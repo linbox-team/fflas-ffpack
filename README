@@ -1,0 +1,30 @@
+  ******  FFLAS-FFPACK : Finite Field Linear Algebra Subroutines/Package ******  
+
+Version 1.0.1
+
+PURPOSE:
+
+The FFLAS-FFPACK library provides functionalities for dense linear algebra
+over word size prime finite field.
+
+INSTALLATION:
+
+see INSTALL
+
+AVAILABILITY: from www-lmc.imag.fr/lmc-mosaic/Jean-Guillaume.Dumas/FFLAS/
+
+REQUIREMENTS:  A C-BLAS library: for ex. ATLAS (http://math-atlas.sourceforge.net/)
+
+This library requires the GNU C++ compiler (gcc-3.0 or newer) or any 
+compiler supporting advanced template features.
+
+
+==========================================================
+The FFLAS-FFPACK website is  www-lmc.imag.fr/lmc-mosaic/Jean-Guillaume.Dumas/FFLAS/
+
+Corrections, suggestions and comments to : 
+Clement.Pernet@imag.fr
+ 
+Last update : 2006 August
+ 
+

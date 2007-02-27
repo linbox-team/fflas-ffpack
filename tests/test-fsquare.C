@@ -1,0 +1,73 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+//--------------------------------------------------------------------------
+//                        Test for fsquare : 1 computation
+//                  
+//--------------------------------------------------------------------------
+// Clement Pernet
+//-------------------------------------------------------------------------
+
+#define DEBUG 0
+#define TIME 1
+
+#include <iomanip>
+#include <iostream>
+#include "fflas-ffpack/modular-balanced.h"
+#include "timer.h"
+#include "Matio.h"
+#include "fflas-ffpack/fflas.h"
+
+
+using namespace std;
+
+typedef Modular<double> Field;
+
+int main(int argc, char** argv){
+
+	int n;
+
+	cerr<<setprecision(10);
+	if (argc != 6)	{
+		cerr<<"Usage : test-fsquare <p> <A> <i>"
+		    <<"<alpha> <beta>"
+		    <<"         to do i computations of C <- AA"
+		    <<endl;
+		exit(-1);
+	}
+	Field F(atoi(argv[1]));
+
+	Field::Element * A;
+	Field::Element * C;
+	size_t lda;
+	size_t ldb;
+	
+	A = read_field(F,argv[2],&n,&n);
+	int nbit=atoi(argv[3]); // number of times the product is performed
+
+	Field::Element alpha,beta;
+	F.init (alpha, (double)atoi(argv[4]));
+	F.init (beta, (double)atoi(argv[5]));
+
+	C = new Field::Element[n*n];
+	Timer tim,t; t.clear();tim.clear(); 
+	for(int i = 0;i<nbit;++i){
+		t.clear();
+		t.start();
+		FFLAS::fsquare (F, FFLAS::FflasNoTrans,n, alpha, A,n, beta, C, n);
+		t.stop();
+		tim+=t;
+	}
+
+#if TIME
+	double mflops = (2.0*(n*n/1000000.0)*nbit*n/tim.usertime());
+	cerr << n <<"x" <<n <<" : fsquare over Z/"
+	     <<atoi(argv[1])<<"Z : [ "
+	     <<mflops<<" MFops in "<<tim.usertime()/nbit<<"s]"
+	     << endl;
+	
+	cerr<<"alpha, beta = "<<alpha <<", "<<beta <<endl;
+
+	cout<<n<<" "<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
+#endif
+}  
+
+

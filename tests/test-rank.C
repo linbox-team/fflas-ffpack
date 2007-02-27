@@ -1,0 +1,60 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+//--------------------------------------------------------------------------
+//                        Test for rank
+//                  
+//--------------------------------------------------------------------------
+// Clement Pernet
+//-------------------------------------------------------------------------
+
+#include <iomanip>
+#include <iostream>
+#include "fflas-ffpack/modular-balanced.h"
+#include "timer.h"
+#include "Matio.h"
+#include "fflas-ffpack/ffpack.h"
+
+
+
+using namespace std;
+
+typedef Modular<double> Field;
+
+int main(int argc, char** argv){
+
+	int n,m;
+	int nbit=atoi(argv[3]); // number of times the product is performed
+	cerr<<setprecision(10);
+	if (argc !=  4)	{
+		cerr<<"Usage : test-rank <p> <A> <<i>"
+		    <<endl
+		    <<"         to compute the rank of A mod p (i computations)"
+		    <<endl;
+		exit(-1);
+	}
+	Field F(atoi(argv[1]));
+	Field::Element * A,*Ab;
+	A = read_field(F,argv[2],&m ,&n);
+		
+	Timer tim,t; t.clear();tim.clear(); 
+	Field::Element r;
+	for(int i = 0;i<nbit;++i){
+		t.clear();
+		t.start();
+		r = FFPACK::Rank (F, m, n, A, n);
+		t.stop();
+		tim+=t;
+		if (i+1<nbit){
+			delete[] A;
+			A = read_field(F,argv[2],&m,&n);
+		}
+	}
+
+	double mflops = 2.0/3.0*(n*r/1000000.0)*nbit*n/tim.usertime();
+	F.write (cerr<<"m,n = "<<m<<", "<<n<<" Rank (A) = ",r)
+		     << " mod "<<atoi(argv[1])<<" : t= "
+		     << tim.usertime()/nbit 
+		     << " s, Mffops = "<<mflops
+		     << endl;
+	
+	cout<<m<<" "<<n<<" "<<r<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
+}
