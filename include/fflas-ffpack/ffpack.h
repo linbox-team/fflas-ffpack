@@ -47,8 +47,11 @@ public:
 				   FfpackHybrid=3,
 				   FfpackKGFast=4,
 				   FfpackDanilevski=5,
-				   FfpackKGFastG=6
+				   FfpackArithProg=6,
+				   FfpackKGFastG=7
 	};
+	
+	class CharpolyFailed{};
 	
 	enum FFPACK_MINPOLY_TAG { FfpackDense=1,
 				    FfpackKGF=2 };
@@ -450,7 +453,7 @@ public:
 	static std::list<Polynomial>&
 	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
 		  typename Field::Element * A, const size_t lda,
-		  const enum FFPACK_CHARPOLY_TAG CharpTag= FfpackLUK);
+		  const enum FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 	
 	//---------------------------------------------------------------------
 	// MinPoly: Compute the minimal polynomial of (A,v) using an LUP 
@@ -468,7 +471,7 @@ public:
 
 
 	// Solve L X = B or X L = B in place
-	// L is M*M if Side == FflasLeft and N*N if Side == FflasRigt, B is M*N.
+	// L is M*M if Side == FflasLeft and N*N if Side == FflasRight, B is M*N.
 	// Only the R non trivial column of L are stored in the M*R matrix L
 	// Requirement :  so that L could  be expanded in-place
 	template<class Field>
@@ -482,24 +485,26 @@ public:
 		 typename Field::Element one, zero;
 		F.init(one, 1.0);
 		F.init(zero, 0.0);
+		size_t LM = (Side == FflasRight)?N:M;
 		for (int i=R-1; i>=0; --i){
 			if (  Q[i] > (size_t) i){
 				//for (size_t j=0; j<=Q[i]; ++j)
 				//F.init( *(L+Q[i]+j*ldl), 0 );
-				fcopy( F, M-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
-				for ( size_t j=Q[i]*ldl; j<M*ldl; j+=ldl)
+				//cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
+				fcopy( F, LM-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
+				for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 					F.assign( *(L+i+j), zero );
 			}
 		}
 		ftrsm( F, Side, FflasLower, FflasNoTrans, FflasUnit, M, N, one, L, ldl , B, ldb);
-		
+		//write_field(F,cerr<<"dans solveLB "<<endl,L,N,N,ldl);
 		// Undo the permutation of L
 		for (size_t i=0; i<R; ++i){
 			if ( Q[i] > (size_t) i){
 				//for (size_t j=0; j<=Q[i]; ++j)
 				//F.init( *(L+Q[i]+j*ldl), 0 );
-				fcopy( F, M-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl, L+Q[i]*(ldl+1)+ldl,ldl );
-				for ( size_t j=Q[i]*ldl; j<M*ldl; j+=ldl)
+				fcopy( F, LM-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl, L+Q[i]*(ldl+1)+ldl,ldl );
+				for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 					F.assign( *(L+Q[i]+j), zero );
 			}
 		} 
@@ -546,18 +551,20 @@ public:
 		else{ // Side == FflasRight
 			int j=R-1;
 			while ( j >=0 ) {
+				//cerr<<"j="<<j<<endl;
 				k = ib = Q[j];
 				while ( (j>=0) &&  (Q[j] == k)  ) {--k;--j;}
 				Ldim = ib-k;
+				//cerr<<"Ldim, ib, k, N = "<<Ldim<<" "<<ib<<" "<<k<<" "<<N<<endl;
 				Lcurr = L + j+1 + (k+1)*ldl;
 				Bcurr = B + ib;
 				Rcurr = Lcurr + Ldim*ldl;
-				fgemm( F, FflasNoTrans, FflasNoTrans, M, N-ib-1, Ldim, Mone, Bcurr, ldb, Rcurr, ldl,  one, Bcurr-Ldim, ldb);
+				fgemm (F, FflasNoTrans, FflasNoTrans, M,  Ldim, N-ib-1, Mone, Bcurr, ldb, Rcurr, ldl,  one, Bcurr-Ldim, ldb);
 				//cerr<<"j avant="<<j<<endl;
 				//cerr<<"k, ib, j, R "<<k<<" "<<ib<<" "<<j<<" "<<R<<endl;
 				//cerr<<"M,k="<<M<<" "<<k<<endl;
 				//cerr<<" ftrsm with M, N="<<Ldim<<" "<<N<<endl;
-				ftrsm( F, Side, FflasLower, FflasNoTrans, FflasUnit, M, Ldim, one, Lcurr, ldl , Bcurr-Ldim, ldb );
+				ftrsm (F, Side, FflasLower, FflasNoTrans, FflasUnit, M, Ldim, one, Lcurr, ldl , Bcurr-Ldim, ldb );
 				//cerr<<"M,k="<<M<<" "<<k<<endl;
 				//cerr<<" fgemm with M, N, K="<<M-k<<" "<<N<<" "<<Ldim<<endl;
 			}
@@ -580,8 +587,8 @@ public:
 					 typename Field::Element * A, const size_t lda, const size_t deg, size_t *rankProfile);
 	template <class Field, class Polynomial>
 	static std::list<Polynomial>&
-	Frobenius (const Field& F, std::list<Polynomial>& frobeniusForm, 
-		   const size_t N, typename Field::Element * A, const size_t lda, const size_t c);
+	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm, 
+			   const size_t N, typename Field::Element * A, const size_t lda, const size_t c);
 	template <class Field>
 	static void CompressRows (Field& F, const size_t M,
 				  typename Field::Element * A, const size_t lda,

@@ -166,7 +166,8 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 					rankProfile [rp_idx++] = curr_row;
 					if (dependent){
 						std::cerr<<"FAIL itere dependant intercale"<<std::endl;
-						exit(-1);
+						throw CharpolyFailed();
+						//exit(-1);
 					}
 #if DEBUG
 					std::cerr<<"X";
