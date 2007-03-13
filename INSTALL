@@ -28,10 +28,8 @@ C BLAS ATLAS; The following parameters are given to the compiler :
 
 COMPILATION OF THE TESTS :
 
-To compile the tests, complete the 3 variables given in test/Makefile :
-ATLASROOT=         {the root directory where ATLAS is installed}
-ATLASARCH=         {the architecture-system name given during ATLAS installation. 
-		    for example Linux_P4SSE2}
-ARCH=		   {the architecture parameter for g++. For example pentium4, athlon, ...}
+To compile the tests, complete the variables given in test/Makefile and/or uncomment the adequate option:
+BLASROOT=         {the directory where the BLAS library is located}
+ARCH=		   {the architecture parameter for g++. For example pentium4, athlon, opteron,...}
 
 Then simply run make in the test directory.

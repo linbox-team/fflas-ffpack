@@ -1,3 +1,9 @@
+2007-03-11 v1.1.1
+	* complete preconditioning phase for the new Charpoly algorithm
+	* new Charpoly algorithm renamed CharpolyArithProg
+	* add exception for failure of the LasVegas algrithm
+	* default charpoly is now: 2 attempts to CharpolyArithProg, then LUKrylov
+
 2007-02-27 v1.1.0
 	* change some naming conventions in the directories
 	* add a LQUP routine for small dimension (LUdivine_small) and the

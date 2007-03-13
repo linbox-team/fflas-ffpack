@@ -1,4 +1,4 @@
-VERSION=1.1.0
+VERSION=1.1.1
 
 FFLAS_FFPACK_DIR=/home/pernet/Logiciels/fflas-ffpack
 LINBOX_DIR=/home/pernet/Logiciels/linbox

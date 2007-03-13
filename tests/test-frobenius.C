@@ -27,7 +27,7 @@ std::ostream& printvect(std::ostream& o, vector<T>& vect){
 	for(size_t i=0; i < vect.size()-1; ++i)
 		o << vect[i] << " " ;
 	return o << vect[vect.size()-1] << std::endl;
-}
+	}
 
 int main(int argc, char** argv){
 
@@ -50,14 +50,13 @@ int main(int argc, char** argv){
 	Timer tim;
 	tim.clear();
 	tim.start();
-	FFPACK::Frobenius (F, frobForm, n, A, n, c);
+	FFPACK::CharpolyArithProg (F, frobForm, n, A, n, c);
 	tim.stop(); 
 	std::list<vector<Field::Element> >::iterator it = frobForm.begin();
-	size_t i=0;
 	while(it != frobForm.end()){
 		printvect (cout, *(it++));
 	}
 	cerr<<c<<" "<<tim.usertime()<<" "<<4.55*n*n/1000000.0*n/tim.usertime()<<endl;
+	delete[] A;
 	return 0;	       
 }
-

@@ -24,7 +24,7 @@ ARCH = -march=pentium3
 #----------------------------------------------------------
 
 OPTFLAGS+=-O3
-OPTFLAGS+=-g
+OPTFLAGS+=-g -Wall
 OPTFLAGS+= ${ARCH}
 
 CXXFLAGS+=${OPTFLAGS} 

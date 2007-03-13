@@ -26,7 +26,8 @@ typedef Modular<double> Field;
 
 int main(int argc, char** argv){
 	cerr<<setprecision(20);
-	int i,j,m,n,nbf,R;
+	int i,j,nbf,m,n;
+	size_t R=0;
 
 	if (argc!=5){
 		cerr<<"usage : test-lqup <p> <A> <c> <i>"<<endl
@@ -79,11 +80,11 @@ int main(int argc, char** argv){
 	for (size_t i=0; i<R; ++i){
 		for (size_t j=0; j<i; ++j)
 			F.assign ( *(U + i*n + j), zero);
-		for (size_t j=i; j<n; ++j)
+		for (int j=i; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
 	}
-	for ( size_t i=0; i<m; ++i ){
-		size_t j=0;
+	for ( int i=0; i<m; ++i ){
+		int j=0;
 		for (; j< ((i<n)?i:n) ; ++j )
 			F.assign( *(L + i*m+j), *(A+i*n+j));
 		for (; j<m; ++j )
@@ -92,7 +93,7 @@ int main(int argc, char** argv){
 
 	FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,m, L, m, Q);
 	if (diag == FFLAS::FflasNonUnit)
-		for ( size_t i=0; i<m; ++i )
+		for ( int i=0; i<m; ++i )
 			F.assign (*(L+i*(m+1)),one);
 	else{
 		size_t i=0;
@@ -107,11 +108,12 @@ int main(int argc, char** argv){
 
 	Field::Element * B =  read_field(F,argv[2],&m,&n);
 	bool fail = false;
-	for (size_t i=0; i<m; ++i)
-		for (size_t j=0; j<n; ++j)
+	for (int i=0; i<m; ++i)
+		for (int j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j)))
 				fail=true;
 	
+	delete[] B;
 	if (fail)
 		cerr<<"FAIL"<<endl;
 

@@ -1,4 +1,3 @@
-
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 //--------------------------------------------------------------------------
 //                        Test for charpoly
@@ -47,7 +46,7 @@ int main(int argc, char** argv){
 	}
 	int nbit=atoi(argv[3]); // number of times the product is performed
 	Field F((long unsigned int)atoi(argv[1]));
-	Field::Element * A,*Ab;
+	Field::Element * A;
 	A = read_field(F,argv[2],&n,&n);
 		
 	Timer tim,t; t.clear();tim.clear(); 
@@ -57,7 +56,7 @@ int main(int argc, char** argv){
 		t.clear();
 		t.start();
 		
-		FFPACK::CharPoly (F, P_list, n, A, n, FFPACK::FfpackLUK);
+		FFPACK::CharPoly (F, P_list, n, A, n);
 		t.stop();
 		tim+=t;
 		delete[] A;

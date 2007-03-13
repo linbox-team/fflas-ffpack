@@ -50,10 +50,9 @@ public:
 
 	const bool balanced;
 
-	Modular<double> (int p)  : modulus((double)p), balanced(true), inv_modulus(1./(double)p), half_mod( (p-1.)/2) {}
+	Modular<double> (int p)  : modulus((double)p), inv_modulus(1./(double)p), half_mod( (p-1.)/2), balanced(true) {}
 
-	Modular<double>(const Modular<double>& mf) : modulus(mf.modulus),  balanced(true), inv_modulus(mf.inv_modulus), 
-					     half_mod(mf.half_mod){}
+	Modular<double>(const Modular<double>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
 	
 	const Modular<double> &operator=(const Modular<double> &F) {
 			modulus = F.modulus;

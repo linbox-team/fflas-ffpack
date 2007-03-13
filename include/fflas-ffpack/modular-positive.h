@@ -77,7 +77,7 @@
 			
 // 		}
 
-		Modular (double p) : modulus(p), balanced(false), lmodulus((unsigned long)p) {
+		Modular (double p) : modulus(p),  lmodulus((unsigned long)p), balanced(false) {
 			// if( modulus <= 1 )
 // 				throw PreconditionFailed(__FUNCTION__,__LINE__,"modulus must be > 1");
 // 			unsigned long max;
@@ -85,7 +85,7 @@
 // 				throw PreconditionFailed(__FUNCTION__,__LINE__,"modulus is too big");
 		}
 
-		Modular (long int p) :modulus((double)p), balanced(false),lmodulus(p) {
+		Modular (long int p) :modulus((double)p), lmodulus(p),  balanced(false) {
 // 			if( (double) modulus <= 1 )
 // 				throw PreconditionFailed(__FUNCTION__,__LINE__,"modulus must be > 1");
 // 			unsigned long max;
@@ -93,7 +93,7 @@
 // 				throw PreconditionFailed(__FUNCTION__,__LINE__,"modulus is too big");
 		}
 
-		Modular (const unsigned long& p) : modulus((double) p), balanced(false),lmodulus(p) //, inv_modulus(1./(double)p)
+		Modular (const unsigned long& p) : modulus((double) p),lmodulus(p), balanced(false) //, inv_modulus(1./(double)p)
 		{
 // 			if(modulus <= 1)
 // 				throw PreconditionFailed(__FUNCTION__,__LINE__,"modulus must be > 1");
@@ -102,7 +102,7 @@
 				
 		}
 
-		Modular(const Modular<double>& mf) : modulus(mf.modulus), balanced(false), lmodulus(mf.lmodulus)//,inv_modulus(mf.inv_modulus)
+		Modular(const Modular<double>& mf) : modulus(mf.modulus), lmodulus(mf.lmodulus), balanced(false)//,inv_modulus(mf.inv_modulus)
 		{}
 
 		const Modular &operator=(const Modular<double> &F) {

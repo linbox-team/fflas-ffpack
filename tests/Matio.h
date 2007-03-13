@@ -10,7 +10,7 @@ double * read_dbl(char * mat_file,int* tni,int* tnj) {
   char *UT, *File_Name;
   int is_gzipped = 0;
   size_t s = strlen(mat_file);
-  double* X;
+  double* X=NULL;
   if ((mat_file[--s] == 'z') && 
       (mat_file[--s] == 'g') && 
       (mat_file[--s] == '.')) {
@@ -27,7 +27,7 @@ double * read_dbl(char * mat_file,int* tni,int* tnj) {
   FILE* FileDes = fopen(File_Name, "r");
   if (FileDes != NULL) {
     char * tmp = new char[200];// usigned long tni, tnj;
-    fscanf(FileDes,"%d %d %s\n",tni, tnj, &tmp) ;
+    fscanf(FileDes,"%d %d %s\n",tni, tnj, tmp) ;
     int n=*tni;
     int p=*tnj;
     X = new double[n*p];
@@ -42,7 +42,6 @@ double * read_dbl(char * mat_file,int* tni,int* tnj) {
   }
   
   fclose(FileDes);
-  if (is_gzipped) system(UT);        
   return X;
 }
 
@@ -56,7 +55,7 @@ std::ostream& write_dbl(std::ostream& c,
       c << *(E+j+id*i) << " ";
     c << std::endl;
   }
-  c << std::endl;
+  return c << std::endl;
 }
 
 // Reading and writing matrices over field
@@ -70,7 +69,7 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
   size_t s = strlen(mat_file);
   typename Field::Element zero;
   F.init(zero,0.0);
-  typename Field::Element * X;
+  typename Field::Element * X=NULL;
   if ((mat_file[--s] == 'z') && 
       (mat_file[--s] == 'g') && 
       (mat_file[--s] == '.')) {
@@ -86,7 +85,7 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
   FILE* FileDes = fopen(File_Name, "r");
   if (FileDes != NULL) {
     char  tmp[200];// usigned long tni, tnj;
-    fscanf(FileDes,"%d %d %s\n",tni, tnj, &tmp) ;
+    fscanf(FileDes,"%d %d %s\n",tni, tnj, tmp) ;
 
     int n=*tni;
     int p=*tnj;
@@ -102,7 +101,6 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
   }
   
   fclose(FileDes);
-  if (is_gzipped) system(UT);        
   return X;
 }
 
@@ -120,7 +118,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
       c << tmp << " ";}
     c << std::endl;
   }
-  c << std::endl;
+  return c << std::endl;
   //#endif
 }
 #endif
