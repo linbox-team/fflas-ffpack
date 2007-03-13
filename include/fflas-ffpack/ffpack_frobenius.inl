@@ -82,7 +82,6 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			std::cerr << "FAIL in preconditionning phase:"
 			     << " degree sequence is not monotonically not increasing"
 			     << std::endl;
-			//exit (-1);
 			throw CharpolyFailed();
 		}
 		dK[k] = dold = d;
@@ -125,11 +124,19 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	size_t offset = Ncurr-1;
 	for (size_t i=Mk-1; i>=nb_full_blocks+1;  --i)
 		if (dK[i] >= 1){ 
+			for (size_t j = offset+1; j<R; ++j)
+				if (!F.isZero(*(K2b + i*ldk + j))){
+					std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
+					throw CharpolyFailed();
+				}
 			Polynomial P (dK [i]+1);
 			F.assign(P[dK[i]], one);
+			cerr<<"Recovery in preconditionning P =";
 			for (size_t j=0; j < dK [i]; ++j){
 				F.neg (P [dK [i]-j-1], *(K2b + i*ldk + (offset-j)));
+				cerr<<" "<<P[dK[i]-j-1];
 			}
+			cerr<<endl;
 			frobeniusForm.push_front(P);
 			offset -= dK [i];
 			Ncurr -= dK [i];
@@ -137,17 +144,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		}
 	Mk = Ma;
 
-// 	for (size_t i= offset+1; i<oldNcurr; ++i)
-// 		for (size_t j=0; j<nb_full_blocks+1; ++j){
-// 			//		cerr<<"K + "<<i<<"*ldk + "<<j<<" = "<<(*(K+i*ldk+j))<<endl;
-// 			if (!F.isZero( *(K2b+i*ldk+j) )){
-// 				std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
-// 				exit(-1);
-// 			}
-// 		}
-	
 	if (R<N){
-		
 // 		std::cerr<<"Preconditionning failed; missing rank = "<<N-R
 // 			 <<" completing the Krylov matrix"
 // 			 <<std::endl;
