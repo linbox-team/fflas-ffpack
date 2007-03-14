@@ -1,4 +1,4 @@
-VERSION=1.1.1
+VERSION=1.1.2
 
 FFLAS_FFPACK_DIR=/home/pernet/Logiciels/fflas-ffpack
 LINBOX_DIR=/home/pernet/Logiciels/linbox
@@ -21,6 +21,6 @@ dist:
 
 linbox:
 
-	cp ${FFLAS_FFPACK_DIR}/include/fflas-ffpack/{fflas.h,fflas_fgemm.inl,fflas_fgemv.inl,fflas_ftrsm.inl,fflas_ftrsv.inl,fflas_ftrmm.inl,fflas_fdot.inl,fflas_fcopy.inl,fflas_faxpy.inl,fflas_fger.inl} ${LINBOX_DIR}/linbox/fflas/
+	cp ${FFLAS_FFPACK_DIR}/include/fflas-ffpack/{fflas.h,fflas_fgemm.inl,fflas_fgemv.inl,fflas_ftrsm.inl,fflas_ftrsv.inl,fflas_ftrmm.inl,fflas_fdot.inl,fflas_fcopy.inl,fflas_faxpy.inl,fflas_fger.inl,fflas_bounds.inl} ${LINBOX_DIR}/linbox/fflas/
 	cp ${FFLAS_FFPACK_DIR}/include/fflas-ffpack/{ffpack.h,ffpack_charpoly.inl,ffpack_frobenius.inl,ffpack_ludivine.inl,ffpack_minpoly.inl,ffpack_krylovelim.inl,ffpack_charpoly_danilevski.inl,ffpack_charpoly_kglu.inl,ffpack_charpoly_kgfast.inl,ffpack_charpoly_kgfastgeneralized.inl} ${LINBOX_DIR}/linbox/ffpack/
 

@@ -26,9 +26,7 @@ int main(int argc, char** argv){
 
 	int n;
 	int nbit=atoi(argv[3]); // number of times the product is performed
-	long alphalong=1, betalong=0;
 	cerr<<setprecision(10);
-	Field::Element alpha,beta;
 	Field::Element zero, one;
 
 	if (argc != 4)	{
@@ -44,12 +42,13 @@ int main(int argc, char** argv){
 	Field::Element * A,*Ab;
 	A = read_field(F,argv[2],&n,&n);
 	Ab = new Field::Element[n*n];
-	for (size_t i=0; i<n*n;++i)
+	for (int i=0; i<n*n;++i)
 		F.assign(*(Ab+i),*(A+i));
 	Field::Element * X = new Field::Element[n*n];
 
 	Timer tim,t; t.clear();tim.clear(); 
-	int nullity;
+	int nullity=0;
+	
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
@@ -57,7 +56,7 @@ int main(int argc, char** argv){
 		t.stop();
 		tim+=t;
 		if (i+1<nbit)
-			for (size_t i=0; i<n*n;++i)
+			for (int i=0; i<n*n;++i)
 				F.assign(*(A+i),*(Ab+i));
 	}
 
@@ -67,8 +66,8 @@ int main(int argc, char** argv){
 		      1.0, Ab, n, X, n, 0.0, I, n); 
 	bool wrong = false;
 
-	for (size_t i=0;i<n;++i)
-		for (size_t j=0;j<n;++j)
+	for (int i=0;i<n;++i)
+		for (int j=0;j<n;++j)
 			if ( ((i!=j) && !F.areEqual(*(I+i*n+j),zero))
 			     ||((i==j) &&!F.areEqual(*(I+i*n+j),one)))
 				wrong = true;

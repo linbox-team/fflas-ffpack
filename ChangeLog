@@ -1,3 +1,6 @@
+2007-03-13 v1.1.2
+	* change the genericity system for trsm to detect Field
+	implementations over double (compatibility with LinBox)
 2007-03-11 v1.1.1
 	* complete preconditioning phase for the new Charpoly algorithm
 	* new Charpoly algorithm renamed CharpolyArithProg
