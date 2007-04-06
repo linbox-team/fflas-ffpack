@@ -32,11 +32,11 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 	Field F(atoi(argv[1]));
-	Field::Element * A,*Ab;
+	Field::Element * A;
 	A = read_field(F,argv[2],&m ,&n);
 		
 	Timer tim,t; t.clear();tim.clear(); 
-	Field::Element r;
+	Field::Element r=0;
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
