@@ -7,6 +7,7 @@
  *
  * See COPYING for license information.
  */
+#include <math.h>
 
 #ifndef __FFLAS_H
 #define __FFLAS_H

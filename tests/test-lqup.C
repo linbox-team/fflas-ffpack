@@ -19,7 +19,7 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/modular-positive.h"
 #include "fflas-ffpack/ffpack.h"
 
 typedef Modular<double> Field;
@@ -35,7 +35,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F(atoi(argv[1]));
+	Field F((unsigned long)atoi(argv[1]));
 	Field::Element * A;
 	
 	A = read_field(F,argv[2],&m,&n);
@@ -62,13 +62,21 @@ int main(int argc, char** argv){
 			Q[j]=0;
 		tim.clear();      
 		tim.start(); 	
-		R = FFPACK::LUdivine (F, diag, m, n, A, n, P, Q,
-					      FFPACK::FfpackLQUP, cutoff);
+		R = FFPACK::LUdivine_gauss (F, diag, m, n, A, n, P, Q,
+					    FFPACK::FfpackLQUP);
 		tim.stop();
 		timc+=tim;
 	}
 	//write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
-	
+
+// 	cerr<<"P = [";
+// 	for (size_t i=0; i<n; ++i)
+// 		cerr<<P[i]<<" ";
+// 	cerr<<"]"<<endl;
+// 	cerr<<"Q = [";
+// 	for (size_t i=0; i<m; ++i)
+// 		cerr<<Q[i]<<" ";
+// 	cerr<<"]"<<endl;
 #if DEBUG
 	Field::Element * L = new Field::Element[m*m];
 	Field::Element * U = new Field::Element[m*n];
@@ -83,15 +91,20 @@ int main(int argc, char** argv){
 		for (int j=i; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
 	}
+	for (size_t i=R;i<m; ++i)
+		for (size_t j=0; j<n; ++j)
+			F.assign(*(U+i*n+j), zero);
 	for ( int i=0; i<m; ++i ){
 		int j=0;
-		for (; j< ((i<n)?i:n) ; ++j )
+		for (; j< ((i<R)?i:R) ; ++j )
 			F.assign( *(L + i*m+j), *(A+i*n+j));
 		for (; j<m; ++j )
 			F.assign( *(L+i*m+j), zero);
 	}
 
-	FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,m, L, m, Q);
+// 	write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+// 	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+	FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,R, L, m, Q);
 	if (diag == FFLAS::FflasNonUnit)
 		for ( int i=0; i<m; ++i )
 			F.assign (*(L+i*(m+1)),one);

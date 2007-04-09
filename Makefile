@@ -1,7 +1,7 @@
 VERSION=1.1.2
 
-FFLAS_FFPACK_DIR=/home/pernet/Logiciels/fflas-ffpack
-LINBOX_DIR=/home/pernet/Logiciels/linbox
+FFLAS_FFPACK_DIR=/home/cpernet/Logiciels/fflas-ffpack
+LINBOX_DIR=/home/cpernet/Logiciels/linbox
 
 
 all:

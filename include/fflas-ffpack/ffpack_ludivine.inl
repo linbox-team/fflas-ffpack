@@ -36,36 +36,35 @@ FFPACK::LUdivine_gauss( const Field& F, const enum FFLAS_DIAG Diag,
 			const size_t M, const size_t N,		
 			typename Field::Element * A, const size_t lda, size_t*P, 
 			size_t *Q, const enum FFPACK_LUDIVINE_TAG LuTag){
-	static typename Field::Element mone,one;
+	static typename Field::Element mone,one,zero;
 	F.init(one,1.0);
+	F.init(zero,0.0);
 	F.neg (mone, one);
 	size_t MN = MIN(M,N);
 	typename Field::Element * Acurr = A;
 	size_t r = 0;
 	
 	for (size_t k = 0; k < MN; ++k){
-		write_field(F,cerr<<"A = "<<endl,A,M,N,lda);
-		cerr<<"Q["<<r<<"] = "<<Q[r]<<endl;
 		size_t p = r;
+		Acurr = A+k*lda+r;
 		while ((p < N) && F.isZero (*(Acurr++)))
 			p++;
-		if (p == N){
-			Q[r] ++;
-			Acurr += lda;
-		} else {
+		if (p < N){
 			P[r] = p;
-			if (r < Q[r])
-				fcopy (F, N-r, (A + r*(lda+1)), 1, (A+Q[r]*lda+r),1);
+			if (r < k){
+				fcopy (F, N-r, (A + r*(lda+1)), 1, (A+k*lda+r),1);
+				Acurr = A+r+k*lda;
+				for (size_t i=r; i<N; ++i)
+					F.assign(*(Acurr++),zero);
+			}
+			
 			fswap (F, M, A+r, lda, A+p, lda);
-			Acurr += lda +1;
+			Q[r] = k;
 			r++;
-			Q[r] = r;
 		}
-		if (Q[r]<M){
-			write_field(F,cerr<<"A avant  = "<<endl,A,M,N,lda);
-			ftrsv (F, FflasUpper, FflasTrans, FflasNonUnit, r, A, lda, A+(Q[r])*lda, 1);
-			write_field(F,cerr<<"A milieu = "<<endl,A,M,N,lda);
-			fgemv (F, FflasTrans, N-r,r, mone, A+r, lda, A+(Q[r])*lda, 1, one, Acurr, 1);
+		if (k+1<M){
+			ftrsv (F, FflasUpper, FflasTrans, FflasNonUnit, r, A, lda, A+(k+1)*lda, 1);
+			fgemv (F, FflasTrans, r, N-r, mone, A+r, lda, A+(k+1)*lda, 1, one, A+(k+1)*lda+r, 1);
 		} else
 			return r;
 	}
