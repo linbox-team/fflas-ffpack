@@ -396,6 +396,12 @@ public:
 			const size_t M, const size_t N,
 			typename Field::Element * A, const size_t lda,
 			size_t* P, size_t* Q, const enum FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
+	template <class Field>
+	static size_t 
+	LUdivine_gauss (const Field& F, const enum FFLAS_DIAG Diag,
+			const size_t M, const size_t N,
+			typename Field::Element * A, const size_t lda,
+			size_t* P, size_t* Q, const enum FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
        	
 	// Apply a permutation submatrix of P (between ibeg and iend) to a matrix
 	// to (iend-ibeg) vectors of size M stored in A (as column for NoTrans 

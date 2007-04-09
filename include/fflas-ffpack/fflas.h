@@ -149,7 +149,7 @@ public:
 	/**
 	   @brief ftrsv: TRiangular System solve with Vector
 	   Computes  X <- op(A^-1).X\\
-	   size of X is m
+	   size of X is N
 	*/
 	template<class Field>
 	static void
