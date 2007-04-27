@@ -6,7 +6,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 0
+#define DEBUG 1
 #define TIME 1
 
 #include <iomanip>
@@ -42,8 +42,8 @@ int main(int argc, char** argv){
 	}
 	Field F(atoi(argv[1]));
 
-	F.init( alpha, double(atoi(argv[6])));
-	F.init( beta, double(atoi(argv[7])));
+	F.init( alpha, Field::Element(atoi(argv[6])));
+	F.init( beta, Field::Element(atoi(argv[7])));
 
 	Field::Element * A;
 	Field::Element * B;

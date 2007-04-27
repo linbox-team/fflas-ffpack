@@ -19,7 +19,7 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-#include "fflas-ffpack/modular-positive.h"
+#include "fflas-ffpack/modular-balanced.h"
 #include "fflas-ffpack/ffpack.h"
 
 typedef Modular<double> Field;
@@ -27,7 +27,7 @@ typedef Modular<double> Field;
 int main(int argc, char** argv){
 	cerr<<setprecision(20);
 	int i,j,nbf,m,n;
-	size_t R=0;
+	int R=0;
 
 	if (argc!=5){
 		cerr<<"usage : test-lqup <p> <A> <c> <i>"<<endl
@@ -43,7 +43,7 @@ int main(int argc, char** argv){
 	size_t *P = new size_t[n];
 	size_t *Q = new size_t[m];
 		
-	size_t cutoff = atoi(argv[3]);
+	//	size_t cutoff = atoi(argv[3]);
 	nbf = atoi(argv[4]);
 	
 	Timer tim,timc;
@@ -62,7 +62,7 @@ int main(int argc, char** argv){
 			Q[j]=0;
 		tim.clear();      
 		tim.start(); 	
-		R = FFPACK::LUdivine_gauss (F, diag, m, n, A, n, P, Q,
+		R = FFPACK::LUdivine (F, diag, m, n, A, n, P, Q,
 					    FFPACK::FfpackLQUP);
 		tim.stop();
 		timc+=tim;
@@ -85,14 +85,14 @@ int main(int argc, char** argv){
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	for (size_t i=0; i<R; ++i){
-		for (size_t j=0; j<i; ++j)
+	for (int i=0; i<R; ++i){
+		for (int j=0; j<i; ++j)
 			F.assign ( *(U + i*n + j), zero);
 		for (int j=i; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
 	}
-	for (size_t i=R;i<m; ++i)
-		for (size_t j=0; j<n; ++j)
+	for (int i=R;i<m; ++i)
+		for (int j=0; j<n; ++j)
 			F.assign(*(U+i*n+j), zero);
 	for ( int i=0; i<m; ++i ){
 		int j=0;
@@ -109,9 +109,9 @@ int main(int argc, char** argv){
 		for ( int i=0; i<m; ++i )
 			F.assign (*(L+i*(m+1)),one);
 	else{
-		size_t i=0;
-		while (Q[i]==i){*(L+i*(m+1)) = * (U+i*(n+1)); ++i;}
-		for ( size_t i=0; i<R; ++i )
+		int i=0;
+		while (Q[i]==size_t(i)){*(L+i*(m+1)) = * (U+i*(n+1)); ++i;}
+		for ( int i=0; i<R; ++i )
 			F.assign (*(U+i*(n+1)),one);
 	}
 	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,R, U, n, P);

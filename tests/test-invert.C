@@ -20,7 +20,7 @@
 
 using namespace std;
 
-typedef Modular<double> Field;
+typedef Modular<float> Field;
 
 int main(int argc, char** argv){
 

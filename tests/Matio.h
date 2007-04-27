@@ -110,7 +110,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 		     const typename Field::Element* E,
 		     int n, int m, int id){
   
-  double tmp;
+  typename Field::Element tmp;
   //#if DEBUG
   for (int i = 0; i<n;++i){
     for (int j=0; j<m;++j){
