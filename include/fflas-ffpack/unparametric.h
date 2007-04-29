@@ -34,12 +34,12 @@
 template< class K>
 class UnparametricField;
 
-template<>
-class UnparametricField <double>
+template<class K>
+class UnparametricField 
 {
 public:
 	
-	typedef double Element;    
+	typedef K Element;    
 	
 
 	UnparametricField(){}
@@ -51,6 +51,8 @@ public:
 
 	Element &init (Element &x, const double &y=0) const 
 	{ return x = y; }
+	Element &init (Element &x, const float &y=0) const 
+	{ return x = y; }
 
     
 	unsigned long convert (unsigned long &x, const Element &y) const 
@@ -59,7 +61,7 @@ public:
 	}
     
 	
-	double &convert (double &x, const Element &y) const { return x = y; }
+	K &convert (K &x, const Element &y) const { return x = y; }
 	
 	Element &assign (Element &x, const Element &y) const { return x = y; }
     
