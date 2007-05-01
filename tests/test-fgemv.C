@@ -6,7 +6,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 0
+#define DEBUG 1
 #define TIME 1
 
 #include <iomanip>
@@ -44,8 +44,6 @@ int main(int argc, char** argv){
 
 	Field::Element * A;
 	Field::Element * b;
-	size_t lda;
-	size_t ldb;
 	
 	b = read_field(F,argv[3],&n,&k);
 	A = read_field(F,argv[2],&m,&n);
@@ -66,6 +64,29 @@ int main(int argc, char** argv){
 		tim+=t;
 	}
 
+#if DEBUG
+	Field::Element *d = new Field::Element[n];
+	for (int i=0; i<m; ++i)
+		F.mul (d[i], beta, b[i]);
+	for (int i=0; i<m; ++i)
+		F.mulin (b[i], alpha);
+	for (int i=0; i<m; ++i)
+		for (int j=0; j<n; ++j)
+			F.axpyin (d[i], *(A+i*m+j), b[j]);
+	bool fail = false;
+	for (int i=0; i<m; ++i)
+		if (!F.areEqual(d[i], c[i]))
+			fail = true;
+
+	if (fail)
+		cerr<<"FAIL"<<endl;
+	else
+		cerr<<"PASS"<<endl;
+	delete[] d;
+#endif
+	delete[] A;
+	delete[] b;
+	delete[] c;
 #if TIME
 	double mflops = (2.0*(m*n/1000000.0)*nbit/tim.usertime());
 	cerr << m <<"x" <<n <<" : fgemv over Z/"
