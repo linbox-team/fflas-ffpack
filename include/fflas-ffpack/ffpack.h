@@ -26,9 +26,11 @@ namespace LinBox{
 
 #define __FFPACK_LUDIVINE_CUTOFF 100
 	/**
-	 * \brief Set of elimination based routines for dense linear algebra with matrices over finite prime field of characteristic less than 2^26.
+	 * \brief Set of elimination based routines for dense linear algebra
+	 * with matrices over finite prime field of characteristic less than 2^26.
 	 *
-	 *  This class only provides a set of static member functions. No instantiation is allowed.
+	 *  This class only provides a set of static member functions.
+	 *  No instantiation is allowed.
 	 *
 	 * It enlarges the set of BLAS routines of the class FFLAS, with higher 
 	 * level routines based on elimination.
@@ -403,6 +405,146 @@ public:
 			typename Field::Element * A, const size_t lda,
 			size_t* P, size_t* Q, const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
        	
+
+
+	/**
+	 * Compute the inverse of a triangular matrix.
+	 * @param Uplo whether the matrix is upper of lower triangular
+	 * @param Diag whether the matrix if unit diagonal
+	 * 
+	 */
+	 template<class Field>
+	 static void
+	 ftrtri (const Field& F, const FFLAS_UPLO Uplo, const FFLAS_DIAG Diag,
+		 const size_t N, typename Field::Element * A, const size_t lda){
+
+		 typename Field::Element mone, one;
+		 F.init(one,1.0);
+		 F.init(mone,-1.0);
+		 if ((N == 1) && (Diag == FflasNonUnit))
+			 F.divin (*A);
+		 else{
+			 size_t N1 = N/2;
+			 size_t N2 = N - N1;
+			 ftrtri (F, Uplo, Diag, N1, A, lda);
+			 ftrtri (F, Uplo, Diag, N2, A + N1*(lda+1), lda);
+			 if (Uplo == FflasUpper){
+				 ftrmm (F, FflasLeft, Uplo, FflasNoTrans, Diag, N1, N2,
+					one, A, lda, A + N1, lda);
+				 ftrmm (F, FflasRight, Uplo, FflasNoTrans, Diag, N1, N2,
+					mone, A + N1*(lda+1), lda, A + N1, lda);
+			 } else {
+				 ftrmm (F, FflasLeft, Uplo, FflasNoTrans, Diag, N2, N1,
+					one, A + N1*(lda+1), lda, A + N1*lda, lda);
+				 ftrmm (F, FflasRight, Uplo, FflasNoTrans, Diag, N2, N1,
+					mone, A, lda, A + N1*lda, lda);
+			 }
+		 }
+	 }
+
+
+	/**
+	 * Compute the product UL of the upper, resp lower triangular matrices U and L
+	 * stored one above the other in the square matrix A.
+	 * The matrix U is supposed to be unit diagonal
+	 * 
+	 */
+	template<class Field>
+	static void
+	ftrtrm (const Field& F, const size_t N, typename Field::Element * A, const size_t lda){
+		
+		typename Field::Element one;
+		F.init(one,1.0);
+
+		 if (N == 1)
+			return;
+		size_t N1 = N/2;
+		size_t N2 = N-N1;
+		
+		ftrtrm (F, N1, A, lda);
+		
+		fgemm (F, FflasNoTrans, FflasNoTrans, N1, N1, N2, one,
+		       A+N1, lda, A+N1*lda, lda, one, A, lda);
+		
+		ftrmm (F, FflasRight, FflasLower, N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
+		
+		ftrmm (F, FflasLeft, FflasUpper, N2, N1, one, A + N1*(lda+1), lda, A + N1*lda, lda);
+		
+		ftrtrm (F, N2, A + N1*(lda+1), lda);
+		
+	}
+
+	/**
+	 * Compute the Column Echelon form of the input matrix in-place.
+	 * 
+	 * After the computation A = [ M \ V ] such that AU = C is a column echelon
+	 * decomposition of A, with U = P^T [  V     ] and C = M + Q [ Ir   ]
+	 *                                  [ 0 In-r ]               [    0 ]
+	 */
+	template <class Field>
+	static size_t
+	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+			   typename Field::Element * A, const size_t lda,
+			   size_t* P, size_t* Q){
+
+		typename Field::Element one, mone;
+		F.init (one, 1.0);
+		F.neg (mone, one);
+		size_t r;
+
+		r = LUdivine (F, FflasUnit, M, N, A, lda, P, Q);
+
+		ftrtri (F, FflasUpper, FflasUnit, r, A, lda);
+
+		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, r, N,
+		       mone, A, lda, A+r, lda);
+
+		return r;
+
+	}
+
+	/**
+	 * Compute the Reduced Column Echelon form of the input matrix in-place.
+	 * 
+	 * After the computation A = [  V  ] such that AU = R is a reduced column echelon
+	 *                           [ M 0 ]
+	 * decomposition of A, where U = P^T [  V     ] and R = Q [ Ir   ]
+	 *                                   [ 0 In-r ]           [ M  0 ]
+	 */
+	
+	template <class Field>
+	static size_t
+	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+				  typename Field::Element * A, const size_t lda,
+				  size_t* P, size_t* Q){
+		
+		typename Field::Element one, mone;
+		F.init (one, 1.0);
+		F.neg (mone, one);
+		size_t r;
+
+		r = ColumnEchelonForm (F, M, N, A, lda, P, Q);
+
+		// M = Q^T M 
+		for (int i=r-1; i>=0; --i){
+			if ( Q[i]> (size_t) i ){
+				fswap( F, i, 
+				       A + Q[i]*lda, 1, 
+				       A + i*lda, 1 );
+			}
+		}
+		
+		ftrtri (F, FflasLower, FflasNonUnit, r, A, lda);
+		
+		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, r, N,
+		       one, A, lda, A+r, lda);
+
+		ftrtrm (F, r, A, lda);
+
+		return r;
+
+	}
+	
 	// Apply a permutation submatrix of P (between ibeg and iend) to a matrix
 	// to (iend-ibeg) vectors of size M stored in A (as column for NoTrans 
 	// and rows for Trans)
@@ -580,6 +722,7 @@ public:
 			}
 		}
 	}
+
 
 	template<class Field>
 	static void trinv_left( const Field& F, const size_t N, const typename Field::Element * L, const size_t ldl,
