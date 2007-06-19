@@ -284,7 +284,11 @@ public:
 			for (size_t i=0; i<M; ++i)
 				for (size_t j=0; j<M;++j)
 					F.assign(*(X+i*ldx+j), zero);
+
 			// X = L^-1 in n^3/3
+// 			ftrtri (F, FflasLower, FflasUnit, M, A, lda);
+// 			for (size_t i=1; i<M; ++i)
+// 				fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
 			invL( F, M, A, lda, X, ldx );
 			// X = Q^-1.X is not necessary since Q = Id
 			
@@ -365,7 +369,7 @@ public:
 	 * @param A input matrix
 	 * @param lda leading dimension of A
 	 * @param P the column permutation
-	 * @param Q the row permutation
+	 * @param Qt the transpose of the row permutation Q
 	 * @param LuTag flag for setting the earling termination if the matrix
 	 * is singular
 	 */
@@ -375,7 +379,7 @@ public:
 	LUdivine (const Field& F, const FFLAS_DIAG Diag,
 		  const size_t M, const size_t N,
 		  typename Field::Element * A, const size_t lda,
-		  size_t* P, size_t* Q,
+		  size_t* P, size_t* Qt,
 		  const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP,
 		  const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF);
 
@@ -418,12 +422,14 @@ public:
 	 ftrtri (const Field& F, const FFLAS_UPLO Uplo, const FFLAS_DIAG Diag,
 		 const size_t N, typename Field::Element * A, const size_t lda){
 
-		 typename Field::Element mone, one;
+		 static typename Field::Element one;
+		 static typename Field::Element mone;
 		 F.init(one,1.0);
 		 F.init(mone,-1.0);
-		 if ((N == 1) && (Diag == FflasNonUnit))
-			 F.divin (*A);
-		 else{
+		 if (N == 1){
+			 if (Diag == FflasNonUnit)
+				 F.invin (*A);
+		 } else {
 			 size_t N1 = N/2;
 			 size_t N2 = N - N1;
 			 ftrtri (F, Uplo, Diag, N1, A, lda);
@@ -466,9 +472,9 @@ public:
 		fgemm (F, FflasNoTrans, FflasNoTrans, N1, N1, N2, one,
 		       A+N1, lda, A+N1*lda, lda, one, A, lda);
 		
-		ftrmm (F, FflasRight, FflasLower, N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
+		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
 		
-		ftrmm (F, FflasLeft, FflasUpper, N2, N1, one, A + N1*(lda+1), lda, A + N1*lda, lda);
+		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, N2, N1, one, A + N1*(lda+1), lda, A + N1*lda, lda);
 		
 		ftrtrm (F, N2, A + N1*(lda+1), lda);
 		
@@ -478,25 +484,30 @@ public:
 	 * Compute the Column Echelon form of the input matrix in-place.
 	 * 
 	 * After the computation A = [ M \ V ] such that AU = C is a column echelon
-	 * decomposition of A, with U = P^T [  V     ] and C = M + Q [ Ir   ]
-	 *                                  [ 0 In-r ]               [    0 ]
+	 * decomposition of A, with U = P^T [  V (+Ir) ] and C = M //+ Q [ Ir   ]
+	 *                                  [ 0 In-r   ]           //    [    0 ]
+	 * Qt = Q^T
 	 */
 	template <class Field>
 	static size_t
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 			   typename Field::Element * A, const size_t lda,
-			   size_t* P, size_t* Q){
+			   size_t* P, size_t* Qt){
 
 		typename Field::Element one, mone;
 		F.init (one, 1.0);
 		F.neg (mone, one);
 		size_t r;
 
-		r = LUdivine (F, FflasUnit, M, N, A, lda, P, Q);
+		//		write_field(F,cerr<<"A = "<<std::endl,A,M,N,N);
+				
+		r = LUdivine (F, FflasUnit, M, N, A, lda, P, Qt);
+
+		//write_field(F,cerr<<"LUP = "<<std::endl,A,M,N,N);
 
 		ftrtri (F, FflasUpper, FflasUnit, r, A, lda);
 
-		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, r, N,
+		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, r, N-r,
 		       mone, A, lda, A+r, lda);
 
 		return r;
@@ -508,38 +519,53 @@ public:
 	 * 
 	 * After the computation A = [  V  ] such that AU = R is a reduced column echelon
 	 *                           [ M 0 ]
-	 * decomposition of A, where U = P^T [  V     ] and R = Q [ Ir   ]
+	 * decomposition of A, where U = P^T [ V      ] and R = Q [ Ir   ]
 	 *                                   [ 0 In-r ]           [ M  0 ]
+	 * Qt = Q^T
 	 */
 	
 	template <class Field>
 	static size_t
 	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 				  typename Field::Element * A, const size_t lda,
-				  size_t* P, size_t* Q){
+				  size_t* P, size_t* Qt){
 		
 		typename Field::Element one, mone;
 		F.init (one, 1.0);
 		F.neg (mone, one);
 		size_t r;
 
-		r = ColumnEchelonForm (F, M, N, A, lda, P, Q);
+		//write_field(F,std::cerr<<"Start : A = "<<std::endl,A,M,N,lda);
 
+		r = ColumnEchelonForm (F, M, N, A, lda, P, Qt);
+
+		//write_field(F,std::cerr<<"After ColEchelon : A = "<<std::endl,A,M,N,lda);
+		
+			
 		// M = Q^T M 
-		for (int i=r-1; i>=0; --i){
-			if ( Q[i]> (size_t) i ){
-				fswap( F, i, 
-				       A + Q[i]*lda, 1, 
+		for (int i=0; i<r; ++i){
+			if ( Qt[i]> (size_t) i ){
+				fswap( F, i+1, 
+				       A + Qt[i]*lda, 1, 
 				       A + i*lda, 1 );
 			}
 		}
 		
+		//write_field(F,std::cerr<<"After Permut A = "<<std::endl,A,M,N,lda);
+
 		ftrtri (F, FflasLower, FflasNonUnit, r, A, lda);
 		
-		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, r, N,
-		       one, A, lda, A+r, lda);
+		//write_field(F,std::cerr<<"After ftrtri : A = "<<std::endl,A,M,N,lda);
 
+		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, M-r, r,
+		       one, A, lda, A+r*lda, lda);
+
+
+		//write_field(F,std::cerr<<"After ftrmm : A = "<<std::endl,A,M,N,lda);
+		
 		ftrtrm (F, r, A, lda);
+
+		//write_field(F,std::cerr<<"After ftrtrm : A = "<<std::endl,A,M,N,lda);
 
 		return r;
 
@@ -642,14 +668,14 @@ public:
 			if (  Q[i] > (size_t) i){
 				//for (size_t j=0; j<=Q[i]; ++j)
 				//F.init( *(L+Q[i]+j*ldl), 0 );
-				//cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
+				//std::cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
 				fcopy( F, LM-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
 				for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 					F.assign( *(L+i+j), zero );
 			}
 		}
 		ftrsm( F, Side, FflasLower, FflasNoTrans, FflasUnit, M, N, one, L, ldl , B, ldb);
-		//write_field(F,cerr<<"dans solveLB "<<endl,L,N,N,ldl);
+		//write_field(F,std::cerr<<"dans solveLB "<<endl,L,N,N,ldl);
 		// Undo the permutation of L
 		for (size_t i=0; i<R; ++i){
 			if ( Q[i] > (size_t) i){
@@ -817,10 +843,10 @@ protected:
 			// X21 = X21 . -X11^-1 (pascal 2004-10-12, make the negation
 			// after the multiplication, problem in ftrmm)
 			ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasUnit, 
-			       N2, N1, one, X11, ldx, X21, ldx );
-			for (size_t i=0; i<N2; ++i)
-				for (size_t j=0; j<N1; ++j)
-					F.negin(*(X21+i*ldx+j));
+			       N2, N1, mone, X11, ldx, X21, ldx );
+// 			for (size_t i=0; i<N2; ++i)
+// 				for (size_t j=0; j<N1; ++j)
+// 					F.negin(*(X21+i*ldx+j));
 
 			// X21 = X22^-1 . X21
 			ftrmm( F, FflasLeft, FflasLower, FflasNoTrans, FflasUnit, N2, N1, one, X22, ldx, X21, ldx );

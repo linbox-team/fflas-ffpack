@@ -322,8 +322,8 @@ public:
 		float tmp=y;
 		
 		//tmp = floor (y + 0.5);
-		//tmp = fmod (tmp, modulus);
-		tmp = fmod (y, modulus);
+		tmp = fmod (tmp, modulus);
+		//tmp = fmod (y, modulus);
 		
 		if ( tmp > half_mod ) return x = tmp - modulus;
 		else if ( tmp <-half_mod ) return x = tmp + modulus;
