@@ -6,20 +6,25 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 1
+#define DEBUG 0
+#define NEWWINO
 #define TIME 1
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+using namespace std;
+
+#include "fflas-ffpack/modular-positive.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas.h"
 
 
-using namespace std;
+
 
 typedef Modular<double> Field;
+//typedef Modular<float> Field;
+//typedef Modular<int> Field;
 
 int main(int argc, char** argv){
 
@@ -40,7 +45,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F(atoi(argv[1]));
+	Field F((long)atoi(argv[1]));
 
 	F.init( alpha, Field::Element(atoi(argv[6])));
 	F.init( beta, Field::Element(atoi(argv[7])));
@@ -72,26 +77,37 @@ int main(int argc, char** argv){
 	}
 	
 	Field::Element * C;
-	C = new Field::Element[m*n];
 
+// 	write_field (F, cerr<<"A = "<<endl, A, m, k, lda);
+// 	write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);
 	Timer tim,t; t.clear();tim.clear(); 
 	for(int i = 0;i<nbit;++i){
 		if (!F.isZero(beta)){
 			C = read_field(F,argv[8],&m,&n);
-		}
+		}else
+			C = new Field::Element[m*n];
 		t.clear();
 		t.start();
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			      beta,C,n,nbw);
 		t.stop();
 		tim+=t;
+		if (i<nbit-1)
+			delete[] C;
 	}
 
 #if DEBUG
 	bool wrong = false;
-	Field::Element * Cd = new Field::Element[m*n];
+	Field::Element zero;
+	F.init(zero, 0.0);
+	Field::Element * Cd;
 	if (!F.isZero(beta))
  		Cd = read_field(F,argv[8],&m,&n);
+	else{
+		Cd  = new Field::Element[m*n];
+		for (size_t i=0; i<m*n; ++i)
+			F.assign (*(Cd+i), zero);
+	}
 	Field::Element aij, bij, beta_alpha;
 	F.div (beta_alpha, beta, alpha);
 	for (int i = 0; i < m; ++i)
@@ -126,8 +142,12 @@ int main(int argc, char** argv){
 	else{
 		cerr<<"PASS"<<endl;
 	}
+	delete[] Cd;
 #endif
 
+	delete[] C;
+	delete[] A;
+	delete[] B;
 #if TIME
 	double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tim.usertime();
 	cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
