@@ -19,7 +19,7 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-#include "fflas-ffpack/modular-balanced.h"
+//#include "fflas-ffpack/modular-balanced.h"
 #include "fflas-ffpack/modular-positive.h"
 #include "fflas-ffpack/ffpack.h"
 
@@ -67,9 +67,9 @@ int main(int argc, char** argv){
 			delete[] A;
 			A = read_field(F,argv[2],&m,&n);
 		}
-		for (j=0;j<n;j++)
+		for (j=0;j<maxP;j++)
 			P[j]=0;
-		for (j=0;j<m;j++)
+		for (j=0;j<maxQ;j++)
 			Q[j]=0;
 		tim.clear();      
 		tim.start(); 	
@@ -78,7 +78,7 @@ int main(int argc, char** argv){
 		tim.stop();
 		timc+=tim;
 	}
-	write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
+	//write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
 
 	cerr<<"P = [";
 	for (size_t i=0; i<maxP; ++i)
@@ -115,14 +115,14 @@ int main(int argc, char** argv){
 				F.assign( *(L+i*m+j), zero);
 		}
 		
-		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+		// write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,R, L, m, Q);
 		for ( int i=0; i<m; ++i )
 			F.assign(*(L+i*(m+1)), one);
 
-		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+// 		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 		if (diag == FFLAS::FflasNonUnit)
 			for ( int i=0; i<R; ++i )
 				F.assign (*(U+i*(n+1)), *(A+i*(n+1)));
@@ -133,8 +133,8 @@ int main(int argc, char** argv){
 				F.assign (*(U+i*(n+1)),one);
 			}
 		}
-		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+// 		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,R, U, n, P);
 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, n,0,R, U, n, Q);
@@ -166,8 +166,8 @@ int main(int argc, char** argv){
 			for (; j<n; ++j )
 				F.assign( *(U+i+j*n), zero);
 		}
-		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
-		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
+// 		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
+// 		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
 
 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n,0,R, U, n, Q);
 
@@ -184,8 +184,8 @@ int main(int argc, char** argv){
 				F.assign (*(L+i*(n+1)),one);
 			}
 		}
-		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
-		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
+// 		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
+// 		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
 
 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, n,0,R, L, n, P);
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,R, L, n, Q);
@@ -198,8 +198,8 @@ int main(int argc, char** argv){
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j)))
 				fail=true;
 	
- 	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
- 	write_field(F,cerr<<"B = "<<endl,B,m,n,n);
+//  	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
+//  	write_field(F,cerr<<"B = "<<endl,B,m,n,n);
 	delete[] B;
 	if (fail)
 		cerr<<"FAIL"<<endl;

@@ -1,8 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 //--------------------------------------------------------------------------
-//          Test for the reduced echelon factorisation
+//          Test for the row echelon factorisation
 //--------------------------------------------------------------------------
-// usage: test-redechelon p A n, for n reduced echelon computations
+// usage: test-row p A n, for n computations
 // of A over Z/pZ
 //-------------------------------------------------------------------------
 
@@ -19,19 +19,20 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-#include "fflas-ffpack/modular-balanced.h"
+//#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/modular-positive.h"
 #include "fflas-ffpack/ffpack.h"
 
 typedef Modular<double> Field;
 
 int main(int argc, char** argv){
-	//cerr<<setprecision(20);
+	cerr<<setprecision(20);
 	int i,j,nbf,m,n;
 	int R=0;
 
 	if (argc!=4){
-		cerr<<"usage : test-redechelon <p> <A> <i>"<<endl
-		    <<"        to do i reduced  echelon computations of A"
+		cerr<<"usage : test-row <p> <A> <i>"<<endl
+		    <<"        to do i Row Echelon factorisation of A"
 		    <<endl;
 		exit(-1);
 	}
@@ -61,7 +62,7 @@ int main(int argc, char** argv){
 			Q[j]=0;
 		tim.clear();      
 		tim.start(); 	
-		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q);
+		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q);
 		tim.stop();
 		timc+=tim;
 	}
@@ -76,38 +77,34 @@ int main(int argc, char** argv){
 // 		cerr<<Q[i]<<" ";
 // 	cerr<<"]"<<endl;
 #if DEBUG
-	Field::Element * L = new Field::Element[m*n];
-	Field::Element * U = new Field::Element[n*n];
+	Field::Element * L = new Field::Element[m*m];
+	Field::Element * U = new Field::Element[m*n];
 	Field::Element * X = new Field::Element[m*n];
 	
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	
 	for (int i=0; i<R; ++i){
-		for (int j=0; j<n; ++j)
-			F.assign (*(U + i*n + j), *(A+ i*n+j));
+		for (int j=0; j<=i; ++j)
+			F.assign ( *(L + i + j*m), zero);
+		F.init (*(L+i*(m+1)),one);
+		for (int j=i+1; j<m; ++j)
+			F.assign (*(L + i + j*m), *(A+ i+j*n));
 	}
-	for (int i=R;i<n; ++i){
-		for (int j=0; j<n; ++j)
-			F.assign(*(U+i*n+j), zero);
-		F.init(*(U+i*(n+1)),one);
+	for (int i=R;i<m; ++i){
+		for (int j=0; j<m; ++j)
+			F.assign(*(L+i+j*m), zero);
+		F.init(*(L+i*(m+1)),one);
 	}
-	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, R, U, n, P);	
+	FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m, 0, R, L, m, P);	
 
-	for ( int i=0; i<R; ++i ){
-		for (int j=0; j < n ; ++j)
-			F.assign( *(L + i*n+j),zero);
-		F.assign(*(L+i*(n+1)), one);
+	for ( int i=0; i<n; ++i ){
+		int j=0;
+		for (; j <= ((i<R)?i:R) ; ++j )
+			F.assign( *(U + i+j*n), *(A+i+j*n));
+		for (; j<m; ++j )
+			F.assign( *(U+i+j*n), zero);
 	}
-	for ( int i=R; i<m; ++i ){
-		for (int j=0; j<R; ++j )
-			F.assign (*(L+i*n+j), *(A+i*n+j));
-		for (int j=R; j<n; ++j)
-			F.assign (*(L+i*n+j), zero);
-	}
-	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, R, L, n, Q);
-
 // 	cerr<<"P = ";
 // 	for (size_t i=0; i<n;++i)
 // 		cerr<<" "<<P[i];
@@ -117,24 +114,24 @@ int main(int argc, char** argv){
 // 		cerr<<" "<<Q[i];
 // 	cerr<<endl;
 	
-	// write_field(F,cerr<<"A = "<<endl,A,m,n,n);
-	//  	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
-  	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+// 	write_field(F,cerr<<"A = "<<endl,A,m,n,n);
+//  	write_field(F,cerr<<"L = "<<endl,L,m,n,n);
+//  	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 
 	Field::Element * B =  read_field(F,argv[2],&m,&n);
 	
-	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0,
-		      B, n, U, n, 0.0, X,n);
+	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0,
+		      L, m, B, n, 0.0, X,n);
 	//delete[] A;
 
 	bool fail = false;
 	for (int i=0; i<m; ++i)
 		for (int j=0; j<n; ++j)
-			if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
+			if (!F.areEqual (*(U+i*n+j), *(X+i*n+j)))
 				fail=true;
 	
-// 	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
-//   	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
+	// write_field(F,cerr<<"X = "<<endl,X,m,n,n);
+	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 	
 	delete[] B;
 	if (fail)
@@ -160,7 +157,7 @@ int main(int argc, char** argv){
 	delete[] Q;
 
 	double t = timc.usertime();
-	double numops = 2*m*m/1000.0*n;
+	double numops = m*m/1000.0*(n-m/3.0);
 	
 	cerr<<m<<"x"<< n 
 	    << " : rank = " << R << "  ["

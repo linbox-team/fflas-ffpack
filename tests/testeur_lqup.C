@@ -11,8 +11,8 @@
 #include <iomanip>
 using namespace std;
 //#include "fflas-ffpack/modular-int.h"
-#include "fflas-ffpack/modular-positive.h"
-//#include "fflas-ffpack/modular-balanced.h"
+//#include "fflas-ffpack/modular-positive.h"
+#include "fflas-ffpack/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/ffpack.h"
@@ -81,7 +81,8 @@ int main(int argc, char** argv){
 			U = new Field::Element[N*N];
 			P = new size_t[M];
 			Q = new size_t[N];
-
+			for (size_t i=0; i<M; ++i) P[i] = 0;
+			for (size_t i=0; i<N; ++i) Q[i] = 0;
 		}
 		else{
 			ta = FFLAS::FflasNoTrans;
@@ -89,7 +90,8 @@ int main(int argc, char** argv){
 			U = new Field::Element[M*N];
 			P = new size_t[N];
 			Q = new size_t[M];
-
+			for (size_t i=0; i<N; ++i) P[i] = 0;
+			for (size_t i=0; i<M; ++i) Q[i] = 0;
 		}
 		
 		size_t R=0;
@@ -208,7 +210,7 @@ int main(int argc, char** argv){
 			
 			FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, U, N, Q);
 			for (size_t i=0; i<N; ++i)
-			F.assign (*(U+i*(N+1)),one);
+				F.assign (*(U+i*(N+1)),one);
 			if (diag == FFLAS::FflasNonUnit)
 				for ( size_t i=0; i<R; ++i )
 					F.assign (*(L+i*(N+1)), *(A+i*(lda+1)));
@@ -262,7 +264,8 @@ int main(int argc, char** argv){
 	cerr<<M<<" "<<N<<" M"<<endl;
 	for (size_t i=0; i<M; ++i)
 		for (size_t j=0; j<N; ++j)
-			cerr<<i+1<<" "<<j+1<<" "<<((size_t) *(Abis+i*lda+j) )<<endl;
+			if (!(*(Abis+i*lda+j)))
+				cerr<<i+1<<" "<<j+1<<" "<<((size_t) *(Abis+i*lda+j) )<<endl;
 	cerr<<"0 0 0"<<endl<<endl;
 	
 	delete[] A;

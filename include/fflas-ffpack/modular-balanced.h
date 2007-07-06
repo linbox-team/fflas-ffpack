@@ -110,7 +110,7 @@ public:
 	}
 
 	inline Element& init(Element& x, double y =0) const {		  
-		double tmp=y;
+		double tmp;
 		
 		//tmp = floor (y + 0.5);
 		//tmp = fmod (tmp, modulus);

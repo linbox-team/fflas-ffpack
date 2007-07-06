@@ -1141,10 +1141,9 @@ public:
 			 const size_t kmax, const size_t w, const FFLAS_BASE base) {
 		if (w <= 0) 
 			callClassicMatmul<double> () (F, ta, tb, m, n, k, 
-						 alpha, A, lda, B, ldb, beta, C, ldc, kmax,base);
+						      alpha, A, lda, B, ldb, beta, C, ldc, kmax,base);
 		else {
-			if (k < kmax) { // switch on double
-				// Temporary double matrices
+			if (k < kmax) { // switch on delayed modulus
 				DoubleDomain::Element _alpha, _beta;
 			
 				_beta = beta;
@@ -1168,7 +1167,7 @@ public:
 				// recursive call
 				WinoMain (DoubleDomain(), ta, tb, m, n, k, 
 					  _alpha, A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
-				// Conversion double = >  GFq
+				// Modular reduction
 				for (double * Ci = C; Ci != C+m*ldc; Ci+=ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.init (*(Ci + j), *(Ci + j));
@@ -1179,7 +1178,6 @@ public:
 						for (size_t j=0; j < n; ++j) 
 							F.mulin (* (Ci + j), alpha);
 				}
-				// Temporary double matrices destruction
 			}
 			else{
 				WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, kmax,w,base);

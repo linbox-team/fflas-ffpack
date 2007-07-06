@@ -6,7 +6,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 0
+#define DEBUG 1
 #define NEWWINO
 #define TIME 1
 
@@ -14,7 +14,7 @@
 #include <iostream>
 using namespace std;
 
-#include "fflas-ffpack/modular-positive.h"
+#include "fflas-ffpack/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas.h"

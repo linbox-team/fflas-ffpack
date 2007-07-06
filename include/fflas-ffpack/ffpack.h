@@ -463,31 +463,32 @@ public:
 	/**
 	 * Compute the product UL of the upper, resp lower triangular matrices U and L
 	 * stored one above the other in the square matrix A.
-	 * The matrix U is supposed to be unit diagonal
+	 * Diag == Unit if the matrix U is unit diagonal
 	 * 
 	 */
 	template<class Field>
 	static void
-	ftrtrm (const Field& F, const size_t N, typename Field::Element * A, const size_t lda){
+	ftrtrm (const Field& F, const FFLAS_DIAG diag, const size_t N,
+		typename Field::Element * A, const size_t lda){
 		
 		typename Field::Element one;
 		F.init(one,1.0);
-
-		 if (N == 1)
+		
+		if (N == 1)
 			return;
 		size_t N1 = N/2;
 		size_t N2 = N-N1;
 		
-		ftrtrm (F, N1, A, lda);
+		ftrtrm (F, diag, N1, A, lda);
 		
 		fgemm (F, FflasNoTrans, FflasNoTrans, N1, N1, N2, one,
 		       A+N1, lda, A+N1*lda, lda, one, A, lda);
 		
-		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
+		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, (diag == FflasUnit) ? FflasNonUnit : FflasUnit, N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
 		
-		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, N2, N1, one, A + N1*(lda+1), lda, A + N1*lda, lda);
+		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, diag, N2, N1, one, A + N1*(lda+1), lda, A + N1*lda, lda);
 		
-		ftrtrm (F, N2, A + N1*(lda+1), lda);
+		ftrtrm (F, diag, N2, A + N1*(lda+1), lda);
 		
 	}
 
@@ -495,8 +496,8 @@ public:
 	 * Compute the Column Echelon form of the input matrix in-place.
 	 * 
 	 * After the computation A = [ M \ V ] such that AU = C is a column echelon
-	 * decomposition of A, with U = P^T [  V (+Ir) ] and C = M //+ Q [ Ir   ]
-	 *                                  [ 0 In-r   ]           //    [    0 ]
+	 * decomposition of A, with U = P^T [ V + Ir ] and C = M //+ Q [ Ir   ]
+	 *                                  [ 0 In-r ]           //    [    0 ]
 	 * Qt = Q^T
 	 */
 	template <class Field>
@@ -513,7 +514,7 @@ public:
 		Timer t1;
 		t1.clear();
 		t1.start();
-		r = LUdivine (F, FflasUnit, M, N, A, lda, P, Qt);
+		r = LUdivine (F, FflasUnit, FflasNoTrans, M, N, A, lda, P, Qt);
 		t1.stop();
 		//cerr<<"LU --> "<<t1.usertime()<<endl;
 		
@@ -525,6 +526,47 @@ public:
 
 		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, r, N-r,
 		       mone, A, lda, A+r, lda);
+
+		t2.stop();
+		//cerr<<"U^-1 --> "<<t2.usertime()<<endl;
+
+		return r;
+	}
+
+	/**
+	 * Compute the Row Echelon form of the input matrix in-place.
+	 * 
+	 * After the computation A = [ L \ M ] such that L A = R is a column echelon
+	 * decomposition of A, with L =  [ L+Ir  0   ] P  and R = M
+	 *                               [      In-r ]               
+	 * Qt = Q^T
+	 */
+	template <class Field>
+	static size_t
+	RowEchelonForm (const Field& F, const size_t M, const size_t N,
+			typename Field::Element * A, const size_t lda,
+			size_t* P, size_t* Qt){
+
+		typename Field::Element one, mone;
+		F.init (one, 1.0);
+		F.neg (mone, one);
+		size_t r;
+
+		Timer t1;
+		t1.clear();
+		t1.start();
+		r = LUdivine (F, FflasUnit, FflasTrans,  M, N, A, lda, P, Qt);
+		t1.stop();
+		//cerr<<"LU --> "<<t1.usertime()<<endl;
+		
+		Timer t2;
+		t2.clear();
+		t2.start();
+		ftrtri (F, FflasLower, FflasUnit, r, A, lda);
+
+
+		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasUnit, M-r, r,
+		       mone, A, lda, A+r*lda, lda);
 
 		t2.stop();
 		//cerr<<"U^-1 --> "<<t2.usertime()<<endl;
@@ -572,7 +614,55 @@ public:
 		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, M-r, r,
 		       one, A, lda, A+r*lda, lda);
 
-		ftrtrm (F, r, A, lda);
+		ftrtrm (F, FflasUnit, r, A, lda);
+		t1.stop();
+		//cerr<<"U^-1L^-1 --> "<<t1.usertime()<<endl;	   
+		
+		return r;
+
+	}
+
+	/**
+	 * Compute the Reduced Row Echelon form of the input matrix in-place.
+	 * 
+	 * After the computation A = [  V  ] such that L A = R is a reduced row echelon
+	 *                           [ M 0 ]
+	 * decomposition of A, where L =  [ V      ] P^T and R =  [ Ir M  ] Q
+	 *                                [ 0 In-r ]              [ 0     ]
+	 * Qt = Q^T
+	 */
+	template <class Field>
+	static size_t
+	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
+			       typename Field::Element * A, const size_t lda,
+			       size_t* P, size_t* Qt){
+		
+		typename Field::Element one, mone;
+		F.init (one, 1.0);
+		F.neg (mone, one);
+		size_t r;
+
+		r = RowEchelonForm (F, M, N, A, lda, P, Qt);
+			
+		Timer t1;
+		t1.clear();
+		t1.start();
+		// M = M Q^T 
+		for (int i=0; i<r; ++i){
+			if ( Qt[i]> (size_t) i ){
+				fswap( F, i+1, 
+				       A + Qt[i], lda, 
+				       A + i, lda );
+			}
+		}
+		
+		ftrtri (F, FflasUpper, FflasNonUnit, r, A, lda);
+		
+		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit, r, N-r,
+		       one, A, lda, A+r, lda);
+		
+		ftrtrm (F, FflasNonUnit, r, A, lda);
+		
 		t1.stop();
 		//cerr<<"U^-1L^-1 --> "<<t1.usertime()<<endl;	   
 		

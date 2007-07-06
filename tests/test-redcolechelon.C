@@ -1,8 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 //--------------------------------------------------------------------------
-//          Test for the reduced echelon factorisation
+//          Test for the reduced column echelon factorisation
 //--------------------------------------------------------------------------
-// usage: test-redechelon p A n, for n reduced echelon computations
+// usage: test-redcolechelon p A n, for n reduced column echelon computations
 // of A over Z/pZ
 //-------------------------------------------------------------------------
 
@@ -30,8 +30,8 @@ int main(int argc, char** argv){
 	int R=0;
 
 	if (argc!=4){
-		cerr<<"usage : test-redechelon <p> <A> <i>"<<endl
-		    <<"        to do i reduced  echelon computations of A"
+		cerr<<"usage : test-redcolechelon <p> <A> <i>"<<endl
+		    <<"        to do i reduced column  echelon computations of A"
 		    <<endl;
 		exit(-1);
 	}

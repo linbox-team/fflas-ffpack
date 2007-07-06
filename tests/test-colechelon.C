@@ -1,8 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 //--------------------------------------------------------------------------
-//          Test for the reduced echelon factorisation
+//          Test for the column echelon factorisation
 //--------------------------------------------------------------------------
-// usage: test-redechelon p A n, for n reduced echelon computations
+// usage: test-colechelon p A n, for n computations
 // of A over Z/pZ
 //-------------------------------------------------------------------------
 
@@ -25,13 +25,13 @@ using namespace std;
 typedef Modular<double> Field;
 
 int main(int argc, char** argv){
-	//cerr<<setprecision(20);
+	cerr<<setprecision(20);
 	int i,j,nbf,m,n;
 	int R=0;
 
 	if (argc!=4){
-		cerr<<"usage : test-redechelon <p> <A> <i>"<<endl
-		    <<"        to do i reduced  echelon computations of A"
+		cerr<<"usage : test-colechelon <p> <A> <i>"<<endl
+		    <<"        to do i Column Echelon factorisation of A"
 		    <<endl;
 		exit(-1);
 	}
@@ -61,7 +61,7 @@ int main(int argc, char** argv){
 			Q[j]=0;
 		tim.clear();      
 		tim.start(); 	
-		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q);
+		R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q);
 		tim.stop();
 		timc+=tim;
 	}
@@ -83,9 +83,11 @@ int main(int argc, char** argv){
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	
 	for (int i=0; i<R; ++i){
-		for (int j=0; j<n; ++j)
+		for (int j=0; j<=i; ++j)
+			F.assign ( *(U + i*n + j), zero);
+		F.init (*(U+i*(n+1)),one);
+		for (int j=i+1; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
 	}
 	for (int i=R;i<n; ++i){
@@ -95,19 +97,13 @@ int main(int argc, char** argv){
 	}
 	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, R, U, n, P);	
 
-	for ( int i=0; i<R; ++i ){
-		for (int j=0; j < n ; ++j)
-			F.assign( *(L + i*n+j),zero);
-		F.assign(*(L+i*(n+1)), one);
+	for ( int i=0; i<m; ++i ){
+		int j=0;
+		for (; j <= ((i<R)?i:R) ; ++j )
+			F.assign( *(L + i*m+j), *(A+i*n+j));
+		for (; j<m; ++j )
+			F.assign( *(L+i*m+j), zero);
 	}
-	for ( int i=R; i<m; ++i ){
-		for (int j=0; j<R; ++j )
-			F.assign (*(L+i*n+j), *(A+i*n+j));
-		for (int j=R; j<n; ++j)
-			F.assign (*(L+i*n+j), zero);
-	}
-	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, R, L, n, Q);
-
 // 	cerr<<"P = ";
 // 	for (size_t i=0; i<n;++i)
 // 		cerr<<" "<<P[i];
@@ -117,9 +113,9 @@ int main(int argc, char** argv){
 // 		cerr<<" "<<Q[i];
 // 	cerr<<endl;
 	
-	// write_field(F,cerr<<"A = "<<endl,A,m,n,n);
-	//  	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
-  	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+// 	write_field(F,cerr<<"A = "<<endl,A,m,n,n);
+//  	write_field(F,cerr<<"L = "<<endl,L,m,n,n);
+//  	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 
 	Field::Element * B =  read_field(F,argv[2],&m,&n);
 	
@@ -133,8 +129,8 @@ int main(int argc, char** argv){
 			if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
 				fail=true;
 	
-// 	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
-//   	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
+ 	// write_field(F,cerr<<"X = "<<endl,X,m,n,n);
+//  	write_field(F,cerr<<"L = "<<endl,L,m,n,n);
 	
 	delete[] B;
 	if (fail)
@@ -160,7 +156,7 @@ int main(int argc, char** argv){
 	delete[] Q;
 
 	double t = timc.usertime();
-	double numops = 2*m*m/1000.0*n;
+	double numops = m*m/1000.0*(n-m/3.0);
 	
 	cerr<<m<<"x"<< n 
 	    << " : rank = " << R << "  ["
