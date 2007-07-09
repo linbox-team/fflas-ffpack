@@ -20,8 +20,8 @@
 #define MIN(a,b) ((a > b)?b:a)
 #endif
 
-#ifdef _LINBOX_CONFIG_H 
-#include "linbox/config-blas.h"
+#ifdef _LINBOX_LINBOX_CONFIG_H 
+#include "linbox/linbox/config-blas.h"
 #include "linbox/field/unparametric.h"
 
 namespace LinBox {
@@ -707,7 +707,7 @@ protected:
 #include "fflas_fdot.inl"
 #include "fflas_fcopy.inl"
 
-#ifdef _LINBOX_CONFIG_H
+#ifdef _LINBOX_LINBOX_CONFIG_H
 }
 #endif
 

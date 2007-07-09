@@ -8,7 +8,7 @@
  * See COPYING for license information.
  */
 
-#ifdef _LINBOX_CONFIG_H
+#ifdef _LINBOX_LINBOX_CONFIG_H
 #define FFLAS_INT_TYPE Integer
 #else
 #define FFLAS_INT_TYPE long unsigned int

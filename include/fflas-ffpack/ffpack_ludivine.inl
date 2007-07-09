@@ -729,7 +729,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 // 	Timer tim;
 // 	tim.clear();
 // 	tim.start();
-	q1 = LUdivine( F, FflasNonUnit, mloc, no2, NW, ld1, P1, Q1, FfpackLQUP, cutoff);
+	q1 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, no2, NW, ld1, P1, Q1, FfpackLQUP, cutoff);
 	
 // 	tim.stop();
 // 	cerr<<"LQUP1:"<<tim.realtime()<<std::endl;
@@ -803,7 +803,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	//Step 2: E1 = L2.Q2.U2.P2
 	mloc = M-mo2;
 	nloc = N-no2;
-	q2 = LUdivine( F, FflasNonUnit, mloc, nloc, SE, ld4, P2, Q2, FfpackLQUP, cutoff);
+	q2 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, SE, ld4, P2, Q2, FfpackLQUP, cutoff);
 #if DEBUG
 	std::cerr<<"  E1 = L2.Q2.U2.P2"<<std::endl;
 	write_field(F,std::cerr,SE,M-mo2,N-no2,ld4);	
@@ -865,7 +865,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	//Step 3: F2 = L3.Q3.U3.P3
 	mloc = M-mo2-q2;
 	nloc = no2-q1;
-	q3 = LUdivine( F, FflasNonUnit, mloc, nloc, SW+q2*ld3+q1, ld3, P1+q1, Q2+q2, FfpackLQUP, cutoff);
+	q3 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, SW+q2*ld3+q1, ld3, P1+q1, Q2+q2, FfpackLQUP, cutoff);
 	
 	// Updating P1,Q2
 	for (size_t i=q1;i<no2;++i)
@@ -877,7 +877,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	mloc = mo2-q1;
 	nloc = N-no2-q2;
 
-	q3b = LUdivine( F, FflasNonUnit, mloc, nloc, NE+q1*ld2+q2, ld2, P2+q2, Q1+q1, FfpackLQUP, cutoff);
+	q3b = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, NE+q1*ld2+q2, ld2, P2+q2, Q1+q1, FfpackLQUP, cutoff);
 	
 	// Updating P2, Q1
 	for (size_t i = q2; i < q2+q3b; ++i)
@@ -954,7 +954,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 		// size_t * rP4 = new size_t[mloc];
 // 		for (size_t j=0;j<mo2-q1;++j)
 // 			rP4[j]=0;
-		q4 = LUdivine( F, FflasNonUnit, mloc, nloc, NW+(q1+q3b)*ld1+q1+q3, ld1, P1+q1+q3, Q1+q1+q3b, FfpackLQUP, cutoff);
+		q4 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, NW+(q1+q3b)*ld1+q1+q3, ld1, P1+q1+q3, Q1+q1+q3b, FfpackLQUP, cutoff);
 
 		// Updating P
 		for (size_t i=q1+q3;i<q1+q3+q4;++i)
