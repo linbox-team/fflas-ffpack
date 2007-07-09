@@ -21,7 +21,7 @@
 #endif
 
 #ifdef _LINBOX_LINBOX_CONFIG_H 
-#include "linbox/linbox/config-blas.h"
+#include "linbox/config-blas.h"
 #include "linbox/field/unparametric.h"
 
 namespace LinBox {
