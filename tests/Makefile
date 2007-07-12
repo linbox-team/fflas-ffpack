@@ -24,13 +24,15 @@ ARCH = -march=opteron -m64 -mtune=k8
 
 #----------------------------------------------------------
 
+LOADLIBES+=-L/home/cpernet/Logiciels/givaro-3.2.6/lib -lgivaro -lgmp
+
 OPTFLAGS+=-O3
 OPTFLAGS+=-g -Wall
 OPTFLAGS+= ${ARCH}
 
 CXXFLAGS+=${OPTFLAGS} 
 
-INCLUDES+=-I. -I../include -I${BLASROOT}/../../include
+INCLUDES+=-I. -I../include -I${BLASROOT}/../../include -I/home/cpernet/Logiciels/givaro-3.2.6/include
 
 
 #ATLAS users, uncomment this line
