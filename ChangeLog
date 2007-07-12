@@ -1,3 +1,21 @@
+2007-07-05 v1.2.2
+	* add a transposed version of the LQUP decomposition routine
+	LUdivine
+	* fix many bugs in LUdivine
+	* new schedules for Winograd algorithm for matrix multiplication:
+	2 cases depending whether beta = 0 or not, taken form [Huss
+	Ledermann & Al. 96]
+	* add rowEchelon and ReducedRowEchelon routines + associated tests
+2007-06-21 v1.2.1
+	* add the use of float BLAS, if the field caradinality is small enough
+	* improve genericity: gemm can be use over any field domain (not
+	requiring any conversion to a integral representation)
+	* add a variant of Winograd's algorithm with less temporaries for
+	the operation C = AxB
+	* add ColumnEchelon and ReducedColumnEchelon routines, using an
+	inplace algorithm, based on the LQUP decompositon of LUdivine
+	* add routines ftrtri (replacing invL), ftrtrm.
+	* fix bunch of memory leaks in the tests (not yet finished)
 2007-03-13 v1.1.2
 	* change the genericity system for trsm to detect Field
 	implementations over double (compatibility with LinBox)
