@@ -29,44 +29,50 @@ FFLAS::ftrsm (const Field& F, const FFLAS_SIDE Side,
 	if (!M || !N ) return; 
 
 	size_t nmax = TRSMBound<Field> (F);
-
+	typename Field::Element one;
+	F.init(one, 1.0);
+	
 	if ( Side==FflasLeft ){
 		if ( Uplo==FflasUpper){
 			
 			if (TransA == FflasNoTrans){
-				ftrsmLeftUpNoTrans(F,Diag,M,N,alpha,A,lda,B,ldb);
+				ftrsmLeftUpNoTrans(F,Diag,M,N,one,A,lda,B,ldb);
 			}
 			else{
-				ftrsmLeftUpTrans(F,Diag,M,N,alpha,A,lda,B,ldb);
+				ftrsmLeftUpTrans(F,Diag,M,N,one,A,lda,B,ldb);
 			}
 		}
 		else{
 			if (TransA == FflasNoTrans){
-				ftrsmLeftLowNoTrans(F,Diag,M,N,alpha,A,lda,B,ldb, nmax);
+				ftrsmLeftLowNoTrans(F,Diag,M,N,one,A,lda,B,ldb, nmax);
 			}
 			else{
-				ftrsmLeftLowTrans(F,Diag,M,N,alpha,A,lda,B,ldb);
+				ftrsmLeftLowTrans(F,Diag,M,N,one,A,lda,B,ldb);
 			}
 		}
 	}
 	else{
 	if ( Uplo==FflasUpper){
 			if (TransA == FflasNoTrans){
-				ftrsmRightUpNoTrans(F,Diag,M,N,alpha,A,lda,B,ldb,nmax);
+				ftrsmRightUpNoTrans(F,Diag,M,N,one,A,lda,B,ldb,nmax);
 			}
 			else{
-				ftrsmRightUpTrans(F,Diag,M,N,alpha,A,lda,B,ldb);
+				ftrsmRightUpTrans(F,Diag,M,N,one,A,lda,B,ldb);
 			}
 		}
 		else{
 			if (TransA == FflasNoTrans){
-				ftrsmRightLowNoTrans(F,Diag,M,N,alpha,A,lda,B,ldb);
+				ftrsmRightLowNoTrans(F,Diag,M,N,one,A,lda,B,ldb);
 			}
 			else{
-				ftrsmRightLowTrans(F,Diag,M,N,alpha,A,lda,B,ldb);
+				ftrsmRightLowTrans(F,Diag,M,N,one,A,lda,B,ldb);
 			}
 		}
 	}
+	if (!F.isOne(alpha))
+		for (size_t i=0; i< M; ++i)
+			for (size_t j=0; j<N; ++j)
+				F.mulin(*(B+i*ldb+j),alpha);
 	
 }
 
@@ -176,10 +182,11 @@ public:
 			}
 			
 			cblas_dtrsm(  CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans,
-				      CblasUnit, M, N, alpha, A, lda, B, ldb );
+				      CblasUnit, M, N, one, A, lda, B, ldb );
 			for (size_t i=0; i< M; ++i)
 				for (size_t j=0; j<N; ++j)
 					F.init(*(B+i*ldb+j),*(B+i*ldb+j));
+					
 			
 			if (Diag == FflasNonUnit ){
 				//Denormalization of A
