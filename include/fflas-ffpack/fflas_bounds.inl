@@ -186,7 +186,7 @@ public:
 #ifdef __LINBOX_CONFIG_H
 			return nmax= bound_compute_double (p=pi); //(F.balanced) ? bound_compute_balanced(p=pi) : bound_compute(p=pi);
 #else
-        	return (F.balanced) ? bound_compute_double_balanced(p=pi) : bound_compute_double(p=pi);
+        	return nmax = (F.balanced) ? bound_compute_double_balanced(p=pi) : bound_compute_double(p=pi);
 #endif
 	}
 };
@@ -210,7 +210,7 @@ public:
 #ifdef __LINBOX_CONFIG_H
 			return nmax= bound_compute_float (p=pi); //(F.balanced) ? bound_compute_balanced(p=pi) : bound_compute(p=pi);
 #else
-        	return (F.balanced) ? bound_compute_float_balanced(p=pi) : bound_compute_float(p=pi);
+        	return nmax = (F.balanced) ? bound_compute_float_balanced(p=pi) : bound_compute_float(p=pi);
 #endif
 	}
 };
