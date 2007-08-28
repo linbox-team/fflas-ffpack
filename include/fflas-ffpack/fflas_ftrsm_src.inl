@@ -155,11 +155,8 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 	static __FFLAS__DOMAIN D;
 
-	//std::cerr<<"Entree dans Delayed, nblas nbblocsblas, M, N = "<<nblas<<" "<<nbblocsblas<<" "<<M<<" "<<N<<std::endl;
 	F.init(one, 1.0);
 	F.neg(Mone,one);
-
-	//std::cerr<<"__FFLAS__Na, nblas ="<<__FFLAS__Na<<" "<<nblas<<std::endl;
 
 	if ( __FFLAS__Na <= nblas ){
 		for (size_t i=0; i < M; ++i)
@@ -167,7 +164,6 @@ void delayed (const Field& F, const size_t M, const size_t N,
 				F.init( *(B + i*ldb + j), *( B + i*ldb + j));
 #ifndef __FFLAS__UNIT
 		typename Field::Element inv;
-		//Normalization of A and B
 		typename Field::Element *  Ai = A, * Bi = B;
 #ifdef __FFLAS__LEFT
 #ifdef __FFLAS__UP
@@ -199,7 +195,6 @@ void delayed (const Field& F, const size_t M, const size_t N,
 				F.init (*(B + i*ldb + j), *(B + i*ldb + j));
 				
 #ifndef __FFLAS__UNIT
-		//Denormalization of A
 		Ai = A;
 #ifdef __FFLAS__LEFT
 #ifdef __FFLAS__UP
@@ -212,7 +207,6 @@ void delayed (const Field& F, const size_t M, const size_t N,
 #endif
 #endif
 		for (size_t i = 0; i < __FFLAS__Na; ++i){
-			//std::cerr<<__FFLAS__Normdim<<std::endl;
 			fscal( F, __FFLAS__Normdim, *(A + i * (lda+1)) , Ai, __FFLAS__Anorminc);
 			Ai += __FFLAS__Anormnext;
 		}
@@ -220,15 +214,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	} else { // __FFLAS__Na <= nblas
 		size_t nbblocsup = (nbblocsblas + 1) / 2;
 		size_t nsplit = nbblocsup * nblas;
-		//std::cout<<"nbblocsup, nbblocsblas = "<<nbblocsup<<" "<<nbblocsblas<<std::endl;
-		//std::cout<<"nsplit, _Mb, _Nb, _Mb2, _Nb2 = "<<nsplit<<" "
-		//         <<__FFLAS__Mb<<" "<<__FFLAS__Nb<<" "<<__FFLAS__Mb2<<" "<<__FFLAS__Nb2<<std::endl;
-		//std::cerr<<"Recursif1 ("<<__FFLAS__Mb<<" "<<__FFLAS__Nb<<std::endl;
+
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
 			       __FFLAS__A1, lda, __FFLAS__B1, ldb, nblas, nbblocsup);
-		//	cerr<<"delay, Nup = "<<delay<<" "<<Nup<<endl;
-		//std::cerr<<"Done recursif1 "<<__FFLAS__Mb<<" "<<__FFLAS__Nb<<std::endl;
-		//cerr<<"M,N,K = "<<M<<" "<<Ndown<<" "<<Nup<<endl;
 
 #ifdef __FFLAS__RIGHT
 		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
@@ -237,11 +225,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
 		       Mone, __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
 #endif
-		//std::cerr<<"Recursif2 ("<<__FFLAS__Mb2<<" "<<__FFLAS__Nb2<<std::endl;
+
 		this->delayed (F, __FFLAS__Mb2, __FFLAS__Nb2,
 			       __FFLAS__A3, lda, __FFLAS__B2, ldb, nblas, nbblocsblas - nbblocsup);
-		//std::cerr<<"Done recursif2 "<<__FFLAS__Mb2<<" "<<__FFLAS__Nb2<<std::endl;
-
 	}
 }
 template <class Field>
@@ -258,8 +244,6 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	static __FFLAS__DOMAIN D;
 	size_t nblas = TRSMBound<Field> (F);
 
-	//size_t nbblocsblas = __FFLAS__Na / nblas;
-	//size_t nrestblas = __FFLAS__Na % nblas;
 	size_t ndel = DotProdBound (F, 0, one,
 #ifdef __FFLAS__DOUBLE
 				    FflasDouble);
@@ -267,18 +251,14 @@ void operator () (const Field& F, const size_t M, const size_t N,
                                     FflasFloat);
 #endif
 	ndel = (ndel / nblas)*nblas;
-	size_t nsplit = ndel;//MIN (ndel, (nbblocsblas+1) / 2 * nblas);
+	size_t nsplit = ndel;
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;
 	size_t nrestsplit = ((__FFLAS__Na-1) % nsplit) +1;
 	
-	//std::cout<<"nblas, ndel, nsplit, nbblocsplit, nrestsplit = "<<nblas<<" "<<ndel<<" "
-	//<<nsplit<<" "<<nbblocsplit<<" "<<nrestsplit<<std::endl;
-
 	for ( size_t  i = 0; i < nbblocsplit; ++i) {
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
 			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb, nblas, nsplit / nblas);
 					 
-//		cerr<<"M,N,K = "<<M<<" "<<(N-(i+1)*nsplit)<<" "<<nsplit<<endl;
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, Mone,
@@ -289,12 +269,9 @@ void operator () (const Field& F, const size_t M, const size_t N,
 		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, one, __FFLAS__Bupdate, ldb);
 #endif
 	}
-	if (nrestsplit){
-		//std::cerr<<"nblas nrestsplit, M, N = "<<nblas<<" "<<nrestsplit<<" "<<M<<" "<<N<<std::endl;
+	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
 			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb, nblas, nrestsplit / nblas);
-	}
-				 
 }
 
 
@@ -325,8 +302,6 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 	} else { // __FFLAS__Na > 1
 		size_t nsplit = __FFLAS__Na >> 1;
 		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A1, lda, __FFLAS__B1, ldb);
-		//	cerr<<"delay, Nup = "<<delay<<" "<<Nup<<endl;
-		//cerr<<"M,N,K = "<<M<<" "<<Ndown<<" "<<Nup<<endl;
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),

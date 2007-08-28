@@ -28,26 +28,26 @@
   #define __FFLAS__Atriang  A + (nbblocsplit - (i + 1)) * nsplit * (lda + 1)
   #define __FFLAS__Aupdate __FFLAS__Atriang + nsplit * __FFLAS__Arowinc
   #define __FFLAS__Arest A + nbblocsplit * nsplit * (lda+1)
-  #define __FFLAS__Bupdate B + (nbblocsplit - (i+1)) * nsplit * ldb
-  #define __FFLAS__Brec B + (nbblocsplit - i) * nsplit * ldb
+  #define __FFLAS__Brec B + (nbblocsplit - (i+1)) * nsplit * ldb
+  #define __FFLAS__Bupdate B + (nbblocsplit - i) * nsplit * ldb
   #define __FFLAS__Brest B + nbblocsplit * nsplit * ldb
-  #define __FFLAS__A1 A + nsplit * (lda + 1)
-  #define __FFLAS__A2 A + nsplit * __FFLAS__Arowinc
+  #define __FFLAS__A1 A + (nsplit) * (lda + 1)
+  #define __FFLAS__A2 A + (nsplit) * __FFLAS__Arowinc
   #define __FFLAS__A3 A
-  #define __FFLAS__B1 B + nsplit * ldb
+  #define __FFLAS__B1 B + (nsplit) * ldb 
   #define __FFLAS__B2 B 
 #else
-  #define __FFLAS__Atriang A + i * nsplit * (lda + 1)
-  #define __FFLAS__Aupdate A + (i+1) * nsplit * __FFLAS__Acolinc
+  #define __FFLAS__Atriang A + (nrestsplit + i * nsplit) * (lda + 1)
+  #define __FFLAS__Aupdate A + (nrestsplit + i * nsplit) * __FFLAS__Acolinc
   #define __FFLAS__Arest A 
-  #define __FFLAS__Bupdate B + (nrestsplit + i * nsplit) * ldb
-  #define __FFLAS__Brec B + MAX(0, int (nrestsplit) + (i-1) * nsplit) * ldb
+  #define __FFLAS__Brec B + (nrestsplit + i * nsplit) * ldb
+  #define __FFLAS__Bupdate B
   #define __FFLAS__Brest B
   #define __FFLAS__A1 A 
-  #define __FFLAS__A2 A + nsplit * __FFLAS__Acolinc
-  #define __FFLAS__A3 A + nsplit * (lda + 1)
-  #define __FFLAS__B1 B
-  #define __FFLAS__B2 B + nsplit * ldb
+  #define __FFLAS__A2 A + (M-nsplit) * __FFLAS__Acolinc
+  #define __FFLAS__A3 A + (M-nsplit) * (lda + 1)
+  #define __FFLAS__B1 B 
+  #define __FFLAS__B2 B + (M-nsplit) * ldb
  #endif
 #else	
  #define __FFLAS__SIDE Right
@@ -66,26 +66,26 @@
   #define __FFLAS__Atriang A + (nbblocsplit - (i + 1)) * nsplit * (lda + 1) 
   #define __FFLAS__Aupdate __FFLAS__Atriang + nsplit * __FFLAS__Acolinc
   #define __FFLAS__Arest A + nbblocsplit * nsplit * (lda+1)
-  #define __FFLAS__Bupdate B + (nbblocsplit - (i+1)) * nsplit 
-  #define __FFLAS__Brec B + (nbblocsplit - i) * nsplit 
+  #define __FFLAS__Brec B + (nbblocsplit - (i+1)) * nsplit 
+  #define __FFLAS__Bupdate B + (nbblocsplit - i) * nsplit 
   #define __FFLAS__Brest B + nbblocsplit * nsplit
-  #define __FFLAS__A1 A + nsplit * (lda + 1)
-  #define __FFLAS__A2 A + nsplit * __FFLAS__Acolinc
+  #define __FFLAS__A1 A + (nsplit) * (lda + 1)
+  #define __FFLAS__A2 A + (nsplit) * __FFLAS__Acolinc
   #define __FFLAS__A3 A
   #define __FFLAS__B1 B + nsplit
-  #define __FFLAS__B2 B
+  #define __FFLAS__B2 B 
 #else
-  #define __FFLAS__Atriang A + i * nsplit * (lda + 1)
-  #define __FFLAS__Aupdate A + (i+1) * nsplit * __FFLAS__Arowinc
+  #define __FFLAS__Atriang A + (nrestsplit + i * nsplit) * (lda + 1) 
+  #define __FFLAS__Aupdate A + (nrestsplit + i * nsplit) * __FFLAS__Arowinc 
   #define __FFLAS__Arest A
-  #define __FFLAS__Bupdate B + (nrestsplit + i * nsplit) 
-  #define __FFLAS__Brec B + MAX(0, int (nrestsplit) + (i-1) * nsplit) 
+  #define __FFLAS__Brec B + (nrestsplit + i * nsplit) 
+  #define __FFLAS__Bupdate B 
   #define __FFLAS__Brest B
   #define __FFLAS__A1 A
-  #define __FFLAS__A2 A + nsplit * __FFLAS__Arowinc
-  #define __FFLAS__A3 A + nsplit * (lda + 1)
-  #define __FFLAS__B1 B
-  #define __FFLAS__B2 B + nsplit 
+  #define __FFLAS__A2 A + (N-nsplit) * __FFLAS__Arowinc
+  #define __FFLAS__A3 A + (N-nsplit) * (lda + 1)
+  #define __FFLAS__B1 B 
+  #define __FFLAS__B2 B + N-nsplit 
  #endif
 #endif
 
@@ -158,11 +158,6 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	F.init(one, 1.0);
 	F.neg(Mone, one);
 	
-	static __FFLAS__DOMAIN D;
-	//size_t nblas = TRSMBound<Field> (F);
-
-	//size_t nbblocsblas = __FFLAS__Na / nblas;
-	//size_t nrestblas = __FFLAS__Na % nblas;
 	size_t nsplit = DotProdBound (F, 0, one,
 #ifdef __FFLAS__DOUBLE
 				    FflasDouble
@@ -170,23 +165,16 @@ void operator () (const Field& F, const size_t M, const size_t N,
                                     FflasFloat
 #endif
 				    );
-	//ndel = (ndel / nblas)*nblas;
-	//size_t nsplit = ndel;//MIN (ndel, (nbblocsblas+1) / 2 * nblas);
+
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;
 	size_t nrestsplit = ((__FFLAS__Na-1) % nsplit) +1;
 	
-	//std::cout<<"nblas, ndel, nsplit, nbblocsplit, nrestsplit = "<<nblas<<" "<<ndel<<" "
-	//<<nsplit<<" "<<nbblocsplit<<" "<<nrestsplit<<std::endl;
-
-	if (nrestsplit){
-		//std::cerr<<"nblas nrestsplit, M, N = "<<nblas<<" "<<nrestsplit<<" "<<M<<" "<<N<<std::endl;
+	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
 			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb);
-	}
-
+	
 	for ( size_t  i = 0; i < nbblocsplit; ++i) {
 		
-//		cerr<<"M,N,K = "<<M<<" "<<(N-(i+1)*nsplit)<<" "<<nsplit<<endl;
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, one,
@@ -196,6 +184,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, one,
 		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, one, __FFLAS__Bupdate, ldb);
 #endif
+
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
 			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb);
 					 
@@ -221,24 +210,26 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 	F.init(one, 1.0);
 	F.neg(Mone,one);
 	if (__FFLAS__Na == 1)
+#ifdef __FFLAS__NONUNIT
 		fscal(F, __FFLAS__Bdim, *A, B, __FFLAS__Bnorminc);
-
-	else { // __FFLAS__Na > 1
+#else
+       ;
+#endif
+	
+	 else { // __FFLAS__Na > 1
 		size_t nsplit = __FFLAS__Na >> 1;
-		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A1, lda, __FFLAS__B1, ldb);
-		//	cerr<<"delay, Nup = "<<delay<<" "<<Nup<<endl;
-		//cerr<<"M,N,K = "<<M<<" "<<Ndown<<" "<<Nup<<endl;
-
+		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A1, lda, __FFLAS__B1, ldb);
+		
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, one,
-		       __FFLAS__B1, ldb, __FFLAS__A2, lda, one, __FFLAS__B2, ldb);
+		       __FFLAS__B2, ldb, __FFLAS__A2, lda, one, __FFLAS__B1, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, one,
-		       __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
+		       __FFLAS__A2, lda, __FFLAS__B2, ldb, one, __FFLAS__B1, ldb);
 #endif
-		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb);
+		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A3, lda, __FFLAS__B2, ldb);
 	}
 }
 };
