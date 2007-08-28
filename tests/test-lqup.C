@@ -27,7 +27,7 @@ typedef Modular<double> Field;
 
 int main(int argc, char** argv){
 	cerr<<setprecision(20);
-	int i,j,nbf,m,n;
+	int m,n;
 	int R=0;
 
 	if (argc!=4){
@@ -44,7 +44,7 @@ int main(int argc, char** argv){
 	size_t maxP, maxQ;
 			
 	//	size_t cutoff = atoi(argv[3]);
-	nbf = atoi(argv[3]);
+	size_t nbf = atoi(argv[3]);
 	
 	Timer tim,timc;
 	timc.clear();
@@ -62,14 +62,14 @@ int main(int argc, char** argv){
 	size_t *Q = new size_t[maxQ];
 		
 	//write_field (F,cerr<<"A = "<<endl, A, m,n,n);
-	for ( i=0;i<nbf;i++){
+	for ( size_t i=0;i<nbf;i++){
 		if (i) {		
 			delete[] A;
 			A = read_field(F,argv[2],&m,&n);
 		}
-		for (j=0;j<maxP;j++)
+		for (size_t j=0;j<maxP;j++)
 			P[j]=0;
-		for (j=0;j<maxQ;j++)
+		for (size_t j=0;j<maxQ;j++)
 			Q[j]=0;
 		tim.clear();      
 		tim.start(); 	
@@ -80,14 +80,14 @@ int main(int argc, char** argv){
 	}
 	//write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
 
-	cerr<<"P = [";
-	for (size_t i=0; i<maxP; ++i)
-		cerr<<P[i]<<" ";
-	cerr<<"]"<<endl;
-	cerr<<"Q = [";
-	for (size_t i=0; i<maxQ; ++i)
-		cerr<<Q[i]<<" ";
-	cerr<<"]"<<endl;
+// 	cerr<<"P = [";
+// 	for (size_t i=0; i<maxP; ++i)
+// 		cerr<<P[i]<<" ";
+// 	cerr<<"]"<<endl;
+// 	cerr<<"Q = [";
+// 	for (size_t i=0; i<maxQ; ++i)
+// 		cerr<<Q[i]<<" ";
+// 	cerr<<"]"<<endl;
 #if DEBUG
 	Field::Element * X = new Field::Element[m*n];
 	Field::Element * L, *U;
