@@ -1,0 +1,27 @@
+Repenser la structure de fgemm:
+  * plus de template, moins de tests
+  * templater DoubleDomain/FLoatDomain?
+  * plus rapide avec des petites matrices
+  * Meilleure strategie de calcul des parametres
+  * Automatic tuning des thresholds Float/Double
+
+LUdivine
+  * Automatic tuning des thresholds gauss/LUdivine
+  * Plus de localite?
+
+TRSM/TRMM
+  * Traitement automatique float/double depuis int
+
+
+Idee: 
+1/ Pourquoi templater FFLAS?
+  --> integration au sein de ATLAS (C et corps definitif)
+2/ ameliorer les cas terminaux de ftrsm ftrmm: copier les ATL_reftrsm sur double et float
+  --> introduire un nouveau seuil dans trsm: celui ou on fait des boucles et pas de la recursivite
+2/ Conversion des le debut vers modular double/float (evite les conv multiples)
+3/ Implantations non template de fgemm, trsm, .... sur double
+4/ Compilation des noyaux
+
+A discuter en fonction du besoin d'un FFLAS generique
+
+
