@@ -220,10 +220,10 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
-		       Mone, __FFLAS__B1, ldb, __FFLAS__A2, lda, one, __FFLAS__B2, ldb);
+		       -1.0, __FFLAS__B1, ldb, __FFLAS__A2, lda, one, __FFLAS__B2, ldb);
 #else
 		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
-		       Mone, __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
+		       -1.0, __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
 #endif
 
 		this->delayed (F, __FFLAS__Mb2, __FFLAS__Nb2,

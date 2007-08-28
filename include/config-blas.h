@@ -21,8 +21,8 @@
  */
 
 
-#ifndef __LINBOX_CONFIG_BLAS
-#define __LINBOX_CONFIG_BLAS
+#ifndef _LINBOX_CONFIG_BLAS
+#define _LINBOX_CONFIG_BLAS
 
 // #ifndef __LINBOX_CONFIGURATION
 // #include <linbox-config.h>

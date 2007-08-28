@@ -154,9 +154,8 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	
 	if (!M || !N ) return;
 	
-	static typename Field::Element one, Mone;
+	static typename Field::Element one;
 	F.init(one, 1.0);
-	F.neg(Mone, one);
 	
 	size_t nsplit = DotProdBound (F, 0, one,
 #ifdef __FFLAS__DOUBLE
@@ -205,10 +204,8 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		 typename Field::Element * A, const size_t lda,
 		 typename Field::Element * B, const size_t ldb) {
 	
-	static typename Field::Element Mone;
 	static typename Field::Element one;
 	F.init(one, 1.0);
-	F.neg(Mone,one);
 	if (__FFLAS__Na == 1)
 #ifdef __FFLAS__NONUNIT
 		fscal(F, __FFLAS__Bdim, *A, B, __FFLAS__Bnorminc);

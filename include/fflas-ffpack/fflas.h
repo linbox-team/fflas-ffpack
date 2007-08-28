@@ -20,7 +20,7 @@
 #define MIN(a,b) ((a > b)?b:a)
 #endif
 
-#ifdef __LINBOX_CONFIG_H 
+#ifdef _LINBOX_CONFIG_H 
 #include "linbox/config-blas.h"
 #include "linbox/field/unparametric.h"
 
