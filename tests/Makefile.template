@@ -21,6 +21,12 @@ BLASROOT =
 #ARCH = -march=opteron 
 #ARCH = -m64 -mtune=k8
 
+# Givaro/GMP root (only necessary for compiling the regression tests testeur_fgemm, testeur_lqup and testeur_ftrsm)
+#GIVARO_ROOT=
+#GMP_ROOT=
+#INCLUDES+= -I ${GIVARO_ROOT}/include -I ${GMP_ROOT}/include
+#LOADLIBES+= -L ${GIVARO_ROOT}/lib -lgivaro -L ${GMP_ROOT}/include -lgmp -lgmpxx
+
 #----------------------------------------------------------
 
 OPTFLAGS+=-O3
@@ -36,5 +42,7 @@ CXX=g++ ${INCLUDES}
 
 all: test-fgemm test-invert test-det test-rank test-charpoly test-lqup dense_generator
 
+regression: testeur_fgemm testeur_lqup testeur_ftrsm
+
 clean:
-	rm -f test-fgemm test-fgemv test-invert test-det test-rank test-charpoly test-lqup dense_generator
+	rm -f test-fgemm test-fgemv test-invert test-det test-rank test-charpoly test-lqup dense_generator testeur_fgemm testeur_lqup testeur_ftrsm

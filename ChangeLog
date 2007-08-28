@@ -1,3 +1,9 @@
+2007-08-28 v1.3.0
+	* new version of ftrmm ftrsm: ftrsm based on a multicascade algorithm
+	reducing the number of modular reductions). Automated generation of each
+	of the 48 specializations 
+	* several bug fixes
+	* add regression tests: testeur_fgemm, testeur_lqup and testeur_ftrsm
 2007-07-05 v1.2.2
 	* add a transposed version of the LQUP decomposition routine
 	LUdivine

@@ -1,6 +1,6 @@
   ******  FFLAS-FFPACK : Finite Field Linear Algebra Subroutines/Package ******  
 
-Version 1.1.2
+Version 1.3.0
 
 PURPOSE:
 
@@ -22,9 +22,9 @@ compiler supporting advanced template features.
 ==========================================================
 The FFLAS-FFPACK website is  www-ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/
 
-Please adress your bug reports, suggestions and comments to : 
-Clement.Pernet@imag.fr
+Please address your bug reports, suggestions and comments to 
+the discussion group http://groups.google.com/group/ffpack-devel
  
-Last update : March 2007 
+Last update : Aug 2007 
  
 
