@@ -1,0 +1,41 @@
+############################
+## VARIABLE TO BE DEFINED ##
+############################
+ATLAS_CXX=-I/home/cpernet/Logiciels/ATLAS_Opteron64/include/
+ATLAS_LIB=-L/home/cpernet/Logiciels/ATLAS_Opteron64/lib   -lcblas -latlas
+GOTO_LIB=-L/home/cpernet/Logiciels/GotoBLAS  -lgoto 
+FFLAS_FFPACK_PATH=/home/cpernet/Logiciels/fflas-ffpack
+
+#####################################
+# DO NOT MODIFY THE FOLLOWING LINES #
+#####################################
+
+CC=g++
+CXX=g++ 
+OPTFLAGS=-O3 -g 
+OPTFLAGS+=-funroll-all-loops -frerun-loop-opt 
+OPTFLAGS+=-fexpensive-optimizations -felide-constructors 
+OPTFLAGS+=-fforce-addr 
+OPTFLAGS+=-fstrength-reduce
+OPTFLAGS+=-fstrict-aliasing -ffast-math
+
+#CXXFLAGS= -I${LINBOX_PATH}/include -I${GMP_PATH}/include
+
+CXXFLAGS= -I${FFLAS_FFPACK_PATH}/include -I${FFLAS_FFPACK_PATH}/tests ${OPTFLAGS}
+
+ifdef GOTO_LINK
+CXX=g++ -U__LINBOX_HAVE_CBLAS 
+LDLIBS+=${GOTO_LIB}
+endif
+
+ifdef ATLAS_LINK
+CXX=g++ -D__LINBOX_HAVE_CBLAS
+CXXFLAGS+=${ATLAS_CXX} 
+LDLIBS+= ${ATLAS_LIB} 
+endif
+
+
+
+
+
+
