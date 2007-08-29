@@ -75,7 +75,7 @@ if test "${DOING_COMPILATION}" = "yes"; then
     cd  ${CURRENT_PATH}/src/BLAS_LAPACK
     echo "Compiling BLAS_LAPACK with GOTO..."
     echo "Compiling BLAS_LAPACK with GOTO..."  >> ${TARGET_PATH}/compilation.log
-#    make -k GOTO_LINK=true && echo "compilation done" && echo
+    make -k GOTO_LINK=true && echo "compilation done" && echo
     
     
 ## Launch ATLAS test compilation
@@ -89,11 +89,11 @@ if test "${DOING_COMPILATION}" = "yes"; then
     cd  ${CURRENT_PATH}/src/FFLAS_FFPACK 
     echo "Compiling FFLAS_FFPACK with ATLAS..."
     echo "Compiling FFLAS_FFPACK with ATLAS..."  >> ${TARGET_PATH}/compilation.log
-    make -k ATLAS_LINK=true && echo "compilation done" && echo
+   make -k ATLAS_LINK=true && echo "compilation done" && echo
     cd  ${CURRENT_PATH}/src/BLAS_LAPACK
     echo "Compiling BLAS_LAPACK with ATLAS..."
     echo "Compiling BLAS_LAPACK with ATLAS..."  >> ${TARGET_PATH}/compilation.log
-#    make -k ATLAS_LINK=true && echo "compilation done" && echo
+    make -k ATLAS_LINK=true && echo "compilation done" && echo
 else
     echo "Skipping compilation..."
     echo
@@ -115,7 +115,7 @@ export BIN_PATH
 echo "running FFLAS_FFPACK tests with GOTO..."
 ${TEST_SRC_PATH}/mesure-FFLAS_FFPACK.sh
 echo "running BLAS_LAPACK tests with GOTO..."
-#${TEST_SRC_PATH}/mesure-BLAS_LAPACK.sh
+${TEST_SRC_PATH}/mesure-BLAS_LAPACK.sh
 
 
 ## Run ATLAS test
@@ -126,5 +126,5 @@ export TEST_PATH
 export BIN_PATH
 echo "running FFLAS_FFPACK tests with ATLAS..."
 ${TEST_SRC_PATH}/mesure-FFLAS_FFPACK.sh
-#echo "running BLAS_LAPACK tests with ATLAS..."
+echo "running BLAS_LAPACK tests with ATLAS..."
 ${TEST_SRC_PATH}/mesure-BLAS_LAPACK.sh

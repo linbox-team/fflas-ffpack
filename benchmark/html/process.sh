@@ -7,6 +7,7 @@ blas_fct=`basename $2 | cut -d "-" -f 3`
 fflas_fct=`basename $3 | cut -d "-" -f 3`
 
 
+echo `pwd`
 echo  "<test name=\"$1\">"
 echo -n "<prime> "
 echo -n "$prime "

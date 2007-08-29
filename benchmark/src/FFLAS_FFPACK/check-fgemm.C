@@ -25,14 +25,12 @@ int main(int argc, char** argv) {
   Element one,zero;
   F.init(one, 1.0);
   F.init(zero,0.0);
-  Element * C = new Element[n*n];
 
   Timer chrono;
   double time=0.0, time2=0.0;
   int singular;
   
-  Element * A;
-  Element * B;
+  Element * A, * B, * C;
 
   for (size_t i=0;i<iter;++i){
     

@@ -10,10 +10,11 @@ read ARCHI
 echo "Enter the description of the architecture :"
 read ARCHI_DESCR
 
-TEST_DIR=`ls $HOME_PATH/Target/$ARCHI -I CVS -I GOTO -I ATLAS -I compilation.log | tail -n 1`
+TEST_DIR=`ls $HOME_PATH/Target/$ARCHI  -I GOTO -I ATLAS -I compilation.log -I report.xml| tail -n 1`
 echo "Processing testing directory [$TEST_DIR]"
 
 TEST_PATH="$HOME_PATH/Target/$ARCHI/$TEST_DIR"
+
 PRIME=65521
 
 
@@ -33,13 +34,13 @@ ${CURRENT_PATH}/process.sh "Matrix Triangularization"     timing-check-dgetrf-${
                                                           timing-check-lqup-${PRIME}.txt  >> ${XML_FILE}
 
 ${CURRENT_PATH}/process.sh "Multiple Triangular System Solving"    timing-check-dtrsm-${PRIME}.txt \
-                                                                   timing-check-ftrsm-${PRIME}.txt  >> ${XML_FILE}
+                                                                   timing-check-ftrsm-${PRIME}.txt >> ${XML_FILE}
 
 ${CURRENT_PATH}/process.sh "Matrix Inversion"             timing-check-dgetri-${PRIME}.txt \
                                                           timing-check-inverse-${PRIME}.txt  >> ${XML_FILE}
 
 ${CURRENT_PATH}/process.sh "Triangular Matrix Inversion"  timing-check-dtrtri-${PRIME}.txt \
-                                                          timing-check-trinverse-${PRIME}.txt  >> ${XML_FILE}
+                                                          timing-check-ftrtri-${PRIME}.txt >> ${XML_FILE}
 echo "</benchmark>" >> ${XML_FILE}
 
 

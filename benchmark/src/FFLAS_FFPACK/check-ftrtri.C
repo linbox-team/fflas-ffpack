@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
     if (argc > 4){
       A = read_field (F, argv[4], &n, &n);    
     } else {
+      A = new Element[n*n];
       for (size_t i=0; i< n*n; ++i)
 	G.random(*(A+i));
     }      
@@ -44,6 +45,7 @@ int main(int argc, char** argv) {
     chrono.stop();
     
     time+=chrono.usertime();
+    delete[] A;
     
   }
 

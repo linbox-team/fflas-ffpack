@@ -1,28 +1,18 @@
 #include <iostream>
 
-//#define __LINBOX_CONFIGURATION
-//#include <linbox/config-blas.h>
+#include "fflas-ffpack/fflas.h"
+#include "fflas-ffpack/modular-balanced.h"
+#include "timer.h"
+#include "Matio.h"
 
-#include "linbox-config.h"
-#undef __LINBOX_HAVE_NTL
-#undef __LINBOX_HAVE_GIVARO
-#include "linbox/matrix/blas-matrix.h"
-#include "linbox/algorithms/blas-domain.h"
-#include "linbox/field/modular.h"
-#include "linbox/util/timer.h"
-
-using namespace LinBox;
 using namespace std;
 
 int main(int argc, char** argv) {
 
   // parameter: p, n, iteration, file1, file2
 
-  if (argc != 4)
-    std::cout<<"usage: <p> <dim> <iter>\n";
-
   int    p    = atoi(argv[1]);
-  size_t n    = atoi(argv[2]);
+  int n    = atoi(argv[2]);
   size_t iter = atoi(argv[3]);
   
 
@@ -30,45 +20,48 @@ int main(int argc, char** argv) {
   typedef Field::Element Element;
       
   Field F(p);
-  BlasMatrixDomain<Field> BMD(F);
-  BlasMatrix<Element> A(n,n), B(n,n);
-
-  LinBox::Timer chrono;
+  Element one;
+  F.init(one, 1.0);
+  Element * A;
+  Element * B;
+  
+  Timer chrono;
   double time=0.0;
   int singular;
   
   for (size_t i=0;i<iter;++i){
+    Field::RandIter G(F);
     if (argc > 4){
-      fstream osA(argv[4]);    
-      A.read(osA,F);
-      osA.close();
+        A = read_field (F, argv[4], &n, &n);    
     }
     else{
-      Field::RandIter G(F);
-      BlasMatrix<Element>::RawIterator it = A.rawBegin();
-      for (; it != A.rawEnd();++it)
-	G.random(*it);      
+      A = new Element[n*n];
+      for (size_t i = 0; i< n*n; ++i)
+	G.random(*(A+i));      
     }
-
 
     if (argc == 6){
-      fstream osB(argv[5]);      
-      B.read(osB,F);
-      osB.close();
+      B = read_field (F, argv[5], &n, &n);    
     }
     else{
+      B = new Element[n*n];
       Field::RandIter G(F);
-      BlasMatrix<Element>::RawIterator it = B.rawBegin();
-      for (; it != B.rawEnd();++it)
-	G.random(*it);
+      for (size_t i=0 ; i< n*n; ++i)
+	G.random(*(A+i));
     }
-  
+        
+    for (size_t k=0;k<n;++k)
+      while (F.isZero( G.random(*(A+k*(n+1)))));
+    
     chrono.clear();
     chrono.start();
-    cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans,
-		CblasUnit, n, n, 1.0, A.getPointer(), n, B.getPointer(), n);
+    cblas_dtrsm (CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans,
+		 CblasNonUnit, n,n, one, A, n, B, n);
+    
     chrono.stop();
     time+=chrono.usertime();
+    delete[] A;
+    delete[] B;
     
   }
 

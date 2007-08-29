@@ -3,7 +3,8 @@
 #include <iostream>
 
 #include "fflas-ffpack/fflas.h"
-#include "fflas-ffpack/modular-centered.h"
+#include "fflas-ffpack/modular-balanced.h"
+#include "Matio.h"
 #include "timer.h"
 
 using namespace std;
@@ -13,7 +14,7 @@ int main(int argc, char** argv) {
   // parameter: p, n, iteration, file1, file2
 
   int    p    = atoi(argv[1]);
-  size_t n    = atoi(argv[2]);
+  int n    = atoi(argv[2]);
   size_t iter = atoi(argv[3]);
   
 
@@ -21,17 +22,15 @@ int main(int argc, char** argv) {
   typedef Field::Element Element;
       
   Field F(p);
-  Element one;
+  Element one, zero;
   F.init(one, 1.0);
+  F.init(zero, 0.0);
   
-  Element * C = new Element[n*n];
-
   Timer chrono;
   double time=0.0, time2=0.0;
   int singular;
   
-  Element * A;
-  Element * B;
+  Element * A, * B, * C;
 
   for (size_t i=0;i<iter;++i){
     
@@ -55,11 +54,12 @@ int main(int argc, char** argv) {
 	G.random(*(B+i));
     }
 
-
+    C = new Element[n*n];
+    
     chrono.clear();
     chrono.start();
-    FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,n, one,
-		  A, n, B, n, zero, C);
+    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, one,
+		 A, n, B, n, zero, C,n);
     chrono.stop();
     time+=chrono.usertime();
 

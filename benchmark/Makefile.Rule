@@ -2,7 +2,7 @@
 ## VARIABLE TO BE DEFINED ##
 ############################
 ATLAS_CXX=-I/home/cpernet/Logiciels/ATLAS_Opteron64/include/
-ATLAS_LIB=-L/home/cpernet/Logiciels/ATLAS_Opteron64/lib   -lcblas -latlas
+ATLAS_LIB=-L/home/cpernet/Logiciels/ATLAS_Opteron64/lib   -llapack -lcblas -latlas 
 GOTO_LIB=-L/home/cpernet/Logiciels/GotoBLAS  -lgoto 
 FFLAS_FFPACK_PATH=/home/cpernet/Logiciels/fflas-ffpack
 

@@ -61,8 +61,8 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 		
-	Timer tim,t; t.clear();tim.clear(); 
-
+	Timer t; t.clear();
+	double time=0.0;
 	//write_field(F, cerr<<"A="<<endl, A, k,k,k);
 
 	for(int i = 0;i<nbit;++i){
@@ -70,7 +70,7 @@ int main(int argc, char** argv){
 		t.start();
 		FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n);
 		t.stop();
-		tim+=t;
+		time+=t.usertime();
 		if (i+1<nbit)
 			for (int i=0; i<m*n;++i)
 				F.assign(*(B+i),*(B2+i));
@@ -130,7 +130,7 @@ int main(int argc, char** argv){
 	delete[] B;
 	delete[] B2;
 #if TIME
-	double mflops = m*n/1000000.0*nbit*n/tim.usertime();
+	double mflops = m*n/1000000.0*nbit*n/time;
 	cerr<<"m,n = "<<m<<" "<<n<<". ftrsm "
 	    <<((side == FFLAS::FflasLeft)?" Left ":" Right ")
 	    <<((uplo == FFLAS::FflasLower)?" Lower ":" Upper ")
@@ -139,10 +139,10 @@ int main(int argc, char** argv){
 	    <<"over Z/"<<atoi(argv[1])<<"Z :"
 	    <<endl
 	    <<"t= "
-	    << tim.usertime()/nbit 
+	    << time/nbit 
 	    << " s, Mffops = "<<mflops
 	    << endl;
 	
-	cout<<m<<" "<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
+	cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
 #endif
 }

@@ -75,7 +75,7 @@ perl make_graph_file.pl ${TEST_PATH}/GOTO/timing-check-${n_base}-${PRIME}.txt \
                   "inversion"  "matrix inversion" "${ARCHI}"
 
 ## TRIANGULAR MATRIX INVERSION
-f_funct=trinverse
+f_funct=ftrtri
 n_funct=dtrtri
 perl make_graph_file.pl ${TEST_PATH}/ATLAS/timing-check-${f_base}-${PRIME}.txt \
                         ${TEST_PATH}/ATLAS/timing-check-${f_funct}-${PRIME}.txt > /tmp/${f_funct}-ATLAS.txt
