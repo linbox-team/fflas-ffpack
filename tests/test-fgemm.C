@@ -76,7 +76,7 @@ int main(int argc, char** argv){
 		ldb = n;
 	}
 	
-	Field::Element * C;
+	Field::Element * C=NULL;
 
 // 	write_field (F, cerr<<"A = "<<endl, A, m, k, lda);
 // 	write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);
@@ -105,7 +105,7 @@ int main(int argc, char** argv){
  		Cd = read_field(F,argv[8],&m,&n);
 	else{
 		Cd  = new Field::Element[m*n];
-		for (size_t i=0; i<m*n; ++i)
+		for (int i=0; i<m*n; ++i)
 			F.assign (*(Cd+i), zero);
 	}
 	Field::Element aij, bij, beta_alpha;
