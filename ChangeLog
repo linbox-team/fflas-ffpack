@@ -1,3 +1,6 @@
+2007-08-29 v1.3.1
+	* add the benchmark directory, for automatic benchmarking against GOTO
+	and ATLAS BLAS. Adapted from Pascal Giorgi's benchmark system.
 2007-08-28 v1.3.0
 	* new version of ftrmm ftrsm: ftrsm based on a multicascade algorithm
 	reducing the number of modular reductions). Automated generation of each

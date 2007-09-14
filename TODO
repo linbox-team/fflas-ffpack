@@ -11,8 +11,13 @@ LUdivine
 
 TRSM/TRMM
   * Traitement automatique float/double depuis int
+  * Securiser les bornes t_update: quand winograd intervient
+  * remplacer BLAS-trsm par le code de reference de ATLAS
 
-
+FTRTRI/FTRTRM
+  * generation automatique du code
+  * traitement des cas de base (seuil > 1)
+ 
 Idee: 
 1/ Pourquoi templater FFLAS?
   --> integration au sein de ATLAS (C et corps definitif)
