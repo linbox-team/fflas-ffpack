@@ -29,6 +29,8 @@ namespace LinBox{
 // with different thresholds.
 // TransPosed version has to be implemented too.
 #define __FFPACK_LUDIVINE_CUTOFF 0
+	
+#define __FFPACK_CHARPOLY_THRESHOLD 30
 
 	/**
 	 * \brief Set of elimination based routines for dense linear algebra
@@ -55,13 +57,12 @@ public:
 				   FfpackKGFast=4,
 				   FfpackDanilevski=5,
 				   FfpackArithProg=6,
-				   FfpackKGFastG=7
-	};
+				   FfpackKGFastG=7};
 	
 	class CharpolyFailed{};
 	
 	enum FFPACK_MINPOLY_TAG { FfpackDense=1,
-				    FfpackKGF=2 };
+				  FfpackKGF=2};
 
 	/** 
 	 * Computes the rank of the given matrix using a LQUP factorization.
@@ -79,7 +80,8 @@ public:
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
-		size_t R = LUdivine( F, FflasNonUnit, FflasNoTrans, M, N, A, lda, P, Q, FfpackLQUP);
+		size_t R = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N,
+				     A, lda, P, Q, FfpackLQUP);
 		delete[] Q;
 		delete[] P;
 		return R;
@@ -102,8 +104,8 @@ public:
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
-		bool singular  = !LUdivine( F, FflasNonUnit, FflasNoTrans, M, N, A, lda, 
-					    P, Q, FfpackSingular);
+		bool singular  = !LUdivine (F, FflasNonUnit, FflasNoTrans, M, N,
+					    A, lda, P, Q, FfpackSingular);
 		
 		delete[] P;
 		delete[] Q;
@@ -129,7 +131,8 @@ public:
 		bool singular;
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
-		singular  = !LUdivine( F, FflasNonUnit, FflasNoTrans,  M, N, A, lda, P, Q, FfpackSingular);
+		singular  = !LUdivine (F, FflasNonUnit, FflasNoTrans,  M, N,
+				       A, lda, P, Q, FfpackSingular);
 		if (singular){
 			F.init(det,0.0);
 			delete[] P;
@@ -154,6 +157,233 @@ public:
  	}
 
 	/**
+	 * Solve the system A X = B or X A = B, using the LQUP decomposition of A
+	 * already computed inplace with LUdivine(FflasNoTrans, FflasNonUnit).
+	 * Version for A square.
+	 * If A is rank deficient, a solution is returned if the system is consistent,
+	 * Otherwise an info is 1
+	 * 
+	 * @param Side Determine wheter the resolution is left or right looking.
+	 * @param M row dimension of B
+	 * @param N col dimension of B
+	 * @param R rank of A
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P column permutation of the LQUP decomposition of A
+ 	 * @param Q column permutation of the LQUP decomposition of A
+	 * @param B Right/Left hand side matrix. Initially stores B, finally stores the solution X.
+	 * @param ldb leading dimension of B
+	 * @info Succes of the computation: 0 if successfull, >0 if system is inconsistent
+	 */
+	template <class Field>
+	static typename Field::Element *
+	fgetrs (const Field& F,
+		const FFLAS_SIDE Side,
+		const size_t M, const size_t N, const size_t R,
+		const Field::Element *A, const size_t lda,
+		const size_t *P, const size_t *Q,
+		Field::Element *B, const size_t ldb,
+		int * info){
+
+		static zero;
+		F.init (zero, 0.0);
+		if (Side == FflasLeft) { // Left looking solve A X = B
+
+			SolveLB (F, FflasLeft, M, N, R, A, lda, Q, B, ldb);
+
+			applyP (F, FflasLeft, FflasNoTrans, N, 0, R, B, ldb, Q);
+
+			bool consistent = true;
+			for (size_t i = R; i < M; ++i)
+				for (size_t j = 0; j < N; ++j)
+					if (!F.isZero (*(B + i*ldb + j)))
+						consistent = false;
+			if (!consistent) {
+				std::cerr<<"System is inconsistent"<<std::endl;
+				*info = 1;
+			}
+			// The last rows of B are now supposed to be 0
+			//			for (size_t i = R; i < M; ++i)
+			// 				for (size_t j = 0; j < N; ++j)
+			// 					*(B + i*ldb + j) = zero;
+
+			ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit, 
+			       R, N, one, A, lda , B, ldb);
+			
+			applyP (F, FflasLeft, FflasTrans, N, 0, R, B, ldb, P);
+
+			return B;
+			
+		} else { // Right Looking X A = B
+
+			applyP (F, FflasRight, FflasTrans, M, 0, R, B, ldb, P);
+			
+			ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit, 
+			       N, R, one, A, lda , B, ldb);
+
+			fgemm (F, FflasNoTrans, FflasNoTrans, M, N-R, R, one,
+			       B, ldb, A+R, lda, mone, B+R, ldb);
+
+			bool consistent = true;
+			for (size_t i = 0; i < M; ++i)
+				for (size_t j = R; j < N; ++j)
+					if (!F.isZero (*(B + i*ldb + j)))
+						consistent = false;
+			if (!consistent) {
+				std::cerr<<"System is inconsistent"<<std::endl;
+				*info = 1;
+			}
+			// The last cols of B are now supposed to be 0
+
+			applyP (F, FflasRight, FflasNoTrans, M, 0, R, B, ldb, Q);
+
+			SolveLB (F, FflasRight, M, N, R, A, lda, Q, B, ldb);
+		}
+	}
+	
+	/**
+	 * Solve the system A X = B or X A = B, using the LQUP decomposition of A
+	 * already computed inplace with LUdivine(FflasNoTrans, FflasNonUnit).
+	 * Version for A rectangular.
+	 * If A is rank deficient, a solution is returned if the system is consistent,
+	 * Otherwise an info is 1
+	 * 
+	 * @param Side Determine wheter the resolution is left or right looking.
+	 * @param M row dimension of A
+	 * @param N col dimension of A
+	 * @param NRHS number of columns (if Side = FflasLeft) or row (if Side = FflasRight) of the matrices X and B
+	 * @param R rank of A
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P column permutation of the LQUP decomposition of A
+ 	 * @param Q column permutation of the LQUP decomposition of A
+	 * @param X solution matrix
+	 * @param ldx leading dimension of X
+	 * @param B Right/Left hand side matrix. 
+	 * @param ldb leading dimension of B
+	 * @info Succes of the computation: 0 if successfull, >0 if system is inconsistent
+	 */
+	template <class Field>
+	static typename Field::Element *
+	fgetrs (const Field& F,
+		const FFLAS_SIDE Side,
+		const size_t M, const size_t N, const size_t NRHS, const size_t R,
+		const Field::Element *A, const size_t lda,
+		const size_t *P, const size_t *Q,
+		Field::Element *X, const size_t ldb,
+		const Field::Element *B, const size_t ldb,
+		int * info) {
+
+		static zero;
+		F.init (zero, 0.0);
+		if (Side == FflasLeft) { // Left looking solve A X = B
+
+			for (size_t i=0; i < N; ++i)
+				fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
+			       
+			SolveLB (F, FflasLeft, M, N, R, A, lda, Q, B, ldb);
+
+			applyP (F, FflasLeft, FflasNoTrans, N, 0, R, B, ldb, Q);
+
+			bool consistent = true;
+			for (size_t i = R; i < M; ++i)
+				for (size_t j = 0; j < N; ++j)
+					if (!F.isZero (*(B + i*ldb + j)))
+						consistent = false;
+			if (!consistent) {
+				std::cerr<<"System is inconsistent"<<std::endl;
+				*info = 1;
+			}
+			// The last rows of B are now supposed to be 0
+			//			for (size_t i = R; i < M; ++i)
+			// 				for (size_t j = 0; j < N; ++j)
+			// 					*(B + i*ldb + j) = zero;
+
+			ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit, 
+			       R, N, one, A, lda , B, ldb);
+			
+			applyP (F, FflasLeft, FflasTrans, N, 0, R, B, ldb, P);
+
+			return B;
+			
+		} else { // Right Looking X A = B
+
+			for (size_t i=0; i < NRHS; ++i)
+				fcopy (F, M, X + i*ldx, 1, B + i*ldb, 1);
+
+			applyP (F, FflasRight, FflasTrans, M, 0, R, B, ldb, P);
+			
+			ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit, 
+			       N, R, one, A, lda , B, ldb);
+
+			fgemm (F, FflasNoTrans, FflasNoTrans, M, N-R, R, one,
+			       B, ldb, A+R, lda, mone, B+R, ldb);
+
+			bool consistent = true;
+			for (size_t i = 0; i < M; ++i)
+				for (size_t j = R; j < N; ++j)
+					if (!F.isZero (*(B + i*ldb + j)))
+						consistent = false;
+			if (!consistent) {
+				std::cerr<<"System is inconsistent"<<std::endl;
+				*info = 1;
+			}
+			// The last cols of B are now supposed to be 0
+
+			applyP (F, FflasRight, FflasNoTrans, M, 0, R, B, ldb, Q);
+
+			SolveLB (F, FflasRight, M, N, R, A, lda, Q, B, ldb);
+		}
+	}
+
+	/**
+	 * @brief Square system solver
+	 * @param Field The computation domain
+	 * @param Side Determine wheter the resolution is left or right looking
+	 * @param M row dimension of B
+	 * @param N col dimension of B
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P column permutation of the LQUP decomposition of A
+ 	 * @param Q column permutation of the LQUP decomposition of A
+	 * @param B Right/Left hand side matrix. Initially contains B, finally contains the solution X.
+	 * @param ldb leading dimension of B
+	 * @info Succes of the computation: 0 if successfull, >0 if system is inconsistent
+ 	 * @return a pointer to B
+ 	 * 
+	 * Solve the system A X = B or X A = B.
+	 * Version for A square.
+	 * If A is rank deficient, a solution is returned if the system is consistent,
+	 * Otherwise an info is 1
+	 */
+	template <class Field>
+	static typename Field::Element *
+	fgesv (const FFLAS_SIDE Side,
+	       const size_t M, const size_t N,
+	       const Field::Element *A, const size_t lda,
+	       Field::Element *B, const size_t ldb,
+	       int * info){
+
+		size_t Na;
+		if (Side == FflasLeft)
+			Na = M;
+		else
+			Na = N;
+		
+		size_t P = new size_t[Na];
+		size_t Q = new size_t[Na];
+
+		size_t R = LUdivine (F, FflasNonUnit, FflasNoTrans, Na, Na, A, lda, P, Q, FfpackLQUP);
+
+		fgetrs (F, Side, M, N , R, A, lda, P, Q, B, ldb, info);
+		
+		delete[] P;
+		delete[] Q;
+
+		return B;
+	}
+	
+	/**
 	 * Solve the system Ax=b, using LQUP factorization and
 	 * two triangular system resolutions.
 	 * The input matrix is modified. 
@@ -171,8 +401,7 @@ public:
 	Solve( const Field& F, const size_t M,
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * x, const int incx,
-	       const typename Field::Element * b, const int incb )
-	{
+	       const typename Field::Element * b, const int incb ){
 		typename Field::Element one, zero;
 		F.init(one,1.0);
 		F.init(zero,0.0);
@@ -761,7 +990,7 @@ public:
 		 const size_t * Q,
 		 typename Field::Element * B, const size_t ldb ){
 		
-		 typename Field::Element one, zero;
+		typename Field::Element one, zero;
 		F.init(one, 1.0);
 		F.init(zero, 0.0);
 		size_t LM = (Side == FflasRight)?N:M;
