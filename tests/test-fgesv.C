@@ -11,13 +11,14 @@
 
 #include <iomanip>
 #include <iostream>
+using namespace std;
+
 #include "fflas-ffpack/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/ffpack.h"
 
 
-using namespace std;
 
 typedef Modular<double> Field;
 
@@ -36,25 +37,25 @@ int main(int argc, char** argv){
 	Field F(atoi(argv[1]));
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	Field::Element * A, *B, *B2, *X;
+	Field::Element * A, *B, *B2, *X=NULL;
 	A = read_field(F,argv[2],&m,&n);
 	B = read_field(F,argv[3],&mb,&nb);
 
 	FFLAS::FFLAS_SIDE side = (atoi(argv[5])) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
 		
-	size_t ldx;
+	size_t ldx=0;
 	size_t rhs = (side == FFLAS::FflasLeft) ? nb : mb;
 	if (m != n)
 		if (side == FFLAS::FflasLeft){
 			X = new Field::Element[n*nb];
 			ldx = nb;
 		} else {
-			X = new Field::Element[m*mb];
+			X = new Field::Element[mb*m];
 			ldx = m;
 		}
 	
-	if ( ((side == FFLAS::FflasRight) && (m != nb))
-	     || ((side == FFLAS::FflasLeft)&&(n != mb)) ) {
+	if ( ((side == FFLAS::FflasRight) && (n != nb))
+	     || ((side == FFLAS::FflasLeft)&&(m != mb)) ) {
 		cerr<<"Error in the dimensions of the input matrices"<<endl;
 		exit(-1);
 	}
@@ -70,6 +71,11 @@ int main(int argc, char** argv){
 			R = FFPACK::fgesv (F, side, mb, nb, A, n, B, nb, &info);
 		else
 			R = FFPACK::fgesv (F, side, m, n, rhs, A, n, X, ldx, B, nb, &info);
+		if (info > 0){
+			std::cerr<<"System is inconsistent"<<std::endl;
+			exit(-1);
+		}
+			
 		t.stop();
 		time+=t.usertime();
 		if (i+1<nbit){
