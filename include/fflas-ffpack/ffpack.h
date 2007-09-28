@@ -189,7 +189,7 @@ public:
 		F.init (zero, 0.0);
 		F.init (one, 1.0);
 		F.neg(mone, one);
-		
+		*info =0;
 		if (Side == FflasLeft) { // Left looking solve A X = B
 
 			solveLB2 (F, FflasLeft, M, N, R, A, lda, Q, B, ldb);
@@ -279,7 +279,8 @@ public:
 		F.init (zero, 0.0);
 		F.init (one, 1.0);
 		F.neg(mone, one);
-
+		*info =0;
+		
 		typename Field::Element* W;
 		size_t ldw;
 
@@ -1173,7 +1174,7 @@ public:
 			size_t j = 0;
 			while ( j<R ) {
 				k = ib = Q[j];
-				while ( (Q[j] == (size_t)k) && (j<R) ) {k++;j++;}
+				while ((j<R) && ( (int) Q[j] == k)  ) {k++;j++;}
 				Ldim = k-ib;
 				Lcurr = L + j-Ldim + ib*ldl;
 				Bcurr = B + ib*ldb;
@@ -1190,7 +1191,7 @@ public:
 			int j=R-1;
 			while ( j >= 0 ) {
 				k = ib = Q[j];
-				while ( (j >= 0) &&  ( Q[j] == k)  ) {--k;--j;}
+				while ( (j >= 0) &&  ( (int)Q[j] == k)  ) {--k;--j;}
 				Ldim = ib-k;
 				Lcurr = L + j+1 + (k+1)*ldl;
 				Bcurr = B + ib+1;
