@@ -585,6 +585,9 @@ public:
 		nullity = M - ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
 		applyP (F, FflasLeft, FflasTrans, M, 0, M, A, lda, P); 
 
+		delete[] P;
+		delete[] Q;
+		
 		if (nullity > 0)
 			return NULL;
 		else
