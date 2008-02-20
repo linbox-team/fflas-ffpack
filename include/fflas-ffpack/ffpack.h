@@ -191,7 +191,7 @@ public:
 		F.neg(mone, one);
 		*info =0;
 		if (Side == FflasLeft) { // Left looking solve A X = B
-
+			
 			solveLB2 (F, FflasLeft, M, N, R, A, lda, Q, B, ldb);
 
 			applyP (F, FflasLeft, FflasNoTrans, N, 0, R, B, ldb, Q);
@@ -285,7 +285,7 @@ public:
 		size_t ldw;
 
 		if (Side == FflasLeft) { // Left looking solve A X = B
-			
+
 			// Initializing X to 0 (to be optimized)
 			for (size_t i = 0; i <N; ++i)
 				for (size_t j=0; j< NRHS; ++j)
@@ -299,7 +299,7 @@ public:
 			       
 				solveLB2 (F, FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
 				
-				applyP (F, FflasLeft, FflasNoTrans, N, 0, R, W, ldw, Q);
+				applyP (F, FflasLeft, FflasNoTrans, NRHS, 0, R, W, ldw, Q);
 
 				bool consistent = true;
 				for (size_t i = R; i < M; ++i)
@@ -309,6 +309,7 @@ public:
 				if (!consistent) {
 					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
+					delete[] W;
 					return X;
 				}
 				// Here the last rows of W are supposed to be 0
@@ -325,10 +326,10 @@ public:
 			} else { // Copy B to X directly
 				for (size_t i=0; i < M; ++i)
 					fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
-			       
+				
 				solveLB2 (F, FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
 				
-				applyP (F, FflasLeft, FflasNoTrans, N, 0, R, X, ldx, Q);
+				applyP (F, FflasLeft, FflasNoTrans, NRHS, 0, R, X, ldx, Q);
 
 				bool consistent = true;
 				for (size_t i = R; i < M; ++i)
@@ -347,7 +348,6 @@ public:
 			
 				applyP (F, FflasLeft, FflasTrans, NRHS, 0, R, X, ldx, P);
 			}
-
 			return X;
 			
 		} else { // Right Looking X A = B
@@ -378,12 +378,13 @@ public:
 				if (!consistent) {
 					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
+					delete[] W;
 					return X;
 				}
 				// The last N-R cols of W are now supposed to be 0
 				for (size_t i=0; i < NRHS; ++i)
 					fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
-
+				delete[] W;
 				applyP (F, FflasRight, FflasNoTrans, NRHS, 0, R, X, ldx, Q);
 
 				solveLB2 (F, FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
@@ -582,16 +583,12 @@ public:
 
 		size_t * P = new size_t[M];
 		size_t * Q = new size_t[M];
-		nullity = M - ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
-		applyP (F, FflasLeft, FflasTrans, M, 0, M, A, lda, P); 
-
-		delete[] P;
-		delete[] Q;
-		
-		if (nullity > 0)
-			return NULL;
-		else
-			return A;
+		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
+		nullity = M - R;
+		applyP (F, FflasLeft, FflasTrans, M, 0, R, A, lda, P); 
+		delete [] P;
+		delete [] Q;
+		return A;
 	}
 
 	template <class Field>
@@ -1097,7 +1094,7 @@ public:
 	static std::list<Polynomial>&
 	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
 		  typename Field::Element * A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackLUK);
+		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 	
 	/**
 	 * Compute the minimal polynomial of (A,v) using an LUP 
@@ -1346,7 +1343,7 @@ protected:
 	static int
 	KGFast ( const Field& F, std::list<Polynomial>& charp, const size_t N,
 		 typename Field::Element * A, const size_t lda, 
-		 size_t * kg_mc, size_t* kg_mc, size_t* kg_j );
+		 size_t * kg_mc, size_t* kg_mb, size_t* kg_j );
 
 	template <class Field, class Polynomial>
 	static std::list<Polynomial>&
