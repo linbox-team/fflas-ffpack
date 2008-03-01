@@ -14,6 +14,15 @@
 #define FFLAS_INT_TYPE long unsigned int
 #endif
 
+/* From M Abshoff */
+#if defined(__sun) 
+#define lround(x) my_lround(x)
+static long my_lround(double x)
+{
+       return (long) ((x) >= 0 ? (x) + 0.5 : (x) - 0.5);
+}
+#endif
+
 //---------------------------------------------------------------------
 // DotProdBound :
 // Computes the maximal dimension k so that the product A*B+beta.C over Z,
@@ -96,7 +105,7 @@ inline size_t FFLAS::DotProdBound (const Field& F, const size_t w,
 // TRSMBound
 // Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^53
 //---------------------------------------------------------------------
-size_t bound_compute_double(const long long pi) {
+inline size_t bound_compute_double(const long long pi) {
 	
 	long long p=pi,p1=1,p2=1;
 	size_t nmax=1;
@@ -109,7 +118,7 @@ size_t bound_compute_double(const long long pi) {
 	nmax--;
 	return nmax;
 }
-size_t bound_compute_double_balanced(const long long pi) {
+inline size_t bound_compute_double_balanced(const long long pi) {
 	
 	long long p=(pi+1)/2,p1=1;
 	size_t nmax=0;
@@ -120,7 +129,7 @@ size_t bound_compute_double_balanced(const long long pi) {
 	}
 	return nmax;
 }
-size_t bound_compute_float(const long long pi) {
+inline size_t bound_compute_float(const long long pi) {
 	
 	long long p=pi,p1=1,p2=1;
 	size_t nmax=1;
@@ -133,7 +142,7 @@ size_t bound_compute_float(const long long pi) {
 	nmax--;
 	return nmax;
 }
-size_t bound_compute_float_balanced(const long long pi) {
+inline size_t bound_compute_float_balanced(const long long pi) {
 	
 	long long p=(pi+1)/2,p1=1;
 	size_t nmax=0;
