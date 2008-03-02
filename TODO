@@ -30,3 +30,7 @@ Idee:
 A discuter en fonction du besoin d'un FFLAS generique
 
 
+Verifier la validite avec modular<int> (sage révele des det faux)
+
+Revoir la structure des bornes dans winograd: trop de reductions
+   modulaires quand il y a des etapes de wino dans le corps fini.
