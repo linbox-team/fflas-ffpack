@@ -31,7 +31,7 @@ namespace LinBox {
 #endif
 	
 #ifndef __LINBOX_STRASSEN_OPTIMIZATION
-#define WINOTHRESHOLD 428
+#define WINOTHRESHOLD 1000
 #else
 #define WINOTHRESHOLD __LINBOX_WINOTHRESHOLD
 #endif
