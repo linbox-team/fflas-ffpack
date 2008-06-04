@@ -11,31 +11,17 @@
  * See COPYING for license information.
  */
 
+#ifndef __MODULAR_BALANCED_H
+#define __MODULAR_BALANCED_H
+
 #include <math.h>
-
-
-#ifndef __MODULAR_DOUBLE_BALANCED_H
-#define __MODULAR_DOUBLE_BALANCED_H
-
-template <class T>
-class Modular;
+#include "fflas-ffpack/modular-randiter.h"
 
 template <class Element>
-class ModularRandIter
-{
-public:
-	ModularRandIter (const Modular<Element> &F):_F(F){}
-	ModularRandIter (const ModularRandIter<Element> &R) 
-		: _F (R._F) {}
-	Element &random (Element &a) const
-	{ return _F.init(a,(double)rand()); }
-private:
-	Modular<Element> _F;
-	
-};
+class ModularBalanced;
 
 template<>
-class Modular <double>{
+class ModularBalanced <double>{
 
 protected:
 	double modulus;
@@ -46,15 +32,15 @@ protected:
 public:	       
 	typedef double Element;
 	typedef unsigned long FieldInt;
-	typedef ModularRandIter<double> RandIter;
+	typedef ModularBalancedRandIter<double> RandIter;
 
 	const bool balanced;
 
-	Modular<double> (int p)  : modulus((double)p), inv_modulus(1./(double)p), half_mod( (p-1.)/2), balanced(true) {}
+	ModularBalanced<double> (int p)  : modulus((double)p), inv_modulus(1./(double)p), half_mod( (p-1.)/2), balanced(true) {}
 
-	Modular<double>(const Modular<double>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
+	ModularBalanced<double>(const ModularBalanced<double>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
 	
-	const Modular<double> &operator=(const Modular<double> &F) {
+	const ModularBalanced<double> &operator=(const ModularBalanced<double> &F) {
 			modulus = F.modulus;
 			inv_modulus = F.inv_modulus;
 			half_mod = F.half_mod;
@@ -241,10 +227,13 @@ public:
 		//return r= tmp- floor(tmp*inv_modulus)*modulus; 
 		return init( r, tmp );
 	}
+
+	static inline double getMaxModulus()
+	{ return 67108864.0; } // 2^26
 		
 };
 template<>
-class Modular <float>{
+class ModularBalanced <float>{
 
 protected:
 	float modulus;
@@ -255,25 +244,21 @@ protected:
 public:	       
 	typedef float Element;
 	typedef unsigned long FieldInt;
-	typedef ModularRandIter<float> RandIter;
+	typedef ModularBalancedRandIter<float> RandIter;
 
 	const bool balanced;
 
-	Modular<float> (int p)  : modulus((float)p), inv_modulus(1./(float)p), half_mod( (p-1.)/2), balanced(true) {}
+	ModularBalanced<float> (int p)  : modulus((float)p), inv_modulus(1./(float)p), half_mod( (p-1.)/2), balanced(true) {}
 
-	Modular<float>(const Modular<float>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
+	ModularBalanced<float>(const ModularBalanced<float>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
 	
-	const Modular<float> &operator=(const Modular<float> &F) {
+	const ModularBalanced<float> &operator=(const ModularBalanced<float> &F) {
 			modulus = F.modulus;
 			inv_modulus = F.inv_modulus;
 			half_mod = F.half_mod;
 			return *this;
 		}
 
-	
-	
-	
-	
 	FieldInt &cardinality (FieldInt &c) const{ 
 		return c = (FieldInt) modulus;
 	}
@@ -461,6 +446,8 @@ public:
 		//return r= tmp- floor(tmp*inv_modulus)*modulus; 
 		return init( r, tmp );
 	}
+	static inline float getMaxModulus()
+	{ return 2048; } // 2^11
 		
 };
 

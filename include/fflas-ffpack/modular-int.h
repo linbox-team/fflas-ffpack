@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 
-/* linbox/field/modular-double.h
+/* linbox/field/modular-int.h
  * Copyright (C) 2003 Pascal Giorgi
  *
  * Written by Pascal Giorgi <pascal.giorgi@ens-lyon.fr>
@@ -10,42 +10,15 @@
  * See COPYING for license information.
  */
 
-
-
-
-#ifndef __LINBOX_MODULAR_DOUBLE_H
-#define __LINBOX_MODULAR_DOUBLE_H
+#ifndef __MODULAR_INT_H
+#define __MODULAR_INT_H
 
 
 #include <math.h>
-# include <sys/time.h>
-
-
-
-
-
+#include <sys/time.h>
+#include "fflas-ffpack/modular-randiter.h"
 template< class Element >
 class Modular;
-
-template <class Element>
-class ModularRandIter
-{
-public:
-	ModularRandIter (const Modular<Element> &F):_F(F){
-		struct timeval tp;
-		gettimeofday(&tp, 0) ;
-		long _seed = (long)(tp.tv_usec);
-		srand48(_seed);
-	}
-	ModularRandIter (const ModularRandIter<Element> &R) 
-		: _F (R._F) {}
-	Element &random (Element &a) const
-	{ return _F.init(a,(double)lrand48()); }
-private:
-	Modular<Element> _F;
-	
-};
-
 
 template <>
 class Modular<int> {

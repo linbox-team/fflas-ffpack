@@ -17,7 +17,7 @@
 
 using namespace std;
 
-typedef Modular<double> Field;
+typedef ModularBalanced<double> Field;
 
 int main(int argc, char** argv){
 
@@ -31,7 +31,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F(atoi(argv[1]));
+	Field F(atof(argv[1]));
 	Field::Element * A;
 	A = read_field(F,argv[2],&m ,&n);
 		

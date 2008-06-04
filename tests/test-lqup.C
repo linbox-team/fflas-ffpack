@@ -19,11 +19,11 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-//#include "fflas-ffpack/modular-balanced.h"
-#include "fflas-ffpack/modular-positive.h"
+#include "fflas-ffpack/modular-balanced.h"
 #include "fflas-ffpack/ffpack.h"
 
-typedef Modular<double> Field;
+//typedef ModularBalanced<double> Field;
+typedef ModularBalanced<float> Field;
 
 int main(int argc, char** argv){
 	cerr<<setprecision(20);
@@ -36,7 +36,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F((unsigned long)atoi(argv[1]));
+	Field F(atof(argv[1]));
 	Field::Element * A;
 	
 	A = read_field(F,argv[2],&m,&n);
@@ -50,7 +50,7 @@ int main(int argc, char** argv){
 	timc.clear();
 
 	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasUnit;
-	enum FFLAS::FFLAS_TRANSPOSE trans = FFLAS::FflasTrans;
+	enum FFLAS::FFLAS_TRANSPOSE trans = FFLAS::FflasNoTrans;
 	if (trans == FFLAS::FflasTrans){
 		maxP = m;
 		maxQ = n;
@@ -121,8 +121,8 @@ int main(int argc, char** argv){
 		for ( int i=0; i<m; ++i )
 			F.assign(*(L+i*(m+1)), one);
 
-// 		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+ 		//write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+ 		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 		if (diag == FFLAS::FflasNonUnit)
 			for ( int i=0; i<R; ++i )
 				F.assign (*(U+i*(n+1)), *(A+i*(n+1)));
@@ -195,9 +195,12 @@ int main(int argc, char** argv){
 	bool fail = false;
 	for (int i=0; i<m; ++i)
 		for (int j=0; j<n; ++j)
-			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j)))
+			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
+				std::cerr << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
+					  << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
+					  << endl;
 				fail=true;
-	
+			}
 //  	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
 //  	write_field(F,cerr<<"B = "<<endl,B,m,n,n);
 	delete[] B;
@@ -217,7 +220,9 @@ int main(int argc, char** argv){
 	double t = timc.usertime();
 	double numops = m*m/1000.0*(n-m/3.0);
 	
-	cerr<<m<<"x"<< n 
+	cerr<<m<<"x"<< n
+	    << " Trans = "<<trans
+	    << " Diag = "<<diag
 	    << " : rank = " << R << "  ["
 	    << ((double)nbf/1000.0*(double)numops / t) 
 	    << " MFops "

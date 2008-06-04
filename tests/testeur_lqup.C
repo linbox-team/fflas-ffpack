@@ -20,9 +20,11 @@ using namespace std;
 
 
 
-typedef Modular<double> Field;
-//typedef Modular<int> Field;
+//typedef Modular<double> Field;
+typedef ModularBalanced<double> Field;
 //typedef Modular<float> Field;
+//typedef ModularBalanced<float> Field;
+//typedef Modular<int> Field;
 //typedef GivaroZpz<Std32> Field;
 //typedef GivaroGfq Field;
 
@@ -264,8 +266,8 @@ int main(int argc, char** argv){
 	cerr<<M<<" "<<N<<" M"<<endl;
 	for (size_t i=0; i<M; ++i)
 		for (size_t j=0; j<N; ++j)
-			if (!(*(Abis+i*lda+j)))
-				cerr<<i+1<<" "<<j+1<<" "<<((size_t) *(Abis+i*lda+j) )<<endl;
+			if (*(Abis+i*lda+j))
+				cerr<<i+1<<" "<<j+1<<" "<<((int) *(Abis+i*lda+j) )<<endl;
 	cerr<<"0 0 0"<<endl<<endl;
 	
 	delete[] A;

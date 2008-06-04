@@ -18,9 +18,7 @@ using namespace std;
 #include "fflas-ffpack/ffpack.h"
 
 
-
-
-typedef Modular<double> Field;
+typedef ModularBalanced<float> Field;
 
 int main(int argc, char** argv){
 
@@ -36,7 +34,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F(atoi(argv[1]));
+	Field F(atof(argv[1]));
 	F.init(zero,0.0);
 	F.init(one,1.0);
 	Field::Element * A;

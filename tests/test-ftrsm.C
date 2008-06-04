@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 //--------------------------------------------------------------------------
-//                        Test for ftrtri : 1 computation
+//                        Test for ftrsm : 1 computation
 //                  
 //--------------------------------------------------------------------------
 // Clement Pernet
@@ -19,7 +19,8 @@
 
 using namespace std;
 
-typedef Modular<double> Field;
+//typedef ModularBalanced<double> Field;
+typedef ModularBalanced<float> Field;
 
 int main(int argc, char** argv){
 
@@ -33,7 +34,7 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 	int nbit=atoi(argv[4]); // number of times the product is performed
-	Field F(atoi(argv[1]));
+	Field F(atof(argv[1]));
 	F.init(zero,0.0);
 	F.init(one,1.0);
 	Field::Element * A, *B, *B2;
@@ -96,39 +97,14 @@ int main(int argc, char** argv){
 		cerr<<"FAIL"<<endl;
 		//write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
 		//write_field (F,cerr<<"B="<<endl,B,m,n,n);
-	}else{
-	
+	} else	
 		cerr<<"PASS"<<endl;
-	}
-
-	Field::Element * C = read_field (F, argv[2], &k, &k);
-	wrong = false;
-
-	for (int i=0;i<k;++i)
-		for (int j=0;j<k;++j)
-			if ( !F.areEqual(*(A+i*k+j), *(C+i*k+j))){
-				cerr<<"A ["<<i<<", "<<j<<"] = "<<(*(A+i*k+j))
-				    <<" ; C ["<<i<<", "<<j<<"] = "<<(*(C+i*k+j))
-				    <<endl;
-				wrong = true;
-			}
-	
-	delete[] C;
-		
-	if ( wrong ){
-		cerr<<"FAIL A modifed"<<endl;
-		//write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
-		//write_field (F,cerr<<"B="<<endl,B,m,n,n);
-	}else{
-	
-		cerr<<"PASS"<<endl;
-	}
-	
 #endif
 
 	delete[] A;
 	delete[] B;
 	delete[] B2;
+
 #if TIME
 	double mflops = m*n/1000000.0*nbit*n/time;
 	cerr<<"m,n = "<<m<<" "<<n<<". ftrsm "

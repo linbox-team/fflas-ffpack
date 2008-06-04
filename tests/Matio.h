@@ -7,22 +7,11 @@
 
 // Reading a matrice from a (eventually zipped) file
 double * read_dbl(char * mat_file,int* tni,int* tnj) {
-  char *UT, *File_Name;
+  char *UT;
   int is_gzipped = 0;
   size_t s = strlen(mat_file);
   double* X=NULL;
-  if ((mat_file[--s] == 'z') && 
-      (mat_file[--s] == 'g') && 
-      (mat_file[--s] == '.')) {
-    is_gzipped = 1;
-    File_Name = "/tmp/bbXXXXXX_";
-    mkstemp(File_Name);
-    UT = new char[s+34+strlen(File_Name)];
-    sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
-    system(UT);
-    sprintf(UT,"\\rm %s", File_Name);
-  } else
-    File_Name = mat_file;
+  const char * File_Name = mat_file;
   
   FILE* FileDes = fopen(File_Name, "r");
   if (FileDes != NULL) {
@@ -64,24 +53,13 @@ std::ostream& write_dbl(std::ostream& c,
 template<class Field>
 typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int* tnj)
 {
-  char *UT, *File_Name;
+  char *UT;
   int is_gzipped = 0;
   size_t s = strlen(mat_file);
   typename Field::Element zero;
   F.init(zero,0.0);
   typename Field::Element * X=NULL;
-  if ((mat_file[--s] == 'z') && 
-      (mat_file[--s] == 'g') && 
-      (mat_file[--s] == '.')) {
-    is_gzipped = 1;
-    File_Name = "/tmp/bbXXXXXX_";
-    mkstemp(File_Name);
-    UT = new char[s+34+strlen(File_Name)];
-    sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
-    system(UT);
-    sprintf(UT,"\\rm %s", File_Name);
-  } else
-    File_Name = mat_file;
+  const char * File_Name = mat_file;
   FILE* FileDes = fopen(File_Name, "r");
   if (FileDes != NULL) {
     char  tmp[200];// usigned long tni, tnj;

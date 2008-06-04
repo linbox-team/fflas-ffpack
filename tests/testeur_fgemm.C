@@ -11,8 +11,8 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
-//#include "fflas-ffpack/modular-int.h"
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/modular-int.h"
+//#include "fflas-ffpack/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas.h"
@@ -20,9 +20,11 @@ using namespace std;
 
 
 
-typedef Modular<double> Field;
-//typedef Modular<int> Field;
+//typedef ModularBalanced<float> Field;
+typedef ModularBalanced<double> Field;
+//typedef Modular<double> Field;
 //typedef Modular<float> Field;
+//typedef Modular<int> Field;
 //typedef GivaroZpz<Std32> Field;
 //typedef GivaroGfq Field;
 
@@ -30,7 +32,7 @@ int main(int argc, char** argv){
 	Timer tim;
 	IntPrimeDom IPD;
 	Field::Element alpha, beta;
-	int p;
+	long p;
 	size_t M, K, N, Wino;
 	bool keepon = true;
 	Integer _p,tmp;
@@ -125,11 +127,12 @@ int main(int argc, char** argv){
 // 				if ( !F.areEqual( *(Cbis+i*n+j), *(C+i*n+j) ) ) 
 // 					keepon = false;
 // 		}
-		Field::Element aij, bij, boa;
-		F.div(boa, beta, alpha);
+		Field::Element aij, bij, boa, temp;
+		//F.div(boa, beta, alpha);
 		for (int i = 0; i < M; ++i )
 			for ( int j = 0; j < N; ++j ){
-				F.mulin(*(Cbis+i*N+j),boa);
+				//				F.mulin(*(Cbis+i*N+j),boa);
+				F.mulin(*(Cbis+i*N+j),beta);
 				for ( int l = 0; l < K ; ++l ){
 					if ( ta == FFLAS::FflasNoTrans )
 						aij = *(A+i*lda+l);
@@ -139,10 +142,11 @@ int main(int argc, char** argv){
 						bij = *(B+l*ldb+j);
 					else
 						bij = *(B+j*ldb+l);
-					
-					F.axpyin( *(Cbis+i*N+j), aij, bij );
+					F.mul(temp,aij,bij);
+					F.axpyin( *(Cbis+i*N+j), alpha, temp);
+					//F.axpyin( *(Cbis+i*N+j), aij, bij );
 				}
-				F.mulin( *(Cbis+i*N+j),alpha );
+				//F.mulin( *(Cbis+i*N+j),alpha );
 				if ( !F.areEqual( *(Cbis+i*N+j), *(C+i*N+j) ) ) {
 					cerr<<"error for i,j="<<i<<" "<<j<<" "<<*(C+i*N+j)<<" "<<*(Cbis+i*N+j)<<endl;
 					keepon = false;
@@ -159,10 +163,10 @@ int main(int argc, char** argv){
 			delete[] Cter;
 		}
 		else{
-			cerr<<"C="<<endl;
-			write_field( F, cerr, C, M, N, N );
-			cerr<<"Cbis="<<endl;
-			write_field( F, cerr, Cbis, M, N, N );
+			// cerr<<"C="<<endl;
+// 			write_field( F, cerr, C, M, N, N );
+// 			cerr<<"Cbis="<<endl;
+// 			write_field( F, cerr, Cbis, M, N, N );
 		}
 	}
 	cout<<endl;

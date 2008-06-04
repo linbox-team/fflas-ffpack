@@ -6,7 +6,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 1
+#define DEBUG 1 
 #define NEWWINO
 #define TIME 1
 
@@ -14,7 +14,7 @@
 #include <iostream>
 using namespace std;
 
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/modular-positive.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas.h"
@@ -24,6 +24,8 @@ using namespace std;
 
 typedef Modular<double> Field;
 //typedef Modular<float> Field;
+//typedef ModularBalanced<double> Field;
+//typedef ModularBalanced<float> Field;
 //typedef Modular<int> Field;
 
 int main(int argc, char** argv){
@@ -108,11 +110,12 @@ int main(int argc, char** argv){
 		for (int i=0; i<m*n; ++i)
 			F.assign (*(Cd+i), zero);
 	}
-	Field::Element aij, bij, beta_alpha;
-	F.div (beta_alpha, beta, alpha);
+	Field::Element aij, bij, beta_alpha, tmp;
+	//F.div (beta_alpha, beta, alpha);
 	for (int i = 0; i < m; ++i)
 		for (int j = 0; j < n; ++j){
-			F.mulin(*(Cd+i*n+j),beta_alpha);
+			F.mulin(*(Cd+i*n+j),beta);
+			F.assign (tmp, zero);
 			for ( int l = 0; l < k ; ++l ){
 				if ( ta == FFLAS::FflasNoTrans )
 					aij = *(A+i*lda+l);
@@ -122,9 +125,12 @@ int main(int argc, char** argv){
 					bij = *(B+l*ldb+j);
 				else
 					bij = *(B+j*ldb+l);
-				F.axpyin( *(Cd+i*n+j), aij, bij );
+				//F.mul (tmp, aij, bij);
+				//F.axpyin( *(Cd+i*n+j), alpha, tmp );
+				F.axpyin (tmp, aij, bij); 
 			}
-			F.mulin( *(Cd+i*n+j),alpha );
+			F.axpyin (*(Cd+i*n+j), alpha, tmp);
+			//F.mulin( *(Cd+i*n+j),alpha );
 			if ( !F.areEqual( *(Cd+i*n+j), *(C+i*n+j) ) ) {
 				wrong = true;
 			}
