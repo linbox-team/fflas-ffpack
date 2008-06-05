@@ -9,7 +9,7 @@
  */
 
 #ifdef _LINBOX_LINBOX_CONFIG_H
-#define FFLAS_INT_TYPE LinBox::Integer
+#define FFLAS_INT_TYPE Integer
 #else
 #define FFLAS_INT_TYPE long unsigned int
 #endif
@@ -141,7 +141,7 @@ inline double FFLAS::computeFactor (const Field& F, const size_t w){
 inline size_t FFLAS::WinoSteps (const size_t m) {
 	size_t w = 0;
 	size_t mt = m;
-	while (mt >= WINOTHRESHOLD) {w++; mt >> 1;}
+	while (mt >= WINOTHRESHOLD) {w++; mt >>= 1;}
 	return w;
 }
 
@@ -283,7 +283,7 @@ inline size_t FFLAS::TRSMBound (const ModularBalanced<double>& F){
 	F.characteristic (pi);
 	unsigned long long p = (pi + 1) / 2, p1 = 1;
 	size_t nmax = 0;
-	unsigned long long max = ((1ULL << (DOUBLE_MANTISSA + 1)) / (pi - 1));
+	unsigned long long max = ((1ULL << (DOUBLE_MANTISSA + 1)) / ((unsigned long long)(p - 1)));
 	while (p1 < max){
 		p1 *= p;
 		nmax++;
@@ -303,7 +303,7 @@ inline size_t FFLAS::TRSMBound (const ModularBalanced<float>& F){
 	F.characteristic (pi);
 	unsigned long long p = (pi + 1) / 2, p1 = 1;
 	size_t nmax = 0;
-	unsigned long long max = ((1ULL << (FLOAT_MANTISSA + 1)) / (pi - 1));
+	unsigned long long max = ((1ULL << (FLOAT_MANTISSA + 1)) / ((unsigned long long) (pi - 1)));
 	while (p1 < max){
 		p1 *= p;
 		nmax++;
