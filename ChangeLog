@@ -1,3 +1,13 @@
+2008-06-05 v1.3.3
+	* fix the design of specializations to modular<double> modular<float>
+	* give a proper name to ModularBalanced
+	* fix the bugs in the bound computations (Winograd recursion over the
+	finite field was too deep)
+	* prepare the interface for integrating compressed representation for
+	small finite fields
+2007-09-28 v1.3.2
+	* add routines fgetrs and fgesv (cf LAPACK), for system solving.
+	  supports rectangular, over/underdetermined systems.
 2007-08-29 v1.3.1
 	* add the benchmark directory, for automatic benchmarking against GOTO
 	and ATLAS BLAS. Adapted from Pascal Giorgi's benchmark system.

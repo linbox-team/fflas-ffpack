@@ -25,7 +25,7 @@ BLASROOT =
 #GIVARO_ROOT=
 #GMP_ROOT=
 #INCLUDES+= -I ${GIVARO_ROOT}/include -I ${GMP_ROOT}/include
-#LOADLIBES+= -L ${GIVARO_ROOT}/lib -lgivaro -L ${GMP_ROOT}/include -lgmp -lgmpxx
+#LOADLIBES+= -L ${GIVARO_ROOT}/lib -lgivaro -L ${GMP_ROOT}/lib -lgmp -lgmpxx
 
 #----------------------------------------------------------
 
