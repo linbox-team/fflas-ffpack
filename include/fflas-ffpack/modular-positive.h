@@ -1,9 +1,10 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 
-/* linbox/field/modular-double.h
+/* fflas-ffpack/modular-positive.h
  * Copyright (C) 2003 Pascal Giorgi
- *
- * Written by Pascal Giorgi <pascal.giorgi@ens-lyon.fr>
+ *               2008 Clement Pernet
+ * Written by Clement Pernet <clement.pernet@gmail.com>
+ *            Pascal Giorgi  <pascal.giorgi@ens-lyon.fr>
  *
  * ------------------------------------
  *
@@ -15,6 +16,7 @@
 
 #include <math.h>
 #include "fflas-ffpack/modular-randiter.h"
+#include "fflas-ffpack/nonzero-randiter.h"
 
 template <class Element>
 class Modular;
@@ -33,6 +35,7 @@ public:
 	typedef double Element;
 	typedef unsigned long FieldInt;
 	typedef ModularRandIter<double> RandIter;
+	typedef NonzeroRandIter<Modular<double>, ModularRandIter<double> > NonZeroRandIter;
 
 	const bool balanced;
 
@@ -315,6 +318,7 @@ public:
 	typedef float Element;
 	typedef unsigned long FieldInt;
 	typedef ModularRandIter<float> RandIter;
+	typedef NonzeroRandIter<Modular<float>, ModularRandIter<float> > NonZeroRandIter;
 
 	const bool balanced;
 

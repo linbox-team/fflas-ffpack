@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include "fflas-ffpack/modular-randiter.h"
+#include "fflas-ffpack/nonzero-randiter.h"
 
 template <class Element>
 class ModularBalanced;
@@ -25,24 +26,26 @@ class ModularBalanced <double>{
 
 protected:
 	double modulus;
-	double inv_modulus;
 	double half_mod;
-
+	unsigned long lmodulus;
        
 public:	       
 	typedef double Element;
 	typedef unsigned long FieldInt;
 	typedef ModularBalancedRandIter<double> RandIter;
+	typedef NonzeroRandIter<ModularBalanced<double>, ModularBalancedRandIter<double> >  NonZeroRandIter;
 
 	const bool balanced;
 
-	ModularBalanced<double> (int p)  : modulus((double)p), inv_modulus(1./(double)p), half_mod( (p-1.)/2), balanced(true) {}
+	ModularBalanced<double> (int p)	: modulus((double)p),
+		half_mod( (p-1.)/2),
+		balanced(true) {}
 
-	ModularBalanced<double>(const ModularBalanced<double>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
+	ModularBalanced<double>(const ModularBalanced<double>& mf)
+	: modulus(mf.modulus), half_mod(mf.half_mod), balanced(true){}
 	
 	const ModularBalanced<double> &operator=(const ModularBalanced<double> &F) {
 			modulus = F.modulus;
-			inv_modulus = F.inv_modulus;
 			half_mod = F.half_mod;
 			return *this;
 		}
@@ -69,7 +72,7 @@ public:
 	}
 		
 	std::ostream &write (std::ostream &os) const {
-		return os << "int mod " << (int)modulus;
+		return os << "double mod " << (int)modulus;
 	}
 	
 	std::istream &read (std::istream &is) {
@@ -95,7 +98,7 @@ public:
 		else return x=tmp;
 	}
 
-	inline Element& init(Element& x, double y =0) const {		  
+	inline Element& init(Element& x, const double y =0) const {		  
 		double tmp;
 		
 		//tmp = floor (y + 0.5);
@@ -130,19 +133,18 @@ public:
 		x = y + z;
 		if ( x > half_mod ) return x -= modulus;
 		if ( x < -half_mod ) return x += modulus; 
-		else return x;
+		return x;
 	}
  
 	inline Element &sub (Element &x, const Element &y, const Element &z) const {
 		x = y - z;
 		if (x > half_mod) return x -= modulus;
-		else if (x < -half_mod) return x += modulus;
-		else return x;
+		if (x < -half_mod) return x += modulus;
+		return x;
 	}
 		
 	inline Element &mul (Element &x, const Element &y, const Element &z) const {		
 		double tmp= y*z;
-		//x= tmp - floor(tmp*inv_modulus)*modulus;
 		return init (x, tmp);
 	}
  
@@ -186,23 +188,21 @@ public:
 			      const Element &x, 
 			      const Element &y) const {
 		double tmp= a*x+y;
-		//return r = tmp- floor(tmp*inv_modulus)*modulus; 
 		return init( r, tmp);
-
 	}
 
 	inline Element &addin (Element &x, const Element &y) const {
 		x += y;
 		if ( x > half_mod ) return x -= modulus;
 		if ( x < -half_mod ) return x += modulus; 
-		else return x;
+		return x;
 	}
  
 	inline Element &subin (Element &x, const Element &y) const {
 		x -= y;
 		if ( x > half_mod ) return x -= modulus;
 		if ( x < -half_mod ) return x += modulus; 
-		else return x;
+		return x;
 	}
  
 	inline Element &mulin (Element &x, const Element &y) const {
@@ -223,9 +223,8 @@ public:
 	}
 		
 	inline Element &axpyin (Element &r, const Element &a, const Element &x) const {
-		double tmp=r+a*x;
-		//return r= tmp- floor(tmp*inv_modulus)*modulus; 
-		return init( r, tmp );
+		r += a * x;
+		return init( r, r);
 	}
 
 	static inline double getMaxModulus()
@@ -237,7 +236,6 @@ class ModularBalanced <float>{
 
 protected:
 	float modulus;
-	float inv_modulus;
 	float half_mod;
 
        
@@ -245,16 +243,16 @@ public:
 	typedef float Element;
 	typedef unsigned long FieldInt;
 	typedef ModularBalancedRandIter<float> RandIter;
+	typedef NonzeroRandIter<ModularBalanced<float>, RandIter> NonZeroRandIter;
 
 	const bool balanced;
 
-	ModularBalanced<float> (int p)  : modulus((float)p), inv_modulus(1./(float)p), half_mod( (p-1.)/2), balanced(true) {}
+	ModularBalanced<float> (int p)  : modulus((float)p), half_mod( (p-1.)/2), balanced(true) {}
 
-	ModularBalanced<float>(const ModularBalanced<float>& mf) : modulus(mf.modulus), inv_modulus(mf.inv_modulus), half_mod(mf.half_mod), balanced(true){}
+	ModularBalanced<float>(const ModularBalanced<float>& mf) : modulus(mf.modulus), half_mod(mf.half_mod), balanced(true){}
 	
 	const ModularBalanced<float> &operator=(const ModularBalanced<float> &F) {
 			modulus = F.modulus;
-			inv_modulus = F.inv_modulus;
 			half_mod = F.half_mod;
 			return *this;
 		}
@@ -360,15 +358,13 @@ public:
 	}
 		
 	inline Element &mul (Element &x, const Element &y, const Element &z) const {		
-		float tmp= y*z;
-		//x= tmp - floor(tmp*inv_modulus)*modulus;
-		return init (x, tmp);
+		x = y*z;
+		return init (x, x);
 	}
  
 	inline Element &div (Element &x, const Element &y, const Element &z) const {
-		Element temp;
-		inv (temp, z);
-		return mul (x, y, temp);
+		inv (x, z);
+		return mulin (x, y);
 	}
  
 	inline Element &neg (Element &x, const Element &y) const {
@@ -404,9 +400,8 @@ public:
 			      const Element &a, 
 			      const Element &x, 
 			      const Element &y) const {
-		float tmp= a*x+y;
-		//return r = tmp- floor(tmp*inv_modulus)*modulus; 
-		return init( r, tmp);
+		r = a * x + y;
+		return init( r, r);
 
 	}
 
@@ -442,9 +437,8 @@ public:
 	}
 		
 	inline Element &axpyin (Element &r, const Element &a, const Element &x) const {
-		float tmp=r+a*x;
-		//return r= tmp- floor(tmp*inv_modulus)*modulus; 
-		return init( r, tmp );
+		r += a * x;
+		return init( r, r);
 	}
 	static inline float getMaxModulus()
 	{ return 2048; } // 2^11

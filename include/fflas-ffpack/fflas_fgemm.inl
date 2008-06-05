@@ -94,7 +94,6 @@ inline void FFLAS::ClassicMatmul (const Field& F,
 			ClassicMatmul (DoubleDomain(), ta, tb, m, n, remblock, alphad, Add, dlda,
 				       Bdd, dldb, betad, Cd, n, kmax,base );
 
-			typename Field::Element tmp;
 			MatD2MatF (F, C, ldc, Cd, n, m, n);
 			MatF2MatD (F, Cd, n, C, ldc, m, n);
 			

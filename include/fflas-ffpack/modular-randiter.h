@@ -10,8 +10,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __MODULAR_RANDITER
-#define __MODULAR_RANDITER
+#ifndef __MODULAR_RANDITER_H
+#define __MODULAR_RANDITER_H
 
 #include <sys/time.h>
 
@@ -33,10 +33,6 @@ public:
 	Element &random (Element &a) const
 	{ return _F.init(a,(double)lrand48()); }
 
-	Element &nonzerorandom (Element &a) const{
-		while (_F.isZero (random(a)));
-		return a;
-	}
 private:
 	Modular<Element> _F;
 	
@@ -54,10 +50,6 @@ public:
 		: _F (R._F) {}
 	Element &random (Element &a) const{
 		return _F.init(a,(double)rand());
-	}
-	Element &nonzerorandom (Element &a) const{
-		while (_F.isZero (random(a)));
-		return a;
 	}
 private:
 	ModularBalanced<Element> _F;

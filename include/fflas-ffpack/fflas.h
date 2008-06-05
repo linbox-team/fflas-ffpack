@@ -25,6 +25,8 @@
 #include "linbox/field/unparametric.h"
 #include "linbox/field/modular-double.h"
 #include "linbox/field/modular-float.h"
+#include "linbox/field/modular-balanced-double.h"
+#include "linbox/field/modular-balanced-float.h"
 namespace LinBox {
 #else
 #include "config-blas.h"
@@ -34,7 +36,7 @@ namespace LinBox {
 #endif
 	
 #ifndef __LINBOX_STRASSEN_OPTIMIZATION
-#define WINOTHRESHOLD 2000
+#define WINOTHRESHOLD 1000
 #else
 #define WINOTHRESHOLD __LINBOX_WINOTHRESHOLD
 #endif
