@@ -11,8 +11,9 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
-#include "fflas-ffpack/modular-int.h"
-//#include "fflas-ffpack/modular-balanced.h"
+//#include "fflas-ffpack/modular-int.h"
+//#include "fflas-ffpack/modular-positive.h"
+#include "fflas-ffpack/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas.h"

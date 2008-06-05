@@ -14,7 +14,9 @@
 #include <iostream>
 using namespace std;
 
-#include "fflas-ffpack/modular-positive.h"
+//#include "fflas-ffpack/modular-positive.h"
+//#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/modular-int.h"
 #include "timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas.h"
@@ -22,9 +24,9 @@ using namespace std;
 
 
 
-typedef Modular<double> Field;
+//typedef Modular<double> Field;
 //typedef Modular<float> Field;
-//typedef ModularBalanced<double> Field;
+typedef ModularBalanced<double> Field;
 //typedef ModularBalanced<float> Field;
 //typedef Modular<int> Field;
 
