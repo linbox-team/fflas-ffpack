@@ -94,13 +94,13 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 	if (p == 0)
 		return 1;
 	
-	size_t kmax;
+	double kmax;
 	if (w > 0) {
 		double c = computeFactor (F,w);
 		double d = (double (1ULL << mantissa) /(c*c) + 1);
 		if (d < 2)
 			return 1;
-		kmax =  (size_t) (floor (d * (1ULL << w)));
+		kmax = floor (d * (1ULL << w));
 	} else {
 		////// A fixer: (p-1)/2 si balanced
 
@@ -109,7 +109,7 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 		if (!F.isZero (beta))
 			if (F.isOne (beta) || F.areEqual (beta, mone)) cplt = c;
 			else cplt = c*c;
-		kmax =  (size_t) (floor ( (double ((1ULL << mantissa) - cplt)) / (c*c)));
+		kmax = floor ( (double ((1ULL << mantissa) - cplt)) / (c*c));
 		if (kmax  <= 1)
 			return 1;
 		}
