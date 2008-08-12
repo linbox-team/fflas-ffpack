@@ -7,7 +7,7 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-#define DEBUG 1
+#define DEBUG 0
 // Debug option  0: no debug
 //               1: check A = LQUP 
 //-------------------------------------------------------------------------
@@ -210,14 +210,15 @@ int main(int argc, char** argv){
 
 	else
 		cerr<<"PASS"<<endl;
+	delete[] U;
+	delete[] L;
+	delete[] X;
 #endif
 	delete[] A;
 	delete[] P;
 	delete[] Q;
-	delete[] U;
-	delete[] L;
-	delete[] X;
-	double t = timc.usertime();
+	
+	double t = timc.realtime();
 	double numops = m*m/1000.0*(n-m/3.0);
 	
 	cerr<<m<<"x"<< n
