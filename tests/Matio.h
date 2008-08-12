@@ -2,7 +2,7 @@
 #define __MATIO_H
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <cstring>
 // Reading and writing matrices over double
 
 // Reading a matrice from a (eventually zipped) file
