@@ -245,8 +245,9 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 				*(Arp + j*ldarp + Ncurr-i-1) = *(Ac + i*ldac + j);
 		for (size_t i=0; i<2*Ncurr; ++i)
 			rp[i] = 0;
+		size_t R;
 		try{
-			size_t R = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
+			R = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
 		} catch (CharpolyFailed){
 			delete[] Arp; delete[] Ac; delete[] K; delete[] K3;
 			delete[] rp; delete[] dA; delete[] dK;

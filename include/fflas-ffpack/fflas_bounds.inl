@@ -106,9 +106,10 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 
 		double c = p-1;
 		double cplt=0;
-		if (!F.isZero (beta))
+		if (!F.isZero (beta)){
 			if (F.isOne (beta) || F.areEqual (beta, mone)) cplt = c;
 			else cplt = c*c;
+		}
 		kmax = floor ( (double ((1ULL << mantissa) - cplt)) / (c*c));
 		if (kmax  <= 1)
 			return 1;
