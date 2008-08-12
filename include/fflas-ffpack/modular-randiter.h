@@ -14,7 +14,7 @@
 #define __MODULAR_RANDITER_H
 
 #include <sys/time.h>
-
+#include <stdlib.h>
 template< class Element >
 class Modular;
 
