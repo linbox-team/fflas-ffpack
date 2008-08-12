@@ -420,8 +420,9 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 					Q[ip]=ip;
 					ip++;
 				}
-				if (ip == rowDim) {return 0;}
-				else{
+				if (ip == rowDim) {
+					return 0;
+				} else {
 					size_t oldip = ip;
 					if ( Diag == FflasNonUnit ){
 						elt invpiv;
@@ -462,14 +463,9 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 		size_t Nup = rowDim >> 1;
 		size_t Ndown =  rowDim - Nup;
 		// Recursive call on NW
-		//cerr<<"LUdivine1..";
-
-		//cerr<<"done"<<endl;
 		size_t R, R2;
 		if (trans == FflasTrans){
-			//cerr<<"LUdivine1..."<<endl;
 			R = LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q, LuTag, cutoff);
-			//cerr<<"done"<<endl;
 			typename Field::Element *Ar = A + Nup*incRow; // SW
 			typename Field::Element *Ac = A + R*incCol;     // NE
 			typename Field::Element *An = Ar + R*incCol;    // SE
@@ -479,23 +475,15 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 			} else {			
 				applyP (F, FflasLeft, FflasNoTrans, Ndown, 0, R, Ar, lda, P); 
 				// Ar <- L1^-1 Ar
-				//write_field(F,cerr<<"Avant ftrsm"<<endl, A, M, N, lda);
 				ftrsm( F, FflasLeft, FflasLower, 
 				       FflasNoTrans, Diag, R, Ndown,  
 				       one, A, lda, Ar, lda);
 				// An <- An - Ac*Ar
-				//write_field(F,cerr<<"Avant fgemm"<<endl, A, M, N, lda);
 				fgemm( F, FflasNoTrans, FflasNoTrans, colDim-R, Ndown, R,
 				       Mone, Ac, lda, Ar, lda, one, An, lda);
-				//write_field(F,cerr<<"Apres fgemm"<<endl, A, M, N, lda);
-							
 			}
 			// Recursive call on SE
-			// cerr<<"LUdivine2..";
-// 			write_field(F,cerr<<"Apres mise a jour"<<endl, A, M, N, lda);
-			
 			R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
-			//cerr<<"done"<<endl;
 			for (size_t i = R; i < R + R2; ++i)
 				P[i] += R;
 			if (R2)
@@ -514,7 +502,6 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 					return 0;
 			} else {			
 				// Ar <- Ar.P
-				
 				applyP (F, FflasRight, FflasTrans, Ndown, 0, R, Ar, lda, P); 
 				// Ar <- Ar.U1^-1
 				ftrsm( F, FflasRight, FflasUpper, 
@@ -523,12 +510,10 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 				// An <- An - Ar*Ac
 				fgemm( F, FflasNoTrans, FflasNoTrans, Ndown, colDim-R, R,
 				       Mone, Ar, lda, Ac, lda, one, An, lda);
-				// Recursive call on SE
+				
 			}
-			// cerr<<"LUdivine2..";
-// 			write_field(F,cerr<<"Apres mise a jour"<<endl, A, M, N, lda);
+			// Recursive call on SE
 			R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup, LuTag, cutoff);
-			//cerr<<"done"<<endl;
 			for (size_t i = R; i < R + R2; ++i)
 				P[i] += R;
 			if (R2)
@@ -539,7 +524,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 			
 		}
 		// Non zero row permutations
-		for (size_t i = Nup; i < rowDim; i++)
+		for (size_t i = Nup; i < Nup + R2; i++)
 			Q[i] += Nup;
 		if (R < Nup){
 			// Permutation of the 0 rows
@@ -637,7 +622,7 @@ FFPACK::LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
 			typename Field::Element * Xc = X + Nup;     //  NE
 			typename Field::Element * Xn = Xr + Nup;    //  SE
 			typename Field::Element * Xi = Xr;
-			if ( computeX )
+			if ( computeX ){
 				if (MinTag == FfpackDense)
 					for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 						fgemv(F, FflasNoTrans, N, N, one, 
@@ -650,9 +635,9 @@ FFPACK::LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
   							   kg_mc, kg_mb, kg_j );
 						fcopy(F, N, u,1,Xi, 1);
 					}
-			 
+			}
 			// Apply the permutation on SW
-		applyP( F, FflasRight, FflasTrans, Ndown, 0, R, Xr, ldx, P); 
+			applyP( F, FflasRight, FflasTrans, Ndown, 0, R, Xr, ldx, P); 
 			// Triangular block inversion of NW and apply to SW
 			// Xr <- Xr.U1^-1
 			ftrsm( F, FflasRight, FflasUpper, FflasNoTrans, Diag,
