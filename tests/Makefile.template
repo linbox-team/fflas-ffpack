@@ -40,7 +40,7 @@ INCLUDES+=-I. -I../include
 
 CXX=g++ ${INCLUDES}
 
-all: test-fgemm test-invert test-det test-rank test-charpoly test-lqup dense_generator
+all: test-fgemm test-invert test-det test-rank test-charpoly test-lqup test-nullspace dense_generator
 
 regression: testeur_fgemm testeur_lqup testeur_ftrsm
 
