@@ -420,13 +420,22 @@ inline void FFLAS::ClassicMatmul (const Modular<double> & F,
 
 	ClassicMatmul (DoubleDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 		       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base );
-	for (double * Ci = C; Ci != C+m*ldc; Ci += ldc)
+	double * Ci;
+        Timer t;
+//	t.clear();
+//	t.start();
+//#pragma omp parallel for schedule(static) private (Ci)
+	for (Ci = C; Ci < C+m*ldc; Ci += ldc)
 		for (size_t j=0; j < n;++j)
 			F.init(*(Ci+j),*(Ci+j));
-	for (size_t i = 0; i < nblock; ++i) {
+//	t.stop();
+//	std::cerr<<"Reduction dans Classic -> "<<t.realtime()<<std::endl;
+	
+for (size_t i = 0; i < nblock; ++i) {
 		ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
 			       B+i*shiftB, ldb, one, C, ldc, kmax,base);
-		for (double * Ci = C; Ci != C+m*ldc; Ci += ldc)
+//#pragma omp parallel for schedule(static) private (Ci)
+		for (Ci = C; Ci < C+m*ldc; Ci += ldc)
 			for (size_t j=0; j < n;++j)
 				F.init(*(Ci+j),*(Ci+j));
 	}
@@ -1185,10 +1194,10 @@ inline void FFLAS::WinoMain (const ModularBalanced<double>& F,
 			WinoMain (DoubleDomain(), ta, tb, m, n, k, _alpha,
 				  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 			// Modular reduction
-			for (double * Ci = C; Ci != C+m*ldc; Ci+=ldc)
+			for (double* Ci = C; Ci < C+m*ldc; Ci+=ldc)
 				for (size_t j = 0; j < n; ++j)
 					F.init (*(Ci + j), *(Ci + j));
-			
+
 			if (!F.areEqual (1.0, alpha) &&
 			    !F.areEqual (-1.0, alpha))
 				// Fix-up: compute C *= alpha
@@ -1297,14 +1306,23 @@ inline void FFLAS::WinoMain (const Modular<double>& F,
 			WinoMain (DoubleDomain(), ta, tb, m, n, k, _alpha,
 				  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 			// Modular reduction
-			for (double * Ci = C; Ci != C+m*ldc; Ci+=ldc)
+			// Timer t;
+			// t.clear();
+			// t.start();
+			double*Ci;
+			
+#pragma omp parallel for schedule(static) private (Ci)
+			for (Ci = C; Ci < C+m*ldc; Ci+=ldc)
 				for (size_t j = 0; j < n; ++j)
 					F.init (*(Ci + j), *(Ci + j));
+			
+			// t.stop();
+			// std::cerr<<"Reduction -> "<<t.realtime()<<std::endl;
 			
 			if (!F.areEqual (1.0, alpha) &&
 			    !F.areEqual (-1.0, alpha))
 				// Fix-up: compute C *= alpha
-				for (double* Ci=C; Ci < C+m*ldc; Ci+=ldc)
+				for (Ci=C; Ci < C+m*ldc; Ci+=ldc)
 					for (size_t j=0; j < n; ++j) 
 						F.mulin (* (Ci + j), alpha);
 		} else {
