@@ -257,7 +257,7 @@ public:
 		WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				 C, ldc, kmax, winolevel, base);
 		return C;
-		};
+		}
 	
 	/** @brief  Field GEneral Matrix Multiply 
 	 * 
@@ -328,6 +328,16 @@ public:
 				F.assign(*(C + i*N + j),*(A + i*lda + j));
 		return C;
 	}
+ 
+
+	/**
+	 * Winosteps
+	 *
+	 * \brief Computes the number of recursive levels to perform
+	 *
+	 * \param m the common dimension in the product AxB
+	 */
+	static size_t WinoSteps (const size_t m);
 	
 protected:
 
@@ -517,18 +527,12 @@ protected:
 	 * Generic implementation for positive representations
 	 */
 	template <class Field>
-	static double computeFactor (const Field& F, const size_t w);
+	static double computeFactorWino (const Field& F, const size_t w);
 	
+	template <class Field>
+	static double computeFactorClassic (const Field& F);
 
-	/**
-	 * Winosteps
-	 *
-	 * \brief Computes the number of recursive levels to perform
-	 *
-	 * \param m the common dimension in the product AxB
-	 */
-	static size_t WinoSteps (const size_t m);
-	
+
 	/**
 	 * BaseCompute
 	 *
@@ -567,9 +571,9 @@ protected:
 				    const typename Field::Element* B, const size_t ldb, 
 				    const typename Field::Element beta,
 				    typename Field::Element* C, const size_t ldc, 
-				    const size_t kmax );
+				    const size_t  ); //kmax
 
-	template<class Field>
+	template <class Field>
 	static void MatVectProd (const Field& F, 
 				 const FFLAS_TRANSPOSE TransA, 
 				 const size_t M, const size_t N,
@@ -593,7 +597,7 @@ protected:
     
 	// Winograd Multiplication  alpha.A(n*k) * B(k*m) + beta . C(n*m)
 	// WinoCalc performs the 22 Winograd operations
-	template<class Field>
+	template <class Field>
 	static void WinoCalc (const Field& F, 
 			      const FFLAS_TRANSPOSE ta,
 			      const FFLAS_TRANSPOSE tb,
