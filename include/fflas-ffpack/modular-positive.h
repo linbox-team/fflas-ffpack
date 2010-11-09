@@ -386,6 +386,9 @@ public:
 	float &convert (float &x, const Element& y) const {
 		return x=y;
 	}
+	double &convert (double &x, const Element& y) const {
+		return x=y;
+	}
 		
 	std::ostream &write (std::ostream &os) const {
 		return os << "float mod " << (int)modulus;
