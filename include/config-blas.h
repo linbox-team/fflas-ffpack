@@ -32,7 +32,15 @@
 
 //#define __LINBOX_HAVE_CBLAS
 
+#ifdef CUDA_BLAS
 
+#define sgemv_ cublas_sgemv
+#define sgemm_ cublas_sgemm
+#define strsm_ cublas_strsm
+#define strmm_ cublas_strmm
+
+#endif
+		
 #ifndef __LINBOX_HAVE_CBLAS
 
 // CBLAS are not available define our own wrapper
@@ -369,5 +377,4 @@ extern "C" {
 			   const enum CBLAS_DIAG Diag,const int N, double *A, const int lda);
 }
 #endif
-
 #endif
