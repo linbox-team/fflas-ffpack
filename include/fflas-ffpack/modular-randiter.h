@@ -15,6 +15,7 @@
 
 #include <sys/time.h>
 #include <stdlib.h>
+#include <limits>
 template< class Element >
 class Modular;
 
@@ -31,7 +32,7 @@ public:
 	ModularRandIter (const ModularRandIter<Element> &R) 
 		: _F (R._F) {}
 	Element &random (Element &a) const
-	{ return _F.init(a,(double)lrand48()); }
+        { return _F.init(a,(double)lrand48()-std::numeric_limits<long>::max()); }
 
 private:
 	Modular<Element> _F;
