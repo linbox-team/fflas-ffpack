@@ -1,5 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_ftrmm.inl
  * Copyright (C) 2007 Clement Pernet
  *
@@ -18,16 +18,16 @@
 template<class Field>
 inline void
 FFLAS::ftrmm (const Field& F, const FFLAS_SIDE Side,
-	      const FFLAS_UPLO Uplo, 
+	      const FFLAS_UPLO Uplo,
 	      const FFLAS_TRANSPOSE TransA,
-	      const FFLAS_DIAG Diag, 
+	      const FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      const typename Field::Element alpha,
 	      typename Field::Element * A, const size_t lda,
-	      typename Field::Element * B, const size_t ldb) 
+	      typename Field::Element * B, const size_t ldb)
 {
-	if (!M || !N ) return; 
-		
+	if (!M || !N ) return;
+
 	if ( Side==FflasLeft ){
 		if ( Uplo==FflasUpper){
 			if (TransA == FflasNoTrans){
@@ -85,7 +85,7 @@ FFLAS::ftrmm (const Field& F, const FFLAS_SIDE Side,
 		for (size_t i=0; i< M; ++i)
 			for (size_t j=0; j<N; ++j)
 				F.mulin(*(B+i*ldb+j),alpha);
-	
+
 }
 
 #define __FFLAS__GENERIC

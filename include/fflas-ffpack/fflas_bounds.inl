@@ -1,5 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_bounds.inl
  * Copyright (C) 2008 Clement Pernet
  *
@@ -14,13 +14,12 @@
 #define FFLAS_INT_TYPE long unsigned int
 #endif
 
-/**
- * MatMulParameters
+/** MatMulParameters.
  *
  * \brief Computes the threshold parameters for the cascade
  *        Matmul algorithm
  *
- * 
+ *
  * \param F Finite Field/Ring of the computation.
  * \param k Common dimension of A and B, in the product A x B
  * \param bet Computing AB + beta C
@@ -64,26 +63,24 @@ inline void FFLAS::MatMulParameters (const Field& F,
 
 }
 
-/**
- * DotProdBound
- *
- * \brief  computes the maximal size for delaying the modular reduction
- *         in a dotproduct
+/** DotProdBound computes the maximal size for delaying the modular reduction
+ * in a dotproduct.
  *
  * This is the default version assuming a conversion to a positive modular representation
- * 
+ *
  * \param F Finite Field/Ring of the computation
- * \param winoRecLevel Number of recusrive Strassen-Winograd levels (if any, 0 otherwise)
- * \param beta Computing AB + beta C
+ * \param w Number of recusrive Strassen-Winograd levels (if any, \p 0 otherwise)
+ * \param beta Computing <code>AB + beta C</code>
  * \param base Type of floating point representation for delayed modular computations
- * 
+ *
  */
 template <class Field>
 inline size_t FFLAS::DotProdBound (const Field& F,
-				   const size_t w, 
+				   const size_t w,
 				   const typename Field::Element& beta,
-				   const FFLAS_BASE base) {
-	
+				   const FFLAS_BASE base)
+{
+
 	FFLAS_INT_TYPE p;
 	F.characteristic(p);
 	typename Field::Element mone;
@@ -94,11 +91,11 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 
 	if (p == 0)
 		return 1;
-	
+
 	double kmax;
 	if (w > 0) {
 		double c = computeFactorWino (F,w);
-				
+
 		double d = (double (1ULL << mantissa) /(c*c) + 1);
 		if (d < 2)
 			return 1;
@@ -106,7 +103,7 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 	} else {
 
 		double c = computeFactorClassic(F);
-		
+
 		double cplt=0;
 		if (!F.isZero (beta)){
 			if (F.isOne (beta) || F.areEqual (beta, mone)) cplt = c;
@@ -116,21 +113,22 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 				cplt = abs(be)*c;
 			}
 		}
-		
 		kmax = floor ( (double ((1ULL << mantissa) - cplt)) / (c*c));
 		if (kmax  <= 1)
 			return 1;
 		}
+
 	//kmax--; // we computed a strict upper bound
 	return  (size_t) MIN (kmax, 1ULL << 31);
 }
 
-/**
- * Internal function for the bound computation
+/** @internal
+ * @brief Internal function for the bound computation
  * Generic implementation for positive representations
  */
 template <class Field>
-inline double FFLAS::computeFactorWino (const Field& F, const size_t w){
+inline double FFLAS::computeFactorWino (const Field& F, const size_t w)
+{
 	FFLAS_INT_TYPE p;
 	F.characteristic(p);
 	size_t ex=1;
@@ -145,33 +143,29 @@ inline double FFLAS::computeFactorClassic (const Field& F){
 	return p-1;
 }
 
-/**
- * WinoSteps
- *
- * \brief Computes the number of recursive levels to perform
+/** WinoSteps computes the number of recursive levels to perform.
  *
  * \param m the common dimension in the product AxB
- * 
+ *
  */
-inline size_t FFLAS::WinoSteps (const size_t m) {
+inline size_t FFLAS::WinoSteps (const size_t m)
+{
 	size_t w = 0;
 	size_t mt = m;
 	while (mt >= WINOTHRESHOLD) {w++; mt >>= 1;}
 	return w;
 }
 
-/**
- * BaseCompute
- *
- * \brief Determines the type of floating point representation to convert to,
- *        for BLAS computations
+/** BaseCompute determines the type of floating point representation to
+ * convert to, for BLAS computations.
  * \param F Finite Field/Ring of the computation
  * \param w Number of recursive levels in Winograd's algorithm
- * 
+ *
  */
 template <class Field>
-inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const Field& F, const size_t w){
-	
+inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const Field& F, const size_t w)
+{
+
 	FFLAS_INT_TYPE pi;
 	F.characteristic(pi);
 	FFLAS_BASE base;
@@ -199,7 +193,7 @@ inline double FFLAS::computeFactorWino (const ModularBalanced<double>& F, const 
 	F.characteristic(p);
 	size_t ex=1;
 	for (size_t i=0; i < w; ++i) 	ex *= 3;
-	return  (p - 1) * ex / 2; 
+	return  (p - 1) * ex / 2;
 }
 
 template <>
@@ -208,6 +202,7 @@ inline double FFLAS::computeFactorClassic (const ModularBalanced<double>& F){
 	F.characteristic(p);
 	return (p-1) >> 1;
 }
+
 
 template <>
 inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const Modular<double>& ,
@@ -241,13 +236,13 @@ inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const ModularBalanced<float>& ,
  *
  * This is the default version over an arbitrary field.
  * It is currently never used (the recursive algorithm is run until n=1 in this case)
- * 
+ *
  * \param F Finite Field/Ring of the computation
- * 
+ *
  */
 template <class Field>
 inline size_t FFLAS::TRSMBound (const Field& F) {
-	return 1;	
+	return 1;
 }
 
 /**
@@ -296,7 +291,7 @@ inline size_t FFLAS::TRSMBound (const Modular<float>& F){
 }
 
 /**
- * Specialization for balanced modular representation over double
+ * Specialization for balanced modular representation over double.
  * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
  */
