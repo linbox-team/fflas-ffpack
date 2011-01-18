@@ -24,7 +24,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __FIELD_UNPARAMETRIC_H
 #define __FIELD_UNPARAMETRIC_H
 
@@ -35,49 +35,49 @@ template< class K>
 class UnparametricField;
 
 template<class K>
-class UnparametricField 
+class UnparametricField
 {
 public:
-	
-	typedef K Element;    
-	
+
+	typedef K Element;
+
 
 	UnparametricField(){}
 	~UnparametricField () {}
     	UnparametricField &operator=(const UnparametricField &F) { return *this; }
-	
-	Element &init (Element &x, const unsigned long &y=0) const 
+
+	Element &init (Element &x, const unsigned long &y=0) const
 	{ return x = y; }
 
-	Element &init (Element &x, const double &y=0) const 
+	Element &init (Element &x, const double &y=0) const
 	{ return x = y; }
-	Element &init (Element &x, const float &y=0) const 
+	Element &init (Element &x, const float &y=0) const
 	{ return x = y; }
 
-    
-	unsigned long convert (unsigned long &x, const Element &y) const 
-	{ 
-		return x = (unsigned long) y; 
+
+	unsigned long convert (unsigned long &x, const Element &y) const
+	{
+		return x = (unsigned long) y;
 	}
-    
-	
+
+
 	K &convert (K &x, const Element &y) const { return x = y; }
-	
+
 	Element &assign (Element &x, const Element &y) const { return x = y; }
-    
+
 	unsigned long &cardinality (unsigned long &c) const { return c = 0; }
-    
+
         unsigned long &characteristic (unsigned long &c) const { return c = 0; }
-    
+
 	//  x == y
 	bool areEqual (const Element &x, const Element &y) const { return x == y; }
-    
+
 	//  x == 0
 	bool isZero (const Element &x) const { return x == Element (0); }
-    
+
 	///  x == 1
 	bool isOne (const Element &x) const { return x == Element (1); }
-	
+
 	// x := y + z
 	Element &add (Element &x, const Element &y, const Element &z) const
 	{ return x = y + z; }
@@ -93,10 +93,10 @@ public:
     	/// x := -y
 	Element &neg (Element &x, const Element &y) const { return x = - y; }
     	/// x := 1/y
-	Element &inv (Element &x, const Element &y) const 
+	Element &inv (Element &x, const Element &y) const
 	{ return x = Element (1) / y; }
-    	/// z := a*x + y 
-	Element &axpy (Element &z, const Element &a, const Element &x, 
+    	/// z := a*x + y
+	Element &axpy (Element &z, const Element &a, const Element &x,
 		       const Element &y) const
 	{ return z = a * x + y; }
  	// x := x + y
@@ -114,14 +114,14 @@ public:
 	/// y := a*x + y
 	Element &axpyin (Element &y, const Element &a, const Element &x) const
 	{ return y += a * x; }
- 
-	
+
+
 	std::ostream &write (std::ostream &os) const { return os << "unparamterized field"; }
     	std::istream &read (std::istream &is) const { return is; }
-    
-	std::ostream &write (std::ostream &os, const Element &x) const 
+
+	std::ostream &write (std::ostream &os, const Element &x) const
 	{ return os << x; }
 	std::istream &read (std::istream &is, Element &x) const { return is >> x; }
-    
-};	
+
+};
 #endif // __FIELD_UNPARAMETRIC_H_

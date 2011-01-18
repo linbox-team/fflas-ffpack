@@ -29,14 +29,14 @@ public:
 		long _seed = (long)(tp.tv_usec);
 		srand48(_seed);
 	}
-	ModularRandIter (const ModularRandIter<Element> &R) 
+	ModularRandIter (const ModularRandIter<Element> &R)
 		: _F (R._F) {}
 	Element &random (Element &a) const
         { return _F.init(a,(double)lrand48()-std::numeric_limits<long>::max()); }
 
 private:
 	Modular<Element> _F;
-	
+
 };
 
 template <class T>
@@ -47,14 +47,14 @@ class ModularBalancedRandIter
 {
 public:
 	ModularBalancedRandIter (const ModularBalanced<Element> &F):_F(F){}
-	ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R) 
+	ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R)
 		: _F (R._F) {}
 	Element &random (Element &a) const{
 		return _F.init(a,(double)rand());
 	}
 private:
 	ModularBalanced<Element> _F;
-	
+
 };
 
 #endif

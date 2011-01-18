@@ -31,39 +31,39 @@ template <class Field, class RandIter = typename Field::RandIter>
 class NonzeroRandIter
 {
 public:
-	
+
 	typedef typename Field::Element Element;
 
 	NonzeroRandIter (const Field &F, const RandIter &r)
 		: _F (F), _r (r) {}
-	
+
 	NonzeroRandIter (const NonzeroRandIter& R)
 		: _F (R._F), _r (R._r) {}
-	
-	~NonzeroRandIter() 
+
+	~NonzeroRandIter()
 	{}
-	
+
 	NonzeroRandIter& operator=(const NonzeroRandIter& R)
 	{
 		if (this != &R) { // guard against self-assignment
 			_F = R._F;
 			_r = R._r;
 		}
-		
+
 		return *this;
 	}
-	
+
 	Element &random (Element &a)  const
 	{
 		do _r.random (a); while (_F.isZero (a));
 		return a;
 	}
-	
+
 private:
-	
+
 	Field    _F;
 	RandIter _r;
-	
+
 }; // class NonzeroRandIter
- 
+
 #endif // __NONZERO_RANDITER_H
