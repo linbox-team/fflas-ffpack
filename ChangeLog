@@ -1,3 +1,5 @@
+2011-15-04 v1.4.0
+        * Convert project to autotools (à la LinBox et Givaro)
 2008-06-05 v1.3.3
 	* fix the design of specializations to modular<double> modular<float>
 	* give a proper name to ModularBalanced
