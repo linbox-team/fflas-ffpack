@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for ftrtri : 1 computation
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -11,10 +12,10 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 
@@ -42,7 +43,7 @@ int main(int argc, char** argv){
 	Field::Element * A,*Ab;
 	A = read_field(F,argv[2],&n,&n);
 	Ab = new Field::Element[n*n];
-	
+
 	for (int i=0; i<n;++i){
 		for(int j=0; j<i; ++j)
 			F.assign(*(Ab+i*n+j),*(A+i*n+j));
@@ -54,8 +55,8 @@ int main(int argc, char** argv){
 
 	Field::Element * X = new Field::Element[n*n];
 
-	Timer tim,t; t.clear();tim.clear(); 
-		
+	Timer tim,t; t.clear();tim.clear();
+
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
@@ -73,7 +74,7 @@ int main(int argc, char** argv){
 		      n, n, 1.0,
 		      X,
 		      //A,
-		      n, Ab, n); 
+		      n, Ab, n);
 	bool wrong = false;
 
 	for (int i=0;i<n;++i)
@@ -81,13 +82,13 @@ int main(int argc, char** argv){
 			if ( ((i!=j) && !F.areEqual(*(Ab+i*n+j),zero))
 			     ||((i==j) &&!F.areEqual(*(Ab+i*n+j),one)))
 				wrong = true;
-	
+
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
 		write_field (F,cerr<<"Ab="<<endl,A,n,n,n);
 		//write_field (F,cerr<<"X="<<endl,X,n,n,n);
 	}else{
-	
+
 		cerr<<"PASS"<<endl;
 	}
 #endif
@@ -95,10 +96,10 @@ int main(int argc, char** argv){
 #if TIME
 	double mflops = 1.0/3.0*(n*n/1000000.0)*nbit*n/tim.usertime();
 	cerr<<"n = "<<n<<" Inversion over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tim.usertime()/nbit 
+	     << tim.usertime()/nbit
 	     << " s, Mffops = "<<mflops
 	     << endl;
-	
+
 	cout<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
 }

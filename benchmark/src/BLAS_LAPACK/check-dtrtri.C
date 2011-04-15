@@ -1,6 +1,8 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 #include <iostream>
 
-#define __LINBOX_HAVE_DTRTRI 1
+#define __FFLAFLAS_HAVE_DTRTRI 1
 
 #include "fflas-ffpack/modular-balanced.h"
 #include "fflas-ffpack/ffpack.h"

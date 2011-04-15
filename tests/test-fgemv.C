@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for fgemv : 1 computation
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -11,10 +12,10 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 
 
 
@@ -44,16 +45,16 @@ int main(int argc, char** argv){
 
 	Field::Element * A;
 	Field::Element * b;
-	
+
 	b = read_field(F,argv[3],&n,&k);
 	A = read_field(F,argv[2],&m,&n);
-	
+
 	Field::Element * c;
 	c = new Field::Element[n];
 
-	
 
-	Timer tim,t; t.clear();tim.clear(); 
+
+	Timer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit;++i){
 		c = read_field(F,argv[7],&m,&k);
 		t.clear();
@@ -93,11 +94,11 @@ int main(int argc, char** argv){
 	     <<atoi(argv[1])<<"Z : [ "
 	     <<mflops<<" MFops in "<<tim.usertime()/nbit<<"s]"
 	     << endl;
-	
+
 	cerr<<"alpha, beta = "<<alpha <<", "<<beta <<endl;
 
 	cout<<m<<" "<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
-}  
+}
 
 

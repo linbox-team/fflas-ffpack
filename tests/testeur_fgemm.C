@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
-//                        Test for the  fgemm winograd 
-//                  
+//                        Test for the  fgemm winograd
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -11,12 +12,12 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
-//#include "fflas-ffpack/modular-int.h"
-//#include "fflas-ffpack/modular-positive.h"
-#include "fflas-ffpack/modular-balanced.h"
+//#include "fflas-ffpack/fieldmodular-int.h"
+//#include "fflas-ffpack/fieldmodular-positive.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "givaro/givintprime.h"
 
 
@@ -31,17 +32,17 @@ typedef ModularBalanced<double> Field;
 
 int main(int argc, char** argv){
 	Timer tim;
-	IntPrimeDom IPD;
+	Givaro::IntPrimeDom IPD;
 	Field::Element alpha, beta;
 	long p;
 	size_t M, K, N, Wino;
 	bool keepon = true;
-	Integer _p,tmp;
+	Givaro::Integer _p,tmp;
 	cerr<<setprecision(10);
 	size_t TMAX = 100;
 	size_t PRIMESIZE = 23;
 	size_t WINOMAX = 8;
-	
+
 	if (argc > 1 )
 		TMAX = atoi(argv[1]);
 	if (argc > 2 )
@@ -54,7 +55,7 @@ int main(int argc, char** argv){
 	Field::Element * A;
 	Field::Element * B;
 	Field::Element * C, *Cbis, *Cter;
-	
+
 	while (keepon){
 		srandom(_p);
 		do{
@@ -62,14 +63,14 @@ int main(int argc, char** argv){
 			_p = random();//max % (2<<30);
 			IPD.prevprime( tmp, (_p% (1<<PRIMESIZE)) );
 			p =  tmp;
-			
+
 		}while( (p <= 2) );
-		
-		Field F( p ); 
+
+		Field F( p );
 		Field::RandIter RValue( F );
 		//NonzeroRandIter<Field> RnValue( F, RValue );
-		
-		
+
+
 		do{
 			M = (size_t)  random() % TMAX;
 			K = (size_t)  random() % TMAX;
@@ -93,30 +94,30 @@ int main(int argc, char** argv){
 			tb = FFLAS::FflasNoTrans;
 			ldb = N;
 		}
-		
+
 		A = new Field::Element[M*K];
 		B = new Field::Element[K*N];
 		C = new Field::Element[M*N];
 		Cbis = new Field::Element[M*N];
 		Cter = new Field::Element[M*N];
-		
+
 		for( size_t i = 0; i < M*K; ++i )
 			RValue.random( *(A+i) );
 		for( size_t i = 0; i < K*N; ++i )
 			RValue.random( *(B+i) );
 		for( size_t i = 0; i < M*N; ++i )
 			*(Cter+i) = *(Cbis+i)= RValue.random( *(C+i) );
-		
+
 		RValue.random( alpha );
 		RValue.random( beta );
-		
+
 		cout <<"p = "<<(size_t)p<<" M = "<<M
 		     <<" N = "<<N<<" K = "<<K<<" Winolevel = "<<Wino<<" "
 		     <<alpha
 		     <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
 		     <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
 		     <<beta<<".C"
-		     <<"...."; 
+		     <<"....";
 
 		tim.clear();
 		tim.start();
@@ -125,16 +126,17 @@ int main(int argc, char** argv){
 // 		for (int j = 0; j < n; ++j ){
 // 			FFLAS::fgemv( F, FFLAS::FflasNoTrans, m, k, alpha, A, k, B+j, n, beta, Cbis+j, n);
 // 			for (int i=0; i<m; ++i)
-// 				if ( !F.areEqual( *(Cbis+i*n+j), *(C+i*n+j) ) ) 
+// 				if ( !F.areEqual( *(Cbis+i*n+j), *(C+i*n+j) ) )
 // 					keepon = false;
 // 		}
-		Field::Element aij, bij, boa, temp;
+		Field::Element aij, bij, temp;
+		// Field::Element boa ;
 		//F.div(boa, beta, alpha);
-		for (int i = 0; i < M; ++i )
-			for ( int j = 0; j < N; ++j ){
+		for (size_t i = 0; i < M; ++i )
+			for ( size_t j = 0; j < N; ++j ){
 				//				F.mulin(*(Cbis+i*N+j),boa);
 				F.mulin(*(Cbis+i*N+j),beta);
-				for ( int l = 0; l < K ; ++l ){
+				for ( size_t l = 0; l < K ; ++l ){
 					if ( ta == FFLAS::FflasNoTrans )
 						aij = *(A+i*lda+l);
 					else
@@ -153,10 +155,10 @@ int main(int argc, char** argv){
 					keepon = false;
 				}
 			}
-		
+
 		if (keepon){
 			cout<<"Passed "
-			    <<(2*M*N/1000.0*K/tim.usertime()/1000.0)<<"Mfops"<<endl; 
+			    <<(2*M*N/1000.0*K/tim.usertime()/1000.0)<<"Mfops"<<endl;
 			delete[] A;
 			delete[] B;
 			delete[] C;
@@ -173,7 +175,7 @@ int main(int argc, char** argv){
 	cout<<endl;
 	cerr<<"FAILED with p = "<<(size_t)p<<" M = "<<M<<" N = "<<N<<" K = "<<K
 	    <<" Winolevel = "<<Wino
-	    <<" alpha = "<<(size_t)alpha<<" beta = "<<(size_t)beta<<endl; 
+	    <<" alpha = "<<(size_t)alpha<<" beta = "<<(size_t)beta<<endl;
 	cerr<<"A:"<<endl;
 	if ( ta ==FFLAS::FflasNoTrans ){
 		cerr<<M<<" "<<K<<" M"<<endl;

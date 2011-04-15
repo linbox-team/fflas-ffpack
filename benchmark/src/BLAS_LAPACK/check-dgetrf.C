@@ -1,9 +1,11 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 #include <iostream>
 #include <vector>
 
 
-#ifndef __LINBOX_HAVE_DGETRF 
-#define __LINBOX_HAVE_DGETRF 1
+#ifndef __FFLAFLAS_HAVE_DGETRF 
+#define __FFLAFLAS_HAVE_DGETRF 1
 #endif
 #include "fflas-ffpack/fflas.h"
 #include "fflas-ffpack/modular-balanced.h"

@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Sanity check for ftrsm and ftrmm
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet 2007
 //-------------------------------------------------------------------------
@@ -9,15 +10,15 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
-//#include "fflas-ffpack/modular-int.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+//#include "fflas-ffpack/field/modular-int.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "givaro/givintprime.h"
 
 using namespace std;
- 
+
 //typedef Modular<int> Field;
 //typedef Modular<float> Field;
 typedef Modular<double> Field;
@@ -26,11 +27,11 @@ int main(int argc, char** argv){
 
 
 	Timer tim;
-	IntPrimeDom IPD;
+	Givaro::IntPrimeDom IPD;
 	unsigned long p;
 	size_t M, N, K ;
 	bool keepon = true;
-	Integer _p,tmp;
+	Givaro::Integer _p,tmp;
 	Field::Element zero,one;
 	cerr<<setprecision(10);
 
@@ -58,12 +59,12 @@ int main(int argc, char** argv){
 			IPD.prevprime( tmp, (_p% (1<<PRIMESIZE)) );
 			p =  tmp;
 		}while( (p <= 2) );
-		
-		Field F (p); 
+
+		Field F (p);
 		F.init (zero,0.0);
 		F.init (one,1.0);
 		Field::RandIter RValue (F);
-		
+
 		do{
 			M = (size_t)  random() % TMAX;
 			N = (size_t)  random() % TMAX;
@@ -76,7 +77,7 @@ int main(int argc, char** argv){
 			trans = FFLAS::FflasNoTrans;
 		else
 			trans = FFLAS::FflasTrans;
-		
+
 
 		if (random()%2)
 			diag = FFLAS::FflasUnit;
@@ -95,11 +96,11 @@ int main(int argc, char** argv){
 
 		if (random()%2)
 			uplo = FFLAS::FflasUpper;
-		else 
+		else
 			uplo = FFLAS::FflasLower;
-		
+
 		while (F.isZero(RValue.random (alpha)));
-		
+
 		A = new Field::Element[K*K];
 		B = new Field::Element[M*N];
 		Abis = new Field::Element[K*K];
@@ -124,9 +125,9 @@ int main(int argc, char** argv){
 		     <<((uplo==FFLAS::FflasLower)?" Lower ":" Upper ")
 		     <<((trans==FFLAS::FflasTrans)?" Trans ":" NoTrans ")
 		     <<((diag==FFLAS::FflasUnit)?" Unit ":" NonUnit ")
-		     <<"...."; 
+		     <<"....";
 
-			
+
 		tim.clear();
 		tim.start();
 		FFLAS::ftrsm (F, side, uplo, trans, diag, M, N, alpha,
@@ -137,14 +138,14 @@ int main(int argc, char** argv){
 		Field::Element invalpha;
 		F.inv(invalpha, alpha);
 		FFLAS::ftrmm (F, side, uplo, trans, diag, M, N, invalpha,
-			      A, K, B, N); 
+			      A, K, B, N);
 		for (size_t i = 0;i < M;++i)
 			for (size_t j = 0;j < N; ++j)
 				if ( !F.areEqual (*(Bbis + i*N+ j ), *(B + i*N + j))){
 					cerr<<endl
 					    <<"Bbis ["<<i<<", "<<j<<"] = "<<(*(Bbis + i*N + j))
 					    <<" ; B ["<<i<<", "<<j<<"] = "<<(*(B + i*N + j));
-					    
+
 					keepon = false;
 				}
 		for (size_t i = 0;i < K; ++i)
@@ -157,20 +158,20 @@ int main(int argc, char** argv){
 				}
 		if (keepon) {
 			cout<<" Passed "
-			    <<M*N/1000000.0*K/tim.usertime()<<" Mfops"<<endl; 
-			
+			    <<M*N/1000000.0*K/tim.usertime()<<" Mfops"<<endl;
+
 			delete[] B;
 			delete[] Bbis;
 			delete[] A;
 			delete[] Abis;
 		} else {
-			
+
 			cerr<<endl;
 			write_field (F, cerr<<"A = "<<endl, Abis, K,K,K);
 			write_field (F, cerr<<"B = "<<endl, Bbis, M,N,N);
 		}
 	}
-	
+
 	cout<<endl;
 	cerr<<"FAILED with p = "<<(size_t)p
 	    <<" M = "<<M
@@ -181,7 +182,7 @@ int main(int argc, char** argv){
 	    <<((trans==FFLAS::FflasTrans)?" Trans ":" NoTrans ")
 	    <<((diag==FFLAS::FflasUnit)?" Unit ":" NonUnit ")
 	    <<endl;
-	
+
 	cerr<<"A:"<<endl;
 	cerr<<K<<" "<<K<<" M"<<endl;
 	for (size_t i=0; i<K; ++i)

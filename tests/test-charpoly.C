@@ -1,19 +1,20 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for charpoly
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
-#include "fflas-ffpack/modular-positive.h"
-#include "fflas-ffpack/modular-int.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/field/modular-int.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 
@@ -29,7 +30,7 @@ typedef vector<Field::Element> Polynomial;
 
 
 template <class Field, class Polynomial>
-void printPolynomial (const Field &F, const Polynomial &v) 
+void printPolynomial (const Field &F, const Polynomial &v)
 {
 	for (int i = v.size () - 1; i >= 0; i--) {
 		F.write (cout, v[i]);
@@ -54,14 +55,14 @@ int main(int argc, char** argv){
 	Field F((long unsigned int)atoi(argv[1]));
 	Field::Element * A;
 	A = read_field(F,argv[2],&n,&n);
-		
-	Timer tim,t; t.clear();tim.clear(); 
+
+	Timer tim,t; t.clear();tim.clear();
 	list<Polynomial> P_list;
 	for(int i = 0;i<nbit;++i){
 		P_list.clear();
 		t.clear();
 		t.start();
-		
+
 		FFPACK::CharPoly (F, P_list, n, A, n);
 		t.stop();
 		tim+=t;
@@ -70,16 +71,16 @@ int main(int argc, char** argv){
 		  A = read_field(F,argv[2],&n,&n);
 		}
 	}
-		
+
 	double mflops = (2+(2.0/3.0))*(n*n/1000000.0)*nbit*n/tim.usertime();
 	list<Polynomial>::iterator P_it = P_list.begin();
 	for (;P_it!=P_list.end();++P_it)
 		printPolynomial ( F, *P_it);
-	
+
 	cerr<<"n = "<<n<<" #inv. fact = "<<P_list.size()<<" Charpoly (A) over Z/ "<<atoi(argv[1])<<"Z : t= "
-		     << tim.usertime()/nbit 
+		     << tim.usertime()/nbit
 		     << " s, Mffops = "<<mflops
 		     << endl;
-	
+
 	cout<<n<<" "<<P_list.size()<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 }

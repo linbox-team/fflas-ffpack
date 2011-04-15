@@ -1,4 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* linbox/util/timer.C
  * Copyright (C) 1994-1997 Givaro Team
@@ -23,8 +24,8 @@
  * This file implements the C++ interface to commentators (for 
  * providing runtime commentary to the user)
  */
-#ifndef __LINBOX__TIMER__C__
-#define __LINBOX__TIMER__C__
+#ifndef __FFLAFLAS__TIMER__C__
+#define __FFLAFLAS__TIMER__C__
 // Description:
 // - various timer objects
 // - to be rewritten to be more efficient

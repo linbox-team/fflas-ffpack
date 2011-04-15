@@ -1,4 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //          Test for the krylov-elimination
 //--------------------------------------------------------------------------
@@ -13,14 +14,15 @@
 #include "Matio.h"
 #include "timer.h"
 using namespace std;
-#include "fflas-ffpack/modular-balanced.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 typedef Modular<double> Field;
 
 template<class T>
-std::ostream& printvect(std::ostream& o, T* vect, size_t dim){
+std::ostream& printvect(std::ostream& o, T* vect, size_t dim)
+{
 	for(size_t i=0; i<dim; ++i)
 		o << vect[i] << " " ;
 	return o << std::endl;
@@ -28,9 +30,9 @@ std::ostream& printvect(std::ostream& o, T* vect, size_t dim){
 
 int main(int argc, char** argv){
 
-	int m,n;
+	size_t m,n;
 
-	
+
 	if (argc!=3){
 		cerr<<"usage : test-lqup <p> <A>"<<endl
 		    <<"         to compute the rank profile of the (n+m)xn matrix B formed by the n identity vectors and the mxn matrix A over Z/pZ"
@@ -40,7 +42,7 @@ int main(int argc, char** argv){
 	Field F(atoi(argv[1]));
 	Field::Element one;
 	F.init(one, 1UL);
-	Field::Element * A = read_field<Field> (F,argv[2],&m,&n);
+	Field::Element * A = read_field<Field> (F,argv[2],(int*)&m,(int*)&n);
 
 	Field::Element * B = new Field::Element[(m+n)*n];
 	for (size_t i=0; i<(n+m)*n;++i) *(B+i)=0;
@@ -71,14 +73,14 @@ int main(int argc, char** argv){
 
 	size_t * P = new size_t[n];
 	size_t * Q = new size_t[n+m];
-	FFPACK::LUdivine(F, FFLAS::FflasNonUnit, m+n, n, B, n, P, Q, FFPACK::FfpackLQUP);
+	FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,(int)m+n, n, B, n, P, Q, FFPACK::FfpackLQUP);
 
 	printvect (cout<<"RankProfile (A) = "<<endl, rp, n)<<endl;
 
 	printvect (cout<<"RankProfile (B) = "<<endl, Q, n)<<endl;
 
 
-	
-	
-	return 0;	       
+
+
+	return 0;
 }

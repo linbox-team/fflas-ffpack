@@ -1,17 +1,18 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for rank
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 
@@ -31,11 +32,11 @@ int main(int argc, char** argv){
 	Field F (atoi(argv[1]));
 	Field::Element * A;
 	Field::Element * X;
-	
+
 	A = read_field(F,argv[2],&m ,&n);
 	write_field (F, cerr<<"A = "<<endl, A, m, n, n);
-		
-	Timer tim,t; t.clear();tim.clear(); 
+
+	Timer tim,t; t.clear();tim.clear();
 	size_t R;
 
 	FFPACK::ColRankProfileSubmatrix (F, m, n, A, n, X, R);
@@ -46,7 +47,7 @@ int main(int argc, char** argv){
 	if (r2 != R)
 		std::cerr<<"Fail : Rank (X) != Rank (A)"<<std::endl;
 
-	
+
 
 	delete[]X;
 	delete[]A;

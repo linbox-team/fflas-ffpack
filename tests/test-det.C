@@ -1,17 +1,18 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for det
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 using namespace std;
@@ -33,8 +34,8 @@ int main(int argc, char** argv){
 	Field F(atof(argv[1]));
 	Field::Element * A;
 	A = read_field(F,argv[2],&n,&n);
-		
-	Timer tim,t; t.clear();tim.clear(); 
+
+	Timer tim,t; t.clear();tim.clear();
 	Field::Element d=0;
 	for(int i = 0;i<nbit;++i){
 		t.clear();
@@ -47,13 +48,13 @@ int main(int argc, char** argv){
 			A = read_field(F,argv[2],&n,&n);
 		}
 	}
-		
+
 	double mflops = 2.0/3.0*(n*n/1000000.0)*nbit*n/tim.usertime();
 	F.write (cerr<<"n = "<<n<<" Det (A) = ",d)
 		     << " mod "<<atoi(argv[1])<<" : t= "
-		     << tim.usertime()/nbit 
+		     << tim.usertime()/nbit
 		     << " s, Mffops = "<<mflops
 		     << endl;
-	
+
 	cout<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 }

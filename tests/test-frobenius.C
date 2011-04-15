@@ -1,4 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //          Test for the krylov-elimination
 //--------------------------------------------------------------------------
@@ -11,13 +12,13 @@
 
 #include <iostream>
 #include <iomanip>
-#include <list> 
+#include <list>
 #include <vector>
 #include "Matio.h"
 #include "timer.h"
 using namespace std;
-#include "fflas-ffpack/modular-positive.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 typedef Modular<double> Field;
@@ -33,7 +34,7 @@ int main(int argc, char** argv){
 
 	int m,n;
 	cout<<setprecision(20);
-	
+
 	if (argc!=4){
 		cerr<<"usage : test-frobenius <p> <A> <c>"<<endl
 	 	    <<"         to compute the frobenius normal form of the matrix A over Z/pZ, with conditonning parameter c"
@@ -45,18 +46,18 @@ int main(int argc, char** argv){
 	F.init(one, 1UL);
 	Field::Element * A = read_field<Field> (F,argv[2],&m,&n);
 	size_t c = atoi(argv[3]);
-	
+
 	std::list<vector<Field::Element> > frobForm;
 	Timer tim;
 	tim.clear();
 	tim.start();
 	FFPACK::CharpolyArithProg (F, frobForm, n, A, n, c);
-	tim.stop(); 
+	tim.stop();
 	std::list<vector<Field::Element> >::iterator it = frobForm.begin();
 	while(it != frobForm.end()){
 		printvect (cout, *(it++));
 	}
 	cerr<<c<<" "<<tim.usertime()<<" "<<4.55*n*n/1000000.0*n/tim.usertime()<<endl;
 	delete[] A;
-	return 0;	       
+	return 0;
 }

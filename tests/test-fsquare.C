@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for fsquare : 1 computation
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -11,10 +12,10 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 
 
 using namespace std;
@@ -37,9 +38,9 @@ int main(int argc, char** argv){
 
 	Field::Element * A;
 	Field::Element * C;
-	size_t lda;
-	size_t ldb;
-	
+	// size_t lda;
+	// size_t ldb;
+
 	A = read_field(F,argv[2],&n,&n);
 	int nbit=atoi(argv[3]); // number of times the product is performed
 
@@ -48,7 +49,7 @@ int main(int argc, char** argv){
 	F.init (beta, (double)atoi(argv[5]));
 
 	C = new Field::Element[n*n];
-	Timer tim,t; t.clear();tim.clear(); 
+	Timer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
@@ -63,11 +64,11 @@ int main(int argc, char** argv){
 	     <<atoi(argv[1])<<"Z : [ "
 	     <<mflops<<" MFops in "<<tim.usertime()/nbit<<"s]"
 	     << endl;
-	
+
 	cerr<<"alpha, beta = "<<alpha <<", "<<beta <<endl;
 
 	cout<<n<<" "<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
-}  
+}
 
 

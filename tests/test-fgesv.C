@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for fgesv : 1 computation
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -13,10 +14,10 @@
 #include <iostream>
 using namespace std;
 
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 
@@ -42,18 +43,20 @@ int main(int argc, char** argv){
 	B = read_field(F,argv[3],&mb,&nb);
 
 	FFLAS::FFLAS_SIDE side = (atoi(argv[5])) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
-		
+
 	size_t ldx=0;
 	size_t rhs = (side == FFLAS::FflasLeft) ? nb : mb;
-	if (m != n)
+	if (m != n) {
 		if (side == FFLAS::FflasLeft){
 			X = new Field::Element[n*nb];
 			ldx = nb;
-		} else {
+		}
+		else {
 			X = new Field::Element[mb*m];
 			ldx = m;
 		}
-	
+	}
+
 	if ( ((side == FFLAS::FflasRight) && (n != nb))
 	     || ((side == FFLAS::FflasLeft)&&(m != mb)) ) {
 		cerr<<"Error in the dimensions of the input matrices"<<endl;
@@ -75,7 +78,7 @@ int main(int argc, char** argv){
 			std::cerr<<"System is inconsistent"<<std::endl;
 			exit(-1);
 		}
-			
+
 		t.stop();
 		time+=t.usertime();
 		if (i+1<nbit){
@@ -93,12 +96,12 @@ int main(int argc, char** argv){
 		std::cerr<<"System inconsistent"<<std::endl;
 		exit (-1);
 	}
-		
+
 	A = read_field(F,argv[2],&m,&n);
-			
+
 	B2 = new Field::Element[mb*nb];
 
-	
+
 	if (m==n)
 		if (side == FFLAS::FflasLeft)
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
@@ -127,13 +130,13 @@ int main(int argc, char** argv){
 				    <<endl;
 				wrong = true;
 			}
-	
+
 	if (wrong) {
 		cerr<<"FAIL"<<endl;
 		//write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
 		//write_field (F,cerr<<"B="<<endl,B,m,n,n);
 	}else{
-	
+
 		cerr<<"PASS"<<endl;
 	}
 
@@ -154,10 +157,10 @@ int main(int argc, char** argv){
 	    <<"over Z/"<<atoi(argv[1])<<"Z :"
 	    <<endl
 	    <<"t= "
-	    << time/nbit 
+	    << time/nbit
 	    << " s, Mffops = "<<mflops
 	    << endl;
-	
+
 	cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
 #endif
 }

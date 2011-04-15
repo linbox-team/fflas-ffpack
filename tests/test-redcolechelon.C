@@ -1,4 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //          Test for the reduced column echelon factorisation
 //--------------------------------------------------------------------------
@@ -9,7 +10,7 @@
 //-------------------------------------------------------------------------
 #define DEBUG 1
 // Debug option  0: no debug
-//               1: check A = LQUP 
+//               1: check A = LQUP
 //-------------------------------------------------------------------------
 using namespace std;
 
@@ -19,8 +20,8 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-#include "fflas-ffpack/modular-balanced.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 typedef Modular<double> Field;
 
@@ -37,21 +38,21 @@ int main(int argc, char** argv){
 	}
 	Field F((unsigned long)atoi(argv[1]));
 	Field::Element * A;
-	
+
 	A = read_field(F,argv[2],&m,&n);
-	
+
 	size_t *P = new size_t[n];
 	size_t *Q = new size_t[m];
-		
+
 	//	size_t cutoff = atoi(argv[3]);
 	nbf = atoi(argv[3]);
-	
+
 	Timer tim,timc;
 	timc.clear();
 
 
 	for ( i=0;i<nbf;i++){
-		if (i) {		
+		if (i) {
 			delete[] A;
 			A = read_field(F,argv[2],&m,&n);
 		}
@@ -59,8 +60,8 @@ int main(int argc, char** argv){
 			P[j]=0;
 		for (j=0;j<m;j++)
 			Q[j]=0;
-		tim.clear();      
-		tim.start(); 	
+		tim.clear();
+		tim.start();
 		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q);
 		tim.stop();
 		timc+=tim;
@@ -79,11 +80,11 @@ int main(int argc, char** argv){
 	Field::Element * L = new Field::Element[m*n];
 	Field::Element * U = new Field::Element[n*n];
 	Field::Element * X = new Field::Element[m*n];
-	
+
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	
+
 	for (int i=0; i<R; ++i){
 		for (int j=0; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
@@ -93,7 +94,7 @@ int main(int argc, char** argv){
 			F.assign(*(U+i*n+j), zero);
 		F.init(*(U+i*(n+1)),one);
 	}
-	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, R, U, n, P);	
+	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, R, U, n, P);
 
 	for ( int i=0; i<R; ++i ){
 		for (int j=0; j < n ; ++j)
@@ -116,13 +117,13 @@ int main(int argc, char** argv){
 // 	for (size_t i=0; i<m;++i)
 // 		cerr<<" "<<Q[i];
 // 	cerr<<endl;
-	
+
 	// write_field(F,cerr<<"A = "<<endl,A,m,n,n);
 	//  	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
   	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 
 	Field::Element * B =  read_field(F,argv[2],&m,&n);
-	
+
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0,
 		      B, n, U, n, 0.0, X,n);
 	//delete[] A;
@@ -132,10 +133,10 @@ int main(int argc, char** argv){
 		for (int j=0; j<n; ++j)
 			if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
 				fail=true;
-	
+
 // 	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
 //   	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
-	
+
 	delete[] B;
 	if (fail)
 		cerr<<"FAIL"<<endl;
@@ -143,7 +144,7 @@ int main(int argc, char** argv){
 
 	else
 		cerr<<"PASS"<<endl;
-		
+
 // 	cout<<m<<" "<<n<<" M"<<endl;
 // 	for (size_t i=0; i<m; ++i)
 // 		for (size_t j=0; j<n; ++j)
@@ -161,16 +162,16 @@ int main(int argc, char** argv){
 
 	double t = timc.usertime();
 	double numops = 2*m*m/1000.0*n;
-	
-	cerr<<m<<"x"<< n 
+
+	cerr<<m<<"x"<< n
 	    << " : rank = " << R << "  ["
-	    << ((double)nbf/1000.0*(double)numops / t) 
+	    << ((double)nbf/1000.0*(double)numops / t)
 	    << " MFops "
 	    << " in "
 	    << t/nbf<<"s"
 	    <<"]"<< endl;
 // 	cout<<m
-// 	    <<" "<<((double)nbf/1000.0*(double)numops / t) 
+// 	    <<" "<<((double)nbf/1000.0*(double)numops / t)
 // 	    <<" "<<t/nbf
 // 	    <<endl;
 

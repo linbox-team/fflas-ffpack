@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
-//                        Test for nullspace 
-//                  
+//                        Test for nullspace
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -12,10 +13,10 @@ using namespace std;
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 typedef ModularBalanced<double> Field;
@@ -40,9 +41,9 @@ int main(int argc, char** argv){
 	Field::Element * A, *NS;
 	A = read_field(F,argv[2],&m,&n);
 
-	Timer tim,t; t.clear();tim.clear(); 
+	Timer tim,t; t.clear();tim.clear();
 	size_t  ldn, NSdim;
-	
+
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
@@ -58,20 +59,20 @@ int main(int argc, char** argv){
 	Field::Element *Ab = read_field(F,argv[2],&m,&n);
 	Field::Element *C = new Field::Element[NSdim*n];
  	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n,
- 		      1.0, Ab, n, NS, ldn, 0.0, C, NSdim); 
+ 		      1.0, Ab, n, NS, ldn, 0.0, C, NSdim);
 // 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NSdim, n, m,
-// 		      1.0, NS, ldn, Ab, n, 0.0, C, n); 
+// 		      1.0, NS, ldn, Ab, n, 0.0, C, n);
 	bool wrong = false;
 
 	for (int i=0;i<m;++i)
-		for (int j=0;j<NSdim;++j)
+		for (size_t j=0;j<NSdim;++j)
 			if (!F.areEqual(*(C+i*NSdim+j),zero))
 				wrong = true;
 // 	for (int i=0;i<NSdim;++i)
 // 		for (int j=0;j<n;++j)
 // 			if (!F.areEqual(*(C+i*n+j),zero))
 // 				wrong = true;
-	
+
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
 		write_field (F,cerr<<"A="<<endl,Ab,m,n,n);
@@ -92,10 +93,10 @@ int main(int argc, char** argv){
 #if TIME
 	double mflops = 2*(n*n/1000000.0)*nbit*n/tim.usertime();
 	cerr<<"NSdim = "<<NSdim<<" Nullspace over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tim.usertime()/nbit 
+	     << tim.usertime()/nbit
 	     << " s, Mffops = "<<mflops
 	     << endl;
-	
+
 	cout<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
 }

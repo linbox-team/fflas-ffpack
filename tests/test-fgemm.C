@@ -1,12 +1,13 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for fgemm : 1 computation
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 1 
+#define DEBUG 1
 #define NEWWINO
 #define TIME 1
 
@@ -14,12 +15,12 @@
 #include <iostream>
 using namespace std;
 
-//#include "fflas-ffpack/modular-positive.h"
-//#include "fflas-ffpack/modular-balanced.h"
-#include "fflas-ffpack/modular-int.h"
+//#include "fflas-ffpack/field/modular-positive.h"
+//#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/field/modular-int.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 
 
 
@@ -58,7 +59,7 @@ int main(int argc, char** argv){
 	Field::Element * B;
 	size_t lda;
 	size_t ldb;
-	
+
 	enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
 	enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
 	if (atoi(argv[9])){
@@ -79,12 +80,12 @@ int main(int argc, char** argv){
 		B = read_field(F,argv[3],&k,&n);
 		ldb = n;
 	}
-	
+
 	Field::Element * C=NULL;
 
 // 	write_field (F, cerr<<"A = "<<endl, A, m, k, lda);
 // 	write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);
-	Timer tim,t; t.clear();tim.clear(); 
+	Timer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit;++i){
 		if (!F.isZero(beta)){
 			C = read_field(F,argv[8],&m,&n);
@@ -112,7 +113,8 @@ int main(int argc, char** argv){
 		for (int i=0; i<m*n; ++i)
 			F.assign (*(Cd+i), zero);
 	}
-	Field::Element aij, bij, beta_alpha, tmp;
+	Field::Element aij, bij,  tmp;
+	// Field::Element beta_alpha;
 	//F.div (beta_alpha, beta, alpha);
 	for (int i = 0; i < m; ++i)
 		for (int j = 0; j < n; ++j){
@@ -129,7 +131,7 @@ int main(int argc, char** argv){
 					bij = *(B+j*ldb+l);
 				//F.mul (tmp, aij, bij);
 				//F.axpyin( *(Cd+i*n+j), alpha, tmp );
-				F.axpyin (tmp, aij, bij); 
+				F.axpyin (tmp, aij, bij);
 			}
 			F.axpyin (*(Cd+i*n+j), alpha, tmp);
 			//F.mulin( *(Cd+i*n+j),alpha );
@@ -159,10 +161,10 @@ int main(int argc, char** argv){
 #if TIME
 	double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tim.usertime();
 	cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tim.usertime()/nbit 
+	     << tim.usertime()/nbit
 	     << " s, Mffops = "<<mflops
 	     << endl;
-	
+
 	cerr<<"m,n,k,nbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
 	    <<", "<<beta<<", "<<nbw<<endl
 	    <<alpha
@@ -172,6 +174,6 @@ int main(int argc, char** argv){
 	cout<<m<<" "<<n<<" "<<k<<" "<<nbw<<" "<<alpha<<" "<<beta<<" "
 	    <<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
-}  
+}
 
 

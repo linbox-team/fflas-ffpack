@@ -1,17 +1,18 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for rank
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 
@@ -34,8 +35,8 @@ int main(int argc, char** argv){
 	Field F(atof(argv[1]));
 	Field::Element * A;
 	A = read_field(F,argv[2],&m ,&n);
-		
-	Timer tim,t; t.clear();tim.clear(); 
+
+	Timer tim,t; t.clear();tim.clear();
 	Field::Element r=0;
 	for(int i = 0;i<nbit;++i){
 		t.clear();
@@ -52,9 +53,9 @@ int main(int argc, char** argv){
 	double mflops = 2.0/3.0*(n*r/1000000.0)*nbit*n/tim.usertime();
 	F.write (cerr<<"m,n = "<<m<<", "<<n<<" Rank (A) = ",r)
 		     << " mod "<<atoi(argv[1])<<" : t= "
-		     << tim.usertime()/nbit 
+		     << tim.usertime()/nbit
 		     << " s, Mffops = "<<mflops
 		     << endl;
-	
+
 	cout<<m<<" "<<n<<" "<<r<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 }

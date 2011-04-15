@@ -1,15 +1,16 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //          Test for the lsp factorisation
 //--------------------------------------------------------------------------
-// usage: test-lsp p A n, for n lsp factorization  
+// usage: test-lsp p A n, for n lsp factorization
 // of A over Z/pZ
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
 #define DEBUG 0
 // Debug option  0: no debug
-//               1: check A = LQUP 
+//               1: check A = LQUP
 //-------------------------------------------------------------------------
 using namespace std;
 
@@ -19,8 +20,8 @@ using namespace std;
 #include <iomanip>
 #include "Matio.h"
 #include "timer.h"
-#include "fflas-ffpack/modular-balanced.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 //typedef ModularBalanced<double> Field;
 typedef ModularBalanced<float> Field;
@@ -38,14 +39,14 @@ int main(int argc, char** argv){
 	}
 	Field F(atof(argv[1]));
 	Field::Element * A;
-	
+
 	A = read_field(F,argv[2],&m,&n);
-	
+
 	size_t maxP, maxQ;
-			
+
 	//	size_t cutoff = atoi(argv[3]);
 	size_t nbf = atoi(argv[3]);
-	
+
 	Timer tim,timc;
 	timc.clear();
 
@@ -60,10 +61,10 @@ int main(int argc, char** argv){
 	}
 	size_t *P = new size_t[maxP];
 	size_t *Q = new size_t[maxQ];
-		
+
 	//write_field (F,cerr<<"A = "<<endl, A, m,n,n);
 	for ( size_t i=0;i<nbf;i++){
-		if (i) {		
+		if (i) {
 			delete[] A;
 			A = read_field(F,argv[2],&m,&n);
 		}
@@ -71,8 +72,8 @@ int main(int argc, char** argv){
 			P[j]=0;
 		for (size_t j=0;j<maxQ;j++)
 			Q[j]=0;
-		tim.clear();      
-		tim.start(); 	
+		tim.clear();
+		tim.start();
 		R = FFPACK::LUdivine (F, diag, trans, m, n, A, n, P, Q,
 				      FFPACK::FfpackLQUP);
 		tim.stop();
@@ -94,7 +95,7 @@ int main(int argc, char** argv){
 	if (trans == FFLAS::FflasNoTrans){
 		L = new Field::Element[m*m];
 		U = new Field::Element[m*n];
-				
+
 		Field::Element zero,one;
 		F.init(zero,0.0);
 		F.init(one,1.0);
@@ -114,7 +115,7 @@ int main(int argc, char** argv){
 			for (; j<m; ++j )
 				F.assign( *(L+i*m+j), zero);
 		}
-		
+
 		// write_field(F,cerr<<"L = "<<endl,L,m,m,m);
 // 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m,0,R, L, m, Q);
@@ -126,7 +127,7 @@ int main(int argc, char** argv){
 		if (diag == FFLAS::FflasNonUnit)
 			for ( int i=0; i<R; ++i )
 				F.assign (*(U+i*(n+1)), *(A+i*(n+1)));
-			
+
 		else{
 			for ( int i=0; i<R; ++i ){
 				*(L+Q[i]*(m+1)) = *(A+Q[i]*n+i);
@@ -145,7 +146,7 @@ int main(int argc, char** argv){
 		L = new Field::Element[m*n];
 		U = new Field::Element[n*n];
 
-		
+
 		Field::Element zero,one;
 		F.init(zero,0.0);
 		F.init(one,1.0);
@@ -155,7 +156,7 @@ int main(int argc, char** argv){
 			for (int j=i+1; j<m; ++j)
 				F.assign (*(L + i + j*n), *(A+ i+j*n));
 		}
-		
+
 		for (int i=R;i<n; ++i)
 			for (int j=0; j<m; ++j)
 				F.assign(*(L+i+j*n), zero);
@@ -217,21 +218,21 @@ int main(int argc, char** argv){
 	delete[] A;
 	delete[] P;
 	delete[] Q;
-	
+
 	double t = timc.realtime();
 	double numops = m*m/1000.0*(n-m/3.0);
-	
+
 	cerr<<m<<"x"<< n
 	    << " Trans = "<<trans
 	    << " Diag = "<<diag
 	    << " : rank = " << R << "  ["
-	    << ((double)nbf/1000.0*(double)numops / t) 
+	    << ((double)nbf/1000.0*(double)numops / t)
 	    << " MFops "
 	    << " in "
 	    << t/nbf<<"s"
 	    <<"]"<< endl;
 // 	cout<<m
-// 	    <<" "<<((double)nbf/1000.0*(double)numops / t) 
+// 	    <<" "<<((double)nbf/1000.0*(double)numops / t)
 // 	    <<" "<<t/nbf
 // 	    <<endl;
 

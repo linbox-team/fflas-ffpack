@@ -1,7 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //--------------------------------------------------------------------------
 //                        Test for the  lqup decomposition
-//                  
+//
 //--------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
@@ -10,12 +11,12 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
-//#include "fflas-ffpack/modular-int.h"
-//#include "fflas-ffpack/modular-positive.h"
-#include "fflas-ffpack/modular-balanced.h"
+//#include "fflas-ffpack/field/modular-int.h"
+//#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "timer.h"
 #include "Matio.h"
-#include "fflas-ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 #include "givaro/givintprime.h"
 
 
@@ -30,16 +31,16 @@ typedef ModularBalanced<double> Field;
 
 int main(int argc, char** argv){
 	Timer tim;
-	IntPrimeDom IPD;
+	Givaro::IntPrimeDom IPD;
 	unsigned long p;
 	size_t M, N ;
 	bool keepon = true;
-	Integer _p,tmp;
+	Givaro::Integer _p,tmp;
 	Field::Element zero,one;
 	cerr<<setprecision(10);
 	size_t TMAX = 100;
 	size_t PRIMESIZE = 23;
-	
+
 	if (argc > 1 )
 		TMAX = atoi(argv[1]);
 	if (argc > 2 )
@@ -58,14 +59,14 @@ int main(int argc, char** argv){
 			_p = random();//max % (2<<30);
 			IPD.prevprime( tmp, (_p% (1<<PRIMESIZE)) );
 			p =  tmp;
-			
+
 		}while( (p <= 2) );
-		
-		Field F( p); 
+
+		Field F( p);
 		F.init(zero,0.0);
 		F.init(one,1.0);
 		Field::RandIter RValue( F );
-		
+
 		do{
 			M = (size_t)  random() % TMAX;
 			N = (size_t)  random() % TMAX;
@@ -75,7 +76,7 @@ int main(int argc, char** argv){
 			diag = FFLAS::FflasUnit;
 		else
 			diag = FFLAS::FflasNonUnit;
-		
+
 
 		if (random()%2){
 			ta = FFLAS::FflasTrans;
@@ -95,7 +96,7 @@ int main(int argc, char** argv){
 			for (size_t i=0; i<N; ++i) P[i] = 0;
 			for (size_t i=0; i<M; ++i) Q[i] = 0;
 		}
-		
+
 		size_t R=0;
 		Field::Element * G = new Field::Element[M*M];
 		Field::Element * H = new Field::Element[M*N];
@@ -110,8 +111,8 @@ int main(int argc, char** argv){
 			else
 				for (size_t j=0; j < M; ++j)
 					F.assign(*(G+i*M+j), zero);
-			
-		
+
+
 
 		for (size_t j=0; j < N; ++j)
 			if (!(random() % t))
@@ -127,21 +128,21 @@ int main(int argc, char** argv){
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, M, one, G, M, H, N, zero, A, N);
 		delete[] G;
 		delete[] H;
-		
+
 		Abis = new Field::Element[M*N];
 		for (size_t i=0; i<M*N; ++i)
 			*(Abis+i) = *(A+i);
-		
+
 		X = new Field::Element[M*N];
-		
-		
+
+
 		cout <<"p = "<<(size_t)p<<" M = "<<M
 		     <<" N = "<<N
 		     <<((diag==FFLAS::FflasUnit)?" Unit ":" Non Unit ")
 		     <<((ta==FFLAS::FflasNoTrans)?"LQUP ( A ) ":"LQUP ( A^T ) ")
-		     <<"...."; 
+		     <<"....";
 
-			
+
 		tim.clear();
 		tim.start();
 		R = FFPACK::LUdivine (F, diag, ta, M, N, A, lda, P, Q);
@@ -149,9 +150,9 @@ int main(int argc, char** argv){
 
 
 		//write_field(F,cerr<<"Result = "<<endl,Abis,M,N,lda);
-		
+
 		if (ta == FFLAS::FflasNoTrans){
-			
+
 			for (size_t i=0; i<R; ++i){
 				for (size_t j=0; j<i; ++j)
 					F.assign ( *(U + i*N + j), zero);
@@ -168,37 +169,37 @@ int main(int argc, char** argv){
 				for (; j<M; ++j )
 					F.assign( *(L+i*M+j), zero);
 			}
-			
+
 			//write_field(F,cerr<<"L = "<<endl,L,M,M,M);
 			//write_field(F,cerr<<"U = "<<endl,U,M,N,N);
 			FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M,0,R, L, M, Q);
 			for ( size_t  i=0; i<M; ++i )
 				F.assign(*(L+i*(M+1)), one);
-			
+
 			if (diag == FFLAS::FflasNonUnit)
 				for ( size_t  i=0; i<R; ++i )
 					F.assign (*(U+i*(N+1)), *(A+i*(lda+1)));
-			
+
 			else{
 				for (size_t i=0; i<R; ++i ){
 					*(L+Q[i]*(M+1)) = *(A+Q[i]*lda+i);
 					F.assign (*(U+i*(N+1)),one);
 				}
 			}
-			
+
 			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M,0,R, U, N, P);
 			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, U, N, Q);
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,M, 1.0, L,M, U,N, 0.0, X,N);
 			//delete[] A;
 		} else {
-			
+
 			for (size_t i=0; i<R; ++i){
 				for (size_t j=0; j<i; ++j)
 					F.assign ( *(L + i + j*N), zero);
 				for (size_t j=i+1; j<M; ++j)
 					F.assign (*(L + i + j*N), *(A+ i+j*N));
 			}
-			
+
 			for (size_t i=R;i<N; ++i)
 				for (size_t j=0; j<M; ++j)
 					F.assign(*(L+i+j*N), zero);
@@ -209,7 +210,7 @@ int main(int argc, char** argv){
 				for (; j<N; ++j )
 					F.assign( *(U+i+j*N), zero);
 			}
-			
+
 			FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, U, N, Q);
 			for (size_t i=0; i<N; ++i)
 				F.assign (*(U+i*(N+1)),one);
@@ -224,7 +225,7 @@ int main(int argc, char** argv){
 			}
 			// write_field(F,cerr<<"L = "<<endl,L,M,N,N);
 // 			write_field(F,cerr<<"U = "<<endl,U,N,N,N);
-			
+
 			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, L, N, P);
 			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M,0,R, L, N, Q);
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, 1.0, L,N, U,N, 0.0, X,N);
@@ -235,14 +236,14 @@ int main(int argc, char** argv){
 					cerr<<"error for i,j="<<i<<" "<<j<<" "<<*(Abis+i*N+j)<<" "<<*(X+i*N+j)<<endl;
 					keepon = false;
 				}
-		
+
 		//write_field(F,cerr<<"X = "<<endl,X,m,n,n);
 		//write_field(F,cerr<<"B = "<<endl,B,m,n,n);
-		
+
 		if (keepon){
 			cout<<"R = "<<R
 			    <<" Passed "
-			    <<(M*M/1000.0*(N-M/3.0)/tim.usertime()/1000.0)<<"Mfops"<<endl; 
+			    <<(M*M/1000.0*(N-M/3.0)/tim.usertime()/1000.0)<<"Mfops"<<endl;
 			delete[] A;
 			delete[] L;
 			delete[] U;
@@ -269,7 +270,7 @@ int main(int argc, char** argv){
 			if (*(Abis+i*lda+j))
 				cerr<<i+1<<" "<<j+1<<" "<<((int) *(Abis+i*lda+j) )<<endl;
 	cerr<<"0 0 0"<<endl<<endl;
-	
+
 	delete[] A;
 	delete[] Abis;
 	delete[] L;
