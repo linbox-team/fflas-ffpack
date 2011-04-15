@@ -5,6 +5,6 @@
 
 SUBDIRS=fflas ffpack field
 
-EXTRA_DIST=fflas-ffack.doxy
+EXTRA_DIST=fflas-ffpack.doxy
 
 pkginclude_HEADERS = config-blas.h

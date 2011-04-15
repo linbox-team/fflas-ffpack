@@ -55,7 +55,7 @@ int main(int argc, char** argv){
 	A[15+15*N] = 1;
 	A[16+16*N] = 1;
 	deg[0]  = 4; deg[1] = 4; deg[2] = 4;deg[3] = 2; deg[4] = 1; deg[5] =2;
-	for (size_t i=0; i<N; ++i)
+	for (size_t i=0; i<size_t(N); ++i)
 		A[11+i*N] = A[7+i*N] = A[3+i*N] = i % 10;
 
 	write_field(F, cerr, A, N, N, N);
