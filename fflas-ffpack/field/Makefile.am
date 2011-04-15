@@ -3,7 +3,9 @@
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
-pkginclude_HEADERS=        \
+pkgincludesubdir=$(pkgincludedir)/field
+
+pkgincludesub_HEADERS=        \
 		modular-balanced.h \
 		modular-positive.h \
 		nonzero-randiter.h \

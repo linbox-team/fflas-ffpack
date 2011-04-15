@@ -3,7 +3,9 @@
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
-pkginclude_HEADERS=        \
+pkgincludesubdir=$(pkgincludedir)/fflas
+
+pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
 	   fflas_fcopy.inl       \
 	   fflas_ftrmm.inl       \

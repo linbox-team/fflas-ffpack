@@ -3,7 +3,9 @@
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
-pkginclude_HEADERS=        \
+pkgincludesubdir=$(pkgincludedir)/ffpack
+
+pkgincludesub_HEADERS=        \
 		ffpack_charpoly_danilevski.inl        \
 		ffpack_charpoly.inl                   \
 		ffpack_charpoly_kgfastgeneralized.inl \
