@@ -15,7 +15,8 @@ template<class Field>
 inline typename Field::Element
 FFLAS::fdot( const Field& F, const size_t N,
 		     const typename Field::Element * x, const size_t incx,
-		     const typename Field::Element * y, const size_t incy ){
+		     const typename Field::Element * y, const size_t incy )
+{
 
 	typename Field::Element d;
 	const typename Field::Element* xi = x;
@@ -30,7 +31,8 @@ template<>
 inline FFLAS::DoubleDomain::Element
 FFLAS::fdot( const DoubleDomain& , const size_t N,
 	     const DoubleDomain::Element * x, const size_t incx,
-	     const DoubleDomain::Element * y, const size_t incy ){
+	     const DoubleDomain::Element * y, const size_t incy )
+{
 
 	return cblas_ddot( N, x, incx, y, incy );
 }

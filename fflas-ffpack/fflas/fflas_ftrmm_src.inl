@@ -191,6 +191,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;
 	size_t nrestsplit = ((__FFLAS__Na-1) % nsplit) +1;
+	fflaflas_check(__FFLAS__Na == nsplit*nbblocsplit+nrestsplit);
 
 	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,

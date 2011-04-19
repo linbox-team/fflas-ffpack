@@ -13,7 +13,8 @@ template<class Field>
 inline void
 FFLAS::fcopy (const Field& F, const size_t N,
 	      typename Field::Element * X, const size_t incX,
-	      const typename Field::Element * Y, const size_t incY ){
+	      const typename Field::Element * Y, const size_t incY )
+{
 
 	typename Field::Element * Xi = X;
 	const typename Field::Element * Yi=Y;

@@ -15,7 +15,8 @@ FFLAS::fger (const Field& F, const size_t M, const size_t N,
 	     const typename Field::Element alpha,
 	     const typename Field::Element * x, const size_t incx,
 	     const typename Field::Element * y, const size_t incy,
-	     typename Field::Element * A, const size_t lda){
+	     typename Field::Element * A, const size_t lda)
+{
 
 	static typename Field::Element one, mone, tmp;
 	F.init( one, 1UL );
@@ -76,7 +77,8 @@ FFLAS::fger( const DoubleDomain& , const size_t M, const size_t N,
 		     const DoubleDomain::Element alpha,
 		     const DoubleDomain::Element * x, const size_t incx,
 		     const DoubleDomain::Element * y, const size_t incy,
-		     DoubleDomain::Element * A, const size_t lda){
+		     DoubleDomain::Element * A, const size_t lda)
+{
 
 	cblas_dger( CblasRowMajor, M, N, alpha, x, incx, y, incy, A, lda );
 }

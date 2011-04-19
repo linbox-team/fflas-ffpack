@@ -1,0 +1,13 @@
+// This is part of Fflas-Ffpack
+// Copyright(c) 2011 Fflas-Ffpack
+// Written by BB <bboyer@imag.fr>
+// See COPYING for licence information
+
+/** \ingroup fflas-ffpack
+ *   \defgroup ffpack ffpack
+ *
+ *	\brief Class FFPACK provides functions using fflas much as Lapack uses BLAS.
+ *
+ */
+
+// vim:syn=doxygen

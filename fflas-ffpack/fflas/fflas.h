@@ -25,21 +25,21 @@
 #define MIN(a,b) ((a > b)?b:a)
 #endif
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-#include "linbox/config-blas.h"
-#include "linbox/field/unparametric.h"
-#include "linbox/field/modular-double.h"
-#include "linbox/field/modular-float.h"
-#include "linbox/field/modular-balanced-double.h"
-#include "linbox/field/modular-balanced-float.h"
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+// #include "linbox/config-blas.h"
+// #include "linbox/field/unparametric.h"
+// #include "linbox/field/modular-double.h"
+// #include "linbox/field/modular-float.h"
+// #include "linbox/field/modular-balanced-double.h"
+// #include "linbox/field/modular-balanced-float.h"
 // namespace LinBox
 // {
-#else
+// #else
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-#endif
+// #endif
 
 #ifndef __FFLAFLAS_STRASSEN_OPTIMIZATION
 #define WINOTHRESHOLD 1000
@@ -367,7 +367,7 @@ public:
 // Level 3 routines
 //---------------------------------------------------------------------
 
-	/** @brief ftrsm: TRiangular System solve with matrix.
+	/** @brief ftrsm: <b>TR</b>iangular <b>S</b>ystem solve with <b>M</b>atrix.
 	 * Computes  \f$ B \gets \alpha \mathrm{op}(A^{-1}) B\f$ or  \f$B \gets \alpha B \mathrm{op}(A^{-1})\f$.
 	 * \param F field
 	 * \param Side if \c Side==FflasLeft then  \f$ B \gets \alpha \mathrm{op}(A^{-1}) B\f$ is computed.
@@ -381,7 +381,8 @@ public:
 	 * @param lda leading dim of \p A
 	 * @param B matrix of size \p MxN
 	 * @param ldb leading dim of \p B
-	 * @warning unsafe with \c Trans==FflasTrans (debugging in progress)
+	 * @bug unsafe with \c Trans==FflasTrans (debugging in progress)
+	 * @bug \f$\alpha\f$ must be non zero.
 	 */
 	template<class Field>
 	static void
@@ -394,13 +395,13 @@ public:
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb);
 
-	/** @brief ftrmm: TRiangular Matrix Multiply.
+	/** @brief ftrmm: <b>TR</b>iangular <b>M</b>atrix <b>M</b>ultiply.
 	 * Computes  \f$ B \gets \alpha \mathrm{op}(A) B\f$ or  \f$B \gets \alpha B \mathrm{op}(A)\f$.
 	 * @param F field
 	 * \param Side if \c Side==FflasLeft then  \f$ B \gets \alpha \mathrm{op}(A) B\f$ is computed.
 	 * \param Uplo if \c Uplo==FflasUpper then \p A is upper triangular
 	 * \param TransA if \c TransA==FflasTrans then \f$\mathrm{op}(A)=A^t\f$.
-	 * \param Diag if \c Diag==FflasUnit then \p A is unit.
+	 * \param Diag if \c Diag==FflasUnit then \p A is implicitly unit.
 	 * \param M rows of \p B
 	 * \param N cols of \p B
 	 * @param alpha scalar
@@ -408,7 +409,7 @@ public:
 	 * @param lda leading dim of \p A
 	 * @param B matrix of size \p MxN
 	 * @param ldb leading dim of \p B
-	 * @warning unsafe with \c Trans==FflasTrans (debugging in progress)
+	 * @bug unsafe with \c Trans==FflasTrans (debugging in progress)
 	 */
 	template<class Field>
 	static void
@@ -432,7 +433,6 @@ public:
 	 * \param n see \p B
 	 * \param alpha scalar
 	 * \param beta scalar
-	 * \param w recursive levels of Winograd's algorithm are used
 	 * \param A \f$\mathrm{op}(A)\f$ is \f$m \times k\f$
 	 * \param B \f$\mathrm{op}(B)\f$ is \f$k \times n\f$
 	 * \param C \f$C\f$ is \f$m \times n\f$
@@ -440,6 +440,7 @@ public:
 	 * \param ldb leading dimension of \p B
 	 * \param ldc leading dimension of \p C
 	 * \param w recursive levels of Winograd's algorithm are used
+	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field>
 	static typename Field::Element*
@@ -493,6 +494,7 @@ public:
 	 * \param lda leading dimension of \p A
 	 * \param ldb leading dimension of \p B
 	 * \param ldc leading dimension of \p C
+	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field>
 	static typename Field::Element*
@@ -516,6 +518,14 @@ public:
 			return C;
 		}
 
+#ifdef _LB_DEBUG
+		/*  check if alpha is invertible. XXX do it in F.isInvertible(Element&) ? */
+		typename Field::Element e ;
+		F.init(e,1);
+		F.divin(e,alpha);
+		F.mulin(e,alpha);
+		fflaflas_check(F.isOne(e));
+#endif
 		size_t w, kmax;
  		FFLAS_BASE base;
 
@@ -1090,9 +1100,9 @@ protected:
 
 #include "fflas_faddm.inl"
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
+// #ifdef _LINBOX_LINBOX_CONFIG_H
 // }
-#endif
+// #endif
 
 #undef LB_TRTR
 

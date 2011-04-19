@@ -29,6 +29,7 @@
 #ifndef __FIELD_UNPARAMETRIC_H
 #define __FIELD_UNPARAMETRIC_H
 
+#include <iostream> // std::cout
 #include <string>
 #include <algorithm>
 

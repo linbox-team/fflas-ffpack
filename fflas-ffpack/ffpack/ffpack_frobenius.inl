@@ -24,6 +24,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			   const size_t c)
 {
 
+	fflaflas_check(c);
 	static typename Field::Element one, zero, mone;
 	F.init(one, 1UL);
 	F.neg(mone, one);
@@ -31,10 +32,13 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	size_t * rp = new size_t[2*N];
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
+	size_t Nnoc = N*noc;
 
 	// Building the workplace matrix
-	typename Field::Element *K = new typename Field::Element[N*(noc*c)];
-	typename Field::Element *K2 = new typename Field::Element[N*(noc*c)];
+	typename Field::Element *K  = new typename Field::Element[Nnoc*c];
+	typename Field::Element *K2 = new typename Field::Element[Nnoc*c];
+	// for (size_t i = 0 ; i < Nnoc*c ; ++i)
+		// K[i] = zero;
 	size_t ldk = N;
 
 	size_t *dA = new size_t[N]; //PA
@@ -53,10 +57,12 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	// Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
 	for (size_t i = 1; i<c; ++i){
+// #warning "leaks here"
 		fgemm( F, FflasNoTrans, FflasTrans,  noc, N, N, one,
-		       K+(i-1)*noc*ldk, ldk, A, lda, zero, K+i*noc*ldk, ldk);
+		       K+(i-1)*Nnoc, ldk, A, lda, zero, K+i*Nnoc, ldk);
 	}
 	// K2 <- K (re-ordering)
+	//! @todo swap to save space ??
 	size_t w_idx = 0;
 	for (size_t i=0; i<noc; ++i)
 		for (size_t j=0; j<c; ++j, w_idx++)
@@ -495,7 +501,7 @@ void FFPACK::DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 	size_t currtmp = 0;
 	for (int i=0; i<int(nb_blocs)-1; ++i)
 		zeroblockdim += deg - d[i];
-	for (size_t i=0; i < zeroblockdim - 1; ++i, ++currtmp)
+	for (int i=0; i < zeroblockdim - 1; ++i, ++currtmp)
 		fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + (N - zeroblockdim +i)*lda, 1);
 	currtmp--;
 	size_t w_idx = N - 2;

@@ -23,19 +23,20 @@
 #ifndef __FFLAFLAS_ffpack_H
 #define __FFLAFLAS_ffpack_H
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-#include "linbox/fflas/fflas.h"
-#else
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+// #include "linbox/fflas/fflas.h"
+// #else
 #include "fflas-ffpack/fflas/fflas.h"
-#endif
+// #endif
 
 #include <list>
 #include <vector>
+#include <iostream> // std::cout
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
+// #ifdef _LINBOX_LINBOX_CONFIG_H
 // namespace LinBox
 // {
-#endif
+// #endif
 
 	// The use of the small size LQUP is currently disabled:
 	// need for a better handling of element base (double, float, generic) combined
@@ -1808,9 +1809,9 @@
 #include "ffpack_krylovelim.inl"
 #include "ffpack_frobenius.inl"
 #include "ffpack_echelonforms.inl"
-#ifdef _LINBOX_LINBOX_CONFIG_H
+// #ifdef _LINBOX_LINBOX_CONFIG_H
 	// } // LinBox
-#endif
+// #endif
 
 #endif // __FFLAFLAS_ffpack_H
 

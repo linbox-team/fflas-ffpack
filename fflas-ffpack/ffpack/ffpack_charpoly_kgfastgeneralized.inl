@@ -22,6 +22,8 @@
 
 //#define LB_DEBUG
 
+#include <iostream> // std::cout
+
 #ifdef LB_DEBUG
 #include "tests/Matio.h"
 

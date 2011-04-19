@@ -13,7 +13,8 @@ inline void
 FFLAS::faxpy( const Field& F, const size_t N,
 		      const typename Field::Element a,
 		      const typename Field::Element * X, const size_t incX,
-		      typename Field::Element * Y, const size_t incY ){
+		      typename Field::Element * Y, const size_t incY )
+{
 
 	const typename Field::Element * Xi = X;
 	typename Field::Element * Yi=Y;
@@ -26,7 +27,8 @@ inline void
 FFLAS::faxpy( const DoubleDomain& , const size_t N,
 		      const DoubleDomain::Element a,
 		      const DoubleDomain::Element * x, const size_t incx,
-		      DoubleDomain::Element * y, const size_t incy ){
+		      DoubleDomain::Element * y, const size_t incy )
+{
 
 	cblas_daxpy( N, a, x, incx, y, incy);
 }

@@ -8,11 +8,14 @@
  * See COPYING for license information.
  */
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-#define FFLAS_INT_TYPE Integer
-#else
+#ifndef __FFLAFLAS_fflas_bounds_INL
+#define __FFLAFLAS_fflas_bounds_INL
+
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+// #define FFLAS_INT_TYPE Givaro::Integer
+// #else
 #define FFLAS_INT_TYPE long unsigned int
-#endif
+// #endif
 
 /** MatMulParameters.
  *
@@ -87,7 +90,7 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 	F.init (mone, -1.0);
 
 	unsigned long mantissa =
-		(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
+	(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
 
 	if (p == 0)
 		return 1;
@@ -116,7 +119,7 @@ inline size_t FFLAS::DotProdBound (const Field& F,
 		kmax = floor ( (double ((1ULL << mantissa) - cplt)) / (c*c));
 		if (kmax  <= 1)
 			return 1;
-		}
+	}
 
 	//kmax--; // we computed a strict upper bound
 	return  (size_t) MIN (kmax, 1ULL << 31);
@@ -137,7 +140,8 @@ inline double FFLAS::computeFactorWino (const Field& F, const size_t w)
 }
 
 template <class Field>
-inline double FFLAS::computeFactorClassic (const Field& F){
+inline double FFLAS::computeFactorClassic (const Field& F)
+{
 	FFLAS_INT_TYPE p;
 	F.characteristic(p);
 	return p-1;
@@ -188,7 +192,8 @@ inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const Field& F, const size_t w)
  *************************************************************************************/
 
 template <>
-inline double FFLAS::computeFactorWino (const ModularBalanced<double>& F, const size_t w){
+inline double FFLAS::computeFactorWino (const ModularBalanced<double>& F, const size_t w)
+{
 	FFLAS_INT_TYPE p;
 	F.characteristic(p);
 	size_t ex=1;
@@ -197,7 +202,8 @@ inline double FFLAS::computeFactorWino (const ModularBalanced<double>& F, const 
 }
 
 template <>
-inline double FFLAS::computeFactorClassic (const ModularBalanced<double>& F){
+inline double FFLAS::computeFactorClassic (const ModularBalanced<double>& F)
+{
 	FFLAS_INT_TYPE p;
 	F.characteristic(p);
 	return (p-1) >> 1;
@@ -206,25 +212,29 @@ inline double FFLAS::computeFactorClassic (const ModularBalanced<double>& F){
 
 template <>
 inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const Modular<double>& ,
-					     const size_t ){
+					     const size_t )
+{
 	return FflasDouble;
 }
 
 template <>
 inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const Modular<float>& ,
-					     const size_t ){
+					     const size_t )
+{
 	return FflasFloat;
 }
 
 template <>
 inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const ModularBalanced<double>& ,
-					     const size_t ){
+					     const size_t )
+{
 	return FflasDouble;
 }
 
 template <>
 inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const ModularBalanced<float>& ,
-					     const size_t ){
+					     const size_t )
+{
 	return FflasFloat;
 }
 
@@ -241,7 +251,8 @@ inline FFLAS::FFLAS_BASE FFLAS::BaseCompute (const ModularBalanced<float>& ,
  *
  */
 template <class Field>
-inline size_t FFLAS::TRSMBound (const Field& F) {
+inline size_t FFLAS::TRSMBound (const Field& F)
+{
 	return 1;
 }
 
@@ -251,12 +262,13 @@ inline size_t FFLAS::TRSMBound (const Field& F) {
  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
  */
 template<>
-inline size_t FFLAS::TRSMBound (const Modular<double>& F){
+inline size_t FFLAS::TRSMBound (const Modular<double>& F)
+{
 
 	FFLAS_INT_TYPE pi;
 	F.characteristic(pi);
 	unsigned long p = pi;
-	unsigned long long p1(1UL), p2(1UL);
+        unsigned long long p1(1UL), p2(1UL);
 	size_t nmax = 0;
 	unsigned long long max = ( (1ULL << (DOUBLE_MANTISSA + 1) ) / ((unsigned long long)(p - 1)));
 	while ( (p1 + p2) < max ){
@@ -274,12 +286,13 @@ inline size_t FFLAS::TRSMBound (const Modular<double>& F){
  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
  */
 template<>
-inline size_t FFLAS::TRSMBound (const Modular<float>& F){
+inline size_t FFLAS::TRSMBound (const Modular<float>& F)
+{
 
 	FFLAS_INT_TYPE pi;
 	F.characteristic(pi);
 	unsigned long p = pi;
-	unsigned long long p1(1UL), p2(1UL);
+        unsigned long long p1(1UL), p2(1UL);
 	size_t nmax = 0;
 	unsigned long long max = ( (1ULL << (FLOAT_MANTISSA + 1) ) / ((unsigned long long)(p - 1)));
 	while ( (p1 + p2) < max ){
@@ -296,12 +309,13 @@ inline size_t FFLAS::TRSMBound (const Modular<float>& F){
  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
  */
 template<>
-inline size_t FFLAS::TRSMBound (const ModularBalanced<double>& F){
+inline size_t FFLAS::TRSMBound (const ModularBalanced<double>& F)
+{
 
 	FFLAS_INT_TYPE pi;
 	F.characteristic (pi);
 	unsigned long p = (pi + 1) / 2;
-	unsigned long long p1(1UL);
+        unsigned long long p1(1UL);
 	size_t nmax = 0;
 	unsigned long long max = ((1ULL << (DOUBLE_MANTISSA + 1)) / ((unsigned long long)(p - 1)));
 	while (p1 < max){
@@ -317,12 +331,13 @@ inline size_t FFLAS::TRSMBound (const ModularBalanced<double>& F){
  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
  */
 template<>
-inline size_t FFLAS::TRSMBound (const ModularBalanced<float>& F){
+inline size_t FFLAS::TRSMBound (const ModularBalanced<float>& F)
+{
 
 	FFLAS_INT_TYPE pi;
 	F.characteristic (pi);
 	unsigned long p = (pi + 1) / 2;
-	unsigned long long p1(1UL);
+        unsigned long long p1(1UL);
 	size_t nmax = 0;
 	unsigned long long max = ((1ULL << (FLOAT_MANTISSA + 1)) / ((unsigned long long) (p - 1)));
 	while (p1 < max){
@@ -333,3 +348,4 @@ inline size_t FFLAS::TRSMBound (const ModularBalanced<float>& F){
 
 }
 
+#endif // __FFLAFLAS_fflas_bounds_INL
