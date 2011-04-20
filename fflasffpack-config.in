@@ -20,6 +20,7 @@ Known values for OPTION are:
 
   --prefix		show Givaro installation prefix 
   --libs		print library linking information
+  --blas-libs	print BLAS library linking information
   --cflags		print pre-processor and compiler flags
   --help		display this help and exit
   --version		output version information
@@ -61,13 +62,21 @@ while test $# -gt 0; do
 	;;
 
     --cflags)
-       	echo -I${includedir} @BLAS_CFLAGS@
+       	echo -I${includedir}  @GMP_CFLAGS@ @GIVARO_CFLAGS@ @CBLAS_FLAG@
 	;;
 
+    --blas-cflags)
+       	echo -I${includedir} @CBLAS_FLAG@
+	;;
+
+
     --libs)
-       	echo -L${libdir} -lfflasffpack @BLAS_LIBS@ 
+       	echo  @GMP_LIBS@ @GIVARO_LIBS@ @BLAS_LIBS@ 
        	;;
 
+    --blas-libs)
+       	echo  @BLAS_LIBS@ 
+       	;;
     *)
 	usage
 	exit 1

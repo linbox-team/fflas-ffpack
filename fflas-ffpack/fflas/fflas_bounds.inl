@@ -11,11 +11,11 @@
 #ifndef __FFLAFLAS_fflas_bounds_INL
 #define __FFLAFLAS_fflas_bounds_INL
 
-// #ifdef _LINBOX_LINBOX_CONFIG_H
-// #define FFLAS_INT_TYPE Givaro::Integer
-// #else
+#ifdef _LINBOX_LINBOX_CONFIG_H
+#define FFLAS_INT_TYPE Givaro::Integer
+#else
 #define FFLAS_INT_TYPE long unsigned int
-// #endif
+#endif
 
 /** MatMulParameters.
  *

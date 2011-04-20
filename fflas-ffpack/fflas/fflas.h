@@ -25,21 +25,21 @@
 #define MIN(a,b) ((a > b)?b:a)
 #endif
 
-// #ifdef _LINBOX_LINBOX_CONFIG_H
-// #include "linbox/config-blas.h"
-// #include "linbox/field/unparametric.h"
-// #include "linbox/field/modular-double.h"
-// #include "linbox/field/modular-float.h"
-// #include "linbox/field/modular-balanced-double.h"
-// #include "linbox/field/modular-balanced-float.h"
-// namespace LinBox
-// {
-// #else
+#ifdef _LINBOX_LINBOX_CONFIG_H
+#include "linbox/config-blas.h"
+#include "linbox/field/unparametric.h"
+#include "linbox/field/modular-double.h"
+#include "linbox/field/modular-float.h"
+#include "linbox/field/modular-balanced-double.h"
+#include "linbox/field/modular-balanced-float.h"
+namespace LinBox
+{
+#else
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-// #endif
+#endif
 
 #ifndef __FFLAFLAS_STRASSEN_OPTIMIZATION
 #define WINOTHRESHOLD 1000
@@ -1100,9 +1100,9 @@ protected:
 
 #include "fflas_faddm.inl"
 
-// #ifdef _LINBOX_LINBOX_CONFIG_H
-// }
-// #endif
+#ifdef _LINBOX_LINBOX_CONFIG_H
+}
+#endif
 
 #undef LB_TRTR
 

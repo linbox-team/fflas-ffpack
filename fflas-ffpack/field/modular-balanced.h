@@ -19,6 +19,7 @@
 #ifndef __FFLAFLAS_modular_balanced_double_H
 #define __FFLAFLAS_modular_balanced_double_H
 
+#ifndef _LINBOX_LINBOX_CONFIG
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -511,5 +512,6 @@ public:
 
 };
 
-#endif
+#endif // _LINBOX_LINBOX_CONFIG
+#endif // __FFLAFLAS_modular_balanced_double_H
 
