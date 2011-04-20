@@ -45,7 +45,7 @@ FFPACK::MinPoly( const Field& F, Polynomial& minP, const size_t N,
 
 	// nRow = 1;
 	// LUP factorization of the Krylov Base Matrix
-	k = LUdivine_construct (F, FflasUnit, N+1, N, A, lda, X, ldx, U, P, true,
+	k = LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, X, ldx, U, P, true,
 				MinTag, kg_mc, kg_mb, kg_j);
 	//delete[] U;
 	minP.resize(k+1);
@@ -58,8 +58,8 @@ FFPACK::MinPoly( const Field& F, Polynomial& minP, const size_t N,
 	}
 	// U contains the k first coefs of the minpoly
 	//elt* m= new elt[k];
-	fcopy( F, k, U, 1, X+k*ldx, 1);
-	ftrsv( F, FflasLower, FflasTrans, FflasNonUnit, k, X, ldx, U, 1);
+	FFLAS::fcopy( F, k, U, 1, X+k*ldx, 1);
+	ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, k, X, ldx, U, 1);
 	it = minP.begin();
 	for (j=0; j<k; ++j, it++){
 		F.neg(*it, U[j]);

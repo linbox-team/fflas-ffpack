@@ -60,7 +60,7 @@ size_t FFPACK::newD( const Field& F, size_t * d, bool& KeepOn,
 
 		if (j<nr){
 			minpt[i].resize(j);
-			ftrsv( F, FflasLower, FflasTrans, FflasUnit,
+			ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasUnit,
 			       j, Li, N, Xminp-j+N,1);
 			elt* Xi = Xminp-j+N;
 			for (size_t ii = 0; ii<j; ++ii, ++Xi)
@@ -131,7 +131,7 @@ FFPACK::KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t
 		P[i]=0;
 	for ( i=0;i<2*N;++i)
 		Q[i]=0;
-	LUdivine( F, FflasNonUnit, FflasNoTrans, 2*N, N, X, N, P, Q, FfpackLQUP);
+	LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, 2*N, N, X, N, P, Q, FfpackLQUP);
 
 	k = newD( F,d, KeepOn, l, N, X, Q, m);
 
@@ -185,9 +185,9 @@ FFPACK::KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t
 		// max block size of X, U, V is l=2^i
 		l*=2;
 		// B = A^2^i
-		fsquare( F, FflasNoTrans, N, one, B, N, zero, B, N );
+		fsquare( F, FFLAS::FflasNoTrans, N, one, B, N, zero, B, N );
 		// V = U.B^t
-		fgemm( F, FflasNoTrans, FflasNoTrans, N, N, N, one,
+		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N, N, N, one,
 		       U, N, B, N, zero, V, N);
 		// X = ( U1, V1, U2, V2, ... )
 		Xi = X; Ui = U; Vi = V;
@@ -222,7 +222,7 @@ FFPACK::KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t
 			P[i]=0;
 		for ( i=0;i<2*N;++i)
 			Q[i]=0;
-		LUdivine( F, FflasNonUnit, FflasNoTrans, nrowX, N, X, N, P, Q, FfpackLQUP);
+		LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, nrowX, N, X, N, P, Q, FfpackLQUP);
 
 		// Recompute the degrees of the list factors
 		k = newD(F, d, KeepOn, l, N, X,Q, m);

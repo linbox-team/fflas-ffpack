@@ -121,17 +121,17 @@ FFPACK::LUKrylov (const Field& F, std::list<Polynomial>& charp, const size_t N,
 		elt * X22 = X21 + k;
 		// Compute the n-k last rows of A' = PA^tP^t in X2_
 		// A = A . P^t
-		applyP (F, FflasRight, FflasTrans, Ncurr, 0, k, A, lda, P);
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Ncurr, 0, k, A, lda, P);
 		// Copy X2_ = (A'_2)^t
 		for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-Ncurr)
 			for (size_t jj=0; jj<Ncurr*lda; jj+=lda)
 				*(Xi++) = *(Ai+jj);
 		// A = A . P : Undo the permutation on A
-		applyP (F, FflasRight, FflasNoTrans, Ncurr, 0, k, A, lda, P);
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Ncurr, 0, k, A, lda, P);
 		// X2_ = X2_ . P^t (=  (P A^t P^t)2_)
-		applyP (F, FflasRight, FflasTrans, Nrest, 0, k, X21, ldx, P);
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0, k, X21, ldx, P);
 		// X21 = X21 . S1^-1
-		ftrsm(F, FflasRight, FflasUpper, FflasNoTrans, FflasUnit, Nrest, k,
+		ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
 		      one, X2, ldx, X21, ldx);
 		// Creation of the matrix A2 for recurise call
 		for (Xi = X22, Ai = A;
@@ -139,7 +139,7 @@ FFPACK::LUKrylov (const Field& F, std::list<Polynomial>& charp, const size_t N,
 		     Xi += (ldx-Nrest), Ai += (lda-Nrest))
 			for (size_t jj=0; jj<Nrest; ++jj)
 				*(Ai++) = *(Xi++);
-		fgemm (F, FflasNoTrans, FflasNoTrans, Nrest, Nrest, k, Mone,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, Mone,
 		       X21, ldx, X2+k, ldx, one, A, lda);
 		X2 = X22;
 		Ncurr = Nrest;
@@ -215,7 +215,7 @@ FFPACK::LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const siz
 		}
 		// Column block B
 		for (typename Field::Element* Ai=A; Ai<A+N*lda; Ai+=lda)
-			fcopy (F, kg_mb, Ai+lambda, 1, Ai+N-kg_mc-kg_mb, 1);
+			FFLAS::fcopy (F, kg_mb, Ai+lambda, 1, Ai+N-kg_mc-kg_mb, 1);
 
 		// Second Id block
 		imax = N- kg_j*kg_mc;
@@ -231,7 +231,7 @@ FFPACK::LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const siz
 		// Compute the n-k last rows of A' = PA^tP^t in X2_
 
 		// A = P . A
-		applyP (F, FflasLeft, FflasNoTrans, N, 0, k,
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, k,
 			const_cast<typename Field::Element* &>(A), lda, P);
 
 		// Copy X2_ = (A'2_)
@@ -242,14 +242,14 @@ FFPACK::LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const siz
 		}
 
 		// A = P^t . A : Undo the permutation on A
-		applyP (F, FflasLeft, FflasTrans, N, 0, k,
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, k,
 			const_cast<typename Field::Element* &>(A), lda, P);
 
 		// X2_ = X2_ . P^t (=  (P A P^t)2_)
-		applyP (F, FflasRight, FflasTrans, Nrest, 0, k, X21, ldx, P);
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0, k, X21, ldx, P);
 
 		// X21 = X21 . S1^-1
-		ftrsm(F, FflasRight, FflasUpper, FflasNoTrans, FflasUnit, Nrest, k,
+		ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
 		      one, X, ldx, X21, ldx);
 
 		// Creation of the matrix A2 for recurise call
@@ -262,7 +262,7 @@ FFPACK::LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const siz
 				*(A2i++) = *(Xi++);
 			}
 		}
-		fgemm (F, FflasNoTrans, FflasNoTrans, Nrest, Nrest, k, Mone,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, Mone,
 		       X21, ldx, X+k, ldx, one, A2, Nrest);
 
 		// Recursive call on X22

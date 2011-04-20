@@ -37,23 +37,23 @@ FFPACK::Danilevski (const Field& F, std::list<Polynomial>& charp,
 		while ((i<N) && F.isZero(*e)) { e += lda; i++; }
 		if (i < N){
 			if (i > k + 1) {
-				fswap (F, N-k, e, 1, pivot, 1);
-				fswap (F, N, A+i, lda, A+k+1, lda);
+				FFLAS::fswap (F, N-k, e, 1, pivot, 1);
+				FFLAS::fswap (F, N, A+i, lda, A+k+1, lda);
 			}
 			F.inv (invp, *pivot);
-			fscal (F, N-k-1, invp, pivot+1, 1);
-			fscal (F, N-dtot, *pivot, A+dtot*lda+k+1, lda);
+			FFLAS::fscal (F, N-k-1, invp, pivot+1, 1);
+			FFLAS::fscal (F, N-dtot, *pivot, A+dtot*lda+k+1, lda);
 			// X <- X - uw
-			fger (F, k + 1-dtot, N - k -1, mone,
+			FFLAS::fger (F, k + 1-dtot, N - k -1, mone,
 			      A + dtot*lda + k, lda, pivot+1, 1,
 			      A+k+1+dtot*lda, lda);
 			if (k<N-2){
 
 				// Y <- Y - vw
-				fger (F, N-k-2, N-k-1, mone, pivot+lda, lda, pivot+1, 1,
+				FFLAS::fger (F, N-k-2, N-k-1, mone, pivot+lda, lda, pivot+1, 1,
 				      pivot+lda+1,lda);
 				//6
-				fgemv (F, FflasNoTrans, N-dtot, N-k-2,
+				fgemv (F, FFLAS::FflasNoTrans, N-dtot, N-k-2,
 				       one, A+dtot*lda+k+2, lda, pivot+lda, lda, one,
 				       A+dtot*lda+k+1,lda);
 			}

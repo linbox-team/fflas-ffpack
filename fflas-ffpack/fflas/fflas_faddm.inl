@@ -15,104 +15,108 @@
 #include <emmintrin.h>
 #endif
 
-/** faddm
- * A <- A+op(B)
- * with op(B) = B or B^T
- */
+namespace FFLAS {
 
-template<class Field>
-inline void FFLAS::faddm(const Field & F,
-		  const FFLAS_TRANSPOSE transA,
-		  const size_t M, const size_t N,
-		  const typename Field::Element * A, const size_t lda,
-		        typename Field::Element * B, const size_t ldb)
-{
-	if (!M || !N) return ;
-	if (transA ==  FflasNoTrans)
-		faddmNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-	else
-		faddmTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-	return ;
-}
+	/** faddm
+	 * A <- A+op(B)
+	 * with op(B) = B or B^T
+	 */
 
-/** faddm
- * C <- op(A)+op(B)
- * with op(B) = B or B^T
- */
-
-template<class Field>
-inline void FFLAS::faddm(const Field & F,
-		  const FFLAS_TRANSPOSE transA,
-		  const FFLAS_TRANSPOSE transB,
-		  const size_t M, const size_t N,
-		  const typename Field::Element * A, const size_t lda,
-		  const typename Field::Element * B, const size_t ldb,
-		        typename Field::Element * C, const size_t ldc )
-{
-	if (!M || !N) return ;
-	if (transA ==  FflasNoTrans)
-		if (transB ==  FflasNoTrans)
-			faddmNoTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+	template<class Field>
+	inline void faddm(const Field & F,
+			  const FFLAS_TRANSPOSE transA,
+			  const size_t M, const size_t N,
+			  const typename Field::Element * A, const size_t lda,
+			  typename Field::Element * B, const size_t ldb)
+	{
+		if (!M || !N) return ;
+		if (transA ==  FflasNoTrans)
+			Protected::faddmNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 		else
-			faddmNoTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
-	else
-		if (transB ==  FflasNoTrans)
-			faddmTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			Protected::faddmTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+		return ;
+	}
+
+	/** faddm
+	 * C <- op(A)+op(B)
+	 * with op(B) = B or B^T
+	 */
+
+	template<class Field>
+	inline void faddm(const Field & F,
+			  const FFLAS_TRANSPOSE transA,
+			  const FFLAS_TRANSPOSE transB,
+			  const size_t M, const size_t N,
+			  const typename Field::Element * A, const size_t lda,
+			  const typename Field::Element * B, const size_t ldb,
+			  typename Field::Element * C, const size_t ldc )
+	{
+		if (!M || !N) return ;
+		if (transA ==  FflasNoTrans)
+			if (transB ==  FflasNoTrans)
+				Protected::faddmNoTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			else
+				Protected::faddmNoTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
 		else
-			faddmTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			if (transB ==  FflasNoTrans)
+				Protected::faddmTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			else
+				Protected::faddmTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
 
-	return ;
-}
+		return ;
+	}
 
-/** fsubm
- * A <- A-op(B)
- * with op(B) = B or B^T
- */
+	/** fsubm
+	 * A <- A-op(B)
+	 * with op(B) = B or B^T
+	 */
 
-template<class Field>
-inline void FFLAS::fsubm(const Field & F,
-		  const FFLAS_TRANSPOSE transA,
-		  const size_t M, const size_t N,
-		  const typename Field::Element * A, const size_t lda,
-		        typename Field::Element * B, const size_t ldb)
+	template<class Field>
+	inline void fsubm(const Field & F,
+			  const FFLAS_TRANSPOSE transA,
+			  const size_t M, const size_t N,
+			  const typename Field::Element * A, const size_t lda,
+			  typename Field::Element * B, const size_t ldb)
 
-{
-	if (!M || !N) return ;
-	if (transA ==  FflasNoTrans)
-		fsubmNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-	else
-		fsubmTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-	return ;
-}
-
-/** fsubm
- * C <- op(A)-op(B)
- * with op(B) = B or B^T
- */
-
-template<class Field>
-inline void FFLAS::fsubm(const Field & F,
-		  const FFLAS_TRANSPOSE transA,
-		  const FFLAS_TRANSPOSE transB,
-		  const size_t M, const size_t N,
-		  const typename Field::Element * A, const size_t lda,
-		  const typename Field::Element * B, const size_t ldb,
-		        typename Field::Element * C, const size_t ldc )
-{
-	if (!M || !N) return ;
-	if (transA ==  FflasNoTrans)
-		if (transB ==  FflasNoTrans)
-			fsubmNoTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+	{
+		if (!M || !N) return ;
+		if (transA ==  FflasNoTrans)
+			Protected::fsubmNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 		else
-			fsubmNoTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
-	else
-		if (transB ==  FflasNoTrans)
-			fsubmTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
-		else
-			fsubmTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			Protected::fsubmTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+		return ;
+	}
 
-	return ;
-}
+	/** fsubm
+	 * C <- op(A)-op(B)
+	 * with op(B) = B or B^T
+	 */
+
+	template<class Field>
+	inline void fsubm(const Field & F,
+			  const FFLAS_TRANSPOSE transA,
+			  const FFLAS_TRANSPOSE transB,
+			  const size_t M, const size_t N,
+			  const typename Field::Element * A, const size_t lda,
+			  const typename Field::Element * B, const size_t ldb,
+			  typename Field::Element * C, const size_t ldc )
+	{
+		if (!M || !N) return ;
+		if (transA ==  FflasNoTrans)
+			if (transB ==  FflasNoTrans)
+				Protected::fsubmNoTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			else
+				Protected::fsubmNoTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+		else
+			if (transB ==  FflasNoTrans)
+				Protected::fsubmTransNoTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+			else
+				Protected::fsubmTransTrans<typename Field::Element>()(F,M,N,A,lda,B,ldb,C,ldc);
+
+		return ;
+	}
+
+	namespace Protected {
 
 #undef __FFLAS__FLOAT
 #undef __FFLAS__DOUBLE
@@ -161,7 +165,7 @@ inline void FFLAS::fsubm(const Field & F,
 #undef  __FFLAS__TRANSPOSE
 #undef  __FFLAS__DOUBLE
 
-//
+		//
 #define __FFLAS__GENERIC
 #define __FFLAS__ANOTRANSPOSE // no A transpose
 #define __FFLAS__BNOTRANSPOSE // no B transpose
@@ -195,7 +199,7 @@ inline void FFLAS::fsubm(const Field & F,
 #undef  __FFLAS__ATRANSPOSE // no A transpose
 #undef  __FFLAS__GENERIC
 
-//
+		//
 #define __FFLAS__FLOAT
 #define __FFLAS__ANOTRANSPOSE // no A transpose
 #define __FFLAS__BNOTRANSPOSE // no B transpose
@@ -229,7 +233,7 @@ inline void FFLAS::fsubm(const Field & F,
 #undef  __FFLAS__ATRANSPOSE // no A transpose
 #undef  __FFLAS__FLOAT
 
-//
+		//
 #define __FFLAS__DOUBLE
 #define __FFLAS__ANOTRANSPOSE // no A transpose
 #define __FFLAS__BNOTRANSPOSE // no B transpose
@@ -266,3 +270,6 @@ inline void FFLAS::fsubm(const Field & F,
 
 #endif // __FFLAFLAS_fflas_faddm_H
 
+	} // Protected
+
+} // FFLAS

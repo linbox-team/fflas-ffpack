@@ -58,7 +58,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	// Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
 	for (size_t i = 1; i<c; ++i){
 // #warning "leaks here"
-		fgemm( F, FflasNoTrans, FflasTrans,  noc, N, N, one,
+		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N, one,
 		       K+(i-1)*Nnoc, ldk, A, lda, zero, K+i*Nnoc, ldk);
 	}
 	// K2 <- K (re-ordering)
@@ -66,11 +66,11 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	size_t w_idx = 0;
 	for (size_t i=0; i<noc; ++i)
 		for (size_t j=0; j<c; ++j, w_idx++)
-			fcopy(F, N, (K2+(w_idx)*ldk), 1, (K+(i+j*noc)*ldk), 1);
+			FFLAS::fcopy(F, N, (K2+(w_idx)*ldk), 1, (K+(i+j*noc)*ldk), 1);
 
 	// Copying K <- K2
 	for (size_t i=0; i<noc*c; ++i)
-		fcopy (F, N, (K+i*ldk), 1, K2+i*ldk, 1);
+		FFLAS::fcopy (F, N, (K+i*ldk), 1, K2+i*ldk, 1);
 
 	size_t * Pk = new size_t[N];
 	size_t * Qk = new size_t[N];
@@ -79,7 +79,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	for (size_t i=0; i<N; ++i)
 		Pk[i] = 0;
 
-	size_t R = LUdivine(F, FflasNonUnit, FflasNoTrans, N, N, K, ldk, Pk, Qk, FfpackLQUP);
+	size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk, FfpackLQUP);
 
 	size_t row_idx = 0;
 	size_t i=0;
@@ -112,28 +112,28 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	typename Field::Element * K4 = new typename Field::Element[Mk*N];
 	size_t bk_idx = 0;
 	for (size_t i = 0; i < Mk; ++i){
-		fcopy (F, N, (K3+i*ldk), 1, (K2 + (bk_idx + dK[i]-1)*ldk), 1);
+		FFLAS::fcopy (F, N, (K3+i*ldk), 1, (K2 + (bk_idx + dK[i]-1)*ldk), 1);
 		bk_idx += c;
 	}
 	delete[] K2;
 
 	// K <- K A^T
-	fgemm( F, FflasNoTrans, FflasTrans, Mk, N, N, one,  K3, ldk, A, lda, zero, K4, ldk);
+	fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N, one,  K3, ldk, A, lda, zero, K4, ldk);
 
 	// K <- K P^T
-	applyP (F, FflasRight, FflasTrans, Mk, 0, R, K4, ldk, Pk);
+	applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Mk, 0, R, K4, ldk, Pk);
 
 	// K <- K U^-1
-	ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit, Mk, R, one, K, ldk, K4, ldk);
+	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, R, one, K, ldk, K4, ldk);
 
 	// L <-  Q^T L
-	applyP(F, FflasLeft, FflasNoTrans, N, 0, R, K, ldk, Qk);
+	applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, K, ldk, Qk);
 
 	// K <- K L^-1
-	ftrsm (F, FflasRight, FflasLower, FflasNoTrans, FflasUnit, Mk, R, one, K, ldk, K4, ldk);
+	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, R, one, K, ldk, K4, ldk);
 
 	//undoing permutation on L
-	applyP(F, FflasLeft, FflasTrans, N, 0, R, K, ldk, Qk);
+	applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, R, K, ldk, Qk);
 
 	// Recovery of the completed invariant factors
 	size_t Ma = Mk;
@@ -182,7 +182,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 		//  Compute the n-k last rows of A' = P A^T P^T in K2_
 		// A = A . P^t
-		applyP( F, FflasRight, FflasTrans, N, 0, R, A, lda, Pk);
+		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, N, 0, R, A, lda, Pk);
 
 		// Copy K2_ = (A'_2)^t
 		for (Ki = K21, Ai = A+R; Ki != K21 + Nrest*ldk; Ai++, Ki+=ldk-N)
@@ -190,13 +190,13 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 				*(Ki++) = *(Ai+j);
 
 		// A = A . P : Undo the permutation on A
-		applyP( F, FflasRight, FflasNoTrans, N, 0, R, A, lda, Pk);
+		applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, 0, R, A, lda, Pk);
 
 		// K2_ = K2_ . P^t (=  ( P A^t P^t )2_ )
-		applyP( F, FflasRight, FflasTrans, Nrest, 0, R, K21, ldk, Pk);
+		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0, R, K21, ldk, Pk);
 
 		// K21 = K21 . S1^-1
-		ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit, Nrest, R,
+		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Nrest, R,
 		       one, K, ldk, K21, ldk);
 
 		typename Field::Element * Arec = new typename Field::Element[Nrest*Nrest];
@@ -208,7 +208,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		     Ki += (ldk-Nrest) )
 			for ( size_t j=0; j<Nrest; ++j )
 				*(Ai++) = *(Ki++);
-		fgemm (F, FflasNoTrans, FflasNoTrans, Nrest, Nrest, R, mone,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R, mone,
 		       K21, ldk, K+R, ldk, one, Arec, ldarec);
 
 		std::list<Polynomial> polyList;
@@ -297,7 +297,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 		// Selection of dense colums of K
 		for (size_t i=0; i < nb_full_blocks; ++i){
-			fcopy (F, Ncurr, K+i, ldk, Ac+i, ldac);
+			FFLAS::fcopy (F, Ncurr, K+i, ldk, Ac+i, ldac);
 		}
 
 		// K <- QK K
@@ -311,7 +311,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 		// Copying K3 <- K
 		for (size_t i=0; i<Mk; ++i)
-			fcopy (F, Ncurr, K3+i, ldk, K+i, ldk);
+			FFLAS::fcopy (F, Ncurr, K3+i, ldk, K+i, ldk);
 		CompressRowsQK (F, Mk, K3 + nb_full_blocks*(deg-1)*ldk, ldk,
 				Arp, ldarp, dK+nb_full_blocks, deg, Mk-nb_full_blocks);
 
@@ -322,12 +322,12 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		CompressRowsQA (F, Ma, Ac, ldac, Arp, ldarp, dA, Ma);
 
 		// K <- A K
-		fgemm (F, FflasNoTrans, FflasNoTrans, Ncurr-Ma, nb_full_blocks, Ma, one,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Ma, nb_full_blocks, Ma, one,
 		       Ac, ldac, K+(Ncurr-Ma)*ldk, ldk, one, K, ldk);
-		fgemm (F, FflasNoTrans, FflasNoTrans, Ma, nb_full_blocks, Ma, one,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ma, nb_full_blocks, Ma, one,
 		       Ac+(Ncurr-Ma)*ldac, ldac, K+(Ncurr-Ma)*ldk, ldk, zero, Arp, ldarp);
 		for (size_t i=0; i< Ma; ++i)
-			fcopy(F, nb_full_blocks, K+(Ncurr-Ma+i)*ldk, 1, Arp+i*ldarp, 1);
+			FFLAS::fcopy(F, nb_full_blocks, K+(Ncurr-Ma+i)*ldk, 1, Arp+i*ldarp, 1);
 
 		// Copying the last rows of A times K
 		offset = (deg-2)*nb_full_blocks;
@@ -335,7 +335,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			for (size_t j=0; j<Ncurr; ++j)
 				F.assign(*(K+i+j*ldk), zero);
 			if (dK[i] == dA[i]) // copy the column of A
-				fcopy (F, Ncurr, K+i, ldk, Ac+i, ldac);
+				FFLAS::fcopy (F, Ncurr, K+i, ldk, Ac+i, ldac);
 			else{
 				F.assign (*(K + i + (offset+dK[i]-1)*ldk), one);
 			}
@@ -352,17 +352,17 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		// K <- K^-1 K
 		size_t *P=new size_t[Mk];
 		size_t *Q=new size_t[Mk];
-		if (LUdivine (F, FflasNonUnit, FflasNoTrans, Mk, Mk , K3 + (Ncurr-Mk)*ldk, ldk, P, Q, FfpackLQUP) < Mk){
+		if (LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Mk, Mk , K3 + (Ncurr-Mk)*ldk, ldk, P, Q, FfpackLQUP) < Mk){
 			// should never happen (not a LAS VEGAS check)
 			//std::cerr<<"FAIL R2 < MK"<<std::endl;
 			//			exit(-1);
 		}
-		ftrsm (F, FflasLeft, FflasLower, FflasNoTrans, FflasUnit, Mk, Mk, one,
+		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, Mk, one,
 		       K3 + (Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
-		ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit, Mk, Mk, one,
+		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, Mk, one,
 		       K3+(Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
-		applyP (F, FflasLeft, FflasTrans, Mk, 0, Mk, K+(Ncurr-Mk)*ldk,ldk, P);
-		fgemm (F, FflasNoTrans, FflasNoTrans, Ncurr-Mk, Mk, Mk, mone,
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Mk, 0, Mk, K+(Ncurr-Mk)*ldk,ldk, P);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk, mone,
 		       K3, ldk, K+(Ncurr-Mk)*ldk,ldk, one, K, ldk);
 		delete[] P;
 		delete[] Q;
@@ -410,7 +410,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		Arp = new typename Field::Element[Ncurr*Mk];
 		ldarp=Ncurr;
 		for (size_t i=0; i < Ncurr; ++i )
-			fcopy (F, Mk, Ac + i*ldac, 1, K + i*ldk, 1);
+			FFLAS::fcopy (F, Mk, Ac + i*ldac, 1, K + i*ldk, 1);
 
 		deg++;
 
@@ -439,13 +439,13 @@ void FFPACK::CompressRowsQK (Field& F, const size_t M,
 	size_t currr = d[0]-1;
 	for (int i = 0; i< int(nb_blocs)-1; ++i){
 		for (int j = d[i]-1; j<int(deg)-1; ++j, currr++, currtmp++)
-			fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + currr*lda, 1);
+			FFLAS::fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + currr*lda, 1);
 		for (int j=0; j < int(d[i+1]) -1; ++j, currr++, currw++){
-			fcopy(F, M, A + (currw)*lda, 1, A+(currr)*lda, 1);
+			FFLAS::fcopy(F, M, A + (currw)*lda, 1, A+(currr)*lda, 1);
 		}
 	}
 	for (int i=0; i < currtmp; ++i, currw++){
-		fcopy (F, M, A + (currw)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (currw)*lda, 1, tmp + i*ldtmp, 1);
 	}
 }
 
@@ -459,14 +459,14 @@ void FFPACK::CompressRows (Field& F, const size_t M,
 	size_t currd = d[0]-1;
 	size_t curri = d[0]-1;
 	for (int i = 0; i< int(nb_blocs)-1; ++i){
-		fcopy(F, M, tmp + i*ldtmp, 1,  A + currd*lda, 1);
+		FFLAS::fcopy(F, M, tmp + i*ldtmp, 1,  A + currd*lda, 1);
 		for (int j=0; j < int(d[i+1]) -1; ++j){
-			fcopy(F, M, A + (curri++)*lda, 1, A+(currd+j+1)*lda, 1);
+			FFLAS::fcopy(F, M, A + (curri++)*lda, 1, A+(currd+j+1)*lda, 1);
 		}
 		currd += d[i+1];
 	}
 	for (int i=0; i < int(nb_blocs)-1; ++i){
-		fcopy (F, M, A + (curri++)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (curri++)*lda, 1, tmp + i*ldtmp, 1);
 	}
 }
 
@@ -478,15 +478,15 @@ void FFPACK::DeCompressRows (Field& F, const size_t M, const size_t N,
 {
 
 	for (int i=0; i<int(nb_blocs)-1; ++i)
-		fcopy(F, M, tmp + i*ldtmp, 1, A + (N-nb_blocs+i)*lda, 1);
+		FFLAS::fcopy(F, M, tmp + i*ldtmp, 1, A + (N-nb_blocs+i)*lda, 1);
 
 	size_t w_idx = N - 2;
 	size_t r_idx = N - nb_blocs - 1;
 	int i = int(nb_blocs)-1 ;
 	for (; i--; ){
 		for (size_t j = 0; j<d[i+1]-1; ++j)
-			fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
-		fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*ldtmp, 1);
+			FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
+		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*ldtmp, 1);
 	}
 }
 
@@ -502,7 +502,7 @@ void FFPACK::DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 	for (int i=0; i<int(nb_blocs)-1; ++i)
 		zeroblockdim += deg - d[i];
 	for (int i=0; i < zeroblockdim - 1; ++i, ++currtmp)
-		fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + (N - zeroblockdim +i)*lda, 1);
+		FFLAS::fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + (N - zeroblockdim +i)*lda, 1);
 	currtmp--;
 	size_t w_idx = N - 2;
 	size_t r_idx = N - zeroblockdim - 1;
@@ -510,9 +510,9 @@ void FFPACK::DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 	int i = int(nb_blocs)-1 ;
 	for (; i--;){
 		for (size_t j = 0; j < d [i+1] - 1; ++j)
-			fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
+			FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
 		for (size_t j = 0; j < deg - d[i]; ++j)
-			fcopy (F, M, A + (w_idx--)*lda, 1, tmp + (currtmp--)*ldtmp, 1);
+			FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + (currtmp--)*ldtmp, 1);
 	}
 }
 
@@ -526,13 +526,13 @@ void FFPACK::CompressRowsQA (Field& F, const size_t M,
 	size_t currd = 0;
 	size_t curri = 0;
 	for (size_t i = 0; i< nb_blocs; ++i){
-		fcopy(F, M, tmp + i*ldtmp, 1,  A + currd*lda, 1);
+		FFLAS::fcopy(F, M, tmp + i*ldtmp, 1,  A + currd*lda, 1);
 		for (size_t j=0; j < d[i] -1; ++j)
-			fcopy(F, M, A + (curri++)*lda, 1, A+(currd+j+1)*lda, 1);
+			FFLAS::fcopy(F, M, A + (curri++)*lda, 1, A+(currd+j+1)*lda, 1);
 		currd += d[i];
 	}
 	for (size_t i=0; i < nb_blocs; ++i)
-		fcopy (F, M, A + (curri++)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (curri++)*lda, 1, tmp + i*ldtmp, 1);
 }
 
 template <class Field>
@@ -543,14 +543,14 @@ void FFPACK::DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 {
 
 	for (size_t i=0; i<nb_blocs; ++i)
-		fcopy(F, M, tmp + i*ldtmp, 1, A + (N-nb_blocs+i)*lda, 1);
+		FFLAS::fcopy(F, M, tmp + i*ldtmp, 1, A + (N-nb_blocs+i)*lda, 1);
 
 	size_t w_idx = N - 1;
 	size_t r_idx = N - nb_blocs - 1;
 	int i = int(nb_blocs) ;
 	for (; i--; ){
 		for (size_t j = 0; j<d[i]-1; ++j)
-			fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
-		fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*ldtmp, 1);
+			FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
+		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*ldtmp, 1);
 	}
 }

@@ -59,7 +59,7 @@ namespace LinBox
 	 * level routines based on elimination.
 	 \ingroup ffpack
 	 */
-	class FFPACK : public FFLAS {
+	class FFPACK  {
 
 
 	public:
@@ -102,7 +102,7 @@ namespace LinBox
 		{
 			size_t *P = new size_t[N];
 			size_t *Q = new size_t[M];
-			size_t R = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N,
+			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
 					     A, lda, P, Q, FfpackLQUP);
 			delete[] Q;
 			delete[] P;
@@ -127,7 +127,7 @@ namespace LinBox
 		{
 			size_t *P = new size_t[N];
 			size_t *Q = new size_t[M];
-			bool singular  = !LUdivine (F, FflasNonUnit, FflasNoTrans, M, N,
+			bool singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
 						    A, lda, P, Q, FfpackSingular);
 
 			delete[] P;
@@ -155,7 +155,7 @@ namespace LinBox
 			bool singular;
 			size_t *P = new size_t[N];
 			size_t *Q = new size_t[M];
-			singular  = !LUdivine (F, FflasNonUnit, FflasNoTrans,  M, N,
+			singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,  M, N,
 					       A, lda, P, Q, FfpackSingular);
 			if (singular){
 				F.init(det,0.0);
@@ -182,7 +182,7 @@ namespace LinBox
 
 		/**
 		 * Solve the system \f$A X = B\f$ or \f$X A = B\f$, using the \c LQUP decomposition of \p A
-		 * already computed inplace with \c LUdivine(FflasNoTrans, FflasNonUnit).
+		 * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
 		 * Version for A square.
 		 * If A is rank deficient, a solution is returned if the system is consistent,
 		 * Otherwise an info is 1
@@ -203,7 +203,7 @@ namespace LinBox
 		template <class Field>
 		static void
 		fgetrs (const Field& F,
-			const FFLAS_SIDE Side,
+			const FFLAS::FFLAS_SIDE Side,
 			const size_t M, const size_t N, const size_t R,
 			typename Field::Element *A, const size_t lda,
 			const size_t *P, const size_t *Q,
@@ -216,11 +216,11 @@ namespace LinBox
 			F.init (one, 1.0);
 			F.neg(mone, one);
 			*info =0;
-			if (Side == FflasLeft) { // Left looking solve A X = B
+			if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
-				solveLB2 (F, FflasLeft, M, N, R, A, lda, Q, B, ldb);
+				solveLB2 (F, FFLAS::FflasLeft, M, N, R, A, lda, Q, B, ldb);
 
-				applyP (F, FflasLeft, FflasNoTrans, N, 0, R, B, ldb, Q);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, B, ldb, Q);
 
 				bool consistent = true;
 				for (size_t i = R; i < M; ++i)
@@ -236,19 +236,19 @@ namespace LinBox
 				// 				for (size_t j = 0; j < N; ++j)
 				// 					*(B + i*ldb + j) = zero;
 
-				ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit,
+				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       R, N, one, A, lda , B, ldb);
 
-				applyP (F, FflasLeft, FflasTrans, N, 0, R, B, ldb, P);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, R, B, ldb, P);
 
 			} else { // Right Looking X A = B
 
-				applyP (F, FflasRight, FflasTrans, M, 0, R, B, ldb, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, R, B, ldb, P);
 
-				ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit,
+				ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       M, R, one, A, lda , B, ldb);
 
-				fgemm (F, FflasNoTrans, FflasNoTrans, M, N-R, R, one,
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, one,
 				       B, ldb, A+R, lda, mone, B+R, ldb);
 
 				bool consistent = true;
@@ -262,15 +262,15 @@ namespace LinBox
 				}
 				// The last cols of B are now supposed to be 0
 
-				applyP (F, FflasRight, FflasNoTrans, M, 0, R, B, ldb, Q);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, B, ldb, Q);
 
-				solveLB2 (F, FflasRight, M, N, R, A, lda, Q, B, ldb);
+				solveLB2 (F, FFLAS::FflasRight, M, N, R, A, lda, Q, B, ldb);
 			}
 		}
 
 		/**
 		 * Solve the system A X = B or X A = B, using the LQUP decomposition of A
-		 * already computed inplace with LUdivine(FflasNoTrans, FflasNonUnit).
+		 * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
 		 * Version for A rectangular.
 		 * If A is rank deficient, a solution is returned if the system is consistent,
 		 * Otherwise an info is 1
@@ -279,7 +279,7 @@ namespace LinBox
 		 * @param Side Determine wheter the resolution is left or right looking.
 		 * @param M row dimension of A
 		 * @param N col dimension of A
-		 * @param NRHS number of columns (if Side = FflasLeft) or row (if Side = FflasRight) of the matrices X and B
+		 * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
 		 * @param R rank of A
 		 * @param A input matrix
 		 * @param lda leading dimension of A
@@ -294,7 +294,7 @@ namespace LinBox
 		template <class Field>
 		static typename Field::Element *
 		fgetrs (const Field& F,
-			const FFLAS_SIDE Side,
+			const FFLAS::FFLAS_SIDE Side,
 			const size_t M, const size_t N, const size_t NRHS, const size_t R,
 			typename Field::Element *A, const size_t lda,
 			const size_t *P, const size_t *Q,
@@ -312,7 +312,7 @@ namespace LinBox
 			typename Field::Element* W;
 			size_t ldw;
 
-			if (Side == FflasLeft) { // Left looking solve A X = B
+			if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
 				// Initializing X to 0 (to be optimized)
 				for (size_t i = 0; i <N; ++i)
@@ -323,11 +323,11 @@ namespace LinBox
 					W = new typename Field::Element [M*NRHS];
 					ldw = NRHS;
 					for (size_t i=0; i < M; ++i)
-						fcopy (F, NRHS, W + i*ldw, 1, B + i*ldb, 1);
+						FFLAS::fcopy (F, NRHS, W + i*ldw, 1, B + i*ldb, 1);
 
-					solveLB2 (F, FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
+					solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
 
-					applyP (F, FflasLeft, FflasNoTrans, NRHS, 0, R, W, ldw, Q);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, NRHS, 0, R, W, ldw, Q);
 
 					bool consistent = true;
 					for (size_t i = R; i < M; ++i)
@@ -342,22 +342,22 @@ namespace LinBox
 					}
 					// Here the last rows of W are supposed to be 0
 
-					ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit,
+					ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					       R, NRHS, one, A, lda , W, ldw);
 
 					for (size_t i=0; i < R; ++i)
-						fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
+						FFLAS::fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
 
 					delete[] W;
-					applyP (F, FflasLeft, FflasTrans, NRHS, 0, R, X, ldx, P);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, R, X, ldx, P);
 
 				} else { // Copy B to X directly
 					for (size_t i=0; i < M; ++i)
-						fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
+						FFLAS::fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
 
-					solveLB2 (F, FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
+					solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
 
-					applyP (F, FflasLeft, FflasNoTrans, NRHS, 0, R, X, ldx, Q);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, NRHS, 0, R, X, ldx, Q);
 
 					bool consistent = true;
 					for (size_t i = R; i < M; ++i)
@@ -371,10 +371,10 @@ namespace LinBox
 					}
 					// Here the last rows of W are supposed to be 0
 
-					ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit,
+					ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					       R, NRHS, one, A, lda , X, ldx);
 
-					applyP (F, FflasLeft, FflasTrans, NRHS, 0, R, X, ldx, P);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, R, X, ldx, P);
 				}
 				return X;
 
@@ -388,14 +388,14 @@ namespace LinBox
 					W = new typename Field::Element [NRHS*N];
 					ldw = N;
 					for (size_t i=0; i < NRHS; ++i)
-						fcopy (F, N, W + i*ldw, 1, B + i*ldb, 1);
+						FFLAS::fcopy (F, N, W + i*ldw, 1, B + i*ldb, 1);
 
-					applyP (F, FflasRight, FflasTrans, NRHS, 0, R, W, ldw, P);
+					applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, R, W, ldw, P);
 
-					ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit,
+					ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					       NRHS, R, one, A, lda , W, ldw);
 
-					fgemm (F, FflasNoTrans, FflasNoTrans, NRHS, N-R, R, one,
+					fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, one,
 					       W, ldw, A+R, lda, mone, W+R, ldw);
 
 					bool consistent = true;
@@ -411,22 +411,22 @@ namespace LinBox
 					}
 					// The last N-R cols of W are now supposed to be 0
 					for (size_t i=0; i < NRHS; ++i)
-						fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
+						FFLAS::fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
 					delete[] W;
-					applyP (F, FflasRight, FflasNoTrans, NRHS, 0, R, X, ldx, Q);
+					applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, R, X, ldx, Q);
 
-					solveLB2 (F, FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
+					solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
 				} else {
 					for (size_t i=0; i < NRHS; ++i)
-						fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
+						FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
 
-					applyP (F, FflasRight, FflasTrans, NRHS, 0, R, X, ldx, P);
+					applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, R, X, ldx, P);
 
-					ftrsm (F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit,
+					ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					       NRHS, R, one, A, lda , X, ldx);
 
-					fgemm (F, FflasNoTrans, FflasNoTrans, NRHS, N-R, R, one,
+					fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, one,
 					       X, ldx, A+R, lda, mone, X+R, ldx);
 
 					bool consistent = true;
@@ -441,9 +441,9 @@ namespace LinBox
 					}
 					// The last N-R cols of W are now supposed to be 0
 
-					applyP (F, FflasRight, FflasNoTrans, NRHS, 0, R, X, ldx, Q);
+					applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, R, X, ldx, Q);
 
-					solveLB2 (F, FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
+					solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
 				}
 				return X;
@@ -471,7 +471,7 @@ namespace LinBox
 		template <class Field>
 		static size_t
 		fgesv (const Field& F,
-		       const FFLAS_SIDE Side,
+		       const FFLAS::FFLAS_SIDE Side,
 		       const size_t M, const size_t N,
 		       typename Field::Element *A, const size_t lda,
 		       typename Field::Element *B, const size_t ldb,
@@ -479,7 +479,7 @@ namespace LinBox
 		{
 
 			size_t Na;
-			if (Side == FflasLeft)
+			if (Side == FFLAS::FflasLeft)
 				Na = M;
 			else
 				Na = N;
@@ -487,7 +487,7 @@ namespace LinBox
 			size_t* P = new size_t[Na];
 			size_t* Q = new size_t[Na];
 
-			size_t R = LUdivine (F, FflasNonUnit, FflasNoTrans, Na, Na, A, lda, P, Q, FfpackLQUP);
+			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Na, Na, A, lda, P, Q, FfpackLQUP);
 
 			fgetrs (F, Side, M, N, R, A, lda, P, Q, B, ldb, info);
 
@@ -503,7 +503,7 @@ namespace LinBox
 		 * @param Side Determine wheter the resolution is left or right looking
 		 * @param M row dimension of A
 		 * @param N col dimension of A
-		 * @param NRHS number of columns (if Side = FflasLeft) or row (if Side = FflasRight) of the matrices X and B
+		 * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
 		 * @param A input matrix
 		 * @param lda leading dimension of A
 		 * @param B Right/Left hand side matrix. Initially contains B, finally contains the solution X.
@@ -521,7 +521,7 @@ namespace LinBox
 		template <class Field>
 		static size_t
 		fgesv (const Field& F,
-		       const FFLAS_SIDE Side,
+		       const FFLAS::FFLAS_SIDE Side,
 		       const size_t M, const size_t N, const size_t NRHS,
 		       typename Field::Element *A, const size_t lda,
 		       typename Field::Element *X, const size_t ldx,
@@ -532,7 +532,7 @@ namespace LinBox
 			size_t* P = new size_t[N];
 			size_t* Q = new size_t[M];
 
-			size_t R = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N, A, lda, P, Q, FfpackLQUP);
+			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q, FfpackLQUP);
 
 			fgetrs (F, Side, M, N, NRHS, R, A, lda, P, Q, X, ldx, B, ldb, info);
 
@@ -570,20 +570,20 @@ namespace LinBox
 			size_t *P = new size_t[M];
 			size_t *rowP = new size_t[M];
 
-			if (LUdivine( F, FflasNonUnit, FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP) < M){
+			if (LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP) < M){
 				std::cerr<<"SINGULAR MATRIX"<<std::endl;
 				delete[] P;
 				delete[] rowP;
 				return x;
 			}
 			else{
-				fcopy( F, M, x, incx, b, incb );
+				FFLAS::fcopy( F, M, x, incx, b, incb );
 
-				ftrsv(F,  FflasLower, FflasNoTrans, FflasUnit, M,
+				ftrsv(F,  FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M,
 				      A, lda , x, incx);
-				ftrsv(F,  FflasUpper, FflasNoTrans, FflasNonUnit, M,
+				ftrsv(F,  FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M,
 				      A, lda , x, incx);
-				applyP( F, FflasRight, FflasTrans, M, 0, M, x, incx, P );
+				applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, M, x, incx, P );
 				delete[] rowP;
 				delete[] P;
 
@@ -610,7 +610,7 @@ namespace LinBox
 		 *
 		 */
 		template <class Field>
-		static size_t NullSpaceBasis (const Field& F, const FFLAS_SIDE Side,
+		static size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 					      const size_t M, const size_t N,
 					      typename Field::Element* A, const size_t lda,
 					      typename Field::Element*& NS, size_t& ldn,
@@ -622,20 +622,20 @@ namespace LinBox
 			F.init(zero, 0.0);
 			F.neg(mone, one);
 
-			if (Side == FflasRight) { // Right NullSpace
+			if (Side == FFLAS::FflasRight) { // Right NullSpace
 				size_t* P = new size_t[N];
 				size_t* Qt = new size_t[M];
 
-				size_t R = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N, A, lda, P, Qt);
+				size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
 
 				ldn = N-R;
 				NSdim = ldn;
 				NS = new typename Field::Element [N*ldn];
 
 				for (size_t i=0; i<R; ++i)
-					fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
+					FFLAS::fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
 
-				ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit, R, ldn,
+				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
 				       mone, A, lda, NS, ldn);
 
 				for (size_t i=R; i<N; ++i){
@@ -643,7 +643,7 @@ namespace LinBox
 						F.assign (*(NS+i*ldn+j), zero);
 					F.assign (*(NS + i*ldn + i-R), one);
 				}
-				applyP (F, FflasLeft, FflasTrans, NSdim, 0, R, NS, ldn, P);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NSdim, 0, R, NS, ldn, P);
 				delete [] P;
 				delete [] Qt;
 				return N-R;
@@ -651,14 +651,14 @@ namespace LinBox
 				size_t* P = new size_t[M];
 				size_t* Qt = new size_t[N];
 
-				size_t R = LUdivine (F, FflasNonUnit, FflasTrans, M, N, A, lda, P, Qt);
+				size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
 
 				ldn = M;
 				NSdim = M-R;
 				NS = new typename Field::Element [NSdim*ldn];
 				for (size_t i=0; i<NSdim; ++i)
-					fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
-				ftrsm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, NSdim, R,
+					FFLAS::fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
+				ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R,
 				       mone, A, lda, NS, ldn);
 
 				for (size_t i=0; i<NSdim; ++i){
@@ -666,7 +666,7 @@ namespace LinBox
 						F.assign (*(NS+i*ldn+j), zero);
 					F.assign (*(NS + i*ldn + i+R), one);
 				}
-				applyP (F, FflasRight, FflasNoTrans, NSdim, 0, R, NS, ldn, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NSdim, 0, R, NS, ldn, P);
 				delete [] P;
 				delete [] Qt;
 				return N-R;
@@ -695,7 +695,7 @@ namespace LinBox
 			size_t *Q = new size_t[M];
 			size_t R;
 
-			R = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N, A, lda, P, Q);
+			R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q);
 			rkprofile = new size_t[R];
 
 			for (size_t i=0; i<R; ++i)
@@ -728,7 +728,7 @@ namespace LinBox
 			size_t *Q = new size_t[M];
 			size_t R;
 
-			R = LUdivine (F, FflasNonUnit, FflasTrans, M, N, A, lda, P, Q);
+			R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
 			rkprofile = new size_t[R];
 
 			for (size_t i=0; i<R; ++i)
@@ -767,7 +767,7 @@ namespace LinBox
 			size_t *P = new size_t[N];
 			size_t *Q = new size_t[M];
 
-			R = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N, A, lda, P, Q);
+			R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q);
 			rowindices = new size_t[M];
 			colindices = new size_t[N];
 			for (size_t i=0; i<R; ++i){
@@ -819,7 +819,7 @@ namespace LinBox
 			size_t *P = new size_t[M];
 			size_t *Q = new size_t[N];
 
-			R = LUdivine (F, FflasNonUnit, FflasTrans, M, N, A, lda, P, Q);
+			R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
 			rowindices = new size_t[M];
 			colindices = new size_t[N];
 			for (size_t i=0; i<R; ++i)
@@ -867,7 +867,7 @@ namespace LinBox
 
 			size_t * rowindices, * colindices;
 
-			typename Field::Element * A2 = MatCopy (F, M, N, A, lda);
+			typename Field::Element * A2 = FFLAS::MatCopy (F, M, N, A, lda);
 
 			RowRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
@@ -905,7 +905,7 @@ namespace LinBox
 
 			size_t * rowindices, * colindices;
 
-			typename Field::Element * A2 = MatCopy (F, M, N, A, lda);
+			typename Field::Element * A2 = FFLAS::MatCopy (F, M, N, A, lda);
 
 			ColRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
@@ -957,13 +957,13 @@ namespace LinBox
 
 			// X <- (Qt.L.Q)^(-1)
 			//invL( F, rank, A_factors, lda, X, ldx);
-			ftrtri (F, FflasLower, FflasUnit, rank, A_factors, lda);
+			ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, rank, A_factors, lda);
 			for (size_t i=0; i<rank; ++i)
-				fcopy (F, rank, A_factors+i*lda, 1, X+i*ldx,1);
+				FFLAS::fcopy (F, rank, A_factors+i*lda, 1, X+i*ldx,1);
 
 			// X = U^-1.X
-			ftrsm( F, FflasLeft, FflasUpper, FflasNoTrans,
-			       FflasNonUnit, rank, rank, one, A_factors, lda, X, ldx);
+			ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans,
+			       FFLAS::FflasNonUnit, rank, rank, one, A_factors, lda, X, ldx);
 
 			return X;
 
@@ -997,7 +997,7 @@ namespace LinBox
 		/// LQUP factorization.
 		template <class Field>
 		static size_t
-		LUdivine (const Field& F, const FFLAS_DIAG Diag,  const FFLAS_TRANSPOSE trans,
+		LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 			  const size_t M, const size_t N,
 			  typename Field::Element * A, const size_t lda,
 			  size_t* P, size_t* Qt,
@@ -1010,7 +1010,7 @@ namespace LinBox
 
 		template <class Field>
 		static size_t
-		LUdivine_small (const Field& F, const FFLAS_DIAG Diag,  const FFLAS_TRANSPOSE trans,
+		LUdivine_small (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 				const size_t M, const size_t N,
 				typename Field::Element * A, const size_t lda,
 				size_t* P, size_t* Q,
@@ -1018,7 +1018,7 @@ namespace LinBox
 
 		template <class Field>
 		static size_t
-		LUdivine_gauss (const Field& F, const FFLAS_DIAG Diag,
+		LUdivine_gauss (const Field& F, const FFLAS::FFLAS_DIAG Diag,
 				const size_t M, const size_t N,
 				typename Field::Element * A, const size_t lda,
 				size_t* P, size_t* Q,
@@ -1028,9 +1028,9 @@ namespace LinBox
 		/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
 		 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
 		 * and rows for Trans).
-		 * Side==FflasLeft for row permutation Side==FflasRight for a column
+		 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column
 		 * permutation
-		 * Trans==FflasTrans for the inverse permutation of P
+		 * Trans==FFLAS::FflasTrans for the inverse permutation of P
 		 * @param F
 		 * @param Side
 		 * @param Trans
@@ -1045,39 +1045,39 @@ namespace LinBox
 		template<class Field>
 		static void
 		applyP( const Field& F,
-			const FFLAS_SIDE Side,
-			const FFLAS_TRANSPOSE Trans,
+			const FFLAS::FFLAS_SIDE Side,
+			const FFLAS::FFLAS_TRANSPOSE Trans,
 			const size_t M, const int ibeg, const int iend,
 			typename Field::Element * A, const size_t lda, const size_t * P )
 		{
 
-			if ( Side == FflasRight )
-				if ( Trans == FflasTrans )
+			if ( Side == FFLAS::FflasRight )
+				if ( Trans == FFLAS::FflasTrans )
 					for (size_t j = 0 ; j < M ; ++j){
 						for ( size_t i=ibeg; i<(size_t) iend; ++i)
 							if ( P[i]> i )
 								std::swap(A[j*lda+P[i]],A[j*lda+i]);
-						//fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
+						//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
 					}
-				else // Trans == FflasNoTrans
+				else // Trans == FFLAS::FflasNoTrans
 					for (size_t j = 0 ; j < M ; ++j){
 						for (int i=iend; i-->ibeg; )
 							if ( P[i]>(size_t)i )
 								std::swap(A[j*lda+P[i]],A[j*lda+i]);
-						//fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
+						//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
 					}
-			else // Side == FflasLeft
-				if ( Trans == FflasNoTrans )
+			else // Side == FFLAS::FflasLeft
+				if ( Trans == FFLAS::FflasNoTrans )
 					for (size_t i=ibeg; i<(size_t)iend; ++i){
 						if ( P[i]> (size_t) i )
-							fswap( F, M,
+							FFLAS::fswap( F, M,
 							       A + P[i]*lda, 1,
 							       A + i*lda, 1 );
 					}
-				else // Trans == FflasTrans
+				else // Trans == FFLAS::FflasTrans
 					for (int i=iend; i-->ibeg; ){
 						if ( P[i]> (size_t) i ){
-							fswap( F, M,
+							FFLAS::fswap( F, M,
 							       A + P[i]*lda, 1,
 							       A + i*lda, 1 );
 						}
@@ -1098,7 +1098,7 @@ namespace LinBox
 		 */
 		template<class Field>
 		static void
-		ftrtri (const Field& F, const FFLAS_UPLO Uplo, const FFLAS_DIAG Diag,
+		ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 			const size_t N, typename Field::Element * A, const size_t lda)
 		{
 
@@ -1107,22 +1107,22 @@ namespace LinBox
 			F.init(one,1.0);
 			F.init(mone,-1.0);
 			if (N == 1){
-				if (Diag == FflasNonUnit)
+				if (Diag == FFLAS::FflasNonUnit)
 					F.invin (*A);
 			} else {
 				size_t N1 = N/2;
 				size_t N2 = N - N1;
 				ftrtri (F, Uplo, Diag, N1, A, lda);
 				ftrtri (F, Uplo, Diag, N2, A + N1*(lda+1), lda);
-				if (Uplo == FflasUpper){
-					ftrmm (F, FflasLeft, Uplo, FflasNoTrans, Diag, N1, N2,
+				if (Uplo == FFLAS::FflasUpper){
+					ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
 					       one, A, lda, A + N1, lda);
-					ftrmm (F, FflasRight, Uplo, FflasNoTrans, Diag, N1, N2,
+					ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
 					       mone, A + N1*(lda+1), lda, A + N1, lda);
 				} else {
-					ftrmm (F, FflasLeft, Uplo, FflasNoTrans, Diag, N2, N1,
+					ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
 					       one, A + N1*(lda+1), lda, A + N1*lda, lda);
-					ftrmm (F, FflasRight, Uplo, FflasNoTrans, Diag, N2, N1,
+					ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
 					       mone, A, lda, A + N1*lda, lda);
 				}
 			}
@@ -1142,7 +1142,7 @@ namespace LinBox
 		 */
 		template<class Field>
 		static void
-		ftrtrm (const Field& F, const FFLAS_DIAG diag, const size_t N,
+		ftrtrm (const Field& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
 			typename Field::Element * A, const size_t lda)
 		{
 
@@ -1156,14 +1156,14 @@ namespace LinBox
 
 			ftrtrm (F, diag, N1, A, lda);
 
-			fgemm (F, FflasNoTrans, FflasNoTrans, N1, N1, N2, one,
+			fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N1, N1, N2, one,
 			       A+N1, lda, A+N1*lda, lda, one, A, lda);
 
-			ftrmm (F, FflasRight, FflasLower, FflasNoTrans,
-			       (diag == FflasUnit) ? FflasNonUnit : FflasUnit,
+			ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans,
+			       (diag == FFLAS::FflasUnit) ? FFLAS::FflasNonUnit : FFLAS::FflasUnit,
 			       N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
 
-			ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, diag, N2, N1,
+			ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, diag, N2, N1,
 			       one, A + N1*(lda+1), lda, A + N1*lda, lda);
 
 			ftrtrm (F, diag, N2, A + N1*(lda+1), lda);
@@ -1325,7 +1325,7 @@ namespace LinBox
 			size_t * Q = new size_t[M];
 			size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
 			nullity = M - R;
-			applyP (F, FflasLeft, FflasTrans, M, 0, R, A, lda, P);
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, M, 0, R, A, lda, P);
 			delete [] P;
 			delete [] Q;
 			return A;
@@ -1357,7 +1357,7 @@ namespace LinBox
 
 			Invert (F,  M, A, lda, nullity);
 			for (size_t i=0; i<M; ++i)
-				fcopy (F, M, X+i*ldx, 1, A+i*lda,1);
+				FFLAS::fcopy (F, M, X+i*ldx, 1, A+i*lda,1);
 			return X;
 
 		}
@@ -1396,7 +1396,7 @@ namespace LinBox
 			t1.start();
 #endif
 
-			nullity = M - LUdivine( F, FflasNonUnit, FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP);
+			nullity = M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP);
 
 #if 0
 			t1.stop();
@@ -1418,14 +1418,14 @@ namespace LinBox
 						F.assign(*(X+i*ldx+j), zero);
 
 				// X = L^-1 in n^3/3
-				ftrtri (F, FflasLower, FflasUnit, M, A, lda);
+				ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, M, A, lda);
 				for (size_t i=0; i<M; ++i){
 					for (size_t j=i; j<M; ++j)
 						F.assign(*(X +i*ldx+j),zero);
 					F.assign (*(X+i*(ldx+1)), one);
 				}
 				for (size_t i=1; i<M; ++i)
-					fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
+					FFLAS::fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
 #if 0
 				t1.stop();
 				cerr<<"U^-1 --> "<<t1.usertime()<<endl;
@@ -1437,7 +1437,7 @@ namespace LinBox
 				t1.clear();
 				t1.start();
 #endif
-				ftrsm( F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit,
+				ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       M, M, one, A, lda , X, ldx);
 #if 0
 				t1.stop();
@@ -1445,7 +1445,7 @@ namespace LinBox
 #endif
 
 				// X = P^-1.X
-				applyP( F, FflasLeft, FflasTrans, M, 0, M, X, ldx, P );
+				applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, M, 0, M, X, ldx, P );
 
 				delete[] P;
 				delete[] rowP;
@@ -1528,12 +1528,12 @@ namespace LinBox
 
 
 		// Solve L X = B or X L = B in place
-		// L is M*M if Side == FflasLeft and N*N if Side == FflasRight, B is M*N.
+		// L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
 		// Only the R non trivial column of L are stored in the M*R matrix L
 		// Requirement :  so that L could  be expanded in-place
 		template<class Field>
 		static void
-		solveLB( const Field& F, const FFLAS_SIDE Side,
+		solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
 			 const size_t M, const size_t N, const size_t R,
 			 typename Field::Element * L, const size_t ldl,
 			 const size_t * Q,
@@ -1543,26 +1543,26 @@ namespace LinBox
 			typename Field::Element one, zero;
 			F.init(one, 1.0);
 			F.init(zero, 0.0);
-			size_t LM = (Side == FflasRight)?N:M;
+			size_t LM = (Side == FFLAS::FflasRight)?N:M;
 			int i = R ;
 			for (; i--; ){ // much faster for
 				if (  Q[i] > (size_t) i){
 					//for (size_t j=0; j<=Q[i]; ++j)
 					//F.init( *(L+Q[i]+j*ldl), 0 );
 					//std::cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
-					fcopy( F, LM-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
+					FFLAS::fcopy( F, LM-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
 					for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 						F.assign( *(L+i+j), zero );
 				}
 			}
-			ftrsm( F, Side, FflasLower, FflasNoTrans, FflasUnit, M, N, one, L, ldl , B, ldb);
+			ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, N, one, L, ldl , B, ldb);
 			//write_field(F,std::cerr<<"dans solveLB "<<endl,L,N,N,ldl);
 			// Undo the permutation of L
 			for (size_t i=0; i<R; ++i){
 				if ( Q[i] > (size_t) i){
 					//for (size_t j=0; j<=Q[i]; ++j)
 					//F.init( *(L+Q[i]+j*ldl), 0 );
-					fcopy( F, LM-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl, L+Q[i]*(ldl+1)+ldl,ldl );
+					FFLAS::fcopy( F, LM-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl, L+Q[i]*(ldl+1)+ldl,ldl );
 					for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 						F.assign( *(L+Q[i]+j), zero );
 				}
@@ -1574,7 +1574,7 @@ namespace LinBox
 		// Only the R non trivial column of L are stored in the M*R matrix L
 		template<class Field>
 		static void
-		solveLB2( const Field& F, const FFLAS_SIDE Side,
+		solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,
 			  const size_t M, const size_t N, const size_t R,
 			  typename Field::Element * L, const size_t ldl,
 			  const size_t * Q,
@@ -1589,7 +1589,7 @@ namespace LinBox
 			typename Field::Element * Lcurr,* Rcurr,* Bcurr;
 			size_t ib,  Ldim;
 			int k;
-			if ( Side == FflasLeft ){
+			if ( Side == FFLAS::FflasLeft ){
 				size_t j = 0;
 				while ( j<R ) {
 					k = ib = Q[j];
@@ -1599,14 +1599,14 @@ namespace LinBox
 					Bcurr = B + ib*ldb;
 					Rcurr = Lcurr + Ldim*ldl;
 
-					ftrsm( F, Side, FflasLower, FflasNoTrans, FflasUnit, Ldim, N, one,
+					ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Ldim, N, one,
 					       Lcurr, ldl , Bcurr, ldb );
 
-					fgemm( F, FflasNoTrans, FflasNoTrans, M-k, N, Ldim, Mone,
+					fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-k, N, Ldim, Mone,
 					       Rcurr , ldl, Bcurr, ldb, one, Bcurr+Ldim*ldb, ldb);
 				}
 			}
-			else{ // Side == FflasRight
+			else{ // Side == FFLAS::FflasRight
 				int j=R-1;
 				while ( j >= 0 ) {
 					k = ib = Q[j];
@@ -1616,10 +1616,10 @@ namespace LinBox
 					Bcurr = B + ib+1;
 					Rcurr = Lcurr + Ldim*ldl;
 
-					fgemm (F, FflasNoTrans, FflasNoTrans, M,  Ldim, N-ib-1, Mone,
+					fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,  Ldim, N-ib-1, Mone,
 					       Bcurr, ldb, Rcurr, ldl,  one, Bcurr-Ldim, ldb);
 
-					ftrsm (F, Side, FflasLower, FflasNoTrans, FflasUnit, M, Ldim, one,
+					ftrsm (F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, Ldim, one,
 					       Lcurr, ldl , Bcurr-Ldim, ldb );
 				}
 			}
@@ -1631,8 +1631,8 @@ namespace LinBox
 					typename Field::Element * X, const size_t ldx )
 		{
 			for (size_t i=0; i<N; ++i)
-				fcopy (F, N, X+i*ldx, 1, L+i*ldl, 1);
-			ftrtri (F, FflasLower, FflasUnit, N, X, ldx);
+				FFLAS::fcopy (F, N, X+i*ldx, 1, L+i*ldl, 1);
+			ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, N, X, ldx);
 			//invL(F,N,L,ldl,X,ldx);
 		}
 
@@ -1720,11 +1720,11 @@ namespace LinBox
 			size_t x = dist2pivot;
 			for (; Ai<A+M*lda; Ai+=lda){
 				while ( F.isZero(*(Ai-x)) ) { // test if the pivot is 0
-					fcopy( F, N, T2i, 1, Ai, 1);
+					FFLAS::fcopy( F, N, T2i, 1, Ai, 1);
 					Ai += lda;
 					T2i += ldt;
 				}
-				fcopy( F, N, T1i, 1, Ai, 1);
+				FFLAS::fcopy( F, N, T1i, 1, Ai, 1);
 				T1i += ldt;
 				x--;
 			}
@@ -1747,7 +1747,7 @@ namespace LinBox
 
 		template <class Field>
 		static size_t
-		LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
+		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 				    const size_t M, const size_t N,
 				    const typename Field::Element * A, const size_t lda,
 				    typename Field::Element * X, const size_t ldx,

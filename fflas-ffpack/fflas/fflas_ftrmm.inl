@@ -8,6 +8,7 @@
  * See COPYING for license information.
  */
 
+namespace FFLAS {
 
 //---------------------------------------------------------------------
 // ftrmm: TRiangular Matrix Multiply
@@ -17,7 +18,7 @@
 // //---------------------------------------------------------------------
 template<class Field>
 inline void
-FFLAS::ftrmm (const Field& F, const FFLAS_SIDE Side,
+ftrmm (const Field& F, const FFLAS_SIDE Side,
 	      const FFLAS_UPLO Uplo,
 	      const FFLAS_TRANSPOSE TransA,
 	      const FFLAS_DIAG Diag,
@@ -32,52 +33,52 @@ FFLAS::ftrmm (const Field& F, const FFLAS_SIDE Side,
 		if ( Uplo==FflasUpper){
 			if (TransA == FflasNoTrans){
 				if (Diag == FflasUnit)
-					ftrmmLeftUpperNoTransUnit<typename Field::Element> ()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftUpperNoTransUnit<typename Field::Element> ()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmLeftUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			} else {
 				if (Diag == FflasUnit)
-					ftrmmLeftUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmLeftUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			}
 		} else {
 			if (TransA == FflasNoTrans){
 				if (Diag == FflasUnit)
-					ftrmmLeftLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmLeftLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			} else {
 				if (Diag == FflasUnit)
-					ftrmmLeftLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmLeftLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmLeftLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			}
 		}
 	} else {
 		if ( Uplo == FflasUpper){
 			if (TransA == FflasNoTrans){
 				if (Diag == FflasUnit)
-					ftrmmRightUpperNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightUpperNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmRightUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			} else {
 				if (Diag == FflasUnit)
-					ftrmmRightUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmRightUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			}
 		} else {
 			if (TransA == FflasNoTrans){
 				if (Diag == FflasUnit)
-					ftrmmRightLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmRightLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			} else {
 				if (Diag == FflasUnit)
-					ftrmmRightLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 				else
-					ftrmmRightLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					Protected::ftrmmRightLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
 			}
 		}
 	}
@@ -87,6 +88,8 @@ FFLAS::ftrmm (const Field& F, const FFLAS_SIDE Side,
 				F.mulin(*(B+i*ldb+j),alpha);
 
 }
+
+namespace Protected {
 
 #define __FFLAS__GENERIC
 #define __FFLAS__LEFT
@@ -678,3 +681,6 @@ FFLAS::ftrmm (const Field& F, const FFLAS_SIDE Side,
 #undef __FFLAS__TRANSPOSE
 #undef __FFLAS__UNIT
 
+} // Protected
+
+} // FFLAS

@@ -149,7 +149,7 @@
 
 #ifndef __FFLAS__GENERIC
 template <>
-class FFLAS::Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG))))<__FFLAS__ELEMENT>{
+class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG))))<__FFLAS__ELEMENT>{
 public:
 
 template <class Field>
@@ -221,7 +221,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 #else // __FFLAS__GENERIC
 
 template <class Element>
-class FFLAS::Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
+class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
 public:
 
 template<class Field>

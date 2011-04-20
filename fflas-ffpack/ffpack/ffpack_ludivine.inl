@@ -22,7 +22,7 @@
 
 template<class Field>
 inline size_t
-FFPACK::LUdivine_gauss( const Field& F, const FFLAS_DIAG Diag,
+FFPACK::LUdivine_gauss( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 			const size_t M, const size_t N,
 			typename Field::Element * A, const size_t lda, size_t*P,
 			size_t *Q, const FFPACK_LUDIVINE_TAG LuTag)
@@ -43,19 +43,19 @@ FFPACK::LUdivine_gauss( const Field& F, const FFLAS_DIAG Diag,
 		if (p < N){
 			P[r] = p;
 			if (r < k){
-				fcopy (F, N-r, (A + r*(lda+1)), 1, (A+k*lda+r),1);
+				FFLAS::fcopy (F, N-r, (A + r*(lda+1)), 1, (A+k*lda+r),1);
 				Acurr = A+r+k*lda;
 				for (size_t i=r; i<N; ++i)
 					F.assign(*(Acurr++),zero);
 			}
 
-			fswap (F, M, A+r, lda, A+p, lda);
+			FFLAS::fswap (F, M, A+r, lda, A+p, lda);
 			Q[r] = k;
 			r++;
 		}
 		if (k+1<M){
-			ftrsv (F, FflasUpper, FflasTrans, FflasNonUnit, r, A, lda, A+(k+1)*lda, 1);
-			fgemv (F, FflasTrans, r, N-r, mone, A+r, lda, A+(k+1)*lda, 1, one, A+(k+1)*lda+r, 1);
+			ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, r, A, lda, A+(k+1)*lda, 1);
+			fgemv (F, FFLAS::FflasTrans, r, N-r, mone, A+r, lda, A+(k+1)*lda, 1, one, A+(k+1)*lda+r, 1);
 		} else
 			return r;
 	}
@@ -66,7 +66,7 @@ FFPACK::LUdivine_gauss( const Field& F, const FFLAS_DIAG Diag,
 
 template<class Field>
 inline size_t
-FFPACK::LUdivine_small( const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE trans,
+FFPACK::LUdivine_small( const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 			const size_t M, const size_t N,
 			typename Field::Element * A, const size_t lda, size_t*P,
 			size_t *Q, const FFPACK_LUDIVINE_TAG LuTag)
@@ -80,7 +80,7 @@ class FFPACK::callLUdivine_small {
 public:
 	template <class Field>
 	inline size_t
-	operator()( const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE trans,
+	operator()( const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 		    const size_t M, const size_t N,
 		    typename Field::Element * A, const size_t lda, size_t*P,
 		    size_t *Q, const FFPACK_LUDIVINE_TAG LuTag){
@@ -97,7 +97,7 @@ public:
 		size_t colp;
 		size_t R = 0;
 		size_t k = 0;
-		//size_t kmax = DotProdBound (F, 0, one) -1; // the max number of delayed operations
+		//size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one) -1; // the max number of delayed operations
 		while ((rowp<M) && (k<N)){
 
 			//Find non zero pivot
@@ -120,7 +120,7 @@ public:
 			Q[k] = rowp;
 
 			// Permutation of the pivot column
-			fswap (F, M, A+k, lda, A + colp , lda);
+			FFLAS::fswap (F, M, A+k, lda, A + colp , lda);
 
 			//Normalization
 			elt invpiv;
@@ -135,7 +135,7 @@ public:
 					F.init(*(Aini+i), *(Aini+i));
 
 
-			if (Diag == FflasUnit) {
+			if (Diag == FFLAS::FflasUnit) {
 				for (size_t j=1; j<N-k; ++j)
 					if (!F.isZero(*(Aini+j)))
 						F.mulin (*(Aini+j),invpiv);
@@ -146,14 +146,14 @@ public:
 
 			//Elimination
 			//Or equivalently, but without delayed ops :
-			fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+			FFLAS::fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 			Aini += lda+1; ++rowp; ++k;
 		}
 
 		// Compression the U matrix
 		size_t l;
-		if (Diag == FflasNonUnit){
+		if (Diag == FFLAS::FflasNonUnit){
 			Aini = A;
 			l = N;
 		} else {
@@ -162,7 +162,7 @@ public:
 		}
 		for (size_t i=0; i<R; ++i, Aini += lda+1) {
 			if (Q[i] > i){
-				fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
+				FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
 				for (size_t j=0; j<l-i; ++j)
 					F.assign (*(Aini+(Q[i]-i)*lda+j), zero);
 			}
@@ -176,7 +176,7 @@ class FFPACK::callLUdivine_small<double> {
 public:
 	template <class Field>
 	inline size_t
-	operator()( const Field& F, const FFLAS_DIAG Diag,  const FFLAS_TRANSPOSE trans,
+	operator()( const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 		    const size_t M, const size_t N,
 		    typename Field::Element * A, const size_t lda, size_t*P,
 		    size_t *Q, const FFPACK_LUDIVINE_TAG LuTag){
@@ -194,7 +194,7 @@ public:
 		size_t R = 0;
 		size_t k = 0;
 		size_t delay =0;
-		size_t kmax = DotProdBound (F, 0, one, FflasDouble) -1; // the max number of delayed operations
+		size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one, FFLAS::FflasDouble) -1; // the max number of delayed operations
 		while ((rowp<M) && (k<N)){
 
 			//Find non zero pivot
@@ -217,7 +217,7 @@ public:
 			Q[k] = rowp;
 
 			// Permutation of the pivot column
-			fswap (F, M, A+k, lda, A + colp , lda);
+			FFLAS::fswap (F, M, A+k, lda, A + colp , lda);
 
 			//Normalization
 			elt invpiv;
@@ -232,7 +232,7 @@ public:
 					F.init(*(Aini+i), *(Aini+i));
 
 
-			if (Diag == FflasUnit) {
+			if (Diag == FFLAS::FflasUnit) {
 				for (size_t j=1; j<N-k; ++j)
 					if (!F.isZero(*(Aini+j)))
 						F.mulin (*(Aini+j),invpiv);
@@ -252,14 +252,14 @@ public:
 				for (size_t j=1; j<N-k; ++j)
 					*(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
 			//Or equivalently, but without delayed ops :
-			//fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+			//FFLAS::fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 			Aini += lda+1; ++rowp; ++k;
 		}
 
 		// Compression the U matrix
 		size_t l;
-		if (Diag == FflasNonUnit){
+		if (Diag == FFLAS::FflasNonUnit){
 			Aini = A;
 			l = N;
 		} else {
@@ -268,7 +268,7 @@ public:
 		}
 		for (size_t i=0; i<R; ++i, Aini += lda+1) {
 			if (Q[i] > i){
-				fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
+				FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
 				for (size_t j=0; j<l-i; ++j)
 					F.assign (*(Aini+(Q[i]-i)*lda+j), zero);
 			}
@@ -282,7 +282,7 @@ class FFPACK::callLUdivine_small<float> {
 public:
 	template <class Field>
 	inline size_t
-	operator()( const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE trans,
+	operator()( const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 		    const size_t M, const size_t N,
 		    typename Field::Element * A, const size_t lda, size_t*P,
 		    size_t *Q, const FFPACK_LUDIVINE_TAG LuTag){
@@ -300,7 +300,7 @@ public:
 		size_t R = 0;
 		size_t k = 0;
 		size_t delay =0;
-		size_t kmax = DotProdBound (F, 0, one, FflasFloat) -1; // the max number of delayed operations
+		size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one, FFLAS::FflasFloat) -1; // the max number of delayed operations
 		while ((rowp<M) && (k<N)){
 
 			//Find non zero pivot
@@ -323,7 +323,7 @@ public:
 			Q[k] = rowp;
 
 			// Permutation of the pivot column
-			fswap (F, M, A+k, lda, A + colp , lda);
+			FFLAS::fswap (F, M, A+k, lda, A + colp , lda);
 
 			//Normalization
 			elt invpiv;
@@ -338,7 +338,7 @@ public:
 					F.init(*(Aini+i), *(Aini+i));
 
 
-			if (Diag == FflasUnit) {
+			if (Diag == FFLAS::FflasUnit) {
 				for (size_t j=1; j<N-k; ++j)
 					if (!F.isZero(*(Aini+j)))
 						F.mulin (*(Aini+j),invpiv);
@@ -358,14 +358,14 @@ public:
 				for (size_t j=1; j<N-k; ++j)
 					*(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
 			//Or equivalently, but without delayed ops :
-			//fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+			//FFLAS::fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 			Aini += lda+1; ++rowp; ++k;
 		}
 
 		// Compression the U matrix
 		size_t l;
-		if (Diag == FflasNonUnit){
+		if (Diag == FFLAS::FflasNonUnit){
 			Aini = A;
 			l = N;
 		} else {
@@ -374,7 +374,7 @@ public:
 		}
 		for (size_t i=0; i<R; ++i, Aini += lda+1) {
 			if (Q[i] > i){
-				fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
+				FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
 				for (size_t j=0; j<l-i; ++j)
 					F.assign (*(Aini+(Q[i]-i)*lda+j), zero);
 			}
@@ -385,7 +385,7 @@ public:
 
 template <class Field>
 inline size_t
-FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE trans,
+FFPACK::LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 		  const size_t M, const size_t N,
 		  typename Field::Element * A, const size_t lda, size_t*P,
 		  size_t *Q, const FFPACK_LUDIVINE_TAG LuTag, const size_t cutoff)
@@ -400,7 +400,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 	size_t MN = MIN(M,N);
 
 	size_t incRow, incCol, rowDim, colDim;
-	if (trans == FflasTrans){
+	if (trans == FFLAS::FflasTrans){
 		incRow = 1;
 		incCol = lda;
 		colDim = M;
@@ -433,7 +433,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 					return 0;
 				} else {
 					size_t oldip = ip;
-					if ( Diag == FflasNonUnit ){
+					if ( Diag == FFLAS::FflasNonUnit ){
 						elt invpiv;
 						F.inv(invpiv,*(A+ip*incRow));
 						while(++ip<rowDim)
@@ -459,7 +459,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 		}
 		elt invpiv;
 		F.inv(invpiv, *A);
-		if ( Diag == FflasUnit ){
+		if ( Diag == FFLAS::FflasUnit ){
 			// Normalisation of the row
 			for (size_t k=1; k<colDim; k++)
 				F.mulin(*(A+k*incCol), invpiv);
@@ -473,7 +473,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 		size_t Ndown =  rowDim - Nup;
 		// Recursive call on NW
 		size_t R, R2;
-		if (trans == FflasTrans){
+		if (trans == FFLAS::FflasTrans){
 			R = LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q, LuTag, cutoff);
 			typename Field::Element *Ar = A + Nup*incRow; // SW
 			typename Field::Element *Ac = A + R*incCol;     // NE
@@ -482,13 +482,13 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 				if (LuTag == FfpackSingular )
 					return 0;
 			} else {
-				applyP (F, FflasLeft, FflasNoTrans, Ndown, 0, R, Ar, lda, P);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, Ndown, 0, R, Ar, lda, P);
 				// Ar <- L1^-1 Ar
-				ftrsm( F, FflasLeft, FflasLower,
-				       FflasNoTrans, Diag, R, Ndown,
+				ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
+				       FFLAS::FflasNoTrans, Diag, R, Ndown,
 				       one, A, lda, Ar, lda);
 				// An <- An - Ac*Ar
-				fgemm( F, FflasNoTrans, FflasNoTrans, colDim-R, Ndown, R,
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
 				       Mone, Ac, lda, Ar, lda, one, An, lda);
 			}
 			// Recursive call on SE
@@ -497,7 +497,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 				P[i] += R;
 			if (R2)
 				// An <- An.P2
-				applyP (F, FflasLeft, FflasNoTrans, Nup, R, R+R2, A, lda, P);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, Nup, R, R+R2, A, lda, P);
 			else if (LuTag == FfpackSingular)
 				return 0;
 
@@ -511,13 +511,13 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 					return 0;
 			} else {
 				// Ar <- Ar.P
-				applyP (F, FflasRight, FflasTrans, Ndown, 0, R, Ar, lda, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Ndown, 0, R, Ar, lda, P);
 				// Ar <- Ar.U1^-1
-				ftrsm( F, FflasRight, FflasUpper,
-				       FflasNoTrans, Diag, Ndown, R,
+				ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
+				       FFLAS::FflasNoTrans, Diag, Ndown, R,
 				       one, A, lda, Ar, lda);
 				// An <- An - Ar*Ac
-				fgemm( F, FflasNoTrans, FflasNoTrans, Ndown, colDim-R, R,
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
 				       Mone, Ar, lda, Ac, lda, one, An, lda);
 
 			}
@@ -527,7 +527,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 				P[i] += R;
 			if (R2)
 				// An <- An.P2
-				applyP (F, FflasRight, FflasTrans, Nup, R, R+R2, A, lda, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nup, R, R+R2, A, lda, P);
 			else if (LuTag == FfpackSingular)
 				return 0;
 
@@ -537,9 +537,9 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 			Q[i] += Nup;
 		if (R < Nup){
 			// Permutation of the 0 rows
-			if (Diag == FflasNonUnit){
+			if (Diag == FFLAS::FflasNonUnit){
 				for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
-					fcopy( F, colDim - j, A + j * (lda + 1), incCol, A + i*incRow + j*incCol, incCol);
+					FFLAS::fcopy( F, colDim - j, A + j * (lda + 1), incCol, A + i*incRow + j*incCol, incCol);
  					for (typename Field::Element *Ai = A + i*incRow + j*incCol;
  					     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
  						F.assign (*Ai, zero);
@@ -549,7 +549,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 				}
 			} else {
 				for ( size_t i = Nup, j = R+1 ; i < Nup + R2; ++i, ++j){
-					fcopy( F, colDim - j,
+					FFLAS::fcopy( F, colDim - j,
 					       A + (j-1)*incRow + j*incCol, incCol,
 					       A + i*incRow + j*incCol, incCol);
 					for (typename Field::Element *Ai = A + i*incRow + j*incCol;
@@ -578,7 +578,7 @@ FFPACK::LUdivine (const Field& F, const FFLAS_DIAG Diag, const FFLAS_TRANSPOSE t
 
 template <class Field>
 size_t
-FFPACK::LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
+FFPACK::LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 				      const size_t M, const size_t N,
 				      const typename Field::Element * A, const size_t lda,
 				      typename Field::Element * X, const size_t ldx,
@@ -607,7 +607,7 @@ FFPACK::LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
 			*X = *(X+ip);
 			*(X+ip) = tmp;
 		}
-		if ( Diag == FflasUnit ){
+		if ( Diag == FFLAS::FflasUnit ){
 			typename Field::Element invpiv;
 			F.inv(invpiv, *X);
 
@@ -635,27 +635,27 @@ FFPACK::LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
 			if ( computeX ){
 				if (MinTag == FfpackDense)
 					for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
-						fgemv(F, FflasNoTrans, N, N, one,
+						fgemv(F, FFLAS::FflasNoTrans, N, N, one,
 						      A, lda, u, 1, zero, Xi,1);
-						fcopy(F, N, u,1,Xi, 1);
+						FFLAS::fcopy(F, N, u,1,Xi, 1);
 					}
 				else // Keller-Gehrig Fast algorithm's matrix
 					for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 						fgemv_kgf( F, N, A, lda, u, 1, Xi, 1,
   							   kg_mc, kg_mb, kg_j );
-						fcopy(F, N, u,1,Xi, 1);
+						FFLAS::fcopy(F, N, u,1,Xi, 1);
 					}
 			}
 			// Apply the permutation on SW
-			applyP( F, FflasRight, FflasTrans, Ndown, 0, R, Xr, ldx, P);
+			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Ndown, 0, R, Xr, ldx, P);
 			// Triangular block inversion of NW and apply to SW
 			// Xr <- Xr.U1^-1
-			ftrsm( F, FflasRight, FflasUpper, FflasNoTrans, Diag,
+			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag,
 			       Ndown, R, one, X, ldx, Xr, ldx);
 
 			// Update of SE
 			// Xn <- Xn - Xr*Xc
-			fgemm( F, FflasNoTrans, FflasNoTrans, Ndown, N-Nup, Nup,
+			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-Nup, Nup,
 			       Mone, Xr, ldx, Xc, ldx, one, Xn, ldx);
 
 			// Recursive call on SE
@@ -665,7 +665,7 @@ FFPACK::LUdivine_construct( const Field& F, const FFLAS_DIAG Diag,
 							false, MinTag, kg_mc, kg_mb, kg_j);
 			for ( size_t i=R;i<R+R2;++i) P[i] += R;
 
-			applyP( F, FflasRight, FflasTrans, Nup, R, R+R2, X, ldx, P);
+			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Nup, R, R+R2, X, ldx, P);
 
 			return R+=R2;
 		}
@@ -727,7 +727,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	tim.clear();
 	tim.start();
 #endif
-	q1 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, no2, NW, ld1, P1, Q1, FfpackLQUP, cutoff);
+	q1 = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mloc, no2, NW, ld1, P1, Q1, FfpackLQUP, cutoff);
 
 #if 0
 	tim.stop();
@@ -743,7 +743,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	std::cerr<<"avant B1 = L^-1.NE"<<std::endl;
 	write_field(F,std::cerr,NE,mloc,N-no2,ld2);
 #endif
-	solveLB( F, FflasLeft, mo2, N-no2, q1, NW, ld1, Q1, NE, ld2);
+	solveLB( F, FFLAS::FflasLeft, mo2, N-no2, q1, NW, ld1, Q1, NE, ld2);
 #ifdef LB_DEBUG
 	std::cerr<<"B1 = L^-1.NE"<<std::endl;
 	write_field(F,std::cerr,NE,mloc,N-no2,ld2);
@@ -751,14 +751,14 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 
 	// NE = Q^-1.NE
 
-	applyP( F, FflasLeft, FflasNoTrans, N-no2, 0, mo2, NE, ld2, Q1);
+	applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-no2, 0, mo2, NE, ld2, Q1);
 #ifdef LB_DEBUG
 	std::cerr<<"NE=Q^-1.NE"<<std::endl;
 	write_field(F,std::cerr,NE,mloc,N-no2,ld2);
 #endif
 
 	// SW = SW.P1
-	applyP( F, FflasRight, FflasTrans, M-mo2, 0, q1, SW, ld3, P1 );
+	applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, M-mo2, 0, q1, SW, ld3, P1 );
 #ifdef LB_DEBUG
 	std::cerr<<"SW = SW.P1"<<std::endl;
 	write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -771,7 +771,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 #endif
 
 	// N1 = SW_{1,q1} . U1^-1
-	ftrsm( F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit, M-mo2, q1, one, NW, ld1 , SW, ld3 );
+	ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-mo2, q1, one, NW, ld1 , SW, ld3 );
 #ifdef LB_DEBUG
 	std::cerr<<" N1 = SW_{1,q1} . U1^-1"<<std::endl;
 	write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -784,7 +784,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 #endif
 
 	// I1 = SW_{q1+1,n} - N1.G1
-	fgemm(F, FflasNoTrans, FflasNoTrans, M-mo2,  no2-q1, q1, Mone, SW, ld3, NW+q1, ld1, one, SW+q1, ld3);
+	fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2,  no2-q1, q1, Mone, SW, ld3, NW+q1, ld1, one, SW+q1, ld3);
 #ifdef LB_DEBUG
 	std::cerr<<" I1 = SW_{q1+1,n} - N1.G1"<<std::endl;
 	write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -797,7 +797,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 #endif
 
 	// E1 = SE - N1.B1_{1,q1}
-	fgemm( F, FflasNoTrans, FflasNoTrans, M-mo2, N-no2, q1, Mone, SW, ld3, NE, ld2, one, SE, ld4);
+	fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2, N-no2, q1, Mone, SW, ld3, NE, ld2, one, SE, ld4);
 #ifdef LB_DEBUG
 	std::cerr<<"  E1 = SE - N1.B1_{1,q1}"<<std::endl;
 	write_field(F,std::cerr,SE,M-mo2,N-no2,ld4);
@@ -813,7 +813,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	//Step 2: E1 = L2.Q2.U2.P2
 	mloc = M-mo2;
 	nloc = N-no2;
-	q2 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, SE, ld4, P2, Q2, FfpackLQUP, cutoff);
+	q2 = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mloc, nloc, SE, ld4, P2, Q2, FfpackLQUP, cutoff);
 #ifdef LB_DEBUG
 	std::cerr<<"  E1 = L2.Q2.U2.P2"<<std::endl;
 	write_field(F,std::cerr,SE,M-mo2,N-no2,ld4);
@@ -826,20 +826,20 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 #endif
 
 	// [I2;F2] = L2^-1.I1
-	solveLB( F, FflasLeft, mloc, no2-q1, q2, SE, ld4, Q2, SW+q1, ld3);
+	solveLB( F, FFLAS::FflasLeft, mloc, no2-q1, q2, SE, ld4, Q2, SW+q1, ld3);
 #ifdef LB_DEBUG
 	std::cerr<<"  [I2;F2] = L2^-1.I1"<<std::endl;
 	write_field(F,std::cerr,SW,M-mo2,no2,ld3);
 #endif
 	// I1 = Q2^-1.I1
-	applyP( F, FflasLeft, FflasNoTrans, no2-q1, 0, mloc, SW+q1, ld3, Q2 );
+	applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, no2-q1, 0, mloc, SW+q1, ld3, Q2 );
 #ifdef LB_DEBUG
 	std::cerr<<"I1 = Q2^-1.I1"<<std::endl;
 	write_field(F,std::cerr,SW,mloc,no2,ld3);
 #endif
 
 	// B1 = B1.P2
-	applyP( F, FflasRight, FflasTrans, mo2, 0, q2, NE, ld2, P2 );
+	applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, mo2, 0, q2, NE, ld2, P2 );
 #ifdef LB_DEBUG
 	std::cerr<<"B1 = B1.P2"<<std::endl;
 	write_field(F,std::cerr,NE,mo2,N-no2,ld2);
@@ -855,7 +855,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 
 	//alternative: de 0 a q2 avant
 	// N2 = B1_{q1+1,mo2} . V2^-1
-	ftrsm(F, FflasRight, FflasUpper,FflasNoTrans,FflasNonUnit, mo2-q1, q2, one, SE, ld4, NE+q1*ld2,ld2);
+	ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, mo2-q1, q2, one, SE, ld4, NE+q1*ld2,ld2);
 #if 0
 	tim.stop();
 	std::cerr<<"trsm2:"<<tim.realtime()<<std::endl;
@@ -863,7 +863,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 #endif
 
 	// H2 = B1_{q1+1,mo2;q2,N-no2} - N2.E2
-	fgemm(F, FflasNoTrans, FflasNoTrans, mo2-q1, N-no2-q2, q2, Mone, NE+q1*ld2, ld2, SE+q2, ld4, one, NE+q1*ld2+q2, ld2);
+	fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, N-no2-q2, q2, Mone, NE+q1*ld2, ld2, SE+q2, ld4, one, NE+q1*ld2+q2, ld2);
 
 #if 0
 	tim.stop();
@@ -873,7 +873,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	write_field (F,cerr<<"avant O2"<<endl, A, M, N, lda);
 #endif
 
-	fgemm(F, FflasNoTrans, FflasNoTrans, mo2-q1, no2-q1, q2, Mone, NE+q1*ld2, ld2, SW+q1, ld3, zero,
+	fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, no2-q1, q2, Mone, NE+q1*ld2, ld2, SW+q1, ld3, zero,
 	      NW+q1*(ld1+1), ld1);
 	//	write_field (F,cerr<<"apres O2"<<endl, A, M, N, lda);
 #if 0
@@ -886,7 +886,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	//Step 3: F2 = L3.Q3.U3.P3
 	mloc = M-mo2-q2;
 	nloc = no2-q1;
-	q3 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, SW+q2*ld3+q1, ld3, P1+q1, Q2+q2, FfpackLQUP, cutoff);
+	q3 = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mloc, nloc, SW+q2*ld3+q1, ld3, P1+q1, Q2+q2, FfpackLQUP, cutoff);
 
 	// Updating P1,Q2
 	for (size_t i=q1;i<no2;++i)
@@ -898,7 +898,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	mloc = mo2-q1;
 	nloc = N-no2-q2;
 
-	q3b = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, NE+q1*ld2+q2, ld2, P2+q2, Q1+q1, FfpackLQUP, cutoff);
+	q3b = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mloc, nloc, NE+q1*ld2+q2, ld2, P2+q2, Q1+q1, FfpackLQUP, cutoff);
 
 	// Updating P2, Q1
 	for (size_t i = q2; i < q2+q3b; ++i)
@@ -917,19 +917,19 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 #if 0
 			if ( mo2-q1 < N-no2-q2+q1)
 				// L is expanded to a Lower triangular matrix
-				solveLB( F, FflasLeft,mloc, no2-q1, q3b, NE+q1*ld2+q2 , ld2, rP3b, NW+q1*(ld1+1), ld1);
+				solveLB( F, FFLAS::FflasLeft,mloc, no2-q1, q3b, NE+q1*ld2+q2 , ld2, rP3b, NW+q1*(ld1+1), ld1);
 			else
 #endif
 			//std::cerr<<"USING SOLVELB2"<<std::endl;
 			//no modification of L
-			solveLB2( F, FflasLeft,mloc, no2-q1, q3b, NE+q1*ld2+q2 , ld2, Q1+q1, NW+q1*(ld1+1), ld1);
+			solveLB2( F, FFLAS::FflasLeft,mloc, no2-q1, q3b, NE+q1*ld2+q2 , ld2, Q1+q1, NW+q1*(ld1+1), ld1);
 #ifdef LB_DEBUG
 			std::cerr<<"O2 avant="<<std::endl;
 			write_field(F,std::cerr,NW+q1*(ld1+1),mloc,no2-q1,ld1);
 #endif
 
 			// O2 = Q3b^-1.O2
-			applyP( F, FflasLeft, FflasNoTrans, no2-q1, 0, mloc, NW+q1*(ld1+1), ld1, Q1+q1 );
+			applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, no2-q1, 0, mloc, NW+q1*(ld1+1), ld1, Q1+q1 );
 #ifdef LB_DEBUG
 			std::cerr<<"O2 apres="<<std::endl;
 			write_field(F,std::cerr,NW+q1*(ld1+1),mloc,no2-q1,ld1);
@@ -949,28 +949,28 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 
 			// X2 = X2.P3
 			// Si plusieurs niveaux rec, remplacer X2 par [NW;I2]
-			applyP( F, FflasRight, FflasTrans, mo2-q1-q3b, q1, q1+q3,
+			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, mo2-q1-q3b, q1, q1+q3,
 				NW/*+(q1+q3b)*ld1*/, ld1, P1);
-			applyP( F, FflasRight, FflasTrans, q2, q1, q1+q3,
+			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, q2, q1, q1+q3,
 				SW/*+(q1+q3b)*ld1*/, ld3, P1);
 
 
 			// A faire si plusieurs niveaux recursifs
 			// B2 = B2.P3b
-			applyP (F, FflasRight, FflasTrans, q1, q2, q2+q3b,
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q1, q2, q2+q3b,
 				NW, ld2, P2);
 			//flaswp(F,q1,NE,lda,no2+q2,no2+q2+q3b,P,1);
 			// E2 = E2.P3b
-			applyP (F, FflasRight, FflasTrans, q2, q2, q2+q3b,
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q2, q2, q2+q3b,
 				SE, ld4, P2);
 			//flaswp(F,q2,SE+q2,lda,no2+q2,no2+q2+q3b,P,1);
 		}
 
 		// N3 = X2 . D3^-1
-		ftrsm( F, FflasRight, FflasUpper, FflasNoTrans, FflasNonUnit, mo2-q1-q3b, q3, one, SW+q2*ld3+q1, ld3 ,NW+(q1+q3b)*ld1+q1,ld1);
+		ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, mo2-q1-q3b, q3, one, SW+q2*ld3+q1, ld3 ,NW+(q1+q3b)*ld1+q1,ld1);
 
 		// T2 = T2 - N3.F3
-		fgemm( F, FflasNoTrans, FflasNoTrans, mo2-q1-q3b, no2-q1-q3,q3, Mone, NW+(q1+q3b)*ld1+q1, ld1, SW+q2*ld3+q3+q1, ld3, one, NW+(q1+q3b)*ld1+q1+q3, ld1 );
+		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1-q3b, no2-q1-q3,q3, Mone, NW+(q1+q3b)*ld1+q1, ld1, SW+q2*ld3+q3+q1, ld3, one, NW+(q1+q3b)*ld1+q1+q3, ld1 );
 
 
 		//Step 4: T2 = L4.Q4.U4.P4
@@ -982,7 +982,7 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 		for (size_t j=0;j<mo2-q1;++j)
 			rP4[j]=0;
 #endif
-		q4 = LUdivine( F, FflasNonUnit, FflasNoTrans, mloc, nloc, NW+(q1+q3b)*ld1+q1+q3, ld1, P1+q1+q3, Q1+q1+q3b, FfpackLQUP, cutoff);
+		q4 = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mloc, nloc, NW+(q1+q3b)*ld1+q1+q3, ld1, P1+q1+q3, Q1+q1+q3b, FfpackLQUP, cutoff);
 
 		// Updating P
 		for (size_t i=q1+q3;i<q1+q3+q4;++i)
@@ -1000,11 +1000,11 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 
 		// A faire si plusieurs niveaux recursifs
 		// [G1;O3] = [G1;O3].P4
-		applyP (F, FflasRight, FflasTrans, q1+q3b, q1+q3, q1+q3+q4,
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q1+q3b, q1+q3, q1+q3+q4,
 			NW, ld1, P1);
 		//flaswp(F,q1+q3b,NE,lda,no2+q2,no2+q2+q3b,P,1);
 		// [I2;F3] = [I2;F3].P4
-		applyP (F, FflasRight, FflasTrans, q2+q3, q1+q3, q1+q3+q4,
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q2+q3, q1+q3, q1+q3+q4,
 			SW, ld3, P1);
 		//flaswp(F,q2,SE+q2,lda,no2+q2,no2+q2+q3b,P,1);
 	}
@@ -1048,71 +1048,71 @@ FFPACK::TURBO (const Field& F, const size_t M, const size_t N,
 	size_t ldr = N;
 	// Copying first q1 cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, q1, R+i*ldr, 1, NW+i*ld1,1);
+		FFLAS::fcopy (F, q1, R+i*ldr, 1, NW+i*ld1,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, q1, R+i*ldr, 1, SW+(i-q1)*ld3,1);
+		FFLAS::fcopy (F, q1, R+i*ldr, 1, SW+(i-q1)*ld3,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, q1, R+i*ldr, 1, NW+(i-q2-q3)*ld1,1);
+		FFLAS::fcopy (F, q1, R+i*ldr, 1, NW+(i-q2-q3)*ld1,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, q1, R+i*ldr, 1, SW+(i-mo2)*ld3,1);
+		FFLAS::fcopy (F, q1, R+i*ldr, 1, SW+(i-mo2)*ld3,1);
 	// Copying q1..q2 cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, q2, R+q1+i*ldr, 1, NE+i*ld2,1);
+		FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, NE+i*ld2,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, q2, R+q1+i*ldr, 1, SE+(i-q1)*ld4,1);
+		FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, SE+(i-q1)*ld4,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, q2, R+q1+i*ldr, 1, NE+(i-q2-q3)*ld2,1);
+		FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, NE+(i-q2-q3)*ld2,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, q2, R+q1+i*ldr, 1, SE+(i-mo2)*ld4,1);
+		FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, SE+(i-mo2)*ld4,1);
 	// Copying q2..q3 cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, q3, R+q1+q2+i*ldr, 1, NW+q1+i*ld1,1);
+		FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, NW+q1+i*ld1,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, q3, R+q1+q2+i*ldr, 1, SW+q1+(i-q1)*ld3,1);
+		FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, SW+q1+(i-q1)*ld3,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, q3, R+q1+q2+i*ldr, 1, NW+q1+(i-q2-q3)*ld1,1);
+		FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, NW+q1+(i-q2-q3)*ld1,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, q3, R+q1+q2+i*ldr, 1, SW+q1+(i-mo2)*ld3,1);
+		FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, SW+q1+(i-mo2)*ld3,1);
 	// Copying q3..q3b cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, NE+q2+i*ld2,1);
+		FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, NE+q2+i*ld2,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, SE+q2+(i-q1)*ld4,1);
+		FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, SE+q2+(i-q1)*ld4,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, NE+q2+(i-q2-q3)*ld2,1);
+		FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, NE+q2+(i-q2-q3)*ld2,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, SE+q2+(i-mo2)*ld4,1);
+		FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, SE+q2+(i-mo2)*ld4,1);
 	// Copying q3b..q4 cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, NW+q1+q3+i*ld1,1);
+		FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, NW+q1+q3+i*ld1,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, SW+q1+q3+(i-q1)*ld3,1);
+		FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, SW+q1+q3+(i-q1)*ld3,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, NW+q1+q3+(i-q2-q3)*ld1,1);
+		FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, NW+q1+q3+(i-q2-q3)*ld1,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, SW+q1+q3+(i-mo2)*ld3,1);
+		FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, SW+q1+q3+(i-mo2)*ld3,1);
 	// Copying the last cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, NW+q1+q3+q4+i*ld1,1);
+		FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, NW+q1+q3+q4+i*ld1,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, SW+q1+q3+q4+(i-q1)*ld3,1);
+		FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, SW+q1+q3+q4+(i-q1)*ld3,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, NW+q1+q3+q4+(i-q2-q3)*ld1,1);
+		FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, NW+q1+q3+q4+(i-q2-q3)*ld1,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, SW+q1+q3+q4+(i-mo2)*ld3,1);
+		FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, SW+q1+q3+q4+(i-mo2)*ld3,1);
 	// Copying the last cols
 	for (size_t i=0; i<q1; ++i)
-		fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, NE+q2+q3b+i*ld2,1);
+		FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, NE+q2+q3b+i*ld2,1);
 	for (size_t i=q1; i<q1+q2+q3; ++i)
-		fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, SE+q2+q3b+(i-q1)*ld4,1);
+		FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, SE+q2+q3b+(i-q1)*ld4,1);
 	for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-		fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, NE+q2+q3b+(i-q2-q3)*ld2,1);
+		FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, NE+q2+q3b+(i-q2-q3)*ld2,1);
 	for (size_t i=q2+q3+mo2; i<M; ++i)
-		fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, SE+q2+q3b+(i-mo2)*ld4,1);
+		FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, SE+q2+q3b+(i-mo2)*ld4,1);
 
 	// A=R : to be improved (avoid allocation of R). To be changed if rec data structure are used
 	for (size_t i=0; i<M; ++i)
-		fcopy (F, N, A+i*lda, 1, R+i*ldr,1);
+		FFLAS::fcopy (F, N, A+i*lda, 1, R+i*ldr,1);
 
 	delete[] R;
 	//delete[] Q;

@@ -34,7 +34,7 @@
 
 #ifndef __FFLAS__GENERIC
 template<>
-class FFLAS::Mjoin(faddm, __FFLAS_Trans)<__FFLAS_Element> {
+class Mjoin(faddm, __FFLAS_Trans)<__FFLAS_Element> {
 public :
 	template<class Field>
 	void operator() (const Field & F,
@@ -97,7 +97,7 @@ public :
 };
 #else
 template<class Element>
-class FFLAS::Mjoin(faddm, __FFLAS_Trans) {
+class Mjoin(faddm, __FFLAS_Trans) {
 public :
 	template<class Field>
 	void operator() (const Field & F,
@@ -120,7 +120,7 @@ public :
 
 #ifndef __FFLAS__GENERIC
 template<>
-class FFLAS::Mjoin(fsubm, __FFLAS_Trans)<__FFLAS_Element > {
+class Mjoin(fsubm, __FFLAS_Trans)<__FFLAS_Element > {
 public :
 	template<class Field>
 	void operator() (const Field & F,
@@ -149,7 +149,7 @@ public :
 };
 #else
 template<class Element>
-class FFLAS::Mjoin(fsubm,__FFLAS_Trans) {
+class Mjoin(fsubm,__FFLAS_Trans) {
 public :
 	template<class Field>
 	void operator() (const Field & F,

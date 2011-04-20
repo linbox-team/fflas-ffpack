@@ -160,7 +160,7 @@
 
 #ifndef __FFLAS__GENERIC
 template <>
-class FFLAS::Mjoin(ftrsm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG))))<__FFLAS__ELEMENT>{
+class Mjoin(ftrsm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG))))<__FFLAS__ELEMENT>{
 public:
 
 // TRSM with delayed updates: assumes input in Zp and ensures output in Zp.
@@ -307,7 +307,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 #else // __FFLAS__GENERIC
 
 template <class Element>
-class FFLAS::Mjoin(ftrsm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
+class Mjoin(ftrsm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
 public:
 
 template<class Field>
@@ -339,7 +339,7 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, Mone,
 		       __FFLAS__B1, ldb, __FFLAS__A2, lda, one, __FFLAS__B2, ldb);
 #else
-		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans,
+		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, Mone,
 		       __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
 #endif

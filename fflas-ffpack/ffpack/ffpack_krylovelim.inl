@@ -104,13 +104,13 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 
 		if (R){
 			// Ar <- Ar.P
-			applyP (F, FflasRight, FflasTrans, Ndown, 0, R, Ar, lda, P);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Ndown, 0, R, Ar, lda, P);
 			// Ar <- Ar.U1^-1
-			ftrsm( F, FflasRight, FflasUpper,
-			       FflasNoTrans, FFLAS::FflasNonUnit, Ndown, R,
+			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
+			       FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Ndown, R,
 			       one, A, lda, Ar, lda);
 			// An <- An - Ar*Ac
-			fgemm( F, FflasNoTrans, FflasNoTrans, Ndown, N-R, R,
+			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-R, R,
 			       Mone, Ar, lda, Ac, lda, one, An, lda);
 		}
 		// Recursive call on SE
@@ -120,7 +120,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 			P[i] += R;
 		if (R2)
 			// An <- An.P2
-			applyP (F, FflasRight, FflasTrans, Nup, R, R+R2, A, lda, P);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nup, R, R+R2, A, lda, P);
 
 		// Non zero row permutations
 		for (size_t i = Nup; i < M; i++)
@@ -128,7 +128,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 		if (R < Nup){
 			// Permutation of the 0 rows
 			for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
-				fcopy( F, N - j, A + j*(lda + 1), 1, A + i*lda + j, 1);
+				FFLAS::fcopy( F, N - j, A + j*(lda + 1), 1, A + i*lda + j, 1);
 				for (typename Field::Element *Ai = A + i*lda + j;
 				     Ai != A + i*lda + N; ++Ai)
 					F.assign (*Ai, zero);

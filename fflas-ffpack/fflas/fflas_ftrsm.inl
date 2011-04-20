@@ -9,86 +9,88 @@
  * See COPYING for license information.
  */
 
+namespace FFLAS {
+	//---------------------------------------------------------------------
+	// ftrsm: TRiangular System solve with matrix
+	// Computes  B <- alpha.op(A^-1).B,  B <- alpha.B.op(A^-1)
+	// B is M*N, A is M*M if Side==FflasLeft, N*N if Side==FflasRight
+	// Warning : unsafe with Trans ==  FflasTrans (debugging in progress)
+	//---------------------------------------------------------------------
+	template<class Field>
+	inline void
+	ftrsm (const Field& F, const FFLAS_SIDE Side,
+	       const FFLAS_UPLO Uplo,
+	       const FFLAS_TRANSPOSE TransA,
+	       const FFLAS_DIAG Diag,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       typename Field::Element * A, const size_t lda,
+	       typename Field::Element * B, const size_t ldb)
+	{
+		if (!M || !N ) return;
 
-//---------------------------------------------------------------------
-// ftrsm: TRiangular System solve with matrix
-// Computes  B <- alpha.op(A^-1).B,  B <- alpha.B.op(A^-1)
-// B is M*N, A is M*M if Side==FflasLeft, N*N if Side==FflasRight
-// Warning : unsafe with Trans ==  FflasTrans (debugging in progress)
-//---------------------------------------------------------------------
-template<class Field>
-inline void
-FFLAS::ftrsm (const Field& F, const FFLAS_SIDE Side,
-	      const FFLAS_UPLO Uplo,
-	      const FFLAS_TRANSPOSE TransA,
-	      const FFLAS_DIAG Diag,
-	      const size_t M, const size_t N,
-	      const typename Field::Element alpha,
-	      typename Field::Element * A, const size_t lda,
-	      typename Field::Element * B, const size_t ldb)
-{
-	if (!M || !N ) return;
 
-
-	if ( Side==FflasLeft ){
-		if ( Uplo==FflasUpper){
-			if (TransA == FflasNoTrans){
-				if (Diag == FflasUnit)
-					ftrsmLeftUpperNoTransUnit<typename Field::Element> ()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmLeftUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+		if ( Side==FflasLeft ){
+			if ( Uplo==FflasUpper){
+				if (TransA == FflasNoTrans){
+					if (Diag == FflasUnit)
+						Protected::ftrsmLeftUpperNoTransUnit<typename Field::Element> ()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmLeftUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				} else {
+					if (Diag == FflasUnit)
+						Protected::ftrsmLeftUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmLeftUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				}
 			} else {
-				if (Diag == FflasUnit)
-					ftrsmLeftUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmLeftUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				if (TransA == FflasNoTrans){
+					if (Diag == FflasUnit)
+						Protected::ftrsmLeftLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmLeftLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				} else {
+					if (Diag == FflasUnit)
+						Protected::ftrsmLeftLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmLeftLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				}
 			}
 		} else {
-			if (TransA == FflasNoTrans){
-				if (Diag == FflasUnit)
-					ftrsmLeftLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmLeftLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+			if ( Uplo == FflasUpper){
+				if (TransA == FflasNoTrans){
+					if (Diag == FflasUnit)
+						Protected::ftrsmRightUpperNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmRightUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				} else {
+					if (Diag == FflasUnit)
+						Protected::ftrsmRightUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmRightUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				}
 			} else {
-				if (Diag == FflasUnit)
-					ftrsmLeftLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmLeftLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				if (TransA == FflasNoTrans){
+					if (Diag == FflasUnit)
+						Protected::ftrsmRightLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmRightLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				} else {
+					if (Diag == FflasUnit)
+						Protected::ftrsmRightLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+					else
+						Protected::ftrsmRightLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+				}
 			}
 		}
-	} else {
-		if ( Uplo == FflasUpper){
-			if (TransA == FflasNoTrans){
-				if (Diag == FflasUnit)
-					ftrsmRightUpperNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmRightUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-			} else {
-				if (Diag == FflasUnit)
-					ftrsmRightUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmRightUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-			}
-		} else {
-			if (TransA == FflasNoTrans){
-				if (Diag == FflasUnit)
-					ftrsmRightLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmRightLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-			} else {
-				if (Diag == FflasUnit)
-					ftrsmRightLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-				else
-					ftrsmRightLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
-			}
-		}
+		if (!F.isOne(alpha))
+			for (size_t i=0; i< M; ++i)
+				for (size_t j=0; j<N; ++j)
+					F.mulin(*(B+i*ldb+j),alpha);
+
 	}
-	if (!F.isOne(alpha))
-		for (size_t i=0; i< M; ++i)
-			for (size_t j=0; j<N; ++j)
-				F.mulin(*(B+i*ldb+j),alpha);
 
-}
+	namespace Protected {
 
 #define __FFLAS__GENERIC
 #define __FFLAS__LEFT
@@ -285,7 +287,7 @@ FFLAS::ftrsm (const Field& F, const FFLAS_SIDE Side,
 #undef __FFLAS__LOW
 #undef __FFLAS__TRANSPOSE
 #undef __FFLAS__UNIT
-//==
+		//==
 
 #define __FFLAS__DOUBLE
 #define __FFLAS__LEFT
@@ -679,3 +681,6 @@ FFLAS::ftrsm (const Field& F, const FFLAS_SIDE Side,
 #undef __FFLAS__LOW
 #undef __FFLAS__TRANSPOSE
 #undef __FFLAS__UNIT
+
+	} // Protected
+} // FFLAS

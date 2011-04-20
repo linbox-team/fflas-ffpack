@@ -59,9 +59,9 @@ namespace LinBox
 
 //#define LB_TRTR
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
-class FFLAS {
+namespace FFLAS {
 
-public:
+// public:
 	/// Is matrix transposed ?
 	enum FFLAS_TRANSPOSE
 	{
@@ -101,6 +101,442 @@ public:
 	typedef UnparametricField<float> FloatDomain;
 	typedef UnparametricField<double> DoubleDomain;
 
+	namespace Protected {
+
+		// Prevents the instantiation of the class
+		// FFLAS(){}
+		template <class X,class Y>
+		class AreEqual {
+		public:
+			static const bool value = false;
+		};
+
+		template <class X>
+		class AreEqual<X,X> {
+		public:
+			static const bool value = true;
+		};
+
+		//-----------------------------------------------------------------------------
+		// Some conversion functions
+		//-----------------------------------------------------------------------------
+
+		//---------------------------------------------------------------------
+		// Finite Field matrix => double matrix
+		//---------------------------------------------------------------------
+		template<class Field>
+		static void MatF2MatD (const Field& F,
+				       DoubleDomain::Element* S, const size_t lds,
+				       const typename Field::Element* E,
+				       const size_t lde,const size_t m, const size_t n)
+		{
+
+			const typename Field::Element* Ei = E;
+			DoubleDomain::Element *Si=S;
+			size_t j;
+			for (; Ei < E+lde*m; Ei+=lde, Si += lds)
+				for ( j=0; j<n; ++j){
+					F.convert(*(Si+j),*(Ei+j));
+				}
+		}
+		//---------------------------------------------------------------------
+		// Finite Field matrix => float matrix
+		//---------------------------------------------------------------------
+		template<class Field>
+		static void MatF2MatFl (const Field& F,
+					FloatDomain::Element* S, const size_t lds,
+					const typename Field::Element* E,
+					const size_t lde,const size_t m, const size_t n)
+		{
+
+			const typename Field::Element* Ei = E;
+			FloatDomain::Element *Si=S;
+			size_t j;
+			for (; Ei < E+lde*m; Ei+=lde, Si += lds)
+				for ( j=0; j<n; ++j){
+					F.convert(*(Si+j),*(Ei+j));
+				}
+		}
+
+		//---------------------------------------------------------------------
+		// Finite Field matrix => double matrix
+		// Special design for upper-triangular matrices
+		//---------------------------------------------------------------------
+		template<class Field>
+		static void MatF2MatD_Triangular (const Field& F,
+						  typename DoubleDomain::Element* S, const size_t lds,
+						  const typename Field::Element* const E,
+						  const size_t lde,
+						  const size_t m, const size_t n){
+
+			const typename Field::Element* Ei = E;
+			typename DoubleDomain::Element* Si = S;
+			size_t i=0, j;
+			for ( ; i<m;++i, Ei+=lde, Si+=lds)
+				for ( j=i; j<n;++j)
+					F.convert(*(Si+j),*(Ei+j));
+		}
+
+		//---------------------------------------------------------------------
+		// Finite Field matrix => float matrix
+		// Special design for upper-triangular matrices
+		//---------------------------------------------------------------------
+		template<class Field>
+		static void MatF2MatFl_Triangular (const Field& F,
+						   typename FloatDomain::Element* S, const size_t lds,
+						   const typename Field::Element* const E,
+						   const size_t lde,
+						   const size_t m, const size_t n){
+
+			const typename Field::Element* Ei = E;
+			typename FloatDomain::Element* Si = S;
+			size_t i=0, j;
+			for ( ; i<m;++i, Ei+=lde, Si+=lds)
+				for ( j=i; j<n;++j)
+					F.convert(*(Si+j),*(Ei+j));
+		}
+
+		//---------------------------------------------------------------------
+		// double matrix => Finite Field matrix
+		//---------------------------------------------------------------------
+		template<class Field>
+		static void MatD2MatF (const Field& F,
+				       typename Field::Element* S, const size_t lds,
+				       const typename DoubleDomain::Element* E, const size_t lde,
+				       const size_t m, const size_t n)
+		{
+
+			typename Field::Element* Si = S;
+			const DoubleDomain::Element* Ei =E;
+			size_t j;
+			for ( ; Si < S+m*lds; Si += lds, Ei+= lde){
+				for ( j=0; j<n;++j)
+					F.init( *(Si+j), *(Ei+j) );
+			}
+		}
+
+		//---------------------------------------------------------------------
+		// float matrix => Finite Field matrix
+		//---------------------------------------------------------------------
+		template<class Field>
+		static void MatFl2MatF (const Field& F,
+					typename Field::Element* S, const size_t lds,
+					const typename FloatDomain::Element* E, const size_t lde,
+					const size_t m, const size_t n){
+
+			typename Field::Element* Si = S;
+			const FloatDomain::Element* Ei =E;
+			size_t j;
+			for ( ; Si < S+m*lds; Si += lds, Ei+= lde){
+				for ( j=0; j<n;++j)
+					F.init( *(Si+j), *(Ei+j) );
+			}
+		}
+
+		/**
+		 * Computes the threshold parameters for the cascade
+		 *        Matmul algorithm.
+		 *
+		 *
+		 * \param F Finite Field/Ring of the computation.
+		 * \param k Common dimension of A and B, in the product A x B
+		 * \param beta Computing \f$AB + \beta C\f$
+		 * \param delayedDim Returns the size of blocks that can be multiplied
+		 *                   over Z with no overflow
+		 * \param base Returns the type of BLAS representation to use
+		 * \param winoRecLevel Returns the number of recursion levels of
+		 *                     Strassen-Winograd's algorithm to perform
+		 * \param winoLevelProvided tells whether the user forced the number of
+		 *                          recursive level of Winograd's algorithm
+		 *
+		 * @bib [Dumas, Giorgi, Pernet, arXiv cs/0601133]
+		 * <a href=http://arxiv.org/abs/cs.SC/0601133>here</a>
+		 */
+		template <class Field>
+		static void MatMulParameters (const Field& F,
+					      const size_t k,
+					      const typename Field::Element& beta,
+					      size_t& delayedDim,
+					      FFLAS_BASE& base,
+					      size_t& winoRecLevel,
+					      bool winoLevelProvided=false);
+
+
+		/**
+		 * Computes the maximal size for delaying the modular reduction
+		 *         in a dotproduct.
+		 *
+		 * This is the default version assuming a conversion to a positive modular representation
+		 *
+		 * \param F Finite Field/Ring of the computation
+		 * \param winoRecLevel Number of recusrive Strassen-Winograd levels (if any, 0 otherwise)
+		 * \param beta Computing AB + beta C
+		 * \param base Type of floating point representation for delayed modular computations
+		 *
+		 */
+		template <class Field>
+		static size_t DotProdBound (const Field& F,
+					    const size_t winoRecLevel,
+					    const typename Field::Element& beta,
+					    const FFLAS_BASE base);
+
+
+		/**
+		 * Internal function for the bound computation.
+		 * Generic implementation for positive representations
+		 */
+		template <class Field>
+		static double computeFactorWino (const Field& F, const size_t w);
+
+		template <class Field>
+		static double computeFactorClassic (const Field& F);
+
+
+		/**
+		 * Determines the type of floating point representation to convert to,
+		 *        for BLAS computations.
+		 * \param F Finite Field/Ring of the computation
+		 * \param w Number of recursive levels in Winograd's algorithm
+		 */
+		template <class Field>
+		static FFLAS_BASE BaseCompute (const Field& F, const size_t w);
+
+		/**
+		 * Computes the maximal size for delaying the modular reduction
+		 *         in a triangular system resolution.
+		 *
+		 *  Compute the maximal dimension k, such that a unit diagonal triangular
+		 *  system of dimension k can be solved over Z without overflow of the
+		 *  underlying floating point representation.
+		 *
+		 *  @bib [Dumas, Giorgi, Pernet 06, arXiv:cs/0601133 ]
+		 *
+		 * \param F Finite Field/Ring of the computation
+		 *
+		 */
+		template <class Field>
+		static size_t TRSMBound (const Field& F);
+
+		template <class Field>
+		static void DynamicPealing( const Field& F,
+					    const FFLAS_TRANSPOSE ta,
+					    const FFLAS_TRANSPOSE tb,
+					    const size_t m, const size_t n, const size_t k,
+					    const typename Field::Element alpha,
+					    const typename Field::Element* A, const size_t lda,
+					    const typename Field::Element* B, const size_t ldb,
+					    const typename Field::Element beta,
+					    typename Field::Element* C, const size_t ldc,
+					    const size_t  ); //kmax
+
+		template <class Field>
+		static void MatVectProd (const Field& F,
+					 const FFLAS_TRANSPOSE TransA,
+					 const size_t M, const size_t N,
+					 const typename Field::Element alpha,
+					 const typename Field::Element * A, const size_t lda,
+					 const typename Field::Element * X, const size_t incX,
+					 const typename Field::Element beta,
+					 typename Field::Element * Y, const size_t incY);
+
+		template <class Field>
+		static void ClassicMatmul(const Field& F,
+					  const FFLAS_TRANSPOSE ta,
+					  const FFLAS_TRANSPOSE tb,
+					  const size_t m, const size_t n, const size_t k,
+					  const typename Field::Element alpha,
+					  const typename Field::Element * A, const size_t lda,
+					  const typename Field::Element * B, const size_t ldb,
+					  const typename Field::Element beta,
+					  typename Field::Element * C, const size_t ldc,
+					  const size_t kmax, const FFLAS_BASE base );
+
+		// Winograd Multiplication  alpha.A(n*k) * B(k*m) + beta . C(n*m)
+		// WinoCalc performs the 22 Winograd operations
+		template <class Field>
+		static void WinoCalc (const Field& F,
+				      const FFLAS_TRANSPOSE ta,
+				      const FFLAS_TRANSPOSE tb,
+				      const size_t mr, const size_t nr,const size_t kr,
+				      const typename Field::Element alpha,
+				      const typename Field::Element* A,const size_t lda,
+				      const typename Field::Element* B,const size_t ldb,
+				      const typename Field::Element beta,
+				      typename Field::Element * C, const size_t ldc,
+				      const size_t kmax, const size_t w, const FFLAS_BASE base);
+
+		template<class Field>
+		static void WinoMain (const Field& F,
+				      const FFLAS_TRANSPOSE ta,
+				      const FFLAS_TRANSPOSE tb,
+				      const size_t m, const size_t n, const size_t k,
+				      const typename Field::Element alpha,
+				      const typename Field::Element* A,const size_t lda,
+				      const typename Field::Element* B,const size_t ldb,
+				      const typename Field::Element beta,
+				      typename Field::Element * C, const size_t ldc,
+				      const size_t kmax, const size_t w, const FFLAS_BASE base);
+
+		// Specialized routines for ftrsm
+		template <class Element>
+		class ftrsmLeftUpperNoTransNonUnit;
+		template <class Element>
+		class ftrsmLeftUpperNoTransUnit;
+		template <class Element>
+		class ftrsmLeftUpperTransNonUnit;
+		template <class Element>
+		class ftrsmLeftUpperTransUnit;
+		template <class Element>
+		class ftrsmLeftLowerNoTransNonUnit;
+		template <class Element>
+		class ftrsmLeftLowerNoTransUnit;
+		template <class Element>
+		class ftrsmLeftLowerTransNonUnit;
+		template <class Element>
+		class ftrsmLeftLowerTransUnit;
+		template <class Element>
+		class ftrsmRightUpperNoTransNonUnit;
+		template <class Element>
+		class ftrsmRightUpperNoTransUnit;
+		template <class Element>
+		class ftrsmRightUpperTransNonUnit;
+		template <class Element>
+		class ftrsmRightUpperTransUnit;
+		template <class Element>
+		class ftrsmRightLowerNoTransNonUnit;
+		template <class Element>
+		class ftrsmRightLowerNoTransUnit;
+		template <class Element>
+		class ftrsmRightLowerTransNonUnit;
+		template <class Element>
+		class ftrsmRightLowerTransUnit;
+
+		// Specialized routines for ftrmm
+		template <class Element>
+		class ftrmmLeftUpperNoTransNonUnit;
+		template <class Element>
+		class ftrmmLeftUpperNoTransUnit;
+		template <class Element>
+		class ftrmmLeftUpperTransNonUnit;
+		template <class Element>
+		class ftrmmLeftUpperTransUnit;
+		template <class Element>
+		class ftrmmLeftLowerNoTransNonUnit;
+		template <class Element>
+		class ftrmmLeftLowerNoTransUnit;
+		template <class Element>
+		class ftrmmLeftLowerTransNonUnit;
+		template <class Element>
+		class ftrmmLeftLowerTransUnit;
+		template <class Element>
+		class ftrmmRightUpperNoTransNonUnit;
+		template <class Element>
+		class ftrmmRightUpperNoTransUnit;
+		template <class Element>
+		class ftrmmRightUpperTransNonUnit;
+		template <class Element>
+		class ftrmmRightUpperTransUnit;
+		template <class Element>
+		class ftrmmRightLowerNoTransNonUnit;
+		template <class Element>
+		class ftrmmRightLowerNoTransUnit;
+		template <class Element>
+		class ftrmmRightLowerTransNonUnit;
+		template <class Element>
+		class ftrmmRightLowerTransUnit;
+
+		// BB : ça peut servir...
+#ifdef LB_TRTR
+		template <class Element>
+		class ftrtrLeftUpperNoTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftUpperNoTransUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftUpperTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftUpperTransUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftLowerNoTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftLowerNoTransUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftLowerTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftLowerTransUnitNonUnit;
+		template <class Element>
+		class ftrtrLeftUpperNoTransNonUnitUnit;
+		template <class Element>
+		class ftrtrLeftUpperNoTransUnitUnit;
+		template <class Element>
+		class ftrtrLeftUpperTransNonUnitUnit;
+		template <class Element>
+		class ftrtrLeftUpperTransUnitUnit;
+		template <class Element>
+		class ftrtrLeftLowerNoTransNonUnitUnit;
+		template <class Element>
+		class ftrtrLeftLowerNoTransUnitUnit;
+		template <class Element>
+		class ftrtrLeftLowerTransNonUnitUnit;
+		template <class Element>
+		class ftrtrLeftLowerTransUnitUnit;
+		template <class Element>
+		class ftrtrRightUpperNoTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrRightUpperNoTransUnitNonUnit;
+		template <class Element>
+		class ftrtrRightUpperTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrRightUpperTransUnitNonUnit;
+		template <class Element>
+		class ftrtrRightLowerNoTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrRightLowerNoTransUnitNonUnit;
+		template <class Element>
+		class ftrtrRightLowerTransNonUnitNonUnit;
+		template <class Element>
+		class ftrtrRightLowerTransUnitNonUnit;
+		template <class Element>
+		class ftrtrRightUpperNoTransNonUnitUnit;
+		template <class Element>
+		class ftrtrRightUpperNoTransUnitUnit;
+		template <class Element>
+		class ftrtrRightUpperTransNonUnitUnit;
+		template <class Element>
+		class ftrtrRightUpperTransUnitUnit;
+		template <class Element>
+		class ftrtrRightLowerNoTransNonUnitUnit;
+		template <class Element>
+		class ftrtrRightLowerNoTransUnitUnit;
+		template <class Element>
+		class ftrtrRightLowerTransNonUnitUnit;
+		template <class Element>
+		class ftrtrRightLowerTransUnitUnit;
+#endif
+		template<class Element>
+		class faddmTrans;
+		template<class Element>
+		class faddmNoTrans;
+		template<class Element>
+		class fsubmTrans;
+		template<class Element>
+		class fsubmNoTrans;
+		template<class Element>
+		class faddmTransTrans;
+		template<class Element>
+		class faddmNoTransTrans;
+		template<class Element>
+		class faddmTransNoTrans;
+		template<class Element>
+		class faddmNoTransNoTrans;
+		template<class Element>
+		class fsubmTransTrans;
+		template<class Element>
+		class fsubmNoTransTrans;
+		template<class Element>
+		class fsubmTransNoTrans;
+		template<class Element>
+		class fsubmNoTransNoTrans;
+	} // protected
 
 //---------------------------------------------------------------------
 // Level 1 routines
@@ -469,9 +905,9 @@ public:
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
-		MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base,
+		Protected::MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base,
 				winolevel, true);
-		WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
+		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				C, ldc, kmax, winolevel, base);
 		return C;
 	}
@@ -529,9 +965,9 @@ public:
 		size_t w, kmax;
  		FFLAS_BASE base;
 
-		MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base, w);
+		Protected::MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base, w);
 
-		WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
+		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 			  C, ldc, kmax, w, base);
 		return C;
 	}
@@ -645,439 +1081,6 @@ public:
 	 */
 	static size_t WinoSteps (const size_t m);
 
-protected:
-
-	// Prevents the instantiation of the class
-	FFLAS(){}
-	template <class X,class Y>
-	class AreEqual {
-	public:
-		static const bool value = false;
-	};
-
-	template <class X>
-	class AreEqual<X,X> {
-	public:
-		static const bool value = true;
-	};
-
-	//-----------------------------------------------------------------------------
-	// Some conversion functions
-	//-----------------------------------------------------------------------------
-
-	//---------------------------------------------------------------------
-	// Finite Field matrix => double matrix
-	//---------------------------------------------------------------------
-	template<class Field>
-	static void MatF2MatD (const Field& F,
-			       DoubleDomain::Element* S, const size_t lds,
-			       const typename Field::Element* E,
-			       const size_t lde,const size_t m, const size_t n){
-
-		const typename Field::Element* Ei = E;
-		DoubleDomain::Element *Si=S;
-		size_t j;
-		for (; Ei < E+lde*m; Ei+=lde, Si += lds)
-			for ( j=0; j<n; ++j){
-				F.convert(*(Si+j),*(Ei+j));
-			}
-		}
-	//---------------------------------------------------------------------
-	// Finite Field matrix => float matrix
-	//---------------------------------------------------------------------
-	template<class Field>
-	static void MatF2MatFl (const Field& F,
-				FloatDomain::Element* S, const size_t lds,
-				const typename Field::Element* E,
-				const size_t lde,const size_t m, const size_t n){
-
-		const typename Field::Element* Ei = E;
-		FloatDomain::Element *Si=S;
-		size_t j;
-		for (; Ei < E+lde*m; Ei+=lde, Si += lds)
-			for ( j=0; j<n; ++j){
-				F.convert(*(Si+j),*(Ei+j));
-			}
-		}
-
-	//---------------------------------------------------------------------
-	// Finite Field matrix => double matrix
-	// Special design for upper-triangular matrices
-	//---------------------------------------------------------------------
-	template<class Field>
-	static void MatF2MatD_Triangular (const Field& F,
-					  typename DoubleDomain::Element* S, const size_t lds,
-					  const typename Field::Element* const E,
-					  const size_t lde,
-					  const size_t m, const size_t n){
-
-		const typename Field::Element* Ei = E;
-		typename DoubleDomain::Element* Si = S;
-		size_t i=0, j;
-		for ( ; i<m;++i, Ei+=lde, Si+=lds)
-			for ( j=i; j<n;++j)
-				F.convert(*(Si+j),*(Ei+j));
-	}
-
-	//---------------------------------------------------------------------
-	// Finite Field matrix => float matrix
-	// Special design for upper-triangular matrices
-	//---------------------------------------------------------------------
-	template<class Field>
-	static void MatF2MatFl_Triangular (const Field& F,
-					   typename FloatDomain::Element* S, const size_t lds,
-					   const typename Field::Element* const E,
-					   const size_t lde,
-					   const size_t m, const size_t n){
-
-		const typename Field::Element* Ei = E;
-		typename FloatDomain::Element* Si = S;
-		size_t i=0, j;
-		for ( ; i<m;++i, Ei+=lde, Si+=lds)
-			for ( j=i; j<n;++j)
-				F.convert(*(Si+j),*(Ei+j));
-	}
-
-	//---------------------------------------------------------------------
-	// double matrix => Finite Field matrix
-	//---------------------------------------------------------------------
-	template<class Field>
-	static void MatD2MatF (const Field& F,
-			       typename Field::Element* S, const size_t lds,
-			       const typename DoubleDomain::Element* E, const size_t lde,
-			       const size_t m, const size_t n)
-	{
-
-		typename Field::Element* Si = S;
-		const DoubleDomain::Element* Ei =E;
-		size_t j;
-		for ( ; Si < S+m*lds; Si += lds, Ei+= lde){
-			for ( j=0; j<n;++j)
-				F.init( *(Si+j), *(Ei+j) );
-		}
-	}
-
-	//---------------------------------------------------------------------
-	// float matrix => Finite Field matrix
-	//---------------------------------------------------------------------
-	template<class Field>
-	static void MatFl2MatF (const Field& F,
-				typename Field::Element* S, const size_t lds,
-				const typename FloatDomain::Element* E, const size_t lde,
-				const size_t m, const size_t n){
-
-		typename Field::Element* Si = S;
-		const FloatDomain::Element* Ei =E;
-		size_t j;
-		for ( ; Si < S+m*lds; Si += lds, Ei+= lde){
-			for ( j=0; j<n;++j)
-				F.init( *(Si+j), *(Ei+j) );
-		}
-	}
-
-	/**
-	 * Computes the threshold parameters for the cascade
-	 *        Matmul algorithm.
-	 *
-	 *
-	 * \param F Finite Field/Ring of the computation.
-	 * \param k Common dimension of A and B, in the product A x B
-	 * \param beta Computing \f$AB + \beta C\f$
-	 * \param delayedDim Returns the size of blocks that can be multiplied
-	 *                   over Z with no overflow
-	 * \param base Returns the type of BLAS representation to use
-	 * \param winoRecLevel Returns the number of recursion levels of
-	 *                     Strassen-Winograd's algorithm to perform
-	 * \param winoLevelProvided tells whether the user forced the number of
-	 *                          recursive level of Winograd's algorithm
-	 *
-	 * @bib [Dumas, Giorgi, Pernet, arXiv cs/0601133]
-	 * <a href=http://arxiv.org/abs/cs.SC/0601133>here</a>
-	 */
-	template <class Field>
-	static void MatMulParameters (const Field& F,
-				      const size_t k,
-				      const typename Field::Element& beta,
-				      size_t& delayedDim,
-				      FFLAS_BASE& base,
-				      size_t& winoRecLevel,
-				      bool winoLevelProvided=false);
-
-
-	/**
-	 * Computes the maximal size for delaying the modular reduction
-	 *         in a dotproduct.
-	 *
-	 * This is the default version assuming a conversion to a positive modular representation
-	 *
-	 * \param F Finite Field/Ring of the computation
-	 * \param winoRecLevel Number of recusrive Strassen-Winograd levels (if any, 0 otherwise)
-	 * \param beta Computing AB + beta C
-	 * \param base Type of floating point representation for delayed modular computations
-	 *
-	 */
-	template <class Field>
-	static size_t DotProdBound (const Field& F,
-			     const size_t winoRecLevel,
-			     const typename Field::Element& beta,
-			     const FFLAS_BASE base);
-
-
-	/**
-	 * Internal function for the bound computation.
-	 * Generic implementation for positive representations
-	 */
-	template <class Field>
-	static double computeFactorWino (const Field& F, const size_t w);
-
-	template <class Field>
-	static double computeFactorClassic (const Field& F);
-
-
-	/**
-	 * Determines the type of floating point representation to convert to,
-	 *        for BLAS computations.
-	 * \param F Finite Field/Ring of the computation
-	 * \param w Number of recursive levels in Winograd's algorithm
-	 */
-	template <class Field>
-	static FFLAS_BASE BaseCompute (const Field& F, const size_t w);
-
-	/**
-	 * Computes the maximal size for delaying the modular reduction
-	 *         in a triangular system resolution.
-	 *
-	 *  Compute the maximal dimension k, such that a unit diagonal triangular
-	 *  system of dimension k can be solved over Z without overflow of the
-	 *  underlying floating point representation.
-	 *
-  	 *  @bib [Dumas, Giorgi, Pernet 06, arXiv:cs/0601133 ]
-	 *
-	 * \param F Finite Field/Ring of the computation
-	 *
-	 */
-	template <class Field>
-	static size_t TRSMBound (const Field& F);
-
-	template <class Field>
-	static void DynamicPealing( const Field& F,
-				    const FFLAS_TRANSPOSE ta,
-				    const FFLAS_TRANSPOSE tb,
-				    const size_t m, const size_t n, const size_t k,
-				    const typename Field::Element alpha,
-				    const typename Field::Element* A, const size_t lda,
-				    const typename Field::Element* B, const size_t ldb,
-				    const typename Field::Element beta,
-				    typename Field::Element* C, const size_t ldc,
-				    const size_t  ); //kmax
-
-	template <class Field>
-	static void MatVectProd (const Field& F,
-				 const FFLAS_TRANSPOSE TransA,
-				 const size_t M, const size_t N,
-				 const typename Field::Element alpha,
-				 const typename Field::Element * A, const size_t lda,
-				 const typename Field::Element * X, const size_t incX,
-				 const typename Field::Element beta,
-				 typename Field::Element * Y, const size_t incY);
-
-	template <class Field>
-	static void ClassicMatmul(const Field& F,
-				  const FFLAS_TRANSPOSE ta,
-				  const FFLAS_TRANSPOSE tb,
-				  const size_t m, const size_t n, const size_t k,
-				  const typename Field::Element alpha,
-				  const typename Field::Element * A, const size_t lda,
-				  const typename Field::Element * B, const size_t ldb,
-				  const typename Field::Element beta,
-				  typename Field::Element * C, const size_t ldc,
-				  const size_t kmax, const FFLAS_BASE base );
-
-	// Winograd Multiplication  alpha.A(n*k) * B(k*m) + beta . C(n*m)
-	// WinoCalc performs the 22 Winograd operations
-	template <class Field>
-	static void WinoCalc (const Field& F,
-			      const FFLAS_TRANSPOSE ta,
-			      const FFLAS_TRANSPOSE tb,
-			      const size_t mr, const size_t nr,const size_t kr,
-			      const typename Field::Element alpha,
-			      const typename Field::Element* A,const size_t lda,
-			      const typename Field::Element* B,const size_t ldb,
-			      const typename Field::Element beta,
-			      typename Field::Element * C, const size_t ldc,
-			      const size_t kmax, const size_t w, const FFLAS_BASE base);
-
-	template<class Field>
-	static void WinoMain (const Field& F,
-			      const FFLAS_TRANSPOSE ta,
-			      const FFLAS_TRANSPOSE tb,
-			      const size_t m, const size_t n, const size_t k,
-			      const typename Field::Element alpha,
-			      const typename Field::Element* A,const size_t lda,
-			      const typename Field::Element* B,const size_t ldb,
-			      const typename Field::Element beta,
-			      typename Field::Element * C, const size_t ldc,
-			      const size_t kmax, const size_t w, const FFLAS_BASE base);
-
-	// Specialized routines for ftrsm
-	template <class Element>
-	class ftrsmLeftUpperNoTransNonUnit;
-	template <class Element>
-	class ftrsmLeftUpperNoTransUnit;
-	template <class Element>
-	class ftrsmLeftUpperTransNonUnit;
-	template <class Element>
-	class ftrsmLeftUpperTransUnit;
-	template <class Element>
-	class ftrsmLeftLowerNoTransNonUnit;
-	template <class Element>
-	class ftrsmLeftLowerNoTransUnit;
-	template <class Element>
-	class ftrsmLeftLowerTransNonUnit;
-	template <class Element>
-	class ftrsmLeftLowerTransUnit;
-	template <class Element>
-	class ftrsmRightUpperNoTransNonUnit;
-	template <class Element>
-	class ftrsmRightUpperNoTransUnit;
-	template <class Element>
-	class ftrsmRightUpperTransNonUnit;
-	template <class Element>
-	class ftrsmRightUpperTransUnit;
-	template <class Element>
-	class ftrsmRightLowerNoTransNonUnit;
-	template <class Element>
-	class ftrsmRightLowerNoTransUnit;
-	template <class Element>
-	class ftrsmRightLowerTransNonUnit;
-	template <class Element>
-	class ftrsmRightLowerTransUnit;
-
-	// Specialized routines for ftrmm
-	template <class Element>
-	class ftrmmLeftUpperNoTransNonUnit;
-	template <class Element>
-	class ftrmmLeftUpperNoTransUnit;
-	template <class Element>
-	class ftrmmLeftUpperTransNonUnit;
-	template <class Element>
-	class ftrmmLeftUpperTransUnit;
-	template <class Element>
-	class ftrmmLeftLowerNoTransNonUnit;
-	template <class Element>
-	class ftrmmLeftLowerNoTransUnit;
-	template <class Element>
-	class ftrmmLeftLowerTransNonUnit;
-	template <class Element>
-	class ftrmmLeftLowerTransUnit;
-	template <class Element>
-	class ftrmmRightUpperNoTransNonUnit;
-	template <class Element>
-	class ftrmmRightUpperNoTransUnit;
-	template <class Element>
-	class ftrmmRightUpperTransNonUnit;
-	template <class Element>
-	class ftrmmRightUpperTransUnit;
-	template <class Element>
-	class ftrmmRightLowerNoTransNonUnit;
-	template <class Element>
-	class ftrmmRightLowerNoTransUnit;
-	template <class Element>
-	class ftrmmRightLowerTransNonUnit;
-	template <class Element>
-	class ftrmmRightLowerTransUnit;
-
-	// BB : ça peut servir...
-#ifdef LB_TRTR
-	template <class Element>
-	class ftrtrLeftUpperNoTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftUpperNoTransUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftUpperTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftUpperTransUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftLowerNoTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftLowerNoTransUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftLowerTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftLowerTransUnitNonUnit;
-	template <class Element>
-	class ftrtrLeftUpperNoTransNonUnitUnit;
-	template <class Element>
-	class ftrtrLeftUpperNoTransUnitUnit;
-	template <class Element>
-	class ftrtrLeftUpperTransNonUnitUnit;
-	template <class Element>
-	class ftrtrLeftUpperTransUnitUnit;
-	template <class Element>
-	class ftrtrLeftLowerNoTransNonUnitUnit;
-	template <class Element>
-	class ftrtrLeftLowerNoTransUnitUnit;
-	template <class Element>
-	class ftrtrLeftLowerTransNonUnitUnit;
-	template <class Element>
-	class ftrtrLeftLowerTransUnitUnit;
-	template <class Element>
-	class ftrtrRightUpperNoTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrRightUpperNoTransUnitNonUnit;
-	template <class Element>
-	class ftrtrRightUpperTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrRightUpperTransUnitNonUnit;
-	template <class Element>
-	class ftrtrRightLowerNoTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrRightLowerNoTransUnitNonUnit;
-	template <class Element>
-	class ftrtrRightLowerTransNonUnitNonUnit;
-	template <class Element>
-	class ftrtrRightLowerTransUnitNonUnit;
-	template <class Element>
-	class ftrtrRightUpperNoTransNonUnitUnit;
-	template <class Element>
-	class ftrtrRightUpperNoTransUnitUnit;
-	template <class Element>
-	class ftrtrRightUpperTransNonUnitUnit;
-	template <class Element>
-	class ftrtrRightUpperTransUnitUnit;
-	template <class Element>
-	class ftrtrRightLowerNoTransNonUnitUnit;
-	template <class Element>
-	class ftrtrRightLowerNoTransUnitUnit;
-	template <class Element>
-	class ftrtrRightLowerTransNonUnitUnit;
-	template <class Element>
-	class ftrtrRightLowerTransUnitUnit;
-#endif
-	template<class Element>
-	class faddmTrans;
-	template<class Element>
-	class faddmNoTrans;
-	template<class Element>
-	class fsubmTrans;
-	template<class Element>
-	class fsubmNoTrans;
-	template<class Element>
-	class faddmTransTrans;
-	template<class Element>
-	class faddmNoTransTrans;
-	template<class Element>
-	class faddmTransNoTrans;
-	template<class Element>
-	class faddmNoTransNoTrans;
-	template<class Element>
-	class fsubmTransTrans;
-	template<class Element>
-	class fsubmNoTransTrans;
-	template<class Element>
-	class fsubmTransNoTrans;
-	template<class Element>
-	class fsubmNoTransNoTrans;
 
 
 }; // class FFLAS

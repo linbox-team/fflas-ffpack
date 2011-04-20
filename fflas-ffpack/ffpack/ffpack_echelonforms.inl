@@ -22,11 +22,11 @@ size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	F.init (one, 1.0);
 	F.neg (mone, one);
 	size_t r;
-	r = LUdivine (F, FflasNonUnit, FflasNoTrans, M, N, A, lda, P, Qt);
+	r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
 
 	if (transform){
-		ftrtri (F, FflasUpper, FflasNonUnit, r, A, lda);
-		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit, r, N-r,
+		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
+		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r,
 		       mone, A, lda, A+r, lda);
 	}
 
@@ -43,12 +43,12 @@ size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 	F.init (one, 1.0);
 	F.neg (mone, one);
 	size_t r;
-	r = LUdivine (F, FflasNonUnit, FflasTrans,  M, N, A, lda, P, Qt);
+	r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
 
 	if (transform){
 
-		ftrtri (F, FflasLower, FflasNonUnit, r, A, lda);
-		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasNonUnit, M-r, r,
+		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda);
+		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-r, r,
 		       mone, A, lda, A+r*lda, lda);
 	}
 
@@ -71,25 +71,25 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	// M = Q^T M
 	for (size_t i=0; i<r; ++i){
 		if ( Qt[i]> (size_t) i ){
-			fswap( F, i,
+			FFLAS::fswap( F, i,
 			       A + Qt[i]*lda, 1,
 			       A + i*lda, 1 );
 		}
 	}
 	if (transform){
-		ftrtri (F, FflasLower, FflasUnit, r, A, lda);
-		ftrmm (F, FflasRight, FflasLower, FflasNoTrans, FflasUnit, M-r, r,
+		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, r, A, lda);
+		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r,
 		       one, A, lda, A+r*lda, lda);
-		ftrtrm (F, FflasNonUnit, r, A, lda);
+		ftrtrm (F, FFLAS::FflasNonUnit, r, A, lda);
 	} else {
-		ftrsm (F, FflasRight, FflasLower, FflasNoTrans, FflasUnit, M-r, r,
+		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r,
 		       one, A, lda, A+r*lda, lda);
 		for (size_t i=0; i<r; i++){
 			for (size_t j=0; j<N; j++)
 				F.assign (*(A+i*lda+j),zero);
 			F.assign (*(A + i*(lda+1)), one);
 		}
-		applyP(F, FflasLeft, FflasTrans, r, 0, r, A, lda, Qt);
+		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0, r, A, lda, Qt);
 	}
 
 	return r;
@@ -111,25 +111,25 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 	// M = M Q
 	for (size_t i=0; i<r; ++i){
 		if ( Qt[i]> i ){
-			fswap( F, i,
+			FFLAS::fswap( F, i,
 			       A + Qt[i], lda,
 			       A + i, lda );
 		}
 	}
 	if (transform){
-		ftrtri (F, FflasUpper, FflasUnit, r, A, lda);
-		ftrmm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, r, N-r,
+		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasUnit, r, A, lda);
+		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r,
 		       one, A, lda, A+r, lda);
-		ftrtrm (F, FflasUnit, r, A, lda);
+		ftrtrm (F, FFLAS::FflasUnit, r, A, lda);
 	} else {
-		ftrsm (F, FflasLeft, FflasUpper, FflasNoTrans, FflasUnit, r, N-r,
+		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r,
 		       one, A, lda, A+r, lda);
 		for (size_t i=0; i<r; i++){
 			for (size_t j=0; j<M; j++)
 				F.assign (*(A+j*lda+i),zero);
 			F.assign (*(A + i*(lda+1)), one);
 		}
-		applyP(F, FflasRight, FflasNoTrans, r, 0, r, A, lda, Qt);
+		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, r, A, lda, Qt);
 	}
 	return r;
 }
@@ -200,21 +200,21 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	 * where the transformation matrix is stored at the pivot column position
 	 */
 	// Apply row permutation on A*2
-	applyP (F, FflasLeft, FflasNoTrans, colsize - recsize, rowbeg, rowbeg+r1, A12, lda, Qt);
+	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, colsize - recsize, rowbeg, rowbeg+r1, A12, lda, Qt);
 
 	// A12 <- A12 - A11 * A22
-	fgemm (F, FflasNoTrans, FflasNoTrans, rowbeg, colsize - recsize, r1,
+	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg, colsize - recsize, r1,
 	       one, A11, lda, A22, lda, one, A12, lda);
 
 	// A32 <- A32 - A31 * A22
-	fgemm (F, FflasNoTrans, FflasNoTrans, M-rowbeg-r1, colsize - recsize, r1,
+	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-rowbeg-r1, colsize - recsize, r1,
 	       one, A31, lda, A22, lda, one, A32, lda);
 
 	// A22 <- A21*A22
 	Element* tmp = new Element [r1*(colsize-recsize)];
 	for (size_t i = 0; i < r1; ++i)
 		fcopy (F, colsize-recsize, tmp+i*(colsize-recsize), 1, A22+i*lda, 1);
-	fgemm (F, FflasNoTrans, FflasNoTrans, r1, colsize-recsize, r1,
+	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r1, colsize-recsize, r1,
 	       one, A21, lda, tmp, colsize-recsize, zero, A22, lda);
 	delete[] tmp;
 
@@ -223,7 +223,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 			colsize - recsize, Qt, P);
 
 	// Apply permutation on A*1
-	applyP (F, FflasLeft, FflasNoTrans, r1, rowbeg+r1, rowbeg+r1+r2, A11, lda, Qt);
+	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, r1, rowbeg+r1, rowbeg+r1+r2, A11, lda, Qt);
 
 	Element * U11 = A11;
 	Element * U12 = A12;
@@ -233,11 +233,11 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	Element * U32 = U31+recsize;
 
 	// U11 <- U11 + U12 * U21
-	fgemm (F, FflasNoTrans, FflasNoTrans, rowbeg+r1, r1, r2,
+	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg+r1, r1, r2,
 	       one, U12, lda, U21, lda, one, U11, lda);
 
 	// U31 <- U31 + U32 * U21
-	fgemm (F, FflasNoTrans, FflasNoTrans, M-rowbeg-r1-r2, r1, r2,
+	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-rowbeg-r1-r2, r1, r2,
 	       one, U32, lda, U21, lda, one, U31, lda);
 
 	// U21 <- U22*U21
@@ -245,7 +245,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	for (size_t i = 0; i < r2; ++i)
 		fcopy (F, r1, tmp+i*r1, 1, U21+i*lda, 1);
 
-	fgemm (F, FflasNoTrans, FflasNoTrans, r2, r1, r2,
+	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r2, r1, r2,
 	       one, U22, lda, tmp, r1, zero, U21, lda);
 	delete[] tmp;
 

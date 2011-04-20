@@ -56,11 +56,11 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 			// B1 <- C1^-1.B1
 			typename Field::Element * LUP = new typename Field::Element[mc*mc];
 			for (size_t i=0; i<mc; ++i)
-				fcopy( F, mc, LUP+i*mc, 1, C+i*lda, 1);
+				FFLAS::fcopy( F, mc, LUP+i*mc, 1, C+i*lda, 1);
 			size_t * P = new size_t[mc];
 			size_t * Q = new size_t[mc];
 
-			if ( (r = LUdivine( F, FflasNonUnit, FflasNoTrans, mc, mc,
+			if ( (r = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mc, mc,
 					    LUP, mc, P, Q, FfpackLQUP)) < mc ){
 				* kg_mc = mc;
 				* kg_mb = mb;
@@ -76,12 +76,12 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 			write_field( F, std::cerr, LUP, mc, mc, mc );
 #endif
                         //std::cerr<<" "<<r;
-			ftrsm(F, FflasLeft, FflasLower, FflasNoTrans, FflasUnit,
+			ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
 			      mc, mb, one, LUP, mc , B, lda);
-			ftrsm(F, FflasLeft, FflasUpper, FflasNoTrans, FflasNonUnit,
+			ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 			      mc, mb, one, LUP, mc , B, lda);
 			delete[] LUP;
-			applyP( F, FflasLeft, FflasTrans, mb, 0, mc, B, lda, P );
+			applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, mb, 0, mc, B, lda, P );
 
 			delete[] P;
 			delete[] Q;
@@ -91,7 +91,7 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 #endif
 
 			// B2 <- B2 - C2.B1
-			fgemm(F, FflasNoTrans, FflasNoTrans, N-mc, mb, mc,
+			fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-mc, mb, mc,
 			      mone, C+mc*lda, lda, B, lda,
 			      one, B+mc*lda, lda);
 
@@ -103,11 +103,11 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 			// Shifting B: B1;B2 -> B2;B1
 			typename Field::Element * tmp = new typename Field::Element[mc*mb];
 			for (size_t i=0; i<mc; ++i)
-				fcopy( F, mb, tmp+i*mb, 1, B+i*lda, 1);
+				FFLAS::fcopy( F, mb, tmp+i*mb, 1, B+i*lda, 1);
 			for (size_t i=mc; i<N; ++i)
-				fcopy( F, mb, B+(i-mc)*lda, 1, B+i*lda, 1);
+				FFLAS::fcopy( F, mb, B+(i-mc)*lda, 1, B+i*lda, 1);
 			for (size_t i=0; i<mc; ++i)
-				fcopy( F, mb, B+(i+N-mc)*lda, 1, tmp+i*mb, 1);
+				FFLAS::fcopy( F, mb, B+(i+N-mc)*lda, 1, tmp+i*mb, 1);
 			delete[] tmp;
 #if 0
 			std::cerr<<"Apres shift de B"<<std::endl;
@@ -116,7 +116,7 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 
 
 			// C3 <- B3.C1 + C3
-			fgemm(F, FflasNoTrans, FflasNoTrans, (j+1)*mc, mc, mb,
+			fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, (j+1)*mc, mc, mb,
 			      one, B+(N-(j+1)*mc)*lda, lda, C+(N-(j+1)*mc-mb)*lda, lda,
 			      one, C+(N-(j+1)*mc)*lda, lda);
 #if 0
@@ -138,21 +138,21 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 
 				// tmp <- C1
 				for (int i=0; i<lambda; ++i)
-					fcopy( F, mc, tmp+i*mc, 1, C+i*lda, 1);
+					FFLAS::fcopy( F, mc, tmp+i*mc, 1, C+i*lda, 1);
 
 				// C1' <- B1.C2
-				fgemm(F, FflasNoTrans, FflasNoTrans, mb, mc, mb,
+				fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
 				      one, B, lda, C+lambda*lda, lda,
 				      zero, C, lda);
 
 				// tmp <- B2.C2 + tmp
-				fgemm(F, FflasNoTrans, FflasNoTrans, lambda, mc, mb,
+				fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
 				      one, B+mb*lda, lda, C+lambda*lda, lda,
 				      one, tmp, mc);
 
 				// C2' <- tmp
 				for (int i=0; i<lambda; ++i)
-					fcopy( F, mc, C+mb*lda+i*lda, 1, tmp+i*mc, 1);
+					FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, tmp+i*mc, 1);
 				delete[] tmp;
 			}
 			else if ( lambda > 0 ){
@@ -162,22 +162,22 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 
 				typename Field::Element * tmp = new typename Field::Element[mb*mc];
 				// C1 <- B2.C2 + C1
-				fgemm(F, FflasNoTrans, FflasNoTrans, lambda, mc, mb,
+				fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
 				      one, B+mb*lda, lda, C+lambda*lda, lda,
 				      one, C, lda);
 
 				// tmp <-B1.C2
-				fgemm(F, FflasNoTrans, FflasNoTrans, mb, mc, mb,
+				fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
 				      one, B, lda, C+lambda*lda, lda,
 				      zero, tmp, mc);
 
 				// C2' <- C1
 				for (int i=0; i<lambda; ++i)
-					fcopy( F, mc, C+mb*lda+i*lda, 1, C+i*lda, 1);
+					FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, C+i*lda, 1);
 
 				// C1' <- tmp
 				for (size_t i=0; i<mb; ++i)
-					fcopy( F, mc, C+i*lda, 1, tmp+i*mc, 1);
+					FFLAS::fcopy( F, mc, C+i*lda, 1, tmp+i*mc, 1);
 				delete[] tmp;
 			}
 			else{
@@ -188,13 +188,13 @@ FFPACK::KGFast ( const Field& F, std::list<Polynomial>& charp,
 				typename Field::Element * tmp = new typename Field::Element[mb*mc];
 
 				// tmp <-B1.C1
-				fgemm(F, FflasNoTrans, FflasNoTrans, mb, mc, mb,
+				fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
 				      one, B, lda, C, lda,
 				      zero, tmp, mc);
 
 				// C1' <- tmp
 				for (size_t i=0; i<mb; ++i)
-					fcopy( F, mc, C+i*lda, 1, tmp+i*mc, 1);
+					FFLAS::fcopy( F, mc, C+i*lda, 1, tmp+i*mc, 1);
 				delete[] tmp;
 			}
 
@@ -232,11 +232,11 @@ FFPACK::fgemv_kgf( const Field& F,  const size_t N,
 	size_t big_truc =kg_mb-kg_mc*(kg_j+1) ;
 	size_t lambda = (N<big_truc)?(0):(N-big_truc);
 	// Y1 <- X2
-	fcopy ( F, lambda, Y, incY, X+(kg_mb+kg_mc)*incX, incX );
+	FFLAS::fcopy ( F, lambda, Y, incY, X+(kg_mb+kg_mc)*incX, incX );
 	// Y2 <- X.B
-	fgemv( F, FflasTrans, N, kg_mb, one, A+N-kg_mc-kg_mb, lda, X, incX, zero, Y+lambda*incY, incY );
+	fgemv( F, FFLAS::FflasTrans, N, kg_mb, one, A+N-kg_mc-kg_mb, lda, X, incX, zero, Y+lambda*incY, incY );
 	// Y3 <- X3
-	fcopy ( F, kg_j*kg_mc, Y+(lambda+kg_mb)*incY, incY, X+(lambda+kg_mb+kg_mc)*incX, incX );
+	FFLAS::fcopy ( F, kg_j*kg_mc, Y+(lambda+kg_mb)*incY, incY, X+(lambda+kg_mb+kg_mc)*incX, incX );
 	// Y4 <- X.C
-	fgemv( F, FflasTrans, N, kg_mc, one, A+N-kg_mc, lda, X, incX, zero, Y+(N-kg_mc)*incY, incY );
+	fgemv( F, FFLAS::FflasTrans, N, kg_mc, one, A+N-kg_mc, lda, X, incX, zero, Y+(N-kg_mc)*incY, incY );
 }
