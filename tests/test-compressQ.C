@@ -15,9 +15,11 @@
 #include <vector>
 #include "Matio.h"
 #include "timer.h"
-using namespace std;
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
+
+#include "test-common.h"
+using namespace std;
 
 
 typedef NAMESPACE Modular<double> Field;
@@ -29,7 +31,15 @@ std::ostream& printvect(std::ostream& o, vector<T>& vect){
 	return o << std::endl;
 }
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
+
+
+	static Argument as[] = {
+		END_OF_ARGUMENTS
+	};
+
+	parseArguments(argc,argv,as);
 
 	// int m,n;
 
@@ -58,15 +68,22 @@ int main(int argc, char** argv){
 	for (size_t i=0; i<size_t(N); ++i)
 		A[11+i*N] = A[7+i*N] = A[3+i*N] = i % 10;
 
-	write_field(F, cerr, A, N, N, N);
+	double * B = new double[N*N] ;
+	FFLAS::fcopy(F,N*N,B,1,A,1);
+
+	// write_field(F, cerr, A, N, N, N);
 
 	FFPACK::CompressRowsQK (F, N, A+9*N, N, tmp, N, deg+3, 4, 3 );
 
-	write_field(F, cerr, A, N, N, N);
+	// write_field(F, cerr, A, N, N, N);
 
 	FFPACK::DeCompressRowsQK (F, N, N-9, A+9*N, N, tmp, N, deg+3, 4, 3 );
 
-	write_field(F, cerr, A, N, N, N);
+	// write_field(F, cerr, A, N, N, N);
 
+	for (size_t i = 0 ; i < N * N ; ++i)
+		if (A[i] != B[i])
+			return 1 ;
+	return 0 ;
 
 }

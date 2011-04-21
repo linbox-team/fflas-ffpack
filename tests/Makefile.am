@@ -9,12 +9,12 @@ check: $(BASE_TESTS)
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
-AM_CPPFLAGS += $(OPTFLAGS) -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(GMP_CFLAGS)  $(GIVARO_CFLAGS)
+AM_CPPFLAGS += $(OPTFLAGS) -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(GMP_CFLAGS)  $(GIVARO_CFLAGS)
 LDADD = $(BLAS_LIBS) $(GIVARO_LIBS) $(GMP_LIBS)
 AM_LDFLAGS=-static
 
 BASIC_TESTS =              \
-		dense_generator        \
+		test-charpoly          \
 		test-compressQ
 
 NOT_A_TEST =  \
@@ -36,7 +36,6 @@ NOT_A_TEST =  \
 		test-redechelon        \
 		test-ftrsm             \
 		test-fgemm             \
-		test-charpoly          \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
@@ -47,7 +46,7 @@ INFINITE_TEST= \
 		testeur_ftrsm          \
 		testeur_lqup
 
-EXTRA_DIST= timer.C timer.h Matio.h
+EXTRA_DIST= timer.C timer.h Matio.h test-common.h
 
 CLEANFILES =           \
 		$(BASIC_TESTS)
@@ -58,8 +57,8 @@ EXTRA_PROGRAMS =       \
 TESTS =                \
 	    $(BASIC_TESTS)
 
-dense_generator_SOURCES        = dense_generator.C
-test_compressQ_SOURCES         = test-compressQ.C
+#  dense_generator_SOURCES        = dense_generator.C
+test_compressQ_SOURCES         = test-compressQ.C test-common.h
 #  test_det_SOURCES               = test-det.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
@@ -79,7 +78,7 @@ test_compressQ_SOURCES         = test-compressQ.C
 #  test_rowechelon_SOURCES        = test-rowechelon.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 #  test_invert_SOURCES            = test-invert.C
-#  test_charpoly_SOURCES          = test-charpoly.C
+test_charpoly_SOURCES          = test-charpoly.C test-common.h
 #  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
 #  test_colechelon_SOURCES        = test-colechelon.C
@@ -88,6 +87,8 @@ test_compressQ_SOURCES         = test-compressQ.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 
+dense_generator:
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
 
 
 # for compilation of new tests

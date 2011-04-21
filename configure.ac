@@ -253,6 +253,7 @@ fflas-ffpack/Makefile
 fflas-ffpack/fflas/Makefile
 fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
+utils/Makefile
 doc/Makefile
 tests/Makefile
 benchmark/Makefile
