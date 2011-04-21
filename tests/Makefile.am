@@ -46,7 +46,7 @@ INFINITE_TEST= \
 		testeur_ftrsm          \
 		testeur_lqup
 
-EXTRA_DIST= timer.C timer.h Matio.h test-common.h
+EXTRA_DIST= timer.C timer.h
 
 CLEANFILES =           \
 		$(BASIC_TESTS)
@@ -58,7 +58,7 @@ TESTS =                \
 	    $(BASIC_TESTS)
 
 #  dense_generator_SOURCES        = dense_generator.C
-test_compressQ_SOURCES         = test-compressQ.C test-common.h
+test_compressQ_SOURCES         = test-compressQ.C
 #  test_det_SOURCES               = test-det.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
@@ -78,7 +78,7 @@ test_compressQ_SOURCES         = test-compressQ.C test-common.h
 #  test_rowechelon_SOURCES        = test-rowechelon.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 #  test_invert_SOURCES            = test-invert.C
-test_charpoly_SOURCES          = test-charpoly.C test-common.h
+test_charpoly_SOURCES          = test-charpoly.C
 #  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
 #  test_colechelon_SOURCES        = test-colechelon.C

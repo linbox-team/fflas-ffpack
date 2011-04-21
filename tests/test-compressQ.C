@@ -18,7 +18,7 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
-#include "test-common.h"
+#include "fflas-ffpack/utils/args-parser.h"
 using namespace std;
 
 
