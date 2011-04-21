@@ -8,62 +8,65 @@
  *
  * See COPYING for license information.
  */
+namespace FFPACK {
 
-template <class Field, class Polynomial>
-Polynomial&
-FFPACK::MinPoly( const Field& F, Polynomial& minP, const size_t N,
-			 const typename Field::Element *A, const size_t lda,
-			 typename Field::Element* X, const size_t ldx,
-			 size_t* P,
-			 const FFPACK_MINPOLY_TAG MinTag = FfpackDense,
-			 const size_t kg_mc =0,
-			 const size_t kg_mb=0,
-			 const size_t kg_j=0 )
-{
+	template <class Field, class Polynomial>
+	Polynomial&
+	MinPoly( const Field& F, Polynomial& minP, const size_t N,
+		 const typename Field::Element *A, const size_t lda,
+		 typename Field::Element* X, const size_t ldx,
+		 size_t* P,
+		 const FFPACK_MINPOLY_TAG MinTag = FfpackDense,
+		 const size_t kg_mc =0,
+		 const size_t kg_mb=0,
+		 const size_t kg_j=0 )
+	{
 
-	typedef typename Field::Element elt;
-	static elt one,zero;
-	F.init( one, 1.0 );
-	F.init( zero, 0.0 );
-	// nRow is the number of row in the krylov base already computed
-	size_t j, k ;
-	//size_t	nRow = 2;
-	typename Polynomial::iterator it;
-	elt* Xi, *Ui;
-	typename Field::RandIter g (F);
-	bool KeepOn=true;
-	elt* U = new elt[N];
-	// Picking a non zero vector
-	do{
-		for (Ui=U, Xi = X; Ui<U+N; ++Ui, ++Xi){
-			g.random (*Ui);
-		 	*Xi = *Ui;
-			if (!F.isZero(*Ui))
-				KeepOn = false;
+		typedef typename Field::Element elt;
+		static elt one,zero;
+		F.init( one, 1.0 );
+		F.init( zero, 0.0 );
+		// nRow is the number of row in the krylov base already computed
+		size_t j, k ;
+		//size_t	nRow = 2;
+		typename Polynomial::iterator it;
+		elt* Xi, *Ui;
+		typename Field::RandIter g (F);
+		bool KeepOn=true;
+		elt* U = new elt[N];
+		// Picking a non zero vector
+		do{
+			for (Ui=U, Xi = X; Ui<U+N; ++Ui, ++Xi){
+				g.random (*Ui);
+				*Xi = *Ui;
+				if (!F.isZero(*Ui))
+					KeepOn = false;
+			}
+		}while(KeepOn);
+
+		// nRow = 1;
+		// LUP factorization of the Krylov Base Matrix
+		k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, X, ldx, U, P, true,
+					MinTag, kg_mc, kg_mb, kg_j);
+		//delete[] U;
+		minP.resize(k+1);
+		minP[k] = one;
+		if ( (k==1) && F.isZero(*(X+ldx))){ // minpoly is X
+			delete[] U;
+			for (size_t i=0; i<k; ++i)
+				minP[i] = zero;
+			return minP;
 		}
-	}while(KeepOn);
-
-	// nRow = 1;
-	// LUP factorization of the Krylov Base Matrix
-	k = LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, X, ldx, U, P, true,
-				MinTag, kg_mc, kg_mb, kg_j);
-	//delete[] U;
-	minP.resize(k+1);
-	minP[k] = one;
-	if ( (k==1) && F.isZero(*(X+ldx))){ // minpoly is X
+		// U contains the k first coefs of the minpoly
+		//elt* m= new elt[k];
+		FFLAS::fcopy( F, k, U, 1, X+k*ldx, 1);
+		ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, k, X, ldx, U, 1);
+		it = minP.begin();
+		for (j=0; j<k; ++j, it++){
+			F.neg(*it, U[j]);
+		}
 		delete[] U;
-		for (size_t i=0; i<k; ++i)
-			minP[i] = zero;
 		return minP;
 	}
-	// U contains the k first coefs of the minpoly
-	//elt* m= new elt[k];
-	FFLAS::fcopy( F, k, U, 1, X+k*ldx, 1);
-	ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, k, X, ldx, U, 1);
-	it = minP.begin();
-	for (j=0; j<k; ++j, it++){
-		F.neg(*it, U[j]);
-	}
-	delete[] U;
-	return minP;
-}
+
+} // FFPACK

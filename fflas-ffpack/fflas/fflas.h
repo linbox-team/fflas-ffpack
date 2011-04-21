@@ -32,13 +32,15 @@
 #include "linbox/field/modular-float.h"
 #include "linbox/field/modular-balanced-double.h"
 #include "linbox/field/modular-balanced-float.h"
-namespace LinBox
-{
+#define NAMESPACE LinBox::
+// namespace LinBox
+// {
 #else
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
+#define NAMESPACE
 #endif
 
 #ifndef __FFLAFLAS_STRASSEN_OPTIMIZATION
@@ -98,8 +100,14 @@ namespace FFLAS {
 	};
 
 	/* Representations of Z with floating point elements*/
+#ifdef _LINBOX_LINBOX_CONFIG_H
+	typedef LinBox::UnparametricField<float> FloatDomain;
+	typedef LinBox::UnparametricField<double> DoubleDomain;
+#else
 	typedef UnparametricField<float> FloatDomain;
 	typedef UnparametricField<double> DoubleDomain;
+#endif
+
 
 	namespace Protected {
 
@@ -1103,9 +1111,9 @@ namespace FFLAS {
 
 #include "fflas_faddm.inl"
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-}
-#endif
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+// }
+// #endif
 
 #undef LB_TRTR
 

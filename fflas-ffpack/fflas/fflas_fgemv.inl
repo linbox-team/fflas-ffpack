@@ -186,7 +186,7 @@ namespace FFLAS {
 
 
 		template<>
-		inline void MatVectProd (const ModularBalanced<double>& F,
+		inline void MatVectProd (const  NAMESPACE ModularBalanced<double>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const double alpha,
@@ -224,7 +224,7 @@ namespace FFLAS {
 		}
 
 		template<>
-		inline void MatVectProd (const ModularBalanced<float>& F,
+		inline void MatVectProd (const  NAMESPACE ModularBalanced<float>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const float alpha,
@@ -260,7 +260,7 @@ namespace FFLAS {
 		}
 
 		template<>
-		inline void MatVectProd (const Modular<double>& F,
+		inline void MatVectProd (const  NAMESPACE Modular<double>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const double alpha,
@@ -298,7 +298,7 @@ namespace FFLAS {
 		}
 
 		template<>
-		inline void MatVectProd (const Modular<float>& F,
+		inline void MatVectProd (const  NAMESPACE Modular<float>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const float alpha,

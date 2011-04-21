@@ -33,10 +33,10 @@
 #include <vector>
 #include <iostream> // std::cout
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-namespace LinBox
-{
-#endif
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+// namespace LinBox
+// {
+// #endif
 
 	// The use of the small size LQUP is currently disabled:
 	// need for a better handling of element base (double, float, generic) combined
@@ -59,10 +59,10 @@ namespace LinBox
 	 * level routines based on elimination.
 	 \ingroup ffpack
 	 */
-	class FFPACK  {
+	namespace FFPACK  {
 
 
-	public:
+		// public:
 		enum FFPACK_LUDIVINE_TAG
 		{
 			FfpackLQUP=1,
@@ -1071,15 +1071,15 @@ namespace LinBox
 					for (size_t i=ibeg; i<(size_t)iend; ++i){
 						if ( P[i]> (size_t) i )
 							FFLAS::fswap( F, M,
-							       A + P[i]*lda, 1,
-							       A + i*lda, 1 );
+								      A + P[i]*lda, 1,
+								      A + i*lda, 1 );
 					}
 				else // Trans == FFLAS::FflasTrans
 					for (int i=iend; i-->ibeg; ){
 						if ( P[i]> (size_t) i ){
 							FFLAS::fswap( F, M,
-							       A + P[i]*lda, 1,
-							       A + i*lda, 1 );
+								      A + P[i]*lda, 1,
+								      A + i*lda, 1 );
 						}
 					}
 
@@ -1470,7 +1470,8 @@ namespace LinBox
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 		template<class Polynomial, class Field>
-		Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2){
+		Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2)
+		{
 			size_t i,j;
 			// Warning: assumes that res is allocated to the size of the product
 			res.resize(P1.size()+P2.size()-1);
@@ -1486,7 +1487,8 @@ namespace LinBox
 		static std::list<Polynomial>&
 		CharPoly( const Field& F, Polynomial& charp, const size_t N,
 			  typename Field::Element * A, const size_t lda,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg){
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg)
+		{
 
 			std::list<Polynomial> factor_list;
 			CharPoly (F, factor_list, N, A, lda, CharpTag);
@@ -1519,12 +1521,12 @@ namespace LinBox
 		 * U contains the Krylov matrix and X, its LSP factorization
 		 */
 		template <class Field, class Polynomial>
-		static Polynomial&
+		static	Polynomial&
 		MinPoly( const Field& F, Polynomial& minP, const size_t N,
 			 const typename Field::Element *A, const size_t lda,
 			 typename Field::Element* X, const size_t ldx, size_t* P,
-			 const FFPACK_MINPOLY_TAG MinTag,
-			 const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+			const FFPACK::FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
+			 const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0 );
 
 
 		// Solve L X = B or X L = B in place
@@ -1684,120 +1686,121 @@ namespace LinBox
 					      const size_t * d, const size_t nb_blocs);
 
 
-	protected:
+		namespace Protected {
 
 
-		// Subroutine for Keller-Gehrig charpoly algorithm
-		// Compute the new d after a LSP ( d[i] can be zero )
-		template<class Field>
-		static size_t
-		newD( const Field& F, size_t * d, bool& KeepOn,
-		      const size_t l, const size_t N,
-		      typename Field::Element * X,
-		      const size_t* Q,
-		      std::vector<std::vector<typename Field::Element> >& minpt);
+			// Subroutine for Keller-Gehrig charpoly algorithm
+			// Compute the new d after a LSP ( d[i] can be zero )
+			template<class Field>
+			static size_t
+			newD( const Field& F, size_t * d, bool& KeepOn,
+			      const size_t l, const size_t N,
+			      typename Field::Element * X,
+			      const size_t* Q,
+			      std::vector<std::vector<typename Field::Element> >& minpt);
 
-		template<class Field>
-		static size_t
-		updateD(const Field& F, size_t * d, size_t k,
-			std::vector<std::vector<typename Field::Element> >& minpt );
+			template<class Field>
+			static size_t
+			updateD(const Field& F, size_t * d, size_t k,
+				std::vector<std::vector<typename Field::Element> >& minpt );
 
-		//---------------------------------------------------------------------
-		// RectangleCopyTURBO: Copy A to T, with respect to the row permutation
-		//                     defined by the lsp factorization of located in
-		//                     A-dist2pivot
-		//---------------------------------------------------------------------
-		template <class Field>
-		static void
-		RectangleCopyTURBO( const Field& F, const size_t M, const size_t N,
-				    const size_t dist2pivot, const size_t rank,
-				    typename Field::Element * T, const size_t ldt,
-				    const typename Field::Element * A, const size_t lda )
-		{
+			//---------------------------------------------------------------------
+			// RectangleCopyTURBO: Copy A to T, with respect to the row permutation
+			//                     defined by the lsp factorization of located in
+			//                     A-dist2pivot
+			//---------------------------------------------------------------------
+			template <class Field>
+			static void
+			RectangleCopyTURBO( const Field& F, const size_t M, const size_t N,
+					    const size_t dist2pivot, const size_t rank,
+					    typename Field::Element * T, const size_t ldt,
+					    const typename Field::Element * A, const size_t lda )
+			{
 
-			const typename Field::Element * Ai = A;
-			typename Field::Element * T1i = T, T2i = T + rank*ldt;
-			size_t x = dist2pivot;
-			for (; Ai<A+M*lda; Ai+=lda){
-				while ( F.isZero(*(Ai-x)) ) { // test if the pivot is 0
-					FFLAS::fcopy( F, N, T2i, 1, Ai, 1);
-					Ai += lda;
-					T2i += ldt;
+				const typename Field::Element * Ai = A;
+				typename Field::Element * T1i = T, T2i = T + rank*ldt;
+				size_t x = dist2pivot;
+				for (; Ai<A+M*lda; Ai+=lda){
+					while ( F.isZero(*(Ai-x)) ) { // test if the pivot is 0
+						FFLAS::fcopy( F, N, T2i, 1, Ai, 1);
+						Ai += lda;
+						T2i += ldt;
+					}
+					FFLAS::fcopy( F, N, T1i, 1, Ai, 1);
+					T1i += ldt;
+					x--;
 				}
-				FFLAS::fcopy( F, N, T1i, 1, Ai, 1);
-				T1i += ldt;
-				x--;
 			}
-		}
 
 
 
-		//---------------------------------------------------------------------
-		// LUdivine_construct: (Specialisation of LUdivine)
-		// LUP factorisation of X, the Krylov base matrix of A^t and v, in A.
-		// X contains the nRowX first vectors v, vA, .., vA^{nRowX-1}
-		// A contains the LUP factorisation of the nUsedRowX first row of X.
-		// When all rows of X have been factorized in A, and rank is full,
-		// then X is updated by the following scheme: X <= ( X; X.B ), where
-		// B = A^2^i.
-		// This enables to make use of Matrix multiplication, and stop computing
-		// Krylov vector, when the rank is not longer full.
-		// P is the permutation matrix stored in an array of indexes
-		//---------------------------------------------------------------------
+			//---------------------------------------------------------------------
+			// LUdivine_construct: (Specialisation of LUdivine)
+			// LUP factorisation of X, the Krylov base matrix of A^t and v, in A.
+			// X contains the nRowX first vectors v, vA, .., vA^{nRowX-1}
+			// A contains the LUP factorisation of the nUsedRowX first row of X.
+			// When all rows of X have been factorized in A, and rank is full,
+			// then X is updated by the following scheme: X <= ( X; X.B ), where
+			// B = A^2^i.
+			// This enables to make use of Matrix multiplication, and stop computing
+			// Krylov vector, when the rank is not longer full.
+			// P is the permutation matrix stored in an array of indexes
+			//---------------------------------------------------------------------
 
-		template <class Field>
-		static size_t
-		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
-				    const size_t M, const size_t N,
-				    const typename Field::Element * A, const size_t lda,
-				    typename Field::Element * X, const size_t ldx,
-				    typename Field::Element * u, size_t* P,
-				    bool computeX, const FFPACK_MINPOLY_TAG MinTag,
-				    const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+			template <class Field>
+			static size_t
+			LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
+					    const size_t M, const size_t N,
+					    const typename Field::Element * A, const size_t lda,
+					    typename Field::Element * X, const size_t ldx,
+					    typename Field::Element * u, size_t* P,
+					    bool computeX, const FFPACK_MINPOLY_TAG MinTag,
+					    const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
 
-		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
-		KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			      const typename Field::Element * A, const size_t lda );
+			template <class Field, class Polynomial>
+			static std::list<Polynomial>&
+			KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t N,
+				      const typename Field::Element * A, const size_t lda );
 
-		template <class Field, class Polynomial>
-		static int
-		KGFast ( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			 typename Field::Element * A, const size_t lda,
-			 size_t * kg_mc, size_t* kg_mb, size_t* kg_j );
-
-		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
-		KGFast_generalized (const Field& F, std::list<Polynomial>& charp,
-				    const size_t N,
-				    typename Field::Element * A, const size_t lda);
-
-
-		template<class Field>
-		static void
-		fgemv_kgf( const Field& F,  const size_t N,
-			   const typename Field::Element * A, const size_t lda,
-			   const typename Field::Element * X, const size_t incX,
-			   typename Field::Element * Y, const size_t incY,
-			   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
-
-		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
-		LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element * A, const size_t lda,
-			  typename Field::Element * U, const size_t ldu);
-
-		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
-		Danilevski (const Field& F, std::list<Polynomial>& charp,
-			    const size_t N, typename Field::Element * A, const size_t lda);
-
-		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
-		LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
+			template <class Field, class Polynomial>
+			static int
+			KGFast ( const Field& F, std::list<Polynomial>& charp, const size_t N,
 				 typename Field::Element * A, const size_t lda,
-				 typename Field::Element * X, const size_t ldx);
-	};
+				 size_t * kg_mc, size_t* kg_mb, size_t* kg_j );
+
+			template <class Field, class Polynomial>
+			static std::list<Polynomial>&
+			KGFast_generalized (const Field& F, std::list<Polynomial>& charp,
+					    const size_t N,
+					    typename Field::Element * A, const size_t lda);
+
+
+			template<class Field>
+			static void
+			fgemv_kgf( const Field& F,  const size_t N,
+				   const typename Field::Element * A, const size_t lda,
+				   const typename Field::Element * X, const size_t incX,
+				   typename Field::Element * Y, const size_t incY,
+				   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+
+			template <class Field, class Polynomial>
+			static std::list<Polynomial>&
+			LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
+				  typename Field::Element * A, const size_t lda,
+				  typename Field::Element * U, const size_t ldu);
+
+			template <class Field, class Polynomial>
+			static std::list<Polynomial>&
+			Danilevski (const Field& F, std::list<Polynomial>& charp,
+				    const size_t N, typename Field::Element * A, const size_t lda);
+
+			template <class Field, class Polynomial>
+			static std::list<Polynomial>&
+			LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
+					 typename Field::Element * A, const size_t lda,
+					 typename Field::Element * X, const size_t ldx);
+		} // Protected
+	} // FFPACK
 
 #include "ffpack_ludivine.inl"
 #include "ffpack_minpoly.inl"
@@ -1809,9 +1812,9 @@ namespace LinBox
 #include "ffpack_krylovelim.inl"
 #include "ffpack_frobenius.inl"
 #include "ffpack_echelonforms.inl"
-#ifdef _LINBOX_LINBOX_CONFIG_H
-} // LinBox
-#endif
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+	// } // LinBox
+// #endif
 
 #endif // __FFLAFLAS_ffpack_H
 

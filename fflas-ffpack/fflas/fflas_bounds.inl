@@ -17,6 +17,7 @@
 #define FFLAS_INT_TYPE long unsigned int
 #endif
 
+
 namespace FFLAS {
 	namespace Protected {
 		/** MatMulParameters.
@@ -196,7 +197,7 @@ namespace FFLAS {
 		 *************************************************************************************/
 
 		template <>
-		inline double computeFactorWino (const ModularBalanced<double>& F, const size_t w)
+		inline double computeFactorWino (const NAMESPACE ModularBalanced<double>& F, const size_t w)
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
@@ -206,7 +207,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline double computeFactorClassic (const ModularBalanced<double>& F)
+		inline double computeFactorClassic (const NAMESPACE ModularBalanced<double>& F)
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
@@ -215,28 +216,28 @@ namespace FFLAS {
 
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const Modular<double>& ,
+		inline FFLAS_BASE BaseCompute (const NAMESPACE Modular<double>& ,
 					       const size_t )
 		{
 			return FflasDouble;
 		}
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const Modular<float>& ,
+		inline FFLAS_BASE BaseCompute (const NAMESPACE Modular<float>& ,
 					       const size_t )
 		{
 			return FflasFloat;
 		}
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const ModularBalanced<double>& ,
+		inline FFLAS_BASE BaseCompute (const NAMESPACE ModularBalanced<double>& ,
 					       const size_t )
 		{
 			return FflasDouble;
 		}
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const ModularBalanced<float>& ,
+		inline FFLAS_BASE BaseCompute (const NAMESPACE ModularBalanced<float>& ,
 					       const size_t )
 		{
 			return FflasFloat;
@@ -268,7 +269,7 @@ namespace FFLAS {
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const Modular<double>& F)
+		inline size_t TRSMBound (const NAMESPACE Modular<double>& F)
 		{
 
 			FFLAS_INT_TYPE pi;
@@ -292,7 +293,7 @@ namespace FFLAS {
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const Modular<float>& F)
+		inline size_t TRSMBound (const NAMESPACE Modular<float>& F)
 		{
 
 			FFLAS_INT_TYPE pi;
@@ -315,7 +316,7 @@ namespace FFLAS {
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const ModularBalanced<double>& F)
+		inline size_t TRSMBound (const NAMESPACE ModularBalanced<double>& F)
 		{
 
 			FFLAS_INT_TYPE pi;
@@ -337,7 +338,7 @@ namespace FFLAS {
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const ModularBalanced<float>& F)
+		inline size_t TRSMBound (const NAMESPACE ModularBalanced<float>& F)
 		{
 
 			FFLAS_INT_TYPE pi;

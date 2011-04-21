@@ -13,6 +13,8 @@
 #define MIN(a,b) (a<b)?a:b
 #endif
 
+namespace FFPACK {
+
 //---------------------------------------------------------------------
 // CharPoly: Compute the characteristic polynomial of A using
 // Danilevski's algorithm.
@@ -20,7 +22,7 @@
 
 template <class Field, class Polynomial>
 std::list<Polynomial>&
-FFPACK::Danilevski (const Field& F, std::list<Polynomial>& charp,
+Danilevski (const Field& F, std::list<Polynomial>& charp,
 			    const size_t N, typename Field::Element * A,
 			    const size_t lda)
 {
@@ -79,3 +81,4 @@ FFPACK::Danilevski (const Field& F, std::list<Polynomial>& charp,
 	return charp;
 }
 
+} // FFPACK
