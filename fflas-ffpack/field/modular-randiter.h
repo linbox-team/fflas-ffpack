@@ -17,6 +17,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <limits>
+namespace FFPACK {
 template< class Element >
 class Modular;
 
@@ -58,4 +59,5 @@ private:
 
 };
 
+} // FFPACK
 #endif

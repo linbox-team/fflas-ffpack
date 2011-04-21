@@ -19,11 +19,11 @@
 #ifndef __FFLAFLAS_modular_balanced_double_H
 #define __FFLAFLAS_modular_balanced_double_H
 
-#ifndef _LINBOX_LINBOX_CONFIG
-
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/nonzero-randiter.h"
+
+namespace FFPACK {
 
 template <class Element>
 class ModularBalanced;
@@ -512,6 +512,7 @@ public:
 
 };
 
-#endif // _LINBOX_LINBOX_CONFIG
+} // FFPACK
+
 #endif // __FFLAFLAS_modular_balanced_double_H
 

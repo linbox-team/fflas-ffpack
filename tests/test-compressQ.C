@@ -20,7 +20,7 @@ using namespace std;
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
-typedef Modular<double> Field;
+typedef NAMESPACE Modular<double> Field;
 
 template<class T>
 std::ostream& printvect(std::ostream& o, vector<T>& vect){

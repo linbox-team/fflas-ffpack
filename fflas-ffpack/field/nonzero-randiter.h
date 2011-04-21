@@ -23,6 +23,7 @@
 
 #include <string>
 
+namespace FFPACK {
 /** Random iterator for nonzero random numbers
  *
  * Wraps around an existing random iterator and ensures that the output
@@ -67,4 +68,5 @@ private:
 
 }; // class NonzeroRandIter
 
+} // FFPACK
 #endif // __NONZERO_RANDITER_H

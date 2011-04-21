@@ -40,7 +40,7 @@
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-#define NAMESPACE
+#define NAMESPACE FFPACK::
 #endif
 
 #ifndef __FFLAFLAS_STRASSEN_OPTIMIZATION
@@ -100,13 +100,9 @@ namespace FFLAS {
 	};
 
 	/* Representations of Z with floating point elements*/
-#ifdef _LINBOX_LINBOX_CONFIG_H
-	typedef LinBox::UnparametricField<float> FloatDomain;
-	typedef LinBox::UnparametricField<double> DoubleDomain;
-#else
-	typedef UnparametricField<float> FloatDomain;
-	typedef UnparametricField<double> DoubleDomain;
-#endif
+
+	typedef NAMESPACE UnparametricField<float> FloatDomain;
+	typedef NAMESPACE UnparametricField<double> DoubleDomain;
 
 
 	namespace Protected {

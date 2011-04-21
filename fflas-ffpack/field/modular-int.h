@@ -19,6 +19,7 @@
 #include <sys/time.h>
 #include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/nonzero-randiter.h"
+namespace FFPACK {
 template< class Element >
 class Modular;
 
@@ -320,6 +321,7 @@ private:
 	}
 
 };
+} // FFPACK
 
 
 

@@ -33,6 +33,7 @@
 #include <string>
 #include <algorithm>
 
+namespace FFPACK {
 template< class K>
 class UnparametricField;
 
@@ -126,4 +127,6 @@ public:
 	std::istream &read (std::istream &is, Element &x) const { return is >> x; }
 
 };
+
+} // FFPACK
 #endif // __FIELD_UNPARAMETRIC_H_
