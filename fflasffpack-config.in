@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Copyright(c)'1994-2009 by The Givaro group
 # This file is part of Givaro.
 # Givaro is governed by the CeCILL-B license under French law
@@ -18,12 +18,14 @@ Usage: fflasffpack-config [OPTION]
 
 Known values for OPTION are:
 
-  --prefix		show Givaro installation prefix 
-  --libs		print library linking information
-  --blas-libs	print BLAS library linking information
-  --cflags		print pre-processor and compiler flags
-  --help		display this help and exit
-  --version		output version information
+  --prefix		 		show Givaro installation prefix 
+  --libs		 		print library linking information
+  --blas-libs			print BLAS library linking information
+  --cflags				print pre-processor and compiler flags
+  --blas-cflags	 		print BLAS pre-processor and BLAS compiler flags
+  --help		 		display this help and exit
+  --version		     	output version information
+  --decimal-version	 	output version in decimal representation (base 100)
 
 EOF
 
@@ -33,6 +35,13 @@ EOF
 if test $# -eq 0; then
     usage 1
 fi
+
+major=`echo @VERSION@ | cut -d'.' -f1`
+minor=`echo @VERSION@ | cut -d'.' -f2`
+micro=`echo @VERSION@ | cut -d'.' -f3`
+decvr=$((((($major*100)+$minor)*100)+$micro))
+
+
 
 cflags=false
 libs=false
@@ -54,6 +63,11 @@ while test $# -gt 0; do
 
     --version)
 	echo @VERSION@
+	exit 0
+	;;
+
+	--decimal-version)
+	echo $decvr
 	exit 0
 	;;
 
