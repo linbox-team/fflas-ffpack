@@ -1,13 +1,11 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* linbox/tests/test-common.C
+/* utils/args-parser.C
  * Copyright (C) 2001, 2002 Bradford Hovinen
  *
  * Written by Bradford Hovinen <hovinen@cis.udel.edu>
- * Modified 2011 Brice Boyer (more types,...)
- *
- * ------------------------------------
  * Modified by Dmitriy Morozov <linbox@foxcub.org>. May 27, 2002.
+ * Modified 2011 Brice Boyer (more types,...)
  *
  * Added parametrization to the VectorCategory tags to make them fit the
  * Rootbeer meeting design of VectorCategories being parametrized by
@@ -36,7 +34,7 @@ enum ArgumentType {
 #define TYPE_BOOL TYPE_NONE
 
 #define END_OF_ARGUMENTS \
-     { '\0', "\0", "\0", TYPE_NONE, NULL }
+{ '\0', "\0", "\0", TYPE_NONE, NULL }
 
 struct Argument
 {
@@ -54,12 +52,6 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults =
 
 /** writes the values of all arguments, preceded by the programName */
 std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName);
-
-
-/* Give an approximation of the value of the incomplete gamma function at a, x,
- * to within the tolerance tol */
-
-
 
 void printHelpMessage (const char *program, Argument *args, bool printDefaults = false)
 {
@@ -203,8 +195,10 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 	for (i = 1; i < argc; ++i) {
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 0) {
-				// LinBox::commentator.setBriefReportStream (cout);
-				// LinBox::commentator.setReportStream (cout);
+#ifdef _LINBOX_LINBOX_CONFIG
+				LinBox::commentator.setBriefReportStream (cout);
+				LinBox::commentator.setReportStream (cout);
+#endif
 				std::cout << "Writing report data to cout (intermingled with brief report)" << std::endl << std::endl;
 				std::cout.flush ();
 			}
@@ -216,25 +210,25 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 				switch (current->type) {
 				case TYPE_NONE:
 					{
-					if (argc == i+1 || (argv[i+1][0] == '-' && argv[i+1][1] != '\0')) {
-						// if at last argument, or next argument is a switch, set to true
-						*(bool *) current->data = true;
-						break;
+						if (argc == i+1 || (argv[i+1][0] == '-' && argv[i+1][1] != '\0')) {
+							// if at last argument, or next argument is a switch, set to true
+							*(bool *) current->data = true;
+							break;
+						}
+						*(bool *) current->data =
+						(argv[i+1][0] == '+'
+						 || argv[i+1][0] == 'Y'
+						 || argv[i+1][0] == 'y'
+						 || argv[i+1][0] == 'T'
+						 || argv[i+1][0] == 't') ;
+						++i;
 					}
-					*(bool *) current->data =
-					(argv[i+1][0] == '+'
-					 || argv[i+1][0] == 'Y'
-					 || argv[i+1][0] == 'y'
-					 || argv[i+1][0] == 'T'
-					 || argv[i+1][0] == 't') ;
-					++i;
-				}
 					break;
 
 				case TYPE_INT:
 					{
-					*(int *) current->data = atoi (argv[i+1]);
-					++i;
+						*(int *) current->data = atoi (argv[i+1]);
+						++i;
 					}
 					break;
 
@@ -273,8 +267,10 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 				break;
 			}
 		} else {
-			// LinBox::commentator.setBriefReportStream(cout);
-			// LinBox::commentator.setDefaultReportFile (argv[i]);
+#ifdef _LINBOX_LINBOX_CONFIG
+			LinBox::commentator.setBriefReportStream(cout);
+			LinBox::commentator.setDefaultReportFile (argv[i]);
+#endif
 			std::cout << "Writing report data to " << argv[i] << std::endl << std::endl;
 			std::cout.flush ();
 		}

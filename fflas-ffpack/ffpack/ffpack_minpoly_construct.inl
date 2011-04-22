@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* linbox/ffpack/ffpack_minpoly_construct.inl
+/* fflas-ffpack/ffpack/ffpack_minpoly_construct.inl
  * Copyright (C) 2003 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
@@ -8,8 +8,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __LINBOX_ffpack_minpoly_construct_INL
-#define __LINBOX_ffpack_minpoly_construct_INL
+#ifndef __FFLAFLAS_ffpack_minpoly_construct_INL
+#define __FFLAFLAS_ffpack_minpoly_construct_INL
 
 #error "not included anywhere"
 
@@ -90,4 +90,4 @@ namespace FFPACK {
 
 #undef LB_DEBUG
 
-#endif //__LINBOX_ffpack_minpoly_construct_INL
+#endif //__FFLAFLAS_ffpack_minpoly_construct_INL

@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* linbox/ffpack/ffpack_frobenius.inl
+/* fflas-ffpack/ffpack/ffpack_frobenius.inl
  * Copyright (C) 2007 Clement Pernet
  *
  * Written by Clement Pernet <cpernet@uwaterloo.ca>

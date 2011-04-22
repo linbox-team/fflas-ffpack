@@ -25,13 +25,6 @@ CXXFLAGS="${BACKUP_CXXFLAGS} -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
 
 
-dnl  echo   " #define __FFLAFLAS_INT8  $LINBOX_INT8
-	 dnl  #define __FFLAFLAS_INT16 $LINBOX_INT16
-	 dnl  #define __FFLAFLAS_INT32 $LINBOX_INT32
-	 dnl  #define __FFLAFLAS_INT64 $LINBOX_INT64
-dnl  " > linbox/linbox-config.h
-
-
 AC_TRY_RUN([	//#define LinBoxSrcOnly
 		#include <iostream>
 		#include <fstream>
@@ -46,7 +39,7 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		//using namespace LinBox;
 		int main () {
 
-		  Modular<double> F((long int)17);
+		  FFPACK::Modular<double> F((long int)17);
 		  size_t n=300, nmax=5000, prec=512, nbest=0, count=0;
 		  Timer chrono;
 		  double basetime, time;

@@ -7,6 +7,8 @@ pkgincludesubdir=$(pkgincludedir)/field
 
 pkgincludesub_HEADERS=        \
 		modular-balanced.h \
+		modular-balanced-double.h \
+		modular-balanced-float.h \
 		modular-positive.h \
 		nonzero-randiter.h \
 		modular-int.h      \

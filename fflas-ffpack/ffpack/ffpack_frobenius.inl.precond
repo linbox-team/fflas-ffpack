@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 
-/* linbox/ffpack/ffpack_charpoly_kgfast.inl
+/* fflas-ffpack/ffpack/ffpack_charpoly_kgfast.inl
  * Copyright (C) 2006 Clement Pernet
  *
  * Written by Clement Pernet <cpernet@uwaterloo.ca>

@@ -8,7 +8,7 @@
  *            Bradford Hovinen <hovinen@cis.udel.edu>
  *            Clement Pernet <clement.pernet@gmail.com>
  *
- * taken for linbox/randiter/nonzero.h
+ * taken for LinBox
  *
  * ------------------------------------
  *

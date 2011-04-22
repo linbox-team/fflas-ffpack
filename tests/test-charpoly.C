@@ -103,6 +103,10 @@ int main(int argc, char** argv)
 	}
 	else {
 		std::cerr << "not implemented yet" << std::endl;
+		// create A random
+		// create A diagonal
+		// create A nilpotent
+		// create A non invertible
 		return 1 ;
 	}
 

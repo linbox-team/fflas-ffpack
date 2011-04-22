@@ -32,6 +32,7 @@
 #include <iostream> // std::cout
 #include <string>
 #include <algorithm>
+#include <typeinfo>
 
 
 namespace FFPACK
@@ -137,63 +138,172 @@ namespace FFPACK
 		}
 
 
-		unsigned long &cardinality (unsigned long &c) const { return c = 0; }
+		unsigned long &cardinality (unsigned long &c) const
+		{
+		       	return c = _card ;
+		}
 
-		unsigned long &characteristic (unsigned long &c) const { return c = 0; }
+		unsigned long &characteristic (unsigned long &c) const
+		{
+		       	return c = _card ;
+		}
 
-		//  x == y
-		bool areEqual (const Element &x, const Element &y) const { return x == y; }
+		unsigned long cardinality () const
+		{
+		       	return _card ;
+		}
 
-		//  x == 0
-		bool isZero (const Element &x) const { return x == Element (0); }
+		unsigned long characteristic () const
+		{
+		       	return _card ;
+		}
+
+		/// @name Comparison Predicates
+		//@{
+		///  x == y
+		bool areEqual (const Element &x, const Element &y) const
+		{
+		       	return x == y;
+	       	}
+
+		///  x == 0
+		bool isZero (const Element &x) const
+		{
+		       	return x == Element (0);
+		}
 
 		///  x == 1
-		bool isOne (const Element &x) const { return x == Element (1); }
+		bool isOne (const Element &x) const
+		{
+		       	return x == Element (1);
+		}
+		//@} Comparison Predicates
 
-		// x := y + z
+
+		/** @name Arithmetic Operations
+		 * The first argument is set and is also the return value.
+		 */
+		//@{
+
+		/// x := y + z
 		Element &add (Element &x, const Element &y, const Element &z) const
-		{ return x = y + z; }
-		// x := y - z
+		{
+		       	return x = y + z;
+		}
+
+		/// x := y - z
 		Element &sub (Element &x, const Element &y, const Element &z) const
-		{ return x = y - z; }
-		// x := y*z
+		{
+		       	return x = y - z;
+		}
+
+		/// x := y*z
 		Element &mul (Element &x, const Element &y, const Element &z) const
-		{ return x = y * z; }
+		{
+		       	return x = y * z;
+		}
+
 		/// x := y/z
 		Element &div (Element &x, const Element &y, const Element &z) const
-		{ return x = y / z; }
+		{
+		       	return x = y / z;
+		}
+
 		/// x := -y
-		Element &neg (Element &x, const Element &y) const { return x = - y; }
+		Element &neg (Element &x, const Element &y) const
+		{
+		       	return x = - y;
+		}
+
 		/// x := 1/y
 		Element &inv (Element &x, const Element &y) const
-		{ return x = Element (1) / y; }
+		{
+		       	return x = Element (1) / y;
+	       	}
+
 		/// z := a*x + y
-		Element &axpy (Element &z, const Element &a, const Element &x,
+		// more optimal implementation, if available, can be defined in a template specialization.
+		Element &axpy (Element &z,
+			       const Element &a,
+			       const Element &x,
 			       const Element &y) const
-		{ return z = a * x + y; }
-		// x := x + y
-		Element &addin (Element &x, const Element &y) const { return x += y; }
-		// x := x - y
-		Element &subin (Element &x, const Element &y) const { return x -= y; }
+		{
+			return z = a * x + y;
+	       	}
+
+		//@} Arithmetic Operations
+
+	/** @name Inplace Arithmetic Operations
+		 * The first argument is modified and the result is the return value.
+		 */
+		//@{
+
+		/// x := x + y
+		Element &addin (Element &x, const Element &y) const
+		{ return x += y; }
+
+		/// x := x - y
+		Element &subin (Element &x, const Element &y) const
+		{ return x -= y; }
+
 		/// x := x*y
-		Element &mulin (Element &x, const Element &y) const { return x *= y; }
+		Element &mulin (Element &x, const Element &y) const
+		{ return x *= y; }
+
 		/// x := x/y
-		Element &divin (Element &x, const Element &y) const { return x /= y; }
+		Element &divin (Element &x, const Element &y) const
+		{ return x /= y; }
+
 		/// x := -x
-		Element &negin (Element &x) const { return x = - x; }
+		Element &negin (Element &x) const
+		{ return x = - x; }
+
 		/// x := 1/x
-		Element &invin (Element &x) const { return x = Element (1) / x; }
+		Element &invin (Element &x) const
+		{ return x = Element (1) / x; }
+
 		/// y := a*x + y
 		Element &axpyin (Element &y, const Element &a, const Element &x) const
 		{ return y += a * x; }
 
+		//@} Inplace Arithmetic Operations
 
-		std::ostream &write (std::ostream &os) const { return os << "unparamterized field"; }
-		std::istream &read (std::istream &is) const { return is; }
+		/** @name Input/Output Operations */
+		//@{
 
+		/** Print field.
+		 * @return output stream to which field is written.
+		 * @param  os  output stream to which field is written.
+		 */
+		std::ostream &write (std::ostream &os) const
+		{ return os << "unparameterized field(" << sizeof(Element) <<',' << typeid(Element).name() << ')'; }
+
+		/** Read field.
+		 * @return input stream from which field is read.
+		 * @param  is  input stream from which field is read.
+		 */
+		std::istream &read (std::istream &is) const
+		{ return is; }
+
+		/** Print field element.
+		 * @return output stream to which field element is written.
+		 * @param  os  output stream to which field element is written.
+		 * @param  x   field element.
+		 */
 		std::ostream &write (std::ostream &os, const Element &x) const
 		{ return os << x; }
-		std::istream &read (std::istream &is, Element &x) const { return is >> x; }
+
+		/** Read field element.
+		 * @return input stream from which field element is read.
+		 * @param  is  input stream from which field element is read.
+		 * @param  x   field element.
+		 */
+		std::istream &read (std::istream &is, Element &x) const
+		{ return is >> x; }
+
+		//@}
+
+
 
 	};
 

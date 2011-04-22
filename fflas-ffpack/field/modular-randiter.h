@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* linbox/field/modular-randiter.h
+/* field/modular-randiter.h
  * Copyright (C) 2008 Clement Pernet
  *
  * Written by Clement Pernet <clement.pernet@gmail.com>
@@ -11,8 +11,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __MODULAR_RANDITER_H
-#define __MODULAR_RANDITER_H
+#ifndef __FFLAFLAS_modular_randiter_H
+#define __FFLAFLAS_modular_randiter_H
 
 #include <sys/time.h>
 #include <stdlib.h>
@@ -60,4 +60,4 @@ private:
 };
 
 } // FFPACK
-#endif
+#endif // __FFLAFLAS_modular_randiter_H

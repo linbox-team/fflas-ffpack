@@ -7,7 +7,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 1
+//#define DEBUG 1
 #define NEWWINO
 #define TIME 1
 

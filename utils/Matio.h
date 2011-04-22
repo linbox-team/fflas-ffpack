@@ -285,4 +285,4 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 	return c ;
 }
 
-#endif //__LINBOX_matio_H
+#endif //__FFLAFLAS_matio_H

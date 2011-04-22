@@ -25,18 +25,16 @@
 #define MIN(a,b) ((a > b)?b:a)
 #endif
 
+#include "fflas-ffpack/config-blas.h"
 #ifdef _LINBOX_LINBOX_CONFIG_H
-#include "linbox/config-blas.h"
+// #include "linbox/config-blas.h"
 #include "linbox/field/unparametric.h"
 #include "linbox/field/modular-double.h"
 #include "linbox/field/modular-float.h"
 #include "linbox/field/modular-balanced-double.h"
 #include "linbox/field/modular-balanced-float.h"
 #define NAMESPACE LinBox::
-// namespace LinBox
-// {
 #else
-#include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
@@ -63,7 +61,7 @@
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
 namespace FFLAS {
 
-// public:
+	// public:
 	/// Is matrix transposed ?
 	enum FFLAS_TRANSPOSE
 	{
@@ -81,7 +79,7 @@ namespace FFLAS {
 	enum FFLAS_DIAG
 	{
 		FflasNonUnit=131 ,  /**< Triangular matrix has an explicit general diagonal */
-	       	FflasUnit   =132    /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*//**< */
+		FflasUnit   =132    /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*//**< */
 	};
 
 	/// On what side ?
@@ -542,9 +540,9 @@ namespace FFLAS {
 		class fsubmNoTransNoTrans;
 	} // protected
 
-//---------------------------------------------------------------------
-// Level 1 routines
-//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	// Level 1 routines
+	//---------------------------------------------------------------------
 	/** fscal
 	 * \f$x \gets a \cdot x\f$.
 	 * @param F field
@@ -567,7 +565,7 @@ namespace FFLAS {
 		F.init(zero,0UL);
 
 		if (F.areEqual(alpha,one))
-		    return ;
+			return ;
 
 		Element * Xi = X;
 		if (F.areEqual(alpha,mone)){
@@ -653,9 +651,9 @@ namespace FFLAS {
 		}
 	}
 
-//---------------------------------------------------------------------
-// Level 2 routines
-//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	// Level 2 routines
+	//---------------------------------------------------------------------
 
 	/** fadd : matrix addition.
 	 * Computes \p C = \p A + \p B.
@@ -669,19 +667,19 @@ namespace FFLAS {
 	 * @param C dense matrix of size \c MxN
 	 * @param ldc leading dimension of \p C
 	 */
-        template <class Field>
-        static void
-        fadd (const Field& F, const size_t M, const size_t N,
-              const typename Field::Element* A, const size_t lda,
-              const typename Field::Element* B, const size_t ldb,
-              typename Field::Element* C, const size_t ldc)
-        {
-            const typename Field::Element *Ai = A, *Bi = B;
-            typename Field::Element *Ci = C;
-            for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-                for (size_t i=0; i<N; i++)
-                    F.add (Ci[i], Ai[i], Bi[i]);
-        }
+	template <class Field>
+	static void
+	fadd (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element* A, const size_t lda,
+	      const typename Field::Element* B, const size_t ldb,
+	      typename Field::Element* C, const size_t ldc)
+	{
+		const typename Field::Element *Ai = A, *Bi = B;
+		typename Field::Element *Ci = C;
+		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
+			for (size_t i=0; i<N; i++)
+				F.add (Ci[i], Ai[i], Bi[i]);
+	}
 
 	/** fsub : matrix subtraction.
 	 * Computes \p C = \p A - \p B.
@@ -695,45 +693,45 @@ namespace FFLAS {
 	 * @param C dense matrix of size \c MxN
 	 * @param ldc leading dimension of \p C
 	 */
-        template <class Field>
-        static void
-        fsub (const Field& F, const size_t M, const size_t N,
-              const typename Field::Element* A, const size_t lda,
-              const typename Field::Element* B, const size_t ldb,
-              typename Field::Element* C, const size_t ldc)
-        {
-            const typename Field::Element * Ai = A, *Bi = B;
-            typename Field::Element *Ci = C;
-            for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-                for (size_t i=0; i<N; i++)
-                    F.sub (Ci[i], Ai[i], Bi[i]);
-        }
+	template <class Field>
+	static void
+	fsub (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element* A, const size_t lda,
+	      const typename Field::Element* B, const size_t ldb,
+	      typename Field::Element* C, const size_t ldc)
+	{
+		const typename Field::Element * Ai = A, *Bi = B;
+		typename Field::Element *Ci = C;
+		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
+			for (size_t i=0; i<N; i++)
+				F.sub (Ci[i], Ai[i], Bi[i]);
+	}
 
 	template <class Field>
-        static void
-        fsubin (const Field& F, const size_t M, const size_t N,
-              const typename Field::Element* B, const size_t ldb,
-              typename Field::Element* C, const size_t ldc)
-        {
-            const typename Field::Element * Bi = B;
-            typename Field::Element *Ci = C;
-            for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
-                for (size_t i=0; i<N; i++)
-                    F.subin (Ci[i], Bi[i]);
-        }
+	static void
+	fsubin (const Field& F, const size_t M, const size_t N,
+		const typename Field::Element* B, const size_t ldb,
+		typename Field::Element* C, const size_t ldc)
+	{
+		const typename Field::Element * Bi = B;
+		typename Field::Element *Ci = C;
+		for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
+			for (size_t i=0; i<N; i++)
+				F.subin (Ci[i], Bi[i]);
+	}
 
 	template <class Field>
-        static void
-        faddin (const Field& F, const size_t M, const size_t N,
-              const typename Field::Element* B, const size_t ldb,
-              typename Field::Element* C, const size_t ldc)
-        {
-            const typename Field::Element * Bi = B;
-            typename Field::Element *Ci = C;
-            for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
-                for (size_t i=0; i<N; i++)
-                    F.addin (Ci[i], Bi[i]);
-        }
+	static void
+	faddin (const Field& F, const size_t M, const size_t N,
+		const typename Field::Element* B, const size_t ldb,
+		typename Field::Element* C, const size_t ldc)
+	{
+		const typename Field::Element * Bi = B;
+		typename Field::Element *Ci = C;
+		for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
+			for (size_t i=0; i<N; i++)
+				F.addin (Ci[i], Bi[i]);
+	}
 
 
 	/**  @brief finite prime Field GEneral Matrix Vector multiplication.
@@ -795,7 +793,7 @@ namespace FFLAS {
 	 * \param TransA if \c TransA==FflasTrans then \f$\mathrm{op}(A)=A^t\f$.
 	 * \param Diag if \c Diag==FflasUnit then \p A is unit.
 	 * \param Uplo if \c Uplo==FflasUpper then \p A is upper triangular
-	*/
+	 */
 	template<class Field>
 	static void
 	ftrsv (const Field& F, const FFLAS_UPLO Uplo,
@@ -803,9 +801,9 @@ namespace FFLAS {
 	       const size_t N,const typename Field::Element * A, const size_t lda,
 	       typename Field::Element * X, int incX);
 
-//---------------------------------------------------------------------
-// Level 3 routines
-//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	// Level 3 routines
+	//---------------------------------------------------------------------
 
 	/** @brief ftrsm: <b>TR</b>iangular <b>S</b>ystem solve with <b>M</b>atrix.
 	 * Computes  \f$ B \gets \alpha \mathrm{op}(A^{-1}) B\f$ or  \f$B \gets \alpha B \mathrm{op}(A^{-1})\f$.
@@ -910,9 +908,9 @@ namespace FFLAS {
 		size_t winolevel = w;
 		FFLAS_BASE base;
 		Protected::MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base,
-				winolevel, true);
+					     winolevel, true);
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-				C, ldc, kmax, winolevel, base);
+				     C, ldc, kmax, winolevel, base);
 		return C;
 	}
 
@@ -967,12 +965,12 @@ namespace FFLAS {
 		fflaflas_check(F.isOne(e));
 #endif
 		size_t w, kmax;
- 		FFLAS_BASE base;
+		FFLAS_BASE base;
 
 		Protected::MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base, w);
 
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-			  C, ldc, kmax, w, base);
+				     C, ldc, kmax, w, base);
 		return C;
 	}
 
@@ -1106,10 +1104,6 @@ namespace FFLAS {
 #endif
 
 #include "fflas_faddm.inl"
-
-// #ifdef _LINBOX_LINBOX_CONFIG_H
-// }
-// #endif
 
 #undef LB_TRTR
 

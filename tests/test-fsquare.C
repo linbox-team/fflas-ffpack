@@ -7,7 +7,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 0
+//#define DEBUG 0
 #define TIME 1
 
 #include <iomanip>
