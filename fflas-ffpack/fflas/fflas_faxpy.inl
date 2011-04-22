@@ -9,6 +9,11 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLAFLAS_faxpy_INL
+#define __FFLAFLAS_faxpy_INL
+
+
+
 namespace FFLAS {
 
 template<class Field>
@@ -37,3 +42,5 @@ faxpy( const DoubleDomain& , const size_t N,
 }
 
 } // FFLAS
+
+#endif // __FFLAFLAS_faxpy_INL

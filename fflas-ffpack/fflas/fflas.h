@@ -26,20 +26,9 @@
 #endif
 
 #include "fflas-ffpack/config-blas.h"
-#ifdef _LINBOX_LINBOX_CONFIG_H
-// #include "linbox/config-blas.h"
-#include "linbox/field/unparametric.h"
-#include "linbox/field/modular-double.h"
-#include "linbox/field/modular-float.h"
-#include "linbox/field/modular-balanced-double.h"
-#include "linbox/field/modular-balanced-float.h"
-#define NAMESPACE LinBox::
-#else
 #include "fflas-ffpack/field/unparametric.h"
-#include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-#define NAMESPACE FFPACK::
-#endif
+#include "fflas-ffpack/field/modular-positive.h"
 
 #ifndef __FFLAFLAS_STRASSEN_OPTIMIZATION
 #define WINOTHRESHOLD 1000
@@ -99,8 +88,8 @@ namespace FFLAS {
 
 	/* Representations of Z with floating point elements*/
 
-	typedef NAMESPACE UnparametricField<float> FloatDomain;
-	typedef NAMESPACE UnparametricField<double> DoubleDomain;
+	typedef FFPACK::UnparametricField<float> FloatDomain;
+	typedef FFPACK::UnparametricField<double> DoubleDomain;
 
 
 	namespace Protected {

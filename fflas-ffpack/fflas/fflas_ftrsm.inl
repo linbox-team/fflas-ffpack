@@ -9,6 +9,10 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLAFLAS_ftrsm_INL
+#define __FFLAFLAS_ftrsm_INL
+
+
 namespace FFLAS {
 	//---------------------------------------------------------------------
 	// ftrsm: TRiangular System solve with matrix
@@ -684,3 +688,5 @@ namespace FFLAS {
 
 	} // Protected
 } // FFLAS
+
+#endif // __FFLAFLAS_ftrsm_INL

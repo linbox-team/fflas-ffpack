@@ -8,6 +8,9 @@
  *
  * See COPYING for license information.
  */
+
+#ifndef __FFLAFLAS_fger_INL
+#define __FFLAFLAS_fger_INL
 namespace FFLAS {
 
 	template<class Field>
@@ -84,3 +87,4 @@ namespace FFLAS {
 		cblas_dger( CblasRowMajor, M, N, alpha, x, incx, y, incy, A, lda );
 	}
 } // FFLAS
+#endif // __FFLAFLAS_fger_INL

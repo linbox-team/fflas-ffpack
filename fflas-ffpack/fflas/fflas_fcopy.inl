@@ -9,9 +9,14 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLAFLAS_fcopy_INL
+#define __FFLAFLAS_fcopy_INL
+
+namespace FFLAS {
+
 template<class Field>
 inline void
-FFLAS::fcopy (const Field& F, const size_t N,
+fcopy (const Field& F, const size_t N,
 	      typename Field::Element * X, const size_t incX,
 	      const typename Field::Element * Y, const size_t incY )
 {
@@ -22,3 +27,7 @@ FFLAS::fcopy (const Field& F, const size_t N,
 		F.assign(*Xi,*Yi);
 }
 
+}
+
+
+#endif // __FFLAFLAS_fcopy_INL

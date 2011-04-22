@@ -11,11 +11,11 @@
 #ifndef __FFLAFLAS_fflas_bounds_INL
 #define __FFLAFLAS_fflas_bounds_INL
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-#define FFLAS_INT_TYPE Givaro::Integer
-#else
+// #ifdef _LINBOX_LINBOX_CONFIG_H
+// #define FFLAS_INT_TYPE Givaro::Integer
+// #else
 #define FFLAS_INT_TYPE long unsigned int
-#endif
+// #endif
 
 
 namespace FFLAS {
@@ -197,7 +197,7 @@ namespace FFLAS {
 		 *************************************************************************************/
 
 		template <>
-		inline double computeFactorWino (const NAMESPACE ModularBalanced<double>& F, const size_t w)
+		inline double computeFactorWino (const FFPACK:: ModularBalanced<double>& F, const size_t w)
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
@@ -207,7 +207,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline double computeFactorClassic (const NAMESPACE ModularBalanced<double>& F)
+		inline double computeFactorClassic (const FFPACK:: ModularBalanced<double>& F)
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
@@ -216,28 +216,28 @@ namespace FFLAS {
 
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const NAMESPACE Modular<double>& ,
+		inline FFLAS_BASE BaseCompute (const FFPACK:: Modular<double>& ,
 					       const size_t )
 		{
 			return FflasDouble;
 		}
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const NAMESPACE Modular<float>& ,
+		inline FFLAS_BASE BaseCompute (const FFPACK:: Modular<float>& ,
 					       const size_t )
 		{
 			return FflasFloat;
 		}
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const NAMESPACE ModularBalanced<double>& ,
+		inline FFLAS_BASE BaseCompute (const FFPACK:: ModularBalanced<double>& ,
 					       const size_t )
 		{
 			return FflasDouble;
 		}
 
 		template <>
-		inline FFLAS_BASE BaseCompute (const NAMESPACE ModularBalanced<float>& ,
+		inline FFLAS_BASE BaseCompute (const FFPACK:: ModularBalanced<float>& ,
 					       const size_t )
 		{
 			return FflasFloat;
@@ -269,7 +269,7 @@ namespace FFLAS {
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const NAMESPACE Modular<double>& F)
+		inline size_t TRSMBound (const FFPACK:: Modular<double>& F)
 		{
 
 			FFLAS_INT_TYPE pi;
@@ -288,12 +288,13 @@ namespace FFLAS {
 
 
 		/**
-		 * Specialization for positive modular representation over float
+		 * Specialization for positive modular representation over float.
 		 * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^24
+		 * @pbi
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const NAMESPACE Modular<float>& F)
+		inline size_t TRSMBound (const FFPACK:: Modular<float>& F)
 		{
 
 			FFLAS_INT_TYPE pi;
@@ -313,10 +314,11 @@ namespace FFLAS {
 		/**
 		 * Specialization for balanced modular representation over double.
 		 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
+		 * @bib
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const NAMESPACE ModularBalanced<double>& F)
+		inline size_t TRSMBound (const FFPACK:: ModularBalanced<double>& F)
 		{
 
 			FFLAS_INT_TYPE pi;
@@ -338,7 +340,7 @@ namespace FFLAS {
 		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 		 */
 		template<>
-		inline size_t TRSMBound (const NAMESPACE ModularBalanced<float>& F)
+		inline size_t TRSMBound (const FFPACK:: ModularBalanced<float>& F)
 		{
 
 			FFLAS_INT_TYPE pi;

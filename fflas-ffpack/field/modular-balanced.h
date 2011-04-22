@@ -17,8 +17,8 @@
  * @brief Balanced representation of <code>Z/mZ</code> over \c double .
  */
 
-#ifndef __FFLAFLAS_modular_balancedH
-#define __FFLAFLAS_modular_balancedH
+#ifndef __FFLAFLAS_modular_balanced_H
+#define __FFLAFLAS_modular_balanced_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -34,6 +34,8 @@ class ModularBalanced;
 
 #include "fflas-ffpack/field/modular-balanced-double.h"
 #include "fflas-ffpack/field/modular-balanced-float.h"
+#include "fflas-ffpack/field/modular-balanced-int32.h"
+#include "fflas-ffpack/field/modular-balanced-int64.h"
 
 #endif // __FFLAFLAS_modular_balanced_double_H
 

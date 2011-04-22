@@ -9,6 +9,8 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLAFLAS_fgemv_INL
+#define __FFLAFLAS_fgemv_INL
 namespace FFLAS {
 
 	//---------------------------------------------------------------------
@@ -186,7 +188,7 @@ namespace FFLAS {
 
 
 		template<>
-		inline void MatVectProd (const  NAMESPACE ModularBalanced<double>& F,
+		inline void MatVectProd (const  FFPACK:: ModularBalanced<double>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const double alpha,
@@ -224,7 +226,7 @@ namespace FFLAS {
 		}
 
 		template<>
-		inline void MatVectProd (const  NAMESPACE ModularBalanced<float>& F,
+		inline void MatVectProd (const  FFPACK:: ModularBalanced<float>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const float alpha,
@@ -260,7 +262,7 @@ namespace FFLAS {
 		}
 
 		template<>
-		inline void MatVectProd (const  NAMESPACE Modular<double>& F,
+		inline void MatVectProd (const  FFPACK:: Modular<double>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const double alpha,
@@ -298,7 +300,7 @@ namespace FFLAS {
 		}
 
 		template<>
-		inline void MatVectProd (const  NAMESPACE Modular<float>& F,
+		inline void MatVectProd (const  FFPACK:: Modular<float>& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const float alpha,
@@ -362,3 +364,4 @@ namespace FFLAS {
 			     alpha, A, lda, X, incX, beta, Y, incY);
 	}
 } // FFLAS
+#endif //  __FFLAFLAS_fgemv_INL

@@ -9,6 +9,9 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLAFLAS_fgemm_INL
+#define __FFLAFLAS_fgemm_INL
+
 #ifndef MAX
 #define MAX(a,b) (a < b)?b:a
 #endif
@@ -269,7 +272,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline void ClassicMatmul (const NAMESPACE ModularBalanced<double> & F,
+		inline void ClassicMatmul (const FFPACK:: ModularBalanced<double> & F,
 					   const FFLAS_TRANSPOSE ta,
 					   const FFLAS_TRANSPOSE tb,
 					   const size_t m, const size_t n,const size_t k,
@@ -330,7 +333,7 @@ namespace FFLAS {
 
 
 		template <>
-		inline void ClassicMatmul (const  NAMESPACE ModularBalanced<float> & F,
+		inline void ClassicMatmul (const  FFPACK:: ModularBalanced<float> & F,
 					   const FFLAS_TRANSPOSE ta,
 					   const FFLAS_TRANSPOSE tb,
 					   const size_t m, const size_t n,const size_t k,
@@ -391,7 +394,7 @@ namespace FFLAS {
 
 
 		template <>
-		inline void ClassicMatmul (const  NAMESPACE Modular<double> & F,
+		inline void ClassicMatmul (const  FFPACK:: Modular<double> & F,
 					   const FFLAS_TRANSPOSE ta,
 					   const FFLAS_TRANSPOSE tb,
 					   const size_t m, const size_t n,const size_t k,
@@ -474,7 +477,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline void ClassicMatmul (const  NAMESPACE Modular<float> & F,
+		inline void ClassicMatmul (const  FFPACK:: Modular<float> & F,
 					   const FFLAS_TRANSPOSE ta,
 					   const FFLAS_TRANSPOSE tb,
 					   const size_t m, const size_t n,const size_t k,
@@ -1197,7 +1200,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline void WinoMain (const  NAMESPACE ModularBalanced<double>& F,
+		inline void WinoMain (const  FFPACK:: ModularBalanced<double>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1258,7 +1261,7 @@ namespace FFLAS {
 
 
 		template <>
-		inline void WinoMain (const  NAMESPACE ModularBalanced<float>& F,
+		inline void WinoMain (const  FFPACK:: ModularBalanced<float>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1318,7 +1321,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline void WinoMain (const  NAMESPACE Modular<double>& F,
+		inline void WinoMain (const  FFPACK:: Modular<double>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1391,7 +1394,7 @@ namespace FFLAS {
 
 
 		template <>
-		inline void WinoMain (const  NAMESPACE Modular<float>& F,
+		inline void WinoMain (const  FFPACK:: Modular<float>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1554,7 +1557,7 @@ namespace FFLAS {
 	// For internal usage only (or use it with care)
 	template<>
 	inline double*
-	fgemm< NAMESPACE UnparametricField<double> > ( const  NAMESPACE UnparametricField<double>& F,
+	fgemm< FFPACK:: UnparametricField<double> > ( const  FFPACK:: UnparametricField<double>& F,
 					    const FFLAS_TRANSPOSE ta,
 					    const FFLAS_TRANSPOSE tb,
 					    const size_t m,
@@ -1584,7 +1587,7 @@ namespace FFLAS {
 
 	template<>
 	inline float*
-	fgemm< NAMESPACE UnparametricField<float> > ( const  NAMESPACE UnparametricField<float>& F,
+	fgemm< FFPACK:: UnparametricField<float> > ( const  FFPACK:: UnparametricField<float>& F,
 					   const FFLAS_TRANSPOSE ta,
 					   const FFLAS_TRANSPOSE tb,
 					   const size_t m,
@@ -1613,7 +1616,7 @@ namespace FFLAS {
 
 	template<>
 	inline double*
-	fgemm< NAMESPACE UnparametricField<double> > (const  NAMESPACE UnparametricField<double>& F,
+	fgemm< FFPACK:: UnparametricField<double> > (const  FFPACK:: UnparametricField<double>& F,
 					   const FFLAS_TRANSPOSE ta,
 					   const FFLAS_TRANSPOSE tb,
 					   const size_t m,
@@ -1630,7 +1633,7 @@ namespace FFLAS {
 
 	template<>
 	inline float*
-	fgemm< NAMESPACE UnparametricField<float> > (const  NAMESPACE UnparametricField<float>& F,
+	fgemm< FFPACK:: UnparametricField<float> > (const  FFPACK:: UnparametricField<float>& F,
 					  const FFLAS_TRANSPOSE ta,
 					  const FFLAS_TRANSPOSE tb,
 					  const size_t m,
@@ -1685,7 +1688,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline double* fsquare (const  NAMESPACE ModularBalanced<double> & F,
+	inline double* fsquare (const  FFPACK:: ModularBalanced<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
 				const double* A, const size_t lda,
@@ -1710,7 +1713,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline float * fsquare (const  NAMESPACE ModularBalanced<float> & F,
+	inline float * fsquare (const  FFPACK:: ModularBalanced<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
 				const float* A, const size_t lda,
@@ -1735,7 +1738,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline double* fsquare (const  NAMESPACE Modular<double> & F,
+	inline double* fsquare (const  FFPACK:: Modular<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
 				const double* A, const size_t lda,
@@ -1759,7 +1762,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline float * fsquare (const  NAMESPACE Modular<float> & F,
+	inline float * fsquare (const  FFPACK:: Modular<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
 				const float* A, const size_t lda,
@@ -1783,3 +1786,5 @@ namespace FFLAS {
 	}
 
 } // FFLAS
+
+#endif // __FFLAFLAS_fgemm_INL

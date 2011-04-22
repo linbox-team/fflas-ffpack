@@ -34,8 +34,28 @@
 
 #include <sstream>
 
-namespace FFPACK {
+#include "fflasffpack-config.h"
 
+
+#ifdef __FFLAFLAS_HAVE_STDINT_H
+#define __STDC_LIMIT_MACROS
+#include <stdint.h>
+#else
+#error "you need intXX_t types"
+#endif
+
+#ifndef DEBUG
+#define fflaflas_check(check)
+#else
+#define fflaflas_check(check) \
+if (!(check)) \
+throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); //BB : should work on non gnu compilers too
+#endif
+
+
+
+namespace FFPACK {
+#if 0
 
 /*!  A precondtion failed.
 	 * @ingroup util
@@ -136,6 +156,7 @@ namespace FFPACK {
 
 		}
 	};
+#endif
 
 } // FFPACK
 

@@ -8,7 +8,10 @@
  *
  * See COPYING for license information.
  */
+#ifndef __FFLAFLAS_ftrsv_INL
+#define __FFLAFLAS_ftrsv_INL
 
+namespace FFLAS {
 //---------------------------------------------------------------------
 // ftrsv: TRiangular System solve with vector
 // Computes  X <- op(A^-1).X
@@ -16,7 +19,7 @@
 //---------------------------------------------------------------------
 template<class Field>
 inline void
-FFLAS::ftrsv (const Field& F, const FFLAS_UPLO Uplo,
+ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 	      const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
 	      const size_t N,const typename Field::Element * A, size_t lda,
 	      typename Field::Element * X, int incX)
@@ -88,3 +91,7 @@ FFLAS::ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 		}
 	}
 }
+
+}
+
+#endif // __FFLAFLAS_ftrsv_INL

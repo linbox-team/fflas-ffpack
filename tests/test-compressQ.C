@@ -22,7 +22,7 @@
 using namespace std;
 
 
-typedef NAMESPACE Modular<double> Field;
+typedef FFPACK:: Modular<double> Field;
 
 template<class T>
 std::ostream& printvect(std::ostream& o, vector<T>& vect){

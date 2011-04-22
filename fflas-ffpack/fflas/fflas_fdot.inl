@@ -8,6 +8,11 @@
  *
  * See COPYING for license information.
  */
+
+#ifndef __FFLAFLAS_fdot_INL
+#define __FFLAFLAS_fdot_INL
+
+
 // Default implementation
 // Specializations should be written
 // to increase efficiency
@@ -42,3 +47,5 @@ namespace FFLAS {
 	}
 
 } // FFLAS
+
+#endif // __FFLAFLAS_fdot_INL

@@ -13,7 +13,7 @@ include_HEADERS=fflasffpack-config.h
 
 docs:doc/fflas-ffpack-html/index.html
 
-doc/linbox-html/index.html:
+doc/fflas-ffpack-html/index.html:
 	(cd doc; make docs)
 
 docs_dev:doc/fflas-ffpack-dev-html/index.html

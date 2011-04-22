@@ -8,6 +8,9 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLAFLAS_ftrmm_INL
+#define __FFLAFLAS_ftrmm_INL
+
 namespace FFLAS {
 
 //---------------------------------------------------------------------
@@ -684,3 +687,5 @@ namespace Protected {
 } // Protected
 
 } // FFLAS
+
+#endif // __FFLAFLAS_ftrmm_INL

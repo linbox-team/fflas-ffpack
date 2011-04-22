@@ -11,7 +11,7 @@
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
-#include "fflas-ffpack/field/modular-int.h"
+// #include "fflas-ffpack/field/modular-int.h"
 #include "timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -25,7 +25,7 @@ using namespace std;
 //typedef ModularBalanced<float> Field;
 //typedef Modular<double> Field;
 //typedef Modular<float> Field;
-typedef NAMESPACE Modular<int> Field;
+typedef FFPACK:: Modular<int> Field;
 typedef vector<Field::Element> Polynomial;
 
 

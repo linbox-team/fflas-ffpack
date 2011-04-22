@@ -8,6 +8,9 @@
  *
  * See COPYING for license information.
  */
+#ifndef __FFLAFLAS_charpoly_INL
+#define __FFLAFLAS_charpoly_INL
+
 namespace FFPACK {
 
 
@@ -281,3 +284,5 @@ namespace FFPACK {
 	} // Protected
 
 } // FFPACK
+
+#endif // __FFLAFLAS_charpoly_INL

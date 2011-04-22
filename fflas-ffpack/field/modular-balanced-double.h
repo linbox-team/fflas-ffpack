@@ -154,6 +154,11 @@ namespace FFPACK
 			return x=y;
 		}
 
+		float &convert (float &x, const Element& y) const
+		{
+			return x=y;
+		}
+
 		std::ostream &write (std::ostream &os) const
 		{
 			return os << "balanced double mod " << (long int)modulus;
