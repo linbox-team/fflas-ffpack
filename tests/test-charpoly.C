@@ -102,12 +102,14 @@ int main(int argc, char** argv)
 		return !passed ;
 	}
 	else {
-		std::cerr << "not implemented yet" << std::endl;
+		std::cerr << std::endl << "##################################"<< std::endl;
+		std::cerr << std::endl << "  **** not implemented yet ! ***" << std::endl;
+		std::cerr << std::endl << "##################################"<< std::endl;
 		// create A random
 		// create A diagonal
 		// create A nilpotent
 		// create A non invertible
-		return 1 ;
+		return false ;
 	}
 
 }

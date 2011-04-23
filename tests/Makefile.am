@@ -5,7 +5,8 @@
 
 
 SUBDIRS =
-check: $(BASE_TESTS)
+check:
+	$(BASE_TESTS)
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@

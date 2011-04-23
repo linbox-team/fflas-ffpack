@@ -113,8 +113,8 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 		File_Name = mat_file;
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
-		char * tmp = new char[200];// usigned long tni, tnj;
-		fscanf(FileDes,"%d %d %s\n",tni, tnj, &tmp) ;
+		char  tmp [200];// usigned long tni, tnj;
+		fscanf(FileDes,"%d %d %s\n",tni, tnj, tmp) ;
 		int n=*tni;
 		int p=*tnj;
 		X = new typename Field::Element[n*p];
