@@ -99,7 +99,7 @@ namespace FFPACK
 		///
 		const UnparametricField &operator=(const UnparametricField &F) const
 		{
-		       	return *this;
+			return *this;
 		}
 		//@} Field Object Basics.
 
@@ -111,7 +111,6 @@ namespace FFPACK
 		Element& init (Element& x) const
 		{
 			return x;
-
 		}
 
 		/// x := y.  Caution: it is via cast to long.  Good candidate for specialization.
@@ -119,7 +118,6 @@ namespace FFPACK
 		Element& init (Element& x, const Src& s) const
 		{
 			return Caster (x, s);
-
 		}
 
 
@@ -134,48 +132,50 @@ namespace FFPACK
 		///
 		Element &assign (Element &x, const Element &y) const
 		{
-		       	return x = y;
+			return x = y;
 		}
 
 
 		unsigned long &cardinality (unsigned long &c) const
 		{
-		       	return c = _card ;
+			return c = _card ;
 		}
 
 		unsigned long &characteristic (unsigned long &c) const
 		{
-		       	return c = _card ;
+			return c = _card ;
 		}
 
 		unsigned long cardinality () const
 		{
-		       	return _card ;
+			return _card ;
 		}
 
 		unsigned long characteristic () const
 		{
-		       	return _card ;
+			return _card ;
 		}
+
+		//@}
 
 		/// @name Comparison Predicates
 		//@{
 		///  x == y
 		bool areEqual (const Element &x, const Element &y) const
 		{
-		       	return x == y;
-	       	}
+			return x == y;
+		}
 
 		///  x == 0
 		bool isZero (const Element &x) const
 		{
-		       	return x == Element (0);
+			return x == Element (0);
 		}
 
 		///  x == 1
 		bool isOne (const Element &x) const
 		{
-		       	return x == Element (1);
+			return x == Element (1);
 		}
 		//@} Comparison Predicates
 
@@ -188,38 +188,38 @@ namespace FFPACK
 		/// x := y + z
 		Element &add (Element &x, const Element &y, const Element &z) const
 		{
-		       	return x = y + z;
+			return x = y + z;
 		}
 
 		/// x := y - z
 		Element &sub (Element &x, const Element &y, const Element &z) const
 		{
-		       	return x = y - z;
+			return x = y - z;
 		}
 
 		/// x := y*z
 		Element &mul (Element &x, const Element &y, const Element &z) const
 		{
-		       	return x = y * z;
+			return x = y * z;
 		}
 
 		/// x := y/z
 		Element &div (Element &x, const Element &y, const Element &z) const
 		{
-		       	return x = y / z;
+			return x = y / z;
 		}
 
 		/// x := -y
 		Element &neg (Element &x, const Element &y) const
 		{
-		       	return x = - y;
+			return x = - y;
 		}
 
 		/// x := 1/y
 		Element &inv (Element &x, const Element &y) const
 		{
-		       	return x = Element (1) / y;
-	       	}
+			return x = Element (1) / y;
+		}
 
 		/// z := a*x + y
 		// more optimal implementation, if available, can be defined in a template specialization.
@@ -229,42 +229,56 @@ namespace FFPACK
 			       const Element &y) const
 		{
 			return z = a * x + y;
-	       	}
+		}
 
 		//@} Arithmetic Operations
 
-	/** @name Inplace Arithmetic Operations
+		/** @name Inplace Arithmetic Operations
 		 * The first argument is modified and the result is the return value.
 		 */
 		//@{
 
 		/// x := x + y
 		Element &addin (Element &x, const Element &y) const
-		{ return x += y; }
+		{
+			return x += y;
+		}
 
 		/// x := x - y
 		Element &subin (Element &x, const Element &y) const
-		{ return x -= y; }
+		{
+			return x -= y;
+		}
 
 		/// x := x*y
 		Element &mulin (Element &x, const Element &y) const
-		{ return x *= y; }
+		{
+			return x *= y;
+		}
 
 		/// x := x/y
 		Element &divin (Element &x, const Element &y) const
-		{ return x /= y; }
+		{
+			return x /= y;
+		}
 
 		/// x := -x
 		Element &negin (Element &x) const
-		{ return x = - x; }
+		{
+			return x = - x;
+		}
 
 		/// x := 1/x
 		Element &invin (Element &x) const
-		{ return x = Element (1) / x; }
+		{
+			return x = Element (1) / x;
+		}
 
 		/// y := a*x + y
 		Element &axpyin (Element &y, const Element &a, const Element &x) const
-		{ return y += a * x; }
+		{
+			return y += a * x;
+		}
 
 		//@} Inplace Arithmetic Operations
 
@@ -276,14 +290,18 @@ namespace FFPACK
 		 * @param  os  output stream to which field is written.
 		 */
 		std::ostream &write (std::ostream &os) const
-		{ return os << "unparameterized field(" << sizeof(Element) <<',' << typeid(Element).name() << ')'; }
+		{
+			return os << "unparameterized field(" << sizeof(Element) <<',' << typeid(Element).name() << ')';
+		}
 
 		/** Read field.
 		 * @return input stream from which field is read.
 		 * @param  is  input stream from which field is read.
 		 */
 		std::istream &read (std::istream &is) const
-		{ return is; }
+		{
+			return is;
+		}
 
 		/** Print field element.
 		 * @return output stream to which field element is written.
@@ -291,7 +309,9 @@ namespace FFPACK
 		 * @param  x   field element.
 		 */
 		std::ostream &write (std::ostream &os, const Element &x) const
-		{ return os << x; }
+		{
+			return os << x;
+		}
 
 		/** Read field element.
 		 * @return input stream from which field element is read.
@@ -299,7 +319,9 @@ namespace FFPACK
 		 * @param  x   field element.
 		 */
 		std::istream &read (std::istream &is, Element &x) const
-		{ return is >> x; }
+		{
+			return is >> x;
+		}
 
 		//@}
 
