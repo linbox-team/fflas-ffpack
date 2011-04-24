@@ -1,5 +1,14 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+/*
+ * Copyright (C) Fflas-Ffpack
+ * Written by Clément Pernet
+ * This file is Free Software and part of Fflas-Ffpack.
+ * See COPYING for license information.
+ */
+
+
 //--------------------------------------------------------------------------
 //                        Test for det
 //
@@ -17,7 +26,7 @@
 
 using namespace std;
 
-typedef ModularBalanced<double> Field;
+typedef FFPACK:: ModularBalanced<double> Field;
 
 int main(int argc, char** argv){
 

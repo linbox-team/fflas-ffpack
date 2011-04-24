@@ -201,7 +201,7 @@ namespace FFPACK
 			else return x;
 		}
 
-		inline Element& init(Element& x, const double y =0) const
+		Element& init(Element& x, const double y =0) const
 		{
 
 			x = fmod (y, modulus);
@@ -210,7 +210,14 @@ namespace FFPACK
 			return x;
 		}
 
-		inline Element& assign(Element& x, const Element& y) const
+		template<class T>
+		Element& init(Element& x, const T y =0) const
+		{
+			return init(x,double(y));
+		}
+
+
+		Element& assign(Element& x, const Element& y) const
 		{
 			return x = y;
 		}
