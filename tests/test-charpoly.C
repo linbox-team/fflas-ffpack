@@ -54,7 +54,7 @@ bool launch_test(const Field & F, typename Field::Element * A, int n,
 {
 	Timer tim,t; t.clear();tim.clear();
 	list<Polynomial> P_list;
-	for(int i = 0;i<nbit;++i){
+	for(size_t i = 0;i<nbit;++i){
 		P_list.clear();
 		t.clear();
 		t.start();
@@ -79,6 +79,7 @@ bool launch_test(const Field & F, typename Field::Element * A, int n,
 
 	cout<<n<<" "<<P_list.size()<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
+	return true ;
 
 }
 
@@ -100,6 +101,8 @@ int main(int argc, char** argv)
 		{ 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
+
+	parseArguments(argc,argv,as);
 
 	Field F((long unsigned int)p);
 	Field::Element * A;
