@@ -169,11 +169,11 @@ namespace FFPACK {
 			is >> modulus;
 #ifdef DEBUG
 			if(modulus <= 1)
-				throw PreconditionFailed (__func__,
+				throw Failure (__func__,
 							  __LINE__,
 							  "modulus must be > 1");
 			if(modulus > getMaxModulus())
-				throw PreconditionFailed (__func__,
+				throw Failure (__func__,
 							  __LINE__,
 							  "modulus is too big");
 #endif

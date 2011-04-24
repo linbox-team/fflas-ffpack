@@ -90,7 +90,7 @@ namespace FFPACK
 #endif
 		}
 
-	ModularBalanced (unsigned long p) :
+		ModularBalanced (unsigned long p) :
 			modulus ((double)p),
 			half_mod (double((unsigned long)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
@@ -169,13 +169,13 @@ namespace FFPACK
 			is >> modulus;
 #ifdef DEBUG
 			if(modulus <= 1)
-				throw PreconditionFailed (__func__,
-							  __LINE__,
-							  "modulus must be > 1");
+				throw Failure (__func__,
+					       __LINE__,
+					       "modulus must be > 1");
 			if(modulus > getMaxModulus())
-				throw PreconditionFailed (__func__,
-							  __LINE__,
-							  "modulus is too big");
+				throw Failure (__func__,
+					       __LINE__,
+					       "modulus is too big");
 #endif
 			return is;
 		}
@@ -361,7 +361,7 @@ namespace FFPACK
 
 		static inline double getMaxModulus()
 		{
-		       	return 67108864.0;  // 2^26
+			return 67108864.0;  // 2^26
 		}
 
 	};
