@@ -992,9 +992,10 @@ namespace FFPACK  {
 	LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 		  const size_t M, const size_t N,
 		  typename Field::Element * A, const size_t lda,
-		  size_t* P, size_t* Qt,
-		  const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP,
-		  const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF);
+		  size_t* P, size_t* Qt
+		  , const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP
+		  , const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF
+		  );
 
 
 	template<class Element>
@@ -1746,8 +1747,11 @@ namespace FFPACK  {
 				    const typename Field::Element * A, const size_t lda,
 				    typename Field::Element * X, const size_t ldx,
 				    typename Field::Element * u, size_t* P,
-				    bool computeX, const FFPACK_MINPOLY_TAG MinTag,
-				    const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+				    bool computeX, const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense
+				    , const size_t kg_mc =0
+				    , const size_t kg_mb =0
+				    , const size_t kg_j  =0
+				    );
 
 		template <class Field, class Polynomial>
 		static std::list<Polynomial>&

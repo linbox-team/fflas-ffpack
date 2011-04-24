@@ -194,7 +194,7 @@ namespace FFPACK {
 		}
 
 		Element &init (Element &x, const unsigned long &y) const  {
-			Element tmp  = y % (unsigned long)  (modulus);
+			Element tmp  = Element(y % lmodulus);
 			if (tmp > half_mod) return x =  tmp-modulus;
 			else if (tmp<mhalf_mod) return x = tmp+modulus;
 			else return x=tmp;
@@ -202,7 +202,7 @@ namespace FFPACK {
 
 		inline Element& init(Element& x, const double y =0) const
 		{
-			x = fmod (y, double(modulus));
+			x = (Element) fmod (y, double(modulus));
 			if ( x > half_mod ) return x -= modulus;
 			else if ( x < mhalf_mod ) return x +=  modulus;
 			else return x ;

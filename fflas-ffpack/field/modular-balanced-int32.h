@@ -160,7 +160,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const double &y) const
 		{
-			x = fmod(y,(double)modulus);
+			x = (Element) fmod(y,(double)modulus);
 			if (x < nhalfmodulus) x += modulus;
 			else if (x > halfmodulus) x -= modulus;
 			return x;

@@ -156,7 +156,7 @@ namespace FFPACK
 
 		float &convert (float &x, const Element& y) const
 		{
-			return x=y;
+			return x=float(y);
 		}
 
 		std::ostream &write (std::ostream &os) const
@@ -195,7 +195,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const unsigned long &y) const
 		{
-			x  = y % (unsigned long)  (modulus);
+			x  = Element(y % lmodulus);
 			if (x > half_mod) return x -=  modulus;
 			else if (x<mhalf_mod) return x += modulus;
 			else return x;

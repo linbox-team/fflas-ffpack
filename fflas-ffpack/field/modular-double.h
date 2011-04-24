@@ -172,7 +172,7 @@ namespace FFPACK {
 
 
 		Element &init (Element &x, const unsigned long &y) const  {
-			x = y % long (modulus);
+			x = double(y % lmodulus);
 			if (x < 0) x += modulus;
 			return x;
 		}

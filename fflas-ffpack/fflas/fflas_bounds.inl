@@ -116,7 +116,7 @@ namespace FFLAS {
 					else{
 						double be;
 						F.convert(be, beta);
-						cplt = abs(be)*c;
+						cplt = fabs(be)*c;
 					}
 				}
 				kmax = floor ( (double ((1ULL << mantissa) - cplt)) / (c*c));
@@ -147,7 +147,7 @@ namespace FFLAS {
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
-			return p-1;
+			return (double) (p-1);
 		}
 	} // Protected
 
@@ -203,7 +203,7 @@ namespace FFLAS {
 			F.characteristic(p);
 			size_t ex=1;
 			for (size_t i=0; i < w; ++i) 	ex *= 3;
-			return  (p - 1) * ex / 2;
+			return  double((p - 1) * ex / 2);
 		}
 
 		template <>
@@ -211,7 +211,7 @@ namespace FFLAS {
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
-			return (p-1) >> 1;
+			return double((p-1) >> 1);
 		}
 
 
