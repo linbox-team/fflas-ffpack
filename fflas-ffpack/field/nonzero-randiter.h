@@ -37,7 +37,8 @@ public:
 	typedef typename Field::Element Element;
 
 	NonzeroRandIter (const Field &F, const RandIter &r)
-		: _F (F), _r (r) {}
+		: _F (F), _r (r)
+	{}
 
 	NonzeroRandIter (const NonzeroRandIter& R)
 		: _F (R._F), _r (R._r) {}
@@ -69,4 +70,5 @@ private:
 }; // class NonzeroRandIter
 
 } // FFPACK
+
 #endif // __NONZERO_RANDITER_H

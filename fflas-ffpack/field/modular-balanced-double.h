@@ -369,5 +369,7 @@ namespace FFPACK
 
 } // FFPACK
 
+#include "field-general.h"
+
 #endif // __FFLAFLAS_modular_balanced_double_H
 

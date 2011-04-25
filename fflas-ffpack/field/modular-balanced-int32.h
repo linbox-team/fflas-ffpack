@@ -410,5 +410,6 @@ namespace FFPACK
 
 }
 
+#include "field-general.h"
 #endif // __FFLAFLAS_modular_balanced_int32_H
 

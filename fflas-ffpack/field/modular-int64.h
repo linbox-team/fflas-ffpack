@@ -446,6 +446,7 @@ namespace FFPACK
 
 #undef LINBOX_MAX_INT64
 
+#include "field-general.h"
 
 #endif //__LINBOX_modular_int64_H
 

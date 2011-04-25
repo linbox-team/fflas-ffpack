@@ -421,8 +421,7 @@ namespace FFPACK
 
 #undef LINBOX_MAX_INT64
 
-// #include "linbox/randiter/modular.h" // do not unse _LB_MAX inside this one !
-
+#include "field-general.h"
 
 #endif //__FFLAFLAS_modular_balanced_int64_H
 

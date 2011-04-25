@@ -330,4 +330,7 @@ namespace FFPACK
 	};
 
 } // FFPACK
+
+#include "field-general.h"
+
 #endif // __FIELD_UNPARAMETRIC_H_

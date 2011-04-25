@@ -326,4 +326,7 @@ namespace FFPACK {
 	};
 
 } // FFPACK
+
+#include "field-general.h"
+
 #endif

@@ -477,5 +477,7 @@ namespace FFPACK
 
 }
 
+#include "field-general.h"
+
 #endif //__LINBOX_modular_int32_H
 

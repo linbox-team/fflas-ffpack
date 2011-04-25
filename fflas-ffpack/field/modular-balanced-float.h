@@ -74,7 +74,6 @@ namespace FFPACK {
 			mhalf_mod( half_mod-p+1),
 			lmodulus ((unsigned long)p),
 			balanced(true)
-
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -95,7 +94,6 @@ namespace FFPACK {
 			mhalf_mod( half_mod-p+1),
 			lmodulus(p),
 			balanced(true)
-
 		{
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
@@ -162,7 +160,7 @@ namespace FFPACK {
 
 		std::ostream &write (std::ostream &os) const
 		{
-			return os << "balanced Element mod " << int(modulus);
+			return os << "balanced float mod " << int(modulus);
 		}
 
 		std::istream &read (std::istream &is) {
@@ -193,7 +191,8 @@ namespace FFPACK {
 			return is;
 		}
 
-		Element &init (Element &x, const unsigned long &y) const  {
+		Element &init (Element &x, const unsigned long &y) const
+		{
 			Element tmp  = Element(y % lmodulus);
 			if (tmp > half_mod) return x =  tmp-modulus;
 			else if (tmp<mhalf_mod) return x = tmp+modulus;
@@ -358,6 +357,8 @@ namespace FFPACK {
 	};
 
 } // FFPACK
+
+#include "field-general.h"
 
 #endif // __FFLAFLAS_modular_balanced_double_H
 

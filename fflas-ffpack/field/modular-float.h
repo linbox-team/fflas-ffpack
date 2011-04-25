@@ -171,7 +171,6 @@ namespace FFPACK {
 			return x;
 		}
 
-
 		inline Element& init(Element& x, Element y =0) const
 		{
 
@@ -336,5 +335,7 @@ namespace FFPACK {
 	};
 
 } // FFPACK
+
+#include "field-general.h"
 
 #endif // __FFLAFLAS_modular_float_H
