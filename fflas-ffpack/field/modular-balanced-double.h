@@ -75,7 +75,6 @@ namespace FFPACK
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus ((unsigned long)p),
 			balanced(true)
-
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -96,7 +95,6 @@ namespace FFPACK
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p),
 			balanced(true)
-
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -113,7 +111,8 @@ namespace FFPACK
 
 
 		ModularBalanced<double>(const ModularBalanced<double>& mf) :
-			modulus(mf.modulus), half_mod(mf.half_mod),mhalf_mod(mf.mhalf_mod), balanced(true)
+			modulus(mf.modulus), half_mod(mf.half_mod)
+			,mhalf_mod(mf.mhalf_mod), lmodulus(mf.lmodulus), balanced(true)
 		{}
 
 		const ModularBalanced<double> &operator=(const ModularBalanced<double> &F)
@@ -137,6 +136,10 @@ namespace FFPACK
 			return (FieldInt) modulus;
 		}
 
+		unsigned long characteristic() const
+		{
+			return lmodulus ;
+		}
 
 		FieldInt &characteristic (FieldInt &c) const
 		{
