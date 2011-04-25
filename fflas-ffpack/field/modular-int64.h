@@ -34,11 +34,11 @@
 #include "fflas-ffpack/field/nonzero-randiter.h"
 
 
-#ifndef _LB_MAX_INT
+#ifndef LINBOX_MAX_INT64
 #ifdef __x86_64__
-#define _LB_MAX_INT 18446744073709551615L
+#define LINBOX_MAX_INT64 INT64_MAX
 #else
-#define _LB_MAX_INT 18446744073709551615LL
+#define LINBOX_MAX_INT64 INT64_MAX
 #endif
 #endif
 
@@ -444,7 +444,7 @@ namespace FFPACK
 
 }
 
-#undef _LB_MAX_INT
+#undef LINBOX_MAX_INT64
 
 
 #endif //__LINBOX_modular_int64_H

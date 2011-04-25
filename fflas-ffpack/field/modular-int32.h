@@ -34,7 +34,7 @@
 #include "fflas-ffpack/utils/debug.h"
 
 #ifndef LINBOX_MAX_INT
-#define LINBOX_MAX_INT 2147483647
+#define LINBOX_MAX_INT INT32_MAX
 #endif
 
 // Namespace in which all LinBox code resides
@@ -413,7 +413,9 @@ namespace FFPACK
 
 
 		static  int32_t getMaxModulus()
-		{ return 1073741824; } // 2^30
+		{
+		       	return 1073741824;
+		} // 2^30
 
 	private:
 

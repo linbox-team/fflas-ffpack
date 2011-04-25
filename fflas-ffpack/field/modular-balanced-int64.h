@@ -37,11 +37,11 @@
 #include "fflas-ffpack/utils/debug.h"
 
 
-#ifndef _LB_MAX_INT
+#ifndef LINBOX_MAX_INT64
 #ifdef __x86_64__
-#define _LB_MAX_INT 18446744073709551615L
+#define LINBOX_MAX_INT64 INT64_MAX
 #else
-#define _LB_MAX_INT 18446744073709551615LL
+#define LINBOX_MAX_INT64 INT64_MAX
 #endif
 #endif
 
@@ -116,7 +116,9 @@ namespace FFPACK
 
 
 		uint64_t characteristic () const
-		{ return modulus; }
+		{
+		       	return modulus;
+		}
 
 
 		double & convert(double &x, const Element &y) const
@@ -128,8 +130,6 @@ namespace FFPACK
 		{
 			return x = (float) y;
 		}
-
-
 
 		std::ostream &write (std::ostream &os) const
 		{
@@ -160,7 +160,7 @@ namespace FFPACK
 
 		std::istream &read (std::istream &is, Element &x) const
 		{
-			double tmp;
+			long int tmp;
 			is >> tmp;
 			init(x,tmp);
 			return is;
@@ -177,7 +177,8 @@ namespace FFPACK
 		}
 
 
-		Element &init (Element &x, const size_t &y) const  {
+		Element &init (Element &x, const size_t &y) const
+		{
 			x = y % (modulus);
 			if (x < nhalfmodulus) x += modulus;
 			else if (x > halfmodulus) x -= modulus;
@@ -372,7 +373,7 @@ namespace FFPACK
 
 			if (a < 0) {
 #ifdef DEBUG
-				if (a < -LINBOX_MAX_INT) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
+				if (a < -LINBOX_MAX_INT64) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
 #endif
 				a = -a;
 				aneg = 1;
@@ -380,7 +381,7 @@ namespace FFPACK
 
 			if (b < 0) {
 #ifdef DEBUG
-				if (b < -LINBOX_MAX_INT) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
+				if (b < -LINBOX_MAX_INT64) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
 #endif
 				b = -b;
 				bneg = 1;
@@ -418,7 +419,7 @@ namespace FFPACK
 
 }
 
-#undef _LB_MAX_INT
+#undef LINBOX_MAX_INT64
 
 // #include "linbox/randiter/modular.h" // do not unse _LB_MAX inside this one !
 
