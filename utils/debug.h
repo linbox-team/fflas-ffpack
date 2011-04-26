@@ -55,9 +55,9 @@ throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); //BB : should work
 
 
 namespace FFPACK {
-#if 0
 
-/*!  A precondtion failed.
+
+	/*!  A precondtion failed.
 	 * @ingroup util
 	 * The \c throw mechanism is usually used here as in
 	 \code
@@ -67,6 +67,7 @@ namespace FFPACK {
 	 * The parameters of the constructor help debugging.
 	 */
 	class Failure {//: public LinboxError BB: otherwise,  error.h:39 segfaults
+	protected:
 		static std::ostream *_errorStream;
 
 	public:
@@ -119,6 +120,7 @@ namespace FFPACK {
 		}
 	};
 
+#if 0
 	/*! @internal A function is "not implemented yet(tm)".
 	 * where, why ?
 	 */
@@ -156,8 +158,10 @@ namespace FFPACK {
 
 		}
 	};
+
 #endif
 
+	std::ostream *Failure::_errorStream;
 } // FFPACK
 
 #endif // __FFLAFLAS_util_debug_H

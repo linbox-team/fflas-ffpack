@@ -58,8 +58,7 @@ namespace FFPACK {
 			if(modulus <= 1)
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if( exp != 1 ) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
-			integer max;
-			if(modulus > (Element) FieldTraits<Modular<Element> >::maxModulus(max))
+			if(modulus > getMaxModulus())
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 #endif
 		}
@@ -72,8 +71,7 @@ namespace FFPACK {
 #ifdef DEBUG
 			if( modulus <= 1 )
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			integer max;
-			if( modulus > (Element) FieldTraits<Modular<Element> >::maxModulus(max))
+			if( modulus > getMaxModulus())
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 #endif
 		}
@@ -86,8 +84,7 @@ namespace FFPACK {
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			integer max;
-			if( (Element) modulus > (Element) FieldTraits<Modular<Element> >::maxModulus(max))
+			if( (Element) modulus > getMaxModulus())
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 #endif
 		}

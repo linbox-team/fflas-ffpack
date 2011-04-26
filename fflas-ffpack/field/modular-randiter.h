@@ -58,8 +58,8 @@ namespace FFPACK {
 	{
 	public:
 		ModularBalancedRandIter (const ModularBalanced<Element> &F):_F(F){}
-		ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R)
-		: _F (R._F)
+		ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R) :
+			_F (R._F)
 		{}
 		Element &random (Element &a) const
 		{
