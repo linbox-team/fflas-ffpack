@@ -264,10 +264,12 @@ namespace FFPACK {
 			return init (x,x);
 		}
 
+		//! @todo remove temp
 		inline Element &div (Element &x, const Element &y, const Element &z) const
 		{
-			inv (x, z);
-			return mulin (x, y);
+			Element temp ;
+			inv (temp, z);
+			return mul (x, y, temp);
 		}
 
 		inline Element &neg (Element &x, const Element &y) const
