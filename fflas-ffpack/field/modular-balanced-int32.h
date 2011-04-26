@@ -107,7 +107,9 @@ namespace FFPACK
 
 
 		size_t characteristic () const
-		{ return modulus; }
+		{
+			return modulus;
+		}
 
 
 		double & convert(double &x, const Element &y) const
@@ -166,7 +168,8 @@ namespace FFPACK
 		}
 
 
-		Element &init (Element &x, const size_t &y) const  {
+		Element &init (Element &x, const size_t &y) const
+		{
 			x = y % (modulus);
 			if (x < nhalfmodulus) x += modulus;
 			else if (x > halfmodulus) x -= modulus;
