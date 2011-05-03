@@ -195,7 +195,7 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 	for (i = 1; i < argc; ++i) {
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 0) {
-#ifdef _LINBOX_LINBOX_CONFIG
+#ifdef _LINBOX_LINBOX_CONFIG_H
 				LinBox::commentator.setBriefReportStream (cout);
 				LinBox::commentator.setReportStream (cout);
 #endif
@@ -267,7 +267,7 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 				break;
 			}
 		} else {
-#ifdef _LINBOX_LINBOX_CONFIG
+#ifdef _LINBOX_LINBOX_CONFIG_H
 			LinBox::commentator.setBriefReportStream(cout);
 			LinBox::commentator.setDefaultReportFile (argv[i]);
 #endif
