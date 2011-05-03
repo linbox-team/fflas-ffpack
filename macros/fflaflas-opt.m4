@@ -31,7 +31,7 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		//#define _LINBOX_LINBOX_CONFIG_H
 		#define __FFLAFLAS_CONFIGURATION
 		#include <fflas-ffpack/config-blas.h>
-		#include <fflas-ffpack/fflasffpack-config.h>
+		#include <fflasffpack-config.h>
 		#include <fflas-ffpack/field/modular-positive.h>
 		#include <fflas-ffpack/fflas/fflas.h>
 		#include <tests/timer.h>
@@ -39,7 +39,7 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		//using namespace LinBox;
 		int main () {
 
-		  FFPACK::Modular<double> F((long int)17);
+		  FFPACK::Modular<double> F(17);
 		  size_t n=300, nmax=5000, prec=512, nbest=0, count=0;
 		  Timer chrono;
 		  double basetime, time;
@@ -133,13 +133,11 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 	AC_MSG_RESULT(cross compilation)
 	strassen_opti="no"
 	break
-	\rm -f fflas-ffpack/fflasffpack-config,h 2>&1 > /dev/null
 	])
 
 fi;
 ],[
 AC_MSG_RESULT(no)
-\rm -f fflas-ffpack/fflasffpack-config.h  2>&1 > /dev/null
 ])
 
 ])
