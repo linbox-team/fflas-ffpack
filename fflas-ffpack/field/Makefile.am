@@ -17,7 +17,6 @@ pkgincludesub_HEADERS=          \
 	  modular-int32.h           \
 	  modular-int64.h           \
 	  nonzero-randiter.h        \
-	  modular-int.h             \
 	  modular-randiter.h        \
 	  unparametric.h            \
 	  field-general.h
