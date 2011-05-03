@@ -20,6 +20,7 @@
 
 
 using namespace std;
+using namespace FFPACK;
 
 //typedef ModularBalanced<double> Field;
 typedef ModularBalanced<float> Field;

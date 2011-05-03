@@ -106,6 +106,25 @@ namespace FFPACK
 #endif
 		}
 
+		ModularBalanced (long p) :
+			modulus ((double)p),
+			half_mod (double((unsigned long)(p-1)/2)),
+			mhalf_mod(half_mod-modulus+1),
+			lmodulus (p),
+			balanced(true)
+		{
+#ifdef DEBUG
+			if (modulus <= 1)
+				throw Failure(__func__,__FILE__,
+					      __LINE__,
+					      "modulus must be > 1");
+			if (modulus > getMaxModulus())
+				throw Failure (__func__,__FILE__,
+					       __LINE__,
+					       "modulus is too big");
+#endif
+		}
+
 
 		ModularBalanced<double>(const ModularBalanced<double>& mf) :
 			modulus(mf.modulus), half_mod(mf.half_mod)

@@ -129,7 +129,8 @@ namespace FFPACK
 			return os << "balanced int32_t mod " << modulus;
 		}
 
-		std::istream &read (std::istream &is) {
+		std::istream &read (std::istream &is)
+		{
 			is >> modulus;
 			halfmodulus = modulus/2;
 			nhalfmodulus = halfmodulus-modulus+1;
@@ -138,7 +139,7 @@ namespace FFPACK
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			int32_t max = getMaxModulus();
 
-			if(value > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if(modulus > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 			if( ! (modulus % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be oddd");
 #endif
 
@@ -355,7 +356,9 @@ namespace FFPACK
 		}
 
 		static inline int32_t getMaxModulus()
-		{ return 1073741824; } // 2^30
+		{
+			return 1073741824; // 2^30
+		}
 
 	private:
 

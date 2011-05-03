@@ -87,9 +87,7 @@ namespace FFPACK
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(value <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			int64_t max;
-			FieldTraits<Modular<int64_t> >::maxModulus((uint64_t&)max);
-			if(value > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if(value > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 			if( ! (value % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
 #endif
 
@@ -144,9 +142,7 @@ namespace FFPACK
 			modulusinv = 1 /((double) modulus );
 #ifdef DEBUG
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			int64_t max;
-			FieldTraits<Modular<int64_t> >::maxModulus((uint64_t&)max) ;
-			if(modulus > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if(modulus > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 			if( ! (modulus % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be oddd");
 #endif
 
@@ -361,6 +357,15 @@ namespace FFPACK
 				r += modulus;
 
 			return r;
+		}
+
+		static inline int64_t getMaxModulus()
+		{
+#ifdef __x86_64__
+			return 4611686018427387904L; // 2^62
+#else
+			return 4611686018427387904LL; // 2^62
+#endif
 		}
 
 	private:

@@ -20,6 +20,11 @@ using namespace std;
 #include "givaro/givintprime.h"
 
 
+using namespace FFPACK;
+
+#ifndef __FFLAFLAS_HAVE_GIVARO
+#error you need givaro (and gmp) here
+#endif
 
 //typedef Modular<double> Field;
 typedef ModularBalanced<double> Field;

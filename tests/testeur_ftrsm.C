@@ -18,6 +18,11 @@
 #include "givaro/givintprime.h"
 
 using namespace std;
+using namespace FFPACK;
+
+#ifndef __FFLAFLAS_HAVE_GIVARO
+#error you need givaro (and gmp) here
+#endif
 
 //typedef Modular<int> Field;
 //typedef Modular<float> Field;

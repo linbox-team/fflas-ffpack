@@ -168,6 +168,15 @@ namespace FFPACK {
 			return x;
 		}
 
+		inline Element& init(Element& x, long y) const
+		{
+
+			x = fmodf (Element(y), modulus);
+
+			if (x < 0) x += modulus;
+			return x;
+		}
+
 		inline Element& init(Element& x, Element y =0) const
 		{
 

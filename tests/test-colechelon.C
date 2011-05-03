@@ -32,7 +32,8 @@ using namespace std;
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
-typedef NAMESPACE Modular<double> Field;
+using namespace FFPACK ;
+typedef FFPACK:: Modular<double> Field;
 
 int main(int argc, char** argv){
 	cerr<<setprecision(20);

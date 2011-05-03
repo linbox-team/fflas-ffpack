@@ -29,6 +29,7 @@ using namespace std;
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
+using namespace FFPACK;
 
 typedef Modular<double> Field;
 

@@ -8,6 +8,7 @@
 #include "Matio.h"
 
 using namespace std;
+using namespace FFPACK;
 
 int main(int argc, char** argv) {
 

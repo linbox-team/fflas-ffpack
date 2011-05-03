@@ -501,7 +501,7 @@ void FFPACK::DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 	size_t currtmp = 0;
 	for (int i=0; i<int(nb_blocs)-1; ++i)
 		zeroblockdim += deg - d[i];
-	for (int i=0; i < zeroblockdim - 1; ++i, ++currtmp)
+	for (size_t i=0; i < zeroblockdim - 1; ++i, ++currtmp)
 		FFLAS::fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + (N - zeroblockdim +i)*lda, 1);
 	currtmp--;
 	size_t w_idx = N - 2;

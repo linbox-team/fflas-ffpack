@@ -29,10 +29,12 @@
 
 
 using namespace std;
+using namespace FFPACK;
 
 typedef Modular<float> Field;
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
 
 	int n;
 	int nbit=atoi(argv[3]); // number of times the product is performed

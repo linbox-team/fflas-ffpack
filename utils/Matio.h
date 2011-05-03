@@ -97,7 +97,7 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
 	typename Field::Element zero;
-	F.init(zero,0);
+	F.init(zero,0UL);
 	typename Field::Element * X;
 	if ((mat_file[--s] == 'z') &&
 	    (mat_file[--s] == 'g') &&

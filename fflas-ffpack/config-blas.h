@@ -381,14 +381,6 @@ extern "C" {
 
 // DEBUG
 
-#ifndef DEBUG
-#  define fflaflas_check(check)
-#else
-#  define fflaflas_check(check) \
-        if (!(check)) \
-                std::cerr << "\n *** Condition failed *** \n at " << __func__ <<" in "<<__FILE__ << ':' << __LINE__ << " -> " << #check <<std::endl;
-#endif
-
 
 
 #endif //__FFLAFLAS_config_blas_H

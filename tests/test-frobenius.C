@@ -30,6 +30,7 @@ using namespace std;
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
+using namespace FFPACK;
 typedef Modular<double> Field;
 
 template<class T>
@@ -50,7 +51,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F(  long(atoi(argv[1])));
+	Field F( atoi(argv[1]) );
 	Field::Element one;
 	F.init(one, 1UL);
 	Field::Element * A = read_field<Field> (F,argv[2],&m,&n);

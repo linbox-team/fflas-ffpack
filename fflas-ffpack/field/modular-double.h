@@ -167,9 +167,17 @@ namespace FFPACK {
 			return is;
 		}
 
-
-		Element &init (Element &x, const unsigned long &y) const  {
+		Element &init (Element &x, const unsigned long &y) const
+		{
 			x = double(y % lmodulus);
+			if (x < 0) x += modulus;
+			return x;
+		}
+
+		Element &init (Element &x, const long &y) const
+		{
+			// no problem here because double<long
+			x = double(y % (long)lmodulus);
 			if (x < 0) x += modulus;
 			return x;
 		}

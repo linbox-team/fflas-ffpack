@@ -29,6 +29,7 @@
 
 
 using namespace std;
+using namespace FFPACK;
 
 typedef Modular<double> Field;
 

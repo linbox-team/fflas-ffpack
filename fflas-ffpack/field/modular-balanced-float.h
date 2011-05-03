@@ -60,8 +60,7 @@ namespace FFPACK {
 			if( exp != 1 ) throw Failure(__func__,__FILE__,
 						     __LINE__,
 						     "exponent must be 1");
-			integer max;
-			if (modulus > (Element) FieldTraits<ModularBalanced<Element> >::maxModulus(max))
+			if ((Element) modulus > (Element) getMaxModulus())
 				throw Failure (__func__,__FILE__,
 					       __LINE__,
 					       "modulus is too big");
@@ -80,13 +79,32 @@ namespace FFPACK {
 				throw Failure(__func__,__FILE__,
 					      __LINE__,
 					      "modulus must be > 1");
-			integer max;
-			if (modulus > (Element) FieldTraits<ModularBalanced<Element> >::maxModulus(max))
+			if ((Element) modulus > (Element) getMaxModulus())
 				throw Failure (__func__,__FILE__,
 					       __LINE__,
 					       "modulus is too big");
 #endif
 		}
+
+		ModularBalanced (double p) :
+			modulus (Element(p)),
+			half_mod( Element((p-1)/2)),
+			mhalf_mod( half_mod-p+1),
+			lmodulus ((unsigned long)p),
+			balanced(true)
+		{
+#ifdef DEBUG
+			if (modulus <= 1)
+				throw Failure(__func__,__FILE__,
+					      __LINE__,
+					      "modulus must be > 1");
+			if ((Element) modulus > (Element) getMaxModulus())
+				throw Failure (__func__,__FILE__,
+					       __LINE__,
+					       "modulus is too big");
+#endif
+		}
+
 
 		ModularBalanced (FieldInt p) :
 			modulus((Element)p),
@@ -98,8 +116,7 @@ namespace FFPACK {
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			integer max;
-			if ((Element) modulus > (Element) FieldTraits<ModularBalanced<Element> >::maxModulus(max))
+			if ((Element) modulus > (Element) getMaxModulus())
 				throw Failure (__func__,__FILE__,
 					       __LINE__,
 					       "modulus is too big");
@@ -196,6 +213,15 @@ namespace FFPACK {
 		Element &init (Element &x, const unsigned long &y) const
 		{
 			Element tmp  = Element(y % lmodulus);
+			if (tmp > half_mod) return x =  tmp-modulus;
+			else if (tmp<mhalf_mod) return x = tmp+modulus;
+			else return x=tmp;
+		}
+
+		Element &init (Element &x, const long &y) const
+		{
+			// pas de pbème : float tout petit !
+			Element tmp  = Element(y % (long) lmodulus);
 			if (tmp > half_mod) return x =  tmp-modulus;
 			else if (tmp<mhalf_mod) return x = tmp+modulus;
 			else return x=tmp;

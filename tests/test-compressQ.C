@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 
 	// write_field(F, cerr, A, N, N, N);
 
-	for (size_t i = 0 ; i < N * N ; ++i)
+	for (size_t i = 0 ; i < (size_t)N * (size_t)N ; ++i)
 		if (A[i] != B[i])
 			return 1 ;
 	return 0 ;
