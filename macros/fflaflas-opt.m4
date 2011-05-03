@@ -9,7 +9,7 @@ AC_DEFUN([FF_OPT],
 AC_MSG_CHECKING([whether to use run time optimization])
 
 AC_ARG_ENABLE(optimization,
-[  --enable-optimization  Enable run time optimization in FflasFpack code],
+[AC_HELP_STRING([--enable-optimization], [ Enable run time optimization in FflasFpack code])],
 [
 AC_MSG_RESULT(yes)
 

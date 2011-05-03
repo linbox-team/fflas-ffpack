@@ -12,12 +12,12 @@ AC_DEFUN([FF_CHECK_BLAS],
 [
 
 AC_ARG_WITH(blas,
-[  --with-blas=<lib>|yes Use BLAS library. This library is mandatory for Fflas-Ffpack
+[AC_HELP_STRING([--with-blas=<lib>|yes], [Use BLAS library. This library is mandatory for Fflas-Ffpack
    			compilation. If argument is yes or <empty> that means
 			the library is reachable with the standard search path
 			(/usr or /usr/local). Otherwise you give the <path> to
 			the directory which contain the library.
-	     ],
+	     ])],
 	     [if test "$withval" = yes ; then
 			BLAS_HOME_PATH="${DEFAULT_CHECKING_PATH}"
 	      else
