@@ -21,10 +21,10 @@
 #include "fflas-ffpack/field/modular-positive.h"
 // #include "fflas-ffpack/field/modular-int.h"
 #include "timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "utils/Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
-#include "fflas-ffpack/utils/args-parser.h"
+#include "utils/args-parser.h"
 
 
 using namespace std;
