@@ -110,14 +110,15 @@ namespace FFPACK
 			return *this;
 		}
 
-
-
-
 		uint64_t characteristic () const
 		{
 		       	return modulus;
 		}
 
+		size_t cardinality () const
+		{
+			return modulus;
+		}
 
 		double & convert(double &x, const Element &y) const
 		{

@@ -105,8 +105,12 @@ namespace FFPACK
 			return *this;
 		}
 
-
 		size_t characteristic () const
+		{
+			return modulus;
+		}
+
+		size_t cardinality () const
 		{
 			return modulus;
 		}
