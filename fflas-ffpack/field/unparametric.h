@@ -79,7 +79,7 @@ namespace FFPACK
 		 *  This constructor must be defined in a specialization.
 		 */
 		UnparametricField(long int q = 0, size_t e = 1) :
-			_p(q), _card(q == 0 ? -1 : pow((double)q, (double)e) )
+			_p(q), _card((long)(q == 0 ? -1 : pow((double)q, (double)e)) )
 			{}  // assuming q is a prime or zero.
 
 		/// construct this field as copy of F.
