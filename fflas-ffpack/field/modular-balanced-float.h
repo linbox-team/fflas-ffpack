@@ -89,7 +89,7 @@ namespace FFPACK {
 		ModularBalanced (double p) :
 			modulus (Element(p)),
 			half_mod( Element((p-1)/2)),
-			mhalf_mod( half_mod-p+1),
+			mhalf_mod( half_mod-Element(p)+1),
 			lmodulus ((unsigned long)p),
 			balanced(true)
 		{
