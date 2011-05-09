@@ -382,7 +382,8 @@ namespace FFPACK
 			return 4611686018427387904LL;  // 2^62 in long
 #endif
 #endif
-			return 1 << 31 ;
+			// return 1 << 31 ;
+			return 4294967296 ;
 		}
 
 	private:

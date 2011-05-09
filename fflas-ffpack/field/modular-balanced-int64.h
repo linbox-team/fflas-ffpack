@@ -362,14 +362,16 @@ namespace FFPACK
 
 		static inline int64_t getMaxModulus()
 		{
-#if 0
+#if 1
 #ifdef __x86_64__
-			return 4611686018427387904L; // 2^62
+			// return 4611686018427387904L; // 2^62
+			return 8589934591L;
 #else
-			return 4611686018427387904LL; // 2^62
+			// return 4611686018427387904LL; // 2^62
+			return 8589934591LL;
 #endif
 #endif
-			return 1 << 31;
+			// return 1 << 31;
 		}
 
 	private:
