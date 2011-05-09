@@ -948,7 +948,7 @@ namespace FFLAS {
 #ifdef _LB_DEBUG
 		/*  check if alpha is invertible. XXX do it in F.isInvertible(Element&) ? */
 		typename Field::Element e ;
-		F.init(e,1);
+		F.init(e,1UL);
 		F.divin(e,alpha);
 		F.mulin(e,alpha);
 		fflaflas_check(F.isOne(e));
