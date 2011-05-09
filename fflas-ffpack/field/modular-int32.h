@@ -107,7 +107,10 @@ namespace FFPACK
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
 			if(value<=1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			if(value>getMaxModulus()) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if (value>INT32_MAX)  // stupidly big ?
+				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if((Element)value>getMaxModulus()) // we can cast now
+			       	throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 #endif
 			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
 			_two64 += 1;
