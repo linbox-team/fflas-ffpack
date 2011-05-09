@@ -326,7 +326,8 @@ namespace FFPACK {
 
 		static  Element getMaxModulus()
 		{
-			return 67108864.0;  // 2^26
+			// return 67108864.0;  // 2^26
+			return  9007199254740991.;  // 2^DBL_MANT_DIG-1
 		}
 
 	};

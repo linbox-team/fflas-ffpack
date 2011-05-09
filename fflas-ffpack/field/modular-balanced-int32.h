@@ -80,8 +80,8 @@ namespace FFPACK
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(value <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			int32_t max = getMaxModulus();
-			if(value > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			// std::cout << value << '<' << getMaxModulus() << std::endl;
+			if(value > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 			if( ! (value % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
 #endif
 
@@ -141,9 +141,8 @@ namespace FFPACK
 			modulusinv = 1 /((double) modulus );
 #ifdef DEBUG
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			int32_t max = getMaxModulus();
 
-			if(modulus > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if(modulus > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 			if( ! (modulus % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be oddd");
 #endif
 
@@ -361,7 +360,8 @@ namespace FFPACK
 
 		static inline int32_t getMaxModulus()
 		{
-			return 1073741824; // 2^30
+			// return 1073741824; // 2^30
+			return INT32_MAX; // 2^31-1
 		}
 
 	private:
