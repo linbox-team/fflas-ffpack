@@ -361,7 +361,7 @@ namespace FFPACK
 		static inline int32_t getMaxModulus()
 		{
 			// return 1073741824; // 2^30
-			return INT32_MAX; // 2^31-1
+			return 1 << 15; // 2^15
 		}
 
 	private:

@@ -24,6 +24,7 @@
 #include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
+#include <float.h>
 
 namespace FFPACK
 {
@@ -380,7 +381,7 @@ namespace FFPACK
 		static inline double getMaxModulus()
 		{
 			// return 67108864.0;  // 2^26
-			return  9007199254740991.;  // 2^DBL_MANT_DIG-1
+			return  1 << (DBL_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
 		}
 
 	};

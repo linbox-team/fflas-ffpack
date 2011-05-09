@@ -382,7 +382,7 @@ namespace FFPACK
 			return 4611686018427387904LL;  // 2^62 in long
 #endif
 #endif
-			return INT64_MAX ;
+			return 1 << 31 ;
 		}
 
 	private:
