@@ -22,6 +22,7 @@
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/nonzero-randiter.h"
+#include "fflas-ffpack/utils/debug.h"
 
 namespace FFPACK {
 
