@@ -380,11 +380,11 @@ namespace FFPACK
 
 		static inline double getMaxModulus()
 		{
-			// return 67108864.0;  // 2^26
+			return 67108864.0;  // 2^26
 			// return  1 << (DBL_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
-			fflaflas_check(94906266LL*94906267LL>9007199254740991LL);
-			fflaflas_check(94906265LL*94906266LL<9007199254740991LL);
-			return 189812531 ;
+			// fflaflas_check(94906266LL*94906267LL>9007199254740991LL);
+			// fflaflas_check(94906265LL*94906266LL<9007199254740991LL);
+			// return 189812531 ;
 		}
 
 	};
