@@ -362,8 +362,8 @@ namespace FFPACK
 		{
 			// return 1073741824; // 2^30
 			// return 1 << 15; // 2^15
-			fflaflas_check(46340*46341<2147483647);
-			fflaflas_check(46342*46341>2147483647);
+			fflaflas_check(46340LL*46341LL<2147483647LL);
+			fflaflas_check(46342LL*46341LL>2147483647LL);
 			return  92681 ;
 		}
 
