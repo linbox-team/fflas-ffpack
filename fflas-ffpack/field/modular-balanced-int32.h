@@ -360,7 +360,8 @@ namespace FFPACK
 
 		static inline int32_t getMaxModulus()
 		{
-			return 1073741824; // 2^30
+			// return 1073741824; // 2^30
+			return 2147483647; // 2^31 -1
 			// return 1 << 15; // 2^15
 			// fflaflas_check(46340LL*46341LL<2147483647LL);
 			// fflaflas_check(46342LL*46341LL>2147483647LL);

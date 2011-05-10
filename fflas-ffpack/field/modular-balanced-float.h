@@ -383,11 +383,10 @@ namespace FFPACK {
 
 		static inline Element getMaxModulus()
 		{
-			return 2048.;  // 2^11
-			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(FLT_MANT_DIG/2)
 			// fflaflas_check (4095*4096<16777215)
 			// fflaflas_check (4097*4096>16777215)
-			// return 8191 ;
+			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(FLT_MANT_DIG/2)
+			return 8191 ;
 		}
 
 	};
