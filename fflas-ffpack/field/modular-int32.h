@@ -94,7 +94,10 @@ namespace FFPACK
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(value<=1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			if(value>getMaxModulus()) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if(value>getMaxModulus())  {
+				std::cerr << value << '>' << getMaxModulus() << std::endl;
+				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			}
 #endif
 			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
 			_two64 += 1;
