@@ -31,6 +31,6 @@ benchmarks:
 
 bin_SCRIPTS=fflasffpack-config
 
-VERSION=1.4.0
+VERSION=1.4.1
 
 #  EXTRA_DIST=incremente-versions
