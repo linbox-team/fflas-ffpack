@@ -23,8 +23,14 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <cstring>
+#include <list>
+#include <stdlib.h>
 #include "fflas-ffpack/utils/print-utils.h"
 
+#ifdef _LINBOX_LINBOX_CONFIG_H
+#include "linbox/util/commentator.h"
+#endif
 
 using namespace std;
 

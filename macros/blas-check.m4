@@ -1,7 +1,7 @@
-# Check for BLAS
-# Copyright Pascal Giorgi 2005
-# This file is part of Fflas-Fpack (and comes from LinBox)
-# See COPYING for licence information.
+dnl  Check for BLAS
+dnl  Copyright Pascal Giorgi 2005
+dnl  This file is part of Fflas-Fpack (and comes from LinBox)
+dnl  See COPYING for licence information.
 
 
 dnl FF_CHECK_BLAS ([MINIMUM-VERSION [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
@@ -39,14 +39,14 @@ AC_MSG_CHECKING(for C interface to BLAS)
 fi
 
 
-###
-### Check first for C interface to BLAS
-###
+dnl
+dnl Check first for C interface to BLAS
+dnl
 
 
 if test -n "$BLAS_VAL"; then
 
-	## check with user supplied value
+	dnl check with user supplied value
 	CBLAS="yes"
 	CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
 
@@ -54,8 +54,12 @@ if test -n "$BLAS_VAL"; then
 		if test -r "$BLAS_VAL/lib/libcblas.a" ; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/lib/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-### lapack_atlas is for hmrg at udel.  What a kludge that this specialization is here.
-				ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+dnl lapack_atlas is for hmrg at udel.  What a kludge that this specialization is here.
+                if [ -f $BLAS_VAL/lib/liblapack_atlas.a ] ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
 				ATLAS_LIBS="-lcblas -llapack"
 			fi
@@ -64,7 +68,11 @@ if test -n "$BLAS_VAL"; then
 		elif test -r "$BLAS_VAL/libcblas.a" ; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-				ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+                if [ -f $BLAS_VAL/liblapack_atlas.a ] ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
 				ATLAS_LIBS="-lcblas -llapack"
 			fi
@@ -123,7 +131,7 @@ if test -n "$BLAS_VAL"; then
 	])
 else
 
-	## check in default path
+	dnl check in default path
 	for BLAS_HOME in ${DEFAULT_CHECKING_PATH}
 	do
 		CBLAS="yes"
@@ -135,7 +143,11 @@ else
 
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/lib/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-				ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+                if [ -f $BLAS_HOME/lib/liblapack_atlas.a ] ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
 				ATLAS_LIBS="-lcblas -llapack"
 			fi
@@ -146,9 +158,13 @@ else
 			fi
 
 		elif test -r "$BLAS_HOME/libcblas.a"; then
-			ATLAS_NEEDED=`nm -u $BLAS_HOME/lib/libcblas.a | grep ATL`
+			ATLAS_NEEDED=`nm -u $BLAS_HOME/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-				ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+                if [ -f $BLAS_HOME/liblapack_atlas.a ] ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
 				ATLAS_LIBS="-lcblas -llapack"
 			fi
@@ -210,7 +226,7 @@ if test "x$blas_found" = "xyes"; then
 		echo "whether your BLAS are good. I am assuming it is."
 	fi
 
-## Check for lapack
+	dnl Check for lapack
 	AC_MSG_CHECKING(for lapack)
 	AC_TRY_RUN(
 	[#define __FFLAFLAS_CONFIGURATION
@@ -238,22 +254,22 @@ if test "x$blas_found" = "xyes"; then
 		AC_DEFINE(HAVE_LAPACK,1,[Define if lapack is available])
 	else
 		AC_MSG_RESULT(disabling)
-		#AC_DEFINE(HAVE_LAPACK,0,[Define if lapack is available])
+		dnl  AC_DEFINE(HAVE_LAPACK,0,[Define if lapack is available])
 	fi
 
 	ifelse([$2], , :, [$2])
 
 elif test -n "$blas_problem"; then
 	AC_MSG_RESULT(not working)
-	#echo "Sorry, your BLAS are not working. Disabling."
+	dnl  echo "Sorry, your BLAS are not working. Disabling."
 elif test "x$blas_found" = "xno" ; then
 	AC_MSG_RESULT(not found)
 fi
 
 
-###
-### Check if other BLAS are available (only if C BLAS are not available)
-###
+dnl
+dnl  Check if other BLAS are available (only if C BLAS are not available)
+dnl
 if test "x$blas_found" != "xyes" ; then
 	AC_MSG_CHECKING(for others BLAS)
 	CBLAS="no"
@@ -306,7 +322,7 @@ if test "x$blas_found" != "xyes" ; then
 		])
 	else
 
-		## check in default path
+		dnl check in default path
 		for BLAS_HOME in ${DEFAULT_CHECKING_PATH}
 		do
 			CBLAS="no"
@@ -405,7 +421,7 @@ AM_CONDITIONAL(FFLAFFLAS_HAVE_BLAS, test "x$HAVE_BLAS" = "xyes")
 
 CXXFLAGS=${BACKUP_CXXFLAGS}
 LIBS=${BACKUP_LIBS}
-#unset LD_LIBRARY_PATH
+dnl  unset LD_LIBRARY_PATH
 
 
 ])
