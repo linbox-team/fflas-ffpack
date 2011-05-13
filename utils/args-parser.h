@@ -102,8 +102,10 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 				break;
 			case TYPE_INTLIST:
 				cout << *(std::list<int> *) args[i].data ;
+				break;
 			case TYPE_STR:
 				cout << *(std::string *) args[i].data ;
+				break;
 			}
 			std::cout << ")";
 		}
@@ -199,6 +201,7 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 	Argument *current;
 
 	for (i = 1; i < argc; ++i) {
+		std::cout << "i=" << i << std::endl;
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 0) {
 #ifdef _LINBOX_LINBOX_CONFIG_H
@@ -264,7 +267,10 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 					break;
 
 				case TYPE_STR:
-					*(std::string *) current->data = argv[i+1] ;
+					{
+						*(std::string *) current->data = argv[i+1] ;
+						++i;
+					}
 					break;
 
 				}
