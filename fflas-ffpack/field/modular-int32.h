@@ -121,6 +121,23 @@ namespace FFPACK
 				_two64 = _two64 - (int32_t) value;
 		}
 
+		Modular (long int value) :
+			modulus((Element) value),lmodulus((long int)value),balanced(false)
+		{
+			modulusinv = 1 / ((double) value);
+#ifdef DEBUG
+			if(value<=1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
+			if (value>INT32_MAX)  // stupidly big ?
+				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+			if((Element)value>getMaxModulus()) // we can cast now
+				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
+#endif
+			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
+			_two64 += 1;
+			if ((unsigned long)_two64 >= value)
+				_two64 = _two64 - (int32_t) value;
+		}
+
 
 		Modular(const Modular<int32_t>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv)

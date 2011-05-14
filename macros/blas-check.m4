@@ -55,7 +55,7 @@ if test -n "$BLAS_VAL"; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/lib/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
 dnl lapack_atlas is for hmrg at udel.  What a kludge that this specialization is here.
-                if [ -f $BLAS_VAL/lib/liblapack_atlas.a ] ; then
+                if test -f $BLAS_VAL/lib/liblapack_atlas.a  ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
@@ -68,7 +68,7 @@ dnl lapack_atlas is for hmrg at udel.  What a kludge that this specialization is
 		elif test -r "$BLAS_VAL/libcblas.a" ; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-                if [ -f $BLAS_VAL/liblapack_atlas.a ] ; then
+                if test -f $BLAS_VAL/liblapack_atlas.a  ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
@@ -143,7 +143,7 @@ else
 
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/lib/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-                if [ -f $BLAS_HOME/lib/liblapack_atlas.a ] ; then
+                if test -f $BLAS_HOME/lib/liblapack_atlas.a  ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
@@ -160,7 +160,7 @@ else
 		elif test -r "$BLAS_HOME/libcblas.a"; then
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/libcblas.a | grep ATL`
 			if test -n "$ATLAS_NEEDED"; then
-                if [ -f $BLAS_HOME/liblapack_atlas.a ] ; then
+                if test -f $BLAS_HOME/liblapack_atlas.a  ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
