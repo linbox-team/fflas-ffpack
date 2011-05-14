@@ -110,6 +110,11 @@ namespace FFPACK
 			return modulus;
 		}
 
+		unsigned long characteristic (unsigned long & c) const
+		{
+			return c=modulus;
+		}
+
 		size_t cardinality () const
 		{
 			return modulus;

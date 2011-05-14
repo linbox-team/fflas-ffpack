@@ -1405,7 +1405,7 @@ namespace FFPACK  {
 		t1.start();
 #endif
 
-		nullity = M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP);
+		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP));
 
 #if 0
 		t1.stop();
@@ -1454,7 +1454,8 @@ namespace FFPACK  {
 #endif
 
 			// X = P^-1.X
-			applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, M, 0, M, X, ldx, P );
+			applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+				M, 0,(int) M, X, ldx, P );
 
 			delete[] P;
 			delete[] rowP;
@@ -1555,7 +1556,7 @@ namespace FFPACK  {
 		F.init(one, 1.0);
 		F.init(zero, 0.0);
 		size_t LM = (Side == FFLAS::FflasRight)?N:M;
-		int i = R ;
+		int i = (int)R ;
 		for (; i--; ){ // much faster for
 			if (  Q[i] > (size_t) i){
 				//for (size_t j=0; j<=Q[i]; ++j)
