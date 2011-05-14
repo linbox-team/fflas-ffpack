@@ -104,7 +104,8 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 
 		if (R){
 			// Ar <- Ar.P
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Ndown, 0, R, Ar, lda, P);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+				Ndown, 0, (int)R, Ar, lda, P);
 			// Ar <- Ar.U1^-1
 			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
 			       FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Ndown, R,
@@ -120,7 +121,8 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 			P[i] += R;
 		if (R2)
 			// An <- An.P2
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nup, R, R+R2, A, lda, P);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+				Nup, (int)R, (int)(R+R2), A, lda, P);
 
 		// Non zero row permutations
 		for (size_t i = Nup; i < M; i++)

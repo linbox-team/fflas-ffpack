@@ -84,7 +84,7 @@ namespace FFLAS {
 	      DoubleDomain::Element * A, const size_t lda)
 	{
 
-		cblas_dger( CblasRowMajor, M, N, alpha, x, incx, y, incy, A, lda );
+		cblas_dger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
 	}
 } // FFLAS
 #endif // __FFLAFLAS_fger_INL

@@ -105,7 +105,7 @@ namespace FFLAS {
 				double d = (double (1ULL << mantissa) /(c*c) + 1);
 				if (d < 2)
 					return 1;
-				kmax = floor (d * (1ULL << w));
+				kmax = floor (d * double(1ULL << w));
 			} else {
 
 				double c = computeFactorClassic(F);
@@ -119,7 +119,7 @@ namespace FFLAS {
 						cplt = fabs(be)*c;
 					}
 				}
-				kmax = floor ( (double ((1ULL << mantissa) - cplt)) / (c*c));
+				kmax = floor ( (double (double(1ULL << mantissa) - cplt)) / (c*c));
 				if (kmax  <= 1)
 					return 1;
 			}
@@ -139,7 +139,7 @@ namespace FFLAS {
 			F.characteristic(p);
 			size_t ex=1;
 			for (size_t i=0; i < w; ++i) 	ex *= 3;
-			return double(p - 1) * (1 + ex) / 2;
+			return double(p - 1) * double(1 + ex) / double(2);
 		}
 
 		template <class Field>

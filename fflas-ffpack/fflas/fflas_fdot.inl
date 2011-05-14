@@ -43,7 +43,7 @@ namespace FFLAS {
 	      const DoubleDomain::Element * y, const size_t incy )
 	{
 
-		return cblas_ddot( N, x, incx, y, incy );
+		return cblas_ddot( (int)N, x, (int)incx, y, (int)incy );
 	}
 
 } // FFLAS

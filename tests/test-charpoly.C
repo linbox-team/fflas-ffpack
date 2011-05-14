@@ -107,7 +107,8 @@ int main(int argc, char** argv)
 	Field F((long unsigned int)p);
 	Field::Element * A;
 	if (!file.empty()) {
-		A = read_field<Field>(F,(char*)(file.c_str()),&n,&n);
+		const char * filestring = file.c_str();
+		A = read_field<Field>(F,const_cast<char*>(filestring),&n,&n);
 		bool passed = launch_test<Field>(F,A,n,p,nbit);
 		delete[] A;
 		return !passed ;

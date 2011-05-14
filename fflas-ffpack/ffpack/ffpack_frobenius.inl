@@ -121,19 +121,22 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N, one,  K3, ldk, A, lda, zero, K4, ldk);
 
 	// K <- K P^T
-	applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Mk, 0, R, K4, ldk, Pk);
+	applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+		Mk, 0,(int) R, K4, ldk, Pk);
 
 	// K <- K U^-1
 	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, R, one, K, ldk, K4, ldk);
 
 	// L <-  Q^T L
-	applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, K, ldk, Qk);
+	applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+	       N, 0,(int) R, K, ldk, Qk);
 
 	// K <- K L^-1
 	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, R, one, K, ldk, K4, ldk);
 
 	//undoing permutation on L
-	applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, R, K, ldk, Qk);
+	applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+	       N, 0,(int) R, K, ldk, Qk);
 
 	// Recovery of the completed invariant factors
 	size_t Ma = Mk;
@@ -182,7 +185,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 		//  Compute the n-k last rows of A' = P A^T P^T in K2_
 		// A = A . P^t
-		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, N, 0, R, A, lda, Pk);
+		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+			N, 0,(int) R, A, lda, Pk);
 
 		// Copy K2_ = (A'_2)^t
 		for (Ki = K21, Ai = A+R; Ki != K21 + Nrest*ldk; Ai++, Ki+=ldk-N)
@@ -190,10 +194,12 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 				*(Ki++) = *(Ai+j);
 
 		// A = A . P : Undo the permutation on A
-		applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, 0, R, A, lda, Pk);
+		applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+			N, 0,(int) R, A, lda, Pk);
 
 		// K2_ = K2_ . P^t (=  ( P A^t P^t )2_ )
-		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0, R, K21, ldk, Pk);
+		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+			Nrest, 0,(int) R, K21, ldk, Pk);
 
 		// K21 = K21 . S1^-1
 		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Nrest, R,
@@ -361,7 +367,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		       K3 + (Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
 		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, Mk, one,
 		       K3+(Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
-		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Mk, 0, Mk, K+(Ncurr-Mk)*ldk,ldk, P);
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+			Mk, 0,(int) Mk, K+(Ncurr-Mk)*ldk,ldk, P);
 		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk, mone,
 		       K3, ldk, K+(Ncurr-Mk)*ldk,ldk, one, K, ldk);
 		delete[] P;
@@ -438,13 +445,13 @@ void FFPACK::CompressRowsQK (Field& F, const size_t M,
 	size_t currw = d[0]-1;
 	size_t currr = d[0]-1;
 	for (int i = 0; i< int(nb_blocs)-1; ++i){
-		for (int j = d[i]-1; j<int(deg)-1; ++j, currr++, currtmp++)
+		for (int j = int(d[i]-1); j<int(deg)-1; ++j, ++currr, ++currtmp)
 			FFLAS::fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + currr*lda, 1);
-		for (int j=0; j < int(d[i+1]) -1; ++j, currr++, currw++){
+		for (int j=0; j < int(d[i+1]) -1; ++j, ++currr, ++currw){
 			FFLAS::fcopy(F, M, A + (currw)*lda, 1, A+(currr)*lda, 1);
 		}
 	}
-	for (int i=0; i < currtmp; ++i, currw++){
+	for (int i=0; i < currtmp; ++i, ++currw){
 		FFLAS::fcopy (F, M, A + (currw)*lda, 1, tmp + i*ldtmp, 1);
 	}
 }

@@ -495,7 +495,8 @@ namespace FFPACK {
 					if (LuTag == FFPACK::FfpackSingular )
 						return 0;
 				} else {
-					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, Ndown, 0, R, Ar, lda, P);
+					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+							Ndown, 0,(int) R, Ar, lda, P);
 					// Ar <- L1^-1 Ar
 					ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
 					       FFLAS::FflasNoTrans, Diag, R, Ndown,
@@ -510,7 +511,8 @@ namespace FFPACK {
 					P[i] += R;
 				if (R2)
 					// An <- An.P2
-					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, Nup, R, R+R2, A, lda, P);
+					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+							Nup,(int) R, (int)(R+R2), A, lda, P);
 				else if (LuTag == FFPACK::FfpackSingular)
 					return 0;
 
@@ -524,7 +526,8 @@ namespace FFPACK {
 						return 0;
 				} else {
 					// Ar <- Ar.P
-					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Ndown, 0, R, Ar, lda, P);
+					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+							Ndown, 0,(int) R, Ar, lda, P);
 					// Ar <- Ar.U1^-1
 					ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
 					       FFLAS::FflasNoTrans, Diag, Ndown, R,
@@ -540,7 +543,8 @@ namespace FFPACK {
 					P[i] += R;
 				if (R2)
 					// An <- An.P2
-					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nup, R, R+R2, A, lda, P);
+					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+							Nup,(int) R, (int)(R+R2), A, lda, P);
 				else if (LuTag == FFPACK::FfpackSingular)
 					return 0;
 
@@ -665,7 +669,8 @@ namespace FFPACK {
 						}
 				}
 				// Apply the permutation on SW
-				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Ndown, 0, R, Xr, ldx, P);
+				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						Ndown, 0,(int) R, Xr, ldx, P);
 				// Triangular block inversion of NW and apply to SW
 				// Xr <- Xr.U1^-1
 				ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag,
@@ -683,7 +688,8 @@ namespace FFPACK {
 							       false, MinTag, kg_mc, kg_mb, kg_j);
 				for ( size_t i=R;i<R+R2;++i) P[i] += R;
 
-				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, Nup, R, R+R2, X, ldx, P);
+				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						Nup, (int)R, (int)(R+R2), X, ldx, P);
 
 				return R+=R2;
 			}
@@ -771,14 +777,16 @@ namespace FFPACK {
 
 		// NE = Q^-1.NE
 
-		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-no2, 0, mo2, NE, ld2, Q1);
+		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+				N-no2, 0,(int) mo2, NE, ld2, Q1);
 #ifdef LB_DEBUG
 		std::cerr<<"NE=Q^-1.NE"<<std::endl;
 		write_field(F,std::cerr,NE,mloc,N-no2,ld2);
 #endif
 
 		// SW = SW.P1
-		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, M-mo2, 0, q1, SW, ld3, P1 );
+		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+				M-mo2, 0,(int) q1, SW, ld3, P1 );
 #ifdef LB_DEBUG
 		std::cerr<<"SW = SW.P1"<<std::endl;
 		write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -852,14 +860,16 @@ namespace FFPACK {
 		write_field(F,std::cerr,SW,M-mo2,no2,ld3);
 #endif
 		// I1 = Q2^-1.I1
-		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, no2-q1, 0, mloc, SW+q1, ld3, Q2 );
+		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+				no2-q1, 0,(int) mloc, SW+q1, ld3, Q2 );
 #ifdef LB_DEBUG
 		std::cerr<<"I1 = Q2^-1.I1"<<std::endl;
 		write_field(F,std::cerr,SW,mloc,no2,ld3);
 #endif
 
 		// B1 = B1.P2
-		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, mo2, 0, q2, NE, ld2, P2 );
+		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+				mo2, 0,(int) q2, NE, ld2, P2 );
 #ifdef LB_DEBUG
 		std::cerr<<"B1 = B1.P2"<<std::endl;
 		write_field(F,std::cerr,NE,mo2,N-no2,ld2);
@@ -949,7 +959,8 @@ namespace FFPACK {
 #endif
 
 				// O2 = Q3b^-1.O2
-				FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, no2-q1, 0, mloc, NW+q1*(ld1+1), ld1, Q1+q1 );
+				FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+						no2-q1, 0,(int) mloc, NW+q1*(ld1+1), ld1, Q1+q1 );
 #ifdef LB_DEBUG
 				std::cerr<<"O2 apres="<<std::endl;
 				write_field(F,std::cerr,NW+q1*(ld1+1),mloc,no2-q1,ld1);
@@ -969,19 +980,23 @@ namespace FFPACK {
 
 				// X2 = X2.P3
 				// Si plusieurs niveaux rec, remplacer X2 par [NW;I2]
-				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, mo2-q1-q3b, q1, q1+q3,
+				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						mo2-q1-q3b,(int) q1, (int)(q1+q3),
 					NW/*+(q1+q3b)*ld1*/, ld1, P1);
-				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, q2, q1, q1+q3,
+				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						q2,(int) q1, (int)(q1+q3),
 					SW/*+(q1+q3b)*ld1*/, ld3, P1);
 
 
 				// A faire si plusieurs niveaux recursifs
 				// B2 = B2.P3b
-				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q1, q2, q2+q3b,
+				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						q1,(int) q2, (int)(q2+q3b),
 					NW, ld2, P2);
 				//flaswp(F,q1,NE,lda,no2+q2,no2+q2+q3b,P,1);
 				// E2 = E2.P3b
-				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q2, q2, q2+q3b,
+				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						q2,(int) q2, (int)(q2+q3b),
 					SE, ld4, P2);
 				//flaswp(F,q2,SE+q2,lda,no2+q2,no2+q2+q3b,P,1);
 			}
@@ -1020,11 +1035,13 @@ namespace FFPACK {
 
 			// A faire si plusieurs niveaux recursifs
 			// [G1;O3] = [G1;O3].P4
-			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q1+q3b, q1+q3, q1+q3+q4,
+			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					q1+q3b, (int)(q1+q3), (int)(q1+q3+q4),
 				NW, ld1, P1);
 			//flaswp(F,q1+q3b,NE,lda,no2+q2,no2+q2+q3b,P,1);
 			// [I2;F3] = [I2;F3].P4
-			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, q2+q3, q1+q3, q1+q3+q4,
+			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					q2+q3, (int)(q1+q3),(int) (q1+q3+q4),
 				SW, ld3, P1);
 			//flaswp(F,q2,SE+q2,lda,no2+q2,no2+q2+q3b,P,1);
 		}

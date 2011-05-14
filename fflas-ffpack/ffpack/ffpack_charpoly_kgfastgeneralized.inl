@@ -182,7 +182,7 @@ namespace FFPACK {
 
 						}
 						else {
-							int i = mu+1 ;
+							int i = int(mu+1) ;
 							for (; i--; )
 								T[i+lambda] = T[i]+lambda;
 							for (size_t i=0; i< lambda; ++i)
@@ -201,18 +201,21 @@ namespace FFPACK {
 					for (size_t i=0;i<r;++i)
 						std::cerr<<"P["<<i<<"] = "<<P[i]<<std::endl;
 #endif
-					applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, N, 0, r, C, lda, P);
+					applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						N, 0, (int)r, C, lda, P);
 #ifdef LB_DEBUG
 					std::cerr<<".";
 #endif
 					//printA(F,cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 					// (E, C) <- P(E, C)
-					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, me, 0, r, E+(N-mc)*lda, lda, P);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+						me, 0, (int)r, E+(N-mc)*lda, lda, P);
 #ifdef LB_DEBUG
 					std::cerr<<".";
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
-					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, mc, 0, r, C+(N-mc)*lda, lda, P);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+						mc, 0, (int)r, C+(N-mc)*lda, lda, P);
 #ifdef LB_DEBUG
 					std::cerr<<".";
 #endif
@@ -249,12 +252,14 @@ namespace FFPACK {
 #endif
 
 					// (E, C) <- Q^T(E, C)
-					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, me, 0, r, E, lda, Q);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+						me, 0,(int) r, E, lda, Q);
 #ifdef LB_DEBUG
 					std::cerr<<".";
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
-					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, mc, 0, r, C, lda, Q);
+					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+						mc, 0, (int)r, C, lda, Q);
 #ifdef LB_DEBUG
 					std::cerr<<".";
 #endif
@@ -262,7 +267,7 @@ namespace FFPACK {
 					size_t * tempP = new size_t[lambda+me+mc];
 					for (size_t i=0; i< lambda+me+mc; ++i)
 						tempP[i] = i;
-					int i = r ;
+					int i = int(r) ;
 					for (; i--; )
 						if (Q[i] > (size_t) i){
 #ifdef LB_DEBUG
@@ -292,7 +297,7 @@ namespace FFPACK {
 						std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
 #endif
 					// B <- B Q
-					for (int k = r-1; k>=0; --k)
+					for (int k = int(r-1); k>=0; --k)
 						if (Q[k] > (size_t) k){
 							// on permute Ck et C_Q[k]
 							size_t tmp = B[k];
@@ -446,7 +451,7 @@ namespace FFPACK {
 					for (size_t i=0; i < (mc-r); ++i){
 						FFLAS::fcopy (F, r, tmp+i*r, 1, C4 + i*lda, 1);
 					}
-					for (int i = N-1; i >= (int) (N -mu-r); --i)
+					for (int i = int(N-1); i >= (int) (N -mu-r); --i)
 						FFLAS::fcopy (F, r, C+i*lda, 1, C+(i-mc+r)*lda, 1);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;

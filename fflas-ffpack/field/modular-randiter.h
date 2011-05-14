@@ -42,7 +42,7 @@ namespace FFPACK {
 		/*! @bug not so random... (at all)  */
 		Element &random (Element &a) const
 		{
-			return _F.init(a,(double)lrand48()-std::numeric_limits<long>::max());
+			return _F.init(a,(double)(lrand48()-std::numeric_limits<long>::max()));
 		}
 
 	private:

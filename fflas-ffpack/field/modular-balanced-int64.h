@@ -167,9 +167,11 @@ namespace FFPACK
 
 		Element &init (Element &x, const double &y) const
 		{
-			x = fmod(y,(double)modulus);
-			if (x < nhalfmodulus) x += modulus;
-			else if (x > halfmodulus) x -= modulus;
+			x = (Element) fmod(y,(double)modulus);
+			if (x < nhalfmodulus)
+				x += modulus;
+			else if (x > halfmodulus)
+				x -= modulus;
 			return x;
 		}
 
@@ -177,8 +179,10 @@ namespace FFPACK
 		Element &init (Element &x, const size_t &y) const
 		{
 			x = y % (modulus);
-			if (x < nhalfmodulus) x += modulus;
-			else if (x > halfmodulus) x -= modulus;
+			if (x < nhalfmodulus)
+				x += modulus;
+			else if (x > halfmodulus)
+				x -= modulus;
 			return x;
 		}
 
@@ -187,8 +191,10 @@ namespace FFPACK
 		{
 			x = y % modulus;
 
-			if ( x < nhalfmodulus ) x += modulus;
-			else if (x > halfmodulus ) x -= modulus;
+			if ( x < nhalfmodulus )
+				x += modulus;
+			else if (x > halfmodulus )
+				x -= modulus;
 
 			return x;
 		}

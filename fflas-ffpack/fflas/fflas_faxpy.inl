@@ -38,7 +38,7 @@ faxpy( const DoubleDomain& , const size_t N,
 		      DoubleDomain::Element * y, const size_t incy )
 {
 
-	cblas_daxpy( N, a, x, incx, y, incy);
+	cblas_daxpy( (int)N, a, x, (int)incx, y, (int)incy);
 }
 
 } // FFLAS

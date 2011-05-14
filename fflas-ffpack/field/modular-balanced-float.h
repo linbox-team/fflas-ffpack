@@ -50,7 +50,7 @@ namespace FFPACK {
 		ModularBalanced (int32_t p, int exp = 1) :
 			modulus((Element)p),
 			half_mod( Element((p-1)/2)),
-			mhalf_mod( half_mod-p+1),
+			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus (p),
 			balanced(true)
 		{
@@ -111,7 +111,7 @@ namespace FFPACK {
 		ModularBalanced (FieldInt p) :
 			modulus((Element)p),
 			half_mod( Element((p-1)/2)),
-			mhalf_mod( half_mod-p+1),
+			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p),
 			balanced(true)
 		{
@@ -215,26 +215,35 @@ namespace FFPACK {
 		Element &init (Element &x, const unsigned long &y) const
 		{
 			Element tmp  = Element(y % lmodulus);
-			if (tmp > half_mod) return x =  tmp-modulus;
-			else if (tmp<mhalf_mod) return x = tmp+modulus;
-			else return x=tmp;
+			if (tmp > half_mod)
+return x =  tmp-modulus;
+			else if (tmp<mhalf_mod)
+return x = tmp+modulus;
+			else
+return x=tmp;
 		}
 
 		Element &init (Element &x, const long &y) const
 		{
 			// pas de pbème : float tout petit !
 			Element tmp  = Element(y % (long) lmodulus);
-			if (tmp > half_mod) return x =  tmp-modulus;
-			else if (tmp<mhalf_mod) return x = tmp+modulus;
-			else return x=tmp;
+			if (tmp > half_mod)
+return x =  tmp-modulus;
+			else if (tmp<mhalf_mod)
+return x = tmp+modulus;
+			else
+return x=tmp;
 		}
 
 		inline Element& init(Element& x, const double y =0) const
 		{
 			x = (Element) fmod (y, double(modulus));
-			if ( x > half_mod ) return x -= modulus;
-			else if ( x < mhalf_mod ) return x +=  modulus;
-			else return x ;
+			if ( x > half_mod )
+return x -= modulus;
+			else if ( x < mhalf_mod )
+return x +=  modulus;
+			else
+return x ;
 		}
 
 		inline Element& init(Element& x, const Element y =0) const
@@ -242,9 +251,12 @@ namespace FFPACK {
 
 			x = fmodf (y, modulus);
 
-			if ( x > half_mod ) return x -= modulus;
-			else if ( x < mhalf_mod ) return x +=  modulus;
-			else return x ;
+			if ( x > half_mod )
+return x -= modulus;
+			else if ( x < mhalf_mod )
+return x +=  modulus;
+			else
+return x ;
 		}
 
 		inline Element& assign(Element& x, const Element& y) const
@@ -271,18 +283,24 @@ namespace FFPACK {
 				     const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x > half_mod ) return x -= modulus;
-			if ( x < mhalf_mod ) return x += modulus;
-			else return x;
+			if ( x > half_mod )
+return x -= modulus;
+			if ( x < mhalf_mod )
+return x += modulus;
+			else
+return x;
 		}
 
 		inline Element &sub (Element &x,
 				     const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x > half_mod) return x -= modulus;
-			if (x < mhalf_mod) return x += modulus;
-			else return x;
+			if (x > half_mod)
+return x -= modulus;
+			if (x < mhalf_mod)
+return x += modulus;
+			else
+return x;
 		}
 
 		inline Element &mul (Element &x,
@@ -325,8 +343,10 @@ namespace FFPACK {
 				tx = temp;
 			}
 
-			if (tx > half_mod ) return x = tx - modulus;
-			else if ( tx < mhalf_mod ) return x = tx + modulus;
+			if (tx > half_mod )
+				return x = (Element)tx - modulus;
+			else if ( tx < mhalf_mod )
+				return x = (Element)tx + modulus;
 			return x = (Element) tx;
 		}
 
@@ -342,16 +362,20 @@ namespace FFPACK {
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if ( x > half_mod ) return x -= modulus;
-			else if ( x < mhalf_mod ) return x += modulus;
+			if ( x > half_mod )
+				return x -= modulus;
+			else if ( x < mhalf_mod )
+				return x += modulus;
 			return x;
 		}
 
 		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if ( x > half_mod ) return x -= modulus;
-			else if ( x < mhalf_mod ) return x += modulus;
+			if ( x > half_mod )
+return x -= modulus;
+			else if ( x < mhalf_mod )
+return x += modulus;
 			return x;
 		}
 

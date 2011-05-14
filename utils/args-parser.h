@@ -74,7 +74,7 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 	for (i = 0; args[i].c != '\0'; ++i) {
 		if (args[i].example != 0) {
 			std::cout << "  " << args[i].example;
-			l = 10 - strlen (args[i].example);
+			l = 10 - (int)strlen (args[i].example);
 			do std::cout << ' '; while (--l > 0);
 		}
 		else if (args[i].type == TYPE_NONE)
@@ -84,7 +84,7 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 
 		std::cout << args[i].helpString;
 		if (printDefaults) {
-			l = 54 - strlen (args[i].helpString);
+			l = 54 - (int)strlen (args[i].helpString);
 			do std::cout << ' '; while (--l > 0);
 			std::cout << " (default ";
 			switch (args[i].type) {
@@ -168,7 +168,7 @@ int getListArgs(std::list<int> & outlist, std::string & instring)
 			int j = atoi(instring.substr(start,count).c_str());
 			outlist.push_front(j);
 			count =  0 ;
-			start = i+1 ;
+			start = int(i+1) ;
 		}
 		else {
 			std::cout << std::endl << "ill formed list " << instring << std::endl;

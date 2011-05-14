@@ -169,8 +169,8 @@ namespace FFLAS {
 				for (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
 					F.convert (*(Ydi), *Yi);
 
-			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N, alphad,
-				     Ad, N, Xd, 1, betad, Yd, 1);
+			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N, alphad,
+				     Ad, (int)N, Xd, 1, betad, Yd, 1);
 
 			Ydi=Yd;
 			for  (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
@@ -212,8 +212,8 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 			}
 
-			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N,
-				     _alpha, A, lda, X, incX, _beta, Y, incY);
+			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
+				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
 			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
@@ -250,8 +250,8 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 				}
 			}
-			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N,
-				     _alpha, A, lda, X, incX, _beta, Y, incY);
+			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
+				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
 			if ( (!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))){
@@ -286,8 +286,8 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 			}
 
-			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N,
-				     _alpha, A, lda, X, incX, _beta, Y, incY);
+			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
+				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
 			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
@@ -324,8 +324,8 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 				}
 			}
-			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N,
-				     _alpha, A, lda, X, incX, _beta, Y, incY);
+			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
+				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
 			if ( (!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))){
@@ -346,8 +346,8 @@ namespace FFLAS {
 	       const DoubleDomain::Element * X, const size_t incX,
 	       const DoubleDomain::Element beta,
 	       DoubleDomain::Element * Y, const size_t incY) {
-		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N,
-			     alpha, A, lda, X, incX, beta, Y, incY);
+		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
+			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}
 
 	template<>
@@ -360,8 +360,8 @@ namespace FFLAS {
 	       const FloatDomain::Element beta,
 	       FloatDomain::Element * Y, const size_t incY)
 	{
-		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, M, N,
-			     alpha, A, lda, X, incX, beta, Y, incY);
+		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
+			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}
 } // FFLAS
 #endif //  __FFLAFLAS_fgemv_INL

@@ -83,7 +83,7 @@ namespace FFPACK {
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					      mc, mb, one, LUP, mc , B, lda);
 					delete[] LUP;
-					applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, mb, 0, mc, B, lda, P );
+					applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, mb, 0, (int)mc, B, lda, P );
 
 					delete[] P;
 					delete[] Q;
@@ -130,7 +130,7 @@ namespace FFPACK {
 					write_field( F, std::cerr, C+(N-(j+1)*mc)*lda, (j+1)*mc, mc, lda );
 #endif
 
-					int lambda = N - mb - (j+1)*mc;
+					int lambda = (int)(N - mb - (j+1)*mc );
 					if ( int(mb) < lambda ){
 
 #if 0

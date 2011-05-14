@@ -250,8 +250,8 @@ namespace FFLAS {
 		{
 
 			cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
-				     m, n, k, (DoubleDomain::Element) alpha,
-				     Ad, lda, Bd, ldb, (DoubleDomain::Element) beta,Cd, ldc);
+				     (int)m, (int)n, (int)k, (DoubleDomain::Element) alpha,
+				     Ad, (int)lda, Bd, (int)ldb, (DoubleDomain::Element) beta,Cd, (int)ldc);
 		}
 
 		template  <>
@@ -267,8 +267,8 @@ namespace FFLAS {
 					   const size_t kmax, const FFLAS_BASE base)
 		{
 			cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
-				     m, n, k, (FloatDomain::Element) alpha,
-				     Ad, lda, Bd, ldb, (FloatDomain::Element) beta,Cd, ldc);
+				     (int)m, (int)n, (int)k, (FloatDomain::Element) alpha,
+				     Ad, (int)lda, Bd, (int)ldb, (FloatDomain::Element) beta,Cd, (int)ldc);
 		}
 
 		template <>
@@ -1677,9 +1677,9 @@ namespace FFLAS {
 
 		// Call to the blas Multiplication
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,
-			     (CBLAS_TRANSPOSE)ta, n, n, n,
-			     (DoubleDomain::Element) alphad, Ad, n, Ad, n,
-			     (DoubleDomain::Element) betad, Cd, n);
+			     (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
+			     (DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
+			     (DoubleDomain::Element) betad, Cd, (int)n);
 		// Conversion double = >  Finite Field
 		delete[] Ad;
 		Protected::MatD2MatF (F, C, ldc, Cd, n, n, n);

@@ -103,7 +103,8 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 	    (mat_file[--s] == 'g') &&
 	    (mat_file[--s] == '.')) {
 		is_gzipped = 1;
-		File_Name = (char*) "/tmp/bbXXXXXX_";
+		char tmp_nam[] = "/tmp/bbXXXXXX_";
+		File_Name  = tmp_nam;
 		mkstemp(File_Name);
 		UT = new char[s+34+strlen(File_Name)];
 		sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);

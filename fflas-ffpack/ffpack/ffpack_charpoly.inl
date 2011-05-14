@@ -98,14 +98,14 @@ namespace FFPACK {
 			F.init(zero,0.0);
 			F.init(one, 1.0);
 			F.neg(Mone,one);
-			int Ncurr=N;
+			int Ncurr=int(N);
 			charp.clear();
 			int nbfac = 0;
 			while (Ncurr > 0){
 				size_t P[Ncurr];
 				Polynomial minP;//=new Polynomial();
 				FFPACK::MinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
-				int k = minP.size()-1; // degre of minpoly
+				int k = int(minP.size()-1); // degre of minpoly
 				if ((k==1) && F.isZero ((minP)[0])){ // minpoly is X
 					Ai = A;
 					int j = Ncurr*Ncurr;
@@ -127,15 +127,18 @@ namespace FFPACK {
 				elt * X22 = X21 + k;
 				// Compute the n-k last rows of A' = PA^tP^t in X2_
 				// A = A . P^t
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Ncurr, 0, k, A, lda, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					Ncurr, 0, (int)k, A, lda, P);
 				// Copy X2_ = (A'_2)^t
 				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-Ncurr)
 					for (size_t jj=0; jj<Ncurr*lda; jj+=lda)
 						*(Xi++) = *(Ai+jj);
 				// A = A . P : Undo the permutation on A
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Ncurr, 0, k, A, lda, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+					Ncurr, 0, (int)k, A, lda, P);
 				// X2_ = X2_ . P^t (=  (P A^t P^t)2_)
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0, k, X21, ldx, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					Nrest, 0, (int)k, X21, ldx, P);
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
 				      one, X2, ldx, X21, ldx);
@@ -148,7 +151,7 @@ namespace FFPACK {
 				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, Mone,
 				       X21, ldx, X2+k, ldx, one, A, lda);
 				X2 = X22;
-				Ncurr = Nrest;
+				Ncurr = int(Nrest);
 			}
 			return charp;
 		}
@@ -181,7 +184,7 @@ namespace FFPACK {
 				size_t k = minP->size()-1; // degre of minpoly
 				if ((k==1) && F.isZero ((*minP)[0])){ // minpoly is X
 					Ai = A;
-					int j = N*N;
+					int j = int(N*N);
 					while (j-- && F.isZero(*(Ai++))) ;
 					if (!j){ // A is 0, CharPoly=X^n
 						minP->resize(N+1);
@@ -238,7 +241,8 @@ namespace FFPACK {
 				// Compute the n-k last rows of A' = PA^tP^t in X2_
 
 				// A = P . A
-				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, k,
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+					N, 0,(int) k,
 					const_cast<typename Field::Element* &>(A), lda, P);
 
 				// Copy X2_ = (A'2_)
@@ -249,11 +253,13 @@ namespace FFPACK {
 				}
 
 				// A = P^t . A : Undo the permutation on A
-				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, k,
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+					N, 0,(int) k,
 					const_cast<typename Field::Element* &>(A), lda, P);
 
 				// X2_ = X2_ . P^t (=  (P A P^t)2_)
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Nrest, 0, k, X21, ldx, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					Nrest, 0,(int) k, X21, ldx, P);
 
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
