@@ -134,7 +134,7 @@ namespace FFPACK
 #endif
 			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
 			_two64 += 1;
-			if ((unsigned long)_two64 >= value)
+			if ((long int)_two64 >= value)
 				_two64 = _two64 - (int32_t) value;
 		}
 
