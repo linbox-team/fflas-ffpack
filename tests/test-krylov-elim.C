@@ -74,8 +74,8 @@ int main(int argc, char** argv){
 		bk_idx++;
 		curr_row++;
 	}
-	write_field (F, cout<<"A = "<<endl, A, m,n,n);
-	write_field (F, cout<<"B = "<<endl, B, m+n,n,n);
+	write_field (F, cout<<"A = "<<endl, A,(int) m,(int) n,(int) n);
+	write_field (F, cout<<"B = "<<endl, B, (int) (m+n),(int) n,(int) n);
 
 	size_t *rp = new size_t[n];
 

@@ -73,7 +73,7 @@ int main(int argc, char** argv){
 			Q[j]=0;
 		tim.clear();
 		tim.start();
-		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q);
+		R = (int)FFPACK::RowEchelonForm (F, m, n, A, n, P, Q);
 		tim.stop();
 		timc+=tim;
 	}

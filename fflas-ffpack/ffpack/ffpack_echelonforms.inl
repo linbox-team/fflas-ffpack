@@ -89,7 +89,8 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 				F.assign (*(A+i*lda+j),zero);
 			F.assign (*(A + i*(lda+1)), one);
 		}
-		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0, r, A, lda, Qt);
+		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+		       r, 0,(int) r, A, lda, Qt);
 	}
 
 	return r;
@@ -129,7 +130,8 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 				F.assign (*(A+j*lda+i),zero);
 			F.assign (*(A + i*(lda+1)), one);
 		}
-		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, r, A, lda, Qt);
+		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+		       r, 0, (int)r, A, lda, Qt);
 	}
 	return r;
 }

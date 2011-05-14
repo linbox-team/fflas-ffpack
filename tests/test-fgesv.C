@@ -48,7 +48,7 @@ int main(int argc, char** argv){
 	Field F(atoi(argv[1]));
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	Field::Element * A, *B, *B2, *X=NULL;
+	Field::Element * A, *B, *X=NULL;
 	A = read_field(F,argv[2],&m,&n);
 	B = read_field(F,argv[3],&mb,&nb);
 
@@ -100,6 +100,7 @@ int main(int argc, char** argv){
 	}
 
 #if DEBUG
+	Field::Element  *B2=NULL;
 	delete[] A;
 
 	if (info > 0){
@@ -151,17 +152,18 @@ int main(int argc, char** argv){
 	}
 
 
+	delete[] B2;
 #endif
 
 	delete[] A;
 	delete[] B;
-	delete[] B2;
 #if TIME
 	double mflops;
+	double cplx = (double)n*m*m-(double)m*m*m/3;
 	if (side == FFLAS::FflasLeft)
-		mflops = (n*m*m-m*m*m/3+2*R*R*n)/1000000.0*nbit/time;
+		mflops = (cplx+(double)(2*R*R*n))/1000000.0*nbit/time;
 	else
-		mflops = (n*m*m-m*m*m/3+2*R*R*m)/1000000.0*nbit/time;
+		mflops = (cplx+(double)(2*R*R*m))/1000000.0*nbit/time;
 	cerr<<"m,n,mb,nb = "<<m<<" "<<n<<" "<<mb<<" "<<nb<<". fgesv "
 	    <<((side == FFLAS::FflasLeft)?" Left ":" Right ")
 	    <<"over Z/"<<atoi(argv[1])<<"Z :"

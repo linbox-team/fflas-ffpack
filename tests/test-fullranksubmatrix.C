@@ -51,7 +51,7 @@ int main(int argc, char** argv){
 
 	FFPACK::ColRankProfileSubmatrix (F, m, n, A, n, X, R);
 
-	write_field (F, cerr<<"X = "<<endl, X, R, R, R);
+	write_field (F, cerr<<"X = "<<endl, X, (int) R, (int) R, (int) R);
 
 	size_t r2 = FFPACK::Rank(F, R,R, X, R);
 	if (r2 != R)

@@ -163,7 +163,7 @@ int main(int argc, char** argv){
 				}
 		if (keepon) {
 			cout<<" Passed "
-			    <<M*N/1000000.0*K/tim.usertime()<<" Mfops"<<endl;
+			    <<double(M*N)/1000000.0*double(K)/tim.usertime()<<" Mfops"<<endl;
 
 			delete[] B;
 			delete[] Bbis;
@@ -172,8 +172,8 @@ int main(int argc, char** argv){
 		} else {
 
 			cerr<<endl;
-			write_field (F, cerr<<"A = "<<endl, Abis, K,K,K);
-			write_field (F, cerr<<"B = "<<endl, Bbis, M,N,N);
+			write_field (F, cerr<<"A = "<<endl, Abis, (int) K,(int) K,(int) K);
+			write_field (F, cerr<<"B = "<<endl, Bbis, (int) M,(int) N,(int) N);
 		}
 	}
 

@@ -46,8 +46,10 @@ int main(int argc, char** argv){
 	Field::Element * A;
 	A = read_field(F,argv[2],&m ,&n);
 
-	Timer tim,t; t.clear();tim.clear();
-	Field::Element r=0;
+	Timer tim,t;
+	t.clear();
+	tim.clear();
+	size_t r=0;
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
@@ -60,8 +62,8 @@ int main(int argc, char** argv){
 		}
 	}
 
-	double mflops = 2.0/3.0*(n*r/1000000.0)*nbit*n/tim.usertime();
-	F.write (cerr<<"m,n = "<<m<<", "<<n<<" Rank (A) = ",r)
+	double mflops = 2.0/3.0*(n*(double)r/1000000.0)*nbit*n/tim.usertime();
+	cerr<<"m,n = "<<m<<", "<<n<<" Rank (A) = " << r
 		     << " mod "<<atoi(argv[1])<<" : t= "
 		     << tim.usertime()/nbit
 		     << " s, Mffops = "<<mflops

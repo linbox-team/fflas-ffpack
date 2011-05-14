@@ -177,7 +177,8 @@ int main(int argc, char** argv){
 
 			//write_field(F,cerr<<"L = "<<endl,L,M,M,M);
 			//write_field(F,cerr<<"U = "<<endl,U,M,N,N);
-			FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M,0,R, L, M, Q);
+			FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+					M,0,(int) R, L, M, Q);
 			for ( size_t  i=0; i<M; ++i )
 				F.assign(*(L+i*(M+1)), one);
 
@@ -192,8 +193,10 @@ int main(int argc, char** argv){
 				}
 			}
 
-			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M,0,R, U, N, P);
-			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, U, N, Q);
+			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+					M,0,(int) R, U, N, P);
+			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+					N,0,(int) R, U, N, Q);
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,M, 1.0, L,M, U,N, 0.0, X,N);
 			//delete[] A;
 		} else {
@@ -216,7 +219,8 @@ int main(int argc, char** argv){
 					F.assign( *(U+i+j*N), zero);
 			}
 
-			FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, U, N, Q);
+			FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+					N,0,(int) R, U, N, Q);
 			for (size_t i=0; i<N; ++i)
 				F.assign (*(U+i*(N+1)),one);
 			if (diag == FFLAS::FflasNonUnit)
@@ -231,8 +235,10 @@ int main(int argc, char** argv){
 			// write_field(F,cerr<<"L = "<<endl,L,M,N,N);
 // 			write_field(F,cerr<<"U = "<<endl,U,N,N,N);
 
-			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N,0,R, L, N, P);
-			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M,0,R, L, N, Q);
+			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+					N,0,(int) R, L, N, P);
+			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+					M,0,(int) R, L, N, Q);
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, 1.0, L,N, U,N, 0.0, X,N);
 		}
 		for (size_t i=0; i<M; ++i)
@@ -248,7 +254,7 @@ int main(int argc, char** argv){
 		if (keepon){
 			cout<<"R = "<<R
 			    <<" Passed "
-			    <<(M*M/1000.0*(N-M/3.0)/tim.usertime()/1000.0)<<"Mfops"<<endl;
+			    <<(double(M*M)/1000.0*(double(N)-double(M)/3.0)/tim.usertime()/1000.0)<<"Mfops"<<endl;
 			delete[] A;
 			delete[] L;
 			delete[] U;
@@ -259,9 +265,9 @@ int main(int argc, char** argv){
 		}
 		else{
 			cerr<<"Abis = "<<endl;
-			write_field( F, cerr, Abis, M, N, N );
+			write_field( F, cerr, Abis, (int) M, (int) N, (int) N );
 			cerr<<"X = "<<endl;
-			write_field( F, cerr, X, M, N, N );
+			write_field( F, cerr, X, (int) M, (int) N, (int) N );
 		}
 	}
 	cout<<endl;

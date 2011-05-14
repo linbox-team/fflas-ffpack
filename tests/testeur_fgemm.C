@@ -164,7 +164,7 @@ int main(int argc, char** argv){
 
 		if (keepon){
 			cout<<"Passed "
-			    <<(2*M*N/1000.0*K/tim.usertime()/1000.0)<<"Mfops"<<endl;
+			    <<(2*double(M*N)/1000.0*double(K)/tim.usertime()/1000.0)<<"Mfops"<<endl;
 			delete[] A;
 			delete[] B;
 			delete[] C;

@@ -50,7 +50,7 @@ INFINITE_TEST= \
 EXTRA_DIST= timer.C timer.h
 
 CLEANFILES =           \
-		$(BASIC_TESTS)
+		$(BASIC_TESTS) $(NOT_A_TEST)
 
 EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS)

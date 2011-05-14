@@ -164,7 +164,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		 Mjoin (Cblas, __FFLAS__UPLO),
 		 Mjoin (Cblas, __FFLAS__TRANS),
 		 Mjoin (Cblas, __FFLAS__DIAG),
-		 M, N, 1.0, A, lda, B, ldb );
+		 (int)M, (int)N, 1.0, A, (int)lda, B, (int)ldb );
 	for (size_t i = 0; i < M; ++i)
 		for (size_t j = 0; j < N; ++j)
 			F.init (*(B + i*ldb + j), *(B + i*ldb + j));

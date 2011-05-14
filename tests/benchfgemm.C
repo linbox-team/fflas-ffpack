@@ -64,8 +64,8 @@ int main(int argc, char** argv)
 	}
 
 	std::cerr<<"n: "<<n <<" p: "<<p<<" w: "<<w<<std::endl
-	<<" time:  "<<time/iter<<" s"<<std::endl
-	<<" speed: "<<2.0*n/1000.0*n/1000.0/time*n/1000.0*iter<<" Gffops"
+	<<" time:  "<<time/(double)iter<<" s"<<std::endl
+	<<" speed: "<<2.0*n/1000.0*n/1000.0/time*n/1000.0*double(iter)<<" Gffops"
 	<<std::endl;
 
 	return 0;

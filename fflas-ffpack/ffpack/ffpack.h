@@ -212,7 +212,8 @@ namespace FFPACK  {
 
 			solveLB2 (F, FFLAS::FflasLeft, M, N, R, A, lda, Q, B, ldb);
 
-			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, B, ldb, Q);
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+				N, 0,(int) R, B, ldb, Q);
 
 			bool consistent = true;
 			for (size_t i = R; i < M; ++i)
@@ -231,11 +232,13 @@ namespace FFPACK  {
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 			       R, N, one, A, lda , B, ldb);
 
-			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, R, B, ldb, P);
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+				N, 0,(int) R, B, ldb, P);
 
 		} else { // Right Looking X A = B
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, R, B, ldb, P);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+				M, 0,(int) R, B, ldb, P);
 
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 			       M, R, one, A, lda , B, ldb);
@@ -254,7 +257,8 @@ namespace FFPACK  {
 			}
 			// The last cols of B are now supposed to be 0
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, B, ldb, Q);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+				M, 0,(int) R, B, ldb, Q);
 
 			solveLB2 (F, FFLAS::FflasRight, M, N, R, A, lda, Q, B, ldb);
 		}
@@ -319,7 +323,8 @@ namespace FFPACK  {
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
 
-				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, NRHS, 0, R, W, ldw, Q);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+					NRHS, 0,(int) R, W, ldw, Q);
 
 				bool consistent = true;
 				for (size_t i = R; i < M; ++i)
@@ -341,7 +346,8 @@ namespace FFPACK  {
 					FFLAS::fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
 
 				delete[] W;
-				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, R, X, ldx, P);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+					NRHS, 0,(int) R, X, ldx, P);
 
 			} else { // Copy B to X directly
 				for (size_t i=0; i < M; ++i)
@@ -349,7 +355,8 @@ namespace FFPACK  {
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
 
-				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, NRHS, 0, R, X, ldx, Q);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+					NRHS, 0,(int) R, X, ldx, Q);
 
 				bool consistent = true;
 				for (size_t i = R; i < M; ++i)
@@ -366,7 +373,8 @@ namespace FFPACK  {
 				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       R, NRHS, one, A, lda , X, ldx);
 
-				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NRHS, 0, R, X, ldx, P);
+				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+					NRHS, 0,(int) R, X, ldx, P);
 			}
 			return X;
 
@@ -382,7 +390,8 @@ namespace FFPACK  {
 				for (size_t i=0; i < NRHS; ++i)
 					FFLAS::fcopy (F, N, W + i*ldw, 1, B + i*ldb, 1);
 
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, R, W, ldw, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					NRHS, 0,(int) R, W, ldw, P);
 
 				ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       NRHS, R, one, A, lda , W, ldw);
@@ -405,7 +414,8 @@ namespace FFPACK  {
 				for (size_t i=0; i < NRHS; ++i)
 					FFLAS::fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
 				delete[] W;
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, R, X, ldx, Q);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+					NRHS, 0,(int) R, X, ldx, Q);
 
 				solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
@@ -413,7 +423,8 @@ namespace FFPACK  {
 				for (size_t i=0; i < NRHS; ++i)
 					FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
 
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, NRHS, 0, R, X, ldx, P);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+					NRHS, 0,(int) R, X, ldx, P);
 
 				ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       NRHS, R, one, A, lda , X, ldx);
@@ -433,7 +444,8 @@ namespace FFPACK  {
 				}
 				// The last N-R cols of W are now supposed to be 0
 
-				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NRHS, 0, R, X, ldx, Q);
+				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+					NRHS, 0,(int) R, X, ldx, Q);
 
 				solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
@@ -575,7 +587,8 @@ namespace FFPACK  {
 			      A, lda , x, incx);
 			ftrsv(F,  FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M,
 			      A, lda , x, incx);
-			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, M, x, incx, P );
+			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+				M, 0,(int) M, x, incx, P );
 			delete[] rowP;
 			delete[] P;
 
@@ -635,7 +648,8 @@ namespace FFPACK  {
 					F.assign (*(NS+i*ldn+j), zero);
 				F.assign (*(NS + i*ldn + i-R), one);
 			}
-			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, NSdim, 0, R, NS, ldn, P);
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+				NSdim, 0,(int) R, NS, ldn, P);
 			delete [] P;
 			delete [] Qt;
 			return N-R;
@@ -658,7 +672,8 @@ namespace FFPACK  {
 					F.assign (*(NS+i*ldn+j), zero);
 				F.assign (*(NS + i*ldn + i+R), one);
 			}
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NSdim, 0, R, NS, ldn, P);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+				NSdim, 0,(int) R, NS, ldn, P);
 			delete [] P;
 			delete [] Qt;
 			return N-R;
@@ -1317,8 +1332,9 @@ namespace FFPACK  {
 		size_t * P = new size_t[M];
 		size_t * Q = new size_t[M];
 		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
-		nullity = M - R;
-		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, M, 0, R, A, lda, P);
+		nullity = (int)(M - R);
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+			M, 0, (int)R, A, lda, P);
 		delete [] P;
 		delete [] Q;
 		return A;
@@ -1587,7 +1603,8 @@ namespace FFPACK  {
 		if ( Side == FFLAS::FflasLeft ){
 			size_t j = 0;
 			while ( j<R ) {
-				k = ib = Q[j];
+				 ib = Q[j];
+				k = (int)ib ;
 				while ((j<R) && ( (int) Q[j] == k)  ) {k++;j++;}
 				Ldim = k-ib;
 				Lcurr = L + j-Ldim + ib*ldl;
@@ -1602,9 +1619,10 @@ namespace FFPACK  {
 			}
 		}
 		else{ // Side == FFLAS::FflasRight
-			int j=R-1;
+			int j=(int)R-1;
 			while ( j >= 0 ) {
-				k = ib = Q[j];
+				ib = Q[j];
+				k = (int) ib;
 				while ( (j >= 0) &&  ( (int)Q[j] == k)  ) {--k;--j;}
 				Ldim = ib-k;
 				Lcurr = L + j+1 + (k+1)*ldl;

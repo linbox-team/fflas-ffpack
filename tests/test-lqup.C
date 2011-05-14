@@ -84,7 +84,7 @@ int main(int argc, char** argv){
 			Q[j]=0;
 		tim.clear();
 		tim.start();
-		R = FFPACK::LUdivine (F, diag, trans, m, n, A, n, P, Q,
+		R = (int)FFPACK::LUdivine (F, diag, trans, m, n, A, n, P, Q,
 				      FFPACK::FfpackLQUP);
 		tim.stop();
 		timc+=tim;
@@ -239,7 +239,7 @@ int main(int argc, char** argv){
 	    << ((double)nbf/1000.0*(double)numops / t)
 	    << " MFops "
 	    << " in "
-	    << t/nbf<<"s"
+	    << t/double(nbf)<<"s"
 	    <<"]"<< endl;
 // 	cout<<m
 // 	    <<" "<<((double)nbf/1000.0*(double)numops / t)
