@@ -82,14 +82,14 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk, FfpackLQUP);
 
 	size_t row_idx = 0;
-	size_t i=0;
+	size_t ii=0;
 	size_t dold = c;
 	size_t nb_full_blocks = 0;
 	size_t Mk = 0;
 	// Determining the degree sequence dK
 	for (size_t k = 0; k<noc; ++k){
 		size_t d = 0;
-		while ( (d<c) && (row_idx<R) && (Qk[row_idx] == i)) {i++; row_idx++; d++;}
+		while ( (d<c) && (row_idx<R) && (Qk[row_idx] == ii)) {ii++; row_idx++; d++;}
 		if (d > dold){
 			// std::cerr << "FAIL in preconditionning phase:"
 			//           << " degree sequence is not monotonically not increasing"
@@ -103,7 +103,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		if (d == c)
 			nb_full_blocks++;
 		if (row_idx < N)
-			i = Qk[row_idx];
+			ii = Qk[row_idx];
 	}
 
 	// Selection of the last iterate of each block
@@ -259,16 +259,16 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 				*(Arp + j*ldarp + Ncurr-i-1) = *(Ac + i*ldac + j);
 		for (size_t i=0; i<2*Ncurr; ++i)
 			rp[i] = 0;
-		size_t R;
+		size_t RR;
 		try{
-			R = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
+			RR = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
 		} catch (CharpolyFailed){
 			delete[] Arp; delete[] Ac; delete[] K; delete[] K3;
 			delete[] rp; delete[] dA; delete[] dK;
 			throw CharpolyFailed();
 		}
-		if (R < Ncurr){
-			//std::cerr<<"FAIL R<Ncurr"<<std::endl;
+		if (RR < Ncurr){
+			//std::cerr<<"FAIL RR<Ncurr"<<std::endl;
 			delete[] Arp; delete[] Ac; delete[] K; delete[] K3;
 			delete[] rp; delete[] dA; delete[] dK;
 			throw CharpolyFailed();
@@ -277,13 +277,13 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		// Computation of the degree vector dK
 		it_idx = 0;
 		rp_val = 0;
-		size_t g = 0;
+		size_t gg = 0;
 		size_t dtot=0;
 		block_idx = 0;
 		nb_full_blocks = 0;
 		while (dtot<Ncurr){
-			do {g++; rp_val++; it_idx++;}
-			while ( /*(g<Ncurr ) &&*/ (rp[g] == rp_val) && (it_idx < deg ));
+			do {gg++; rp_val++; it_idx++;}
+			while ( /*(gg<Ncurr ) &&*/ (rp[gg] == rp_val) && (it_idx < deg ));
 			if ((block_idx)&&(it_idx > dK[block_idx-1])){
 				delete[] Arp; delete[] Ac;delete[] K; delete[] K3;
 				delete[] rp; delete[] dA; delete[] dK;
@@ -296,7 +296,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			if (it_idx == deg)
 				nb_full_blocks ++;
 			it_idx=0;
-			rp_val = rp[g];
+			rp_val = rp[gg];
 		}
 
 		Mk = block_idx;
@@ -391,11 +391,11 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		size_t oldNcurr = Ncurr;
 		for (size_t i=Mk-1; i>=nb_full_blocks+1;  --i)
 			if (dK[i] >= 1){
-				Polynomial  P (dK [i]+1);
-				F.assign(P[dK[i]], one);
+				Polynomial  PP (dK [i]+1);
+				F.assign(PP[dK[i]], one);
 				for (size_t j=0; j < dK[i]; ++j)
-					F.neg( P[dK[i]-j-1], *(K + i + (offset-j)*ldk));
-				frobeniusForm.push_front(P);
+					F.neg( PP[dK[i]-j-1], *(K + i + (offset-j)*ldk));
+				frobeniusForm.push_front(PP);
 				offset -= dK[i];
 				Ncurr -= dK[i];
 			}

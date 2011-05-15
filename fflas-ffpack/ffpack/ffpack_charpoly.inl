@@ -102,7 +102,7 @@ namespace FFPACK {
 			charp.clear();
 			int nbfac = 0;
 			while (Ncurr > 0){
-				size_t P[Ncurr];
+				size_t *P = new size_t[Ncurr];
 				Polynomial minP;//=new Polynomial();
 				FFPACK::MinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
 				int k = int(minP.size()-1); // degre of minpoly
@@ -139,6 +139,7 @@ namespace FFPACK {
 				// X2_ = X2_ . P^t (=  (P A^t P^t)2_)
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					Nrest, 0, (int)k, X21, ldx, P);
+				delete[] P ;
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
 				      one, X2, ldx, X21, ldx);
@@ -224,8 +225,8 @@ namespace FFPACK {
 					++imax;
 				}
 				// Column block B
-				for (typename Field::Element* Ai=A; Ai<A+N*lda; Ai+=lda)
-					FFLAS::fcopy (F, kg_mb, Ai+lambda, 1, Ai+N-kg_mc-kg_mb, 1);
+				for (typename Field::Element* Aj=A; Aj<A+N*lda; Aj+=lda)
+					FFLAS::fcopy (F, kg_mb, Aj+lambda, 1, Aj+N-kg_mc-kg_mb, 1);
 
 				// Second Id block
 				imax = N- kg_j*kg_mc;

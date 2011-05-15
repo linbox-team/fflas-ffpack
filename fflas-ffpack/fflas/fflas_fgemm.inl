@@ -470,7 +470,7 @@ namespace FFLAS {
 						F.init(*(Ci+j),*(Ci+j));
 			}
 			if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))) {
-				for (double * Ci = C; Ci < C+m*ldc; Ci += ldc)
+				for (Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
 			}
@@ -1380,7 +1380,7 @@ namespace FFLAS {
 					if (!F.areEqual (1.0, alpha) &&
 					    !F.areEqual (-1.0, alpha))
 						// Fix-up: compute C *= alpha
-						for (double* Ci=C; Ci < C+m*ldc; Ci+=ldc)
+						for (Ci=C; Ci < C+m*ldc; Ci+=ldc)
 							for (size_t j=0; j < n; ++j)
 								F.mulin (* (Ci + j), alpha);
 				} else {

@@ -1074,7 +1074,7 @@ namespace FFLAS {
 
 
 
-}; // class FFLAS
+} // class FFLAS
 
 #include "fflas_bounds.inl"
 #include "fflas_fgemm.inl"

@@ -182,8 +182,7 @@ namespace FFPACK {
 
 						}
 						else {
-							int i = int(mu+1) ;
-							for (; i--; )
+							for (int i = int(mu+1); i--; )
 								T[i+lambda] = T[i]+lambda;
 							for (size_t i=0; i< lambda; ++i)
 								T[B[i]-mc-1] = i;
@@ -267,8 +266,8 @@ namespace FFPACK {
 					size_t * tempP = new size_t[lambda+me+mc];
 					for (size_t i=0; i< lambda+me+mc; ++i)
 						tempP[i] = i;
-					int i = int(r) ;
-					for (; i--; )
+
+					for (int i = int(r) ; i--; )
 						if (Q[i] > (size_t) i){
 #ifdef LB_DEBUG
 							std::cerr<<"Permutation de tempP["<<i

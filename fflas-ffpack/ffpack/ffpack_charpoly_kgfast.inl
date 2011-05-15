@@ -136,68 +136,68 @@ namespace FFPACK {
 #if 0
 						std::cerr<<"mb<lambda"<<std::endl;
 #endif
-						typename Field::Element * tmp = new typename Field::Element[lambda*mc];
+						typename Field::Element * tmp2 = new typename Field::Element[lambda*mc];
 
-						// tmp <- C1
+						// tmp2 <- C1
 						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, tmp+i*mc, 1, C+i*lda, 1);
+							FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
 
 						// C1' <- B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
 						      one, B, lda, C+lambda*lda, lda,
 						      zero, C, lda);
 
-						// tmp <- B2.C2 + tmp
+						// tmp2 <- B2.C2 + tmp2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
 						      one, B+mb*lda, lda, C+lambda*lda, lda,
-						      one, tmp, mc);
+						      one, tmp2, mc);
 
-						// C2' <- tmp
+						// C2' <- tmp2
 						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, tmp+i*mc, 1);
-						delete[] tmp;
+							FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, tmp2+i*mc, 1);
+						delete[] tmp2;
 					}
 					else if ( lambda > 0 ){
 #if 0
 						std::cerr<<"lambda>0"<<std::endl;
 #endif
 
-						typename Field::Element * tmp = new typename Field::Element[mb*mc];
+						typename Field::Element * tmp2 = new typename Field::Element[mb*mc];
 						// C1 <- B2.C2 + C1
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
 						      one, B+mb*lda, lda, C+lambda*lda, lda,
 						      one, C, lda);
 
-						// tmp <-B1.C2
+						// tmp2 <-B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
 						      one, B, lda, C+lambda*lda, lda,
-						      zero, tmp, mc);
+						      zero, tmp2, mc);
 
 						// C2' <- C1
 						for (int i=0; i<lambda; ++i)
 							FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, C+i*lda, 1);
 
-						// C1' <- tmp
+						// C1' <- tmp2
 						for (size_t i=0; i<mb; ++i)
-							FFLAS::fcopy( F, mc, C+i*lda, 1, tmp+i*mc, 1);
-						delete[] tmp;
+							FFLAS::fcopy( F, mc, C+i*lda, 1, tmp2+i*mc, 1);
+						delete[] tmp2;
 					}
 					else{
 #if 0
 						std::cerr<<"lambda<0"<<std::endl;
 #endif
 						mb = N - (j+1)*mc;
-						typename Field::Element * tmp = new typename Field::Element[mb*mc];
+						typename Field::Element * tmp2 = new typename Field::Element[mb*mc];
 
-						// tmp <-B1.C1
+						// tmp2 <-B1.C1
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
 						      one, B, lda, C, lda,
-						      zero, tmp, mc);
+						      zero, tmp2, mc);
 
-						// C1' <- tmp
+						// C1' <- tmp2
 						for (size_t i=0; i<mb; ++i)
-							FFLAS::fcopy( F, mc, C+i*lda, 1, tmp+i*mc, 1);
-						delete[] tmp;
+							FFLAS::fcopy( F, mc, C+i*lda, 1, tmp2+i*mc, 1);
+						delete[] tmp2;
 					}
 
 					j++;

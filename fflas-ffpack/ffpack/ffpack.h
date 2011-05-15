@@ -1570,13 +1570,13 @@ namespace FFPACK  {
 		ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, N, one, L, ldl , B, ldb);
 		//write_field(F,std::cerr<<"dans solveLB "<<endl,L,N,N,ldl);
 		// Undo the permutation of L
-		for (size_t i=0; i<R; ++i){
-			if ( Q[i] > (size_t) i){
-				//for (size_t j=0; j<=Q[i]; ++j)
-				//F.init( *(L+Q[i]+j*ldl), 0 );
-				FFLAS::fcopy( F, LM-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl, L+Q[i]*(ldl+1)+ldl,ldl );
-				for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
-					F.assign( *(L+Q[i]+j), zero );
+		for (size_t ii=0; ii<R; ++ii){
+			if ( Q[ii] > (size_t) ii){
+				//for (size_t j=0; j<=Q[ii]; ++j)
+				//F.init( *(L+Q[ii]+j*ldl), 0 );
+				FFLAS::fcopy( F, LM-Q[ii]-1, L+(Q[ii]+1)*ldl+ii, ldl, L+Q[ii]*(ldl+1)+ldl,ldl );
+				for ( size_t j=Q[ii]*ldl; j<LM*ldl; j+=ldl)
+					F.assign( *(L+Q[ii]+j), zero );
 			}
 		}
 	}
