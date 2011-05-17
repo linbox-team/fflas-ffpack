@@ -9,8 +9,14 @@
 #ifndef __FFLAFLAS_print_utils_H
 #define __FFLAFLAS_print_utils_H
 
+#include <vector>
+// #include <pair>
+#include <list>
+#include <set>
+
 namespace std
 {
+
 	/*! Prints a vector on output.
 	 * @param o output stream
 	 * @param v vector
@@ -42,6 +48,7 @@ namespace std
 		return o ;
 	}
 
+
 	/*! Prints a list.
 	 * @param o output stream
 	 * @param C a pair
@@ -62,6 +69,29 @@ namespace std
 			}
 		return o << '}' ;
 	}
+
+
+	/*! Prints a set.
+	 * @param o output stream
+	 * @param C a pair
+	 * @warning <<(ostream&,T&) exists !
+	 */
+	template<class T>
+	std::ostream& operator<< (std::ostream& o, const std::set<T> & L)
+	{
+		typename std::set<T>::const_iterator it = L.begin() ;
+		o << '|' ;
+		if (it != L.end() )
+			while(true) {
+				o << *it ;
+				if (++it != L.end())
+					o << ", " ;
+				else
+					break;
+			}
+		return o << '|' ;
+	}
+
 
 #if 0
 	std::ostream &operator << (std::ostream &out, const std::vector<bool> &S)

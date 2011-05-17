@@ -201,7 +201,7 @@ void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
 	Argument *current;
 
 	for (i = 1; i < argc; ++i) {
-		std::cout << "i=" << i << std::endl;
+		// std::cout << "i=" << i << std::endl;
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 0) {
 #ifdef _LINBOX_LINBOX_CONFIG_H
