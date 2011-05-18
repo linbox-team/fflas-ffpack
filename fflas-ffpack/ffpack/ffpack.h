@@ -696,7 +696,7 @@ namespace FFPACK  {
 	template <class Field>
 	static size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
 				      typename Field::Element* A, const size_t lda,
-				      size_t* rkprofile)
+				      size_t* &rkprofile)
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
@@ -729,7 +729,7 @@ namespace FFPACK  {
 	template <class Field>
 	static size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
 					 typename Field::Element* A, const size_t lda,
-					 size_t* rkprofile)
+					 size_t* &rkprofile)
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
