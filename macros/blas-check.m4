@@ -51,11 +51,12 @@ if test -n "$BLAS_VAL"; then
 	CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
 
 	if   test -d "$BLAS_VAL"; then
-		if test -r "$BLAS_VAL/lib/libcblas.a" ; then
+		if test -r "$BLAS_VAL/lib/libcblas.a" -o -r "$BLAS_VAL/lib/libcblas.so" ; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/lib/libcblas.a | grep ATL`
-			if test -n "$ATLAS_NEEDED"; then
+			ATLAS_NEEDED2=`readelf -Ws $BLAS_VAL/lib/libcblas.so | grep ATL`
+			if test -n "$ATLAS_NEEDED" -o -n "ATLAS_NEEDED2" ; then
 dnl lapack_atlas is for hmrg at udel.  What a kludge that this specialization is here.
-                if test -f $BLAS_VAL/lib/liblapack_atlas.a  ; then
+                if test -f "$BLAS_VAL/lib/liblapack_atlas.a"  -o  -f "$BLAS_VAL/lib/liblapack_atlas.so"   ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
@@ -65,10 +66,11 @@ dnl lapack_atlas is for hmrg at udel.  What a kludge that this specialization is
 			fi
 			BLAS_LIBS="-L${BLAS_VAL}/lib $ATLAS_LIBS"
 
-		elif test -r "$BLAS_VAL/libcblas.a" ; then
+		elif test -r "$BLAS_VAL/libcblas.a" -o  -r "$BLAS_VAL/libcblas.so"  ; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/libcblas.a | grep ATL`
-			if test -n "$ATLAS_NEEDED"; then
-                if test -f $BLAS_VAL/liblapack_atlas.a  ; then
+			ATLAS_NEEDED2=`readelf -Ws $BLAS_VAL/libcblas.so | grep ATL`
+			if test -n "$ATLAS_NEEDED" -o -n "ATLAS_NEEDED2" ; then
+                if test -f "$BLAS_VAL/liblapack_atlas.a"  -o  -f "$BLAS_VAL/liblapack_atlas.so"   ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
