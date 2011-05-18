@@ -37,10 +37,10 @@ docs_dev:
 
 
 install-doc:
-	mkdir $(docdir)
-	cp -r fflas-ffpack-html $(docdir)/fflas-ffpack-html
-	cp -r fflas-ffpack-dev-html $(docdir)/fflas-ffpack-dev-html
-	cp fflas-ffpack.html $(docdir)/fflas-ffpack.html
+	mkdir -p $(DESTDIR)/$(docdir)
+	cp -rp fflas-ffpack-html $(DESTDIR)/$(docdir)/fflas-ffpack-html
+	cp -rp fflas-ffpack-dev-html $(DESTDIR)/$(docdir)/fflas-ffpack-dev-html
+	cp -p fflas-ffpack.html $(DESTDIR)/$(docdir)/fflas-ffpack.html
 
 EXTRA_DIST= \
 			Doxyfile            \
