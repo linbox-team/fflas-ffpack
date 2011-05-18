@@ -28,7 +28,7 @@ AC_SUBST([MKDIR_P])
 AC_LANG([C++])
 
 AC_DEBUG
-# AC_FULL_DEBUG
+AC_PROFILE
 AC_WARNINGS
 
 # CFLAGS=${CFLAGS:-$DEFAULT_CFLAGS}
@@ -50,29 +50,33 @@ AC_SUBST([DEFAULT_CFLAGS])
 AC_SUBST([DEBUG_CFLAGS])
 AC_SUBST([TESTS_CFLAGS])
 
-TESTS_CFLAGS="-O0 -g"
+TESTS_CFLAGS="-O0"
 DEBUG_CFLAGS="-g"
 DEFAULT_CFLAGS="-pipe"
 WARN_CFLAGS="-Wall"
 
 if test "x$DBG" = "xyes" ; then
-	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} -g -pg" #those are CXXFLAGS
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLAFLAS_DEBUG"
+	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} " #those are CXXFLAGS
+	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLAFFLAS_DEBUG"
 else
-	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} -DNDEBUG -U_LB_DEBUG"
+	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} "
+	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DNDEBUG -UFFLAFFLAS_DEBUG -UFFLAFFLAS_DEBUG"
 fi
 
+if test "x$PROF" = "xyes" ; then
+	DEFAULT_CFLAGS="${DEFAULT_CFLAGS} -pg"
+fi
 
-
-if test "x$WARN" = "xyes" ; then
-	# if  test "x${CXX}" = "xicpc" -o "x${CXX}" = "xicc"  ; then
+if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 	if test "x${CCNAM}" = "xicc" ; then
 		WARN_CFLAGS="${WARN_CFLAGS} -Wcheck"
 		# DEBUG_CFLAGS="-fast"
 	else
 		if test "x${CCNAM}" = "xgcc"  ; then
-			# WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter -Wuninitialized -Wconversion -Wcast-qual"
-			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wno-long-long  -Wpointer-arith -Wcast-align -Wwrite-strings"
+			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
+			if test "x${WARN}" = "xfull" ; then
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+			fi
 		else
 			echo
 			echo "*******************************************************"
