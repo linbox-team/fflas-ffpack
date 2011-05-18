@@ -25,7 +25,7 @@ AC_ARG_WITH(doxygen,
 		DOXYGEN_PATH="$PATH"
 	    ])
 
-AC_ARG_ENABLE(docs,[AC_HELP_STRING([--enable-doc], [Enable building documentation])],
+AC_ARG_ENABLE(doc,[AC_HELP_STRING([--enable-doc], [Enable building documentation])],
 [
 AC_MSG_RESULT(yes)
 AC_MSG_CHECKING(whether doxygen works)
