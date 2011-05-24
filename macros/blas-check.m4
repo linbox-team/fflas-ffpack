@@ -141,11 +141,12 @@ else
 
 		if test -r "/System/Library/Frameworks/Accelerate.framework"; then
 			BLAS_LIBS="-Wl,-framework -Wl,Accelerate"
-		elif test -r "$BLAS_HOME/lib/libcblas.a"; then
+		elif test -r "$BLAS_HOME/lib/libcblas.a" -o -r "$BLAS_HOME/lib/libcblas.so"; then
 
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/lib/libcblas.a | grep ATL`
-			if test -n "$ATLAS_NEEDED"; then
-                if test -f $BLAS_HOME/lib/liblapack_atlas.a  ; then
+			ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
+			if test -n "$ATLAS_NEEDED" -o -n "$ATLAS_NEEDED2" ; then
+                if test -f $BLAS_HOME/lib/liblapack_atlas.a -o -f $BLAS_HOME/lib/liblapack_atlas.so ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
@@ -159,10 +160,11 @@ else
 				BLAS_LIBS="-L${BLAS_HOME}/lib ${ATLAS_LIBS}"
 			fi
 
-		elif test -r "$BLAS_HOME/libcblas.a"; then
+		elif test -r "$BLAS_HOME/libcblas.a"  -o -r "$BLAS_HOME/libcblas.so" ; then
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/libcblas.a | grep ATL`
-			if test -n "$ATLAS_NEEDED"; then
-                if test -f $BLAS_HOME/liblapack_atlas.a  ; then
+			ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
+			if test -n "$ATLAS_NEEDED" -o -n "$ATLAS_NEEDED2" ; then
+                if test -f $BLAS_HOME/liblapack_atlas.a  -o -f $BLAS_HOME/liblapack_atlas.a ; then
 					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
 				else
 					ATLAS_LIBS="-llapack -lcblas -latlas"
@@ -278,10 +280,10 @@ if test "x$blas_found" != "xyes" ; then
 	CBLAS_FLAG=""
 	if test -n "$BLAS_VAL"; then
 		if   test -d "$BLAS_VAL"; then
-			if test -r "${BLAS_VAL}/lib/libblas.a" ; then
+			if test -r "${BLAS_VAL}/lib/libblas.a" -o  -r "${BLAS_VAL}/lib/libblas.so"; then
 				BLAS_LIBS="-L${BLAS_VAL}/lib  -lblas"
 			fi
-			if test -r "${BLAS_VAL}/libblas.a" ; then
+			if test -r "${BLAS_VAL}/libblas.a" -o -r "${BLAS_VAL}/libblas.a" ; then
 				BLAS_LIBS="-L${BLAS_VAL}  -lblas"
 			fi
 		else
@@ -330,7 +332,11 @@ if test "x$blas_found" != "xyes" ; then
 			CBLAS="no"
 			CBLAS_FLAG=""
 
-			if test -r "$BLAS_HOME/lib64/libblas.a" && test -r "$BLAS_HOME/lib64/liblapack.a" ; then
+			BLAS_LIBS=""
+
+dnl checking for libblas.a
+
+			if test -r "$BLAS_HOME/lib64/libblas.a"  && test -r "$BLAS_HOME/lib64/liblapack.a" ; then
 				BLAS_LIBS="-L${BLAS_HOME}/lib64 -llapack -lblas"
 			elif test -r "$BLAS_HOME/lib/libblas.a" && test -r "$BLAS_HOME/lib/liblapack.a" ; then
 				BLAS_LIBS="-L${BLAS_HOME}/lib -llapack -lblas"
@@ -349,6 +355,31 @@ if test "x$blas_found" != "xyes" ; then
 			elif test -r "$BLAS_HOME/libblas.a"; then
 				BLAS_LIBS="-L${BLAS_HOME} -lblas"
 			fi
+
+dnl checking for libblas.so
+
+			if test -z "$BLAS_LIBS" ; then
+				if test -r "$BLAS_HOME/lib64/libblas.so"  && test -r "$BLAS_HOME/lib64/liblapack.so" ; then
+					BLAS_LIBS="-L${BLAS_HOME}/lib64 -llapack -lblas"
+				elif test -r "$BLAS_HOME/lib/libblas.so" && test -r "$BLAS_HOME/lib/liblapack.so" ; then
+					BLAS_LIBS="-L${BLAS_HOME}/lib -llapack -lblas"
+				elif test -r "$BLAS_HOME/lib/libblas.so"; then
+					if test "x$BLAS_HOME" = "x/usr" -o "x$BLAS_HOME" = "/usr/local" ; then
+						BLAS_LIBS="-lblas"
+					else
+						BLAS_LIBS="-L${BLAS_HOME}/lib  -lblas"
+					fi
+				elif test -r "$BLAS_HOME/lib64/libblas.so"; then
+					if test "x$BLAS_HOME" = "x/usr" -o "x$BLAS_HOME" = "/usr/local" ; then
+						BLAS_LIBS="-lblas"
+					else
+						BLAS_LIBS="-L${BLAS_HOME}/lib64  -lblas"
+					fi
+				elif test -r "$BLAS_HOME/libblas.so"; then
+					BLAS_LIBS="-L${BLAS_HOME} -lblas"
+				fi
+			fi
+
 
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
 			LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
