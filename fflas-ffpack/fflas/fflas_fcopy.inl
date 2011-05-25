@@ -14,18 +14,22 @@
 
 namespace FFLAS {
 
-template<class Field>
-inline void
-fcopy (const Field& F, const size_t N,
-	      typename Field::Element * X, const size_t incX,
-	      const typename Field::Element * Y, const size_t incY )
-{
+	template<class Field>
+	inline void
+	fcopy (const Field& F, const size_t N,
+	       typename Field::Element * X, const size_t incX,
+	       const typename Field::Element * Y, const size_t incY )
+	{
 
-	typename Field::Element * Xi = X;
-	const typename Field::Element * Yi=Y;
-	for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
-		F.assign(*Xi,*Yi);
-}
+		if (incY == 1 && incY == 1) {
+			memcpy(X,Y,N*sizeof(typename Field::Element)); // much faster (hopefully)
+			return;
+		}
+		typename Field::Element * Xi = X;
+		const typename Field::Element * Yi=Y;
+		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
+			F.assign(*Xi,*Yi);
+	}
 
 }
 

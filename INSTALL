@@ -1,68 +1,11 @@
-HOW TO USE IT :
+If you have blas available :
+    make ; make install ;
+should install Fflas-Ffpack.
 
-This is a source library : no precompilation is required.
-The usual way of using it is to include the file include/fflas_ffpack/fflas.h 
-or include/fflas_ffpack/ffpack.h in your code.
+If you need to compile tests, you'll probably need Givaro too.
 
-The routines are designed to work with a generic finite field implementation, 
-compliant with the interface of LinBox (www.linalg.org). We also provide two
-default implementations that make these routines work more efficiently.
+The test directory is under big reconstruction, and so is the benchmark/.
 
-* fflas_ffpack/modular-balanced.h : implements any prime finite field of cardinality between larger than 2.
-and smaller than 2^26 (Modular<double>) or 2^12 (Modular<float>).
-The most efficient implementations ; to be used by default. 
+Any help in documenting, coding is wellcome !
 
-* fflas_ffpack/modular-positive.h : implements any prime finite field of cardinality between
-2 and 2^26 (Modular<double>) or 2^12 (Modular<float>). 
-
-REQUIREMENTS :
-
-A C BLAS library must be installed in your environment : the file "cblas.h" 
-must be in the include environment of the compilation and the associated
-compiled library be provided to the linker.
-
-For example, in the test directory, the test programms are compiled using the
-C BLAS ATLAS; The following parameters are given to the compiler :
-
--I${ATLASROOT}/include -I${ATLASROOT}/include/${ATLASARCH}
--L ${ATLASROOT}/lib/${ATLASARCH} -lcblas -latlas
-
-COMPILATION OF THE TESTS :
-
-To compile the tests, complete the variables given in test/Makefile and/or uncomment the adequate option:
-BLASROOT=         {the directory where the BLAS library is located}
-ARCH=		   {the architecture parameter for g++. For example pentium4, athlon, opteron,...}
-
-Then simply run 
-
-'make' 
-
-in the test directory.
-
-The compiled tests are the following files
-tests/test-fgemm
-tests/test-fgemv
-tests/test-lqup
-tests/test-charpoly
-tests/test-compressQ
-tests/test-frobenius
-tests/test-fsquare
-tests/test-det
-tests/test-invert
-tests/test-krylov-elim
-tests/test-rank
-
-
-COMPILATION OF THE SANITY/REGRESSION TESTS :
-
-These tests require the GIVARO library and therefore also the GMP library.
-First complete and uncomment the fields GIVARO_ROOT and GMP_ROOT in tests/Makefile.
-Then run 
-
-'make regression'.
-
-The compiled tests are the following files
-
-tests/testeur_fgemm.C
-tests/testeur_lqup.C
-tests/testeur_ftrsm.C
+          -- The Fflas-Ffpack team.

@@ -115,7 +115,7 @@ namespace FFPACK {
 	 \endcode
 	 * The parameters of the constructor help debugging.
 	 */
-	class Failure {//: public LinboxError BB: otherwise,  error.h:39 segfaults
+	class Failure {
 	protected:
 		static std::ostream *_errorStream;
 

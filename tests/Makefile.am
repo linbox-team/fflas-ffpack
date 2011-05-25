@@ -16,6 +16,7 @@ AM_LDFLAGS=-static
 
 BASIC_TESTS =              \
 		test-charpoly          \
+		test-lqup              \
 		test-compressQ
 
 NOT_A_TEST =  \
@@ -30,7 +31,6 @@ NOT_A_TEST =  \
 		test-rowechelon        \
 		test-fgemv             \
 		test-colechelon        \
-		test-lqup              \
 		test-fullranksubmatrix \
 		test-redrowechelon     \
 		test-ftrtri            \
@@ -58,8 +58,10 @@ EXTRA_PROGRAMS =       \
 TESTS =                \
 	    $(BASIC_TESTS)
 
-#  dense_generator_SOURCES        = dense_generator.C
 test_compressQ_SOURCES         = test-compressQ.C
+test_charpoly_SOURCES          = test-charpoly.C
+test_lqup_SOURCES              = test-lqup.C
+#  dense_generator_SOURCES        = dense_generator.C
 #  test_det_SOURCES               = test-det.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
@@ -79,12 +81,10 @@ test_compressQ_SOURCES         = test-compressQ.C
 #  test_rowechelon_SOURCES        = test-rowechelon.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 #  test_invert_SOURCES            = test-invert.C
-test_charpoly_SOURCES          = test-charpoly.C
 #  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
 #  test_colechelon_SOURCES        = test-colechelon.C
 #  test_fgesv_SOURCES             = test-fgesv.C
-#  test_lqup_SOURCES              = test-lqup.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 
