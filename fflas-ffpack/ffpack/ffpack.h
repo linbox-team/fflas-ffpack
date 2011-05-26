@@ -235,7 +235,8 @@ namespace FFPACK  {
 			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 				N, 0,(int) R, B, ldb, P);
 
-		} else { // Right Looking X A = B
+		}
+else { // Right Looking X A = B
 
 			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 				M, 0,(int) R, B, ldb, P);
@@ -349,7 +350,8 @@ namespace FFPACK  {
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);
 
-			} else { // Copy B to X directly
+			}
+else { // Copy B to X directly
 				for (size_t i=0; i < M; ++i)
 					FFLAS::fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
 
@@ -378,7 +380,8 @@ namespace FFPACK  {
 			}
 			return X;
 
-		} else { // Right Looking X A = B
+		}
+else { // Right Looking X A = B
 
 			for (size_t i = 0; i <NRHS; ++i)
 				for (size_t j=0; j< M; ++j)
@@ -419,7 +422,8 @@ namespace FFPACK  {
 
 				solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
-			} else {
+			}
+else {
 				for (size_t i=0; i < NRHS; ++i)
 					FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
 
@@ -653,7 +657,8 @@ namespace FFPACK  {
 			delete [] P;
 			delete [] Qt;
 			return N-R;
-		} else { // Left NullSpace
+		}
+else { // Left NullSpace
 			size_t* P = new size_t[M];
 			size_t* Qt = new size_t[N];
 
@@ -1117,7 +1122,8 @@ namespace FFPACK  {
 		if (N == 1){
 			if (Diag == FFLAS::FflasNonUnit)
 				F.invin (*A);
-		} else {
+		}
+else {
 			size_t N1 = N/2;
 			size_t N2 = N - N1;
 			ftrtri (F, Uplo, Diag, N1, A, lda);
@@ -1127,7 +1133,8 @@ namespace FFPACK  {
 				       one, A, lda, A + N1, lda);
 				ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
 				       mone, A + N1*(lda+1), lda, A + N1, lda);
-			} else {
+			}
+else {
 				ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
 				       one, A + N1*(lda+1), lda, A + N1*lda, lda);
 				ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
@@ -1416,7 +1423,8 @@ namespace FFPACK  {
 			delete[] P;
 			delete[] rowP;
 			return NULL;
-		} else {
+		}
+else {
 			// Initializing X to 0
 #if 0
 			t1.clear();
