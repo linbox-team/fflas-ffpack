@@ -581,10 +581,32 @@ namespace FFLAS {
 	 * \param incY stride of \p Y
 	 */
 	template<class Field>
-	static void
+	void
 	fcopy (const Field& F, const size_t N,
 	       typename Field::Element * X, const size_t incX,
 	       const typename Field::Element * Y, const size_t incY );
+
+	/** \brief fzero : \f$A \gets 0 \f$.
+	 * @param F field
+	 * @param n number of elements to zero
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 */
+	template<class Field>
+	void
+	fzero (const Field& F, const size_t n,
+	       typename Field::Element *X, const size_t incX)
+	{
+
+		typename Field::Element zero = F.init(0UL);
+		if (n == incX) { // contigous data
+			memset(X,zero,n);
+		}
+		else { // not contiguous (strided)
+			for (size_t i = 0 ; i < n ; ++i)
+				F.assign(X+i*incX,zero);
+		}
+	}
 
 	/** \brief faxpy : \f$y \gets \alpha \cdot x + y\f$.
 	 * @param F field
@@ -646,8 +668,8 @@ namespace FFLAS {
 
 	/** \brief fcopy : \f$B \gets A \f$.
 	 * @param F field
-	 * @param N number of rows to copy
-	 * @param M number of cols to copy
+	 * @param m number of rows to copy
+	 * @param n number of cols to copy
 	 * \param A matrix in \p F
 	 * \param lda stride of \p A
 	 * \param B vector in \p F
@@ -659,6 +681,29 @@ namespace FFLAS {
 	       typename Field::Element * A, const size_t lda,
 	       const typename Field::Element * B, const size_t ldb ) ;
 
+	/** \brief fzero : \f$A \gets 0 \f$.
+	 * @param F field
+	 * @param m number of rows to zero
+	 * @param n number of cols to zero
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 */
+	template<class Field>
+	static void
+	fzero (const Field& F, const size_t m, const size_t n,
+	       typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * B, const size_t ldb )
+	{
+
+		typename Field::Element zero = F.init(0UL);
+		if (n == lda) { // contigous data
+			memset(A,zero,m*n);
+		}
+		else { // not contiguous (strided)
+			for (size_t i = 0 ; i < m ; ++i)
+				memset(A+i*lda,zero,m) ;
+		}
+	}
 
 	/** fadd : matrix addition.
 	 * Computes \p C = \p A + \p B.
