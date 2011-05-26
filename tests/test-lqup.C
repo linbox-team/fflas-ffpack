@@ -25,145 +25,13 @@ using namespace std;
 #include "Matio.h"
 #include "timer.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-// #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "test-utils.h"
 
 #include "fflas-ffpack/utils/args-parser.h"
 
 using namespace FFPACK;
 
-/*! @brief  Random Matrix.
- * Creates a \c m x \c n matrix with random entries.
- * @param F field
- * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
- * @param m number of rows in \p A
- * @param n number of cols in \p A
- * @param lda leading dimension of \p A
- * @return pointer to \c A.
- */
-template<class Field>
-typename Field::Element * RandomMatrix(const Field & F,
-				      typename Field::Element * A,
-				      size_t m, size_t n, size_t lda)
-{
-	typedef typename Field::RandIter Randiter ;
-	Randiter R(F);
-	for (size_t i=0 ; i<m ; ++i)
-		for (size_t j= 0; j<n ;++j)
-			R.random( A[i*lda+j] );
-	return A;
-
-}
-
-/*! Random integer in range.
- * @param a min bound
- * @param b max bound
- * @return a random integer in [a,b[  */
-int RandInt(int a, int b)
-{
-	int x = a ;
-	x += rand()%(b-a+1);
-	fflaflas_check(x<b && x>=a);
-	return x ;
-}
-/*! Random integer in range.
- * @param a min bound
- * @param b max bound
- * @return a random integer in [a,b[  */
-size_t RandInt(size_t a, size_t b)
-{
-	size_t x = a ;
-	x += rand()%(b-a);
-	fflaflas_check(x<b && x>=a);
-	return x ;
-}
-
-/*! @brief  Random Matrix with prescribed rank.
- * Creates a \c m x \c n matrix with random entries and rank \c r.
- * @param F field
- * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
- * @param r rank of the matrix to build
- * @param m number of rows in \p A
- * @param n number of cols in \p A
- * @param lda leading dimension of \p A
- * @return pointer to \c A.
- */
-template<class Field>
-typename Field::Element * RandomMatrixWithRank(const Field & F,
-				      typename Field::Element * A,
-				      size_t r,
-				      size_t m, size_t n, size_t lda)
-{
-	typedef typename Field::RandIter Randiter ;
-	typedef typename Field::Element  Element ;
-	Randiter R(F);
-	NonzeroRandIter<Field,Randiter> nzR(F,R);
-
-	size_t * P = new size_t[n];
-	size_t * Q = new size_t[m];
-	for (size_t i = 0 ; i < m ; ++i ) Q[i] = 0;
-	for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
-
-	Element * U = new Element[m*n];
-	Element * L = new Element[m*m];
-
-
-	/*  Create L, lower invertible */
-	for (size_t i=0 ; i<m ; ++i)
-		for (size_t j= 0; j<i ;++j)
-			R.random( L[i*m+j] );
-
-	for (size_t i=0 ; i<m ; ++i)
-		nzR.random( L[i*m+i] );
-
-	for (size_t i=0 ; i<m ; ++i)
-		for (size_t j= i+1; j<m ;++j)
-			 F.init(L[i*m+j],0);
-
-
-	/*  Create U, upper or rank r */
-	for (size_t i=0 ; i<r ; ++i)
-		for (size_t j= i+1; j<r ;++j)
-			R.random( U[i*n+j] );
-	for (size_t i=0 ; i<r ; ++i)
-			nzR.random( U[i*n+i] );
-	for (size_t i=0 ; i<r ; ++i)
-		for (size_t j= 0 ; j<i ;++j)
-			 F.init(U[i*n+j],0);
-
-	for (size_t i=r ; i<m ; ++i)
-		for (size_t j= 0 ; j<n ;++j)
-			 F.init(U[i*n+j],0);
-
-	for (size_t i=0 ; i<r ; ++i)
-		for (size_t j= r ; j<n ;++j)
-			R.random( U[i*n+j] );
-
-	/*  Create a random P,Q */
-
-	for (size_t i = 0 ; i < n ; ++i)
-		P[i] = i + RandInt(0UL,n-i);
-	for (size_t i = 0 ; i < m ; ++i)
-		Q[i] = i + RandInt(0UL,m-i);
-
-	/*  compute product */
-
-	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-			m,0,(int)n, U, n, P);
-	FFPACK::applyP (F, FFLAS::FflasLeft,  FFLAS::FflasNoTrans,
-		       	m,0,(int)m, L, m, Q);
-	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-		      m,n,m, 1.0, L,m, U,n, 0.0, A,lda);
-	//! @todo compute LU with ftrtr
-
-	delete[] P;
-	delete[] L;
-	delete[] U;
-	delete[] Q;
-
-	return A;
-
-}
 
 /*! Tests the LUdivine routine.
  * @tparam Field Field
@@ -192,7 +60,8 @@ bool test_lu(const Field & F,
 	if (trans == FFLAS::FflasTrans){
 		maxP = m;
 		maxQ = n;
-	} else{
+	}
+	else{
 		maxP = n;
 		maxQ = m;
 	}
@@ -266,7 +135,8 @@ bool test_lu(const Field & F,
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 			      m,n,m, 1.0, L,m, U,n, 0.0, C,n);
 		//delete[] A;
-	} else {
+	}
+       	else {
 
 		L = new Element[m*n];
 		U = new Element[n*n];
@@ -413,6 +283,51 @@ bool launch_test(const Field & F,
 	return fail;
 }
 
+#if 0
+template<class Field>
+bool test_lu_append(const Field & F,
+		    const typename Field::Element * A,
+		    size_t r,
+		    size_t m, size_t n, size_t lda)
+{
+	bool fail = false ;
+	size_t k = std::min(m,n)/2+1 ;
+	typedef typename Field::Element Element ;
+	Element * B = new Element[k*lda];
+	size_t R = 2*k/3+1;
+	if (R > k) R = k ;
+	if (k != 1) --R ;
+	RandomMatrixWithRank(F,B,R,k,n,lda);
+	size_t * PP,QQ ;
+	size_t * P = new size_t[n] ;
+	size_t * Q = new size_t[m] ;
+
+	size_t * LU = new size_t[m*lda] ;
+	FFLAS::fcopy(F,m*lda,LU,1,A,1);
+	size_t rr = LUdivine(F,FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,
+			     m,n,
+			     LU,lda,
+			     P,Q);
+	if (rr != r)
+		return fail=true;
+	size_t Rr = LUupdate(F,FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,
+			     m,n,
+			     LU,lda,P,Q,
+			     r,
+			     k,
+			     B,lda,PP,QQ,
+			     R);
+	if (Rr != R)
+		return fail=true ;
+
+	// extract PLUQ from LU
+
+	// extract PLUQ from B
+	return fail ;
+}
+#endif
+
+
 int main(int argc, char** argv){
 	cerr<<setprecision(20);
 	int p = 101;
@@ -433,17 +348,56 @@ int main(int argc, char** argv){
 
 	parseArguments(argc,argv,as);
 
-	typedef ModularBalanced<double> Field;
+	{
+		typedef ModularBalanced<double> Field;
+		typedef Field::Element Element;
+		Field F(p);
 
-	typedef Field::Element Element;
+		for (int i = 0 ; i < iter ; ++i) {
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+		}
+	}
 
-	Field F(p);
+	{
+		typedef Modular<double> Field;
+		typedef Field::Element Element;
+		Field F(p);
 
-	for (int i = 0 ; i < iter ; ++i) {
-		fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-		fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+		for (int i = 0 ; i < iter ; ++i) {
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+		}
+	}
+
+	{
+		typedef ModularBalanced<float> Field;
+		typedef Field::Element Element;
+		Field F(p);
+
+		for (int i = 0 ; i < iter ; ++i) {
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+		}
+	}
+
+	{
+		typedef Modular<float> Field;
+		typedef Field::Element Element;
+		Field F(p);
+
+		for (int i = 0 ; i < iter ; ++i) {
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail &= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+		}
 	}
 
 	return fail ;
