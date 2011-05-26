@@ -644,6 +644,22 @@ namespace FFLAS {
 	// Level 2 routines
 	//---------------------------------------------------------------------
 
+	/** \brief fcopy : \f$B \gets A \f$.
+	 * @param F field
+	 * @param N number of rows to copy
+	 * @param M number of cols to copy
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * \param B vector in \p F
+	 * \param ldb stride of \p B
+	 */
+	template<class Field>
+	static void
+	fcopy (const Field& F, const size_t m, const size_t n,
+	       typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * B, const size_t ldb ) ;
+
+
 	/** fadd : matrix addition.
 	 * Computes \p C = \p A + \p B.
 	 * @param F field
@@ -849,7 +865,7 @@ namespace FFLAS {
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb);
 
-	/** @brief  Field GEneral Matrix Multiply.
+	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
 	 * Computes \f$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C\f$
 	 * \param F field.
@@ -903,7 +919,7 @@ namespace FFLAS {
 		return C;
 	}
 
-	/** @brief  Field GEneral Matrix Multiply.
+	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
 	 * Computes \f$C = \alpha \mathrm{op}(A) \mathrm{op}(B) + \beta C\f$.
 	 * Automatically set Winograd recursion level

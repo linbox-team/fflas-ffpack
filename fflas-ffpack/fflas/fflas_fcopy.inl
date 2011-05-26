@@ -29,7 +29,27 @@ namespace FFLAS {
 		const typename Field::Element * Yi=Y;
 		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
 			F.assign(*Xi,*Yi);
+		return;
 	}
+
+	template<class Field>
+	void fcopy (const Field& F, const size_t m, const size_t n,
+		    typename Field::Element * A, const size_t lda,
+		    const typename Field::Element * B, const size_t ldb )
+	{
+		// if possible, copy one big block
+		if (lda == n && ldb == n) {
+			fcopy(F,m*n,A,1,B,1);
+			return ;
+		}
+		// else, copy row after row
+		for (size_t i = 0 ; i < m ; ++i) {
+			fcopy(F,n,A+i*lda,1,B+i*ldb,1);
+		}
+		return;
+
+	}
+
 
 }
 
