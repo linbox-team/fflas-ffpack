@@ -61,7 +61,7 @@ bool test_lu(const Field & F,
 		maxP = m;
 		maxQ = n;
 	}
-	else{
+	else{ // trans == FFLAS::FflasNoTrans
 		maxP = n;
 		maxQ = m;
 	}
@@ -81,6 +81,7 @@ bool test_lu(const Field & F,
 	}
 
 	Element * C = new Element[m*n]; // compute C=LQUP and check C == A
+	/*  Build L,U */
 	Element * L, *U;
 	if (trans == FFLAS::FflasNoTrans){
 		L = new Element[m*m];
@@ -89,15 +90,18 @@ bool test_lu(const Field & F,
 		Element zero,one;
 		F.init(zero,0.0);
 		F.init(one,1.0);
+		/*  build U */
 		for (size_t i=0; i<R; ++i){
 			for (size_t j=0; j<i; ++j)
 				F.assign ( *(U + i*n + j), zero);
 			for (size_t j=i+1; j<n; ++j)
 				F.assign (*(U + i*n + j), *(B+ i*lda+j));
 		}
-		for (size_t i=R;i<m; ++i)
+		for (size_t i=R;i<m; ++i) {
 			for (size_t j=0; j<n; ++j)
 				F.assign(*(U+i*n+j), zero);
+		}
+		/*  build L */
 		for ( size_t i=0; i<m; ++i ){
 			size_t j=0;
 			for (; j< ((i<R)?i:R) ; ++j )
@@ -107,36 +111,38 @@ bool test_lu(const Field & F,
 		}
 
 		// write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-			       	m,0,(int)R, L, m, Q);
+				m,0,(int)R, L, m, Q);
 		for ( size_t i=0; i<m; ++i )
 			F.assign(*(L+i*(m+1)), one);
 
- 		//write_field(F,cerr<<"L = "<<endl,L,m,m,m);
- 		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-		if (diag == FFLAS::FflasNonUnit)
+		/*  reconstruct the diagonal */
+		//write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+		if (diag == FFLAS::FflasNonUnit) {
 			for ( size_t i=0; i<R; ++i )
 				F.assign (*(U+i*(n+1)), *(B+i*(lda+1)));
-
-		else{
+		}
+		else{ // diag == FFLAS::FflasUnit
 			for ( size_t i=0; i<R; ++i ){
 				*(L+Q[i]*(m+1)) = *(B+Q[i]*lda+i);
 				F.assign (*(U+i*(n+1)),one);
 			}
 		}
-// 		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+		//write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
 
+		/*  Compute LQUP */
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-			       	m,0,(int) R, U, n, P);
+				m,0,(int) R, U, n, P);
 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-			       	n,0,(int)R, U, n, Q);
+				n,0,(int)R, U, n, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 			      m,n,m, 1.0, L,m, U,n, 0.0, C,n);
 		//delete[] A;
 	}
-       	else {
+	else { /*  trans == FFLAS::FflasTrans */
 
 		L = new Element[m*n];
 		U = new Element[n*n];
@@ -145,16 +151,18 @@ bool test_lu(const Field & F,
 		Element zero,one;
 		F.init(zero,0.0);
 		F.init(one,1.0);
+		/*  build L */
 		for (size_t i=0; i<R; ++i){
 			for (size_t j=0; j<i; ++j)
 				F.assign ( *(L + i + j*n), zero);
 			for (size_t j=i+1; j<m; ++j)
 				F.assign (*(L + i + j*n), *(B+ i+j*lda));
 		}
-
-		for (size_t i=R;i<n; ++i)
+		for (size_t i=R;i<n; ++i) {
 			for (size_t j=0; j<m; ++j)
 				F.assign(*(L+i+j*n), zero);
+		}
+		/*  build U */
 		for ( size_t i=0; i<n; ++i ){
 			size_t j=0;
 			for (;  j< ((i<R)?i:R) ; ++j )
@@ -162,44 +170,48 @@ bool test_lu(const Field & F,
 			for (; j<n; ++j )
 				F.assign( *(U+i+j*n), zero);
 		}
-// 		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
-// 		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
+		// 		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
+		// 		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
 
 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-			       	n,0,(int)R, U, n, Q);
-
+				n,0,(int)R, U, n, Q);
 
 		for (size_t i=0; i<n; ++i)
 			F.assign (*(U+i*(n+1)),one);
 
-		if (diag == FFLAS::FflasNonUnit)
+		/*  reconstruct the diagonal */
+		if (diag == FFLAS::FflasNonUnit) {
 			for ( size_t i=0; i<R; ++i )
 				F.assign (*(L+i*(n+1)), *(B+i*(lda+1)));
-		else{
+		}
+		else{ // diag == FFLAS::FflasUnit
 			for ( size_t i=0; i<R; ++i ){
 				*(U+Q[i]*(n+1)) = *(B+Q[i]+i*lda);
 				F.assign (*(L+i*(n+1)),one);
 			}
 		}
-// 		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
-// 		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
+		// 		write_field(F,cerr<<"L = "<<endl,L,m,n,n);
+		// 		write_field(F,cerr<<"U = "<<endl,U,n,n,n);
 
+		/*  Compute LQUP */
 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-			       	n,0,(int)R, L, n, P);
+				n,0,(int)R, L, n, P);
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-			       	m,0,(int)R, L, n, Q);
+				m,0,(int)R, L, n, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 			      m,n,n, 1.0, L,n, U,n, 0.0, C,n);
 	}
+	/*  check equality */
 	bool fail = false;
-	for (size_t i=0; i<m; ++i)
+	for (size_t i=0; i<m; ++i) {
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(C+i*n+j))){
 				std::cerr << " A["<<i<<","<<j<<"]    = " << (*(A+i*lda+j))
-					  << " PLUQ["<<i<<","<<j<<"] = " << (*(C+i*n+j))
-					  << endl;
+				<< " PLUQ["<<i<<","<<j<<"] = " << (*(C+i*n+j))
+				<< endl;
 				fail=true;
 			}
+	}
 
 	delete[] P;
 	delete[] L;
@@ -215,8 +227,8 @@ bool test_lu(const Field & F,
 
 template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
 bool launch_test(const Field & F,
-	     size_t r,
-	     size_t m, size_t n)
+		 size_t r,
+		 size_t m, size_t n)
 {
 	typedef typename Field::Element Element ;
 	bool fail = false ;
