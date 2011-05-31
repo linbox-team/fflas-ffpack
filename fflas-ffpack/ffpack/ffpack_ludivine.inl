@@ -56,7 +56,8 @@ namespace FFPACK {
 			if (k+1<M){
 				ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, r, A, lda, A+(k+1)*lda, 1);
 				fgemv (F, FFLAS::FflasTrans, r, N-r, mone, A+r, lda, A+(k+1)*lda, 1, one, A+(k+1)*lda+r, 1);
-			} else
+			}
+			else
 				return r;
 		}
 
@@ -144,7 +145,8 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						if (!F.isZero(*(Aini+j)))
 							F.mulin (*(Aini+j),invpiv);
-				} else
+				}
+				else
 					for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
 						if (!F.isZero(*(Aini+i)))
 							F.mulin (*(Aini+i),invpiv);
@@ -161,7 +163,8 @@ namespace FFPACK {
 			if (Diag == FFLAS::FflasNonUnit){
 				Aini = A;
 				l = N;
-			} else {
+			}
+			else {
 				Aini = A+1;
 				l=N-1;
 			}
@@ -243,7 +246,8 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						if (!F.isZero(*(Aini+j)))
 							F.mulin (*(Aini+j),invpiv);
-				} else
+				}
+				else
 					for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
 						if (!F.isZero(*(Aini+i)))
 							F.mulin (*(Aini+i),invpiv);
@@ -269,7 +273,8 @@ namespace FFPACK {
 			if (Diag == FFLAS::FflasNonUnit){
 				Aini = A;
 				l = N;
-			} else {
+			}
+			else {
 				Aini = A+1;
 				l=N-1;
 			}
@@ -351,7 +356,8 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						if (!F.isZero(*(Aini+j)))
 							F.mulin (*(Aini+j),invpiv);
-				} else
+				}
+				else
 					for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
 						if (!F.isZero(*(Aini+i)))
 							F.mulin (*(Aini+i),invpiv);
@@ -377,7 +383,8 @@ namespace FFPACK {
 			if (Diag == FFLAS::FflasNonUnit){
 				Aini = A;
 				l = N;
-			} else {
+			}
+			else {
 				Aini = A+1;
 				l=N-1;
 			}
@@ -397,11 +404,11 @@ namespace FFPACK {
 	LUdivine (const Field& F,
 		  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 		  const size_t M, const size_t N,
-		  typename Field::Element * A, const size_t lda, size_t*P,
-		  size_t *Q
+		  typename Field::Element * A, const size_t lda,
+		  size_t*P, size_t *Q
 		  , const FFPACK::FFPACK_LUDIVINE_TAG LuTag // =FFPACK::FfpackLQUP
 		  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
-		  )
+		 )
 	{
 
 		if ( !(M && N) ) return 0;
@@ -418,289 +425,312 @@ namespace FFPACK {
 			incCol = lda;
 			colDim = M;
 			rowDim = N;
-		} else {
+		}
+		else {
 			incRow = lda;
 			incCol = 1;
 			colDim = N;
 			rowDim = M;
 		}
 
-		if ((rowDim < cutoff) && (colDim < 2*cutoff)) // the coeff 2 is experimentally determined!
+		if ((rowDim < cutoff) && (colDim < 2*cutoff)) { // the coeff 2 is experimentally determined!
 			return LUdivine_small (F, Diag, trans, M, N, A, lda, P, Q, LuTag);
-		else if (MN == 1){
-			size_t ip=0;
-			//while (ip<N && !F.isUnit(*(A+ip)))ip++;
-			while (F.isZero (*(A+ip*incCol)))
-				if (++ip == colDim)
-					break;
-			*Q=0;
-			if (ip == colDim){ // current row is zero
-				*P=0;
-				if (colDim == 1){
-					//while (ip<M && !F.isUnit(*(A+ip*lda)))
-					while (ip<rowDim && F.isZero(*(A + ip*incRow))){
-						Q[ip]=ip;
-						ip++;
-					}
-					if (ip == rowDim) {
-						return 0;
-					} else {
-						size_t oldip = ip;
-						if ( Diag == FFLAS::FflasNonUnit ){
-							elt invpiv;
-							F.inv(invpiv,*(A+ip*incRow));
-							while(++ip<rowDim)
-								F.mulin(*(A + ip*incRow), invpiv);
-							elt tmp;
-							F.assign(tmp, *(A+oldip*incRow));
-							F.assign( *(A+oldip*incRow), *A);
-							F.assign( *A, tmp);
+		}
+		else { // recursively :
+			if (MN == 1){
+				size_t ip=0;
+				//while (ip<N && !F.isUnit(*(A+ip)))ip++;
+				while (F.isZero (*(A+ip*incCol)))
+					if (++ip == colDim)
+						break;
+				*Q=0;
+				if (ip == colDim){ // current row is zero
+					*P=0;
+					if (colDim == 1){
+						//while (ip<M && !F.isUnit(*(A+ip*lda)))
+						while (ip<rowDim && F.isZero(*(A + ip*incRow))){
+							Q[ip]=ip;
+							ip++;
 						}
-						*Q=oldip;
+						if (ip == rowDim) {
+							return 0;
+						}
+						else {
+							size_t oldip = ip;
+							if ( Diag == FFLAS::FflasNonUnit ){
+								elt invpiv;
+								F.inv(invpiv,*(A+ip*incRow));
+								while(++ip<rowDim)
+									F.mulin(*(A + ip*incRow), invpiv);
+								elt tmp;
+								F.assign(tmp, *(A+oldip*incRow));
+								F.assign( *(A+oldip*incRow), *A);
+								F.assign( *A, tmp);
+							}
+							*Q=oldip;
 
-						return 1;
+							return 1;
+						}
+					}
+					else{
+					       	*Q=0; return 0;
 					}
 				}
-				else{ *Q=0; return 0;}
+				*P=ip;
+				if (ip!=0){
+					// swap the pivot
+					typename Field::Element tmp=*A;
+					*A = *(A + ip*incCol);
+					*(A + ip*incCol) = tmp;
+				}
+				elt invpiv;
+				F.inv(invpiv, *A);
+				if ( Diag == FFLAS::FflasUnit ){
+					// Normalisation of the row
+					for (size_t k=1; k<colDim; k++)
+						F.mulin(*(A+k*incCol), invpiv);
+				}
+				else  {
+					if ( colDim==1 )
+					while(++ip<rowDim)
+						F.mulin(*(A + ip*incRow), invpiv);
+				}
+				return 1;
 			}
-			*P=ip;
-			if (ip!=0){
-				// swap the pivot
-				typename Field::Element tmp=*A;
-				*A = *(A + ip*incCol);
-				*(A + ip*incCol) = tmp;
-			}
-			elt invpiv;
-			F.inv(invpiv, *A);
-			if ( Diag == FFLAS::FflasUnit ){
-				// Normalisation of the row
-				for (size_t k=1; k<colDim; k++)
-					F.mulin(*(A+k*incCol), invpiv);
-			}
-			else if ( colDim==1 )
-				while(++ip<rowDim)
-					F.mulin(*(A + ip*incRow), invpiv);
-			return 1;
-		} else { // MN>1
-			size_t Nup = rowDim >> 1;
-			size_t Ndown =  rowDim - Nup;
-			// Recursive call on NW
-			size_t R, R2;
-			if (trans == FFLAS::FflasTrans){
-				R = LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q, LuTag, cutoff);
-				typename Field::Element *Ar = A + Nup*incRow; // SW
-				typename Field::Element *Ac = A + R*incCol;     // NE
-				typename Field::Element *An = Ar + R*incCol;    // SE
-				if (!R){
-					if (LuTag == FFPACK::FfpackSingular )
+			else { // MN>1
+				size_t Nup = rowDim >> 1;
+				size_t Ndown =  rowDim - Nup;
+				// Recursive call on NW
+				size_t R, R2;
+				if (trans == FFLAS::FflasTrans){
+					R = LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q,
+						      LuTag, cutoff);
+
+					typename Field::Element *Ar = A + Nup*incRow;   // SW
+					typename Field::Element *Ac = A + R*incCol;     // NE
+					typename Field::Element *An = Ar+ R*incCol;     // SE
+
+					if (!R){
+						if (LuTag == FFPACK::FfpackSingular )
+							return 0;
+					}
+					else {
+						FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+								Ndown, 0,(int) R, Ar, lda, P);
+						// Ar <- L1^-1 Ar
+						ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
+						       FFLAS::FflasNoTrans, Diag, R, Ndown,
+						       one, A, lda, Ar, lda);
+						// An <- An - Ac*Ar
+						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
+						       Mone, Ac, lda, Ar, lda, one, An, lda);
+					}
+					// Recursive call on SE
+					R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
+					for (size_t i = R; i < R + R2; ++i)
+						P[i] += R;
+					if (R2) {
+						// An <- An.P2
+						FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+								Nup,(int) R, (int)(R+R2), A, lda, P);
+					}
+					else {
+						if (LuTag == FFPACK::FfpackSingular)
+							return 0;
+					}
+
+				}
+				else { // trans == FFLAS::FflasNoTrans
+					R = LUdivine (F, Diag, trans, Nup, colDim, A, lda, P, Q, LuTag, cutoff);
+					typename Field::Element *Ar = A + Nup*incRow;   // SW
+					typename Field::Element *Ac = A + R*incCol;     // NE
+					typename Field::Element *An = Ar+ R*incCol;     // SE
+
+
+					if (!R){
+						if (LuTag == FFPACK::FfpackSingular )
+							return 0;
+					}
+					else {
+						// Ar <- Ar.P
+						FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+								Ndown, 0,(int) R, Ar, lda, P);
+						// Ar <- Ar.U1^-1
+						ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
+						       FFLAS::FflasNoTrans, Diag, Ndown, R,
+						       one, A, lda, Ar, lda);
+						// An <- An - Ar*Ac
+						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
+						       Mone, Ar, lda, Ac, lda, one, An, lda);
+
+					}
+					// Recursive call on SE
+					R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup, LuTag, cutoff);
+					for (size_t i = R; i < R + R2; ++i)
+						P[i] += R;
+					if (R2)
+						// An <- An.P2
+						FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+								Nup,(int) R, (int)(R+R2), A, lda, P);
+					else if (LuTag == FFPACK::FfpackSingular)
 						return 0;
-				} else {
-					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-							Ndown, 0,(int) R, Ar, lda, P);
-					// Ar <- L1^-1 Ar
-					ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
-					       FFLAS::FflasNoTrans, Diag, R, Ndown,
-					       one, A, lda, Ar, lda);
-					// An <- An - Ac*Ar
-					fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-					       Mone, Ac, lda, Ar, lda, one, An, lda);
-				}
-				// Recursive call on SE
-				R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
-				for (size_t i = R; i < R + R2; ++i)
-					P[i] += R;
-				if (R2)
-					// An <- An.P2
-					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-							Nup,(int) R, (int)(R+R2), A, lda, P);
-				else if (LuTag == FFPACK::FfpackSingular)
-					return 0;
-
-			} else{
-				R = LUdivine (F, Diag, trans, Nup, colDim, A, lda, P, Q, LuTag, cutoff);
-				typename Field::Element *Ar = A + Nup*incRow; // SW
-				typename Field::Element *Ac = A + R*incCol;     // NE
-				typename Field::Element *An = Ar + R*incCol;    // SE
-				if (!R){
-					if (LuTag == FFPACK::FfpackSingular )
-						return 0;
-				} else {
-					// Ar <- Ar.P
-					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-							Ndown, 0,(int) R, Ar, lda, P);
-					// Ar <- Ar.U1^-1
-					ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
-					       FFLAS::FflasNoTrans, Diag, Ndown, R,
-					       one, A, lda, Ar, lda);
-					// An <- An - Ar*Ac
-					fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-					       Mone, Ar, lda, Ac, lda, one, An, lda);
 
 				}
-				// Recursive call on SE
-				R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup, LuTag, cutoff);
-				for (size_t i = R; i < R + R2; ++i)
-					P[i] += R;
-				if (R2)
-					// An <- An.P2
-					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-							Nup,(int) R, (int)(R+R2), A, lda, P);
-				else if (LuTag == FFPACK::FfpackSingular)
-					return 0;
-
-			}
-			// Non zero row permutations
-			for (size_t i = Nup; i < Nup + R2; i++)
-				Q[i] += Nup;
-			if (R < Nup){
-				// Permutation of the 0 rows
-				if (Diag == FFLAS::FflasNonUnit){
-					for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
-						FFLAS::fcopy( F, colDim - j, A + j * (lda + 1), incCol, A + i*incRow + j*incCol, incCol);
-						for (typename Field::Element *Ai = A + i*incRow + j*incCol;
-						     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
-							F.assign (*Ai, zero);
-						size_t t = Q[j];
-						Q[j]=Q[i];
-						Q[i] = t;
+				// Non zero row permutations
+				for (size_t i = Nup; i < Nup + R2; i++)
+					Q[i] += Nup;
+				if (R < Nup){
+					// Permutation of the 0 rows
+					if (Diag == FFLAS::FflasNonUnit){
+						for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
+							FFLAS::fcopy( F, colDim - j, A + j * (lda + 1), incCol, A + i*incRow + j*incCol, incCol);
+							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
+							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
+								F.assign (*Ai, zero);
+							///@todo std::swap ?
+							size_t t = Q[j];
+							Q[j]=Q[i];
+							Q[i] = t;
+						}
 					}
-				} else {
-					for ( size_t i = Nup, j = R+1 ; i < Nup + R2; ++i, ++j){
-						FFLAS::fcopy( F, colDim - j,
-							      A + (j-1)*incRow + j*incCol, incCol,
-							      A + i*incRow + j*incCol, incCol);
-						for (typename Field::Element *Ai = A + i*incRow + j*incCol;
-						     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
-							F.assign (*Ai, zero);
-						size_t t = Q[j-1];
-						Q[j-1]=Q[i];
-						Q[i] = t;
+					else { // Diag == FFLAS::FflasUnit
+						for ( size_t i = Nup, j = R+1 ; i < Nup + R2; ++i, ++j){
+							FFLAS::fcopy( F, colDim - j,
+								      A + (j-1)*incRow + j*incCol, incCol,
+								      A + i*incRow + j*incCol, incCol);
+							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
+							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
+								F.assign (*Ai, zero);
+							size_t t = Q[j-1];
+							Q[j-1]=Q[i];
+							Q[i] = t;
+						}
 					}
 				}
+				return R + R2;
 			}
-			return R + R2;
 		}
 	}
 
 	namespace Protected {
 
-	//---------------------------------------------------------------------
-	// LUdivine_construct: (Specialisation of LUdivine)
-	// LUP factorisation of the Krylov base matrix of A^t and v.
-	// When all rows have been factorized in A, and rank is full,
-	// then new krylov vectors are computed and then triangularized
-	// P is the permutation matrix stored in the lapack style
-	// nRowX is the number of Krylov vectors already computed,
-	// nUsedRowX is the number of Krylov vectors already triangularized
-	//---------------------------------------------------------------------
+		//---------------------------------------------------------------------
+		// LUdivine_construct: (Specialisation of LUdivine)
+		// LUP factorisation of the Krylov base matrix of A^t and v.
+		// When all rows have been factorized in A, and rank is full,
+		// then new krylov vectors are computed and then triangularized
+		// P is the permutation matrix stored in the lapack style
+		// nRowX is the number of Krylov vectors already computed,
+		// nUsedRowX is the number of Krylov vectors already triangularized
+		//---------------------------------------------------------------------
 
-	template <class Field>
-	size_t
-	LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
-			    const size_t M, const size_t N,
-			    const typename Field::Element * A, const size_t lda,
-			    typename Field::Element * X, const size_t ldx,
-			    typename Field::Element * u, size_t* P,
-			    bool computeX
-			    , const FFPACK::FFPACK_MINPOLY_TAG MinTag //= FFPACK::FfpackDense
-			    , const size_t kg_mc// =0
-			    , const size_t kg_mb// =0
-			    , const size_t kg_j // =0
-			    )
-	{
+		template <class Field>
+		size_t
+		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
+				    const size_t M, const size_t N,
+				    const typename Field::Element * A, const size_t lda,
+				    typename Field::Element * X, const size_t ldx,
+				    typename Field::Element * u, size_t* P,
+				    bool computeX
+				    , const FFPACK::FFPACK_MINPOLY_TAG MinTag //= FFPACK::FfpackDense
+				    , const size_t kg_mc// =0
+				    , const size_t kg_mb// =0
+				    , const size_t kg_j // =0
+				  )
+		{
 
-		static typename Field::Element Mone, one, zero;
-		F.init(Mone, -1.0);
-		F.init(one, 1.0);
-		F.init(zero,0.0);
-		size_t MN = MIN(M,N);
+			static typename Field::Element Mone, one, zero;
+			F.init(Mone, -1.0);
+			F.init(one, 1.0);
+			F.init(zero,0.0);
+			size_t MN = MIN(M,N);
 
-		if (MN == 1){
-			size_t ip=0;
-			while (ip<N && F.isZero(*(X+ip))){ip++;}
-			if (ip==N){ // current row is zero
-				*P=0;
-				return 0;
-			}
-			*P=ip;
-			if (ip!=0){
-				// swap the pivot
-				typename Field::Element tmp=*X;
-				*X = *(X+ip);
-				*(X+ip) = tmp;
-			}
-			if ( Diag == FFLAS::FflasUnit ){
-				typename Field::Element invpiv;
-				F.inv(invpiv, *X);
-
-				// Normalisation of the row
-				for (size_t k=1; k<N; k++)
-					F.mulin(*(X+k), invpiv);
-			}
-			if (N==1 && M>1 && computeX)// Only appends when A is 1 by 1
-				F.mul(*(X+ldx),*X, *A);
-
-			return 1;
-		}
-		else{ // MN>1
-			size_t Nup = MN>>1;
-			size_t Ndown =  M - Nup;
-
-			// Recursive call on NW
-			size_t R = LUdivine_construct(F, Diag, Nup, N, A, lda, X, ldx, u,
-						      P, computeX, MinTag, kg_mc, kg_mb, kg_j );
-			if (R==Nup){
-				typename Field::Element * Xr = X + Nup*ldx; //  SW
-				typename Field::Element * Xc = X + Nup;     //  NE
-				typename Field::Element * Xn = Xr + Nup;    //  SE
-				typename Field::Element * Xi = Xr;
-				if ( computeX ){
-					if (MinTag == FFPACK::FfpackDense)
-						for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
-							fgemv(F, FFLAS::FflasNoTrans, N, N, one,
-							      A, lda, u, 1, zero, Xi,1);
-							FFLAS::fcopy(F, N, u,1,Xi, 1);
-						}
-					else // Keller-Gehrig Fast algorithm's matrix
-						for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
-							FFPACK::Protected::fgemv_kgf( F, N, A, lda, u, 1, Xi, 1,
-								   kg_mc, kg_mb, kg_j );
-							FFLAS::fcopy(F, N, u,1,Xi, 1);
-						}
+			if (MN == 1){
+				size_t ip=0;
+				while (ip<N && F.isZero(*(X+ip))){ip++;}
+				if (ip==N){ // current row is zero
+					*P=0;
+					return 0;
 				}
-				// Apply the permutation on SW
-				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
-						Ndown, 0,(int) R, Xr, ldx, P);
-				// Triangular block inversion of NW and apply to SW
-				// Xr <- Xr.U1^-1
-				ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag,
-				       Ndown, R, one, X, ldx, Xr, ldx);
+				*P=ip;
+				if (ip!=0){
+					// swap the pivot
+					typename Field::Element tmp=*X;
+					*X = *(X+ip);
+					*(X+ip) = tmp;
+				}
+				if ( Diag == FFLAS::FflasUnit ){
+					typename Field::Element invpiv;
+					F.inv(invpiv, *X);
 
-				// Update of SE
-				// Xn <- Xn - Xr*Xc
-				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-Nup, Nup,
-				       Mone, Xr, ldx, Xc, ldx, one, Xn, ldx);
+					// Normalisation of the row
+					for (size_t k=1; k<N; k++)
+						F.mulin(*(X+k), invpiv);
+				}
+				if (N==1 && M>1 && computeX)// Only appends when A is 1 by 1
+					F.mul(*(X+ldx),*X, *A);
 
-				// Recursive call on SE
-
-				size_t R2 = LUdivine_construct(F, Diag, Ndown, N-Nup, A, lda,
-							       Xn, ldx, u, P + Nup,
-							       false, MinTag, kg_mc, kg_mb, kg_j);
-				for ( size_t i=R;i<R+R2;++i) P[i] += R;
-
-				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
-						Nup, (int)R, (int)(R+R2), X, ldx, P);
-
-				return R+=R2;
+				return 1;
 			}
-			else
-				return R;
-			// Rank deficient matrices can only be factorized
-			// under the condition: the first R rows are linearly independent
-			// If not, the lower block is never factorized as soon as the
-			// upper block is rank defficient
+			else{ // MN>1
+				size_t Nup = MN>>1;
+				size_t Ndown =  M - Nup;
+
+				// Recursive call on NW
+				size_t R = LUdivine_construct(F, Diag, Nup, N, A, lda, X, ldx, u,
+							      P, computeX, MinTag, kg_mc, kg_mb, kg_j );
+				if (R==Nup){
+					typename Field::Element * Xr = X + Nup*ldx; //  SW
+					typename Field::Element * Xc = X + Nup;     //  NE
+					typename Field::Element * Xn = Xr + Nup;    //  SE
+					typename Field::Element * Xi = Xr;
+					if ( computeX ){
+						if (MinTag == FFPACK::FfpackDense)
+							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
+								fgemv(F, FFLAS::FflasNoTrans, N, N, one,
+								      A, lda, u, 1, zero, Xi,1);
+								FFLAS::fcopy(F, N, u,1,Xi, 1);
+							}
+						else // Keller-Gehrig Fast algorithm's matrix
+							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
+								FFPACK::Protected::fgemv_kgf( F, N, A, lda, u, 1, Xi, 1,
+											      kg_mc, kg_mb, kg_j );
+								FFLAS::fcopy(F, N, u,1,Xi, 1);
+							}
+					}
+					// Apply the permutation on SW
+					FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+							Ndown, 0,(int) R, Xr, ldx, P);
+					// Triangular block inversion of NW and apply to SW
+					// Xr <- Xr.U1^-1
+					ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag,
+					       Ndown, R, one, X, ldx, Xr, ldx);
+
+					// Update of SE
+					// Xn <- Xn - Xr*Xc
+					fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-Nup, Nup,
+					       Mone, Xr, ldx, Xc, ldx, one, Xn, ldx);
+
+					// Recursive call on SE
+
+					size_t R2 = LUdivine_construct(F, Diag, Ndown, N-Nup, A, lda,
+								       Xn, ldx, u, P + Nup,
+								       false, MinTag, kg_mc, kg_mb, kg_j);
+					for ( size_t i=R;i<R+R2;++i) P[i] += R;
+
+					FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
+							Nup, (int)R, (int)(R+R2), X, ldx, P);
+
+					return R+=R2;
+				}
+				else
+					return R;
+				// Rank deficient matrices can only be factorized
+				// under the condition: the first R rows are linearly independent
+				// If not, the lower block is never factorized as soon as the
+				// upper block is rank defficient
+			}
 		}
-	}
 
 	} // Protected
 
@@ -982,22 +1012,22 @@ namespace FFPACK {
 				// Si plusieurs niveaux rec, remplacer X2 par [NW;I2]
 				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
 						mo2-q1-q3b,(int) q1, (int)(q1+q3),
-					NW/*+(q1+q3b)*ld1*/, ld1, P1);
+						NW/*+(q1+q3b)*ld1*/, ld1, P1);
 				FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
 						q2,(int) q1, (int)(q1+q3),
-					SW/*+(q1+q3b)*ld1*/, ld3, P1);
+						SW/*+(q1+q3b)*ld1*/, ld3, P1);
 
 
 				// A faire si plusieurs niveaux recursifs
 				// B2 = B2.P3b
 				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 						q1,(int) q2, (int)(q2+q3b),
-					NW, ld2, P2);
+						NW, ld2, P2);
 				//flaswp(F,q1,NE,lda,no2+q2,no2+q2+q3b,P,1);
 				// E2 = E2.P3b
 				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 						q2,(int) q2, (int)(q2+q3b),
-					SE, ld4, P2);
+						SE, ld4, P2);
 				//flaswp(F,q2,SE+q2,lda,no2+q2,no2+q2+q3b,P,1);
 			}
 
@@ -1037,12 +1067,12 @@ namespace FFPACK {
 			// [G1;O3] = [G1;O3].P4
 			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					q1+q3b, (int)(q1+q3), (int)(q1+q3+q4),
-				NW, ld1, P1);
+					NW, ld1, P1);
 			//flaswp(F,q1+q3b,NE,lda,no2+q2,no2+q2+q3b,P,1);
 			// [I2;F3] = [I2;F3].P4
 			FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					q2+q3, (int)(q1+q3),(int) (q1+q3+q4),
-				SW, ld3, P1);
+					SW, ld3, P1);
 			//flaswp(F,q2,SE+q2,lda,no2+q2,no2+q2+q3b,P,1);
 		}
 		//!!!!!! Attention a appliquer Q4, Q2, Q3, Q3b a gauche !!!!!!!
@@ -1161,6 +1191,252 @@ namespace FFPACK {
 		//std::cerr<<q1<<" "<<q2<<" "<<q3<<" "<<q3b<<" "<<q4<<std::endl;
 		return q1+q2+q3+q3b+q4;
 	}
+
+	template <class Field>
+	size_t LUpdate (const Field& F,
+			const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
+			const size_t M, const size_t N,
+			typename Field::Element * A, const size_t lda,
+			const size_t R,
+			const size_t K,
+			typename Field::Element * B, const size_t ldb,
+			size_t*P, size_t *Q
+			, const FFPACK::FFPACK_LUDIVINE_TAG LuTag // =FFPACK::FfpackLQUP
+			, const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
+		       )
+	{
+		if (trans == FFLAS::FflasTrans)
+			throw Failure(__func__,__FILE__,__LINE__,"Transposed version is not implemented yet");
+
+		if ( !K ) {  // no line to append
+			std::cout << "no row to append" << std::endl;
+			return R;
+		}
+		if ( !R ) { // A was null
+			std::cout << "A was 0" << std::endl;
+			// LU on B
+			size_t R2 = LUdivine(F,Diag,trans,K,N,B,lda,P,Q,LuTag,cutoff);
+			if (!R2)
+				return 0 ;
+			// move to B and A
+			if (K <= M) {
+				FFLAS::fcopy(F,K,N,A,lda,B,ldb);
+			}
+			else { // K >M
+				FFLAS::fcopy(F,M,N,A,lda,B,ldb);
+				FFLAS::fcopy(F,M-K,N,B,ldb,B+M*ldb,ldb);
+				FFLAS::fzero(F,M,N,B+(M-K)*ldb,ldb);
+			}
+			return R2 ;
+		}
+
+		typedef typename Field::Element elt;
+		static elt Mone, one, zero;
+		F.init(Mone, -1.0);
+		F.init(one,1.0);
+		F.init(zero,0.0);
+		// size_t MN = MIN(M,N);
+
+		size_t incRow, incCol, rowDim, colDim;
+#if 0 /*  not working */
+		if (trans == FFLAS::FflasTrans){
+			incRow = 1;
+			incCol = lda;
+			colDim = M;
+			rowDim = N;
+		}
+		else
+#endif
+		{ // trans == FFLAS::FflasNoTrans
+			incRow = lda;
+			incCol = 1;
+			colDim = N;
+			rowDim = M;
+		}
+
+#if 0 /*  not ported */
+		if (MN == 1){
+			size_t ip=0;
+			//while (ip<N && !F.isUnit(*(A+ip)))ip++;
+			while (F.isZero (*(A+ip*incCol)))
+				if (++ip == colDim)
+					break;
+			Q[0] = 0;
+			if (ip == colDim){ // current row is zero
+				P[0] = 0;
+				if (colDim == 1){
+					while (ip<rowDim && F.isZero(*(A + ip*incRow))){
+						Q[ip]=ip;
+						ip++;
+					}
+					if (ip == rowDim) {
+						return 0;
+					}
+					else {
+						size_t oldip = ip;
+						if ( Diag == FFLAS::FflasNonUnit ){
+							elt invpiv;
+							F.inv(invpiv,*(A+ip*incRow));
+							while(++ip<rowDim)
+								F.mulin(*(A + ip*incRow), invpiv);
+							elt tmp;
+							F.assign(tmp, *(A+oldip*incRow));
+							F.assign( *(A+oldip*incRow), *A);
+							F.assign( *A, tmp);
+						}
+						*Q=oldip;
+
+						return 1;
+					}
+				}
+				else{ *Q=0; return 0;}
+			}
+			*P=ip;
+			if (ip!=0){
+				// swap the pivot
+				typename Field::Element tmp=*A;
+				*A = *(A + ip*incCol);
+				*(A + ip*incCol) = tmp;
+			}
+			elt invpiv;
+			F.inv(invpiv, *A);
+			if ( Diag == FFLAS::FflasUnit ){
+				// Normalisation of the row
+				for (size_t k=1; k<colDim; k++)
+					F.mulin(*(A+k*incCol), invpiv);
+			}
+			else if ( colDim==1 )
+				while(++ip<rowDim)
+					F.mulin(*(A + ip*incRow), invpiv);
+			return 1;
+		}
+		else  // MN>1
+#endif
+		{
+			size_t Nup   = rowDim;
+			size_t Ndown = K;
+			// Recursive call on NW
+			size_t R2;
+#if 0 /*  not working */
+			if (trans == FFLAS::FflasTrans){
+				size_t Nd = N / 2 ;
+				size_t Ng = N-Nd ;
+				typename Field::Element *Ar = A  + Nd;           // SW
+				typename Field::Element *Ac_sup = A  + R*lda;    // NE
+				typename Field::Element *An_sup = Ar + R*lda;    // SE
+				typename Field::Element *Ac_inf = B  ;           // NE
+				typename Field::Element *An_sup = B + Nd;        // SE
+
+
+
+				// Ar <- P.Ar
+				FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+						Ndown, 0,(int) R, Ar, lda, P);
+				// Ar <- L1^-1 Ar
+				ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
+				       FFLAS::FflasNoTrans, Diag, R, Ndown,
+				       one, A, lda, Ar, lda);
+				// An <- An - Ac*Ar
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
+				       Mone, Ac, lda, Ar, lda, one, An, lda);
+				// LU call on SE
+				R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup,
+					       LuTag, cutoff);
+				for (size_t i = R; i < R + R2; ++i)
+					P[i] += R;
+				if (R2) {
+					// An <- An.P2
+					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
+							Nup,(int) R, (int)(R+R2), A, lda, P);
+				}
+				else { // !R2
+					if (LuTag == FFPACK::FfpackSingular)
+						return 0;
+				}
+
+			}
+			else
+#endif
+			{ // trans == FFLAS::FflasNoTrans
+				typename Field::Element *Ac = A  + R*incCol;    // NE
+				typename Field::Element *Ar = B;                // SW
+				typename Field::Element *An = Ar + R*incCol;    // SE
+
+
+				// Ar <- Ar.P
+				FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+						Ndown, 0,(int) R, Ar, lda, P);
+				// Ar <- Ar.U1^-1
+				ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
+				       FFLAS::FflasNoTrans, Diag, Ndown, R,
+				       one, A, lda, Ar, lda);
+				// An <- An - Ar*Ac
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
+				       Mone, Ar, lda, Ac, lda, one, An, lda);
+
+				// LU call on SE
+				R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup,
+					     LuTag, cutoff);
+				if (R2) {
+					for (size_t i = R; i < R + R2; ++i)
+						P[i] += R;
+					// An <- An.P2
+					FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
+							Nup,(int) R, (int)(R+R2), A, lda, P);
+
+				}
+				else {
+					if (LuTag == FFPACK::FfpackSingular)
+						return 0;
+				}
+
+			}
+			// Non zero row permutations
+			for (size_t i = Nup; i < Nup + R2; ++i)
+				Q[i] += Nup;
+			if (R < Nup){ // Permutation of the 0 rows
+				if (Diag == FFLAS::FflasNonUnit){
+					for ( size_t i = 0, j = R ; i < R2; ++i, ++j){
+						FFLAS::fcopy( F, colDim - j, A + j * (lda + 1),
+							      incCol, B + i*incRow + j*incCol, incCol);
+						typename Field::Element *Ai = B + i*incRow + j*incCol ;
+						typename Field::Element *Aend = B + colDim*incCol ;
+						for (; Ai != Aend + i*incRow ; Ai+=incCol)
+							F.assign (*Ai, zero);
+						///@todo std::swap ?
+						size_t t = Q[j];
+						Q[j]=Q[Nup+i];
+						Q[Nup+i] = t;
+					}
+				}
+				else { // Diag == FFLAS::FflasUnit
+					for ( size_t i = 0, ii = R+1 ; i < R2; ++i, ++ii){
+						if (ii < M)
+							FFLAS::fcopy( F, colDim - ii,
+								      A + (ii-1)*incRow + ii*incCol, incCol,
+								      B + i*incRow + ii*incCol, incCol);
+						else {
+							std::cout << "dangerous zone" << std::endl;
+							FFLAS::fcopy( F, colDim - ii,
+								      B + (ii-M-1)*incRow + ii*incCol, incCol,
+								      B + i*incRow + ii*incCol, incCol);
+						}
+
+						typename Field::Element *Ai   = B + i*incRow + ii*incCol ;
+						typename Field::Element *Aend = B + colDim*incCol ;
+						for (; Ai != Aend + i*incRow ; Ai+=incCol)
+							F.assign (*Ai, zero);
+						size_t t = Q[ii-1];
+						Q[ii-1]=Q[Nup+i];
+						Q[Nup+i] = t;
+					}
+				}
+			}
+			return R + R2;
+		}
+	}
+
+
 
 } // FFPACK
 

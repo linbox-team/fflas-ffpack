@@ -666,7 +666,7 @@ namespace FFLAS {
 	// Level 2 routines
 	//---------------------------------------------------------------------
 
-	/** \brief fcopy : \f$B \gets A \f$.
+	/** \brief fcopy : \f$A \gets B \f$.
 	 * @param F field
 	 * @param m number of rows to copy
 	 * @param n number of cols to copy
@@ -687,22 +687,42 @@ namespace FFLAS {
 	 * @param n number of cols to zero
 	 * \param A matrix in \p F
 	 * \param lda stride of \p A
+	 * @warning may be buggy if Element is larger than int
 	 */
 	template<class Field>
 	static void
 	fzero (const Field& F, const size_t m, const size_t n,
-	       typename Field::Element * A, const size_t lda,
-	       const typename Field::Element * B, const size_t ldb )
+	       typename Field::Element * A, const size_t lda)
 	{
 
-		typename Field::Element zero = F.init(0UL);
+		typename Field::Element zero ;
+	       	F.init(zero,0UL);
 		if (n == lda) { // contigous data
-			memset(A,zero,m*n);
+			memset(A,(int)zero,m*n);
 		}
 		else { // not contiguous (strided)
 			for (size_t i = 0 ; i < m ; ++i)
-				memset(A+i*lda,zero,m) ;
+				memset(A+i*lda,(int)zero,m) ;
 		}
+	}
+
+	/** \brief fmove : \f$A \gets B \f$ and \f$ B \gets 0\f$.
+	 * @param F field
+	 * @param m number of rows to copy
+	 * @param n number of cols to copy
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * \param B vector in \p F
+	 * \param ldb stride of \p B
+	 */
+	template<class Field>
+	static void
+	fmove (const Field& F, const size_t m, const size_t n,
+	       typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * B, const size_t ldb )
+	{
+		fcopy(F,m,n,A,lda,B,ldb);
+		fzero(F,m,n,B,ldb);
 	}
 
 	/** fadd : matrix addition.

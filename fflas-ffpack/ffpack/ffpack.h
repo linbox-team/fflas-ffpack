@@ -1017,6 +1017,18 @@ else { // Left NullSpace
 		  , const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF
 		  );
 
+	template <class Field>
+	size_t LUpdate (const Field& F,
+			const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
+			const size_t M, const size_t N,
+			typename Field::Element * A, const size_t lda,
+			const size_t R,
+			const size_t K,
+			typename Field::Element * B, const size_t ldb,
+			size_t*P, size_t *Q
+			, const FFPACK::FFPACK_LUDIVINE_TAG LuTag  =FFPACK::FfpackLQUP
+			, const size_t cutoff  =__FFPACK_LUDIVINE_CUTOFF
+		       );
 
 	template<class Element>
 	class callLUdivine_small;
@@ -1064,7 +1076,7 @@ else { // Left NullSpace
 		typename Field::Element * A, const size_t lda, const size_t * P )
 	{
 
-		if ( Side == FFLAS::FflasRight )
+		if ( Side == FFLAS::FflasRight ) {
 			if ( Trans == FFLAS::FflasTrans )
 				for (size_t j = 0 ; j < M ; ++j){
 					for ( size_t i=ibeg; i<(size_t) iend; ++i)
@@ -1079,7 +1091,8 @@ else { // Left NullSpace
 							std::swap(A[j*lda+P[i]],A[j*lda+i]);
 					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
 				}
-		else // Side == FFLAS::FflasLeft
+		}
+		else { // Side == FFLAS::FflasLeft
 			if ( Trans == FFLAS::FflasNoTrans )
 				for (size_t i=ibeg; i<(size_t)iend; ++i){
 					if ( P[i]> (size_t) i )
@@ -1095,6 +1108,7 @@ else { // Left NullSpace
 							      A + i*lda, 1 );
 					}
 				}
+		}
 
 	}
 
