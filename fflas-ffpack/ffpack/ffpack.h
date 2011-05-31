@@ -990,23 +990,26 @@ else { // Left NullSpace
 	       typename Field::Element* A, const size_t lda, size_t * P, size_t * Q, const size_t cutoff);
 
 	/**
-	 * Compute the LQUP factorization of the given matrix using
+	 * @brief Compute the LQUP factorization of the given matrix using
 	 * a block agorithm and return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param Diag  precise whether U should have a unit diagonal or not
-	 * @param trans
+	 * @param trans UNKOWN TAG, probably the \c LU of \f$A^t\f$
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
 	 * @param A input matrix
-	 * @param lda leading dimension of A
+	 * @param lda leading dimension of \p A
 	 * @param P the column permutation
-	 * @param Qt the transpose of the row permutation Q
+	 * @param Qt the transpose of the row permutation \p Q
 	 * @param LuTag flag for setting the earling termination if the matrix
 	 * is singular
-	 * @param cutoff
+	 * @param cutoff UNKOWN TAG, probably a switch to a faster algo below \c cutoff
+	 *
+	 * @return the rank of \p A
+	 * @bib - Jeannerod CP, \emph{\c LSP Matrix Decomposition Revisited}, 2006
+	 * - Pernet C, Brassel M \emph{\c LUdivine, une divine factorisation \c LU}, 2002
 	 */
-	/// LQUP factorization.
 	template <class Field>
 	static size_t
 	LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
