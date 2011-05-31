@@ -248,20 +248,22 @@ bool test_lu_append(const Field & F,
 	size_t M = m + k ;
 	typedef typename Field::Element Element ;
 	Element * Acop = new Element[m*lda] ;
-	memcpy(Acop,A,m*lda*sizeof(Element));
+	FFLAS::fcopy(F,m,n,Acop,lda,A,lda) ;
 
 	Element * Bcop = new Element[k*lda] ;
-	memcpy(Bcop,B,k*lda*sizeof(Element));
+	FFLAS::fcopy(F,k,n,Bcop,lda,B,lda) ;
 
 	Element * Append = new Element[M*lda];
-	memcpy(Append,A,m*lda*sizeof(Element));
-	memcpy(Append+m*lda,B,k*lda*sizeof(Element));
+	FFLAS::fcopy(F,m,n,Append,lda,A,lda) ;
+	FFLAS::fcopy(F,k,n,Append+m*lda,lda,B,lda) ;
 
 	Element * Afull = new Element[M*lda];
-	memcpy(Afull,A,m*lda*sizeof(Element));
-	memcpy(Afull+m*lda,B,k*lda*sizeof(Element));
+	FFLAS::fcopy(F,m,n,Afull,lda,A,lda) ;
+	FFLAS::fcopy(F,k,n,Afull+m*lda,lda,B,lda) ;
 
 
+
+#if 0
 	for (size_t i = 0 ; i < m ; ++i)
 		for (size_t j = 0 ; j < n ; ++j)
 			fflaflas_check(Acop[i*lda+j]==A[i*lda+j]);
@@ -270,11 +272,12 @@ bool test_lu_append(const Field & F,
 			fflaflas_check(Bcop[i*lda+j]==B[i*lda+j]);
 	for (size_t i = 0 ; i < M ; ++i)
 		for (size_t j = 0 ; j < n ; ++j)
-			if (i < m) {
+			if (i < m)
 				fflaflas_check(Afull[i*lda+j]==A[i*lda+j]);
-			}
 			else
 				fflaflas_check(Afull[i*lda+j]==B[(i-m)*lda+j]);
+#endif
+
 
 
 
@@ -748,22 +751,39 @@ bool launch_test_append(const Field & F,
 		delete[] A ;
 		delete[] B ;
 	}
-#if 0
 	{ /*  user given and lda bigger. Rank is max */
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
+		size_t k = m/2+1 ;
 		Element * A = new Element[m*lda];
+		Element * B = new Element[k*lda];
 		RandomMatrixWithRank(F,A,R,m,n,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
+		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
+		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
+		if (fail) std::cout << "failed" << std::endl;
+		delete[] A ;
+	}
+	{ /*  user given and lda bigger. Appended Rank is min */
+		size_t lda = n+10 ;
+		size_t R = std::min(m,n);
+		size_t k = m/2+1 ;
+		Element * A = new Element[m*lda];
+		Element * B = new Element[k*lda];
+		RandomMatrixWithRank(F,A,R,m,n,lda);
+		RandomMatrixWithRank(F,B,0,k,n,lda);
+		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
 	}
 	{ /*  user given and lda bigger. Rank is min */
 		size_t lda = n+10 ;
 		size_t R = 0;
+		size_t k = m/2+1 ;
 		Element * A = new Element[m*lda];
+		Element * B = new Element[k*lda];
 		RandomMatrixWithRank(F,A,R,m,n,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
+		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
+		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
 	}
@@ -772,9 +792,12 @@ bool launch_test_append(const Field & F,
 		size_t N = M ;
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
+		size_t k = R ;
 		Element * A = new Element[M*lda];
+		Element * B = new Element[k*lda];
 		RandomMatrixWithRank(F,A,R,M,N,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
+		RandomMatrixWithRank(F,B,R/2,k,N,lda);
+		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
 	}
@@ -782,10 +805,13 @@ bool launch_test_append(const Field & F,
 		size_t M = std::max(m,n);
 		size_t N = 2*M ;
 		size_t R = M/2 ;
+		size_t k = R ;
 		size_t lda = N+10 ;
 		Element * A = new Element[M*lda];
+		Element * B = new Element[k*lda];
 		RandomMatrixWithRank(F,A,R,M,N,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
+		RandomMatrixWithRank(F,B,k/2,k,N,lda);
+		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
 	}
@@ -793,14 +819,16 @@ bool launch_test_append(const Field & F,
 		size_t M = std::max(m,n);
 		size_t N = M/2 ;
 		size_t R = M/3 ;
+		size_t k = N ;
 		size_t lda = N+10 ;
 		Element * A = new Element[M*lda];
+		Element * B = new Element[k*lda];
 		RandomMatrixWithRank(F,A,R,M,N,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
+		RandomMatrixWithRank(F,A,std::min(k/2,M/2),k,N,lda);
+		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
 	}
-#endif
 
 	return fail;
 }
@@ -812,7 +840,7 @@ int main(int argc, char** argv)
 	int m = 50;
 	int n = 50;
 	int r = 20;
-	int iter = 3 ;
+	int iter = 2 ;
 	bool fail = false;
 
 	static Argument as[] = {

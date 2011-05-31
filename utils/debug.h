@@ -94,11 +94,12 @@
 #endif
 
 #ifndef DEBUG
-#define fflaflas_check(check)
+#define fflaflas_check(check) ((void) 0)
 #else
 #define fflaflas_check(check) \
-if (!(check)) \
-throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); //BB : should work on non gnu compilers too
+if (!(check)) {\
+throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); /*BB : should work on non gnu compilers too */ \
+}
 #endif
 
 

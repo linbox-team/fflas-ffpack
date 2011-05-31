@@ -1226,29 +1226,6 @@ namespace FFPACK {
 	{
 		if (trans == FFLAS::FflasTrans)
 			throw Failure(__func__,__FILE__,__LINE__,"Transposed version is not implemented yet");
-
-		if ( !K ) {  // no line to append
-			std::cout << "no row to append" << std::endl;
-			return R;
-		}
-		if ( !R ) { // A was null
-			std::cout << "A was 0" << std::endl;
-			// LU on B
-			size_t R2 = LUdivine(F,Diag,trans,K,N,B,lda,P,Q,LuTag,cutoff);
-			if (!R2)
-				return 0 ;
-			// move to B and A
-			if (K <= M) {
-				FFLAS::fcopy(F,K,N,A,lda,B,ldb);
-			}
-			else { // K >M
-				FFLAS::fcopy(F,M,N,A,lda,B,ldb);
-				FFLAS::fcopy(F,M-K,N,B,ldb,B+M*ldb,ldb);
-				FFLAS::fzero(F,M,N,B+(M-K)*ldb,ldb);
-			}
-			return R2 ;
-		}
-
 		typedef typename Field::Element elt;
 		static elt Mone, one, zero;
 		F.init(Mone, -1.0);
@@ -1272,6 +1249,78 @@ namespace FFPACK {
 			colDim = N;
 			rowDim = M;
 		}
+
+		size_t Nup   = rowDim;
+		size_t Ndown = K;
+
+
+		if ( !K ) {  // no line to append
+			std::cout << "no row to append" << std::endl;
+			return R;
+		}
+		if ( !R ) { // A was null
+			// std::cout << "A was 0" << std::endl;
+			// LU on B
+			size_t R2 = LUdivine(F,Diag,trans,K,N,B,lda,P,Q+Nup,LuTag,cutoff);
+			if (!R2)
+				return 0 ;
+			// Non zero row permutations
+			for (size_t i = Nup; i < Nup + R2; ++i)
+				Q[i] += Nup;
+			{ // Permutation of the 0 rows Could probably be improved !
+				if (Diag == FFLAS::FflasNonUnit){
+					for ( size_t i = 0, j = R ; i < R2; ++i, ++j){
+						FFLAS::fcopy( F, colDim - j, A + j * (lda + 1),
+							      incCol, B + i*incRow + j*incCol, incCol);
+						typename Field::Element *Ai = B + i*incRow + j*incCol ;
+						typename Field::Element *Aend = B + colDim*incCol ;
+						for (; Ai != Aend + i*incRow ; Ai+=incCol)
+							F.assign (*Ai, zero);
+						///@todo std::swap ?
+						size_t t = Q[j];
+						Q[j]=Q[Nup+i];
+						Q[Nup+i] = t;
+					}
+				}
+				else { // Diag == FFLAS::FflasUnit
+					for ( size_t i = 0, ii = R+1 ; i < R2; ++i, ++ii){
+						if (ii < M)
+							FFLAS::fcopy( F, colDim - ii,
+								      A + (ii-1)*incRow + ii*incCol, incCol,
+								      B + i*incRow + ii*incCol, incCol);
+						else {
+							std::cout << "dangerous zone" << std::endl;
+							FFLAS::fcopy( F, colDim - ii,
+								      B + (ii-M-1)*incRow + ii*incCol, incCol,
+								      B + i*incRow + ii*incCol, incCol);
+						}
+
+						typename Field::Element *Ai   = B + i*incRow + ii*incCol ;
+						typename Field::Element *Aend = B + colDim*incCol ;
+						for (; Ai != Aend + i*incRow ; Ai+=incCol)
+							F.assign (*Ai, zero);
+						size_t t = Q[ii-1];
+						Q[ii-1]=Q[Nup+i];
+						Q[Nup+i] = t;
+					}
+				}
+			}
+#if 0 /* surréaliste ! */
+			// move to B and A
+			if (K <= M) {
+				FFLAS::fmove(F,K,N,A,lda,B,ldb);
+			}
+			else { // K >M
+				FFLAS::fcopy(F,M,N,A,lda,B,ldb);
+				FFLAS::fcopy(F,K-M,N,B,ldb,B+M*ldb,ldb);
+				FFLAS::fzero(F,M,N,B+(K-M)*ldb,ldb);
+			}
+			for (size_t i = Nup, ii = 0 ; i < R2 ; ++ii, ++i)
+				std::swap(Q[i],Q[ii]);
+#endif
+			return R2 ;
+		}
+
 
 #if 0 /*  not ported */
 		if (MN == 1){
@@ -1332,8 +1381,6 @@ namespace FFPACK {
 		else  // MN>1
 #endif
 		{
-			size_t Nup   = rowDim;
-			size_t Ndown = K;
 			// Recursive call on NW
 			size_t R2;
 #if 0 /*  not working */
@@ -1435,7 +1482,7 @@ namespace FFPACK {
 								      A + (ii-1)*incRow + ii*incCol, incCol,
 								      B + i*incRow + ii*incCol, incCol);
 						else {
-							std::cout << "dangerous zone" << std::endl;
+							// std::cout << "dangerous zone" << std::endl;
 							FFLAS::fcopy( F, colDim - ii,
 								      B + (ii-M-1)*incRow + ii*incCol, incCol,
 								      B + i*incRow + ii*incCol, incCol);

@@ -719,7 +719,7 @@ namespace FFLAS {
 	static void
 	fmove (const Field& F, const size_t m, const size_t n,
 	       typename Field::Element * A, const size_t lda,
-	       const typename Field::Element * B, const size_t ldb )
+	       typename Field::Element * B, const size_t ldb )
 	{
 		fcopy(F,m,n,A,lda,B,ldb);
 		fzero(F,m,n,B,ldb);
