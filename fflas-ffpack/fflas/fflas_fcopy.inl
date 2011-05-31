@@ -12,6 +12,8 @@
 #ifndef __FFLAFLAS_fcopy_INL
 #define __FFLAFLAS_fcopy_INL
 
+#include <string.h>
+
 namespace FFLAS {
 
 	template<class Field>
