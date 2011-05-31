@@ -1192,6 +1192,28 @@ namespace FFPACK {
 		return q1+q2+q3+q3b+q4;
 	}
 
+
+	/*!
+	 * @brief Updates an existing LU factorisation with more rows.
+	 *
+	 * @param F Field on which arithmetic is done
+	 * @param Diag Is \p L unit ? (if so, \c FFLAS::FflasUnit)
+	 * @param trans Not used yet, should be \c FFLAS::FflasNoTrans
+	 * @param M rows in \p A
+	 * @param N cols in \p A
+	 * @param A \p A is already in \c LU factorisation
+	 * @param lda leading dimension of \p A
+	 * @param R rank of \p A
+	 * @param K rows in \p B
+	 * @param B more rows to append to \p A
+	 * @param ldb leading dimension of \p B (not tested if != lda)
+	 * @param P permutation for \c LU in \p A. Should be big enough so it can store the permutation for \c LU of \p A and \p B
+	 * @param Q same as \p P
+	 * @param LuTag see \c LUdivine.
+	 * @param cutoff see \c LUdivine.
+	 *
+	 * @return rank of <code>A.append(B)</code>
+	 */
 	template <class Field>
 	size_t LUpdate (const Field& F,
 			const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
@@ -1200,10 +1222,7 @@ namespace FFPACK {
 			const size_t R,
 			const size_t K,
 			typename Field::Element * B, const size_t ldb,
-			size_t*P, size_t *Q
-			, const FFPACK::FFPACK_LUDIVINE_TAG LuTag // =FFPACK::FfpackLQUP
-			, const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
-		       )
+			size_t*P, size_t *Q , const FFPACK::FFPACK_LUDIVINE_TAG LuTag , const size_t cutoff)
 	{
 		if (trans == FFLAS::FflasTrans)
 			throw Failure(__func__,__FILE__,__LINE__,"Transposed version is not implemented yet");
