@@ -275,7 +275,7 @@ dnl
 dnl  Check if other BLAS are available (only if C BLAS are not available)
 dnl
 if test "x$blas_found" != "xyes" ; then
-	AC_MSG_CHECKING(for others BLAS)
+	AC_MSG_CHECKING(for other BLAS)
 	CBLAS="no"
 	CBLAS_FLAG=""
 	if test -n "$BLAS_VAL"; then

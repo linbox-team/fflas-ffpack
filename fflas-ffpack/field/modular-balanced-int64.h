@@ -117,7 +117,7 @@ namespace FFPACK
 
 		size_t cardinality () const
 		{
-			return modulus;
+			return (size_t) modulus;
 		}
 
 		double & convert(double &x, const Element &y) const
