@@ -8,23 +8,18 @@ dnl FF_CHECK_BLAS ([MINIMUM-VERSION [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]]
 dnl
 dnl Test for BLAS and define BLAS_LIBS
 
-AC_DEFUN([FF_CHECK_BLAS_ONLY],
+AC_DEFUN([FF_CHECK_CLAPACK],
 [
 
-AC_ARG_WITH(blas,
-[AC_HELP_STRING([--with-blas=<lib>|yes], [Use BLAS library. This library is mandatory for Fflas-Ffpack
-   			compilation. If argument is yes or <empty> that means
+AC_ARG_WITH(clapack,
+[AC_HELP_STRING([--with-clapack=<lib>], [Use BLAS library. This library is mandatory for Fflas-Ffpack
+   			compilation. If argument is <empty> that means
 			the library is reachable with the standard search path
 			(/usr or /usr/local). Otherwise you give the <path> to
-			the directory which contain the library.
+			the directory which contains the library.
 	     ])],
-	     [if test "$withval" = yes ; then
-			BLAS_HOME_PATH="${DEFAULT_CHECKING_PATH}"
-	      else
-			BLAS_HOME_PATH="$withval"
-			BLAS_VAL="$withval"
-	     fi],
-	     [BLAS_HOME_PATH="${DEFAULT_CHECKING_PATH}"])
+
+		LAPACK_HOME_PATH="$withval ${DEFAULT_CHECKING_PATH}"
 
 
 
@@ -55,9 +50,14 @@ if test -n "$BLAS_VAL"; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/lib/libcblas.a | grep ATL`
 			ATLAS_NEEDED2=`nm -Du $BLAS_VAL/lib/libcblas.so | grep ATL`
 			if test -n "$ATLAS_NEEDED" -o -n "ATLAS_NEEDED2" ; then
-				ATLAS_LIBS=" -lcblas -latlas"
+dnl lapack_atlas is for hmrg at udel.  What a kludge that this specialization is here.
+                if test -f "$BLAS_VAL/lib/liblapack_atlas.a"  -o  -f "$BLAS_VAL/lib/liblapack_atlas.so"   ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
-				ATLAS_LIBS="-lcblas "
+				ATLAS_LIBS="-lcblas -llapack"
 			fi
 			BLAS_LIBS="-L${BLAS_VAL}/lib $ATLAS_LIBS"
 
@@ -65,9 +65,13 @@ if test -n "$BLAS_VAL"; then
 			ATLAS_NEEDED=`nm -u $BLAS_VAL/libcblas.a | grep ATL`
 			ATLAS_NEEDED2=`nm -Du $BLAS_VAL/libcblas.so | grep ATL`
 			if test -n "$ATLAS_NEEDED" -o -n "ATLAS_NEEDED2" ; then
-				ATLAS_LIBS=" -lcblas -latlas"
+                if test -f "$BLAS_VAL/liblapack_atlas.a"  -o  -f "$BLAS_VAL/liblapack_atlas.so"   ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
-				ATLAS_LIBS="-lcblas "
+				ATLAS_LIBS="-lcblas -llapack"
 			fi
 			BLAS_LIBS="-L${BLAS_VAL} $ATLAS_LIBS"
                 elif test -r "$BLAS_VAL/include/mkl_cblas.h"; then
@@ -82,7 +86,7 @@ if test -n "$BLAS_VAL"; then
 					echo "Sorry unsupported arch, please complain in ffpack-devel discussion group";
 					;;
 			esac
-                        BLAS_LIBS="-L${BLAS_VAL}/lib/${MKL_ARCH}/ -lmkl -lvml -lguide"
+                        BLAS_LIBS="-L${BLAS_VAL}/lib/${MKL_ARCH}/ -lmkl_lapack64 -lmkl -lvml -lguide"
 		fi
 	else
 		BLAS_LIBS="$BLAS_VAL"
@@ -137,9 +141,13 @@ else
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/lib/libcblas.a | grep ATL`
 			ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
 			if test -n "$ATLAS_NEEDED" -o -n "$ATLAS_NEEDED2" ; then
-				ATLAS_LIBS=" -lcblas -latlas"
+                if test -f $BLAS_HOME/lib/liblapack_atlas.a -o -f $BLAS_HOME/lib/liblapack_atlas.so ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
-				ATLAS_LIBS="-lcblas "
+				ATLAS_LIBS="-lcblas -llapack"
 			fi
 			if test "x$BLAS_HOME" = "x/usr" -o "x$BLAS_HOME" = "x/usr/local" ; then
  				BLAS_LIBS=" ${ATLAS_LIBS}"
@@ -151,9 +159,13 @@ else
 			ATLAS_NEEDED=`nm -u $BLAS_HOME/libcblas.a | grep ATL`
 			ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
 			if test -n "$ATLAS_NEEDED" -o -n "$ATLAS_NEEDED2" ; then
-					ATLAS_LIBS=" -lcblas -latlas"
+                if test -f $BLAS_HOME/liblapack_atlas.a  -o -f $BLAS_HOME/liblapack_atlas.a ; then
+					ATLAS_LIBS="-llapack -llapack_atlas -lcblas -latlas"
+				else
+					ATLAS_LIBS="-llapack -lcblas -latlas"
+				fi
 			else
-				ATLAS_LIBS="-lcblas "
+				ATLAS_LIBS="-lcblas -llapack"
 			fi
 			BLAS_LIBS="-L${BLAS_HOME} ${ATLAS_LIBS}"
 		fi
@@ -213,6 +225,37 @@ if test "x$blas_found" = "xyes"; then
 		echo "whether your BLAS are good. I am assuming it is."
 	fi
 
+	dnl Check for lapack
+	AC_MSG_CHECKING(for LAPACK)
+	AC_TRY_RUN(
+	[#define __FFLAFLAS_CONFIGURATION
+	 #define __FFLAFLAS_HAVE_LAPACK 1
+       	 #include "fflas-ffpack/config-blas.h"
+	 int main () {  double a[4] = {1.,2.,3.,4.};
+			int ipiv[2];
+			clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
+			if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
+				return -1;
+			else
+				return 0;
+		      }
+	],[
+	dgetrf_found="yes"
+	break
+	],[
+	dgetrf_problem="$problem"
+	],[
+	break
+	])
+
+	if test "x$dgetrf_found" = "xyes"; then
+		AC_MSG_RESULT(found)
+		AC_DEFINE(HAVE_LAPACK,1,[Define if lapack is available])
+	else
+		AC_MSG_RESULT(disabling)
+		dnl  AC_DEFINE(HAVE_LAPACK,0,[Define if lapack is available])
+	fi
+
 	ifelse([$2], , :, [$2])
 
 elif test -n "$blas_problem"; then
@@ -227,7 +270,7 @@ dnl
 dnl  Check if other BLAS are available (only if C BLAS are not available)
 dnl
 if test "x$blas_found" != "xyes" ; then
-	AC_MSG_CHECKING(for others BLAS)
+	AC_MSG_CHECKING(for other BLAS)
 	CBLAS="no"
 	CBLAS_FLAG=""
 	if test -n "$BLAS_VAL"; then
@@ -288,10 +331,10 @@ if test "x$blas_found" != "xyes" ; then
 
 dnl checking for libblas.a
 
-			if test -r "$BLAS_HOME/lib64/libblas.a"  ; then
-				BLAS_LIBS="-L${BLAS_HOME}/lib64  -lblas"
-			elif test -r "$BLAS_HOME/lib/libblas.a"  ; then
-				BLAS_LIBS="-L${BLAS_HOME}/lib  -lblas"
+			if test -r "$BLAS_HOME/lib64/libblas.a"  && test -r "$BLAS_HOME/lib64/liblapack.a" ; then
+				BLAS_LIBS="-L${BLAS_HOME}/lib64 -llapack -lblas"
+			elif test -r "$BLAS_HOME/lib/libblas.a" && test -r "$BLAS_HOME/lib/liblapack.a" ; then
+				BLAS_LIBS="-L${BLAS_HOME}/lib -llapack -lblas"
 			elif test -r "$BLAS_HOME/lib/libblas.a"; then
 				if test "x$BLAS_HOME" = "x/usr" -o "x$BLAS_HOME" = "/usr/local" ; then
  					BLAS_LIBS="-lblas"
@@ -311,10 +354,10 @@ dnl checking for libblas.a
 dnl checking for libblas.so
 
 			if test -z "$BLAS_LIBS" ; then
-				if test -r "$BLAS_HOME/lib64/libblas.so" ; then
-					BLAS_LIBS="-L${BLAS_HOME}/lib64  -lblas"
-				elif test -r "$BLAS_HOME/lib/libblas.so" ; then
-					BLAS_LIBS="-L${BLAS_HOME}/lib  -lblas"
+				if test -r "$BLAS_HOME/lib64/libblas.so"  && test -r "$BLAS_HOME/lib64/liblapack.so" ; then
+					BLAS_LIBS="-L${BLAS_HOME}/lib64 -llapack -lblas"
+				elif test -r "$BLAS_HOME/lib/libblas.so" && test -r "$BLAS_HOME/lib/liblapack.so" ; then
+					BLAS_LIBS="-L${BLAS_HOME}/lib -llapack -lblas"
 				elif test -r "$BLAS_HOME/lib/libblas.so"; then
 					if test "x$BLAS_HOME" = "x/usr" -o "x$BLAS_HOME" = "/usr/local" ; then
 						BLAS_LIBS="-lblas"
