@@ -15,7 +15,7 @@
  *  - \subpage copy.
  *  - \subpage tuto. This is a brief introduction to %Fflas-Ffpack
  *  capabilities.
- *  - \subpage inst. Explains how to install from sources or from the latest
+ *  - \subpage inst. Explains how to configure/install from sources or from the latest
  *  svn version.
  *  - \subpage arch. Describes how Fflas-Ffpack is organized
  *  - <a href="../fflas-ffpack-html/index.html"     style="color: blue  ;
@@ -29,5 +29,12 @@
  *\section contrib Contributing to fflas-ffpack, getting assistance.
  *
  *\version 1.4.0
+ */
+
+/** @page inst Configuring and Installing Fflas-Ffpack
+ * Fflas-Ffpack is a header-only package. Hower configuration process can be tweaked a lot.
+ * Configure looks for BLAS and LAPACK routine.
+ * See the output of <code>./configure --help</code> for information about the LAPACK/BLAS discovering strategies.
+ * For now, Givaro is not compulsory
  */
 // vim:syn=doxygen

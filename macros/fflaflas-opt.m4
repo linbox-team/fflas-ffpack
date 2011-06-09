@@ -9,7 +9,9 @@ AC_DEFUN([FF_OPT],
 AC_MSG_CHECKING([whether to use run time optimization])
 
 AC_ARG_ENABLE(optimization,
-[AC_HELP_STRING([--enable-optimization], [ Enable run time optimization in FflasFpack code])],
+[AC_HELP_STRING([--disable-optimization], [ Disable run time optimization in FflasFpack code])])
+
+AS_IF([test "x$enable_optimization" != "xno"],
 [
 AC_MSG_RESULT(yes)
 
@@ -17,7 +19,7 @@ AC_MSG_RESULT(yes)
 BACKUP_CXXFLAGS=${CXXFLAGS}
 BACKUP_LIBS=${LIBS}
 
-if test "x$HAVE_BLAS" = "xyes" ;then
+dnl  if test "x$HAVE_BLAS" = "xyes" ;then
 AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 
 
@@ -135,9 +137,8 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 	break
 	])
 
-fi;
-],[
-AC_MSG_RESULT(no)
-])
+],
+[AC_MSG_RESULT(no)]
+)
 
 ])

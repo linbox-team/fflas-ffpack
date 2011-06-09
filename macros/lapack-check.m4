@@ -24,7 +24,12 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 				the library is reachable with the standard search path
 				(/usr or /usr/local). Or, you can give the <path> to
 				the directory which contains the library. If the argument
-				is 'blas', then we look in the BLAS vendor library
+				is 'blas', then we look in the BLAS vendor library.
+				We look for a C interface (clapack_), and if not present,
+				look for standard functions (as dgetrf_). First one available
+				in order in '$path /usr /usr/local', first chosen, even if it is
+                not clapack_ (example: clapack_ in /usr but dgetrf_ in $path : dgetrf_ chosen,
+					$path not even looked into).
 				])
 			])
 
