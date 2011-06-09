@@ -42,6 +42,16 @@
 	enum CBLAS_DIAG  {CblasNonUnit=131, CblasUnit=132};
 	enum CBLAS_SIDE  {CblasLeft=141, CblasRight=142};
 
+	#define CBLAS_INDEX int
+
+
+#ifndef __FFLAFLAS_HAVE_CBLAS
+
+// CBLAS are not available define our own wrapper
+
+// define external link to BLAS function
+extern "C" {
+
 	static const char* EXT_BLAS_TRANSPOSE    (CBLAS_TRANSPOSE t) { if (t == CblasNoTrans) return "N"; else if (t == CblasTrans) return "T"; else return "";}
 	static const char* EXT_BLAS_TRANSPOSE_tr (CBLAS_TRANSPOSE t) { if (t == CblasNoTrans) return "T"; else if (t == CblasTrans) return "N"; else return "";}
 
@@ -53,15 +63,6 @@
 	static const char* EXT_BLAS_SIDE         (CBLAS_SIDE t)      { if (t == CblasLeft)  return "L"; else return "R";}
 	static const char* EXT_BLAS_SIDE_tr      (CBLAS_SIDE t)      { if (t == CblasLeft)  return "R"; else return "L";}
 
-#define CBLAS_INDEX int
-
-
-#ifndef __FFLAFLAS_HAVE_CBLAS
-
-// CBLAS are not available define our own wrapper
-
-// define external link to BLAS function
-extern "C" {
 
 	// level 1 routines
 	void   daxpy_   (const int*, const double*, const double*, const int*, double*, const int*);
