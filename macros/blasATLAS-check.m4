@@ -1,5 +1,6 @@
 dnl  Check for BLAS
 dnl  Copyright Pascal Giorgi 2005
+dnl  Modified Brice Boyer 2011
 dnl  This file is part of Fflas-Fpack (and comes from LinBox)
 dnl  See COPYING for licence information.
 
@@ -16,7 +17,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 				the directory which contains the library.  ])
 			])
 
-		BLAS_HOME_PATH="$withval ${DEFAULT_CHECKING_PATH}"
+		BLAS_HOME_PATH="$with_cblas ${DEFAULT_CHECKING_PATH}"
 
 		dnl Check for existence
 
@@ -31,6 +32,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 
 
 		for BLAS_HOME in ${BLAS_HOME_PATH} ; do
+			dnl  echo looking in ${BLAS_HOME}
 			CBLAS="yes"
 			CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
 			ATLAS_LIBS="-lcblas"
@@ -46,8 +48,9 @@ AC_DEFUN([FF_CHECK_CBLAS],
 						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
+					BLAS_PATH="${BLAS_HOME}/lib"
 
-					AS_IF([ ! test "x$BLAS_HOME" = "x/usr" -a "x$BLAS_HOME" = "x/usr/local"],
+					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 						[BLAS_LIBS="-L${BLAS_HOME}/lib ${ATLAS_LIBS}"])
 					],
 					dnl libcblas.* ?
@@ -58,14 +61,17 @@ AC_DEFUN([FF_CHECK_CBLAS],
 						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
+					BLAS_PATH="${BLAS_HOME}"
 
-					AS_IF([ ! test "x$BLAS_HOME" = "x/usr" -a "x$BLAS_HOME" = "x/usr/local"],
+					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 							[BLAS_LIBS="-L${BLAS_HOME} ${ATLAS_LIBS}"])
 					]
 					)
 
-					CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
-					LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
+				CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
+				LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
+
+					dnl  echo $LIBS
 
 				AC_TRY_LINK(
 					[#define __FFLAFLAS_CONFIGURATION
@@ -106,12 +112,15 @@ AC_DEFUN([FF_CHECK_CBLAS],
 
 
 		AS_IF([ test "x$blas_found" = "xyes" ],
+				BLAS_VENDOR="ATLAS"
+				AC_SUBST(BLAS_VENDOR)
+
 				[ AC_SUBST(BLAS_LIBS)
-				AC_SUBST(BLAS_HOME)
+				AC_SUBST(BLAS_PATH)
 				AC_SUBST(CBLAS_FLAG)
 				AC_DEFINE(HAVE_BLAS,1,[Define if BLAS is installed])
 				AC_DEFINE(HAVE_CBLAS,1,[Define if C interface to BLAS is available])
-				AC_DEFINE(BLAS_AVAILABLE,,[Define if BLAS routines are available])
+				dnl  AC_DEFINE(BLAS_AVAILABLE,,[Define if BLAS routines are available])
 				HAVE_BLAS=yes
 				BLAS_FOUND=true
 				AC_SUBST(BLAS_FOUND)
@@ -130,9 +139,9 @@ AC_DEFUN([FF_CHECK_CBLAS],
 				[ test "x$blas_found" = "xno" ],
 				[ AC_MSG_RESULT(not found)]
 				)
-	AS_IF([ ! test "x$blas_found" = "xyes" ],
-			[
-		AC_MSG_CHECKING(for C interface to BLAS with -lblas)
+				AS_IF([  test "x$blas_found" != "xyes" ],
+						[
+						AC_MSG_CHECKING(for C interface to BLAS with -lblas)
 
 		dnl **************************************
 		dnl Check first for C interface to BLAS
@@ -140,6 +149,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 
 
 		for BLAS_HOME in ${BLAS_HOME_PATH} ; do
+			dnl  echo looking in ${BLAS_HOME}
 			CBLAS="yes"
 			CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
 			ATLAS_LIBS="-lblas"
@@ -149,13 +159,15 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					[
 					dnl  CBLAS_SYM=`nm -Du $BLAS_HOME/lib/libblas.so | grep cblas_'
 					BLAS_LIBS=" ${ATLAS_LIBS}"
-					AS_IF([ ! test "x$BLAS_HOME" = "x/usr" -a "x$BLAS_HOME" = "x/usr/local"],
+					BLAS_PATH="${BLAS_HOME}/lib"
+					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 						[BLAS_LIBS="-L${BLAS_HOME}/lib ${ATLAS_LIBS}"])
 					],
 					dnl libblas.* ?
 					[ test -r "$BLAS_HOME/libblas.a" -o -r "$BLAS_HOME/libblas.so" ],
 					[ BLAS_LIBS=" ${ATLAS_LIBS}"
-					AS_IF([ ! test "x$BLAS_HOME" = "x/usr" -a "x$BLAS_HOME" = "x/usr/local"],
+					BLAS_PATH="${BLAS_HOME}"
+					AS_IF([ test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 						[BLAS_LIBS="-L${BLAS_HOME} ${ATLAS_LIBS}"])
 					])
 
@@ -199,8 +211,10 @@ AC_DEFUN([FF_CHECK_CBLAS],
 		done ;
 
 		AS_IF([ test "x$blas_found" = "xyes" ],
-				[ AC_SUBST(BLAS_LIBS)
-				AC_SUBST(BLAS_HOME)
+				[ 	BLAS_VENDOR="OTHER"
+				AC_SUBST(BLAS_VENDOR)
+				AC_SUBST(BLAS_LIBS)
+				AC_SUBST(BLAS_PATH)
 				AC_SUBST(CBLAS_FLAG)
 				AC_DEFINE(HAVE_BLAS,1,[Define if BLAS is installed])
 				AC_DEFINE(HAVE_CBLAS,1,[Define if C interface to BLAS is available])

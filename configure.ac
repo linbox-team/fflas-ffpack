@@ -207,9 +207,7 @@ echo ' --with-gmp=<prefix> when running configure.'
 echo '*******************************************************************************'
 ])
 
-# LB_CHECK_IML
 
-# LB_CHECK_NTL
 LB_CHECK_GIVARO(,,[
 echo '*******************************************************************************'
 echo ' WARNING: GIVARO not found!'
@@ -219,25 +217,39 @@ echo ' Please make sure GIVARO is installed and specify its location with the'
 echo ' option --with-givaro=<prefix> when running configure.'
 echo '*******************************************************************************'
 ])
-# LB_CHECK_SACLIB
-# LB_CHECK_LIDIA
-# LB_CHECK_MAPLE
-# LB_CHECK_SAGE
-#LB_CHECK_ATLAS
-FF_CHECK_BLAS(,,[
-echo ''
-echo '*******************************************************************************'
-echo ' ERROR: BLAS not found!'
-echo
-echo ' BLAS routines are required for this library to compile. Please'
-echo ' make sure BLAS are installed and specify its location with the option'
-echo ' --with-blas=<lib> when running configure.'
-echo '*******************************************************************************'
-exit 1
-])
-# LB_CHECK_EXPAT
 
-# LB_BENCH
+BLAS_FOUND=false
+
+FF_CHECK_GOTOBLAS
+
+FF_CHECK_GSL
+
+if test "$BLAS_FOUND" = "false" ; then
+	FF_CHECK_CBLAS
+fi
+
+if test "$BLAS_FOUND" = "false" ; then
+	FF_CHECK_BLAS
+fi
+
+if test "$BLAS_FOUND" = "false" ; then
+	echo ''
+	echo '*******************************************************************************'
+	echo ' ERROR: BLAS not found!'
+	echo
+	echo ' BLAS routines are required for this library to compile. Please'
+	echo ' make sure BLAS are installed and specify its location with the option'
+	echo ' --with-blas=<lib> when running configure (or --with-cblas for atlas,...).'
+	echo '*******************************************************************************'
+	exit 1
+fi
+
+FF_CHECK_LAPACK
+
+# AM_CONDITIONAL(FFLAFFLAS_HAVE_BLAS,  test "x$BLAS_FOUND" != "xfalse")
+
+
+# FF_BENCH
 
 FF_OPT
 
@@ -248,10 +260,6 @@ FF_DOC
 	# echo "Creating data dir in benchmark" ;
 	# mkdir ./benchmarks/data  ;
 # fi
-
-# this is bogus so far as I can tell.  -bds
-#CXXFLAGS="${GMP_CFLAGS} ${NTL_CFLAGS} ${GIVARO_CFLAGS} ${SACLIB_CFLAGS} ${CXXFLAGS}"
-#AC_SUBST(CXXFLAGS)
 
 CXXFLAGS="${GMP_CFLAGS} ${CXXFLAGS}"
 AC_SUBST(CXXFLAGS)

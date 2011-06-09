@@ -8,50 +8,47 @@ dnl FF_CHECK_BLAS ([MINIMUM-VERSION [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]]
 dnl
 dnl Test for BLAS and define BLAS_LIBS
 
-AC_DEFUN([FF_CHECK_GOTOBLAS],
+AC_DEFUN([FF_CHECK_GSL],
 		[
-		AC_ARG_WITH(gotoblas2,
-			[AC_HELP_STRING([--with-gotoblas2=<path|yes>],
-				[Use GOTO2 blas library. BLAS are mandatory for Fflas-Ffpack
+		AC_ARG_WITH(gsl,
+			[AC_HELP_STRING([--with-gsl=<path|yes>],
+				[Use GSL blas library. BLAS are mandatory for Fflas-Ffpack
 				compilation. If argument is  <yes> that means
 				the library is reachable with the standard search path
 				(/usr or /usr/local). Otherwise you give the <path> to
-				the directory which contains the library. If empty, GOTO2 are not searched for.  ])
+				the directory which contains the library. If empty, GSL is not
+				searched for.  ])
 			])
-		dnl  echo $with_gotoblas2
+		dnl  echo $with_gsl
 		dnl  echo $withval
 
-		AS_IF([ test -n "$with_gotoblas2" ],
+		AS_IF([ test -n "$with_gsl" ],
 			[ BLAS_HOME_PATH="${DEFAULT_CHECKING_PATH}"
-			AS_IF([ test "$with_gotoblas2" != "yes" ],
-				[ BLAS_HOME_PATH="$with_gotoblas2 ${DEFAULT_CHECKING_PATH}" ])
+			AS_IF([ test "$with_gsl" != "yes" ],
+				[ BLAS_HOME_PATH="$with_gsl ${DEFAULT_CHECKING_PATH}" ])
 
 			BACKUP_CXXFLAGS=${CXXFLAGS}
 			BACKUP_LIBS=${LIBS}
 
-			AC_MSG_CHECKING(for C interface to BLAS with -lgoto2)
+			AC_MSG_CHECKING(for C interface to BLAS with -lgsl -lgslcblas)
 
 
 			for BLAS_HOME in ${BLAS_HOME_PATH} ; do
-				dnl remove last '/'
-				dnl  BLAS_HOME=`echo $BLAS_HOME | sed 's/\(.*\)\/$/\1/'`
 				CBLAS="yes"
 				CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
 
-				AS_IF([ test -r "$BLAS_HOME/lib/libgoto2.a" -o -r "$BLAS_HOME/lib/libgoto2.so"  ],
-				[BLAS_LIBS="-lgoto2 -pthread"
+				AS_IF([ test -r "$BLAS_HOME/lib/libgsl.a" -o -r "$BLAS_HOME/lib/libgsl.so"  ],
+				[BLAS_LIBS="-lgsl -lgslcblas -lm"
+				BLAS_PATH="${BLAS_HOME}/lib"
 				AS_IF([ test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
-					[BLAS_LIBS="-L${BLAS_HOME}/lib -Wl,-R,${BLAS_HOME}/lib ${BLAS_LIBS}"])
+					[BLAS_LIBS="-L${BLAS_HOME}/lib ${BLAS_LIBS}"])
 				],
-				[test -r "$BLAS_HOME/libgoto2.a" -o -r "$BLAS_HOME/libgoto2.so" ],
-				[ BLAS_LIBS="-lgoto2 -pthread"
+				[test -r "$BLAS_HOME/libgsl.a" -o -r "$BLAS_HOME/libgsl.so" ],
+				[ BLAS_LIBS="-lgsl -lgslcblas -lm"
+				BLAS_PATH="${BLAS_HOME}"
 				AS_IF([ test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
-					[BLAS_LIBS="-L${BLAS_HOME} -Wl,-R,${BLAS_HOME}/lib ${BLAS_LIBS}"])
+					[BLAS_LIBS="-L${BLAS_HOME} ${BLAS_LIBS}"])
 				])
-
-				AS_CASE(["x$CCNAM"],
-						["xgcc"],[BLAS_LIBS="${BLAS_LIBS} -lgfortran"],
-						["xicc"],[BLAS_LIBS="${BLAS_LIBS} -lifcore"])
 
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
 				LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
@@ -73,13 +70,11 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 								return 0;
 							} ],
 							[ blas_found="yes"
-							BLAS_PATH=${BLAS_HOME}
 							break ],
 							[ blas_problem="$problem $BLAS_HOME"
 							unset BLAS_LIBS ],
 							[ blas_found="yes"
 							blas_cross="yes"
-							BLAS_PATH=${BLAS_HOME}
 							break ])
 						],
 						[
@@ -90,7 +85,7 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 			done
 
 	AS_IF([ test "x$blas_found" = "xyes" ],[
-			BLAS_VENDOR="GOTO2"
+			BLAS_VENDOR="GSL"
 			AC_SUBST(BLAS_VENDOR)
 			AC_SUBST(BLAS_LIBS)
 			AC_SUBST(CBLAS_FLAG)

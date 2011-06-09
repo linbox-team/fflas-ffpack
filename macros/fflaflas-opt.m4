@@ -40,7 +40,7 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		int main () {
 
 		  FFPACK::Modular<double> F(17);
-		  size_t n=300, nmax=5000, prec=512, nbest=0, count=0;
+		  size_t n=700, nmax=5000, prec=512, nbest=0, count=0;
 		  Timer chrono;
 		  double basetime, time;
 		  bool bound=false;
