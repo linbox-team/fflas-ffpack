@@ -29,7 +29,7 @@ AC_DEFUN([FF_CHECK_BLAS],
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		BACKUP_LIBS=${LIBS}
 
-		AS_IF([ test -n "x$with_blas"],[
+		AS_IF([ test -n "$with_blas"],[
 
 		AC_MSG_CHECKING("for BLAS ($with_blas)")
 
