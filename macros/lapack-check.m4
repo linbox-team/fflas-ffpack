@@ -62,7 +62,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 				["OTHER"],
 				[LAPACK_LIBS=""],
 				dnl defaulting somewhere...
-				[LAPACK_LIBS="-llapack"])
+				[LAPACK_LIBS=""])
 
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
 			LIBS="${BACKUP_LIBS} ${BLAS_LIBS} ${LAPACK_LIBS}"
@@ -123,6 +123,71 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 			],[ dnl not BLAS vendor asked, so looking in DEFAULT_CHECKING_PATH
 			dnl  echo "path"
 
+			AS_IF([test "x$BLAS_VENDOR" = "xUSER"], [ dnl this is temporary  -- because the user supplies everything in --with-blas.
+					CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
+					LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
+
+
+					AC_TRY_RUN(
+						[#define __FFLAFLAS_CONFIGURATION
+						#define __FFLAFLAS_HAVE_LAPACK 1
+						#define __FFLAFLAS_HAVE_CLAPACK 1
+						#include "fflas-ffpack/config-blas.h"
+						int main () {  double a[4] = {1.,2.,3.,4.};
+						int ipiv[2];
+						clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
+						if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
+						return -1;
+						else
+						return 0;
+						} ],
+						[ dgetrf_found="yes"
+						dnl  echo "yes"
+						],
+						[ dgetrf_problem="problem"
+						dnl  echo "no"
+						],
+						[ ])
+
+					AS_IF([ test "${dgetrf_found}" = "yes"],
+							[	 AC_SUBST(LAPACK_LIBS)
+							AC_MSG_RESULT( yes (clapack))
+							AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
+							AC_DEFINE(HAVE_CLAPACK,1,[Define if C interface to LAPACK is available])
+							], dnl clapack not found. looking for lapack
+							[
+
+							AC_TRY_RUN(
+								[#define __FFLAFLAS_CONFIGURATION
+								#define __FFLAFLAS_HAVE_LAPACK 1
+								//#define __FFLAFLAS_HAVE_CLAPACK 1
+								#include "fflas-ffpack/config-blas.h"
+								int main () {  double a[4] = {1.,2.,3.,4.};
+								int ipiv[2];
+								clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
+								if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
+								return -1;
+								else
+								return 0;
+								} ],
+								[ dgetrf_found="yes"
+								 ],
+								[ dgetrf_problem="$problem"
+								],
+								[  ])
+
+							AS_IF([ test "x${dgetrf_found}" = "xyes"],
+									[	 AC_SUBST(LAPACK_LIBS)
+									AC_MSG_RESULT( yes (lapack))
+									AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
+									], dnl clapack not found. looking for lapack
+									[
+									AC_MSG_RESULT( no )
+									])
+							])
+
+							],[
+
 			LAPACK_HOME_PATH="$with_lapack ${DEFAULT_CHECKING_PATH}"
 			for LAPACK_HOME in ${LAPACK_HOME_PATH} ; do
 				dnl  echo "in ${LAPACK_HOME} for clapack"
@@ -162,6 +227,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 						dnl  echo "yes"
 						break ],
 						[ dgetrf_problem="problem"
+						unset LAPACK_LIBS
 						dnl  echo "no" ],
 						[ break ])
 			done ;
@@ -220,6 +286,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 							[
 							AC_MSG_RESULT( no )
 							])
+					])
 					])
 					])
 

@@ -220,6 +220,8 @@ echo '**************************************************************************
 
 BLAS_FOUND=false
 
+FF_CHECK_BLAS
+
 FF_CHECK_GOTOBLAS
 
 FF_CHECK_GSL
@@ -229,7 +231,7 @@ if test "$BLAS_FOUND" = "false" ; then
 fi
 
 if test "$BLAS_FOUND" = "false" ; then
-	FF_CHECK_BLAS
+	FF_CHECK_OTERBLAS
 fi
 
 if test "$BLAS_FOUND" = "false" ; then
