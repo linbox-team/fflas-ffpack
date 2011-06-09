@@ -25,6 +25,10 @@
 #ifndef __FFLAFLAS_config_blas_H
 #define __FFLAFLAS_config_blas_H
 
+#ifndef __FFLAFLAS_CONFIGURATION
+#include "fflas-ffpack/fflas-ffpack-config.h"
+#endif
+
 #ifdef CUDA_BLAS
 
 #define sgemv_ cublas_sgemv
