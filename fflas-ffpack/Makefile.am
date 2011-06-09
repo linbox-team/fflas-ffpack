@@ -9,3 +9,5 @@ EXTRA_DIST=fflas-ffpack.doxy utils
 
 pkginclude_HEADERS = config-blas.h \
 					 fflas-ffpack.h
+
+include_HEADERS=fflas-ffpack-config.h

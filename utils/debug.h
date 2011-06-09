@@ -34,7 +34,7 @@
 
 #include <sstream>
 
-#include "fflasffpack-config.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 
 
 #ifdef __FFLAFLAS_HAVE_STDINT_H

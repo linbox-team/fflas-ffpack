@@ -7,7 +7,6 @@ ACLOCAL_AMFLAGS = -I macros
 
 SUBDIRS=fflas-ffpack tests doc benchmark macros utils
 
-include_HEADERS=fflasffpack-config.h
 
 #!@todo add examples dir XXX
 
