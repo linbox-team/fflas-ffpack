@@ -75,7 +75,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		WARN_CFLAGS="${WARN_CFLAGS} -Wcheck"
 		# DEBUG_CFLAGS="-fast"
 	else
-		if test "x${CCNAM}" = "xgcc"  ; then
+		if test "x${CCNAM}" = "xgcc" -o "x${CCNAM}" = "xeko" ; then
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
 				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
