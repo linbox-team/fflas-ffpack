@@ -231,7 +231,7 @@ if test "$BLAS_FOUND" = "false" ; then
 fi
 
 if test "$BLAS_FOUND" = "false" ; then
-	FF_CHECK_OTERBLAS
+	FF_CHECK_OTHERBLAS
 fi
 
 if test "$BLAS_FOUND" = "false" ; then
