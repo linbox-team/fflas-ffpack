@@ -274,7 +274,7 @@ echo "-----------------------------------------------"
 AC_CONFIG_FILES([
 Makefile
 macros/Makefile
-fflasffpack-config
+fflas-ffpack-config
 fflas-ffpack/Makefile
 fflas-ffpack/fflas/Makefile
 fflas-ffpack/ffpack/Makefile
