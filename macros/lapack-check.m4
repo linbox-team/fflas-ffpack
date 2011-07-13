@@ -70,9 +70,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 			dnl  echo ${LAPACK_LIBS}
 
 			AC_TRY_RUN(
-					[#define __FFLAFLAS_CONFIGURATION
-					#define __FFLAFLAS_HAVE_LAPACK 1
-					#define __FFLAFLAS_HAVE_CLAPACK 1
+					[#define __FFLASFFPACK_CONFIGURATION
+					#define __FFLASFFPACK_HAVE_LAPACK 1
+					#define __FFLASFFPACK_HAVE_CLAPACK 1
 					#include "fflas-ffpack/config-blas.h"
 					int main () {  double a[4] = {1.,2.,3.,4.};
 					int ipiv[2];
@@ -98,9 +98,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 
 						AC_TRY_RUN(
-							[#define __FFLAFLAS_CONFIGURATION
-							#define __FFLAFLAS_HAVE_LAPACK 1
-							//#define __FFLAFLAS_HAVE_CLAPACK 1
+							[#define __FFLASFFPACK_CONFIGURATION
+							#define __FFLASFFPACK_HAVE_LAPACK 1
+							//#define __FFLASFFPACK_HAVE_CLAPACK 1
 							#include "fflas-ffpack/config-blas.h"
 							int main () {  double a[4] = {1.,2.,3.,4.};
 							int ipiv[2];
@@ -129,9 +129,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 
 					AC_TRY_RUN(
-						[#define __FFLAFLAS_CONFIGURATION
-						#define __FFLAFLAS_HAVE_LAPACK 1
-						#define __FFLAFLAS_HAVE_CLAPACK 1
+						[#define __FFLASFFPACK_CONFIGURATION
+						#define __FFLASFFPACK_HAVE_LAPACK 1
+						#define __FFLASFFPACK_HAVE_CLAPACK 1
 						#include "fflas-ffpack/config-blas.h"
 						int main () {  double a[4] = {1.,2.,3.,4.};
 						int ipiv[2];
@@ -158,9 +158,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 							[
 
 							AC_TRY_RUN(
-								[#define __FFLAFLAS_CONFIGURATION
-								#define __FFLAFLAS_HAVE_LAPACK 1
-								//#define __FFLAFLAS_HAVE_CLAPACK 1
+								[#define __FFLASFFPACK_CONFIGURATION
+								#define __FFLASFFPACK_HAVE_LAPACK 1
+								//#define __FFLASFFPACK_HAVE_CLAPACK 1
 								#include "fflas-ffpack/config-blas.h"
 								int main () {  double a[4] = {1.,2.,3.,4.};
 								int ipiv[2];
@@ -211,9 +211,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 
 				AC_TRY_RUN(
-						[#define __FFLAFLAS_CONFIGURATION
-						#define __FFLAFLAS_HAVE_LAPACK 1
-						#define __FFLAFLAS_HAVE_CLAPACK 1
+						[#define __FFLASFFPACK_CONFIGURATION
+						#define __FFLASFFPACK_HAVE_LAPACK 1
+						#define __FFLASFFPACK_HAVE_CLAPACK 1
 						#include "fflas-ffpack/config-blas.h"
 						int main () {  double a[4] = {1.,2.,3.,4.};
 						int ipiv[2];
@@ -259,9 +259,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 
 						AC_TRY_RUN(
-								[#define __FFLAFLAS_CONFIGURATION
-								#define __FFLAFLAS_HAVE_LAPACK 1
-								//#define __FFLAFLAS_HAVE_CLAPACK 1
+								[#define __FFLASFFPACK_CONFIGURATION
+								#define __FFLASFFPACK_HAVE_LAPACK 1
+								//#define __FFLASFFPACK_HAVE_CLAPACK 1
 								#include "fflas-ffpack/config-blas.h"
 								int main () {  double a[4] = {1.,2.,3.,4.};
 								int ipiv[2];
@@ -290,7 +290,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 					])
 					])
 
-					dnl  AM_CONDITIONAL(FFLAFFLAS_HAVE_LAPACK, test "x$HAVE_LAPACK" = "xyes")
+					dnl  AM_CONDITIONAL(FFLASFFPACK_HAVE_LAPACK, test "x$HAVE_LAPACK" = "xyes")
 
 					CXXFLAGS=${BACKUP_CXXFLAGS}
 					LIBS=${BACKUP_LIBS}

@@ -10,7 +10,7 @@ dnl Test for C interface to BLAS and define BLAS_LIBS
 
 AC_DEFUN([FF_CHECK_CBLAS],
 		[ AC_ARG_WITH(cblas,
-			[AC_HELP_STRING([--with-cblas=<lib>], [Use BLAS library. This library is mandatory for Fflas-Ffpack
+			[AC_HELP_STRING([--with-cblas=<lib>], [Use BLAS library. This library is mandatory for FFLAS-FFPACK
 				compilation. If argument is <empty> that means
 				the library is reachable with the standard search path
 				(/usr or /usr/local). Otherwise you give the <path> to
@@ -34,7 +34,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 		for BLAS_HOME in ${BLAS_HOME_PATH} ; do
 			dnl  echo looking in ${BLAS_HOME}
 			CBLAS="yes"
-			CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
+			CBLAS_FLAG="-D__FFLASFFPACK_HAVE_CBLAS"
 			ATLAS_LIBS="-lcblas"
 			AS_IF(
 					dnl obscure
@@ -74,12 +74,12 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					dnl  echo $LIBS
 
 				AC_TRY_LINK(
-					[#define __FFLAFLAS_CONFIGURATION
+					[#define __FFLASFFPACK_CONFIGURATION
 					#include "fflas-ffpack/config-blas.h"],
 					[double a;],
 					[
 					AC_TRY_RUN(
-						[#define __FFLAFLAS_CONFIGURATION
+						[#define __FFLASFFPACK_CONFIGURATION
 						#include "fflas-ffpack/config-blas.h"
 						int main () {  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
 						cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,2,2,2,1., a,2,b,2,0.,c,2);
@@ -151,7 +151,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 		for BLAS_HOME in ${BLAS_HOME_PATH} ; do
 			dnl  echo looking in ${BLAS_HOME}
 			CBLAS="yes"
-			CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
+			CBLAS_FLAG="-D__FFLASFFPACK_HAVE_CBLAS"
 			ATLAS_LIBS="-lblas"
 			AS_IF(
 					dnl lib/libblas.* ?
@@ -175,12 +175,12 @@ AC_DEFUN([FF_CHECK_CBLAS],
 			LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
 			AC_TRY_LINK(
-					[#define __FFLAFLAS_CONFIGURATION
+					[#define __FFLASFFPACK_CONFIGURATION
 					#include "fflas-ffpack/config-blas.h"],
 					[double a;],
 					[
 					AC_TRY_RUN(
-						[#define __FFLAFLAS_CONFIGURATION
+						[#define __FFLASFFPACK_CONFIGURATION
 #include "fflas-ffpack/config-blas.h"
 						int main () {  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
 						cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,2,2,2,1., a,2,b,2,0.,c,2);
@@ -239,7 +239,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 	])
 
 
-	AM_CONDITIONAL(FFLAFFLAS_HAVE_BLAS, test "x$HAVE_BLAS" = "xyes")
+	AM_CONDITIONAL(FFLASFFPACK_HAVE_BLAS, test "x$HAVE_BLAS" = "xyes")
 
 	CXXFLAGS=${BACKUP_CXXFLAGS}
 	LIBS=${BACKUP_LIBS}
