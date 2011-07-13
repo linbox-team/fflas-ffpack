@@ -1,6 +1,6 @@
 If you have blas available :
     make ; make install ;
-should install Fflas-Ffpack.
+should install FFLAS-FFPACK.
 
 If you need to compile tests, you'll probably need Givaro too.
 
@@ -8,4 +8,4 @@ The test directory is under big reconstruction, and so is the benchmark/.
 
 Any help in documenting, coding is wellcome !
 
-          -- The Fflas-Ffpack team.
+          -- The FFLAS-FFPACK team.
