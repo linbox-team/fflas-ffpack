@@ -25,7 +25,7 @@
 #ifndef __FFLASFFPACK_config_blas_H
 #define __FFLASFFPACK_config_blas_H
 
-#ifndef __FFLAFLAS_CONFIGURATION
+#ifndef __FFLASFFPACK_CONFIGURATION
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #endif
 
@@ -49,7 +49,7 @@
 	#define CBLAS_INDEX int
 
 
-#ifndef __FFLAFLAS_HAVE_CBLAS
+#ifndef __FFLASFFPACK_HAVE_CBLAS
 
 // CBLAS are not available define our own wrapper
 
@@ -272,9 +272,9 @@ extern "C" {
 }
 #endif // CBLAS ?
 
-#ifdef __FFLAFLAS_HAVE_LAPACK
+#ifdef __FFLASFFPACK_HAVE_LAPACK
 
-#ifndef __FFLAFLAS_HAVE_CLAPACK
+#ifndef __FFLASFFPACK_HAVE_CLAPACK
 
 #ifndef CBLAS_EXTERNALS
 #define CBLAS_EXTERNALS
