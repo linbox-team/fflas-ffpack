@@ -4,8 +4,8 @@
 #include <vector>
 
 
-#ifndef __FFLAFLAS_HAVE_DGETRF 
-#define __FFLAFLAS_HAVE_DGETRF 1
+#ifndef __FFLASFFPACK_HAVE_DGETRF 
+#define __FFLASFFPACK_HAVE_DGETRF 1
 #endif
 #include "fflas-ffpack/fflas.h"
 #include "fflas-ffpack/modular-balanced.h"
