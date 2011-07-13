@@ -12,9 +12,9 @@ EXTRA_DIST=            \
 	blasGSL-check.m4   \
 	config-header.m4   \
 	debug.m4           \
-	fflaflas-doc.m4    \
-	fflaflas-misc.m4   \
-	fflaflas-opt.m4    \
+	fflas-ffpack-doc.m4    \
+	fflas-ffpack-misc.m4   \
+	fflas-ffpack-opt.m4    \
 	givaro-check.m4    \
 	gmp-check.m4       \
 	lapack-check.m4
