@@ -28,7 +28,7 @@ benchmarks:
 
 .PHONY:examples benchmarks
 
-bin_SCRIPTS=fflasffpack-config
+bin_SCRIPTS=fflas-ffpack-config
 
 VERSION=1.4.2
 

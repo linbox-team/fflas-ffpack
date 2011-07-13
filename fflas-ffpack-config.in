@@ -14,7 +14,7 @@ libdir=@libdir@
 usage()
 {
     cat <<EOF
-Usage: fflasffpack-config [OPTION]
+Usage: fflas-ffpack-config [OPTION]
 
 Known values for OPTION are:
 
