@@ -7,7 +7,7 @@ chmod +x autogen.status
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="Fflas-Ffpack"
+PKG_NAME="FFLAS-FFPACK"
 
 (test -f $srcdir/configure.ac \
 	&& test -f $srcdir/fflas-ffpack/fflas-ffpack.doxy) || {

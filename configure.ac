@@ -1,11 +1,11 @@
-# Copyright (c) 2011 Fflas-Ffpack
-# This file is part of Fflas-Ffpack
+# Copyright (c) 2011 FFLAS-FFPACK
+# This file is part of FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
-AC_PREREQ(2.61)
+AC_PREREQ([2.61])
 
-AC_INIT([Fflas-Ffpack], [1.4.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [1.4.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[http://www.linalg.org/projects/fflas-ffpack])
 AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -60,10 +60,10 @@ WARN_CFLAGS="-Wall"
 
 if test "x$DBG" = "xyes" ; then
 	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} " #those are CXXFLAGS
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLAFFLAS_DEBUG"
+	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
 else
 	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} "
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DNDEBUG -UFFLAFFLAS_DEBUG -UFFLAFFLAS_DEBUG"
+	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DNDEBUG -UFFLASFFPACK_DEBUG -UFFLASFFPACK_DEBUG"
 fi
 
 if test "x$PROF" = "xyes" ; then
