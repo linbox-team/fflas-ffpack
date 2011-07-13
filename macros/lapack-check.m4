@@ -1,6 +1,6 @@
 dnl  Check for LAPACK
 dnl  Copyright 2011 Brice Boyer <bboyer@imag.fr>
-dnl  This file is part of Fflas-Fpack
+dnl  This file is part of FFLAS-FFPACK
 dnl  See COPYING for licence information.
 
 dnl **********************************

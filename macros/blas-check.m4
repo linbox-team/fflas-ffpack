@@ -1,7 +1,7 @@
 dnl  Check for BLAS
 dnl  Copyright Pascal Giorgi 2005
 dnl  Modified Brice Boyer 2011
-dnl  This file is part of Fflas-Fpack (and comes from LinBox)
+dnl  This file is part of FFLAS-FFPACK (and comes from LinBox)
 dnl  See COPYING for licence information.
 
 dnl **********************************

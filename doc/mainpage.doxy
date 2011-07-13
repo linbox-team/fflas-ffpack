@@ -31,8 +31,8 @@
  *\version 1.4.0
  */
 
-/** @page inst Configuring and Installing Fflas-Ffpack
- * Fflas-Ffpack is a header-only package. Hower configuration process can be tweaked a lot.
+/** @page inst Configuring and Installing FFLAS-FFPACK
+ * FFLAS-FFPACK is a header-only package. Hower configuration process can be tweaked a lot.
  * Configure looks for BLAS and LAPACK routine.
  * See the output of <code>./configure --help</code> for information about the LAPACK/BLAS discovering strategies.
  * For now, Givaro is not compulsory

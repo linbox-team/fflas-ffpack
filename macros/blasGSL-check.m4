@@ -1,6 +1,6 @@
 dnl  Check for BLAS
 dnl  Copyright 2011 Brice Boyer <bboyer@imag.fr>
-dnl  This file is part of Fflas-Fpack (and comes from LinBox)
+dnl  This file is part of FFLAS-FFPACK (and comes from LinBox)
 dnl  See COPYING for licence information.
 
 
