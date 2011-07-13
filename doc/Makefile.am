@@ -1,13 +1,13 @@
-# Copyright (c) 2011 Fflas-Ffpack
-# This file is part of Fflas-Ffpack
+# Copyright (c) 2011 FFLAS-FFPACK
+# This file is part of FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
-if FFLAFLAS_BUILD_DOC
+if FFLASFFPACK_BUILD_DOC
 USE_TARGETS = docs
 INSTALL_TARGETS = install-doc
 endif
-docdir=$(FFLAFLAS_DOC_PATH)
+docdir=$(FFLASFFPACK_DOC_PATH)
 
 #man1_MANS = fflas-ffpack-config.1
 

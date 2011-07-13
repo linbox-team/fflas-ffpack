@@ -1,9 +1,9 @@
-# Copyright (c) 2011 Fflas-Ffpack
-# This file is part of Fflas-Ffpack
+# Copyright (c) 2011 FFLAS-FFPACK
+# This file is part of FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
-/** @mainpage Fflas-Ffpack Documentation.
+/** @mainpage FFLAS-FFPACK Documentation.
  *
  * \section intro Introduction
  *
@@ -11,13 +11,13 @@
  *
  * \section desig Design
  *
- * \section using Using Fflas-Ffpack.
+ * \section using Using FFLAS-FFPACK.
  *  - \subpage copy.
- *  - \subpage tuto. This is a brief introduction to %Fflas-Ffpack
+ *  - \subpage tuto. This is a brief introduction to %FFLAS-FFPACK
  *  capabilities.
  *  - \subpage inst. Explains how to configure/install from sources or from the latest
  *  svn version.
- *  - \subpage arch. Describes how Fflas-Ffpack is organized
+ *  - \subpage arch. Describes how FFLAS-FFPACK is organized
  *  - <a href="../fflas-ffpack-html/index.html"     style="color: blue  ;
  *  font-weight: bold">Documentation for Users</a>. If everything around is
  *  blue, then you are reading the lighter, user-oriented, documentation.
