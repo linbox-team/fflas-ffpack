@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_fgemm_INL
-#define __FFLAFLAS_fgemm_INL
+#ifndef __FFLASFFPACK_fgemm_INL
+#define __FFLASFFPACK_fgemm_INL
 
 #ifndef MAX
 #define MAX(a,b) (a < b)?b:a
@@ -73,7 +73,7 @@ namespace FFLAS {
 						if (! F.areEqual (one, alpha)) {
 							// Compute y = A*x + beta/alpha.y
 							// and after y *= alpha
-							fflaflas_check(!F.isZero(alpha));
+							FFLASFFPACK_check(!F.isZero(alpha));
 							F.div (tmp, beta, alpha);
 							F.convert (betad, tmp);
 						}
@@ -144,7 +144,7 @@ namespace FFLAS {
 						if (! F.areEqual (one, alpha)) {
 							// Compute y = A*x + beta/alpha.y
 							// and after y *= alpha
-							fflaflas_check(!F.isZero(alpha));
+							FFLASFFPACK_check(!F.isZero(alpha));
 							F.div (tmp, beta, alpha);
 							F.convert (betad, tmp);
 						}
@@ -201,7 +201,7 @@ namespace FFLAS {
 							F.assign (*(C+i*ldc+j), zero);
 				else {
 					typename Field::Element betadivalpha;
-					fflaflas_check(!F.isZero(alpha));
+					FFLASFFPACK_check(!F.isZero(alpha));
 					F.div (betadivalpha, beta, alpha);
 					for (size_t i = 0; i < m; ++i)
 						for (size_t j = 0; j < n; ++j)
@@ -302,7 +302,7 @@ namespace FFLAS {
 				if (! F.areEqual (one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
-					fflaflas_check(!F.isZero(alpha));
+					FFLASFFPACK_check(!F.isZero(alpha));
 					F.divin (_beta, alpha);
 				}
 			}
@@ -363,7 +363,7 @@ namespace FFLAS {
 				if (! F.areEqual (one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
-					fflaflas_check(!F.isZero(alpha));
+					FFLASFFPACK_check(!F.isZero(alpha));
 					F.divin (_beta, alpha);
 				}
 			}
@@ -427,7 +427,7 @@ namespace FFLAS {
 				if (! F.areEqual (one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
-					fflaflas_check(!F.isZero(alpha));
+					FFLASFFPACK_check(!F.isZero(alpha));
 					F.divin (_beta, alpha);
 				}
 			}
@@ -507,7 +507,7 @@ namespace FFLAS {
 				if (! F.areEqual (one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
-					fflaflas_check(!F.isZero(alpha));
+					FFLASFFPACK_check(!F.isZero(alpha));
 					F.divin (_beta, alpha);
 				}
 			}
@@ -1098,7 +1098,7 @@ namespace FFLAS {
 							if (! F.areEqual (one, alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
-								fflaflas_check(!F.isZero(alpha));
+								FFLASFFPACK_check(!F.isZero(alpha));
 								F.div (_betabis, beta, alpha);
 								F.convert (betad, _betabis);
 							}
@@ -1149,7 +1149,7 @@ namespace FFLAS {
 							if (! F.areEqual (one, alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
-								fflaflas_check(!F.isZero(alpha));
+								FFLASFFPACK_check(!F.isZero(alpha));
 								F.div (_betabis, beta, alpha);
 								F.convert (betad, _betabis);
 							}
@@ -1223,7 +1223,7 @@ namespace FFLAS {
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
 						if (! F.areEqual (1.0, alpha)) {
-							fflaflas_check(!F.isZero(alpha));
+							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
 						_alpha = 1.0;
@@ -1285,7 +1285,7 @@ namespace FFLAS {
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
 						if (! F.areEqual (1.0, alpha)) {
-							fflaflas_check(!F.isZero(alpha));
+							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
 						_alpha = 1.0;
@@ -1344,7 +1344,7 @@ namespace FFLAS {
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
 						if (! F.areEqual (1.0, alpha)) {
-							fflaflas_check(!F.isZero(alpha));
+							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
 						_alpha = 1.0;
@@ -1418,7 +1418,7 @@ namespace FFLAS {
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
 						if (! F.areEqual (1.0, alpha)) {
-							fflaflas_check(!F.isZero(alpha));
+							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
 						_alpha = 1.0;
@@ -1787,4 +1787,4 @@ namespace FFLAS {
 
 } // FFLAS
 
-#endif // __FFLAFLAS_fgemm_INL
+#endif // __FFLASFFPACK_fgemm_INL

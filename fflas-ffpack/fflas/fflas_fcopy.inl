@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_fcopy_INL
-#define __FFLAFLAS_fcopy_INL
+#ifndef __FFLASFFPACK_fcopy_INL
+#define __FFLASFFPACK_fcopy_INL
 
 #include <string.h>
 
@@ -56,4 +56,4 @@ namespace FFLAS {
 }
 
 
-#endif // __FFLAFLAS_fcopy_INL
+#endif // __FFLASFFPACK_fcopy_INL

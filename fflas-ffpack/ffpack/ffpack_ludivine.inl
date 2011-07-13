@@ -8,8 +8,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_ffpack_ludivine_INL
-#define __FFLAFLAS_ffpack_ludivine_INL
+#ifndef __FFLASFFPACK_ffpack_ludivine_INL
+#define __FFLASFFPACK_ffpack_ludivine_INL
 
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
@@ -1507,5 +1507,5 @@ namespace FFPACK {
 } // FFPACK
 
 #undef LB_DEBUG
-#endif //__FFLAFLAS_ffpack_ludivine_INL
+#endif //__FFLASFFPACK_ffpack_ludivine_INL
 

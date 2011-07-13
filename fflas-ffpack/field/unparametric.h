@@ -26,8 +26,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __FFLAFLAS_field_unparametric_H
-#define __FFLAFLAS_field_unparametric_H
+#ifndef __FFLASFFPACK_field_unparametric_H
+#define __FFLASFFPACK_field_unparametric_H
 
 #include <iostream> // std::cout
 #include <string>

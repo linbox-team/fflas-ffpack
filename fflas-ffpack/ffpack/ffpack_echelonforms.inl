@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_ffpack_echelon_forms_INL
-#define __FFLAFLAS_ffpack_echelon_forms_INL
+#ifndef __FFLASFFPACK_ffpack_echelon_forms_INL
+#define __FFLASFFPACK_ffpack_echelon_forms_INL
 
 template <class Field>
 size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
@@ -292,4 +292,4 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	return r1+r2;
 }
 
-#endif  // __FFLAFLAS_ffpack_echelon_forms_INL
+#endif  // __FFLASFFPACK_ffpack_echelon_forms_INL

@@ -16,8 +16,8 @@
  * @brief Balanced representation of <code>Z/mZ</code> over \c float .
  */
 
-#ifndef __FFLAFLAS_modular_balanced_float_H
-#define __FFLAFLAS_modular_balanced_float_H
+#ifndef __FFLASFFPACK_modular_balanced_float_H
+#define __FFLASFFPACK_modular_balanced_float_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -407,8 +407,8 @@ return x += modulus;
 
 		static inline Element getMaxModulus()
 		{
-			// fflaflas_check (4095*4096<16777215)
-			// fflaflas_check (4097*4096>16777215)
+			// FFLASFFPACK_check (4095*4096<16777215)
+			// FFLASFFPACK_check (4097*4096>16777215)
 			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(FLT_MANT_DIG/2)
 			return 8191 ;
 		}
@@ -419,5 +419,5 @@ return x += modulus;
 
 #include "field-general.h"
 
-#endif // __FFLAFLAS_modular_balanced_double_H
+#endif // __FFLASFFPACK_modular_balanced_double_H
 

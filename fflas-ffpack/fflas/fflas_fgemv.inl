@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_fgemv_INL
-#define __FFLAFLAS_fgemv_INL
+#ifndef __FFLASFFPACK_fgemv_INL
+#define __FFLASFFPACK_fgemv_INL
 namespace FFLAS {
 
 	//---------------------------------------------------------------------
@@ -364,4 +364,4 @@ namespace FFLAS {
 			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}
 } // FFLAS
-#endif //  __FFLAFLAS_fgemv_INL
+#endif //  __FFLASFFPACK_fgemv_INL

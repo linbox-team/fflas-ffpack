@@ -96,7 +96,7 @@ public :
 
 		// adding (precomputing tB ?)
 		for (size_t i = 0 ; i < M ; ++i)
-#ifndef __FFLAFLAS_HAVE_SSE2
+#ifndef __FFLASFFPACK_HAVE_SSE2
 			for (size_t j = 0 ; j < N ; ++j)
 				*(C+i*ldc+j) = *(A+i*__FFLAS_ldA+j*__FFLAS_incA) + *(B+i*__FFLAS_ldB+j*__FFLAS_incB) ;
 #else

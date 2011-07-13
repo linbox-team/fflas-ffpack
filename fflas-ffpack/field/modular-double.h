@@ -12,8 +12,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_modular_double_H
-#define __FFLAFLAS_modular_double_H
+#ifndef __FFLASFFPACK_modular_double_H
+#define __FFLASFFPACK_modular_double_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"

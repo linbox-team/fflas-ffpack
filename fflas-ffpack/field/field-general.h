@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* field/field-general
- * This file is part of Fflas-Ffpack
+ * This file is part of FFLAS-FFPACK
  * Copyright (C) 2011 Brice Boyer <bboyer@imag.fr>
  *
  * ------------------------------------
@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_field_general_H
-#define __FFLAFLAS_field_general_H
+#ifndef __FFLASFFPACK_field_general_H
+#define __FFLASFFPACK_field_general_H
 
 #include <ostream>
 
@@ -47,4 +47,4 @@ namespace FFPACK {
 }
 
 
-#endif // __FFLAFLAS_field_general_H
+#endif // __FFLASFFPACK_field_general_H

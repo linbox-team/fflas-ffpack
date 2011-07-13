@@ -28,8 +28,8 @@
  * @brief Balanced representation of <code>Z/mZ</code> over \c int32_t .
  */
 
-#ifndef __FFLAFLAS_modular_balanced_int32_H
-#define __FFLAFLAS_modular_balanced_int32_H
+#ifndef __FFLASFFPACK_modular_balanced_int32_H
+#define __FFLASFFPACK_modular_balanced_int32_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -374,8 +374,8 @@ namespace FFPACK
 			// return 1073741824; // 2^30
 			return 2147483647; // 2^31 -1
 			// return 1 << 15; // 2^15
-			// fflaflas_check(46340LL*46341LL<2147483647LL);
-			// fflaflas_check(46342LL*46341LL>2147483647LL);
+			// FFLASFFPACK_check(46340LL*46341LL<2147483647LL);
+			// FFLASFFPACK_check(46342LL*46341LL>2147483647LL);
 			// return  92681 ;
 		}
 
@@ -435,5 +435,5 @@ namespace FFPACK
 }
 
 #include "field-general.h"
-#endif // __FFLAFLAS_modular_balanced_int32_H
+#endif // __FFLASFFPACK_modular_balanced_int32_H
 

@@ -12,8 +12,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_modular_float_H
-#define __FFLAFLAS_modular_float_H
+#ifndef __FFLASFFPACK_modular_float_H
+#define __FFLASFFPACK_modular_float_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -347,4 +347,4 @@ namespace FFPACK {
 
 #include "field-general.h"
 
-#endif // __FFLAFLAS_modular_float_H
+#endif // __FFLASFFPACK_modular_float_H

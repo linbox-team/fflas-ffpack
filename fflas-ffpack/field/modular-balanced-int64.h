@@ -28,8 +28,8 @@
  * @brief Balanced representation of <code>Z/mZ</code> over \c int64_t .
  */
 
-#ifndef __FFLAFLAS_modular_balanced_int64_H
-#define __FFLAFLAS_modular_balanced_int64_H
+#ifndef __FFLASFFPACK_modular_balanced_int64_H
+#define __FFLASFFPACK_modular_balanced_int64_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -440,5 +440,5 @@ namespace FFPACK
 
 #include "field-general.h"
 
-#endif //__FFLAFLAS_modular_balanced_int64_H
+#endif //__FFLASFFPACK_modular_balanced_int64_H
 

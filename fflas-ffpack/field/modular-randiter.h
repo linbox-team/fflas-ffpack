@@ -11,8 +11,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_modular_randiter_H
-#define __FFLAFLAS_modular_randiter_H
+#ifndef __FFLASFFPACK_modular_randiter_H
+#define __FFLASFFPACK_modular_randiter_H
 
 #include <sys/time.h>
 #include <stdlib.h>
@@ -72,4 +72,4 @@ namespace FFPACK {
 
 } // FFPACK
 
-#endif // __FFLAFLAS_modular_randiter_H
+#endif // __FFLASFFPACK_modular_randiter_H

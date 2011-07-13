@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_faxpy_INL
-#define __FFLAFLAS_faxpy_INL
+#ifndef __FFLASFFPACK_faxpy_INL
+#define __FFLASFFPACK_faxpy_INL
 
 
 
@@ -43,4 +43,4 @@ faxpy( const DoubleDomain& , const size_t N,
 
 } // FFLAS
 
-#endif // __FFLAFLAS_faxpy_INL
+#endif // __FFLASFFPACK_faxpy_INL

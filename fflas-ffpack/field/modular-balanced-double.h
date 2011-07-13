@@ -17,8 +17,8 @@
  * @brief Balanced representation of <code>Z/mZ</code> over \c double .
  */
 
-#ifndef __FFLAFLAS_modular_balanced_double_H
-#define __FFLAFLAS_modular_balanced_double_H
+#ifndef __FFLASFFPACK_modular_balanced_double_H
+#define __FFLASFFPACK_modular_balanced_double_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -382,8 +382,8 @@ namespace FFPACK
 		{
 			return 67108864.0;  // 2^26
 			// return  1 << (DBL_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
-			// fflaflas_check(94906266LL*94906267LL>9007199254740991LL);
-			// fflaflas_check(94906265LL*94906266LL<9007199254740991LL);
+			// FFLASFFPACK_check(94906266LL*94906267LL>9007199254740991LL);
+			// FFLASFFPACK_check(94906265LL*94906266LL<9007199254740991LL);
 			// return 189812531 ;
 		}
 
@@ -394,5 +394,5 @@ namespace FFPACK
 
 #include "field-general.h"
 
-#endif // __FFLAFLAS_modular_balanced_double_H
+#endif // __FFLASFFPACK_modular_balanced_double_H
 

@@ -12,8 +12,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_modular_positive_H
-#define __FFLAFLAS_modular_positive_H
+#ifndef __FFLASFFPACK_modular_positive_H
+#define __FFLASFFPACK_modular_positive_H
 
 #include <math.h>
 #include "fflas-ffpack/field/modular-randiter.h"
@@ -31,4 +31,4 @@ namespace FFPACK {
 #include "fflas-ffpack/field/modular-int32.h"
 #include "fflas-ffpack/field/modular-int64.h"
 
-#endif // __FFLAFLAS_modular_positive_H
+#endif // __FFLASFFPACK_modular_positive_H

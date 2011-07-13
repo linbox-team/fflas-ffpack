@@ -25,8 +25,8 @@
  * @ingroup field
  * @brief  representation of <code>Z/mZ</code> over \c int64_t .
  */
-#ifndef __FFLAFLAS_modular_int32_H
-#define __FFLAFLAS_modular_int32_H
+#ifndef __FFLASFFPACK_modular_int32_H
+#define __FFLASFFPACK_modular_int32_H
 
 #include <math.h>
 #include <sys/time.h>

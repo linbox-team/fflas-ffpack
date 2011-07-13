@@ -9,8 +9,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_fdot_INL
-#define __FFLAFLAS_fdot_INL
+#ifndef __FFLASFFPACK_fdot_INL
+#define __FFLASFFPACK_fdot_INL
 
 
 // Default implementation
@@ -48,4 +48,4 @@ namespace FFLAS {
 
 } // FFLAS
 
-#endif // __FFLAFLAS_fdot_INL
+#endif // __FFLASFFPACK_fdot_INL

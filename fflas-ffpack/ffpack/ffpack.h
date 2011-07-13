@@ -20,8 +20,8 @@
 
 */
 
-#ifndef __FFLAFLAS_ffpack_H
-#define __FFLAFLAS_ffpack_H
+#ifndef __FFLASFFPACK_ffpack_H
+#define __FFLASFFPACK_ffpack_H
 
 #include "fflas-ffpack/fflas/fflas.h"
 
@@ -1853,5 +1853,5 @@ else {
 #include "ffpack_frobenius.inl"
 #include "ffpack_echelonforms.inl"
 
-#endif // __FFLAFLAS_ffpack_H
+#endif // __FFLASFFPACK_ffpack_H
 

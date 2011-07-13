@@ -8,8 +8,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_ffpack_krylovelim_INL
-#define __FFLAFLAS_ffpack_krylovelim_INL
+#ifndef __FFLASFFPACK_ffpack_krylovelim_INL
+#define __FFLASFFPACK_ffpack_krylovelim_INL
 
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
@@ -222,5 +222,5 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 	return rp_idx;
 }
 
-#endif //__FFLAFLAS_ffpack_krylovelim_INL
+#endif //__FFLASFFPACK_ffpack_krylovelim_INL
 

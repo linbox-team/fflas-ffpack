@@ -24,7 +24,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			   const size_t c)
 {
 
-	fflaflas_check(c);
+	FFLASFFPACK_check(c);
 	static typename Field::Element one, zero, mone;
 	F.init(one, 1UL);
 	F.neg(mone, one);

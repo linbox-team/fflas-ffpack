@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __FFLAFLAS_config_blas_H
-#define __FFLAFLAS_config_blas_H
+#ifndef __FFLASFFPACK_config_blas_H
+#define __FFLASFFPACK_config_blas_H
 
 #ifndef __FFLAFLAS_CONFIGURATION
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -319,7 +319,7 @@ extern "C" {
 		int info;
 		double *work;
 
-#ifndef __FFLAFLAS_AUTOIMPLEMENT_DGETRI
+#ifndef __FFLASFFPACK_AUTOIMPLEMENT_DGETRI
 		// the optimum size of work can be determinted via the
 		// Lapack function ilaenv.
 		work= new double[N];
@@ -387,4 +387,4 @@ extern "C" {
 
 #endif
 
-#endif //__FFLAFLAS_config_blas_H
+#endif //__FFLASFFPACK_config_blas_H

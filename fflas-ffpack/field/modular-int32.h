@@ -24,8 +24,8 @@
  * @ingroup field
  * @brief  representation of <code>Z/mZ</code> over \c int32_t .
  */
-#ifndef __FFLAFLAS_modular_int32_H
-#define __FFLAFLAS_modular_int32_H
+#ifndef __FFLASFFPACK_modular_int32_H
+#define __FFLASFFPACK_modular_int32_H
 
 #include <math.h>
 #include <sys/time.h>
@@ -314,7 +314,7 @@ namespace FFPACK
 
 		Element &div (Element &x, const Element &y, const Element &z) const
 		{
-			fflaflas_check(!isZero(z));
+			FFLASFFPACK_check(!isZero(z));
 			Element temp;
 			inv (temp, z);
 			return mul (x, y, temp);
@@ -328,7 +328,7 @@ namespace FFPACK
 
 		Element &inv (Element &x, const Element &y) const
 		{
-			fflaflas_check(!isZero(y));
+			FFLASFFPACK_check(!isZero(y));
 			int32_t d, t;
 			XGCD(d, x, t, y, modulus);
 			if (d != 1)
@@ -395,7 +395,7 @@ namespace FFPACK
 
 		Element &invin (Element &x) const
 		{
-			fflaflas_check(!isZero(x));
+			FFLASFFPACK_check(!isZero(x));
 			return inv (x, x);
 		}
 

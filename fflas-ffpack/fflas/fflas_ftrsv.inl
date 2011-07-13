@@ -8,8 +8,8 @@
  *
  * See COPYING for license information.
  */
-#ifndef __FFLAFLAS_ftrsv_INL
-#define __FFLAFLAS_ftrsv_INL
+#ifndef __FFLASFFPACK_ftrsv_INL
+#define __FFLASFFPACK_ftrsv_INL
 
 namespace FFLAS {
 //---------------------------------------------------------------------
@@ -94,4 +94,4 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 
 }
 
-#endif // __FFLAFLAS_ftrsv_INL
+#endif // __FFLASFFPACK_ftrsv_INL

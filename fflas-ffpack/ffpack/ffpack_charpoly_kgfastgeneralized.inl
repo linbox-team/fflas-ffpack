@@ -8,8 +8,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_ffpack_charpoly_kgfastgeneralized_INL
-#define __FFLAFLAS_ffpack_charpoly_kgfastgeneralized_INL
+#ifndef __FFLASFFPACK_ffpack_charpoly_kgfastgeneralized_INL
+#define __FFLASFFPACK_ffpack_charpoly_kgfastgeneralized_INL
 
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
@@ -621,5 +621,5 @@ namespace FFPACK {
 
 #undef LB_DEBUG
 
-#endif // __FFLAFLAS_ffpack_charpoly_kgfastgeneralized_INL
+#endif // __FFLASFFPACK_ffpack_charpoly_kgfastgeneralized_INL
 

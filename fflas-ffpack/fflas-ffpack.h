@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* Copyright (C) 2011 Fflas-Ffpack
+/* Copyright (C) 2011 FFLAS-FFPACK
  * Written by <brice.boyer@imag.fr>
  *
  *
@@ -27,10 +27,10 @@
  */
 
 
-#ifndef __FFLAFLAS_fflas_ffpack_H
-#define __FFLAFLAS_fflas_ffpack_H
+#ifndef __FFLASFFPACK_fflas_ffpack_H
+#define __FFLASFFPACK_fflas_ffpack_H
 
 #include "fflas/fflas.h"
 #include "ffpack/ffpack.h"
 
-#endif // __FFLAFLAS_fflas_ffpack_H
+#endif // __FFLASFFPACK_fflas_ffpack_H

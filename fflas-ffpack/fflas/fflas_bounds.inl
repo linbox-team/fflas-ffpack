@@ -8,8 +8,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_fflas_bounds_INL
-#define __FFLAFLAS_fflas_bounds_INL
+#ifndef __FFLASFFPACK_fflas_bounds_INL
+#define __FFLASFFPACK_fflas_bounds_INL
 
 // #ifdef _LINBOX_LINBOX_CONFIG_H
 // #define FFLAS_INT_TYPE Givaro::Integer
@@ -359,4 +359,4 @@ namespace FFLAS {
 	} // Protected
 } // FFLAS
 
-#endif // __FFLAFLAS_fflas_bounds_INL
+#endif // __FFLASFFPACK_fflas_bounds_INL

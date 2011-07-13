@@ -8,8 +8,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_ffpack_minpoly_construct_INL
-#define __FFLAFLAS_ffpack_minpoly_construct_INL
+#ifndef __FFLASFFPACK_ffpack_minpoly_construct_INL
+#define __FFLASFFPACK_ffpack_minpoly_construct_INL
 
 #error "not included anywhere"
 
@@ -90,4 +90,4 @@ namespace FFPACK {
 
 #undef LB_DEBUG
 
-#endif //__FFLAFLAS_ffpack_minpoly_construct_INL
+#endif //__FFLASFFPACK_ffpack_minpoly_construct_INL

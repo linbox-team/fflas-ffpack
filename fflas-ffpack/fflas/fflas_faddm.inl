@@ -8,10 +8,10 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_fflas_faddm_H
-#define __FFLAFLAS_fflas_faddm_H
+#ifndef __FFLASFFPACK_fflas_faddm_H
+#define __FFLASFFPACK_fflas_faddm_H
 
-#ifdef __FFLAFLAS_HAVE_SSE2
+#ifdef __FFLASFFPACK_HAVE_SSE2
 #include <emmintrin.h>
 #endif
 
@@ -268,7 +268,7 @@ namespace FFLAS {
 #undef  __FFLAS__DOUBLE
 
 
-#endif // __FFLAFLAS_fflas_faddm_H
+#endif // __FFLASFFPACK_fflas_faddm_H
 
 	} // Protected
 

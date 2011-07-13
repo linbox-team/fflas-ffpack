@@ -13,8 +13,8 @@
  * @brief <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines
  */
 
-#ifndef __FFLAFLAS_fflas_H
-#define __FFLAFLAS_fflas_H
+#ifndef __FFLASFFPACK_fflas_H
+#define __FFLASFFPACK_fflas_H
 
 #include <cmath>
 
@@ -30,10 +30,10 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
 
-#ifndef __FFLAFLAS_STRASSEN_OPTIMIZATION
+#ifndef __FFLASFFPACK_STRASSEN_OPTIMIZATION
 #define WINOTHRESHOLD 1000
 #else
-#define WINOTHRESHOLD __FFLAFLAS_WINOTHRESHOLD
+#define WINOTHRESHOLD __FFLASFFPACK_WINOTHRESHOLD
 #endif
 
 // Thresholds determining which floating point representation to use,
@@ -1032,7 +1032,7 @@ namespace FFLAS {
 		F.init(e,1UL);
 		F.divin(e,alpha);
 		F.mulin(e,alpha);
-		fflaflas_check(F.isOne(e));
+		FFLASFFPACK_check(F.isOne(e));
 #endif
 		size_t w, kmax;
 		FFLAS_BASE base;
@@ -1177,6 +1177,6 @@ namespace FFLAS {
 
 #undef LB_TRTR
 
-#endif // __FFLAFLAS_fflas_H
+#endif // __FFLASFFPACK_fflas_H
 
 
