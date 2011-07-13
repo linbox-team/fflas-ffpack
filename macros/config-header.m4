@@ -1,5 +1,5 @@
-# Copyright (c) 2011 Fflas-Ffpack
-# This file is part of Fflas-Ffpack
+# Copyright (c) 2011 FFLAS-FFPACK
+# This file is part of FFLAS-FFPACK
 # This was copied from Givaro's
 # see COPYING for licence
 

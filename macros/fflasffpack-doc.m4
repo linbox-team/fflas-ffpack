@@ -6,15 +6,15 @@ AC_MSG_CHECKING(whether to build documentation)
 
 
 AC_ARG_WITH(docdir,
-[AC_HELP_STRING([--with-docdir=<path>], [Where the Fflas-Ffpack documentation should be installed])],
+[AC_HELP_STRING([--with-docdir=<path>], [Where the FFLAS-FFPACK documentation should be installed])],
             [
-		FFLAFLAS_DOC_PATH="$withval"
+		FFLASFFPACK_DOC_PATH="$withval"
 	    ],
 	    [
-		eval FFLAFLAS_DOC_PATH="${prefix}/docs"
+		eval FFLASFFPACK_DOC_PATH="${prefix}/docs"
 	    ])
 
-AC_SUBST(FFLAFLAS_DOC_PATH)
+AC_SUBST(FFLASFFPACK_DOC_PATH)
 
 AC_ARG_WITH(doxygen,
 [AC_HELP_STRING([--with-doxygen=<path>], [Give the path to Doxygen. Note: --enable-doc needed])],
@@ -34,16 +34,16 @@ export PATH=$DOXYGEN_PATH
 	AC_MSG_RESULT(no)
 	echo
 	echo "You must have doxygen installed to create documentation for"
-	echo "Fflas-Ffpack. This error only happens if you use --enable-doc."
+	echo "FFLAS-FFPACK. This error only happens if you use --enable-doc."
 	echo "Download the appropriate package for your distribution, or get"
 	echo "the source tarball from http://www.stack.nl/~dimitri/doxygen/"
 	exit -1
 }
 AC_MSG_RESULT(yes)
-AM_CONDITIONAL(FFLAFLAS_BUILD_DOC, true)
+AM_CONDITIONAL(FFLASFFPACK_BUILD_DOC, true)
 ],
 [
 AC_MSG_RESULT(no)
-AM_CONDITIONAL(FFLAFLAS_BUILD_DOC, false)
+AM_CONDITIONAL(FFLASFFPACK_BUILD_DOC, false)
 ])
 ])

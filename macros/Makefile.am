@@ -1,5 +1,5 @@
-# Copyright(c)2011 by Fflas-Ffpack
-# This file is part of Fflas-Ffpack
+# Copyright(c)2011 by FFLAS-FFPACK
+# This file is part of FFLAS-FFPACK
 # This is free Software.
 # Written by BB <bboyer@imag.fr>
 # see the COPYING file for more details.

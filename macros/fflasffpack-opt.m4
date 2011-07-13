@@ -1,4 +1,4 @@
-# Copyright (c) Fflas-Ffpack
+# Copyright (c) FFLAS-FFPACK
 # This file was taken from LinBox linbox-opt.m4
 # see COPYING for licence
 
@@ -9,9 +9,7 @@ AC_DEFUN([FF_OPT],
 AC_MSG_CHECKING([whether to use run time optimization])
 
 AC_ARG_ENABLE(optimization,
-[AC_HELP_STRING([--disable-optimization], [ Disable run time optimization in FflasFpack code])])
-
-AS_IF([test "x$enable_optimization" != "xno"],
+[AC_HELP_STRING([--enable-optimization], [ Enable run time optimization in FflasFpack code])],
 [
 AC_MSG_RESULT(yes)
 
@@ -19,11 +17,9 @@ AC_MSG_RESULT(yes)
 BACKUP_CXXFLAGS=${CXXFLAGS}
 BACKUP_LIBS=${LIBS}
 
-dnl  if test "x$HAVE_BLAS" = "xyes" ;then
+if test "x$HAVE_BLAS" = "xyes" ;then
 AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 
-AS_IF([test "x$HAVE_CBLAS" = "xtrue"],
-[ echo "#define __FFLAFLAS_HAVE_CBLAS 1" >> ../fflas-ffpack/fflas-ffpack-config.h])
 
 CXXFLAGS="${BACKUP_CXXFLAGS} -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
@@ -33,9 +29,9 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		#include <iostream>
 		#include <fstream>
 		//#define _LINBOX_LINBOX_CONFIG_H
-		#define __FFLAFLAS_CONFIGURATION
+		#define __FFLASFFPACK_CONFIGURATION
 		#include <fflas-ffpack/config-blas.h>
-		#include <fflas-ffpack/fflas-ffpack-config.h>
+		#include <fflasffpack-config.h>
 		#include <fflas-ffpack/field/modular-positive.h>
 		#include <fflas-ffpack/fflas/fflas.h>
 		#include <tests/timer.h>
@@ -44,7 +40,7 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		int main () {
 
 		  FFPACK::Modular<double> F(17);
-		  size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
+		  size_t n=300, nmax=5000, prec=512, nbest=0, count=0;
 		  Timer chrono;
 		  double basetime, time;
 		  bool bound=false;
@@ -113,8 +109,8 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		  out<<nbest;
 		  out.close();
 
-		  outlog << "defined __FFLAFLAS_STRASSEN_OPTIMIZATION" << std::endl
-			 << "defined __FFLAFLAS_WINOTHRESHOLD to " << nbest << "" << std::endl;
+		  outlog << "defined __FFLASFFPACK_STRASSEN_OPTIMIZATION" << std::endl
+			 << "defined __FFLASFFPACK_WINOTHRESHOLD to " << nbest << "" << std::endl;
 	          outlog.close();
 
 		  delete[] A;
@@ -139,8 +135,9 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 	break
 	])
 
-],
-[AC_MSG_RESULT(no)]
-)
+fi;
+],[
+AC_MSG_RESULT(no)
+])
 
 ])
