@@ -12,7 +12,7 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 		[
 		AC_ARG_WITH(gotoblas2,
 			[AC_HELP_STRING([--with-gotoblas2=<path|yes>],
-				[Use GOTO2 blas library. BLAS are mandatory for Fflas-Ffpack
+				[Use GOTO2 blas library. BLAS are mandatory for FFLAS-FFPACK
 				compilation. If argument is  <yes> that means
 				the library is reachable with the standard search path
 				(/usr or /usr/local). Otherwise you give the <path> to
@@ -36,7 +36,7 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 				dnl remove last '/'
 				dnl  BLAS_HOME=`echo $BLAS_HOME | sed 's/\(.*\)\/$/\1/'`
 				CBLAS="yes"
-				CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
+				CBLAS_FLAG="-D__FFLASFFPACK_HAVE_CBLAS"
 
 				AS_IF([ test -r "$BLAS_HOME/lib/libgoto2.a" -o -r "$BLAS_HOME/lib/libgoto2.so"  ],
 				[BLAS_LIBS="-lgoto2 -pthread"
@@ -57,12 +57,12 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 				LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
 				AC_TRY_LINK(
-						[#define __FFLAFLAS_CONFIGURATION
+						[#define __FFLASFFPACK_CONFIGURATION
 						#include "fflas-ffpack/config-blas.h"],
 						[double a;],
 						[
 						AC_TRY_RUN(
-							[#define __FFLAFLAS_CONFIGURATION
+							[#define __FFLASFFPACK_CONFIGURATION
 							#include "fflas-ffpack/config-blas.h"
 							int main ()
 							{  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
