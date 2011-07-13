@@ -29,15 +29,15 @@
  * @todo we should put vector printing elsewhere.
  */
 
-#ifndef __FFLAFLAS_util_debug_H
-#define __FFLAFLAS_util_debug_H
+#ifndef __FFLASFFPACK_util_debug_H
+#define __FFLASFFPACK_util_debug_H
 
 #include <sstream>
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 
-#ifdef __FFLAFLAS_HAVE_STDINT_H
+#ifdef __FFLASFFPACK_HAVE_STDINT_H
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
 
@@ -94,9 +94,9 @@
 #endif
 
 #ifndef DEBUG
-#define fflaflas_check(check) ((void) 0)
+#define FFLASFFPACK_check(check) ((void) 0)
 #else
-#define fflaflas_check(check) \
+#define FFLASFFPACK_check(check) \
 if (!(check)) {\
 throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); /*BB : should work on non gnu compilers too */ \
 }
@@ -166,7 +166,7 @@ namespace FFPACK {
 			if (std::ostringstream * str = dynamic_cast<std::ostringstream*>(_errorStream))
 				return o << str->str() ;
 			else
-				throw "Fflas-Ffpack ERROR: Failure exception is not initialized correctly";
+				throw "FFLAS-FFPACK ERROR: Failure exception is not initialized correctly";
 		}
 	};
 
@@ -214,4 +214,4 @@ namespace FFPACK {
 	std::ostream *Failure::_errorStream;
 } // FFPACK
 
-#endif // __FFLAFLAS_util_debug_H
+#endif // __FFLASFFPACK_util_debug_H

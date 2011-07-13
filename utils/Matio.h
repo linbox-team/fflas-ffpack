@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* Copyright (C) LinBox,Fflas-Ffpack
+/* Copyright (C) LinBox,FFLAS-FFPACK
  *
  *
  *
@@ -20,8 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __FFLAFLAS_matio_H
-#define __FFLAFLAS_matio_H
+#ifndef __FFLASFFPACK_matio_H
+#define __FFLASFFPACK_matio_H
 
 #include <cstring>
 #include <stdio.h>
@@ -286,4 +286,4 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 	return c ;
 }
 
-#endif //__FFLAFLAS_matio_H
+#endif //__FFLASFFPACK_matio_H

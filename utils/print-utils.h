@@ -6,8 +6,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLAFLAS_print_utils_H
-#define __FFLAFLAS_print_utils_H
+#ifndef __FFLASFFPACK_print_utils_H
+#define __FFLASFFPACK_print_utils_H
 
 #include <vector>
 // #include <pair>
@@ -120,4 +120,4 @@ namespace std
 #endif
 }
 
-#endif // __FFLAFLAS_print_utils_H
+#endif // __FFLASFFPACK_print_utils_H
