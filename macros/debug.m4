@@ -1,6 +1,6 @@
-# Copyright(c)'2011 Fflas-Ffpack
+# Copyright(c)'2011 FFLAS-FFPACK
 # Written by BB <bboyer@imag.fr>
-# This file is part of Fflas-Ffpack
+# This file is part of FFLAS-FFPACK
 # see the COPYING file for more details.
 
 dnl enable basic debug mode.
