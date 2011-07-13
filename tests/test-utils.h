@@ -2,9 +2,9 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
- * Copyright (C) Fflas-Ffpack
+ * Copyright (C) FFLAS-FFPACK
  * Written by Brice Boyer <bboyer@imag.fr>
- * This file is Free Software and part of Fflas-Ffpack.
+ * This file is Free Software and part of FFLAS-FFPACK.
  * See COPYING for license information.
  */
 
@@ -14,8 +14,8 @@
  * To be used in the tests
  */
 
-#ifndef __FFLAFLAS_tests_test_utils_H
-#define __FFLAFLAS_tests_test_utils_H
+#ifndef __FFLASFFPACK_tests_test_utils_H
+#define __FFLASFFPACK_tests_test_utils_H
 
 #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
@@ -53,7 +53,7 @@ namespace FFPACK {
 	{
 		int x = a ;
 		x += rand()%(b-a+1);
-		fflaflas_check(x<b && x>=a);
+		FFLASFFPACK_check(x<b && x>=a);
 		return x ;
 	}
 
@@ -65,7 +65,7 @@ namespace FFPACK {
 	{
 		size_t x = a ;
 		x += rand()%(b-a);
-		fflaflas_check(x<b && x>=a);
+		FFLASFFPACK_check(x<b && x>=a);
 		return x ;
 	}
 

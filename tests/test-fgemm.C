@@ -3,9 +3,9 @@
 
 
 /*
- * Copyright (C) Fflas-Ffpack
+ * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
- * This file is Free Software and part of Fflas-Ffpack.
+ * This file is Free Software and part of FFLAS-FFPACK.
  * See COPYING for license information.
  */
 

@@ -1,5 +1,5 @@
-# Copyright (c) 2011 Fflas-Ffpack
-# This file is part of Fflas-Ffpack
+# Copyright (c) 2011 FFLAS-FFPACK
+# This file is part of FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # see COPYING for licence
 
@@ -93,6 +93,6 @@ dense_generator:
 
 
 # for compilation of new tests
-FFLAFFLAS_BIN=@bindir@
+FFLASFFPACK_BIN=@bindir@
 %:%.C
 	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)

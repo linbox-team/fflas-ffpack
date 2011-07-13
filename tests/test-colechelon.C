@@ -2,9 +2,9 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //
 /*
- * Copyright (C) Fflas-Ffpack
+ * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
- * This file is Free Software and part of Fflas-Ffpack.
+ * This file is Free Software and part of FFLAS-FFPACK.
  * See COPYING for license information.
  */
 

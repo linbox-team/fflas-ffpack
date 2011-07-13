@@ -25,8 +25,8 @@
  * This file implements the C++ interface to commentators (for
  * providing runtime commentary to the user)
  */
-#ifndef __FFLAFLAS_timer_C
-#define __FFLAFLAS_timer_C
+#ifndef __FFLASFFPACK_timer_C
+#define __FFLASFFPACK_timer_C
 // Description:
 // - various timer objects
 // - to be rewritten to be more efficient

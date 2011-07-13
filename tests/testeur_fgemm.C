@@ -20,7 +20,7 @@ using namespace std;
 #include "fflas-ffpack/fflas/fflas.h"
 #include "givaro/givintprime.h"
 
-#ifndef __FFLAFLAS_HAVE_GIVARO
+#ifndef __FFLASFFPACK_HAVE_GIVARO
 #error you need givaro (and gmp) here
 #endif
 
