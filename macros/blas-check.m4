@@ -21,7 +21,7 @@ dnl Test for BLAS and define BLAS_LIBS
 AC_DEFUN([FF_CHECK_BLAS],
 		[ AC_ARG_WITH(blas,
 			[AC_HELP_STRING([--with-blas=lflags],
-				[Use BLAS library. This library is mandatory for Fflas-Ffpack
+				[Use BLAS library. This library is mandatory for FFLAS-FFPACK
 				compilation. The user has the responsability to provide library
                 flags such that the compiler will find and use BLAS (and LAPACK)])
 			])
@@ -39,12 +39,12 @@ AC_DEFUN([FF_CHECK_BLAS],
 		LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
 		AC_TRY_LINK(
-				[#define __FFLAFLAS_CONFIGURATION
+				[#define __FFLASFFPACK_CONFIGURATION
 				#include "fflas-ffpack/config-blas.h"],
 				[double a;],
 				[
 				AC_TRY_RUN(
-					[#define __FFLAFLAS_CONFIGURATION
+					[#define __FFLASFFPACK_CONFIGURATION
 					#include "fflas-ffpack/config-blas.h"
 					int main () {  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
 					cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,2,2,2,1., a,2,b,2,0.,c,2);
@@ -91,12 +91,12 @@ AC_DEFUN([FF_CHECK_BLAS],
 				CXXFLAGS="${BACKUP_CXXFLAGS}  ${CBLAS_FLAG}"
 
 				AC_TRY_LINK(
-					[#define __FFLAFLAS_CONFIGURATION
+					[#define __FFLASFFPACK_CONFIGURATION
 					#include "fflas-ffpack/config-blas.h"],
 					[double a;],
 					[
 					AC_TRY_RUN(
-						[#define __FFLAFLAS_CONFIGURATION
+						[#define __FFLASFFPACK_CONFIGURATION
 						#include "fflas-ffpack/config-blas.h"
 						int main () {  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
 						cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,2,2,2,1., a,2,b,2,0.,c,2);
@@ -139,7 +139,7 @@ AC_DEFUN([FF_CHECK_BLAS],
 		])
 
 
-		AM_CONDITIONAL(FFLAFFLAS_HAVE_BLAS, test "x$HAVE_BLAS" = "xyes")
+		AM_CONDITIONAL(FFLASFFPACK_HAVE_BLAS, test "x$HAVE_BLAS" = "xyes")
 
 		CXXFLAGS=${BACKUP_CXXFLAGS}
 		LIBS=${BACKUP_LIBS}
