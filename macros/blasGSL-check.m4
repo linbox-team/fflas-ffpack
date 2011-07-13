@@ -12,7 +12,7 @@ AC_DEFUN([FF_CHECK_GSL],
 		[
 		AC_ARG_WITH(gsl,
 			[AC_HELP_STRING([--with-gsl=<path|yes>],
-				[Use GSL blas library. BLAS are mandatory for Fflas-Ffpack
+				[Use GSL blas library. BLAS are mandatory for FFLAS-FFPACK
 				compilation. If argument is  <yes> that means
 				the library is reachable with the standard search path
 				(/usr or /usr/local). Otherwise you give the <path> to
@@ -35,7 +35,7 @@ AC_DEFUN([FF_CHECK_GSL],
 
 			for BLAS_HOME in ${BLAS_HOME_PATH} ; do
 				CBLAS="yes"
-				CBLAS_FLAG="-D__FFLAFLAS_HAVE_CBLAS"
+				CBLAS_FLAG="-D__FFLASFFPACK_HAVE_CBLAS"
 
 				AS_IF([ test -r "$BLAS_HOME/lib/libgsl.a" -o -r "$BLAS_HOME/lib/libgsl.so"  ],
 				[BLAS_LIBS="-lgsl -lgslcblas -lm"
@@ -54,12 +54,12 @@ AC_DEFUN([FF_CHECK_GSL],
 				LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
 				AC_TRY_LINK(
-						[#define __FFLAFLAS_CONFIGURATION
+						[#define __FFLASFFPACK_CONFIGURATION
 						#include "fflas-ffpack/config-blas.h"],
 						[double a;],
 						[
 						AC_TRY_RUN(
-							[#define __FFLAFLAS_CONFIGURATION
+							[#define __FFLASFFPACK_CONFIGURATION
 							#include "fflas-ffpack/config-blas.h"
 							int main ()
 							{  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
