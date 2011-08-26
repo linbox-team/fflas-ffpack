@@ -30,6 +30,6 @@ benchmarks:
 
 bin_SCRIPTS=fflas-ffpack-config
 
-VERSION=1.4.2
+VERSION=1.4.3
 
 #  EXTRA_DIST=incremente-versions
