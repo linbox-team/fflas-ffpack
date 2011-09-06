@@ -11,8 +11,8 @@ test -z "$srcdir" && srcdir=.
 
 PKG_NAME="FFLAS-FFPACK"
 
-(test -f $srcdir/configure.ac ) \
-	&& test -f $srcdir/fflas-ffpack/fflas-ffpack.doxy || {
+(test -f $srcdir/configure.ac  \
+	&& test -f $srcdir/fflas-ffpack/fflas-ffpack.doxy ) || {
 	echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
 	echo " top-level "\`$PKG_NAME\'" directory"
 	exit 1
