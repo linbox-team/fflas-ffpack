@@ -1,4 +1,6 @@
 #!/bin/sh
+# This file is part of FFLAS-FFPACK.
+# See COPYING for details about the licence.
 # Run this to generate all the initial makefiles, etc.
 
 echo "$0 $*" > autogen.status
@@ -9,11 +11,11 @@ test -z "$srcdir" && srcdir=.
 
 PKG_NAME="FFLAS-FFPACK"
 
-(test -f $srcdir/configure.ac \
+(test -f $srcdir/configure.ac ) \
 	&& test -f $srcdir/fflas-ffpack/fflas-ffpack.doxy) || {
-echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
-echo " top-level "\`$PKG_NAME\'" directory"
-exit 1
+	echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
+	echo " top-level "\`$PKG_NAME\'" directory"
+	exit 1
 }
 
 ORIGDIR=`pwd`
@@ -22,6 +24,18 @@ PROJECT=fflasffpack
 TEST_TYPE=-f
 
 DIE=0
+
+# Defaults
+LIBTOOL=libtool
+LIBTOOLIZE=libtoolize
+
+# Fix OSx problem with GNU libtool
+(uname -a|grep -v Darwin) < /dev/null > /dev/null 2>&1 ||
+{
+echo "....Adding fix for OSX"
+LIBTOOL=glibtool
+LIBTOOLIZE=glibtoolize
+}
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
 echo
@@ -47,26 +61,33 @@ DIE=1
  DIE=1
 }
 
+(automake --version) < /dev/null > /dev/null 2>&1 || {
+	echo
+	echo "You must have automake installed to compile $PROJECT."
+	echo "Get ftp://sourceware.cygnus.com/pub/automake/automake-1.4.tar.gz"
+	echo "(or a newer version if it is available)"
+	DIE=1
+}
 
 (grep "^AC_PROG_LIBTOOL" configure.ac >/dev/null) && {
-(libtool --version) < /dev/null > /dev/null 2>&1 || {
-echo
-echo "You must have libtool installed to compile $PROJECT."
-echo "Download the appropriate package for your distribution,"
-echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
-DIE=1
+  ($LIBTOOL --version) < /dev/null > /dev/null 2>&1 || {
+     echo
+	 echo "You must have libtool installed to compile $PROJECT."
+	 echo "Download the appropriate package for your distribution,"
+	 echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+	 DIE=1
   }
 }
 
 grep "^AM_GNU_GETTEXT" configure.ac >/dev/null && {
-grep "sed.*POTFILES" $srcdir/configure.ac >/dev/null || \
+  grep "sed.*POTFILES" $srcdir/configure.ac >/dev/null || \
 	(gettext --version) < /dev/null > /dev/null 2>&1 || {
-echo
-echo "You must have gettext installed to compile $PROJECT."
-echo "Download the appropriate package for your distribution,"
-echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
-DIE=1
-  }
+       echo
+	   echo "You must have gettext installed to compile $PROJECT."
+	   echo "Download the appropriate package for your distribution,"
+	   echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+	   DIE=1
+   }
 }
 
 if test "$DIE" -eq 1; then
@@ -122,7 +143,7 @@ do
 		fi
 		if grep "^AC_PROG_LIBTOOL" configure.ac >/dev/null; then
 			echo "Running libtoolize..."
-			libtoolize --force --copy
+			$LIBTOOLIZE --force --copy
 		fi
 		echo "Running aclocal $aclocalinclude ..."
 		aclocal $aclocalinclude
@@ -138,7 +159,9 @@ do
 	fi
 done
 
-conf_flags="--enable-maintainer-mode" #--enable-iso-c
+conf_flags="--enable-maintainer-mode" 
+#--enable-compile-warnings
+#--enable-iso-c
 
 cd "$ORIGDIR"
 
