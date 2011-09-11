@@ -74,7 +74,7 @@ namespace FFLAS {
 	/// On what side ?
 	enum FFLAS_SIDE
 	{
-		FflasLeft  =141,  /**< Operator applied on the left */
+		FflasLeft  = 141, /**< Operator applied on the left */
 		FflasRight = 142  /**< Operator applied on the rigth*/
 	};
 

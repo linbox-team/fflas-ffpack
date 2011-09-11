@@ -11,6 +11,18 @@ exec_prefix=@exec_prefix@
 includedir=@includedir@
 libdir=@libdir@
 
+major=`echo @VERSION@ | cut -d'.' -f1`
+minor=`echo @VERSION@ | cut -d'.' -f2`
+micro=`echo @VERSION@ | cut -d'.' -f3`
+decvr=$((((($major*100)+$minor)*100)+$micro))
+
+
+
+cflags=false
+libs=false
+
+
+
 usage()
 {
     cat <<EOF
@@ -25,8 +37,8 @@ Known values for OPTION are:
   --blas-cflags	 		print BLAS pre-processor and BLAS compiler flags
   --blas-home	 		print where BLAS were found
   --help		 		display this help and exit
-  --version		     	output version information
-  --decimal-version	 	output version in decimal representation (base 100)
+  --version		     	output version information string (eg @VERSION@)
+  --decimal-version	 	output version in decimal representation (base 100, that is $decvr)
 
 EOF
 
@@ -36,16 +48,6 @@ EOF
 if test $# -eq 0; then
     usage 1
 fi
-
-major=`echo @VERSION@ | cut -d'.' -f1`
-minor=`echo @VERSION@ | cut -d'.' -f2`
-micro=`echo @VERSION@ | cut -d'.' -f3`
-decvr=$((((($major*100)+$minor)*100)+$micro))
-
-
-
-cflags=false
-libs=false
 
 while test $# -gt 0; do
 	case "$1" in
