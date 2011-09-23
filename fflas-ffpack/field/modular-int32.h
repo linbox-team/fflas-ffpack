@@ -61,6 +61,8 @@ namespace FFPACK
 	class Modular<int32_t> {
 	public :
 		typedef int32_t Element;
+		static const Element one  = 1 ;
+		static const Element zero = 0 ;
 
 	protected:
 
@@ -417,9 +419,9 @@ namespace FFPACK
 
 		unsigned long AccBound(const Element&r) const
 		{
-			Element one, zero ;
-			init(one,1UL) ;
-			init(zero,0UL);
+			// Element one, zero ;
+			// init(one,1UL) ;
+			// init(zero,0UL);
 			double max_double = (double) (INT32_MAX) - modulus ;
 			double p = modulus-1 ;
 			if (areEqual(zero,r))
