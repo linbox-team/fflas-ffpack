@@ -35,7 +35,9 @@ class ModularBalanced;
 #include "fflas-ffpack/field/modular-balanced-double.h"
 #include "fflas-ffpack/field/modular-balanced-float.h"
 #include "fflas-ffpack/field/modular-balanced-int32.h"
+#ifdef __x86_64__ // __WORDSIZE == 64
 #include "fflas-ffpack/field/modular-balanced-int64.h"
+#endif
 
 #endif // __FFLASFFPACK_modular_balanced_double_H
 

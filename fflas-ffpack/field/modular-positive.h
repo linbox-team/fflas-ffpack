@@ -29,6 +29,8 @@ namespace FFPACK {
 #include "fflas-ffpack/field/modular-float.h"
 #include "fflas-ffpack/field/modular-double.h"
 #include "fflas-ffpack/field/modular-int32.h"
+#ifdef __x86_64__
 #include "fflas-ffpack/field/modular-int64.h"
+#endif
 
 #endif // __FFLASFFPACK_modular_positive_H
