@@ -70,8 +70,8 @@ namespace FFPACK
 
 	public :
 		typedef int32_t Element;
-		static const Element one  = 1 ;
-		static const Element zero = 0 ;
+		static const Element one   ;
+		static const Element zero  ;
 		Element mone ; // can't be const because of operator=
 
 	public:
@@ -512,6 +512,12 @@ namespace FFPACK
 
 
 }
+
+const int32_t FFPACK::Modular<int32_t>::one  =  1UL;
+const int32_t FFPACK::Modular<int32_t>::zero =  0UL;
+
+
+
 
 #include "field-general.h"
 
