@@ -23,8 +23,7 @@ namespace FFPACK {
 	class Modular;
 
 	template <class Element>
-	class ModularRandIter
-	{
+	class ModularRandIter {
 	public:
 		ModularRandIter (const Modular<Element> &F) :
 			_F(F)
@@ -54,8 +53,7 @@ namespace FFPACK {
 	class ModularBalanced;
 
 	template <class Element>
-	class ModularBalancedRandIter
-	{
+	class ModularBalancedRandIter {
 	public:
 		ModularBalancedRandIter (const ModularBalanced<Element> &F):_F(F){}
 		ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R) :

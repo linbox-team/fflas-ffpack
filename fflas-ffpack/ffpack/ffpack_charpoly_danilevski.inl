@@ -26,9 +26,6 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 			    const size_t N, typename Field::Element * A,
 			    const size_t lda)
 {
-	static typename Field::Element one, mone;
-	F.init(one, 1.0);
-	F.neg(mone, one);
 	charp.clear();
 	size_t dtot=0;
 	typename Field::Element *pivot,*e,*u1,invp;
@@ -46,17 +43,17 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 			FFLAS::fscal (F, N-k-1, invp, pivot+1, 1);
 			FFLAS::fscal (F, N-dtot, *pivot, A+dtot*lda+k+1, lda);
 			// X <- X - uw
-			FFLAS::fger (F, k + 1-dtot, N - k -1, mone,
+			FFLAS::fger (F, k + 1-dtot, N - k -1, F.mone,
 			      A + dtot*lda + k, lda, pivot+1, 1,
 			      A+k+1+dtot*lda, lda);
 			if (k<N-2){
 
 				// Y <- Y - vw
-				FFLAS::fger (F, N-k-2, N-k-1, mone, pivot+lda, lda, pivot+1, 1,
+				FFLAS::fger (F, N-k-2, N-k-1,  F.mone, pivot+lda, lda, pivot+1, 1,
 				      pivot+lda+1,lda);
 				//6
 				fgemv (F, FFLAS::FflasNoTrans, N-dtot, N-k-2,
-				       one, A+dtot*lda+k+2, lda, pivot+lda, lda, one,
+				        F.one, A+dtot*lda+k+2, lda, pivot+lda, lda,  F.one,
 				       A+dtot*lda+k+1,lda);
 			}
 			//5
@@ -73,7 +70,7 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 			for (i = 0; i < d; ++i){
 				F.neg (P->operator[](i), *(Ai+i*lda));
 			}
-			F.assign( (*P)[d], one);
+			F.assign( (*P)[d],  F.one);
 			charp.push_front(*P);
 			dtot+=d;
 		}

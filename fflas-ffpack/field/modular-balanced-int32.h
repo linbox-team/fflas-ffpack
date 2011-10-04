@@ -60,11 +60,15 @@ namespace FFPACK
 		typedef ModularBalancedRandIter<int32_t> RandIter;
 		typedef NonzeroRandIter<ModularBalanced<int32_t>,RandIter> NonZeroRandIter;
 
-		const bool balanced;
+		static const Element one  = 1 ;
+		static const Element zero = 0 ;
+		static const Element mone = -1;
+
+		static const bool balanced = true;
 
 		//default modular field,taking 65521 as default modulus
 		ModularBalanced () :
-			modulus(65521),balanced(true)
+			modulus(65521)
 		{
 			modulusinv = 1/(double)65521;
 			halfmodulus = (65521 >> 1);
@@ -72,7 +76,7 @@ namespace FFPACK
 		}
 
 		ModularBalanced (int32_t value, int exp = 1)  :
-			modulus(value),balanced(true)
+			modulus(value)
 		{
 			halfmodulus = (modulus >> 1);
 			nhalfmodulus = halfmodulus-modulus+1;
@@ -91,8 +95,7 @@ namespace FFPACK
 			modulus(mf.modulus),
 			halfmodulus(mf.halfmodulus),
 			nhalfmodulus(mf.nhalfmodulus),
-			modulusinv(mf.modulusinv),
-			balanced(true)
+			modulusinv(mf.modulusinv)
 		{ }
 
 		const ModularBalanced &operator=(const ModularBalanced<int32_t> &F)
@@ -433,6 +436,7 @@ namespace FFPACK
 	};
 
 }
+
 
 #include "field-general.h"
 #endif // __FFLASFFPACK_modular_balanced_int32_H

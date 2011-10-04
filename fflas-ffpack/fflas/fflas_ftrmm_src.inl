@@ -178,10 +178,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	if (!M || !N ) return;
 
-	static typename Field::Element one;
-	F.init(one, 1.0);
-
-	size_t nsplit = DotProdBound (F, 0, one,
+	size_t nsplit = DotProdBound (F, 0, F.one,
 #ifdef __FFLAS__DOUBLE
 				    FflasDouble
 #else
@@ -201,12 +198,12 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, one,
-		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, one, __FFLAS__Bupdate, ldb);
+		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.one,
+		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, F.one, __FFLAS__Bupdate, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
-		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, one,
-		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, one, __FFLAS__Bupdate, ldb);
+		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.one,
+		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, F.one, __FFLAS__Bupdate, ldb);
 #endif
 
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
@@ -230,8 +227,6 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		 typename Field::Element * B, const size_t ldb)
 {
 
-	static typename Field::Element one;
-	F.init(one, 1.0);
 	if (__FFLAS__Na == 1)
 #ifdef __FFLAS__NONUNIT
 		fscal(F, __FFLAS__Bdim, *A, B, __FFLAS__Bnorminc);
@@ -245,12 +240,12 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, one,
-		       __FFLAS__B2, ldb, __FFLAS__A2, lda, one, __FFLAS__B1, ldb);
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.one,
+		       __FFLAS__B2, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B1, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans,
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, one,
-		       __FFLAS__A2, lda, __FFLAS__B2, ldb, one, __FFLAS__B1, ldb);
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.one,
+		       __FFLAS__A2, lda, __FFLAS__B2, ldb, F.one, __FFLAS__B1, ldb);
 #endif
 		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A3, lda, __FFLAS__B2, ldb);
 	}

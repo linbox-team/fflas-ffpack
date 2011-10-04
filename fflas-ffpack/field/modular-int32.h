@@ -59,10 +59,6 @@ namespace FFPACK
 	 */
 	template <>
 	class Modular<int32_t> {
-	public :
-		typedef int32_t Element;
-		static const Element one  = 1 ;
-		static const Element zero = 0 ;
 
 	protected:
 
@@ -71,16 +67,24 @@ namespace FFPACK
 		unsigned long lmodulus;
 		int32_t _two64;
 
+
+	public :
+		typedef int32_t Element;
+		static const Element one  = 1 ;
+		static const Element zero = 0 ;
+		Element mone ; // can't be const because of operator=
+
 	public:
 
 
-		const bool balanced ;
+		static const bool balanced = false ;
 		typedef ModularRandIter<Element> RandIter;
 		typedef NonzeroRandIter<Modular<Element>, ModularRandIter<Element> > NonZeroRandIter;
 
 		//default modular field,taking 65521 as default modulus
 		Modular () :
-			modulus(65521),lmodulus(modulus),balanced(false)
+			modulus(65521),lmodulus(modulus)
+			,mone(modulus -1)
 		{
 			modulusinv=1/(double)65521;
 
@@ -90,7 +94,8 @@ namespace FFPACK
 		}
 
 		Modular (int32_t value, int32_t exp = 1) :
-			modulus(value),lmodulus(value),balanced(false)
+			modulus(value),lmodulus(value)
+			,mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -107,7 +112,8 @@ namespace FFPACK
 		}
 
 		Modular (unsigned long int value) :
-			modulus((Element) value),lmodulus(value),balanced(false)
+			modulus((Element) value),lmodulus(value)
+			,mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -124,7 +130,8 @@ namespace FFPACK
 		}
 
 		Modular (long int value) :
-			modulus((Element) value),lmodulus((long int)value),balanced(false)
+			modulus((Element) value),lmodulus((long int)value)
+			,mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -144,7 +151,7 @@ namespace FFPACK
 		Modular(const Modular<int32_t>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv)
 			,lmodulus(mf.lmodulus),_two64(mf._two64)
-			,balanced(false)
+			,mone(modulus -1)
 		{}
 
 		const Modular &operator=(const Modular<int32_t> &F)
@@ -153,6 +160,7 @@ namespace FFPACK
 			modulusinv = F.modulusinv;
 			lmodulus   = F.lmodulus ;
 			_two64     = F._two64;
+			mone       = F.mone ;
 			return *this;
 		}
 

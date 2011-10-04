@@ -89,8 +89,6 @@ namespace FFLAS {
 
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
-			typename Field::Element mone;
-			F.init (mone, -1.0);
 
 			unsigned long mantissa =
 			(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
@@ -112,7 +110,7 @@ namespace FFLAS {
 
 				double cplt=0;
 				if (!F.isZero (beta)){
-					if (F.isOne (beta) || F.areEqual (beta, mone)) cplt = c;
+					if (F.isOne (beta) || F.areEqual (beta, F.mone)) cplt = c;
 					else{
 						double be;
 						F.convert(be, beta);

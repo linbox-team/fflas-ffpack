@@ -25,10 +25,6 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 {
 
 	FFLASFFPACK_check(c);
-	static typename Field::Element one, zero, mone;
-	F.init(one, 1UL);
-	F.neg(mone, one);
-	F.init(zero, 0UL);
 
 	size_t * rp = new size_t[2*N];
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
@@ -38,7 +34,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	typename Field::Element *K  = new typename Field::Element[Nnoc*c];
 	typename Field::Element *K2 = new typename Field::Element[Nnoc*c];
 	// for (size_t i = 0 ; i < Nnoc*c ; ++i)
-		// K[i] = zero;
+		// K[i] = F.zero;
 	size_t ldk = N;
 
 	size_t *dA = new size_t[N]; //PA
@@ -58,8 +54,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	// Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
 	for (size_t i = 1; i<c; ++i){
 // #warning "leaks here"
-		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N, one,
-		       K+(i-1)*Nnoc, ldk, A, lda, zero, K+i*Nnoc, ldk);
+		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans,  noc, N, N,F.one,
+		       K+(i-1)*Nnoc, ldk, A, lda, F.zero, K+i*Nnoc, ldk);
 	}
 	// K2 <- K (re-ordering)
 	//! @todo swap to save space ??
@@ -118,21 +114,21 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	delete[] K2;
 
 	// K <- K A^T
-	fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N, one,  K3, ldk, A, lda, zero, K4, ldk);
+	fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N,F.one,  K3, ldk, A, lda, F.zero, K4, ldk);
 
 	// K <- K P^T
 	applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 		Mk, 0,(int) R, K4, ldk, Pk);
 
 	// K <- K U^-1
-	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, R, one, K, ldk, K4, ldk);
+	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, R,F.one, K, ldk, K4, ldk);
 
 	// L <-  Q^T L
 	applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
 	       N, 0,(int) R, K, ldk, Qk);
 
 	// K <- K L^-1
-	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, R, one, K, ldk, K4, ldk);
+	ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, R,F.one, K, ldk, K4, ldk);
 
 	//undoing permutation on L
 	applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans,
@@ -153,7 +149,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 					throw CharpolyFailed();
 				}
 			Polynomial P (dK [i]+1);
-			F.assign(P[dK[i]], one);
+			F.assign(P[dK[i]],F.one);
 			for (size_t j=0; j < dK [i]; ++j)
 				F.neg (P [dK [i]-j-1], *(K4 + i*ldk + (offset-j)));
 			frobeniusForm.push_front(P);
@@ -203,7 +199,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 		// K21 = K21 . S1^-1
 		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Nrest, R,
-		       one, K, ldk, K21, ldk);
+		      F.one, K, ldk, K21, ldk);
 
 		typename Field::Element * Arec = new typename Field::Element[Nrest*Nrest];
 		size_t ldarec = Nrest;
@@ -214,8 +210,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		     Ki += (ldk-Nrest) )
 			for ( size_t j=0; j<Nrest; ++j )
 				*(Ai++) = *(Ki++);
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R, mone,
-		       K21, ldk, K+R, ldk, one, Arec, ldarec);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mone,
+		       K21, ldk, K+R, ldk,F.one, Arec, ldarec);
 
 		std::list<Polynomial> polyList;
 		polyList.clear();
@@ -310,8 +306,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		size_t pos = nb_full_blocks*(deg-1);
 		for (size_t i = nb_full_blocks; i < Mk; ++i){
 			for (size_t j=0; j<Ncurr; ++j)
-				F.assign (*(K + i + j*ldk), zero);
-			F.assign (*(K + i + (pos + dK[i]-1)*ldk), one);
+				F.assign (*(K + i + j*ldk), F.zero);
+			F.assign (*(K + i + (pos + dK[i]-1)*ldk),F.one);
 			pos += dA[i];
 		}
 
@@ -328,10 +324,10 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		CompressRowsQA (F, Ma, Ac, ldac, Arp, ldarp, dA, Ma);
 
 		// K <- A K
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Ma, nb_full_blocks, Ma, one,
-		       Ac, ldac, K+(Ncurr-Ma)*ldk, ldk, one, K, ldk);
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ma, nb_full_blocks, Ma, one,
-		       Ac+(Ncurr-Ma)*ldac, ldac, K+(Ncurr-Ma)*ldk, ldk, zero, Arp, ldarp);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Ma, nb_full_blocks, Ma,F.one,
+		       Ac, ldac, K+(Ncurr-Ma)*ldk, ldk,F.one, K, ldk);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ma, nb_full_blocks, Ma,F.one,
+		       Ac+(Ncurr-Ma)*ldac, ldac, K+(Ncurr-Ma)*ldk, ldk, F.zero, Arp, ldarp);
 		for (size_t i=0; i< Ma; ++i)
 			FFLAS::fcopy(F, nb_full_blocks, K+(Ncurr-Ma+i)*ldk, 1, Arp+i*ldarp, 1);
 
@@ -339,11 +335,11 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		offset = (deg-2)*nb_full_blocks;
 		for (size_t i = nb_full_blocks; i < Mk; ++i) {
 			for (size_t j=0; j<Ncurr; ++j)
-				F.assign(*(K+i+j*ldk), zero);
+				F.assign(*(K+i+j*ldk), F.zero);
 			if (dK[i] == dA[i]) // copy the column of A
 				FFLAS::fcopy (F, Ncurr, K+i, ldk, Ac+i, ldac);
 			else{
-				F.assign (*(K + i + (offset+dK[i]-1)*ldk), one);
+				F.assign (*(K + i + (offset+dK[i]-1)*ldk),F.one);
 			}
 			offset += dA[i]-1;
 		}
@@ -363,14 +359,14 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			//std::cerr<<"FAIL R2 < MK"<<std::endl;
 			//			exit(-1);
 		}
-		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, Mk, one,
+		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Mk, Mk,F.one,
 		       K3 + (Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
-		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, Mk, one,
+		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Mk, Mk,F.one,
 		       K3+(Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 			Mk, 0,(int) Mk, K+(Ncurr-Mk)*ldk,ldk, P);
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk, mone,
-		       K3, ldk, K+(Ncurr-Mk)*ldk,ldk, one, K, ldk);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk,F.mone,
+		       K3, ldk, K+(Ncurr-Mk)*ldk,ldk,F.one, K, ldk);
 		delete[] P;
 		delete[] Q;
 
@@ -392,7 +388,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		for (size_t i=Mk-1; i>=nb_full_blocks+1;  --i)
 			if (dK[i] >= 1){
 				Polynomial  PP (dK [i]+1);
-				F.assign(PP[dK[i]], one);
+				F.assign(PP[dK[i]],F.one);
 				for (size_t j=0; j < dK[i]; ++j)
 					F.neg( PP[dK[i]-j-1], *(K + i + (offset-j)*ldk));
 				frobeniusForm.push_front(PP);
@@ -425,7 +421,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	// Recovery of the first invariant factor
 	Polynomial Pl(dK [0]+1);
-	F.assign(Pl[dK[0]], one);
+	F.assign(Pl[dK[0]],F.one);
 	for (size_t j=0; j < dK[0]; ++j)
 		F.neg( Pl[j], *(K  + j*ldk));
 	frobeniusForm.push_front(Pl);

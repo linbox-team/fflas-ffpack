@@ -41,12 +41,6 @@ namespace FFLAS {
 					   typename Field::Element* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			typename Field::Element Mone;
-			typename Field::Element one;
-			typename Field::Element zero;
-			F.init(one, 1.0);
-			F.neg(Mone, one);
-			F.init(zero, 0.0);
 			typename Field::Element tmp;
 
 			size_t k2 = MIN(k,kmax); // Size of the blocks
@@ -64,13 +58,13 @@ namespace FFLAS {
 						remblock = kmax ;
 						--nblock;
 					}
-					if (F.areEqual (Mone, beta)) betad = -1.0;
+					if (F.areEqual (F.mone, beta)) betad = -1.0;
 					else F.convert (betad, beta);
 
-					if (F.areEqual (Mone, alpha)) alphad = -1.0;
+					if (F.areEqual (F.mone, alpha)) alphad = -1.0;
 					else {
 						alphad = 1.0;
-						if (! F.areEqual (one, alpha)) {
+						if (! F.areEqual (F.one, alpha)) {
 							// Compute y = A*x + beta/alpha.y
 							// and after y *= alpha
 							FFLASFFPACK_check(!F.isZero(alpha));
@@ -116,7 +110,7 @@ namespace FFLAS {
 						MatD2MatF (F, C, ldc, Cd, n, m, n);
 						MatF2MatD (F, Cd, n, C, ldc, m, n);
 					}
-					if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha)))
+					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha)))
 						for (typename Field::Element * Ci = C; Ci < C+m*ldc; Ci += ldc)
 							for (size_t j = 0; j < n; ++j)
 								F.mulin (* (Ci + j), alpha);
@@ -135,13 +129,13 @@ namespace FFLAS {
 						remblock = kmax;
 						--nblock;
 					}
-					if (F.areEqual (Mone, beta)) betad = -1.0;
+					if (F.areEqual (F.mone, beta)) betad = -1.0;
 					else F.convert (betad, beta);
 
-					if (F.areEqual (Mone, alpha)) alphad = -1.0;
+					if (F.areEqual (F.mone, alpha)) alphad = -1.0;
 					else {
 						alphad = 1.0;
-						if (! F.areEqual (one, alpha)) {
+						if (! F.areEqual (F.one, alpha)) {
 							// Compute y = A*x + beta/alpha.y
 							// and after y *= alpha
 							FFLASFFPACK_check(!F.isZero(alpha));
@@ -184,7 +178,7 @@ namespace FFLAS {
 						MatFl2MatF (F, C, ldc, Cd, n, m, n);
 						MatF2MatFl (F, Cd, n, C, ldc, m, n);
 					}
-					if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))) {
+					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
 						for (typename Field::Element * Ci = C; Ci < C+m*ldc; Ci += ldc)
 							for (size_t j = 0; j < n; ++j)
 								F.mulin (* (Ci + j), alpha);
@@ -198,7 +192,7 @@ namespace FFLAS {
 				if (F.isZero (beta))
 					for (size_t i = 0; i < m; ++i)
 						for (size_t j = 0; j < n; ++j)
-							F.assign (*(C+i*ldc+j), zero);
+							F.assign (*(C+i*ldc+j), F.zero);
 				else {
 					typename Field::Element betadivalpha;
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -283,9 +277,7 @@ namespace FFLAS {
 					   double* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			double Mone, one, _alpha, _beta;
-			F.init(one, 1.0);
-			F.neg(Mone, one);
+			double _alpha, _beta;
 			// To ensure the initial computation with beta
 			size_t k2 = MIN(k,kmax);
 			size_t nblock = k / kmax;
@@ -294,12 +286,12 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (Mone, beta)) _beta = -1.0;
+			if (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha)) {
+				if (! F.areEqual (F.one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -319,12 +311,12 @@ namespace FFLAS {
 					F.init(*(Ci+j),*(Ci+j));
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, one, C, ldc, kmax,base);
+					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
 				for (double * Ci = C; Ci != C+m*ldc; Ci += ldc)
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
 				for (double * Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -344,9 +336,7 @@ namespace FFLAS {
 					   float* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			float Mone, one, _alpha, _beta;
-			F.init(one, 1.0);
-			F.neg(Mone, one);
+			float _alpha, _beta;
 			// To ensure the initial computation with beta
 			size_t k2 = MIN(k,kmax);
 			size_t nblock = k / kmax;
@@ -355,12 +345,12 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (Mone, beta)) _beta = -1.0;
+			if (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha)) {
+				if (! F.areEqual (F.one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -380,12 +370,12 @@ namespace FFLAS {
 					F.init(*(Ci+j),*(Ci+j));
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (FloatDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, one, C, ldc, kmax,base);
+					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
 				for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
 				for (float * Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -405,9 +395,7 @@ namespace FFLAS {
 					   double* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			double Mone, one, _alpha, _beta;
-			F.init(one, 1.0);
-			F.neg(Mone, one);
+			double _alpha, _beta;
 			// To ensure the initial computation with beta
 			size_t k2 = MIN(k,kmax);
 			size_t nblock = k / kmax;
@@ -416,15 +404,15 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (Mone, beta))
+			if (F.areEqual (F.mone, beta))
 				_beta = -1.0;
 			else
 				_beta = beta;
-			if (F.areEqual (Mone, alpha))
+			if (F.areEqual (F.mone, alpha))
 				_alpha = -1.0;
 			else {
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha)) {
+				if (! F.areEqual (F.one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -463,13 +451,13 @@ namespace FFLAS {
 
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, one, C, ldc, kmax, base);
+					       B+i*shiftB, ldb, F.one, C, ldc, kmax, base);
 				//#pragma omp parallel for schedule(static) private (Ci)
 				for (Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
 				for (Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -488,9 +476,7 @@ namespace FFLAS {
 					   float* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			float Mone, one, _alpha, _beta;
-			F.init(one, 1.0);
-			F.neg(Mone, one);
+			float _alpha, _beta;
 			// To ensure the initial computation with beta
 			size_t k2 = MIN(k,kmax);
 			size_t nblock = k / kmax;
@@ -499,12 +485,12 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (Mone, beta)) _beta = -1.0;
+			if (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha)) {
+				if (! F.areEqual (F.one, alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -524,12 +510,12 @@ namespace FFLAS {
 					F.init(*(Ci+j),*(Ci+j));
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (FloatDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, one, C, ldc, kmax,base);
+					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
 				for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
 				for (float * Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -551,9 +537,6 @@ namespace FFLAS {
 			      typename Field::Element * C, const size_t ldc,
 			      const size_t kmax, const size_t w, const FFLAS_BASE base)
 	{
-		typename Field::Element zero, one;
-		F.init  (zero, 0.0);
-		F.init  (one, 1.0);
 
 		typename Field::Element mbeta;
 		F.neg(mbeta,beta);
@@ -619,7 +602,7 @@ namespace FFLAS {
 					F.sub (*(dx1+j), *(d11 + j), *(d21 + j));
 
 			// P7 = alpha . S3 * T3  in C21
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, zero, C21, ldc, kmax, w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, F.zero, C21, ldc, kmax, w-1, base);
 
 			// T1 = B12 - B11 in X2
 			d11 = B11; d12 = B12; dx2 = X2;
@@ -637,7 +620,7 @@ namespace FFLAS {
 			}
 
 			// P5 = alpha . S1*T1 in C22
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, zero, C22, ldc, kmax, w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, F.zero, C22, ldc, kmax, w-1, base);
 
 			// T2 = B22 - T1 in X2
 			d22 = B22; dx2 = X2;
@@ -654,7 +637,7 @@ namespace FFLAS {
 			}
 
 			// P6 = alpha . S2 * T2 in C12
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, zero, C12, ldc, kmax, w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, F.zero, C12, ldc, kmax, w-1, base);
 
 			// S4 = A12 -S2 in X1
 			d12 = A12; dx1 = X1;
@@ -664,10 +647,10 @@ namespace FFLAS {
 			}
 
 			// P3 = alpha . S4*B22 in C11
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, B22, ldb, zero, C11, ldc, kmax, w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, B22, ldb, F.zero, C11, ldc, kmax, w-1, base);
 
 			// P1 = alpha . A11 * B11 in X1
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, zero, X1, nr, kmax, w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, kmax, w-1, base);
 
 
 
@@ -699,7 +682,7 @@ namespace FFLAS {
 			}
 
 			// P4 = alpha . A22 * T4 in C11
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldx2, zero, C11, ldc, kmax, w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldx2, F.zero, C11, ldc, kmax, w-1, base);
 
 			delete[] X2;
 			// U6 = U3 - P4 in C21
@@ -709,7 +692,7 @@ namespace FFLAS {
 					F.subin (*(d21c + j), *(d11c + j));
 
 			// P2 = alpha . A12 * B21  in C11
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, zero, C11, ldc, kmax,w-1, base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, kmax,w-1, base);
 
 			//  U1 = P2 + P1 in C11
 			d11c = C11; dx1 = X1;
@@ -781,7 +764,7 @@ namespace FFLAS {
 
 			// P5 = alpha . S1*T1 + beta . C12 in C12
 			//WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, beta, C12, ldc, kmax, w-1,base);
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, zero, X1, nr, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.zero, X1, nr, kmax, w-1,base);
 
 			// C22 = P5 + beta C22 in C22
 			d22c = C22; dx1 = X1;
@@ -800,7 +783,7 @@ namespace FFLAS {
 				}
 
 			// P1 = alpha . A11 * B11 in X1
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, zero, X1, nr, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, kmax, w-1,base);
 
 
 			// P2 = alpha . A12 * B21 + beta . C11  in C11
@@ -827,7 +810,7 @@ namespace FFLAS {
 			}
 
 			// U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, one, X1, nr, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.one, X1, nr, kmax, w-1,base);
 
 
 
@@ -856,7 +839,7 @@ namespace FFLAS {
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldx3, mbeta, C21, ldc, kmax, w-1,base);
 
 			// U5 = P3 + U4 = alpha . S4*B22 + U4 in C12
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, B22, ldb, one, C12, ldc, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, B22, ldb, F.one, C12, ldc, kmax, w-1,base);
 
 			// T3 = B22 - B12 in X3
 			d12 = B12; d22 = B22; dx3 = X3;
@@ -871,7 +854,7 @@ namespace FFLAS {
 					F.sub (*(dx2+j), *(d11 + j), *(d21 + j));
 
 			// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, one, X1, nr, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.one, X1, nr, kmax, w-1,base);
 
 			// U7 =  U3 + C22 in C22
 			d22c = C22; dx1 = X1; d12c = C12;
@@ -951,7 +934,7 @@ namespace FFLAS {
 			}
 
 			// P6 = alpha . S2 * T2 in X1
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, zero, X1, nr, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.zero, X1, nr, kmax, w-1,base);
 
 			// T4 = T2 - B21 in X3
 			d21 = B21;dx3=X3;
@@ -971,7 +954,7 @@ namespace FFLAS {
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldx3, mbeta, C21, ldc, kmax, w-1,base);
 
 			// P1 = alpha . A11 * B11 in X3
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, zero, X3, nr, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X3, nr, kmax, w-1,base);
 
 			//  U1 = P2 + P1 in C11
 			d11c = C11; dx3 = X3;
@@ -997,7 +980,7 @@ namespace FFLAS {
 				}
 			}
 			// P3 = alpha . S4*B22 in X1
-			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, B22, ldb, one, C12, ldc, kmax, w-1,base);
+			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, B22, ldb, F.one, C12, ldc, kmax, w-1,base);
 
 			// U5 = P3 + U4 in C12
 #if 0
@@ -1077,10 +1060,6 @@ namespace FFLAS {
 				       const FFLAS_BASE base)
 		{
 
-			typename Field::Element one,zero,mone;
-			F.init(one, 1UL);
-			F.init(zero, 0UL);
-			F.neg(mone, one);
 
 			if (w <= 0) // Winograd - >  Classic
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
@@ -1091,11 +1070,11 @@ namespace FFLAS {
 						DoubleDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
-						if (F.areEqual (mone, alpha)) {
+						if (F.areEqual (F.mone, alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
 						} else {
-							if (! F.areEqual (one, alpha)) {
+							if (! F.areEqual (F.one, alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
 								FFLASFFPACK_check(!F.isZero(alpha));
@@ -1126,8 +1105,8 @@ namespace FFLAS {
 						// Conversion double = >  GFq
 						MatD2MatF (F, C, ldc, Cd, n, m, n);
 
-						if (!F.areEqual (one, alpha) &&
-						    !F.areEqual (mone, alpha)) {
+						if (!F.areEqual (F.one, alpha) &&
+						    !F.areEqual (F.mone, alpha)) {
 							// Fix-up: compute C *= alpha
 							for (typename Field::Element* Ci = C;
 							     Ci < C + m*ldc; Ci+=ldc)
@@ -1142,11 +1121,11 @@ namespace FFLAS {
 						FloatDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
-						if (F.areEqual (mone, alpha)) {
+						if (F.areEqual (F.mone, alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
 						} else {
-							if (! F.areEqual (one, alpha)) {
+							if (! F.areEqual (F.one, alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
 								FFLASFFPACK_check(!F.isZero(alpha));
@@ -1177,8 +1156,8 @@ namespace FFLAS {
 						// Conversion double = >  GFq
 						MatFl2MatF (F, C, ldc, Cd, n, m, n);
 
-						if (!F.areEqual (one, alpha) &&
-						    !F.areEqual (mone, alpha)) {
+						if (!F.areEqual (F.one, alpha) &&
+						    !F.areEqual (F.mone, alpha)) {
 							// Fix-up: compute C *= alpha
 							for (typename Field::Element* Ci=C;
 							     Ci < C+m*ldc; Ci+=ldc)
@@ -1659,11 +1638,9 @@ namespace FFLAS {
 		 typename Field::Element* C, const size_t ldc)
 	{
 
-		typename Field::Element mone;
-		F.init (mone, -1.0);
 		double alphad, betad;
 		F.convert (alphad, alpha);
-		if (F.areEqual (beta, mone))
+		if (F.areEqual (beta, F.mone))
 			betad = -1.0;
 		else
 			F.convert (betad, beta);

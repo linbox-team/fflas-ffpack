@@ -8,6 +8,8 @@
  *
  * See COPYING for license information.
  */
+#ifndef __FFLASFFPACK_ffpack_minpoly_INL
+#define __FFLASFFPACK_ffpack_minpoly_INL
 namespace FFPACK {
 
 	template <class Field, class Polynomial>
@@ -24,9 +26,6 @@ namespace FFPACK {
 	{
 
 		typedef typename Field::Element elt;
-		static elt one,zero;
-		F.init( one, 1.0 );
-		F.init( zero, 0.0 );
 		// nRow is the number of row in the krylov base already computed
 		size_t j, k ;
 		//size_t	nRow = 2;
@@ -51,11 +50,11 @@ namespace FFPACK {
 					MinTag, kg_mc, kg_mb, kg_j);
 		//delete[] U;
 		minP.resize(k+1);
-		minP[k] = one;
+		minP[k] = F.one;
 		if ( (k==1) && F.isZero(*(X+ldx))){ // minpoly is X
 			delete[] U;
 			for (size_t i=0; i<k; ++i)
-				minP[i] = zero;
+				minP[i] = F.zero;
 			return minP;
 		}
 		// U contains the k first coefs of the minpoly
@@ -71,3 +70,4 @@ namespace FFPACK {
 	}
 
 } // FFPACK
+#endif // __FFLASFFPACK_ffpack_minpoly_INL

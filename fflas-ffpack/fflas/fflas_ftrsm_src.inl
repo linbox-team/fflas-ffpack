@@ -172,13 +172,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	      const size_t nblas, size_t nbblocsblas)
 {
 
-	static typename Field::Element Mone;
-	static typename Field::Element one;
-
-	static __FFLAS__DOMAIN D;
-
-	F.init(one, 1.0);
-	F.neg(Mone,one);
+	static __FFLAS__DOMAIN D; // is this safe ??
 
 	if ( __FFLAS__Na <= nblas ){
 		for (size_t i=0; i < M; ++i)
@@ -245,10 +239,10 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
-		       -1.0, __FFLAS__B1, ldb, __FFLAS__A2, lda, one, __FFLAS__B2, ldb);
+		       -1.0, __FFLAS__B1, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B2, ldb);
 #else
 		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
-		       -1.0, __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
+		       -1.0, __FFLAS__A2, lda, __FFLAS__B1, ldb, F.one, __FFLAS__B2, ldb);
 #endif
 
 		this->delayed (F, __FFLAS__Mb2, __FFLAS__Nb2,
@@ -263,14 +257,11 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	if (!M || !N ) return;
 
-	static typename Field::Element one, Mone;
-	F.init(one, 1.0);
-	F.neg(Mone, one);
 
 	static __FFLAS__DOMAIN D;
 	size_t nblas = TRSMBound<Field> (F);
 
-	size_t ndel = DotProdBound (F, 0, one,
+	size_t ndel = DotProdBound (F, 0, F.one,
 #ifdef __FFLAS__DOUBLE
 				    FflasDouble
 #else
@@ -288,12 +279,12 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, Mone,
-		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, one, __FFLAS__Bupdate, ldb);
+		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mone,
+		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, F.one, __FFLAS__Bupdate, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
-		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, Mone,
-		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, one, __FFLAS__Bupdate, ldb);
+		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mone,
+		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, F.one, __FFLAS__Bupdate, ldb);
 #endif
 	}
 	if (nrestsplit)
@@ -316,10 +307,6 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		 typename Field::Element * B, const size_t ldb)
 {
 
-	static typename Field::Element Mone;
-	static typename Field::Element one;
-	F.init(one, 1.0);
-	F.neg(Mone,one);
 	if (__FFLAS__Na == 1){
 
 #ifndef __FFLAS__UNIT
@@ -336,12 +323,12 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, Mone,
-		       __FFLAS__B1, ldb, __FFLAS__A2, lda, one, __FFLAS__B2, ldb);
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mone,
+		       __FFLAS__B1, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B2, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, Mone,
-		       __FFLAS__A2, lda, __FFLAS__B1, ldb, one, __FFLAS__B2, ldb);
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mone,
+		       __FFLAS__A2, lda, __FFLAS__B1, ldb, F.one, __FFLAS__B2, ldb);
 #endif
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb);
 	}

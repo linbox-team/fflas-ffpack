@@ -9,14 +9,8 @@
  */
 
 /** @file ffpack.h
- * \brief Set of elimination based routines for dense linear algebra
- * with matrices over finite prime field of characteristic less than 2^26.
- *
- * \details This class only provides a set of static member functions.
- *  No instantiation is allowed.
- *
- * It enlarges the set of BLAS routines of the class FFLAS, with higher
- * level routines based on elimination.
+ * \brief Set of elimination based routines for dense linear algebra.
+ * Matrices are supposed over finite prime field of characteristic less than 2^26.
 
 */
 
@@ -41,13 +35,10 @@
 #ifndef __FFPACK_CHARPOLY_THRESHOLD
 #define __FFPACK_CHARPOLY_THRESHOLD 30
 #endif
-/** Set of elimination based routines for dense linear algebra
- * with matrices over finite prime field of characteristic less than 2^26.
+/** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
+ * Set of elimination based routines for dense linear algebra.
  *
- *  This class only provides a set of static member functions.
- *  No instantiation is allowed.
- *
- * It enlarges the set of BLAS routines of the class FFLAS, with higher
+ * This namespace enlarges the set of BLAS routines of the class FFLAS, with higher
  * level routines based on elimination.
  \ingroup ffpack
  */
@@ -88,7 +79,7 @@ namespace FFPACK  {
 	 * @param lda leading dimension of A
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	Rank( const Field& F, const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda)
 	{
@@ -113,7 +104,7 @@ namespace FFPACK  {
 	 * @param lda leading dimension of A
 	 */
 	template <class Field>
-	static bool
+	bool
 	IsSingular( const Field& F, const size_t M, const size_t N,
 		    typename Field::Element * A, const size_t lda)
 	{
@@ -138,7 +129,7 @@ namespace FFPACK  {
 	 */
 	///  using LQUP factorization  with early termination.
 	template <class Field>
-	static typename Field::Element
+	typename Field::Element
 	Det( const Field& F, const size_t M, const size_t N,
 	     typename Field::Element * A, const size_t lda)
 	{
@@ -193,7 +184,7 @@ namespace FFPACK  {
 	 * @param info Success of the computation: 0 if successfull, >0 if system is inconsistent
 	 */
 	template <class Field>
-	static void
+	void
 	fgetrs (const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const size_t M, const size_t N, const size_t R,
@@ -203,10 +194,6 @@ namespace FFPACK  {
 		int * info)
 	{
 
-		static typename Field::Element zero, one, mone;
-		F.init (zero, 0.0);
-		F.init (one, 1.0);
-		F.neg(mone, one);
 		*info =0;
 		if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
@@ -225,12 +212,14 @@ namespace FFPACK  {
 				*info = 1;
 			}
 			// The last rows of B are now supposed to be 0
-			//			for (size_t i = R; i < M; ++i)
-			// 				for (size_t j = 0; j < N; ++j)
-			// 					*(B + i*ldb + j) = zero;
+#if 0
+			for (size_t i = R; i < M; ++i)
+				for (size_t j = 0; j < N; ++j)
+					*(B + i*ldb + j) = F.zero;
+#endif
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-			       R, N, one, A, lda , B, ldb);
+			       R, N, F.one, A, lda , B, ldb);
 
 			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 				N, 0,(int) R, B, ldb, P);
@@ -242,10 +231,10 @@ else { // Right Looking X A = B
 				M, 0,(int) R, B, ldb, P);
 
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-			       M, R, one, A, lda , B, ldb);
+			       M, R, F.one, A, lda , B, ldb);
 
-			fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, one,
-			       B, ldb, A+R, lda, mone, B+R, ldb);
+			fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, F.one,
+			       B, ldb, A+R, lda, F.mone, B+R, ldb);
 
 			bool consistent = true;
 			for (size_t i = 0; i < M; ++i)
@@ -289,7 +278,7 @@ else { // Right Looking X A = B
 	 * @param info Succes of the computation: 0 if successfull, >0 if system is inconsistent
 	 */
 	template <class Field>
-	static typename Field::Element *
+	typename Field::Element *
 	fgetrs (const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const size_t M, const size_t N, const size_t NRHS, const size_t R,
@@ -300,10 +289,6 @@ else { // Right Looking X A = B
 		int * info)
 	{
 
-		static typename Field::Element zero, one, mone;
-		F.init (zero, 0.0);
-		F.init (one, 1.0);
-		F.neg(mone, one);
 		*info =0;
 
 		typename Field::Element* W;
@@ -314,7 +299,7 @@ else { // Right Looking X A = B
 			// Initializing X to 0 (to be optimized)
 			for (size_t i = 0; i <N; ++i)
 				for (size_t j=0; j< NRHS; ++j)
-					F.assign (*(X+i*ldx+j), zero);
+					F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M > N){ // Cannot copy B into X
 				W = new typename Field::Element [M*NRHS];
@@ -341,7 +326,7 @@ else { // Right Looking X A = B
 				// Here the last rows of W are supposed to be 0
 
 				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-				       R, NRHS, one, A, lda , W, ldw);
+				       R, NRHS, F.one, A, lda , W, ldw);
 
 				for (size_t i=0; i < R; ++i)
 					FFLAS::fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
@@ -373,7 +358,7 @@ else { // Copy B to X directly
 				// Here the last rows of W are supposed to be 0
 
 				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-				       R, NRHS, one, A, lda , X, ldx);
+				       R, NRHS, F.one, A, lda , X, ldx);
 
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);
@@ -385,7 +370,7 @@ else { // Right Looking X A = B
 
 			for (size_t i = 0; i <NRHS; ++i)
 				for (size_t j=0; j< M; ++j)
-					F.assign (*(X+i*ldx+j), zero);
+					F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M < N) {
 				W = new typename Field::Element [NRHS*N];
@@ -397,10 +382,10 @@ else { // Right Looking X A = B
 					NRHS, 0,(int) R, W, ldw, P);
 
 				ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-				       NRHS, R, one, A, lda , W, ldw);
+				       NRHS, R, F.one, A, lda , W, ldw);
 
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, one,
-				       W, ldw, A+R, lda, mone, W+R, ldw);
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.one,
+				       W, ldw, A+R, lda, F.mone, W+R, ldw);
 
 				bool consistent = true;
 				for (size_t i = 0; i < NRHS; ++i)
@@ -431,10 +416,10 @@ else {
 					NRHS, 0,(int) R, X, ldx, P);
 
 				ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-				       NRHS, R, one, A, lda , X, ldx);
+				       NRHS, R, F.one, A, lda , X, ldx);
 
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, one,
-				       X, ldx, A+R, lda, mone, X+R, ldx);
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.one,
+				       X, ldx, A+R, lda, F.mone, X+R, ldx);
 
 				bool consistent = true;
 				for (size_t i = 0; i < NRHS; ++i)
@@ -477,7 +462,7 @@ else {
 	 * Otherwise an info is 1
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	fgesv (const Field& F,
 	       const FFLAS::FFLAS_SIDE Side,
 	       const size_t M, const size_t N,
@@ -527,7 +512,7 @@ else {
 	 * Otherwise an info is 1
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	fgesv (const Field& F,
 	       const FFLAS::FFLAS_SIDE Side,
 	       const size_t M, const size_t N, const size_t NRHS,
@@ -565,15 +550,12 @@ else {
 	 */
 	/// Solve linear system using LQUP factorization.
 	template <class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	Solve( const Field& F, const size_t M,
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * x, const int incx,
 	       const typename Field::Element * b, const int incb )
 	{
-		typename Field::Element one, zero;
-		F.init(one,1.0);
-		F.init(zero,0.0);
 
 		size_t *P = new size_t[M];
 		size_t *rowP = new size_t[M];
@@ -619,18 +601,12 @@ else {
 	 *
 	 */
 	template <class Field>
-	static size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
+	size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 				      const size_t M, const size_t N,
 				      typename Field::Element* A, const size_t lda,
 				      typename Field::Element*& NS, size_t& ldn,
 				      size_t& NSdim)
 	{
-
-		typename Field::Element one, zero,mone;
-		F.init(one, 1.0);
-		F.init(zero, 0.0);
-		F.neg(mone, one);
-
 		if (Side == FFLAS::FflasRight) { // Right NullSpace
 			size_t* P = new size_t[N];
 			size_t* Qt = new size_t[M];
@@ -645,12 +621,12 @@ else {
 				FFLAS::fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
-			       mone, A, lda, NS, ldn);
+			       F.mone, A, lda, NS, ldn);
 
 			for (size_t i=R; i<N; ++i){
 				for (size_t j=0; j < ldn; ++j)
-					F.assign (*(NS+i*ldn+j), zero);
-				F.assign (*(NS + i*ldn + i-R), one);
+					F.assign (*(NS+i*ldn+j), F.zero);
+				F.assign (*(NS + i*ldn + i-R), F.one);
 			}
 			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 				NSdim, 0,(int) R, NS, ldn, P);
@@ -670,12 +646,12 @@ else { // Left NullSpace
 			for (size_t i=0; i<NSdim; ++i)
 				FFLAS::fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R,
-			       mone, A, lda, NS, ldn);
+			       F.mone, A, lda, NS, ldn);
 
 			for (size_t i=0; i<NSdim; ++i){
 				for (size_t j=R; j < M; ++j)
-					F.assign (*(NS+i*ldn+j), zero);
-				F.assign (*(NS + i*ldn + i+R), one);
+					F.assign (*(NS+i*ldn+j), F.zero);
+				F.assign (*(NS + i*ldn + i+R), F.one);
 			}
 			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 				NSdim, 0,(int) R, NS, ldn, P);
@@ -699,7 +675,7 @@ else { // Left NullSpace
 	 * @returns R
 	 */
 	template <class Field>
-	static size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
+	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
 				      typename Field::Element* A, const size_t lda,
 				      size_t* &rkprofile)
 	{
@@ -732,7 +708,7 @@ else { // Left NullSpace
 	 * @returns R
 	 */
 	template <class Field>
-	static size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
+	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
 					 typename Field::Element* A, const size_t lda,
 					 size_t* &rkprofile)
 	{
@@ -768,7 +744,7 @@ else { // Left NullSpace
 	 * @returns R
 	 */
 	template <class Field>
-	static size_t RowRankProfileSubmatrixIndices (const Field& F,
+	size_t RowRankProfileSubmatrixIndices (const Field& F,
 						      const size_t M, const size_t N,
 						      typename Field::Element* A,
 						      const size_t lda,
@@ -820,7 +796,7 @@ else { // Left NullSpace
 	 * \return R
 	 */
 	template <class Field>
-	static size_t ColRankProfileSubmatrixIndices (const Field& F,
+	size_t ColRankProfileSubmatrixIndices (const Field& F,
 						      const size_t M, const size_t N,
 						      typename Field::Element* A,
 						      const size_t lda,
@@ -870,7 +846,7 @@ else { // Left NullSpace
 	 * @return R
 	 */
 	template <class Field>
-	static size_t RowRankProfileSubmatrix (const Field& F,
+	size_t RowRankProfileSubmatrix (const Field& F,
 					       const size_t M, const size_t N,
 					       typename Field::Element* A,
 					       const size_t lda,
@@ -910,7 +886,7 @@ else { // Left NullSpace
 	 * \returns R
 	 */
 	template <class Field>
-	static size_t ColRankProfileSubmatrix (const Field& F, const size_t M, const size_t N,
+	size_t ColRankProfileSubmatrix (const Field& F, const size_t M, const size_t N,
 					       typename Field::Element* A, const size_t lda,
 					       typename Field::Element*& X, size_t& R)
 	{
@@ -946,16 +922,12 @@ else { // Left NullSpace
 	 * @param ldx
 	 */
 	template <class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	LQUPtoInverseOfFullRankMinor( const Field& F, const size_t rank,
 				      typename Field::Element * A_factors, const size_t lda,
 				      const size_t* QtPointer,
 				      typename Field::Element * X, const size_t ldx)
 	{
-
-		typename Field::Element one, zero;
-		F.init(one,1.0);
-		F.init(zero,0.0);
 
 		// upper entries are okay, just need to move up bottom ones
 		const size_t* srcRow = QtPointer;
@@ -975,7 +947,7 @@ else { // Left NullSpace
 
 		// X = U^-1.X
 		ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans,
-		       FFLAS::FflasNonUnit, rank, rank, one, A_factors, lda, X, ldx);
+		       FFLAS::FflasNonUnit, rank, rank, F.one, A_factors, lda, X, ldx);
 
 		return X;
 
@@ -985,7 +957,7 @@ else { // Left NullSpace
 	// TURBO: rank computation algorithm
 	//---------------------------------------------------------------------
 	template <class Field>
-	static size_t
+	size_t
 	TURBO (const Field& F, const size_t M, const size_t N,
 	       typename Field::Element* A, const size_t lda, size_t * P, size_t * Q, const size_t cutoff);
 
@@ -1011,7 +983,7 @@ else { // Left NullSpace
 	 * - Pernet C, Brassel M \emph{\c LUdivine, une divine factorisation \c LU}, 2002
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 		  const size_t M, const size_t N,
 		  typename Field::Element * A, const size_t lda,
@@ -1037,7 +1009,7 @@ else { // Left NullSpace
 	class callLUdivine_small;
 
 	template <class Field>
-	static size_t
+	size_t
 	LUdivine_small (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 			const size_t M, const size_t N,
 			typename Field::Element * A, const size_t lda,
@@ -1045,7 +1017,7 @@ else { // Left NullSpace
 			const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
 
 	template <class Field>
-	static size_t
+	size_t
 	LUdivine_gauss (const Field& F, const FFLAS::FFLAS_DIAG Diag,
 			const size_t M, const size_t N,
 			typename Field::Element * A, const size_t lda,
@@ -1071,7 +1043,7 @@ else { // Left NullSpace
 	 * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
 	 */
 	template<class Field>
-	static void
+	void
 	applyP( const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const FFLAS::FFLAS_TRANSPOSE Trans,
@@ -1127,35 +1099,30 @@ else { // Left NullSpace
 	 *
 	 */
 	template<class Field>
-	static void
+	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 		const size_t N, typename Field::Element * A, const size_t lda)
 	{
-
-		static typename Field::Element one;
-		static typename Field::Element mone;
-		F.init(one,1.0);
-		F.init(mone,-1.0);
 		if (N == 1){
 			if (Diag == FFLAS::FflasNonUnit)
 				F.invin (*A);
 		}
-else {
+		else {
 			size_t N1 = N/2;
 			size_t N2 = N - N1;
 			ftrtri (F, Uplo, Diag, N1, A, lda);
 			ftrtri (F, Uplo, Diag, N2, A + N1*(lda+1), lda);
 			if (Uplo == FFLAS::FflasUpper){
 				ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
-				       one, A, lda, A + N1, lda);
+				       F.one, A, lda, A + N1, lda);
 				ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
-				       mone, A + N1*(lda+1), lda, A + N1, lda);
+				       F.mone, A + N1*(lda+1), lda, A + N1, lda);
 			}
-else {
+			else {
 				ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
-				       one, A + N1*(lda+1), lda, A + N1*lda, lda);
+				       F.one, A + N1*(lda+1), lda, A + N1*lda, lda);
 				ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
-				       mone, A, lda, A + N1*lda, lda);
+				       F.mone, A, lda, A + N1*lda, lda);
 			}
 		}
 	}
@@ -1173,13 +1140,10 @@ else {
 	 *
 	 */
 	template<class Field>
-	static void
+	void
 	ftrtrm (const Field& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
 		typename Field::Element * A, const size_t lda)
 	{
-
-		typename Field::Element one;
-		F.init(one,1.0);
 
 		if (N == 1)
 			return;
@@ -1188,15 +1152,15 @@ else {
 
 		ftrtrm (F, diag, N1, A, lda);
 
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N1, N1, N2, one,
-		       A+N1, lda, A+N1*lda, lda, one, A, lda);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N1, N1, N2, F.one,
+		       A+N1, lda, A+N1*lda, lda, F.one, A, lda);
 
 		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans,
 		       (diag == FFLAS::FflasUnit) ? FFLAS::FflasNonUnit : FFLAS::FflasUnit,
-		       N1, N2, one, A + N1*(lda+1), lda, A + N1, lda);
+		       N1, N2, F.one, A + N1*(lda+1), lda, A + N1, lda);
 
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, diag, N2, N1,
-		       one, A + N1*(lda+1), lda, A + N1*lda, lda);
+		       F.one, A + N1*(lda+1), lda, A + N1*lda, lda);
 
 		ftrtrm (F, diag, N2, A + N1*(lda+1), lda);
 
@@ -1225,7 +1189,7 @@ else {
 	 * @param transform
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 			   typename Field::Element * A, const size_t lda,
 			   size_t* P, size_t* Qt, bool transform = true);
@@ -1248,7 +1212,7 @@ else {
 	 * @param transform
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	RowEchelonForm (const Field& F, const size_t M, const size_t N,
 			typename Field::Element * A, const size_t lda,
 			size_t* P, size_t* Qt, const bool transform = false);
@@ -1273,7 +1237,7 @@ else {
 	 * @param transform
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 				  typename Field::Element * A, const size_t lda,
 				  size_t* P, size_t* Qt, const bool transform = true);
@@ -1297,7 +1261,7 @@ else {
 	 * @param transform
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 			       typename Field::Element * A, const size_t lda,
 			       size_t* P, size_t* Qt, const bool transform = true);
@@ -1315,7 +1279,7 @@ else {
 	 * Consequently this function should only be used for benchmarks
 	 */
 	template <class Field>
-	static size_t
+	size_t
 	ReducedRowEchelonForm2 (const Field& F, const size_t M, const size_t N,
 				typename Field::Element * A, const size_t lda,
 				size_t* P, size_t* Qt, const bool transform = true){
@@ -1326,7 +1290,7 @@ else {
 	}
 
 	template <class Field>
-	static size_t
+	size_t
 	REF (const Field& F, const size_t M, const size_t N,
 	     typename Field::Element * A, const size_t lda,
 	     const size_t colbeg, const size_t rowbeg, const size_t colsize,
@@ -1347,7 +1311,7 @@ else {
 	 */
 	/// Invert a matrix or return its nullity
 	template <class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	Invert (const Field& F, const size_t M,
 		typename Field::Element * A, const size_t lda,
 		int& nullity)
@@ -1381,7 +1345,7 @@ else {
 	/// Invert a matrix or return its nullity
 
 	template <class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	Invert (const Field& F, const size_t M,
 		typename Field::Element * A, const size_t lda,
 		typename Field::Element * X, const size_t ldx,
@@ -1409,16 +1373,12 @@ else {
 	 */
 	/// Invert a matrix or return its nullity
 	template <class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	Invert2( const Field& F, const size_t M,
 		 typename Field::Element * A, const size_t lda,
 		 typename Field::Element * X, const size_t ldx,
 		 int& nullity)
 	{
-
-		typename Field::Element one, zero;
-		F.init(one,1.0);
-		F.init(zero,0.0);
 
 		size_t *P = new size_t[M];
 		size_t *rowP = new size_t[M];
@@ -1449,14 +1409,14 @@ else {
 #endif
 			for (size_t i=0; i<M; ++i)
 				for (size_t j=0; j<M;++j)
-					F.assign(*(X+i*ldx+j), zero);
+					F.assign(*(X+i*ldx+j), F.zero);
 
 			// X = L^-1 in n^3/3
 			ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, M, A, lda);
 			for (size_t i=0; i<M; ++i){
 				for (size_t j=i; j<M; ++j)
-					F.assign(*(X +i*ldx+j),zero);
-				F.assign (*(X+i*(ldx+1)), one);
+					F.assign(*(X +i*ldx+j), F.zero);
+				F.assign (*(X+i*(ldx+1)), F.one);
 			}
 			for (size_t i=1; i<M; ++i)
 				FFLAS::fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
@@ -1472,7 +1432,7 @@ else {
 			t1.start();
 #endif
 			ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-			       M, M, one, A, lda , X, ldx);
+			       M, M, F.one, A, lda , X, ldx);
 #if 0
 			t1.stop();
 			cerr<<"ftrsm --> "<<t1.usertime()<<endl;
@@ -1499,7 +1459,7 @@ else {
 	 * Method, and LUP factorization of the Krylov matrix
 	 */
 	template <class Field, class Polynomial>
-	static std::list<Polynomial>&
+	std::list<Polynomial>&
 	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
 		  typename Field::Element * A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
@@ -1519,7 +1479,7 @@ else {
 	}
 
 	template <class Field, class Polynomial>
-	static std::list<Polynomial>&
+	std::list<Polynomial>&
 	CharPoly( const Field& F, Polynomial& charp, const size_t N,
 		  typename Field::Element * A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg)
@@ -1556,7 +1516,7 @@ else {
 	 * U contains the Krylov matrix and X, its LSP factorization
 	 */
 	template <class Field, class Polynomial>
-	static	Polynomial&
+	Polynomial&
 	MinPoly( const Field& F, Polynomial& minP, const size_t N,
 		 const typename Field::Element *A, const size_t lda,
 		 typename Field::Element* X, const size_t ldx, size_t* P,
@@ -1569,7 +1529,7 @@ else {
 	// Only the R non trivial column of L are stored in the M*R matrix L
 	// Requirement :  so that L could  be expanded in-place
 	template<class Field>
-	static void
+	void
 	solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
 		 const size_t M, const size_t N, const size_t R,
 		 typename Field::Element * L, const size_t ldl,
@@ -1577,9 +1537,6 @@ else {
 		 typename Field::Element * B, const size_t ldb )
 	{
 
-		typename Field::Element one, zero;
-		F.init(one, 1.0);
-		F.init(zero, 0.0);
 		size_t LM = (Side == FFLAS::FflasRight)?N:M;
 		int i = (int)R ;
 		for (; i--; ){ // much faster for
@@ -1589,10 +1546,10 @@ else {
 				//std::cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
 				FFLAS::fcopy( F, LM-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
 				for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
-					F.assign( *(L+i+j), zero );
+					F.assign( *(L+i+j), F.zero );
 			}
 		}
-		ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, N, one, L, ldl , B, ldb);
+		ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, N, F.one, L, ldl , B, ldb);
 		//write_field(F,std::cerr<<"dans solveLB "<<endl,L,N,N,ldl);
 		// Undo the permutation of L
 		for (size_t ii=0; ii<R; ++ii){
@@ -1601,7 +1558,7 @@ else {
 				//F.init( *(L+Q[ii]+j*ldl), 0 );
 				FFLAS::fcopy( F, LM-Q[ii]-1, L+(Q[ii]+1)*ldl+ii, ldl, L+Q[ii]*(ldl+1)+ldl,ldl );
 				for ( size_t j=Q[ii]*ldl; j<LM*ldl; j+=ldl)
-					F.assign( *(L+Q[ii]+j), zero );
+					F.assign( *(L+Q[ii]+j), F.zero );
 			}
 		}
 	}
@@ -1610,19 +1567,13 @@ else {
 	// L is M*M or N*N, B is M*N.
 	// Only the R non trivial column of L are stored in the M*R matrix L
 	template<class Field>
-	static void
+	void
 	solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,
 		  const size_t M, const size_t N, const size_t R,
 		  typename Field::Element * L, const size_t ldl,
 		  const size_t * Q,
 		  typename Field::Element * B, const size_t ldb )
 	{
-
-
-
-		typename Field::Element Mone, one;
-		F.init( Mone, -1.0 );
-		F.init( one, 1.0 );
 		typename Field::Element * Lcurr,* Rcurr,* Bcurr;
 		size_t ib,  Ldim;
 		int k;
@@ -1637,11 +1588,11 @@ else {
 				Bcurr = B + ib*ldb;
 				Rcurr = Lcurr + Ldim*ldl;
 
-				ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Ldim, N, one,
+				ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Ldim, N, F.one,
 				       Lcurr, ldl , Bcurr, ldb );
 
-				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-k, N, Ldim, Mone,
-				       Rcurr , ldl, Bcurr, ldb, one, Bcurr+Ldim*ldb, ldb);
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-k, N, Ldim, F.mone,
+				       Rcurr , ldl, Bcurr, ldb, F.one, Bcurr+Ldim*ldb, ldb);
 			}
 		}
 		else{ // Side == FFLAS::FflasRight
@@ -1655,10 +1606,10 @@ else {
 				Bcurr = B + ib+1;
 				Rcurr = Lcurr + Ldim*ldl;
 
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,  Ldim, N-ib-1, Mone,
-				       Bcurr, ldb, Rcurr, ldl,  one, Bcurr-Ldim, ldb);
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,  Ldim, N-ib-1, F.mone,
+				       Bcurr, ldb, Rcurr, ldl,  F.one, Bcurr-Ldim, ldb);
 
-				ftrsm (F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, Ldim, one,
+				ftrsm (F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, Ldim, F.one,
 				       Lcurr, ldl , Bcurr-Ldim, ldb );
 			}
 		}
@@ -1666,7 +1617,7 @@ else {
 
 
 	template<class Field>
-	static void trinv_left( const Field& F, const size_t N, const typename Field::Element * L, const size_t ldl,
+	void trinv_left( const Field& F, const size_t N, const typename Field::Element * L, const size_t ldl,
 				typename Field::Element * X, const size_t ldx )
 	{
 		for (size_t i=0; i<N; ++i)
@@ -1676,48 +1627,48 @@ else {
 	}
 
 	template <class Field>
-	static size_t KrylovElim( const Field& F, const size_t M, const size_t N,
+	size_t KrylovElim( const Field& F, const size_t M, const size_t N,
 				  typename Field::Element * A, const size_t lda, size_t*P,
 				  size_t *Q, const size_t deg, size_t *iterates, size_t * inviterates, const size_t maxit,size_t virt);
 
 	template <class Field>
-	static size_t  SpecRankProfile (const Field& F, const size_t M, const size_t N,
+	size_t  SpecRankProfile (const Field& F, const size_t M, const size_t N,
 					typename Field::Element * A, const size_t lda, const size_t deg, size_t *rankProfile);
 	template <class Field, class Polynomial>
-	static std::list<Polynomial>&
+	std::list<Polynomial>&
 	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			   const size_t N, typename Field::Element * A, const size_t lda, const size_t c);
 
 	template <class Field>
-	static void CompressRows (Field& F, const size_t M,
+	void CompressRows (Field& F, const size_t M,
 				  typename Field::Element * A, const size_t lda,
 				  typename Field::Element * tmp, const size_t ldtmp,
 				  const size_t * d, const size_t nb_blocs);
 
 	template <class Field>
-	static void CompressRowsQK (Field& F, const size_t M,
+	void CompressRowsQK (Field& F, const size_t M,
 				    typename Field::Element * A, const size_t lda,
 				    typename Field::Element * tmp, const size_t ldtmp,
 				    const size_t * d,const size_t deg, const size_t nb_blocs);
 
 	template <class Field>
-	static void DeCompressRows (Field& F, const size_t M, const size_t N,
+	void DeCompressRows (Field& F, const size_t M, const size_t N,
 				    typename Field::Element * A, const size_t lda,
 				    typename Field::Element * tmp, const size_t ldtmp,
 				    const size_t * d, const size_t nb_blocs);
 	template <class Field>
-	static void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
+	void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 				      typename Field::Element * A, const size_t lda,
 				      typename Field::Element * tmp, const size_t ldtmp,
 				      const size_t * d, const size_t deg, const size_t nb_blocs);
 
 	template <class Field>
-	static void CompressRowsQA (Field& F, const size_t M,
+	void CompressRowsQA (Field& F, const size_t M,
 				    typename Field::Element * A, const size_t lda,
 				    typename Field::Element * tmp, const size_t ldtmp,
 				    const size_t * d, const size_t nb_blocs);
 	template <class Field>
-	static void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
+	void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 				      typename Field::Element * A, const size_t lda,
 				      typename Field::Element * tmp, const size_t ldtmp,
 				      const size_t * d, const size_t nb_blocs);
@@ -1729,7 +1680,7 @@ else {
 		// Subroutine for Keller-Gehrig charpoly algorithm
 		// Compute the new d after a LSP ( d[i] can be zero )
 		template<class Field>
-		static size_t
+		size_t
 		newD( const Field& F, size_t * d, bool& KeepOn,
 		      const size_t l, const size_t N,
 		      typename Field::Element * X,
@@ -1737,7 +1688,7 @@ else {
 		      std::vector<std::vector<typename Field::Element> >& minpt);
 
 		template<class Field>
-		static size_t
+		size_t
 		updateD(const Field& F, size_t * d, size_t k,
 			std::vector<std::vector<typename Field::Element> >& minpt );
 
@@ -1747,7 +1698,7 @@ else {
 		//                     A-dist2pivot
 		//---------------------------------------------------------------------
 		template <class Field>
-		static void
+		void
 		RectangleCopyTURBO( const Field& F, const size_t M, const size_t N,
 				    const size_t dist2pivot, const size_t rank,
 				    typename Field::Element * T, const size_t ldt,
@@ -1785,7 +1736,7 @@ else {
 		//---------------------------------------------------------------------
 
 		template <class Field>
-		static size_t
+		size_t
 		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 				    const size_t M, const size_t N,
 				    const typename Field::Element * A, const size_t lda,
@@ -1798,25 +1749,25 @@ else {
 				    );
 
 		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
+		std::list<Polynomial>&
 		KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			      const typename Field::Element * A, const size_t lda );
 
 		template <class Field, class Polynomial>
-		static int
+		int
 		KGFast ( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			 typename Field::Element * A, const size_t lda,
 			 size_t * kg_mc, size_t* kg_mb, size_t* kg_j );
 
 		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
+		std::list<Polynomial>&
 		KGFast_generalized (const Field& F, std::list<Polynomial>& charp,
 				    const size_t N,
 				    typename Field::Element * A, const size_t lda);
 
 
 		template<class Field>
-		static void
+		void
 		fgemv_kgf( const Field& F,  const size_t N,
 			   const typename Field::Element * A, const size_t lda,
 			   const typename Field::Element * X, const size_t incX,
@@ -1824,18 +1775,18 @@ else {
 			   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
 
 		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
+		std::list<Polynomial>&
 		LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			  typename Field::Element * A, const size_t lda,
 			  typename Field::Element * U, const size_t ldu);
 
 		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
+		std::list<Polynomial>&
 		Danilevski (const Field& F, std::list<Polynomial>& charp,
 			    const size_t N, typename Field::Element * A, const size_t lda);
 
 		template <class Field, class Polynomial>
-		static std::list<Polynomial>&
+		std::list<Polynomial>&
 		LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
 				 typename Field::Element * A, const size_t lda,
 				 typename Field::Element * X, const size_t ldx);

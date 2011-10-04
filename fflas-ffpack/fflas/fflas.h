@@ -116,7 +116,7 @@ namespace FFLAS {
 		// Finite Field matrix => double matrix
 		//---------------------------------------------------------------------
 		template<class Field>
-		static void MatF2MatD (const Field& F,
+		void MatF2MatD (const Field& F,
 				       DoubleDomain::Element* S, const size_t lds,
 				       const typename Field::Element* E,
 				       const size_t lde,const size_t m, const size_t n)
@@ -134,7 +134,7 @@ namespace FFLAS {
 		// Finite Field matrix => float matrix
 		//---------------------------------------------------------------------
 		template<class Field>
-		static void MatF2MatFl (const Field& F,
+		void MatF2MatFl (const Field& F,
 					FloatDomain::Element* S, const size_t lds,
 					const typename Field::Element* E,
 					const size_t lde,const size_t m, const size_t n)
@@ -154,7 +154,7 @@ namespace FFLAS {
 		// Special design for upper-triangular matrices
 		//---------------------------------------------------------------------
 		template<class Field>
-		static void MatF2MatD_Triangular (const Field& F,
+		void MatF2MatD_Triangular (const Field& F,
 						  typename DoubleDomain::Element* S, const size_t lds,
 						  const typename Field::Element* const E,
 						  const size_t lde,
@@ -173,7 +173,7 @@ namespace FFLAS {
 		// Special design for upper-triangular matrices
 		//---------------------------------------------------------------------
 		template<class Field>
-		static void MatF2MatFl_Triangular (const Field& F,
+		void MatF2MatFl_Triangular (const Field& F,
 						   typename FloatDomain::Element* S, const size_t lds,
 						   const typename Field::Element* const E,
 						   const size_t lde,
@@ -191,7 +191,7 @@ namespace FFLAS {
 		// double matrix => Finite Field matrix
 		//---------------------------------------------------------------------
 		template<class Field>
-		static void MatD2MatF (const Field& F,
+		void MatD2MatF (const Field& F,
 				       typename Field::Element* S, const size_t lds,
 				       const typename DoubleDomain::Element* E, const size_t lde,
 				       const size_t m, const size_t n)
@@ -210,7 +210,7 @@ namespace FFLAS {
 		// float matrix => Finite Field matrix
 		//---------------------------------------------------------------------
 		template<class Field>
-		static void MatFl2MatF (const Field& F,
+		void MatFl2MatF (const Field& F,
 					typename Field::Element* S, const size_t lds,
 					const typename FloatDomain::Element* E, const size_t lde,
 					const size_t m, const size_t n){
@@ -244,7 +244,7 @@ namespace FFLAS {
 		 * <a href=http://arxiv.org/abs/cs.SC/0601133>here</a>
 		 */
 		template <class Field>
-		static void MatMulParameters (const Field& F,
+		void MatMulParameters (const Field& F,
 					      const size_t k,
 					      const typename Field::Element& beta,
 					      size_t& delayedDim,
@@ -266,7 +266,7 @@ namespace FFLAS {
 		 *
 		 */
 		template <class Field>
-		static size_t DotProdBound (const Field& F,
+		size_t DotProdBound (const Field& F,
 					    const size_t winoRecLevel,
 					    const typename Field::Element& beta,
 					    const FFLAS_BASE base);
@@ -277,10 +277,10 @@ namespace FFLAS {
 		 * Generic implementation for positive representations
 		 */
 		template <class Field>
-		static double computeFactorWino (const Field& F, const size_t w);
+		double computeFactorWino (const Field& F, const size_t w);
 
 		template <class Field>
-		static double computeFactorClassic (const Field& F);
+		double computeFactorClassic (const Field& F);
 
 
 		/**
@@ -290,7 +290,7 @@ namespace FFLAS {
 		 * \param w Number of recursive levels in Winograd's algorithm
 		 */
 		template <class Field>
-		static FFLAS_BASE BaseCompute (const Field& F, const size_t w);
+		FFLAS_BASE BaseCompute (const Field& F, const size_t w);
 
 		/**
 		 * Computes the maximal size for delaying the modular reduction
@@ -306,10 +306,10 @@ namespace FFLAS {
 		 *
 		 */
 		template <class Field>
-		static size_t TRSMBound (const Field& F);
+		size_t TRSMBound (const Field& F);
 
 		template <class Field>
-		static void DynamicPealing( const Field& F,
+		void DynamicPealing( const Field& F,
 					    const FFLAS_TRANSPOSE ta,
 					    const FFLAS_TRANSPOSE tb,
 					    const size_t m, const size_t n, const size_t k,
@@ -321,7 +321,7 @@ namespace FFLAS {
 					    const size_t  ); //kmax
 
 		template <class Field>
-		static void MatVectProd (const Field& F,
+		void MatVectProd (const Field& F,
 					 const FFLAS_TRANSPOSE TransA,
 					 const size_t M, const size_t N,
 					 const typename Field::Element alpha,
@@ -331,7 +331,7 @@ namespace FFLAS {
 					 typename Field::Element * Y, const size_t incY);
 
 		template <class Field>
-		static void ClassicMatmul(const Field& F,
+		void ClassicMatmul(const Field& F,
 					  const FFLAS_TRANSPOSE ta,
 					  const FFLAS_TRANSPOSE tb,
 					  const size_t m, const size_t n, const size_t k,
@@ -345,7 +345,7 @@ namespace FFLAS {
 		// Winograd Multiplication  alpha.A(n*k) * B(k*m) + beta . C(n*m)
 		// WinoCalc performs the 22 Winograd operations
 		template <class Field>
-		static void WinoCalc (const Field& F,
+		void WinoCalc (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t mr, const size_t nr,const size_t kr,
@@ -357,7 +357,7 @@ namespace FFLAS {
 				      const size_t kmax, const size_t w, const FFLAS_BASE base);
 
 		template<class Field>
-		static void WinoMain (const Field& F,
+		void WinoMain (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -532,6 +532,28 @@ namespace FFLAS {
 	//---------------------------------------------------------------------
 	// Level 1 routines
 	//---------------------------------------------------------------------
+
+	/** \brief fzero : \f$A \gets 0 \f$.
+	 * @param F field
+	 * @param n number of elements to zero
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 */
+	template<class Field>
+	void
+	fzero (const Field& F, const size_t n,
+	       typename Field::Element *X, const size_t incX)
+	{
+
+		if (n == incX) { // contigous data
+			memset(X,(int)F.zero,n); // might be bogus ?
+		}
+		else { // not contiguous (strided)
+			for (size_t i = 0 ; i < n ; ++i)
+				F.assign(*(X+i*incX), F.zero);
+		}
+	}
+
 	/** fscal
 	 * \f$x \gets a \cdot x\f$.
 	 * @param F field
@@ -543,28 +565,25 @@ namespace FFLAS {
 	 * @todo check if comparison with +/-1,0 is necessary.
 	 */
 	template<class Field>
-	static void
+	void
 	fscal (const Field& F, const size_t n, const typename Field::Element alpha,
 	       typename Field::Element * X, const size_t incX)
 	{
 		typedef typename Field::Element Element ;
-		Element one, mone, zero;
-		F.init(one,1UL);
-		F.init(mone,-1.0) ;
-		F.init(zero,0UL);
 
-		if (F.areEqual(alpha,one))
+		if (F.isOne(alpha))
 			return ;
 
 		Element * Xi = X;
-		if (F.areEqual(alpha,mone)){
+		if (F.areEqual(alpha,F.mone)){
 			for (; Xi < X+n*incX; Xi+=incX )
 				F.negin( *Xi );
 			return;
 		}
-		if (F.areEqual(alpha,zero)){
-			for (; Xi < X+n*incX; Xi+=incX )
-				F.assign( *Xi,zero );
+		if (F.isZero(alpha)){
+			fzero(F,n,X,incX);
+			// for (; Xi < X+n*incX; Xi+=incX )
+				// F.assign( *Xi, F.zero );
 			return;
 		}
 
@@ -586,27 +605,6 @@ namespace FFLAS {
 	       typename Field::Element * X, const size_t incX,
 	       const typename Field::Element * Y, const size_t incY );
 
-	/** \brief fzero : \f$A \gets 0 \f$.
-	 * @param F field
-	 * @param n number of elements to zero
-	 * \param X vector in \p F
-	 * \param incX stride of \p X
-	 */
-	template<class Field>
-	void
-	fzero (const Field& F, const size_t n,
-	       typename Field::Element *X, const size_t incX)
-	{
-
-		typename Field::Element zero = F.init(0UL);
-		if (n == incX) { // contigous data
-			memset(X,zero,n);
-		}
-		else { // not contiguous (strided)
-			for (size_t i = 0 ; i < n ; ++i)
-				F.assign(X+i*incX,zero);
-		}
-	}
 
 	/** \brief faxpy : \f$y \gets \alpha \cdot x + y\f$.
 	 * @param F field
@@ -618,7 +616,7 @@ namespace FFLAS {
 	 * \param incY stride of \p Y
 	 */
 	template<class Field>
-	static void
+	void
 	faxpy (const Field& F, const size_t N,
 	       const typename Field::Element alpha,
 	       const typename Field::Element * X, const size_t incX,
@@ -633,7 +631,7 @@ namespace FFLAS {
 	 * \param incY stride of \p Y
 	 */
 	template<class Field>
-	static typename Field::Element
+	typename Field::Element
 	fdot (const Field& F, const size_t N,
 	      const typename Field::Element * X, const size_t incX,
 	      const typename Field::Element * Y, const size_t incY );
@@ -647,7 +645,7 @@ namespace FFLAS {
 	 * \param incY stride of \p Y
 	 */
 	template<class Field>
-	static void
+	void
 	fswap (const Field& F, const size_t N, typename Field::Element * X, const size_t incX,
 	       typename Field::Element * Y, const size_t incY )
 	{
@@ -676,7 +674,7 @@ namespace FFLAS {
 	 * \param ldb stride of \p B
 	 */
 	template<class Field>
-	static void
+	void
 	fcopy (const Field& F, const size_t m, const size_t n,
 	       typename Field::Element * A, const size_t lda,
 	       const typename Field::Element * B, const size_t ldb ) ;
@@ -690,19 +688,17 @@ namespace FFLAS {
 	 * @warning may be buggy if Element is larger than int
 	 */
 	template<class Field>
-	static void
+	void
 	fzero (const Field& F, const size_t m, const size_t n,
 	       typename Field::Element * A, const size_t lda)
 	{
 
-		typename Field::Element zero ;
-	       	F.init(zero,0UL);
 		if (n == lda) { // contigous data
-			memset(A,(int)zero,m*n);
+			memset(A,(int) F.zero,m*n); // might be bogus ?
 		}
 		else { // not contiguous (strided)
 			for (size_t i = 0 ; i < m ; ++i)
-				memset(A+i*lda,(int)zero,m) ;
+				memset(A+i*lda,(int) F.zero,m) ; // might be bogus ?
 		}
 	}
 
@@ -716,7 +712,7 @@ namespace FFLAS {
 	 * \param ldb stride of \p B
 	 */
 	template<class Field>
-	static void
+	void
 	fmove (const Field& F, const size_t m, const size_t n,
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb )
@@ -738,7 +734,7 @@ namespace FFLAS {
 	 * @param ldc leading dimension of \p C
 	 */
 	template <class Field>
-	static void
+	void
 	fadd (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element* B, const size_t ldb,
@@ -764,7 +760,7 @@ namespace FFLAS {
 	 * @param ldc leading dimension of \p C
 	 */
 	template <class Field>
-	static void
+	void
 	fsub (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element* B, const size_t ldb,
@@ -778,7 +774,7 @@ namespace FFLAS {
 	}
 
 	template <class Field>
-	static void
+	void
 	fsubin (const Field& F, const size_t M, const size_t N,
 		const typename Field::Element* B, const size_t ldb,
 		typename Field::Element* C, const size_t ldc)
@@ -791,7 +787,7 @@ namespace FFLAS {
 	}
 
 	template <class Field>
-	static void
+	void
 	faddin (const Field& F, const size_t M, const size_t N,
 		const typename Field::Element* B, const size_t ldb,
 		typename Field::Element* C, const size_t ldc)
@@ -821,7 +817,7 @@ namespace FFLAS {
 	 * @param incY stride of \p Y
 	 */
 	template<class Field>
-	static void
+	void
 	fgemv (const Field& F, const FFLAS_TRANSPOSE TransA,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
@@ -845,7 +841,7 @@ namespace FFLAS {
 	 * @param incy stride of \p Y
 	 */
 	template<class Field>
-	static void
+	void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
 	      const typename Field::Element * x, const size_t incx,
@@ -865,7 +861,7 @@ namespace FFLAS {
 	 * \param Uplo if \c Uplo==FflasUpper then \p A is upper triangular
 	 */
 	template<class Field>
-	static void
+	void
 	ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 	       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
 	       const size_t N,const typename Field::Element * A, const size_t lda,
@@ -893,7 +889,7 @@ namespace FFLAS {
 	 * @bug \f$\alpha\f$ must be non zero.
 	 */
 	template<class Field>
-	static void
+	void
 	ftrsm (const Field& F, const FFLAS_SIDE Side,
 	       const FFLAS_UPLO Uplo,
 	       const FFLAS_TRANSPOSE TransA,
@@ -920,7 +916,7 @@ namespace FFLAS {
 	 * @bug unsafe with \c Trans==FflasTrans (debugging in progress)
 	 */
 	template<class Field>
-	static void
+	void
 	ftrmm (const Field& F, const FFLAS_SIDE Side,
 	       const FFLAS_UPLO Uplo,
 	       const FFLAS_TRANSPOSE TransA,
@@ -951,7 +947,7 @@ namespace FFLAS {
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
@@ -1005,7 +1001,7 @@ namespace FFLAS {
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field>
-	static typename Field::Element*
+	typename Field::Element*
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
@@ -1058,7 +1054,7 @@ namespace FFLAS {
 	 * @param ldc leading dimension of \p C
 	 */
 	template<class Field>
-	static typename Field::Element* fsquare (const Field& F,
+	typename Field::Element* fsquare (const Field& F,
 						 const FFLAS_TRANSPOSE ta,
 						 const size_t n,
 						 const typename Field::Element alpha,
@@ -1077,7 +1073,7 @@ namespace FFLAS {
 	 *
 	 */
 	template<class Field>
-	static typename Field::Element* ftrtr (const Field& F, const FFLAS_SIDE Side,
+	typename Field::Element* ftrtr (const Field& F, const FFLAS_SIDE Side,
 					       const FFLAS_UPLO Uplo,
 					       const FFLAS_TRANSPOSE TransA,
 					       const FFLAS_DIAG ADiag,
@@ -1089,14 +1085,14 @@ namespace FFLAS {
 #endif
 
 	template<class Field>
-	static void faddm(const Field & F,
+	void faddm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
 			  const size_t M, const size_t N,
 			  const typename Field::Element * A, const size_t lda,
 			  typename Field::Element * B, const size_t ldb);
 
 	template<class Field>
-	static void faddm(const Field & F,
+	void faddm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
 			  const FFLAS_TRANSPOSE transB,
 			  const size_t M, const size_t N,
@@ -1105,14 +1101,14 @@ namespace FFLAS {
 			  typename Field::Element * C, const size_t ldc );
 
 	template<class Field>
-	static void fsubm(const Field & F,
+	void fsubm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
 			  const size_t M, const size_t N,
 			  const typename Field::Element * A, const size_t lda,
 			  typename Field::Element * B, const size_t ldb) ;
 
 	template<class Field>
-	static void fsubm(const Field & F,
+	void fsubm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
 			  const FFLAS_TRANSPOSE transB,
 			  const size_t M, const size_t N,
@@ -1131,7 +1127,7 @@ namespace FFLAS {
 	 * @warning \p A and \p C belong to the same field.
 	 */
 	template<class Field>
-	static typename Field::Element* MatCopy (const Field& F,
+	typename Field::Element* MatCopy (const Field& F,
 						 const size_t M, const size_t N,
 						 const typename Field::Element * A,
 						 const size_t lda)
@@ -1151,7 +1147,7 @@ namespace FFLAS {
 	 *
 	 * \param m the common dimension in the product AxB
 	 */
-	static size_t WinoSteps (const size_t m);
+	size_t WinoSteps (const size_t m);
 
 
 

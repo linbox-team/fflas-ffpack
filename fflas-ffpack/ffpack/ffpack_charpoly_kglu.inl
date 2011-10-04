@@ -1,5 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+//
+#ifndef __FFLASFFPACK_ffpack_charpoly_kglu_INL
+#define __FFLASFFPACK_ffpack_charpoly_kglu_INL
 
 /* ffpack/ffpack_charpoly_kglu.inl
  * Copyright (C) 2005 Clement Pernet
@@ -93,7 +96,6 @@ namespace FFPACK {
 
 			typedef typename Field::Element elt;
 			const elt * Ai=A;
-			static elt one, zero;
 			elt * U = new elt[N*N];     // to store A^2^i
 			elt * B = new elt[N*N];     // to store A^2^i
 			elt * V = new elt[N*N];     // to store A^2^i.U
@@ -110,8 +112,6 @@ namespace FFPACK {
 			typename Polynomial::iterator it;
 			size_t i=0, l=1, j, k=N,  cpt, newRowNb, nrowX, ind;
 			bool  KeepOn;
-			F.init( one, 1.0);
-			F.init( zero, 0.0);
 
 			for ( i=0; i<N; ++i)
 				dv[i] = dold[i] = d[i] = 1;
@@ -119,11 +119,11 @@ namespace FFPACK {
 			// Computing the first X: (e1; e1A^t; e2; e2A^t;...;en;enA^t)
 			for ( i=0, Ui=U, Vi=V, Bi=B; i<N; ++i, Ai -= N*lda-1  ){
 				for ( Xj=Xi, Uj=Ui; Xj<Xi+N; ++Xj, ++Uj){
-					F.assign(*Xj, zero);
-					F.assign(*Ui, zero);
+					F.assign(*Xj, F.zero);
+					F.assign(*Ui, F.zero);
 				}
-				F.assign(*(Ui+i), one);
-				F.assign(*(Xi+i), one);
+				F.assign(*(Ui+i), F.one);
+				F.assign(*(Xi+i), F.one);
 				while ( Xj<Xi+2*N) {
 					*(Bi++) = *(Xj++) = *(Vi++) = *Ai;
 					Ai+=lda;
@@ -191,10 +191,10 @@ namespace FFPACK {
 				// max block size of X, U, V is l=2^i
 				l*=2;
 				// B = A^2^i
-				fsquare( F, FFLAS::FflasNoTrans, N, one, B, N, zero, B, N );
+				fsquare( F, FFLAS::FflasNoTrans, N, F.one, B, N, F.zero, B, N );
 				// V = U.B^t
-				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N, N, N, one,
-				       U, N, B, N, zero, V, N);
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N, N, N, F.one,
+				       U, N, B, N, F.zero, V, N);
 				// X = ( U1, V1, U2, V2, ... )
 				Xi = X; Ui = U; Vi = V;
 				ind=0; cpt=0; nrowX = 0;
@@ -245,7 +245,7 @@ namespace FFPACK {
 			// Constructing the CharPoly
 			for ( i=0; i<k; ++i){
 				Polynomial * minP = new Polynomial(d[i]+1);
-				minP->operator[](d[i]) = one;
+				minP->operator[](d[i]) = F.one;
 				it = minP->begin();
 				for ( j=0; j<d[i]; ++j, it++)
 					F.neg(*it, m[i][j]);
@@ -258,3 +258,5 @@ namespace FFPACK {
 
 	} // Protected
 } // FFPACK
+
+#endif // __FFLASFFPACK_ffpack_charpoly_kglu_INL

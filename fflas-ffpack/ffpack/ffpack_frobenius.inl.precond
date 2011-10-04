@@ -148,11 +148,6 @@ std::list<Polynomial>&
 FFPACK::Frobenius (const Field& F, std::list<Polynomial>& frobeniusForm, 
 		   const size_t N, typename Field::Element * A, const size_t lda){
 	
-	static typename Field::Element one, zero, mone;
-	F.init(one, 1UL);
-	F.neg(mone, one);
-	F.init(zero, 0UL);
-
 	size_t * rp = new size_t[2*N];
 	size_t c = 8;
 

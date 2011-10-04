@@ -29,9 +29,6 @@ namespace FFPACK {
 	{
 
 		typedef typename Field::Element elt;
-		static elt one,zero;
-		F.init( one, 1UL );
-		F.init( zero, 0UL );
 		// nRow is the number of row in the krylov base already computed
 		size_t j, k, nRow = 2;
 		elt* B = new elt[ N*N ];

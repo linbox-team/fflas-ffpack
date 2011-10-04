@@ -28,10 +28,6 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY)
 	{
-		static typename Field::Element  one, mone, zero;
-		F.init(one,1UL);
-		F.neg(mone,one);
-		F.init(zero,0UL);
 
 		if (F.isZero (alpha)){
 			for  (typename Field::Element * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
@@ -57,7 +53,7 @@ namespace FFLAS {
 					     Y, incY);
 				for  (size_t i = 0; i < nblock; ++i){
 					Protected::MatVectProd (F, FflasNoTrans, M, kmax, alpha,
-						     A+i*kmax, lda, X+i*kmax*incX, incX, one,
+						     A+i*kmax, lda, X+i*kmax*incX, incX, F.one,
 						     Y, incY);
 				}
 			}
@@ -75,7 +71,7 @@ namespace FFLAS {
 					     Y, incY);
 				for  (size_t i = 0; i < nblock; ++i){
 					Protected::MatVectProd (F, FflasTrans, kmax, N, alpha,
-						     A+i*kmax*lda, lda, X+i*kmax*incX, incX, one,
+						     A+i*kmax*lda, lda, X+i*kmax*incX, incX, F.one,
 						     Y, incY);
 				}
 
@@ -84,7 +80,7 @@ namespace FFLAS {
 			if  (TransA == FflasNoTrans) {
 				if (F.isZero (beta))
 					for (size_t i = 0; i < M; ++i)
-						F.assign( *(Y+i*incY), zero);
+						F.assign( *(Y+i*incY), F.zero);
 				else {
 					typename Field::Element betadivalpha;
 					F.div (betadivalpha, beta, alpha);
@@ -100,7 +96,7 @@ namespace FFLAS {
 			} else {
 				if (F.isZero (beta))
 					for (size_t i = 0; i < N; ++i)
-						F.assign( *(Y+i*incY), zero);
+						F.assign( *(Y+i*incY), F.zero);
 				else {
 					typename Field::Element betadivalpha;
 					F.div (betadivalpha, beta, alpha);
@@ -132,11 +128,9 @@ namespace FFLAS {
 			     const typename Field::Element * A, const size_t lda,
 			     const typename Field::Element * X, const size_t incX,
 			     const typename Field::Element beta,
-			     typename Field::Element * Y, const size_t incY){
-			typename Field::Element  one, mone;
+			     typename Field::Element * Y, const size_t incY)
+		{
 			typename Field::Element tmp;
-			F.init(one,1.0);
-			F.init(mone,-1.0);
 
 			size_t Xl, Yl;
 			if  (TransA == FflasNoTrans){Xl = N;Yl = M;}
@@ -146,11 +140,11 @@ namespace FFLAS {
 			double* Yd = new double[Yl];
 			double alphad, betad;
 
-			if (F.areEqual (mone, alpha)){
+			if (F.areEqual (F.mone, alpha)){
 				alphad = -1.0;
 				F.convert (betad, beta);
 			} else {
-				if (! F.areEqual (one, alpha)){
+				if (! F.areEqual (F.one, alpha)){
 					// Compute C = A*B + beta/alpha.C
 					// and after C *= alpha
 					F.div (tmp, beta, alpha);
@@ -176,7 +170,7 @@ namespace FFLAS {
 			for  (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
 				F.init (*Yi, *(Ydi));
 
-			if  (!F.areEqual (one, alpha) && !F.areEqual (mone, alpha)){
+			if  (!F.areEqual (F.one, alpha) && !F.areEqual (F.mone, alpha)){
 				// Fix-up: compute Y *= alpha
 				for (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -195,18 +189,17 @@ namespace FFLAS {
 					 const double * A, const size_t lda,
 					 const double * X, const size_t incX,
 					 const double beta,
-					 double * Y, const size_t incY){
+					 double * Y, const size_t incY)
+		{
 
-			double Mone, one, _alpha, _beta;
-			F.init(one, 1UL);
-			F.neg(Mone, one);
-			if (F.areEqual (Mone, beta)) _beta = -1.0;
+			double _alpha, _beta;
+			if (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha))
+				if (! F.areEqual (F.one, alpha))
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -218,7 +211,7 @@ namespace FFLAS {
 			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
 
-			if ( (!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))){
+			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))){
 				// Fix-up: compute y *= alpha
 				for (double* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -233,18 +226,17 @@ namespace FFLAS {
 					 const float * A, const size_t lda,
 					 const float * X, const size_t incX,
 					 const float beta,
-					 float * Y, const size_t incY){
+					 float * Y, const size_t incY)
+		{
 
-			float Mone, one, _alpha, _beta;
-			F.init(one, 1UL);
-			F.neg(Mone, one);
-			if  (F.areEqual (Mone, beta)) _beta = -1.0;
+			float _alpha, _beta;
+			if  (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha)){
+				if (! F.areEqual (F.one, alpha)){
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -254,7 +246,7 @@ namespace FFLAS {
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
-			if ( (!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))){
+			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))){
 				// Fix-up: compute y *= alpha
 				for (float* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -269,18 +261,17 @@ namespace FFLAS {
 					 const double * A, const size_t lda,
 					 const double * X, const size_t incX,
 					 const double beta,
-					 double * Y, const size_t incY){
+					 double * Y, const size_t incY)
+		{
 
-			double Mone, one, _alpha, _beta;
-			F.init(one, 1UL);
-			F.neg(Mone, one);
-			if (F.areEqual (Mone, beta)) _beta = -1.0;
+			double _alpha, _beta;
+			if (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha))
+				if (! F.areEqual (F.one, alpha))
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -292,7 +283,7 @@ namespace FFLAS {
 			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
 
-			if ( (!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))){
+			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))){
 				// Fix-up: compute y *= alpha
 				for (double* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -307,18 +298,17 @@ namespace FFLAS {
 					 const float * A, const size_t lda,
 					 const float * X, const size_t incX,
 					 const float beta,
-					 float * Y, const size_t incY){
+					 float * Y, const size_t incY)
+		{
 
-			float Mone, one, _alpha, _beta;
-			F.init(one, 1UL);
-			F.neg(Mone, one);
-			if  (F.areEqual (Mone, beta)) _beta = -1.0;
+			float _alpha, _beta;
+			if  (F.areEqual (F.mone, beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (Mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (one, alpha)){
+				if (! F.areEqual (F.one, alpha)){
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -328,7 +318,7 @@ namespace FFLAS {
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
-			if ( (!F.areEqual (one, alpha)) && (!F.areEqual (Mone, alpha))){
+			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))){
 				// Fix-up: compute y *= alpha
 				for (float* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -345,7 +335,8 @@ namespace FFLAS {
 	       const DoubleDomain::Element * A, const size_t lda,
 	       const DoubleDomain::Element * X, const size_t incX,
 	       const DoubleDomain::Element beta,
-	       DoubleDomain::Element * Y, const size_t incY) {
+	       DoubleDomain::Element * Y, const size_t incY)
+	{
 		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}

@@ -94,10 +94,6 @@ namespace FFPACK {
 
 			typedef typename Field::Element elt;
 			elt* Ai, *Xi, *X2=X;
-			static elt Mone, one, zero;
-			F.init(zero,0.0);
-			F.init(one, 1.0);
-			F.neg(Mone,one);
 			int Ncurr=int(N);
 			charp.clear();
 			int nbfac = 0;
@@ -112,8 +108,8 @@ namespace FFPACK {
 					while (j-- && F.isZero(*(Ai++))) ;
 					if (!j){ // A is 0, CharPoly=X^n
 						minP.resize(Ncurr+1);
-						(minP)[1] = zero;
-						(minP)[Ncurr] = one;
+						(minP)[1] = F.zero;
+						(minP)[Ncurr] = F.one;
 						k=Ncurr;
 					}
 				}
@@ -142,15 +138,15 @@ namespace FFPACK {
 				delete[] P ;
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
-				      one, X2, ldx, X21, ldx);
+				      F.one, X2, ldx, X21, ldx);
 				// Creation of the matrix A2 for recurise call
 				for (Xi = X22, Ai = A;
 				     Xi != X22 + Nrest*ldx;
 				     Xi += (ldx-Nrest), Ai += (lda-Nrest))
 					for (size_t jj=0; jj<Nrest; ++jj)
 						*(Ai++) = *(Xi++);
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, Mone,
-				       X21, ldx, X2+k, ldx, one, A, lda);
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mone,
+				       X21, ldx, X2+k, ldx, F.one, A, lda);
 				X2 = X22;
 				Ncurr = int(Nrest);
 			}
@@ -167,10 +163,6 @@ namespace FFPACK {
 
 			typedef typename Field::Element elt;
 
-			static elt Mone, one, zero;
-			F.init(zero,0.0);
-			F.init(one, 1.0);
-			F.neg(Mone,one);
 			size_t kg_mc, kg_mb, kg_j;
 
 			if (!KGFast (F, charp, N, A, lda, &kg_mc, &kg_mb, &kg_j))
@@ -189,8 +181,8 @@ namespace FFPACK {
 					while (j-- && F.isZero(*(Ai++))) ;
 					if (!j){ // A is 0, CharPoly=X^n
 						minP->resize(N+1);
-						(*minP)[1] = zero;
-						(*minP)[N] = one;
+						(*minP)[1] = F.zero;
+						(*minP)[N] = F.one;
 						k=N;
 					}
 				}
@@ -218,10 +210,10 @@ namespace FFPACK {
 				// First Id
 				for (size_t j = 0; j < lambda; ++j){
 					for (size_t i=0; i<imax; ++i)
-						F.assign (*(A+j+i*lda), zero);
-					F.assign (*(A+j+imax*lda), one);
+						F.assign (*(A+j+i*lda), F.zero);
+					F.assign (*(A+j+imax*lda), F.one);
 					for (size_t i=imax+1; i<N; ++i)
-						F.assign (*(A+j+i*lda), zero);
+						F.assign (*(A+j+i*lda), F.zero);
 					++imax;
 				}
 				// Column block B
@@ -232,10 +224,10 @@ namespace FFPACK {
 				imax = N- kg_j*kg_mc;
 				for (size_t j = 0; j< kg_j*kg_mc; ++j){
 					for (size_t i = 0; i<imax; ++i)
-						F.assign (*(A+lambda+kg_mb+j+i*lda), zero);
-					F.assign (*(A+lambda+kg_mb+j+imax*lda), one);
+						F.assign (*(A+lambda+kg_mb+j+i*lda), F.zero);
+					F.assign (*(A+lambda+kg_mb+j+imax*lda), F.one);
 					for (size_t i = imax+1; i<N; ++i)
-						F.assign (*(A+lambda+kg_mb+j+i*lda), zero);
+						F.assign (*(A+lambda+kg_mb+j+i*lda), F.zero);
 					++imax;
 				}
 
@@ -264,7 +256,7 @@ namespace FFPACK {
 
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
-				      one, X, ldx, X21, ldx);
+				      F.one, X, ldx, X21, ldx);
 
 				// Creation of the matrix A2 for recurise call
 				elt * A2 = new elt[Nrest*Nrest];
@@ -276,8 +268,8 @@ namespace FFPACK {
 						*(A2i++) = *(Xi++);
 					}
 				}
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, Mone,
-				       X21, ldx, X+k, ldx, one, A2, Nrest);
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mone,
+				       X21, ldx, X+k, ldx, F.one, A2, Nrest);
 
 				// Recursive call on X22
 				LUKrylov_KGFast (F, charp, Nrest, A2, Nrest, X22, ldx);

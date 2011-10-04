@@ -36,17 +36,13 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 
 	if ( !(M && N) ) return 0;
 	typedef typename Field::Element elt;
-	static elt Mone, one, zero;
-	F.init(Mone, -1.0);
-	F.init(one,1.0);
-	F.init(zero,0.0);
 
 	if (M == 1){
 		virt += deg;
 		for (size_t i=0; i<virt; ++i)
 			if (iterates[i]){
 				//	cerr<<"A["<<N-i-1<<"]=0"<<endl;
-				F.assign (A [N-iterates[i]], zero);
+				F.assign (A [N-iterates[i]], F.zero);
 			}
 		size_t ip=0;
 		//while (ip<N && !F.isUnit(*(A+ip)))ip++;
@@ -109,10 +105,10 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 			// Ar <- Ar.U1^-1
 			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
 			       FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Ndown, R,
-			       one, A, lda, Ar, lda);
+			       F.one, A, lda, Ar, lda);
 			// An <- An - Ar*Ac
 			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-R, R,
-			       Mone, Ar, lda, Ac, lda, one, An, lda);
+			       F.mone, Ar, lda, Ac, lda, F.one, An, lda);
 		}
 		// Recursive call on SE
 		size_t R2 = KrylovElim (F, Ndown, N-R, An, lda,P+R, Q+Nup, deg, iterates, inviterates, maxit, MIN(maxit-deg,(virt+Nup*deg)));
@@ -133,7 +129,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 				FFLAS::fcopy( F, N - j, A + j*(lda + 1), 1, A + i*lda + j, 1);
 				for (typename Field::Element *Ai = A + i*lda + j;
 				     Ai != A + i*lda + N; ++Ai)
-					F.assign (*Ai, zero);
+					F.assign (*Ai, F.zero);
 				size_t t = Q[j];
 				Q[j]=Q[i];
 				Q[i] = t;

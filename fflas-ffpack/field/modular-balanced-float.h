@@ -45,14 +45,17 @@ namespace FFPACK {
 		typedef ModularBalancedRandIter<float> RandIter;
 		typedef NonzeroRandIter<ModularBalanced<float>, RandIter> NonZeroRandIter;
 
-		const bool balanced;
+		static const Element one  ;
+		static const Element zero ;
+		static const Element mone ;
+
+		static const bool balanced = true ;
 
 		ModularBalanced (int32_t p, int exp = 1) :
 			modulus((Element)p),
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
-			lmodulus (p),
-			balanced(true)
+			lmodulus (p)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -73,8 +76,7 @@ namespace FFPACK {
 			modulus (p),
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( half_mod-p+1),
-			lmodulus ((unsigned long)p),
-			balanced(true)
+			lmodulus ((unsigned long)p)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -92,8 +94,7 @@ namespace FFPACK {
 			modulus (Element(p)),
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( half_mod-Element(p)+1),
-			lmodulus ((unsigned long)p),
-			balanced(true)
+			lmodulus ((unsigned long)p)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -112,8 +113,7 @@ namespace FFPACK {
 			modulus((Element)p),
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
-			lmodulus(p),
-			balanced(true)
+			lmodulus(p)
 		{
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
@@ -129,11 +129,11 @@ namespace FFPACK {
 			modulus(mf.modulus),
 			half_mod(mf.half_mod),
 			mhalf_mod(mf.mhalf_mod),
-			lmodulus (mf.lmodulus),
-			balanced(true)
+			lmodulus (mf.lmodulus)
 		{}
 
-		const ModularBalanced<float> &operator=(const ModularBalanced<float> &F) {
+		const ModularBalanced<float> &operator=(const ModularBalanced<float> &F)
+		{
 			modulus   = F.modulus;
 			half_mod  = F.half_mod;
 			mhalf_mod = F.mhalf_mod;
@@ -418,6 +418,11 @@ return x += modulus;
 } // FFPACK
 
 #include "field-general.h"
+
+const float FFPACK::ModularBalanced<float>::one  =  1;
+const float FFPACK::ModularBalanced<float>::mone =  -1;
+const float FFPACK::ModularBalanced<float>::zero =  0;
+
 
 #endif // __FFLASFFPACK_modular_balanced_double_H
 

@@ -15,10 +15,9 @@
 template <class Field>
 void print_matrix (Field &F, size_t N, size_t M, size_t Ncurr,
 		   typename Field::Element * X,
-		   typename Field::Element * A, size_t lda,  size_t * d){
+		   typename Field::Element * A, size_t lda,  size_t * d)
+		   {
 
-	typename Field::Element one;
-	F.init(one, 1.0);
 
 	size_t k = 0;
 	//cerr << "M,Ncurr = "<<M<<" "<<Ncurr<<endl;
@@ -54,10 +53,6 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			   const size_t N, typename Field::Element * A, const size_t lda,
 			   const size_t c){
 	
-	static typename Field::Element one, zero, mone;
-	F.init(one, 1UL);
-	F.neg(mone, one);
-	F.init(zero, 0UL);
 
 	size_t * rp = new size_t[2*N];
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));

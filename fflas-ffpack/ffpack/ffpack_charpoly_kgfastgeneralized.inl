@@ -60,24 +60,21 @@ namespace FFPACK {
 					       const size_t mu)
 	{
 
-		typename Field::Element zero,one;
-		F.init (zero,0UL);
-		F.init (one,1UL);
 		size_t N = mc+me+lambda+mu;
 		typename Field::Element * A = new typename Field::Element[N*N];
 		for (size_t j=0; j<lambda+me;++j)
 			if (B[j] < N){
 				for (size_t i=0;i<N;++i)
-					F.assign( *(A+i*N+j),zero);
-				F.assign( *(A+B[j]*lda+j), one);
+					F.assign( *(A+i*N+j), F.zero);
+				F.assign( *(A+B[j]*lda+j), F.one);
 			} else {
 				FFLAS::fcopy (F, N, A+j, N, E+B[j]-N, lda);
 			}
 		for (size_t j=lambda+me; j<lambda+me+mu; ++j)
 			for (size_t i=0;i<N;++i)
-				F.assign( *(A+i*N+j),zero);
+				F.assign( *(A+i*N+j), F.zero);
 		for (size_t i=0; i<mu; ++i)
-			F.assign( *(A+(lambda+me+mc+i)*lda+lambda+me+T[i]), one);
+			F.assign( *(A+(lambda+me+mc+i)*lda+lambda+me+T[i]), F.one);
 		for (size_t j=0; j<mc; ++j)
 			FFLAS::fcopy(F,N,A+N-mc+j,N,C+j,lda);
 		return A;
@@ -93,10 +90,6 @@ namespace FFPACK {
 		{
 
 			//std::cerr<<"Dans KGFast"<<std::endl;
-			static typename Field::Element one, zero, mone;
-			F.init(one, 1UL);
-			F.neg(mone, one);
-			F.init(zero, 0UL);
 			size_t mc=N>>1; // Matrix A is transformed into a mc_Frobenius form
 			size_t me=N-mc;
 			// B[i] = j, the row of the 1 if the col Ai is sparse;
@@ -145,7 +138,7 @@ namespace FFPACK {
 							FFLAS::fcopy (F, ncols, LUP+i*ncols, 1, C+i*lda, 1);
 						else
 							for (size_t j = 0; j < ncols; ++j)
-								F.assign (*(LUP+i*ncols+j), zero);
+								F.assign (*(LUP+i*ncols+j), F.zero);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					write_field (F,std::cerr<<"LUP="<<std::endl,LUP,lambda+me,ncols,ncols);
@@ -330,9 +323,9 @@ namespace FFPACK {
 #endif
 
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
-					      r, me, one, LUP, mc , E, lda);
+					      r, me, F.one, LUP, mc , E, lda);
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-					      r, me, one, LUP, mc , E, lda);
+					      r, me, F.one, LUP, mc , E, lda);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -341,9 +334,9 @@ namespace FFPACK {
 					std::cerr<<"// C'12 <- C11^-1 C12";
 #endif
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
-					      r, mc-r, one, LUP, mc , C+r, lda);
+					      r, mc-r, F.one, LUP, mc , C+r, lda);
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-					      r, mc-r, one, LUP, mc , C+r, lda);
+					      r, mc-r, F.one, LUP, mc , C+r, lda);
 					delete[] LUP;
 					delete[] P;
 					delete[] Q;
@@ -361,8 +354,8 @@ namespace FFPACK {
 					std::cerr<<"// E'2 <- E2 - C21.E'1";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-r, me, r,
-					      mone, C+r*lda, lda, E, lda,
-					      one, E+r*lda, lda);
+					      F.mone, C+r*lda, lda, E, lda,
+					      F.one, E+r*lda, lda);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -370,8 +363,8 @@ namespace FFPACK {
 					std::cerr<<"// C'22 <- C22 - C21.C'12";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-r, mc-r, r,
-					      mone, C+r*lda, lda, C+r, lda,
-					      one, C+r*(lda+1), lda);
+					      F.mone, C+r*lda, lda, C+r, lda,
+					      F.one, C+r*(lda+1), lda);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -435,8 +428,8 @@ namespace FFPACK {
 							FFLAS::fcopy (F, r, tmp+(B[i]-N)*r, 1, C+i*lda, 1);
 						}
 					fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mu + r, r, me,
-					       one, E+(N-mu-r)*lda, lda, tmp, r,
-					       one, C+(N-mu-mc)*lda, lda);
+					       F.one, E+(N-mu-r)*lda, lda, tmp, r,
+					       F.one, C+(N-mu-mc)*lda, lda);
 
 					delete[] tmp;
 #ifdef LB_DEBUG
@@ -490,7 +483,7 @@ namespace FFPACK {
 #endif
 					for (size_t i = 0; i < N-mu-r; ++i)
 						for (size_t j = 0; j < r; ++j)
-							F.assign (*(C+i*lda+j), zero);
+							F.assign (*(C+i*lda+j), F.zero);
 #ifdef LB_DEBUG
 					std::cerr<<"2"<<std::endl;
 #endif
@@ -514,7 +507,7 @@ namespace FFPACK {
 					std::cerr<<"// C'1 += E1 tmp2";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-mu-r, r, me,
-					      one, E, lda, tmp2, r, one, C, lda);
+					      F.one, E, lda, tmp2, r, F.one, C, lda);
 					delete[] tmp2;
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -525,7 +518,7 @@ namespace FFPACK {
 					std::cerr<<"// C'_1 += C_2 C4";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N, r, mc-r,
-					      one, C+r, lda, tmp, r, one, C, lda);
+					      F.one, C+r, lda, tmp, r, F.one, C, lda);
 					delete[] tmp;
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -607,7 +600,7 @@ namespace FFPACK {
 
 			Polynomial *minP = new Polynomial();
 			minP->resize(N+1);
-			minP->operator[](N) = one;
+			minP->operator[](N) = F.one;
 			typename Polynomial::iterator it = minP->begin();
 			for (size_t j=0; j<N; ++j, it++){
 				F.neg(*it, *(A+N-1+j*lda));

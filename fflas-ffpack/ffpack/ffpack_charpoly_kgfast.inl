@@ -9,6 +9,9 @@
  * See COPYING for license information.
  */
 
+#ifndef __FFLASFFPACK_ffpack_charpoly_kgfast_INL
+#define __FFLASFFPACK_ffpack_charpoly_kgfast_INL
+
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -29,10 +32,6 @@ namespace FFPACK {
 		{
 
 			//std::cerr<<"Dans KGFast"<<std::endl;
-			static typename Field::Element one, zero, mone;
-			F.init(one, 1.0);
-			F.neg(mone, one);
-			F.init(zero, 0.0);
 			size_t mc=N>>1; // Matrix A is transformed into a mc_Frobenius form
 			size_t mb=N-mc;
 			size_t r;
@@ -79,9 +78,9 @@ namespace FFPACK {
 #endif
 					//std::cerr<<" "<<r;
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
-					      mc, mb, one, LUP, mc , B, lda);
+					      mc, mb, F.one, LUP, mc , B, lda);
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
-					      mc, mb, one, LUP, mc , B, lda);
+					      mc, mb, F.one, LUP, mc , B, lda);
 					delete[] LUP;
 					applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, mb, 0, (int)mc, B, lda, P );
 
@@ -94,8 +93,8 @@ namespace FFPACK {
 
 					// B2 <- B2 - C2.B1
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-mc, mb, mc,
-					      mone, C+mc*lda, lda, B, lda,
-					      one, B+mc*lda, lda);
+					      F.mone, C+mc*lda, lda, B, lda,
+					      F.one, B+mc*lda, lda);
 
 #if 0
 					std::cerr<<"Apres B2<-B2-C2.B1"<<std::endl;
@@ -119,8 +118,8 @@ namespace FFPACK {
 
 					// C3 <- B3.C1 + C3
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, (j+1)*mc, mc, mb,
-					      one, B+(N-(j+1)*mc)*lda, lda, C+(N-(j+1)*mc-mb)*lda, lda,
-					      one, C+(N-(j+1)*mc)*lda, lda);
+					      F.one, B+(N-(j+1)*mc)*lda, lda, C+(N-(j+1)*mc-mb)*lda, lda,
+					      F.one, C+(N-(j+1)*mc)*lda, lda);
 #if 0
 					std::cerr<<"C3 <- B3.C1 + C3: B3="<<std::endl;
 					write_field( F, std::cerr, B+(N-(j+1)*mc)*lda, (j+1)*mc, mb, lda );
@@ -144,13 +143,13 @@ namespace FFPACK {
 
 						// C1' <- B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
-						      one, B, lda, C+lambda*lda, lda,
-						      zero, C, lda);
+						      F.one, B, lda, C+lambda*lda, lda,
+						      F.zero, C, lda);
 
 						// tmp2 <- B2.C2 + tmp2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
-						      one, B+mb*lda, lda, C+lambda*lda, lda,
-						      one, tmp2, mc);
+						      F.one, B+mb*lda, lda, C+lambda*lda, lda,
+						      F.one, tmp2, mc);
 
 						// C2' <- tmp2
 						for (int i=0; i<lambda; ++i)
@@ -165,13 +164,13 @@ namespace FFPACK {
 						typename Field::Element * tmp2 = new typename Field::Element[mb*mc];
 						// C1 <- B2.C2 + C1
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
-						      one, B+mb*lda, lda, C+lambda*lda, lda,
-						      one, C, lda);
+						      F.one, B+mb*lda, lda, C+lambda*lda, lda,
+						      F.one, C, lda);
 
 						// tmp2 <-B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
-						      one, B, lda, C+lambda*lda, lda,
-						      zero, tmp2, mc);
+						      F.one, B, lda, C+lambda*lda, lda,
+						      F.zero, tmp2, mc);
 
 						// C2' <- C1
 						for (int i=0; i<lambda; ++i)
@@ -191,8 +190,8 @@ namespace FFPACK {
 
 						// tmp2 <-B1.C1
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
-						      one, B, lda, C, lda,
-						      zero, tmp2, mc);
+						      F.one, B, lda, C, lda,
+						      F.zero, tmp2, mc);
 
 						// C1' <- tmp2
 						for (size_t i=0; i<mb; ++i)
@@ -209,7 +208,7 @@ namespace FFPACK {
 
 			Polynomial *minP = new Polynomial();
 			minP->resize(N+1);
-			minP->operator[](N) = one;
+			minP->operator[](N) = F.one;
 			typename Polynomial::iterator it = minP->begin();
 			for (size_t j=0; j<N; ++j, it++){
 				F.neg(*it, *(A+N-1+j*lda));
@@ -228,21 +227,20 @@ namespace FFPACK {
 			   const size_t kg_mc, const size_t kg_mb, const size_t kg_j )
 		{
 
-			typename Field::Element one, zero;
-			F.init(one, 1.0);
-			F.init(zero, 0.0);
 			size_t big_truc =kg_mb-kg_mc*(kg_j+1) ;
 			size_t lambda = (N<big_truc)?(0):(N-big_truc);
 			// Y1 <- X2
 			FFLAS::fcopy ( F, lambda, Y, incY, X+(kg_mb+kg_mc)*incX, incX );
 			// Y2 <- X.B
-			fgemv( F, FFLAS::FflasTrans, N, kg_mb, one, A+N-kg_mc-kg_mb, lda, X, incX, zero, Y+lambda*incY, incY );
+			fgemv( F, FFLAS::FflasTrans, N, kg_mb, F.one, A+N-kg_mc-kg_mb, lda, X, incX, F.zero, Y+lambda*incY, incY );
 			// Y3 <- X3
 			FFLAS::fcopy ( F, kg_j*kg_mc, Y+(lambda+kg_mb)*incY, incY, X+(lambda+kg_mb+kg_mc)*incX, incX );
 			// Y4 <- X.C
-			fgemv( F, FFLAS::FflasTrans, N, kg_mc, one, A+N-kg_mc, lda, X, incX, zero, Y+(N-kg_mc)*incY, incY );
+			fgemv( F, FFLAS::FflasTrans, N, kg_mc, F.one, A+N-kg_mc, lda, X, incX, F.zero, Y+(N-kg_mc)*incY, incY );
 		}
 
 	} // Protected
 
 } // FFPACK
+
+#endif // __FFLASFFPACK_ffpack_charpoly_kgfast_INL
