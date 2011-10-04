@@ -70,9 +70,9 @@ namespace FFPACK
 		 */
 
 		typedef K Element;
-		const Element one  ; // peut pas être static... :(
-		const Element zero ;
-		const Element mone ;
+		Element one  ; // peut pas être static... :(
+		Element zero ;
+		Element mone ;
 
 		/** @name Field Object Basics.
 		*/
@@ -83,16 +83,18 @@ namespace FFPACK
 		 */
 		UnparametricField(long int q = 0, size_t e = 1) :
 			_p(q), _card((long)(q == 0 ? -1 : pow((double)q, (double)e)) )
-			,one(1),zero(0)
-			,mone((Element)-1)
-			{}  // assuming q is a prime or zero.
+			// ,one(Element(1L)),zero(Element(0L)),mone(Element(-1L))
+		{
+			// Caster(one,1);
+		}  // assuming q is a prime or zero.
 
 		/// construct this field as copy of F.
 		UnparametricField (const UnparametricField &F) :
 			_p(F._p), _card(F._card)
-			,one(1),zero(0)
-			,mone((Element)_card-1)
-		{}
+			// ,one(1L),zero(0L)
+		{
+			// init(mone,-1L);
+		}
 
 		// UnparametricField(){}
 		///
