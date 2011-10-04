@@ -22,20 +22,18 @@ namespace FFLAS {
 	      typename Field::Element * A, const size_t lda)
 	{
 
-		static typename Field::Element one, mone, tmp;
-		F.init( one, 1UL );
-		F.neg (mone, one);
+		typename Field::Element tmp;
 		const typename Field::Element* xi=x, *yj=y;
 		typename Field::Element* Ai=A;
 
 		if ( M < N ){
-			if ( F.areEqual( alpha, one ) )
+			if ( F.areEqual( alpha, F.one ) )
 				for ( ; Ai < A+M*lda; Ai+=lda, xi+=incx ){
 					yj = y;
 					for (size_t j = 0; j < N; ++j, yj+=incy )
 						F.axpyin( *(Ai+j), *xi, *yj );
 				}
-			else if ( F.areEqual( alpha, mone ) )
+			else if ( F.areEqual( alpha, F.mone ) )
 				for ( ; Ai < A+M*lda; Ai+=lda, xi+=incx ){
 					F.neg( tmp, *xi );
 					yj = y;
@@ -50,14 +48,14 @@ namespace FFLAS {
 						F.axpyin( *(Ai+j), tmp, *yj );
 				}
 		} else {
-			if ( F.areEqual( alpha, one ) ){
+			if ( F.areEqual( alpha, F.one ) ){
 				for ( ; Ai < A+N; ++Ai, yj+=incy ){
 					xi = x;
 					for (size_t i = 0; i < M; ++i, xi+=incx )
 						F.axpyin( *(Ai+i*lda), *xi, *yj );
 				}
 			}
-			else if ( F.areEqual( alpha, mone ) )
+			else if ( F.areEqual( alpha, F.mone ) )
 				for ( ; Ai < A+N; ++Ai, yj+=incy ){
 					F.neg( tmp, *yj );
 					xi = x;

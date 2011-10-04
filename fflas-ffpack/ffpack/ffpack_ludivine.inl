@@ -27,10 +27,6 @@ namespace FFPACK {
 			typename Field::Element * A, const size_t lda, size_t*P,
 			size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 	{
-		static typename Field::Element mone,one,zero;
-		F.init(one,1.0);
-		F.init(zero,0.0);
-		F.neg (mone, one);
 		size_t MN = MIN(M,N);
 		typename Field::Element * Acurr = A;
 		size_t r = 0;
@@ -46,7 +42,7 @@ namespace FFPACK {
 					FFLAS::fcopy (F, N-r, (A + r*(lda+1)), 1, (A+k*lda+r),1);
 					Acurr = A+r+k*lda;
 					for (size_t i=r; i<N; ++i)
-						F.assign(*(Acurr++),zero);
+						F.assign(*(Acurr++),F.zero);
 				}
 
 				FFLAS::fswap (F, M, A+r, lda, A+p, lda);
@@ -55,7 +51,7 @@ namespace FFPACK {
 			}
 			if (k+1<M){
 				ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, r, A, lda, A+(k+1)*lda, 1);
-				fgemv (F, FFLAS::FflasTrans, r, N-r, mone, A+r, lda, A+(k+1)*lda, 1, one, A+(k+1)*lda+r, 1);
+				fgemv (F, FFLAS::FflasTrans, r, N-r, F.mone, A+r, lda, A+(k+1)*lda, 1, F.one, A+(k+1)*lda+r, 1);
 			}
 			else
 				return r;
@@ -93,10 +89,6 @@ namespace FFPACK {
 
 			if ( !(M && N) ) return 0;
 			typedef typename Field::Element elt;
-			elt mone,zero,one;;
-			F.init (one, 1.0);
-			F.neg(mone, one);
-			F.init (zero, 0.0);
 			elt * Aini = A;
 			elt * Acurr;
 			size_t rowp = 0;
@@ -153,7 +145,7 @@ namespace FFPACK {
 
 				//Elimination
 				//Or equivalently, but without delayed ops :
-				FFLAS::fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+				FFLAS::fger (F, M-rowp-1, N-k-1, F.mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 				Aini += lda+1; ++rowp; ++k;
 			}
@@ -172,7 +164,7 @@ namespace FFPACK {
 				if (Q[i] > i){
 					FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
 					for (size_t j=0; j<l-i; ++j)
-						F.assign (*(Aini+(Q[i]-i)*lda+j), zero);
+						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
 			}
 			return R;
@@ -193,10 +185,6 @@ namespace FFPACK {
 
 			if ( !(M && N) ) return 0;
 			typedef typename Field::Element elt;
-			elt mone,zero,one;;
-			F.init (one, 1.0);
-			F.neg(mone, one);
-			F.init (zero, 0.0);
 			elt * Aini = A;
 			elt * Acurr;
 			size_t rowp = 0;
@@ -204,7 +192,7 @@ namespace FFPACK {
 			size_t R = 0;
 			size_t k = 0;
 			size_t delay =0;
-			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one, FFLAS::FflasDouble) -1; // the max number of delayed operations
+			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, F.one, FFLAS::FflasDouble) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
 
 				//Find non zero pivot
@@ -263,7 +251,7 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						*(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
 				//Or equivalently, but without delayed ops :
-				//FFLAS::fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+				//FFLAS::fger (F, M-rowp-1, N-k-1, F.mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 				Aini += lda+1; ++rowp; ++k;
 			}
@@ -282,7 +270,7 @@ namespace FFPACK {
 				if (Q[i] > i){
 					FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
 					for (size_t j=0; j<l-i; ++j)
-						F.assign (*(Aini+(Q[i]-i)*lda+j), zero);
+						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
 			}
 			return R;
@@ -303,10 +291,6 @@ namespace FFPACK {
 
 			if ( !(M && N) ) return 0;
 			typedef typename Field::Element elt;
-			elt mone,zero,one;;
-			F.init (one, 1.0);
-			F.neg(mone, one);
-			F.init (zero, 0.0);
 			elt * Aini = A;
 			elt * Acurr;
 			size_t rowp = 0;
@@ -314,7 +298,7 @@ namespace FFPACK {
 			size_t R = 0;
 			size_t k = 0;
 			size_t delay =0;
-			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one, FFLAS::FflasFloat) -1; // the max number of delayed operations
+			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, F.one, FFLAS::FflasFloat) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
 
 				//Find non zero pivot
@@ -373,7 +357,7 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						*(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
 				//Or equivalently, but without delayed ops :
-				//FFLAS::fger (F, M-rowp-1, N-k-1, mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+				//FFLAS::fger (F, M-rowp-1, N-k-1, F.mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 				Aini += lda+1; ++rowp; ++k;
 			}
@@ -392,7 +376,7 @@ namespace FFPACK {
 				if (Q[i] > i){
 					FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
 					for (size_t j=0; j<l-i; ++j)
-						F.assign (*(Aini+(Q[i]-i)*lda+j), zero);
+						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
 			}
 			return R;
@@ -413,10 +397,6 @@ namespace FFPACK {
 
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
-		static elt Mone, one, zero;
-		F.init(Mone, -1.0);
-		F.init(one,1.0);
-		F.init(zero,0.0);
 		size_t MN = MIN(M,N);
 
 		size_t incRow, incCol, rowDim, colDim;
@@ -520,10 +500,10 @@ namespace FFPACK {
 						// Ar <- L1^-1 Ar
 						ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
 						       FFLAS::FflasNoTrans, Diag, R, Ndown,
-						       one, A, lda, Ar, lda);
+						       F.one, A, lda, Ar, lda);
 						// An <- An - Ac*Ar
 						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-						       Mone, Ac, lda, Ar, lda, one, An, lda);
+						       F.mone, Ac, lda, Ar, lda, F.one, An, lda);
 					}
 					// Recursive call on SE
 					R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
@@ -558,10 +538,10 @@ namespace FFPACK {
 						// Ar <- Ar.U1^-1
 						ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
 						       FFLAS::FflasNoTrans, Diag, Ndown, R,
-						       one, A, lda, Ar, lda);
+						       F.one, A, lda, Ar, lda);
 						// An <- An - Ar*Ac
 						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-						       Mone, Ar, lda, Ac, lda, one, An, lda);
+						       F.mone, Ar, lda, Ac, lda, F.one, An, lda);
 
 					}
 					// Recursive call on SE
@@ -586,7 +566,7 @@ namespace FFPACK {
 							FFLAS::fcopy( F, colDim - j, A + j * (lda + 1), incCol, A + i*incRow + j*incCol, incCol);
 							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
-								F.assign (*Ai, zero);
+								F.assign (*Ai, F.zero);
 							///@todo std::swap ?
 							size_t t = Q[j];
 							Q[j]=Q[i];
@@ -600,7 +580,7 @@ namespace FFPACK {
 								      A + i*incRow + j*incCol, incCol);
 							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
-								F.assign (*Ai, zero);
+								F.assign (*Ai, F.zero);
 							size_t t = Q[j-1];
 							Q[j-1]=Q[i];
 							Q[i] = t;
@@ -639,10 +619,6 @@ namespace FFPACK {
 				  )
 		{
 
-			static typename Field::Element Mone, one, zero;
-			F.init(Mone, -1.0);
-			F.init(one, 1.0);
-			F.init(zero,0.0);
 			size_t MN = MIN(M,N);
 
 			if (MN == 1){
@@ -687,8 +663,8 @@ namespace FFPACK {
 					if ( computeX ){
 						if (MinTag == FFPACK::FfpackDense)
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
-								fgemv(F, FFLAS::FflasNoTrans, N, N, one,
-								      A, lda, u, 1, zero, Xi,1);
+								fgemv(F, FFLAS::FflasNoTrans, N, N, F.one,
+								      A, lda, u, 1, F.zero, Xi,1);
 								FFLAS::fcopy(F, N, u,1,Xi, 1);
 							}
 						else // Keller-Gehrig Fast algorithm's matrix
@@ -704,12 +680,12 @@ namespace FFPACK {
 					// Triangular block inversion of NW and apply to SW
 					// Xr <- Xr.U1^-1
 					ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag,
-					       Ndown, R, one, X, ldx, Xr, ldx);
+					       Ndown, R, F.one, X, ldx, Xr, ldx);
 
 					// Update of SE
 					// Xn <- Xn - Xr*Xc
 					fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-Nup, Nup,
-					       Mone, Xr, ldx, Xc, ldx, one, Xn, ldx);
+					       F.mone, Xr, ldx, Xc, ldx, F.one, Xn, ldx);
 
 					// Recursive call on SE
 
@@ -757,10 +733,6 @@ namespace FFPACK {
 
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
-		static elt Mone, one, zero;
-		F.init(Mone, -1.0);
-		F.init(one,1.0);
-		F.init(zero,0.0);
 
 		// Column permutation
 		size_t * P1 = new size_t[no2];
@@ -829,7 +801,7 @@ namespace FFPACK {
 #endif
 
 		// N1 = SW_{1,q1} . U1^-1
-		ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-mo2, q1, one, NW, ld1 , SW, ld3 );
+		ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-mo2, q1, F.one, NW, ld1 , SW, ld3 );
 #ifdef LB_DEBUG
 		std::cerr<<" N1 = SW_{1,q1} . U1^-1"<<std::endl;
 		write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -842,7 +814,7 @@ namespace FFPACK {
 #endif
 
 		// I1 = SW_{q1+1,n} - N1.G1
-		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2,  no2-q1, q1, Mone, SW, ld3, NW+q1, ld1, one, SW+q1, ld3);
+		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2,  no2-q1, q1, F.mone, SW, ld3, NW+q1, ld1, F.one, SW+q1, ld3);
 #ifdef LB_DEBUG
 		std::cerr<<" I1 = SW_{q1+1,n} - N1.G1"<<std::endl;
 		write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -855,7 +827,7 @@ namespace FFPACK {
 #endif
 
 		// E1 = SE - N1.B1_{1,q1}
-		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2, N-no2, q1, Mone, SW, ld3, NE, ld2, one, SE, ld4);
+		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2, N-no2, q1, F.mone, SW, ld3, NE, ld2, F.one, SE, ld4);
 #ifdef LB_DEBUG
 		std::cerr<<"  E1 = SE - N1.B1_{1,q1}"<<std::endl;
 		write_field(F,std::cerr,SE,M-mo2,N-no2,ld4);
@@ -915,7 +887,7 @@ namespace FFPACK {
 
 		//alternative: de 0 a q2 avant
 		// N2 = B1_{q1+1,mo2} . V2^-1
-		ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, mo2-q1, q2, one, SE, ld4, NE+q1*ld2,ld2);
+		ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit, mo2-q1, q2, F.one, SE, ld4, NE+q1*ld2,ld2);
 #if 0
 		tim.stop();
 		std::cerr<<"trsm2:"<<tim.realtime()<<std::endl;
@@ -923,7 +895,7 @@ namespace FFPACK {
 #endif
 
 		// H2 = B1_{q1+1,mo2;q2,N-no2} - N2.E2
-		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, N-no2-q2, q2, Mone, NE+q1*ld2, ld2, SE+q2, ld4, one, NE+q1*ld2+q2, ld2);
+		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, N-no2-q2, q2, F.mone, NE+q1*ld2, ld2, SE+q2, ld4, F.one, NE+q1*ld2+q2, ld2);
 
 #if 0
 		tim.stop();
@@ -933,7 +905,7 @@ namespace FFPACK {
 		write_field (F,cerr<<"avant O2"<<endl, A, M, N, lda);
 #endif
 
-		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, no2-q1, q2, Mone, NE+q1*ld2, ld2, SW+q1, ld3, zero,
+		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, no2-q1, q2, F.mone, NE+q1*ld2, ld2, SW+q1, ld3, F.zero,
 		      NW+q1*(ld1+1), ld1);
 		//	write_field (F,cerr<<"apres O2"<<endl, A, M, N, lda);
 #if 0
@@ -1032,10 +1004,10 @@ namespace FFPACK {
 			}
 
 			// N3 = X2 . D3^-1
-			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, mo2-q1-q3b, q3, one, SW+q2*ld3+q1, ld3 ,NW+(q1+q3b)*ld1+q1,ld1);
+			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, mo2-q1-q3b, q3, F.one, SW+q2*ld3+q1, ld3 ,NW+(q1+q3b)*ld1+q1,ld1);
 
 			// T2 = T2 - N3.F3
-			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1-q3b, no2-q1-q3,q3, Mone, NW+(q1+q3b)*ld1+q1, ld1, SW+q2*ld3+q3+q1, ld3, one, NW+(q1+q3b)*ld1+q1+q3, ld1 );
+			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1-q3b, no2-q1-q3,q3, F.mone, NW+(q1+q3b)*ld1+q1, ld1, SW+q2*ld3+q3+q1, ld3, F.one, NW+(q1+q3b)*ld1+q1+q3, ld1 );
 
 
 			//Step 4: T2 = L4.Q4.U4.P4
@@ -1227,10 +1199,6 @@ namespace FFPACK {
 		if (trans == FFLAS::FflasTrans)
 			throw Failure(__func__,__FILE__,__LINE__,"Transposed version is not implemented yet");
 		typedef typename Field::Element elt;
-		static elt Mone, one, zero;
-		F.init(Mone, -1.0);
-		F.init(one,1.0);
-		F.init(zero,0.0);
 		// size_t MN = MIN(M,N);
 
 		size_t incRow, incCol, rowDim, colDim;
@@ -1275,7 +1243,7 @@ namespace FFPACK {
 						typename Field::Element *Ai = B + i*incRow + j*incCol ;
 						typename Field::Element *Aend = B + colDim*incCol ;
 						for (; Ai != Aend + i*incRow ; Ai+=incCol)
-							F.assign (*Ai, zero);
+							F.assign (*Ai, F.zero);
 						///@todo std::swap ?
 						size_t t = Q[j];
 						Q[j]=Q[Nup+i];
@@ -1298,7 +1266,7 @@ namespace FFPACK {
 						typename Field::Element *Ai   = B + i*incRow + ii*incCol ;
 						typename Field::Element *Aend = B + colDim*incCol ;
 						for (; Ai != Aend + i*incRow ; Ai+=incCol)
-							F.assign (*Ai, zero);
+							F.assign (*Ai, F.zero);
 						size_t t = Q[ii-1];
 						Q[ii-1]=Q[Nup+i];
 						Q[Nup+i] = t;
@@ -1401,10 +1369,10 @@ namespace FFPACK {
 				// Ar <- L1^-1 Ar
 				ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
 				       FFLAS::FflasNoTrans, Diag, R, Ndown,
-				       one, A, lda, Ar, lda);
+				       F.one, A, lda, Ar, lda);
 				// An <- An - Ac*Ar
 				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-				       Mone, Ac, lda, Ar, lda, one, An, lda);
+				       F.mone, Ac, lda, Ar, lda, F.one, An, lda);
 				// LU call on SE
 				R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup,
 					       LuTag, cutoff);
@@ -1435,10 +1403,10 @@ namespace FFPACK {
 				// Ar <- Ar.U1^-1
 				ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper,
 				       FFLAS::FflasNoTrans, Diag, Ndown, R,
-				       one, A, lda, Ar, lda);
+				       F.one, A, lda, Ar, lda);
 				// An <- An - Ar*Ac
 				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-				       Mone, Ar, lda, Ac, lda, one, An, lda);
+				       F.mone, Ar, lda, Ac, lda, F.one, An, lda);
 
 				// LU call on SE
 				R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup,
@@ -1468,7 +1436,7 @@ namespace FFPACK {
 						typename Field::Element *Ai = B + i*incRow + j*incCol ;
 						typename Field::Element *Aend = B + colDim*incCol ;
 						for (; Ai != Aend + i*incRow ; Ai+=incCol)
-							F.assign (*Ai, zero);
+							F.assign (*Ai, F.zero);
 						///@todo std::swap ?
 						size_t t = Q[j];
 						Q[j]=Q[Nup+i];
@@ -1491,7 +1459,7 @@ namespace FFPACK {
 						typename Field::Element *Ai   = B + i*incRow + ii*incCol ;
 						typename Field::Element *Aend = B + colDim*incCol ;
 						for (; Ai != Aend + i*incRow ; Ai+=incCol)
-							F.assign (*Ai, zero);
+							F.assign (*Ai, F.zero);
 						size_t t = Q[ii-1];
 						Q[ii-1]=Q[Nup+i];
 						Q[Nup+i] = t;
