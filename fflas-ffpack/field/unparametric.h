@@ -37,6 +37,8 @@
 
 namespace FFPACK
 {
+	template<class _Element>
+	class UnparametricField ;
 
 	template <typename Target, typename Source>
 	Target& Caster (Target& t, const Source& s)
@@ -59,46 +61,13 @@ namespace FFPACK
 	 *  For a typical unparametric field, some of the methods must be defined in a specialization.
 	 */
 	template <class K>
-	class UnparametricField {
-	protected:
-		long int _p ; long int _card ;
+	class UnparametricOperations {
 	public:
-
-		/** The field's element type.
-		 * Type K must provide a default constructor,
-		 * a copy constructor, a destructor, and an assignment operator.
-		 */
-
 		typedef K Element;
-		Element one  ; // peut pas être static... :(
-		Element zero ;
-		Element mone ;
 
-		/** @name Field Object Basics.
-		*/
+		UnparametricOperations(){}
 		//@{
-
-		/** Builds this field to have characteristic q and cardinality q<sup>e</sup>.
-		 *  This constructor must be defined in a specialization.
-		 */
-		UnparametricField(long int q = 0, size_t e = 1) :
-			_p(q), _card((long)(q == 0 ? -1 : pow((double)q, (double)e)) )
-			// ,one(Element(1L)),zero(Element(0L)),mone(Element(-1L))
-		{
-			// Caster(one,1);
-		}  // assuming q is a prime or zero.
-
-		/// construct this field as copy of F.
-		UnparametricField (const UnparametricField &F) :
-			_p(F._p), _card(F._card)
-			// ,one(1L),zero(0L)
-		{
-			// init(mone,-1L);
-		}
-
-		// UnparametricField(){}
-		///
-		~UnparametricField () {}
+		~UnparametricOperations () {}
 
 		/* Assignment operator.
 		 * Assigns UnparametricField object F to field.
@@ -106,10 +75,6 @@ namespace FFPACK
 		 */
 		// I believe this should be virtual -bds
 		///
-		const UnparametricField &operator=(const UnparametricField &F) const
-		{
-			return *this;
-		}
 		//@} Field Object Basics.
 
 		/** @name Data Object Management.
@@ -144,26 +109,6 @@ namespace FFPACK
 			return x = y;
 		}
 
-
-		unsigned long &cardinality (unsigned long &c) const
-		{
-			return c = _card ;
-		}
-
-		unsigned long &characteristic (unsigned long &c) const
-		{
-			return c = _p ;
-		}
-
-		unsigned long cardinality () const
-		{
-			return _card ;
-		}
-
-		unsigned long characteristic () const
-		{
-			return _p ;
-		}
 
 		//@}
 
@@ -338,6 +283,71 @@ namespace FFPACK
 
 	};
 
+	template<class _Element>
+	class UnparametricField : public UnparametricOperations<_Element> {
+	protected:
+		long int _p ; long int _card ;
+	public:
+
+		/** The field's element type.
+		 * Type K must provide a default constructor,
+		 * a copy constructor, a destructor, and an assignment operator.
+		 */
+
+		typedef typename UnparametricOperations<_Element>::Element Element;
+		const Element one  ; // peut pas être static... :(
+		const Element zero ;
+		const Element mone ;
+
+		/** @name Field Object Basics.
+		*/
+		//@{
+
+		/** Builds this field to have characteristic q and cardinality q<sup>e</sup>.
+		 *  This constructor must be defined in a specialization.
+		 */
+		UnparametricField(long int q = 0, size_t e = 1) :
+			_p(q), _card((long)(q == 0 ? -1 : pow((double)q, (double)e)) )
+			// ,one(Element(1L)),zero(Element(0L)),mone(Element(-1L))
+			,one(1),zero(0),mone(-one)
+			{
+				// Caster(one,1);
+			}  // assuming q is a prime or zero.
+		//@}
+
+		/// construct this field as copy of F.
+		UnparametricField (const UnparametricField &F) :
+			_p(F._p), _card(F._card)
+			// ,one(1L),zero(0L)
+			,one(F.one),zero(F.zero),mone(F.mone)
+		{
+			// init(mone,-1L);
+		}
+
+
+		unsigned long &cardinality (unsigned long &c) const
+		{
+			return c = _card ;
+		}
+
+		unsigned long &characteristic (unsigned long &c) const
+		{
+			return c = _p ;
+			// return c = _card ;
+		}
+
+		unsigned long cardinality () const
+		{
+			return _card ;
+		}
+
+		unsigned long characteristic () const
+		{
+			return _p ;
+			// return  _card ;
+		}
+
+	};
 } // FFPACK
 
 #include "field-general.h"
