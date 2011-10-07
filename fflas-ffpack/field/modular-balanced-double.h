@@ -137,13 +137,28 @@ namespace FFPACK
 			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
-#if 0
-		const ModularBalanced<double> &operator=(const ModularBalanced<double> &F)
+		ModularBalanced<Element> & assign(const ModularBalanced<Element> &F)
 		{
-			modulus   = F.modulus;
+			modulus = F.modulus;
 			half_mod  = F.half_mod;
 			mhalf_mod = F.mhalf_mod;
-			lmodulus  = F.lmodulus;
+			lmodulus   = F.lmodulus;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
+			return *this;
+		}
+
+#if 1
+		const ModularBalanced<double> &operator=(const ModularBalanced<double> &F)
+		{
+			modulus = F.modulus;
+			half_mod  = F.half_mod;
+			mhalf_mod = F.mhalf_mod;
+			lmodulus   = F.lmodulus;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
 			return *this;
 		}
 #endif

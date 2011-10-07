@@ -96,13 +96,25 @@ namespace FFPACK {
 			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
-#if 0
+		Modular <Element>& assign(const Modular<Element> &F)
+		{
+			modulus = F.modulus;
+			lmodulus= F.lmodulus;
+			//inv_modulus = F.inv_modulus;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
+			return *this;
+		}
+#if 1
 		const Modular &operator=(const Modular<Element> &F)
 		{
 			modulus = F.modulus;
 			lmodulus= F.lmodulus;
 			//inv_modulus = F.inv_modulus;
-			mone = F.mone ;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
 			return *this;
 		}
 #endif

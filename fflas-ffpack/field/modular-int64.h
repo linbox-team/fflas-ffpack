@@ -118,14 +118,30 @@ namespace FFPACK
 				,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
-#if 0
-		const Modular &operator=(const Modular<int64_t> &F)
+		Modular<Element> & assign(const Modular<Element> &F)
 		{
-			modulus    = F.modulus;
+			modulus = F.modulus;
 			modulusinv = F.modulusinv;
 			lmodulus   = F.lmodulus;
 			_two64     = F._two64;
-			mone       = F.mone ;
+			//inv_modulus = F.inv_modulus;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
+			return *this;
+		}
+
+#if 1
+		const Modular &operator=(const Modular<int64_t> &F)
+		{
+			modulus = F.modulus;
+			modulusinv = F.modulusinv;
+			lmodulus   = F.lmodulus;
+			_two64     = F._two64;
+			//inv_modulus = F.inv_modulus;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
 			return *this;
 		}
 #endif

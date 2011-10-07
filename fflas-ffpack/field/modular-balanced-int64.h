@@ -57,8 +57,8 @@ namespace FFPACK
 	class ModularBalanced<int64_t>  {
 	protected:
 		int64_t modulus;
-		int64_t halfmodulus;
-		int64_t nhalfmodulus;
+		int64_t half_mod;
+		int64_t mhalf_mod;
 		double modulusinv;
 
 	public:
@@ -81,16 +81,16 @@ namespace FFPACK
 			,one(1),zero(0),mone(-1)
 		{
 			modulusinv = 1/(double)65521;
-			halfmodulus = (65521 >> 1);
-			nhalfmodulus = halfmodulus-65520;
+			half_mod = (65521 >> 1);
+			mhalf_mod = half_mod-65520;
 		}
 
 		ModularBalanced (int64_t value, int exp = 1)  :
 			modulus(value)
 			,one(1),zero(0),mone(-1)
 		{
-			halfmodulus = (modulus >> 1);
-			nhalfmodulus = halfmodulus-modulus+1;
+			half_mod = (modulus >> 1);
+			mhalf_mod = half_mod-modulus+1;
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
@@ -103,20 +103,36 @@ namespace FFPACK
 
 		ModularBalanced (const ModularBalanced<int64_t>& mf) :
 			modulus(mf.modulus),
-			halfmodulus(mf.halfmodulus),
-			nhalfmodulus(mf.nhalfmodulus),
+			half_mod(mf.half_mod),
+			mhalf_mod(mf.mhalf_mod),
 			modulusinv(mf.modulusinv)
 			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{ }
 
-#if 0
+		ModularBalanced<Element> & assign(const ModularBalanced<Element> &F)
+		{
+			modulus = F.modulus;
+			half_mod  = F.half_mod;
+			mhalf_mod = F.mhalf_mod;
+			// lmodulus   = F.lmodulus;
+			modulusinv = F.modulusinv;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
+			return *this;
+		}
+
+#if 1
 		const ModularBalanced &operator=(const ModularBalanced<int64_t> &F)
 		{
-			modulus      = F.modulus;
-			halfmodulus  = F.halfmodulus;
-			nhalfmodulus = F.nhalfmodulus;
-			modulusinv   = F.modulusinv;
-
+			modulus = F.modulus;
+			half_mod  = F.half_mod;
+			mhalf_mod = F.mhalf_mod;
+			// lmodulus   = F.lmodulus;
+			modulusinv = F.modulusinv;
+			F.assign(const_cast<Element&>(one),F.one);
+			F.assign(const_cast<Element&>(zero),F.zero);
+			F.assign(const_cast<Element&>(mone),F.mone);
 			return *this;
 		}
 #endif
@@ -149,8 +165,8 @@ namespace FFPACK
 		std::istream &read (std::istream &is)
 		{
 			is >> modulus;
-			halfmodulus = modulus/2;
-			nhalfmodulus = halfmodulus-modulus+1;
+			half_mod = modulus/2;
+			mhalf_mod = half_mod-modulus+1;
 			modulusinv = 1 /((double) modulus );
 #ifdef DEBUG
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
@@ -179,9 +195,9 @@ namespace FFPACK
 		Element &init (Element &x, const double &y) const
 		{
 			x = (Element) fmod(y,(double)modulus);
-			if (x < nhalfmodulus)
+			if (x < mhalf_mod)
 				x += modulus;
-			else if (x > halfmodulus)
+			else if (x > half_mod)
 				x -= modulus;
 			return x;
 		}
@@ -190,9 +206,9 @@ namespace FFPACK
 		Element &init (Element &x, const size_t &y) const
 		{
 			x = y % (modulus);
-			if (x < nhalfmodulus)
+			if (x < mhalf_mod)
 				x += modulus;
-			else if (x > halfmodulus)
+			else if (x > half_mod)
 				x -= modulus;
 			return x;
 		}
@@ -202,9 +218,9 @@ namespace FFPACK
 		{
 			x = y % modulus;
 
-			if ( x < nhalfmodulus )
+			if ( x < mhalf_mod )
 				x += modulus;
-			else if (x > halfmodulus )
+			else if (x > half_mod )
 				x -= modulus;
 
 			return x;
@@ -213,8 +229,8 @@ namespace FFPACK
 		inline Element& init(Element& x, long y) const
 		{
 			x = y % modulus;
-			if ( x < nhalfmodulus ) x += modulus;
-			else if ( x > halfmodulus ) x -= modulus;
+			if ( x < mhalf_mod ) x += modulus;
+			else if ( x > half_mod ) x -= modulus;
 
 			return x;
 		}
@@ -243,8 +259,8 @@ namespace FFPACK
 		inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x > halfmodulus ) x -= modulus;
-			else if ( x < nhalfmodulus ) x += modulus;
+			if ( x > half_mod ) x -= modulus;
+			else if ( x < mhalf_mod ) x += modulus;
 
 			return x;
 		}
@@ -252,8 +268,8 @@ namespace FFPACK
 		inline Element &sub (Element &x, const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x > halfmodulus) x -= modulus;
-			else if (x < nhalfmodulus) x += modulus;
+			if (x > half_mod) x -= modulus;
+			else if (x < mhalf_mod) x += modulus;
 			return x;
 		}
 
@@ -264,9 +280,9 @@ namespace FFPACK
 			q  = (int64_t) ((((double) y) * ((double) z)) * modulusinv);  // q could be off by (+/-) 1
 			x = (int64_t) (y*z - q*modulus);
 
-			if (x > halfmodulus)
+			if (x > half_mod)
 				x -= modulus;
-			else if (x < nhalfmodulus)
+			else if (x < mhalf_mod)
 				x += modulus;
 
 			return x;
@@ -292,9 +308,9 @@ namespace FFPACK
 			if (d != 1)
 				throw Failure(__func__,__FILE__,__LINE__,"InvMod: inverse undefined");
 #endif
-			if (x > halfmodulus)
+			if (x > half_mod)
 				x -= modulus;
-			else if (x < nhalfmodulus)
+			else if (x < mhalf_mod)
 				x += modulus;
 
 			return x;
@@ -312,9 +328,9 @@ namespace FFPACK
 			r = (int64_t) (a * x + y - q*modulus);
 
 
-			if (r > halfmodulus)
+			if (r > half_mod)
 				r -= modulus;
-			else if (r < nhalfmodulus)
+			else if (r < mhalf_mod)
 				r += modulus;
 
 			return r;
@@ -324,8 +340,8 @@ namespace FFPACK
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if ( x > halfmodulus ) x -= modulus;
-			else if (x < nhalfmodulus) x += modulus;
+			if ( x > half_mod ) x -= modulus;
+			else if (x < mhalf_mod) x += modulus;
 
 			return x;
 		}
@@ -333,9 +349,9 @@ namespace FFPACK
 		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if (x > halfmodulus)
+			if (x > half_mod)
 				x -= modulus;
-			else if (x < nhalfmodulus)
+			else if (x < mhalf_mod)
 				x += modulus;
 
 			return x;
@@ -369,9 +385,9 @@ namespace FFPACK
 			r = (int64_t) (a * x + r - q*modulus);
 
 
-			if (r > halfmodulus)
+			if (r > half_mod)
 				r -= modulus;
-			else if (r < nhalfmodulus)
+			else if (r < mhalf_mod)
 				r += modulus;
 
 			return r;
