@@ -96,7 +96,7 @@ namespace FFPACK {
 		Modular(const Modular<Element>& mf) :
 			modulus(mf.modulus),
 			lmodulus(mf.lmodulus)
-			,one(mf.mone),zero(mf.zero),mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
 		Modular<Element> & assign(const Modular<Element> &F)
