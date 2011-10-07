@@ -38,9 +38,9 @@ namespace FFPACK {
 	public:
 		typedef unsigned long FieldInt;
 
-		static const Element one  ;
-		static const Element zero ;
-		Element mone ;
+		const Element one  ;
+		const Element zero ;
+		const Element mone ;
 
 
 		static const bool balanced = false ;
@@ -50,13 +50,13 @@ namespace FFPACK {
 
 
 		Modular () :
-			mone(0)
+			one(0),zero(0),mone(0)
 		{}
 
 
 		Modular (int32_t p, int exp = 1) :
 			modulus((double)p), lmodulus(p)//, inv_modulus(1./(double)p)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -69,7 +69,7 @@ namespace FFPACK {
 
 		Modular (Element p) :
 			modulus(p), lmodulus((unsigned long)p)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -81,7 +81,7 @@ namespace FFPACK {
 
 		Modular (unsigned long int p) :
 			modulus((Element)p), lmodulus(p)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -96,9 +96,10 @@ namespace FFPACK {
 		Modular(const Modular<Element>& mf) :
 			modulus(mf.modulus),
 			lmodulus(mf.lmodulus)
-			,mone(mf.mone)
+			,one(mf.mone),zero(mf.zero),mone(mf.mone)
 		{}
 
+#if 0
 		const Modular &operator=(const Modular<double> &F)
 		{
 			modulus = F.modulus;
@@ -107,6 +108,7 @@ namespace FFPACK {
 			mone   = F.mone ;
 			return *this;
 		}
+#endif
 
 
 		unsigned long &cardinality (unsigned long &c) const
@@ -337,8 +339,8 @@ namespace FFPACK {
 
 } // FFPACK
 
-const double FFPACK::Modular<double>::one  =  1UL;
-const double FFPACK::Modular<double>::zero =  0UL;
+// const double FFPACK::Modular<double>::one  =  1UL;
+// const double FFPACK::Modular<double>::zero =  0UL;
 
 
 

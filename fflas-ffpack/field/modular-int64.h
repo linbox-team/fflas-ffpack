@@ -74,8 +74,8 @@ namespace FFPACK
 	public:
 
 		typedef int64_t Element;
-		static const Element one  = 1 ;
-		static const Element zero = 0 ;
+		const Element one  ;
+		const Element zero ;
 		const Element mone ;
 
 
@@ -86,7 +86,7 @@ namespace FFPACK
 		//default modular field,taking 65521 as default modulus
 		Modular () :
 			modulus(65521),lmodulus(modulus)
-			,mone(modulus -1)
+				,one(1),zero(0),mone(modulus -1)
 		{
 			modulusinv=1/(double)65521;
 			_two64 = (int64) ((uint64) (-1) % (uint64) 65521);
@@ -97,7 +97,7 @@ namespace FFPACK
 
 		Modular (int64_t value, int64_t exp = 1) :
 			modulus(value),lmodulus(modulus)
-			,mone(modulus -1)
+				,one(1),zero(0),mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -115,9 +115,10 @@ namespace FFPACK
 
 		Modular(const Modular<int64_t>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv),lmodulus(modulus),_two64(mf._two64)
-			,mone(modulus -1)
+				,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
+#if 0
 		const Modular &operator=(const Modular<int64_t> &F)
 		{
 			modulus    = F.modulus;
@@ -127,6 +128,7 @@ namespace FFPACK
 			mone       = F.mone ;
 			return *this;
 		}
+#endif
 
 		inline unsigned long &cardinality ( unsigned long &c) const
 		{

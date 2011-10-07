@@ -41,18 +41,21 @@ namespace FFPACK {
 		typedef ModularRandIter<Element> RandIter;
 		typedef NonzeroRandIter<Modular<Element>, ModularRandIter<Element> > NonZeroRandIter;
 
-		static const Element one  ;
-		static const Element zero ;
-		Element mone ;
+		const Element one  ;
+		const Element zero ;
+		const Element mone ;
 
 
 		static const bool balanced = false;
 
-		Modular () {}
+		Modular () :
+			modulus(0),lmodulus(0)
+			,one(0),zero(0),mone(0)
+		{}
 
 		Modular (int32_t p, int exp = 1)  :
 			modulus((Element)p), lmodulus(p)//, inv_modulus(1./(Element)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -65,7 +68,7 @@ namespace FFPACK {
 		}
 		Modular (Element p) :
 			modulus(p),  lmodulus((unsigned long)p)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -77,7 +80,7 @@ namespace FFPACK {
 
 		Modular (unsigned long int p) :
 			modulus((Element)p), lmodulus(p)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -90,9 +93,10 @@ namespace FFPACK {
 
 		Modular(const Modular<Element>& mf) :
 			modulus(mf.modulus), lmodulus(mf.lmodulus)//inv_modulus(mf.inv_modulus)
-			,mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
+#if 0
 		const Modular &operator=(const Modular<Element> &F)
 		{
 			modulus = F.modulus;
@@ -101,6 +105,7 @@ namespace FFPACK {
 			mone = F.mone ;
 			return *this;
 		}
+#endif
 
 
 		unsigned long &cardinality (unsigned long &c) const
@@ -356,8 +361,8 @@ namespace FFPACK {
 } // FFPACK
 
 
-const float FFPACK::Modular<float>::one  =  1UL;
-const float FFPACK::Modular<float>::zero =  0UL;
+// const float FFPACK::Modular<float>::one  =  1UL;
+// const float FFPACK::Modular<float>::zero =  0UL;
 
 
 

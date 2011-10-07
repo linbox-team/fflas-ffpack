@@ -70,9 +70,9 @@ namespace FFPACK
 
 	public :
 		typedef int32_t Element;
-		static const Element one   ;
-		static const Element zero  ;
-		Element mone ; // can't be const because of operator=
+		const Element one   ;
+		const Element zero  ;
+		const Element mone ; // can't be const because of operator=
 
 	public:
 
@@ -84,7 +84,7 @@ namespace FFPACK
 		//default modular field,taking 65521 as default modulus
 		Modular () :
 			modulus(65521),lmodulus(modulus)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 			modulusinv=1/(double)65521;
 
@@ -95,7 +95,7 @@ namespace FFPACK
 
 		Modular (int32_t value, int32_t exp = 1) :
 			modulus(value),lmodulus(value)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -113,7 +113,7 @@ namespace FFPACK
 
 		Modular (unsigned long int value) :
 			modulus((Element) value),lmodulus(value)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -131,7 +131,7 @@ namespace FFPACK
 
 		Modular (long int value) :
 			modulus((Element) value),lmodulus((long int)value)
-			,mone(modulus -1)
+			,one(1),zero(0),mone(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -151,9 +151,10 @@ namespace FFPACK
 		Modular(const Modular<int32_t>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv)
 			,lmodulus(mf.lmodulus),_two64(mf._two64)
-			,mone(modulus -1)
+			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
+#if 0
 		const Modular &operator=(const Modular<int32_t> &F)
 		{
 			modulus    = F.modulus;
@@ -163,6 +164,7 @@ namespace FFPACK
 			mone       = F.mone ;
 			return *this;
 		}
+#endif
 
 
 		unsigned long &cardinality (unsigned long &c) const
@@ -513,8 +515,8 @@ namespace FFPACK
 
 }
 
-const int32_t FFPACK::Modular<int32_t>::one  =  1UL;
-const int32_t FFPACK::Modular<int32_t>::zero =  0UL;
+// const int32_t FFPACK::Modular<int32_t>::one  =  1UL;
+// const int32_t FFPACK::Modular<int32_t>::zero =  0UL;
 
 
 

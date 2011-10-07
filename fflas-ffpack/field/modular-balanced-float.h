@@ -45,9 +45,9 @@ namespace FFPACK {
 		typedef ModularBalancedRandIter<float> RandIter;
 		typedef NonzeroRandIter<ModularBalanced<float>, RandIter> NonZeroRandIter;
 
-		static const Element one  ;
-		static const Element zero ;
-		static const Element mone ;
+		const Element one  ;
+		const Element zero ;
+		const Element mone ;
 
 		static const bool balanced = true ;
 
@@ -56,6 +56,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus (p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -77,6 +78,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( half_mod-p+1),
 			lmodulus ((unsigned long)p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -95,6 +97,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( half_mod-Element(p)+1),
 			lmodulus ((unsigned long)p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -114,6 +117,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
@@ -130,8 +134,10 @@ namespace FFPACK {
 			half_mod(mf.half_mod),
 			mhalf_mod(mf.mhalf_mod),
 			lmodulus (mf.lmodulus)
+			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
+#if 0
 		const ModularBalanced<float> &operator=(const ModularBalanced<float> &F)
 		{
 			modulus   = F.modulus;
@@ -140,6 +146,7 @@ namespace FFPACK {
 			lmodulus  = F.lmodulus;
 			return *this;
 		}
+#endif
 
 		FieldInt &cardinality (FieldInt &c) const
 		{
@@ -419,9 +426,9 @@ return x += modulus;
 
 #include "field-general.h"
 
-const float FFPACK::ModularBalanced<float>::one  =  1;
-const float FFPACK::ModularBalanced<float>::mone =  -1;
-const float FFPACK::ModularBalanced<float>::zero =  0;
+// const float FFPACK::ModularBalanced<float>::one  =  1;
+// const float FFPACK::ModularBalanced<float>::mone =  -1;
+// const float FFPACK::ModularBalanced<float>::zero =  0;
 
 
 #endif // __FFLASFFPACK_modular_balanced_double_H

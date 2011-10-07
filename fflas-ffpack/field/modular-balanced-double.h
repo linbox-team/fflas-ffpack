@@ -45,9 +45,9 @@ namespace FFPACK
 		typedef ModularBalancedRandIter<double> RandIter;
 		typedef NonzeroRandIter<ModularBalanced<double>, RandIter >  NonZeroRandIter;
 
-		static const Element one  ;
-		static const Element zero ;
-		static const Element mone ; // except in char 2
+		const Element one  ;
+		const Element zero ;
+		const Element mone ; // except in char 2
 
 		static const bool balanced = true;
 
@@ -56,6 +56,7 @@ namespace FFPACK
 			half_mod (double((p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -77,6 +78,7 @@ namespace FFPACK
 			half_mod (double((int)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus ((unsigned long)p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -95,6 +97,7 @@ namespace FFPACK
 			half_mod (double((unsigned long)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -113,6 +116,7 @@ namespace FFPACK
 			half_mod (double((unsigned long)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p)
+			,one(1),zero(0),mone(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -130,8 +134,10 @@ namespace FFPACK
 		ModularBalanced<double>(const ModularBalanced<double>& mf) :
 			modulus(mf.modulus), half_mod(mf.half_mod)
 			,mhalf_mod(mf.mhalf_mod), lmodulus(mf.lmodulus)
+			,one(mf.one),zero(mf.zero),mone(mf.mone)
 		{}
 
+#if 0
 		const ModularBalanced<double> &operator=(const ModularBalanced<double> &F)
 		{
 			modulus   = F.modulus;
@@ -140,6 +146,7 @@ namespace FFPACK
 			lmodulus  = F.lmodulus;
 			return *this;
 		}
+#endif
 
 
 		FieldInt &cardinality (FieldInt &c) const
@@ -391,9 +398,9 @@ namespace FFPACK
 
 } // FFPACK
 
-const double FFPACK::ModularBalanced<double>::one  =  1;
-const double FFPACK::ModularBalanced<double>::mone =  -1;
-const double FFPACK::ModularBalanced<double>::zero =  0;
+// const double FFPACK::ModularBalanced<double>::one  =  1;
+// const double FFPACK::ModularBalanced<double>::mone =  -1;
+// const double FFPACK::ModularBalanced<double>::zero =  0;
 
 #include "field-general.h"
 
