@@ -87,21 +87,6 @@ namespace FFPACK
 			return x;
 		}
 
-		/// x := y.  Caution: it is via cast to long.  Good candidate for specialization.
-		template <typename Src>
-		Element& init (Element& x, const Src& s) const
-		{
-			return Caster (x, s);
-		}
-
-
-		/// x :=  y.  Caution: it is via cast to long.  Good candidate for specialization. --dpritcha
-
-		template <typename T>
-		T& convert (T &x, const Element &y) const
-		{
-			return Caster (x,y);
-		}
 
 		///
 		Element &assign (Element &x, const Element &y) const
@@ -345,6 +330,23 @@ namespace FFPACK
 		{
 			return _p ;
 			// return  _card ;
+		}
+
+
+		/// x := y.  Caution: it is via cast to long.  Good candidate for specialization.
+		template <typename Src>
+		Element& init (Element& x, const Src& s) const
+		{
+			return Caster (x, s);
+		}
+
+
+		/// x :=  y.  Caution: it is via cast to long.  Good candidate for specialization. --dpritcha
+
+		template <typename T>
+		T& convert (T &x, const Element &y) const
+		{
+			return Caster (x,y);
 		}
 
 	};
