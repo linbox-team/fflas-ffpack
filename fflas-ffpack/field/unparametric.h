@@ -332,6 +332,7 @@ namespace FFPACK
 			// return  _card ;
 		}
 
+		UnparametricField<Element> operator=(const UnparametricField<Element>) { return *this ;}
 
 		/// x := y.  Caution: it is via cast to long.  Good candidate for specialization.
 		template <typename Src>
