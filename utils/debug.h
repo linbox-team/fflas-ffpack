@@ -38,7 +38,9 @@
 
 
 #ifdef __FFLASFFPACK_HAVE_STDINT_H
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
+#endif
 #include <stdint.h>
 
 #ifndef INT64_MAX
