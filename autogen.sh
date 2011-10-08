@@ -53,7 +53,7 @@ echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
 DIE=1
  }
 
-(libtool --version) < /dev/null > /dev/null 2>&1 || {
+($LIBTOOL --version) < /dev/null > /dev/null 2>&1 || {
  echo
  echo "You must have libtool installed to compile $PROJECT."
  echo "Download the appropriate package for your distribution,"
