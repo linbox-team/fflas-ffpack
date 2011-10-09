@@ -134,7 +134,7 @@ namespace FFPACK
 			return modulus;
 		}
 
-		unsigned long characteristic (unsigned long & c) const
+		unsigned long &characteristic (unsigned long & c) const
 		{
 			return c=modulus;
 		}
