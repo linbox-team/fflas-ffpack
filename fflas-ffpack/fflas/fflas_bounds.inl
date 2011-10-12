@@ -69,6 +69,12 @@ namespace FFLAS {
 
 		}
 
+		template <class Field>
+		unsigned long Mantissa (const Field& F, const FFLAS_BASE base)
+		{
+			return (base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
+		}
+		
 		/** DotProdBound computes the maximal size for delaying the modular reduction
 		 * in a dotproduct.
 		 *
@@ -90,8 +96,9 @@ namespace FFLAS {
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
 
-			unsigned long mantissa =
-			(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
+			unsigned long mantissa = Mantissa (F, base);
+			
+			    //(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
 
 			if (p == 0)
 				return 1;
