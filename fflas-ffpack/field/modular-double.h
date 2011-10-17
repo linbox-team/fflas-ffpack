@@ -50,6 +50,7 @@ namespace FFPACK {
 
 
 		Modular () :
+			modulus(0),lmodulus(0),
 			one(0),zero(0),mone(0)
 		{}
 

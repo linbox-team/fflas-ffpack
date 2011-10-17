@@ -16,8 +16,8 @@
  * See COPYING for license information.
  */
 
-#ifndef __FFLASFFPACK_test_common_H
-#define __FFLASFFPACK_test_common_H
+#ifndef __FFLASFFPACK_args_parser_H
+#define __FFLASFFPACK_args_parser_H
 
 #include <iostream>
 #include <fstream>
@@ -319,4 +319,4 @@ std::ostream& writeCommandString (std::ostream& os, Argument *args, char* progra
 }
 
 
-#endif // __FFLASFFPACK_test_common_H
+#endif // __FFLASFFPACK_args_parser_H

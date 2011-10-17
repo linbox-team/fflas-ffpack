@@ -25,6 +25,7 @@ using namespace std;
 #include "Matio.h"
 #include "timer.h"
 #include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "test-utils.h"
 
