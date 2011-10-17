@@ -3,9 +3,25 @@
 # See COPYING for details about the licence.
 # Run this to generate all the initial makefiles, etc.
 
-echo "$0 $*" > autogen.status
+
+# Recover command line, with double-quotes
+CMDLINE=""
+for arg in "$@"
+do
+    WHO="`echo $arg | cut -d'=' -f1`"
+    WHAT="`echo $arg | cut -s -d'=' -f2`"
+    if test "x$WHAT" = "x"; then
+    	CMDLINE="$CMDLINE $WHO"
+    else
+	CMDLINE="$CMDLINE $WHO=\"$WHAT\""
+    fi
+done
+
+echo  "$0 $CMDLINE" > autogen.status
 chmod +x autogen.status
 
+
+# Starts configuring
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
