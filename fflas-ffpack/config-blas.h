@@ -71,6 +71,7 @@ extern "C" {
 
 	// level 1 routines
 	void   daxpy_   (const int*, const double*, const double*, const int*, double*, const int*);
+	void   saxpy_   (const int*, const float*, const float*, const int*, float*, const int*);
 	double ddot_    (const int*, const double*, const int*, const double*, const int*);
 	double dasum_   (const int*, const double*, const int*);
 	int    idamax_  (const int*, const double*, const int*);
@@ -99,6 +100,11 @@ extern "C" {
 	void cblas_daxpy(const int N, const double alpha, const double *X, const int incX, double *Y, const int incY)
 	{
 		daxpy_ (&N,&alpha, X, &incX, Y, &incY);
+	}
+
+	void cblas_saxpy(const int N, const float alpha, const float *X, const int incX, float *Y, const int incY)
+	{
+		saxpy_ (&N,&alpha, X, &incX, Y, &incY);
 	}
 
 	double cblas_ddot(const int N, const double *X, const int incX, const double *Y, const int incY)
@@ -222,6 +228,7 @@ extern "C" {
 	// level 1 routines
 
 	void   cblas_daxpy(const int N, const double alpha, const double *X, const int incX, double *Y, const int incY);
+	void   cblas_saxpy(const int N, const float alpha, const float *X, const int incX, float *Y, const int incY);
 
 	double cblas_ddot(const int N, const double *X, const int incX, const double *Y, const int incY);
 
