@@ -40,7 +40,7 @@ namespace FFPACK {
 
 		const Element one  ;
 		const Element zero ;
-		const Element mone ;
+		const Element mOne ;
 
 
 		static const bool balanced = false ;
@@ -51,13 +51,13 @@ namespace FFPACK {
 
 		Modular () :
 			modulus(0),lmodulus(0),
-			one(0),zero(0),mone(0)
+			one(0),zero(0),mOne(0)
 		{}
 
 
 		Modular (int32_t p, int exp = 1) :
 			modulus((double)p), lmodulus(p)//, inv_modulus(1./(double)p)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -70,7 +70,7 @@ namespace FFPACK {
 
 		Modular (Element p) :
 			modulus(p), lmodulus((unsigned long)p)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -82,7 +82,7 @@ namespace FFPACK {
 
 		Modular (unsigned long int p) :
 			modulus((Element)p), lmodulus(p)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -97,7 +97,7 @@ namespace FFPACK {
 		Modular(const Modular<Element>& mf) :
 			modulus(mf.modulus),
 			lmodulus(mf.lmodulus)
-			,one(mf.one),zero(mf.zero),mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{}
 
 		Modular<Element> & assign(const Modular<Element> &F)
@@ -107,7 +107,7 @@ namespace FFPACK {
 			//inv_modulus = F.inv_modulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 
@@ -119,7 +119,7 @@ namespace FFPACK {
 			//inv_modulus = F.inv_modulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 

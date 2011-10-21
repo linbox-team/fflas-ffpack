@@ -74,7 +74,7 @@ namespace FFLAS {
 		{
 			return (base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
 		}
-		
+
 		/** DotProdBound computes the maximal size for delaying the modular reduction
 		 * in a dotproduct.
 		 *
@@ -97,7 +97,7 @@ namespace FFLAS {
 			F.characteristic(p);
 
 			unsigned long mantissa = Mantissa (F, base);
-			
+
 			    //(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
 
 			if (p == 0)
@@ -111,13 +111,14 @@ namespace FFLAS {
 				if (d < 2)
 					return 1;
 				kmax = floor (d * double(1ULL << w));
-			} else {
+			}
+		       	else {
 
 				double c = computeFactorClassic(F);
 
 				double cplt=0;
 				if (!F.isZero (beta)){
-					if (F.isOne (beta) || F.areEqual (beta, F.mone)) cplt = c;
+					if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
 					else{
 						double be;
 						F.convert(be, beta);
@@ -130,7 +131,7 @@ namespace FFLAS {
 			}
 
 			//kmax--; // we computed a strict upper bound
-			return  (size_t) MIN (kmax, 1ULL << 31);
+			return  (size_t) MIN ((size_t)kmax, 1ULL << 31);
 		}
 
 		/** @internal

@@ -47,7 +47,7 @@ namespace FFPACK {
 
 		const Element one  ;
 		const Element zero ;
-		const Element mone ;
+		const Element mOne ;
 
 		static const bool balanced = true ;
 
@@ -56,7 +56,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus (p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -78,7 +78,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( half_mod-p+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -97,7 +97,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( half_mod-Element(p)+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -117,7 +117,7 @@ namespace FFPACK {
 			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
@@ -134,7 +134,7 @@ namespace FFPACK {
 			half_mod(mf.half_mod),
 			mhalf_mod(mf.mhalf_mod),
 			lmodulus (mf.lmodulus)
-			,one(mf.one),zero(mf.zero),mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{}
 
 		ModularBalanced<Element> & assign(const ModularBalanced<Element> &F)
@@ -145,7 +145,7 @@ namespace FFPACK {
 			lmodulus   = F.lmodulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 
@@ -158,7 +158,7 @@ namespace FFPACK {
 			lmodulus   = F.lmodulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 #endif
@@ -442,7 +442,7 @@ return x += modulus;
 #include "field-general.h"
 
 // const float FFPACK::ModularBalanced<float>::one  =  1;
-// const float FFPACK::ModularBalanced<float>::mone =  -1;
+// const float FFPACK::ModularBalanced<float>::mOne =  -1;
 // const float FFPACK::ModularBalanced<float>::zero =  0;
 
 

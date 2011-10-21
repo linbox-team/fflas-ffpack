@@ -24,7 +24,7 @@ size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	if (transform){
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r,
-		       F.mone, A, lda, A+r, lda);
+		       F.mOne, A, lda, A+r, lda);
 	}
 
 	return r;
@@ -43,7 +43,7 @@ size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-r, r,
-		       F.mone, A, lda, A+r*lda, lda);
+		       F.mOne, A, lda, A+r*lda, lda);
 	}
 
 	return r;

@@ -33,7 +33,7 @@ namespace FFLAS {
 					for (size_t j = 0; j < N; ++j, yj+=incy )
 						F.axpyin( *(Ai+j), *xi, *yj );
 				}
-			else if ( F.areEqual( alpha, F.mone ) )
+			else if ( F.areEqual( alpha, F.mOne ) )
 				for ( ; Ai < A+M*lda; Ai+=lda, xi+=incx ){
 					F.neg( tmp, *xi );
 					yj = y;
@@ -55,7 +55,7 @@ namespace FFLAS {
 						F.axpyin( *(Ai+i*lda), *xi, *yj );
 				}
 			}
-			else if ( F.areEqual( alpha, F.mone ) )
+			else if ( F.areEqual( alpha, F.mOne ) )
 				for ( ; Ai < A+N; ++Ai, yj+=incy ){
 					F.neg( tmp, *yj );
 					xi = x;

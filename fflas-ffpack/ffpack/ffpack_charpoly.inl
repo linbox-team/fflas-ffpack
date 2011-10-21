@@ -145,7 +145,7 @@ namespace FFPACK {
 				     Xi += (ldx-Nrest), Ai += (lda-Nrest))
 					for (size_t jj=0; jj<Nrest; ++jj)
 						*(Ai++) = *(Xi++);
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mone,
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mOne,
 				       X21, ldx, X2+k, ldx, F.one, A, lda);
 				X2 = X22;
 				Ncurr = int(Nrest);
@@ -268,7 +268,7 @@ namespace FFPACK {
 						*(A2i++) = *(Xi++);
 					}
 				}
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mone,
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mOne,
 				       X21, ldx, X+k, ldx, F.one, A2, Nrest);
 
 				// Recursive call on X22

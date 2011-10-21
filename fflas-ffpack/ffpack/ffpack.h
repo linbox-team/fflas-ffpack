@@ -234,7 +234,7 @@ else { // Right Looking X A = B
 			       M, R, F.one, A, lda , B, ldb);
 
 			fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N-R, R, F.one,
-			       B, ldb, A+R, lda, F.mone, B+R, ldb);
+			       B, ldb, A+R, lda, F.mOne, B+R, ldb);
 
 			bool consistent = true;
 			for (size_t i = 0; i < M; ++i)
@@ -385,7 +385,7 @@ else { // Right Looking X A = B
 				       NRHS, R, F.one, A, lda , W, ldw);
 
 				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.one,
-				       W, ldw, A+R, lda, F.mone, W+R, ldw);
+				       W, ldw, A+R, lda, F.mOne, W+R, ldw);
 
 				bool consistent = true;
 				for (size_t i = 0; i < NRHS; ++i)
@@ -419,7 +419,7 @@ else {
 				       NRHS, R, F.one, A, lda , X, ldx);
 
 				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NRHS, N-R, R, F.one,
-				       X, ldx, A+R, lda, F.mone, X+R, ldx);
+				       X, ldx, A+R, lda, F.mOne, X+R, ldx);
 
 				bool consistent = true;
 				for (size_t i = 0; i < NRHS; ++i)
@@ -621,7 +621,7 @@ else {
 				FFLAS::fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
-			       F.mone, A, lda, NS, ldn);
+			       F.mOne, A, lda, NS, ldn);
 
 			for (size_t i=R; i<N; ++i){
 				for (size_t j=0; j < ldn; ++j)
@@ -646,7 +646,7 @@ else { // Left NullSpace
 			for (size_t i=0; i<NSdim; ++i)
 				FFLAS::fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R,
-			       F.mone, A, lda, NS, ldn);
+			       F.mOne, A, lda, NS, ldn);
 
 			for (size_t i=0; i<NSdim; ++i){
 				for (size_t j=R; j < M; ++j)
@@ -1116,13 +1116,13 @@ else { // Left NullSpace
 				ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
 				       F.one, A, lda, A + N1, lda);
 				ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
-				       F.mone, A + N1*(lda+1), lda, A + N1, lda);
+				       F.mOne, A + N1*(lda+1), lda, A + N1, lda);
 			}
 			else {
 				ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
 				       F.one, A + N1*(lda+1), lda, A + N1*lda, lda);
 				ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, N2, N1,
-				       F.mone, A, lda, A + N1*lda, lda);
+				       F.mOne, A, lda, A + N1*lda, lda);
 			}
 		}
 	}
@@ -1591,7 +1591,7 @@ else {
 				ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Ldim, N, F.one,
 				       Lcurr, ldl , Bcurr, ldb );
 
-				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-k, N, Ldim, F.mone,
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-k, N, Ldim, F.mOne,
 				       Rcurr , ldl, Bcurr, ldb, F.one, Bcurr+Ldim*ldb, ldb);
 			}
 		}
@@ -1606,7 +1606,7 @@ else {
 				Bcurr = B + ib+1;
 				Rcurr = Lcurr + Ldim*ldl;
 
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,  Ldim, N-ib-1, F.mone,
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,  Ldim, N-ib-1, F.mOne,
 				       Bcurr, ldb, Rcurr, ldl,  F.one, Bcurr-Ldim, ldb);
 
 				ftrsm (F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, Ldim, F.one,

@@ -282,7 +282,7 @@ namespace FFPACK
 		typedef typename UnparametricOperations<_Element>::Element Element;
 		const Element one  ; // peut pas être static... :(
 		const Element zero ;
-		const Element mone ;
+		const Element mOne ;
 
 		/** @name Field Object Basics.
 		*/
@@ -293,8 +293,8 @@ namespace FFPACK
 		 */
 		UnparametricField(long int q = 0, size_t e = 1) :
 			_p(q), _card((long)(q == 0 ? -1 : pow((double)q, (double)e)) )
-			// ,one(Element(1L)),zero(Element(0L)),mone(Element(-1L))
-			,one(1),zero(0),mone(-one)
+			// ,one(Element(1L)),zero(Element(0L)),mOne(Element(-1L))
+			,one(1),zero(0),mOne(-one)
 			{
 				// Caster(one,1);
 			}  // assuming q is a prime or zero.
@@ -304,9 +304,9 @@ namespace FFPACK
 		UnparametricField (const UnparametricField &F) :
 			_p(F._p), _card(F._card)
 			// ,one(1L),zero(0L)
-			,one(F.one),zero(F.zero),mone(F.mone)
+			,one(F.one),zero(F.zero),mOne(F.mOne)
 		{
-			// init(mone,-1L);
+			// init(mOne,-1L);
 		}
 
 

@@ -62,14 +62,14 @@ namespace FFPACK
 
 		const Element one  ;
 		const Element zero ;
-		const Element mone ;
+		const Element mOne ;
 
 		static const bool balanced = true;
 
 		//default modular field,taking 65521 as default modulus
 		ModularBalanced () :
 			modulus(65521)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 			modulusinv = 1/(double)65521;
 			half_mod = (65521 >> 1);
@@ -78,7 +78,7 @@ namespace FFPACK
 
 		ModularBalanced (int32_t value, int exp = 1)  :
 			modulus(value)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 			half_mod = (modulus >> 1);
 			mhalf_mod = half_mod-modulus+1;
@@ -98,7 +98,7 @@ namespace FFPACK
 			half_mod(mf.half_mod),
 			mhalf_mod(mf.mhalf_mod),
 			modulusinv(mf.modulusinv)
-			,one(mf.one),zero(mf.zero),mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{ }
 
 		ModularBalanced<Element> & assign(const ModularBalanced<Element> &F)
@@ -110,7 +110,7 @@ namespace FFPACK
 			modulusinv = F.modulusinv;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 
@@ -124,7 +124,7 @@ namespace FFPACK
 			modulusinv = F.modulusinv;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 #endif

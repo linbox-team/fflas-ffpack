@@ -43,13 +43,13 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 			FFLAS::fscal (F, N-k-1, invp, pivot+1, 1);
 			FFLAS::fscal (F, N-dtot, *pivot, A+dtot*lda+k+1, lda);
 			// X <- X - uw
-			FFLAS::fger (F, k + 1-dtot, N - k -1, F.mone,
+			FFLAS::fger (F, k + 1-dtot, N - k -1, F.mOne,
 			      A + dtot*lda + k, lda, pivot+1, 1,
 			      A+k+1+dtot*lda, lda);
 			if (k<N-2){
 
 				// Y <- Y - vw
-				FFLAS::fger (F, N-k-2, N-k-1,  F.mone, pivot+lda, lda, pivot+1, 1,
+				FFLAS::fger (F, N-k-2, N-k-1,  F.mOne, pivot+lda, lda, pivot+1, 1,
 				      pivot+lda+1,lda);
 				//6
 				fgemv (F, FFLAS::FflasNoTrans, N-dtot, N-k-2,

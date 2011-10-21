@@ -210,7 +210,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		     Ki += (ldk-Nrest) )
 			for ( size_t j=0; j<Nrest; ++j )
 				*(Ai++) = *(Ki++);
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mone,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, R,F.mOne,
 		       K21, ldk, K+R, ldk,F.one, Arec, ldarec);
 
 		std::list<Polynomial> polyList;
@@ -365,7 +365,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		       K3+(Ncurr-Mk)*ldk, ldk, K+(Ncurr-Mk)*ldk, ldk);
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 			Mk, 0,(int) Mk, K+(Ncurr-Mk)*ldk,ldk, P);
-		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk,F.mone,
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk,F.mOne,
 		       K3, ldk, K+(Ncurr-Mk)*ldk,ldk,F.one, K, ldk);
 		delete[] P;
 		delete[] Q;

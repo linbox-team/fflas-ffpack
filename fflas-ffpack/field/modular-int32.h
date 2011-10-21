@@ -72,7 +72,7 @@ namespace FFPACK
 		typedef int32_t Element;
 		const Element one   ;
 		const Element zero  ;
-		const Element mone ; // can't be const because of operator=
+		const Element mOne ; // can't be const because of operator=
 
 	public:
 
@@ -84,7 +84,7 @@ namespace FFPACK
 		//default modular field,taking 65521 as default modulus
 		Modular () :
 			modulus(65521),lmodulus(modulus)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv=1/(double)65521;
 
@@ -95,7 +95,7 @@ namespace FFPACK
 
 		Modular (int32_t value, int32_t exp = 1) :
 			modulus(value),lmodulus(value)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -113,7 +113,7 @@ namespace FFPACK
 
 		Modular (unsigned long int value) :
 			modulus((Element) value),lmodulus(value)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -131,7 +131,7 @@ namespace FFPACK
 
 		Modular (long int value) :
 			modulus((Element) value),lmodulus((long int)value)
-			,one(1),zero(0),mone(modulus -1)
+			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
 #ifdef DEBUG
@@ -151,7 +151,7 @@ namespace FFPACK
 		Modular(const Modular<int32_t>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv)
 			,lmodulus(mf.lmodulus),_two64(mf._two64)
-			,one(mf.one),zero(mf.zero),mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{}
 
 		Modular <Element>& assign(const Modular<Element> &F)
@@ -163,7 +163,7 @@ namespace FFPACK
 			//inv_modulus = F.inv_modulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 
@@ -177,7 +177,7 @@ namespace FFPACK
 			//inv_modulus = F.inv_modulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 #endif

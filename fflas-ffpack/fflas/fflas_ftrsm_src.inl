@@ -279,11 +279,11 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mone,
+		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
 		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, F.one, __FFLAS__Bupdate, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
-		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mone,
+		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
 		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, F.one, __FFLAS__Bupdate, ldb);
 #endif
 	}
@@ -323,11 +323,11 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mone,
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
 		       __FFLAS__B1, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B2, ldb);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mone,
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
 		       __FFLAS__A2, lda, __FFLAS__B1, ldb, F.one, __FFLAS__B2, ldb);
 #endif
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb);

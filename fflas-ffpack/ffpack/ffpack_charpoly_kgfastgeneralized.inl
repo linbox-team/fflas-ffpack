@@ -354,7 +354,7 @@ namespace FFPACK {
 					std::cerr<<"// E'2 <- E2 - C21.E'1";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-r, me, r,
-					      F.mone, C+r*lda, lda, E, lda,
+					      F.mOne, C+r*lda, lda, E, lda,
 					      F.one, E+r*lda, lda);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -363,7 +363,7 @@ namespace FFPACK {
 					std::cerr<<"// C'22 <- C22 - C21.C'12";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-r, mc-r, r,
-					      F.mone, C+r*lda, lda, C+r, lda,
+					      F.mOne, C+r*lda, lda, C+r, lda,
 					      F.one, C+r*(lda+1), lda);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;

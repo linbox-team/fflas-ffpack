@@ -575,7 +575,7 @@ namespace FFLAS {
 			return ;
 
 		Element * Xi = X;
-		if (F.areEqual(alpha,F.mone)){
+		if (F.areEqual(alpha,F.mOne)){
 			for (; Xi < X+n*incX; Xi+=incX )
 				F.negin( *Xi );
 			return;

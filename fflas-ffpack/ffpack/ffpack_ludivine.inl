@@ -51,7 +51,7 @@ namespace FFPACK {
 			}
 			if (k+1<M){
 				ftrsv (F, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, r, A, lda, A+(k+1)*lda, 1);
-				fgemv (F, FFLAS::FflasTrans, r, N-r, F.mone, A+r, lda, A+(k+1)*lda, 1, F.one, A+(k+1)*lda+r, 1);
+				fgemv (F, FFLAS::FflasTrans, r, N-r, F.mOne, A+r, lda, A+(k+1)*lda, 1, F.one, A+(k+1)*lda+r, 1);
 			}
 			else
 				return r;
@@ -145,7 +145,7 @@ namespace FFPACK {
 
 				//Elimination
 				//Or equivalently, but without delayed ops :
-				FFLAS::fger (F, M-rowp-1, N-k-1, F.mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+				FFLAS::fger (F, M-rowp-1, N-k-1, F.mOne, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 				Aini += lda+1; ++rowp; ++k;
 			}
@@ -251,7 +251,7 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						*(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
 				//Or equivalently, but without delayed ops :
-				//FFLAS::fger (F, M-rowp-1, N-k-1, F.mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+				//FFLAS::fger (F, M-rowp-1, N-k-1, F.mOne, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 				Aini += lda+1; ++rowp; ++k;
 			}
@@ -357,7 +357,7 @@ namespace FFPACK {
 					for (size_t j=1; j<N-k; ++j)
 						*(Aini+i*lda+j) -= *(Aini+i*lda) * *(Aini+j);
 				//Or equivalently, but without delayed ops :
-				//FFLAS::fger (F, M-rowp-1, N-k-1, F.mone, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
+				//FFLAS::fger (F, M-rowp-1, N-k-1, F.mOne, Aini+lda, lda, Aini+1, 1, Aini+(lda+1), lda);
 
 				Aini += lda+1; ++rowp; ++k;
 			}
@@ -503,7 +503,7 @@ namespace FFPACK {
 						       F.one, A, lda, Ar, lda);
 						// An <- An - Ac*Ar
 						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-						       F.mone, Ac, lda, Ar, lda, F.one, An, lda);
+						       F.mOne, Ac, lda, Ar, lda, F.one, An, lda);
 					}
 					// Recursive call on SE
 					R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
@@ -541,7 +541,7 @@ namespace FFPACK {
 						       F.one, A, lda, Ar, lda);
 						// An <- An - Ar*Ac
 						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-						       F.mone, Ar, lda, Ac, lda, F.one, An, lda);
+						       F.mOne, Ar, lda, Ac, lda, F.one, An, lda);
 
 					}
 					// Recursive call on SE
@@ -685,7 +685,7 @@ namespace FFPACK {
 					// Update of SE
 					// Xn <- Xn - Xr*Xc
 					fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-Nup, Nup,
-					       F.mone, Xr, ldx, Xc, ldx, F.one, Xn, ldx);
+					       F.mOne, Xr, ldx, Xc, ldx, F.one, Xn, ldx);
 
 					// Recursive call on SE
 
@@ -814,7 +814,7 @@ namespace FFPACK {
 #endif
 
 		// I1 = SW_{q1+1,n} - N1.G1
-		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2,  no2-q1, q1, F.mone, SW, ld3, NW+q1, ld1, F.one, SW+q1, ld3);
+		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2,  no2-q1, q1, F.mOne, SW, ld3, NW+q1, ld1, F.one, SW+q1, ld3);
 #ifdef LB_DEBUG
 		std::cerr<<" I1 = SW_{q1+1,n} - N1.G1"<<std::endl;
 		write_field(F,std::cerr,SW,M-mo2,no2,ld3);
@@ -827,7 +827,7 @@ namespace FFPACK {
 #endif
 
 		// E1 = SE - N1.B1_{1,q1}
-		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2, N-no2, q1, F.mone, SW, ld3, NE, ld2, F.one, SE, ld4);
+		fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-mo2, N-no2, q1, F.mOne, SW, ld3, NE, ld2, F.one, SE, ld4);
 #ifdef LB_DEBUG
 		std::cerr<<"  E1 = SE - N1.B1_{1,q1}"<<std::endl;
 		write_field(F,std::cerr,SE,M-mo2,N-no2,ld4);
@@ -895,7 +895,7 @@ namespace FFPACK {
 #endif
 
 		// H2 = B1_{q1+1,mo2;q2,N-no2} - N2.E2
-		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, N-no2-q2, q2, F.mone, NE+q1*ld2, ld2, SE+q2, ld4, F.one, NE+q1*ld2+q2, ld2);
+		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, N-no2-q2, q2, F.mOne, NE+q1*ld2, ld2, SE+q2, ld4, F.one, NE+q1*ld2+q2, ld2);
 
 #if 0
 		tim.stop();
@@ -905,7 +905,7 @@ namespace FFPACK {
 		write_field (F,cerr<<"avant O2"<<endl, A, M, N, lda);
 #endif
 
-		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, no2-q1, q2, F.mone, NE+q1*ld2, ld2, SW+q1, ld3, F.zero,
+		fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1, no2-q1, q2, F.mOne, NE+q1*ld2, ld2, SW+q1, ld3, F.zero,
 		      NW+q1*(ld1+1), ld1);
 		//	write_field (F,cerr<<"apres O2"<<endl, A, M, N, lda);
 #if 0
@@ -1007,7 +1007,7 @@ namespace FFPACK {
 			ftrsm( F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, mo2-q1-q3b, q3, F.one, SW+q2*ld3+q1, ld3 ,NW+(q1+q3b)*ld1+q1,ld1);
 
 			// T2 = T2 - N3.F3
-			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1-q3b, no2-q1-q3,q3, F.mone, NW+(q1+q3b)*ld1+q1, ld1, SW+q2*ld3+q3+q1, ld3, F.one, NW+(q1+q3b)*ld1+q1+q3, ld1 );
+			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mo2-q1-q3b, no2-q1-q3,q3, F.mOne, NW+(q1+q3b)*ld1+q1, ld1, SW+q2*ld3+q3+q1, ld3, F.one, NW+(q1+q3b)*ld1+q1+q3, ld1 );
 
 
 			//Step 4: T2 = L4.Q4.U4.P4
@@ -1372,7 +1372,7 @@ namespace FFPACK {
 				       F.one, A, lda, Ar, lda);
 				// An <- An - Ac*Ar
 				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-				       F.mone, Ac, lda, Ar, lda, F.one, An, lda);
+				       F.mOne, Ac, lda, Ar, lda, F.one, An, lda);
 				// LU call on SE
 				R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup,
 					       LuTag, cutoff);
@@ -1406,7 +1406,7 @@ namespace FFPACK {
 				       F.one, A, lda, Ar, lda);
 				// An <- An - Ar*Ac
 				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-				       F.mone, Ar, lda, Ac, lda, F.one, An, lda);
+				       F.mOne, Ar, lda, Ac, lda, F.one, An, lda);
 
 				// LU call on SE
 				R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup,

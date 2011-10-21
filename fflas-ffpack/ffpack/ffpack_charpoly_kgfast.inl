@@ -93,7 +93,7 @@ namespace FFPACK {
 
 					// B2 <- B2 - C2.B1
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-mc, mb, mc,
-					      F.mone, C+mc*lda, lda, B, lda,
+					      F.mOne, C+mc*lda, lda, B, lda,
 					      F.one, B+mc*lda, lda);
 
 #if 0

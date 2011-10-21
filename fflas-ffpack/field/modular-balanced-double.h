@@ -47,7 +47,7 @@ namespace FFPACK
 
 		const Element one  ;
 		const Element zero ;
-		const Element mone ; // except in char 2
+		const Element mOne ; // except in char 2
 
 		static const bool balanced = true;
 
@@ -56,7 +56,7 @@ namespace FFPACK
 			half_mod (double((p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -78,7 +78,7 @@ namespace FFPACK
 			half_mod (double((int)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -97,7 +97,7 @@ namespace FFPACK
 			half_mod (double((unsigned long)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -116,7 +116,7 @@ namespace FFPACK
 			half_mod (double((unsigned long)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
 			lmodulus (p)
-			,one(1),zero(0),mone(-1)
+			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -134,7 +134,7 @@ namespace FFPACK
 		ModularBalanced<double>(const ModularBalanced<double>& mf) :
 			modulus(mf.modulus), half_mod(mf.half_mod)
 			,mhalf_mod(mf.mhalf_mod), lmodulus(mf.lmodulus)
-			,one(mf.one),zero(mf.zero),mone(mf.mone)
+			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{}
 
 		ModularBalanced<Element> & assign(const ModularBalanced<Element> &F)
@@ -145,7 +145,7 @@ namespace FFPACK
 			lmodulus   = F.lmodulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 
@@ -158,7 +158,7 @@ namespace FFPACK
 			lmodulus   = F.lmodulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
-			F.assign(const_cast<Element&>(mone),F.mone);
+			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
 #endif
@@ -414,7 +414,7 @@ namespace FFPACK
 } // FFPACK
 
 // const double FFPACK::ModularBalanced<double>::one  =  1;
-// const double FFPACK::ModularBalanced<double>::mone =  -1;
+// const double FFPACK::ModularBalanced<double>::mOne =  -1;
 // const double FFPACK::ModularBalanced<double>::zero =  0;
 
 #include "field-general.h"

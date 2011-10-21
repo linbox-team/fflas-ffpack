@@ -58,10 +58,10 @@ namespace FFLAS {
 						remblock = kmax ;
 						--nblock;
 					}
-					if (F.areEqual (F.mone, beta)) betad = -1.0;
+					if (F.areEqual (F.mOne, beta)) betad = -1.0;
 					else F.convert (betad, beta);
 
-					if (F.areEqual (F.mone, alpha)) alphad = -1.0;
+					if (F.areEqual (F.mOne, alpha)) alphad = -1.0;
 					else {
 						alphad = 1.0;
 						if (! F.areEqual (F.one, alpha)) {
@@ -110,7 +110,7 @@ namespace FFLAS {
 						MatD2MatF (F, C, ldc, Cd, n, m, n);
 						MatF2MatD (F, Cd, n, C, ldc, m, n);
 					}
-					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha)))
+					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha)))
 						for (typename Field::Element * Ci = C; Ci < C+m*ldc; Ci += ldc)
 							for (size_t j = 0; j < n; ++j)
 								F.mulin (* (Ci + j), alpha);
@@ -129,10 +129,10 @@ namespace FFLAS {
 						remblock = kmax;
 						--nblock;
 					}
-					if (F.areEqual (F.mone, beta)) betad = -1.0;
+					if (F.areEqual (F.mOne, beta)) betad = -1.0;
 					else F.convert (betad, beta);
 
-					if (F.areEqual (F.mone, alpha)) alphad = -1.0;
+					if (F.areEqual (F.mOne, alpha)) alphad = -1.0;
 					else {
 						alphad = 1.0;
 						if (! F.areEqual (F.one, alpha)) {
@@ -178,7 +178,7 @@ namespace FFLAS {
 						MatFl2MatF (F, C, ldc, Cd, n, m, n);
 						MatF2MatFl (F, Cd, n, C, ldc, m, n);
 					}
-					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
+					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
 						for (typename Field::Element * Ci = C; Ci < C+m*ldc; Ci += ldc)
 							for (size_t j = 0; j < n; ++j)
 								F.mulin (* (Ci + j), alpha);
@@ -286,9 +286,9 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mone, beta)) _beta = -1.0;
+			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
 				if (! F.areEqual (F.one, alpha)) {
@@ -316,7 +316,7 @@ namespace FFLAS {
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
 				for (double * Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -345,9 +345,9 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mone, beta)) _beta = -1.0;
+			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
 				if (! F.areEqual (F.one, alpha)) {
@@ -375,7 +375,7 @@ namespace FFLAS {
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
 				for (float * Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -404,11 +404,11 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mone, beta))
+			if (F.areEqual (F.mOne, beta))
 				_beta = -1.0;
 			else
 				_beta = beta;
-			if (F.areEqual (F.mone, alpha))
+			if (F.areEqual (F.mOne, alpha))
 				_alpha = -1.0;
 			else {
 				_alpha = 1.0;
@@ -457,7 +457,7 @@ namespace FFLAS {
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
 				for (Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -485,9 +485,9 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mone, beta)) _beta = -1.0;
+			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (F.mone, alpha)) _alpha = -1.0;
+			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
 				if (! F.areEqual (F.one, alpha)) {
@@ -515,7 +515,7 @@ namespace FFLAS {
 					for (size_t j=0; j < n;++j)
 						F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mone, alpha))) {
+			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
 				for (float * Ci = C; Ci < C+m*ldc; Ci += ldc)
 					for (size_t j = 0; j < n; ++j)
 						F.mulin (* (Ci + j), alpha);
@@ -1070,7 +1070,7 @@ namespace FFLAS {
 						DoubleDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
-						if (F.areEqual (F.mone, alpha)) {
+						if (F.areEqual (F.mOne, alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
 						} else {
@@ -1106,7 +1106,7 @@ namespace FFLAS {
 						MatD2MatF (F, C, ldc, Cd, n, m, n);
 
 						if (!F.areEqual (F.one, alpha) &&
-						    !F.areEqual (F.mone, alpha)) {
+						    !F.areEqual (F.mOne, alpha)) {
 							// Fix-up: compute C *= alpha
 							for (typename Field::Element* Ci = C;
 							     Ci < C + m*ldc; Ci+=ldc)
@@ -1121,7 +1121,7 @@ namespace FFLAS {
 						FloatDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
-						if (F.areEqual (F.mone, alpha)) {
+						if (F.areEqual (F.mOne, alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
 						} else {
@@ -1157,7 +1157,7 @@ namespace FFLAS {
 						MatFl2MatF (F, C, ldc, Cd, n, m, n);
 
 						if (!F.areEqual (F.one, alpha) &&
-						    !F.areEqual (F.mone, alpha)) {
+						    !F.areEqual (F.mOne, alpha)) {
 							// Fix-up: compute C *= alpha
 							for (typename Field::Element* Ci=C;
 							     Ci < C+m*ldc; Ci+=ldc)
@@ -1640,7 +1640,7 @@ namespace FFLAS {
 
 		double alphad, betad;
 		F.convert (alphad, alpha);
-		if (F.areEqual (beta, F.mone))
+		if (F.areEqual (beta, F.mOne))
 			betad = -1.0;
 		else
 			F.convert (betad, beta);

@@ -108,7 +108,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 			       F.one, A, lda, Ar, lda);
 			// An <- An - Ar*Ac
 			fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, N-R, R,
-			       F.mone, Ar, lda, Ac, lda, F.one, An, lda);
+			       F.mOne, Ar, lda, Ac, lda, F.one, An, lda);
 		}
 		// Recursive call on SE
 		size_t R2 = KrylovElim (F, Ndown, N-R, An, lda,P+R, Q+Nup, deg, iterates, inviterates, maxit, MIN(maxit-deg,(virt+Nup*deg)));
