@@ -26,6 +26,13 @@ doc/fflas-ffpack-dev-html/index.html:
 benchmarks:
 	(cd benchmarks; make benchmarks)
 
+uninstall-hook:
+	(test -d "$(includedir)/fflas-ffpack" && rmdir "$(includedir)/fflas-ffpack/fflas" \
+		"$(includedir)/fflas-ffpack/ffpack" \
+		"$(includedir)/fflas-ffpack/field" \
+		"$(includedir)/fflas-ffpack/utils" \
+		"$(includedir)/fflas-ffpack/" )
+
 .PHONY:examples benchmarks
 
 bin_SCRIPTS=fflas-ffpack-config
