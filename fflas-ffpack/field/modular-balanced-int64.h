@@ -184,7 +184,7 @@ namespace FFPACK
 
 		std::istream &read (std::istream &is, Element &x) const
 		{
-			long int tmp;
+			int64_t tmp;
 			is >> tmp;
 			init(x,tmp);
 			return is;
