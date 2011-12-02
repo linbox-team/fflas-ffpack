@@ -131,17 +131,17 @@ namespace FFPACK
 
 		size_t characteristic () const
 		{
-			return modulus;
+			return (size_t) modulus;
 		}
 
 		unsigned long &characteristic (unsigned long & c) const
 		{
-			return c=modulus;
+			return c=(unsigned long)modulus;
 		}
 
 		size_t cardinality () const
 		{
-			return modulus;
+			return (size_t) modulus;
 		}
 
 
@@ -203,7 +203,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const size_t &y) const
 		{
-			x = Element(y % modulus);
+			x = Element((Element)y % (Element)modulus);
 			if (x < mhalf_mod)
 				x += modulus;
 			else if (x > half_mod)

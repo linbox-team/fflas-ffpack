@@ -83,7 +83,7 @@ namespace FFPACK
 
 		//default modular field,taking 65521 as default modulus
 		Modular () :
-			modulus(65521),lmodulus(modulus)
+			modulus(65521),lmodulus((unsigned long) modulus)
 			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv=1/(double)65521;
@@ -94,7 +94,7 @@ namespace FFPACK
 		}
 
 		Modular (int32_t value, int32_t exp = 1) :
-			modulus(value),lmodulus(value)
+			modulus(value),lmodulus((unsigned long)value)
 			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
@@ -130,7 +130,7 @@ namespace FFPACK
 		}
 
 		Modular (long int value) :
-			modulus((Element) value),lmodulus((long int)value)
+			modulus((Element) value), lmodulus((unsigned long int)value)
 			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
@@ -457,7 +457,7 @@ namespace FFPACK
 				if (modulus>= getMaxModulus())
 					return 0 ;
 				else
-					return (unsigned long) max_double/(modulus*modulus) ;
+					return (unsigned long) max_double/(unsigned long)(modulus*modulus) ;
 			} else
 				throw "Bad input, expecting 0 or 1";
 			return 0;

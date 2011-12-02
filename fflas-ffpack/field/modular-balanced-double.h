@@ -55,7 +55,7 @@ namespace FFPACK
 			modulus((double)p),
 			half_mod (double((p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
-			lmodulus (p)
+			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG
@@ -115,7 +115,7 @@ namespace FFPACK
 			modulus ((double)p),
 			half_mod (double((unsigned long)(p-1)/2)),
 			mhalf_mod(half_mod-modulus+1),
-			lmodulus (p)
+			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(-1)
 		{
 #ifdef DEBUG

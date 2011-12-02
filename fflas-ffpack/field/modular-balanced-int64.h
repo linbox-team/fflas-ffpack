@@ -139,7 +139,7 @@ namespace FFPACK
 
 		uint64_t characteristic () const
 		{
-		       	return modulus;
+		       	return (uint64_t)modulus;
 		}
 
 		size_t cardinality () const
@@ -205,7 +205,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const size_t &y) const
 		{
-			x = y % (modulus);
+			x = (Element)y % Element(modulus);
 			if (x < mhalf_mod)
 				x += modulus;
 			else if (x > half_mod)

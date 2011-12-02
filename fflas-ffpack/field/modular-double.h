@@ -56,7 +56,7 @@ namespace FFPACK {
 
 
 		Modular (int32_t p, int exp = 1) :
-			modulus((double)p), lmodulus(p)//, inv_modulus(1./(double)p)
+			modulus((double)p), lmodulus((unsigned long)p)//, inv_modulus(1./(double)p)
 			,one(1),zero(0),mOne(modulus -1)
 		{
 #ifdef DEBUG
