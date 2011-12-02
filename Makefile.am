@@ -31,7 +31,7 @@ uninstall-hook:
 		"$(includedir)/fflas-ffpack/ffpack" \
 		"$(includedir)/fflas-ffpack/field" \
 		"$(includedir)/fflas-ffpack/utils" \
-		"$(includedir)/fflas-ffpack/" )
+		"$(includedir)/fflas-ffpack/" ) || true
 
 .PHONY:examples benchmarks
 

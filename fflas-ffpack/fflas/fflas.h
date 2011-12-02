@@ -17,6 +17,7 @@
 #define __FFLASFFPACK_fflas_H
 
 #include <cmath>
+#include <cstring>
 
 #ifndef MAX
 #define MAX(a,b) ((a < b)?b:a)
