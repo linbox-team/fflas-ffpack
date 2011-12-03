@@ -118,7 +118,7 @@ namespace FFPACK {
 				if (k==Ncurr){
 					return charp;
 				}
-				size_t Nrest = Ncurr-k;
+				size_t Nrest = (size_t)(Ncurr-k);
 				elt * X21 = X2 + k*ldx;
 				elt * X22 = X21 + k;
 				// Compute the n-k last rows of A' = PA^tP^t in X2_
@@ -127,7 +127,7 @@ namespace FFPACK {
 					Ncurr, 0, (int)k, A, lda, P);
 				// Copy X2_ = (A'_2)^t
 				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-Ncurr)
-					for (size_t jj=0; jj<Ncurr*lda; jj+=lda)
+					for (size_t jj=0; jj<(size_t)Ncurr*lda; jj+=lda)
 						*(Xi++) = *(Ai+jj);
 				// A = A . P : Undo the permutation on A
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,

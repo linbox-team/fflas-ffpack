@@ -1054,7 +1054,7 @@ else { // Left NullSpace
 		if ( Side == FFLAS::FflasRight ) {
 			if ( Trans == FFLAS::FflasTrans )
 				for (size_t j = 0 ; j < M ; ++j){
-					for ( size_t i=ibeg; i<(size_t) iend; ++i)
+					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
 						if ( P[i]> i )
 							std::swap(A[j*lda+P[i]],A[j*lda+i]);
 					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
@@ -1069,7 +1069,7 @@ else { // Left NullSpace
 		}
 		else { // Side == FFLAS::FflasLeft
 			if ( Trans == FFLAS::FflasNoTrans )
-				for (size_t i=ibeg; i<(size_t)iend; ++i){
+				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i){
 					if ( P[i]> (size_t) i )
 						FFLAS::fswap( F, M,
 							      A + P[i]*lda, 1,
@@ -1583,7 +1583,7 @@ else {
 				 ib = Q[j];
 				k = (int)ib ;
 				while ((j<R) && ( (int) Q[j] == k)  ) {k++;j++;}
-				Ldim = k-ib;
+				Ldim = (size_t)k-ib;
 				Lcurr = L + j-Ldim + ib*ldl;
 				Bcurr = B + ib*ldb;
 				Rcurr = Lcurr + Ldim*ldl;
@@ -1601,7 +1601,7 @@ else {
 				ib = Q[j];
 				k = (int) ib;
 				while ( (j >= 0) &&  ( (int)Q[j] == k)  ) {--k;--j;}
-				Ldim = ib-k;
+				Ldim = ib-(size_t)k;
 				Lcurr = L + j+1 + (k+1)*ldl;
 				Bcurr = B + ib+1;
 				Rcurr = Lcurr + Ldim*ldl;

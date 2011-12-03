@@ -176,7 +176,7 @@ namespace FFPACK {
 						}
 						else {
 							for (int i = int(mu+1); i--; )
-								T[i+lambda] = T[i]+lambda;
+								T[(size_t)i+lambda] = T[i]+lambda;
 							for (size_t i=0; i< lambda; ++i)
 								T[B[i]-mc-1] = i;
 							mu += lambda;
