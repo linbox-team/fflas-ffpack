@@ -71,6 +71,72 @@ namespace FFPACK  {
 		FfpackKGF=2
 	};
 
+
+	/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
+	 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
+	 * and rows for Trans).
+	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column
+	 * permutation
+	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
+	 * @param F
+	 * @param Side
+	 * @param Trans
+	 * @param M
+	 * @param ibeg
+	 * @param iend
+	 * @param A
+	 * @param lda
+	 * @param P
+	 * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
+	 */
+	template<class Field>
+	void
+	applyP( const Field& F,
+		const FFLAS::FFLAS_SIDE Side,
+		const FFLAS::FFLAS_TRANSPOSE Trans,
+		const size_t M, const int ibeg, const int iend,
+		typename Field::Element * A, const size_t lda, const size_t * P )
+	{
+
+		if ( Side == FFLAS::FflasRight ) {
+			if ( Trans == FFLAS::FflasTrans )
+				for (size_t j = 0 ; j < M ; ++j){
+					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
+						if ( P[i]> i )
+							std::swap(A[j*lda+P[i]],A[j*lda+i]);
+					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
+				}
+			else // Trans == FFLAS::FflasNoTrans
+				for (size_t j = 0 ; j < M ; ++j){
+					for (int i=iend; i-->ibeg; )
+						if ( P[i]>(size_t)i )
+							std::swap(A[j*lda+P[i]],A[j*lda+(size_t)i]);
+					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
+				}
+		}
+		else { // Side == FFLAS::FflasLeft
+			if ( Trans == FFLAS::FflasNoTrans )
+				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i){
+					if ( P[i]> (size_t) i )
+						FFLAS::fswap( F, M,
+							      A + P[i]*lda, 1,
+							      A + i*lda, 1 );
+				}
+			else // Trans == FFLAS::FflasTrans
+				for (int i=iend; i-->ibeg; ){
+					if ( P[i]> (size_t) i ){
+						FFLAS::fswap( F, M,
+							      A + P[i]*lda, 1,
+							      A + (size_t)i*lda, 1 );
+					}
+				}
+		}
+
+	}
+
+
+
+
 	/** Computes the rank of the given matrix using a LQUP factorization.
 	 * The input matrix is modified.
 	 * @param M row dimension of the matrix
@@ -162,6 +228,17 @@ namespace FFPACK  {
 		delete[] Q;
 		return det;
 	}
+
+	// forward declaration
+	template<class Field>
+	void
+	solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,
+		  const size_t M, const size_t N, const size_t R,
+		  typename Field::Element * L, const size_t ldl,
+		  const size_t * Q,
+		  typename Field::Element * B, const size_t ldb ) ;
+
+
 
 	/**
 	 * Solve the system \f$A X = B\f$ or \f$X A = B\f$, using the \c LQUP decomposition of \p A
@@ -1025,67 +1102,6 @@ else { // Left NullSpace
 			const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
 
 
-	/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
-	 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
-	 * and rows for Trans).
-	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column
-	 * permutation
-	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
-	 * @param F
-	 * @param Side
-	 * @param Trans
-	 * @param M
-	 * @param ibeg
-	 * @param iend
-	 * @param A
-	 * @param lda
-	 * @param P
-	 * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
-	 */
-	template<class Field>
-	void
-	applyP( const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const FFLAS::FFLAS_TRANSPOSE Trans,
-		const size_t M, const int ibeg, const int iend,
-		typename Field::Element * A, const size_t lda, const size_t * P )
-	{
-
-		if ( Side == FFLAS::FflasRight ) {
-			if ( Trans == FFLAS::FflasTrans )
-				for (size_t j = 0 ; j < M ; ++j){
-					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
-						if ( P[i]> i )
-							std::swap(A[j*lda+P[i]],A[j*lda+i]);
-					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
-				}
-			else // Trans == FFLAS::FflasNoTrans
-				for (size_t j = 0 ; j < M ; ++j){
-					for (int i=iend; i-->ibeg; )
-						if ( P[i]>(size_t)i )
-							std::swap(A[j*lda+P[i]],A[j*lda+(size_t)i]);
-					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
-				}
-		}
-		else { // Side == FFLAS::FflasLeft
-			if ( Trans == FFLAS::FflasNoTrans )
-				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i){
-					if ( P[i]> (size_t) i )
-						FFLAS::fswap( F, M,
-							      A + P[i]*lda, 1,
-							      A + i*lda, 1 );
-				}
-			else // Trans == FFLAS::FflasTrans
-				for (int i=iend; i-->ibeg; ){
-					if ( P[i]> (size_t) i ){
-						FFLAS::fswap( F, M,
-							      A + P[i]*lda, 1,
-							      A + (size_t)i*lda, 1 );
-					}
-				}
-		}
-
-	}
 
 
 	/**
