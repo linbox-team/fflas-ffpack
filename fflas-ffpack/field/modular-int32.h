@@ -246,7 +246,7 @@ namespace FFPACK
 
 		std::istream &read (std::istream &is, Element &x) const
 		{
-			long int tmp;
+			int32_t tmp;
 			is >> tmp;
 			init(x,tmp);
 			return is;

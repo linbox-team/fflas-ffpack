@@ -64,7 +64,7 @@ namespace FFPACK {
 	size_t RandInt(size_t a, size_t b)
 	{
 		size_t x = a ;
-		x += rand()%(b-a);
+		x += (size_t)rand()%(b-a);
 		FFLASFFPACK_check(x<b && x>=a);
 		return x ;
 	}

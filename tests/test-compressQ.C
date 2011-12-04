@@ -53,19 +53,19 @@ int main(int argc, char** argv)
 	// int m,n;
 
 	Field F(65521);
-	int N = 17;
+	size_t N = 17;
 	double * A = new double[N*N];
 	double * tmp = new double[N*N];
 	size_t * deg = new size_t[N];
 
 	for (size_t i=0; i<(size_t)N*N; ++i)
 		A[i] = 0;
-	for (int i=0; i<3; ++i)
+	for (size_t i=0; i<3; ++i)
 		A[i+i*N] = 1;
 
-	for (int i=3; i<6; ++i)
+	for (size_t i=3; i<6; ++i)
 		A[i+1+i*N] = 1;
-	for (int i=6; i<9; ++i)
+	for (size_t i=6; i<9; ++i)
 		A[i+2+i*N] = 1;
 
 	A[12+9*N] = 1;

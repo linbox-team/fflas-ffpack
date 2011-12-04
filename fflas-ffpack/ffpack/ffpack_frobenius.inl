@@ -442,13 +442,13 @@ void FFPACK::CompressRowsQK (Field& F, const size_t M,
 	size_t currr = d[0]-1;
 	for (int i = 0; i< int(nb_blocs)-1; ++i){
 		for (int j = int(d[i]-1); j<int(deg)-1; ++j, ++currr, ++currtmp)
-			FFLAS::fcopy(F, M, tmp + currtmp*ldtmp, 1,  A + currr*lda, 1);
+			FFLAS::fcopy(F, M, tmp + (size_t)currtmp*ldtmp, 1,  A + currr*lda, 1);
 		for (int j=0; j < int(d[i+1]) -1; ++j, ++currr, ++currw){
 			FFLAS::fcopy(F, M, A + (currw)*lda, 1, A+(currr)*lda, 1);
 		}
 	}
 	for (int i=0; i < currtmp; ++i, ++currw){
-		FFLAS::fcopy (F, M, A + (currw)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (currw)*lda, 1, tmp + (size_t)i*ldtmp, 1);
 	}
 }
 

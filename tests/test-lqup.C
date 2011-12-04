@@ -838,9 +838,9 @@ int main(int argc, char** argv)
 {
 	cerr<<setprecision(20);
 	int p = 101;
-	int m = 50;
-	int n = 50;
-	int r = 20;
+	size_t m = 50;
+	size_t n = 50;
+	size_t r = 20;
 	int iter = 2 ;
 	bool fail = false;
 

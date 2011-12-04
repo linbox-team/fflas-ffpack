@@ -149,6 +149,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	    (mat_file[--s] == 'g') &&
 	    (mat_file[--s] == '.')) {
 		is_gzipped = 1;
+		// XXX on fait pas ça !
 		File_Name = "/tmp/bbXXXXXX_";
 		mkstemp(File_Name);
 		UT = new char[s+34+strlen(File_Name)];

@@ -1063,7 +1063,7 @@ else { // Left NullSpace
 				for (size_t j = 0 ; j < M ; ++j){
 					for (int i=iend; i-->ibeg; )
 						if ( P[i]>(size_t)i )
-							std::swap(A[j*lda+P[i]],A[j*lda+i]);
+							std::swap(A[j*lda+P[i]],A[j*lda+(size_t)i]);
 					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
 				}
 		}
@@ -1080,7 +1080,7 @@ else { // Left NullSpace
 					if ( P[i]> (size_t) i ){
 						FFLAS::fswap( F, M,
 							      A + P[i]*lda, 1,
-							      A + i*lda, 1 );
+							      A + (size_t)i*lda, 1 );
 					}
 				}
 		}

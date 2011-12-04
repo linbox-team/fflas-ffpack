@@ -165,7 +165,7 @@ int getListArgs(std::list<int> & outlist, std::string & instring)
 				std::cout << '^' << std::endl;
 				return(1);
 			}
-			int j = atoi(instring.substr(start,count).c_str());
+			int j = atoi(instring.substr((size_t)start,(size_t)count).c_str());
 			outlist.push_front(j);
 			count =  0 ;
 			start = int(i+1) ;
@@ -188,7 +188,7 @@ int getListArgs(std::list<int> & outlist, std::string & instring)
 		return(1);
 	}
 
-	int j = atoi(instring.substr(start,count).c_str());
+	int j = atoi(instring.substr((size_t)start,(size_t)count).c_str());
 	outlist.push_front(j);
 
 	return 0 ;

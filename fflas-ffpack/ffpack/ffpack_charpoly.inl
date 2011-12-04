@@ -98,7 +98,7 @@ namespace FFPACK {
 			charp.clear();
 			int nbfac = 0;
 			while (Ncurr > 0){
-				size_t *P = new size_t[Ncurr];
+				size_t *P = new size_t[(size_t)Ncurr];
 				Polynomial minP;//=new Polynomial();
 				FFPACK::MinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
 				int k = int(minP.size()-1); // degre of minpoly
