@@ -191,6 +191,18 @@ namespace FFPACK
 		}
 
 
+		template<class Element1>
+		Element &init (Element & x, const Element1 &y) const
+		{
+			x = y % modulus;
+
+			if ( x < mhalf_mod )
+				x += modulus;
+			else if (x > half_mod )
+				x -= modulus;
+			
+			return x;
+		}
 
 		Element &init (Element &x, const double &y) const
 		{
