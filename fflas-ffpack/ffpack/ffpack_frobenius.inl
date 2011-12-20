@@ -9,6 +9,8 @@
  * See COPYING for license information.
  */
 
+#include <fflas-ffpack/field/nonzero-randiter.h>
+
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -44,7 +46,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	// Picking a random noc x N block vector U^T
 	typename Field::RandIter g (F);
-	typename Field::NonZeroRandIter nzg (F,g);
+	NonzeroRandIter<Field> nzg (F,g);
 	for (size_t i = 0; i < noc; ++i)
  		for (size_t j = 0; j < N; ++j)
  			g.random( *(K + i*ldk +j) );
