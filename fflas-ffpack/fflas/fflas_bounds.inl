@@ -111,8 +111,7 @@ namespace FFLAS {
 				if (d < 2)
 					return 1;
 				kmax = floor (d * double(1ULL << w));
-			}
-		       	else {
+			} else {
 
 				double c = computeFactorClassic(F);
 
@@ -131,7 +130,7 @@ namespace FFLAS {
 			}
 
 			//kmax--; // we computed a strict upper bound
-			return  (size_t) MIN ((size_t)kmax, 1ULL << 31);
+			return  (size_t) MIN ((uint64_t)kmax, 1ULL << 31);
 		}
 
 		/** @internal
