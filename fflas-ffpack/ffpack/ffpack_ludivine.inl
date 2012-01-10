@@ -542,7 +542,7 @@ namespace FFPACK {
 						       F.one, A, lda, Ar, lda);
 						// An <- An - Ar*Ac
 						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-						       F.mOne, Ar, lda, Ac, lda, F.one, An, lda);
+						       F.mOne, Ar, lda, Ac, lda, F.one, An, lda );
 
 					}
 					// Recursive call on SE

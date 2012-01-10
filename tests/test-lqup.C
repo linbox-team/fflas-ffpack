@@ -246,6 +246,7 @@ bool test_lu_append(const Field & F,
 		    const typename Field::Element * B,
 		    size_t m, size_t n, size_t k, size_t lda)
 {
+	FFLASFFPACK_check(n<=lda);
 	bool fail = false;
 	size_t M = m + k ;
 	typedef typename Field::Element Element ;
@@ -259,9 +260,23 @@ bool test_lu_append(const Field & F,
 	FFLAS::fcopy(F,m,n,Append,lda,A,lda) ;
 	FFLAS::fcopy(F,k,n,Append+m*lda,lda,B,lda) ;
 
+#if 0 /*  paranoid check */
+	for (size_t i = 0 ; i < m ; ++i) {
+		for (size_t j = 0 ; j < n ; ++j) {
+			FFLASFFPACK_check(Append[i*lda+j]==A[i*lda+j]);
+		}
+	}
+	for (size_t i = 0 ; i < k ; ++i) {
+		for (size_t j = 0 ; j < n ; ++j) {
+			FFLASFFPACK_check(Append[(i+m)*lda+j]==B[i*lda+j]);
+		}
+	}
+#endif
+
 	Element * Afull = new Element[M*lda];
-	FFLAS::fcopy(F,m,n,Afull,lda,A,lda) ;
-	FFLAS::fcopy(F,k,n,Afull+m*lda,lda,B,lda) ;
+	FFLAS::fcopy(F,M,n,Afull,lda,Append,lda) ;
+	// FFLAS::fcopy(F,m,n,Afull,lda,A,lda) ;
+	// FFLAS::fcopy(F,k,n,Afull+m*lda,lda,B,lda) ;
 
 
 
@@ -301,14 +316,15 @@ bool test_lu_append(const Field & F,
 	size_t * QQ = new size_t[maxQ] ;
 
 
-	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop, lda, P, Q,
+	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q,
 				      FFPACK::FfpackLQUP);
 
-	size_t R = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ,
-				     FFPACK::FfpackLQUP);
+	/* valgrind says the following leaks. Just incroyable. */
+	size_t R  = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ,
+				      FFPACK::FfpackLQUP);
 
-	size_t R2 = FFPACK::LUpdate(F,diag,trans,m,n,Acop,lda,R1,k,Bcop,lda,P,Q,
-				    FFPACK::FfpackLQUP);
+	size_t R2 = FFPACK::LUpdate  (F,diag,trans,m,n,Acop,lda,R1,k,Bcop,lda,P,Q,
+				      FFPACK::FfpackLQUP);
 #if 0
 	std::cout << "P := [ " ;
 	for (size_t i = 0 ; i < maxP ; ++i)
@@ -711,8 +727,8 @@ bool launch_test(const Field & F,
 	{ /*  wide  */
 		size_t M = std::max(m,n);
 		size_t N = 2*M ;
-		size_t R = M/2 ;
-		size_t lda = N+10 ;
+		size_t R = 3*M/4 ;
+		size_t lda = N+5 ;
 		Element * A = new Element[M*lda];
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
@@ -722,8 +738,8 @@ bool launch_test(const Field & F,
 	{ /*  narrow  */
 		size_t M = std::max(m,n);
 		size_t N = M/2 ;
-		size_t R = M/3 ;
-		size_t lda = N+10 ;
+		size_t R = 3*M/8 ;
+		size_t lda = N+5 ;
 		Element * A = new Element[M*lda];
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
@@ -764,6 +780,7 @@ bool launch_test_append(const Field & F,
 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
+		delete[] B ;
 	}
 	{ /*  user given and lda bigger. Appended Rank is min */
 		size_t lda = n+10 ;
@@ -776,6 +793,7 @@ bool launch_test_append(const Field & F,
 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
+		delete[] B ;
 	}
 	{ /*  user given and lda bigger. Rank is min */
 		size_t lda = n+10 ;
@@ -788,6 +806,7 @@ bool launch_test_append(const Field & F,
 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
+		delete[] B ;
 	}
 	{ /*  square  */
 		size_t M = std::max(m,n);
@@ -802,6 +821,7 @@ bool launch_test_append(const Field & F,
 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
+		delete[] B ;
 	}
 	{ /*  wide  */
 		size_t M = std::max(m,n);
@@ -816,6 +836,7 @@ bool launch_test_append(const Field & F,
 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
+		delete[] B ;
 	}
 	{ /*  narrow  */
 		size_t M = std::max(m,n);
@@ -830,6 +851,7 @@ bool launch_test_append(const Field & F,
 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		delete[] A ;
+		delete[] B ;
 	}
 
 	return fail;

@@ -42,6 +42,8 @@ namespace FFLAS {
 		    typename Field::Element * A, const size_t lda,
 		    const typename Field::Element * B, const size_t ldb )
 	{
+		FFLASFFPACK_check(n<=lda);
+		FFLASFFPACK_check(n<=ldb);
 		// if possible, copy one big block
 		if (lda == n && ldb == n) {
 			fcopy(F,m*n,A,1,B,1);
