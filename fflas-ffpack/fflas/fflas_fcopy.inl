@@ -22,13 +22,16 @@ namespace FFLAS {
 	       typename Field::Element * X, const size_t incX,
 	       const typename Field::Element * Y, const size_t incY )
 	{
-
-		if (incY == 1 && incY == 1) {
-			memcpy(X,Y,N*sizeof(typename Field::Element)); // much faster (hopefully)
-			return;
-		}
 		typename Field::Element * Xi = X;
 		const typename Field::Element * Yi=Y;
+
+		if (incY == 1 && incY == 1) {
+			// memcpy(X,Y,N*sizeof(typename Field::Element)); // much faster (hopefully)
+			for (; Xi < X+N; ++Xi, ++Yi)
+				F.assign(*Xi,*Yi);
+
+			return;
+		}
 		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
 			F.assign(*Xi,*Yi);
 		return;

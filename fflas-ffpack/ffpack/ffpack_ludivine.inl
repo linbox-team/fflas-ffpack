@@ -480,6 +480,7 @@ namespace FFPACK {
 			else { // MN>1
 				size_t Nup = rowDim >> 1;
 				size_t Ndown =  rowDim - Nup;
+				// FFLASFFPACK_check(Ndown < rowDim);
 				// Recursive call on NW
 				size_t R, R2;
 				if (trans == FFLAS::FflasTrans){
@@ -531,7 +532,7 @@ namespace FFPACK {
 						if (LuTag == FFPACK::FfpackSingular )
 							return 0;
 					}
-					else {
+					else { /*  R>0 */
 						// Ar <- Ar.P
 						FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 								Ndown, 0,(int) R, Ar, lda, P);
@@ -1185,6 +1186,7 @@ namespace FFPACK {
 	 * @param cutoff see \c LUdivine.
 	 *
 	 * @return rank of <code>A.append(B)</code>
+	 * @bug may be bogus.
 	 */
 	template <class Field>
 	size_t LUpdate (const Field& F,

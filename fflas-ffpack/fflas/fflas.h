@@ -545,9 +545,11 @@ namespace FFLAS {
 	fzero (const Field& F, const size_t n,
 	       typename Field::Element *X, const size_t incX)
 	{
+		if (incX == 1) { // contigous data
+			// memset(X,(int)F.zero,n); // might be bogus ?
+			for (size_t i = 0 ; i < n ; ++i)
+				F.assign(*(X+i), F.zero);
 
-		if (n == incX) { // contigous data
-			memset(X,(int)F.zero,n); // might be bogus ?
 		}
 		else { // not contiguous (strided)
 			for (size_t i = 0 ; i < n ; ++i)
@@ -693,13 +695,15 @@ namespace FFLAS {
 	fzero (const Field& F, const size_t m, const size_t n,
 	       typename Field::Element * A, const size_t lda)
 	{
-
+		/*  use memset only with Elements that are ok */
 		if (n == lda) { // contigous data
-			memset(A,(int) F.zero,m*n); // might be bogus ?
+			// memset(A,(int) F.zero,m*n); // might be bogus ?
+			fzero(F,m*n,A,1);
 		}
 		else { // not contiguous (strided)
 			for (size_t i = 0 ; i < m ; ++i)
-				memset(A+i*lda,(int) F.zero,m) ; // might be bogus ?
+				// memset(A+i*lda,(int) F.zero,n) ; // might be bogus ?
+				fzero(F,n,A+i*lda,1);
 		}
 	}
 
