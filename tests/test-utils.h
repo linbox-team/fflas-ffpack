@@ -97,7 +97,7 @@ namespace FFPACK {
 		for (size_t i = 0 ; i < m ; ++i ) Q[i] = 0;
 		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
 
-		Element * U = new Element[m*n];
+		Element * U = new Element[m*lda];
 		Element * L = new Element[m*m];
 
 
@@ -117,20 +117,20 @@ namespace FFPACK {
 		/*  Create U, upper or rank r */
 		for (size_t i=0 ; i<r ; ++i)
 			for (size_t j= i+1; j<r ;++j)
-				R.random( U[i*n+j] );
+				R.random( U[i*lda+j] );
 		for (size_t i=0 ; i<r ; ++i)
-			nzR.random( U[i*n+i] );
+			nzR.random( U[i*lda+i] );
 		for (size_t i=0 ; i<r ; ++i)
 			for (size_t j= 0 ; j<i ;++j)
-				F.init(U[i*n+j],0UL);
+				F.init(U[i*lda+j],0UL);
 
 		for (size_t i=r ; i<m ; ++i)
 			for (size_t j= 0 ; j<n ;++j)
-				F.init(U[i*n+j],0UL);
+				F.init(U[i*lda+j],0UL);
 
 		for (size_t i=0 ; i<r ; ++i)
 			for (size_t j= r ; j<n ;++j)
-				R.random( U[i*n+j] );
+				R.random( U[i*lda+j] );
 
 		/*  Create a random P,Q */
 
@@ -142,11 +142,11 @@ namespace FFPACK {
 		/*  compute product */
 
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-				m,0,(int)n, U, n, P);
+				m,0,(int)n, U, lda, P);
 		FFPACK::applyP (F, FFLAS::FflasLeft,  FFLAS::FflasNoTrans,
 				m,0,(int)m, L, m, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-			      m,n,m, 1.0, L,m, U,n, 0.0, A,lda);
+			      m,n,m, 1.0, L,m, U,lda, 0.0, A,lda);
 		//! @todo compute LU with ftrtr
 
 		delete[] P;

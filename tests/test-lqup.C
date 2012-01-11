@@ -247,6 +247,7 @@ bool test_lu_append(const Field & F,
 		    size_t m, size_t n, size_t k, size_t lda)
 {
 	FFLASFFPACK_check(n<=lda);
+
 	bool fail = false;
 	size_t M = m + k ;
 	typedef typename Field::Element Element ;
@@ -277,6 +278,23 @@ bool test_lu_append(const Field & F,
 	FFLAS::fcopy(F,M,n,Afull,lda,Append,lda) ;
 	// FFLAS::fcopy(F,m,n,Afull,lda,A,lda) ;
 	// FFLAS::fcopy(F,k,n,Afull+m*lda,lda,B,lda) ;
+
+#if 0
+std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
+	for (size_t i = 0 ; i < m ; ++i) {
+		for (size_t j = 0 ; j < n ; ++j) {
+			std::cout << Append[i*lda+j] << "(" << A[i*lda+j] << ") " ;
+		} std::cout << std::endl;
+	}
+std::cout << "-----------------------------------" << std::endl;
+	for (size_t i = 0 ; i < k ; ++i) {
+		for (size_t j = 0 ; j < n ; ++j) {
+			std::cout << Append[(i+m)*lda+j] ;
+			std::cout << "(" << B[i*lda+j] << ") "  ;
+		}std::cout << std::endl;
+	}
+std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::flush << std::endl;
+#endif
 
 
 
@@ -655,7 +673,7 @@ bool test_lu_append(const Field & F,
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(Afull+i*lda+j), *(C+i*lda+j))){
 				std::cerr << " A["<<i<<","<<j<<"]    = " << (*(Afull+i*lda+j))
-				<< " PLUQ["<<i<<","<<j<<"] = " << (*(C+i*lda+j))
+				<< " PLUQ(append)["<<i<<","<<j<<"] = " << (*(C+i*lda+j))
 				<< endl;
 				fail|=true;
 			}
@@ -838,6 +856,7 @@ bool launch_test_append(const Field & F,
 		delete[] A ;
 		delete[] B ;
 	}
+#if 0 /*  leak here */
 	{ /*  narrow  */
 		size_t M = std::max(m,n);
 		size_t N = M/2 ;
@@ -853,6 +872,7 @@ bool launch_test_append(const Field & F,
 		delete[] A ;
 		delete[] B ;
 	}
+#endif
 
 	return fail;
 }
@@ -889,7 +909,7 @@ int main(int argc, char** argv)
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
 
-#if 0 /*  may be bogus */
+#if 1 /*  may be bogus */
 			fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			// fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
@@ -909,7 +929,7 @@ int main(int argc, char** argv)
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
 
-#if 0 /*  may be bogus */
+#if 1 /*  may be bogus */
 			fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			// fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
@@ -930,7 +950,7 @@ int main(int argc, char** argv)
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
 
-#if 0 /*  may be bogus */
+#if 1 /*  may be bogus */
 			fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			// fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
@@ -951,7 +971,7 @@ int main(int argc, char** argv)
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
 
-#if 0 /*  may be bogus */
+#if 1 /*  may be bogus */
 			fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
 			// fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
