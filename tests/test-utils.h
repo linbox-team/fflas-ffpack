@@ -85,6 +85,8 @@ namespace FFPACK {
 						       size_t r,
 						       size_t m, size_t n, size_t lda)
 	{
+		FFLASFFPACK_check(r <= std::min(m,n));
+		FFLASFFPACK_check(n <= lda);
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
 		Randiter R(F);
