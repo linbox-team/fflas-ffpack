@@ -1,12 +1,29 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-// ==========================================================================
-// $Source: /var/lib/cvs/DLAFF/EXPERIMENTS/src/BLOCKING/tblockmat.C,v $
-// Copyright(c)'94-97 by Givaro Team
-// Author: T. Gautier
-// $Id: tblockmat.C,v 1.1 2007-06-19 14:22:16 jgdumas Exp $
-// ==========================================================================
-// Description:
+
+
+/* Copyright (c) FFLAS-FFPACK
+* Written by T. Gautier, jgdumas
+* adapted from Givaro.
+* ========LICENCE========
+* This file is part of the library FFLAS-FFPACK.
+*
+* FFLAS-FFPACK is free software: you can redistribute it and/or modify
+* it under the terms of the  GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+* ========LICENCE========
+*/
+
 
 #include <iostream>
 #include <fstream>
@@ -39,7 +56,7 @@ public:
   inline T& operator[](int i) { return _data[i]; }
   inline T& operator()(int i, int j) { return _data[i*size+j]; }
   inline const T& operator()(int i, int j) const { return _data[i*size+j]; }
-  inline FixedMatrix<T,size>& operator= (const T& val ) 
+  inline FixedMatrix<T,size>& operator= (const T& val )
   { for (int i=size*size; --i; ) _data[i] =val; return *this; }
   inline void mul( const FixedMatrix<T,size>& A, const FixedMatrix<T,size>& B)
   {
@@ -81,31 +98,31 @@ public:
   }
 
 private:
-  T _data[size*size]; 
+  T _data[size*size];
 };
 
-    
 
-template<class T>    
-class Matrix {                                                                            
-public:                                                                                        
+
+template<class T>
+class Matrix {
+public:
   Matrix(int dim) {
    _dim = dim;
    _nblock = dim / NDIM;
    _data = new FixedMatrix<T,NDIM>[_nblock*_nblock];
-  } 
+  }
   ~Matrix() { delete [] _data; }
   int rowdim() const { return _dim; }
   int coldim() const { return _dim; }
   inline FixedMatrix<T,NDIM>& operator[](int i)
   { return _data[i]; }
-  inline FixedMatrix<T,NDIM>& operator()(int i, int j) 
+  inline FixedMatrix<T,NDIM>& operator()(int i, int j)
   { return _data[i*_nblock+j]; }
-  inline const FixedMatrix<T,NDIM>& operator()(int i, int j) const 
+  inline const FixedMatrix<T,NDIM>& operator()(int i, int j) const
   { return _data[i*_nblock+j]; }
-  inline void mul( const Matrix<T>& A, const Matrix<T>& B)                 
+  inline void mul( const Matrix<T>& A, const Matrix<T>& B)
   {
-    for (int i=0; i<_nblock; ++i )                                              
+    for (int i=0; i<_nblock; ++i )
       for (int j=0; j<_nblock; ++j )
       {
         (*this)(i,j)=0;
@@ -114,9 +131,9 @@ public:
         }
       }
   }
-  inline void mulmod( const Matrix<T>& A, const Matrix<T>& B)                 
+  inline void mulmod( const Matrix<T>& A, const Matrix<T>& B)
   {
-    for (int i=0; i<_nblock; ++i )                                              
+    for (int i=0; i<_nblock; ++i )
       for (int j=0; j<_nblock; ++j )
       {
         (*this)(i,j)=0;
@@ -129,7 +146,7 @@ private:
   int _dim;
   int _nblock;
   FixedMatrix<T,NDIM>* _data;
-};                                                                                             
+};
 
 
 template<class T>
@@ -168,7 +185,7 @@ int main(int argc, char** argv)
   coef = coef*coef*(2.0*coef-1)*1e-6*NB;
   double seconds;
 
-  for (int k=0; k<MAXITER; k++) {  
+  for (int k=0; k<MAXITER; k++) {
     for (i=0; i<(DIM*DIM)/NDIM/NDIM; i++) {
       for (j=0 ; j<NDIM*NDIM ; j++) {
         AA[i][j] = rand();
@@ -204,7 +221,7 @@ int main(int argc, char** argv)
 
   MoyenneDesTemps /= (double)(MAXITER);
   MoyenneDesTempsMod /= (double)(MAXITER);
-  
+
 
   plot1 << DIM << '\t' << MoyenneDesTemps/(double)NB << '\t' << coef/MoyenneDesTemps;
   plot1 << '\t' << MoyenneDesTempsMod/(double)NB << '\t' << coef/MoyenneDesTempsMod << std::endl;

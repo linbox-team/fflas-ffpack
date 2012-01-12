@@ -2,6 +2,25 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //#include "goto-def.h"
 
+/* Copyright (c) FFLAS-FFPACK
+* ========LICENCE========
+* This file is part of the library FFLAS-FFPACK.
+*
+* FFLAS-FFPACK is free software: you can redistribute it and/or modify
+* it under the terms of the  GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+* ========LICENCE========
+*/
 #include <iostream>
 
 #include "fflas-ffpack/fflas.h"
@@ -18,11 +37,11 @@ int main(int argc, char** argv) {
   int    p    = atoi(argv[1]);
   int n    = atoi(argv[2]);
   size_t iter = atoi(argv[3]);
-  
+
 
   typedef Modular<double> Field;
   typedef Field::Element Element;
-      
+
   Field F(p);
   Element one,zero;
   F.init(one, 1.0);
@@ -31,23 +50,23 @@ int main(int argc, char** argv) {
   Timer chrono;
   double time=0.0, time2=0.0;
   int singular;
-  
+
   Element * A, * B, * C;
 
   for (size_t i=0;i<iter;++i){
-    
+
     if (argc > 4){
-      A = read_field (F, argv[4], &n, &n);    
+      A = read_field (F, argv[4], &n, &n);
     }
     else{
       Field::RandIter G(F);
       A = new Element[n*n];
       for (size_t i=0; i<n*n; ++i)
-	G.random (*(A+i));      
+	G.random (*(A+i));
     }
 
     if (argc == 6){
-      B = read_field (F, argv[5], &n, &n);    
+      B = read_field (F, argv[5], &n, &n);
     }
     else{
       Field::RandIter G(F);
@@ -68,7 +87,7 @@ int main(int argc, char** argv) {
     delete[] B;
     delete[] C;
   }
-  
+
   std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/iter<<std::endl;
 
   return 0;

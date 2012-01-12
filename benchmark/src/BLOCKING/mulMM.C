@@ -1,12 +1,26 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-// ==========================================================================
-// $Source: /var/lib/cvs/DLAFF/EXPERIMENTS/src/BLOCKING/mulMM.C,v $
-// Copyright(c)'94-97 by Givaro Team
-// Author: T. Gautier
-// $Id: mulMM.C,v 1.1 2007-06-19 14:22:16 jgdumas Exp $
-// ==========================================================================
-// Description:
+
+/* Copyright (c) FFLAS-FFPACK
+* ========LICENCE========
+* This file is part of the library FFLAS-FFPACK.
+*
+* FFLAS-FFPACK is free software: you can redistribute it and/or modify
+* it under the terms of the  GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* This library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this library; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+* ========LICENCE========
+*/
+
 
 #include <iostream>
 #include <fstream>
@@ -34,7 +48,7 @@ public:
   inline T& operator[](int i) { return _data[i]; }
   inline T& operator()(int i, int j) { return _data[i*size+j]; }
   inline const T& operator()(int i, int j) const { return _data[i*size+j]; }
-  inline Matrix<T>& operator= (const T& val ) 
+  inline Matrix<T>& operator= (const T& val )
   { for (int i=size*size; --i; ) _data[i] =val; return *this; }
   inline void mul( const Matrix<T>& A, const Matrix<T>& B)
   {
@@ -85,7 +99,7 @@ public:
   }
 
 private:
-  T * _data; 
+  T * _data;
 };
 
 
@@ -125,7 +139,7 @@ int main(int argc, char** argv)
   coef = coef*coef*(2.0*coef-1)*1e-6*NB;
   double seconds;
 
-  for (int k=0; k<MAXITER; k++) {  
+  for (int k=0; k<MAXITER; k++) {
     for (i=0; i<DIM; i++) {
       for (j=0 ; j<DIM ; j++) {
         AA(i,j) = rand();
@@ -161,11 +175,11 @@ int main(int argc, char** argv)
 
   MoyenneDesTemps /= (double)(MAXITER);
   MoyenneDesTempsMod /= (double)(MAXITER);
-  
+
 
   plot1 << DIM << '\t' << MoyenneDesTemps/(double)NB << '\t' << coef/MoyenneDesTemps;
   plot1 << '\t' << MoyenneDesTempsMod/(double)NB << '\t' << coef/MoyenneDesTempsMod << std::endl;
   plot1.close();
-  
+
   return 0 ;
 };
