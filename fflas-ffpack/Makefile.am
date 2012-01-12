@@ -1,4 +1,4 @@
-# Coypright (c) 2011 FFLAS-FFPACK
+# Copyright (c) 2011 FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # adapted from LinBox configuration
 #

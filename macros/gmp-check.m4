@@ -1,4 +1,5 @@
 dnl Check for GMP
+dnl  Copyright (c) 2011 FFLAS-FFPACK
 dnl Modified by Pascal Giorgi, 2003-12-03
 dnl ========LICENCE========
 dnl This file is part of the library FFLAS-FFPACK.

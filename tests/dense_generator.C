@@ -2,7 +2,7 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //
 /*
- * Coypright (c) FFLAS-FFPACK
+ * Copyright (c) FFLAS-FFPACK
  * Written by Clement Pernet <clement.pernet@imag.fr>
  *
  * ========LICENCE========

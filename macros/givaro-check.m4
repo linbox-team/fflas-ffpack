@@ -7,6 +7,7 @@ dnl stolen from Manish Singh again
 dnl stolen back from Frank Belew
 dnl stolen from Manish Singh
 dnl Shamelessly stolen from Owen Taylor
+dnl  Copyright (c) 2011 FFLAS-FFPACK
 dnl ========LICENCE========
 dnl This file is part of the library FFLAS-FFPACK.
 dnl

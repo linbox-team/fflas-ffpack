@@ -6,7 +6,7 @@
 //--------------------------------------------------------------------------
 
 /*
- * Coypright (c) FFLAS-FFPACK
+ * Copyright (c) FFLAS-FFPACK
  * Written by Clement Pernet <clement.pernet@imag.fr>
  *
  * ========LICENCE========

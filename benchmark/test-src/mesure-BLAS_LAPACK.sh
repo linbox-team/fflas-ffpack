@@ -1,5 +1,6 @@
 #!/bin/bash
 # Written by Clément Pernet <clement.pernet@imag.fr>
+# Copyright (c)  FFLAS-FFPACK
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
 #
