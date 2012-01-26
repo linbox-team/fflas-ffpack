@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 		END_OF_ARGUMENTS
 	};
 
-	parseArguments(argc,argv,as);
+	FFLAS::parseArguments(argc,argv,as);
 
 	Field F((long unsigned int)p);
 	Field::Element * A;

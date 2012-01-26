@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include "fflas-ffpack/utils/print-utils.h"
 
-#ifdef _LINBOX_LINBOX_CONFIG_H
-#include "linbox/util/commentator.h"
-#endif
-
 using namespace std;
 
 enum ArgumentType {
@@ -68,8 +64,10 @@ struct Argument
 // example may be passed as null and will be generated intelligently
 // eg "-b {YN+-}" for bools, "-v v" for all else
 
+namespace FFLAS {
+    void parseArguments (int argc, char **argv, Argument *args, bool printDefaults = true);
+}
 
-void parseArguments (int argc, char **argv, Argument *args, bool printDefaults = true);
 
 /** writes the values of all arguments, preceded by the programName */
 std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName);
@@ -210,99 +208,94 @@ int getListArgs(std::list<int> & outlist, std::string & instring)
 }
 
 
-void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
-{
-	int i;
-	Argument *current;
+namespace FFLAS {
+    void parseArguments (int argc, char **argv, Argument *args, bool printDefaults)
+    {
+        int i;
+        Argument *current;
 
-	for (i = 1; i < argc; ++i) {
-		// std::cout << "i=" << i << std::endl;
-		if (argv[i][0] == '-') {
-			if (argv[i][1] == 0) {
-#ifdef _LINBOX_LINBOX_CONFIG_H
-				LinBox::commentator.setBriefReportStream (cout);
-				LinBox::commentator.setReportStream (cout);
-#endif
-				std::cout << "Writing report data to cout (intermingled with brief report)" << std::endl << std::endl;
-				std::cout.flush ();
-			}
-			else if (argv[i][1] == 'h' || argv[i][1] == '?') {
-				printHelpMessage (argv[0], args, printDefaults);
-				exit (1);
-			}
-			else if ((current = findArgument (args, argv[i][1])) != (Argument *) 0) {
-				switch (current->type) {
-				case TYPE_NONE:
-					{
-						if (argc == i+1 || (argv[i+1][0] == '-' && argv[i+1][1] != '\0')) {
-							// if at last argument, or next argument is a switch, set to true
-							*(bool *) current->data = true;
-							break;
-						}
-						*(bool *) current->data =
-						(argv[i+1][0] == '+'
-						 || argv[i+1][0] == 'Y'
-						 || argv[i+1][0] == 'y'
-						 || argv[i+1][0] == 'T'
-						 || argv[i+1][0] == 't') ;
-						++i;
-					}
-					break;
+        for (i = 1; i < argc; ++i) {
+                // std::cout << "i=" << i << std::endl;
+            if (argv[i][0] == '-') {
+                if (argv[i][1] == 0) {
+                    std::cout << "Writing report data to cout (intermingled with brief report)" << std::endl << std::endl;
+                    std::cout.flush ();
+                }
+                else if (argv[i][1] == 'h' || argv[i][1] == '?') {
+                    printHelpMessage (argv[0], args, printDefaults);
+                    exit (1);
+                }
+                else if ((current = findArgument (args, argv[i][1])) != (Argument *) 0) {
+                    switch (current->type) {
+                        case TYPE_NONE:
+                        {
+                            if (argc == i+1 || (argv[i+1][0] == '-' && argv[i+1][1] != '\0')) {
+                                    // if at last argument, or next argument is a switch, set to true
+                                *(bool *) current->data = true;
+                                break;
+                            }
+                            *(bool *) current->data =
+                                (argv[i+1][0] == '+'
+                                 || argv[i+1][0] == 'Y'
+                                 || argv[i+1][0] == 'y'
+                                 || argv[i+1][0] == 'T'
+                                 || argv[i+1][0] == 't') ;
+                            ++i;
+                        }
+                        break;
 
-				case TYPE_INT:
-					{
-						*(int *) current->data = atoi (argv[i+1]);
-						++i;
-					}
-					break;
+                        case TYPE_INT:
+                        {
+                            *(int *) current->data = atoi (argv[i+1]);
+                            ++i;
+                        }
+                        break;
 
-				case TYPE_INTEGER:
-					{
-						long int tmp = atoi(argv[i+1]);
-						*(long int *) current->data = tmp;
-					}
-					++i;
-					break;
+                        case TYPE_INTEGER:
+                        {
+                            long int tmp = atoi(argv[i+1]);
+                            *(long int *) current->data = tmp;
+                        }
+                        ++i;
+                        break;
 
-				case TYPE_DOUBLE:
-					{
-						*(double *) current->data = atof (argv[i+1]);
-						++i;
-					}
-					break;
+                        case TYPE_DOUBLE:
+                        {
+                            *(double *) current->data = atof (argv[i+1]);
+                            ++i;
+                        }
+                        break;
 
-				case TYPE_INTLIST:
-					{
-						std::string lst = argv[i+1] ;
-						std::list<int> LST ;
-						getListArgs(LST,lst);
-						*(std::list<int> *) current->data = LST ;
-						++i;
-					}
-					break;
+                        case TYPE_INTLIST:
+                        {
+                            std::string lst = argv[i+1] ;
+                            std::list<int> LST ;
+                            getListArgs(LST,lst);
+                            *(std::list<int> *) current->data = LST ;
+                            ++i;
+                        }
+                        break;
 
-				case TYPE_STR:
-					{
-						*(std::string *) current->data = argv[i+1] ;
-						++i;
-					}
-					break;
+                        case TYPE_STR:
+                        {
+                            *(std::string *) current->data = argv[i+1] ;
+                            ++i;
+                        }
+                        break;
 
-				}
-			} else {
-				std::cerr << "ERROR: Bad argument " << argv[i] << std::endl;
-				break;
-			}
-		} else {
-#ifdef _LINBOX_LINBOX_CONFIG_H
-			LinBox::commentator.setBriefReportStream(cout);
-			LinBox::commentator.setDefaultReportFile (argv[i]);
-#endif
-			std::cout << "Writing report data to " << argv[i] << std::endl << std::endl;
-			std::cout.flush ();
-		}
-	}
+                    }
+                } else {
+                    std::cerr << "ERROR: Bad argument " << argv[i] << std::endl;
+                    break;
+                }
+            } else {
+                std::cout << "Writing report data to " << argv[i] << std::endl << std::endl;
+                std::cout.flush ();
+            }
+        }
+    }
 }
+
 
 std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName)
 {
