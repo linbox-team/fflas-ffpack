@@ -46,7 +46,7 @@ AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 AS_IF([test "x$HAVE_CBLAS" = "xtrue"],
 [ echo "#define __FFLASFFPACK_HAVE_CBLAS 1" >> ../fflas-ffpack/fflas-ffpack-config.h])
 
-CXXFLAGS="${BACKUP_CXXFLAGS} -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
+CXXFLAGS="${BACKUP_CXXFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
 
 
