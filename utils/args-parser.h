@@ -84,18 +84,24 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 	std::cout << std::endl;
 	std::cout << "Where [options] are the following:" << std::endl;
 
+    bool messageboolean(false),messageprimality(false);
+
 	for (i = 0; args[i].c != '\0'; ++i) {
 		if (args[i].example != 0) {
 			std::cout << "  " << args[i].example;
 			l = 10 - (int)strlen (args[i].example);
 			do std::cout << ' '; while (--l > 0);
 		}
-		else if (args[i].type == TYPE_NONE)
+		else if (args[i].type == TYPE_NONE) {
 			std::cout << "  -" << args[i].c << " {YN+-} ";
+            messageboolean = true;
+        }
 		else
 			std::cout << "  -" << args[i].c << ' ' << args[i].c << "      ";
 
 		std::cout << args[i].helpString;
+        if (strncmp(args[i].helpString,"Operate over the \"field\"",24) == 0)
+            messageprimality = true;
 		if (printDefaults) {
 			l = 54 - (int)strlen (args[i].helpString);
 			do std::cout << ' '; while (--l > 0);
@@ -126,14 +132,16 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 	}
 
 	std::cout << "  -h or -?  Display this message" << std::endl;
-	std::cout << "For boolean switches, the argument may be omitted, meaning the switch should be ON" << std::endl;
+	if (messageboolean) 
+        std::cout << "For boolean switches, the argument may be omitted, meaning the switch should be ON" << std::endl;
 	std::cout << std::endl;
 	std::cout << "If <report file> is '-' the report is written to std output.  If <report file> is" << std::endl;
 	std::cout << "not given, then no detailed reporting is done. This is suitable if you wish only" << std::endl;
 	std::cout << "to determine whether the tests succeeded." << std::endl;
 	std::cout << std::endl;
-	std::cout << "[1] N.B. This program does not verify the primality of Q, and does not use a" << std::endl;
-	std::cout << "    field extension in the event that Q=p^n, n > 1" << std::endl;
+	if (messageprimality) 
+        std::cout << "[1] N.B. This program does not verify the primality of Q, and does not use a" << std::endl 
+                  << "    field extension in the event that Q=p^n, n > 1" << std::endl;
 	std::cout << std::endl;
 }
 
