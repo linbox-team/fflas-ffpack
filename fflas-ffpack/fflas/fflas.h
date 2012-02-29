@@ -5,20 +5,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -582,6 +582,7 @@ namespace FFLAS {
 	 * @param alpha homotÃ©ti scalar
 	 * \param X vector in \p F
 	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
 	 * @internal
 	 * @todo check if comparison with +/-1,0 is necessary.
 	 */
@@ -722,6 +723,40 @@ namespace FFLAS {
 			for (size_t i = 0 ; i < m ; ++i)
 				// memset(A+i*lda,(int) F.zero,n) ; // might be bogus ?
 				fzero(F,n,A+i*lda,1);
+		}
+	}
+
+	/** fscal
+	 * \f$A \gets a \cdot A\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * @param alpha homotecie scalar
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * @internal
+	 */
+	template<class Field>
+	void
+	fscal (const Field& F, const size_t m , const size_t n,
+	       const typename Field::Element alpha,
+	       typename Field::Element * A, const size_t lda)
+	{
+		typedef typename Field::Element Element ;
+
+		if (F.isOne(alpha)) {
+			return ;
+		}
+		else {
+			if (lda == n) {
+				fscal(F,n*m,A,1);
+			}
+			else {
+				for (size_t i = 0 ; i < m ; ++i)
+					fscal(F,n,A+i*lda,1);
+			}
+
+			return;
 		}
 	}
 

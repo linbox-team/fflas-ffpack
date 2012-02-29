@@ -351,12 +351,11 @@ std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::flush << std::endl;
 	size_t * PP = new size_t[maxP] ;
 	size_t * QQ = new size_t[maxQ] ;
 
-
-	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q,
-				      FFPACK::FfpackLQUP);
-
 	/* valgrind says the following leaks. Just incroyable. */
 	size_t R  = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ,
+				      FFPACK::FfpackLQUP);
+
+	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q,
 				      FFPACK::FfpackLQUP);
 
 	size_t R2 = FFPACK::LUpdate  (F,diag,trans,m,n,Acop,lda,R1,k,Bcop,lda,P,Q,
