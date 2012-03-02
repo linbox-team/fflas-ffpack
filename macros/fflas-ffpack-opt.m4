@@ -43,8 +43,6 @@ BACKUP_LIBS=${LIBS}
 dnl  if test "x$HAVE_BLAS" = "xyes" ;then
 AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 
-AS_IF([test "x$HAVE_CBLAS" = "xtrue"],
-[ echo "#define __FFLASFFPACK_HAVE_CBLAS 1" >> ../fflas-ffpack/fflas-ffpack-config.h])
 
 CXXFLAGS="${BACKUP_CXXFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
@@ -56,7 +54,7 @@ AC_TRY_RUN([	//#define LinBoxSrcOnly
 		//#define _LINBOX_LINBOX_CONFIG_H
 		#define __FFLASFFPACK_CONFIGURATION
 		#include "fflas-ffpack/config-blas.h"
-		//#include "fflas-ffpack/fflas-ffpack-config.h"
+		#include "fflas-ffpack/fflas-ffpack-config.h"
 		#include "fflas-ffpack/field/modular-positive.h"
 		#include "fflas-ffpack/fflas/fflas.h"
 		#include <tests/timer.h>
