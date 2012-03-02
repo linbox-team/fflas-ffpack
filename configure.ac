@@ -276,7 +276,6 @@ AC_SUBST(BLAS_LIBS)
 
 # FF_BENCH
 
-FF_OPT
 
 FF_DOC
 
@@ -305,3 +304,5 @@ tests/Makefile
 benchmark/Makefile
 ])
 AC_OUTPUT
+
+FF_OPT
