@@ -208,7 +208,7 @@ namespace FFPACK {
 		Element &init (Element &x, const unsigned long &y) const
 		{
 			x = double(y % lmodulus);
-			if (x < 0) x += modulus;
+			if (x < 0.) x += modulus;
 			return x;
 		}
 
@@ -216,16 +216,36 @@ namespace FFPACK {
 		{
 			// no problem here because double<long
 			x = double(y % (long)lmodulus);
-			if (x < 0) x += modulus;
+			if (x < 0.) x += modulus;
 			return x;
 		}
 
-		Element& init(Element& x, Element y =0) const
+		Element &init (Element &x, const unsigned int &y) const
+		{
+			x = double(y % lmodulus);
+			if (x < 0.) x += modulus;
+			return x;
+		}
+
+		Element &init (Element &x, const int &y) const
+		{
+			// no problem here because int<=long
+			x = double(y % (long)lmodulus);
+			if (x < 0.) x += modulus;
+			return x;
+		}
+
+		Element& init(Element& x, Element y) const
 		{
 
 			x = fmod (y, modulus);
-			if (x < 0) x += modulus;
+			if (x < 0.) x += modulus;
 			return x;
+		}
+
+		Element& init(Element& x) const
+		{
+			return x=0.;
 		}
 
 		 Element& assign(Element& x, const Element& y) const
