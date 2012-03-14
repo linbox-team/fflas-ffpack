@@ -8,20 +8,20 @@
  * Modified   Brice Boyer <bboyer@imag.fr>
  * ------------------------------------
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -275,28 +275,46 @@ return x = tmp+modulus;
 return x=tmp;
 		}
 
-		inline Element& init(Element& x, const double y =0) const
+		Element &init (Element &x, const int &y) const
+		{
+			// pas de pbème : float tout petit !
+			Element tmp  = Element(y % (long) lmodulus);
+			if (tmp > half_mod)
+				return x =  tmp-modulus;
+			else if (tmp<mhalf_mod)
+				return x = tmp+modulus;
+			else
+				return x=tmp;
+		}
+
+		inline Element& init(Element& x, const double y ) const
 		{
 			x = (Element) fmod (y, double(modulus));
 			if ( x > half_mod )
-return x -= modulus;
+				return x -= modulus;
 			else if ( x < mhalf_mod )
-return x +=  modulus;
+				return x +=  modulus;
 			else
-return x ;
+				return x ;
 		}
 
-		inline Element& init(Element& x, const Element y =0) const
+		inline Element& init(Element& x, const Element y) const
 		{
 
 			x = fmodf (y, modulus);
 
 			if ( x > half_mod )
-return x -= modulus;
+				return x -= modulus;
 			else if ( x < mhalf_mod )
-return x +=  modulus;
+				return x +=  modulus;
 			else
-return x ;
+				return x ;
+		}
+
+		inline Element& init(Element& x) const
+		{
+
+			return x=0 ;
 		}
 
 		inline Element& assign(Element& x, const Element& y) const

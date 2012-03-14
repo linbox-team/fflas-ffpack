@@ -216,7 +216,7 @@ namespace FFPACK
 		}
 
 
-		inline Element& init(Element& x, int y =0) const
+		inline Element& init(Element& x, int y ) const
 		{
 			x = Element(y % modulus);
 
@@ -226,6 +226,11 @@ namespace FFPACK
 				x -= modulus;
 
 			return x;
+		}
+
+		inline Element& init(Element& x ) const
+		{
+			return x = 0;
 		}
 
 		inline Element& init(Element& x, long y) const

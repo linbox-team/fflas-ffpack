@@ -259,7 +259,7 @@ namespace FFPACK
 			else return x;
 		}
 
-		Element& init(Element& x, const double y =0) const
+		Element& init(Element& x, const double y) const
 		{
 
 			x = fmod (y, modulus);
@@ -269,8 +269,13 @@ namespace FFPACK
 			return x;
 		}
 
+		Element& init(Element& x) const
+		{
+			return x = 0;
+		}
+
 		template<class T>
-		Element& init(Element& x, const T y =0) const
+		Element& init(Element& x, const T y)  const
 		{
 			return init(x,double(y));
 		}
