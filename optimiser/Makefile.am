@@ -1,6 +1,5 @@
-# Copyright (c) 2011 FFLAS-FFPACK
+# Copyright (c) 2012 FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
-# adapted from LinBox configuration
 #
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
@@ -22,40 +21,5 @@
 #/
 
 
-ACLOCAL_AMFLAGS = -I macros
+EXTRA_DIST= winograd.C
 
-SUBDIRS=fflas-ffpack tests doc benchmark macros utils optimiser
-
-
-#!@todo add examples dir XXX
-
-docs:doc/fflas-ffpack-html/index.html
-
-doc/fflas-ffpack-html/index.html:
-	(cd doc; make docs)
-
-docs_dev:doc/fflas-ffpack-dev-html/index.html
-
-doc/fflas-ffpack-dev-html/index.html:
-	(cd doc; make docs_dev)
-
-#  examples:
-#  (cd examples; make examples)
-
-benchmarks:
-	(cd benchmarks; make benchmarks)
-
-uninstall-hook:
-	(test -d "$(includedir)/fflas-ffpack" && rmdir "$(includedir)/fflas-ffpack/fflas" \
-		"$(includedir)/fflas-ffpack/ffpack" \
-		"$(includedir)/fflas-ffpack/field" \
-		"$(includedir)/fflas-ffpack/utils" \
-		"$(includedir)/fflas-ffpack/" ) || true
-
-.PHONY:examples benchmarks
-
-bin_SCRIPTS=fflas-ffpack-config
-
-VERSION=1.5.0
-
-#  EXTRA_DIST=incremente-versions

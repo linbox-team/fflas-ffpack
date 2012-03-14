@@ -1,5 +1,5 @@
-dnl Copyright (c) FFLAS-FFPACK
-dnl Written by Clément Pernet
+dnl Copyright (c) 2012 FFLAS-FFPACK
+dnl Written by Clément Pernet, Brice Boyer.
 dnl This file was taken from LinBox linbox-opt.m4
 dnl ========LICENCE========
 dnl This file is part of the library FFLAS-FFPACK.
@@ -32,6 +32,15 @@ AC_MSG_CHECKING([whether to use run time optimization])
 AC_ARG_ENABLE(optimization,
 [AC_HELP_STRING([--disable-optimization], [ Disable run time optimization in FflasFpack code])])
 
+dnl creating the optimise file unconditionally
+
+echo "#ifndef __FFLASFFPACK_optimise_H" >  fflas-ffpack/fflas-ffpack-optimise.h
+echo "#define __FFLASFFPACK_optimise_H" >> fflas-ffpack/fflas-ffpack-optimise.h
+echo ""                                 >> fflas-ffpack/fflas-ffpack-optimise.h
+dnl The optimise.h file has to be correcly written, so we close the #if !
+echo "#endif // optimise.h"             >> fflas-ffpack/fflas-ffpack-optimise.h
+
+
 AS_IF([test "x$enable_optimization" != "xno"],
 [
 AC_MSG_RESULT(yes)
@@ -40,123 +49,34 @@ AC_MSG_RESULT(yes)
 BACKUP_CXXFLAGS=${CXXFLAGS}
 BACKUP_LIBS=${LIBS}
 
-dnl  if test "x$HAVE_BLAS" = "xyes" ;then
-AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
+echo "  *** OPTIMISATIONS ***  "
 
+AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 
 CXXFLAGS="${BACKUP_CXXFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
 
+WINO=`cat optimiser/winograd.C`
 
-AC_TRY_RUN([	//#define LinBoxSrcOnly
-		#include <iostream>
-		#include <fstream>
-		//#define _LINBOX_LINBOX_CONFIG_H
-		#define __FFLASFFPACK_CONFIGURATION
-		#include "fflas-ffpack/config-blas.h"
-		#include "fflas-ffpack/fflas-ffpack-config.h"
-		#include "fflas-ffpack/field/modular-positive.h"
-		#include "fflas-ffpack/fflas/fflas.h"
-		#include <tests/timer.h>
-
-		//using namespace LinBox;
-		int main () {
-
-		  FFPACK::Modular<double> F(17);
-		  size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
-		  Timer chrono;
-		  double basetime, time;
-		  bool bound=false;
-
-		  double *A, *C;
-		  A = new double[nmax*nmax];
-		  C = new double[nmax*nmax];
-		  for (size_t i=0; i<nmax*nmax;++i){
-		    A[i]=2.;
-	  	  }
-
-		  std::ofstream outlog;
-		  outlog.open("config.log", std::ofstream::out | std::ofstream::app);
-		  outlog << std::endl
-			 << "Threshold for finite field Strassen-Winograd matrix multiplication"
-			 << std::endl;
-		  do {
-		    chrono.start();
-		    FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				 n, n, n, 1., A, n, A, n, 0., C, n, 0);
-		    chrono.stop();
-		    std::cout << std::endl
-			      << "fgemm " << n << "x" << n << ": "
-			      << chrono.usertime() << " s, "
-                              << (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
-			      << std::endl;
-		    outlog << std::endl
-			      << "fgemm " << n << "x" << n << ": "
-			      << chrono.usertime() << " s, "
-                              << (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
-			      << std::endl;
-		    basetime= chrono.usertime();
-		    chrono.clear();
-		    chrono.start();
-		    FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				 n, n, n, 1., A, n, A, n, 0., C, n, 1);
-		    chrono.stop();
-		    std::cout << "1Wino " << n << "x" << n << ": "
-			      << chrono.usertime() << " s, "
-			      << (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
-			      << std::endl;
-		    outlog << "1Wino " << n << "x" << n << ": "
-			      << chrono.usertime() << " s, "
-			      << (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
-			      << std::endl;
-		    time= chrono.usertime();
-
-		    if (basetime > time ){
-		      count++;
-		      if (count > 1){
-	    		 nbest=n;
-		         bound=true;
-		         prec=prec>>1;
-		         n-=prec;
-		      }
-		    }
-		    else{
-		      count=0;
-		      if (bound)
-			prec=prec>>1;
-		      n+=prec;
-		    }
-		  } while ((prec > 64 ) && (n < nmax));
-
-		  std::ofstream out("WinoThreshold");
-		  out<<nbest;
-		  out.close();
-
-		  outlog << "defined __FFLASFFPACK_STRASSEN_OPTIMIZATION" << std::endl
-			 << "defined __FFLASFFPACK_WINOTHRESHOLD to " << nbest << "" << std::endl;
-	          outlog.close();
-
-		  delete[] A;
-		  delete[] C;
-
-		  return 0;
-		}
-	],[
-	AC_MSG_RESULT(done)
-	WT="`cat WinoThreshold`"
-	if test "$WT" != "0"; then
-	 AC_DEFINE(STRASSEN_OPTIMIZATION,,[Define if optimized  threshold for Strassen-Winograd matrix multiplication is available])
-	 AC_DEFINE_UNQUOTED(WINOTHRESHOLD, $WT, [optimized threshold for switching to strassen matrix multiplication])
-	fi
-	],[
-	AC_MSG_RESULT(problem)
-	strassen_opti="no"
-	break
-	],[
-	AC_MSG_RESULT(cross compilation)
-	strassen_opti="no"
-	break
-	])
+AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
+		dnl remove last line
+		sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl append new definition
+		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl close the file
+		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
+		dnl cleaning service !
+		rm WinoThreshold ;
+		AC_MSG_RESULT(done)
+		],[
+		AC_MSG_RESULT(problem)
+		dnl  strassen_opti="no"
+		break
+		],[
+		AC_MSG_RESULT(cross compilation)
+		dnl  strassen_opti="no"
+		break
+		])
 
 ],
 [AC_MSG_RESULT(no)]
