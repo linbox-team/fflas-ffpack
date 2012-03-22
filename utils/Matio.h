@@ -99,7 +99,7 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 	size_t s = strlen(mat_file);
 	typename Field::Element zero;
 	F.init(zero,0UL);
-	typename Field::Element * X;
+	typename Field::Element * X = NULL;
 	if ((mat_file[--s] == 'z') &&
 	    (mat_file[--s] == 'g') &&
 	    (mat_file[--s] == '.')) {

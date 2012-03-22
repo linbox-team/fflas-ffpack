@@ -1,5 +1,6 @@
 # Copyright (c) 2011 FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
+#
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
 #
@@ -17,14 +18,36 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # ========LICENCE========
+#/
+
+SUBDIRS =
+
+BENCHMARK=check-fgemm  check-ftrsm  check-ftrtri  check-inverse  check-lqup
+
+bench: $(BENCHMARK)
+
+AM_CPPFLAGS=-I$(top_srcdir)
+AM_CXXFLAGS = @DEFAULT_CFLAGS@
+AM_CPPFLAGS += $(OPTFLAGS) -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(GMP_CFLAGS)  $(GIVARO_CFLAGS)
+LDADD = $(BLAS_LIBS) $(GIVARO_LIBS) $(GMP_LIBS)
+AM_LDFLAGS=-static
 
 
-pkgincludesubdir=$(pkgincludedir)/utils
-pkgincludesub_HEADERS=       \
-		args-parser.h        \
-		print-utils.h        \
-		debug.h              \
-		Matio.h
 
-EXTRA_DIST=timer.h timer.C
+#  EXTRA_DIST=
 
+CLEANFILES=           \
+		$(BENCHMARK)
+
+EXTRA_PROGRAMS =       \
+		$(BENCHMARK)
+
+check_fgemm_SOURCES = check-fgemm.C
+check_ftrsm_SOURCES = check-ftrsm.C
+check_ftrtri_SOURCES = check-ftrtri.C
+check_inverse_SOURCES = check-inverse.C
+
+# for compilation of new benches
+FFLASFFPACK_BIN=@bindir@
+%:%.C
+	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)

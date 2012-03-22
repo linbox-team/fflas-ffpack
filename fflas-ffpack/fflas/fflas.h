@@ -749,11 +749,11 @@ namespace FFLAS {
 		}
 		else {
 			if (lda == n) {
-				fscal(F,n*m,A,1);
+				fscal(F,n*m,alpha,A,1);
 			}
 			else {
 				for (size_t i = 0 ; i < m ; ++i)
-					fscal(F,n,A+i*lda,1);
+					fscal(F,n,alpha,A+i*lda,1);
 			}
 
 			return;
@@ -1023,8 +1023,7 @@ namespace FFLAS {
 		if (!(m && n && k)) return C;
 
 		if (F.isZero (alpha)){
-			for (size_t i = 0; i<m; ++i)
-				fscal(F, n, beta, C + i*ldc, 1);
+			fscal(F, m, n, beta, C, ldc);
 			return C;
 		}
 

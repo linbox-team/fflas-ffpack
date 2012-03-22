@@ -24,10 +24,11 @@
 
 #include <iostream>
 
-#include "fflas-ffpack/ffpack.h"
-#include "fflas-ffpack/modular-balanced.h"
-#include "timer.h"
-#include "Matio.h"
+#include "fflas-ffpack/fflas-ffpack.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/Matio.h"
+
 
 using namespace std;
 
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
   size_t iter = atoi(argv[3]);
 
 
-  typedef Modular<double> Field;
+  typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
   Field F(p);
@@ -48,7 +49,6 @@ int main(int argc, char** argv) {
 
   Timer chrono;
   double time=0.0;
-  int singular;
 
   for (size_t i=0;i<iter;++i){
     if (argc > 4){
@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
     } else {
       A = new Element[n*n];
       Field::RandIter G(F);
-      for (size_t i=0; i<n*n; ++i)
-	G.random(*(A+i));
+      for (size_t j=0; j<(size_t)n*n; ++j)
+	G.random(*(A+j));
 
     }
     int nullity=0;
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
     delete[] A;
   }
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/iter<<endl;
+  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
 
 
   return 0;

@@ -42,7 +42,7 @@
 using namespace std;
 
 #include "fflas-ffpack/field/modular-balanced.h"
-#include "timer.h"
+#include "utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 

@@ -36,7 +36,7 @@ using namespace std;
 //#include "fflas-ffpack/fieldmodular-int.h"
 //#include "fflas-ffpack/fieldmodular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-#include "timer.h"
+#include "utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "givaro/givintprime.h"

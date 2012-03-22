@@ -63,7 +63,7 @@ INFINITE_TEST= \
 		testeur_ftrsm          \
 		testeur_lqup
 
-EXTRA_DIST= timer.C timer.h test-utils.h
+EXTRA_DIST= test-utils.h
 
 CLEANFILES =           \
 		$(BASIC_TESTS) $(NOT_A_TEST)

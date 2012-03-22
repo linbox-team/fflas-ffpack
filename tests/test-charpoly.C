@@ -38,7 +38,7 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
 // #include "fflas-ffpack/field/modular-int.h"
-#include "timer.h"
+#include "utils/timer.h"
 #include "utils/Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 

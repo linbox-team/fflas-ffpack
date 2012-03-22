@@ -303,6 +303,7 @@ doc/Makefile
 tests/Makefile
 benchmark/Makefile
 optimiser/Makefile
+benchmark/src/FFLAS_FFPACK/Makefile
 ])
 AC_OUTPUT
 
