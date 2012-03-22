@@ -36,7 +36,7 @@
 #include "fflas-ffpack/fflas-ffpack-optimise.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "tests/timer.h"
+#include "fflas-ffpack/utils/timer.h"
 
 //using namespace LinBox;
 int main () {

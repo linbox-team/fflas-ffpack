@@ -43,7 +43,7 @@
 
 #include "fflas-ffpack/fflas.h"
 #include "fflas-ffpack/modular-balanced.h"
-#include "timer.h"
+#include "utils/timer.h"
 #include "Matio.h"
 
 using namespace std;
