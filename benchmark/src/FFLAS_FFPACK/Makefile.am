@@ -22,7 +22,8 @@
 
 SUBDIRS =
 
-BENCHMARK=check-fgemm  check-ftrsm  check-ftrtri  check-inverse  check-lqup
+BENCHMARK=check-fgemm  check-ftrsm  check-ftrtri  check-inverse  check-lqup \
+	  check-wino
 
 bench: $(BENCHMARK)
 
@@ -43,6 +44,7 @@ EXTRA_PROGRAMS =       \
 		$(BENCHMARK)
 
 check_fgemm_SOURCES = check-fgemm.C
+check_wino_SOURCES = check-wino.C
 check_ftrsm_SOURCES = check-ftrsm.C
 check_ftrtri_SOURCES = check-ftrtri.C
 check_inverse_SOURCES = check-inverse.C
