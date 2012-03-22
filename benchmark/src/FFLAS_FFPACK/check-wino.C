@@ -36,6 +36,64 @@
 
 #define CUBE(x) ((x)*(x)*(x))
 
+template<class Field>
+void launch_wino(const Field  &F,
+		 const size_t &n,
+		 const size_t &NB,
+		 const size_t &winomax,
+		 const size_t &seed)
+{
+
+	typedef typename Field::Element Element ;
+	typename Field::RandIter G(F);
+	F.write(std::cout<< "Field " ) << std::endl;
+
+	double basetime(0.0), time(.0);
+
+	Element *A, *C;
+	A = new Element[n*n];
+	C = new Element[n*n];
+	for (size_t i=0; i<n*n;++i)
+		G.random(A[i]);
+
+
+	Timer chrono;
+	for(size_t i=0; i<NB; ++i) {
+		chrono.start();
+		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			     n, n, n, 1., A, n, A, n, 0., C, n, 0);
+		chrono.stop();
+		basetime+= chrono.usertime();
+	}
+	std::cout << std::endl
+	<< "fgemm " << n << "x" << n << ": "
+	<< basetime/(double)NB << " s, "
+	<< (2.0/basetime*(double)NB*CUBE((double)n/100.0)) << " Mffops"
+	<< std::endl;
+
+	for(size_t w=1; w<winomax; ++w) {
+
+		chrono.clear();
+		for(size_t i=0; i<NB; ++i) {
+			chrono.start();
+			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+				     n, n, n, 1., A, n, A, n, 0., C, n, w);
+			chrono.stop();
+			time+= chrono.usertime();
+		}
+		std::cout << w << "Wino " << n << "x" << n << ": "
+		<< time/(double)NB << " s, "
+		<< (2.0/time*(double)NB*CUBE((double)n/100.0)) << " Mffops"
+		<< std::endl;
+	}
+
+	std::cout << std::endl;
+	std::cout << std::endl;
+
+	delete[] A;
+	delete[] C;
+}
+
     //using namespace LinBox;
 int main (int argc, char ** argv) {
         const size_t p = argc>1 ? atoi(argv[1]) : 65521;
@@ -45,101 +103,28 @@ int main (int argc, char ** argv) {
         const size_t seed = argc>5 ? atoi(argv[5]) : BaseTimer::seed() ;
         srand((unsigned int)seed);
 
-        {
-
-        FFPACK::Modular<double> F( p );
-        double basetime(0.0), time(0.0);
-
-        double *A, *C;
-        A = new double[n*n];
-        C = new double[n*n];
-        for (size_t i=0; i<n*n;++i){
-		    A[i]= (double)((size_t)((double)i*rand())%p);
-        }
-
-
-        Timer chrono;
-        for(size_t i=0; i<NB; ++i) {
-            chrono.start();
-            FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                         n, n, n, 1., A, n, A, n, 0., C, n, 0);
-            chrono.stop();
-            basetime+= chrono.usertime();
-        }
-        std::cout << std::endl
-                  << "fgemm " << n << "x" << n << ": "
-                  << basetime/(double)NB << " s, "
-                  << (2.0/basetime*(double)NB*CUBE((double)n/100.0)) << " Mffops"
-                  << std::endl;
-
-        for(size_t w=1; w<winomax; ++w) {
-
-            chrono.clear();
-            for(size_t i=0; i<NB; ++i) {
-                chrono.start();
-                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                             n, n, n, 1., A, n, A, n, 0., C, n, w);
-                chrono.stop();
-                time+= chrono.usertime();
-            }
-            std::cout << w << "Wino " << n << "x" << n << ": "
-                      << time/(double)NB << " s, "
-                      << (2.0/time*(double)NB*CUBE((double)n/100.0)) << " Mffops"
-                      << std::endl;
-        }
+	using namespace FFPACK;
+	Modular<double> F1(p);
+	Modular<float>  F2(p);
+	Modular<int>    F3(p);
+	ModularBalanced<double> F4(p);
+	ModularBalanced<float>  F5(p);
+	ModularBalanced<int>    F6(p);
+	//! @bug no randiter in UnparametricField !!
+	// UnparametricField<double> F7;
+	// UnparametricField<float>  F8;
+	// UnparametricField<int>    F9;
 
 
-        delete[] A;
-        delete[] C;
-        }
-        {
-
-        FFPACK::Modular<float> F( p );
-        double basetime(0.0), time(.0);
-
-        float *A, *C;
-        A = new float[n*n];
-        C = new float[n*n];
-        for (size_t i=0; i<n*n;++i){
-		    A[i]= (float)((size_t)((float)i*(float)rand())%p);
-        }
-
-
-        Timer chrono;
-        for(size_t i=0; i<NB; ++i) {
-            chrono.start();
-            FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                         n, n, n, 1., A, n, A, n, 0., C, n, 0);
-            chrono.stop();
-            basetime+= chrono.usertime();
-        }
-        std::cout << std::endl
-                  << "fgemm " << n << "x" << n << ": "
-                  << basetime/(double)NB << " s, "
-                  << (2.0/basetime*(double)NB*CUBE((double)n/100.0)) << " Mffops"
-                  << std::endl;
-
-        for(size_t w=1; w<winomax; ++w) {
-
-            chrono.clear();
-            for(size_t i=0; i<NB; ++i) {
-                chrono.start();
-                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                             n, n, n, 1., A, n, A, n, 0., C, n, w);
-                chrono.stop();
-                time+= chrono.usertime();
-            }
-            std::cout << w << "Wino " << n << "x" << n << ": "
-                      << time/(double)NB << " s, "
-                      << (2.0/time*(double)NB*CUBE((double)n/100.0)) << " Mffops"
-                      << std::endl;
-        }
-
-
-        delete[] A;
-        delete[] C;
-        }
-
+	launch_wino(F1,n,NB,winomax,seed);
+	launch_wino(F2,n,NB,winomax,seed);
+	launch_wino(F3,n,NB,winomax,seed);
+	launch_wino(F4,n,NB,winomax,seed);
+	launch_wino(F5,n,NB,winomax,seed);
+	launch_wino(F6,n,NB,winomax,seed);
+	// launch_wino(F7,n,NB,winomax,seed);
+	// launch_wino(F8,n,NB,winomax,seed);
+	// launch_wino(F9,n,NB,winomax,seed);
 
         return 0;
     }

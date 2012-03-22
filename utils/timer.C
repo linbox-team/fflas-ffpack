@@ -95,7 +95,7 @@ void RealTimer::start()
 	gettimeofday (&tmp2, 0) ;
 
 	// real time
-	_start_t = (double) tmp2.tv_sec +
+	_t = (double) tmp2.tv_sec +
 		((double) tmp2.tv_usec)/ (double)BaseTimer::MSPSEC ;
 }
 
@@ -108,7 +108,7 @@ void RealTimer::stop()
 
 	// real time
 	_t = (double) tmp2.tv_sec +
-		((double) tmp2.tv_usec)/ (double)BaseTimer::MSPSEC - _start_t ;
+		((double) tmp2.tv_usec)/ (double)BaseTimer::MSPSEC - _t ;
 }
 
 // Start timer
@@ -117,7 +117,7 @@ void UserTimer::start()
 	struct rusage  tmp1 ;  // to getrusage (sys+user times)
 	getrusage (RUSAGE_SELF, &tmp1) ;
 	// user time
-	_start_t = (double) tmp1.ru_utime.tv_sec +
+	_t = (double) tmp1.ru_utime.tv_sec +
 		((double) tmp1.ru_utime.tv_usec)/ (double)MSPSEC ;
 }
 
@@ -129,7 +129,7 @@ void UserTimer::stop()
 	getrusage (RUSAGE_SELF, &tmp1) ;
 	// user time
 	_t = (double) tmp1.ru_utime.tv_sec +
-		((double) tmp1.ru_utime.tv_usec)/ (double)MSPSEC - _start_t ;
+		((double) tmp1.ru_utime.tv_usec)/ (double)MSPSEC - _t ;
 }
 
 
@@ -139,7 +139,7 @@ void SysTimer::start()
 	struct rusage  tmp1 ;  // to getrusage (sys+user times)
 	getrusage (RUSAGE_SELF, &tmp1) ;
 	// user time
-	_start_t = (double) tmp1.ru_stime.tv_sec +
+	_t = (double) tmp1.ru_stime.tv_sec +
 		((double) tmp1.ru_stime.tv_usec)/ (double)MSPSEC ;
 }
 
@@ -151,22 +151,22 @@ void SysTimer::stop()
 	getrusage (RUSAGE_SELF, &tmp1) ;
 	// user time
 	_t = (double) tmp1.ru_stime.tv_sec +
-		((double) tmp1.ru_stime.tv_usec)/ (double)MSPSEC - _start_t ;
+		((double) tmp1.ru_stime.tv_usec)/ (double)MSPSEC - _t ;
 }
 
 
 
 // Clear timer :
 void Timer::clear()
-{ rt.clear() ; ut.clear(); st.clear(); _count = 0; }
+{ rt.clear() ; ut.clear(); st.clear() ;  }
 
 // Start timer
 void Timer::start()
-{ rt.start() ; ut.start(); st.start(); _count = 0; }
+{ rt.start() ; ut.start(); st.start() ;  }
 
 // Stop timer
 void Timer::stop()
-{ rt.stop() ; ut.stop(); st.stop(); _count = 1; }
+{ rt.stop() ; ut.stop(); st.stop() ; }
 
 
 std::ostream& Timer::print( std::ostream& o ) const
@@ -182,7 +182,6 @@ Timer& Timer::operator = (const Timer & T)
 	ut = T.ut ;
 	st = T.st ;
 	rt = T.rt ;
-	_count = T._count;
 	return *this ;
 }
 
@@ -194,7 +193,6 @@ const Timer Timer::operator - (const Timer & T)  const
 	Tmp.ut = ut - T.ut ;
 	Tmp.st = st - T.st ;
 	Tmp.rt = rt - T.rt ;
-	Tmp._count = _count - T._count;
 	return Tmp ;
 }
 
@@ -204,7 +202,6 @@ const Timer Timer::operator - ()
 	Tmp.ut = -ut ;
 	Tmp.st = -st ;
 	Tmp.rt = -rt ;
-	Tmp._count = - _count;
 	return Tmp ;
 }
 
@@ -214,7 +211,6 @@ const Timer Timer::operator + (const Timer & T)  const
 	Tmp.ut = ut + T.ut ;
 	Tmp.st = st + T.st ;
 	Tmp.rt = rt + T.rt ;
-	Tmp._count = _count + T._count;
 	return Tmp ;
 }
 

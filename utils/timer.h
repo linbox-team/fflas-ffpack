@@ -62,7 +62,7 @@ class BaseTimer {
 	static long seed();
 
 	// -- basic methods:
-	std::ostream &print (std::ostream &) const;
+	std::ostream& print( std::ostream& ) const;
 
 	// -- Some arithmetic operators to compute cumulative time :
 	BaseTimer& operator = (const BaseTimer & T) ;
@@ -73,7 +73,6 @@ class BaseTimer {
 	BaseTimer& operator -= (const BaseTimer & T) { return *this = *this - T; };
 
     public:
-	double _start_t;  // time as of start ()
 	double _t;        // time
 };
 
@@ -108,19 +107,19 @@ class SysTimer : public BaseTimer {
 
 
 class Timer {
-    public :
+public :
 
 	// Clear timer :
 	void clear();
 
 	// Start timer
-	void start ();
+	void start();
 
 	// Stop timer
-	void stop ();
+	void stop();
 
 	// total amount of second spent in user mode
-	double usertime () const { return ut.time(); }
+	double usertime() const { return ut.time(); }
 
 	// total amount of second spent in system mode
 	double systime () const { return st.time(); }
@@ -136,16 +135,13 @@ class Timer {
 	const Timer operator - (const Timer & T)  const;
 	const Timer operator - () ;
 	const Timer operator + (const Timer & T)  const;
-	Timer& operator += (const Timer & T) { return *this = *this + T; };
-	Timer& operator -= (const Timer & T) { return *this = *this - T; };
+	/* const */Timer& operator += (const Timer & T) { return *this = *this + T; };
+	/* const */Timer& operator -= (const Timer & T) { return *this = *this - T; };
 
 	// -- methods :
 	std::ostream &print (std::ostream &) const;
 
-	size_t count() const {return _count;}
 
-    private:
-	size_t _count; // how many
 
 	RealTimer rt;
 	UserTimer ut;
@@ -159,7 +155,7 @@ inline std::ostream &operator << (std::ostream &o, const Timer &T)
 {
 	double ut = T.usertime();
 	if (ut < 0.0000000001) ut = 0;
-	return o << T.realtime() << "s (" << ut << " cpu) [" << T.count() << "]";
+	return o << T.realtime() << "s (" << ut << " cpu) ";
 }
 
 

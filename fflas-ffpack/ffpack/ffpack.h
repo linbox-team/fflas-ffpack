@@ -5,20 +5,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -117,18 +117,27 @@ namespace FFPACK  {
 	{
 
 		if ( Side == FFLAS::FflasRight ) {
+			typename Field::Element tmp;
 			if ( Trans == FFLAS::FflasTrans )
 				for (size_t j = 0 ; j < M ; ++j){
 					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
-						if ( P[i]> i )
-							std::swap(A[j*lda+P[i]],A[j*lda+i]);
+						if ( P[i]> i ) {
+							F.assign(tmp,A[j*lda+P[i]]);
+							F.assign(A[j*lda+P[i]],A[j*lda+i]);
+							F.assign(A[j*lda+i],tmp);
+							// std::swap(A[j*lda+P[i]],A[j*lda+i]);
+						}
 					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
 				}
 			else // Trans == FFLAS::FflasNoTrans
 				for (size_t j = 0 ; j < M ; ++j){
 					for (int i=iend; i-->ibeg; )
-						if ( P[i]>(size_t)i )
-							std::swap(A[j*lda+P[i]],A[j*lda+(size_t)i]);
+						if ( P[i]>(size_t)i ) {
+							F.assign(tmp,A[j*lda+P[i]]);
+							F.assign(A[j*lda+P[i]],A[j*lda+(size_t)i]);
+							F.assign(A[j*lda+(size_t)i],tmp);
+							// std::swap(A[j*lda+P[i]],A[j*lda+(size_t)i]);
+						}
 					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
 				}
 		}
