@@ -209,7 +209,7 @@ namespace FFPACK {
 		inline Element& init(Element& x, unsigned long int y) const
 		{
 
-			x = fmodf (Element(y), modulus);
+			x = (Element)(y % lmodulus);
 
 			if (x < 0) x += modulus;
 			return x;
@@ -218,7 +218,7 @@ namespace FFPACK {
 		inline Element& init(Element& x, long int y) const
 		{
 
-			x = fmodf (Element(y), modulus);
+			x = (Element)(y % (long)lmodulus);
 
 			if (x < 0) x += modulus;
 			return x;
@@ -235,7 +235,7 @@ namespace FFPACK {
 		inline Element& init(Element& x, double y ) const
 		{
 
-			x = fmodf (Element(y), modulus);
+			x = (Element)fmod (y, (double)modulus);
 			if (x < 0) x += modulus;
 			return x;
 		}
@@ -243,7 +243,7 @@ namespace FFPACK {
 		inline Element& init(Element& x, int y ) const
 		{
 
-			x = fmodf (Element(y), modulus);
+			x = (Element) (y%(int) lmodulus);
 			if (x < 0) x += modulus;
 			return x;
 		}
@@ -251,7 +251,7 @@ namespace FFPACK {
 		inline Element& init(Element& x, unsigned int y ) const
 		{
 
-			x = fmodf (Element(y), modulus);
+			x = (Element)(y % (unsigned int)lmodulus);
 			if (x < 0) x += modulus;
 			return x;
 		}

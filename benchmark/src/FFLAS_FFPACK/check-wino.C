@@ -48,7 +48,7 @@ void launch_wino(const Field  &F,
 	typename Field::RandIter G(F);
 	F.write(std::cout<< "Field " ) << std::endl;
 
-	double basetime(0.0), time(.0);
+	double basetime(0.0), time(0.0);
 
 	Element *A, *C;
 	A = new Element[n*n];
@@ -73,6 +73,7 @@ void launch_wino(const Field  &F,
 
 	for(size_t w=0; w<winomax; ++w) {
 
+		time = 0. ;
 		chrono.clear();
 		for(size_t i=0; i<NB; ++i) {
 			chrono.start();
