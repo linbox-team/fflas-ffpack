@@ -29,11 +29,7 @@
 #ifndef __FFLASFFPACK_fflas_bounds_INL
 #define __FFLASFFPACK_fflas_bounds_INL
 
-// #ifdef _LINBOX_LINBOX_CONFIG_H
-// #define FFLAS_INT_TYPE Givaro::Integer
-// #else
 #define FFLAS_INT_TYPE long unsigned int
-// #endif
 
 
 namespace FFLAS {
@@ -221,6 +217,16 @@ namespace FFLAS {
 
 		template <>
 		inline double computeFactorWino (const FFPACK:: ModularBalanced<double>& F, const size_t w)
+		{
+			FFLAS_INT_TYPE p;
+			F.characteristic(p);
+			size_t ex=1;
+			for (size_t i=0; i < w; ++i) 	ex *= 3;
+			return  double((p - 1) * ex / 2);
+		}
+
+		template <>
+		inline double computeFactorWino (const FFPACK:: ModularBalanced<float>& F, const size_t w)
 		{
 			FFLAS_INT_TYPE p;
 			F.characteristic(p);
