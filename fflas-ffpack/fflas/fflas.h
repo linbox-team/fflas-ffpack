@@ -49,21 +49,17 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
 
-#ifndef __FFLASFFPACK_STRASSEN_OPTIMIZATION
-#define WINOTHRESHOLD 1000
-#else
 #define WINOTHRESHOLD __FFLASFFPACK_WINOTHRESHOLD
-#endif
 
-// Thresholds determining which floating point representation to use,
-// depending on the cardinality of the finite field. This is only used when
-// the element representation is not a floating point type.
+/* Thresholds determining which floating point representation to use, depending
+ * on the cardinality of the finite field. This is only used when the element
+ * representation is not a floating point type.
+ */
 #define FLOAT_DOUBLE_THRESHOLD_0 430
 #define FLOAT_DOUBLE_THRESHOLD_1 350
 #define FLOAT_DOUBLE_THRESHOLD_2 175
 
-#define DOUBLE_MANTISSA 53
-#define FLOAT_MANTISSA 24
+#include <float.h>
 
 //#define LB_TRTR
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.

@@ -2,6 +2,7 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* Copyright (c) FFLAS-FFPACK
+* Written by Clément Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
 *
@@ -44,8 +45,6 @@ int main(int argc, char** argv) {
   typedef Field::Element Element;
 
   Field F(p);
-  Element one;
-  F.init(one, 1.0);
   Element * A;
   Element * B;
 
@@ -68,7 +67,6 @@ int main(int argc, char** argv) {
 	  }
 	  else{
 		  B = new Element[n*n];
-		  // Field::RandIter G(F);
 		  for (size_t j=0 ; j< (size_t)n*n; ++j)
 			  G.random(*(A+j));
 	  }
@@ -79,7 +77,7 @@ int main(int argc, char** argv) {
 	  chrono.clear();
 	  chrono.start();
 	  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans,
-			FFLAS::FflasNonUnit, n,n, one, A, n, B, n);
+			FFLAS::FflasNonUnit, n,n, F.one, A, n, B, n);
 
 	  chrono.stop();
 	  time+=chrono.usertime();

@@ -1,6 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
+
 /* Copyright (c) FFLAS-FFPACK
 * Written by Clément Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
@@ -22,7 +23,6 @@
 * ========LICENCE========
 */
 
-
 #include <iostream>
 #include <vector>
 
@@ -40,11 +40,11 @@
 #define __FFLASFFPACK_AUTOIMPLEMENT_DGETRI 1
 #endif
 
+#include "fflas-ffpack/fflas-ffpack.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/Matio.h"
 
-#include "fflas-ffpack/fflas.h"
-#include "fflas-ffpack/modular-balanced.h"
-#include "utils/timer.h"
-#include "Matio.h"
 
 using namespace std;
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
   size_t iter = atoi(argv[3]);
 
 
-  typedef Modular<double> Field;
+  typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
   vector<int> Piv(n,0);
 
@@ -66,19 +66,18 @@ int main(int argc, char** argv) {
 
   Timer chrono;
   double time=0.0;
-  int singular;
 
   for (size_t i=0;i<iter;++i){
     if (argc > 4){
       A = read_field(F, argv[4],  &n, &n);
-    } else {
+    }
+    else {
       A = new Element[n*n];
       Field::RandIter G(F);
-      for (size_t i=0; i<n*n; ++i)
-	G.random(*(A+i));
-
+		  for (size_t j=0; j<(size_t)n*n; ++j)
+			  G.random(*(A+j));
     }
-    int nullity=0;
+
     chrono.clear();
     chrono.start();
     clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
@@ -90,7 +89,7 @@ int main(int argc, char** argv) {
     delete[] A;
   }
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/iter<<endl;
+  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
 
 
   return 0;

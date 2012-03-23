@@ -52,12 +52,16 @@ BACKUP_LIBS=${LIBS}
 echo "  *** OPTIMISATIONS ***  "
 
 AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
+AC_MSG_RESULT([see below])
 
-CXXFLAGS="${BACKUP_CXXFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
+CXXFLAGS_ALL="${BACKUP_CXXFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
-
 WINO=`cat optimiser/winograd.C`
 
+
+dnl for Wino threshold for double
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=double"
+echo "\n  == Wino/BLAS threshold for double == "
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -66,20 +70,41 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl close the file
 		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
 		dnl cleaning service !
+		dnl  echo done : `cat WinoThreshold`
 		rm WinoThreshold ;
 		AC_MSG_RESULT(done)
 		],[
 		AC_MSG_RESULT(problem)
-		dnl  strassen_opti="no"
 		break
 		],[
 		AC_MSG_RESULT(cross compilation)
-		dnl  strassen_opti="no"
+		break
+		])
+
+dnl for WinoThreshold for float
+echo "  == Wino/BLAS threshold for float == "
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=float"
+AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
+		dnl remove last line
+		sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl append new definition
+		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl close the file
+		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
+		dnl  echo done : `cat WinoThreshold`
+		dnl cleaning service !
+		rm WinoThreshold ;
+		AC_MSG_RESULT(done)
+		],[
+		AC_MSG_RESULT(problem)
+		break
+		],[
+		AC_MSG_RESULT(cross compilation)
 		break
 		])
 
 ],
-[AC_MSG_RESULT(no)]
+[AC_MSG_RESULT(no optimisation)]
 )
 
 ])

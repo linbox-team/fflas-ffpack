@@ -90,7 +90,7 @@ namespace FFLAS {
 		template <class Field>
 		unsigned long Mantissa (const Field& F, const FFLAS_BASE base)
 		{
-			return (base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
+			return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
 		}
 
 		/** DotProdBound computes the maximal size for delaying the modular reduction
@@ -116,7 +116,7 @@ namespace FFLAS {
 
 			unsigned long mantissa = Mantissa (F, base);
 
-			    //(base == FflasDouble) ? DOUBLE_MANTISSA : FLOAT_MANTISSA;
+			    //(base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
 
 			if (p == 0)
 				return 1;
@@ -300,7 +300,7 @@ namespace FFLAS {
 			unsigned long p = pi;
 			unsigned long long p1(1UL), p2(1UL);
 			size_t nmax = 0;
-			unsigned long long max = ( (1ULL << (DOUBLE_MANTISSA + 1) ) / ((unsigned long long)(p - 1)));
+			unsigned long long max = ( (1ULL << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
 			while ( (p1 + p2) < max ){
 				p1*=p;
 				p2*=p-2;
@@ -325,7 +325,7 @@ namespace FFLAS {
 			unsigned long p = pi;
 			unsigned long long p1(1UL), p2(1UL);
 			size_t nmax = 0;
-			unsigned long long max = ( (1ULL << (FLOAT_MANTISSA + 1) ) / ((unsigned long long)(p - 1)));
+			unsigned long long max = ( (1ULL << (FLT_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
 			while ( (p1 + p2) < max ){
 				p1*=p;
 				p2*=p-2;
@@ -349,7 +349,7 @@ namespace FFLAS {
 			unsigned long p = (pi + 1) / 2;
 			unsigned long long p1(1UL);
 			size_t nmax = 0;
-			unsigned long long max = ((1ULL << (DOUBLE_MANTISSA + 1)) / ((unsigned long long)(p - 1)));
+			unsigned long long max = ((1ULL << (DBL_MANT_DIG + 1)) / ((unsigned long long)(p - 1)));
 			while (p1 < max){
 				p1 *= p;
 				nmax++;
@@ -371,7 +371,7 @@ namespace FFLAS {
 			unsigned long p = (pi + 1) / 2;
 			unsigned long long p1(1UL);
 			size_t nmax = 0;
-			unsigned long long max = ((1ULL << (FLOAT_MANTISSA + 1)) / ((unsigned long long) (p - 1)));
+			unsigned long long max = ((1ULL << (FLT_MANT_DIG + 1)) / ((unsigned long long) (p - 1)));
 			while (p1 < max){
 				p1 *= p;
 				nmax++;

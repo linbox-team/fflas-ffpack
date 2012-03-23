@@ -1,5 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+//
 /* Copyright (c) FFLAS-FFPACK
 * Written by Clément Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
@@ -21,13 +22,13 @@
 * ========LICENCE========
 */
 
-
 #include <iostream>
 
-#include "fflas-ffpack/fflas.h"
-#include "fflas-ffpack/modular-balanced.h"
-#include "utils/timer.h"
-#include "Matio.h"
+#include "fflas-ffpack/fflas-ffpack.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/Matio.h"
+
 
 using namespace std;
 
@@ -40,18 +41,15 @@ int main(int argc, char** argv) {
   size_t iter = atoi(argv[3]);
 
 
-  typedef Modular<double> Field;
+  typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
   Field F(p);
-  Element one;
-  F.init(one, 1.0);
   Element * A;
   Element * B;
 
   Timer chrono;
   double time=0.0;
-  int singular;
 
   for (size_t i=0;i<iter;++i){
     Field::RandIter G(F);
@@ -60,8 +58,8 @@ int main(int argc, char** argv) {
     }
     else{
       A = new Element[n*n];
-      for (size_t i = 0; i< n*n; ++i)
-	G.random(*(A+i));
+		  for (size_t j = 0; j< (size_t)n*n; ++j)
+			  G.random(*(A+j));
     }
 
     if (argc == 6){
@@ -69,18 +67,17 @@ int main(int argc, char** argv) {
     }
     else{
       B = new Element[n*n];
-      Field::RandIter G(F);
-      for (size_t i=0 ; i< n*n; ++i)
-	G.random(*(A+i));
+		  for (size_t j=0 ; j< (size_t)n*n; ++j)
+			  G.random(*(A+j));
     }
 
-    for (size_t k=0;k<n;++k)
+	  for (size_t k=0;k<(size_t)n;++k)
       while (F.isZero( G.random(*(A+k*(n+1)))));
 
     chrono.clear();
     chrono.start();
     cblas_dtrsm (CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans,
-		 CblasNonUnit, n,n, one, A, n, B, n);
+		 CblasNonUnit, n,n, F.one, A, n, B, n);
 
     chrono.stop();
     time+=chrono.usertime();
@@ -89,7 +86,7 @@ int main(int argc, char** argv) {
 
   }
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/iter<<endl;
+  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
 
 
   return 0;

@@ -3,6 +3,7 @@
 //#include "goto-def.h"
 
 /* Copyright (c) FFLAS-FFPACK
+* Written by Clément Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
 *
@@ -21,6 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
+
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -74,6 +76,7 @@ int main(int argc, char** argv) {
 		  for (size_t j=0; j<(size_t)n*n; ++j)
 			  G.random(*(B+j));
 	  }
+
 	  C = new Element[n*n];
 
 	  chrono.clear();

@@ -38,19 +38,25 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
 
+#ifndef FLTTYPE
+#define FLTTYPE double
+#endif
+
 //using namespace LinBox;
 int main () {
 	using namespace std;
 
-	FFPACK::Modular<double> F(17);
+	typedef FFPACK::Modular<FLTTYPE> Field ;
+	Field F(17);
+	typedef Field::Element Element ;
 	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
 	Timer chrono;
 	double basetime, time;
 	bool bound=false;
 
-	double *A, *C;
-	A = new double[nmax*nmax];
-	C = new double[nmax*nmax];
+	Element *A, *C;
+	A = new Element[nmax*nmax];
+	C = new Element[nmax*nmax];
 	for (size_t i=0; i<nmax*nmax;++i){
 		A[i]=2.;
 	}
@@ -58,12 +64,12 @@ int main () {
 	std::ofstream outlog;
 	outlog.open("optim.log", std::ofstream::out | std::ofstream::app);
 	outlog << std::endl
-		<< "Threshold for finite field Strassen-Winograd matrix multiplication"
-		<< std::endl;
+		<< "Threshold for finite field Strassen-Winograd matrix multiplication" ;
+	F.write(outlog << "(using ") << ')' << std::endl;
 	do {
 		chrono.start();
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				n, n, n, 1., A, n, A, n, 0., C, n, 0);
+				n, n, n, F.one, A, n, A, n, F.zero, C, n, 0);
 		chrono.stop();
 		std::cout << std::endl
 			<< "fgemm " << n << "x" << n << ": "
@@ -110,9 +116,17 @@ int main () {
 
 	std::ofstream out("WinoThreshold");
 	if (nbest != 0 ) {
+	if (typeid(Element).name() == typeid(double).name()) {
 		out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD"  << endl;
-		out << "#define __FFLASFFPACK_WINOTHRESHOLD " << nbest << endl;
+		out << "#define __FFLASFFPACK_WINOTHRESHOLD" << ' ' <<  nbest << endl;
 		out << "#endif"                               << endl  << endl;
+	}
+
+	if (typeid(Element).name() == typeid(float).name()) {
+		out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_FLT"  << endl;
+		out << "#define __FFLASFFPACK_WINOTHRESHOLD_FLT" << ' ' << nbest << endl;
+		out << "#endif"                               << endl  << endl;
+	}
 	}
 	out.close();
 

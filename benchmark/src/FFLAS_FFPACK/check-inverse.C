@@ -3,6 +3,7 @@
 
 
 /* Copyright (c) FFLAS-FFPACK
+* Written by Clément Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
 *
@@ -51,23 +52,24 @@ int main(int argc, char** argv) {
   double time=0.0;
 
   for (size_t i=0;i<iter;++i){
-    if (argc > 4){
-      A = read_field(F, argv[4],  &n, &n);
-    } else {
-      A = new Element[n*n];
-      Field::RandIter G(F);
-      for (size_t j=0; j<(size_t)n*n; ++j)
-	G.random(*(A+j));
+	  if (argc > 4){
+		  A = read_field(F, argv[4],  &n, &n);
+	  }
+	  else {
+		  A = new Element[n*n];
+		  Field::RandIter G(F);
+		  for (size_t j=0; j<(size_t)n*n; ++j)
+			  G.random(*(A+j));
+	  }
 
-    }
-    int nullity=0;
-    chrono.clear();
-    chrono.start();
-    FFPACK::Invert (F, n, A, n, nullity);
-    chrono.stop();
+	  int nullity=0;
+	  chrono.clear();
+	  chrono.start();
+	  FFPACK::Invert (F, n, A, n, nullity);
+	  chrono.stop();
 
-    time+=chrono.usertime();
-    delete[] A;
+	  time+=chrono.usertime();
+	  delete[] A;
   }
 
   cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;

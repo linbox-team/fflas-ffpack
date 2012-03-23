@@ -1,6 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //#include "goto-def.h"
+
 /* Copyright (c) FFLAS-FFPACK
 * Written by Clément Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
@@ -22,13 +23,13 @@
 * ========LICENCE========
 */
 
-
 #include <iostream>
 
-#include "fflas-ffpack/fflas.h"
-#include "fflas-ffpack/modular-balanced.h"
-#include "Matio.h"
-#include "utils/timer.h"
+#include "fflas-ffpack/config-blas.h"
+#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/Matio.h"
 
 using namespace std;
 
@@ -41,17 +42,14 @@ int main(int argc, char** argv) {
   size_t iter = atoi(argv[3]);
 
 
-  typedef Modular<double> Field;
+  typedef FFPACK::Modular<double> Field;
+  // typedef FFPACK::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
   Field F(p);
-  Element one, zero;
-  F.init(one, 1.0);
-  F.init(zero, 0.0);
 
   Timer chrono;
-  double time=0.0, time2=0.0;
-  int singular;
+  double time=0.0;// time2=0.0;
 
   Element * A, * B, * C;
 
@@ -63,8 +61,8 @@ int main(int argc, char** argv) {
     else{
       Field::RandIter G(F);
       A = new Element[n*n];
-      for (size_t i=0; i<n*n; ++i)
-	G.random (*(A+i));
+		  for (size_t j=0; j<(size_t)n*n; ++j)
+			  G.random (*(A+j));
     }
 
     if (argc == 6){
@@ -73,16 +71,16 @@ int main(int argc, char** argv) {
     else{
       Field::RandIter G(F);
       B = new Element[n*n];
-      for (size_t i=0; i<n*n; ++i)
-	G.random(*(B+i));
+		  for (size_t j=0; j<(size_t)n*n; ++j)
+			  G.random(*(B+j));
     }
 
     C = new Element[n*n];
 
     chrono.clear();
     chrono.start();
-    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, one,
-		 A, n, B, n, zero, C,n);
+    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
+		 A, n, B, n, F.zero, C,n);
     chrono.stop();
     time+=chrono.usertime();
 
@@ -91,7 +89,7 @@ int main(int argc, char** argv) {
     delete[] C;
   }
 
-  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/iter<<std::endl;
+  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<std::endl;
 
   return 0;
 }

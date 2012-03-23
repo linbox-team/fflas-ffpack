@@ -304,6 +304,7 @@ tests/Makefile
 benchmark/Makefile
 optimiser/Makefile
 benchmark/src/FFLAS_FFPACK/Makefile
+benchmark/src/BLAS_LAPACK/Makefile
 ])
 AC_OUTPUT
 
