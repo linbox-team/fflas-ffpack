@@ -9,20 +9,20 @@
  *
  * ------------------------------------
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -206,7 +206,7 @@ namespace FFPACK {
 		}
 
 		//!@warning possibly buggy. use % instead ?
-		inline Element& init(Element& x, unsigned long y) const
+		inline Element& init(Element& x, unsigned long int y) const
 		{
 
 			x = fmodf (Element(y), modulus);
@@ -215,7 +215,7 @@ namespace FFPACK {
 			return x;
 		}
 
-		inline Element& init(Element& x, long y) const
+		inline Element& init(Element& x, long int y) const
 		{
 
 			x = fmodf (Element(y), modulus);
@@ -224,7 +224,7 @@ namespace FFPACK {
 			return x;
 		}
 
-		inline Element& init(Element& x, Element y =0) const
+		inline Element& init(Element& x, Element y ) const
 		{
 
 			x = fmodf (y, modulus);
@@ -232,7 +232,7 @@ namespace FFPACK {
 			return x;
 		}
 
-		inline Element& init(Element& x, double y =0) const
+		inline Element& init(Element& x, double y ) const
 		{
 
 			x = fmodf (Element(y), modulus);
@@ -240,6 +240,26 @@ namespace FFPACK {
 			return x;
 		}
 
+		inline Element& init(Element& x, int y ) const
+		{
+
+			x = fmodf (Element(y), modulus);
+			if (x < 0) x += modulus;
+			return x;
+		}
+
+		inline Element& init(Element& x, unsigned int y ) const
+		{
+
+			x = fmodf (Element(y), modulus);
+			if (x < 0) x += modulus;
+			return x;
+		}
+
+		inline Element &init(Element& x) const
+		{
+			return x = 0. ;
+		}
 
 		inline Element& assign(Element& x, const Element& y) const
 		{

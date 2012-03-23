@@ -27,12 +27,12 @@
 #include <iostream>
 #include <fstream>
     //#define _LINBOX_LINBOX_CONFIG_H
-#define __FFLASFFPACK_CONFIGURATION
-#include "fflas-ffpack/config-blas.h"
-#include "fflas-ffpack/fflas-ffpack-config.h"
+// #define __FFLASFFPACK_CONFIGURATION
+// #include "fflas-ffpack/config-blas.h"
+#include "fflas-ffpack/fflas-ffpack-configuration.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include <utils/timer.h>
+#include "fflas-ffpack/utils/timer.h"
 
 #define CUBE(x) ((x)*(x)*(x))
 
@@ -61,7 +61,7 @@ void launch_wino(const Field  &F,
 	for(size_t i=0; i<NB; ++i) {
 		chrono.start();
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-			     n, n, n, 1., A, n, A, n, 0., C, n, 0);
+			     n, n, n, F.one, A, n, A, n, F.zero, C, n);
 		chrono.stop();
 		basetime+= chrono.usertime();
 	}
@@ -71,13 +71,13 @@ void launch_wino(const Field  &F,
 	<< (2.0/basetime*(double)NB*CUBE((double)n/100.0)) << " Mffops"
 	<< std::endl;
 
-	for(size_t w=1; w<winomax; ++w) {
+	for(size_t w=0; w<winomax; ++w) {
 
 		chrono.clear();
 		for(size_t i=0; i<NB; ++i) {
 			chrono.start();
 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				     n, n, n, 1., A, n, A, n, 0., C, n, w);
+				     n, n, n, F.one, A, n, A, n, F.zero, C, n, w);
 			chrono.stop();
 			time+= chrono.usertime();
 		}
@@ -109,7 +109,7 @@ int main (int argc, char ** argv) {
 	Modular<int>    F3(p);
 	ModularBalanced<double> F4(p);
 	ModularBalanced<float>  F5(p);
-	ModularBalanced<int>    F6(p);
+	ModularBalanced<int>    F6((int)p);
 	//! @bug no randiter in UnparametricField !!
 	// UnparametricField<double> F7;
 	// UnparametricField<float>  F8;
