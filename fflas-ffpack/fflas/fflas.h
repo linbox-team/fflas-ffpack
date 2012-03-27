@@ -600,8 +600,6 @@ namespace FFLAS {
 		}
 		if (F.isZero(alpha)){
 			fzero(F,n,X,incX);
-			// for (; Xi < X+n*incX; Xi+=incX )
-				// F.assign( *Xi, F.zero );
 			return;
 		}
 
@@ -1022,6 +1020,8 @@ namespace FFLAS {
 			fscal(F, m, n, beta, C, ldc);
 			return C;
 		}
+
+
 
 		size_t kmax = 0;
 		size_t winolevel = w;
