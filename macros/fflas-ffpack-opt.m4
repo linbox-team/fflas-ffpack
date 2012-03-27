@@ -61,7 +61,7 @@ WINO=`cat optimiser/winograd.C`
 
 dnl for Wino threshold for double
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=double"
-echo "\n  == Wino/BLAS threshold for double == "
+echo "  == Wino/BLAS threshold for double == "
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
