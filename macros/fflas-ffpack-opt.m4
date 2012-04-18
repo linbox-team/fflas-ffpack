@@ -40,8 +40,7 @@ echo ""                                 >> fflas-ffpack/fflas-ffpack-optimise.h
 dnl The optimise.h file has to be correcly written, so we close the #if !
 echo "#endif // optimise.h"             >> fflas-ffpack/fflas-ffpack-optimise.h
 
-
-AS_IF([test "x$enable_optimization" != "xno"],
+AS_IF([test "x$enable_optimization" == "xyes"],
 [
 AC_MSG_RESULT(yes)
 
