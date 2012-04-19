@@ -63,7 +63,9 @@ CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=double"
 echo "  == Wino/BLAS threshold for double == "
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
-		sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl  -i does not work on BSD sed
+		sed  '$d' fflas-ffpack/fflas-ffpack-optimise.h > fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl append new definition
 		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl close the file
