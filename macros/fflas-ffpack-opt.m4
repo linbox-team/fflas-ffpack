@@ -65,7 +65,8 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl  -i does not work on BSD sed
-		sed  '$d' fflas-ffpack/fflas-ffpack-optimise.h > fflas-ffpack/fflas-ffpack-optimise.h ;
+		sed  '$d' fflas-ffpack/fflas-ffpack-optimise.h > fflas-ffpack/fflas-ffpack-optimise.back.h ;
+		mv fflas-ffpack/fflas-ffpack-optimise.back.h fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl append new definition
 		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl close the file
@@ -87,7 +88,9 @@ echo "  == Wino/BLAS threshold for float == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=float"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
-		sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		sed  '$d' fflas-ffpack/fflas-ffpack-optimise.h > fflas-ffpack/fflas-ffpack-optimise.back.h ;
+		mv fflas-ffpack/fflas-ffpack-optimise.back.h fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl append new definition
 		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl close the file
