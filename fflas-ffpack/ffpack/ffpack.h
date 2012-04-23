@@ -227,20 +227,20 @@ namespace FFPACK  {
 	     typename Field::Element * A, const size_t lda)
 	{
 
-		typename Field::Element det;
+		typename Field::Element det; F.init(det);
 		bool singular;
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
 		singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,  M, N,
 				       A, lda, P, Q, FfpackSingular);
 		if (singular){
-			F.init(det,0.0);
+			F.assign(det,F.zero);
 			delete[] P;
 			delete[] Q;
 			return det;
 		}
 		else{
-			F.init(det,1.0);
+			F.assign(det,F.one);
 			typename Field::Element *Ai=A;
 			for (; Ai < A+ M*lda+N; Ai+=lda+1 )
 				F.mulin( det, *Ai );
@@ -1514,7 +1514,7 @@ else {
 		// Warning: assumes that res is allocated to the size of the product
 		res.resize(P1.size()+P2.size()-1);
 		for (i=0;i<res.size();i++)
-			F.assign(res[i], 0.0);
+			F.assign(res[i], F.zero);
 		for ( i=0;i<P1.size();i++)
 			for ( j=0;j<P2.size();j++)
 				F.axpyin(res[i+j],P1[i],P2[j]);
