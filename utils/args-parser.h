@@ -43,8 +43,6 @@
 #include <stdlib.h>
 #include "fflas-ffpack/utils/print-utils.h"
 
-using namespace std;
-
 enum ArgumentType {
 	TYPE_NONE, TYPE_INT, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
 };
@@ -108,22 +106,22 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 			std::cout << " (default ";
 			switch (args[i].type) {
 			case TYPE_NONE:
-				cout << ((*(bool *)args[i].data)?"ON":"OFF");
+				std::cout << ((*(bool *)args[i].data)?"ON":"OFF");
 				break;
 			case TYPE_INT:
-				cout << *(int *) args[i].data;
+				std::cout << *(int *) args[i].data;
 				break;
 			case TYPE_INTEGER:
-				cout << *(long int *) args[i].data;
+				std::cout << *(long int *) args[i].data;
 				break;
 			case TYPE_DOUBLE:
-				cout << *(double *) args[i].data;
+				std::cout << *(double *) args[i].data;
 				break;
 			case TYPE_INTLIST:
-				cout << *(std::list<int> *) args[i].data ;
+				std::cout << *(std::list<int> *) args[i].data ;
 				break;
 			case TYPE_STR:
-				cout << *(std::string *) args[i].data ;
+				std::cout << *(std::string *) args[i].data ;
 				break;
 			}
 			std::cout << ")";
@@ -309,7 +307,7 @@ std::ostream& writeCommandString (std::ostream& os, Argument *args, char* progra
 {
 	os << programName;
 	for (int i = 0; args[i].c != '\0'; ++i) {
-		cout << " -" << args[i].c;
+		os << " -" << args[i].c;
 		switch (args[i].type) {
 		case TYPE_NONE:
 			if (! (*(bool *)args[i].data)) os << " N";
