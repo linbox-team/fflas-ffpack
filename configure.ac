@@ -221,8 +221,8 @@ LB_CHECK_GMP(,,[
 echo '*******************************************************************************'
 echo ' WARNING: GMP not found!'
 echo
-echo ' GMP version 3.1.1 or greater with --enable-cxx is needed for this library to have Givaro. Please'
-echo ' make sure GMP is installed and specify its location with the option'
+echo ' GMP library compiled with --enable-cxx is required for this library to compile.'
+echo ' Please make sure GMP is installed and specify its location with the option'
 echo ' --with-gmp=<prefix> when running configure.'
 echo '*******************************************************************************'
 ])
@@ -232,7 +232,7 @@ LB_CHECK_GIVARO(,,[
 echo '*******************************************************************************'
 echo ' WARNING: GIVARO not found!'
 echo
-echo ' GIVARO version 3.4.0 or greater (<3.5) is required for some tests in this library.'
+echo ' GIVARO library is required for some tests in this library.'
 echo ' Please make sure GIVARO is installed and specify its location with the'
 echo ' option --with-givaro=<prefix> when running configure.'
 echo '*******************************************************************************'
