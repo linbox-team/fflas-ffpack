@@ -159,7 +159,6 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda,
 	      typename Field::Element * B, const size_t ldb)
 {
-if( Field == true )
 	Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trmm))
 		(CblasRowMajor,
 		 Mjoin (Cblas, __FFLAS__SIDE),
