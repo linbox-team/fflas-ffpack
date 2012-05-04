@@ -28,8 +28,8 @@
  * @ingroup field
  * @brief  representation of <code>Z/mZ</code> over \c int64_t .
  */
-#ifndef __FFLASFFPACK_modular_int32_H
-#define __FFLASFFPACK_modular_int32_H
+#ifndef __FFLASFFPACK_modular_int64_H
+#define __FFLASFFPACK_modular_int64_H
 
 #include <math.h>
 #include <sys/time.h>
@@ -92,7 +92,7 @@ namespace FFPACK
 				,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv=1/(double)65521;
-			_two64 = (int64) ((uint64) (-1) % (uint64) 65521);
+			_two64 = (int64_t) ((uint64_t) (-1) % (uint64_t) 65521);
 			_two64 += 1;
 			if (_two64 >= 65521) _two64 -= 65521;
 
@@ -110,7 +110,7 @@ namespace FFPACK
 			FieldTraits<Modular<int64_t > >::maxModulus((uint64_t&)max) ;
 			if( value > max ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 #endif
-			 _two64 = (int64) ((uint64) (-1) % (uint64) value);
+			 _two64 = (int64_t) ((uint64_t) (-1) % (uint64_t) value);
 			 _two64 += 1;
 			 if (_two64 >= value) _two64 -= value;
 
