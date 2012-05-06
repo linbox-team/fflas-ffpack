@@ -26,6 +26,12 @@
  *.
  */
 
+/*! @internal
+ * @file fflas/fflas_faddm.inl
+ * @ingroup fflas
+ * @brief NO DOC
+ */
+
 #ifndef __FFLASFFPACK_fflas_faddm_H
 #define __FFLASFFPACK_fflas_faddm_H
 
@@ -34,11 +40,6 @@
 #endif
 
 namespace FFLAS {
-
-	/** faddm
-	 * A <- A+op(B)
-	 * with op(B) = B or B^T
-	 */
 
 	template<class Field>
 	inline void faddm(const Field & F,
@@ -55,10 +56,6 @@ namespace FFLAS {
 		return ;
 	}
 
-	/** faddm
-	 * C <- op(A)+op(B)
-	 * with op(B) = B or B^T
-	 */
 
 	template<class Field>
 	inline void faddm(const Field & F,
@@ -84,10 +81,6 @@ namespace FFLAS {
 		return ;
 	}
 
-	/** fsubm
-	 * A <- A-op(B)
-	 * with op(B) = B or B^T
-	 */
 
 	template<class Field>
 	inline void fsubm(const Field & F,
@@ -105,10 +98,6 @@ namespace FFLAS {
 		return ;
 	}
 
-	/** fsubm
-	 * C <- op(A)-op(B)
-	 * with op(B) = B or B^T
-	 */
 
 	template<class Field>
 	inline void fsubm(const Field & F,
@@ -134,6 +123,8 @@ namespace FFLAS {
 		return ;
 	}
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 	namespace Protected {
 
 #undef __FFLAS__FLOAT
@@ -153,6 +144,7 @@ namespace FFLAS {
 #undef  __FFLAS__NOTRANSPOSE
 #undef  __FFLAS__GENERIC
 
+
 #define __FFLAS__GENERIC
 #define __FFLAS__TRANSPOSE // no transpose
 #include "fflas_faddmin_src.inl"
@@ -286,8 +278,11 @@ namespace FFLAS {
 #undef  __FFLAS__DOUBLE
 
 
-#endif // __FFLASFFPACK_fflas_faddm_H
 
 	} // Protected
 
+#endif // SKIPPED BY DOXYGEN
+
 } // FFLAS
+
+#endif // __FFLASFFPACK_fflas_faddm_H

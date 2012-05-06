@@ -88,7 +88,7 @@ namespace FFPACK
 
 		//default modular field,taking 65521 as default modulus
 		Modular () :
-			modulus(65521),lmodulus(modulus)
+			modulus(65521),lmodulus((unsigned long)modulus)
 				,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv=1/(double)65521;
@@ -99,7 +99,7 @@ namespace FFPACK
 		}
 
 		Modular (int64_t value, int64_t exp = 1) :
-			modulus(value),lmodulus(modulus)
+			modulus(value),lmodulus((unsigned long)modulus)
 				,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
@@ -117,7 +117,7 @@ namespace FFPACK
 		}
 
 		Modular(const Modular<int64_t>& mf) :
-			modulus(mf.modulus),modulusinv(mf.modulusinv),lmodulus(modulus),_two64(mf._two64)
+			modulus(mf.modulus),modulusinv(mf.modulusinv),lmodulus((unsigned long)modulus),_two64(mf._two64)
 				,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{}
 

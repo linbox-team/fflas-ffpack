@@ -26,6 +26,12 @@
  *.
  */
 
+/** @internal
+ * @file fflas/fflas_faddmin_src.inl
+ * @ingroup fflas
+ * @brief NO DOC
+ */
+
 #define Mjoin(pre, nam) my_join(pre, nam)
 #define my_join(pre, nam) pre ## nam
 

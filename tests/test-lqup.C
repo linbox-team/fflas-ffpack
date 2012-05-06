@@ -34,7 +34,6 @@
 // of A over Z/pZ
 //-------------------------------------------------------------------------
 
-using namespace std;
 
 
 //#define __LUDIVINE_CUTOFF 1
@@ -49,6 +48,7 @@ using namespace std;
 
 #include "fflas-ffpack/utils/args-parser.h"
 
+using namespace std;
 using namespace FFPACK;
 
 

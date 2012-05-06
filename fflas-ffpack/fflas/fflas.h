@@ -255,8 +255,8 @@ namespace FFLAS {
 		 * \param winoLevelProvided tells whether the user forced the number of
 		 *                          recursive level of Winograd's algorithm
 		 *
-		 * @bib [Dumas, Giorgi, Pernet, arXiv cs/0601133]
-		 * <a href=http://arxiv.org/abs/cs.SC/0601133>here</a>
+		 * @bib
+		 * - Dumas, Giorgi, Pernet, arXiv cs/0601133  <a href=http://arxiv.org/abs/cs.SC/0601133>here</a>
 		 */
 		template <class Field>
 		void MatMulParameters (const Field& F,
@@ -315,7 +315,8 @@ namespace FFLAS {
 		 *  system of dimension k can be solved over Z without overflow of the
 		 *  underlying floating point representation.
 		 *
-		 *  @bib [Dumas, Giorgi, Pernet 06, arXiv:cs/0601133 ]
+		 *  @bib
+		 *  - Dumas, Giorgi, Pernet 06, arXiv:cs/0601133.
 		 *
 		 * \param F Finite Field/Ring of the computation
 		 *
@@ -825,6 +826,7 @@ namespace FFLAS {
 				F.sub (Ci[i], Ai[i], Bi[i]);
 	}
 
+	//! fsubin
 	template <class Field>
 	void
 	fsubin (const Field& F, const size_t M, const size_t N,
@@ -838,6 +840,7 @@ namespace FFLAS {
 				F.subin (Ci[i], Bi[i]);
 	}
 
+	//! faddin
 	template <class Field>
 	void
 	faddin (const Field& F, const size_t M, const size_t N,
@@ -1137,6 +1140,10 @@ namespace FFLAS {
 					       typename Field::Element * B, const size_t ldb);
 #endif
 
+	/** faddm.
+	 * A <- A+op(B)
+	 * with op(B) = B or B^T
+	 */
 	template<class Field>
 	void faddm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
@@ -1144,6 +1151,10 @@ namespace FFLAS {
 			  const typename Field::Element * A, const size_t lda,
 			  typename Field::Element * B, const size_t ldb);
 
+	/** faddm.
+	 * C <- op(A)+op(B)
+	 * with op(B) = B or B^T
+	 */
 	template<class Field>
 	void faddm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
@@ -1153,6 +1164,10 @@ namespace FFLAS {
 			  const typename Field::Element * B, const size_t ldb,
 			  typename Field::Element * C, const size_t ldc );
 
+	/** fsubm.
+	 * A <- A-op(B)
+	 * with op(B) = B or B^T
+	 */
 	template<class Field>
 	void fsubm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
@@ -1160,6 +1175,10 @@ namespace FFLAS {
 			  const typename Field::Element * A, const size_t lda,
 			  typename Field::Element * B, const size_t ldb) ;
 
+	/** fsubm.
+	 * C <- op(A)-op(B)
+	 * with op(B) = B or B^T
+	 */
 	template<class Field>
 	void fsubm(const Field & F,
 			  const FFLAS_TRANSPOSE transA,
@@ -1169,8 +1188,7 @@ namespace FFLAS {
 			  const typename Field::Element * B, const size_t ldb,
 			  typename Field::Element * C, const size_t ldc );
 
-	/**
-	 * MatCopy makes a copy of the matrix M into a new allocated space.
+	/** MatCopy makes a copy of the matrix M into a new allocated space.
 	 * @param F field
 	 * @param M rows of \p A
 	 * @param N cols of \p A
@@ -1193,10 +1211,7 @@ namespace FFLAS {
 		return C;
 	}
 
-	/**
-	 * Winosteps
-	 *
-	 * \brief Computes the number of recursive levels to perform
+	/** \brief Computes the number of recursive levels to perform.
 	 *
 	 * \param m the common dimension in the product AxB
 	 */

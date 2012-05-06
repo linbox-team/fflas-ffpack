@@ -56,4 +56,17 @@
  * See the output of <code>./configure --help</code> for information about the LAPACK/BLAS discovering strategies.
  * For now, Givaro is not compulsory
  */
+
+/** @page copy Copying and Licence
+ * @brief no doc.
+ */
+
+/** @page tuto Tutorial
+ * @brief no doc.
+ */
+
+/** @page arch Architecture of the library.
+ * @brief no doc.
+ */
+
 // vim:syn=doxygen

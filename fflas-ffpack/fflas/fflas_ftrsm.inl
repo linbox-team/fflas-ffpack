@@ -112,6 +112,9 @@ namespace FFLAS {
 
 	}
 
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 	namespace Protected {
 
 #define __FFLAS__GENERIC
@@ -705,6 +708,9 @@ namespace FFLAS {
 #undef __FFLAS__UNIT
 
 	} // Protected
+
+#endif // SKIPPED BY DOXYGEN
+
 } // FFLAS
 
 #endif // __FFLASFFPACK_ftrsm_INL

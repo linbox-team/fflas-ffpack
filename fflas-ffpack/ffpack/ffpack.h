@@ -166,6 +166,7 @@ namespace FFPACK  {
 
 	/** Computes the rank of the given matrix using a LQUP factorization.
 	 * The input matrix is modified.
+	 * @param F field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix
 	 * @param A input matrix
@@ -267,8 +268,8 @@ namespace FFPACK  {
 
 
 
-	/**
-	 * Solve the system \f$A X = B\f$ or \f$X A = B\f$, using the \c LQUP decomposition of \p A
+	/** Solve the system \f$A X = B\f$ or \f$X A = B\f$.
+	 * Solving using the \c LQUP decomposition of \p A
 	 * already computed inplace with \c LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
 	 * Version for A square.
 	 * If A is rank deficient, a solution is returned if the system is consistent,
@@ -358,8 +359,8 @@ else { // Right Looking X A = B
 		}
 	}
 
-	/**
-	 * Solve the system A X = B or X A = B, using the LQUP decomposition of A
+	/** Solve the system A X = B or X A = B.
+	 * Solving using the LQUP decomposition of A
 	 * already computed inplace with LUdivine(FFLAS::FflasNoTrans, FFLAS::FflasNonUnit).
 	 * Version for A rectangular.
 	 * If A is rank deficient, a solution is returned if the system is consistent,
@@ -547,8 +548,7 @@ else {
 		}
 	}
 
-	/**
-	 * @brief Square system solver
+	/** @brief Square system solver
 	 * @param F The computation domain
 	 * @param Side Determine wheter the resolution is left or right looking
 	 * @param M row dimension of B
@@ -594,8 +594,7 @@ else {
 		return R;
 	}
 
-	/**
-	 * @brief Rectangular system solver
+	/**  @brief Rectangular system solver
 	 * @param F The computation domain
 	 * @param Side Determine wheter the resolution is left or right looking
 	 * @param M row dimension of A
@@ -639,8 +638,8 @@ else {
 		return R;
 	}
 
-	/**
-	 * Solve the system Ax=b, using LQUP factorization and
+	/**  Solve the system Ax=b.
+	 * Solving using LQUP factorization and
 	 * two triangular system resolutions.
 	 * The input matrix is modified.
 	 * @param F The computation domain
@@ -689,8 +688,7 @@ else {
 
 
 
-	/**
-	 * Computes a basis of the Left/Right nullspace of the matrix A
+	/**  Computes a basis of the Left/Right nullspace of the matrix A.
 	 * return the dimension of the nullspace.
 	 *
 	 * @param F The computation domain
@@ -765,8 +763,7 @@ else { // Left NullSpace
 		}
 	}
 
-	/**
-	 * Computes the row rank profile of A.
+	/**  Computes the row rank profile of A.
 	 *
 	 * @param F
 	 * @param M
@@ -797,8 +794,7 @@ else { // Left NullSpace
 		return R;
 	}
 
-	/**
-	 * Computes the column rank profile of A.
+	/**  Computes the column rank profile of A.
 	 *
 	 * @param F
 	 * @param M
@@ -830,7 +826,7 @@ else { // Left NullSpace
 		return R;
 	}
 
-	/** RowRankProfileSubmatrixIndices
+	/** RowRankProfileSubmatrixIndices.
 	 * Computes the indices of the submatrix r*r X of A whose rows correspond to
 	 * the row rank profile of A.
 	 *
@@ -882,8 +878,7 @@ else { // Left NullSpace
 		return R;
 	}
 
-	/**
-	 * Computes the indices of the submatrix r*r X of A whose columns correspond to
+	/** Computes the indices of the submatrix r*r X of A whose columns correspond to
 	 * the column rank profile of A.
 	 *
 	 * @param F
@@ -934,8 +929,7 @@ else { // Left NullSpace
 		return R;
 	}
 
-	/**
-	 * Compute the r*r submatrix X of A, by picking the row rank profile rows of A.
+	/** Compute the r*r submatrix X of A, by picking the row rank profile rows of A.
 	 *
 	 * @param F
 	 * @param M
@@ -973,8 +967,7 @@ else { // Left NullSpace
 		return R;
 	}
 
-	/**
-	 * Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
+	/** Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
 	 *
 	 *
 	 * @param F
@@ -1065,11 +1058,12 @@ else { // Left NullSpace
 	TURBO (const Field& F, const size_t M, const size_t N,
 	       typename Field::Element* A, const size_t lda, size_t * P, size_t * Q, const size_t cutoff);
 
-	/**
-	 * @brief Compute the LQUP factorization of the given matrix using
-	 * a block agorithm and return its rank.
+	/** @brief Compute the LQUP factorization of the given matrix.
+	 * Using
+	 * a block algorithm and return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
+	 * @param F field
 	 * @param Diag  precise whether U should have a unit diagonal or not
 	 * @param trans UNKOWN TAG, probably the \c LU of \f$A^t\f$
 	 * @param M matrix row dimension
@@ -1083,8 +1077,10 @@ else { // Left NullSpace
 	 * @param cutoff UNKOWN TAG, probably a switch to a faster algo below \c cutoff
 	 *
 	 * @return the rank of \p A
-	 * @bib - Jeannerod CP, \emph{\c LSP Matrix Decomposition Revisited}, 2006
-	 * - Pernet C, Brassel M \emph{\c LUdivine, une divine factorisation \c LU}, 2002
+	 * @bib
+	 * - Jeannerod CP, <i>\c LSP Matrix Decomposition Revisited</i>, 2006
+	 * - Pernet C, Brassel M <i>\c LUdivine, une divine factorisation \c LU</i>, 2002
+	 * .
 	 */
 	template <class Field>
 	size_t
@@ -1096,6 +1092,7 @@ else { // Left NullSpace
 		  , const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF
 		  );
 
+	//! LUpdate
 	template <class Field>
 	size_t LUpdate (const Field& F,
 			const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
@@ -1112,6 +1109,7 @@ else { // Left NullSpace
 	template<class Element>
 	class callLUdivine_small;
 
+	//! LUdivine small case
 	template <class Field>
 	size_t
 	LUdivine_small (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
@@ -1120,6 +1118,7 @@ else { // Left NullSpace
 			size_t* P, size_t* Q,
 			const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
 
+	//! LUdivine gauss
 	template <class Field>
 	size_t
 	LUdivine_gauss (const Field& F, const FFLAS::FFLAS_DIAG Diag,
@@ -1131,8 +1130,7 @@ else { // Left NullSpace
 
 
 
-	/**
-	 * Compute the inverse of a triangular matrix.
+	/** Compute the inverse of a triangular matrix.
 	 * @param F
 	 * @param Uplo whether the matrix is upper of lower triangular
 	 * @param Diag whether the matrix if unit diagonal
@@ -1171,8 +1169,8 @@ else { // Left NullSpace
 	}
 
 
-	/**
-	 * Compute the product UL of the upper, resp lower triangular matrices U and L
+	/**  Compute the product UL.
+	 * Product UL of the upper, resp lower triangular matrices U and L
 	 * stored one above the other in the square matrix A.
 	 * Diag == Unit if the matrix U is unit diagonal
 	 * @param F
@@ -1213,8 +1211,7 @@ else { // Left NullSpace
 	/* ECHELON FORMS */
 	/*****************/
 
-	/**
-	 * Compute the Column Echelon form of the input matrix in-place.
+	/** Compute the Column Echelon form of the input matrix in-place.
 	 *
 	 * After the computation A = [ M \ V ] such that AU = C is a column echelon
 	 * decomposition of A, with U = P^T [   V    ] and C = M + Q [ Ir ]
@@ -1236,8 +1233,7 @@ else { // Left NullSpace
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 			   typename Field::Element * A, const size_t lda,
 			   size_t* P, size_t* Qt, bool transform = true);
-	/**
-	 * Compute the Row Echelon form of the input matrix in-place.
+	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
 	 * After the computation A = [ L \ M ] such that L A = R is a row echelon
 	 * decomposition of A, with L =  [ L  0   ] P  and R = M + [Ir 0] Q^T
@@ -1260,8 +1256,7 @@ else { // Left NullSpace
 			typename Field::Element * A, const size_t lda,
 			size_t* P, size_t* Qt, const bool transform = false);
 
-	/**
-	 * Compute the Reduced Column Echelon form of the input matrix in-place.
+	/** Compute the Reduced Column Echelon form of the input matrix in-place.
 	 *
 	 * After the computation A = [ V   ] such that AU = R is a reduced col echelon
 	 *                           [ M 0 ]
@@ -1285,8 +1280,7 @@ else { // Left NullSpace
 				  typename Field::Element * A, const size_t lda,
 				  size_t* P, size_t* Qt, const bool transform = true);
 
-	/**
-	 * Compute the Reduced Row Echelon form of the input matrix in-place.
+	/** Compute the Reduced Row Echelon form of the input matrix in-place.
 	 *
 	 * After the computation A = [ V1 M ] such that L A = R is a reduced row echelon
 	 *                           [ V2 0 ]
@@ -1309,8 +1303,8 @@ else { // Left NullSpace
 			       typename Field::Element * A, const size_t lda,
 			       size_t* P, size_t* Qt, const bool transform = true);
 
-	/**
-	 * Variant by the block recursive algorithm (See A. Storjohann Thesis 2000)
+	/**  Variant by the block recursive algorithm.
+	 * (See A. Storjohann Thesis 2000)
 	 * !!!!!! Warning !!!!!!
 	 * This code is NOT WORKING properly for some echelon structures.
 	 * This is due to a limitation of the way we represent permutation matrices
@@ -1332,6 +1326,7 @@ else { // Left NullSpace
 
 	}
 
+	//! REF
 	template <class Field>
 	size_t
 	REF (const Field& F, const size_t M, const size_t N,
@@ -1342,8 +1337,7 @@ else { // Left NullSpace
 	/*****************/
 	/*   INVERSION   */
 	/*****************/
-	/**
-	 * Invert the given matrix in place
+	/**  Invert the given matrix in place.
 	 * or computes its nullity if it is singular.
 	 * An inplace 2n^3 algorithm is used.
 	 * @param F The computation domain
@@ -1371,8 +1365,7 @@ else { // Left NullSpace
 		return A;
 	}
 
-	/**
-	 * Invert the given matrix in place
+	/** Invert the given matrix in place.
 	 * or computes its nullity if it is singular.
 	 *
 	 * Partial doc.
@@ -1402,8 +1395,7 @@ else { // Left NullSpace
 
 	}
 
-	/**
-	 * Invert the given matrix or computes its nullity if it is singular.
+	/** Invert the given matrix or computes its nullity if it is singular.
 	 * An 2n^3 algorithm is used.
 	 * The input matrix is modified.
 	 * @param F
@@ -1552,8 +1544,8 @@ else {
 	/* MINIMAL POLYNOMIAL */
 	/**********************/
 
-	/**
-	 * Compute the minimal polynomial of (A,v) using an LUP
+	/** Compute the minimal polynomial.
+	 * Minpoly of (A,v) using an LUP
 	 * factorization of the Krylov Base (v, Av, .., A^kv)
 	 * U,X must be (n+1)*n
 	 * U contains the Krylov matrix and X, its LSP factorization
@@ -1567,10 +1559,10 @@ else {
 		 const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0 );
 
 
-	// Solve L X = B or X L = B in place
-	// L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
-	// Only the R non trivial column of L are stored in the M*R matrix L
-	// Requirement :  so that L could  be expanded in-place
+	//! Solve L X = B or X L = B in place.
+	//! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
+	//! Only the R non trivial column of L are stored in the M*R matrix L
+	//! Requirement :  so that L could  be expanded in-place
 	template<class Field>
 	void
 	solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
@@ -1606,9 +1598,9 @@ else {
 		}
 	}
 
-	// Solve L X = B in place
-	// L is M*M or N*N, B is M*N.
-	// Only the R non trivial column of L are stored in the M*R matrix L
+	//! Solve L X = B in place.
+	//! L is M*M or N*N, B is M*N.
+	//! Only the R non trivial column of L are stored in the M*R matrix L
 	template<class Field>
 	void
 	solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,

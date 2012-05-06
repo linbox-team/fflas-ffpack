@@ -110,6 +110,8 @@ ftrmm (const Field& F, const FFLAS_SIDE Side,
 
 }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 namespace Protected {
 
 #define __FFLAS__GENERIC
@@ -703,6 +705,8 @@ namespace Protected {
 #undef __FFLAS__UNIT
 
 } // Protected
+
+#endif // SKIPPED BY DOXYGEN
 
 } // FFLAS
 

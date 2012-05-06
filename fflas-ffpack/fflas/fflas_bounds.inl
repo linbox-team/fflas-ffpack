@@ -344,7 +344,7 @@ namespace FFLAS {
 		 * Specialization for balanced modular representation over double.
 		 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
 		 * @bib
-		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+		 * - Dumas Giorgi Pernet 06, arXiv:cs/0601133
 		 */
 		template<>
 		inline size_t TRSMBound (const FFPACK:: ModularBalanced<double>& F)

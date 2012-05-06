@@ -23,7 +23,7 @@
  *
  */
 
-/*! @file field/modular-int32_t.h
+/*! @file field/modular-int32.h
  * @ingroup field
  * @brief  representation of <code>Z/mZ</code> over \c int32_t .
  */
