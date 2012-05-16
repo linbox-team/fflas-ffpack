@@ -21,8 +21,8 @@
 
 #
 # Nothing yet
-
-SUBDIRS=graph src html test-src
-#
-EXTRA_DIST=run.sh
+EXTRA_DIST=fflas.css  \
+	   html_report.sh  \
+	   html_report.xsl \
+	   process.sh
 

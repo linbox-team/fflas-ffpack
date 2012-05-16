@@ -21,8 +21,8 @@
 
 #
 # Nothing yet
-
-SUBDIRS=graph src html test-src
 #
-EXTRA_DIST=run.sh
-
+EXTRA_DIST=mesure-BLAS_LAPACK.sh \
+	   mesure-FFLAS_FFPACK.sh \
+	   mesure.sh  \
+	   parameter.in

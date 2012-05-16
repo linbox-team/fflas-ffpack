@@ -303,8 +303,13 @@ doc/Makefile
 tests/Makefile
 benchmark/Makefile
 optimiser/Makefile
+benchmark/src/Makefile
+benchmark/src/BLOCKING/Makefile
 benchmark/src/FFLAS_FFPACK/Makefile
 benchmark/src/BLAS_LAPACK/Makefile
+benchmark/html/Makefile
+benchmark/graph/Makefile
+benchmark/test-src/Makefile
 ])
 AC_OUTPUT
 

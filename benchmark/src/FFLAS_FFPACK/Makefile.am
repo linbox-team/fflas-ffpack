@@ -48,6 +48,7 @@ check_wino_SOURCES = check-wino.C
 check_ftrsm_SOURCES = check-ftrsm.C
 check_ftrtri_SOURCES = check-ftrtri.C
 check_inverse_SOURCES = check-inverse.C
+check_lqup_SOURCES = check-lqup.C
 
 # for compilation of new benches
 FFLASFFPACK_BIN=@bindir@

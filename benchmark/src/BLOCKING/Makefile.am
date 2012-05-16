@@ -21,8 +21,5 @@
 
 #
 # Nothing yet
-
-SUBDIRS=graph src html test-src
-#
-EXTRA_DIST=run.sh
+EXTRA_DIST=gnucommand  Makefile  Makefile.am  mesure.sh  mulMM.C  plot1-mulMM  tblockmat.C
 

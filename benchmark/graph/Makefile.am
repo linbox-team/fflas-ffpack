@@ -21,8 +21,6 @@
 
 #
 # Nothing yet
-
-SUBDIRS=graph src html test-src
-#
-EXTRA_DIST=run.sh
-
+EXTRA_DIST=graph_report.sh \
+	   make_graph_file.pl \
+	   make_graph.sh

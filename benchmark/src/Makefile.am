@@ -22,7 +22,5 @@
 #
 # Nothing yet
 
-SUBDIRS=graph src html test-src
-#
-EXTRA_DIST=run.sh
+SUBDIRS=BLAS_LAPACK  BLOCKING  FFLAS_FFPACK
 
