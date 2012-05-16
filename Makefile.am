@@ -56,6 +56,6 @@ uninstall-hook:
 
 bin_SCRIPTS=fflas-ffpack-config
 
-VERSION=1.5.0
+VERSION=1.5.1
 
 #  EXTRA_DIST=incremente-versions
