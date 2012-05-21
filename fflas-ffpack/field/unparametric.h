@@ -342,7 +342,7 @@ namespace FFPACK
 		template <typename Src>
 		Element& init (Element& x, const Src& s) const
 		{
-			return Caster (x, s);
+			return FFPACK::Caster (x, s);
 		}
 
 
@@ -351,7 +351,7 @@ namespace FFPACK
 		template <typename T>
 		T& convert (T &x, const Element &y) const
 		{
-			return Caster (x,y);
+			return FFPACK::Caster (x,y);
 		}
 
 	};
