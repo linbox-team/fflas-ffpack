@@ -46,16 +46,22 @@ benchmarks:
 	(cd benchmarks; make benchmarks)
 
 uninstall-hook:
-	(test -d "$(includedir)/fflas-ffpack" && rmdir "$(includedir)/fflas-ffpack/fflas" \
+	(test -d "$(includedir)/fflas-ffpack" && rmdir  "$(bindir)" \
+		"$(libdir)" \
+		"$(mandir)/man1" \
+		"$(mandir)" \
+		"$(includedir)/fflas-ffpack/fflas" \
 		"$(includedir)/fflas-ffpack/ffpack" \
 		"$(includedir)/fflas-ffpack/field" \
 		"$(includedir)/fflas-ffpack/utils" \
-		"$(includedir)/fflas-ffpack/" ) || true
+		"$(includedir)/fflas-ffpack/"  \
+		"$(datarootdir)/" \
+		"$(includedir)") || true
 
 .PHONY:examples benchmarks
 
 bin_SCRIPTS=fflas-ffpack-config
 
-VERSION=1.5.1
+VERSION=1.6.0
 
 #  EXTRA_DIST=incremente-versions
