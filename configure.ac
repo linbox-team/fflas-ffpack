@@ -219,22 +219,24 @@ echo "-----------------------------------------------"
 
 LB_CHECK_GMP(,,[
 echo '*******************************************************************************'
-echo ' WARNING: GMP not found!'
+echo ' WARNING: GMP not found! (this is not a problem for the moment)'
 echo
 echo ' GMP library compiled with --enable-cxx is required for this library to compile.'
 echo ' Please make sure GMP is installed and specify its location with the option'
 echo ' --with-gmp=<prefix> when running configure.'
+echo ' Do not forget to set/export LD_LIBRARY_PATH if necessary.'
 echo '*******************************************************************************'
 ])
 
 
 LB_CHECK_GIVARO(,,[
 echo '*******************************************************************************'
-echo ' WARNING: GIVARO not found!'
+echo ' WARNING: GIVARO not found! (this is not a problem for the moment)'
 echo
 echo ' GIVARO library is required for some tests in this library.'
 echo ' Please make sure GIVARO is installed and specify its location with the'
 echo ' option --with-givaro=<prefix> when running configure.'
+echo ' Do not forget to set/export LD_LIBRARY_PATH if necessary.'
 echo '*******************************************************************************'
 ])
 
