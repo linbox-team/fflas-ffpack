@@ -609,11 +609,12 @@ namespace FFLAS {
 	}
 
 	/** \brief fcopy : \f$x \gets y \f$.
+	 * X is preallocated
 	 * @param F field
 	 * @param N size of the vectors
-	 * \param X vector in \p F
+	 * \param [out] X vector in \p F
 	 * \param incX stride of \p X
-	 * \param Y vector in \p F
+	 * \param [in] Y vector in \p F
 	 * \param incY stride of \p Y
 	 */
 	template<class Field>

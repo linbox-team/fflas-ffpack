@@ -41,10 +41,14 @@ dnl Test for BLAS and define BLAS_LIBS
 
 AC_DEFUN([FF_CHECK_BLAS],
 		[ AC_ARG_WITH(blas,
-			[AC_HELP_STRING([--with-blas=lflags],
+			[AC_HELP_STRING([--with-blas=<lflags>],
 				[Use BLAS library. This library is mandatory for FFLAS-FFPACK
-				compilation. The user has the responsability to provide library
-                flags such that the compiler will find and use BLAS (and LAPACK)])
+				compilation. The user has the responsability to
+				provide library flags such that the compiler
+				will find and use BLAS (and LAPACK). An example
+				could be --with-blas=/path/to/blas or
+				--with-blas="-L/path/to/blas/lib -lsomeblas".\n
+				* Warning : we don't really handle .a archives alone...])
 			])
 
 		BACKUP_CXXFLAGS=${CXXFLAGS}

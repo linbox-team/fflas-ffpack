@@ -1337,16 +1337,16 @@ else { // Left NullSpace
 	/*****************/
 	/*   INVERSION   */
 	/*****************/
-	/**  Invert the given matrix in place.
+	/**  Invert the given matrix in place
 	 * or computes its nullity if it is singular.
 	 * An inplace 2n^3 algorithm is used.
 	 * @param F The computation domain
 	 * @param M order of the matrix
-	 * @param A input matrix
+	 * @param [in,out] A input matrix (\f$M \times M\f$)
 	 * @param lda leading dimension of A
 	 * @param nullity dimension of the kernel of A
+	 * @return pointer to \f$A \gets A^{-1}\f$
 	 */
-	/// Invert a matrix or return its nullity
 	template <class Field>
 	typename Field::Element*
 	Invert (const Field& F, const size_t M,
@@ -1365,48 +1365,48 @@ else { // Left NullSpace
 		return A;
 	}
 
-	/** Invert the given matrix in place.
+	/** Invert the given matrix in place
 	 * or computes its nullity if it is singular.
 	 *
-	 * Partial doc.
+	 * X is preallocated.
 	 *
 	 * @param F The computation domain
 	 * @param M order of the matrix
-	 * @param A input matrix
-	 * @param lda leading dimension of A
-	 * @param X
-	 * @param ldx
-	 * @param nullity dimension of the kernel of A
+	 * @param [in] A input matrix (\f$M \times M\f$)
+	 * @param lda leading dimension of \p A
+	 * @param [out] X output matrix
+	 * @param ldx leading dimension of \p X
+	 * @param nullity dimension of the kernel of \p A
+	 * @return pointer to \f$X = A^{-1}\f$
 	 */
-	/// Invert a matrix or return its nullity
-
 	template <class Field>
 	typename Field::Element*
 	Invert (const Field& F, const size_t M,
-		typename Field::Element * A, const size_t lda,
+		const typename Field::Element * A, const size_t lda,
 		typename Field::Element * X, const size_t ldx,
 		int& nullity)
 	{
 
-		Invert (F,  M, A, lda, nullity);
-		for (size_t i=0; i<M; ++i)
-			FFLAS::fcopy (F, M, X+i*ldx, 1, A+i*lda,1);
+		FFLAS::fcopy(F,M,M,X,ldx,A,lda);
+		Invert (F,  M, X, lda, nullity);
 		return X;
-
 	}
 
 	/** Invert the given matrix or computes its nullity if it is singular.
 	 * An 2n^3 algorithm is used.
-	 * The input matrix is modified.
+	 * This routine can be \% faster than Invert but is not totally inplace.
+	 * X is preallocated.
+	 * @warning A is overwritten here !
+	 * @warning not tested.
 	 * @param F
 	 * @param M order of the matrix
-	 * @param A input matrix
+	 * @param [in,out] A input matrix (\f$M \times M\f$)
 	 * @param lda leading dimension of A
-	 * @param X inverse of A
+	 * @param [out] X output matrix
 	 * @param ldx leading dimension of X
 	 * @param nullity dimension of the kernel of A
+	 * @return pointer to \f$X = A^{-1}\f$
 	 */
-	/// Invert a matrix or return its nullity
 	template <class Field>
 	typename Field::Element*
 	Invert2( const Field& F, const size_t M,
@@ -1418,7 +1418,7 @@ else { // Left NullSpace
 		size_t *P = new size_t[M];
 		size_t *rowP = new size_t[M];
 
-#if 0
+#if 0 /*  timer remnants */
 		Timer t1;
 		t1.clear();
 		t1.start();
@@ -1426,7 +1426,7 @@ else { // Left NullSpace
 
 		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP));
 
-#if 0
+#if 0/*  timer remnants */
 		t1.stop();
 		cerr<<"LU --> "<<t1.usertime()<<endl;
 #endif
@@ -1436,12 +1436,13 @@ else { // Left NullSpace
 			delete[] rowP;
 			return NULL;
 		}
-else {
+		else {
 			// Initializing X to 0
-#if 0
+#if 0/*  timer remnants */
 			t1.clear();
 			t1.start();
 #endif
+			//! @todo this init is not necessary (done after ftrtri)
 			for (size_t i=0; i<M; ++i)
 				for (size_t j=0; j<M;++j)
 					F.assign(*(X+i*ldx+j), F.zero);
@@ -1455,7 +1456,7 @@ else {
 			}
 			for (size_t i=1; i<M; ++i)
 				FFLAS::fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
-#if 0
+#if 0/*  timer remnants */
 			t1.stop();
 			cerr<<"U^-1 --> "<<t1.usertime()<<endl;
 
@@ -1468,7 +1469,7 @@ else {
 #endif
 			ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 			       M, M, F.one, A, lda , X, ldx);
-#if 0
+#if 0/*  timer remnants */
 			t1.stop();
 			cerr<<"ftrsm --> "<<t1.usertime()<<endl;
 #endif

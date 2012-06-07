@@ -261,7 +261,7 @@ if test "$BLAS_FOUND" = "false" ; then
 	echo
 	echo ' BLAS routines are required for this library to compile. Please'
 	echo ' make sure BLAS are installed and specify its location with the option'
-	echo ' --with-blas=<lib> when running configure (or --with-cblas for atlas,...).'
+	echo ' --with-blas=<lib> when running configure (or --with-cblas... see configure --help).'
 	echo '*******************************************************************************'
 	exit 1
 fi
