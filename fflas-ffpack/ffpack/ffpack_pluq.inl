@@ -45,9 +45,40 @@ namespace FFPACK {
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
 		
-		if (MIN (M,N) = 1){
-			return 
-				}
+		if (M = 1){
+			size_t piv = 0;
+			while ((piv < N) && F.isZero (A[piv])) piv++;
+			if (piv == N)
+				return 0;
+			F.assign (*A, A[piv]);
+			F.assign (A[piv], F.Zero);
+			if (Diag== FflasUnit){
+				typename Field::Element invpivot;
+				F.inv(invpivot, *A);
+				for (size_t i=piv+1; i<N; ++i)
+					F.mulin (A[i], invpivot);
+			}
+			P[0] = 0;
+			Q[0] = piv;
+			return 1;
+		}
+		if (N = 1){
+			size_t piv = 0;
+			while ((piv < M) && F.isZero (A +piv*lda)) piv++;
+			if (piv == M)
+				return 0;
+			F.assign (*A, *(A+piv*lda));
+			F.assign (*(A+piv*lda), F.Zero);
+			if (Diag== FflasNonUnit){
+				typename Field::Element invpivot;
+				F.inv(invpivot, *A);
+				for (size_t i=piv+1; i<M; ++i)
+					F.mulin (*(A+i*lda), invpivot);
+			}
+			P[0] = piv;
+			Q[0] = 0;
+			return 1;
+		}
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;
 		size_t N2 = N >> 1;
