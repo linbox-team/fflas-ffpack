@@ -88,7 +88,36 @@ namespace FFPACK  {
 		FfpackDense=1,
 		FfpackKGF=2
 	};
+	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP, 
+				  const size_t N);
 
+	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP, 
+				  const size_t N);
+
+	template <class Element>
+	void applyS (Element* A, const size_t lda, const size_t width, 
+		     const size_t M2,
+		     const size_t R1, const size_t R2, 
+		     const size_t R3, const size_t R4);
+
+	template <class Element>
+	void applyT (Element* A, const size_t lda, const size_t width, 
+		     const size_t N2,
+		     const size_t R1, const size_t R2, 
+		     const size_t R3, const size_t R4);
+
+	void applyTT (size_t* A, const size_t N2,
+		     const size_t R1, const size_t R2, 
+		     const size_t R3, const size_t R4);
+
+	void composePermutationsP (size_t * MathP, 
+				  const size_t * P1, 
+				  const size_t * P2, 
+				  const size_t R, const size_t N);
+	void composePermutationsQ (size_t * MathP, 
+				  const size_t * Q1, 
+				  const size_t * Q2, 
+				  const size_t R, const size_t N);
 
 	/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
 	 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
@@ -1058,6 +1087,14 @@ else { // Left NullSpace
 	TURBO (const Field& F, const size_t M, const size_t N,
 	       typename Field::Element* A, const size_t lda, size_t * P, size_t * Q, const size_t cutoff);
 
+	template<class Field>
+	size_t
+	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+	      const size_t M, const size_t N,
+	      typename Field::Element * A, const size_t lda, 
+	      size_t*P, size_t *Q);
+
+	
 	/** @brief Compute the LQUP factorization of the given matrix.
 	 * Using
 	 * a block algorithm and return its rank.
@@ -1839,6 +1876,6 @@ else { // Left NullSpace
 #include "ffpack_krylovelim.inl"
 #include "ffpack_frobenius.inl"
 #include "ffpack_echelonforms.inl"
-
+#include "ffpack_pluq.inl"
 #endif // __FFLASFFPACK_ffpack_H
 
