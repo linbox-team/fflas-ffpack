@@ -44,25 +44,11 @@ namespace FFPACK {
 	PLUQ (const Field& Fi, const FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
-		// write_field (Fi, std::cerr<<"Entree dans PLUQ M = "<<M<<
-		// 	     " N = "<<N<<"A = "<<std::endl,A, M,N,lda); 
+		
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
 		if (MIN (M,N) == 0) return 0;
-		if (MAX (M,N) == 1){
-		
-			// write_field (Fi, std::cerr<<"Sortie de PLUQ A = "<<std::endl,A, M,N,lda);
-			// std::cerr<<"P = ";
-			// for (int i=0; i<M; ++i)
-			// 	std::cerr<<P[i]<<" ";
-			// std::cerr<<std::endl;
-			// std::cerr<<"Q = ";
-			// for (int i=0; i<N; ++i)
-			// 	std::cerr<<Q[i]<<" ";
-			// std::cerr<<std::endl;
-			
-			return (Fi.isZero(*A))? 0 : 1;
-		}
+		if (MAX (M,N) == 1) return (Fi.isZero(*A))? 0 : 1;
 		if (M == 1){
 			size_t piv = 0;
 			while ((piv < N) && Fi.isZero (A[piv])) piv++;
@@ -79,17 +65,6 @@ namespace FFPACK {
 				for (size_t i=piv+1; i<N; ++i)
 					Fi.mulin (A[i], invpivot);
 			}
-			    //std::cerr<<"Cas de base M = "<<M<<" N = "<<N<<" piv = "<<piv<<std::endl;
-			    //write_field (Fi, std::cerr<<"Sortie de PLUQ A = "<<std::endl,A, M,N,lda);
-		// std::cerr<<"P = ";
-		// for (int i=0; i<M; ++i)
-		// 	std::cerr<<P[i]<<" ";
-		// std::cerr<<std::endl;
-		// std::cerr<<"Q = ";
-		// for (int i=0; i<N; ++i)
-		// 	std::cerr<<Q[i]<<" ";
-		// std::cerr<<std::endl;
-
 			return 1;
 		}
 		if (N == 1){
@@ -108,15 +83,6 @@ namespace FFPACK {
 				for (size_t i=piv+1; i<M; ++i)
 					Fi.mulin (*(A+i*lda), invpivot);
 			}
-//		write_field (Fi, std::cerr<<"Sortie de PLUQ A = "<<std::endl,A, M,N,lda);
-		// std::cerr<<"P = ";
-		// for (int i=0; i<M; ++i)
-		// 	std::cerr<<P[i]<<" ";
-		// std::cerr<<std::endl;
-		// std::cerr<<"Q = ";
-		// for (int i=0; i<N; ++i)
-		// 	std::cerr<<Q[i]<<" ";
-		// std::cerr<<std::endl;
 			return 1;
 		}
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
@@ -136,7 +102,7 @@ namespace FFPACK {
 		typename Field::Element * G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
-		applyP (Fi, FflasLeft, FflasTrans, N-N2, 0, M2, A2, lda, P1);
+		applyP (Fi, FflasLeft, FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
 		    // [ C1 C2 ] <- A3 Q1^T
 		applyP (Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 		    // D <- L1^-1 B1
@@ -159,31 +125,28 @@ namespace FFPACK {
 		size_t * P3 = new size_t [M-M2];
 		size_t * Q3 = new size_t [N2-R1];
 		R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
-		// write_field (Fi, std::cerr<<"Apres R3 A = "<<std::endl,A, M,N,lda);	
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
 		applyP (Fi, FflasRight, FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
-		applyP (Fi, FflasLeft, FflasTrans, N-N2, 0, M-M2, A4, lda, P3);
+		applyP (Fi, FflasLeft, FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
 		    // [ E1 ] <- P3^T E
 		    // [ E2 ]
-		applyP (Fi, FflasLeft, FflasTrans, R1, 0, M-M2, A3, lda, P3);
+		applyP (Fi, FflasLeft, FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
 		    // [ M11 ] <- P2^T M1
 		    // [ M12 ]
-		applyP (Fi, FflasLeft, FflasTrans, R1, 0, M2-R1, A+R1*lda, lda, P2);
+		applyP (Fi, FflasLeft, FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2);
 		    // [ D1 D2 ] <- D Q2^T
 		applyP (Fi, FflasRight, FflasTrans, R1, 0, N-N2, A2, lda, Q2);
 		    // [ V1 V2 ] <- V1 Q3^T
 		applyP (Fi, FflasRight, FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3);
 		    // I <- H U2^-1
+		    // K <- H3 U2^-1
 		ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
 		typename Field::Element * temp = new typename Field::Element [R3*R2];
 		for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
 		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
-		
-		    // K <- H3 U2^-1
-		    //ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2-R3, R2, Fi.one, F, lda, A4+R3*lda, lda);
 		    // N <- L3^-1 H2
 		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		    // O <- N - J V2
@@ -197,11 +160,10 @@ namespace FFPACK {
 		    //         [ M4 ]
 		size_t * P4 = new size_t [M-M2-R3];
 		size_t * Q4 = new size_t [N-N2-R2];
-		// write_field (Fi, std::cerr<<"Avant R4 A = "<<std::endl,A, M,N,lda);	
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ] 
 		    // [ E22 M32 0 K2 ]
-		applyP (Fi, FflasLeft, FflasTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
+		applyP (Fi, FflasLeft, FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
 		    // [ V21 V22 ]  <- [ V2 ] Q4^T
 		    // [  0   0  ]     [  0 ]
@@ -211,9 +173,7 @@ namespace FFPACK {
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
 		size_t* MathP = new size_t[M];
-//		std::cerr<<"composePerm P1 P2"<<std::endl;
 		composePermutationsP (MathP, P1, P2, R1, M2);
-//		std::cerr<<"composePerm P3 P4"<<std::endl;
 		composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
 		delete[] P1;
 		delete[] P2;
@@ -221,13 +181,9 @@ namespace FFPACK {
 		delete[] P4;
 		for (size_t i=M2; i<M; ++i)
 			MathP[i] += M2;
-		// std::cerr<<"MathP = ";
-		// for (size_t i=0; i<M; ++i)
-		// 	std::cerr<<MathP[i]<<" ";
-		// std::cerr<<std::endl;
 		if (R1+R2 < M2){ 
 			    // P <- P S
-			applyS (MathP, 1, 1, M2, R1, R2, R3, R4);
+			applyS (MathP, 1,1,M2, R1, R2, R3, R4);
 			    // A <-  S^T A
 			applyS (A, lda, N, M2, R1, R2, R3, R4);
 		}
@@ -237,9 +193,7 @@ namespace FFPACK {
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		    //            [      Q3 ]      [      P4 ]
 		size_t * MathQ = new size_t [N];
-		// std::cerr<<"composePerm Q1 Q3"<<std::endl;
 		composePermutationsQ (MathQ, Q1, Q3, R1, N2);
-		// std::cerr<<"composePerm Q2 Q4"<<std::endl;
 		composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
 		delete[] Q1;
 		delete[] Q2;
@@ -250,25 +204,12 @@ namespace FFPACK {
 		
 		if (R1 < N2){
 			    // Q <- T Q
-			// std::cerr<<"Applique Q<-TQ"<<std::endl;
 			applyT (MathQ, 1,1,N2, R1, R2, R3, R4);
-			// std::cerr<<"done Q"<<std::endl;
 			    // A <-   A T^T
 			applyT (A, lda, M, N2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (Q, MathQ, N);
 		delete[] MathQ;
-		
-		    // write_field (Fi, std::cerr<<"Sortie de PLUQ A = "<<std::endl,A, M,N,lda);
-		// std::cerr<<"P = ";
-		// for (int i=0; i<M; ++i)
-		// 	std::cerr<<P[i]<<" ";
-		// std::cerr<<std::endl;
-		// std::cerr<<"Q = ";
-		// for (int i=0; i<N; ++i)
-		// 	std::cerr<<Q[i]<<" ";
-		// std::cerr<<std::endl;
-				
 		
 		return R1+R2+R3+R4;
 
@@ -281,6 +222,7 @@ namespace FFPACK {
 			    const size_t R1, const size_t R2, 
 			    const size_t R3, const size_t R4){
 		Element * tmp = new Element [(M2-R1-R2)*width];
+		// std::cerr<<"ici"<<std::endl;
 		for (size_t i = 0, j = R1+R2; j < M2; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
 				tmp [i*width + k] = A [j*lda + k];
@@ -299,8 +241,7 @@ namespace FFPACK {
 			    const size_t N2,
 			    const size_t R1, const size_t R2, 
 			    const size_t R3, const size_t R4){
-		Element tmp[(N2-R1)*width];
-		    //Element * tmp = new Element[(N2-R1)*width];
+		Element * tmp = new Element[(N2-R1)*width];
 		for (size_t k = 0; k < width; ++k){
 			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
 				tmp [i + k*(N2-R1)] = A [k*lda + j];
@@ -317,43 +258,9 @@ namespace FFPACK {
 			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
 				A [k*lda + j] = tmp [k*(N2-R1) + i];
 		}
-		    //delete[] tmp;
+		delete[] tmp;
 	}
 
-	inline void applyTT (size_t* P,  const size_t N2,
-			    const size_t R1, const size_t R2, 
-			    const size_t R3, const size_t R4){
-		size_t tmp[R2+R4];
-		    //Element * tmp = new Element[(N2-R1)*width];
-		// std::cerr<<"Dans applyTT"<<std::endl;
-		// for (size_t i=0; i<N2+R2+R4; ++i)
-		// 	std::cerr<<P[i]<<" ";
-		// std::cerr<<std::endl;
-		for (size_t i = 0, j = R1; i< R2; ++i, ++j){
-			tmp [i] = P [j];
-		}
-		for (size_t i = R2, j = R1+R2+R3; i< R2+R4; ++i, ++j){
-			tmp [i] = P [j];
-		}
-		for (size_t i = R1, j = R1+R2; j < R1+R2+R3; ++i, ++j)
-			P [i] = P [j];
-		for (size_t i = R1+R3, j = R1+R2+R3+R4; i < N2; ++i, ++j){
-			P [i] = P [j];
-		}
-		// std::cerr<<"Dans applyTT"<<std::endl;
-		// for (size_t i=0; i<N2+R2+R4; ++i)
-		// 	std::cerr<<P[i]<<" ";
-		// std::cerr<<std::endl;
-		for (size_t i = N2, j = 0; j < R2; ++i,++j)
-			P [i] = tmp [j];
-		for (size_t i = N2+R2, j = R2; j < R2+R4; ++i,++j){
-			P [i] = tmp [j];
-		}
-		// std::cerr<<"Dans applyTT"<<std::endl;
-		// for (size_t i=0; i<N2+R2+R4; ++i)
-		// 	std::cerr<<P[i]<<" ";
-		    //delete[] tmp;
-	}
 
             /**
 	     * Conversion of a permutation from LAPACK format to Math format
@@ -375,10 +282,8 @@ namespace FFPACK {
 	     */
 	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP, 
 					 const size_t N){
-//		size_t * T = new size_t[N];
-//		size_t * Tinv = new size_t[N]; 
-		size_t  T[N];
-		size_t  Tinv[N]; 
+		size_t * T = new size_t[N];
+		size_t * Tinv = new size_t[N]; 
 		for (size_t i=0; i<N; i++){
 			T[i] =i;
 			Tinv[i] = i;
@@ -392,8 +297,8 @@ namespace FFPACK {
 			T[i] = tmp;
 			Tinv[tmp] = i;
 		}
-		    //delete[] T;
-		    //delete[] Tinv;
+		delete[] T;
+		delete[] Tinv;
 	}
 	    /**
 	     * Computes P1 [ I_R     ] stored in MathPermutation format
@@ -403,33 +308,17 @@ namespace FFPACK {
 				  const size_t * P1, 
 				  const size_t * P2, 
 				  const size_t R, const size_t N){
-		for (size_t i=0; i<R; ++i)
+		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
-		LAPACKPerm2MathPerm (MathP+R, P2, N-R);
-		for (size_t i=R; i<N; ++i)
-			MathP[i] += R;
-		    // std::cerr<<"avant P1 MathP = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<MathP[i]<<" ";
-		// std::cerr<<std::endl;
+		LAPACKPerm2MathPerm (MathP, P1, N);
 
-		
-		// std::cerr<<"avant P1 P1 = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<P1[i]<<" ";
-		// std::cerr<<std::endl;
-
-		for (size_t i=0; i<N; i++){
-			if (P1[i] != i){
+		for (size_t i=R; i<N; i++){
+			if (P2[i-R] != i-R){
 				size_t tmp = MathP[i];
-				MathP[i] = MathP[P1[i]];
-				MathP[P1[i]] = tmp;
+				MathP[i] = MathP[P2[i-R]+R];
+				MathP[P2[i-R]+R] = tmp;
 			}
 		}
-		// std::cerr<<"apres P1 MathP = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<MathP[i]<<" ";
-		// std::cerr<<std::endl;
 	}
 	inline void composePermutationsQ (size_t * MathP, 
 				  const size_t * Q1, 
@@ -439,16 +328,6 @@ namespace FFPACK {
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, Q1, N);
 		
-		// std::cerr<<"avant P1 MathP = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<MathP[i]<<" ";
-		// std::cerr<<std::endl;
-
-		// std::cerr<<"avant Q2 Q2 = ";
-		// for (size_t i=0; i<N-R; ++i)
-		// 	std::cerr<<Q2[i]<<" ";
-		// std::cerr<<std::endl;
-
 		for (size_t i=R; i<N; i++){
 			if (Q2[i-R] != i-R){
 				size_t tmp = MathP[i];
@@ -456,10 +335,6 @@ namespace FFPACK {
 				MathP[Q2[i-R]+R] = tmp;
 			}
 		}
-		// std::cerr<<"apres Q2 MathP = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<MathP[i]<<" ";
-		// std::cerr<<std::endl;
 	}
 
 } // namespace FFPACK

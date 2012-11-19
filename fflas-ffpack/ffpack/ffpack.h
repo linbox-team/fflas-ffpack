@@ -93,7 +93,6 @@ namespace FFPACK  {
 
 	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP, 
 				  const size_t N);
-
 	template <class Element>
 	void applyS (Element* A, const size_t lda, const size_t width, 
 		     const size_t M2,
@@ -103,10 +102,6 @@ namespace FFPACK  {
 	template <class Element>
 	void applyT (Element* A, const size_t lda, const size_t width, 
 		     const size_t N2,
-		     const size_t R1, const size_t R2, 
-		     const size_t R3, const size_t R4);
-
-	void applyTT (size_t* A, const size_t N2,
 		     const size_t R1, const size_t R2, 
 		     const size_t R3, const size_t R4);
 
@@ -150,7 +145,7 @@ namespace FFPACK  {
 			if ( Trans == FFLAS::FflasTrans )
 				for (size_t j = 0 ; j < M ; ++j){
 					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
-						if ( P[i]> i ) {
+						if ( P[i]!= i ) {
 							F.assign(tmp,A[j*lda+P[i]]);
 							F.assign(A[j*lda+P[i]],A[j*lda+i]);
 							F.assign(A[j*lda+i],tmp);
@@ -161,7 +156,7 @@ namespace FFPACK  {
 			else // Trans == FFLAS::FflasNoTrans
 				for (size_t j = 0 ; j < M ; ++j){
 					for (int i=iend; i-->ibeg; )
-						if ( P[i]>(size_t)i ) {
+						if ( P[i]!=(size_t)i ) {
 							F.assign(tmp,A[j*lda+P[i]]);
 							F.assign(A[j*lda+P[i]],A[j*lda+(size_t)i]);
 							F.assign(A[j*lda+(size_t)i],tmp);
@@ -173,14 +168,14 @@ namespace FFPACK  {
 		else { // Side == FFLAS::FflasLeft
 			if ( Trans == FFLAS::FflasNoTrans )
 				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i){
-					if ( P[i]> (size_t) i )
+					if ( P[i]!= (size_t) i )
 						FFLAS::fswap( F, M,
 							      A + P[i]*lda, 1,
 							      A + i*lda, 1 );
 				}
 			else // Trans == FFLAS::FflasTrans
 				for (int i=iend; i-->ibeg; ){
-					if ( P[i]> (size_t) i ){
+					if ( P[i]!= (size_t) i ){
 						FFLAS::fswap( F, M,
 							      A + P[i]*lda, 1,
 							      A + (size_t)i*lda, 1 );
