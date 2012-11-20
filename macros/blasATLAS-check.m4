@@ -59,11 +59,11 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					dnl obscure
 					[ test -r "/System/Library/Frameworks/Accelerate.framework" ],
 					[BLAS_LIBS="-Wl,-framework -Wl,Accelerate"],
-					dnl lib/libcblas.* ?
-					[ test -r "$BLAS_HOME/lib/libcblas.a" -o -r "$BLAS_HOME/lib/libcblas.so" ],
+					dnl lib/libcblas.a ?
+					[ test -r "$BLAS_HOME/lib/libcblas.a" ],
 					[ ATLAS_NEEDED=`nm  -u $BLAS_HOME/lib/libcblas.a  | grep ATL`
-					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
-					AS_IF( [test -n "$ATLAS_NEEDED" -o -n "$ATLAS_NEEDED2"],
+					dnl  ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
+					AS_IF( [test -n "$ATLAS_NEEDED" ],
 						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
@@ -72,11 +72,38 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 						[BLAS_LIBS="-L${BLAS_HOME}/lib ${ATLAS_LIBS}"])
 					],
+					dnl lib/libcblas.so ?
+					[ test  -r "$BLAS_HOME/lib/libcblas.so" ],
+					[ dnl ATLAS_NEEDED=`nm  -u $BLAS_HOME/lib/libcblas.a  | grep ATL`
+					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
+					AS_IF( [test -n "$ATLAS_NEEDED2"],
+						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+
+					BLAS_LIBS=" ${ATLAS_LIBS}"
+					BLAS_PATH="${BLAS_HOME}/lib"
+
+					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
+						[BLAS_LIBS="-L${BLAS_HOME}/lib ${ATLAS_LIBS}"])
+					],
+
 					dnl libcblas.* ?
-					[ test -r "$BLAS_HOME/libcblas.a" -o -r "$BLAS_HOME/libcblas.so" ],
+					[ test -r "$BLAS_HOME/libcblas.a" ],
 					[ ATLAS_NEEDED=`nm  -u $BLAS_HOME/libcblas.a  | grep ATL`
+					dnl  ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
+					AS_IF( [test -n "$ATLAS_NEEDED" ],
+						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+
+					BLAS_LIBS=" ${ATLAS_LIBS}"
+					BLAS_PATH="${BLAS_HOME}"
+
+					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
+							[BLAS_LIBS="-L${BLAS_HOME} ${ATLAS_LIBS}"])
+					],
+					dnl libcblas.so ?
+					[ test -r "$BLAS_HOME/libcblas.so" ],
+					[ dnl ATLAS_NEEDED=`nm  -u $BLAS_HOME/libcblas.a  | grep ATL`
 					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
-					AS_IF( [test -n "$ATLAS_NEEDED" -o -n "$ATLAS_NEEDED2"],
+					AS_IF( [test -n "$ATLAS_NEEDED2"],
 						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
@@ -85,6 +112,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					AS_IF([  test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 							[BLAS_LIBS="-L${BLAS_HOME} ${ATLAS_LIBS}"])
 					]
+
 					)
 
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
