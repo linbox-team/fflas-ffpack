@@ -88,6 +88,10 @@ namespace FFPACK  {
 		FfpackDense=1,
 		FfpackKGF=2
 	};
+	void RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
+				    const size_t * P, const size_t * Q, 
+				    const size_t M, const size_t N, const size_t R);
+
 	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP, 
 				  const size_t N);
 
