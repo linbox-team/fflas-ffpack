@@ -36,9 +36,9 @@
 #define MAX(a,b) (a<b)?b:a
 #endif
 
-using namespace FFLAS;
-
 namespace FFPACK {
+    using namespace FFLAS;
+
 	template<class Field>
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS_DIAG Diag,
