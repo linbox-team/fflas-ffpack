@@ -85,9 +85,9 @@ int main(int argc, char** argv){
 			delete[] A;
 			A = read_field(F,argv[2],&m,&n);
 		}
-		for (j=0;j<n;j++)
-			P[j]=0;
 		for (j=0;j<m;j++)
+			P[j]=0;
+		for (j=0;j<n;j++)
 			Q[j]=0;
 		tim.clear();
 		tim.start();
