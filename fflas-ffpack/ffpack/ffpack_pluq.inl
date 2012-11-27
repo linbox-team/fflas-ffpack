@@ -85,6 +85,82 @@ namespace FFPACK {
 			}
 			return 1;
 		}
+#if 1
+        if (M == 2) { // and here N>=2
+// std::cerr << "CALL to subcase M==2" << std::endl;
+// write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
+            typename Field::Element* A2 = A+lda;
+		    size_t pivrow=0;
+		    while( (pivrow<N) && Fi.isZero(A[pivrow]) && Fi.isZero(A2[pivrow])) ++pivrow;
+// std::cerr<<"pivrow: " << pivrow <<std::endl;
+		    if (pivrow == N) return 0;
+            if (Fi.isZero(A[pivrow])) {
+                    // Case 0...0 0 xxxxx
+                    //      0...0 y yyyyy
+                P[0]=1;
+                for(size_t i=pivrow;i<N;++i) {
+                    typename Field::Element tmp;
+                    Fi.assign(tmp,A[i]);
+                    Fi.assign(A[i],A2[i]);
+                    Fi.assign(A2[i],tmp);
+                }
+                if (pivrow > 0) {
+                    Q[0]=pivrow;
+				    Fi.assign(*A,A[pivrow]);
+				    Fi.assign(A[pivrow],Fi.zero);
+			    }
+                size_t pivcol=++pivrow;
+                while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
+// std::cerr<<"pivcol: " << pivcol <<std::endl;
+                if (pivcol == N) return 1;
+                if (pivcol > pivrow) {
+                    Q[1] = pivcol;
+                    Fi.assign(A2[1], A2[pivcol]);
+                    Fi.assign(A2[pivcol], A[1]);
+                    Fi.assign(A[1], A[pivcol]);
+                    Fi.assign(A[pivcol], A2[pivcol]);
+                    Fi.assign(A2[pivcol], Fi.zero);
+                }
+                    // Diag == FflasUnit ...
+// write_field(Fi,std::cerr<<"AFT0 A = "<<std::endl,A,M,N,lda);
+                return 2;
+            } else {
+                    // Case 0...0 x xxxxx
+                    //      0...0 ? yyyyy
+			    if (pivrow > 0) {
+				    Q[0]=pivrow;
+				    Fi.assign(*A,A[pivrow]);
+				    Fi.assign(A[pivrow],Fi.zero);
+                    Fi.assign(*A2,A[pivrow]);
+                    Fi.assign(A2[pivrow],Fi.zero);
+			    }
+                ++pivrow;
+                if (! Fi.isZero(*A2)) {
+                    Fi.divin(*A2,*A);
+                    for(size_t i=pivrow; i<N; ++i)
+                        Fi.maxpyin(*(A2+i),*A2,*(A+i));
+// write_field(Fi,std::cerr<<"div: "<<std::endl,A,M,N,lda);
+                }
+                size_t pivcol=pivrow;
+                while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
+// std::cerr<<"pivcol: " << pivcol <<std::endl;
+                if (pivcol == N) return 1;
+                if (pivcol > pivrow) {
+                    Q[1] = pivcol;
+                    Fi.assign(A2[1], A2[pivcol]);
+                    Fi.assign(A2[pivcol], A[1]);
+                    Fi.assign(A[1], A[pivcol]);
+                    Fi.assign(A[pivcol], A2[pivcol]);
+                    Fi.assign(A2[pivcol], Fi.zero);
+                }
+// write_field(Fi,std::cerr<<"AFT1 A = "<<std::endl,A,M,N,lda);
+                    // Diag == FflasUnit ...
+                return 2;
+            }
+            
+            
+        }
+#endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;
 		size_t N2 = N >> 1;
@@ -359,7 +435,7 @@ namespace FFPACK {
 			}
 		for (size_t i=0; i<R; ++i)
 			RowRankProfile[i] = RRP[i];
-		for (int i=0; i<N; ++i){
+		for (size_t i=0; i<N; ++i){
 			// std::cerr<<"Q["<<i<<"] ="<<Q[i]<<std::endl;
 			if (Q[i] != i){
 				size_t tmp = CRP [i];
