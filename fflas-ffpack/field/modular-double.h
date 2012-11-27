@@ -394,6 +394,13 @@ namespace FFPACK {
 
 		}
 
+		 Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		{
+			r = r - a * x;
+			return r = fmod(r, modulus);
+
+		}
+
 		static  Element getMaxModulus()
 		{
 			return 67108864.0;  // 2^26
