@@ -70,8 +70,8 @@ int main(int argc, char** argv){
 
 	A = read_field(F,argv[2],&m,&n);
 
-	size_t *P = new size_t[n];
-	size_t *Q = new size_t[m];
+	size_t *P = new size_t[m];
+	size_t *Q = new size_t[n];
 
 	//	size_t cutoff = atoi(argv[3]);
 	nbf = atoi(argv[3]);
