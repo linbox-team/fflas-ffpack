@@ -97,8 +97,6 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 	char *UT, *File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
-	typename Field::Element zero;
-	F.init(zero,0UL);
 	typename Field::Element * X = NULL;
 	if ((mat_file[--s] == 'z') &&
 	    (mat_file[--s] == 'g') &&
@@ -121,7 +119,7 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 		int p=*tnj;
 		X = new typename Field::Element[n*p];
 		for (int i=0;i<n*p;++i)
-			X[i] = zero;
+			F.assign(X[i], F.zero);
 		long i,j; long val;
 		fscanf(FileDes,"%ld %ld %ld\n",&i, &j, &val) ;
 		while(i && j) {
@@ -143,8 +141,6 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	char *UT, *File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
-	typename Field::Element zero;
-	F.init(zero,0);
 	typename Field::Element * X;
 	if ((mat_file[--s] == 'z') &&
 	    (mat_file[--s] == 'g') &&
@@ -173,13 +169,13 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 		SE = new typename Field::Element[(n-no2)*(p-po2)];
 
 		for (int i=0;i<no2*po2;++i)
-			NW[i] = zero;
+			F.assign(NW[i],F.zero);
 		for (int i=0;i<no2*(p-po2);++i)
-			NE[i] = zero;
+			F.assign(NE[i],F.zero);
 		for (int i=0;i<(n-no2)*po2;++i)
-			SW[i] = zero;
+			F.assign(SW[i],F.zero);
 		for (int i=0;i<(n-no2)*(p-po2);++i)
-			SE[i] = zero;
+			F.assign(SE[i],F.zero);
 		long i,j; long val;
 		fscanf(FileDes,"%ld %ld %ld\n",&i, &j, &val) ;
 		while(i && j) {
