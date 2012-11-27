@@ -261,7 +261,7 @@ namespace FFPACK
 		 * @param  is  input stream from which field element is read.
 		 * @param  x   field element.
 		 */
-		std::istream &read (std::istream &is, Element &x) const
+		virtual std::istream &read (std::istream &is, Element &x) const
 		{
 			return is >> x;
 		}
