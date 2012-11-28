@@ -397,7 +397,9 @@ namespace FFPACK {
 		 Element &maxpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r = r - a * x;
-			return r = fmod(r, modulus);
+			r = fmod(r, modulus);
+			if (r<0) r += modulus;
+			return r;
 
 		}
 

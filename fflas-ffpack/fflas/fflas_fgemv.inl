@@ -55,13 +55,12 @@ namespace FFLAS {
 
 		FFLAS_BASE base = Protected::BaseCompute (F, 0);
 		size_t kmax = Protected::DotProdBound (F, 0, beta, base);
-
 		if (kmax > 1) {
 			if  (TransA == FflasNoTrans) {
 				size_t nblock = N / kmax;
 				size_t remblock = N % kmax;
 				// To ensure the initial computation with beta
-				if (!remblock){
+				if ((!remblock) && nblock){
 					remblock = kmax;
 					--nblock;
 				}

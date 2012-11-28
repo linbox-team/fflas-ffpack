@@ -36,9 +36,91 @@
 #define MAX(a,b) (a<b)?b:a
 #endif
 
+//#define LEFTLOOKING
+
 namespace FFPACK {
     using namespace FFLAS;
 
+	template<class Field>
+	inline size_t
+	PLUQ_basecase (const Field& Fi, const FFLAS_DIAG Diag,
+		       const size_t M, const size_t N,
+		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+		size_t row = 0;
+		size_t col = 0;
+		size_t rank = 0;
+		for (size_t i=0; i<M; ++i) P[i] = i;
+		for (size_t i=0; i<N; ++i) Q[i] = i;
+			
+		while ((col < N)||(row < M)){
+			size_t piv2 = rank;
+			size_t piv3 = rank;
+			typename Field::Element * A1 = A + rank*lda;
+			typename Field::Element * A2 = A + col;
+			typename Field::Element * A3 = A + row*lda;
+			    // search for pivot in A2
+			while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
+			if (piv3 == col){
+#ifdef LEFTLOOKING
+				    // Left looking style update 
+				ftrsv (Fi, FflasLower, FflasNoTrans, 
+				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
+				       rank, A, lda, A2, lda);
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.one, A2,lda, A2, lda,
+				       Fi.mOne, A2+rank*lda, lda);
+#endif
+				while ((piv2 < row) && Fi.isZero (A2 [piv2*lda])) piv2++;
+				if (piv2 < row) col++;
+				else{col++; row++;}
+			}
+			else 
+				piv2 = row++;
+			if (Fi.isZero (A [piv2*lda+piv3])){
+				    // no pivot found
+				continue;
+			}
+			    // At this point the pivot is located at x=piv2 y = piv3
+			P [rank] = piv2;
+			Q [rank] = piv3;
+			A2 = A+piv3;
+			A3 = A+piv2*lda;
+			typename Field::Element invpiv;
+			Fi.inv (invpiv, A3[piv3]);
+			if (Diag==FflasUnit)
+				    // Normalizing the pivot row
+				for (size_t i=piv3+1; i<N; ++i)
+					Fi.mulin (A3[i], invpiv);
+			else
+				    // Normalizing the pivot column
+				for (size_t i=piv2+1; i<M; ++i)
+					Fi.mulin (A2 [i*lda], invpiv);
+			    // Update
+#ifndef LEFTLOOKING
+			for (size_t i=piv2+1; i<M; ++i)
+			 	for (size_t j=piv3+1; j<N; ++j)
+					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
+#endif
+			    //Swapping pivot column
+			if (piv3 < col)
+				for (size_t i=0; i<M; ++i){
+					typename Field::Element tmp;
+					Fi.assign (tmp, A[i*lda + rank]);
+					Fi.assign (A[i*lda + rank], A2[i*lda]);
+					Fi.assign (A2[i*lda], tmp);
+				}
+			    //Swapping pivot row
+			if (piv2 < row)
+				for (size_t i=0; i<N; ++i){
+					typename Field::Element tmp;
+					Fi.assign (tmp, A1[i]);
+					Fi.assign (A1[i], A3[i]);
+					Fi.assign (A3[i], tmp);
+				}
+			rank++; 
+		}
+		return rank;
+	}
+	
 	template<class Field>
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS_DIAG Diag,
@@ -86,80 +168,80 @@ namespace FFPACK {
 			return 1;
 		}
 #if 1
-        if (M == 2) { // and here N>=2
-// std::cerr << "CALL to subcase M==2" << std::endl;
-// write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
-            typename Field::Element* A2 = A+lda;
-		    size_t pivrow=0;
-		    while( (pivrow<N) && Fi.isZero(A[pivrow]) && Fi.isZero(A2[pivrow])) ++pivrow;
-// std::cerr<<"pivrow: " << pivrow <<std::endl;
-		    if (pivrow == N) return 0;
-            if (Fi.isZero(A[pivrow])) {
-                    // Case 0...0 0 xxxxx
-                    //      0...0 y yyyyy
-                P[0]=1;
-                for(size_t i=pivrow;i<N;++i) {
-                    typename Field::Element tmp;
-                    Fi.assign(tmp,A[i]);
-                    Fi.assign(A[i],A2[i]);
-                    Fi.assign(A2[i],tmp);
-                }
-                if (pivrow > 0) {
-                    Q[0]=pivrow;
-				    Fi.assign(*A,A[pivrow]);
-				    Fi.assign(A[pivrow],Fi.zero);
-			    }
-                size_t pivcol=++pivrow;
-                while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
-// std::cerr<<"pivcol: " << pivcol <<std::endl;
-                if (pivcol == N) return 1;
-                if (pivcol > pivrow) {
-                    Q[1] = pivcol;
-                    Fi.assign(A2[1], A2[pivcol]);
-                    Fi.assign(A2[pivcol], A[1]);
-                    Fi.assign(A[1], A[pivcol]);
-                    Fi.assign(A[pivcol], A2[pivcol]);
-                    Fi.assign(A2[pivcol], Fi.zero);
-                }
-                    // Diag == FflasUnit ...
-// write_field(Fi,std::cerr<<"AFT0 A = "<<std::endl,A,M,N,lda);
-                return 2;
-            } else {
-                    // Case 0...0 x xxxxx
-                    //      0...0 ? yyyyy
-			    if (pivrow > 0) {
-				    Q[0]=pivrow;
-				    Fi.assign(*A,A[pivrow]);
-				    Fi.assign(A[pivrow],Fi.zero);
-                    Fi.assign(*A2,A[pivrow]);
-                    Fi.assign(A2[pivrow],Fi.zero);
-			    }
-                ++pivrow;
-                if (! Fi.isZero(*A2)) {
-                    Fi.divin(*A2,*A);
-                    for(size_t i=pivrow; i<N; ++i)
-                        Fi.maxpyin(*(A2+i),*A2,*(A+i));
-// write_field(Fi,std::cerr<<"div: "<<std::endl,A,M,N,lda);
-                }
-                size_t pivcol=pivrow;
-                while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
-// std::cerr<<"pivcol: " << pivcol <<std::endl;
-                if (pivcol == N) return 1;
-                if (pivcol > pivrow) {
-                    Q[1] = pivcol;
-                    Fi.assign(A2[1], A2[pivcol]);
-                    Fi.assign(A2[pivcol], A[1]);
-                    Fi.assign(A[1], A[pivcol]);
-                    Fi.assign(A[pivcol], A2[pivcol]);
-                    Fi.assign(A2[pivcol], Fi.zero);
-                }
-// write_field(Fi,std::cerr<<"AFT1 A = "<<std::endl,A,M,N,lda);
-                    // Diag == FflasUnit ...
-                return 2;
-            }
+		if (M == 2) { // and here N>=2
+                        // std::cerr << "CALL to subcase M==2" << std::endl;
+                        // write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
+			typename Field::Element* A2 = A+lda;
+			size_t pivrow=0;
+			while( (pivrow<N) && Fi.isZero(A[pivrow]) && Fi.isZero(A2[pivrow])) ++pivrow;
+                        // std::cerr<<"pivrow: " << pivrow <<std::endl;
+			if (pivrow == N) return 0;
+			if (Fi.isZero(A[pivrow])) {
+				    // Case 0...0 0 xxxxx
+				    //      0...0 y yyyyy
+				P[0]=1;
+				for(size_t i=pivrow;i<N;++i) {
+					typename Field::Element tmp;
+					Fi.assign(tmp,A[i]);
+					Fi.assign(A[i],A2[i]);
+					Fi.assign(A2[i],tmp);
+				}
+				if (pivrow > 0) {
+					Q[0]=pivrow;
+					Fi.assign(*A,A[pivrow]);
+					Fi.assign(A[pivrow],Fi.zero);
+				}
+				size_t pivcol=++pivrow;
+				while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
+                                // std::cerr<<"pivcol: " << pivcol <<std::endl;
+				if (pivcol == N) return 1;
+				if (pivcol > pivrow) {
+					Q[1] = pivcol;
+					Fi.assign(A2[1], A2[pivcol]);
+					Fi.assign(A2[pivcol], A[1]);
+					Fi.assign(A[1], A[pivcol]);
+					Fi.assign(A[pivcol], A2[pivcol]);
+					Fi.assign(A2[pivcol], Fi.zero);
+				}
+				    // Diag == FflasUnit ...
+				// write_field(Fi,std::cerr<<"AFT0 A = "<<std::endl,A,M,N,lda);
+				return 2;
+			} else {
+				    // Case 0...0 x xxxxx
+				    //      0...0 ? yyyyy
+				if (pivrow > 0) {
+					Q[0]=pivrow;
+					Fi.assign(*A,A[pivrow]);
+					Fi.assign(A[pivrow],Fi.zero);
+					Fi.assign(*A2,A[pivrow]);
+					Fi.assign(A2[pivrow],Fi.zero);
+				}
+				++pivrow;
+				if (! Fi.isZero(*A2)) {
+					Fi.divin(*A2,*A);
+					for(size_t i=pivrow; i<N; ++i)
+						Fi.maxpyin(*(A2+i),*A2,*(A+i));
+					 // write_field(Fi,std::cerr<<"div: "<<std::endl,A,M,N,lda);
+				}
+				size_t pivcol=pivrow;
+				while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
+				// std::cerr<<"pivcol: " << pivcol <<std::endl;
+				if (pivcol == N) return 1;
+				if (pivcol > pivrow) {
+					Q[1] = pivcol;
+					Fi.assign(A2[1], A2[pivcol]);
+					Fi.assign(A2[pivcol], A[1]);
+					Fi.assign(A[1], A[pivcol]);
+					Fi.assign(A[pivcol], A2[pivcol]);
+					Fi.assign(A2[pivcol], Fi.zero);
+				}
+                                // write_field(Fi,std::cerr<<"AFT1 A = "<<std::endl,A,M,N,lda);
+				    // Diag == FflasUnit ...
+				return 2;
+			}
+			
             
-            
-        }
+		}
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;

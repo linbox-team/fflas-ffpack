@@ -1092,6 +1092,12 @@ else { // Left NullSpace
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda, 
 	      size_t*P, size_t *Q);
+	template<class Field>
+	size_t
+	PLUQ_basecase (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+		       const size_t M, const size_t N,
+		       typename Field::Element * A, const size_t lda, 
+		       size_t*P, size_t *Q);
 
 	
 	/** @brief Compute the LQUP factorization of the given matrix.
