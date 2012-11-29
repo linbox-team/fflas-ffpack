@@ -36,8 +36,10 @@
 #define MAX(a,b) (a<b)?b:a
 #endif
 
-//#define LEFTLOOKING
-
+#define LEFTLOOKING
+//#define BASECASE_2
+#define BASECASE_K
+using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
 
@@ -46,12 +48,12 @@ namespace FFPACK {
 	PLUQ_basecase (const Field& Fi, const FFLAS_DIAG Diag,
 		       const size_t M, const size_t N,
 		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+		write_field(Fi,cerr<<"Entree PLUQ A = "<<endl,A,M,N,lda);
 		size_t row = 0;
 		size_t col = 0;
 		size_t rank = 0;
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
-			
 		while ((col < N)||(row < M)){
 			size_t piv2 = rank;
 			size_t piv3 = rank;
@@ -59,27 +61,34 @@ namespace FFPACK {
 			typename Field::Element * A2 = A + col;
 			typename Field::Element * A3 = A + row*lda;
 			    // search for pivot in A2
+			cerr<<"Searching for pivot with row = "<<row<<" col = "<<col<<" rank = "<<rank<<endl;
 			while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
 			if (piv3 == col){
+				if (col==N){
+					row++;
+					continue;
+				}
 #ifdef LEFTLOOKING
 				    // Left looking style update 
 				ftrsv (Fi, FflasLower, FflasNoTrans, 
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
 				       rank, A, lda, A2, lda);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.one, A2,lda, A2, lda,
-				       Fi.mOne, A2+rank*lda, lda);
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
+				       A1,lda, A2, lda,
+				       Fi.one, A2+rank*lda, lda);
 #endif
 				while ((piv2 < row) && Fi.isZero (A2 [piv2*lda])) piv2++;
-				if (piv2 < row) col++;
-				else{col++; row++;}
+				if (col<N) col++;
 			}
 			else 
-				piv2 = row++;
+				piv2 = row;
+			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
 				    // no pivot found
 				continue;
 			}
 			    // At this point the pivot is located at x=piv2 y = piv3
+			cerr<<"pivot at A["<<piv2<<","<<piv3<<"] = "<<A[piv2*lda+piv3]<<endl;
 			P [rank] = piv2;
 			Q [rank] = piv3;
 			A2 = A+piv3;
@@ -116,8 +125,19 @@ namespace FFPACK {
 					Fi.assign (A1[i], A3[i]);
 					Fi.assign (A3[i], tmp);
 				}
+			write_field(Fi,cerr<<"After A = "<<endl,A,M,N,lda);
 			rank++; 
 		}
+		// if (col<N){
+		// 	ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, 
+		// 	       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
+		// 	       rank, N-col, Fi.one, A, lda, A+col, lda);
+		// 	fgemm (Fi, FflasNoTrans, FflasNoTrans,  M-rank, rank, N-col, Fi.mOne, 
+		// 	       A+rank*lda, lda, A+col, lda,
+		// 	       Fi.one, A+col+rank*lda, lda);	
+		// }
+		//write_field(Fi,cerr<<"Polish A = "<<endl,A,M,N,lda);
+
 		return rank;
 	}
 	
@@ -167,7 +187,7 @@ namespace FFPACK {
 			}
 			return 1;
 		}
-#if 1
+#ifdef BASECASE_2
 		if (M == 2) { // and here N>=2
                         // std::cerr << "CALL to subcase M==2" << std::endl;
                         // write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
@@ -242,6 +262,10 @@ namespace FFPACK {
 			
             
 		}
+#endif
+#ifdef BASECASE_K
+		if (MIN(M,N) < 30)
+			return PLUQ_basecase (Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;

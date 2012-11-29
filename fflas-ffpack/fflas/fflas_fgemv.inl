@@ -47,6 +47,7 @@ namespace FFLAS {
 	       typename Field::Element * Y, const size_t incY)
 	{
 
+		if (!M || !N) return;
 		if (F.isZero (alpha)){
 			for  (typename Field::Element * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.mulin(*Yi, beta);
