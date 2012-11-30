@@ -37,8 +37,8 @@
 #endif
 
 #define LEFTLOOKING
-//#define BASECASE_2
-#define BASECASE_K
+#define BASECASE_2
+//#define BASECASE_K
 using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
@@ -189,12 +189,12 @@ namespace FFPACK {
 		}
 #ifdef BASECASE_2
 		if (M == 2) { // and here N>=2
-                        // std::cerr << "CALL to subcase M==2" << std::endl;
-                        // write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
+// std::cerr << "CALL to subcase M==2" << std::endl;
+// write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
 			typename Field::Element* A2 = A+lda;
 			size_t pivrow=0;
 			while( (pivrow<N) && Fi.isZero(A[pivrow]) && Fi.isZero(A2[pivrow])) ++pivrow;
-                        // std::cerr<<"pivrow: " << pivrow <<std::endl;
+// std::cerr<<"pivrow: " << pivrow <<std::endl;
 			if (pivrow == N) return 0;
 			if (Fi.isZero(A[pivrow])) {
 				    // Case 0...0 0 xxxxx
@@ -213,7 +213,7 @@ namespace FFPACK {
 				}
 				size_t pivcol=++pivrow;
 				while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
-                                // std::cerr<<"pivcol: " << pivcol <<std::endl;
+// std::cerr<<"pivcol: " << pivcol <<std::endl;
 				if (pivcol == N) return 1;
 				if (pivcol > 1) {
 					Q[1] = pivcol;
@@ -224,7 +224,7 @@ namespace FFPACK {
 					Fi.assign(A2[pivcol], Fi.zero);
 				}
 				    // Diag == FflasUnit ...
-				// write_field(Fi,std::cerr<<"AFT0 A = "<<std::endl,A,M,N,lda);
+// write_field(Fi,std::cerr<<"AFT0 A = "<<std::endl,A,M,N,lda);
 				return 2;
 			} else {
 				    // Case 0...0 x xxxxx
@@ -241,11 +241,11 @@ namespace FFPACK {
 					Fi.divin(*A2,*A);
 					for(size_t i=pivrow; i<N; ++i)
 						Fi.maxpyin(*(A2+i),*A2,*(A+i));
-					 // write_field(Fi,std::cerr<<"div: "<<std::endl,A,M,N,lda);
+// write_field(Fi,std::cerr<<"div: "<<std::endl,A,M,N,lda);
 				}
 				size_t pivcol=pivrow;
 				while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
-				// std::cerr<<"pivcol: " << pivcol <<std::endl;
+// std::cerr<<"pivcol: " << pivcol <<std::endl;
 				if (pivcol == N) return 1;
 				if (pivcol > 1) {
 					Q[1] = pivcol;
@@ -255,12 +255,101 @@ namespace FFPACK {
 					Fi.assign(A[pivcol], A2[pivcol]);
 					Fi.assign(A2[pivcol], Fi.zero);
 				}
-                                // write_field(Fi,std::cerr<<"AFT1 A = "<<std::endl,A,M,N,lda);
+// write_field(Fi,std::cerr<<"AFT1 A = "<<std::endl,A,M,N,lda);
 				    // Diag == FflasUnit ...
 				return 2;
 			}
 			
             
+		}
+		if (N == 2) { // and here M>=2
+// std::cerr << "CALL to subcase N==2" << std::endl;
+// write_field(Fi,std::cerr<<"BEF A = "<<std::endl,A,M,N,lda);
+			typename Field::Element* iterA = A;
+			typename Field::Element* A2 = A+1;
+			typename Field::Element* iterA2 = A2;
+			size_t pivrow=0;
+			for( ; (pivrow<M) && Fi.isZero(*iterA) && Fi.isZero(*iterA2);
+			     ++pivrow, iterA+=lda, iterA2+=lda) {}
+			
+// std::cerr<<"pivrow: " << pivrow <<std::endl;
+			if (pivrow == M) return 0;
+			if (Fi.isZero(*iterA)) {
+				    // Case 0 0
+				    //      ... 
+				    //      0 y
+				    //      X Y
+				Q[0]=1;
+				typename Field::Element * Apiv = iterA;
+				typename Field::Element * A2piv = iterA2;
+				for(size_t i=pivrow;i<M;++i,Apiv+=lda,A2piv+=lda) {
+					typename Field::Element tmp;
+					Fi.assign(tmp,*Apiv);
+					Fi.assign(*Apiv,*A2piv);
+					Fi.assign(*A2piv,tmp);
+				}
+			}
+// write_field(Fi,std::cerr<<"AFT0 A = "<<std::endl,A,M,N,lda);
+			    // Case 0 0
+			    //      ... 
+			    //      x ?
+			    //      X Y
+			if (pivrow > 0) {
+				P[0]=pivrow;
+				Fi.assign(*A,*iterA);
+				Fi.assign(*iterA,Fi.zero);
+				Fi.assign(*A2,*iterA2);
+				Fi.assign(*iterA2,Fi.zero);
+			}
+			typename Field::Element invpiv;
+			Fi.inv(invpiv, *A);
+// Fi.write(std::cerr<<"invpiv: ", invpiv) << std::endl;			
+			if (Fi.isZero(*A2)) {
+				typename Field::Element * Apiv = iterA+lda;
+				for(size_t i=++pivrow; i<M; Apiv+=lda, ++i)
+// 				{
+					Fi.mulin(*Apiv, invpiv);
+// write_field(Fi,std::cerr<<"divin[" << i << "] A = "<<std::endl,A,M,N,lda);
+
+// 				}
+				
+			} else {
+				typename Field::Element * Apiv = iterA+lda;
+				typename Field::Element * A2piv = iterA2+lda;
+				for(size_t i=++pivrow; i<M; Apiv+=lda, A2piv+=lda, ++i) {
+					Fi.mulin(*Apiv, invpiv);
+					Fi.maxpyin(*A2piv, *Apiv, *A2);
+// write_field(Fi,std::cerr<<"div/maxpy in[" << i << "] A = "<<std::endl,A,M,N,lda);
+				}
+			}
+// write_field(Fi,std::cerr<<"AFT1 A = "<<std::endl,A,M,N,lda);
+			size_t pivcol=pivrow;
+			typename Field::Element * A2piv = iterA2+lda;
+			for( ; (pivcol<M) && Fi.isZero(*A2piv); ++pivcol, A2piv+=lda) {}
+// std::cerr<<"pivcol: " << pivcol <<std::endl;
+			if (pivcol == M) return 1;
+			Fi.inv(invpiv, *A2piv);
+			A2piv+=lda;
+			for(size_t i=pivcol+1; i<M; ++i, A2piv+=lda)
+				Fi.mulin(*A2piv, invpiv);
+				
+
+// write_field(Fi,std::cerr<<"AFT2 A = "<<std::endl,A,M,N,lda);
+			if (pivcol > 1) {
+				P[1] = pivcol;
+				typename Field::Element * A10 = A+lda;
+				typename Field::Element * A11 = A2+lda;
+				typename Field::Element * Ak0 = A+pivcol*lda;
+				typename Field::Element * Ak1 = A2+pivcol*lda;
+				Fi.assign(*A11, *A10);
+				Fi.assign(*A10, *Ak0);
+				Fi.assign(*Ak0, *A11);
+				Fi.assign(*A11, *Ak1);
+				Fi.assign(*Ak1, Fi.zero);
+			}
+// write_field(Fi,std::cerr<<"AFT3 A = "<<std::endl,A,M,N,lda);
+			    // Diag == FflasUnit ...
+			return 2;
 		}
 #endif
 #ifdef BASECASE_K
