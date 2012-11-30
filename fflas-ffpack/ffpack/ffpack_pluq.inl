@@ -215,7 +215,7 @@ namespace FFPACK {
 				while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
                                 // std::cerr<<"pivcol: " << pivcol <<std::endl;
 				if (pivcol == N) return 1;
-				if (pivcol > pivrow) {
+				if (pivcol > 1) {
 					Q[1] = pivcol;
 					Fi.assign(A2[1], A2[pivcol]);
 					Fi.assign(A2[pivcol], A[1]);
@@ -247,7 +247,7 @@ namespace FFPACK {
 				while((pivcol<N) && Fi.isZero(A2[pivcol])) ++pivcol;
 				// std::cerr<<"pivcol: " << pivcol <<std::endl;
 				if (pivcol == N) return 1;
-				if (pivcol > pivrow) {
+				if (pivcol > 1) {
 					Q[1] = pivcol;
 					Fi.assign(A2[1], A2[pivcol]);
 					Fi.assign(A2[pivcol], A[1]);
