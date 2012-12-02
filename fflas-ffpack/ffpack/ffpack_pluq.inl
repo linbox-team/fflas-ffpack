@@ -48,7 +48,6 @@ namespace FFPACK {
 	PLUQ_basecase (const Field& Fi, const FFLAS_DIAG Diag,
 		       const size_t M, const size_t N,
 		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
-		write_field(Fi,cerr<<"Entree PLUQ A = "<<endl,A,M,N,lda);
 		size_t row = 0;
 		size_t col = 0;
 		size_t rank = 0;
@@ -61,8 +60,10 @@ namespace FFPACK {
 			typename Field::Element * A2 = A + col;
 			typename Field::Element * A3 = A + row*lda;
 			    // search for pivot in A2
-			cerr<<"Searching for pivot with row = "<<row<<" col = "<<col<<" rank = "<<rank<<endl;
-			while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
+			if (row==M){
+				piv3=col;
+			}else
+				while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
 			if (piv3 == col){
 				if (col==N){
 					row++;
@@ -79,26 +80,30 @@ namespace FFPACK {
 #endif
 				while ((piv2 < row) && Fi.isZero (A2 [piv2*lda])) piv2++;
 				if (col<N) col++;
-			}
-			else 
+				if (piv2==M)
+					continue;
+			} else 
 				piv2 = row;
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
 				    // no pivot found
+				    //cerr<<endl;
 				continue;
 			}
 			    // At this point the pivot is located at x=piv2 y = piv3
-			cerr<<"pivot at A["<<piv2<<","<<piv3<<"] = "<<A[piv2*lda+piv3]<<endl;
 			P [rank] = piv2;
 			Q [rank] = piv3;
 			A2 = A+piv3;
 			A3 = A+piv2*lda;
 			typename Field::Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
-			if (Diag==FflasUnit)
+			if (Diag==FflasUnit){
+#ifdef LEFTLOOKING
 				    // Normalizing the pivot row
 				for (size_t i=piv3+1; i<N; ++i)
 					Fi.mulin (A3[i], invpiv);
+#endif
+			}
 			else
 				    // Normalizing the pivot column
 				for (size_t i=piv2+1; i<M; ++i)
@@ -110,34 +115,32 @@ namespace FFPACK {
 					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
 #endif
 			    //Swapping pivot column
-			if (piv3 < col)
+			if (piv3 > rank)
 				for (size_t i=0; i<M; ++i){
 					typename Field::Element tmp;
 					Fi.assign (tmp, A[i*lda + rank]);
 					Fi.assign (A[i*lda + rank], A2[i*lda]);
 					Fi.assign (A2[i*lda], tmp);
 				}
+				    // Updating cols 
+
 			    //Swapping pivot row
-			if (piv2 < row)
+			if (piv2 > rank)
 				for (size_t i=0; i<N; ++i){
 					typename Field::Element tmp;
 					Fi.assign (tmp, A1[i]);
 					Fi.assign (A1[i], A3[i]);
 					Fi.assign (A3[i], tmp);
 				}
-			write_field(Fi,cerr<<"After A = "<<endl,A,M,N,lda);
+#ifdef LEFTLOOKING
+			    // Need to update the cols already updated
+			for (size_t i=rank+1; i<M; ++i)
+				for (size_t j=rank+1; j<col; ++j)
+					Fi.maxpyin (A[i*lda+j], 
+						    A[i*lda+rank], A[rank*lda+j]);				
+#endif
 			rank++; 
 		}
-		// if (col<N){
-		// 	ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, 
-		// 	       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
-		// 	       rank, N-col, Fi.one, A, lda, A+col, lda);
-		// 	fgemm (Fi, FflasNoTrans, FflasNoTrans,  M-rank, rank, N-col, Fi.mOne, 
-		// 	       A+rank*lda, lda, A+col, lda,
-		// 	       Fi.one, A+col+rank*lda, lda);	
-		// }
-		//write_field(Fi,cerr<<"Polish A = "<<endl,A,M,N,lda);
-
 		return rank;
 	}
 	
