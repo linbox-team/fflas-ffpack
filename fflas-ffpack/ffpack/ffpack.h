@@ -1881,6 +1881,7 @@ else { // Left NullSpace
 #include "ffpack_krylovelim.inl"
 #include "ffpack_frobenius.inl"
 #include "ffpack_echelonforms.inl"
+//#include "ffpack_pluq-copy.inl"
 #include "ffpack_pluq.inl"
 #endif // __FFLASFFPACK_ffpack_H
 

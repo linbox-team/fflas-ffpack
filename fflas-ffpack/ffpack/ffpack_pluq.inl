@@ -37,8 +37,8 @@
 #endif
 
 #define LEFTLOOKING
-#define BASECASE_2
-//#define BASECASE_K
+//#define BASECASE_2
+#define BASECASE_K 30
 using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
@@ -134,8 +134,8 @@ namespace FFPACK {
 				}
 #ifdef LEFTLOOKING
 			    // Need to update the cols already updated
-			for (size_t i=rank+1; i<M; ++i)
-				for (size_t j=rank+1; j<col; ++j)
+			for (size_t i=piv2+1; i<M; ++i)
+				for (size_t j=piv3+1; j<col; ++j)
 					Fi.maxpyin (A[i*lda+j], 
 						    A[i*lda+rank], A[rank*lda+j]);				
 #endif
@@ -356,7 +356,7 @@ namespace FFPACK {
 		}
 #endif
 #ifdef BASECASE_K
-		if (MIN(M,N) < 30)
+		if (MIN(M,N) < BASECASE_K)
 			return PLUQ_basecase (Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
