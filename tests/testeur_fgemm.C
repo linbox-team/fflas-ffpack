@@ -66,16 +66,25 @@ int main(int argc, char** argv){
 	bool keepon = true;
 	Givaro::Integer _p,tmp;
 	cerr<<setprecision(10);
-	size_t TMAX = 100;
+	size_t TMAXM = 100, TMAXK = 100, TMAXN = 100;
 	size_t PRIMESIZE = 23;
 	size_t WINOMAX = 8;
 
 	if (argc > 1 )
-		TMAX = atoi(argv[1]);
+		TMAXM = atoi(argv[1]);
 	if (argc > 2 )
 		PRIMESIZE = atoi(argv[2]);
 	if (argc > 3 )
 		WINOMAX = atoi(argv[3]);
+	if (argc > 4 )
+		TMAXK = atoi(argv[4]);
+    else
+        TMAXK = TMAXM;
+	if (argc > 5 )
+		TMAXN = atoi(argv[5]);
+    else
+        TMAXN = TMAXM;
+    
 
 	enum FFLAS::FFLAS_TRANSPOSE ta, tb;
 	size_t lda,ldb;
@@ -99,9 +108,9 @@ int main(int argc, char** argv){
 
 
 		do{
-			M = (size_t)  random() % TMAX;
-			K = (size_t)  random() % TMAX;
-			N = (size_t)  random() % TMAX;
+			M = (size_t)  random() % TMAXM;
+			K = (size_t)  random() % TMAXK;
+			N = (size_t)  random() % TMAXN;
 			Wino = random() % WINOMAX;
 		} while (!( (K>>Wino > 0) && (M>>Wino > 0) && (N>>Wino > 0) ));
 
@@ -139,7 +148,9 @@ int main(int argc, char** argv){
 		RValue.random( beta );
 
 		cout <<"p = "<<(size_t)p<<" M = "<<M
-		     <<" N = "<<N<<" K = "<<K<<" Winolevel = "<<Wino<<" "
+		     <<" K = "<<K
+             <<" N = "<<N
+             <<" Winolevel = "<<Wino<<" "
 		     <<alpha
 		     <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
 		     <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
