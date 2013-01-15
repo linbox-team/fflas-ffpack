@@ -43,14 +43,16 @@ namespace FFPACK {
 	template <class Element>
 	class ModularRandIter {
 	public:
-		ModularRandIter (const Modular<Element> &F) :
-			_F(F)
-		{
-			struct timeval tp;
-			gettimeofday(&tp, 0) ;
-			long _seed = (long)(tp.tv_usec);
-			srand48(_seed);
-		}
+                ModularRandIter (const Modular<Element> &F, size_t seed=0) :
+                        _F(F)
+                {
+                        if (seed==0) {
+                                struct timeval tp;
+                                gettimeofday(&tp, 0) ;
+                                seed = tp.tv_usec;
+                        }
+                        srand48(seed);
+                }
 
 		ModularRandIter (const ModularRandIter<Element> &R) :
 			_F (R._F)
