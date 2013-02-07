@@ -36,6 +36,13 @@
  #define __FFLAS__SIDE Left
  #define __FFLAS__Na M
  #define __FFLAS__Nb N
+ #ifdef __FFLAS__TRANSPOSE
+   #define __FFLAS__Acopcolinc __FFLAS__Na
+   #define __FFLAS__Acoprowinc 1
+ #else
+   #define __FFLAS__Acopcolinc 1
+   #define __FFLAS__Acoprowinc __FFLAS__Na
+ #endif
  #define __FFLAS__Mb nsplit
  #define __FFLAS__Nb2 N
  #define __FFLAS__Mb2 M-nsplit
@@ -44,6 +51,7 @@
  #define __FFLAS__Mupdate M-(i+1)*nsplit
  #define __FFLAS__Nupdate N
  #define __FFLAS__Anorminc __FFLAS__Acolinc
+ #define __FFLAS__Acopnorminc __FFLAS__Acopcolinc
  #define __FFLAS__Bnorminc 1
  #define __FFLAS__Bnormnext ldb
  #define __FFLAS__Bdim N
@@ -52,6 +60,7 @@
   #define __FFLAS__Aupdate A + i * nsplit * (lda + 1) + nsplit*__FFLAS__Arowinc
   #define __FFLAS__Arest A + (__FFLAS__Na - nrestsplit) * (lda + 1)
   #define __FFLAS__Anormnext __FFLAS__Arowinc
+  #define __FFLAS__Acopnormnext __FFLAS__Acoprowinc
   #define __FFLAS__Bupdate B + (i+1)*nsplit*ldb
   #define __FFLAS__Brec B + i * nsplit * ldb
   #define __FFLAS__Brest B + (M - nrestsplit) * ldb
@@ -66,6 +75,7 @@
   #define __FFLAS__Aupdate A + (__FFLAS__Na  - (i + 1) * nsplit) * __FFLAS__Acolinc
   #define __FFLAS__Arest A
   #define __FFLAS__Anormnext lda + 1
+  #define __FFLAS__Acopnormnext __FFLAS__Na + 1
   #define __FFLAS__Bupdate B
   #define __FFLAS__Brec B + (M - (i + 1) * nsplit) * ldb
   #define __FFLAS__Brest B
@@ -80,6 +90,13 @@
  #define __FFLAS__SIDE Right
  #define __FFLAS__Na N
  #define __FFLAS__Nb nsplit
+ #ifdef __FFLAS__TRANSPOSE
+   #define __FFLAS__Acopcolinc __FFLAS__Na
+   #define __FFLAS__Acoprowinc 1
+ #else
+   #define __FFLAS__Acopcolinc 1
+   #define __FFLAS__Acoprowinc __FFLAS__Na
+ #endif
  #define __FFLAS__Mb M
  #define __FFLAS__Mb2 M
  #define __FFLAS__Nb2 N-nsplit
@@ -88,6 +105,7 @@
  #define __FFLAS__Mupdate M
  #define __FFLAS__Nupdate N - (i + 1) * nsplit
  #define __FFLAS__Anorminc __FFLAS__Arowinc
+ #define __FFLAS__Acopnorminc __FFLAS__Acoprowinc
  #define __FFLAS__Bnorminc ldb
  #define __FFLAS__Bnormnext 1
  #define __FFLAS__Bdim M
@@ -96,6 +114,7 @@
   #define __FFLAS__Aupdate A + i * nsplit * (lda + 1) + nsplit * __FFLAS__Acolinc
   #define __FFLAS__Arest A + (__FFLAS__Na - nrestsplit) * (lda + 1)
   #define __FFLAS__Anormnext __FFLAS__Acolinc
+  #define __FFLAS__Acopnormnext __FFLAS__Acopcolinc
   #define __FFLAS__Bupdate B + (i + 1) * nsplit
   #define __FFLAS__Brec B + i * nsplit
   #define __FFLAS__Brest B + (N - nrestsplit)
@@ -110,6 +129,7 @@
   #define __FFLAS__Aupdate A + (__FFLAS__Na - (i + 1) * nsplit) * __FFLAS__Arowinc
   #define __FFLAS__Arest A
   #define __FFLAS__Anormnext lda + 1
+  #define __FFLAS__Acopnormnext __FFLAS__Na + 1
   #define __FFLAS__Bupdate B
   #define __FFLAS__Brec B + N - (i + 1) * nsplit
   #define __FFLAS__Brest B
@@ -167,6 +187,9 @@ public:
 // The multiple MatMul updates (recursive sequence) are done over Z
 template<class Field>
 void delayed (const Field& F, const size_t M, const size_t N,
+#ifdef __FFLAS__TRSM_READONLY
+	      const
+#endif
 	      typename Field::Element * A, const size_t lda,
 	      typename Field::Element * B, const size_t ldb,
 	      const size_t nblas, size_t nbblocsblas)
@@ -178,17 +201,37 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		for (size_t i=0; i < M; ++i)
 			for (size_t j = 0; j < N; ++j)
 				F.init( *(B + i*ldb + j), *( B + i*ldb + j));
+#define __FFLAS__Atrsm A
+#define __FFLAS__Atrsm_lda lda
 #ifndef __FFLAS__UNIT
+  #ifdef __FFLAS__TRSM_READONLY
+		typename Field::Element Acop[__FFLAS__Na*__FFLAS__Na];
+		typename Field::Element* Acopi = Acop;
+    #undef __FFLAS__Atrsm
+    #undef __FFLAS__Atrsm_lda
+    #define __FFLAS__Atrsm Acop
+    #define __FFLAS__Atrsm_lda __FFLAS__Na
+  #endif
 		typename Field::Element inv;
-		typename Field::Element *  Ai = A, * Bi = B;
+#ifdef __FFLAS__TRSM_READONLY
+		const 
+#endif
+			typename Field::Element *  Ai = A;
+		typename Field::Element* Bi = B;
 #ifdef __FFLAS__LEFT
 #ifdef __FFLAS__UP
 		Ai += __FFLAS__Acolinc;
+#ifdef __FFLAS__TRSM_READONLY
+		Acopi += __FFLAS__Acopcolinc;
+#endif
 #endif
 #endif
 #ifdef __FFLAS__RIGHT
 #ifdef __FFLAS__LOW
 		Ai += __FFLAS__Arowinc;
+#ifdef __FFLAS__TRSM_READONLY
+		Acopi += __FFLAS__Acoprowinc;
+#endif
 #endif
 #endif
 		for (size_t i = 0; i < __FFLAS__Na; ++i){
@@ -196,7 +239,19 @@ void delayed (const Field& F, const size_t M, const size_t N,
 			if ( F.isZero(*(A+i*(lda+1))) ) throw PreconditionFailed(__func__,__FILE__,__LINE__,"Triangular matrix not invertible");
 #endif
 			F.inv (inv, *(A + i * (lda+1)));
+#ifdef __FFLAS__TRSM_READONLY
+			const typename Field::Element * Acurr;
+			typename Field::Element* Acopcurr;
+			for (Acurr = Ai,  Acopcurr = Acopi; 
+			     Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim); 
+			     Acurr += __FFLAS__Anorminc,
+				     Acopcurr += __FFLAS__Acopnorminc){
+				F.mul (*Acopcurr, *Acurr, inv);
+			}
+			Acopi += __FFLAS__Acopnormnext;
+#else
 			fscal (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc);
+#endif
 			fscal (F, __FFLAS__Bdim, inv, Bi, __FFLAS__Bnorminc);
 			Ai += __FFLAS__Anormnext;
 			Bi += __FFLAS__Bnormnext;
@@ -208,27 +263,35 @@ void delayed (const Field& F, const size_t M, const size_t N,
 			 Mjoin (Cblas, __FFLAS__UPLO),
 			 Mjoin (Cblas, __FFLAS__TRANS),
 			 CblasUnit,
-			 (int)M, (int)N, 1.0, A, (int)lda, B, (int)ldb );
+			 (int)M, (int)N, 1.0, __FFLAS__Atrsm, (int)__FFLAS__Atrsm_lda, B, (int)ldb );
 		for (size_t i = 0; i < M; ++i)
 			for (size_t j = 0; j < N; ++j)
 				F.init (*(B + i*ldb + j), *(B + i*ldb + j));
 
 #ifndef __FFLAS__UNIT
 		Ai = A;
+//		Acopi = Acop;
 #ifdef __FFLAS__LEFT
 #ifdef __FFLAS__UP
 		Ai += __FFLAS__Acolinc;
+//		Acopi += __FFLAS__Acopcolinc;
+
 #endif
 #endif
 #ifdef __FFLAS__RIGHT
 #ifdef __FFLAS__LOW
 		Ai += __FFLAS__Arowinc;
+//		Acopi += __FFLAS__Acoprowinc;
+
 #endif
 #endif
+
+#ifndef __FFLAS__TRSM_READONLY
 		for (size_t i = 0; i < __FFLAS__Na; ++i){
 			fscal( F, __FFLAS__Normdim, *(A + i * (lda+1)) , Ai, __FFLAS__Anorminc);
 			Ai += __FFLAS__Anormnext;
 		}
+#endif
 #endif // __FFLAS__UNIT
 	} else { // __FFLAS__Na <= nblas
 		size_t nbblocsup = (nbblocsblas + 1) / 2;
@@ -251,6 +314,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 }
 template <class Field>
 void operator () (const Field& F, const size_t M, const size_t N,
+#ifdef __FFLAS__TRSM_READONLY
+	      const
+#endif
 		  typename Field::Element * A, const size_t lda,
 		  typename Field::Element * B, const size_t ldb)
 {
@@ -303,6 +369,9 @@ public:
 
 template<class Field>
 void operator()	(const Field& F, const size_t M, const size_t N,
+#ifdef __FFLAS__TRSM_READONLY
+	      const
+#endif
 		 typename Field::Element * A, const size_t lda,
 		 typename Field::Element * B, const size_t ldb)
 {
@@ -358,7 +427,9 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #undef __FFLAS__Bnorminc
 #undef __FFLAS__Bnormnext
 #undef __FFLAS__Anormnext
+#undef __FFLAS__Acopnormnext
 #undef __FFLAS__Anorminc
+#undef __FFLAS__Acopnorminc
 #undef __FFLAS__ELEMENT
 #undef __FFLAS__BLAS_PREFIX
 #undef __FFLAS__DOMAIN
@@ -373,5 +444,9 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #undef __FFLAS__Normdim
 #undef __FFLAS__Acolinc
 #undef __FFLAS__Arowinc
+#undef __FFLAS__Acopcolinc
+#undef __FFLAS__Acoprowinc
+#undef __FFLAS__Atrsm_lda
+#undef __FFLAS__Atrsm
 #undef Mjoin
 #undef my_join

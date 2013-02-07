@@ -247,6 +247,7 @@ namespace FFLAS {
 		 *
 		 *
 		 * \param F Finite Field/Ring of the computation.
+		 * \param WinoDim max square size on which to apply Winograd
 		 * \param k Common dimension of A and B, in the product A x B
 		 * \param beta Computing \f$AB + \beta C\f$
 		 * \param delayedDim Returns the size of blocks that can be multiplied
@@ -262,6 +263,7 @@ namespace FFLAS {
 		 */
 		template <class Field>
 		void MatMulParameters (const Field& F,
+					      const size_t WinoDim,
 					      const size_t k,
 					      const typename Field::Element& beta,
 					      size_t& delayedDim,
@@ -954,6 +956,9 @@ namespace FFLAS {
 	       const FFLAS_DIAG Diag,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
+#ifdef __FFLAS__TRSM_READONLY
+	       const
+#endif 
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb);
 
@@ -1032,7 +1037,7 @@ namespace FFLAS {
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
-		Protected::MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base,
+		Protected::MatMulParameters (F, MIN(MIN(m,n),k), k, beta, kmax, base,
 					     winolevel, true);
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, winolevel, base);
@@ -1092,7 +1097,7 @@ namespace FFLAS {
 		size_t w, kmax;
 		FFLAS_BASE base;
 
-		Protected::MatMulParameters (F, MIN(MIN(m,n),k), beta, kmax, base, w);
+		Protected::MatMulParameters (F, MIN(MIN(m,n),k),k, beta, kmax, base, w);
 
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, w, base);

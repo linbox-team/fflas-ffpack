@@ -46,6 +46,9 @@ namespace FFLAS {
 	       const FFLAS_DIAG Diag,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
+#ifdef __FFLAS__TRSM_READONLY
+	       const
+#endif
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb)
 	{

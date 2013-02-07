@@ -53,6 +53,7 @@ namespace FFLAS {
 		 */
 		template <class Field>
 		inline void MatMulParameters (const Field& F,
+					      const size_t WinoDim,
 					      const size_t k,
 					      const typename Field::Element& beta,
 					      size_t& delayedDim,
@@ -65,7 +66,7 @@ namespace FFLAS {
 			// Can be improved for some cases.
 
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (k);
+				winoRecLevel = WinoSteps (WinoDim);
 			base = BaseCompute (F, winoRecLevel);
 			delayedDim = DotProdBound (F, winoRecLevel, beta, base);
 
