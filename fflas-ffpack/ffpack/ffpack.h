@@ -40,7 +40,7 @@
 #include <list>
 #include <vector>
 #include <iostream> // std::cout
-
+#include <algorithm>
 
 // The use of the small size LQUP is currently disabled:
 // need for a better handling of element base (double, float, generic) combined
