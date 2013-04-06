@@ -36,12 +36,133 @@
 #define MAX(a,b) (a<b)?b:a
 #endif
 
-#define LEFTLOOKING
-//#define BASECASE_2
+//#define LEFTLOOKING
 #define BASECASE_K 30
 using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
+
+	template<class Field>
+	inline size_t
+	PLUQ_basecaseV2 (const Field& Fi, const FFLAS_DIAG Diag,
+			 const size_t M, const size_t N,
+			 typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+		size_t row = 0;
+		size_t col = 0;
+		size_t rank = 0;
+		vector<bool> pivotRows(M,false);
+		vector<bool> pivotCols(N,false);
+		size_t MathP[M];
+		size_t MathQ[N];
+		size_t npp=0;
+		size_t npq=0;
+				
+		while ((col < N)||(row < M)){
+			size_t piv2 = 0;
+			size_t piv3 = 0;
+			typename Field::Element * A1 = A;
+			typename Field::Element * A2 = A + col;
+			typename Field::Element * A3 = A + row*lda;
+			    // search for pivot in A2
+			if (row==M){
+				piv3=col;
+			}else
+				while ((piv3 < col) && (pivotCols[piv3] || Fi.isZero (A3 [piv3]))) piv3++;
+			if (piv3 == col){
+				if (col==N){
+					row++;
+					continue;
+				}
+#ifdef LEFTLOOKING // not supported so far
+				    // Left looking style update 
+				ftrsv (Fi, FflasLower, FflasNoTrans, 
+				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
+				       rank, A, lda, A2, lda);
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
+				       A1,lda, A2, lda,
+				       Fi.one, A2+rank*lda, lda);
+#endif
+				while ((piv2 < row) && (pivotRows[piv2] || Fi.isZero (A2 [piv2*lda]))) piv2++;
+				if (col<N) col++;
+				if (piv2==M){
+					    //NonPivQ[npq++] = col-1;
+					continue;
+				}
+			} else 
+				piv2 = row;
+				       
+			if (row<M)  row++;
+			if (Fi.isZero (A [piv2*lda+piv3])){
+				    // no pivot found
+				continue;
+			}
+			    // At this point the pivot is located at x=piv2 y = piv3
+			A2 = A+piv3;
+			A3 = A+piv2*lda;
+			typename Field::Element invpiv;
+			Fi.inv (invpiv, A3[piv3]);
+			if (Diag==FflasUnit){
+#ifdef LEFTLOOKING
+				    // Normalizing the pivot row
+				for (size_t i=piv3+1; i<N; ++i)
+					Fi.mulin (A3[i], invpiv);
+#endif
+			}
+			else{
+				    // Normalizing the pivot column
+				for (size_t i=piv2+1; i<row; ++i)
+					if (!pivotRows[i])
+						Fi.mulin (A2 [i*lda], invpiv);
+				for (size_t i=row; i<M; ++i)
+					Fi.mulin (A2 [i*lda], invpiv);
+			}
+				       
+			    // Update
+#ifndef LEFTLOOKING
+			for (size_t i=piv2+1; i<row; ++i)
+				if (!pivotRows[i]){
+					for (size_t j=piv3+1; j<col; ++j)
+						if (!pivotCols[j])
+							Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
+					for (size_t j=col; j<N; ++j)
+						Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
+				}
+			for (size_t i=row; i<M; ++i){
+				for (size_t j=piv3+1; j<col; ++j)
+					if (!pivotCols[j])
+						Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
+				for (size_t j=col; j<N; ++j)
+					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
+			}
+#endif
+#ifdef LEFTLOOKING
+			    // Need to update the cols already updated
+			for (size_t i=piv2+1; i<M; ++i)
+				for (size_t j=piv3+1; j<col; ++j)
+					Fi.maxpyin (A[i*lda+j], 
+						    A[i*lda+rank], A[rank*lda+j]);				
+#endif
+			MathQ[rank] = piv3;
+			MathP[rank] = piv2;
+			pivotCols[piv3] = true;	       
+			pivotRows[piv2] = true;	       
+			rank++; 
+		}
+		    // Building permutations
+		 size_t nonpiv = rank;
+		 for (size_t i = 0; i<M; ++i)
+			 if (!pivotRows[i])
+				 MathP[nonpiv++] = i;
+		 nonpiv = rank;
+		 for (size_t i = 0; i<N; ++i)
+			 if (!pivotCols[i])
+				 MathQ[nonpiv++] = i;
+		MathPerm2LAPACKPerm (Q, MathQ, N);
+		applyP (Fi, FflasRight, FflasTrans, M, 0, N, A, lda, Q);
+		MathPerm2LAPACKPerm (P, MathP, M);
+		applyP (Fi, FflasLeft, FflasNoTrans, N, 0, M, A, lda, P);
+		return rank;
+	}
 
 	template<class Field>
 	inline size_t
@@ -193,7 +314,7 @@ namespace FFPACK {
 
 #ifdef BASECASE_K
 		if (MIN(M,N) < BASECASE_K)
-			return PLUQ_basecase (Fi, Diag, M, N, A, lda, P, Q);
+			return PLUQ_basecaseV2 (Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;
