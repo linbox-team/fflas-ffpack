@@ -37,7 +37,7 @@
 #endif
 
 //#define LEFTLOOKING
-#define BASECASE_K 30
+#define BASECASE_K 128
 using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
@@ -183,7 +183,13 @@ namespace FFPACK {
 		size_t MathQ[N];
 		size_t npp=0;
 		size_t npq=0;
-				
+
+#ifdef LEFTLOOKING
+		typename Field::Element* Ltemp = new typename Field::Element[M*N];
+		for (size_t i=0; i<M*N; ++i)
+			Fi.assign(Ltemp[i],Fi.zero);
+		typename Field::Element vtemp[M];
+#endif				
 		while ((col < N)||(row < M)){
 			size_t piv2 = 0;
 			size_t piv3 = 0;
@@ -200,21 +206,31 @@ namespace FFPACK {
 					row++;
 					continue;
 				}
-#ifdef LEFTLOOKING // not supported so far
-				    // Left looking style update 
+#ifdef LEFTLOOKING 
+				for (size_t i=0; i<rank; ++i)
+					Fi.assign (vtemp[i], A2 [MathP[i]*lda]);
+				typename Field::Element * vtemp_it = vtemp +rank;
+				for (size_t i=0; i<M; ++i)
+					if (!pivotRows[i])
+						Fi.assign (*(vtemp_it++), A2[i*lda]);	
+				    // Left looking update 
 				ftrsv (Fi, FflasLower, FflasNoTrans, 
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
-				       rank, A, lda, A2, lda);
+				       rank, Ltemp, N, vtemp, 1);
 				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
-				       A1,lda, A2, lda,
-				       Fi.one, A2+rank*lda, lda);
+				       Ltemp + rank*N, N, 
+				       vtemp, 1, Fi.one, vtemp + rank, 1);
+				for (size_t i=0; i<rank; ++i)
+					Fi.assign (A2 [MathP[i]*lda], vtemp[i]);
+				vtemp_it = vtemp +rank;
+				for (size_t i=0; i<M; ++i)
+					if (!pivotRows[i])
+						Fi.assign (A2[i*lda], *(vtemp_it++));
 #endif
 				while ((piv2 < row) && (pivotRows[piv2] || Fi.isZero (A2 [piv2*lda]))) piv2++;
 				if (col<N) col++;
-				if (piv2==M){
-					    //NonPivQ[npq++] = col-1;
+				if (piv2==M)
 					continue;
-				}
 			} else 
 				piv2 = row;
 				       
@@ -226,24 +242,49 @@ namespace FFPACK {
 			    // At this point the pivot is located at x=piv2 y = piv3
 			A2 = A+piv3;
 			A3 = A+piv2*lda;
+			MathQ[rank] = piv3;
+			MathP[rank] = piv2;
+			pivotCols[piv3] = true;	       
+			pivotRows[piv2] = true;	       
 			typename Field::Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
 			if (Diag==FflasUnit){
-#ifdef LEFTLOOKING
+#ifndef LEFTLOOKING
 				    // Normalizing the pivot row
 				for (size_t i=piv3+1; i<N; ++i)
 					Fi.mulin (A3[i], invpiv);
 #endif
 			}
 			else{
-				    // Normalizing the pivot column
-				for (size_t i=piv2+1; i<row; ++i)
+#ifdef LEFTLOOKING
+				    // finding the row idx of row piv2 in Ltemp
+				size_t Lpiv2 = rank;
+				for (size_t i=0; i<piv2; ++i)
 					if (!pivotRows[i])
-						Fi.mulin (A2 [i*lda], invpiv);
-				for (size_t i=row; i<M; ++i)
-					Fi.mulin (A2 [i*lda], invpiv);
+						Lpiv2 ++;
+				if (Lpiv2 != rank)
+					cyclic_shift_row(Ltemp+rank*N, Lpiv2-rank+1, rank, N);
+				    // Normalizing the pivot column
+				typename Field::Element * Lt_it = Ltemp + rank*(N+1) + N;
+				for (size_t i=0; i<row; ++i)
+					if (!pivotRows[i]){
+						Fi.assign (*Lt_it, Fi.mulin (A2 [i*lda], invpiv));
+						Lt_it+= N;
+					}
+				
+				for (size_t i=row; i<M; ++i){
+					Fi.assign (*Lt_it,Fi.mulin (A2 [i*lda], invpiv));
+					Lt_it+=N;
+				}
+#else
+				      // Normalizing the pivot column 
+				for (size_t i=piv2+1; i<row; ++i) 
+					if (!pivotRows[i]) 
+						Fi.mulin (A2 [i*lda], invpiv); 
+				for (size_t i=row; i<M; ++i) 
+					Fi.mulin (A2 [i*lda], invpiv); 
+#endif
 			}
-				       
 			    // Update
 #ifndef LEFTLOOKING
 			for (size_t i=piv2+1; i<row; ++i)
@@ -264,17 +305,17 @@ namespace FFPACK {
 #endif
 #ifdef LEFTLOOKING
 			    // Need to update the cols already updated
-			for (size_t i=piv2+1; i<M; ++i)
-				for (size_t j=piv3+1; j<col; ++j)
-					Fi.maxpyin (A[i*lda+j], 
-						    A[i*lda+rank], A[rank*lda+j]);				
+			if (piv3<col)
+				for (size_t i=piv2+1; i<M; ++i)
+					for (size_t j=piv3+1; j<col; ++j)
+						if (!pivotCols[j])
+							Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
 #endif
-			MathQ[rank] = piv3;
-			MathP[rank] = piv2;
-			pivotCols[piv3] = true;	       
-			pivotRows[piv2] = true;	       
 			rank++; 
 		}
+#ifdef LEFTLOOKING
+		delete[] Ltemp;
+#endif
 		    // Building permutations
 		 size_t nonpiv = rank;
 		 for (size_t i = 0; i<M; ++i)
@@ -441,7 +482,7 @@ namespace FFPACK {
 
 #ifdef BASECASE_K
 		if (MIN(M,N) < BASECASE_K)
-			return PLUQ_basecaseV3 (Fi, Diag, M, N, A, lda, P, Q);
+			return PLUQ_basecaseV2 (Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;
