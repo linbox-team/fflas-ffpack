@@ -709,7 +709,7 @@ namespace FFPACK {
 		// for (size_t i=0; i<N; ++i)
 		// 	std::cerr<<CRP[i]<<" ";
 		// std::cerr<<std::endl;
-		for (int i=0; i<M; ++i)
+		for (size_t i=0; i<M; ++i)
 			if (P[i] != i){
 				size_t tmp = RRP [i];
 				RRP [i] = RRP [P [i]];
