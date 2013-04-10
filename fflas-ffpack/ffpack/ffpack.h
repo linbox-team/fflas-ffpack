@@ -118,6 +118,15 @@ namespace FFPACK  {
 				  const size_t * Q2, 
 				  const size_t R, const size_t N);
 
+	void cyclic_shift_mathPerm (size_t * P,  const size_t s);
+	template<typename Base_t>
+	void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda);
+	template<typename Base_t>
+	void cyclic_shift_row(Base_t * A, size_t m, size_t n, size_t lda);
+	template<typename Base_t>
+	void cyclic_shift_col(Base_t * A, size_t m, size_t n, size_t lda);
+	
+
 	/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
 	 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
 	 * and rows for Trans).

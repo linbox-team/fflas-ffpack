@@ -28,7 +28,7 @@
 
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
-
+#define MEMCOPY
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -41,6 +41,133 @@
 using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
+
+	template<class Field>
+	inline size_t
+	PLUQ_basecaseV3 (const Field& Fi, const FFLAS_DIAG Diag,
+		       const size_t M, const size_t N,
+		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+		size_t row = 0;
+		size_t col = 0;
+		size_t rank = 0;
+		size_t * MathP = new size_t[M];
+		size_t * MathQ = new size_t[N];
+
+		for (size_t i=0; i<M; ++i) MathP[i] = i;
+		for (size_t i=0; i<N; ++i) MathQ[i] = i;
+		for (size_t i=0; i<M; ++i) P[i] = i;
+		for (size_t i=0; i<N; ++i) Q[i] = i;
+		while ((col < N)||(row < M)){
+			size_t piv2 = rank;
+			size_t piv3 = rank;
+			typename Field::Element * A1 = A + rank*lda;
+			typename Field::Element * A2 = A + col;
+			typename Field::Element * A3 = A + row*lda;
+			    // search for pivot in A2
+			if (row==M){
+				piv3=col;
+			}else
+				while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
+			if (piv3 == col){
+				if (col==N){
+					row++;
+					continue;
+				}
+#ifdef LEFTLOOKING
+				    // Left looking style update 
+				ftrsv (Fi, FflasLower, FflasNoTrans, 
+				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
+				       rank, A, lda, A2, lda);
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
+				       A1,lda, A2, lda,
+				       Fi.one, A2+rank*lda, lda);
+#endif
+				while ((piv2 < row) && Fi.isZero (A2 [piv2*lda])) piv2++;
+				if (col<N) col++;
+				if (piv2==M)
+					continue;
+			} else 
+				piv2 = row;
+			if (row<M)  row++;
+			if (Fi.isZero (A [piv2*lda+piv3])){
+				    // no pivot found
+				    //cerr<<endl;
+				continue;
+			}
+			    // At this point the pivot is located at x=piv2 y = piv3
+//			P [rank] = piv2;
+//			Q [rank] = piv3;			
+			
+			A2 = A+piv3;
+			A3 = A+piv2*lda;
+			
+			    // update permutations (cyclic shift)
+
+
+			if(piv2 > rank)
+				cyclic_shift_mathPerm(MathP+rank, piv2-rank+1);
+			
+			if(piv3 > rank)
+				cyclic_shift_mathPerm(MathQ+rank, piv3-rank+1);
+
+			typename Field::Element invpiv;
+			Fi.inv (invpiv, A3[piv3]);
+			if (Diag==FflasUnit){
+#ifdef LEFTLOOKING
+				    // Normalizing the pivot row
+				for (size_t i=piv3+1; i<N; ++i)
+					Fi.mulin (A3[i], invpiv);
+#endif
+			}
+			else
+				    // Normalizing the pivot column
+				for (size_t i=piv2+1; i<M; ++i)
+					Fi.mulin (A2 [i*lda], invpiv);
+			    // Update
+#ifndef LEFTLOOKING
+			for (size_t i=piv2+1; i<M; ++i)
+			 	for (size_t j=piv3+1; j<N; ++j)
+					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
+#endif
+
+
+			    // cyclic shift pivot column and row
+			if(piv3 > rank || piv2 > rank)
+			{
+
+				cyclic_shift_row_col(A+rank*(1+lda), piv2-rank+1, piv3-rank+1, lda);
+
+				cyclic_shift_row(A+rank*lda, piv2-rank+1, rank, lda);
+				cyclic_shift_row(A+rank*lda+piv3+1, piv2-rank+1, N-1-piv3, lda);
+				cyclic_shift_col(A+rank, rank, piv3-rank+1, lda);
+				cyclic_shift_col(A+rank+(piv2+1)*lda, M-1-piv2, piv3-rank+1, lda);
+			}
+
+
+/*
+
+			if(piv2 > rank)
+				cyclic_shift_row(A+rank*lda, piv2-rank+1, N, lda);
+			if(piv3 > rank)
+				cyclic_shift_col(A+rank, M, piv3-rank+1, lda);
+*/			
+
+#ifdef LEFTLOOKING
+			    // Need to update the cols already updated
+			for (size_t i=piv2+1; i<M; ++i)
+				for (size_t j=piv3+1; j<col; ++j)
+					Fi.maxpyin (A[i*lda+j], 
+						    A[i*lda+rank], A[rank*lda+j]);				
+#endif
+			rank++;
+		}
+		MathPerm2LAPACKPerm(P, MathP, M);
+		MathPerm2LAPACKPerm(Q, MathQ, N);
+			delete[] MathP;
+			delete[] MathQ;
+
+		return rank;
+	}
 
 	template<class Field>
 	inline size_t
@@ -314,7 +441,7 @@ namespace FFPACK {
 
 #ifdef BASECASE_K
 		if (MIN(M,N) < BASECASE_K)
-			return PLUQ_basecaseV2 (Fi, Diag, M, N, A, lda, P, Q);
+			return PLUQ_basecaseV3 (Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;
@@ -609,6 +736,125 @@ namespace FFPACK {
 		delete[] RRP;
 		delete[] CRP;
 	}
+
+	inline void 
+	cyclic_shift_mathPerm (size_t * P,  const size_t s){
+                size_t tmp;
+                tmp = *(P+s-1);
+		    //memmove(P+1, P, (s)*sizeof(size_t));	
+		size_t * Pi = P;
+		std::copy(Pi, Pi+s-1, Pi+1);
+
+                *(P)=tmp;
+	}
+
+	template<typename Base_t>
+	inline void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda) {
+		    //	std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
+		if (m > 1) {
+			const size_t mun(m-1);
+			if (n > 1) {
+				const size_t nun(n-1);
+				
+				Base_t * b = new Base_t[mun];
+				Base_t * Ainun = A+nun;
+				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
+				
+				    // dc = [ d c ]
+				Base_t * dc = new Base_t[n];            
+				std::copy(Ainun-nun, Ainun, dc+1);
+				
+				    // this is d
+				*dc = *Ainun;
+				
+				Base_t * Ai=A+(mun-1)*lda;
+				for(size_t i=mun; i>0; --i, Ai-=lda)
+					std::copy(Ai, Ai+nun, Ai+1+lda);
+				
+				std::copy(dc, dc+n, A);
+				
+				Base_t * Aipo = A+lda;
+				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = b[i];
+				
+				delete [] dc;
+				delete [] b;
+			} else if (n != 0) {
+				Base_t * Ai=A+mun*lda;
+				Base_t d = *Ai;
+				for(; Ai != A; Ai-=lda) *Ai= *(Ai-lda);
+				*A=d;
+			}
+		} else {
+			if ((m!=0) && (n > 1)) {
+				const size_t nun(n-1);
+				Base_t d = A[nun];
+				std::copy(A,A+nun,A+1);
+				*A=d;
+			}
+		}
 		
+	}
+	template<typename Base_t>
+	inline void cyclic_shift_row(Base_t * A, size_t m, size_t n, size_t lda)
+	{
+		if (m > 1) {
+			const size_t mun(m-1);
+			const size_t nun(n-1);
+			
+			Base_t * b = new Base_t[n];
+			Base_t * Ai = A+mun*lda;
+			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
+			
+			    // dc = [ d c ]
+//			Base_t * dc = new Base_t[n];
+
+			Base_t * Ac = A;
+			for(int i=mun-1; i>=0; --i)
+				std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
+			
+			Base_t * Aii = A;
+			for(size_t i=0; i<n; ++i, Aii++) *Aii = b[i];
+				
+//			delete [] dc;
+			delete [] b;
+		}
+	}
+
+	template<typename Base_t>
+	inline void cyclic_shift_col(Base_t * A, size_t m, size_t n, size_t lda)
+	{
+		if (n > 1) {
+			const size_t mun(m-1);
+			const size_t nun(n-1);		
+			Base_t * b = new Base_t[m];
+			Base_t * Ainun = A+nun;
+			for(size_t i=0; i<m; ++i, Ainun+=lda) b[i] = *Ainun;
+			
+			    // dc = [ d c ]
+			Base_t * tmp = new Base_t[nun]; 
+			Base_t * Ac = A;
+			for(int i=mun; i>=0; --i)
+			{				
+//				std::copy(A+i*lda, A+i*lda+1, A+1);
+				std::copy(Ac+i*lda, Ac+i*lda+nun, tmp);
+				std::copy(tmp, tmp+nun, Ac+i*lda+1);
+			}
+			
+			Base_t * Aipo = A;
+			for(size_t i=0; i<m; ++i, Aipo+=lda) *Aipo = b[i];
+			delete [] tmp;
+			delete [] b;
+		}
+	}
+	
+	    /*
+	inline void cyclic_shift_permut (size_t * P,  const size_t N){
+                size_t tmp;
+                tmp = *P;
+      		memmove(P, P+1, (N-1)*sizeof(size_t));
+                *(P+N-1)=tmp;
+	}
+	    */
+	
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL
