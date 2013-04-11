@@ -28,7 +28,7 @@
 
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
-#define MEMCOPY
+//#define MEMCOPY 
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -104,10 +104,10 @@ namespace FFPACK {
 			    // update permutations (cyclic shift)
 
 
-			if(piv2 > rank)
+			    //if(piv2 > rank)
 				cyclic_shift_mathPerm(MathP+rank, piv2-rank+1);
 			
-			if(piv3 > rank)
+				    //if(piv3 > rank)
 				cyclic_shift_mathPerm(MathQ+rank, piv3-rank+1);
 
 			typename Field::Element invpiv;
@@ -129,7 +129,7 @@ namespace FFPACK {
 			 	for (size_t j=piv3+1; j<N; ++j)
 					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
 #endif
-
+/*
 
 			    // cyclic shift pivot column and row
 			if(piv3 > rank || piv2 > rank)
@@ -143,14 +143,14 @@ namespace FFPACK {
 				cyclic_shift_col(A+rank+(piv2+1)*lda, M-1-piv2, piv3-rank+1, lda);
 			}
 
+*/
 
-/*
 
 			if(piv2 > rank)
 				cyclic_shift_row(A+rank*lda, piv2-rank+1, N, lda);
 			if(piv3 > rank)
 				cyclic_shift_col(A+rank, M, piv3-rank+1, lda);
-*/			
+			
 
 #ifdef LEFTLOOKING
 			    // Need to update the cols already updated
@@ -791,6 +791,53 @@ namespace FFPACK {
 
 	template<typename Base_t>
 	inline void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda) {
+
+#ifdef MEMCOPY
+//		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
+    
+		if (m > 1) {
+			const size_t mun(m-1);
+			if (n > 1) {
+//     std::cerr << "m: " << m << ", n: " << n << std::endl;
+				const size_t nun(n-1);
+				const size_t blo(sizeof(Base_t));
+				const size_t bmu(blo*mun);
+				const size_t bnu(blo*nun);
+				Base_t * b = new Base_t[mun];
+				for(size_t i=0; i<mun; ++i) b[i] = A[i*lda+nun];
+				Base_t * dc = new Base_t[n];
+				memcpy(dc+1,A+mun*lda,bnu);
+				*dc = A[mun*lda+nun]; // this is d
+				    // dc = [ d c ]
+				
+				for(size_t i=mun; i>0; --i)
+					memcpy(A+1+i*lda, A+(i-1)*lda, bnu);
+				
+				memcpy(A, dc, bnu+blo);
+				for(size_t i=0; i<mun; ++i) A[i*lda+lda] = b[i];
+			} else if (n != 0) {
+				Base_t d = A[mun*lda];
+				for(size_t i=mun; i>0; --i) A[i*lda]=A[(i-1)*lda];
+				*A=d;
+			}
+		} else {
+			if ((m!=0) && (n > 1)) {
+				const size_t nun(n-1);
+				const size_t blo(sizeof(Base_t));
+				const size_t bnu(blo*nun);
+				Base_t d = A[nun];
+//  std::cerr << "d: " << d << std::endl;
+				Base_t * tmp = new Base_t[nun];
+//				memcpy(tmp,A,bnu);
+//				memcpy(A+1,tmp,bnu);
+				std::copy(A,A+nun,A+1);
+				*A=d;
+			}
+		}
+//		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
+
+#else
+
 		    //	std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
 		if (m > 1) {
 			const size_t mun(m-1);
@@ -833,11 +880,38 @@ namespace FFPACK {
 				*A=d;
 			}
 		}
-		
+
+#endif		
 	}
 	template<typename Base_t>
 	inline void cyclic_shift_row(Base_t * A, size_t m, size_t n, size_t lda)
 	{
+	
+#ifdef MEMCOPY
+		if (m > 1) {
+			const size_t mun(m-1);
+			const size_t nun(n-1);
+			
+			Base_t * b = new Base_t[n];
+			Base_t * Ai = A+mun*lda;
+			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
+			
+			    // dc = [ d c ]
+//			Base_t * dc = new Base_t[n];
+
+			Base_t * Ac = A;
+			for(int i=mun-1; i>=0; --i)
+				    //	std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
+			    memcpy(Ac+(i+1)*lda, Ac+i*lda, (n)*sizeof(Base_t));
+			
+			Base_t * Aii = A;
+			for(size_t i=0; i<n; ++i, Aii++) *Aii = b[i];
+				
+//			delete [] dc;
+			delete [] b;
+		}
+
+#else
 		if (m > 1) {
 			const size_t mun(m-1);
 			const size_t nun(n-1);
@@ -859,6 +933,8 @@ namespace FFPACK {
 //			delete [] dc;
 			delete [] b;
 		}
+
+#endif
 	}
 
 	template<typename Base_t>
@@ -888,14 +964,6 @@ namespace FFPACK {
 		}
 	}
 	
-	    /*
-	inline void cyclic_shift_permut (size_t * P,  const size_t N){
-                size_t tmp;
-                tmp = *P;
-      		memmove(P, P+1, (N-1)*sizeof(size_t));
-                *(P+N-1)=tmp;
-	}
-	    */
 	
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL
