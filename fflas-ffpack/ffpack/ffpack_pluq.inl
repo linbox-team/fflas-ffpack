@@ -28,7 +28,7 @@
 
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
-//#define MEMCOPY 
+#define MEMCOPY 
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -815,6 +815,9 @@ namespace FFPACK {
 				
 				memcpy(A, dc, bnu+blo);
 				for(size_t i=0; i<mun; ++i) A[i*lda+lda] = b[i];
+				delete [] dc;
+				delete [] b;
+				
 			} else if (n != 0) {
 				Base_t d = A[mun*lda];
 				for(size_t i=mun; i>0; --i) A[i*lda]=A[(i-1)*lda];
@@ -828,10 +831,12 @@ namespace FFPACK {
 				Base_t d = A[nun];
 //  std::cerr << "d: " << d << std::endl;
 				Base_t * tmp = new Base_t[nun];
-//				memcpy(tmp,A,bnu);
-//				memcpy(A+1,tmp,bnu);
-				std::copy(A,A+nun,A+1);
+				memcpy(tmp,A,bnu);
+				memcpy(A+1,tmp,bnu);
+//				std::copy(A,A+nun,A+1);
 				*A=d;
+				delete [] tmp;
+				
 			}
 		}
 //		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
