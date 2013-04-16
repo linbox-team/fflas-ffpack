@@ -129,7 +129,7 @@ namespace FFPACK {
 			 	for (size_t j=piv3+1; j<N; ++j)
 					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
 #endif
-/*
+
 
 			    // cyclic shift pivot column and row
 			if(piv3 > rank || piv2 > rank)
@@ -143,14 +143,14 @@ namespace FFPACK {
 				cyclic_shift_col(A+rank+(piv2+1)*lda, M-1-piv2, piv3-rank+1, lda);
 			}
 
-*/
 
+/*
 
 			if(piv2 > rank)
 				cyclic_shift_row(A+rank*lda, piv2-rank+1, N, lda);
 			if(piv3 > rank)
 				cyclic_shift_col(A+rank, M, piv3-rank+1, lda);
-			
+*/			
 
 #ifdef LEFTLOOKING
 			    // Need to update the cols already updated
