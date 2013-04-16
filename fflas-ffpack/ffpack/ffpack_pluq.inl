@@ -36,8 +36,8 @@
 #define MAX(a,b) (a<b)?b:a
 #endif
 
-//#define LEFTLOOKING
-#define BASECASE_K 128
+#define LEFTLOOKING
+#define BASECASE_K 288
 using namespace std;
 namespace FFPACK {
     using namespace FFLAS;
