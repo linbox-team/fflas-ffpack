@@ -61,10 +61,11 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 				["ATLAS"],[
 				dnl atlas provides a liblapack next to its libcblas
 				LAPACK_LIBS="-llapack"
-				dnl why would we need lapack_atlas when llapack is enough ?
-				dnl could llapack not provide the symbols ?
 				AS_IF([test -r "${BLAS_PATH}/liblapack_atlas.a" -o -r "${BLAS_PATH}/liblapack_atlas.so"],
 					[LAPACK_LIBS="${LAPACK_LIBS} -llapack_atlas"])
+				AS_IF([test -r "${BLAS_PATH}/libatlas.a" -o -r "${BLAS_PATH}/libatlas.so"],
+					[LAPACK_LIBS="${LAPACK_LIBS} -latlas"])
+
 				dnl  AS_IF([ test "x$BLAS_PATH" != "x/usr/lib" -a "x$BLAS_PATH" != "x/usr/local/lib"],
 					dnl  [LAPACK_LIBS="-L${BLAS_PATH} ${BLAS_LIBS}"])
 
@@ -82,7 +83,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 				[LAPACK_LIBS=""])
 
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-			LIBS="${BACKUP_LIBS} ${BLAS_LIBS} ${LAPACK_LIBS}"
+			LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS} "
 
 			dnl  echo ${LAPACK_LIBS}
 
@@ -111,7 +112,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 						],
                         [dnl not found : trying only lapack
 						CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-						LIBS="${BACKUP_LIBS} ${BLAS_LIBS} ${LAPACK_LIBS}"
+						LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS}"
 
 
 						AC_TRY_RUN(
@@ -224,7 +225,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 					 )
 				dnl  echo "lapack libs : $LAPACK_LIBS"
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-				LIBS="${BACKUP_LIBS} ${BLAS_LIBS} ${LAPACK_LIBS}"
+				LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS}"
 
 
 				AC_TRY_RUN(
@@ -272,7 +273,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 							]
 						 )
 						CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-						LIBS="${BACKUP_LIBS} ${BLAS_LIBS} ${LAPACK_LIBS}"
+						LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS}"
 
 
 						AC_TRY_RUN(
