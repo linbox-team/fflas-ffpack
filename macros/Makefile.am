@@ -28,6 +28,7 @@ EXTRA_DIST=            \
 	blasATLAS-check.m4 \
 	blasGOTO-check.m4  \
 	blasGSL-check.m4   \
+	blas-pkg-config.m4   \
 	config-header.m4   \
 	debug.m4           \
 	fflas-ffpack-doc.m4    \

@@ -64,7 +64,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					[ ATLAS_NEEDED=`nm  -u $BLAS_HOME/lib/libcblas.a  | grep ATL`
 					dnl  ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED" ],
-						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}/lib"
@@ -77,7 +77,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					[ dnl ATLAS_NEEDED=`nm  -u $BLAS_HOME/lib/libcblas.a  | grep ATL`
 					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED2"],
-						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}/lib"
@@ -91,7 +91,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					[ ATLAS_NEEDED=`nm  -u $BLAS_HOME/libcblas.a  | grep ATL`
 					dnl  ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED" ],
-						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}"
@@ -104,7 +104,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					[ dnl ATLAS_NEEDED=`nm  -u $BLAS_HOME/libcblas.a  | grep ATL`
 					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED2"],
-						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}"
@@ -217,6 +217,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					AS_IF([ test "x$BLAS_HOME" != "x/usr" -a "x$BLAS_HOME" != "x/usr/local"],
 						[BLAS_LIBS="-L${BLAS_HOME} ${ATLAS_LIBS}"])
 					])
+					BLAS_LIBS=" ${BLAS_LIBS} -lblas"
 
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
 			LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
