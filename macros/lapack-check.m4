@@ -65,6 +65,10 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 					[LAPACK_LIBS="${LAPACK_LIBS} -llapack_atlas"])
 				AS_IF([test -r "${BLAS_PATH}/libatlas.a" -o -r "${BLAS_PATH}/libatlas.so"],
 					[LAPACK_LIBS="${LAPACK_LIBS} -latlas"])
+				AS_IF([test -r "${BLAS_PATH}/libf77blas.a" -o -r "${BLAS_PATH}/libf77blas.so"],
+					[LAPACK_LIBS="${LAPACK_LIBS} -lf77blas -lgfortran  -latlas "])
+
+
 
 				dnl  AS_IF([ test "x$BLAS_PATH" != "x/usr/lib" -a "x$BLAS_PATH" != "x/usr/local/lib"],
 					dnl  [LAPACK_LIBS="-L${BLAS_PATH} ${BLAS_LIBS}"])
@@ -83,7 +87,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 				[LAPACK_LIBS=""])
 
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-			LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS} "
+			LIBS="${BACKUP_LIBS} -L${BLAS_PATH} ${LAPACK_LIBS} ${BLAS_LIBS}" dnl llapack must be first
 
 			dnl  echo ${LAPACK_LIBS}
 
@@ -112,7 +116,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 						],
                         [dnl not found : trying only lapack
 						CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-						LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS}"
+						LIBS="${BACKUP_LIBS} ${BLAS_LIBS} ${LAPACK_LIBS}"
 
 
 						AC_TRY_RUN(
@@ -225,7 +229,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 					 )
 				dnl  echo "lapack libs : $LAPACK_LIBS"
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-				LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS}"
+				LIBS="${BACKUP_LIBS}  ${BLAS_LIBS} ${LAPACK_LIBS}"
 
 
 				AC_TRY_RUN(
@@ -273,7 +277,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 							]
 						 )
 						CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-						LIBS="${BACKUP_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS}"
+						LIBS="${BACKUP_LIBS}  ${BLAS_LIBS} ${LAPACK_LIBS}"
 
 
 						AC_TRY_RUN(
