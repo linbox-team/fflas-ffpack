@@ -89,33 +89,33 @@ namespace FFPACK  {
 		FfpackKGF=2
 	};
 	void RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-				    const size_t * P, const size_t * Q, 
+				    const size_t * P, const size_t * Q,
 				    const size_t M, const size_t N, const size_t R);
 
-	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP, 
+	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
 				  const size_t N);
 
-	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP, 
+	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
 				  const size_t N);
 	template <class Element>
-	void applyS (Element* A, const size_t lda, const size_t width, 
+	void applyS (Element* A, const size_t lda, const size_t width,
 		     const size_t M2,
-		     const size_t R1, const size_t R2, 
+		     const size_t R1, const size_t R2,
 		     const size_t R3, const size_t R4);
 
 	template <class Element>
-	void applyT (Element* A, const size_t lda, const size_t width, 
+	void applyT (Element* A, const size_t lda, const size_t width,
 		     const size_t N2,
-		     const size_t R1, const size_t R2, 
+		     const size_t R1, const size_t R2,
 		     const size_t R3, const size_t R4);
 
-	void composePermutationsP (size_t * MathP, 
-				  const size_t * P1, 
-				  const size_t * P2, 
+	void composePermutationsP (size_t * MathP,
+				  const size_t * P1,
+				  const size_t * P2,
 				  const size_t R, const size_t N);
-	void composePermutationsQ (size_t * MathP, 
-				  const size_t * Q1, 
-				  const size_t * Q2, 
+	void composePermutationsQ (size_t * MathP,
+				  const size_t * Q1,
+				  const size_t * Q2,
 				  const size_t R, const size_t N);
 
 	void cyclic_shift_mathPerm (size_t * P,  const size_t s);
@@ -125,7 +125,7 @@ namespace FFPACK  {
 	void cyclic_shift_row(Base_t * A, size_t m, size_t n, size_t lda);
 	template<typename Base_t>
 	void cyclic_shift_col(Base_t * A, size_t m, size_t n, size_t lda);
-	
+
 
 	/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
 	 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
@@ -1099,16 +1099,16 @@ else { // Left NullSpace
 	size_t
 	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
-	      typename Field::Element * A, const size_t lda, 
+	      typename Field::Element * A, const size_t lda,
 	      size_t*P, size_t *Q);
 	template<class Field>
 	size_t
 	PLUQ_basecase (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 		       const size_t M, const size_t N,
-		       typename Field::Element * A, const size_t lda, 
+		       typename Field::Element * A, const size_t lda,
 		       size_t*P, size_t *Q);
 
-	
+
 	/** @brief Compute the LQUP factorization of the given matrix.
 	 * Using
 	 * a block algorithm and return its rank.
@@ -1678,7 +1678,7 @@ else { // Left NullSpace
 				ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Ldim, N, F.one,
 				       Lcurr, ldl , Bcurr, ldb );
 
-				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-k, N, Ldim, F.mOne,
+				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-(size_t)k, N, Ldim, F.mOne,
 				       Rcurr , ldl, Bcurr, ldb, F.one, Bcurr+Ldim*ldb, ldb);
 			}
 		}
@@ -1689,7 +1689,7 @@ else { // Left NullSpace
 				k = (int) ib;
 				while ( (j >= 0) &&  ( (int)Q[j] == k)  ) {--k;--j;}
 				Ldim = ib-(size_t)k;
-				Lcurr = L + j+1 + (k+1)*ldl;
+				Lcurr = L + j+1 + (k+1)*(int)ldl;
 				Bcurr = B + ib+1;
 				Rcurr = Lcurr + Ldim*ldl;
 
