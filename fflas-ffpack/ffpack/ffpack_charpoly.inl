@@ -6,20 +6,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -118,16 +118,16 @@ namespace FFPACK {
 			while (Ncurr > 0){
 				size_t *P = new size_t[(size_t)Ncurr];
 				Polynomial minP;//=new Polynomial();
-				FFPACK::MinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
+				FFPACK::MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
 				int k = int(minP.size()-1); // degre of minpoly
 				if ((k==1) && F.isZero ((minP)[0])){ // minpoly is X
 					Ai = A;
 					int j = Ncurr*Ncurr;
 					while (j-- && F.isZero(*(Ai++))) ;
 					if (!j){ // A is 0, CharPoly=X^n
-						minP.resize(Ncurr+1);
+						minP.resize((size_t)Ncurr+1);
 						(minP)[1] = F.zero;
-						(minP)[Ncurr] = F.one;
+						(minP)[(size_t)Ncurr] = F.one;
 						k=Ncurr;
 					}
 				}
@@ -137,25 +137,26 @@ namespace FFPACK {
 					return charp;
 				}
 				size_t Nrest = (size_t)(Ncurr-k);
-				elt * X21 = X2 + k*ldx;
+				elt * X21 = X2 + k*(int)ldx;
 				elt * X22 = X21 + k;
 				// Compute the n-k last rows of A' = PA^tP^t in X2_
 				// A = A . P^t
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-					Ncurr, 0, (int)k, A, lda, P);
+					(size_t)Ncurr, 0, (int)k, A, lda, P);
 				// Copy X2_ = (A'_2)^t
-				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-Ncurr)
+				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-(size_t)Ncurr)
 					for (size_t jj=0; jj<(size_t)Ncurr*lda; jj+=lda)
 						*(Xi++) = *(Ai+jj);
 				// A = A . P : Undo the permutation on A
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-					Ncurr, 0, (int)k, A, lda, P);
+					(size_t)Ncurr, 0, (int)k, A, lda, P);
 				// X2_ = X2_ . P^t (=  (P A^t P^t)2_)
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					Nrest, 0, (int)k, X21, ldx, P);
 				delete[] P ;
 				// X21 = X21 . S1^-1
-				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
+				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper,
+				      FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, (size_t)k,
 				      F.one, X2, ldx, X21, ldx);
 				// Creation of the matrix A2 for recurise call
 				for (Xi = X22, Ai = A;
@@ -163,7 +164,7 @@ namespace FFPACK {
 				     Xi += (ldx-Nrest), Ai += (lda-Nrest))
 					for (size_t jj=0; jj<Nrest; ++jj)
 						*(Ai++) = *(Xi++);
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mOne,
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, (size_t)k, F.mOne,
 				       X21, ldx, X2+k, ldx, F.one, A, lda);
 				X2 = X22;
 				Ncurr = int(Nrest);
@@ -198,7 +199,7 @@ namespace FFPACK {
 					int j = int(N*N);
 					while (j-- && F.isZero(*(Ai++))) ;
 					if (!j){ // A is 0, CharPoly=X^n
-						minP->resize(N+1);
+						minP->resize((size_t)N+1);
 						(*minP)[1] = F.zero;
 						(*minP)[N] = F.one;
 						k=N;

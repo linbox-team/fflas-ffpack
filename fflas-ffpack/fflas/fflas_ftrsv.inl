@@ -6,20 +6,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -48,7 +48,7 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 	if ( Uplo == FflasLower ){
 		if ( TransA == FflasTrans){
 			Ai = A+(N-1)*(lda+1); // bottom right entry of A
-			Ximax = Xi = X+(N-1)*incX;
+			Ximax = Xi = X+(int)(N-1)*incX;
 			for( ; Xi>=X; Ai-=lda+1,Xi-=incX ){
 				F.negin( *Xi );
 				for ( Xj = Xi+incX, Aj=Ai+lda; Xj<=Ximax;
@@ -64,7 +64,7 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 		else{
 			Ai = A;
 		        Xi = X;
-			for( ; Xi<X+incX*N; Ai+=lda+1,Xi+=incX ){
+			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX ){
 				F.negin( *Xi );
 				for ( Xj = Xi-incX, Aj=Ai-1; Xj>=X;
 				      Xj-=incX, Aj--){
@@ -80,7 +80,7 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 		if ( TransA == FflasTrans){
 			Ai = A;
 			Xi = X;
-			for( ; Xi<X+N*incX; Ai+=lda+1,Xi+=incX ){
+			for( ; Xi<X+(int)N*incX; Ai+=lda+1,Xi+=incX ){
 				F.negin( *Xi );
 				for ( Xj = Xi-incX, Aj=Ai-lda; Xj>=X;
 				      Xj-=incX, Aj-=lda){
@@ -95,7 +95,7 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 		} // FflasTrans
 		else{
 			Ai = A+(lda+1)*(N-1);
-			Ximax = Xi = X+incX*(N-1);
+			Ximax = Xi = X+incX*(int)(N-1);
 			for( ; Xi>=X; Ai-=lda+1,Xi-=incX ){
 				F.negin( *Xi );
 				for ( Xj = Xi+incX, Aj=Ai+1; Xj<=Ximax;

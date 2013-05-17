@@ -6,20 +6,20 @@
  *
  * Written by Clement Pernet <cpernet@uwaterloo.ca>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -482,14 +482,14 @@ void FFPACK::CompressRows (Field& F, const size_t M,
 	size_t currd = d[0]-1;
 	size_t curri = d[0]-1;
 	for (int i = 0; i< int(nb_blocs)-1; ++i){
-		FFLAS::fcopy(F, M, tmp + i*ldtmp, 1,  A + currd*lda, 1);
+		FFLAS::fcopy(F, M, tmp + i*(int)ldtmp, 1,  A + currd*lda, 1);
 		for (int j=0; j < int(d[i+1]) -1; ++j){
-			FFLAS::fcopy(F, M, A + (curri++)*lda, 1, A+(currd+j+1)*lda, 1);
+			FFLAS::fcopy(F, M, A + (curri++)*lda, 1, A+(currd+(size_t)j+1)*lda, 1);
 		}
 		currd += d[i+1];
 	}
 	for (int i=0; i < int(nb_blocs)-1; ++i){
-		FFLAS::fcopy (F, M, A + (curri++)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (curri++)*lda, 1, tmp + i*(int)ldtmp, 1);
 	}
 }
 
@@ -501,7 +501,7 @@ void FFPACK::DeCompressRows (Field& F, const size_t M, const size_t N,
 {
 
 	for (int i=0; i<int(nb_blocs)-1; ++i)
-		FFLAS::fcopy(F, M, tmp + i*ldtmp, 1, A + (N-nb_blocs+i)*lda, 1);
+		FFLAS::fcopy(F, M, tmp + i*(int)ldtmp, 1, A + (N-nb_blocs+(size_t)i)*lda, 1);
 
 	size_t w_idx = N - 2;
 	size_t r_idx = N - nb_blocs - 1;
@@ -509,7 +509,7 @@ void FFPACK::DeCompressRows (Field& F, const size_t M, const size_t N,
 	for (; i--; ){
 		for (size_t j = 0; j<d[i+1]-1; ++j)
 			FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
-		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*(int)ldtmp, 1);
 	}
 }
 
@@ -574,6 +574,6 @@ void FFPACK::DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 	for (; i--; ){
 		for (size_t j = 0; j<d[i]-1; ++j)
 			FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, A + (r_idx--)*lda, 1);
-		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*ldtmp, 1);
+		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*(int)ldtmp, 1);
 	}
 }

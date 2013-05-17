@@ -6,20 +6,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -153,25 +153,25 @@ namespace FFPACK {
 #if 0
 						std::cerr<<"mb<lambda"<<std::endl;
 #endif
-						typename Field::Element * tmp2 = new typename Field::Element[lambda*mc];
+						typename Field::Element * tmp2 = new typename Field::Element[(size_t)lambda*mc];
 
 						// tmp2 <- C1
 						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+							FFLAS::fcopy( F, mc, tmp2+i*(int)mc, 1, C+i*(int)lda, 1);
 
 						// C1' <- B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
-						      F.one, B, lda, C+lambda*lda, lda,
+						      F.one, B, lda, C+lambda*(int)lda, lda,
 						      F.zero, C, lda);
 
 						// tmp2 <- B2.C2 + tmp2
-						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
-						      F.one, B+mb*lda, lda, C+lambda*lda, lda,
+						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, (size_t)lambda, mc, mb,
+						      F.one, B+mb*lda, lda, C+lambda*(int)lda, lda,
 						      F.one, tmp2, mc);
 
 						// C2' <- tmp2
 						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, tmp2+i*mc, 1);
+							FFLAS::fcopy( F, mc, C+(mb+(size_t)i)*lda, 1, tmp2+(size_t)i*mc, 1);
 						delete[] tmp2;
 					}
 					else if ( lambda > 0 ){
@@ -181,18 +181,18 @@ namespace FFPACK {
 
 						typename Field::Element * tmp2 = new typename Field::Element[mb*mc];
 						// C1 <- B2.C2 + C1
-						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, lambda, mc, mb,
-						      F.one, B+mb*lda, lda, C+lambda*lda, lda,
+						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, (size_t)lambda, mc, mb,
+						      F.one, B+mb*lda, lda, C+lambda*(int)lda, lda,
 						      F.one, C, lda);
 
 						// tmp2 <-B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
-						      F.one, B, lda, C+lambda*lda, lda,
+						      F.one, B, lda, C+lambda*(int)lda, lda,
 						      F.zero, tmp2, mc);
 
 						// C2' <- C1
 						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, C+mb*lda+i*lda, 1, C+i*lda, 1);
+							FFLAS::fcopy( F, mc, C+(mb+(size_t)i)*lda, 1, C+i*(int)lda, 1);
 
 						// C1' <- tmp2
 						for (size_t i=0; i<mb; ++i)
