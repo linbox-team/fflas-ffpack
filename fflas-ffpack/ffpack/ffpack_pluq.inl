@@ -5,20 +5,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -28,7 +28,7 @@
 
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
-#define MEMCOPY 
+#define MEMCOPY
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -74,11 +74,11 @@ namespace FFPACK {
 					continue;
 				}
 #ifdef LEFTLOOKING
-				    // Left looking style update 
-				ftrsv (Fi, FflasLower, FflasNoTrans, 
+				    // Left looking style update
+				ftrsv (Fi, FflasLower, FflasNoTrans,
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
 				       rank, A, lda, A2, lda);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
 				       A1,lda, A2, lda,
 				       Fi.one, A2+rank*lda, lda);
 #endif
@@ -86,7 +86,7 @@ namespace FFPACK {
 				if (col<N) col++;
 				if (piv2==M)
 					continue;
-			} else 
+			} else
 				piv2 = row;
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
@@ -96,17 +96,17 @@ namespace FFPACK {
 			}
 			    // At this point the pivot is located at x=piv2 y = piv3
 //			P [rank] = piv2;
-//			Q [rank] = piv3;			
-			
+//			Q [rank] = piv3;
+
 			A2 = A+piv3;
 			A3 = A+piv2*lda;
-			
+
 			    // update permutations (cyclic shift)
 
 
 			    //if(piv2 > rank)
 				cyclic_shift_mathPerm(MathP+rank, piv2-rank+1);
-			
+
 				    //if(piv3 > rank)
 				cyclic_shift_mathPerm(MathQ+rank, piv3-rank+1);
 
@@ -150,14 +150,14 @@ namespace FFPACK {
 				cyclic_shift_row(A+rank*lda, piv2-rank+1, N, lda);
 			if(piv3 > rank)
 				cyclic_shift_col(A+rank, M, piv3-rank+1, lda);
-*/			
+*/
 
 #ifdef LEFTLOOKING
 			    // Need to update the cols already updated
 			for (size_t i=piv2+1; i<M; ++i)
 				for (size_t j=piv3+1; j<col; ++j)
-					Fi.maxpyin (A[i*lda+j], 
-						    A[i*lda+rank], A[rank*lda+j]);				
+					Fi.maxpyin (A[i*lda+j],
+						    A[i*lda+rank], A[rank*lda+j]);
 #endif
 			rank++;
 		}
@@ -189,7 +189,7 @@ namespace FFPACK {
 		for (size_t i=0; i<M*N; ++i)
 			Fi.assign(Ltemp[i],Fi.zero);
 		typename Field::Element vtemp[M];
-#endif				
+#endif
 		while ((col < N)||(row < M)){
 			size_t piv2 = 0;
 			size_t piv3 = 0;
@@ -206,19 +206,19 @@ namespace FFPACK {
 					row++;
 					continue;
 				}
-#ifdef LEFTLOOKING 
+#ifdef LEFTLOOKING
 				for (size_t i=0; i<rank; ++i)
 					Fi.assign (vtemp[i], A2 [MathP[i]*lda]);
 				typename Field::Element * vtemp_it = vtemp +rank;
 				for (size_t i=0; i<M; ++i)
 					if (!pivotRows[i])
-						Fi.assign (*(vtemp_it++), A2[i*lda]);	
-				    // Left looking update 
-				ftrsv (Fi, FflasLower, FflasNoTrans, 
+						Fi.assign (*(vtemp_it++), A2[i*lda]);
+				    // Left looking update
+				ftrsv (Fi, FflasLower, FflasNoTrans,
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
 				       rank, Ltemp, N, vtemp, 1);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
-				       Ltemp + rank*N, N, 
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
+				       Ltemp + rank*N, N,
 				       vtemp, 1, Fi.one, vtemp + rank, 1);
 				for (size_t i=0; i<rank; ++i)
 					Fi.assign (A2 [MathP[i]*lda], vtemp[i]);
@@ -231,9 +231,9 @@ namespace FFPACK {
 				if (col<N) col++;
 				if (piv2==M)
 					continue;
-			} else 
+			} else
 				piv2 = row;
-				       
+
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
 				    // no pivot found
@@ -244,8 +244,8 @@ namespace FFPACK {
 			A3 = A+piv2*lda;
 			MathQ[rank] = piv3;
 			MathP[rank] = piv2;
-			pivotCols[piv3] = true;	       
-			pivotRows[piv2] = true;	       
+			pivotCols[piv3] = true;
+			pivotRows[piv2] = true;
 			typename Field::Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
 			if (Diag==FflasUnit){
@@ -271,18 +271,18 @@ namespace FFPACK {
 						Fi.assign (*Lt_it, Fi.mulin (A2 [i*lda], invpiv));
 						Lt_it+= N;
 					}
-				
+
 				for (size_t i=row; i<M; ++i){
 					Fi.assign (*Lt_it,Fi.mulin (A2 [i*lda], invpiv));
 					Lt_it+=N;
 				}
 #else
-				      // Normalizing the pivot column 
-				for (size_t i=piv2+1; i<row; ++i) 
-					if (!pivotRows[i]) 
-						Fi.mulin (A2 [i*lda], invpiv); 
-				for (size_t i=row; i<M; ++i) 
-					Fi.mulin (A2 [i*lda], invpiv); 
+				      // Normalizing the pivot column
+				for (size_t i=piv2+1; i<row; ++i)
+					if (!pivotRows[i])
+						Fi.mulin (A2 [i*lda], invpiv);
+				for (size_t i=row; i<M; ++i)
+					Fi.mulin (A2 [i*lda], invpiv);
 #endif
 			}
 			    // Update
@@ -311,7 +311,7 @@ namespace FFPACK {
 						if (!pivotCols[j])
 							Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
 #endif
-			rank++; 
+			rank++;
 		}
 #ifdef LEFTLOOKING
 		delete[] Ltemp;
@@ -359,11 +359,11 @@ namespace FFPACK {
 					continue;
 				}
 #ifdef LEFTLOOKING
-				    // Left looking style update 
-				ftrsv (Fi, FflasLower, FflasNoTrans, 
+				    // Left looking style update
+				ftrsv (Fi, FflasLower, FflasNoTrans,
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
 				       rank, A, lda, A2, lda);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
 				       A1,lda, A2, lda,
 				       Fi.one, A2+rank*lda, lda);
 #endif
@@ -371,7 +371,7 @@ namespace FFPACK {
 				if (col<N) col++;
 				if (piv2==M)
 					continue;
-			} else 
+			} else
 				piv2 = row;
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
@@ -411,7 +411,7 @@ namespace FFPACK {
 					Fi.assign (A[i*lda + rank], A2[i*lda]);
 					Fi.assign (A2[i*lda], tmp);
 				}
-				    // Updating cols 
+				    // Updating cols
 
 			    //Swapping pivot row
 			if (piv2 > rank)
@@ -425,20 +425,20 @@ namespace FFPACK {
 			    // Need to update the cols already updated
 			for (size_t i=piv2+1; i<M; ++i)
 				for (size_t j=piv3+1; j<col; ++j)
-					Fi.maxpyin (A[i*lda+j], 
-						    A[i*lda+rank], A[rank*lda+j]);				
+					Fi.maxpyin (A[i*lda+j],
+						    A[i*lda+rank], A[rank*lda+j]);
 #endif
-			rank++; 
+			rank++;
 		}
 		return rank;
 	}
-	
+
 	template<class Field>
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
-		
+
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
 		if (MIN (M,N) == 0) return 0;
@@ -506,7 +506,7 @@ namespace FFPACK {
 		applyP (Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 		    // D <- L1^-1 B1
 		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda);
-		    // E <- C1 U1^-1 
+		    // E <- C1 U1^-1
 		ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 		    // F <- B2 - M1 D
 		fgemm (Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
@@ -560,7 +560,7 @@ namespace FFPACK {
 		size_t * P4 = new size_t [M-M2-R3];
 		size_t * Q4 = new size_t [N-N2-R2];
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
-		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ] 
+		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
 		applyP (Fi, FflasLeft, FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
@@ -568,7 +568,7 @@ namespace FFPACK {
 		    // [  0   0  ]     [  0 ]
 		    // [ O1   O2 ]     [  O ]
 		applyP (Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
-		
+
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
 		size_t* MathP = new size_t[M];
@@ -580,7 +580,7 @@ namespace FFPACK {
 		delete[] P4;
 		for (size_t i=M2; i<M; ++i)
 			MathP[i] += M2;
-		if (R1+R2 < M2){ 
+		if (R1+R2 < M2){
 			    // P <- P S
 			applyS (MathP, 1,1,M2, R1, R2, R3, R4);
 			    // A <-  S^T A
@@ -588,7 +588,7 @@ namespace FFPACK {
 		}
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
-		
+
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		    //            [      Q3 ]      [      P4 ]
 		size_t * MathQ = new size_t [N];
@@ -600,7 +600,7 @@ namespace FFPACK {
 		delete[] Q4;
 		for (size_t i=N2; i<N; ++i)
 			MathQ[i] += N2;
-		
+
 		if (R1 < N2){
 			    // Q <- T Q
 			applyT (MathQ, 1,1,N2, R1, R2, R3, R4);
@@ -609,16 +609,16 @@ namespace FFPACK {
 		}
 		MathPerm2LAPACKPerm (Q, MathQ, N);
 		delete[] MathQ;
-		
+
 		return R1+R2+R3+R4;
 
-	
+
 	}
 
 	template <class Element>
-	inline void applyS (Element* A, const size_t lda, const size_t width, 
+	inline void applyS (Element* A, const size_t lda, const size_t width,
 			    const size_t M2,
-			    const size_t R1, const size_t R2, 
+			    const size_t R1, const size_t R2,
 			    const size_t R3, const size_t R4){
 		Element * tmp = new Element [(M2-R1-R2)*width];
 		// std::cerr<<"ici"<<std::endl;
@@ -633,25 +633,25 @@ namespace FFPACK {
 				A [j*lda + k] = tmp [i*width + k];
 		delete[] tmp;
 	}
-	
+
 
 	template <class Element>
-	inline void applyT (Element* A, const size_t lda, const size_t width, 
+	inline void applyT (Element* A, const size_t lda, const size_t width,
 			    const size_t N2,
-			    const size_t R1, const size_t R2, 
+			    const size_t R1, const size_t R2,
 			    const size_t R3, const size_t R4){
 		Element * tmp = new Element[(N2-R1)*width];
 		for (size_t k = 0; k < width; ++k){
 			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
 				tmp [i + k*(N2-R1)] = A [k*lda + j];
 			}
-			
+
 			for (size_t i = N2, j = R1; i < N2+R2; ++i, ++j)
 				A [k*lda + j] = A [k*lda + i];
-			
+
 			for (size_t i = 0, j = R1+R2; i < R3; ++i, ++j)
 				A [k*lda + j] = tmp [k*(N2-R1) + i];
-			
+
 			for (size_t i = N2+R2, j = R1+R2+R3; i < N2+R2+R4; ++i,++j)
 				A [k*lda + j] = A [k*lda + i];
 			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
@@ -664,7 +664,7 @@ namespace FFPACK {
             /**
 	     * Conversion of a permutation from LAPACK format to Math format
 	     */
-	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP, 
+	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
 				  const size_t N){
 		for (size_t i=0; i<N; i++)
 			MathP[i] = i;
@@ -679,10 +679,10 @@ namespace FFPACK {
 	    /**
 	     * Conversion of a permutation from Maths format to LAPACK format
 	     */
-	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP, 
+	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
 					 const size_t N){
 		size_t * T = new size_t[N];
-		size_t * Tinv = new size_t[N]; 
+		size_t * Tinv = new size_t[N];
 		for (size_t i=0; i<N; i++){
 			T[i] =i;
 			Tinv[i] = i;
@@ -703,9 +703,9 @@ namespace FFPACK {
 	     * Computes P1 [ I_R     ] stored in MathPermutation format
 	     *             [     P_2 ]
 	     */
-	inline void composePermutationsP (size_t * MathP, 
-				  const size_t * P1, 
-				  const size_t * P2, 
+	inline void composePermutationsP (size_t * MathP,
+				  const size_t * P1,
+				  const size_t * P2,
 				  const size_t R, const size_t N){
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
@@ -719,14 +719,14 @@ namespace FFPACK {
 			}
 		}
 	}
-	inline void composePermutationsQ (size_t * MathP, 
-				  const size_t * Q1, 
-				  const size_t * Q2, 
+	inline void composePermutationsQ (size_t * MathP,
+				  const size_t * Q1,
+				  const size_t * Q2,
 				  const size_t R, const size_t N){
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, Q1, N);
-		
+
 		for (size_t i=R; i<N; i++){
 			if (Q2[i-R] != i-R){
 				size_t tmp = MathP[i];
@@ -737,7 +737,7 @@ namespace FFPACK {
 	}
 	inline void
 	RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-			      const size_t * P, const size_t * Q, 
+			      const size_t * P, const size_t * Q,
 			      const size_t M, const size_t N, const size_t R){
 		size_t * RRP=new size_t[M];
 		size_t * CRP=new size_t[N];
@@ -745,7 +745,7 @@ namespace FFPACK {
 			RRP [i]=i;
 		for (size_t i=0;i < N; ++i)
 			CRP [i]=i;
-		
+
 		// std::cerr<<"CRP = ";
 		// for (size_t i=0; i<N; ++i)
 		// 	std::cerr<<CRP[i]<<" ";
@@ -778,11 +778,11 @@ namespace FFPACK {
 		delete[] CRP;
 	}
 
-	inline void 
+	inline void
 	cyclic_shift_mathPerm (size_t * P,  const size_t s){
                 size_t tmp;
                 tmp = *(P+s-1);
-		    //memmove(P+1, P, (s)*sizeof(size_t));	
+		    //memmove(P+1, P, (s)*sizeof(size_t));
 		size_t * Pi = P;
 		std::copy(Pi, Pi+s-1, Pi+1);
 
@@ -794,7 +794,7 @@ namespace FFPACK {
 
 #ifdef MEMCOPY
 //		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
-    
+
 		if (m > 1) {
 			const size_t mun(m-1);
 			if (n > 1) {
@@ -809,15 +809,15 @@ namespace FFPACK {
 				memcpy(dc+1,A+mun*lda,bnu);
 				*dc = A[mun*lda+nun]; // this is d
 				    // dc = [ d c ]
-				
+
 				for(size_t i=mun; i>0; --i)
 					memcpy(A+1+i*lda, A+(i-1)*lda, bnu);
-				
+
 				memcpy(A, dc, bnu+blo);
 				for(size_t i=0; i<mun; ++i) A[i*lda+lda] = b[i];
 				delete [] dc;
 				delete [] b;
-				
+
 			} else if (n != 0) {
 				Base_t d = A[mun*lda];
 				for(size_t i=mun; i>0; --i) A[i*lda]=A[(i-1)*lda];
@@ -836,7 +836,7 @@ namespace FFPACK {
 //				std::copy(A,A+nun,A+1);
 				*A=d;
 				delete [] tmp;
-				
+
 			}
 		}
 //		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
@@ -848,27 +848,27 @@ namespace FFPACK {
 			const size_t mun(m-1);
 			if (n > 1) {
 				const size_t nun(n-1);
-				
+
 				Base_t * b = new Base_t[mun];
 				Base_t * Ainun = A+nun;
 				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
-				
+
 				    // dc = [ d c ]
-				Base_t * dc = new Base_t[n];            
+				Base_t * dc = new Base_t[n];
 				std::copy(Ainun-nun, Ainun, dc+1);
-				
+
 				    // this is d
 				*dc = *Ainun;
-				
+
 				Base_t * Ai=A+(mun-1)*lda;
 				for(size_t i=mun; i>0; --i, Ai-=lda)
 					std::copy(Ai, Ai+nun, Ai+1+lda);
-				
+
 				std::copy(dc, dc+n, A);
-				
+
 				Base_t * Aipo = A+lda;
 				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = b[i];
-				
+
 				delete [] dc;
 				delete [] b;
 			} else if (n != 0) {
@@ -886,32 +886,32 @@ namespace FFPACK {
 			}
 		}
 
-#endif		
+#endif
 	}
 	template<typename Base_t>
 	inline void cyclic_shift_row(Base_t * A, size_t m, size_t n, size_t lda)
 	{
-	
+
 #ifdef MEMCOPY
 		if (m > 1) {
 			const size_t mun(m-1);
 			const size_t nun(n-1);
-			
+
 			Base_t * b = new Base_t[n];
 			Base_t * Ai = A+mun*lda;
 			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
-			
+
 			    // dc = [ d c ]
 //			Base_t * dc = new Base_t[n];
 
 			Base_t * Ac = A;
-			for(int i=mun-1; i>=0; --i)
+			for(int i=(int)mun-1; i>=0; --i)
 				    //	std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
 			    memcpy(Ac+(i+1)*lda, Ac+i*lda, (n)*sizeof(Base_t));
-			
+
 			Base_t * Aii = A;
 			for(size_t i=0; i<n; ++i, Aii++) *Aii = b[i];
-				
+
 //			delete [] dc;
 			delete [] b;
 		}
@@ -920,21 +920,21 @@ namespace FFPACK {
 		if (m > 1) {
 			const size_t mun(m-1);
 			const size_t nun(n-1);
-			
+
 			Base_t * b = new Base_t[n];
 			Base_t * Ai = A+mun*lda;
 			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
-			
+
 			    // dc = [ d c ]
 //			Base_t * dc = new Base_t[n];
 
 			Base_t * Ac = A;
 			for(int i=mun-1; i>=0; --i)
 				std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
-			
+
 			Base_t * Aii = A;
 			for(size_t i=0; i<n; ++i, Aii++) *Aii = b[i];
-				
+
 //			delete [] dc;
 			delete [] b;
 		}
@@ -947,28 +947,28 @@ namespace FFPACK {
 	{
 		if (n > 1) {
 			const size_t mun(m-1);
-			const size_t nun(n-1);		
+			const size_t nun(n-1);
 			Base_t * b = new Base_t[m];
 			Base_t * Ainun = A+nun;
 			for(size_t i=0; i<m; ++i, Ainun+=lda) b[i] = *Ainun;
-			
+
 			    // dc = [ d c ]
-			Base_t * tmp = new Base_t[nun]; 
+			Base_t * tmp = new Base_t[nun];
 			Base_t * Ac = A;
-			for(int i=mun; i>=0; --i)
-			{				
+			for(int i=(int)mun; i>=0; --i)
+			{
 //				std::copy(A+i*lda, A+i*lda+1, A+1);
 				std::copy(Ac+i*lda, Ac+i*lda+nun, tmp);
 				std::copy(tmp, tmp+nun, Ac+i*lda+1);
 			}
-			
+
 			Base_t * Aipo = A;
 			for(size_t i=0; i<m; ++i, Aipo+=lda) *Aipo = b[i];
 			delete [] tmp;
 			delete [] b;
 		}
 	}
-	
-	
+
+
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL
