@@ -349,7 +349,6 @@ namespace FFPACK {
 		{
 			r = a * x + y;
 			return init(r,r);
-
 		}
 
 		 Element &addin (Element &x, const Element &y) const

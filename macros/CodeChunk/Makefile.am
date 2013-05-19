@@ -1,4 +1,4 @@
-# Copyright (c) 2011 FFLAS-FFPACK
+# Copyright (c) 2013 FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # adapted from LinBox configuration
 #
@@ -21,21 +21,10 @@
 # ========LICENCE========
 #/
 
-SUBDIRS=CodeChunk
 
 EXTRA_DIST=            \
-	aclocal-include.m4 \
-	blas-check.m4      \
-	blasATLAS-check.m4 \
-	blasGOTO-check.m4  \
-	blasGSL-check.m4   \
-	blas-pkg-config.m4   \
-	config-header.m4   \
-	debug.m4           \
-	fflas-ffpack-doc.m4    \
-	fflas-ffpack-misc.m4   \
-	fflas-ffpack-opt.m4    \
-	givaro-check.m4    \
-	gmp-check.m4       \
-	lapack-check.m4
+       clapack.C       \
+       lapack.C        \
+       cblas.C         \
+       givaro.C
 

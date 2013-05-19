@@ -304,6 +304,7 @@ extern "C" {
 
 // define external link to LAPACK routines
 extern "C" {
+	//!@bug we should also allow lapacke from MLK
         void dgetrf_ (const int *, const int *, double *, const int *, int *, int *);
         void dgetri_ (const int *, double *, const int *, const int *, double *, const int *, int *);
         void dtrtri_ (const char *, const char *, const int *, double *, const int *, int *);
@@ -316,6 +317,7 @@ extern "C" {
 
 	// return A=P.L.U (L unitary) with ColMajor
 	// return A=L.U.P (U unitary) with RowMajor
+	//! @bug Order is not used. we should use ATLAS/interfaces/lapack/C/src/clapack_dgetrf.c or similar
 	inline int clapack_dgetrf(const enum CBLAS_ORDER Order, const int M, const int N,
 			   double *A, const int lda, int *ipiv)
         {

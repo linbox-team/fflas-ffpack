@@ -39,6 +39,7 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 			])
 		dnl  echo $with_gotoblas2
 		dnl  echo $withval
+		CODE_CBLAS=`cat macros/CodeChunk/cblas.C`
 
 		AS_IF([ test -n "$with_gotoblas2" ],
 			[ BLAS_HOME_PATH="${DEFAULT_CHECKING_PATH}"
@@ -81,16 +82,7 @@ AC_DEFUN([FF_CHECK_GOTOBLAS],
 						[double a;],
 						[
 						AC_TRY_RUN(
-							[#define __FFLASFFPACK_CONFIGURATION
-							#include "fflas-ffpack/config-blas.h"
-							int main ()
-							{  double a[4] = {1.,2.,3.,4.}; double b[4]= {4.,3.,2.,1.}; double c[4];
-							cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,2,2,2,1., a,2,b,2,0.,c,2);
-							if ( (c[0]!=8.) && (c[1]!=5.) && (c[2]!=20.) && (c[3]!=13))
-								return -1;
-							else
-								return 0;
-							} ],
+							[ ${CODE_CBLAS} ],
 							[ blas_found="yes"
 							BLAS_PATH=${BLAS_HOME}
 							break ],

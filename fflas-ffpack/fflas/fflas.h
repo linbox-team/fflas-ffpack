@@ -659,6 +659,7 @@ namespace FFLAS {
 	      const typename Field::Element * Y, const size_t incY );
 
 	/** \brief fswap: \f$ X \leftrightarrow Y\f$.
+	 * @bug use cblas_dswap when double
 	 * @param F field
 	 * @param N size of the vectors
 	 * \param X vector in \p F
@@ -886,7 +887,7 @@ namespace FFLAS {
 	       const  typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY);
 
-	/**  @brief fger: GEneral ?
+	/**  @brief fger: rank one update of a general matrix
 	 *
 	 *  Computes  \f$A \gets \alpha x . y^T + A\f$
 	 * @param F field
@@ -958,7 +959,7 @@ namespace FFLAS {
 	       const typename Field::Element alpha,
 #ifdef __FFLAS__TRSM_READONLY
 	       const
-#endif 
+#endif
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb);
 

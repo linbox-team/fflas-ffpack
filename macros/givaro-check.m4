@@ -62,6 +62,7 @@ dnl Check for existence
 
 BACKUP_CXXFLAGS=${CXXFLAGS}
 BACKUP_LIBS=${LIBS}
+CODE_GIVARO=`cat macros/CodeChunk/givaro.C`
 
 AC_MSG_CHECKING(for GIVARO >= $version_min and < $version_max)
 
@@ -84,9 +85,7 @@ if test -r "$GIVARO_HOME/include/givaro/givconfig.h"; then
 	[Givaro::Integer a;],
 	[
 	AC_TRY_RUN(
-	[#include <givaro/givconfig.h>
-         int main () { if (GIVARO_VERSION < $version_min || GIVARO_VERSION >= $version_max || GIVARO_VERSION>0x030000) return -1; else return 0; /* old version of Givaro are defined as hexa 0x03yyzz*/ }
-	],[
+	[ ${CODE_CBLAS} ],[
 	givaro_found="yes"
 	break
 	],[

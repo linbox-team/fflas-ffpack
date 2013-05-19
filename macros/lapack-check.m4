@@ -32,6 +32,9 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		BACKUP_LIBS=${LIBS}
+		CODE_CLAPACK=`cat macros/CodeChunk/clapack.C`
+		CODE_LAPACK=`cat macros/CodeChunk/lapack.C`
+
 
 
 		AC_ARG_WITH(lapack,
@@ -92,18 +95,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 			dnl  echo ${LAPACK_LIBS}
 
 			AC_TRY_RUN(
-					[#define __FFLASFFPACK_CONFIGURATION
-					#define __FFLASFFPACK_HAVE_LAPACK 1
-					#define __FFLASFFPACK_HAVE_CLAPACK 1
-					#include "fflas-ffpack/config-blas.h"
-					int main () {  double a[4] = {1.,2.,3.,4.};
-					int ipiv[2];
-					clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
-					if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
-					return -1;
-					else
-					return 0;
-					} ],
+					[ ${CODE_CLAPACK} ],
 					[ dgetrf_found="yes" ],
 					[ dgetrf_problem="problem" ],
 					[ dgetrf_found="" ])
@@ -120,18 +112,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 
 						AC_TRY_RUN(
-							[#define __FFLASFFPACK_CONFIGURATION
-							#define __FFLASFFPACK_HAVE_LAPACK 1
-							//#define __FFLASFFPACK_HAVE_CLAPACK 1
-							#include "fflas-ffpack/config-blas.h"
-							int main () {  double a[4] = {1.,2.,3.,4.};
-							int ipiv[2];
-							clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
-							if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
-							return -1;
-							else
-							return 0;
-							} ],
+							[ ${CODE_CLAPACK} ],
 							[ dgetrf_found="yes" ],
 							[ dgetrf_problem="problem" ],
 							[ dgetrf_found="" ])
@@ -151,18 +132,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 
 
 					AC_TRY_RUN(
-						[#define __FFLASFFPACK_CONFIGURATION
-						#define __FFLASFFPACK_HAVE_LAPACK 1
-						#define __FFLASFFPACK_HAVE_CLAPACK 1
-						#include "fflas-ffpack/config-blas.h"
-						int main () {  double a[4] = {1.,2.,3.,4.};
-						int ipiv[2];
-						clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
-						if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
-						return -1;
-						else
-						return 0;
-						} ],
+						[ ${CODE_CLAPACK} ],
 						[ dgetrf_found="yes"
 						dnl  echo "yes"
 						],
@@ -180,18 +150,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 							[
 
 							AC_TRY_RUN(
-								[#define __FFLASFFPACK_CONFIGURATION
-								#define __FFLASFFPACK_HAVE_LAPACK 1
-								//#define __FFLASFFPACK_HAVE_CLAPACK 1
-								#include "fflas-ffpack/config-blas.h"
-								int main () {  double a[4] = {1.,2.,3.,4.};
-								int ipiv[2];
-								clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
-								if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
-								return -1;
-								else
-								return 0;
-								} ],
+								[  ${CODE_LAPACK} ],
 								[ dgetrf_found="yes"
 								 ],
 								[ dgetrf_problem="$problem"
@@ -232,19 +191,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 				LIBS="${BACKUP_LIBS}  ${BLAS_LIBS} ${LAPACK_LIBS}"
 
 
-				AC_TRY_RUN(
-						[#define __FFLASFFPACK_CONFIGURATION
-						#define __FFLASFFPACK_HAVE_LAPACK 1
-						#define __FFLASFFPACK_HAVE_CLAPACK 1
-						#include "fflas-ffpack/config-blas.h"
-						int main () {  double a[4] = {1.,2.,3.,4.};
-						int ipiv[2];
-						clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
-						if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
-						return -1;
-						else
-						return 0;
-						} ],
+				AC_TRY_RUN( [ ${CODE_CLAPACK} ],
 						[ dgetrf_found="yes"
 						dnl  echo "yes"
 						break ],
@@ -280,19 +227,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 						LIBS="${BACKUP_LIBS}  ${BLAS_LIBS} ${LAPACK_LIBS}"
 
 
-						AC_TRY_RUN(
-								[#define __FFLASFFPACK_CONFIGURATION
-								#define __FFLASFFPACK_HAVE_LAPACK 1
-								//#define __FFLASFFPACK_HAVE_CLAPACK 1
-								#include "fflas-ffpack/config-blas.h"
-								int main () {  double a[4] = {1.,2.,3.,4.};
-								int ipiv[2];
-								clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
-								if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
-								return -1;
-								else
-								return 0;
-								} ],
+						AC_TRY_RUN( [ ${CODE_LAPACK} ],
 								[ dgetrf_found="yes"
 								break ],
 								[ dgetrf_problem="$problem"

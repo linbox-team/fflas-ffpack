@@ -101,7 +101,8 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir}  @GMP_CFLAGS@ @GIVARO_CFLAGS@ 
+			echo -I${includedir} 
+# @GMP_CFLAGS@ @GIVARO_CFLAGS@ 
 # @CBLAS_FLAG@
 			;;
 
@@ -110,7 +111,8 @@ while test $# -gt 0; do
 			;;
 
 		--libs)
-			echo  @GMP_LIBS@ @GIVARO_LIBS@ @BLAS_LIBS@ 
+			echo  @BLAS_LIBS@  @LAPACK_LIBS@
+# @GMP_LIBS@ @GIVARO_LIBS@ 
 			;;
 
 		--blas-libs)
