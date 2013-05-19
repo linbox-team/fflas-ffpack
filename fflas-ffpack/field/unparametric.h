@@ -332,7 +332,7 @@ namespace FFPACK
 
 		unsigned long characteristic () const
 		{
-			return _p ;
+			return (unsigned long)_p ;
 			// return  _card ;
 		}
 
