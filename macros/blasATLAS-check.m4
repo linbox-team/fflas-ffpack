@@ -29,7 +29,7 @@ dnl Test for C interface to BLAS and define BLAS_LIBS
 
 AC_DEFUN([FF_CHECK_CBLAS],
 		[ AC_ARG_WITH(cblas,
-			[AC_HELP_STRING([--with-cblas=<lib>], [Use BLAS library. This library is mandatory for FFLAS-FFPACK
+			[AC_HELP_STRING([--with-cblas=<path/to/atlas>], [Use BLAS library. This library is mandatory for FFLAS-FFPACK
 				compilation. If argument is <empty> that means
 				the library is reachable with the standard search path
 				(/usr or /usr/local). Otherwise you give the <path> to
@@ -63,9 +63,8 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					dnl lib/libcblas.a ?
 					[ test -r "$BLAS_HOME/lib/libcblas.a" ],
 					[ ATLAS_NEEDED=`nm  -u $BLAS_HOME/lib/libcblas.a  | grep ATL`
-					dnl  ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED" ],
-						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}/lib"
@@ -75,10 +74,9 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					],
 					dnl lib/libcblas.so ?
 					[ test  -r "$BLAS_HOME/lib/libcblas.so" ],
-					[ dnl ATLAS_NEEDED=`nm  -u $BLAS_HOME/lib/libcblas.a  | grep ATL`
-					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
+					[ ATLAS_NEEDED2=`nm -Du $BLAS_HOME/lib/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED2"],
-						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}/lib"
@@ -87,12 +85,11 @@ AC_DEFUN([FF_CHECK_CBLAS],
 						[BLAS_LIBS="-L${BLAS_HOME}/lib ${ATLAS_LIBS}"])
 					],
 
-					dnl libcblas.* ?
+					dnl libcblas.a ?
 					[ test -r "$BLAS_HOME/libcblas.a" ],
 					[ ATLAS_NEEDED=`nm  -u $BLAS_HOME/libcblas.a  | grep ATL`
-					dnl  ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED" ],
-						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}"
@@ -102,10 +99,9 @@ AC_DEFUN([FF_CHECK_CBLAS],
 					],
 					dnl libcblas.so ?
 					[ test -r "$BLAS_HOME/libcblas.so" ],
-					[ dnl ATLAS_NEEDED=`nm  -u $BLAS_HOME/libcblas.a  | grep ATL`
-					ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
+					[ ATLAS_NEEDED2=`nm -Du $BLAS_HOME/libcblas.so | grep ATL`
 					AS_IF( [test -n "$ATLAS_NEEDED2"],
-						[BLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
+						[ATLAS_LIBS=" ${ATLAS_LIBS} -latlas"])
 
 					BLAS_LIBS=" ${ATLAS_LIBS}"
 					BLAS_PATH="${BLAS_HOME}"

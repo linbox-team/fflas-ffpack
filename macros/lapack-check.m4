@@ -188,7 +188,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 					 )
 				dnl  echo "lapack libs : $LAPACK_LIBS"
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-				LIBS="${BACKUP_LIBS}  ${BLAS_LIBS} ${LAPACK_LIBS}"
+				LIBS="${BACKUP_LIBS}  ${LAPACK_LIBS} ${BLAS_LIBS} "
 
 
 				AC_TRY_RUN( [ ${CODE_CLAPACK} ],
@@ -224,7 +224,7 @@ AC_DEFUN([FF_CHECK_LAPACK], [
 							]
 						 )
 						CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} "
-						LIBS="${BACKUP_LIBS}  ${BLAS_LIBS} ${LAPACK_LIBS}"
+						LIBS="${BACKUP_LIBS} ${LAPACK_LIBS}  ${BLAS_LIBS}"
 
 
 						AC_TRY_RUN( [ ${CODE_LAPACK} ],
