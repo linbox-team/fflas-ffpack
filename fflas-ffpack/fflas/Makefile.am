@@ -34,6 +34,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_ftrmm_src.inl   \
 	   fflas_faddmin_src.inl \
 	   fflas_fgemm.inl       \
+	   fflas_pfgemm.inl       \
 	   fflas_ftrsm.inl       \
 	   fflas_faddm_src.inl   \
 	   fflas_fgemv.inl       \

@@ -81,7 +81,7 @@ namespace FFLAS {
 		FflasLower=122   /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
 	};
 
-	/// Is Matrix diagonal implicit ?
+	/// Is the triangular matrix implicitly unit diagonal ?
 	enum FFLAS_DIAG
 	{
 		FflasNonUnit=131 ,  /**< Triangular matrix has an explicit general diagonal */
@@ -1104,6 +1104,24 @@ namespace FFLAS {
 				     C, ldc, kmax, w, base);
 		return C;
 	}
+	    /**
+	     * Parallel fgemm
+	     */
+
+	template<class Field>
+	typename Field::Element*
+	pfgemm( const Field& F,
+		const FFLAS_TRANSPOSE ta,
+		const FFLAS_TRANSPOSE tb,
+		const size_t m,
+		const size_t n,
+		const size_t k,
+		const typename Field::Element alpha,
+		const typename Field::Element* A, const size_t lda,
+		const typename Field::Element* B, const size_t ldb,
+		const typename Field::Element beta,
+		typename Field::Element* C, const size_t ldc,
+		const size_t w);
 
 	/** @brief fsquare: Squares a matrix.
 	 * compute \f$ C \gets \alpha \mathrm{op}(A) \mathrm{op}(A) + \beta C\f$ over a Field \p F
@@ -1232,6 +1250,7 @@ namespace FFLAS {
 
 #include "fflas_bounds.inl"
 #include "fflas_fgemm.inl"
+#include "fflas_pfgemm.inl"
 #include "fflas_fgemv.inl"
 #include "fflas_fger.inl"
 #include "fflas_ftrsm.inl"
