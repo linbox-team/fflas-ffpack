@@ -751,7 +751,6 @@ namespace FFPACK {
 		ld1 = ld2 = ld3 = ld4 = lda;
 
 		if ( !(M && N) ) return 0;
-		typedef typename Field::Element elt;
 
 		// Column permutation
 		size_t * P1 = new size_t[no2];
@@ -1218,7 +1217,6 @@ namespace FFPACK {
 	{
 		if (trans == FFLAS::FflasTrans)
 			throw Failure(__func__,__FILE__,__LINE__,"Transposed version is not implemented yet");
-		typedef typename Field::Element elt;
 		// size_t MN = MIN(M,N);
 
 		size_t incRow, incCol, rowDim, colDim;

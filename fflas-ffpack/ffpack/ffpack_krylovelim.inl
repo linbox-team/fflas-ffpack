@@ -53,7 +53,6 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 {
 
 	if ( !(M && N) ) return 0;
-	typedef typename Field::Element elt;
 
 	if (M == 1){
 		virt += deg;
