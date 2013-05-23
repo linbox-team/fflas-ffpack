@@ -29,24 +29,28 @@
 #ifndef __FFLASFFPACK_fflas_pfgmm_INL
 #define __FFLASFFPACK_fflas_pfgmm_INL
 
-#define RBLOCKSIZE 512
-#define CBLOCKSIZE 100000
+
 #include <omp.h>
 namespace FFLAS {
 template<class Field>
 inline typename Field::Element*
 pfgemm( const Field& F,
-               const FFLAS_TRANSPOSE ta,
-               const FFLAS_TRANSPOSE tb,
-               const size_t m,
-               const size_t n,
-               const size_t k,
-               const typename Field::Element alpha,
-               const typename Field::Element* A, const size_t lda,
-               const typename Field::Element* B, const size_t ldb,
-               const typename Field::Element beta,
-               typename Field::Element* C, const size_t ldc,
-               const size_t w){
+        const FFLAS_TRANSPOSE ta,
+        const FFLAS_TRANSPOSE tb,
+        const size_t m,
+        const size_t n,
+        const size_t k,
+        const typename Field::Element alpha,
+        const typename Field::Element* A, const size_t lda,
+        const typename Field::Element* B, const size_t ldb,
+        const typename Field::Element beta,
+        typename Field::Element* C, const size_t ldc,
+        const size_t w,
+        const CuttingStrategy method = BLOCK_THREADS
+        ){
+
+    size_t RBLOCKSIZE, CBLOCKSIZE;
+    BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method);
 
     size_t NrowBlocks = m/RBLOCKSIZE;
     size_t LastrowBlockSize = m % RBLOCKSIZE;
@@ -60,9 +64,12 @@ pfgemm( const Field& F,
         NcolBlocks++;
     else
         LastcolBlockSize = CBLOCKSIZE;
+    
+    const size_t BLOCKS = NrowBlocks*NcolBlocks;
+    
 
-#pragma omp parallel for default (none) shared (A, B, C, F, NcolBlocks, NrowBlocks, LastcolBlockSize, LastrowBlockSize)
-    for (size_t t = 0; t < NrowBlocks*NcolBlocks; ++t){
+#pragma omp parallel for default (none) shared (A, B, C, F, RBLOCKSIZE, CBLOCKSIZE, NcolBlocks, NrowBlocks, LastcolBlockSize, LastrowBlockSize)
+    for (size_t t = 0; t < BLOCKS; ++t){
         size_t i = t / NcolBlocks;
         size_t j = t % NcolBlocks;
         size_t BlockRowDim = RBLOCKSIZE;
