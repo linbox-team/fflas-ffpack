@@ -51,7 +51,9 @@ using namespace std;
 //typedef ModularBalanced<float> Field;
 //typedef Modular<double> Field;
 //typedef Modular<float> Field;
-typedef FFPACK:: Modular<int> Field;
+//typedef FFPACK:: Modular<int> Field;
+typedef FFPACK:: Modular<double> Field;
+
 typedef vector<Field::Element> Polynomial;
 
 
@@ -90,7 +92,7 @@ bool launch_test(const Field & F, typename Field::Element * A, int n,
 	for (;P_it!=P_list.end();++P_it)
 		printPolynomial ( F, *P_it);
 
-	cerr<<"n = "<<n<<" #inv. fact = "<<P_list.size()<<" Charpoly (A) over Z/ "<<atoi(argv[1])<<"Z : t= "
+	F.write(cerr<<"n = "<<n<<" #inv. fact = "<<P_list.size()<<" Charpoly (A) over ") << " : t= "
 	<< tim.usertime()/nbit
 	<< " s, Mffops = "<<mflops
 	<< endl;
