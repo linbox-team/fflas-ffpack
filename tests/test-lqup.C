@@ -917,7 +917,6 @@ int main(int argc, char** argv)
 
 	{
 		typedef ModularBalanced<double> Field;
-		typedef Field::Element Element;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {
@@ -937,7 +936,6 @@ int main(int argc, char** argv)
 
 	{
 		typedef Modular<double> Field;
-		typedef Field::Element Element;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {
@@ -958,7 +956,6 @@ int main(int argc, char** argv)
 
 	{
 		typedef ModularBalanced<float> Field;
-		typedef Field::Element Element;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {
@@ -979,7 +976,6 @@ int main(int argc, char** argv)
 
 	{
 		typedef Modular<float> Field;
-		typedef Field::Element Element;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {
