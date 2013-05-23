@@ -1,3 +1,34 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* fflas/fflas_pfgemm.inl
+ * Copyright (C) 2013 ??
+ *
+ * Written by ??
+ *
+ *
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ *.
+ */
+
+#ifndef __FFLASFFPACK_fflas_pfgmm_INL
+#define __FFLASFFPACK_fflas_pfgmm_INL
+
 #define RBLOCKSIZE 512
 #define CBLOCKSIZE 100000
 #include <omp.h>
@@ -16,18 +47,18 @@ pfgemm( const Field& F,
                const typename Field::Element beta,
                typename Field::Element* C, const size_t ldc,
                const size_t w){
-    
+
     size_t NrowBlocks = m/RBLOCKSIZE;
     size_t LastrowBlockSize = m % RBLOCKSIZE;
-    if (LastrowBlockSize) 
+    if (LastrowBlockSize)
         NrowBlocks++;
-    else 
+    else
         LastrowBlockSize = RBLOCKSIZE;
     size_t NcolBlocks = n/CBLOCKSIZE;
     size_t LastcolBlockSize = n % CBLOCKSIZE;
-    if (LastcolBlockSize) 
+    if (LastcolBlockSize)
         NcolBlocks++;
-    else 
+    else
         LastcolBlockSize = CBLOCKSIZE;
 
 #pragma omp parallel for default (none) shared (A, B, C, F, NcolBlocks, NrowBlocks, LastcolBlockSize, LastrowBlockSize)
@@ -46,3 +77,5 @@ pfgemm( const Field& F,
     return C;
 }
 } // FFLAS
+
+#endif // __FFLASFFPACK_fflas_pfgmm_INL

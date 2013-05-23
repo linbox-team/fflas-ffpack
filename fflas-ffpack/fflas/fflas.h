@@ -1108,6 +1108,7 @@ namespace FFLAS {
 	     * Parallel fgemm
 	     */
 
+#ifdef FFLAS_FFPACK_USES_OPENMP
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
@@ -1122,6 +1123,7 @@ namespace FFLAS {
 		const typename Field::Element beta,
 		typename Field::Element* C, const size_t ldc,
 		const size_t w);
+#endif
 
 	/** @brief fsquare: Squares a matrix.
 	 * compute \f$ C \gets \alpha \mathrm{op}(A) \mathrm{op}(A) + \beta C\f$ over a Field \p F
@@ -1250,7 +1252,11 @@ namespace FFLAS {
 
 #include "fflas_bounds.inl"
 #include "fflas_fgemm.inl"
+
+#ifdef FFLAS_FFPACK_USES_OPENMP
 #include "fflas_pfgemm.inl"
+#endif
+
 #include "fflas_fgemv.inl"
 #include "fflas_fger.inl"
 #include "fflas_ftrsm.inl"

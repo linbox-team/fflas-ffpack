@@ -42,4 +42,10 @@
 #define __FFLASFFPACK_WINOTHRESHOLD 1000
 #endif
 
+
+#if defined(_OPENMP) || defined(OMP_H) || defined(__OMP_H) || defined(__pmp_omp_h)
+#define FFLAS_FFPACK_USES_OPENMP
+#endif
+
+
 #endif // __FFLASFFPACK_fflas_ffpack_configuration_H
