@@ -72,12 +72,16 @@ namespace FFLAS {
 
 			size_t n = k;
 			size_t winoDel = winoRecLevel;
-
 			// Computes the delayedDim, only depending on the recursive levels
 			// that must be performed over Z
 			while (winoDel > 0 && delayedDim < n) {
 				winoDel--;
 				delayedDim = DotProdBound (F, winoDel, beta, base);
+				if (!winoDel) {
+					typename Field::Element mbeta;
+					F.neg (mbeta,beta);
+					delayedDim = MIN(delayedDim, DotProdBound (F, winoDel, mbeta, base));
+				}
 				n >>= 1;
 			}
 			delayedDim = MIN (k, delayedDim);
