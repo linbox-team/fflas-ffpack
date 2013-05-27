@@ -29,9 +29,27 @@
 #ifndef __FFLASFFPACK_fflas_pfgmm_INL
 #define __FFLASFFPACK_fflas_pfgmm_INL
 
-
+#ifdef __FFLAS_USE_OMP
 #include <omp.h>
+#endif
+#ifdef __FFLAS_USE_KAAPI
+#include <kaapi++.h>
+#endif 
+
 namespace FFLAS {
+
+#ifdef __FFLAS_USE_KAAPI
+	class KaapifgemmPar{
+		operator (){
+			pfgemm();
+		}
+	class KaapifgemmSeq{
+		operator (){
+			fgemm();
+		}
+	};
+#endif
+
 template<class Field>
 inline typename Field::Element*
 pfgemm( const Field& F,
@@ -79,10 +97,16 @@ pfgemm( const Field& F,
         if (j == NcolBlocks-1)
             BlockColDim = LastcolBlockSize;
 
+#ifdef __FFLAS_USE_OMP
         fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w);
+#endif
+#ifdef __FFLAS_USE_KAAPI
+	spawn<fgemm>
+#endif
     }
     return C;
 }
+
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_pfgmm_INL
