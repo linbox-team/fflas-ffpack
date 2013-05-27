@@ -445,6 +445,9 @@ namespace FFPACK
 // 			return 4611686018427387904LL;  // 2^62 in long
 // #endif
 // #endif
+			// return 1 << 31 ;
+			// return 4294967296 ;
+
                 // (p-1)^2+(p-1) < 2^{63}
 #ifdef __x86_64__
                     return 3037000500L;  // long
@@ -452,8 +455,6 @@ namespace FFPACK
                     return 3037000500LL;  // long long
 #endif
 
-			// return 1 << 31 ;
-			// return 4294967296 ;
 		}
 
 	private:

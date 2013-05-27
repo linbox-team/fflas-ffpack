@@ -506,10 +506,10 @@ namespace FFPACK
 		{
 			// return INT32_MAX ; // 2^31-1
 			// return 1073741824;// 2^30
-			// return 46341 ;
+            // return 65536;
             
-            // (p-1)^2+(p-1)
-            return 65536;
+            // (p-1)^2+(p-1) < 2^{31}
+			return 46341 ;
             
 		}
 

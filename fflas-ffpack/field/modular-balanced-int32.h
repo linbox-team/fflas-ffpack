@@ -452,8 +452,8 @@ namespace FFPACK
 			// FFLASFFPACK_check(46342LL*46341LL>2147483647LL);
 			// return  92681 ;
 
-            // (p-1)(p+1)/4 < 2^{32}
-            return 131072;
+            // (p-1)(p+1)/4 < 2^{31}
+            return 92681;
 		}
 
 	private:

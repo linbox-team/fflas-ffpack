@@ -495,7 +495,7 @@ return x += modulus;
 			// FFLASFFPACK_check (4095*4096<16777215)
 			// FFLASFFPACK_check (4097*4096>16777215)
 			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(FLT_MANT_DIG/2)
-			return 8191 ;
+			return 8192.0 ;
 		}
 
 	};
