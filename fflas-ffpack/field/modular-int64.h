@@ -445,8 +445,12 @@ namespace FFPACK
 // 			return 4611686018427387904LL;  // 2^62 in long
 // #endif
 // #endif
-                // (p-1)^2+(p-1) < 2^{64}
-            return 42949672965L;
+                // (p-1)^2+(p-1) < 2^{63}
+#ifdef __x86_64__
+                    return 3037000500L;  // long
+#else
+                    return 3037000500LL;  // long long
+#endif
 
 			// return 1 << 31 ;
 			// return 4294967296 ;

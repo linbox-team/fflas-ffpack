@@ -228,6 +228,15 @@ namespace FFPACK
 			return x;
 		}
 
+		inline Element& init(Element& x, unsigned int y ) const
+		{
+			x = Element(y % modulus);
+                        if (x > half_mod )
+				x -= modulus;
+
+			return x;
+		}
+
 		inline Element& init(Element& x ) const
 		{
 			return x = 0;
@@ -241,6 +250,14 @@ namespace FFPACK
 			else if ( x > half_mod )
 				x -= modulus;
 
+			return x;
+		}
+
+		inline Element& init(Element& x, unsigned long y) const
+		{
+			x = Element(y % modulus);
+			if ( x > half_mod )
+				x -= modulus;
 			return x;
 		}
 

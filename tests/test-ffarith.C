@@ -4,6 +4,10 @@
 // Givaro is governed by the CeCILL-B license under French law
 // and abiding by the rules of distribution of free software.
 // see the COPYRIGHT file for more details.
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
+#include <stdint.h>
 
 #include <iostream>
 #include <cassert>
@@ -77,12 +81,15 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 
 	F.init(a, FIRSTINT);
 
-    Givaro::IntPrimeDom IPD;
-	F.init(b, (long)FIRSTFLOAT );
-    Givaro::Integer bI = ((long)b+F.characteristic());
-    IPD.nextprimein( bI );
-	F.init(b, (long)bI );
-    if (F.isZero(b)) F.init(b,1);
+        Givaro::IntPrimeDom IPD;
+	F.init(b, (unsigned long)FIRSTFLOAT );
+        Givaro::Integer bI = (unsigned long)b;
+        bI += F.characteristic();
+        IPD.nextprimein( bI );
+        bI %= Givaro::Integer(F.characteristic());
+
+	F.init(b, (unsigned long)bI );
+        if (F.isZero(b)) F.init(b,1);
 
 	F.init(c);            // empty constructor
 	F.init(d);            // empty constructor
@@ -111,11 +118,11 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 	F.assign(c_,c);       // c_ <- c
 	F.divin(c_,b);      // c_ == a ?
 
-//         F.write(std::cerr) << std::endl;
-//         F.write(std::cerr << "a:=", a) << ';' << std::endl;
-//         F.write(std::cerr << "b:=", b) << ';' << std::endl;
-//         F.write(std::cerr << "c:=", c) << ';' << std::endl;
-//         F.write(std::cerr << "c_:=", c_) << ';' << std::endl;
+        F.write(std::cerr) << std::endl;
+        F.write(std::cerr << "a:=", a) << ';' << std::endl;
+        F.write(std::cerr << "b:=", b) << ';' << std::endl;
+        F.write(std::cerr << "c:=", c) << ';' << std::endl;
+        F.write(std::cerr << "c_:=", c_) << ';' << std::endl;
 	TESTE_EG(a,c_);
 
 	F.axpy(d, a, b, c); // d = a*b + c;
@@ -125,7 +132,7 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 	F.subin(d,c);
 
 //         F.write(std::cerr) << std::endl;
-//         F.write(std::cerr << "a:=", a) << ';' << std::endl;
+//         F.write(std::cerr << "a:=", a) << std::endl;
 //         F.write(std::cerr << "b:=", b) << ';' << std::endl;
 //         F.write(std::cerr << "c:=", c) << ';' << std::endl;
 //         F.write(std::cerr << "d:=", d) << ';' << std::endl;
@@ -241,7 +248,7 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 template<class Field>
 int TestField(const Field& F, const int seed)
 {/*{{{*/
-    long ch = (long) F.characteristic();
+    int64_t ch = (int64_t) F.characteristic();
     JEONETESTE(F,7UL,-29.3);
     srand48(seed);
     for(size_t i=0; i< NBITER; ++i) {
@@ -249,7 +256,7 @@ int TestField(const Field& F, const int seed)
         float d;
 	do {
 		d = float((double)ch*drand48());
-            F.init(x, (long)d );
+            F.init(x, (int)d );
         } while(F.isZero(x));
         int a; do {
             F.init(x, a = (int)lrand48());
