@@ -228,8 +228,6 @@ namespace FFPACK {
 		{
 
 			x = fmodf (y, modulus);
-std::cerr << "fmodf(" << y << ", " << modulus << "): " << x << std::endl;
-            
 			if (x < 0) x += modulus;
 			return x;
 		}
@@ -238,7 +236,6 @@ std::cerr << "fmodf(" << y << ", " << modulus << "): " << x << std::endl;
 		{
 
 			x = (Element)fmod (y, (double)modulus);
-std::cerr << "fmod(" << y << ", " << modulus << "): " << x << std::endl;
 			if (x < 0) x += modulus;
 			return x;
 		}
