@@ -71,10 +71,10 @@ namespace FFPACK {
 
 		ModularBalanced (int32_t p, int exp = 1) :
 			modulus((Element)p),
-			half_mod( Element((p-1)/2)),
+			half_mod( p==2? 1 : Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus ((unsigned int)p)
-			,one(1),zero(0),mOne(-1)
+			,one(1),zero(0),mOne(p==2 ? 1 : -1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -93,10 +93,10 @@ namespace FFPACK {
 
 		ModularBalanced (Element p) :
 			modulus (p),
-			half_mod( Element((p-1)/2)),
+			half_mod( p==2? 1 : Element(floor((p-1)/2))),
 			mhalf_mod( half_mod-p+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mOne(-1)
+			,one(1),zero(0),mOne(p==2 ? 1 : -1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -112,10 +112,10 @@ namespace FFPACK {
 
 		ModularBalanced (double p) :
 			modulus (Element(p)),
-			half_mod( Element((p-1)/2)),
+			half_mod( p==2? 1 : Element(floor((p-1)/2))),
 			mhalf_mod( half_mod-Element(p)+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mOne(-1)
+			,one(1),zero(0),mOne(p==2 ? 1 : -1)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -132,10 +132,10 @@ namespace FFPACK {
 
 		ModularBalanced (FieldInt p) :
 			modulus((Element)p),
-			half_mod( Element((p-1)/2)),
+			half_mod( p==2? 1 : Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p)
-			,one(1),zero(0),mOne(-1)
+			,one(1),zero(0),mOne(p==2 ? 1 : -1)
 		{
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
@@ -417,6 +417,24 @@ return x;
 			return init (r, r);
 		}
 
+		inline Element &axmy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			r = a * x - y;
+			return init (r, r);
+		}
+
+		inline Element &maxpy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			r = y - a * x;
+			return init (r, r);
+		}
+
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
@@ -449,7 +467,10 @@ return x += modulus;
 
 		inline Element &negin (Element &x) const
 		{
-			return x = -x;
+			x = -x;
+                // required for even modulus
+			if ( x > half_mod ) return x -= modulus;
+            return x;
 		}
 
 		inline Element &invin (Element &x) const
@@ -460,6 +481,12 @@ return x += modulus;
 		inline Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r += a * x;
+			return init (r, r);
+		}
+
+		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		{
+			r -= a * x;
 			return init (r, r);
 		}
 

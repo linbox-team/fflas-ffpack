@@ -73,7 +73,7 @@ namespace FFPACK {
 
 		Modular (int32_t p, int exp = 1)  :
 			modulus((Element)p), lmodulus((unsigned long)p)//, inv_modulus(1./(Element)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne(p==2 ? 1. : modulus -1.)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -86,7 +86,7 @@ namespace FFPACK {
 		}
 		Modular (Element p) :
 			modulus(p),  lmodulus((unsigned long)p)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne(p==2. ? 1. : modulus -1.)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -98,7 +98,7 @@ namespace FFPACK {
 
 		Modular (unsigned long int p) :
 			modulus((Element)p), lmodulus(p)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne(p==2 ? 1. : modulus -1.)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -228,6 +228,8 @@ namespace FFPACK {
 		{
 
 			x = fmodf (y, modulus);
+std::cerr << "fmodf(" << y << ", " << modulus << "): " << x << std::endl;
+            
 			if (x < 0) x += modulus;
 			return x;
 		}
@@ -236,6 +238,7 @@ namespace FFPACK {
 		{
 
 			x = (Element)fmod (y, (double)modulus);
+std::cerr << "fmod(" << y << ", " << modulus << "): " << x << std::endl;
 			if (x < 0) x += modulus;
 			return x;
 		}
@@ -357,6 +360,30 @@ namespace FFPACK {
 
 		}
 
+		inline Element &axmy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			Element tmp = a * x - y;
+			r= fmodf(tmp, modulus);
+ 			if (r < 0.) r += modulus;
+            return r;
+           
+		}
+
+		inline Element &maxpy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			Element tmp = y - a * x;
+			r=fmodf(tmp, modulus);
+			if (r < 0.) r += modulus;
+            return r;
+            
+		}
+
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
@@ -394,10 +421,20 @@ namespace FFPACK {
 
 		inline Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
-			Element tmp = r + a * x;
-			return r = fmodf(tmp, modulus);
+			r += a * x;
+			return r = fmodf(r, modulus);
 
 			//return r= tmp- floor(tmp*inv_modulus)*modulus;
+		}
+
+		inline Element &maxpyin (Element &r,
+				      const Element &a,
+				      const Element &x) const
+		{
+			r -= a * x;
+			r= fmodf(r, modulus);
+			if (r < 0) r += modulus;
+            return r; 
 		}
 
 		static inline Element getMaxModulus()

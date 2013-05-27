@@ -102,7 +102,7 @@ namespace FFPACK
 			modulus(value),lmodulus((unsigned long)modulus)
 				,one(1),zero(0),mOne(modulus -1)
 		{
-			modulusinv = 1 / ((double) value);
+			modulusinv = 1. / ((double) value);
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(value<=1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
@@ -191,7 +191,7 @@ namespace FFPACK
 		inline std::istream &read (std::istream &is)
 		{
 			is >> modulus;
-			modulusinv = 1 /((double) modulus );
+			modulusinv = 1. /((double) modulus );
 #ifdef DEBUG
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if(modulus > getMaxModulus()) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
@@ -287,9 +287,9 @@ namespace FFPACK
 		{
 			int64_t q;
 
-			q  = (int64_t) ((((double) y)*((double) z)) * modulusinv);  // q could be off by (+/-) 1
+			q  = (int64_t) ((((double) y)*((double) z)) * modulusinv);
+			// q could be off by (+/-) 1
 			x = (int64_t) (y*z - q*modulus);
-
 
 			if (x >= modulus)
 				x -= modulus;
@@ -303,7 +303,7 @@ namespace FFPACK
 		{
 			Element temp;
 			inv (temp, z);
-			return mul (x, y, temp);
+            return mul (x, y, temp);
 		}
 
 		inline Element &neg (Element &x, const Element &y) const
@@ -348,6 +348,34 @@ namespace FFPACK
 
 		}
 
+		inline Element &axmy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			int64_t q;
+
+			q  = (int64_t) (((((double) a) * ((double) x)) - (double)y) * modulusinv);  // q could be off by (+/-) 1
+			r = (int64_t) (a * x - y - q*modulus);
+
+
+			if (r >= modulus)
+				r -= modulus;
+			else if (r < 0)
+				r += modulus;
+
+			return r;
+
+		}
+
+		inline Element &maxpy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			return negin(axmy(r,a,x,y));
+		}
+
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
@@ -369,7 +397,8 @@ namespace FFPACK
 
 		inline Element &divin (Element &x, const Element &y) const
 		{
-			return div(x,x,y);
+            Element tmp(x);
+			return div(x,tmp,y);
 		}
 
 		inline Element &negin (Element &x) const
@@ -399,15 +428,26 @@ namespace FFPACK
 			return r;
 		}
 
+		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		{
+            Element q;
+            maxpy(q,a,x,r);
+            return assign(r,q);
+        }
+        
+
 		static inline int64_t getMaxModulus()
 		{
-#if 1
-#ifdef __x86_64__
-			return 4611686018427387904L;  // 2^62 in long long
-#else
-			return 4611686018427387904LL;  // 2^62 in long
-#endif
-#endif
+// #if 1
+// #ifdef __x86_64__
+// 			return 4611686018427387904L;  // 2^62 in long long
+// #else
+// 			return 4611686018427387904LL;  // 2^62 in long
+// #endif
+// #endif
+                // (p-1)^2+(p-1) < 2^{64}
+            return 42949672965L;
+
 			// return 1 << 31 ;
 			// return 4294967296 ;
 		}

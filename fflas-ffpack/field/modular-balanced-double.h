@@ -381,6 +381,24 @@ namespace FFPACK
 			return init (r, r);
 		}
 
+		inline Element &axmy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			r = a * x - y;
+			return init (r, r);
+		}
+
+		inline Element &maxpy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			r = y - a * x;
+			return init (r, r);
+		}
+
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
@@ -409,7 +427,10 @@ namespace FFPACK
 
 		inline Element &negin (Element &x) const
 		{
-			return x = - x;
+			x = - x;
+                // required for even modulus
+			if ( x > half_mod ) return x -= modulus;
+            return x;
 		}
 
 		inline Element &invin (Element &x) const
@@ -420,6 +441,12 @@ namespace FFPACK
 		inline Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r += a * x;
+			return init (r, r);
+		}
+
+		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		{
+			r -= a * x;
 			return init (r, r);
 		}
 

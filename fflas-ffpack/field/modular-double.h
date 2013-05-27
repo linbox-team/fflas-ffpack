@@ -75,7 +75,7 @@ namespace FFPACK {
 
 		Modular (int32_t p, int exp = 1) :
 			modulus((double)p), lmodulus((unsigned long)p)//, inv_modulus(1./(double)p)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne( p==2? 1 : modulus -1)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -88,7 +88,7 @@ namespace FFPACK {
 
 		Modular (Element p) :
 			modulus(p), lmodulus((unsigned long)p)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne(p==2.? 1 : modulus -1)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -100,7 +100,7 @@ namespace FFPACK {
 
 		Modular (unsigned long int p) :
 			modulus((Element)p), lmodulus(p)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne(p==2? 1 : modulus -1)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -348,6 +348,24 @@ namespace FFPACK {
 				      const Element &y) const
 		{
 			r = a * x + y;
+			return init(r,r);
+		}
+
+		 Element &axmy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			r = a * x - y;
+			return init(r,r);
+		}
+
+		 Element &maxpy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			r = y - a * x;
 			return init(r,r);
 		}
 

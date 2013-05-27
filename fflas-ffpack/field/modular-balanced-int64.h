@@ -352,6 +352,34 @@ namespace FFPACK
 
 		}
 
+		inline Element &axmy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+			int64_t q;
+
+			q  = (int64_t) (((((double) a) * ((double) x)) - (double)y) * modulusinv);  // q could be off by (+/-) 1
+			r = (int64_t) (a * x - y - q*modulus);
+
+
+			if (r > half_mod)
+				r -= modulus;
+			else if (r < mhalf_mod)
+				r += modulus;
+
+			return r;
+
+		}
+
+		inline Element &maxpy (Element &r,
+				      const Element &a,
+				      const Element &x,
+				      const Element &y) const
+		{
+            return negin(axmy(r,a,x,y));
+		}
+
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
@@ -408,18 +436,29 @@ namespace FFPACK
 			return r;
 		}
 
+		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		{
+			Element q;
+            maxpy(q,a,x,r);
+            return assign(r,q);
+		}
+
 		static inline int64_t getMaxModulus()
 		{
-#if 1
-#ifdef __x86_64__
-			return 4611686018427387904L; // 2^62
-			// return 8589934591L;
-#else
-			return 4611686018427387904LL; // 2^62
-			// return 8589934591LL;
-#endif
-#endif
+// #if 1
+// #ifdef __x86_64__
+// 			return 4611686018427387904L; // 2^62
+// 			// return 8589934591L;
+// #else
+// 			return 4611686018427387904LL; // 2^62
+// 			// return 8589934591LL;
+// #endif
+// #endif
 			// return 1 << 31;
+
+            // (p-1)(p+1)/4 < 2^{32}
+            return 8589934592;
+            
 		}
 
 	private:

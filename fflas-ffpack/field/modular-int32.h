@@ -394,6 +394,34 @@ namespace FFPACK
 
 		}
 
+		Element &axmy (Element &r,
+			       const Element &a,
+			       const Element &x,
+			       const Element &y) const
+		{
+			int32_t q;
+
+			q  = (int32_t) (((((double) a) * ((double) x)) - (double)y) * modulusinv);  // q could be off by (+/-) 1
+			r = (int32_t) (a * x - y - q*modulus);
+
+
+			if (r >= modulus)
+				r -= modulus;
+			else if (r < 0)
+				r += modulus;
+
+			return r;
+
+		}
+
+		Element &maxpy (Element &r,
+			       const Element &a,
+			       const Element &x,
+			       const Element &y) const
+		{
+			return negin(axmy(r,a,x,y));
+		}
+
 		Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
@@ -446,6 +474,13 @@ namespace FFPACK
 			return r;
 		}
 
+		Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		{
+			Element q;
+            maxpy(q,a,x,r);
+            return assign(r,q);
+		}
+
 		unsigned long AccBound(const Element&r) const
 		{
 			// Element one, zero ;
@@ -470,8 +505,12 @@ namespace FFPACK
 		static  int32_t getMaxModulus()
 		{
 			// return INT32_MAX ; // 2^31-1
-			return 1073741824;// 2^30
+			// return 1073741824;// 2^30
 			// return 46341 ;
+            
+            // (p-1)^2+(p-1)
+            return 65536;
+            
 		}
 
 	private:
