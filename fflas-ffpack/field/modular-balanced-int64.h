@@ -456,9 +456,12 @@ namespace FFPACK
 // #endif
 			// return 1 << 31;
 
-            // (p-1)(p+1)/4 < 2^{32}
-            return 8589934592;
-            
+            // (p-1)(p+1)/4 < 2^{64}
+#ifdef __x86_64__
+			return 8589934592L;
+#else
+			return 8589934592LL;
+#endif            
 		}
 
 	private:

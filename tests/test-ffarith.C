@@ -112,10 +112,10 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 	F.divin(c_,b);      // c_ == a ?
 
 //         F.write(std::cerr) << std::endl;
-//         F.write(std::cerr << "a: ", a) << std::endl;
-//         F.write(std::cerr << "b: ", b) << std::endl;
-//         F.write(std::cerr << "c: ", c) << std::endl;
-//         F.write(std::cerr << "c_: ", c_) << std::endl;
+//         F.write(std::cerr << "a:=", a) << ';' << std::endl;
+//         F.write(std::cerr << "b:=", b) << ';' << std::endl;
+//         F.write(std::cerr << "c:=", c) << ';' << std::endl;
+//         F.write(std::cerr << "c_:=", c_) << ';' << std::endl;
 	TESTE_EG(a,c_);
 
 	F.axpy(d, a, b, c); // d = a*b + c;
