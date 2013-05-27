@@ -205,17 +205,6 @@ namespace FFPACK
 		}
 
 
-		Element &init (Element &x, const size_t &y) const
-		{
-			x = Element((Element)y % (Element)modulus);
-			if (x < mhalf_mod)
-				x += modulus;
-			else if (x > half_mod)
-				x -= modulus;
-			return x;
-		}
-
-
 		inline Element& init(Element& x, int y ) const
 		{
 			x = Element(y % modulus);
