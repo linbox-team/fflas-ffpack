@@ -32,6 +32,7 @@ AM_LDFLAGS=-static
 
 BASIC_TESTS =              \
 		test-lqup              \
+		test-modulararith      \
 		test-compressQ
 
 NOT_A_TEST =  \
@@ -76,6 +77,7 @@ TESTS =                \
 
 test_compressQ_SOURCES         = test-compressQ.C
 test_lqup_SOURCES              = test-lqup.C
+test_modulararith_SOURCES      = test-modulararith.C
 #  test_charpoly_SOURCES          = test-charpoly.C
 #  dense_generator_SOURCES        = dense_generator.C
 #  test_det_SOURCES               = test-det.C

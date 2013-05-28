@@ -50,10 +50,25 @@ if (TestOneField(F,(int)a,(float)x)) {\
 	return -1 ; \
 }
 
+template<class Int1, class Int2>
+long long locgcd ( const Int1 a, const Int2 b ) {
+    long long u3, v3; u3 = a; v3 = b;
+    while (v3 != 0) {
+        long long q, t3;
+        q = u3 / v3;
+        t3 = u3 - q * v3;
+        u3 = v3; v3 = t3;
+    }
+//     std::cerr << '|' << a << '^' << b << '|' << u3 << std::endl;
+    
+    return u3;
+}
+
+
 template<class Field>
 int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 {/*{{{*/
-#ifdef GIVARO_DEBUG
+#ifdef FFLASFFPACK_DEBUG
 	std::cerr << "testing " ;
 	F.write(std::cerr );
         std::cerr << " (" << FIRSTINT << ',' << FIRSTFLOAT << ')';
@@ -81,15 +96,12 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 
 	F.init(a, FIRSTINT);
 
-        Givaro::IntPrimeDom IPD;
-	F.init(b, (unsigned long)FIRSTFLOAT );
-        Givaro::Integer bI = (unsigned long)b;
-        bI += F.characteristic();
-        IPD.nextprimein( bI );
-        bI %= Givaro::Integer(F.characteristic());
+    unsigned long invertible=(unsigned long)(FIRSTFLOAT<0?-FIRSTFLOAT:FIRSTFLOAT);
 
-	F.init(b, (unsigned long)bI );
-        if (F.isZero(b)) F.init(b,1);
+    for( ; locgcd( invertible,F.characteristic()) != 1; ++invertible) {}
+    F.init(b, invertible); 
+//     F.write(std::cerr << "b:=", b) << ';' << std::endl;
+    if (F.isZero(b)) F.init(b,1);
 
 	F.init(c);            // empty constructor
 	F.init(d);            // empty constructor
@@ -235,7 +247,7 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
         TESTE_EG(F.one,a);
 	}
 
-#ifdef GIVARO_DEBUG
+#ifdef FFLASFFPACK_DEBUG
 	F.write(std::cerr );
 	std::cerr  << " done." << std::endl;
 #endif
@@ -271,10 +283,10 @@ int TestField(const Field& F, const int seed)
 int main(int argc, char ** argv)
 {/*{{{*/
     int seed = int (argc>1?atoi(argv[1]):BaseTimer::seed());
-#ifdef GIVARO_DEBUG
+#ifdef FFLASFFPACK_DEBUG
     std::cerr << "seed: " << seed << std::endl;
 #endif
-
+    srand48(seed);
 
 #ifdef NDEBUG
     assert(0);
@@ -374,24 +386,22 @@ int main(int argc, char ** argv)
 
 // // Random values
 
-    Givaro::IntPrimeDom IPD;  
-    Givaro::Integer::seeding(seed);
     for(int i=0; i< 20; ++i) {
 
-        Givaro::Integer a= Givaro::Integer::random();
+        long a = lrand48();
 //         std::cerr << "rand int: " << a << std::endl;
         
 
-    Modular<float> CUrand( (float)(a % Modular<float>::getMaxModulus() ));
+    Modular<float> CUrand( (float)(a % (long)Modular<float>::getMaxModulus() ));
     JETESTE(CUrand,seed);
 
-    Modular<double> Zrand((double)(a %  Modular<double>::getMaxModulus() ));
+    Modular<double> Zrand((double)(a %  (long)Modular<double>::getMaxModulus() ));
     JETESTE(Zrand,seed);
 
-	ModularBalanced<float> Urand((float)(a % ModularBalanced<float>::getMaxModulus() ));
+	ModularBalanced<float> Urand((float)(a % (long)ModularBalanced<float>::getMaxModulus() ));
 	JETESTE(Urand,seed);
 
-	ModularBalanced<double> Mrand((double)(a % ModularBalanced<double>::getMaxModulus()));
+	ModularBalanced<double> Mrand((double)(a % (long)ModularBalanced<double>::getMaxModulus()));
 	JETESTE(Mrand,seed);
 
 	Modular<int32_t> Lrand((int32_t)(a % Modular<int32_t>::getMaxModulus()));
