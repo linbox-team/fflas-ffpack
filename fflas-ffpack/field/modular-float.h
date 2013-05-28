@@ -73,7 +73,7 @@ namespace FFPACK {
 
 		Modular (int32_t p, int exp = 1)  :
 			modulus((Element)p), lmodulus((unsigned long)p)//, inv_modulus(1./(Element)
-			,one(1),zero(0),mOne(p==2 ? 1. : modulus -1.)
+			,one(1.f),zero(0.f),mOne(p==2 ? 1.f : modulus -1.f)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -86,7 +86,7 @@ namespace FFPACK {
 		}
 		Modular (Element p) :
 			modulus(p),  lmodulus((unsigned long)p)
-			,one(1),zero(0),mOne(p==2. ? 1. : modulus -1.)
+			,one(1.f),zero(0.f),mOne(p==2. ? 1.f : modulus -1.f)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -98,7 +98,7 @@ namespace FFPACK {
 
 		Modular (unsigned long int p) :
 			modulus((Element)p), lmodulus(p)
-			,one(1),zero(0),mOne(p==2 ? 1. : modulus -1.)
+			,one(1.f),zero(0.f),mOne(p==2 ? 1.f : modulus -1.f)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -366,7 +366,7 @@ namespace FFPACK {
 			r= fmodf(tmp, modulus);
  			if (r < 0.) r += modulus;
             return r;
-           
+
 		}
 
 		inline Element &maxpy (Element &r,
@@ -378,7 +378,7 @@ namespace FFPACK {
 			r=fmodf(tmp, modulus);
 			if (r < 0.) r += modulus;
             return r;
-            
+
 		}
 
 		inline Element &addin (Element &x, const Element &y) const
@@ -431,7 +431,7 @@ namespace FFPACK {
 			r -= a * x;
 			r= fmodf(r, modulus);
 			if (r < 0) r += modulus;
-            return r; 
+            return r;
 		}
 
 		static inline Element getMaxModulus()

@@ -42,7 +42,7 @@ namespace FFLAS {
 		 *
 		 * \param F Finite Field/Ring of the computation.
 		 * \param k Common dimension of A and B, in the product A x B
-		 * \param bet Computing AB + beta C
+		 * \param beta Computing AB + beta C
 		 * \param delayedDim Returns the size of blocks that can be multiplied
 		 *                   over Z with no overflow
 		 * \param base Returns the type of BLAS representation to use
@@ -59,7 +59,8 @@ namespace FFLAS {
 					      size_t& delayedDim,
 					      FFLAS_BASE& base,
 					      size_t& winoRecLevel,
-					      bool winoLevelProvided) {
+					      bool winoLevelProvided)
+		{
 
 			// Strategy : determine Winograd's recursion first, then choose appropriate
 			// floating point representation, and finally the blocking dimension.
