@@ -632,9 +632,9 @@ namespace FFLAS {
 	 * @param F field
 	 * @param N size of the vectors
 	 * @param alpha scalar
-	 * \param X vector in \p F
+	 * \param[in] X vector in \p F
 	 * \param incX stride of \p X
-	 * \param Y vector in \p F
+	 * \param[in,out] Y vector in \p F
 	 * \param incY stride of \p Y
 	 */
 	template<class Field>
@@ -1115,69 +1115,69 @@ namespace FFLAS {
         BLOCK_FIXED    ,
         ROW_THREADS    ,
         COLUMN_THREADS ,
-        BLOCK_THREADS  
+        BLOCK_THREADS
     };
 
 
-    template<CuttingStrategy Method> 
+    template<CuttingStrategy Method>
     void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
                    const size_t m, const size_t n);
-    
-    template<> 
-    void BlockCuts<ROW_FIXED>(size_t& RBLOCKSIZE, 
+
+    template<>
+    void BlockCuts<ROW_FIXED>(size_t& RBLOCKSIZE,
                               size_t& CBLOCKSIZE,
-                              const size_t m, const size_t n) { 
-        RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS; 
-        CBLOCKSIZE = n; 
+                              const size_t m, const size_t n) {
+        RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
+        CBLOCKSIZE = n;
     }
-    
-                               
-    template<> 
-    void BlockCuts<COLUMN_FIXED>(size_t& RBLOCKSIZE, 
+
+
+    template<>
+    void BlockCuts<COLUMN_FIXED>(size_t& RBLOCKSIZE,
                                  size_t& CBLOCKSIZE,
-                                 const size_t m, const size_t n) { 
-        RBLOCKSIZE = m; 
-        CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS; 
+                                 const size_t m, const size_t n) {
+        RBLOCKSIZE = m;
+        CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
     }
-    
-                               
-    template<> 
-    void BlockCuts<BLOCK_FIXED>(size_t& RBLOCKSIZE, 
+
+
+    template<>
+    void BlockCuts<BLOCK_FIXED>(size_t& RBLOCKSIZE,
                                 size_t& CBLOCKSIZE,
-                                const size_t m, const size_t n) { 
-        RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS; 
-        CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS; 
+                                const size_t m, const size_t n) {
+        RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
+        CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
     }
-    
-    template<> 
-    void BlockCuts<ROW_THREADS>(size_t& RBLOCKSIZE, 
+
+    template<>
+    void BlockCuts<ROW_THREADS>(size_t& RBLOCKSIZE,
                                 size_t& CBLOCKSIZE,
-                                const size_t m, const size_t n) { 
-        RBLOCKSIZE = MAX(m/omp_get_max_threads(),1); 
-        CBLOCKSIZE = n; 
+                                const size_t m, const size_t n) {
+        RBLOCKSIZE = MAX(m/omp_get_max_threads(),1);
+        CBLOCKSIZE = n;
     }
-    
-                               
-    template<> 
-    void BlockCuts<COLUMN_THREADS>(size_t& RBLOCKSIZE, 
+
+
+    template<>
+    void BlockCuts<COLUMN_THREADS>(size_t& RBLOCKSIZE,
                                    size_t& CBLOCKSIZE,
-                                   const size_t m, const size_t n) { 
-        RBLOCKSIZE = m; 
+                                   const size_t m, const size_t n) {
+        RBLOCKSIZE = m;
         CBLOCKSIZE = MAX(n/omp_get_max_threads(),1);
     }
-    
-                               
-    template<> 
-    void BlockCuts<BLOCK_THREADS>(size_t& RBLOCKSIZE, 
+
+
+    template<>
+    void BlockCuts<BLOCK_THREADS>(size_t& RBLOCKSIZE,
                                   size_t& CBLOCKSIZE,
-                                  const size_t m, const size_t n) { 
+                                  const size_t m, const size_t n) {
         const size_t maxt = (size_t)sqrt((double)omp_get_max_threads());
         RBLOCKSIZE=MAX(m/maxt,1);
         CBLOCKSIZE=MAX(n/maxt,1);
     }
-    
+
     void BlockCuts(size_t& r, size_t& c,
-                   const size_t m, const size_t n, 
+                   const size_t m, const size_t n,
                    const CuttingStrategy method) {
         switch(method) {
             case ROW_THREADS: BlockCuts<ROW_THREADS>(r,c,m,n); break;
