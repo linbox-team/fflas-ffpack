@@ -24,10 +24,6 @@
 #include "fflas-ffpack/field/modular-int64.h"
 #include "fflas-ffpack/field/unparametric.h"
 
-
-#include "givaro/givintprime.h"
-
-
 using namespace FFPACK;
 //using namespace FFLAS;
 
