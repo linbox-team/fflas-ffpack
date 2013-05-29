@@ -76,7 +76,7 @@ namespace FFPACK {
 			,one(1.f),zero(0.f),mOne(p==2 ? 1.f : modulus -1.f)
 		{
 #ifdef DEBUG
-			if(modulus <= 1)
+			if(modulus <= 1.f)
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if( exp != 1 ) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(modulus > getMaxModulus() )
@@ -86,10 +86,10 @@ namespace FFPACK {
 		}
 		Modular (Element p) :
 			modulus(p),  lmodulus((unsigned long)p)
-			,one(1.f),zero(0.f),mOne(p==2. ? 1.f : modulus -1.f)
+			,one(1.f),zero(0.f),mOne(p==2.f ? 1.f : modulus -1.f)
 		{
 #ifdef DEBUG
-			if( modulus <= 1 )
+			if( modulus <= 1.f )
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if( modulus > getMaxModulus())
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
@@ -101,7 +101,7 @@ namespace FFPACK {
 			,one(1.f),zero(0.f),mOne(p==2 ? 1.f : modulus -1.f)
 		{
 #ifdef DEBUG
-			if( (Element) modulus <= 1 )
+			if( (Element) modulus <= 1.f )
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if( (Element) modulus > getMaxModulus())
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
@@ -183,7 +183,7 @@ namespace FFPACK {
 		{
 			is >> modulus;
 #ifdef DEBUG
-			if(modulus <= 1)
+			if(modulus <= 1.f)
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if(modulus > 94906265)
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
@@ -274,12 +274,12 @@ namespace FFPACK {
 
 		inline  bool isZero (const Element &x) const
 		{
-			return x == 0.;
+			return x == 0.f;
 		}
 
 		inline bool isOne (const Element &x) const
 		{
-			return x == 1.;
+			return x == 1.f;
 		}
 
 		inline Element &add (Element &x, const Element &y, const Element &z) const
@@ -366,7 +366,7 @@ namespace FFPACK {
 			r= fmodf(tmp, modulus);
  			if (r < 0.) r += modulus;
             return r;
-
+           
 		}
 
 		inline Element &maxpy (Element &r,
@@ -378,7 +378,7 @@ namespace FFPACK {
 			r=fmodf(tmp, modulus);
 			if (r < 0.) r += modulus;
             return r;
-
+            
 		}
 
 		inline Element &addin (Element &x, const Element &y) const
@@ -431,12 +431,12 @@ namespace FFPACK {
 			r -= a * x;
 			r= fmodf(r, modulus);
 			if (r < 0) r += modulus;
-            return r;
+            return r; 
 		}
 
 		static inline Element getMaxModulus()
 		{
-			return 4096.0;  // floor( 2^12 )
+			return 4096.0f;  // floor( 2^12 )
 			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
 		}
 
