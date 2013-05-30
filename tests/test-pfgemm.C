@@ -123,7 +123,7 @@ int main(int argc, char** argv){
 // 	write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);
     
     size_t r,c; FFLAS::BlockCuts(r,c,m,n,Strategy, omp_get_max_threads() );
-    std::cerr << "pfgemm: " << m << 'x' << n << ' ' << r << ':' << c << std::endl;
+    std::cerr << "pfgemm: " << m << 'x' << n << ' ' << r << ':' << c << "  <--  " << omp_get_max_threads() << ':' << (m/r) << 'x' << (n/c) << std::endl;
 if (nbw <0) {
 FFLAS::FFLAS_BASE base; size_t winolev, kmax;
 FFLAS::Protected::MatMulParameters (F, MIN(MIN(m,n),k),k, beta, kmax, base, winolev);

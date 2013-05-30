@@ -75,7 +75,6 @@ pfgemm( const Field& F,
             BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, omp_get_num_threads() );
         } 
     }
-    
 
     size_t NrowBlocks = m/RBLOCKSIZE;
     size_t LastrowBlockSize = m % RBLOCKSIZE;

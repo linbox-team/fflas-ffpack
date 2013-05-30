@@ -1180,23 +1180,23 @@ namespace FFLAS {
                                   const size_t numthreads) {
         const size_t maxt = (size_t)sqrt((double)numthreads);
 	size_t maxtr=maxt,maxtc=maxt;
-	for(int i=maxt; i>=1; --i) {
-		int j=maxt;
-		for( ; (i*j)< numthreads; ++j) {
-		}
-		if ((i*j) == numthreads) {
-			maxtr=i;
-			maxtc=j;
-			break;
-		}
-		
-	}
+	for(size_t i=maxt; i>=1; --i) {
+		size_t j=maxt;
+                size_t newpr = i*j;
+		for( ; newpr < numthreads; ++j, newpr+=i ) {}
+                if (newpr == numthreads) {
+                    maxtr = i;
+                    maxtc = j;
+                    break;
+                }
+        }
+
         RBLOCKSIZE=MAX(m/maxtr,1);
         CBLOCKSIZE=MAX(n/maxtc,1);
     }
 
     void BlockCuts(size_t& r, size_t& c,
-                   const size_t m, const size_t n,
+                   size_t m, size_t n,
                    const CuttingStrategy method,
                    const size_t t) {
         switch(method) {
@@ -1208,6 +1208,7 @@ namespace FFLAS {
             case COLUMN_FIXED: BlockCuts<COLUMN_FIXED>(r,c,m,n,t); break;
             default: BlockCuts<BLOCK_THREADS>(r,c,m,n,t); 
         };
+
     }
 
 	template<class Field>
