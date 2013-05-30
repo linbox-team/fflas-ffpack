@@ -68,7 +68,14 @@ pfgemm( const Field& F,
         ){
 
     size_t RBLOCKSIZE, CBLOCKSIZE;
-    BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method);
+#pragma omp parallel 
+    { 
+#pragma omp single
+        {
+            BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, omp_get_num_threads() );
+        } 
+    }
+    
 
     size_t NrowBlocks = m/RBLOCKSIZE;
     size_t LastrowBlockSize = m % RBLOCKSIZE;
