@@ -1110,12 +1110,12 @@ namespace FFLAS {
 #define FFLAS_FFPACK_MINBLOCKCUTS 512
 
     enum CuttingStrategy {
-        ROW_FIXED      ,
-        COLUMN_FIXED   ,
-        BLOCK_FIXED    ,
-        ROW_THREADS    ,
-        COLUMN_THREADS ,
-        BLOCK_THREADS
+        ROW_FIXED	,
+        COLUMN_FIXED	,
+        BLOCK_FIXED	,
+        ROW_THREADS	,
+        COLUMN_THREADS	,
+        BLOCK_THREADS	,
     };
 
 
@@ -1172,20 +1172,33 @@ namespace FFLAS {
                                   size_t& CBLOCKSIZE,
                                   const size_t m, const size_t n) {
         const size_t maxt = (size_t)sqrt((double)omp_get_max_threads());
-        RBLOCKSIZE=MAX(m/maxt,1);
-        CBLOCKSIZE=MAX(n/maxt,1);
+	size_t maxtr=maxt,maxtc=maxt;
+	for(int i=maxt; i>=1; --i) {
+		int j=maxt;
+		for( ; (i*j)< omp_get_max_threads(); ++j) {
+		}
+		if ((i*j) == omp_get_max_threads()) {
+			maxtr=i;
+			maxtc=j;
+			break;
+		}
+		
+	}
+        RBLOCKSIZE=MAX(m/maxtr,1);
+        CBLOCKSIZE=MAX(n/maxtc,1);
     }
 
     void BlockCuts(size_t& r, size_t& c,
                    const size_t m, const size_t n,
                    const CuttingStrategy method) {
         switch(method) {
+            case BLOCK_THREADS: BlockCuts<BLOCK_THREADS>(r,c,m,n); break;
             case ROW_THREADS: BlockCuts<ROW_THREADS>(r,c,m,n); break;
             case ROW_FIXED: BlockCuts<ROW_FIXED>(r,c,m,n); break;
-            case BLOCK_THREADS: BlockCuts<BLOCK_THREADS>(r,c,m,n); break;
             case BLOCK_FIXED: BlockCuts<BLOCK_FIXED>(r,c,m,n); break;
             case COLUMN_THREADS: BlockCuts<COLUMN_THREADS>(r,c,m,n); break;
             case COLUMN_FIXED: BlockCuts<COLUMN_FIXED>(r,c,m,n); break;
+            default: BlockCuts<BLOCK_THREADS>(r,c,m,n); 
         };
     }
 

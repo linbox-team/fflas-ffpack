@@ -43,6 +43,7 @@
 #define TIME 1
 #endif
 #define FFLAS_FFPACK_USES_OPENMP
+#define __FFLAS_USE_OMP
 
 #include <iomanip>
 #include <iostream>
@@ -87,6 +88,7 @@ int main(int argc, char** argv){
         
 	int m=atoi(argv[2]),n=atoi(argv[3]),k=m;
     int nbw=atoi(argv[4]); // number of winograd levels
+	int pnbw = nbw;
 	int nbit=atoi(argv[5]); // number of times the product is performed
 	cerr<<setprecision(10);
 	Field::Element alpha,beta;
@@ -122,6 +124,13 @@ int main(int argc, char** argv){
     
     size_t r,c; FFLAS::BlockCuts(r,c,m,n,Strategy);
     std::cerr << "pfgemm: " << m << 'x' << n << ' ' << r << ':' << c << std::endl;
+if (nbw <0) {
+FFLAS::FFLAS_BASE base; size_t winolev, kmax;
+FFLAS::Protected::MatMulParameters (F, MIN(MIN(m,n),k),k, beta, kmax, base, winolev);
+nbw=winolev;
+pnbw=0;
+    std::cerr << "Winolevel: " << nbw << '(' << pnbw << ')' << std::endl;
+}
 
 	OMPTimer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit+1;++i){
@@ -129,7 +138,7 @@ int main(int argc, char** argv){
 		t.clear();
 		t.start();
 		FFLAS::pfgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,n,nbw, Strategy);
+			      beta,C,n,pnbw, Strategy);
 		t.stop();
 		if (i) tim+=t;
         if (i<nbit) delete[] C;
@@ -137,19 +146,20 @@ int main(int argc, char** argv){
 
 #if TIME
 	double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tim.realtime();
-	cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
+	cerr << pnbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
 	     << tim.realtime()/nbit
 	     << " s, Mffops = "<<mflops
 	     << endl;
 
-	cerr<<"m,n,k,nbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
-	    <<", "<<beta<<", "<<nbw<<endl
+	cerr<<"m,n,k,pnbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
+	    <<", "<<beta<<", "<<pnbw<<endl
 	    <<alpha
 	    <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
 	    <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
 	    <<beta<<".C"<<endl;
-	cout<<m<<" "<<n<<" "<<k<<" "<<nbw<<" "<<alpha<<" "<<beta<<" "
+	cout<<m<<" "<<n<<" "<<k<<" "<<pnbw<<" "<<alpha<<" "<<beta<<" "
 	    <<mflops<<" "<<tim.realtime()/nbit<<endl;
+
 
 	OMPTimer tims,ts; ts.clear();tims.clear();
 	for(int i = 0;i<nbit;++i){
