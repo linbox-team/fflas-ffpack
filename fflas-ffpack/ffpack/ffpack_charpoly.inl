@@ -39,61 +39,69 @@ namespace FFPACK {
 		  const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		switch (CharpTag) {
-		case FfpackLUK:{
-				       typename Field::Element * X = new typename Field::Element[N*(N+1)];
-				       Protected::LUKrylov (F, charp, N, A, lda, X, N);
-				       delete[] X;
-				       return charp;
-			       }
-		case FfpackKG:{
-				      return Protected::KellerGehrig (F, charp, N, A, lda);
-				      // break;
-			      }
-		case FfpackDanilevski:{
-					      return Danilevski (F, charp, N, A, lda);
-					      // break;
-				      }
-		case FfpackKGFast:{
-					  size_t mc, mb, j;
-					  if (Protected::KGFast (F, charp, N, A, lda, &mc, &mb, &j)){
-						  std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
-					  }
-					  return charp;
-					  // break;
-				  }
-		case FfpackKGFastG:{
-					   return Protected::KGFast_generalized (F, charp, N, A, lda);
-				   }
-		case FfpackHybrid:{
-					  typename Field::Element * X = new typename Field::Element[N*(N+1)];
-					  Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
-					  delete[] X;
-					  return charp;
-				  }
-		case FfpackArithProg:{
-					     size_t attempts=0;
-					     bool cont = false;
-					     FFLAS_INT_TYPE p;
-					     F.characteristic(p);
-					     // Heuristic condition (the pessimistic theoretical one being p<2n^2.
-					     if ((unsigned long) (p) < N)
-						     return CharPoly (F, charp, N, A, lda, FfpackLUK);
+		case FfpackLUK:
+			{
+				typename Field::Element * X = new typename Field::Element[N*(N+1)];
+				Protected::LUKrylov (F, charp, N, A, lda, X, N);
+				delete[] X;
+				return charp;
+			}
+		case FfpackKG:
+			{
+				return Protected::KellerGehrig (F, charp, N, A, lda);
+				// break;
+			}
+		case FfpackDanilevski:
+			{
+				return Danilevski (F, charp, N, A, lda);
+				// break;
+			}
+		case FfpackKGFast:
+			{
+				size_t mc, mb, j;
+				if (Protected::KGFast (F, charp, N, A, lda, &mc, &mb, &j)){
+					std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
+				}
+				return charp;
+				// break;
+			}
+		case FfpackKGFastG:
+			{
+				return Protected::KGFast_generalized (F, charp, N, A, lda);
+			}
+		case FfpackHybrid:
+			{
+				typename Field::Element * X = new typename Field::Element[N*(N+1)];
+				Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
+				delete[] X;
+				return charp;
+			}
+		case FfpackArithProg:
+			{
+				size_t attempts=0;
+				bool cont = false;
+				FFLAS_INT_TYPE p;
+				F.characteristic(p);
+				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
+				if ((unsigned long) (p) < N)
+					return CharPoly (F, charp, N, A, lda, FfpackLUK);
 
-					     do{
-						     try {
-							     CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD);
-						     }
-						     catch (CharpolyFailed){
-							     if (attempts++ < 2)
-								     cont = true;
-							     else
-								     return CharPoly(F, charp, N, A, lda, FfpackLUK);
+				do{
+					try {
+						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD);
+					}
+					catch (CharpolyFailed){
+						if (attempts++ < 2)
+							cont = true;
+						else
+							return CharPoly(F, charp, N, A, lda, FfpackLUK);
 
-						     }
-					     } while (cont);
-					     return charp;
-				     }
-		default:{
+					}
+				} while (cont);
+				return charp;
+			}
+		default:
+			{
 				typename Field::Element * X = new typename Field::Element[N*(N+1)];
 				Protected::LUKrylov (F, charp, N, A, lda, X, N);
 				delete[] X;

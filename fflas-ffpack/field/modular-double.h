@@ -315,7 +315,7 @@ namespace FFPACK {
 		}
 
 		 Element &inv (Element &x, const Element &y) const
-		{
+		 {
 			// The extended Euclidean algoritm
 			int x_int, y_int, q, tx, ty, temp;
 			x_int = int (modulus);

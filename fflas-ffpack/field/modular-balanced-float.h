@@ -74,7 +74,7 @@ namespace FFPACK {
 			half_mod( p==2? 1 : Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus ((unsigned int)p)
-			,one(1),zero(0),mOne(p==2 ? 1 : -1)
+			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
 #ifdef DEBUG
 			if(modulus <= 1)
@@ -96,7 +96,7 @@ namespace FFPACK {
 			half_mod( p==2? 1 : Element(floor((p-1)/2))),
 			mhalf_mod( half_mod-p+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mOne(p==2 ? 1 : -1)
+			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -115,7 +115,7 @@ namespace FFPACK {
 			half_mod( p==2? 1 : Element(floor((p-1)/2))),
 			mhalf_mod( half_mod-Element(p)+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mOne(p==2 ? 1 : -1)
+			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
 #ifdef DEBUG
 			if (modulus <= 1)
@@ -135,7 +135,7 @@ namespace FFPACK {
 			half_mod( p==2? 1 : Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p)
-			,one(1),zero(0),mOne(p==2 ? 1 : -1)
+			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
