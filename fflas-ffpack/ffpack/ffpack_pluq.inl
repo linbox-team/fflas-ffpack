@@ -181,8 +181,8 @@ namespace FFPACK {
 		vector<bool> pivotCols(N,false);
 		size_t MathP[M];
 		size_t MathQ[N];
-		size_t npp=0;
-		size_t npq=0;
+		// size_t npp=0;
+		// size_t npq=0;
 
 #ifdef LEFTLOOKING
 		typename Field::Element* Ltemp = new typename Field::Element[M*N];
@@ -801,7 +801,7 @@ namespace FFPACK {
 //     std::cerr << "m: " << m << ", n: " << n << std::endl;
 				const size_t nun(n-1);
 				const size_t blo(sizeof(Base_t));
-				const size_t bmu(blo*mun);
+				// const size_t bmu(blo*mun);
 				const size_t bnu(blo*nun);
 				Base_t * b = new Base_t[mun];
 				for(size_t i=0; i<mun; ++i) b[i] = A[i*lda+nun];
@@ -895,7 +895,7 @@ namespace FFPACK {
 #ifdef MEMCOPY
 		if (m > 1) {
 			const size_t mun(m-1);
-			const size_t nun(n-1);
+			// const size_t nun(n-1);
 
 			Base_t * b = new Base_t[n];
 			Base_t * Ai = A+mun*lda;

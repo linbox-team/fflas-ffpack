@@ -147,14 +147,17 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	    (mat_file[--s] == '.')) {
 		is_gzipped = 1;
 		// XXX on fait pas ça !
-		File_Name = "/tmp/bbXXXXXX_";
+		char tmp_nam [] = "/tmp/bbXXXXXX_";
+		File_Name = tmp_nam ;
 		mkstemp(File_Name);
 		UT = new char[s+34+strlen(File_Name)];
 		sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
 		system(UT);
 		sprintf(UT,"\\rm %s", File_Name);
-	} else
+	}
+	else {
 		File_Name = mat_file;
+	}
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
 		char * tmp = new char[200];// usigned long tni, tnj;
