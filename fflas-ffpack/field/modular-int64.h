@@ -229,7 +229,7 @@ namespace FFPACK
 		template<class Element1>
 		inline Element &init (Element & x, const Element1 &y) const
 		{
-			x = y % modulus;
+			x = (Element) y % modulus;
 			if (x < 0) x += modulus;
 			return x;
 		}
@@ -434,7 +434,7 @@ namespace FFPACK
             maxpy(q,a,x,r);
             return assign(r,q);
         }
-        
+
 
 		static inline int64_t getMaxModulus()
 		{

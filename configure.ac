@@ -91,24 +91,48 @@ if test "x$PROF" = "xyes" ; then
 fi
 
 if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
-	if test "x${CCNAM}" = "xicc" ; then
+	case x${CCNAM} in
+		xicc)
 		WARN_CFLAGS="${WARN_CFLAGS} -Wcheck"
 		# DEBUG_CFLAGS="-fast"
-	else
-		if test "x${CCNAM}" = "xgcc" -o "x${CCNAM}" = "xeko" ; then
+			;;
+		xeko)
+			WARN_CFLAGS="${WARN_CFLAGS} -Wno-unused-parameter"
+			;;
+		xgcc)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
 				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
 			fi
-		else
+		;;
+		xgcc48)
+			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
+			if test "x${WARN}" = "xfull" ; then
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address"
+			fi
+			;;
+
+		xclang)
+			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
+			if test "x${WARN}" = "xfull" ; then
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+			fi
+			;;
+		xclang31)
+			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
+			if test "x${WARN}" = "xfull" ; then
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address"
+			fi
+			;;
+
+		*)
 			echo
 			echo "*******************************************************"
 			echo "unsupported compiler ($CCNAM). Please file a bug."
 			echo "*******************************************************"
 			echo
 			WARN_CFLAGS="${WARN_CFLAGS}"
-		fi
-	fi
+	esac
 fi
 
 
@@ -122,7 +146,6 @@ AC_PROG_LIBTOOL
 # newer libtool...
 LT_PREREQ([2.2])
 LT_INIT
-
 
 
 echo "-----------------------------------------------"
@@ -299,7 +322,6 @@ CXXFLAGS="${GMP_CFLAGS} ${CXXFLAGS}"
 AC_SUBST(CXXFLAGS)
 
 echo "-----------------------------------------------"
-
 AC_CONFIG_FILES([
 Makefile
 macros/Makefile

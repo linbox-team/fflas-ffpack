@@ -48,7 +48,7 @@ if (TestOneField(F,(int)a,(float)x)) {\
 
 template<class Int1, class Int2>
 long long locgcd ( const Int1 a, const Int2 b ) {
-    long long u3, v3; u3 = a; v3 = b;
+    long long u3, v3; u3 = (long long)a; v3 =  (long long)b;
     while (v3 != 0) {
         long long q, t3;
         q = u3 / v3;
@@ -56,7 +56,7 @@ long long locgcd ( const Int1 a, const Int2 b ) {
         u3 = v3; v3 = t3;
     }
 //     std::cerr << '|' << a << '^' << b << '|' << u3 << std::endl;
-    
+
     return u3;
 }
 
@@ -95,7 +95,7 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
     unsigned long invertible=(unsigned long)(FIRSTFLOAT<0?-FIRSTFLOAT:FIRSTFLOAT);
 
     for( ; locgcd( invertible,F.characteristic()) != 1; ++invertible) {}
-    F.init(b, invertible); 
+    F.init(b, invertible);
 //     F.write(std::cerr << "b:=", b) << ';' << std::endl;
     if (F.isZero(b)) F.init(b,1);
 
@@ -222,24 +222,24 @@ int TestOneField(const Field& F, const int FIRSTINT, const float FIRSTFLOAT)
 		F.mulin(a,b);
 //         F.write(std::cerr << "a:=", a) << ';' << std::endl;
 //         F.write(std::cerr << "b:=", b) << ';' << std::endl;
-        
+
         TESTE_EG(F.one,a);
 
         F.init(a,37409);
         F.inv(b,a);
         F.mul(c,b,a);
-        
+
 //         F.write(std::cerr << "a:=", a) << ';' << std::endl;
 //         F.write(std::cerr << "b:=", b) << ';' << std::endl;
 //         F.write(std::cerr << "c:=", c) << ';' << std::endl;
 //         F.write(std::cerr << "1:=", F.one) << ';' << std::endl;
         TESTE_EG(F.one,c);
-        
+
         F.init(a,37409);
         F.init(b,37409);
         F.invin(a);
         F.mulin(a,b);
-        
+
         TESTE_EG(F.one,a);
 	}
 
@@ -300,11 +300,11 @@ int main(int argc, char ** argv)
 	ModularBalanced<float> U13(13);
 	JETESTE(U13,seed);
 
-	// modulo 13 
+	// modulo 13
 	ModularBalanced<double> M13(13);
 	JETESTE(M13,seed);
 
-	// modulo 13 
+	// modulo 13
 	Modular<int32_t> L13(13);
 	JETESTE(L13,seed);
 
@@ -312,7 +312,7 @@ int main(int argc, char ** argv)
 	Modular<int64_t> LL13(13UL);
 	JETESTE(LL13,seed);
 
-	// modulo 13 
+	// modulo 13
 	ModularBalanced<int32_t> Lb13(13);
 	JETESTE(Lb13,seed);
 
@@ -343,11 +343,21 @@ int main(int argc, char ** argv)
 	Modular<int64_t> LLmax(Modular<int64_t>::getMaxModulus());
 	JETESTE(LLmax,seed);
 
-    ModularBalanced<int32_t> Lbmax(ModularBalanced<int32_t>::getMaxModulus());
-    JETESTE(Lbmax,seed);
+	{
+		int32_t pp = ModularBalanced<int32_t>::getMaxModulus() ;
+		if (!(pp%2)) --pp;
 
-    ModularBalanced<int64_t> LLbmax(ModularBalanced<int64_t>::getMaxModulus());
-    JETESTE(LLbmax,seed);
+		ModularBalanced<int32_t> Lbmax(pp);
+		JETESTE(Lbmax,seed);
+	}
+
+	{
+		// must be odd
+		int64_t pp = ModularBalanced<int64_t>::getMaxModulus() ;
+		if (!(pp%2)) --pp;
+		ModularBalanced<int64_t> LLbmax(pp);
+		JETESTE(LLbmax,seed);
+	}
 
 
 
@@ -367,7 +377,7 @@ int main(int argc, char ** argv)
 
 //     ModularBalanced<double> M2(2);
 //     JETESTE(M2,seed);
-	
+
 	Modular<int32_t> L2(2);
 	JETESTE(L2,seed);
 
@@ -386,7 +396,7 @@ int main(int argc, char ** argv)
 
         long a = lrand48();
 //         std::cerr << "rand int: " << a << std::endl;
-        
+
 
     Modular<float> CUrand( (float)(a % (long)Modular<float>::getMaxModulus() ));
     JETESTE(CUrand,seed);
@@ -406,15 +416,23 @@ int main(int argc, char ** argv)
 	Modular<int64_t> LLrand((int64_t)(a % Modular<int64_t>::getMaxModulus()));
 	JETESTE(LLrand,seed);
 
-    ModularBalanced<int32_t> Lbrand((int32_t)(a % ModularBalanced<int32_t>::getMaxModulus()));
-    JETESTE(Lbrand,seed);
+	{
+		int32_t pp = (int32_t)(a % ModularBalanced<int32_t>::getMaxModulus()) ;
+		if (!(pp%2)) --pp;
+		ModularBalanced<int32_t> Lbrand(pp);
+		JETESTE(Lbrand,seed);
+	}
 
-    ModularBalanced<int64_t> LLbrand((int64_t)(a % ModularBalanced<int64_t>::getMaxModulus()));
-    JETESTE(LLbrand,seed);
+	{
+		int64_t pp = (int64_t)(a % ModularBalanced<int64_t>::getMaxModulus()) ;
+		if (!(pp%2)) --pp;
+		ModularBalanced<int64_t> LLbrand(pp);
+		JETESTE(LLbrand,seed);
+	}
 
-    
+
     }
-    
+
 
 	return 0;
 }/*}}}*/
