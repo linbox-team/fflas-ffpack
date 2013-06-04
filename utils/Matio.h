@@ -161,7 +161,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
 		char * tmp = new char[200];// usigned long tni, tnj;
-		fscanf(FileDes,"%d %d %s\n",tni, tnj, &tmp) ;
+		fscanf(FileDes,"%d %d %s\n",tni, tnj, tmp) ;
 		int n=*tni;
 		int p=*tnj;
 		int no2= n>>1;
