@@ -101,7 +101,7 @@ bool test_det(Field &F, size_t n, int iter)
 int main(int argc, char** argv){
 
 	static int iters =10 ;
-	static size_t p = 65537 ;
+	static unsigned long p = 65521 ;
 	static size_t n = 200 ;
 
 	static Argument as[] = {
