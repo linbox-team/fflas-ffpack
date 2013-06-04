@@ -34,6 +34,7 @@ BASIC_TESTS =              \
 		test-lqup              \
 		test-modulararith      \
 		test-det               \
+		test-echelon           \
 		test-compressQ
 
 NOT_A_TEST =  \
@@ -43,7 +44,6 @@ NOT_A_TEST =  \
 		test-redcolechelon     \
 		benchfgemm             \
 		test-rank              \
-		test-echelon           \
 		test-krylov-elim       \
 		test-rowechelon        \
 		test-fgemv             \
@@ -79,13 +79,13 @@ test_compressQ_SOURCES         = test-compressQ.C
 test_lqup_SOURCES              = test-lqup.C
 test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
+test_echelon_SOURCES           = test-echelon.C
 #  test_charpoly_SOURCES          = test-charpoly.C
 #  dense_generator_SOURCES        = dense_generator.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
 #  test_rank_SOURCES              = test-rank.C
 #  benchlqup_SOURCES              = benchlqup.C
-#  test_echelon_SOURCES           = test-echelon.C
 #  test_ftrmm_SOURCES             = test-ftrmm.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
