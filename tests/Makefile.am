@@ -33,13 +33,13 @@ AM_LDFLAGS=-static
 BASIC_TESTS =              \
 		test-lqup              \
 		test-modulararith      \
+		test-det               \
 		test-compressQ
 
 NOT_A_TEST =  \
 		test-charpoly          \
 		benchlqup              \
 		test-fsquare           \
-		test-det               \
 		test-redcolechelon     \
 		benchfgemm             \
 		test-rank              \
@@ -78,9 +78,9 @@ TESTS =                \
 test_compressQ_SOURCES         = test-compressQ.C
 test_lqup_SOURCES              = test-lqup.C
 test_modulararith_SOURCES      = test-modulararith.C
+test_det_SOURCES               = test-det.C
 #  test_charpoly_SOURCES          = test-charpoly.C
 #  dense_generator_SOURCES        = dense_generator.C
-#  test_det_SOURCES               = test-det.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
 #  test_rank_SOURCES              = test-rank.C

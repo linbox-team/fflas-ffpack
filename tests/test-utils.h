@@ -177,5 +177,103 @@ namespace FFPACK {
 
 	}
 
+	/*! @brief  Random Matrix with prescribed det.
+	 * @bug duplicate with linbox
+	 * Creates a \c m x \c n matrix with random entries and rank \c r.
+	 * @param F field
+	 * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+	 * @param r rank of the matrix to build
+	 * @param m number of rows in \p A
+	 * @param n number of cols in \p A
+	 * @param lda leading dimension of \p A
+	 * @return pointer to \c A.
+	 */
+	template<class Field>
+	typename Field::Element * RandomMatrixWithDet(const Field & F,
+						      typename Field::Element * A,
+						      typename Field::Element d,
+						      size_t n, size_t lda)
+	{
+		FFLASFFPACK_check(n <= lda);
+		typedef typename Field::RandIter Randiter ;
+		typedef typename Field::Element  Element ;
+		Randiter R(F);
+		NonzeroRandIter<Field,Randiter> nzR(F,R);
+
+		size_t * P = new size_t[n];
+		size_t * Q = new size_t[n];
+		for (size_t i = 0 ; i < n ; ++i ) Q[i] = 0;
+		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
+
+		Element * U = new Element[n*lda];
+		Element * L = new Element[n*n];
+
+		/*  Create a random P,Q */
+
+		for (size_t i = 0 ; i < n ; ++i)
+			P[i] = i + RandInt(0UL,n-i);
+		for (size_t i = 0 ; i < n ; ++i)
+			Q[i] = i + RandInt(0UL,n-i);
+
+		/*  det of P,Q */
+		int d1 =1 ;
+		for (size_t i = 0 ; i < n ; ++i)
+			if (P[i] != i)
+				d1 = -d1;
+		for (size_t i = 0 ; i < n ; ++i)
+			if (Q[i] != i)
+				d1 = -d1;
+
+
+
+		/*  Create L, lower det d */
+		for (size_t i=0 ; i<n ; ++i)
+			for (size_t j= 0; j<i ;++j)
+				R.random( L[i*n+j] );
+
+		Element dd = F.one;
+		for (size_t i=0 ; i<n-1 ; ++i) {
+			nzR.random( L[i*n+i] );
+			F.mulin(dd,L[i*n+i]);
+		}
+
+		F.div(dd,d,dd);
+		if (d1<0) F.negin(dd);
+		L[n*n-1] = dd ;
+
+		for (size_t i=0 ; i<n ; ++i)
+			for (size_t j= i+1; j<n ;++j)
+				F.init(L[i*n+j],0UL);
+
+
+		/*  Create U, upper or rank r */
+		for (size_t i=0 ; i<n ; ++i) {
+			for (size_t j= 0; j<i ;++j)
+				U[i*lda+j] = F.zero;
+			U[i*lda+i] = F.one;
+			for (size_t j= i+1; j<n ;++j)
+				R.random( U[i*lda+j] );
+		}
+
+		/*  compute product */
+
+		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+				n,0,(int)n, U, lda, P);
+		FFPACK::applyP (F, FFLAS::FflasLeft,  FFLAS::FflasNoTrans,
+				n,0,(int)n, L, n, Q);
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			      n,n,n, 1.0, L,n, U,lda, 0.0, A,lda);
+		//! @todo compute LU with ftrtr
+
+		delete[] P;
+		delete[] L;
+		delete[] U;
+		delete[] Q;
+
+		return A;
+
+	}
+
+
 } // FFPACK
 #endif
