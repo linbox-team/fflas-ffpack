@@ -86,6 +86,7 @@ namespace FFPACK
 			modulusinv = 1/(double)65521;
 			half_mod = (65521 >> 1);
 			mhalf_mod = half_mod-65520;
+			FFLASFFPACK_check(isOdd(modulus));
 		}
 
 		ModularBalanced (int64_t value, int exp = 1)  :
@@ -95,6 +96,7 @@ namespace FFPACK
 			half_mod = (modulus >> 1);
 			mhalf_mod = half_mod-modulus+1;
 			modulusinv = 1 / ((double) value);
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(value <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
@@ -174,7 +176,7 @@ namespace FFPACK
 #ifdef DEBUG
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if(modulus > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-			if( ! (modulus % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be oddd");
+			if( ! (modulus % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
 #endif
 
 			return is;
@@ -461,7 +463,7 @@ namespace FFPACK
 			return 6074001000L;
 #else
 			return 6074001000LL;
-#endif            
+#endif
 		}
 
 	private:

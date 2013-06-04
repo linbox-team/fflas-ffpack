@@ -76,6 +76,7 @@ namespace FFPACK {
 			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if(modulus <= 1)
 				throw Failure(__func__,__FILE__,
@@ -98,6 +99,7 @@ namespace FFPACK {
 			lmodulus ((unsigned long)p)
 			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if (modulus <= 1)
 				throw Failure(__func__,__FILE__,
@@ -117,6 +119,7 @@ namespace FFPACK {
 			lmodulus ((unsigned long)p)
 			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if (modulus <= 1)
 				throw Failure(__func__,__FILE__,
@@ -137,6 +140,7 @@ namespace FFPACK {
 			lmodulus(p)
 			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if ((Element) modulus <= 1)
 				throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");

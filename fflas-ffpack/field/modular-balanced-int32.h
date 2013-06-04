@@ -78,12 +78,14 @@ namespace FFPACK
 			modulusinv = 1/(double)65521;
 			half_mod = (65521 >> 1);
 			mhalf_mod = half_mod-65520;
+			FFLASFFPACK_check(isOdd(modulus));
 		}
 
 		ModularBalanced (int32_t value, int exp = 1)  :
 			modulus(value)
 			,one(1),zero(0),mOne(-1)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 			half_mod = (modulus >> 1);
 			mhalf_mod = half_mod-modulus+1;
 			modulusinv = 1 / ((double) value);

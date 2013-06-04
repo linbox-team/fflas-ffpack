@@ -331,11 +331,19 @@ int main(int argc, char ** argv)
     Modular<double> Zmax( Modular<double>::getMaxModulus() );
     JETESTE(Zmax,seed);
 
-	ModularBalanced<float> Umax(ModularBalanced<float>::getMaxModulus() );
+    {
+	    float pp =ModularBalanced<float>::getMaxModulus();
+		if (!isOdd(pp)) --pp;
+	ModularBalanced<float> Umax( pp );
 	JETESTE(Umax,seed);
+    }
 
-	ModularBalanced<double> Mmax(ModularBalanced<double>::getMaxModulus());
+    {
+	    double pp = ModularBalanced<double>::getMaxModulus();
+		if (!isOdd(pp)) --pp;
+	ModularBalanced<double> Mmax(pp);
 	JETESTE(Mmax,seed);
+    }
 
 	Modular<int32_t> Lmax(Modular<int32_t>::getMaxModulus());
 	JETESTE(Lmax,seed);
@@ -345,7 +353,7 @@ int main(int argc, char ** argv)
 
 	{
 		int32_t pp = ModularBalanced<int32_t>::getMaxModulus() ;
-		if (!(pp%2)) --pp;
+		if (!isOdd(pp)) --pp;
 
 		ModularBalanced<int32_t> Lbmax(pp);
 		JETESTE(Lbmax,seed);
@@ -354,7 +362,7 @@ int main(int argc, char ** argv)
 	{
 		// must be odd
 		int64_t pp = ModularBalanced<int64_t>::getMaxModulus() ;
-		if (!(pp%2)) --pp;
+		if (!isOdd(pp)) --pp;
 		ModularBalanced<int64_t> LLbmax(pp);
 		JETESTE(LLbmax,seed);
 	}
@@ -398,34 +406,50 @@ int main(int argc, char ** argv)
 //         std::cerr << "rand int: " << a << std::endl;
 
 
+	{
     Modular<float> CUrand( (float)(a % (long)Modular<float>::getMaxModulus() ));
     JETESTE(CUrand,seed);
+    }
 
+    {
     Modular<double> Zrand((double)(a %  (long)Modular<double>::getMaxModulus() ));
     JETESTE(Zrand,seed);
+    }
 
-	ModularBalanced<float> Urand((float)(a % (long)ModularBalanced<float>::getMaxModulus() ));
+    {
+	    float pp =(float)(a % (long)ModularBalanced<float>::getMaxModulus() );
+		if (!isOdd(pp)) --pp;
+	ModularBalanced<float> Urand(pp);
 	JETESTE(Urand,seed);
+    }
 
-	ModularBalanced<double> Mrand((double)(a % (long)ModularBalanced<double>::getMaxModulus()));
+	{
+		double pp =(double)(a % (long)ModularBalanced<double>::getMaxModulus());
+		if (!isOdd(pp)) --pp;
+	ModularBalanced<double> Mrand(pp);
 	JETESTE(Mrand,seed);
+    }
 
+	{
 	Modular<int32_t> Lrand((int32_t)(a % Modular<int32_t>::getMaxModulus()));
 	JETESTE(Lrand,seed);
+    }
 
+	{
 	Modular<int64_t> LLrand((int64_t)(a % Modular<int64_t>::getMaxModulus()));
 	JETESTE(LLrand,seed);
+    }
 
 	{
 		int32_t pp = (int32_t)(a % ModularBalanced<int32_t>::getMaxModulus()) ;
-		if (!(pp%2)) --pp;
+		if (!isOdd(pp)) --pp;
 		ModularBalanced<int32_t> Lbrand(pp);
 		JETESTE(Lbrand,seed);
 	}
 
 	{
 		int64_t pp = (int64_t)(a % ModularBalanced<int64_t>::getMaxModulus()) ;
-		if (!(pp%2)) --pp;
+		if (!isOdd(pp)) --pp;
 		ModularBalanced<int64_t> LLbrand(pp);
 		JETESTE(LLbrand,seed);
 	}

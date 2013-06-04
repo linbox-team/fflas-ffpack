@@ -76,6 +76,7 @@ namespace FFPACK
 			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(-1)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if(modulus <= 1)
 				throw FFPACK::Failure(__func__,__FILE__,
@@ -98,6 +99,7 @@ namespace FFPACK
 			lmodulus ((unsigned long)p)
 			,one(1),zero(0),mOne(-1)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if (modulus <= 1)
 				throw Failure(__func__,__FILE__,
@@ -117,6 +119,7 @@ namespace FFPACK
 			lmodulus (p)
 			,one(1),zero(0),mOne(-1)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if (modulus <= 1)
 				throw Failure(__func__,__FILE__,
@@ -136,6 +139,7 @@ namespace FFPACK
 			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(-1)
 		{
+			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if (modulus <= 1)
 				throw Failure(__func__,__FILE__,

@@ -215,6 +215,20 @@ namespace FFPACK {
 #endif
 
 	std::ostream *Failure::_errorStream;
+
+	template<class T>
+	bool isOdd (T & a) {
+		return (a%2);
+	}
+
+	bool isOdd(float &a) {
+		return (bool)(int)fmodf(a,2.f);
+	}
+
+	bool isOdd(double &a) {
+		return (bool)(int)fmod(a,2.);
+	}
+
 } // FFPACK
 
 #endif // __FFLASFFPACK_util_debug_H
