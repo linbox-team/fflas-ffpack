@@ -289,175 +289,164 @@ int main(int argc, char ** argv)
 #endif
 
 	// modulo 13 over 16 bits
-	Modular<float> C13(13);
-	JETESTE(C13,seed);
-
-    // modulo 13 over 32 bits
+    Modular<float> C13(13);
+    JETESTE(C13,seed);
+    
+        // modulo 13 over 32 bits
     Modular<double> Z13(13);
     JETESTE(Z13,seed);
-
+    
+        // modulo 13
+    ModularBalanced<float> U13(13);
+    JETESTE(U13,seed);
+    
 	// modulo 13
-	ModularBalanced<float> U13(13);
-	JETESTE(U13,seed);
-
+    ModularBalanced<double> M13(13);
+    JETESTE(M13,seed);
+    
 	// modulo 13
-	ModularBalanced<double> M13(13);
-	JETESTE(M13,seed);
-
-	// modulo 13
-	Modular<int32_t> L13(13);
-	JETESTE(L13,seed);
-
+    Modular<int32_t> L13(13);
+    JETESTE(L13,seed);
+    
 	// modulo 13 over 64 bits
-	Modular<int64_t> LL13(13UL);
-	JETESTE(LL13,seed);
-
+    Modular<int64_t> LL13(13UL);
+    JETESTE(LL13,seed);
+    
 	// modulo 13
-	ModularBalanced<int32_t> Lb13(13);
-	JETESTE(Lb13,seed);
-
+    ModularBalanced<int32_t> Lb13(13);
+    JETESTE(Lb13,seed);
+    
 	// modulo 13 over 64 bits
-	ModularBalanced<int64_t> LLb13(13UL);
-	JETESTE(LLb13,seed);
-
-
-
+    ModularBalanced<int64_t> LLb13(13UL);
+    JETESTE(LLb13,seed);
+    
+    
+    
 // // Maximal values
-
+    
 // 	// prime modulo max
     Modular<float> CUmax(Modular<float>::getMaxModulus() );
     JETESTE(CUmax,seed);
-
+    
     Modular<double> Zmax( Modular<double>::getMaxModulus() );
     JETESTE(Zmax,seed);
-
+    
     {
-	    float pp =ModularBalanced<float>::getMaxModulus();
-		if (!isOdd(pp)) --pp;
+        float pp =ModularBalanced<float>::getMaxModulus();
+        if (!isOdd(pp)) --pp;
 	ModularBalanced<float> Umax( pp );
 	JETESTE(Umax,seed);
     }
-
+    
     {
-	    double pp = ModularBalanced<double>::getMaxModulus();
-		if (!isOdd(pp)) --pp;
+        double pp = ModularBalanced<double>::getMaxModulus();
+        if (!isOdd(pp)) --pp;
 	ModularBalanced<double> Mmax(pp);
 	JETESTE(Mmax,seed);
     }
-
-	Modular<int32_t> Lmax(Modular<int32_t>::getMaxModulus());
-	JETESTE(Lmax,seed);
-
-	Modular<int64_t> LLmax(Modular<int64_t>::getMaxModulus());
-	JETESTE(LLmax,seed);
-
-	{
-		int32_t pp = ModularBalanced<int32_t>::getMaxModulus() ;
-		if (!isOdd(pp)) --pp;
-
-		ModularBalanced<int32_t> Lbmax(pp);
-		JETESTE(Lbmax,seed);
-	}
-
-	{
-		// must be odd
-		int64_t pp = ModularBalanced<int64_t>::getMaxModulus() ;
-		if (!isOdd(pp)) --pp;
-		ModularBalanced<int64_t> LLbmax(pp);
-		JETESTE(LLbmax,seed);
-	}
-
-
+    
+    Modular<int32_t> Lmax(Modular<int32_t>::getMaxModulus());
+    JETESTE(Lmax,seed);
+    
+    Modular<int64_t> LLmax(Modular<int64_t>::getMaxModulus());
+    JETESTE(LLmax,seed);
+    
+    {
+        int32_t pp = ModularBalanced<int32_t>::getMaxModulus() ;
+        if (!isOdd(pp)) --pp;
+        
+        ModularBalanced<int32_t> Lbmax(pp);
+        JETESTE(Lbmax,seed);
+    }
+    
+    {
+            // must be odd
+        int64_t pp = ModularBalanced<int64_t>::getMaxModulus() ;
+        if (!isOdd(pp)) --pp;
+        ModularBalanced<int64_t> LLbmax(pp);
+        JETESTE(LLbmax,seed);
+    }
+    
+    
 
 // // Characteristic 2
 
 
 // 	// modulo 2 over 16 bits
-	Modular<float> C2(2);
-	JETESTE(C2,seed);
+    Modular<float> C2(2);
+    JETESTE(C2,seed);
 
 // 	// modulo 2 over 32 bits
     Modular<double> Z2(2);
     JETESTE(Z2,seed);
 
-//     ModularBalanced<float> U2(2);
-//     JETESTE(U2,seed);
-
-//     ModularBalanced<double> M2(2);
-//     JETESTE(M2,seed);
-
-	Modular<int32_t> L2(2);
-	JETESTE(L2,seed);
-
-	Modular<int64_t> LL2(2UL);
-	JETESTE(LL2,seed);
-
-// 	ModularBalanced<int32_t> L2b( 2 );
-// 	JETESTE(L2b,seed);
-
-// 	ModularBalanced<int64_t> LL2b( 2 );
-// 	JETESTE(LL2b,seed);
+    Modular<int32_t> L2(2);
+    JETESTE(L2,seed);
+    
+    Modular<int64_t> LL2(2UL);
+    JETESTE(LL2,seed);
+    
 
 // // Random values
 
     for(int i=0; i< 20; ++i) {
-
+        
         long a = lrand48();
 //         std::cerr << "rand int: " << a << std::endl;
 
-
+        
 	{
-    Modular<float> CUrand( (float)(a % (long)Modular<float>::getMaxModulus() ));
-    JETESTE(CUrand,seed);
-    }
-
-    {
-    Modular<double> Zrand((double)(a %  (long)Modular<double>::getMaxModulus() ));
-    JETESTE(Zrand,seed);
-    }
-
-    {
+            Modular<float> CUrand( (float)(a % (long)Modular<float>::getMaxModulus() ));
+            JETESTE(CUrand,seed);
+        }
+        
+        {
+            Modular<double> Zrand((double)(a %  (long)Modular<double>::getMaxModulus() ));
+            JETESTE(Zrand,seed);
+        }
+        
+        {
 	    float pp =(float)(a % (long)ModularBalanced<float>::getMaxModulus() );
-		if (!isOdd(pp)) --pp;
-	ModularBalanced<float> Urand(pp);
-	JETESTE(Urand,seed);
-    }
-
+            if (!isOdd(pp)) --pp;
+            ModularBalanced<float> Urand(pp);
+            JETESTE(Urand,seed);
+        }
+        
 	{
-		double pp =(double)(a % (long)ModularBalanced<double>::getMaxModulus());
-		if (!isOdd(pp)) --pp;
-	ModularBalanced<double> Mrand(pp);
-	JETESTE(Mrand,seed);
-    }
-
+            double pp =(double)(a % (long)ModularBalanced<double>::getMaxModulus());
+            if (!isOdd(pp)) --pp;
+            ModularBalanced<double> Mrand(pp);
+            JETESTE(Mrand,seed);
+        }
+        
 	{
-	Modular<int32_t> Lrand((int32_t)(a % Modular<int32_t>::getMaxModulus()));
-	JETESTE(Lrand,seed);
-    }
-
+            Modular<int32_t> Lrand((int32_t)(a % Modular<int32_t>::getMaxModulus()));
+            JETESTE(Lrand,seed);
+        }
+        
 	{
-	Modular<int64_t> LLrand((int64_t)(a % Modular<int64_t>::getMaxModulus()));
-	JETESTE(LLrand,seed);
-    }
-
+            Modular<int64_t> LLrand((int64_t)(a % Modular<int64_t>::getMaxModulus()));
+            JETESTE(LLrand,seed);
+        }
+        
 	{
-		int32_t pp = (int32_t)(a % ModularBalanced<int32_t>::getMaxModulus()) ;
-		if (!isOdd(pp)) --pp;
-		ModularBalanced<int32_t> Lbrand(pp);
-		JETESTE(Lbrand,seed);
+            int32_t pp = (int32_t)(a % ModularBalanced<int32_t>::getMaxModulus()) ;
+            if (!isOdd(pp)) --pp;
+            ModularBalanced<int32_t> Lbrand(pp);
+            JETESTE(Lbrand,seed);
 	}
-
+        
 	{
-		int64_t pp = (int64_t)(a % ModularBalanced<int64_t>::getMaxModulus()) ;
-		if (!isOdd(pp)) --pp;
-		ModularBalanced<int64_t> LLbrand(pp);
-		JETESTE(LLbrand,seed);
+            int64_t pp = (int64_t)(a % ModularBalanced<int64_t>::getMaxModulus()) ;
+            if (!isOdd(pp)) --pp;
+            ModularBalanced<int64_t> LLbrand(pp);
+            JETESTE(LLbrand,seed);
 	}
-
-
+        
+        
     }
-
-
+    
+    
 	return 0;
 }/*}}}*/
 

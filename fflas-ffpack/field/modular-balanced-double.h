@@ -33,6 +33,7 @@
 /*! @file field/modular-balanced-double.h
  * @ingroup field
  * @brief Balanced representation of <code>Z/mZ</code> over \c double .
+ * @warning NOT DEFINED for EVEN modulus
  */
 
 #ifndef __FFLASFFPACK_modular_balanced_double_H
@@ -259,7 +260,7 @@ namespace FFPACK
 		{
 			x  = Element(y % lmodulus);
 			if (x > half_mod) return x -=  modulus;
-			else if (x<mhalf_mod) return x += modulus;
+// 			else if (x<mhalf_mod) return x += modulus;
 			else return x;
 		}
 
@@ -269,13 +270,13 @@ namespace FFPACK
 			x = fmod (y, modulus);
 			// x =(Element) ((long int)y%(long int)(modulus));
 			if (x < mhalf_mod) return x +=  modulus;
-			if (x > half_mod) return x -=  modulus;
-			return x;
+			else if (x > half_mod) return x -=  modulus;
+			else return x;
 		}
 
 		Element& init(Element& x) const
 		{
-			return x = 0;
+			return x = 0.;
 		}
 
 		template<class T>
@@ -316,8 +317,8 @@ namespace FFPACK
 		{
 			x = y + z;
 			if ( x > half_mod ) return x -= modulus;
-			if ( x < mhalf_mod ) return x += modulus;
-			return x;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &sub (Element &x,
@@ -326,8 +327,8 @@ namespace FFPACK
 		{
 			x = y - z;
 			if (x > half_mod) return x -= modulus;
-			if (x < mhalf_mod) return x += modulus;
-			return x;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element &mul (Element &x,
@@ -341,8 +342,7 @@ namespace FFPACK
 				     const Element &y, const Element &z) const
 		{
 			Element temp;
-			inv (temp, z);
-			return mul (x, y, temp);
+			return mul (x, y, inv (temp, z) );
 		}
 
 		inline Element &neg (Element &x,
@@ -370,10 +370,10 @@ namespace FFPACK
 				temp = ty; ty = tx - q * ty;
 				tx = temp;
 			}
-
-			if (tx > half_mod ) return x = tx - modulus;
-			else if ( tx < mhalf_mod ) return x = tx + modulus;
-			else return x = (double) tx;
+                        x = (double)tx;
+			if (x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &axpy (Element &r,
@@ -407,16 +407,16 @@ namespace FFPACK
 		{
 			x += y;
 			if ( x > half_mod ) return x -= modulus;
-			if ( x < mhalf_mod ) return x += modulus;
-			return x;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
 			if ( x > half_mod ) return x -= modulus;
-			if ( x < mhalf_mod ) return x += modulus;
-			return x;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &mulin (Element &x, const Element &y) const
@@ -431,10 +431,7 @@ namespace FFPACK
 
 		inline Element &negin (Element &x) const
 		{
-			x = - x;
-                // required for even modulus
-			if ( x > half_mod ) return x -= modulus;
-            return x;
+			return x = - x;
 		}
 
 		inline Element &invin (Element &x) const
@@ -456,11 +453,11 @@ namespace FFPACK
 
 		static inline double getMaxModulus()
 		{
-                // return 67108864.0;  // 2^26
+                        // return 67108864.0;  // 2^26
 			// return  1 << (DBL_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
 			// FFLASFFPACK_check(94906266LL*94906267LL>9007199254740991LL);
 			// FFLASFFPACK_check(94906265LL*94906266LL<9007199254740991LL);
-            // (p-1)*(p+1) < 2^{53+2}
+                        // (p-1)*(p+1) < 2^{53+2}
 			return 189812531.0 ;
 		}
 

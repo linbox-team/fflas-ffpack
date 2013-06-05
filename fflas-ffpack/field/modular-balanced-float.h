@@ -32,6 +32,7 @@
 /*! @file field/modular-balanced-float.h
  * @ingroup field
  * @brief Balanced representation of <code>Z/mZ</code> over \c float .
+ * @warning NOT DEFINED for EVEN modulus
  */
 
 #ifndef __FFLASFFPACK_modular_balanced_float_H
@@ -71,10 +72,10 @@ namespace FFPACK {
 
 		ModularBalanced (int32_t p, int exp = 1) :
 			modulus((Element)p),
-			half_mod( p==2? 1 : Element((p-1)/2)),
+			half_mod(Element(floor((p-1)/2))),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus ((unsigned int)p)
-			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
+			,one(1),zero(0),mOne(-1.f)
 		{
 			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
@@ -94,10 +95,10 @@ namespace FFPACK {
 
 		ModularBalanced (Element p) :
 			modulus (p),
-			half_mod( p==2? 1 : Element(floor((p-1)/2))),
+			half_mod( Element(floor((p-1)/2))),
 			mhalf_mod( half_mod-p+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
+			,one(1),zero(0),mOne(-1.f)
 		{
 			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
@@ -114,10 +115,10 @@ namespace FFPACK {
 
 		ModularBalanced (double p) :
 			modulus (Element(p)),
-			half_mod( p==2? 1 : Element(floor((p-1)/2))),
+			half_mod( Element(floor((p-1)/2))),
 			mhalf_mod( half_mod-Element(p)+1),
 			lmodulus ((unsigned long)p)
-			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
+			,one(1),zero(0),mOne(-1.f)
 		{
 			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
@@ -135,10 +136,10 @@ namespace FFPACK {
 
 		ModularBalanced (FieldInt p) :
 			modulus((Element)p),
-			half_mod( p==2? 1 : Element((p-1)/2)),
+			half_mod( Element(floor((p-1)/2))),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p)
-			,one(1),zero(0),mOne(p==2 ? 1.f : -1.f)
+			,one(1),zero(0),mOne(-1.f)
 		{
 			FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
@@ -258,67 +259,51 @@ namespace FFPACK {
 
 		Element &init (Element &x, const unsigned long &y) const
 		{
-			Element tmp  = Element(y % lmodulus);
-			if (tmp > half_mod)
-return x =  tmp-modulus;
-			else if (tmp<mhalf_mod)
-return x = tmp+modulus;
-			else
-return x=tmp;
+			x = Element(y % lmodulus);
+			if (x > half_mod) return x -= modulus;
+// 			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		Element &init (Element &x, const long &y) const
 		{
 			// pas de pbème : float tout petit !
-			Element tmp  = Element(y % (long) lmodulus);
-			if (tmp > half_mod)
-return x =  tmp-modulus;
-			else if (tmp<mhalf_mod)
-return x = tmp+modulus;
-			else
-return x=tmp;
+			x  = Element(y % (long) lmodulus);
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		Element &init (Element &x, const int &y) const
 		{
 			// pas de pbème : float tout petit !
-			Element tmp  = Element(y % (long) lmodulus);
-			if (tmp > half_mod)
-				return x =  tmp-modulus;
-			else if (tmp<mhalf_mod)
-				return x = tmp+modulus;
-			else
-				return x=tmp;
+			x  = Element(y % (long) lmodulus);
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element& init(Element& x, const double y ) const
 		{
 			x = (Element) fmod (y, double(modulus));
-			if ( x > half_mod )
-				return x -= modulus;
-			else if ( x < mhalf_mod )
-				return x +=  modulus;
-			else
-				return x ;
+			if ( x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x +=  modulus;
+			else return x ;
 		}
 
 		inline Element& init(Element& x, const Element y) const
 		{
 
 			x = fmodf (y, modulus);
-
-			if ( x > half_mod )
-				return x -= modulus;
-			else if ( x < mhalf_mod )
-				return x +=  modulus;
-			else
-				return x ;
+			if ( x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x +=  modulus;
+			else return x ;
 		}
 
 		inline Element& init(Element& x) const
 		{
 
-			return x=0 ;
+			return x=0.f ;
 		}
 
 		inline Element& assign(Element& x, const Element& y) const
@@ -333,36 +318,30 @@ return x=tmp;
 
 		inline  bool isZero (const Element &x) const
 		{
-			return x == 0.;
+			return x == 0.f;
 		}
 
 		inline bool isOne (const Element &x) const
 		{
-			return x == 1.;
+			return x == 1.f;
 		}
 
 		inline Element &add (Element &x,
 				     const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x > half_mod )
-return x -= modulus;
-			if ( x < mhalf_mod )
-return x += modulus;
-			else
-return x;
+			if ( x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &sub (Element &x,
 				     const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x > half_mod)
-return x -= modulus;
-			if (x < mhalf_mod)
-return x += modulus;
-			else
-return x;
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element &mul (Element &x,
@@ -376,8 +355,7 @@ return x;
 		inline Element &div (Element &x, const Element &y, const Element &z) const
 		{
 			Element temp ;
-			inv (temp, z);
-			return mul (x, y, temp);
+			return mul (x, y, inv (temp, z) );
 		}
 
 		inline Element &neg (Element &x, const Element &y) const
@@ -404,12 +382,11 @@ return x;
 				temp = ty; ty = tx - q * ty;
 				tx = temp;
 			}
-
-			if (tx > half_mod )
-				return x = (Element)tx - modulus;
-			else if ( tx < mhalf_mod )
-				return x = (Element)tx + modulus;
-			return x = (Element) tx;
+                        
+                        x = (Element)tx;
+			if (x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &axpy (Element &r,
@@ -442,21 +419,17 @@ return x;
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if ( x > half_mod )
-				return x -= modulus;
-			else if ( x < mhalf_mod )
-				return x += modulus;
-			return x;
+			if ( x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if ( x > half_mod )
-return x -= modulus;
-			else if ( x < mhalf_mod )
-return x += modulus;
-			return x;
+			if ( x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &mulin (Element &x, const Element &y) const
@@ -471,10 +444,7 @@ return x += modulus;
 
 		inline Element &negin (Element &x) const
 		{
-			x = -x;
-                // required for even modulus
-			if ( x > half_mod ) return x -= modulus;
-            return x;
+			return x = -x;
 		}
 
 		inline Element &invin (Element &x) const

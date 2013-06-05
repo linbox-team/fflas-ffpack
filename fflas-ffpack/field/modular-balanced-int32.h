@@ -30,6 +30,7 @@
 /*! @file field/modular-balanced-int32.h
  * @ingroup field
  * @brief Balanced representation of <code>Z/mZ</code> over \c int32_t .
+ * @warning NOT DEFINED for EVEN modulus
  */
 
 #ifndef __FFLASFFPACK_modular_balanced_int32_H
@@ -201,9 +202,9 @@ namespace FFPACK
 		Element &init (Element &x, const double &y) const
 		{
 			x = (Element) fmod(y,(double)modulus);
-			if (x < mhalf_mod) x += modulus;
-			else if (x > half_mod) x -= modulus;
-			return x;
+			if (x < mhalf_mod) return x += modulus;
+			else if (x > half_mod) return x -= modulus;
+			else return x;
 		}
 
 
@@ -211,21 +212,16 @@ namespace FFPACK
 		{
 			x = Element(y % modulus);
 
-			if ( x < mhalf_mod )
-				x += modulus;
-			else if (x > half_mod )
-				x -= modulus;
-
-			return x;
+			if ( x < mhalf_mod ) return x += modulus;
+			else if (x > half_mod ) return x -= modulus;
+			else return x;
 		}
 
 		inline Element& init(Element& x, unsigned int y ) const
 		{
 			x = Element(y % (unsigned int)modulus);
-                        if (x > half_mod )
-				x -= modulus;
-
-			return x;
+                        if (x > half_mod ) return x -= modulus;
+			else return x;
 		}
 
 		inline Element& init(Element& x ) const
@@ -236,20 +232,16 @@ namespace FFPACK
 		inline Element& init(Element& x, long y) const
 		{
 			x = Element(y % modulus);
-			if ( x < mhalf_mod )
-				x += modulus;
-			else if ( x > half_mod )
-				x -= modulus;
-
-			return x;
+			if ( x < mhalf_mod ) return x += modulus;
+			else if ( x > half_mod ) return x -= modulus;
+			else return x;
 		}
 
 		inline Element& init(Element& x, unsigned long y) const
 		{
 			x = Element(y % (unsigned long)modulus);
-			if ( x > half_mod )
-				x -= modulus;
-			return x;
+			if ( x > half_mod ) return x -= modulus;
+			else return x;
 		}
 
 		inline Element& assign(Element& x, const Element& y) const
@@ -276,18 +268,17 @@ namespace FFPACK
 		inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x > half_mod ) x -= modulus;
-			else if ( x < mhalf_mod ) x += modulus;
-
-			return x;
+			if ( x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+			else return x;
 		}
 
 		inline Element &sub (Element &x, const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x > half_mod) x -= modulus;
-			else if (x < mhalf_mod) x += modulus;
-			return x;
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element &mul (Element &x, const Element &y, const Element &z) const
@@ -297,19 +288,15 @@ namespace FFPACK
 			q  = (int32_t) ((((double) y) * ((double) z)) * modulusinv);  // q could be off by (+/-) 1
 			x = (int32_t) (y*z - q*modulus);
 
-			if (x > half_mod)
-				x -= modulus;
-			else if (x < mhalf_mod)
-				x += modulus;
-
-			return x;
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element &div (Element &x, const Element &y, const Element &z) const
 		{
 			Element temp;
-			inv (temp, z);
-			return mul (x, y, temp);
+			return mul (x, y, inv (temp, z) );
 		}
 
 		inline Element &neg (Element &x, const Element &y) const
@@ -325,12 +312,9 @@ namespace FFPACK
 			if (d != 1)
 				throw Failure(__func__,__FILE__,__LINE__,"InvMod: inverse undefined");
 #endif
-			if (x > half_mod)
-				x -= modulus;
-			else if (x < mhalf_mod)
-				x += modulus;
-
-			return x;
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 
 		}
 
@@ -345,12 +329,9 @@ namespace FFPACK
 			r = (int32_t) (a * x + y - q*modulus);
 
 
-			if (r > half_mod)
-				r -= modulus;
-			else if (r < mhalf_mod)
-				r += modulus;
-
-			return r;
+			if (r > half_mod) return r -= modulus;
+			else if (r < mhalf_mod) return r += modulus;
+			else return r;
 
 		}
 
@@ -365,12 +346,9 @@ namespace FFPACK
 			r = (int32_t) (a * x - y - q*modulus);
 
 
-			if (r > half_mod)
-				r -= modulus;
-			else if (r < mhalf_mod)
-				r += modulus;
-
-			return r;
+			if (r > half_mod) return r -= modulus;
+			else if (r < mhalf_mod) return r += modulus;
+			else return r;
 
 		}
 
@@ -379,27 +357,23 @@ namespace FFPACK
 				      const Element &x,
 				      const Element &y) const
 		{
-            return negin(axmy(r,a,x,y));
+                    return negin(axmy(r,a,x,y));
 		}
 
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if ( x > half_mod ) x -= modulus;
-			else if (x < mhalf_mod) x += modulus;
-
-			return x;
+			if ( x > half_mod ) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if (x > half_mod)
-				x -= modulus;
-			else if (x < mhalf_mod)
-				x += modulus;
-
-			return x;
+			if (x > half_mod) return x -= modulus;
+			else if (x < mhalf_mod) return x += modulus;
+			else return x;
 		}
 
 		inline Element &mulin (Element &x, const Element &y) const
@@ -430,19 +404,16 @@ namespace FFPACK
 			r = (int32_t) (a * x + r - q*modulus);
 
 
-			if (r > half_mod)
-				r -= modulus;
-			else if (r < mhalf_mod)
-				r += modulus;
-
-			return r;
+			if (r > half_mod) return r -= modulus;
+			else if (r < mhalf_mod) return r += modulus;
+                        else return r;
 		}
 
 		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
 		{
 			Element q;
-            maxpy(q,a,x,r);
-            return assign(r,q);
+                        maxpy(q,a,x,r);
+                        return assign(r,q);
 		}
 
 		static inline int32_t getMaxModulus()
@@ -454,8 +425,8 @@ namespace FFPACK
 			// FFLASFFPACK_check(46342LL*46341LL>2147483647LL);
 			// return  92681 ;
 
-            // (p-1)(p+1)/4 < 2^{31}
-            return 92681;
+                        // (p-1)(p+1)/4 < 2^{31}
+                    return 92681;
 		}
 
 	private:
