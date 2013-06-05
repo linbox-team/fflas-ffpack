@@ -72,7 +72,7 @@ namespace FFPACK {
 
 		ModularBalanced (int32_t p, int exp = 1) :
 			modulus((Element)p),
-			half_mod(Element(floor((p-1)/2))),
+			half_mod(Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(-1.f)
@@ -136,7 +136,7 @@ namespace FFPACK {
 
 		ModularBalanced (FieldInt p) :
 			modulus((Element)p),
-			half_mod( Element(floor((p-1)/2))),
+			half_mod( Element((p-1)/2)),
 			mhalf_mod( (Element) half_mod-modulus+1),
 			lmodulus(p)
 			,one(1),zero(0),mOne(-1.f)
