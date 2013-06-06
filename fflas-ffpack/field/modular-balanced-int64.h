@@ -304,8 +304,8 @@ namespace FFPACK
 
 		inline Element &inv (Element &x, const Element &y) const
 		{
-			int64_t d, t;
-			XGCD(d, x, t, y, modulus);
+			int64_t d;
+			XINV(d, x, y, modulus);
 #ifdef DEBUG
 			if (d != 1)
 				throw Failure(__func__,__FILE__,__LINE__,"InvMod: inverse undefined");
@@ -437,54 +437,37 @@ namespace FFPACK
 
 	private:
 
-		inline static void XGCD(int64_t& d, int64_t& s, int64_t& t, int64_t a, int64_t b)
+		inline static int64_t& XINV(int64_t& d, int64_t& s, int64_t a, int64_t b)
 		{
-			int64_t  u, v, u0, v0, u1, v1, u2, v2, q, r;
-
-			int64_t aneg = 0, bneg = 0;
+			int64_t  v, u2;
+			int64_t aneg = 0;
 
 			if (a < 0) {
 #ifdef DEBUG
-				if (a < -LINBOX_MAX_INT64) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
+                            if (a < -LINBOX_MAX_INT64) throw Failure(__func__,__FILE__,__LINE__,"XINV: integer overflow");
 #endif
-				a = -a;
-				aneg = 1;
-			}
+                            v = -a;
+                            aneg = 1;
+			} else {
+                            v = a;
+                        }
 
-			if (b < 0) {
-#ifdef DEBUG
-				if (b < -LINBOX_MAX_INT64) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
-#endif
-				b = -b;
-				bneg = 1;
-			}
-
-			u1 = 1; v1 = 0;
-			u2 = 0; v2 = 1;
-			u = a; v = b;
+			s = 0; 
+			u2 = 1; 
+			d = b; 
 
 			while (v != 0) {
-				q = u / v;
-				r = u % v;
-				u = v;
+				int64_t  q = d / v;
+				int64_t  r = d % v;
+				d = v;
 				v = r;
-				u0 = u2;
-				v0 = v2;
-				u2 =  u1 - q*u2;
-				v2 = v1- q*v2;
-				u1 = u0;
-				v1 = v0;
+				r = u2;
+				u2 = s - q*u2;
+				s = r;
 			}
 
-			if (aneg)
-				u1 = -u1;
-
-			if (bneg)
-				v1 = -v1;
-
-			d = u;
-			s = u1;
-			t = v1;
+			if (aneg) return s = -s;
+                        else return s;
 		}
 
 	};
