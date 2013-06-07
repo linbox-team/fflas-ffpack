@@ -98,7 +98,8 @@ bool test_det(Field &F, size_t n, int iter)
 	return pass;
 	}
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
 
 	static int iters =10 ;
 	static unsigned long p = 65521 ;

@@ -127,7 +127,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		// 	std::cerr<<"]"<<std::endl;
 		// #if DEBUG
 
-		Element zero=F.zero,one=F.one;
+		Element one=F.one;
 		// F.init(zero,0.0);
 		// F.init(one,1.0);
 		// for (size_t i=0; i<R; ++i){
@@ -151,7 +151,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, (int)R, U, n, P);
 
 		FFPACK::EchelonFromLU (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,L,n,A,n);
-		
+
 		// for ( size_t i=0; i<m; ++i ){
 		// 	size_t j=0;
 		// 	for (; j <= ((i<R)?i:R) ; ++j )

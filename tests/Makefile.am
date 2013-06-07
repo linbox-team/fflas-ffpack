@@ -35,6 +35,7 @@ BASIC_TESTS =              \
 		test-modulararith      \
 		test-det               \
 		test-echelon           \
+		test-fgemm-long        \
 		test-compressQ
 
 NOT_A_TEST =  \
@@ -80,8 +81,9 @@ test_lqup_SOURCES              = test-lqup.C
 test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
 test_echelon_SOURCES           = test-echelon.C
+test_fgemm_long_SOURCES             = test-fgemm-long.C
+#  test_fgemm_SOURCES             = test-fgemm.C
 #  test_charpoly_SOURCES          = test-charpoly.C
-#  dense_generator_SOURCES        = dense_generator.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
 #  test_rank_SOURCES              = test-rank.C
@@ -97,7 +99,6 @@ test_echelon_SOURCES           = test-echelon.C
 #  testeur_lqup_SOURCES           = testeur_lqup.C
 #  test_fullranksubmatrix_SOURCES = test-fullranksubmatrix.C
 #  test_rowechelon_SOURCES        = test-rowechelon.C
-#  test_fgemm_SOURCES             = test-fgemm.C
 #  test_invert_SOURCES            = test-invert.C
 #  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
@@ -106,9 +107,10 @@ test_echelon_SOURCES           = test-echelon.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 
-dense_generator:
+dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
 
+#  dense_generator_SOURCES        = dense_generator.C
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
