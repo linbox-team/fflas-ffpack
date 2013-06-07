@@ -166,7 +166,7 @@ bool launch_MM(const Field & F,
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fcopy(F,m,n,D,n,C,ldc);
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,ldc/*,nbw*/);
+			      beta,C,ldc,nbw);
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			      beta,C,ldc);
 
@@ -196,6 +196,7 @@ bool launch_MM_dispatch(const Field &F,
 	size_t lda,ldb,ldc;
 		//!@bug test for ldX equal
 		//!@bug test for transpo
+		//!@todo does nbw actually do nbw recursive calls and then call blas ?
 
 	{
 		m = 10+(size_t)random()%nn;
@@ -267,7 +268,7 @@ int main(int argc, char** argv)
 	static size_t iters =10 ;
 	static unsigned long p = 65521 ;
 	static size_t n = 100 ;
-	static int nbw = 1 ;
+	static int nbw = 2 ;
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
