@@ -53,6 +53,7 @@
 #ifndef __FFPACK_CHARPOLY_THRESHOLD
 #define __FFPACK_CHARPOLY_THRESHOLD 30
 #endif
+using namespace FFLAS;
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -1258,6 +1259,131 @@ else { // Left NullSpace
 
 	}
 
+	/** Extracts a triangular matrix from a compact storage A=L\U of rank R.
+	 * row and column dimension of T are greater or equal to that of A and
+	 * if UpLo = FflasLower, rowdim(T) = rowdim(A), else coldim(T) = coldim (A)
+	 * @param F: base field
+	 * @param UpLo: selects if the upper or lower triangular matrix is returned
+	 * @param diag: selects if the triangular matrix unit-diagonal
+	 * @param M: row dimension of T
+	 * @param N: column dimension of T
+	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+	 * @param T: output matrix
+	 * @param ldt: leading dimension of T
+	 * @param A: input matrix
+	 * @param lda: leading dimension of A
+	 */
+	template <class Field>
+	void 
+	TriangularFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+			  const FFLAS::FFLAS_DIAG diag, 
+			  const size_t M, const size_t N, const size_t R,
+			  typename Field::Element * T, const size_t ldt,
+			  const typename Field::Element * A, const size_t lda){
+		const typename Field::Element * Ai = A;
+		typename Field::Element * Ti = T;
+		if (Uplo == FFLAS::FflasUpper){
+			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
+				if (diag == FFLAS::FflasNonUnit){
+					for (size_t j=0; j<i; j++)
+						F.assign (Ti[j], F.zero);
+					fcopy (F, N-i, Ti+i, 1, Ai+i, 1);
+				} else {
+					for (size_t j=0; j<i; j++)
+						F.assign (Ti[j], F.zero);
+					F.assign (*(Ti+i), F.one);
+					fcopy (F, N-i-1, Ti+i+1, 1, Ai+i+1, 1);
+				}
+			}
+			Ti = T+R*ldt;
+			for (size_t i=R; i<M; i++, Ti+=ldt)
+				for (size_t j=0; j<N; j++)
+					F.assign (Ti[j], F.zero);
+		} else {
+			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
+				if (diag == FFLAS::FflasNonUnit){
+					fcopy (F, i+1, Ti, 1, Ai, 1);
+					for (size_t j=i+1; j<N; j++)
+						F.assign (Ti[j], F.zero);
+				} else {
+					fcopy (F, i, Ti, 1, Ai, 1);
+					F.assign (Ti[i], F.one);
+					for (size_t j=i+1; j<N; j++)
+						F.assign (Ti[j], F.zero);
+				}
+			}
+			Ti = T+R*ldt;
+			for (size_t i=R; i<M; i++, Ti+=ldt)
+				fcopy(F, i, Ti, 1, Ai, 1);
+				for (size_t j=R; j<N; j++)
+					F.assign (Ti[j], F.zero);
+		}
+	}
+
+        /** Extracts an echelon matrix from a compact storage A=L\U of rank R.
+	 * Either L or U is in Echelon form (depending on Uplo
+	 * The echelon structure is defined by the first R values of the array P.
+	 * row and column dimension of T are equal to that of A 
+	 * @param F: base field
+	 * @param UpLo: selects if the upper or lower triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param M: row dimension of T
+	 * @param N: column dimension of T
+	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+	 * @param P: positions of the R pivots 
+	 * @param T: output matrix
+	 * @param ldt: leading dimension of T
+	 * @param A: input matrix
+	 * @param lda: leading dimension of A
+	 */
+	template <class Field>
+	void 
+	EchelonFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+		       const FFLAS::FFLAS_DIAG diag, 
+		       const size_t M, const size_t N, const size_t R, const size_t* P,
+		       typename Field::Element * T, const size_t ldt,
+		       const typename Field::Element * A, const size_t lda){
+
+		const typename Field::Element * Ai = A;
+		typename Field::Element * Ti = T;
+		if (Uplo == FFLAS::FflasUpper){
+			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
+				size_t piv = P[i];
+				if (diag == FFLAS::FflasNonUnit){
+					for (size_t j=0; j<piv; j++)
+						F.assign (Ti[j], F.zero);
+					fcopy (F, N-piv, Ti+piv, 1, Ai+piv, 1);
+				} else {
+					for (size_t j=0; j<piv; j++)
+						F.assign (Ti[j], F.zero);
+					F.assign (Ti[piv], F.one);
+					fcopy (F, N-piv-1, Ti+piv+1, 1, Ai+piv+1, 1);
+				}
+			}
+			Ti = T+R*ldt;
+			for (size_t i=R; i<M; i++, Ti+=ldt)
+				for (size_t j=0; j<N; j++)
+					F.assign (Ti[j], F.zero);
+		} else {
+			for (size_t i=0; i<R; i++, Ai++, Ti++){
+				size_t piv = P[i];
+				if (diag == FFLAS::FflasNonUnit){
+					for (size_t j=0; j<piv; j++)
+						F.assign (*(Ti+j*ldt), F.zero);
+					fcopy (F, M-piv, Ti+piv*ldt, ldt, Ai+piv*lda, lda);
+				} else {
+					for (size_t j=0; j<piv; j++)
+						F.assign (*(Ti+j*ldt), F.zero);
+					F.assign (*(Ti+piv*ldt), F.one);
+					fcopy (F, M-piv-1, Ti+(piv+1)*ldt, ldt, Ai+(piv+1)*lda, lda);
+				}
+			}
+			Ti = T+R;
+			for (size_t i=0; i<M; i++, Ti+=ldt)
+				for (size_t j=0; j<N-R; j++)
+					F.assign (Ti[j], F.zero);
+		}
+	}
 	/*****************/
 	/* ECHELON FORMS */
 	/*****************/
@@ -1284,6 +1410,7 @@ else { // Left NullSpace
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 			   typename Field::Element * A, const size_t lda,
 			   size_t* P, size_t* Qt, bool transform = true);
+
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
 	 * After the computation A = [ L \ M ] such that L A = R is a row echelon

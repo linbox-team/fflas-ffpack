@@ -35,7 +35,7 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-//#define DEBUG 1
+#define DEBUG 1
 // Debug option  0: no debug
 //               1: check A = LQUP
 //-------------------------------------------------------------------------
@@ -130,27 +130,35 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		Element zero=F.zero,one=F.one;
 		// F.init(zero,0.0);
 		// F.init(one,1.0);
-		for (size_t i=0; i<R; ++i){
-			for (size_t j=0; j<=i; ++j)
-				F.assign ( *(U + i*n + j), zero);
-			F.init (*(U+i*(n+1)),one);
-			for (size_t j=i+1; j<n; ++j)
-				F.assign (*(U + i*n + j), *(A+ i*n+j));
-		}
-		for (size_t i=R;i<n; ++i){
-			for (size_t j=0; j<n; ++j)
-				F.assign(*(U+i*n+j), zero);
-			F.init(*(U+i*(n+1)),one);
-		}
+		// for (size_t i=0; i<R; ++i){
+		// 	for (size_t j=0; j<=i; ++j)
+		// 		F.assign ( *(U + i*n + j), zero);
+		// 	F.init (*(U+i*(n+1)),one);
+		// 	for (size_t j=i+1; j<n; ++j)
+		// 		F.assign (*(U + i*n + j), *(A+ i*n+j));
+		// }
+		// for (size_t i=R;i<n; ++i){
+		// 	for (size_t j=0; j<n; ++j)
+		// 		F.assign(*(U+i*n+j), zero);
+		// 	F.assign(*(U+i*(n+1)),one);
+		// }
+		FFPACK::TriangularFromLU (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, n,
+					  R, U, n, A, n);
+		    // Adding I_{n-R} on the bottom right corner
+		for (size_t i=R;i<n; ++i)
+			F.assign (*(U+i*(n+1)),one);
+
 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, (int)R, U, n, P);
 
-		for ( size_t i=0; i<m; ++i ){
-			size_t j=0;
-			for (; j <= ((i<R)?i:R) ; ++j )
-				F.assign( *(L + i*m+j), *(A+i*n+j));
-			for (; j<m; ++j )
-				F.assign( *(L+i*m+j), zero);
-		}
+		FFPACK::EchelonFromLU (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,L,n,A,n);
+		
+		// for ( size_t i=0; i<m; ++i ){
+		// 	size_t j=0;
+		// 	for (; j <= ((i<R)?i:R) ; ++j )
+		// 		F.assign( *(L + i*n+j), *(A+i*n+j));
+		// 	for (; j<m; ++j )
+		// 		F.assign( *(L+i*n+j), zero);
+		// }
 		// 	std::cerr<<"P = ";
 		// 	for (size_t i=0; i<n;++i)
 		// 		std::cerr<<" "<<P[i];
@@ -178,6 +186,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 		// write_field(F,std::cerr<<"X = "<<std::endl,X,m,n,n);
 		// write_field(F,std::cerr<<"L = "<<std::endl,L,m,n,n);
+		// write_field(F,std::cerr<<"A = "<<std::endl,A,m,n,n);
 
 		if (fail) {
 			std::cerr<<"FAIL"<<std::endl;
@@ -196,11 +205,15 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		// 				std::cout<<i+1<<" "<<j+1<<" "<<(*(A+i*n+j))<<std::endl;
 		// 	std::cout<<"0 0 0"<<std::endl;
 
-		delete[] U;
-		delete[] L;
-		delete[] X;
+		// delete[] U;
+		// delete[] L;
+		// delete[] X;
 		// #endif
 	}
+
+	delete[] U;
+	delete[] L;
+	delete[] X;
 	delete[] B;
 	delete[] A;
 	delete[] P;
