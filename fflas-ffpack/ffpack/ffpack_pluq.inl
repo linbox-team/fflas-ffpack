@@ -45,7 +45,9 @@ namespace FFPACK {
 	inline size_t
 	PLUQ_basecaseV3 (const Field& Fi, const FFLAS_DIAG Diag,
 		       const size_t M, const size_t N,
-		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	{
+		typedef typename Field::Element Element;
 		size_t row = 0;
 		size_t col = 0;
 		size_t rank = 0;
@@ -59,9 +61,9 @@ namespace FFPACK {
 		while ((col < N)||(row < M)){
 			size_t piv2 = rank;
 			size_t piv3 = rank;
-			typename Field::Element * A1 = A + rank*lda;
-			typename Field::Element * A2 = A + col;
-			typename Field::Element * A3 = A + row*lda;
+			Element * A1 = A + rank*lda;
+			Element * A2 = A + col;
+			Element * A3 = A + row*lda;
 			    // search for pivot in A2
 			if (row==M){
 				piv3=col;
@@ -109,7 +111,7 @@ namespace FFPACK {
 				    //if(piv3 > rank)
 				cyclic_shift_mathPerm(MathQ+rank, piv3-rank+1);
 
-			typename Field::Element invpiv;
+			Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
 			if (Diag==FflasUnit){
 #ifdef LEFTLOOKING
@@ -172,29 +174,31 @@ namespace FFPACK {
 	inline size_t
 	PLUQ_basecaseV2 (const Field& Fi, const FFLAS_DIAG Diag,
 			 const size_t M, const size_t N,
-			 typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+			 typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	{
+		typedef typename Field::Element Element;
 		size_t row = 0;
 		size_t col = 0;
 		size_t rank = 0;
 		std::vector<bool> pivotRows(M,false);
 		std::vector<bool> pivotCols(N,false);
-		size_t MathP[M];
-		size_t MathQ[N];
+		size_t * MathP = new size_t[M];
+		size_t * MathQ = new size_t[N];
 		// size_t npp=0;
 		// size_t npq=0;
 
 #ifdef LEFTLOOKING
-		typename Field::Element* Ltemp = new typename Field::Element[M*N];
+		Element* Ltemp = new Element[M*N];
 		for (size_t i=0; i<M*N; ++i)
 			Fi.assign(Ltemp[i],Fi.zero);
-		typename Field::Element vtemp[M];
+		Element * vtemp = new Element[M];
 #endif
 		while ((col < N)||(row < M)){
 			size_t piv2 = 0;
 			size_t piv3 = 0;
-			typename Field::Element * A1 = A;
-			typename Field::Element * A2 = A + col;
-			typename Field::Element * A3 = A + row*lda;
+			Element * A1 = A;
+			Element * A2 = A + col;
+			Element * A3 = A + row*lda;
 			    // search for pivot in A2
 			if (row==M){
 				piv3=col;
@@ -208,7 +212,7 @@ namespace FFPACK {
 #ifdef LEFTLOOKING
 				for (size_t i=0; i<rank; ++i)
 					Fi.assign (vtemp[i], A2 [MathP[i]*lda]);
-				typename Field::Element * vtemp_it = vtemp +rank;
+				Element * vtemp_it = vtemp +rank;
 				for (size_t i=0; i<M; ++i)
 					if (!pivotRows[i])
 						Fi.assign (*(vtemp_it++), A2[i*lda]);
@@ -232,6 +236,9 @@ namespace FFPACK {
 					continue;
 			} else
 				piv2 = row;
+#ifdef LEFTLOOKING
+			delete[] vtemp;
+#endif
 
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
@@ -245,7 +252,7 @@ namespace FFPACK {
 			MathP[rank] = piv2;
 			pivotCols[piv3] = true;
 			pivotRows[piv2] = true;
-			typename Field::Element invpiv;
+			Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
 			if (Diag==FflasUnit){
 #ifndef LEFTLOOKING
@@ -264,7 +271,7 @@ namespace FFPACK {
 				if (Lpiv2 != rank)
 					cyclic_shift_row(Ltemp+rank*N, Lpiv2-rank+1, rank, N);
 				    // Normalizing the pivot column
-				typename Field::Element * Lt_it = Ltemp + rank*(N+1) + N;
+				Element * Lt_it = Ltemp + rank*(N+1) + N;
 				for (size_t i=0; i<row; ++i)
 					if (!pivotRows[i]){
 						Fi.assign (*Lt_it, Fi.mulin (A2 [i*lda], invpiv));
@@ -325,9 +332,13 @@ namespace FFPACK {
 			 if (!pivotCols[i])
 				 MathQ[nonpiv++] = i;
 		MathPerm2LAPACKPerm (Q, MathQ, N);
+		delete[] MathQ;
 		applyP (Fi, FflasRight, FflasTrans, M, 0, N, A, lda, Q);
+
 		MathPerm2LAPACKPerm (P, MathP, M);
+		delete[] MathP;
 		applyP (Fi, FflasLeft, FflasNoTrans, N, 0, M, A, lda, P);
+
 		return rank;
 	}
 
@@ -335,7 +346,9 @@ namespace FFPACK {
 	inline size_t
 	PLUQ_basecase (const Field& Fi, const FFLAS_DIAG Diag,
 		       const size_t M, const size_t N,
-		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	{
+		typedef typename Field::Element Element;
 		size_t row = 0;
 		size_t col = 0;
 		size_t rank = 0;
@@ -344,9 +357,9 @@ namespace FFPACK {
 		while ((col < N)||(row < M)){
 			size_t piv2 = rank;
 			size_t piv3 = rank;
-			typename Field::Element * A1 = A + rank*lda;
-			typename Field::Element * A2 = A + col;
-			typename Field::Element * A3 = A + row*lda;
+			Element * A1 = A + rank*lda;
+			Element * A2 = A + col;
+			Element * A3 = A + row*lda;
 			    // search for pivot in A2
 			if (row==M){
 				piv3=col;
@@ -383,7 +396,7 @@ namespace FFPACK {
 			Q [rank] = piv3;
 			A2 = A+piv3;
 			A3 = A+piv2*lda;
-			typename Field::Element invpiv;
+			Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
 			if (Diag==FflasUnit){
 #ifdef LEFTLOOKING
@@ -405,7 +418,7 @@ namespace FFPACK {
 			    //Swapping pivot column
 			if (piv3 > rank)
 				for (size_t i=0; i<M; ++i){
-					typename Field::Element tmp;
+					Element tmp;
 					Fi.assign (tmp, A[i*lda + rank]);
 					Fi.assign (A[i*lda + rank], A2[i*lda]);
 					Fi.assign (A2[i*lda], tmp);
@@ -415,7 +428,7 @@ namespace FFPACK {
 			    //Swapping pivot row
 			if (piv2 > rank)
 				for (size_t i=0; i<N; ++i){
-					typename Field::Element tmp;
+					Element tmp;
 					Fi.assign (tmp, A1[i]);
 					Fi.assign (A1[i], A3[i]);
 					Fi.assign (A3[i], tmp);
@@ -436,7 +449,9 @@ namespace FFPACK {
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
-	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q){
+	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	{
+		typedef typename Field::Element Element;
 
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
@@ -453,7 +468,7 @@ namespace FFPACK {
 				Fi.assign (A[piv], Fi.zero);
 			}
 			if (Diag== FflasUnit){
-				typename Field::Element invpivot;
+				Element invpivot;
 				Fi.inv(invpivot, *A);
 				for (size_t i=piv+1; i<N; ++i)
 					Fi.mulin (A[i], invpivot);
@@ -471,7 +486,7 @@ namespace FFPACK {
 				Fi.assign (*(A+piv*lda), Fi.zero);
 			}
 			if (Diag== FflasNonUnit){
-				typename Field::Element invpivot;
+				Element invpivot;
 				Fi.inv(invpivot, *A);
 				for (size_t i=piv+1; i<M; ++i)
 					Fi.mulin (*(A+i*lda), invpivot);
@@ -493,11 +508,11 @@ namespace FFPACK {
 		    // A1 = P1 [ L1 ] [ U1 V1 ] Q1
 		    //        [ M1 ]
 		R1 = PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1);
-		typename Field::Element * A2 = A + N2;
-		typename Field::Element * A3 = A + M2*lda;
-		typename Field::Element * A4 = A3 + N2;
-		typename Field::Element * F = A2 + R1*lda;
-		typename Field::Element * G = A3 + R1;
+		Element * A2 = A + N2;
+		Element * A3 = A + M2*lda;
+		Element * A4 = A3 + N2;
+		Element * F = A2 + R1*lda;
+		Element * G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
 		applyP (Fi, FflasLeft, FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
@@ -541,7 +556,7 @@ namespace FFPACK {
 		    // K <- H3 U2^-1
 		ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
-		typename Field::Element * temp = new typename Field::Element [R3*R2];
+		Element * temp = new Element [R3*R2];
 		for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
 		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
@@ -551,7 +566,7 @@ namespace FFPACK {
 		fgemm (Fi, FflasNoTrans, FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
 		delete[] temp;
 		    // R <- H4 - K V2 - M3 O
-		typename Field::Element * R = A4 + R2 + R3*lda;
+		Element * R = A4 + R2 + R3*lda;
 		fgemm (Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		fgemm (Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
@@ -618,7 +633,8 @@ namespace FFPACK {
 	inline void applyS (Element* A, const size_t lda, const size_t width,
 			    const size_t M2,
 			    const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4){
+			    const size_t R3, const size_t R4)
+	{
 		Element * tmp = new Element [(M2-R1-R2)*width];
 		// std::cerr<<"ici"<<std::endl;
 		for (size_t i = 0, j = R1+R2; j < M2; ++i, ++j)
@@ -638,7 +654,8 @@ namespace FFPACK {
 	inline void applyT (Element* A, const size_t lda, const size_t width,
 			    const size_t N2,
 			    const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4){
+			    const size_t R3, const size_t R4)
+	{
 		Element * tmp = new Element[(N2-R1)*width];
 		for (size_t k = 0; k < width; ++k){
 			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
@@ -664,7 +681,8 @@ namespace FFPACK {
 	     * Conversion of a permutation from LAPACK format to Math format
 	     */
 	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
-				  const size_t N){
+				  const size_t N)
+	{
 		for (size_t i=0; i<N; i++)
 			MathP[i] = i;
 		for (size_t i=0; i<N; i++){
@@ -675,11 +693,13 @@ namespace FFPACK {
 			}
 		}
 	}
+
 	    /**
 	     * Conversion of a permutation from Maths format to LAPACK format
 	     */
 	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
-					 const size_t N){
+					 const size_t N)
+	{
 		size_t * T = new size_t[N];
 		size_t * Tinv = new size_t[N];
 		for (size_t i=0; i<N; i++){
@@ -698,6 +718,7 @@ namespace FFPACK {
 		delete[] T;
 		delete[] Tinv;
 	}
+
 	    /**
 	     * Computes P1 [ I_R     ] stored in MathPermutation format
 	     *             [     P_2 ]
@@ -705,7 +726,8 @@ namespace FFPACK {
 	inline void composePermutationsP (size_t * MathP,
 				  const size_t * P1,
 				  const size_t * P2,
-				  const size_t R, const size_t N){
+				  const size_t R, const size_t N)
+	{
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, P1, N);
@@ -718,10 +740,12 @@ namespace FFPACK {
 			}
 		}
 	}
+
 	inline void composePermutationsQ (size_t * MathP,
 				  const size_t * Q1,
 				  const size_t * Q2,
-				  const size_t R, const size_t N){
+				  const size_t R, const size_t N)
+	{
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, Q1, N);
@@ -734,6 +758,7 @@ namespace FFPACK {
 			}
 		}
 	}
+
 	inline void
 	RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
 			      const size_t * P, const size_t * Q,
