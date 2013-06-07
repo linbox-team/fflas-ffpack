@@ -1023,8 +1023,13 @@ namespace FFLAS {
 	       typename Field::Element* C, const size_t ldc,
 	       const size_t w)
 	{
+		if (!k) {
+			fscal(F, m, n, beta, C, ldc);
+			return C;
+		}
 
-		if (!(m && n && k)) return C;
+		if (!(m && n && k))
+			return C;
 
 		if (F.isZero (alpha)){
 			fscal(F, m, n, beta, C, ldc);
@@ -1077,6 +1082,10 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc)
 	{
+		if (!k) {
+			fscal(F, m, n, beta, C, ldc);
+			return C;
+		}
 
 		if (!(m && n && k)) return C;
 		if (F.isZero (alpha)){
@@ -1121,13 +1130,13 @@ namespace FFLAS {
 
     template<CuttingStrategy Method>
     void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
-                   const size_t m, const size_t n, 
+                   const size_t m, const size_t n,
                    const size_t numthreads);
 
     template<>
     void BlockCuts<ROW_FIXED>(size_t& RBLOCKSIZE,
                               size_t& CBLOCKSIZE,
-                              const size_t m, const size_t n, 
+                              const size_t m, const size_t n,
                               const size_t numthreads) {
         RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
         CBLOCKSIZE = n;
@@ -1137,7 +1146,7 @@ namespace FFLAS {
     template<>
     void BlockCuts<COLUMN_FIXED>(size_t& RBLOCKSIZE,
                                  size_t& CBLOCKSIZE,
-                                 const size_t m, const size_t n, 
+                                 const size_t m, const size_t n,
                                  const size_t numthreads) {
         RBLOCKSIZE = m;
         CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
@@ -1147,7 +1156,7 @@ namespace FFLAS {
     template<>
     void BlockCuts<BLOCK_FIXED>(size_t& RBLOCKSIZE,
                                 size_t& CBLOCKSIZE,
-                                const size_t m, const size_t n, 
+                                const size_t m, const size_t n,
                                 const size_t numthreads) {
         RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
         CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
@@ -1156,7 +1165,7 @@ namespace FFLAS {
     template<>
     void BlockCuts<ROW_THREADS>(size_t& RBLOCKSIZE,
                                 size_t& CBLOCKSIZE,
-                                const size_t m, const size_t n, 
+                                const size_t m, const size_t n,
                                 const size_t numthreads) {
         RBLOCKSIZE = MAX(m/numthreads,1);
         CBLOCKSIZE = n;
@@ -1166,7 +1175,7 @@ namespace FFLAS {
     template<>
     void BlockCuts<COLUMN_THREADS>(size_t& RBLOCKSIZE,
                                    size_t& CBLOCKSIZE,
-                                   const size_t m, const size_t n, 
+                                   const size_t m, const size_t n,
                                    const size_t numthreads) {
         RBLOCKSIZE = m;
         CBLOCKSIZE = MAX(n/numthreads,1);
@@ -1176,7 +1185,7 @@ namespace FFLAS {
     template<>
     void BlockCuts<BLOCK_THREADS>(size_t& RBLOCKSIZE,
                                   size_t& CBLOCKSIZE,
-                                  const size_t m, const size_t n, 
+                                  const size_t m, const size_t n,
                                   const size_t numthreads) {
         const size_t maxt = (size_t)sqrt((double)numthreads);
 	size_t maxtr=maxt,maxtc=maxt;
@@ -1206,7 +1215,7 @@ namespace FFLAS {
             case BLOCK_FIXED: BlockCuts<BLOCK_FIXED>(r,c,m,n,t); break;
             case COLUMN_THREADS: BlockCuts<COLUMN_THREADS>(r,c,m,n,t); break;
             case COLUMN_FIXED: BlockCuts<COLUMN_FIXED>(r,c,m,n,t); break;
-            default: BlockCuts<BLOCK_THREADS>(r,c,m,n,t); 
+            default: BlockCuts<BLOCK_THREADS>(r,c,m,n,t);
         };
 
     }
