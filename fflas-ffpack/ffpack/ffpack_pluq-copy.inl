@@ -5,20 +5,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -35,8 +35,10 @@
 #ifndef MAX
 #define MAX(a,b) (a<b)?b:a
 #endif
-using namespace std;
-using namespace FFLAS;
+
+// XXX interdit !!
+// using namespace std;
+// using namespace FFLAS;
 
 namespace FFPACK {
 
@@ -69,11 +71,11 @@ namespace FFPACK {
 					continue;
 				}
 #ifdef LEFTLOOKING
-				    // Left looking style update 
-				ftrsv (Fi, FflasLower, FflasNoTrans, 
+				    // Left looking style update
+				ftrsv (Fi, FflasLower, FflasNoTrans,
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
 				       rank, A, lda, A2, lda);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne, 
+				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
 				       A1,lda, A2, lda,
 				       Fi.one, A2+rank*lda, lda);
 #endif
@@ -81,7 +83,7 @@ namespace FFPACK {
 				if (col<N) col++;
 				if (piv2==M)
 					continue;
-			} else 
+			} else
 				piv2 = row;
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
@@ -121,7 +123,7 @@ namespace FFPACK {
 					Fi.assign (A[i*lda + rank], A2[i*lda]);
 					Fi.assign (A2[i*lda], tmp);
 				}
-				    // Updating cols 
+				    // Updating cols
 
 			    //Swapping pivot row
 			if (piv2 > rank)
@@ -135,10 +137,10 @@ namespace FFPACK {
 			    // Need to update the cols already updated
 			for (size_t i=piv2+1; i<M; ++i)
 				for (size_t j=piv3+1; j<col; ++j)
-					Fi.maxpyin (A[i*lda+j], 
-						    A[i*lda+rank], A[rank*lda+j]);				
+					Fi.maxpyin (A[i*lda+j],
+						    A[i*lda+rank], A[rank*lda+j]);
 #endif
-			rank++; 
+			rank++;
 		}
 		MatrixCopy (Fi, M, N, B, ldb, A, lda);
 		return rank;
@@ -170,7 +172,7 @@ namespace FFPACK {
 			}
 			Q[0] = piv;
 			Fi.assign (*B, A[piv]);
-			
+
 			for (size_t i=1; i<=piv; ++i)
 				Fi.assign (B[i], Fi.zero);
 			if (Diag== FflasUnit){
@@ -194,7 +196,7 @@ namespace FFPACK {
 			}
 			P[0] = piv;
 			Fi.assign (*B, *(A+piv*lda));
-			
+
 			for (size_t i=1; i<=piv; ++i)
 				Fi.assign (B[i*ldb], Fi.zero);
 			if (Diag== FflasNonUnit){
@@ -236,7 +238,7 @@ namespace FFPACK {
 		applyP (Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 		    // D <- L1^-1 B1
 		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, B1, ldb1, A2, lda);
-		    // E <- C1 U1^-1 
+		    // E <- C1 U1^-1
 		ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, B1, ldb1, A3, lda);
 		    // F <- B2 - M1 D
 		fgemm (Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, B1 + R1*ldb1, ldb1, A2, lda, Fi.one, A2+R1*lda, lda);
@@ -250,7 +252,7 @@ namespace FFPACK {
 		size_t * Q2 = new size_t [N-N2];
 		typename Field::Element * B2 = new typename Field::Element[M2*(N-N2)];
 		size_t ldb2 = N-N2;
-		R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, B2, ldb2,  P2, Q2);	
+		R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, B2, ldb2,  P2, Q2);
 		    // G = P3 [ L3 ] [ U3 V3 ] Q3
 		    //        [ M3 ]
 		size_t * P3 = new size_t [M-M2];
@@ -297,7 +299,7 @@ namespace FFPACK {
 		typename Field::Element * B4 = new typename Field::Element[(M-M2-R3)*(N-N2-R2)];
 		size_t ldb4 = N-N2-R2;
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, B4, ldb4, P4, Q4);
-		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ] 
+		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
 		applyP (Fi, FflasLeft, FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
 		applyP (Fi, FflasLeft, FflasNoTrans, R3, 0, M-M2-R3, B3+R3*ldb3, ldb3, P4);
@@ -307,7 +309,7 @@ namespace FFPACK {
 		    // [ O1   O2 ]     [  O ]
 		applyP (Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 		applyP (Fi, FflasRight, FflasTrans, R2, 0, N-N2-R2, B2+R2, ldb2, Q4);
-		
+
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
 		size_t* MathP = new size_t[M];
@@ -319,13 +321,13 @@ namespace FFPACK {
 		delete[] P4;
 		for (size_t i=M2; i<M; ++i)
 			MathP[i] += M2;
-		if (R1+R2 < M2){ 
+		if (R1+R2 < M2){
 			    // P <- P S
 			applyS (MathP, 1,1,M2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
-		
+
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		    //            [      Q3 ]      [      P4 ]
 		size_t * MathQ = new size_t [N];
@@ -337,19 +339,19 @@ namespace FFPACK {
 		delete[] Q4;
 		for (size_t i=N2; i<N; ++i)
 			MathQ[i] += N2;
-		
+
 		if (R1 < N2){
 			    // Q <- T Q
 			applyT (MathQ, 1,1,N2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (Q, MathQ, N);
 		delete[] MathQ;
-		
+
 		    // Composition of the result matrix B
 		    // L1\U1
 		    // M1
 		MatrixCopy (Fi, R1+R2, R1, B, ldb, B1, ldb1);
-		    // D1 
+		    // D1
 		MatrixCopy (Fi, R1, R2, B+R1, ldb, A+N2, lda);
 		    // L2/U2
 		MatrixCopy (Fi, R2, R2, B+R1*(ldb+1), ldb, B2, ldb2);
@@ -416,22 +418,22 @@ namespace FFPACK {
 //		write_field(Fi,std::cerr<<"Sortie B="<<std::endl,B,M,N,ldb);
 		return R1+R2+R3+R4;
 
-	
+
 	}
 
 	template <class Field>
 	inline void MatrixCopy (const Field& F, const size_t M, const size_t N,
-				typename Field::Element* B, const size_t ldb, 
+				typename Field::Element* B, const size_t ldb,
 				const typename Field::Element* A, const size_t lda){
 		for (size_t i=0; i<M; ++i)
 			for (size_t j=0; j<N; ++j)
 				F.assign (B[i*ldb + j], A[i*lda + j]);
 	}
-	
+
 	template <class Element>
-	inline void applyS (Element* A, const size_t lda, const size_t width, 
+	inline void applyS (Element* A, const size_t lda, const size_t width,
 			    const size_t M2,
-			    const size_t R1, const size_t R2, 
+			    const size_t R1, const size_t R2,
 			    const size_t R3, const size_t R4){
 		Element * tmp = new Element [(M2-R1-R2)*width];
 		// std::cerr<<"ici"<<std::endl;
@@ -446,25 +448,25 @@ namespace FFPACK {
 				A [j*lda + k] = tmp [i*width + k];
 		delete[] tmp;
 	}
-	
+
 
 	template <class Element>
-	inline void applyT (Element* A, const size_t lda, const size_t width, 
+	inline void applyT (Element* A, const size_t lda, const size_t width,
 			    const size_t N2,
-			    const size_t R1, const size_t R2, 
+			    const size_t R1, const size_t R2,
 			    const size_t R3, const size_t R4){
 		Element * tmp = new Element[(N2-R1)*width];
 		for (size_t k = 0; k < width; ++k){
 			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
 				tmp [i + k*(N2-R1)] = A [k*lda + j];
 			}
-			
+
 			for (size_t i = N2, j = R1; i < N2+R2; ++i, ++j)
 				A [k*lda + j] = A [k*lda + i];
-			
+
 			for (size_t i = 0, j = R1+R2; i < R3; ++i, ++j)
 				A [k*lda + j] = tmp [k*(N2-R1) + i];
-			
+
 			for (size_t i = N2+R2, j = R1+R2+R3; i < N2+R2+R4; ++i,++j)
 				A [k*lda + j] = A [k*lda + i];
 			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
@@ -477,7 +479,7 @@ namespace FFPACK {
             /**
 	     * Conversion of a permutation from LAPACK format to Math format
 	     */
-	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP, 
+	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
 				  const size_t N){
 		for (size_t i=0; i<N; i++)
 			MathP[i] = i;
@@ -492,10 +494,10 @@ namespace FFPACK {
 	    /**
 	     * Conversion of a permutation from Maths format to LAPACK format
 	     */
-	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP, 
+	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
 					 const size_t N){
 		size_t * T = new size_t[N];
-		size_t * Tinv = new size_t[N]; 
+		size_t * Tinv = new size_t[N];
 		for (size_t i=0; i<N; i++){
 			T[i] =i;
 			Tinv[i] = i;
@@ -516,9 +518,9 @@ namespace FFPACK {
 	     * Computes P1 [ I_R     ] stored in MathPermutation format
 	     *             [     P_2 ]
 	     */
-	inline void composePermutationsP (size_t * MathP, 
-				  const size_t * P1, 
-				  const size_t * P2, 
+	inline void composePermutationsP (size_t * MathP,
+				  const size_t * P1,
+				  const size_t * P2,
 				  const size_t R, const size_t N){
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
@@ -532,14 +534,14 @@ namespace FFPACK {
 			}
 		}
 	}
-	inline void composePermutationsQ (size_t * MathP, 
-				  const size_t * Q1, 
-				  const size_t * Q2, 
+	inline void composePermutationsQ (size_t * MathP,
+				  const size_t * Q1,
+				  const size_t * Q2,
 				  const size_t R, const size_t N){
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, Q1, N);
-		
+
 		for (size_t i=R; i<N; i++){
 			if (Q2[i-R] != i-R){
 				size_t tmp = MathP[i];
@@ -550,7 +552,7 @@ namespace FFPACK {
 	}
 	inline void
 	RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-			      const size_t * P, const size_t * Q, 
+			      const size_t * P, const size_t * Q,
 			      const size_t M, const size_t N, const size_t R){
 		size_t * RRP=new size_t[M];
 		size_t * CRP=new size_t[N];
@@ -558,7 +560,7 @@ namespace FFPACK {
 			RRP [i]=i;
 		for (size_t i=0;i < N; ++i)
 			CRP [i]=i;
-		
+
 		std::cerr<<"CRP = ";
 		for (size_t i=0; i<N; ++i)
 			std::cerr<<CRP[i]<<" ";
@@ -581,7 +583,7 @@ namespace FFPACK {
 		}
 		for (size_t i=0; i<R; ++i)
 			ColumnRankProfile [i] = CRP [i];
-		
+
 		std::cerr<<"CRP = ";
 		for (size_t i=0; i<N; ++i)
 			std::cerr<<CRP[i]<<" ";
@@ -589,6 +591,6 @@ namespace FFPACK {
 		delete[] RRP;
 		delete[] CRP;
 	}
-		
+
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL

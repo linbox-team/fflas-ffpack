@@ -38,9 +38,8 @@
 
 #define LEFTLOOKING
 #define BASECASE_K 288
-using namespace std;
 namespace FFPACK {
-    using namespace FFLAS;
+	using namespace FFLAS;
 
 	template<class Field>
 	inline size_t
@@ -177,8 +176,8 @@ namespace FFPACK {
 		size_t row = 0;
 		size_t col = 0;
 		size_t rank = 0;
-		vector<bool> pivotRows(M,false);
-		vector<bool> pivotCols(N,false);
+		std::vector<bool> pivotRows(M,false);
+		std::vector<bool> pivotCols(N,false);
 		size_t MathP[M];
 		size_t MathQ[N];
 		// size_t npp=0;

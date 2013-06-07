@@ -241,7 +241,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 }
 
 int main(int argc, char** argv){
-	std::cerr<<setprecision(20);
+	std::cerr<<std::setprecision(20);
 
 	int    p = 101;
 	size_t m = 50;

@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 
 	// int n;
 	// int iter=atoi(argv[3]); // number of times the product is performed
-	std::cerr<<setprecision(10);
+	std::cerr<<std::setprecision(10);
 #if 0 /*  don't know how to do this in parseArguments ; grosse flemme */
 	if (argc != 4)	{
 		std::cerr<<"Usage : test-det <p> <A> <<i>"

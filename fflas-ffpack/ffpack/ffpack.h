@@ -53,7 +53,6 @@
 #ifndef __FFPACK_CHARPOLY_THRESHOLD
 #define __FFPACK_CHARPOLY_THRESHOLD 30
 #endif
-using namespace FFLAS;
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -62,6 +61,7 @@ using namespace FFLAS;
  \ingroup ffpack
  */
 namespace FFPACK  {
+	using namespace FFLAS;
 
 
 	// public:
@@ -1274,9 +1274,9 @@ else { // Left NullSpace
 	 * @param lda: leading dimension of A
 	 */
 	template <class Field>
-	void 
+	void
 	TriangularFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-			  const FFLAS::FFLAS_DIAG diag, 
+			  const FFLAS::FFLAS_DIAG diag,
 			  const size_t M, const size_t N, const size_t R,
 			  typename Field::Element * T, const size_t ldt,
 			  const typename Field::Element * A, const size_t lda){
@@ -1323,23 +1323,23 @@ else { // Left NullSpace
         /** Extracts an echelon matrix from a compact storage A=L\U of rank R.
 	 * Either L or U is in Echelon form (depending on Uplo
 	 * The echelon structure is defined by the first R values of the array P.
-	 * row and column dimension of T are equal to that of A 
+	 * row and column dimension of T are equal to that of A
 	 * @param F: base field
 	 * @param UpLo: selects if the upper or lower triangular matrix is returned
 	 * @param diag: selects if the echelon matrix has unit pivots
 	 * @param M: row dimension of T
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param P: positions of the R pivots 
+	 * @param P: positions of the R pivots
 	 * @param T: output matrix
 	 * @param ldt: leading dimension of T
 	 * @param A: input matrix
 	 * @param lda: leading dimension of A
 	 */
 	template <class Field>
-	void 
+	void
 	EchelonFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-		       const FFLAS::FFLAS_DIAG diag, 
+		       const FFLAS::FFLAS_DIAG diag,
 		       const size_t M, const size_t N, const size_t R, const size_t* P,
 		       typename Field::Element * T, const size_t ldt,
 		       const typename Field::Element * A, const size_t lda){
