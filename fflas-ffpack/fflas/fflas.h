@@ -1124,7 +1124,7 @@ namespace FFLAS {
         BLOCK_FIXED	,
         ROW_THREADS	,
         COLUMN_THREADS	,
-        BLOCK_THREADS	,
+        BLOCK_THREADS	//,
     };
 
 

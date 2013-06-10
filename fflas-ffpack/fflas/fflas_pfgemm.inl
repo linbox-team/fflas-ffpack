@@ -34,7 +34,7 @@
 #endif
 #ifdef __FFLAS_USE_KAAPI
 #include <kaapi++.h>
-#endif 
+#endif
 
 namespace FFLAS {
 
@@ -64,16 +64,16 @@ pfgemm( const Field& F,
         const typename Field::Element beta,
         typename Field::Element* C, const size_t ldc,
         const size_t w,
-        const CuttingStrategy method = BLOCK_THREADS
+        const CuttingStrategy method //= BLOCK_THREADS
         ){
 
     size_t RBLOCKSIZE, CBLOCKSIZE;
-#pragma omp parallel 
-    { 
+#pragma omp parallel
+    {
 #pragma omp single
         {
             BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, omp_get_num_threads() );
-        } 
+        }
     }
 
     size_t NrowBlocks = m/RBLOCKSIZE;
@@ -88,9 +88,9 @@ pfgemm( const Field& F,
         NcolBlocks++;
     else
         LastcolBlockSize = CBLOCKSIZE;
-    
+
     const size_t BLOCKS = NrowBlocks*NcolBlocks;
-    
+
 
 #pragma omp parallel for default (none) shared (A, B, C, F, RBLOCKSIZE, CBLOCKSIZE, NcolBlocks, NrowBlocks, LastcolBlockSize, LastrowBlockSize)
     for (size_t t = 0; t < BLOCKS; ++t){
