@@ -113,7 +113,7 @@ namespace FFLAS {
 					    const FFLAS_BASE base)
 		{
 
-			FFLAS_INT_TYPE p;
+			FFLAS_INT_TYPE p=0;
 			F.characteristic(p);
 
 			unsigned long mantissa = Mantissa (F, base);
@@ -160,7 +160,7 @@ namespace FFLAS {
 		template <class Field>
 		inline double computeFactorWino (const Field& F, const size_t w)
 		{
-			FFLAS_INT_TYPE p;
+			FFLAS_INT_TYPE p=0;
 			F.characteristic(p);
 			size_t ex=1;
 			for (size_t i=0; i < w; ++i) 	ex *= 3;
@@ -170,7 +170,7 @@ namespace FFLAS {
 		template <class Field>
 		inline double computeFactorClassic (const Field& F)
 		{
-			FFLAS_INT_TYPE p;
+			FFLAS_INT_TYPE p=0;
 			F.characteristic(p);
 			return (double) (p-1);
 		}
@@ -200,7 +200,7 @@ namespace FFLAS {
 		inline FFLAS_BASE BaseCompute (const Field& F, const size_t w)
 		{
 
-			FFLAS_INT_TYPE pi;
+			FFLAS_INT_TYPE pi=0;
 			F.characteristic(pi);
 			FFLAS_BASE base;
 			switch (w) {
