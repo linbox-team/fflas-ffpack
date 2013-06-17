@@ -32,6 +32,7 @@
 #ifdef __FFLAS_USE_OMP
 #include <omp.h>
 #endif
+
 #ifdef __FFLAS_USE_KAAPI
 #include <kaapi++.h>
 #endif
@@ -43,6 +44,7 @@ namespace FFLAS {
 		operator (){
 			pfgemm();
 		}
+	};
 	class KaapifgemmSeq{
 		operator (){
 			fgemm();
