@@ -558,7 +558,7 @@ namespace FFLAS {
 
 		typename Field::Element mbeta;
 		F.neg(mbeta,beta);
-		size_t imaxb, jmaxb, imaxa, jmaxa, ldx2, ldx3;
+		size_t imaxb, jmaxb, imaxa, jmaxa, ldx2;
 		size_t x3rd = MAX(mr,kr);
 		const typename Field::Element* d11,*d12,*d21,*d22;
 		typename Field::Element* d11c,*d12c,*d21c,*d22c,*dx1,*dx2,*dx3;
@@ -721,6 +721,7 @@ namespace FFLAS {
 			delete[] X1;
 
 		} else {
+			size_t ldx3;
 			// Three temporary submatrices are required
 			typename Field::Element* X1 = new typename Field::Element[mr*nr];
 			typename Field::Element* X2 = new typename Field::Element[mr*kr];
@@ -1031,7 +1032,7 @@ namespace FFLAS {
 				       const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
 
-			if (w <= 0)
+			if (w == 0)
 				ClassicMatmul (D, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, kmax,base);
 			else{
 				WinoCalc (D, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, kmax, w,base);
@@ -1052,7 +1053,7 @@ namespace FFLAS {
 				       const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
 
-			if (w <= 0) {
+			if (w == 0) {
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
 			}
@@ -1079,7 +1080,7 @@ namespace FFLAS {
 		{
 
 
-			if (w <= 0) // Winograd - >  Classic
+			if (w == 0) // Winograd - >  Classic
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
 			else {
@@ -1208,7 +1209,7 @@ namespace FFLAS {
 				      double * C, const size_t ldc,
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
-			if (w <= 0)
+			if (w == 0)
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
 			else {
@@ -1269,7 +1270,7 @@ namespace FFLAS {
 				      float * C, const size_t ldc,
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
-			if (w <= 0)
+			if (w == 0)
 				ClassicMatmul (F, ta, tb, m, n, k, alpha,
 					       A, lda, B, ldb, beta, C, ldc, kmax,base);
 			else {
@@ -1329,7 +1330,7 @@ namespace FFLAS {
 				      double * C, const size_t ldc,
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
-			if (w <= 0)
+			if (w == 0)
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
 			else {
@@ -1402,7 +1403,7 @@ namespace FFLAS {
 				      float * C, const size_t ldc,
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
-			if (w <= 0) {
+			if (w == 0) {
 				ClassicMatmul (F, ta, tb, m, n, k, alpha,
 					       A, lda, B, ldb, beta, C, ldc, kmax,base);
 			}

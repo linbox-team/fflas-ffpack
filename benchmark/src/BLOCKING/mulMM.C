@@ -43,6 +43,12 @@ class Matrix {
     const int size;
 public:
   Matrix(int s): size(s),sq(s*s), _data(new T[sq]) {};
+  Matrix (const Matrix & q) :
+	  size (rowdim()),
+	  sq(rowdim()*coldim()),
+	  _data(new T[sq])
+	{}
+  ~Matrix() { delete[] _data ; }
   int rowdim() const { return size; }
   int coldim() const { return size; }
   inline T& operator[](int i) { return _data[i]; }
@@ -137,9 +143,9 @@ int main(int argc, char** argv)
   double MoyenneDesTempsMod = 0.0;
   double coef = DIM;
   coef = coef*coef*(2.0*coef-1)*1e-6*NB;
-  double seconds;
 
   for (int k=0; k<MAXITER; k++) {
+	  double seconds;
     for (i=0; i<DIM; i++) {
       for (j=0 ; j<DIM ; j++) {
         AA(i,j) = rand();

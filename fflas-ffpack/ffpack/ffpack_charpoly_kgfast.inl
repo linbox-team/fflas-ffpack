@@ -52,11 +52,11 @@ namespace FFPACK {
 			//std::cerr<<"Dans KGFast"<<std::endl;
 			size_t mc=N>>1; // Matrix A is transformed into a mc_Frobenius form
 			size_t mb=N-mc;
-			size_t r;
 			typename Field::Element * C, *B;
 
 
 			while ( mc > 0 ) {
+				// size_t r;
 #if 0
 				std::cerr<<"Boucle1: mc,mb,N="<<mc<<" "<<mb<<" "<<N<<std::endl;
 				write_field( F, std::cerr, A, N, N, lda );
@@ -79,7 +79,7 @@ namespace FFPACK {
 					size_t * P = new size_t[mc];
 					size_t * Q = new size_t[mc];
 
-					if ( (r = LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mc, mc,
+					if ( (/*r = */LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mc, mc,
 							    LUP, mc, P, Q, FfpackLQUP)) < mc ){
 						* kg_mc = mc;
 						* kg_mb = mb;

@@ -321,13 +321,14 @@ namespace FFPACK {
 		inline Element &inv (Element &x, const Element &y) const
 		{
 			// The extended Euclidean algoritm
-			int x_int, y_int, q, tx, ty, temp;
+			int x_int, y_int, tx, ty;
 			x_int = int (modulus);
 			y_int = int (y);
 			tx = 0;
 			ty = 1;
 
 			while (y_int != 0) {
+				int q, temp;
 				// always: gcd (modulus,residue) = gcd (x_int,y_int)
 				//         sx*modulus + tx*residue = x_int
 				//         sy*modulus + ty*residue = y_int
@@ -366,7 +367,7 @@ namespace FFPACK {
 			r= fmodf(tmp, modulus);
  			if (r < 0.) r += modulus;
             return r;
-           
+
 		}
 
 		inline Element &maxpy (Element &r,
@@ -378,7 +379,7 @@ namespace FFPACK {
 			r=fmodf(tmp, modulus);
 			if (r < 0.) r += modulus;
             return r;
-            
+
 		}
 
 		inline Element &addin (Element &x, const Element &y) const
@@ -431,7 +432,7 @@ namespace FFPACK {
 			r -= a * x;
 			r= fmodf(r, modulus);
 			if (r < 0) r += modulus;
-            return r; 
+            return r;
 		}
 
 		static inline Element getMaxModulus()

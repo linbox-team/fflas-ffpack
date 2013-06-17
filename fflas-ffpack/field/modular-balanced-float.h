@@ -366,13 +366,14 @@ namespace FFPACK {
 		inline Element &inv (Element &x, const Element &y) const
 		{
 			// The extended Euclidean algoritm
-			int x_int, y_int, q, tx, ty, temp;
+			int x_int, y_int, tx, ty;
 			x_int = int (modulus);
 			y_int = (y < 0.) ? int(y + modulus) : int(y);
 			tx = 0;
 			ty = 1;
 
 			while (y_int != 0) {
+				int q,temp;
 				// always: gcd (modulus,residue) = gcd (x_int,y_int)
 				//         sx*modulus + tx*residue = x_int
 				//         sy*modulus + ty*residue = y_int
@@ -382,7 +383,7 @@ namespace FFPACK {
 				temp = ty; ty = tx - q * ty;
 				tx = temp;
 			}
-                        
+
                         x = (Element)tx;
 			if (x > half_mod ) return x -= modulus;
 			else if ( x < mhalf_mod ) return x += modulus;

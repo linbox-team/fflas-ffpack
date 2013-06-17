@@ -127,6 +127,7 @@ namespace FFPACK {
 			std::cerr<<"Debut KGFG"<<std::endl
 			<<" ----------------------------"<<std::endl;
 #endif
+			int exit_value = 0 ;
 			while (mc > 0) {
 #ifdef LB_DEBUG
 				std::cerr<<"Boucle1: mc,me,lambda="<<mc<<" "<<me<<" "<<lambda<<std::endl;
@@ -141,7 +142,7 @@ namespace FFPACK {
 					std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
 				//std::cerr<<std::endl<<"mc="<<mc<<":";
 #endif
-				while (mu < N-mc) {
+				while (mu < N-mc && !exit_value) {
 #ifdef LB_DEBUG
 					std::cerr<<"Boucle2: mu,me,lambda="<<mu<<" "<<me<<" "<<lambda<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -185,11 +186,13 @@ namespace FFPACK {
 							typename Field::Element * At = buildMatrix(F,E,C,lda,B,T,me,mc,lambda,mu);
 							KGFast_generalized (F, charp, N-me, At+me*(lda+1), lda);
 							delete[] At;
-							exit(-1);
+							exit_value = -1;
+							break;
 
 						} else if (me != 0) {
 							std::cerr<<"BLOCAGE me!=0!!!"<<std::endl;
-							exit(-1);
+							exit_value = -1;
+							break ;
 
 						}
 						else {
@@ -245,7 +248,8 @@ namespace FFPACK {
 							}
 							else if (mu){
 								std::cerr<<"CAS MU < MC - k"<<std::endl;
-								exit(-1);
+								exit_value = -1;
+								break;
 							}
 							// Updating B to be improved (tabulated B^-1)
 							for (size_t i=0; i<lambda+me; ++i){
@@ -256,6 +260,8 @@ namespace FFPACK {
 							}
 
 						}
+					if (exit_value)
+						break;
 #ifdef LB_DEBUG
 					std::cerr<<".";
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -616,6 +622,12 @@ namespace FFPACK {
 
 			}
 
+			delete[] B ;
+			delete[] T ;
+			delete[] allowedRows ;
+
+			if (exit_value)
+				exit(exit_value);
 			Polynomial *minP = new Polynomial();
 			minP->resize(N+1);
 			minP->operator[](N) = F.one;

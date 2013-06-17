@@ -130,15 +130,15 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 	}
 
 	std::cout << "  -h or -?  Display this message" << std::endl;
-	if (messageboolean) 
+	if (messageboolean)
         std::cout << "For boolean switches, the argument may be omitted, meaning the switch should be ON" << std::endl;
 	std::cout << std::endl;
 	std::cout << "If <report file> is '-' the report is written to std output.  If <report file> is" << std::endl;
 	std::cout << "not given, then no detailed reporting is done. This is suitable if you wish only" << std::endl;
 	std::cout << "to determine whether the tests succeeded." << std::endl;
 	std::cout << std::endl;
-	if (messageprimality) 
-        std::cout << "[1] N.B. This program does not verify the primality of Q, and does not use a" << std::endl 
+	if (messageprimality)
+        std::cout << "[1] N.B. This program does not verify the primality of Q, and does not use a" << std::endl
                   << "    field extension in the event that Q=p^n, n > 1" << std::endl;
 	std::cout << std::endl;
 }
@@ -237,7 +237,7 @@ namespace FFLAS {
                         {
                             if (argc == i+1 || (argv[i+1][0] == '-' && argv[i+1][1] != '\0')) {
                                     // if at last argument, or next argument is a switch, set to true
-                                *(bool *) current->data = true;
+                                *((bool *) current->data) = true;
                                 break;
                             }
                             *(bool *) current->data =

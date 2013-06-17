@@ -109,9 +109,16 @@ int main(int argc, char** argv)
 
 	// write_field(F, cerr, A, N, N, N);
 
+	int ok = 0 ;
 	for (size_t i = 0 ; i < (size_t)N * (size_t)N ; ++i)
 		if (A[i] != B[i])
-			return 1 ;
-	return 0 ;
+		{
+			ok = 1 ;
+			break ;
+		}
+
+	delete[] A ; delete[] tmp ; delete[] deg ; delete[] B ;
+
+	return ok ;
 
 }

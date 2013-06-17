@@ -273,6 +273,7 @@ int main(int argc, char** argv)
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
+		{ 'w', "-w N", "Set the number of winograd levels.",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		END_OF_ARGUMENTS
 	};

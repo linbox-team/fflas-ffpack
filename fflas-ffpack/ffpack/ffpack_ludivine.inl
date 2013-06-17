@@ -5,20 +5,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -110,11 +110,11 @@ namespace FFPACK {
 			elt * Aini = A;
 			elt * Acurr;
 			size_t rowp = 0;
-			size_t colp;
 			size_t R = 0;
 			size_t k = 0;
 			//size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
+				size_t colp;
 
 				//Find non zero pivot
 				colp = k;
@@ -206,12 +206,12 @@ namespace FFPACK {
 			elt * Aini = A;
 			elt * Acurr;
 			size_t rowp = 0;
-			size_t colp;
 			size_t R = 0;
 			size_t k = 0;
 			size_t delay =0;
 			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, F.one, FFLAS::FflasDouble) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
+				size_t colp;
 
 				//Find non zero pivot
 				colp = k;
@@ -312,12 +312,12 @@ namespace FFPACK {
 			elt * Aini = A;
 			elt * Acurr;
 			size_t rowp = 0;
-			size_t colp;
 			size_t R = 0;
 			size_t k = 0;
 			size_t delay =0;
 			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, F.one, FFLAS::FflasFloat) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
+				size_t colp;
 
 				//Find non zero pivot
 				colp = k;
@@ -763,11 +763,12 @@ namespace FFPACK {
 		for (size_t i=0; i<M-mo2; ++i)
 			Q2[i] = 0;
 		size_t q1,q2,q3,q3b,q4;
-		q1=q2=q3=q3b=q4=0;
+		/*q1=q2=q3=  */q3b=q4=0;
+
 
 		// Step 1: NW = L1.Q1.U1.P1
 		size_t mloc = mo2;
-		size_t nloc = no2;
+		size_t nloc ;
 #if 0
 		Timer tim;
 		tim.clear();

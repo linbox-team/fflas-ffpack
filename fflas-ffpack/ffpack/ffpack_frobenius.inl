@@ -259,10 +259,10 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			*(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
 	delete[] K4;
 
-	size_t block_idx, it_idx, rp_val;
 
 	// Main loop of the arithmetic progession
 	while ((nb_full_blocks >= 1) && (Mk > 1)) {
+		size_t block_idx, it_idx, rp_val;
 		delete[] K;
 		delete[] K3;
 		K = new typename Field::Element[Ncurr*Ma];

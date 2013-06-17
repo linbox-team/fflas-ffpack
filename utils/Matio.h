@@ -94,7 +94,7 @@ std::ostream& write_dbl(std::ostream& c,
 template<class Field>
 typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int* tnj)
 {
-	char *UT, *File_Name;
+	char *UT = NULL, *File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
 	typename Field::Element * X = NULL;
@@ -113,8 +113,8 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 		File_Name = mat_file;
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
-		char  tmp [200];// usigned long tni, tnj;
-		fscanf(FileDes,"%d %d %s\n",tni, tnj, tmp) ;
+		char  tmp [200];// unsigned long tni, tnj;
+		fscanf(FileDes,"%d %d %200s\n",tni, tnj, tmp) ;
 		int n=*tni;
 		int p=*tnj;
 		X = new typename Field::Element[n*p];
@@ -126,10 +126,12 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 			F.init(X[p*(i-1)+j-1],val);
 			fscanf(FileDes,"%ld %ld %ld\n",&i, &j, &val) ;
 		}
+		fclose(FileDes);
 	}
 
-	fclose(FileDes);
 	if (is_gzipped) system(UT);
+	if (UT != NULL)
+		delete[] UT;
 	return X;
 }
 
@@ -138,7 +140,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 		 typename Field::Element *& NW,typename Field::Element *& NE,
 		 typename Field::Element *& SW,typename Field::Element *& SE)
 {
-	char *UT, *File_Name;
+	char *UT = NULL, *File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
 	typename Field::Element * X;
@@ -162,6 +164,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	if (FileDes != NULL) {
 		char * tmp = new char[200];// usigned long tni, tnj;
 		fscanf(FileDes,"%d %d %s\n",tni, tnj, tmp) ;
+		delete[] tmp;
 		int n=*tni;
 		int p=*tnj;
 		int no2= n>>1;
@@ -208,10 +211,12 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 		//*A3 = SW;
 		//*A4 = SE;
 
+		fclose(FileDes);
 	}
 
-	fclose(FileDes);
 	if (is_gzipped) system(UT);
+	if (UT != NULL)
+		delete[] UT ;
 }
 
 // Displays a matrix

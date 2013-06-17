@@ -9,20 +9,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -67,11 +67,12 @@ namespace FFPACK {
 			//const elt * Xi = X; // Xi points to the begining of each block
 			elt *Li=X, *Xminp=X;
 			KeepOn = false;
-			size_t nr, s, i, j, jtot=0, dtot = 0, nrtot=0;
+			size_t  i, jtot=0, dtot = 0, nrtot=0;
 
 			for ( i=0; dtot<N; ++i){ // for each block
-				j = 0;
-				nr = s = ( d[i]==l )? 2*l : d[i];
+				size_t j = 0;
+				size_t s ;
+				size_t nr = s = ( d[i]==l )? 2*l : d[i];
 				if (s > N-dtot)
 					s= N-dtot;
 				nrtot += nr;
@@ -128,7 +129,7 @@ namespace FFPACK {
 			// vector of the opposite of the coefficient of computed minpolys
 			std::vector< std::vector< elt > > m(N);
 			typename Polynomial::iterator it;
-			size_t i=0, l=1, j, k=N,  cpt, newRowNb, nrowX, ind;
+			size_t i=0, l=1, j, k=N,  cpt, newRowNb;
 			bool  KeepOn;
 
 			for ( i=0; i<N; ++i)
@@ -160,6 +161,7 @@ namespace FFPACK {
 			k = Protected::newD( F,d, KeepOn, l, N, X, Q, m);
 
 			while(KeepOn){ // Main loop, until each subspace dimension has been found
+				size_t nrowX, ind ;
 				// Updating U:
 				Uk = U;
 				// Firstly, removing extra rows

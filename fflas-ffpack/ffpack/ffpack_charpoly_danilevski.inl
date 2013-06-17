@@ -6,20 +6,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -49,7 +49,6 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 	typename Field::Element *pivot,*e,*u1,invp;
 	for (size_t k=0; k<N; ++k){
 		size_t i = k+1;
-		size_t d;
 		e = pivot = A + (k+1) * lda + k; // coef
 		while ((i<N) && F.isZero(*e)) { e += lda; i++; }
 		if (i < N){
@@ -82,6 +81,7 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 			}
 		}
 		if (i==N){// completed one companion block
+		size_t d;
 			d = k+1-dtot;
 			typename Field::Element *Ai = A+k+dtot*lda;
 			Polynomial * P = new Polynomial(d+1);
