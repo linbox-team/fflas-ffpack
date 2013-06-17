@@ -204,7 +204,7 @@ namespace FFPACK {
 
 		std::istream &read (std::istream &is, Element &x) const
 		{
-			double tmp;
+			double tmp = 0.;
 			is >> tmp;
 			init(x,tmp);
 			return is;

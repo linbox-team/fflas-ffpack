@@ -51,7 +51,6 @@ int main () {
 	typedef Field::Element Element ;
 	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
 	Timer chrono;
-	double basetime, time;
 	bool bound=false;
 
 	Element *A, *C;
@@ -67,6 +66,7 @@ int main () {
 		<< "Threshold for finite field Strassen-Winograd matrix multiplication" ;
 	F.write(outlog << "(using ") << ')' << std::endl;
 	do {
+	double basetime, time;
 		chrono.start();
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 				n, n, n, F.one, A, n, A, n, F.zero, C, n, 0);
