@@ -98,6 +98,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		xicc)
 		WARN_CFLAGS="${WARN_CFLAGS} -Wcheck"
 		WARN_CFLAGS="${WARN_CFLAGS} -Wall -Wno-unused-parameter -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith  -Wwrite-strings -Wno-long-long"
+		WARN_CFLAGS="${WARN_CFLAGS} -Wextra -ansi"
 			;;
 		xeko)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wno-unused-parameter"
