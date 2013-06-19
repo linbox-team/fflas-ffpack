@@ -27,6 +27,7 @@ AC_PREREQ([2.61])
 
 AC_INIT([FFLAS-FFPACK], [1.6.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[http://www.linalg.org/projects/fflas-ffpack])
+
 AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability])
@@ -54,12 +55,14 @@ AC_PROFILE
 AC_WARNINGS
 
 echo "-----------------------------------------------"
+
 # CFLAGS=${CFLAGS:-$DEFAULT_CFLAGS}
 # CXXFLAGS=${CXXFLAGS:-$DEFAULT_CXXFLAGS}
 
 ######################################################
 # Try and pass different flags according to compiler #
 ######################################################
+
 
 # disable default -g -O2 CXXFLAGS
 : ${CXXFLAGS=""}
@@ -94,7 +97,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 	case x${CCNAM} in
 		xicc)
 		WARN_CFLAGS="${WARN_CFLAGS} -Wcheck"
-		# DEBUG_CFLAGS="-fast"
+		WARN_CFLAGS="${WARN_CFLAGS} -Wall -Wno-unused-parameter -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith  -Wwrite-strings -Wno-long-long"
 			;;
 		xeko)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wno-unused-parameter"
@@ -121,7 +124,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		xclang31)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address -g"
 			fi
 			;;
 
@@ -234,7 +237,6 @@ AC_C_BIGENDIAN(
 echo "-----------------------------------------------"
 # Feature checks
 FF_MISC
-# LB_DRIVER
 
 AC_LANG_CPLUSPLUS
 
@@ -322,6 +324,7 @@ CXXFLAGS="${GMP_CFLAGS} ${CXXFLAGS}"
 AC_SUBST(CXXFLAGS)
 
 echo "-----------------------------------------------"
+
 AC_CONFIG_FILES([
 Makefile
 macros/Makefile
