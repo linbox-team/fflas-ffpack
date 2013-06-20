@@ -142,6 +142,7 @@ namespace FFPACK {
 				nbfac++;
 				charp.push_front (minP);
 				if (k==Ncurr){
+					delete[] P;
 					return charp;
 				}
 				size_t Nrest = (size_t)(Ncurr-k);
