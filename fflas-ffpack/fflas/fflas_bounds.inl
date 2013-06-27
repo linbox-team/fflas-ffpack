@@ -185,7 +185,7 @@ namespace FFLAS {
 	{
 		size_t w = 0;
 		size_t mt = m;
-		while ( mt >= INOTHRESHOLD ) {
+		while ( mt >= WINOTHRESHOLD ) {
 			++w;
 			mt >>= 1;
 		}
