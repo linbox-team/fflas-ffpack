@@ -275,7 +275,7 @@ namespace FFPACK
 	template<class _Element>
 	class UnparametricField : public UnparametricOperations<_Element> {
 	protected:
-		long int _p ; long int _card ;
+		long int _p ; long int _card ; // why do we have them (not used anywhere, just copied along.)
 	public:
 
 		/** The field's element type.

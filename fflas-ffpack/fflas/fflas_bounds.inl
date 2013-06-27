@@ -181,11 +181,14 @@ namespace FFLAS {
 	 * \param m the common dimension in the product AxB
 	 *
 	 */
-	inline size_t WinoSteps (const size_t m)
+	inline size_t WinoSteps (const size_t & m)
 	{
 		size_t w = 0;
 		size_t mt = m;
-		while (mt >= WINOTHRESHOLD) {w++; mt >>= 1;}
+		while ( mt >= FFLAS::WINOTHRESHOLD ) {
+			++w;
+			mt >>= 1;
+		}
 		return w;
 	}
 

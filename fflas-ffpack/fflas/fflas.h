@@ -49,13 +49,16 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
 
+namespace FFLAS {
 #ifndef WINOTHRESHOLD
 #define WINOTHRESHOLD __FFLASFFPACK_WINOTHRESHOLD
 #endif
+}
 
-/* Thresholds determining which floating point representation to use, depending
+/** Thresholds determining which floating point representation to use, depending
  * on the cardinality of the finite field. This is only used when the element
  * representation is not a floating point type.
+ * @bug to be benchmarked.
  */
 #define FLOAT_DOUBLE_THRESHOLD_0 430
 #define FLOAT_DOUBLE_THRESHOLD_1 350
@@ -1356,7 +1359,7 @@ namespace FFLAS {
 	 *
 	 * \param m the common dimension in the product AxB
 	 */
-	size_t WinoSteps (const size_t m);
+	size_t WinoSteps (const size_t & m);
 
 
 
