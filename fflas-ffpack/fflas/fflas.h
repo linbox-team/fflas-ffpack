@@ -49,11 +49,11 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
 
-namespace FFLAS {
+// namespace FFLAS {
 #ifndef WINOTHRESHOLD
 #define WINOTHRESHOLD __FFLASFFPACK_WINOTHRESHOLD
 #endif
-}
+// }
 
 /** Thresholds determining which floating point representation to use, depending
  * on the cardinality of the finite field. This is only used when the element
