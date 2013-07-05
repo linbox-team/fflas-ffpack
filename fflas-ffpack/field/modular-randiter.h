@@ -33,6 +33,9 @@
 #define __FFLASFFPACK_modular_randiter_H
 
 #include <sys/time.h>
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE
+#endif
 #include <stdlib.h>
 #include <limits>
 

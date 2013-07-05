@@ -282,6 +282,12 @@ namespace FFPACK {
 			return x == 1.f;
 		}
 
+		inline bool isMOne (const Element &x) const
+		{
+			return x == mOne ;
+		}
+
+
 		inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;

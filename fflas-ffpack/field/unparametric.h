@@ -120,6 +120,12 @@ namespace FFPACK
 		{
 			return x == Element (1);
 		}
+
+		inline bool isMOne (const Element &x) const
+		{
+			return x == Element(-1) ;
+		}
+
 		//@} Comparison Predicates
 
 
@@ -327,7 +333,7 @@ namespace FFPACK
 
 		unsigned long cardinality () const
 		{
-			return _card ;
+			return (unsigned long)_card ;
 		}
 
 		unsigned long characteristic () const

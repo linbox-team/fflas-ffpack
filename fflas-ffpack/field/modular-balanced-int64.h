@@ -263,6 +263,11 @@ namespace FFPACK
 			return x == 1;
 		}
 
+		inline bool isMOne (const Element &x) const
+		{
+			return x == mOne;
+		}
+
 		inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
@@ -452,9 +457,9 @@ namespace FFPACK
                             v = a;
                         }
 
-			s = 0; 
-			u2 = 1; 
-			d = b; 
+			s = 0;
+			u2 = 1;
+			d = b;
 
 			while (v != 0) {
 				int64_t  q = d / v;
