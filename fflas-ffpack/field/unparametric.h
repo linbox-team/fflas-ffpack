@@ -243,6 +243,12 @@ namespace FFPACK
 			return os << "unparameterized field(" << sizeof(Element) <<',' << typeid(Element).name() << ')';
 		}
 
+		std::ostream &write (std::ostream &os, std::string F) const
+		{
+            return this->write(F != "" ? os << F : os);
+		}
+
+
 		/** Read field.
 		 * @return input stream from which field is read.
 		 * @param  is  input stream from which field is read.
@@ -261,7 +267,6 @@ namespace FFPACK
 		{
 			return os << x;
 		}
-
 		/** Read field element.
 		 * @return input stream from which field element is read.
 		 * @param  is  input stream from which field element is read.
