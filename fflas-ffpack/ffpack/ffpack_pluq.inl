@@ -215,7 +215,7 @@ namespace FFPACK {
 				Element * vtemp_it = vtemp +rank;
 				for (size_t i=0; i<M; ++i)
 					if (!pivotRows[i])
-						Fi.assign (*(vtemp_it++), A2[i*lda]);
+                        Fi.assign (*(vtemp_it++), A2[i*lda]);
 				    // Left looking update
 				ftrsv (Fi, FflasLower, FflasNoTrans,
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
@@ -236,9 +236,6 @@ namespace FFPACK {
 					continue;
 			} else
 				piv2 = row;
-#ifdef LEFTLOOKING
-			delete[] vtemp;
-#endif
 
 			if (row<M)  row++;
 			if (Fi.isZero (A [piv2*lda+piv3])){
@@ -320,6 +317,7 @@ namespace FFPACK {
 			rank++;
 		}
 #ifdef LEFTLOOKING
+        delete[] vtemp;
 		delete[] Ltemp;
 #endif
 		    // Building permutations
