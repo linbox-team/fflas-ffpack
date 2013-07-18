@@ -61,7 +61,7 @@ namespace FFPACK {
 		while ((col < N)||(row < M)){
 			size_t piv2 = rank;
 			size_t piv3 = rank;
-			Element * A1 = A + rank*lda;
+ 			Element * A1 = A + rank*lda;
 			Element * A2 = A + col;
 			Element * A3 = A + row*lda;
 			    // search for pivot in A2
@@ -196,7 +196,7 @@ namespace FFPACK {
 		while ((col < N)||(row < M)){
 			size_t piv2 = 0;
 			size_t piv3 = 0;
-			Element * A1 = A;
+// 			Element * A1 = A;
 			Element * A2 = A + col;
 			Element * A3 = A + row*lda;
 			    // search for pivot in A2
