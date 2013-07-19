@@ -48,7 +48,7 @@ AC_MSG_RESULT(yes)
 BACKUP_CXXFLAGS=${CXXFLAGS}
 BACKUP_LIBS=${LIBS}
 
-echo "  *** OPTIMISATIONS ***  "
+echo "  *** OPTIMIZATION ***  "
 
 AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 AC_MSG_RESULT([see below])
@@ -108,7 +108,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 ],
-[AC_MSG_RESULT(no optimisation)]
+[AC_MSG_RESULT(no optimization)]
 )
 
 ])
