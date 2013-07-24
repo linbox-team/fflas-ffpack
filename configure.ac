@@ -78,9 +78,11 @@ AC_SUBST([TESTS_CFLAGS])
 
 TESTS_CFLAGS="-O0"
 DEBUG_CFLAGS="-g"
-DEFAULT_CFLAGS="-pipe"
+
+DEFAULT_CFLAGS="-pipe -Wno-vla"
 WARN_CFLAGS="-Wall"
 
+#TODO use -fast for icc, -ipa for eko...
 if test "x$DBG" = "xyes" ; then
 	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} " #those are CXXFLAGS
 	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
@@ -103,17 +105,24 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		xeko)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wno-unused-parameter"
 			;;
-		xgcc)
+		xgcc|xgcc44)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+			fi
+	if test "x${HAVE_CXX11}" = "x0" ; then
+				WARN_CFLAGS="${WARN_CFLAGS} -ansi"
 			fi
 		;;
 		xgcc48)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -ansi -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address"
 			fi
+			if test "x${HAVE_CXX11}" = "x0" ; then
+				WARN_CFLAGS="${WARN_CFLAGS} -ansi"
+			fi
+
 			;;
 
 		xclang)

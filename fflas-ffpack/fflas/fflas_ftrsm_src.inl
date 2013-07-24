@@ -205,6 +205,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 #define __FFLAS__Atrsm_lda lda
 #ifndef __FFLAS__UNIT
   #ifdef __FFLAS__TRSM_READONLY
+		//! @warning this is C99 (-Wno-vla)
 		typename Field::Element Acop[__FFLAS__Na*__FFLAS__Na];
 		typename Field::Element* Acopi = Acop;
     #undef __FFLAS__Atrsm
@@ -214,7 +215,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
   #endif
 		typename Field::Element inv;
 #ifdef __FFLAS__TRSM_READONLY
-		const 
+		const
 #endif
 			typename Field::Element *  Ai = A;
 		typename Field::Element* Bi = B;
@@ -242,8 +243,8 @@ void delayed (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
 			const typename Field::Element * Acurr;
 			typename Field::Element* Acopcurr;
-			for (Acurr = Ai,  Acopcurr = Acopi; 
-			     Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim); 
+			for (Acurr = Ai,  Acopcurr = Acopi;
+			     Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim);
 			     Acurr += __FFLAS__Anorminc,
 				     Acopcurr += __FFLAS__Acopnorminc){
 				F.mul (*Acopcurr, *Acurr, inv);
