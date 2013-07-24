@@ -84,11 +84,11 @@ int main(int argc, char** argv){
 		tim.start(); 	
 
 		R = FFPACK::PLUQ/*_basecase*/ (F, diag, m, n, A, n, P, Q);
-		delete[] A;
+//		delete[] A;
 //		A = read_field(F,argv[2],&m,&n);
 //		std::cerr<<"LUDivine: "<<std::endl;
 		    //	R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackLQUP);
-		std::cerr<<"Fini LUdivine"<<std::endl;
+//		std::cerr<<"Fini LUdivine"<<std::endl;
 		tim.stop();
 		timc+=tim;
 		RRP = new size_t[R];
