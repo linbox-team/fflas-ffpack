@@ -191,7 +191,7 @@ namespace FFPACK {
 		Element* Ltemp = new Element[M*N];
 		for (size_t i=0; i<M*N; ++i)
 			Fi.assign(Ltemp[i],Fi.zero);
-		    //Element * vtemp = new Element[M];
+		// this is C99 (-Wno-vla)
 		Element vtemp[M];
 #endif
 		while ((col < N)||(row < M)){
@@ -318,7 +318,6 @@ namespace FFPACK {
 			rank++;
 		}
 #ifdef LEFTLOOKING
-		    //delete[] vtemp;
 		delete[] Ltemp;
 #endif
 		    // Building permutations
