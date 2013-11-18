@@ -36,7 +36,7 @@ AC_DEFUN([FF_CHECK_CBLAS],
 				the directory which contains the library.  ])
 			])
 
-		BLAS_HOME_PATH="$with_cblas ${DEFAULT_CHECKING_PATH} /usr/lib/atlas"
+		BLAS_HOME_PATH="$with_cblas ${DEFAULT_CHECKING_PATH} /usr/lib/atlas /usr/lib64/atlas"
 		dnl  echo $BLAS_HOME_PATH
 
 		dnl Check for existence
