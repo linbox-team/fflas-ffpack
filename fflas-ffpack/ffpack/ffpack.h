@@ -1693,7 +1693,7 @@ else { // Left NullSpace
 	}
 
 	template <class Field, class Polynomial>
-	std::list<Polynomial>&
+	Polynomial&
 	CharPoly( const Field& F, Polynomial& charp, const size_t N,
 		  typename Field::Element * A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg)
