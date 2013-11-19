@@ -1701,22 +1701,20 @@ else { // Left NullSpace
 
 		std::list<Polynomial> factor_list;
 		CharPoly (F, factor_list, N, A, lda, CharpTag);
-		typename std::list<std::vector<typename Field::Element> >::const_iterator it;
+		typename std::list<Polynomial >::const_iterator it;
 		it = factor_list.begin();
-		//		std::vector<Element>* tmp = new std::vector<Element> (n+1);
+
 		charp.resize(N+1);
 
-		Polynomial P = *(it++);
+		Polynomial P = charp = *(it++);
+
 		while( it!=factor_list.end() ){
 			mulpoly (F,charp, P, *it);
 			P = charp;
-
-			//	delete &(*it);
 			++it;
 		}
+
 		return charp;
-
-
 	}
 
 	/**********************/
