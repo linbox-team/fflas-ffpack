@@ -1190,21 +1190,25 @@ namespace FFLAS {
                                   size_t& CBLOCKSIZE,
                                   const size_t m, const size_t n,
                                   const size_t numthreads) {
-        const size_t maxt = (size_t)sqrt((double)numthreads);
-	size_t maxtr=maxt,maxtc=maxt;
-	for(size_t i=maxt; i>=1; --i) {
-		size_t j=maxt;
-                size_t newpr = i*j;
-		for( ; newpr < numthreads; ++j, newpr+=i ) {}
-                if (newpr == numthreads) {
-                    maxtr = i;
-                    maxtc = j;
-                    break;
-                }
-        }
+	    //CP: Let's not compute these values all the time
+            const short maxtr[64] = {1,1,1,2,1,2,1,2,3,2,1,3,1,2,3,4,1,3,1,4,3,2,1,4,5,2,3,4,1,5,1,4,3,2,5,6,1,2,3,5,1,6,1,4,5,2,1,6,7,5,3,4,1,6,5,7,3,2,1,6,1,2,7,8};
+            const short maxtc[64] = {1,2,3,2,5,3,7,4,3,5,11,4,13,7,5,4,17,6,19,5,7,11,23,6,5,13,9,7,29,6,31,8,11,17,7,6,37,19,13,8,41,7,43,11,9,23,47,8,7,10,17,13,53,9,11,8,19,29,59,10,61,31,9,8};
 
-        RBLOCKSIZE=MAX(m/maxtr,1);
-        CBLOCKSIZE=MAX(n/maxtc,1);
+       // const size_t maxt = (size_t)sqrt((double)numthreads);
+       // 	size_t maxtr=maxt,maxtc=maxt;
+       // 	for(size_t i=maxt; i>=1; --i) {
+       // 		size_t j=maxt;
+       //          size_t newpr = i*j;
+       // 		for( ; newpr < numthreads; ++j, newpr+=i ) {}
+       //          if (newpr == numthreads) {
+       //              maxtr = i;
+       //              maxtc = j;
+       //              break;
+       //          }
+       //  }
+
+	    RBLOCKSIZE=MAX(m/maxtr[numthreads-1],1);
+	    CBLOCKSIZE=MAX(n/maxtc[numthreads-1],1);
     }
 
     void BlockCuts(size_t& r, size_t& c,
