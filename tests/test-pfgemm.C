@@ -42,8 +42,7 @@
 #ifndef TIME
 #define TIME 1
 #endif
-#define FFLAS_FFPACK_USES_OPENMP
-#define __FFLAS_USE_OMP
+#define __FFLASFFPACK_USE_OPENMP
 
 #include <iomanip>
 #include <iostream>

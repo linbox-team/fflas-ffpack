@@ -1118,8 +1118,8 @@ namespace FFLAS {
 	     * Parallel fgemm
 	     */
 
-#ifdef FFLAS_FFPACK_USES_OPENMP
-#define FFLAS_FFPACK_MINBLOCKCUTS 512
+#ifdef __FFLASFFPACK_USE_OPENMP
+#define __FFLASFFPACK_MINBLOCKCUTS 512
 
     enum CuttingStrategy {
         ROW_FIXED	,
@@ -1141,7 +1141,7 @@ namespace FFLAS {
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t numthreads) {
-        RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
+        RBLOCKSIZE = __FFLASFFPACK_MINBLOCKCUTS;
         CBLOCKSIZE = n;
     }
 
@@ -1152,7 +1152,7 @@ namespace FFLAS {
                                  const size_t m, const size_t n,
                                  const size_t numthreads) {
         RBLOCKSIZE = m;
-        CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
+        CBLOCKSIZE =__FFLASFFPACK_MINBLOCKCUTS;
     }
 
 
@@ -1161,8 +1161,8 @@ namespace FFLAS {
                                 size_t& CBLOCKSIZE,
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
-        RBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
-        CBLOCKSIZE = FFLAS_FFPACK_MINBLOCKCUTS;
+        RBLOCKSIZE =__FFLASFFPACK_MINBLOCKCUTS;
+        CBLOCKSIZE =__FFLASFFPACK_MINBLOCKCUTS;
     }
 
     template<>
@@ -1372,7 +1372,7 @@ namespace FFLAS {
 #include "fflas_bounds.inl"
 #include "fflas_fgemm.inl"
 
-#ifdef FFLAS_FFPACK_USES_OPENMP
+#ifdef __FFLASFFPACK_USE_OPENMP
 #include "fflas_pfgemm.inl"
 #endif
 
