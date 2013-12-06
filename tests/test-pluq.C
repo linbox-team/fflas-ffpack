@@ -7,7 +7,7 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-//#define DEBUG 1
+#define DEBUG 1
 #define __FFLAS__TRSM_READONLY
 // Debug option  0: no debug
 //               1: check A = LQUP 
@@ -56,7 +56,7 @@ int main(int argc, char** argv){
 
 	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
 	enum FFLAS::FFLAS_TRANSPOSE trans = FFLAS::FflasNoTrans;
-	if (trans == FFLAS::FflasTrans){
+	if (trans == FFLAS::FflasNoTrans){
 		maxP = m;
 		maxQ = n;
 	} else{
