@@ -37,138 +37,12 @@
 #endif
 
 #define LEFTLOOKING
-#define BASECASE_K 288
+#define CROUT
+#define MEMCOPY
+#define BASECASE_K 400
 namespace FFPACK {
 	using namespace FFLAS;
 
-	template<class Field>
-	inline size_t
-	PLUQ_basecaseV3 (const Field& Fi, const FFLAS_DIAG Diag,
-		       const size_t M, const size_t N,
-		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
-	{
-		typedef typename Field::Element Element;
-		size_t row = 0;
-		size_t col = 0;
-		size_t rank = 0;
-		size_t * MathP = new size_t[M];
-		size_t * MathQ = new size_t[N];
-
-		for (size_t i=0; i<M; ++i) MathP[i] = i;
-		for (size_t i=0; i<N; ++i) MathQ[i] = i;
-		for (size_t i=0; i<M; ++i) P[i] = i;
-		for (size_t i=0; i<N; ++i) Q[i] = i;
-		while ((col < N)||(row < M)){
-			size_t piv2 = rank;
-			size_t piv3 = rank;
- 			Element * A1 = A + rank*lda;
-			Element * A2 = A + col;
-			Element * A3 = A + row*lda;
-			    // search for pivot in A2
-			if (row==M){
-				piv3=col;
-			}else
-				while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
-			if (piv3 == col){
-				if (col==N){
-					row++;
-					continue;
-				}
-#ifdef LEFTLOOKING
-				    // Left looking style update
-				ftrsv (Fi, FflasLower, FflasNoTrans,
-				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
-				       rank, A, lda, A2, lda);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
-				       A1,lda, A2, lda,
-				       Fi.one, A2+rank*lda, lda);
-#endif
-				while ((piv2 < row) && Fi.isZero (A2 [piv2*lda])) piv2++;
-				if (col<N) col++;
-				if (piv2==M)
-					continue;
-			} else
-				piv2 = row;
-			if (row<M)  row++;
-			if (Fi.isZero (A [piv2*lda+piv3])){
-				    // no pivot found
-				    //cerr<<endl;
-				continue;
-			}
-			    // At this point the pivot is located at x=piv2 y = piv3
-//			P [rank] = piv2;
-//			Q [rank] = piv3;
-
-			A2 = A+piv3;
-			A3 = A+piv2*lda;
-
-			    // update permutations (cyclic shift)
-
-
-			    //if(piv2 > rank)
-				cyclic_shift_mathPerm(MathP+rank, piv2-rank+1);
-
-				    //if(piv3 > rank)
-				cyclic_shift_mathPerm(MathQ+rank, piv3-rank+1);
-
-			Element invpiv;
-			Fi.inv (invpiv, A3[piv3]);
-			if (Diag==FflasUnit){
-#ifdef LEFTLOOKING
-				    // Normalizing the pivot row
-				for (size_t i=piv3+1; i<N; ++i)
-					Fi.mulin (A3[i], invpiv);
-#endif
-			}
-			else
-				    // Normalizing the pivot column
-				for (size_t i=piv2+1; i<M; ++i)
-					Fi.mulin (A2 [i*lda], invpiv);
-			    // Update
-#ifndef LEFTLOOKING
-			for (size_t i=piv2+1; i<M; ++i)
-			 	for (size_t j=piv3+1; j<N; ++j)
-					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
-#endif
-
-
-			    // cyclic shift pivot column and row
-			if(piv3 > rank || piv2 > rank)
-			{
-
-				cyclic_shift_row_col(A+rank*(1+lda), piv2-rank+1, piv3-rank+1, lda);
-
-				cyclic_shift_row(A+rank*lda, piv2-rank+1, rank, lda);
-				cyclic_shift_row(A+rank*lda+piv3+1, piv2-rank+1, N-1-piv3, lda);
-				cyclic_shift_col(A+rank, rank, piv3-rank+1, lda);
-				cyclic_shift_col(A+rank+(piv2+1)*lda, M-1-piv2, piv3-rank+1, lda);
-			}
-
-
-/*
-
-			if(piv2 > rank)
-				cyclic_shift_row(A+rank*lda, piv2-rank+1, N, lda);
-			if(piv3 > rank)
-				cyclic_shift_col(A+rank, M, piv3-rank+1, lda);
-*/
-
-#ifdef LEFTLOOKING
-			    // Need to update the cols already updated
-			for (size_t i=piv2+1; i<M; ++i)
-				for (size_t j=piv3+1; j<col; ++j)
-					Fi.maxpyin (A[i*lda+j],
-						    A[i*lda+rank], A[rank*lda+j]);
-#endif
-			rank++;
-		}
-		MathPerm2LAPACKPerm(P, MathP, M);
-		MathPerm2LAPACKPerm(Q, MathQ, N);
-			delete[] MathP;
-			delete[] MathQ;
-
-		return rank;
-	}
 
 	template<class Field>
 	inline size_t
@@ -216,7 +90,7 @@ namespace FFPACK {
 				Element * vtemp_it = vtemp +rank;
 				for (size_t i=0; i<M; ++i)
 					if (!pivotRows[i])
-                        Fi.assign (*(vtemp_it++), A2[i*lda]);
+						Fi.assign (*(vtemp_it++), A2[i*lda]);
 				    // Left looking update
 				ftrsv (Fi, FflasLower, FflasNoTrans,
 				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
@@ -339,6 +213,262 @@ namespace FFPACK {
 
 		return rank;
 	}
+	
+        // Base Case based on a CUP decomp with rotations
+	template<class Field>
+	inline size_t
+	PLUQ_basecaseCrout (const Field& Fi, const FFLAS_DIAG Diag,
+			    const size_t M, const size_t N,
+			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	{
+		typedef typename Field::Element Element;
+		int row = 0;
+		int rank = 0;
+		Element* CurrRow=A;
+		size_t * MathP = new size_t[M];
+		size_t * MathQ = new size_t[N];
+		for (size_t i=0; i<M; ++i) MathP[i] = i;
+		for (size_t i=0; i<N; ++i) MathQ[i] = i;
+		while ((row<M) && (rank<N)){
+			    // Updating row where pivot will be searched for
+			fgemv(Fi, FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
+//			write_field(Fi,std::cerr<<"Avant la cherche"<<std::endl,A,M,N,lda);
+			int i = rank-1;
+			while(Fi.isZero (CurrRow[++i]) && (i<N-1));
+//			std::cout<<"row = "<<row<<" i = "<<i<<" -> A[row,i] = "<<CurrRow[i]<<std::endl;
+			if (!Fi.isZero (CurrRow[i])){
+				    // found pivot
+				    // Updating column below pivot
+				// pivotCols [i] = true;
+				// Q [rank] = i;
+				// pivotRows [row] = true;
+				// P [rank] = row;
+				fgemv(Fi, FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
+				    // Normalization
+				Element invpiv;
+				Fi.inv (invpiv, CurrRow[i]);
+				if (Diag == FflasUnit)
+					fscal (Fi, N-i-1, invpiv, CurrRow+i+1,1);
+				else
+					fscal (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);			
+				if (i > rank){
+					    // Column rotation to move pivot on the diagonal
+					    // on U
+					cyclic_shift_col(A+rank, rank, i-rank+1, lda);
+					cyclic_shift_mathPerm(MathQ+rank, i-rank+1);
+					    // on A
+					cyclic_shift_col(CurrRow+lda+rank, M-row-1, i-rank+1, lda);
+					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
+					fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
+				}
+				if (row > rank){
+					    // Row rotation for L
+					    // Optimization: delay this to the end
+					cyclic_shift_row(A+rank*lda, row-rank+1, rank, lda);
+					cyclic_shift_mathPerm(MathP+rank, row-rank+1);
+					    // Row rotation for U (not moving the 0 block)
+					fcopy (Fi, N-i-1, A+rank*lda+i+1, 1, CurrRow+i+1, 1);
+					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
+					fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);			
+					Fi.assign(CurrRow[i],Fi.zero); // only needed once here
+				}
+//				write_field(Fi,std::cerr<<"Apres cylicRow"<<std::endl,A,M,N,lda);
+rank++;
+			}
+			CurrRow+=lda;
+			row++;
+		}
+
+		// size_t nonpiv = rank;
+		// for (size_t i = 0; i<M; ++i)
+		// 	if (!pivotRows[i])
+		// 		MathP[nonpiv++] = i;
+		// nonpiv = rank;
+		// for (size_t i = 0; i<N; ++i)
+		// 	if (!pivotCols[i])
+		// 		MathQ[nonpiv++] = i;
+		
+		// std::cerr<<"MathP = ";
+		// for (int i=0; i<M; ++i)
+		// 	std::cerr<<MathP[i]<<" ";
+		// std::cerr<<std::endl;
+		// std::cerr<<"MathQ = ";
+		// for (int i=0; i<N; ++i)
+		// 	std::cerr<<MathQ[i]<<" ";
+		// std::cerr<<std::endl;
+
+		MathPerm2LAPACKPerm (Q, MathQ, N);
+		delete[] MathQ;
+		MathPerm2LAPACKPerm (P, MathP, M);
+		delete[] MathP;
+		for (size_t i=rank; i<M; ++i)
+			fzero (Fi, N-rank, A+i*lda+rank, 1);				
+//		write_field(Fi,std::cerr<<"Fini"<<std::endl,A,M,N,lda);
+
+
+		return rank;
+	}
+// Premiere tentative de Crout avortee: trop de copies compact<->disperse et 2 cyclic-shift
+//	template<class Field>
+//	inline size_t
+// 	PLUQ_basecaseCrout (const Field& Fi, const FFLAS_DIAG Diag,
+// 			    const size_t M, const size_t N,
+// 			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+// 	{
+// 		typedef typename Field::Element Element;
+// 		size_t row = 0;
+// 		size_t col = 0;
+// 		size_t rank = 0;
+// 		std::vector<bool> pivotRows(M,false);
+// 		std::vector<bool> pivotCols(N,false);
+// 		size_t * MathP = new size_t[M];
+// 		size_t * MathQ = new size_t[N];
+// 		    // Elimination takes place on Acop
+// 		    // The Compact L\U output will be progressively stored in A
+// 		Element* Acop = new Element[M*N];
+// 		size_t ldac=N;
+// 		Element* Aci=Acop;
+// 		for (size_t i=0; i<M; ++i)
+// 			for (size_t j=0; i<N; ++j, ++Aci)
+// 				Fi.assign (*Aci, A[i*lda+j]);
+// 		// this is C99 (-Wno-vla)
+// 		while ((col < N)||(row < M)){
+// 			size_t piv2 = 0;
+// 			size_t piv3 = 0;
+// 			Element * Ac2 = Acop + col;
+// 			Element * Ac3 = Acop + row*ldac;
+// 			Element * A12 = A+rank;
+// 			Element * A21 = A+rank*lda;
+// 			Element * A22 = A21+rank;
+// 			if (row==M){
+// 				piv3=col;
+// 			}else
+// 				while ((piv3 < col) && (pivotCols[piv3] || Fi.isZero (Ac3 [piv3]))) piv3++;
+// 			if (piv3 == col){
+// 				    // No pivot found in bottom row -> need to update one column and search in it
+// 				if (col==N){
+// 					row++;
+// 					continue;
+// 				}
+// 				    // Copying the U part of the column
+// 				for (size_t i=0; i<rank; ++i)
+// 					Fi.assign (A12 [i*lda], Ac2 [MathP[i]*ldac]);
+// 				    // Copying the lower part to be updated
+// 				Element * A_it = A22;
+// 				for (size_t i=0; i<row; ++i)
+// 					if (!pivotRows[i])
+// 						Fi.assign (*(A_it++), Ac2[i*ldac]);
+// 				for (size_t i=row; i<M; ++i)
+// 					Fi.assign (*(A_it++), Ac2[i*ldac]);
+ 				
+// 				    //Update
+// 				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
+// 				       A21, lda, A12, lda, Fi.one, A22, lda);
+				
+// 				// Copying back the updated column to Acop
+// 				// could be avoided: search the min index of pivot directly on A22
+                                
+// 				A_it = A22;
+// 				for (size_t i=0; i<M; ++i)
+// 					if (!pivotRows[i]){
+// 						Fi.assign (Ac2[i*ldac], *(A_it));
+// 						A_it+=lda;
+// 					}
+// 				while ((piv2 < row) && (pivotRows[piv2] || Fi.isZero (Ac2 [piv2*ldac]))) piv2++;
+// 				if (col<N) col++;
+// 				if (piv2==M)
+// 					continue;
+// 			} else
+// 				piv2 = row;
+
+// 			if (row<M)  row++;
+// 			if (Fi.isZero (Acop [piv2*lda+piv3])){
+// 				    // no pivot found
+// 				continue;
+// 			}
+// 			    // At this point the pivot is located at x=piv2 y = piv3
+// 			Ac2 = Acop+piv3;
+// 			Ac3 = Acop+piv2*ldac;
+// 			MathQ[rank] = piv3;
+// 			MathP[rank] = piv2;
+// 			pivotCols[piv3] = true;
+// 			pivotRows[piv2] = true;
+//                             //Applying the permutation on L
+// 			    // finding the row idx of row piv2 in L stored in A
+// 			size_t Lpiv2=1;
+// 			    // This value should be maintained, not computed every time!!!
+// 			if (piv2==row)
+// 				Lpiv2 = row-rank+1;
+// 			else
+// 				for (size_t i=0; i<piv2; ++i)
+// 					if (!pivotRows[i])
+// 						Lpiv2 ++;
+// 			cyclic_shift_row(A21, Lpiv2, rank+1, lda);
+
+// 			Element invpiv;
+// 			Fi.inv (invpiv, Ac3[piv3]);
+// 			if (Diag==FflasNonUnit){
+// 				    // Normalizing the pivot column
+// 				Element * L_it = A22 + lda;
+// 				for (size_t i=0; i<row+1; ++i)
+// 					if (!pivotRows[i]){
+// 						Fi.assign (*L_it, Fi.mulin (Ac2 [i*ldac], invpiv));
+// 						L_it+= lda;
+// 					}
+
+// 				for (size_t i=row+1; i<M; ++i){
+// 					Fi.assign (*L_it,Fi.mulin (Ac2 [i*ldac], invpiv));
+// 					Ldt_it+=lda;
+// 				}
+// 			}
+// 			    //Copying the new row of U to the compact storage in A
+// 			Element* U_it = A22+1;
+// 			for (size_t i=0; i<col+1; ++i)
+// 				if (!pivotCols[i])
+// 					Fi.assign (*(U_it++), Ac3 [i]);
+// 			for (size_t i=col+1; i<N; ++i)
+// 				Fi.assign (*(U_it++), Ac3 [i]);
+				
+			
+// 		      !!!!
+// 			    //Then Updating it
+// 			fgemv (Fi, FflasNoTrans, rank, N-rank-1, Fi.mOne, A12, lda, A21, 1, Fi.one, A22+1, 1);
+			
+			
+// 			    // Divinding this new row by L
+// 			if (Diag==FflasUnit){
+// 				    // Normalizing the pivot row
+// 				for (size_t i=piv3+1; i<N; ++i)
+// 					Fi.assign (A21[i], Fi.mulin (Ac3[i], invpiv));
+// 			}
+
+// 			    // Need to update the cols already updated
+// 			if (piv3<col)
+// 				for (size_t i=piv2+1; i<M; ++i)
+// 					for (size_t j=piv3+1; j<col; ++j)
+// 						if (!pivotCols[j])
+// 							Fi.assign(!!!!, Fi.maxpyin (Acop[i*lda+j], Ac2[i*ldac], Ac3[j]));
+// // A faire aussi dans A
+// 			rank++;
+// 		}
+// 		delete[] Acop;
+// 		    // Building permutations
+// 		 size_t nonpiv = rank;
+// 		 for (size_t i = 0; i<M; ++i)
+// 			 if (!pivotRows[i])
+// 				 MathP[nonpiv++] = i;
+// 		 nonpiv = rank;
+// 		 for (size_t i = 0; i<N; ++i)
+// 			 if (!pivotCols[i])
+// 				 MathQ[nonpiv++] = i;
+// 		MathPerm2LAPACKPerm (Q, MathQ, N);
+// 		delete[] MathQ;
+
+// 		MathPerm2LAPACKPerm (P, MathP, M);
+// 		delete[] MathP;
+
+// 		return rank;
+// 	}
 
 	template<class Field>
 	inline size_t
@@ -455,6 +585,7 @@ namespace FFPACK {
 		for (size_t i=0; i<N; ++i) Q[i] = i;
 		if (MIN (M,N) == 0) return 0;
 		if (MAX (M,N) == 1) return (Fi.isZero(*A))? 0 : 1;
+#ifndef BASECASE_K
 		if (M == 1){
 			size_t piv = 0;
 			while ((piv < N) && Fi.isZero (A[piv])) piv++;
@@ -491,10 +622,16 @@ namespace FFPACK {
 			}
 			return 1;
 		}
-
+#endif
 #ifdef BASECASE_K
 		if (MIN(M,N) < BASECASE_K)
-			return PLUQ_basecaseV2 (Fi, Diag, M, N, A, lda, P, Q);
+			return
+#ifdef CROUT
+				PLUQ_basecaseCrout 
+#else
+				PLUQ_basecaseV2
+#endif
+				(Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
 		size_t M2 = M >> 1;
@@ -504,7 +641,7 @@ namespace FFPACK {
 		size_t R1,R2,R3,R4;
 
 		    // A1 = P1 [ L1 ] [ U1 V1 ] Q1
-		    //        [ M1 ]
+		    //         [ M1 ]
 		R1 = PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1);
 		Element * A2 = A + N2;
 		Element * A3 = A + M2*lda;
