@@ -1,9 +1,10 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
 /* fflas/fflas_pfgemm.inl
- * Copyright (C) 2013 ??
+ * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
- * Written by ??
+ * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  *
  * ========LICENCE========
@@ -29,92 +30,149 @@
 #ifndef __FFLASFFPACK_fflas_pfgmm_INL
 #define __FFLASFFPACK_fflas_pfgmm_INL
 
+
+#ifdef __FFLAS_USE_KAAPI
+#include <kaapi++>
+#endif
 #ifdef __FFLAS_USE_OMP
 #include <omp.h>
 #endif
 
-#ifdef __FFLAS_USE_KAAPI
-#include <kaapi++.h>
-#endif
-
 namespace FFLAS {
 
+
+
 #ifdef __FFLAS_USE_KAAPI
-	class KaapifgemmPar{
-		operator (){
-			pfgemm();
-		}
-	};
-	class KaapifgemmSeq{
-		operator (){
-			fgemm();
-		}
-	};
-#endif
-
-template<class Field>
-inline typename Field::Element*
-pfgemm( const Field& F,
-        const FFLAS_TRANSPOSE ta,
-        const FFLAS_TRANSPOSE tb,
-        const size_t m,
-        const size_t n,
-        const size_t k,
-        const typename Field::Element alpha,
-        const typename Field::Element* A, const size_t lda,
-        const typename Field::Element* B, const size_t ldb,
-        const typename Field::Element beta,
-        typename Field::Element* C, const size_t ldc,
-        const size_t w,
-        const CuttingStrategy method //= BLOCK_THREADS
-        ){
-
-    size_t RBLOCKSIZE, CBLOCKSIZE;
-#pragma omp parallel
-    {
-#pragma omp single
-        {
-            BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, omp_get_num_threads() );
-        }
-    }
-
-    size_t NrowBlocks = m/RBLOCKSIZE;
-    size_t LastrowBlockSize = m % RBLOCKSIZE;
-    if (LastrowBlockSize)
-        NrowBlocks++;
-    else
-        LastrowBlockSize = RBLOCKSIZE;
-    size_t NcolBlocks = n/CBLOCKSIZE;
-    size_t LastcolBlockSize = n % CBLOCKSIZE;
-    if (LastcolBlockSize)
-        NcolBlocks++;
-    else
-        LastcolBlockSize = CBLOCKSIZE;
-
-    const size_t BLOCKS = NrowBlocks*NcolBlocks;
-
-
-#pragma omp parallel for default (none) shared (A, B, C, F, RBLOCKSIZE, CBLOCKSIZE, NcolBlocks, NrowBlocks, LastcolBlockSize, LastrowBlockSize)
-    for (size_t t = 0; t < BLOCKS; ++t){
-        size_t i = t / NcolBlocks;
-        size_t j = t % NcolBlocks;
-        size_t BlockRowDim = RBLOCKSIZE;
-        if (i == NrowBlocks-1)
-            BlockRowDim = LastrowBlockSize;
-        size_t BlockColDim = CBLOCKSIZE;
-        if (j == NcolBlocks-1)
-            BlockColDim = LastcolBlockSize;
-
-#ifdef __FFLAS_USE_OMP
-        fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w);
-#endif
-#ifdef __FFLAS_USE_KAAPI
-	spawn<fgemm>
-#endif
-    }
-    return C;
+	template<class Field>			
+	struct Taskfgemm : public ka::Task<15>::Signature<
+		Field,
+		FFLAS_TRANSPOSE,
+		FFLAS_TRANSPOSE,
+		size_t ,
+		size_t ,
+		size_t ,
+		typename Field::Element,
+		ka::R<typename Field::Element>,
+		size_t ,
+		ka::R<typename Field::Element>,
+		size_t ,
+		typename Field::Element,
+		ka::RW<typename Field::Element>,
+		size_t ,
+		size_t
+		>{};
 }
 
-} // FFLAS
+template<class Field>
+struct TaskBodyCPU<FFLAS::Taskfgemm<Field> >{
+	void operator()(const Field& F,
+			const FFLAS::FFLAS_TRANSPOSE ta,
+			const FFLAS::FFLAS_TRANSPOSE tb,
+			size_t BlockRowDim,
+			size_t BlockColDim,
+			size_t k,
+			const typename Field::Element alpha,
+			ka::pointer_r<typename Field::Element> A,
+			const size_t lda,
+			ka::pointer_r<typename Field::Element> B,
+			const size_t ldb,
+			const typename Field::Element beta,
+			ka::pointer_rw<typename Field::Element> C, const size_t ldc,
+			const size_t w)
+	{
+		FFLAS::fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A.ptr(), lda, B.ptr() , ldb,
+			      beta, C.ptr(), ldc, w);
+	}
+};
 
-#endif // __FFLASFFPACK_fflas_pfgmm_INL
+namespace FFLAS {
+	
+#endif
+	
+	template<class Field>
+	inline typename Field::Element*
+	pfgemm( const Field& F,
+		const FFLAS_TRANSPOSE ta,
+		const FFLAS_TRANSPOSE tb,
+		const size_t m,
+		const size_t n,
+		const size_t k,
+		const typename Field::Element alpha,
+		const typename Field::Element* A, const size_t lda,
+		const typename Field::Element* B, const size_t ldb,
+		const typename Field::Element beta,
+		typename Field::Element* C, const size_t ldc,
+		const size_t w,
+		const CuttingStrategy method 
+#ifdef __FFLAS_USE_KAAPI
+		= BLOCK_THREADS
+#endif
+		){
+		size_t RBLOCKSIZE, CBLOCKSIZE;
+
+#ifdef __FFLAS_USE_OMP
+		//		const CuttingStrategy method = BLOCK_THREADS;
+		//#pragma omp parallel
+		//		{
+			//#pragma omp single
+		//	{
+				
+				BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, omp_get_num_threads() );
+				
+				//	}
+				//}
+#endif
+#ifdef __FFLAS_USE_KAAPI
+		BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, kaapi_getconcurrency_cpu() );
+#endif
+		
+		//std::cout<<"RBLOCKSIZE : "<<RBLOCKSIZE<<std::endl;
+		//std::cout<<"CBLOCKSIZE : "<<CBLOCKSIZE<<std::endl;
+		size_t NrowBlocks = m/RBLOCKSIZE;
+		size_t LastrowBlockSize = m % RBLOCKSIZE;
+		if (LastrowBlockSize)
+			NrowBlocks++;
+		else
+			LastrowBlockSize = RBLOCKSIZE;
+		size_t NcolBlocks = n/CBLOCKSIZE;
+		size_t LastcolBlockSize = n % CBLOCKSIZE;
+		if (LastcolBlockSize)
+			NcolBlocks++;
+		else
+			LastcolBlockSize = CBLOCKSIZE;
+		
+		const size_t BLOCKS = NrowBlocks*NcolBlocks;
+		//std::cout<<"NrowBlocks : "<<NrowBlocks<<std::endl;
+		//std::cout<<"NcolBlocks : "<<NcolBlocks<<std::endl;
+		for (size_t t = 0; t < BLOCKS; ++t){
+			size_t i = t / NcolBlocks;
+			size_t j = t % NcolBlocks;
+			size_t BlockRowDim = RBLOCKSIZE;
+			if (i == NrowBlocks-1)
+				BlockRowDim = LastrowBlockSize;
+			size_t BlockColDim = CBLOCKSIZE;
+			if (j == NcolBlocks-1)
+				BlockColDim = LastcolBlockSize;
+			
+#ifdef __FFLAS_USE_OMP
+#pragma omp task shared (A, B, C, F, NcolBlocks, NrowBlocks)
+			fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w);
+#endif
+#ifdef __FFLAS_USE_KAAPI
+			ka::Spawn<Taskfgemm<Field> >()(F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda,
+						       B + CBLOCKSIZE * j, ldb,beta, C + RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w);
+#endif
+		}
+#ifdef __FFLAS_USE_OMP
+       #pragma omp taskwait
+#endif
+#ifdef __FFLAS_USE_KAAPI
+		ka::Sync();
+#endif
+		return C;
+	}
+	
+} // FFLAS                                                                                                                   
+
+#endif // __FFLASFFPACK_fflas_pfgmm_INL  
+
