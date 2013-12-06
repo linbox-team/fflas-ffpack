@@ -7,7 +7,7 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-#define DEBUG 1
+//#define DEBUG 1
 #define __FFLAS__TRSM_READONLY
 // Debug option  0: no debug
 //               1: check A = LQUP 
@@ -18,7 +18,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include "Matio.h"
+#include "utils/Matio.h"
 #include "utils/timer.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -83,10 +83,9 @@ int main(int argc, char** argv){
 		tim.clear();      
 		tim.start(); 	
 
-		R = FFPACK::PLUQ/*_basecase*/ (F, diag, m, n, A, n, P, Q);
+		R = FFPACK::PLUQ/*_basecaseCrout*/ (F, diag, m, n, A, n, P, Q);
 //		delete[] A;
 //		A = read_field(F,argv[2],&m,&n);
-//		std::cerr<<"LUDivine: "<<std::endl;
 		    //	R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackLQUP);
 //		std::cerr<<"Fini LUdivine"<<std::endl;
 		tim.stop();
@@ -95,7 +94,7 @@ int main(int argc, char** argv){
 		CRP = new size_t[R];
 		RankProfilesFromPLUQ(RRP, CRP, P, Q, m, n, R);
 	}
-	// cerr<<"Row Rank Profile = ";
+	    // cerr<<"Row Rank Profile = ";
 	// for (size_t i=0;i<R;++i)
 	// 	cerr<<RRP[i]<<" ";
 	// cerr<<endl;
@@ -137,22 +136,22 @@ int main(int argc, char** argv){
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	for (size_t i=0; i<R; ++i){
+	for (size_t  i=0; i<R; ++i){
 		for (size_t j=0; j<i; ++j)
 			F.assign ( *(U + i*n + j), zero);
-		for (size_t j=i; j<n; ++j)
+		for (int j=i; j<n; ++j)
 			F.assign (*(U + i*n + j), *(A+ i*n+j));
 	}
 	for ( size_t j=0; j<R; ++j ){
 		for (size_t i=0; i<=j; ++i )
 			F.assign( *(L+i*R+j), zero);
 		F.assign(*(L+j*R+j), one);
-		for (size_t i=j+1; i<m; i++)
+		for (size_t i=j+1; i<(size_t)m; i++)
 			F.assign( *(L + i*R+j), *(A+i*n+j));
 	}
 	
-	// write_field(F,cerr<<"L = "<<endl,L,m,R,R);
-	// write_field(F,cerr<<"U = "<<endl,U,R,n,n);
+	    //write_field(F,cerr<<"L = "<<endl,L,m,R,R);
+	    //write_field(F,cerr<<"U = "<<endl,U,R,n,n);
 	// cerr<<endl;
 	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 	
@@ -167,8 +166,8 @@ int main(int argc, char** argv){
 	    //delete[] A;
 	
 //////
-	// write_field(F,cerr<<"L = "<<endl,L,m ,n,n);
-	// write_field(F,cerr<<"U = "<<endl,U,n,n,n);
+	    //write_field(F,cerr<<"L = "<<endl,L,m ,n,n);
+	    //write_field(F,cerr<<"U = "<<endl,U,n,n,n);
 	
 	 // cerr<<"P = ";
 	 // for (int i=0; i<m; ++i)
@@ -178,12 +177,12 @@ int main(int argc, char** argv){
 	 // for (int i=0; i<n; ++i)
 	 // 	cerr<<Q[i]<<" ";
 	 // cerr<<endl;
-
+	
 	Field::Element * B =  read_field(F,argv[2],&m,&n);
 
 	bool fail = false;
-	for (size_t i=0; i<m; ++i)
-		for (size_t j=0; j<n; ++j)
+	for (size_t i=0; i<(size_t)m; ++i)
+		for (size_t j=0; j<(size_t)n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
 				std::cerr << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 					  << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
