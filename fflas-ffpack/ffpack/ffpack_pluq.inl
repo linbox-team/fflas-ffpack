@@ -39,7 +39,7 @@
 #define LEFTLOOKING
 #define CROUT
 #define MEMCOPY
-#define BASECASE_K 400
+#define BASECASE_K 256
 namespace FFPACK {
 	using namespace FFLAS;
 
@@ -239,7 +239,6 @@ namespace FFPACK {
 			if (!Fi.isZero (CurrRow[i])){
 				    // found pivot
 				    // Updating column below pivot
-				// pivotCols [i] = true;
 				// Q [rank] = i;
 				// pivotRows [row] = true;
 				// P [rank] = row;
@@ -1058,20 +1057,13 @@ rank++;
 
 			Base_t * b = new Base_t[n];
 			Base_t * Ai = A+mun*lda;
-			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
+			memcpy (b,Ai,n*sizeof(Base_t));
 
-			    // dc = [ d c ]
-//			Base_t * dc = new Base_t[n];
-
-			Base_t * Ac = A;
-			for(int i=(int)mun-1; i>=0; --i)
+			for(Base_t * Ac = A+mun*lda; Ac!=A;Ac-=lda)
 				    //	std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
-			    memcpy(Ac+(i+1)*lda, Ac+i*lda, (n)*sizeof(Base_t));
-
-			Base_t * Aii = A;
-			for(size_t i=0; i<n; ++i, Aii++) *Aii = b[i];
-
-//			delete [] dc;
+				memcpy (Ac, Ac-lda, n*sizeof(Base_t));
+			
+			memcpy ( A, b, n*sizeof(Base_t));
 			delete [] b;
 		}
 
@@ -1101,30 +1093,17 @@ rank++;
 #endif
 	}
 
-	template<typename Base_t>
-	inline void cyclic_shift_col(Base_t * A, size_t m, size_t n, size_t lda)
+	template<typename Element>
+	inline void cyclic_shift_col(Element * A, size_t m, size_t n, size_t lda)
 	{
 		if (n > 1) {
-			const size_t mun(m-1);
 			const size_t nun(n-1);
-			Base_t * b = new Base_t[m];
-			Base_t * Ainun = A+nun;
-			for(size_t i=0; i<m; ++i, Ainun+=lda) b[i] = *Ainun;
-
-			    // dc = [ d c ]
-			Base_t * tmp = new Base_t[nun];
-			Base_t * Ac = A;
-			for(int i=(int)mun; i>=0; --i)
+			for(Element*Ai=A; Ai!= A+m*lda; Ai+=lda)
 			{
-//				std::copy(A+i*lda, A+i*lda+1, A+1);
-				std::copy(Ac+i*lda, Ac+i*lda+nun, tmp);
-				std::copy(tmp, tmp+nun, Ac+i*lda+1);
+				Element tmp = Ai[nun];
+				std::copy_backward(Ai, Ai+nun, Ai+n);
+				*Ai=tmp;
 			}
-
-			Base_t * Aipo = A;
-			for(size_t i=0; i<m; ++i, Aipo+=lda) *Aipo = b[i];
-			delete [] tmp;
-			delete [] b;
 		}
 	}
 
