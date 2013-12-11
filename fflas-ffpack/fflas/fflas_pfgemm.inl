@@ -109,9 +109,9 @@ namespace FFLAS {
 #endif
 		){
 		size_t RBLOCKSIZE, CBLOCKSIZE;
-#else
-    BlockCuts<BLOCK_FIXED>(RBLOCKSIZE, CBLOCKSIZE, m, n, method);
-#endif
+//#else
+//    BlockCuts<BLOCK_FIXED>(RBLOCKSIZE, CBLOCKSIZE, m, n, method);
+//#endif
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 		//		const CuttingStrategy method = BLOCK_THREADS;
