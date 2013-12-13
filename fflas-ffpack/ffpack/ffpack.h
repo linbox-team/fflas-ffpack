@@ -35,6 +35,10 @@
 #ifndef __FFLASFFPACK_ffpack_H
 #define __FFLASFFPACK_ffpack_H
 
+#ifdef __FFLASFFPACK_USE_OPENMP
+#include <omp.h>
+#endif
+
 #include "fflas-ffpack/fflas/fflas.h"
 
 #include <list>
@@ -200,6 +204,93 @@ namespace FFPACK  {
 	}
 
 
+
+#ifdef __FFLASFFPACK_USE_OPENMP
+
+
+	// Parallel applyP with OPENMP tasks
+	template<class Field>
+	void
+	papplyP( const Field& F,
+		 const FFLAS::FFLAS_SIDE Side,
+		 const FFLAS::FFLAS_TRANSPOSE Trans,
+		 const size_t m, const int ibeg, const int iend,
+		 typename Field::Element * A, const size_t lda, const size_t * P )
+	{
+		int numthreads = omp_get_max_threads();
+		size_t BLOCKSIZE=MAX(2*m/numthreads,1); // Assume that there is at least 2 ApplyP taking place in parallel
+		size_t NBlocks = m/BLOCKSIZE;
+		size_t LastBlockSize = m % BLOCKSIZE;
+		if (LastBlockSize)
+			NBlocks++;
+		else
+			LastBlockSize=BLOCKSIZE;
+		for (size_t t = 0; t < NBlocks; ++t)
+			{
+				size_t BlockDim = BLOCKSIZE;
+				if (t == NBlocks-1)
+					BlockDim = LastBlockSize;
+                                #pragma omp task shared (A, P, F) firstprivate(BlockDim)
+				applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FflasRight)?lda:1), lda, P);
+			}
+                        #pragma omp taskwait
+	}
+
+	// Parallel applyT with OPENMP tasks
+	template <class Element>
+	void papplyT (Element* A, const size_t lda, const size_t width,
+		      const size_t N2,
+		      const size_t R1, const size_t R2,
+		      const size_t R3, const size_t R4)
+	{
+		int numthreads = omp_get_max_threads();
+		size_t BLOCKSIZE=MAX(width/numthreads,1);
+		size_t NBlocks = width/BLOCKSIZE;
+		size_t LastBlockSize = width % BLOCKSIZE;
+		if (LastBlockSize)
+			NBlocks++;
+		else
+			LastBlockSize=BLOCKSIZE;
+		for (size_t t = 0; t < NBlocks; ++t)
+			{
+				size_t BlockDim = BLOCKSIZE;
+				if (t == NBlocks-1)
+					BlockDim = LastBlockSize;
+                                #pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,N2)
+				applyT (A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
+			}
+                        #pragma omp taskwait
+	}
+	
+
+	// Parallel applyS tasks with OPENMP tasks
+	template <class Element>
+	void papplyS (Element* A, const size_t lda, const size_t width,
+		      const size_t M2,
+		      const size_t R1, const size_t R2,
+		      const size_t R3, const size_t R4)
+	{
+		int numthreads = omp_get_max_threads();
+		size_t BLOCKSIZE=MAX(width/numthreads,1);
+		size_t NBlocks = width/BLOCKSIZE;
+		size_t LastBlockSize = width % BLOCKSIZE;
+		if (LastBlockSize)
+			NBlocks++;
+		else
+			LastBlockSize=BLOCKSIZE;
+		for (size_t t = 0; t < NBlocks; ++t)
+			{
+				size_t BlockDim = BLOCKSIZE;
+				if (t == NBlocks-1)
+					BlockDim = LastBlockSize;
+                                #pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,M2)
+				applyS(A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
+			}
+                        #pragma omp taskwait
+	}
+
+
+#endif
 
 
 	/** Computes the rank of the given matrix using a LQUP factorization.
