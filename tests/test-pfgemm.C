@@ -134,9 +134,16 @@ pnbw=0;
         C = new Field::Element[m*n];
 		t.clear();
 		t.start();
-		FFLAS::pfgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,n,pnbw, Strategy);
-		t.stop();
+#pragma omp parallel
+        {
+#pragma omp single
+            {
+                
+                FFLAS::pfgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+                               beta,C,n,pnbw, Strategy);
+            }
+        }
+        t.stop();
 		if (i) tim+=t;
         if (i<nbit) delete[] C;
 	}
