@@ -72,10 +72,11 @@ typedef Modular<double> Field;
 
 Field::Element* makemat(const Field::RandIter& RF,int m, int n){
     Field::Element * res = new Field::Element[m*n];
+#pragma omp parallel for
     for (long i = 0; i < m; ++i)
         for (long j = 0; j < n; ++j) {
             RF.random(res[j+i*n]);
-  }    
+        }    
     return res;
 }    
 
