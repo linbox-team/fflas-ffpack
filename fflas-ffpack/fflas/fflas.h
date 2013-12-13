@@ -1118,7 +1118,7 @@ namespace FFLAS {
 	     * Parallel fgemm
 	     */
 
-#ifdef __FFLASFFPACK_USE_OPENMP
+#ifdef __FFLASFFPACK_USE_OPENMP 
 #define __FFLASFFPACK_MINBLOCKCUTS 512
 
     enum CuttingStrategy {
@@ -1184,7 +1184,6 @@ namespace FFLAS {
         CBLOCKSIZE = MAX(n/numthreads,1);
     }
 
-
     template<>
     void BlockCuts<BLOCK_THREADS>(size_t& RBLOCKSIZE,
                                   size_t& CBLOCKSIZE,
@@ -1227,6 +1226,7 @@ namespace FFLAS {
 
     }
 
+	// Parallel fgemm with OpenMP tasks
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
@@ -1242,6 +1242,22 @@ namespace FFLAS {
             typename Field::Element* C, const size_t ldc,
             const size_t w,
             const CuttingStrategy method = BLOCK_THREADS);
+
+
+
+	//Parallel ftrsm with OpenMP tasks
+	template<class Field>
+        typename Field::Element*
+        pftrsm( const Field& F,
+                     const FFLAS_SIDE Side,
+                     const FFLAS_UPLO UpLo,
+                     const FFLAS_TRANSPOSE TA,
+                     const FFLAS_DIAG Diag,
+                     const size_t m,
+                     const size_t n,
+                     const typename Field::Element alpha,
+                     const typename Field::Element* A, const size_t lda,
+		typename Field::Element* B, const size_t ldb);
 #endif
 
 	/** @brief fsquare: Squares a matrix.
@@ -1374,6 +1390,7 @@ namespace FFLAS {
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include "fflas_pfgemm.inl"
+#include "fflas_pftrsm.inl"
 #endif
 
 #include "fflas_fgemv.inl"
