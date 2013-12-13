@@ -109,44 +109,31 @@ namespace FFLAS {
 #endif
 		){
 		size_t RBLOCKSIZE, CBLOCKSIZE;
-//#else
-//    BlockCuts<BLOCK_FIXED>(RBLOCKSIZE, CBLOCKSIZE, m, n, method);
-//#endif
 
+        size_t NrowBlocks, NcolBlocks;
+        size_t LastrowBlockSize, LastcolBlockSize;
+
+        BlockCuts(RBLOCKSIZE, CBLOCKSIZE,
+                  LastrowBlockSize, LastcolBlockSize,
+                  NrowBlocks, NcolBlocks,
+                  m, n, method,
 #ifdef __FFLASFFPACK_USE_OPENMP
-		//		const CuttingStrategy method = BLOCK_THREADS;
-		//#pragma omp parallel
-		//		{
-			//#pragma omp single
-		//	{
-				
-				BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, omp_get_num_threads() );
-				
-				//	}
-				//}
+                  omp_get_num_threads()
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
-		BlockCuts(RBLOCKSIZE, CBLOCKSIZE, m, n, method, kaapi_getconcurrency_cpu() );
+                  kaapi_getconcurrency_cpu()
 #endif
-		
-		//std::cout<<"RBLOCKSIZE : "<<RBLOCKSIZE<<std::endl;
-		//std::cout<<"CBLOCKSIZE : "<<CBLOCKSIZE<<std::endl;
-		size_t NrowBlocks = m/RBLOCKSIZE;
-		size_t LastrowBlockSize = m % RBLOCKSIZE;
-		if (LastrowBlockSize)
-			NrowBlocks++;
-		else
-			LastrowBlockSize = RBLOCKSIZE;
-		size_t NcolBlocks = n/CBLOCKSIZE;
-		size_t LastcolBlockSize = n % CBLOCKSIZE;
-		if (LastcolBlockSize)
-			NcolBlocks++;
-		else
-			LastcolBlockSize = CBLOCKSIZE;
-		
+                  );
+
 		const size_t BLOCKS = NrowBlocks*NcolBlocks;
-		//std::cout<<"NrowBlocks : "<<NrowBlocks<<std::endl;
-		//std::cout<<"NcolBlocks : "<<NcolBlocks<<std::endl;
+
+// 		std::cout<<"RBLOCKSIZE : "<<RBLOCKSIZE<<std::endl;
+// 		std::cout<<"CBLOCKSIZE : "<<CBLOCKSIZE<<std::endl;
+// 		std::cout<<"lastRBS    : "<<LastrowBlockSize<<std::endl;
+// 		std::cout<<"lastCBS    : "<<LastcolBlockSize<<std::endl;
+// 		std::cout<<"NrowBlocks : "<<NrowBlocks<<std::endl;
+// 		std::cout<<"NcolBlocks : "<<NcolBlocks<<std::endl;
+
 		for (size_t t = 0; t < BLOCKS; ++t){
 			size_t i = t / NcolBlocks;
 			size_t j = t % NcolBlocks;

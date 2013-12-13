@@ -131,8 +131,22 @@ namespace FFLAS {
 
 
 
-
+    void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
+                   size_t& lastRBS, size_t& lastCBS,
+                   size_t& numRowBlock, size_t& numColBlock,
+                   size_t m, size_t n,
+                   const CuttingStrategy method,
+                   const size_t numthreads) {
+        BlockCuts(rowBlockSize, colBlockSize, m, n, method, numthreads);
+        numRowBlock = m/rowBlockSize;
+        numColBlock = n/colBlockSize;
+        lastRBS = m % rowBlockSize;
+        if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
+        lastCBS = n % colBlockSize;
+        if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
+    }
     
+
 }
 
 
