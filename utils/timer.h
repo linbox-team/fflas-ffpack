@@ -158,7 +158,7 @@ inline std::ostream &operator << (std::ostream &o, const Timer &T)
 	return o << T.realtime() << "s (" << ut << " cpu) ";
 }
 
-#ifdef __FFLAS_USES_OPENMP
+#ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
 struct OMPTimer {
 	double _c;

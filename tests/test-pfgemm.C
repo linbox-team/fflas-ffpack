@@ -49,8 +49,6 @@
 using namespace std;
 
 #include "fflas-ffpack/field/modular-positive.h"
-//#include "fflas-ffpack/field/modular-balanced.h"
-//#include "fflas-ffpack/field/modular-int32.h"
 #include "utils/timer.h"
 #include "utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
