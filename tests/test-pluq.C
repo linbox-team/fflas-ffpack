@@ -207,7 +207,10 @@ int main(int argc, char** argv){
 	delete[] Q;
 	
 	double t = timc.realtime();
-	double numops = m*m/1000.0*(n-m/3.0);
+    const int sm = MIN(m,n);
+    const int sn = MAX(m,n);
+    
+	double numops = sm*sm/1000.0*(sn-sm/3.0);
 	
 	// cerr<<m<<"x"<< n
 	//     << " Trans = "<<trans

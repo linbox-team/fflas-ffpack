@@ -28,7 +28,6 @@
 
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
-#define MEMCOPY
 #ifndef MIN
 #define MIN(a,b) (a<b)?a:b
 #endif
@@ -36,9 +35,9 @@
 #define MAX(a,b) (a<b)?b:a
 #endif
 
+#define MEMCOPY
 #define LEFTLOOKING
 #define CROUT
-#define MEMCOPY
 #define BASECASE_K 256
 namespace FFPACK {
 	using namespace FFLAS;
@@ -1053,14 +1052,12 @@ rank++;
 #ifdef MEMCOPY
 		if (m > 1) {
 			const size_t mun(m-1);
-			// const size_t nun(n-1);
 
 			Base_t * b = new Base_t[n];
 			Base_t * Ai = A+mun*lda;
 			memcpy (b,Ai,n*sizeof(Base_t));
 
 			for(Base_t * Ac = A+mun*lda; Ac!=A;Ac-=lda)
-				    //	std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
 				memcpy (Ac, Ac-lda, n*sizeof(Base_t));
 			
 			memcpy ( A, b, n*sizeof(Base_t));
@@ -1070,23 +1067,17 @@ rank++;
 #else
 		if (m > 1) {
 			const size_t mun(m-1);
-			const size_t nun(n-1);
 
 			Base_t * b = new Base_t[n];
 			Base_t * Ai = A+mun*lda;
 			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
 
-			    // dc = [ d c ]
-//			Base_t * dc = new Base_t[n];
-
-			Base_t * Ac = A;
-			for(int i=mun-1; i>=0; --i)
-				std::copy(Ac+i*lda, Ac+i*lda+n, Ac+(i+1)*lda);
+			for(Base_t * Ac = A+mun*lda; Ac!=A;Ac-=lda)
+                std::copy(Ac-lda,Ac-lda+n, Ac);
 
 			Base_t * Aii = A;
-			for(size_t i=0; i<n; ++i, Aii++) *Aii = b[i];
+			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = b[i];
 
-//			delete [] dc;
 			delete [] b;
 		}
 
