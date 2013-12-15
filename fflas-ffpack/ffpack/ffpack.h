@@ -259,7 +259,7 @@ namespace FFPACK  {
 			}
                         #pragma omp taskwait
 	}
-	
+
 
 	// Parallel applyS tasks with OPENMP tasks
 	template <class Element>
@@ -1376,12 +1376,12 @@ else { // Left NullSpace
 				if (diag == FFLAS::FflasNonUnit){
 					for (size_t j=0; j<i; j++)
 						F.assign (Ti[j], F.zero);
-					fcopy (F, N-i, Ti+i, 1, Ai+i, 1);
+					FFLAS::fcopy (F, N-i, Ti+i, 1, Ai+i, 1);
 				} else {
 					for (size_t j=0; j<i; j++)
 						F.assign (Ti[j], F.zero);
 					F.assign (*(Ti+i), F.one);
-					fcopy (F, N-i-1, Ti+i+1, 1, Ai+i+1, 1);
+					FFLAS::fcopy (F, N-i-1, Ti+i+1, 1, Ai+i+1, 1);
 				}
 			}
 			Ti = T+R*ldt;
@@ -1391,11 +1391,11 @@ else { // Left NullSpace
 		} else {
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				if (diag == FFLAS::FflasNonUnit){
-					fcopy (F, i+1, Ti, 1, Ai, 1);
+					FFLAS::fcopy (F, i+1, Ti, 1, Ai, 1);
 					for (size_t j=i+1; j<N; j++)
 						F.assign (Ti[j], F.zero);
 				} else {
-					fcopy (F, i, Ti, 1, Ai, 1);
+					FFLAS::fcopy (F, i, Ti, 1, Ai, 1);
 					F.assign (Ti[i], F.one);
 					for (size_t j=i+1; j<N; j++)
 						F.assign (Ti[j], F.zero);
@@ -1403,7 +1403,7 @@ else { // Left NullSpace
 			}
 			Ti = T+R*ldt;
 			for (size_t i=R; i<M; i++, Ti+=ldt)
-				fcopy(F, i, Ti, 1, Ai, 1);
+				FFLAS::fcopy(F, i, Ti, 1, Ai, 1);
 				for (size_t j=R; j<N; j++)
 					F.assign (Ti[j], F.zero);
 		}
@@ -1441,12 +1441,12 @@ else { // Left NullSpace
 				if (diag == FFLAS::FflasNonUnit){
 					for (size_t j=0; j<piv; j++)
 						F.assign (Ti[j], F.zero);
-					fcopy (F, N-piv, Ti+piv, 1, Ai+piv, 1);
+					FFLAS::fcopy (F, N-piv, Ti+piv, 1, Ai+piv, 1);
 				} else {
 					for (size_t j=0; j<piv; j++)
 						F.assign (Ti[j], F.zero);
 					F.assign (Ti[piv], F.one);
-					fcopy (F, N-piv-1, Ti+piv+1, 1, Ai+piv+1, 1);
+					FFLAS::fcopy (F, N-piv-1, Ti+piv+1, 1, Ai+piv+1, 1);
 				}
 			}
 			Ti = T+R*ldt;
@@ -1459,12 +1459,12 @@ else { // Left NullSpace
 				if (diag == FFLAS::FflasNonUnit){
 					for (size_t j=0; j<piv; j++)
 						F.assign (*(Ti+j*ldt), F.zero);
-					fcopy (F, M-piv, Ti+piv*ldt, ldt, Ai+piv*lda, lda);
+					FFLAS::fcopy (F, M-piv, Ti+piv*ldt, ldt, Ai+piv*lda, lda);
 				} else {
 					for (size_t j=0; j<piv; j++)
 						F.assign (*(Ti+j*ldt), F.zero);
 					F.assign (*(Ti+piv*ldt), F.one);
-					fcopy (F, M-piv-1, Ti+(piv+1)*ldt, ldt, Ai+(piv+1)*lda, lda);
+					FFLAS::fcopy (F, M-piv-1, Ti+(piv+1)*ldt, ldt, Ai+(piv+1)*lda, lda);
 				}
 			}
 			Ti = T+R;

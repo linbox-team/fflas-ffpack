@@ -39,7 +39,7 @@ namespace FFPACK {
 
 	template<class Field>
 	inline size_t
-	PLUQ_basecaseV2 (const Field& Fi, const FFLAS_DIAG Diag,
+	PLUQ_basecaseV2 (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 			 const size_t M, const size_t N,
 			 typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
 	{
@@ -85,10 +85,10 @@ namespace FFPACK {
 					if (!pivotRows[i])
 						Fi.assign (*(vtemp_it++), A2[i*lda]);
 				    // Left looking update
-				ftrsv (Fi, FflasLower, FflasNoTrans,
-				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
+				ftrsv (Fi, FFLAS::FflasLower, FFLAS::FflasNoTrans,
+				       (Diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit:FFLAS::FflasUnit,
 				       rank, Ltemp, N, vtemp, 1);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
+				fgemv (Fi, FFLAS::FflasNoTrans, M-rank, rank, Fi.mOne,
 				       Ltemp + rank*N, N,
 				       vtemp, 1, Fi.one, vtemp + rank, 1);
 				for (size_t i=0; i<rank; ++i)
@@ -119,7 +119,7 @@ namespace FFPACK {
 			pivotRows[piv2] = true;
 			Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
-			if (Diag==FflasUnit){
+			if (Diag==FFLAS::FflasUnit){
 #ifndef LEFTLOOKING
 				    // Normalizing the pivot row
 				for (size_t i=piv3+1; i<N; ++i)
@@ -198,11 +198,11 @@ namespace FFPACK {
 				 MathQ[nonpiv++] = i;
 		MathPerm2LAPACKPerm (Q, MathQ, N);
 		delete[] MathQ;
-		applyP (Fi, FflasRight, FflasTrans, M, 0, N, A, lda, Q);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, N, A, lda, Q);
 
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
-		applyP (Fi, FflasLeft, FflasNoTrans, N, 0, M, A, lda, P);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, M, A, lda, P);
 
 		return rank;
 	}
@@ -210,7 +210,7 @@ namespace FFPACK {
         // Base Case based on a CUP decomp with rotations
 	template<class Field>
 	inline size_t
-	PLUQ_basecaseCrout (const Field& Fi, const FFLAS_DIAG Diag,
+	PLUQ_basecaseCrout (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 			    const size_t M, const size_t N,
 			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
 	{
@@ -224,7 +224,7 @@ namespace FFPACK {
 		for (size_t i=0; i<N; ++i) MathQ[i] = i;
 		while ((row<M) && (rank<N)){
 			    // Updating row where pivot will be searched for
-			fgemv(Fi, FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
+			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
 //			write_field(Fi,std::cerr<<"Avant la cherche"<<std::endl,A,M,N,lda);
 			int i = rank-1;
 			while(Fi.isZero (CurrRow[++i]) && (i<N-1));
@@ -235,11 +235,11 @@ namespace FFPACK {
 				// Q [rank] = i;
 				// pivotRows [row] = true;
 				// P [rank] = row;
-				fgemv(Fi, FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
+				fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
 				    // Normalization
 				Element invpiv;
 				Fi.inv (invpiv, CurrRow[i]);
-				if (Diag == FflasUnit)
+				if (Diag == FFLAS::FflasUnit)
 					fscal (Fi, N-i-1, invpiv, CurrRow+i+1,1);
 				else
 					fscal (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
@@ -303,7 +303,7 @@ rank++;
 // Premiere tentative de Crout avortee: trop de copies compact<->disperse et 2 cyclic-shift
 //	template<class Field>
 //	inline size_t
-// 	PLUQ_basecaseCrout (const Field& Fi, const FFLAS_DIAG Diag,
+// 	PLUQ_basecaseCrout (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 // 			    const size_t M, const size_t N,
 // 			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
 // 	{
@@ -354,7 +354,7 @@ rank++;
 // 					Fi.assign (*(A_it++), Ac2[i*ldac]);
 
 // 				    //Update
-// 				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
+// 				fgemv (Fi, FFLAS::FflasNoTrans, M-rank, rank, Fi.mOne,
 // 				       A21, lda, A12, lda, Fi.one, A22, lda);
 
 // 				// Copying back the updated column to Acop
@@ -399,7 +399,7 @@ rank++;
 
 // 			Element invpiv;
 // 			Fi.inv (invpiv, Ac3[piv3]);
-// 			if (Diag==FflasNonUnit){
+// 			if (Diag==FFLAS::FflasNonUnit){
 // 				    // Normalizing the pivot column
 // 				Element * L_it = A22 + lda;
 // 				for (size_t i=0; i<row+1; ++i)
@@ -424,11 +424,11 @@ rank++;
 
 // 		      !!!!
 // 			    //Then Updating it
-// 			fgemv (Fi, FflasNoTrans, rank, N-rank-1, Fi.mOne, A12, lda, A21, 1, Fi.one, A22+1, 1);
+// 			fgemv (Fi, FFLAS::FflasNoTrans, rank, N-rank-1, Fi.mOne, A12, lda, A21, 1, Fi.one, A22+1, 1);
 
 
 // 			    // Divinding this new row by L
-// 			if (Diag==FflasUnit){
+// 			if (Diag==FFLAS::FflasUnit){
 // 				    // Normalizing the pivot row
 // 				for (size_t i=piv3+1; i<N; ++i)
 // 					Fi.assign (A21[i], Fi.mulin (Ac3[i], invpiv));
@@ -464,7 +464,7 @@ rank++;
 
 	template<class Field>
 	inline size_t
-	PLUQ_basecase (const Field& Fi, const FFLAS_DIAG Diag,
+	PLUQ_basecase (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 		       const size_t M, const size_t N,
 		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
 	{
@@ -492,10 +492,10 @@ rank++;
 				}
 #ifdef LEFTLOOKING
 				    // Left looking style update
-				ftrsv (Fi, FflasLower, FflasNoTrans,
-				       (Diag==FflasUnit)?FflasNonUnit:FflasUnit,
+				ftrsv (Fi, FFLAS::FflasLower, FFLAS::FflasNoTrans,
+				       (Diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit:FFLAS::FflasUnit,
 				       rank, A, lda, A2, lda);
-				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
+				fgemv (Fi, FFLAS::FflasNoTrans, M-rank, rank, Fi.mOne,
 				       A1,lda, A2, lda,
 				       Fi.one, A2+rank*lda, lda);
 #endif
@@ -518,7 +518,7 @@ rank++;
 			A3 = A+piv2*lda;
 			Element invpiv;
 			Fi.inv (invpiv, A3[piv3]);
-			if (Diag==FflasUnit){
+			if (Diag==FFLAS::FflasUnit){
 #ifdef LEFTLOOKING
 				    // Normalizing the pivot row
 				for (size_t i=piv3+1; i<N; ++i)
@@ -567,7 +567,7 @@ rank++;
 
 	template<class Field>
 	inline size_t
-	PLUQ (const Field& Fi, const FFLAS_DIAG Diag,
+	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
 	{
@@ -588,7 +588,7 @@ rank++;
 				Fi.assign (*A, A[piv]);
 				Fi.assign (A[piv], Fi.zero);
 			}
-			if (Diag== FflasUnit){
+			if (Diag== FFLAS::FflasUnit){
 				Element invpivot;
 				Fi.inv(invpivot, *A);
 				for (size_t i=piv+1; i<N; ++i)
@@ -606,7 +606,7 @@ rank++;
 				Fi.assign (*A, *(A+piv*lda));
 				Fi.assign (*(A+piv*lda), Fi.zero);
 			}
-			if (Diag== FflasNonUnit){
+			if (Diag== FFLAS::FflasNonUnit){
 				Element invpivot;
 				Fi.inv(invpivot, *A);
 				for (size_t i=piv+1; i<M; ++i)
@@ -625,7 +625,7 @@ rank++;
 #endif
 				(Fi, Diag, M, N, A, lda, P, Q);
 #endif
-		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;
+	 FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
 		size_t M2 = M >> 1;
 		size_t N2 = N >> 1;
 		size_t * P1 = new size_t [M2];
@@ -642,19 +642,19 @@ rank++;
 		Element * G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
-		applyP (Fi, FflasLeft, FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
 		    // [ C1 C2 ] <- A3 Q1^T
-		applyP (Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 		    // D <- L1^-1 B1
-		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda);
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda);
 		    // E <- C1 U1^-1
-		ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
+		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 		    // F <- B2 - M1 D
-		fgemm (Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
 		    // G <- C2 - E V1
-		fgemm (Fi, FflasNoTrans, FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
 		    // H <- A4 - ED
-		fgemm (Fi, FflasNoTrans, FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda);
                     // F = P2 [ L2 ] [ U2 V2 ] Q2
 		    //        [ M2 ]
 		size_t * P2 = new size_t [M2-R1];
@@ -667,35 +667,35 @@ rank++;
 		R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
-		applyP (Fi, FflasRight, FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
-		applyP (Fi, FflasLeft, FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
 		    // [ E1 ] <- P3^T E
 		    // [ E2 ]
-		applyP (Fi, FflasLeft, FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
 		    // [ M11 ] <- P2^T M1
 		    // [ M12 ]
-		applyP (Fi, FflasLeft, FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2);
 		    // [ D1 D2 ] <- D Q2^T
-		applyP (Fi, FflasRight, FflasTrans, R1, 0, N-N2, A2, lda, Q2);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2);
 		    // [ V1 V2 ] <- V1 Q3^T
-		applyP (Fi, FflasRight, FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3);
 		    // I <- H U2^-1
 		    // K <- H3 U2^-1
-		ftrsm (Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
+		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
 		Element * temp = new Element [R3*R2];
 		for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
-		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 		    // N <- L3^-1 H2
-		ftrsm (Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		    // O <- N - J V2
-		fgemm (Fi, FflasNoTrans, FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
 		delete[] temp;
 		    // R <- H4 - K V2 - M3 O
 		Element * R = A4 + R2 + R3*lda;
-		fgemm (Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
-		fgemm (Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
 		    //         [ M4 ]
 		size_t * P4 = new size_t [M-M2-R3];
@@ -703,12 +703,12 @@ rank++;
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
-		applyP (Fi, FflasLeft, FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
 		    // [ V21 V22 ]  <- [ V2 ] Q4^T
 		    // [  0   0  ]     [  0 ]
 		    // [ O1   O2 ]     [  O ]
-		applyP (Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]

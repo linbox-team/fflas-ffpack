@@ -217,15 +217,15 @@ namespace FFPACK {
 	std::ostream *Failure::_errorStream;
 
 	template<class T>
-	bool isOdd (T & a) {
+	bool isOdd (const T & a) {
 		return (a%2);
 	}
 
-	bool isOdd(float &a) {
+	bool isOdd(const float &a) {
 		return (bool)(int)fmodf(a,2.f);
 	}
 
-	bool isOdd(double &a) {
+	bool isOdd(const double &a) {
 		return (bool)(int)fmod(a,2.);
 	}
 
