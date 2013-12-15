@@ -81,11 +81,11 @@ namespace FFLAS {
 				if (!winoDel) {
 					typename Field::Element mbeta;
 					F.neg (mbeta,beta);
-					delayedDim = MIN(delayedDim, DotProdBound (F, winoDel, mbeta, base));
+					delayedDim = std::min(delayedDim, DotProdBound (F, winoDel, mbeta, base));
 				}
 				n >>= 1;
 			}
-			delayedDim = MIN (k, delayedDim);
+			delayedDim = std::min (k, delayedDim);
 
 		}
 
@@ -150,7 +150,7 @@ namespace FFLAS {
 			}
 
 			//kmax--; // we computed a strict upper bound
-			return  (size_t) MIN ((unsigned long long)kmax, 1ULL << 31);
+			return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
 		}
 
 		/** @internal

@@ -29,12 +29,6 @@
 #ifndef __FFLASFFPACK_ffpack_ludivine_INL
 #define __FFLASFFPACK_ffpack_ludivine_INL
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
-#ifndef MAX
-#define MAX(a,b) (a<b)?b:a
-#endif
 
 //#define LB_DEBUG
 namespace FFPACK {
@@ -45,7 +39,7 @@ namespace FFPACK {
 			typename Field::Element * A, const size_t lda, size_t*P,
 			size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 	{
-		size_t MN = MIN(M,N);
+		size_t MN = std::min(M,N);
 		typename Field::Element * Acurr = A;
 		size_t r = 0;
 
@@ -415,7 +409,7 @@ namespace FFPACK {
 
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
-		size_t MN = MIN(M,N);
+		size_t MN = std::min(M,N);
 
 		size_t incRow, incCol, rowDim, colDim;
 		if (trans == FFLAS::FflasTrans){
@@ -638,7 +632,7 @@ namespace FFPACK {
 				  )
 		{
 
-			size_t MN = MIN(M,N);
+			size_t MN = std::min(M,N);
 
 			if (MN == 1){
 				size_t ip=0;
@@ -1218,7 +1212,7 @@ namespace FFPACK {
 	{
 		if (trans == FFLAS::FflasTrans)
 			throw Failure(__func__,__FILE__,__LINE__,"Transposed version is not implemented yet");
-		// size_t MN = MIN(M,N);
+		// size_t MN = std::min(M,N);
 
 		size_t incRow, incCol, rowDim, colDim;
 #if 0 /*  not working */

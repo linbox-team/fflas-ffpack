@@ -30,10 +30,6 @@
 #ifndef __FFLASFFPACK_ffpack_charpoly_kgfast_INL
 #define __FFLASFFPACK_ffpack_charpoly_kgfast_INL
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
-
 namespace FFPACK {
 	namespace Protected {
 		//---------------------------------------------------------------------
@@ -65,7 +61,7 @@ namespace FFPACK {
 				C = A + (N-mc);
 				//std::cerr<<std::endl<<"mc="<<mc<<":";
 				while ( (j+1)*mc < N ) {
-					mb = MIN ( mb, N-(j+1)*mc );
+					mb = std::min ( mb, N-(j+1)*mc );
 #if 0
 					std::cerr<<"Boucle2: j,mb="<<j<<" "<<mb<<std::endl;
 					write_field( F, std::cerr, A, N, N, lda );

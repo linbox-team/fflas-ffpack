@@ -227,7 +227,7 @@ namespace FFPACK {
 				elt * X22 = X21 + k;
 
 				// Creates the matrix A
-				//size_t lambda = MAX(0,N - kg_mc*(kg_j+1) - kg_mb);  // uint >= 0 !!!
+				//size_t lambda = std::max(0,N - kg_mc*(kg_j+1) - kg_mb);  // uint >= 0 !!!
 				size_t lambda =   kg_mc*(kg_j+1) + kg_mb;
 				if (lambda > N)
 					lambda = 0 ;

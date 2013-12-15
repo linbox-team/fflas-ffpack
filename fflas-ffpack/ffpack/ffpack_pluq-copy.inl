@@ -29,17 +29,6 @@
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
-#ifndef MAX
-#define MAX(a,b) (a<b)?b:a
-#endif
-
-// XXX interdit !!
-// using namespace std;
-// using namespace FFLAS;
-
 namespace FFPACK {
 
 	template<class Field>
@@ -157,8 +146,8 @@ namespace FFPACK {
 
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
-		if (MIN (M,N) == 0) return 0;
-		if (MAX (M,N) == 1){
+		if (std::min (M,N) == 0) return 0;
+		if (std::max (M,N) == 1){
 			Fi.assign (*B,*A);
 			return (Fi.isZero(*A))? 0 : 1;
 		}
@@ -211,7 +200,7 @@ namespace FFPACK {
 			return 1;
 		}
 #ifdef BASECASE_K
-		if (MIN(M,N) < BASECASE_K)
+		if (std::min(M,N) < BASECASE_K)
 			return PLUQ_basecase (Fi, Diag, M, N, A, lda, B, ldb, P, Q);
 #endif
 		FFLAS_DIAG OppDiag = (Diag == FflasUnit)? FflasNonUnit : FflasUnit;

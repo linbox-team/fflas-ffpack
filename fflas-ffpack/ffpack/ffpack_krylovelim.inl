@@ -5,20 +5,20 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,14 +29,6 @@
 #ifndef __FFLASFFPACK_ffpack_krylovelim_INL
 #define __FFLASFFPACK_ffpack_krylovelim_INL
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
-#ifndef MAX
-#define MAX(a,b) (a<b)?b:a
-#endif
-
-//#define LB_DEBUG
 
 // A is m x n with m <= n
 // Ensures : rankprof is the row rankprofil of the matrix k x n matrix B formed as follows (k = sum d_i):
@@ -128,7 +120,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 			       F.mOne, Ar, lda, Ac, lda, F.one, An, lda);
 		}
 		// Recursive call on SE
-		size_t R2 = KrylovElim (F, Ndown, N-R, An, lda,P+R, Q+Nup, deg, iterates, inviterates, maxit, MIN(maxit-deg,(virt+Nup*deg)));
+		size_t R2 = KrylovElim (F, Ndown, N-R, An, lda,P+R, Q+Nup, deg, iterates, inviterates, maxit, std::min(maxit-deg,(virt+Nup*deg)));
 
 		for (size_t i = R; i < R + R2; ++i)
 			P[i] += R;

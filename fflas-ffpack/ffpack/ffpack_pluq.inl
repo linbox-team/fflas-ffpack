@@ -28,19 +28,13 @@
 
 #ifndef __FFLASFFPACK_ffpack_pluq_INL
 #define __FFLASFFPACK_ffpack_pluq_INL
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
-#ifndef MAX
-#define MAX(a,b) (a<b)?b:a
-#endif
 
 #define MEMCOPY
 #define LEFTLOOKING
 #define CROUT
 #define BASECASE_K 256
+
 namespace FFPACK {
-	using namespace FFLAS;
 
 
 	template<class Field>
@@ -212,7 +206,7 @@ namespace FFPACK {
 
 		return rank;
 	}
-	
+
         // Base Case based on a CUP decomp with rotations
 	template<class Field>
 	inline size_t
@@ -248,7 +242,7 @@ namespace FFPACK {
 				if (Diag == FflasUnit)
 					fscal (Fi, N-i-1, invpiv, CurrRow+i+1,1);
 				else
-					fscal (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);			
+					fscal (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
 				if (i > rank){
 					    // Column rotation to move pivot on the diagonal
 					    // on U
@@ -267,7 +261,7 @@ namespace FFPACK {
 					    // Row rotation for U (not moving the 0 block)
 					fcopy (Fi, N-i-1, A+rank*lda+i+1, 1, CurrRow+i+1, 1);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
-					fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);			
+					fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
 					Fi.assign(CurrRow[i],Fi.zero); // only needed once here
 				}
 //				write_field(Fi,std::cerr<<"Apres cylicRow"<<std::endl,A,M,N,lda);
@@ -285,7 +279,7 @@ rank++;
 		// for (size_t i = 0; i<N; ++i)
 		// 	if (!pivotCols[i])
 		// 		MathQ[nonpiv++] = i;
-		
+
 		// std::cerr<<"MathP = ";
 		// for (int i=0; i<M; ++i)
 		// 	std::cerr<<MathP[i]<<" ";
@@ -300,7 +294,7 @@ rank++;
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
 		for (size_t i=rank; i<M; ++i)
-			fzero (Fi, N-rank, A+i*lda+rank, 1);				
+			fzero (Fi, N-rank, A+i*lda+rank, 1);
 //		write_field(Fi,std::cerr<<"Fini"<<std::endl,A,M,N,lda);
 
 
@@ -358,14 +352,14 @@ rank++;
 // 						Fi.assign (*(A_it++), Ac2[i*ldac]);
 // 				for (size_t i=row; i<M; ++i)
 // 					Fi.assign (*(A_it++), Ac2[i*ldac]);
- 				
+
 // 				    //Update
 // 				fgemv (Fi, FflasNoTrans, M-rank, rank, Fi.mOne,
 // 				       A21, lda, A12, lda, Fi.one, A22, lda);
-				
+
 // 				// Copying back the updated column to Acop
 // 				// could be avoided: search the min index of pivot directly on A22
-                                
+
 // 				A_it = A22;
 // 				for (size_t i=0; i<M; ++i)
 // 					if (!pivotRows[i]){
@@ -426,13 +420,13 @@ rank++;
 // 					Fi.assign (*(U_it++), Ac3 [i]);
 // 			for (size_t i=col+1; i<N; ++i)
 // 				Fi.assign (*(U_it++), Ac3 [i]);
-				
-			
+
+
 // 		      !!!!
 // 			    //Then Updating it
 // 			fgemv (Fi, FflasNoTrans, rank, N-rank-1, Fi.mOne, A12, lda, A21, 1, Fi.one, A22+1, 1);
-			
-			
+
+
 // 			    // Divinding this new row by L
 // 			if (Diag==FflasUnit){
 // 				    // Normalizing the pivot row
@@ -581,8 +575,8 @@ rank++;
 
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
-		if (MIN (M,N) == 0) return 0;
-		if (MAX (M,N) == 1) return (Fi.isZero(*A))? 0 : 1;
+		if (std::min (M,N) == 0) return 0;
+		if (std::max (M,N) == 1) return (Fi.isZero(*A))? 0 : 1;
 #ifndef BASECASE_K
 		if (M == 1){
 			size_t piv = 0;
@@ -622,10 +616,10 @@ rank++;
 		}
 #endif
 #ifdef BASECASE_K
-		if (MIN(M,N) < BASECASE_K)
+		if (std::min(M,N) < BASECASE_K)
 			return
 #ifdef CROUT
-				PLUQ_basecaseCrout 
+				PLUQ_basecaseCrout
 #else
 				PLUQ_basecaseV2
 #endif
@@ -1059,7 +1053,7 @@ rank++;
 
 			for(Base_t * Ac = A+mun*lda; Ac!=A;Ac-=lda)
 				memcpy (Ac, Ac-lda, n*sizeof(Base_t));
-			
+
 			memcpy ( A, b, n*sizeof(Base_t));
 			delete [] b;
 		}

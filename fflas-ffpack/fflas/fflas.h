@@ -37,13 +37,6 @@
 #include <cmath>
 #include <cstring>
 
-#ifndef MAX
-#define MAX(a,b) ((a < b)?b:a)
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a > b)?b:a)
-#endif
-
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-balanced.h"
@@ -1044,7 +1037,7 @@ namespace FFLAS {
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
-		Protected::MatMulParameters (F, MIN(MIN(m,n),k), k, beta, kmax, base,
+		Protected::MatMulParameters (F, std::min(std::min(m,n),k), k, beta, kmax, base,
 					     winolevel, true);
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, winolevel, base);
@@ -1108,7 +1101,7 @@ namespace FFLAS {
 		size_t w, kmax;
 		FFLAS_BASE base;
 
-		Protected::MatMulParameters (F, MIN(MIN(m,n),k),k, beta, kmax, base, w);
+		Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base, w);
 
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, w, base);
@@ -1118,7 +1111,7 @@ namespace FFLAS {
 	     * Parallel fgemm
 	     */
 
-#ifdef __FFLASFFPACK_USE_OPENMP 
+#ifdef __FFLASFFPACK_USE_OPENMP
     enum CuttingStrategy {
         ROW_FIXED	,
         COLUMN_FIXED	,
@@ -1127,6 +1120,7 @@ namespace FFLAS {
         COLUMN_THREADS	,
         BLOCK_THREADS	//,
     };
+
 
 	// Parallel fgemm with OpenMP tasks
 	template<class Field>

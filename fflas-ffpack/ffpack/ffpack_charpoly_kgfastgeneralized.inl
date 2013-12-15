@@ -29,9 +29,6 @@
 #ifndef __FFLASFFPACK_ffpack_charpoly_kgfastgeneralized_INL
 #define __FFLASFFPACK_ffpack_charpoly_kgfastgeneralized_INL
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
 
 //---------------------------------------------------------------------
 // CharPoly: Compute the characteristic polynomial of A using

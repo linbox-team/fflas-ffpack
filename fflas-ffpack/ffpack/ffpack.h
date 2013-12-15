@@ -65,8 +65,6 @@
  \ingroup ffpack
  */
 namespace FFPACK  {
-	using namespace FFLAS;
-
 
 	// public:
 	enum FFPACK_LUDIVINE_TAG

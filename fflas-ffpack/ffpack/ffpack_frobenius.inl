@@ -29,10 +29,6 @@
 
 #include <fflas-ffpack/field/nonzero-randiter.h>
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
-
 //---------------------------------------------------------------------
 // CharpolyArithProg: Las Vegas algorithm to compute the Charpoly
 // over a large field (Z/pZ, s.t.  p > 2n^2)

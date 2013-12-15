@@ -8,9 +8,6 @@
  * See COPYING for license information.
  */
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
 
 template <class Field>
 void print_matrix (Field &F, size_t N, size_t M, size_t Ncurr,

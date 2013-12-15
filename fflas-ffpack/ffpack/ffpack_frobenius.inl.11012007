@@ -8,9 +8,6 @@
  * See COPYING for license information.
  */
 
-#ifndef MIN
-#define MIN(a,b) (a<b)?a:b
-#endif
 
 //---------------------------------------------------------------------
 // Frobenius: Las Vegas algorithm to compute the Frobenius normal form over a large field

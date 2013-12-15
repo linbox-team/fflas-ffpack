@@ -30,12 +30,6 @@
 #ifndef __FFLASFFPACK_fgemm_INL
 #define __FFLASFFPACK_fgemm_INL
 
-#ifndef MAX
-#define MAX(a,b) (a < b)?b:a
-#endif
-#ifndef MIN
-#define MIN(a,b) (a > b)?b:a
-#endif
 
 namespace FFLAS {
 
@@ -61,7 +55,7 @@ namespace FFLAS {
 		{
 			typename Field::Element tmp;
 
-			size_t k2 = MIN(k,kmax); // Size of the blocks
+			size_t k2 = std::min(k,kmax); // Size of the blocks
 
 			if (k2 > 1) {
 				if (base == FflasDouble){
@@ -297,7 +291,7 @@ namespace FFLAS {
 		{
 			double _alpha, _beta;
 			// To ensure the initial computation with beta
-			size_t k2 = MIN(k,kmax);
+			size_t k2 = std::min(k,kmax);
 			size_t nblock = k / kmax;
 			size_t remblock = k % kmax;
 			if (!remblock) {
@@ -356,7 +350,7 @@ namespace FFLAS {
 		{
 			float _alpha, _beta;
 			// To ensure the initial computation with beta
-			size_t k2 = MIN(k,kmax);
+			size_t k2 = std::min(k,kmax);
 			size_t nblock = k / kmax;
 			size_t remblock = k % kmax;
 			if (!remblock) {
@@ -415,7 +409,7 @@ namespace FFLAS {
 		{
 			double _alpha, _beta;
 			// To ensure the initial computation with beta
-			size_t k2 = MIN(k,kmax);
+			size_t k2 = std::min(k,kmax);
 			size_t nblock = k / kmax;
 			size_t remblock = k % kmax;
 			if (!remblock) {
@@ -496,7 +490,7 @@ namespace FFLAS {
 		{
 			float _alpha, _beta;
 			// To ensure the initial computation with beta
-			size_t k2 = MIN(k,kmax);
+			size_t k2 = std::min(k,kmax);
 			size_t nblock = k / kmax;
 			size_t remblock = k % kmax;
 			if (!remblock) {
@@ -559,7 +553,7 @@ namespace FFLAS {
 		typename Field::Element mbeta;
 		F.neg(mbeta,beta);
 		size_t imaxb, jmaxb, imaxa, jmaxa, ldx2;
-		size_t x3rd = MAX(mr,kr);
+		size_t x3rd = std::max(mr,kr);
 		const typename Field::Element* d11,*d12,*d21,*d22;
 		typename Field::Element* d11c,*d12c,*d21c,*d22c,*dx1,*dx2,*dx3;
 		const typename Field::Element * A11=A, *A12, *A21, *A22;
@@ -568,7 +562,7 @@ namespace FFLAS {
 
 
 		if (F.isZero(beta)){
-			size_t x1rd = MAX(nr,kr);
+			size_t x1rd = std::max(nr,kr);
 			size_t ldx1;
 			if (ta == FflasTrans) {
 				A21 = A + mr;
@@ -1626,7 +1620,7 @@ namespace FFLAS {
 					   const double beta,
 					   double* C, const size_t ldc)
 	{
-		return fgemm (F, ta, tb, m, n ,k, alpha, A, lda, B, ldb, beta, C, ldc, WinoSteps (MIN(m,MIN(k,n))));
+		return fgemm (F, ta, tb, m, n ,k, alpha, A, lda, B, ldb, beta, C, ldc, WinoSteps (std::min(m,std::min(k,n))));
 	}
 
 	template<>
@@ -1643,7 +1637,7 @@ namespace FFLAS {
 					  const float beta,
 					  float* C, const size_t ldc)
 	{
-		return fgemm (F, ta, tb, m, n ,k, alpha, A, lda, B, ldb, beta, C, ldc, WinoSteps (MIN(m,MIN(k,n))));
+		return fgemm (F, ta, tb, m, n ,k, alpha, A, lda, B, ldb, beta, C, ldc, WinoSteps (std::min(m,std::min(k,n))));
 	}
 
 
