@@ -70,13 +70,13 @@ namespace FFLAS {
 						remblock = kmax ;
 						--nblock;
 					}
-					if (F.areEqual (F.mOne, beta)) betad = -1.0;
+					if (F.isMOne( beta)) betad = -1.0;
 					else F.convert (betad, beta);
 
-					if (F.areEqual (F.mOne, alpha)) alphad = -1.0;
+					if (F.isMOne( alpha)) alphad = -1.0;
 					else {
 						alphad = 1.0;
-						if (! F.areEqual (F.one, alpha)) {
+						if (! F.isOne( alpha)) {
 							// Compute y = A*x + beta/alpha.y
 							// and after y *= alpha
 							FFLASFFPACK_check(!F.isZero(alpha));
@@ -124,7 +124,7 @@ namespace FFLAS {
 						MatD2MatF (F, C, ldc, Cd, n, m, n);
 						MatF2MatD (F, Cd, n, C, ldc, m, n);
 					}
-					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha)))
+					if ((!F.isOne( alpha)) && (!F.isMOne( alpha)))
 						fscalin(F,m,n,alpha,C,ldc);
 					delete[] Add;
 					delete[] Bdd;
@@ -142,13 +142,13 @@ namespace FFLAS {
 						remblock = kmax;
 						--nblock;
 					}
-					if (F.areEqual (F.mOne, beta)) betad = -1.0;
+					if (F.isMOne( beta)) betad = -1.0;
 					else F.convert (betad, beta);
 
-					if (F.areEqual (F.mOne, alpha)) alphad = -1.0;
+					if (F.isMOne( alpha)) alphad = -1.0;
 					else {
 						alphad = 1.0;
-						if (! F.areEqual (F.one, alpha)) {
+						if (! F.isOne( alpha)) {
 							// Compute y = A*x + beta/alpha.y
 							// and after y *= alpha
 							FFLASFFPACK_check(!F.isZero(alpha));
@@ -193,7 +193,7 @@ namespace FFLAS {
 						MatFl2MatF (F, C, ldc, Cd, n, m, n);
 						MatF2MatFl (F, Cd, n, C, ldc, m, n);
 					}
-					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
+					if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
 						fscalin(F,m,n,alpha,C,ldc);
 					}
 					delete[] Add;
@@ -296,12 +296,12 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if (F.isMOne( beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne( alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha)) {
+				if (! F.isOne( alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -322,7 +322,7 @@ namespace FFLAS {
 					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
 				finit(F,m,n,C,ldc);
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
+			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
 				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
@@ -349,12 +349,12 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if (F.isMOne( beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne( alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha)) {
+				if (! F.isOne( alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -375,7 +375,7 @@ namespace FFLAS {
 					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
 				finit(F,m,n,C,ldc);
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
+			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
 				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
@@ -402,15 +402,15 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mOne, beta))
+			if (F.isMOne( beta))
 				_beta = -1.0;
 			else
 				_beta = beta;
-			if (F.areEqual (F.mOne, alpha))
+			if (F.isMOne( alpha))
 				_alpha = -1.0;
 			else {
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha)) {
+				if (! F.isOne( alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -450,7 +450,7 @@ namespace FFLAS {
 				//#pragma omp parallel for schedule(static) private (Ci)
 				finit(F,m,n,C,ldc);
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
+			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
 				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
@@ -476,12 +476,12 @@ namespace FFLAS {
 				remblock = kmax;
 				--nblock;
 			}
-			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if (F.isMOne( beta)) _beta = -1.0;
 			else _beta = beta;
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne( alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha)) {
+				if (! F.isOne( alpha)) {
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					FFLASFFPACK_check(!F.isZero(alpha));
@@ -505,7 +505,7 @@ namespace FFLAS {
 					// for (size_t j=0; j < n;++j)
 						// F.init(*(Ci+j),*(Ci+j));
 			}
-			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
+			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
 				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
@@ -1068,12 +1068,12 @@ namespace FFLAS {
 						DoubleDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
-						if (F.areEqual (F.mOne, alpha)) {
+						if (F.isMOne(alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
 						}
 					       	else {
-							if (! F.areEqual (F.one, alpha)) {
+							if (! F.isOne ( alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
 								FFLASFFPACK_check(!F.isZero(alpha));
@@ -1104,8 +1104,8 @@ namespace FFLAS {
 						// Conversion double = >  GFq
 						MatD2MatF (F, C, ldc, Cd, n, m, n);
 
-						if (!F.areEqual (F.one, alpha) &&
-						    !F.areEqual (F.mOne, alpha)) {
+						if (!F.isOne(alpha) &&
+						    !F.isMOne (alpha)) {
 							// Fix-up: compute C *= alpha
 							fscalin(F,m,n,alpha,C,ldc);
 						}
@@ -1118,12 +1118,12 @@ namespace FFLAS {
 						FloatDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
-						if (F.areEqual (F.mOne, alpha)) {
+						if (F.isMOne (alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
 						}
 					       	else {
-							if (! F.areEqual (F.one, alpha)) {
+							if (! F.isOne ( alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
 								FFLASFFPACK_check(!F.isZero(alpha));
@@ -1154,8 +1154,8 @@ namespace FFLAS {
 						// Conversion double = >  GFq
 						MatFl2MatF (F, C, ldc, Cd, n, m, n);
 
-						if (!F.areEqual (F.one, alpha) &&
-						    !F.areEqual (F.mOne, alpha)) {
+						if (!F.isOne (alpha) &&
+						    !F.isMOne (alpha)) {
 							// Fix-up: compute C *= alpha
 							fscalin(F,m,n,alpha,C,ldc);
 						}
@@ -1193,11 +1193,11 @@ namespace FFLAS {
 				if (k <= kmax) { // switch on delayed modulus
 					DoubleDomain::Element _alpha, _beta;
 					_beta = beta;
-					if (F.areEqual (-1.0, alpha)) _alpha = -1.0;
+					if (F.isMOne( alpha)) _alpha = -1.0;
 					else{
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
-						if (! F.areEqual (1.0, alpha)) {
+						if (! F.isOne( alpha)) {
 							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
@@ -1216,8 +1216,8 @@ namespace FFLAS {
 						  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 					// Modular reduction
 					finit(F,m,n,C,ldc);
-					if (!F.areEqual (1.0, alpha) &&
-					    !F.areEqual (-1.0, alpha))
+					if (!F.isOne( alpha) &&
+					    !F.isMOne( alpha))
 						// Fix-up: compute C *= alpha
 						fscalin(F,m,n,alpha,C,ldc);
 				}
@@ -1251,11 +1251,11 @@ namespace FFLAS {
 					// Temporary float matrices
 					FloatDomain::Element _alpha, _beta;
 					_beta = beta;
-					if (F.areEqual (-1.0, alpha)) _alpha = -1.0;
+					if (F.isMOne( alpha)) _alpha = -1.0;
 					else {
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
-						if (! F.areEqual (1.0, alpha)) {
+						if (! F.isOne( alpha)) {
 							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
@@ -1273,8 +1273,8 @@ namespace FFLAS {
 						  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 					// Conversion float = >  GFq
 					finit(F,m,n,C,ldc);
-					if (!F.areEqual (1.0, alpha) &&
-					    !F.areEqual (-1.0, alpha))
+					if (!F.isOne( alpha) &&
+					    !F.isMOne( alpha))
 						// Fix-up: compute C *= alpha
 						fscalin(F,m,n,alpha,C,ldc);
 				}
@@ -1306,11 +1306,11 @@ namespace FFLAS {
 				if (k <= kmax) { // switch on delayed modulus
 					DoubleDomain::Element _alpha, _beta;
 					_beta = beta;
-					if (F.areEqual (-1.0, alpha)) _alpha = -1.0;
+					if (F.isMOne( alpha)) _alpha = -1.0;
 					else{
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
-						if (! F.areEqual (1.0, alpha)) {
+						if (! F.isOne( alpha)) {
 							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
@@ -1341,8 +1341,8 @@ namespace FFLAS {
 					std::cerr<<"Reduction -> "<<t.realtime()<<std::endl;
 #endif
 
-					if (!F.areEqual (1.0, alpha) &&
-					    !F.areEqual (-1.0, alpha))
+					if (!F.isOne( alpha) &&
+					    !F.isMOne( alpha))
 						// Fix-up: compute C *= alpha
 						fscalin(F,m,n,alpha,C,ldc);
 				}
@@ -1376,11 +1376,11 @@ namespace FFLAS {
 				if (k <= kmax) { // switch on float
 					FloatDomain::Element _alpha, _beta;
 					_beta = beta;
-					if (F.areEqual (-1.0, alpha)) _alpha = -1.0;
+					if (F.isMOne( alpha)) _alpha = -1.0;
 					else {
 						// Compute C = A*B + beta/alpha.C
 						// and then C *= alpha
-						if (! F.areEqual (1.0, alpha)) {
+						if (! F.isOne( alpha)) {
 							FFLASFFPACK_check(!F.isZero(alpha));
 							F.divin (_beta, alpha);
 						}
@@ -1399,8 +1399,8 @@ namespace FFLAS {
 					// Conversion float = >  GFq
 					finit(F,m,n,C,ldc);
 
-					if (!F.areEqual (1.0, alpha) &&
-					    !F.areEqual (-1.0, alpha))
+					if (!F.isOne( alpha) &&
+					    !F.isMOne( alpha))
 						// Fix-up: compute C *= alpha
 						fscalin(F,m,n,alpha,C,ldc);
 				}
@@ -1621,7 +1621,7 @@ namespace FFLAS {
 
 		double alphad, betad;
 		F.convert (alphad, alpha);
-		if (F.areEqual (beta, F.mOne))
+		if (F.isMOne (beta))
 			betad = -1.0;
 		else
 			F.convert (betad, beta);
