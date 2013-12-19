@@ -240,9 +240,9 @@ namespace FFPACK {
 				Element invpiv;
 				Fi.inv (invpiv, CurrRow[i]);
 				if (Diag == FFLAS::FflasUnit)
-					fscal (Fi, N-i-1, invpiv, CurrRow+i+1,1);
+					fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
 				else
-					fscal (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
+					fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
 				if (i > rank){
 					    // Column rotation to move pivot on the diagonal
 					    // on U

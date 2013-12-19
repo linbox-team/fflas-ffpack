@@ -251,9 +251,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 			}
 			Acopi += __FFLAS__Acopnormnext;
 #else
-			fscal (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc);
+			fscalin (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc);
 #endif
-			fscal (F, __FFLAS__Bdim, inv, Bi, __FFLAS__Bnorminc);
+			fscalin (F, __FFLAS__Bdim, inv, Bi, __FFLAS__Bnorminc);
 			Ai += __FFLAS__Anormnext;
 			Bi += __FFLAS__Bnormnext;
 		}
@@ -289,7 +289,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 #ifndef __FFLAS__TRSM_READONLY
 		for (size_t i = 0; i < __FFLAS__Na; ++i){
-			fscal( F, __FFLAS__Normdim, *(A + i * (lda+1)) , Ai, __FFLAS__Anorminc);
+			fscalin( F, __FFLAS__Normdim, *(A + i * (lda+1)) , Ai, __FFLAS__Anorminc);
 			Ai += __FFLAS__Anormnext;
 		}
 #endif
@@ -385,7 +385,7 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		if ( F.isZero(*A) ) throw PreconditionFailed(__func__,__FILE__,__LINE__,"Triangular matrix not invertible");
 #endif
 		F.inv(inv, *A);
-		FFLAS::fscal(F, __FFLAS__Bdim, inv, B, __FFLAS__Bnorminc);
+		FFLAS::fscalin(F, __FFLAS__Bdim, inv, B, __FFLAS__Bnorminc);
 #endif //__FFLAS__UNIT
 	} else { // __FFLAS__Na > 1
 		size_t nsplit = __FFLAS__Na >> 1;

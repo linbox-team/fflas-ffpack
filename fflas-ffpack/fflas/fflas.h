@@ -549,6 +549,64 @@ namespace FFLAS {
 	// Level 1 routines
 	//---------------------------------------------------------------------
 
+	/** finit
+	 * \f$x \gets  x mod F\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 */
+	template<class Field>
+	void
+	finit (const Field& F, const size_t n,
+	       typename Field::Element * X, const size_t incX)
+	{
+		typename Field::Element * Xi = X ;
+		for (; Xi < X+n*incX; Xi+=incX )
+			F.init( *Xi , *Xi);
+	}
+
+	/** fnegin
+	 * \f$x \gets - x\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 */
+	template<class Field>
+	void
+	fnegin (const Field& F, const size_t n,
+	       typename Field::Element * X, const size_t incX)
+	{
+		typename Field::Element * Xi = X ;
+		for (; Xi < X+n*incX; Xi+=incX )
+			F.negin( *Xi );
+	}
+
+	/** fneg
+	 * \f$x \gets - y\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 * \param Y vector in \p F
+	 * \param incY stride of \p Y
+	 * @bug use cblas_(d)scal when possible
+	 */
+	template<class Field>
+	void
+	fneg (const Field& F, const size_t n,
+	       typename Field::Element * X, const size_t incX,
+	       const typename Field::Element * Y, const size_t incY)
+	{
+		typename Field::Element * Xi = X ;
+		const typename Field::Element * Yi = Y ;
+		for (; Xi < X+n*incX; Xi+=incX,Yi+=incY  )
+			F.neg( *Xi, *Yi );
+	}
+
 	/** \brief fzero : \f$A \gets 0 \f$.
 	 * @param F field
 	 * @param n number of elements to zero
@@ -572,42 +630,6 @@ namespace FFLAS {
 		}
 	}
 
-	/** fscal
-	 * \f$x \gets a \cdot x\f$.
-	 * @param F field
-	 * @param n size of the vectors
-	 * @param alpha homotÃ©ti scalar
-	 * \param X vector in \p F
-	 * \param incX stride of \p X
-	 * @bug use cblas_(d)scal when possible
-	 * @internal
-	 * @todo check if comparison with +/-1,0 is necessary.
-	 */
-	template<class Field>
-	void
-	fscal (const Field& F, const size_t n, const typename Field::Element alpha,
-	       typename Field::Element * X, const size_t incX)
-	{
-		typedef typename Field::Element Element ;
-
-		if (F.isOne(alpha))
-			return ;
-
-		Element * Xi = X;
-		if (F.areEqual(alpha,F.mOne)){
-			for (; Xi < X+n*incX; Xi+=incX )
-				F.negin( *Xi );
-			return;
-		}
-		if (F.isZero(alpha)){
-			fzero(F,n,X,incX);
-			return;
-		}
-
-		for (; Xi < X+n*incX; Xi+=incX )
-			F.mulin( *Xi, alpha );
-	}
-
 	/** \brief fcopy : \f$x \gets y \f$.
 	 * X is preallocated
 	 * @param F field
@@ -622,6 +644,88 @@ namespace FFLAS {
 	fcopy (const Field& F, const size_t N,
 	       typename Field::Element * X, const size_t incX,
 	       const typename Field::Element * Y, const size_t incY );
+
+
+	/** fscalin
+	 * \f$x \gets a \cdot x\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * @param alpha homotÃ©ti scalar
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 * @internal
+	 * @todo check if comparison with +/-1,0 is necessary.
+	 */
+	template<class Field>
+	void
+	fscalin (const Field& F, const size_t n, const typename Field::Element alpha,
+	       typename Field::Element * X, const size_t incX)
+	{
+		typedef typename Field::Element Element ;
+
+		if (F.isOne(alpha))
+			return ;
+
+		if (F.isMOne(alpha)){
+			fnegin(F,n,X,incX);
+			return;
+		}
+
+		if (F.isZero(alpha)){
+			fzero(F,n,X,incX);
+			return;
+		}
+
+		Element * Xi = X ;
+		for (; Xi < X+n*incX; Xi+=incX )
+			F.mulin( *Xi, alpha );
+	}
+
+
+	/** fscal
+	 * \f$x \gets a \cdot y\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * @param alpha homotÃ©ti scalar
+	 * \param[in] Y vector in \p F
+	 * \param incY stride of \p Y
+	 * \param[out] X vector in \p F
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 * @internal
+	 * @todo check if comparison with +/-1,0 is necessary.
+	 */
+	template<class Field>
+	void
+	fscal (const Field& F, const size_t n, const typename Field::Element alpha,
+	       typename Field::Element * X, const size_t incX,
+	       const typename Field::Element * Y, const size_t incY)
+	{
+		typedef typename Field::Element Element ;
+
+		if (F.isOne(alpha)) {
+			fcopy(F,n,X,incX,Y,incY);
+			return ;
+		}
+
+		Element * Xi = X;
+		const Element * Yi = Y;
+		if (F.areEqual(alpha,F.mOne)){
+			for (; Xi < X+n*incX; Xi+=incX, Yi += incY )
+				F.neg( *Xi, *Yi );
+			return;
+		}
+
+		if (F.isZero(alpha)){
+			fzero(F,n,X,incX);
+			return;
+		}
+
+		for (; Xi < X+n*incX; Xi+=incX, Yi+=incY )
+			F.mul( *Xi, alpha, *Yi );
+	}
+
 
 
 	/** \brief faxpy : \f$y \gets \alpha \cdot x + y\f$.
@@ -723,7 +827,68 @@ namespace FFLAS {
 		}
 	}
 
-	/** fscal
+	/** finit
+	 * \f$A \gets  A mod F\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * @internal
+	 */
+	template<class Field>
+	void
+	finit (const Field& F, const size_t m , const size_t n,
+	       typename Field::Element * A, const size_t lda)
+	{
+		//!@todo check if n == lda
+		for (size_t i = 0 ; i < m ; ++i)
+			finit(F,n,A+i*lda,1);
+		return;
+	}
+
+	/** fnegin
+	 * \f$A \gets - A\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * @internal
+	 */
+	template<class Field>
+	void
+	fnegin (const Field& F, const size_t m , const size_t n,
+	       typename Field::Element * A, const size_t lda)
+	{
+		//!@todo check if n == lda
+		for (size_t i = 0 ; i < m ; ++i)
+			fnegin(F,n,A+i*lda,1);
+		return;
+	}
+
+	/** fneg
+	 * \f$A \gets  - B\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * @internal
+	 */
+	template<class Field>
+	void
+	fneg (const Field& F, const size_t m , const size_t n,
+	       typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * B, const size_t ldb)
+	{
+		//!@todo check if n == lda
+		for (size_t i = 0 ; i < m ; ++i)
+			fneg(F,n,A+i*lda,1,B+i*ldb,1);
+		return;
+	}
+
+	/** fscalin
 	 * \f$A \gets a \cdot A\f$.
 	 * @param F field
 	 * @param m number of rows
@@ -735,25 +900,68 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	void
-	fscal (const Field& F, const size_t m , const size_t n,
+	fscalin (const Field& F, const size_t m , const size_t n,
 	       const typename Field::Element alpha,
 	       typename Field::Element * A, const size_t lda)
 	{
 		if (F.isOne(alpha)) {
 			return ;
 		}
+		else if (F.isZero(alpha)) {
+			fzero(F,m,n,A,lda);
+		}
+		else if (F.isMOne(alpha)) {
+			fnegin(F,m,n,A,lda);
+		}
 		else {
 			if (lda == n) {
-				fscal(F,n*m,alpha,A,1);
+				fscalin(F,n*m,alpha,A,1);
 			}
 			else {
 				for (size_t i = 0 ; i < m ; ++i)
-					fscal(F,n,alpha,A+i*lda,1);
+					fscalin(F,n,alpha,A+i*lda,1);
 			}
 
 			return;
 		}
 	}
+
+	/** fscal
+	 * \f$A \gets a \cdot B\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * @param alpha homotecie scalar
+	 * \param[in] A matrix in \p F
+	 * \param lda stride of \p A
+	 * \param[out] B matrix in \p F
+	 * \param ldb stride of \p B
+	 * @internal
+	 */
+	template<class Field>
+	void
+	fscal (const Field& F, const size_t m , const size_t n,
+	       const typename Field::Element alpha,
+	       typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * B, const size_t ldb)
+	{
+		if (F.isOne(alpha)) {
+			fcopy(F,m,n,A,lda,B,ldb) ;
+		}
+		else if (F.isZero(alpha)) {
+			fzero(F,m,n,A,lda);
+		}
+		else if (F.isMOne(alpha)) {
+			fneg(F,m,n,A,lda,B,ldb);
+		}
+		else {
+			for (size_t i = 0; i < m ; ++i)
+				fscal(F,n,alpha,A+i*lda,1,B+i*ldb,1);
+		}
+
+		return;
+	}
+
 
 	/** \brief fmove : \f$A \gets B \f$ and \f$ B \gets 0\f$.
 	 * @param F field
@@ -1020,7 +1228,7 @@ namespace FFLAS {
 	       const size_t w)
 	{
 		if (!k) {
-			fscal(F, m, n, beta, C, ldc);
+			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
 
@@ -1028,7 +1236,7 @@ namespace FFLAS {
 			return C;
 
 		if (F.isZero (alpha)){
-			fscal(F, m, n, beta, C, ldc);
+			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
 
@@ -1079,14 +1287,15 @@ namespace FFLAS {
 	       typename Field::Element* C, const size_t ldc)
 	{
 		if (!k) {
-			fscal(F, m, n, beta, C, ldc);
+			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
 
 		if (!(m && n && k)) return C;
 		if (F.isZero (alpha)){
-			for (size_t i = 0; i<m; ++i)
-				fscal(F, n, beta, C + i*ldc, 1);
+			fscalin(F,m,n,beta,C,ldc);
+			// for (size_t i = 0; i<m; ++i)
+				// fscalin(F, n, beta, C + i*ldc, 1);
 			return C;
 		}
 

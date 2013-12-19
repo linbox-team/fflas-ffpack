@@ -92,14 +92,16 @@ namespace FFLAS {
 					if (ta == FflasTrans) {
 						dlda = m;
 						MatF2MatD (F, Add, dlda, A+k2*nblock*lda, lda, remblock, m);
-					} else {
+					}
+				       	else {
 						dlda = k2;
 						MatF2MatD (F, Add, dlda, A+k2*nblock, lda, m, remblock);
 					}
 					if (tb == FflasTrans) {
 						dldb = k2;
 						MatF2MatD (F, Bdd, k2, B+k2*nblock, ldb, n, remblock);
-					} else {
+					}
+				       	else {
 						dldb = n;
 						MatF2MatD (F, Bdd, dldb, B+k2*nblock*ldb, ldb, remblock, n);
 					}
@@ -123,13 +125,12 @@ namespace FFLAS {
 						MatF2MatD (F, Cd, n, C, ldc, m, n);
 					}
 					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha)))
-						for (typename Field::Element * Ci = C; Ci < C+m*ldc; Ci += ldc)
-							for (size_t j = 0; j < n; ++j)
-								F.mulin (* (Ci + j), alpha);
+						fscalin(F,m,n,alpha,C,ldc);
 					delete[] Add;
 					delete[] Bdd;
 					delete[] Cd;
-				} else {
+				}
+				else {
 					FloatDomain::Element alphad, betad;
 					FloatDomain::Element * Add = new FloatDomain::Element[m*k2];
 					FloatDomain::Element * Bdd = new FloatDomain::Element[k2*n];
@@ -163,14 +164,16 @@ namespace FFLAS {
 					if (ta == FflasTrans) {
 						dlda = m;
 						MatF2MatFl (F, Add, dlda, A+k2*nblock*lda, lda, remblock, m);
-					} else {
+					}
+				       	else {
 						dlda = k2;
 						MatF2MatFl (F, Add, dlda, A+k2*nblock, lda, m, remblock);
 					}
 					if (tb == FflasTrans) {
 						dldb = k2;
 						MatF2MatFl (F, Bdd, k2, B+k2*nblock, ldb, n, remblock);
-					} else {
+					}
+				       	else {
 						dldb = n;
 						MatF2MatFl (F, Bdd, dldb, B+k2*nblock*ldb, ldb, remblock, n);
 					}
@@ -191,15 +194,14 @@ namespace FFLAS {
 						MatF2MatFl (F, Cd, n, C, ldc, m, n);
 					}
 					if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
-						for (typename Field::Element * Ci = C; Ci < C+m*ldc; Ci += ldc)
-							for (size_t j = 0; j < n; ++j)
-								F.mulin (* (Ci + j), alpha);
+						fscalin(F,m,n,alpha,C,ldc);
 					}
 					delete[] Add;
 					delete[] Bdd;
 					delete[] Cd;
 				}
-			} else { // k2 == 1
+			}
+			else { // k2 == 1
 				// Standard algorithm is performed over the Field, without conversion
 				if (F.isZero (beta))
 					for (size_t i = 0; i < m; ++i)
@@ -209,9 +211,7 @@ namespace FFLAS {
 					typename Field::Element betadivalpha;
 					FFLASFFPACK_check(!F.isZero(alpha));
 					F.div (betadivalpha, beta, alpha);
-					for (size_t i = 0; i < m; ++i)
-						for (size_t j = 0; j < n; ++j)
-							F.mulin (*(C+i*ldc+j), betadivalpha);
+					fscalin(F,m,n,betadivalpha,C,ldc);
 				}
 				if (ta == FflasNoTrans)
 					if (tb == FflasNoTrans)
@@ -236,9 +236,7 @@ namespace FFLAS {
 								for (size_t l = 0; l < k; ++l)
 									F.axpyin (*(C+i*ldc+j), *(A+l*lda+i), *(B+j*ldb+l));
 				if (! F.isOne(alpha))
-					for (size_t i = 0; i < m; ++i)
-						for (size_t j = 0; j < n; ++j)
-							F.mulin (*(C+i*ldc+j), alpha);
+					fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
 
@@ -318,20 +316,14 @@ namespace FFLAS {
 
 			ClassicMatmul (DoubleDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base );
-			for (double * Ci = C; Ci != C+m*ldc; Ci += ldc)
-				for (size_t j=0; j < n;++j)
-					F.init(*(Ci+j),*(Ci+j));
+			finit(F,m,n,C,ldc);
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
 					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
-				for (double * Ci = C; Ci != C+m*ldc; Ci += ldc)
-					for (size_t j=0; j < n;++j)
-						F.init(*(Ci+j),*(Ci+j));
+				finit(F,m,n,C,ldc);
 			}
 			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
-				for (double * Ci = C; Ci < C+m*ldc; Ci += ldc)
-					for (size_t j = 0; j < n; ++j)
-						F.mulin (* (Ci + j), alpha);
+				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
 
@@ -377,20 +369,14 @@ namespace FFLAS {
 
 			ClassicMatmul (FloatDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base);
-			for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
-				for (size_t j=0; j < n;++j)
-					F.init(*(Ci+j),*(Ci+j));
+			finit(F,m,n,C,ldc);
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (FloatDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
 					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
-				for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
-					for (size_t j=0; j < n;++j)
-						F.init(*(Ci+j),*(Ci+j));
+				finit(F,m,n,C,ldc);
 			}
 			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
-				for (float * Ci = C; Ci < C+m*ldc; Ci += ldc)
-					for (size_t j = 0; j < n; ++j)
-						F.mulin (* (Ci + j), alpha);
+				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
 
@@ -444,7 +430,6 @@ namespace FFLAS {
 			ClassicMatmul (DoubleDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax, base );
 
-			double * Ci;
 #if 0 /* timing */
 			Timer t;
 			t.clear();
@@ -452,9 +437,7 @@ namespace FFLAS {
 #endif
 			//#pragma omp parallel for schedule(static) private (Ci)
 			//!@todo init only if remblock!=0 and _beta == 0
-			for (Ci = C; Ci < C+m*ldc; Ci += ldc)
-				for (size_t j=0; j < n;++j)
-					F.init(*(Ci+j),*(Ci+j));
+			finit(F,m,n,C,ldc);
 #if 0
 			t.stop();
 			std::cerr<<"Reduction dans Classic -> "<<t.realtime()<<std::endl;
@@ -465,14 +448,10 @@ namespace FFLAS {
 				ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
 					       B+i*shiftB, ldb, F.one, C, ldc, kmax, base);
 				//#pragma omp parallel for schedule(static) private (Ci)
-				for (Ci = C; Ci < C+m*ldc; Ci += ldc)
-					for (size_t j=0; j < n;++j)
-						F.init(*(Ci+j),*(Ci+j));
+				finit(F,m,n,C,ldc);
 			}
 			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
-				for (Ci = C; Ci < C+m*ldc; Ci += ldc)
-					for (size_t j = 0; j < n; ++j)
-						F.mulin (* (Ci + j), alpha);
+				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
 
@@ -517,20 +496,17 @@ namespace FFLAS {
 
 			ClassicMatmul (FloatDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base);
-			for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
-				for (size_t j=0; j < n;++j)
-					F.init(*(Ci+j),*(Ci+j));
+			finit(F,m,n,C,ldc);
 			for (size_t i = 0; i < nblock; ++i) {
 				ClassicMatmul (FloatDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
 					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
-				for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
-					for (size_t j=0; j < n;++j)
-						F.init(*(Ci+j),*(Ci+j));
+				finit(F,m,n,C,ldc);
+				// for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
+					// for (size_t j=0; j < n;++j)
+						// F.init(*(Ci+j),*(Ci+j));
 			}
 			if ((!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))) {
-				for (float * Ci = C; Ci < C+m*ldc; Ci += ldc)
-					for (size_t j = 0; j < n; ++j)
-						F.mulin (* (Ci + j), alpha);
+				fscalin(F,m,n,alpha,C,ldc);
 			}
 		}
 
@@ -571,7 +547,8 @@ namespace FFLAS {
 				imaxa = kr;
 				jmaxa = mr;
 				ldx1 = mr;
-			} else {
+			}
+		       	else {
 				A12 = A + kr;
 				A21 = A + mr*lda;
 				A22 = A21 + kr;
@@ -586,7 +563,8 @@ namespace FFLAS {
 				imaxb = nr;
 				jmaxb = kr;
 				ldx2 = kr;
-			} else {
+			}
+		       	else {
 				B12 = B + nr;
 				B21 = B + kr*ldb;
 				B22 = B21 + nr;
@@ -714,7 +692,8 @@ namespace FFLAS {
 
 			delete[] X1;
 
-		} else {
+		}
+	       	else { // beta non zero
 			size_t ldx3;
 			// Three temporary submatrices are required
 			typename Field::Element* X1 = new typename Field::Element[mr*nr];
@@ -727,7 +706,8 @@ namespace FFLAS {
 				A22 = A12 + mr;
 				imaxa = kr;
 				ldx2 = jmaxa = mr;
-			} else {
+			}
+			else { // ta == FflasNoTrans
 				A12 = A + kr;
 				A21 = A + mr*lda;
 				A22 = A21 + kr;
@@ -741,7 +721,8 @@ namespace FFLAS {
 				imaxb = nr;
 				jmaxb = kr;
 				ldx3 = x3rd;
-			} else {
+			}
+		       	else { // ta == FflasNoTrans
 				B12 = B + nr;
 				B21 = B + kr*ldb;
 				B22 = B21 + nr;
@@ -783,6 +764,7 @@ namespace FFLAS {
 			d22c = C22; dx1 = X1;
 			for (size_t i = 0; i < mr; ++i, dx1 += nr, d22c += ldc)
 				for (size_t j=0;j < nr;++j) {
+					//! @todo can merge ops ?
 					F.mulin (*(d22c + j), beta);
 					F.addin (*(d22c + j), *(dx1 + j));
 				}
@@ -791,6 +773,7 @@ namespace FFLAS {
 			dx1 = X1; d12c = C12;
 			for (size_t i = 0; i < mr; ++i, d12c += ldc, dx1 += nr)
 				for (size_t j=0;j < nr;++j) {
+					//! @todo can merge ops ?
 					F.mulin (*(d12c + j), beta);
 					F.addin (*(d12c + j), *(dx1 + j));
 				}
@@ -992,20 +975,22 @@ namespace FFLAS {
 					F.sub (*(d21c + j), tmpU3, *(d21c + j)); // U6 = U3 - P4 in C21
 				}
 			}
+
+			delete[] X1;
+			delete[] X3;
+
 			// P3 = alpha . S4*B22 in X1
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, B22, ldb, F.one, C12, ldc, kmax, w-1,base);
 
 			// U5 = P3 + U4 in C12
 #if 0
-			// 		d12c = C12; dx1 = X1;
-			// 		for (size_t i = 0; i < mr; ++i, d12c += ldc, dx1 += nr)
-			// 			for (size_t j = 0; j < nr; ++j)
-			// 				F.addin (*(d12c + j), *(dx1 + j));
+			d12c = C12; dx1 = X1;
+			for (size_t i = 0; i < mr; ++i, d12c += ldc, dx1 += nr)
+				for (size_t j = 0; j < nr; ++j)
+					F.addin (*(d12c + j), *(dx1 + j));
 #endif
 #endif
-			delete[] X1;
 			delete[] X2;
-			delete[] X3;
 		}
 	}
 
@@ -1086,7 +1071,8 @@ namespace FFLAS {
 						if (F.areEqual (F.mOne, alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
-						} else {
+						}
+					       	else {
 							if (! F.areEqual (F.one, alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
@@ -1121,23 +1107,22 @@ namespace FFLAS {
 						if (!F.areEqual (F.one, alpha) &&
 						    !F.areEqual (F.mOne, alpha)) {
 							// Fix-up: compute C *= alpha
-							for (typename Field::Element* Ci = C;
-							     Ci < C + m*ldc; Ci+=ldc)
-								for (size_t j=0; j < n; ++j)
-									F.mulin (*(Ci + j), alpha);
+							fscalin(F,m,n,alpha,C,ldc);
 						}
 						// Temporary double matrices destruction
 						delete[] Ad;
 						delete[] Bd;
 						delete[] Cd;
-					} else {
+					}
+				       	else {
 						FloatDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
 						if (F.areEqual (F.mOne, alpha)) {
 							alphad = -1.0;
 							F.convert (betad, beta);
-						} else {
+						}
+					       	else {
 							if (! F.areEqual (F.one, alpha)) {
 								// Compute C = A*B + beta/alpha.C
 								// and after C *= alpha
@@ -1172,17 +1157,15 @@ namespace FFLAS {
 						if (!F.areEqual (F.one, alpha) &&
 						    !F.areEqual (F.mOne, alpha)) {
 							// Fix-up: compute C *= alpha
-							for (typename Field::Element* Ci=C;
-							     Ci < C+m*ldc; Ci+=ldc)
-								for (size_t j=0; j < n; ++j)
-									F.mulin (* (Ci + j), alpha);
+							fscalin(F,m,n,alpha,C,ldc);
 						}
 						// Temporary double matrices destruction
 						delete[] Ad;
 						delete[] Bd;
 						delete[] Cd;
 					}
-				} else{
+				}
+			       	else{
 					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
 						  beta, C, ldc, kmax,w,base);
 					DynamicPealing (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
@@ -1232,17 +1215,13 @@ namespace FFLAS {
 					WinoMain (DoubleDomain(), ta, tb, m, n, k, _alpha,
 						  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 					// Modular reduction
-					for (double* Ci = C; Ci < C+m*ldc; Ci+=ldc)
-						for (size_t j = 0; j < n; ++j)
-							F.init (*(Ci + j), *(Ci + j));
-
+					finit(F,m,n,C,ldc);
 					if (!F.areEqual (1.0, alpha) &&
 					    !F.areEqual (-1.0, alpha))
 						// Fix-up: compute C *= alpha
-						for (double* Ci=C; Ci < C+m*ldc; Ci+=ldc)
-							for (size_t j=0; j < n; ++j)
-								F.mulin (* (Ci + j), alpha);
-				} else {
+						fscalin(F,m,n,alpha,C,ldc);
+				}
+			       	else {
 					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha,
 						  A, lda, B, ldb, beta, C, ldc, kmax,w,base);
 					DynamicPealing (F, ta, tb, m, n, k, alpha,
@@ -1293,17 +1272,13 @@ namespace FFLAS {
 					WinoMain (FloatDomain(), ta, tb, m, n, k, _alpha,
 						  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 					// Conversion float = >  GFq
-					for (float * Ci = C; Ci != C+m*ldc; Ci+=ldc)
-						for (size_t j = 0; j < n; ++j)
-							F.init (*(Ci + j), *(Ci + j));
-
+					finit(F,m,n,C,ldc);
 					if (!F.areEqual (1.0, alpha) &&
 					    !F.areEqual (-1.0, alpha))
 						// Fix-up: compute C *= alpha
-						for (float* Ci=C; Ci < C+m*ldc; Ci+=ldc)
-							for (size_t j=0; j < n; ++j)
-								F.mulin (* (Ci + j), alpha);
-				} else{
+						fscalin(F,m,n,alpha,C,ldc);
+				}
+			       	else{
 					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha,
 						  A, lda, B, ldb, beta, C, ldc, kmax,w,base);
 					DynamicPealing (F, ta, tb, m, n, k, alpha,
@@ -1358,12 +1333,9 @@ namespace FFLAS {
 					t.clear();
 					t.start();
 #endif
-					double*Ci;
 
 					// #pragma omp parallel for schedule(static) private (Ci)
-					for (Ci = C; Ci < C+m*ldc; Ci+=ldc)
-						for (size_t j = 0; j < n; ++j)
-							F.init (*(Ci + j), *(Ci + j));
+					finit(F,m,n,C,ldc);
 #if 0
 					t.stop();
 					std::cerr<<"Reduction -> "<<t.realtime()<<std::endl;
@@ -1372,10 +1344,9 @@ namespace FFLAS {
 					if (!F.areEqual (1.0, alpha) &&
 					    !F.areEqual (-1.0, alpha))
 						// Fix-up: compute C *= alpha
-						for (Ci=C; Ci < C+m*ldc; Ci+=ldc)
-							for (size_t j=0; j < n; ++j)
-								F.mulin (* (Ci + j), alpha);
-				} else {
+						fscalin(F,m,n,alpha,C,ldc);
+				}
+			       	else {
 					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha,
 						  A, lda, B, ldb, beta, C, ldc, kmax,w,base);
 					DynamicPealing (F, ta, tb, m, n, k, alpha,
@@ -1426,17 +1397,14 @@ namespace FFLAS {
 					WinoMain (FloatDomain(), ta, tb, m, n, k, _alpha,
 						  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
 					// Conversion float = >  GFq
-					for (float * Ci = C; Ci != C+m*ldc; Ci+=ldc)
-						for (size_t j = 0; j < n; ++j)
-							F.init (*(Ci + j), *(Ci + j));
+					finit(F,m,n,C,ldc);
 
 					if (!F.areEqual (1.0, alpha) &&
 					    !F.areEqual (-1.0, alpha))
 						// Fix-up: compute C *= alpha
-						for (float* Ci=C; Ci < C+m*ldc; Ci+=ldc)
-							for (size_t j=0; j < n; ++j)
-								F.mulin (* (Ci + j), alpha);
-				} else{
+						fscalin(F,m,n,alpha,C,ldc);
+				}
+			       	else{
 					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha,
 						  A, lda, B, ldb, beta, C, ldc, kmax,w,base);
 					DynamicPealing (F, ta, tb, m, n, k, alpha,
@@ -1469,7 +1437,8 @@ namespace FFLAS {
 			inca12 = 1;
 			a21 = A+m-1;
 			inca21 = lda;
-		} else {
+		}
+	       	else {
 			ma = m;
 			na = k;
 			a12 = A+k-1;
@@ -1484,7 +1453,8 @@ namespace FFLAS {
 			incb12 = 1;
 			b21 = B+k-1;
 			incb21 = ldb;
-		} else {
+		}
+	       	else {
 			mb = k;
 			nb = n;
 			b12 = B+n-1;
@@ -1566,8 +1536,7 @@ namespace FFLAS {
 		if (!(m && n && k)) return C;
 
 		if (F.isZero (alpha)){
-			for (size_t i = 0; i<m; ++i)
-				fscal(F, n, beta, C + i*ldc, 1);
+			fscalin(F,m,n,beta,C,ldc);
 			return C;
 		}
 
@@ -1596,8 +1565,7 @@ namespace FFLAS {
 		if (!(m && n && k)) return C;
 
 		if (F.isZero (alpha)){
-			for (size_t i = 0; i<m; ++i)
-				fscal(F, n, beta, C + i*ldc, 1);
+			fscalin(F,m,n,beta,C,ldc);
 			return C;
 		}
 
@@ -1691,14 +1659,11 @@ namespace FFLAS {
 				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
 			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
 			delete[] Ad;
-		} else
+		}
+	       	else
 			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
 		// Conversion double = >  Finite Field
-		size_t i;
-		double *Ci;
-		for (i=0, Ci=C ; i < n;++i, Ci+=ldc)
-			for (size_t j=0; j < n;++j)
-				F.init(*(Ci+j),*(Ci+j));
+		finit(F,n,n,C,ldc);
 		return C;
 	}
 
@@ -1716,14 +1681,11 @@ namespace FFLAS {
 				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
 			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
 			delete[] Ad;
-		} else
+		}
+	       	else
 			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
 		// Conversion float = >  Finite Field
-		size_t i;
-		float *Ci;
-		for (i=0, Ci=C ; i < n;++i, Ci+=ldc)
-			for (size_t j=0; j < n;++j)
-				F.init(*(Ci+j),*(Ci+j));
+		finit(F,n,n,C,ldc);
 		return C;
 	}
 
@@ -1741,13 +1703,11 @@ namespace FFLAS {
 				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
 			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
 			delete[] Ad;
-		} else
+		}
+	       	else
 			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
 		// Conversion double = >  Finite Field
-		double *Ci = C;
-		for (size_t i=0; i < n;++i, Ci+=ldc)
-			for (size_t j=0; j < n;++j)
-				F.init(*(Ci+j),*(Ci+j));
+		finit(F,n,n,C,ldc);
 		return C;
 	}
 
@@ -1765,13 +1725,11 @@ namespace FFLAS {
 				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
 			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
 			delete[] Ad;
-		} else
+		}
+	       	else
 			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
 		// Conversion float = >  Finite Field
-		float *Ci = C;
-		for (size_t i=0; i < n;++i, Ci+=ldc)
-			for (size_t j=0; j < n;++j)
-				F.init(*(Ci+j),*(Ci+j));
+		finit(F,n,n,C,ldc);
 		return C;
 	}
 
