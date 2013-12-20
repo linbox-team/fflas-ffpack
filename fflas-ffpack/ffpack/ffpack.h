@@ -92,8 +92,8 @@ namespace FFPACK  {
 		FfpackKGF=2
 	};
 	void RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-				    const size_t * P, const size_t * Q,
-				    const size_t M, const size_t N, const size_t R);
+				   const size_t * P, const size_t * Q,
+				   const size_t M, const size_t N, const size_t R);
 
 	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
 				  const size_t N);
@@ -113,13 +113,13 @@ namespace FFPACK  {
 		     const size_t R3, const size_t R4);
 
 	void composePermutationsP (size_t * MathP,
-				  const size_t * P1,
-				  const size_t * P2,
-				  const size_t R, const size_t N);
+				   const size_t * P1,
+				   const size_t * P2,
+				   const size_t R, const size_t N);
 	void composePermutationsQ (size_t * MathP,
-				  const size_t * Q1,
-				  const size_t * Q2,
-				  const size_t R, const size_t N);
+				   const size_t * Q1,
+				   const size_t * Q2,
+				   const size_t R, const size_t N);
 
 	void cyclic_shift_mathPerm (size_t * P,  const size_t s);
 	template<typename Base_t>
@@ -224,14 +224,14 @@ namespace FFPACK  {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-			{
-				size_t BlockDim = BLOCKSIZE;
-				if (t == NBlocks-1)
-					BlockDim = LastBlockSize;
-                                #pragma omp task shared (A, P, F) firstprivate(BlockDim)
-				applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FflasRight)?lda:1), lda, P);
-			}
-                        #pragma omp taskwait
+		{
+			size_t BlockDim = BLOCKSIZE;
+			if (t == NBlocks-1)
+				BlockDim = LastBlockSize;
+#pragma omp task shared (A, P, F) firstprivate(BlockDim)
+			applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FflasRight)?lda:1), lda, P);
+		}
+#pragma omp taskwait
 	}
 
 	// Parallel applyT with OPENMP tasks
@@ -250,14 +250,14 @@ namespace FFPACK  {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-			{
-				size_t BlockDim = BLOCKSIZE;
-				if (t == NBlocks-1)
-					BlockDim = LastBlockSize;
-                                #pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,N2)
-				applyT (A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
-			}
-                        #pragma omp taskwait
+		{
+			size_t BlockDim = BLOCKSIZE;
+			if (t == NBlocks-1)
+				BlockDim = LastBlockSize;
+#pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,N2)
+			applyT (A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
+		}
+#pragma omp taskwait
 	}
 
 
@@ -277,14 +277,14 @@ namespace FFPACK  {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-			{
-				size_t BlockDim = BLOCKSIZE;
-				if (t == NBlocks-1)
-					BlockDim = LastBlockSize;
-                                #pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,M2)
-				applyS(A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
-			}
-                        #pragma omp taskwait
+		{
+			size_t BlockDim = BLOCKSIZE;
+			if (t == NBlocks-1)
+				BlockDim = LastBlockSize;
+#pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,M2)
+			applyS(A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
+		}
+#pragma omp taskwait
 	}
 
 
@@ -457,7 +457,7 @@ namespace FFPACK  {
 				N, 0,(int) R, B, ldb, P);
 
 		}
-else { // Right Looking X A = B
+		else { // Right Looking X A = B
 
 			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 				M, 0,(int) R, B, ldb, P);
@@ -529,15 +529,17 @@ else { // Right Looking X A = B
 		if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
 
 			// Initializing X to 0 (to be optimized)
-			for (size_t i = 0; i <N; ++i)
-				for (size_t j=0; j< NRHS; ++j)
-					F.assign (*(X+i*ldx+j), F.zero);
+			FFLAS::fzero(F,N,NRHS,X,ldx);
+			// for (size_t i = 0; i <N; ++i)
+			// for (size_t j=0; j< NRHS; ++j)
+			// F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M > N){ // Cannot copy B into X
 				W = new typename Field::Element [M*NRHS];
 				ldw = NRHS;
-				for (size_t i=0; i < M; ++i)
-					FFLAS::fcopy (F, NRHS, W + i*ldw, 1, B + i*ldb, 1);
+				FFLAS::fcopy(F,M,NRHS,W,ldw,B,ldb);
+				// for (size_t i=0; i < M; ++i)
+				// FFLAS::fcopy (F, NRHS, W + i*ldw, 1, B + i*ldb, 1);
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
 
@@ -560,17 +562,20 @@ else { // Right Looking X A = B
 				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       R, NRHS, F.one, A, lda , W, ldw);
 
-				for (size_t i=0; i < R; ++i)
-					FFLAS::fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
+				FFLAS::fcopy(F,R,NRHS,X,ldx,W,ldw);
+				// for (size_t i=0; i < R; ++i)
+				// FFLAS::fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
 
 				delete[] W;
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);
 
 			}
-else { // Copy B to X directly
-				for (size_t i=0; i < M; ++i)
-					FFLAS::fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
+			else { // Copy B to X directly
+
+				FFLAS::fcopy(F,M,NRHS,X,ldx,B,ldb);
+				// for (size_t i=0; i < M; ++i)
+				// FFLAS::fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
 
@@ -598,17 +603,19 @@ else { // Copy B to X directly
 			return X;
 
 		}
-else { // Right Looking X A = B
+		else { // Right Looking X A = B
 
-			for (size_t i = 0; i <NRHS; ++i)
-				for (size_t j=0; j< M; ++j)
-					F.assign (*(X+i*ldx+j), F.zero);
+			FFLAS::fzero(F,NRHS,M,X,ldx);
+			// for (size_t i = 0; i <NRHS; ++i)
+			// for (size_t j=0; j< M; ++j)
+			// F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M < N) {
 				W = new typename Field::Element [NRHS*N];
 				ldw = N;
-				for (size_t i=0; i < NRHS; ++i)
-					FFLAS::fcopy (F, N, W + i*ldw, 1, B + i*ldb, 1);
+				FFLAS::fcopy (F,NRHS, N, W, ldw, B, ldb);
+				// for (size_t i=0; i < NRHS; ++i)
+				// FFLAS::fcopy (F, N, W + i*ldw, 1, B + i*ldb, 1);
 
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, W, ldw, P);
@@ -631,8 +638,9 @@ else { // Right Looking X A = B
 					return X;
 				}
 				// The last N-R cols of W are now supposed to be 0
-				for (size_t i=0; i < NRHS; ++i)
-					FFLAS::fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
+				FFLAS::fcopy (F, NRHS,R, X ,ldx,  W , ldb);
+				// for (size_t i=0; i < NRHS; ++i)
+				// FFLAS::fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
 				delete[] W;
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					NRHS, 0,(int) R, X, ldx, Q);
@@ -640,9 +648,10 @@ else { // Right Looking X A = B
 				solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
 			}
-else {
-				for (size_t i=0; i < NRHS; ++i)
-					FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
+			else {
+				FFLAS::fcopy(F,NRHS,N,X,ldx,B,ldb);
+				// for (size_t i=0; i < NRHS; ++i)
+				// FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
 
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);
@@ -831,10 +840,10 @@ else {
 	 */
 	template <class Field>
 	size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
-				      const size_t M, const size_t N,
-				      typename Field::Element* A, const size_t lda,
-				      typename Field::Element*& NS, size_t& ldn,
-				      size_t& NSdim)
+			       const size_t M, const size_t N,
+			       typename Field::Element* A, const size_t lda,
+			       typename Field::Element*& NS, size_t& ldn,
+			       size_t& NSdim)
 	{
 		if (Side == FFLAS::FflasRight) { // Right NullSpace
 			size_t* P = new size_t[N];
@@ -846,12 +855,14 @@ else {
 			NSdim = ldn;
 			NS = new typename Field::Element [N*ldn];
 
-			for (size_t i=0; i<R; ++i)
-				FFLAS::fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
+			FFLAS::fcopy (F, R, ldn, NS , ldn,  A + R,  lda );
+			// for (size_t i=0; i<R; ++i)
+			// FFLAS::fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
 			       F.mOne, A, lda, NS, ldn);
 
+			// fzero(F,N-R,ldn,NS+(N-R)*ldn,ldn);
 			for (size_t i=R; i<N; ++i){
 				for (size_t j=0; j < ldn; ++j)
 					F.assign (*(NS+i*ldn+j), F.zero);
@@ -863,7 +874,7 @@ else {
 			delete [] Qt;
 			return N-R;
 		}
-else { // Left NullSpace
+		else { // Left NullSpace
 			size_t* P = new size_t[M];
 			size_t* Qt = new size_t[N];
 
@@ -872,11 +883,13 @@ else { // Left NullSpace
 			ldn = M;
 			NSdim = M-R;
 			NS = new typename Field::Element [NSdim*ldn];
-			for (size_t i=0; i<NSdim; ++i)
-				FFLAS::fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
+			FFLAS::fcopy (F, NSdim, R, NS, ldn, A + R *lda, lda);
+			// for (size_t i=0; i<NSdim; ++i)
+			// FFLAS::fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R,
 			       F.mOne, A, lda, NS, ldn);
 
+			// fzero(F,NSdim,M-R,NS+R,ldn);
 			for (size_t i=0; i<NSdim; ++i){
 				for (size_t j=R; j < M; ++j)
 					F.assign (*(NS+i*ldn+j), F.zero);
@@ -904,8 +917,8 @@ else { // Left NullSpace
 	 */
 	template <class Field>
 	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
-				      typename Field::Element* A, const size_t lda,
-				      size_t* &rkprofile)
+			       typename Field::Element* A, const size_t lda,
+			       size_t* &rkprofile)
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
@@ -936,8 +949,8 @@ else { // Left NullSpace
 	 */
 	template <class Field>
 	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
-					 typename Field::Element* A, const size_t lda,
-					 size_t* &rkprofile)
+				  typename Field::Element* A, const size_t lda,
+				  size_t* &rkprofile)
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
@@ -972,12 +985,12 @@ else { // Left NullSpace
 	 */
 	template <class Field>
 	size_t RowRankProfileSubmatrixIndices (const Field& F,
-						      const size_t M, const size_t N,
-						      typename Field::Element* A,
-						      const size_t lda,
-						      size_t*& rowindices,
-						      size_t*& colindices,
-						      size_t& R)
+					       const size_t M, const size_t N,
+					       typename Field::Element* A,
+					       const size_t lda,
+					       size_t*& rowindices,
+					       size_t*& colindices,
+					       size_t& R)
 	{
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
@@ -1023,12 +1036,12 @@ else { // Left NullSpace
 	 */
 	template <class Field>
 	size_t ColRankProfileSubmatrixIndices (const Field& F,
-						      const size_t M, const size_t N,
-						      typename Field::Element* A,
-						      const size_t lda,
-						      size_t*& rowindices,
-						      size_t*& colindices,
-						      size_t& R)
+					       const size_t M, const size_t N,
+					       typename Field::Element* A,
+					       const size_t lda,
+					       size_t*& rowindices,
+					       size_t*& colindices,
+					       size_t& R)
 	{
 		size_t *P = new size_t[M];
 		size_t *Q = new size_t[N];
@@ -1072,19 +1085,21 @@ else { // Left NullSpace
 	 */
 	template <class Field>
 	size_t RowRankProfileSubmatrix (const Field& F,
-					       const size_t M, const size_t N,
-					       typename Field::Element* A,
-					       const size_t lda,
-					       typename Field::Element*& X, size_t& R)
+					const size_t M, const size_t N,
+					typename Field::Element* A,
+					const size_t lda,
+					typename Field::Element*& X, size_t& R)
 	{
 
 		size_t * rowindices, * colindices;
+		typedef typename Field::Element Element ;
 
-		typename Field::Element * A2 = FFLAS::MatCopy (F, M, N, A, lda);
+		Element * A2 = new Element[M*N] ;
+		FFLAS::fcopy(F,M,N,A2,N,A,lda);
 
 		RowRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
-		X = new typename Field::Element[R*R];
+		X = new Element[R*R];
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
@@ -1111,17 +1126,19 @@ else { // Left NullSpace
 	 */
 	template <class Field>
 	size_t ColRankProfileSubmatrix (const Field& F, const size_t M, const size_t N,
-					       typename Field::Element* A, const size_t lda,
-					       typename Field::Element*& X, size_t& R)
+					typename Field::Element* A, const size_t lda,
+					typename Field::Element*& X, size_t& R)
 	{
 
 		size_t * rowindices, * colindices;
+		typedef typename Field::Element Element ;
 
-		typename Field::Element * A2 = FFLAS::MatCopy (F, M, N, A, lda);
+		Element * A2 = new Element[M*N];
+		FFLAS::fcopy(F,M,N,A2,N,A,lda);
 
 		ColRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
-		X = new typename Field::Element[R*R];
+		X = new Element[R*R];
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
@@ -1166,8 +1183,9 @@ else { // Left NullSpace
 		// X <- (Qt.L.Q)^(-1)
 		//invL( F, rank, A_factors, lda, X, ldx);
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, rank, A_factors, lda);
-		for (size_t i=0; i<rank; ++i)
-			FFLAS::fcopy (F, rank, A_factors+i*lda, 1, X+i*ldx,1);
+		FFLAS::fcopy(F,rank,rank,A_factors,lda,X,ldx);
+		// for (size_t i=0; i<rank; ++i)
+		// FFLAS::fcopy (F, rank, A_factors+i*lda, 1, X+i*ldx,1);
 
 		// X = U^-1.X
 		ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans,
@@ -1231,7 +1249,7 @@ else { // Left NullSpace
 		  size_t* P, size_t* Qt
 		  , const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP
 		  , const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF
-		  );
+		 );
 
 	//! LUpdate
 	template <class Field>
@@ -1373,30 +1391,35 @@ else { // Left NullSpace
 		typename Field::Element * Ti = T;
 		if (Uplo == FFLAS::FflasUpper){
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
+				//!@todo just one triangular fzero+fcopy ?
 				if (diag == FFLAS::FflasNonUnit){
-					for (size_t j=0; j<i; j++)
-						F.assign (Ti[j], F.zero);
+					FFLAS::fzero(F,i,Ti,1);
 					FFLAS::fcopy (F, N-i, Ti+i, 1, Ai+i, 1);
-				} else {
-					for (size_t j=0; j<i; j++)
-						F.assign (Ti[j], F.zero);
+				}
+				else {
+					FFLAS::fzero(F,i,Ti,1);
 					F.assign (*(Ti+i), F.one);
 					FFLAS::fcopy (F, N-i-1, Ti+i+1, 1, Ai+i+1, 1);
 				}
 			}
 			Ti = T+R*ldt;
-			for (size_t i=R; i<M; i++, Ti+=ldt)
-				for (size_t j=0; j<N; j++)
-					F.assign (Ti[j], F.zero);
-		} else {
+			// FFLAS::fzero(F,M-R,N,Ti+(M-R)*ldt,ldt);
+			for (size_t i=R; i<M; i++, Ti+=ldt) {
+				FFLAS::fzero(F,N,Ti,1);
+			}
+		}
+		else {
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				if (diag == FFLAS::FflasNonUnit){
 					FFLAS::fcopy (F, i+1, Ti, 1, Ai, 1);
+					// FFLAS::fzero(F,N-i-1,Ti+i+1,1);
 					for (size_t j=i+1; j<N; j++)
 						F.assign (Ti[j], F.zero);
-				} else {
+				}
+				else {
 					FFLAS::fcopy (F, i, Ti, 1, Ai, 1);
 					F.assign (Ti[i], F.one);
+					// FFLAS::fzero(F,N-i-1,Ti+i+1,1);
 					for (size_t j=i+1; j<N; j++)
 						F.assign (Ti[j], F.zero);
 				}
@@ -1404,12 +1427,13 @@ else { // Left NullSpace
 			Ti = T+R*ldt;
 			for (size_t i=R; i<M; i++, Ti+=ldt)
 				FFLAS::fcopy(F, i, Ti, 1, Ai, 1);
-				for (size_t j=R; j<N; j++)
-					F.assign (Ti[j], F.zero);
+			// FFLAS::fzero(F,N-R,Ti+R,1);
+			for (size_t j=R; j<N; j++)
+				F.assign (Ti[j], F.zero);
 		}
 	}
 
-        /** Extracts an echelon matrix from a compact storage A=L\U of rank R.
+	/** Extracts an echelon matrix from a compact storage A=L\U of rank R.
 	 * Either L or U is in Echelon form (depending on Uplo
 	 * The echelon structure is defined by the first R values of the array P.
 	 * row and column dimension of T are equal to that of A
@@ -1439,38 +1463,47 @@ else { // Left NullSpace
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				size_t piv = P[i];
 				if (diag == FFLAS::FflasNonUnit){
-					for (size_t j=0; j<piv; j++)
-						F.assign (Ti[j], F.zero);
+					FFLAS::fzero(F,piv,Ti,1);
+					// for (size_t j=0; j<piv; j++)
+					// F.assign (Ti[j], F.zero);
 					FFLAS::fcopy (F, N-piv, Ti+piv, 1, Ai+piv, 1);
-				} else {
-					for (size_t j=0; j<piv; j++)
-						F.assign (Ti[j], F.zero);
+				}
+				else {
+					FFLAS::fzero(F,piv,Ti,1);
+					// for (size_t j=0; j<piv; j++)
+					// F.assign (Ti[j], F.zero);
 					F.assign (Ti[piv], F.one);
 					FFLAS::fcopy (F, N-piv-1, Ti+piv+1, 1, Ai+piv+1, 1);
 				}
 			}
 			Ti = T+R*ldt;
+			// FFLAS::fzero(F,M-R,N,Ti+R*ldt,ldt);
 			for (size_t i=R; i<M; i++, Ti+=ldt)
 				for (size_t j=0; j<N; j++)
 					F.assign (Ti[j], F.zero);
-		} else {
+		}
+		else {
 			for (size_t i=0; i<R; i++, Ai++, Ti++){
 				size_t piv = P[i];
 				if (diag == FFLAS::FflasNonUnit){
-					for (size_t j=0; j<piv; j++)
-						F.assign (*(Ti+j*ldt), F.zero);
+					FFLAS::fzero(F,piv,Ti,ldt);
+					// for (size_t j=0; j<piv; j++)
+					// F.assign (*(Ti+j*ldt), F.zero);
 					FFLAS::fcopy (F, M-piv, Ti+piv*ldt, ldt, Ai+piv*lda, lda);
-				} else {
-					for (size_t j=0; j<piv; j++)
-						F.assign (*(Ti+j*ldt), F.zero);
+				}
+				else {
+					FFLAS::fzero(F,piv,Ti,ldt);
+					// for (size_t j=0; j<piv; j++)
+					// F.assign (*(Ti+j*ldt), F.zero);
 					F.assign (*(Ti+piv*ldt), F.one);
 					FFLAS::fcopy (F, M-piv-1, Ti+(piv+1)*ldt, ldt, Ai+(piv+1)*lda, lda);
 				}
 			}
 			Ti = T+R;
-			for (size_t i=0; i<M; i++, Ti+=ldt)
-				for (size_t j=0; j<N-R; j++)
-					F.assign (Ti[j], F.zero);
+			FFLAS::fzero(F,M,N-R,Ti,ldt);
+			// for (size_t i=0; i<M; i++, Ti+=ldt)
+			// for (size_t j=0; j<N-R; j++)
+			// F.assign (Ti[j], F.zero);
 		}
 	}
 	/*****************/
@@ -1709,10 +1742,11 @@ else { // Left NullSpace
 			t1.clear();
 			t1.start();
 #endif
-			//! @todo this init is not necessary (done after ftrtri)
-			for (size_t i=0; i<M; ++i)
-				for (size_t j=0; j<M;++j)
-					F.assign(*(X+i*ldx+j), F.zero);
+			//! @todo this init is not all necessary (done after ftrtri)
+			fzero(F,M,M,X,ldx);
+			// for (size_t i=0; i<M; ++i)
+			// for (size_t j=0; j<M;++j)
+			// F.assign(*(X+i*ldx+j), F.zero);
 
 			// X = L^-1 in n^3/3
 			ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, M, A, lda);
@@ -1773,8 +1807,9 @@ else { // Left NullSpace
 		size_t i,j;
 		// Warning: assumes that res is allocated to the size of the product
 		res.resize(P1.size()+P2.size()-1);
-		for (i=0;i<res.size();i++)
-			F.assign(res[i], F.zero);
+		FFLAS::fzero(F,res.size(),&res[0],1);
+		// for (i=0;i<res.size();i++)
+		// F.assign(res[i], F.zero);
 		for ( i=0;i<P1.size();i++)
 			for ( j=0;j<P2.size();j++)
 				F.axpyin(res[i+j],P1[i],P2[j]);
@@ -1881,7 +1916,7 @@ else { // Left NullSpace
 		if ( Side == FFLAS::FflasLeft ){
 			size_t j = 0;
 			while ( j<R ) {
-				 ib = Q[j];
+				ib = Q[j];
 				k = (int)ib ;
 				while ((j<R) && ( (int) Q[j] == k)  ) {k++;j++;}
 				Ldim = (size_t)k-ib;
@@ -1919,22 +1954,23 @@ else { // Left NullSpace
 
 	template<class Field>
 	void trinv_left( const Field& F, const size_t N, const typename Field::Element * L, const size_t ldl,
-				typename Field::Element * X, const size_t ldx )
+			 typename Field::Element * X, const size_t ldx )
 	{
-		for (size_t i=0; i<N; ++i)
-			FFLAS::fcopy (F, N, X+i*ldx, 1, L+i*ldl, 1);
+		FFLAS::fcopy(F,N,N,X,ldx,L,ldl);
+		// for (size_t i=0; i<N; ++i)
+		// FFLAS::fcopy (F, N, X+i*ldx, 1, L+i*ldl, 1);
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, N, X, ldx);
 		//invL(F,N,L,ldl,X,ldx);
 	}
 
 	template <class Field>
 	size_t KrylovElim( const Field& F, const size_t M, const size_t N,
-				  typename Field::Element * A, const size_t lda, size_t*P,
-				  size_t *Q, const size_t deg, size_t *iterates, size_t * inviterates, const size_t maxit,size_t virt);
+			   typename Field::Element * A, const size_t lda, size_t*P,
+			   size_t *Q, const size_t deg, size_t *iterates, size_t * inviterates, const size_t maxit,size_t virt);
 
 	template <class Field>
 	size_t  SpecRankProfile (const Field& F, const size_t M, const size_t N,
-					typename Field::Element * A, const size_t lda, const size_t deg, size_t *rankProfile);
+				 typename Field::Element * A, const size_t lda, const size_t deg, size_t *rankProfile);
 	template <class Field, class Polynomial>
 	std::list<Polynomial>&
 	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
@@ -1942,37 +1978,37 @@ else { // Left NullSpace
 
 	template <class Field>
 	void CompressRows (Field& F, const size_t M,
-				  typename Field::Element * A, const size_t lda,
-				  typename Field::Element * tmp, const size_t ldtmp,
-				  const size_t * d, const size_t nb_blocs);
+			   typename Field::Element * A, const size_t lda,
+			   typename Field::Element * tmp, const size_t ldtmp,
+			   const size_t * d, const size_t nb_blocs);
 
 	template <class Field>
 	void CompressRowsQK (Field& F, const size_t M,
-				    typename Field::Element * A, const size_t lda,
-				    typename Field::Element * tmp, const size_t ldtmp,
-				    const size_t * d,const size_t deg, const size_t nb_blocs);
+			     typename Field::Element * A, const size_t lda,
+			     typename Field::Element * tmp, const size_t ldtmp,
+			     const size_t * d,const size_t deg, const size_t nb_blocs);
 
 	template <class Field>
 	void DeCompressRows (Field& F, const size_t M, const size_t N,
-				    typename Field::Element * A, const size_t lda,
-				    typename Field::Element * tmp, const size_t ldtmp,
-				    const size_t * d, const size_t nb_blocs);
+			     typename Field::Element * A, const size_t lda,
+			     typename Field::Element * tmp, const size_t ldtmp,
+			     const size_t * d, const size_t nb_blocs);
 	template <class Field>
 	void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
-				      typename Field::Element * A, const size_t lda,
-				      typename Field::Element * tmp, const size_t ldtmp,
-				      const size_t * d, const size_t deg, const size_t nb_blocs);
+			       typename Field::Element * A, const size_t lda,
+			       typename Field::Element * tmp, const size_t ldtmp,
+			       const size_t * d, const size_t deg, const size_t nb_blocs);
 
 	template <class Field>
 	void CompressRowsQA (Field& F, const size_t M,
-				    typename Field::Element * A, const size_t lda,
-				    typename Field::Element * tmp, const size_t ldtmp,
-				    const size_t * d, const size_t nb_blocs);
+			     typename Field::Element * A, const size_t lda,
+			     typename Field::Element * tmp, const size_t ldtmp,
+			     const size_t * d, const size_t nb_blocs);
 	template <class Field>
 	void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
-				      typename Field::Element * A, const size_t lda,
-				      typename Field::Element * tmp, const size_t ldtmp,
-				      const size_t * d, const size_t nb_blocs);
+			       typename Field::Element * A, const size_t lda,
+			       typename Field::Element * tmp, const size_t ldtmp,
+			       const size_t * d, const size_t nb_blocs);
 
 
 	namespace Protected {
@@ -2047,7 +2083,7 @@ else { // Left NullSpace
 				    , const size_t kg_mc =0
 				    , const size_t kg_mb =0
 				    , const size_t kg_j  =0
-				    );
+				  );
 
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&

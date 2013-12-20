@@ -632,6 +632,7 @@ namespace FFLAS {
 
 	/** \brief fcopy : \f$x \gets y \f$.
 	 * X is preallocated
+	 * @todo variant for triagular matrix
 	 * @param F field
 	 * @param N size of the vectors
 	 * \param [out] X vector in \p F
@@ -1412,6 +1413,7 @@ namespace FFLAS {
 	/** faddm.
 	 * A <- A+op(B)
 	 * with op(B) = B or B^T
+	 * @bug not tested
 	 */
 	template<class Field>
 	void faddm(const Field & F,
@@ -1423,6 +1425,7 @@ namespace FFLAS {
 	/** faddm.
 	 * C <- op(A)+op(B)
 	 * with op(B) = B or B^T
+	 * @bug not tested
 	 */
 	template<class Field>
 	void faddm(const Field & F,
@@ -1436,6 +1439,7 @@ namespace FFLAS {
 	/** fsubm.
 	 * A <- A-op(B)
 	 * with op(B) = B or B^T
+	 * @bug not tested
 	 */
 	template<class Field>
 	void fsubm(const Field & F,
@@ -1447,6 +1451,7 @@ namespace FFLAS {
 	/** fsubm.
 	 * C <- op(A)-op(B)
 	 * with op(B) = B or B^T
+	 * @bug not tested
 	 */
 	template<class Field>
 	void fsubm(const Field & F,
@@ -1457,28 +1462,6 @@ namespace FFLAS {
 			  const typename Field::Element * B, const size_t ldb,
 			  typename Field::Element * C, const size_t ldc );
 
-	/** MatCopy makes a copy of the matrix M into a new allocated space.
-	 * @param F field
-	 * @param M rows of \p A
-	 * @param N cols of \p A
-	 * @param A matrix to be copied
-	 * @param lda leading dimension of \p A
-	 * @return a copy \p C of \p A with stride \p N
-	 * @warning \p A and \p C belong to the same field.
-	 */
-	template<class Field>
-	typename Field::Element* MatCopy (const Field& F,
-						 const size_t M, const size_t N,
-						 const typename Field::Element * A,
-						 const size_t lda)
-	{
-
-		typename Field::Element * C = new typename Field::Element[M*N];
-		for (size_t i = 0; i < N; ++i)
-			for (size_t j = 0; j < N; ++j)
-				F.assign(*(C + i*N + j),*(A + i*lda + j));
-		return C;
-	}
 
 	/** \brief Computes the number of recursive levels to perform.
 	 *
