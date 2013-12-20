@@ -579,62 +579,42 @@ namespace FFLAS {
 
 			// T3 = B22 - B12 in X2
 			d12 = B12; d22 = B22; dx2 = X2;
-			for (size_t i=0; i < imaxb; ++i, d12+=ldb, d22+=ldb, dx2+=ldx2) {
-				for (size_t j=0;j < jmaxb;++j)
-					F.sub (*(dx2+j), *(d22 + j), *(d12 + j));
-			}
+			fsub(F,imaxb,jmaxb,d22,ldb,d12,ldb,dx2,ldx2);
 
 			// S3 = A11 - A21 in X1
 			typename Field::Element* X1 = new typename Field::Element[mr*x1rd];		// S3 = A11 - A21 in X1
 			d11 = A11; d21 = A21; dx1 = X1;
-			for (size_t i = 0; i < imaxa; ++i, d11 += lda, d21 += lda, dx1 += ldx1)
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.sub (*(dx1+j), *(d11 + j), *(d21 + j));
+			fsub(F,imaxa,jmaxa,d11,lda,d21,lda,dx1,ldx1);
 
 			// P7 = alpha . S3 * T3  in C21
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, F.zero, C21, ldc, kmax, w-1, base);
 
 			// T1 = B12 - B11 in X2
 			d11 = B11; d12 = B12; dx2 = X2;
-			for (size_t i = 0; i < imaxb; ++i, d11 += ldb, d12 += ldb, dx2 += ldx2) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.sub (*(dx2 + j), *(d12 + j), *(d11 + j));
-			}
+			fsub(F,imaxb,jmaxb,d12,ldb,d11,ldb,dx2,ldx2);
 
 			// S1 = A21 + A22 in X1
 
 			d21 = A21; d22 = A22; dx1 = X1;
-			for (size_t i = 0; i < imaxa; ++i, d21+=lda, d22+=lda, dx1+=ldx1) {
-				for (size_t j=0;j < jmaxa;++j)
-					F.add(*(dx1+j),* (d21 + j),*(d22 + j));
-			}
+			fadd(F,imaxa,jmaxa,d21,lda,d22,lda,dx1,ldx1);
 
 			// P5 = alpha . S1*T1 in C22
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, F.zero, C22, ldc, kmax, w-1, base);
 
 			// T2 = B22 - T1 in X2
 			d22 = B22; dx2 = X2;
-			for (size_t i = 0; i < imaxb; ++i, d22+=ldb, dx2+=ldx2) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.sub (*(dx2+j), *(d22 + j), *(dx2+j));
-			}
+			fsub(F,imaxb,jmaxb,d22,ldb,dx2,ldx2,dx2,ldx2);
 
 			// S2 = S1 - A11 in X1
 			d11 = A11; dx1 = X1;
-			for (size_t i = 0; i < imaxa; ++i, d11+=lda, dx1+=ldx1) {
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.subin (*(dx1+j), *(d11 + j));
-			}
+			fsubin(F,imaxa,jmaxa,d11,lda,dx1,ldx1);
 
 			// P6 = alpha . S2 * T2 in C12
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, X2, ldx2, F.zero, C12, ldc, kmax, w-1, base);
 
 			// S4 = A12 -S2 in X1
 			d12 = A12; dx1 = X1;
-			for (size_t i = 0; i < imaxa; ++i, d12 += lda, dx1 += ldx1) {
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.sub (*(dx1+j), *(d12 + j), *(dx1+j));
-			}
+			fsub(F,imaxa,jmaxa,d12,lda,dx1,ldx1,dx1,ldx1);
 
 			// P3 = alpha . S4*B22 in C11
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X1, ldx1, B22, ldb, F.zero, C11, ldc, kmax, w-1, base);
@@ -652,24 +632,20 @@ namespace FFLAS {
 			for (size_t i = 0; i < mr;
 			     ++i, d12c += ldc, dx1 += nr, d22c+=ldc, d21c += ldc) {
 				for (size_t j=0;j < nr;++j) {
-					F.addin ( *(d12c + j), *(dx1 + j));    // U2 = P1 + P6
-					F.addin ( *(d21c+j), *(d12c+j));      //  U3 = U2 + P7
-					F.addin (*(d12c + j), *(d22c+j));   // U4 = P5 + U2 in C12
-					F.addin (*(d22c + j), *(d21c+j));  // U7 = P5 + U3 in C22
+					F.addin ( *(d12c + j), *(dx1 +j));    // U2 = P1 + P6
+					F.addin ( *(d21c+j)  , *(d12c+j));      //  U3 = U2 + P7
+					F.addin ( *(d12c + j), *(d22c+j));   // U4 = P5 + U2 in C12
+					F.addin ( *(d22c + j), *(d21c+j));  // U7 = P5 + U3 in C22
 				}
 			}
 
 			// U5 = P3 + U4 in C12
 			d12c = C12; d11 = C11;
-			for (size_t i = 0; i < mr; ++i, d12c += ldc, d11 += ldc)
-				for (size_t j = 0; j < nr; ++j)
-					F.addin (*(d12c + j), *(d11 + j));
+			faddin(F,mr,nr,d11,ldc,d12c,ldc);
+
 			// T4 = T2 - B21 in X2
 			d21 = B21;dx2=X2;
-			for (size_t i = 0; i < imaxb; ++i, d21+=ldb, dx2+=ldx2) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.subin (*(dx2+j),* (d21 + j));
-			}
+			fsubin(F,imaxb,jmaxb,d21,ldb,dx2,ldx2);
 
 			// P4 = alpha . A22 * T4 in C11
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldx2, F.zero, C11, ldc, kmax, w-1, base);
@@ -677,18 +653,14 @@ namespace FFLAS {
 			delete[] X2;
 			// U6 = U3 - P4 in C21
 			d21c = C21; d11c = C11;
-			for (size_t i = 0; i < mr; ++i, d21c += ldc, d11c += ldc)
-				for (size_t j = 0; j < nr; ++j)
-					F.subin (*(d21c + j), *(d11c + j));
+			fsubin(F,mr,nr,d11c,ldc,d21c,ldc);
 
 			// P2 = alpha . A12 * B21  in C11
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, kmax,w-1, base);
 
 			//  U1 = P2 + P1 in C11
 			d11c = C11; dx1 = X1;
-			for (size_t i = 0; i < mr; ++i, d11c += ldc, dx1 += nr)
-				for (size_t j = 0; j < nr; ++j)
-					F.addin (*(d11c + j), *(dx1 + j));
+			faddin(F,mr,nr,dx1,nr,d11c,ldc);
 
 			delete[] X1;
 
@@ -744,17 +716,11 @@ namespace FFLAS {
 
 			// T1 = B12 - B11 in X3
 			d11 = B11; d12 = B12; dx3 = X3;
-			for (size_t i = 0; i < imaxb; ++i, d11 += ldb, d12 += ldb, dx3 += ldx3) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.sub (*(dx3 + j), *(d12 + j), *(d11 + j));
-			}
+			fsub(F,imaxb,jmaxb,d12,ldb,d11,ldb,dx3,ldx3);
 
 			// S1 = A21 + A22 in X2
 			d21 = A21; d22 = A22; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d21+=lda, d22+=lda, dx2+=ldx2) {
-				for (size_t j=0;j < jmaxa;++j)
-					F.add(*(dx2+j),* (d21 + j),*(d22 + j));
-			}
+			fadd(F,imaxa,jmaxa,d21,lda,d22,lda,dx2,ldx2);
 
 			// P5 = alpha . S1*T1 + beta . C12 in C12
 			//WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, beta, C12, ldc, kmax, w-1,base);
@@ -787,49 +753,30 @@ namespace FFLAS {
 
 			//  U1 = P2 + P1 in C11
 			d11c = C11; dx1 = X1;
-			for (size_t i = 0; i < mr; ++i, d11c += ldc, dx1 += nr)
-				for (size_t j = 0; j < nr; ++j)
-					F.addin (*(d11c + j), *(dx1 + j));
+			faddin(F,mr,nr,dx1,nr,d11c,ldc);
 
 			// T2 = B22 - T1 in X3
 			d22 = B22; dx3 = X3;
-			for (size_t i = 0; i < imaxb; ++i, d22+=ldb, dx3+=ldx3) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.sub (*(dx3+j), *(d22 + j), *(dx3+j));
-			}
+			fsub(F,imaxb,jmaxb,d22,ldb,dx3,ldx3,dx3,ldx3);
 
 			// S2 = S1 - A11 in X2
 			d11 = A11; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d11+=lda, dx2+=ldx2) {
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.subin (*(dx2+j), *(d11 + j));
-			}
+			fsubin(F,imaxa,jmaxa,d11,lda,dx2,ldx2);
 
 			// U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.one, X1, nr, kmax, w-1,base);
 
-
-
-
 			// U4 = U2 + P5 in C12
 			d12c = C12; dx1 = X1;
-			for (size_t i = 0; i < mr; ++i, d12c += ldc, dx1 += nr)
-				for (size_t j=0;j < nr;++j)
-					F.addin (*(d12c + j), *(dx1 + j));
+			faddin(F,mr,nr,dx1,nr,d12c,ldc);
 
 			// T4 = T2 - B21 in X3
 			d21 = B21;dx3=X3;
-			for (size_t i = 0; i < imaxb; ++i, d21+=ldb, dx3+=ldx3) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.subin (*(dx3+j),* (d21 + j));
-			}
+			fsubin(F,imaxb,jmaxb,d21,ldb,dx3,ldx3);
 
 			// S4 = A12 -S2 in X2
 			d12 = A12; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d12 += lda, dx2 += ldx2) {
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.sub (*(dx2+j), *(d12 + j), *(dx2+j));
-			}
+			fsub(F,imaxa,jmaxa,d12,lda,dx2,ldx2,dx2,ldx2);
 
 			// P4 = alpha . A22 * T4 - beta . C21 in C21
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldx3, mbeta, C21, ldc, kmax, w-1,base);
@@ -839,112 +786,76 @@ namespace FFLAS {
 
 			// T3 = B22 - B12 in X3
 			d12 = B12; d22 = B22; dx3 = X3;
-			for (size_t i=0; i < imaxb; ++i, d12+=ldb, d22+=ldb, dx3+=ldx3)
-				for (size_t j=0;j < jmaxb;++j)
-					F.sub (*(dx3+j), *(d22 + j), *(d12 + j));
+			fsub(F,imaxb,jmaxb,d22,ldb,d12,ldb,dx3,ldx3);
 
 			// S3 = A11 - A21 in X2
 			d11 = A11; d21 = A21; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d11 += lda, d21 += lda, dx2 += ldx2)
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.sub (*(dx2+j), *(d11 + j), *(d21 + j));
+			fsub(F,imaxa,jmaxa,d11,lda,d21,lda,dx2,ldx2);
 
 			// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.one, X1, nr, kmax, w-1,base);
 
 			// U7 =  U3 + C22 in C22
 			d22c = C22; dx1 = X1; d12c = C12;
-			for (size_t i = 0; i < mr; ++i, d22c += ldc, dx1 += nr)
-				for (size_t j = 0; j < nr; ++j)
-					F.addin (*(d22c + j), *(dx1 + j));
+			faddin(F,mr,nr,dx1,nr,d22c,ldc);
 
 			// U6 = U3 - P4 in C21
 			dx1 = X1; d21c = C21;
-			for (size_t i = 0; i < mr; ++i, dx1 += nr, d21c += ldc)
-				for (size_t j=0;j < nr;++j)
-					F.sub  (*(d21c + j), *(dx1 + j),* (d21c + j));
+			fsub(F,mr,nr,dx1,nr,d21c,ldc,d21c,ldc);
 #else
 			// P2 = alpha . A12 * B21 + beta . C11  in C11
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, kmax,w-1,base);
 
 			// T3 = B22 - B12 in X3
 			d12 = B12; d22 = B22; dx3 = X3;
-			for (size_t i=0; i < imaxb; ++i, d12+=ldb, d22+=ldb, dx3+=ldx3) {
-				for (size_t j=0;j < jmaxb;++j)
-					F.sub (*(dx3+j), *(d22 + j), *(d12 + j));
-
-			}
+			fsub(F,imaxb,jmaxb,d22,ldb,d12,ldb,dx3,ldx3);
 
 			// S3 = A11 - A21 in X2
 			d11 = A11; d21 = A21; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d11 += lda, d21 += lda, dx2 += ldx2)
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.sub (*(dx2+j), *(d11 + j), *(d21 + j));
+			fsub(F,imaxa,jmaxa,d11,lda,d21,lda,dx2,ldx2);
 
 			// C22 = C22 - C12 if beta != 0
 			d12c = C12;
 			d22c = C22;
-			for (size_t i = 0; i <  mr; ++i, d12c += ldc, d22c += ldc)
-				for (size_t j = 0; j < nr; ++j)
-					F.subin (*(d22c + j), *(d12c + j));
+			fsubin(F,mr,nr,d12c,ldc,d22c,ldc);
 
 			// C21 = C21 - C22
 			d21c = C21;
 			d22c = C22;
-			for (size_t i = 0; i <  mr; ++i, d22c += ldc, d21c += ldc)
-				for (size_t j = 0; j < nr; ++j)
-					F.subin (*(d21c + j), *(d22c + j));
+			fsubin(F,mr,nr,d22c,ldc,d21c,ldc);
 
 			// P7 = alpha . S3 * T3 + beta . C22 in C22
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, beta, C22, ldc, kmax, w-1,base);
 
 			// T1 = B12 - B11 in X3
 			d11 = B11; d12 = B12; dx3 = X3;
-			for (size_t i = 0; i < imaxb; ++i, d11 += ldb, d12 += ldb, dx3 += ldx3) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.sub (*(dx3 + j), *(d12 + j), *(d11 + j));
-			}
+			fsub(F,imaxb,jmaxb,d12,ldb,d11,ldb,dx3,ldx3);
 
 			// S1 = A21 + A22 in X2
 			d21 = A21; d22 = A22; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d21+=lda, d22+=lda, dx2+=ldx2) {
-				for (size_t j=0;j < jmaxa;++j)
-					F.add(*(dx2+j),* (d21 + j),*(d22 + j));
-			}
+			fadd(F,imaxa,jmaxa,d21,lda,d22,lda,dx2,ldx2);
 
 			// P5 = alpha . S1*T1 + beta . C12 in C12
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, beta, C12, ldc, kmax, w-1,base);
 
 			// T2 = B22 - T1 in X3
 			d22 = B22; dx3 = X3;
-			for (size_t i = 0; i < imaxb; ++i, d22+=ldb, dx3+=ldx3) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.sub (*(dx3+j), *(d22 + j), *(dx3+j));
-			}
+			fsub(F,imaxb,jmaxb,d22,ldb,dx3,ldx3,dx3,ldx3);
 
 			// S2 = S1 - A11 in X2
 			d11 = A11; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d11+=lda, dx2+=ldx2) {
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.subin (*(dx2+j), *(d11 + j));
-			}
+			fsubin(F,imaxa,jmaxa,d11,lda,dx2,ldx2);
 
 			// P6 = alpha . S2 * T2 in X1
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.zero, X1, nr, kmax, w-1,base);
 
 			// T4 = T2 - B21 in X3
 			d21 = B21;dx3=X3;
-			for (size_t i = 0; i < imaxb; ++i, d21+=ldb, dx3+=ldx3) {
-				for (size_t j = 0; j < jmaxb; ++j)
-					F.subin (*(dx3+j),* (d21 + j));
-			}
+			fsubin(F,imaxb,jmaxb,d21,ldb,dx3,ldx3);
 
 			// S4 = A12 -S2 in X2
 			d12 = A12; dx2 = X2;
-			for (size_t i = 0; i < imaxa; ++i, d12 += lda, dx2 += ldx2) {
-				for (size_t j = 0; j < jmaxa; ++j)
-					F.sub (*(dx2+j), *(d12 + j), *(dx2+j));
-			}
+			fsub(F,imaxa,jmaxa,d12,lda,dx2,ldx2,dx2,ldx2);
 
 			// P4 = alpha . A22 * T4 - beta . C21 in C21
 			WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldx3, mbeta, C21, ldc, kmax, w-1,base);
@@ -954,9 +865,7 @@ namespace FFLAS {
 
 			//  U1 = P2 + P1 in C11
 			d11c = C11; dx3 = X3;
-			for (size_t i = 0; i < mr; ++i, d11c += ldc, dx3 += nr)
-				for (size_t j = 0; j < nr; ++j)
-					F.addin (*(d11c + j), *(dx3 + j));
+			faddin(F,mr,nr,dx3,ldx3,d11c,ldc);
 
 			// U2 = P1 + P6 in tmpU2  and
 			// U3 = P7 + U2 in tmpU3  and

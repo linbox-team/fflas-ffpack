@@ -35,8 +35,9 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+#ifndef NEWINO
 #define NEWWINO
+#endif
 #define TIME 1
 
 #include <iomanip>
