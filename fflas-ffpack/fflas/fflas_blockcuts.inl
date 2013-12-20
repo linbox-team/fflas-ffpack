@@ -73,7 +73,7 @@ namespace FFLAS {
                                 size_t& CBLOCKSIZE,
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
-        RBLOCKSIZE = MAX(m/numthreads,1);
+        RBLOCKSIZE = std::max(m/numthreads,(size_t)1);
         CBLOCKSIZE = n;
     }
 
@@ -84,7 +84,7 @@ namespace FFLAS {
                                    const size_t m, const size_t n,
                                    const size_t numthreads) {
         RBLOCKSIZE = m;
-        CBLOCKSIZE = MAX(n/numthreads,1);
+        CBLOCKSIZE = std::max(n/numthreads,(size_t)1);
     }
 
     template<>
@@ -109,8 +109,8 @@ namespace FFLAS {
        //          }
        //  }
 
-	    RBLOCKSIZE=MAX(m/maxtr[numthreads-1],1);
-	    CBLOCKSIZE=MAX(n/maxtc[numthreads-1],1);
+	    RBLOCKSIZE=std::max(m/maxtr[numthreads-1],(size_t)1);
+	    CBLOCKSIZE=std::max(n/maxtc[numthreads-1],(size_t)1);
     }
 
     void BlockCuts(size_t& r, size_t& c,
@@ -145,7 +145,7 @@ namespace FFLAS {
         lastCBS = n % colBlockSize;
         if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
     }
-    
+
 
 }
 

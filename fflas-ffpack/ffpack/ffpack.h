@@ -216,7 +216,7 @@ namespace FFPACK  {
 		 typename Field::Element * A, const size_t lda, const size_t * P )
 	{
 		int numthreads = omp_get_max_threads();
-		size_t BLOCKSIZE=MAX(2*m/numthreads,1); // Assume that there is at least 2 ApplyP taking place in parallel
+		size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
 		size_t NBlocks = m/BLOCKSIZE;
 		size_t LastBlockSize = m % BLOCKSIZE;
 		if (LastBlockSize)
@@ -229,7 +229,7 @@ namespace FFPACK  {
 			if (t == NBlocks-1)
 				BlockDim = LastBlockSize;
 #pragma omp task shared (A, P, F) firstprivate(BlockDim)
-			applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FflasRight)?lda:1), lda, P);
+			applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P);
 		}
 #pragma omp taskwait
 	}
@@ -242,7 +242,7 @@ namespace FFPACK  {
 		      const size_t R3, const size_t R4)
 	{
 		int numthreads = omp_get_max_threads();
-		size_t BLOCKSIZE=MAX(width/numthreads,1);
+		size_t BLOCKSIZE=std::max(width/numthreads,(size_t)1);
 		size_t NBlocks = width/BLOCKSIZE;
 		size_t LastBlockSize = width % BLOCKSIZE;
 		if (LastBlockSize)
@@ -269,7 +269,7 @@ namespace FFPACK  {
 		      const size_t R3, const size_t R4)
 	{
 		int numthreads = omp_get_max_threads();
-		size_t BLOCKSIZE=MAX(width/numthreads,1);
+		size_t BLOCKSIZE=std::max(width/numthreads,(size_t)1);
 		size_t NBlocks = width/BLOCKSIZE;
 		size_t LastBlockSize = width % BLOCKSIZE;
 		if (LastBlockSize)
@@ -648,7 +648,7 @@ namespace FFPACK  {
 				solveLB2 (F, FFLAS::FflasRight, NRHS, M, R, A, lda, Q, X, ldx);
 
 			}
-			else {
+			else { // M >=N
 				FFLAS::fcopy(F,NRHS,N,X,ldx,B,ldb);
 				// for (size_t i=0; i < NRHS; ++i)
 				// FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);

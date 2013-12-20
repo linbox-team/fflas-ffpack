@@ -48,7 +48,7 @@ namespace FFLAS {
 	{
 		int numthreads = omp_get_max_threads();
 		if(Side == FflasRight){
-			size_t BLOCKSIZE=MAX(2*m/numthreads,1); // There is always 2 TRSM taking place in parallel
+			size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // There is always 2 TRSM taking place in parallel
 			size_t NBlocks = m/BLOCKSIZE;
 			size_t LastBlockSize = m % BLOCKSIZE;
 			if (LastBlockSize)
@@ -66,7 +66,7 @@ namespace FFLAS {
 			}
 		}
 		else {
-			size_t BLOCKSIZE=MAX(2*n/numthreads,1); // There is always 2 TRSM taking place in parallel
+			size_t BLOCKSIZE=std::max(2*n/numthreads,(size_t)1); // There is always 2 TRSM taking place in parallel
 			size_t NBlocks = n/BLOCKSIZE;
 			size_t LastBlockSize = n % BLOCKSIZE;
 			if (LastBlockSize)
@@ -85,11 +85,11 @@ namespace FFLAS {
 				}
 		}
                 #pragma omp taskwait
-		
+
 		return B;
 	}
-	
-	
-} // FFLAS                                                                                                                   
+
+
+} // FFLAS
 
 
