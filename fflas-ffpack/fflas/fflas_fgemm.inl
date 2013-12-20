@@ -921,10 +921,13 @@ namespace FFLAS {
 		{
 
 			if (w == 0)
-				ClassicMatmul (D, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, kmax,base);
+				ClassicMatmul (D, ta, tb, m, n, k, alpha, A, lda, B, ldb,
+					       beta, C, ldc, kmax,base);
 			else{
-				WinoCalc (D, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, kmax, w,base);
-				DynamicPealing (D, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, kmax);
+				WinoCalc (D, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
+					  beta, C, ldc, kmax, w,base);
+				DynamicPealing (D, ta, tb, m, n, k, alpha, A, lda, B, ldb,
+						beta, C, ldc, kmax);
 			}
 		}
 
@@ -1084,7 +1087,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline void WinoMain (const  FFPACK:: ModularBalanced<double>& F,
+		inline void WinoMain (const FFPACK:: ModularBalanced<double>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1141,7 +1144,7 @@ namespace FFLAS {
 
 
 		template <>
-		inline void WinoMain (const  FFPACK:: ModularBalanced<float>& F,
+		inline void WinoMain (const FFPACK:: ModularBalanced<float>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1197,7 +1200,7 @@ namespace FFLAS {
 		}
 
 		template <>
-		inline void WinoMain (const  FFPACK:: Modular<double>& F,
+		inline void WinoMain (const FFPACK:: Modular<double>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1266,7 +1269,7 @@ namespace FFLAS {
 
 
 		template <>
-		inline void WinoMain (const  FFPACK:: Modular<float>& F,
+		inline void WinoMain (const FFPACK:: Modular<float>& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -1422,7 +1425,7 @@ namespace FFLAS {
 		}
 	}
 
-	} // Winomain
+	} // Protected Winomain
 
 	// Unsafe matmul over Z
 	// For internal usage only (or use it with care)

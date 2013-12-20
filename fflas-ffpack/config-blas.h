@@ -77,6 +77,7 @@ extern "C" {
 	void   daxpy_   (const int*, const double*, const double*, const int*, double*, const int*);
 	void   saxpy_   (const int*, const float*, const float*, const int*, float*, const int*);
 	double ddot_    (const int*, const double*, const int*, const double*, const int*);
+	float  sdot_    (const int*, const float*, const int*, const float*, const int*);
 	double dasum_   (const int*, const double*, const int*);
 	int    idamax_  (const int*, const double*, const int*);
 	double dnrm2_   (const int*, const double*, const int*);
@@ -85,6 +86,7 @@ extern "C" {
 	void dgemv_ (const char*, const int*, const int*, const double*, const double*, const int*, const double*, const int*, const double*, double*, const int*);
 	void sgemv_ (const char*, const int*, const int*, const float*, const float*, const int*, const float*, const int*, const float*, float*, const int*);
 	void dger_  (const int*, const int*, const double*, const double*, const int*, const double*, const int*, double*, const int*);
+	void sger_  (const int*, const int*, const float*, const float*, const int*, const float*, const int*, float*, const int*);
 
 	// level 3 routines
 	void dtrsm_ (const char*, const char*, const char*, const char*, const int*, const int*, const double*, const double*, const int*, double*, const int*);
@@ -115,6 +117,12 @@ extern "C" {
 	{
 		return ddot_ (&N, X, &incX, Y, &incY);
 	}
+
+	inline float cblas_sdot(const int N, const float *X, const int incX, const float *Y, const int incY)
+	{
+		return sdot_ (&N, X, &incX, Y, &incY);
+	}
+
 
 	inline double cblas_dasum(const int N, const double *X, const int incX){
 		return dasum_ (&N, X, &incX);
@@ -157,6 +165,14 @@ extern "C" {
 			dger_ (&M, &N, &alpha, X, &incX, Y, &incY, A, &lda);
 	}
 
+	inline void cblas_sger(const enum CBLAS_ORDER Order, const int M, const int N, const float alpha, const float *X, const int incX,
+			const float *Y, const int incY, float *A, const int lda)
+	{
+		if (Order == CblasRowMajor)
+			sger_ (&N, &M, &alpha, Y, &incY, X, &incX, A, &lda);
+		else
+			sger_ (&M, &N, &alpha, X, &incX, Y, &incY, A, &lda);
+	}
 
 
 	// level 3 routines
@@ -235,6 +251,7 @@ extern "C" {
 	void   cblas_saxpy(const int N, const float alpha, const float *X, const int incX, float *Y, const int incY);
 
 	double cblas_ddot(const int N, const double *X, const int incX, const double *Y, const int incY);
+	float  cblas_sdot(const int N, const float *X, const int incX, const float *Y, const int incY);
 
 	double cblas_dasum(const int N, const double *X, const int incX);
 
@@ -253,6 +270,10 @@ extern "C" {
 
 	void cblas_dger(const enum CBLAS_ORDER Order, const int M, const int N, const double alpha, const double *X, const int incX,
 			const double *Y, const int incY, double *A, const int lda);
+
+	void cblas_sger(const enum CBLAS_ORDER Order, const int M, const int N, const float alpha, const float *X, const int incX,
+			const float *Y, const int incY, float *A, const int lda);
+
 
 
 	// level 3 routines
