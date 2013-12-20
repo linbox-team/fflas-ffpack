@@ -230,7 +230,7 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 
 	if (__FFLAS__Na == 1)
 #ifdef __FFLAS__NONUNIT
-		fscal(F, __FFLAS__Bdim, *A, B, __FFLAS__Bnorminc);
+		fscalin(F, __FFLAS__Bdim, *A, B, __FFLAS__Bnorminc);
 #else
        ;
 #endif
