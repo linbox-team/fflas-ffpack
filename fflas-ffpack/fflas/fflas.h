@@ -171,7 +171,8 @@ namespace FFLAS {
 						  typename DoubleDomain::Element* S, const size_t lds,
 						  const typename Field::Element* const E,
 						  const size_t lde,
-						  const size_t m, const size_t n){
+						  const size_t m, const size_t n)
+		{
 
 			const typename Field::Element* Ei = E;
 			typename DoubleDomain::Element* Si = S;
@@ -190,7 +191,8 @@ namespace FFLAS {
 						   typename FloatDomain::Element* S, const size_t lds,
 						   const typename Field::Element* const E,
 						   const size_t lde,
-						   const size_t m, const size_t n){
+						   const size_t m, const size_t n)
+		{
 
 			const typename Field::Element* Ei = E;
 			typename FloatDomain::Element* Si = S;
@@ -226,7 +228,8 @@ namespace FFLAS {
 		void MatFl2MatF (const Field& F,
 					typename Field::Element* S, const size_t lds,
 					const typename FloatDomain::Element* E, const size_t lde,
-					const size_t m, const size_t n){
+					const size_t m, const size_t n)
+		{
 
 			typename Field::Element* Si = S;
 			const FloatDomain::Element* Ei =E;
@@ -1196,66 +1199,6 @@ namespace FFLAS {
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
 	 * Computes \f$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C\f$
-	 * \param F field.
-	 * \param ta if \c ta==FflasTrans then \f$\mathrm{op}(A)=A^t\f$, else \f$\mathrm{op}(A)=A\f$,
-	 * \param tb same for \p B
-	 * \param m see \p A
-	 * \param k see \p A
-	 * \param n see \p B
-	 * \param alpha scalar
-	 * \param beta scalar
-	 * \param A \f$\mathrm{op}(A)\f$ is \f$m \times k\f$
-	 * \param B \f$\mathrm{op}(B)\f$ is \f$k \times n\f$
-	 * \param C \f$C\f$ is \f$m \times n\f$
-	 * \param lda leading dimension of \p A
-	 * \param ldb leading dimension of \p B
-	 * \param ldc leading dimension of \p C
-	 * \param w recursive levels of Winograd's algorithm are used
-	 * @warning \f$\alpha\f$ \e must be invertible
-	 */
-	template<class Field>
-	typename Field::Element*
-	fgemm( const Field& F,
-	       const FFLAS_TRANSPOSE ta,
-	       const FFLAS_TRANSPOSE tb,
-	       const size_t m,
-	       const size_t n,
-	       const size_t k,
-	       const typename Field::Element alpha,
-	       const typename Field::Element* A, const size_t lda,
-	       const typename Field::Element* B, const size_t ldb,
-	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc,
-	       const size_t w)
-	{
-		if (!k) {
-			fscalin(F, m, n, beta, C, ldc);
-			return C;
-		}
-
-		if (!(m && n && k))
-			return C;
-
-		if (F.isZero (alpha)){
-			fscalin(F, m, n, beta, C, ldc);
-			return C;
-		}
-
-
-
-		size_t kmax = 0;
-		size_t winolevel = w;
-		FFLAS_BASE base;
-		Protected::MatMulParameters (F, std::min(std::min(m,n),k), k, beta, kmax, base,
-					     winolevel, true);
-		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-				     C, ldc, kmax, winolevel, base);
-		return C;
-	}
-
-	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
-	 *
-	 * Computes \f$C = \alpha \mathrm{op}(A) \mathrm{op}(B) + \beta C\f$.
 	 * Automatically set Winograd recursion level
 	 * \param F field.
 	 * \param ta if \c ta==FflasTrans then \f$\mathrm{op}(A)=A^t\f$, else \f$\mathrm{op}(A)=A\f$,
@@ -1271,11 +1214,12 @@ namespace FFLAS {
 	 * \param lda leading dimension of \p A
 	 * \param ldb leading dimension of \p B
 	 * \param ldc leading dimension of \p C
+	 * \param w recursive levels of Winograd's algorithm are used. No argument (or -1) does auto computation of \p w.
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field>
 	typename Field::Element*
-	fgemm (const Field& F,
+	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
 	       const size_t m,
@@ -1285,18 +1229,19 @@ namespace FFLAS {
 	       const typename Field::Element* A, const size_t lda,
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc)
+	       typename Field::Element* C, const size_t ldc,
+	       const size_t w = (size_t) -1)
 	{
 		if (!k) {
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
 
-		if (!(m && n && k)) return C;
+		if (!(m && n && k))
+			return C;
+
 		if (F.isZero (alpha)){
-			fscalin(F,m,n,beta,C,ldc);
-			// for (size_t i = 0; i<m; ++i)
-				// fscalin(F, n, beta, C + i*ldc, 1);
+			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
 
@@ -1308,15 +1253,21 @@ namespace FFLAS {
 		F.mulin(e,alpha);
 		FFLASFFPACK_check(F.isOne(e));
 #endif
-		size_t w, kmax;
-		FFLAS_BASE base;
 
-		Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base, w);
+
+		bool winoLevelProvided = (w != (size_t(-1)));
+		size_t kmax = 0;
+		size_t winolevel = w;
+		FFLAS_BASE base;
+		Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base,
+					     winolevel, winoLevelProvided);
 
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-				     C, ldc, kmax, w, base);
+				     C, ldc, kmax, winolevel, base);
 		return C;
 	}
+
+
 	    /**
 	     * Parallel fgemm
 	     */

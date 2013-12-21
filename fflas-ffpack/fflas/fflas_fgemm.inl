@@ -974,7 +974,7 @@ namespace FFLAS {
 			if (w == 0) // Winograd - >  Classic
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
-			else {
+			else { // w > 0
 				if (k <= kmax) { // switch on floating point
 					if (base == FflasDouble){
 						DoubleDomain::Element alphad, betad;
@@ -1026,7 +1026,7 @@ namespace FFLAS {
 						delete[] Bd;
 						delete[] Cd;
 					}
-				       	else {
+				       	else { // FloatDomain
 						FloatDomain::Element alphad, betad;
 						typename Field::Element _betabis;
 
@@ -1077,7 +1077,7 @@ namespace FFLAS {
 						delete[] Cd;
 					}
 				}
-			       	else{
+			       	else{ // k > kmax
 					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
 						  beta, C, ldc, kmax,w,base);
 					DynamicPealing (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
@@ -1452,9 +1452,12 @@ namespace FFLAS {
 			return C;
 		}
 
+		size_t W = w ;
+		if (w == (size_t)-1)
+			W = WinoSteps (std::min(m,std::min(k,n)));
 
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-			  C, ldc, k+1, w, FflasDouble);
+			  C, ldc, k+1, W, FflasDouble);
 		return C;
 	}
 
@@ -1481,44 +1484,16 @@ namespace FFLAS {
 			return C;
 		}
 
+		size_t W = w ;
+		if (w == (size_t)-1)
+			W = WinoSteps (std::min(m,std::min(k,n)));
+
+
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-			  C, ldc, k+1, w, FflasFloat);
+			  C, ldc, k+1, W, FflasFloat);
 		return C;
 	}
 
-	template<>
-	inline double*
-	fgemm< FFPACK:: UnparametricField<double> > (const  FFPACK:: UnparametricField<double>& F,
-					   const FFLAS_TRANSPOSE ta,
-					   const FFLAS_TRANSPOSE tb,
-					   const size_t m,
-					   const size_t n,
-					   const size_t k,
-					   const double alpha,
-					   const double* A, const size_t lda,
-					   const double* B, const size_t ldb,
-					   const double beta,
-					   double* C, const size_t ldc)
-	{
-		return fgemm (F, ta, tb, m, n ,k, alpha, A, lda, B, ldb, beta, C, ldc, WinoSteps (std::min(m,std::min(k,n))));
-	}
-
-	template<>
-	inline float*
-	fgemm< FFPACK:: UnparametricField<float> > (const  FFPACK:: UnparametricField<float>& F,
-					  const FFLAS_TRANSPOSE ta,
-					  const FFLAS_TRANSPOSE tb,
-					  const size_t m,
-					  const size_t n,
-					  const size_t k,
-					  const float alpha,
-					  const float* A, const size_t lda,
-					  const float* B, const size_t ldb,
-					  const float beta,
-					  float* C, const size_t ldc)
-	{
-		return fgemm (F, ta, tb, m, n ,k, alpha, A, lda, B, ldb, beta, C, ldc, WinoSteps (std::min(m,std::min(k,n))));
-	}
 
 
 	template < class Field >
