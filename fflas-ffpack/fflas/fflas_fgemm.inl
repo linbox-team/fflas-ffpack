@@ -1532,6 +1532,34 @@ namespace FFLAS {
 		return C;
 	}
 
+	namespace Protected {
+
+		template < class Field >
+		inline typename Field::Element*
+		fsquareCommon (const Field& F,
+			       const FFLAS_TRANSPOSE ta,
+			       const size_t n, const typename Field::Element alpha,
+			       const typename Field::Element* A, const size_t lda,
+			       const typename Field::Element beta,
+			       typename Field::Element* C, const size_t ldc)
+		{
+			typedef typename Field::Element Element ; // double or float
+			if (C==A) {
+				Element * Ad = new Element[n*n];
+				fcopy(F,n,n,Ad,n,A,lda);
+				fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
+				delete[] Ad;
+			}
+			else
+				fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
+			// Conversion double/float = >  Finite Field
+			finit(F,n,n,C,ldc);
+			return C;
+
+		}
+
+	} // Protected
+
 	template <>
 	inline double* fsquare (const  FFPACK:: ModularBalanced<double> & F,
 				const FFLAS_TRANSPOSE ta,
@@ -1540,18 +1568,7 @@ namespace FFLAS {
 				const double beta,
 				double* C, const size_t ldc)
 	{
-		if (C==A) {
-			double * Ad = new double[n*n];
-			for (size_t i=0; i < n; ++i)
-				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
-			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
-			delete[] Ad;
-		}
-	       	else
-			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
-		// Conversion double = >  Finite Field
-		finit(F,n,n,C,ldc);
-		return C;
+		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 	template <>
@@ -1562,18 +1579,7 @@ namespace FFLAS {
 				const float beta,
 				float* C, const size_t ldc)
 	{
-		if (C==A) {
-			float * Ad = new float[n*n];
-			for (size_t i=0; i < n; ++i)
-				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
-			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
-			delete[] Ad;
-		}
-	       	else
-			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
-		// Conversion float = >  Finite Field
-		finit(F,n,n,C,ldc);
-		return C;
+		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 	template <>
@@ -1584,18 +1590,7 @@ namespace FFLAS {
 				const double beta,
 				double* C, const size_t ldc)
 	{
-		if (C==A) {
-			double * Ad = new double[n*n];
-			for (size_t i=0; i < n; ++i)
-				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
-			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
-			delete[] Ad;
-		}
-	       	else
-			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
-		// Conversion double = >  Finite Field
-		finit(F,n,n,C,ldc);
-		return C;
+		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 	template <>
@@ -1606,18 +1601,7 @@ namespace FFLAS {
 				const float beta,
 				float* C, const size_t ldc)
 	{
-		if (C==A) {
-			float * Ad = new float[n*n];
-			for (size_t i=0; i < n; ++i)
-				fcopy (F, n,Ad+i*n, 1, A+i*lda, 1);
-			fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
-			delete[] Ad;
-		}
-	       	else
-			fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
-		// Conversion float = >  Finite Field
-		finit(F,n,n,C,ldc);
-		return C;
+		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 } // FFLAS
