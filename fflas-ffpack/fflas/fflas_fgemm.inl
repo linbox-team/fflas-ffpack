@@ -33,7 +33,26 @@
 
 namespace FFLAS {
 
+	DoubleDomain associatedDomain (const FFPACK::Modular<double> & )
+	{
+		return DoubleDomain();
+	}
+	DoubleDomain associatedDomain (const FFPACK::ModularBalanced<double> & )
+	{
+		return DoubleDomain();
+	}
+	FloatDomain associatedDomain (const FFPACK::Modular<float> & )
+	{
+		return FloatDomain();
+	}
+	FloatDomain associatedDomain (const FFPACK::ModularBalanced<float> & )
+	{
+		return FloatDomain();
+	}
+
 	namespace Protected {
+
+
 
 		// Note:
 		// The domain is supposed to be a field since some divisions are required for efficiency purposes
@@ -275,6 +294,61 @@ namespace FFLAS {
 				     Ad, (int)lda, Bd, (int)ldb, (FloatDomain::Element) beta,Cd, (int)ldc);
 		}
 
+
+		namespace Protected {
+			template<class Field>
+			inline void ClassicMatmulCommon (const Field & F,
+							 const FFLAS_TRANSPOSE ta,
+							 const FFLAS_TRANSPOSE tb,
+							 const size_t m, const size_t n,const size_t k,
+							 const typename Field::Element alpha,
+							 const typename Field::Element * A, const size_t lda,
+							 const typename Field::Element * B, const size_t ldb,
+							 const typename Field::Element beta,
+							 typename Field::Element* C, const size_t ldc,
+							 const size_t kmax, const FFLAS_BASE base)
+			{
+				typename Field::Element _alpha, _beta;
+				// To ensure the initial computation with beta
+				size_t k2 = std::min(k,kmax);
+				size_t nblock = k / kmax;
+				size_t remblock = k % kmax;
+				if (!remblock) {
+					remblock = kmax;
+					--nblock;
+				}
+				if (F.isMOne( beta)) _beta = -1.0;
+				else _beta = beta;
+				if (F.isMOne( alpha)) _alpha = -1.0;
+				else{
+					_alpha = 1.0;
+					if (! F.isOne( alpha)) {
+						// Compute y = A*x + beta/alpha.y
+						// and after y *= alpha
+						FFLASFFPACK_check(!F.isZero(alpha));
+						F.divin (_beta, alpha);
+					}
+				}
+				size_t shiftA, shiftB;
+				if (ta == FflasTrans) shiftA = k2*lda;
+				else shiftA = k2;
+				if (tb == FflasTrans) shiftB = k2;
+				else shiftB = k2*ldb;
+
+				ClassicMatmul (associatedDomain(F), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
+					       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base);
+				finit(F,m,n,C,ldc);
+				for (size_t i = 0; i < nblock; ++i) {
+					ClassicMatmul (associatedDomain(F), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
+						       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
+					finit(F,m,n,C,ldc);
+				}
+				if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
+					fscalin(F,m,n,alpha,C,ldc);
+				}
+			}
+		} // Protected
+
 		template <>
 		inline void ClassicMatmul (const FFPACK:: ModularBalanced<double> & F,
 					   const FFLAS_TRANSPOSE ta,
@@ -287,44 +361,7 @@ namespace FFLAS {
 					   double* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			double _alpha, _beta;
-			// To ensure the initial computation with beta
-			size_t k2 = std::min(k,kmax);
-			size_t nblock = k / kmax;
-			size_t remblock = k % kmax;
-			if (!remblock) {
-				remblock = kmax;
-				--nblock;
-			}
-			if (F.isMOne( beta)) _beta = -1.0;
-			else _beta = beta;
-			if (F.isMOne( alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne( alpha)) {
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					FFLASFFPACK_check(!F.isZero(alpha));
-					F.divin (_beta, alpha);
-				}
-			}
-			size_t shiftA, shiftB;
-			if (ta == FflasTrans) shiftA = k2*lda;
-			else shiftA = k2;
-			if (tb == FflasTrans) shiftB = k2;
-			else shiftB = k2*ldb;
-
-			ClassicMatmul (DoubleDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
-				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base );
-			finit(F,m,n,C,ldc);
-			for (size_t i = 0; i < nblock; ++i) {
-				ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
-				finit(F,m,n,C,ldc);
-			}
-			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
-				fscalin(F,m,n,alpha,C,ldc);
-			}
+			return Protected::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
 
@@ -340,44 +377,7 @@ namespace FFLAS {
 					   float* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			float _alpha, _beta;
-			// To ensure the initial computation with beta
-			size_t k2 = std::min(k,kmax);
-			size_t nblock = k / kmax;
-			size_t remblock = k % kmax;
-			if (!remblock) {
-				remblock = kmax;
-				--nblock;
-			}
-			if (F.isMOne( beta)) _beta = -1.0;
-			else _beta = beta;
-			if (F.isMOne( alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne( alpha)) {
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					FFLASFFPACK_check(!F.isZero(alpha));
-					F.divin (_beta, alpha);
-				}
-			}
-			size_t shiftA, shiftB;
-			if (ta == FflasTrans) shiftA = k2*lda;
-			else shiftA = k2;
-			if (tb == FflasTrans) shiftB = k2;
-			else shiftB = k2*ldb;
-
-			ClassicMatmul (FloatDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
-				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base);
-			finit(F,m,n,C,ldc);
-			for (size_t i = 0; i < nblock; ++i) {
-				ClassicMatmul (FloatDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
-				finit(F,m,n,C,ldc);
-			}
-			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
-				fscalin(F,m,n,alpha,C,ldc);
-			}
+			return Protected::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
 
@@ -393,66 +393,7 @@ namespace FFLAS {
 					   double* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			double _alpha, _beta;
-			// To ensure the initial computation with beta
-			size_t k2 = std::min(k,kmax);
-			size_t nblock = k / kmax;
-			size_t remblock = k % kmax;
-			if (!remblock) {
-				remblock = kmax;
-				--nblock;
-			}
-			if (F.isMOne( beta))
-				_beta = -1.0;
-			else
-				_beta = beta;
-			if (F.isMOne( alpha))
-				_alpha = -1.0;
-			else {
-				_alpha = 1.0;
-				if (! F.isOne( alpha)) {
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					FFLASFFPACK_check(!F.isZero(alpha));
-					F.divin (_beta, alpha);
-				}
-			}
-			size_t shiftA, shiftB;
-			if (ta == FflasTrans)
-				shiftA = k2*lda;
-			else
-				shiftA = k2;
-			if (tb == FflasTrans)
-				shiftB = k2;
-			else
-				shiftB = k2*ldb;
-
-			ClassicMatmul (DoubleDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
-				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax, base );
-
-#if 0 /* timing */
-			Timer t;
-			t.clear();
-			t.start();
-#endif
-			//#pragma omp parallel for schedule(static) private (Ci)
-			//!@todo init only if remblock!=0 and _beta == 0
-			finit(F,m,n,C,ldc);
-#if 0
-			t.stop();
-			std::cerr<<"Reduction dans Classic -> "<<t.realtime()<<std::endl;
-#endif
-
-
-			for (size_t i = 0; i < nblock; ++i) {
-				ClassicMatmul (DoubleDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, F.one, C, ldc, kmax, base);
-				//#pragma omp parallel for schedule(static) private (Ci)
-				finit(F,m,n,C,ldc);
-			}
-			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
-				fscalin(F,m,n,alpha,C,ldc);
-			}
+			return Protected::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
 		template <>
@@ -467,47 +408,7 @@ namespace FFLAS {
 					   float* C, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
-			float _alpha, _beta;
-			// To ensure the initial computation with beta
-			size_t k2 = std::min(k,kmax);
-			size_t nblock = k / kmax;
-			size_t remblock = k % kmax;
-			if (!remblock) {
-				remblock = kmax;
-				--nblock;
-			}
-			if (F.isMOne( beta)) _beta = -1.0;
-			else _beta = beta;
-			if (F.isMOne( alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne( alpha)) {
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					FFLASFFPACK_check(!F.isZero(alpha));
-					F.divin (_beta, alpha);
-				}
-			}
-			size_t shiftA, shiftB;
-			if (ta == FflasTrans) shiftA = k2*lda;
-			else shiftA = k2;
-			if (tb == FflasTrans) shiftB = k2;
-			else shiftB = k2*ldb;
-
-			ClassicMatmul (FloatDomain(), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
-				       B+nblock*shiftB, ldb, _beta, C, ldc, kmax,base);
-			finit(F,m,n,C,ldc);
-			for (size_t i = 0; i < nblock; ++i) {
-				ClassicMatmul (FloatDomain(), ta, tb, m, n, k2, _alpha, A+i*shiftA, lda,
-					       B+i*shiftB, ldb, F.one, C, ldc, kmax,base);
-				finit(F,m,n,C,ldc);
-				// for (float * Ci = C; Ci != C+m*ldc; Ci += ldc)
-					// for (size_t j=0; j < n;++j)
-						// F.init(*(Ci+j),*(Ci+j));
-			}
-			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
-				fscalin(F,m,n,alpha,C,ldc);
-			}
+			return Protected::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
 

@@ -112,17 +112,6 @@ namespace FFLAS {
 			return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
 		}
 
-		/** DotProdBound computes the maximal size for delaying the modular reduction
-		 * in a dotproduct.
-		 *
-		 * This is the default version assuming a conversion to a positive modular representation
-		 *
-		 * \param F Finite Field/Ring of the computation
-		 * \param w Number of recusrive Strassen-Winograd levels (if any, \p 0 otherwise)
-		 * \param beta Computing <code>AB + beta C</code>
-		 * \param base Type of floating point representation for delayed modular computations
-		 *
-		 */
 		template <class Field>
 		inline size_t DotProdBound (const Field& F,
 					    const size_t w,
@@ -170,10 +159,6 @@ namespace FFLAS {
 			return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
 		}
 
-		/** @internal
-		 * @brief Internal function for the bound computation
-		 * Generic implementation for positive representations
-		 */
 		template <class Field>
 		inline double computeFactorWino (const Field& F, const size_t w)
 		{
@@ -193,11 +178,6 @@ namespace FFLAS {
 		}
 	} // Protected
 
-	/** WinoSteps computes the number of recursive levels to perform.
-	 *
-	 * \param m the common dimension in the product AxB
-	 *
-	 */
 	inline size_t WinoSteps (const size_t & m)
 	{
 		size_t w = 0;
@@ -210,12 +190,6 @@ namespace FFLAS {
 	}
 
 	namespace Protected {
-		/** BaseCompute determines the type of floating point representation to
-		 * convert to, for BLAS computations.
-		 * \param F Finite Field/Ring of the computation
-		 * \param w Number of recursive levels in Winograd's algorithm
-		 *
-		 */
 		template <class Field>
 		inline FFLAS_BASE BaseCompute (const Field& F, const size_t w)
 		{

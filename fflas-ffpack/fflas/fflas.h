@@ -271,15 +271,14 @@ namespace FFLAS {
 					      bool winoLevelProvided=false);
 
 
-		/**
-		 * Computes the maximal size for delaying the modular reduction
-		 *         in a dotproduct.
+		/** DotProdBound computes the maximal size for delaying the modular reduction
+		 * in a dotproduct.
 		 *
 		 * This is the default version assuming a conversion to a positive modular representation
 		 *
 		 * \param F Finite Field/Ring of the computation
-		 * \param winoRecLevel Number of recusrive Strassen-Winograd levels (if any, 0 otherwise)
-		 * \param beta Computing AB + beta C
+		 * \param winoRecLevel Number of recusrive Strassen-Winograd levels (if any, \p 0 otherwise)
+		 * \param beta Computing <code>AB + beta C</code>
 		 * \param base Type of floating point representation for delayed modular computations
 		 *
 		 */
@@ -290,8 +289,8 @@ namespace FFLAS {
 					    const FFLAS_BASE base);
 
 
-		/**
-		 * Internal function for the bound computation.
+		/** @internal
+		 * @brief Internal function for the bound computation
 		 * Generic implementation for positive representations
 		 */
 		template <class Field>
@@ -301,11 +300,11 @@ namespace FFLAS {
 		double computeFactorClassic (const Field& F);
 
 
-		/**
-		 * Determines the type of floating point representation to convert to,
-		 *        for BLAS computations.
+		/** BaseCompute determines the type of floating point representation to
+		 * convert to, for BLAS computations.
 		 * \param F Finite Field/Ring of the computation
 		 * \param w Number of recursive levels in Winograd's algorithm
+		 *
 		 */
 		template <class Field>
 		FFLAS_BASE BaseCompute (const Field& F, const size_t w);
