@@ -125,45 +125,6 @@ namespace FFLAS {
 		// Some conversion functions
 		//-----------------------------------------------------------------------------
 
-#if 0
-		//---------------------------------------------------------------------
-		// Finite Field matrix => double matrix
-		//---------------------------------------------------------------------
-		template<class Field>
-		void MatF2MatD (const Field& F,
-				       DoubleDomain::Element* S, const size_t lds,
-				       const typename Field::Element* E,
-				       const size_t lde,const size_t m, const size_t n)
-		{
-
-			const typename Field::Element* Ei = E;
-			DoubleDomain::Element *Si=S;
-			size_t j;
-			for (; Ei < E+lde*m; Ei+=lde, Si += lds)
-				for ( j=0; j<n; ++j){
-					F.convert(*(Si+j),*(Ei+j));
-				}
-		}
-
-		//---------------------------------------------------------------------
-		// Finite Field matrix => float matrix
-		//---------------------------------------------------------------------
-		template<class Field>
-		void MatF2MatFl (const Field& F,
-					FloatDomain::Element* S, const size_t lds,
-					const typename Field::Element* E,
-					const size_t lde,const size_t m, const size_t n)
-		{
-
-			const typename Field::Element* Ei = E;
-			FloatDomain::Element *Si=S;
-			size_t j;
-			for (; Ei < E+lde*m; Ei+=lde, Si += lds)
-				for ( j=0; j<n; ++j){
-					F.convert(*(Si+j),*(Ei+j));
-				}
-		}
-#endif
 
 		//---------------------------------------------------------------------
 		// Finite Field matrix => double matrix
@@ -189,6 +150,8 @@ namespace FFLAS {
 		// Finite Field matrix => float matrix
 		// Special design for upper-triangular matrices
 		//---------------------------------------------------------------------
+		//! @todo do finit(...,FFLAS_TRANS,FFLAS_DIAG)
+		//! @todo do fconvert(...,FFLAS_TRANS,FFLAS_DIAG)
 		template<class Field>
 		void MatF2MatFl_Triangular (const Field& F,
 						   typename FloatDomain::Element* S, const size_t lds,
@@ -204,46 +167,6 @@ namespace FFLAS {
 				for ( j=i; j<n;++j)
 					F.convert(*(Si+j),*(Ei+j));
 		}
-
-#if 0
-		//---------------------------------------------------------------------
-		// double matrix => Finite Field matrix
-		//---------------------------------------------------------------------
-		template<class Field>
-		void MatD2MatF (const Field& F,
-				       typename Field::Element* S, const size_t lds,
-				       const typename DoubleDomain::Element* E, const size_t lde,
-				       const size_t m, const size_t n)
-		{
-
-			typename Field::Element* Si = S;
-			const DoubleDomain::Element* Ei =E;
-			size_t j;
-			for ( ; Si < S+m*lds; Si += lds, Ei+= lde){
-				for ( j=0; j<n;++j)
-					F.init( *(Si+j), *(Ei+j) );
-			}
-		}
-
-		//---------------------------------------------------------------------
-		// float matrix => Finite Field matrix
-		//---------------------------------------------------------------------
-		template<class Field>
-		void MatFl2MatF (const Field& F,
-				 typename Field::Element* S, const size_t lds,
-				 const typename FloatDomain::Element* E, const size_t lde,
-				 const size_t m, const size_t n)
-		{
-
-			typename Field::Element* Si = S;
-			const FloatDomain::Element* Ei =E;
-			size_t j;
-			for ( ; Si < S+m*lds; Si += lds, Ei+= lde){
-				for ( j=0; j<n;++j)
-					F.init( *(Si+j), *(Ei+j) );
-			}
-		}
-#endif
 
 		/**
 		 * Computes the threshold parameters for the cascade

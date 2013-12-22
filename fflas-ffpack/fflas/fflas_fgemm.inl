@@ -52,8 +52,8 @@ namespace FFLAS {
 
 	namespace Protected {
 
-	// G is (Float/Double)Domain
-	template  < class Field, class FloatField >
+		// G is (Float/Double)Domain
+		template  < class Field, class FloatField >
 		inline void ClassicMatmulFloat (const Field& F,
 						const FFLAS_TRANSPOSE ta,
 						const FFLAS_TRANSPOSE tb,
@@ -812,17 +812,17 @@ namespace FFLAS {
 		// G is (Float/Double)Domain
 		template <class Field, class FloatField>
 		inline void  WinoMainFloat (const Field& F,
-				       const FFLAS_TRANSPOSE ta,
-				       const FFLAS_TRANSPOSE tb,
-				       const size_t m, const size_t n, const size_t k,
-				       const typename Field::Element alpha,
-				       const typename Field::Element* A,const size_t lda,
-				       const typename Field::Element* B,const size_t ldb,
-				       const typename Field::Element beta,
-				       typename Field::Element * C, const size_t ldc,
-				       const size_t kmax, const size_t w,
-				       const FFLAS_BASE base
-				       , const FloatField &G)
+					    const FFLAS_TRANSPOSE ta,
+					    const FFLAS_TRANSPOSE tb,
+					    const size_t m, const size_t n, const size_t k,
+					    const typename Field::Element alpha,
+					    const typename Field::Element* A,const size_t lda,
+					    const typename Field::Element* B,const size_t ldb,
+					    const typename Field::Element beta,
+					    typename Field::Element * C, const size_t ldc,
+					    const size_t kmax, const size_t w,
+					    const FFLAS_BASE base
+					    , const FloatField &G)
 		{
 			typedef typename FloatField::Element FloatElement;
 			FloatElement alphad, betad;
@@ -916,15 +916,15 @@ namespace FFLAS {
 		// F is Modular(Balanced)<float/double>
 		template <class Field>
 		inline void WinoMainCommon (const Field& F,
-				      const FFLAS_TRANSPOSE ta,
-				      const FFLAS_TRANSPOSE tb,
-				      const size_t m, const size_t n, const size_t k,
-				      const typename Field::Element alpha,
-				      const typename Field::Element* A, const size_t lda,
-				      const typename Field::Element* B, const size_t ldb,
-				      const typename Field::Element beta,
-				      typename Field::Element * C, const size_t ldc,
-				      const size_t kmax, const size_t w, const FFLAS_BASE base)
+					    const FFLAS_TRANSPOSE ta,
+					    const FFLAS_TRANSPOSE tb,
+					    const size_t m, const size_t n, const size_t k,
+					    const typename Field::Element alpha,
+					    const typename Field::Element* A, const size_t lda,
+					    const typename Field::Element* B, const size_t ldb,
+					    const typename Field::Element beta,
+					    typename Field::Element * C, const size_t ldc,
+					    const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
 			if (w == 0)
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
@@ -980,16 +980,16 @@ namespace FFLAS {
 
 		template <>
 		inline void WinoMain (const FFPACK:: ModularBalanced<float>& F,
-				       const FFLAS_TRANSPOSE ta,
-				       const FFLAS_TRANSPOSE tb,
-				       const size_t m, const size_t n, const size_t k,
-				       const float alpha,
-				       const float * A,const size_t lda,
-				       const float * B,const size_t ldb,
-				       const float beta,
-				       float * C, const size_t ldc,
-				       const size_t kmax, const size_t w,
-				       const FFLAS_BASE base)
+				      const FFLAS_TRANSPOSE ta,
+				      const FFLAS_TRANSPOSE tb,
+				      const size_t m, const size_t n, const size_t k,
+				      const float alpha,
+				      const float * A,const size_t lda,
+				      const float * B,const size_t ldb,
+				      const float beta,
+				      float * C, const size_t ldc,
+				      const size_t kmax, const size_t w,
+				      const FFLAS_BASE base)
 		{
 			WinoMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 		}
