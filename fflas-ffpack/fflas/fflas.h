@@ -125,6 +125,7 @@ namespace FFLAS {
 		// Some conversion functions
 		//-----------------------------------------------------------------------------
 
+#if 0
 		//---------------------------------------------------------------------
 		// Finite Field matrix => double matrix
 		//---------------------------------------------------------------------
@@ -143,6 +144,7 @@ namespace FFLAS {
 					F.convert(*(Si+j),*(Ei+j));
 				}
 		}
+
 		//---------------------------------------------------------------------
 		// Finite Field matrix => float matrix
 		//---------------------------------------------------------------------
@@ -161,6 +163,7 @@ namespace FFLAS {
 					F.convert(*(Si+j),*(Ei+j));
 				}
 		}
+#endif
 
 		//---------------------------------------------------------------------
 		// Finite Field matrix => double matrix
@@ -202,6 +205,7 @@ namespace FFLAS {
 					F.convert(*(Si+j),*(Ei+j));
 		}
 
+#if 0
 		//---------------------------------------------------------------------
 		// double matrix => Finite Field matrix
 		//---------------------------------------------------------------------
@@ -226,9 +230,9 @@ namespace FFLAS {
 		//---------------------------------------------------------------------
 		template<class Field>
 		void MatFl2MatF (const Field& F,
-					typename Field::Element* S, const size_t lds,
-					const typename FloatDomain::Element* E, const size_t lde,
-					const size_t m, const size_t n)
+				 typename Field::Element* S, const size_t lds,
+				 const typename FloatDomain::Element* E, const size_t lde,
+				 const size_t m, const size_t n)
 		{
 
 			typename Field::Element* Si = S;
@@ -239,6 +243,7 @@ namespace FFLAS {
 					F.init( *(Si+j), *(Ei+j) );
 			}
 		}
+#endif
 
 		/**
 		 * Computes the threshold parameters for the cascade
@@ -569,6 +574,50 @@ namespace FFLAS {
 			F.init( *Xi , *Xi);
 	}
 
+	/** finit
+	 * \f$x \gets  y mod F\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * \param Y vector of \p OtherElement
+	 * \param incY stride of \p Y
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 */
+	template<class Field, class OtherElement>
+	void
+	finit (const Field& F, const size_t n,
+	       typename Field::Element * X, const size_t incX,
+	       const OtherElement * Y, const size_t incY)
+	{
+		typename Field::Element * Xi = X ;
+		const OtherElement * Yi = Y ;
+		for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
+			F.init( *Xi , *Yi);
+	}
+
+	/** fconvert
+	 * \f$x \gets  y mod F\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * \param Y vector of \p F
+	 * \param incY stride of \p Y
+	 * \param X vector in \p OtherElement
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 */
+	template<class Field, class OtherElement>
+	void
+	fconvert (const Field& F, const size_t n,
+	       OtherElement * X, const size_t incX,
+	       const typename  Field::Element* Y, const size_t incY)
+	{
+		OtherElement * Xi = X ;
+		const typename Field::Element * Yi = Y ;
+		for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
+			F.convert( *Xi , *Yi);
+	}
+
 	/** fnegin
 	 * \f$x \gets - x\f$.
 	 * @param F field
@@ -847,6 +896,52 @@ namespace FFLAS {
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
 			finit(F,n,A+i*lda,1);
+		return;
+	}
+
+	/** finit
+	 * \f$A \gets  B mod F\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * \param B matrix in \p OtherElement
+	 * \param ldb stride of \p B
+	 * @internal
+	 */
+	template<class Field, class OtherElement>
+	void
+	finit (const Field& F, const size_t m , const size_t n,
+	       typename Field::Element * A, const size_t lda,
+	       const OtherElement * B, const size_t ldb)
+	{
+		//!@todo check if n == lda
+		for (size_t i = 0 ; i < m ; ++i)
+			finit(F,n,A+i*lda,1,B+i*ldb,1);
+		return;
+	}
+
+	/** fconvert
+	 * \f$A \gets  B mod F\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * \param A matrix in \p OtherElement
+	 * \param lda stride of \p A
+	 * \param B matrix in \p F
+	 * \param ldb stride of \p B
+	 * @internal
+	 */
+	template<class Field, class OtherElement>
+	void
+	fconvert (const Field& F, const size_t m , const size_t n,
+	        OtherElement * A, const size_t lda,
+	       const typename Field::Element* B, const size_t ldb)
+	{
+		//!@todo check if n == lda
+		for (size_t i = 0 ; i < m ; ++i)
+			fconvert(F,n,A+i*lda,1,B+i*ldb,1);
 		return;
 	}
 
