@@ -34,23 +34,6 @@
 
 namespace FFLAS {
 	namespace Protected {
-		/** MatMulParameters.
-		 *
-		 * \brief Computes the threshold parameters for the cascade
-		 *        Matmul algorithm
-		 *
-		 *
-		 * \param F Finite Field/Ring of the computation.
-		 * \param k Common dimension of A and B, in the product A x B
-		 * \param beta Computing AB + beta C
-		 * \param delayedDim Returns the size of blocks that can be multiplied
-		 *                   over Z with no overflow
-		 * \param base Returns the type of BLAS representation to use
-		 * \param winoRecLevel Returns the number of recursion levels of
-		 *                     Strassen-Winograd's algorithm to perform
-		 * \param winoLevelProvided tells whether the user forced the number of
-		 *                          recursive level of Winograd's algorithm
-		 */
 		template <class Field>
 		inline void MatMulParameters (const Field& F,
 					      const size_t WinoDim,
@@ -87,6 +70,40 @@ namespace FFLAS {
 			}
 			delayedDim = std::min (k, delayedDim);
 
+		}
+
+		template <>
+		inline void MatMulParameters (const DoubleDomain & F,
+					      const size_t WinoDim,
+					      const size_t k,
+					      const typename DoubleDomain::Element& beta,
+					      size_t& delayedDim,
+					      FFLAS_BASE& base,
+					      size_t& winoRecLevel,
+					      bool winoLevelProvided)
+		{
+			if (!winoLevelProvided)
+				winoRecLevel = WinoSteps (WinoDim) ;
+
+			delayedDim = k+1;
+			base = FflasDouble;
+		}
+
+		template <>
+		inline void MatMulParameters (const FloatDomain & F,
+					      const size_t WinoDim,
+					      const size_t k,
+					      const typename FloatDomain::Element& beta,
+					      size_t& delayedDim,
+					      FFLAS_BASE& base,
+					      size_t& winoRecLevel,
+					      bool winoLevelProvided)
+		{
+			if (!winoLevelProvided)
+				winoRecLevel = WinoSteps (WinoDim) ;
+
+			delayedDim = k+1;
+			base = FflasFloat;
 		}
 
 		template <class Field>

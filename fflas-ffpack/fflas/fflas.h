@@ -1237,15 +1237,16 @@ namespace FFLAS {
 			return C;
 		}
 
-		if (!(m && n && k))
+		if (!(m && n && k)) {
 			return C;
+		}
 
 		if (F.isZero (alpha)){
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
 
-#ifdef _LB_DEBUG
+#ifndef NDEBUG
 		/*  check if alpha is invertible. XXX do it in F.isInvertible(Element&) ? */
 		typename Field::Element e ;
 		F.init(e,1UL);
