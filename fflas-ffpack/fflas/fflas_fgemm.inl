@@ -1055,11 +1055,11 @@ namespace FFLAS {
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n, const size_t k,
-				       const typename Field::Element alpha,
-				       const typename Field::Element* A,const size_t lda,
-				       const typename Field::Element* B,const size_t ldb,
-				       const typename Field::Element beta,
-				       typename Field::Element * C, const size_t ldc,
+				       const float alpha,
+				       const float * A,const size_t lda,
+				       const float * B,const size_t ldb,
+				       const float beta,
+				       float * C, const size_t ldc,
 				       const size_t kmax, const size_t w,
 				       const FFLAS_BASE base)
 		{
