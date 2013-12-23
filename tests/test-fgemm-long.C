@@ -149,8 +149,8 @@ bool launch_MM(const Field & F,
 	bool ok = true;
 
 	typedef typename Field::Element Element;
-	Element * A = new Element[m*lda];
-	Element * B = new Element[k*ldb];
+	Element * A = new Element[std::max(k,m)*lda];
+	Element * B = new Element[std::max(k,n)*ldb];
 	Element * C = new Element[m*ldc];
 	Element * D = new Element[m*n];
 	for(size_t i = 0;i<iters;++i){
