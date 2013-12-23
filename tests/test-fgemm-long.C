@@ -104,19 +104,16 @@ bool check_MM(const Field                   & F,
 					bij = *(B+l*ldb+j);
 				else
 					bij = *(B+j*ldb+l);
-				//F.mul (tmp, aij, bij);
-				//F.axpyin( *(D+i*n+j), alpha, tmp );
 				F.axpyin (tmp, aij, bij);
 			}
 			F.axpyin (*(D+i*n+j), alpha, tmp);
-			//F.mulin( *(D+i*n+j),alpha );
 			if ( !F.areEqual( *(D+i*n+j), *(C+i*ldc+j) ) ) {
 				wrong = true;
 			}
 		}
 	if ( wrong ){
 		std::cerr<<"FAIL"<<std::endl;
-		std::cerr << m << 'x' << n << 'x' << k << std::endl;
+		std::cerr << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
 		std::cerr << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
 		for (size_t i=0; i<m; ++i){
 			for (size_t j =0; j<n; ++j)
@@ -126,11 +123,6 @@ bool check_MM(const Field                   & F,
 					<<(*(D+i*n+j))<<std::endl;
 		}
 	}
-#if 0
-	else{
-		std::cerr<<"PASS"<<std::endl;
-	}
-#endif
 
 	delete[] D;
 
@@ -197,67 +189,155 @@ bool launch_MM_dispatch(const Field &F,
 	size_t lda,ldb,ldc;
 		//!@bug test for ldX equal
 		//!@bug test for transpo
-		//!@todo does nbw actually do nbw recursive calls and then call blas ?
+		//!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
+	size_t ld = 13 ;
 
 	{
+		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
+
 		m = 10+(size_t)random()%nn;
 		n = 10+(size_t)random()%nn;
 		k = 10+(size_t)random()%nn;
-		lda = k+(size_t)random()%nn;
-		ldb = n+(size_t)random()%nn;
-		ldc = n+(size_t)random()%nn;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
 		ok &= launch_MM<Field>(F,m,n,k,
 				       alpha,beta,
 				       ldc,
-				       lda, FFLAS::FflasNoTrans ,
-				       ldb, FFLAS::FflasNoTrans,
+				       lda, ta,
+				       ldb, tb,
 				       iters,nbw);
 	}
 
 	{
+		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		// if (random()%2) ta = FFLAS::FflasTrans ;
+		// if (random()%2) tb = FFLAS::FflasTrans ;
+
 		m = 0;
 		n = 10+(size_t)random()%nn;
 		k = 10+(size_t)random()%nn;
-		lda = k+(size_t)random()%nn;
-		ldb = n+(size_t)random()%nn;
-		ldc = n+(size_t)random()%nn;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
 		ok &= launch_MM<Field>(F,m,n,k,
 				       alpha,beta,
 				       ldc,
-				       lda, FFLAS::FflasNoTrans ,
-				       ldb, FFLAS::FflasNoTrans,
+				       lda, ta,
+				       ldb, tb,
 				       iters,nbw);
 	}
 
 	{
+	FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		// if (random()%2) ta = FFLAS::FflasTrans ;
+		// if (random()%2) tb = FFLAS::FflasTrans ;
+
 		m = 10+(size_t)random()%nn;
 		n = 0 ;
 		k = 10+(size_t)random()%nn;
-		lda = k+(size_t)random()%nn;
-		ldb = n+(size_t)random()%nn;
-		ldc = n+(size_t)random()%nn;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = 1+std::max(n,k)+(size_t)random()%ld;
+		ldc = 1+n+(size_t)random()%ld;
 		ok &= launch_MM<Field>(F,m,n,k,
 				       alpha,beta,
 				       ldc,
-				       lda, FFLAS::FflasNoTrans ,
-				       ldb, FFLAS::FflasNoTrans,
+				       lda, ta,
+				       ldb, tb,
 				       iters,nbw);
 	}
 
 	{
+	FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		// if (random()%2) ta = FFLAS::FflasTrans ;
+		// if (random()%2) tb = FFLAS::FflasTrans ;
+
 		m = 10+(size_t)random()%nn;
 		n = 10+(size_t)random()%nn;
 		k = 0;
-		lda = k+(size_t)random()%nn;
-		ldb = n+(size_t)random()%nn;
-		ldc = n+(size_t)random()%nn;
+		lda = 1+std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
 		ok &= launch_MM<Field>(F,m,n,k,
 				       alpha,beta,
 				       ldc,
-				       lda, FFLAS::FflasNoTrans ,
-				       ldb, FFLAS::FflasNoTrans,
+				       lda, ta,
+				       ldb, tb,
 				       iters,nbw);
 	}
+
+	{
+	FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		// if (random()%2) ta = FFLAS::FflasTrans ;
+		// if (random()%2) tb = FFLAS::FflasTrans ;
+
+		m = 1;
+		n = 10+(size_t)random()%nn;
+		k = 10+(size_t)random()%nn;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
+		ok &= launch_MM<Field>(F,m,n,k,
+				       alpha,beta,
+				       ldc,
+				       lda, ta,
+				       ldb, tb,
+				       iters,nbw);
+	}
+
+
+	{
+		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		// if (random()%2) ta = FFLAS::FflasTrans ;
+		// if (random()%2) tb = FFLAS::FflasTrans ;
+		m = 10+(size_t)random()%nn;
+		n = 1 ;
+		k = 10+(size_t)random()%nn;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
+		// std::cout << m << ','
+		// << n << ','
+		// << k << ','
+		// << lda << ','
+		// << ldb << ','
+		// << ldc << std::endl;
+		ok &= launch_MM<Field>(F,m,n,k,
+				       alpha,beta,
+				       ldc,
+				       lda, ta ,
+				       ldb, tb ,
+				       iters,nbw);
+	}
+
+	{
+		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		// if (random()%2) ta = FFLAS::FflasTrans ;
+		// if (random()%2) tb = FFLAS::FflasTrans ;
+
+		m = 10+(size_t)random()%nn;
+		n = 10+(size_t)random()%nn;
+		k = 1;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
+		ok &= launch_MM<Field>(F,m,n,k,
+				       alpha,beta,
+				       ldc,
+				       lda, ta,
+				       ldb, tb,
+				       iters,nbw);
+	}
+
 
 	return ok ;
 }

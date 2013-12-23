@@ -1264,7 +1264,10 @@ namespace FFLAS {
 		}
 
 #ifndef NDEBUG
-		/*  check if alpha is invertible. XXX do it in F.isInvertible(Element&) ? */
+		/*  check if alpha is invertible.
+		 *  XXX do it in F.isInvertible(Element&) ?
+		 *  XXX do it in return status of F.inv(Element&,Element&)
+		 */
 		typename Field::Element e ;
 		F.init(e,1UL);
 		F.divin(e,alpha);
@@ -1272,6 +1275,17 @@ namespace FFLAS {
 		FFLASFFPACK_check(F.isOne(e));
 #endif
 
+#if 0
+		if (n == 1) {
+			return fgemv(F,
+		}
+		if (m == 1) {
+
+		}
+		if (k == 1) {
+
+		}
+#endif
 
 		bool winoLevelProvided = (w != (size_t(-1)));
 		size_t kmax = 0;

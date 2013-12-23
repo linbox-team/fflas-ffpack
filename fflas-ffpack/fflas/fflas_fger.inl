@@ -100,6 +100,7 @@ namespace FFLAS {
 	      DoubleDomain::Element * A, const size_t lda)
 	{
 
+		FFLASFFPACK_check(lda);
 		cblas_dger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
 	}
 
@@ -112,6 +113,7 @@ namespace FFLAS {
 	      FloatDomain::Element * A, const size_t lda)
 	{
 
+			FFLASFFPACK_check(lda);
 		cblas_sger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
 	}
 

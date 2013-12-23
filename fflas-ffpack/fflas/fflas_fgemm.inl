@@ -225,6 +225,9 @@ namespace FFLAS {
 					   const size_t kmax, const FFLAS_BASE base)
 		{
 
+			FFLASFFPACK_check(lda);
+			FFLASFFPACK_check(ldb);
+			FFLASFFPACK_check(ldc);
 			cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 				     (int)m, (int)n, (int)k, (DoubleDomain::Element) alpha,
 				     Ad, (int)lda, Bd, (int)ldb, (DoubleDomain::Element) beta,Cd, (int)ldc);
@@ -242,6 +245,10 @@ namespace FFLAS {
 					   FloatDomain::Element * Cd, const size_t ldc,
 					   const size_t kmax, const FFLAS_BASE base)
 		{
+			FFLASFFPACK_check(lda);
+			FFLASFFPACK_check(ldb);
+			FFLASFFPACK_check(ldc);
+
 			cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 				     (int)m, (int)n, (int)k, (FloatDomain::Element) alpha,
 				     Ad, (int)lda, Bd, (int)ldb, (FloatDomain::Element) beta,Cd, (int)ldc);
@@ -756,56 +763,54 @@ namespace FFLAS {
 			}
 		}
 
-
-		// Control the switch with classic multiplication
-		// Fix-up for odd-sized matrices using dynamic pealing
-		// for matrices over double
-		template <>
-		inline  void WinoMain (const DoubleDomain& D,
+#define DYNAMIC_PEALING
+		// dispatches according to w = 0 or not
+		template<class Field>
+		inline  void WinoMainGeneric (const Field& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n, const size_t k,
-				       const DoubleDomain::Element alpha,
-				       const DoubleDomain::Element * A, const size_t lda,
-				       const DoubleDomain::Element * B, const size_t ldb,
-				       const DoubleDomain::Element beta,
-				       DoubleDomain::Element * C, const size_t ldc,
+				       const typename Field::Element alpha,
+				       const typename Field::Element * A, const size_t lda,
+				       const typename Field::Element * B, const size_t ldb,
+				       const typename Field::Element beta,
+				       typename Field::Element * C, const size_t ldc,
 				       const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
 
-			if (w == 0)
-				ClassicMatmul (D, ta, tb, m, n, k, alpha, A, lda, B, ldb,
-					       beta, C, ldc, kmax,base);
-			else{
-				WinoCalc (D, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
-					  beta, C, ldc, kmax, w,base);
-				DynamicPealing (D, ta, tb, m, n, k, alpha, A, lda, B, ldb,
-						beta, C, ldc, kmax);
-			}
-		}
-
-		template <>
-		inline  void WinoMain (const FloatDomain& F,
-				       const FFLAS_TRANSPOSE ta,
-				       const FFLAS_TRANSPOSE tb,
-				       const size_t m, const size_t n, const size_t k,
-				       const FloatDomain::Element alpha,
-				       const FloatDomain::Element * A, const size_t lda,
-				       const FloatDomain::Element * B, const size_t ldb,
-				       const FloatDomain::Element beta,
-				       FloatDomain::Element * C, const size_t ldc,
-				       const size_t kmax, const size_t w, const FFLAS_BASE base)
-		{
+			if (!m || !n )
+				return;
+			if (!k)
+				return fscalin(F,m,n,beta,C,ldc);
 
 			if (w == 0) {
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
 			}
 			else{
+#ifdef DYNAMIC_PEALING
 				WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
 					  beta, C, ldc, kmax, w,base);
 				DynamicPealing (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 						beta, C, ldc, kmax);
+#else
+				size_t m2 = (m >> w) << (w-1) ;
+				size_t n2 = (m >> w) << (w-1) ;
+				size_t k2 = (m >> w) << (w-1) ;
+				FFLASFFPACK_check(m2);
+				FFLASFFPACK_check(n2);
+				FFLASFFPACK_check(k2);
+				WinoCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb,
+					  beta, C, ldc, kmax, w,base);
+
+				size_t mr = m -2*m2;
+				size_t kr = k -2*k2;
+				size_t nr = n -2*n2;
+
+				DynamicPealing2 (F, ta, tb, m, n, k, mr, kr, nr, alpha, A, lda, B, ldb,
+						beta, C, ldc, kmax);
+
+#endif
 			}
 		}
 
@@ -824,6 +829,9 @@ namespace FFLAS {
 					    const FFLAS_BASE base
 					    , const FloatField &G)
 		{
+			FFLASFFPACK_check(lda);
+			FFLASFFPACK_check(ldb);
+			FFLASFFPACK_check(ldc);
 			typedef typename FloatField::Element FloatElement;
 			FloatElement alphad, betad;
 			typename Field::Element _betabis;
@@ -876,6 +884,41 @@ namespace FFLAS {
 
 		}
 
+		// Control the switch with classic multiplication
+		// Fix-up for odd-sized matrices using dynamic pealing
+		// for matrices over double
+		template <>
+		inline  void WinoMain (const DoubleDomain& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const FFLAS_TRANSPOSE tb,
+				       const size_t m, const size_t n, const size_t k,
+				       const DoubleDomain::Element alpha,
+				       const DoubleDomain::Element * A, const size_t lda,
+				       const DoubleDomain::Element * B, const size_t ldb,
+				       const DoubleDomain::Element beta,
+				       DoubleDomain::Element * C, const size_t ldc,
+				       const size_t kmax, const size_t w, const FFLAS_BASE base)
+		{
+			WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+		}
+
+
+		template <>
+		inline  void WinoMain (const FloatDomain& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const FFLAS_TRANSPOSE tb,
+				       const size_t m, const size_t n, const size_t k,
+				       const FloatDomain::Element alpha,
+				       const FloatDomain::Element * A, const size_t lda,
+				       const FloatDomain::Element * B, const size_t ldb,
+				       const FloatDomain::Element beta,
+				       FloatDomain::Element * C, const size_t ldc,
+				       const size_t kmax, const size_t w, const FFLAS_BASE base)
+		{
+			WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+		}
+
+
 		template <class Field>
 		inline void  WinoMain (const Field& F,
 				       const FFLAS_TRANSPOSE ta,
@@ -889,27 +932,19 @@ namespace FFLAS {
 				       const size_t kmax, const size_t w,
 				       const FFLAS_BASE base)
 		{
-			if (w == 0) // Winograd - >  Classic
-				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
-					       beta, C, ldc, kmax,base);
-			else { // w > 0
-				if (k <= kmax) { // switch on floating point
-					if (base == FflasDouble){
-						DoubleDomain G ;
-						WinoMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base,G);
-					}
-					else { // FloatDomain
-						FloatDomain G ;
-						WinoMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base,G);
-					}
+			if (w > 0 && k <= kmax) {
+				if (base == FflasDouble){
+					DoubleDomain G ;
+					return WinoMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base,G);
 				}
-				else{ // k > kmax
-					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
-						  beta, C, ldc, kmax,w,base);
-					DynamicPealing (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
-							beta, C, ldc, kmax);
+				else { // FloatDomain
+					FloatDomain G ;
+					return WinoMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base,G);
 				}
 			}
+			// w = 0 or k> kmax
+			WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+
 		}
 
 
@@ -926,41 +961,33 @@ namespace FFLAS {
 					    typename Field::Element * C, const size_t ldc,
 					    const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
-			if (w == 0)
-				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
-					       beta, C, ldc, kmax,base);
-			else {
-				if (k <= kmax) { // switch on delayed modulus
-					// Temporary float matrices
-					typename Field::Element _alpha, _beta;
-					_beta = beta;
-					if (F.isMOne( alpha)) _alpha = -1.0;
-					else {
-						// Compute C = A*B + beta/alpha.C
-						// and then C *= alpha
-						if (! F.isOne( alpha)) {
-							FFLASFFPACK_check(!F.isZero(alpha));
-							F.divin (_beta, alpha);
-						}
-						_alpha = 1.0;
-					}
-					// recursive call
-					WinoMain (associatedDomain(F), ta, tb, m, n, k, _alpha,
-						  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
-					// Modular reduction
-					finit(F,m,n,C,ldc);
-					if (!F.isOne( alpha) &&
-					    !F.isMOne( alpha))
-						// Fix-up: compute C *= alpha
-						fscalin(F,m,n,alpha,C,ldc);
-				}
+			if (w > 0 && k <= kmax) { // switch on delayed modulus
+				typename Field::Element _alpha, _beta;
+				_beta = beta;
+				if (F.isMOne( alpha)) _alpha = -1.0;
 				else {
-					WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha,
-						  A, lda, B, ldb, beta, C, ldc, kmax,w,base);
-					DynamicPealing (F, ta, tb, m, n, k, alpha,
-							A, lda, B, ldb, beta, C, ldc, kmax);
+					// Compute C = A*B + beta/alpha.C
+					// and then C *= alpha
+					if (! F.isOne( alpha)) {
+						FFLASFFPACK_check(!F.isZero(alpha));
+						F.divin (_beta, alpha);
+					}
+					_alpha = 1.0;
 				}
+				// recursive call
+				WinoMain (associatedDomain(F), ta, tb, m, n, k, _alpha,
+					  A, lda, B, ldb, _beta, C, ldc, kmax, w,base);
+				// Modular reduction
+				finit(F,m,n,C,ldc);
+				if (!F.isOne( alpha ) && !F.isMOne( alpha ))
+					// Fix-up: compute C *= alpha
+					fscalin(F,m,n,alpha,C,ldc);
+
+				return;
 			}
+			// w = 0 or k> kmax
+			WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+
 		}
 
 		template <>
@@ -1126,6 +1153,108 @@ namespace FFLAS {
 			}
 		}
 
+		template  < class Field >
+		inline void
+		DynamicPealing2 (const Field& F,
+				 const FFLAS_TRANSPOSE ta,
+				 const FFLAS_TRANSPOSE tb,
+				 const size_t m, const size_t n, const size_t k,
+				 const size_t mr, const size_t nr, const size_t kr,
+				 const typename Field::Element alpha,
+				 const typename Field::Element* A, const size_t lda,
+				 const typename Field::Element* B, const size_t ldb,
+				 const typename Field::Element beta,
+				 typename Field::Element* C, const size_t ldc,
+				 const size_t kmax)
+		{
+			const typename Field::Element *a12, *a21, *b12, *b21;
+			size_t inca12, inca21, incb12, incb21, ma, na, mb, nb;
+			size_t mkn = (nr > 0)+ ((kr > 0) << 1)+  ((mr > 0) << 2);
+
+			if (ta == FflasTrans) {
+				ma = k;
+				na = m;
+				a12 = A+(k-1)*lda;
+				inca12 = 1;
+				a21 = A+m-1;
+				inca21 = lda;
+			}
+			else {
+				ma = m;
+				na = k;
+				a12 = A+k-1;
+				inca12 = lda;
+				a21 = A+(m-1)*lda;
+				inca21 = 1;
+			}
+			if (tb == FflasTrans) {
+				mb = n;
+				nb = k;
+				b12 = B+(n-1)*ldb;
+				incb12 = 1;
+				b21 = B+k-1;
+				incb21 = ldb;
+			}
+			else {
+				mb = k;
+				nb = n;
+				b12 = B+n-1;
+				incb12 = ldb;
+				b21 = B+(k-1)*ldb;
+				incb21 = 1;
+			}
+			switch (mkn) {
+			case 1: // n oddsized
+				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1,ldc);
+				break;
+
+			case 2: // k oddsized
+				fger (F, m, n, alpha, a12, inca12, b21, incb21, C, ldc);
+				break;
+
+			case 3: // n, k oddsized
+				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1,ldc);
+				fger (F, m, n-1, alpha, a12, inca12, b21, incb21, C, ldc);
+				break;
+
+			case 4: // m oddsized
+				fgemv(F, (tb == FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
+				      alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				break;
+
+			case 5: // m, n oddsized
+				if (tb == FflasTrans)
+					mb--;
+				else
+					nb--;
+				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1, ldc);
+				fgemv (F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
+				       alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				break;
+
+			case 6: // m, k oddsized
+				fger (F, m-1, n, alpha, a12, inca12, b21, incb21, C, ldc);
+				fgemv(F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
+				      alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				break;
+
+			case 7: // m, k, n oddsized
+				if (tb == FflasTrans)
+					mb--;
+				else
+					nb--;
+				// Block NW
+				fger (F, m-1, n-1, alpha, a12, inca12, b21, incb21, C, ldc);
+				// Block SW
+				fgemv (F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
+				       alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				// Block NE
+				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1, ldc);
+				break;
+			}
+		}
+
+
 	} // Protected Winomain
 
 
@@ -1154,6 +1283,7 @@ namespace FFLAS {
 		if (!F.isZero(beta)) fconvert(F, n, n, Cd, n, C, ldc);
 
 		// Call to the blas Multiplication
+		FFLASFFPACK_check(n);
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,
 			     (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
 			     (DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,

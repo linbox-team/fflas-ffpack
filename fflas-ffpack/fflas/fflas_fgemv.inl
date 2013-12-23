@@ -181,6 +181,7 @@ namespace FFLAS {
 				for (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
 					F.convert (*(Ydi), *Yi);
 
+			FFLASFFPACK_check(N);
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N, alphad,
 				     Ad, (int)N, Xd, 1, betad, Yd, 1);
 
@@ -223,6 +224,7 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 			}
 
+			FFLASFFPACK_check(lda);
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
@@ -260,6 +262,7 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 				}
 			}
+			FFLASFFPACK_check(lda);
 			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
@@ -295,6 +298,7 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 			}
 
+			FFLASFFPACK_check(lda);
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
@@ -332,6 +336,7 @@ namespace FFLAS {
 					F.divin (_beta, alpha);
 				}
 			}
+			FFLASFFPACK_check(lda);
 			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
@@ -355,6 +360,7 @@ namespace FFLAS {
 	       const DoubleDomain::Element beta,
 	       DoubleDomain::Element * Y, const size_t incY)
 	{
+		FFLASFFPACK_check(lda);
 		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}
@@ -369,6 +375,7 @@ namespace FFLAS {
 	       const FloatDomain::Element beta,
 	       FloatDomain::Element * Y, const size_t incY)
 	{
+			FFLASFFPACK_check(lda);
 		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}
