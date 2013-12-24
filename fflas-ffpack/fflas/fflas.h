@@ -265,6 +265,20 @@ namespace FFLAS {
 					    const typename Field::Element beta,
 					    typename Field::Element* C, const size_t ldc,
 					    const size_t  ); //kmax
+		template  < class Field >
+		inline void
+		DynamicPealing2 (const Field& F,
+				 const FFLAS_TRANSPOSE ta,
+				 const FFLAS_TRANSPOSE tb,
+				 const size_t m, const size_t n, const size_t k,
+				 const size_t mr, const size_t nr, const size_t kr,
+				 const typename Field::Element alpha,
+				 const typename Field::Element* A, const size_t lda,
+				 const typename Field::Element* B, const size_t ldb,
+				 const typename Field::Element beta,
+				 typename Field::Element* C, const size_t ldc,
+				 const size_t kmax);
+
 
 		template <class Field>
 		void MatVectProd (const Field& F,

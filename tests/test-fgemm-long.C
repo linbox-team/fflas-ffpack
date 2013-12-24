@@ -112,17 +112,18 @@ bool check_MM(const Field                   & F,
 			}
 		}
 	if ( wrong ){
-		std::cerr<<"FAIL"<<std::endl;
-		std::cerr << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
-		std::cerr << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
+		std::cout<<"FAIL"<<std::endl;
+		std::cout << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
+		std::cout << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
 		for (size_t i=0; i<m; ++i){
 			for (size_t j =0; j<n; ++j)
 				if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) )
-					std::cerr<<"Erreur C["<<i<<","<<j<<"]="
+					std::cout<<"Erreur C["<<i<<","<<j<<"]="
 					<<(*(C+i*ldc+j))<<" C[d"<<i<<","<<j<<"]="
 					<<(*(D+i*n+j))<<std::endl;
 		}
 	}
+	// else std::cout<<"COOL"<<std::endl;
 
 	delete[] D;
 
@@ -215,8 +216,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 0;
 		n = 10+(size_t)random()%nn;
@@ -235,8 +236,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 	FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 10+(size_t)random()%nn;
 		n = 0 ;
@@ -255,8 +256,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 	FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 10+(size_t)random()%nn;
 		n = 10+(size_t)random()%nn;
@@ -275,8 +276,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 	FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 1;
 		n = 10+(size_t)random()%nn;
@@ -296,8 +297,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 		m = 10+(size_t)random()%nn;
 		n = 1 ;
 		k = 10+(size_t)random()%nn;
@@ -321,8 +322,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 10+(size_t)random()%nn;
 		n = 10+(size_t)random()%nn;

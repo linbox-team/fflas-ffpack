@@ -763,7 +763,7 @@ namespace FFLAS {
 			}
 		}
 
-#define DYNAMIC_PEALING
+#define OLD_DYNAMIC_PEALING
 		// dispatches according to w = 0 or not
 		template<class Field>
 		inline  void WinoMainGeneric (const Field& F,
@@ -788,27 +788,31 @@ namespace FFLAS {
 					       beta, C, ldc, kmax,base);
 			}
 			else{
-#ifdef DYNAMIC_PEALING
+#ifdef OLD_DYNAMIC_PEALING
 				WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
 					  beta, C, ldc, kmax, w,base);
 				DynamicPealing (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 						beta, C, ldc, kmax);
 #else
-				size_t m2 = (m >> w) << (w-1) ;
-				size_t n2 = (m >> w) << (w-1) ;
-				size_t k2 = (m >> w) << (w-1) ;
-				FFLASFFPACK_check(m2);
-				FFLASFFPACK_check(n2);
-				FFLASFFPACK_check(k2);
+				size_t ww = w ;
+				size_t m2 = (m >> ww) << (ww-1) ;
+				size_t n2 = (n >> ww) << (ww-1) ;
+				size_t k2 = (k >> ww) << (ww-1) ;
+
 				WinoCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb,
 					  beta, C, ldc, kmax, w,base);
 
 				size_t mr = m -2*m2;
-				size_t kr = k -2*k2;
 				size_t nr = n -2*n2;
+				size_t kr = k -2*k2;
+				FFLASFFPACK_check(m == m2*2+mr);
+				FFLASFFPACK_check(n == n2*2+nr);
+				FFLASFFPACK_check(k == k2*2+kr);
+				// std::cout  << "w =" << ww << "m =" << m << ", mr = " << mr  << ", m2 = " << m2 << std::endl;
 
-				DynamicPealing2 (F, ta, tb, m, n, k, mr, kr, nr, alpha, A, lda, B, ldb,
+				DynamicPealing2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb,
 						beta, C, ldc, kmax);
+
 
 #endif
 			}
@@ -1168,88 +1172,66 @@ namespace FFLAS {
 				 const size_t kmax)
 		{
 			const typename Field::Element *a12, *a21, *b12, *b21;
-			size_t inca12, inca21, incb12, incb21, ma, na, mb, nb;
-			size_t mkn = (nr > 0)+ ((kr > 0) << 1)+  ((mr > 0) << 2);
+			size_t mkn = (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2);
 
 			if (ta == FflasTrans) {
-				ma = k;
-				na = m;
-				a12 = A+(k-1)*lda;
-				inca12 = 1;
-				a21 = A+m-1;
-				inca21 = lda;
+				a12 = A+(k-kr)*lda;
+				a21 = A+(m-mr);
 			}
 			else {
-				ma = m;
-				na = k;
-				a12 = A+k-1;
-				inca12 = lda;
-				a21 = A+(m-1)*lda;
-				inca21 = 1;
+				a12 = A+(k-kr);
+				a21 = A+(m-mr)*lda;
 			}
 			if (tb == FflasTrans) {
-				mb = n;
-				nb = k;
-				b12 = B+(n-1)*ldb;
-				incb12 = 1;
-				b21 = B+k-1;
-				incb21 = ldb;
+				b12 = B+(n-nr)*ldb;
+				b21 = B+(k-kr);
 			}
 			else {
-				mb = k;
-				nb = n;
-				b12 = B+n-1;
-				incb12 = ldb;
-				b21 = B+(k-1)*ldb;
-				incb21 = 1;
+				b12 = B+(n-nr);
+				b21 = B+(k-kr)*ldb;
 			}
 			switch (mkn) {
 			case 1: // n oddsized
-				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1,ldc);
+				fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc);
+
 				break;
 
 			case 2: // k oddsized
-				fger (F, m, n, alpha, a12, inca12, b21, incb21, C, ldc);
+				fgemm (F, ta, tb, m, n, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc);
+
 				break;
 
 			case 3: // n, k oddsized
-				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1,ldc);
-				fger (F, m, n-1, alpha, a12, inca12, b21, incb21, C, ldc);
+				fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc);
+				fgemm (F, ta, tb, m, n-nr, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc);
+
 				break;
 
 			case 4: // m oddsized
-				fgemv(F, (tb == FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
-				      alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				fgemm (F,  ta, tb, mr, n, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc);
+
 				break;
 
 			case 5: // m, n oddsized
-				if (tb == FflasTrans)
-					mb--;
-				else
-					nb--;
-				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1, ldc);
-				fgemv (F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
-				       alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc);
+				fgemm (F, ta, tb, mr, n-nr, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc);
+
 				break;
 
 			case 6: // m, k oddsized
-				fger (F, m-1, n, alpha, a12, inca12, b21, incb21, C, ldc);
-				fgemv(F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
-				      alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				fgemm (F, ta, tb, m-mr, n, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc);
+				fgemm (F,  ta, tb, mr, n, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc);
+
 				break;
 
 			case 7: // m, k, n oddsized
-				if (tb == FflasTrans)
-					mb--;
-				else
-					nb--;
 				// Block NW
-				fger (F, m-1, n-1, alpha, a12, inca12, b21, incb21, C, ldc);
+				fgemm (F, ta, tb, m-mr, n-nr, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc);
 				// Block SW
-				fgemv (F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
-				       alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1);
+				fgemm (F,  ta, tb, mr, n-nr, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc);
 				// Block NE
-				fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1, ldc);
+				fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc);
+
 				break;
 			}
 		}
