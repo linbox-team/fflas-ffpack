@@ -155,8 +155,14 @@ bool launch_MM(const Field & F,
 	Element * C = new Element[m*ldc];
 	Element * D = new Element[m*n];
 	for(size_t i = 0;i<iters;++i){
-		RandomMatrix(F,A,m,k,lda);
-		RandomMatrix(F,B,k,n,ldb);
+		if (ta == FFLAS::FflasNoTrans)
+			RandomMatrix(F,A,m,k,lda);
+		else
+			RandomMatrix(F,A,k,m,lda);
+		if (tb == FFLAS::FflasNoTrans)
+			RandomMatrix(F,B,k,n,ldb);
+		else
+			RandomMatrix(F,B,n,k,ldb);
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fcopy(F,m,n,D,n,C,ldc);
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
