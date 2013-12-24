@@ -44,14 +44,17 @@ namespace FFLAS {
 		const typename Field::Element* xi=x, *yj=y;
 		typename Field::Element* Ai=A;
 
+		if (F.isZero(alpha)) return ;
+
+
 		if ( M < N ){
-			if ( F.areEqual( alpha, F.one ) )
+			if ( F.isOne( alpha ) )
 				for ( ; Ai < A+M*lda; Ai+=lda, xi+=incx ){
 					yj = y;
 					for (size_t j = 0; j < N; ++j, yj+=incy )
 						F.axpyin( *(Ai+j), *xi, *yj );
 				}
-			else if ( F.areEqual( alpha, F.mOne ) )
+			else if ( F.isMOne( alpha ) )
 				for ( ; Ai < A+M*lda; Ai+=lda, xi+=incx ){
 					F.neg( tmp, *xi );
 					yj = y;
@@ -66,14 +69,14 @@ namespace FFLAS {
 						F.axpyin( *(Ai+j), tmp, *yj );
 				}
 		} else {
-			if ( F.areEqual( alpha, F.one ) ){
+			if ( F.isOne( alpha ) ){
 				for ( ; Ai < A+N; ++Ai, yj+=incy ){
 					xi = x;
 					for (size_t i = 0; i < M; ++i, xi+=incx )
 						F.axpyin( *(Ai+i*lda), *xi, *yj );
 				}
 			}
-			else if ( F.areEqual( alpha, F.mOne ) )
+			else if ( F.isMOne( alpha ) )
 				for ( ; Ai < A+N; ++Ai, yj+=incy ){
 					F.neg( tmp, *yj );
 					xi = x;
@@ -93,12 +96,13 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fger( const DoubleDomain& , const size_t M, const size_t N,
+	fger( const DoubleDomain& F, const size_t M, const size_t N,
 	      const DoubleDomain::Element alpha,
 	      const DoubleDomain::Element * x, const size_t incx,
 	      const DoubleDomain::Element * y, const size_t incy,
 	      DoubleDomain::Element * A, const size_t lda)
 	{
+		if (F.isZero(alpha)) return ;
 
 		FFLASFFPACK_check(lda);
 		cblas_dger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
@@ -106,12 +110,13 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fger( const FloatDomain& , const size_t M, const size_t N,
+	fger( const FloatDomain& F, const size_t M, const size_t N,
 	      const FloatDomain::Element alpha,
 	      const FloatDomain::Element * x, const size_t incx,
 	      const FloatDomain::Element * y, const size_t incy,
 	      FloatDomain::Element * A, const size_t lda)
 	{
+		if (F.isZero(alpha)) return ;
 
 			FFLASFFPACK_check(lda);
 		cblas_sger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );

@@ -493,9 +493,9 @@ namespace FFPACK
 			// init(zero,0UL);
 			double max_double = (double) (INT32_MAX) - modulus ;
 			double p = modulus-1 ;
-			if (areEqual(zero,r))
+			if (isZero(r))
 				return (unsigned long) (max_double/p) ;
-			else if (areEqual(one,r))
+			else if (isOne(r))
 			{
 				if (modulus>= getMaxModulus())
 					return 0 ;

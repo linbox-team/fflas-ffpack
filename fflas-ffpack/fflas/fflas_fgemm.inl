@@ -1171,9 +1171,10 @@ namespace FFLAS {
 				 typename Field::Element* C, const size_t ldc,
 				 const size_t kmax)
 		{
-			const typename Field::Element *a12, *a21, *b12, *b21;
 			size_t mkn = (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2);
+			if (mkn == 0) return;
 
+			const typename Field::Element *a12, *a21, *b12, *b21;
 			if (ta == FflasTrans) {
 				a12 = A+(k-kr)*lda;
 				a21 = A+(m-mr);

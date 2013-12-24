@@ -1290,15 +1290,10 @@ namespace FFLAS {
 #endif
 
 #if 0
-		if (n == 1) {
-			return fgemv(F,
-		}
-		if (m == 1) {
-
-		}
-		if (k == 1) {
-
-		}
+		// detect fgemv
+		if (n == 1 and ...)
+		// detect fger
+		if (k==1 and ...)
 #endif
 
 		bool winoLevelProvided = (w != (size_t(-1)));

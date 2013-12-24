@@ -158,11 +158,11 @@ namespace FFLAS {
 			double* Yd = new double[Yl];
 			double alphad, betad;
 
-			if (F.areEqual (F.mOne, alpha)){
+			if (F.isMOne( alpha)){
 				alphad = -1.0;
 				F.convert (betad, beta);
 			} else {
-				if (! F.areEqual (F.one, alpha)){
+				if (! F.isOne( alpha)){
 					// Compute C = A*B + beta/alpha.C
 					// and after C *= alpha
 					F.div (tmp, beta, alpha);
@@ -189,7 +189,7 @@ namespace FFLAS {
 			for  (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
 				F.init (*Yi, *(Ydi));
 
-			if  (!F.areEqual (F.one, alpha) && !F.areEqual (F.mOne, alpha)){
+			if  (!F.isOne(alpha) && !F.isMOne(alpha)){
 				// Fix-up: compute Y *= alpha
 				for (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -212,13 +212,13 @@ namespace FFLAS {
 		{
 
 			double _alpha, _beta;
-			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if (F.isMOne(beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne(alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha))
+				if (! F.isOne(alpha))
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -231,7 +231,7 @@ namespace FFLAS {
 			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
 
-			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))){
+			if ( (!F.isMOne(alpha)) && (!F.isOne(alpha))){
 				// Fix-up: compute y *= alpha
 				for (double* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -250,13 +250,13 @@ namespace FFLAS {
 		{
 
 			float _alpha, _beta;
-			if  (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if  (F.isMOne(beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne(alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha)){
+				if (! F.isOne(alpha)){
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -267,7 +267,7 @@ namespace FFLAS {
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
-			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))){
+			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
 				for (float* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -286,13 +286,13 @@ namespace FFLAS {
 		{
 
 			double _alpha, _beta;
-			if (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if (F.isMOne(beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne(alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha))
+				if (! F.isOne(alpha))
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -305,7 +305,7 @@ namespace FFLAS {
 			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
 
-			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))){
+			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
 				for (double* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);
@@ -324,13 +324,13 @@ namespace FFLAS {
 		{
 
 			float _alpha, _beta;
-			if  (F.areEqual (F.mOne, beta)) _beta = -1.0;
+			if  (F.isMOne(beta)) _beta = -1.0;
 			else _beta = beta;
 
-			if (F.areEqual (F.mOne, alpha)) _alpha = -1.0;
+			if (F.isMOne(alpha)) _alpha = -1.0;
 			else{
 				_alpha = 1.0;
-				if (! F.areEqual (F.one, alpha)){
+				if (! F.isOne(alpha)){
 					// Compute y = A*x + beta/alpha.y
 					// and after y *= alpha
 					F.divin (_beta, alpha);
@@ -341,7 +341,7 @@ namespace FFLAS {
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
 				F.init (*Yi, *Yi);
-			if ( (!F.areEqual (F.one, alpha)) && (!F.areEqual (F.mOne, alpha))){
+			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
 				for (float* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
 					F.mulin (*Yi , alpha);

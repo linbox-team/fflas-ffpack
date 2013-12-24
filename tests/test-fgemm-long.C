@@ -386,50 +386,50 @@ int main(int argc, char** argv)
 		NonzeroRandIter<Field,Randiter> R(F,R1);
 
 		size_t k = 0 ;
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.zero,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.zero,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.zero,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 
 		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.one,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.one,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.one,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 
 		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.mOne,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.mOne,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.mOne,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha,beta ;
 		R.random(alpha);
 
 		ok &= launch_MM_dispatch<Field>(F,n,F.one ,alpha,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.zero,alpha,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,alpha,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 
 		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.one ,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.zero,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.mOne,iters,nbw);
-		std::cout << k << "/18" << std::endl; ++k;
+		std::cout << k << "/24" << std::endl; ++k;
 
 		for (size_t j = 0 ; j < 9 ; ++j) {
 			R.random(alpha);
 			R.random(beta);
 			ok &= launch_MM_dispatch<Field>(F,n,alpha,beta,iters,nbw);
-			std::cout << k << "/18" << std::endl; ++k;
+			std::cout << k << "/24" << std::endl; ++k;
 		}
 	}
 

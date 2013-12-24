@@ -5,20 +5,20 @@
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
  * This file is Free Software and part of FFLAS-FFPACK.
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -54,7 +54,6 @@ int main(int argc, char** argv){
 	int n;
 	int nbit=atoi(argv[3]); // number of times the product is performed
 	cerr<<setprecision(10);
-	Field::Element zero, one;
 
 	if (argc != 4)	{
 		cerr<<"Usage : test-invert <p> <A> <<i>"
@@ -64,8 +63,6 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 	Field F(atof(argv[1]));
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	Field::Element * A;
 	A = read_field(F,argv[2],&n,&n);
 
@@ -89,8 +86,8 @@ int main(int argc, char** argv){
 
 	for (int i=0;i<n;++i)
 		for (int j=0;j<n;++j)
-			if ( ((i!=j) && !F.areEqual(*(I+i*n+j),zero))
-			     ||((i==j) &&!F.areEqual(*(I+i*n+j),one)))
+			if ( ((i!=j) && !F.isZero(*(I+i*n+j)))
+			     ||((i==j) &&!F.isOne(*(I+i*n+j))))
 				wrong = true;
 
 	if ( wrong ){

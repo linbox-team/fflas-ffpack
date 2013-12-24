@@ -56,7 +56,6 @@ int main(int argc, char** argv)
 	int n;
 	int nbit=atoi(argv[3]); // number of times the product is performed
 	cerr<<setprecision(10);
-	Field::Element zero, one;
 
 	if (argc != 4)	{
 		cerr<<"Usage : test-ftrtri <p> <A> <<i>"
@@ -66,8 +65,6 @@ int main(int argc, char** argv)
 		exit(-1);
 	}
 	Field F(atoi(argv[1]));
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	Field::Element * A,*Ab;
 	A = read_field(F,argv[2],&n,&n);
 	Ab = new Field::Element[n*n];
@@ -107,8 +104,8 @@ int main(int argc, char** argv)
 
 	for (int i=0;i<n;++i)
 		for (int j=0;j<n;++j)
-			if ( ((i!=j) && !F.areEqual(*(Ab+i*n+j),zero))
-			     ||((i==j) &&!F.areEqual(*(Ab+i*n+j),one)))
+			if ( ((i!=j) && !F.isZero(*(Ab+i*n+j)))
+			     ||((i==j) &&!F.isOne(*(Ab+i*n+j))))
 				wrong = true;
 
 	if ( wrong ){
