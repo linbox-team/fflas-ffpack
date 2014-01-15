@@ -6,20 +6,20 @@
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
  * This file is Free Software and part of FFLAS-FFPACK.
- * 
+ *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
- * 
+ *
  * FFLAS-FFPACK is free software: you can redistribute it and/or modify
  * it under the terms of the  GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -42,7 +42,6 @@
 #ifndef TIME
 #define TIME 1
 #endif
-#define __FFLASFFPACK_USE_OPENMP
 
 #include <iomanip>
 #include <iostream>
@@ -62,7 +61,7 @@ T& myrand (T& r, long size) {
         return r = T( (lrand48() % (-size-size)) + size );
     else
         return r = T(  lrand48() % size ) ;
-};
+}
 
 typedef Modular<double> Field;
 //typedef Modular<float> Field;
@@ -70,20 +69,23 @@ typedef Modular<double> Field;
 //typedef ModularBalanced<float> Field;
 //typedef Modular<int> Field;
 
+#ifdef  __FFLASFFPACK_USE_OPENMP
 Field::Element* makemat(const Field::RandIter& RF,int m, int n){
     Field::Element * res = new Field::Element[m*n];
 #pragma omp parallel for
     for (long i = 0; i < m; ++i)
         for (long j = 0; j < n; ++j) {
             RF.random(res[j+i*n]);
-        }    
+        }
     return res;
-}    
+}
+#endif
 
 
 int main(int argc, char** argv){
+#ifdef  __FFLASFFPACK_USE_OPENMP
         srand48(BaseTimer::seed());
-        
+
 	int m=atoi(argv[2]),n=atoi(argv[3]),k=m;
     int nbw=atoi(argv[4]); // number of winograd levels
 	int pnbw = nbw;
@@ -106,20 +108,20 @@ int main(int argc, char** argv){
 
     Field::RandIter RF(F);
 
-	Field::Element * A = makemat(RF,m,n); 
+	Field::Element * A = makemat(RF,m,n);
 	Field::Element * B = makemat(RF,m,n);
 	size_t lda=m;
 	size_t ldb=n;
 
 	enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
 	enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
-    
+
 
 	Field::Element * C=NULL;
 
 // 	write_field (F, cerr<<"A = "<<endl, A, m, k, lda);
 // 	write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);
-    
+
     size_t r,c; FFLAS::BlockCuts(r,c,m,n,Strategy, omp_get_max_threads() );
     std::cerr << "pfgemm: " << m << 'x' << n << ' ' << r << ':' << c << "  <--  " << omp_get_max_threads() << ':' << (m/r) << 'x' << (n/c) << std::endl;
 if (nbw <0) {
@@ -139,7 +141,7 @@ pnbw=0;
         {
 #pragma omp single
             {
-                
+
                 FFLAS::pfgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
                                beta,C,n,pnbw, Strategy);
             }
@@ -205,7 +207,7 @@ pnbw=0;
 		Cd  = new Field::Element[m*n];
 		for (int i=0; i<m*n; ++i)
 			F.assign (*(Cd+i), zero);
-	
+
 	Field::Element aij, bij,  tmp;
 	// Field::Element beta_alpha;
 	//F.div (beta_alpha, beta, alpha);
@@ -250,11 +252,14 @@ pnbw=0;
 
 
     std::cerr << "Speed-up: " << tims.realtime()/tim.realtime() << std::endl;
-    
+
 	delete[] C;
 	delete[] A;
 	delete[] B;
-
+#else
+	std::cerr << "no openmp available" << std::endl;
+	return 0;
+#endif // __FFLASFFPACK_USE_OPENMP
 }
 
 
