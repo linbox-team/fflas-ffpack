@@ -1743,7 +1743,7 @@ namespace FFPACK  {
 			t1.start();
 #endif
 			//! @todo this init is not all necessary (done after ftrtri)
-			fzero(F,M,M,X,ldx);
+			FFLAS::fzero(F,M,M,X,ldx);
 			// for (size_t i=0; i<M; ++i)
 			// for (size_t j=0; j<M;++j)
 			// F.assign(*(X+i*ldx+j), F.zero);
