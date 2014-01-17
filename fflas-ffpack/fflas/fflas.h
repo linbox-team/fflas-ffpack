@@ -799,6 +799,7 @@ namespace FFLAS {
 	 * \param lda stride of \p A
 	 * @warning may be buggy if Element is larger than int
 	 */
+
 	template<class Field>
 	void
 	fzero (const Field& F, const size_t m, const size_t n,
@@ -814,6 +815,28 @@ namespace FFLAS {
 				// memset(A+i*lda,(int) F.zero,n) ; // might be bogus ?
 				fzero(F,n,A+i*lda,1);
 		}
+	}
+
+	//! creates a diagonal matrix
+	template<class Field>
+	void
+	fidentity (const Field& F, const size_t m, const size_t n,
+		   typename Field::Element * A, const size_t lda, const typename Field::Element & d) // =F.one...
+	{
+		fzero(F,m,n,A,lda);
+		for (size_t i = 0 ; i < std::min(m,n) ; ++i)
+			F.assign(A[i*lda+i],d);
+	}
+
+	//! creates a diagonal matrix
+	template<class Field>
+	void
+	fidentity (const Field& F, const size_t m, const size_t n,
+		   typename Field::Element * A, const size_t lda)
+	{
+		fzero(F,m,n,A,lda);
+		for (size_t i = 0 ; i < std::min(m,n) ; ++i)
+			F.assign(A[i*lda+i],F.one);
 	}
 
 	/** finit

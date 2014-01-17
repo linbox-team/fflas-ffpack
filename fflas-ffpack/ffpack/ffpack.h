@@ -831,11 +831,11 @@ namespace FFPACK  {
 	 * @param Side
 	 * @param M
 	 * @param N
-	 * @param A input matrix of dimension M x N, A is modified
+	 * @param[in,out] A input matrix of dimension M x N, A is modified
 	 * @param lda
-	 * @param NS output matrix of dimension N x NSdim (allocated here)
-	 * @param ldn
-	 * @param NSdim the dimension of the Nullspace (N-rank(A))
+	 * @param[out] NS output matrix of dimension N x NSdim (allocated here)
+	 * @param[out] ldn
+	 * @param[out] NSdim the dimension of the Nullspace (N-rank(A))
 	 *
 	 */
 	template <class Field>
@@ -850,56 +850,78 @@ namespace FFPACK  {
 			size_t* Qt = new size_t[M];
 
 			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
+			delete [] Qt;
 
 			ldn = N-R;
 			NSdim = ldn;
+
+			if (NSdim == 0) {
+				delete[] P;
+				NS = NULL ;
+				return NSdim ;
+			}
+
 			NS = new typename Field::Element [N*ldn];
 
+			if (R == 0) {
+				delete[] P;
+				FFLAS::fidentity(F,N,ldn,NS,ldn);
+				return NSdim;
+			}
+
 			FFLAS::fcopy (F, R, ldn, NS , ldn,  A + R,  lda );
-			// for (size_t i=0; i<R; ++i)
-			// FFLAS::fcopy (F, ldn, NS + i*ldn, 1, A + R + i*lda, 1);
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
 			       F.mOne, A, lda, NS, ldn);
 
-			// fzero(F,N-R,ldn,NS+(N-R)*ldn,ldn);
-			for (size_t i=R; i<N; ++i){
-				for (size_t j=0; j < ldn; ++j)
-					F.assign (*(NS+i*ldn+j), F.zero);
-				F.assign (*(NS + i*ldn + i-R), F.one);
-			}
+			FFLAS::fidentity(F,NSdim,NSdim,NS+R*ldn,ldn);
+
 			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 				NSdim, 0,(int) R, NS, ldn, P);
+
 			delete [] P;
-			delete [] Qt;
-			return N-R;
+
+			return NSdim;
 		}
 		else { // Left NullSpace
 			size_t* P = new size_t[M];
 			size_t* Qt = new size_t[N];
 
 			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
+			delete [] Qt;
 
 			ldn = M;
 			NSdim = M-R;
+
+			if (NSdim == 0) {
+				delete[] P;
+				NS = NULL;
+				return NSdim;
+			}
+
 			NS = new typename Field::Element [NSdim*ldn];
+
+
+			if (R == 0) {
+				delete[] P;
+				FFLAS::fidentity(F,NSdim,ldn,NS,ldn);
+				return NSdim;
+			}
+
+
 			FFLAS::fcopy (F, NSdim, R, NS, ldn, A + R *lda, lda);
-			// for (size_t i=0; i<NSdim; ++i)
-			// FFLAS::fcopy (F, R, NS + i*ldn, 1, A + (R + i)*lda, 1);
+
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R,
 			       F.mOne, A, lda, NS, ldn);
 
-			// fzero(F,NSdim,M-R,NS+R,ldn);
-			for (size_t i=0; i<NSdim; ++i){
-				for (size_t j=R; j < M; ++j)
-					F.assign (*(NS+i*ldn+j), F.zero);
-				F.assign (*(NS + i*ldn + i+R), F.one);
-			}
+			FFLAS::fidentity(F,NSdim,NSdim,NS+R,ldn);
+
 			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 				NSdim, 0,(int) R, NS, ldn, P);
+
 			delete [] P;
-			delete [] Qt;
-			return N-R;
+
+			return NSdim;
 		}
 	}
 
