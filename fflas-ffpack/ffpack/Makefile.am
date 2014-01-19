@@ -39,3 +39,4 @@ pkgincludesub_HEADERS=        \
 		ffpack_minpoly_construct.inl          \
 		ffpack_minpoly.inl
 
+EXTRA_DIST=ffpack.doxy

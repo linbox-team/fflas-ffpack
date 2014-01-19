@@ -24,6 +24,8 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas
 
+SUBDIRS=fflas_fgemm
+
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
 	   fflas_fcopy.inl       \
@@ -45,3 +47,4 @@ pkgincludesub_HEADERS=       \
 	   fflas_fger.inl        \
 	   fflas_ftrsv.inl
 
+EXTRA_DIST=fflas.doxy

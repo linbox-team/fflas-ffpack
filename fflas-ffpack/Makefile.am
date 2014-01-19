@@ -22,9 +22,9 @@
 #/
 
 
-SUBDIRS=fflas ffpack field
+SUBDIRS=fflas ffpack field utils
 
-EXTRA_DIST=fflas-ffpack.doxy utils
+EXTRA_DIST=fflas-ffpack.doxy
 
 pkginclude_HEADERS = config-blas.h   \
 		     fflas-ffpack.h  \
