@@ -39,6 +39,8 @@
 #define NEWWINO
 #endif
 
+// #define WINOTHRESHOLD 100
+
 #define TIME 1
 
 #include <iomanip>

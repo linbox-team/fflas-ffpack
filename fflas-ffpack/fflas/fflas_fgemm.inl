@@ -427,11 +427,16 @@ namespace FFLAS {
 				ClassicMatmul (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 					       beta, C, ldc, kmax,base);
 			}
-			else{
+			else {
 #ifdef OLD_DYNAMIC_PEALING
 				WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
 					  beta, C, ldc, kmax, w,base);
-				DynamicPealing (F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
+
+				FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
+				FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
+				FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
+
+				DynamicPealing (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb,
 						beta, C, ldc, kmax);
 #else
 				size_t ww = w ;
@@ -445,10 +450,10 @@ namespace FFLAS {
 				size_t mr = m -2*m2;
 				size_t nr = n -2*n2;
 				size_t kr = k -2*k2;
+
 				FFLASFFPACK_check(m == m2*2+mr);
 				FFLASFFPACK_check(n == n2*2+nr);
 				FFLASFFPACK_check(k == k2*2+kr);
-				// std::cout  << "w =" << ww << "m =" << m << ", mr = " << mr  << ", m2 = " << m2 << std::endl;
 
 				DynamicPealing2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb,
 						beta, C, ldc, kmax);
@@ -703,6 +708,7 @@ namespace FFLAS {
 				const FFLAS_TRANSPOSE ta,
 				const FFLAS_TRANSPOSE tb,
 				const size_t m, const size_t n, const size_t k,
+				const size_t mr, const size_t nr, const size_t kr,
 				const typename Field::Element alpha,
 				const typename Field::Element* A, const size_t lda,
 				const typename Field::Element* B, const size_t ldb,
@@ -712,7 +718,7 @@ namespace FFLAS {
 		{
 			const typename Field::Element *a12, *a21, *b12, *b21;
 			size_t inca12, inca21, incb12, incb21, ma, na, mb, nb;
-			size_t mkn = (n & 0x1)+ ((k & 0x1) << 1)+  ((m & 0x1) << 2);
+			size_t mkn = nr + (kr << 1)+  (mr << 2);
 
 			if (ta == FflasTrans) {
 				ma = k;
