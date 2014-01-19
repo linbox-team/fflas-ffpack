@@ -38,6 +38,7 @@
 #ifndef NEWINO
 #define NEWWINO
 #endif
+
 #define TIME 1
 
 #include <iomanip>

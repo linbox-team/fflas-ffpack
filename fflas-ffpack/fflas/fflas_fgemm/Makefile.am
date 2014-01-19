@@ -1,5 +1,7 @@
-# Copyright (c) 2011 FFLAS-FFPACK
+# Copyright (c) 2014 FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
+#
+#
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
 #
@@ -17,18 +19,14 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # ========LICENCE========
+#/
 
 
-pkgincludesubdir=$(pkgincludedir)/utils
+pkgincludesubdir=$(pkgincludedir)/fflas_fgemm
+
+EXTRA_DIST=matmul.doxy
 
 pkgincludesub_HEADERS=       \
-		args-parser.h        \
-		print-utils.h        \
-		debug.h              \
-		Matio.h
-
-### is this really extra dist ?
-### this is wrong in a header only lib
-EXTRA_DIST=timer.h timer.C
-
+	winograd.inl         \
+	winograd_acc.inl
 

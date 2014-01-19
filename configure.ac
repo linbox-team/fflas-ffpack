@@ -342,6 +342,7 @@ macros/CodeChunk/Makefile
 fflas-ffpack-config
 fflas-ffpack/Makefile
 fflas-ffpack/fflas/Makefile
+fflas-ffpack/fflas/fflas_fgemm/Makefile
 fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
 utils/Makefile
