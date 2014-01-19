@@ -30,6 +30,12 @@
  *
  */
 
+
+/*! @file field/unparametric.h
+ * @ingroup field
+ * @brief  representation of a field of characteristic 0.
+ */
+
 #ifndef __FFLASFFPACK_field_unparametric_H
 #define __FFLASFFPACK_field_unparametric_H
 

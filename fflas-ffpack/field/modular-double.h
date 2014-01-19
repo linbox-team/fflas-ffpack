@@ -30,6 +30,11 @@
  *.
  */
 
+/*! @file field/modular-double.h
+ * @ingroup field
+ * @brief  representation of <code>Z/mZ</code> over \c double.
+ */
+
 #ifndef __FFLASFFPACK_modular_double_H
 #define __FFLASFFPACK_modular_double_H
 

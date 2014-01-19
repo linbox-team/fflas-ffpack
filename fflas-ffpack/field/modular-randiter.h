@@ -29,6 +29,12 @@
  *.
  */
 
+
+/*! @file field/modular-randiter.h
+ * @ingroup field
+ * @brief  random elements over  <code>Z/mZ</code>.
+ */
+
 #ifndef __FFLASFFPACK_modular_randiter_H
 #define __FFLASFFPACK_modular_randiter_H
 

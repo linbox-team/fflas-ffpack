@@ -30,6 +30,11 @@
  *.
  */
 
+/*! @file field/modular-float.h
+ * @ingroup field
+ * @brief  representation of <code>Z/mZ</code> over \c float.
+ */
+
 #ifndef __FFLASFFPACK_modular_float_H
 #define __FFLASFFPACK_modular_float_H
 

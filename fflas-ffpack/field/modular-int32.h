@@ -27,6 +27,7 @@
  * @ingroup field
  * @brief  representation of <code>Z/mZ</code> over \c int32_t .
  */
+
 #ifndef __FFLASFFPACK_modular_int32_H
 #define __FFLASFFPACK_modular_int32_H
 
