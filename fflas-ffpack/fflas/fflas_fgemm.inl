@@ -404,11 +404,11 @@ namespace FFLAS {
 					std::cout << mr << ',' << nr << ',' << kr << std::endl;
 					std::cout << lda << ',' << ldb << ',' << ldc << std::endl;
 					typedef typename Field::Element Element ;
-					size_t ldA = kr;
-					size_t ldB = nr;
+					size_t ldA = lda;
+					size_t ldB = ldb;
 					Element * Ac = new Element[mr*ldA] ;
-					fcopy(F,mr,kr,Ac,ldA,A,lda);
 					Element * Bc = new Element[kr*ldB] ;
+					fcopy(F,mr,kr,Ac,ldA,A,lda);
 					fcopy(F,kr,nr,Bc,ldB,B,ldb);
 					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
 					delete[] Ac;
