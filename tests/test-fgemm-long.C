@@ -226,7 +226,7 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
-		m = 100+(size_t)random()%nn;
+		m = 20+(size_t)random()%nn;
 		n = m ;
 		k = m ;
 		lda = std::max(k,m)+(size_t)random()%ld;
@@ -246,9 +246,9 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
-		m = 10+(size_t)random()%nn;
-		n = 10+(size_t)random()%nn;
-		k = 10+(size_t)random()%nn;
+		m = 20+(size_t)random()%nn;
+		n = 20+(size_t)random()%nn;
+		k = 20+(size_t)random()%nn;
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
@@ -267,8 +267,8 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 0;
-		n = 10+(size_t)random()%nn;
-		k = 10+(size_t)random()%nn;
+		n = 20+(size_t)random()%nn;
+		k = 20+(size_t)random()%nn;
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
@@ -286,9 +286,9 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
-		m = 10+(size_t)random()%nn;
+		m = 20+(size_t)random()%nn;
 		n = 0 ;
-		k = 10+(size_t)random()%nn;
+		k = 20+(size_t)random()%nn;
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = 1+std::max(n,k)+(size_t)random()%ld;
 		ldc = 1+n+(size_t)random()%ld;
@@ -306,8 +306,8 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
-		m = 10+(size_t)random()%nn;
-		n = 10+(size_t)random()%nn;
+		m = 20+(size_t)random()%nn;
+		n = 20+(size_t)random()%nn;
 		k = 0;
 		lda = 1+std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
@@ -327,8 +327,8 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 1;
-		n = 10+(size_t)random()%nn;
-		k = 10+(size_t)random()%nn;
+		n = 20+(size_t)random()%nn;
+		k = 20+(size_t)random()%nn;
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
@@ -345,9 +345,9 @@ bool launch_MM_dispatch(const Field &F,
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
-		m = 10+(size_t)random()%nn;
+		m = 20+(size_t)random()%nn;
 		n = 1 ;
-		k = 10+(size_t)random()%nn;
+		k = 20+(size_t)random()%nn;
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
@@ -371,8 +371,8 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
-		m = 10+(size_t)random()%nn;
-		n = 10+(size_t)random()%nn;
+		m = 20+(size_t)random()%nn;
+		n = 20+(size_t)random()%nn;
 		k = 1;
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
@@ -395,7 +395,7 @@ int main(int argc, char** argv)
 	srand((int)time(NULL));
 	srand48(time(NULL));
 
-	static size_t iters =10 ;
+	static size_t iters = 3 ;
 	static unsigned long p = 65521 ;
 	static size_t n = 100 ;
 	static int nbw = 2 ;
