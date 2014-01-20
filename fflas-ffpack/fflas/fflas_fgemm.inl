@@ -405,7 +405,8 @@ namespace FFLAS {
 #elif defined(OLDWINO)
 				BLAS3::WinogradAccOld(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 #elif defined(NEWACC)
-				BLAS3::WinogradAcc2(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				// BLAS3::WinogradAcc2(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				BLAS3::WinogradAcc3(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 #else
 #error "you need to make a choice for a BLAS3 mat mul schedule"
 #endif
