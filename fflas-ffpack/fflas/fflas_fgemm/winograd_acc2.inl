@@ -64,9 +64,6 @@ namespace FFLAS { namespace BLAS3 {
 
 
 
-		size_t ldxa;           // ld of X when X=Asub
-		size_t ldxc = nr;      // ld of X when X=Csub
-		size_t ldy ;           // ld of Y
 		size_t la, ca, lb, cb; // lines and columns in A,B sub matrices
 
 		// Three temporary submatrices are required
@@ -77,7 +74,6 @@ namespace FFLAS { namespace BLAS3 {
 			A21 = A + mr;
 			A12 = A + kr*lda;
 			A22 = A12 + mr;
-			ldxa = mr ;
 			la = kr ;
 			ca = mr ;
 		}
@@ -85,7 +81,6 @@ namespace FFLAS { namespace BLAS3 {
 			A12 = A + kr;
 			A21 = A + mr*lda;
 			A22 = A21 + kr;
-			ldxa = kr ;
 			la = mr ;
 			ca = kr ;
 
@@ -94,7 +89,6 @@ namespace FFLAS { namespace BLAS3 {
 			B21 = B + kr;
 			B12 = B + nr*ldb;
 			B22 = B12 + kr;
-			ldy = kr ;
 			lb = nr ;
 			cb = kr ;
 
@@ -103,7 +97,6 @@ namespace FFLAS { namespace BLAS3 {
 			B12 = B + nr;
 			B21 = B + kr*ldb;
 			B22 = B21 + nr;
-			ldy = nr ;
 			lb = kr ;
 			cb = nr ;
 		}
@@ -113,50 +106,50 @@ namespace FFLAS { namespace BLAS3 {
 		// Z3 = C12-C21           in C12
 		fsubin(F,mr,nr,C21,ldc,C12,ldc);
 		// S1 = A21 + A22         in X
-		fadd(F,la,ca,A21,lda,A22,lda,X,ldxa);
+		fadd(F,la,ca,A21,lda,A22,lda,X,ca);
 		// T1 = B12 - B11         in Y
-		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,ldy);
+		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// P5 = a S1 T1 + b Z3    in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, Y, ldy, beta, C12, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);
 		// S2 = S1 - A11          in X
-		fsubin(F,la,ca,A11,lda,X,ldxa);
+		fsubin(F,la,ca,A11,lda,X,ca);
 		// T2 = B22 - T1          in Y
-		fsub(F,lb,cb,B22,ldb,Y,ldy,Y,ldy);
+		fsub(F,lb,cb,B22,ldb,Y,cb,Y,cb);
 		// P6 = a S2 T2 + b C21   in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, Y, ldy, beta, C21, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C21, ldc, kmax,w-1,base);
 		// S4 = A12 - S2          in X
-		fsub(F,la,ca,A12,lda,X,ldxa,X,ldxa);
+		fsub(F,la,ca,A12,lda,X,ca,X,ca);
 		// W1 = P5 + beta Z1      in C22
 		fadd(F,mr,nr,C12,ldc,beta,C22,ldc,C22,ldc);
 		// P3 = a S4 B22 + P5     in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, B22, ldb, F.one, C12, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, B22, ldb, F.one, C12, ldc, kmax,w-1,base);
 		// P1 = a A11 B11         in X
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, ldxc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, kmax,w-1,base);
 		// U2 = P6 + P1           in C21
-		faddin(F,mr,nr,X,ldxc,C21,ldc);
+		faddin(F,mr,nr,X,nr,C21,ldc);
 		// P2 = a A12 B21 + b C11 in C11
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, kmax,w-1,base);
 		// U1 = P1 + P2           in C11
-		faddin(F,mr,nr,X,ldxc,C11,ldc);
+		faddin(F,mr,nr,X,nr,C11,ldc);
 		// U5 = U2 + P3           in C12
 		faddin(F,mr,nr,C21,ldc,C12,ldc);
 		// S3 =  A11 - A21        in X ;
-		fsub(F,la,ca,A11,lda,A21,lda,X,ldxa);
+		fsub(F,la,ca,A11,lda,A21,lda,X,ca);
 		// T3 = B22 - B12         in Y
-		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,ldy);
+		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,cb);
 		// U3 = a S3 T3 + U2      in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, Y, ldy, F.one, C21, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, F.one, C21, ldc, kmax,w-1,base);
 		delete[] X;
 		// U7 = U3 + W1           in C22
 		faddin(F,mr,nr,C21,ldc,C22,ldc);
 		// T1_ = B12 - B11        in Y
-		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,ldy);
+		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// T2_ = B22 - T1_        in Y
-		fsub(F,lb,cb,B22,ldb,Y,ldy,Y,ldy);
+		fsub(F,lb,cb,B22,ldb,Y,cb,Y,cb);
 		// T4 = T2_ - B21         in Y
-		fsub(F,lb,cb,Y,ldy,B21,ldb,Y,ldy);
+		fsub(F,lb,cb,Y,cb,B21,ldb,Y,cb);
 		// U6 = -a A22 T4 + U3    in C21;
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, malpha, A22, lda, Y, ldy, F.one, C21, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, malpha, A22, lda, Y, cb, F.one, C21, ldc, kmax,w-1,base);
 		delete[] Y;
 
 
@@ -188,9 +181,6 @@ namespace FFLAS { namespace BLAS3 {
 
 
 
-		size_t ldxa;           // ld of X when X=Asub
-		size_t ldxc = nr;      // ld of X when X=Csub
-		size_t ldy ;           // ld of Y
 		size_t la, ca, lb, cb; // lines and columns in A,B sub matrices
 
 		// Three temporary submatrices are required
@@ -201,7 +191,6 @@ namespace FFLAS { namespace BLAS3 {
 			A21 = A + mr;
 			A12 = A + kr*lda;
 			A22 = A12 + mr;
-			ldxa = mr ;
 			la = kr ;
 			ca = mr ;
 		}
@@ -209,7 +198,6 @@ namespace FFLAS { namespace BLAS3 {
 			A12 = A + kr;
 			A21 = A + mr*lda;
 			A22 = A21 + kr;
-			ldxa = kr ;
 			la = mr ;
 			ca = kr ;
 
@@ -218,7 +206,6 @@ namespace FFLAS { namespace BLAS3 {
 			B21 = B + kr;
 			B12 = B + nr*ldb;
 			B22 = B12 + kr;
-			ldy = kr ;
 			lb = nr ;
 			cb = kr ;
 
@@ -227,7 +214,6 @@ namespace FFLAS { namespace BLAS3 {
 			B12 = B + nr;
 			B21 = B + kr*ldb;
 			B22 = B21 + nr;
-			ldy = nr ;
 			lb = kr ;
 			cb = nr ;
 		}
@@ -237,57 +223,57 @@ namespace FFLAS { namespace BLAS3 {
 		// Z3 = C12-C21           in C12
 		fsubin(F,mr,nr,C21,ldc,C12,ldc);
 		// S1 = A21 + A22         in X
-		fadd(F,la,ca,A21,lda,A22,lda,X,ldxa);
+		fadd(F,la,ca,A21,lda,A22,lda,X,ca);
 		// T1 = B12 - B11         in Y
-		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,ldy);
+		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// P5 = a S1 T1 + b Z3    in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, Y, ldy, beta, C12, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);
 		// S2 = S1 - A11          in X
-		fsubin(F,la,ca,A11,lda,X,ldxa);
+		fsubin(F,la,ca,A11,lda,X,ca);
 		// T2 = B22 - T1          in Y
-		fsub(F,lb,cb,B22,ldb,Y,ldy,Y,ldy);
+		fsub(F,lb,cb,B22,ldb,Y,cb,Y,cb);
 		// P6 = a S2 T2 + b C21   in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, Y, ldy, beta, C21, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C21, ldc, kmax,w-1,base);
 		// S4 = A12 - S2          in X
-		fsub(F,la,ca,A12,lda,X,ldxa,X,ldxa);
+		fsub(F,la,ca,A12,lda,X,ca,X,ca);
 		// W1 = P5 + beta Z1      in C22
 		fadd(F,mr,nr,C12,ldc,beta,C22,ldc,C22,ldc);
 		// P3 = a S4 B22 + P5     in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, B22, ldb, F.zero, Y, nr, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, B22, ldb, F.zero, Y, nr, kmax,w-1,base);
 		fadd(F,mr,nr,Y,nr,C12,ldc,C12,ldc);
 		// P1 = a A11 B11         in X
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, ldxc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, kmax,w-1,base);
 		// U2 = P6 + P1           in C21
-		faddin(F,mr,nr,X,ldxc,C21,ldc);
+		faddin(F,mr,nr,X,nr,C21,ldc);
 		// P2 = a A12 B21 + b C11 in C11
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, Y, nr, kmax,w-1,base);
 		fadd(F,mr,nr,Y,nr,beta,C11,ldc,C11,ldc);
 		// U1 = P1 + P2           in C11
-		faddin(F,mr,nr,X,ldxc,C11,ldc);
+		faddin(F,mr,nr,X,nr,C11,ldc);
 		// U5 = U2 + P3           in C12
 		faddin(F,mr,nr,C21,ldc,C12,ldc);
 		// S3 =  A11 - A21        in X ;
-		fsub(F,la,ca,A11,lda,A21,lda,X,ldxa);
+		fsub(F,la,ca,A11,lda,A21,lda,X,ca);
 		// T3 = B22 - B12         in Y
-		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,ldy);
+		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,cb);
 		// U3 = a S3 T3 + U2      in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ldxa, Y, ldy, F.one, C21, ldc, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, F.one, C21, ldc, kmax,w-1,base);
 		// U7 = U3 + W1           in C22
 		faddin(F,mr,nr,C21,ldc,C22,ldc);
 		// T1_ = B12 - B11        in Y
-		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,ldy);
+		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// T2_ = B22 - T1_        in Y
-		fsub(F,lb,cb,B22,ldb,Y,ldy,Y,ldy);
+		fsub(F,lb,cb,B22,ldb,Y,cb,Y,cb);
 		// T4 = T2_ - B21         in Y
-		fsub(F,lb,cb,Y,ldy,B21,ldb,Y,ldy);
+		fsub(F,lb,cb,Y,cb,B21,ldb,Y,cb);
 		// U6 = -a A22 T4 + U3    in C21;
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, Y, ldy, F.zero, X, nr, kmax,w-1,base);
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, Y, cb, F.zero, X, nr, kmax,w-1,base);
 		delete[] Y;
 		fsub(F,mr,nr,C21,ldc,X,nr,C21,ldc);
 		delete[] X;
 
 
-	} // WinogradAccOld
+	} // WinogradAcc3
 
 
 } // BLAS3

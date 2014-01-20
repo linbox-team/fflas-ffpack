@@ -382,6 +382,7 @@ namespace FFLAS {
 			return ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
+// #define NEWIP
 
 		// Winograd Multiplication  A(n*k) * B(k*m) in C(n*m)
 		// Computation of the 22 Winograd's operations
@@ -399,7 +400,22 @@ namespace FFLAS {
 		{
 
 			if (F.isZero(beta)) {
-#if NEWIP /*  NOT IP --- TESTS ONLY */
+#ifdef NEWIP /*  NOT IP --- TESTS ONLY */
+				if (kr == nr  && kr <= mr ) {
+					std::cout << "ici" << std::endl;
+					typedef typename Field::Element Element ;
+					size_t ldA = lda;
+					size_t ldB = ldb;
+					Element * Ac = new Element[mr*2*ldA] ;
+					Element * Bc = new Element[kr*2*ldB] ;
+					fcopy(F,mr*2,kr*2,Ac,ldA,A,lda);
+					fcopy(F,kr*2,nr*2,Bc,ldB,B,ldb);
+
+					BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
+					delete[] Ac;
+					delete[] Bc;
+					std::cout << "la" << std::endl;
+				}
 				if (kr == nr ) {
 					typedef typename Field::Element Element ;
 					size_t ldA = lda;

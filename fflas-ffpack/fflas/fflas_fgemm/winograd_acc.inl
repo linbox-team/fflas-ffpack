@@ -67,9 +67,6 @@ namespace FFLAS { namespace BLAS3 {
 
 		size_t ldX3;
 		// Three temporary submatrices are required
-		typename Field::Element* X1 = new typename Field::Element[mr*nr];
-		typename Field::Element* X2 = new typename Field::Element[mr*kr];
-		typename Field::Element* X3 = new typename Field::Element[x3rd*nr];
 
 		if (ta == FflasTrans) {
 			A21 = A + mr;
@@ -104,8 +101,12 @@ namespace FFLAS { namespace BLAS3 {
 		// P2 = alpha . A12 * B21 + beta . C11  in C11
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, kmax,w-1,base);
 
+		typename Field::Element* X3 = new typename Field::Element[x3rd*nr];
+
 		// T3 = B22 - B12 in X3
 		fsub(F,lb,cb,B22,ldb,B12,ldb,X3,ldX3);
+
+		typename Field::Element* X2 = new typename Field::Element[mr*kr];
 
 		// S3 = A11 - A21 in X2
 		fsub(F,la,ca,A11,lda,A21,lda,X2,ca);
@@ -133,6 +134,8 @@ namespace FFLAS { namespace BLAS3 {
 
 		// S2 = S1 - A11 in X2
 		fsubin(F,la,ca,A11,lda,X2,ca);
+
+		typename Field::Element* X1 = new typename Field::Element[mr*nr];
 
 		// P6 = alpha . S2 * T2 in X1
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, kmax, w-1,base);
@@ -163,10 +166,12 @@ namespace FFLAS { namespace BLAS3 {
 
 		// U4 = P5 + U2 in C12    and
 		faddin(F, mr, nr, X1, nr, C12, ldc);
+
 		delete[] X1;
 
 		// U6 = U3 - P4 in C21    and
 		fsub(F, mr, nr, X3, nr, C21, ldc, C21, ldc);
+
 		delete[] X3;
 
 		// P3 = alpha . S4*B22 in X1
@@ -204,9 +209,6 @@ namespace FFLAS { namespace BLAS3 {
 
 		size_t ldX3;
 		// Three temporary submatrices are required
-		typename Field::Element* X1 = new typename Field::Element[mr*nr];
-		typename Field::Element* X2 = new typename Field::Element[mr*kr];
-		typename Field::Element* X3 = new typename Field::Element[x3rd*nr];
 
 		if (ta == FflasTrans) {
 			A21 = A + mr;
@@ -238,15 +240,20 @@ namespace FFLAS { namespace BLAS3 {
 			ldX3 = cb = nr;
 		}
 
+		typename Field::Element* X3 = new typename Field::Element[x3rd*nr];
 
 		// T1 = B12 - B11 in X3
 		fsub(F,lb,cb,B12,ldb,B11,ldb,X3,ldX3);
+
+		typename Field::Element* X2 = new typename Field::Element[mr*kr];
 
 		// S1 = A21 + A22 in X2
 		fadd(F,la,ca,A21,lda,A22,lda,X2,ca);
 
 		// P5 = alpha . S1*T1 + beta . C12 in C12
+		typename Field::Element* X1 = new typename Field::Element[mr*nr];
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, kmax, w-1,base);
+
 
 		// C22 = P5 + beta C22 in C22
 		fadd(F,mr,nr,X1,nr,beta,C22,ldc,C22,ldc);
@@ -296,12 +303,16 @@ namespace FFLAS { namespace BLAS3 {
 		// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, kmax, w-1,base);
 
+		delete[] X2;
+		delete[] X3;
+
 		// U7 =  U3 + C22 in C22
 		faddin(F,mr,nr,X1,nr,C22,ldc);
 
 		// U6 = U3 - P4 in C21
 		fsub(F,mr,nr,X1,nr,C21,ldc,C21,ldc);
-		delete[] X2;
+
+		delete[] X1;
 
 	} // WinogradAcc
 
