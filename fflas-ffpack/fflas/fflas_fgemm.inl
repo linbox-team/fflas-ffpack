@@ -382,7 +382,7 @@ namespace FFLAS {
 			return ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
-#define NEWIP
+// #define NEWIP
 
 		// Winograd Multiplication  A(n*k) * B(k*m) in C(n*m)
 		// Computation of the 22 Winograd's operations
@@ -403,48 +403,56 @@ namespace FFLAS {
 #ifdef NEWIP /*  NOT IP --- TESTS ONLY */
 				// (kr == nr  && kr <= mr /*  if not transposed */)
 				// we copy because they erase stuff
-				if (ta == FflasNoTrans && tb == FflasNoTrans) {
-					typedef typename Field::Element Element ;
-					Element * Ac;
-					Element * Bc;
-					if (ta == FflasNoTrans) {
-						Ac = new Element[mr*2*lda] ;
-						fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
-					}
-					else {
-						Ac = new Element[kr*2*lda] ;
-						fcopy(F,kr*2,kr*2,Ac,lda,A,lda);
-					}
-					if (tb == FflasNoTrans) {
-						Bc = new Element[kr*2*ldb] ;
-						fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
-					}
-					else {
-						Bc = new Element[nr*2*ldb] ;
-						fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
-					}
-
-
-					if (kr == nr && kr == mr ) {
-						std::cout << "ici" << std::endl;
-
-						BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
-						std::cout << "la" << std::endl;
-					}
-					else if (kr == nr ) {
-						std::cout << "in" << std::endl;
-
-						BLAS3::WinogradIP(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
-						std::cout << "out" << std::endl;
-					}
-					delete[] Ac;
-					delete[] Bc;
+				// bool normal =  (ta == FflasNoTrans && tb == FflasNoTrans) ;
+				bool normal = true;
+				//! @todo do some fancy stuff for transpose adds mixing A/B/C
+				typedef typename Field::Element Element ;
+				Element * Ac;
+				Element * Bc;
+				if (ta == FflasNoTrans) {
+					Ac = new Element[mr*2*lda] ;
+					fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
 				}
+				else {
+					Ac = new Element[kr*2*lda] ;
+					fcopy(F,kr*2,mr*2,Ac,lda,A,lda);
+				}
+				if (tb == FflasNoTrans) {
+					Bc = new Element[kr*2*ldb] ;
+					fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
+				}
+				else {
+					Bc = new Element[nr*2*ldb] ;
+					fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
+				}
+
+				std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
+
+#if 0
+				if (kr == nr && kr == mr && normal) {
+					std::cout << "ici" << std::endl;
+
+					BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					std::cout << "la" << std::endl;
+				}
+#else
+				if (kr == nr && kr==mr && normal) {
+					std::cout << "in" << std::endl;
+
+					BLAS3::WinogradIP(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					std::cout << "out" << std::endl;
+				}
+#endif
 				else
 #endif
 				{
 					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 				}
+#ifdef NEWIP
+				delete[] Ac;
+				delete[] Bc;
+#endif
+
 			}
 			else
 #ifdef NEWWINO
