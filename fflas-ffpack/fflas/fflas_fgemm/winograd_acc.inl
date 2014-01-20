@@ -167,23 +167,36 @@ namespace FFLAS { namespace BLAS3 {
 		d11c = C11; dx3 = X3;
 		faddin(F,mr,nr,dx3,nr,d11c,ldc);
 
-		// U2 = P1 + P6 in tmpU2  and
-		// U3 = P7 + U2 in tmpU3  and
-		// U7 = P5 + U3 in C22    and
-		// U4 = P5 + U2 in C12    and
-		// U6 = U3 - P4 in C21    and
-		typename Field::Element tmpU2, tmpU3;
 		d12c = C12; dx1=X1; dx3=X3; d21c = C21; d22c = C22;
+
+#if 1
+		// U2 = P1 + P6 in tmpU2/dx1  and
+		faddin(F, mr, nr, dx3, nr, dx1, nr);
+
+		// U3 = P7 + U2 in tmpU3/dx3  and
+		fadd(F, mr, nr, dx1, nr, d22c, ldc, dx3, nr);
+
+		// U7 = P5 + U3 in C22    and
+		fadd(F, mr, nr, d12c, ldc, dx3, nr, d22c, ldc);
+
+		// U4 = P5 + U2 in C12    and
+		faddin(F, mr, nr, dx1, nr, d12c, ldc);
+
+		// U6 = U3 - P4 in C21    and
+		fsub(F, mr, nr, dx3, nr, d21c, ldc, d21c, ldc);
+
+#else /*  not using functions */
 		for (size_t i = 0; i < mr;
 		     ++i, d12c += ldc, dx1 += nr, dx3 += nr, d22c+=ldc, d21c += ldc) {
 			for (size_t j=0;j < nr;++j) {
 				F.add (tmpU2, *(dx3 + j), *(dx1 + j));    // temporary U2 = P1 + P6
-				F.add (tmpU3, tmpU2, *(d22c + j));      // temporary U3 = U2 + P7
-				F.add (*(d22c + j), *(d12c + j), tmpU3);  // U7 = P5 + U3 in C22
-				F.addin (*(d12c + j), tmpU2);             // U4 = P5 + U2 in C12
-				F.sub (*(d21c + j), tmpU3, *(d21c + j)); // U6 = U3 - P4 in C21
+				F.add (tmpU3, *(dx1+j), *(d22c + j));      // temporary U3 = U2 + P7
+				F.add (*(d22c + j), *(d12c + j), *(dx3+j));  // U7 = P5 + U3 in C22
+				F.addin (*(d12c + j), *(dx1+j));             // U4 = P5 + U2 in C12
+				F.sub (*(d21c + j), *(dx3+j), *(d21c + j)); // U6 = U3 - P4 in C21
 			}
 		}
+#endif
 
 		delete[] X1;
 		delete[] X3;
@@ -266,16 +279,6 @@ namespace FFLAS { namespace BLAS3 {
 			ldx3 = jmaxb = nr;
 		}
 
-#if 0
-		std::cerr<<"New Wino"<<std::endl;
-		// C22 = C22 - C12
-		d12c = C12;
-		d22c = C22;
-		for (size_t i = 0; i <  mr; ++i, d12c += ldc, d22c += ldc)
-			for (size_t j = 0; j < nr; ++j)
-				F.subin (*(d22c + j), *(d12c + j));
-#endif
-
 
 		// T1 = B12 - B11 in X3
 		d11 = B11; d12 = B12; dx3 = X3;
@@ -286,26 +289,15 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(F,imaxa,jmaxa,d21,lda,d22,lda,dx2,ldx2);
 
 		// P5 = alpha . S1*T1 + beta . C12 in C12
-		//Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, beta, C12, ldc, kmax, w-1,base);
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ldx2, X3, ldx3, F.zero, X1, nr, kmax, w-1,base);
 
 		// C22 = P5 + beta C22 in C22
 		d22c = C22; dx1 = X1;
-		for (size_t i = 0; i < mr; ++i, dx1 += nr, d22c += ldc)
-			for (size_t j=0;j < nr;++j) {
-				//! @todo can merge ops ?
-				F.mulin (*(d22c + j), beta);
-				F.addin (*(d22c + j), *(dx1 + j));
-			}
+		fadd(F,mr,nr,dx1,nr,beta,d22c,ldc,d22c,ldc);
 
 		// C12 = P5 + beta C12 in C12
 		dx1 = X1; d12c = C12;
-		for (size_t i = 0; i < mr; ++i, d12c += ldc, dx1 += nr)
-			for (size_t j=0;j < nr;++j) {
-				//! @todo can merge ops ?
-				F.mulin (*(d12c + j), beta);
-				F.addin (*(d12c + j), *(dx1 + j));
-			}
+		fadd(F,mr,nr,dx1,nr,beta,d12c,ldc,d12c,ldc);
 
 		// P1 = alpha . A11 * B11 in X1
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, kmax, w-1,base);

@@ -28,5 +28,7 @@ EXTRA_DIST=matmul.doxy
 
 pkgincludesub_HEADERS=       \
 	winograd.inl         \
-	winograd_acc.inl
+	winograd_acc.inl     \
+	bini.inl             \
+	winograd_acc2.inl    \
 

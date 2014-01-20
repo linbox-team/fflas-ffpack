@@ -33,6 +33,11 @@
 // #include "fflas_fgemm/matmul_algos.inl"
 #include "fflas_fgemm/winograd.inl"
 #include "fflas_fgemm/winograd_acc.inl"
+#include "fflas_fgemm/winograd_acc2.inl"
+// #include "fflas_fgemm/bini.inl"
+
+#define NEWWINO
+// #define OLDWINO
 
 namespace FFLAS {
 
@@ -397,8 +402,12 @@ namespace FFLAS {
 			else
 #ifdef NEWWINO
 				BLAS3::WinogradAcc(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
-#else
+#elif defined(OLDWINO)
 				BLAS3::WinogradAccOld(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+#elif defined(NEWACC)
+				BLAS3::WinogradAcc2(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+#else
+#error "you need to make a choice for a BLAS3 mat mul schedule"
 #endif
 
 		}

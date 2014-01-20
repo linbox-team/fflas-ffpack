@@ -1067,6 +1067,8 @@ namespace FFLAS {
 				F.add (Ci[i], Ai[i], Bi[i]);
 	}
 
+
+
 	/** fsub : matrix subtraction.
 	 * Computes \p C = \p A - \p B.
 	 * @param F field
@@ -1094,6 +1096,7 @@ namespace FFLAS {
 	}
 
 	//! fsubin
+	//! C = C - B
 	template <class Field>
 	void
 	fsubin (const Field& F, const size_t M, const size_t N,
@@ -1105,6 +1108,43 @@ namespace FFLAS {
 		for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
 			for (size_t i=0; i<N; i++)
 				F.subin (Ci[i], Bi[i]);
+	}
+
+	/** fadd : matrix addition.
+	 * Computes \p C = \p A + alpha \p B.
+	 * @param F field
+	 * @param M rows
+	 * @param N cols
+	 * @param A dense matrix of size \c MxN
+	 * @param lda leading dimension of \p A
+	 * @param alpha some scalar
+	 * @param B dense matrix of size \c MxN
+	 * @param ldb leading dimension of \p B
+	 * @param C dense matrix of size \c MxN
+	 * @param ldc leading dimension of \p C
+	 */
+	template <class Field>
+	void
+	fadd (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element* A, const size_t lda,
+	      const typename Field::Element alpha,
+	      const typename Field::Element* B, const size_t ldb,
+	      typename Field::Element* C, const size_t ldc)
+	{
+		if (F.isOne(alpha))
+			return fadd(F,M,N,A,lda,B,ldb,C,ldc);
+		if (F.isMOne(alpha))
+			return fsub(F,M,N,A,lda,B,ldb,C,ldc);
+		if (F.isZero(alpha))
+			return fcopy(F,M,N,C,ldc,A,lda);
+
+		const typename Field::Element *Ai = A, *Bi = B;
+		typename Field::Element *Ci = C;
+		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
+			for (size_t i=0; i<N; i++) {
+				F.mul(Ci[i],alpha,Bi[i]);
+				F.addin (Ci[i], Ai[i]);
+			}
 	}
 
 	//! faddin
