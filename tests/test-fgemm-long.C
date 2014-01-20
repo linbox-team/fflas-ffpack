@@ -189,14 +189,16 @@ bool launch_MM(const Field & F,
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			      beta,C,ldc,nbw);
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,ldc);
+			       beta,C,ldc);
+
+		delete[] A;
+		delete[] B;
 
 		if (!ok)
 			break;
 
+
 	}
-	delete[] A;
-	delete[] B;
 	delete[] C;
 	delete[] D;
 
@@ -395,7 +397,7 @@ int main(int argc, char** argv)
 	srand((int)time(NULL));
 	srand48(time(NULL));
 
-	static size_t iters = 3 ;
+	static size_t iters = 5 ;
 	static unsigned long p = 65521 ;
 	static size_t n = 100 ;
 	static int nbw = 2 ;

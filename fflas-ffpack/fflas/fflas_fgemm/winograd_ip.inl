@@ -196,7 +196,6 @@ namespace FFLAS { namespace BLAS3 {
 		}
 
 
-
 		// S3 = A11 - A21         in C22
 		fsub(F,la,ca,A11,lda,A21,lda,C22,ldc);
 		// S1 =  A21 + A22        in A21
@@ -233,7 +232,7 @@ namespace FFLAS { namespace BLAS3 {
 		// U7 = U3 + P5           in C22
 		faddin(F,mr,nr,C21,ldc,C22,ldc);
 		// U5 = U4 + P3           in C12
-		faddin(F,mr,nr,A21,lda,C12,ldc);
+		faddin(F,la,ca,A21,lda,C12,ldc);
 		// P2 = A12 B21           in X
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, X, nr, kmax, w-1, base);
 		// U1 = P1 + P2           in C11

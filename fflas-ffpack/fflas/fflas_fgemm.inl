@@ -382,7 +382,7 @@ namespace FFLAS {
 			return ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,kmax,base);
 		}
 
-// #define NEWIP
+#define NEWIP
 
 		// Winograd Multiplication  A(n*k) * B(k*m) in C(n*m)
 		// Computation of the 22 Winograd's operations
@@ -401,31 +401,42 @@ namespace FFLAS {
 
 			if (F.isZero(beta)) {
 #ifdef NEWIP /*  NOT IP --- TESTS ONLY */
-				if (kr == nr  && kr <= mr ) {
-					std::cout << "ici" << std::endl;
+				// (kr == nr  && kr <= mr /*  if not transposed */)
+				// we copy because they erase stuff
+				if (ta == FflasNoTrans && tb == FflasNoTrans) {
 					typedef typename Field::Element Element ;
-					size_t ldA = lda;
-					size_t ldB = ldb;
-					Element * Ac = new Element[mr*2*ldA] ;
-					Element * Bc = new Element[kr*2*ldB] ;
-					fcopy(F,mr*2,kr*2,Ac,ldA,A,lda);
-					fcopy(F,kr*2,nr*2,Bc,ldB,B,ldb);
+					Element * Ac;
+					Element * Bc;
+					if (ta == FflasNoTrans) {
+						Ac = new Element[mr*2*lda] ;
+						fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
+					}
+					else {
+						Ac = new Element[kr*2*lda] ;
+						fcopy(F,kr*2,kr*2,Ac,lda,A,lda);
+					}
+					if (tb == FflasNoTrans) {
+						Bc = new Element[kr*2*ldb] ;
+						fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
+					}
+					else {
+						Bc = new Element[nr*2*ldb] ;
+						fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
+					}
 
-					BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
-					delete[] Ac;
-					delete[] Bc;
-					std::cout << "la" << std::endl;
-				}
-				if (kr == nr ) {
-					typedef typename Field::Element Element ;
-					size_t ldA = lda;
-					size_t ldB = ldb;
-					Element * Ac = new Element[mr*2*ldA] ;
-					Element * Bc = new Element[kr*2*ldB] ;
-					fcopy(F,mr*2,kr*2,Ac,ldA,A,lda);
-					fcopy(F,kr*2,nr*2,Bc,ldB,B,ldb);
 
-					BLAS3::WinogradIP(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
+					if (kr == nr && kr == mr ) {
+						std::cout << "ici" << std::endl;
+
+						BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+						std::cout << "la" << std::endl;
+					}
+					else if (kr == nr ) {
+						std::cout << "in" << std::endl;
+
+						BLAS3::WinogradIP(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+						std::cout << "out" << std::endl;
+					}
 					delete[] Ac;
 					delete[] Bc;
 				}
