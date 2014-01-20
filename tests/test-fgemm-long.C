@@ -208,6 +208,26 @@ bool launch_MM_dispatch(const Field &F,
 		if (random()%2) ta = FFLAS::FflasTrans ;
 		if (random()%2) tb = FFLAS::FflasTrans ;
 
+		m = 100+(size_t)random()%nn;
+		n = m ;
+		k = m ;
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
+		ok &= launch_MM<Field>(F,m,n,k,
+				       alpha,beta,
+				       ldc,
+				       lda, ta,
+				       ldb, tb,
+				       iters,nbw);
+	}
+
+	{
+		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
+
 		m = 10+(size_t)random()%nn;
 		n = 10+(size_t)random()%nn;
 		k = 10+(size_t)random()%nn;
@@ -301,7 +321,6 @@ bool launch_MM_dispatch(const Field &F,
 				       ldb, tb,
 				       iters,nbw);
 	}
-
 
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;

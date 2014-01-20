@@ -31,4 +31,5 @@ pkgincludesub_HEADERS=       \
 	winograd_acc.inl     \
 	bini.inl             \
 	winograd_acc2.inl    \
+	winograd_ip.inl
 

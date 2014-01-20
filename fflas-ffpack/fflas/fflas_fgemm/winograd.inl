@@ -107,7 +107,7 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,imaxb,jmaxb,d22,ldb,d12,ldb,dx2,ldx2);
 
 		// S3 = A11 - A21 in X1
-		typename Field::Element* X1 = new typename Field::Element[mr*x1rd];		// S3 = A11 - A21 in X1
+		typename Field::Element* X1 = new typename Field::Element[mr*x1rd];
 		d11 = A11; d21 = A21; dx1 = X1;
 		fsub(F,imaxa,jmaxa,d11,lda,d21,lda,dx1,ldx1);
 

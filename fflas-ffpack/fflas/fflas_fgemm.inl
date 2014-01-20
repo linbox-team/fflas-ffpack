@@ -34,6 +34,7 @@
 #include "fflas_fgemm/winograd.inl"
 #include "fflas_fgemm/winograd_acc.inl"
 #include "fflas_fgemm/winograd_acc2.inl"
+#include "fflas_fgemm/winograd_ip.inl"
 // #include "fflas_fgemm/bini.inl"
 
 #define NEWWINO
@@ -397,8 +398,28 @@ namespace FFLAS {
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
 
-			if (F.isZero(beta))
-				BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+			if (F.isZero(beta)) {
+				if (kr == nr && ta == FflasNoTrans && tb == FflasNoTrans) {
+					std::cout << "tested" << std::endl;
+					std::cout << mr << ',' << nr << ',' << kr << std::endl;
+					std::cout << lda << ',' << ldb << ',' << ldc << std::endl;
+					typedef typename Field::Element Element ;
+					size_t ldA = kr;
+					size_t ldB = nr;
+					Element * Ac = new Element[mr*ldA] ;
+					fcopy(F,mr,kr,Ac,ldA,A,lda);
+					Element * Bc = new Element[kr*ldB] ;
+					fcopy(F,kr,nr,Bc,ldB,B,ldb);
+					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
+					delete[] Ac;
+					delete[] Bc;
+					std::cout << "done" << std::endl;
+				}
+				else
+				{
+					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				}
+			}
 			else
 #ifdef NEWWINO
 				BLAS3::WinogradAcc(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
