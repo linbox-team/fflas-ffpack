@@ -1088,6 +1088,7 @@ namespace FFLAS {
 	      const typename Field::Element* B, const size_t ldb,
 	      typename Field::Element* C, const size_t ldc)
 	{
+		FFLASFFPACK_check(N <= std::min(std::min(lda,ldb),ldc));
 		const typename Field::Element * Ai = A, *Bi = B;
 		typename Field::Element *Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)

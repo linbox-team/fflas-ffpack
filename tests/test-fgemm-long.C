@@ -156,22 +156,27 @@ bool launch_MM(const Field & F,
 	Element * A ;
 	Element * B ;
 	Element * C = new Element[m*ldc];
+	FFLAS::fzero(F,m,ldc,C,ldc);
 	Element * D = new Element[m*n];
 	for(size_t i = 0;i<iters;++i){
 		if (ta == FFLAS::FflasNoTrans) {
 			A = new Element[m*lda];
+			FFLAS::fzero(F,m,lda,A,lda);
 			RandomMatrix(F,A,m,k,lda);
 		}
 		else {
 			A = new Element[k*lda];
+			FFLAS::fzero(F,k,lda,A,lda);
 			RandomMatrix(F,A,k,m,lda);
 		}
 		if (tb == FFLAS::FflasNoTrans) {
 			B = new Element[k*ldb];
+			FFLAS::fzero(F,k,ldb,B,ldb);
 			RandomMatrix(F,B,k,n,ldb);
 		}
 		else {
 			B = new Element[n*ldb];
+			FFLAS::fzero(F,n,ldb,B,ldb);
 			RandomMatrix(F,B,n,k,ldb);
 		}
 		RandomMatrix(F,C,m,n,ldc);
