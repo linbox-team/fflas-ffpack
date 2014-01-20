@@ -149,11 +149,17 @@ namespace FFLAS { namespace BLAS3 {
 
 
 
-		// U2 = P1 + P6 in tmpU2  and
-		// U3 = P7 + U2 in tmpU3  and
-		// U7 = P5 + U3 in C22    and
-		// U4 = P5 + U2 in C12    and
 		d12c = C12; dx1=X1; d21c = C21; d22c = C22;
+		// U2 = P1 + P6 in tmpU2  and
+		faddin(F,mr,nr,dx1,nr,d12c,ldc);
+		// U3 = P7 + U2 in tmpU3  and
+		faddin(F,mr,nr,d12c,ldc,d21c,ldc);
+		// U7 = P5 + U3 in C22    and
+		faddin(F,mr,nr,d22c,ldc,d12c,ldc);
+		// U4 = P5 + U2 in C12    and
+		faddin(F,mr,nr,d21c,ldc,d22c,ldc);
+
+#if 0
 		for (size_t i = 0; i < mr;
 		     ++i, d12c += ldc, dx1 += nr, d22c+=ldc, d21c += ldc) {
 			for (size_t j=0;j < nr;++j) {
@@ -163,6 +169,7 @@ namespace FFLAS { namespace BLAS3 {
 				F.addin ( *(d22c + j), *(d21c+j));  // U7 = P5 + U3 in C22
 			}
 		}
+#endif
 
 		// U5 = P3 + U4 in C12
 		d12c = C12; d11 = C11;

@@ -399,9 +399,8 @@ namespace FFLAS {
 		{
 
 			if (F.isZero(beta)) {
-				if (kr == nr && ta == FflasNoTrans && tb == FflasNoTrans) {
-
-					std::cout << "tested" << std::endl;
+#if NEWIP /*  NOT IP --- TESTS ONLY */
+				if (kr == nr ) {
 					typedef typename Field::Element Element ;
 					size_t ldA = lda;
 					size_t ldB = ldb;
@@ -410,12 +409,12 @@ namespace FFLAS {
 					fcopy(F,mr*2,kr*2,Ac,ldA,A,lda);
 					fcopy(F,kr*2,nr*2,Bc,ldB,B,ldb);
 
-					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
+					BLAS3::WinogradIP(F,ta,tb,mr,nr,kr,alpha,Ac,ldA,Bc,ldB,beta,C,ldc,kmax,w,base);
 					delete[] Ac;
 					delete[] Bc;
-					std::cout << "done" << std::endl;
 				}
 				else
+#endif
 				{
 					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 				}

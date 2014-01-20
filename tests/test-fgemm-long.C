@@ -156,25 +156,30 @@ bool launch_MM(const Field & F,
 	Element * A ;
 	Element * B ;
 	Element * C = new Element[m*ldc];
+	FFLASFFPACK_check(ldc >= n);
 	FFLAS::fzero(F,m,ldc,C,ldc);
 	Element * D = new Element[m*n];
 	for(size_t i = 0;i<iters;++i){
 		if (ta == FFLAS::FflasNoTrans) {
+			FFLASFFPACK_check(lda >= k);
 			A = new Element[m*lda];
 			FFLAS::fzero(F,m,lda,A,lda);
 			RandomMatrix(F,A,m,k,lda);
 		}
 		else {
+			FFLASFFPACK_check(lda >= m);
 			A = new Element[k*lda];
 			FFLAS::fzero(F,k,lda,A,lda);
 			RandomMatrix(F,A,k,m,lda);
 		}
 		if (tb == FFLAS::FflasNoTrans) {
+			FFLASFFPACK_check(ldb >= n);
 			B = new Element[k*ldb];
 			FFLAS::fzero(F,k,ldb,B,ldb);
 			RandomMatrix(F,B,k,n,ldb);
 		}
 		else {
+			FFLASFFPACK_check(ldb >= k);
 			B = new Element[n*ldb];
 			FFLAS::fzero(F,n,ldb,B,ldb);
 			RandomMatrix(F,B,n,k,ldb);
@@ -218,8 +223,8 @@ bool launch_MM_dispatch(const Field &F,
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
 		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
-		// if (random()%2) ta = FFLAS::FflasTrans ;
-		// if (random()%2) tb = FFLAS::FflasTrans ;
+		if (random()%2) ta = FFLAS::FflasTrans ;
+		if (random()%2) tb = FFLAS::FflasTrans ;
 
 		m = 100+(size_t)random()%nn;
 		n = m ;

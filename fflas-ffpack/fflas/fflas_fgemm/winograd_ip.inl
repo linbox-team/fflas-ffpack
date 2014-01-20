@@ -70,7 +70,7 @@ namespace FFLAS { namespace BLAS3 {
 			A22  = A12 + mr;
 			la   = kr;
 			ca   = mr;
-			ldxa = mr;
+			ldxa = lda;
 		}
 		else {
 			A12  = A + kr;
@@ -78,7 +78,7 @@ namespace FFLAS { namespace BLAS3 {
 			A22  = A21 + kr;
 			la   = mr;
 			ca   = kr;
-			ldxa = kr;
+			ldxa = lda;
 		}
 		if (tb == FflasTrans) {
 			B21  = B + kr;
@@ -86,7 +86,7 @@ namespace FFLAS { namespace BLAS3 {
 			B22  = B12 + kr;
 			lb   = nr;
 			cb   = kr;
-			ldxb = kr;
+			ldxb = ldb;
 		}
 		else {
 			B12  = B + nr;
@@ -94,7 +94,7 @@ namespace FFLAS { namespace BLAS3 {
 			B22  = B21 + nr;
 			lb   = kr;
 			cb   = nr;
-			ldxb = nr;
+			ldxb = ldb;
 		}
 
 
@@ -105,7 +105,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T1 = B12 - B11         in C22
 		fsub(F,lb,cb,B12,ldxb,B11,ldxb,C22,ldc);
 		// T3 = B22 - B12         in B12
-		fsub(F,lb,cb,B22,ldxb,B11,ldxb,B12,ldxb);
+		fsub(F,lb,cb,B22,ldxb,B12,ldxb,B12,ldxb);
 		// P7 = S3 T3             in C21
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C11, ldc, B12, ldxb, F.zero, C21, ldc, kmax, w-1, base);
 		// S2 = S1 - A11          in C12
