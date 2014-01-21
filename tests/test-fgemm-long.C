@@ -35,9 +35,9 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#ifndef NEWINO
-#define NEWWINO
-#endif
+// #ifndef NEWINO
+// #define NEWWINO
+// #endif
 
 // #define WINOTHRESHOLD 100
 

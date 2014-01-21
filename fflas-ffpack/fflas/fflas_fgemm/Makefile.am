@@ -22,7 +22,7 @@
 #/
 
 
-pkgincludesubdir=$(pkgincludedir)/fflas_fgemm
+pkgincludesubdir=$(pkgincludedir)/fflas/fflas_fgemm
 
 EXTRA_DIST=matmul.doxy
 
