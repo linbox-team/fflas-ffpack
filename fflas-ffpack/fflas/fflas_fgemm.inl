@@ -426,14 +426,15 @@ namespace FFLAS {
 					fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
 				}
 
-				std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
+				// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
 
-#if 0
+#if 1
 				if (kr == nr && kr == mr && normal) {
-					std::cout << "ici" << std::endl;
+					// std::cout << "ici" << std::endl;
 
-					BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
-					std::cout << "la" << std::endl;
+					// BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					BLAS3::WinogradIPR(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					// std::cout << "la" << std::endl;
 				}
 #else
 				if (kr == nr && kr==mr && normal) {
