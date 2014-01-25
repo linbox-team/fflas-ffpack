@@ -37,7 +37,10 @@
 #include "fflas_fgemm/winograd_ip.inl"
 // #include "fflas_fgemm/bini.inl"
 
+#ifndef NEWWINO
 #define NEWWINO
+#endif
+
 // #define OLDWINO
 
 namespace FFLAS {
@@ -457,12 +460,12 @@ namespace FFLAS {
 			}
 			else
 #ifdef NEWWINO
-				BLAS3::WinogradAcc(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				BLAS3::WinogradAcc_3_21(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 #elif defined(OLDWINO)
-				BLAS3::WinogradAccOld(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				BLAS3::WinogradAcc_3_23(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 #elif defined(NEWACC)
-				// BLAS3::WinogradAcc2(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
-				BLAS3::WinogradAcc3(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				// BLAS3::WinogradAcc_2_24(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
+				BLAS3::WinogradAcc_2_27(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 #else
 #error "you need to make a choice for a BLAS3 mat mul schedule"
 #endif
