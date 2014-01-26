@@ -116,10 +116,11 @@ bool check_MM(const Field                   & F,
 		}
 	if ( wrong ){
 		std::cout<<"FAIL"<<std::endl;
+		std::cout << "a   :" << alpha<<", b   : " << beta << std::endl;
 		std::cout << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
 		std::cout << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
-		for (size_t i=0; i<m; ++i){
-			for (size_t j =0; j<n; ++j)
+		for (size_t i=0; i<std::min(m,(size_t)10); ++i){
+			for (size_t j =0; j<std::min(n,(size_t)10); ++j)
 				if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) )
 					std::cout<<"Erreur C["<<i<<","<<j<<"]="
 					<<(*(C+i*ldc+j))<<" C[d"<<i<<","<<j<<"]="

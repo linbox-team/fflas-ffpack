@@ -347,8 +347,6 @@ namespace FFLAS { namespace BLAS3 {
 		size_t la, ca, lb, cb; // lines and columns in A,B sub matrices
 
 		// Three temporary submatrices are required
-		typename Field::Element* X = new typename Field::Element[mr*std::max(nr,kr)];
-		typename Field::Element* Y = new typename Field::Element[nr*kr];
 
 		if (ta == FflasTrans) {
 			A21 = A + mr;
@@ -386,8 +384,10 @@ namespace FFLAS { namespace BLAS3 {
 		// Z3 = C12-C21           in C12
 		fsubin(F,mr,nr,C21,ldc,C12,ldc);
 		// S1 = A21 + A22         in X
+		typename Field::Element* X = new typename Field::Element[mr*std::max(nr,kr)];
 		fadd(F,la,ca,A21,lda,A22,lda,X,ca);
 		// T1 = B12 - B11         in Y
+		typename Field::Element* Y = new typename Field::Element[nr*kr];
 		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// P5 = a S1 T1 + b Z3    in C12
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);

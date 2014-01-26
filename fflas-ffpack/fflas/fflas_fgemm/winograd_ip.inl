@@ -4,7 +4,6 @@
 /*
  * Copyright (C) 2014 the LinBox group
  *
- * Written by Clement Pernet <Clement.Pernet@imag.fr>
  * Written by BB <bbboyer@ncsu.edu>
  *
  *
@@ -40,7 +39,7 @@
 namespace FFLAS { namespace BLAS3 {
 
 	template < class Field >
-	inline void WinogradIP (const Field& F,
+	inline void Winograd_LR_S (const Field& F,
 				const FFLAS_TRANSPOSE ta,
 				const FFLAS_TRANSPOSE tb,
 				const size_t mr, const size_t nr, const size_t kr,
@@ -144,7 +143,7 @@ namespace FFLAS { namespace BLAS3 {
 
 
 	template < class Field >
-	inline void WinogradIPL(const Field& F,
+	inline void Winograd_L_S(const Field& F,
 				const FFLAS_TRANSPOSE ta,
 				const FFLAS_TRANSPOSE tb,
 				const size_t mr, const size_t nr, const size_t kr,
@@ -247,7 +246,7 @@ namespace FFLAS { namespace BLAS3 {
 	} // WinogradIP
 
 	template < class Field >
-	inline void WinogradIPR(const Field& F,
+	inline void Winograd_R_S(const Field& F,
 				const FFLAS_TRANSPOSE ta,
 				const FFLAS_TRANSPOSE tb,
 				const size_t mr, const size_t nr, const size_t kr,

@@ -33,7 +33,7 @@
 // #include "fflas_fgemm/matmul_algos.inl"
 #include "fflas_fgemm/winograd.inl"
 #include "fflas_fgemm/winograd_acc.inl"
-#include "fflas_fgemm/winograd_acc2.inl"
+#include "fflas_fgemm/winograd_acc_ip.inl"
 #include "fflas_fgemm/winograd_ip.inl"
 // #include "fflas_fgemm/bini.inl"
 
@@ -386,6 +386,7 @@ namespace FFLAS {
 		}
 
 // #define NEWIP
+// #define NEWACCIP
 
 		// Winograd Multiplication  A(n*k) * B(k*m) in C(n*m)
 		// Computation of the 22 Winograd's operations
@@ -431,22 +432,11 @@ namespace FFLAS {
 
 				// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
 
-#if 1
 				if (kr == nr && kr == mr && normal) {
-					// std::cout << "ici" << std::endl;
-
-					// BLAS3::WinogradIPL(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
-					BLAS3::WinogradIPR(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
-					// std::cout << "la" << std::endl;
+					// BLAS3::Winograd_L_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					// BLAS3::Winograd_R_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					BLAS3::Winograd_LR_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
 				}
-#else
-				if (kr == nr && kr==mr && normal) {
-					std::cout << "in" << std::endl;
-
-					BLAS3::WinogradIP(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
-					std::cout << "out" << std::endl;
-				}
-#endif
 				else
 #endif
 				{
@@ -458,8 +448,32 @@ namespace FFLAS {
 #endif
 
 			}
-			else
-#ifdef NEWWINO
+			else {
+#ifdef NEWACCIP
+				std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
+				typedef typename Field::Element Element ;
+				Element * Ac;
+				Element * Bc;
+				if (ta == FflasNoTrans) {
+					Ac = new Element[mr*2*lda] ;
+					fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
+				}
+				else {
+					Ac = new Element[kr*2*lda] ;
+					fcopy(F,kr*2,mr*2,Ac,lda,A,lda);
+				}
+				if (tb == FflasNoTrans) {
+					Bc = new Element[kr*2*ldb] ;
+					fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
+				}
+				else {
+					Bc = new Element[nr*2*ldb] ;
+					fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
+				}
+				BLAS3::WinogradAcc_LR(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+
+
+#elif defined(NEWWINO)
 				BLAS3::WinogradAcc_3_21(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 #elif defined(OLDWINO)
 				BLAS3::WinogradAcc_3_23(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
@@ -470,6 +484,7 @@ namespace FFLAS {
 #error "you need to make a choice for a BLAS3 mat mul schedule"
 #endif
 
+			}
 		}
 
 #define OLD_DYNAMIC_PEALING
