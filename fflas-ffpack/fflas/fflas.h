@@ -1140,10 +1140,18 @@ namespace FFLAS {
 		if (F.isZero(alpha))
 			return fcopy(F,M,N,C,ldc,A,lda);
 
-		const typename Field::Element *Ai = A, *Bi = B;
-		typename Field::Element *Ci = C;
+		typedef typename Field::Element Element ;
+
+		const Element *Ai = A, *Bi = B;
+		Element *Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
 			for (size_t i=0; i<N; i++) {
+				// Element ci = Ci[i];
+				// Element ai = Ai[i];
+				// Element bi = Bi[i];
+				// F.mulin(bi,alpha);
+				// F.add(ci,bi,ai);
+				// F.assign(Ci[i],ci);
 				F.mul(Ci[i],alpha,Bi[i]);
 				F.addin (Ci[i], Ai[i]);
 			}

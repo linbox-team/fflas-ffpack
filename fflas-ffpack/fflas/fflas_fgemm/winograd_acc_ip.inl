@@ -109,6 +109,7 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(F,la,ca,A21,lda,A22,lda,X,ca);
 		// T1 = B12 - B11         in Y
 		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
+		// XXX
 		// Z2 = C21 - Z1          in C21
 		fsubin(F,mr,nr,C22,ldc,C21,ldc);
 		// T3 = B22 - B12         in B12 ;
@@ -123,10 +124,13 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,lb,cb,B22,ldb,Y,cb,B12,ldb);
 		// P5 = a S1 T1 + b C12   in C12
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);
+		// XXX
 		// T4 = T2 - B21          in X
 		fsub(F,lb,cb,B12,ldb,B21,ldb,X,cb);
+		// XXX
 		// W1 = a A22 T4          in Y;
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X, cb, F.zero, Y, nr, kmax,w-1,base);
+		// XXX
 		// P4 = W1 - b Z2         in C21
 		fadd(F,mr,nr,Y,nr,mbeta,C21,ldc,C21,ldc);
 		// S4 = A12 - S2          in A22
@@ -147,8 +151,9 @@ namespace FFLAS { namespace BLAS3 {
 		faddin(F,mr,nr,X,nr,C22,ldc);
 		// U4 = U2 + P5           in X
 		faddin(F,mr,nr,C12,ldc,X,nr);
-		// U6 = U4 - P4           in C21
-		fsub(F,mr,nr,X,nr,C21,ldc,C21,ldc);
+		// XXX
+		// U6 = U3 - P4           in C21
+		fsub(F,mr,nr,C22,ldc,C21,ldc,C21,ldc);
 		// U7 = U3 + P5           in C22
 		faddin(F,mr,nr,C12,ldc,C22,ldc);
 		// P3 = a S4 B22          in C12

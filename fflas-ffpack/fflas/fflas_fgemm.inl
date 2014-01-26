@@ -449,8 +449,8 @@ namespace FFLAS {
 
 			}
 			else {
-#ifdef NEWACCIP
-				std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
+#ifdef NEWACCIP /*  test only */
+				// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
 				typedef typename Field::Element Element ;
 				Element * Ac;
 				Element * Bc;
