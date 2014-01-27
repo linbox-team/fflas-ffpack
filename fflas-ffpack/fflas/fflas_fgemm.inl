@@ -403,32 +403,34 @@ namespace FFLAS {
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
 		{
 
+#if defined(NEWIP) or defined(NEWACCIP)  /*  XXX TESTS ONLY */
+			typedef typename Field::Element Element ;
+			Element * Ac;
+			Element * Bc;
+			if (ta == FflasNoTrans) {
+				Ac = new Element[mr*2*lda] ;
+				fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
+			}
+			else {
+				Ac = new Element[kr*2*lda] ;
+				fcopy(F,kr*2,mr*2,Ac,lda,A,lda);
+			}
+			if (tb == FflasNoTrans) {
+				Bc = new Element[kr*2*ldb] ;
+				fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
+			}
+			else {
+				Bc = new Element[nr*2*ldb] ;
+				fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
+			}
+#endif
+
 			if (F.isZero(beta)) {
 #ifdef NEWIP /*  NOT IP --- TESTS ONLY */
 				// (kr == nr  && kr <= mr /*  if not transposed */)
 				// we copy because they erase stuff
 				// bool normal =  (ta == FflasNoTrans && tb == FflasNoTrans) ;
 				bool normal = true;
-				//! @todo do some fancy stuff for transpose adds mixing A/B/C
-				typedef typename Field::Element Element ;
-				Element * Ac;
-				Element * Bc;
-				if (ta == FflasNoTrans) {
-					Ac = new Element[mr*2*lda] ;
-					fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
-				}
-				else {
-					Ac = new Element[kr*2*lda] ;
-					fcopy(F,kr*2,mr*2,Ac,lda,A,lda);
-				}
-				if (tb == FflasNoTrans) {
-					Bc = new Element[kr*2*ldb] ;
-					fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
-				}
-				else {
-					Bc = new Element[nr*2*ldb] ;
-					fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
-				}
 
 				// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
 
@@ -442,38 +444,15 @@ namespace FFLAS {
 				{
 					BLAS3::Winograd(F,ta,tb,mr,nr,kr,alpha,A,lda,B,ldb,beta,C,ldc,kmax,w,base);
 				}
-#ifdef NEWIP
-				delete[] Ac;
-				delete[] Bc;
-#endif
 
 			}
 			else {
 #ifdef NEWACCIP /*  test only */
 				// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
-				typedef typename Field::Element Element ;
-				Element * Ac;
-				Element * Bc;
-				if (ta == FflasNoTrans) {
-					Ac = new Element[mr*2*lda] ;
-					fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
-				}
-				else {
-					Ac = new Element[kr*2*lda] ;
-					fcopy(F,kr*2,mr*2,Ac,lda,A,lda);
-				}
-				if (tb == FflasNoTrans) {
-					Bc = new Element[kr*2*ldb] ;
-					fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
-				}
-				else {
-					Bc = new Element[nr*2*ldb] ;
-					fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
-				}
-
 				if (kr == nr && kr == mr ) {
-					std::cout << 'h' << std::endl;
-					BLAS3::WinogradAcc_R_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					// std::cout << 'h' << std::endl;
+					BLAS3::WinogradAcc_L_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+					// BLAS3::WinogradAcc_R_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
 				}
 				else {
 					BLAS3::WinogradAcc_LR(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
@@ -492,6 +471,11 @@ namespace FFLAS {
 #endif
 
 			}
+#if defined(NEWIP) or defined(NEWACCIP)  /*  NOT IP --- TESTS ONLY */
+				delete[] Ac;
+				delete[] Bc;
+#endif
+
 		}
 
 #define OLD_DYNAMIC_PEALING
