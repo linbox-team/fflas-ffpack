@@ -470,7 +470,14 @@ namespace FFLAS {
 					Bc = new Element[nr*2*ldb] ;
 					fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
 				}
-				BLAS3::WinogradAcc_LR(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+
+				if (kr == nr && kr == mr ) {
+					std::cout << 'h' << std::endl;
+					BLAS3::WinogradAcc_R_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+				}
+				else {
+					BLAS3::WinogradAcc_LR(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,kmax,w,base);
+				}
 
 
 #elif defined(NEWWINO)

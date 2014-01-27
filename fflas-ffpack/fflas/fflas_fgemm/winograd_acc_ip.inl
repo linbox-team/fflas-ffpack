@@ -109,7 +109,6 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(F,la,ca,A21,lda,A22,lda,X,ca);
 		// T1 = B12 - B11         in Y
 		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
-		// XXX
 		// Z2 = C21 - Z1          in C21
 		fsubin(F,mr,nr,C22,ldc,C21,ldc);
 		// T3 = B22 - B12         in B12 ;
@@ -124,13 +123,10 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,lb,cb,B22,ldb,Y,cb,B12,ldb);
 		// P5 = a S1 T1 + b C12   in C12
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);
-		// XXX
 		// T4 = T2 - B21          in X
 		fsub(F,lb,cb,B12,ldb,B21,ldb,X,cb);
-		// XXX
 		// W1 = a A22 T4          in Y;
 		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X, cb, F.zero, Y, nr, kmax,w-1,base);
-		// XXX
 		// P4 = W1 - b Z2         in C21
 		fadd(F,mr,nr,Y,nr,mbeta,C21,ldc,C21,ldc);
 		// S4 = A12 - S2          in A22
@@ -151,7 +147,6 @@ namespace FFLAS { namespace BLAS3 {
 		faddin(F,mr,nr,X,nr,C22,ldc);
 		// U4 = U2 + P5           in X
 		faddin(F,mr,nr,C12,ldc,X,nr);
-		// XXX
 		// U6 = U3 - P4           in C21
 		fsub(F,mr,nr,C22,ldc,C21,ldc,C21,ldc);
 		// U7 = U3 + P5           in C22
@@ -178,7 +173,117 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      const size_t kmax, const size_t w, const FFLAS_BASE base)
-	;
+	{
+
+		FFLASFFPACK_check(!F.isZero(beta));
+
+		typename Field::Element malpha ;
+		F.neg(malpha,alpha);
+
+		// A, B and c submatrices
+		const typename Field::Element * A11=A, *A12, *A21, *A22;
+		typename Field::Element * B11=B, *B12, *B21, *B22;
+		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+
+
+		typename Field::Element mbeta ;
+		F.neg(mbeta,beta);
+
+		size_t la, ca, lb, cb; // lines and columns in A,B sub matrices
+
+		// Three temporary submatrices are required
+
+		if (ta == FflasTrans) {
+			A21 = A + mr;
+			A12 = A + kr*lda;
+			A22 = A12 + mr;
+			la = kr ;
+			ca = mr ;
+		}
+		else { // ta == FflasNoTrans
+			A12 = A + kr;
+			A21 = A + mr*lda;
+			A22 = A21 + kr;
+			la = mr ;
+			ca = kr ;
+
+		}
+		if (tb == FflasTrans) {
+			B21 = B + kr;
+			B12 = B + nr*ldb;
+			B22 = B12 + kr;
+			lb = nr ;
+			cb = kr ;
+
+		}
+		else { // ta == FflasNoTrans
+			B12 = B + nr;
+			B21 = B + kr*ldb;
+			B22 = B21 + nr;
+			lb = kr ;
+			cb = nr ;
+		}
+
+		typename Field::Element* X = new typename Field::Element[std::max(mr,kr)*nr];
+		typename Field::Element* Y = new typename Field::Element[mr*kr];
+
+		// Z1 = C22 - C12         in C22
+		fsubin(F,mr,nr,C12,ldc,C22,ldc);
+		// T1 = B12 - B11         in X
+		fsub(F,lb,cb,B12,ldb,B11,ldb,X,cb);
+		// Z2 = C21 - Z1          in C21
+		fsubin(F,mr,nr,C22,ldc,C21,ldc);
+		// T3 = B22 - B12         in B12 ;
+		fsub(F,lb,cb,B22,ldb,B12,ldb,B12,ldb);
+		// S3 =  A11 - A21        in Y
+		fsub(F,la,ca,A11,lda,A21,lda,Y,ca);
+		// P7 = a S3 T3 + b Z1    in C22
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, Y, ca, B12, ldb, beta, C22, ldc, kmax,w-1,base);
+		// S1 = A21 + A22         in Y
+		fadd(F,la,ca,A21,lda,A22,lda,Y,ca);
+		// T2 = B22 - T1          in B12
+		fsub(F,lb,cb,B22,ldb,X,cb,B12,ldb);
+		// P5 = a S1 T1 + b C12   in C12
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, Y, ca, X, cb, beta, C12, ldc, kmax,w-1,base);
+		// T4 = T2 - B21          in X
+		fsub(F,lb,cb,B12,ldb,B21,ldb,X,cb);
+		// P4 = a A22 T4 - b Z2   in C21
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X, cb, mbeta, C21, ldc, kmax,w-1,base);
+		// W1 = a A12 B21          in X;
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, X, nr, kmax,w-1,base);
+		// P2 = W1 + beta C11     in C11
+		fadd(F,mr,nr,X,nr,beta,C11,ldc,C11,ldc);
+		// S2 = S1 - A11          in Y
+		fsubin(F,la,ca,A11,lda,Y,ca);
+		// P6 = a S2 T2           in B21
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, Y, ca, B12, ldb, F.zero, B21, ldb, kmax,w-1,base);
+		// S4 = A12 - S2          in Y
+		fsub(F,la,ca,A12,lda,Y,ca,Y,ca);
+		// P1 = a A11 B11         in X
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, kmax,w-1,base);
+		// U2 = P6 + P1           in B21
+		faddin(F,mr,nr,X,nr,B21,ldb);
+		// U3 = U2 + P7           in C22
+		faddin(F,mr,nr,B21,ldb,C22,ldc);
+		// U4 = U2 + P5           in B21
+		faddin(F,mr,nr,C12,ldc,B21,ldb);
+		// U6 = U3 - P4           in C21
+		fsub(F,mr,nr,C22,ldc,C21,ldc,C21,ldc);
+		// U1 = P1 + P2           in C11
+		faddin(F,mr,nr,X,nr,C11,ldc);
+		// U7 = U3 + P5           in C22
+		faddin(F,mr,nr,C12,ldc,C22,ldc);
+		// P3 = a S4 B22          in C12
+		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, Y, ca, B22, ldb, F.zero, C12, ldc, kmax,w-1,base);
+		// U5 = U4 + P3           in C12
+		faddin(F,mr,nr,B21,ldb,C12,ldc);
+
+
+		delete[] X;
+		delete[] Y;
+
+
+	} // WinogradAccOld
 
 
 	template < class Field >
