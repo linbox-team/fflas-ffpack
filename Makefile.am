@@ -27,6 +27,7 @@ ACLOCAL_AMFLAGS = -I macros
 SUBDIRS=fflas-ffpack tests doc benchmark macros utils optimiser
 
 
+#  include_HEADERS=fflas-ffpack-config.h
 #!@todo add examples dir XXX
 
 docs:doc/fflas-ffpack-html/index.html

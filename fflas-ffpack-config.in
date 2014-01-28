@@ -35,10 +35,8 @@ micro=`echo @VERSION@ | cut -d'.' -f3`
 decvr=$((((($major*100)+$minor)*100)+$micro))
 
 
-
 cflags=false
 libs=false
-
 
 
 usage()
@@ -48,7 +46,7 @@ Usage: fflas-ffpack-config [OPTION]
 
 Known values for OPTION are:
 
-  --prefix		 		show Givaro installation prefix 
+  --prefix		 		show FFLAS-FFPACK installation prefix
   --libs		 		print library linking information
   --blas-libs			print BLAS library linking information
   --cflags				print pre-processor and compiler flags
@@ -69,11 +67,11 @@ fi
 
 while test $# -gt 0; do
 	case "$1" in
-		-*=*) 
+		-*=*)
 			optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` 
 			;;
-		*) 
-			optarg= 
+		*)
+			optarg=
 			;;
 	esac
 
@@ -101,8 +99,8 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir} 
-# @GMP_CFLAGS@ @GIVARO_CFLAGS@ 
+			echo -I${includedir}
+# @GMP_CFLAGS@ @GIVARO_CFLAGS@
 # @CBLAS_FLAG@
 			;;
 
@@ -112,15 +110,15 @@ while test $# -gt 0; do
 
 		--libs)
 			echo  @BLAS_LIBS@  @LAPACK_LIBS@
-# @GMP_LIBS@ @GIVARO_LIBS@ 
+# @GMP_LIBS@ @GIVARO_LIBS@
 			;;
 
 		--blas-libs)
-			echo  @BLAS_LIBS@ 
+			echo  @BLAS_LIBS@
 			;;
-	
+
 		--blas-home)
-			echo  @BLAS_PATH@ 
+			echo  @BLAS_PATH@
 			;;
 
 		*)
@@ -130,5 +128,6 @@ while test $# -gt 0; do
 	esac
 	shift
 done
+echo
 
 exit 0
