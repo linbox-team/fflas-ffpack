@@ -30,7 +30,7 @@
 #define __FFLASFFPACK_config_blas_H
 
 #ifndef __FFLASFFPACK_CONFIGURATION
-#include "fflas-ffpack/fflas-ffpack-configuration.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #endif
 
 #ifdef CUDA_BLAS

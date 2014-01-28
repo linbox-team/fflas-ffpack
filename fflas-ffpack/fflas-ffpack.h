@@ -32,7 +32,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_H
 #define __FFLASFFPACK_fflas_ffpack_H
 
-#include "fflas-ffpack/fflas-ffpack-configuration.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas/fflas.h"
 #include "ffpack/ffpack.h"
 

@@ -32,7 +32,7 @@ AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability])
 AC_CONFIG_HEADERS([config.h])
-AX_PREFIX_CONFIG_H(fflas-ffpack/fflas-ffpack-config.h, __FFLASFFPACK)
+AX_PREFIX_CONFIG_H(fflas-ffpack/config.h, __FFLASFFPACK)
 AC_PATH_PROG(RM, rm, $FALSE)
 RM="$RM -f"
 

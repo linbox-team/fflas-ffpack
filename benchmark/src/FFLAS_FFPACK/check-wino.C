@@ -29,7 +29,7 @@
     //#define _LINBOX_LINBOX_CONFIG_H
 // #define __FFLASFFPACK_CONFIGURATION
 // #include "fflas-ffpack/config-blas.h"
-#include "fflas-ffpack/fflas-ffpack-configuration.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"

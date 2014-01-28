@@ -28,6 +28,6 @@ EXTRA_DIST=fflas-ffpack.doxy
 
 pkginclude_HEADERS = config-blas.h   \
 		     fflas-ffpack.h  \
+		     config.h \
 		     fflas-ffpack-config.h \
-		     fflas-ffpack-configuration.h \
 		     fflas-ffpack-optimise.h
