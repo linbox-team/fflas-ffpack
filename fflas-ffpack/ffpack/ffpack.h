@@ -1830,8 +1830,6 @@ namespace FFPACK  {
 		// Warning: assumes that res is allocated to the size of the product
 		res.resize(P1.size()+P2.size()-1);
 		FFLAS::fzero(F,res.size(),&res[0],1);
-		// for (i=0;i<res.size();i++)
-		// F.assign(res[i], F.zero);
 		for ( i=0;i<P1.size();i++)
 			for ( j=0;j<P2.size();j++)
 				F.axpyin(res[i+j],P1[i],P2[j]);

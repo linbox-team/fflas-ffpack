@@ -222,7 +222,7 @@ namespace FFPACK {
 		size_t * MathQ = new size_t[N];
 		for (size_t i=0; i<M; ++i) MathP[i] = i;
 		for (size_t i=0; i<N; ++i) MathQ[i] = i;
-		while ((row<M) && (rank<N)){
+		while (((size_t)row<M) && ((size_t)rank<N)){
 			    // Updating row where pivot will be searched for
 			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
 //			write_field(Fi,std::cerr<<"Avant la cherche"<<std::endl,A,M,N,lda);
@@ -247,7 +247,7 @@ namespace FFPACK {
 					    // Column rotation to move pivot on the diagonal
 					    // on U
 					cyclic_shift_col(A+rank, rank, i-rank+1, lda);
-					cyclic_shift_mathPerm(MathQ+rank, i-rank+1);
+					cyclic_shift_mathPerm(MathQ+rank, (size_t)(i-rank+1));
 					    // on A
 					cyclic_shift_col(CurrRow+lda+rank, M-row-1, i-rank+1, lda);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
@@ -257,7 +257,7 @@ namespace FFPACK {
 					    // Row rotation for L
 					    // Optimization: delay this to the end
 					cyclic_shift_row(A+rank*lda, row-rank+1, rank, lda);
-					cyclic_shift_mathPerm(MathP+rank, row-rank+1);
+					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
 					    // Row rotation for U (not moving the 0 block)
 					fcopy (Fi, N-i-1, A+rank*lda+i+1, 1, CurrRow+i+1, 1);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
@@ -293,12 +293,12 @@ rank++;
 		delete[] MathQ;
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
-		for (size_t i=rank; i<M; ++i)
+		for (size_t i=(size_t)rank; i<M; ++i)
 			fzero (Fi, N-rank, A+i*lda+rank, 1);
 //		write_field(Fi,std::cerr<<"Fini"<<std::endl,A,M,N,lda);
 
 
-		return rank;
+		return (size_t) rank;
 	}
 // Premiere tentative de Crout avortee: trop de copies compact<->disperse et 2 cyclic-shift
 //	template<class Field>
