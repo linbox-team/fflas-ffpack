@@ -278,6 +278,7 @@ echo "-----------------------------------------------"
 
 BLAS_FOUND=false
 
+FF_CHECK_BLAS_CFLAGS
 FF_CHECK_BLAS
 
 FF_CHECK_GOTOBLAS
@@ -314,7 +315,8 @@ fi
 
 
 
-BLAS_LIBS="-L/${BLAS_PATH} ${LAPACK_LIBS} ${BLAS_LIBS}"
+BLAS_LIBS="${BLAS_LIBS}"
+# BLAS_LIBS="-L/${BLAS_PATH} ${LAPACK_LIBS} ${BLAS_LIBS}"
 AC_SUBST(BLAS_LIBS)
 
 # AM_CONDITIONAL(FFLASFFPACK_HAVE_BLAS,  test "x$BLAS_FOUND" != "xfalse")
