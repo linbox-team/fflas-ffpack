@@ -25,7 +25,7 @@
 
 AC_PREREQ([2.61])
 
-AC_INIT([FFLAS-FFPACK], [1.6.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [1.7.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[http://www.linalg.org/projects/fflas-ffpack])
 
 AC_CONFIG_MACRO_DIR([macros])
