@@ -28,9 +28,9 @@ dnl/
 dnl **********************************
 dnl *              TODO              *
 dnl **********************************
-dnl no support yet to MKL
-dnl AS_IF([test -r "$BLAS_VAL/include/mkl_cblas.h"],
-dnl [ BLAS_LIBS="-L${BLAS_VAL}/lib/${MKL_ARCH}/ -lmkl_lapack64 -lmkl -lvml -lguide" ])
+dnl
+dnl can we allow both parallel and sequential BLAS ?
+dnl
 dnl **********************************
 
 

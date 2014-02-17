@@ -37,5 +37,6 @@ EXTRA_DIST=            \
 	fflas-ffpack-opt.m4    \
 	givaro-check.m4    \
 	gmp-check.m4       \
-	lapack-check.m4
+	lapack-check.m4 \
+	mkl-check.m4
 
