@@ -24,7 +24,7 @@
 */
 
 #include <iostream>
-
+#include <omp.h>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/field/modular-balanced.h"
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
   Field F(p);
 
-  Timer chrono;
+  OMPTimer chrono;
   double time=0.0;// time2=0.0;
 
   Element * A, * B, * C;
@@ -81,8 +81,16 @@ int main(int argc, char** argv) {
 
 	  chrono.clear();
 	  chrono.start();
-	  FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,n, F.one,
-			A, n, B, n, F.zero, C,n);
+#pragma omp parallel
+        {
+#pragma omp single
+            {
+
+	  FFLAS::pfgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,n, F.one,
+                    A, n, B, n, F.zero, C,n);
+            }
+        }
+        
 	  chrono.stop();
 	  time+=chrono.usertime();
 
@@ -92,7 +100,7 @@ int main(int argc, char** argv) {
 	  delete[] C;
   }
 
-  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<std::endl;
+  std::cout<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl;
 
   return 0;
 }

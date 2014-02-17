@@ -22,7 +22,7 @@
 
 SUBDIRS =
 
-BENCHMARK=check-fgemm  check-ftrsm  check-ftrtri  check-inverse  check-lqup \
+BENCHMARK=check-fgemm check-pfgemm  check-ftrsm  check-ftrtri  check-inverse  check-lqup \
 	  check-wino
 
 bench: $(BENCHMARK)
@@ -43,6 +43,9 @@ CLEANFILES=           \
 EXTRA_PROGRAMS =       \
 		$(BENCHMARK)
 
+check_pfgemm_SOURCES = check-pfgemm.C
+check_pfgemm_CPPFLAGS = -fopenmp
+check_pfgemm_LDFLAGS = -fopenmp
 check_fgemm_SOURCES = check-fgemm.C
 check_wino_SOURCES = check-wino.C
 check_ftrsm_SOURCES = check-ftrsm.C
