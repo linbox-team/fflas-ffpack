@@ -398,6 +398,7 @@ namespace FFLAS {
 		template <class Element>
 		class ftrmmRightLowerTransUnit;
 
+#if 0
 		// BB : ça peut servir...
 #ifdef LB_TRTR
 		template <class Element>
@@ -464,6 +465,7 @@ namespace FFLAS {
 		class ftrtrRightLowerTransNonUnitUnit;
 		template <class Element>
 		class ftrtrRightLowerTransUnitUnit;
+#endif
 #endif
 		template<class Element>
 		class faddmTrans;
@@ -1557,9 +1559,11 @@ namespace FFLAS {
 #include "fflas_fdot.inl"
 #include "fflas_fcopy.inl"
 
+#if 0
 //BB
 #ifdef LB_TRTR
 #include "fflas_ftrtr.inl"
+#endif
 #endif
 
 #include "fflas_faddm.inl"
