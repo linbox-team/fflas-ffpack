@@ -44,7 +44,9 @@
 
 
 #if defined(_OPENMP) || defined(OMP_H) || defined(__OMP_H) || defined(__pmp_omp_h)
+#ifndef __FFLASFFPACK_USE_OPENMP
 #define __FFLASFFPACK_USE_OPENMP
+#endif
 #endif
 
 
