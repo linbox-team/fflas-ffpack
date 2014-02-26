@@ -43,6 +43,10 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
 
+#ifdef __FFLASFFPACK_USE_OPENMP
+#include <omp.h>
+#endif
+
 // namespace FFLAS {
 #ifndef WINOTHRESHOLD
 #define WINOTHRESHOLD __FFLASFFPACK_WINOTHRESHOLD

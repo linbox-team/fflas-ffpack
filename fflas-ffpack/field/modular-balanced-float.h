@@ -209,9 +209,6 @@ namespace FFPACK {
 
 		unsigned long &convert (unsigned long &x, const Element &y) const
 		{
-			// if ( y < 0. )
-			// return x= (unsigned long) (y + modulus) ;
-			// else
 				return x = (unsigned long)y;
 		}
 
