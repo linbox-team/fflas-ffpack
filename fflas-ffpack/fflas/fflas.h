@@ -242,6 +242,7 @@ namespace FFLAS {
 		template <class Field>
 		FFLAS_BASE BaseCompute (const Field& F, const size_t w);
 
+
 		/**
 		 * Computes the maximal size for delaying the modular reduction
 		 *         in a triangular system resolution.
@@ -1343,6 +1344,7 @@ namespace FFLAS {
 	       typename Field::Element* C, const size_t ldc,
 	       const size_t w = (size_t) -1)
 	{
+		// typedef typename Field::Element Element ;
 		if (!k) {
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
@@ -1376,12 +1378,15 @@ namespace FFLAS {
 		if (k==1 and ...)
 #endif
 
+
+
 		bool winoLevelProvided = (w != (size_t(-1)));
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
 		Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base,
 					     winolevel, winoLevelProvided);
+
 
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, winolevel, base);
@@ -1430,7 +1435,7 @@ namespace FFLAS {
             );
 
 	// Parallel fgemm with OpenMP tasks
-    // winograd level is automatic
+	// winograd level is automatic
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
@@ -1572,7 +1577,8 @@ namespace FFLAS {
 	 *
 	 * \param m the common dimension in the product AxB
 	 */
-	size_t WinoSteps (const size_t & m);
+	template<class Field>
+	size_t WinoSteps (const Field & F, const size_t & m);
 
 
 

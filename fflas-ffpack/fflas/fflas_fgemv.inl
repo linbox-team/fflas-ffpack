@@ -5,6 +5,7 @@
  * Copyright (C) 2005 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
+ *            Brice Boyer <bbboyer@ncsu.edu>
  *
  *
  * ========LICENCE========
@@ -49,12 +50,12 @@ namespace FFLAS {
 
 		if (!M || !N) return;
 		if (F.isZero (alpha)){
-			for  (typename Field::Element * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
-				F.mulin(*Yi, beta);
+			fscalin(F,((TransA == FflasNoTrans)?M:N),beta,Y,incY);
 			return;
 		}
 
 		FFLAS_BASE base = Protected::BaseCompute (F, 0);
+		// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
 		size_t kmax = Protected::DotProdBound (F, 0, beta, base);
 		if (kmax > 1) {
 			if  (TransA == FflasNoTrans) {
@@ -87,6 +88,7 @@ namespace FFLAS {
 				Protected::MatVectProd (F, FflasTrans, remblock, N, alpha,
 					     A+kmax*nblock*lda, lda, X+kmax*nblock*incX, incX, beta,
 					     Y, incY);
+
 				for  (size_t i = 0; i < nblock; ++i){
 					Protected::MatVectProd (F, FflasTrans, kmax, N, alpha,
 						     A+i*kmax*lda, lda, X+i*kmax*incX, incX, F.one,
@@ -96,40 +98,37 @@ namespace FFLAS {
 			}
 		} else {
 			if  (TransA == FflasNoTrans) {
-				if (F.isZero (beta))
-					for (size_t i = 0; i < M; ++i)
-						F.assign( *(Y+i*incY), F.zero);
+				if (F.isZero (beta)) {
+					fzero(F,M,Y,incY);
+				}
 				else {
 					typename Field::Element betadivalpha;
 					F.div (betadivalpha, beta, alpha);
-					for (size_t i = 0; i < M; ++i)
-						F.mulin( *(Y+i*incY), betadivalpha);
+						fscalin(F,M,betadivalpha,Y,incY);
 				}
-				for (size_t i = 0; i < M; ++i)
-					for (size_t j = 0; j < N; ++j)
-						F.axpyin (*(Y+i*incY), *(A+i*lda+j), *(X+j*incX));
-				if (! F.isOne(alpha))
-					for (size_t i = 0; i < M; ++i)
-						F.mulin (*(Y+i*incY), alpha);
+				for (size_t i = 0; i < M; ++i) {
+					F.assign(*(Y+i*incY),fdot(F,N,A+i*lda,1,X,incX));
+				}
+				if (! F.isOne(alpha)) {
+					fscalin(F,M,alpha,Y,incY);
+				}
 			} else {
-				if (F.isZero (beta))
-					for (size_t i = 0; i < N; ++i)
-						F.assign( *(Y+i*incY), F.zero);
+				if (F.isZero (beta)) {
+					fzero(F,N,Y,incY);
+				}
 				else {
 					typename Field::Element betadivalpha;
 					F.div (betadivalpha, beta, alpha);
-					for (size_t i = 0; i < N; ++i)
-						F.mulin( *(Y+i*incY), betadivalpha);
+						fscalin(F,N,betadivalpha,Y,incY);
 				}
 
 
-				for (size_t i = 0; i < M; ++i)
-					for (size_t j = 0; j < N; ++j){
-						F.axpyin (*(Y+j*incY), *(A+i*lda+j), *(X+i*incX));
+				for (size_t i = 0; i < M; ++i) {
+					faxpy(F,N,*(X+i*incX),A+i*lda,1,Y,incY);
 					}
-				if (! F.isOne(alpha))
-					for (size_t i = 0; i < N; ++i)
-						F.mulin (*(Y+i*incY), alpha);
+				if (! F.isOne(alpha)) {
+					fscalin(F,N,alpha,Y,incY);
+				}
 			}
 		}
 	}
@@ -173,26 +172,20 @@ namespace FFLAS {
 			}
 			fconvert(F,M,N, Ad, N, A, lda);
 
-			double *Xdi=Xd;
-			for (const typename Field::Element* Xi=X; Xi != X+Xl*incX; Xi+=incX, Xdi++)
-				F.convert (*(Xdi), *Xi);
-			double  *Ydi=Yd;
-			if (!F.isZero(beta))
-				for (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
-					F.convert (*(Ydi), *Yi);
+			fconvert(F,Xl,Xd,1,X,incX);
+			if (!F.isZero(beta)) {
+				fconvert(F,Yl,Yd,1,Y,incY);
+			}
 
 			FFLASFFPACK_check(N);
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N, alphad,
 				     Ad, (int)N, Xd, 1, betad, Yd, 1);
 
-			Ydi=Yd;
-			for  (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi+=incY, Ydi++)
-				F.init (*Yi, *(Ydi));
+			finit(F,Yl,Y,incY,Yd,1);
 
 			if  (!F.isOne(alpha) && !F.isMOne(alpha)){
 				// Fix-up: compute Y *= alpha
-				for (typename Field::Element* Yi = Y; Yi != Y+Yl*incY; Yi += incY)
-					F.mulin (*Yi , alpha);
+				fscalin(F,Yl,alpha,Y,incY);
 			}
 			delete[] Ad;
 			delete[] Xd;
@@ -228,13 +221,11 @@ namespace FFLAS {
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
-			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
-				F.init (*Yi, *Yi);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
 
 			if ( (!F.isMOne(alpha)) && (!F.isOne(alpha))){
 				// Fix-up: compute y *= alpha
-				for (double* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
-					F.mulin (*Yi , alpha);
+					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
 			}
 		}
 
@@ -265,12 +256,10 @@ namespace FFLAS {
 			FFLASFFPACK_check(lda);
 			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
-				F.init (*Yi, *Yi);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
 			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
-				for (float* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
-					F.mulin (*Yi , alpha);
+					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
 			}
 		}
 
@@ -302,13 +291,11 @@ namespace FFLAS {
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
-			for  (double * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
-				F.init (*Yi, *Yi);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
 
 			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
-				for (double* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
-					F.mulin (*Yi , alpha);
+					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
 			}
 		}
 
@@ -339,12 +326,11 @@ namespace FFLAS {
 			FFLASFFPACK_check(lda);
 			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-			for  (float * Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi+=incY)
-				F.init (*Yi, *Yi);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
+
 			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
-				for (float* Yi = Y; Yi != Y+((TransA == FflasNoTrans)?M:N)*incY; Yi += incY)
-					F.mulin (*Yi , alpha);
+					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
 			}
 		}
 

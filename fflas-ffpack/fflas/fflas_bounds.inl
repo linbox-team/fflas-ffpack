@@ -50,8 +50,9 @@ namespace FFLAS {
 			// Can be improved for some cases.
 
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (WinoDim);
+				winoRecLevel = WinoSteps (F, WinoDim);
 			base = BaseCompute (F, winoRecLevel);
+			// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
 			delayedDim = DotProdBound (F, winoRecLevel, beta, base);
 
 			size_t n = k;
@@ -83,7 +84,7 @@ namespace FFLAS {
 					      bool winoLevelProvided)
 		{
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (WinoDim) ;
+				winoRecLevel = WinoSteps (F, WinoDim) ;
 
 			delayedDim = k+1;
 			base = FflasDouble;
@@ -100,7 +101,7 @@ namespace FFLAS {
 					      bool winoLevelProvided)
 		{
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (WinoDim) ;
+				winoRecLevel = WinoSteps (F, WinoDim) ;
 
 			delayedDim = k+1;
 			base = FflasFloat;
@@ -176,9 +177,12 @@ namespace FFLAS {
 			F.characteristic(p);
 			return (double) (p-1);
 		}
+
+
 	} // Protected
 
-	inline size_t WinoSteps (const size_t & m)
+	template<class Field>
+	inline size_t WinoSteps (const Field & F, const size_t & m)
 	{
 		size_t w = 0;
 		size_t mt = m;
@@ -189,7 +193,56 @@ namespace FFLAS {
 		return w;
 	}
 
+	template<>
+	inline size_t WinoSteps (const FFPACK:: Modular<double> & F, const size_t & m)
+	{
+		size_t w = 0;
+		size_t mt = m;
+		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD ) {
+			++w;
+			mt >>= 1;
+		}
+		return w;
+	}
+
+	template<>
+	inline size_t WinoSteps (const FFPACK:: ModularBalanced<double> & F, const size_t & m)
+	{
+		size_t w = 0;
+		size_t mt = m;
+		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL ) {
+			++w;
+			mt >>= 1;
+		}
+		return w;
+	}
+
+	template<>
+	inline size_t WinoSteps (const FFPACK:: Modular<float> & F, const size_t & m)
+	{
+		size_t w = 0;
+		size_t mt = m;
+		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_FLT ) {
+			++w;
+			mt >>= 1;
+		}
+		return w;
+	}
+
+	template<>
+	inline size_t WinoSteps (const FFPACK:: ModularBalanced<float> & F, const size_t & m)
+	{
+		size_t w = 0;
+		size_t mt = m;
+		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT ) {
+			++w;
+			mt >>= 1;
+		}
+		return w;
+	}
+
 	namespace Protected {
+		//! @bug these thresholds come from nowhere.
 		template <class Field>
 		inline FFLAS_BASE BaseCompute (const Field& F, const size_t w)
 		{
@@ -244,6 +297,7 @@ namespace FFLAS {
 		}
 
 
+#if 1
 		template <>
 		inline FFLAS_BASE BaseCompute (const FFPACK:: Modular<double>& ,
 					       const size_t )
@@ -271,6 +325,7 @@ namespace FFLAS {
 		{
 			return FflasFloat;
 		}
+#endif
 
 
 

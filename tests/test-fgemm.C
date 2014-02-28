@@ -5,6 +5,7 @@
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet
+ *            Brice Boyer <bbboyer@ncsu.edu>
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========

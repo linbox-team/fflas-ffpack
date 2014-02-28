@@ -59,7 +59,7 @@ WINO=`cat optimiser/winograd.C`
 
 
 dnl for Wino threshold for double
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=double"
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<double> -DOPTIMISATION_MODE"
 echo "  == Wino/BLAS threshold for double == "
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
@@ -85,7 +85,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 
 dnl for WinoThreshold for float
 echo "  == Wino/BLAS threshold for float == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=float"
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<float> -DOPTIMISATION_MODE"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -106,6 +106,56 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		AC_MSG_RESULT(cross compilation)
 		break
 		])
+
+dnl for Wino threshold for double
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<double> -DOPTIMISATION_MODE"
+echo "  == Wino/BLAS threshold for double == "
+AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
+		dnl remove last line
+		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl  -i does not work on BSD sed
+		sed  '$d' fflas-ffpack/fflas-ffpack-optimise.h > fflas-ffpack/fflas-ffpack-optimise.back.h ;
+		mv fflas-ffpack/fflas-ffpack-optimise.back.h fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl append new definition
+		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl close the file
+		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
+		dnl cleaning service !
+		dnl  echo done : `cat WinoThreshold`
+		rm WinoThreshold ;
+		AC_MSG_RESULT(done)
+		],[
+		AC_MSG_RESULT(problem)
+		break
+		],[
+		AC_MSG_RESULT(cross compilation)
+		break
+		])
+
+dnl for WinoThreshold for float
+echo "  == Wino/BLAS threshold for float == "
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<float> -DOPTIMISATION_MODE"
+AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
+		dnl remove last line
+		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
+		sed  '$d' fflas-ffpack/fflas-ffpack-optimise.h > fflas-ffpack/fflas-ffpack-optimise.back.h ;
+		mv fflas-ffpack/fflas-ffpack-optimise.back.h fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl append new definition
+		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
+		dnl close the file
+		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
+		dnl  echo done : `cat WinoThreshold`
+		dnl cleaning service !
+		rm WinoThreshold ;
+		AC_MSG_RESULT(done)
+		],[
+		AC_MSG_RESULT(problem)
+		break
+		],[
+		AC_MSG_RESULT(cross compilation)
+		break
+		])
+
 
 ],
 [AC_MSG_RESULT(no optimization)]

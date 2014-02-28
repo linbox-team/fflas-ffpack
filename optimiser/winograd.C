@@ -39,14 +39,26 @@
 #include "fflas-ffpack/utils/timer.h"
 
 #ifndef FLTTYPE
-#define FLTTYPE double
+#define FLTTYPE Modular<double>
 #endif
+
+template<class Field>
+bool balanced(const Field & )
+{
+	return false;
+}
+
+template <class T>
+bool balanced(const FFPACK::ModularBalanced<T>&)
+{
+	return true;
+}
 
 //using namespace LinBox;
 int main () {
 	using namespace std;
 
-	typedef FFPACK::Modular<FLTTYPE> Field ;
+	typedef FFPACK:: FLTTYPE Field ;
 	Field F(17);
 	typedef Field::Element Element ;
 	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
@@ -117,14 +129,26 @@ int main () {
 	std::ofstream out("WinoThreshold");
 	if (nbest != 0 ) {
 	if (typeid(Element).name() == typeid(double).name()) {
-		out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD"  << endl;
-		out << "#define __FFLASFFPACK_WINOTHRESHOLD" << ' ' <<  nbest << endl;
+		if ( balanced(F) ) {
+			out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL"  << endl;
+			out << "#define __FFLASFFPACK_WINOTHRESHOLD_BAL" << ' ' <<  nbest << endl;
+		}
+		else {
+			out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD"  << endl;
+			out << "#define __FFLASFFPACK_WINOTHRESHOLD" << ' ' <<  nbest << endl;
+		}
 		out << "#endif"                               << endl  << endl;
 	}
 
 	if (typeid(Element).name() == typeid(float).name()) {
-		out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_FLT"  << endl;
-		out << "#define __FFLASFFPACK_WINOTHRESHOLD_FLT" << ' ' << nbest << endl;
+		if ( balanced(F) ) {
+			out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT"  << endl;
+			out << "#define __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT" << ' ' << nbest << endl;
+		}
+		else {
+			out << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_FLT"  << endl;
+			out << "#define __FFLASFFPACK_WINOTHRESHOLD_FLT" << ' ' << nbest << endl;
+		}
 		out << "#endif"                               << endl  << endl;
 	}
 	}
