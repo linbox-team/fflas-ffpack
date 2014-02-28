@@ -51,6 +51,12 @@ enum ArgumentType {
 #define END_OF_ARGUMENTS \
 { '\0', "\0", "\0", TYPE_NONE, NULL }
 
+#ifdef _GIVARO_CONFIG_H
+#define type_integer Givaro::Integer
+#else
+#define type_integer long int
+#endif
+
 struct Argument
 {
 	char             c;
@@ -112,7 +118,7 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 				std::cout << *(int *) args[i].data;
 				break;
 			case TYPE_INTEGER:
-				std::cout << *(long int *) args[i].data;
+				std::cout << *(type_integer *) args[i].data;
 				break;
 			case TYPE_DOUBLE:
 				std::cout << *(double *) args[i].data;
@@ -258,10 +264,14 @@ namespace FFLAS {
                         break;
 
                         case TYPE_INTEGER:
-                        {
-                            long int tmp = atoi(argv[i+1]);
-                            *(long int *) current->data = tmp;
-                        }
+			{
+#ifdef _GIVARO_CONFIG_H
+				type_integer tmp(argv[i+1]);
+#else
+				type_integer tmp = atol(argv[i+1]);
+#endif
+				*(type_integer *) current->data = tmp;
+			}
                         ++i;
                         break;
 
@@ -332,5 +342,6 @@ std::ostream& writeCommandString (std::ostream& os, Argument *args, char* progra
 	return os << std::endl;
 }
 
+#undef type_integer
 
 #endif // __FFLASFFPACK_args_parser_H
