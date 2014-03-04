@@ -137,14 +137,14 @@ namespace FFLAS {
 		//---------------------------------------------------------------------
 		template<class Field>
 		void MatF2MatD_Triangular (const Field& F,
-						  typename DoubleDomain::Element* S, const size_t lds,
+						  DoubleDomain::Element* S, const size_t lds,
 						  const typename Field::Element* const E,
 						  const size_t lde,
 						  const size_t m, const size_t n)
 		{
 
 			const typename Field::Element* Ei = E;
-			typename DoubleDomain::Element* Si = S;
+			DoubleDomain::Element* Si = S;
 			size_t i=0, j;
 			for ( ; i<m;++i, Ei+=lde, Si+=lds)
 				for ( j=i; j<n;++j)
@@ -159,14 +159,14 @@ namespace FFLAS {
 		//! @todo do fconvert(...,FFLAS_TRANS,FFLAS_DIAG)
 		template<class Field>
 		void MatF2MatFl_Triangular (const Field& F,
-						   typename FloatDomain::Element* S, const size_t lds,
+						   FloatDomain::Element* S, const size_t lds,
 						   const typename Field::Element* const E,
 						   const size_t lde,
 						   const size_t m, const size_t n)
 		{
 
 			const typename Field::Element* Ei = E;
-			typename FloatDomain::Element* Si = S;
+			FloatDomain::Element* Si = S;
 			size_t i=0, j;
 			for ( ; i<m;++i, Ei+=lde, Si+=lds)
 				for ( j=i; j<n;++j)
