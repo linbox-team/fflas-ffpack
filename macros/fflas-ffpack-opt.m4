@@ -59,8 +59,8 @@ WINO=`cat optimiser/winograd.C`
 
 
 dnl for Wino threshold for double
+echo "  == Wino/BLAS threshold for Modular<double> == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<double> -DOPTIMISATION_MODE"
-echo "  == Wino/BLAS threshold for double == "
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -71,10 +71,11 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		cat WinoThreshold >> fflas-ffpack/fflas-ffpack-optimise.h ;
 		dnl close the file
 		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
-		dnl cleaning service !
 		dnl  echo done : `cat WinoThreshold`
+		WINOT=`cat WinoThreshold |  awk  'NR==2' | awk '{print $ 3}'`
+		dnl cleaning service !
 		rm WinoThreshold ;
-		AC_MSG_RESULT(done)
+		AC_MSG_RESULT(done (${WINOT}))
 		],[
 		AC_MSG_RESULT(problem)
 		break
@@ -84,7 +85,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 dnl for WinoThreshold for float
-echo "  == Wino/BLAS threshold for float == "
+echo "  == Wino/BLAS threshold for Modular<float> == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<float> -DOPTIMISATION_MODE"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
@@ -96,9 +97,10 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl close the file
 		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
 		dnl  echo done : `cat WinoThreshold`
+		WINOT=`cat WinoThreshold |  awk  'NR==2' | awk '{print $ 3}'`
 		dnl cleaning service !
 		rm WinoThreshold ;
-		AC_MSG_RESULT(done)
+		AC_MSG_RESULT(done (${WINOT}))
 		],[
 		AC_MSG_RESULT(problem)
 		break
@@ -108,8 +110,8 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 dnl for Wino threshold for double
+echo "  == Wino/BLAS threshold for ModularBalanced<double> == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<double> -DOPTIMISATION_MODE"
-echo "  == Wino/BLAS threshold for double == "
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -121,9 +123,10 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl close the file
 		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
 		dnl cleaning service !
+		WINOT=`cat WinoThreshold |  awk  'NR==2' | awk '{print $ 3}'`
 		dnl  echo done : `cat WinoThreshold`
 		rm WinoThreshold ;
-		AC_MSG_RESULT(done)
+		AC_MSG_RESULT(done (${WINOT}))
 		],[
 		AC_MSG_RESULT(problem)
 		break
@@ -133,7 +136,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 dnl for WinoThreshold for float
-echo "  == Wino/BLAS threshold for float == "
+echo "  == Wino/BLAS threshold for ModularBalanced<float> == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<float> -DOPTIMISATION_MODE"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
@@ -145,9 +148,10 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl close the file
 		echo "#endif // optimise.h"  >> fflas-ffpack/fflas-ffpack-optimise.h
 		dnl  echo done : `cat WinoThreshold`
+		WINOT=`cat WinoThreshold |  awk  'NR==2' | awk '{print $ 3}'`
 		dnl cleaning service !
 		rm WinoThreshold ;
-		AC_MSG_RESULT(done)
+		AC_MSG_RESULT(done (${WINOT}))
 		],[
 		AC_MSG_RESULT(problem)
 		break
