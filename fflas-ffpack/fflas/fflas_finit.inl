@@ -47,38 +47,38 @@ namespace FFLAS {
 		PP= _mm256_set1_pd(invp);
 		long st=long(T)%32;
 		size_t i=0;;
-		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned) 
+		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=st;j<32;j+=8,i++){
 				T[i]=fmod(T[i],p);
-				if (T[i]>=p) 
+				if (T[i]>=p)
 					T[i]-=p;
 			}
 		}
 		// perform the loop using 256 bits SIMD
-		for (;i<=n-4;i+=4){ 
+		for (;i<=n-4;i+=4){
 			C=_mm256_load_pd(T+i);
-			VEC_MODF(C,Q,P,PP,TMP); 
+			VEC_MODF(C,Q,P,PP,TMP);
 			_mm256_store_pd(T+i,C);
-		}		
+		}
 		// perform the last elt from T without SIMD
-		for (;i<n;i++){ 
+		for (;i<n;i++){
 			T[i]=fmod(T[i],p);
-			if (T[i]>=p) 
+			if (T[i]>=p)
 				T[i]-=p;
 		}
 	}
 #else
 
 	inline void modp( double *T, size_t n, double p, double invp){
-		for(size_t j=0;j<n;j++){ 
-			T[j]= fmod(T[j],p); 
-			T[j]-= ((T[j]>=p)?p:0); 			
+		for(size_t j=0;j<n;j++){
+			T[j]= fmod(T[j],p);
+			T[j]-= ((T[j]>=p)?p:0);
 		}
-	
+
 	}
 #endif
- 
-	template<> 
+
+	template<>
 	void finit (const FFPACK:: Modular<double> & F, const size_t m , const size_t n,
 		    double * A, const size_t lda){
 		double p, invp;
@@ -91,9 +91,9 @@ namespace FFLAS {
 				modp(A+i*lda,n,p,invp);
 
 	}
-	
+
 
 }
 
 #endif
- 
+

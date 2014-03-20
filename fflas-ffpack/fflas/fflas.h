@@ -862,9 +862,11 @@ namespace FFLAS {
 	finit (const Field& F, const size_t m , const size_t n,
 	       typename Field::Element * A, const size_t lda)
 	{
-		//!@todo check if n == lda
-		for (size_t i = 0 ; i < m ; ++i)
-			finit(F,n,A+i*lda,1);
+		if (n == lda)
+			finit(F,n*m,A,1);
+		else
+			for (size_t i = 0 ; i < m ; ++i)
+				finit(F,n,A+i*lda,1);
 		return;
 	}
 
@@ -885,9 +887,11 @@ namespace FFLAS {
 	       typename Field::Element * A, const size_t lda,
 	       const OtherElement * B, const size_t ldb)
 	{
-		//!@todo check if n == lda
-		for (size_t i = 0 ; i < m ; ++i)
-			finit(F,n,A+i*lda,1,B+i*ldb,1);
+		if (n == lda && lda == ldb)
+			finit(F,n*m,A,1,B,1);
+		else
+			for (size_t i = 0 ; i < m ; ++i)
+				finit(F,n,A+i*lda,1,B+i*ldb,1);
 		return;
 	}
 
@@ -1067,7 +1071,7 @@ namespace FFLAS {
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element* B, const size_t ldb,
 	      typename Field::Element* C, const size_t ldc)
-	{		
+	{
 		const typename Field::Element *Ai = A, *Bi = B;
 		typename Field::Element *Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
@@ -1584,7 +1588,7 @@ namespace FFLAS {
 
 #include "fflas_bounds.inl"
 #include "fflas_finit.inl"
-#include "fflas_fgemm.inl" 
+#include "fflas_fgemm.inl"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include "fflas_blockcuts.inl"
@@ -1592,7 +1596,7 @@ namespace FFLAS {
 #include "fflas_pftrsm.inl"
 #endif
 
-#include "fflas_fgemv.inl" 
+#include "fflas_fgemv.inl"
 #include "fflas_fger.inl"
 #include "fflas_ftrsm.inl"
 #include "fflas_ftrmm.inl"
