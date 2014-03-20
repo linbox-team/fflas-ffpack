@@ -1067,7 +1067,7 @@ namespace FFLAS {
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element* B, const size_t ldb,
 	      typename Field::Element* C, const size_t ldc)
-	{
+	{		
 		const typename Field::Element *Ai = A, *Bi = B;
 		typename Field::Element *Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
@@ -1386,8 +1386,6 @@ namespace FFLAS {
 		FFLAS_BASE base;
 		Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base,
 					     winolevel, winoLevelProvided);
-
-
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, winolevel, base);
 		return C;
@@ -1585,7 +1583,8 @@ namespace FFLAS {
 } // class FFLAS
 
 #include "fflas_bounds.inl"
-#include "fflas_fgemm.inl"
+#include "fflas_finit.inl"
+#include "fflas_fgemm.inl" 
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include "fflas_blockcuts.inl"
@@ -1593,7 +1592,7 @@ namespace FFLAS {
 #include "fflas_pftrsm.inl"
 #endif
 
-#include "fflas_fgemv.inl"
+#include "fflas_fgemv.inl" 
 #include "fflas_fger.inl"
 #include "fflas_ftrsm.inl"
 #include "fflas_ftrmm.inl"
@@ -1610,6 +1609,7 @@ namespace FFLAS {
 #endif
 
 #include "fflas_faddm.inl"
+
 
 #undef LB_TRTR
 
