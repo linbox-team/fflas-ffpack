@@ -89,6 +89,19 @@ namespace FFLAS {
 		else
 			for(size_t i=0;i<m;i++)
 				modp(A+i*lda,n,p,invp);
+#if 1 /* BB: just making the tests pass */
+		if(n==lda) {
+			for (size_t i = 0 ; i < m*n ; ++i)
+				if (A[i] < 0)
+					A[i] += p ;
+		}
+		else {
+			for(size_t i=0;i<m;i++)
+				for(size_t j=0;j<n;j++)
+					if (A[i*lda+j] < 0)
+						A[i*lda+j] += p ;
+		}
+#endif
 
 	}
 

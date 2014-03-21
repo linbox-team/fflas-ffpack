@@ -516,8 +516,12 @@ namespace FFLAS {
 	       typename Field::Element * X, const size_t incX)
 	{
 		typename Field::Element * Xi = X ;
-		for (; Xi < X+n*incX; Xi+=incX )
-			F.init( *Xi , *Xi);
+		if (incX == 1)
+			for (; Xi < X + n ; ++Xi)
+				F.init( *Xi , *Xi);
+		else
+			for (; Xi < X+n*incX; Xi+=incX )
+				F.init( *Xi , *Xi);
 	}
 
 	/** finit
@@ -538,8 +542,13 @@ namespace FFLAS {
 	{
 		typename Field::Element * Xi = X ;
 		const OtherElement * Yi = Y ;
-		for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
-			F.init( *Xi , *Yi);
+
+		if (incX == 1 && incY == 1)
+			for (; Xi < X + n ; ++Xi, ++Yi)
+				F.init( *Xi , *Yi);
+		else
+			for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
+				F.init( *Xi , *Yi);
 	}
 
 	/** fconvert
