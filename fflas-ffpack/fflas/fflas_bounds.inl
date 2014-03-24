@@ -31,8 +31,8 @@
 
 #define FFLAS_INT_TYPE long unsigned int
 
-#include "fflas-ffpack/fflas-ffpack-configuration.h" 
- 
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 namespace FFLAS {
 	namespace Protected {
 		template <class Field>

@@ -60,7 +60,7 @@ namespace FFLAS {
 		Q = _mm256_and_ps(Q,TMP);				\
 		C = _mm256_add_ps(C,Q);					\
 	}
-	
+
 #else // __AVX__
 	// compute C modulo P in the range [MIN, MAX]
 #define VEC_MODF_D(C,Q,P,NEGP,INVP,T,MIN,MAX)				\
@@ -97,7 +97,16 @@ namespace FFLAS {
 		MIN = _mm256_set1_pd(min);
 		MAX = _mm256_set1_pd(max);
 		long st=long(T)%32;
-		size_t i=0;;
+		size_t i=0;
+		if (n < 4) {
+			for (;i<n;i++){
+				T[i]=fmod(T[i],p);
+				T[i]-=(T[i]>max)?p:0;
+				T[i]+=(T[i]<min)?p:0;
+			}
+				return;
+
+		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=st;j<32;j+=8,i++){
 				T[i]=fmod(T[i],p);
@@ -105,6 +114,7 @@ namespace FFLAS {
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
+		FFLASFFPACK_check((long(T+i)%32==0));
 		// perform the loop using 256 bits SIMD
 		for (;i<=n-4;i+=4){
 			C=_mm256_load_pd(T+i);
@@ -115,7 +125,7 @@ namespace FFLAS {
 		for (;i<n;i++){
 			T[i]=fmod(T[i],p);
 			T[i]-=(T[i]>max)?p:0;
-			T[i]+=(T[i]<min)?p:0;			
+			T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
@@ -124,13 +134,21 @@ namespace FFLAS {
 		P   = _mm256_set1_ps(p);
 		NEGP= _mm256_set1_ps(-p);
 		INVP= _mm256_set1_ps(invp);
-		MIN = _mm256_set1_ps(min);
-		MAX = _mm256_set1_ps(max);
+		MIN= _mm256_set1_ps(min);
+		MAX= _mm256_set1_ps(max);
 		long st=long(T)%32;
 		size_t i=0;;
+		if (n < 8) {
+			for (;i<n;i++){
+				T[i]=fmodf(T[i],p);
+				T[i]-=(T[i]>max)?p:0;
+				T[i]+=(T[i]<min)?p:0;
+			}
+				return;
+		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=st;j<32;j+=4,i++){
-				T[i]=fmod(T[i],p);
+				T[i]=fmodf(T[i],p);
 				T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
@@ -143,9 +161,9 @@ namespace FFLAS {
 		}
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
-			T[i]=fmod(T[i],p);
+			T[i]=fmodf(T[i],p);
 			T[i]-=(T[i]>max)?p:0;
-			T[i]+=(T[i]<min)?p:0;			
+			T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
@@ -155,7 +173,7 @@ namespace FFLAS {
 		for(size_t j=0;j<n;j++){
 			T[j]= fmod(T[j],p);
 			T[j]-=(T[j]>max)?p:0;
-			T[j]+=(T[j]<min)?p:0;						
+			T[j]+=(T[j]<min)?p:0;
 		}
 
 	}
@@ -164,12 +182,12 @@ namespace FFLAS {
 		for(size_t j=0;j<n;j++){
 			T[j]= fmodf(T[j],p);
 			T[j]-=(T[j]>max)?p:0;
-			T[j]+=(T[j]<min)?p:0;						
+			T[j]+=(T[j]<min)?p:0;
 		}
 
 	}
 
-#endif // AVX(2) 
+#endif // AVX(2)
 
 	template<>
 	void finit (const FFPACK:: Modular<double> & F, const size_t m,
@@ -187,6 +205,28 @@ namespace FFLAS {
 				F.init( *Xi , *Xi);
 		}
 	}
+
+
+	template<>
+	void finit (const FFPACK:: Modular<float> & F, const size_t m,
+		    float * A, const size_t incX)
+	{
+		if(incX == 1) {
+			float p, invp;
+			p=(float)F.cardinality();
+			invp=1.f/p;
+			modp(A,m,p,invp,0,p-1);
+		}
+		else { /*  faster with copy, use incX=1, copy back ? */
+			float * Xi = A ;
+			for (; Xi < A+m*incX; Xi+=incX )
+				F.init( *Xi , *Xi);
+
+		}
+
+	}
+
+#if 0
 
 	template<>
 	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m,
@@ -209,25 +249,6 @@ namespace FFLAS {
 	}
 
 	template<>
-	void finit (const FFPACK:: Modular<float> & F, const size_t m,
-		    float * A, const size_t incX)
-	{
-		if(incX == 1) {
-			float p, invp;
-			p=(float)F.cardinality();
-			invp=1.f/p;
-			modp(A,m,p,invp,0,p-1);
-		}
-		else { /*  faster with copy, use incX=1, copy back ? */
-			float * Xi = A ;
-			for (; Xi < A+m*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
-
-		}
-
-	}
-
-	template<>
 	void finit (const FFPACK:: ModularBalanced<float> & F, const size_t m,
 		    float * A, const size_t incX)
 	{
@@ -244,10 +265,11 @@ namespace FFLAS {
 			for (; Xi < A+m*incX; Xi+=incX )
 				F.init( *Xi , *Xi);
 		}
-		
+
 	}
-	
-	
+#endif
+
+
 	/*
 	template<>
 	void finit (const FFPACK:: Modular<double> & F, const size_t m , const size_t n,
@@ -262,7 +284,7 @@ namespace FFLAS {
 			for(size_t i=0;i<m;i++)
 				modp(A+i*lda,n,p,invp);
 	}
-	
+
 	template<>
 	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m , const size_t n,
 		    double * A, const size_t lda){
@@ -271,13 +293,13 @@ namespace FFLAS {
 		invp=1./p;
 		double pmax = (p-1)/2 ;
 		double pmin = pmax-p+1;
-	
+
 		if(n==lda)
 			modp(A,m*n,p,invp,pmin,pmax);
 		else
 			for(size_t i=0;i<m;i++)
 				modp(A+i*lda,n,p,invp,pmin,pmax);
-	
+
 	}
 	*/
 } // end of namespace FFLAS
