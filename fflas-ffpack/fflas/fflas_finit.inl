@@ -124,8 +124,8 @@ namespace FFLAS {
 		P   = _mm256_set1_ps(p);
 		NEGP= _mm256_set1_ps(-p);
 		INVP= _mm256_set1_ps(invp);
-		MIN= _mm256_set1_ps(min);
-		MAX= _mm256_set1_ps(max);
+		MIN = _mm256_set1_ps(min);
+		MAX = _mm256_set1_ps(max);
 		long st=long(T)%32;
 		size_t i=0;;
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
@@ -136,7 +136,7 @@ namespace FFLAS {
 			}
 		}
 		// perform the loop using 256 bits SIMD
-		for (;i<=n-4;i+=4){
+		for (;i<=n-8;i+=8){
 			C=_mm256_load_ps(T+i);
 			VEC_MODF_S(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
 			_mm256_store_ps(T+i,C);
@@ -154,8 +154,8 @@ namespace FFLAS {
 	inline void modp( double *T, size_t n, double p, double invp, double min, double max){
 		for(size_t j=0;j<n;j++){
 			T[j]= fmod(T[j],p);
-			T[i]-=(T[i]>max)?p:0;
-			T[i]+=(T[i]<min)?p:0;						
+			T[j]-=(T[j]>max)?p:0;
+			T[j]+=(T[j]<min)?p:0;						
 		}
 
 	}
@@ -163,8 +163,8 @@ namespace FFLAS {
 	inline void modp( float *T, size_t n, float p, float invp, float min, float max){
 		for(size_t j=0;j<n;j++){
 			T[j]= fmodf(T[j],p);
-			T[i]-=(T[i]>max)?p:0;
-			T[i]+=(T[i]<min)?p:0;						
+			T[j]-=(T[j]>max)?p:0;
+			T[j]+=(T[j]<min)?p:0;						
 		}
 
 	}
