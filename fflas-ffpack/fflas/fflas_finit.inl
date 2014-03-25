@@ -45,7 +45,7 @@ namespace FFLAS {
 		T = _mm256_cmp_pd(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_pd(Q,NEGP);				\
 		T = _mm256_and_pd(T,P);					\
-		Q = _mm256_and_pd(Q,TMP);				\
+		Q = _mm256_and_pd(Q,T);				\
 		C = _mm256_add_pd(C,Q);					\
 	}
 	// compute C modulo P in the range [MIN, MAX]
@@ -57,7 +57,7 @@ namespace FFLAS {
 		T = _mm256_cmp_ps(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_ps(Q,NEGP);				\
 		T = _mm256_and_ps(T,P);					\
-		Q = _mm256_and_ps(Q,TMP);				\
+		Q = _mm256_and_ps(Q,T);				\
 		C = _mm256_add_ps(C,Q);					\
 	}
 
@@ -71,7 +71,7 @@ namespace FFLAS {
 		T = _mm256_cmp_pd(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_pd(Q,NEGP);				\
 		T = _mm256_and_pd(T,P);					\
-		Q = _mm256_and_pd(Q,TMP);				\
+		Q = _mm256_and_pd(Q,T);				\
 		C = _mm256_add_pd(C,Q);					\
 	}
 	// compute C modulo P in the range [MIN, MAX]
@@ -83,7 +83,7 @@ namespace FFLAS {
 		T = _mm256_cmp_ps(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_ps(Q,NEGP);				\
 		T = _mm256_and_ps(T,P);					\
-		Q = _mm256_and_ps(Q,TMP);				\
+		Q = _mm256_and_ps(Q,T);				\
 		C = _mm256_add_ps(C,Q);					\
 	}
 
