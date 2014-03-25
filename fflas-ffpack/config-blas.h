@@ -88,6 +88,11 @@ extern "C" {
 	void dger_  (const int*, const int*, const double*, const double*, const int*, const double*, const int*, double*, const int*);
 	void sger_  (const int*, const int*, const float*, const float*, const int*, const float*, const int*, float*, const int*);
 
+	void dcopy_  (const int *, const double *, const int *, double *, const int *);
+	void scopy_  (const int *, const float  *, const int *, float  *, const int *);
+
+
+
 	// level 3 routines
 	void dtrsm_ (const char*, const char*, const char*, const char*, const int*, const int*, const double*, const double*, const int*, double*, const int*);
 	void strsm_ (const char*, const char*, const char*, const char*, const int*, const int*, const float*, const float*, const int*, float*, const int*);
@@ -172,6 +177,16 @@ extern "C" {
 			sger_ (&N, &M, &alpha, Y, &incY, X, &incX, A, &lda);
 		else
 			sger_ (&M, &N, &alpha, X, &incX, Y, &incY, A, &lda);
+	}
+
+	void cblas_dcopy(const int N, const double *X, const int incX, double *Y, const int incY)
+	{
+		dcopy_(&N,X,&incX,Y,&incY);
+	}
+
+	void cblas_scopy(const int N, const float *X, const int incX, float *Y, const int incY)
+	{
+		scopy_(&N,X,&incX,Y,&incY);
 	}
 
 
@@ -273,6 +288,12 @@ extern "C" {
 
 	void cblas_sger(const enum CBLAS_ORDER Order, const int M, const int N, const float alpha, const float *X, const int incX,
 			const float *Y, const int incY, float *A, const int lda);
+
+	void cblas_dcopy(const int N, const double *X, const int incX,
+			 double *Y, const int incY);
+
+	void cblas_scopy(const int N, const float *X, const int incX,
+			 float *Y, const int incY);
 
 
 

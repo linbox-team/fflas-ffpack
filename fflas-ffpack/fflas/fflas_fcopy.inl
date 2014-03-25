@@ -44,7 +44,6 @@ namespace FFLAS {
 		const typename Field::Element * Yi=Y;
 
 		if (incX == 1 && incY == 1) {
-			// memcpy(X,Y,N*sizeof(typename Field::Element)); // much faster (hopefully)
 			for (; Xi < X+N; ++Xi, ++Yi)
 				F.assign(*Xi,*Yi);
 
@@ -54,6 +53,79 @@ namespace FFLAS {
 			F.assign(*Xi,*Yi);
 		return;
 	}
+
+	template<>
+	inline void
+	fcopy (const FFPACK:: Modular<float>& F, const size_t N,
+	       float * X, const size_t incX,
+	       const float * Y, const size_t incY )
+	{
+
+		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
+
+		return;
+	}
+
+	template<>
+	inline void
+	fcopy (const FFPACK:: ModularBalanced<float>& F, const size_t N,
+	       float * X, const size_t incX,
+	       const float * Y, const size_t incY )
+	{
+
+		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
+
+		return;
+	}
+
+	template<>
+	inline void
+	fcopy (const FFPACK:: UnparametricField<float>& F, const size_t N,
+	       float * X, const size_t incX,
+	       const float * Y, const size_t incY )
+	{
+
+		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
+
+		return;
+	}
+
+	template<>
+	inline void
+	fcopy (const FFPACK:: Modular<double>& F, const size_t N,
+	       double * X, const size_t incX,
+	       const double * Y, const size_t incY )
+	{
+
+		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
+
+		return;
+	}
+
+	template<>
+	inline void
+	fcopy (const FFPACK:: ModularBalanced<double>& F, const size_t N,
+	       double * X, const size_t incX,
+	       const double * Y, const size_t incY )
+	{
+
+		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
+
+		return;
+	}
+
+	template<>
+	inline void
+	fcopy (const FFPACK:: UnparametricField<double>& F, const size_t N,
+	       double * X, const size_t incX,
+	       const double * Y, const size_t incY )
+	{
+
+		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
+
+		return;
+	}
+
 
 	template<class Field>
 	void fcopy (const Field& F, const size_t m, const size_t n,

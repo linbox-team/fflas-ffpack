@@ -1596,6 +1596,7 @@ namespace FFLAS {
 } // class FFLAS
 
 #include "fflas_bounds.inl"
+#include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
 #include "fflas_fgemm.inl"
 
@@ -1612,7 +1613,6 @@ namespace FFLAS {
 #include "fflas_ftrsv.inl"
 #include "fflas_faxpy.inl"
 #include "fflas_fdot.inl"
-#include "fflas_fcopy.inl"
 
 #if 0
 //BB

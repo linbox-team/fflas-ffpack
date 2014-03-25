@@ -31,8 +31,21 @@
 
 // #include <x86intrin.h>
 #include <immintrin.h>
+#include "fflas-ffpack/field/unparametric.h"
+
+#define FFLASFFPACK_COPY_INIT 100
 
 namespace FFLAS {
+
+#define DEBUG_M256(M) \
+	{                    \
+		float ssssssss[8] ; \
+		_mm256_store_ps(ssssssss,M); \
+		for (size_t ii = 0 ; ii < 8 ; ++ii) \
+		std::cout << ssssssss[ii] << ", " ; \
+		std::cout << std::endl; \
+	}
+
 
 #if defined(__AVX2__) || defined(__AVX__)
 #ifdef __AVX2__
@@ -45,7 +58,7 @@ namespace FFLAS {
 		T = _mm256_cmp_pd(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_pd(Q,NEGP);				\
 		T = _mm256_and_pd(T,P);					\
-		Q = _mm256_and_pd(Q,T);				\
+		Q = _mm256_or_pd(Q,T);				\
 		C = _mm256_add_pd(C,Q);					\
 	}
 	// compute C modulo P in the range [MIN, MAX]
@@ -57,7 +70,7 @@ namespace FFLAS {
 		T = _mm256_cmp_ps(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_ps(Q,NEGP);				\
 		T = _mm256_and_ps(T,P);					\
-		Q = _mm256_and_ps(Q,T);				\
+		Q = _mm256_or_ps(Q,T);				\
 		C = _mm256_add_ps(C,Q);					\
 	}
 
@@ -71,19 +84,19 @@ namespace FFLAS {
 		T = _mm256_cmp_pd(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_pd(Q,NEGP);				\
 		T = _mm256_and_pd(T,P);					\
-		Q = _mm256_and_pd(Q,T);				\
+		Q = _mm256_or_pd(Q,T);				\
 		C = _mm256_add_pd(C,Q);					\
 	}
 	// compute C modulo P in the range [MIN, MAX]
 #define VEC_MODF_S(C,Q,P,NEGP,INVP,T,MIN,MAX)				\
-	{								\
-		Q = _mm256_mul_ps(C,INVP);  Q=_mm256_floor_ps(Q);	\
+	{  							\
+		Q = _mm256_mul_ps(C,INVP); Q=_mm256_floor_ps(Q);	\
 		T = _mm256_mul_ps(Q,P); C= _mm256_sub_ps(C,T);		\
 		Q = _mm256_cmp_ps(C,MAX,_CMP_GT_OS);			\
 		T = _mm256_cmp_ps(C,MIN,_CMP_LT_OS);			\
 		Q = _mm256_and_ps(Q,NEGP);				\
 		T = _mm256_and_ps(T,P);					\
-		Q = _mm256_and_ps(Q,T);				\
+		Q = _mm256_or_ps(Q,T);				\
 		C = _mm256_add_ps(C,Q);					\
 	}
 
@@ -108,7 +121,7 @@ namespace FFLAS {
 
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
-			for (size_t j=st;j<32;j+=8,i++){
+			for (size_t j=(size_t)st;j<32;j+=8,i++){
 				T[i]=fmod(T[i],p);
 				T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
@@ -147,7 +160,7 @@ namespace FFLAS {
 				return;
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
-			for (size_t j=st;j<32;j+=4,i++){
+			for (size_t j=(size_t)st;j<32;j+=4,i++){
 				T[i]=fmodf(T[i],p);
 				T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
@@ -199,12 +212,20 @@ namespace FFLAS {
 			invp=1./p;
 			modp(A,m,p,invp,0,p-1);
 			//! @bug to be removed
-			for (size_t i = 0 ; i < m ; ++i) if (A[i] >= p) A[i] -= p ;
+			// for (size_t i = 0 ; i < m ; ++i) if (A[i] >= p) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
-			double * Xi = A ;
-			for (; Xi < A+m*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
+			if (m < FFLASFFPACK_COPY_INIT) {
+				double * Xi = A ;
+				for (; Xi < A+m*incX; Xi+=incX )
+					F.init( *Xi , *Xi);
+			}
+			else {
+				double * Ac = new double[m] ;
+				fcopy(F,m,Ac,1,A,incX);
+				finit(F,m,Ac,1);
+				fcopy(F,m,A,incX,Ac,1);
+			}
 		}
 	}
 
@@ -219,12 +240,20 @@ namespace FFLAS {
 			invp=1.f/p;
 			modp(A,m,p,invp,0,p-1);
 			//! @bug to be removed
-			for (size_t i = 0 ; i < m ; ++i) if (A[i] >= p) A[i] -= p ;
+			// for (size_t i = 0 ; i < m ; ++i) if (A[i] >= p) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
-			float * Xi = A ;
-			for (; Xi < A+m*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
+			if (m < FFLASFFPACK_COPY_INIT) {
+				float * Xi = A ;
+				for (; Xi < A+m*incX; Xi+=incX )
+					F.init( *Xi , *Xi);
+			}
+			else {
+				float * Ac = new float[m] ;
+				fcopy(F,m,Ac,1,A,incX);
+				finit(F,m,Ac,1);
+				fcopy(F,m,A,incX,Ac,1);
+			}
 
 		}
 
@@ -243,12 +272,20 @@ namespace FFLAS {
 			double pmin = pmax-p+1;
 			modp(A,m,p,invp,pmin,pmax);
 			//! @bug to be removed
-			for (size_t i = 0 ; i < m ; ++i) if (A[i] > pmax) A[i] -= p ;
+			// for (size_t i = 0 ; i < m ; ++i) if (A[i] > pmax) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
-			double * Xi = A ;
-			for (; Xi < A+m*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
+			if (m < FFLASFFPACK_COPY_INIT) {
+				double * Xi = A ;
+				for (; Xi < A+m*incX; Xi+=incX )
+					F.init( *Xi , *Xi);
+			}
+			else {
+				double * Ac = new double[m] ;
+				fcopy(F,m,Ac,1,A,incX);
+				finit(F,m,Ac,1);
+				fcopy(F,m,A,incX,Ac,1);
+			}
 		}
 
 	}
@@ -265,12 +302,20 @@ namespace FFLAS {
 			float pmin = pmax-p+1;
 			modp(A,m,p,invp,pmin,pmax);
 			//! @bug to be removed
-			for (size_t i = 0 ; i < m ; ++i) if (A[i] > pmax) A[i] -= p ;
+			// for (size_t i = 0 ; i < m ; ++i) if (A[i] > pmax) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
-			float * Xi = A ;
-			for (; Xi < A+m*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
+			if (m < FFLASFFPACK_COPY_INIT) {
+				float * Xi = A ;
+				for (; Xi < A+m*incX; Xi+=incX )
+					F.init( *Xi , *Xi);
+			}
+			else {
+				float * Ac = new float[m] ;
+				fcopy(F,m,Ac,1,A,incX);
+				finit(F,m,Ac,1);
+				fcopy(F,m,A,incX,Ac,1);
+			}
 		}
 
 	}
