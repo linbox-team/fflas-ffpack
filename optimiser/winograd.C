@@ -55,6 +55,9 @@ bool balanced(const FFPACK::ModularBalanced<T>&)
 	return true;
 }
 
+
+#define MFLOPS (2.0/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
+
 //using namespace LinBox;
 int main () {
 	using namespace std;
@@ -87,12 +90,12 @@ int main () {
 		std::cout << std::endl
 			<< "fgemm " << n << "x" << n << ": "
 			<< chrono.usertime() << " s, "
-			<< (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
+			<< MFLOPS << " Mffops"
 			<< std::endl;
 		outlog << std::endl
 			<< "fgemm " << n << "x" << n << ": "
 			<< chrono.usertime() << " s, "
-			<< (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
+			<< MFLOPS << " Mffops"
 			<< std::endl;
 		basetime= chrono.usertime();
 		chrono.clear();
@@ -102,11 +105,11 @@ int main () {
 		chrono.stop();
 		std::cout << "1Wino " << n << "x" << n << ": "
 			<< chrono.usertime() << " s, "
-			<< (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
+			<< MFLOPS  << " Mffops"
 			<< std::endl;
 		outlog << "1Wino " << n << "x" << n << ": "
 			<< chrono.usertime() << " s, "
-			<< (2.0/chrono.usertime()*n/100.0*n/100.0*n/100.0) << " Mffops"
+			<< MFLOPS  << " Mffops"
 			<< std::endl;
 		time= chrono.usertime();
 

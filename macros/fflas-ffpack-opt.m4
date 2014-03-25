@@ -53,7 +53,7 @@ echo "  *** OPTIMIZATION ***  "
 AC_MSG_CHECKING([best threshold for Strassen-Winograd matrix multiplication])
 AC_MSG_RESULT([see below])
 
-CXXFLAGS_ALL="${BACKUP_CXXFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
+CXXFLAGS_ALL="${BACKUP_CXXFLAGS} ${DEFAULT_CFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
 WINO=`cat optimiser/winograd.C`
 
