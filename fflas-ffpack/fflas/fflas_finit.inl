@@ -198,6 +198,8 @@ namespace FFLAS {
 			p=(double)F.cardinality();
 			invp=1./p;
 			modp(A,m,p,invp,0,p-1);
+			//! @bug to be removed
+			for (size_t i = 0 ; i < m ; ++i) if (A[i] >= p) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			double * Xi = A ;
@@ -216,6 +218,8 @@ namespace FFLAS {
 			p=(float)F.cardinality();
 			invp=1.f/p;
 			modp(A,m,p,invp,0,p-1);
+			//! @bug to be removed
+			for (size_t i = 0 ; i < m ; ++i) if (A[i] >= p) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			float * Xi = A ;
@@ -226,7 +230,6 @@ namespace FFLAS {
 
 	}
 
-#if 0
 
 	template<>
 	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m,
@@ -239,6 +242,8 @@ namespace FFLAS {
 			double pmax = (p-1)/2 ;
 			double pmin = pmax-p+1;
 			modp(A,m,p,invp,pmin,pmax);
+			//! @bug to be removed
+			for (size_t i = 0 ; i < m ; ++i) if (A[i] > pmax) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			double * Xi = A ;
@@ -259,6 +264,8 @@ namespace FFLAS {
 			float pmax = (p-1)/2 ;
 			float pmin = pmax-p+1;
 			modp(A,m,p,invp,pmin,pmax);
+			//! @bug to be removed
+			for (size_t i = 0 ; i < m ; ++i) if (A[i] > pmax) A[i] -= p ;
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			float * Xi = A ;
@@ -267,7 +274,6 @@ namespace FFLAS {
 		}
 
 	}
-#endif
 
 
 	/*
