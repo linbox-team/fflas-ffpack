@@ -36,7 +36,6 @@ bool test_finit(size_t m, size_t k, size_t n, size_t p)
 		Timer tim;
 		Timer tom;
 		F.write(std::cout << "Modular ") << std::endl;
-		// std::cout << "Start Modular<"<< typeid(T).name()<<"> " << p << std::endl;
 		tim.clear();tim.start();
 		for (size_t i = 0 ; i < m ; ++i)
 			for (size_t j = 0 ; j < k ; ++j)
@@ -67,7 +66,6 @@ bool test_finit(size_t m, size_t k, size_t n, size_t p)
 
 		Timer tim;
 		Timer tom;
-		// std::cout << "Start ModularBalanced<"<< typeid(T).name()<<"> " << p << std::endl;
 		G.write(std::cout << "Modular ") << std::endl;
 		tim.clear();tim.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -101,7 +99,6 @@ bool test_finit(size_t m, size_t k, size_t n, size_t p)
 
 		Timer tim;
 		Timer tom;
-		// std::cout << "Start ModularBalanced<"<< typeid(T).name()<<"> " << p << std::endl;
 		G.write(std::cout << "Modular ") << std::endl;
 		tim.clear();tim.start();
 		for (size_t i = 1 ; i < m*n ; i += incX) {
