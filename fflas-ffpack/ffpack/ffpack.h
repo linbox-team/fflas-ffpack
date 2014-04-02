@@ -1672,7 +1672,7 @@ namespace FFPACK  {
 	 * @param [in,out] A input matrix (\f$M \times M\f$)
 	 * @param lda leading dimension of A
 	 * @param nullity dimension of the kernel of A
-	 * @return pointer to \f$A \gets A^{-1}\f$
+	 * @return pointer to \f$A\f$ and \f$A \gets A^{-1}\f$
 	 */
 	template <class Field>
 	typename Field::Element*
@@ -1680,6 +1680,11 @@ namespace FFPACK  {
 		typename Field::Element * A, const size_t lda,
 		int& nullity)
 	{
+
+		if (M == 0) {
+			nullity = 0 ;
+			return NULL ;
+		}
 
 		size_t * P = new size_t[M];
 		size_t * Q = new size_t[M];
@@ -1715,7 +1720,7 @@ namespace FFPACK  {
 	{
 		if (M == 0) {
 			nullity = 0 ;
-			return X ;
+			return NULL ;
 		}
 
 
@@ -1748,7 +1753,7 @@ namespace FFPACK  {
 	{
 		if (M == 0) {
 			nullity = 0 ;
-			return X ;
+			return NULL ;
 		}
 		size_t *P = new size_t[M];
 		size_t *rowP = new size_t[M];
