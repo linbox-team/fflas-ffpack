@@ -304,6 +304,9 @@ namespace FFPACK  {
 	Rank( const Field& F, const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda)
 	{
+		if (M == 0 and  N  == 0)
+			return 0 ;
+
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
@@ -317,10 +320,13 @@ namespace FFPACK  {
 	 * The method is a block elimination with early termination
 	 *
 	 * using LQUP factorization  with early termination.
+	 * If <code>M != N</code>,
+	 * then the matrix is virtually padded with zeros to make it square and
+	 * it's determinant is zero.
 	 * @warning The input matrix is modified.
 	 * @param F field
 	 * @param M row dimension of the matrix
-	 * @param N column dimension of the matrix
+	 * @param N column dimension of the matrix.
 	 * @param [in,out] A input matrix
 	 * @param lda leading dimension of A
 	 */
@@ -349,14 +355,17 @@ namespace FFPACK  {
 
 	/** @brief Returns the determinant of the given matrix.
 	 * @details The method is a block elimination with early termination
+	 * using LQUP factorization  with early termination.
+	 * If <code>M != N</code>,
+	 * then the matrix is virtually padded with zeros to make it square and
+	 * it's determinant is zero.
 	 * @warning The input matrix is modified.
 	 * @param F field
 	 * @param M row dimension of the matrix
-	 * @param N column dimension of the matrix
+	 * @param N column dimension of the matrix.
 	 * @param [in,out] A input matrix
 	 * @param lda leading dimension of A
 	 */
-	///  using LQUP factorization  with early termination.
 	template <class Field>
 	typename Field::Element
 	Det( const Field& F, const size_t M, const size_t N,
