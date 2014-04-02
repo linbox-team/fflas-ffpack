@@ -329,6 +329,9 @@ namespace FFPACK  {
 	IsSingular( const Field& F, const size_t M, const size_t N,
 		    typename Field::Element * A, const size_t lda)
 	{
+		if ( (M==0) and (N==0) )
+			return  false ;
+
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
 		bool singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
@@ -354,6 +357,8 @@ namespace FFPACK  {
 	Det( const Field& F, const size_t M, const size_t N,
 	     typename Field::Element * A, const size_t lda)
 	{
+		if ( (M==0) and (N==0) )
+			return  F.one ;
 
 		typename Field::Element det; F.init(det);
 		bool singular;
