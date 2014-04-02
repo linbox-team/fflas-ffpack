@@ -1713,6 +1713,11 @@ namespace FFPACK  {
 		typename Field::Element * X, const size_t ldx,
 		int& nullity)
 	{
+		if (M == 0) {
+			nullity = 0 ;
+			return X ;
+		}
+
 
 		FFLAS::fcopy(F,M,M,X,ldx,A,lda);
 		Invert (F,  M, X, lda, nullity);
@@ -1741,7 +1746,10 @@ namespace FFPACK  {
 		 typename Field::Element * X, const size_t ldx,
 		 int& nullity)
 	{
-
+		if (M == 0) {
+			nullity = 0 ;
+			return X ;
+		}
 		size_t *P = new size_t[M];
 		size_t *rowP = new size_t[M];
 
