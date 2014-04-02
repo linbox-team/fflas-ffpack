@@ -130,6 +130,7 @@ int main(int argc, char** argv)
 	typedef FFPACK:: ModularBalanced<double> Field;
 	Field F(p);
 	pass &= test_det(F,n,iters);
+	pass &= test_det(F,0,iters);
 
 	return ((pass==true)?0:1);
 }
