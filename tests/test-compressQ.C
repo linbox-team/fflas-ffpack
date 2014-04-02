@@ -101,11 +101,11 @@ int main(int argc, char** argv)
 
 	// write_field(F, cerr, A, N, N, N);
 
-	FFPACK::CompressRowsQK (F, N, A+9*N, N, tmp, N, deg+3, 4, 3 );
+	FFPACK::Protected::CompressRowsQK (F, N, A+9*N, N, tmp, N, deg+3, 4, 3 );
 
 	// write_field(F, cerr, A, N, N, N);
 
-	FFPACK::DeCompressRowsQK (F, N, N-9, A+9*N, N, tmp, N, deg+3, 4, 3 );
+	FFPACK::Protected::DeCompressRowsQK (F, N, N-9, A+9*N, N, tmp, N, deg+3, 4, 3 );
 
 	// write_field(F, cerr, A, N, N, N);
 

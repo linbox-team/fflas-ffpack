@@ -55,6 +55,7 @@ namespace FFPACK {
 			return ind;
 		}
 
+		// Subroutine for Keller-Gehrig charpoly algorithm
 		// Compute the new d after a LSP ( d[i] can be zero )
 		template<class Field>
 		size_t newD( const Field& F, size_t * d, bool& KeepOn,

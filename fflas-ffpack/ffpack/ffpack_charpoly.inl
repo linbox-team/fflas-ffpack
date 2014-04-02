@@ -110,6 +110,45 @@ namespace FFPACK {
 		}
 	}
 
+	template<class Polynomial, class Field>
+	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2)
+	{
+		size_t i,j;
+		// Warning: assumes that res is allocated to the size of the product
+		res.resize(P1.size()+P2.size()-1);
+		FFLAS::fzero(F,res.size(),&res[0],1);
+		for ( i=0;i<P1.size();i++)
+			for ( j=0;j<P2.size();j++)
+				F.axpyin(res[i+j],P1[i],P2[j]);
+		return res;
+	}
+
+	template <class Field, class Polynomial>
+	Polynomial&
+	CharPoly( const Field& F, Polynomial& charp, const size_t N,
+		  typename Field::Element * A, const size_t lda,
+		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
+	{
+
+		std::list<Polynomial> factor_list;
+		CharPoly (F, factor_list, N, A, lda, CharpTag);
+		typename std::list<Polynomial >::const_iterator it;
+		it = factor_list.begin();
+
+		charp.resize(N+1);
+
+		Polynomial P = charp = *(it++);
+
+		while( it!=factor_list.end() ){
+			mulpoly (F,charp, P, *it);
+			P = charp;
+			++it;
+		}
+
+		return charp;
+	}
+
+
 	namespace Protected {
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&

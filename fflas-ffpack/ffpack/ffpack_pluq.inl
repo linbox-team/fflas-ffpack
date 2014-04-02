@@ -301,166 +301,168 @@ rank++;
 		return (size_t) rank;
 	}
 // Premiere tentative de Crout avortee: trop de copies compact<->disperse et 2 cyclic-shift
-//	template<class Field>
-//	inline size_t
-// 	PLUQ_basecaseCrout (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-// 			    const size_t M, const size_t N,
-// 			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
-// 	{
-// 		typedef typename Field::Element Element;
-// 		size_t row = 0;
-// 		size_t col = 0;
-// 		size_t rank = 0;
-// 		std::vector<bool> pivotRows(M,false);
-// 		std::vector<bool> pivotCols(N,false);
-// 		size_t * MathP = new size_t[M];
-// 		size_t * MathQ = new size_t[N];
-// 		    // Elimination takes place on Acop
-// 		    // The Compact L\U output will be progressively stored in A
-// 		Element* Acop = new Element[M*N];
-// 		size_t ldac=N;
-// 		Element* Aci=Acop;
-// 		for (size_t i=0; i<M; ++i)
-// 			for (size_t j=0; i<N; ++j, ++Aci)
-// 				Fi.assign (*Aci, A[i*lda+j]);
-// 		// this is C99 (-Wno-vla)
-// 		while ((col < N)||(row < M)){
-// 			size_t piv2 = 0;
-// 			size_t piv3 = 0;
-// 			Element * Ac2 = Acop + col;
-// 			Element * Ac3 = Acop + row*ldac;
-// 			Element * A12 = A+rank;
-// 			Element * A21 = A+rank*lda;
-// 			Element * A22 = A21+rank;
-// 			if (row==M){
-// 				piv3=col;
-// 			}else
-// 				while ((piv3 < col) && (pivotCols[piv3] || Fi.isZero (Ac3 [piv3]))) piv3++;
-// 			if (piv3 == col){
-// 				    // No pivot found in bottom row -> need to update one column and search in it
-// 				if (col==N){
-// 					row++;
-// 					continue;
-// 				}
-// 				    // Copying the U part of the column
-// 				for (size_t i=0; i<rank; ++i)
-// 					Fi.assign (A12 [i*lda], Ac2 [MathP[i]*ldac]);
-// 				    // Copying the lower part to be updated
-// 				Element * A_it = A22;
-// 				for (size_t i=0; i<row; ++i)
-// 					if (!pivotRows[i])
-// 						Fi.assign (*(A_it++), Ac2[i*ldac]);
-// 				for (size_t i=row; i<M; ++i)
-// 					Fi.assign (*(A_it++), Ac2[i*ldac]);
+#if 0
+	template<class Field>
+	inline size_t
+	PLUQ_basecaseCrout (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+			    const size_t M, const size_t N,
+			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	{
+		typedef typename Field::Element Element;
+		size_t row = 0;
+		size_t col = 0;
+		size_t rank = 0;
+		std::vector<bool> pivotRows(M,false);
+		std::vector<bool> pivotCols(N,false);
+		size_t * MathP = new size_t[M];
+		size_t * MathQ = new size_t[N];
+		    // Elimination takes place on Acop
+		    // The Compact L\U output will be progressively stored in A
+		Element* Acop = new Element[M*N];
+		size_t ldac=N;
+		Element* Aci=Acop;
+		for (size_t i=0; i<M; ++i)
+			for (size_t j=0; i<N; ++j, ++Aci)
+				Fi.assign (*Aci, A[i*lda+j]);
+		// this is C99 (-Wno-vla)
+		while ((col < N)||(row < M)){
+			size_t piv2 = 0;
+			size_t piv3 = 0;
+			Element * Ac2 = Acop + col;
+			Element * Ac3 = Acop + row*ldac;
+			Element * A12 = A+rank;
+			Element * A21 = A+rank*lda;
+			Element * A22 = A21+rank;
+			if (row==M){
+				piv3=col;
+			}else
+				while ((piv3 < col) && (pivotCols[piv3] || Fi.isZero (Ac3 [piv3]))) piv3++;
+			if (piv3 == col){
+				    // No pivot found in bottom row -> need to update one column and search in it
+				if (col==N){
+					row++;
+					continue;
+				}
+				    // Copying the U part of the column
+				for (size_t i=0; i<rank; ++i)
+					Fi.assign (A12 [i*lda], Ac2 [MathP[i]*ldac]);
+				    // Copying the lower part to be updated
+				Element * A_it = A22;
+				for (size_t i=0; i<row; ++i)
+					if (!pivotRows[i])
+						Fi.assign (*(A_it++), Ac2[i*ldac]);
+				for (size_t i=row; i<M; ++i)
+					Fi.assign (*(A_it++), Ac2[i*ldac]);
 
-// 				    //Update
-// 				fgemv (Fi, FFLAS::FflasNoTrans, M-rank, rank, Fi.mOne,
-// 				       A21, lda, A12, lda, Fi.one, A22, lda);
+				    //Update
+				fgemv (Fi, FFLAS::FflasNoTrans, M-rank, rank, Fi.mOne,
+				       A21, lda, A12, lda, Fi.one, A22, lda);
 
-// 				// Copying back the updated column to Acop
-// 				// could be avoided: search the min index of pivot directly on A22
+				// Copying back the updated column to Acop
+				// could be avoided: search the min index of pivot directly on A22
 
-// 				A_it = A22;
-// 				for (size_t i=0; i<M; ++i)
-// 					if (!pivotRows[i]){
-// 						Fi.assign (Ac2[i*ldac], *(A_it));
-// 						A_it+=lda;
-// 					}
-// 				while ((piv2 < row) && (pivotRows[piv2] || Fi.isZero (Ac2 [piv2*ldac]))) piv2++;
-// 				if (col<N) col++;
-// 				if (piv2==M)
-// 					continue;
-// 			} else
-// 				piv2 = row;
+				A_it = A22;
+				for (size_t i=0; i<M; ++i)
+					if (!pivotRows[i]){
+						Fi.assign (Ac2[i*ldac], *(A_it));
+						A_it+=lda;
+					}
+				while ((piv2 < row) && (pivotRows[piv2] || Fi.isZero (Ac2 [piv2*ldac]))) piv2++;
+				if (col<N) col++;
+				if (piv2==M)
+					continue;
+			} else
+				piv2 = row;
 
-// 			if (row<M)  row++;
-// 			if (Fi.isZero (Acop [piv2*lda+piv3])){
-// 				    // no pivot found
-// 				continue;
-// 			}
-// 			    // At this point the pivot is located at x=piv2 y = piv3
-// 			Ac2 = Acop+piv3;
-// 			Ac3 = Acop+piv2*ldac;
-// 			MathQ[rank] = piv3;
-// 			MathP[rank] = piv2;
-// 			pivotCols[piv3] = true;
-// 			pivotRows[piv2] = true;
-//                             //Applying the permutation on L
-// 			    // finding the row idx of row piv2 in L stored in A
-// 			size_t Lpiv2=1;
-// 			    // This value should be maintained, not computed every time!!!
-// 			if (piv2==row)
-// 				Lpiv2 = row-rank+1;
-// 			else
-// 				for (size_t i=0; i<piv2; ++i)
-// 					if (!pivotRows[i])
-// 						Lpiv2 ++;
-// 			cyclic_shift_row(A21, Lpiv2, rank+1, lda);
+			if (row<M)  row++;
+			if (Fi.isZero (Acop [piv2*lda+piv3])){
+				    // no pivot found
+				continue;
+			}
+			    // At this point the pivot is located at x=piv2 y = piv3
+			Ac2 = Acop+piv3;
+			Ac3 = Acop+piv2*ldac;
+			MathQ[rank] = piv3;
+			MathP[rank] = piv2;
+			pivotCols[piv3] = true;
+			pivotRows[piv2] = true;
+			    //Applying the permutation on L
+			    // finding the row idx of row piv2 in L stored in A
+			size_t Lpiv2=1;
+			    // This value should be maintained, not computed every time!!!
+			if (piv2==row)
+				Lpiv2 = row-rank+1;
+			else
+				for (size_t i=0; i<piv2; ++i)
+					if (!pivotRows[i])
+						Lpiv2 ++;
+			cyclic_shift_row(A21, Lpiv2, rank+1, lda);
 
-// 			Element invpiv;
-// 			Fi.inv (invpiv, Ac3[piv3]);
-// 			if (Diag==FFLAS::FflasNonUnit){
-// 				    // Normalizing the pivot column
-// 				Element * L_it = A22 + lda;
-// 				for (size_t i=0; i<row+1; ++i)
-// 					if (!pivotRows[i]){
-// 						Fi.assign (*L_it, Fi.mulin (Ac2 [i*ldac], invpiv));
-// 						L_it+= lda;
-// 					}
+			Element invpiv;
+			Fi.inv (invpiv, Ac3[piv3]);
+			if (Diag==FFLAS::FflasNonUnit){
+				    // Normalizing the pivot column
+				Element * L_it = A22 + lda;
+				for (size_t i=0; i<row+1; ++i)
+					if (!pivotRows[i]){
+						Fi.assign (*L_it, Fi.mulin (Ac2 [i*ldac], invpiv));
+						L_it+= lda;
+					}
 
-// 				for (size_t i=row+1; i<M; ++i){
-// 					Fi.assign (*L_it,Fi.mulin (Ac2 [i*ldac], invpiv));
-// 					Ldt_it+=lda;
-// 				}
-// 			}
-// 			    //Copying the new row of U to the compact storage in A
-// 			Element* U_it = A22+1;
-// 			for (size_t i=0; i<col+1; ++i)
-// 				if (!pivotCols[i])
-// 					Fi.assign (*(U_it++), Ac3 [i]);
-// 			for (size_t i=col+1; i<N; ++i)
-// 				Fi.assign (*(U_it++), Ac3 [i]);
-
-
-// 		      !!!!
-// 			    //Then Updating it
-// 			fgemv (Fi, FFLAS::FflasNoTrans, rank, N-rank-1, Fi.mOne, A12, lda, A21, 1, Fi.one, A22+1, 1);
+				for (size_t i=row+1; i<M; ++i){
+					Fi.assign (*L_it,Fi.mulin (Ac2 [i*ldac], invpiv));
+					Ldt_it+=lda;
+				}
+			}
+			    //Copying the new row of U to the compact storage in A
+			Element* U_it = A22+1;
+			for (size_t i=0; i<col+1; ++i)
+				if (!pivotCols[i])
+					Fi.assign (*(U_it++), Ac3 [i]);
+			for (size_t i=col+1; i<N; ++i)
+				Fi.assign (*(U_it++), Ac3 [i]);
 
 
-// 			    // Divinding this new row by L
-// 			if (Diag==FFLAS::FflasUnit){
-// 				    // Normalizing the pivot row
-// 				for (size_t i=piv3+1; i<N; ++i)
-// 					Fi.assign (A21[i], Fi.mulin (Ac3[i], invpiv));
-// 			}
+		      !!!!
+			    //Then Updating it
+			fgemv (Fi, FFLAS::FflasNoTrans, rank, N-rank-1, Fi.mOne, A12, lda, A21, 1, Fi.one, A22+1, 1);
 
-// 			    // Need to update the cols already updated
-// 			if (piv3<col)
-// 				for (size_t i=piv2+1; i<M; ++i)
-// 					for (size_t j=piv3+1; j<col; ++j)
-// 						if (!pivotCols[j])
-// 							Fi.assign(!!!!, Fi.maxpyin (Acop[i*lda+j], Ac2[i*ldac], Ac3[j]));
-// // A faire aussi dans A
-// 			rank++;
-// 		}
-// 		delete[] Acop;
-// 		    // Building permutations
-// 		 size_t nonpiv = rank;
-// 		 for (size_t i = 0; i<M; ++i)
-// 			 if (!pivotRows[i])
-// 				 MathP[nonpiv++] = i;
-// 		 nonpiv = rank;
-// 		 for (size_t i = 0; i<N; ++i)
-// 			 if (!pivotCols[i])
-// 				 MathQ[nonpiv++] = i;
-// 		MathPerm2LAPACKPerm (Q, MathQ, N);
-// 		delete[] MathQ;
 
-// 		MathPerm2LAPACKPerm (P, MathP, M);
-// 		delete[] MathP;
+			    // Divinding this new row by L
+			if (Diag==FFLAS::FflasUnit){
+				    // Normalizing the pivot row
+				for (size_t i=piv3+1; i<N; ++i)
+					Fi.assign (A21[i], Fi.mulin (Ac3[i], invpiv));
+			}
 
-// 		return rank;
-// 	}
+			    // Need to update the cols already updated
+			if (piv3<col)
+				for (size_t i=piv2+1; i<M; ++i)
+					for (size_t j=piv3+1; j<col; ++j)
+						if (!pivotCols[j])
+							Fi.assign(!!!!, Fi.maxpyin (Acop[i*lda+j], Ac2[i*ldac], Ac3[j]));
+// A faire aussi dans A
+			rank++;
+		}
+		delete[] Acop;
+		    // Building permutations
+		 size_t nonpiv = rank;
+		 for (size_t i = 0; i<M; ++i)
+			 if (!pivotRows[i])
+				 MathP[nonpiv++] = i;
+		 nonpiv = rank;
+		 for (size_t i = 0; i<N; ++i)
+			 if (!pivotCols[i])
+				 MathQ[nonpiv++] = i;
+		MathPerm2LAPACKPerm (Q, MathQ, N);
+		delete[] MathQ;
+
+		MathPerm2LAPACKPerm (P, MathP, M);
+		delete[] MathP;
+
+		return rank;
+	}
+#endif
 
 	template<class Field>
 	inline size_t
@@ -756,140 +758,11 @@ rank++;
 
 	}
 
-	template <class Element>
-	inline void applyS (Element* A, const size_t lda, const size_t width,
-			    const size_t M2,
-			    const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4)
-	{
-		Element * tmp = new Element [(M2-R1-R2)*width];
-		// std::cerr<<"ici"<<std::endl;
-		for (size_t i = 0, j = R1+R2; j < M2; ++i, ++j)
-			for (size_t k = 0; k<width; ++k)
-				tmp [i*width + k] = A [j*lda + k];
-		for (size_t i = M2, j = R1+R2; i < M2+R3+R4; ++i, ++j)
-			for (size_t k = 0; k<width; ++k)
-				A [j*lda + k] = A [i*lda +k];
-		for (size_t i = 0, j = R1+R2+R3+R4; i < M2-R1-R2; ++i, ++j)
-			for (size_t k = 0; k<width; ++k)
-				A [j*lda + k] = tmp [i*width + k];
-		delete[] tmp;
-	}
-
-
-	template <class Element>
-	inline void applyT (Element* A, const size_t lda, const size_t width,
-			    const size_t N2,
-			    const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4)
-	{
-		Element * tmp = new Element[(N2-R1)*width];
-		for (size_t k = 0; k < width; ++k){
-			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
-				tmp [i + k*(N2-R1)] = A [k*lda + j];
-			}
-
-			for (size_t i = N2, j = R1; i < N2+R2; ++i, ++j)
-				A [k*lda + j] = A [k*lda + i];
-
-			for (size_t i = 0, j = R1+R2; i < R3; ++i, ++j)
-				A [k*lda + j] = tmp [k*(N2-R1) + i];
-
-			for (size_t i = N2+R2, j = R1+R2+R3; i < N2+R2+R4; ++i,++j)
-				A [k*lda + j] = A [k*lda + i];
-			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
-				A [k*lda + j] = tmp [k*(N2-R1) + i];
-		}
-		delete[] tmp;
-	}
-
-
-            /**
-	     * Conversion of a permutation from LAPACK format to Math format
-	     */
-	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
-				  const size_t N)
-	{
-		for (size_t i=0; i<N; i++)
-			MathP[i] = i;
-		for (size_t i=0; i<N; i++){
-			if (LapackP[i] != i){
-				size_t tmp = MathP[i];
-				MathP[i] = MathP[LapackP[i]];
-				MathP[LapackP[i]] = tmp;
-			}
-		}
-	}
-
-	    /**
-	     * Conversion of a permutation from Maths format to LAPACK format
-	     */
-	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
-					 const size_t N)
-	{
-		size_t * T = new size_t[N];
-		size_t * Tinv = new size_t[N];
-		for (size_t i=0; i<N; i++){
-			T[i] =i;
-			Tinv[i] = i;
-		}
-		for (size_t i=0; i<N; i++){
-			size_t j = Tinv [MathP [i]];
-			LapackP [i] = j;
-			size_t tmp = T[j];
-			T[j] = T[i];
-			Tinv[T[i]] = j;
-			T[i] = tmp;
-			Tinv[tmp] = i;
-		}
-		delete[] T;
-		delete[] Tinv;
-	}
-
-	    /**
-	     * Computes P1 [ I_R     ] stored in MathPermutation format
-	     *             [     P_2 ]
-	     */
-	inline void composePermutationsP (size_t * MathP,
-				  const size_t * P1,
-				  const size_t * P2,
-				  const size_t R, const size_t N)
-	{
-		for (size_t i=0; i<N; ++i)
-			MathP[i] = i;
-		LAPACKPerm2MathPerm (MathP, P1, N);
-
-		for (size_t i=R; i<N; i++){
-			if (P2[i-R] != i-R){
-				size_t tmp = MathP[i];
-				MathP[i] = MathP[P2[i-R]+R];
-				MathP[P2[i-R]+R] = tmp;
-			}
-		}
-	}
-
-	inline void composePermutationsQ (size_t * MathP,
-				  const size_t * Q1,
-				  const size_t * Q2,
-				  const size_t R, const size_t N)
-	{
-		for (size_t i=0; i<N; ++i)
-			MathP[i] = i;
-		LAPACKPerm2MathPerm (MathP, Q1, N);
-
-		for (size_t i=R; i<N; i++){
-			if (Q2[i-R] != i-R){
-				size_t tmp = MathP[i];
-				MathP[i] = MathP[Q2[i-R]+R];
-				MathP[Q2[i-R]+R] = tmp;
-			}
-		}
-	}
-
 	inline void
 	RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
 			      const size_t * P, const size_t * Q,
-			      const size_t M, const size_t N, const size_t R){
+			      const size_t M, const size_t N, const size_t R)
+	{
 		size_t * RRP=new size_t[M];
 		size_t * CRP=new size_t[N];
 		for (size_t i=0;i < M; ++i)
@@ -927,169 +800,6 @@ rank++;
 		// std::cerr<<std::endl;
 		delete[] RRP;
 		delete[] CRP;
-	}
-
-	inline void
-	cyclic_shift_mathPerm (size_t * P,  const size_t s){
-                size_t tmp;
-                tmp = *(P+s-1);
-		    //memmove(P+1, P, (s)*sizeof(size_t));
-		size_t * Pi = P;
-		std::copy(Pi, Pi+s-1, Pi+1);
-
-                *(P)=tmp;
-	}
-
-	template<typename Base_t>
-	inline void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda) {
-
-#ifdef MEMCOPY
-//		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
-
-		if (m > 1) {
-			const size_t mun(m-1);
-			if (n > 1) {
-//     std::cerr << "m: " << m << ", n: " << n << std::endl;
-				const size_t nun(n-1);
-				const size_t blo(sizeof(Base_t));
-				// const size_t bmu(blo*mun);
-				const size_t bnu(blo*nun);
-				Base_t * b = new Base_t[mun];
-				for(size_t i=0; i<mun; ++i) b[i] = A[i*lda+nun];
-				Base_t * dc = new Base_t[n];
-				memcpy(dc+1,A+mun*lda,bnu);
-				*dc = A[mun*lda+nun]; // this is d
-				    // dc = [ d c ]
-
-				for(size_t i=mun; i>0; --i)
-					memcpy(A+1+i*lda, A+(i-1)*lda, bnu);
-
-				memcpy(A, dc, bnu+blo);
-				for(size_t i=0; i<mun; ++i) A[i*lda+lda] = b[i];
-				delete [] dc;
-				delete [] b;
-
-			} else if (n != 0) {
-				Base_t d = A[mun*lda];
-				for(size_t i=mun; i>0; --i) A[i*lda]=A[(i-1)*lda];
-				*A=d;
-			}
-		} else {
-			if ((m!=0) && (n > 1)) {
-				const size_t nun(n-1);
-				const size_t blo(sizeof(Base_t));
-				const size_t bnu(blo*nun);
-				Base_t d = A[nun];
-//  std::cerr << "d: " << d << std::endl;
-				Base_t * tmp = new Base_t[nun];
-				memcpy(tmp,A,bnu);
-				memcpy(A+1,tmp,bnu);
-//				std::copy(A,A+nun,A+1);
-				*A=d;
-				delete [] tmp;
-
-			}
-		}
-//		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
-
-#else
-
-		    //	std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
-		if (m > 1) {
-			const size_t mun(m-1);
-			if (n > 1) {
-				const size_t nun(n-1);
-
-				Base_t * b = new Base_t[mun];
-				Base_t * Ainun = A+nun;
-				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
-
-				    // dc = [ d c ]
-				Base_t * dc = new Base_t[n];
-				std::copy(Ainun-nun, Ainun, dc+1);
-
-				    // this is d
-				*dc = *Ainun;
-
-				Base_t * Ai=A+(mun-1)*lda;
-				for(size_t i=mun; i>0; --i, Ai-=lda)
-					std::copy(Ai, Ai+nun, Ai+1+lda);
-
-				std::copy(dc, dc+n, A);
-
-				Base_t * Aipo = A+lda;
-				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = b[i];
-
-				delete [] dc;
-				delete [] b;
-			} else if (n != 0) {
-				Base_t * Ai=A+mun*lda;
-				Base_t d = *Ai;
-				for(; Ai != A; Ai-=lda) *Ai= *(Ai-lda);
-				*A=d;
-			}
-		} else {
-			if ((m!=0) && (n > 1)) {
-				const size_t nun(n-1);
-				Base_t d = A[nun];
-				std::copy(A,A+nun,A+1);
-				*A=d;
-			}
-		}
-
-#endif
-	}
-	template<typename Base_t>
-	inline void cyclic_shift_row(Base_t * A, size_t m, size_t n, size_t lda)
-	{
-
-#ifdef MEMCOPY
-		if (m > 1) {
-			const size_t mun(m-1);
-
-			Base_t * b = new Base_t[n];
-			Base_t * Ai = A+mun*lda;
-			memcpy (b,Ai,n*sizeof(Base_t));
-
-			for(Base_t * Ac = A+mun*lda; Ac!=A;Ac-=lda)
-				memcpy (Ac, Ac-lda, n*sizeof(Base_t));
-
-			memcpy ( A, b, n*sizeof(Base_t));
-			delete [] b;
-		}
-
-#else
-		if (m > 1) {
-			const size_t mun(m-1);
-
-			Base_t * b = new Base_t[n];
-			Base_t * Ai = A+mun*lda;
-			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
-
-			for(Base_t * Ac = A+mun*lda; Ac!=A;Ac-=lda)
-                std::copy(Ac-lda,Ac-lda+n, Ac);
-
-			Base_t * Aii = A;
-			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = b[i];
-
-			delete [] b;
-		}
-
-#endif
-	}
-
-	template<typename Element>
-	inline void cyclic_shift_col(Element * A, size_t m, size_t n, size_t lda)
-	{
-		if (n > 1) {
-			const size_t nun(n-1);
-			for(Element*Ai=A; Ai!= A+m*lda; Ai+=lda)
-			{
-				Element tmp = Ai[nun];
-				std::copy_backward(Ai, Ai+nun, Ai+n);
-				*Ai=tmp;
-			}
-		}
 	}
 
 

@@ -341,7 +341,7 @@ extern "C" {
 
 	// static const char* EXT_BLAS_SIDE         (CBLAS_SIDE t)      { if (t == CblasLeft)  return "L"; else return "R";}
 	// static const char* EXT_BLAS_SIDE_tr      (CBLAS_SIDE t)      { if (t == CblasLeft)  return "R"; else return "L";}
-#endif
+#endif // CBLAS_EXTERNALS
 
 
 // define external link to LAPACK routines

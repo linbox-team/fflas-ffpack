@@ -26,6 +26,8 @@
  * ========LICENCE========
  *.
  */
+#ifndef __FFLASFFPACK_ffpack_charpoly_danilveski_INL
+#define __FFLASFFPACK_ffpack_charpoly_danilveski_INL
 
 namespace FFPACK {
 
@@ -93,3 +95,5 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 }
 
 } // FFPACK
+
+#endif // __FFLASFFPACK_ffpack_charpoly_danilveski_INL

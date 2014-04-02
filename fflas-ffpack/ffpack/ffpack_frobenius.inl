@@ -33,6 +33,46 @@
 // CharpolyArithProg: Las Vegas algorithm to compute the Charpoly
 // over a large field (Z/pZ, s.t.  p > 2n^2)
 //---------------------------------------------------------------------
+//
+//
+namespace FFPACK { namespace Protected {
+	template <class Field>
+	void CompressRows (Field& F, const size_t M,
+			   typename Field::Element * A, const size_t lda,
+			   typename Field::Element * tmp, const size_t ldtmp,
+			   const size_t * d, const size_t nb_blocs);
+
+	template <class Field>
+	void CompressRowsQK (Field& F, const size_t M,
+			     typename Field::Element * A, const size_t lda,
+			     typename Field::Element * tmp, const size_t ldtmp,
+			     const size_t * d,const size_t deg, const size_t nb_blocs);
+
+	template <class Field>
+	void DeCompressRows (Field& F, const size_t M, const size_t N,
+			     typename Field::Element * A, const size_t lda,
+			     typename Field::Element * tmp, const size_t ldtmp,
+			     const size_t * d, const size_t nb_blocs);
+	template <class Field>
+	void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
+			       typename Field::Element * A, const size_t lda,
+			       typename Field::Element * tmp, const size_t ldtmp,
+			       const size_t * d, const size_t deg, const size_t nb_blocs);
+
+	template <class Field>
+	void CompressRowsQA (Field& F, const size_t M,
+			     typename Field::Element * A, const size_t lda,
+			     typename Field::Element * tmp, const size_t ldtmp,
+			     const size_t * d, const size_t nb_blocs);
+	template <class Field>
+	void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
+			       typename Field::Element * A, const size_t lda,
+			       typename Field::Element * tmp, const size_t ldtmp,
+			       const size_t * d, const size_t nb_blocs);
+	} // Protected
+} // FFPACK
+
+
 template <class Field, class Polynomial>
 std::list<Polynomial>&
 FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
@@ -330,14 +370,14 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		// Copying K3 <- K
 		for (size_t i=0; i<Mk; ++i)
 			FFLAS::fcopy (F, Ncurr, K3+i, ldk, K+i, ldk);
-		CompressRowsQK (F, Mk, K3 + nb_full_blocks*(deg-1)*ldk, ldk,
+		Protected::CompressRowsQK (F, Mk, K3 + nb_full_blocks*(deg-1)*ldk, ldk,
 				Arp, ldarp, dK+nb_full_blocks, deg, Mk-nb_full_blocks);
 
 		// K <- PA K
-		CompressRows (F, nb_full_blocks, K, ldk, Arp, ldarp, dA, Ma);
+		Protected::CompressRows (F, nb_full_blocks, K, ldk, Arp, ldarp, dA, Ma);
 
 		// A <- newQA^T K (compress)
-		CompressRowsQA (F, Ma, Ac, ldac, Arp, ldarp, dA, Ma);
+		Protected::CompressRowsQA (F, Ma, Ac, ldac, Arp, ldarp, dA, Ma);
 
 		// K <- A K
 		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Ma, nb_full_blocks, Ma,F.one,
@@ -361,10 +401,10 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		}
 
 		// K <- QA K
-		DeCompressRowsQA (F, Mk, Ncurr, K, ldk, Arp, ldarp, dA, Ma);
+		Protected::DeCompressRowsQA (F, Mk, Ncurr, K, ldk, Arp, ldarp, dA, Ma);
 
 		// K <- QK^T K
-		CompressRowsQK (F, Mk, K + nb_full_blocks*(deg-1)*ldk, ldk, Arp, ldarp,
+		Protected::CompressRowsQK (F, Mk, K + nb_full_blocks*(deg-1)*ldk, ldk, Arp, ldarp,
 				dK+nb_full_blocks, deg, Mk-nb_full_blocks);
 
 		// K <- K^-1 K
@@ -387,7 +427,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		delete[] Q;
 
 		// K <- PK^T K
-		DeCompressRows (F, Mk, Ncurr, K, ldk, Arp, ldarp, dK, Mk);
+		Protected::DeCompressRows (F, Mk, Ncurr, K, ldk, Arp, ldarp, dK, Mk);
 
 		// K <- K PK (dA <- dK)
 		if (nb_full_blocks*deg < Ncurr)
@@ -446,8 +486,9 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	return frobeniusForm;
 }
 
+namespace FFPACK { namespace Protected {
 template <class Field>
-void FFPACK::CompressRowsQK (Field& F, const size_t M,
+void CompressRowsQK (Field& F, const size_t M,
 			   typename Field::Element * A, const size_t lda,
 			   typename Field::Element * tmp, const size_t ldtmp,
 			   const size_t * d, const size_t deg,const size_t nb_blocs)
@@ -469,7 +510,7 @@ void FFPACK::CompressRowsQK (Field& F, const size_t M,
 }
 
 template <class Field>
-void FFPACK::CompressRows (Field& F, const size_t M,
+void CompressRows (Field& F, const size_t M,
 			     typename Field::Element * A, const size_t lda,
 			     typename Field::Element * tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs)
@@ -490,7 +531,7 @@ void FFPACK::CompressRows (Field& F, const size_t M,
 }
 
 template <class Field>
-void FFPACK::DeCompressRows (Field& F, const size_t M, const size_t N,
+void DeCompressRows (Field& F, const size_t M, const size_t N,
 			     typename Field::Element * A, const size_t lda,
 			     typename Field::Element * tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs)
@@ -510,7 +551,7 @@ void FFPACK::DeCompressRows (Field& F, const size_t M, const size_t N,
 }
 
 template <class Field>
-void FFPACK::DeCompressRowsQK (Field& F, const size_t M, const size_t N,
+void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 			       typename Field::Element * A, const size_t lda,
 			       typename Field::Element * tmp, const size_t ldtmp,
 			       const size_t * d, const size_t deg,const size_t nb_blocs)
@@ -536,7 +577,7 @@ void FFPACK::DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 }
 
 template <class Field>
-void FFPACK::CompressRowsQA (Field& F, const size_t M,
+void CompressRowsQA (Field& F, const size_t M,
 			     typename Field::Element * A, const size_t lda,
 			     typename Field::Element * tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs)
@@ -555,7 +596,7 @@ void FFPACK::CompressRowsQA (Field& F, const size_t M,
 }
 
 template <class Field>
-void FFPACK::DeCompressRowsQA (Field& F, const size_t M, const size_t N,
+void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 			       typename Field::Element * A, const size_t lda,
 			       typename Field::Element * tmp, const size_t ldtmp,
 			       const size_t * d, const size_t nb_blocs)
@@ -573,3 +614,6 @@ void FFPACK::DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 		FFLAS::fcopy (F, M, A + (w_idx--)*lda, 1, tmp + i*(int)ldtmp, 1);
 	}
 }
+
+} // Protected
+} //FFPACK
