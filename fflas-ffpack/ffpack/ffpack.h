@@ -321,7 +321,7 @@ namespace FFPACK  {
 	 * @param F field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix
-	 * @param A input matrix
+	 * @param [in,out] A input matrix
 	 * @param lda leading dimension of A
 	 */
 	template <class Field>
@@ -331,6 +331,11 @@ namespace FFPACK  {
 	{
 		if ( (M==0) and (N==0) )
 			return  false ;
+		if ( (M==0) or (N==0) )
+			return  true ;
+		if ( M != N )
+			return  true ;
+
 
 		size_t *P = new size_t[N];
 		size_t *Q = new size_t[M];
@@ -342,13 +347,13 @@ namespace FFPACK  {
 		return singular;
 	}
 
-	/** Returns the determinant of the given matrix.
-	 * The method is a block elimination with early termination
+	/** @brief Returns the determinant of the given matrix.
+	 * @details The method is a block elimination with early termination
 	 * @warning The input matrix is modified.
 	 * @param F field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix
-	 * @param A input matrix
+	 * @param [in,out] A input matrix
 	 * @param lda leading dimension of A
 	 */
 	///  using LQUP factorization  with early termination.
@@ -359,6 +364,10 @@ namespace FFPACK  {
 	{
 		if ( (M==0) and (N==0) )
 			return  F.one ;
+		if ( (M==0) or (N==0) )
+			return  F.zero ;
+		if ( M != N )
+			return  F.zero ;
 
 		typename Field::Element det; F.init(det);
 		bool singular;
@@ -1664,9 +1673,10 @@ namespace FFPACK  {
 	/*****************/
 	/*   INVERSION   */
 	/*****************/
-	/**  Invert the given matrix in place
+	/**  @brief Invert the given matrix in place
 	 * or computes its nullity if it is singular.
-	 * An inplace 2n^3 algorithm is used.
+	 *
+	 * An inplace \f$2n^3\f$ algorithm is used.
 	 * @param F The computation domain
 	 * @param M order of the matrix
 	 * @param [in,out] A input matrix (\f$M \times M\f$)
@@ -1680,6 +1690,7 @@ namespace FFPACK  {
 		typename Field::Element * A, const size_t lda,
 		int& nullity)
 	{
+		FFLASFFPACK_check(lda >= M);
 
 		if (M == 0) {
 			nullity = 0 ;
@@ -1697,16 +1708,19 @@ namespace FFPACK  {
 		return A;
 	}
 
-	/** Invert the given matrix in place
+	/** @brief Invert the given matrix in place
 	 * or computes its nullity if it is singular.
 	 *
-	 * X is preallocated.
+	 * @pre \p X is preallocated and should be large enough to store the
+	 * \f$ m \times m\f$ matrix \p A.
 	 *
 	 * @param F The computation domain
 	 * @param M order of the matrix
 	 * @param [in] A input matrix (\f$M \times M\f$)
 	 * @param lda leading dimension of \p A
-	 * @param [out] X output matrix
+	 * @param [out] X this is the inverse of \p A if \p A is invertible
+	 * (non \c NULL and \f$ \mathtt{nullity} = 0\f$). It is untouched
+	 * otherwise.
 	 * @param ldx leading dimension of \p X
 	 * @param nullity dimension of the kernel of \p A
 	 * @return pointer to \f$X = A^{-1}\f$
@@ -1718,6 +1732,8 @@ namespace FFPACK  {
 		typename Field::Element * X, const size_t ldx,
 		int& nullity)
 	{
+		FFLASFFPACK_check(lda >= M);
+		FFLASFFPACK_check(ldx >= M);
 		if (M == 0) {
 			nullity = 0 ;
 			return NULL ;
@@ -1729,19 +1745,26 @@ namespace FFPACK  {
 		return X;
 	}
 
-	/** Invert the given matrix or computes its nullity if it is singular.
-	 * An 2n^3 algorithm is used.
-	 * This routine can be \% faster than Invert but is not totally inplace.
-	 * X is preallocated.
+	/** @brief Invert the given matrix or computes its nullity if it is singular.
+	 *
+	 * An \f$2n^3f\f$ algorithm is used.
+	 * This routine can be \% faster than FFPACK::Invert but is not totally inplace.
+	 *
+	 * @pre \p X is preallocated and should be large enough to store the
+	 * \f$ m \times m\f$ matrix \p A.
+	 *
 	 * @warning A is overwritten here !
-	 * @warning not tested.
+	 * @bug not tested.
 	 * @param F
 	 * @param M order of the matrix
-	 * @param [in,out] A input matrix (\f$M \times M\f$)
+	 * @param [in,out] A input matrix (\f$M \times M\f$). On output, \p A
+	 * is modified and represents a "psycological" factorisation \c LU.
 	 * @param lda leading dimension of A
-	 * @param [out] X output matrix
-	 * @param ldx leading dimension of X
-	 * @param nullity dimension of the kernel of A
+	 * @param [out] X this is the inverse of \p A if \p A is invertible
+	 * (non \c NULL and \f$ \mathtt{nullity} = 0\f$). It is untouched
+	 * otherwise.
+	 * @param ldx leading dimension of \p X
+	 * @param nullity dimension of the kernel of \p A
 	 * @return pointer to \f$X = A^{-1}\f$
 	 */
 	template <class Field>
@@ -1751,25 +1774,19 @@ namespace FFPACK  {
 		 typename Field::Element * X, const size_t ldx,
 		 int& nullity)
 	{
+		FFLASFFPACK_check(lda >= M);
+		FFLASFFPACK_check(ldx >= M);
+
 		if (M == 0) {
 			nullity = 0 ;
 			return NULL ;
 		}
+
 		size_t *P = new size_t[M];
 		size_t *rowP = new size_t[M];
 
-#if 0 /*  timer remnants */
-		Timer t1;
-		t1.clear();
-		t1.start();
-#endif
 
 		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP));
-
-#if 0/*  timer remnants */
-		t1.stop();
-		cerr<<"LU --> "<<t1.usertime()<<endl;
-#endif
 
 		if (nullity > 0){
 			delete[] P;
@@ -1784,9 +1801,6 @@ namespace FFPACK  {
 #endif
 			//! @todo this init is not all necessary (done after ftrtri)
 			FFLAS::fzero(F,M,M,X,ldx);
-			// for (size_t i=0; i<M; ++i)
-			// for (size_t j=0; j<M;++j)
-			// F.assign(*(X+i*ldx+j), F.zero);
 
 			// X = L^-1 in n^3/3
 			ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, M, A, lda);
@@ -1797,23 +1811,9 @@ namespace FFPACK  {
 			}
 			for (size_t i=1; i<M; ++i)
 				FFLAS::fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
-#if 0/*  timer remnants */
-			t1.stop();
-			cerr<<"U^-1 --> "<<t1.usertime()<<endl;
 
-			invL( F, M, A, lda, X, ldx );
-			// X = Q^-1.X is not necessary since Q = Id
-
-			// X = U^-1.X
-			t1.clear();
-			t1.start();
-#endif
 			ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 			       M, M, F.one, A, lda , X, ldx);
-#if 0/*  timer remnants */
-			t1.stop();
-			cerr<<"ftrsm --> "<<t1.usertime()<<endl;
-#endif
 
 			// X = P^-1.X
 			applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
