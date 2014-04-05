@@ -181,7 +181,7 @@ namespace FFLAS {
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N, alphad,
 				     Ad, (int)N, Xd, 1, betad, Yd, 1);
 
-			finit(F,Yl,Y,incY,Yd,1);
+			finit(F,Yl,Yd,1,Y,incY);
 
 			if  (!F.isOne(alpha) && !F.isMOne(alpha)){
 				// Fix-up: compute Y *= alpha
@@ -221,7 +221,7 @@ namespace FFLAS {
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
 
 			if ( (!F.isMOne(alpha)) && (!F.isOne(alpha))){
 				// Fix-up: compute y *= alpha
@@ -256,7 +256,7 @@ namespace FFLAS {
 			FFLASFFPACK_check(lda);
 			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
 			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
 					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
@@ -291,7 +291,7 @@ namespace FFLAS {
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
 
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
 
 			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha
@@ -326,7 +326,7 @@ namespace FFLAS {
 			FFLASFFPACK_check(lda);
 			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY,Y,incY);
+			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
 
 			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
 				// Fix-up: compute y *= alpha

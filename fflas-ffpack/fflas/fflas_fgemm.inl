@@ -133,7 +133,7 @@ namespace FFLAS {
 			ClassicMatmul (G, ta, tb, m, n, remblock, alphad, Add, dlda,
 				       Bdd, dldb, betad, Cd, n, kmax,base );
 
-			finit (F, m, n, C, ldc, Cd, n);
+			finit (F, m, n, Cd, n, C, ldc);
 			fconvert(F, m, n, Cd, n, C, ldc);
 
 			for (size_t i = 0; i < nblock; ++i) {
@@ -144,7 +144,7 @@ namespace FFLAS {
 
 				ClassicMatmul (G, ta, tb, m, n, k2, alphad, Add, dlda,
 					       Bdd, dldb, 1.0, Cd, n, kmax,base);
-				finit(F, m, n, C, ldc, Cd, n);
+				finit(F, m, n, Cd, n, C, ldc);
 				fconvert(F, m, n, Cd, n, C, ldc);
 			}
 			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
@@ -594,7 +594,7 @@ namespace FFLAS {
 			WinoMain (G, ta, tb, m, n, k, alphad,
 				  Ad, ka, Bd, nb, betad, Cd, n, kmax, w,base);
 			// Conversion double = >  GFq
-			finit(F, m, n, C, ldc, Cd, n);
+			finit(F, m, n, Cd, n, C, ldc);
 
 			if (!F.isOne(alpha) &&
 			    !F.isMOne (alpha)) {
@@ -993,7 +993,7 @@ namespace FFLAS {
 			     (DoubleDomain::Element) betad, Cd, (int)n);
 		// Conversion double = >  Finite Field
 		delete[] Ad;
-		finit (F,n,n, C, ldc, Cd, n);
+		finit (F,n,n, Cd, n, C, ldc);
 		delete[] Cd;
 		return C;
 	}
