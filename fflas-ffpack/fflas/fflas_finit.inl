@@ -220,9 +220,9 @@ namespace FFLAS {
 			}
 			else {
 				double * Ac = new double[m] ;
-				fcopy(F,m,Ac,1,A,incX);
-				finit(F,m,Ac,1);
 				fcopy(F,m,A,incX,Ac,1);
+				finit(F,m,Ac,1);
+				fcopy(F,m,Ac,1,A,incX);
 				delete[] Ac;
 			}
 		}
@@ -247,9 +247,9 @@ namespace FFLAS {
 			}
 			else {
 				float * Ac = new float[m] ;
-				fcopy(F,m,Ac,1,A,incX);
-				finit(F,m,Ac,1);
 				fcopy(F,m,A,incX,Ac,1);
+				finit(F,m,Ac,1);
+				fcopy(F,m,Ac,1,A,incX);
 				delete[] Ac;
 			}
 
@@ -278,9 +278,9 @@ namespace FFLAS {
 			}
 			else {
 				double * Ac = new double[m] ;
-				fcopy(F,m,Ac,1,A,incX);
-				finit(F,m,Ac,1);
 				fcopy(F,m,A,incX,Ac,1);
+				finit(F,m,Ac,1);
+				fcopy(F,m,Ac,1,A,incX);
 				delete[] Ac;
 			}
 		}
@@ -307,48 +307,60 @@ namespace FFLAS {
 			}
 			else {
 				float * Ac = new float[m] ;
-				fcopy(F,m,Ac,1,A,incX);
-				finit(F,m,Ac,1);
 				fcopy(F,m,A,incX,Ac,1);
+				finit(F,m,Ac,1);
+				fcopy(F,m,Ac,1,A,incX);
 				delete[] Ac;
 			}
 		}
 
 	}
 
-
-	/*
-	template<>
-	void finit (const FFPACK:: Modular<double> & F, const size_t m , const size_t n,
-		    double * A, const size_t lda)
+	template<class Field, class OtherElement>
+	void
+	finit (const Field& F, const size_t n,
+	       const OtherElement * Y, const size_t incY,
+	       typename Field::Element * X, const size_t incX)
 	{
-		double p, invp;
-		p=(double)F.cardinality();
-		invp=1./p;
-		if(n==lda)
-			modp(A,m*n,p,invp);
+		typename Field::Element * Xi = X ;
+		const OtherElement * Yi = Y ;
+
+		if (incX == 1 && incY == 1)
+			for (; Xi < X + n ; ++Xi, ++Yi)
+				F.init( *Xi , *Yi);
 		else
-			for(size_t i=0;i<m;i++)
-				modp(A+i*lda,n,p,invp);
+			for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
+				F.init( *Xi , *Yi);
 	}
 
-	template<>
-	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m , const size_t n,
-		    double * A, const size_t lda){
-		double p, invp;
-		p=(double)F.cardinality();
-		invp=1./p;
-		double pmax = (p-1)/2 ;
-		double pmin = pmax-p+1;
 
-		if(n==lda)
-			modp(A,m*n,p,invp,pmin,pmax);
+	template<class Field>
+	void
+	finit (const Field& F, const size_t m , const size_t n,
+	       typename Field::Element * A, const size_t lda)
+	{
+		if (n == lda)
+			finit(F,n*m,A,1);
 		else
-			for(size_t i=0;i<m;i++)
-				modp(A+i*lda,n,p,invp,pmin,pmax);
-
+			for (size_t i = 0 ; i < m ; ++i)
+				finit(F,n,A+i*lda,1);
+		return;
 	}
-	*/
+
+	template<class Field, class OtherElement>
+	void
+	finit (const Field& F, const size_t m , const size_t n,
+	       const OtherElement * B, const size_t ldb,
+	       typename Field::Element * A, const size_t lda)
+	{
+		if (n == lda && lda == ldb)
+			finit(F,n*m,B,1,A,1);
+		else
+			for (size_t i = 0 ; i < m ; ++i)
+				finit(F,n,B+i*ldb,1,A+i*lda,1);
+		return;
+	}
+
 } // end of namespace FFLAS
 #endif // __FFLASFFPACK_fflas_init_INL
 

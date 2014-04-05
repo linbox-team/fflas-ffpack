@@ -71,7 +71,7 @@ template <class Field>
 		}
 
 
-		FFLAS::fcopy(F,M,M,X,ldx,A,lda);
+		FFLAS::fcopy(F,M,M,A,lda,X,ldx);
 		Invert (F,  M, X, lda, nullity);
 		return X;
 	}
@@ -119,7 +119,7 @@ template <class Field>
 				F.assign (*(X+i*(ldx+1)), F.one);
 			}
 			for (size_t i=1; i<M; ++i)
-				FFLAS::fcopy (F, i, (X+i*ldx), 1, (A+i*lda), 1);
+				FFLAS::fcopy (F, i, (A+i*lda), 1, (X+i*ldx), 1);
 
 			ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 			       M, M, F.one, A, lda , X, ldx);

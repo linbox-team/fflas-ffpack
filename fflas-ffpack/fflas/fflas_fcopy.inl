@@ -37,8 +37,8 @@ namespace FFLAS {
 	template<class Field>
 	inline void
 	fcopy (const Field& F, const size_t N,
-	       typename Field::Element * X, const size_t incX,
-	       const typename Field::Element * Y, const size_t incY )
+	       const typename Field::Element * Y, const size_t incY,
+	       typename Field::Element * X, const size_t incX)
 	{
 		typename Field::Element * Xi = X;
 		const typename Field::Element * Yi=Y;
@@ -57,8 +57,8 @@ namespace FFLAS {
 	template<>
 	inline void
 	fcopy (const FFPACK:: Modular<float>& F, const size_t N,
-	       float * X, const size_t incX,
-	       const float * Y, const size_t incY )
+	       const float * Y, const size_t incY,
+	       float * X, const size_t incX)
 	{
 
 		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
@@ -69,8 +69,8 @@ namespace FFLAS {
 	template<>
 	inline void
 	fcopy (const FFPACK:: ModularBalanced<float>& F, const size_t N,
-	       float * X, const size_t incX,
-	       const float * Y, const size_t incY )
+	       const float * Y, const size_t incY,
+	       float * X, const size_t incX)
 	{
 
 		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
@@ -81,8 +81,8 @@ namespace FFLAS {
 	template<>
 	inline void
 	fcopy (const FFPACK:: UnparametricField<float>& F, const size_t N,
-	       float * X, const size_t incX,
-	       const float * Y, const size_t incY )
+	       const float * Y, const size_t incY,
+	       float * X, const size_t incX)
 	{
 
 		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
@@ -93,8 +93,8 @@ namespace FFLAS {
 	template<>
 	inline void
 	fcopy (const FFPACK:: Modular<double>& F, const size_t N,
-	       double * X, const size_t incX,
-	       const double * Y, const size_t incY )
+	       const double * Y, const size_t incY,
+	       double * X, const size_t incX)
 	{
 
 		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
@@ -105,8 +105,8 @@ namespace FFLAS {
 	template<>
 	inline void
 	fcopy (const FFPACK:: ModularBalanced<double>& F, const size_t N,
-	       double * X, const size_t incX,
-	       const double * Y, const size_t incY )
+	       const double * Y, const size_t incY,
+	       double * X, const size_t incX)
 	{
 
 		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
@@ -117,8 +117,8 @@ namespace FFLAS {
 	template<>
 	inline void
 	fcopy (const FFPACK:: UnparametricField<double>& F, const size_t N,
-	       double * X, const size_t incX,
-	       const double * Y, const size_t incY )
+	       const double * Y, const size_t incY ,
+	       double * X, const size_t incX)
 	{
 
 		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
@@ -129,18 +129,18 @@ namespace FFLAS {
 
 	template<class Field>
 	void fcopy (const Field& F, const size_t m, const size_t n,
-		    typename Field::Element * A, const size_t lda,
-		    const typename Field::Element * B, const size_t ldb )
+		    const typename Field::Element * B, const size_t ldb ,
+		    typename Field::Element * A, const size_t lda)
 	{
 		FFLASFFPACK_check(n<=std::min(lda,ldb));
 		// if possible, copy one big block
 		if (lda == n && ldb == n) {
-			fcopy(F,m*n,A,1,B,1);
+			fcopy(F,m*n,B,1,A,1);
 			return ;
 		}
 		// else, copy row after row
 		for (size_t i = 0 ; i < m ; ++i) {
-			fcopy(F,n,A+i*lda,1,B+i*ldb,1);
+			fcopy(F,n,B+i*ldb,1,A+i*lda,1);
 		}
 		return;
 

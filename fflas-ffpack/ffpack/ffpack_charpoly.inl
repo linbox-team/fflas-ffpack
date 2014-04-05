@@ -285,7 +285,7 @@ namespace FFPACK {
 				}
 				// Column block B
 				for (typename Field::Element* Aj=A; Aj<A+N*lda; Aj+=lda)
-					FFLAS::fcopy (F, kg_mb, Aj+lambda, 1, Aj+N-kg_mc-kg_mb, 1);
+					FFLAS::fcopy (F, kg_mb, Aj+N-kg_mc-kg_mb, 1, Aj+lambda, 1);
 
 				// Second Id block
 				imax = N- kg_j*kg_mc;

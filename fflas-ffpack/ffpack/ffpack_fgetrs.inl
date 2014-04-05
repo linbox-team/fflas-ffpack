@@ -133,9 +133,9 @@ namespace FFPACK {
 			if (M > N){ // Cannot copy B into X
 				W = new typename Field::Element [M*NRHS];
 				ldw = NRHS;
-				FFLAS::fcopy(F,M,NRHS,W,ldw,B,ldb);
+				FFLAS::fcopy(F,M,NRHS,B,ldb,W,ldw);
 				// for (size_t i=0; i < M; ++i)
-				// FFLAS::fcopy (F, NRHS, W + i*ldw, 1, B + i*ldb, 1);
+				// FFLAS::fcopy (F, NRHS, B + i*ldb, 1, W + i*ldw, 1);
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
 
@@ -158,9 +158,9 @@ namespace FFPACK {
 				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       R, NRHS, F.one, A, lda , W, ldw);
 
-				FFLAS::fcopy(F,R,NRHS,X,ldx,W,ldw);
+				FFLAS::fcopy(F,R,W,ldw,NRHS,X,ldx);
 				// for (size_t i=0; i < R; ++i)
-				// FFLAS::fcopy (F, NRHS, X + i*ldx, 1, W + i*ldw, 1);
+				// FFLAS::fcopy (F, NRHS, W + i*ldw, 1, X + i*ldx, 1);
 
 				delete[] W;
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
@@ -169,9 +169,9 @@ namespace FFPACK {
 			}
 			else { // Copy B to X directly
 
-				FFLAS::fcopy(F,M,NRHS,X,ldx,B,ldb);
+				FFLAS::fcopy(F,M,B,ldb,NRHS,X,ldx);
 				// for (size_t i=0; i < M; ++i)
-				// FFLAS::fcopy (F, NRHS, X + i*ldx, 1, B + i*ldb, 1);
+				// FFLAS::fcopy (F, NRHS, B + i*ldb, 1, X + i*ldx, 1);
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
 
@@ -209,9 +209,9 @@ namespace FFPACK {
 			if (M < N) {
 				W = new typename Field::Element [NRHS*N];
 				ldw = N;
-				FFLAS::fcopy (F,NRHS, N, W, ldw, B, ldb);
+				FFLAS::fcopy (F,NRHS, B, ldb, N, W, ldw);
 				// for (size_t i=0; i < NRHS; ++i)
-				// FFLAS::fcopy (F, N, W + i*ldw, 1, B + i*ldb, 1);
+				// FFLAS::fcopy (F, N, B + i*ldb, 1, W + i*ldw, 1);
 
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, W, ldw, P);
@@ -234,9 +234,9 @@ namespace FFPACK {
 					return X;
 				}
 				// The last N-R cols of W are now supposed to be 0
-				FFLAS::fcopy (F, NRHS,R, X ,ldx,  W , ldb);
+				FFLAS::fcopy (F, NRHS,  W , ldb,R, X ,ldx);
 				// for (size_t i=0; i < NRHS; ++i)
-				// FFLAS::fcopy (F, R, X + i*ldx, 1, W + i*ldb, 1);
+				// FFLAS::fcopy (F, R, W + i*ldb, 1, X + i*ldx, 1);
 				delete[] W;
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					NRHS, 0,(int) R, X, ldx, Q);
@@ -245,9 +245,9 @@ namespace FFPACK {
 
 			}
 			else { // M >=N
-				FFLAS::fcopy(F,NRHS,N,X,ldx,B,ldb);
+				FFLAS::fcopy(F,NRHS,B,ldb,N,X,ldx);
 				// for (size_t i=0; i < NRHS; ++i)
-				// FFLAS::fcopy (F, N, X + i*ldx, 1, B + i*ldb, 1);
+				// FFLAS::fcopy (F, N, B + i*ldb, 1, X + i*ldx, 1);
 
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);

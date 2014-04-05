@@ -505,11 +505,11 @@ namespace FFPACK { /* ludivine, turbo */
 			size_t x = dist2pivot;
 			for (; Ai<A+M*lda; Ai+=lda){
 				while ( F.isZero(*(Ai-x)) ) { // test if the pivot is 0
-					FFLAS::fcopy( F, N, T2i, 1, Ai, 1);
+					FFLAS::fcopy( F, N, Ai, 1, T2i, 1);
 					Ai += lda;
 					T2i += ldt;
 				}
-				FFLAS::fcopy( F, N, T1i, 1, Ai, 1);
+				FFLAS::fcopy( F, N, Ai, 1, T1i, 1);
 				T1i += ldt;
 				x--;
 			}

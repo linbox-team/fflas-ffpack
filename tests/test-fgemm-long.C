@@ -93,7 +93,7 @@ bool check_MM(const Field                   & F,
 	Element aij, bij,  tmp;
 
 	Element * D  = new Element[m*n];
-	FFLAS::fcopy(F,m,n,D,n,Cd,n);
+	FFLAS::fcopy(F,m,n,Cd,n,D,n);
 
 	for (size_t i = 0; i < m; ++i)
 		for (size_t j = 0; j < n; ++j){
@@ -201,7 +201,7 @@ bool launch_MM(const Field & F,
 			RandomMatrix(F,B,n,k,ldb);
 		}
 		RandomMatrix(F,C,m,n,ldc);
-		FFLAS::fcopy(F,m,n,D,n,C,ldc);
+		FFLAS::fcopy(F,m,n,C,ldc,D,n);
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			      beta,C,ldc,nbw);
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb,

@@ -135,7 +135,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 		if (R < Nup){
 			// Permutation of the 0 rows
 			for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
-				FFLAS::fcopy( F, N - j, A + j*(lda + 1), 1, A + i*lda + j, 1);
+				FFLAS::fcopy( F, N - j, A + i*lda + j, 1, A + j*(lda + 1), 1);
 				for (typename Field::Element *Ai = A + i*lda + j;
 				     Ai != A + i*lda + N; ++Ai)
 					F.assign (*Ai, F.zero);

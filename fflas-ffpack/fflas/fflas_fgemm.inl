@@ -409,19 +409,19 @@ namespace FFLAS {
 			Element * Bc;
 			if (ta == FflasNoTrans) {
 				Ac = new Element[mr*2*lda] ;
-				fcopy(F,mr*2,kr*2,Ac,lda,A,lda);
+				fcopy(F,mr*2,kr*2,A,lda,Ac,lda);
 			}
 			else {
 				Ac = new Element[kr*2*lda] ;
-				fcopy(F,kr*2,mr*2,Ac,lda,A,lda);
+				fcopy(F,kr*2,mr*2,A,lda,Ac,lda);
 			}
 			if (tb == FflasNoTrans) {
 				Bc = new Element[kr*2*ldb] ;
-				fcopy(F,kr*2,nr*2,Bc,ldb,B,ldb);
+				fcopy(F,kr*2,nr*2,B,ldb,Bc,ldb);
 			}
 			else {
 				Bc = new Element[nr*2*ldb] ;
-				fcopy(F,nr*2,kr*2,Bc,ldb,B,ldb);
+				fcopy(F,nr*2,kr*2,B,ldb,Bc,ldb);
 			}
 #endif
 
@@ -1013,7 +1013,7 @@ namespace FFLAS {
 			typedef typename Field::Element Element ; // double or float
 			if (C==A) {
 				Element * Ad = new Element[n*n];
-				fcopy(F,n,n,Ad,n,A,lda);
+				fcopy(F,n,n,A,lda,Ad,n);
 				fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
 				delete[] Ad;
 			}

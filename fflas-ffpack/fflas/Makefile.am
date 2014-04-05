@@ -31,21 +31,20 @@ pkgincludesub_HEADERS=       \
 	   fflas_fcopy.inl       \
 	   fflas_ftrmm.inl       \
 	   fflas.h               \
-	   fflas_faddm.inl       \
+	   fflas_fadd.inl       \
 	   fflas_fdot.inl        \
 	   fflas_ftrmm_src.inl   \
-	   fflas_faddmin_src.inl \
 	   fflas_fgemm.inl       \
 	   fflas_pfgemm.inl      \
 	   fflas_blockcuts.inl   \
 	   fflas_pftrsm.inl      \
 	   fflas_ftrsm.inl       \
-	   fflas_faddm_src.inl   \
 	   fflas_fgemv.inl       \
+	   fflas_fscal.inl       \
 	   fflas_ftrsm_src.inl   \
 	   fflas_faxpy.inl       \
 	   fflas_fger.inl        \
 	   fflas_ftrsv.inl       \
-	   fflas_finit.inl 
+	   fflas_finit.inl
 
 EXTRA_DIST=fflas.doxy

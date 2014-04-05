@@ -403,99 +403,6 @@ namespace FFLAS {
 		template <class Element>
 		class ftrmmRightLowerTransUnit;
 
-#if 0
-		// BB : ça peut servir...
-#ifdef LB_TRTR
-		template <class Element>
-		class ftrtrLeftUpperNoTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftUpperNoTransUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftUpperTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftUpperTransUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftLowerNoTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftLowerNoTransUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftLowerTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftLowerTransUnitNonUnit;
-		template <class Element>
-		class ftrtrLeftUpperNoTransNonUnitUnit;
-		template <class Element>
-		class ftrtrLeftUpperNoTransUnitUnit;
-		template <class Element>
-		class ftrtrLeftUpperTransNonUnitUnit;
-		template <class Element>
-		class ftrtrLeftUpperTransUnitUnit;
-		template <class Element>
-		class ftrtrLeftLowerNoTransNonUnitUnit;
-		template <class Element>
-		class ftrtrLeftLowerNoTransUnitUnit;
-		template <class Element>
-		class ftrtrLeftLowerTransNonUnitUnit;
-		template <class Element>
-		class ftrtrLeftLowerTransUnitUnit;
-		template <class Element>
-		class ftrtrRightUpperNoTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrRightUpperNoTransUnitNonUnit;
-		template <class Element>
-		class ftrtrRightUpperTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrRightUpperTransUnitNonUnit;
-		template <class Element>
-		class ftrtrRightLowerNoTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrRightLowerNoTransUnitNonUnit;
-		template <class Element>
-		class ftrtrRightLowerTransNonUnitNonUnit;
-		template <class Element>
-		class ftrtrRightLowerTransUnitNonUnit;
-		template <class Element>
-		class ftrtrRightUpperNoTransNonUnitUnit;
-		template <class Element>
-		class ftrtrRightUpperNoTransUnitUnit;
-		template <class Element>
-		class ftrtrRightUpperTransNonUnitUnit;
-		template <class Element>
-		class ftrtrRightUpperTransUnitUnit;
-		template <class Element>
-		class ftrtrRightLowerNoTransNonUnitUnit;
-		template <class Element>
-		class ftrtrRightLowerNoTransUnitUnit;
-		template <class Element>
-		class ftrtrRightLowerTransNonUnitUnit;
-		template <class Element>
-		class ftrtrRightLowerTransUnitUnit;
-#endif
-#endif
-		template<class Element>
-		class faddmTrans;
-		template<class Element>
-		class faddmNoTrans;
-		template<class Element>
-		class fsubmTrans;
-		template<class Element>
-		class fsubmNoTrans;
-		template<class Element>
-		class faddmTransTrans;
-		template<class Element>
-		class faddmNoTransTrans;
-		template<class Element>
-		class faddmTransNoTrans;
-		template<class Element>
-		class faddmNoTransNoTrans;
-		template<class Element>
-		class fsubmTransTrans;
-		template<class Element>
-		class fsubmNoTransTrans;
-		template<class Element>
-		class fsubmTransNoTrans;
-		template<class Element>
-		class fsubmNoTransNoTrans;
 	} // protected
 
 	//---------------------------------------------------------------------
@@ -513,16 +420,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	finit (const Field& F, const size_t n,
-	       typename Field::Element * X, const size_t incX)
-	{
-		typename Field::Element * Xi = X ;
-		if (incX == 1)
-			for (; Xi < X + n ; ++Xi)
-				F.init( *Xi , *Xi);
-		else
-			for (; Xi < X+n*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
-	}
+	       typename Field::Element * X, const size_t incX);
 
 	/** finit
 	 * \f$x \gets  y mod F\f$.
@@ -537,19 +435,8 @@ namespace FFLAS {
 	template<class Field, class OtherElement>
 	void
 	finit (const Field& F, const size_t n,
-	       typename Field::Element * X, const size_t incX,
-	       const OtherElement * Y, const size_t incY)
-	{
-		typename Field::Element * Xi = X ;
-		const OtherElement * Yi = Y ;
-
-		if (incX == 1 && incY == 1)
-			for (; Xi < X + n ; ++Xi, ++Yi)
-				F.init( *Xi , *Yi);
-		else
-			for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
-				F.init( *Xi , *Yi);
-	}
+	       const OtherElement * Y, const size_t incY,
+	       typename Field::Element * X, const size_t incX);
 
 	/** fconvert
 	 * \f$x \gets  y mod F\f$.
@@ -604,8 +491,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fneg (const Field& F, const size_t n,
-	       typename Field::Element * X, const size_t incX,
-	       const typename Field::Element * Y, const size_t incY)
+	       const typename Field::Element * Y, const size_t incY,
+	       typename Field::Element * X, const size_t incX)
 	{
 		typename Field::Element * Xi = X ;
 		const typename Field::Element * Yi = Y ;
@@ -649,8 +536,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fcopy (const Field& F, const size_t N,
-	       typename Field::Element * X, const size_t incX,
-	       const typename Field::Element * Y, const size_t incY );
+	       const typename Field::Element * Y, const size_t incY ,
+	       typename Field::Element * X, const size_t incX);
 
 
 	/** fscalin
@@ -667,71 +554,28 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fscalin (const Field& F, const size_t n, const typename Field::Element alpha,
-	       typename Field::Element * X, const size_t incX)
-	{
-		typedef typename Field::Element Element ;
-
-		if (F.isOne(alpha))
-			return ;
-
-		if (F.isMOne(alpha)){
-			fnegin(F,n,X,incX);
-			return;
-		}
-
-		if (F.isZero(alpha)){
-			fzero(F,n,X,incX);
-			return;
-		}
-
-		Element * Xi = X ;
-		for (; Xi < X+n*incX; Xi+=incX )
-			F.mulin( *Xi, alpha );
-	}
+	       typename Field::Element * X, const size_t incX);
 
 
 	/** fscal
-	 * \f$x \gets a \cdot y\f$.
+	 * \f$y \gets a \cdot x\f$.
 	 * @param F field
 	 * @param n size of the vectors
 	 * @param alpha homotÃ©ti scalar
-	 * \param[in] Y vector in \p F
-	 * \param incY stride of \p Y
-	 * \param[out] X vector in \p F
+	 * \param[in] X vector in \p F
 	 * \param incX stride of \p X
+	 * \param[out] Y vector in \p F
+	 * \param incY stride of \p Y
 	 * @bug use cblas_(d)scal when possible
 	 * @internal
 	 * @todo check if comparison with +/-1,0 is necessary.
 	 */
 	template<class Field>
 	void
-	fscal (const Field& F, const size_t n, const typename Field::Element alpha,
-	       typename Field::Element * X, const size_t incX,
-	       const typename Field::Element * Y, const size_t incY)
-	{
-		typedef typename Field::Element Element ;
-
-		if (F.isOne(alpha)) {
-			fcopy(F,n,X,incX,Y,incY);
-			return ;
-		}
-
-		Element * Xi = X;
-		const Element * Yi = Y;
-		if (F.areEqual(alpha,F.mOne)){
-			for (; Xi < X+n*incX; Xi+=incX, Yi += incY )
-				F.neg( *Xi, *Yi );
-			return;
-		}
-
-		if (F.isZero(alpha)){
-			fzero(F,n,X,incX);
-			return;
-		}
-
-		for (; Xi < X+n*incX; Xi+=incX, Yi+=incY )
-			F.mul( *Xi, alpha, *Yi );
-	}
+	fscal (const Field& F, const size_t n
+	       , const typename Field::Element alpha
+	       , const typename Field::Element * X, const size_t incX
+	       , typename Field::Element * Y, const size_t incY);
 
 
 
@@ -750,6 +594,26 @@ namespace FFLAS {
 	       const typename Field::Element alpha,
 	       const typename Field::Element * X, const size_t incX,
 	       typename Field::Element * Y, const size_t incY );
+
+	/** \brief faxpby : \f$y \gets \alpha \cdot x + \beta \cdot y\f$.
+	 * @param F field
+	 * @param N size of the vectors
+	 * @param alpha scalar
+	 * \param[in] X vector in \p F
+	 * \param incX stride of \p X
+	 * \param beta scalar
+	 * \param[in,out] Y vector in \p F
+	 * \param incY stride of \p Y
+	 * \note this is a catlas function
+	 */
+	template<class Field>
+	void
+	faxpby (const Field& F, const size_t N,
+	       const typename Field::Element alpha,
+	       const typename Field::Element * X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element * Y, const size_t incY );
+
 
 	/** \brief fdot: dot product \f$x^T  y\f$.
 	 * @param F field
@@ -790,6 +654,40 @@ namespace FFLAS {
 		}
 	}
 
+	template <class Field>
+	void
+	fadd (const Field& F,  const size_t N,
+	      const typename Field::Element* A, const size_t inca,
+	      const typename Field::Element* B, const size_t incb,
+	      typename Field::Element* C, const size_t incc);
+
+	template <class Field>
+	void
+	fsub (const Field& F,  const size_t N,
+	      const typename Field::Element* A, const size_t inca,
+	      const typename Field::Element* B, const size_t incb,
+	      typename Field::Element* C, const size_t incc);
+
+	template <class Field>
+	void
+	faddin (const Field& F,  const size_t N,
+	      const typename Field::Element* B, const size_t incb,
+	      typename Field::Element* C, const size_t incc);
+
+	template <class Field>
+	void
+	fsubin (const Field& F,  const size_t N,
+	      typename Field::Element* C, const size_t incc);
+
+
+	template <class Field>
+	void
+	fadd (const Field& F,  const size_t N,
+	      const typename Field::Element* A, const size_t inca,
+	      const typename Field::Element alpha,
+	      const typename Field::Element* B, const size_t incb,
+	      typename Field::Element* C, const size_t incc);
+
 	//---------------------------------------------------------------------
 	// Level 2 routines
 	//---------------------------------------------------------------------
@@ -806,8 +704,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fcopy (const Field& F, const size_t m, const size_t n,
-	       typename Field::Element * A, const size_t lda,
-	       const typename Field::Element * B, const size_t ldb ) ;
+	       const typename Field::Element * B, const size_t ldb ,
+	       typename Field::Element * A, const size_t lda );
 
 	/** \brief fzero : \f$A \gets 0 \f$.
 	 * @param F field
@@ -869,15 +767,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element * A, const size_t lda)
-	{
-		if (n == lda)
-			finit(F,n*m,A,1);
-		else
-			for (size_t i = 0 ; i < m ; ++i)
-				finit(F,n,A+i*lda,1);
-		return;
-	}
+	       typename Field::Element * A, const size_t lda);
 
 	/** finit
 	 * \f$A \gets  B mod F\f$.
@@ -893,16 +783,8 @@ namespace FFLAS {
 	template<class Field, class OtherElement>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element * A, const size_t lda,
-	       const OtherElement * B, const size_t ldb)
-	{
-		if (n == lda && lda == ldb)
-			finit(F,n*m,A,1,B,1);
-		else
-			for (size_t i = 0 ; i < m ; ++i)
-				finit(F,n,A+i*lda,1,B+i*ldb,1);
-		return;
-	}
+	       const OtherElement * B, const size_t ldb,
+	       typename Field::Element * A, const size_t lda);
 
 	/** fconvert
 	 * \f$A \gets  B mod F\f$.
@@ -959,12 +841,12 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fneg (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element * A, const size_t lda,
-	       const typename Field::Element * B, const size_t ldb)
+	       const typename Field::Element * B, const size_t ldb,
+	       typename Field::Element * A, const size_t lda)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
-			fneg(F,n,A+i*lda,1,B+i*ldb,1);
+			fneg(F,n,B+i*ldb,1,A+i*lda,1);
 		return;
 	}
 
@@ -982,32 +864,10 @@ namespace FFLAS {
 	void
 	fscalin (const Field& F, const size_t m , const size_t n,
 	       const typename Field::Element alpha,
-	       typename Field::Element * A, const size_t lda)
-	{
-		if (F.isOne(alpha)) {
-			return ;
-		}
-		else if (F.isZero(alpha)) {
-			fzero(F,m,n,A,lda);
-		}
-		else if (F.isMOne(alpha)) {
-			fnegin(F,m,n,A,lda);
-		}
-		else {
-			if (lda == n) {
-				fscalin(F,n*m,alpha,A,1);
-			}
-			else {
-				for (size_t i = 0 ; i < m ; ++i)
-					fscalin(F,n,alpha,A+i*lda,1);
-			}
-
-			return;
-		}
-	}
+	       typename Field::Element * A, const size_t lda);
 
 	/** fscal
-	 * \f$A \gets a \cdot B\f$.
+	 * \f$B \gets a \cdot A\f$.
 	 * @param F field
 	 * @param m number of rows
 	 * @param n number of cols
@@ -1022,26 +882,45 @@ namespace FFLAS {
 	void
 	fscal (const Field& F, const size_t m , const size_t n,
 	       const typename Field::Element alpha,
-	       typename Field::Element * A, const size_t lda,
-	       const typename Field::Element * B, const size_t ldb)
-	{
-		if (F.isOne(alpha)) {
-			fcopy(F,m,n,A,lda,B,ldb) ;
-		}
-		else if (F.isZero(alpha)) {
-			fzero(F,m,n,A,lda);
-		}
-		else if (F.isMOne(alpha)) {
-			fneg(F,m,n,A,lda,B,ldb);
-		}
-		else {
-			for (size_t i = 0; i < m ; ++i)
-				fscal(F,n,alpha,A+i*lda,1,B+i*ldb,1);
-		}
+	       const typename Field::Element * A, const size_t lda,
+	       typename Field::Element * B, const size_t ldb);
 
-		return;
-	}
+	/** \brief faxpy : \f$y \gets \alpha \cdot x + y\f$.
+	 * @param F field
+	 * @param m row dimension
+	 * @param n column dimension
+	 * @param alpha scalar
+	 * \param[in] X vector in \p F
+	 * \param ldx leading dimension of \p X
+	 * \param[in,out] Y vector in \p F
+	 * \param ldy leading dimension of \p Y
+	 */
+	template<class Field>
+	void
+	faxpy (const Field& F, const size_t m, const size_t n
+	       , const typename Field::Element alpha,
+	       const typename Field::Element * X, const size_t ldx,
+	       typename Field::Element * Y, const size_t ldy );
 
+	/** \brief faxpby : \f$y \gets \alpha \cdot x + \beta \cdot y\f$.
+	 * @param F field
+	 * @param m row dimension
+	 * @param n column dimension
+	 * @param alpha scalar
+	 * \param[in] X vector in \p F
+	 * \param ldx leading dimension of \p X
+	 * \param beta scalar
+	 * \param[in,out] Y vector in \p F
+	 * \param ldy leading dimension of \p Y
+	 * \note this is a catlas function
+	 */
+	template<class Field>
+	void
+	faxpby (const Field& F, const size_t m, const size_t n,
+	       const typename Field::Element alpha,
+	       const typename Field::Element * X, const size_t ldx,
+	       const typename Field::Element beta,
+	       typename Field::Element * Y, const size_t ldy );
 
 	/** \brief fmove : \f$A \gets B \f$ and \f$ B \gets 0\f$.
 	 * @param F field
@@ -1079,14 +958,7 @@ namespace FFLAS {
 	fadd (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc)
-	{
-		const typename Field::Element *Ai = A, *Bi = B;
-		typename Field::Element *Ci = C;
-		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-			for (size_t i=0; i<N; i++)
-				F.add (Ci[i], Ai[i], Bi[i]);
-	}
+	      typename Field::Element* C, const size_t ldc);
 
 
 
@@ -1107,15 +979,7 @@ namespace FFLAS {
 	fsub (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc)
-	{
-		FFLASFFPACK_check(N <= std::min(std::min(lda,ldb),ldc));
-		const typename Field::Element * Ai = A, *Bi = B;
-		typename Field::Element *Ci = C;
-		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-			for (size_t i=0; i<N; i++)
-				F.sub (Ci[i], Ai[i], Bi[i]);
-	}
+	      typename Field::Element* C, const size_t ldc);
 
 	//! fsubin
 	//! C = C - B
@@ -1123,14 +987,7 @@ namespace FFLAS {
 	void
 	fsubin (const Field& F, const size_t M, const size_t N,
 		const typename Field::Element* B, const size_t ldb,
-		typename Field::Element* C, const size_t ldc)
-	{
-		const typename Field::Element * Bi = B;
-		typename Field::Element *Ci = C;
-		for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
-			for (size_t i=0; i<N; i++)
-				F.subin (Ci[i], Bi[i]);
-	}
+		typename Field::Element* C, const size_t ldc);
 
 	/** fadd : matrix addition with scaling.
 	 * Computes \p C = \p A + alpha \p B.
@@ -1151,45 +1008,14 @@ namespace FFLAS {
 	      const typename Field::Element* A, const size_t lda,
 	      const typename Field::Element alpha,
 	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc)
-	{
-		if (F.isOne(alpha))
-			return fadd(F,M,N,A,lda,B,ldb,C,ldc);
-		if (F.isMOne(alpha))
-			return fsub(F,M,N,A,lda,B,ldb,C,ldc);
-		if (F.isZero(alpha))
-			return fcopy(F,M,N,C,ldc,A,lda);
-
-		typedef typename Field::Element Element ;
-
-		const Element *Ai = A, *Bi = B;
-		Element *Ci = C;
-		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-			for (size_t i=0; i<N; i++) {
-				// Element ci = Ci[i];
-				// Element ai = Ai[i];
-				// Element bi = Bi[i];
-				// F.mulin(bi,alpha);
-				// F.add(ci,bi,ai);
-				// F.assign(Ci[i],ci);
-				F.mul(Ci[i],alpha,Bi[i]);
-				F.addin (Ci[i], Ai[i]);
-			}
-	}
+	      typename Field::Element* C, const size_t ldc);
 
 	//! faddin
 	template <class Field>
 	void
 	faddin (const Field& F, const size_t M, const size_t N,
 		const typename Field::Element* B, const size_t ldb,
-		typename Field::Element* C, const size_t ldc)
-	{
-		const typename Field::Element * Bi = B;
-		typename Field::Element *Ci = C;
-		for (; Ci < C+M*ldc; Bi+=ldb, Ci+=ldc)
-			for (size_t i=0; i<N; i++)
-				F.addin (Ci[i], Bi[i]);
-	}
+		typename Field::Element* C, const size_t ldc);
 
 
 	/**  @brief finite prime Field GEneral Matrix Vector multiplication.
@@ -1509,80 +1335,7 @@ namespace FFLAS {
 						 const size_t lda,
 						 const typename Field::Element beta,
 						 typename Field::Element* C,
-						 const size_t ldc);
-#ifdef LB_TRTR
-	// BB
-	/** @brief ftrtr: Triangular-Triangular matrix multiplication.
-	 * \f$B \gets \alpha \mathrm{op}(A) \times B\f$ (for FFLAS_SIDE::FflasLeft)
-	 * A and B are triangular, with B UpLo
-	 * and op(A) = A, A^T according to TransA
-	 * A and B can be (non)unit
-	 *
-	 */
-	template<class Field>
-	typename Field::Element* ftrtr (const Field& F, const FFLAS_SIDE Side,
-					       const FFLAS_UPLO Uplo,
-					       const FFLAS_TRANSPOSE TransA,
-					       const FFLAS_DIAG ADiag,
-					       const FFLAS_DIAG BDiag,
-					       const size_t M,
-					       const typename Field::Element alpha,
-					       typename Field::Element * A, const size_t lda,
-					       typename Field::Element * B, const size_t ldb);
-#endif
-
-	/** faddm.
-	 * A <- A+op(B)
-	 * with op(B) = B or B^T
-	 * @bug not tested
-	 */
-	template<class Field>
-	void faddm(const Field & F,
-			  const FFLAS_TRANSPOSE transA,
-			  const size_t M, const size_t N,
-			  const typename Field::Element * A, const size_t lda,
-			  typename Field::Element * B, const size_t ldb);
-
-	/** faddm.
-	 * C <- op(A)+op(B)
-	 * with op(B) = B or B^T
-	 * @bug not tested
-	 */
-	template<class Field>
-	void faddm(const Field & F,
-			  const FFLAS_TRANSPOSE transA,
-			  const FFLAS_TRANSPOSE transB,
-			  const size_t M, const size_t N,
-			  const typename Field::Element * A, const size_t lda,
-			  const typename Field::Element * B, const size_t ldb,
-			  typename Field::Element * C, const size_t ldc );
-
-	/** fsubm.
-	 * A <- A-op(B)
-	 * with op(B) = B or B^T
-	 * @bug not tested
-	 */
-	template<class Field>
-	void fsubm(const Field & F,
-			  const FFLAS_TRANSPOSE transA,
-			  const size_t M, const size_t N,
-			  const typename Field::Element * A, const size_t lda,
-			  typename Field::Element * B, const size_t ldb) ;
-
-	/** fsubm.
-	 * C <- op(A)-op(B)
-	 * with op(B) = B or B^T
-	 * @bug not tested
-	 */
-	template<class Field>
-	void fsubm(const Field & F,
-			  const FFLAS_TRANSPOSE transA,
-			  const FFLAS_TRANSPOSE transB,
-			  const size_t M, const size_t N,
-			  const typename Field::Element * A, const size_t lda,
-			  const typename Field::Element * B, const size_t ldb,
-			  typename Field::Element * C, const size_t ldc );
-
+					 const size_t ldc);
 
 	/** \brief Computes the number of recursive levels to perform.
 	 *
@@ -1621,7 +1374,8 @@ namespace FFLAS {
 #endif
 #endif
 
-#include "fflas_faddm.inl"
+#include "fflas_fadd.inl"
+#include "fflas_fscal.inl"
 
 
 #undef LB_TRTR

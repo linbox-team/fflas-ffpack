@@ -31,7 +31,7 @@ bool test_finit(size_t m, size_t k, size_t n, size_t p)
 	for (size_t b = 0 ; b < 3 ; ++b) {
 		RandomMatrix(E,A,m,k,n);
 		// RandomMatrix(E,B,m,k,n);
-		FFLAS::fcopy(E,m,k,B,n,A,n);
+		FFLAS::fcopy(E,m,k,A,n,B,n);
 
 		Timer tim;
 		Timer tom;
@@ -62,7 +62,7 @@ bool test_finit(size_t m, size_t k, size_t n, size_t p)
 
 	for (size_t b = 0 ; b < 3 ; ++b) {
 		RandomMatrix(E,A,m,k,n);
-		FFLAS::fcopy(E,m,k,B,n,A,n);
+		FFLAS::fcopy(E,m,k,A,n,B,n);
 
 		Timer tim;
 		Timer tom;
@@ -94,7 +94,7 @@ bool test_finit(size_t m, size_t k, size_t n, size_t p)
 
 	for (size_t b = 0 ; b < 3 ; ++b) {
 		RandomMatrix(E,A,m,n,n);
-		FFLAS::fcopy(E,m,n,B,n,A,n);
+		FFLAS::fcopy(E,m,n,A,n,B,n);
 		size_t incX = 2 ;
 
 		Timer tim;

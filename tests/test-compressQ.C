@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 		A[11+i*N] = A[7+i*N] = A[3+i*N] = double(i % 10);
 
 	double * B = new double[N*N] ;
-	FFLAS::fcopy(F,N*N,B,1,A,1);
+	FFLAS::fcopy(F,N*N,A,1,B,1);
 
 	// write_field(F, cerr, A, N, N, N);
 

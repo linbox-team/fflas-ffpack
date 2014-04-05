@@ -184,9 +184,20 @@ extern "C" {
 		dcopy_(&N,X,&incX,Y,&incY);
 	}
 
+
 	void cblas_scopy(const int N, const float *X, const int incX, float *Y, const int incY)
 	{
 		scopy_(&N,X,&incX,Y,&incY);
+	}
+
+	void cblas_dscal(const int N, const double alpha,  double *Y, const int incY)
+	{
+		dscal_(&N,X,Y,&incY);
+	}
+
+	void cblas_sscal(const int N, const float alpha,  float *Y, const int incY)
+	{
+		sscal_(&N,&alpha,Y,&incY);
 	}
 
 
@@ -295,6 +306,11 @@ extern "C" {
 	void cblas_scopy(const int N, const float *X, const int incX,
 			 float *Y, const int incY);
 
+	void cblas_dscal(const int N, const double alpha,
+			 double *Y, const int incY);
+
+	void cblas_sscal(const int N, const float alpha,
+			 float *Y, const int incY);
 
 
 	// level 3 routines

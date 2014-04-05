@@ -51,7 +51,7 @@ namespace FFPACK {
 			if (p < N){
 				P[r] = p;
 				if (r < k){
-					FFLAS::fcopy (F, N-r, (A + r*(lda+1)), 1, (A+k*lda+r),1);
+					FFLAS::fcopy (F, N-r, (A+k*lda+r),1, (A + r*(lda+1)), 1);
 					Acurr = A+r+k*lda;
 					for (size_t i=r; i<N; ++i)
 						F.assign(*(Acurr++),F.zero);
@@ -174,7 +174,7 @@ namespace FFPACK {
 			}
 			for (size_t i=0; i<R; ++i, Aini += lda+1) {
 				if (Q[i] > i){
-					FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
+					FFLAS::fcopy (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
 					for (size_t j=0; j<l-i; ++j)
 						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
@@ -280,7 +280,7 @@ namespace FFPACK {
 			}
 			for (size_t i=0; i<R; ++i, Aini += lda+1) {
 				if (Q[i] > i){
-					FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
+					FFLAS::fcopy (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
 					for (size_t j=0; j<l-i; ++j)
 						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
@@ -386,7 +386,7 @@ namespace FFPACK {
 			}
 			for (size_t i=0; i<R; ++i, Aini += lda+1) {
 				if (Q[i] > i){
-					FFLAS::fcopy (F, l-i, Aini, 1, Aini+(Q[i]-i)*lda, 1);
+					FFLAS::fcopy (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
 					for (size_t j=0; j<l-i; ++j)
 						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
@@ -576,7 +576,7 @@ namespace FFPACK {
 					// Permutation of the 0 rows
 					if (Diag == FFLAS::FflasNonUnit){
 						for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
-							FFLAS::fcopy( F, colDim - j, A + j * (lda + 1), incCol, A + i*incRow + j*incCol, incCol);
+							FFLAS::fcopy( F, colDim - j, A + i*incRow + j*incCol, incCol, A + j * (lda + 1), incCol);
 							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
 								F.assign (*Ai, F.zero);
@@ -589,8 +589,8 @@ namespace FFPACK {
 					else { // Diag == FFLAS::FflasUnit
 						for ( size_t i = Nup, j = R+1 ; i < Nup + R2; ++i, ++j){
 							FFLAS::fcopy( F, colDim - j,
-								      A + (j-1)*incRow + j*incCol, incCol,
-								      A + i*incRow + j*incCol, incCol);
+								      A + i*incRow + j*incCol, incCol,
+								      A + (j-1)*incRow + j*incCol, incCol);
 							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
 								F.assign (*Ai, F.zero);
@@ -678,13 +678,13 @@ namespace FFPACK {
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 								fgemv(F, FFLAS::FflasNoTrans, N, N, F.one,
 								      A, lda, u, 1, F.zero, Xi,1);
-								FFLAS::fcopy(F, N, u,1,Xi, 1);
+								FFLAS::fcopy(F, N,Xi, 1, u,1);
 							}
 						else // Keller-Gehrig Fast algorithm's matrix
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 								FFPACK::Protected::fgemv_kgf( F, N, A, lda, u, 1, Xi, 1,
 											      kg_mc, kg_mb, kg_j );
-								FFLAS::fcopy(F, N, u,1,Xi, 1);
+								FFLAS::fcopy(F, N,Xi, 1, u,1);
 							}
 					}
 					// Apply the permutation on SW
@@ -1100,71 +1100,71 @@ namespace FFPACK {
 		size_t ldr = N;
 		// Copying first q1 cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, q1, R+i*ldr, 1, NW+i*ld1,1);
+			FFLAS::fcopy (F, q1, NW+i*ld1,1, R+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, q1, R+i*ldr, 1, SW+(i-q1)*ld3,1);
+			FFLAS::fcopy (F, q1, SW+(i-q1)*ld3,1, R+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, q1, R+i*ldr, 1, NW+(i-q2-q3)*ld1,1);
+			FFLAS::fcopy (F, q1, NW+(i-q2-q3)*ld1,1, R+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, q1, R+i*ldr, 1, SW+(i-mo2)*ld3,1);
+			FFLAS::fcopy (F, q1, SW+(i-mo2)*ld3,1, R+i*ldr, 1);
 		// Copying q1..q2 cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, NE+i*ld2,1);
+			FFLAS::fcopy (F, q2, NE+i*ld2,1, R+q1+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, SE+(i-q1)*ld4,1);
+			FFLAS::fcopy (F, q2, SE+(i-q1)*ld4,1, R+q1+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, NE+(i-q2-q3)*ld2,1);
+			FFLAS::fcopy (F, q2, NE+(i-q2-q3)*ld2,1, R+q1+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, q2, R+q1+i*ldr, 1, SE+(i-mo2)*ld4,1);
+			FFLAS::fcopy (F, q2, SE+(i-mo2)*ld4,1, R+q1+i*ldr, 1);
 		// Copying q2..q3 cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, NW+q1+i*ld1,1);
+			FFLAS::fcopy (F, q3, NW+q1+i*ld1,1, R+q1+q2+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, SW+q1+(i-q1)*ld3,1);
+			FFLAS::fcopy (F, q3, SW+q1+(i-q1)*ld3,1, R+q1+q2+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, NW+q1+(i-q2-q3)*ld1,1);
+			FFLAS::fcopy (F, q3, NW+q1+(i-q2-q3)*ld1,1, R+q1+q2+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, q3, R+q1+q2+i*ldr, 1, SW+q1+(i-mo2)*ld3,1);
+			FFLAS::fcopy (F, q3, SW+q1+(i-mo2)*ld3,1, R+q1+q2+i*ldr, 1);
 		// Copying q3..q3b cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, NE+q2+i*ld2,1);
+			FFLAS::fcopy (F, q3b, NE+q2+i*ld2,1, R+q1+q2+q3+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, SE+q2+(i-q1)*ld4,1);
+			FFLAS::fcopy (F, q3b, SE+q2+(i-q1)*ld4,1, R+q1+q2+q3+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, NE+q2+(i-q2-q3)*ld2,1);
+			FFLAS::fcopy (F, q3b, NE+q2+(i-q2-q3)*ld2,1, R+q1+q2+q3+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, q3b, R+q1+q2+q3+i*ldr, 1, SE+q2+(i-mo2)*ld4,1);
+			FFLAS::fcopy (F, q3b, SE+q2+(i-mo2)*ld4,1, R+q1+q2+q3+i*ldr, 1);
 		// Copying q3b..q4 cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, NW+q1+q3+i*ld1,1);
+			FFLAS::fcopy (F, q4, NW+q1+q3+i*ld1,1, R+q1+q2+q3+q3b+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, SW+q1+q3+(i-q1)*ld3,1);
+			FFLAS::fcopy (F, q4, SW+q1+q3+(i-q1)*ld3,1, R+q1+q2+q3+q3b+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, NW+q1+q3+(i-q2-q3)*ld1,1);
+			FFLAS::fcopy (F, q4, NW+q1+q3+(i-q2-q3)*ld1,1, R+q1+q2+q3+q3b+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, q4, R+q1+q2+q3+q3b+i*ldr, 1, SW+q1+q3+(i-mo2)*ld3,1);
+			FFLAS::fcopy (F, q4, SW+q1+q3+(i-mo2)*ld3,1, R+q1+q2+q3+q3b+i*ldr, 1);
 		// Copying the last cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, NW+q1+q3+q4+i*ld1,1);
+			FFLAS::fcopy (F, no2-q1-q3-q4, NW+q1+q3+q4+i*ld1,1, R+q1+q2+q3+q3b+q4+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, SW+q1+q3+q4+(i-q1)*ld3,1);
+			FFLAS::fcopy (F, no2-q1-q3-q4, SW+q1+q3+q4+(i-q1)*ld3,1, R+q1+q2+q3+q3b+q4+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, NW+q1+q3+q4+(i-q2-q3)*ld1,1);
+			FFLAS::fcopy (F, no2-q1-q3-q4, NW+q1+q3+q4+(i-q2-q3)*ld1,1, R+q1+q2+q3+q3b+q4+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, no2-q1-q3-q4, R+q1+q2+q3+q3b+q4+i*ldr, 1, SW+q1+q3+q4+(i-mo2)*ld3,1);
+			FFLAS::fcopy (F, no2-q1-q3-q4, SW+q1+q3+q4+(i-mo2)*ld3,1, R+q1+q2+q3+q3b+q4+i*ldr, 1);
 		// Copying the last cols
 		for (size_t i=0; i<q1; ++i)
-			FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, NE+q2+q3b+i*ld2,1);
+			FFLAS::fcopy (F, N-no2-q2-q3b, NE+q2+q3b+i*ld2,1, R+no2+q2+q3b+i*ldr, 1);
 		for (size_t i=q1; i<q1+q2+q3; ++i)
-			FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, SE+q2+q3b+(i-q1)*ld4,1);
+			FFLAS::fcopy (F, N-no2-q2-q3b, SE+q2+q3b+(i-q1)*ld4,1, R+no2+q2+q3b+i*ldr, 1);
 		for (size_t i=q1+q2+q3; i<q2+q3+mo2; ++i)
-			FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, NE+q2+q3b+(i-q2-q3)*ld2,1);
+			FFLAS::fcopy (F, N-no2-q2-q3b, NE+q2+q3b+(i-q2-q3)*ld2,1, R+no2+q2+q3b+i*ldr, 1);
 		for (size_t i=q2+q3+mo2; i<M; ++i)
-			FFLAS::fcopy (F, N-no2-q2-q3b, R+no2+q2+q3b+i*ldr, 1, SE+q2+q3b+(i-mo2)*ld4,1);
+			FFLAS::fcopy (F, N-no2-q2-q3b, SE+q2+q3b+(i-mo2)*ld4,1, R+no2+q2+q3b+i*ldr, 1);
 
 		// A=R : to be improved (avoid allocation of R). To be changed if rec data structure are used
 		for (size_t i=0; i<M; ++i)
-			FFLAS::fcopy (F, N, A+i*lda, 1, R+i*ldr,1);
+			FFLAS::fcopy (F, N, R+i*ldr,1, A+i*lda, 1);
 
 		delete[] R;
 		//delete[] Q;
@@ -1251,8 +1251,8 @@ namespace FFPACK {
 			{ // Permutation of the 0 rows Could probably be improved !
 				if (Diag == FFLAS::FflasNonUnit){
 					for ( size_t i = 0, j = R ; i < R2; ++i, ++j){
-						FFLAS::fcopy( F, colDim - j, A + j * (lda + 1),
-							      incCol, B + i*incRow + j*incCol, incCol);
+						FFLAS::fcopy( F, colDim - j, B + i*incRow + j*incCol, incCol, A + j * (lda + 1),
+							      incCol);
 						typename Field::Element *Ai = B + i*incRow + j*incCol ;
 						typename Field::Element *Aend = B + colDim*incCol ;
 						for (; Ai != Aend + i*incRow ; Ai+=incCol)
@@ -1267,13 +1267,13 @@ namespace FFPACK {
 					for ( size_t i = 0, ii = R+1 ; i < R2; ++i, ++ii){
 						if (ii < M)
 							FFLAS::fcopy( F, colDim - ii,
-								      A + (ii-1)*incRow + ii*incCol, incCol,
-								      B + i*incRow + ii*incCol, incCol);
+								      B + i*incRow + ii*incCol, incCol,
+								      A + (ii-1)*incRow + ii*incCol, incCol);
 						else {
 							std::cout << "dangerous zone" << std::endl;
 							FFLAS::fcopy( F, colDim - ii,
-								      B + (ii-M-1)*incRow + ii*incCol, incCol,
-								      B + i*incRow + ii*incCol, incCol);
+								      B + i*incRow + ii*incCol, incCol,
+								      B + (ii-M-1)*incRow + ii*incCol, incCol);
 						}
 
 						typename Field::Element *Ai   = B + i*incRow + ii*incCol ;
@@ -1286,124 +1286,14 @@ namespace FFPACK {
 					}
 				}
 			}
-#if 0 /* surréaliste ! */
-			// move to B and A
-			if (K <= M) {
-				FFLAS::fmove(F,K,N,A,lda,B,ldb);
-			}
-			else { // K >M
-				FFLAS::fcopy(F,M,N,A,lda,B,ldb);
-				FFLAS::fcopy(F,K-M,N,B,ldb,B+M*ldb,ldb);
-				FFLAS::fzero(F,M,N,B+(K-M)*ldb,ldb);
-			}
-			for (size_t i = Nup, ii = 0 ; i < R2 ; ++ii, ++i)
-				std::swap(Q[i],Q[ii]);
-#endif
+
 			return R2 ;
 		}
 
 
-#if 0 /*  not ported */
-		if (MN == 1){
-			size_t ip=0;
-			//while (ip<N && !F.isUnit(*(A+ip)))ip++;
-			while (F.isZero (*(A+ip*incCol)))
-				if (++ip == colDim)
-					break;
-			Q[0] = 0;
-			if (ip == colDim){ // current row is zero
-				P[0] = 0;
-				if (colDim == 1){
-					while (ip<rowDim && F.isZero(*(A + ip*incRow))){
-						Q[ip]=ip;
-						ip++;
-					}
-					if (ip == rowDim) {
-						return 0;
-					}
-					else {
-						size_t oldip = ip;
-						if ( Diag == FFLAS::FflasNonUnit ){
-							elt invpiv;
-							F.inv(invpiv,*(A+ip*incRow));
-							while(++ip<rowDim)
-								F.mulin(*(A + ip*incRow), invpiv);
-							elt tmp;
-							F.assign(tmp, *(A+oldip*incRow));
-							F.assign( *(A+oldip*incRow), *A);
-							F.assign( *A, tmp);
-						}
-						*Q=oldip;
-
-						return 1;
-					}
-				}
-				else{ *Q=0; return 0;}
-			}
-			*P=ip;
-			if (ip!=0){
-				// swap the pivot
-				typename Field::Element tmp=*A;
-				*A = *(A + ip*incCol);
-				*(A + ip*incCol) = tmp;
-			}
-			elt invpiv;
-			F.inv(invpiv, *A);
-			if ( Diag == FFLAS::FflasUnit ){
-				// Normalisation of the row
-				for (size_t k=1; k<colDim; k++)
-					F.mulin(*(A+k*incCol), invpiv);
-			}
-			else if ( colDim==1 )
-				while(++ip<rowDim)
-					F.mulin(*(A + ip*incRow), invpiv);
-			return 1;
-		}
-		else  // MN>1
-#endif
 		{
 			// Recursive call on NW
 			size_t R2;
-#if 0 /*  not working */
-			if (trans == FFLAS::FflasTrans){
-				size_t Nd = N / 2 ;
-				size_t Ng = N-Nd ;
-				typename Field::Element *Ar = A  + Nd;           // SW
-				typename Field::Element *Ac_sup = A  + R*lda;    // NE
-				typename Field::Element *An_sup = Ar + R*lda;    // SE
-				typename Field::Element *Ac_inf = B  ;           // NE
-				typename Field::Element *An_sup = B + Nd;        // SE
-
-
-
-				// Ar <- P.Ar
-				FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-						Ndown, 0,(int) R, Ar, lda, P);
-				// Ar <- L1^-1 Ar
-				ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
-				       FFLAS::FflasNoTrans, Diag, R, Ndown,
-				       F.one, A, lda, Ar, lda);
-				// An <- An - Ac*Ar
-				fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-				       F.mOne, Ac, lda, Ar, lda, F.one, An, lda);
-				// LU call on SE
-				R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup,
-					       LuTag, cutoff);
-				for (size_t i = R; i < R + R2; ++i)
-					P[i] += R;
-				if (R2) {
-					// An <- An.P2
-					FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
-							Nup,(int) R, (int)(R+R2), A, lda, P);
-				}
-				else { // !R2
-					if (LuTag == FFPACK::FfpackSingular)
-						return 0;
-				}
-
-			}
-			else
-#endif
 			{ // trans == FFLAS::FflasNoTrans
 				typename Field::Element *Ac = A  + R*incCol;    // NE
 				typename Field::Element *Ar = B;                // SW
@@ -1444,8 +1334,8 @@ namespace FFPACK {
 			if (R < Nup){ // Permutation of the 0 rows
 				if (Diag == FFLAS::FflasNonUnit){
 					for ( size_t i = 0, j = R ; i < R2; ++i, ++j){
-						FFLAS::fcopy( F, colDim - j, A + j * (lda + 1),
-							      incCol, B + i*incRow + j*incCol, incCol);
+						FFLAS::fcopy( F, colDim - j, B + i*incRow + j*incCol, incCol, A + j * (lda + 1),
+							      incCol);
 						typename Field::Element *Ai = B + i*incRow + j*incCol ;
 						typename Field::Element *Aend = B + colDim*incCol ;
 						for (; Ai != Aend + i*incRow ; Ai+=incCol)
@@ -1460,13 +1350,13 @@ namespace FFPACK {
 					for ( size_t i = 0, ii = R+1 ; i < R2; ++i, ++ii){
 						if (ii < M)
 							FFLAS::fcopy( F, colDim - ii,
-								      A + (ii-1)*incRow + ii*incCol, incCol,
-								      B + i*incRow + ii*incCol, incCol);
+								      B + i*incRow + ii*incCol, incCol,
+								      A + (ii-1)*incRow + ii*incCol, incCol);
 						else {
 							// std::cout << "dangerous zone" << std::endl;
 							FFLAS::fcopy( F, colDim - ii,
-								      B + (ii-M-1)*incRow + ii*incCol, incCol,
-								      B + i*incRow + ii*incCol, incCol);
+								      B + i*incRow + ii*incCol, incCol,
+								      B + (ii-M-1)*incRow + ii*incCol, incCol);
 						}
 
 						typename Field::Element *Ai   = B + i*incRow + ii*incCol ;

@@ -74,7 +74,7 @@ bool test_lu(const Field & F,
 	typedef typename Field::Element Element ;
 	Element * B = new Element[m*lda] ;
 	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fcopy !
-	FFLAS::fcopy(F,m,n,B,lda,A,lda);
+	FFLAS::fcopy(F,m,n,A,lda,B,lda);
 
 	size_t maxP, maxQ ;
 
@@ -270,14 +270,14 @@ bool test_lu_append(const Field & F,
 	size_t M = m + k ;
 	typedef typename Field::Element Element ;
 	Element * Acop = new Element[m*lda] ;
-	FFLAS::fcopy(F,m,n,Acop,lda,A,lda) ;
+	FFLAS::fcopy(F,m,n,A,lda,Acop,lda) ;
 
 	Element * Bcop = new Element[k*lda] ;
-	FFLAS::fcopy(F,k,n,Bcop,lda,B,lda) ;
+	FFLAS::fcopy(F,k,n,B,lda,Bcop,lda) ;
 
 	Element * Append = new Element[M*lda];
-	FFLAS::fcopy(F,m,n,Append,lda,A,lda) ;
-	FFLAS::fcopy(F,k,n,Append+m*lda,lda,B,lda) ;
+	FFLAS::fcopy(F,m,n,A,lda,Append,lda) ;
+	FFLAS::fcopy(F,k,n,B,lda,Append+m*lda,lda) ;
 
 #if 0 /*  paranoid check */
 	for (size_t i = 0 ; i < m ; ++i) {
@@ -293,9 +293,9 @@ bool test_lu_append(const Field & F,
 #endif
 
 	Element * Afull = new Element[M*lda];
-	FFLAS::fcopy(F,M,n,Afull,lda,Append,lda) ;
-	// FFLAS::fcopy(F,m,n,Afull,lda,A,lda) ;
-	// FFLAS::fcopy(F,k,n,Afull+m*lda,lda,B,lda) ;
+	FFLAS::fcopy(F,M,n,Append,lda,Afull,lda) ;
+	// FFLAS::fcopy(F,m,n,A,lda,Afull,lda) ;
+	// FFLAS::fcopy(F,k,n,B,lda,Afull+m*lda,lda) ;
 
 #if 0
 std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;

@@ -83,7 +83,7 @@ namespace FFPACK {
 					F.assign( *(A+i*N+j), F.zero);
 				F.assign( *(A+B[j]*lda+j), F.one);
 			} else {
-				FFLAS::fcopy (F, N, A+j, N, E+B[j]-N, lda);
+				FFLAS::fcopy (F, N, E+B[j]-N, lda, A+j, N);
 			}
 		for (size_t j=lambda+me; j<lambda+me+mu; ++j)
 			for (size_t i=0;i<N;++i)
@@ -91,7 +91,7 @@ namespace FFPACK {
 		for (size_t i=0; i<mu; ++i)
 			F.assign( *(A+(lambda+me+mc+i)*lda+lambda+me+T[i]), F.one);
 		for (size_t j=0; j<mc; ++j)
-			FFLAS::fcopy(F,N,A+N-mc+j,N,C+j,lda);
+			FFLAS::fcopy(F,N,C+j,lda,A+N-mc+j,N);
 		return A;
 	}
 
@@ -151,7 +151,7 @@ namespace FFPACK {
 					typename Field::Element * LUP = new typename Field::Element[(lambda+me)*ncols];
 					for (size_t i=0;i < lambda + me; ++i)
 						if (allowedRows[i])
-							FFLAS::fcopy (F, ncols, LUP+i*ncols, 1, C+i*lda, 1);
+							FFLAS::fcopy (F, ncols, C+i*lda, 1, LUP+i*ncols, 1);
 						else
 							for (size_t j = 0; j < ncols; ++j)
 								F.assign (*(LUP+i*ncols+j), F.zero);
@@ -328,7 +328,7 @@ namespace FFPACK {
 					// grouping the bloc L in LUP
 					for (size_t i=0; i<r; ++i)
 						if (Q[i]>i)
-							FFLAS::fcopy(F, i, LUP+i*mc, 1, LUP+Q[i]*mc,1);
+							FFLAS::fcopy(F, i, LUP+Q[i]*mc,1, LUP+i*mc, 1);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -398,11 +398,11 @@ namespace FFPACK {
 #endif
 					typename Field::Element * tmp = new typename Field::Element[r*me];
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, me, tmp+i*me, 1, E+i*lda, 1);
+						FFLAS::fcopy (F, me, E+i*lda, 1, tmp+i*me, 1);
 					for (size_t i=r; i< N; ++i)
-						FFLAS::fcopy (F, me, E+(i-r)*lda, 1, E+i*lda, 1);
+						FFLAS::fcopy (F, me, E+i*lda, 1, E+(i-r)*lda, 1);
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, me, E+(i+N-r)*lda, 1, tmp+i*me, 1);
+						FFLAS::fcopy (F, me, tmp+i*me, 1, E+(i+N-r)*lda, 1);
 					delete[] tmp;
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -412,11 +412,11 @@ namespace FFPACK {
 #endif
 					tmp = new typename Field::Element[r*(mc-r)];
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, mc-r, tmp+i*(mc-r), 1, C+r+i*lda, 1);
+						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, tmp+i*(mc-r), 1);
 					for (size_t i=r; i< N; ++i)
-						FFLAS::fcopy (F, mc-r, C+r+(i-r)*lda, 1, C+r+i*lda, 1);
+						FFLAS::fcopy (F, mc-r, 1, C+r+i*lda, 1, C+r+(i-r)*lda);
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, mc-r, C+r+(i+N-r)*lda, 1, tmp+i*(mc-r), 1);
+						FFLAS::fcopy (F, mc-r, tmp+i*(mc-r), 1, C+r+(i+N-r)*lda, 1);
 					delete[] tmp;
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -433,9 +433,9 @@ namespace FFPACK {
 					tmp = new typename Field::Element[mu*r];
 					typename Field::Element * C2 = C+(N-mu-mc)*lda;
 					for (size_t i=0; i<mu; ++i)
-						FFLAS::fcopy (F, r, tmp+i*r, 1, C2+T[i]*lda, 1);
+						FFLAS::fcopy (F, r, C2+T[i]*lda, 1, tmp+i*r, 1);
 					for (size_t i=0; i<mu; ++i)
-						FFLAS::fcopy (F, r, C2+i*lda, 1, tmp+i*r, 1);
+						FFLAS::fcopy (F, r, tmp+i*r, 1, C2+i*lda, 1);
 					delete[] tmp;
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -446,7 +446,7 @@ namespace FFPACK {
 					tmp = new typename Field::Element[me*r];
 					for (size_t i=0; i<lambda+me; ++i)
 						if (B[i] >= N){
-							FFLAS::fcopy (F, r, tmp+(B[i]-N)*r, 1, C+i*lda, 1);
+							FFLAS::fcopy (F, r, C+i*lda, 1, tmp+(B[i]-N)*r, 1);
 						}
 					fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mu + r, r, me,
 					       F.one, E+(N-mu-r)*lda, lda, tmp, r,
@@ -462,10 +462,10 @@ namespace FFPACK {
 					tmp = new typename Field::Element[(mc-r)*r];
 					typename Field::Element * C4 = C + (N-mc+r)*lda;
 					for (size_t i=0; i < (mc-r); ++i){
-						FFLAS::fcopy (F, r, tmp+i*r, 1, C4 + i*lda, 1);
+						FFLAS::fcopy (F, r, C4 + i*lda, 1, tmp+i*r, 1);
 					}
 					for (int i = int(N-1); i >= (int) (N -mu-r); --i)
-						FFLAS::fcopy (F, r, C+i*(int)lda, 1, C+((size_t)i-mc+r)*lda, 1);
+						FFLAS::fcopy (F, r, C+((size_t)i-mc+r)*lda, 1, C+i*(int)lda, 1);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -481,7 +481,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"saving in row "<<B[i]-N<<std::endl;
 #endif
-							FFLAS::fcopy (F, r, tmp2+(B[i]-N)*r, 1, C+i*lda, 1);
+							FFLAS::fcopy (F, r, 1, C+i*lda, 1, tmp2+(B[i]-N)*r);
 						}
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -497,7 +497,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"copie de la ligne "<<i<<std::endl;
 #endif
-							FFLAS::fcopy (F, r, tmp3 + i*r, 1, C + i*lda, 1);
+							FFLAS::fcopy (F, r, C + i*lda, 1, tmp3 + i*r, 1);
 						}
 #ifdef LB_DEBUG
 					std::cerr<<"1"<<std::endl;
@@ -513,7 +513,7 @@ namespace FFPACK {
 						std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
 #endif
 						if (B[i] < N)
-							FFLAS::fcopy (F, r, C+(B[i]-r)*lda, 1, tmp3+i*r, 1);
+							FFLAS::fcopy (F, r, tmp3+i*r, 1, C+(B[i]-r)*lda, 1);
 					}
 #ifdef LB_DEBUG
 					std::cerr<<"3"<<std::endl;
@@ -551,11 +551,11 @@ namespace FFPACK {
 #endif
 					tmp = new typename Field::Element[N*r];
 					for (size_t j = 0; j<r; ++j)
-						FFLAS::fcopy (F, N, tmp+j, r, C+j, lda);
+						FFLAS::fcopy (F, N, C+j, lda, tmp+j, r);
 					for (size_t j = r; j<mc; ++j)
-						FFLAS::fcopy (F, N, C+j-r, lda, C+j, lda);
+						FFLAS::fcopy (F, N, C+j, lda, C+j-r, lda);
 					for (size_t j = 0; j<r; ++j)
-						FFLAS::fcopy (F, N, C+mc-r+j, lda, tmp+j, r);
+						FFLAS::fcopy (F, N, tmp+j, r, C+mc-r+j, lda);
 					delete[] tmp;
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -577,7 +577,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"B["<<j-r<<"] = "<<N+nme<<std::endl;
 #endif
-							FFLAS::fcopy (F, N, tmp2+nme, me, E+(B[j]-N), lda);
+							FFLAS::fcopy (F, N, E+(B[j]-N), lda, tmp2+nme, me);
 							B[j-r] = N + nme;
 							nme++;
 						} else {
@@ -590,7 +590,7 @@ namespace FFPACK {
 						}
 					}
 					for (size_t j=0; j<nme; ++j)
-						FFLAS::fcopy (F, N, E+j, lda, tmp2+j, me);
+						FFLAS::fcopy (F, N, tmp2+j, me, E+j, lda);
 					lambda = nlambda;
 					me = nme;
 #ifdef LB_DEBUG

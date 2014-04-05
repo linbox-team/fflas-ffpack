@@ -132,7 +132,7 @@ namespace FFPACK {
 			return x;
 		}
 		else{
-			FFLAS::fcopy( F, M, x, incx, b, incb );
+			FFLAS::fcopy( F, M, b, incb, x, incx );
 
 			ftrsv(F,  FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M,
 			      A, lda , x, incx);
@@ -179,7 +179,7 @@ namespace FFPACK {
 				return NSdim;
 			}
 
-			FFLAS::fcopy (F, R, ldn, NS , ldn,  A + R,  lda );
+			FFLAS::fcopy (F, R,  A + R,  lda, ldn, NS , ldn );
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
 			       F.mOne, A, lda, NS, ldn);
@@ -219,7 +219,7 @@ namespace FFPACK {
 			}
 
 
-			FFLAS::fcopy (F, NSdim, R, NS, ldn, A + R *lda, lda);
+			FFLAS::fcopy (F, NSdim, R, A + R *lda, lda, NS, ldn);
 
 			ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, NSdim, R,
 			       F.mOne, A, lda, NS, ldn);
@@ -355,7 +355,7 @@ namespace FFPACK {
 		typedef typename Field::Element Element ;
 
 		Element * A2 = new Element[M*N] ;
-		FFLAS::fcopy(F,M,N,A2,N,A,lda);
+		FFLAS::fcopy(F,M,N,A,lda,A2,N);
 
 		RowRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
@@ -379,7 +379,7 @@ namespace FFPACK {
 		typedef typename Field::Element Element ;
 
 		Element * A2 = new Element[M*N];
-		FFLAS::fcopy(F,M,N,A2,N,A,lda);
+		FFLAS::fcopy(F,M,N,A,lda,A2,N);
 
 		ColRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
@@ -414,9 +414,7 @@ namespace FFPACK {
 		// X <- (Qt.L.Q)^(-1)
 		//invL( F, rank, A_factors, lda, X, ldx);
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, rank, A_factors, lda);
-		FFLAS::fcopy(F,rank,rank,A_factors,lda,X,ldx);
-		// for (size_t i=0; i<rank; ++i)
-		// FFLAS::fcopy (F, rank, A_factors+i*lda, 1, X+i*ldx,1);
+		FFLAS::fcopy(F,rank,rank,X,ldx,A_factors,lda);
 
 		// X = U^-1.X
 		ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans,
@@ -441,12 +439,12 @@ namespace FFPACK {
 				//!@todo just one triangular fzero+fcopy ?
 				if (diag == FFLAS::FflasNonUnit){
 					FFLAS::fzero(F,i,Ti,1);
-					FFLAS::fcopy (F, N-i, Ti+i, 1, Ai+i, 1);
+					FFLAS::fcopy (F, N-i, Ai+i, 1, Ti+i, 1);
 				}
 				else {
 					FFLAS::fzero(F,i,Ti,1);
 					F.assign (*(Ti+i), F.one);
-					FFLAS::fcopy (F, N-i-1, Ti+i+1, 1, Ai+i+1, 1);
+					FFLAS::fcopy (F, N-i-1, Ai+i+1, 1, Ti+i+1, 1);
 				}
 			}
 			Ti = T+R*ldt;
@@ -458,13 +456,13 @@ namespace FFPACK {
 		else {
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				if (diag == FFLAS::FflasNonUnit){
-					FFLAS::fcopy (F, i+1, Ti, 1, Ai, 1);
+					FFLAS::fcopy (F, i+1, Ai, 1, Ti, 1);
 					// FFLAS::fzero(F,N-i-1,Ti+i+1,1);
 					for (size_t j=i+1; j<N; j++)
 						F.assign (Ti[j], F.zero);
 				}
 				else {
-					FFLAS::fcopy (F, i, Ti, 1, Ai, 1);
+					FFLAS::fcopy (F, i, Ai, 1, Ti, 1);
 					F.assign (Ti[i], F.one);
 					// FFLAS::fzero(F,N-i-1,Ti+i+1,1);
 					for (size_t j=i+1; j<N; j++)
@@ -473,7 +471,7 @@ namespace FFPACK {
 			}
 			Ti = T+R*ldt;
 			for (size_t i=R; i<M; i++, Ti+=ldt)
-				FFLAS::fcopy(F, i, Ti, 1, Ai, 1);
+				FFLAS::fcopy(F, i, Ai, 1, Ti, 1);
 			// FFLAS::fzero(F,N-R,Ti+R,1);
 			for (size_t j=R; j<N; j++)
 				F.assign (Ti[j], F.zero);
@@ -498,14 +496,14 @@ namespace FFPACK {
 					FFLAS::fzero(F,piv,Ti,1);
 					// for (size_t j=0; j<piv; j++)
 					// F.assign (Ti[j], F.zero);
-					FFLAS::fcopy (F, N-piv, Ti+piv, 1, Ai+piv, 1);
+					FFLAS::fcopy (F, N-piv, Ai+piv, 1, Ti+piv, 1);
 				}
 				else {
 					FFLAS::fzero(F,piv,Ti,1);
 					// for (size_t j=0; j<piv; j++)
 					// F.assign (Ti[j], F.zero);
 					F.assign (Ti[piv], F.one);
-					FFLAS::fcopy (F, N-piv-1, Ti+piv+1, 1, Ai+piv+1, 1);
+					FFLAS::fcopy (F, N-piv-1, Ai+piv+1, 1, Ti+piv+1, 1);
 				}
 			}
 			Ti = T+R*ldt;
@@ -521,14 +519,14 @@ namespace FFPACK {
 					FFLAS::fzero(F,piv,Ti,ldt);
 					// for (size_t j=0; j<piv; j++)
 					// F.assign (*(Ti+j*ldt), F.zero);
-					FFLAS::fcopy (F, M-piv, Ti+piv*ldt, ldt, Ai+piv*lda, lda);
+					FFLAS::fcopy (F, M-piv, Ai+piv*lda, lda, Ti+piv*ldt, ldt);
 				}
 				else {
 					FFLAS::fzero(F,piv,Ti,ldt);
 					// for (size_t j=0; j<piv; j++)
 					// F.assign (*(Ti+j*ldt), F.zero);
 					F.assign (*(Ti+piv*ldt), F.one);
-					FFLAS::fcopy (F, M-piv-1, Ti+(piv+1)*ldt, ldt, Ai+(piv+1)*lda, lda);
+					FFLAS::fcopy (F, M-piv-1, Ai+(piv+1)*lda, lda, Ti+(piv+1)*ldt, ldt);
 				}
 			}
 			Ti = T+R;
@@ -555,7 +553,7 @@ namespace FFPACK {
 				//for (size_t j=0; j<=Q[i]; ++j)
 				//F.init( *(L+Q[i]+j*ldl), 0 );
 				//std::cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
-				FFLAS::fcopy( F, LM-Q[i]-1, L+Q[i]*(ldl+1)+ldl,ldl, L+(Q[i]+1)*ldl+i, ldl );
+				FFLAS::fcopy( F, LM-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl , L+Q[i]*(ldl+1)+ldl,ldl);
 				for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 					F.assign( *(L+i+j), F.zero );
 			}
@@ -567,7 +565,7 @@ namespace FFPACK {
 			if ( Q[ii] > (size_t) ii){
 				//for (size_t j=0; j<=Q[ii]; ++j)
 				//F.init( *(L+Q[ii]+j*ldl), 0 );
-				FFLAS::fcopy( F, LM-Q[ii]-1, L+(Q[ii]+1)*ldl+ii, ldl, L+Q[ii]*(ldl+1)+ldl,ldl );
+				FFLAS::fcopy( F, LM-Q[ii]-1, L+Q[ii]*(ldl+1)+ldl,ldl, L+(Q[ii]+1)*ldl+ii, ldl );
 				for ( size_t j=Q[ii]*ldl; j<LM*ldl; j+=ldl)
 					F.assign( *(L+Q[ii]+j), F.zero );
 			}

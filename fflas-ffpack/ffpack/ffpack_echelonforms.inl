@@ -215,7 +215,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	// A22 <- A21*A22
 	Element* tmp = new Element [r1*(colsize-recsize)];
 	for (size_t i = 0; i < r1; ++i)
-		fcopy (F, colsize-recsize, tmp+i*(colsize-recsize), 1, A22+i*lda, 1);
+		fcopy (F, colsize-recsize, A22+i*lda, 1, tmp+i*(colsize-recsize), 1);
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r1, colsize-recsize, r1,
 	       F.one, A21, lda, tmp, colsize-recsize, F.zero, A22, lda);
 	delete[] tmp;
@@ -245,7 +245,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	// U21 <- U22*U21
 	tmp = new Element [r2*r1];
 	for (size_t i = 0; i < r2; ++i)
-		fcopy (F, r1, tmp+i*r1, 1, U21+i*lda, 1);
+		fcopy (F, r1, U21+i*lda, 1, tmp+i*r1, 1);
 
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r2, r1, r2,
 	       F.one, U22, lda, tmp, r1, F.zero, U21, lda);
@@ -259,14 +259,15 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 
 		tmp = new Element [nrow*ncol];
 		for (size_t i=0; i < nrow; ++i)
-			fcopy (F, ncol, tmp+i*ncol, 1, NZ1 + i*lda, 1);
+			fcopy (F, ncol, NZ1 + i*lda, 1, tmp+i*ncol, 1);
 		for (size_t i=0; i < M; ++i)
 			// Risky copy with overlap, but safe with the naive
 			// implementation of fcopy
-			fcopy (F, r2, NZ1+i*lda, 1, A12 + i*lda, 1);
+			//! @bug safe ???
+			fcopy (F, r2, A12 + i*lda, 1, NZ1+i*lda, 1);
 		NZ1 +=  r2;
 		for (size_t i=0; i<nrow; ++i)
-			fcopy (F, ncol, NZ1 + i*lda, 1, tmp+i*ncol,1);
+			fcopy (F, ncol, tmp+i*ncol,1, NZ1 + i*lda, 1);
 		delete[] tmp;
 
 		for (size_t i=rowbeg+r1; i<M; ++i)

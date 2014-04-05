@@ -42,6 +42,15 @@ faxpy( const Field& F, const size_t N,
 		      typename Field::Element * Y, const size_t incY )
 {
 
+	if (F.isZero(a))
+		return ;
+
+	if (F.isOne(a))
+		return fcopy(F,N,X,incX,Y,incY);
+
+	if (F.isMOne(a))
+		return fneg(F,N,X,incX,Y,incY);
+
 	const typename Field::Element * Xi = X;
 	typename Field::Element * Yi=Y;
 	for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
@@ -68,6 +77,32 @@ faxpy( const FloatDomain& , const size_t N,
 {
 
 	cblas_saxpy( (int)N, a, x, (int)incx, y, (int)incy);
+}
+
+template<class Field>
+inline void
+faxpy( const Field& F, const size_t m, const size_t n,
+		      const typename Field::Element a,
+		      const typename Field::Element * X, const size_t ldX,
+		      typename Field::Element * Y, const size_t ldY )
+{
+
+	if (F.isZero(a))
+		return ;
+
+	if (F.isOne(a))
+		return fcopy(F,m,n,X,ldX,Y,ldY);
+
+	if (F.isMOne(a))
+		return fneg(F,m,n,X,ldX,Y,ldY);
+
+	if (n == ldX && n == ldY)
+		return faxpy(F,m*n,a,X,1,Y,1);
+
+	const typename Field::Element * Xi = X;
+	typename Field::Element * Yi=Y;
+	for (; Xi < X+m*ldX; Xi+=ldX, Yi+=ldY )
+		faxpy(F,n,a,Xi,1,Yi,1);
 }
 
 } // FFLAS
