@@ -414,7 +414,7 @@ namespace FFPACK {
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, tmp+i*(mc-r), 1);
 					for (size_t i=r; i< N; ++i)
-						FFLAS::fcopy (F, mc-r, 1, C+r+i*lda, 1, C+r+(i-r)*lda);
+						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, C+r+(i-r)*lda, 1);
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fcopy (F, mc-r, tmp+i*(mc-r), 1, C+r+(i+N-r)*lda, 1);
 					delete[] tmp;
@@ -481,7 +481,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"saving in row "<<B[i]-N<<std::endl;
 #endif
-							FFLAS::fcopy (F, r, 1, C+i*lda, 1, tmp2+(B[i]-N)*r);
+							FFLAS::fcopy (F, r, C+i*lda, 1, tmp2+(B[i]-N)*r, 1);
 						}
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
