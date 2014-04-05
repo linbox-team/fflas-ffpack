@@ -498,8 +498,10 @@ void CompressRowsQK (Field& F, const size_t M,
 	size_t currw = d[0]-1;
 	size_t currr = d[0]-1;
 	for (int i = 0; i< int(nb_blocs)-1; ++i){
+		// FFLAS::fcopy(F,deg-d[i],M,A+currr*lda,lda,tmp+(size_t)currtmp*ldtmp);
 		for (int j = int(d[i]-1); j<int(deg)-1; ++j, ++currr, ++currtmp)
 			FFLAS::fcopy(F, M,  A + currr*lda, 1, tmp + (size_t)currtmp*ldtmp, 1);
+		// currr += (deg - d[i]);
 		for (int j=0; j < int(d[i+1]) -1; ++j, ++currr, ++currw){
 			FFLAS::fcopy(F, M, A+(currr)*lda, 1, A + (currw)*lda, 1);
 		}

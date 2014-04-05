@@ -92,6 +92,8 @@ namespace FFPACK {
 			F.assign( *(A+(lambda+me+mc+i)*lda+lambda+me+T[i]), F.one);
 		for (size_t j=0; j<mc; ++j)
 			FFLAS::fcopy(F,N,C+j,lda,A+N-mc+j,N);
+		//! @bug is this :
+		// FFLAS::fcopy(F,N,mc,C,lda,A+N-mc,N);
 		return A;
 	}
 

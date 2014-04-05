@@ -70,8 +70,9 @@ namespace FFPACK {
 
 					// B1 <- C1^-1.B1
 					typename Field::Element * LUP = new typename Field::Element[mc*mc];
-					for (size_t i=0; i<mc; ++i)
-						FFLAS::fcopy( F, mc, C+i*lda, 1, LUP+i*mc, 1);
+					// for (size_t i=0; i<mc; ++i)
+						// FFLAS::fcopy( F, mc, C+i*lda, 1, LUP+i*mc, 1);
+					FFLAS::fcopy(F,mc,mc,C,lda,LUP,mc);
 					size_t * P = new size_t[mc];
 					size_t * Q = new size_t[mc];
 
@@ -117,12 +118,15 @@ namespace FFPACK {
 
 					// Shifting B: B1;B2 -> B2;B1
 					typename Field::Element * tmp = new typename Field::Element[mc*mb];
-					for (size_t i=0; i<mc; ++i)
-						FFLAS::fcopy( F, mb, B+i*lda, 1, tmp+i*mb, 1);
-					for (size_t i=mc; i<N; ++i)
-						FFLAS::fcopy( F, mb, B+i*lda, 1, B+(i-mc)*lda, 1);
-					for (size_t i=0; i<mc; ++i)
-						FFLAS::fcopy( F, mb, tmp+i*mb, 1, B+(i+N-mc)*lda, 1);
+					// for (size_t i=0; i<mc; ++i)
+						// FFLAS::fcopy( F, mb, B+i*lda, 1, tmp+i*mb, 1);
+					FFLAS::fcopy(F,mc,mb,B,lda,tmp,mb);
+					// for (size_t i=mc; i<N; ++i)
+						// FFLAS::fcopy( F, mb, B+i*lda, 1, B+(i-mc)*lda, 1);
+					FFLAS::fcopy(F,N-mc,mb,B+mc*lda,lda,B,lda);
+					// for (size_t i=0; i<mc; ++i)
+						// FFLAS::fcopy( F, mb, tmp+i*mb, 1, B+(i+N-mc)*lda, 1);
+					FFLAS::fcopy(F,mc,mb,tmp,mb,B+(N-mc)*lda,lda);
 					delete[] tmp;
 #if 0
 					std::cerr<<"Apres shift de B"<<std::endl;
@@ -152,8 +156,9 @@ namespace FFPACK {
 						typename Field::Element * tmp2 = new typename Field::Element[(size_t)lambda*mc];
 
 						// tmp2 <- C1
-						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, C+i*(int)lda, 1, tmp2+i*(int)mc, 1);
+						// for (int i=0; i<lambda; ++i)
+							// FFLAS::fcopy( F, mc, C+i*(int)lda, 1, tmp2+i*(int)mc, 1);
+						FFLAS::fcopy(F,lambda,mc,C,lda,tmp2,mc);
 
 						// C1' <- B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
@@ -166,8 +171,9 @@ namespace FFPACK {
 						      F.one, tmp2, mc);
 
 						// C2' <- tmp2
-						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, tmp2+(size_t)i*mc, 1, C+(mb+(size_t)i)*lda, 1);
+						// for (int i=0; i<lambda; ++i)
+							// FFLAS::fcopy( F, mc, tmp2+(size_t)i*mc, 1, C+(mb+(size_t)i)*lda, 1);
+						FFLAS::fcopy(F,lambda,mc,tmp2,mc,C+mb*lda,lda);
 						delete[] tmp2;
 					}
 					else if ( lambda > 0 ){
@@ -187,12 +193,14 @@ namespace FFPACK {
 						      F.zero, tmp2, mc);
 
 						// C2' <- C1
-						for (int i=0; i<lambda; ++i)
-							FFLAS::fcopy( F, mc, C+i*(int)lda, 1, C+(mb+(size_t)i)*lda, 1);
+						// for (int i=0; i<lambda; ++i)
+							// FFLAS::fcopy( F, mc, C+i*(int)lda, 1, C+(mb+(size_t)i)*lda, 1);
+						FFLAS::fcopy(F,lambda,mc,C,lda,C+mb*lda,lda);
 
 						// C1' <- tmp2
-						for (size_t i=0; i<mb; ++i)
-							FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+						// for (size_t i=0; i<mb; ++i)
+							// FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+						FFLAS::fcopy(F,mb,mc,tmp2,mc,C,lda);
 						delete[] tmp2;
 					}
 					else{
@@ -208,8 +216,9 @@ namespace FFPACK {
 						      F.zero, tmp2, mc);
 
 						// C1' <- tmp2
-						for (size_t i=0; i<mb; ++i)
-							FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+						// for (size_t i=0; i<mb; ++i)
+							// FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+						FFLAS::fcopy(F,mb,mc,tmp2,mc,C,lda);
 						delete[] tmp2;
 					}
 

@@ -31,7 +31,8 @@ pkgincludesub_HEADERS=       \
 	   fflas_fcopy.inl       \
 	   fflas_ftrmm.inl       \
 	   fflas.h               \
-	   fflas_fadd.inl       \
+	   fflas_avx_functions.h \
+	   fflas_fadd.inl        \
 	   fflas_fdot.inl        \
 	   fflas_ftrmm_src.inl   \
 	   fflas_fgemm.inl       \

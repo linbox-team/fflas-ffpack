@@ -179,7 +179,7 @@ namespace FFPACK {
 				return NSdim;
 			}
 
-			FFLAS::fcopy (F, R,  A + R,  lda, ldn, NS , ldn );
+			FFLAS::fcopy (F, R, ldn,  A + R,  lda, NS , ldn );
 
 			ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R, ldn,
 			       F.mOne, A, lda, NS, ldn);
@@ -448,33 +448,33 @@ namespace FFPACK {
 				}
 			}
 			Ti = T+R*ldt;
-			// FFLAS::fzero(F,M-R,N,Ti+(M-R)*ldt,ldt);
-			for (size_t i=R; i<M; i++, Ti+=ldt) {
-				FFLAS::fzero(F,N,Ti,1);
-			}
+			FFLAS::fzero(F,M-R,N,Ti,ldt);
+			// for (size_t i=R; i<M; i++, Ti+=ldt) {
+				// FFLAS::fzero(F,N,Ti,1);
+			// }
 		}
 		else {
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				if (diag == FFLAS::FflasNonUnit){
 					FFLAS::fcopy (F, i+1, Ai, 1, Ti, 1);
-					// FFLAS::fzero(F,N-i-1,Ti+i+1,1);
-					for (size_t j=i+1; j<N; j++)
-						F.assign (Ti[j], F.zero);
+					FFLAS::fzero(F,N-i-1,Ti+i+1,1);
+					// for (size_t j=i+1; j<N; j++)
+						// F.assign (Ti[j], F.zero);
 				}
 				else {
 					FFLAS::fcopy (F, i, Ai, 1, Ti, 1);
 					F.assign (Ti[i], F.one);
-					// FFLAS::fzero(F,N-i-1,Ti+i+1,1);
-					for (size_t j=i+1; j<N; j++)
-						F.assign (Ti[j], F.zero);
+					FFLAS::fzero(F,N-i-1,Ti+i+1,1);
+					// for (size_t j=i+1; j<N; j++)
+						// F.assign (Ti[j], F.zero);
 				}
 			}
 			Ti = T+R*ldt;
 			for (size_t i=R; i<M; i++, Ti+=ldt)
 				FFLAS::fcopy(F, i, Ai, 1, Ti, 1);
-			// FFLAS::fzero(F,N-R,Ti+R,1);
-			for (size_t j=R; j<N; j++)
-				F.assign (Ti[j], F.zero);
+			FFLAS::fzero(F,N-R,Ti+R,1);
+			// for (size_t j=R; j<N; j++)
+				// F.assign (Ti[j], F.zero);
 		}
 	}
 
@@ -494,8 +494,6 @@ namespace FFPACK {
 				size_t piv = P[i];
 				if (diag == FFLAS::FflasNonUnit){
 					FFLAS::fzero(F,piv,Ti,1);
-					// for (size_t j=0; j<piv; j++)
-					// F.assign (Ti[j], F.zero);
 					FFLAS::fcopy (F, N-piv, Ai+piv, 1, Ti+piv, 1);
 				}
 				else {
@@ -507,10 +505,10 @@ namespace FFPACK {
 				}
 			}
 			Ti = T+R*ldt;
-			// FFLAS::fzero(F,M-R,N,Ti+R*ldt,ldt);
-			for (size_t i=R; i<M; i++, Ti+=ldt)
-				for (size_t j=0; j<N; j++)
-					F.assign (Ti[j], F.zero);
+			FFLAS::fzero(F,M-R,N,Ti,ldt);
+			// for (size_t i=R; i<M; i++, Ti+=ldt)
+				// for (size_t j=0; j<N; j++)
+					// F.assign (Ti[j], F.zero);
 		}
 		else {
 			for (size_t i=0; i<R; i++, Ai++, Ti++){
