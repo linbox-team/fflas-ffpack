@@ -330,7 +330,7 @@ namespace FFLAS { namespace vectorised {
 		MAX = _mm256_set1_pd(max);
 		long st=long(T)%32;
 		size_t i=0;
-		if (n < 8) {
+		if (n < 4) {
 			for (;i<n;i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
@@ -340,7 +340,7 @@ namespace FFLAS { namespace vectorised {
 
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
-			for (size_t j=(size_t)st;j<32;j+=4,i++){
+			for (size_t j=(size_t)st;j<32;j+=8,i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
 				if (!positive) T[i]+=(T[i]<min)?p:0;
@@ -385,7 +385,7 @@ namespace FFLAS { namespace vectorised {
 		MAX = _mm256_set1_ps(max);
 		long st=long(T)%32;
 		size_t i=0;
-		if (n < 4) {
+		if (n < 8) {
 			for (;i<n;i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
@@ -395,7 +395,7 @@ namespace FFLAS { namespace vectorised {
 
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
-			for (size_t j=(size_t)st;j<32;j+=8,i++){
+			for (size_t j=(size_t)st;j<32;j+=4,i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
 				if (!positive) T[i]+=(T[i]<min)?p:0;

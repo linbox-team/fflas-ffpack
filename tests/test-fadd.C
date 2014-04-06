@@ -9,22 +9,22 @@
 
 // using namespace FFPACK;
 template<class Field>
-bool test_finit(const Field & F, size_t m, size_t k, size_t n)
+bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
 {
 	typedef typename Field::Element T ;
 
 	T * A = new T[m*n];
 	T * B = new T[m*n];
-
-	FFPACK::ModularBalanced<T> E(101);
+	T * C = new T[m*n];
+	T * D = new T[m*n];
 
 	std::cout << ">>>" << std::endl ;
-	std::cout << "=== inc == 1 ===" << std::endl ;
 
 	for (size_t b = 0 ; b < 3 ; ++b) {
-		RandomMatrix(E,A,m,k,n);
-		// RandomMatrix(E,B,m,k,n);
-		FFLAS::fcopy(E,m,k,A,n,B,n);
+		RandomMatrix(F,A,m,k,n);
+		RandomMatrix(F,B,m,k,n);
+		RandomMatrix(F,C,m,k,n);
+		FFLAS::fcopy(F,m,k,C,n,D,n);
 
 		Timer tim;
 		Timer tom;
@@ -32,57 +32,23 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n)
 		tim.clear();tim.start();
 		for (size_t i = 0 ; i < m ; ++i)
 			for (size_t j = 0 ; j < k ; ++j)
-				F.init(A[i*n+j],A[i*n+j]);
+				F.add(D[i*n+j],A[i*n+j],B[i*n+j]);
 		tim.stop();
-		std::cout << "finit (___): " << tim.usertime() << 's' << std::endl;
+		std::cout << "fadd (___): " << tim.usertime() << 's' << std::endl;
 
 		tim.clear();tim.start();
-		FFLAS::finit(F,m,k,B,n);
+		FFLAS::fadd(F,m,k,A,n,B,n,C,n);
 		tim.stop();
-		std::cout << "finit (AVX): " << tim.usertime() << 's'<<  std::endl << std::endl;
+		std::cout << "fadd (AVX): " << tim.usertime() << 's'<<  std::endl << std::endl;
 
 #if 1
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
-				if (! F.areEqual(B[i*n+j],A[i*n+j])) {
-					std::cout  <<  i << ',' << j << " : " <<  B[i*n+j] << "!= (ref)" << A[i*n+j] << std::endl;
+				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
+					std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
-	}
-
-	std::cout << "=== inc != 1 ===" << std::endl ;
-
-
-	for (size_t b = 0 ; b < 3 ; ++b) {
-		RandomMatrix(E,A,m,n,n);
-		FFLAS::fcopy(E,m,n,A,n,B,n);
-		size_t incX = 2 ;
-
-		Timer tim;
-		Timer tom;
-		F.write(std::cout << "Modular ") << std::endl;
-		tim.clear();tim.start();
-		for (size_t i = 1 ; i < m*n ; i += incX) {
-				F.init(A[i],A[i]);
-		}
-
-		tim.stop();
-		size_t cnt = (size_t)floor((double)(m*n)/(double)incX) ;
-		std::cout << "finit (___): " << tim.usertime() << 's' << std::endl;
-		tim.clear();tim.start();
-		FFLAS::finit(F,cnt,B+1,incX);
-		tim.stop();
-		std::cout << "finit (AVX): " << tim.usertime() << 's'<<  std::endl << std::endl;
-
-#if 1
-		for (size_t i =1 ; i < m*n ; i+=incX)
-				if (! F.areEqual(B[i],A[i])) {
-					std::cout <<  i << " : " << B[i] << "!= (ref)" << A[i] << std::endl;
-					return false ;
-				}
-#endif
-
 	}
 
 	std::cout << "<<<" << std::endl;
@@ -122,52 +88,52 @@ int main(int ac, char **av) {
 	bool pass  = true ;
 	{
 		FFPACK:: Modular<float> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: ModularBalanced<float> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: Modular<double> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: ModularBalanced<double> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: Modular<int32_t> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: Modular<int64_t> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: ModularBalanced<int64_t> F(p) ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 #if 1
 	{
 		FFPACK:: UnparametricField<float> F ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: UnparametricField<double> F ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: UnparametricField<int32_t> F;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 	{
 		FFPACK:: UnparametricField<int64_t> F ;
-		pass &= test_finit(F,m,k,n);
+		pass &= test_fadd(F,m,k,n);
 	}
 #endif
 
