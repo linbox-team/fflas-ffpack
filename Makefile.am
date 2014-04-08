@@ -24,7 +24,7 @@
 
 ACLOCAL_AMFLAGS = -I macros
 
-SUBDIRS=fflas-ffpack tests doc benchmark macros utils optimiser
+SUBDIRS=fflas-ffpack tests doc benchmark macros optimiser
 
 
 #  include_HEADERS=fflas-ffpack-config.h
@@ -47,17 +47,17 @@ benchmarks:
 	(cd benchmarks; make benchmarks)
 
 uninstall-hook:
-	(test -d "$(includedir)/fflas-ffpack" && rmdir  "$(bindir)" \
-		"$(libdir)" \
-		"$(mandir)/man1" \
+	(test -d "$(includedir)/fflas-ffpack" && rm -rf \
+	       	"$(mandir)/man1" \
 		"$(mandir)" \
 		"$(includedir)/fflas-ffpack/fflas" \
+		"$(includedir)/fflas-ffpack/fflas/fflas_fgemm" \
 		"$(includedir)/fflas-ffpack/ffpack" \
 		"$(includedir)/fflas-ffpack/field" \
 		"$(includedir)/fflas-ffpack/utils" \
 		"$(includedir)/fflas-ffpack/"  \
 		"$(datarootdir)/" \
-		"$(includedir)") || true
+		) || true
 
 .PHONY:examples benchmarks
 
