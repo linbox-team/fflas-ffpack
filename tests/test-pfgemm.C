@@ -126,7 +126,7 @@ int main(int argc, char** argv){
     std::cerr << "pfgemm: " << m << 'x' << n << ' ' << r << ':' << c << "  <--  " << omp_get_max_threads() << ':' << (m/r) << 'x' << (n/c) << std::endl;
     if (nbw <0) {
         FFLAS::FFLAS_BASE base; size_t winolev, kmax;
-        FFLAS::Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base, winolev);
+        FFLAS::Protected::MatMulParameters (F, m, n, k, beta, kmax, base, winolev);
         nbw=winolev;
         pnbw=0;
         std::cerr << "Winolevel: " << nbw << '(' << pnbw << ')' << std::endl;
