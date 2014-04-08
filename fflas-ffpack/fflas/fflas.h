@@ -104,6 +104,28 @@ namespace FFLAS {
 		FflasGeneric = 153   /**< for any other domain, that can not be converted to floating point integers */
 	};
 
+	class MMParameters{
+		short _SWRecLevels;
+		bool _AutoSetSWRecLevels;
+		bool _ImmutableElementType;
+		size_t _MaxDelayedDim;
+	protected:
+		MMParameters(){}
+	public:
+		template <class Field>
+		MMParameters(const Field& F, const size_t m, const size_t n, const size_t k, 
+			     const typename Field::Element& beta): 
+				_AutoSetSWRecLevels(true), _ImmutableElementType(false){
+			FFLAS_BASE base;
+			MatMulParameters(F,m,n,k, beta, &_MaxDelayedDim, base, _SWRecLevels, _AutoSetSWRecLevels);
+		}
+
+		void setSWRecLevels(const short w){ _SWRecLevels = w; _AutoSetSWRecLevels = false;}
+		void setAutoSWRecLevels(){_AutoSetSWRecLevels = true;}
+		void setElementTypeImmutability(const bool i){_ImmutableElementType = i;}
+
+	};
+
 	/* Representations of Z with floating point elements*/
 
 	typedef FFPACK::UnparametricField<float> FloatDomain;
@@ -112,8 +134,6 @@ namespace FFLAS {
 
 	namespace Protected {
 
-		// Prevents the instantiation of the class
-		// FFLAS(){}
 		template <class X,class Y>
 		class AreEqual {
 		public:
@@ -179,7 +199,8 @@ namespace FFLAS {
 		 *
 		 *
 		 * \param F Finite Field/Ring of the computation.
-		 * \param WinoDim max square size on which to apply Winograd
+		 * \param m row dim of A
+		 * \param n col dim of B
 		 * \param k Common dimension of A and B, in the product A x B
 		 * \param beta Computing \f$AB + \beta C\f$
 		 * \param delayedDim Returns the size of blocks that can be multiplied
@@ -195,13 +216,14 @@ namespace FFLAS {
 		 */
 		template <class Field>
 		void MatMulParameters (const Field& F,
-					      const size_t WinoDim,
-					      const size_t k,
-					      const typename Field::Element& beta,
-					      size_t& delayedDim,
-					      FFLAS_BASE& base,
-					      size_t& winoRecLevel,
-					      bool winoLevelProvided=false);
+				       const size_t m,
+				       const size_t n,
+				       const size_t k,
+				       const typename Field::Element& beta,
+				       size_t& delayedDim,
+				       FFLAS_BASE& base,
+				       size_t& winoRecLevel,
+				       bool winoLevelProvided=false);
 
 
 		/** DotProdBound computes the maximal size for delaying the modular reduction
@@ -1155,8 +1177,8 @@ namespace FFLAS {
 	 * \param ta if \c ta==FflasTrans then \f$\mathrm{op}(A)=A^t\f$, else \f$\mathrm{op}(A)=A\f$,
 	 * \param tb same for matrix \p B
 	 * \param m see \p A
-	 * \param k see \p A
 	 * \param n see \p B
+	 * \param k see \p A
 	 * \param alpha scalar
 	 * \param beta scalar
 	 * \param A \f$\mathrm{op}(A)\f$ is \f$m \times k\f$
@@ -1189,7 +1211,7 @@ namespace FFLAS {
 			return C;
 		}
 
-		if (!(m && n && k)) {
+		if (!m || !n) {
 			return C;
 		}
 
@@ -1223,7 +1245,7 @@ namespace FFLAS {
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
-		Protected::MatMulParameters (F, std::min(std::min(m,n),k),k, beta, kmax, base,
+		Protected::MatMulParameters (F, m, n, k, beta, kmax, base,
 					     winolevel, winoLevelProvided);
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, winolevel, base);

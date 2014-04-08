@@ -37,7 +37,8 @@ namespace FFLAS {
 	namespace Protected {
 		template <class Field>
 		inline void MatMulParameters (const Field& F,
-					      const size_t WinoDim,
+					      const size_t m,
+					      const size_t n,
 					      const size_t k,
 					      const typename Field::Element& beta,
 					      size_t& delayedDim,
@@ -51,24 +52,29 @@ namespace FFLAS {
 			// Can be improved for some cases.
 
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (F, WinoDim);
+				winoRecLevel = WinoSteps (F, std::min(m,std::min(n,k)));
 			base = BaseCompute (F, winoRecLevel);
 			// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
 			delayedDim = DotProdBound (F, winoRecLevel, beta, base);
 
-			size_t n = k;
+			size_t oldk = k;
 			size_t winoDel = winoRecLevel;
 			// Computes the delayedDim, only depending on the recursive levels
 			// that must be performed over Z
-			while (winoDel > 0 && delayedDim < n) {
+			while (winoDel > 0 && delayedDim < oldk) {
+				    // If the topmost rec call is done with modular reductions
+				    // Then do one less rec step
 				winoDel--;
+				    // recompute the bound
 				delayedDim = DotProdBound (F, winoDel, beta, base);
 				if (!winoDel) {
 					typename Field::Element mbeta;
 					F.neg (mbeta,beta);
-					delayedDim = std::min(delayedDim, DotProdBound (F, winoDel, mbeta, base));
+					    // beta only comes into play when winodel==0
+					    // Then -beta = p-beta is also used in some calls
+					delayedDim = std::min(delayedDim, DotProdBound (F, 0, mbeta, base));
 				}
-				n >>= 1;
+				oldk >>= 1;
 			}
 			delayedDim = std::min (k, delayedDim);
 
@@ -76,7 +82,8 @@ namespace FFLAS {
 
 		template <>
 		inline void MatMulParameters (const DoubleDomain & F,
-					      const size_t WinoDim,
+					      const size_t m,
+					      const size_t n,
 					      const size_t k,
 					      const DoubleDomain::Element& beta,
 					      size_t& delayedDim,
@@ -85,7 +92,7 @@ namespace FFLAS {
 					      bool winoLevelProvided)
 		{
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (F, WinoDim) ;
+				winoRecLevel = WinoSteps (F, std::min(m,std::min(k,n))) ;
 
 			delayedDim = k+1;
 			base = FflasDouble;
@@ -93,7 +100,8 @@ namespace FFLAS {
 
 		template <>
 		inline void MatMulParameters (const FloatDomain & F,
-					      const size_t WinoDim,
+					      const size_t m,
+					      const size_t n,
 					      const size_t k,
 					      const FloatDomain::Element& beta,
 					      size_t& delayedDim,
@@ -102,7 +110,7 @@ namespace FFLAS {
 					      bool winoLevelProvided)
 		{
 			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (F, WinoDim) ;
+				winoRecLevel = WinoSteps (F, std::min(m,std::min(k,n))) ;
 
 			delayedDim = k+1;
 			base = FflasFloat;
