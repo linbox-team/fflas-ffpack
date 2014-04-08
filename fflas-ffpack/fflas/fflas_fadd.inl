@@ -92,10 +92,61 @@ namespace FFLAS {
 				F.add (C[i*incc], A[i*inca], B[i*incb]);
 	}
 
+	template <>
+	void
+	fsub (const FFPACK:: Modular<double> & F,  const size_t N,
+	      const double* A, const size_t inca,
+	      const double* B, const size_t incb,
+	      double* C, const size_t incc)
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			double p = (double)F.characteristic();
+			vectorised::subp<true>(C,A,B,N,p,0,p-1);
+		}
+		else
+			for (size_t i=0; i<N; i++)
+				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+	}
+
 
 	template <>
 	void
-	fadd (const FFPACK:: ModularBalanced<float> & F,  const size_t N,
+	fsub (const FFPACK:: ModularBalanced<double> & F,  const size_t N,
+	      const double* A, const size_t inca,
+	      const double* B, const size_t incb,
+	      double* C, const size_t incc)
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			double p = (double)F.characteristic();
+			double pmax = (p-1)/2 ;
+			double pmin = pmax-p+1;
+			vectorised::subp<false>(C,A,B,N,p,pmin, pmax);
+		}
+		else
+			for (size_t i=0; i<N; i++)
+				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+	}
+
+	template <>
+	void
+	fsub (const FFPACK:: Modular<float> & F,  const size_t N,
+	      const float* A, const size_t inca,
+	      const float* B, const size_t incb,
+	      float* C, const size_t incc)
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			float p = (float)F.characteristic();
+			vectorised::subp<true>(C,A,B,N,p,0,p-1);
+		}
+		else
+			for (size_t i=0; i<N; i++)
+				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+	}
+
+
+	template <>
+	void
+	fsub (const FFPACK:: ModularBalanced<float> & F,  const size_t N,
 	      const float* A, const size_t inca,
 	      const float* B, const size_t incb,
 	      float* C, const size_t incc)
@@ -104,11 +155,11 @@ namespace FFLAS {
 			float p = (float)F.characteristic();
 			float pmax = (p-1)/2 ;
 			float pmin = pmax-p+1;
-			vectorised::addp<false>(C,A,B,N,p,pmin, pmax);
+			vectorised::subp<false>(C,A,B,N,p,pmin, pmax);
 		}
 		else
 			for (size_t i=0; i<N; i++)
-				F.add (C[i*incc], A[i*inca], B[i*incb]);
+				F.sub (C[i*incc], A[i*inca], B[i*incb]);
 	}
 
 #if 0
