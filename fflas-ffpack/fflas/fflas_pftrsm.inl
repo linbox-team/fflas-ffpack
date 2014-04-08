@@ -29,7 +29,6 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
-#endif
 
 namespace FFLAS {
 
@@ -91,5 +90,26 @@ namespace FFLAS {
 
 
 } // FFLAS
+#else
+namespace FFLAS {
+
+	template<class Field>
+	typename Field::Element*
+	pftrsm( const Field& F,
+		     const FFLAS_SIDE Side,
+		     const FFLAS_UPLO UpLo,
+		     const FFLAS_TRANSPOSE TA,
+		     const FFLAS_DIAG Diag,
+		     const size_t m,
+		     const size_t n,
+		     const typename Field::Element alpha,
+		     const typename Field::Element* A, const size_t lda,
+		     typename Field::Element* B, const size_t ldb)
+	{
+		return ftrsm(F,Side,UpLo,TA,Diag,m,n,alpha,A,lda,B,ldb);
+	}
+} //FFLAS
+
+#endif // __FFLASFFPACK_USE_OPENMP
 
 
