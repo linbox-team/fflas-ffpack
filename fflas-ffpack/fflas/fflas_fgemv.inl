@@ -53,10 +53,12 @@ namespace FFLAS {
 			fscalin(F,((TransA == FflasNoTrans)?M:N),beta,Y,incY);
 			return;
 		}
-
 		FFLAS_BASE base = Protected::BaseCompute (F, 0);
 		// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
-		size_t kmax = Protected::DotProdBound (F, 0, beta, base);
+		typename Field::Element gamma;
+		F.div(gamma,beta,alpha);
+		size_t kmax = Protected::DotProdBound (F, 0, gamma, base);
+		std::cerr<<"kmax  = "<<kmax<<std::endl;
 		if (kmax > 1) {
 			if  (TransA == FflasNoTrans) {
 				size_t nblock = N / kmax;
@@ -104,10 +106,10 @@ namespace FFLAS {
 				else {
 					typename Field::Element betadivalpha;
 					F.div (betadivalpha, beta, alpha);
-						fscalin(F,M,betadivalpha,Y,incY);
+					fscalin(F,M,betadivalpha,Y,incY);
 				}
 				for (size_t i = 0; i < M; ++i) {
-					F.assign(*(Y+i*incY),fdot(F,N,A+i*lda,1,X,incX));
+					F.addin(*(Y+i*incY),fdot(F,N,A+i*lda,1,X,incX));
 				}
 				if (! F.isOne(alpha)) {
 					fscalin(F,M,alpha,Y,incY);
@@ -119,7 +121,7 @@ namespace FFLAS {
 				else {
 					typename Field::Element betadivalpha;
 					F.div (betadivalpha, beta, alpha);
-						fscalin(F,N,betadivalpha,Y,incY);
+					fscalin(F,N,betadivalpha,Y,incY);
 				}
 
 
