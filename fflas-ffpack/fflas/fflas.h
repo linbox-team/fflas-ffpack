@@ -1245,7 +1245,9 @@ namespace FFLAS {
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
-		Protected::MatMulParameters (F, m, n, k, beta, kmax, base,
+		typename Field::Element gamma;       
+		F.div(gamma,beta,alpha);
+		Protected::MatMulParameters (F, m, n, k, gamma, kmax, base,
 					     winolevel, winoLevelProvided);
 		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
 				     C, ldc, kmax, winolevel, base);
