@@ -61,23 +61,28 @@ namespace FFLAS {
 			size_t winoDel = winoRecLevel;
 			// Computes the delayedDim, only depending on the recursive levels
 			// that must be performed over Z
-			while (winoDel > 0 && delayedDim < oldk) {
-				    // If the topmost rec call is done with modular reductions
-				    // Then do one less rec step
-				winoDel--;
-				    // recompute the bound
-				delayedDim = DotProdBound (F, winoDel, beta, base);
-				if (!winoDel) {
-					typename Field::Element mbeta;
-					F.neg (mbeta,beta);
-					    // beta only comes into play when winodel==0
-					    // Then -beta = p-beta is also used in some calls
-					delayedDim = std::min(delayedDim, DotProdBound (F, 0, mbeta, base));
+			if (!winoLevelProvided){ // Automatic mode
+				while (winoDel > 0 && delayedDim < oldk) {
+					    // If the topmost rec call is done with modular reductions
+					    // Then do one less rec step
+					winoDel--;
+					    // recompute the bound
+					delayedDim = DotProdBound (F, winoDel, beta, base);
+					if (!winoDel) {
+						typename Field::Element mbeta;
+						F.neg (mbeta,beta);
+						    // beta only comes into play when winodel==0
+						    // Then -beta = p-beta is also used in some calls
+						delayedDim = std::min(delayedDim, DotProdBound (F, 0, mbeta, base));
+						
+					}
+					oldk >>= 1;
 				}
-				oldk >>= 1;
+				winoRecLevel = winoDel;
 			}
 			delayedDim = std::min (k, delayedDim);
 
+			    //std::cerr<<"p = "<<F.characteristic()<<" k = "<<k<<" winoRecLevel = "<<winoRecLevel<<" -> delayedDim = "<<delayedDim<<std::endl;
 		}
 
 		template <>
