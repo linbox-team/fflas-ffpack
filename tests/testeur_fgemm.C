@@ -39,11 +39,13 @@ using namespace std;
 #include "utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "givaro/givintprime.h"
 
 #ifndef __FFLASFFPACK_HAVE_GIVARO
 #error you need givaro (and gmp) here
 #endif
+
+
+#include "givaro/givintprime.h"
 
 
 
@@ -84,7 +86,7 @@ int main(int argc, char** argv){
 		TMAXN = atoi(argv[5]);
     else
         TMAXN = TMAXM;
-    
+
 
 	enum FFLAS::FFLAS_TRANSPOSE ta, tb;
 	size_t lda,ldb;

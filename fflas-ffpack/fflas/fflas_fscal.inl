@@ -48,24 +48,24 @@ namespace FFLAS {
 			return ;
 		}
 
-		Element * Xi = X;
-		const Element * Yi = Y;
+		const Element * Xi = X;
+		Element * Yi = Y;
 		if (F.areEqual(alpha,F.mOne)){
 			fneg(F,N,X,incX,Y,incY);
 			return;
 		}
 
 		if (F.isZero(alpha)){
-			fzero(F,N,X,incX);
+			fzero(F,N,Y,incY);
 			return;
 		}
 
 		if (incX == 1 && incY == 1)
 			for (size_t i = 0 ; i < N ; ++i)
-				F.mul( X[i], alpha, Y[i] );
+				F.mul( Y[i], alpha, X[i] );
 		else
 		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
-			F.mul( *Xi, alpha, *Yi );
+			F.mul( *Yi, alpha, *Xi );
 	}
 
 	template<class Field>
@@ -180,7 +180,7 @@ namespace FFLAS {
 			fcopy(F,m,n,A,lda,B,ldb) ;
 		}
 		else if (F.isZero(alpha)) {
-			fzero(F,m,n,A,lda);
+			fzero(F,m,n,B,ldb);
 		}
 		else if (F.isMOne(alpha)) {
 			fneg(F,m,n,A,lda,B,ldb);

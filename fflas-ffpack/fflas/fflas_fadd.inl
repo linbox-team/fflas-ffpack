@@ -237,12 +237,8 @@ namespace FFLAS {
 		const typename Field::Element* B, const size_t incb,
 		typename Field::Element* C, const size_t incc)
 	{
-		if (incb == 1 && incc == 1)
-			for (size_t i=0; i<N; i++)
-				F.subin (C[i], B[i]);
-		else
-			for (size_t i=0; i<N; i++)
-				F.subin (C[i*incc], B[i*incb]);
+
+		fsub(F,N,C,incc,B,incb,C,incc);
 	}
 
 

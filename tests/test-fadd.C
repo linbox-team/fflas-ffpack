@@ -253,7 +253,7 @@ int main(int ac, char **av) {
 	std::cout << seed << std::endl;
 
 	bool pass  = true ;
-	{
+	{ /*  fadd  */
 		{
 			FFPACK:: Modular<float> F(p) ;
 			pass &= test_fadd(F,m,k,n);
@@ -305,7 +305,7 @@ int main(int ac, char **av) {
 		}
 #endif
 	}
-	{
+	{ /*  faddin  */
 		{
 			FFPACK:: Modular<float> F(p) ;
 			pass &= test_faddin(F,m,k,n);
@@ -357,7 +357,7 @@ int main(int ac, char **av) {
 		}
 #endif
 	}
-	{
+	{ /*  fsub */
 		{
 			FFPACK:: Modular<float> F(p) ;
 			pass &= test_fsub(F,m,k,n);
@@ -409,7 +409,7 @@ int main(int ac, char **av) {
 		}
 #endif
 	}
-	{
+	{ /*  fsubin */
 		{
 			FFPACK:: Modular<float> F(p) ;
 			pass &= test_fsubin(F,m,k,n);
