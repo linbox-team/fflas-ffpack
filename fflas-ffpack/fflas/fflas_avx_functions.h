@@ -705,7 +705,7 @@ namespace FFLAS { namespace vectorised {
 	{
 		size_t i = 0 ;
 		for (;i<n;i++){
-			T[i]=TA[i] + TB[i];
+			T[i]=TA[i] - TB[i];
 			T[i]-=(T[i]>max)?p:0;
 			if (!positive) T[i]+=(T[i]<min)?p:0;
 		}
@@ -717,7 +717,7 @@ namespace FFLAS { namespace vectorised {
 	{
 		size_t i = 0 ;
 		for (;i<n;i++){
-			T[i]=TA[i] + TB[i];
+			T[i]=TA[i] - TB[i];
 			T[i]-=(T[i]>max)?p:0;
 			if (!positive) T[i]+=(T[i]<min)?p:0;
 		}

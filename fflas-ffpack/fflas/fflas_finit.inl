@@ -157,12 +157,14 @@ namespace FFLAS {
 	}
 
 	// just to make sure
+#if 0
 	template<class T>
 	void finit (const FFPACK:: UnparametricField<T> & , const size_t ,
 		    T * , const size_t)
 	{
 		return ;
 	}
+#endif
 
 	template<class Field>
 	void
@@ -189,10 +191,10 @@ namespace FFLAS {
 		const OtherElement * Yi = Y ;
 
 		if (incX == 1 && incY == 1)
-			for (; Xi < X + n ; ++Xi, ++Yi)
+			for (; Yi < Y + n ; ++Xi, ++Yi)
 				F.init( *Xi , *Yi);
 		else
-			for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
+			for (; Yi < Y+n*incY; Xi+=incX, Yi += incX )
 				F.init( *Xi , *Yi);
 	}
 

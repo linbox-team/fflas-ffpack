@@ -51,10 +51,12 @@ namespace FFLAS {
 		if (inca == 1 && incb == 1 && incc == 1) {
 			double p = (double)F.characteristic();
 			vectorised::addp<true>(C,A,B,N,p,0,p-1);
+
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.add (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 
@@ -71,9 +73,10 @@ namespace FFLAS {
 			double pmin = pmax-p+1;
 			vectorised::addp<false>(C,A,B,N,p,pmin, pmax);
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.add (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 	template <>
@@ -87,9 +90,10 @@ namespace FFLAS {
 			float p = (float)F.characteristic();
 			vectorised::addp<true>(C,A,B,N,p,0,p-1);
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.add (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 	template <>
@@ -102,10 +106,12 @@ namespace FFLAS {
 		if (inca == 1 && incb == 1 && incc == 1) {
 			double p = (double)F.characteristic();
 			vectorised::subp<true>(C,A,B,N,p,0,p-1);
+
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 
@@ -121,10 +127,12 @@ namespace FFLAS {
 			double pmax = (p-1)/2 ;
 			double pmin = pmax-p+1;
 			vectorised::subp<false>(C,A,B,N,p,pmin, pmax);
+
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 	template <>
@@ -137,10 +145,12 @@ namespace FFLAS {
 		if (inca == 1 && incb == 1 && incc == 1) {
 			float p = (float)F.characteristic();
 			vectorised::subp<true>(C,A,B,N,p,0,p-1);
+
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 
@@ -156,10 +166,12 @@ namespace FFLAS {
 			float pmax = (p-1)/2 ;
 			float pmin = pmax-p+1;
 			vectorised::subp<false>(C,A,B,N,p,pmin, pmax);
+
 		}
-		else
+		else {
 			for (size_t i=0; i<N; i++)
 				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
 	}
 
 #if 0

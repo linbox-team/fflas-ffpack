@@ -34,6 +34,12 @@
 
 namespace FFLAS {
 
+
+	/***************************/
+	/*         LEVEL 1         */
+	/***************************/
+
+
 	template<class Field>
 	inline void
 	fcopy (const Field& F, const size_t N,
@@ -125,6 +131,11 @@ namespace FFLAS {
 
 		return;
 	}
+
+
+	/***************************/
+	/*         LEVEL 2         */
+	/***************************/
 
 
 	template<class Field>
