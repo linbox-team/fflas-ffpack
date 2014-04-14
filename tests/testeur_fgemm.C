@@ -216,6 +216,24 @@ int main(int argc, char** argv){
 	cerr<<"FAILED with p = "<<(size_t)p<<" M = "<<M<<" N = "<<N<<" K = "<<K
 	    <<" Winolevel = "<<Wino
 	    <<" alpha = "<<(size_t)alpha<<" beta = "<<(size_t)beta<<endl;
+
+	if (M < 20 && N < 20) {
+		cerr << "error locations (X)" << endl;
+		Field F( (size_t) p );
+		for (size_t i = 0; i < M; ++i ) {
+			for ( size_t j = 0; j < N; ++j ){
+				if ( !F.areEqual( *(Cbis+i*N+j), *(C+i*N+j) ) ) {
+					cerr<<"x" ;
+				}
+				else
+					cerr<<"o" ;
+			}
+			cerr << endl;
+		}
+		cerr << endl;
+
+	}
+
 	cerr<<"A:"<<endl;
 	if ( ta ==FFLAS::FflasNoTrans ){
 		cerr<<M<<" "<<K<<" M"<<endl;

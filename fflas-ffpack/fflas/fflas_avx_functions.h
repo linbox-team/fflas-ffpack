@@ -157,7 +157,7 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 #endif // AVX and AVX2
 
 	template<bool positive> // no default argument unless C++11
-	inline void modp( double *T, size_t n, double p, double invp, double min, double max)
+	inline void modp( double *T, const double * U, size_t n, double p, double invp, double min, double max)
 	{
 		register __m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX;
 		P   = _mm256_set1_pd(p);
@@ -169,8 +169,9 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 		size_t i=0;
 		if (n < 4) {
 			for (;i<n;i++){
-				T[i]=fmod(T[i],p);
-				if (!positive) T[i]-=(T[i]>max)?p:0;
+				T[i]=fmod(U[i],p);
+				if (!positive)
+				       	T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
@@ -178,33 +179,37 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=8,i++){
-				T[i]=fmod(T[i],p);
-				if (!positive) T[i]-=(T[i]>max)?p:0;
+				T[i]=fmod(U[i],p);
+				if (!positive)
+					T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
 		FFLASFFPACK_check((long(T+i)%32==0));
-		// perform the loop using 256 bits SIMD
-		for (;i<=n-4;i+=4){
-			C=_mm256_load_pd(T+i);
-			if (positive) {
-				VEC_MODF_D_POS(C,Q,P,INVP,TMP);
+		if ((long(U+i)%32==0)) {
+			// perform the loop using 256 bits SIMD
+			for (;i<=n-4;i+=4){
+				C=_mm256_load_pd(U+i);
+				if (positive) {
+					VEC_MODF_D_POS(C,Q,P,INVP,TMP);
+				}
+				else {
+					VEC_MODF_D(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
+				}
+				_mm256_store_pd(T+i,C);
 			}
-			else {
-				VEC_MODF_D(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
-			}
-			_mm256_store_pd(T+i,C);
 		}
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
-			T[i]=fmod(T[i],p);
-			if (!positive) T[i]-=(T[i]>max)?p:0;
+			T[i]=fmod(U[i],p);
+			if (!positive)
+			       	T[i]-=(T[i]>max)?p:0;
 			T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
 	template<bool positive>
-	inline void modp( float *T,  size_t n, float p, float invp, float min, float max)
+	inline void modp( float *T, const double * U,  size_t n, float p, float invp, float min, float max)
 	{
 		register __m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX;
 		P   = _mm256_set1_ps(p);
@@ -216,34 +221,41 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 		size_t i=0;;
 		if (n < 8) {
 			for (;i<n;i++){
-				T[i]=fmodf(T[i],p);
-				if (!positive) T[i]-=(T[i]>max)?p:0;
+				T[i]=fmodf(U[i],p);
+				if (!positive)
+				       	T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=4,i++){
-				T[i]=fmodf(T[i],p);
-				if (!positive) T[i]-=(T[i]>max)?p:0;
+				T[i]=fmodf(U[i],p);
+				if (!positive)
+					T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
-		// perform the loop using 256 bits SIMD
-		for (;i<=n-8;i+=8){
-			C=_mm256_load_ps(T+i);
-			if (positive) {
-				VEC_MODF_S_POS(C,Q,P,INVP,TMP);
+
+		FFLASFFPACK_check((long(T+i)%32==0));
+		if ((long(U+i)%32==0)) {
+			// perform the loop using 256 bits SIMD
+			for (;i<=n-8;i+=8){
+				C=_mm256_load_ps(U+i);
+				if (positive) {
+					VEC_MODF_S_POS(C,Q,P,INVP,TMP);
+				}
+				else {
+					VEC_MODF_S(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
+				}
+				_mm256_store_ps(T+i,C);
 			}
-			else {
-				VEC_MODF_S(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
-			}
-			_mm256_store_ps(T+i,C);
 		}
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
-			T[i]=fmodf(T[i],p);
-			if (!positive) T[i]-=(T[i]>max)?p:0;
+			T[i]=fmodf(U[i],p);
+			if (!positive)
+				T[i]-=(T[i]>max)?p:0;
 			T[i]+=(T[i]<min)?p:0;
 		}
 	}
@@ -251,22 +263,24 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 #else // no AVX
 
 	template<bool positive>
-	inline void modp( double *T, size_t n, double p, double invp, double min, double max)
+	inline void modp( double *T, const double * U, size_t n, double p, double invp, double min, double max)
 	{
 		for(size_t j=0;j<n;j++){
-			T[j]= fmod(T[j],p);
-			if (!positive) T[j]-=(T[j]>max)?p:0;
+			T[j]= fmod(U[j],p);
+			if (!positive)
+				T[j]-=(T[j]>max)?p:0;
 			T[j]+=(T[j]<min)?p:0;
 		}
 
 	}
 
 	template<bool positive>
-	inline void modp( float *T, size_t n, float p, float invp, float min, float max)
+	inline void modp( float *T, const float * U, size_t n, float p, float invp, float min, float max)
 	{
 		for(size_t j=0;j<n;j++){
-			T[j]= fmodf(T[j],p);
-			if (!positive) T[j]-=(T[j]>max)?p:0;
+			T[j]= fmodf(U[j],p);
+			if (!positive)
+				T[j]-=(T[j]>max)?p:0;
 			T[j]+=(T[j]<min)?p:0;
 		}
 
@@ -334,7 +348,8 @@ namespace FFLAS { namespace vectorised {
 			for (;i<n;i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				if (!positive)
+					T[i]+=(T[i]<min)?p:0;
 			}
 			return;
 
@@ -343,7 +358,8 @@ namespace FFLAS { namespace vectorised {
 			for (size_t j=(size_t)st;j<32;j+=8,i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				if (!positive)
+					T[i]+=(T[i]<min)?p:0;
 			}
 		}
 		FFLASFFPACK_check((long(T+i)%32==0));
@@ -371,7 +387,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] + TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			if (!positive)
+				T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
@@ -389,7 +406,8 @@ namespace FFLAS { namespace vectorised {
 			for (;i<n;i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				if (!positive)
+				       	T[i]+=(T[i]<min)?p:0;
 			}
 			return;
 
@@ -398,7 +416,8 @@ namespace FFLAS { namespace vectorised {
 			for (size_t j=(size_t)st;j<32;j+=4,i++){
 				T[i]=TA[i] + TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				if (!positive)
+					T[i]+=(T[i]<min)?p:0;
 			}
 		}
 		FFLASFFPACK_check((long(T+i)%32==0));
@@ -426,7 +445,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] + TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			if (!positive)
+				T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
@@ -480,7 +500,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] + TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			if (!positive)
+				T[i]+=(T[i]<min)?p:0;
 		}
 
 	}
@@ -492,7 +513,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] + TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			if (!positive)
+				T[i]+=(T[i]<min)?p:0;
 		}
 
 	}
@@ -561,7 +583,7 @@ namespace FFLAS { namespace vectorised {
 			for (;i<n;i++){
 				T[i]=TA[i] - TB[i];
 				if (!positive)
-				T[i]-=(T[i]>max)?p:0;
+					T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
@@ -570,8 +592,8 @@ namespace FFLAS { namespace vectorised {
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=8,i++){
 				T[i]=TA[i] - TB[i];
-				    if (!positive)
-				T[i]-=(T[i]>max)?p:0;
+				if (!positive)
+					T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
@@ -599,8 +621,8 @@ namespace FFLAS { namespace vectorised {
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
-			    if (!positive)
-			T[i]-=(T[i]>max)?p:0;
+			if (!positive)
+				T[i]-=(T[i]>max)?p:0;
 			T[i]+=(T[i]<min)?p:0;
 		}
 	}
@@ -618,8 +640,8 @@ namespace FFLAS { namespace vectorised {
 		if (n < 8) {
 			for (;i<n;i++){
 				T[i]=TA[i] - TB[i];
-				    if (!positive)
-				T[i]-=(T[i]>max)?p:0;
+				if (!positive)
+					T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
@@ -628,8 +650,8 @@ namespace FFLAS { namespace vectorised {
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=4,i++){
 				T[i]=TA[i] - TB[i];
-				    if (!positive)
-				T[i]-=(T[i]>max)?p:0;
+				if (!positive)
+					T[i]-=(T[i]>max)?p:0;
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
@@ -657,8 +679,8 @@ namespace FFLAS { namespace vectorised {
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
-			    if (!positive)
-			T[i]-=(T[i]>max)?p:0;
+			if (!positive)
+				T[i]-=(T[i]>max)?p:0;
 			T[i]+=(T[i]<min)?p:0;
 		}
 	}
@@ -712,8 +734,8 @@ namespace FFLAS { namespace vectorised {
 		size_t i = 0 ;
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
-			    if (!positive)
-			T[i]-=(T[i]>max)?p:0;
+			if (!positive)
+				T[i]-=(T[i]>max)?p:0;
 			T[i]+=(T[i]<min)?p:0;
 		}
 
@@ -725,8 +747,8 @@ namespace FFLAS { namespace vectorised {
 		size_t i = 0 ;
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
-			    if (!positive)
-			T[i]-=(T[i]>max)?p:0;
+			if (!positive)
+				T[i]-=(T[i]>max)?p:0;
 			T[i]+=(T[i]<min)?p:0;
 		}
 

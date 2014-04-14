@@ -48,7 +48,7 @@ namespace FFLAS {
 		typename Field::Element d;
 		const typename Field::Element* xi = x;
 		const typename Field::Element* yi = y;
-		F.init( d, 0 );
+		F.init( d, F.zero );
 		for ( ; xi < x+N*incx; xi+=incx, yi+=incy )
 			F.axpyin( d, *xi, *yi );
 		return d;

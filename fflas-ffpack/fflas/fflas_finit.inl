@@ -50,7 +50,7 @@ namespace FFLAS {
 			double p, invp;
 			p=(double)F.cardinality();
 			invp=1./p;
-			vectorised::modp<true>(A,m,p,invp,0,p-1);
+			vectorised::modp<true>(A,A,m,p,invp,0,p-1);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -77,7 +77,7 @@ namespace FFLAS {
 			float p, invp;
 			p=(float)F.cardinality();
 			invp=1.f/p;
-			vectorised::modp<true>(A,m,p,invp,0,p-1);
+			vectorised::modp<true>(A,A,m,p,invp,0,p-1);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -108,7 +108,7 @@ namespace FFLAS {
 			invp=1./p;
 			double pmax = (p-1)/2 ;
 			double pmin = pmax-p+1;
-			vectorised::modp<false>(A,m,p,invp,pmin,pmax);
+			vectorised::modp<false>(A,A,m,p,invp,pmin,pmax);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -137,7 +137,7 @@ namespace FFLAS {
 			invp=1.f/p;
 			float pmax = (p-1)/2 ;
 			float pmin = pmax-p+1;
-			vectorised::modp<false>(A,m,p,invp,pmin,pmax);
+			vectorised::modp<false>(A,A,m,p,invp,pmin,pmax);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -155,6 +155,93 @@ namespace FFLAS {
 		}
 
 	}
+
+
+
+	template<>
+	void finit (const FFPACK:: Modular<double> & F, const size_t m,
+		    const double * B, const size_t incY,
+		    double * A, const size_t incX)
+	{
+		if(incX == 1 && incY == 1) {
+			double p, invp;
+			p=(double)F.cardinality();
+			invp=1./p;
+			vectorised::modp<true>(A,B,m,p,invp,0,p-1);
+		}
+		else {
+			double * Xi = A ;
+			const double * Yi = B ;
+			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+				F.init( *Xi , *Yi);
+		}
+	}
+
+
+	template<>
+	void finit (const FFPACK:: Modular<float> & F, const size_t m,
+		    const float * B, const size_t incY,
+		    float * A, const size_t incX)
+	{
+		if(incX == 1) {
+			float p, invp;
+			p=(float)F.cardinality();
+			invp=1.f/p;
+			vectorised::modp<true>(A,B,m,p,invp,0,p-1);
+		}
+		else {
+			float * Xi = A ;
+			const float * Yi = B ;
+			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+				F.init( *Xi , *Yi);
+		}
+
+	}
+
+
+	template<>
+	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m,
+		    const double * B, const size_t incY,
+		    double * A, const size_t incX)
+	{
+		if(incX == 1) {
+			double p, invp;
+			p=(double)F.cardinality();
+			invp=1./p;
+			double pmax = (p-1)/2 ;
+			double pmin = pmax-p+1;
+			vectorised::modp<false>(A,B,m,p,invp,pmin,pmax);
+		}
+		else {
+			double * Xi = A ;
+			const double * Yi = B ;
+			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+				F.init( *Xi , *Yi);
+		}
+	}
+
+	template<>
+	void finit (const FFPACK:: ModularBalanced<float> & F, const size_t m,
+		    const float * B, const size_t incY,
+		    float * A, const size_t incX)
+	{
+		if(incX == 1) {
+			float p, invp;
+			p=(float)F.cardinality();
+			invp=1.f/p;
+			float pmax = (p-1)/2 ;
+			float pmin = pmax-p+1;
+			vectorised::modp<false>(A,B,m,p,invp,pmin,pmax);
+		}
+		else {
+			float * Xi = A ;
+			const float * Yi = B ;
+			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+				F.init( *Xi , *Yi);
+		}
+
+	}
+
 
 	// just to make sure
 #if 0
@@ -224,7 +311,7 @@ namespace FFLAS {
 	       const OtherElement * B, const size_t ldb,
 	       typename Field::Element * A, const size_t lda)
 	{
-		if (n == lda && lda == ldb)
+		if (n == lda && n == ldb)
 			finit(F,n*m,B,1,A,1);
 		else
 			for (size_t i = 0 ; i < m ; ++i)

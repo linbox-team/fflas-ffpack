@@ -96,13 +96,13 @@
 #error "you need intXX_t types"
 #endif
 
-#ifndef DEBUG
-#define FFLASFFPACK_check(check) ((void) 0)
-#else
+#ifndef NDEBUG
 #define FFLASFFPACK_check(check) \
 if (!(check)) {\
 throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); /*BB : should work on non gnu compilers too */ \
 }
+#else
+#define FFLASFFPACK_check(check) ((void) 0)
 #endif
 
 

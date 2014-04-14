@@ -1264,10 +1264,12 @@ namespace FFLAS {
 		 *  XXX do it in return status of F.inv(Element&,Element&)
 		 */
 		typename Field::Element e ;
-		F.init(e,1UL);
+		F.init(e,beta);
+		// F.init(e,F.one);
 		F.divin(e,alpha);
 		F.mulin(e,alpha);
-		FFLASFFPACK_check(F.isOne(e));
+		// FFLASFFPACK_check(F.isOne(e));
+		FFLASFFPACK_check(F.areEqual(e,beta));
 #endif
 
 #if 0

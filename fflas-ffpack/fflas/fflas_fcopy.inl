@@ -53,10 +53,11 @@ namespace FFLAS {
 			for (; Xi < X+N; ++Xi, ++Yi)
 				F.assign(*Xi,*Yi);
 
-			return;
 		}
-		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
-			F.assign(*Xi,*Yi);
+		else {
+			for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
+				F.assign(*Xi,*Yi);
+		}
 		return;
 	}
 
