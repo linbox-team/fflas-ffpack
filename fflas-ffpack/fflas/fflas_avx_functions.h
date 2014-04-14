@@ -364,7 +364,7 @@ namespace FFLAS { namespace vectorised {
 		}
 		else {
 #ifndef NDEBUG
-			std::cout << "in vectorised::addp, could not align T, Ta and Tb" << std::endl;
+			// std::cout << "in vectorised::addp, could not align T, Ta and Tb" << std::endl;
 #endif
 		}
 		// perform the last elt from T without SIMD
@@ -419,7 +419,7 @@ namespace FFLAS { namespace vectorised {
 		}
 		else {
 #ifndef NDEBUG
-			std::cout << "in vectorised::addp, could not align T, Ta and Tb" << std::endl;
+			// std::cout << "in vectorised::addp, could not align T, Ta and Tb" << std::endl;
 #endif
 		}
 		// perform the last elt from T without SIMD
@@ -560,8 +560,8 @@ namespace FFLAS { namespace vectorised {
 		if (n < 4) {
 			for (;i<n;i++){
 				T[i]=TA[i] - TB[i];
+				if (!positive)
 				T[i]-=(T[i]>max)?p:0;
-				    //if (!positive) 
 				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
@@ -570,8 +570,8 @@ namespace FFLAS { namespace vectorised {
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=8,i++){
 				T[i]=TA[i] - TB[i];
+				    if (!positive)
 				T[i]-=(T[i]>max)?p:0;
-				    //if (!positive)
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
@@ -593,14 +593,14 @@ namespace FFLAS { namespace vectorised {
 		}
 		else {
 #ifndef NDEBUG
-			std::cout << "in vectorised::subp, could not align T, Ta and Tb" << std::endl;
+			// std::cout << "in vectorised::subp, could not align T, Ta and Tb" << std::endl;
 #endif
 		}
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
+			    if (!positive)
 			T[i]-=(T[i]>max)?p:0;
-			    //if (!positive) 
 			T[i]+=(T[i]<min)?p:0;
 		}
 	}
@@ -618,8 +618,8 @@ namespace FFLAS { namespace vectorised {
 		if (n < 8) {
 			for (;i<n;i++){
 				T[i]=TA[i] - TB[i];
+				    if (!positive)
 				T[i]-=(T[i]>max)?p:0;
-				    //if (!positive) 
 				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
@@ -628,8 +628,8 @@ namespace FFLAS { namespace vectorised {
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=4,i++){
 				T[i]=TA[i] - TB[i];
+				    if (!positive)
 				T[i]-=(T[i]>max)?p:0;
-				    //if (!positive) 
 				T[i]+=(T[i]<min)?p:0;
 			}
 		}
@@ -651,14 +651,14 @@ namespace FFLAS { namespace vectorised {
 		}
 		else {
 #ifndef NDEBUG
-			std::cout << "in vectorised::subp, could not align T, Ta and Tb" << std::endl;
+			// std::cout << "in vectorised::subp, could not align T, Ta and Tb" << std::endl;
 #endif
 		}
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
+			    if (!positive)
 			T[i]-=(T[i]>max)?p:0;
-			    //if (!positive) 
 			T[i]+=(T[i]<min)?p:0;
 		}
 	}
@@ -694,7 +694,7 @@ namespace FFLAS { namespace vectorised {
 		}
 		else {
 #ifndef NDEBUG
-			std::cout << "in vectorised::subp, could not align T, Ta and Tb" << std::endl;
+			// std::cout << "in vectorised::subp, could not align T, Ta and Tb" << std::endl;
 #endif
 		}
 		// perform the last elt from T without SIMD
@@ -712,8 +712,8 @@ namespace FFLAS { namespace vectorised {
 		size_t i = 0 ;
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
+			    if (!positive)
 			T[i]-=(T[i]>max)?p:0;
-			    //if (!positive) 
 			T[i]+=(T[i]<min)?p:0;
 		}
 
@@ -725,8 +725,8 @@ namespace FFLAS { namespace vectorised {
 		size_t i = 0 ;
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
+			    if (!positive)
 			T[i]-=(T[i]>max)?p:0;
-			    //if (!positive) 
 			T[i]+=(T[i]<min)?p:0;
 		}
 

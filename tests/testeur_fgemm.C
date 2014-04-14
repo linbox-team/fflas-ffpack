@@ -52,8 +52,8 @@ using namespace std;
 using namespace FFPACK;
 
 //typedef ModularBalanced<float> Field;
-typedef ModularBalanced<double> Field;
-//typedef Modular<double> Field;
+// typedef ModularBalanced<double> Field;
+typedef Modular<double> Field;
 //typedef Modular<float> Field;
 //typedef Modular<int> Field;
 //typedef GivaroZpz<Std32> Field;
@@ -104,7 +104,7 @@ int main(int argc, char** argv){
 
 		}while( (p <= 2) );
 
-		Field F( p );
+		Field F( (size_t) p );
 		Field::RandIter RValue( F );
 		//NonzeroRandIter<Field> RnValue( F, RValue );
 

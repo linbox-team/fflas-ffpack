@@ -104,17 +104,21 @@ namespace FFLAS {
 		FflasGeneric = 153   /**< for any other domain, that can not be converted to floating point integers */
 	};
 
-	class MMParameters{
+
+
+	class MMParameters {};
+
+	class WinogradHelper : public MMParameters {
 		short _SWRecLevels;
 		bool _AutoSetSWRecLevels;
 		bool _ImmutableElementType;
 		size_t _MaxDelayedDim;
 	protected:
-		MMParameters(){}
+		WinogradHelper(){}
 	public:
 		template <class Field>
-		MMParameters(const Field& F, const size_t m, const size_t n, const size_t k, 
-			     const typename Field::Element& beta): 
+		WinogradHelper(const Field& F, const size_t m, const size_t n, const size_t k,
+			     const typename Field::Element& beta):
 				_AutoSetSWRecLevels(true), _ImmutableElementType(false){
 			FFLAS_BASE base;
 			MatMulParameters(F,m,n,k, beta, &_MaxDelayedDim, base, _SWRecLevels, _AutoSetSWRecLevels);
@@ -125,6 +129,40 @@ namespace FFLAS {
 		void setElementTypeImmutability(const bool i){_ImmutableElementType = i;}
 
 	};
+
+	class BiniHelper : public MMParameters {
+		// rec=1
+		// extra: epsilon or p
+		// fail back: winograd
+	} ;
+
+	class LowMemHelper : public MMParameters {
+		// rec= any
+		// extra: T* X, T* Y, T* Z...
+		// square/rect options
+
+	} ;
+
+	class NaiveHelper : public MMParameters {
+		// ijk order
+		// blocking
+	};
+
+	template<class Field>
+	typename Field::Element*
+	fgemm2( const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       const typename Field::Element* A, const size_t lda,
+	       const typename Field::Element* B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element* C, const size_t ldc,
+	       const MMParameters & /* = WinogradHelper */) ;
+
 
 	/* Representations of Z with floating point elements*/
 
@@ -1245,7 +1283,7 @@ namespace FFLAS {
 		size_t kmax = 0;
 		size_t winolevel = w;
 		FFLAS_BASE base;
-		typename Field::Element gamma;       
+		typename Field::Element gamma;
 		F.div(gamma,beta,alpha);
 		Protected::MatMulParameters (F, m, n, k, gamma, kmax, base,
 					     winolevel, winoLevelProvided);
