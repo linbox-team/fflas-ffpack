@@ -561,7 +561,8 @@ namespace FFLAS { namespace vectorised {
 			for (;i<n;i++){
 				T[i]=TA[i] - TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				    //if (!positive) 
+				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
 
@@ -570,7 +571,8 @@ namespace FFLAS { namespace vectorised {
 			for (size_t j=(size_t)st;j<32;j+=8,i++){
 				T[i]=TA[i] - TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				    //if (!positive)
+				T[i]+=(T[i]<min)?p:0;
 			}
 		}
 		FFLASFFPACK_check((long(T+i)%32==0));
@@ -598,7 +600,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			    //if (!positive) 
+			T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
@@ -616,7 +619,8 @@ namespace FFLAS { namespace vectorised {
 			for (;i<n;i++){
 				T[i]=TA[i] - TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				    //if (!positive) 
+				T[i]+=(T[i]<min)?p:0;
 			}
 			return;
 
@@ -625,7 +629,8 @@ namespace FFLAS { namespace vectorised {
 			for (size_t j=(size_t)st;j<32;j+=4,i++){
 				T[i]=TA[i] - TB[i];
 				T[i]-=(T[i]>max)?p:0;
-				if (!positive) T[i]+=(T[i]<min)?p:0;
+				    //if (!positive) 
+				T[i]+=(T[i]<min)?p:0;
 			}
 		}
 		FFLASFFPACK_check((long(T+i)%32==0));
@@ -653,7 +658,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			    //if (!positive) 
+			T[i]+=(T[i]<min)?p:0;
 		}
 	}
 
@@ -665,14 +671,14 @@ namespace FFLAS { namespace vectorised {
 		size_t i=0;
 		if (n < 8) {
 			for (;i<n;i++){
-				T[i]=TA[i] + TB[i];
+				T[i]=TA[i] - TB[i];
 			}
 			return;
 
 		}
 		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 			for (size_t j=(size_t)st;j<32;j+=4,i++){
-				T[i]=TA[i] + TB[i];
+				T[i]=TA[i] - TB[i];
 			}
 		}
 		FFLASFFPACK_check((long(T+i)%32==0));
@@ -693,7 +699,7 @@ namespace FFLAS { namespace vectorised {
 		}
 		// perform the last elt from T without SIMD
 		for (;i<n;i++){
-			T[i]=TA[i] + TB[i];
+			T[i]=TA[i] - TB[i];
 		}
 	}
 #endif
@@ -707,7 +713,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			    //if (!positive) 
+			T[i]+=(T[i]<min)?p:0;
 		}
 
 	}
@@ -719,7 +726,8 @@ namespace FFLAS { namespace vectorised {
 		for (;i<n;i++){
 			T[i]=TA[i] - TB[i];
 			T[i]-=(T[i]>max)?p:0;
-			if (!positive) T[i]+=(T[i]<min)?p:0;
+			    //if (!positive) 
+			T[i]+=(T[i]<min)?p:0;
 		}
 
 	}

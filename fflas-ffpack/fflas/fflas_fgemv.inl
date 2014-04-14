@@ -58,7 +58,7 @@ namespace FFLAS {
 		typename Field::Element gamma;
 		F.div(gamma,beta,alpha);
 		size_t kmax = Protected::DotProdBound (F, 0, gamma, base);
-		std::cerr<<"kmax  = "<<kmax<<std::endl;
+//		std::cerr<<"kmax  = "<<kmax<<std::endl;
 		if (kmax > 1) {
 			if  (TransA == FflasNoTrans) {
 				size_t nblock = N / kmax;
