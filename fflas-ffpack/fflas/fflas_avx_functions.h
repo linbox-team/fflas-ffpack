@@ -209,7 +209,7 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 	}
 
 	template<bool positive>
-	inline void modp( float *T, const double * U,  size_t n, float p, float invp, float min, float max)
+	inline void modp( float *T, const float * U,  size_t n, float p, float invp, float min, float max)
 	{
 		register __m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX;
 		P   = _mm256_set1_ps(p);
