@@ -54,11 +54,13 @@ namespace FFLAS {
 			return;
 		}
 		FFLAS_BASE base = Protected::BaseCompute (F, 0);
-		// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
-		typename Field::Element gamma;
+		    //std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
+		typename Field::Element gamma,gamma2;
 		F.div(gamma,beta,alpha);
-		size_t kmax = Protected::DotProdBound (F, 0, gamma, base);
-//		std::cerr<<"kmax  = "<<kmax<<std::endl;
+		F.inv(gamma2,alpha);
+		    // TODO: instead, implement MatVectProd only with alpha = 1
+		size_t kmax = std::min(Protected::DotProdBound (F, 0, gamma, base),
+				       Protected::DotProdBound (F, 0, gamma2, base));
 		if (kmax > 1) {
 			if  (TransA == FflasNoTrans) {
 				size_t nblock = N / kmax;
@@ -82,7 +84,7 @@ namespace FFLAS {
 				size_t nblock = M / kmax;
 				size_t remblock = M % kmax;
 				// To ensure the initial computation with beta
-				if (!remblock){
+				if ((!remblock) && nblock){
 					remblock = kmax;
 					--nblock;
 				}
@@ -288,7 +290,7 @@ namespace FFLAS {
 					// and after y *= alpha
 					F.divin (_beta, alpha);
 			}
-
+		
 			FFLASFFPACK_check(lda);
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
@@ -363,7 +365,7 @@ namespace FFLAS {
 	       const FloatDomain::Element beta,
 	       FloatDomain::Element * Y, const size_t incY)
 	{
-			FFLASFFPACK_check(lda);
+		FFLASFFPACK_check(lda);
 		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
 	}
