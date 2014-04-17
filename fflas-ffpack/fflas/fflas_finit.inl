@@ -50,7 +50,7 @@ namespace FFLAS {
 			double p, invp;
 			p=(double)F.cardinality();
 			invp=1./p;
-			vectorised::modp<true>(A,A,m,p,invp,0,p-1);
+			vectorised::modp<true,false>(A,A,m,p,invp,0,p-1);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -77,7 +77,7 @@ namespace FFLAS {
 			float p, invp;
 			p=(float)F.cardinality();
 			invp=1.f/p;
-			vectorised::modp<true>(A,A,m,p,invp,0,p-1);
+			vectorised::modp<true,false>(A,A,m,p,invp,0,p-1);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -108,7 +108,7 @@ namespace FFLAS {
 			invp=1./p;
 			double pmax = (p-1)/2 ;
 			double pmin = pmax-p+1;
-			vectorised::modp<false>(A,A,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,A,m,p,invp,pmin,pmax);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -137,7 +137,7 @@ namespace FFLAS {
 			invp=1.f/p;
 			float pmax = (p-1)/2 ;
 			float pmin = pmax-p+1;
-			vectorised::modp<false>(A,A,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,A,m,p,invp,pmin,pmax);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -167,7 +167,7 @@ namespace FFLAS {
 			double p, invp;
 			p=(double)F.cardinality();
 			invp=1./p;
-			vectorised::modp<true>(A,B,m,p,invp,0,p-1);
+			vectorised::modp<true,false>(A,B,m,p,invp,0,p-1);
 		}
 		else {
 			double * Xi = A ;
@@ -187,7 +187,7 @@ namespace FFLAS {
 			float p, invp;
 			p=(float)F.cardinality();
 			invp=1.f/p;
-			vectorised::modp<true>(A,B,m,p,invp,0,p-1);
+			vectorised::modp<true,false>(A,B,m,p,invp,0,p-1);
 		}
 		else {
 			float * Xi = A ;
@@ -210,7 +210,7 @@ namespace FFLAS {
 			invp=1./p;
 			double pmax = (p-1)/2 ;
 			double pmin = pmax-p+1;
-			vectorised::modp<false>(A,B,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,B,m,p,invp,pmin,pmax);
 		}
 		else {
 			double * Xi = A ;
@@ -231,7 +231,7 @@ namespace FFLAS {
 			invp=1.f/p;
 			float pmax = (p-1)/2 ;
 			float pmin = pmax-p+1;
-			vectorised::modp<false>(A,B,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,B,m,p,invp,pmin,pmax);
 		}
 		else {
 			float * Xi = A ;
