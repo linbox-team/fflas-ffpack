@@ -1412,6 +1412,10 @@ namespace FFLAS {
 
 } // class FFLAS
 
+#include "fflas_fadd.inl"
+#include "fflas_fscal.inl"
+
+
 #include "fflas_bounds.inl"
 #include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
@@ -1437,9 +1441,6 @@ namespace FFLAS {
 #include "fflas_ftrtr.inl"
 #endif
 #endif
-
-#include "fflas_fadd.inl"
-#include "fflas_fscal.inl"
 
 
 #undef LB_TRTR

@@ -167,10 +167,12 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 				F.inv(invpiv, *(A+rowbeg*lda + colbeg));
 				F.assign(*(A+rowbeg*lda+colbeg), invpiv);
 				F.negin(invpiv);
-				for (size_t j=0; j<rowbeg; ++j)
-					F.mulin (*(A+j*lda+colbeg), invpiv);
-				for (size_t j=rowbeg+1; j<M; ++j)
-					F.mulin (*(A+j*lda+colbeg), invpiv);
+				// for (size_t j=0; j<rowbeg; ++j)
+					// F.mulin (*(A+j*lda+colbeg), invpiv);
+				FFLAS::fscalin(F,rowbeg,invpiv,A+colbeg,lda);
+				// for (size_t j=rowbeg+1; j<M; ++j)
+					// F.mulin (*(A+j*lda+colbeg), invpiv);
+					FFLAS::fscalin(F,M-rowbeg-1,invpiv,A+colbeg,lda);
 				return 1;
 			}
 		}

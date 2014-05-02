@@ -146,14 +146,17 @@ namespace FFPACK {
 
 
 				if (Diag == FFLAS::FflasUnit) {
-					for (size_t j=1; j<N-k; ++j)
-						if (!F.isZero(*(Aini+j)))
-							F.mulin (*(Aini+j),invpiv);
+					// for (size_t j=1; j<N-k; ++j)
+						// if (!F.isZero(*(Aini+j)))
+							// F.mulin (*(Aini+j),invpiv);
+					FFLAS::fscalin(F,N-k-1,invpiv,Aini+1,1);
 				}
-				else
-					for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
-						if (!F.isZero(*(Aini+i)))
-							F.mulin (*(Aini+i),invpiv);
+				else {
+					// for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
+						// if (!F.isZero(*(Aini+i)))
+							// F.mulin (*(Aini+i),invpiv);
+					FFLAS::fscalin(F,M-rowp-1,invpiv,Aini+lda,lda);
+				}
 
 				//Elimination
 				//Or equivalently, but without delayed ops :
@@ -243,14 +246,17 @@ namespace FFPACK {
 
 
 				if (Diag == FFLAS::FflasUnit) {
-					for (size_t j=1; j<N-k; ++j)
-						if (!F.isZero(*(Aini+j)))
-							F.mulin (*(Aini+j),invpiv);
+					// for (size_t j=1; j<N-k; ++j)
+						// if (!F.isZero(*(Aini+j)))
+							// F.mulin (*(Aini+j),invpiv);
+					FFLAS::fscalin(F,N-k-1,invpiv,Aini+1,1);
 				}
-				else
-					for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
-						if (!F.isZero(*(Aini+i)))
-							F.mulin (*(Aini+i),invpiv);
+				else {
+					// for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
+						// if (!F.isZero(*(Aini+i)))
+							// F.mulin (*(Aini+i),invpiv);
+					FFLAS::fscalin(F,M-rowp-1,invpiv,Aini+lda,lda);
+				}
 
 				if (delay++ >= kmax){ // Reduction has to be done
 					delay = 0;
@@ -349,14 +355,17 @@ namespace FFPACK {
 
 
 				if (Diag == FFLAS::FflasUnit) {
-					for (size_t j=1; j<N-k; ++j)
-						if (!F.isZero(*(Aini+j)))
-							F.mulin (*(Aini+j),invpiv);
+					// for (size_t j=1; j<N-k; ++j)
+						// if (!F.isZero(*(Aini+j)))
+							// F.mulin (*(Aini+j),invpiv);
+					FFLAS::fscalin(F,N-k-1,invpiv,Aini+1,1);
 				}
-				else
-					for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
-						if (!F.isZero(*(Aini+i)))
-							F.mulin (*(Aini+i),invpiv);
+				else {
+					// for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
+						// if (!F.isZero(*(Aini+i)))
+							// F.mulin (*(Aini+i),invpiv);
+					FFLAS::fscalin(F,M-rowp-1,invpiv,Aini+lda,lda);
+				}
 
 				if (delay++ >= kmax){ // Reduction has to be done
 					delay = 0;
@@ -452,8 +461,10 @@ namespace FFPACK {
 							if ( Diag == FFLAS::FflasNonUnit ){
 								elt invpiv;
 								F.inv(invpiv,*(A+ip*incRow));
-								while(++ip<rowDim)
-									F.mulin(*(A + ip*incRow), invpiv);
+								// while(++ip<rowDim)
+									// F.mulin(*(A + ip*incRow), invpiv);
+								if (++ip < rowDim)
+									FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
 								elt tmp;
 								F.assign(tmp, *(A+oldip*incRow));
 								F.assign( *(A+oldip*incRow), *A);
@@ -479,13 +490,17 @@ namespace FFPACK {
 				F.inv(invpiv, *A);
 				if ( Diag == FFLAS::FflasUnit ){
 					// Normalisation of the row
-					for (size_t k=1; k<colDim; k++)
-						F.mulin(*(A+k*incCol), invpiv);
+					// for (size_t k=1; k<colDim; k++)
+						// F.mulin(*(A+k*incCol), invpiv);
+					FFLAS::fscalin(F,colDim-1,invpiv,A+incCol,incCol);
 				}
 				else  {
 					if ( colDim==1 )
-					while(++ip<rowDim)
-						F.mulin(*(A + ip*incRow), invpiv);
+					// while(++ip<rowDim)
+						// F.mulin(*(A + ip*incRow), invpiv);
+						if (++ip < rowDim)
+							FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
+
 				}
 				return 1;
 			}
@@ -653,8 +668,9 @@ namespace FFPACK {
 					F.inv(invpiv, *X);
 
 					// Normalisation of the row
-					for (size_t k=1; k<N; k++)
-						F.mulin(*(X+k), invpiv);
+					// for (size_t k=1; k<N; k++)
+						// F.mulin(*(X+k), invpiv);
+					FFLAS::fscalin(F,N-1,invpiv,X+1,1);
 				}
 				if (N==1 && M>1 && computeX)// Only appends when A is 1 by 1
 					F.mul(*(X+ldx),*X, *A);

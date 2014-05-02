@@ -122,8 +122,9 @@ namespace FFPACK {
 			if (Diag==FFLAS::FflasUnit){
 #ifndef LEFTLOOKING
 				    // Normalizing the pivot row
-				for (size_t i=piv3+1; i<N; ++i)
-					Fi.mulin (A3[i], invpiv);
+				// for (size_t i=piv3+1; i<N; ++i)
+					// Fi.mulin (A3[i], invpiv);
+				FFLAS::fscalin(Fi,N-piv3-1,invpiv,A3+piv3+1,1)
 #endif
 			}
 			else{
@@ -152,8 +153,9 @@ namespace FFPACK {
 				for (size_t i=piv2+1; i<row; ++i)
 					if (!pivotRows[i])
 						Fi.mulin (A2 [i*lda], invpiv);
-				for (size_t i=row; i<M; ++i)
-					Fi.mulin (A2 [i*lda], invpiv);
+				FFLAS::fscalin(Fi,M-row,invpiv,A2+row*lda,lda);
+				// for (size_t i=row; i<M; ++i)
+					// Fi.mulin (A2 [i*lda], invpiv);
 #endif
 			}
 			    // Update
@@ -523,14 +525,16 @@ rank++;
 			if (Diag==FFLAS::FflasUnit){
 #ifdef LEFTLOOKING
 				    // Normalizing the pivot row
-				for (size_t i=piv3+1; i<N; ++i)
-					Fi.mulin (A3[i], invpiv);
+				// for (size_t i=piv3+1; i<N; ++i)
+					// Fi.mulin (A3[i], invpiv);
+				FFLAS::fscalin(Fi,N-piv3-1,invpiv,A3+piv3+1,1);
 #endif
 			}
 			else
 				    // Normalizing the pivot column
-				for (size_t i=piv2+1; i<M; ++i)
-					Fi.mulin (A2 [i*lda], invpiv);
+				// for (size_t i=piv2+1; i<M; ++i)
+					// Fi.mulin (A2 [i*lda], invpiv);
+				FFLAS::fscalin(Fi,M-piv2-1,invpiv,A2+(piv2+1)*lda,lda);
 			    // Update
 #ifndef LEFTLOOKING
 			for (size_t i=piv2+1; i<M; ++i)
@@ -593,8 +597,9 @@ rank++;
 			if (Diag== FFLAS::FflasUnit){
 				Element invpivot;
 				Fi.inv(invpivot, *A);
-				for (size_t i=piv+1; i<N; ++i)
-					Fi.mulin (A[i], invpivot);
+				// for (size_t i=piv+1; i<N; ++i)
+					// Fi.mulin (A[i], invpivot);
+				FFLAS::fscalin(Fi,N-piv-1,invpivot,A+piv+1,1)
 			}
 			return 1;
 		}
@@ -611,8 +616,9 @@ rank++;
 			if (Diag== FFLAS::FflasNonUnit){
 				Element invpivot;
 				Fi.inv(invpivot, *A);
-				for (size_t i=piv+1; i<M; ++i)
-					Fi.mulin (*(A+i*lda), invpivot);
+				// for (size_t i=piv+1; i<M; ++i)
+					// Fi.mulin (*(A+i*lda), invpivot);
+				FFLAS::fscalin(Fi,M-piv-1,invpivot,A+(piv+1)*lda,lda);
 			}
 			return 1;
 		}

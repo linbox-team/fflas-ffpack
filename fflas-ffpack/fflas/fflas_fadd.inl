@@ -274,6 +274,7 @@ namespace FFLAS {
 
 		if (inca == 1 && incb == 1 && incc == 1) {
 			for (size_t i = 0 ; i < N ; ++i) {
+				//!@todo optimise here
 				F.mul(C[i],alpha,B[i]);
 				F.addin(C[i],A[i]);
 			}

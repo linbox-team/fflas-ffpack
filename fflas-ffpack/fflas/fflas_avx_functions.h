@@ -41,6 +41,15 @@
 	std::cout << std::endl; \
 }
 
+#define DEBUG_M256D(M) \
+{                    \
+	float dddd[8] ; \
+	_mm256_store_pd(dddd,M); \
+	for (size_t ii = 0 ; ii < 4 ; ++ii) \
+	std::cout << dddd[ii] << ", " ; \
+	std::cout << std::endl; \
+}
+
 
 // FMOD
 namespace FFLAS { namespace vectorised { /*  FMOD */
@@ -337,7 +346,7 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 } // FFLAS
 
 // FADD
-namespace FFLAS { namespace vectorised {
+namespace FFLAS { namespace vectorised { /*  FADD  */
 
 #if defined(__AVX2__) || defined(__AVX__)
 
@@ -572,7 +581,7 @@ namespace FFLAS { namespace vectorised {
 } // FFLAS
 
 // FSUB
-namespace FFLAS { namespace vectorised {
+namespace FFLAS { namespace vectorised { /*  FSUB */
 
 #if defined(__AVX2__) || defined(__AVX__)
 
@@ -809,5 +818,193 @@ namespace FFLAS { namespace vectorised {
 // FAXPY
 
 // FSCAL
+namespace FFLAS { namespace vectorised { /*  FSCAL */
+
+#if defined(__AVX2__) || defined(__AVX__)
+
+#if defined(__AVX2__)
+
+	// compute C modulo P in the range [MIN, MAX]
+#define VEC_SCALF_D(C,ALPHA,Q,P,NEGP,INVP,T,MIN,MAX)				\
+	{								\
+		Q = _mm256_mul_pd(C,INVP);                              \
+		C = _mm256_mul_pd(C,ALPHA);                              \
+		Q = _mm256_floor_pd(Q);                                 \
+		C = _mm256_fnmadd_pd(Q,P,C);                            \
+		Q = _mm256_cmp_pd(C,MAX,_CMP_GT_OS);			\
+		T = _mm256_cmp_pd(C,MIN,_CMP_LT_OS);			\
+		Q = _mm256_and_pd(Q,NEGP);				\
+		T = _mm256_and_pd(T,P);					\
+		Q = _mm256_or_pd(Q,T);				        \
+		C = _mm256_add_pd(C,Q);					\
+	}
+
+	// compute C modulo P in the range [MIN, MAX]
+#define VEC_SCALF_S(C,ALPHA,Q,P,NEGP,INVP,T,MIN,MAX)				\
+	{								\
+		Q = _mm256_mul_ps(C,INVP);                              \
+		C = _mm256_mul_ps(C,ALPHA);                              \
+		Q = _mm256_floor_ps(Q);	                                \
+		C = _mm256_fnmadd_ps(Q,P,C);				\
+		Q = _mm256_cmp_ps(C,MAX,_CMP_GT_OS);			\
+		T = _mm256_cmp_ps(C,MIN,_CMP_LT_OS);			\
+		Q = _mm256_and_ps(Q,NEGP);				\
+		T = _mm256_and_ps(T,P);					\
+		Q = _mm256_or_ps(Q,T);				        \
+		C = _mm256_add_ps(C,Q);					\
+	}
+
+#else //  defined(__AVX__)
+
+#define VEC_SCALF_D(C,ALPHA,Q,P,NEGP,INVP,T,MIN,MAX)				\
+	{								\
+		Q = _mm256_mul_pd(C,INVP);                              \
+		C = _mm256_mul_pd(C,ALPHA);                              \
+		Q = _mm256_floor_pd(Q);                                 \
+		T = _mm256_mul_pd(Q,P);                                 \
+		C = _mm256_sub_pd(C,T);		                        \
+		Q = _mm256_cmp_pd(C,MAX,_CMP_GT_OS);			\
+		T = _mm256_cmp_pd(C,MIN,_CMP_LT_OS);			\
+		Q = _mm256_and_pd(Q,NEGP);				\
+		T = _mm256_and_pd(T,P);					\
+		Q = _mm256_or_pd(Q,T);				        \
+		C = _mm256_add_pd(C,Q);					\
+	}
+
+
+#define VEC_SCALF_S(C,ALPHA,Q,P,NEGP,INVP,T,MIN,MAX)				\
+	{								\
+		Q = _mm256_mul_ps(C,INVP);                              \
+		C = _mm256_mul_ps(C,ALPHA);                              \
+		Q = _mm256_floor_ps(Q);	                                \
+		T = _mm256_mul_ps(Q,P);                                 \
+		C = _mm256_sub_ps(C,T);	                                \
+		Q = _mm256_cmp_ps(C,MAX,_CMP_GT_OS);			\
+		T = _mm256_cmp_ps(C,MIN,_CMP_LT_OS);			\
+		Q = _mm256_and_ps(Q,NEGP);				\
+		T = _mm256_and_ps(T,P);					\
+		Q = _mm256_or_ps(Q,T);				        \
+		C = _mm256_add_ps(C,Q);					\
+	}
+
+
+#endif // AVX and AVX2
+
+
+
+	inline void scalp( double *T, const double alpha, const double * U, size_t n, double p, double invp, double min, double max)
+	{
+		register __m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+		ALPHA= _mm256_set1_pd(alpha);
+		P   = _mm256_set1_pd(p);
+		NEGP= _mm256_set1_pd(-p);
+		INVP= _mm256_set1_pd(invp);
+		MIN = _mm256_set1_pd(min);
+		MAX = _mm256_set1_pd(max);
+		long st=long(T)%32;
+		size_t i=0;
+		if (n < 4) {
+			for (;i<n;i++){
+				T[i]=fmod(alpha*U[i],p);
+				T[i]-=(T[i]>max)?p:0;
+				T[i]+=(T[i]<min)?p:0;
+			}
+			return;
+
+		}
+		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j=(size_t)st;j<32;j+=8,i++){
+				T[i]=fmod(alpha*U[i],p);
+				T[i]-=(T[i]>max)?p:0;
+				T[i]+=(T[i]<min)?p:0;
+			}
+		}
+		FFLASFFPACK_check((long(T+i)%32==0));
+		if ((long(U+i)%32==0)) {
+			// perform the loop using 256 bits SIMD
+			for (;i<=n-4;i+=4){
+				C=_mm256_load_pd(U+i);
+				VEC_SCALF_D(C,ALPHA,Q,P,NEGP,INVP,TMP,MIN,MAX);
+				_mm256_store_pd(T+i,C);
+			}
+		}
+		// perform the last elt from T without SIMD
+		for (;i<n;i++){
+			T[i]=fmod(alpha*U[i],p);
+			T[i]-=(T[i]>max)?p:0;
+			T[i]+=(T[i]<min)?p:0;
+		}
+	}
+
+	inline void scalp( float *T, const float alpha, const float * U,  size_t n, float p, float invp, float min, float max)
+	{
+		register __m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+		ALPHA= _mm256_set1_ps(alpha);
+		P   = _mm256_set1_ps(p);
+		NEGP= _mm256_set1_ps(-p);
+		INVP= _mm256_set1_ps(invp);
+		MIN= _mm256_set1_ps(min);
+		MAX= _mm256_set1_ps(max);
+		long st=long(T)%32;
+		size_t i=0;;
+		if (n < 8) {
+			for (;i<n;i++){
+				T[i]=fmodf(alpha*U[i],p);
+					T[i]-=(T[i]>max)?p:0;
+				T[i]+=(T[i]<min)?p:0;
+			}
+			return;
+		}
+		if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j=(size_t)st;j<32;j+=4,i++){
+				T[i]=fmodf(alpha*U[i],p);
+					T[i]-=(T[i]>max)?p:0;
+				T[i]+=(T[i]<min)?p:0;
+			}
+		}
+
+		FFLASFFPACK_check((long(T+i)%32==0));
+		if ((long(U+i)%32==0)) {
+			// perform the loop using 256 bits SIMD
+			for (;i<=n-8;i+=8){
+				C=_mm256_load_ps(U+i);
+				VEC_SCALF_S(C,ALPHA,Q,P,NEGP,INVP,TMP,MIN,MAX);
+				_mm256_store_ps(T+i,C);
+			}
+		}
+		// perform the last elt from T without SIMD
+		for (;i<n;i++){
+			T[i]=fmodf(alpha*U[i],p);
+				T[i]-=(T[i]>max)?p:0;
+			T[i]+=(T[i]<min)?p:0;
+		}
+	}
+
+#else // no AVX
+
+	inline void scalp( double *T, const double alpha, const double * U, size_t n, double p, double invp, double min, double max)
+	{
+		for(size_t j=0;j<n;j++){
+			T[j]= fmod(alpha*U[j],p);
+			T[j]-=(T[j]>max)?p:0;
+			T[j]+=(T[j]<min)?p:0;
+		}
+
+	}
+
+	inline void scalp( float *T, const float alpha, const float * U, size_t n, float p, float invp, float min, float max)
+	{
+		for(size_t j=0;j<n;j++){
+			T[j]= fmodf(alpha*U[j],p);
+			T[j]-=(T[j]>max)?p:0;
+			T[j]+=(T[j]<min)?p:0;
+		}
+
+	}
+
+#endif // AVX or AVX2
+
+} // vectorised
+} // FFLAS
 
 #endif // __FFLASFFPACK_fflas_avx_functions_H
