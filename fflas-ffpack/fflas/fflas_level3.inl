@@ -79,7 +79,6 @@ namespace FFLAS {
 
 	struct ClassicHelper ;
 
-
 	struct Winograd2Helper ;
 
 
@@ -367,7 +366,8 @@ namespace FFLAS {
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb);
 
-	template<class Field, class MMParameters>
+#if 0
+	template<class Field>
 	typename Field::Element*
 	fgemm2( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -381,6 +381,7 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc,
 	       MMParameters & /* = WinogradHelper */) ;
+#endif
 
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
@@ -458,9 +459,9 @@ namespace FFLAS {
 
 		Winograd2Helper H (w);
 		H.computeParameters<Field>(F,m,n,k,alpha,beta);
-		Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-				     C, ldc, H.kmax, H.w, H.base);
-		// fgemm2 (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
+		// Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
+				     // C, ldc, H.kmax, H.w, H.base);
+		fgemm2 (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
 		return C;
 	}
 

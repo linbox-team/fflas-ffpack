@@ -49,8 +49,11 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element* B,const size_t ldb,
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
-				      const size_t kmax, const size_t w, const FFLAS_BASE base)
+				      // const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H
+				     )
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
 
@@ -99,7 +102,7 @@ namespace FFLAS { namespace BLAS3 {
 		}
 
 		// P2 = alpha . A12 * B21 + beta . C11  in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, H);
 
 		typename Field::Element* X3 = new typename Field::Element[x3rd*nr];
 
@@ -118,7 +121,7 @@ namespace FFLAS { namespace BLAS3 {
 		fsubin(F,mr,nr,C22,ldc,C21,ldc);
 
 		// P7 = alpha . S3 * T3 + beta . C22 in C22
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, beta, C22, ldc, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, beta, C22, ldc, H);
 
 		// T1 = B12 - B11 in X3
 		fsub(F,lb,cb,B12,ldb,B11,ldb,X3,ldX3);
@@ -127,7 +130,7 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(F,la,ca,A21,lda,A22,lda,X2,ca);
 
 		// P5 = alpha . S1*T1 + beta . C12 in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, beta, C12, ldc, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, beta, C12, ldc, H);
 
 		// T2 = B22 - T1 in X3
 		fsub(F,lb,cb,B22,ldb,X3,ldX3,X3,ldX3);
@@ -138,7 +141,7 @@ namespace FFLAS { namespace BLAS3 {
 		typename Field::Element* X1 = new typename Field::Element[mr*nr];
 
 		// P6 = alpha . S2 * T2 in X1
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H);
 
 		// T4 = T2 - B21 in X3
 		fsubin(F,lb,cb,B21,ldb,X3,ldX3);
@@ -147,10 +150,10 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,la,ca,A12,lda,X2,ca,X2,ca);
 
 		// P4 = alpha . A22 * T4 - beta . C21 in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, H);
 
 		// P1 = alpha . A11 * B11 in X3
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X3, nr, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X3, nr, H);
 
 		//  U1 = P2 + P1 in C11
 		faddin(F,mr,nr,X3,nr,C11,ldc);
@@ -175,7 +178,7 @@ namespace FFLAS { namespace BLAS3 {
 		delete[] X3;
 
 		// P3 = alpha . S4*B22 in X1
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, H);
 
 		delete[] X2;
 
@@ -192,8 +195,11 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element* B,const size_t ldb,
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
-				      const size_t kmax, const size_t w, const FFLAS_BASE base)
+				      // const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H
+				     )
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
 
@@ -253,7 +259,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		// P5 = alpha . S1*T1 + beta . C12 in C12
 		typename Field::Element* X1 = new typename Field::Element[mr*nr];
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H);
 
 
 		// C22 = P5 + beta C22 in C22
@@ -263,10 +269,10 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(F,mr,nr,X1,nr,beta,C12,ldc,C12,ldc);
 
 		// P1 = alpha . A11 * B11 in X1
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H);
 
 		// P2 = alpha . A12 * B21 + beta . C11  in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, H);
 
 		//  U1 = P2 + P1 in C11
 		faddin(F,mr,nr,X1,nr,C11,ldc);
@@ -278,7 +284,7 @@ namespace FFLAS { namespace BLAS3 {
 		fsubin(F,la,ca,A11,lda,X2,ca);
 
 		// U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H);
 
 		// U4 = U2 + P5 in C12
 		faddin(F,mr,nr,X1,nr,C12,ldc);
@@ -290,10 +296,10 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,la,ca,A12,lda,X2,ca,X2,ca);
 
 		// P4 = alpha . A22 * T4 - beta . C21 in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, H);
 
 		// U5 = P3 + U4 = alpha . S4*B22 + U4 in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, H);
 
 		// T3 = B22 - B12 in X3
 		fsub(F,lb,cb,B22,ldb,B12,ldb,X3,ldX3);
@@ -302,7 +308,7 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,la,ca,A11,lda,A21,lda,X2,ca);
 
 		// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, kmax, w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H);
 
 		delete[] X2;
 		delete[] X3;
@@ -321,16 +327,19 @@ namespace FFLAS { namespace BLAS3 {
 	// 2 temps and 24 ops
 	template < class Field >
 	inline void WinogradAcc_2_24 (const Field& F,
-				  const FFLAS_TRANSPOSE ta,
-				  const FFLAS_TRANSPOSE tb,
-				  const size_t mr, const size_t nr, const size_t kr,
-				  const typename Field::Element alpha,
-				  const typename Field::Element* A,const size_t lda,
-				  const typename Field::Element* B,const size_t ldb,
-				  const typename Field::Element  beta,
-				  typename Field::Element * C, const size_t ldc,
-				  const size_t kmax, const size_t w, const FFLAS_BASE base)
+				      const FFLAS_TRANSPOSE ta,
+				      const FFLAS_TRANSPOSE tb,
+				      const size_t mr, const size_t nr, const size_t kr,
+				      const typename Field::Element alpha,
+				      const typename Field::Element* A,const size_t lda,
+				      const typename Field::Element* B,const size_t ldb,
+				      const typename Field::Element  beta,
+				      typename Field::Element * C, const size_t ldc,
+				      // const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H
+				     )
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
 
@@ -390,25 +399,25 @@ namespace FFLAS { namespace BLAS3 {
 		typename Field::Element* Y = new typename Field::Element[nr*kr];
 		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// P5 = a S1 T1 + b Z3    in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, H);
 		// S2 = S1 - A11          in X
 		fsubin(F,la,ca,A11,lda,X,ca);
 		// T2 = B22 - T1          in Y
 		fsub(F,lb,cb,B22,ldb,Y,cb,Y,cb);
 		// P6 = a S2 T2 + b C21   in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C21, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C21, ldc, H);
 		// S4 = A12 - S2          in X
 		fsub(F,la,ca,A12,lda,X,ca,X,ca);
 		// W1 = P5 + beta Z1      in C22
 		fadd(F,mr,nr,C12,ldc,beta,C22,ldc,C22,ldc);
 		// P3 = a S4 B22 + P5     in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, B22, ldb, F.one, C12, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, B22, ldb, F.one, C12, ldc, H);
 		// P1 = a A11 B11         in X
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, H);
 		// U2 = P6 + P1           in C21
 		faddin(F,mr,nr,X,nr,C21,ldc);
 		// P2 = a A12 B21 + b C11 in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, H);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,X,nr,C11,ldc);
 		// U5 = U2 + P3           in C12
@@ -418,7 +427,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T3 = B22 - B12         in Y
 		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,cb);
 		// U3 = a S3 T3 + U2      in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, F.one, C21, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, F.one, C21, ldc, H);
 		delete[] X;
 		// U7 = U3 + W1           in C22
 		faddin(F,mr,nr,C21,ldc,C22,ldc);
@@ -429,7 +438,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T4 = T2_ - B21         in Y
 		fsub(F,lb,cb,Y,cb,B21,ldb,Y,cb);
 		// U6 = -a A22 T4 + U3    in C21;
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, malpha, A22, lda, Y, cb, F.one, C21, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, malpha, A22, lda, Y, cb, F.one, C21, ldc, H);
 		delete[] Y;
 
 
@@ -438,16 +447,18 @@ namespace FFLAS { namespace BLAS3 {
 	// 2 temps and 27 ops
 	template < class Field >
 	inline void WinogradAcc_2_27 (const Field& F,
-				  const FFLAS_TRANSPOSE ta,
-				  const FFLAS_TRANSPOSE tb,
-				  const size_t mr, const size_t nr, const size_t kr,
-				  const typename Field::Element alpha,
-				  const typename Field::Element* A,const size_t lda,
-				  const typename Field::Element* B,const size_t ldb,
-				  const typename Field::Element  beta,
-				  typename Field::Element * C, const size_t ldc,
-				  const size_t kmax, const size_t w, const FFLAS_BASE base)
+				      const FFLAS_TRANSPOSE ta,
+				      const FFLAS_TRANSPOSE tb,
+				      const size_t mr, const size_t nr, const size_t kr,
+				      const typename Field::Element alpha,
+				      const typename Field::Element* A,const size_t lda,
+				      const typename Field::Element* B,const size_t ldb,
+				      const typename Field::Element  beta,
+				      typename Field::Element * C, const size_t ldc,
+				      // const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H)
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
 
@@ -507,26 +518,26 @@ namespace FFLAS { namespace BLAS3 {
 		typename Field::Element* Y = new typename Field::Element[nr*std::max(kr,mr)];
 		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// P5 = a S1 T1 + b Z3    in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C12, ldc, H);
 		// S2 = S1 - A11          in X
 		fsubin(F,la,ca,A11,lda,X,ca);
 		// T2 = B22 - T1          in Y
 		fsub(F,lb,cb,B22,ldb,Y,cb,Y,cb);
 		// P6 = a S2 T2 + b C21   in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C21, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C21, ldc, H);
 		// S4 = A12 - S2          in X
 		fsub(F,la,ca,A12,lda,X,ca,X,ca);
 		// W1 = P5 + beta Z1      in C22
 		fadd(F,mr,nr,C12,ldc,beta,C22,ldc,C22,ldc);
 		// P3 = a S4 B22 + P5     in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, B22, ldb, F.zero, Y, nr, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, B22, ldb, F.zero, Y, nr, H);
 		fadd(F,mr,nr,Y,nr,C12,ldc,C12,ldc);
 		// P1 = a A11 B11         in X
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X, nr, H);
 		// U2 = P6 + P1           in C21
 		faddin(F,mr,nr,X,nr,C21,ldc);
 		// P2 = a A12 B21 + b C11 in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, Y, nr, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, Y, nr, H);
 		fadd(F,mr,nr,Y,nr,beta,C11,ldc,C11,ldc);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,X,nr,C11,ldc);
@@ -537,7 +548,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T3 = B22 - B12         in Y
 		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,cb);
 		// U3 = a S3 T3 + U2      in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, F.one, C21, ldc, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, F.one, C21, ldc, H);
 		// U7 = U3 + W1           in C22
 		faddin(F,mr,nr,C21,ldc,C22,ldc);
 		// T1_ = B12 - B11        in Y
@@ -547,7 +558,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T4 = T2_ - B21         in Y
 		fsub(F,lb,cb,Y,cb,B21,ldb,Y,cb);
 		// U6 = -a A22 T4 + U3    in C21;
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, Y, cb, F.zero, X, nr, kmax,w-1,base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, Y, cb, F.zero, X, nr, H);
 		delete[] Y;
 		fsub(F,mr,nr,C21,ldc,X,nr,C21,ldc);
 		delete[] X;

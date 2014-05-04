@@ -48,8 +48,11 @@ namespace FFLAS { namespace BLAS3 {
 				typename Field::Element* B,const size_t ldb,
 				const typename Field::Element  beta,
 				typename Field::Element * C, const size_t ldc,
-				const size_t kmax, const size_t w, const FFLAS_BASE base)
+				// const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H
+				      )
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(F.isZero(beta));
 
@@ -101,27 +104,27 @@ namespace FFLAS { namespace BLAS3 {
 		// T3 = B22 - B12         in B12
 		fsub(F,lb,cb,B22,ldb,B12,ldb,B12,ldb);
 		// P7 = S3 T3             in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C11, ldc, B12, ldb, F.zero, C21, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C11, ldc, B12, ldb, F.zero, C21, ldc, H);
 		// S2 = S1 - A11          in C12
 		fsub(F,la,ca,A21,lda,A11,lda,C12,ldc);
 		// P1 = A11 B11           in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, C11, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, C11, ldc, H);
 		// T2 = B22 - T1          in B11
 		fsub(F,lb,cb,B22,ldb,C22,ldc,B11,ldb);
 		// P5 = S1 T1             in A11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A21, lda, C22, ldc, F.zero, A11, lda, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A21, lda, C22, ldc, F.zero, A11, lda, H);
 		// T4 = T2 - B21          in C22
 		fsub(F,lb,cb,B11,ldb,B21,ldb,C22,ldc);
 		// P4 = A22 T4            in A21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, C22, ldc, F.zero, A21, lda, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, C22, ldc, F.zero, A21, lda, H);
 		// S4 = A12 - S2          in A22
 		fsub(F,la,ca,A12,lda,C12,ldc,A22,lda);
 		// P6 = S2 T2             in C22
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C12, ldc, B11, ldb, F.zero, C22, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C12, ldc, B11, ldb, F.zero, C22, ldc, H);
 		// U2 = P1 + P6           in C22
 		faddin(F,mr,nr,C11,ldc,C22,ldc);
 		// P2 = A12 B21           in C12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C12, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C12, ldc, H);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,C12,ldc,C11,ldc);
 		// U4 = U2 + P5           in C12
@@ -133,7 +136,7 @@ namespace FFLAS { namespace BLAS3 {
 		// U7 = U3 + P5           in C22
 		faddin(F,mr,nr,A11,lda,C22,ldc);
 		// P3 = S4 B22            in A12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, B22, ldb, F.zero, A12, lda, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, B22, ldb, F.zero, A12, lda, H);
 		// U5 = U4 + P3           in C12
 		faddin(F,mr,nr,A12,lda,C12,ldc);
 
@@ -152,8 +155,11 @@ namespace FFLAS { namespace BLAS3 {
 				const typename Field::Element* B,const size_t ldb,
 				const typename Field::Element  beta,
 				typename Field::Element * C, const size_t ldc,
-				const size_t kmax, const size_t w, const FFLAS_BASE base)
+				// const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H
+				)
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(F.isZero(beta));
 
@@ -204,22 +210,22 @@ namespace FFLAS { namespace BLAS3 {
 		// T1 = B12 - B11         in C21
 		fsub(F,lb,cb,B12,ldb,B11,ldb,C21,ldc);
 		// P1 = A11 B11           in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, C11, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, C11, ldc, H);
 		// T3 = B22 - B12         in A11
 		fsub(F,lb,cb,B22,ldb,B12,ldb,A11,lda);
 		// P7 = S3 T3             in X
 		typename Field::Element * X = new typename Field::Element[mr*nr];
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C22, ldc, A11, lda, F.zero, X, nr, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C22, ldc, A11, lda, F.zero, X, nr, H);
 		// T2 = B22 - T1          in A11
 		fsub(F,lb,cb,B22,ldb,C21,ldc,A11,lda);
 		// P5 = S1 T1             in C22
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A21, lda, C21, ldc, F.zero, C22, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A21, lda, C21, ldc, F.zero, C22, ldc, H);
 		// S4 = A12 - S2          in C21
 		fsub(F,la,ca,A12,lda,C12,ldc,C21,ldc);
 		// P3 = S4 B22            in A21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C21, ldc, B22, ldb, F.zero, A21, lda, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C21, ldc, B22, ldb, F.zero, A21, lda, H);
 		// P6 = S2 T2             in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C12, ldc, A11, lda, F.zero, C21, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C12, ldc, A11, lda, F.zero, C21, ldc, H);
 		// T4 = T2 - B21          in A11
 		fsubin(F,lb,cb,B21,ldb,A11,lda);
 		// U2 = P1 + P6           in C21
@@ -233,12 +239,12 @@ namespace FFLAS { namespace BLAS3 {
 		// U5 = U4 + P3           in C12
 		faddin(F,la,ca,A21,lda,C12,ldc);
 		// P2 = A12 B21           in X
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, X, nr, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, X, nr, H);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,X,nr,C11,ldc);
 		delete[] X ;
 		// P4 = A22 T4            in A21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, A11, lda, F.zero, A21, lda, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, A11, lda, F.zero, A21, lda, H);
 		// U6 = U3 - P4           in C21
 		fsubin(F,mr,nr,A21,lda,C21,ldc);
 
@@ -255,8 +261,11 @@ namespace FFLAS { namespace BLAS3 {
 				typename Field::Element* B,const size_t ldb,
 				const typename Field::Element  beta,
 				typename Field::Element * C, const size_t ldc,
-				const size_t kmax, const size_t w, const FFLAS_BASE base)
+				// const size_t kmax, const size_t w, const FFLAS_BASE base
+				      Winograd2Helper & H
+				      )
 	{
+		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(F.isZero(beta));
 
@@ -305,24 +314,24 @@ namespace FFLAS { namespace BLAS3 {
 		// T1 = B12 - B11         in C12
 		fsub(F,lb,cb,B12,ldb,B11,ldb,C12,ldc);
 		// P1 = A11 B11           in C11
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, C11, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, C11, ldc, H);
 		// S2 = S1 - A11          in B11
 		fsub(F,la,ca,C21,ldc,A11,lda,B11,ldb);
 		// T3 = B22 - B12         in B12
 		fsub(F,lb,cb,B22,ldb,B12,ldb,B12,ldb);
 		// P7 = S3 T3             in X
 		typename Field::Element * X = new typename Field::Element[mr*nr];
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C22, ldc, B12, ldb, F.zero, X, nr, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C22, ldc, B12, ldb, F.zero, X, nr, H);
 		// T2 = B22 - T1          in B12
 		fsub(F,lb,cb,B22,ldb,C12,ldc,B12,ldb);
 		// P5 = S1 T1             in C22
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, C21, ldc, C12, ldc, F.zero, C22, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C21, ldc, C12, ldc, F.zero, C22, ldc, H);
 		// T4 = T2 - B21          in C12
 		fsub(F,lb,cb,B12,ldb,B21,ldb,C12,ldc);
 		// P6 = S2 T2             in C21
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, B11, ldb, B12, ldb, F.zero, C21, ldc, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, B11, ldb, B12, ldb, F.zero, C21, ldc, H);
 		// P4 = A22 T4            in B12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A22, lda, C12, ldc, F.zero, B12, ldb, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, C12, ldc, F.zero, B12, ldb, H);
 		// S4 = A12 - S2          in B11
 		fsub(F,la,ca,A12,lda,B11,ldb,B11,ldb);
 		// U2 = P1 + P6           in C21
@@ -337,11 +346,11 @@ namespace FFLAS { namespace BLAS3 {
 		// U6 = U3 - P4           in C21
 		fsubin(F,mr,nr,B12,ldb,C21,ldc);
 		// P3 = S4 B22            in B12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, B11, ldb, B22, ldb, F.zero, B12, ldb, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, B11, ldb, B22, ldb, F.zero, B12, ldb, H);
 		// U5 = U4 + P3           in C12
 		faddin(F,la,ca,B12,ldb,C12,ldc);
 		// P2 = A12 B21           in B12
-		Protected::WinoMain (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, B12, ldb, kmax, w-1, base);
+		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, B12, ldb, H);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,B12,ldb,C11,ldc);
 

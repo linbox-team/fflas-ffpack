@@ -74,9 +74,7 @@ namespace FFLAS {
 	};
 }
 
-namespace FFLAS { namespace Protected {
-
-} // Protected
+namespace FFLAS {
 
 } // FFLAS
 
