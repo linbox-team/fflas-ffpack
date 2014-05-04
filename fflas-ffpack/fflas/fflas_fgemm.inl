@@ -90,6 +90,7 @@ namespace FFLAS {
 // #define OLDWINO
 
 
+// DynamicPealing,  WinogradMain, WinogradCalc
 namespace FFLAS { namespace Protected {
 
 	template  < class Field >
@@ -279,7 +280,7 @@ namespace FFLAS { namespace Protected {
 	// Winograd Multiplication  A(n*k) * B(k*m) in C(n*m)
 	// Computation of the 22 Winograd's operations
 	template < class Field >
-	inline void WinoCalc (const Field& F,
+	inline void WinogradCalc (const Field& F,
 			      const FFLAS_TRANSPOSE ta,
 			      const FFLAS_TRANSPOSE tb,
 			      const size_t mr, const size_t nr, const size_t kr,
@@ -371,7 +372,7 @@ namespace FFLAS { namespace Protected {
 #define OLD_DYNAMIC_PEALING
 	// dispatches according to w = 0 or not
 	template<class Field>
-	inline  void WinoMainGeneric (const Field& F,
+	inline  void WinogradMainGeneric (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
 				      const size_t m, const size_t n, const size_t k,
@@ -398,7 +399,7 @@ namespace FFLAS { namespace Protected {
 		}
 		else {
 #ifdef OLD_DYNAMIC_PEALING
-			WinoCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
+			WinogradCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
 				  beta, C, ldc, H);
 
 			FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
@@ -413,7 +414,7 @@ namespace FFLAS { namespace Protected {
 			size_t n2 = (n >> ww) << (ww-1) ;
 			size_t k2 = (k >> ww) << (ww-1) ;
 
-			WinoCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb,
+			WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb,
 				  beta, C, ldc, H);
 
 			size_t mr = m -2*m2;
@@ -434,7 +435,7 @@ namespace FFLAS { namespace Protected {
 
 	// G is (Float/Double)Domain
 	template <class Field, class FloatField>
-	inline void  WinoMainFloat (const Field& F,
+	inline void  WinogradMainFloat (const Field& F,
 				    const FFLAS_TRANSPOSE ta,
 				    const FFLAS_TRANSPOSE tb,
 				    const size_t m, const size_t n, const size_t k,
@@ -505,7 +506,7 @@ namespace FFLAS { namespace Protected {
 
 	// F is Modular(Balanced)<float/double>
 	template <class Field>
-	inline void WinoMainCommon (const Field& F,
+	inline void WinogradMainCommon (const Field& F,
 				    const FFLAS_TRANSPOSE ta,
 				    const FFLAS_TRANSPOSE tb,
 				    const size_t m, const size_t n, const size_t k,
@@ -543,7 +544,7 @@ namespace FFLAS { namespace Protected {
 			return;
 		}
 		// w = 0 or k> kmax
-		WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 
 	}
 
@@ -573,15 +574,15 @@ namespace FFLAS {
 		if (H.w > 0 && k <= H.kmax) {
 			if (H.base == FflasDouble){
 				DoubleDomain G ;
-				return Protected::WinoMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G);
+				return Protected::WinogradMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G);
 			}
 			else { // FloatDomain
 				FloatDomain G ;
-				return Protected::WinoMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G);
+				return Protected::WinogradMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G);
 			}
 		}
 		// w = 0 or k> kmax
-		Protected::WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H.kmax,H.w,H.base);
+		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H.kmax,H.w,H.base);
 	}
 
 	// Control the switch with classic multiplication
@@ -601,7 +602,7 @@ namespace FFLAS {
 			    Winograd2Helper & H
 			   )
 	{
-		Protected::WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 
@@ -619,7 +620,7 @@ namespace FFLAS {
 			     Winograd2Helper & H
 			    )
 	{
-		Protected::WinoMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 
@@ -638,7 +639,7 @@ namespace FFLAS {
 			    Winograd2Helper & H
 			   )
 	{
-		Protected::WinoMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 	template <>
@@ -655,7 +656,7 @@ namespace FFLAS {
 			    Winograd2Helper & H
 			   )
 	{
-		Protected::WinoMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 	template <>
@@ -672,7 +673,7 @@ namespace FFLAS {
 			    Winograd2Helper & H
 			   )
 	{
-		Protected::WinoMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 
@@ -690,7 +691,7 @@ namespace FFLAS {
 			   Winograd2Helper & H
 			  )
 	{
-		Protected::WinoMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 

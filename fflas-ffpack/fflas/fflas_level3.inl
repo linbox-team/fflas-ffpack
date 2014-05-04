@@ -152,32 +152,6 @@ namespace FFLAS { namespace Protected {
 		template <class Field>
 		size_t TRSMBound (const Field& F);
 
-		template <class Field>
-		void DynamicPealing( const Field& F,
-					    const FFLAS_TRANSPOSE ta,
-					    const FFLAS_TRANSPOSE tb,
-					    const size_t m, const size_t n, const size_t k,
-					    const size_t mr, const size_t nr, const size_t kr,
-					    const typename Field::Element alpha,
-					    const typename Field::Element* A, const size_t lda,
-					    const typename Field::Element* B, const size_t ldb,
-					    const typename Field::Element beta,
-					    typename Field::Element* C, const size_t ldc,
-					    const size_t  ); //kmax
-		template  < class Field >
-		inline void
-		DynamicPealing2 (const Field& F,
-				 const FFLAS_TRANSPOSE ta,
-				 const FFLAS_TRANSPOSE tb,
-				 const size_t m, const size_t n, const size_t k,
-				 const size_t mr, const size_t nr, const size_t kr,
-				 const typename Field::Element alpha,
-				 const typename Field::Element* A, const size_t lda,
-				 const typename Field::Element* B, const size_t ldb,
-				 const typename Field::Element beta,
-				 typename Field::Element* C, const size_t ldc,
-				 const size_t kmax);
-
 
 		template <class Field>
 		void MatVectProd (const Field& F,
@@ -189,47 +163,6 @@ namespace FFLAS { namespace Protected {
 					 const typename Field::Element beta,
 					 typename Field::Element * Y, const size_t incY);
 
-#if 0
-		template <class Field>
-		void ClassicMatmul(const Field& F,
-					  const FFLAS_TRANSPOSE ta,
-					  const FFLAS_TRANSPOSE tb,
-					  const size_t m, const size_t n, const size_t k,
-					  const typename Field::Element alpha,
-					  const typename Field::Element * A, const size_t lda,
-					  const typename Field::Element * B, const size_t ldb,
-					  const typename Field::Element beta,
-					  typename Field::Element * C, const size_t ldc,
-					  const size_t kmax, const FFLAS_BASE base );
-#endif
-
-		// Winograd Multiplication  alpha.A(n*k) * B(k*m) + beta . C(n*m)
-		// WinoCalc performs the 22 Winograd operations
-		template <class Field>
-		void WinoCalc (const Field& F,
-				      const FFLAS_TRANSPOSE ta,
-				      const FFLAS_TRANSPOSE tb,
-				      const size_t mr, const size_t nr,const size_t kr,
-				      const typename Field::Element alpha,
-				      const typename Field::Element* A,const size_t lda,
-				      const typename Field::Element* B,const size_t ldb,
-				      const typename Field::Element beta,
-				      typename Field::Element * C, const size_t ldc,
-				      const size_t kmax, const size_t w, const FFLAS_BASE base);
-
-#if 0
-		template<class Field>
-		void WinoMain (const Field& F,
-				      const FFLAS_TRANSPOSE ta,
-				      const FFLAS_TRANSPOSE tb,
-				      const size_t m, const size_t n, const size_t k,
-				      const typename Field::Element alpha,
-				      const typename Field::Element* A,const size_t lda,
-				      const typename Field::Element* B,const size_t ldb,
-				      const typename Field::Element beta,
-				      typename Field::Element * C, const size_t ldc,
-				      const size_t kmax, const size_t w, const FFLAS_BASE base);
-#endif
 
 		// Specialized routines for ftrsm
 		template <class Element>
@@ -459,8 +392,6 @@ namespace FFLAS {
 
 		Winograd2Helper H (w);
 		H.computeParameters<Field>(F,m,n,k,alpha,beta);
-		// Protected::WinoMain (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta,
-				     // C, ldc, H.kmax, H.w, H.base);
 		fgemm2 (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
 		return C;
 	}
