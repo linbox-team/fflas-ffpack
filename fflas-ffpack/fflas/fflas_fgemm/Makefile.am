@@ -26,10 +26,14 @@ pkgincludesubdir=$(pkgincludedir)/fflas/fflas_fgemm
 
 EXTRA_DIST=matmul.doxy
 
-pkgincludesub_HEADERS=       \
-	winograd.inl         \
-	winograd_acc.inl     \
-	bini.inl             \
-	winograd_acc_ip.inl    \
+pkgincludesub_HEADERS=            \
+	fflas_bounds_classic.inl  \
+	fflas_bounds_winograd.inl \
+	fgemm_classical.inl       \
+	fgemm_winograd.inl        \
+	winograd.inl              \
+	winograd_acc.inl          \
+	bini.inl                  \
+	winograd_acc_ip.inl       \
 	winograd_ip.inl
 

@@ -106,7 +106,6 @@ namespace FFPACK {
 			size_t rowp = 0;
 			size_t R = 0;
 			size_t k = 0;
-			//size_t kmax = FFLAS::Protected::DotProdBound (F, 0, one) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
 				size_t colp;
 
@@ -206,7 +205,7 @@ namespace FFPACK {
 			size_t R = 0;
 			size_t k = 0;
 			size_t delay =0;
-			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, F.one, FFLAS::FflasDouble) -1; // the max number of delayed operations
+			size_t kmax = FFLAS::Protected::DotProdBoundClassic (F, F.one, FFLAS::FflasDouble) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
 				size_t colp;
 
@@ -315,7 +314,7 @@ namespace FFPACK {
 			size_t R = 0;
 			size_t k = 0;
 			size_t delay =0;
-			size_t kmax = FFLAS::Protected::DotProdBound (F, 0, F.one, FFLAS::FflasFloat) -1; // the max number of delayed operations
+			size_t kmax = FFLAS::Protected::DotProdBoundClassic (F, F.one, FFLAS::FflasFloat) -1; // the max number of delayed operations
 			while ((rowp<M) && (k<N)){
 				size_t colp;
 

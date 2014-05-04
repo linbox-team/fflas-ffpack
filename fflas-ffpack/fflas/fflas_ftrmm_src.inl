@@ -179,7 +179,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	if (!M || !N ) return;
 
-	size_t nsplit = DotProdBound (F, 0, F.one,
+	size_t nsplit = DotProdBoundClassic (F,  F.one,
 #ifdef __FFLAS__DOUBLE
 				    FflasDouble
 #else

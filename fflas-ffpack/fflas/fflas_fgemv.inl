@@ -59,8 +59,8 @@ namespace FFLAS {
 		F.div(gamma,beta,alpha);
 		F.inv(gamma2,alpha);
 		    // TODO: instead, implement MatVectProd only with alpha = 1
-		size_t kmax = std::min(Protected::DotProdBound (F, 0, gamma, base),
-				       Protected::DotProdBound (F, 0, gamma2, base));
+		size_t kmax = std::min(Protected::DotProdBoundClassic (F,  gamma, base),
+				       Protected::DotProdBoundClassic (F,  gamma2, base));
 		if (kmax > 1) {
 			if  (TransA == FflasNoTrans) {
 				size_t nblock = N / kmax;
@@ -290,7 +290,7 @@ namespace FFLAS {
 					// and after y *= alpha
 					F.divin (_beta, alpha);
 			}
-		
+
 			FFLASFFPACK_check(lda);
 			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
 				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);

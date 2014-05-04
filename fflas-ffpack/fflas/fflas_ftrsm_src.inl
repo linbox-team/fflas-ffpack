@@ -328,7 +328,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	static __FFLAS__DOMAIN D;
 	size_t nblas = TRSMBound<Field> (F);
 
-	size_t ndel = DotProdBound (F, 0, F.one,
+	size_t ndel = DotProdBoundClassic (F, F.one,
 #ifdef __FFLAS__DOUBLE
 				    FflasDouble
 #else

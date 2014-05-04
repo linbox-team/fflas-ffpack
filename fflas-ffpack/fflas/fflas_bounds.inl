@@ -4,6 +4,7 @@
  * Copyright (C) 2008 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
+ *            BB <bbboyer@ncsu.edu>
  *
  *
  * ========LICENCE========
@@ -33,428 +34,144 @@
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
+namespace FFLAS { namespace Protected {
+
+	template <class Field>
+	unsigned long Mantissa (const Field& F, const FFLAS_BASE base)
+	{
+		return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
+	}
+
+
+} // Protected
+
+} // FFLAS
+
 namespace FFLAS {
-	namespace Protected {
-		template <class Field>
-		inline void MatMulParameters (const Field& F,
-					      const size_t m,
-					      const size_t n,
-					      const size_t k,
-					      const typename Field::Element& beta,
-					      size_t& delayedDim,
-					      FFLAS_BASE& base,
-					      size_t& winoRecLevel,
-					      bool winoLevelProvided)
-		{
 
-			// Strategy : determine Winograd's recursion first, then choose appropriate
-			// floating point representation, and finally the blocking dimension.
-			// Can be improved for some cases.
-
-			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (F, std::min(m,std::min(n,k)));
-			base = BaseCompute (F, winoRecLevel);
-			// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
-			delayedDim = DotProdBound (F, winoRecLevel, beta, base);
-
-			size_t oldk = k;
-			size_t winoDel = winoRecLevel;
-			// Computes the delayedDim, only depending on the recursive levels
-			// that must be performed over Z
-			if (!winoLevelProvided){ // Automatic mode
-				while (winoDel > 0 && delayedDim < oldk) {
-					    // If the topmost rec call is done with modular reductions
-					    // Then do one less rec step
-					winoDel--;
-					    // recompute the bound
-					delayedDim = DotProdBound (F, winoDel, beta, base);
-					if (!winoDel) {
-						typename Field::Element mbeta;
-						F.neg (mbeta,beta);
-						    // beta only comes into play when winodel==0
-						    // Then -beta = p-beta is also used in some calls
-						delayedDim = std::min(delayedDim, DotProdBound (F, 0, mbeta, base));
-						
-					}
-					oldk >>= 1;
-				}
-				winoRecLevel = winoDel;
-			}
-			delayedDim = std::min (k, delayedDim);
-
-			    //std::cerr<<"p = "<<F.characteristic()<<" k = "<<k<<" winoRecLevel = "<<winoRecLevel<<" -> delayedDim = "<<delayedDim<<std::endl;
-		}
-
-		template <>
-		inline void MatMulParameters (const DoubleDomain & F,
-					      const size_t m,
-					      const size_t n,
-					      const size_t k,
-					      const DoubleDomain::Element& beta,
-					      size_t& delayedDim,
-					      FFLAS_BASE& base,
-					      size_t& winoRecLevel,
-					      bool winoLevelProvided)
-		{
-			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (F, std::min(m,std::min(k,n))) ;
-
-			delayedDim = k+1;
-			base = FflasDouble;
-		}
-
-		template <>
-		inline void MatMulParameters (const FloatDomain & F,
-					      const size_t m,
-					      const size_t n,
-					      const size_t k,
-					      const FloatDomain::Element& beta,
-					      size_t& delayedDim,
-					      FFLAS_BASE& base,
-					      size_t& winoRecLevel,
-					      bool winoLevelProvided)
-		{
-			if (!winoLevelProvided)
-				winoRecLevel = WinoSteps (F, std::min(m,std::min(k,n))) ;
-
-			delayedDim = k+1;
-			base = FflasFloat;
-		}
-
-		template <class Field>
-		unsigned long Mantissa (const Field& F, const FFLAS_BASE base)
-		{
-			return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
-		}
-
-		template <class Field>
-		inline size_t DotProdBound (const Field& F,
-					    const size_t w,
-					    const typename Field::Element& beta,
-					    const FFLAS_BASE base)
-		{
-
-			FFLAS_INT_TYPE p=0;
-			F.characteristic(p);
-
-			unsigned long mantissa = Mantissa (F, base);
-
-			    //(base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
-
-			if (p == 0)
-				return 1;
-
-			double kmax;
-			if (w > 0) {
-				double c = computeFactorWino (F,w);
-
-				double d = (double (1ULL << mantissa) /(c*c) + 1);
-				if (d < 2)
-					return 1;
-				kmax = floor (d * double(1ULL << w));
-				// if (kmax  <= 1) return 1;
-			} else {
-
-				double c = computeFactorClassic(F);
-
-				double cplt=0;
-				if (!F.isZero (beta)){
-					if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
-					else{
-						double be;
-						F.convert(be, beta);
-						cplt = fabs(be)*c;
-					}
-				}
-				kmax = floor ( (double (double(1ULL << mantissa) - cplt)) / (c*c));
-				if (kmax  <= 1) return 1;
-			}
-
-			//kmax--; // we computed a strict upper bound
-			return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
-		}
-
-		template <class Field>
-		inline double computeFactorWino (const Field& F, const size_t w)
-		{
-			FFLAS_INT_TYPE p=0;
-			F.characteristic(p);
-			size_t ex=1;
-			for (size_t i=0; i < w; ++i) 	ex *= 3;
-			return double(p - 1) * double(1 + ex) / double(2);
-		}
-
-		template <class Field>
-		inline double computeFactorClassic (const Field& F)
-		{
-			FFLAS_INT_TYPE p=0;
-			F.characteristic(p);
-			return (double) (p-1);
-		}
-
-
-	} // Protected
-
-	template<class Field>
-	inline size_t WinoSteps (const Field & F, const size_t & m)
+	size_t min3(const size_t & m, const size_t & n , const size_t & k)
 	{
-		size_t w = 0;
-		size_t mt = m;
-		while ( mt >= WINOTHRESHOLD ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
+		return std::min(m,std::min(n,k));
 	}
 
+} // FFLAS
+
+
+namespace FFLAS { namespace Protected {
+
+
+	/**
+	 * TRSMBound
+	 *
+	 * \brief  computes the maximal size for delaying the modular reduction
+	 *         in a triangular system resolution
+	 *
+	 * This is the default version over an arbitrary field.
+	 * It is currently never used (the recursive algorithm is run until n=1 in this case)
+	 *
+	 * \param F Finite Field/Ring of the computation
+	 *
+	 */
+	template <class Field>
+	inline size_t TRSMBound (const Field& F)
+	{
+		return 1;
+	}
+
+	/**
+	 * Specialization for positive modular representation over double
+	 * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^53
+	 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+	 */
 	template<>
-	inline size_t WinoSteps (const FFPACK:: Modular<double> & F, const size_t & m)
+	inline size_t TRSMBound (const FFPACK:: Modular<double>& F)
 	{
-		size_t w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD ) {
-			++w;
-			mt >>= 1;
+
+		FFLAS_INT_TYPE pi;
+		F.characteristic(pi);
+		unsigned long p = pi;
+		unsigned long long p1(1UL), p2(1UL);
+		size_t nmax = 0;
+		unsigned long long max = ( (1ULL << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
+		while ( (p1 + p2) < max ){
+			p1*=p;
+			p2*=p-2;
+			nmax++;
 		}
-		return w;
+		return nmax;
 	}
 
+
+	/**
+	 * Specialization for positive modular representation over float.
+	 * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^24
+	 * @pbi
+	 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+	 */
 	template<>
-	inline size_t WinoSteps (const FFPACK:: ModularBalanced<double> & F, const size_t & m)
+	inline size_t TRSMBound (const FFPACK:: Modular<float>& F)
 	{
-		size_t w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL ) {
-			++w;
-			mt >>= 1;
+
+		FFLAS_INT_TYPE pi;
+		F.characteristic(pi);
+		unsigned long p = pi;
+		unsigned long long p1(1UL), p2(1UL);
+		size_t nmax = 0;
+		unsigned long long max = ( (1ULL << (FLT_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
+		while ( (p1 + p2) < max ){
+			p1*=p;
+			p2*=p-2;
+			nmax++;
 		}
-		return w;
+		return nmax;
 	}
 
+	/**
+	 * Specialization for balanced modular representation over double.
+	 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
+	 * @bib
+	 * - Dumas Giorgi Pernet 06, arXiv:cs/0601133
+	 */
 	template<>
-	inline size_t WinoSteps (const FFPACK:: Modular<float> & F, const size_t & m)
+	inline size_t TRSMBound (const FFPACK:: ModularBalanced<double>& F)
 	{
-		size_t w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_FLT ) {
-			++w;
-			mt >>= 1;
+
+		FFLAS_INT_TYPE pi;
+		F.characteristic (pi);
+		unsigned long p = (pi + 1) / 2;
+		unsigned long long p1(1UL);
+		size_t nmax = 0;
+		unsigned long long max = ((1ULL << (DBL_MANT_DIG + 1)) / ((unsigned long long)(p - 1)));
+		while (p1 < max){
+			p1 *= p;
+			nmax++;
 		}
-		return w;
+		return nmax;
 	}
 
+	/**
+	 * Specialization for balanced modular representation over float
+	 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^24
+	 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
+	 */
 	template<>
-	inline size_t WinoSteps (const FFPACK:: ModularBalanced<float> & F, const size_t & m)
+	inline size_t TRSMBound (const FFPACK:: ModularBalanced<float>& F)
 	{
-		size_t w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT ) {
-			++w;
-			mt >>= 1;
+
+		FFLAS_INT_TYPE pi;
+		F.characteristic (pi);
+		unsigned long p = (pi + 1) / 2;
+		unsigned long long p1(1UL);
+		size_t nmax = 0;
+		unsigned long long max = ((1ULL << (FLT_MANT_DIG + 1)) / ((unsigned long long) (p - 1)));
+		while (p1 < max){
+			p1 *= p;
+			nmax++;
 		}
-		return w;
+		return nmax;
+
 	}
-
-	namespace Protected {
-		//! @bug these thresholds come from nowhere.
-		template <class Field>
-		inline FFLAS_BASE BaseCompute (const Field& F, const size_t w)
-		{
-
-			FFLAS_INT_TYPE pi=0;
-			F.characteristic(pi);
-			FFLAS_BASE base;
-			switch (w) {
-			case 0: base = (pi < FLOAT_DOUBLE_THRESHOLD_0)? FflasFloat : FflasDouble;
-				break;
-			case 1:  base = (pi < FLOAT_DOUBLE_THRESHOLD_1)? FflasFloat : FflasDouble;
-				 break;
-			case 2:  base = (pi < FLOAT_DOUBLE_THRESHOLD_2)? FflasFloat : FflasDouble;
-				 break;
-			default: base = FflasDouble;
-				 break;
-			}
-			return base;
-		}
-
-
-		/*************************************************************************************
-		 * Specializations for ModularPositive and ModularBalanced over double and float
-		 *************************************************************************************/
-
-		template <>
-		inline double computeFactorWino (const FFPACK:: ModularBalanced<double>& F, const size_t w)
-		{
-			FFLAS_INT_TYPE p;
-			F.characteristic(p);
-			size_t ex=1;
-			for (size_t i=0; i < w; ++i) 	ex *= 3;
-			return  double((p - 1) * ex / 2);
-		}
-
-		template <>
-		inline double computeFactorWino (const FFPACK:: ModularBalanced<float>& F, const size_t w)
-		{
-			FFLAS_INT_TYPE p;
-			F.characteristic(p);
-			size_t ex=1;
-			for (size_t i=0; i < w; ++i) 	ex *= 3;
-			return  double((p - 1) * ex / 2);
-		}
-
-		template <>
-		inline double computeFactorClassic (const FFPACK:: ModularBalanced<double>& F)
-		{
-			FFLAS_INT_TYPE p;
-			F.characteristic(p);
-			return double((p-1) >> 1);
-		}
-
-
-#if 1
-		template <>
-		inline FFLAS_BASE BaseCompute (const FFPACK:: Modular<double>& ,
-					       const size_t )
-		{
-			return FflasDouble;
-		}
-
-		template <>
-		inline FFLAS_BASE BaseCompute (const FFPACK:: Modular<float>& ,
-					       const size_t )
-		{
-			return FflasFloat;
-		}
-
-		template <>
-		inline FFLAS_BASE BaseCompute (const FFPACK:: ModularBalanced<double>& ,
-					       const size_t )
-		{
-			return FflasDouble;
-		}
-
-		template <>
-		inline FFLAS_BASE BaseCompute (const FFPACK:: ModularBalanced<float>& ,
-					       const size_t )
-		{
-			return FflasFloat;
-		}
-#endif
-
-
-
-		/**
-		 * TRSMBound
-		 *
-		 * \brief  computes the maximal size for delaying the modular reduction
-		 *         in a triangular system resolution
-		 *
-		 * This is the default version over an arbitrary field.
-		 * It is currently never used (the recursive algorithm is run until n=1 in this case)
-		 *
-		 * \param F Finite Field/Ring of the computation
-		 *
-		 */
-		template <class Field>
-		inline size_t TRSMBound (const Field& F)
-		{
-			return 1;
-		}
-
-		/**
-		 * Specialization for positive modular representation over double
-		 * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^53
-		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
-		 */
-		template<>
-		inline size_t TRSMBound (const FFPACK:: Modular<double>& F)
-		{
-
-			FFLAS_INT_TYPE pi;
-			F.characteristic(pi);
-			unsigned long p = pi;
-			unsigned long long p1(1UL), p2(1UL);
-			size_t nmax = 0;
-			unsigned long long max = ( (1ULL << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
-			while ( (p1 + p2) < max ){
-				p1*=p;
-				p2*=p-2;
-				nmax++;
-			}
-			return nmax;
-		}
-
-
-		/**
-		 * Specialization for positive modular representation over float.
-		 * Computes nmax s.t. (p-1)/2*(p^{nmax-1} + (p-2)^{nmax-1}) < 2^24
-		 * @pbi
-		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
-		 */
-		template<>
-		inline size_t TRSMBound (const FFPACK:: Modular<float>& F)
-		{
-
-			FFLAS_INT_TYPE pi;
-			F.characteristic(pi);
-			unsigned long p = pi;
-			unsigned long long p1(1UL), p2(1UL);
-			size_t nmax = 0;
-			unsigned long long max = ( (1ULL << (FLT_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
-			while ( (p1 + p2) < max ){
-				p1*=p;
-				p2*=p-2;
-				nmax++;
-			}
-			return nmax;
-		}
-
-		/**
-		 * Specialization for balanced modular representation over double.
-		 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^53
-		 * @bib
-		 * - Dumas Giorgi Pernet 06, arXiv:cs/0601133
-		 */
-		template<>
-		inline size_t TRSMBound (const FFPACK:: ModularBalanced<double>& F)
-		{
-
-			FFLAS_INT_TYPE pi;
-			F.characteristic (pi);
-			unsigned long p = (pi + 1) / 2;
-			unsigned long long p1(1UL);
-			size_t nmax = 0;
-			unsigned long long max = ((1ULL << (DBL_MANT_DIG + 1)) / ((unsigned long long)(p - 1)));
-			while (p1 < max){
-				p1 *= p;
-				nmax++;
-			}
-			return nmax;
-		}
-
-		/**
-		 * Specialization for balanced modular representation over float
-		 * Computes nmax s.t. (p-1)/2*(((p+1)/2)^{nmax-1}) < 2^24
-		 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
-		 */
-		template<>
-		inline size_t TRSMBound (const FFPACK:: ModularBalanced<float>& F)
-		{
-
-			FFLAS_INT_TYPE pi;
-			F.characteristic (pi);
-			unsigned long p = (pi + 1) / 2;
-			unsigned long long p1(1UL);
-			size_t nmax = 0;
-			unsigned long long max = ((1ULL << (FLT_MANT_DIG + 1)) / ((unsigned long long) (p - 1)));
-			while (p1 < max){
-				p1 *= p;
-				nmax++;
-			}
-			return nmax;
-
-		}
-	} // Protected
+} // Protected
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_bounds_INL
