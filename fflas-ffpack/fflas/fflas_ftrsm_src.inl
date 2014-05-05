@@ -198,9 +198,10 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	static __FFLAS__DOMAIN D; // is this safe ??
 
 	if ( __FFLAS__Na <= nblas ){
-		for (size_t i=0; i < M; ++i)
-			for (size_t j = 0; j < N; ++j)
-				F.init( *(B + i*ldb + j), *( B + i*ldb + j));
+		finit(F,M,N,B,ldb);
+		// for (size_t i=0; i < M; ++i)
+			// for (size_t j = 0; j < N; ++j)
+				// F.init( *(B + i*ldb + j), *( B + i*ldb + j));
 #define __FFLAS__Atrsm A
 #define __FFLAS__Atrsm_lda lda
 #ifndef __FFLAS__UNIT
@@ -265,9 +266,10 @@ void delayed (const Field& F, const size_t M, const size_t N,
 			 Mjoin (Cblas, __FFLAS__TRANS),
 			 CblasUnit,
 			 (int)M, (int)N, 1.0, __FFLAS__Atrsm, (int)__FFLAS__Atrsm_lda, B, (int)ldb );
-		for (size_t i = 0; i < M; ++i)
-			for (size_t j = 0; j < N; ++j)
-				F.init (*(B + i*ldb + j), *(B + i*ldb + j));
+		finit(F,M,N,B,ldb);
+		// for (size_t i = 0; i < M; ++i)
+			// for (size_t j = 0; j < N; ++j)
+				// F.init (*(B + i*ldb + j), *(B + i*ldb + j));
 
 #ifndef __FFLAS__UNIT
 		Ai = A;
