@@ -242,14 +242,15 @@ void delayed (const Field& F, const size_t M, const size_t N,
 #endif
 			F.inv (inv, *(A + i * (lda+1)));
 #ifdef __FFLAS__TRSM_READONLY
-			const typename Field::Element * Acurr;
-			typename Field::Element* Acopcurr;
-			for (Acurr = Ai,  Acopcurr = Acopi;
-			     Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim);
-			     Acurr += __FFLAS__Anorminc,
-				     Acopcurr += __FFLAS__Acopnorminc){
-				F.mul (*Acopcurr, *Acurr, inv);
-			}
+			// const typename Field::Element * Acurr;
+			// typename Field::Element* Acopcurr;
+			// for (Acurr = Ai,  Acopcurr = Acopi;
+			     // Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim);
+			     // Acurr += __FFLAS__Anorminc,
+				     // Acopcurr += __FFLAS__Acopnorminc){
+				// F.mul (*Acopcurr, *Acurr, inv);
+			// }
+			fscal (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc, Acopi, __FFLAS__Anorminc);
 			Acopi += __FFLAS__Acopnormnext;
 #else
 			fscalin (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc);
