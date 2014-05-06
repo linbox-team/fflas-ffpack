@@ -77,6 +77,7 @@ namespace FFLAS {
 
 	} ;
 
+	template<class FieldT>
 	struct ClassicHelper ;
 
 	struct Winograd2Helper ;

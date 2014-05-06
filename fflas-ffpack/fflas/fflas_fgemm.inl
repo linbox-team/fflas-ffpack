@@ -56,13 +56,8 @@ namespace FFLAS {
 
 } // FFLAS
 
-// #include "fflas_fgemm/matmul_algos.inl"
-#include "fflas_fgemm/fgemm_classical.inl"
-#include "fflas_fgemm/fgemm_winograd.inl"
-// #include "fflas_fgemm/gemm_bini.inl"
-
 namespace FFLAS {
-	template <class Field>
+	template <class Field,class Helper>
 	inline void fgemm2 (const Field& F,
 			    const FFLAS_TRANSPOSE ta,
 			    const FFLAS_TRANSPOSE tb,
@@ -73,9 +68,15 @@ namespace FFLAS {
 			    const typename Field::Element beta,
 			    typename Field::Element * C, const size_t ldc,
 			    // const size_t kmax, const size_t w, const FFLAS_BASE base
-			    Winograd2Helper & H
+			    Helper & H
 			   );
 } // FFLAS
+
+// #include "fflas_fgemm/matmul_algos.inl"
+#include "fflas_fgemm/fgemm_classical.inl"
+#include "fflas_fgemm/fgemm_winograd.inl"
+// #include "fflas_fgemm/gemm_bini.inl"
+
 
 #include "fflas_fgemm/winograd.inl"
 #include "fflas_fgemm/winograd_acc.inl"
@@ -393,7 +394,7 @@ namespace FFLAS { namespace Protected {
 
 		if (H.w == 0) {
 			//! @bug same kmax as Winograd2Helper ?
-			ClassicHelper classic(H.kmax,H.base);
+			ClassicHelper<typename FieldTraits<Field>::value> classic(H.kmax,H.base);
 			fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
 			       beta, C, ldc, classic);
 		}
