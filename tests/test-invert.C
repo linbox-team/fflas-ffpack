@@ -41,7 +41,7 @@ using namespace std;
 #include <iomanip>
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"
-#include "utils/timer.h"
+#include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 

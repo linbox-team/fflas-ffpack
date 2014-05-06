@@ -48,8 +48,8 @@
 using namespace std;
 
 #include "fflas-ffpack/field/modular-positive.h"
-#include "utils/timer.h"
-#include "utils/Matio.h"
+#include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 using namespace FFPACK;
