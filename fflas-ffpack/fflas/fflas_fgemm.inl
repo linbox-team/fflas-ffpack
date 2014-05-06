@@ -68,7 +68,7 @@ namespace FFLAS {
 			    const typename Field::Element beta,
 			    typename Field::Element * C, const size_t ldc,
 			    // const size_t kmax, const size_t w, const FFLAS_BASE base
-			    Helper & H
+			    const Helper & H
 			   );
 } // FFLAS
 

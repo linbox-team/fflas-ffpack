@@ -50,7 +50,7 @@ namespace FFLAS { namespace BLAS3 {
 			      const typename Field::Element  beta,
 			      typename Field::Element * C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
-			      Winograd2Helper & H
+			      const Winograd2Helper & WH
 			      )
 	{
 
@@ -97,8 +97,9 @@ namespace FFLAS { namespace BLAS3 {
 			ldX2 = cb = nr;
 		}
 
-		H.w = H.w-1 ;
 
+		Winograd2Helper H = WH ;
+		H.w = H.w -1 ;
 		// Two temporary submatrices are required
 		typename Field::Element* X2 = new typename Field::Element[kr*nr];
 

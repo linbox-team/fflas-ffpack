@@ -39,9 +39,9 @@
 #include "fflas_bounds_classic.inl"
 
 namespace FFLAS {
-	
 
-	    // Traits and categories will need to be placed in a proper file later 
+
+	    // Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
 		//! generic ring.
 		struct GenericTag{};
@@ -122,7 +122,7 @@ namespace FFLAS { namespace BLAS3 {
 					typename Field::Element* C, const size_t ldc,
 					// const size_t kmax, const FFLAS_BASE base
 					const FloatField & G, const size_t k2,
-					ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
+					const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
 				       )
 	{
 		typedef typename FloatField::Element FloatElement ;
@@ -212,7 +212,7 @@ namespace FFLAS { namespace BLAS3 {
 					 const typename Field::Element beta,
 					 typename Field::Element* C, const size_t ldc,
 					 // const size_t kmax, const FFLAS_BASE base
-					 ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+					 const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
 					)
 	{
 		typename Field::Element _alpha, _beta;
@@ -241,7 +241,7 @@ namespace FFLAS { namespace BLAS3 {
 		else shiftA = k2;
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
-		
+
 		ClassicHelper<typename FieldCategories::FloatingPointTag> associatedH;
 		fgemm2 (associatedDomain(F), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 			B+nblock*shiftB, ldb, _beta, C, ldc, associatedH);
@@ -273,7 +273,7 @@ namespace FFLAS {
 			    const typename Field::Element beta,
 			    typename Field::Element* C, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    ClassicHelper<typename FieldTraits<Field>::categoryTag> & H
+			   const  ClassicHelper<typename FieldTraits<Field>::categoryTag> & H
 			   )
 	{
 
@@ -340,7 +340,7 @@ namespace FFLAS {
 			   const DoubleDomain::Element beta,
 			   DoubleDomain::Element * Cd, const size_t ldc,
 			   // const size_t kmax, const FFLAS_BASE base
-			   ClassicHelper<FieldCategories::FloatingPointTag> &
+			  const  ClassicHelper<FieldCategories::FloatingPointTag> &
 			  )
 	{
 
@@ -363,7 +363,7 @@ namespace FFLAS {
 			    const FloatDomain::Element beta,
 			    FloatDomain::Element * Cd, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    ClassicHelper<FieldCategories::FloatingPointTag> &
+			   const  ClassicHelper<FieldCategories::FloatingPointTag> &
 			   )
 	{
 		FFLASFFPACK_check(lda);
@@ -386,7 +386,7 @@ namespace FFLAS {
 			    const double beta,
 			    double* C, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+			    const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
 			   )
 
 	{
@@ -405,7 +405,7 @@ namespace FFLAS {
 			    const float beta,
 			    float* C, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+			  const   ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
 			   )
 	{
 		return BLAS3::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
@@ -423,7 +423,7 @@ namespace FFLAS {
 			    const double beta,
 			    double* C, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+			   const  ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
 			   )
 	{
 		return BLAS3::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
@@ -440,7 +440,7 @@ namespace FFLAS {
 			    const float beta,
 			    float* C, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+			   const  ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
 			   )
 	{
 		return BLAS3::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);

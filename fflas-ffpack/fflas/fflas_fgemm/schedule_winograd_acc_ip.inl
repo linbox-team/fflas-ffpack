@@ -48,9 +48,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      Winograd2Helper & H
+				      const Winograd2Helper & WH
 				      )
 	{
+		Winograd2Helper H = WH ;
 		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -175,9 +176,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      Winograd2Helper & H
+				      const Winograd2Helper & WH
 				      )
 	{
+		Winograd2Helper H = WH ;
 		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -304,9 +306,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      Winograd2Helper & H
+				      const Winograd2Helper & WH
 				      )
 	{
+		Winograd2Helper H = WH ;
 		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
