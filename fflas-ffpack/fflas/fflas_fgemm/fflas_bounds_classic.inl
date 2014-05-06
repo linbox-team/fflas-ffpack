@@ -34,32 +34,32 @@
 //  computeFactorClassic
 namespace FFLAS { namespace Protected {
 	template <class Field>
-		inline double computeFactorClassic (const Field& F)
-		{
-			FFLAS_INT_TYPE p=0;
-			F.characteristic(p);
-			return (double) (p-1);
-		}
+	inline double computeFactorClassic (const Field& F)
+	{
+		FFLAS_INT_TYPE p=0;
+		F.characteristic(p);
+		return (double) (p-1);
+	}
 
 	/*************************************************************************************
 	 * Specializations for ModularPositive and ModularBalanced over double and float
 	 *************************************************************************************/
 	template <>
-		inline double computeFactorClassic (const FFPACK:: ModularBalanced<double>& F)
-		{
-			FFLAS_INT_TYPE p;
-			F.characteristic(p);
-			return double((p-1) >> 1);
-		}
+	inline double computeFactorClassic (const FFPACK:: ModularBalanced<double>& F)
+	{
+		FFLAS_INT_TYPE p;
+		F.characteristic(p);
+		return double((p-1) >> 1);
+	}
 
 	//BB: ajout, pourquoi pas ?
 	template <>
-		inline double computeFactorClassic (const FFPACK:: ModularBalanced<float>& F)
-		{
-			FFLAS_INT_TYPE p;
-			F.characteristic(p);
-			return double((p-1) >> 1);
-		}
+	inline double computeFactorClassic (const FFPACK:: ModularBalanced<float>& F)
+	{
+		FFLAS_INT_TYPE p;
+		F.characteristic(p);
+		return double((p-1) >> 1);
+	}
 
 
 } // FFLAS
@@ -69,43 +69,42 @@ namespace FFLAS { namespace Protected {
 namespace FFLAS { namespace Protected {
 
 	template <class Field>
-		inline size_t DotProdBoundClassic (const Field& F,
-				// const size_t w,
-				const typename Field::Element& beta,
-				const FFLAS_BASE base)
+	inline size_t DotProdBoundClassic (const Field& F,
+					   const typename Field::Element& beta,
+					   const FFLAS_BASE base)
+	{
+
+		FFLAS_INT_TYPE p=0;
+		F.characteristic(p);
+
+		unsigned long mantissa = Mantissa (F, base);
+
+		//(base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
+
+		if (p == 0)
+			return 1;
+
+		double kmax;
 		{
 
-			FFLAS_INT_TYPE p=0;
-			F.characteristic(p);
+			double c = computeFactorClassic(F);
 
-			unsigned long mantissa = Mantissa (F, base);
-
-			//(base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
-
-			if (p == 0)
-				return 1;
-
-			double kmax;
-			{
-
-				double c = computeFactorClassic(F);
-
-				double cplt=0;
-				if (!F.isZero (beta)){
-					if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
-					else{
-						double be;
-						F.convert(be, beta);
-						cplt = fabs(be)*c;
-					}
+			double cplt=0;
+			if (!F.isZero (beta)){
+				if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
+				else{
+					double be;
+					F.convert(be, beta);
+					cplt = fabs(be)*c;
 				}
-				kmax = floor ( (double (double(1ULL << mantissa) - cplt)) / (c*c));
-				if (kmax  <= 1) return 1;
 			}
-
-			//kmax--; // we computed a strict upper bound
-			return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
+			kmax = floor ( (double (double(1ULL << mantissa) - cplt)) / (c*c));
+			if (kmax  <= 1) return 1;
 		}
+
+		//kmax--; // we computed a strict upper bound
+		return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
+	}
 
 
 } // FFLAS
@@ -135,58 +134,58 @@ namespace FFLAS { namespace Protected {
 	 * - Dumas, Giorgi, Pernet, arXiv cs/0601133  <a href=http://arxiv.org/abs/cs.SC/0601133>here</a>
 	 */
 	template <class Field>
-		inline void MatMulParametersClassic (const Field& F,
-				const size_t &m,
-				const size_t &n,
-				const size_t &k,
-				const typename Field::Element& beta,
-				size_t& delayedDim,
-				FFLAS_BASE& base)
-		{
+	inline void MatMulParametersClassic (const Field& F,
+					     const size_t &m,
+					     const size_t &n,
+					     const size_t &k,
+					     const typename Field::Element& beta,
+					     size_t& delayedDim,
+					     FFLAS_BASE& base)
+	{
 
-			// Strategy : determine Winograd's recursion first, then choose appropriate
-			// floating point representation, and finally the blocking dimension.
-			// Can be improved for some cases.
+		// Strategy : determine Winograd's recursion first, then choose appropriate
+		// floating point representation, and finally the blocking dimension.
+		// Can be improved for some cases.
 
-			base = BaseCompute (F, 0);
-			// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
-			delayedDim = DotProdBoundClassic (F, beta, base);
+		base = BaseCompute (F, 0);
+		// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
+		delayedDim = DotProdBoundClassic (F, beta, base);
 
-			size_t oldk = k;
-			// Computes the delayedDim, only depending on the recursive levels
-			// that must be performed over Z
-			delayedDim = std::min (k, delayedDim);
+		size_t oldk = k;
+		// Computes the delayedDim, only depending on the recursive levels
+		// that must be performed over Z
+		delayedDim = std::min (k, delayedDim);
 
-			//std::cerr<<"p = "<<F.characteristic()<<" k = "<<k<<" winogradRecLevel = "<<winogradRecLevel<<" -> delayedDim = "<<delayedDim<<std::endl;
-		}
-
-	template <>
-		inline void MatMulParametersClassic (const DoubleDomain & F,
-				const size_t &m,
-				const size_t &n,
-				const size_t &k,
-				const DoubleDomain::Element& beta,
-				size_t& delayedDim,
-				FFLAS_BASE& base)
-		{
-
-			delayedDim = k+1;
-			base = FflasDouble;
-		}
+		//std::cerr<<"p = "<<F.characteristic()<<" k = "<<k<<" winogradRecLevel = "<<winogradRecLevel<<" -> delayedDim = "<<delayedDim<<std::endl;
+	}
 
 	template <>
-		inline void MatMulParametersClassic (const FloatDomain & F,
-				const size_t &m,
-				const size_t &n,
-				const size_t &k,
-				const FloatDomain::Element& beta,
-				size_t& delayedDim,
-				FFLAS_BASE& base)
-		{
+	inline void MatMulParametersClassic (const DoubleDomain & F,
+					     const size_t &m,
+					     const size_t &n,
+					     const size_t &k,
+					     const DoubleDomain::Element& beta,
+					     size_t& delayedDim,
+					     FFLAS_BASE& base)
+	{
 
-			delayedDim = k+1;
-			base = FflasFloat;
-		}
+		delayedDim = k+1;
+		base = FflasDouble;
+	}
+
+	template <>
+	inline void MatMulParametersClassic (const FloatDomain & F,
+					     const size_t &m,
+					     const size_t &n,
+					     const size_t &k,
+					     const FloatDomain::Element& beta,
+					     size_t& delayedDim,
+					     FFLAS_BASE& base)
+	{
+
+		delayedDim = k+1;
+		base = FflasFloat;
+	}
 
 
 } // Protected

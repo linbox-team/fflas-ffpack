@@ -40,4 +40,4 @@ pkgincludesub_HEADERS=          \
 	  unparametric.h            \
 	  field-general.h
 
-EXTRA_DIST=fields.doxy
+EXTRA_DIST=field.doxy

@@ -100,6 +100,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		Winograd2Helper H = WH ;
 		H.w = H.w -1 ;
+		// std::cout << WH.w << ',' << H.w << std::endl;
 		// Two temporary submatrices are required
 		typename Field::Element* X2 = new typename Field::Element[kr*nr];
 
