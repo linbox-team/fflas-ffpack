@@ -295,8 +295,9 @@ rank++;
 		delete[] MathQ;
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
-		for (size_t i=(size_t)rank; i<M; ++i)
-			FFLAS::fzero (Fi, N-rank, A+i*lda+rank, 1);
+		// for (size_t i=(size_t)rank; i<M; ++i)
+			// FFLAS::fzero (Fi, N-rank, A+i*lda+rank, 1);
+		FFLAS::fzero (Fi, M-rank, N-rank, A+lda*(1+rank), lda);
 //		write_field(Fi,std::cerr<<"Fini"<<std::endl,A,M,N,lda);
 
 
@@ -692,8 +693,9 @@ rank++;
 		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
 		Element * temp = new Element [R3*R2];
-		for (size_t i=0; i<R3; ++i)
-			FFLAS::fcopy (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
+		// for (size_t i=0; i<R3; ++i)
+			// FFLAS::fcopy (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
+		FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 		    // N <- L3^-1 H2
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
