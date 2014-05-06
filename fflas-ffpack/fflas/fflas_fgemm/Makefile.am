@@ -31,9 +31,9 @@ pkgincludesub_HEADERS=            \
 	fflas_bounds_winograd.inl \
 	fgemm_classical.inl       \
 	fgemm_winograd.inl        \
-	winograd.inl              \
-	winograd_acc.inl          \
-	bini.inl                  \
-	winograd_acc_ip.inl       \
-	winograd_ip.inl
+	schedule_winograd.inl              \
+	schedule_winograd_acc.inl          \
+	schedule_bini.inl                  \
+	schedule_winograd_acc_ip.inl       \
+	schedule_winograd_ip.inl
 

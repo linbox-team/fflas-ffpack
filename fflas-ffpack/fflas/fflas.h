@@ -158,7 +158,6 @@ namespace FFLAS {
 // #include "fflas_bounds.inl"
 #include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
-// #include "fflas_fgemm.inl"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include "fflas_blockcuts.inl"

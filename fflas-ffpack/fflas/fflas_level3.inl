@@ -353,49 +353,7 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc
 	       , const int w = (int) -1
-	     )
-	{
-		// typedef typename Field::Element Element ;
-		if (!k) {
-			fscalin(F, m, n, beta, C, ldc);
-			return C;
-		}
-
-		if (!m || !n) {
-			return C;
-		}
-
-		if (F.isZero (alpha)){
-			fscalin(F, m, n, beta, C, ldc);
-			return C;
-		}
-
-#ifndef NDEBUG
-		/*  check if alpha is invertible.
-		 *  XXX do it in F.isInvertible(Element&) ?
-		 *  XXX do it in return status of F.inv(Element&,Element&)
-		 */
-		typename Field::Element e ;
-		F.init(e,beta);
-		// F.init(e,F.one);
-		F.divin(e,alpha);
-		F.mulin(e,alpha);
-		// FFLASFFPACK_check(F.isOne(e));
-		FFLASFFPACK_check(F.areEqual(e,beta));
-#endif
-
-#if 0
-		// detect fgemv
-		if (n == 1 and ...) {}
-		// detect fger
-		if (k==1 and ...) {}
-#endif
-
-		Winograd2Helper H (w);
-		H.computeParameters<Field>(F,m,n,k,alpha,beta);
-		fgemm2 (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
-		return C;
-	}
+	     ) ;
 
 
 	    /**
