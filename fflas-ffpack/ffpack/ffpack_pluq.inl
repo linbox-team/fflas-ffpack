@@ -242,9 +242,9 @@ namespace FFPACK {
 				Element invpiv;
 				Fi.inv (invpiv, CurrRow[i]);
 				if (Diag == FFLAS::FflasUnit)
-					fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
+					FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
 				else
-					fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
+					FFLAS::fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
 				if (i > rank){
 					    // Column rotation to move pivot on the diagonal
 					    // on U
@@ -253,7 +253,7 @@ namespace FFPACK {
 					    // on A
 					cyclic_shift_col(CurrRow+lda+rank, M-row-1, i-rank+1, lda);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
-					fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
+					FFLAS::fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
 				}
 				if (row > rank){
 					    // Row rotation for L
@@ -261,9 +261,9 @@ namespace FFPACK {
 					cyclic_shift_row(A+rank*lda, row-rank+1, rank, lda);
 					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
 					    // Row rotation for U (not moving the 0 block)
-					fcopy (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
+					FFLAS::fcopy (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
-					fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
+					FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
 					Fi.assign(CurrRow[i],Fi.zero); // only needed once here
 				}
 //				write_field(Fi,std::cerr<<"Apres cylicRow"<<std::endl,A,M,N,lda);
@@ -296,7 +296,7 @@ rank++;
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
 		for (size_t i=(size_t)rank; i<M; ++i)
-			fzero (Fi, N-rank, A+i*lda+rank, 1);
+			FFLAS::fzero (Fi, N-rank, A+i*lda+rank, 1);
 //		write_field(Fi,std::cerr<<"Fini"<<std::endl,A,M,N,lda);
 
 
@@ -693,7 +693,7 @@ rank++;
 		    // J <- L3^-1 I (in a temp)
 		Element * temp = new Element [R3*R2];
 		for (size_t i=0; i<R3; ++i)
-			fcopy (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
+			FFLAS::fcopy (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 		    // N <- L3^-1 H2
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
