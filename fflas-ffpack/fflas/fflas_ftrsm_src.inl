@@ -250,7 +250,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 				     // Acopcurr += __FFLAS__Acopnorminc){
 				// F.mul (*Acopcurr, *Acurr, inv);
 			// }
-			fscal (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc, Acopi, __FFLAS__Anorminc);
+			fscal (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc, Acopi, __FFLAS__Acopnorminc);
 			Acopi += __FFLAS__Acopnormnext;
 #else
 			fscalin (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc);
