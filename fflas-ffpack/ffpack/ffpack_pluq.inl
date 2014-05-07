@@ -297,7 +297,7 @@ rank++;
 		delete[] MathP;
 		// for (size_t i=(size_t)rank; i<M; ++i)
 			// FFLAS::fzero (Fi, N-rank, A+i*lda+rank, 1);
-		FFLAS::fzero (Fi, M-rank, N-rank, A+lda*(1+rank), lda);
+		FFLAS::fzero (Fi, M-rank, N-rank, A+rank*(1+lda), lda);
 //		write_field(Fi,std::cerr<<"Fini"<<std::endl,A,M,N,lda);
 
 
