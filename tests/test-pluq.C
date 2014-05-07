@@ -207,8 +207,8 @@ int main(int argc, char** argv){
 	delete[] Q;
 
 	double t = timc.realtime();
-    const int sm = MIN(m,n);
-    const int sn = MAX(m,n);
+	const int sm = std::min(m,n);
+	const int sn = std::max(m,n);
 
 	double numops = sm*sm/1000.0*(sn-sm/3.0);
 
