@@ -240,7 +240,8 @@ namespace FFLAS { namespace Protected {
 
 			double c = computeFactorWinograd (F,w);
 
-			double d = (double (1ULL << mantissa) /(c*c) + 1);
+			double d = (double (1ULL << mantissa) /(c*c) );
+			    //std::cerr<<"DotProdBound c = "<<c<<" d = "<<d<<std::endl;
 			if (d < 2)
 				return 1;
 			kmax = floor (d * double(1ULL << w));
@@ -301,7 +302,7 @@ namespace FFLAS { namespace Protected {
 		base = BaseCompute (F, winogradRecLevel);
 		// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
 		delayedDim = DotProdBoundWinograd (F, winogradRecLevel, beta, base);
-
+		
 		size_t oldk = k;
 		int winogradDel = winogradRecLevel;
 		// Computes the delayedDim, only depending on the recursive levels

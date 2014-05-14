@@ -34,6 +34,55 @@
 
 namespace FFLAS {
 
+	    // Traits and categories will need to be placed in a proper file later
+	namespace FieldCategories {
+		//! generic ring.
+		struct GenericTag{};
+		//! If it can init/convert elements to/from floating point types: float, double
+		struct FloatingPointConvertibleTag : public  GenericTag{};
+		//! If it is a Modular or ModularBalanced templated by float or double
+		struct ModularFloatingPointTag : public GenericTag{};
+		//! If it is Modular<float> or ModularBalanced<float>
+		struct ModularFloatTag : public ModularFloatingPointTag{};
+		//! If it is Modular<double> or ModularBalanced<double>
+		struct ModularDoubleTag : public ModularFloatingPointTag{};
+		//! If it is a multiprecision field
+		struct MultiPrecisionTag : public  GenericTag{};
+		//! If it is DoubleDomain or a FloatDomain
+		struct FloatingPointTag : public GenericTag{};
+
+	}
+
+	/*! FieldTrait
+	 */
+
+	template <class Field>
+	struct FieldTraits {typedef typename FieldCategories::GenericTag value;};
+	template<> 
+	struct FieldTraits<FFPACK::Modular<double> > {typedef  FieldCategories::ModularFloatingPointTag value;};
+	template<> 
+	struct FieldTraits<FFPACK::Modular<float> > {typedef FieldCategories::ModularFloatingPointTag value;};
+	template<> 
+	struct FieldTraits<FFPACK::ModularBalanced<double> > {typedef FieldCategories::ModularFloatingPointTag value;};
+	template<> 
+	struct FieldTraits<FFPACK::ModularBalanced<float> > {typedef FieldCategories::ModularFloatingPointTag value;};
+	template<> 
+	struct FieldTraits<DoubleDomain> {typedef FieldCategories::FloatingPointTag value;};
+	template<> 
+	struct FieldTraits<FloatDomain> {typedef FieldCategories::FloatingPointTag value;};
+	template<typename  Element> 
+	struct FieldTraits<FFPACK::Modular<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
+
+
+//	template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
+	
+
+	template <typename FieldT>
+	struct ClassicHelper;
+} // FFLAS
+
+namespace FFLAS {
+
 	DoubleDomain associatedDomain (const FFPACK::Modular<double> & )
 	{
 		return DoubleDomain();
@@ -57,19 +106,20 @@ namespace FFLAS {
 } // FFLAS
 
 namespace FFLAS {
-	template <class Field,class Helper>
-	inline void fgemm2 (const Field& F,
-			    const FFLAS_TRANSPOSE ta,
-			    const FFLAS_TRANSPOSE tb,
-			    const size_t m, const size_t n, const size_t k,
-			    const typename Field::Element alpha,
-			    const typename Field::Element* A,const size_t lda,
-			    const typename Field::Element* B,const size_t ldb,
-			    const typename Field::Element beta,
-			    typename Field::Element * C, const size_t ldc,
-			    // const size_t kmax, const size_t w, const FFLAS_BASE base
-			    const Helper & H
-			   );
+
+template  < typename FloatElement, class Field >
+	inline void fgemm_convert (const Field& F,
+				   const FFLAS_TRANSPOSE ta,
+				   const FFLAS_TRANSPOSE tb,
+				   const size_t m, const size_t n,const size_t k,
+				   const typename Field::Element alpha,
+				   const typename Field::Element * A, const size_t lda,
+				   const typename Field::Element * B, const size_t ldb,
+				   const typename Field::Element beta,
+				   typename Field::Element* C, const size_t ldc,
+				   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
+				   );
+
 } // FFLAS
 
 // #include "fflas_fgemm/matmul_algos.inl"

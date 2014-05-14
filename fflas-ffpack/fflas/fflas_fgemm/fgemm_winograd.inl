@@ -36,7 +36,7 @@
 #define __FFLASFFPACK_fflas_fflas_fgemm_winograd_INL
 
 #include "fflas_bounds_winograd.inl"
-
+#include "fgemm_classical.inl"
 namespace FFLAS {
 
 	struct Winograd2Helper : public MMParameters {
@@ -421,8 +421,7 @@ namespace FFLAS { namespace Protected {
 		if (H.w == 0) {
 			//! @bug same kmax as Winograd2Helper ?
 			ClassicHelper<typename FieldTraits<Field>::value> classic(H.kmax,H.base);
-			fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb,
-			       beta, C, ldc, classic);
+			fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, classic);
 		}
 		else {
 #ifdef OLD_DYNAMIC_PEALING
@@ -609,7 +608,7 @@ namespace FFLAS {
 			}
 		}
 		// w = 0 or k> kmax
-		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H.kmax,H.w,H.base);
+		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
 	// Control the switch with classic multiplication
