@@ -84,11 +84,12 @@ namespace FFLAS {
 			   )
 	{
 		if (H.base == FflasDouble)
-			fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else
-			fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
-		
+	namespace Protected{
+
 	template  < typename FloatElement, class Field >
 	inline void fgemm_convert (const Field& F,
 				   const FFLAS_TRANSPOSE ta,
@@ -178,7 +179,9 @@ namespace FFLAS {
 		delete[] Bdd;
 		delete[] Cd;
 
-	}
+	} //fgemm_convert
+
+}//Protected
 
 	// F is Modular(Balanced)<float/double>
 	template<class Field>

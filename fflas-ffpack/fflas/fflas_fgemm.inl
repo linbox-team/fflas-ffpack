@@ -79,6 +79,7 @@ namespace FFLAS {
 
 	template <typename FieldT>
 	struct ClassicHelper;
+	
 	template <typename FieldT>
 	struct Winograd2Helper;
 
@@ -86,31 +87,20 @@ namespace FFLAS {
 
 namespace FFLAS {
 
-	DoubleDomain associatedDomain (const FFPACK::Modular<double> & )
-	{
-		return DoubleDomain();
-	}
 
-	DoubleDomain associatedDomain (const FFPACK::ModularBalanced<double> & )
-	{
-		return DoubleDomain();
-	}
-
-	FloatDomain associatedDomain (const FFPACK::Modular<float> & )
-	{
-		return FloatDomain();
-	}
-
-	FloatDomain associatedDomain (const FFPACK::ModularBalanced<float> & )
-	{
-		return FloatDomain();
-	}
-
+	DoubleDomain associatedDomain (const FFPACK::Modular<double> & ){return DoubleDomain();}
+	DoubleDomain associatedDomain (const FFPACK::ModularBalanced<double> & ){return DoubleDomain();}
+	FloatDomain associatedDomain (const FFPACK::Modular<float> & ){return FloatDomain();}
+	FloatDomain associatedDomain (const FFPACK::ModularBalanced<float> & ){return FloatDomain();}
+	    // This last defintion is useless, but necessary for compilation 
+            //(some template combinations are compiled but never run  in practice)
+	template<class Field>
+	const Field& associatedDomain (const Field& F){return F;}
 } // FFLAS
 
-namespace FFLAS {
+namespace FFLAS {namespace Protected{
 
-template  < typename FloatElement, class Field >
+	template  < typename FloatElement, class Field >
 	inline void fgemm_convert (const Field& F,
 				   const FFLAS_TRANSPOSE ta,
 				   const FFLAS_TRANSPOSE tb,
@@ -123,6 +113,19 @@ template  < typename FloatElement, class Field >
 				   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
 				   );
 
+	template  < typename FloatElement, class Field >
+	inline void fgemm_convert (const Field& F,
+				   const FFLAS_TRANSPOSE ta,
+				   const FFLAS_TRANSPOSE tb,
+				   const size_t m, const size_t n,const size_t k,
+				   const typename Field::Element alpha,
+				   const typename Field::Element * A, const size_t lda,
+				   const typename Field::Element * B, const size_t ldb,
+				   const typename Field::Element beta,
+				   typename Field::Element* C, const size_t ldc,
+				   const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag> & H
+				   );
+	}
 } // FFLAS
 
 // #include "fflas_fgemm/matmul_algos.inl"
@@ -146,8 +149,7 @@ namespace FFLAS {
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc
-	       , const int w = (int) -1
-	     )
+	       , const int w = (int) -1)
 	{
 		// typedef typename Field::Element Element ;
 		if (!k) {

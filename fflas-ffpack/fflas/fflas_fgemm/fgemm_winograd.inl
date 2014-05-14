@@ -56,7 +56,11 @@ namespace FFLAS {
 			w(rec) , kmax(0), base(FflasDouble)
 			// ,delay(true),pmin(0),pmax(0)
 		{}
-
+		template<class FT2>
+		Winograd2Helper(Winograd2Helper<FT2> WH) : 
+				w(WH.w), kmax(WH.kmax), base(WH.base) 
+		{}
+ 
 		// copy constructor
 		// compute parameters (full delay)
 		template<class Field>
@@ -392,72 +396,105 @@ namespace FFLAS { namespace Protected {
 		delete[] Bc;
 #endif
 
-	}
-
-#define OLD_DYNAMIC_PEALING
-	// dispatches according to w = 0 or not
+	} // WinogradCalc
+	
+//#define OLD_DYNAMIC_PEALING
+		
+	}// namespace Protected
+		
 	template<class Field>
-	inline  void /*fgemm2*/WinogradMainGeneric (const Field& F,
-				      const FFLAS_TRANSPOSE ta,
-				      const FFLAS_TRANSPOSE tb,
-				      const size_t m, const size_t n, const size_t k,
-				      const typename Field::Element alpha,
-				      const typename Field::Element * A, const size_t lda,
-				      const typename Field::Element * B, const size_t ldb,
-				      const typename Field::Element beta,
-				      typename Field::Element * C, const size_t ldc,
-				      const Winograd2Helper<typename FieldTraits<Field>::value> & H)
+	inline  void fgemm2 (const Field& F,
+			     const FFLAS_TRANSPOSE ta,
+			     const FFLAS_TRANSPOSE tb,
+			     const size_t m, const size_t n, const size_t k,
+			     const typename Field::Element alpha,
+			     const typename Field::Element * A, const size_t lda,
+			     const typename Field::Element * B, const size_t ldb,
+			     const typename Field::Element beta,
+			     typename Field::Element * C, const size_t ldc,
+			     const Winograd2Helper<typename FieldTraits<Field>::value> & H)
 	{
+		if (!m || !n ) return;
 
-		if (!m || !n )
-			return;
-		if (!k)
-			return fscalin(F,m,n,beta,C,ldc);
+		if (!k)	return fscalin(F,m,n,beta,C,ldc);
 
-		if (H.w == 0) {
-			//! @bug same kmax as Winograd2Helper ?
-			ClassicHelper<typename FieldTraits<Field>::value> classic(H.kmax,H.base);
-			fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, classic);
+		if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, ClassicHelper<typename FieldTraits<Field>::value>(H.kmax,H.base));
+		
+		    // Then w >0
+		if (Protected::AreEqual< typename FieldTraits<Field>::value,
+					 FieldCategories::FloatingPointConvertibleTag>::value){
+			    // Field is convertible to a floating point representation
+			if (k <= H.kmax) {
+				if (H.base == FflasDouble)
+					return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+				else // FloatDomain
+					return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			}
+
+		} else if (Protected::AreEqual<typename FieldTraits<Field>::value, 
+					       FieldCategories::ModularFloatingPointTag>::value){
+			    // Field is a Modular[Balanced]<float,double>
+			
+			if (k <= H.kmax) { // switch on delayed modulus
+				typename Field::Element _alpha, _beta;
+				_beta = beta;
+				if (F.isMOne( alpha)) _alpha = -1.0;
+				else {
+					    // Compute C = A*B + beta/alpha.C
+					    // and then C *= alpha
+					if (! F.isOne( alpha)) {
+						FFLASFFPACK_check(!F.isZero(alpha));
+						F.divin (_beta, alpha);
+					}
+					_alpha = 1.0;
+				}
+				    // call on Z with no modulo
+				fgemm2 (associatedDomain(F), ta, tb, m, n, k, _alpha,
+					A, lda, B, ldb, _beta, C, ldc, 
+					Winograd2Helper<FieldCategories::FloatingPointTag>(H));
+				    // Modular reduction
+				finit(F,m,n,C,ldc);
+				if (!F.isOne( alpha ) && !F.isMOne( alpha ))
+					    // Fix-up: compute C *= alpha
+					fscalin(F,m,n,alpha,C,ldc);		
+				return;	
+			}
 		}
-		else {
+	
 #ifdef OLD_DYNAMIC_PEALING
-			WinogradCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb,
-				  beta, C, ldc, H);
-
-			FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
-			FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
-			FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
-
-			DynamicPealing (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb,
-					beta, C, ldc, H.kmax);
+		WinogradCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);
+	
+		FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
+		FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
+		FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
+		
+		Protected::DynamicPealing (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb,
+					   beta, C, ldc, H.kmax);
 #else
-			size_t ww = w ;
-			size_t m2 = (m >> ww) << (ww-1) ;
-			size_t n2 = (n >> ww) << (ww-1) ;
-			size_t k2 = (k >> ww) << (ww-1) ;
-
-			WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb,
-				  beta, C, ldc, H);
-
-			size_t mr = m -2*m2;
-			size_t nr = n -2*n2;
-			size_t kr = k -2*k2;
-
-			FFLASFFPACK_check(m == m2*2+mr);
-			FFLASFFPACK_check(n == n2*2+nr);
-			FFLASFFPACK_check(k == k2*2+kr);
-
-			DynamicPealing2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb,
+		size_t ww = H.w ;
+		size_t m2 = (m >> ww) << (ww-1) ;
+		size_t n2 = (n >> ww) << (ww-1) ;
+		size_t k2 = (k >> ww) << (ww-1) ;
+		
+		Protected::WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb,
+					 beta, C, ldc, H);
+		
+		size_t mr = m -2*m2;
+		size_t nr = n -2*n2;
+		size_t kr = k -2*k2;
+		
+		FFLASFFPACK_check(m == m2*2+mr);
+		FFLASFFPACK_check(n == n2*2+nr);
+		FFLASFFPACK_check(k == k2*2+kr);
+		
+		Protected::DynamicPealing2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb,
 					 beta, C, ldc, H.kmax);
-
-
 #endif
-		}
-	}
+	} // fgemm2
 
-	// G is (Float/Double)Domain
-	template <class Field, class FloatField>
-	inline void  /*fgemm_convert*/WinogradMainFloat (const Field& F,
+	namespace Protected{
+	template <typename FloatElement, class Field>
+	inline void  fgemm_convert (const Field& F,
 				    const FFLAS_TRANSPOSE ta,
 				    const FFLAS_TRANSPOSE tb,
 				    const size_t m, const size_t n, const size_t k,
@@ -466,13 +503,12 @@ namespace FFLAS { namespace Protected {
 				    const typename Field::Element* B,const size_t ldb,
 				    const typename Field::Element beta,
 				    typename Field::Element * C, const size_t ldc,
-				    const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag> & H
-				    , const FloatField &G)
+				    const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag>& H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
-		typedef typename FloatField::Element FloatElement;
+		FFPACK::UnparametricField<FloatElement> G;
 		FloatElement alphad, betad;
 		typename Field::Element _betabis;
 
@@ -509,7 +545,7 @@ namespace FFLAS { namespace Protected {
 		// recursive call
 		fgemm2(G, ta, tb, m, n, k, alphad,
 		       Ad, ka, Bd, nb, betad, Cd, n, 
-		       Winograd2Helper<FieldCategories::FloatingPointTag>(H.w));
+		       Winograd2Helper<FieldCategories::FloatingPointTag>(H));
 		// Conversion double = >  GFq
 		finit(F, m, n, Cd, n, C, ldc);
 
@@ -522,195 +558,9 @@ namespace FFLAS { namespace Protected {
 		delete[] Ad;
 		delete[] Bd;
 		delete[] Cd;
-
-	}
-
-
-	// F is Modular(Balanced)<float/double>
-	template <class Field>
-	inline void /*fgemm2*/ WinogradMainCommon (const Field& F,
-				    const FFLAS_TRANSPOSE ta,
-				    const FFLAS_TRANSPOSE tb,
-				    const size_t m, const size_t n, const size_t k,
-				    const typename Field::Element alpha,
-				    const typename Field::Element* A, const size_t lda,
-				    const typename Field::Element* B, const size_t ldb,
-				    const typename Field::Element beta,
-				    typename Field::Element * C, const size_t ldc,
-				    const Winograd2Helper<FieldCategories::ModularFloatingPointTag> & H
-				   )
-	{
-		if (H.w > 0 && k <= H.kmax) { // switch on delayed modulus
-			typename Field::Element _alpha, _beta;
-			_beta = beta;
-			if (F.isMOne( alpha)) _alpha = -1.0;
-			else {
-				// Compute C = A*B + beta/alpha.C
-				// and then C *= alpha
-				if (! F.isOne( alpha)) {
-					FFLASFFPACK_check(!F.isZero(alpha));
-					F.divin (_beta, alpha);
-				}
-				_alpha = 1.0;
-			}
-			// recursive call
-			fgemm2 (associatedDomain(F), ta, tb, m, n, k, _alpha,
-				A, lda, B, ldb, _beta, C, ldc, 
-				Winograd2Helper<FieldCategories::FloatingPointTag>());
-			// Modular reduction
-			finit(F,m,n,C,ldc);
-			if (!F.isOne( alpha ) && !F.isMOne( alpha ))
-				// Fix-up: compute C *= alpha
-				fscalin(F,m,n,alpha,C,ldc);
-
-			return;
-		}
-		// w = 0 or k> kmax
-		WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-
-	}
-
-
-
-
-} // Protected Winomain
+	
+	} // Protected 
 } // FFLAS
 
-// fgemm2
-namespace FFLAS {
-
-	template <class Field>
-	inline void fgemm2 (const Field& F,
-			    const FFLAS_TRANSPOSE ta,
-			    const FFLAS_TRANSPOSE tb,
-			    const size_t m, const size_t n, const size_t k,
-			    const typename Field::Element alpha,
-			    const typename Field::Element* A,const size_t lda,
-			    const typename Field::Element* B,const size_t ldb,
-			    const typename Field::Element beta,
-			    typename Field::Element * C, const size_t ldc,
-			    // const size_t kmax, const size_t w, const FFLAS_BASE base
-			    const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag> & H
-			   )
-	{
-		if (H.w > 0 && k <= H.kmax) {
-			    //Winograd2Helper<FieldCategories::FloatingPointConvertibleTag> HF(H.w);
-			if (H.base == FflasDouble){
-				DoubleDomain G ;
-				return Protected::/*fgemm_convert*/WinogradMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G);
-			}
-			else { // FloatDomain
-				FloatDomain G ;
-				return Protected::/*fgemm_convert*/WinogradMainFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G);
-			}
-		}
-		// w = 0 or k> kmax
-		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-	// Control the switch with classic multiplication
-	// Fix-up for odd-sized matrices using dynamic pealing
-	// for matrices over double
-	inline  void fgemm2(const DoubleDomain& F,
-			    const FFLAS_TRANSPOSE ta,
-			    const FFLAS_TRANSPOSE tb,
-			    const size_t m, const size_t n, const size_t k,
-			    const DoubleDomain::Element alpha,
-			    const DoubleDomain::Element * A, const size_t lda,
-			    const DoubleDomain::Element * B, const size_t ldb,
-			    const DoubleDomain::Element beta,
-			    DoubleDomain::Element * C, const size_t ldc,
-			    const Winograd2Helper<FieldCategories::FloatingPointTag> & H
-			   )
-	{
-		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-
-	inline  void fgemm2 (const FloatDomain& F,
-			     const FFLAS_TRANSPOSE ta,
-			     const FFLAS_TRANSPOSE tb,
-			     const size_t m, const size_t n, const size_t k,
-			     const FloatDomain::Element alpha,
-			     const FloatDomain::Element * A, const size_t lda,
-			     const FloatDomain::Element * B, const size_t ldb,
-			     const FloatDomain::Element beta,
-			     FloatDomain::Element * C, const size_t ldc,
-			     const Winograd2Helper<FieldCategories::FloatingPointTag> & H
-			    )
-	{
-		Protected::WinogradMainGeneric(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-
-
-	inline void fgemm2 (const FFPACK:: ModularBalanced<double>& F,
-			    const FFLAS_TRANSPOSE ta,
-			    const FFLAS_TRANSPOSE tb,
-			    const size_t m, const size_t n, const size_t k,
-			    const double alpha,
-			    const double* A, const size_t lda,
-			    const double* B, const size_t ldb,
-			    const double beta,
-			    double * C, const size_t ldc,
-			    const Winograd2Helper<FieldCategories::ModularFloatingPointTag> & H
-			   )
-	{
-		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-	inline void fgemm2 (const FFPACK:: ModularBalanced<float>& F,
-			    const FFLAS_TRANSPOSE ta,
-			    const FFLAS_TRANSPOSE tb,
-			    const size_t m, const size_t n, const size_t k,
-			    const float alpha,
-			    const float * A,const size_t lda,
-			    const float * B,const size_t ldb,
-			    const float beta,
-			    float * C, const size_t ldc,
-			    const Winograd2Helper<FieldCategories::ModularFloatingPointTag> & H
-			   )
-	{
-		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-	inline void fgemm2 (const FFPACK:: Modular<double>& F,
-			    const FFLAS_TRANSPOSE ta,
-			    const FFLAS_TRANSPOSE tb,
-			    const size_t m, const size_t n, const size_t k,
-			    const double alpha,
-			    const double* A, const size_t lda,
-			    const double* B, const size_t ldb,
-			    const double beta,
-			    double * C, const size_t ldc,
-			    const Winograd2Helper<FieldCategories::ModularFloatingPointTag> & H
-			   )
-	{
-		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-
-	inline void fgemm2(const FFPACK:: Modular<float>& F,
-			   const FFLAS_TRANSPOSE ta,
-			   const FFLAS_TRANSPOSE tb,
-			   const size_t m, const size_t n, const size_t k,
-			   const float alpha,
-			   const float* A, const size_t lda,
-			   const float* B, const size_t ldb,
-			   const float beta,
-			   float * C, const size_t ldc,
-			   const  Winograd2Helper<FieldCategories::ModularFloatingPointTag> & H
-			  )
-	{
-		Protected::WinogradMainCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	}
-
-
-} //
-
-
-namespace FFLAS {
-
-} // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_fgemm_winograd_INL
