@@ -79,6 +79,9 @@ namespace FFLAS {
 
 	template <typename FieldT>
 	struct ClassicHelper;
+	template <typename FieldT>
+	struct Winograd2Helper;
+
 } // FFLAS
 
 namespace FFLAS {
@@ -182,8 +185,8 @@ namespace FFLAS {
 		if (k==1 and ...) {}
 #endif
 
-		Winograd2Helper H (w);
-		H.computeParameters<Field>(F,m,n,k,alpha,beta);
+		Winograd2Helper<typename FieldTraits<Field>::value> H (w);
+		H.computeParameters(F,m,n,k,alpha,beta);
 		fgemm2 (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
 		return C;
 	}

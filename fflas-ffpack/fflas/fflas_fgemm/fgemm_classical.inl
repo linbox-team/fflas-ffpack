@@ -39,7 +39,7 @@
 #include "fflas_bounds_classic.inl"
 #include "fflas-ffpack/field/field-general.h"
 namespace FFLAS{
-	template <typename FieldT>
+	template <typename FieldTraits>
 	struct ClassicHelper : public MMParameters {
 		size_t     kmax ;
 		FFLAS_BASE base ;
@@ -68,11 +68,9 @@ namespace FFLAS{
 	};
 }
 
-namespace FFLAS { //namespace BLAS3{
+namespace FFLAS {
 
-	// G is (Float/Double)Domain
-        //ex ClassicMatmulFloat
-	template  < class Field/*, class FloatField*/ >
+	template  < class Field >
 	inline void fgemm2(const Field& F,
 			   const FFLAS_TRANSPOSE ta,
 			   const FFLAS_TRANSPOSE tb,
@@ -82,8 +80,6 @@ namespace FFLAS { //namespace BLAS3{
 			   const typename Field::Element * B, const size_t ldb,
 			   const typename Field::Element beta,
 			   typename Field::Element* C, const size_t ldc,
-			       // const size_t kmax, const FFLAS_BASE base
-			       //const FloatField & G, const size_t k2,
 			   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
 			   )
 	{
@@ -186,17 +182,16 @@ namespace FFLAS { //namespace BLAS3{
 
 	// F is Modular(Balanced)<float/double>
 	template<class Field>
-	inline void fgemm2/*ClassicMatmulCommon*/ (const Field & F,
-					 const FFLAS_TRANSPOSE ta,
-					 const FFLAS_TRANSPOSE tb,
-					 const size_t m, const size_t n,const size_t k,
-					 const typename Field::Element alpha,
-					 const typename Field::Element * A, const size_t lda,
-					 const typename Field::Element * B, const size_t ldb,
-					 const typename Field::Element beta,
-					 typename Field::Element* C, const size_t ldc,
-					 // const size_t kmax, const FFLAS_BASE base
-					 const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+	inline void fgemm2 (const Field & F,
+			    const FFLAS_TRANSPOSE ta,
+			    const FFLAS_TRANSPOSE tb,
+			    const size_t m, const size_t n,const size_t k,
+			    const typename Field::Element alpha,
+			    const typename Field::Element * A, const size_t lda,
+			    const typename Field::Element * B, const size_t ldb,
+			    const typename Field::Element beta,
+			    typename Field::Element* C, const size_t ldc,
+			    const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
 					)
 	{
 		typename Field::Element _alpha, _beta;
@@ -239,7 +234,6 @@ namespace FFLAS { //namespace BLAS3{
 			fscalin(F,m,n,alpha,C,ldc);
 		}
 	}
-//} // BLAS3
 } // FFLAS
 
 namespace FFLAS {
@@ -256,33 +250,9 @@ namespace FFLAS {
 			    const typename Field::Element * B, const size_t ldb,
 			    const typename Field::Element beta,
 			    typename Field::Element* C, const size_t ldc,
-			    // const size_t kmax, const FFLAS_BASE base
 			    const  ClassicHelper<FieldCategories::GenericTag> & H
 			   )
 	{
-		    //CP: switch on k2 no longer needed:
-		    // - either ClassicHelper indicates FloatingPointConvertible 
-		    //    -> then fgemm2 specialized for that is being called
-		    // - or the field is generic, and the triple loop has to be run
-		    // 
-		// size_t k2 = std::min(k,H.kmax); // Size of the blocks
-
-		// if (k2 > 1) {
-			
-		// 	const int b=H.base;
-		// 	typedef BaseType<b>::value BaseDomain;
-		// 	    //if (H.base == FflasFloat) {
-		// 	BaseDomain G ;
-		// 	    //FloatDomain G ;
-		// 	BLAS3::ClassicMatmulFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G,k2);
-		// 	    //}
-		// 	    //else { // base == FflasDouble
-		// 	    //	DoubleDomain G ;
-		// 	    //	BLAS3::ClassicMatmulFloat(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H,G,k2);
-		// 	    //}
-		// }
-		// else { // k2 == 1
-		FFLASFFPACK_check(k2 == 1);
 		    // Standard algorithm is performed over the Field, without conversion
 		if (F.isZero (beta))
 			for (size_t i = 0; i < m; ++i)
@@ -318,21 +288,8 @@ namespace FFLAS {
 							F.axpyin (*(C+i*ldc+j), *(A+l*lda+i), *(B+j*ldb+l));
 		if (! F.isOne(alpha))
 			fscalin(F,m,n,alpha,C,ldc);
-			    //}
 	}
 
-	// template<class Field>
-	// inline void fgemm2(const Field& ,
-	// 		   const FFLAS_TRANSPOSE ta,
-	// 		   const FFLAS_TRANSPOSE tb,
-	// 		   const size_t m, const size_t n,const size_t k,
-	// 		   const typename Field::Element alpha,
-	// 		   const typename Field::Element * Ad, const size_t lda,
-	// 		   const typename Field::Element * Bd, const size_t ldb,
-	// 		   const typename Field::Element beta,
-	// 		   typename Field::Element * Cd, const size_t ldc,
-	// 		   const  ClassicHelper<FieldCategories::FloatingPointTag> & );
-//	template<>
 	inline void fgemm2(const DoubleDomain& ,
 			   const FFLAS_TRANSPOSE ta,
 			   const FFLAS_TRANSPOSE tb,
@@ -355,7 +312,6 @@ namespace FFLAS {
 			     Ad, (int)lda, Bd, (int)ldb, (DoubleDomain::Element) beta,Cd, (int)ldc);
 	}
 
-//	template  <>
 	inline void fgemm2 (const FloatDomain& F,
 			    const FFLAS_TRANSPOSE ta,
 			    const FFLAS_TRANSPOSE tb,
@@ -377,78 +333,6 @@ namespace FFLAS {
 			     (int)m, (int)n, (int)k, (FloatDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (FloatDomain::Element) beta,Cd, (int)ldc);
 	}
-
-        //CP: only 1 needed: repalced by the specialization of the ClassicHelper
-	// template <class Field>
-	// inline void fgemm2 (const Field & F,
-	// 		    const FFLAS_TRANSPOSE ta,
-	// 		    const FFLAS_TRANSPOSE tb,
-	// 		    const size_t m, const size_t n,const size_t k,
-	// 		    const double alpha,
-	// 		    const double * A, const size_t lda,
-	// 		    const double * B, const size_t ldb,
-	// 		    const double beta,
-	// 		    double* C, const size_t ldc,
-	// 		    // const size_t kmax, const FFLAS_BASE base
-	// 		    const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
-	// 		   )
-
-	// {
-	// 	return fgemm2/*BLAS3::ClassicMatmulCommon*/(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	// }
-
-
-	// template <>
-	// inline void fgemm2 (const  FFPACK:: ModularBalanced<float> & F,
-	// 		    const FFLAS_TRANSPOSE ta,
-	// 		    const FFLAS_TRANSPOSE tb,
-	// 		    const size_t m, const size_t n,const size_t k,
-	// 		    const float alpha,
-	// 		    const float * A, const size_t lda,
-	// 		    const float * B, const size_t ldb,
-	// 		    const float beta,
-	// 		    float* C, const size_t ldc,
-	// 		    // const size_t kmax, const FFLAS_BASE base
-	// 		  const   ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
-	// 		   )
-	// {
-	// 	return BLAS3::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	// }
-
-
-	// template <>
-	// inline void fgemm2 (const  FFPACK:: Modular<double> & F,
-	// 		    const FFLAS_TRANSPOSE ta,
-	// 		    const FFLAS_TRANSPOSE tb,
-	// 		    const size_t m, const size_t n,const size_t k,
-	// 		    const double alpha,
-	// 		    const double * A, const size_t lda,
-	// 		    const double * B, const size_t ldb,
-	// 		    const double beta,
-	// 		    double* C, const size_t ldc,
-	// 		    // const size_t kmax, const FFLAS_BASE base
-	// 		   const  ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
-	// 		   )
-	// {
-	// 	return BLAS3::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	// }
-
-	// template <>
-	// inline void fgemm2 (const  FFPACK:: Modular<float> & F,
-	// 		    const FFLAS_TRANSPOSE ta,
-	// 		    const FFLAS_TRANSPOSE tb,
-	// 		    const size_t m, const size_t n,const size_t k,
-	// 		    const float alpha,
-	// 		    const float * A, const size_t lda,
-	// 		    const float * B, const size_t ldb,
-	// 		    const float beta,
-	// 		    float* C, const size_t ldc,
-	// 		    // const size_t kmax, const FFLAS_BASE base
-	// 		   const  ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
-	// 		   )
-	// {
-	// 	return BLAS3::ClassicMatmulCommon(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-	// }
 
 } // FFLAS
 

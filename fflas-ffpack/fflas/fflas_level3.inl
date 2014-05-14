@@ -41,6 +41,7 @@ namespace FFLAS {
 
 	struct MMParameters {};
 
+	template <class FieldTrait>
 	struct WinogradHelper : public MMParameters {
 		short _SWRecLevels;
 		bool _AutoSetSWRecLevels;
@@ -77,9 +78,10 @@ namespace FFLAS {
 
 	} ;
 
-	template<class FieldT>
+	template<class FieldTrait>
 	struct ClassicHelper ;
 
+	template <class FieldTrait>
 	struct Winograd2Helper ;
 
 

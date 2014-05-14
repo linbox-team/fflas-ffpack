@@ -39,7 +39,7 @@
 
 namespace FFLAS { namespace BLAS3 {
 
-	template < class Field >
+		template < class Field >
 	inline void Winograd (const Field& F,
 			      const FFLAS_TRANSPOSE ta,
 			      const FFLAS_TRANSPOSE tb,
@@ -50,7 +50,7 @@ namespace FFLAS { namespace BLAS3 {
 			      const typename Field::Element  beta,
 			      typename Field::Element * C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
-			      const Winograd2Helper & WH
+			      const Winograd2Helper<typename FieldTraits<Field>::value> & WH
 			      )
 	{
 
@@ -98,7 +98,7 @@ namespace FFLAS { namespace BLAS3 {
 		}
 
 
-		Winograd2Helper H = WH ;
+		Winograd2Helper<typename FieldTraits<Field>::value> H = WH ;
 		H.w = H.w -1 ;
 		// std::cout << WH.w << ',' << H.w << std::endl;
 		// Two temporary submatrices are required
