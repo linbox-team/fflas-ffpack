@@ -76,12 +76,14 @@ namespace FFLAS {
 
 	//	template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
 
+	namespace MMHelperCategories{
+		struct Classic{};
+		struct Winograd{};
+		struct Bini{};
+	}
 
-	template <typename FieldT>
-	struct ClassicHelper;
-
-	template <typename FieldT>
-	struct Winograd2Helper;
+	template <class Categorie, typename FieldT>
+	struct MMHelper;
 
 } // FFLAS
 
@@ -110,7 +112,7 @@ namespace FFLAS { namespace Protected {
 				   const typename Field::Element * B, const size_t ldb,
 				   const typename Field::Element beta,
 				   typename Field::Element* C, const size_t ldc,
-				   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
+				   const MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointConvertibleTag> & H
 				  );
 
 	template  < typename FloatElement, class Field >
@@ -123,7 +125,7 @@ namespace FFLAS { namespace Protected {
 				   const typename Field::Element * B, const size_t ldb,
 				   const typename Field::Element beta,
 				   typename Field::Element* C, const size_t ldc,
-				   const Winograd2Helper<typename FieldTraits<Field>::value> & H
+				   const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> & H
 				  );
 } // Protected
 } // FFLAS
@@ -187,7 +189,7 @@ namespace FFLAS {
 		if (k==1 and ...) {}
 #endif
 
-		Winograd2Helper<typename FieldTraits<Field>::value> H (w);
+		MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> H (w);
 		H.computeParameters(F,m,n,k,alpha,beta);
 		fgemm2 (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
 		return C;

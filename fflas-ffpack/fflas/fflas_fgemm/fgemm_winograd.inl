@@ -41,24 +41,24 @@
 namespace FFLAS {
 
 	template<typename FieldTrait>
-	struct Winograd2Helper : public MMParameters {
+	struct MMHelper<MMHelperCategories::Winograd, FieldTrait> : public MMParameters {
 		int w ;
 		size_t kmax ;
 		FFLAS_BASE base ;
 		// double pmin,pmax ;
 		// bool   delay ;
 
-		Winograd2Helper() :
+		MMHelper() :
 			w(-1) , kmax(0), base(FflasDouble)
-			// ,delay(true),pmin(0),pmax(0)
+			    // ,delay(true),pmin(0),pmax(0)
 		{}
 
-		Winograd2Helper(int rec) :
+		MMHelper(int rec) :
 			w(rec) , kmax(0), base(FflasDouble)
 			// ,delay(true),pmin(0),pmax(0)
 		{}
 		template<class FT2>
-		Winograd2Helper(Winograd2Helper<FT2> WH) :
+		MMHelper(MMHelper<MMHelperCategories::Winograd, FT2> WH) :
 			w(WH.w), kmax(WH.kmax), base(WH.base)
 		{}
 
@@ -321,7 +321,7 @@ namespace FFLAS { namespace Protected {
 				  const typename Field::Element* B,const size_t ldb,
 				  const typename Field::Element beta,
 				  typename Field::Element * C, const size_t ldc,
-				  const Winograd2Helper<typename FieldTraits<Field>::value> & H)
+				  const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> & H)
 	{
 
 #if defined(NEWIP) or defined(NEWACCIP)  /*  XXX TESTS ONLY */
@@ -417,13 +417,13 @@ inline  void fgemm2 (const Field& F,
 		     const typename Field::Element * B, const size_t ldb, 
 		     const typename Field::Element beta, 
 		     typename Field::Element * C, const size_t ldc, 
-		     const Winograd2Helper<typename FieldTraits<Field>::value> & H) 
+		     const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> & H) 
 { 
 	if (!m || !n ) return; 
 	
 	if (!k) return fscalin(F,m,n,beta,C,ldc); 
  	
-	if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, ClassicHelper<typename FieldTraits<Field>::value>(H.kmax,H.base)); 
+	if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value>(H.kmax,H.base)); 
 	
 	    // Then w >0 
 	if (Protected::AreEqual< typename FieldTraits<Field>::value, 
@@ -488,7 +488,7 @@ namespace FFLAS { namespace Protected{
 				    const typename Field::Element* B,const size_t ldb,
 				    const typename Field::Element beta,
 				    typename Field::Element * C, const size_t ldc,
-				    const Winograd2Helper<typename FieldTraits<Field>::value>& H)
+				    const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value>& H)
 	{
 		const bool NeedCopy = AreEqual<typename FieldTraits<Field>::value,
 					       FieldCategories::FloatingPointConvertibleTag
@@ -548,7 +548,7 @@ namespace FFLAS { namespace Protected{
 		}
                
 		fgemm2(G, ta, tb, m, n, k, alphad, Ad, ldad, Bd, ldbd, betad, Cd, ldcd, 
-		       Winograd2Helper<FieldCategories::FloatingPointTag>(H));
+		       MMHelper<MMHelperCategories::Winograd,FieldCategories::FloatingPointTag>(H));
 		// Conversion double = >  GFq
 		if (NeedCopy)
 			finit(F, m, n, Cd, n, C, ldc);

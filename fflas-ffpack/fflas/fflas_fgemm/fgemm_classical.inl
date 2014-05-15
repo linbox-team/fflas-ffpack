@@ -40,15 +40,15 @@
 #include "fflas-ffpack/field/field-general.h"
 namespace FFLAS{
 	template <typename FieldTraits>
-	struct ClassicHelper : public MMParameters {
+	struct MMHelper<MMHelperCategories::Classic,FieldTraits> {
 		size_t     kmax ;
 		FFLAS_BASE base ;
 		// ijk order
-		ClassicHelper() :
+		MMHelper() :
 			kmax(0), base(FflasDouble)
 		{
 		}
-		ClassicHelper(size_t k, FFLAS_BASE b):
+		MMHelper(size_t k, FFLAS_BASE b):
 			kmax(k),base(b)
 		{
 		}
@@ -80,7 +80,7 @@ namespace FFLAS {
 			   const typename Field::Element * B, const size_t ldb,
 			   const typename Field::Element beta,
 			   typename Field::Element* C, const size_t ldc,
-			   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
+			   const MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointConvertibleTag> & H
 			  )
 	{
 		if (H.base == FflasDouble)
@@ -103,7 +103,7 @@ namespace FFLAS {
 					   typename Field::Element* C, const size_t ldc,
 					   // const size_t kmax, const FFLAS_BASE base
 					   //const FloatField & G, const size_t k2,
-					   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
+					   const MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointConvertibleTag> & H
 					  )
 		{
 			size_t k2 = std::min(k,H.kmax); // Size of the blocks
@@ -157,7 +157,7 @@ namespace FFLAS {
 			}
 
 			fgemm2 (G, ta, tb, m, n, remblock, alphad, Add, dlda,
-				Bdd, dldb, betad, Cd, n, ClassicHelper<FieldCategories::FloatingPointTag>() );
+				Bdd, dldb, betad, Cd, n, MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag>() );
 
 			finit (F, m, n, Cd, n, C, ldc);
 			fconvert(F, m, n, Cd, n, C, ldc);
@@ -169,7 +169,7 @@ namespace FFLAS {
 				else fconvert(F, k2, n, Bdd, dldb, B+k2*i*ldb, ldb);
 
 				fgemm2 (G, ta, tb, m, n, k2, alphad, Add, dlda,
-					Bdd, dldb, 1.0, Cd, n, ClassicHelper<FieldCategories::FloatingPointTag>());
+					Bdd, dldb, 1.0, Cd, n, MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag>());
 				finit(F, m, n, Cd, n, C, ldc);
 				fconvert(F, m, n, Cd, n, C, ldc);
 			}
@@ -195,7 +195,7 @@ namespace FFLAS {
 			    const typename Field::Element * B, const size_t ldb,
 			    const typename Field::Element beta,
 			    typename Field::Element* C, const size_t ldc,
-			    const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
+			    const MMHelper<MMHelperCategories::Classic, FieldCategories::ModularFloatingPointTag> & H
 			   )
 	{
 		typename Field::Element _alpha, _beta;
@@ -225,7 +225,7 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		ClassicHelper<typename FieldCategories::FloatingPointTag> associatedH;
+		MMHelper<MMHelperCategories::Classic, typename FieldCategories::FloatingPointTag> associatedH;
 		fgemm2 (associatedDomain(F), ta, tb, m, n, remblock, _alpha, A+nblock*shiftA, lda,
 			B+nblock*shiftB, ldb, _beta, C, ldc, associatedH);
 		finit(F,m,n,C,ldc);
@@ -254,7 +254,7 @@ namespace FFLAS {
 			    const typename Field::Element * B, const size_t ldb,
 			    const typename Field::Element beta,
 			    typename Field::Element* C, const size_t ldc,
-			    const  ClassicHelper<FieldCategories::GenericTag> & H
+			    const  MMHelper<MMHelperCategories::Classic, FieldCategories::GenericTag> & H
 			   )
 	{
 		// Standard algorithm is performed over the Field, without conversion
@@ -304,7 +304,7 @@ namespace FFLAS {
 			   const DoubleDomain::Element beta,
 			   DoubleDomain::Element * Cd, const size_t ldc,
 			   // const size_t kmax, const FFLAS_BASE base
-			   const  ClassicHelper<FieldCategories::FloatingPointTag> &
+			   const  MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag> &
 			  )
 	{
 
@@ -326,7 +326,7 @@ namespace FFLAS {
 			    const FloatDomain::Element beta,
 			    FloatDomain::Element * Cd, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			    const  ClassicHelper<FieldCategories::FloatingPointTag> &
+			    const  MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag> &
 			   )
 	{
 		FFLASFFPACK_check(lda);
