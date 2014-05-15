@@ -84,8 +84,8 @@ namespace FFLAS {
 	template<class Field, class OtherElement>
 	void
 	fconvert (const Field& F, const size_t n,
-	       OtherElement * X, const size_t incX,
-	       const typename  Field::Element* Y, const size_t incY)
+		  OtherElement * X, const size_t incX,
+		  const typename  Field::Element* Y, const size_t incY)
 	{
 		OtherElement * Xi = X ;
 		const typename Field::Element * Yi = Y ;
@@ -104,7 +104,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fnegin (const Field& F, const size_t n,
-	       typename Field::Element * X, const size_t incX)
+		typename Field::Element * X, const size_t incX)
 	{
 		typename Field::Element * Xi = X ;
 		for (; Xi < X+n*incX; Xi+=incX )
@@ -124,8 +124,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fneg (const Field& F, const size_t n,
-	       const typename Field::Element * Y, const size_t incY,
-	       typename Field::Element * X, const size_t incX)
+	      const typename Field::Element * Y, const size_t incY,
+	      typename Field::Element * X, const size_t incX)
 	{
 		typename Field::Element * Xi = X ;
 		const typename Field::Element * Yi = Y ;
@@ -187,7 +187,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fscalin (const Field& F, const size_t n, const typename Field::Element alpha,
-	       typename Field::Element * X, const size_t incX);
+		 typename Field::Element * X, const size_t incX);
 
 
 	/** fscal
@@ -242,10 +242,10 @@ namespace FFLAS {
 	template<class Field>
 	void
 	faxpby (const Field& F, const size_t N,
-	       const typename Field::Element alpha,
-	       const typename Field::Element * X, const size_t incX,
-	       const typename Field::Element beta,
-	       typename Field::Element * Y, const size_t incY );
+		const typename Field::Element alpha,
+		const typename Field::Element * X, const size_t incX,
+		const typename Field::Element beta,
+		typename Field::Element * Y, const size_t incY );
 
 
 	/** \brief fdot: dot product \f$x^T  y\f$.
@@ -304,13 +304,13 @@ namespace FFLAS {
 	template <class Field>
 	void
 	faddin (const Field& F,  const size_t N,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc);
+		const typename Field::Element* B, const size_t incb,
+		typename Field::Element* C, const size_t incc);
 
 	template <class Field>
 	void
 	fsubin (const Field& F,  const size_t N,
-	      typename Field::Element* C, const size_t incc);
+		typename Field::Element* C, const size_t incc);
 
 
 	template <class Field>
@@ -325,5 +325,3 @@ namespace FFLAS {
 
 
 #endif // __FFLASFFPACK_fflas_fflas_level1_INL
-
-

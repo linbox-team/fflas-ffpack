@@ -66,7 +66,7 @@ namespace FFLAS{
 		}
 
 	};
-}
+} // FFLAS
 
 namespace FFLAS {
 
@@ -81,107 +81,108 @@ namespace FFLAS {
 			   const typename Field::Element beta,
 			   typename Field::Element* C, const size_t ldc,
 			   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
-			   )
+			  )
 	{
 		if (H.base == FflasDouble)
 			Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else
 			Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
+
 	namespace Protected{
 
-	template  < typename FloatElement, class Field >
-	inline void fgemm_convert (const Field& F,
-				   const FFLAS_TRANSPOSE ta,
-				   const FFLAS_TRANSPOSE tb,
-				   const size_t m, const size_t n,const size_t k,
-				   const typename Field::Element alpha,
-				   const typename Field::Element * A, const size_t lda,
-				   const typename Field::Element * B, const size_t ldb,
-				   const typename Field::Element beta,
-				   typename Field::Element* C, const size_t ldc,
-				       // const size_t kmax, const FFLAS_BASE base
-				       //const FloatField & G, const size_t k2,
-				   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
-				   )
-	{
-		size_t k2 = std::min(k,H.kmax); // Size of the blocks
-		FFPACK::UnparametricField<FloatElement> G;
-		FloatElement alphad, betad;
-		FloatElement * Add = new FloatElement[m*k2];
-		FloatElement * Bdd = new FloatElement[k2*n];
-		FloatElement * Cd = new FloatElement[m*n];
+		template  < typename FloatElement, class Field >
+		inline void fgemm_convert (const Field& F,
+					   const FFLAS_TRANSPOSE ta,
+					   const FFLAS_TRANSPOSE tb,
+					   const size_t m, const size_t n,const size_t k,
+					   const typename Field::Element alpha,
+					   const typename Field::Element * A, const size_t lda,
+					   const typename Field::Element * B, const size_t ldb,
+					   const typename Field::Element beta,
+					   typename Field::Element* C, const size_t ldc,
+					   // const size_t kmax, const FFLAS_BASE base
+					   //const FloatField & G, const size_t k2,
+					   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
+					  )
+		{
+			size_t k2 = std::min(k,H.kmax); // Size of the blocks
+			FFPACK::UnparametricField<FloatElement> G;
+			FloatElement alphad, betad;
+			FloatElement * Add = new FloatElement[m*k2];
+			FloatElement * Bdd = new FloatElement[k2*n];
+			FloatElement * Cd = new FloatElement[m*n];
 
-		size_t nblock = k / H.kmax;
-		size_t remblock = k % H.kmax;
-		if (!remblock) {
-			remblock = H.kmax;
-			--nblock;
-		}
-		if (F.isMOne( beta)) betad = -1.0;
-		else F.convert (betad, beta);
-
-		if (F.isMOne( alpha)) alphad = -1.0;
-		else {
-			alphad = 1.0;
-			if (! F.isOne( alpha)) {
-				// Compute y = A*x + beta/alpha.y
-				// and after y *= alpha
-				typename Field::Element tmp;
-				FFLASFFPACK_check(!F.isZero(alpha));
-				F.div (tmp, beta, alpha);
-				F.convert (betad, tmp);
+			size_t nblock = k / H.kmax;
+			size_t remblock = k % H.kmax;
+			if (!remblock) {
+				remblock = H.kmax;
+				--nblock;
 			}
-		}
+			if (F.isMOne( beta)) betad = -1.0;
+			else F.convert (betad, beta);
 
-		size_t dlda, dldb;
-		if (!F.isZero(beta))
-			fconvert (F, m, n, Cd, n, C, ldc);
+			if (F.isMOne( alpha)) alphad = -1.0;
+			else {
+				alphad = 1.0;
+				if (! F.isOne( alpha)) {
+					// Compute y = A*x + beta/alpha.y
+					// and after y *= alpha
+					typename Field::Element tmp;
+					FFLASFFPACK_check(!F.isZero(alpha));
+					F.div (tmp, beta, alpha);
+					F.convert (betad, tmp);
+				}
+			}
 
-		if (ta == FflasTrans) {
-			dlda = m;
-			fconvert(F, remblock, m, Add, dlda, A+k2*nblock*lda, lda);
-		}
-		else {
-			dlda = k2;
-			fconvert(F, m, remblock, Add, dlda, A+k2*nblock, lda);
-		}
-		if (tb == FflasTrans) {
-			dldb = k2;
-			fconvert (F, n, remblock, Bdd, k2, B+k2*nblock, ldb);
-		}
-		else {
-			dldb = n;
-			fconvert(F, remblock, n, Bdd, dldb, B+k2*nblock*ldb, ldb);
-		}
+			size_t dlda, dldb;
+			if (!F.isZero(beta))
+				fconvert (F, m, n, Cd, n, C, ldc);
 
-		fgemm2 (G, ta, tb, m, n, remblock, alphad, Add, dlda,
-			Bdd, dldb, betad, Cd, n, ClassicHelper<FieldCategories::FloatingPointTag>() );
+			if (ta == FflasTrans) {
+				dlda = m;
+				fconvert(F, remblock, m, Add, dlda, A+k2*nblock*lda, lda);
+			}
+			else {
+				dlda = k2;
+				fconvert(F, m, remblock, Add, dlda, A+k2*nblock, lda);
+			}
+			if (tb == FflasTrans) {
+				dldb = k2;
+				fconvert (F, n, remblock, Bdd, k2, B+k2*nblock, ldb);
+			}
+			else {
+				dldb = n;
+				fconvert(F, remblock, n, Bdd, dldb, B+k2*nblock*ldb, ldb);
+			}
 
-		finit (F, m, n, Cd, n, C, ldc);
-		fconvert(F, m, n, Cd, n, C, ldc);
+			fgemm2 (G, ta, tb, m, n, remblock, alphad, Add, dlda,
+				Bdd, dldb, betad, Cd, n, ClassicHelper<FieldCategories::FloatingPointTag>() );
 
-		for (size_t i = 0; i < nblock; ++i) {
-			if (ta == FflasTrans) fconvert(F, k2, m, Add, dlda, A+k2*i*lda, lda);
-			else fconvert(F, m, k2, Add, dlda,  A+k2*i, lda);
-			if (tb == FflasTrans) fconvert(F, n, k2, Bdd, dldb, B+k2*i, ldb);
-			else fconvert(F, k2, n, Bdd, dldb, B+k2*i*ldb, ldb);
-
-			fgemm2 (G, ta, tb, m, n, k2, alphad, Add, dlda,
-				Bdd, dldb, 1.0, Cd, n, ClassicHelper<FieldCategories::FloatingPointTag>());
-			finit(F, m, n, Cd, n, C, ldc);
+			finit (F, m, n, Cd, n, C, ldc);
 			fconvert(F, m, n, Cd, n, C, ldc);
-		}
-		if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
-			fscalin(F,m,n,alpha,C,ldc);
-		}
-		delete[] Add;
-		delete[] Bdd;
-		delete[] Cd;
 
-	} //fgemm_convert
+			for (size_t i = 0; i < nblock; ++i) {
+				if (ta == FflasTrans) fconvert(F, k2, m, Add, dlda, A+k2*i*lda, lda);
+				else fconvert(F, m, k2, Add, dlda,  A+k2*i, lda);
+				if (tb == FflasTrans) fconvert(F, n, k2, Bdd, dldb, B+k2*i, ldb);
+				else fconvert(F, k2, n, Bdd, dldb, B+k2*i*ldb, ldb);
 
-}//Protected
+				fgemm2 (G, ta, tb, m, n, k2, alphad, Add, dlda,
+					Bdd, dldb, 1.0, Cd, n, ClassicHelper<FieldCategories::FloatingPointTag>());
+				finit(F, m, n, Cd, n, C, ldc);
+				fconvert(F, m, n, Cd, n, C, ldc);
+			}
+			if ((!F.isOne( alpha)) && (!F.isMOne( alpha))) {
+				fscalin(F,m,n,alpha,C,ldc);
+			}
+			delete[] Add;
+			delete[] Bdd;
+			delete[] Cd;
+
+		} //fgemm_convert
+
+	}//Protected
 
 	// F is Modular(Balanced)<float/double>
 	template<class Field>
@@ -195,7 +196,7 @@ namespace FFLAS {
 			    const typename Field::Element beta,
 			    typename Field::Element* C, const size_t ldc,
 			    const ClassicHelper<FieldCategories::ModularFloatingPointTag> & H
-					)
+			   )
 	{
 		typename Field::Element _alpha, _beta;
 		// To ensure the initial computation with beta
@@ -242,7 +243,7 @@ namespace FFLAS {
 namespace FFLAS {
 
 	// Classic multiplication over a generic finite field
-	
+
 	template  < class Field >
 	inline void fgemm2 (const Field& F,
 			    const FFLAS_TRANSPOSE ta,
@@ -256,7 +257,7 @@ namespace FFLAS {
 			    const  ClassicHelper<FieldCategories::GenericTag> & H
 			   )
 	{
-		    // Standard algorithm is performed over the Field, without conversion
+		// Standard algorithm is performed over the Field, without conversion
 		if (F.isZero (beta))
 			for (size_t i = 0; i < m; ++i)
 				for (size_t j = 0; j < n; ++j)
@@ -303,7 +304,7 @@ namespace FFLAS {
 			   const DoubleDomain::Element beta,
 			   DoubleDomain::Element * Cd, const size_t ldc,
 			   // const size_t kmax, const FFLAS_BASE base
-			  const  ClassicHelper<FieldCategories::FloatingPointTag> &
+			   const  ClassicHelper<FieldCategories::FloatingPointTag> &
 			  )
 	{
 
@@ -325,7 +326,7 @@ namespace FFLAS {
 			    const FloatDomain::Element beta,
 			    FloatDomain::Element * Cd, const size_t ldc,
 			    // const size_t kmax, const FFLAS_BASE base
-			   const  ClassicHelper<FieldCategories::FloatingPointTag> &
+			    const  ClassicHelper<FieldCategories::FloatingPointTag> &
 			   )
 	{
 		FFLASFFPACK_check(lda);

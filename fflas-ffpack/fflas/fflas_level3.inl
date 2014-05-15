@@ -52,11 +52,11 @@ namespace FFLAS {
 	public:
 		template <class Field>
 		WinogradHelper(const Field& F, const size_t m, const size_t n, const size_t k,
-			     const typename Field::Element& beta):
-				_AutoSetSWRecLevels(true), _ImmutableElementType(false){
-			FFLAS_BASE base;
-			MatMulParametersWinograd(F,m,n,k, beta, &_MaxDelayedDim, base, _SWRecLevels, _AutoSetSWRecLevels);
-		}
+			       const typename Field::Element& beta):
+			_AutoSetSWRecLevels(true), _ImmutableElementType(false){
+				FFLAS_BASE base;
+				MatMulParametersWinograd(F,m,n,k, beta, &_MaxDelayedDim, base, _SWRecLevels, _AutoSetSWRecLevels);
+			}
 
 		void setSWRecLevels(const short w){ _SWRecLevels = w; _AutoSetSWRecLevels = false;}
 		void setAutoSWRecLevels(){_AutoSetSWRecLevels = true;}
@@ -90,153 +90,153 @@ namespace FFLAS {
 #include "fflas_fgemm.inl"
 
 namespace FFLAS { namespace Protected {
-		//-----------------------------------------------------------------------------
-		// Some conversion functions
-		//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------
+	// Some conversion functions
+	//-----------------------------------------------------------------------------
 
 
-		//---------------------------------------------------------------------
-		// Finite Field matrix => double matrix
-		// Special design for upper-triangular matrices
-		//---------------------------------------------------------------------
-		template<class Field>
-		void MatF2MatD_Triangular (const Field& F,
-						  DoubleDomain::Element* S, const size_t lds,
-						  const typename Field::Element* const E,
-						  const size_t lde,
-						  const size_t m, const size_t n)
-		{
+	//---------------------------------------------------------------------
+	// Finite Field matrix => double matrix
+	// Special design for upper-triangular matrices
+	//---------------------------------------------------------------------
+	template<class Field>
+	void MatF2MatD_Triangular (const Field& F,
+				   DoubleDomain::Element* S, const size_t lds,
+				   const typename Field::Element* const E,
+				   const size_t lde,
+				   const size_t m, const size_t n)
+	{
 
-			const typename Field::Element* Ei = E;
-			DoubleDomain::Element* Si = S;
-			size_t i=0, j;
-			for ( ; i<m;++i, Ei+=lde, Si+=lds)
-				for ( j=i; j<n;++j)
-					F.convert(*(Si+j),*(Ei+j));
-		}
+		const typename Field::Element* Ei = E;
+		DoubleDomain::Element* Si = S;
+		size_t i=0, j;
+		for ( ; i<m;++i, Ei+=lde, Si+=lds)
+			for ( j=i; j<n;++j)
+				F.convert(*(Si+j),*(Ei+j));
+	}
 
-		//---------------------------------------------------------------------
-		// Finite Field matrix => float matrix
-		// Special design for upper-triangular matrices
-		//---------------------------------------------------------------------
-		//! @todo do finit(...,FFLAS_TRANS,FFLAS_DIAG)
-		//! @todo do fconvert(...,FFLAS_TRANS,FFLAS_DIAG)
-		template<class Field>
-		void MatF2MatFl_Triangular (const Field& F,
-						   FloatDomain::Element* S, const size_t lds,
-						   const typename Field::Element* const E,
-						   const size_t lde,
-						   const size_t m, const size_t n)
-		{
+	//---------------------------------------------------------------------
+	// Finite Field matrix => float matrix
+	// Special design for upper-triangular matrices
+	//---------------------------------------------------------------------
+	//! @todo do finit(...,FFLAS_TRANS,FFLAS_DIAG)
+	//! @todo do fconvert(...,FFLAS_TRANS,FFLAS_DIAG)
+	template<class Field>
+	void MatF2MatFl_Triangular (const Field& F,
+				    FloatDomain::Element* S, const size_t lds,
+				    const typename Field::Element* const E,
+				    const size_t lde,
+				    const size_t m, const size_t n)
+	{
 
-			const typename Field::Element* Ei = E;
-			FloatDomain::Element* Si = S;
-			size_t i=0, j;
-			for ( ; i<m;++i, Ei+=lde, Si+=lds)
-				for ( j=i; j<n;++j)
-					F.convert(*(Si+j),*(Ei+j));
-		}
-
-
-		/**
-		 * Computes the maximal size for delaying the modular reduction
-		 *         in a triangular system resolution.
-		 *
-		 *  Compute the maximal dimension k, such that a unit diagonal triangular
-		 *  system of dimension k can be solved over Z without overflow of the
-		 *  underlying floating point representation.
-		 *
-		 *  @bib
-		 *  - Dumas, Giorgi, Pernet 06, arXiv:cs/0601133.
-		 *
-		 * \param F Finite Field/Ring of the computation
-		 *
-		 */
-		template <class Field>
-		size_t TRSMBound (const Field& F);
+		const typename Field::Element* Ei = E;
+		FloatDomain::Element* Si = S;
+		size_t i=0, j;
+		for ( ; i<m;++i, Ei+=lde, Si+=lds)
+			for ( j=i; j<n;++j)
+				F.convert(*(Si+j),*(Ei+j));
+	}
 
 
-		template <class Field>
-		void MatVectProd (const Field& F,
-					 const FFLAS_TRANSPOSE TransA,
-					 const size_t M, const size_t N,
-					 const typename Field::Element alpha,
-					 const typename Field::Element * A, const size_t lda,
-					 const typename Field::Element * X, const size_t incX,
-					 const typename Field::Element beta,
-					 typename Field::Element * Y, const size_t incY);
+	/**
+	 * Computes the maximal size for delaying the modular reduction
+	 *         in a triangular system resolution.
+	 *
+	 *  Compute the maximal dimension k, such that a unit diagonal triangular
+	 *  system of dimension k can be solved over Z without overflow of the
+	 *  underlying floating point representation.
+	 *
+	 *  @bib
+	 *  - Dumas, Giorgi, Pernet 06, arXiv:cs/0601133.
+	 *
+	 * \param F Finite Field/Ring of the computation
+	 *
+	 */
+	template <class Field>
+	size_t TRSMBound (const Field& F);
 
 
-		// Specialized routines for ftrsm
-		template <class Element>
-		class ftrsmLeftUpperNoTransNonUnit;
-		template <class Element>
-		class ftrsmLeftUpperNoTransUnit;
-		template <class Element>
-		class ftrsmLeftUpperTransNonUnit;
-		template <class Element>
-		class ftrsmLeftUpperTransUnit;
-		template <class Element>
-		class ftrsmLeftLowerNoTransNonUnit;
-		template <class Element>
-		class ftrsmLeftLowerNoTransUnit;
-		template <class Element>
-		class ftrsmLeftLowerTransNonUnit;
-		template <class Element>
-		class ftrsmLeftLowerTransUnit;
-		template <class Element>
-		class ftrsmRightUpperNoTransNonUnit;
-		template <class Element>
-		class ftrsmRightUpperNoTransUnit;
-		template <class Element>
-		class ftrsmRightUpperTransNonUnit;
-		template <class Element>
-		class ftrsmRightUpperTransUnit;
-		template <class Element>
-		class ftrsmRightLowerNoTransNonUnit;
-		template <class Element>
-		class ftrsmRightLowerNoTransUnit;
-		template <class Element>
-		class ftrsmRightLowerTransNonUnit;
-		template <class Element>
-		class ftrsmRightLowerTransUnit;
+	template <class Field>
+	void MatVectProd (const Field& F,
+			  const FFLAS_TRANSPOSE TransA,
+			  const size_t M, const size_t N,
+			  const typename Field::Element alpha,
+			  const typename Field::Element * A, const size_t lda,
+			  const typename Field::Element * X, const size_t incX,
+			  const typename Field::Element beta,
+			  typename Field::Element * Y, const size_t incY);
 
-		// Specialized routines for ftrmm
-		template <class Element>
-		class ftrmmLeftUpperNoTransNonUnit;
-		template <class Element>
-		class ftrmmLeftUpperNoTransUnit;
-		template <class Element>
-		class ftrmmLeftUpperTransNonUnit;
-		template <class Element>
-		class ftrmmLeftUpperTransUnit;
-		template <class Element>
-		class ftrmmLeftLowerNoTransNonUnit;
-		template <class Element>
-		class ftrmmLeftLowerNoTransUnit;
-		template <class Element>
-		class ftrmmLeftLowerTransNonUnit;
-		template <class Element>
-		class ftrmmLeftLowerTransUnit;
-		template <class Element>
-		class ftrmmRightUpperNoTransNonUnit;
-		template <class Element>
-		class ftrmmRightUpperNoTransUnit;
-		template <class Element>
-		class ftrmmRightUpperTransNonUnit;
-		template <class Element>
-		class ftrmmRightUpperTransUnit;
-		template <class Element>
-		class ftrmmRightLowerNoTransNonUnit;
-		template <class Element>
-		class ftrmmRightLowerNoTransUnit;
-		template <class Element>
-		class ftrmmRightLowerTransNonUnit;
-		template <class Element>
-		class ftrmmRightLowerTransUnit;
+
+	// Specialized routines for ftrsm
+	template <class Element>
+	class ftrsmLeftUpperNoTransNonUnit;
+	template <class Element>
+	class ftrsmLeftUpperNoTransUnit;
+	template <class Element>
+	class ftrsmLeftUpperTransNonUnit;
+	template <class Element>
+	class ftrsmLeftUpperTransUnit;
+	template <class Element>
+	class ftrsmLeftLowerNoTransNonUnit;
+	template <class Element>
+	class ftrsmLeftLowerNoTransUnit;
+	template <class Element>
+	class ftrsmLeftLowerTransNonUnit;
+	template <class Element>
+	class ftrsmLeftLowerTransUnit;
+	template <class Element>
+	class ftrsmRightUpperNoTransNonUnit;
+	template <class Element>
+	class ftrsmRightUpperNoTransUnit;
+	template <class Element>
+	class ftrsmRightUpperTransNonUnit;
+	template <class Element>
+	class ftrsmRightUpperTransUnit;
+	template <class Element>
+	class ftrsmRightLowerNoTransNonUnit;
+	template <class Element>
+	class ftrsmRightLowerNoTransUnit;
+	template <class Element>
+	class ftrsmRightLowerTransNonUnit;
+	template <class Element>
+	class ftrsmRightLowerTransUnit;
+
+	// Specialized routines for ftrmm
+	template <class Element>
+	class ftrmmLeftUpperNoTransNonUnit;
+	template <class Element>
+	class ftrmmLeftUpperNoTransUnit;
+	template <class Element>
+	class ftrmmLeftUpperTransNonUnit;
+	template <class Element>
+	class ftrmmLeftUpperTransUnit;
+	template <class Element>
+	class ftrmmLeftLowerNoTransNonUnit;
+	template <class Element>
+	class ftrmmLeftLowerNoTransUnit;
+	template <class Element>
+	class ftrmmLeftLowerTransNonUnit;
+	template <class Element>
+	class ftrmmLeftLowerTransUnit;
+	template <class Element>
+	class ftrmmRightUpperNoTransNonUnit;
+	template <class Element>
+	class ftrmmRightUpperNoTransUnit;
+	template <class Element>
+	class ftrmmRightUpperTransNonUnit;
+	template <class Element>
+	class ftrmmRightUpperTransUnit;
+	template <class Element>
+	class ftrmmRightLowerNoTransNonUnit;
+	template <class Element>
+	class ftrmmRightLowerNoTransUnit;
+	template <class Element>
+	class ftrmmRightLowerTransNonUnit;
+	template <class Element>
+	class ftrmmRightLowerTransUnit;
 
 } // protected
-} // Protected
+} // FFLAS
 
 namespace FFLAS {
 
@@ -306,18 +306,17 @@ namespace FFLAS {
 	template<class Field>
 	typename Field::Element*
 	fgemm2( const Field& F,
-	       const FFLAS_TRANSPOSE ta,
-	       const FFLAS_TRANSPOSE tb,
-	       const size_t m,
-	       const size_t n,
-	       const size_t k,
-	       const typename Field::Element alpha,
-	       const typename Field::Element* A, const size_t lda,
-	       const typename Field::Element* B, const size_t ldb,
-	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc,
-	       MMParameters & /* = WinogradHelper */) ;
-#endif
+		const FFLAS_TRANSPOSE ta,
+		const FFLAS_TRANSPOSE tb,
+		const size_t m,
+		const size_t n,
+		const size_t k,
+		const typename Field::Element alpha,
+		const typename Field::Element* A, const size_t lda,
+		const typename Field::Element* B, const size_t ldb,
+		const typename Field::Element beta,
+		typename Field::Element* C, const size_t ldc,
+		MMParameters & /* = WinogradHelper */) ;
 
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
@@ -354,89 +353,89 @@ namespace FFLAS {
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc
-	       , const int w = (int) -1
 	     ) ;
+#endif
 
 
-	    /**
-	     * Parallel fgemm
-	     */
+	/**
+	 * Parallel fgemm
+	 */
 
 #ifdef __FFLASFFPACK_USE_OPENMP
-    enum CuttingStrategy {
-        ROW_FIXED	,
-        COLUMN_FIXED	,
-        BLOCK_FIXED	,
-        ROW_THREADS	,
-        COLUMN_THREADS	,
-        BLOCK_THREADS	//,
-    };
+	enum CuttingStrategy {
+		ROW_FIXED	,
+		COLUMN_FIXED	,
+		BLOCK_FIXED	,
+		ROW_THREADS	,
+		COLUMN_THREADS	,
+		BLOCK_THREADS	//,
+	};
 
 
 	// Parallel fgemm with OpenMP tasks
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
-            const FFLAS_TRANSPOSE ta,
-            const FFLAS_TRANSPOSE tb,
-            const size_t m,
-            const size_t n,
-            const size_t k,
-            const typename Field::Element alpha,
-            const typename Field::Element* A, const size_t lda,
-            const typename Field::Element* B, const size_t ldb,
-            const typename Field::Element beta,
-            typename Field::Element* C, const size_t ldc,
-            const size_t w,
-            const CuttingStrategy method = BLOCK_THREADS,
-            const int maxThreads
+		const FFLAS_TRANSPOSE ta,
+		const FFLAS_TRANSPOSE tb,
+		const size_t m,
+		const size_t n,
+		const size_t k,
+		const typename Field::Element alpha,
+		const typename Field::Element* A, const size_t lda,
+		const typename Field::Element* B, const size_t ldb,
+		const typename Field::Element beta,
+		typename Field::Element* C, const size_t ldc,
+		const size_t w,
+		const CuttingStrategy method = BLOCK_THREADS,
+		const int maxThreads
 #ifdef __FFLASFFPACK_USE_OPENMP
-            = omp_get_num_threads()
+		= omp_get_num_threads()
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
-            = kaapi_getconcurrency_cpu()
+		= kaapi_getconcurrency_cpu()
 #endif
-            );
+	      );
 
 	// Parallel fgemm with OpenMP tasks
 	// winograd level is automatic
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
-            const FFLAS_TRANSPOSE ta,
-            const FFLAS_TRANSPOSE tb,
-            const size_t m,
-            const size_t n,
-            const size_t k,
-            const typename Field::Element alpha,
-            const typename Field::Element* A, const size_t lda,
-            const typename Field::Element* B, const size_t ldb,
-            const typename Field::Element beta,
-            typename Field::Element* C, const size_t ldc,
-            const CuttingStrategy method = BLOCK_THREADS,
-            const int maxThreads
+		const FFLAS_TRANSPOSE ta,
+		const FFLAS_TRANSPOSE tb,
+		const size_t m,
+		const size_t n,
+		const size_t k,
+		const typename Field::Element alpha,
+		const typename Field::Element* A, const size_t lda,
+		const typename Field::Element* B, const size_t ldb,
+		const typename Field::Element beta,
+		typename Field::Element* C, const size_t ldc,
+		const CuttingStrategy method = BLOCK_THREADS,
+		const int maxThreads
 #ifdef __FFLASFFPACK_USE_OPENMP
-            = omp_get_num_threads()
+		= omp_get_num_threads()
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
-            = kaapi_getconcurrency_cpu()
+		= kaapi_getconcurrency_cpu()
 #endif
-            );
+	      );
 
 
 
 	//Parallel ftrsm with OpenMP tasks
 	template<class Field>
-        typename Field::Element*
-        pftrsm( const Field& F,
-                     const FFLAS_SIDE Side,
-                     const FFLAS_UPLO UpLo,
-                     const FFLAS_TRANSPOSE TA,
-                     const FFLAS_DIAG Diag,
-                     const size_t m,
-                     const size_t n,
-                     const typename Field::Element alpha,
-                     const typename Field::Element* A, const size_t lda,
+	typename Field::Element*
+	pftrsm( const Field& F,
+		const FFLAS_SIDE Side,
+		const FFLAS_UPLO UpLo,
+		const FFLAS_TRANSPOSE TA,
+		const FFLAS_DIAG Diag,
+		const size_t m,
+		const size_t n,
+		const typename Field::Element alpha,
+		const typename Field::Element* A, const size_t lda,
 		typename Field::Element* B, const size_t ldb);
 #endif
 
@@ -455,19 +454,16 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	typename Field::Element* fsquare (const Field& F,
-						 const FFLAS_TRANSPOSE ta,
-						 const size_t n,
-						 const typename Field::Element alpha,
-						 const typename Field::Element* A,
-						 const size_t lda,
-						 const typename Field::Element beta,
-						 typename Field::Element* C,
-					 const size_t ldc);
+					  const FFLAS_TRANSPOSE ta,
+					  const size_t n,
+					  const typename Field::Element alpha,
+					  const typename Field::Element* A,
+					  const size_t lda,
+					  const typename Field::Element beta,
+					  typename Field::Element* C,
+					  const size_t ldc);
 
 
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_level3_INL
-
-
-

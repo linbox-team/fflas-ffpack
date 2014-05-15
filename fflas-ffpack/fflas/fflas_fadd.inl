@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_faxpy.inl
+/*
  * Copyright (C) 2014 FFLAS-FFPACK group
  *
  * Written by BB <bbboyer@ncsu.edu>
@@ -40,6 +40,7 @@ namespace FFLAS {
 
 
 	/**** Specialised ****/
+
 
 	template <>
 	void

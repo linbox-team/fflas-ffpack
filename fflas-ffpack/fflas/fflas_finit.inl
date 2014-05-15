@@ -41,6 +41,7 @@ namespace FFLAS {
 	/***************************/
 
 
+	// specialised
 
 	template<>
 	void finit (const FFPACK:: Modular<double> & F, const size_t m,

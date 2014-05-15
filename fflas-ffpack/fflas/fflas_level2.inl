@@ -148,8 +148,8 @@ namespace FFLAS {
 	template<class Field, class OtherElement>
 	void
 	fconvert (const Field& F, const size_t m , const size_t n,
-	        OtherElement * A, const size_t lda,
-	       const typename Field::Element* B, const size_t ldb)
+		  OtherElement * A, const size_t lda,
+		  const typename Field::Element* B, const size_t ldb)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
@@ -169,7 +169,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fnegin (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element * A, const size_t lda)
+		typename Field::Element * A, const size_t lda)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
@@ -189,8 +189,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fneg (const Field& F, const size_t m , const size_t n,
-	       const typename Field::Element * B, const size_t ldb,
-	       typename Field::Element * A, const size_t lda)
+	      const typename Field::Element * B, const size_t ldb,
+	      typename Field::Element * A, const size_t lda)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
@@ -211,8 +211,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fscalin (const Field& F, const size_t m , const size_t n,
-	       const typename Field::Element alpha,
-	       typename Field::Element * A, const size_t lda);
+		 const typename Field::Element alpha,
+		 typename Field::Element * A, const size_t lda);
 
 	/** fscal
 	 * \f$B \gets a \cdot A\f$.
@@ -265,10 +265,10 @@ namespace FFLAS {
 	template<class Field>
 	void
 	faxpby (const Field& F, const size_t m, const size_t n,
-	       const typename Field::Element alpha,
-	       const typename Field::Element * X, const size_t ldx,
-	       const typename Field::Element beta,
-	       typename Field::Element * Y, const size_t ldy );
+		const typename Field::Element alpha,
+		const typename Field::Element * X, const size_t ldx,
+		const typename Field::Element beta,
+		typename Field::Element * Y, const size_t ldy );
 
 	/** \brief fmove : \f$A \gets B \f$ and \f$ B \gets 0\f$.
 	 * @param F field
@@ -436,4 +436,3 @@ namespace FFLAS {
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_level2_INL
-

@@ -39,7 +39,7 @@
 
 namespace FFLAS { namespace BLAS3 {
 
-		template < class Field >
+	template < class Field >
 	inline void Winograd (const Field& F,
 			      const FFLAS_TRANSPOSE ta,
 			      const FFLAS_TRANSPOSE tb,
@@ -51,7 +51,7 @@ namespace FFLAS { namespace BLAS3 {
 			      typename Field::Element * C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
 			      const Winograd2Helper<typename FieldTraits<Field>::value> & WH
-			      )
+			     )
 	{
 
 		FFLASFFPACK_check(F.isZero(beta));

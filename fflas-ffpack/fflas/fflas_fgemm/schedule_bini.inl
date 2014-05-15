@@ -97,7 +97,7 @@ namespace FFLAS { namespace BLAS3 {
 			ldx2 = jmaxb = nr;
 		}
 
-		{
+		namespace Protected {
 #error "cacabouda"
 			// C = a*A + B
 			void add(const size_t m, const size_t n,
@@ -195,6 +195,7 @@ namespace FFLAS { namespace BLAS3 {
 				// FFLAS::finit(F2,m,n,C,ldc);
 				return C;
 			}
+		} // Protected
 
 
 			namespace Protected {
@@ -447,7 +448,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		} // Winograd
 
-} // BLAS3
+	} // BLAS3
 
 
 } // FFLAS

@@ -34,7 +34,7 @@
 
 namespace FFLAS {
 
-	    // Traits and categories will need to be placed in a proper file later
+	// Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
 		//! generic ring.
 		struct GenericTag{};
@@ -54,32 +54,32 @@ namespace FFLAS {
 	}
 
 	/*! FieldTrait
-	 */
+	*/
 
 	template <class Field>
 	struct FieldTraits {typedef typename FieldCategories::GenericTag value;};
-	template<> 
+	template<>
 	struct FieldTraits<FFPACK::Modular<double> > {typedef  FieldCategories::ModularFloatingPointTag value;};
-	template<> 
+	template<>
 	struct FieldTraits<FFPACK::Modular<float> > {typedef FieldCategories::ModularFloatingPointTag value;};
-	template<> 
+	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<double> > {typedef FieldCategories::ModularFloatingPointTag value;};
-	template<> 
+	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<float> > {typedef FieldCategories::ModularFloatingPointTag value;};
-	template<> 
+	template<>
 	struct FieldTraits<DoubleDomain> {typedef FieldCategories::FloatingPointTag value;};
-	template<> 
+	template<>
 	struct FieldTraits<FloatDomain> {typedef FieldCategories::FloatingPointTag value;};
-	template<typename  Element> 
+	template<typename  Element>
 	struct FieldTraits<FFPACK::Modular<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
 
 
-//	template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
-	
+	//	template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
+
 
 	template <typename FieldT>
 	struct ClassicHelper;
-	
+
 	template <typename FieldT>
 	struct Winograd2Helper;
 
@@ -92,13 +92,13 @@ namespace FFLAS {
 	DoubleDomain associatedDomain (const FFPACK::ModularBalanced<double> & ){return DoubleDomain();}
 	FloatDomain associatedDomain (const FFPACK::Modular<float> & ){return FloatDomain();}
 	FloatDomain associatedDomain (const FFPACK::ModularBalanced<float> & ){return FloatDomain();}
-	    // This last defintion is useless, but necessary for compilation 
-            //(some template combinations are compiled but never run  in practice)
+	// This last defintion is useless, but necessary for compilation
+	//(some template combinations are compiled but never run  in practice)
 	template<class Field>
 	const Field& associatedDomain (const Field& F){return F;}
 } // FFLAS
 
-namespace FFLAS {namespace Protected{
+namespace FFLAS { namespace Protected {
 
 	template  < typename FloatElement, class Field >
 	inline void fgemm_convert (const Field& F,
@@ -111,7 +111,7 @@ namespace FFLAS {namespace Protected{
 				   const typename Field::Element beta,
 				   typename Field::Element* C, const size_t ldc,
 				   const ClassicHelper<FieldCategories::FloatingPointConvertibleTag> & H
-				   );
+				  );
 
 	template  < typename FloatElement, class Field >
 	inline void fgemm_convert (const Field& F,
@@ -124,8 +124,8 @@ namespace FFLAS {namespace Protected{
 				   const typename Field::Element beta,
 				   typename Field::Element* C, const size_t ldc,
 				   const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag> & H
-				   );
-	}
+				  );
+} // Protected
 } // FFLAS
 
 // #include "fflas_fgemm/matmul_algos.inl"

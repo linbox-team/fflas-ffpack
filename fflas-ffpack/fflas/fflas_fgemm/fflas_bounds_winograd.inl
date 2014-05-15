@@ -241,7 +241,7 @@ namespace FFLAS { namespace Protected {
 			double c = computeFactorWinograd (F,w);
 
 			double d = (double (1ULL << mantissa) /(c*c) );
-			    //std::cerr<<"DotProdBound c = "<<c<<" d = "<<d<<std::endl;
+			//std::cerr<<"DotProdBound c = "<<c<<" d = "<<d<<std::endl;
 			if (d < 2)
 				return 1;
 			kmax = floor (d * double(1ULL << w));
@@ -283,14 +283,14 @@ namespace FFLAS { namespace Protected {
 	 */
 	template <class Field>
 	inline void MatMulParametersWinograd (const Field& F,
-				      const size_t &m,
-				      const size_t &n,
-				      const size_t &k,
-				      const typename Field::Element& beta,
-				      size_t& delayedDim,
-				      FFLAS_BASE& base,
-				      int& winogradRecLevel,
-				      bool winogradLevelProvided=false)
+					      const size_t &m,
+					      const size_t &n,
+					      const size_t &k,
+					      const typename Field::Element& beta,
+					      size_t& delayedDim,
+					      FFLAS_BASE& base,
+					      int& winogradRecLevel,
+					      bool winogradLevelProvided=false)
 	{
 
 		// Strategy : determine Winograd's recursion first, then choose appropriate
@@ -302,7 +302,7 @@ namespace FFLAS { namespace Protected {
 		base = BaseCompute (F, winogradRecLevel);
 		// std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
 		delayedDim = DotProdBoundWinograd (F, winogradRecLevel, beta, base);
-		
+
 		size_t oldk = k;
 		int winogradDel = winogradRecLevel;
 		// Computes the delayedDim, only depending on the recursive levels
@@ -333,14 +333,14 @@ namespace FFLAS { namespace Protected {
 
 	template <>
 	inline void MatMulParametersWinograd (const DoubleDomain & F,
-				      const size_t &m,
-				      const size_t &n,
-				      const size_t &k,
-				      const DoubleDomain::Element& beta,
-				      size_t& delayedDim,
-				      FFLAS_BASE& base,
-				      int& winogradRecLevel,
-				      bool winogradLevelProvided)
+					      const size_t &m,
+					      const size_t &n,
+					      const size_t &k,
+					      const DoubleDomain::Element& beta,
+					      size_t& delayedDim,
+					      FFLAS_BASE& base,
+					      int& winogradRecLevel,
+					      bool winogradLevelProvided)
 	{
 		if (!winogradLevelProvided)
 			winogradRecLevel = WinogradSteps (F, min3(m,k,n)) ;
@@ -351,14 +351,14 @@ namespace FFLAS { namespace Protected {
 
 	template <>
 	inline void MatMulParametersWinograd (const FloatDomain & F,
-				      const size_t &m,
-				      const size_t &n,
-				      const size_t &k,
-				      const FloatDomain::Element& beta,
-				      size_t& delayedDim,
-				      FFLAS_BASE& base,
-				      int& winogradRecLevel,
-				      bool winogradLevelProvided)
+					      const size_t &m,
+					      const size_t &n,
+					      const size_t &k,
+					      const FloatDomain::Element& beta,
+					      size_t& delayedDim,
+					      FFLAS_BASE& base,
+					      int& winogradRecLevel,
+					      bool winogradLevelProvided)
 	{
 		if (!winogradLevelProvided)
 			winogradRecLevel = WinogradSteps (F, min3(m,k,n)) ;

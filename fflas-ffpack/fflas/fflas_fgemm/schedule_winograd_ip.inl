@@ -40,16 +40,16 @@ namespace FFLAS { namespace BLAS3 {
 
 	template < class Field >
 	inline void Winograd_LR_S (const Field& F,
-				const FFLAS_TRANSPOSE ta,
-				const FFLAS_TRANSPOSE tb,
-				const size_t mr, const size_t nr, const size_t kr,
-				const typename Field::Element alpha,
-				typename Field::Element* A,const size_t lda,
-				typename Field::Element* B,const size_t ldb,
-				const typename Field::Element  beta,
-				typename Field::Element * C, const size_t ldc,
-				const Winograd2Helper<typename FieldTraits<Field>::value > & WH
-				      )
+				   const FFLAS_TRANSPOSE ta,
+				   const FFLAS_TRANSPOSE tb,
+				   const size_t mr, const size_t nr, const size_t kr,
+				   const typename Field::Element alpha,
+				   typename Field::Element* A,const size_t lda,
+				   typename Field::Element* B,const size_t ldb,
+				   const typename Field::Element  beta,
+				   typename Field::Element * C, const size_t ldc,
+				   const Winograd2Helper<typename FieldTraits<Field>::value > & WH
+				  )
 	{
 		Winograd2Helper<typename FieldTraits<Field>::value > H = WH ;
 		H.w = H.w - 1 ;
@@ -147,15 +147,15 @@ namespace FFLAS { namespace BLAS3 {
 
 	template < class Field >
 	inline void Winograd_L_S(const Field& F,
-				const FFLAS_TRANSPOSE ta,
-				const FFLAS_TRANSPOSE tb,
-				const size_t mr, const size_t nr, const size_t kr,
-				const typename Field::Element alpha,
-				typename Field::Element* A,const size_t lda,
-				const typename Field::Element* B,const size_t ldb,
-				const typename Field::Element  beta,
-				typename Field::Element * C, const size_t ldc,
-				const Winograd2Helper<typename FieldTraits<Field>::value > & WH
+				 const FFLAS_TRANSPOSE ta,
+				 const FFLAS_TRANSPOSE tb,
+				 const size_t mr, const size_t nr, const size_t kr,
+				 const typename Field::Element alpha,
+				 typename Field::Element* A,const size_t lda,
+				 const typename Field::Element* B,const size_t ldb,
+				 const typename Field::Element  beta,
+				 typename Field::Element * C, const size_t ldc,
+				 const Winograd2Helper<typename FieldTraits<Field>::value > & WH
 				)
 	{
 		Winograd2Helper<typename FieldTraits<Field>::value > H = WH ;
@@ -253,16 +253,16 @@ namespace FFLAS { namespace BLAS3 {
 
 	template < class Field >
 	inline void Winograd_R_S(const Field& F,
-				const FFLAS_TRANSPOSE ta,
-				const FFLAS_TRANSPOSE tb,
-				const size_t mr, const size_t nr, const size_t kr,
-				const typename Field::Element alpha,
-				const typename Field::Element* A,const size_t lda,
-				typename Field::Element* B,const size_t ldb,
-				const typename Field::Element  beta,
-				typename Field::Element * C, const size_t ldc,
-				const Winograd2Helper<typename FieldTraits<Field>::value > & WH
-				      )
+				 const FFLAS_TRANSPOSE ta,
+				 const FFLAS_TRANSPOSE tb,
+				 const size_t mr, const size_t nr, const size_t kr,
+				 const typename Field::Element alpha,
+				 const typename Field::Element* A,const size_t lda,
+				 typename Field::Element* B,const size_t ldb,
+				 const typename Field::Element  beta,
+				 typename Field::Element * C, const size_t ldc,
+				 const Winograd2Helper<typename FieldTraits<Field>::value > & WH
+				)
 	{
 		Winograd2Helper<typename FieldTraits<Field>::value > H = WH ;
 		H.w = H.w - 1 ;
