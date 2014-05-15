@@ -404,67 +404,46 @@ namespace FFLAS { namespace Protected {
 }// namespace Protected
 } // FFLAS
 
-namespace FFLAS {
 
-template<class Field>
-inline  void fgemm2 (const Field& F,
-		     const FFLAS_TRANSPOSE ta,
-		     const FFLAS_TRANSPOSE tb,
-		     const size_t m, const size_t n, const size_t k,
-		     const typename Field::Element alpha,
-		     const typename Field::Element * A, const size_t lda,
-		     const typename Field::Element * B, const size_t ldb,
-		     const typename Field::Element beta,
-		     typename Field::Element * C, const size_t ldc,
-		     const Winograd2Helper<typename FieldTraits<Field>::value> & H)
-{
-	if (!m || !n ) return;
-
-	if (!k)	return fscalin(F,m,n,beta,C,ldc);
-
-	if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, ClassicHelper<typename FieldTraits<Field>::value>(H.kmax,H.base));
-
-	// Then w >0
-	if (Protected::AreEqual< typename FieldTraits<Field>::value,
-	    FieldCategories::FloatingPointConvertibleTag>::value){
-		// Field is convertible to a floating point representation
-		if (k <= H.kmax) {
-			if (H.base == FflasDouble)
-				return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-			else // FloatDomain
-				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-		}
-
-	} else if (Protected::AreEqual<typename FieldTraits<Field>::value,
-		   FieldCategories::ModularFloatingPointTag>::value){
+namespace FFLAS { 
+	
+template<class Field> 
+inline  void fgemm2 (const Field& F, 
+		     const FFLAS_TRANSPOSE ta, 
+		     const FFLAS_TRANSPOSE tb, 
+		     const size_t m, const size_t n, const size_t k, 
+		     const typename Field::Element alpha, 
+		     const typename Field::Element * A, const size_t lda, 
+		     const typename Field::Element * B, const size_t ldb, 
+		     const typename Field::Element beta, 
+		     typename Field::Element * C, const size_t ldc, 
+		     const Winograd2Helper<typename FieldTraits<Field>::value> & H) 
+{ 
+	if (!m || !n ) return; 
+	
+	if (!k) return fscalin(F,m,n,beta,C,ldc); 
+ 	
+	if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, ClassicHelper<typename FieldTraits<Field>::value>(H.kmax,H.base)); 
+	
+	    // Then w >0 
+	if (Protected::AreEqual< typename FieldTraits<Field>::value, 
+				 FieldCategories::FloatingPointConvertibleTag>::value){ 
+		    // Field is convertible to a floating point representation 
+		if (k <= H.kmax) { 
+			if (H.base == FflasDouble) 
+				return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H); 
+			else // FloatDomain 
+				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H); 
+		} 
+	} else if (Protected::AreEqual<typename FieldTraits<Field>::value, 
+				       FieldCategories::ModularFloatingPointTag>::value){
 		// Field is a Modular[Balanced]<float,double>
-
-		if (k <= H.kmax) { // switch on delayed modulus
-			typename Field::Element _alpha, _beta;
-			_beta = beta;
-			if (F.isMOne( alpha)) _alpha = -1.0;
-			else {
-				// Compute C = A*B + beta/alpha.C
-				// and then C *= alpha
-				if (! F.isOne( alpha)) {
-					FFLASFFPACK_check(!F.isZero(alpha));
-					F.divin (_beta, alpha);
-				}
-				_alpha = 1.0;
-			}
-			// call on Z with no modulo
-			fgemm2 (associatedDomain(F), ta, tb, m, n, k, _alpha,
-				A, lda, B, ldb, _beta, C, ldc,
-				Winograd2Helper<FieldCategories::FloatingPointTag>(H));
-			// Modular reduction
-			finit(F,m,n,C,ldc);
-			if (!F.isOne( alpha ) && !F.isMOne( alpha ))
-				// Fix-up: compute C *= alpha
-				fscalin(F,m,n,alpha,C,ldc);
-			return;
-		}
+		
+		if (k <= H.kmax)  // switch on delayed modulus
+			return Protected::fgemm_convert<typename Field::Element,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 
+	    // Otherwise keep doing the recursion
 #ifdef OLD_DYNAMIC_PEALING
 	WinogradCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
@@ -509,8 +488,11 @@ namespace FFLAS { namespace Protected{
 				    const typename Field::Element* B,const size_t ldb,
 				    const typename Field::Element beta,
 				    typename Field::Element * C, const size_t ldc,
-				    const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag>& H)
+				    const Winograd2Helper<typename FieldTraits<Field>::value>& H)
 	{
+		const bool NeedCopy = AreEqual<typename FieldTraits<Field>::value,
+					       FieldCategories::FloatingPointConvertibleTag
+					       >::value;
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
@@ -534,36 +516,55 @@ namespace FFLAS { namespace Protected{
 				F.convert (betad, beta);
 			alphad = 1.0;
 		}
-		FloatElement * Ad = new FloatElement[m*k];
-		FloatElement * Bd = new FloatElement[k*n];
-		FloatElement * Cd = new FloatElement[m*n];
-		// Conversion GFq = >  double
-		size_t ma, ka, kb, nb; //mb, na
-		if (ta == FflasTrans) { ma = k; ka = m; }
-		else { ma = m; ka = k; }
-		if (tb == FflasTrans) { kb = n; nb = k; }
-		else {  kb = k; nb = n; }
+		FloatElement * Ad, *Bd;
+		FloatElement *Cd;
+		size_t ldad, ldbd, ldcd;
+		if (NeedCopy){
+			
+		       
+			Ad = new FloatElement[m*k];
+			Bd = new FloatElement[k*n];
+			Cd = new FloatElement[m*n];
+			
+			    // Conversion GFq = >  double
+			size_t ma, ka, kb, nb; //mb, na
+			if (ta == FflasTrans) { ma = k; ka = m; }
+			else { ma = m; ka = k; }
+			if (tb == FflasTrans) { kb = n; nb = k; }
+			else {  kb = k; nb = n; }
+			ldad = ka; ldbd = nb; ldcd = n;
 
-		fconvert(F, ma, ka, Ad, ka, A, lda);
-		fconvert(F, kb, nb, Bd, nb, B, ldb);
-		if (!F.isZero(beta))
-			fconvert(F, m, n, Cd, n, C, ldc);
-		// recursive call
-		fgemm2(G, ta, tb, m, n, k, alphad,
-		       Ad, ka, Bd, nb, betad, Cd, n,
+			fconvert(F, ma, ka, Ad, ka, A, lda);
+			fconvert(F, kb, nb, Bd, nb, B, ldb);
+			
+			if (!F.isZero(beta))
+				fconvert(F, m, n, Cd, n, C, ldc);
+		} else {
+			    // Evil casts: never actually run, but needed for compilation of some template specializations
+			Ad = const_cast<FloatElement*>(reinterpret_cast<const FloatElement*>(A)); 
+			Bd = const_cast<FloatElement*>(reinterpret_cast<const FloatElement*>(B)); 
+			Cd = reinterpret_cast<FloatElement*>(C);
+			ldad = lda; ldbd = ldb; ldcd = ldc;
+		}
+               
+		fgemm2(G, ta, tb, m, n, k, alphad, Ad, ldad, Bd, ldbd, betad, Cd, ldcd, 
 		       Winograd2Helper<FieldCategories::FloatingPointTag>(H));
 		// Conversion double = >  GFq
-		finit(F, m, n, Cd, n, C, ldc);
-
+		if (NeedCopy)
+			finit(F, m, n, Cd, n, C, ldc);
+		else
+			finit(F, m, n, C, ldc);
 		if (!F.isOne(alpha) &&
 		    !F.isMOne (alpha)) {
 			// Fix-up: compute C *= alpha
 			fscalin(F,m,n,alpha,C,ldc);
 		}
 		// Temporary double matrices destruction
-		delete[] Ad;
-		delete[] Bd;
-		delete[] Cd;
+		if (NeedCopy){
+			delete[] Ad;
+			delete[] Bd;
+			delete[] Cd;
+		}
 	}
 
 	} // Protected

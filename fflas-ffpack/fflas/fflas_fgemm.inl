@@ -123,7 +123,7 @@ namespace FFLAS { namespace Protected {
 				   const typename Field::Element * B, const size_t ldb,
 				   const typename Field::Element beta,
 				   typename Field::Element* C, const size_t ldc,
-				   const Winograd2Helper<FieldCategories::FloatingPointConvertibleTag> & H
+				   const Winograd2Helper<typename FieldTraits<Field>::value> & H
 				  );
 } // Protected
 } // FFLAS
