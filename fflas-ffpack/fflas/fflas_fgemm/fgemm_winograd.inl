@@ -405,40 +405,40 @@ namespace FFLAS { namespace Protected {
 } // FFLAS
 
 
-namespace FFLAS { 
-	
-template<class Field> 
-inline  void fgemm2 (const Field& F, 
-		     const FFLAS_TRANSPOSE ta, 
-		     const FFLAS_TRANSPOSE tb, 
-		     const size_t m, const size_t n, const size_t k, 
-		     const typename Field::Element alpha, 
-		     const typename Field::Element * A, const size_t lda, 
-		     const typename Field::Element * B, const size_t ldb, 
-		     const typename Field::Element beta, 
-		     typename Field::Element * C, const size_t ldc, 
-		     const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> & H) 
-{ 
-	if (!m || !n ) return; 
-	
-	if (!k) return fscalin(F,m,n,beta,C,ldc); 
- 	
-	if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value>(H.kmax,H.base)); 
-	
-	    // Then w >0 
-	if (Protected::AreEqual< typename FieldTraits<Field>::value, 
-				 FieldCategories::FloatingPointConvertibleTag>::value){ 
-		    // Field is convertible to a floating point representation 
-		if (k <= H.kmax) { 
-			if (H.base == FflasDouble) 
-				return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H); 
-			else // FloatDomain 
-				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H); 
-		} 
-	} else if (Protected::AreEqual<typename FieldTraits<Field>::value, 
+namespace FFLAS {
+
+template<class Field>
+inline  void fgemm2 (const Field& F,
+		     const FFLAS_TRANSPOSE ta,
+		     const FFLAS_TRANSPOSE tb,
+		     const size_t m, const size_t n, const size_t k,
+		     const typename Field::Element alpha,
+		     const typename Field::Element * A, const size_t lda,
+		     const typename Field::Element * B, const size_t ldb,
+		     const typename Field::Element beta,
+		     typename Field::Element * C, const size_t ldc,
+		     const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> & H)
+{
+	if (!m || !n ) return;
+
+	if (!k) return fscalin(F,m,n,beta,C,ldc);
+
+	if (H.w == 0) return fgemm2(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value>(H.kmax,H.base));
+
+	    // Then w >0
+	if (Protected::AreEqual< typename FieldTraits<Field>::value,
+				 FieldCategories::FloatingPointConvertibleTag>::value){
+		    // Field is convertible to a floating point representation
+		if (k <= H.kmax) {
+			if (H.base == FflasDouble)
+				return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			else // FloatDomain
+				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		}
+	} else if (Protected::AreEqual<typename FieldTraits<Field>::value,
 				       FieldCategories::ModularFloatingPointTag>::value){
 		// Field is a Modular[Balanced]<float,double>
-		
+
 		if (k <= H.kmax)  // switch on delayed modulus
 			return Protected::fgemm_convert<typename Field::Element,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
@@ -501,7 +501,7 @@ namespace FFLAS { namespace Protected{
 		typename Field::Element _betabis;
 
 		if (F.isMOne(alpha)) {
-			alphad = -1.0;
+			alphad = (FloatElement) -1.0;
 			F.convert (betad, beta);
 		}
 		else {
@@ -520,12 +520,12 @@ namespace FFLAS { namespace Protected{
 		FloatElement *Cd;
 		size_t ldad, ldbd, ldcd;
 		if (NeedCopy){
-			
-		       
+
+
 			Ad = new FloatElement[m*k];
 			Bd = new FloatElement[k*n];
 			Cd = new FloatElement[m*n];
-			
+
 			    // Conversion GFq = >  double
 			size_t ma, ka, kb, nb; //mb, na
 			if (ta == FflasTrans) { ma = k; ka = m; }
@@ -536,18 +536,18 @@ namespace FFLAS { namespace Protected{
 
 			fconvert(F, ma, ka, Ad, ka, A, lda);
 			fconvert(F, kb, nb, Bd, nb, B, ldb);
-			
+
 			if (!F.isZero(beta))
 				fconvert(F, m, n, Cd, n, C, ldc);
 		} else {
 			    // Evil casts: never actually run, but needed for compilation of some template specializations
-			Ad = const_cast<FloatElement*>(reinterpret_cast<const FloatElement*>(A)); 
-			Bd = const_cast<FloatElement*>(reinterpret_cast<const FloatElement*>(B)); 
+			Ad = const_cast<FloatElement*>(reinterpret_cast<const FloatElement*>(A));
+			Bd = const_cast<FloatElement*>(reinterpret_cast<const FloatElement*>(B));
 			Cd = reinterpret_cast<FloatElement*>(C);
 			ldad = lda; ldbd = ldb; ldcd = ldc;
 		}
-               
-		fgemm2(G, ta, tb, m, n, k, alphad, Ad, ldad, Bd, ldbd, betad, Cd, ldcd, 
+
+		fgemm2(G, ta, tb, m, n, k, alphad, Ad, ldad, Bd, ldbd, betad, Cd, ldcd,
 		       MMHelper<MMHelperCategories::Winograd,FieldCategories::FloatingPointTag>(H));
 		// Conversion double = >  GFq
 		if (NeedCopy)
