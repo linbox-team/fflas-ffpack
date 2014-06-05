@@ -144,55 +144,17 @@ namespace FFLAS {
 		const typename Field::Element beta,
 		typename Field::Element* C, const size_t ldc,
 		const size_t w,
-		const FFLAS::CuttingStrategy method, // = BLOCK_THREADS,
-		const int maxThreads /*
-#ifdef __FFLASFFPACK_USE_KAAPI
-		= kaapi_getconcurrency_cpu()
-#endif
-#ifdef __FFLASFFPACK_USE_OPENMP
-		= omp_get_num_threads()
-#endif
-				     */
+		const FFLAS::CuttingStrategy method,
+		const int maxThreads
 		){
-		size_t RBLOCKSIZE, CBLOCKSIZE;
-
-        size_t NrowBlocks, NcolBlocks;
-        size_t LastrowBlockSize, LastcolBlockSize;
-
-        BlockCuts(RBLOCKSIZE, CBLOCKSIZE,
-                  LastrowBlockSize, LastcolBlockSize,
-                  NrowBlocks, NcolBlocks,
-                  m, n, method, maxThreads
-                  );
-
-	//		const size_t BLOCKS = NrowBlocks*NcolBlocks;
-
-// 		std::cout<<"RBLOCKSIZE : "<<RBLOCKSIZE<<std::endl;
-// 		std::cout<<"CBLOCKSIZE : "<<CBLOCKSIZE<<std::endl;
-// 		std::cout<<"lastRBS    : "<<LastrowBlockSize<<std::endl;
-// 		std::cout<<"lastCBS    : "<<LastcolBlockSize<<std::endl;
-// 		std::cout<<"NrowBlocks : "<<NrowBlocks<<std::endl;
-// 		std::cout<<"NcolBlocks : "<<NcolBlocks<<std::endl;
-/*
-		for (size_t t = 0; t < BLOCKS; ++t){
-			size_t i = t / NcolBlocks;
-			size_t j = t % NcolBlocks;
-			size_t BlockRowDim = RBLOCKSIZE;
-			if (i == NrowBlocks-1)
-				BlockRowDim = LastrowBlockSize;
-			size_t BlockColDim = CBLOCKSIZE;
-			if (j == NcolBlocks-1)
-				BlockColDim = LastcolBlockSize;
-*/
         ForStrategy2D iter(m,n,method,maxThreads);
         for (iter.begin(); ! iter.end(); ++iter){
-		TASK(read(A,B,F), nowrite(), readwrite(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, w);
-		//			TASK(read(A,B,F, NcolBlocks, NrowBlocks), nowrite(), readwrite(C), fgemm, F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w );
+            TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, w);
 
-               }
+        }
 
 		WAIT;
-		//		BARRIER;
+//		BARRIER;
 
 		return C;
 	}
@@ -212,34 +174,11 @@ namespace FFLAS {
 		typename Field::Element* C, const size_t ldc,
         const CuttingStrategy method,
         const int maxThreads
-		/*
-#ifdef __FFLASFFPACK_USE_KAAPI
-		= kaapi_getconcurrency_cpu()
-#endif
-#ifdef __FFLASFFPACK_USE_OPENMP
-		= omp_get_num_threads()
-		#endif*/
-		){
+            ){
         ForStrategy2D iter(m,n,method,maxThreads);
         for (iter.begin(); ! iter.end(); ++iter){
-		TASK(read(A,B,F), nowrite(), readwrite(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
-		/*
-#ifdef __FFLASFFPACK_USE_OPENMP
-#pragma omp task shared (A, B, C, F)
-            fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
-#endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-			ka::Spawn<Taskfgemmw<Field> >()( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
-#endif
-		}
-#ifdef __FFLASFFPACK_USE_OPENMP
-       #pragma omp taskwait
-#endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-		ka::Sync();
-#endif
-		*/
-	}
+            TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
+        }
 		WAIT;
 		return C;
 	}

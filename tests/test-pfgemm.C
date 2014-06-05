@@ -143,7 +143,7 @@ int main(int argc, char** argv){
 #pragma omp single
             {
                 FFLAS::pfgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-                               beta,C,n,pnbw, Strategy);
+                               beta,C,n,pnbw, Strategy );
             }
         }
         t.stop();

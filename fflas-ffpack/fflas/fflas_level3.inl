@@ -357,11 +357,15 @@ namespace FFLAS {
 	     ) ;
 #endif
 
+} // FFLAS
 
 	/**
 	 * Parallel fgemm
 	 */
 
+#include "fflas-ffpack/ffpack/parallel.h"
+
+namespace FFLAS {
 	//#ifdef __FFLASFFPACK_USE_OPENMP
 	enum CuttingStrategy {
 		ROW_FIXED	,
@@ -388,16 +392,8 @@ namespace FFLAS {
             const typename Field::Element beta,
             typename Field::Element* C, const size_t ldc,
             const size_t w,
-		const CuttingStrategy method, //  =  BLOCK_THREADS,
-            const int maxThreads
-		/*
-#ifdef __FFLASFFPACK_USE_OPENMP
-		= omp_get_num_threads()
-#endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-		= kaapi_getconcurrency_cpu()
-#endif
-		*/
+            const CuttingStrategy method, 
+            const int maxThreads  = HPAC_NUM_THREADS
             );
 
 	// Parallel fgemm with OpenMP tasks
@@ -414,17 +410,9 @@ namespace FFLAS {
             const typename Field::Element* A, const size_t lda,
             const typename Field::Element* B, const size_t ldb,
             const typename Field::Element beta,
-	    typename Field::Element* C, const size_t ldc,
-		const CuttingStrategy method, //  = BLOCK_THREADS,
-            const int maxThreads
-		/*
-#ifdef __FFLASFFPACK_USE_OPENMP
-		= omp_get_num_threads()
-#endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-		= kaapi_getconcurrency_cpu()
-#endif
-		*/
+            typename Field::Element* C, const size_t ldc,
+            const CuttingStrategy method,
+            const int maxThreads = HPAC_NUM_THREADS
             );
 
 
