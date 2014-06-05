@@ -83,6 +83,12 @@ Field::Element* makemat(const Field::RandIter& RF,int m, int n){
 
 
 int main(int argc, char** argv){
+	if (argc < 8 || argc > 9)	{
+		cerr<<"Usage : test-fgemm <p> <nA> <nB> <w> <i> <alpha> <beta> [cutting]"
+		    <<endl;
+		exit(-1);
+	}
+
 #ifdef  __FFLASFFPACK_USE_OPENMP
         srand48(BaseTimer::seed());
 
@@ -94,11 +100,6 @@ int main(int argc, char** argv){
 	Field::Element alpha,beta;
 
 
-	if (argc < 8 || argc > 9)	{
-		cerr<<"Usage : test-fgemm <p> <nA> <nB> <w> <i> <alpha> <beta> [cutting]"
-		    <<endl;
-		exit(-1);
-	}
 	Field F(atoi(argv[1]));
 
 	F.init( alpha, Field::Element(atoi(argv[6])));
@@ -124,13 +125,13 @@ int main(int argc, char** argv){
 
     size_t r,c; FFLAS::BlockCuts(r,c,m,n,Strategy, omp_get_max_threads() );
     std::cerr << "pfgemm: " << m << 'x' << n << ' ' << r << ':' << c << "  <--  " << omp_get_max_threads() << ':' << (m/r) << 'x' << (n/c) << std::endl;
-    if (nbw <0) {
-        FFLAS::FFLAS_BASE base; size_t winolev, kmax;
-        FFLAS::Protected::MatMulParameters (F, m, n, k, beta, kmax, base, winolev);
-        nbw=winolev;
-        pnbw=0;
-        std::cerr << "Winolevel: " << nbw << '(' << pnbw << ')' << std::endl;
-    }
+//     if (nbw <0) {
+//         FFLAS::FFLAS_BASE base; size_t winolev, kmax;
+//         FFLAS::Protected::MatMulParameters (F, m, n, k, beta, kmax, base, winolev);
+//         nbw=winolev;
+//         pnbw=0;
+//         std::cerr << "Winolevel: " << nbw << '(' << pnbw << ')' << std::endl;
+//     }
 
 	OMPTimer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit+1;++i){
@@ -141,65 +142,17 @@ int main(int argc, char** argv){
         {
 #pragma omp single
             {
-
                 FFLAS::pfgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
                                beta,C,n,pnbw, Strategy);
             }
         }
         t.stop();
 		if (i) tim+=t;
-        if (i<nbit) delete[] C;
+//         if (i<nbit) delete[] C;
 	}
-
-#if TIME
-	double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tim.realtime();
-	cerr << pnbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tim.realtime()/nbit
-	     << " s, Mffops = "<<mflops
-	     << endl;
-
-	cerr<<"m,n,k,pnbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
-	    <<", "<<beta<<", "<<pnbw<<endl
-	    <<alpha
-	    <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
-	    <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
-	    <<beta<<".C"<<endl;
-	cout<<m<<" "<<n<<" "<<k<<" "<<pnbw<<" "<<alpha<<" "<<beta<<" "
-	    <<mflops<<" "<<tim.realtime()/nbit<<endl;
-
-
-	OMPTimer tims,ts; ts.clear();tims.clear();
-	for(int i = 0;i<nbit;++i){
-        C = new Field::Element[m*n];
-		ts.clear();
-		ts.start();
-		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,n,nbw);
-		ts.stop();
-		//if (i)
-			tims+=ts;
-        //if (i<nbit) delete[] C;
-	}
-
-
-	mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tims.realtime();
-	cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tims.realtime()/nbit
-	     << " s, Mffops = "<<mflops
-	     << endl;
-
-	cerr<<"m,n,k,nbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
-	    <<", "<<beta<<", "<<nbw<<endl
-	    <<alpha
-	    <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
-	    <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
-	    <<beta<<".C"<<endl;
-	cout<<m<<" "<<n<<" "<<k<<" "<<nbw<<" "<<alpha<<" "<<beta<<" "
-	    <<mflops<<" "<<tims.realtime()/nbit<<endl;
-
-#endif
 
 #if DEBUG
+    cerr<<"Debugging ... ";
 	bool wrong = false;
 	Field::Element zero;
 	F.init(zero, 0.0);
@@ -248,6 +201,54 @@ int main(int argc, char** argv){
 		cerr<<"PASS"<<endl;
 	}
 	delete[] Cd;
+#endif
+
+#if TIME
+	double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tim.realtime();
+	cerr << pnbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
+	     << tim.realtime()/nbit
+	     << " s, Mffops = "<<mflops
+	     << endl;
+
+	cerr<<"m,n,k,pnbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
+	    <<", "<<beta<<", "<<pnbw<<endl
+	    <<alpha
+	    <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
+	    <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
+	    <<beta<<".C"<<endl;
+	cout<<m<<" "<<n<<" "<<k<<" "<<pnbw<<" "<<alpha<<" "<<beta<<" "
+	    <<mflops<<" "<<tim.realtime()/nbit<<endl;
+
+
+	OMPTimer tims,ts; ts.clear();tims.clear();
+	for(int i = 0;i<nbit;++i){
+        C = new Field::Element[m*n];
+		ts.clear();
+		ts.start();
+		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+			      beta,C,n,nbw);
+		ts.stop();
+		//if (i)
+			tims+=ts;
+//         if (i<nbit) delete[] C;
+	}
+
+
+	mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*nbit*n/tims.realtime();
+	cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
+	     << tims.realtime()/nbit
+	     << " s, Mffops = "<<mflops
+	     << endl;
+
+	cerr<<"m,n,k,nbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
+	    <<", "<<beta<<", "<<nbw<<endl
+	    <<alpha
+	    <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
+	    <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
+	    <<beta<<".C"<<endl;
+	cout<<m<<" "<<n<<" "<<k<<" "<<nbw<<" "<<alpha<<" "<<beta<<" "
+	    <<mflops<<" "<<tims.realtime()/nbit<<endl;
+
 #endif
 
 

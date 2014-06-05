@@ -144,45 +144,16 @@ namespace FFLAS {
         const CuttingStrategy method,
         const int maxThreads
 		){
-		size_t RBLOCKSIZE, CBLOCKSIZE;
-
-        size_t NrowBlocks, NcolBlocks;
-        size_t LastrowBlockSize, LastcolBlockSize;
-
-        BlockCuts(RBLOCKSIZE, CBLOCKSIZE,
-                  LastrowBlockSize, LastcolBlockSize,
-                  NrowBlocks, NcolBlocks,
-                  m, n, method, maxThreads
-                  );
-
-		const size_t BLOCKS = NrowBlocks*NcolBlocks;
-
-// 		std::cout<<"RBLOCKSIZE : "<<RBLOCKSIZE<<std::endl;
-// 		std::cout<<"CBLOCKSIZE : "<<CBLOCKSIZE<<std::endl;
-// 		std::cout<<"lastRBS    : "<<LastrowBlockSize<<std::endl;
-// 		std::cout<<"lastCBS    : "<<LastcolBlockSize<<std::endl;
-// 		std::cout<<"NrowBlocks : "<<NrowBlocks<<std::endl;
-// 		std::cout<<"NcolBlocks : "<<NcolBlocks<<std::endl;
-
-		for (size_t t = 0; t < BLOCKS; ++t){
-			size_t i = t / NcolBlocks;
-			size_t j = t % NcolBlocks;
-			size_t BlockRowDim = RBLOCKSIZE;
-			if (i == NrowBlocks-1)
-				BlockRowDim = LastrowBlockSize;
-			size_t BlockColDim = CBLOCKSIZE;
-			if (j == NcolBlocks-1)
-				BlockColDim = LastcolBlockSize;
-			
+        ForStrategy2D iter(m,n,method,maxThreads);
+        for (iter.begin(); ! iter.end(); ++iter){
 #ifdef __FFLASFFPACK_USE_OPENMP
-#pragma omp task shared (A, B, C, F, NcolBlocks, NrowBlocks)
-			fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w);
+#pragma omp task shared (A, B, C, F)
+            fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, w);
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
-			ka::Spawn<Taskfgemm<Field> >()(F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda,
-						       B + CBLOCKSIZE * j, ldb,beta, C + RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w);
+            ka::Spawn<Taskfgemmw<Field> >()( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, w);
 #endif
-		}
+               }
 #ifdef __FFLASFFPACK_USE_OPENMP
        #pragma omp taskwait
 #endif
@@ -208,43 +179,14 @@ namespace FFLAS {
         const CuttingStrategy method,
         const int maxThreads
 		){
-		size_t RBLOCKSIZE, CBLOCKSIZE;
-
-        size_t NrowBlocks, NcolBlocks;
-        size_t LastrowBlockSize, LastcolBlockSize;
-
-        BlockCuts(RBLOCKSIZE, CBLOCKSIZE,
-                  LastrowBlockSize, LastcolBlockSize,
-                  NrowBlocks, NcolBlocks,
-                  m, n, method, maxThreads
-                  );
-
-		const size_t BLOCKS = NrowBlocks*NcolBlocks;
-
-// 		std::cout<<"RBLOCKSIZE : "<<RBLOCKSIZE<<std::endl;
-// 		std::cout<<"CBLOCKSIZE : "<<CBLOCKSIZE<<std::endl;
-// 		std::cout<<"lastRBS    : "<<LastrowBlockSize<<std::endl;
-// 		std::cout<<"lastCBS    : "<<LastcolBlockSize<<std::endl;
-// 		std::cout<<"NrowBlocks : "<<NrowBlocks<<std::endl;
-// 		std::cout<<"NcolBlocks : "<<NcolBlocks<<std::endl;
-
-		for (size_t t = 0; t < BLOCKS; ++t){
-			size_t i = t / NcolBlocks;
-			size_t j = t % NcolBlocks;
-			size_t BlockRowDim = RBLOCKSIZE;
-			if (i == NrowBlocks-1)
-				BlockRowDim = LastrowBlockSize;
-			size_t BlockColDim = CBLOCKSIZE;
-			if (j == NcolBlocks-1)
-				BlockColDim = LastcolBlockSize;
-			
+        ForStrategy2D iter(m,n,method,maxThreads);
+        for (iter.begin(); ! iter.end(); ++iter){
 #ifdef __FFLASFFPACK_USE_OPENMP
-#pragma omp task shared (A, B, C, F, NcolBlocks, NrowBlocks)
-			fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc);
+#pragma omp task shared (A, B, C, F)
+            fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
-			ka::Spawn<Taskfgemmw<Field> >()(F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda,
-						       B + CBLOCKSIZE * j, ldb,beta, C + RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc);
+			ka::Spawn<Taskfgemmw<Field> >()( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
 #endif
 		}
 #ifdef __FFLASFFPACK_USE_OPENMP

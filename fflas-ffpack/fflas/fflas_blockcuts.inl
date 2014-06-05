@@ -151,5 +151,65 @@ namespace FFLAS {
 
 
 
+namespace FFLAS {
+
+    class ForStrategy1D {
+        ForStrategy1D(const size_t n, const size_t numthreads) {}
+    };
+    
+
+    struct ForStrategy2D {
+        ForStrategy2D(const size_t m, const size_t n, const CuttingStrategy method, const size_t numthreads) {
+            BlockCuts(rowBlockSize, colBlockSize, m, n, method, numthreads);
+            numRowBlock = m/rowBlockSize;
+            numColBlock = n/colBlockSize;
+            lastRBS = m % rowBlockSize;
+            if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
+            lastCBS = n % colBlockSize;
+            if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
+            BLOCKS = numRowBlock * numColBlock;
+//             std::cout<<"RBLOCKSIZE : "<<rowBlockSize<<std::endl;
+//             std::cout<<"CBLOCKSIZE : "<<colBlockSize<<std::endl;
+//             std::cout<<"lastRBS    : "<<lastRBS<<std::endl;
+//             std::cout<<"lastCBS    : "<<lastCBS<<std::endl;
+//             std::cout<<"NrowBlocks : "<<numRowBlock<<std::endl;
+//             std::cout<<"NcolBlocks : "<<numColBlock<<std::endl;
+        }
+        
+        size_t begin() { current = 0; return setCurrentBlock(); }
+        bool end() const { return current == BLOCKS; }
+        size_t setCurrentBlock() { 
+			ibeg = current / numColBlock;
+			jbeg = current % numColBlock;
+			size_t BlockRowDim = rowBlockSize;
+			if (ibeg == numRowBlock-1)
+				BlockRowDim = lastRBS;
+			size_t BlockColDim = colBlockSize;
+			if (jbeg == numColBlock-1)
+				BlockColDim = lastCBS;
+            ibeg *= rowBlockSize;
+            jbeg *= colBlockSize;
+            iend = ibeg + BlockRowDim;
+            jend = jbeg + BlockColDim;
+            return current;
+        }
+        
+        size_t operator++() { ++current; return setCurrentBlock(); }
+        
+        size_t ibeg, iend, jbeg, jend;
+
+    protected:
+        size_t current;
+        size_t rowBlockSize; size_t colBlockSize;
+        size_t lastRBS; size_t lastCBS;
+        size_t numRowBlock; size_t numColBlock;
+        size_t BLOCKS;
+        
+   };
+    
+}
+
+
+
 #endif
 
