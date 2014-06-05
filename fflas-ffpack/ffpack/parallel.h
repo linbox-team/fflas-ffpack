@@ -120,6 +120,14 @@
 #endif
 #endif 
 
+// Parallel Region
+#ifdef __FFLASFFPACK_USE_OPENMP
+#define HPAC_PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
+  PRAGMA_OMP_TASK_IMPL( omp single ) 
+#else
+#define HPAC_PAR_REGION 
+#endif
+
 // Get number of threads
 #ifdef __FFLASFFPACK_USE_OPENMP
 # define HPAC_NUM_THREADS omp_get_num_threads()

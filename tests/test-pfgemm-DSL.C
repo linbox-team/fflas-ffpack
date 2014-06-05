@@ -47,8 +47,8 @@
 #include <iostream>
 using namespace std;
 
-//#define  __FFLASFFPACK_USE_OPENMP
-#define  __FFLASFFPACK_USE_KAAPI
+#define  __FFLASFFPACK_USE_OPENMP
+//#define  __FFLASFFPACK_USE_KAAPI
 
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -169,9 +169,9 @@ int main(int argc, char** argv){
 		C = new Field::Element[m*n];
                 clock_gettime(CLOCK_REALTIME, &t0);
 
-		P_REGION{
+		HPAC_PAR_REGION{
 			FFLAS::pfgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-				      beta,C,n, nbw, Strategy, NUM_THREADS);   
+				      beta,C,n, nbw, Strategy, HPAC_NUM_THREADS);   
 		}
 		BARRIER;
                 clock_gettime(CLOCK_REALTIME, &t1);

@@ -149,7 +149,8 @@ namespace FFLAS {
 		){
         ForStrategy2D iter(m,n,method,maxThreads);
         for (iter.begin(); ! iter.end(); ++iter){
-            TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, w);
+		TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, w);
+		//			TASK(read(A,B,F, NcolBlocks, NrowBlocks), nowrite(), readwrite(C), fgemm, F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A + RBLOCKSIZE * i*lda, lda, B + CBLOCKSIZE * j, ldb, beta, C+ RBLOCKSIZE*i*ldc+j*CBLOCKSIZE, ldc, w );
 
         }
 
@@ -177,8 +178,24 @@ namespace FFLAS {
             ){
         ForStrategy2D iter(m,n,method,maxThreads);
         for (iter.begin(); ! iter.end(); ++iter){
-            TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
-        }
+		TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
+		/*
+#ifdef __FFLASFFPACK_USE_OPENMP
+#pragma omp task shared (A, B, C, F)
+            fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
+#endif
+#ifdef __FFLASFFPACK_USE_KAAPI
+			ka::Spawn<Taskfgemmw<Field> >()( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
+#endif
+		}
+#ifdef __FFLASFFPACK_USE_OPENMP
+       #pragma omp taskwait
+#endif
+#ifdef __FFLASFFPACK_USE_KAAPI
+		ka::Sync();
+#endif
+		*/
+	}
 		WAIT;
 		return C;
 	}
