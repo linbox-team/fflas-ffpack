@@ -154,7 +154,38 @@ namespace FFLAS {
 namespace FFLAS {
 
     class ForStrategy1D {
-        ForStrategy1D(const size_t n, const size_t numthreads) {}
+        ForStrategy1D(const size_t n, const CuttingStrategy method, const size_t numthreads) {
+            if ( method == BLOCK_THREADS || method == ROW_THREADS || method == COLUMN_THREADS) {
+                BlockSize = std::max(n/numthreads,(size_t)1);
+            } else {
+                BlockSize =__FFLASFFPACK_MINBLOCKCUTS;
+            }
+            numBlock = n/BlockSize;
+            lastBS = n % BlockSize;
+            if (lastBS) ++numBlock; else lastBS = BlockSize;            
+        }
+        
+        size_t begin() { current = 0; return setCurrentBlock(); }
+        bool end() const { return current == numBlock; }
+        size_t setCurrentBlock() { 
+			ibeg = current / numBlock;
+			size_t BlockDim = BlockSize;
+			if (ibeg == numBlock-1)
+				BlockDim = lastBS;
+            ibeg *= BlockSize;
+            iend = ibeg + BlockDim;
+            return current;
+        }
+        
+        size_t operator++() { ++current; return setCurrentBlock(); }
+        
+        size_t ibeg, iend;
+
+    protected:
+        size_t current;
+        size_t BlockSize; 
+        size_t lastBS; 
+        size_t numBlock;
     };
     
 
