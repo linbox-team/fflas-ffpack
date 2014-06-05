@@ -161,11 +161,11 @@ namespace FFLAS {
 #include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
 
-#ifdef __FFLASFFPACK_USE_OPENMP
+//#ifdef __FFLASFFPACK_USE_OPENMP
 #include "fflas_blockcuts.inl"
 #include "fflas_pfgemm.inl"
 #include "fflas_pftrsm.inl"
-#endif
+//#endif
 
 #include "fflas_fgemv.inl"
 #include "fflas_fger.inl"

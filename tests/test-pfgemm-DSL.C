@@ -1,0 +1,319 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+
+/*
+ * Copyright (C) FFLAS-FFPACK
+ * Written by Ziad Sultan
+ * This file is Free Software and part of FFLAS-FFPACK.
+ *
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ *.
+ */
+
+
+//--------------------------------------------------------------------------
+//                        DSL test for pfgemm 
+//
+//--------------------------------------------------------------------------
+// Ziad Sultan
+//-------------------------------------------------------------------------
+
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+#define NEWWINO
+#ifndef TIME
+#define TIME 1
+#endif
+
+#include <iomanip>
+#include <iostream>
+using namespace std;
+
+#define  __FFLASFFPACK_USE_OPENMP
+//#define  __FFLASFFPACK_USE_KAAPI
+
+#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/fflas/fflas.h"
+#include "time.h"
+
+
+
+
+#ifdef __FFLASFFPACK_USE_KAAPI
+#include <kaapi++>
+#endif
+
+#ifdef __FFLASFFPACK_USE_OPENMP
+#include <omp.h>
+#endif
+
+
+using namespace FFPACK;
+
+
+template<class T>
+T& myrand (T& r, long size) {
+    if (size < 0)
+        return r = T( (lrand48() % (-size-size)) + size );
+    else
+        return r = T(  lrand48() % size ) ;
+}
+
+typedef Modular<double> Field;
+//typedef Modular<float> Field;
+//typedef ModularBalanced<double> Field;
+//typedef ModularBalanced<float> Field;
+//typedef Modular<int> Field;
+
+//#ifdef  __FFLASFFPACK_USE_OPENMP
+Field::Element* makemat(const Field::RandIter& RF,int m, int n){
+    Field::Element * res = new Field::Element[m*n];
+    //#pragma omp parallel for
+    for (long i = 0; i < m; ++i)
+        for (long j = 0; j < n; ++j) {
+            RF.random(res[j+i*n]);
+        }
+    return res;
+}
+//#endif
+
+
+
+#ifdef __FFLASFFPACK_USE_KAAPI
+struct doit {
+	void operator()(int argc, char** argv )
+	{
+#endif
+
+#ifndef __FFLASFFPACK_USE_KAAPI
+int main(int argc, char** argv){
+
+#endif
+
+        if (argc != 8)  {
+                cerr<<"Testing pfgemm with : test-fgemm-DSL <p> <file-matrixA> <File-matrixB> <w> <i> <alpha> <beta>"
+                    <<endl;
+                exit(-1);
+        }
+        srand48(BaseTimer::seed());
+        int m,n, k;
+
+        Field F(atoi(argv[1]));
+
+        typename Field::Element *A = read_field(F, argv[2], &m, &k);
+        typename Field::Element *B = read_field(F, argv[3], &k, &n);
+
+        //      //      int m=atoi(argv[2]),n=atoi(argv[3]),k=m;                                                                                                                
+        int nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
+        int nbit=atoi(argv[5]); // number of times the product is performed                                                                                                     
+        cerr<<setprecision(10);
+	Field::Element alpha,beta;
+
+
+
+
+
+
+        F.init( alpha, Field::Element(atoi(argv[6])));
+        F.init( beta, Field::Element(atoi(argv[7])));
+        /*                                                                                                                                                                      
+    Field::RandIter RF(F);                                                                                                                                                      
+                                                                                                                                                                                
+        Field::Element * A = makemat(RF,m,n);                                                                                                                                   
+        Field::Element * B = makemat(RF,m,n);                                                                                                                                   
+        */
+        size_t lda=m;
+        size_t ldb=n;
+
+
+        enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
+        enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
+        /*                                                                                                                                                                      
+        const size_t maxt = (size_t)sqrt((double)omp_get_max_threads());                                                                                                        
+        const size_t RBLOCKSIZE=MAX(m/maxt,1), CBLOCKSIZE=MAX(n/maxt,1);                                                                                                        
+        */
+	Field::Element * C=NULL;
+        struct timespec t0,t1;
+        double delay, avrg;
+        double t_total=0;
+
+	//      write_field (F, cerr<<"A = "<<endl, A, m, k, lda);                                                                                                                      
+	//      write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);                                                                                                                      
+	//      std::cout<<"coucou"<<std::endl;                                                                                                                                         
+	//      OMPTimer tim,t; t.clear();tim.clear();                                                                                                                                  
+
+	//	size_t RBLOCKSIZE = 256;
+	//	size_t CBLOCKSIZE = 256;
+
+	//#ifdef __FFLASFFPACK_USE_KAAPI
+	const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
+	//	size_t r,c; FFLAS::BlockCuts(r,c,m,n,Strategy, kaapi_getconcurrency_cpu());
+	//#endif
+
+        for(int i = 0;i<nbit;++i){
+		C = new Field::Element[m*n];
+                clock_gettime(CLOCK_REALTIME, &t0);
+
+#ifdef __FFLASFFPACK_USE_OPENMP                                      
+                #pragma omp parallel
+                {
+                        #pragma omp single nowait
+                        {
+#endif
+				FFLAS::pfgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+					      beta,C,n, nbw, Strategy, 
+#ifdef __FFLASFFPACK_USE_OPENMP
+				       omp_get_num_threads()                              
+#else
+#ifdef __FFLASFFPACK_USE_KAAPI
+				       kaapi_getconcurrency_cpu()                             
+#else
+1
+#endif
+#endif 
+				       );
+				
+#ifdef __FFLASFFPACK_USE_KAAPI
+				ka::Sync();
+#endif
+#ifdef __FFLASFFPACK_USE_OPENMP
+                        }
+                }
+#endif
+                clock_gettime(CLOCK_REALTIME, &t1);
+                delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
+                //              t.stop();                                                                                                                                       
+                if (i)
+                        t_total+=delay;
+                //        if (i<nbit) delete[] C;                                                                                                                               
+        }
+        avrg = t_total/(nbit-1);
+
+#if TIME
+        //      double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*(nbit-1)*n/tim.realtime();
+        double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*n/avrg;
+        /*      cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
+		<< tim.realtime()/nbit                                                                         
+		<< " s, Mffops = "<<mflops
+		<< endl;                  
+		cerr<<"m,n,k,nbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
+		<<", "<<beta<<", "<<nbw<<endl
+		<<alpha
+		<<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
+		<<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
+		<<beta<<".C"<<endl;*/
+	cerr<<m<<" "<<n<<" "<<k<<" "<<nbw/*<<" "<<RBLOCKSIZE<<" "<<CBLOCKSIZE*/<<" "<<alpha<<" "<<beta<<" "
+	    <<mflops<<" "<<avrg<<endl;
+#endif
+
+
+#if DEBUG
+        bool wrong = false;
+	Field::Element zero;
+        F.init(zero, 0.0);
+	Field::Element * Cd;
+	Cd  = new Field::Element[m*n];
+	for (int i=0; i<m*n; ++i)
+		F.assign (*(Cd+i), zero);
+
+	Field::Element aij, bij,  tmp;
+        // Field::Element beta_alpha;                                                                                                                                           
+        //F.div (beta_alpha, beta, alpha);                                                                                                                                      
+        for (int i = 0; i < m; ++i)
+                for (int j = 0; j < n; ++j){
+                        F.mulin(*(Cd+i*n+j),beta);
+                        F.assign (tmp, zero);
+                        for ( int l = 0; l < k ; ++l ){
+                                if ( ta == FFLAS::FflasNoTrans )
+                                        aij = *(A+i*lda+l);
+                                else
+                                        aij = *(A+l*lda+i);
+                                if ( tb == FFLAS::FflasNoTrans )
+                                        bij = *(B+l*ldb+j);
+                                else
+                                        bij = *(B+j*ldb+l);
+                                //F.mul (tmp, aij, bij);                                                                                                                        
+                                //F.axpyin( *(Cd+i*n+j), alpha, tmp );                                                                                                          
+                                F.axpyin (tmp, aij, bij);
+                        }
+                        F.axpyin (*(Cd+i*n+j), alpha, tmp);
+                        //F.mulin( *(Cd+i*n+j),alpha );                                                                                                                         
+                        if ( !F.areEqual( *(Cd+i*n+j), *(C+i*n+j) ) ) {
+                                wrong = true;
+                        }
+                }
+        if ( wrong ){
+                cerr<<"FAIL"<<endl;
+                for (int i=0; i<m; ++i){
+                        for (int j =0; j<n; ++j)
+                                if (!F.areEqual( *(C+i*n+j), *(Cd+i*n+j) ) )
+					cerr<<"Erreur C["<<i<<","<<j<<"]="
+					    <<(*(C+i*n+j))<<" C[d"<<i<<","<<j<<"]="
+					    <<(*(Cd+i*n+j))<<endl;
+                }
+        }
+        else{
+                cerr<<"PASS"<<endl;
+        }
+        delete[] Cd;
+#endif
+
+        delete[] C;
+        delete[] A;
+        delete[] B;
+
+
+}
+
+
+#ifdef __FFLASFFPACK_USE_KAAPI
+};
+
+
+int main(int argc, char** argv){
+
+	try {
+		/* Join the initial group of computation : it is defining                                                                                                                                                  
+                when launching the program by a1run.                                                                                                                                                           
+		*/
+		ka::Community com = ka::System::join_community( argc, argv );
+
+		/* Start computation by forking the main task */
+		ka::SpawnMain<doit>()(argc, argv);
+
+		/* Leave the community: at return to this call no more athapascan                                                                                                                                          
+                tasks or shared could be created.                                                                                                                                                              
+		*/
+		com.leave();
+		/* */
+		ka::System::terminate();
+	}
+	catch (const std::exception& E) {
+		ka::logfile() << "Catch : " << E.what() << std::endl;
+	}
+	catch (...) {
+		ka::logfile() << "Catch unknown exception: " << std::endl;
+	}
+	return 0;
+}
+#endif

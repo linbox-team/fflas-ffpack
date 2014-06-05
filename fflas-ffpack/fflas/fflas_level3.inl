@@ -353,6 +353,7 @@ namespace FFLAS {
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc
+	       , const int w /*= (int) -1*/
 	     ) ;
 #endif
 
@@ -361,7 +362,7 @@ namespace FFLAS {
 	 * Parallel fgemm
 	 */
 
-#ifdef __FFLASFFPACK_USE_OPENMP
+	//#ifdef __FFLASFFPACK_USE_OPENMP
 	enum CuttingStrategy {
 		ROW_FIXED	,
 		COLUMN_FIXED	,
@@ -376,51 +377,55 @@ namespace FFLAS {
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
-		const FFLAS_TRANSPOSE ta,
-		const FFLAS_TRANSPOSE tb,
-		const size_t m,
-		const size_t n,
-		const size_t k,
-		const typename Field::Element alpha,
-		const typename Field::Element* A, const size_t lda,
-		const typename Field::Element* B, const size_t ldb,
-		const typename Field::Element beta,
-		typename Field::Element* C, const size_t ldc,
-		const size_t w,
-		const CuttingStrategy method = BLOCK_THREADS,
-		const int maxThreads
+            const FFLAS_TRANSPOSE ta,
+            const FFLAS_TRANSPOSE tb,
+            const size_t m,
+            const size_t n,
+            const size_t k,
+            const typename Field::Element alpha,
+            const typename Field::Element* A, const size_t lda,
+            const typename Field::Element* B, const size_t ldb,
+            const typename Field::Element beta,
+            typename Field::Element* C, const size_t ldc,
+            const size_t w,
+		const CuttingStrategy method, //  =  BLOCK_THREADS,
+            const int maxThreads
+		/*
 #ifdef __FFLASFFPACK_USE_OPENMP
 		= omp_get_num_threads()
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
 		= kaapi_getconcurrency_cpu()
 #endif
-	      );
+		*/
+            );
 
 	// Parallel fgemm with OpenMP tasks
 	// winograd level is automatic
 	template<class Field>
 	typename Field::Element*
 	pfgemm( const Field& F,
-		const FFLAS_TRANSPOSE ta,
-		const FFLAS_TRANSPOSE tb,
-		const size_t m,
-		const size_t n,
-		const size_t k,
-		const typename Field::Element alpha,
-		const typename Field::Element* A, const size_t lda,
-		const typename Field::Element* B, const size_t ldb,
-		const typename Field::Element beta,
-		typename Field::Element* C, const size_t ldc,
-		const CuttingStrategy method = BLOCK_THREADS,
-		const int maxThreads
+            const FFLAS_TRANSPOSE ta,
+            const FFLAS_TRANSPOSE tb,
+            const size_t m,
+            const size_t n,
+            const size_t k,
+            const typename Field::Element alpha,
+            const typename Field::Element* A, const size_t lda,
+            const typename Field::Element* B, const size_t ldb,
+            const typename Field::Element beta,
+	    typename Field::Element* C, const size_t ldc,
+		const CuttingStrategy method, //  = BLOCK_THREADS,
+            const int maxThreads
+		/*
 #ifdef __FFLASFFPACK_USE_OPENMP
 		= omp_get_num_threads()
 #endif
 #ifdef __FFLASFFPACK_USE_KAAPI
 		= kaapi_getconcurrency_cpu()
 #endif
-	      );
+		*/
+            );
 
 
 
@@ -437,7 +442,7 @@ namespace FFLAS {
 		const typename Field::Element alpha,
 		const typename Field::Element* A, const size_t lda,
 		typename Field::Element* B, const size_t ldb);
-#endif
+	//#endif
 
 	/** @brief fsquare: Squares a matrix.
 	 * compute \f$ C \gets \alpha \mathrm{op}(A) \mathrm{op}(A) + \beta C\f$ over a Field \p F

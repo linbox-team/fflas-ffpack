@@ -42,7 +42,7 @@
 #endif
 
 #include "fflas-ffpack/fflas/fflas.h"
-
+//#include "parallel.h"
 #include <list>
 #include <vector>
 #include <iostream> // std::cout
@@ -164,7 +164,7 @@ namespace FFPACK { /* Permutations */
 		const size_t M, const int ibeg, const int iend,
 		typename Field::Element * A, const size_t lda, const size_t * P );
 
-
+ 
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 
@@ -192,6 +192,14 @@ namespace FFPACK { /* Permutations */
 		      const size_t M2,
 		      const size_t R1, const size_t R2,
 		      const size_t R3, const size_t R4) ;
+
+	template<class Field>
+	size_t 
+	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+	      const size_t M, const size_t N,
+	      typename Field::Element* A, const size_t lda,
+	      size_t* P, size_t* Q);
+
 
 #endif
 
@@ -391,6 +399,8 @@ namespace FFPACK { /* PLUQ */
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda,
 	      size_t*P, size_t *Q);
+
+
 	template<class Field>
 
 	//! @bug why here ?
@@ -1221,6 +1231,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_fgetrs.inl"
 #include "ffpack_ftrtr.inl"
 #include "ffpack_pluq.inl"
+#include "ffpack_ppluq.inl"
 #include "ffpack_ludivine.inl"
 #include "ffpack_echelonforms.inl"
 #include "ffpack_invert.inl"
