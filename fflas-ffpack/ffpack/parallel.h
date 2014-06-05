@@ -121,7 +121,7 @@
 #endif 
 
 // Get number of threads
-#ifdef __FFLASFFPACK_USE_KAAPI
+#ifdef __FFLASFFPACK_USE_OPENMP
 # define HPAC_NUM_THREADS omp_get_num_threads()
 #else
 # ifdef __FFLASFFPACK_USE_KAAPI
