@@ -56,11 +56,11 @@ AC_MSG_RESULT([see below])
 CXXFLAGS_ALL="${BACKUP_CXXFLAGS} ${DEFAULT_CFLAGS} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BLAS_CFLAGS} ${CBLAS_FLAG}"
 LIBS="${BACKUP_LIBS} ${BLAS_LIBS} "
 WINO=`cat optimiser/winograd.C`
-
+ADDFLAGS="-DOPTIMISATION_MODE"
 
 dnl for Wino threshold for double
 echo "  == Wino/BLAS threshold for Modular<double> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<double> -DOPTIMISATION_MODE"
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<double> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -86,7 +86,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 
 dnl for WinoThreshold for float
 echo "  == Wino/BLAS threshold for Modular<float> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<float> -DOPTIMISATION_MODE"
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<float> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -111,7 +111,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 
 dnl for Wino threshold for double
 echo "  == Wino/BLAS threshold for ModularBalanced<double> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<double> -DOPTIMISATION_MODE"
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<double> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -137,7 +137,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 
 dnl for WinoThreshold for float
 echo "  == Wino/BLAS threshold for ModularBalanced<float> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<float> -DOPTIMISATION_MODE"
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<float> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
