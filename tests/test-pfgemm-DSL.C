@@ -47,8 +47,8 @@
 #include <iostream>
 using namespace std;
 
-#define  __FFLASFFPACK_USE_OPENMP
-//#define  __FFLASFFPACK_USE_KAAPI
+//#define  __FFLASFFPACK_USE_OPENMP
+#define  __FFLASFFPACK_USE_KAAPI
 
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -129,14 +129,9 @@ int main(int argc, char** argv){
         cerr<<setprecision(10);
 	Field::Element alpha,beta;
 
-
-
-
-
-
         F.init( alpha, Field::Element(atoi(argv[6])));
         F.init( beta, Field::Element(atoi(argv[7])));
-        /*                                                                                                                                                                      
+        /*                                                                           
     Field::RandIter RF(F);                                                                                                                                                      
                                                                                                                                                                                 
         Field::Element * A = makemat(RF,m,n);                                                                                                                                   
@@ -174,38 +169,19 @@ int main(int argc, char** argv){
 		C = new Field::Element[m*n];
                 clock_gettime(CLOCK_REALTIME, &t0);
 
-#ifdef __FFLASFFPACK_USE_OPENMP                                      
-                #pragma omp parallel
-                {
-                        #pragma omp single nowait
-                        {
-#endif
-				FFLAS::pfgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-					      beta,C,n, nbw, Strategy, 
-#ifdef __FFLASFFPACK_USE_OPENMP
-				       omp_get_num_threads()                              
-#else
-#ifdef __FFLASFFPACK_USE_KAAPI
-				       kaapi_getconcurrency_cpu()                             
-#else
-1
-#endif
-#endif 
-				       );
-				
-#ifdef __FFLASFFPACK_USE_KAAPI
-				ka::Sync();
-#endif
-#ifdef __FFLASFFPACK_USE_OPENMP
-                        }
-                }
-#endif
+		P_REGION{
+			FFLAS::pfgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+				      beta,C,n, nbw, Strategy, NUM_THREADS);   
+		}
+		BARRIER;
                 clock_gettime(CLOCK_REALTIME, &t1);
                 delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
-                //              t.stop();                                                                                                                                       
+                //              t.stop();
+
                 if (i)
-                        t_total+=delay;
-                //        if (i<nbit) delete[] C;                                                                                                                               
+			t_total+=delay;
+
+                //        if (i<nbit) delete[] C;            
         }
         avrg = t_total/(nbit-1);
 
