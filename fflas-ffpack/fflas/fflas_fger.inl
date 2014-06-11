@@ -39,7 +39,7 @@ namespace FFLAS {
 	      const typename Field::Element * y, const size_t incy,
 	      typename Field::Element * A, const size_t lda)
 	{
-		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field > H(F);
+		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field > H(F,0);
 		fger (F, M, N, alpha, const_cast<typename Field::Element*>(x), incx, const_cast<typename Field::Element*>(y), incy, A, lda, H);
 		finit (F, M, N, A, lda);
 	}
