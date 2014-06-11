@@ -29,7 +29,7 @@
 #ifndef __FFLASFFPACK_ffpack_ludivine_INL
 #define __FFLASFFPACK_ffpack_ludivine_INL
 
-#include "fflas_bounds.inl"
+#include "fflas-ffpack/fflas/fflas_bounds.inl"
 
 //#define LB_DEBUG
 namespace FFPACK {

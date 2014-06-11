@@ -49,7 +49,7 @@ namespace FFLAS{ namespace Protected {
 		FloatElement alphaf, betaf;
 		F.convert (betaf, beta);
 		F.convert (alphaf, alpha);
-		
+
 		size_t ma, na;
 		if (ta == FflasTrans) { ma = N; na = M; }
 		else { ma = M; na = N; }
@@ -60,7 +60,7 @@ namespace FFLAS{ namespace Protected {
 
 		fconvert(F, ma, na, Af, ldaf, A, lda);
 		fconvert(F, na, Xf, 1, X, incX);
-		
+
 		if (!F.isZero(beta))
 			fconvert(F, ma, Yf, 1, Y, incY);
 
@@ -139,7 +139,7 @@ namespace FFLAS {
 		typedef MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field > MMH_t;
 		MMH_t H(F,0);
 
-		fgemv (F, ta, M, N, alpha_, 
+		fgemv (F, ta, M, N, alpha_,
 		       const_cast<typename Field::Element*>(A), lda,
 		       const_cast<typename Field::Element*>(X), incX,
 		       beta_, Y, incY, H);
@@ -159,7 +159,7 @@ namespace FFLAS {
 	}
 }
 
-namespace FFLAS{	    
+namespace FFLAS{
 	template<class Field>
 	inline typename Field::Element*
 	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
@@ -169,8 +169,8 @@ namespace FFLAS{
 	       const typename Field::Element * X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY,
-	       MMHelper<MMHelperCategories::Classic, FieldCategories::GenericTag, Field> & H) 
-	       
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::GenericTag, Field> & H)
+
 	{
 		size_t Ydim = (ta==FflasNoTrans)?M:N;
 
@@ -193,7 +193,7 @@ namespace FFLAS{
 	}
 }
 
-namespace FFLAS{	    
+namespace FFLAS{
 	template<class Field>
 	inline typename Field::Element*
 	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
@@ -220,9 +220,9 @@ namespace FFLAS{
 			}
 		}
 		if (F.isMOne(betadf)) betadf = -1.0;
-		
+
 		size_t kmax = H.MaxDelayedDim (betadf);
-		
+
 		if (kmax <=  Xdim/2 ){
                         // Might as well reduce inputs
                         if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
@@ -270,7 +270,7 @@ namespace FFLAS{
 
 		fgemv (H.delayedField, ta, M1, N1, alphadf, A+nblock*shiftA, lda,
 		       X+nblock*k2*incX, incX, betadf, Y, incY, Hfp);
-		
+
 		for (size_t i = 0; i < nblock; ++i) {
 			finit(F, Ydim ,Y, incY);
 			Hfp.initC();
@@ -311,12 +311,12 @@ namespace FFLAS{
 	       MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, DoubleDomain> & H)
 	{
 		FFLASFFPACK_check(lda);
-		FFLASFFPACK_check(ldb);
-		FFLASFFPACK_check(ldc);
-		
+		// FFLASFFPACK_check(ldb);
+		// FFLASFFPACK_check(ldc);
+
                 H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
-		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta, 
+		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
 			     (int)M, (int)N, (DoubleDomain::Element) alpha,
 			     A, (int)lda, X, (int)incX, (DoubleDomain::Element) beta, Y, (int)incY);
 		return Y;
@@ -330,20 +330,20 @@ namespace FFLAS{
 	       const FloatDomain::Element * X, const size_t incX,
 	       const FloatDomain::Element beta,
 	       FloatDomain::Element * Y, const size_t incY,
-	       MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H) 
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H)
 	{
 		FFLASFFPACK_check(lda);
-		FFLASFFPACK_check(ldb);
-		FFLASFFPACK_check(ldc);
-		
+		// FFLASFFPACK_check(ldb);
+		// FFLASFFPACK_check(ldc);
+
 		H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
-		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta, 
+		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
 			     (int)M, (int)N, (DoubleDomain::Element) alpha,
 			     A, (int)lda, X, (int)incX, (DoubleDomain::Element) beta, Y, (int)incY);
 		return Y;
 	}
 
 }
-	
+
 #endif //  __FFLASFFPACK_fgemv_INL
