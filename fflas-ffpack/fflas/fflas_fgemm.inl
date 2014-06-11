@@ -53,9 +53,13 @@ namespace FFLAS { namespace Protected{
 		FFLASFFPACK_check(ldc);
 
 		FFPACK::Modular<FloatElement> G((FloatElement) F.characteristic());
-		FloatElement alphaf, betaf;
-		F.convert (betaf, beta);
-		F.convert (alphaf, alpha);
+		FloatElement tmp,alphaf, betaf;
+		    // This conversion is quite tricky, but convert and init are required
+		    // in sequence e.g. for when F is a ModularBalanced field and alpha == -1
+		F.convert (tmp, beta);
+		G.init(betaf, tmp);
+		F.convert (tmp, alpha);
+		G.init(alphaf, tmp);
 		
 		FloatElement * Af = new FloatElement[m*k];
 		FloatElement * Bf = new FloatElement[k*n];
@@ -217,7 +221,6 @@ namespace FFLAS {
 		// detect fger
 		if (k==1 and ...) {}
 #endif
-
 		typename Field::Element alpha_,beta_;
 		F.assign (alpha_,alpha);
 		F.assign (beta_,beta);

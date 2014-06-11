@@ -229,7 +229,7 @@ namespace FFPACK {
 			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
 //			write_field(Fi,std::cerr<<"Avant la cherche"<<std::endl,A,M,N,lda);
 			int i = rank-1;
-			while(Fi.isZero (CurrRow[++i]) && (i<N-1));
+			while(Fi.isZero (CurrRow[++i]) && (i<(int)N-1));
 //			std::cout<<"row = "<<row<<" i = "<<i<<" -> A[row,i] = "<<CurrRow[i]<<std::endl;
 			if (!Fi.isZero (CurrRow[i])){
 				    // found pivot

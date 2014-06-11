@@ -383,7 +383,7 @@ namespace FFLAS {
 	 * @param incY stride of \p Y
 	 */
 	template<class Field>
-	void
+	typename Field::Element*
 	fgemv (const Field& F, const FFLAS_TRANSPOSE TransA,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,

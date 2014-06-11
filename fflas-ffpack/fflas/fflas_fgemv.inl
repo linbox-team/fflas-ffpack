@@ -117,7 +117,7 @@ namespace FFLAS {
 		size_t Ydim = (ta == FflasNoTrans)?M:N;
 		if (!N || F.isZero (alpha)){
 			fscalin(F, Ydim, beta, Y, incY);
-			return;
+			return Y;
 		}
 
 		typename Field::Element alpha_,beta_;
@@ -137,7 +137,7 @@ namespace FFLAS {
 		}
 
 		typedef MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field > MMH_t;
-		MMH_t H(F);
+		MMH_t H(F,0);
 
 		fgemv (F, ta, M, N, alpha_, 
 		       const_cast<typename Field::Element*>(A), lda,
