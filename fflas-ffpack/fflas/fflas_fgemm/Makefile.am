@@ -35,5 +35,7 @@ pkgincludesub_HEADERS=            \
 	schedule_winograd_acc.inl          \
 	schedule_bini.inl                  \
 	schedule_winograd_acc_ip.inl       \
-	schedule_winograd_ip.inl
+	schedule_winograd_ip.inl	\
+	fflas_mmhelper.inl
+
 

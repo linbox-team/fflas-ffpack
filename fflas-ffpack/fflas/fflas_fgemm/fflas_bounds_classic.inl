@@ -77,7 +77,7 @@ namespace FFLAS { namespace Protected {
 		FFLAS_INT_TYPE p=0;
 		F.characteristic(p);
 
-		unsigned long mantissa = Mantissa (F, base);
+		unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
 
 		//(base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
 

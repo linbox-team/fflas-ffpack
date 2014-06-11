@@ -39,29 +39,32 @@
 
 namespace FFLAS { namespace BLAS3 {
 
-	template < class Field >
+		template < class Field >
 	inline void Winograd (const Field& F,
 			      const FFLAS_TRANSPOSE ta,
 			      const FFLAS_TRANSPOSE tb,
 			      const size_t mr, const size_t nr, const size_t kr,
 			      const typename Field::Element alpha,
-			      const typename Field::Element* A,const size_t lda,
-			      const typename Field::Element* B,const size_t ldb,
+			       typename Field::Element* A,const size_t lda,
+			       typename Field::Element* B,const size_t ldb,
 			      const typename Field::Element  beta,
 			      typename Field::Element * C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
-			      const MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> & WH
+			      MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> & WH
 			     )
 	{
 
 		FFLASFFPACK_check(F.isZero(beta));
 
-		size_t lb, cb, la, ca, ldX2;
-		// size_t x3rd = std::max(mr,kr);
-		const typename Field::Element * A11=A, *A12, *A21, *A22;
-		const typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		typedef MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field > MMH_t;
 
+		typename MMH_t::DelayedField_t & DF = WH.delayedField;
+
+		size_t lb, cb, la, ca, ldX2;
+		    // size_t x3rd = std::max(mr,kr);
+		typename Field::Element * A11=A, *A12, *A21, *A22;
+		typename Field::Element * B11=B, *B12, *B21, *B22;
+		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
 
 		size_t x1rd = std::max(nr,kr);
 		size_t ldX1;
@@ -72,8 +75,7 @@ namespace FFLAS { namespace BLAS3 {
 			la = kr;
 			ca = mr;
 			ldX1 = mr;
-		}
-		else {
+		} else {
 			A12 = A + kr;
 			A21 = A + mr*lda;
 			A22 = A21 + kr;
@@ -88,8 +90,7 @@ namespace FFLAS { namespace BLAS3 {
 			lb = nr;
 			cb = kr;
 			ldX2 = kr;
-		}
-		else {
+		} else {
 			B12 = B + nr;
 			B21 = B + kr*ldb;
 			B22 = B21 + nr;
@@ -97,83 +98,172 @@ namespace FFLAS { namespace BLAS3 {
 			ldX2 = cb = nr;
 		}
 
-
-		MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value> H = WH ;
-		H.w = H.w -1 ;
-		// std::cout << WH.w << ',' << H.w << std::endl;
 		// Two temporary submatrices are required
 		typename Field::Element* X2 = new typename Field::Element[kr*nr];
 
 		// T3 = B22 - B12 in X2
-		fsub(F,lb,cb,B22,ldb,B12,ldb,X2,ldX2);
+		fsub(DF,lb,cb,B22,ldb,B12,ldb,X2,ldX2);
 
 		// S3 = A11 - A21 in X1
 		typename Field::Element* X1 = new typename Field::Element[mr*x1rd];
-		fsub(F,la,ca,A11,lda,A21,lda,X1,ldX1);
+		fsub(DF,la,ca,A11,lda,A21,lda,X1,ldX1);
 
 		// P7 = alpha . S3 * T3  in C21
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H);
+		MMH_t H7(F, WH.recLevel-1, -(WH.Amax-WH.Amin), WH.Amax-WH.Amin, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0,0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H7);
 
 		// T1 = B12 - B11 in X2
-		fsub(F,lb,cb,B12,ldb,B11,ldb,X2,ldX2);
+		fsub(DF,lb,cb,B12,ldb,B11,ldb,X2,ldX2);
 
 		// S1 = A21 + A22 in X1
 
-		fadd(F,la,ca,A21,lda,A22,lda,X1,ldX1);
+		fadd(DF,la,ca,A21,lda,A22,lda,X1,ldX1);
 
 		// P5 = alpha . S1*T1 in C22
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H);
+		MMH_t H5(F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0, 0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
 		// T2 = B22 - T1 in X2
-		fsub(F,lb,cb,B22,ldb,X2,ldX2,X2,ldX2);
+		fsub(DF,lb,cb,B22,ldb,X2,ldX2,X2,ldX2);
 
 		// S2 = S1 - A11 in X1
-		fsubin(F,la,ca,A11,lda,X1,ldX1);
+		fsubin(DF,la,ca,A11,lda,X1,ldX1);
 
 		// P6 = alpha . S2 * T2 in C12
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H);
+		MMH_t H6(F, WH.recLevel-1, 2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0, 0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
 
 		// S4 = A12 -S2 in X1
-		fsub(F,la,ca,A12,lda,X1,ldX1,X1,ldX1);
+		fsub(DF,la,ca,A12,lda,X1,ldX1,X1,ldX1);
 
 		// P3 = alpha . S4*B22 in C11
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, B22, ldb, F.zero, C11, ldc, H);
+		MMH_t H3(F, WH.recLevel-1, 2*WH.Amin-2*WH.Amax, 2*WH.Amax-2*WH.Amin, WH.Bmin, WH.Bmax, 0, 0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, B22, ldb, F.zero, C11, ldc, H3);
 
 		// P1 = alpha . A11 * B11 in X1
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H);
+		MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H1);
 
-		// U2 = P1 + P6 in tmpU2  and
-		faddin(F,mr,nr,X1,nr,C12,ldc);
+		// U2 = P1 + P6 in C12  and
+		double U2Min, U2Max;
+		    // This test will be optimized out
+		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+			U2Min = H1.Outmin + H6.Outmin;
+			U2Max = H1.Outmax + H6.Outmax;
+			if (std::max(-U2Min, U2Max) > WH.MaxStorableValue) {
+				finit(F,mr,nr,X1,nr);
+				finit(F,mr,nr,C12,ldc);
+				H1.initOut();
+				H6.initOut();
+				U2Min = 2*WH.FieldMin;
+				U2Max = 2*WH.FieldMax;
+			}
+		} else {
+			U2Min = WH.FieldMin;
+			U2Max = WH.FieldMax;
+		}
+		faddin(DF,mr,nr,X1,nr,C12,ldc);
 
-		// U3 = P7 + U2 in tmpU3  and
-		faddin(F,mr,nr,C12,ldc,C21,ldc);
-
-		// U7 = P5 + U3 in C22    and
-		faddin(F,mr,nr,C22,ldc,C12,ldc);
+		// U3 = P7 + U2 in C21  and
+		double U3Min, U3Max;
+		    // This test will be optimized out
+		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+			U3Min = U2Min + H7.Outmin;
+			U3Max = U2Max + H7.Outmax;
+			if (std::max(-U3Min, U3Max) > WH.MaxStorableValue) {
+				finit(F, mr,nr,C12,ldc);
+				finit(F, mr,nr,C21,ldc);
+				H7.Outmin = WH.FieldMin;
+				H7.Outmax = WH.FieldMax;
+				U2Min = WH.FieldMin;
+				U2Max = WH.FieldMax;
+				U3Min = 2*WH.FieldMin;
+				U3Max = 2*WH.FieldMax;
+			}
+		} else {
+			U3Min = WH.FieldMin;
+			U3Max = WH.FieldMax;
+		}
+		faddin(DF,mr,nr,C12,ldc,C21,ldc);
+		
 
 		// U4 = P5 + U2 in C12    and
-		faddin(F,mr,nr,C21,ldc,C22,ldc);
+		double U4Min, U4Max;
+		    // This test will be optimized out
+		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+			U4Min = U2Min + H5.Outmin;
+			U4Max = U2Max + H5.Outmax;
+			if (std::max(-U4Min, U4Max) > WH.MaxStorableValue) {
+				finit(F,mr,nr,C22,ldc);
+				finit(F,mr,nr,C12,ldc);
+				H5.Outmin = WH.FieldMin;
+				H5.Outmax = WH.FieldMax;
+				U2Min = WH.FieldMin;
+				U2Max = WH.FieldMax;
+				U4Min = 2*WH.FieldMin;
+				U4Max = 2*WH.FieldMax;
+			}
+		} else {
+			U4Min = WH.FieldMin;
+			U4Max = WH.FieldMax;
+		}
+		faddin(DF,mr,nr,C22,ldc,C12,ldc);
+		
+
+		// U7 = P5 + U3 in C22    and
+		double U7Min, U7Max;
+		    // This test will be optimized out
+		if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.Outmin,H5.Outmax, WH) ){
+			finit(F,mr,nr,C21,ldc);
+			finit(F,mr,nr,C22,ldc);
+		}
+		faddin(DF,mr,nr,C21,ldc,C22,ldc);
+
 
 		// U5 = P3 + U4 in C12
-		faddin(F,mr,nr,C11,ldc,C12,ldc);
+		double U5Min, U5Max;
+		    // This test will be optimized out
+		if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.Outmin, H3.Outmax, WH) ){
+			finit(F,mr,nr,C12,ldc);
+			finit(F,mr,nr,C11,ldc);
+		}
+		faddin(DF,mr,nr,C11,ldc,C12,ldc);
 
 		// T4 = T2 - B21 in X2
-		fsubin(F,lb,cb,B21,ldb,X2,ldX2);
+		fsubin(DF,lb,cb,B21,ldb,X2,ldX2);
 
 		// P4 = alpha . A22 * T4 in C11
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H);
+		MMH_t H4(F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin, 0, 0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H4);
 
 		delete[] X2;
-		// U6 = U3 - P4 in C21
-		fsubin(F,mr,nr,C11,ldc,C21,ldc);
 
+		// U6 = U3 - P4 in C21
+		double U6Min, U6Max;
+		    // This test will be optimized out
+		if (Protected::NeedPreSubReduction (U6Min,U6Max, U3Min, U3Max, H4.Outmin,H4.Outmax, WH) ){
+			finit(F,mr,nr,C11,ldc);
+			finit(F,mr,nr,C21,ldc);
+		}
+		fsubin(DF,mr,nr,C11,ldc,C21,ldc);
+		
 		// P2 = alpha . A12 * B21  in C11
-		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H);
+		MMH_t H2(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+		fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H2);
 
 		//  U1 = P2 + P1 in C11
-		faddin(F,mr,nr,X1,nr,C11,ldc);
+		double U1Min, U1Max;
+		    // This test will be optimized out
+		if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
+			finit(F,mr,nr,X1,nr);
+			finit(F,mr,nr,C11,ldc);
+		}
+		faddin(DF,mr,nr,X1,nr,C11,ldc);
 
 		delete[] X1;
+
+		WH.Outmin = std::min (U1Min, std::min (U5Min, std::min (U6Min, U7Min)));
+		WH.Outmax = std::max (U1Max, std::max (U5Max, std::max (U6Max, U7Max)));
 
 	} // Winograd
 

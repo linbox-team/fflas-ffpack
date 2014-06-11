@@ -58,9 +58,9 @@
  * representation is not a floating point type.
  * @bug to be benchmarked.
  */
-#define FLOAT_DOUBLE_THRESHOLD_0 430
-#define FLOAT_DOUBLE_THRESHOLD_1 350
-#define FLOAT_DOUBLE_THRESHOLD_2 175
+#ifndef DOUBLE_TO_FLOAT_CROSSOVER
+#define DOUBLE_TO_FLOAT_CROSSOVER 800
+#endif
 
 #include <float.h>
 
@@ -134,7 +134,6 @@ namespace FFLAS {
 // Level 1 routines
 //---------------------------------------------------------------------
 
-
 #include "fflas_level1.inl"
 
 //---------------------------------------------------------------------
@@ -156,8 +155,6 @@ namespace FFLAS {
 #include "fflas_fadd.inl"
 #include "fflas_fscal.inl"
 
-
-// #include "fflas_bounds.inl"
 #include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
 

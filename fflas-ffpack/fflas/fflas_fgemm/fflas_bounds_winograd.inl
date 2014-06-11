@@ -36,73 +36,12 @@
 // WinogradSteps
 namespace FFLAS {
 
-	/** \brief Computes the number of recursive levels to perform.
-	 *
-	 * \param m the common dimension in the product AxB
-	 */
-	template<class Field>
-	inline int WinogradSteps (const Field & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= WINOTHRESHOLD ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const FFPACK:: Modular<double> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const FFPACK:: ModularBalanced<double> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const FFPACK:: Modular<float> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_FLT ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const FFPACK:: ModularBalanced<float> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-} // FFLAS
 
 // BaseCompute
 namespace FFLAS { namespace Protected {
+
+#if 0
+
 	/**  BaseCompute determines the type of floating point representation to
 	 * convert to, for BLAS computations.
 	 * \param F Finite Field/Ring of the computation
@@ -129,7 +68,6 @@ namespace FFLAS { namespace Protected {
 		}
 		return base;
 	}
-#if 1
 	template <>
 	inline FFLAS_BASE BaseCompute (const FFPACK:: Modular<double>& ,
 				       const size_t )

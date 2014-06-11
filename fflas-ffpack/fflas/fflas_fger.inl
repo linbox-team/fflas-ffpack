@@ -39,6 +39,84 @@ namespace FFLAS {
 	      const typename Field::Element * y, const size_t incy,
 	      typename Field::Element * A, const size_t lda)
 	{
+		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field > H(F);
+		fger (F, M, N, alpha, const_cast<typename Field::Element*>(x), incx, const_cast<typename Field::Element*>(y), incy, A, lda, H);
+		finit (F, M, N, A, lda);
+	}
+
+	template<class Field>
+	inline void
+	fger (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element alpha,
+	      typename Field::Element * x, const size_t incx,
+	      typename Field::Element * y, const size_t incy,
+	      typename Field::Element * A, const size_t lda,
+	      MMHelper<MMHelperCategories::Classic, FieldCategories::ModularFloatingPointTag, Field> & H)
+	{
+		typename MMHelper<MMHelperCategories::Classic, FieldCategories::ModularFloatingPointTag, Field>::DelayedField_t::Element alphadf;
+		if (F.isMOne( alpha)) alphadf = -1.0;
+		else alphadf = 1.0;
+
+		MMHelper<MMHelperCategories::Classic,
+			 typename FieldCategories::FloatingPointTag, 
+			 typename associatedDelayedField<Field>::value > Hfp(H);
+
+		// std::cerr<<"FGER : alpha = "<<alpha<<" maxdelayedim ="<<Hfp.MaxDelayedDim(1.0)<<std::endl;
+		if (Hfp.MaxDelayedDim(1.0) < 1){
+			
+			if (Hfp.Amin < H.FieldMin || Hfp.Amax>H.FieldMax){
+				Hfp.initA();
+				finit(F, M, x, incx);
+			}
+			if (Hfp.Bmin < H.FieldMin || Hfp.Bmax>H.FieldMax){
+				Hfp.initB();
+				finit(F, N, y, incy);
+			}
+			if (Hfp.Cmin < H.FieldMin || Hfp.Cmax>H.FieldMax){
+				    //std::cout<<"reducing C "<<std::endl;
+				Hfp.initC();
+				finit(F, M, N, A, lda);
+			}
+		}
+		// std::cerr<<"After inits maxdelayedim ="<<Hfp.MaxDelayedDim(1.0)<<std::endl;
+		// Hfp.print();
+		    //Helper<MMHelperCategories::Classic, FieldCategories::GenericTag, Field> Hg(H);
+		    //fger(F, M, N, alpha, x, incx, y, incy, A, lda, Hg );
+		Hfp.Outmin = Hfp.FieldMin;
+		Hfp.Outmax = Hfp.FieldMax;
+
+		fger (H.delayedField, M, N, alphadf, x, incx, y, incy, A, lda, Hfp);
+		// std::cerr<<"After fger ="<<std::endl;
+		// Hfp.print();
+
+		if (!F.isOne(alpha) && !F.isMOne(alpha)){
+                        if (abs(alpha)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+				finit (F, M, N, A, lda);
+				Hfp.initOut();
+			}
+			fscalin(H.delayedField, M, N, alpha, A, lda);
+			if (alpha>0){
+				H.Outmin = alpha*Hfp.Outmin;
+				H.Outmax = alpha*Hfp.Outmax;
+			} else {
+				H.Outmin = alpha*Hfp.Outmax;
+				H.Outmax = alpha*Hfp.Outmin;
+			}
+		}else {
+			H.Outmin = Hfp.Outmin;
+			H.Outmax = Hfp.Outmax;
+		}
+	}
+
+	template<class Field>
+	inline void
+	fger (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element alpha,
+	      const typename Field::Element * x, const size_t incx,
+	      const typename Field::Element * y, const size_t incy,
+	      typename Field::Element * A, const size_t lda,
+	      MMHelper<MMHelperCategories::Classic, FieldCategories::GenericTag, Field> & H)
+	{
 
 		typename Field::Element tmp;
 		const typename Field::Element* xi=x, *yj=y;
@@ -94,32 +172,40 @@ namespace FFLAS {
 
 	}
 
-	template<>
 	inline void
 	fger( const DoubleDomain& F, const size_t M, const size_t N,
 	      const DoubleDomain::Element alpha,
 	      const DoubleDomain::Element * x, const size_t incx,
 	      const DoubleDomain::Element * y, const size_t incy,
-	      DoubleDomain::Element * A, const size_t lda)
+	      DoubleDomain::Element * A, const size_t lda,
+	      MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, DoubleDomain> & H)
 	{
 		if (F.isZero(alpha)) return ;
 
 		FFLASFFPACK_check(lda);
 		cblas_dger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
+		// write_field(F, std::cerr<<"A = "<<std::endl, A, M, N, lda);
+		H.setOutBounds (1, alpha, 1.0);
+		// H.print();
+
 	}
 
-	template<>
 	inline void
 	fger( const FloatDomain& F, const size_t M, const size_t N,
 	      const FloatDomain::Element alpha,
 	      const FloatDomain::Element * x, const size_t incx,
 	      const FloatDomain::Element * y, const size_t incy,
-	      FloatDomain::Element * A, const size_t lda)
+	      FloatDomain::Element * A, const size_t lda,
+	      MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H)
 	{
 		if (F.isZero(alpha)) return ;
 
-			FFLASFFPACK_check(lda);
+		FFLASFFPACK_check(lda);
+		// write_field(F, std::cerr<<"x = ", x, M, 1, incx);
+		// write_field(F, std::cerr<<"y = ", y, N, 1, incy);
+		// write_field(F, std::cerr<<"A = ", A, M, N, lda);
 		cblas_sger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
+		H.setOutBounds (1, alpha, 1.0);
 	}
 
 } // FFLAS

@@ -36,11 +36,12 @@
 
 namespace FFLAS { namespace Protected {
 
-	template <class Field>
-	unsigned long Mantissa (const Field& F, const FFLAS_BASE base)
-	{
-		return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
-	}
+		template<class T>
+		unsigned long Mantissa () {return DBL_MANT_DIG;}
+		template<>
+		unsigned long Mantissa<float> () {return FLT_MANT_DIG;}
+		// unsigned long Mantissa (const FFLAS_BASE base)
+		// {return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;}
 
 
 } // Protected
@@ -49,10 +50,20 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS {
 
-	size_t min3(const size_t & m, const size_t & n , const size_t & k)
-	{
-		return std::min(m,std::min(n,k));
-	}
+	template <class T>
+	const T& min3(const T & m, const T & n , const T & k)	{return std::min(m,std::min(n,k));}
+
+	template <class T>
+	const T& max3(const T & m, const T & n , const T & k)	{return std::max(m,std::min(n,k));}
+
+	template <class T>
+	const T& min4(const T & m, const T & n , const T & k, const T & l)
+	{return std::min(std::min(m,n),std::min(k,l));}
+
+	template <class T>
+	const T& max4(const T & m, const T & n , const T & k, const T & l)
+	{return std::max(std::max(m,n),std::max(k,l));}
+
 
 } // FFLAS
 

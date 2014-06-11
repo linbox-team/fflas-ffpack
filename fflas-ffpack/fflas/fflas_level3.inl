@@ -36,58 +36,7 @@
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
 #include "fflas_bounds.inl"
-
-namespace FFLAS {
-
-	struct MMParameters {};
-
-	template <class FieldTrait>
-	struct WinogradHelper : public MMParameters {
-		short _SWRecLevels;
-		bool _AutoSetSWRecLevels;
-		bool _ImmutableElementType;
-		size_t _MaxDelayedDim;
-	protected:
-		WinogradHelper(){}
-	public:
-		template <class Field>
-		WinogradHelper(const Field& F, const size_t m, const size_t n, const size_t k,
-			       const typename Field::Element& beta):
-			_AutoSetSWRecLevels(true), _ImmutableElementType(false){
-				FFLAS_BASE base;
-				MatMulParametersWinograd(F,m,n,k, beta, &_MaxDelayedDim, base, _SWRecLevels, _AutoSetSWRecLevels);
-			}
-
-		void setSWRecLevels(const short w){ _SWRecLevels = w; _AutoSetSWRecLevels = false;}
-		void setAutoSWRecLevels(){_AutoSetSWRecLevels = true;}
-		void setElementTypeImmutability(const bool i){_ImmutableElementType = i;}
-
-	};
-
-
-	struct BiniHelper : public MMParameters {
-		// rec=1
-		// extra: epsilon or p
-		// fail back: winograd
-	} ;
-
-	struct LowMemHelper : public MMParameters {
-		// rec= any
-		// extra: T* X, T* Y, T* Z...
-		// square/rect options
-
-	} ;
-
-	template<class FieldTrait>
-	struct ClassicHelper ;
-
-	template <class FieldTrait>
-	struct Winograd2Helper ;
-
-
-} // FFLAS
-
-#include "fflas_fgemm.inl"
+#include "fflas_fgemm/fflas_mmhelper.inl"
 
 namespace FFLAS { namespace Protected {
 	//-----------------------------------------------------------------------------
@@ -137,7 +86,6 @@ namespace FFLAS { namespace Protected {
 				F.convert(*(Si+j),*(Ei+j));
 	}
 
-
 	/**
 	 * Computes the maximal size for delaying the modular reduction
 	 *         in a triangular system resolution.
@@ -152,88 +100,41 @@ namespace FFLAS { namespace Protected {
 	 * \param F Finite Field/Ring of the computation
 	 *
 	 */
-	template <class Field>
-	size_t TRSMBound (const Field& F);
-
-
-	template <class Field>
-	void MatVectProd (const Field& F,
-			  const FFLAS_TRANSPOSE TransA,
-			  const size_t M, const size_t N,
-			  const typename Field::Element alpha,
-			  const typename Field::Element * A, const size_t lda,
-			  const typename Field::Element * X, const size_t incX,
-			  const typename Field::Element beta,
-			  typename Field::Element * Y, const size_t incY);
-
-
 	// Specialized routines for ftrsm
-	template <class Element>
-	class ftrsmLeftUpperNoTransNonUnit;
-	template <class Element>
-	class ftrsmLeftUpperNoTransUnit;
-	template <class Element>
-	class ftrsmLeftUpperTransNonUnit;
-	template <class Element>
-	class ftrsmLeftUpperTransUnit;
-	template <class Element>
-	class ftrsmLeftLowerNoTransNonUnit;
-	template <class Element>
-	class ftrsmLeftLowerNoTransUnit;
-	template <class Element>
-	class ftrsmLeftLowerTransNonUnit;
-	template <class Element>
-	class ftrsmLeftLowerTransUnit;
-	template <class Element>
-	class ftrsmRightUpperNoTransNonUnit;
-	template <class Element>
-	class ftrsmRightUpperNoTransUnit;
-	template <class Element>
-	class ftrsmRightUpperTransNonUnit;
-	template <class Element>
-	class ftrsmRightUpperTransUnit;
-	template <class Element>
-	class ftrsmRightLowerNoTransNonUnit;
-	template <class Element>
-	class ftrsmRightLowerNoTransUnit;
-	template <class Element>
-	class ftrsmRightLowerTransNonUnit;
-	template <class Element>
-	class ftrsmRightLowerTransUnit;
+	template <class Element> class ftrsmLeftUpperNoTransNonUnit;
+	template <class Element> class ftrsmLeftUpperNoTransUnit;
+	template <class Element> class ftrsmLeftUpperTransNonUnit;
+	template <class Element> class ftrsmLeftUpperTransUnit;
+	template <class Element> class ftrsmLeftLowerNoTransNonUnit;
+	template <class Element> class ftrsmLeftLowerNoTransUnit;
+	template <class Element> class ftrsmLeftLowerTransNonUnit;
+	template <class Element> class ftrsmLeftLowerTransUnit;
+	template <class Element> class ftrsmRightUpperNoTransNonUnit;
+	template <class Element> class ftrsmRightUpperNoTransUnit;
+	template <class Element> class ftrsmRightUpperTransNonUnit;
+	template <class Element> class ftrsmRightUpperTransUnit;
+	template <class Element> class ftrsmRightLowerNoTransNonUnit;
+	template <class Element> class ftrsmRightLowerNoTransUnit;
+	template <class Element> class ftrsmRightLowerTransNonUnit;
+	template <class Element> class ftrsmRightLowerTransUnit;
 
 	// Specialized routines for ftrmm
-	template <class Element>
-	class ftrmmLeftUpperNoTransNonUnit;
-	template <class Element>
-	class ftrmmLeftUpperNoTransUnit;
-	template <class Element>
-	class ftrmmLeftUpperTransNonUnit;
-	template <class Element>
-	class ftrmmLeftUpperTransUnit;
-	template <class Element>
-	class ftrmmLeftLowerNoTransNonUnit;
-	template <class Element>
-	class ftrmmLeftLowerNoTransUnit;
-	template <class Element>
-	class ftrmmLeftLowerTransNonUnit;
-	template <class Element>
-	class ftrmmLeftLowerTransUnit;
-	template <class Element>
-	class ftrmmRightUpperNoTransNonUnit;
-	template <class Element>
-	class ftrmmRightUpperNoTransUnit;
-	template <class Element>
-	class ftrmmRightUpperTransNonUnit;
-	template <class Element>
-	class ftrmmRightUpperTransUnit;
-	template <class Element>
-	class ftrmmRightLowerNoTransNonUnit;
-	template <class Element>
-	class ftrmmRightLowerNoTransUnit;
-	template <class Element>
-	class ftrmmRightLowerTransNonUnit;
-	template <class Element>
-	class ftrmmRightLowerTransUnit;
+	template <class Element> class ftrmmLeftUpperNoTransNonUnit;
+	template <class Element> class ftrmmLeftUpperNoTransUnit;
+	template <class Element> class ftrmmLeftUpperTransNonUnit;
+	template <class Element> class ftrmmLeftUpperTransUnit;
+	template <class Element> class ftrmmLeftLowerNoTransNonUnit;
+	template <class Element> class ftrmmLeftLowerNoTransUnit;
+	template <class Element> class ftrmmLeftLowerTransNonUnit;
+	template <class Element> class ftrmmLeftLowerTransUnit;
+	template <class Element> class ftrmmRightUpperNoTransNonUnit;
+	template <class Element> class ftrmmRightUpperNoTransUnit;
+	template <class Element> class ftrmmRightUpperTransNonUnit;
+	template <class Element> class ftrmmRightUpperTransUnit;
+	template <class Element> class ftrmmRightLowerNoTransNonUnit;
+	template <class Element> class ftrmmRightLowerNoTransUnit;
+	template <class Element> class ftrmmRightLowerTransNonUnit;
+	template <class Element> class ftrmmRightLowerTransUnit;
 
 } // protected
 } // FFLAS
@@ -302,23 +203,6 @@ namespace FFLAS {
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb);
 
-#if 0
-	template<class Field>
-	typename Field::Element*
-	fgemm2( const Field& F,
-		const FFLAS_TRANSPOSE ta,
-		const FFLAS_TRANSPOSE tb,
-		const size_t m,
-		const size_t n,
-		const size_t k,
-		const typename Field::Element alpha,
-		const typename Field::Element* A, const size_t lda,
-		const typename Field::Element* B, const size_t ldb,
-		const typename Field::Element beta,
-		typename Field::Element* C, const size_t ldc,
-		MMParameters & /* = WinogradHelper */) ;
-
-
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
 	 * Computes \f$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C\f$
@@ -352,16 +236,44 @@ namespace FFLAS {
 	       const typename Field::Element* A, const size_t lda,
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc
-	       , const int w /*= (int) -1*/
-	     ) ;
-#endif
+	       typename Field::Element* C, const size_t ldc,
+	       const int w = (int) -1);
 
-} // FFLAS
-
-	/**
-	 * Parallel fgemm
+	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
+	 *
+	 * Computes \f$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C\f$
+	 * Version with Helper. Input and Output are not supposed to be reduced.
+	 * \param F field.
+	 * \param ta if \c ta==FflasTrans then \f$\mathrm{op}(A)=A^t\f$, else \f$\mathrm{op}(A)=A\f$,
+	 * \param tb same for matrix \p B
+	 * \param m see \p A
+	 * \param n see \p B
+	 * \param k see \p A
+	 * \param alpha scalar
+	 * \param beta scalar
+	 * \param A \f$\mathrm{op}(A)\f$ is \f$m \times k\f$
+	 * \param B \f$\mathrm{op}(B)\f$ is \f$k \times n\f$
+	 * \param C \f$C\f$ is \f$m \times n\f$
+	 * \param lda leading dimension of \p A
+	 * \param ldb leading dimension of \p B
+	 * \param ldc leading dimension of \p C
+	 * \param H helper, driving the computation (algorithm, delayed modular reduction, switch of base type, etc)
+	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
+	template<class Field, class AlgoT, class FieldTrait> 
+	inline  typename Field::Element*
+	fgemm (const Field& F, 
+	       const FFLAS_TRANSPOSE ta, 
+	       const FFLAS_TRANSPOSE tb, 
+	       const size_t m, const size_t n, const size_t k, 
+	       const typename Field::Element alpha, 
+	       typename Field::Element * A, const size_t lda, 
+	       typename Field::Element * B, const size_t ldb, 
+	       const typename Field::Element beta, 
+	       typename Field::Element * C, const size_t ldc, 
+	       MMHelper<AlgoT, FieldTrait, Field> & H);
+		
+} // FFLAS
 
 #include "fflas-ffpack/ffpack/parallel.h"
 
@@ -377,6 +289,9 @@ namespace FFLAS {
 	};
 
 
+	/**
+	 * @brief pfgemm: <b>P</b>arallel <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
+	 */
 	// Parallel fgemm with OpenMP tasks
 	template<class Field>
 	typename Field::Element*
@@ -458,5 +373,7 @@ namespace FFLAS {
 
 
 } // FFLAS
+
+#include "fflas_fgemm.inl"
 
 #endif // __FFLASFFPACK_fflas_fflas_level3_INL

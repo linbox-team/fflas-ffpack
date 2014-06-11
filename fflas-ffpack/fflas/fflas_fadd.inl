@@ -35,7 +35,7 @@
 namespace FFLAS {
 
 	/***************************/
-	/*         LEVEL 2         */
+	/*         LEVEL 1         */
 	/***************************/
 
 
@@ -268,8 +268,9 @@ namespace FFLAS {
 			return faxpy(F,N,alpha,B,incb,C,incc);
 		if (F.isOne(alpha))
 			return fadd(F,N,A,inca,B,incb,C,incc);
-		if (F.isMOne(alpha))
+		if (F.isMOne(alpha)){
 			return fsub(F,N,A,inca,B,incb,C,incc);
+		}
 		if (F.isZero(alpha))
 			return fcopy(F,N,A,inca,C,incc);
 

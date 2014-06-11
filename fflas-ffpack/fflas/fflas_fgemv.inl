@@ -30,6 +30,71 @@
 
 #ifndef __FFLASFFPACK_fgemv_INL
 #define __FFLASFFPACK_fgemv_INL
+
+namespace FFLAS{ namespace Protected {
+	template <typename FloatElement, class Field>
+	inline typename Field::Element*
+	fgemv_convert (const Field& F,
+		       const FFLAS_TRANSPOSE ta,
+		       const size_t M, const size_t N,
+		       const typename Field::Element alpha,
+		       const typename Field::Element* A,const size_t lda,
+		       const typename Field::Element* X,const size_t incX,
+		       const typename Field::Element beta,
+		       typename Field::Element * Y, const size_t incY)
+	{
+		FFLASFFPACK_check(lda);
+
+		FFPACK::Modular<FloatElement> G((FloatElement) F.characteristic());
+		FloatElement alphaf, betaf;
+		F.convert (betaf, beta);
+		F.convert (alphaf, alpha);
+		
+		size_t ma, na;
+		if (ta == FflasTrans) { ma = N; na = M; }
+		else { ma = M; na = N; }
+		size_t ldaf = na;
+		FloatElement * Af = new FloatElement[M*N];
+		FloatElement * Xf = new FloatElement[na];
+		FloatElement * Yf = new FloatElement[ma];
+
+		fconvert(F, ma, na, Af, ldaf, A, lda);
+		fconvert(F, na, Xf, 1, X, incX);
+		
+		if (!F.isZero(beta))
+			fconvert(F, ma, Yf, 1, Y, incY);
+
+		fgemv (G, ta, ma, na, alphaf, Af, ldaf, Xf, 1, betaf, Yf, 1);
+
+		finit(F, ma, Yf, 1, Y, incY);
+
+		delete[] Af;
+		delete[] Xf;
+		delete[] Yf;
+		return Y;
+	}
+	}// Protected
+}// FFLAS
+
+namespace FFLAS {
+	template<class Field>
+	inline  typename Field::Element*
+	fgemv (const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       typename Field::Element * A, const size_t lda,
+	       typename Field::Element * X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element * Y, const size_t incY,
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointConvertibleTag, Field> & H)
+	{
+		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+			return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
+		else
+			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
+	}
+}// FFLAS
 namespace FFLAS {
 
 	//---------------------------------------------------------------------
@@ -38,8 +103,8 @@ namespace FFLAS {
 	// A is M*N,
 	//---------------------------------------------------------------------
 	template<class Field>
-	inline void
-	fgemv (const Field& F, const FFLAS_TRANSPOSE TransA,
+	inline typename Field::Element*
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
 	       const typename Field::Element * A, const size_t lda,
@@ -48,326 +113,237 @@ namespace FFLAS {
 	       typename Field::Element * Y, const size_t incY)
 	{
 
-		if (!M || !N) return;
-		if (F.isZero (alpha)){
-			fscalin(F,((TransA == FflasNoTrans)?M:N),beta,Y,incY);
+		if (!M) {return Y;}
+		size_t Ydim = (ta == FflasNoTrans)?M:N;
+		if (!N || F.isZero (alpha)){
+			fscalin(F, Ydim, beta, Y, incY);
 			return;
 		}
-		FFLAS_BASE base = Protected::BaseCompute (F, 0);
-		    //std::cout << typeid(typename Field::Element).name() << "->" << ((base == FflasFloat)?"f":"d") << std::endl;
-		typename Field::Element gamma,gamma2;
-		F.div(gamma,beta,alpha);
-		F.inv(gamma2,alpha);
-		    // TODO: instead, implement MatVectProd only with alpha = 1
-		size_t kmax = std::min(Protected::DotProdBoundClassic (F,  gamma, base),
-				       Protected::DotProdBoundClassic (F,  gamma2, base));
-		if (kmax > 1) {
-			if  (TransA == FflasNoTrans) {
-				size_t nblock = N / kmax;
-				size_t remblock = N % kmax;
-				// To ensure the initial computation with beta
-				if ((!remblock) && nblock){
-					remblock = kmax;
-					--nblock;
-				}
 
-				Protected::MatVectProd (F, FflasNoTrans, M, remblock, alpha,
-					     A+kmax*nblock, lda, X+kmax*nblock*incX, incX, beta,
-					     Y, incY);
-				for  (size_t i = 0; i < nblock; ++i){
-					Protected::MatVectProd (F, FflasNoTrans, M, kmax, alpha,
-						     A+i*kmax, lda, X+i*kmax*incX, incX, F.one,
-						     Y, incY);
-				}
-			}
-			else{ // FflasTrans
-				size_t nblock = M / kmax;
-				size_t remblock = M % kmax;
-				// To ensure the initial computation with beta
-				if ((!remblock) && nblock){
-					remblock = kmax;
-					--nblock;
-				}
-
-				Protected::MatVectProd (F, FflasTrans, remblock, N, alpha,
-					     A+kmax*nblock*lda, lda, X+kmax*nblock*incX, incX, beta,
-					     Y, incY);
-
-				for  (size_t i = 0; i < nblock; ++i){
-					Protected::MatVectProd (F, FflasTrans, kmax, N, alpha,
-						     A+i*kmax*lda, lda, X+i*kmax*incX, incX, F.one,
-						     Y, incY);
-				}
-
-			}
-		} else {
-			if  (TransA == FflasNoTrans) {
-				if (F.isZero (beta)) {
-					fzero(F,M,Y,incY);
-				}
-				else {
-					typename Field::Element betadivalpha;
-					F.div (betadivalpha, beta, alpha);
-					fscalin(F,M,betadivalpha,Y,incY);
-				}
-				for (size_t i = 0; i < M; ++i) {
-					F.addin(*(Y+i*incY),fdot(F,N,A+i*lda,1,X,incX));
-				}
-				if (! F.isOne(alpha)) {
-					fscalin(F,M,alpha,Y,incY);
-				}
-			} else {
-				if (F.isZero (beta)) {
-					fzero(F,N,Y,incY);
-				}
-				else {
-					typename Field::Element betadivalpha;
-					F.div (betadivalpha, beta, alpha);
-					fscalin(F,N,betadivalpha,Y,incY);
-				}
-
-
-				for (size_t i = 0; i < M; ++i) {
-					faxpy(F,N,*(X+i*incX),A+i*lda,1,Y,incY);
-					}
-				if (! F.isOne(alpha)) {
-					fscalin(F,N,alpha,Y,incY);
-				}
+		typename Field::Element alpha_,beta_;
+		F.assign (alpha_,alpha);
+		F.assign (beta_,beta);
+		if (Protected::AreEqual<Field, FFPACK::Modular<double> >::value ||
+		    Protected::AreEqual<Field, FFPACK::ModularBalanced<double> >::value){
+			    // Modular<double> need to switch to float if p too small
+			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+				return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X,incX,beta,Y,incY);
+		}
+		if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
+			if ( !F.isOne(alpha) && !F.isMOne(alpha)){
+				F.assign (alpha_, F.one);
+				F.div (beta_, beta, alpha);
 			}
 		}
+
+		typedef MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field > MMH_t;
+		MMH_t H(F);
+
+		fgemv (F, ta, M, N, alpha_, 
+		       const_cast<typename Field::Element*>(A), lda,
+		       const_cast<typename Field::Element*>(X), incX,
+		       beta_, Y, incY, H);
+
+		if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
+			    // Will need a more general treatment for multiprec delayed modulus
+			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+				finit (F, Ydim, Y, incY);
+				fscalin (F, Ydim, alpha, Y, incY);
+			} else {
+				fscalin (H.delayedField, Ydim, alpha, Y, incY);
+				finit(F, Ydim, Y, incY);
+			}
+		} else
+			finit(F, Ydim, Y, incY);
+		return Y;
 	}
+}
 
-	namespace Protected {
-
-		// MatVectProd: computes y <- alpha.op(A)*x +  beta.y.
-		// Assumes that the condition k(p-1)^2 <2^53 is satisfied
-		template<class Field>
-		inline void
-		MatVectProd (const Field& F, const FFLAS_TRANSPOSE TransA,
-			     const size_t M, const size_t N,
-			     const typename Field::Element alpha,
-			     const typename Field::Element * A, const size_t lda,
-			     const typename Field::Element * X, const size_t incX,
-			     const typename Field::Element beta,
-			     typename Field::Element * Y, const size_t incY)
-		{
-			typename Field::Element tmp;
-
-			size_t Xl, Yl;
-			if  (TransA == FflasNoTrans){Xl = N;Yl = M;}
-			else {Xl = M; Yl = N;}
-			double* Ad = new double[M*N];
-			double* Xd = new double[Xl];
-			double* Yd = new double[Yl];
-			double alphad, betad;
-
-			if (F.isMOne( alpha)){
-				alphad = -1.0;
-				F.convert (betad, beta);
-			} else {
-				if (! F.isOne( alpha)){
-					// Compute C = A*B + beta/alpha.C
-					// and after C *= alpha
-					F.div (tmp, beta, alpha);
-					F.convert (betad, tmp);
-				} else
-					F.convert (betad, beta);
-				alphad = 1.0;
-			}
-			fconvert(F,M,N, Ad, N, A, lda);
-
-			fconvert(F,Xl,Xd,1,X,incX);
-			if (!F.isZero(beta)) {
-				fconvert(F,Yl,Yd,1,Y,incY);
-			}
-
-			FFLASFFPACK_check(N);
-			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N, alphad,
-				     Ad, (int)N, Xd, 1, betad, Yd, 1);
-
-			finit(F,Yl,Yd,1,Y,incY);
-
-			if  (!F.isOne(alpha) && !F.isMOne(alpha)){
-				// Fix-up: compute Y *= alpha
-				fscalin(F,Yl,alpha,Y,incY);
-			}
-			delete[] Ad;
-			delete[] Xd;
-			delete[] Yd;
-		}
-
-
-		template<>
-		inline void MatVectProd (const  FFPACK:: ModularBalanced<double>& F,
-					 const FFLAS_TRANSPOSE TransA,
-					 const size_t M, const size_t N,
-					 const double alpha,
-					 const double * A, const size_t lda,
-					 const double * X, const size_t incX,
-					 const double beta,
-					 double * Y, const size_t incY)
-		{
-
-			double _alpha, _beta;
-			if (F.isMOne(beta)) _beta = -1.0;
-			else _beta = beta;
-
-			if (F.isMOne(alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne(alpha))
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					F.divin (_beta, alpha);
-			}
-
-			FFLASFFPACK_check(lda);
-			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
-				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
-
-			if ( (!F.isMOne(alpha)) && (!F.isOne(alpha))){
-				// Fix-up: compute y *= alpha
-					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
-			}
-		}
-
-		template<>
-		inline void MatVectProd (const  FFPACK:: ModularBalanced<float>& F,
-					 const FFLAS_TRANSPOSE TransA,
-					 const size_t M, const size_t N,
-					 const float alpha,
-					 const float * A, const size_t lda,
-					 const float * X, const size_t incX,
-					 const float beta,
-					 float * Y, const size_t incY)
-		{
-
-			float _alpha, _beta;
-			if  (F.isMOne(beta)) _beta = -1.0;
-			else _beta = beta;
-
-			if (F.isMOne(alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne(alpha)){
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					F.divin (_beta, alpha);
-				}
-			}
-			FFLASFFPACK_check(lda);
-			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
-				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
-			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
-				// Fix-up: compute y *= alpha
-					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
-			}
-		}
-
-		template<>
-		inline void MatVectProd (const  FFPACK:: Modular<double>& F,
-					 const FFLAS_TRANSPOSE TransA,
-					 const size_t M, const size_t N,
-					 const double alpha,
-					 const double * A, const size_t lda,
-					 const double * X, const size_t incX,
-					 const double beta,
-					 double * Y, const size_t incY)
-		{
-
-			double _alpha, _beta;
-			if (F.isMOne(beta)) _beta = -1.0;
-			else _beta = beta;
-
-			if (F.isMOne(alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne(alpha))
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					F.divin (_beta, alpha);
-			}
-
-			FFLASFFPACK_check(lda);
-			cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
-				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
-
-			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
-				// Fix-up: compute y *= alpha
-					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
-			}
-		}
-
-		template<>
-		inline void MatVectProd (const  FFPACK:: Modular<float>& F,
-					 const FFLAS_TRANSPOSE TransA,
-					 const size_t M, const size_t N,
-					 const float alpha,
-					 const float * A, const size_t lda,
-					 const float * X, const size_t incX,
-					 const float beta,
-					 float * Y, const size_t incY)
-		{
-
-			float _alpha, _beta;
-			if  (F.isMOne(beta)) _beta = -1.0;
-			else _beta = beta;
-
-			if (F.isMOne(alpha)) _alpha = -1.0;
-			else{
-				_alpha = 1.0;
-				if (! F.isOne(alpha)){
-					// Compute y = A*x + beta/alpha.y
-					// and after y *= alpha
-					F.divin (_beta, alpha);
-				}
-			}
-			FFLASFFPACK_check(lda);
-			cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
-				     _alpha, A, (int)lda, X, (int)incX, _beta, Y, (int)incY);
-			finit(F,((TransA == FflasNoTrans)?M:N),Y,incY);
-
-			if ( (!F.isOne(alpha)) && (!F.isMOne(alpha))){
-				// Fix-up: compute y *= alpha
-					fscalin(F,((TransA == FflasNoTrans)?M:N),alpha,Y,incY);
-			}
-		}
-
-	} // Protected
-
-	template<>
-	inline void
-	fgemv (const DoubleDomain& , const FFLAS_TRANSPOSE TransA,
+namespace FFLAS{	    
+	template<class Field>
+	inline typename Field::Element*
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
-	       const DoubleDomain::Element  alpha,
+	       const typename Field::Element alpha,
+	       const typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element * Y, const size_t incY,
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::GenericTag, Field> & H) 
+	       
+	{
+		size_t Ydim = (ta==FflasNoTrans)?M:N;
+
+		if (F.isZero (beta))
+			fzero (F, Ydim, Y, incY);
+		else {
+			typename Field::Element betadivalpha;
+			FFLASFFPACK_check(!F.isZero(alpha));
+			F.div (betadivalpha, beta, alpha);
+			fscalin (F, Ydim, betadivalpha, Y, incY);
+		}
+		if (ta == FflasNoTrans)
+			for (size_t i = 0; i < M; ++i)
+				Y[i*incY] = fdot(F, N, A+i*lda, 1, X, incX);
+		else
+			for (size_t i = 0; i < M; ++i)
+				Y[i*incY] = fdot(F, M, A+i, lda, X, incX);
+		fscalin (F, Ydim, alpha, Y, incY);
+		return Y;
+	}
+}
+
+namespace FFLAS{	    
+	template<class Field>
+	inline typename Field::Element*
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       typename Field::Element * A, const size_t lda,
+	       typename Field::Element * X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element * Y, const size_t incY,
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::ModularFloatingPointTag, Field> & H)
+	{
+		typename MMHelper<MMHelperCategories::Classic, FieldCategories::ModularFloatingPointTag, Field>::DelayedField_t::Element alphadf=alpha, betadf=beta;
+
+		 size_t Ydim = (ta==FflasNoTrans)?M:N;
+		 size_t Xdim = (ta==FflasNoTrans)?N:M;
+
+		if (F.isMOne (alpha)) alphadf = -1.0;
+		else {
+			alphadf = 1.0;
+			if (! F.isOne( alpha)) {
+				// Compute y = A*x + beta/alpha.y, then y *= alpha
+				FFLASFFPACK_check(!F.isZero(alpha));
+				F.div (betadf, beta, alpha);
+			}
+		}
+		if (F.isMOne(betadf)) betadf = -1.0;
+		
+		size_t kmax = H.MaxDelayedDim (betadf);
+		
+		if (kmax <=  Xdim/2 ){
+                        // Might as well reduce inputs
+                        if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
+				H.initA();
+				finit(F, M, N, A, lda);
+			}
+			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
+				H.initB();
+				finit(F, Xdim, X, incX);
+			}
+			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
+				H.initC();
+				finit(F, Ydim, Y, incY);
+			}
+			kmax = H.MaxDelayedDim (betadf);
+		}
+
+		if (!kmax){
+			MMHelper<MMHelperCategories::Classic, FieldCategories::GenericTag, Field> HG(H);
+			H.initOut();
+			return fgemv (F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, HG);
+		}
+		size_t k2 = std::min (Xdim, kmax);
+		size_t nblock = Xdim / kmax;
+		size_t remblock = Xdim % kmax;
+		if (!remblock) {
+			remblock = kmax;
+			--nblock;
+		}
+		size_t shiftA, M1, N1, Mi, Ni;
+		if (ta == FflasTrans) {
+			shiftA = k2*lda;
+			M1 = remblock;
+			Mi = k2;
+			Ni = N1 = N;
+		}else {
+			shiftA = k2;
+			Mi = M1 = M;
+			N1 = remblock;
+			Ni = k2;
+		}
+		MMHelper<MMHelperCategories::Classic,
+			 typename FieldCategories::FloatingPointTag,
+			 typename associatedDelayedField<Field>::value > Hfp(H);
+
+		fgemv (H.delayedField, ta, M1, N1, alphadf, A+nblock*shiftA, lda,
+		       X+nblock*k2*incX, incX, betadf, Y, incY, Hfp);
+		
+		for (size_t i = 0; i < nblock; ++i) {
+			finit(F, Ydim ,Y, incY);
+			Hfp.initC();
+			fgemv (H.delayedField, ta, Mi, Ni, alphadf, A+i*shiftA, lda,
+			       X+i*k2*incX, incX, F.one, Y, incY, Hfp);
+		}
+
+                if (!F.isOne(alpha) && !F.isMOne(alpha)){
+                        if (abs(alpha)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+				finit (F, Ydim, Y, incY);
+				Hfp.initOut();
+			}
+			fscalin(H.delayedField, Ydim, alpha, Y, incY);
+			if (alpha>0){
+				H.Outmin = alpha*Hfp.Outmin;
+				H.Outmax = alpha*Hfp.Outmax;
+			} else {
+				H.Outmin = alpha*Hfp.Outmax;
+				H.Outmax = alpha*Hfp.Outmin;
+			}
+		}else {
+			H.Outmin = Hfp.Outmin;
+			H.Outmax = Hfp.Outmax;
+		}
+		return Y;
+	}
+}
+
+namespace FFLAS{
+	inline DoubleDomain::Element*
+	fgemv (const DoubleDomain& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const DoubleDomain::Element alpha,
 	       const DoubleDomain::Element * A, const size_t lda,
 	       const DoubleDomain::Element * X, const size_t incX,
 	       const DoubleDomain::Element beta,
-	       DoubleDomain::Element * Y, const size_t incY)
+	       DoubleDomain::Element * Y, const size_t incY,
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, DoubleDomain> & H)
 	{
 		FFLASFFPACK_check(lda);
-		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
-			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
+		FFLASFFPACK_check(ldb);
+		FFLASFFPACK_check(ldc);
+		
+                H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
+
+		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta, 
+			     (int)M, (int)N, (DoubleDomain::Element) alpha,
+			     A, (int)lda, X, (int)incX, (DoubleDomain::Element) beta, Y, (int)incY);
+		return Y;
 	}
 
-	template<>
-	inline void
-	fgemv (const FloatDomain& , const FFLAS_TRANSPOSE TransA,
+	inline FloatDomain::Element*
+	fgemv (const FloatDomain& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
-	       const FloatDomain::Element  alpha,
+	       const FloatDomain::Element alpha,
 	       const FloatDomain::Element * A, const size_t lda,
 	       const FloatDomain::Element * X, const size_t incX,
 	       const FloatDomain::Element beta,
-	       FloatDomain::Element * Y, const size_t incY)
+	       FloatDomain::Element * Y, const size_t incY,
+	       MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H) 
 	{
 		FFLASFFPACK_check(lda);
-		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) TransA, (int)M, (int)N,
-			     alpha, A, (int)lda, X, (int)incX, beta, Y, (int)incY);
+		FFLASFFPACK_check(ldb);
+		FFLASFFPACK_check(ldc);
+		
+		H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
+
+		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta, 
+			     (int)M, (int)N, (DoubleDomain::Element) alpha,
+			     A, (int)lda, X, (int)incX, (DoubleDomain::Element) beta, Y, (int)incY);
+		return Y;
 	}
-} // FFLAS
+
+}
+	
 #endif //  __FFLASFFPACK_fgemv_INL
