@@ -85,7 +85,11 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 		C = _mm256_add_ps(C,Q);					\
 	}
 
-	// compute C modulo P in the range [O, P-1] (not sure faster)
+/* CP not working: 
+ *   the code assumes that the result of fnmadd is positive, and hence 
+ *   does not test <0, which unfortunately can happen. 
+ * Solution: always use VEC_MODF_{S,D} above
+        // compute C modulo P in the range [O, P-1] (not sure faster)
 #define VEC_MODF_D_POS(C,Q,P,INVP,T)                  \
 	{       Q = _mm256_mul_pd(C,INVP);            \
 		Q = _mm256_floor_pd(Q);               \
@@ -98,14 +102,14 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 
 	// compute C modulo P in the range [O, P-1] (not sure faster)
 #define VEC_MODF_S_POS(C,Q,P,INVP,T)                  \
-	{       Q = _mm256_mul_ps(C,INVP);            \
-		Q = _mm256_floor_ps(Q);               \
-		C = _mm256_fnmadd_ps(Q,P,C);          \
-		Q = C;                                \
-		Q = _mm256_cmp_ps(Q,P,_CMP_GE_OS);    \
-		Q = _mm256_and_ps(Q,P);               \
-		C = _mm256_sub_ps(C,Q);               \
-	}
+ 	{       Q = _mm256_mul_ps(C,INVP);            \
+ 		Q = _mm256_floor_ps(Q);               \
+ 		C = _mm256_fnmadd_ps(Q,P,C);          \
+ 		Q = C;                                \
+ 		Q = _mm256_cmp_ps(Q,P,_CMP_GE_OS);    \
+ 		Q = _mm256_and_ps(Q,P);               \
+ 		C = _mm256_sub_ps(C,Q);               \
+*/ 	}
 
 
 #else //  defined(__AVX__)
@@ -139,7 +143,11 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 		C = _mm256_add_ps(C,Q);					\
 	}
 
-	// compute C modulo P in the range [O, P-1] (not sure faster)
+/* CP not working: 
+ *   the code assumes that the result of fnmadd is positive, and hence 
+ *   does not test <0, which unfortunately can happen. 
+ * Solution: always use VEC_MODF_{S,D} above
+  	// compute C modulo P in the range [O, P-1] (not sure faster)
 #define VEC_MODF_D_POS(C,Q,P,INVP,T)                  \
 	{       Q = _mm256_mul_pd(C,INVP);            \
 		Q = _mm256_floor_pd(Q);               \
@@ -162,7 +170,7 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 		Q = _mm256_and_ps(Q,P);               \
 		C = _mm256_sub_ps(C,Q);               \
 	}
-
+*/
 #endif // AVX and AVX2
 
 	template<bool positive, bool round> // no default argument unless C++11
@@ -211,12 +219,12 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 				C=_mm256_load_pd(U+i);
 				if (round)
 					C = _mm256_round_pd(C, _MM_FROUND_TO_NEAREST_INT);
-				if (positive) {
-					VEC_MODF_D_POS(C,Q,P,INVP,TMP);
-				}
-				else {
-					VEC_MODF_D(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
-				}
+				// if (positive) {
+				// 	VEC_MODF_D_POS(C,Q,P,INVP,TMP);
+				// }
+				// else {
+				VEC_MODF_D(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
+				//}
 				_mm256_store_pd(T+i,C);
 			}
 		}
@@ -281,12 +289,12 @@ namespace FFLAS { namespace vectorised { /*  FMOD */
 				if (round)
 					C = _mm256_round_ps(C, _MM_FROUND_TO_NEAREST_INT);
 
-				if (positive) {
-					VEC_MODF_S_POS(C,Q,P,INVP,TMP);
-				}
-				else {
-					VEC_MODF_S(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
-				}
+				// if (positive) {
+				// 	VEC_MODF_S_POS(C,Q,P,INVP,TMP);
+				// }
+				// else {
+				VEC_MODF_S(C,Q,P,NEGP,INVP,TMP,MIN,MAX);
+				//}
 				_mm256_store_ps(T+i,C);
 			}
 		}
@@ -423,12 +431,12 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 				C=_mm256_load_pd(T+i);
 				A=_mm256_load_pd(TA+i);
 				B=_mm256_load_pd(TB+i);
-				if (positive) {
-					VEC_ADD_D_POS(C,A,B,P,Q);
-				}
-				else {
-					VEC_ADD_D(C,A,B,P,NEGP,TMP,MIN,MAX);
-				}
+				// if (positive) {
+				// 	VEC_ADD_D_POS(C,A,B,P,Q);
+				// }
+				// else {
+				VEC_ADD_D(C,A,B,P,NEGP,TMP,MIN,MAX);
+				//}
 				_mm256_store_pd(T+i,C);
 			}
 		}
@@ -481,12 +489,12 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 				C=_mm256_load_ps(T+i);
 				A=_mm256_load_ps(TA+i);
 				B=_mm256_load_ps(TB+i);
-				if (positive) {
-					VEC_ADD_S_POS(C,A,B,P,Q);
-				}
-				else {
-					VEC_ADD_S(C,A,B,P,NEGP,TMP,MIN,MAX);
-				}
+				// if (positive) {
+				// 	VEC_ADD_S_POS(C,A,B,P,Q);
+				// }
+				// else {
+				VEC_ADD_S(C,A,B,P,NEGP,TMP,MIN,MAX);
+				//}
 				_mm256_store_ps(T+i,C);
 			}
 		}
@@ -658,12 +666,12 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 				C=_mm256_load_pd(T+i);
 				A=_mm256_load_pd(TA+i);
 				B=_mm256_load_pd(TB+i);
-				if (positive) {
-					VEC_SUB_D_POS(C,A,B,P,Q,MIN);
-				}
-				else {
-					VEC_SUB_D(C,A,B,P,NEGP,TMP,MIN,MAX);
-				}
+				// if (positive) {
+				// 	VEC_SUB_D_POS(C,A,B,P,Q,MIN);
+				// }
+				// else {
+				VEC_SUB_D(C,A,B,P,NEGP,TMP,MIN,MAX);
+				    //}
 				_mm256_store_pd(T+i,C);
 			}
 		}
@@ -716,12 +724,12 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 				C=_mm256_load_ps(T+i);
 				A=_mm256_load_ps(TA+i);
 				B=_mm256_load_ps(TB+i);
-				if (positive) {
-					VEC_SUB_S_POS(C,A,B,P,Q,MIN);
-				}
-				else {
-					VEC_SUB_S(C,A,B,P,NEGP,TMP,MIN,MAX);
-				}
+				// if (positive) {
+				// 	VEC_SUB_S_POS(C,A,B,P,Q,MIN);
+				// }
+				// else {
+				VEC_SUB_S(C,A,B,P,NEGP,TMP,MIN,MAX);
+				//}
 				_mm256_store_ps(T+i,C);
 			}
 		}
