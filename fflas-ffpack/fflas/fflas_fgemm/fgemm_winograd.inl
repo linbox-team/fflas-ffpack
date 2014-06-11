@@ -54,7 +54,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 
-// DynamicPealing, WinogradCalc
+// DynamicPeeling, WinogradCalc
 namespace FFLAS { namespace Protected {
 
 	/** \brief Computes the number of recursive levels to perform.
@@ -123,7 +123,7 @@ namespace FFLAS { namespace Protected {
 
 	template  < class Field >
 	inline void
-	DynamicPealing (const Field& F,
+	DynamicPeeling (const Field& F,
 			const FFLAS_TRANSPOSE ta,
 			const FFLAS_TRANSPOSE tb,
 			const size_t m, const size_t n, const size_t k,
@@ -223,7 +223,7 @@ namespace FFLAS { namespace Protected {
 
 		template  < class Field >
 	inline void
-	DynamicPealing2 (const Field& F,
+	DynamicPeeling2 (const Field& F,
 			 const FFLAS_TRANSPOSE ta,
 			 const FFLAS_TRANSPOSE tb,
 			 const size_t m, const size_t n, const size_t k,
@@ -392,7 +392,7 @@ namespace FFLAS { namespace Protected {
 
 	} // WinogradCalc
 
-#define OLD_DYNAMIC_PEALING
+//#define OLD_DYNAMIC_PEELING
 
 }// namespace Protected
 } // FFLAS
@@ -424,7 +424,7 @@ inline  void fgemm (const Field& F,
 	}
 	    // Then w >0 
 
-#ifdef OLD_DYNAMIC_PEALING
+#ifdef OLD_DYNAMIC_PEELING
 	double Cmin = H.Cmin;
 	double Cmax = H.Cmax;
 	
@@ -434,7 +434,7 @@ inline  void fgemm (const Field& F,
 	FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
 	FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
 
-	Protected::DynamicPealing (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
+	Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
 
 #else
 	size_t ww = H.recLevel ;
@@ -452,7 +452,7 @@ inline  void fgemm (const Field& F,
 	FFLASFFPACK_check(n == n2*2+nr);
 	FFLASFFPACK_check(k == k2*2+kr);
 
-	Protected::DynamicPealing2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H);
+	Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H);
 #endif
 } // fgemm
 
