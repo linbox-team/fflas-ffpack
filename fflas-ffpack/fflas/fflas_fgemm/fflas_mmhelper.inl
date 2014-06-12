@@ -48,7 +48,7 @@ namespace FFLAS{ namespace Protected{
 namespace FFLAS {
 
 	template <class Field>
-	struct associatedDelayedField{typedef DoubleDomain value;};
+	struct associatedDelayedField{typedef Field value;};
 	template <>
 	struct associatedDelayedField<FFPACK::Modular<float> >{typedef FloatDomain value;};
 	template <>
@@ -183,14 +183,16 @@ namespace FFLAS {
 		}
 
 		MMHelper(){}
-
+		    //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
+		    // correct but semantically not satisfactory
 		MMHelper(const Field& F, size_t m, size_t k, size_t n) :
 		                recLevel(Protected::WinogradSteps (F, min3(m,k,n))),
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
-				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1){}
+				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
+				delayedField(F.characteristic()) {}
 
 		MMHelper(const Field& F, int w) :
 				recLevel(w), //base(FflasDouble),
@@ -198,7 +200,8 @@ namespace FFLAS {
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
-				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1){}
+				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
+				delayedField(F.characteristic()){}
 
 		// copy constructor from other Field and Algo Traits
 		template<class AlgoT2, class FT2, class F2>
@@ -209,7 +212,8 @@ namespace FFLAS {
 				Bmin(WH.Bmin), Bmax(WH.Bmax),
 				Cmin(WH.Cmin), Cmax(WH.Cmax),
 				Outmin(WH.Outmin), Outmax(WH.Outmax),
-				MaxStorableValue(WH.MaxStorableValue) {}
+				MaxStorableValue(WH.MaxStorableValue),
+				delayedField(WH.delayedField) {}
 
 		MMHelper(const Field& F, int w,
 			 double _Amin, double _Amax,
@@ -219,7 +223,8 @@ namespace FFLAS {
 				Amin(_Amin), Amax(_Amax),
 				Bmin(_Bmin), Bmax(_Bmax),
 				Cmin(_Cmin), Cmax(_Cmax),
-				MaxStorableValue((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1) {}
+				MaxStorableValue((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
+				delayedField(F.characteristic()) {}
 
 		void print(){
 			std::cerr<<"Helper: "
