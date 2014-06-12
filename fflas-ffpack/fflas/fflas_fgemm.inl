@@ -158,6 +158,24 @@ namespace FFLAS{ namespace Protected{
 	{
 		finit(F, N, X, incX);
 	}
+	
+	template <class AlgoT, class Field>
+	inline void ScalAndInit (const Field& F, const size_t N,
+				 const typename Field::Element alpha,
+				 typename Field::Element * X, const size_t incX,
+				 const MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& H)
+	{
+		if (!F.isOne(alpha) && !F.isMOne(alpha)){
+			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+				finit (F, N, X, incX);
+				fscalin (F, N, alpha, X, incX);
+			} else {
+				fscalin (H.delayedField, N, alpha, X, incX);
+				finit(F, N, X, incX);
+			}
+		} else
+			finit(F, N, X, incX);
+	}
 
 	template <class AlgoT, class FieldT, class Field>
 	inline void ScalAndInit (const Field& F, const size_t M, const size_t N, 
