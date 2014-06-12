@@ -144,17 +144,19 @@ namespace FFLAS {
 		       const_cast<typename Field::Element*>(X), incX,
 		       beta_, Y, incY, H);
 
-		if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
-			    // Will need a more general treatment for multiprec delayed modulus
-			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
-				finit (F, Ydim, Y, incY);
-				fscalin (F, Ydim, alpha, Y, incY);
-			} else {
-				fscalin (H.delayedField, Ydim, alpha, Y, incY);
-				finit(F, Ydim, Y, incY);
-			}
-		} else
-			finit(F, Ydim, Y, incY);
+		Protected::ScalAndInit (F, Ydim, alpha, Y, incY, H);
+		
+		// if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value 
+		//     && ( !F.isOne(alpha) && !F.isMOne(alpha))){
+		// 	if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+		// 		finit (F, Ydim, Y, incY);
+		// 		fscalin (F, Ydim, alpha, Y, incY);
+		// 	} else {
+		// 		fscalin (H.delayedField, Ydim, alpha, Y, incY);
+		// 		finit(F, Ydim, Y, incY);
+		// 	}
+		// } else
+		// 	finit(F, Ydim, Y, incY);
 		return Y;
 	}
 }

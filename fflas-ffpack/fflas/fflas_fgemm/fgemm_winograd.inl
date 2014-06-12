@@ -392,7 +392,7 @@ namespace FFLAS { namespace Protected {
 
 	} // WinogradCalc
 
-//#define OLD_DYNAMIC_PEELING
+#define OLD_DYNAMIC_PEELING
 
 }// namespace Protected
 } // FFLAS

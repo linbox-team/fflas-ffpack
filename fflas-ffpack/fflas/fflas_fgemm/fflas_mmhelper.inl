@@ -57,8 +57,7 @@ namespace FFLAS {
 	struct associatedDelayedField<FFPACK::Modular<double> >{typedef DoubleDomain value;};
 	template <>
 	struct associatedDelayedField<FFPACK::ModularBalanced<double> >{typedef DoubleDomain value;};
-        template <class Element>
-        struct associatedDelayedField<FFPACK::UnparametricField<Element> >{typedef FFPACK::UnparametricField<Element> value;};
+        
 	// Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
 		//! generic ring.

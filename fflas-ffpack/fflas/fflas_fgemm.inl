@@ -90,6 +90,104 @@ namespace FFLAS { namespace Protected{
 	}//Protected
 }//FFLAS
 
+namespace FFLAS{ namespace Protected{
+	template <class AlgoT, class Field>
+	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
+					 double& Op1min, double& Op1max, 
+					 double& Op2min, double& Op2max, 
+					 MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& WH)
+	{
+		Outmin = Op1min + Op2min;
+		Outmax = Op1max + Op2max;
+		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
+			// Reducing both Op1 and Op2
+			Op1min = Op2min = WH.FieldMin; 
+			Op1max = Op2max = WH.FieldMax;
+			Outmin = 2*WH.FieldMin;
+			Outmax = 2*WH.FieldMax;	
+			return true;
+		} else return false;
+	}
+
+	template <class AlgoT, class FieldT, class Field>
+	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
+				     double& Op1min, double& Op1max, 
+				     double& Op2min, double& Op2max, 
+				     MMHelper<AlgoT, FieldT, Field >& WH)
+	{
+		Outmin = WH.FieldMin;
+		Outmax = WH.FieldMax;
+		return false;
+	}
+
+	template <class AlgoT, class Field>
+	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
+					 double& Op1min, double& Op1max, 
+					 double& Op2min, double& Op2max, 
+					 MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& WH)
+	{
+		Outmin = Op1min - Op2max;
+		Outmax = Op1max - Op2min;
+		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
+			// Reducing both Op1 and Op2
+			Op1min = Op2min = WH.FieldMin; 
+			Op1max = Op2max = WH.FieldMax;
+			Outmin = WH.FieldMin-WH.FieldMax;
+			Outmax = -Outmin;
+			return true;
+		} else return false;
+	}
+
+	template <class AlgoT, class FieldT, class Field>
+	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
+					 double& Op1min, double& Op1max, 
+					 double& Op2min, double& Op2max, 
+					 MMHelper<AlgoT, FieldT, Field >& WH)
+	{
+		    // Necessary?
+		Outmin = WH.FieldMin;
+		Outmax = WH.FieldMax;
+		return false;
+	}
+
+	template <class AlgoT, class FieldT, class Field>
+	inline void ScalAndInit (const Field& F, const size_t N, 
+				 const typename Field::Element alpha,
+				 typename Field::Element * X, const size_t incX,
+				 const MMHelper<AlgoT, FieldT, Field >& H)
+	{
+		finit(F, N, X, incX);
+	}
+
+	template <class AlgoT, class FieldT, class Field>
+	inline void ScalAndInit (const Field& F, const size_t M, const size_t N, 
+				 const typename Field::Element alpha,
+				 typename Field::Element * A, const size_t lda,
+				 const MMHelper<AlgoT, FieldT, Field >& H)
+	{
+		finit(F, M, N, A, lda);
+	}
+	
+	template <class AlgoT, class Field>
+	inline void ScalAndInit (const Field& F, const size_t M, const size_t N,
+				 const typename Field::Element alpha,
+				 typename Field::Element * A, const size_t lda,
+				 const MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& H)
+	{
+		if (!F.isOne(alpha) && !F.isMOne(alpha)){
+			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+				finit (F, M, N, A, lda);
+				fscalin (F, M, N, alpha, A, lda);
+			} else {
+				fscalin (H.delayedField, M, N, alpha, A, lda);
+				finit(F, M, N, A, lda);
+			}
+		} else
+			finit(F, M, N, A, lda);
+	}
+
+} // Protected
+} // FFLAS
 
 namespace FFLAS {
 	
@@ -112,68 +210,6 @@ namespace FFLAS {
 			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H.recLevel);
 	}
 }// FFLAS
-
-namespace FFLAS{ namespace Protected{
-	template <class AlgoT, class DelayedField>
-	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, DelayedField >& WH)
-	{
-		Outmin = Op1min + Op2min;
-		Outmax = Op1max + Op2max;
-		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
-			// Reducing both Op1 and Op2
-			Op1min = Op2min = WH.FieldMin; 
-			Op1max = Op2max = WH.FieldMax;
-			Outmin = 2*WH.FieldMin;
-			Outmax = 2*WH.FieldMax;	
-			return true;
-		} else return false;
-	}
-
-	template <class AlgoT, class FieldT, class DelayedField>
-	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
-				     double& Op1min, double& Op1max, 
-				     double& Op2min, double& Op2max, 
-				     MMHelper<AlgoT, FieldT, DelayedField >& WH)
-	{
-		Outmin = WH.FieldMin;
-		Outmax = WH.FieldMax;
-		return false;
-	}
-
-	template <class AlgoT, class DelayedField>
-	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, DelayedField >& WH)
-	{
-		Outmin = Op1min - Op2max;
-		Outmax = Op1max - Op2min;
-		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
-			// Reducing both Op1 and Op2
-			Op1min = Op2min = WH.FieldMin; 
-			Op1max = Op2max = WH.FieldMax;
-			Outmin = WH.FieldMin-WH.FieldMax;
-			Outmax = -Outmin;
-			return true;
-		} else return false;
-	}
-
-	template <class AlgoT, class FieldT, class DelayedField>
-	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldT, DelayedField >& WH)
-	{
-		    // Necessary?
-		Outmin = WH.FieldMin;
-		Outmax = WH.FieldMax;
-		return false;
-	}
-} // Protected
-} // FFLAS
 
 // #include "fflas_fgemm/matmul_algos.inl"
 #include "fflas_fgemm/fgemm_classical.inl"
@@ -249,19 +285,20 @@ namespace FFLAS {
 		       const_cast<typename Field::Element*>(B), ldb, 
 		       beta_, C, ldc, H);
 		
-		if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
-			if ( !F.isOne(alpha) && !F.isMOne(alpha)){
-				if (abs(alpha)*std::max(-H.Outmin, H.Outmax)>H.MaxStorableValue){
-					finit(F,m,n,C,ldc);
-					fscalin(F, m,n,alpha,C,ldc);
-				} else {
-					fscalin(H.delayedField, m,n,alpha,C,ldc);
-					finit(F,m,n,C,ldc);
-				}
-				return C;
-			}
-		}
-		finit(F,m,n,C,ldc);
+		Protected::ScalAndInit (F, m, n, alpha, C, ldc, H);
+		// if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
+		// 	if ( !F.isOne(alpha) && !F.isMOne(alpha)){
+		// 		if (abs(alpha)*std::max(-H.Outmin, H.Outmax)>H.MaxStorableValue){
+		// 			finit(F,m,n,C,ldc);
+		// 			fscalin(F, m,n,alpha,C,ldc);
+		// 		} else {
+		// 			fscalin(H.delayedField, m,n,alpha,C,ldc);
+		// 			finit(F,m,n,C,ldc);
+		// 		}
+		// 		return C;
+		// 	}
+		// }
+		// finit(F,m,n,C,ldc);
 		return C;
 	}
 
