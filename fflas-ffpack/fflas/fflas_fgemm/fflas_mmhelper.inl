@@ -48,7 +48,7 @@ namespace FFLAS{ namespace Protected{
 namespace FFLAS {
 
 	template <class Field>
-	struct associatedDelayedField{typedef Field value;};
+	struct associatedDelayedField{typedef DoubleDomain value;};
 	template <>
 	struct associatedDelayedField<FFPACK::Modular<float> >{typedef FloatDomain value;};
 	template <>
