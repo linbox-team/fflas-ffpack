@@ -58,7 +58,7 @@ namespace FFLAS {
 	template <>
 	struct associatedDelayedField<FFPACK::ModularBalanced<double> >{typedef DoubleDomain value;};
         template <class Element>
-        struct associatedDelayedField<FFPACK::UnparametricField<Element> >{typedef FFPACK::UnparametricField<Element> value;}         
+        struct associatedDelayedField<FFPACK::UnparametricField<Element> >{typedef FFPACK::UnparametricField<Element> value;};
 	// Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
 		//! generic ring.
@@ -100,11 +100,11 @@ namespace FFLAS {
 	}
 
 	// TODO: fieldMin and fieldMax could be offered by the Field object directly ?
-	template <class Field> 
+	template <class Field>
 	inline double getFieldMin (const Field& F){return 0;}
-	template <class Field> 
+	template <class Field>
 	inline double getFieldMax (const Field& F){return (double) F.characteristic()-1;}
-	template<class Element> 
+	template<class Element>
 	inline double getFieldMin (const FFPACK::ModularBalanced<Element>& F){
 		return -((double) F.characteristic()-1)/2;
 	}
@@ -112,7 +112,7 @@ namespace FFLAS {
 	inline double getFieldMax (const FFPACK::ModularBalanced<Element>& F){
 		return ((double) F.characteristic()-1)/2;
 	}
-	
+
 	template<typename AlgoTrait, typename FieldTrait, class Field>
 	struct MMHelper {
 		int recLevel ;
@@ -120,7 +120,7 @@ namespace FFLAS {
 		double MaxStorableValue;
 		typedef  typename associatedDelayedField<Field>::value DelayedField_t;
 		DelayedField_t delayedField;
-		
+
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
 		void initA(){Amin = FieldMin; Amax = FieldMax;}
 		void initB(){Bmin = FieldMin; Bmax = FieldMax;}
@@ -128,7 +128,7 @@ namespace FFLAS {
 
 
 		size_t MaxDelayedDim(double beta){return std::max (0.0, floor ( (MaxStorableValue - abs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));}
-		
+
 		void setOutBounds(const size_t k, const double alpha, const double beta){
 			if (beta<0){
 				Outmin = beta*Cmax;
@@ -185,12 +185,12 @@ namespace FFLAS {
 
 		MMHelper(){}
 
-		MMHelper(const Field& F, size_t m, size_t k, size_t n) : 
-		                recLevel(Protected::WinogradSteps (F, min3(m,k,n))), 
+		MMHelper(const Field& F, size_t m, size_t k, size_t n) :
+		                recLevel(Protected::WinogradSteps (F, min3(m,k,n))),
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
-				Cmin(FieldMin), Cmax(FieldMax), 
+				Cmin(FieldMin), Cmax(FieldMax),
 				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1){}
 
 		MMHelper(const Field& F, int w) :
@@ -198,7 +198,7 @@ namespace FFLAS {
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
-				Cmin(FieldMin), Cmax(FieldMax), 
+				Cmin(FieldMin), Cmax(FieldMax),
 				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1){}
 
 		// copy constructor from other Field and Algo Traits
@@ -208,18 +208,18 @@ namespace FFLAS {
 				FieldMin(WH.FieldMin), FieldMax(WH.FieldMax),
 				Amin(WH.Amin), Amax(WH.Amax),
 				Bmin(WH.Bmin), Bmax(WH.Bmax),
-				Cmin(WH.Cmin), Cmax(WH.Cmax), 
+				Cmin(WH.Cmin), Cmax(WH.Cmax),
 				Outmin(WH.Outmin), Outmax(WH.Outmax),
 				MaxStorableValue(WH.MaxStorableValue) {}
-		
-		MMHelper(const Field& F, int w, 
-			 double _Amin, double _Amax, 
-			 double _Bmin, double _Bmax, 
+
+		MMHelper(const Field& F, int w,
+			 double _Amin, double _Amax,
+			 double _Bmin, double _Bmax,
 			 double _Cmin, double _Cmax):
 				recLevel(w), FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(_Amin), Amax(_Amax),
 				Bmin(_Bmin), Bmax(_Bmax),
-				Cmin(_Cmin), Cmax(_Cmax), 	
+				Cmin(_Cmin), Cmax(_Cmax),
 				MaxStorableValue((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1) {}
 
 		void print(){
