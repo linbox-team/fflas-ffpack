@@ -43,6 +43,55 @@ namespace FFLAS {
 		fger (F, M, N, alpha, const_cast<typename Field::Element*>(x), incx, const_cast<typename Field::Element*>(y), incy, A, lda, H);
 		finit (F, M, N, A, lda);
 	}
+} //FFLAS
+
+namespace FFLAS { namespace Protected {
+	template<class FloatElement, class Field>
+	inline void
+	fger_convert (const Field& F, const size_t M, const size_t N,
+		      const typename Field::Element alpha,
+		      const typename Field::Element * x, const size_t incx,
+		      const typename Field::Element * y, const size_t incy,
+		      typename Field::Element * A, const size_t lda)
+	{
+		FFPACK::Modular<FloatElement> G((FloatElement) F.characteristic());
+		FloatElement alphaf;
+		F.convert (alphaf, alpha);
+
+		FloatElement * Af = new FloatElement[M*N];
+		FloatElement * Xf = new FloatElement[M];
+		FloatElement * Yf = new FloatElement[N];
+
+		fconvert(F, M, N, Af, N, A, lda);
+		fconvert(F, M, Xf, 1, x, incx);
+		fconvert(F, M, Yf, 1, y, incy);
+
+		fger (G, M, N, alphaf, Xf, 1, Yf, 1, Af, N);
+
+		finit(F, M, N, Af, N, A, lda);
+
+		delete[] Af;
+		delete[] Xf;
+		delete[] Yf;
+	}
+}// Protected
+}// FFLAS
+
+namespace FFLAS{
+	template<class Field>
+	inline void
+	fger (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element alpha,
+	      typename Field::Element * x, const size_t incx,
+	      typename Field::Element * y, const size_t incy,
+	      typename Field::Element * A, const size_t lda,
+	      MMHelper<MMHelperCategories::Classic, FieldCategories::FloatingPointConvertibleTag, Field> & H)
+	{
+		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
+		else
+			return Protected::fger_convert<double,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
+	}
 
 	template<class Field>
 	inline void
