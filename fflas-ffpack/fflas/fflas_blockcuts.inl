@@ -145,9 +145,21 @@ namespace FFLAS {
         numRowBlock = m/rowBlockSize;
         numColBlock = n/colBlockSize;
         lastRBS = m % rowBlockSize;
-        if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
         lastCBS = n % colBlockSize;
-        if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
+
+            // Better preserve numRowBlock and numColBlock
+        if (lastRBS) {
+            lastRBS = m-rowBlockSize*numRowBlock;
+            ++rowBlockSize;
+        } else lastRBS = rowBlockSize;
+        if (lastCBS) {
+            lastCBS = n-colBlockSize*numColBlock;
+            ++colBlockSize;
+        } else lastCBS = colBlockSize;
+
+//             // Better preserve rowBlockSize and colBlockSize
+//         if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
+//         if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
     }
 
 
@@ -201,6 +213,12 @@ namespace FFLAS {
                       m, n, method, numthreads);
 
             BLOCKS = numRowBlock * numColBlock;
+//             std::cout<<"RBLOCKSIZE : "<<rowBlockSize<<std::endl;
+//             std::cout<<"CBLOCKSIZE : "<<colBlockSize<<std::endl;
+//             std::cout<<"lastRBS    : "<<lastRBS<<std::endl;
+//             std::cout<<"lastCBS    : "<<lastCBS<<std::endl;
+//             std::cout<<"NrowBlocks : "<<numRowBlock<<std::endl;
+//             std::cout<<"NcolBlocks : "<<numColBlock<<std::endl;
         }
         
         size_t begin() { current = 0; return setCurrentBlock(); }
