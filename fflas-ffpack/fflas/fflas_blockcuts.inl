@@ -92,27 +92,31 @@ namespace FFLAS {
                                   size_t& CBLOCKSIZE,
                                   const size_t m, const size_t n,
                                   const size_t numthreads) {
-	    //CP: Let's not compute these values all the time
+        if (numthreads<65) {
+                //CP: Let's not compute these values all the time
             const short maxtr[64] = {1,1,1,2,1,2,1,2,3,2,1,3,1,2,3,4,1,3,1,4,3,2,1,4,5,2,3,4,1,5,1,4,3,2,5,6,1,2,3,5,1,6,1,4,5,2,1,6,7,5,3,4,1,6,5,7,3,2,1,6,1,2,7,8};
             const short maxtc[64] = {1,2,3,2,5,3,7,4,3,5,11,4,13,7,5,4,17,6,19,5,7,11,23,6,5,13,9,7,29,6,31,8,11,17,7,6,37,19,13,8,41,7,43,11,9,23,47,8,7,10,17,13,53,9,11,8,19,29,59,10,61,31,9,8};
-
-       // const size_t maxt = (size_t)sqrt((double)numthreads);
-       // 	size_t maxtr=maxt,maxtc=maxt;
-       // 	for(size_t i=maxt; i>=1; --i) {
-       // 		size_t j=maxt;
-       //          size_t newpr = i*j;
-       // 		for( ; newpr < numthreads; ++j, newpr+=i ) {}
-       //          if (newpr == numthreads) {
-       //              maxtr = i;
-       //              maxtc = j;
-       //              break;
-       //          }
-       //  }
-
-	    RBLOCKSIZE=std::max(m/maxtr[numthreads-1],(size_t)1);
-	    CBLOCKSIZE=std::max(n/maxtc[numthreads-1],(size_t)1);
+            
+            RBLOCKSIZE=std::max(m/maxtr[numthreads-1],(size_t)1);
+            CBLOCKSIZE=std::max(n/maxtc[numthreads-1],(size_t)1);
+        } else {
+            const size_t maxt = (size_t)sqrt((double)numthreads);
+            size_t maxtr=maxt,maxtc=maxt;
+            for(size_t i=maxt; i>=1; --i) {
+                size_t j=maxt;
+                size_t newpr = i*j;
+                for( ; newpr < numthreads; ++j, newpr+=i ) {}
+                if (newpr == numthreads) {
+                    maxtr = i;
+                    maxtc = j;
+                    break;
+                }
+            }
+            RBLOCKSIZE=std::max(m/maxtr,(size_t)1);
+            CBLOCKSIZE=std::max(n/maxtc,(size_t)1);
+        }
     }
-
+    
     void BlockCuts(size_t& r, size_t& c,
                    size_t m, size_t n,
                    const CuttingStrategy method,
@@ -191,20 +195,12 @@ namespace FFLAS {
 
     struct ForStrategy2D {
         ForStrategy2D(const size_t m, const size_t n, const CuttingStrategy method, const size_t numthreads) {
-            BlockCuts(rowBlockSize, colBlockSize, m, n, method, numthreads);
-            numRowBlock = m/rowBlockSize;
-            numColBlock = n/colBlockSize;
-            lastRBS = m % rowBlockSize;
-            if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
-            lastCBS = n % colBlockSize;
-            if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
+            BlockCuts(rowBlockSize, colBlockSize, 
+                      lastRBS, lastCBS,
+                      numRowBlock, numColBlock,
+                      m, n, method, numthreads);
+
             BLOCKS = numRowBlock * numColBlock;
-//             std::cout<<"RBLOCKSIZE : "<<rowBlockSize<<std::endl;
-//             std::cout<<"CBLOCKSIZE : "<<colBlockSize<<std::endl;
-//             std::cout<<"lastRBS    : "<<lastRBS<<std::endl;
-//             std::cout<<"lastCBS    : "<<lastCBS<<std::endl;
-//             std::cout<<"NrowBlocks : "<<numRowBlock<<std::endl;
-//             std::cout<<"NcolBlocks : "<<numColBlock<<std::endl;
         }
         
         size_t begin() { current = 0; return setCurrentBlock(); }
