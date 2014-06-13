@@ -29,6 +29,8 @@
 
 
 //#define LinBoxSrcOnly
+#define DOUBLE_TO_FLOAT_CROSSOVER 0
+
 #include <iostream>
 #include <fstream>
 #include "fflas-ffpack/config-blas.h"
@@ -42,7 +44,6 @@
 #ifndef FLTTYPE
 #define FLTTYPE Modular<double>
 #endif
-
 template<class Field>
 bool balanced(const Field & )
 {
