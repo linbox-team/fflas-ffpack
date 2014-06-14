@@ -47,7 +47,7 @@ namespace FFLAS { namespace Protected{
 		       typename Field::Element* B,const size_t ldb,
 		       const typename Field::Element beta,
 		       typename Field::Element * C, const size_t ldc,
-		       MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H)
+		       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
@@ -78,7 +78,7 @@ namespace FFLAS { namespace Protected{
 		
 		if (!F.isZero(beta))
 			fconvert(F, m, n, Cf, n, C, ldc);
-		MMHelper<MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag, FFPACK::ModularBalanced<FloatElement> > HG(G,H.recLevel);
+		MMHelper<FFPACK::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel);
 		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 		finit(F, m, n, Cf, n, C, ldc);
@@ -92,11 +92,11 @@ namespace FFLAS { namespace Protected{
 }//FFLAS
 
 namespace FFLAS{ namespace Protected{
-	template <class AlgoT, class Field>
+	template <class Field, class AlgoT>
 	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
 					 double& Op1min, double& Op1max, 
 					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& WH)
+					 MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
 	{
 		Outmin = Op1min + Op2min;
 		Outmax = Op1max + Op2max;
@@ -110,22 +110,22 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class AlgoT, class FieldT, class Field>
+	template <class Field, class AlgoT, class FieldT>
 	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
-				     double& Op1min, double& Op1max, 
-				     double& Op2min, double& Op2max, 
-				     MMHelper<AlgoT, FieldT, Field >& WH)
+					 double& Op1min, double& Op1max, 
+					 double& Op2min, double& Op2max, 
+					 MMHelper<Field, AlgoT, FieldT >& WH)
 	{
 		Outmin = WH.FieldMin;
 		Outmax = WH.FieldMax;
 		return false;
 	}
 
-	template <class AlgoT, class Field>
+	template <class Field, class AlgoT>
 	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
 					 double& Op1min, double& Op1max, 
 					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& WH)
+					 MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
 	{
 		Outmin = Op1min - Op2max;
 		Outmax = Op1max - Op2min;
@@ -139,11 +139,11 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class AlgoT, class FieldT, class Field>
+	template <class Field, class AlgoT, class FieldT>
 	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
 					 double& Op1min, double& Op1max, 
 					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldT, Field >& WH)
+					 MMHelper<Field, AlgoT, FieldT >& WH)
 	{
 		    // Necessary?
 		Outmin = WH.FieldMin;
@@ -151,11 +151,11 @@ namespace FFLAS{ namespace Protected{
 		return false;
 	}
 
-	template <class AlgoT, class Field>
+	template <class Field, class AlgoT>
 	inline void ScalAndInit (const Field& F, const size_t N,
 				 const typename Field::Element alpha,
 				 typename Field::Element * X, const size_t incX,
-				 const MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& H)
+				 const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
@@ -169,11 +169,11 @@ namespace FFLAS{ namespace Protected{
 			finit(F, N, X, incX);
 	}
 
-	template <class AlgoT, class Field>
+	template <class Field, class AlgoT>
 	inline void ScalAndInit (const Field& F, const size_t M, const size_t N,
 				 const typename Field::Element alpha,
 				 typename Field::Element * A, const size_t lda,
-				 const MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& H)
+				 const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
@@ -203,7 +203,7 @@ namespace FFLAS {
 	       typename Field::Element * B, const size_t ldb, 
 	       const typename Field::Element beta, 
 	       typename Field::Element * C, const size_t ldc, 
-	       MMHelper<MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag, Field> & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag> & H)
 	{ 
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
@@ -229,11 +229,10 @@ namespace FFLAS {
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc)
-	//		, MMHelper<MMHelperAlgo::Auto, FieldTrait, Field> & H) 
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, Field > HW (F, m, k, n);
+		MMHelper<Field, MMHelperAlgo::Winograd > HW (F, m, k, n);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, 
 			       const_cast<typename Field::Element*>(A), lda, 
 			       const_cast<typename Field::Element*>(B), ldb, 
@@ -253,7 +252,7 @@ namespace FFLAS {
 	       typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element* C, const size_t ldc,
-	       MMHelper<MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag, Field> & H) 
+	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H) 
 	{
 		if (!m || !n) {return C;}
 
@@ -293,7 +292,7 @@ namespace FFLAS {
 			F.assign (alpha_,alpha);
 			F.assign (beta_,beta);
 		}
-		MMHelper<MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag, Field>  HD(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag>  HD(H);
 		fgemm (F, ta, tb, m, n, k, alpha_, 
 		       const_cast<typename Field::Element*>(A), lda, 
 		       const_cast<typename Field::Element*>(B), ldb, 

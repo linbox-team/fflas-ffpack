@@ -87,7 +87,7 @@ namespace FFLAS {
 	       typename Field::Element * X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY,
-	       MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag, Field> & H)
+	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
 	{
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
@@ -134,7 +134,7 @@ namespace FFLAS {
 				F.assign (alpha_, F.one);
 				F.div (beta_, beta, alpha);
 			}
-			MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field > HD(F,0);
+			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag > HD(F,0);
 			
 			fgemv (F, ta, M, N, alpha_,
 			       const_cast<typename Field::Element*>(A), lda,
@@ -145,7 +145,7 @@ namespace FFLAS {
 			return Y;
 
 		} else {
-			MMHelper<MMHelperAlgo::Classic, typename FieldTraits<Field>::value, Field > H(F,0);
+			MMHelper<Field, MMHelperAlgo::Classic, typename FieldTraits<Field>::value > H(F,0);
 			
 			fgemv (F, ta, M, N, alpha_, A, lda, X, incX, beta_, Y, incY, H);
 			return Y;
@@ -163,7 +163,7 @@ namespace FFLAS{
 	       const typename Field::Element * X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY,
-	       MMHelper<MMHelperAlgo::Classic, FieldCategories::GenericTag, Field> & H)
+	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
 
 	{
 		size_t Ydim = (ta==FflasNoTrans)?M:N;
@@ -197,9 +197,9 @@ namespace FFLAS{
 	       typename Field::Element * X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY,
-	       MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field> & H)
+	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
-		typename MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field>::DelayedField_t::Element alphadf=alpha, betadf=beta;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf=alpha, betadf=beta;
 
 		 size_t Ydim = (ta==FflasNoTrans)?M:N;
 		 size_t Xdim = (ta==FflasNoTrans)?N:M;
@@ -235,7 +235,7 @@ namespace FFLAS{
 		}
 
 		if (!kmax){
-			MMHelper<MMHelperAlgo::Classic, FieldCategories::GenericTag, Field> HG(H);
+			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> HG(H);
 			H.initOut();
 			return fgemv (F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, HG);
 		}
@@ -258,9 +258,9 @@ namespace FFLAS{
 			N1 = remblock;
 			Ni = k2;
 		}
-		MMHelper<MMHelperAlgo::Classic,
-			 typename FieldCategories::FloatingPointTag,
-			 typename associatedDelayedField<Field>::value > Hfp(H);
+		MMHelper<typename associatedDelayedField<Field>::value,
+			 MMHelperAlgo::Classic,
+			 typename FieldCategories::FloatingPointTag > Hfp(H);
 
 		fgemv (H.delayedField, ta, M1, N1, alphadf, A+nblock*shiftA, lda,
 		       X+nblock*k2*incX, incX, betadf, Y, incY, Hfp);
@@ -302,7 +302,7 @@ namespace FFLAS{
 	       const DoubleDomain::Element * X, const size_t incX,
 	       const DoubleDomain::Element beta,
 	       DoubleDomain::Element * Y, const size_t incY,
-	       MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointTag, DoubleDomain> & H)
+	       MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		// FFLASFFPACK_check(ldb);
@@ -324,7 +324,7 @@ namespace FFLAS{
 	       const FloatDomain::Element * X, const size_t incX,
 	       const FloatDomain::Element beta,
 	       FloatDomain::Element * Y, const size_t incY,
-	       MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H)
+	       MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		// FFLASFFPACK_check(ldb);

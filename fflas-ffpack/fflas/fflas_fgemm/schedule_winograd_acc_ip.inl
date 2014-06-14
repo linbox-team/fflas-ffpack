@@ -37,7 +37,7 @@
 
 namespace FFLAS { namespace BLAS3 {
 
-		template < class Field, class InitField >
+	template < class Field, class FieldTrait >
 	inline void WinogradAcc_LR (const Field& F,
 				    const FFLAS_TRANSPOSE ta,
 				    const FFLAS_TRANSPOSE tb,
@@ -48,10 +48,10 @@ namespace FFLAS { namespace BLAS3 {
 				    const typename Field::Element  beta,
 				    typename Field::Element * C, const size_t ldc,
 				    // const size_t kmax, const size_t w, const FFLAS_BASE base
-				    const MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, InitField > & WH
+				    const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				   )
 	{
-		MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, InitField > H = WH ;
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
 		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -165,7 +165,7 @@ namespace FFLAS { namespace BLAS3 {
 
 	} // WinogradAccOld
 
-		template < class Field, class InitField >
+	template < class Field, class FieldTrait >
 	inline void WinogradAcc_R_S (const Field& F,
 				     const FFLAS_TRANSPOSE ta,
 				     const FFLAS_TRANSPOSE tb,
@@ -176,10 +176,10 @@ namespace FFLAS { namespace BLAS3 {
 				     const typename Field::Element  beta,
 				     typename Field::Element * C, const size_t ldc,
 				     // const size_t kmax, const size_t w, const FFLAS_BASE base
-				     const MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, InitField > & WH
+				     const MMHelper<Field, MMHelperAlgo::Winograd,FieldTrait > & WH
 				    )
 	{
-		MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, InitField > H = WH ;
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
 		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -295,7 +295,7 @@ namespace FFLAS { namespace BLAS3 {
 	} // WinogradAccOld
 
 
-	template < class Field ,class InitField>
+	template < class Field ,class FieldTrait>
 	inline void WinogradAcc_L_S (const Field& F,
 				     const FFLAS_TRANSPOSE ta,
 				     const FFLAS_TRANSPOSE tb,
@@ -306,10 +306,10 @@ namespace FFLAS { namespace BLAS3 {
 				     const typename Field::Element  beta,
 				     typename Field::Element * C, const size_t ldc,
 				     // const size_t kmax, const size_t w, const FFLAS_BASE base
-				     const MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, InitField > & WH
+				     const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				    )
 	{
-		MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, InitField > H = WH ;
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
 		H.w = H.w - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));

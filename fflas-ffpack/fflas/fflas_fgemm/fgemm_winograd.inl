@@ -121,7 +121,7 @@ namespace FFLAS { namespace Protected {
 		return w;
 	}
 
-		template  < class Field, class FieldTrait >
+	template  < class Field, class FieldTrait >
 	inline void
 	DynamicPeeling (const Field& F,
 			const FFLAS_TRANSPOSE ta,
@@ -133,7 +133,7 @@ namespace FFLAS { namespace Protected {
 			typename Field::Element* B, const size_t ldb,
 			const typename Field::Element beta,
 			typename Field::Element* C, const size_t ldc,
-			MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H,
+			MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
 			const double Cmin, const double Cmax) 
 	{
 		typename Field::Element *a12, *a21, *b12, *b21;
@@ -160,9 +160,9 @@ namespace FFLAS { namespace Protected {
 			b12 = B+n-1; incb12 = ldb;
 			b21 = B+(k-1)*ldb; incb21 = 1;
 		}
-		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> Hacc(H);
-		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HModd(H);
-		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HNodd(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> Hacc(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HModd(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HNodd(H);
 			
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
@@ -233,7 +233,7 @@ namespace FFLAS { namespace Protected {
 			 typename Field::Element* B, const size_t ldb,
 			 const typename Field::Element beta,
 			 typename Field::Element* C, const size_t ldc,
-			 MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H,
+			 MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
 			 const double Cmin, const double Cmax)
 	{
 		size_t mkn =(size_t)( (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2));
@@ -257,9 +257,9 @@ namespace FFLAS { namespace Protected {
 			b21 = B+(k-kr)*ldb;
 		}
 		
-		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> Hacc(H);
-		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HModd(H);
-		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HNodd(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> Hacc(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HModd(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HNodd(H);
 			
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
@@ -323,7 +323,7 @@ namespace FFLAS { namespace Protected {
 				  typename Field::Element* B,const size_t ldb,
 				  const typename Field::Element beta,
 				  typename Field::Element * C, const size_t ldc,
-				  MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H)
+				  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
 	{
 #if defined(NEWIP) or defined(NEWACCIP)  /*  XXX TESTS ONLY */
 		typedef typename Field::Element Element ;
@@ -418,7 +418,7 @@ namespace FFLAS{
 	       typename Field::Element * B, const size_t ldb, 
 	       const typename Field::Element beta, 
 	       typename Field::Element * C, const size_t ldc, 
-	       MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H) 
+	       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H) 
 	{
 		if (!m || !n ) return C;
 
@@ -429,7 +429,7 @@ namespace FFLAS{
 		}
 
 		if (H.recLevel == 0){
-			MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HC(H);
+			MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
 			fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
 			H.Outmax = HC.Outmax;
 			H.Outmin = HC.Outmin;

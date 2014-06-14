@@ -52,14 +52,14 @@ namespace FFLAS {
                            typename Field::Element * B, const size_t ldb,
                            const typename Field::Element beta,
                            typename Field::Element* C, const size_t ldc,
-                           MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field> & H)
+                           MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
 		
                 // Input matrices are unreduced: need to figure out the best option between:
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
 		
-		typename MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field>::DelayedField_t::Element alphadf, betadf;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf, betadf;
 		F.convert (betadf, beta);
 		if (F.isMOne (alpha)) {
 			alphadf = -1.0;
@@ -95,7 +95,7 @@ namespace FFLAS {
 		}
 		
 		if (!kmax){
-			MMHelper<MMHelperAlgo::Classic, FieldCategories::GenericTag, Field> HG(H);
+			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> HG(H);
 			H.initOut();
 			return fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
 		}
@@ -114,9 +114,9 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<MMHelperAlgo::Classic,
-			 typename FieldCategories::FloatingPointTag, 
-			 typename associatedDelayedField<Field>::value > Hfp(H);
+		MMHelper<typename associatedDelayedField<Field>::value, 
+			 MMHelperAlgo::Classic,
+			 typename FieldCategories::FloatingPointTag > Hfp(H);
 
 		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, A+nblock*shiftA, lda,
 		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
@@ -164,7 +164,7 @@ namespace FFLAS {
 			   typename Field::Element * B, const size_t ldb,
 			   const typename Field::Element beta,
 			   typename Field::Element* C, const size_t ldc,
-			   MMHelper<MMHelperAlgo::Classic, FieldCategories::GenericTag, Field> & H)
+			   MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
 	{
                 // Standard algorithm is performed over the Field, without conversion
                 if (F.isZero (beta))
@@ -209,7 +209,7 @@ namespace FFLAS {
 			   DoubleDomain::Element * Bd, const size_t ldb,
 			   const DoubleDomain::Element beta,
 			   DoubleDomain::Element * Cd, const size_t ldc,
-			   MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointTag, DoubleDomain> &H)
+			   MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> &H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
@@ -231,7 +231,7 @@ namespace FFLAS {
 			   FloatDomain::Element * Bd, const size_t ldb,
 			   const FloatDomain::Element beta,
 			   FloatDomain::Element * Cd, const size_t ldc,
-			   MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H)
+			   MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);

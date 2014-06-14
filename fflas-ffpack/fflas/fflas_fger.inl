@@ -39,7 +39,7 @@ namespace FFLAS {
 	      const typename Field::Element * y, const size_t incy,
 	      typename Field::Element * A, const size_t lda)
 	{
-		MMHelper<MMHelperAlgo::Classic, typename FieldTraits<Field>::value, Field > H(F,0);
+		MMHelper<Field, MMHelperAlgo::Classic, typename FieldTraits<Field>::value > H(F,0);
 		fger (F, M, N, alpha, const_cast<typename Field::Element*>(x), incx, const_cast<typename Field::Element*>(y), incy, A, lda, H);
 		finit (F, M, N, A, lda);
 	}
@@ -85,7 +85,7 @@ namespace FFLAS{
 	      typename Field::Element * x, const size_t incx,
 	      typename Field::Element * y, const size_t incy,
 	      typename Field::Element * A, const size_t lda,
-	      MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag, Field> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
 	{
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
@@ -100,15 +100,15 @@ namespace FFLAS{
 	      typename Field::Element * x, const size_t incx,
 	      typename Field::Element * y, const size_t incy,
 	      typename Field::Element * A, const size_t lda,
-	      MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
-		typename MMHelper<MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag, Field>::DelayedField_t::Element alphadf;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf;
 		if (F.isMOne( alpha)) alphadf = -1.0;
 		else alphadf = 1.0;
 
-		MMHelper<MMHelperAlgo::Classic,
-			 typename FieldCategories::FloatingPointTag, 
-			 typename associatedDelayedField<Field>::value > Hfp(H);
+		MMHelper<typename associatedDelayedField<Field>::value,
+			 MMHelperAlgo::Classic,
+			 typename FieldCategories::FloatingPointTag > Hfp(H);
 
 		if (Hfp.MaxDelayedDim(1.0) < 1){
 			
@@ -156,7 +156,7 @@ namespace FFLAS{
 	      const typename Field::Element * x, const size_t incx,
 	      const typename Field::Element * y, const size_t incy,
 	      typename Field::Element * A, const size_t lda,
-	      MMHelper<MMHelperAlgo::Classic, FieldCategories::GenericTag, Field> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
 	{
 
 		typename Field::Element tmp;
@@ -219,7 +219,7 @@ namespace FFLAS{
 	      const DoubleDomain::Element * x, const size_t incx,
 	      const DoubleDomain::Element * y, const size_t incy,
 	      DoubleDomain::Element * A, const size_t lda,
-	      MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointTag, DoubleDomain> & H)
+	      MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		if (F.isZero(alpha)) return ;
 
@@ -234,7 +234,7 @@ namespace FFLAS{
 	      const FloatDomain::Element * x, const size_t incx,
 	      const FloatDomain::Element * y, const size_t incy,
 	      FloatDomain::Element * A, const size_t lda,
-	      MMHelper<MMHelperAlgo::Classic, FieldCategories::FloatingPointTag, FloatDomain> & H)
+	      MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		if (F.isZero(alpha)) return ;
 

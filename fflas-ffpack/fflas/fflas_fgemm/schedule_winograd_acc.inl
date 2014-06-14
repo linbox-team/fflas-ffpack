@@ -52,10 +52,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > & WH
+				      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				     )
 	{
-		MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > H = WH ;
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
 		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -199,10 +199,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > & WH
+				      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				     )
 	{
-		typedef MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > MMH_t;
+		typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
 
 		typename MMH_t::DelayedField_t & DF = WH.delayedField;
 
@@ -419,10 +419,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperAlgo::Winograd,FieldTrait, Field > & WH
+				      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				     )
 	{
-		MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > H = WH ;
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
 		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -541,9 +541,9 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > & WH)
+				      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH)
 	{
-		MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > H = WH ;
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
 		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));

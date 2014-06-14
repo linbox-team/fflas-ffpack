@@ -115,7 +115,7 @@ namespace FFLAS {
 		return ((double) F.characteristic()-1)/2;
 	}
 
-	template<typename AlgoTrait, typename FieldTrait, class Field>
+	template<class Field, typename AlgoTrait = MMHelperAlgo::Auto, typename FieldTrait = typename FieldTraits<Field>::value >
 	struct MMHelper {
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
@@ -207,8 +207,8 @@ namespace FFLAS {
 				delayedField(F.characteristic()){}
 
 		// copy constructor from other Field and Algo Traits
-		template<class AlgoT2, class FT2, class F2>
-		MMHelper(MMHelper<AlgoT2,FT2, F2>& WH) :
+		template<class F2, typename AlgoT2, typename FT2>
+		MMHelper(MMHelper<F2, AlgoT2, FT2>& WH) :
 		                recLevel(WH.recLevel),
 				FieldMin(WH.FieldMin), FieldMax(WH.FieldMax),
 				Amin(WH.Amin), Amax(WH.Amax),
