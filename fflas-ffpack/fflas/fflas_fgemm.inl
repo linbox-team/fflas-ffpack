@@ -36,23 +36,24 @@
 
 namespace FFLAS { namespace Protected{
 		
-	template <typename FloatElement, class Field>
+	template <typename FloatElement, class Field, class FieldTrait>
 	inline typename Field::Element*
 	fgemm_convert (const Field& F,
 		       const FFLAS_TRANSPOSE ta,
 		       const FFLAS_TRANSPOSE tb,
 		       const size_t m, const size_t n, const size_t k,
 		       const typename Field::Element alpha,
-		       const typename Field::Element* A,const size_t lda,
-		       const typename Field::Element* B,const size_t ldb,
+		       typename Field::Element* A,const size_t lda,
+		       typename Field::Element* B,const size_t ldb,
 		       const typename Field::Element beta,
-		       typename Field::Element * C, const size_t ldc, const int w)
+		       typename Field::Element * C, const size_t ldc,
+		       MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
 
-		FFPACK::Modular<FloatElement> G((FloatElement) F.characteristic());
+		FFPACK::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement tmp,alphaf, betaf;
 		    // This conversion is quite tricky, but convert and init are required
 		    // in sequence e.g. for when F is a ModularBalanced field and alpha == -1
@@ -77,8 +78,8 @@ namespace FFLAS { namespace Protected{
 		
 		if (!F.isZero(beta))
 			fconvert(F, m, n, Cf, n, C, ldc);
-
-		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, w);
+		MMHelper<MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag, FFPACK::ModularBalanced<FloatElement> > HG(G,H.recLevel);
+		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 		finit(F, m, n, Cf, n, C, ldc);
 
@@ -95,7 +96,7 @@ namespace FFLAS{ namespace Protected{
 	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
 					 double& Op1min, double& Op1max, 
 					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& WH)
+					 MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& WH)
 	{
 		Outmin = Op1min + Op2min;
 		Outmax = Op1max + Op2max;
@@ -124,7 +125,7 @@ namespace FFLAS{ namespace Protected{
 	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
 					 double& Op1min, double& Op1max, 
 					 double& Op2min, double& Op2max, 
-					 MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& WH)
+					 MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& WH)
 	{
 		Outmin = Op1min - Op2max;
 		Outmax = Op1max - Op2min;
@@ -150,20 +151,11 @@ namespace FFLAS{ namespace Protected{
 		return false;
 	}
 
-	template <class AlgoT, class FieldT, class Field>
-	inline void ScalAndInit (const Field& F, const size_t N, 
-				 const typename Field::Element alpha,
-				 typename Field::Element * X, const size_t incX,
-				 const MMHelper<AlgoT, FieldT, Field >& H)
-	{
-		finit(F, N, X, incX);
-	}
-	
 	template <class AlgoT, class Field>
 	inline void ScalAndInit (const Field& F, const size_t N,
 				 const typename Field::Element alpha,
 				 typename Field::Element * X, const size_t incX,
-				 const MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& H)
+				 const MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
@@ -177,20 +169,11 @@ namespace FFLAS{ namespace Protected{
 			finit(F, N, X, incX);
 	}
 
-	template <class AlgoT, class FieldT, class Field>
-	inline void ScalAndInit (const Field& F, const size_t M, const size_t N, 
-				 const typename Field::Element alpha,
-				 typename Field::Element * A, const size_t lda,
-				 const MMHelper<AlgoT, FieldT, Field >& H)
-	{
-		finit(F, M, N, A, lda);
-	}
-	
 	template <class AlgoT, class Field>
 	inline void ScalAndInit (const Field& F, const size_t M, const size_t N,
 				 const typename Field::Element alpha,
 				 typename Field::Element * A, const size_t lda,
-				 const MMHelper<AlgoT, FieldCategories::ModularFloatingPointTag, Field >& H)
+				 const MMHelper<AlgoT, FieldCategories::DelayedModularFloatingPointTag, Field >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			if (abs(alpha)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
@@ -220,19 +203,15 @@ namespace FFLAS {
 	       typename Field::Element * B, const size_t ldb, 
 	       const typename Field::Element beta, 
 	       typename Field::Element * C, const size_t ldc, 
-	       MMHelper<MMHelperCategories::Winograd, FieldCategories::FloatingPointConvertibleTag, Field> & H)
+	       MMHelper<MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag, Field> & H)
 	{ 
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
-			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H.recLevel);
+			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else
-			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H.recLevel);
+			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 	}
 }// FFLAS
 
-// #include "fflas_fgemm/matmul_algos.inl"
-#include "fflas_fgemm/fgemm_classical.inl"
-#include "fflas_fgemm/fgemm_winograd.inl"
-// #include "fflas_fgemm/gemm_bini.inl"
 
 // fgemm
 namespace FFLAS {
@@ -249,7 +228,32 @@ namespace FFLAS {
 	       const typename Field::Element* A, const size_t lda,
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc, const int w=-1)
+	       typename Field::Element* C, const size_t ldc)
+	//		, MMHelper<MMHelperAlgo::Auto, FieldTrait, Field> & H) 
+	{
+		    // The entry point to fgemm.
+		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
+		MMHelper<MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, Field > HW (F, m, k, n);
+		return 	fgemm (F, ta, tb, m, n, k, alpha, 
+			       const_cast<typename Field::Element*>(A), lda, 
+			       const_cast<typename Field::Element*>(B), ldb, 
+			       beta, C, ldc, HW);
+	}
+
+	template<class Field>
+	inline typename Field::Element*
+	fgemm( const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element* A, const size_t lda,
+	       typename Field::Element* B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element* C, const size_t ldc,
+	       MMHelper<MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag, Field> & H) 
 	{
 		if (!m || !n) {return C;}
 
@@ -275,53 +279,41 @@ namespace FFLAS {
 		// detect fger
 		if (k==1 and ...) {}
 #endif
-		typename Field::Element alpha_,beta_;
-		F.assign (alpha_,alpha);
-		F.assign (beta_,beta);
 		if (Protected::AreEqual<Field, FFPACK::Modular<double> >::value ||
 		    Protected::AreEqual<Field, FFPACK::ModularBalanced<double> >::value){
 			    // Modular<double> need to switch to float if p too small	
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
-				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,w);
+				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		}
-		if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
-			if ( !F.isOne(alpha) && !F.isMOne(alpha)){
-				F.assign (alpha_, F.one);
-				F.div (beta_, beta, alpha);
-			}
+		typename Field::Element alpha_,beta_;
+		if ( !F.isOne(alpha) && !F.isMOne(alpha)){
+			F.assign (alpha_, F.one);
+			F.div (beta_, beta, alpha);
+		} else {
+			F.assign (alpha_,alpha);
+			F.assign (beta_,beta);
 		}
-
-		typedef MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field > MMH_t;
-		MMH_t H;
-		if (w==-1) // Auto set Winograd rec. level
-			H = MMH_t (F, m, k, n);
-		else
-			H = MMH_t (F, w);
-
+		MMHelper<MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag, Field>  HD(H);
 		fgemm (F, ta, tb, m, n, k, alpha_, 
 		       const_cast<typename Field::Element*>(A), lda, 
 		       const_cast<typename Field::Element*>(B), ldb, 
-		       beta_, C, ldc, H);
+		       beta_, C, ldc, HD);
 		
-		Protected::ScalAndInit (F, m, n, alpha, C, ldc, H);
-		// if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
-		// 	if ( !F.isOne(alpha) && !F.isMOne(alpha)){
-		// 		if (abs(alpha)*std::max(-H.Outmin, H.Outmax)>H.MaxStorableValue){
-		// 			finit(F,m,n,C,ldc);
-		// 			fscalin(F, m,n,alpha,C,ldc);
-		// 		} else {
-		// 			fscalin(H.delayedField, m,n,alpha,C,ldc);
-		// 			finit(F,m,n,C,ldc);
-		// 		}
-		// 		return C;
-		// 	}
-		// }
-		// finit(F,m,n,C,ldc);
+		H.Outmin = HD.Outmin;
+		H.Outmax = HD.Outmax;
+
+		Protected::ScalAndInit (F, m, n, alpha, C, ldc, HD);
+		
+		H.initOut();
+
 		return C;
 	}
-
 } // FFLAS
 
+// #include "fflas_fgemm/matmul_algos.inl"
+#include "fflas_fgemm/fgemm_classical.inl"
+#include "fflas_fgemm/fgemm_winograd.inl"
+// #include "fflas_fgemm/gemm_bini.inl"
 
 // fsquare
 namespace FFLAS {

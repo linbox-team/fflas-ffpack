@@ -41,7 +41,7 @@ namespace FFLAS { namespace BLAS3 {
 
 	// 3 temps and 23 ops
         // TODO: Add check for modular reductions before final additions
-	template < class Field,class DelayedField >
+	template < class Field,class FieldTrait >
 	inline void WinogradAcc_3_23 (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
@@ -52,10 +52,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, DelayedField > & WH
+				      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > & WH
 				     )
 	{
-		MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, DelayedField > H = WH ;
+		MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > H = WH ;
 		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -188,7 +188,7 @@ namespace FFLAS { namespace BLAS3 {
 	} // WinogradAccOld
 
 	// 3 temps and 21 ops
-	template < class Field>
+	template < class Field, class FieldTrait>
 	inline void WinogradAcc_3_21 (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
@@ -199,10 +199,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field > & WH
+				      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > & WH
 				     )
 	{
-		typedef MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field > MMH_t;
+		typedef MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > MMH_t;
 
 		typename MMH_t::DelayedField_t & DF = WH.delayedField;
 
@@ -275,7 +275,7 @@ namespace FFLAS { namespace BLAS3 {
 		double C22Min, C22Max;
 		double C12Min, C12Max;
 		// This test will be optimized out
-		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
 			// Testing if P5 need to be reduced
 		 	C22Min = H5.Outmin + std::min(betadf*WH.Cmin,betadf*WH.Cmax); 
 			C22Max = H5.Outmax + std::max(betadf*WH.Cmin,betadf*WH.Cmax);
@@ -408,7 +408,7 @@ namespace FFLAS { namespace BLAS3 {
 
 	// 2 temps and 24 ops
         // TODO: Add check for modular reductions before final additions
-	template < class Field, class DelayedField >
+	template < class Field, class FieldTrait >
 	inline void WinogradAcc_2_24 (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
@@ -419,10 +419,10 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, DelayedField > & WH
+				      MMHelper<MMHelperAlgo::Winograd,FieldTrait, Field > & WH
 				     )
 	{
-		MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, DelayedField > H = WH ;
+		MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > H = WH ;
 		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));
@@ -530,7 +530,7 @@ namespace FFLAS { namespace BLAS3 {
 
 	// 2 temps and 27 ops
         // TODO: Add check for modular reductions before final additions
-	template < class Field, class DelayedField >
+	template < class Field, class FieldTrait >
 	inline void WinogradAcc_2_27 (const Field& F,
 				      const FFLAS_TRANSPOSE ta,
 				      const FFLAS_TRANSPOSE tb,
@@ -541,9 +541,9 @@ namespace FFLAS { namespace BLAS3 {
 				      const typename Field::Element  beta,
 				      typename Field::Element * C, const size_t ldc,
 				      // const size_t kmax, const size_t w, const FFLAS_BASE base
-				      MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, DelayedField > & WH)
+				      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > & WH)
 	{
-		MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, DelayedField > H = WH ;
+		MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > H = WH ;
 		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(!F.isZero(beta));

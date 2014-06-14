@@ -39,7 +39,7 @@
 
 namespace FFLAS { namespace BLAS3 {
 
-		template < class Field >
+		template < class Field, class FieldTrait >
 	inline void Winograd (const Field& F,
 			      const FFLAS_TRANSPOSE ta,
 			      const FFLAS_TRANSPOSE tb,
@@ -50,13 +50,13 @@ namespace FFLAS { namespace BLAS3 {
 			      const typename Field::Element  beta,
 			      typename Field::Element * C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
-			      MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> & WH
+			      MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & WH
 			     )
 	{
 
 		FFLASFFPACK_check(F.isZero(beta));
 
-		typedef MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field > MMH_t;
+		typedef MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field > MMH_t;
 
 		typename MMH_t::DelayedField_t & DF = WH.delayedField;
 
@@ -147,7 +147,7 @@ namespace FFLAS { namespace BLAS3 {
 		// U2 = P1 + P6 in C12  and
 		double U2Min, U2Max;
 		    // This test will be optimized out
-		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
 			U2Min = H1.Outmin + H6.Outmin;
 			U2Max = H1.Outmax + H6.Outmax;
 			if (std::max(-U2Min, U2Max) > WH.MaxStorableValue) {
@@ -167,7 +167,7 @@ namespace FFLAS { namespace BLAS3 {
 		// U3 = P7 + U2 in C21  and
 		double U3Min, U3Max;
 		    // This test will be optimized out
-		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
 			U3Min = U2Min + H7.Outmin;
 			U3Max = U2Max + H7.Outmax;
 			if (std::max(-U3Min, U3Max) > WH.MaxStorableValue) {
@@ -190,7 +190,7 @@ namespace FFLAS { namespace BLAS3 {
 		// U4 = P5 + U2 in C12    and
 		double U4Min, U4Max;
 		    // This test will be optimized out
-		if (Protected::AreEqual<typename FieldTraits<Field>::value, FieldCategories::ModularFloatingPointTag >::value){
+		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
 			U4Min = U2Min + H5.Outmin;
 			U4Max = U2Max + H5.Outmax;
 			if (std::max(-U4Min, U4Max) > WH.MaxStorableValue) {

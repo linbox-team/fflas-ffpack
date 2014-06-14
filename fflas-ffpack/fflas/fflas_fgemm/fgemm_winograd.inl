@@ -121,7 +121,7 @@ namespace FFLAS { namespace Protected {
 		return w;
 	}
 
-	template  < class Field >
+		template  < class Field, class FieldTrait >
 	inline void
 	DynamicPeeling (const Field& F,
 			const FFLAS_TRANSPOSE ta,
@@ -133,7 +133,7 @@ namespace FFLAS { namespace Protected {
 			typename Field::Element* B, const size_t ldb,
 			const typename Field::Element beta,
 			typename Field::Element* C, const size_t ldc,
-			MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> & H,
+			MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H,
 			const double Cmin, const double Cmax) 
 	{
 		typename Field::Element *a12, *a21, *b12, *b21;
@@ -160,9 +160,9 @@ namespace FFLAS { namespace Protected {
 			b12 = B+n-1; incb12 = ldb;
 			b21 = B+(k-1)*ldb; incb21 = 1;
 		}
-		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field> Hacc(H);
-		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field> HModd(H);
-		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field> HNodd(H);
+		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> Hacc(H);
+		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HModd(H);
+		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HNodd(H);
 			
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
@@ -221,7 +221,7 @@ namespace FFLAS { namespace Protected {
 		H.checkOut(F, m,n, C, ldc);
 	}
 
-		template  < class Field >
+		template  < class Field, class FieldTrait >
 	inline void
 	DynamicPeeling2 (const Field& F,
 			 const FFLAS_TRANSPOSE ta,
@@ -233,7 +233,8 @@ namespace FFLAS { namespace Protected {
 			 typename Field::Element* B, const size_t ldb,
 			 const typename Field::Element beta,
 			 typename Field::Element* C, const size_t ldc,
-			 MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> & H)
+			 MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H,
+			 const double Cmin, const double Cmax)
 	{
 		size_t mkn =(size_t)( (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2));
 		if (mkn == 0) return;
@@ -255,57 +256,64 @@ namespace FFLAS { namespace Protected {
 			b12 = B+(n-nr);
 			b21 = B+(k-kr)*ldb;
 		}
-		H.recLevel = 0;
-		MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> H2(H);
-		H.Cmin = H.FieldMin; H.Cmax = H.FieldMax;
-		H2.Cmin = H.Outmin; H2.Cmax = H.Outmax;
-
+		
+		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> Hacc(H);
+		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HModd(H);
+		MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HNodd(H);
+			
+		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
+		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
+		HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
+		HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
+		HNodd.Cmin = Cmin; HNodd.Cmax = Cmax;
+		
 		switch (mkn) {
 		case 1: // n oddsized
-			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, H);
+			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
 			break;
 
 		case 2: // k oddsized
-			fgemm (F, ta, tb, m, n, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, H2);
+			fgemm (F, ta, tb, m, n, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, Hacc);
 			break;
 
 		case 3: // n, k oddsized
-			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, H);
-			fgemm (F, ta, tb, m, n-nr, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, H2);
+			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
+			fgemm (F, ta, tb, m, n-nr, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, Hacc);
 			break;
 
 		case 4: // m oddsized
-			fgemm (F,  ta, tb, mr, n, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, H);
+			fgemm (F,  ta, tb, mr, n, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, HModd);
 			break;
 
 		case 5: // m, n oddsized
-			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, H);
-			fgemm (F, ta, tb, mr, n-nr, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, H);
+			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
+			fgemm (F, ta, tb, mr, n-nr, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, HModd);
 			break;
 
 		case 6: // m, k oddsized
-			fgemm (F, ta, tb, m-mr, n, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, H2);
-			fgemm (F, ta, tb, mr, n, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, H);
+			fgemm (F, ta, tb, m-mr, n, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, Hacc);
+			fgemm (F, ta, tb, mr, n, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, HModd);
 			break;
 
 		case 7: // m, k, n oddsized
 			// Block NW
-			fgemm (F, ta, tb, m-mr, n-nr, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, H2);
+			fgemm (F, ta, tb, m-mr, n-nr, kr, alpha, a12, lda, b21, ldb, F.one, C, ldc, Hacc);
 			// Block SW
-			fgemm (F,  ta, tb, mr, n-nr, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, H);
+			fgemm (F,  ta, tb, mr, n-nr, k, alpha, a21, lda, B, ldb, beta, C+(m-mr)*ldc, ldc, HModd);
 			// Block NE
-			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, H);
+			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
 			break;
 		}
-		H.Outmin = std::min(H.Outmin, H2.Outmin);
-		H.Outmax = std::max(H.Outmax, H2.Outmax);
+		H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
+		H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
+		H.checkOut(F, m,n, C, ldc);
 	}
 
 	// #define NEWIP
 	// #define NEWACCIP
 
 	// Switch between the scheduling for Strassen-Winograd Multiplication
-	template < class Field >
+	template < class Field, class FieldTrait >
 	inline void WinogradCalc (const Field& F,
 				  const FFLAS_TRANSPOSE ta,
 				  const FFLAS_TRANSPOSE tb,
@@ -315,7 +323,7 @@ namespace FFLAS { namespace Protected {
 				  typename Field::Element* B,const size_t ldb,
 				  const typename Field::Element beta,
 				  typename Field::Element * C, const size_t ldc,
-				  MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> & H)
+				  MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H)
 	{
 #if defined(NEWIP) or defined(NEWACCIP)  /*  XXX TESTS ONLY */
 		typedef typename Field::Element Element ;
@@ -399,62 +407,67 @@ namespace FFLAS { namespace Protected {
 
 
 namespace FFLAS{
-template<class Field> 
-inline  void fgemm (const Field& F, 
-		    const FFLAS_TRANSPOSE ta, 
-		    const FFLAS_TRANSPOSE tb, 
-		    const size_t m, const size_t n, const size_t k, 
-		    const typename Field::Element alpha, 
-		    typename Field::Element * A, const size_t lda, 
-		    typename Field::Element * B, const size_t ldb, 
-		    const typename Field::Element beta, 
-		    typename Field::Element * C, const size_t ldc, 
-		    MMHelper<MMHelperCategories::Winograd, typename FieldTraits<Field>::value, Field> & H) 
-{ 
-	if (!m || !n ) return; 
-	
-	if (!k) return fscalin(F,m,n,beta,C,ldc); 
- 	
-	if (H.recLevel == 0){
-		MMHelper<MMHelperCategories::Classic, typename FieldTraits<Field>::value, Field> HC(H);
-		fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC); 
-		H.Outmax = HC.Outmax;
-		H.Outmin = HC.Outmin;
-		return;
-	}
-	    // Then w >0 
+	template<class Field, class FieldTrait> 
+	inline  typename Field::Element*
+	fgemm (const Field& F, 
+	       const FFLAS_TRANSPOSE ta, 
+	       const FFLAS_TRANSPOSE tb, 
+	       const size_t m, const size_t n, const size_t k, 
+	       const typename Field::Element alpha, 
+	       typename Field::Element * A, const size_t lda, 
+	       typename Field::Element * B, const size_t ldb, 
+	       const typename Field::Element beta, 
+	       typename Field::Element * C, const size_t ldc, 
+	       MMHelper<MMHelperAlgo::Winograd, FieldTrait, Field> & H) 
+	{
+		if (!m || !n ) return C;
+
+		if (!k){
+			    //TODO: update helper
+			fscalin(F,m,n,beta,C,ldc);
+			return C;
+		}
+
+		if (H.recLevel == 0){
+			MMHelper<MMHelperAlgo::Classic, FieldTrait, Field> HC(H);
+			fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
+			H.Outmax = HC.Outmax;
+			H.Outmin = HC.Outmin;
+			return C;
+		}
+		// Then w >0
+		double Cmin = H.Cmin;
+		double Cmax = H.Cmax;
 
 #ifdef OLD_DYNAMIC_PEELING
-	double Cmin = H.Cmin;
-	double Cmax = H.Cmax;
-	
-	Protected::WinogradCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
-	FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
-	FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
-	FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
+		Protected::WinogradCalc (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
-	Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
+		FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
+		FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
+		FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
 
+		Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
 #else
-	size_t ww = H.recLevel ;
-	size_t m2 = (m >> ww) << (ww-1) ;
-	size_t n2 = (n >> ww) << (ww-1) ;
-	size_t k2 = (k >> ww) << (ww-1) ;
+		size_t ww = H.recLevel ;
+		size_t m2 = (m >> ww) << (ww-1) ;
+		size_t n2 = (n >> ww) << (ww-1) ;
+		size_t k2 = (k >> ww) << (ww-1) ;
 
-	Protected::WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb, beta, C, ldc, H);
+		Protected::WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
-	size_t mr = m -2*m2;
-	size_t nr = n -2*n2;
-	size_t kr = k -2*k2;
+		size_t mr = m -2*m2;
+		size_t nr = n -2*n2;
+		size_t kr = k -2*k2;
 
-	FFLASFFPACK_check(m == m2*2+mr);
-	FFLASFFPACK_check(n == n2*2+nr);
-	FFLASFFPACK_check(k == k2*2+kr);
+		FFLASFFPACK_check(m == m2*2+mr);
+		FFLASFFPACK_check(n == n2*2+nr);
+		FFLASFFPACK_check(k == k2*2+kr);
 
-	Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H);
+		Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
 #endif
-} // fgemm
+		return C;
+	} // fgemm
 
 } // FFLAS
 

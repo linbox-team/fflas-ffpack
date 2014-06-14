@@ -66,6 +66,8 @@ namespace FFLAS {
 		struct FloatingPointConvertibleTag : public  GenericTag{};
 		//! If it is a Modular or ModularBalanced templated by float or double
 		struct ModularFloatingPointTag : public GenericTag{};
+		//! If it is a Modular or ModularBalanced templated by float or double, and result is not reduced
+		struct DelayedModularFloatingPointTag : public GenericTag{};
 		//! If it is a multiprecision field
 		struct MultiPrecisionTag : public  GenericTag{};
 		//! If it is DoubleDomain or a FloatDomain
@@ -92,7 +94,8 @@ namespace FFLAS {
 	struct FieldTraits<FFPACK::Modular<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
 	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
 
-	namespace MMHelperCategories{
+	namespace MMHelperAlgo{
+		struct Auto{};
 		struct Classic{};
 		struct Winograd{};
 		struct Bini{};
@@ -226,7 +229,7 @@ namespace FFLAS {
 				MaxStorableValue((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
 				delayedField(F.characteristic()) {}
 
-		void print(){
+		void print() const {
 			std::cerr<<"Helper: "
 				 <<typeid(AlgoTrait).name()<<" "
 				 <<typeid(FieldTrait).name()<<std::endl

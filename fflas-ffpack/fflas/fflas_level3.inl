@@ -236,8 +236,7 @@ namespace FFLAS {
 	       const typename Field::Element* A, const size_t lda,
 	       const typename Field::Element* B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc,
-	       const int w = (int) -1);
+	       typename Field::Element* C, const size_t ldc);
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
