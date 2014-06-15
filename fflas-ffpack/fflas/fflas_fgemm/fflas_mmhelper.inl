@@ -57,7 +57,7 @@ namespace FFLAS {
 	struct associatedDelayedField<FFPACK::Modular<double> >{typedef DoubleDomain value;};
 	template <>
 	struct associatedDelayedField<FFPACK::ModularBalanced<double> >{typedef DoubleDomain value;};
-        
+
 	// Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
 		//! generic ring.
@@ -129,7 +129,7 @@ namespace FFLAS {
 		void initOut(){Outmin = FieldMin; Outmax = FieldMax;}
 
 
-		size_t MaxDelayedDim(double beta){return std::max (0.0, floor ( (MaxStorableValue - abs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));}
+		size_t MaxDelayedDim(double beta){return (size_t) std::max (0.0, floor ( (MaxStorableValue - abs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));}
 
 		void setOutBounds(const size_t k, const double alpha, const double beta){
 			if (beta<0){
@@ -194,7 +194,7 @@ namespace FFLAS {
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
-				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
+				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()) {}
 
 		MMHelper(const Field& F, int w) :
@@ -203,7 +203,7 @@ namespace FFLAS {
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
-				MaxStorableValue ((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
+				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()){}
 
 		// copy constructor from other Field and Algo Traits
@@ -226,7 +226,7 @@ namespace FFLAS {
 				Amin(_Amin), Amax(_Amax),
 				Bmin(_Bmin), Bmax(_Bmax),
 				Cmin(_Cmin), Cmax(_Cmax),
-				MaxStorableValue((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1),
+				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()) {}
 
 		void print() const {

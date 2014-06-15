@@ -135,18 +135,18 @@ namespace FFLAS {
 				F.div (beta_, beta, alpha);
 			}
 			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag > HD(F,0);
-			
+
 			fgemv (F, ta, M, N, alpha_,
 			       const_cast<typename Field::Element*>(A), lda,
 			       const_cast<typename Field::Element*>(X), incX,
 			       beta_, Y, incY, HD);
-			
+
 			Protected::ScalAndInit (F, Ydim, alpha, Y, incY, HD);
 			return Y;
 
 		} else {
 			MMHelper<Field, MMHelperAlgo::Classic, typename FieldTraits<Field>::value > H(F,0);
-			
+
 			fgemv (F, ta, M, N, alpha_, A, lda, X, incX, beta_, Y, incY, H);
 			return Y;
 		}
@@ -333,8 +333,8 @@ namespace FFLAS{
 		H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
 		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
-			     (int)M, (int)N, (DoubleDomain::Element) alpha,
-			     A, (int)lda, X, (int)incX, (DoubleDomain::Element) beta, Y, (int)incY);
+			     (int)M, (int)N, (FloatDomain::Element) alpha,
+			     A, (int)lda, X, (int)incX, (FloatDomain::Element) beta, Y, (int)incY);
 		return Y;
 	}
 
