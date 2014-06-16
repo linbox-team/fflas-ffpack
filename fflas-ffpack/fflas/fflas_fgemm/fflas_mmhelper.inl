@@ -194,6 +194,7 @@ namespace FFLAS {
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
+				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()) {}
 
@@ -203,6 +204,7 @@ namespace FFLAS {
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
+				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()){}
 

@@ -147,42 +147,18 @@ namespace FFLAS { namespace BLAS3 {
 		// U2 = P1 + P6 in C12  and
 		double U2Min, U2Max;
 		    // This test will be optimized out
-		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
-			U2Min = H1.Outmin + H6.Outmin;
-			U2Max = H1.Outmax + H6.Outmax;
-			if (std::max(-U2Min, U2Max) > WH.MaxStorableValue) {
-				finit(F,mr,nr,X1,nr);
-				finit(F,mr,nr,C12,ldc);
-				H1.initOut();
-				H6.initOut();
-				U2Min = 2*WH.FieldMin;
-				U2Max = 2*WH.FieldMax;
-			}
-		} else {
-			U2Min = WH.FieldMin;
-			U2Max = WH.FieldMax;
+		if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax, WH)){
+			finit(F,mr,nr,X1,nr);
+			finit(F,mr,nr,C12,ldc);
 		}
 		faddin(DF,mr,nr,X1,nr,C12,ldc);
 
 		// U3 = P7 + U2 in C21  and
 		double U3Min, U3Max;
 		    // This test will be optimized out
-		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
-			U3Min = U2Min + H7.Outmin;
-			U3Max = U2Max + H7.Outmax;
-			if (std::max(-U3Min, U3Max) > WH.MaxStorableValue) {
-				finit(F, mr,nr,C12,ldc);
-				finit(F, mr,nr,C21,ldc);
-				H7.Outmin = WH.FieldMin;
-				H7.Outmax = WH.FieldMax;
-				U2Min = WH.FieldMin;
-				U2Max = WH.FieldMax;
-				U3Min = 2*WH.FieldMin;
-				U3Max = 2*WH.FieldMax;
-			}
-		} else {
-			U3Min = WH.FieldMin;
-			U3Max = WH.FieldMax;
+		if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.Outmin, H7.Outmax, WH)){
+			finit(F, mr,nr,C12,ldc);
+			finit(F, mr,nr,C21,ldc);
 		}
 		faddin(DF,mr,nr,C12,ldc,C21,ldc);
 		
@@ -190,22 +166,9 @@ namespace FFLAS { namespace BLAS3 {
 		// U4 = P5 + U2 in C12    and
 		double U4Min, U4Max;
 		    // This test will be optimized out
-		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
-			U4Min = U2Min + H5.Outmin;
-			U4Max = U2Max + H5.Outmax;
-			if (std::max(-U4Min, U4Max) > WH.MaxStorableValue) {
-				finit(F,mr,nr,C22,ldc);
-				finit(F,mr,nr,C12,ldc);
-				H5.Outmin = WH.FieldMin;
-				H5.Outmax = WH.FieldMax;
-				U2Min = WH.FieldMin;
-				U2Max = WH.FieldMax;
-				U4Min = 2*WH.FieldMin;
-				U4Max = 2*WH.FieldMax;
-			}
-		} else {
-			U4Min = WH.FieldMin;
-			U4Max = WH.FieldMax;
+		if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.Outmin, H5.Outmax, WH)){
+			finit(F,mr,nr,C22,ldc);
+			finit(F,mr,nr,C12,ldc);
 		}
 		faddin(DF,mr,nr,C22,ldc,C12,ldc);
 		
