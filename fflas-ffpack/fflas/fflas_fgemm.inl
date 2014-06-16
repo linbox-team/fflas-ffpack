@@ -74,10 +74,14 @@ namespace FFLAS { namespace Protected{
 		size_t ldaf = ka, ldbf = nb, ldcf= n;
 
 		fconvert(F, ma, ka, Af, ka, A, lda);
+		finit(G, ma, ka, Af, ka);
 		fconvert(F, kb, nb, Bf, nb, B, ldb);
+		finit(G, kb, nb, Bf, nb);
 		
-		if (!F.isZero(beta))
+		if (!F.isZero(beta)){
 			fconvert(F, m, n, Cf, n, C, ldc);
+			finit (G, m, n, Cf, n);
+		}
 		MMHelper<FFPACK::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel);
 		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
@@ -148,6 +152,41 @@ namespace FFLAS{ namespace Protected{
 		    // Necessary?
 		Outmin = WH.FieldMin;
 		Outmax = WH.FieldMax;
+		return false;
+	}
+
+
+	template<class Field, class AlgoT>
+	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max, 
+					       double& Out2min, double& Out2max, 
+					       double& Op1min, double& Op1max, 
+					       double& Op2min, double& Op2max, double beta,
+					       MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH){
+		// Testing if P5 need to be reduced
+		Out2min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+		Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
+		Out1min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+		Out1max = Op1max + std::max(beta*Op2min,beta*Op2max);
+		if (std::max(-Out2min, std::max(Out2max, std::max(-Out1min, Out1max))) > WH.MaxStorableValue){
+			Out2min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+			Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
+			Out1min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+			Out1max = Op1max + std::max(beta*Op2min,beta*Op2max);
+			return true;
+		} else return false;
+	}
+
+	template<class Field, class AlgoT, class FieldT>
+	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max, 
+					       double& Out2min, double& Out2max, 
+					       double& Op1min, double& Op1max, 
+					       double& Op2min, double& Op2max, double beta,
+					       MMHelper<Field, AlgoT, FieldT >& WH)
+	{
+		Out2min = WH.FieldMin;
+		Out2max = WH.FieldMax;	
+		Out1min = WH.FieldMin;
+		Out1max = WH.FieldMax;
 		return false;
 	}
 
@@ -297,10 +336,6 @@ namespace FFLAS {
 		       const_cast<typename Field::Element*>(A), lda, 
 		       const_cast<typename Field::Element*>(B), ldb, 
 		       beta_, C, ldc, HD);
-		
-		H.Outmin = HD.Outmin;
-		H.Outmax = HD.Outmax;
-
 		Protected::ScalAndInit (F, m, n, alpha, C, ldc, HD);
 		
 		H.initOut();

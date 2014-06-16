@@ -48,26 +48,6 @@ namespace FFLAS { namespace Protected {
 
 } // FFLAS
 
-namespace FFLAS {
-
-	template <class T>
-	const T& min3(const T & m, const T & n , const T & k)	{return std::min(m,std::min(n,k));}
-
-	template <class T>
-	const T& max3(const T & m, const T & n , const T & k)	{return std::max(m,std::min(n,k));}
-
-	template <class T>
-	const T& min4(const T & m, const T & n , const T & k, const T & l)
-	{return std::min(std::min(m,n),std::min(k,l));}
-
-	template <class T>
-	const T& max4(const T & m, const T & n , const T & k, const T & l)
-	{return std::max(std::max(m,n),std::max(k,l));}
-
-
-} // FFLAS
-
-
 namespace FFLAS { namespace Protected {
 
 	template <class Field>

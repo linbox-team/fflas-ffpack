@@ -148,6 +148,34 @@ namespace FFLAS{
 			H.Outmax = Hfp.Outmax;
 		}
 	}
+template<class Field>
+	inline void
+	fger (const Field& F, const size_t M, const size_t N,
+	      const typename Field::Element alpha,
+	      typename Field::Element * x, const size_t incx,
+	      typename Field::Element * y, const size_t incy,
+	      typename Field::Element * A, const size_t lda,
+	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
+	{
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag>::DelayedField_t::Element alphadf;
+		if (F.isMOne( alpha)) alphadf = -1.0;
+		else alphadf = 1.0;
+
+		MMHelper<typename associatedDelayedField<Field>::value,
+			 MMHelperAlgo::Classic,
+			 typename FieldCategories::FloatingPointTag > Hfp(H);
+
+		fger (H.delayedField, M, N, alphadf, x, incx, y, incy, A, lda, Hfp);
+
+		if (!F.isOne(alpha) && !F.isMOne(alpha)){
+                        if (abs(alpha)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+				finit (F, M, N, A, lda);
+				Hfp.initOut();
+			}
+			fscalin(F, M, N, alpha, A, lda);
+		}
+		H.initOut();		
+	}
 
 	template<class Field>
 	inline void

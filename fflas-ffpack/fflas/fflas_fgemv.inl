@@ -112,6 +112,24 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY)
 	{
+		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
+		return 	fgemv (F, ta, M, N, alpha, 
+			       const_cast<typename Field::Element*>(A), lda, 
+			       const_cast<typename Field::Element*>(X), incX, 
+			       beta, Y, incY, HW);
+	}
+	
+	template<class Field>
+	inline typename Field::Element*
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       const typename Field::Element * A, const size_t lda,
+	       const typename Field::Element * X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element * Y, const size_t incY,
+	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H) 
+	{
 
 		if (!M) {return Y;}
 		size_t Ydim = (ta == FflasNoTrans)?M:N;
@@ -129,27 +147,21 @@ namespace FFLAS {
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X,incX,beta,Y,incY);
 		}
-		if (Protected::AreEqual<typename FieldTraits<Field>::value,FieldCategories::ModularFloatingPointTag>::value){
-			if ( !F.isOne(alpha) && !F.isMOne(alpha)){
-				F.assign (alpha_, F.one);
-				F.div (beta_, beta, alpha);
-			}
-			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag > HD(F,0);
-
-			fgemv (F, ta, M, N, alpha_,
-			       const_cast<typename Field::Element*>(A), lda,
-			       const_cast<typename Field::Element*>(X), incX,
-			       beta_, Y, incY, HD);
-
-			Protected::ScalAndInit (F, Ydim, alpha, Y, incY, HD);
-			return Y;
-
-		} else {
-			MMHelper<Field, MMHelperAlgo::Classic, typename FieldTraits<Field>::value > H(F,0);
-
-			fgemv (F, ta, M, N, alpha_, A, lda, X, incX, beta_, Y, incY, H);
-			return Y;
+		if ( !F.isOne(alpha) && !F.isMOne(alpha)){
+			F.assign (alpha_, F.one);
+			F.div (beta_, beta, alpha);
 		}
+		MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag > HD(F,0);
+		
+		fgemv (F, ta, M, N, alpha_,
+		       const_cast<typename Field::Element*>(A), lda,
+		       const_cast<typename Field::Element*>(X), incX,
+		       beta_, Y, incY, HD);
+
+		Protected::ScalAndInit (F, Ydim, alpha, Y, incY, HD);
+		H.initOut();
+
+		return Y;
 	}
 }
 

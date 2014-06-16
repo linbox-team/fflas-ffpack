@@ -275,26 +275,9 @@ namespace FFLAS { namespace BLAS3 {
 		double C22Min, C22Max;
 		double C12Min, C12Max;
 		// This test will be optimized out
-		if (Protected::AreEqual<FieldTrait, FieldCategories::DelayedModularFloatingPointTag >::value){
-			// Testing if P5 need to be reduced
-		 	C22Min = H5.Outmin + std::min(betadf*WH.Cmin,betadf*WH.Cmax); 
-			C22Max = H5.Outmax + std::max(betadf*WH.Cmin,betadf*WH.Cmax);
-			C12Min = H5.Outmin + std::min(betadf*WH.Cmin,betadf*WH.Cmax); 
-			C12Max = H5.Outmax + std::max(betadf*WH.Cmin,betadf*WH.Cmax);
-			if (std::max(-C22Min, std::max(C22Max, std::max(-C12Min, C12Max))) > WH.MaxStorableValue){
-				// Reduce P5
-				finit(F,mr,nr,X1,nr);
-				H5.initOut();
-				C22Min = H5.Outmin + std::min(betadf*WH.Cmin,betadf*WH.Cmax); 
-				C22Max = H5.Outmax + std::max(betadf*WH.Cmin,betadf*WH.Cmax);
-				C12Min = H5.Outmin + std::min(betadf*WH.Cmin,betadf*WH.Cmax); 
-				C12Max = H5.Outmax + std::max(betadf*WH.Cmin,betadf*WH.Cmax);
-			}
-		} else {
-			C22Min = WH.FieldMin;
-		 	C22Max = WH.FieldMax;	
-			C12Min = WH.FieldMin;
-			C12Max = WH.FieldMax;
+		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, C22Min, C22Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
+			finit(F,mr,nr,X1,nr);
+			H5.initOut();
 		}
 		
                 // C22 = P5 + beta C22 in C22

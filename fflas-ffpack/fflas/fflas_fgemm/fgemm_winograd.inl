@@ -163,7 +163,7 @@ namespace FFLAS { namespace Protected {
 		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> Hacc(H);
 		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HModd(H);
 		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HNodd(H);
-			
+
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
 		HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
