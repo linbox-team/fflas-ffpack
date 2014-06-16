@@ -196,8 +196,8 @@ namespace FFLAS {
 #endif
 		*/
 	}
-		WAIT;
-		return C;
+	WAIT;
+	return C;
 	}
 	
 } // FFLAS                                                                                                                   

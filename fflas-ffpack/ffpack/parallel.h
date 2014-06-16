@@ -140,4 +140,30 @@
 #endif
 
 
+
+#ifdef __FFLASFFPACK_USE_OPENMP
+#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #endif
+#ifdef __FFLASFFPACK_USE_KAAPI
+#define BEGIN_PARALLEL_MAIN(Args...) \
+  struct doit	{					\
+  void operator()(int argc, char** argv) 
+#endif
+
+
+#ifdef __FFLASFFPACK_USE_OPENMP
+#define END_PARALLEL_MAIN(void)  return 0; }
+#endif
+#ifdef __FFLASFFPACK_USE_KAAPI
+#define END_PARALLEL_MAIN(void) \
+  }; int main(int argc, char** argv) {				    \
+try { ka::Community com = ka::System::join_community( argc, argv ); \
+  ka::SpawnMain<doit>()(argc, argv); \
+  com.leave(); \
+  ka::System::terminate();} \
+catch (const std::exception& E) { ka::logfile() << "Catch : " << E.what() << std::endl;} \
+catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
+ return 0;}
+#endif
+
+#endif //__FFLASFFPACK_fflas_parallel_H
