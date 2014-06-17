@@ -173,7 +173,7 @@ namespace FFLAS { namespace Protected {
 	template<class Element>
 	inline size_t TRSMBound (const FFPACK:: Modular<Element>& F)
 	{
-		
+
 		FFLAS_INT_TYPE pi;
 		F.characteristic(pi);
 		double p = pi;

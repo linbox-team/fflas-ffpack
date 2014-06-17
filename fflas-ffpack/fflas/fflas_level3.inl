@@ -259,19 +259,19 @@ namespace FFLAS {
 	 * \param H helper, driving the computation (algorithm, delayed modular reduction, switch of base type, etc)
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
-	template<class Field, class AlgoT, class FieldTrait> 
+	template<class Field, class AlgoT, class FieldTrait>
 	inline  typename Field::Element*
-	fgemm (const Field& F, 
-	       const FFLAS_TRANSPOSE ta, 
-	       const FFLAS_TRANSPOSE tb, 
-	       const size_t m, const size_t n, const size_t k, 
-	       const typename Field::Element alpha, 
-	       typename Field::Element * A, const size_t lda, 
-	       typename Field::Element * B, const size_t ldb, 
-	       const typename Field::Element beta, 
-	       typename Field::Element * C, const size_t ldc, 
-	       MMHelper<AlgoT, FieldTrait, Field> & H);
-		
+	fgemm (const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m, const size_t n, const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element * A, const size_t lda,
+	       typename Field::Element * B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element * C, const size_t ldc,
+	       MMHelper<Field, AlgoT, FieldTrait> & H);
+
 } // FFLAS
 
 #include "fflas-ffpack/fflas/parallel.h"
@@ -306,7 +306,7 @@ namespace FFLAS {
             const typename Field::Element beta,
             typename Field::Element* C, const size_t ldc,
             const size_t w,
-            const CuttingStrategy method, 
+            const CuttingStrategy method,
             const int maxThreads  = HPAC_NUM_THREADS
             );
 
