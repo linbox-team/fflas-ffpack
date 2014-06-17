@@ -202,8 +202,9 @@ bool launch_MM(const Field & F,
 		}
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fcopy(F,m,n,C,ldc,D,n);
+        FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw);
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,ldc,nbw);
+			      beta,C,ldc,WH);
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			       beta,C,ldc);
 
