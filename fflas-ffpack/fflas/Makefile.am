@@ -40,6 +40,8 @@ pkgincludesub_HEADERS=       \
 	   fflas_ftrmm_src.inl   \
 	   fflas_fgemm.inl       \
 	   fflas_pfgemm.inl      \
+	   parallel.h		 \
+           kaapi_routines.inl    \
 	   fflas_blockcuts.inl   \
 	   fflas_pftrsm.inl      \
 	   fflas_ftrsm.inl       \

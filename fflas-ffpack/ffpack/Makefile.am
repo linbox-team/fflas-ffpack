@@ -29,7 +29,6 @@ pkgincludesub_HEADERS=        \
 		ffpack_charpoly.inl                   \
 		ffpack_charpoly_kgfastgeneralized.inl \
 		ffpack.h                              \
-		parallel.h \
 		ffpack_charpoly_kgfast.inl            \
 		ffpack_krylovelim.inl                 \
 		ffpack_charpoly_kglu.inl              \
