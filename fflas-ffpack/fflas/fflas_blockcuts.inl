@@ -171,15 +171,21 @@ namespace FFLAS {
 
     struct ForStrategy1D {
         ForStrategy1D(const size_t n, const CuttingStrategy method, const size_t numthreads) {
+
             if ( method == BLOCK_THREADS || method == ROW_THREADS || method == COLUMN_THREADS) {
-		    //		    std::cout<<"kaapi numthreads "<<numthreads<<std::endl;
-                BlockSize = std::max(n/numthreads,(size_t)1);
+                numBlock = std::max(numthreads,(size_t)1);
             } else {
-                BlockSize =__FFLASFFPACK_MINBLOCKCUTS;
+                numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(size_t)1);
             }
-            numBlock = n/BlockSize;
-            lastBS = n % BlockSize;
-            if (lastBS) ++numBlock; else lastBS = BlockSize;            
+            BlockSize = std::max(n/numBlock,(size_t)1);
+            size_t remSize = n - numBlock*BlockSize;
+            if (remSize) {
+                ++BlockSize;
+                lastBS = remSize-numBlock+BlockSize;
+            } else lastBS = BlockSize;
+//             std::cout<<"BLOCKSIZE : "<<BlockSize<<std::endl;
+//             std::cout<<"lastBS    : "<<lastBS<<std::endl;
+//             std::cout<<"NBlocks : "<<numBlock<<std::endl;
         }
         
         size_t begin() { current = 0; return setCurrentBlock(); }
