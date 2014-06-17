@@ -219,14 +219,15 @@ int main(int argc, char** argv){
 	cout<<m<<" "<<n<<" "<<k<<" "<<pnbw<<" "<<alpha<<" "<<beta<<" "
 	    <<mflops<<" "<<tim.realtime()/nbit<<endl;
 
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw);
 
 	OMPTimer tims,ts; ts.clear();tims.clear();
 	for(int i = 0;i<nbit;++i){
         C = new Field::Element[m*n];
 		ts.clear();
-		ts.start();
+		ts.start();        
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,n,nbw);
+			      beta,C,n,WH);
 		ts.stop();
 		//if (i)
 			tims+=ts;

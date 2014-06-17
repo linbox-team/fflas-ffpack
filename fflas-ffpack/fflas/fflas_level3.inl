@@ -274,7 +274,7 @@ namespace FFLAS {
 		
 } // FFLAS
 
-#include "fflas-ffpack/ffpack/parallel.h"
+#include "fflas-ffpack/fflas/parallel.h"
 
 namespace FFLAS {
 	//#ifdef __FFLASFFPACK_USE_OPENMP
@@ -301,8 +301,8 @@ namespace FFLAS {
             const size_t n,
             const size_t k,
             const typename Field::Element alpha,
-            const typename Field::Element* A, const size_t lda,
-            const typename Field::Element* B, const size_t ldb,
+            typename Field::Element* A, const size_t lda,
+            typename Field::Element* B, const size_t ldb,
             const typename Field::Element beta,
             typename Field::Element* C, const size_t ldc,
             const size_t w,
@@ -321,8 +321,8 @@ namespace FFLAS {
             const size_t n,
             const size_t k,
             const typename Field::Element alpha,
-            const typename Field::Element* A, const size_t lda,
-            const typename Field::Element* B, const size_t ldb,
+            typename Field::Element* A, const size_t lda,
+            typename Field::Element* B, const size_t ldb,
             const typename Field::Element beta,
             typename Field::Element* C, const size_t ldc,
             const CuttingStrategy method,

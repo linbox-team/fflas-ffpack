@@ -39,7 +39,7 @@
 #include <kaapi++>
 #endif
 
-#include "fflas-ffpack/ffpack/parallel.h"
+#include "fflas-ffpack/fflas/parallel.h"
 
 namespace FFLAS {
 
