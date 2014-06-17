@@ -103,7 +103,8 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 
 	Timer t; t.clear();
 	double time=0.0;
-	//write_field(F, cerr<<"A="<<endl, A, k,k,k);
+// write_field(F, cerr<<"A="<<endl, A, k,k,k);
+// write_field(F, cerr<<"B="<<endl, B, m,n,n);
         const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
 	for(int i = 0;i<nbit;++i){
 		t.clear();
@@ -114,12 +115,10 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 		BARRIER;
 		t.stop();
 		time+=t.usertime();
-		if (i+1<nbit)
-			for (int i=0; i<m*n;++i)
-				F.assign(*(B+i),*(B2+i));
 	}
 
 #if DEBUG
+// write_field (F,cerr<<"S="<<endl,B,m,n,n);
 	Field::Element invalpha;
 	F.inv(invalpha, alpha);
 
@@ -137,8 +136,8 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-		//write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
-		//write_field (F,cerr<<"B="<<endl,B,m,n,n);
+// write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
+// write_field (F,cerr<<"B="<<endl,B,m,n,n);
 	} else
 		cerr<<"PASS"<<endl;
 #endif
