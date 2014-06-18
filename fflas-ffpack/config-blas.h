@@ -40,8 +40,10 @@
 #define strsm_ cublas_strsm
 #define strmm_ cublas_strmm
 
-#endif
+#endif // CUDA_BLAS
 
+
+#ifndef __FFLASFFPACK_HAVE_MKL
 
 #define CBLAS_ENUM_DEFINED_H
 	enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102 };
@@ -50,7 +52,7 @@
 	enum CBLAS_DIAG  {CblasNonUnit=131, CblasUnit=132};
 	enum CBLAS_SIDE  {CblasLeft=141, CblasRight=142};
 
-	#define CBLAS_INDEX int
+#define CBLAS_INDEX int
 
 
 #ifndef __FFLASFFPACK_HAVE_CBLAS
@@ -457,5 +459,11 @@ extern "C" {
 #endif // LAPACK ?
 
 #endif
+
+#else
+
+#include <mkl.h>
+
+#endif // __FFLASFFPACK_HAVE_MKL
 
 #endif //__FFLASFFPACK_config_blas_H

@@ -22,24 +22,20 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  U
 dnl ========LICENCE========
 dnl/
 
-dnl **********************************
-dnl *              TODO              *
-dnl **********************************
-dnl
-dnl no support yet to MKL
-dnl AS_IF([test -r "$BLAS_VAL/include/mkl_cblas.h"],
-dnl [ BLAS_LIBS="-L${BLAS_VAL}/lib/${MKL_ARCH}/ -lmkl_lapack64 -lmkl -lvml -lguide" ])
-dnl
-dnl test in a chunk by using some intel type, possibly the standard one with define/ifndef TRY_MKL
-dnl won't do/works for me.
-dnl
-dnl **********************************
-
 
 
 AC_DEFUN([FF_CHECK_MKL],
-		MKL_USED=`echo $BLAS_LIBS | grep -i LMKL`
-		AS_IF( [test -n "$MKL_USED"] , [AC_DEFINE(HAVE_MLK,1,[Define if we use MKL for blas/lapack])])
+		[
+		AC_MSG_CHECKING(for use of MKL)
+		MKL_USED=`echo $CBLAS_LIBS | grep -i LMKL`
+		AS_IF( [test -n "$MKL_USED"] , [
+			AC_DEFINE(HAVE_MKL,1,[Define if we use MKL for blas/lapack])
+			AC_MSG_RESULT( yes )
+			]
+			,
+			[
+			AC_MSG_RESULT( no )
+			]
+		     )
+		]
 	)
-
-

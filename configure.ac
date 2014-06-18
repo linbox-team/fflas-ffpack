@@ -81,10 +81,10 @@ echo "-----------------------------------------------"
 FF_CHECK_AVX
 echo "-----------------------------------------------"
 
-TESTS_CFLAGS="-O0 -Wno-vla ${AVXFLAGS}"
+TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros ${AVXFLAGS}"
 DEBUG_CFLAGS="-g"
 
-DEFAULT_CFLAGS="-pipe -Wno-vla ${AVXFLAGS}"
+DEFAULT_CFLAGS="-pipe -Wno-vla  -Wno-variadic-macros ${AVXFLAGS}"
 WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...
@@ -285,25 +285,29 @@ echo "-----------------------------------------------"
 BLAS_FOUND=false
 
 FF_CHECK_BLAS_CFLAGS
-FF_CHECK_BLAS
+FF_CHECK_BLAS_LIBS
+FF_CHECK_USER_BLAS
+FF_CHECK_USER_LAPACK
 
-FF_CHECK_GOTOBLAS
+# FF_CHECK_BLAS
 
-FF_CHECK_GSL
+# FF_CHECK_GOTOBLAS
 
-if test "$BLAS_FOUND" = "false" ; then
-	FF_CHECK_CBLAS
-fi
+# FF_CHECK_GSL
 
-if test "$BLAS_FOUND" = "false" ; then
-	FF_CHECK_OTHERBLAS
-fi
+# if test "$BLAS_FOUND" = "false" ; then
+	# FF_CHECK_CBLAS
+# fi
 
-FF_CHECK_LAPACK
+# if test "$BLAS_FOUND" = "false" ; then
+	# FF_CHECK_OTHERBLAS
+# fi
 
-if test "$BLAS_FOUND" = "false" ; then
-	FF_CHECK_BLAS2
-fi
+# FF_CHECK_LAPACK
+
+# if test "$BLAS_FOUND" = "false" ; then
+	# FF_CHECK_BLAS2
+# fi
 
 
 
@@ -321,9 +325,9 @@ fi
 
 
 
-BLAS_LIBS="${BLAS_LIBS}"
+# BLAS_LIBS="${BLAS_LIBS}"
 # BLAS_LIBS="-L/${BLAS_PATH} ${LAPACK_LIBS} ${BLAS_LIBS}"
-AC_SUBST(BLAS_LIBS)
+# AC_SUBST(BLAS_LIBS)
 
 FF_CHECK_MKL
 

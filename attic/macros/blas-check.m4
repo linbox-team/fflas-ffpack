@@ -39,14 +39,6 @@ dnl FF_CHECK_BLAS ([MINIMUM-VERSION [, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]]
 dnl
 dnl Test for BLAS and define BLAS_LIBS
 
-AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
-		[ AC_ARG_WITH(blas-cflags,
-			[AC_HELP_STRING([--with-blas-cflags=<cflags>],
-				[ CFLAGS for BLAS (i.e. -I/path/to/blas) ])
-			])
-		CBLAS_FLAG="$with_blas_cflags -D__FFLASFFPACK_HAVE_CBLAS"
-		AC_SUBST(CBLAS_FLAG)
-		])
 
 AC_DEFUN([FF_CHECK_BLAS],
 		[ AC_ARG_WITH(blas,

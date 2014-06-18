@@ -99,22 +99,22 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir}
+			echo -I${includedir} @CBLAS_FLAG@  @AVXFLAGS@
 # @GMP_CFLAGS@ @GIVARO_CFLAGS@
 # @CBLAS_FLAG@
 			;;
 
 		--blas-cflags)
-			echo -I${includedir} @CBLAS_FLAG@
+			echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@
 			;;
 
 		--libs)
-			echo  @BLAS_LIBS@  @LAPACK_LIBS@
+			echo  @CBLAS_LIBS@ 
 # @GMP_LIBS@ @GIVARO_LIBS@
 			;;
 
 		--blas-libs)
-			echo  @BLAS_LIBS@
+			echo  @CBLAS_LIBS@
 			;;
 
 		--blas-home)
