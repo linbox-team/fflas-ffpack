@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <19 Jun 14 13:39:29 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <19 Jun 14 16:36:05 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -64,11 +64,21 @@ namespace FFLAS {
 	{
 		if(Side == FflasRight){
             ForStrategy1D iter(m, method, numThreads);
-            for (iter.begin(); ! iter.end(); ++iter)
+            for (iter.begin(); ! iter.end(); ++iter) {
+//             std::cout << "FS1D rig ibeg: " << iter.ibeg << std::endl;
+//             std::cout << "FS1D rig iend: " << iter.iend << std::endl;
+//             std::cout << "FS1D rig size: " << (iter.iend-iter.ibeg) << std::endl;
+
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb);
+            }
+            
 		} else {
 			ForStrategy1D iter(n, method, numThreads);
 			for (iter.begin(); ! iter.end(); ++iter) {
+//             std::cout << "FS1D lef ibeg: " << iter.ibeg << std::endl;
+//             std::cout << "FS1D lef iend: " << iter.iend << std::endl;
+//             std::cout << "FS1D lef size: " << (iter.iend-iter.ibeg) << std::endl;
+
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb);
             }
 		}

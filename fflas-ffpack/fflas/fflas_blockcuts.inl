@@ -206,7 +206,7 @@ namespace FFLAS {
         bool end() const { return current == numBlock; }
         size_t operator++() { 
             ibeg = iend;
-            iend += ++current<changeBS?firstBlockSize:lastBlockSize;
+            iend += (++current<changeBS?firstBlockSize:lastBlockSize);
 
 //             std::cout << "FS1D i   : " << current << std::endl;
 //             std::cout << "FS1D ibeg: " << ibeg << std::endl;
