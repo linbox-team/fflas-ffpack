@@ -171,48 +171,59 @@ namespace FFLAS {
 
     struct ForStrategy1D {
         ForStrategy1D(const size_t n, const CuttingStrategy method, const size_t numthreads) {
-//             std::cout<<"n : "<<n<<std::endl;
-//             std::cout<<"method    : "<<method<<std::endl;
-//             std::cout<<"numthreads : "<<numthreads<<std::endl;
+//             std::cout<<"FS1D n : "<<n<<std::endl;
+//             std::cout<<"FS1D method    : "<<method<<std::endl;
+//             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
 
             if ( method == BLOCK_THREADS || method == ROW_THREADS || method == COLUMN_THREADS) {
                 numBlock = std::max(numthreads,(size_t)1);
             } else {
                 numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(size_t)1);
             }
-            BlockSize = std::max(n/numBlock,(size_t)1);
-            size_t remSize = n - numBlock*BlockSize;
-            if (remSize) {
-                ++BlockSize;
-                lastBS = remSize-numBlock*BlockSize;
-            } else lastBS = BlockSize;
+            firstBlockSize = n/numBlock;
+            if (firstBlockSize<1) {
+                firstBlockSize = (size_t)1;
+                numBlock = n;
+            }
+            changeBS = n - numBlock*firstBlockSize;
+            lastBlockSize = firstBlockSize;
+            if (changeBS) ++firstBlockSize;
 
-//             std::cout<<"BLOCKSIZE : "<<BlockSize<<std::endl;
-//             std::cout<<"lastBS    : "<<lastBS<<std::endl;
-//             std::cout<<"NBlocks : "<<numBlock<<std::endl;
+//             std::cout<<"FS1D 1BLOCKSIZE : "<<firstBlockSize<<std::endl;
+//             std::cout<<"FS1D 2BLOCKSIZE : "<<lastBlockSize<<std::endl;
+//             std::cout<<"FS1D changeBS : "<<changeBS<<std::endl;
+//             std::cout<<"FS1D NBlocks : "<<numBlock<<std::endl;
         }
         
-        size_t begin() { current = 0; return setCurrentBlock(); }
+        size_t begin() { 
+            ibeg = 0; iend = firstBlockSize; 
+//             std::cout << "FS1D 0   : " << 0 << std::endl;
+//             std::cout << "FS1D ibeg: " << ibeg << std::endl;
+//             std::cout << "FS1D iend: " << iend << std::endl;
+            
+            return current = 0; 
+        }
         bool end() const { return current == numBlock; }
-        size_t setCurrentBlock() { 
-			ibeg = current % numBlock;
-			size_t BlockDim = BlockSize;
-			if (ibeg == numBlock-1)
-				BlockDim = lastBS;
-            ibeg *= BlockSize;
-            iend = ibeg + BlockDim;
+        size_t operator++() { 
+            ibeg = iend;
+            iend += ++current<changeBS?firstBlockSize:lastBlockSize;
+
+//             std::cout << "FS1D i   : " << current << std::endl;
+//             std::cout << "FS1D ibeg: " << ibeg << std::endl;
+//             std::cout << "FS1D iend: " << iend << std::endl;
+            
+
             return current;
         }
-        
-        size_t operator++() { ++current; return setCurrentBlock(); }
         
         size_t ibeg, iend;
 
     protected:
         size_t current;
-        size_t BlockSize; 
-        size_t lastBS; 
+        size_t firstBlockSize,lastBlockSize; 
+        size_t changeBS;
         size_t numBlock;
+
     };
     
 
