@@ -184,7 +184,7 @@ namespace FFLAS {
             size_t remSize = n - numBlock*BlockSize;
             if (remSize) {
                 ++BlockSize;
-                lastBS = remSize-numBlock+BlockSize;
+                lastBS = remSize-numBlock*BlockSize;
             } else lastBS = BlockSize;
 
 //             std::cout<<"BLOCKSIZE : "<<BlockSize<<std::endl;
