@@ -173,7 +173,6 @@ namespace FFLAS {
 
 #include "fflas_fadd.inl"
 #include "fflas_fscal.inl"
-
 #include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
 
@@ -190,6 +189,13 @@ namespace FFLAS {
 #include "fflas_ftrsv.inl"
 #include "fflas_faxpy.inl"
 #include "fflas_fdot.inl"
+
+//---------------------------------------------------------------------
+// Sparse routines
+//---------------------------------------------------------------------
+
+
+#include "fflas_sparse_fgemv.h"
 
 #if 0
 //BB

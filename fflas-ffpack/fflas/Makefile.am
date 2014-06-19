@@ -26,6 +26,9 @@ pkgincludesubdir=$(pkgincludedir)/fflas
 
 SUBDIRS=fflas_fgemm
 
+sparse=fflas_sparse_fgemv.h \
+       fflas_sparse_fgemv.inl
+
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
 	   fflas_fcopy.inl       \
@@ -51,6 +54,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_faxpy.inl       \
 	   fflas_fger.inl        \
 	   fflas_ftrsv.inl       \
-	   fflas_finit.inl
+	   fflas_finit.inl \
+	   ${sparse}
 
 EXTRA_DIST=fflas.doxy

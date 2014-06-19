@@ -31,7 +31,6 @@
 #define __FFLASFFPACK_fscal_INL
 
 
-
 namespace FFLAS {
 
 	/***************************/
@@ -74,7 +73,7 @@ namespace FFLAS {
 	}
 
 	template<class Field>
-	void
+	inline void
 	fscalin (const Field& F, const size_t n, const typename Field::Element a,
 	       typename Field::Element * X, const size_t incX)
 	{
