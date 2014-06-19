@@ -171,6 +171,9 @@ namespace FFLAS {
 
     struct ForStrategy1D {
         ForStrategy1D(const size_t n, const CuttingStrategy method, const size_t numthreads) {
+//             std::cout<<"n : "<<n<<std::endl;
+//             std::cout<<"method    : "<<method<<std::endl;
+//             std::cout<<"numthreads : "<<numthreads<<std::endl;
 
             if ( method == BLOCK_THREADS || method == ROW_THREADS || method == COLUMN_THREADS) {
                 numBlock = std::max(numthreads,(size_t)1);

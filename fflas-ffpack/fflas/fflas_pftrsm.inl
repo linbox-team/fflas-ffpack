@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <17 Jun 14 15:14:17 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <19 Jun 14 13:39:29 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -68,8 +68,9 @@ namespace FFLAS {
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb);
 		} else {
 			ForStrategy1D iter(n, method, numThreads);
-			for (iter.begin(); ! iter.end(); ++iter)
-				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A , lda, B + iter.ibeg, ldb);
+			for (iter.begin(); ! iter.end(); ++iter) {
+				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb);
+            }
 		}
 		WAIT;		      
 		return B;

@@ -68,7 +68,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	Field::Element zero, one;
 
 	if (argc != 10)	{
-		cerr<<"Usage : test-ftrsm <p> <A> <B> <iter> <alpha> <left/right> <Up/Low> <NoTrans/Trans> <NonUnit/Unit>"
+		cerr<<"Usage : test-pftrsm <p> <A> <B> <iter> <alpha> <left/right> <Up/Low> <NoTrans/Trans> <NonUnit/Unit>"
 		    <<endl;
 		exit(-1);
 	}
