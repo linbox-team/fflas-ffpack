@@ -159,7 +159,6 @@ namespace FFLAS {
 	 * @param lda leading dim of \p A
 	 * @param B matrix of size \p MxN
 	 * @param ldb leading dim of \p B
-	 * @bug unsafe with \c Trans==FflasTrans (debugging in progress)
 	 * @bug \f$\alpha\f$ must be non zero.
 	 */
 	template<class Field>
@@ -190,7 +189,6 @@ namespace FFLAS {
 	 * @param lda leading dim of \p A
 	 * @param B matrix of size \p MxN
 	 * @param ldb leading dim of \p B
-	 * @bug unsafe with \c Trans==FflasTrans (debugging in progress)
 	 */
 	template<class Field>
 	void

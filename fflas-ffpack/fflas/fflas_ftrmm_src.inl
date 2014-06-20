@@ -30,7 +30,17 @@
 #ifdef __FFLAS__TRANSPOSE
  #define __FFLAS__Acolinc lda
  #define __FFLAS__Arowinc 1
+ #ifdef __FFLAS__LOW
+  #define __FFLAS__UPPER
+ #else
+  #define __FFLAS__LOWER
+ #endif
 #else
+ #ifdef __FFLAS__LOW
+  #define __FFLAS__LOWER
+ #else
+  #define __FFLAS__UPPER
+ #endif 
  #define __FFLAS__Acolinc 1
  #define __FFLAS__Arowinc lda
 #endif
@@ -48,7 +58,7 @@
  #define __FFLAS__Nupdate N
  #define __FFLAS__Bdim N
  #define __FFLAS__Bnorminc 1
- #ifdef __FFLAS__LOW
+ #ifdef __FFLAS__LOWER
   #define __FFLAS__Atriang  A + (nbblocsplit - (i + 1)) * nsplit * (lda + 1)
   #define __FFLAS__Aupdate __FFLAS__Atriang + nsplit * __FFLAS__Arowinc
   #define __FFLAS__Arest A + nbblocsplit * nsplit * (lda+1)
@@ -86,7 +96,7 @@
  #define __FFLAS__Nupdate nrestsplit + i * nsplit
  #define __FFLAS__Bdim M
  #define __FFLAS__Bnorminc ldb
- #ifdef __FFLAS__UP
+ #ifdef __FFLAS__UPPER
   #define __FFLAS__Atriang A + (nbblocsplit - (i + 1)) * nsplit * (lda + 1)
   #define __FFLAS__Aupdate __FFLAS__Atriang + nsplit * __FFLAS__Acolinc
   #define __FFLAS__Arest A + nbblocsplit * nsplit * (lda+1)
@@ -186,7 +196,6 @@ void operator () (const Field& F, const size_t M, const size_t N,
                                     FflasFloat
 #endif
 				    );
-
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;
 	size_t nrestsplit = ((__FFLAS__Na-1) % nsplit) +1;
 	FFLASFFPACK_check(__FFLAS__Na == nsplit*nbblocsplit+nrestsplit);
@@ -256,6 +265,11 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #endif // __FFLAS__GENERIC
 
 
+#ifdef __FFLAS__LOWER
+ #undef __FFLAS__LOWER
+#else
+ #undef __FFLAS__UPPER
+#endif
 #undef __FFLAS__UPLO
 #undef __FFLAS__DIAG
 #undef __FFLAS__SIDE

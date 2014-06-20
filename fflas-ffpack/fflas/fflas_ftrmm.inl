@@ -35,7 +35,6 @@ namespace FFLAS {
 // ftrmm: TRiangular Matrix Multiply
 // Computes  B <- alpha.op(A).B,  B <- alpha.B.op(A)
 // B is M*N, A is M*M if Side==FflasLeft, N*N if Side==FflasRight
-// Warning : unsafe with Trans ==  FflasTrans (debugging in progress)
 // //---------------------------------------------------------------------
 template<class Field>
 inline void

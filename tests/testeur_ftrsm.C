@@ -48,7 +48,7 @@ using namespace FFPACK;
 
 //typedef Modular<int> Field;
 //typedef Modular<float> Field;
-typedef Modular<double> Field;
+typedef ModularBalanced<double> Field;
 
 int main(int argc, char** argv){
 
@@ -99,8 +99,7 @@ int main(int argc, char** argv){
 
 		ldb = N;
 
-		//if (random()%2)
-		if (1)
+		if (random()%2)
 			trans = FFLAS::FflasNoTrans;
 		else
 			trans = FFLAS::FflasTrans;

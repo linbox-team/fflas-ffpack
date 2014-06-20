@@ -27,7 +27,17 @@
 #ifdef __FFLAS__TRANSPOSE
  #define __FFLAS__Acolinc lda
  #define __FFLAS__Arowinc 1
+ #ifdef __FFLAS__LOW
+  #define __FFLAS__UPPER
+ #else
+  #define __FFLAS__LOWER
+ #endif
 #else
+ #ifdef __FFLAS__LOW
+  #define __FFLAS__LOWER
+ #else
+  #define __FFLAS__UPPER
+ #endif
  #define __FFLAS__Acolinc 1
  #define __FFLAS__Arowinc lda
 #endif
@@ -55,7 +65,7 @@
  #define __FFLAS__Bnorminc 1
  #define __FFLAS__Bnormnext ldb
  #define __FFLAS__Bdim N
- #ifdef __FFLAS__LOW
+ #ifdef __FFLAS__LOWER
   #define __FFLAS__Atriang A + i * nsplit * (lda + 1)
   #define __FFLAS__Aupdate A + i * nsplit * (lda + 1) + nsplit*__FFLAS__Arowinc
   #define __FFLAS__Arest A + (__FFLAS__Na - nrestsplit) * (lda + 1)
@@ -109,7 +119,7 @@
  #define __FFLAS__Bnorminc ldb
  #define __FFLAS__Bnormnext 1
  #define __FFLAS__Bdim M
- #ifdef __FFLAS__UP
+ #ifdef __FFLAS__UPPER
   #define __FFLAS__Atriang A + i * nsplit * (lda + 1)
   #define __FFLAS__Aupdate A + i * nsplit * (lda + 1) + nsplit * __FFLAS__Acolinc
   #define __FFLAS__Arest A + (__FFLAS__Na - nrestsplit) * (lda + 1)
@@ -410,7 +420,11 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 
 #endif // __FFLAS__GENERIC
 
-
+#ifdef __FFLAS__LOWER
+ #undef __FFLAS__LOWER
+#else
+ #undef __FFLAS__UPPER
+#endif
 #undef __FFLAS__UPLO
 #undef __FFLAS__DIAG
 #undef __FFLAS__SIDE
