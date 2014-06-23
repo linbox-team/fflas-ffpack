@@ -52,6 +52,51 @@ namespace FFLAS { /*  DNS */
 
 }
 
+namespace FFLAS { /*  COO */
+
+	template<class Element>
+	struct COO ;
+
+	template<class Element>
+	struct COO_sub ;
+
+	template<class Element>
+	struct COO_ZO ;
+
+
+	template<class Field>
+	void sp_fgemv(
+		      const Field& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const COO<typename Field::Element> & A,
+		      const VECT<typename Field::Element> & x,
+		      const typename Field::Element & b,
+		      VECT<typename Field::Element> & y
+		     );
+
+
+	template<class Field>
+	void sp_fgemv(
+		      const Field& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const COO_sub<typename Field::Element> & A,
+		      const VECT<typename Field::Element> & x,
+		      const typename Field::Element & b,
+		      VECT<typename Field::Element> & y
+		     );
+
+	template<class Field>
+	void sp_fgemv(
+		      const Field & F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const COO_ZO<typename Field::Element> & A,
+		      const VECT<typename Field::Element > & x,
+		      const typename Field::Element & b,
+		      VECT<typename Field::Element > & y
+		     );
+
+} // FFLAS
+
 namespace FFLAS { /*  CSR */
 
 	template<class Element>
@@ -98,6 +143,10 @@ namespace FFLAS { /*  CSR */
 
 }
 
+namespace FFLAS { /*  CSC */
+
+} // FFLAS
+
 namespace FFLAS { /*  ELL */
 
 	template<class Element>
@@ -105,10 +154,6 @@ namespace FFLAS { /*  ELL */
 
 	template<class Element>
 	struct ELLR ;
-} // FFLAS
-
-namespace FFLAS { /*  COO */
-
 } // FFLAS
 
 namespace FFLAS { /*  BCSR */
