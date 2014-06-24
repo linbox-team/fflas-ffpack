@@ -1231,7 +1231,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_fgetrs.inl"
 #include "ffpack_ftrtr.inl"
 #include "ffpack_pluq.inl"
-//#include "ffpack_ppluq.inl"
+#include "ffpack_ppluq.inl"
 #include "ffpack_ludivine.inl"
 #include "ffpack_echelonforms.inl"
 #include "ffpack_invert.inl"

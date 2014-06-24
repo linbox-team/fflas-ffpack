@@ -36,8 +36,8 @@
 #define DEBUG 1
 #define TIME 1
 
-#define __FFLASFFPACK_USE_OPENMP
-//#define __FFLASFFPACK_USE_KAAPI
+//#define __FFLASFFPACK_USE_OPENMP
+#define __FFLASFFPACK_USE_KAAPI
 
 #define __FFLAS__TRSM_READONLY
 
@@ -47,6 +47,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "time.h"
 
 
 using namespace std;
@@ -63,12 +64,13 @@ typedef Modular<double> Field;
 //{
 BEGIN_PARALLEL_MAIN(int argc, char** argv)
 {
+
 	int k,n,m;
 	cerr<<setprecision(10);
 	Field::Element zero, one;
 
 	if (argc != 10)	{
-		cerr<<"Usage : test-pftrsm <p> <A> <B> <iter> <alpha> <left/right> <Up/Low> <NoTrans/Trans> <NonUnit/Unit>"
+		cerr<<"Usage : test-ftrsm <p> <A> <B> <iter> <alpha> <left/right> <Up/Low> <NoTrans/Trans> <NonUnit/Unit>"
 		    <<endl;
 		exit(-1);
 	}
@@ -101,21 +103,38 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 		exit(-1);
 	}
 
-	Timer t; t.clear();
-	double time=0.0;
+	struct timespec t0,t1;
+        double delay, avrg;
+        double t_total=0;
+
+	//	Timer t; t.clear();
+	//	double time=0.0;
 // write_field(F, cerr<<"A="<<endl, A, k,k,k);
 // write_field(F, cerr<<"B="<<endl, B, m,n,n);
         const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
+	//	size_t numThreads;
 	for(int i = 0;i<nbit;++i){
-		t.clear();
-		t.start();
+		//		t.clear();
+		//		t.start();		
+		clock_gettime(CLOCK_REALTIME, &t0);
 		HPAC_PAR_REGION{
+			//		numThreads=HPAC_NUM_THREADS;
 			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, Strategy, HPAC_NUM_THREADS);
 		}
 		BARRIER;
-		t.stop();
-		time+=t.usertime();
+		clock_gettime(CLOCK_REALTIME, &t1);
+		delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
+
+		if (i)
+                        t_total+=delay;
+		//		t.stop();
+		//		time+=t.usertime();
+		if (i+1<nbit)
+                        for (int i=0; i<m*n;++i)
+                                F.assign(*(B+i),*(B2+i));
+
 	}
+        avrg = t_total/(nbit-1);
 
 #if DEBUG
 // write_field (F,cerr<<"S="<<endl,B,m,n,n);
@@ -147,7 +166,8 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	delete[] B2;
 
 #if TIME
-	double mflops = m*n/1000000.0*nbit*n/time;
+	//	double mflops = m*n/1000000.0*nbit*n/time;
+	double mflops = m*n/1000000.0*n/avrg;
 	cerr<<"m,n = "<<m<<" "<<n<<". ftrsm "
 	    <<((side == FFLAS::FflasLeft)?" Left ":" Right ")
 	    <<((uplo == FFLAS::FflasLower)?" Lower ":" Upper ")
@@ -156,11 +176,36 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	    <<"over Z/"<<atoi(argv[1])<<"Z :"
 	    <<endl
 	    <<"t= "
-	    << time/nbit
+	    << avrg
 	    << " s, Mffops = "<<mflops
 	    << endl;
 
-	cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
+	//	cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
+	cout<<m<<" "<<n<<" "<<mflops<<" "<<avrg<<endl;
 #endif
+	//	 }
+
+	/*
+	size_t BLOCKSIZE=std::max(m/numThreads,(size_t)1); // There is always 2 TRSM taking place in parallel                                                        
+	size_t NBlocks = m/BLOCKSIZE;
+	size_t LastBlockSize = m % BLOCKSIZE;
+	if (LastBlockSize)
+		NBlocks++;
+	else
+		LastBlockSize=BLOCKSIZE;
+	//#pragma omp parallel for default (none) shared(A,B,F,NBlocks, LastBlockSize, BLOCKSIZE)                                                                      
+	for (size_t t = 0; t < NBlocks; ++t){
+		size_t i = t % NBlocks;
+		size_t BlockDim = BLOCKSIZE;
+		if (i == NBlocks-1)
+			BlockDim = LastBlockSize;
+
+
+		cout<<"blockDim "<<BlockDim<<"  BLOCKSIZE*i*ldb "<< (BLOCKSIZE*i*n)<<endl;
+	}
+	FFLAS::ForStrategy1D iter(m, FFLAS::BLOCK_THREADS, numThreads);
+	for (iter.begin(); ! iter.end(); ++iter)
+		cout<<"iter.iend-iter.ibeg "<<iter.iend-iter.ibeg<<"   iter.ibeg*ldb "<<  (iter.ibeg*n)<<endl;
+	*/
 }
 END_PARALLEL_MAIN()

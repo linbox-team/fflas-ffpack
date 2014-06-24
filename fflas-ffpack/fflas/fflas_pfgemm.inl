@@ -33,7 +33,7 @@
 
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include <kaapi++>
-#include "fflas-ffpack/fflas/kaapi_routines.h"
+#include "fflas-ffpack/fflas/kaapi_routines.inl"
 #endif
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>

@@ -48,8 +48,8 @@
 #include <iostream>
 using namespace std;
 
-#define  __FFLASFFPACK_USE_OPENMP
-//#define  __FFLASFFPACK_USE_KAAPI
+//#define  __FFLASFFPACK_USE_OPENMP
+#define  __FFLASFFPACK_USE_KAAPI
 
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -125,7 +125,7 @@ int main(int argc, char** argv){
         typename Field::Element *B = read_field(F, argv[3], &k, &n);
 
         //      //      int m=atoi(argv[2]),n=atoi(argv[3]),k=m;                                                                                                                
-        int nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
+        size_t nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
         int nbit=atoi(argv[5]); // number of times the product is performed                                                                                                     
         cerr<<setprecision(10);
 	Field::Element alpha,beta;
@@ -172,7 +172,7 @@ int main(int argc, char** argv){
 
 		HPAC_PAR_REGION{
 			FFLAS::pfgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-				      beta,C,n, nbw, Strategy, HPAC_NUM_THREADS);   
+				      beta,C,n, Strategy, HPAC_NUM_THREADS);   
 		}
 		BARRIER;
                 clock_gettime(CLOCK_REALTIME, &t1);

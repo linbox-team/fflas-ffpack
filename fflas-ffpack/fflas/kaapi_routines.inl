@@ -38,9 +38,8 @@
 #ifdef __FFLASFFPACK_USE_KAAPI
 namespace FFLAS {
 
-    
 	template<class Field>			
-	struct Taskfgemm : public ka::Task<15>::Signature<
+	struct Taskfgemm15 : public ka::Task<15>::Signature<
 		Field,
 		FFLAS_TRANSPOSE,
 		FFLAS_TRANSPOSE,
@@ -55,11 +54,12 @@ namespace FFLAS {
 		typename Field::Element,
 		ka::RW<typename Field::Element>,
 		size_t ,
-		size_t
+		MMHelper<Field, FFLAS::MMHelperAlgo::Winograd>
+		//size_t // winograd
 		>{};
 
 	template<class Field>			
-	struct Taskfgemmw : public ka::Task<14>::Signature<
+	struct Taskfgemm14 : public ka::Task<14>::Signature<
 		Field,
 		FFLAS_TRANSPOSE,
 		FFLAS_TRANSPOSE,
@@ -76,8 +76,26 @@ namespace FFLAS {
 		size_t 
 		>{};
 
+
+
     template<class Field>
-    struct TaskBodyCPU<FFLAS::Taskfgemm<Field> >{
+    struct Taskftrsm12: public ka::Task<12>::Signature<
+        Field , /* Field F */
+        FFLAS::FFLAS_SIDE ,
+        FFLAS::FFLAS_UPLO ,
+        FFLAS::FFLAS_TRANSPOSE ,
+        FFLAS::FFLAS_DIAG ,
+        size_t ,   /* size : M */
+        size_t ,   /* size : N */
+        typename Field::Element ,
+        ka::R<typename Field::Element >, /* Matrix A */
+        size_t , /* lda */
+        ka::RW<typename Field::Element >, /* Matrix B */
+        size_t  /* ldb */
+        >{};
+}
+template<class Field>
+    struct TaskBodyCPU<FFLAS::Taskfgemm15<Field> >{
         void operator()(const Field& F,
                         const FFLAS::FFLAS_TRANSPOSE ta,
                         const FFLAS::FFLAS_TRANSPOSE tb,
@@ -91,15 +109,21 @@ namespace FFLAS {
                         const size_t ldb,
                         const typename Field::Element beta,
                         ka::pointer_rw<typename Field::Element> C, const size_t ldc,
-                        const size_t w)
+                        FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH
+			//	Helper & WH
+			//	size_t w
+			)
             {
-                FFLAS::fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A.ptr(), lda, B.ptr() , ldb,
-                              beta, C.ptr(), ldc, w);
+		    /*
+		    FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH;
+		    WH(F,w);*/
+		    FFLAS::fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A.ptr(), lda, B.ptr() , ldb,
+                              beta, C.ptr(), ldc, WH);
             }
     };
 
     template<class Field>
-    struct TaskBodyCPU<FFLAS::Taskfgemmw<Field> >{
+    struct TaskBodyCPU<FFLAS::Taskfgemm14<Field> >{
         void operator()(const Field& F,
                         const FFLAS::FFLAS_TRANSPOSE ta,
                         const FFLAS::FFLAS_TRANSPOSE tb,
@@ -114,30 +138,13 @@ namespace FFLAS {
                         const typename Field::Element beta,
                         ka::pointer_rw<typename Field::Element> C, const size_t ldc)
             {
-                FFLAS::fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A.ptr(), lda, B.ptr() , ldb,
-                              beta, C.ptr(), ldc);
+		    FFLAS::fgemm( F, ta, tb, BlockRowDim, BlockColDim, k, alpha, A.ptr(), lda, B.ptr() , ldb,
+				  beta, C.ptr(), ldc);
             }
     };
 
-
     template<class Field>
-    struct Taskftrsm: public ka::Task<12>::Signature<
-        Field , /* Field F */
-        FFLAS::FFLAS_SIDE ,
-        FFLAS::FFLAS_UPLO ,
-        FFLAS::FFLAS_TRANSPOSE ,
-        FFLAS::FFLAS_DIAG ,
-        size_t ,   /* size : M */
-        size_t ,   /* size : N */
-        typename Field::Element ,
-        ka::R<typename Field::Element >, /* Matrix A */
-        size_t , /* lda */
-        ka::RW<typename Field::Element >, /* Matrix B */
-        size_t  /* ldb */
-        >{};
-
-    template<class Field>
-    struct TaskBodyCPU<FFLAS::Taskftrsm<Field> > {
+    struct TaskBodyCPU<FFLAS::Taskftrsm12<Field> > {
         void operator()(const Field & F, const FFLAS::FFLAS_SIDE Side,
                         const FFLAS::FFLAS_UPLO Uplo,
                         const FFLAS::FFLAS_TRANSPOSE TransA,
@@ -148,12 +155,9 @@ namespace FFLAS {
                         ka::pointer_rw<typename Field::Element > B, const size_t ldb )
             {
 
-                ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A.ptr(), lda, B.ptr(), ldb);
+		    FFLAS::ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A.ptr(), lda, B.ptr(), ldb);
             }
     };
-
-
-}
 
 
 #endif
