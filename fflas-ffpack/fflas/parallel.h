@@ -43,9 +43,9 @@
 #define READ(Args...) COMMA Args
 #define WRITE(Args...) COMMA Args
 #define READWRITE(Args...) COMMA Args
-#define NOREAD(void) 
-#define NOWRITE(void) 
-#define NOREADWRITE(void) 
+#define NOREAD(void)
+#define NOWRITE(void)
+#define NOREADWRITE(void)
 #ifdef __FFLASFFPACK_USE_OPENMP
 #define GLOBALSHARED(a, Args...) shared(Args)
 #define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
@@ -53,8 +53,8 @@
 
 
 // KAAPI
-#define xstr(s) str(s)
-#define str(s) #s
+#define xstr(s) str_kaapi(s)
+#define str_kaapi(s) #s // you can't use str if you don't undef it !!!
 #define foo 4
 #define SPAWN(f,N) CONC(ka::Spawn<Task ## f, N)
 #define CONC(f, N) f ## N
@@ -87,7 +87,7 @@
 #define TASK(r, w, rw, f, Args...)				\
   PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) )	\
   f(Args)
-#else 
+#else
 #ifdef __FFLASFFPACK_USE_KAAPI
 #define TASK(r, w, rw, f, Args...) SPAWN(f, NUMARGS(Args)) <Field> >()(Args)
 #else
@@ -99,11 +99,11 @@
 #define STR(a) STR_IMPL(a)
 
 // Macro PLUQ
-#ifdef __FFLASFFPACK_USE_OPENMP 
+#ifdef __FFLASFFPACK_USE_OPENMP
 #define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{		\
     Rank = pPLUQ(F, Diag, M, N, A, lda, P, Q);			\
   }while(0)
-#else 
+#else
 #ifdef __FFLASFFPACK_USE_KAAPI
 #define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{			\
     Rank = PPLUQ(F, Diag, M, N, A, lda, P, Q);				\
@@ -113,10 +113,10 @@
     Rank = PPLUQ(F, Diag, M, N, A, lda, P, Q);			\
   }while(0)
 #endif
-#endif 
+#endif
 
 // Macro pragma omp taskwait
-#ifdef __FFLASFFPACK_USE_OPENMP 
+#ifdef __FFLASFFPACK_USE_OPENMP
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
 #else
 #ifdef __FFLASFFPACK_USE_KAAPI
@@ -126,10 +126,10 @@
 #define WAIT do{				\
  }while(0)
 #endif
-#endif 
+#endif
 
 // Macro barrier
-#ifdef __FFLASFFPACK_USE_OPENMP 
+#ifdef __FFLASFFPACK_USE_OPENMP
 #define BARRIER do{				\
   }while(0)
 #else
@@ -141,14 +141,14 @@
 #define BARRIER do{				\
   }while(0)
 #endif
-#endif 
+#endif
 
 // Parallel Region
 #ifdef __FFLASFFPACK_USE_OPENMP
 #define HPAC_PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
-  PRAGMA_OMP_TASK_IMPL( omp single ) 
+  PRAGMA_OMP_TASK_IMPL( omp single )
 #else
-#define HPAC_PAR_REGION 
+#define HPAC_PAR_REGION
 #endif
 
 // Get number of threads
@@ -171,7 +171,7 @@
 #ifdef __FFLASFFPACK_USE_KAAPI
 #define BEGIN_PARALLEL_MAIN(Args...)			\
   struct doit	{					\
-  void operator()(int argc, char** argv) 
+  void operator()(int argc, char** argv)
 #endif
 
 
