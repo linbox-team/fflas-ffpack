@@ -44,7 +44,7 @@
 
 namespace FFLAS {
 
-	
+
 	template<class Field>
 	inline typename Field::Element*
 	pfgemm( const Field& F,
@@ -61,21 +61,22 @@ namespace FFLAS {
 		const size_t w,
 		const FFLAS::CuttingStrategy method,
 		const int maxThreads
-            ){
-        
-        FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,w);
-        
-        ForStrategy2D iter(m,n,method,maxThreads);
-        for (iter.begin(); ! iter.end(); ++iter){
-            TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, WH);
-        }
+            )
+	{
+
+		FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,w);
+
+		ForStrategy2D iter(m,n,method,maxThreads);
+		for (iter.begin(); ! iter.end(); ++iter){
+			TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, WH);
+		}
 
 		WAIT;
-//		BARRIER;
+		//		BARRIER;
 
 		return C;
 	}
-	
+
 	template<class Field>
 	inline typename Field::Element*
 	pfgemm( const Field& F,
@@ -89,9 +90,10 @@ namespace FFLAS {
 		typename Field::Element* B, const size_t ldb,
 		const typename Field::Element beta,
 		typename Field::Element* C, const size_t ldc,
-        const CuttingStrategy method,
-        const int maxThreads
-            ){
+		const CuttingStrategy method,
+		const int maxThreads
+            )
+	{
 
         ForStrategy2D iter(m,n,method,maxThreads);
         for (iter.begin(); ! iter.end(); ++iter){
@@ -100,8 +102,8 @@ namespace FFLAS {
         WAIT;
         return C;
 	}
-	
-} // FFLAS                                                                                                                   
 
-#endif // __FFLASFFPACK_fflas_pfgemm_INL  
+} // FFLAS
+
+#endif // __FFLASFFPACK_fflas_pfgemm_INL
 

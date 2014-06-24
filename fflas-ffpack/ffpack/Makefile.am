@@ -35,6 +35,7 @@ pkgincludesub_HEADERS=        \
 		ffpack_echelonforms.inl               \
 		ffpack_ludivine.inl                   \
 		ffpack_pluq.inl                       \
+		ffpack_ppluq.inl \
 		ffpack_frobenius.inl                  \
 		ffpack_minpoly_construct.inl          \
 		ffpack_minpoly.inl \
