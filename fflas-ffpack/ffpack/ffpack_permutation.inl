@@ -385,7 +385,7 @@ namespace FFPACK {
 
 
 
-#ifdef __FFLASFFPACK_USE_OPENMP
+#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
 	template<class Field>
 	void
 	papplyP( const Field& F,
