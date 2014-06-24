@@ -58,13 +58,13 @@ namespace FFLAS{ namespace Protected {
 		FloatElement * Xf = new FloatElement[na];
 		FloatElement * Yf = new FloatElement[ma];
 
-		fconvert(F, ma, na, Af, ldaf, A, lda);
+		fconvert(F, M, N, Af, lda, A, lda);
 		fconvert(F, na, Xf, 1, X, incX);
 
 		if (!F.isZero(beta))
 			fconvert(F, ma, Yf, 1, Y, incY);
 
-		fgemv (G, ta, ma, na, alphaf, Af, ldaf, Xf, 1, betaf, Yf, 1);
+		fgemv (G, ta, M, N, alphaf, Af, lda, Xf, 1, betaf, Yf, 1);
 
 		finit(F, ma, Yf, 1, Y, incY);
 
@@ -113,12 +113,12 @@ namespace FFLAS {
 	       typename Field::Element * Y, const size_t incY)
 	{
 		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
-		return 	fgemv (F, ta, M, N, alpha, 
-			       const_cast<typename Field::Element*>(A), lda, 
-			       const_cast<typename Field::Element*>(X), incX, 
+		return 	fgemv (F, ta, M, N, alpha,
+			       const_cast<typename Field::Element*>(A), lda,
+			       const_cast<typename Field::Element*>(X), incX,
 			       beta, Y, incY, HW);
 	}
-	
+
 	template<class Field>
 	inline typename Field::Element*
 	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
@@ -128,7 +128,7 @@ namespace FFLAS {
 	       const typename Field::Element * X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element * Y, const size_t incY,
-	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H) 
+	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
 	{
 
 		if (!M) {return Y;}
@@ -152,7 +152,7 @@ namespace FFLAS {
 			F.div (beta_, beta, alpha);
 		}
 		MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag > HD(F,0);
-		
+
 		fgemv (F, ta, M, N, alpha_,
 		       const_cast<typename Field::Element*>(A), lda,
 		       const_cast<typename Field::Element*>(X), incX,
