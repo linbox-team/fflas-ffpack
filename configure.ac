@@ -259,7 +259,10 @@ AC_LANG_CPLUSPLUS
 
 echo "-----------------------------------------------"
 
-# LB_CHECK_GMP(,,[
+FF_CHECK_GMP
+FF_CHECK_GIVARO
+
+# FF_CHECK_GMP(,,[
 # echo '*******************************************************************************'
 # echo ' WARNING: GMP not found! (this is not a problem for the moment)'
 # echo
@@ -271,7 +274,7 @@ echo "-----------------------------------------------"
 # ])
 
 
-# LB_CHECK_GIVARO(,,[
+# FF_CHECK_GIVARO(,,[
 # echo '*******************************************************************************'
 # echo ' WARNING: GIVARO not found! (this is not a problem for the moment)'
 # echo
