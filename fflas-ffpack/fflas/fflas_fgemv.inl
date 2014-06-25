@@ -53,7 +53,7 @@ namespace FFLAS{ namespace Protected {
 		size_t ma, na;
 		if (ta == FflasTrans) { ma = N; na = M; }
 		else { ma = M; na = N; }
-		size_t ldaf = na;
+		// sizet ldaf = na;
 		FloatElement * Af = new FloatElement[M*N];
 		FloatElement * Xf = new FloatElement[na];
 		FloatElement * Yf = new FloatElement[ma];

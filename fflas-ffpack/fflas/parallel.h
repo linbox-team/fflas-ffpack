@@ -56,8 +56,8 @@
 #define xstr(s) str_kaapi(s)
 #define str_kaapi(s) #s // you can't use str if you don't undef it !!!
 #define foo 4
-#define SPAWN(f,N) CONC(ka::Spawn<Task ## f, N)
-#define CONC(f, N) f ## N
+#define SPAWN(f,N) CONC_(ka::Spawn<Task ## f, N)
+#define CONC_(f, N) f ## N // you can't use this (used in linbox)
 
 // Macro computes number of Arguments
 //#define NUMARGS(...)  (sizeof((string[]){__VA_ARGS__})/sizeof(string))
