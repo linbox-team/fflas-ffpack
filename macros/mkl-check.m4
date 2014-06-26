@@ -27,7 +27,8 @@ dnl/
 AC_DEFUN([FF_CHECK_MKL],
 		[
 		AC_MSG_CHECKING(for use of MKL)
-		MKL_USED=`echo $CBLAS_LIBS | grep -i LMKL`
+echo $CBLAS_LIBS
+		MKL_USED=`echo $CBLAS_LIBS | grep -i MKL`
 		AS_IF( [test -n "$MKL_USED"] , [
 			AC_DEFINE(HAVE_MKL,1,[Define if we use MKL for blas/lapack])
 			AC_MSG_RESULT( yes )
