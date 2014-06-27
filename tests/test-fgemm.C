@@ -32,23 +32,23 @@
 //--------------------------------------------------------------------------
 //                        Test for fgemm : 1 computation
 //
-//--------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 // Clement Pernet
 //-------------------------------------------------------------------------
-
-//#define DEBUG 1
+ 
+#define DEBUG 1
 #define NEWWINO
 #define TIME 1
 
 #include <iomanip>
 #include <iostream>
 using namespace std;
+#include "fflas-ffpack/utils/Matio.h"
 
 //#include "fflas-ffpack/field/modular-positive.h"
-//#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-int32.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 using namespace FFPACK;
@@ -65,7 +65,7 @@ int main(int argc, char** argv){
 	int m,n,k;
 	int nbw=atoi(argv[4]); // number of winograd levels
 	int nbit=atoi(argv[5]); // number of times the product is performed
-	cerr<<setprecision(10);
+	cerr<<setprecision(17);
 	Field::Element alpha,beta;
 
 
@@ -122,8 +122,9 @@ int main(int argc, char** argv){
 			C = new Field::Element[m*n];
 		t.clear();
 		t.start();
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,nbw);	
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-			      beta,C,n,nbw);
+			      beta,C,n,WH);
 		t.stop();
 		tim+=t;
 		// if (i<nbit-1) delete[] C; /*  deleted after... */
@@ -173,12 +174,28 @@ int main(int argc, char** argv){
 			for (int j =0; j<n; ++j)
 				if (!F.areEqual( *(C+i*n+j), *(Cd+i*n+j) ) )
 					 cerr<<"Erreur C["<<i<<","<<j<<"]="
-					     <<(*(C+i*n+j))<<" C[d"<<i<<","<<j<<"]="
+					     <<(*(C+i*n+j))<<" Cd["<<i<<","<<j<<"]="
 					     <<(*(Cd+i*n+j))<<endl;
 		}
+		if (m < 20 && n < 20) {
+		cerr << "error locations (X)" << endl;
+		    //Field F( (size_t) p );
+		for (int i = 0; i < m; ++i ) {
+			for (int j = 0; j < n; ++j ){
+				if ( !F.areEqual( *(Cd+i*n+j), *(C+i*n+j) ) ) {
+					cerr<<"x" ;
+				}
+				else
+					cerr<<"." ;
+			}
+			cerr << endl;
+		}
+		cerr << endl;
+
+	}
 	}
 	else{
-		cerr<<"PASS"<<endl;
+		cerr<<"PASS"<<endl;  
 	}
 	delete[] Cd;
 #endif
@@ -199,8 +216,7 @@ int main(int argc, char** argv){
 	    <<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
 	    <<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
 	    <<beta<<".C"<<endl;
-	cout<<m<<" "<<n<<" "<<k<<" "<<nbw<<" "<<alpha<<" "<<beta<<" "
-	    <<mflops<<" "<<tim.usertime()/nbit<<endl;
+	cout<<log2(atoi(argv[1]))<<" "<<m<<" "<<n<<" "<<nbw<<" "<<alpha<<" "<<beta<<" " <<mflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
 }
 
