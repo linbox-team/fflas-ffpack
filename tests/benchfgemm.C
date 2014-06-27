@@ -29,6 +29,7 @@
 
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"
 
@@ -45,11 +46,13 @@ int main(int argc, char** argv)
 	size_t w = atoi (argv[3]);
 	size_t iter = atoi(argv[4]);
 
-	//typedef ModularBalanced<double> Field;
-	typedef ModularBalanced<float> Field;
+//	typedef Modular<float> Field;
+//	typedef Modular<double> Field;
+//	typedef ModularBalanced<double> Field;
+      typedef ModularBalanced<float> Field;
 	typedef Field::Element Element;
 
-	Field F(p);
+	Field F((Field::Element)p);
 	Element one,zero;
 	F.init(one, 1.0);
 	F.init(zero,0.0);
@@ -76,8 +79,9 @@ int main(int argc, char** argv)
 
 		chrono.clear();
 		chrono.start();
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,w);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,n, one,
-			      A, n, B, n, zero, C,n, w);
+			      A, n, B, n, zero, C,n, WH);
 		chrono.stop();
 		time+=chrono.realtime();
 
