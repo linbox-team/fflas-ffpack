@@ -1,14 +1,27 @@
 dnl Check for GMP
 dnl Copyright(c)'1994-2009,2003,2013 by The Givaro group
-dnl This file is part of Givaro.
+dnl This file is part of FFLAS-FFPACK
 
- dnl ========LICENCE========
-dnl Givaro is governed by the CeCILL-B license under French law
-dnl and abiding by the rules of distribution of free software.
-dnl see the COPYRIGHT file for more details.
+dnl ========LICENCE========
+dnl This file is part of the library FFLAS-FFPACK.
 dnl
- dnl ========LICENCE========
- dnl
+dnl FFLAS-FFPACK is free software: you can redistribute it and/or modify
+dnl it under the terms of the  GNU Lesser General Public
+dnl License as published by the Free Software Foundation; either
+dnl version 2.1 of the License, or (at your option) any later version.
+dnl
+dnl This library is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+dnl Lesser General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Lesser General Public
+dnl License along with this library; if not, write to the Free Software
+dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+dnl ========LICENCE========
+dnl/
+
+
 dnl Modified by Pascal Giorgi, 2003-12-03
 dnl Modified by BB, 2013-5-22 and other times
 
@@ -69,6 +82,7 @@ do
 
 	CXXFLAGS="${CXXFLAGS} ${GMP_CFLAGS}"
 	LIBS="${LIBS} ${GMP_LIBS}"
+	CODE_GMP=`cat macros/CodeChunk/gmp.C`
 
 	AC_TRY_LINK(
 		[
@@ -83,11 +97,7 @@ do
 		[
 		dnl  # See if we are running GMP 4.0 with --enable-cxx
 		AC_TRY_RUN(
-			[#include <gmpxx.h>
-			int main () {
-			if (__GNU_MP_VERSION < 4) return -1;
-			mpz_class a(2),b(3),c(5); if ( a+b == c ) return 0; else return -1; }
-			],
+			[ ${CODE_GMP} ],
 			[
 			AC_MSG_RESULT(found)
 			AC_DEFINE(HAVE_GMP,1,[Define if GMP is installed])

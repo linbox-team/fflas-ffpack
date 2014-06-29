@@ -209,39 +209,21 @@ namespace FFLAS { /*  CSR */
 			      double * y
 			     )
 		{
-			// std::cout << m << 'x' << n << std::endl;
-			// std::cout << "y : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << y[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "x : " ; for (size_t i = 0 ; i < n ; ++i) std::cout << x[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "st : " ; for (size_t i = 0 ; i < m+1 ; ++i) std::cout << st[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "col : " ; for (size_t i = 0 ; i < st[m] ; ++i) std::cout << col[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "dat : " ; for (size_t i = 0 ; i < st[m] ; ++i) std::cout << dat[i] << ' '  ; std::cout << std::endl;
-
-
-			// std::cout << "MKL ?" << std::endl;
 #ifdef __FFLASFFPACK_HAVE_MKL
-			// std::cout << "MKL" << std::endl;
-			// fscalin(F,m,b,y,1);
-
 			// char * transa = (ta==FflasNoTrans)?'n':'t';
 			char   transa = 'N';
 			index_t m_ = (index_t) m ;
-			// index_t n_ = n ;
 			double * yd ;
 			if ( b == 0) {
 				yd = y;
 			}
 			else {
 				yd = new double [m];
-				// std::cout << "yd : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << yd[i] << ' '  ; std::cout << std::endl;
 				fscalin(F,m,b,y,1);
 			}
 			// mkl_dcsrgemv (bug, not zero based)
 			mkl_cspblas_dcsrgemv
 			(&transa, &m_, const_cast<double*>(dat), const_cast<index_t*>(st) , const_cast<index_t*>(col), const_cast<double*>(x), yd);
-			// std::cout << "yd : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << yd[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "y : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << y[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "x : " ; for (size_t i = 0 ; i < n ; ++i) std::cout << x[i] << ' '  ; std::cout << std::endl;
-
 			if ( b != 0) {
 				faddin(F,m,yd,1,y,1);
 				delete[] yd ;
@@ -319,9 +301,60 @@ namespace FFLAS { /*  CSR */
 #endif // __FFLASFFPACK_HAVE_MKL
 		}
 
+#ifdef __FFLASFFPACK_HAVE_CUDA
+		// Double
+		template<>
+		void sp_fgemv(
+			      const DoubleDomain & F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const index_t * st_d,
+			      const index_t * col_d,
+			      const double *  dat_d,
+			      const double * x_d ,
+			      const double & b,
+			      double * y_d,
+			      const cusparseMatDescr_t & descrA,
+			      const cusparseHandle_t & handle
+			     )
+		{
+			// char * transa = (ta==FflasNoTrans)?'n':'t';
+			size_t nnz = st[m]-st[m-1];
+			double one = 1.f;
+			status= cusparseDcsrmv(handle,CUSPARSE_OPERATION_NON_TRANSPOSE, m, n, nnz,
+					       &one, descrA, dat_d, st_d, col_d,
+					       x_d, &b, y_d);
+		}
 
+		// Float
+		template<>
+		void sp_fgemv(
+			      const FloatDomain & F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const index_t * st_d,
+			      const index_t * col_d,
+			      const float *  dat_d,
+			      const float * x_d ,
+			      const float & b,
+			      float * y_d,
+			      const cusparseMatDescr_t & descrA,
+			      const cusparseHandle_t & handle
+			     )
+		{
+			// char * transa = (ta==FflasNoTrans)?'n':'t';
+			size_t nnz = st[m]-st[m-1];
+			float one = 1.f;
+			status= cusparseScsrmv(handle,CUSPARSE_OPERATION_NON_TRANSPOSE, m, n, nnz,
+					       &one, descrA, dat_d, st_d, col_d,
+					       x_d, &b, y_d);
 
+		}
 
+		// need cuda finit code (need nvcc)
+#endif // __FFLASFFPACK_HAVE_CUDA
 
 
 		template<class Field>

@@ -120,6 +120,7 @@ namespace FFLAS { /*  CSR */
 		     );
 
 
+	// y = A.x + b y
 	template<class Field>
 	void sp_fgemv(
 		      const Field& F,

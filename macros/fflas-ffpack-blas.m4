@@ -1,5 +1,6 @@
 dnl  Check for BLAS
 dnl  Copyright 2014 Brice Boyer <bbboyer@ncsu.edu>
+dnl This file is part of FFLAS-FFPACK
 dnl
 dnl ========LICENCE========
 dnl This file is part of the library FFLAS-FFPACK.
@@ -20,11 +21,13 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  U
 dnl ========LICENCE========
 dnl/
 
-dnl
+dnl Tests BLAS for and define CBLAS_FLAG and CBLAS_LIBS
+dnl Defines HAVE_LAPACK,  HAVE_CLAPACK,  HAVE_BLAS,  HAVE_CBLAS if available
+
 AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 		[ AC_ARG_WITH(blas-cflags,
 			[AC_HELP_STRING([--with-blas-cflags=<cflags>],
-				[ CFLAGS for BLAS (i.e. -I/path/to/toto-blas) ])
+				[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
 			])
 		CBLAS_FLAG="$with_blas_cflags -D__FFLASFFPACK_HAVE_CBLAS"
 		AC_SUBST(CBLAS_FLAG)
@@ -36,7 +39,7 @@ dnl
 AC_DEFUN([FF_CHECK_BLAS_LIBS],
 		[ AC_ARG_WITH(blas-libs,
 			[AC_HELP_STRING([--with-blas-libs=<libs>],
-				[ LIBS for BLAS (i.e. -L/path/to/toto-blas -ltoto-blas) ])
+				[ LIBS for BLAS/LAPACK (i.e. -L/path/to/toto-blas -ltoto-blas) ])
 			])
 		CBLAS_LIBS="$with_blas_libs"
 		AC_SUBST(CBLAS_LIBS)

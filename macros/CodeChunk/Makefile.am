@@ -26,5 +26,7 @@ EXTRA_DIST=            \
        clapack.C       \
        lapack.C        \
        cblas.C         \
-       givaro.C
+       givaro.C        \
+       cuda.C          \
+       gmp.C
 
