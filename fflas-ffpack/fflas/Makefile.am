@@ -54,7 +54,8 @@ pkgincludesub_HEADERS=       \
 	   fflas_faxpy.inl       \
 	   fflas_fger.inl        \
 	   fflas_ftrsv.inl       \
-	   fflas_finit.inl \
+	   fflas_finit.inl       \
+	   fflas_helpers.inl     \
 	   ${sparse}
 
 EXTRA_DIST=fflas.doxy

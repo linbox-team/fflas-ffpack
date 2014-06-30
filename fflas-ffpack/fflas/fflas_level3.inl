@@ -36,7 +36,7 @@
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
 #include "fflas_bounds.inl"
-#include "fflas_fgemm/fflas_mmhelper.inl"
+#include "fflas_helper.inl"
 
 namespace FFLAS { namespace Protected {
 	//-----------------------------------------------------------------------------

@@ -32,6 +32,7 @@
 
 
 namespace FFLAS {
+
 	//---------------------------------------------------------------------
 	// ftrsm: TRiangular System solve with matrix
 	// Computes  B <- alpha.op(A^-1).B,  B <- alpha.B.op(A^-1)
