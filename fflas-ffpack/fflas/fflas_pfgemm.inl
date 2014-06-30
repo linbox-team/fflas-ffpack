@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <30 Jun 14 12:25:57 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <30 Jun 14 15:30:43 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -27,27 +27,28 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_pfgmm_INL
-#define __FFLASFFPACK_fflas_pfgmm_INL
+#ifndef __FFLASFFPACK_fflas_parfgemm_INL
+#define __FFLASFFPACK_fflas_parfgemm_INL
 
 
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include <kaapi++>
-#include "fflas-ffpack/fflas/kaapi_routines.inl"
+#include "kaapi_routines.inl"
 #endif
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
 #endif
 
-#include "fflas-ffpack/fflas/parallel.h"
+#include "fflas_blockcuts.inl"
+#include "parallel.h"
 
 
 namespace FFLAS {
 
 
-	template<class Field>
+	template<class Field, class AlgoT, class FieldTrait>
 	inline typename Field::Element*
-	pfgemm( const Field& F,
+	fgemm( const Field& F,
 		const FFLAS::FFLAS_TRANSPOSE ta,
 		const FFLAS::FFLAS_TRANSPOSE tb,
 		const size_t m,
@@ -58,21 +59,13 @@ namespace FFLAS {
 		typename Field::Element* B, const size_t ldb,
 		const typename Field::Element beta,
 		typename Field::Element* C, const size_t ldc,
-		const size_t w,
-		const FFLAS::CuttingStrategy method,
-		const int maxThreads
-            )
+		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
 	{
-
-		FFLAS::MMHelper<Field,
-				FFLAS::MMHelperAlgo::Winograd, 
-				typename FieldTraits<Field>::value, 
-//				ParSeqTrait::Parallel> WH (F,w,ParSeqHelper::Parallel(maxThreads));
-				ParSeqHelper::Sequential> WH (F,w,ParSeqHelper::Sequential());
-
-		ForStrategy2D iter(m,n,method,maxThreads);
+		ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
 		for (iter.begin(); ! iter.end(); ++iter){
-			TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, WH);
+			MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value , 
+				ParSeqHelper::Sequential> SeqH (H);
+			TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, SeqH);
 		}
 
 		WAIT;
@@ -81,32 +74,7 @@ namespace FFLAS {
 		return C;
 	}
 
-	template<class Field>
-	inline typename Field::Element*
-	pfgemm( const Field& F,
-		const FFLAS_TRANSPOSE ta,
-		const FFLAS_TRANSPOSE tb,
-		const size_t m,
-		const size_t n,
-		const size_t k,
-		const typename Field::Element alpha,
-		typename Field::Element* A, const size_t lda,
-		typename Field::Element* B, const size_t ldb,
-		const typename Field::Element beta,
-		typename Field::Element* C, const size_t ldc,
-		const CuttingStrategy method,
-		const int maxThreads)
-	{
-
-        ForStrategy2D iter(m,n,method,maxThreads);
-        for (iter.begin(); ! iter.end(); ++iter){
-            TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc);
-        }
-        WAIT;
-        return C;
-	}
-
 } // FFLAS
 
-#endif // __FFLASFFPACK_fflas_pfgemm_INL
+#endif // __FFLASFFPACK_fflas_parfgemm_INL
 

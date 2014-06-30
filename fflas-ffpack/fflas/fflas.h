@@ -177,8 +177,6 @@ namespace FFLAS {
 #include "fflas_finit.inl"
 
 //#ifdef __FFLASFFPACK_USE_OPENMP
-#include "fflas_blockcuts.inl"
-#include "fflas_pfgemm.inl"
 #include "fflas_pftrsm.inl"
 //#endif
 

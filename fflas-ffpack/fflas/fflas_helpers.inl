@@ -33,6 +33,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_mmhelper_INL
 #define __FFLASFFPACK_fflas_fflas_mmhelper_INL
 
+#include "parallel.h"
 
 namespace FFLAS{ namespace Protected{
 	/** \brief Computes the number of recursive levels to perform.
@@ -94,14 +95,36 @@ namespace FFLAS {
 	struct FieldTraits<FFPACK::Modular<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
 	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
 
+
+	enum CuttingStrategy {
+		ROW_FIXED	,
+		COLUMN_FIXED	,
+		BLOCK_FIXED	,
+		ROW_THREADS	,
+		COLUMN_THREADS	,
+		BLOCK_THREADS	//,
+	};
+
 	/*! ParSeqHelper for both fgemm and ftrsm
 	 */
 	namespace ParSeqHelper {
 		struct Parallel{
 			const int numthreads;
-			Parallel(int n):numthreads(n){}
+            const CuttingStrategy method;
+			Parallel(int n=HPAC_NUM_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
+
+            friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
+                return out << "Parallel: " << p.numthreads << ',' << p.method;
+            }
+            
 		};
-		struct Sequential{};
+		struct Sequential{
+            Sequential() {}
+            template<class T> Sequential(T) {}
+            friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
+                return out << "Sequential";
+            }
+        };
 	}
 
 	/*! StructureHelper for ftrsm
@@ -114,8 +137,8 @@ namespace FFLAS {
 	 */
 	template<typename ParSeqTrait = ParSeqHelper::Sequential, typename RecIterTrait = StructureHelper::Recursive >
 	struct TRSMHelper {
-		ParSeqTrait PS;
-		TRSMHelper(ParSeqTrait& _PS):PS(_PS){}
+		ParSeqTrait parseq;
+		TRSMHelper(ParSeqTrait& _PS):parseq(_PS){}
 	};
 
 
@@ -147,12 +170,13 @@ namespace FFLAS {
 		 typename FieldTrait = typename FieldTraits<Field>::value,
 		 typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
+        typedef MMHelper<Field,AlgoTrait,FieldTrait,ParSeqTrait> Self_t;
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
 		double MaxStorableValue;
 		typedef  typename associatedDelayedField<Field>::value DelayedField_t;
 		DelayedField_t delayedField;
-		ParSeqTrait PS;
+		ParSeqTrait parseq;
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
 		void initA(){Amin = FieldMin; Amax = FieldMax;}
 		void initB(){Bmin = FieldMin; Bmax = FieldMax;}
@@ -227,7 +251,7 @@ namespace FFLAS {
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()), 
-				PS(_PS)	{}
+				parseq(_PS)	{}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS) :
 				recLevel(w), //base(FflasDouble),
@@ -238,11 +262,11 @@ namespace FFLAS {
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()),
-				PS(_PS) {}
+				parseq(_PS) {}
 
 		// copy constructor from other Field and Algo Traits
-		template<class F2, typename AlgoT2, typename FT2>
-		MMHelper(MMHelper<F2, AlgoT2, FT2>& WH) :
+		template<class F2, typename AlgoT2, typename FT2, typename PS2>
+		MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) :
 		                recLevel(WH.recLevel),
 				FieldMin(WH.FieldMin), FieldMax(WH.FieldMax),
 				Amin(WH.Amin), Amax(WH.Amax),
@@ -251,7 +275,7 @@ namespace FFLAS {
 				Outmin(WH.Outmin), Outmax(WH.Outmax),
 				MaxStorableValue(WH.MaxStorableValue),
 				delayedField(WH.delayedField),
-				PS(WH.PS) {}
+				parseq(WH.parseq) {}
 
 		MMHelper(const Field& F, int w,
 			 double _Amin, double _Amax,
@@ -264,16 +288,17 @@ namespace FFLAS {
 				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
 				delayedField(F.characteristic()) {}
 
-		void print() const {
-			std::cerr<<"Helper: "
-				 <<typeid(AlgoTrait).name()<<" "
-				 <<typeid(FieldTrait).name()<<std::endl
-				 <<"  recLevel = "<<recLevel<<std::endl
-				 <<"  FieldMin = "<<FieldMin<<" FieldMax = "<<FieldMax<<std::endl
-				 <<"  Amin = "<<Amin<<" Amax = "<<Amax<<std::endl
-				 <<"  Bmin = "<<Bmin<<" Bmax = "<<Bmax<<std::endl
-				 <<"  Cmin = "<<Cmin<<" Cmax = "<<Cmax<<std::endl
-				 <<"  Outmin = "<<Outmin<<" Outmax = "<<Outmax<<std::endl;
+		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)  {
+            return out <<"Helper: "
+                <<typeid(AlgoTrait).name()<<' ' 
+                <<typeid(FieldTrait).name()<< ' '
+                       << M.parseq <<std::endl
+                <<"  recLevel = "<<M.recLevel<<std::endl
+                <<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
+                <<"  Amin = "<<M.Amin<<" Amax = "<<M.Amax<<std::endl
+                <<"  Bmin = "<<M.Bmin<<" Bmax = "<<M.Bmax<<std::endl
+                <<"  Cmin = "<<M.Cmin<<" Cmax = "<<M.Cmax<<std::endl
+                <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
 		}
 	}; // MMHelper
 } // FFLAS

@@ -273,63 +273,14 @@ namespace FFLAS {
 	       typename Field::Element * C, const size_t ldc,
 	       MMHelper<Field, AlgoT, FieldTrait, ParSeqTrait> & H);
 
+
+
+
 } // FFLAS
 
-#include "fflas-ffpack/fflas/parallel.h"
+#include "parallel.h"
 
 namespace FFLAS {
-	//#ifdef __FFLASFFPACK_USE_OPENMP
-	enum CuttingStrategy {
-		ROW_FIXED	,
-		COLUMN_FIXED	,
-		BLOCK_FIXED	,
-		ROW_THREADS	,
-		COLUMN_THREADS	,
-		BLOCK_THREADS	//,
-	};
-
-
-	/**
-	 * @brief pfgemm: <b>P</b>arallel <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
-	 */
-	// Parallel fgemm with OpenMP tasks
-	template<class Field>
-	typename Field::Element*
-	pfgemm( const Field& F,
-            const FFLAS_TRANSPOSE ta,
-            const FFLAS_TRANSPOSE tb,
-            const size_t m,
-            const size_t n,
-            const size_t k,
-            const typename Field::Element alpha,
-            typename Field::Element* A, const size_t lda,
-            typename Field::Element* B, const size_t ldb,
-            const typename Field::Element beta,
-            typename Field::Element* C, const size_t ldc,
-            const size_t w,
-            const CuttingStrategy method,
-            const int maxThreads  = HPAC_NUM_THREADS
-            );
-
-	// Parallel fgemm with OpenMP tasks
-	// winograd level is automatic
-	template<class Field>
-	typename Field::Element*
-	pfgemm( const Field& F,
-            const FFLAS_TRANSPOSE ta,
-            const FFLAS_TRANSPOSE tb,
-            const size_t m,
-            const size_t n,
-            const size_t k,
-            const typename Field::Element alpha,
-            typename Field::Element* A, const size_t lda,
-            typename Field::Element* B, const size_t ldb,
-            const typename Field::Element beta,
-            typename Field::Element* C, const size_t ldc,
-            const CuttingStrategy method,
-            const int maxThreads = HPAC_NUM_THREADS
-            );
-
 
 
 	//Parallel ftrsm with OpenMP tasks
@@ -376,6 +327,7 @@ namespace FFLAS {
 
 } // FFLAS
 
+#include "fflas_pfgemm.inl"
 #include "fflas_fgemm.inl"
 
 #endif // __FFLASFFPACK_fflas_fflas_level3_INL
