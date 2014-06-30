@@ -85,8 +85,8 @@ int main () {
 	do {
 	double basetime, time;
 		chrono.start();
-		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> ClassicH(F,0);
-		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WinogradH(F,1);
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> ClassicH(F,0, FFLAS::ParSeqHelper::Sequential());
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WinogradH(F,1, FFLAS::ParSeqHelper::Sequential());
 
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 				n, n, n, F.one, A, n, A, n, F.zero, C, n, ClassicH);
