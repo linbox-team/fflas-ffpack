@@ -228,7 +228,7 @@ int main(int argc, char** argv){
 	cout<<m<<" "<<n<<" "<<k<<" "<<pnbw<<" "<<alpha<<" "<<beta<<" "
 	    <<mflops<<" "<<tim.realtime()/nbit<<endl;
 
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw);
+	FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw, FFLAS::ParSeqHelper::Sequential());
 
 	OMPTimer tims,ts; ts.clear();tims.clear();
 	for(int i = 0;i<nbit;++i){

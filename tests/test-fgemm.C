@@ -43,6 +43,7 @@
 #include <iomanip>
 #include <iostream>
 using namespace std;
+#undef __FFLASFFPACK_HAVE_CUDA
 #include "fflas-ffpack/utils/Matio.h"
 
 //#include "fflas-ffpack/field/modular-positive.h"
@@ -56,8 +57,8 @@ using namespace FFPACK;
 
 //typedef Modular<double> Field;
 //typedef Modular<float> Field;
-typedef ModularBalanced<double> Field;
-//typedef ModularBalanced<float> Field;
+//typedef ModularBalanced<double> Field;
+typedef ModularBalanced<float> Field;
 //typedef Modular<int> Field;
 
 int main(int argc, char** argv){
@@ -122,7 +123,7 @@ int main(int argc, char** argv){
 			C = new Field::Element[m*n];
 		t.clear();
 		t.start();
-		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,nbw);	
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,nbw,FFLAS::ParSeqHelper::Sequential());	
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			      beta,C,n,WH);
 		t.stop();
