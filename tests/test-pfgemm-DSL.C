@@ -48,8 +48,8 @@
 #include <iostream>
 using namespace std;
 
-//#define  __FFLASFFPACK_USE_OPENMP
-#define  __FFLASFFPACK_USE_KAAPI
+#define  __FFLASFFPACK_USE_OPENMP
+//#define  __FFLASFFPACK_USE_KAAPI
 
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -68,17 +68,7 @@ using namespace std;
 #include <omp.h>
 #endif
 
-
 using namespace FFPACK;
-
-
-template<class T>
-T& myrand (T& r, long size) {
-    if (size < 0)
-        return r = T( (lrand48() % (-size-size)) + size );
-    else
-        return r = T(  lrand48() % size ) ;
-}
 
 typedef Modular<double> Field;
 //typedef Modular<float> Field;
@@ -86,30 +76,8 @@ typedef Modular<double> Field;
 //typedef ModularBalanced<float> Field;
 //typedef Modular<int> Field;
 
-//#ifdef  __FFLASFFPACK_USE_OPENMP
-Field::Element* makemat(const Field::RandIter& RF,int m, int n){
-    Field::Element * res = new Field::Element[m*n];
-    //#pragma omp parallel for
-    for (long i = 0; i < m; ++i)
-        for (long j = 0; j < n; ++j) {
-            RF.random(res[j+i*n]);
-        }
-    return res;
-}
-//#endif
-
-
-
-#ifdef __FFLASFFPACK_USE_KAAPI
-struct doit {
-	void operator()(int argc, char** argv )
-	{
-#endif
-
-#ifndef __FFLASFFPACK_USE_KAAPI
-int main(int argc, char** argv){
-
-#endif
+BEGIN_PARALLEL_MAIN(int argc, char** argv)
+{
 
         if (argc != 8)  {
                 cerr<<"Testing pfgemm with : test-fgemm-DSL <p> <file-matrixA> <File-matrixB> <w> <i> <alpha> <beta>"
@@ -124,7 +92,7 @@ int main(int argc, char** argv){
         typename Field::Element *A = read_field(F, argv[2], &m, &k);
         typename Field::Element *B = read_field(F, argv[3], &k, &n);
 
-        //      //      int m=atoi(argv[2]),n=atoi(argv[3]),k=m;                                                                                                                
+
         size_t nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
         int nbit=atoi(argv[5]); // number of times the product is performed                                                                                                     
         cerr<<setprecision(10);
@@ -132,39 +100,20 @@ int main(int argc, char** argv){
 
         F.init( alpha, Field::Element(atoi(argv[6])));
         F.init( beta, Field::Element(atoi(argv[7])));
-        /*                                                                           
-    Field::RandIter RF(F);                                                                                                                                                      
-                                                                                                                                                                                
-        Field::Element * A = makemat(RF,m,n);                                                                                                                                   
-        Field::Element * B = makemat(RF,m,n);                                                                                                                                   
-        */
+
         size_t lda=m;
         size_t ldb=n;
 
 
         enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
         enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
-        /*                                                                                                                                                                      
-        const size_t maxt = (size_t)sqrt((double)omp_get_max_threads());                                                                                                        
-        const size_t RBLOCKSIZE=MAX(m/maxt,1), CBLOCKSIZE=MAX(n/maxt,1);                                                                                                        
-        */
+
 	Field::Element * C=NULL;
         struct timespec t0,t1;
         double delay, avrg;
         double t_total=0;
 
-	//      write_field (F, cerr<<"A = "<<endl, A, m, k, lda);                                                                                                                      
-	//      write_field (F, cerr<<"B = "<<endl, B, k, n, ldb);                                                                                                                      
-	//      std::cout<<"coucou"<<std::endl;                                                                                                                                         
-	//      OMPTimer tim,t; t.clear();tim.clear();                                                                                                                                  
-
-	//	size_t RBLOCKSIZE = 256;
-	//	size_t CBLOCKSIZE = 256;
-
-	//#ifdef __FFLASFFPACK_USE_KAAPI
 	const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
-	//	size_t r,c; FFLAS::BlockCuts(r,c,m,n,Strategy, kaapi_getconcurrency_cpu());
-	//#endif
 
         for(int i = 0;i<nbit;++i){
 		C = new Field::Element[m*n];
@@ -177,28 +126,17 @@ int main(int argc, char** argv){
 		BARRIER;
                 clock_gettime(CLOCK_REALTIME, &t1);
                 delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
-                //              t.stop();
 
                 if (i)
 			t_total+=delay;
 
-                //        if (i<nbit) delete[] C;            
         }
         avrg = t_total/(nbit-1);
 
 #if TIME
-        //      double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*(nbit-1)*n/tim.realtime();
+
         double mflops = (2.0*(m*k-((!F.isZero(beta))?m:0))/1000000.0)*n/avrg;
-        /*      cerr << nbw << " Winograd's level over Z/"<<atoi(argv[1])<<"Z : t= "
-		<< tim.realtime()/nbit                                                                         
-		<< " s, Mffops = "<<mflops
-		<< endl;                  
-		cerr<<"m,n,k,nbw = "<<m<<", "<<n<<", "<<k<<", "<<alpha
-		<<", "<<beta<<", "<<nbw<<endl
-		<<alpha
-		<<((ta==FFLAS::FflasNoTrans)?".Ax":".A^Tx")
-		<<((tb==FFLAS::FflasNoTrans)?"B + ":"B^T + ")
-		<<beta<<".C"<<endl;*/
+
 	cerr<<m<<" "<<n<<" "<<k<<" "<<nbw/*<<" "<<RBLOCKSIZE<<" "<<CBLOCKSIZE*/<<" "<<alpha<<" "<<beta<<" "
 	    <<mflops<<" "<<avrg<<endl;
 #endif
@@ -261,36 +199,4 @@ int main(int argc, char** argv){
 
 
 }
-
-
-#ifdef __FFLASFFPACK_USE_KAAPI
-};
-
-
-int main(int argc, char** argv){
-
-	try {
-		/* Join the initial group of computation : it is defining                                                                                                                                                  
-                when launching the program by a1run.                                                                                                                                                           
-		*/
-		ka::Community com = ka::System::join_community( argc, argv );
-
-		/* Start computation by forking the main task */
-		ka::SpawnMain<doit>()(argc, argv);
-
-		/* Leave the community: at return to this call no more athapascan                                                                                                                                          
-                tasks or shared could be created.                                                                                                                                                              
-		*/
-		com.leave();
-		/* */
-		ka::System::terminate();
-	}
-	catch (const std::exception& E) {
-		ka::logfile() << "Catch : " << E.what() << std::endl;
-	}
-	catch (...) {
-		ka::logfile() << "Catch unknown exception: " << std::endl;
-	}
-	return 0;
-}
-#endif
+END_PARALLEL_MAIN()
