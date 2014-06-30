@@ -37,10 +37,12 @@
 #endif
 
 #ifdef __FFLASFFPACK_FORCE_SEQ
+
 #undef __FFLASFFPACK_USE_OPENMP
 #undef __FFLASFFPACK_USE_KAAPI
 #undef __FFLASFFPACK_USE_TBB
 #define __FFLASFFPACK_SEQUENTIAL
+
 #endif
 
 /*********************************************************/
@@ -72,19 +74,16 @@
 
 #define GLOBALSHARED(a, Args...) shared(Args)
 #define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
-#define COMMA ,
-#define READ(Args...) COMMA Args
-#define WRITE(Args...) COMMA Args
-#define READWRITE(Args...) COMMA Args
-#define NOREAD(void)
-#define NOWRITE(void)
-#define NOREADWRITE(void)
+
 // Task definition with OpenMP
 #define TASK(r, w, rw, f, Args...)				\
   PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) )	\
   f(Args)
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
+
+#define BARRIER
+
 // parallel region
 #define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
   PRAGMA_OMP_TASK_IMPL( omp single )
@@ -177,5 +176,17 @@
 
 #endif
 
+
+#define COMMA ,
+#define READ(Args...) COMMA Args
+#define WRITE(Args...) COMMA Args
+#define READWRITE(Args...) COMMA Args
+#define NOREAD(void)
+#define NOWRITE(void)
+#define NOREADWRITE(void)
+
+#define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{\
+  Rank = pPLUQ(F, Diag, M, N, A, lda, P, Q);\
+  }while(0)
 
 #endif //__FFLASFFPACK_fflas_parallel_H

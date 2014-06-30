@@ -51,15 +51,16 @@ using namespace std;
 #define  __FFLASFFPACK_USE_OPENMP
 //#define  __FFLASFFPACK_USE_KAAPI
 
+//#define __FFLASFFPACK_FORCE_SEQ
+
+
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "time.h"
 
-
-
-
+/*
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include <kaapi++>
 #endif
@@ -67,6 +68,8 @@ using namespace std;
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
 #endif
+*/
+
 
 using namespace FFPACK;
 
@@ -93,7 +96,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
         typename Field::Element *B = read_field(F, argv[3], &k, &n);
 
 
-        size_t nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
+        int nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     
         int nbit=atoi(argv[5]); // number of times the product is performed                                                                                                     
         cerr<<setprecision(10);
 	Field::Element alpha,beta;
@@ -119,9 +122,12 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 		C = new Field::Element[m*n];
                 clock_gettime(CLOCK_REALTIME, &t0);
 
-		HPAC_PAR_REGION{
-			FFLAS::pfgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-				      beta,C,n, Strategy, HPAC_NUM_THREADS);   
+		PAR_REGION{
+			
+			FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, FFLAS::FieldTraits<Field>::value,
+					FFLAS::ParSeqHelper::Parallel> pWH (F, nbw,FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
+			FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+				      beta,C,n, pWH);   
 		}
 		BARRIER;
                 clock_gettime(CLOCK_REALTIME, &t1);
