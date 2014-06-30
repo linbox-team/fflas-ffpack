@@ -98,7 +98,7 @@ namespace FFLAS {
 	 */
 	namespace ParSeqHelper {
 		struct Parallel{
-			int numthreads;
+			const int numthreads;
 			Parallel(int n):numthreads(n){}
 		};
 		struct Sequential{};
@@ -110,8 +110,9 @@ namespace FFLAS {
 		struct Recursive{};
 		struct Iterative{};
 	}
-
-	template<typename ParSeqTrait = ParSeqHelper::Sequential, typename RecIterTrait = Recursive >
+	/*! TRSM Helper
+	 */
+	template<typename ParSeqTrait = ParSeqHelper::Sequential, typename RecIterTrait = StructureHelper::Recursive >
 	struct TRSMHelper {
 		ParSeqTrait PS;
 		TRSMHelper(ParSeqTrait& _PS):PS(_PS){}
@@ -138,15 +139,20 @@ namespace FFLAS {
 	inline double getFieldMax (const FFPACK::ModularBalanced<Element>& F){
 		return ((double) F.characteristic()-1)/2;
 	}
-
-	template<class Field, typename AlgoTrait = MMHelperAlgo::Auto, typename FieldTrait = typename FieldTraits<Field>::value >
+	
+       /*! FGEMM Helper
+	*/
+	template<class Field, 
+		 typename AlgoTrait = MMHelperAlgo::Auto, 
+		 typename FieldTrait = typename FieldTraits<Field>::value,
+		 typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
 		double MaxStorableValue;
 		typedef  typename associatedDelayedField<Field>::value DelayedField_t;
 		DelayedField_t delayedField;
-
+		ParSeqTrait PS;
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
 		void initA(){Amin = FieldMin; Amax = FieldMax;}
 		void initB(){Bmin = FieldMin; Bmax = FieldMax;}
@@ -212,7 +218,7 @@ namespace FFLAS {
 		MMHelper(){}
 		    //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
 		    // correct but semantically not satisfactory
-		MMHelper(const Field& F, size_t m, size_t k, size_t n) :
+		MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) :
 		                recLevel(Protected::WinogradSteps (F, min3(m,k,n))),
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),
@@ -220,9 +226,10 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
-				delayedField(F.characteristic()) {}
+				delayedField(F.characteristic()), 
+				PS(_PS)	{}
 
-		MMHelper(const Field& F, int w) :
+		MMHelper(const Field& F, int w, ParSeqTrait _PS) :
 				recLevel(w), //base(FflasDouble),
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),
@@ -230,7 +237,8 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
-				delayedField(F.characteristic()){}
+				delayedField(F.characteristic()),
+				PS(_PS) {}
 
 		// copy constructor from other Field and Algo Traits
 		template<class F2, typename AlgoT2, typename FT2>
@@ -242,7 +250,8 @@ namespace FFLAS {
 				Cmin(WH.Cmin), Cmax(WH.Cmax),
 				Outmin(WH.Outmin), Outmax(WH.Outmax),
 				MaxStorableValue(WH.MaxStorableValue),
-				delayedField(WH.delayedField) {}
+				delayedField(WH.delayedField),
+				PS(WH.PS) {}
 
 		MMHelper(const Field& F, int w,
 			 double _Amin, double _Amax,

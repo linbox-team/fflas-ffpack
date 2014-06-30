@@ -82,7 +82,7 @@ namespace FFLAS { namespace Protected{
 			fconvert(F, m, n, Cf, n, C, ldc);
 			finit (G, m, n, Cf, n);
 		}
-		MMHelper<FFPACK::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel);
+		MMHelper<FFPACK::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel, ParSeqHelper::Sequential());
 		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 		finit(F, m, n, Cf, n, C, ldc);
@@ -271,7 +271,7 @@ namespace FFLAS {
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<Field, MMHelperAlgo::Winograd > HW (F, m, k, n);
+		MMHelper<Field, MMHelperAlgo::Winograd > HW (F, m, k, n, FFLAS::ParSeqHelper::Sequential());
 		return 	fgemm (F, ta, tb, m, n, k, alpha, 
 			       const_cast<typename Field::Element*>(A), lda, 
 			       const_cast<typename Field::Element*>(B), ldb, 

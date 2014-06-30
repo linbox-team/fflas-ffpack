@@ -64,7 +64,11 @@ namespace FFLAS {
             )
 	{
 
-		FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,w);
+		FFLAS::MMHelper<Field,
+				FFLAS::MMHelperAlgo::Winograd, 
+				typename FieldTraits<Field>::value, 
+//				ParSeqTrait::Parallel> WH (F,w,ParSeqHelper::Parallel(maxThreads));
+				ParSeqHelper::Sequential> WH (F,w,ParSeqHelper::Sequential());
 
 		ForStrategy2D iter(m,n,method,maxThreads);
 		for (iter.begin(); ! iter.end(); ++iter){
@@ -91,8 +95,7 @@ namespace FFLAS {
 		const typename Field::Element beta,
 		typename Field::Element* C, const size_t ldc,
 		const CuttingStrategy method,
-		const int maxThreads
-            )
+		const int maxThreads)
 	{
 
         ForStrategy2D iter(m,n,method,maxThreads);

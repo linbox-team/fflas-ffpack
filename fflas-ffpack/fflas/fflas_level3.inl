@@ -36,7 +36,7 @@
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
 #include "fflas_bounds.inl"
-#include "fflas_helper.inl"
+#include "fflas_helpers.inl"
 
 namespace FFLAS { namespace Protected {
 	//-----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ namespace FFLAS {
 	 * \param H helper, driving the computation (algorithm, delayed modular reduction, switch of base type, etc)
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
-	template<class Field, class AlgoT, class FieldTrait>
+	template<class Field, class AlgoT, class FieldTrait, class ParSeqTrait>
 	inline  typename Field::Element*
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -271,7 +271,7 @@ namespace FFLAS {
 	       typename Field::Element * B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element * C, const size_t ldc,
-	       MMHelper<Field, AlgoT, FieldTrait> & H);
+	       MMHelper<Field, AlgoT, FieldTrait, ParSeqTrait> & H);
 
 } // FFLAS
 
