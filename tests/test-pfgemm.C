@@ -109,8 +109,8 @@ int main(int argc, char** argv){
 
     Field::RandIter RF(F);
 
-	Field::Element * A = makemat(RF,m,n);
-	Field::Element * B = makemat(RF,m,n);
+	Field::Element * A = makemat(RF,m,k);
+	Field::Element * B = makemat(RF,k,n);
 	size_t lda=m;
 	size_t ldb=n;
 
@@ -189,11 +189,20 @@ int main(int argc, char** argv){
 		}
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
+
+		for (int i=0; i<m; ++i)
+			for (int j =0; j<n; ++j)
+                cerr<<"C["<<i<<","<<j<<"]="<<(*(C+i*n+j))<<std::endl;
+
+		for (int i=0; i<m; ++i)
+			for (int j =0; j<n; ++j)
+                cerr<<"Cd["<<i<<","<<j<<"]="<<(*(Cd+i*n+j))<<std::endl;
+
 		for (int i=0; i<m; ++i){
 			for (int j =0; j<n; ++j)
 				if (!F.areEqual( *(C+i*n+j), *(Cd+i*n+j) ) )
 					 cerr<<"Erreur C["<<i<<","<<j<<"]="
-					     <<(*(C+i*n+j))<<" C[d"<<i<<","<<j<<"]="
+					     <<(*(C+i*n+j))<<" Cd["<<i<<","<<j<<"]="
 					     <<(*(Cd+i*n+j))<<endl;
 		}
 	}

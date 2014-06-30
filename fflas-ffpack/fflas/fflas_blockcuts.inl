@@ -137,6 +137,7 @@ namespace FFLAS {
 
     void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
                    size_t& lastRBS, size_t& lastCBS,
+                   size_t& changeRBS, size_t& changeCBS,
                    size_t& numRowBlock, size_t& numColBlock,
                    size_t m, size_t n,
                    const CuttingStrategy method,
@@ -144,8 +145,16 @@ namespace FFLAS {
         BlockCuts(rowBlockSize, colBlockSize, m, n, method, numthreads);
         numRowBlock = m/rowBlockSize;
         numColBlock = n/colBlockSize;
-        lastRBS = m % rowBlockSize;
-        lastCBS = n % colBlockSize;
+        
+        changeRBS = m-rowBlockSize*numRowBlock;
+        lastRBS = rowBlockSize;
+        if (changeRBS) ++rowBlockSize;
+
+        changeCBS = n-colBlockSize*numColBlock;
+        lastCBS = colBlockSize;
+        if (changeCBS) ++colBlockSize;
+        
+
 	/*
             // Better preserve numRowBlock and numColBlock
         if (lastRBS) {
@@ -157,9 +166,14 @@ namespace FFLAS {
             ++colBlockSize;
         } else lastCBS = colBlockSize;
 */
+
+
+
 //             // Better preserve rowBlockSize and colBlockSize
-         if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
-         if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
+//         lastRBS = m % rowBlockSize;
+//         lastCBS = n % colBlockSize;
+//          if (lastRBS) ++numRowBlock; else lastRBS = rowBlockSize;
+//          if (lastCBS) ++numColBlock; else lastCBS = colBlockSize;
     }
 
 
@@ -231,37 +245,79 @@ namespace FFLAS {
         ForStrategy2D(const size_t m, const size_t n, const CuttingStrategy method, const size_t numthreads) {
             BlockCuts(rowBlockSize, colBlockSize, 
                       lastRBS, lastCBS,
+                      changeRBS, changeCBS,
                       numRowBlock, numColBlock,
                       m, n, method, numthreads);
 
             BLOCKS = numRowBlock * numColBlock;
-             // std::cout<<"RBLOCKSIZE : "<<rowBlockSize<<std::endl;
-             // std::cout<<"CBLOCKSIZE : "<<colBlockSize<<std::endl;
-             // std::cout<<"lastRBS    : "<<lastRBS<<std::endl;
-             // std::cout<<"lastCBS    : "<<lastCBS<<std::endl;
-             // std::cout<<"NrowBlocks : "<<numRowBlock<<std::endl;
-             // std::cout<<"NcolBlocks : "<<numColBlock<<std::endl;
+// std::cout<<"RBLOCKSIZE : "<<rowBlockSize<<std::endl;
+// std::cout<<"CBLOCKSIZE : "<<colBlockSize<<std::endl;
+// std::cout<<"changeRBS    : "<<changeRBS<<std::endl;
+// std::cout<<"changeCBS    : "<<changeCBS<<std::endl;
+// std::cout<<"lastRBS    : "<<lastRBS<<std::endl;
+// std::cout<<"lastCBS    : "<<lastCBS<<std::endl;
+// std::cout<<"NrowBlocks : "<<numRowBlock<<std::endl;
+// std::cout<<"NcolBlocks : "<<numColBlock<<std::endl;
         }
         
-        size_t begin() { current = 0; return setCurrentBlock(); }
+
+        size_t begin() {
+            ibeg = 0; iend = rowBlockSize;
+            jbeg = 0; jend = colBlockSize;
+// std::cout << "FS2D curr: " << 0 << '/' << BLOCKS << std::endl;
+// std::cout << "FS2D ibeg: " << ibeg << std::endl;
+// std::cout << "FS2D iend: " << iend << std::endl;
+// std::cout << "FS2D jbeg: " << jbeg << std::endl;
+// std::cout << "FS2D jend: " << jend << std::endl;
+            
+            return current = 0;
+        }
         bool end() const { return current == BLOCKS; }
-        size_t setCurrentBlock() { 
-			ibeg = current / numColBlock;
-			jbeg = current % numColBlock;
-			size_t BlockRowDim = rowBlockSize;
-			if (ibeg == numRowBlock-1)
-				BlockRowDim = lastRBS;
-			size_t BlockColDim = colBlockSize;
-			if (jbeg == numColBlock-1)
-				BlockColDim = lastCBS;
-            ibeg *= rowBlockSize;
-            jbeg *= colBlockSize;
-            iend = ibeg + BlockRowDim;
-            jend = jbeg + BlockColDim;
+       
+        size_t operator++() {
+            ++current;
+            size_t icurr = current/numColBlock;
+            size_t jcurr = current%numColBlock;
+            if (jcurr) {
+                jbeg = jend;
+                jend += (jcurr<changeCBS?colBlockSize:lastCBS);
+            } else {
+                ibeg = iend;
+                iend += (icurr<changeRBS?rowBlockSize:lastRBS);
+                jbeg = 0;
+                jend = colBlockSize;
+            }
+// std::cout << "FS2D curr: " << current << '/' << BLOCKS << std::endl;
+// std::cout << "FS2D ibeg: " << ibeg << std::endl;
+// std::cout << "FS2D iend: " << iend << std::endl;
+// std::cout << "FS2D jbeg: " << jbeg << std::endl;
+// std::cout << "FS2D jend: " << jend << std::endl;
+
             return current;
         }
+                
+             
+                
+
+//         size_t begin() { current = 0; return setCurrentBlock(); }
+//         bool end() const { return current == BLOCKS; }
+//         size_t setCurrentBlock() { 
+// 			ibeg = current / numColBlock;
+// 			jbeg = current % numColBlock;
+// 			size_t BlockRowDim = rowBlockSize;
+// 			if (ibeg == numRowBlock-1)
+// 				BlockRowDim = lastRBS;
+// 			size_t BlockColDim = colBlockSize;
+// 			if (jbeg == numColBlock-1)
+// 				BlockColDim = lastCBS;
+//             ibeg *= rowBlockSize;
+//             jbeg *= colBlockSize;
+//             iend = ibeg + BlockRowDim;
+//             jend = jbeg + BlockColDim;
+//             return current;
+//         }
         
-        size_t operator++() { ++current; return setCurrentBlock(); }
+//         size_t operator++() { ++current; return setCurrentBlock(); }
         
         size_t ibeg, iend, jbeg, jend;
 
@@ -269,6 +325,7 @@ namespace FFLAS {
         size_t current;
         size_t rowBlockSize; size_t colBlockSize;
         size_t lastRBS; size_t lastCBS;
+        size_t changeRBS; size_t changeCBS;
         size_t numRowBlock; size_t numColBlock;
         size_t BLOCKS;
         
