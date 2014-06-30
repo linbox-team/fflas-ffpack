@@ -110,21 +110,21 @@ namespace FFLAS {
 	namespace ParSeqHelper {
 		struct Parallel{
 			const int numthreads;
-            const CuttingStrategy method;
+			const CuttingStrategy method;
 			Parallel(int n=NUM_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
-
-            friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-                return out << "Parallel: " << p.numthreads << ',' << p.method;
-            }
+			
+			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
+				return out << "Parallel: " << p.numthreads << ',' << p.method;
+			}
             
 		};
 		struct Sequential{
-            Sequential() {}
-            template<class T> Sequential(T) {}
-            friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
-                return out << "Sequential";
-            }
-        };
+			Sequential() {}
+			template<class T> Sequential(T) {}
+			friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
+				return out << "Sequential";
+			}
+		};
 	}
 
 	/*! StructureHelper for ftrsm
@@ -135,12 +135,11 @@ namespace FFLAS {
 	}
 	/*! TRSM Helper
 	 */
-	template<typename ParSeqTrait = ParSeqHelper::Sequential, typename RecIterTrait = StructureHelper::Recursive >
+	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
 	struct TRSMHelper {
 		ParSeqTrait parseq;
-		TRSMHelper(ParSeqTrait& _PS):parseq(_PS){}
+		TRSMHelper(ParSeqTrait _PS):parseq(_PS){}
 	};
-
 
 	namespace MMHelperAlgo{
 		struct Auto{};
@@ -170,7 +169,7 @@ namespace FFLAS {
 		 typename FieldTrait = typename FieldTraits<Field>::value,
 		 typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
-        typedef MMHelper<Field,AlgoTrait,FieldTrait,ParSeqTrait> Self_t;
+		typedef MMHelper<Field,AlgoTrait,FieldTrait,ParSeqTrait> Self_t;
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
 		double MaxStorableValue;
@@ -253,7 +252,7 @@ namespace FFLAS {
 				delayedField(F.characteristic()), 
 				parseq(_PS)	{}
 
-		MMHelper(const Field& F, int w, ParSeqTrait _PS) :
+		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
 				recLevel(w), //base(FflasDouble),
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),

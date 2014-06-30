@@ -59,17 +59,22 @@ namespace FFLAS {
 #endif
 		typename Field::Element* A, const size_t lda,
 		typename Field::Element* B, const size_t ldb,
-		const FFLAS::CuttingStrategy method,
-                const size_t numThreads)
+		TRSMHelper <StructureHelper::Iterative, ParSeqHelper::Parallel> & H)
+		// const FFLAS::CuttingStrategy method,
+                // const size_t numThreads)
 	{
 		if(Side == FflasRight){
-            ForStrategy1D iter(m, method, numThreads);
-            for (iter.begin(); ! iter.end(); ++iter) 
-                TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb);
-        } else {
-			ForStrategy1D iter(n, method, numThreads);
-			for (iter.begin(); ! iter.end(); ++iter) 
-                TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb);
+			ForStrategy1D iter(m, H.parseq.method, H.parseq.numthreads);
+			for (iter.begin(); ! iter.end(); ++iter) {
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
+				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
+			}
+		} else {
+			ForStrategy1D iter(n, H.parseq.method, H.parseq.numthreads);
+			for (iter.begin(); ! iter.end(); ++iter) {
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
+				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
+			}
 		}
 		WAIT;		      
 		return B;

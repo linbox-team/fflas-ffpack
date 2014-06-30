@@ -33,22 +33,22 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+#define DEBUG 1
 #define TIME 1
 
 #include <iomanip>
 #include <iostream>
+#include "Matio.h"
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 
 using namespace std;
 using namespace FFPACK;
 
-//typedef ModularBalanced<double> Field;
-typedef ModularBalanced<float> Field;
+typedef Modular<double> Field;
+//typedef ModularBalanced<float> Field;
 
 int main(int argc, char** argv)
 {
@@ -93,8 +93,7 @@ int main(int argc, char** argv)
 
 	Timer t; t.clear();
 	double time=0.0;
-	//write_field(F, cerr<<"A="<<endl, A, k,k,k);
-
+	
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
@@ -109,7 +108,6 @@ int main(int argc, char** argv)
 #if DEBUG
 	Field::Element invalpha;
 	F.inv(invalpha, alpha);
-
 	FFLAS::ftrmm (F, side, uplo, trans, diag, m, n, invalpha, A, k, B, n);
 	bool wrong = false;
 
@@ -124,8 +122,8 @@ int main(int argc, char** argv)
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-		//write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
-		//write_field (F,cerr<<"B="<<endl,B,m,n,n);
+		    //write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
+		    //write_field (F,cerr<<"B="<<endl,B,m,n,n);
 	} else
 		cerr<<"PASS"<<endl;
 #endif

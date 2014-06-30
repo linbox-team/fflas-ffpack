@@ -332,7 +332,8 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	      const
 #endif
 		  typename Field::Element * A, const size_t lda,
-		  typename Field::Element * B, const size_t ldb)
+		  typename Field::Element * B, const size_t ldb, 
+		  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
 {
 
 	if (!M || !N ) return;
@@ -387,7 +388,8 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 	      const
 #endif
 		 typename Field::Element * A, const size_t lda,
-		 typename Field::Element * B, const size_t ldb)
+		 typename Field::Element * B, const size_t ldb,
+		 TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
 {
 
 	if (__FFLAS__Na == 1){
@@ -402,7 +404,7 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #endif //__FFLAS__UNIT
 	} else { // __FFLAS__Na > 1
 		size_t nsplit = __FFLAS__Na >> 1;
-		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A1, lda, __FFLAS__B1, ldb);
+		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A1, lda, __FFLAS__B1, ldb, H);
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
@@ -413,7 +415,7 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
 		       __FFLAS__A2, lda, __FFLAS__B1, ldb, F.one, __FFLAS__B2, ldb);
 #endif
-		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb);
+		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);
 	}
 }
 };

@@ -36,8 +36,8 @@
 #define DEBUG 1
 #define TIME 1
 
-//#define __FFLASFFPACK_USE_OPENMP
-#define __FFLASFFPACK_USE_KAAPI
+#define __FFLASFFPACK_USE_OPENMP
+//#define __FFLASFFPACK_USE_KAAPI
 
 #define __FFLAS__TRSM_READONLY
 
@@ -119,7 +119,9 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 		clock_gettime(CLOCK_REALTIME, &t0);
 		HPAC_PAR_REGION{
 			//		numThreads=HPAC_NUM_THREADS;
-			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, Strategy, HPAC_NUM_THREADS);
+			FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
+					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));	
+			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
 		}
 		BARRIER;
 		clock_gettime(CLOCK_REALTIME, &t1);

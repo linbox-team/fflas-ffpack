@@ -52,58 +52,78 @@ namespace FFLAS {
 	       typename Field::Element * A, const size_t lda,
 	       typename Field::Element * B, const size_t ldb)
 	{
+		ParSeqHelper::Sequential PSH;
+		TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> H(PSH);
+		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
+	}
+
+	template<class Field>
+	inline void
+	ftrsm (const Field& F, const FFLAS_SIDE Side,
+	       const FFLAS_UPLO Uplo,
+	       const FFLAS_TRANSPOSE TransA,
+	       const FFLAS_DIAG Diag,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+#ifdef __FFLAS__TRSM_READONLY
+	       const
+#endif
+	       typename Field::Element * A, const size_t lda,
+	       typename Field::Element * B, const size_t ldb,
+	       TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
+	{
 		if (!M || !N ) return;
 
 		if ( Side==FflasLeft ){
 			if ( Uplo==FflasUpper){
 				if (TransA == FflasNoTrans){
 					if (Diag == FflasUnit)
-						Protected::ftrsmLeftUpperNoTransUnit<typename Field::Element> ()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftUpperNoTransUnit<typename Field::Element> ()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmLeftUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				} else {
 					if (Diag == FflasUnit)
-						Protected::ftrsmLeftUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmLeftUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				}
 			} else {
 				if (TransA == FflasNoTrans){
 					if (Diag == FflasUnit)
-						Protected::ftrsmLeftLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmLeftLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				} else {
 					if (Diag == FflasUnit)
-						Protected::ftrsmLeftLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmLeftLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmLeftLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				}
 			}
 		} else {
 			if ( Uplo == FflasUpper){
 				if (TransA == FflasNoTrans){
 					if (Diag == FflasUnit)
-						Protected::ftrsmRightUpperNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightUpperNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmRightUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightUpperNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				} else {
 					if (Diag == FflasUnit)
-						Protected::ftrsmRightUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightUpperTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmRightUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightUpperTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				}
 			} else {
 				if (TransA == FflasNoTrans){
 					if (Diag == FflasUnit)
-						Protected::ftrsmRightLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightLowerNoTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmRightLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightLowerNoTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				} else {
 					if (Diag == FflasUnit)
-						Protected::ftrsmRightLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightLowerTransUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 					else
-						Protected::ftrsmRightLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb);
+						Protected::ftrsmRightLowerTransNonUnit<typename Field::Element>()(F,M,N,A,lda,B,ldb,H);
 				}
 			}
 		}
