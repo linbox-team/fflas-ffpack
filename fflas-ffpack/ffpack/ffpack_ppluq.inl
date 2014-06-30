@@ -57,7 +57,7 @@ namespace FFPACK {
 	  {
 
 		  const FFLAS::CuttingStrategy method = FFLAS::BLOCK_THREADS;
-		  size_t NUM = HPAC_NUM_THREADS;
+		  size_t NUM = NUM_THREADS;
 		  for (size_t i=0; i<M; ++i) P[i] = i;
 		  for (size_t i=0; i<N; ++i) Q[i] = i;
 		  if (std::min(M,N) == 0) return 0;
@@ -145,11 +145,11 @@ namespace FFPACK {
 
 		  WAIT;
 		  // F <- B2 - M1 D
-		  TASK(READ(Fi, A), NOWRITE(), READWRITE(A2), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, method, HPAC_NUM_THREADS);
+		  TASK(READ(Fi, A), NOWRITE(), READWRITE(A2), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
 
 		  // G <- C2 - E V1
-		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda,  method, HPAC_NUM_THREADS);
+		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
 
 		  WAIT;
@@ -172,9 +172,9 @@ namespace FFPACK {
 
 
 		  // H <- A4 - ED
-		  TASK(READ(Fi, M2, N2, R1, A3, A2), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, 0,  method, HPAC_NUM_THREADS);
+		  TASK(READ(Fi, M2, N2, R1, A3, A2), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, 0,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda);
-		  //		  std::cout<<"NUM "<<HPAC_NUM_THREADS<<std::endl;
+		  //		  std::cout<<"NUM "<<NUM_THREADS<<std::endl;
 
 		  WAIT;
 
@@ -231,18 +231,18 @@ namespace FFPACK {
 		  WAIT;
 
    // O <- N - J V2
-		  TASK(READ(Fi, R2, temp, F), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda,  method, HPAC_NUM_THREADS);
+		  TASK(READ(Fi, R2, temp, F), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
 
 		  typename Field::Element * R = A4 + R2 + R3*lda;
   // R <- H4 - K V2
-		  TASK(READ(Fi, R2, A4, F), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda,  method, HPAC_NUM_THREADS);
+		  TASK(READ(Fi, R2, A4, F), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		  WAIT;
 
 		  delete[] temp;
     // R <- R - M3 O
-		  TASK(READ(Fi, R3, A4, G), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda,  method, HPAC_NUM_THREADS);
+		  TASK(READ(Fi, R3, A4, G), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 
 		  WAIT;

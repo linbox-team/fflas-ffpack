@@ -28,11 +28,13 @@
 #define __FFLASFFPACK_fflas_parallel_H
 
 
-#ifdef __FFLASFFPACK_USE_OPENMP
-#include "omp.h"
-#endif
+#define __FFLASFFPACK_SEQUENTIAL
 
-#ifdef __FFLASFFPACK_USE_KAAPI
+#ifdef __FFLASFFPACK_USE_OPENMP
+#undef __FFLASFFPACK_SEQUENTIAL
+#include "omp.h"
+#elif defined (__FFLASFFPACK_USE_KAAPI)
+#undef __FFLASFFPACK_SEQUENTIAL
 #include "kaapi++"
 #endif
 
