@@ -39,6 +39,8 @@
 #define __FFLASFFPACK_USE_OPENMP
 //#define __FFLASFFPACK_USE_KAAPI
 
+//#define __FFLASFFPACK_FORCE_SEQ
+
 #define __FFLAS__TRSM_READONLY
 
 #include <iomanip>
@@ -117,10 +119,9 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 		//		t.clear();
 		//		t.start();		
 		clock_gettime(CLOCK_REALTIME, &t0);
-		HPAC_PAR_REGION{
-			//		numThreads=HPAC_NUM_THREADS;
+		PAR_REGION{
 			FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));	
+					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));	
 			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
 		}
 		BARRIER;
