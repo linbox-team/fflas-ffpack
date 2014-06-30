@@ -94,6 +94,30 @@ namespace FFLAS {
 	struct FieldTraits<FFPACK::Modular<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
 	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
 
+	/*! ParSeqHelper for both fgemm and ftrsm
+	 */
+	namespace ParSeqHelper {
+		struct Parallel{
+			int numthreads;
+			Parallel(int n):numthreads(n){}
+		};
+		struct Sequential{};
+	}
+
+	/*! StructureHelper for ftrsm
+	 */
+	namespace StructureHelper {
+		struct Recursive{};
+		struct Iterative{};
+	}
+
+	template<typename ParSeqTrait = ParSeqHelper::Sequential, typename RecIterTrait = Recursive >
+	struct TRSMHelper {
+		ParSeqTrait PS;
+		TRSMHelper(ParSeqTrait& _PS):PS(_PS){}
+	};
+
+
 	namespace MMHelperAlgo{
 		struct Auto{};
 		struct Classic{};
