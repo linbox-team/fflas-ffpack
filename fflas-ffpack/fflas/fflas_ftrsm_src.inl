@@ -195,14 +195,16 @@ public:
 
 // TRSM with delayed updates: assumes input in Zp and ensures output in Zp.
 // The multiple MatMul updates (recursive sequence) are done over Z
-template<class Field>
+template<class Field, class ParSeqTrait>
 void delayed (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
 	      const
 #endif
 	      typename Field::Element * A, const size_t lda,
 	      typename Field::Element * B, const size_t ldb,
-	      const size_t nblas, size_t nbblocsblas)
+	      const size_t nblas, size_t nbblocsblas,
+	      TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
+
 {
 
 	static __FFLAS__DOMAIN D; // is this safe ??
@@ -312,28 +314,36 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		size_t nsplit = nbblocsup * nblas;
 
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
-			       __FFLAS__A1, lda, __FFLAS__B1, ldb, nblas, nbblocsup);
+			       __FFLAS__A1, lda, __FFLAS__B1, ldb, nblas, nbblocsup, H);
+
+		MMHelper<__FFLAS__DOMAIN, FFLAS::MMHelperAlgo::Winograd, typename FieldTraits<__FFLAS__DOMAIN>::value, ParSeqTrait> MMH (D, __FFLAS__Mb2, nsplit, __FFLAS__Nb2, H.parseq);	
 
 #ifdef __FFLAS__RIGHT
-		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
-		       -1.0, __FFLAS__B1, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B2, ldb);
+		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), 
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
+		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb,
+		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
+		       F.one, __FFLAS__B2, ldb, MMH);
 #else
-		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, __FFLAS__Mb2, __FFLAS__Nb2, nsplit,
-		       -1.0, __FFLAS__A2, lda, __FFLAS__B1, ldb, F.one, __FFLAS__B2, ldb);
+		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, 
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
+		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
+		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb, 
+		       F.one, __FFLAS__B2, ldb, MMH);
 #endif
 
 		this->delayed (F, __FFLAS__Mb2, __FFLAS__Nb2,
-			       __FFLAS__A3, lda, __FFLAS__B2, ldb, nblas, nbblocsblas - nbblocsup);
+			       __FFLAS__A3, lda, __FFLAS__B2, ldb, nblas, nbblocsblas - nbblocsup, H);
 	}
 }
-template <class Field>
+template <class Field, class ParSeqTrait>
 void operator () (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
 	      const
 #endif
 		  typename Field::Element * A, const size_t lda,
 		  typename Field::Element * B, const size_t ldb, 
-		  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
+		  TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 {
 
 	if (!M || !N ) return;
@@ -356,21 +366,26 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	for ( size_t  i = 0; i < nbblocsplit; ++i) {
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
-			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb, nblas, nsplit / nblas);
+			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb, nblas, nsplit / nblas, H);
 
+		MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, ParSeqTrait> MMH (F, __FFLAS__Mupdate, nsplit, __FFLAS__Nupdate, H.parseq);
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, F.one, __FFLAS__Bupdate, ldb);
+		       const_cast<typename Field::Element*>(__FFLAS__Brec), ldb,
+		       const_cast<typename Field::Element*>(__FFLAS__Aupdate), lda,
+		       F.one, __FFLAS__Bupdate, ldb, MMH);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, F.one, __FFLAS__Bupdate, ldb);
+		       const_cast<typename Field::Element*>(__FFLAS__Aupdate), lda, 
+		       const_cast<typename Field::Element*>(__FFLAS__Brec), ldb, 
+		       F.one, __FFLAS__Bupdate, ldb, MMH);
 #endif
 	}
 	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
-			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb, nblas, nrestsplit / nblas);
+			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb, nblas, nrestsplit / nblas, H);
 }
 
 
@@ -382,14 +397,14 @@ template <class Element>
 class Mjoin(ftrsm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
 public:
 
-template<class Field>
+template<class Field, class ParSeqTrait>
 void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
 	      const
 #endif
 		 typename Field::Element * A, const size_t lda,
 		 typename Field::Element * B, const size_t ldb,
-		 TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
+		 TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 {
 
 	if (__FFLAS__Na == 1){
@@ -406,14 +421,20 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		size_t nsplit = __FFLAS__Na >> 1;
 		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A1, lda, __FFLAS__B1, ldb, H);
 
+		MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, typename FieldTraits<Field>::value, ParSeqTrait> MMH (F, __FFLAS__Mb2, nsplit, __FFLAS__Nb2, H.parseq);	
+
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       __FFLAS__B1, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B2, ldb);
+		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb,
+		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
+		       F.one, __FFLAS__B2, ldb, MMH);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       __FFLAS__A2, lda, __FFLAS__B1, ldb, F.one, __FFLAS__B2, ldb);
+		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
+		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb, 
+		       F.one, __FFLAS__B2, ldb, MMH);
 #endif
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);
 	}

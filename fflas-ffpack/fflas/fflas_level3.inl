@@ -273,9 +273,6 @@ namespace FFLAS {
 	       typename Field::Element * C, const size_t ldc,
 	       MMHelper<Field, AlgoT, FieldTrait, ParSeqTrait> & H);
 
-
-
-
 } // FFLAS
 
 #include "parallel.h"
