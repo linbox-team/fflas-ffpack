@@ -144,6 +144,9 @@ namespace FFLAS {
 	//---------------------------------------------------------------------
 	// Level 3 routines
 	//---------------------------------------------------------------------
+            // set by default for ftrsm to be thread safe
+	    // undef it at your own risk, and only if you run it in sequential
+#define __FFLAS__TRSM_READONLY
 
 	/** @brief ftrsm: <b>TR</b>iangular <b>S</b>ystem solve with <b>M</b>atrix.
 	 * Computes  \f$ B \gets \alpha \mathrm{op}(A^{-1}) B\f$ or  \f$B \gets \alpha B \mathrm{op}(A^{-1})\f$.
