@@ -104,8 +104,8 @@
 
 #ifdef __FFLASFFPACK_USE_KAAPI // KAAPI
 
-#define SPAWN(f,N) CONC_(ka::Spawn<Task ## f, N)
-#define CONC_(f, N) f ## N // you can't use this (used in linbox)
+#define SPAWN(f,N) CONCATENATE_ARGS(ka::Spawn<Task ## f, N)
+#define CONCATENATE_ARGS(f, N) f ## N 
 
 // TASK definition
 #define TASK(r, w, rw, f, Args...) SPAWN(f, NUMARGS(Args)) <Field> >()(Args)
@@ -117,6 +117,8 @@
 #define BARRIER do{				\
     ka::Sync();					\
   }while(0)
+
+#define PAR_REGION
 
 // Number of threads
 #  define NUM_THREADS kaapi_getconcurrency_cpu()
@@ -176,7 +178,7 @@
 
 #endif
 
-
+// common macros
 #define COMMA ,
 #define READ(Args...) COMMA Args
 #define WRITE(Args...) COMMA Args

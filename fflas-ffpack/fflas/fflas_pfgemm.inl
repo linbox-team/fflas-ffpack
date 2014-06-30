@@ -63,8 +63,7 @@ namespace FFLAS {
 	{
 		ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
 		for (iter.begin(); ! iter.end(); ++iter){
-			MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value , 
-				ParSeqHelper::Sequential> SeqH (H);
+			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
 			TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, SeqH);
 		}
 
