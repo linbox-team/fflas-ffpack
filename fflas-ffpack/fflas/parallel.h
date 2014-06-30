@@ -36,9 +36,42 @@
 #include "kaapi++"
 #endif
 
+#ifdef __FFLASFFPACK_FORCE_SEQ
+#undef __FFLASFFPACK_USE_OPENMP
+#undef __FFLASFFPACK_USE_KAAPI
+#undef __FFLASFFPACK_USE_TBB
+#define __FFLASFFPACK_SEQUENTIAL
+#endif
+
+/*********************************************************/
+/*********************** SEQUENTIAL***********************/
+/*********************************************************/
+
+#ifdef __FFLASFFPACK_SEQUENTIAL // MACRO for sequential execution
+
+// TASK is a function call
+#define TASK(r,w,rw,f,Args...) f(Args)
+
+#define WAIT
+#define BARRIER
+#define PAR_REGION
+#define NUM_THREADS 1
+#define MAX_THREADS 1
+
+#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
+#define END_PARALLEL_MAIN(void)  return 0; }
+
+#endif // Macro for sequential
 
 
-//OMP
+/*********************************************************/
+/************************* OPENMP ************************/
+/*********************************************************/
+
+#ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
+
+#define GLOBALSHARED(a, Args...) shared(Args)
+#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
 #define COMMA ,
 #define READ(Args...) COMMA Args
 #define WRITE(Args...) COMMA Args
@@ -46,21 +79,70 @@
 #define NOREAD(void)
 #define NOWRITE(void)
 #define NOREADWRITE(void)
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define GLOBALSHARED(a, Args...) shared(Args)
-#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
-#endif
+// Task definition with OpenMP
+#define TASK(r, w, rw, f, Args...)				\
+  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) )	\
+  f(Args)
+// macro omp taskwait (waits for all childs of current task)
+#define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
+// parallel region
+#define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
+  PRAGMA_OMP_TASK_IMPL( omp single )
+// get number of threads in the parallel region
+# define NUM_THREADS omp_get_num_threads()
+// get number of threads specified with the global variable OMP_NUM_THREADS
+# define MAX_THREADS omp_get_max_threads()
+
+#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
+#define END_PARALLEL_MAIN(void)  return 0; }
+
+#endif // OpenMP macros
 
 
-// KAAPI
-#define xstr(s) str_kaapi(s)
-#define str_kaapi(s) #s // you can't use str if you don't undef it !!!
-#define foo 4
+/*********************************************************/
+/************************* KAAPI *************************/
+/*********************************************************/
+
+#ifdef __FFLASFFPACK_USE_KAAPI // KAAPI
+
 #define SPAWN(f,N) CONC_(ka::Spawn<Task ## f, N)
 #define CONC_(f, N) f ## N // you can't use this (used in linbox)
 
+// TASK definition
+#define TASK(r, w, rw, f, Args...) SPAWN(f, NUMARGS(Args)) <Field> >()(Args)
+
+// WAIT do nothing in kaapi
+#define WAIT
+
+// BARRIER means synchronization in kaapi (waits for the execution of all tasks)
+#define BARRIER do{				\
+    ka::Sync();					\
+  }while(0)
+
+// Number of threads
+#  define NUM_THREADS kaapi_getconcurrency_cpu()
+
+#  define MAX_THREADS kaapi_getconcurrency_cpu()
+
+// Begin parallel main
+#define BEGIN_PARALLEL_MAIN(Args...)			\
+  struct doit	{					\
+  void operator()(int argc, char** argv)
+//end parallel main
+#define END_PARALLEL_MAIN(void)						\
+  }; int main(int argc, char** argv) {					\
+    try { ka::Community com = ka::System::join_community( argc, argv ); \
+      ka::SpawnMain<doit>()(argc, argv);				\
+      com.leave();							\
+      ka::System::terminate();}						\
+    catch (const std::exception& E) { ka::logfile() << "Catch : " << E.what() << std::endl;} \
+    catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
+    return 0;}
+
+
+
 // Macro computes number of Arguments
-//#define NUMARGS(...)  (sizeof((string[]){__VA_ARGS__})/sizeof(string))
+
 #define NUMARGS(...)				\
   PP_NARG_(__VA_ARGS__,PP_RSEQ_N())
 #define PP_NARG_(...)				\
@@ -81,113 +163,19 @@
     29,28,27,26,25,24,23,22,21,20, \
     19,18,17,16,15,14,13,12,11,10, \
     9,8,7,6,5,4,3,2,1,0
-
-// Macro Task
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define TASK(r, w, rw, f, Args...)				\
-  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) )	\
-  f(Args)
-#else
-#ifdef __FFLASFFPACK_USE_KAAPI
-#define TASK(r, w, rw, f, Args...) SPAWN(f, NUMARGS(Args)) <Field> >()(Args)
-#else
-#define TASK(r,w,rw,f,Args...) f(Args)
-#endif
-#endif
-
-#define STR_IMPL(a) #a
-#define STR(a) STR_IMPL(a)
-
-// Macro PLUQ
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{		\
-    Rank = pPLUQ(F, Diag, M, N, A, lda, P, Q);			\
-  }while(0)
-#else
-#ifdef __FFLASFFPACK_USE_KAAPI
-#define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{			\
-    Rank = PPLUQ(F, Diag, M, N, A, lda, P, Q);				\
-  }while(0)
-#else
-#define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{		\
-    Rank = PPLUQ(F, Diag, M, N, A, lda, P, Q);			\
-  }while(0)
-#endif
-#endif
-
-// Macro pragma omp taskwait
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
-#else
-#ifdef __FFLASFFPACK_USE_KAAPI
-#define WAIT do{				\
-  }while(0)
-#else
-#define WAIT do{				\
- }while(0)
-#endif
-#endif
-
-// Macro barrier
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define BARRIER do{				\
-  }while(0)
-#else
-#ifdef __FFLASFFPACK_USE_KAAPI
-#define BARRIER do{				\
-    ka::Sync();					\
-  }while(0)
-#else
-#define BARRIER do{				\
-  }while(0)
-#endif
-#endif
-
-// Parallel Region
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define HPAC_PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
-  PRAGMA_OMP_TASK_IMPL( omp single )
-#else
-#define HPAC_PAR_REGION
-#endif
-
-// Get number of threads
-#ifdef __FFLASFFPACK_USE_OPENMP
-# define HPAC_NUM_THREADS omp_get_num_threads()
-#else
-# ifdef __FFLASFFPACK_USE_KAAPI
-#  define HPAC_NUM_THREADS kaapi_getconcurrency_cpu()
-# else
-#  define HPAC_NUM_THREADS 1
-# endif
-#endif
+#endif // KAAPI macros
 
 
-// Parallel Main
-
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
-#endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-#define BEGIN_PARALLEL_MAIN(Args...)			\
-  struct doit	{					\
-  void operator()(int argc, char** argv)
-#endif
 
 
-#ifdef __FFLASFFPACK_USE_OPENMP
-#define END_PARALLEL_MAIN(void)  return 0; }
+/*********************************************************/
+/******************* TBB(coming sooon) *******************/ 
+/*********************************************************/
+#ifdef __FFLASFFPACK_USE_TBB
+
+
+
 #endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-#define END_PARALLEL_MAIN(void)						\
-  }; int main(int argc, char** argv) {					\
-    try { ka::Community com = ka::System::join_community( argc, argv ); \
-      ka::SpawnMain<doit>()(argc, argv);				\
-      com.leave();							\
-      ka::System::terminate();}						\
-    catch (const std::exception& E) { ka::logfile() << "Catch : " << E.what() << std::endl;} \
-    catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
-    return 0;}
-#endif
+
 
 #endif //__FFLASFFPACK_fflas_parallel_H

@@ -111,7 +111,7 @@ namespace FFLAS {
 		struct Parallel{
 			const int numthreads;
             const CuttingStrategy method;
-			Parallel(int n=HPAC_NUM_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
+			Parallel(int n=NUM_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
 
             friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
                 return out << "Parallel: " << p.numthreads << ',' << p.method;

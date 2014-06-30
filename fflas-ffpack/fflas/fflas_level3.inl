@@ -297,7 +297,7 @@ namespace FFLAS {
 		const typename Field::Element* A, const size_t lda,
 		typename Field::Element* B, const size_t ldb,
 		const FFLAS::CuttingStrategy method,
-                const size_t numThreads = HPAC_NUM_THREADS);
+                const size_t numThreads = NUM_THREADS);
 	//#endif
 
 	/** @brief fsquare: Squares a matrix.
