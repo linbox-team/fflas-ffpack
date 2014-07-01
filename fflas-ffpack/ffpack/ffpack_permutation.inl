@@ -432,7 +432,7 @@ namespace FFPACK {
 			size_t BlockDim = BLOCKSIZE;
 			if (t == NBlocks-1)
 				BlockDim = LastBlockSize;
-#pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,N2)
+#pragma omp task shared (A) firstprivate(BlockDim)
 			applyT (A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
 		}
 #pragma omp taskwait
@@ -458,7 +458,7 @@ namespace FFPACK {
 			size_t BlockDim = BLOCKSIZE;
 			if (t == NBlocks-1)
 				BlockDim = LastBlockSize;
-#pragma omp task shared (A) firstprivate(BlockDim,R1,R2,R3,R4,M2)
+#pragma omp task shared (A) firstprivate(BlockDim)
 			applyS(A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
 		}
 #pragma omp taskwait
