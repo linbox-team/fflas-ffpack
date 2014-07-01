@@ -58,13 +58,13 @@ namespace FFLAS{ namespace Protected {
 		FloatElement * Xf = new FloatElement[na];
 		FloatElement * Yf = new FloatElement[ma];
 
-		fconvert(F, M, N, Af, lda, A, lda);
+		fconvert(F, M, N, Af, N, A, lda);
 		fconvert(F, na, Xf, 1, X, incX);
 
 		if (!F.isZero(beta))
 			fconvert(F, ma, Yf, 1, Y, incY);
 
-		fgemv (G, ta, M, N, alphaf, Af, lda, Xf, 1, betaf, Yf, 1);
+		fgemv (G, ta, M, N, alphaf, Af, N, Xf, 1, betaf, Yf, 1);
 
 		finit(F, ma, Yf, 1, Y, incY);
 
