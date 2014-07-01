@@ -39,5 +39,6 @@ EXTRA_DIST=            \
 	gmp-check.m4       \
 	lapack-check.m4 \
 	mkl-check.m4 \
+	omp-check.m4 \
 	cuda-check.m4
 

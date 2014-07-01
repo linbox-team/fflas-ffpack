@@ -78,8 +78,10 @@ AC_SUBST([TESTS_CFLAGS])
 
 
 echo "-----------------------------------------------"
+FF_CHECK_OMP
 FF_CHECK_AVX
 echo "-----------------------------------------------"
+AVXFLAGS="${AVXFLAGS} ${OMPFLAGS}"
 
 TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros ${AVXFLAGS}"
 DEBUG_CFLAGS="-g"
@@ -333,7 +335,7 @@ fi
 # AC_SUBST(BLAS_LIBS)
 
 FF_CHECK_MKL
-FF_CHECK_CUDA
+# FF_CHECK_CUDA
 
 # AM_CONDITIONAL(FFLASFFPACK_HAVE_BLAS,  test "x$BLAS_FOUND" != "xfalse")
 

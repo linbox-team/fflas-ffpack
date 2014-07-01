@@ -18,23 +18,28 @@ dnl You should have received a copy of the GNU Lesser General Public
 dnl License along with this library; if not, write to the Free Software
 dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 dnl ========LICENCE========
-dnl/
+dnl
 
-
+dnl FF_CHECK_AVX
+dnl
+dnl turn on AVX or AVX2 extensions if available
 
 AC_DEFUN([FF_CHECK_AVX],
 		[
 		AC_ARG_ENABLE(avx,
 			[AC_HELP_STRING([--enable-avx],
-				[Use Intel(r) AVX ])
-			])
-		AC_MSG_CHECKING("for AVX")
-		AS_IF([ test -n "$enable_avx" ],
+				[ Use Intel(r) AVX ])
+			],
+			[ avec_avx=$enable_avx ],
+			[ avec_avx=yes ]
+			)
+		AC_MSG_CHECKING(for AVX)
+		AS_IF([ test  "x$avec_avx" != "xno" ],
+			[
 			BACKUP_CXXFLAGS=${CXXFLAGS}
 			AVXFLAGS="-mavx"
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${AVXFLAGS}"
-			[AC_TRY_RUN(
-				[
+			AC_TRY_RUN([
 				#include <immintrin.h>
 				int main() {
 				register __m256d P ;
@@ -53,7 +58,7 @@ AC_DEFUN([FF_CHECK_AVX],
 				AC_DEFINE(USE_AVX,1,[Define if AVX is available])
 				AC_SUBST(AVXFLAGS)
 				AC_MSG_RESULT(yes (AVX))
-				AC_MSG_CHECKING("for AVX2 ")
+				AC_MSG_CHECKING(for AVX2)
 				AVX2FLAGS="-mfma -mavx2"
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${AVX2FLAGS}"
 				AC_TRY_RUN(
@@ -79,13 +84,13 @@ AC_DEFUN([FF_CHECK_AVX],
 					AVXFLAGS=${AVX2FLAGS}
 					AC_SUBST(AVXFLAGS)
 					],
-					[
-					AC_MSG_RESULT(no)
-					])
+					[ AC_MSG_RESULT(no) ]
+					)
 					],
-				[ AC_MSG_RESULT(no) ])
-
-		CXXFLAGS=${BACKUP_CXXFLAGS}
+				[ AC_MSG_RESULT(no) ]
+				)
+				CXXFLAGS=${BACKUP_CXXFLAGS}
+				],
+				[ AC_MSG_RESULT(no) ]
+				)
 	])
-])
-
