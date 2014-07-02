@@ -33,6 +33,10 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #endif
 
+// #ifdef OPTIMISATION_MODE
+// #include "fflas-ffpack/config.h"
+// #endif
+
 #ifdef CUDA_BLAS
 
 #define sgemv_ cublas_sgemv

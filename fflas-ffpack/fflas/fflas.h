@@ -38,6 +38,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-balanced.h"
