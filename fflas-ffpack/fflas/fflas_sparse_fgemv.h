@@ -41,8 +41,8 @@
 #ifdef __FFLASFFPACK_HAVE_MKL
 // #include <mkl.h>
 // #include <mkl_spblas.h>
-#ifndef _MKL_H_
-#error "MKL not present"
+#ifndef _MKL_H_ // temporary
+#error "MKL (mkl.h) not present, while you have MKL enabled"
 #endif
 #undef index_t
 #define index_t MKL_INT

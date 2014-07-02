@@ -462,7 +462,6 @@ extern "C" {
 
 #else // MKL present
 
-#error "included"
 #include <mkl.h>
 
 #endif // __FFLASFFPACK_HAVE_MKL
