@@ -35,9 +35,15 @@
 
 #define index_t size_t
 
+#include "fflas-ffpack/config.h"
+#include "fflas-ffpack/config-blas.h"
+
 #ifdef __FFLASFFPACK_HAVE_MKL
 // #include <mkl.h>
 // #include <mkl_spblas.h>
+#ifndef _MKL_H_
+#error "MKL not present"
+#endif
 #undef index_t
 #define index_t MKL_INT
 #endif

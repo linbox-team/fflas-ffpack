@@ -456,11 +456,11 @@ extern "C" {
 			   const enum CBLAS_DIAG Diag,const int N, double *A, const int lda);
 
 }
+#endif // CLAPACK ?
+
 #endif // LAPACK ?
 
-#endif
-
-#else
+#else // MKL present
 
 #include <mkl.h>
 

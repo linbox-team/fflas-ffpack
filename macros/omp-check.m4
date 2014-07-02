@@ -57,7 +57,11 @@ AC_DEFUN([FF_CHECK_OMP],
 					AC_SUBST(OMPFLAGS)
 					AC_MSG_RESULT(yes)
 					],
-					[ AC_MSG_RESULT(no) ]
+					[
+					OMPFLAGS=
+					AC_SUBST(OMPFLAGS)
+                                        AC_MSG_RESULT(no)
+                                        ]
 			     )
 			CXXFLAGS=${BACKUP_CXXFLAGS}
 			],

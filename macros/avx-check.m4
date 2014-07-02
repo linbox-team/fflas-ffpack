@@ -39,14 +39,9 @@ AC_DEFUN([FF_CHECK_AVX],
 			BACKUP_CXXFLAGS=${CXXFLAGS}
 			AVXFLAGS="-mavx"
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${AVXFLAGS}"
+			CODE_AVX=`cat macros/CodeChunk/avx.C`
 			AC_TRY_RUN([
-				#include <immintrin.h>
-				int main() {
-				register __m256d P ;
-				double p = 0;
-				P   = _mm256_set1_pd(p);
-				return 0;
-				}
+				${CODE_AVX}
 				],
 				[ avx_found="yes" ],
 				[ avx_found="no" ],
@@ -63,6 +58,8 @@ AC_DEFUN([FF_CHECK_AVX],
 				CXXFLAGS="${BACKUP_CXXFLAGS} ${AVX2FLAGS}"
 				AC_TRY_RUN(
 					[
+					#define __try_avx2
+					${CODE_AVX}
 					#include <immintrin.h>
 					int main() {
 					register __m256d P ;
@@ -87,7 +84,11 @@ AC_DEFUN([FF_CHECK_AVX],
 					[ AC_MSG_RESULT(no) ]
 					)
 					],
-				[ AC_MSG_RESULT(no) ]
+				[
+				AVXFLAGS=
+				AC_SUBST(AVXFLAGS)
+				AC_MSG_RESULT(no)
+				]
 				)
 				CXXFLAGS=${BACKUP_CXXFLAGS}
 				],
