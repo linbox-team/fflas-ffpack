@@ -30,7 +30,8 @@
 #define __FFLASFFPACK_ffpack_ppluq_INL
 
 
-#define __FFLASFFPACK_USE_OPENMP
+// #define __FFLASFFPACK_USE_OPENMP // you can't define this
+#ifdef __FFLASFFPACK_USE_OPENMP
 #define __FFLAS__TRSM_READONLY
 //#include "parallel.h"
 
@@ -320,4 +321,6 @@ namespace FFPACK {
 	  }
 
 }// namespace FFPACK
+
+#endif
 #endif // __FFLASFFPACK_ffpack_ppluq_INL
