@@ -53,7 +53,7 @@ AC_DEFUN([FF_CHECK_OMP],
 				])
 			AS_IF([ test "x$omp_found" = "xyes" ],
 					[
-					AC_DEFINE(USE_OMP,1,[Define if OMP is available])
+					AC_DEFINE(USE_OPENMP,1,[Define if OMP is available])
 					AC_SUBST(OMPFLAGS)
 					AC_MSG_RESULT(yes)
 					],

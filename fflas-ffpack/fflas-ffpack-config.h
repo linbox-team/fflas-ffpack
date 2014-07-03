@@ -57,6 +57,7 @@
 
 #if defined(_OPENMP) || defined(OMP_H) || defined(__OMP_H) || defined(__pmp_omp_h)
 #ifndef __FFLASFFPACK_USE_OPENMP
+#warning "openmp was not deteced correctly at configure time, please report this bug"
 #define __FFLASFFPACK_USE_OPENMP
 #endif
 #endif
