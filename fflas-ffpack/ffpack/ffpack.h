@@ -393,44 +393,45 @@ namespace FFPACK { /* PLUQ */
 				   const size_t * P, const size_t * Q,
 				   const size_t M, const size_t N, const size_t R);
 
+	/** @brief Compute the PLUQ factorization of the given matrix.
+	 * Using a block algorithm and return its rank.
+	 * The permutations P and Q are represented
+	 * using LAPACK's convention.
+	 * @param F field
+	 * @param Diag   whether U should have a unit diagonal or not
+	 * @param trans, \c LU of \f$A^t\f$
+	 * @param M matrix row dimension
+	 * @param N matrix column dimension
+	 * @param A input matrix
+	 * @param lda leading dimension of \p A
+	 * @param P the column permutation
+	 * @param Q the row permutation 
+
+	 * @return the rank of \p A
+	 * @bib
+	 * - Dumas J-G.,  Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13, 2013
+	 * .
+	 */
 	template<class Field>
 	size_t
-	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
+	PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element * A, const size_t lda,
 	      size_t*P, size_t *Q);
 
-
-	template<class Field>
-
-	//! @bug why here ?
-	size_t
-	PLUQ_basecase (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-		       const size_t M, const size_t N,
-		       typename Field::Element * A, const size_t lda,
-		       size_t*P, size_t *Q);
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"
 
-namespace FFPACK { /* ludivine, turbo */
+namespace FFPACK { /* ludivine */
 
-	//---------------------------------------------------------------------
-	// TURBO: rank computation algorithm
-	//---------------------------------------------------------------------
-	template <class Field>
-	size_t
-	TURBO (const Field& F, const size_t M, const size_t N,
-	       typename Field::Element* A, const size_t lda, size_t * P, size_t * Q, const size_t cutoff);
-
-
-	/** @brief Compute the LQUP factorization of the given matrix.
+	/** @brief Compute the CUP factorization of the given matrix.
 	 * Using
 	 * a block algorithm and return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param F field
-	 * @param Diag  precise whether U should have a unit diagonal or not
-	 * @param trans UNKOWN TAG, probably the \c LU of \f$A^t\f$
+	 * @param Diag  whether U should have a unit diagonal or not
+	 * @param trans  \c LU of \f$A^t\f$
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
 	 * @param A input matrix
@@ -443,7 +444,7 @@ namespace FFPACK { /* ludivine, turbo */
 	 *
 	 * @return the rank of \p A
 	 * @bib
-	 * - Jeannerod CP, <i>\c LSP Matrix Decomposition Revisited</i>, 2006
+	 * - Jeannerod C-P, Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
 	 * - Pernet C, Brassel M <i>\c LUdivine, une divine factorisation \c LU</i>, 2002
 	 * .
 	 */
@@ -456,20 +457,6 @@ namespace FFPACK { /* ludivine, turbo */
 		  , const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP
 		  , const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF
 		 );
-
-	//! LUpdate
-	template <class Field>
-	size_t LUpdate (const Field& F,
-			const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
-			const size_t M, const size_t N,
-			typename Field::Element * A, const size_t lda,
-			const size_t R,
-			const size_t K,
-			typename Field::Element * B, const size_t ldb,
-			size_t*P, size_t *Q
-			, const FFPACK::FFPACK_LUDIVINE_TAG LuTag  =FFPACK::FfpackLQUP
-			, const size_t cutoff  =__FFPACK_LUDIVINE_CUTOFF
-		       );
 
 	template<class Element>
 	class callLUdivine_small;
@@ -493,38 +480,6 @@ namespace FFPACK { /* ludivine, turbo */
 			const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
 
 	namespace Protected {
-
-
-
-#if 0
-		//---------------------------------------------------------------------
-		// RectangleCopyTURBO: Copy A to T, with respect to the row permutation
-		//                     defined by the lsp factorization of located in
-		//                     A-dist2pivot
-		//---------------------------------------------------------------------
-		template <class Field>
-		void
-		RectangleCopyTURBO( const Field& F, const size_t M, const size_t N,
-				    const size_t dist2pivot, const size_t rank,
-				    typename Field::Element * T, const size_t ldt,
-				    const typename Field::Element * A, const size_t lda )
-		{
-
-			const typename Field::Element * Ai = A;
-			typename Field::Element * T1i = T, T2i = T + rank*ldt;
-			size_t x = dist2pivot;
-			for (; Ai<A+M*lda; Ai+=lda){
-				while ( F.isZero(*(Ai-x)) ) { // test if the pivot is 0
-					FFLAS::fcopy( F, N, Ai, 1, T2i, 1);
-					Ai += lda;
-					T2i += ldt;
-				}
-				FFLAS::fcopy( F, N, Ai, 1, T1i, 1);
-				T1i += ldt;
-				x--;
-			}
-		}
-#endif
 
 
 

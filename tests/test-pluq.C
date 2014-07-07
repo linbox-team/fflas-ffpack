@@ -7,7 +7,7 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-#define DEBUG 1
+//#define DEBUG 0
 #define __FFLAS__TRSM_READONLY
 // Debug option  0: no debug
 //               1: check A = LQUP
@@ -27,8 +27,10 @@
 using namespace std;
 using namespace FFPACK;
 
-typedef Modular<double> Field;
+//typedef Modular<double> Field;
+typedef ModularBalanced<double> Field;
 //typedef Modular<float> Field;
+//typedef ModularBalanced<float> Field;
 
 int main(int argc, char** argv){
 	    //cerr<<setprecision(20);
@@ -51,8 +53,9 @@ int main(int argc, char** argv){
 	//	size_t cutoff = atoi(argv[3]);
 	size_t nbf = atoi(argv[3]);
 
-	Timer tim,timc;
+	Timer tim,timc, timlud,timludc;
 	timc.clear();
+	timludc.clear();
 
 	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
 	enum FFLAS::FFLAS_TRANSPOSE trans = FFLAS::FflasNoTrans;
@@ -83,16 +86,20 @@ int main(int argc, char** argv){
 		tim.clear();
 		tim.start();
 
-		R = FFPACK::PLUQ/*_basecaseCrout*/ (F, diag, m, n, A, n, P, Q);
-//		delete[] A;
-//		A = read_field(F,argv[2],&m,&n);
-		    //	R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackLQUP);
-//		std::cerr<<"Fini LUdivine"<<std::endl;
+		R = FFPACK::PLUQ_basecaseCrout (F, diag, m, n, A, n, P, Q);
 		tim.stop();
 		timc+=tim;
+		delete[] A;
+		A = read_field(F,argv[2],&m,&n);
+		timlud.clear();
+		timlud.start();
+		R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackLQUP);
+		timlud.stop();
+		timludc+=timlud;
+//		std::cerr<<"Fini LUdivine"<<std::endl;
 		RRP = new size_t[R];
 		CRP = new size_t[R];
-		RankProfilesFromPLUQ(RRP, CRP, P, Q, m, n, R);
+//		RankProfilesFromPLUQ(RRP, CRP, P, Q, m, n, R);
 	}
 	    // cerr<<"Row Rank Profile = ";
 	// for (size_t i=0;i<R;++i)
@@ -206,24 +213,31 @@ int main(int argc, char** argv){
 	delete[] P;
 	delete[] Q;
 
-	double t = timc.realtime();
+	double t = timc.usertime();
+	double tlud = timludc.usertime();
 	const int sm = std::min(m,n);
 	const int sn = std::max(m,n);
 
 	double numops = sm*sm/1000.0*(sn-sm/3.0);
 
-	// cerr<<m<<"x"<< n
-	//     << " Trans = "<<trans
-	//     << " Diag = "<<diag
-	//     << " : rank = " << R << "  ["
-	//     << ((double)nbf/1000.0*(double)numops / t)
-	//     << " MFops "
-	//     << " in "
-	//     << t/nbf<<"s"
-	//     <<"]"<< endl;
+	cout<<m<<"x"<< n
+	    << " Trans = "<<trans
+	    << " Diag = "<<diag
+	    << " : rank = " << R << "  ["
+	    << ((double)nbf/1000.0*(double)numops / t)
+	    << " MFops "
+	    << " in "
+	    << t/nbf<<"s"
+	    <<" LUdivine : "<<((double)nbf/1000.0*(double)numops / tlud)
+	    << " MFops "
+	    << " in "
+	    <<tlud/nbf
+	    <<"s]"<< endl;
 	cerr<<m
 	    <<" "<<((double)nbf/1000.0*(double)numops / t)
 	    <<" "<<t/nbf
+	    <<" "<<((double)nbf/1000.0*(double)numops / tlud)
+	    <<" "<<tlud/nbf
 	    <<" "<<R
 	    <<endl;
 

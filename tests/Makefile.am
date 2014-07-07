@@ -39,6 +39,7 @@ BASIC_TESTS =              \
 		test-compressQ
 
 NOT_A_TEST =  \
+		test-lqup2              \
 		test-charpoly          \
 		benchlqup              \
 		test-fsquare           \
@@ -78,6 +79,7 @@ TESTS =                \
 
 test_compressQ_SOURCES         = test-compressQ.C
 test_lqup_SOURCES              = test-lqup.C
+test_lqup2_SOURCES              = test-lqup2.C
 test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
 test_echelon_SOURCES           = test-echelon.C
