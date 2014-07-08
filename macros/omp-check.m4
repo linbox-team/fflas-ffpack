@@ -56,6 +56,7 @@ AC_DEFUN([FF_CHECK_OMP],
 					AC_DEFINE(USE_OPENMP,1,[Define if OMP is available])
 					AC_SUBST(OMPFLAGS)
 					AC_MSG_RESULT(yes)
+					HAVE_OMP=yes
 					],
 					[
 					OMPFLAGS=
@@ -67,4 +68,6 @@ AC_DEFUN([FF_CHECK_OMP],
 			],
 			[ AC_MSG_RESULT(no) ]
 			)
-			])
+			]
+			AM_CONDITIONAL(FFLASFFPACK_HAVE_OMP, test "x$HAVE_OMP" = "xyes")
+			)

@@ -99,13 +99,13 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir} @CBLAS_FLAG@  @PARFLAGS@ # @CUDA_CFLAGS@
+			echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
 # @GMP_CFLAGS@ @GIVARO_CFLAGS@
 # @CBLAS_FLAG@
 			;;
 
 		--blas-cflags)
-			echo -I${includedir} @CBLAS_FLAG@ @PARFLAGS@ # @CUDA_CFLAGS@
+			echo -I${includedir} @CBLAS_FLAG@  @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
 			;;
 
 		--libs)

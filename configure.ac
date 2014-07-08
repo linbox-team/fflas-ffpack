@@ -81,12 +81,12 @@ echo "-----------------------------------------------"
 FF_CHECK_OMP
 FF_CHECK_AVX
 echo "-----------------------------------------------"
-PARFLAGS="${AVXFLAGS}"
+PARFLAGS="${AVXFLAGS} ${OMPFLAGS}"
 
-TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros ${PARFLAGS}"
+TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros" # ${PARFLAGS}"
 DEBUG_CFLAGS="-g"
 
-DEFAULT_CFLAGS="-pipe -Wno-vla  -Wno-variadic-macros ${PARFLAGS}"
+DEFAULT_CFLAGS="-pipe -Wno-vla  -Wno-variadic-macros" # ${PARFLAGS}"
 WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...

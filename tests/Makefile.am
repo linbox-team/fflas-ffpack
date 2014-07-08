@@ -26,7 +26,7 @@ check:
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
-AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(GMP_CFLAGS)  $(GIVARO_CFLAGS) $(CUDA_CFLAGS) $(OMPFLAGS)
+AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(GMP_CFLAGS)  $(GIVARO_CFLAGS) $(CUDA_CFLAGS) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(GMP_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static
 
@@ -74,8 +74,17 @@ CLEANFILES =           \
 EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS)
 
+OMP_TESTS = \
+	    test-pfgemm
+
+if FFLASFFPACK_HAVE_OMP
+USE_OMP_TESTS = $(OMP_TESTS)
+endif
+
+
 TESTS =                \
-	    $(BASIC_TESTS)
+	    $(BASIC_TESTS) \
+	    $(USE_OMP_TESTS)
 
 test_compressQ_SOURCES         = test-compressQ.C
 test_lqup_SOURCES              = test-lqup.C
@@ -108,6 +117,7 @@ test_fgemm_long_SOURCES             = test-fgemm-long.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
+test_pfgemm_SOURCES = test-pfgemm.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
