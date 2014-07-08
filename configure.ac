@@ -81,7 +81,7 @@ echo "-----------------------------------------------"
 FF_CHECK_OMP
 FF_CHECK_AVX
 echo "-----------------------------------------------"
-PARFLAGS="${AVXFLAGS} ${OMPFLAGS}"
+PARFLAGS="${AVXFLAGS}"
 
 TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros ${PARFLAGS}"
 DEBUG_CFLAGS="-g"
