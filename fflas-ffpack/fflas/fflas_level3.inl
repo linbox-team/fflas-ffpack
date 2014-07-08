@@ -324,7 +324,7 @@ namespace FFLAS {
 
 } // FFLAS
 
-#include "fflas_pfgemm.inl"
 #include "fflas_fgemm.inl"
+#include "fflas_pfgemm.inl"
 
 #endif // __FFLASFFPACK_fflas_fflas_level3_INL
