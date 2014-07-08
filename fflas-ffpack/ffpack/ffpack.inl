@@ -259,8 +259,8 @@ namespace FFPACK {
 				  typename Field::Element* A, const size_t lda,
 				  size_t* &rkprofile)
 	{
-		size_t *P = new size_t[N];
-		size_t *Q = new size_t[M];
+		size_t *P = new size_t[M];
+		size_t *Q = new size_t[N];
 		size_t R;
 
 		R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
