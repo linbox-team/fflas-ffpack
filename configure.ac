@@ -369,15 +369,15 @@ fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
 doc/Makefile
 tests/Makefile
-benchmark/Makefile
+benchmarks/Makefile
 optimiser/Makefile
-benchmark/src/Makefile
-benchmark/src/BLOCKING/Makefile
-benchmark/src/FFLAS_FFPACK/Makefile
-benchmark/src/BLAS_LAPACK/Makefile
-benchmark/html/Makefile
-benchmark/graph/Makefile
-benchmark/test-src/Makefile
+benchmarks/src/Makefile
+benchmarks/src/BLOCKING/Makefile
+benchmarks/src/FFLAS_FFPACK/Makefile
+benchmarks/src/BLAS_LAPACK/Makefile
+benchmarks/html/Makefile
+benchmarks/graph/Makefile
+benchmarks/test-src/Makefile
 ])
 AC_OUTPUT
 
