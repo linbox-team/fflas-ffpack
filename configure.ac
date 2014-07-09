@@ -81,7 +81,7 @@ echo "-----------------------------------------------"
 FF_CHECK_OMP
 FF_CHECK_AVX
 echo "-----------------------------------------------"
-PARFLAGS="${AVXFLAGS} ${OMPFLAGS}"
+AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
 
 TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros" # ${PARFLAGS}"
 DEBUG_CFLAGS="-g"
@@ -371,13 +371,6 @@ doc/Makefile
 tests/Makefile
 benchmarks/Makefile
 optimiser/Makefile
-benchmarks/src/Makefile
-benchmarks/src/BLOCKING/Makefile
-benchmarks/src/FFLAS_FFPACK/Makefile
-benchmarks/src/BLAS_LAPACK/Makefile
-benchmarks/html/Makefile
-benchmarks/graph/Makefile
-benchmarks/test-src/Makefile
 ])
 AC_OUTPUT
 
