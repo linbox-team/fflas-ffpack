@@ -27,7 +27,7 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
 AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) 
-AM_LDFLAGS=-static
+AM_LDFLAGS=-static $(PARLFLAGS)
 
 FFLA_BENCH =    benchmark-fgemm benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
 BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm  benchmark-dtrtri benchmark-dgetri benchmark-dgetrf

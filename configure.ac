@@ -82,6 +82,7 @@ FF_CHECK_OMP
 FF_CHECK_AVX
 echo "-----------------------------------------------"
 AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
+AC_SUBST([PARLFLAGS],['${OMPFLAGS}'])
 
 TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros" # ${PARFLAGS}"
 DEBUG_CFLAGS="-g"
