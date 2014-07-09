@@ -1,5 +1,6 @@
-# Copyright (c) FFLAS-FFPACK
-# written by BB <bboyer@imag.fr>
+# Copyright (c) 2014 FFLAS-FFPACK
+# written by JGD <Jean-Guillaume.Dumas@imag.fr>
+#
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
 #
@@ -19,10 +20,61 @@
 # ========LICENCE========
 #/
 
-#
-# Nothing yet
+SUBDIRS =
+benchmarks:  $(BENCHMARKS)
 
-SUBDIRS=graph src html test-src
-#
-EXTRA_DIST=run.sh
+AM_CPPFLAGS=-I$(top_srcdir)
+AM_CXXFLAGS = @DEFAULT_CFLAGS@
+AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field  $(CBLAS_FLAG) $(PARFLAGS)
+LDADD = $(CBLAS_LIBS) 
+AM_LDFLAGS=-static
 
+FFLA_BENCH =    benchmark-fgemm benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
+BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm  benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
+
+
+OMP_BENCH = benchmark-pfgemm
+
+if FFLASFFPACK_HAVE_OMP
+USE_OMP_BENCH = $(OMP_BENCH)
+endif
+
+
+BENCHMARKS =			\
+        $(FFLA_BENCH)   \
+        $(BLAS_BENCH)   \
+        $(USE_OMP_BENCH)
+
+CLEANFILES = $(BENCHMARKS)
+
+EXTRA_PROGRAMS = $(BENCHMARKS)
+
+benchmark_dgemm_SOURCES = benchmark-dgemm.C
+benchmark_dtrsm_SOURCES = benchmark-dtrsm.C
+benchmark_dtrtri_SOURCES = benchmark-dtrtri.C
+benchmark_dgetri_SOURCES = benchmark-dgetri.C
+benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
+
+benchmark_pfgemm_SOURCES = benchmark-pfgemm.C
+
+benchmark_fgemm_SOURCES = benchmark-fgemm.C
+benchmark_wino_SOURCES = benchmark-wino.C
+benchmark_ftrsm_SOURCES = benchmark-ftrsm.C
+benchmark_ftrtri_SOURCES = benchmark-ftrtri.C
+benchmark_inverse_SOURCES = benchmark-inverse.C
+benchmark_lqup_SOURCES = benchmark-lqup.C
+
+
+
+# for compilation of new benchmarks
+FFLASFFPACK_BIN=@bindir@
+
+define other_compilation
+	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+endef
+
+%:%.C
+	$(other_compilation)
+
+%:%.cpp
+	$(other_compilation)

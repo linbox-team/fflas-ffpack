@@ -26,19 +26,19 @@
 #include <iostream>
 #include <vector>
 
-#ifndef __FFLASFFPACK_HAVE_DGETRF
-#define __FFLASFFPACK_HAVE_DGETRF 1
-#endif
+// #ifndef __FFLASFFPACK_HAVE_DGETRF
+// #define __FFLASFFPACK_HAVE_DGETRF 1
+// #endif
 
-#ifndef __FFLASFFPACK_HAVE_DGETRI
-#define __FFLASFFPACK_HAVE_DGETRI 1
-#endif
-#ifndef __FFLASFFPACK_HAVE_DTRTRI
-#define __FFLASFFPACK_HAVE_DTRTRI 1
-#endif
-#ifndef __FFLASFFPACK_AUTOIMPLEMENT_DGETRI
-#define __FFLASFFPACK_AUTOIMPLEMENT_DGETRI 1
-#endif
+// #ifndef __FFLASFFPACK_HAVE_DGETRI
+// #define __FFLASFFPACK_HAVE_DGETRI 1
+// #endif
+// #ifndef __FFLASFFPACK_HAVE_DTRTRI
+// #define __FFLASFFPACK_HAVE_DTRTRI 1
+// #endif
+// #ifndef __FFLASFFPACK_AUTOIMPLEMENT_DGETRI
+// #define __FFLASFFPACK_AUTOIMPLEMENT_DGETRI 1
+// #endif
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/field/modular-balanced.h"

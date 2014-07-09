@@ -24,7 +24,7 @@
 */
 
 #include <iostream>
-
+#include <omp.h>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/field/modular-balanced.h"
@@ -42,19 +42,18 @@ int main(int argc, char** argv) {
   size_t iter = atoi(argv[3]);
 
 
-  typedef FFPACK::Modular<double> Field;
+  // typedef FFPACK::Modular<double> Field;
   // typedef FFPACK::Modular<float> Field;
   // typedef FFPACK::ModularBalanced<double> Field;
-  // typedef FFPACK::ModularBalanced<float> Field;
+  typedef FFPACK::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
   Field F(p);
 
-  Timer chrono, freidvals;
-  double time=0.0, timev=0.0;
+  OMPTimer chrono;
+  double time=0.0;// time2=0.0;
 
   Element * A, * B, * C;
-  Element *v, *w, *y;
 
   for (size_t i=0;i<iter;++i){
 
@@ -80,44 +79,40 @@ int main(int argc, char** argv) {
 
 	  C = new Element[n*n];
 
-      v = new Element[n];
-      {
-          Field::RandIter G(F);
-          for(size_t j=0; j<(size_t)n; ++j)
-              G.random(*(v+j));
-      }
-      
-      w = new Element[n];
-      y = new Element[n];
-
+          const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
+          enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
+          enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
+          Field::Element alpha,beta; 
+          F.init(alpha); F.init(beta);
+          
+          F.assign( alpha, F.one);
+          F.assign( beta, F.zero);
+        
+          
 	  chrono.clear();
 	  chrono.start();
-	  FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,n, F.one,
-                    A, n, B, n, F.zero, C,n);
+          PAR_REGION{
+              FFLAS::MMHelper<Field, 
+                  FFLAS::MMHelperAlgo::Winograd, 
+                  FFLAS::FieldTraits<Field>::value,
+                  FFLAS::ParSeqHelper::Parallel> 
+                  pWH (F, n,n,n, FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
+              
+              FFLAS::fgemm(F, ta, tb,n,n,n,alpha, A,n, B,n, beta,C,n, pWH);   
+
+          }
+          BARRIER;
+       
 	  chrono.stop();
 	  time+=chrono.usertime();
 
-      freidvals.clear();
-      freidvals.start();
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, n,n, F.one, 
-                   C, n, v, 1, F.zero, w, 1);
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, n,n, F.one, 
-                   B, n, v, 1, F.zero, y, 1);
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, n,n, F.one, 
-                   A, n, y, 1, F.zero, v, 1);
-      bool pass=true;
-      for(size_t j=0; j<(size_t)n; ++j) pass &= ( *(w+j) == *(v+j) );
-      freidvals.stop();
-      timev+=freidvals.usertime();
-
-      std::cerr << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
+      std::cerr << *A << ' ' << *B << ' ' << *C << std::endl;
 	  delete[] A;
 	  delete[] B;
 	  delete[] C;
   }
 
-  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<std::endl;
-  std::cerr<<"vtime: "<<timev/(double)iter<<std::endl;
+  std::cout<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl;
 
   return 0;
 }
