@@ -210,6 +210,28 @@ namespace FFLAS {
 
 	template<>
 	inline void
+	fscal( const FFPACK:: Modular<double>& F , const size_t N,
+	       const double a,
+		 const double * X, const size_t incX,
+		 double * Y, const size_t incY )
+	{
+		if(incX == 1 && incY==1) {
+			double p, invp;
+			p=(double)F.cardinality();
+			invp=a/p;
+			vectorised::scalp(Y,a,X,N,p,invp,0,p-1);
+		}
+		else {
+			const double * Xi = X ;
+			double * Yi = Y ;
+			for (; Xi < X+N*incX; Xi+=incX,Yi+=incY )
+				F.mul(*Yi, *Xi , a);
+
+		}
+	}
+
+	template<>
+	inline void
 	fscalin( const FFPACK:: ModularBalanced<double>& F , const size_t N,
 	       const double a,
 	       double * X, const size_t incX )
