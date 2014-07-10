@@ -36,7 +36,8 @@ BASIC_TESTS =              \
 		test-det               \
 		test-echelon           \
 		test-fgemm-long        \
-		test-compressQ
+		test-compressQ \
+		regression-check
 
 NOT_A_TEST =  \
 		test-lqup2              \
@@ -118,6 +119,7 @@ test_fgemm_long_SOURCES             = test-fgemm-long.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 test_pfgemm_SOURCES = test-pfgemm.C
+regression_check_SOURCES = regression-check.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
