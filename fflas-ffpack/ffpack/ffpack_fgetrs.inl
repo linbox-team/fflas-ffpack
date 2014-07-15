@@ -39,9 +39,9 @@ namespace FFPACK {
 	fgetrs (const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const size_t M, const size_t N, const size_t R,
-		typename Field::Element *A, const size_t lda,
+		typename Field::Element_ptr A, const size_t lda,
 		const size_t *P, const size_t *Q,
-		typename Field::Element *B, const size_t ldb,
+		typename Field::Element_ptr B, const size_t ldb,
 		int * info)
 	{
 
@@ -106,20 +106,18 @@ namespace FFPACK {
 	}
 
 	template <class Field>
-	typename Field::Element *
+	typename Field::Element_ptr
 	fgetrs (const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const size_t M, const size_t N, const size_t NRHS, const size_t R,
-		typename Field::Element *A, const size_t lda,
+		typename Field::Element_ptr A, const size_t lda,
 		const size_t *P, const size_t *Q,
-		typename Field::Element *X, const size_t ldx,
-		const typename Field::Element *B, const size_t ldb,
+		typename Field::Element_ptr X, const size_t ldx,
+		typename Field::ConstElement_ptr B, const size_t ldb,
 		int * info)
 	{
-
 		*info =0;
-
-		typename Field::Element* W;
+		typename Field::Element_ptr W;
 		size_t ldw;
 
 		if (Side == FFLAS::FflasLeft) { // Left looking solve A X = B
@@ -131,7 +129,7 @@ namespace FFPACK {
 			// F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M > N){ // Cannot copy B into X
-				W = new typename Field::Element [M*NRHS];
+				W = fflas_new (F, M, NRHS);
 				ldw = NRHS;
 				FFLAS::fcopy(F,M,NRHS,B,ldb,W,ldw);
 
@@ -148,7 +146,7 @@ namespace FFPACK {
 				if (!consistent) {
 					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
-					delete[] W;
+					fflas_delete (W);
 					return X;
 				}
 				// Here the last rows of W are supposed to be 0
@@ -158,7 +156,7 @@ namespace FFPACK {
 
 				FFLAS::fcopy(F,R,NRHS,W,ldw,X,ldx);
 
-				delete[] W;
+				fflas_delete (W);
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);
 
@@ -201,7 +199,7 @@ namespace FFPACK {
 			// F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M < N) {
-				W = new typename Field::Element [NRHS*N];
+				W = fflas_new (F, NRHS, N);
 				ldw = N;
 				FFLAS::fcopy (F,NRHS, N, B, ldb, W, ldw);
 
@@ -222,12 +220,12 @@ namespace FFPACK {
 				if (!consistent) {
 					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
-					delete[] W;
+					fflas_delete (W);
 					return X;
 				}
 				// The last N-R cols of W are now supposed to be 0
 				FFLAS::fcopy (F, NRHS,R,  W , ldb, X ,ldx);
-				delete[] W;
+				fflas_delete (W);
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					NRHS, 0,(int) R, X, ldx, Q);
 

@@ -50,6 +50,8 @@ namespace FFPACK {
 	class Modular<double> {
 	public:
 		typedef double Element;
+		typedef double* Element_ptr;
+		typedef const double* ConstElement_ptr;
 
 	protected:
 

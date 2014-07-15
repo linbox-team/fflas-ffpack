@@ -42,18 +42,16 @@ namespace FFLAS {
 	inline void
 	fscal( const Field& F, const size_t N,
 	       const typename Field::Element a,
-	       const typename Field::Element * X, const size_t incX,
-	       typename Field::Element * Y, const size_t incY )
+	       typename Field::ConstElement_ptr X, const size_t incX,
+	       typename Field::Element_ptr Y, const size_t incY )
 	{
-		typedef typename Field::Element Element ;
-
 		if (F.isOne(a)) {
 			fcopy(F,N,X,incX,Y,incY);
 			return ;
 		}
 
-		const Element * Xi = X;
-		Element * Yi = Y;
+		typename Field::ConstElement_ptr Xi = X;
+		typename Field::Element_ptr Yi = Y;
 		if (F.areEqual(a,F.mOne)){
 			fneg(F,N,X,incX,Y,incY);
 			return;
@@ -75,10 +73,8 @@ namespace FFLAS {
 	template<class Field>
 	inline void
 	fscalin (const Field& F, const size_t n, const typename Field::Element a,
-	       typename Field::Element * X, const size_t incX)
+	       typename Field::Element_ptr X, const size_t incX)
 	{
-		typedef typename Field::Element Element ;
-
 		if (F.isOne(a))
 			return ;
 
@@ -92,7 +88,7 @@ namespace FFLAS {
 			return;
 		}
 
-		Element * Xi = X ;
+		typename Field::Element_ptr Xi = X ;
 
 		if ( incX == 1)
 			for (size_t i = 0 ; i < n ; ++i)
@@ -107,8 +103,8 @@ namespace FFLAS {
 	inline void
 	fscal( const DoubleDomain& , const size_t N,
 	       const DoubleDomain::Element a,
-	       const DoubleDomain::Element * x, const size_t incx,
-	       DoubleDomain::Element * y, const size_t incy )
+	       DoubleDomain::ConstElement_ptr x, const size_t incx,
+	       DoubleDomain::Element_ptr y, const size_t incy )
 	{
 		cblas_dcopy( (int)N, x, (int)incy, y, (int)incy);
 		cblas_dscal( (int)N, a, y, (int)incy);
@@ -118,8 +114,8 @@ namespace FFLAS {
 	inline void
 	fscal( const FloatDomain& , const size_t N,
 	       const FloatDomain::Element a,
-	       const FloatDomain::Element * x, const size_t incx,
-	       FloatDomain::Element * y, const size_t incy )
+	       FloatDomain::ConstElement_ptr x, const size_t incx,
+	       FloatDomain::Element_ptr y, const size_t incy )
 	{
 		cblas_scopy( (int)N, x, (int)incy, y, (int)incy);
 		cblas_sscal( (int)N, a, y, (int)incy);
@@ -129,7 +125,7 @@ namespace FFLAS {
 	inline void
 	fscalin( const DoubleDomain& , const size_t N,
 	       const DoubleDomain::Element a,
-	       DoubleDomain::Element * y, const size_t incy )
+	       DoubleDomain::Element_ptr y, const size_t incy )
 	{
 
 		cblas_dscal( (int)N, a, y, (int)incy);
@@ -139,7 +135,7 @@ namespace FFLAS {
 	inline void
 	fscalin( const FloatDomain& , const size_t N,
 	       const FloatDomain::Element a,
-	       FloatDomain::Element * y, const size_t incy )
+	       FloatDomain::Element_ptr y, const size_t incy )
 	{
 
 		cblas_sscal( (int)N, a, y, (int)incy);
@@ -263,7 +259,7 @@ namespace FFLAS {
 	void
 	fscalin (const Field& F, const size_t m , const size_t n,
 	       const typename Field::Element a,
-	       typename Field::Element * A, const size_t lda)
+	       typename Field::Element_ptr A, const size_t lda)
 	{
 		if (F.isOne(a)) {
 			return ;
@@ -291,8 +287,8 @@ namespace FFLAS {
 	void
 	fscal (const Field& F, const size_t m , const size_t n,
 	       const typename Field::Element a,
-	       const typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb)
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb)
 	{
 		if (F.isOne(a)) {
 			fcopy(F,m,n,A,lda,B,ldb) ;

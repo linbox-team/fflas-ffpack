@@ -45,10 +45,10 @@ namespace FFLAS { namespace BLAS3 {
 			      const FFLAS_TRANSPOSE tb,
 			      const size_t mr, const size_t nr, const size_t kr,
 			      const typename Field::Element alpha,
-			       typename Field::Element* A,const size_t lda,
-			       typename Field::Element* B,const size_t ldb,
+			       typename Field::Element_ptr A,const size_t lda,
+			       typename Field::Element_ptr B,const size_t ldb,
 			      const typename Field::Element  beta,
-			      typename Field::Element * C, const size_t ldc,
+			      typename Field::Element_ptr C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
 			      MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
 			     )
@@ -62,9 +62,9 @@ namespace FFLAS { namespace BLAS3 {
 
 		size_t lb, cb, la, ca, ldX2;
 		    // size_t x3rd = std::max(mr,kr);
-		typename Field::Element * A11=A, *A12, *A21, *A22;
-		typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		typename Field::Element_ptr A11=A, A12, A21, A22;
+		typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 		size_t x1rd = std::max(nr,kr);
 		size_t ldX1;
@@ -99,13 +99,13 @@ namespace FFLAS { namespace BLAS3 {
 		}
 
 		// Two temporary submatrices are required
-		typename Field::Element* X2 = new typename Field::Element[kr*nr];
+		typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
 
 		// T3 = B22 - B12 in X2
 		fsub(DF,lb,cb,B22,ldb,B12,ldb,X2,ldX2);
 
 		// S3 = A11 - A21 in X1
-		typename Field::Element* X1 = new typename Field::Element[mr*x1rd];
+		typename Field::Element_ptr X1 = fflas_new (F,mr,x1rd);
 		fsub(DF,la,ca,A11,lda,A21,lda,X1,ldX1);
 
 		// P7 = alpha . S3 * T3  in C21
@@ -199,7 +199,7 @@ namespace FFLAS { namespace BLAS3 {
 		MMH_t H4(F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin, 0, 0);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H4);
 
-		delete[] X2;
+		fflas_delete (X2);
 
 		// U6 = U3 - P4 in C21
 		double U6Min, U6Max;
@@ -223,7 +223,7 @@ namespace FFLAS { namespace BLAS3 {
 		}
 		faddin(DF,mr,nr,X1,nr,C11,ldc);
 
-		delete[] X1;
+		fflas_delete (X1);
 
 		WH.Outmin = std::min (U1Min, std::min (U5Min, std::min (U6Min, U7Min)));
 		WH.Outmax = std::max (U1Max, std::max (U5Max, std::max (U6Max, U7Max)));

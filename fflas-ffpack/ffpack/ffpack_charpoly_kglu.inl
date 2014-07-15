@@ -60,7 +60,7 @@ namespace FFPACK {
 		template<class Field>
 		size_t newD( const Field& F, size_t * d, bool& KeepOn,
 			     const size_t l, const size_t N,
-			     typename Field::Element * X,
+			     typename Field::Element_ptr X,
 			     const size_t * Q,
 			     std::vector<std::vector<typename Field::Element> >& minpt)
 		{
@@ -110,17 +110,16 @@ namespace FFPACK {
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		KellerGehrig( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			      const typename Field::Element * A, const size_t lda )
+			      typename Field::ConstElement_ptr A, const size_t lda )
 		{
 
 
-			typedef typename Field::Element elt;
-			const elt * Ai=A;
-			elt * U = new elt[N*N];     // to store A^2^i
-			elt * B = new elt[N*N];     // to store A^2^i
-			elt * V = new elt[N*N];     // to store A^2^i.U
-			elt * X = new elt[2*N*N];   // to compute the LSP factorization
-			elt *Ui, *Uj, *Uk, *Ukp1, *Ukp1new, *Bi, *Vi, *Vk, *Xi=X, *Xj;
+			typename Field::ConstElement_ptr Ai = A;
+			typename Field::Element_ptr U = fflas_new (F, N, N);     // to store A^2^i
+			typename Field::Element_ptr B = fflas_new (F, N, N);     // to store A^2^i
+			typename Field::Element_ptr V = fflas_new (F, N, N);     // to store A^2^i.U
+			typename Field::Element_ptr X = fflas_new (F, 2*N, N);   // to compute the LSP factorization
+			typename Field::Element_ptr Ui, Uj, Uk, Ukp1, Ukp1new, Bi, Vi, Vk, Xi=X, Xj;
 			size_t * P = new size_t[N]; // Column Permutation for LQUP
 			size_t * Q = new size_t[2*N]; // Row Permutation for LQUP
 
@@ -128,7 +127,7 @@ namespace FFPACK {
 			size_t * dv = new size_t[N];
 			size_t * dold = new size_t[N]; // copy of d
 			// vector of the opposite of the coefficient of computed minpolys
-			std::vector< std::vector< elt > > m(N);
+			std::vector< std::vector< typename Field::Element > > m(N);
 			typename Polynomial::iterator it;
 			size_t i=0, l=1, j, k=N,  cpt, newRowNb;
 			bool  KeepOn;
@@ -254,9 +253,9 @@ namespace FFPACK {
 				// Recompute the degrees of the list factors
 				k = Protected::newD(F, d, KeepOn, l, N, X,Q, m);
 			}
-			delete[] U;
-			delete[] V;
-			delete[] B;
+			fflas_delete (U);
+			fflas_delete (V);
+			fflas_delete (B);
 			delete[] P;
 			delete[] Q;
 			delete[] dv;
@@ -272,7 +271,7 @@ namespace FFPACK {
 					F.neg(*it, m[i][j]);
 				charp.push_back( *minP );
 			}
-			delete[] X;
+			fflas_delete (X);
 			delete[] d;
 			return charp;
 		}

@@ -38,36 +38,36 @@
 namespace FFPACK { namespace Protected {
 	template <class Field>
 	void CompressRows (Field& F, const size_t M,
-			   typename Field::Element * A, const size_t lda,
-			   typename Field::Element * tmp, const size_t ldtmp,
+			   typename Field::Element_ptr A, const size_t lda,
+			   typename Field::Element_ptr tmp, const size_t ldtmp,
 			   const size_t * d, const size_t nb_blocs);
 
 	template <class Field>
 	void CompressRowsQK (Field& F, const size_t M,
-			     typename Field::Element * A, const size_t lda,
-			     typename Field::Element * tmp, const size_t ldtmp,
+			     typename Field::Element_ptr A, const size_t lda,
+			     typename Field::Element_ptr tmp, const size_t ldtmp,
 			     const size_t * d,const size_t deg, const size_t nb_blocs);
 
 	template <class Field>
 	void DeCompressRows (Field& F, const size_t M, const size_t N,
-			     typename Field::Element * A, const size_t lda,
-			     typename Field::Element * tmp, const size_t ldtmp,
+			     typename Field::Element_ptr A, const size_t lda,
+			     typename Field::Element_ptr tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs);
 	template <class Field>
 	void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
-			       typename Field::Element * A, const size_t lda,
-			       typename Field::Element * tmp, const size_t ldtmp,
+			       typename Field::Element_ptr A, const size_t lda,
+			       typename Field::Element_ptr tmp, const size_t ldtmp,
 			       const size_t * d, const size_t deg, const size_t nb_blocs);
 
 	template <class Field>
 	void CompressRowsQA (Field& F, const size_t M,
-			     typename Field::Element * A, const size_t lda,
-			     typename Field::Element * tmp, const size_t ldtmp,
+			     typename Field::Element_ptr A, const size_t lda,
+			     typename Field::Element_ptr tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs);
 	template <class Field>
 	void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
-			       typename Field::Element * A, const size_t lda,
-			       typename Field::Element * tmp, const size_t ldtmp,
+			       typename Field::Element_ptr A, const size_t lda,
+			       typename Field::Element_ptr tmp, const size_t ldtmp,
 			       const size_t * d, const size_t nb_blocs);
 	} // Protected
 } // FFPACK
@@ -76,7 +76,7 @@ namespace FFPACK { namespace Protected {
 template <class Field, class Polynomial>
 std::list<Polynomial>&
 FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
-			   const size_t N, typename Field::Element * A, const size_t lda,
+			   const size_t N, typename Field::Element_ptr A, const size_t lda,
 			   const size_t c)
 {
 
@@ -87,8 +87,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	size_t Nnoc = N*noc;
 
 	// Building the workplace matrix
-	typename Field::Element *K  = new typename Field::Element[Nnoc*c];
-	typename Field::Element *K2 = new typename Field::Element[Nnoc*c];
+	typename Field::Element_ptr K  = fflas_new (F, Nnoc, c);
+	typename Field::Element_ptr K2 = fflas_new (F, Nnoc, c);
 	// for (size_t i = 0 ; i < Nnoc*c ; ++i)
 		// K[i] = F.zero;
 	size_t ldk = N;
@@ -146,7 +146,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			// std::cerr << "FAIL in preconditionning phase:"
 			//           << " degree sequence is not monotonically not increasing"
 			// 	     << std::endl;
-			delete[] rp; delete[] K;
+			delete[] rp; fflas_delete (K);
 			delete[] Pk; delete[] Qk; delete[] dA; delete[] dK;
 			throw CharpolyFailed();
 		}
@@ -160,14 +160,14 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	// Selection of the last iterate of each block
 
-	typename Field::Element * K3 = new typename Field::Element[Mk*N];
-	typename Field::Element * K4 = new typename Field::Element[Mk*N];
+	typename Field::Element_ptr K3 = fflas_new (F, Mk, N);
+	typename Field::Element_ptr K4 = fflas_new (F, Mk, N);
 	size_t bk_idx = 0;
 	for (size_t i = 0; i < Mk; ++i){
 		FFLAS::fcopy (F, N, (K2 + (bk_idx + dK[i]-1)*ldk), 1, (K3+i*ldk), 1);
 		bk_idx += c;
 	}
-	delete[] K2;
+	fflas_delete (K2);
 
 	// K <- K A^T
 	fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasTrans, Mk, N, N,F.one,  K3, ldk, A, lda, F.zero, K4, ldk);
@@ -199,7 +199,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			for (size_t j = offset+1; j<R; ++j)
 				if (!F.isZero(*(K4 + i*ldk + j))){
 					//std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
-					delete[] K3; delete[] K4; delete[] K;
+					fflas_delete (K3); fflas_delete (K4); fflas_delete (K);
 					delete[] Pk; delete[] Qk; delete[] rp;
 					delete[] dA; delete[] dK;
 					throw CharpolyFailed();
@@ -220,7 +220,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		for (size_t i=0; i<nb_full_blocks + 1; ++i)
 			for (size_t j=R; j<N; ++j){
 				if (!F.isZero( *(K4+i*ldk+j) )){
-					delete[] K3; delete[] K4; delete[] K;
+					fflas_delete (K3); fflas_delete (K4); fflas_delete (K);
 					delete[] Pk; delete[] Qk; delete[] rp;
 					delete[] dA; delete[] dK;
 					throw CharpolyFailed();
@@ -231,9 +231,9 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		//	 <<" completing the Krylov matrix"
 		//	 <<std::endl;
 		size_t Nrest = N-R;
-		typename Field::Element * K21 = K + R*ldk;
-		typename Field::Element * K22 = K21 + R;
-		typename Field::Element * Ki, *Ai;
+		typename Field::Element_ptr K21 = K + R*ldk;
+		typename Field::Element_ptr K22 = K21 + R;
+		typename Field::Element_ptr Ki, Ai;
 
 		//  Compute the n-k last rows of A' = P A^T P^T in K2_
 		// A = A . P^t
@@ -257,7 +257,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, Nrest, R,
 		      F.one, K, ldk, K21, ldk);
 
-		typename Field::Element * Arec = new typename Field::Element[Nrest*Nrest];
+		typename Field::Element_ptr Arec = fflas_new (F, Nrest, Nrest);
 		size_t ldarec = Nrest;
 
 		// Creation of the matrix A2 for recursive call
@@ -274,7 +274,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 		// Recursive call on the complementary subspace
 		CharPoly(F, polyList, Nrest, Arec, ldarec);
-		delete[] Arec;
+		fflas_delete (Arec);
 		frobeniusForm.merge(polyList);
 	}
 
@@ -285,24 +285,24 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
  		dA[i] = dK[i];
 	bk_idx = 0;
 
-	typename Field::Element *Arp = new typename Field::Element[Ncurr*Ma];
-	typename Field::Element *Ac = new typename Field::Element[Ncurr*Ma];
+	typename Field::Element_ptr Arp = fflas_new (F, Ncurr, Ma);
+	typename Field::Element_ptr Ac = fflas_new (F, Ncurr, Ma);
 	size_t ldac = Ma;
 	size_t ldarp = Ncurr;
 
 	for (size_t i=0; i < Ncurr; ++i)
  		for (size_t j=0; j<Ma; ++j)
 			*(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
-	delete[] K4;
+	fflas_delete (K4);
 
 
 	// Main loop of the arithmetic progession
 	while ((nb_full_blocks >= 1) && (Mk > 1)) {
 		size_t block_idx, it_idx, rp_val;
-		delete[] K;
-		delete[] K3;
-		K = new typename Field::Element[Ncurr*Ma];
-		K3 = new typename Field::Element[Ncurr*Ma];
+		fflas_delete (K);
+		fflas_delete (K3);
+		K = fflas_new (F, Ncurr, Ma);
+		K3 = fflas_new (F, Ncurr, Ma);
 		ldk = Ma;
 
 		// Computation of the rank profile
@@ -315,13 +315,13 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		try{
 			RR = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
 		} catch (CharpolyFailed){
-			delete[] Arp; delete[] Ac; delete[] K; delete[] K3;
+			fflas_delete (Arp); fflas_delete (Ac); fflas_delete (K); fflas_delete (K3);
 			delete[] rp; delete[] dA; delete[] dK;
 			throw CharpolyFailed();
 		}
 		if (RR < Ncurr){
 			//std::cerr<<"FAIL RR<Ncurr"<<std::endl;
-			delete[] Arp; delete[] Ac; delete[] K; delete[] K3;
+			fflas_delete (Arp); fflas_delete (Ac); fflas_delete (K); fflas_delete (K3);
 			delete[] rp; delete[] dA; delete[] dK;
 			throw CharpolyFailed();
 		}
@@ -337,7 +337,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			do {gg++; rp_val++; it_idx++;}
 			while ( /*(gg<Ncurr ) &&*/ (rp[gg] == rp_val) && (it_idx < deg ));
 			if ((block_idx)&&(it_idx > dK[block_idx-1])){
-				delete[] Arp; delete[] Ac;delete[] K; delete[] K3;
+				fflas_delete (Arp); fflas_delete (Ac); fflas_delete (K); fflas_delete (K3);
 				delete[] rp; delete[] dA; delete[] dK;
 				throw CharpolyFailed();
 				//std::cerr<<"FAIL d non decroissant"<<std::endl;
@@ -455,18 +455,18 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			for (size_t j=0; j<nb_full_blocks+1; ++j){
 				if (!F.isZero( *(K+i*ldk+j) )){
 					//std::cerr<<"FAIL C != 0"<<std::endl;
-					delete[] rp; delete[] Arp; delete[] Ac;
-					delete[] K; delete[] K3;
+					delete[] rp; fflas_delete (Arp); fflas_delete (Ac);
+					fflas_delete (K); fflas_delete (K3);
 					delete[] dA; delete[] dK;
 					throw CharpolyFailed();
 				}
 			}
 
 		// A <- K
-		delete[] Ac; delete[] Arp;
-		Ac = new typename Field::Element[Ncurr*Mk];
+		fflas_delete (Ac); fflas_delete (Arp);
+		Ac = fflas_new (F, Ncurr, Mk);
 		ldac = Mk;
-		Arp = new typename Field::Element[Ncurr*Mk];
+		Arp = fflas_new (F, Ncurr, Mk);
 		ldarp=Ncurr;
 		for (size_t i=0; i < Ncurr; ++i )
 			FFLAS::fcopy (F, Mk, K + i*ldk, 1, Ac + i*ldac, 1);
@@ -481,7 +481,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	for (size_t j=0; j < dK[0]; ++j)
 		F.neg( Pl[j], *(K  + j*ldk));
 	frobeniusForm.push_front(Pl);
-	delete[] rp; delete[] Arp; delete[] Ac; delete[] K; delete[] K3;
+	delete[] rp; fflas_delete (Arp); fflas_delete (Ac); fflas_delete (K); fflas_delete (K3);
 	delete[] dA; delete[] dK;
 	return frobeniusForm;
 }
@@ -489,8 +489,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 namespace FFPACK { namespace Protected {
 template <class Field>
 void CompressRowsQK (Field& F, const size_t M,
-			   typename Field::Element * A, const size_t lda,
-			   typename Field::Element * tmp, const size_t ldtmp,
+			   typename Field::Element_ptr A, const size_t lda,
+			   typename Field::Element_ptr tmp, const size_t ldtmp,
 			   const size_t * d, const size_t deg,const size_t nb_blocs)
 {
 
@@ -513,8 +513,8 @@ void CompressRowsQK (Field& F, const size_t M,
 
 template <class Field>
 void CompressRows (Field& F, const size_t M,
-			     typename Field::Element * A, const size_t lda,
-			     typename Field::Element * tmp, const size_t ldtmp,
+			     typename Field::Element_ptr A, const size_t lda,
+			     typename Field::Element_ptr tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs)
 {
 
@@ -534,8 +534,8 @@ void CompressRows (Field& F, const size_t M,
 
 template <class Field>
 void DeCompressRows (Field& F, const size_t M, const size_t N,
-			     typename Field::Element * A, const size_t lda,
-			     typename Field::Element * tmp, const size_t ldtmp,
+			     typename Field::Element_ptr A, const size_t lda,
+			     typename Field::Element_ptr tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs)
 {
 
@@ -554,8 +554,8 @@ void DeCompressRows (Field& F, const size_t M, const size_t N,
 
 template <class Field>
 void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
-			       typename Field::Element * A, const size_t lda,
-			       typename Field::Element * tmp, const size_t ldtmp,
+			       typename Field::Element_ptr A, const size_t lda,
+			       typename Field::Element_ptr tmp, const size_t ldtmp,
 			       const size_t * d, const size_t deg,const size_t nb_blocs)
 {
 
@@ -580,8 +580,8 @@ void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
 
 template <class Field>
 void CompressRowsQA (Field& F, const size_t M,
-			     typename Field::Element * A, const size_t lda,
-			     typename Field::Element * tmp, const size_t ldtmp,
+			     typename Field::Element_ptr A, const size_t lda,
+			     typename Field::Element_ptr tmp, const size_t ldtmp,
 			     const size_t * d, const size_t nb_blocs)
 {
 
@@ -599,8 +599,8 @@ void CompressRowsQA (Field& F, const size_t M,
 
 template <class Field>
 void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
-			       typename Field::Element * A, const size_t lda,
-			       typename Field::Element * tmp, const size_t ldtmp,
+			       typename Field::Element_ptr A, const size_t lda,
+			       typename Field::Element_ptr tmp, const size_t ldtmp,
 			       const size_t * d, const size_t nb_blocs)
 {
 

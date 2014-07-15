@@ -301,6 +301,8 @@ namespace FFPACK
 		 */
 
 		typedef typename UnparametricOperations<_Element>::Element Element;
+		typedef Element* Element_ptr;
+		typedef const Element* ConstElement_ptr;
 		const Element one  ; // peut pas être static... :(
 		const Element zero ;
 		const Element mOne ;

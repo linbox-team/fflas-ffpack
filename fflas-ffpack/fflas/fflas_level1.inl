@@ -53,7 +53,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	finit (const Field& F, const size_t n,
-	       typename Field::Element * X, const size_t incX);
+	       typename Field::Element_ptr X, const size_t incX);
 
 	/** finit
 	 * \f$x \gets  y mod F\f$.
@@ -65,11 +65,11 @@ namespace FFLAS {
 	 * \param incX stride of \p X
 	 * @bug use cblas_(d)scal when possible
 	 */
-	template<class Field, class OtherElement>
+	template<class Field, class OtherElement_ptr>
 	void
 	finit (const Field& F, const size_t n,
-	       const OtherElement * Y, const size_t incY,
-	       typename Field::Element * X, const size_t incX);
+	       const OtherElement_ptr Y, const size_t incY,
+	       typename Field::Element_ptr X, const size_t incX);
 
 	/** fconvert
 	 * \f$x \gets  y mod F\f$.
@@ -81,14 +81,14 @@ namespace FFLAS {
 	 * \param incX stride of \p X
 	 * @bug use cblas_(d)scal when possible
 	 */
-	template<class Field, class OtherElement>
+	template<class Field, class OtherElement_ptr>
 	void
 	fconvert (const Field& F, const size_t n,
-		  OtherElement * X, const size_t incX,
-		  const typename  Field::Element* Y, const size_t incY)
+		  OtherElement_ptr X, const size_t incX,
+		  typename Field::ConstElement_ptr Y, const size_t incY)
 	{
-		OtherElement * Xi = X ;
-		const typename Field::Element * Yi = Y ;
+		OtherElement_ptr Xi = X ;
+		typename Field::ConstElement_ptr Yi = Y ;
 		for (; Xi < X+n*incX; Xi+=incX, Yi += incY )
 			F.convert( *Xi , *Yi);
 	}
@@ -104,9 +104,9 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fnegin (const Field& F, const size_t n,
-		typename Field::Element * X, const size_t incX)
+		typename Field::Element_ptr X, const size_t incX)
 	{
-		typename Field::Element * Xi = X ;
+		typename Field::Element_ptr Xi = X ;
 		for (; Xi < X+n*incX; Xi+=incX )
 			F.negin( *Xi );
 	}
@@ -124,11 +124,11 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fneg (const Field& F, const size_t n,
-	      const typename Field::Element * Y, const size_t incY,
-	      typename Field::Element * X, const size_t incX)
+	      typename Field::ConstElement_ptr Y, const size_t incY,
+	      typename Field::Element_ptr X, const size_t incX)
 	{
-		typename Field::Element * Xi = X ;
-		const typename Field::Element * Yi = Y ;
+		typename Field::Element_ptr Xi = X ;
+		typename Field::ConstElement_ptr Yi = Y ;
 		for (; Xi < X+n*incX; Xi+=incX,Yi+=incY  )
 			F.neg( *Xi, *Yi );
 	}
@@ -142,7 +142,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fzero (const Field& F, const size_t n,
-	       typename Field::Element *X, const size_t incX)
+	       typename Field::Element_ptr X, const size_t incX)
 	{
 		if (incX == 1) { // contigous data
 			// memset(X,(int)F.zero,n); // might be bogus ?
@@ -169,8 +169,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fcopy (const Field& F, const size_t N,
-	       const typename Field::Element * Y, const size_t incY ,
-	       typename Field::Element * X, const size_t incX);
+	       typename Field::ConstElement_ptr Y, const size_t incY ,
+	       typename Field::Element_ptr X, const size_t incX);
 
 
 	/** fscalin
@@ -187,7 +187,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fscalin (const Field& F, const size_t n, const typename Field::Element alpha,
-		 typename Field::Element * X, const size_t incX);
+		 typename Field::Element_ptr X, const size_t incX);
 
 
 	/** fscal
@@ -207,8 +207,8 @@ namespace FFLAS {
 	void
 	fscal (const Field& F, const size_t n
 	       , const typename Field::Element alpha
-	       , const typename Field::Element * X, const size_t incX
-	       , typename Field::Element * Y, const size_t incY);
+	       , typename Field::ConstElement_ptr X, const size_t incX
+	       , typename Field::Element_ptr Y, const size_t incY);
 
 
 
@@ -225,8 +225,8 @@ namespace FFLAS {
 	void
 	faxpy (const Field& F, const size_t N,
 	       const typename Field::Element alpha,
-	       const typename Field::Element * X, const size_t incX,
-	       typename Field::Element * Y, const size_t incY );
+	       typename Field::ConstElement_ptr X, const size_t incX,
+	       typename Field::Element_ptr Y, const size_t incY );
 
 	/** \brief faxpby : \f$y \gets \alpha \cdot x + \beta \cdot y\f$.
 	 * @param F field
@@ -243,9 +243,9 @@ namespace FFLAS {
 	void
 	faxpby (const Field& F, const size_t N,
 		const typename Field::Element alpha,
-		const typename Field::Element * X, const size_t incX,
+		typename Field::ConstElement_ptr X, const size_t incX,
 		const typename Field::Element beta,
-		typename Field::Element * Y, const size_t incY );
+		typename Field::Element_ptr Y, const size_t incY );
 
 
 	/** \brief fdot: dot product \f$x^T  y\f$.
@@ -259,8 +259,8 @@ namespace FFLAS {
 	template<class Field>
 	typename Field::Element
 	fdot (const Field& F, const size_t N,
-	      const typename Field::Element * X, const size_t incX,
-	      const typename Field::Element * Y, const size_t incY );
+	      typename Field::ConstElement_ptr X, const size_t incX,
+	      typename Field::ConstElement_ptr Y, const size_t incY );
 
 	/** \brief fswap: \f$ X \leftrightarrow Y\f$.
 	 * @bug use cblas_dswap when double
@@ -273,13 +273,13 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	void
-	fswap (const Field& F, const size_t N, typename Field::Element * X, const size_t incX,
-	       typename Field::Element * Y, const size_t incY )
+	fswap (const Field& F, const size_t N, typename Field::Element_ptr X, const size_t incX,
+	       typename Field::Element_ptr Y, const size_t incY )
 	{
 
 		typename Field::Element tmp;
-		typename Field::Element * Xi = X;
-		typename Field::Element * Yi=Y;
+		typename Field::Element_ptr Xi = X;
+		typename Field::Element_ptr Yi=Y;
 		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY ){
 			F.assign( tmp, *Xi );
 			F.assign( *Xi, *Yi );
@@ -290,36 +290,36 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F,  const size_t N,
-	      const typename Field::Element* A, const size_t inca,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc);
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc);
 
 	template <class Field>
 	void
 	fsub (const Field& F,  const size_t N,
-	      const typename Field::Element* A, const size_t inca,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc);
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc);
 
 	template <class Field>
 	void
 	faddin (const Field& F,  const size_t N,
-		const typename Field::Element* B, const size_t incb,
-		typename Field::Element* C, const size_t incc);
+		typename Field::ConstElement_ptr B, const size_t incb,
+		typename Field::Element_ptr C, const size_t incc);
 
 	template <class Field>
 	void
 	fsubin (const Field& F,  const size_t N,
-		typename Field::Element* C, const size_t incc);
+		typename Field::Element_ptr C, const size_t incc);
 
 
 	template <class Field>
 	void
 	fadd (const Field& F,  const size_t N,
-	      const typename Field::Element* A, const size_t inca,
+	      typename Field::ConstElement_ptr A, const size_t inca,
 	      const typename Field::Element alpha,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc);
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc);
 
 } // FFLAS
 

@@ -43,11 +43,11 @@ namespace FFLAS {
 	template<class Field>
 	inline void
 	fcopy (const Field& F, const size_t N,
-	       const typename Field::Element * Y, const size_t incY,
-	       typename Field::Element * X, const size_t incX)
+	       typename Field::ConstElement_ptr Y, const size_t incY,
+	       typename Field::Element_ptr X, const size_t incX)
 	{
-		typename Field::Element * Xi = X;
-		const typename Field::Element * Yi=Y;
+		typename Field::Element_ptr Xi = X;
+		typename Field::ConstElement_ptr Yi=Y;
 
 		if (incX == 1 && incY == 1) {
 			for (; Xi < X+N; ++Xi, ++Yi)
@@ -141,8 +141,8 @@ namespace FFLAS {
 
 	template<class Field>
 	void fcopy (const Field& F, const size_t m, const size_t n,
-		    const typename Field::Element * B, const size_t ldb ,
-		    typename Field::Element * A, const size_t lda)
+		    typename Field::ConstElement_ptr B, const size_t ldb ,
+		    typename Field::Element_ptr A, const size_t lda)
 	{
 		FFLASFFPACK_check(n<=std::min(lda,ldb));
 		// if possible, copy one big block

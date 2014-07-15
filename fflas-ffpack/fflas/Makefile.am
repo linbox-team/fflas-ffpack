@@ -56,6 +56,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_ftrsv.inl       \
 	   fflas_finit.inl       \
 	   fflas_helpers.inl     \
+	   fflas_memory.inl	 \
 	   ${sparse}
 
 EXTRA_DIST=fflas.doxy

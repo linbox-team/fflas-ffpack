@@ -68,6 +68,14 @@ namespace FFPACK {
 		return F.write(o);
 	}
 
+	template<class T, class CT=const T>
+	T fflas_const_cast (CT x){return const_cast<T>(x);}
+	
+	// template<>
+	// RNSInteger::Element_ptr 
+	// fflas_const_cast<RNSInteger::Element_ptr, RNSInteger::ConstElement_ptr>(RNSInteger::ConstElement_ptr x){
+	// 	return (RNSInteger::Element_ptr)x;
+	// }
 }
 
 

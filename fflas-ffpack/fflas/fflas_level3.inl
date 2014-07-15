@@ -50,14 +50,14 @@ namespace FFLAS { namespace Protected {
 	//---------------------------------------------------------------------
 	template<class Field>
 	void MatF2MatD_Triangular (const Field& F,
-				   DoubleDomain::Element* S, const size_t lds,
-				   const typename Field::Element* const E,
+				   DoubleDomain::Element_ptr S, const size_t lds,
+				   typename Field::ConstElement_ptr const E,
 				   const size_t lde,
 				   const size_t m, const size_t n)
 	{
 
-		const typename Field::Element* Ei = E;
-		DoubleDomain::Element* Si = S;
+		typename Field::ConstElement_ptr Ei = E;
+		DoubleDomain::Element_ptr Si = S;
 		size_t i=0, j;
 		for ( ; i<m;++i, Ei+=lde, Si+=lds)
 			for ( j=i; j<n;++j)
@@ -72,14 +72,14 @@ namespace FFLAS { namespace Protected {
 	//! @todo do fconvert(...,FFLAS_TRANS,FFLAS_DIAG)
 	template<class Field>
 	void MatF2MatFl_Triangular (const Field& F,
-				    FloatDomain::Element* S, const size_t lds,
-				    const typename Field::Element* const E,
+				    FloatDomain::Element_ptr S, const size_t lds,
+				    typename Field::ConstElement_ptr const E,
 				    const size_t lde,
 				    const size_t m, const size_t n)
 	{
 
-		const typename Field::Element* Ei = E;
-		FloatDomain::Element* Si = S;
+		typename Field::ConstElement_ptr Ei = E;
+		FloatDomain::Element_ptr Si = S;
 		size_t i=0, j;
 		for ( ; i<m;++i, Ei+=lde, Si+=lds)
 			for ( j=i; j<n;++j)
@@ -173,10 +173,12 @@ namespace FFLAS {
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
 #ifdef __FFLAS__TRSM_READONLY
-	       const
+	       typename Field::ConstElement_ptr A,
+#else
+	       typename Field::Element_ptr A,
 #endif
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb);
+	       const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb);
 
 	/** @brief ftrmm: <b>TR</b>iangular <b>M</b>atrix <b>M</b>ultiply.
 	 * Computes  \f$ B \gets \alpha \mathrm{op}(A) B\f$ or  \f$B \gets \alpha B \mathrm{op}(A)\f$.
@@ -201,8 +203,8 @@ namespace FFLAS {
 	       const FFLAS_DIAG Diag,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb);
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb);
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
@@ -226,7 +228,7 @@ namespace FFLAS {
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
@@ -234,10 +236,10 @@ namespace FFLAS {
 	       const size_t n,
 	       const size_t k,
 	       const typename Field::Element alpha,
-	       const typename Field::Element* A, const size_t lda,
-	       const typename Field::Element* B, const size_t ldb,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc);
+	       typename Field::Element_ptr C, const size_t ldc);
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
@@ -261,16 +263,16 @@ namespace FFLAS {
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
 	template<class Field, class AlgoT, class FieldTrait, class ParSeqTrait>
-	inline  typename Field::Element*
+	inline  typename Field::Element_ptr
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
 	       const size_t m, const size_t n, const size_t k,
 	       const typename Field::Element alpha,
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element * C, const size_t ldc,
+	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, AlgoT, FieldTrait, ParSeqTrait> & H);
 
 } // FFLAS
@@ -282,7 +284,7 @@ namespace FFLAS {
 
 	//Parallel ftrsm with OpenMP tasks
 	template<class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	pftrsm( const Field& F,
 		const FFLAS_SIDE Side,
 		const FFLAS_UPLO UpLo,
@@ -291,8 +293,8 @@ namespace FFLAS {
 		const size_t m,
 		const size_t n,
 		const typename Field::Element alpha,
-		const typename Field::Element* A, const size_t lda,
-		typename Field::Element* B, const size_t ldb,
+		typename Field::ConstElement_ptr A, const size_t lda,
+		typename Field::Element_ptr B, const size_t ldb,
 		const FFLAS::CuttingStrategy method,
                 const size_t numThreads = NUM_THREADS);
 	//#endif
@@ -311,14 +313,14 @@ namespace FFLAS {
 	 * @param ldc leading dimension of \p C
 	 */
 	template<class Field>
-	typename Field::Element* fsquare (const Field& F,
+	typename Field::Element_ptr fsquare (const Field& F,
 					  const FFLAS_TRANSPOSE ta,
 					  const size_t n,
 					  const typename Field::Element alpha,
-					  const typename Field::Element* A,
+					  typename Field::ConstElement_ptr A,
 					  const size_t lda,
 					  const typename Field::Element beta,
-					  typename Field::Element* C,
+					  typename Field::Element_ptr C,
 					  const size_t ldc);
 
 

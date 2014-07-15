@@ -45,27 +45,27 @@ namespace FFPACK {
 	template <class Field>
 	void printA(const Field& F,
 		    std::ostream& os,
-		    const typename Field::Element * E,
-		    const typename Field::Element * C,
+		    typename Field::ConstElement_ptr E,
+		    typename Field::ConstElement_ptr C,
 		    const size_t lda,
 		    const size_t*B,
 		    const size_t*T,
 		    const size_t me,const size_t mc, const size_t lambda, const size_t mu)
 	{
 
-		typename Field::Element * A = buildMatrix(F,E,C,lda,B,T,me,mc,lambda,mu);
+		typename Field::Element_ptr A = buildMatrix(F,E,C,lda,B,T,me,mc,lambda,mu);
 		size_t N = mc+me+lambda+mu;
 		write_field(F,os,A,N,N,N);
-		delete[] A;
+		fflas_delete (A);
 	}
 } // FFPACK
 #endif
 
 namespace FFPACK {
 	template <class Field>
-	typename Field::Element * buildMatrix (const Field& F,
-					       const typename Field::Element * E,
-					       const typename Field::Element * C,
+	typename Field::Element_ptr buildMatrix (const Field& F,
+					       typename Field::ConstElement_ptr E,
+					       typename Field::ConstElement_ptr C,
 					       const size_t lda,
 					       const size_t*B,
 					       const size_t*T,
@@ -76,7 +76,7 @@ namespace FFPACK {
 	{
 
 		size_t N = mc+me+lambda+mu;
-		typename Field::Element * A = new typename Field::Element[N*N];
+		typename Field::Element_ptr A = fflas_new (F, N, N);
 		for (size_t j=0; j<lambda+me;++j)
 			if (B[j] < N){
 				for (size_t i=0;i<N;++i)
@@ -103,7 +103,7 @@ namespace FFPACK {
 		std::list<Polynomial>&
 		KGFast_generalized (const Field& F, std::list<Polynomial>& charp,
 				    const size_t N,
-				    typename Field::Element * A, const size_t lda)
+				    typename Field::Element_ptr A, const size_t lda)
 		{
 
 			//std::cerr<<"Dans KGFast"<<std::endl;
@@ -121,7 +121,7 @@ namespace FFPACK {
 				T[i]=i;
 			size_t lambda=0;
 
-			typename Field::Element * C, *E = A;
+			typename Field::Element_ptr C, E = A;
 #ifdef LB_DEBUG
 			std::cerr<<"Debut KGFG"<<std::endl
 			<<" ----------------------------"<<std::endl;
@@ -150,7 +150,7 @@ namespace FFPACK {
 					std::cerr<<"Forming LUP";
 #endif
 					size_t ncols = ((mu==0)||(mc<=mu))?mc:mc-mu;
-					typename Field::Element * LUP = new typename Field::Element[(lambda+me)*ncols];
+					typename Field::Element_ptr LUP = fflas_new (F, lambda+me, ncols);
 					for (size_t i=0;i < lambda + me; ++i)
 						if (allowedRows[i])
 							FFLAS::fcopy (F, ncols, C+i*lda, 1, LUP+i*ncols, 1);
@@ -182,9 +182,9 @@ namespace FFPACK {
 							KGFast_generalized (F, charp, me, A, lda);
 
 							//Rec call on the trailing block
-							typename Field::Element * At = buildMatrix(F,E,C,lda,B,T,me,mc,lambda,mu);
+							typename Field::Element_ptr At = buildMatrix(F,E,C,lda,B,T,me,mc,lambda,mu);
 							KGFast_generalized (F, charp, N-me, At+me*(lda+1), lda);
-							delete[] At;
+							fflas_delete (At);
 							exit_value = -1;
 							break;
 
@@ -360,7 +360,7 @@ namespace FFPACK {
 					      r, mc-r, F.one, LUP, mc , C+r, lda);
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					      r, mc-r, F.one, LUP, mc , C+r, lda);
-					delete[] LUP;
+					fflas_delete (LUP);
 					delete[] P;
 					delete[] Q;
 #ifdef LB_DEBUG
@@ -398,28 +398,28 @@ namespace FFPACK {
 					// Shifting E: E1;E2 -> E2;E1
 					std::cerr<<"// Shifting E: E1;E2 -> E2;E1";
 #endif
-					typename Field::Element * tmp = new typename Field::Element[r*me];
+					typename Field::Element_ptr tmp = fflas_new (F, r, me);
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fcopy (F, me, E+i*lda, 1, tmp+i*me, 1);
 					for (size_t i=r; i< N; ++i)
 						FFLAS::fcopy (F, me, E+i*lda, 1, E+(i-r)*lda, 1);
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fcopy (F, me, tmp+i*me, 1, E+(i+N-r)*lda, 1);
-					delete[] tmp;
+					fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// Shifting C_{*,2}: C_{1,2};C_{2,2} -> C_{2,2};C_{1,2}
 					std::cerr<<"// Shifting C_{*,2}: C_{1,2};C_{2,2} -> C_{2,2};C_{1,2}";
 #endif
-					tmp = new typename Field::Element[r*(mc-r)];
+					tmp = fflas_new (F, r, mc-r);
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, tmp+i*(mc-r), 1);
 					for (size_t i=r; i< N; ++i)
 						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, C+r+(i-r)*lda, 1);
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fcopy (F, mc-r, tmp+i*(mc-r), 1, C+r+(i+N-r)*lda, 1);
-					delete[] tmp;
+					fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -432,20 +432,20 @@ namespace FFPACK {
 					std::cerr<<"// C'2 <- T C2";
 #endif
 					// To be improved!!!
-					tmp = new typename Field::Element[mu*r];
-					typename Field::Element * C2 = C+(N-mu-mc)*lda;
+					tmp = fflas_new (F, mu, r);
+					typename Field::Element_ptr C2 = C+(N-mu-mc)*lda;
 					for (size_t i=0; i<mu; ++i)
 						FFLAS::fcopy (F, r, C2+T[i]*lda, 1, tmp+i*r, 1);
 					for (size_t i=0; i<mu; ++i)
 						FFLAS::fcopy (F, r, tmp+i*r, 1, C2+i*lda, 1);
-					delete[] tmp;
+					fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// [C'2;C'3] += [E2;E3].C
 					std::cerr<<"// [C'2;C'3] += [E2;E3].C";
 #endif
-					tmp = new typename Field::Element[me*r];
+					tmp = fflas_new (F, me, r);
 					for (size_t i=0; i<lambda+me; ++i)
 						if (B[i] >= N){
 							FFLAS::fcopy (F, r, C+i*lda, 1, tmp+(B[i]-N)*r, 1);
@@ -454,15 +454,15 @@ namespace FFPACK {
 					       F.one, E+(N-mu-r)*lda, lda, tmp, r,
 					       F.one, C+(N-mu-mc)*lda, lda);
 
-					delete[] tmp;
+					fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// shifting [C'2;C'3]
 					std::cerr<<"// shifting [C'2;C'3]";
 #endif
-					tmp = new typename Field::Element[(mc-r)*r];
-					typename Field::Element * C4 = C + (N-mc+r)*lda;
+					tmp = fflas_new (F, mc-r, r);
+					typename Field::Element_ptr C4 = C + (N-mc+r)*lda;
 					for (size_t i=0; i < (mc-r); ++i){
 						FFLAS::fcopy (F, r, C4 + i*lda, 1, tmp+i*r, 1);
 					}
@@ -477,7 +477,7 @@ namespace FFPACK {
 					// tmp2 <- C'1 (the rows corresponding to E)
 					std::cerr<<"// tmp2 <- C'1 (the rows corresponding to E)";
 #endif
-					typename Field::Element * tmp2 = new typename Field::Element[me*r];
+					typename Field::Element_ptr tmp2 = fflas_new (F, me, r);
 					for (size_t i = 0; i < lambda+me; ++i)
 						if (B[i] >= N){
 #ifdef LB_DEBUG
@@ -492,7 +492,7 @@ namespace FFPACK {
 					std::cerr<<"// C'_F[i] <- C_i";
 					std::cerr<<"lambda,r,me = "<<lambda<<" "<<r<<" "<<me<<std::endl;
 #endif
-					typename Field::Element * tmp3 = new typename Field::Element[(lambda+me)*r];
+					typename Field::Element_ptr tmp3 = fflas_new (F, lambda+me,r);
 
 					for (size_t i = 0; i < lambda+me; ++i)
 						if (B[i] < N){
@@ -520,7 +520,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 					std::cerr<<"3"<<std::endl;
 #endif
-					delete[] tmp3;
+					fflas_delete (tmp3);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -531,7 +531,7 @@ namespace FFPACK {
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-mu-r, r, me,
 					      F.one, E, lda, tmp2, r, F.one, C, lda);
-					delete[] tmp2;
+					fflas_delete (tmp2);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -542,7 +542,7 @@ namespace FFPACK {
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N, r, mc-r,
 					      F.one, C+r, lda, tmp, r, F.one, C, lda);
-					delete[] tmp;
+					fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -551,14 +551,14 @@ namespace FFPACK {
 					// switching C_1 <-> C_2
 					std::cerr<<"// switching C_1 <-> C_2";
 #endif
-					tmp = new typename Field::Element[N*r];
+					tmp = fflas_new (F, N, r);
 					for (size_t j = 0; j<r; ++j)
 						FFLAS::fcopy (F, N, C+j, lda, tmp+j, r);
 					for (size_t j = r; j<mc; ++j)
 						FFLAS::fcopy (F, N, C+j, lda, C+j-r, lda);
 					for (size_t j = 0; j<r; ++j)
 						FFLAS::fcopy (F, N, tmp+j, r, C+mc-r+j, lda);
-					delete[] tmp;
+					fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -570,7 +570,7 @@ namespace FFPACK {
 					std::cerr<<"// update the datastructure:";
 #endif
 					mu += r;
-					tmp2 = new typename Field::Element[N*me];
+					tmp2 = fflas_new (F, N, me);
 					size_t nlambda= 0, nme=0;
 					for (size_t i=0;i<lambda+me;++i)
 						allowedRows[i]=true;
@@ -598,7 +598,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 #endif
-					delete[] tmp2;
+					fflas_delete (tmp2);
 				}
 				// update the datastructure: F <- T
 				for (size_t i=0; i<mu; ++i){

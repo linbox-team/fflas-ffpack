@@ -41,13 +41,13 @@ namespace FFLAS {
 	template<class Field>
 	inline typename Field::Element
 	fdot( const Field& F, const size_t N,
-	      const typename Field::Element * x, const size_t incx,
-	      const typename Field::Element * y, const size_t incy )
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy )
 	{
 
 		typename Field::Element d;
-		const typename Field::Element* xi = x;
-		const typename Field::Element* yi = y;
+		typename Field::ConstElement_ptr xi = x;
+		typename Field::ConstElement_ptr yi = y;
 		F.init( d, F.zero );
 		for ( ; xi < x+N*incx; xi+=incx, yi+=incy )
 			F.axpyin( d, *xi, *yi );
@@ -57,8 +57,8 @@ namespace FFLAS {
 	template<>
 	inline DoubleDomain::Element
 	fdot( const DoubleDomain& , const size_t N,
-	      const DoubleDomain::Element * x, const size_t incx,
-	      const DoubleDomain::Element * y, const size_t incy )
+	      DoubleDomain::ConstElement_ptr x, const size_t incx,
+	      DoubleDomain::ConstElement_ptr y, const size_t incy )
 	{
 
 		return cblas_ddot( (int)N, x, (int)incx, y, (int)incy );
@@ -67,8 +67,8 @@ namespace FFLAS {
 	template<>
 	inline FloatDomain::Element
 	fdot( const FloatDomain& , const size_t N,
-	      const FloatDomain::Element * x, const size_t incx,
-	      const FloatDomain::Element * y, const size_t incy )
+	      FloatDomain::ConstElement_ptr x, const size_t incx,
+	      FloatDomain::ConstElement_ptr y, const size_t incy )
 	{
 
 		return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );

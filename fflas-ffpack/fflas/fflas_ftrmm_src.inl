@@ -166,8 +166,8 @@ public:
 
 template <class Field>
 void delayed (const Field& F, const size_t M, const size_t N,
-	      typename Field::Element * A, const size_t lda,
-	      typename Field::Element * B, const size_t ldb)
+	      typename Field::Element_ptr A, const size_t lda,
+	      typename Field::Element_ptr B, const size_t ldb)
 {
 	Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trmm))
 		(CblasRowMajor,
@@ -183,8 +183,8 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 template <class Field>
 void operator () (const Field& F, const size_t M, const size_t N,
-		  typename Field::Element * A, const size_t lda,
-		  typename Field::Element * B, const size_t ldb)
+		  typename Field::Element_ptr A, const size_t lda,
+		  typename Field::Element_ptr B, const size_t ldb)
 {
 
 	if (!M || !N ) return;
@@ -233,8 +233,8 @@ public:
 
 template<class Field>
 void operator()	(const Field& F, const size_t M, const size_t N,
-		 typename Field::Element * A, const size_t lda,
-		 typename Field::Element * B, const size_t ldb)
+		 typename Field::Element_ptr A, const size_t lda,
+		 typename Field::Element_ptr B, const size_t ldb)
 {
 
 	if (__FFLAS__Na == 1)

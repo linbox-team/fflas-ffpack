@@ -33,9 +33,9 @@
 
 namespace FFPACK {
 template <class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::Element * A, const size_t lda,
+		typename Field::Element_ptr A, const size_t lda,
 		int& nullity)
 	{
 		FFLASFFPACK_check(lda >= M);
@@ -57,10 +57,10 @@ template <class Field>
 	}
 
 	template <class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		const typename Field::Element * A, const size_t lda,
-		typename Field::Element * X, const size_t ldx,
+		typename Field::ConstElement_ptr A, const size_t lda,
+		typename Field::Element_ptr X, const size_t ldx,
 		int& nullity)
 	{
 		FFLASFFPACK_check(lda >= M);
@@ -77,10 +77,10 @@ template <class Field>
 	}
 
 	template <class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	Invert2( const Field& F, const size_t M,
-		 typename Field::Element * A, const size_t lda,
-		 typename Field::Element * X, const size_t ldx,
+		 typename Field::Element_ptr A, const size_t lda,
+		 typename Field::Element_ptr X, const size_t ldx,
 		 int& nullity)
 	{
 		FFLASFFPACK_check(lda >= M);

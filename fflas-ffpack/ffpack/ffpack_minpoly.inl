@@ -33,8 +33,8 @@ namespace FFPACK {
 	template <class Field, class Polynomial>
 	Polynomial&
 	MinPoly( const Field& F, Polynomial& minP, const size_t N
-		 ,const typename Field::Element *A, const size_t lda
-		 ,typename Field::Element* X, const size_t ldx
+		 ,typename Field::ConstElement_ptr A, const size_t lda
+		 ,typename Field::Element_ptr X, const size_t ldx
 		 ,size_t* P
 		 ,const FFPACK_MINPOLY_TAG MinTag// = FfpackDense
 		 ,const size_t kg_mc// =0
@@ -42,16 +42,14 @@ namespace FFPACK {
 		 ,const size_t kg_j //=0
 		 )
 	{
-
-		typedef typename Field::Element elt;
 		// nRow is the number of row in the krylov base already computed
 		size_t j, k ;
 		//size_t	nRow = 2;
 		typename Polynomial::iterator it;
-		elt* Xi, *Ui;
+		typename Field::Element_ptr Xi, Ui;
 		typename Field::RandIter g (F);
 		bool KeepOn=true;
-		elt* U = new elt[N];
+		typename Field::Element_ptr U = fflas_new (F, N, 1);
 		// Picking a non zero vector
 		do{
 			for (Ui=U, Xi = X; Ui<U+N; ++Ui, ++Xi){
@@ -70,20 +68,20 @@ namespace FFPACK {
 		minP.resize(k+1);
 		minP[k] = F.one;
 		if ( (k==1) && F.isZero(*(X+ldx))){ // minpoly is X
-			delete[] U;
+			fflas_delete (U);
 			for (size_t i=0; i<k; ++i)
 				minP[i] = F.zero;
 			return minP;
 		}
 		// U contains the k first coefs of the minpoly
-		//elt* m= new elt[k];
+		//typename Field::Element_ptr m= new elt[k];
 		FFLAS::fcopy( F, k, X+k*ldx, 1, U, 1);
 		ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, k, X, ldx, U, 1);
 		it = minP.begin();
 		for (j=0; j<k; ++j, it++){
 			F.neg(*it, U[j]);
 		}
-		delete[] U;
+		fflas_delete (U);
 		return minP;
 	}
 

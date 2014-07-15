@@ -50,7 +50,9 @@ namespace FFPACK {
 	class ModularBalanced <float>{
 
 	public:
-		typedef float Element;
+		typedef float  Element;
+		typedef float* Element_ptr;
+		typedef const float* ConstElement_ptr;
 
 	protected:
 		Element modulus;

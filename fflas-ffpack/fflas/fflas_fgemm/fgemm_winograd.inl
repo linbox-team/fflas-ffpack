@@ -129,14 +129,14 @@ namespace FFLAS { namespace Protected {
 			const size_t m, const size_t n, const size_t k,
 			const size_t mr, const size_t nr, const size_t kr,
 			const typename Field::Element alpha,
-			typename Field::Element* A, const size_t lda,
-			typename Field::Element* B, const size_t ldb,
+			typename Field::Element_ptr A, const size_t lda,
+			typename Field::Element_ptr B, const size_t ldb,
 			const typename Field::Element beta,
-			typename Field::Element* C, const size_t ldc,
+			typename Field::Element_ptr C, const size_t ldc,
 			MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
 			const double Cmin, const double Cmax) 
 	{
-		typename Field::Element *a12, *a21, *b12, *b21;
+		typename Field::Element_ptr a12, a21, b12, b21;
 		size_t inca12, inca21, incb12, incb21, ma, na, mb, nb;
 		size_t mkn = nr + (kr << 1)+  (mr << 2);
 
@@ -229,17 +229,17 @@ namespace FFLAS { namespace Protected {
 			 const size_t m, const size_t n, const size_t k,
 			 const size_t mr, const size_t nr, const size_t kr,
 			 const typename Field::Element alpha,
-			 typename Field::Element* A, const size_t lda,
-			 typename Field::Element* B, const size_t ldb,
+			 typename Field::Element_ptr A, const size_t lda,
+			 typename Field::Element_ptr B, const size_t ldb,
 			 const typename Field::Element beta,
-			 typename Field::Element* C, const size_t ldc,
+			 typename Field::Element_ptr C, const size_t ldc,
 			 MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
 			 const double Cmin, const double Cmax)
 	{
 		size_t mkn =(size_t)( (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2));
 		if (mkn == 0) return;
 
-		 typename Field::Element *a12, *a21, *b12, *b21;
+		 typename Field::Element_ptr a12, a21, b12, b21;
 		if (ta == FflasTrans) {
 			a12 = A+(k-kr)*lda;
 			a21 = A+(m-mr);
@@ -319,30 +319,30 @@ namespace FFLAS { namespace Protected {
 				  const FFLAS_TRANSPOSE tb,
 				  const size_t mr, const size_t nr, const size_t kr,
 				  const typename Field::Element alpha,
-				  typename Field::Element* A,const size_t lda,
-				  typename Field::Element* B,const size_t ldb,
+				  typename Field::Element_ptr A,const size_t lda,
+				  typename Field::Element_ptr B,const size_t ldb,
 				  const typename Field::Element beta,
-				  typename Field::Element * C, const size_t ldc,
+				  typename Field::Element_ptr C, const size_t ldc,
 				  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
 	{
 #if defined(NEWIP) or defined(NEWACCIP)  /*  XXX TESTS ONLY */
 		typedef typename Field::Element Element ;
-		Element * Ac;
-		Element * Bc;
+		Element_ptr Ac;
+		Element_ptr Bc;
 		if (ta == FflasNoTrans) {
-			Ac = new Element[mr*2*lda] ;
+			Ac = fflas_new (F, mr*2, lda);
 			fcopy(F,mr*2,kr*2,A,lda,Ac,lda);
 		}
 		else {
-			Ac = new Element[kr*2*lda] ;
+			Ac = fflas_new (F, kr*2, lda);
 			fcopy(F,kr*2,mr*2,A,lda,Ac,lda);
 		}
 		if (tb == FflasNoTrans) {
-			Bc = new Element[kr*2*ldb] ;
+			Bc = fflas_new (F, kr*2, ldb);
 			fcopy(F,kr*2,nr*2,B,ldb,Bc,ldb);
 		}
 		else {
-			Bc = new Element[nr*2*ldb] ;
+			Bc = fflas_new (F, nr*2, ldb);
 			fcopy(F,nr*2,kr*2,B,ldb,Bc,ldb);
 		}
 #endif
@@ -394,13 +394,13 @@ namespace FFLAS { namespace Protected {
 
 		}
 #if defined(NEWIP) or defined(NEWACCIP)  /*  NOT IP --- TESTS ONLY */
-		delete[] Ac;
-		delete[] Bc;
+		fflas_delete (Ac);
+		fflas_delete (Bc);
 #endif
 
 	} // WinogradCalc
 
-//#define OLD_DYNAMIC_PEELING
+#define OLD_DYNAMIC_PEELING
 
 }// namespace Protected
 } // FFLAS
@@ -408,16 +408,16 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS{
 	template<class Field, class FieldTrait> 
-	inline  typename Field::Element*
+	inline  typename Field::Element_ptr
 	fgemm (const Field& F, 
 	       const FFLAS_TRANSPOSE ta, 
 	       const FFLAS_TRANSPOSE tb, 
 	       const size_t m, const size_t n, const size_t k, 
 	       const typename Field::Element alpha, 
-	       typename Field::Element * A, const size_t lda, 
-	       typename Field::Element * B, const size_t ldb, 
+	       typename Field::Element_ptr A, const size_t lda, 
+	       typename Field::Element_ptr B, const size_t ldb, 
 	       const typename Field::Element beta, 
-	       typename Field::Element * C, const size_t ldc, 
+	       typename Field::Element_ptr C, const size_t ldc, 
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H) 
 	{
 		if (!m || !n ) return C;

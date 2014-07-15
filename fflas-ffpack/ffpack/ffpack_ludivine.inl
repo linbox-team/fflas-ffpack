@@ -37,11 +37,11 @@ namespace FFPACK {
 	inline size_t
 	LUdivine_gauss( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 			const size_t M, const size_t N,
-			typename Field::Element * A, const size_t lda, size_t*P,
+			typename Field::Element_ptr A, const size_t lda, size_t*P,
 			size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 	{
 		size_t MN = std::min(M,N);
-		typename Field::Element * Acurr = A;
+		typename Field::Element_ptr Acurr = A;
 		size_t r = 0;
 
 		for (size_t k = 0; k < MN; ++k){
@@ -82,7 +82,7 @@ namespace FFPACK {
 	inline size_t
 	LUdivine_small( const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 			const size_t M, const size_t N,
-			typename Field::Element * A, const size_t lda, size_t*P,
+			typename Field::Element_ptr A, const size_t lda, size_t*P,
 			size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 	{
 		return callLUdivine_small <typename Field::Element> ()
@@ -96,7 +96,7 @@ namespace FFPACK {
 		inline size_t
 		operator()( const Field& F, const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 			    const size_t M, const size_t N,
-			    typename Field::Element * A, const size_t lda, size_t*P,
+			    typename Field::Element_ptr A, const size_t lda, size_t*P,
 			    size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 		{
 
@@ -194,7 +194,7 @@ namespace FFPACK {
 		operator()( const Field& F,
 			    const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
 			    const size_t M, const size_t N,
-			    typename Field::Element * A, const size_t lda, size_t*P,
+			    typename Field::Element_ptr A, const size_t lda, size_t*P,
 			    size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 		{
 
@@ -304,7 +304,7 @@ namespace FFPACK {
 		operator()( const Field& F,
 			    const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 			    const size_t M, const size_t N,
-			    typename Field::Element * A, const size_t lda, size_t*P,
+			    typename Field::Element_ptr A, const size_t lda, size_t*P,
 			    size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 		{
 
@@ -410,7 +410,7 @@ namespace FFPACK {
 	LUdivine (const Field& F,
 		  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 		  const size_t M, const size_t N,
-		  typename Field::Element * A, const size_t lda,
+		  typename Field::Element_ptr A, const size_t lda,
 		  size_t*P, size_t *Q
 		  , const FFPACK::FFPACK_LUDIVINE_TAG LuTag // =FFPACK::FfpackLQUP
 		  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
@@ -441,7 +441,6 @@ namespace FFPACK {
 		else { // recursively :
 			if (MN == 1){
 				size_t ip=0;
-				//while (ip<N && !F.isUnit(*(A+ip)))ip++;
 				while (F.isZero (*(A+ip*incCol)))
 					if (++ip == colDim)
 						break;
@@ -462,8 +461,6 @@ namespace FFPACK {
 							if ( Diag == FFLAS::FflasNonUnit ){
 								elt invpiv;
 								F.inv(invpiv,*(A+ip*incRow));
-								// while(++ip<rowDim)
-									// F.mulin(*(A + ip*incRow), invpiv);
 								if (++ip < rowDim)
 									FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
 								elt tmp;
@@ -491,17 +488,12 @@ namespace FFPACK {
 				F.inv(invpiv, *A);
 				if ( Diag == FFLAS::FflasUnit ){
 					// Normalisation of the row
-					// for (size_t k=1; k<colDim; k++)
-						// F.mulin(*(A+k*incCol), invpiv);
 					FFLAS::fscalin(F,colDim-1,invpiv,A+incCol,incCol);
 				}
 				else  {
 					if ( colDim==1 )
-					// while(++ip<rowDim)
-						// F.mulin(*(A + ip*incRow), invpiv);
 						if (++ip < rowDim)
 							FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
-
 				}
 				return 1;
 			}
@@ -515,9 +507,9 @@ namespace FFPACK {
 					R = LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q,
 						      LuTag, cutoff);
 
-					typename Field::Element *Ar = A + Nup*incRow;   // SW
-					typename Field::Element *Ac = A + R*incCol;     // NE
-					typename Field::Element *An = Ar+ R*incCol;     // SE
+					typename Field::Element_ptr Ar = A + Nup*incRow;   // SW
+					typename Field::Element_ptr Ac = A + R*incCol;     // NE
+					typename Field::Element_ptr An = Ar+ R*incCol;     // SE
 
 					if (!R){
 						if (LuTag == FFPACK::FfpackSingular )
@@ -527,7 +519,7 @@ namespace FFPACK {
 						FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
 								Ndown, 0,(int) R, Ar, lda, P);
 						// Ar <- L1^-1 Ar
-						ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
+						FFLAS::ftrsm( F, FFLAS::FflasLeft, FFLAS::FflasLower,
 						       FFLAS::FflasNoTrans, Diag, R, Ndown,
 						       F.one, A, lda, Ar, lda);
 						// An <- An - Ac*Ar
@@ -551,9 +543,9 @@ namespace FFPACK {
 				}
 				else { // trans == FFLAS::FflasNoTrans
 					R = LUdivine (F, Diag, trans, Nup, colDim, A, lda, P, Q, LuTag, cutoff);
-					typename Field::Element *Ar = A + Nup*incRow;   // SW
-					typename Field::Element *Ac = A + R*incCol;     // NE
-					typename Field::Element *An = Ar+ R*incCol;     // SE
+					typename Field::Element_ptr Ar = A + Nup*incRow;   // SW
+					typename Field::Element_ptr Ac = A + R*incCol;     // NE
+					typename Field::Element_ptr An = Ar+ R*incCol;     // SE
 
 
 					if (!R){
@@ -593,7 +585,7 @@ namespace FFPACK {
 					if (Diag == FFLAS::FflasNonUnit){
 						for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
 							FFLAS::fcopy( F, colDim - j, A + i*incRow + j*incCol, incCol, A + j * (lda + 1), incCol);
-							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
+							for (typename Field::Element_ptr Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
 								F.assign (*Ai, F.zero);
 							///@todo std::swap ?
@@ -607,7 +599,7 @@ namespace FFPACK {
 							FFLAS::fcopy( F, colDim - j,
 								      A + i*incRow + j*incCol, incCol,
 								      A + (j-1)*incRow + j*incCol, incCol);
-							for (typename Field::Element *Ai = A + i*incRow + j*incCol;
+							for (typename Field::Element_ptr Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
 								F.assign (*Ai, F.zero);
 							size_t t = Q[j-1];
@@ -637,9 +629,9 @@ namespace FFPACK {
 		size_t
 		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 				    const size_t M, const size_t N,
-				    const typename Field::Element * A, const size_t lda,
-				    typename Field::Element * X, const size_t ldx,
-				    typename Field::Element * u, size_t* P,
+				    typename Field::ConstElement_ptr A, const size_t lda,
+				    typename Field::Element_ptr X, const size_t ldx,
+				    typename Field::Element_ptr u, size_t* P,
 				    bool computeX
 				    , const FFPACK::FFPACK_MINPOLY_TAG MinTag //= FFPACK::FfpackDense
 				    , const size_t kg_mc// =0
@@ -686,10 +678,10 @@ namespace FFPACK {
 				size_t R = LUdivine_construct(F, Diag, Nup, N, A, lda, X, ldx, u,
 							      P, computeX, MinTag, kg_mc, kg_mb, kg_j );
 				if (R==Nup){
-					typename Field::Element * Xr = X + Nup*ldx; //  SW
-					typename Field::Element * Xc = X + Nup;     //  NE
-					typename Field::Element * Xn = Xr + Nup;    //  SE
-					typename Field::Element * Xi = Xr;
+					typename Field::Element_ptr Xr = X + Nup*ldx; //  SW
+					typename Field::Element_ptr Xc = X + Nup;     //  NE
+					typename Field::Element_ptr Xn = Xr + Nup;    //  SE
+					typename Field::Element_ptr Xi = Xr;
 					if ( computeX ){
 						if (MinTag == FFPACK::FfpackDense)
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){

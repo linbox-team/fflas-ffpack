@@ -41,21 +41,20 @@ namespace FFPACK {
 	template <class Field, class Polynomial>
 	Polynomial&
 	MinPoly( const Field& F, Polynomial& minP, const size_t N,
-		 const typename Field::Element *A, const size_t lda,
-		 typename Field::Element* U, size_t ldu,typename Field::Element* X, size_t ldx,
+		 typename Field::ConstElement_ptr A, const size_t lda,
+		 typename Field::Element_ptr U, size_t ldu, typename Field::Element_ptr X, size_t ldx,
 		 size_t* P)
 	{
 
-		typedef typename Field::Element elt;
 		// nRow is the number of row in the krylov base already computed
 		size_t j, k, nRow = 2;
-		elt* B = new elt[ N*N ];
+		typename Field::Element_ptr B = fflas_new (F, N, N);
 		typename Polynomial::iterator it;
-		elt* Xi, *Ui;
+		typename Field::Element_ptr Xi, *Ui;
 		typename Field::RandIter g (F);
 		bool KeepOn=true;
 		// Creating the Krylov Base copy matrix X where to factorize
-		//elt * X = new elt[(N+1)*N];
+		//typename Field::Element_ptr X = new elt[(N+1)*N];
 #ifdef LB_DEBUG
 		for (j=0;j<(N+1)*N;j++)
 			X[j] = zero;
@@ -83,14 +82,14 @@ namespace FFPACK {
 
 		k = Protected::LUdivine_construct(F, FflasUnit, N+1, N, B, N, U, ldu, X, N, P,
 				       &nRow, N+1, &nUsedRow );
-		delete[] B;
+		fflas_delete (B);
 		minP.resize(k+1);
 		minP[k] = one;
 		if (k==1 && F.isZero(*(X+N))){ // minpoly is X
 			return minP;
 		}
 		// m contains the k first coefs of the minpoly
-		elt* m= new elt[k];
+		typename Field::Element_ptr m= fflas_new (F,k,1);
 		fcopy( F, k, X+k*N, 1, m, 1);
 		ftrsv( F, FflasLower, FflasTrans, FflasNonUnit, k, X, N, m, 1);
 		//delete[] X;
@@ -98,7 +97,7 @@ namespace FFPACK {
 		for (j=0; j<k; ++j, it++){
 			F.neg(*it, m[j]);
 		}
-		delete[] m;
+		fflas_delete (m);
 		return minP;
 	}
 } // FFPACK

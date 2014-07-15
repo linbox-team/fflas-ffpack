@@ -38,8 +38,8 @@ template<class Field>
 inline void
 faxpy( const Field& F, const size_t N,
 		      const typename Field::Element a,
-		      const typename Field::Element * X, const size_t incX,
-		      typename Field::Element * Y, const size_t incY )
+		      typename Field::ConstElement_ptr X, const size_t incX,
+		      typename Field::Element_ptr Y, const size_t incY )
 {
 
 	if (F.isZero(a))
@@ -51,8 +51,8 @@ faxpy( const Field& F, const size_t N,
 	if (F.isMOne(a))
 		return fneg(F,N,X,incX,Y,incY);
 
-	const typename Field::Element * Xi = X;
-	typename Field::Element * Yi=Y;
+	typename Field::ConstElement_ptr Xi = X;
+	typename Field::Element_ptr Yi=Y;
 	for (; Xi < X+N*incX; Xi+=incX, Yi+=incY )
 		F.axpyin( *Yi, a, *Xi );
 }
@@ -60,9 +60,9 @@ faxpy( const Field& F, const size_t N,
 template<>
 inline void
 faxpy( const DoubleDomain& , const size_t N,
-		      const DoubleDomain::Element a,
-		      const DoubleDomain::Element * x, const size_t incx,
-		      DoubleDomain::Element * y, const size_t incy )
+       const DoubleDomain::Element a,
+       DoubleDomain::ConstElement_ptr x, const size_t incx,
+       DoubleDomain::Element_ptr y, const size_t incy )
 {
 
 	cblas_daxpy( (int)N, a, x, (int)incx, y, (int)incy);
@@ -71,9 +71,9 @@ faxpy( const DoubleDomain& , const size_t N,
 template<>
 inline void
 faxpy( const FloatDomain& , const size_t N,
-		      const FloatDomain::Element a,
-		      const FloatDomain::Element * x, const size_t incx,
-		      FloatDomain::Element * y, const size_t incy )
+       const FloatDomain::Element a,
+       FloatDomain::ConstElement_ptr x, const size_t incx,
+       FloatDomain::Element_ptr y, const size_t incy )
 {
 
 	cblas_saxpy( (int)N, a, x, (int)incx, y, (int)incy);
@@ -83,8 +83,8 @@ template<class Field>
 inline void
 faxpy( const Field& F, const size_t m, const size_t n,
 		      const typename Field::Element a,
-		      const typename Field::Element * X, const size_t ldX,
-		      typename Field::Element * Y, const size_t ldY )
+		      typename Field::ConstElement_ptr X, const size_t ldX,
+		      typename Field::Element_ptr Y, const size_t ldY )
 {
 
 	if (F.isZero(a))
@@ -99,8 +99,8 @@ faxpy( const Field& F, const size_t m, const size_t n,
 	if (n == ldX && n == ldY)
 		return faxpy(F,m*n,a,X,1,Y,1);
 
-	const typename Field::Element * Xi = X;
-	typename Field::Element * Yi=Y;
+	typename Field::ConstElement_ptr Xi = X;
+	typename Field::Element_ptr Yi=Y;
 	for (; Xi < X+m*ldX; Xi+=ldX, Yi+=ldY )
 		faxpy(F,n,a,Xi,1,Yi,1);
 }

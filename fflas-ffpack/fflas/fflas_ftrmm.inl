@@ -44,8 +44,8 @@ ftrmm (const Field& F, const FFLAS_SIDE Side,
 	      const FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element * A, const size_t lda,
-	      typename Field::Element * B, const size_t ldb)
+	      typename Field::Element_ptr A, const size_t lda,
+	      typename Field::Element_ptr B, const size_t ldb)
 {
 	if (!M || !N ) return;
 

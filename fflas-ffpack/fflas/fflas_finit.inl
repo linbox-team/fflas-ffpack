@@ -60,11 +60,11 @@ namespace FFLAS {
 					F.init( *Xi , *Xi);
 			}
 			else {
-				double * Ac = new double[m] ;
+				double * Ac = fflas_new (F,m,1) ;
 				fcopy(F,m,A,incX,Ac,1);
 				finit(F,m,Ac,1);
 				fcopy(F,m,Ac,1,A,incX);
-				delete[] Ac;
+				fflas_delete (Ac);
 			}
 		}
 	}
@@ -87,11 +87,11 @@ namespace FFLAS {
 					F.init( *Xi , *Xi);
 			}
 			else {
-				float * Ac = new float[m] ;
+				float * Ac = fflas_new (F,m,1) ;
 				fcopy(F,m,A,incX,Ac,1);
 				finit(F,m,Ac,1);
 				fcopy(F,m,Ac,1,A,incX);
-				delete[] Ac;
+				fflas_delete (Ac);
 			}
 
 		}
@@ -118,11 +118,11 @@ namespace FFLAS {
 					F.init( *Xi , *Xi);
 			}
 			else {
-				double * Ac = new double[m] ;
+				double * Ac = fflas_new (F,m,1);
 				fcopy(F,m,A,incX,Ac,1);
 				finit(F,m,Ac,1);
 				fcopy(F,m,Ac,1,A,incX);
-				delete[] Ac;
+				fflas_delete (Ac);
 			}
 		}
 
@@ -147,11 +147,11 @@ namespace FFLAS {
 					F.init( *Xi , *Xi);
 			}
 			else {
-				float * Ac = new float[m] ;
+				float * Ac = fflas_new (F,m,1);
 				fcopy(F,m,A,incX,Ac,1);
 				finit(F,m,Ac,1);
 				fcopy(F,m,Ac,1,A,incX);
-				delete[] Ac;
+				fflas_delete (Ac);
 			}
 		}
 
@@ -257,9 +257,9 @@ namespace FFLAS {
 	template<class Field>
 	void
 	finit (const Field& F, const size_t n,
-	       typename Field::Element * X, const size_t incX)
+	       typename Field::Element_ptr X, const size_t incX)
 	{
-		typename Field::Element * Xi = X ;
+		typename Field::Element_ptr Xi = X ;
 
 		if (incX == 1 )
 			for (; Xi < X + n ; ++Xi)
@@ -269,14 +269,14 @@ namespace FFLAS {
 				F.init( *Xi, *Xi );
 	}
 
-	template<class Field, class OtherElement>
+	template<class Field, class ConstOtherElement_ptr>
 	void
 	finit (const Field& F, const size_t n,
-	       const OtherElement * Y, const size_t incY,
-	       typename Field::Element * X, const size_t incX)
+	       ConstOtherElement_ptr Y, const size_t incY,
+	       typename Field::Element_ptr X, const size_t incX)
 	{
-		typename Field::Element * Xi = X ;
-		const OtherElement * Yi = Y ;
+		typename Field::Element_ptr Xi = X ;
+		ConstOtherElement_ptr Yi = Y ;
 
 		if (incX == 1 && incY == 1)
 			for (; Yi < Y + n ; ++Xi, ++Yi)
@@ -296,7 +296,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element * A, const size_t lda)
+	       typename Field::Element_ptr A, const size_t lda)
 	{
 		if (n == lda)
 			finit(F,n*m,A,1);
@@ -306,11 +306,11 @@ namespace FFLAS {
 		return;
 	}
 
-	template<class Field, class OtherElement>
+	template<class Field, class OtherElement_ptr>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
-	       const OtherElement * B, const size_t ldb,
-	       typename Field::Element * A, const size_t lda)
+	       const OtherElement_ptr B, const size_t ldb,
+	       typename Field::Element_ptr A, const size_t lda)
 	{
 		if (n == lda && n == ldb)
 			finit(F,n*m,B,1,A,1);

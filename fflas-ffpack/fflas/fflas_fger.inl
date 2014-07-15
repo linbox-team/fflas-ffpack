@@ -35,12 +35,16 @@ namespace FFLAS {
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      const typename Field::Element * x, const size_t incx,
-	      const typename Field::Element * y, const size_t incy,
-	      typename Field::Element * A, const size_t lda)
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
+	      typename Field::Element_ptr A, const size_t lda)
 	{
-		MMHelper<Field, MMHelperAlgo::Classic, typename FieldTraits<Field>::value > H(F,0);
-		fger (F, M, N, alpha, const_cast<typename Field::Element*>(x), incx, const_cast<typename Field::Element*>(y), incy, A, lda, H);
+		MMHelper<Field, MMHelperAlgo::Classic, 
+			 typename FieldTraits<Field>::value > H(F,0);
+		fger (F, M, N, alpha, 
+		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(x), incx, 
+		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(y), incy, 
+		      A, lda, H);
 		finit (F, M, N, A, lda);
 	}
 } //FFLAS
@@ -50,17 +54,17 @@ namespace FFLAS { namespace Protected {
 	inline void
 	fger_convert (const Field& F, const size_t M, const size_t N,
 		      const typename Field::Element alpha,
-		      const typename Field::Element * x, const size_t incx,
-		      const typename Field::Element * y, const size_t incy,
-		      typename Field::Element * A, const size_t lda)
+		      typename Field::ConstElement_ptr x, const size_t incx,
+		      typename Field::ConstElement_ptr y, const size_t incy,
+		      typename Field::Element_ptr A, const size_t lda)
 	{
 		FFPACK::Modular<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement alphaf;
 		F.convert (alphaf, alpha);
 
-		FloatElement * Af = new FloatElement[M*N];
-		FloatElement * Xf = new FloatElement[M];
-		FloatElement * Yf = new FloatElement[N];
+		FloatElement* Af = fflas_new (F,M,N);
+		FloatElement* Xf = fflas_new (F,M,1);
+		FloatElement* Yf = fflas_new (F,N,1);
 
 		fconvert(F, M, N, Af, N, A, lda);
 		fconvert(F, M, Xf, 1, x, incx);
@@ -70,9 +74,9 @@ namespace FFLAS { namespace Protected {
 
 		finit(F, M, N, Af, N, A, lda);
 
-		delete[] Af;
-		delete[] Xf;
-		delete[] Yf;
+		fflas_delete (Af);
+		fflas_delete (Xf);
+		fflas_delete (Yf);
 	}
 }// Protected
 }// FFLAS
@@ -82,9 +86,9 @@ namespace FFLAS{
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element * x, const size_t incx,
-	      typename Field::Element * y, const size_t incy,
-	      typename Field::Element * A, const size_t lda,
+	      typename Field::Element_ptr x, const size_t incx,
+	      typename Field::Element_ptr y, const size_t incy,
+	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
 	{
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
@@ -97,9 +101,9 @@ namespace FFLAS{
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element * x, const size_t incx,
-	      typename Field::Element * y, const size_t incy,
-	      typename Field::Element * A, const size_t lda,
+	      typename Field::Element_ptr x, const size_t incx,
+	      typename Field::Element_ptr y, const size_t incy,
+	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
 		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf;
@@ -152,9 +156,9 @@ template<class Field>
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element * x, const size_t incx,
-	      typename Field::Element * y, const size_t incy,
-	      typename Field::Element * A, const size_t lda,
+	      typename Field::Element_ptr x, const size_t incx,
+	      typename Field::Element_ptr y, const size_t incy,
+	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
 	{
 		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag>::DelayedField_t::Element alphadf;
@@ -181,15 +185,15 @@ template<class Field>
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      const typename Field::Element * x, const size_t incx,
-	      const typename Field::Element * y, const size_t incy,
-	      typename Field::Element * A, const size_t lda,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
+	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
 	{
 
 		typename Field::Element tmp;
-		const typename Field::Element* xi=x, *yj=y;
-		typename Field::Element* Ai=A;
+		typename Field::ConstElement_ptr xi=x, yj=y;
+		typename Field::Element_ptr Ai=A;
 
 		if (F.isZero(alpha)) return ;
 
@@ -244,9 +248,9 @@ template<class Field>
 	inline void
 	fger( const DoubleDomain& F, const size_t M, const size_t N,
 	      const DoubleDomain::Element alpha,
-	      const DoubleDomain::Element * x, const size_t incx,
-	      const DoubleDomain::Element * y, const size_t incy,
-	      DoubleDomain::Element * A, const size_t lda,
+	      const DoubleDomain::Element_ptr x, const size_t incx,
+	      const DoubleDomain::Element_ptr y, const size_t incy,
+	      DoubleDomain::Element_ptr A, const size_t lda,
 	      MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		if (F.isZero(alpha)) return ;
@@ -259,9 +263,9 @@ template<class Field>
 	inline void
 	fger( const FloatDomain& F, const size_t M, const size_t N,
 	      const FloatDomain::Element alpha,
-	      const FloatDomain::Element * x, const size_t incx,
-	      const FloatDomain::Element * y, const size_t incy,
-	      FloatDomain::Element * A, const size_t lda,
+	      const FloatDomain::Element_ptr x, const size_t incx,
+	      const FloatDomain::Element_ptr y, const size_t incy,
+	      FloatDomain::Element_ptr A, const size_t lda,
 	      MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		if (F.isZero(alpha)) return ;

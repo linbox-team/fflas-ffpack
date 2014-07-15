@@ -48,10 +48,10 @@ namespace FFLAS {
                            const FFLAS_TRANSPOSE tb,
                            const size_t m, const size_t n,const size_t k,
                            const typename Field::Element alpha,
-                           typename Field::Element * A, const size_t lda,
-                           typename Field::Element * B, const size_t ldb,
+                           typename Field::Element_ptr A, const size_t lda,
+                           typename Field::Element_ptr B, const size_t ldb,
                            const typename Field::Element beta,
-                           typename Field::Element* C, const size_t ldc,
+                           typename Field::Element_ptr C, const size_t ldc,
                            MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
 		
@@ -160,10 +160,10 @@ namespace FFLAS {
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
 			   const typename Field::Element alpha,
-			   typename Field::Element * A, const size_t lda,
-			   typename Field::Element * B, const size_t ldb,
+			   typename Field::Element_ptr A, const size_t lda,
+			   typename Field::Element_ptr B, const size_t ldb,
 			   const typename Field::Element beta,
-			   typename Field::Element* C, const size_t ldc,
+			   typename Field::Element_ptr C, const size_t ldc,
 			   MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
 	{
                 // Standard algorithm is performed over the Field, without conversion
@@ -205,10 +205,10 @@ namespace FFLAS {
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
 			   const DoubleDomain::Element alpha,
-			   DoubleDomain::Element * Ad, const size_t lda,
-			   DoubleDomain::Element * Bd, const size_t ldb,
+			   DoubleDomain::Element_ptr Ad, const size_t lda,
+			   DoubleDomain::Element_ptr Bd, const size_t ldb,
 			   const DoubleDomain::Element beta,
-			   DoubleDomain::Element * Cd, const size_t ldc,
+			   DoubleDomain::Element_ptr Cd, const size_t ldc,
 			   MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> &H)
 	{
 		FFLASFFPACK_check(lda);
@@ -227,10 +227,10 @@ namespace FFLAS {
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
 			   const FloatDomain::Element alpha,
-			   FloatDomain::Element * Ad, const size_t lda,
-			   FloatDomain::Element * Bd, const size_t ldb,
+			   FloatDomain::Element_ptr Ad, const size_t lda,
+			   FloatDomain::Element_ptr Bd, const size_t ldb,
 			   const FloatDomain::Element beta,
-			   FloatDomain::Element * Cd, const size_t ldc,
+			   FloatDomain::Element_ptr Cd, const size_t ldc,
 			   MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);

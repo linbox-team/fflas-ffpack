@@ -39,7 +39,7 @@
 template <class Field>
 inline size_t
 FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
-		    typename Field::Element * A, const size_t lda, size_t*P,
+		    typename Field::Element_ptr A, const size_t lda, size_t*P,
 		    size_t *Q, const size_t deg, size_t *iterates,  size_t * inviterates,size_t  maxit,
 		    size_t virt)
 {
@@ -103,9 +103,9 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 		// Recursive call on NW
 		size_t R = KrylovElim (F,  Nup, N, A, lda, P, Q, deg, iterates, inviterates, maxit, virt);
 
-		typename Field::Element *Ar = A + Nup*lda; // SW
-		typename Field::Element *Ac = A + R;     // NE
-		typename Field::Element *An = Ar + R;    // SE
+		typename Field::Element_ptr Ar = A + Nup*lda; // SW
+		typename Field::Element_ptr Ac = A + R;     // NE
+		typename Field::Element_ptr An = Ar + R;    // SE
 
 		if (R){
 			// Ar <- Ar.P
@@ -136,7 +136,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 			// Permutation of the 0 rows
 			for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
 				FFLAS::fcopy( F, N - j, A + i*lda + j, 1, A + j*(lda + 1), 1);
-				for (typename Field::Element *Ai = A + i*lda + j;
+				for (typename Field::Element_ptr Ai = A + i*lda + j;
 				     Ai != A + i*lda + N; ++Ai)
 					F.assign (*Ai, F.zero);
 				size_t t = Q[j];
@@ -151,7 +151,7 @@ FFPACK::KrylovElim( const Field& F, const size_t M, const size_t N,
 template <class Field>
 size_t
 FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
-			 typename Field::Element * A, const size_t lda, const size_t deg,
+			 typename Field::Element_ptr A, const size_t lda, const size_t deg,
 			 size_t *rankProfile)
 {
 

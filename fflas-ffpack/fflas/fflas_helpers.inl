@@ -202,7 +202,7 @@ namespace FFLAS {
 		}
 
 		bool checkA(const Field& F, const size_t M, const size_t N,
-			    const typename Field::Element* A, const size_t lda ){
+			    typename Field::ConstElement_ptr A, const size_t lda ){
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
@@ -214,7 +214,7 @@ namespace FFLAS {
 			return true;
 		}
 		bool checkB(const Field& F, const size_t M, const size_t N,
-			    const typename Field::Element* A, const size_t lda ){
+			    typename Field::ConstElement_ptr A, const size_t lda ){
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
@@ -226,7 +226,7 @@ namespace FFLAS {
 			return true;
 		}
 		bool checkOut(const Field& F, const size_t M, const size_t N,
-			      const typename Field::Element* A, const size_t lda ){
+			      typename Field::ConstElement_ptr A, const size_t lda ){
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)

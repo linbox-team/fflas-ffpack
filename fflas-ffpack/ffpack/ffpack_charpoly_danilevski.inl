@@ -39,12 +39,13 @@ namespace FFPACK {
 template <class Field, class Polynomial>
 std::list<Polynomial>&
 Danilevski (const Field& F, std::list<Polynomial>& charp,
-			    const size_t N, typename Field::Element * A,
+			    const size_t N, typename Field::Element_ptr A,
 			    const size_t lda)
 {
 	charp.clear();
 	size_t dtot=0;
-	typename Field::Element *pivot,*e,*u1,invp;
+	typename Field::Element_ptr pivot,e,u1;
+	typename Field::Element invp;
 	for (size_t k=0; k<N; ++k){
 		size_t i = k+1;
 		e = pivot = A + (k+1) * lda + k; // coef
@@ -81,7 +82,7 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 		if (i==N){// completed one companion block
 		size_t d;
 			d = k+1-dtot;
-			typename Field::Element *Ai = A+k+dtot*lda;
+			typename Field::Element_ptr Ai = A+k+dtot*lda;
 			Polynomial * P = new Polynomial(d+1);
 			for (i = 0; i < d; ++i){
 				F.neg (P->operator[](i), *(Ai+i*lda));

@@ -36,7 +36,7 @@ namespace FFPACK {
 	template <class Field>
 	size_t
 	Rank( const Field& F, const size_t M, const size_t N,
-	      typename Field::Element * A, const size_t lda)
+	      typename Field::Element_ptr A, const size_t lda)
 	{
 		if (M == 0 and  N  == 0)
 			return 0 ;
@@ -53,7 +53,7 @@ namespace FFPACK {
 	template <class Field>
 	bool
 	IsSingular( const Field& F, const size_t M, const size_t N,
-		    typename Field::Element * A, const size_t lda)
+		    typename Field::Element_ptr A, const size_t lda)
 	{
 		if ( (M==0) and (N==0) )
 			return  false ;
@@ -76,7 +76,7 @@ namespace FFPACK {
 	template <class Field>
 	typename Field::Element
 	Det( const Field& F, const size_t M, const size_t N,
-	     typename Field::Element * A, const size_t lda)
+	     typename Field::Element_ptr A, const size_t lda)
 	{
 		if ( (M==0) and (N==0) )
 			return  F.one ;
@@ -99,7 +99,7 @@ namespace FFPACK {
 		}
 		else{
 			F.assign(det,F.one);
-			typename Field::Element *Ai=A;
+			typename Field::Element_ptr Ai=A;
 			for (; Ai < A+ M*lda+N; Ai+=lda+1 )
 				F.mulin( det, *Ai );
 			int count=0;
@@ -115,11 +115,11 @@ namespace FFPACK {
 	}
 
 	template <class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	Solve( const Field& F, const size_t M,
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * x, const int incx,
-	       const typename Field::Element * b, const int incb )
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr x, const int incx,
+	       typename Field::ConstElement_ptr b, const int incb )
 	{
 
 		size_t *P = new size_t[M];
@@ -151,8 +151,8 @@ namespace FFPACK {
 	template <class Field>
 	size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 			       const size_t M, const size_t N,
-			       typename Field::Element* A, const size_t lda,
-			       typename Field::Element*& NS, size_t& ldn,
+			       typename Field::Element_ptr A, const size_t lda,
+			       typename Field::Element_ptr& NS, size_t& ldn,
 			       size_t& NSdim)
 	{
 		if (Side == FFLAS::FflasRight) { // Right NullSpace
@@ -171,7 +171,7 @@ namespace FFPACK {
 				return NSdim ;
 			}
 
-			NS = new typename Field::Element [N*ldn];
+			NS = fflas_new (F, N, ldn);
 
 			if (R == 0) {
 				delete[] P;
@@ -209,7 +209,7 @@ namespace FFPACK {
 				return NSdim;
 			}
 
-			NS = new typename Field::Element [NSdim*ldn];
+			NS = fflas_new (F, NSdim, ldn);
 
 
 			if (R == 0) {
@@ -237,7 +237,7 @@ namespace FFPACK {
 
 	template <class Field>
 	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
-			       typename Field::Element* A, const size_t lda,
+			       typename Field::Element_ptr A, const size_t lda,
 			       size_t* &rkprofile)
 	{
 		size_t *P = new size_t[N];
@@ -256,7 +256,7 @@ namespace FFPACK {
 
 	template <class Field>
 	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
-				  typename Field::Element* A, const size_t lda,
+				  typename Field::Element_ptr A, const size_t lda,
 				  size_t* &rkprofile)
 	{
 		size_t *P = new size_t[M];
@@ -276,7 +276,7 @@ namespace FFPACK {
 	template <class Field>
 	size_t RowRankProfileSubmatrixIndices (const Field& F,
 					       const size_t M, const size_t N,
-					       typename Field::Element* A,
+					       typename Field::Element_ptr A,
 					       const size_t lda,
 					       size_t*& rowindices,
 					       size_t*& colindices,
@@ -311,7 +311,7 @@ namespace FFPACK {
 	template <class Field>
 	size_t ColRankProfileSubmatrixIndices (const Field& F,
 					       const size_t M, const size_t N,
-					       typename Field::Element* A,
+					       typename Field::Element_ptr A,
 					       const size_t lda,
 					       size_t*& rowindices,
 					       size_t*& colindices,
@@ -346,24 +346,23 @@ namespace FFPACK {
 	template <class Field>
 	size_t RowRankProfileSubmatrix (const Field& F,
 					const size_t M, const size_t N,
-					typename Field::Element* A,
+					typename Field::Element_ptr A,
 					const size_t lda,
-					typename Field::Element*& X, size_t& R)
+					typename Field::Element_ptr& X, size_t& R)
 	{
 
 		size_t * rowindices, * colindices;
-		typedef typename Field::Element Element ;
-
-		Element * A2 = new Element[M*N] ;
+	
+		typename Field::Element_ptr A2 = fflas_new (F, M, N) ;
 		FFLAS::fcopy(F,M,N,A,lda,A2,N);
 
 		RowRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
-		X = new Element[R*R];
+		X = fflas_new (F, R, R);
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
-		delete[] A2;
+		fflas_delete (A2);
 		delete[] rowindices;
 		delete[] colindices;
 		return R;
@@ -371,42 +370,41 @@ namespace FFPACK {
 
 	template <class Field>
 	size_t ColRankProfileSubmatrix (const Field& F, const size_t M, const size_t N,
-					typename Field::Element* A, const size_t lda,
-					typename Field::Element*& X, size_t& R)
+					typename Field::Element_ptr A, const size_t lda,
+					typename Field::Element_ptr& X, size_t& R)
 	{
 
 		size_t * rowindices, * colindices;
-		typedef typename Field::Element Element ;
 
-		Element * A2 = new Element[M*N];
+		typename Field::Element_ptr A2 = fflas_new (F, M, N);
 		FFLAS::fcopy(F,M,N,A,lda,A2,N);
 
 		ColRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
-		X = new Element[R*R];
+		X = fflas_new (F, R, R);
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
-		delete[] A2;
+		fflas_delete (A2);
 		delete[] colindices;
 		delete[] rowindices;
 		return R;
 	}
 
 	template <class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	LQUPtoInverseOfFullRankMinor( const Field& F, const size_t rank,
-				      typename Field::Element * A_factors, const size_t lda,
+				      typename Field::Element_ptr A_factors, const size_t lda,
 				      const size_t* QtPointer,
-				      typename Field::Element * X, const size_t ldx)
+				      typename Field::Element_ptr X, const size_t ldx)
 	{
 
 		// upper entries are okay, just need to move up bottom ones
 		const size_t* srcRow = QtPointer;
 		for (size_t row=0; row<rank; row++, srcRow++)
 			if (*srcRow != row) {
-				typename Field::Element* oldRow = A_factors + (*srcRow) * lda;
-				typename Field::Element* newRow = A_factors + row * lda;
+				typename Field::Element_ptr oldRow = A_factors + (*srcRow) * lda;
+				typename Field::Element_ptr newRow = A_factors + row * lda;
 				for (size_t col=0; col<row; col++, oldRow++, newRow++)
 					F.assign(*newRow, *oldRow);
 			}
@@ -429,11 +427,11 @@ namespace FFPACK {
 	TriangularFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			  const FFLAS::FFLAS_DIAG diag,
 			  const size_t M, const size_t N, const size_t R,
-			  typename Field::Element * T, const size_t ldt,
-			  const typename Field::Element * A, const size_t lda)
+			  typename Field::Element_ptr T, const size_t ldt,
+			  typename Field::ConstElement_ptr A, const size_t lda)
 	{
-		const typename Field::Element * Ai = A;
-		typename Field::Element * Ti = T;
+		typename Field::ConstElement_ptr Ai = A;
+		typename Field::Element_ptr Ti = T;
 		if (Uplo == FFLAS::FflasUpper){
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				//!@todo just one triangular fzero+fcopy ?
@@ -483,12 +481,12 @@ namespace FFPACK {
 	EchelonFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 		       const FFLAS::FFLAS_DIAG diag,
 		       const size_t M, const size_t N, const size_t R, const size_t* P,
-		       typename Field::Element * T, const size_t ldt,
-		       const typename Field::Element * A, const size_t lda)
+		       typename Field::Element_ptr T, const size_t ldt,
+		       typename Field::ConstElement_ptr A, const size_t lda)
 	{
 
-		const typename Field::Element * Ai = A;
-		typename Field::Element * Ti = T;
+		typename Field::ConstElement_ptr Ai = A;
+		typename Field::Element_ptr Ti = T;
 		if (Uplo == FFLAS::FflasUpper){
 			for (size_t i=0; i<R; i++, Ai += lda, Ti += ldt){
 				size_t piv = P[i];
@@ -539,9 +537,9 @@ namespace FFPACK {
 	void
 	solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
 		 const size_t M, const size_t N, const size_t R,
-		 typename Field::Element * L, const size_t ldl,
+		 typename Field::Element_ptr L, const size_t ldl,
 		 const size_t * Q,
-		 typename Field::Element * B, const size_t ldb )
+		 typename Field::Element_ptr B, const size_t ldb )
 	{
 
 		size_t LM = (Side == FFLAS::FflasRight)?N:M;
@@ -574,11 +572,11 @@ namespace FFPACK {
 	void
 	solveLB2( const Field& F, const FFLAS::FFLAS_SIDE Side,
 		  const size_t M, const size_t N, const size_t R,
-		  typename Field::Element * L, const size_t ldl,
+		  typename Field::Element_ptr L, const size_t ldl,
 		  const size_t * Q,
-		  typename Field::Element * B, const size_t ldb )
+		  typename Field::Element_ptr B, const size_t ldb )
 	{
-		typename Field::Element * Lcurr,* Rcurr,* Bcurr;
+		typename Field::Element_ptr Lcurr, Rcurr, Bcurr;
 		size_t ib,  Ldim;
 		int k;
 		if ( Side == FFLAS::FflasLeft ){

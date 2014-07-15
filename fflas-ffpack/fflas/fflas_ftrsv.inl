@@ -39,12 +39,12 @@ template<class Field>
 inline void
 ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 	      const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
-	      const size_t N,const typename Field::Element * A, size_t lda,
-	      typename Field::Element * X, int incX)
+	      const size_t N,typename Field::ConstElement_ptr A, size_t lda,
+	      typename Field::Element_ptr X, int incX)
 {
 
-	typename Field::Element * Xi,* Xj, * Ximax;
-	const typename Field::Element * Ai, * Aj;
+	typename Field::Element_ptr Xi, Xj,  Ximax;
+	typename Field::ConstElement_ptr Ai,  Aj;
 	if ( Uplo == FflasLower ){
 		if ( TransA == FflasTrans){
 			Ai = A+(N-1)*(lda+1); // bottom right entry of A

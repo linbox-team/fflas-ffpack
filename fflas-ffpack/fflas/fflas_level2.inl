@@ -52,8 +52,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fcopy (const Field& F, const size_t m, const size_t n,
-	       const typename Field::Element * B, const size_t ldb ,
-	       typename Field::Element * A, const size_t lda );
+	       typename Field::ConstElement_ptr B, const size_t ldb ,
+	       typename Field::Element_ptr A, const size_t lda );
 
 	/** \brief fzero : \f$A \gets 0 \f$.
 	 * @param F field
@@ -67,7 +67,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fzero (const Field& F, const size_t m, const size_t n,
-	       typename Field::Element * A, const size_t lda)
+	       typename Field::Element_ptr A, const size_t lda)
 	{
 		/*  use memset only with Elements that are ok */
 		if (n == lda) { // contigous data
@@ -85,7 +85,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fidentity (const Field& F, const size_t m, const size_t n,
-		   typename Field::Element * A, const size_t lda, const typename Field::Element & d) // =F.one...
+		   typename Field::Element_ptr A, const size_t lda, const typename Field::Element & d) // =F.one...
 	{
 		fzero(F,m,n,A,lda);
 		for (size_t i = 0 ; i < std::min(m,n) ; ++i)
@@ -96,7 +96,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fidentity (const Field& F, const size_t m, const size_t n,
-		   typename Field::Element * A, const size_t lda)
+		   typename Field::Element_ptr A, const size_t lda)
 	{
 		fzero(F,m,n,A,lda);
 		for (size_t i = 0 ; i < std::min(m,n) ; ++i)
@@ -115,7 +115,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element * A, const size_t lda);
+	       typename Field::Element_ptr A, const size_t lda);
 
 	/** finit
 	 * \f$A \gets  B mod F\f$.
@@ -128,11 +128,11 @@ namespace FFLAS {
 	 * \param ldb stride of \p B
 	 * @internal
 	 */
-	template<class Field, class OtherElement>
+	template<class Field, class OtherElement_ptr>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
-	       const OtherElement * B, const size_t ldb,
-	       typename Field::Element * A, const size_t lda);
+	       const OtherElement_ptr B, const size_t ldb,
+	       typename Field::Element_ptr A, const size_t lda);
 
 	/** fconvert
 	 * \f$A \gets  B mod F\f$.
@@ -145,11 +145,11 @@ namespace FFLAS {
 	 * \param ldb stride of \p B
 	 * @internal
 	 */
-	template<class Field, class OtherElement>
+	template<class Field, class OtherElement_ptr>
 	void
 	fconvert (const Field& F, const size_t m , const size_t n,
-		  OtherElement * A, const size_t lda,
-		  const typename Field::Element* B, const size_t ldb)
+		  OtherElement_ptr A, const size_t lda,
+		  typename Field::ConstElement_ptr B, const size_t ldb)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
@@ -169,7 +169,7 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fnegin (const Field& F, const size_t m , const size_t n,
-		typename Field::Element * A, const size_t lda)
+		typename Field::Element_ptr A, const size_t lda)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
@@ -189,8 +189,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fneg (const Field& F, const size_t m , const size_t n,
-	      const typename Field::Element * B, const size_t ldb,
-	      typename Field::Element * A, const size_t lda)
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr A, const size_t lda)
 	{
 		//!@todo check if n == lda
 		for (size_t i = 0 ; i < m ; ++i)
@@ -212,7 +212,7 @@ namespace FFLAS {
 	void
 	fscalin (const Field& F, const size_t m , const size_t n,
 		 const typename Field::Element alpha,
-		 typename Field::Element * A, const size_t lda);
+		 typename Field::Element_ptr A, const size_t lda);
 
 	/** fscal
 	 * \f$B \gets a \cdot A\f$.
@@ -230,8 +230,8 @@ namespace FFLAS {
 	void
 	fscal (const Field& F, const size_t m , const size_t n,
 	       const typename Field::Element alpha,
-	       const typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb);
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb);
 
 	/** \brief faxpy : \f$y \gets \alpha \cdot x + y\f$.
 	 * @param F field
@@ -247,8 +247,8 @@ namespace FFLAS {
 	void
 	faxpy (const Field& F, const size_t m, const size_t n
 	       , const typename Field::Element alpha,
-	       const typename Field::Element * X, const size_t ldx,
-	       typename Field::Element * Y, const size_t ldy );
+	       typename Field::ConstElement_ptr X, const size_t ldx,
+	       typename Field::Element_ptr Y, const size_t ldy );
 
 	/** \brief faxpby : \f$y \gets \alpha \cdot x + \beta \cdot y\f$.
 	 * @param F field
@@ -266,9 +266,9 @@ namespace FFLAS {
 	void
 	faxpby (const Field& F, const size_t m, const size_t n,
 		const typename Field::Element alpha,
-		const typename Field::Element * X, const size_t ldx,
+		typename Field::ConstElement_ptr X, const size_t ldx,
 		const typename Field::Element beta,
-		typename Field::Element * Y, const size_t ldy );
+		typename Field::Element_ptr Y, const size_t ldy );
 
 	/** \brief fmove : \f$A \gets B \f$ and \f$ B \gets 0\f$.
 	 * @param F field
@@ -282,8 +282,8 @@ namespace FFLAS {
 	template<class Field>
 	void
 	fmove (const Field& F, const size_t m, const size_t n,
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb )
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb )
 	{
 		fcopy(F,m,n,A,lda,B,ldb);
 		fzero(F,m,n,B,ldb);
@@ -304,9 +304,9 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F, const size_t M, const size_t N,
-	      const typename Field::Element* A, const size_t lda,
-	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc);
+	      typename Field::ConstElement_ptr A, const size_t lda,
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr C, const size_t ldc);
 
 
 
@@ -325,17 +325,17 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fsub (const Field& F, const size_t M, const size_t N,
-	      const typename Field::Element* A, const size_t lda,
-	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc);
+	      typename Field::ConstElement_ptr A, const size_t lda,
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr C, const size_t ldc);
 
 	//! fsubin
 	//! C = C - B
 	template <class Field>
 	void
 	fsubin (const Field& F, const size_t M, const size_t N,
-		const typename Field::Element* B, const size_t ldb,
-		typename Field::Element* C, const size_t ldc);
+		typename Field::ConstElement_ptr B, const size_t ldb,
+		typename Field::Element_ptr C, const size_t ldc);
 
 	/** fadd : matrix addition with scaling.
 	 * Computes \p C = \p A + alpha \p B.
@@ -353,17 +353,17 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F, const size_t M, const size_t N,
-	      const typename Field::Element* A, const size_t lda,
+	      typename Field::ConstElement_ptr A, const size_t lda,
 	      const typename Field::Element alpha,
-	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc);
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr C, const size_t ldc);
 
 	//! faddin
 	template <class Field>
 	void
 	faddin (const Field& F, const size_t M, const size_t N,
-		const typename Field::Element* B, const size_t ldb,
-		typename Field::Element* C, const size_t ldc);
+		typename Field::ConstElement_ptr B, const size_t ldb,
+		typename Field::Element_ptr C, const size_t ldc);
 
 
 	/**  @brief finite prime Field GEneral Matrix Vector multiplication.
@@ -383,14 +383,14 @@ namespace FFLAS {
 	 * @param incY stride of \p Y
 	 */
 	template<class Field>
-	typename Field::Element*
+	typename Field::Element_ptr
 	fgemv (const Field& F, const FFLAS_TRANSPOSE TransA,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
-	       const typename Field::Element * A, const size_t lda,
-	       const typename Field::Element * X, const size_t incX,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr X, const size_t incX,
 	       const  typename Field::Element beta,
-	       typename Field::Element * Y, const size_t incY);
+	       typename Field::Element_ptr Y, const size_t incY);
 
 	/**  @brief fger: rank one update of a general matrix
 	 *
@@ -410,9 +410,9 @@ namespace FFLAS {
 	void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      const typename Field::Element * x, const size_t incx,
-	      const typename Field::Element * y, const size_t incy,
-	      typename Field::Element * A, const size_t lda);
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
+	      typename Field::Element_ptr A, const size_t lda);
 
 	/** @brief ftrsv: TRiangular System solve with Vector
 	 *  Computes  \f$ X \gets \mathrm{op}(A^{-1}) X\f$
@@ -430,8 +430,8 @@ namespace FFLAS {
 	void
 	ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 	       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
-	       const size_t N,const typename Field::Element * A, const size_t lda,
-	       typename Field::Element * X, int incX);
+	       const size_t N,typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::Element_ptr X, int incX);
 
 } // FFLAS
 

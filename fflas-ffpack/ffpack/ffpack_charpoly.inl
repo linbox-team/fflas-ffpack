@@ -35,15 +35,15 @@ namespace FFPACK {
 	template <class Field, class Polynomial>
 	std::list<Polynomial>&
 	CharPoly (const Field& F, std::list<Polynomial>& charp, const size_t N,
-		  typename Field::Element * A, const size_t lda,
+		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		switch (CharpTag) {
 		case FfpackLUK:
 			{
-				typename Field::Element * X = new typename Field::Element[N*(N+1)];
+				typename Field::Element_ptr X = fflas_new (F, N, N+1);
 				Protected::LUKrylov (F, charp, N, A, lda, X, N);
-				delete[] X;
+				fflas_delete (X);
 				return charp;
 			}
 		case FfpackKG:
@@ -71,9 +71,9 @@ namespace FFPACK {
 			}
 		case FfpackHybrid:
 			{
-				typename Field::Element * X = new typename Field::Element[N*(N+1)];
+				typename Field::Element_ptr X = fflas_new (F, N, N+1);
 				Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
-				delete[] X;
+				fflas_delete (X);
 				return charp;
 			}
 		case FfpackArithProg:
@@ -102,9 +102,9 @@ namespace FFPACK {
 			}
 		default:
 			{
-				typename Field::Element * X = new typename Field::Element[N*(N+1)];
+				typename Field::Element_ptr X = fflas_new (F, N, N+1);
 				Protected::LUKrylov (F, charp, N, A, lda, X, N);
-				delete[] X;
+				fflas_delete (X);
 				return charp;
 			}
 		}
@@ -126,7 +126,7 @@ namespace FFPACK {
 	template <class Field, class Polynomial>
 	Polynomial&
 	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-		  typename Field::Element * A, const size_t lda,
+		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
 	{
 
@@ -153,8 +153,8 @@ namespace FFPACK {
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		LUKrylov (const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element * A, const size_t lda,
-			  typename Field::Element * X, const size_t ldx)
+			  typename Field::Element_ptr A, const size_t lda,
+			  typename Field::Element_ptr X, const size_t ldx)
 		{
 
 			typedef typename Field::Element elt;
@@ -224,11 +224,9 @@ namespace FFPACK {
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const size_t N,
-				 typename Field::Element * A, const size_t lda,
-				 typename Field::Element * X, const size_t ldx)
+				 typename Field::Element_ptr A, const size_t lda,
+				 typename Field::Element_ptr X, const size_t ldx)
 		{
-
-			typedef typename Field::Element elt;
 
 			size_t kg_mc, kg_mb, kg_j;
 
@@ -236,8 +234,8 @@ namespace FFPACK {
 				return charp;
 			else{// Matrix A is not generic
 				Polynomial *minP = new Polynomial();
-				const elt* Ai;
-				elt* A2i, *Xi;
+				typename Field::ConstElement_ptr Ai;
+				typename Field::ConstElement_ptr A2i, Xi;
 				size_t *P = new size_t[N];
 
 				FFPACK::MinPoly (F, *minP, N, A, lda, X, ldx, P, FfpackKGF, kg_mc, kg_mb, kg_j);
@@ -262,8 +260,8 @@ namespace FFPACK {
 				}
 
 				size_t Nrest = N-k;
-				elt * X21 = X + k*ldx;
-				elt * X22 = X21 + k;
+				typename Field::ConstElement_ptr X21 = X + k*ldx;
+				typename Field::ConstElement_ptr X22 = X21 + k;
 
 				// Creates the matrix A
 				//size_t lambda = std::max(0,N - kg_mc*(kg_j+1) - kg_mb);  // uint >= 0 !!!
@@ -284,7 +282,7 @@ namespace FFPACK {
 					++imax;
 				}
 				// Column block B
-				for (typename Field::Element* Aj=A; Aj<A+N*lda; Aj+=lda)
+				for (typename Field::Element_ptr Aj=A; Aj<A+N*lda; Aj+=lda)
 					FFLAS::fcopy (F, kg_mb, Aj+N-kg_mc-kg_mb, 1, Aj+lambda, 1);
 
 				// Second Id block
@@ -303,7 +301,7 @@ namespace FFPACK {
 				// A = P . A
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
 					N, 0,(int) k,
-					const_cast<typename Field::Element* &>(A), lda, P);
+					/*const_cast<typename Field::Element_ptr &>*/(A), lda, P);
 
 				// Copy X2_ = (A'2_)
 				for (Xi = X21, Ai = A+k*lda; Xi != X21 + Nrest*ldx; Ai+=lda-N, Xi+=ldx-N){
@@ -315,7 +313,7 @@ namespace FFPACK {
 				// A = P^t . A : Undo the permutation on A
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					N, 0,(int) k,
-					const_cast<typename Field::Element* &>(A), lda, P);
+					/*const_cast<typename Field::Element_ptr &>*/(A), lda, P);
 
 				// X2_ = X2_ . P^t (=  (P A P^t)2_)
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
@@ -326,7 +324,7 @@ namespace FFPACK {
 				      F.one, X, ldx, X21, ldx);
 
 				// Creation of the matrix A2 for recurise call
-				elt * A2 = new elt[Nrest*Nrest];
+				typename Field::Element_ptr A2 = fflas_new (F, Nrest, Nrest);
 
 				for (Xi = X22, A2i = A2;
 				     Xi != X22 + Nrest*ldx;
@@ -342,7 +340,7 @@ namespace FFPACK {
 				LUKrylov_KGFast (F, charp, Nrest, A2, Nrest, X22, ldx);
 				charp.push_front (*minP);
 				delete[] P;
-				delete[] A2;
+				fflas_delete (A2);
 				return charp;
 			}
 		}

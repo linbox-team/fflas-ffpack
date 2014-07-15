@@ -78,6 +78,8 @@ namespace FFPACK
 	public:
 
 		typedef int64_t Element;
+		typedef int64_t* Element_ptr;
+		typedef const int32_t* ConstElement_ptr;
 		const Element one  ;
 		const Element zero ;
 		const Element mOne ;

@@ -197,9 +197,9 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F,  const size_t N,
-	      const typename Field::Element* A, const size_t inca,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc)
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc)
 	{
 		if (inca == 1 && incb == 1 && incc == 1)
 			for (size_t i=0; i<N; i++)
@@ -212,8 +212,8 @@ namespace FFLAS {
 	template <class Field>
 	void
 	faddin (const Field& F,  const size_t N,
-		const typename Field::Element* B, const size_t incb,
-		typename Field::Element* C, const size_t incc)
+		typename Field::ConstElement_ptr B, const size_t incb,
+		typename Field::Element_ptr C, const size_t incc)
 	{
 		fadd(F,N,B,incb,C,incc,C,incc);
 		return;
@@ -231,9 +231,9 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fsub (const Field& F,  const size_t N,
-	      const typename Field::Element* A, const size_t inca,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc)
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc)
 	{
 		if (inca == 1 && incb == 1 && incc == 1)
 			for (size_t i=0; i<N; i++)
@@ -247,8 +247,8 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fsubin (const Field& F,  const size_t N,
-		const typename Field::Element* B, const size_t incb,
-		typename Field::Element* C, const size_t incc)
+		typename Field::ConstElement_ptr B, const size_t incb,
+		typename Field::Element_ptr C, const size_t incc)
 	{
 
 		fsub(F,N,C,incc,B,incb,C,incc);
@@ -259,10 +259,10 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F, const size_t N,
-	      const typename Field::Element* A, const size_t inca,
+	      typename Field::ConstElement_ptr A, const size_t inca,
 	      const typename Field::Element alpha,
-	      const typename Field::Element* B, const size_t incb,
-	      typename Field::Element* C, const size_t incc)
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc)
 	{
 		if (C == A && inca == incc)
 			return faxpy(F,N,alpha,B,incb,C,incc);
@@ -283,10 +283,8 @@ namespace FFLAS {
 			return;
 		}
 
-		typedef typename Field::Element Element ;
-
-		const Element *Ai = A, *Bi = B;
-		Element *Ci = C;
+		typename Field::ConstElement_ptr Ai = A, Bi = B;
+		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+N*inca; Ai+=inca, Bi+=incb, Ci+=incc) {
 			F.mul(*Ci,alpha,*Bi);
 			F.addin (*Ci, *Ai);
@@ -303,14 +301,14 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F, const size_t M, const size_t N,
-	      const typename Field::Element* A, const size_t lda,
-	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc)
+	      typename Field::ConstElement_ptr A, const size_t lda,
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr C, const size_t ldc)
 	{
 		if (N == lda && N == ldb && N == ldc)
 			return fadd(F,M*N,A,1,B,1,C,1);
-		const typename Field::Element * Ai = A, *Bi = B;
-		typename Field::Element *Ci = C;
+		typename Field::ConstElement_ptr Ai = A, Bi = B;
+		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
 			fadd(F,N,Ai,1,Bi,1,Ci,1);
 	}
@@ -318,14 +316,14 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fsub (const Field& F, const size_t M, const size_t N,
-	      const typename Field::Element* A, const size_t lda,
-	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc)
+	      typename Field::ConstElement_ptr A, const size_t lda,
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr C, const size_t ldc)
 	{
 		if (N == lda && N == ldb && N == ldc)
 			return fsub(F,M*N,A,1,B,1,C,1);
-		const typename Field::Element * Ai = A, *Bi = B;
-		typename Field::Element *Ci = C;
+		typename Field::ConstElement_ptr Ai = A, Bi = B;
+		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
 			fsub(F,N,Ai,1,Bi,1,Ci,1);
 	}
@@ -333,13 +331,13 @@ namespace FFLAS {
 	template <class Field>
 	void
 	faddin (const Field& F, const size_t M, const size_t N,
-		const typename Field::Element* B, const size_t ldb,
-		typename Field::Element* C, const size_t ldc)
+		typename Field::ConstElement_ptr B, const size_t ldb,
+		typename Field::Element_ptr C, const size_t ldc)
 	{
 		if (N == ldb && N == ldc)
 			return faddin(F,M*N,B,1,C,1);
 		const typename Field::Element  *Bi = B;
-		typename Field::Element *Ci = C;
+		typename Field::Element_ptr Ci = C;
 		for (; Bi < B+M*ldb;  Bi+=ldb, Ci+=ldc)
 			faddin(F,N,Bi,1,Ci,1);
 	}
@@ -347,13 +345,13 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fsubin (const Field& F, const size_t M, const size_t N,
-		const typename Field::Element* B, const size_t ldb,
-		typename Field::Element* C, const size_t ldc)
+		typename Field::ConstElement_ptr B, const size_t ldb,
+		typename Field::Element_ptr C, const size_t ldc)
 	{
 		if (N == ldb && N == ldc)
 			return fsubin(F,M*N,B,1,C,1);
-		const typename Field::Element  *Bi = B;
-		typename Field::Element *Ci = C;
+		typename Field::ConstElement_ptr Bi = B;
+		typename Field::Element_ptr Ci = C;
 		for (; Bi < B+M*ldb;  Bi+=ldb, Ci+=ldc)
 			fsubin(F,N,Bi,1,Ci,1);
 	}
@@ -363,10 +361,10 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fadd (const Field& F, const size_t M, const size_t N,
-	      const typename Field::Element* A, const size_t lda,
+	      typename Field::ConstElement_ptr A, const size_t lda,
 	      const typename Field::Element alpha,
-	      const typename Field::Element* B, const size_t ldb,
-	      typename Field::Element* C, const size_t ldc)
+	      typename Field::ConstElement_ptr B, const size_t ldb,
+	      typename Field::Element_ptr C, const size_t ldc)
 	{
 		if (C == A && lda == ldc)
 			return faxpy(F,M,N,alpha,B,ldb,C,ldc);
@@ -379,10 +377,9 @@ namespace FFLAS {
 
 		if (N == lda && N == ldb && N == ldc)
 			return fadd(F,M*N,A,1,alpha,B,1,C,1);
-		typedef typename Field::Element Element ;
 
-		const Element *Ai = A, *Bi = B;
-		Element *Ci = C;
+		typename Field::ConstElement_ptr Ai = A, Bi = B;
+		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
 			for (size_t i=0; i<N; i++) {
 				F.mul(Ci[i],alpha,Bi[i]);

@@ -44,10 +44,10 @@ namespace FFLAS { namespace BLAS3 {
 				   const FFLAS_TRANSPOSE tb,
 				   const size_t mr, const size_t nr, const size_t kr,
 				   const typename Field::Element alpha,
-				   typename Field::Element* A,const size_t lda,
-				   typename Field::Element* B,const size_t ldb,
+				   typename Field::Element_ptr A,const size_t lda,
+				   typename Field::Element_ptr B,const size_t ldb,
 				   const typename Field::Element  beta,
-				   typename Field::Element * C, const size_t ldc,
+				   typename Field::Element_ptr C, const size_t ldc,
 				   const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				  )
 	{
@@ -60,9 +60,9 @@ namespace FFLAS { namespace BLAS3 {
 		FFLASFFPACK_check(kr == nr);
 
 		size_t lb, cb, la, ca;
-		typename Field::Element * A11=A, *A12, *A21, *A22;
-		typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		typename Field::Element_ptr A11=A, A12, A21, A22;
+		typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 
 		if (ta == FflasTrans) {
@@ -151,10 +151,10 @@ namespace FFLAS { namespace BLAS3 {
 				 const FFLAS_TRANSPOSE tb,
 				 const size_t mr, const size_t nr, const size_t kr,
 				 const typename Field::Element alpha,
-				 typename Field::Element* A,const size_t lda,
-				 const typename Field::Element* B,const size_t ldb,
+				 typename Field::Element_ptr A,const size_t lda,
+				 const typename Field::Element_ptr B,const size_t ldb,
 				 const typename Field::Element  beta,
-				 typename Field::Element * C, const size_t ldc,
+				 typename Field::Element_ptr C, const size_t ldc,
 				 const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				)
 	{
@@ -166,9 +166,9 @@ namespace FFLAS { namespace BLAS3 {
 		FFLASFFPACK_check(kr == nr && kr <= mr);
 
 		size_t lb, cb, la, ca;
-		typename Field::Element * A11=A, *A12, *A21, *A22;
-		const typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		typename Field::Element_ptr A11=A, A12, A21, A22;
+		const typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 
 		if (ta == FflasTrans) {
@@ -214,7 +214,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T3 = B22 - B12         in A11
 		fsub(F,lb,cb,B22,ldb,B12,ldb,A11,lda);
 		// P7 = S3 T3             in X
-		typename Field::Element * X = new typename Field::Element[mr*nr];
+		typename Field::Element_ptr X = fflas_new (F, mr, nr);
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C22, ldc, A11, lda, F.zero, X, nr, H);
 		// T2 = B22 - T1          in A11
 		fsub(F,lb,cb,B22,ldb,C21,ldc,A11,lda);
@@ -242,7 +242,7 @@ namespace FFLAS { namespace BLAS3 {
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, X, nr, H);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,X,nr,C11,ldc);
-		delete[] X ;
+		fflas_delete (X);
 		// P4 = A22 T4            in A21
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A22, lda, A11, lda, F.zero, A21, lda, H);
 		// U6 = U3 - P4           in C21
@@ -257,10 +257,10 @@ namespace FFLAS { namespace BLAS3 {
 				 const FFLAS_TRANSPOSE tb,
 				 const size_t mr, const size_t nr, const size_t kr,
 				 const typename Field::Element alpha,
-				 const typename Field::Element* A,const size_t lda,
-				 typename Field::Element* B,const size_t ldb,
+				 const typename Field::Element_ptr A,const size_t lda,
+				 typename Field::Element_ptr B,const size_t ldb,
 				 const typename Field::Element  beta,
-				 typename Field::Element * C, const size_t ldc,
+				 typename Field::Element_ptr C, const size_t ldc,
 				 const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				)
 	{
@@ -272,9 +272,9 @@ namespace FFLAS { namespace BLAS3 {
 		FFLASFFPACK_check(kr == nr && kr <= mr);
 
 		size_t lb, cb, la, ca;
-		const typename Field::Element * A11=A, *A12, *A21, *A22;
-		typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		const typename Field::Element_ptr A11=A, A12, A21, A22;
+		typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 
 		if (ta == FflasTrans) {
@@ -320,7 +320,7 @@ namespace FFLAS { namespace BLAS3 {
 		// T3 = B22 - B12         in B12
 		fsub(F,lb,cb,B22,ldb,B12,ldb,B12,ldb);
 		// P7 = S3 T3             in X
-		typename Field::Element * X = new typename Field::Element[mr*nr];
+		typename Field::Element_ptr X = fflas_new (F, mr, nr);
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, C22, ldc, B12, ldb, F.zero, X, nr, H);
 		// T2 = B22 - T1          in B12
 		fsub(F,lb,cb,B22,ldb,C12,ldc,B12,ldb);
@@ -340,7 +340,7 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(F,mr,nr,C22,ldc,C21,ldc,C12,ldc);
 		// U3 = U2 + P7           in C21
 		faddin(F,mr,nr,X,nr,C21,ldc);
-		delete[] X ;
+		fflas_delete (X);
 		// U7 = U3 + P5           in C22
 		faddin(F,mr,nr,C21,ldc,C22,ldc);
 		// U6 = U3 - P4           in C21

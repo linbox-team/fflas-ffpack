@@ -40,8 +40,8 @@ template <class Field>
 	fgesv (const Field& F,
 	       const FFLAS::FFLAS_SIDE Side,
 	       const size_t M, const size_t N,
-	       typename Field::Element *A, const size_t lda,
-	       typename Field::Element *B, const size_t ldb,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
 	       int * info)
 	{
 
@@ -69,9 +69,9 @@ template <class Field>
 	fgesv (const Field& F,
 	       const FFLAS::FFLAS_SIDE Side,
 	       const size_t M, const size_t N, const size_t NRHS,
-	       typename Field::Element *A, const size_t lda,
-	       typename Field::Element *X, const size_t ldx,
-	       const typename Field::Element *B, const size_t ldb,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr X, const size_t ldx,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       int * info)
 	{
 

@@ -92,12 +92,12 @@ std::ostream& write_dbl(std::ostream& c,
 
 // Reading a matrice from a (eventually zipped) file
 template<class Field>
-typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int* tnj)
+typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,int* tnj)
 {
 	char *UT = NULL, *File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
-	typename Field::Element * X = NULL;
+	typename Field::Element_ptr X = NULL;
 	if ((mat_file[--s] == 'z') &&
 	    (mat_file[--s] == 'g') &&
 	    (mat_file[--s] == '.')) {
@@ -145,13 +145,13 @@ typename Field::Element * read_field(const Field& F,char * mat_file,int* tni,int
 
 template<class Field>
 void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
-		 typename Field::Element *& NW,typename Field::Element *& NE,
-		 typename Field::Element *& SW,typename Field::Element *& SE)
+		 typename Field::Element_ptr& NW,typename Field::Element_ptr& NE,
+		 typename Field::Element_ptr& SW,typename Field::Element_ptr& SE)
 {
 	char *UT = NULL, *File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
-	typename Field::Element * X;
+	typename Field::Element_ptr X;
 	if ((mat_file[--s] == 'z') &&
 	    (mat_file[--s] == 'g') &&
 	    (mat_file[--s] == '.')) {
@@ -230,7 +230,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 // Displays a matrix
 template<class Field>
 std::ostream& write_field(const Field& F,std::ostream& c,
-			  const typename Field::Element* E,
+			  typename Field::ConstElement_ptr E,
 			  int n, int m, int id, bool mapleFormat = false)
 {
 

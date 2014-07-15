@@ -43,10 +43,10 @@ namespace FFLAS { namespace BLAS3 {
 				    const FFLAS_TRANSPOSE tb,
 				    const size_t mr, const size_t nr, const size_t kr,
 				    const typename Field::Element alpha,
-				    typename Field::Element* A,const size_t lda,
-				    typename Field::Element* B,const size_t ldb,
+				    typename Field::Element_ptr A,const size_t lda,
+				    typename Field::Element_ptr B,const size_t ldb,
 				    const typename Field::Element  beta,
-				    typename Field::Element * C, const size_t ldc,
+				    typename Field::Element_ptr C, const size_t ldc,
 				    // const size_t kmax, const size_t w, const FFLAS_BASE base
 				    const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				   )
@@ -60,9 +60,9 @@ namespace FFLAS { namespace BLAS3 {
 		F.neg(malpha,alpha);
 
 		// A, B and c submatrices
-		typename Field::Element * A11=A, *A12, *A21, *A22;
-		typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		typename Field::Element_ptr A11=A, A12, A21, A22;
+		typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 
 		typename Field::Element mbeta ;
@@ -107,10 +107,10 @@ namespace FFLAS { namespace BLAS3 {
 		// Z1 = C22 - C12         in C22
 		fsubin(F,mr,nr,C12,ldc,C22,ldc);
 		// S1 = A21 + A22         in X
-		typename Field::Element* X = new typename Field::Element[std::max(std::max(mr*nr,kr*nr),mr*kr)];
+		typename Field::Element_ptr X = fflas_new (F, std::max(std::max(mr*nr,kr*nr),mr*kr), 1);
 		fadd(F,la,ca,A21,lda,A22,lda,X,ca);
 		// T1 = B12 - B11         in Y
-		typename Field::Element* Y = new typename Field::Element[std::max(mr,kr)*nr];
+		typename Field::Element_ptr Y = fflas_new (F, std::max(mr,kr), nr);
 		fsub(F,lb,cb,B12,ldb,B11,ldb,Y,cb);
 		// Z2 = C21 - Z1          in C21
 		fsubin(F,mr,nr,C22,ldc,C21,ldc);
@@ -146,7 +146,7 @@ namespace FFLAS { namespace BLAS3 {
 		faddin(F,mr,nr,Y,nr,C11,ldc);
 		// U2 = P6 + P1           in X
 		faddin(F,mr,nr,Y,nr,X,nr);
-		delete[] Y;
+		fflas_delete (Y);
 		// U3 = U2 + P7           in C22
 		faddin(F,mr,nr,X,nr,C22,ldc);
 		// U4 = U2 + P5           in X
@@ -160,7 +160,7 @@ namespace FFLAS { namespace BLAS3 {
 		// U5 = U4 + P3           in C12
 		faddin(F,mr,nr,X,nr,C12,ldc);
 
-		delete[] X;
+		fflas_delete (X);
 
 
 	} // WinogradAccOld
@@ -171,10 +171,10 @@ namespace FFLAS { namespace BLAS3 {
 				     const FFLAS_TRANSPOSE tb,
 				     const size_t mr, const size_t nr, const size_t kr,
 				     const typename Field::Element alpha,
-				     const typename Field::Element* A,const size_t lda,
-				     typename Field::Element* B,const size_t ldb,
+				     const typename Field::Element_ptr A,const size_t lda,
+				     typename Field::Element_ptr B,const size_t ldb,
 				     const typename Field::Element  beta,
-				     typename Field::Element * C, const size_t ldc,
+				     typename Field::Element_ptr C, const size_t ldc,
 				     // const size_t kmax, const size_t w, const FFLAS_BASE base
 				     const MMHelper<Field, MMHelperAlgo::Winograd,FieldTrait > & WH
 				    )
@@ -188,9 +188,9 @@ namespace FFLAS { namespace BLAS3 {
 		F.neg(malpha,alpha);
 
 		// A, B and c submatrices
-		const typename Field::Element * A11=A, *A12, *A21, *A22;
-		typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		const typename Field::Element_ptr A11=A, A12, A21, A22;
+		typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 
 		typename Field::Element mbeta ;
@@ -236,15 +236,15 @@ namespace FFLAS { namespace BLAS3 {
 		// Z1 = C22 - C12         in C22
 		fsubin(F,mr,nr,C12,ldc,C22,ldc);
 		// T1 = B12 - B11         in X
-		// typename Field::Element* X = new typename Field::Element[std::max(mr,kr)*nr];
-		typename Field::Element* X = new typename Field::Element[mr*nr];
+		// typename Field::Element_ptr X = fflas_new (F, std::max(mr,kr)*nr];
+		typename Field::Element_ptr X = fflas_new (F, mr, nr);
 		fsub(F,lb,cb,B12,ldb,B11,ldb,X,cb);
 		// Z2 = C21 - Z1          in C21
 		fsubin(F,mr,nr,C22,ldc,C21,ldc);
 		// T3 = B22 - B12         in B12 ;
 		fsub(F,lb,cb,B22,ldb,B12,ldb,B12,ldb);
 		// S3 =  A11 - A21        in Y
-		typename Field::Element* Y = new typename Field::Element[mr*kr];
+		typename Field::Element_ptr Y = fflas_new (F, mr, kr);
 		fsub(F,la,ca,A11,lda,A21,lda,Y,ca);
 		// P7 = a S3 T3 + b Z1    in C22
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, Y, ca, B12, ldb, beta, C22, ldc, H);
@@ -280,12 +280,12 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(F,mr,nr,C22,ldc,C21,ldc,C21,ldc);
 		// U1 = P1 + P2           in C11
 		faddin(F,mr,nr,X,nr,C11,ldc);
-		delete[] X;
+		fflas_delete (X);
 		// U7 = U3 + P5           in C22
 		faddin(F,mr,nr,C12,ldc,C22,ldc);
 		// P3 = a S4 B22          in C12
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, Y, ca, B22, ldb, F.zero, C12, ldc, H);
-		delete[] Y;
+		fflas_delete (Y);
 		// U5 = U4 + P3           in C12
 		faddin(F,mr,nr,B21,ldb,C12,ldc);
 
@@ -301,10 +301,10 @@ namespace FFLAS { namespace BLAS3 {
 				     const FFLAS_TRANSPOSE tb,
 				     const size_t mr, const size_t nr, const size_t kr,
 				     const typename Field::Element alpha,
-				     typename Field::Element* A,const size_t lda,
-				     const typename Field::Element* B,const size_t ldb,
+				     typename Field::Element_ptr A,const size_t lda,
+				     const typename Field::Element_ptr B,const size_t ldb,
 				     const typename Field::Element  beta,
-				     typename Field::Element * C, const size_t ldc,
+				     typename Field::Element_ptr C, const size_t ldc,
 				     // const size_t kmax, const size_t w, const FFLAS_BASE base
 				     const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				    )
@@ -318,9 +318,9 @@ namespace FFLAS { namespace BLAS3 {
 		F.neg(malpha,alpha);
 
 		// A, B and c submatrices
-		typename Field::Element * A11=A, *A12, *A21, *A22;
-		const typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C21+nr;
+		typename Field::Element_ptr A11=A, A12, A21, A22;
+		const typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 
 		typename Field::Element mbeta ;
@@ -368,12 +368,12 @@ namespace FFLAS { namespace BLAS3 {
 		// Z2 = C21 - Z1          in C21
 		fsubin(F,mr,nr,C22,ldc,C21,ldc);
 		// S3 =  A11 - A21        in X
-		typename Field::Element* X = new typename Field::Element[mr*nr];
+		typename Field::Element_ptr X = fflas_new (F, mr, nr);
 		fsub(F,la,ca,A11,lda,A21,lda,X,ca);
 		// S1 = A21 + A22         in A21
 		faddin(F,la,ca,A22,lda,A21,lda);
 		// T3 = B22 - B12         in Y ;
-		typename Field::Element* Y = new typename Field::Element[mr*kr];
+		typename Field::Element_ptr Y = fflas_new (F, mr, kr);
 		fsub(F,lb,cb,B22,ldb,B12,ldb,Y,cb);
 		// P7 = a S3 T3 + b Z1    in C22
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, X, ca, Y, cb, beta, C22, ldc, H);
@@ -411,14 +411,12 @@ namespace FFLAS { namespace BLAS3 {
 		faddin(F,mr,nr,C12,ldc,C22,ldc);
 		// U4 = U2 + P5           in C12
 		faddin(F,mr,nr,X,nr,C12,ldc);
-		delete[] X;
+		fflas_delete (X);
 		// W3 = a S4 B22          in Y
 		fgemm2 (F, ta, tb, mr, nr, kr, alpha, A11, lda, B22, ldb, F.zero, Y, nr, H);
 		// U5 = U4 + W3           in C12
 		faddin(F,mr,nr,Y,nr,C12,ldc);
-
-
-		delete[] Y;
+		fflas_delete (Y);
 
 
 	} // WinogradAccOld

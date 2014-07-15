@@ -37,16 +37,16 @@
 namespace FFLAS { namespace Protected{
 		
 	template <typename FloatElement, class Field, class FieldTrait>
-	inline typename Field::Element*
+	inline typename Field::Element_ptr
 	fgemm_convert (const Field& F,
 		       const FFLAS_TRANSPOSE ta,
 		       const FFLAS_TRANSPOSE tb,
 		       const size_t m, const size_t n, const size_t k,
 		       const typename Field::Element alpha,
-		       typename Field::Element* A,const size_t lda,
-		       typename Field::Element* B,const size_t ldb,
+		       typename Field::Element_ptr A,const size_t lda,
+		       typename Field::Element_ptr B,const size_t ldb,
 		       const typename Field::Element beta,
-		       typename Field::Element * C, const size_t ldc,
+		       typename Field::Element_ptr C, const size_t ldc,
 		       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
 	{
 		FFLASFFPACK_check(lda);
@@ -62,9 +62,9 @@ namespace FFLAS { namespace Protected{
 		F.convert (tmp, alpha);
 		G.init(alphaf, tmp);
 		
-		FloatElement * Af = new FloatElement[m*k];
-		FloatElement * Bf = new FloatElement[k*n];
-		FloatElement * Cf = new FloatElement[m*n];
+		FloatElement* Af = new FloatElement[m*k];
+		FloatElement* Bf = new FloatElement[k*n];
+		FloatElement* Cf = new FloatElement[m*n];
 
 		size_t ma, ka, kb, nb; //mb, na
 		if (ta == FflasTrans) { ma = k; ka = m; }
@@ -87,9 +87,9 @@ namespace FFLAS { namespace Protected{
 
 		finit(F, m, n, Cf, n, C, ldc);
 
-		delete[] Af;
-		delete[] Bf;
-		delete[] Cf;
+		fflas_delete (Af);
+		fflas_delete (Bf);
+		fflas_delete (Cf);
 		return C;
 	}
 	}//Protected
@@ -193,7 +193,7 @@ namespace FFLAS{ namespace Protected{
 	template <class Field, class AlgoT>
 	inline void ScalAndInit (const Field& F, const size_t N,
 				 const typename Field::Element alpha,
-				 typename Field::Element * X, const size_t incX,
+				 typename Field::Element_ptr X, const size_t incX,
 				 const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
@@ -211,7 +211,7 @@ namespace FFLAS{ namespace Protected{
 	template <class Field, class AlgoT>
 	inline void ScalAndInit (const Field& F, const size_t M, const size_t N,
 				 const typename Field::Element alpha,
-				 typename Field::Element * A, const size_t lda,
+				 typename Field::Element_ptr A, const size_t lda,
 				 const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
@@ -232,16 +232,16 @@ namespace FFLAS{ namespace Protected{
 namespace FFLAS {
 	
 	template<class Field> 
-	inline  typename Field::Element*
+	inline  typename Field::Element_ptr
 	fgemm (const Field& F, 
 	       const FFLAS_TRANSPOSE ta, 
 	       const FFLAS_TRANSPOSE tb, 
 	       const size_t m, const size_t n, const size_t k, 
 	       const typename Field::Element alpha, 
-	       typename Field::Element * A, const size_t lda, 
-	       typename Field::Element * B, const size_t ldb, 
+	       typename Field::Element_ptr A, const size_t lda, 
+	       typename Field::Element_ptr B, const size_t ldb, 
 	       const typename Field::Element beta, 
-	       typename Field::Element * C, const size_t ldc, 
+	       typename Field::Element_ptr C, const size_t ldc, 
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag> & H)
 	{ 
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
@@ -256,7 +256,7 @@ namespace FFLAS {
 namespace FFLAS {
 
 	template<class Field>
-	inline typename Field::Element*
+	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
@@ -264,22 +264,22 @@ namespace FFLAS {
 	       const size_t n,
 	       const size_t k,
 	       const typename Field::Element alpha,
-	       const typename Field::Element* A, const size_t lda,
-	       const typename Field::Element* B, const size_t ldb,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc)
+	       typename Field::Element_ptr C, const size_t ldc)
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
 		MMHelper<Field, MMHelperAlgo::Winograd > HW (F, m, k, n, FFLAS::ParSeqHelper::Sequential());
 		return 	fgemm (F, ta, tb, m, n, k, alpha, 
-			       const_cast<typename Field::Element*>(A), lda, 
-			       const_cast<typename Field::Element*>(B), ldb, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
 			       beta, C, ldc, HW);
 	}
 
 	template<class Field>
-	inline typename Field::Element*
+	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
@@ -287,10 +287,10 @@ namespace FFLAS {
 	       const size_t n,
 	       const size_t k,
 	       const typename Field::Element alpha,
-	       typename Field::Element* A, const size_t lda,
-	       typename Field::Element* B, const size_t ldb,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
-	       typename Field::Element* C, const size_t ldc,
+	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H) 
 	{
 		if (!m || !n) {return C;}
@@ -333,8 +333,8 @@ namespace FFLAS {
 		}
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag>  HD(H);
 		fgemm (F, ta, tb, m, n, k, alpha_, 
-		       const_cast<typename Field::Element*>(A), lda, 
-		       const_cast<typename Field::Element*>(B), ldb, 
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
 		       beta_, C, ldc, HD);
 		Protected::ScalAndInit (F, m, n, alpha, C, ldc, HD);
 		
@@ -352,13 +352,13 @@ namespace FFLAS {
 // fsquare
 namespace FFLAS {
 	template < class Field >
-	inline typename Field::Element*
+	inline typename Field::Element_ptr
 	fsquare (const Field& F,
 		 const FFLAS_TRANSPOSE ta,
 		 const size_t n, const typename Field::Element alpha,
-		  typename Field::Element* A, const size_t lda,
+		  typename Field::Element_ptr A, const size_t lda,
 		 const typename Field::Element beta,
-		 typename Field::Element* C, const size_t ldc)
+		 typename Field::Element_ptr C, const size_t ldc)
 	{
 
 		double alphad, betad;
@@ -370,8 +370,8 @@ namespace FFLAS {
 
 		//! @bug why double ?
 		// Double  matrices initialisation
-		DoubleDomain::Element * Ad = new DoubleDomain::Element[n*n];
-		DoubleDomain::Element * Cd = new DoubleDomain::Element[n*n];
+		DoubleDomain::Element_ptr Ad = fflas_new (F,n,n);
+		DoubleDomain::Element_ptr Cd = fflas_new (F,n,n);
 		// Conversion finite Field = >  double
 		fconvert (F, n, n, Ad, n, A, lda);
 		if (!F.isZero(beta)) fconvert(F, n, n, Cd, n, C, ldc);
@@ -383,9 +383,9 @@ namespace FFLAS {
 			     (DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
 			     (DoubleDomain::Element) betad, Cd, (int)n);
 		// Conversion double = >  Finite Field
-		delete[] Ad;
+		fflas_delete (Ad);
 		finit (F,n,n, Cd, n, C, ldc);
-		delete[] Cd;
+		fflas_delete (Cd);
 		return C;
 	}
 
@@ -393,20 +393,19 @@ namespace FFLAS {
 
 		// F is Modular(Balanced)<float/double>
 		template < class Field >
-		inline typename Field::Element*
+		inline typename Field::Element_ptr
 		fsquareCommon (const Field& F,
 			       const FFLAS_TRANSPOSE ta,
 			       const size_t n, const typename Field::Element alpha,
-			       typename Field::Element* A, const size_t lda,
+			       typename Field::Element_ptr A, const size_t lda,
 			       const typename Field::Element beta,
-			       typename Field::Element* C, const size_t ldc)
+			       typename Field::Element_ptr C, const size_t ldc)
 		{
-			typedef typename Field::Element Element ; // double or float
 			if (C==A) {
-				Element * Ad = new Element[n*n];
+				typename Field::Element_ptr Ad = fflas_new (F, n, n);
 				fcopy(F,n,n,A,lda,Ad,n);
 				fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
-				delete[] Ad;
+				fflas_delete (Ad);
 			}
 			else
 				fgemm (F, ta, ta, n, n, n, alpha, A, lda, A, lda, beta, C, ldc);
@@ -422,7 +421,7 @@ namespace FFLAS {
 	inline double* fsquare (const  FFPACK:: ModularBalanced<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
-				 double* A, const size_t lda,
+				double* A, const size_t lda,
 				const double beta,
 				double* C, const size_t ldc)
 	{
@@ -433,7 +432,7 @@ namespace FFLAS {
 	inline float * fsquare (const  FFPACK:: ModularBalanced<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
-				 float* A, const size_t lda,
+				float* A, const size_t lda,
 				const float beta,
 				float* C, const size_t ldc)
 	{
@@ -455,7 +454,7 @@ namespace FFLAS {
 	inline float * fsquare (const  FFPACK:: Modular<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
-				 float* A, const size_t lda,
+				float* A, const size_t lda,
 				const float beta,
 				float* C, const size_t ldc)
 	{

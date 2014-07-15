@@ -47,7 +47,7 @@ namespace FFLAS {
 
 
 	template<class Field, class AlgoT, class FieldTrait>
-	inline typename Field::Element*
+	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 		const FFLAS::FFLAS_TRANSPOSE ta,
 		const FFLAS::FFLAS_TRANSPOSE tb,
@@ -55,10 +55,10 @@ namespace FFLAS {
 		const size_t n,
 		const size_t k,
 		const typename Field::Element alpha,
-		typename Field::Element* A, const size_t lda,
-		typename Field::Element* B, const size_t ldb,
+		typename Field::Element_ptr A, const size_t lda,
+		typename Field::Element_ptr B, const size_t ldb,
 		const typename Field::Element beta,
-		typename Field::Element* C, const size_t ldc,
+		typename Field::Element_ptr C, const size_t ldc,
 		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
 	{
 		ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);

@@ -39,18 +39,17 @@ namespace FFPACK {
 	inline size_t
 	PLUQ_basecaseCrout (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 			    const size_t M, const size_t N,
-			    typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+			    typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
-		typedef typename Field::Element Element;
 		int row = 0;
 		int rank = 0;
-		Element* CurrRow=A;
+		typename Field::Element_ptr CurrRow=A;
 		size_t * MathP = new size_t[M];
 		size_t * MathQ = new size_t[N];
 		for (size_t i=0; i<M; ++i) MathP[i] = i;
 		for (size_t i=0; i<N; ++i) MathQ[i] = i;
 		while (((size_t)row<M) && ((size_t)rank<N)){
-			    // Updating row where pivot will be searched for
+			    // Updating row where pivot will be searched for	
 			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
 			int i = rank-1;
 			while(Fi.isZero (CurrRow[++i]) && (i<(int)N-1));
@@ -62,26 +61,27 @@ namespace FFPACK {
 				// P [rank] = row;
 				fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
 				    // Normalization
-				Element invpiv;
+				typename Field::Element invpiv;
 				Fi.inv (invpiv, CurrRow[i]);
 				if (Diag == FFLAS::FflasUnit)
 					FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
 				else
 					FFLAS::fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
+
 				if (i > rank){
 					    // Column rotation to move pivot on the diagonal
 					    // on U
-					cyclic_shift_col(A+rank, rank, i-rank+1, lda);
+					cyclic_shift_col(Fi, A+rank, rank, i-rank+1, lda);
 					cyclic_shift_mathPerm(MathQ+rank, (size_t)(i-rank+1));
 					    // on A
-					cyclic_shift_col(CurrRow+lda+rank, M-row-1, i-rank+1, lda);
+					cyclic_shift_col(Fi, CurrRow+lda+rank, M-row-1, i-rank+1, lda);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
 					FFLAS::fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
 				}
 				if (row > rank){
 					    // Row rotation for L
 					    // Optimization: delay this to the end
-					cyclic_shift_row(A+rank*lda, row-rank+1, rank, lda);
+					cyclic_shift_row(Fi, A+rank*lda, row-rank+1, rank, lda);
 					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
 					    // Row rotation for U (not moving the 0 block)
 					FFLAS::fcopy (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
@@ -118,6 +118,7 @@ namespace FFPACK {
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
 		FFLAS::fzero (Fi, M-rank, N-rank, A+rank*(1+lda), lda);
+
 		return (size_t) rank;
 	}
 
@@ -126,9 +127,8 @@ namespace FFPACK {
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
-	      typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
+	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
-		typedef typename Field::Element Element;
 
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
@@ -146,7 +146,7 @@ namespace FFPACK {
 				Fi.assign (A[piv], Fi.zero);
 			}
 			if (Diag== FFLAS::FflasUnit){
-				Element invpivot;
+				typename Field::Element invpivot;
 				Fi.inv(invpivot, *A);
 				// for (size_t i=piv+1; i<N; ++i)
 					// Fi.mulin (A[i], invpivot);
@@ -165,7 +165,7 @@ namespace FFPACK {
 				Fi.assign (*(A+piv*lda), Fi.zero);
 			}
 			if (Diag== FFLAS::FflasNonUnit){
-				Element invpivot;
+				typename Field::Element invpivot;
 				Fi.inv(invpivot, *A);
 				// for (size_t i=piv+1; i<M; ++i)
 					// Fi.mulin (*(A+i*lda), invpivot);
@@ -188,11 +188,11 @@ namespace FFPACK {
 		    // A1 = P1 [ L1 ] [ U1 V1 ] Q1
 		    //         [ M1 ]
 		R1 = PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1);
-		Element * A2 = A + N2;
-		Element * A3 = A + M2*lda;
-		Element * A4 = A3 + N2;
-		Element * F = A2 + R1*lda;
-		Element * G = A3 + R1;
+		typename Field::Element_ptr A2 = A + N2;
+		typename Field::Element_ptr A3 = A + M2*lda;
+		typename Field::Element_ptr A4 = A3 + N2;
+		typename Field::Element_ptr F = A2 + R1*lda;
+		typename Field::Element_ptr G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
@@ -236,7 +236,7 @@ namespace FFPACK {
 		    // K <- H3 U2^-1
 		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
-		Element * temp = new Element [R3*R2];
+		typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
 		// for (size_t i=0; i<R3; ++i)
 			// FFLAS::fcopy (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
 		FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
@@ -245,9 +245,9 @@ namespace FFPACK {
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		    // O <- N - J V2
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
-		delete[] temp;
+		FFLAS::fflas_delete (temp);
 		    // R <- H4 - K V2 - M3 O
-		Element * R = A4 + R2 + R3*lda;
+		typename Field::Element_ptr R = A4 + R2 + R3*lda;
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
@@ -277,9 +277,9 @@ namespace FFPACK {
 			MathP[i] += M2;
 		if (R1+R2 < M2){
 			    // P <- P S
-			applyS (MathP, 1,1,M2, R1, R2, R3, R4);
+			PermApplyS (MathP, 1,1,M2, R1, R2, R3, R4);
 			    // A <-  S^T A
-			applyS (A, lda, N, M2, R1, R2, R3, R4);
+			MatrixApplyS (Fi, A, lda, N, M2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (P, MathP, M);
 		delete[] MathP;
@@ -298,9 +298,9 @@ namespace FFPACK {
 
 		if (R1 < N2){
 			    // Q <- T Q
-			applyT (MathQ, 1,1,N2, R1, R2, R3, R4);
+			PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
 			    // A <-   A T^T
-			applyT (A, lda, M, N2, R1, R2, R3, R4);
+			MatrixApplyT (Fi, A, lda, M, N2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (Q, MathQ, N);
 		delete[] MathQ;

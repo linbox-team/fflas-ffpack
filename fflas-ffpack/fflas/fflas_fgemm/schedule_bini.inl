@@ -43,10 +43,10 @@ namespace FFLAS { namespace BLAS3 {
 			  const FFLAS_TRANSPOSE tb,
 			  const size_t mr, const size_t nr, const size_t kr,
 			  const typename Field::Element alpha,
-			  const typename Field::Element* A,const size_t lda,
-			  const typename Field::Element* B,const size_t ldb,
+			  const typename Field::Element_ptr A,const size_t lda,
+			  const typename Field::Element_ptr B,const size_t ldb,
 			  const typename Field::Element  beta,
-			  typename Field::Element * C, const size_t ldc,
+			  typename Field::Element_ptr C, const size_t ldc,
 			  const size_t kmax, const size_t w, const FFLAS_BASE base,
 			  const size_t rec_level)
 	{
@@ -56,11 +56,11 @@ namespace FFLAS { namespace BLAS3 {
 
 		size_t imaxb, jmaxb, imaxa, jmaxa, ldx2;
 		// size_t x3rd = std::max(mr,kr);
-		const typename Field::Element* d11,*d12,*d21,*d22;
-		typename Field::Element* d11c,*d12c,*d21c,*d22c,*dx1,*dx2;
-		const typename Field::Element * A11=A, *A12, *A21, *A22;
-		const typename Field::Element * B11=B, *B12, *B21, *B22;
-		typename Field::Element * C11=C, *C12=C+nr, *C21=C+mr*ldc, *C22=C+nr+mr*ldc;
+		const typename Field::Element_ptr d11,d12,d21,d22;
+		typename Field::Element_ptr d11c,d12c,d21c,d22c,dx1,dx2;
+		const typename Field::Element_ptr A11=A, A12, A21, A22;
+		const typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C+nr+mr*ldc;
 
 
 		size_t x1rd = std::max(nr,kr);
@@ -413,16 +413,16 @@ namespace FFLAS { namespace BLAS3 {
 				} // Rec
 
 				template<class Field>
-				typename Field::Element *
+				typename Field::Element_ptr
 				gemm_bini(const Field &F
 					  , const size_t m
 					  , const size_t n
 					  , const size_t k
-					  , const typename Field::Element *A
+					  , const typename Field::Element_ptr A
 					  , const size_t lda
-					  , const typename Field::Element *B
+					  , const typename Field::Element_ptr B
 					  , const size_t ldb
-					  , typename Field::Element *C
+					  , typename Field::Element_ptr C
 					  , const size_t ldc
 					  , int rec
 					 )

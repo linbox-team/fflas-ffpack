@@ -45,7 +45,7 @@
 namespace FFLAS {
 
 	template<class Field>
-	inline typename Field::Element*
+	inline typename Field::Element_ptr
 	pftrsm( const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const FFLAS::FFLAS_UPLO UpLo,
@@ -55,10 +55,12 @@ namespace FFLAS {
 		const size_t n,
 		const typename Field::Element alpha,
 #ifdef __FFLAS__TRSM_READONLY
-		const
+		typename Field::ConstElement_ptr
+#else
+		typename Field::Element_ptr
 #endif
-		typename Field::Element* A, const size_t lda,
-		typename Field::Element* B, const size_t ldb,
+		 A, const size_t lda,
+		typename Field::Element_ptr B, const size_t ldb,
 		TRSMHelper <StructureHelper::Iterative, ParSeqHelper::Parallel> & H)
 		// const FFLAS::CuttingStrategy method,
                 // const size_t numThreads)

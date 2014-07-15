@@ -198,10 +198,12 @@ public:
 template<class Field, class ParSeqTrait>
 void delayed (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
-	      const
+	      typename Field::ConstElement_ptr 
+#else
+	      typename Field::Element_ptr 
 #endif
-	      typename Field::Element * A, const size_t lda,
-	      typename Field::Element * B, const size_t ldb,
+	      A, const size_t lda,
+	      typename Field::Element_ptr B, const size_t ldb,
 	      const size_t nblas, size_t nbblocsblas,
 	      TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 
@@ -220,7 +222,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
   #ifdef __FFLAS__TRSM_READONLY
 		//! @warning this is C99 (-Wno-vla)
 		typename Field::Element Acop[__FFLAS__Na*__FFLAS__Na];
-		typename Field::Element* Acopi = Acop;
+		typename Field::Element_ptr Acopi = Acop;
     #undef __FFLAS__Atrsm
     #undef __FFLAS__Atrsm_lda
     #define __FFLAS__Atrsm Acop
@@ -228,10 +230,12 @@ void delayed (const Field& F, const size_t M, const size_t N,
   #endif
 		typename Field::Element inv;
 #ifdef __FFLAS__TRSM_READONLY
-		const
+		typename Field::ConstElement_ptr
+#else
+		typename Field::Element_ptr
 #endif
-			typename Field::Element *  Ai = A;
-		typename Field::Element* Bi = B;
+			Ai = A;
+		typename Field::Element_ptr Bi = B;
 #ifdef __FFLAS__LEFT
 #ifdef __FFLAS__UP
 		Ai += __FFLAS__Acolinc;
@@ -254,8 +258,8 @@ void delayed (const Field& F, const size_t M, const size_t N,
 #endif
 			F.inv (inv, *(A + i * (lda+1)));
 #ifdef __FFLAS__TRSM_READONLY
-			// const typename Field::Element * Acurr;
-			// typename Field::Element* Acopcurr;
+			// typename Field::ConstElement_ptr Acurr;
+			// typename Field::Element_ptr Acopcurr;
 			// for (Acurr = Ai,  Acopcurr = Acopi;
 			     // Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim);
 			     // Acurr += __FFLAS__Anorminc,
@@ -320,15 +324,15 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), 
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
-		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb,
-		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
-		       F.one, __FFLAS__B2, ldb, MMH);
+			__FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
+			__FFLAS__B1, ldb,
+			FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
+			F.one, __FFLAS__B2, ldb, MMH);
 #else
 		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, 
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
-		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
-		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb, 
+			FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
+			__FFLAS__B1, ldb, 
 		       F.one, __FFLAS__B2, ldb, MMH);
 #endif
 
@@ -339,10 +343,12 @@ void delayed (const Field& F, const size_t M, const size_t N,
 template <class Field, class ParSeqTrait>
 void operator () (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
-	      const
+		  typename Field::ConstElement_ptr 
+#else
+		  typename Field::Element_ptr 
 #endif
-		  typename Field::Element * A, const size_t lda,
-		  typename Field::Element * B, const size_t ldb, 
+		  A, const size_t lda,
+		  typename Field::Element_ptr B, const size_t ldb, 
 		  TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 {
 
@@ -372,14 +378,14 @@ void operator () (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       const_cast<typename Field::Element*>(__FFLAS__Brec), ldb,
-		       const_cast<typename Field::Element*>(__FFLAS__Aupdate), lda,
+		       __FFLAS__Brec, ldb,
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__Aupdate), lda,
 		       F.one, __FFLAS__Bupdate, ldb, MMH);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       const_cast<typename Field::Element*>(__FFLAS__Aupdate), lda, 
-		       const_cast<typename Field::Element*>(__FFLAS__Brec), ldb, 
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__Aupdate), lda, 
+		       __FFLAS__Brec, ldb, 
 		       F.one, __FFLAS__Bupdate, ldb, MMH);
 #endif
 	}
@@ -400,10 +406,12 @@ public:
 template<class Field, class ParSeqTrait>
 void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
-	      const
+		 typename Field::ConstElement_ptr 
+#else
+		 typename Field::Element_ptr 
 #endif
-		 typename Field::Element * A, const size_t lda,
-		 typename Field::Element * B, const size_t ldb,
+		 A, const size_t lda,
+		 typename Field::Element_ptr B, const size_t ldb,
 		 TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 {
 
@@ -426,14 +434,14 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb,
-		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
+		       __FFLAS__B1, ldb,
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
 		       F.one, __FFLAS__B2, ldb, MMH);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       const_cast<typename Field::Element*>(__FFLAS__A2), lda, 
-		       const_cast<typename Field::Element*>(__FFLAS__B1), ldb, 
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
+		       __FFLAS__B1, ldb, 
 		       F.one, __FFLAS__B2, ldb, MMH);
 #endif
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);

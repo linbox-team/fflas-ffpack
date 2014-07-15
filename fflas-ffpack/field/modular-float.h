@@ -51,6 +51,8 @@ namespace FFPACK {
 
 	public :
 		typedef float Element;
+		typedef float* Element_ptr;
+		typedef const float* ConstElement_ptr;
 
 	protected:
 

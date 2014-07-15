@@ -47,10 +47,12 @@ namespace FFLAS {
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
 #ifdef __FFLAS__TRSM_READONLY
-	       const
+	       typename Field::ConstElement_ptr
+#else
+	       typename Field::Element_ptr
 #endif
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb)
+	       A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb)
 	{
 		ParSeqHelper::Sequential PSH;
 		TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> H(PSH);
@@ -66,10 +68,12 @@ namespace FFLAS {
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
 #ifdef __FFLAS__TRSM_READONLY
-	       const
+	       typename Field::ConstElement_ptr
+#else
+	       typename Field::Element_ptr
 #endif
-	       typename Field::Element * A, const size_t lda,
-	       typename Field::Element * B, const size_t ldb,
+	       A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
 	       TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
 	{
 		if (!M || !N ) return;

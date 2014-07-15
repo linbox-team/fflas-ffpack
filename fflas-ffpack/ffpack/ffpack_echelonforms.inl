@@ -32,7 +32,7 @@
 
 template <class Field>
 size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-				  typename Field::Element * A, const size_t lda,
+				  typename Field::Element_ptr A, const size_t lda,
 				  size_t* P, size_t* Qt, const bool transform)
 {
 
@@ -50,7 +50,7 @@ size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N
 
 template <class Field>
 size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
-			       typename Field::Element * A, const size_t lda,
+			       typename Field::Element_ptr A, const size_t lda,
 			       size_t* P, size_t* Qt, const bool transform)
 {
 
@@ -70,7 +70,7 @@ size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 template <class Field>
 size_t
 FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-				  typename Field::Element * A, const size_t lda,
+				  typename Field::Element_ptr A, const size_t lda,
 				  size_t* P, size_t* Qt, const bool transform)
 {
 
@@ -107,7 +107,7 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 template <class Field>
 size_t
 FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
-			       typename Field::Element * A, const size_t lda,
+			       typename Field::Element_ptr A, const size_t lda,
 			       size_t* P, size_t* Qt, const bool transform)
 {
 
@@ -148,13 +148,10 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 template <class Field>
 size_t
 FFPACK::REF (const Field& F, const size_t M, const size_t N,
-	     typename Field::Element * A, const size_t lda,
+	     typename Field::Element_ptr A, const size_t lda,
 	     const size_t colbeg, const size_t rowbeg, const size_t colsize,
 	     size_t* Qt, size_t* P)
 {
-
-	typedef typename Field::Element Element;
-
 	if (colsize == 1){
 		for (size_t i=rowbeg; i<M; ++i){
 			if (!F.isZero(*(A+i*lda+colbeg))){
@@ -163,7 +160,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 					F.assign(*(A+rowbeg*lda+colbeg),*(A+i*lda+colbeg));
 					F.assign(*(A+i*lda+colbeg), F.zero);
 				}
-				Element invpiv;
+				typename Field::Element invpiv;
 				F.inv(invpiv, *(A+rowbeg*lda + colbeg));
 				F.assign(*(A+rowbeg*lda+colbeg), invpiv);
 				F.negin(invpiv);
@@ -184,12 +181,12 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	// Recurive call on slice A*1
 	size_t r1 = REF(F, M, N, A, lda, colbeg, rowbeg, recsize, Qt, P);
 
-	Element* A11 = A+colbeg;
-	Element* A12 = A11+recsize;
-	Element* A22 = A12+rowbeg*lda;
-	Element* A21 = A11+rowbeg*lda;
-	Element* A31 = A21+r1*lda;
-	Element* A32 = A22+r1*lda;
+	typename Field::Element_ptr A11 = A+colbeg;
+	typename Field::Element_ptr A12 = A11+recsize;
+	typename Field::Element_ptr A22 = A12+rowbeg*lda;
+	typename Field::Element_ptr A21 = A11+rowbeg*lda;
+	typename Field::Element_ptr A31 = A21+r1*lda;
+	typename Field::Element_ptr A32 = A22+r1*lda;
 
 	/**
 	 *  ---------------------
@@ -215,12 +212,12 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	       F.one, A31, lda, A22, lda, F.one, A32, lda);
 
 	// A22 <- A21*A22
-	Element* tmp = new Element [r1*(colsize-recsize)];
+	typename Field::Element_ptr tmp = fflas_new (F, r1, colsize-recsize);
 	for (size_t i = 0; i < r1; ++i)
 		fcopy (F, colsize-recsize, A22+i*lda, 1, tmp+i*(colsize-recsize), 1);
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r1, colsize-recsize, r1,
 	       F.one, A21, lda, tmp, colsize-recsize, F.zero, A22, lda);
-	delete[] tmp;
+	fflas_delete (tmp);
 
 	// Recurive call on slice A*2
 	size_t r2 = REF(F, M, N, A, lda, colbeg + recsize, rowbeg + r1,
@@ -229,12 +226,12 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	// Apply permutation on A*1
 	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, r1, rowbeg+r1, rowbeg+r1+r2, A11, lda, Qt);
 
-	Element * U11 = A11;
-	Element * U12 = A12;
-	Element * U21 = A31;
-	Element * U22 = A32;
-	Element * U31 = U21+r2*lda;
-	Element * U32 = U31+recsize;
+	typename Field::Element_ptr U11 = A11;
+	typename Field::Element_ptr U12 = A12;
+	typename Field::Element_ptr U21 = A31;
+	typename Field::Element_ptr U22 = A32;
+	typename Field::Element_ptr U31 = U21+r2*lda;
+	typename Field::Element_ptr U32 = U31+recsize;
 
 	// U11 <- U11 + U12 * U21
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg+r1, r1, r2,
@@ -245,21 +242,21 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	       F.one, U32, lda, U21, lda, F.one, U31, lda);
 
 	// U21 <- U22*U21
-	tmp = new Element [r2*r1];
+	tmp = fflas_new (F, r2, r1);
 	for (size_t i = 0; i < r2; ++i)
 		fcopy (F, r1, U21+i*lda, 1, tmp+i*r1, 1);
 
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r2, r1, r2,
 	       F.one, U22, lda, tmp, r1, F.zero, U21, lda);
-	delete[] tmp;
+	fflas_delete(tmp);
 
 	//Permute the non pivot columns to the end
 	if (r1 < recsize){
 		size_t ncol = recsize -r1;
 		size_t nrow = rowbeg + r1;
-		Element * NZ1 = A11+r1;
+		typename Field::Element_ptr NZ1 = A11+r1;
 
-		tmp = new Element [nrow*ncol];
+		tmp = fflas_new (F, nrow, ncol);
 		for (size_t i=0; i < nrow; ++i)
 			fcopy (F, ncol, NZ1 + i*lda, 1, tmp+i*ncol, 1);
 		for (size_t i=0; i < M; ++i)
@@ -270,7 +267,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 		NZ1 +=  r2;
 		for (size_t i=0; i<nrow; ++i)
 			fcopy (F, ncol, tmp+i*ncol,1, NZ1 + i*lda, 1);
-		delete[] tmp;
+		fflas_delete (tmp);
 
 		for (size_t i=rowbeg+r1; i<M; ++i)
 			for (size_t j=0; j<recsize-r1; ++j)
@@ -299,7 +296,7 @@ namespace FFPACK {
 	template <class Field>
 	size_t
 	ReducedRowEchelonForm2 (const Field& F, const size_t M, const size_t N,
-				typename Field::Element * A, const size_t lda,
+				typename Field::Element_ptr A, const size_t lda,
 				size_t* P, size_t* Qt, const bool transform /*= true */)
 	{
 		for (size_t i=0; i<N; ++i)

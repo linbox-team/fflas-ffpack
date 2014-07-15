@@ -37,7 +37,7 @@ namespace FFPACK {
 template<class Field>
 	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-		const size_t N, typename Field::Element * A, const size_t lda)
+		const size_t N, typename Field::Element_ptr A, const size_t lda)
 	{
 		if (N == 1){
 			if (Diag == FFLAS::FflasNonUnit)
@@ -67,7 +67,7 @@ template<class Field>
 	template<class Field>
 	void
 	ftrtrm (const Field& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
-		typename Field::Element * A, const size_t lda)
+		typename Field::Element_ptr A, const size_t lda)
 	{
 
 		if (N == 1)
@@ -92,8 +92,8 @@ template<class Field>
 	}
 
 	template<class Field>
-	void trinv_left( const Field& F, const size_t N, const typename Field::Element * L, const size_t ldl,
-			 typename Field::Element * X, const size_t ldx )
+	void trinv_left( const Field& F, const size_t N, typename Field::ConstElement_ptr L, const size_t ldl,
+			 typename Field::Element_ptr X, const size_t ldx )
 	{
 		FFLAS::fcopy(F,N,N,L,ldl,X,ldx);
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, N, X, ldx);

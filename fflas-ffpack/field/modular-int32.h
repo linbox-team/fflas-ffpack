@@ -59,6 +59,7 @@ namespace FFPACK
 	 * Requires: Modulus < 2^30.
 	 * Intended use: 2^15 < prime modulus < 2^30.
 	 * \ingroup field
+
 	 * @todo what about this _two64  not so usefull here ?? (but in linbox)
 	 */
 	template <>
@@ -74,6 +75,8 @@ namespace FFPACK
 
 	public :
 		typedef int32_t Element;
+		typedef int32_t* Element_ptr;
+		typedef const int32_t* ConstElement_ptr;
 		const Element one   ;
 		const Element zero  ;
 		const Element mOne ; // can't be const because of operator=

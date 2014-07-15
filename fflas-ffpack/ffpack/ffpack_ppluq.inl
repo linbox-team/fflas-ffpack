@@ -53,7 +53,7 @@ namespace FFPACK {
 	inline size_t
 	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
-	      typename Field::Element* A, const size_t lda,
+	      typename Field::Element_ptr A, const size_t lda,
 	      size_t* P, size_t* Q)
 	  {
 
@@ -118,11 +118,11 @@ namespace FFPACK {
 		  //        [ M1 ]
 		  //#pragma omp task shared(R1) firstprivate(M2,N2,lda) shared(A,P1,Q1)
 		  R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1);
-		  typename Field::Element * A2 = A + N2;
-		  typename Field::Element * A3 = A + M2*lda;
-		  typename Field::Element * A4 = A3 + N2;
-		  typename Field::Element * F = A2 + R1*lda;
-		  typename Field::Element * G = A3 + R1;
+		  typename Field::Element_ptr A2 = A + N2;
+		  typename Field::Element_ptr A3 = A + M2*lda;
+		  typename Field::Element_ptr A4 = A3 + N2;
+		  typename Field::Element_ptr F = A2 + R1*lda;
+		  typename Field::Element_ptr G = A3 + R1;
 
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]
@@ -214,7 +214,7 @@ namespace FFPACK {
 		  //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		  WAIT;
 
-		  typename Field::Element * temp = new typename Field::Element [R3*R2];
+		  typename Field::Element_ptr temp = fflas_new (F, R3, R2);
 		  /*    for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
 		  */
@@ -235,13 +235,13 @@ namespace FFPACK {
 		  TASK(READ(Fi, R2, temp, F), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
 
-		  typename Field::Element * R = A4 + R2 + R3*lda;
+		  typename Field::Element_ptr R = A4 + R2 + R3*lda;
   // R <- H4 - K V2
 		  TASK(READ(Fi, R2, A4, F), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		  WAIT;
 
-		  delete[] temp;
+		  fflas_delete (temp);
     // R <- R - M3 O
 		  TASK(READ(Fi, R3, A4, G), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda,  method, NUM_THREADS);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
@@ -280,11 +280,11 @@ namespace FFPACK {
 		  WAIT;
 		  if (R1+R2 < M2){
 			  // A <-  S^T A
-			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyS, A, lda, N, M2, R1, R2, R3, R4);
-			  applyS( A, lda, N, M2, R1, R2, R3, R4);
+			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyS, F, A, lda, N, M2, R1, R2, R3, R4);
+			  MatrixApplyS(F, A, lda, N, M2, R1, R2, R3, R4);
 
 			  // P <- P S
-			  applyS( MathP, 1,1, M2, R1, R2, R3, R4);
+			  PermApplyS( MathP, 1,1, M2, R1, R2, R3, R4);
 		  }
 
 		  // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
@@ -297,10 +297,10 @@ namespace FFPACK {
 
 		  if (R1 < N2){
 			  // Q <- T Q
-			  applyT (MathQ, 1,1,N2, R1, R2, R3, R4);
+			  PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
 			  // A <-   A T^T
-			  TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyT, A, lda, M, N2, R1, R2, R3, R4);
-			  //applyT( A, lda, M, N2, R1, R2, R3, R4);
+			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyT, F, A, lda, M, N2, R1, R2, R3, R4);
+			  MatrixApplyT(F, A, lda, M, N2, R1, R2, R3, R4);
 		  }
 		  MathPerm2LAPACKPerm (Q, MathQ, N);
 		  MathPerm2LAPACKPerm (P, MathP, M);
