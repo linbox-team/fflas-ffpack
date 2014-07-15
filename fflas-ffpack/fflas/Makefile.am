@@ -29,6 +29,8 @@ SUBDIRS=fflas_fgemm
 sparse=fflas_sparse_fgemv.h \
        fflas_sparse_fgemv.inl
 
+multprecision= fflas_ftrsm_mp.inl
+
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
 	   fflas_fcopy.inl       \
@@ -57,6 +59,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_finit.inl       \
 	   fflas_helpers.inl     \
 	   fflas_memory.inl	 \
-	   ${sparse}
+	   ${sparse}		 \
+	   ${multiprecision}		 
 
 EXTRA_DIST=fflas.doxy

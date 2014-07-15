@@ -37,6 +37,7 @@
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
 // #include "fflas-ffpack/fflas-ffpack-optimise.h"
+#define __FFLASFFPACK_NOINTEGER
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"

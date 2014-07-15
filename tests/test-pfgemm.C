@@ -35,8 +35,8 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#ifndef DEBUG
-#define DEBUG 0
+#ifndef FFLAS_DEBUG
+#define FFLAS_DEBUG 0
 #endif
 #define NEWWINO
 #ifndef TIME
@@ -155,7 +155,7 @@ int main(int argc, char** argv){
 //         if (i<nbit) delete[] C;
 	}
 
-#if DEBUG
+#if FFLAS_DEBUG
     cerr<<"Debugging ... ";
 	bool wrong = false;
 	Field::Element zero;

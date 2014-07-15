@@ -60,7 +60,10 @@ NOT_A_TEST =  \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
-		test-nullspace
+		test-nullspace		\
+		test-ftrsm-mp           \
+		test-fegmm-mp           \
+		test-igemm-mp             
 
 INFINITE_TEST= \
 		testeur_fgemm          \

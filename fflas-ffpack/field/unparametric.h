@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <typeinfo>
 
+#include "fflas-ffpack/field/integer.h"
 
 namespace FFPACK
 {
@@ -289,6 +290,7 @@ namespace FFPACK
 
 	};
 
+
 	template<class _Element>
 	class UnparametricField : public UnparametricOperations<_Element> {
 	protected:
@@ -331,7 +333,18 @@ namespace FFPACK
 		{
 			// init(mOne,-1L);
 		}
+#ifdef __FFLASFFPACK_HAVE_INTEGER
+		FFPACK::Integer &cardinality (FFPACK::Integer &c) const
+		{
+			return c = _card ;
+		}
 
+		FFPACK::Integer &characteristic (FFPACK::Integer &c) const
+		{
+			return c = (unsigned long)_p ;
+			// return c = _card ;
+		}
+#endif
 
 		unsigned long &cardinality (unsigned long &c) const
 		{

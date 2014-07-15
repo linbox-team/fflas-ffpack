@@ -26,13 +26,17 @@ pkgincludesubdir=$(pkgincludedir)/fflas/fflas_fgemm
 
 EXTRA_DIST=matmul.doxy
 
+multiprecision=fgemm_classical_mp.inl
+
 pkgincludesub_HEADERS=            \
 	fflas_bounds_classic.inl  \
 	fflas_bounds_winograd.inl \
 	fgemm_classical.inl       \
+	fgemm_classical_mp.inl    \
 	fgemm_winograd.inl        \
 	schedule_winograd.inl              \
 	schedule_winograd_acc.inl          \
 	schedule_bini.inl                  \
 	schedule_winograd_acc_ip.inl       \
-	schedule_winograd_ip.inl
+	schedule_winograd_ip.inl           \
+	${multiprecision} 
