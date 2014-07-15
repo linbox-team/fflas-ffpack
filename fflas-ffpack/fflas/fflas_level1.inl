@@ -89,7 +89,7 @@ namespace FFLAS {
 	{
 		OtherElement * Xi = X ;
 		const typename Field::Element * Yi = Y ;
-		for (; Xi < X+n*incX; Xi+=incX, Yi += incX )
+		for (; Xi < X+n*incX; Xi+=incX, Yi += incY )
 			F.convert( *Xi , *Yi);
 	}
 

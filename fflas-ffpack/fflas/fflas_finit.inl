@@ -282,7 +282,7 @@ namespace FFLAS {
 			for (; Yi < Y + n ; ++Xi, ++Yi)
 				F.init( *Xi , *Yi);
 		else
-			for (; Yi < Y+n*incY; Xi+=incX, Yi += incX )
+			for (; Yi < Y+n*incY; Xi+=incX, Yi += incY )
 				F.init( *Xi , *Yi);
 	}
 
