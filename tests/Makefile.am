@@ -72,19 +72,17 @@ INFINITE_TEST= \
 
 EXTRA_DIST= test-utils.h
 
-CLEANFILES =           \
-		$(BASIC_TESTS) $(NOT_A_TEST)
-
-EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS)
-
-OMP_TESTS = \
-	    test-pfgemm
+OMP_TESTS = test-pfgemm
 
 if FFLASFFPACK_HAVE_OMP
 USE_OMP_TESTS = $(OMP_TESTS)
 endif
 
+CLEANFILES =           \
+		$(BASIC_TESTS) $(NOT_A_TEST) $(OMP_TESTS) 
+
+EXTRA_PROGRAMS =       \
+		$(BASIC_TESTS) $(USE_OMP_TESTS)
 
 TESTS =                \
 	    $(BASIC_TESTS) \
@@ -121,6 +119,7 @@ test_fgemm_long_SOURCES             = test-fgemm-long.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
+
 test_pfgemm_SOURCES = test-pfgemm.C
 regression_check_SOURCES = regression-check.C
 
