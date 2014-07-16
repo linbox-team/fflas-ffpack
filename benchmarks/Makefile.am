@@ -30,7 +30,8 @@ LDADD = $(CBLAS_LIBS)
 AM_LDFLAGS=-static $(PARLFLAGS)
 
 FFLA_BENCH =    benchmark-fgemm benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
-BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm  benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
+BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm
+LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
 
 OMP_BENCH = benchmark-pfgemm benchmark-pftrsm
@@ -39,10 +40,16 @@ if FFLASFFPACK_HAVE_OMP
 USE_OMP_BENCH = $(OMP_BENCH)
 endif
 
+if FFLASFFPACK_HAVE_LAPACK
+USE_LAPACK_TESTS = $(LAPA_BENCH)
+endif
+
+
 
 BENCHMARKS =			\
         $(FFLA_BENCH)   \
         $(BLAS_BENCH)   \
+        $(USE_LAPACK_TESTS) \
         $(USE_OMP_BENCH)
 
 CLEANFILES = $(BENCHMARKS)
@@ -51,6 +58,7 @@ EXTRA_PROGRAMS = $(BENCHMARKS)
 
 benchmark_dgemm_SOURCES = benchmark-dgemm.C
 benchmark_dtrsm_SOURCES = benchmark-dtrsm.C
+
 benchmark_dtrtri_SOURCES = benchmark-dtrtri.C
 benchmark_dgetri_SOURCES = benchmark-dgetri.C
 benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
