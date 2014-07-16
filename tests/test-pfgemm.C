@@ -35,9 +35,6 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#ifndef DEBUG
-#define DEBUG 0
-#endif
 #define NEWWINO
 #ifndef TIME
 #define TIME 1
