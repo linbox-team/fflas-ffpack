@@ -33,7 +33,7 @@
 namespace FFLAS{
     
     template<class Field>
-    inline typename Field::Element_ptr fflas_new (Field& F, size_t m, size_t n){
+    inline typename Field::Element_ptr fflas_new (const Field& F, size_t m, size_t n){
         return new typename Field::Element[m*n];
     }
 

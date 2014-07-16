@@ -41,7 +41,6 @@ using namespace std;
 #include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/fflas/fflas.h"
-
 // activate only if FFLAS-FFPACK haves multiprecision integer
 #ifdef __FFLASFFPACK_HAVE_INTEGER
 
@@ -250,7 +249,8 @@ namespace FFLAS {
 	
 	// specialization for the fflas alloc function
 	template<>
-	FFPACK::rns_double_elt_ptr fflas_new(FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n){
+	inline FFPACK::rns_double_elt_ptr
+	fflas_new(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m,  const size_t n){
 		return FFPACK::rns_double_elt_ptr(new double[m*n*F.size()],m*n);
 	}
 	
