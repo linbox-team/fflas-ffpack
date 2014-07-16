@@ -32,7 +32,6 @@ pkgincludesub_HEADERS=            \
 	fflas_bounds_classic.inl  \
 	fflas_bounds_winograd.inl \
 	fgemm_classical.inl       \
-	fgemm_classical_mp.inl    \
 	fgemm_winograd.inl        \
 	schedule_winograd.inl              \
 	schedule_winograd_acc.inl          \
