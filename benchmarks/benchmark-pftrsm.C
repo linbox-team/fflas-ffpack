@@ -76,12 +76,10 @@ int main(int argc, char** argv) {
       
       const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
 
+	  chrono.clear();
+	  chrono.start();
+
       PAR_REGION{
-//               FFLAS::MMHelper<Field, 
-//                   FFLAS::MMHelperAlgo::Winograd, 
-//                   FFLAS::FieldTraits<Field>::value,
-//                   FFLAS::ParSeqHelper::Parallel> 
-//                   pWH (F, n,n,n, FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
           FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
               FFLAS::ParSeqHelper::Parallel> PH 
               (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));      
@@ -93,9 +91,6 @@ int main(int argc, char** argv) {
       }
       BARRIER;
        
-	  chrono.clear();
-	  chrono.start();
-
 	  chrono.stop();
 	  time+=chrono.usertime();
       std::cerr << *A << ' ' << *B << std::endl;
