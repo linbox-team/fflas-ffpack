@@ -82,7 +82,7 @@ namespace FFLAS {
 	{
 		// compute each fgemm componentwise
 		for(size_t i=0;i<F.size();i++){
-			FFLAS::fgemm(F.rns()._field_rns[i],FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
+			FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,//FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 				     m, n, k, alpha._ptr[i], Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb, beta._ptr[i], Cd._ptr+i*Cd._stride, ldc);	
 		}
 		return Cd;
@@ -136,10 +136,15 @@ namespace FFLAS {
 		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
 		RnsDomain Zrns(RNS);
 
-		// allocate data for RNS representation		
+		size_t Arowd,Acold,Browd,Bcold;
+		if (ta == FFLAS::FflasNoTrans){ Arowd = m; Acold = k; }
+		else {Arowd = k; Acold = m;}
+		if (tb == FFLAS::FflasNoTrans){ Browd = k; Bcold = n; }
+		else {Browd = n; Bcold = k;}
+		    // allocate data for RNS representation		
 		typename RnsDomain::Element_ptr Ap,Bp,Cp;		
-		Ap = FFLAS::fflas_new(Zrns,m,k);
-		Bp = FFLAS::fflas_new(Zrns,k,n);
+		Ap = FFLAS::fflas_new(Zrns,Arowd,Acold);
+		Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
 		Cp = FFLAS::fflas_new(Zrns,m,n);
 		
 		//Ap._ptr = new double[m*k*RNS._size];
@@ -150,8 +155,8 @@ namespace FFLAS {
 		// Cp._stride = m*n;
  		
 		// convert the input matrices to RNS representation
-		finit(Zrns,m,k,(logA/16)+((logA%16)?1:0),A,lda,Ap);
-		finit(Zrns,k,n,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
+		finit(Zrns,Arowd,Acold,(logA/16)+((logA%16)?1:0),A,lda,Ap);
+		finit(Zrns,Browd,Bcold,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
 		
 		// perform the fgemm in RNS
 		MMHelper<RnsDomain, MMHelperAlgo::Winograd> H2;// H2(Zrns,0,H.parseq);
@@ -162,7 +167,7 @@ namespace FFLAS {
 		Zrns.init(betap, F.zero); 
 		
 		// call  fgemm
-		fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,k,Bp,n,betap,Cp,n,H2);
+		fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
 				
 		// convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) )
 		fconvert(Zrns,m,n,beta,C,ldc,Cp);
