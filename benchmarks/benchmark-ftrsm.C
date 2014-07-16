@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
   // parameter: p, n, iteration, file1, file2
 
   int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int n       = argc>2 ? atoi(argv[2]) : 2000;
+  int    n    = argc>2 ? atoi(argv[2]) : 2000;
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
 
 

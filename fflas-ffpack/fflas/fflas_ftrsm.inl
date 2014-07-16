@@ -59,7 +59,7 @@ namespace FFLAS {
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
 	}
 
-	template<class Field>
+	template<class Field, class ParSeqTrait=ParSeqHelper::Sequential>
 	inline void
 	ftrsm (const Field& F, const FFLAS_SIDE Side,
 	       const FFLAS_UPLO Uplo,
@@ -74,7 +74,7 @@ namespace FFLAS {
 #endif
 	       A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb,
-	       TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> & H)
+	       TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 	{
 		if (!M || !N ) return;
 
