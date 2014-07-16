@@ -61,9 +61,9 @@ namespace FFLAS { namespace Protected {
 		FloatElement alphaf;
 		F.convert (alphaf, alpha);
 
-		FloatElement* Af = fflas_new (F,M,N);
-		FloatElement* Xf = fflas_new (F,M,1);
-		FloatElement* Yf = fflas_new (F,N,1);
+		FloatElement* Af = fflas_new (G,M,N);
+		FloatElement* Xf = fflas_new (G,M,1);
+		FloatElement* Yf = fflas_new (G,N,1);
 
 		fconvert(F, M, N, Af, N, A, lda);
 		fconvert(F, M, Xf, 1, x, incx);
