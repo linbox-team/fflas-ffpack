@@ -115,10 +115,10 @@ namespace FFPACK {
 
 
 			typename Field::ConstElement_ptr Ai = A;
-			typename Field::Element_ptr U = fflas_new (F, N, N);     // to store A^2^i
-			typename Field::Element_ptr B = fflas_new (F, N, N);     // to store A^2^i
-			typename Field::Element_ptr V = fflas_new (F, N, N);     // to store A^2^i.U
-			typename Field::Element_ptr X = fflas_new (F, 2*N, N);   // to compute the LSP factorization
+			typename Field::Element_ptr U = FFLAS::fflas_new (F, N, N);     // to store A^2^i
+			typename Field::Element_ptr B = FFLAS::fflas_new (F, N, N);     // to store A^2^i
+			typename Field::Element_ptr V = FFLAS::fflas_new (F, N, N);     // to store A^2^i.U
+			typename Field::Element_ptr X = FFLAS::fflas_new (F, 2*N, N);   // to compute the LSP factorization
 			typename Field::Element_ptr Ui, Uj, Uk, Ukp1, Ukp1new, Bi, Vi, Vk, Xi=X, Xj;
 			size_t * P = new size_t[N]; // Column Permutation for LQUP
 			size_t * Q = new size_t[2*N]; // Row Permutation for LQUP
@@ -253,9 +253,9 @@ namespace FFPACK {
 				// Recompute the degrees of the list factors
 				k = Protected::newD(F, d, KeepOn, l, N, X,Q, m);
 			}
-			fflas_delete (U);
-			fflas_delete (V);
-			fflas_delete (B);
+			FFLAS::fflas_delete (U);
+			FFLAS::fflas_delete (V);
+			FFLAS::fflas_delete (B);
 			delete[] P;
 			delete[] Q;
 			delete[] dv;
@@ -271,7 +271,7 @@ namespace FFPACK {
 					F.neg(*it, m[i][j]);
 				charp.push_back( *minP );
 			}
-			fflas_delete (X);
+			FFLAS::fflas_delete (X);
 			delete[] d;
 			return charp;
 		}

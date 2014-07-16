@@ -41,9 +41,9 @@ namespace FFPACK {
 		switch (CharpTag) {
 		case FfpackLUK:
 			{
-				typename Field::Element_ptr X = fflas_new (F, N, N+1);
+				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
 				Protected::LUKrylov (F, charp, N, A, lda, X, N);
-				fflas_delete (X);
+				FFLAS::fflas_delete (X);
 				return charp;
 			}
 		case FfpackKG:
@@ -71,9 +71,9 @@ namespace FFPACK {
 			}
 		case FfpackHybrid:
 			{
-				typename Field::Element_ptr X = fflas_new (F, N, N+1);
+				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
 				Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
-				fflas_delete (X);
+				FFLAS::fflas_delete (X);
 				return charp;
 			}
 		case FfpackArithProg:
@@ -102,9 +102,9 @@ namespace FFPACK {
 			}
 		default:
 			{
-				typename Field::Element_ptr X = fflas_new (F, N, N+1);
+				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
 				Protected::LUKrylov (F, charp, N, A, lda, X, N);
-				fflas_delete (X);
+				FFLAS::fflas_delete (X);
 				return charp;
 			}
 		}
@@ -235,7 +235,7 @@ namespace FFPACK {
 			else{// Matrix A is not generic
 				Polynomial *minP = new Polynomial();
 				typename Field::ConstElement_ptr Ai;
-				typename Field::ConstElement_ptr A2i, Xi;
+				typename Field::Element_ptr A2i, Xi;
 				size_t *P = new size_t[N];
 
 				FFPACK::MinPoly (F, *minP, N, A, lda, X, ldx, P, FfpackKGF, kg_mc, kg_mb, kg_j);
@@ -260,8 +260,8 @@ namespace FFPACK {
 				}
 
 				size_t Nrest = N-k;
-				typename Field::ConstElement_ptr X21 = X + k*ldx;
-				typename Field::ConstElement_ptr X22 = X21 + k;
+				typename Field::Element_ptr X21 = X + k*ldx;
+				typename Field::Element_ptr X22 = X21 + k;
 
 				// Creates the matrix A
 				//size_t lambda = std::max(0,N - kg_mc*(kg_j+1) - kg_mb);  // uint >= 0 !!!
@@ -306,7 +306,7 @@ namespace FFPACK {
 				// Copy X2_ = (A'2_)
 				for (Xi = X21, Ai = A+k*lda; Xi != X21 + Nrest*ldx; Ai+=lda-N, Xi+=ldx-N){
 					for (size_t jj=0; jj<N; ++jj){
-						*(Xi++) = *(Ai++);
+						F.assign(*(Xi++), *(Ai++));
 					}
 				}
 
@@ -324,7 +324,7 @@ namespace FFPACK {
 				      F.one, X, ldx, X21, ldx);
 
 				// Creation of the matrix A2 for recurise call
-				typename Field::Element_ptr A2 = fflas_new (F, Nrest, Nrest);
+				typename Field::Element_ptr A2 = FFLAS::fflas_new (F, Nrest, Nrest);
 
 				for (Xi = X22, A2i = A2;
 				     Xi != X22 + Nrest*ldx;
@@ -340,7 +340,7 @@ namespace FFPACK {
 				LUKrylov_KGFast (F, charp, Nrest, A2, Nrest, X22, ldx);
 				charp.push_front (*minP);
 				delete[] P;
-				fflas_delete (A2);
+				FFLAS::fflas_delete (A2);
 				return charp;
 			}
 		}

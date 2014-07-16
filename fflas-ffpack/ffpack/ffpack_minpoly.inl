@@ -49,7 +49,7 @@ namespace FFPACK {
 		typename Field::Element_ptr Xi, Ui;
 		typename Field::RandIter g (F);
 		bool KeepOn=true;
-		typename Field::Element_ptr U = fflas_new (F, N, 1);
+		typename Field::Element_ptr U = FFLAS::fflas_new (F, N, 1);
 		// Picking a non zero vector
 		do{
 			for (Ui=U, Xi = X; Ui<U+N; ++Ui, ++Xi){
@@ -68,7 +68,7 @@ namespace FFPACK {
 		minP.resize(k+1);
 		minP[k] = F.one;
 		if ( (k==1) && F.isZero(*(X+ldx))){ // minpoly is X
-			fflas_delete (U);
+			FFLAS::fflas_delete (U);
 			for (size_t i=0; i<k; ++i)
 				minP[i] = F.zero;
 			return minP;
@@ -81,7 +81,7 @@ namespace FFPACK {
 		for (j=0; j<k; ++j, it++){
 			F.neg(*it, U[j]);
 		}
-		fflas_delete (U);
+		FFLAS::fflas_delete (U);
 		return minP;
 	}
 
