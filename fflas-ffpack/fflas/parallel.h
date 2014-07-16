@@ -110,7 +110,7 @@
 #define CONCATENATE_ARGS(f, N) f ## N 
 
 // TASK definition
-#define TASK(r, w, rw, f, Args...) SPAWN(f, NUMARGS(Args)) <Field> >()(Args)
+#define TASK(r, w, rw, f, Args...) CONCATENATE_ARGS(spawner,f)(Args)
 
 // WAIT do nothing in kaapi
 #define WAIT

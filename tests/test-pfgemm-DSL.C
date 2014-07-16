@@ -48,8 +48,8 @@
 #include <iostream>
 using namespace std;
 
-#define  __FFLASFFPACK_USE_OPENMP
-//#define  __FFLASFFPACK_USE_KAAPI
+//#define  __FFLASFFPACK_USE_OPENMP
+#define  __FFLASFFPACK_USE_KAAPI
 
 //#define __FFLASFFPACK_FORCE_SEQ
 
@@ -117,15 +117,14 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
         double t_total=0;
 
 	const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
-
+	FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, FFLAS::FieldTraits<Field>::value,
+			FFLAS::ParSeqHelper::Parallel> pWH (F, nbw,FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
         for(int i = 0;i<nbit;++i){
 		C = new Field::Element[m*n];
                 clock_gettime(CLOCK_REALTIME, &t0);
 
 		PAR_REGION{
-			
-			FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, FFLAS::FieldTraits<Field>::value,
-					FFLAS::ParSeqHelper::Parallel> pWH (F, nbw,FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
+		       
 			FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 				      beta,C,n, pWH);   
 		}
