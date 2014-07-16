@@ -62,6 +62,9 @@ namespace FFPACK
 	public:
 
 		typedef int32_t Element;
+		typedef int32_t* Element_ptr;
+		typedef const int32_t* ConstElement_ptr;
+
 		typedef ModularBalancedRandIter<int32_t> RandIter;
 		typedef NonzeroRandIter<ModularBalanced<int32_t>,RandIter> NonZeroRandIter;
 
