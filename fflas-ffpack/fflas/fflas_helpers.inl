@@ -93,6 +93,8 @@ namespace FFLAS {
 	struct FieldTraits<FloatDomain> {typedef FieldCategories::FloatingPointTag value;};
 	template<typename  Element>
 	struct FieldTraits<FFPACK::Modular<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
+	template<typename  Element>
+	struct FieldTraits<FFPACK::ModularBalanced<Element> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
 	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
 
 
