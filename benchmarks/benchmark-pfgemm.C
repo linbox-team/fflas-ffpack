@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
 
   // typedef FFPACK::Modular<double> Field;
   // typedef FFPACK::Modular<float> Field;
-  // typedef FFPACK::ModularBalanced<double> Field;
-  typedef FFPACK::ModularBalanced<float> Field;
+  typedef FFPACK::ModularBalanced<double> Field;
+  // typedef FFPACK::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
   Field F(p);
