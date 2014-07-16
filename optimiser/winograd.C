@@ -60,6 +60,10 @@ bool balanced(const FFPACK::ModularBalanced<T>&)
 
 #define MFLOPS (2.0/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
 
+#ifdef __FFLASFFPACK_HAVE_CXX11
+#include <ctime>
+#endif
+
 //using namespace LinBox;
 int main () {
 	using namespace std;
@@ -80,6 +84,12 @@ int main () {
 
 	std::ofstream outlog;
 	outlog.open("optim.log", std::ofstream::out | std::ofstream::app);
+#ifdef __FFLASFFPACK_HAVE_CXX11
+    std::time_t result = std::time(NULL);
+    outlog << std::endl << 
+        "---------------------------------------------------------------------"
+           << std::endl << std::asctime(std::localtime(&result));
+#endif
 	outlog << std::endl
 		<< "Threshold for finite field Strassen-Winograd matrix multiplication" ;
 	F.write(outlog << "(using ") << ')' << std::endl;
