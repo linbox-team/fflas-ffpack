@@ -139,6 +139,7 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 				AC_MSG_RESULT( yes (clapack))
 				AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
 				AC_DEFINE(HAVE_CLAPACK,1,[Define if C interface to LAPACK is available])
+				HAVE_LAPACK=yes
 				],
 				[
 				AC_TRY_RUN(
@@ -152,6 +153,7 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 					[        AC_SUBST(LAPACK_LIBS)
 					AC_MSG_RESULT( yes (lapack))
 					AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
+					HAVE_LAPACK=yes
 					], dnl clapack not found. looking for lapack
 					[
 					AC_MSG_RESULT( no )
@@ -160,8 +162,8 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 			)
 
 
-		dnl  AM_CONDITIONAL(FFLASFFPACK_HAVE_LAPACK, test "x$HAVE_LAPACK" = "xyes")
-
+		dnl  
+		AM_CONDITIONAL(FFLASFFPACK_HAVE_LAPACK, test "x$HAVE_LAPACK" = "xyes")
 		CXXFLAGS=${BACKUP_CXXFLAGS}
 		LIBS=${BACKUP_LIBS}
 		dnl  unset LD_LIBRARY_PATH

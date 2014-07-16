@@ -29,7 +29,7 @@ AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/
 LDADD = $(CBLAS_LIBS) 
 AM_LDFLAGS=-static $(PARLFLAGS)
 
-FFLA_BENCH =    benchmark-fgemm benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
+FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
 BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
