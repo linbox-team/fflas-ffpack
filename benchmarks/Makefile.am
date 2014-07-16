@@ -33,7 +33,7 @@ FFLA_BENCH =    benchmark-fgemm benchmark-pfgemm  benchmark-ftrsm  benchmark-ftr
 BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm  benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
 
-OMP_BENCH = benchmark-pfgemm
+OMP_BENCH = benchmark-pfgemm benchmark-pftrsm
 
 if FFLASFFPACK_HAVE_OMP
 USE_OMP_BENCH = $(OMP_BENCH)
@@ -56,6 +56,7 @@ benchmark_dgetri_SOURCES = benchmark-dgetri.C
 benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
 
 benchmark_pfgemm_SOURCES = benchmark-pfgemm.C
+benchmark_pftrsm_SOURCES = benchmark-pftrsm.C
 
 benchmark_fgemm_SOURCES = benchmark-fgemm.C
 benchmark_wino_SOURCES = benchmark-wino.C

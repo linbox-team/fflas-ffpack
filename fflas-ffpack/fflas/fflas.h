@@ -177,13 +177,10 @@ namespace FFLAS {
 #include "fflas_fcopy.inl"
 #include "fflas_finit.inl"
 
-//#ifdef __FFLASFFPACK_USE_OPENMP
-#include "fflas_pftrsm.inl"
-//#endif
-
 #include "fflas_fgemv.inl"
 #include "fflas_fger.inl"
 #include "fflas_ftrsm.inl"
+#include "fflas_pftrsm.inl"
 #include "fflas_ftrmm.inl"
 #include "fflas_ftrsv.inl"
 #include "fflas_faxpy.inl"

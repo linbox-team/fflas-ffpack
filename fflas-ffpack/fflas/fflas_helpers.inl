@@ -127,20 +127,6 @@ namespace FFLAS {
 		};
 	}
 
-	/*! StructureHelper for ftrsm
-	 */
-	namespace StructureHelper {
-		struct Recursive{};
-		struct Iterative{};
-	}
-	/*! TRSM Helper
-	 */
-	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
-	struct TRSMHelper {
-		ParSeqTrait parseq;
-		TRSMHelper(ParSeqTrait _PS):parseq(_PS){}
-	};
-
 	namespace MMHelperAlgo{
 		struct Auto{};
 		struct Classic{};
@@ -300,5 +286,34 @@ namespace FFLAS {
                 <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
 		}
 	}; // MMHelper
+
+
+	/*! StructureHelper for ftrsm
+	 */
+	namespace StructureHelper {
+		struct Recursive{};
+		struct Iterative{};
+	}
+	/*! TRSM Helper
+	 */
+	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
+	struct TRSMHelper {
+		ParSeqTrait parseq;
+		TRSMHelper(ParSeqTrait _PS):parseq(_PS){}
+
+        template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
+        FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n, ParSeqTrait p) const {
+            return FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait>(D,m,k,n,p);
+        }
+        template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
+        FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n) const {
+            return pMMH(D,m,k,n,this->parseq);
+        }
+        
+	};
+
+
+
+
 } // FFLAS
 #endif

@@ -255,7 +255,31 @@ namespace FFLAS {
 // fgemm
 namespace FFLAS {
 
-	template<class Field>
+	template<typename Field, typename ParSeqTrait = ParSeqHelper::Sequential>
+	inline typename Field::Element_ptr
+	fgemm( const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+           const ParSeqTrait parseq)
+	{
+		    // The entry point to fgemm.
+		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
+		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqTrait > HW (F, m, k, n, parseq);
+		return 	fgemm (F, ta, tb, m, n, k, alpha, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
+			       beta, C, ldc, HW);
+	}
+
+	template<typename Field>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -269,14 +293,9 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc)
 	{
-		    // The entry point to fgemm.
-		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<Field, MMHelperAlgo::Winograd > HW (F, m, k, n, FFLAS::ParSeqHelper::Sequential());
-		return 	fgemm (F, ta, tb, m, n, k, alpha, 
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
-			       beta, C, ldc, HW);
-	}
+        return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+    }
+           
 
 	template<class Field>
 	inline typename Field::Element_ptr
