@@ -67,10 +67,9 @@ namespace FFPACK {
 			_F (R._F)
 		{}
 
-		/*! @bug not so random... (at all)  */
 		Element &random (Element &a) const
 		{
-			return _F.init(a,(double)(lrand48()-std::numeric_limits<long>::max()));
+			return _F.init(a,rand());
 		}
 
 	private:
@@ -90,7 +89,7 @@ namespace FFPACK {
 		{}
 		Element &random (Element &a) const
 		{
-			return _F.init(a,(double)rand());
+			return _F.init(a,rand());
 		}
 	private:
 		ModularBalanced<Element> _F;
