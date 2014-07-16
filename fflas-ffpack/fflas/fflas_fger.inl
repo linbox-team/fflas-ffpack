@@ -39,8 +39,7 @@ namespace FFLAS {
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda)
 	{
-		MMHelper<Field, MMHelperAlgo::Classic, 
-			 typename FieldTraits<Field>::value > H(F,0);
+		MMHelper<Field, MMHelperAlgo::Classic> H(F,0);
 		fger (F, M, N, alpha, 
 		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(x), incx, 
 		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(y), incy, 

@@ -324,15 +324,13 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), 
-			__FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
-			__FFLAS__B1, ldb,
-			FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
-			F.one, __FFLAS__B2, ldb, H.parseq);
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
+		       __FFLAS__B1, ldb, __FFLAS__A2, lda, 
+		       F.one, __FFLAS__B2, ldb, H.parseq);
 #else
 		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, 
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
-			FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
-			__FFLAS__B1, ldb, 
+		       __FFLAS__A2, lda, __FFLAS__B1, ldb, 
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #endif
 
@@ -377,14 +375,12 @@ void operator () (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       __FFLAS__Brec, ldb,
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__Aupdate), lda,
+		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda,
 		       F.one, __FFLAS__Bupdate, ldb, H.parseq);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__Aupdate), lda, 
-		       __FFLAS__Brec, ldb, 
+		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, 
 		       F.one, __FFLAS__Bupdate, ldb, H.parseq);
 #endif
 	}
@@ -434,14 +430,12 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       __FFLAS__B1, ldb,
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
+		       __FFLAS__B1, ldb, __FFLAS__A2, lda, 
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(__FFLAS__A2), lda, 
-		       __FFLAS__B1, ldb, 
+		       __FFLAS__A2, lda, __FFLAS__B1, ldb, 
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #endif
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);

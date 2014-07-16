@@ -268,11 +268,13 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-           const ParSeqTrait parseq)
+	       const ParSeqTrait parseq)
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
 		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqTrait > HW (F, m, k, n, parseq);
+		    // For the sake of simplicity: only one specialization available with non const A and B.
+		    // However, we guarantee that A and B will never be modified
 		return 	fgemm (F, ta, tb, m, n, k, alpha, 
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
@@ -351,10 +353,7 @@ namespace FFLAS {
 			F.assign (beta_,beta);
 		}
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag>  HD(H);
-		fgemm (F, ta, tb, m, n, k, alpha_, 
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
-		       beta_, C, ldc, HD);
+		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 		Protected::ScalAndInit (F, m, n, alpha, C, ldc, HD);
 		
 		H.initOut();
