@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 
   }
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
+  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" n^3/time/10^9: "<<(double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<endl;
 
 
   return 0;
