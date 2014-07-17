@@ -450,9 +450,12 @@ namespace FFPACK {
 
 		static inline Element getMaxModulus()
 		{
-			return 4096.0f;  // floor( 2^12 )
+			return 2896.0f;  // floor( 2^11.5 ) (A.B+betaC must fit in the float mantissa)
+//			return 4096.0f;  // floor( 2^12 )
 			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
 		}
+
+		static  Element getMinModulus()	{return 2.0;}
 
 	};
 

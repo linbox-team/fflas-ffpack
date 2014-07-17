@@ -79,7 +79,7 @@ namespace FFPACK
 
 		typedef int64_t Element;
 		typedef int64_t* Element_ptr;
-		typedef const int32_t* ConstElement_ptr;
+		typedef const int64_t* ConstElement_ptr;
 		const Element one  ;
 		const Element zero ;
 		const Element mOne ;
@@ -464,6 +464,7 @@ namespace FFPACK
 #endif
 
 		}
+		static  Element getMinModulus()	{return 2.0;}
 
 	private:
 

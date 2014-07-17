@@ -468,8 +468,11 @@ namespace FFPACK
 			// FFLASFFPACK_check(94906266LL*94906267LL>9007199254740991LL);
 			// FFLASFFPACK_check(94906265LL*94906266LL<9007199254740991LL);
                         // (p-1)*(p+1) < 2^{53+2}
-			return 189812531.0 ;
+//			return 189812531.0 ;
+			return 134217728.0f;  // 2^27 as 2((p-1)/2)^2 < 2^53
+
 		}
+		static  Element getMinModulus()	{return 3.0;}
 
 	};
 

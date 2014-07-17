@@ -441,6 +441,7 @@ namespace FFPACK
 			return 6074001000LL;
 #endif
 		}
+		static  Element getMinModulus()	{return 3.0;}
 
 	private:
 

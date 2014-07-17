@@ -474,8 +474,11 @@ namespace FFPACK {
 			// FFLASFFPACK_check (4095*4096<16777215)
 			// FFLASFFPACK_check (4097*4096>16777215)
 			// return  1 << (FLT_MANT_DIG >> 1);  // 2^(FLT_MANT_DIG/2)
-			return 8192.0 ;
+			return 5792.0f;  // floor( 2^12.5 ) (A.B+betaC must fit in the float mantissa)
+			    //return 8192.0 ;
 		}
+
+		static  Element getMinModulus()	{return 3.0;}
 
 	};
 

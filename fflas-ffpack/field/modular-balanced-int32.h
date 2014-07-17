@@ -436,6 +436,7 @@ namespace FFPACK
                         // (p-1)(p+1)/4 < 2^{31}
                     return 92681;
 		}
+		static  Element getMinModulus()	{return 3.0;}
 
 	private:
 
