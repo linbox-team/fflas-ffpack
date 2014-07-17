@@ -41,7 +41,7 @@
 #endif
 
 
-#define DEBUG
+//#define DEBUG
 #include <iomanip>
 #include <iostream>
 using namespace std;

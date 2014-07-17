@@ -156,18 +156,19 @@ bool check_MM(const Field                   & F,
 
 template<class Field>
 bool launch_MM(const Field & F,
-	      const size_t   m,
-	      const size_t   n,
-	      const size_t   k,
-	      const typename Field::Element alpha,
-	      const typename Field::Element beta,
-	      const size_t ldc,
-	      const size_t lda,
-	      enum FFLAS::FFLAS_TRANSPOSE    ta,
-	      const size_t ldb,
-	      enum FFLAS::FFLAS_TRANSPOSE    tb,
-	      size_t iters,
-	      int nbw )
+	       const size_t   m,
+	       const size_t   n,
+	       const size_t   k,
+	       const typename Field::Element alpha,
+	       const typename Field::Element beta,
+	       const size_t ldc,
+	       const size_t lda,
+	       enum FFLAS::FFLAS_TRANSPOSE    ta,
+	       const size_t ldb,
+	       enum FFLAS::FFLAS_TRANSPOSE    tb,
+	       size_t iters,
+	       int nbw,
+	       bool par)
 {
 	bool ok = true;
 
@@ -205,8 +206,15 @@ bool launch_MM(const Field & F,
 		}
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fcopy(F,m,n,C,ldc,D,n);
-		FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw, FFLAS::ParSeqHelper::Sequential());
-		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+		if (par){
+			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw,FFLAS::ParSeqHelper::Parallel());
+			PAR_REGION{
+				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+			}
+		}else{
+			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+		}
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
 
 		FFLAS::fflas_delete(A);
@@ -230,7 +238,8 @@ bool launch_MM_dispatch(const Field &F,
 			const typename Field::Element alpha,
 			const typename Field::Element beta,
 			const size_t iters,
-			const int nbw)
+			const int nbw,
+			const bool par)
 {
 	bool ok = true;
 	size_t m,n,k;
@@ -249,13 +258,13 @@ bool launch_MM_dispatch(const Field &F,
 		n = 1+(size_t)random()%nn;
 		k = 1+(size_t)random()%nn;
 		
-		int logdim = floor(log2(std::min(std::min(m,k),k)));
+		int logdim = floor(log2(std::min(std::min(m,k),n)));
 		int nw = std::min (logdim,nbw);
 		
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
-		std::cout <<"q = "<<F.characteristic()<<" nw = "<<nw<<" C := "
+		std::cout <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
 			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
 			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
 		if (!F.isZero(beta))
@@ -265,13 +274,13 @@ bool launch_MM_dispatch(const Field &F,
 				       ldc,
 				       lda, ta,
 				       ldb, tb,
-				       iters,nw);
+				       iters,nw, par);
 		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
 	}
 	return ok ;
 }
 template <class Field>
-bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters ){
+bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bool par ){
 	bool ok = true ;
 	int p=q;
 	int nbit=iters;
@@ -307,48 +316,48 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters ){
 
 		    //size_t k = 0 ;
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.zero,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.zero,iters,nbw, par);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.zero,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.zero,iters,nbw, par);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.zero,iters,nbw);
-		    //std::cout << k << "/24" << std::endl; ++k;
-
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.one,iters,nbw);
-		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.one,iters,nbw);
-		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.one,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.zero,iters,nbw, par);
 		    //std::cout << k << "/24" << std::endl; ++k;
 
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.mOne,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.one,iters,nbw, par);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.mOne,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.one,iters,nbw, par);
+		    //std::cout << k << "/24" << std::endl; ++k;
+		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.one,iters,nbw, par);
+		    //std::cout << k << "/24" << std::endl; ++k;
+
+		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.mOne,iters,nbw, par);
+		    //std::cout << k << "/24" << std::endl; ++k;
+		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.mOne,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha,beta ;
 		R.random(alpha);
 
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,alpha,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.one ,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,alpha,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.zero,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,alpha,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 
-		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.one ,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.one ,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.zero,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.zero,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.mOne,iters,nbw);
+		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 
 		for (size_t j = 0 ; j < 3 ; ++j) {
 			R.random(alpha);
 			R.random(beta);
-			ok &= launch_MM_dispatch<Field>(F,n,alpha,beta,iters,nbw);
+			ok &= launch_MM_dispatch<Field>(F,n,alpha,beta,iters,nbw, par);
 			//std::cout << k << "/24" << std::endl; ++k;
 		}
 		    //std::cout<<std::endl;
@@ -368,13 +377,15 @@ int main(int argc, char** argv)
 	static size_t n = 50 ;
 	static int nbw = -1 ;
 	static bool loop = false;
+	static bool par = false;
 	static Argument as[] = {
-		{ 'p', "-p P", "Set the field characteristic (-1 for random).",         TYPE_INT , &p },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &p },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
+		{ 'p', "-par Y/N", "run the parallel fgemm.", TYPE_BOOL , &par },
 		END_OF_ARGUMENTS
 	};
 
@@ -384,17 +395,17 @@ int main(int argc, char** argv)
 	bool ok = true;
 	do{
 		std::cout<<"Modular<double>"<<std::endl;
-		ok &= run_with_field<Modular<double> >(p,b,n,nbw,iters);
+		ok &= run_with_field<Modular<double> >(p,b,n,nbw,iters,par);
 		std::cout<<"ModularBalanced<double>"<<std::endl;
-		ok &= run_with_field<ModularBalanced<double> >(p,b,n,nbw,iters);
+		ok &= run_with_field<ModularBalanced<double> >(p,b,n,nbw,iters,par);
 		std::cout<<"Modular<float>"<<std::endl;
-		ok &= run_with_field<Modular<float> >(p,b,n,nbw,iters);
+		ok &= run_with_field<Modular<float> >(p,b,n,nbw,iters,par);
 		std::cout<<"ModularBalanced<float>"<<std::endl;
-		ok &= run_with_field<ModularBalanced<float> >(p,b,n,nbw,iters);
+		ok &= run_with_field<ModularBalanced<float> >(p,b,n,nbw,iters,par);
 		std::cout<<"Modular<int32_t>"<<std::endl;
-		ok &= run_with_field<Modular<int32_t> >(p,b,n,nbw,iters);
+		ok &= run_with_field<Modular<int32_t> >(p,b,n,nbw,iters,par);
 		std::cout<<"ModularBalanced<int32_t>"<<std::endl;
-		ok &= run_with_field<ModularBalanced<int32_t> >(p,b,n,nbw,iters);
+		ok &= run_with_field<ModularBalanced<int32_t> >(p,b,n,nbw,iters,par);
 		    // std::cout<<"Modular<int64_t>"<<std::endl;
 		// ok &= run_with_field<Modular<int64_t> >(p,b,n,nbw,iters);
 		// std::cout<<"ModularBalanced<int64_t>"<<std::endl;
