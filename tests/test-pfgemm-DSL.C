@@ -34,22 +34,23 @@
 //--------------------------------------------------------------------------
 // Ziad Sultan
 //-------------------------------------------------------------------------
-
+/*
 #ifndef DEBUG
 #define DEBUG 0
 #endif
+*/
 #define NEWWINO
 #ifndef TIME
 #define TIME 1
 #endif
 
-//#define DEBUG 1
+#define DEBUG 1
 #include <iomanip>
 #include <iostream>
 using namespace std;
 
-//#define  __FFLASFFPACK_USE_OPENMP
-#define  __FFLASFFPACK_USE_KAAPI
+#define  __FFLASFFPACK_USE_OPENMP
+//#define  __FFLASFFPACK_USE_KAAPI
 
 //#define __FFLASFFPACK_FORCE_SEQ
 
