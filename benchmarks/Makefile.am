@@ -33,23 +33,30 @@ FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-pfgemm  benchmark-ftrsm
 BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
-
 OMP_BENCH = benchmark-pfgemm benchmark-pftrsm
 
 if FFLASFFPACK_HAVE_OMP
 USE_OMP_BENCH = $(OMP_BENCH)
+benchmark_pfgemm_SOURCES = benchmark-pfgemm.C
+benchmark_pftrsm_SOURCES = benchmark-pftrsm.C
 endif
 
 if FFLASFFPACK_HAVE_LAPACK
-USE_LAPACK_TESTS = $(LAPA_BENCH)
+USE_LAPACK_BENCH = $(LAPA_BENCH)
+benchmark_dtrtri_SOURCES = benchmark-dtrtri.C
+benchmark_dgetri_SOURCES = benchmark-dgetri.C
+benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
 endif
 
-
+if FFLASFFPACK_HAVE_GIVARO
+USE_GIVARO_BENCH = $(GIVA_BENCH)
+endif
 
 BENCHMARKS =			\
         $(FFLA_BENCH)   \
         $(BLAS_BENCH)   \
-        $(USE_LAPACK_TESTS) \
+        $(USE_GIVARO_BENCH) \
+        $(USE_LAPACK_BENCH) \
         $(USE_OMP_BENCH)
 
 CLEANFILES = $(BENCHMARKS)
@@ -58,13 +65,6 @@ EXTRA_PROGRAMS = $(BENCHMARKS)
 
 benchmark_dgemm_SOURCES = benchmark-dgemm.C
 benchmark_dtrsm_SOURCES = benchmark-dtrsm.C
-
-benchmark_dtrtri_SOURCES = benchmark-dtrtri.C
-benchmark_dgetri_SOURCES = benchmark-dgetri.C
-benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
-
-benchmark_pfgemm_SOURCES = benchmark-pfgemm.C
-benchmark_pftrsm_SOURCES = benchmark-pftrsm.C
 
 benchmark_fgemm_SOURCES = benchmark-fgemm.C
 benchmark_wino_SOURCES = benchmark-wino.C

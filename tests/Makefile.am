@@ -35,9 +35,10 @@ BASIC_TESTS =              \
 		test-modulararith      \
 		test-det               \
 		test-echelon           \
-		test-fgemm-long        \
 		test-compressQ \
 		regression-check
+
+GIVA_TESTS =  	test-fgemm-long
 
 NOT_A_TEST =  \
 		test-lqup2              \
@@ -78,15 +79,17 @@ if FFLASFFPACK_HAVE_OMP
 USE_OMP_TESTS = $(OMP_TESTS)
 endif
 
-CLEANFILES =           \
-		$(BASIC_TESTS) $(NOT_A_TEST) $(OMP_TESTS) 
+if FFLASFFPACK_HAVE_GIVARO
+USE_GIVARO_TESTS = $(GIVA_TESTS)
+endif
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS) $(USE_OMP_TESTS)
+		$(BASIC_TESTS) $(USE_OMP_TESTS) $(USE_GIVARO_TESTS)
 
-TESTS =                \
-	    $(BASIC_TESTS) \
-	    $(USE_OMP_TESTS)
+CLEANFILES =           \
+		$(NOT_A_TEST) $(EXTRA_PROGRAMS) 
+
+TESTS =     $(EXTRA_PROGRAMS)
 
 test_compressQ_SOURCES         = test-compressQ.C
 test_lqup_SOURCES              = test-lqup.C
