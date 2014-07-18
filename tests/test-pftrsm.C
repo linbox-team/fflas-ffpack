@@ -33,8 +33,6 @@
 // Ziad Sultan
 //-------------------------------------------------------------------------
 
-#define DEBUG 1
-#define TIME 1
 
 #define __FFLASFFPACK_USE_OPENMP
 //#define __FFLASFFPACK_USE_KAAPI
@@ -50,105 +48,54 @@
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "time.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 
 using namespace std;
 using namespace FFPACK;
 
-typedef Modular<double> Field;
-//typedef ModularBalanced<double> Field;
+//typedef Modular<double> Field;
+typedef ModularBalanced<double> Field;
 //typedef ModularBalanced<float> Field;
 
 
 
+Field::Element* makemat(const Field::RandIter& RF,int m, int n){
+	Field::Element * res = new Field::Element[m*n];
 
-//int main(int argc, char** argv)
-//{
-BEGIN_PARALLEL_MAIN(int argc, char** argv)
+        for (long i = 0; i < m; ++i)
+                for (long j = 0; j < n; ++j) {
+                        RF.random(res[j+i*n]);
+                }
+        return res;
+}
+
+
+
+template<class Field>
+bool check_TRSM(const Field                   & F,
+		enum FFLAS::FFLAS_SIDE side,
+		enum FFLAS::FFLAS_UPLO uplo,
+		enum FFLAS::FFLAS_TRANSPOSE   & trans,
+		enum FFLAS::FFLAS_DIAG  & diag,
+		const size_t                    m,
+		const size_t                    n,
+		const size_t                    k,
+		const typename Field::Element & alpha,
+		typename Field::Element * A,
+		typename Field::Element * B,
+		const typename Field::Element * B2 // res
+		)
 {
 
-	int k,n,m;
-	cerr<<setprecision(10);
-	Field::Element zero, one;
-
-	if (argc != 10)	{
-		cerr<<"Usage : test-ftrsm <p> <A> <B> <iter> <alpha> <left/right> <Up/Low> <NoTrans/Trans> <NonUnit/Unit>"
-		    <<endl;
-		exit(-1);
-	}
-	int nbit=atoi(argv[4]); // number of times the product is performed
-	Field F(atof(argv[1]));
-	F.init(zero,0.0);
-	F.init(one,1.0);
-	Field::Element * A, *B, *B2;
-	A = read_field(F,argv[2],&k,&k);
-	B = read_field(F,argv[3],&m,&n);
-	B2 = new Field::Element[m*n];
-
-
-	for (int i=0; i<m;++i){
-		for(int j=0; j<n; ++j)
-			F.assign(*(B2+i*n+j),*(B+i*n+j));
-	}
-
-	Field::Element alpha;
-	F.init (alpha, atof(argv[5]));
-
-	FFLAS::FFLAS_SIDE side = (atoi(argv[6])) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
-	FFLAS::FFLAS_UPLO uplo = (atoi(argv[7])) ? FFLAS::FflasLower :  FFLAS::FflasUpper;
-	FFLAS::FFLAS_TRANSPOSE trans = (atoi(argv[8])) ? FFLAS::FflasTrans :  FFLAS::FflasNoTrans;
-	FFLAS::FFLAS_DIAG diag = (atoi(argv[9])) ? FFLAS::FflasUnit :  FFLAS::FflasNonUnit;
-
-	if (   ((side == FFLAS::FflasRight) &&(k != n))
-	    || ((side == FFLAS::FflasLeft)&&(k != m))) {
-		cerr<<"Error in the dimensions of the input matrices"<<endl;
-		exit(-1);
-	}
-
-	struct timespec t0,t1;
-        double delay, avrg;
-        double t_total=0;
-
-	//	Timer t; t.clear();
-	//	double time=0.0;
-// write_field(F, cerr<<"A="<<endl, A, k,k,k);
-// write_field(F, cerr<<"B="<<endl, B, m,n,n);
-        const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
-	//	size_t numThreads;
-	for(int i = 0;i<nbit;++i){
-		//		t.clear();
-		//		t.start();		
-		clock_gettime(CLOCK_REALTIME, &t0);
-		PAR_REGION{
-			FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));	
-			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
-		}
-		BARRIER;
-		clock_gettime(CLOCK_REALTIME, &t1);
-		delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
-
-		if (i)
-                        t_total+=delay;
-		//		t.stop();
-		//		time+=t.usertime();
-		if (i+1<nbit)
-                        for (int i=0; i<m*n;++i)
-                                F.assign(*(B+i),*(B2+i));
-
-	}
-        avrg = t_total/(nbit-1);
-
-#if DEBUG
-// write_field (F,cerr<<"S="<<endl,B,m,n,n);
-	Field::Element invalpha;
+	typename Field::Element invalpha;
 	F.inv(invalpha, alpha);
 
 	FFLAS::ftrmm (F, side, uplo, trans, diag, m, n, invalpha, A, k, B, n);
 	bool wrong = false;
 
-	for (int i=0;i<m;++i)
-		for (int j=0;j<n;++j)
+	for (size_t i=0;i<m;++i)
+		for (size_t j=0;j<n;++j)
 			if ( !F.areEqual(*(B2+i*n+j), *(B+i*n+j))){
 				cerr<<"B2 ["<<i<<", "<<j<<"] = "<<(*(B2+i*n+j))
 				    <<" ; B ["<<i<<", "<<j<<"] = "<<(*(B+i*n+j))
@@ -158,57 +105,109 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-// write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
-// write_field (F,cerr<<"B="<<endl,B,m,n,n);
-	} else
-		cerr<<"PASS"<<endl;
-#endif
+	}
+	//	else   cerr<<"PASS"<<endl;
+
+	return wrong;
+}
+
+
+//BEGIN_PARALLEL_MAIN(int argc, char** argv)
+int main(int argc, char** argv)
+{                                                                                                                                      
+        srand((int)time(NULL));                                                                                                        
+        srand48(time(NULL));                                                                                                           
+        size_t m,n,k,p, nbit, iters;                                                                                              
+        iters=5;                                                                                                                       
+        p=65521;                                                                                                                       
+        n=100;                                                                                                                         
+        n=20+(size_t)random()%n;
+	m=n;
+	k=n;
+
+	int s = 1; int u = 0; int t = 1; int d = 0; 
+
+
+        static Argument as[] = {
+                { 'p', "-p P", "Set the field characteristic.",                TYPE_INT , &p },
+                { 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &k },
+                { 's', "-s Side", "Set the side of the matrix.",               TYPE_INT , &s },
+                { 'u', "-u UpLow", "Set the triangular side of the matrix.",   TYPE_INT , &u },
+                { 't', "-t Trans", "Set the transposition of the matrix.",     TYPE_INT , &t },
+                { 'd', "-d Diag", "Set the Diag of the matrix.",                TYPE_INT , &d },
+                { 'i', "-i i", "Set number of repetitions.",               TYPE_INT , &iters },
+                END_OF_ARGUMENTS
+        };
+
+	FFLAS::parseArguments(argc,argv,as);                                                                                                                         
+
+
+	FFLAS::FFLAS_SIDE side =  (s) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
+	FFLAS::FFLAS_UPLO uplo =  u ? FFLAS::FflasLower : FFLAS::FflasUpper;
+	FFLAS::FFLAS_TRANSPOSE trans = t ? FFLAS::FflasTrans :  FFLAS::FflasNoTrans;
+	FFLAS::FFLAS_DIAG diag = d ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
+	//cout<<"s: "<<s<<"u: "<<u<<"t: "<<t<<"d: "<<d<<endl;
+	        m = k ;                                                                                                                        
+	        n = m ;                                                                                                                        
+
+        
+	srand48(BaseTimer::seed());
+
+	Field F(p);
+	Field::RandIter RF(F);
+	Field::Element zero, one;
+
+	nbit= iters; // number of times the product is performed
+
+	F.init(zero,0.0);
+	F.init(one,1.0);
+	Field::Element * A = new Field::Element[k*k];
+	Field::Element * B = new Field::Element[m*n];
+	Field::Element * B2 = new Field::Element[m*n];
+
+	A = makemat(RF,k,k);
+	B = makemat(RF,m,n);
+
+	for (size_t i=0; i<m;++i){
+		for(size_t j=0; j<n; ++j)
+			F.assign(*(B2+i*n+j),*(B+i*n+j));
+	}
+
+	Field::Element alpha;
+	F.init (alpha, 1.0);
+
+	if (   ((side == FFLAS::FflasRight) &&(k != n))
+	    || ((side == FFLAS::FflasLeft)&&(k != m))) {
+		cerr<<"Error in the dimensions of the input matrices"<<endl;
+		exit(-1);
+	}
+
+
+        const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
+
+	for(size_t i = 0;i<nbit;++i){
+
+
+		PAR_REGION{
+			FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
+					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));	
+			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
+		}
+		BARRIER;
+
+		if (i+1<nbit)
+                        for (size_t i=0; i<m*n;++i)
+                                F.assign(*(B+i),*(B2+i));
+
+	}
+
+
+	bool wrong = false;
+	wrong &= check_TRSM(F, side, uplo, trans, diag, m, n, k, alpha, A, B, B2);
 
 	delete[] A;
 	delete[] B;
 	delete[] B2;
-
-#if TIME
-	//	double mflops = m*n/1000000.0*nbit*n/time;
-	double mflops = m*n/1000000.0*n/avrg;
-	cerr<<"m,n = "<<m<<" "<<n<<". ftrsm "
-	    <<((side == FFLAS::FflasLeft)?" Left ":" Right ")
-	    <<((uplo == FFLAS::FflasLower)?" Lower ":" Upper ")
-	    <<((diag == FFLAS::FflasUnit)?" Unit ":" NonUnit ")
-	    <<((trans == FFLAS::FflasTrans)?" Trans ":" NoTrans ")
-	    <<"over Z/"<<atoi(argv[1])<<"Z :"
-	    <<endl
-	    <<"t= "
-	    << avrg
-	    << " s, Mffops = "<<mflops
-	    << endl;
-
-	//	cout<<m<<" "<<n<<" "<<mflops<<" "<<time/nbit<<endl;
-	cout<<m<<" "<<n<<" "<<mflops<<" "<<avrg<<endl;
-#endif
-	//	 }
-
-	/*
-	size_t BLOCKSIZE=std::max(m/numThreads,(size_t)1); // There is always 2 TRSM taking place in parallel                                                        
-	size_t NBlocks = m/BLOCKSIZE;
-	size_t LastBlockSize = m % BLOCKSIZE;
-	if (LastBlockSize)
-		NBlocks++;
-	else
-		LastBlockSize=BLOCKSIZE;
-	//#pragma omp parallel for default (none) shared(A,B,F,NBlocks, LastBlockSize, BLOCKSIZE)                                                                      
-	for (size_t t = 0; t < NBlocks; ++t){
-		size_t i = t % NBlocks;
-		size_t BlockDim = BLOCKSIZE;
-		if (i == NBlocks-1)
-			BlockDim = LastBlockSize;
-
-
-		cout<<"blockDim "<<BlockDim<<"  BLOCKSIZE*i*ldb "<< (BLOCKSIZE*i*n)<<endl;
-	}
-	FFLAS::ForStrategy1D iter(m, FFLAS::BLOCK_THREADS, numThreads);
-	for (iter.begin(); ! iter.end(); ++iter)
-		cout<<"iter.iend-iter.ibeg "<<iter.iend-iter.ibeg<<"   iter.ibeg*ldb "<<  (iter.ibeg*n)<<endl;
-	*/
+	return wrong;
 }
-END_PARALLEL_MAIN()
+//END_PARALLEL_MAIN()

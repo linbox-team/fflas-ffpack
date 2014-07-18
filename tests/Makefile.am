@@ -73,7 +73,8 @@ INFINITE_TEST= \
 
 EXTRA_DIST= test-utils.h
 
-OMP_TESTS = test-pfgemm
+OMP_TESTS = test-pfgemm	               \
+            test-pftrsm
 
 if FFLASFFPACK_HAVE_OMP
 USE_OMP_TESTS = $(OMP_TESTS)
@@ -124,6 +125,7 @@ test_fgemm_long_SOURCES             = test-fgemm-long.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 
 test_pfgemm_SOURCES = test-pfgemm.C
+test_pftrsm_SOURCES = test-pftrsm.C
 regression_check_SOURCES = regression-check.C
 
 dense_generator: dense_generator.C
