@@ -29,7 +29,7 @@ SUBDIRS=fflas_fgemm
 sparse=fflas_sparse_fgemv.h \
        fflas_sparse_fgemv.inl
 
-multprecision= fflas_ftrsm_mp.inl
+multiprecision= fflas_ftrsm_mp.inl
 
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
