@@ -401,7 +401,7 @@ namespace FFPACK {
 			typename Field::Element_ptr Aii = A;
 			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = b[i];
 
-			fflas_delete (b);
+			FFLAS::fflas_delete (b);
 		}
 
 #endif

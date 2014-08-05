@@ -217,7 +217,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 		fcopy (F, colsize-recsize, A22+i*lda, 1, tmp+i*(colsize-recsize), 1);
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r1, colsize-recsize, r1,
 	       F.one, A21, lda, tmp, colsize-recsize, F.zero, A22, lda);
-	fflas_delete (tmp);
+	FFLAS::fflas_delete (tmp);
 
 	// Recurive call on slice A*2
 	size_t r2 = REF(F, M, N, A, lda, colbeg + recsize, rowbeg + r1,
@@ -248,7 +248,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r2, r1, r2,
 	       F.one, U22, lda, tmp, r1, F.zero, U21, lda);
-	fflas_delete(tmp);
+	FFLAS::fflas_delete(tmp);
 
 	//Permute the non pivot columns to the end
 	if (r1 < recsize){
@@ -267,7 +267,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 		NZ1 +=  r2;
 		for (size_t i=0; i<nrow; ++i)
 			fcopy (F, ncol, tmp+i*ncol,1, NZ1 + i*lda, 1);
-		fflas_delete (tmp);
+		FFLAS::fflas_delete (tmp);
 
 		for (size_t i=rowbeg+r1; i<M; ++i)
 			for (size_t j=0; j<recsize-r1; ++j)

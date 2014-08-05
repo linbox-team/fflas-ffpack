@@ -82,7 +82,7 @@ namespace FFPACK {
 
 		k = Protected::LUdivine_construct(F, FflasUnit, N+1, N, B, N, U, ldu, X, N, P,
 				       &nRow, N+1, &nUsedRow );
-		fflas_delete (B);
+		FFLAS::fflas_delete (B);
 		minP.resize(k+1);
 		minP[k] = one;
 		if (k==1 && F.isZero(*(X+N))){ // minpoly is X
@@ -97,7 +97,7 @@ namespace FFPACK {
 		for (j=0; j<k; ++j, it++){
 			F.neg(*it, m[j]);
 		}
-		fflas_delete (m);
+		FFLAS::fflas_delete (m);
 		return minP;
 	}
 } // FFPACK

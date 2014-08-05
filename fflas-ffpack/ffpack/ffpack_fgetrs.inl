@@ -146,7 +146,7 @@ namespace FFPACK {
 				if (!consistent) {
 					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
-					fflas_delete (W);
+					FFLAS::fflas_delete (W);
 					return X;
 				}
 				// Here the last rows of W are supposed to be 0
@@ -156,7 +156,7 @@ namespace FFPACK {
 
 				FFLAS::fcopy(F,R,NRHS,W,ldw,X,ldx);
 
-				fflas_delete (W);
+				FFLAS::fflas_delete (W);
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);
 
@@ -220,12 +220,12 @@ namespace FFPACK {
 				if (!consistent) {
 					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
-					fflas_delete (W);
+					FFLAS::fflas_delete (W);
 					return X;
 				}
 				// The last N-R cols of W are now supposed to be 0
 				FFLAS::fcopy (F, NRHS,R,  W , ldb, X ,ldx);
-				fflas_delete (W);
+				FFLAS::fflas_delete (W);
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					NRHS, 0,(int) R, X, ldx, Q);
 

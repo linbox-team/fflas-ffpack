@@ -362,7 +362,7 @@ namespace FFPACK {
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
-		fflas_delete (A2);
+		FFLAS::fflas_delete (A2);
 		delete[] rowindices;
 		delete[] colindices;
 		return R;
@@ -385,7 +385,7 @@ namespace FFPACK {
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
-		fflas_delete (A2);
+		FFLAS::fflas_delete (A2);
 		delete[] colindices;
 		delete[] rowindices;
 		return R;
