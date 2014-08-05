@@ -92,7 +92,7 @@ int main(int argc, char** argv){
 	}
 
 
-	
+
 	int m=atoi(argv[2]),n=atoi(argv[3]),k=m;
 	int nbw=atoi(argv[4]); // number of winograd levels
 	int pnbw = nbw;
@@ -141,8 +141,8 @@ int main(int argc, char** argv){
 
 	Field::RandIter RF(F);
 
-	Field::Element * A = makemat(RF,m,k);
-	Field::Element * B = makemat(RF,k,n);
+	Field::Element * A = makemat(RF,(int)m,(int)k);
+	Field::Element * B = makemat(RF,(int)k,(int)n);
 
 
 	enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
@@ -164,9 +164,9 @@ int main(int argc, char** argv){
 //         std::cerr << "Winolevel: " << nbw << '(' << pnbw << ')' << std::endl;
 //     }
     FFLAS::MMHelper<Field,
-	    FFLAS::MMHelperAlgo::Winograd, 
+	    FFLAS::MMHelperAlgo::Winograd,
 	    FFLAS::FieldTraits<Field>::value,
-	    FFLAS::ParSeqHelper::Parallel> pWH (F,nbw,FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));	
+	    FFLAS::ParSeqHelper::Parallel> pWH (F,(int)nbw,FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
 
 	OMPTimer tim,t; t.clear();tim.clear();
 	for(size_t i = 0;i<nbit+1;++i){
@@ -174,10 +174,10 @@ int main(int argc, char** argv){
 		t.clear();
 		t.start();
         PAR_REGION{
-            
+
                 TASK(READ(A, B),NOWRITE(), READWRITE(C), fgemm, F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
                                beta,C,n, pWH );
-            
+
         }
         t.stop();
 		if (i) tim+=t;
@@ -267,7 +267,7 @@ int main(int argc, char** argv){
 	for(int i = 0;i<nbit;++i){
         C = new Field::Element[m*n];
 		ts.clear();
-		ts.start();        
+		ts.start();
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 			      beta,C,n,WH);
 		ts.stop();
@@ -294,7 +294,7 @@ int main(int argc, char** argv){
 
 #endif
 
-	
+
     std::cerr << "Speed-up: " << tims.realtime()/tim.realtime() << std::endl;
 	*/
 	delete[] C;

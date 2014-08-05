@@ -28,11 +28,11 @@
 
 /*! @file field/rns-double.h
  * @ingroup field
- * @brief  rns structure with double support 
+ * @brief  rns structure with double support
  */
 
 #ifndef __FFPACK_rns_double_H
-#define __FFPACK_rns_double_H 
+#define __FFPACK_rns_double_H
 #include <vector>
 using namespace std;
 
@@ -45,10 +45,10 @@ using namespace std;
 
 
 namespace FFPACK {
-	
+
 	// forward declaration
 	struct rns_double_elt_ptr;
-	
+
 	// element of the rns structure (allow virtualization of element from an array of double)
 	struct rns_double_elt {
 		double    *_ptr;
@@ -58,13 +58,13 @@ namespace FFPACK {
 		~rns_double_elt(){ if (_alloc) delete[] _ptr; }
 
 		rns_double_elt(double* p, size_t r, size_t a=false) : _ptr(p), _stride(r), _alloc(a) {}
-		
+
 		inline  rns_double_elt_ptr operator&() ;
-		
+
 		rns_double_elt(const rns_double_elt& x) : _ptr(x._ptr),_stride(x._stride),_alloc(false) {}
 
 	};
-	
+
 	// pointer to element of the rns structure (allow virtualization of element from an array of double)
 	struct rns_double_elt_ptr : public rns_double_elt {
 		rns_double_elt_ptr(){}
@@ -72,28 +72,28 @@ namespace FFPACK {
 
 		inline const rns_double_elt& operator*() const {
 			return static_cast<const rns_double_elt&>(*this);
-		}	
+		}
 		inline  rns_double_elt& operator*()  {
 			return static_cast<rns_double_elt&>(*this);
-		}	
+		}
 		inline rns_double_elt operator[](size_t i)  const {
 			return *((*this)+i);
-		}	
+		}
 		inline rns_double_elt_ptr operator+(size_t inc) const{
 			return rns_double_elt_ptr(_ptr+inc,_stride);
-		}			
+		}
 	};
-	
-	rns_double_elt_ptr rns_double_elt::operator&() {		
+
+	rns_double_elt_ptr rns_double_elt::operator&() {
 		return 	rns_double_elt_ptr(_ptr,_stride);
 	}
-	
-	
+
+
 	template<>
 	rns_double_elt_ptr fflas_const_cast (const rns_double_elt_ptr x){return x;}
 
-	
-	/* Structure that handles rns representation given a bound and bitsize for prime moduli	 
+
+	/* Structure that handles rns representation given a bound and bitsize for prime moduli
 	 * support sign representation (i.e. the bound must be twice larger then ||A||)
 	 */
 	struct rns_double {
@@ -102,21 +102,21 @@ namespace FFPACK {
 		vector<double>    _invbasis; // the inverse of rns moduli (1/mi)
 		vector<ModField> _field_rns; // the associated prime field for each mi
 		integer                  _M; // the product of the mi's
-		vector<integer>         _Mi; // _M/mi 
-		vector<double>         _MMi; // (_Mi)^(-1) mod mi		
+		vector<integer>         _Mi; // _M/mi
+		vector<double>         _MMi; // (_Mi)^(-1) mod mi
 		vector<double>      _crt_in; //  2^(16*j) mod mi
 		vector<double>     _crt_out; //  (_Mi._MMi) written in base 2^16
  		size_t                _size; // the size of the rns basis (number of mi's)
 		size_t               _pbits; // the size in bit of the mi's
-		size_t                 _ldm; // log[2^16](_M)      
-		
+		size_t                 _ldm; // log[2^16](_M)
+
 		typedef double                        BasisElement;
 		typedef rns_double_elt                     Element;
 		typedef rns_double_elt_ptr             Element_ptr;
 		typedef const rns_double_elt_ptr  ConstElement_ptr;
 
-		rns_double(const integer& bound, size_t pbits, bool rnsmod=false, long seed=time(NULL))  
-			:  _M(1), _size(0), _pbits(pbits) 
+		rns_double(const integer& bound, size_t pbits, bool rnsmod=false, long seed=time(NULL))
+			:  _M(1), _size(0), _pbits(pbits)
 		{
 			integer::seeding(seed);
 			integer prime;
@@ -131,7 +131,7 @@ namespace FFPACK {
 				_size++;
 				_M*=prime;
 				if (rnsmod) sum+=prime;
-			}	
+			}
 
 			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
 			_invbasis.resize(_size);
@@ -144,7 +144,7 @@ namespace FFPACK {
 			for (size_t i=0;i<_size;i++){
 				_invbasis[i]  = 1./_basis[i];
 				_field_rns[i] = ModField(_basis[i]);
-				_Mi[i]        = _M/(unsigned long)_basis[i];				
+				_Mi[i]        = _M/(unsigned long)_basis[i];
 				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);
 				_field_rns[i].invin(_MMi[i]);
 				integer tmp= _Mi[i]*(unsigned long)_MMi[i];
@@ -160,8 +160,8 @@ namespace FFPACK {
 				}
 			}
 		}
-		
-		// Arns must be an array of m*n*_size 
+
+		// Arns must be an array of m*n*_size
 		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const
 		{
 			if (k>_ldm)
@@ -185,19 +185,19 @@ namespace FFPACK {
 						for (;l<maxs;l++)
 							A_beta[l+idx*k]= - double(m0_ptr[l]);
 					for (;l<k;l++)
-						A_beta[l+idx*k]=  0.;					
+						A_beta[l+idx*k]=  0.;
 				}
 			if (RNS_MAJOR==false) {
 				// Arns = _crt_in x A_beta^T
-				cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda);
+				cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 				// reduce each row i of Arns modulo moduli[i]
-				for(size_t i=0;i<_size;i++)	
-					FFLAS::finit(_field_rns[i],mn,Arns+i*rda,1);				
+				for(size_t i=0;i<_size;i++)
+					FFLAS::finit(_field_rns[i],mn,Arns+i*rda,1);
 			}
-			else { 
+			else {
 				// Arns =  A_beta x _crt_in^T
-				cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,mn,_size,k,1.0,A_beta,k,_crt_in.data(),_ldm,0.,Arns,_size);
-				// reduce each column j of Arns modulo moduli[i] 
+				cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
+				// reduce each column j of Arns modulo moduli[i]
 				for(size_t i=0;i<_size;i++)
 					FFLAS::finit(_field_rns[i],mn,Arns+i,_size);
 			}
@@ -214,20 +214,20 @@ namespace FFPACK {
 			cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<endl;
 #endif
 		}
-					
-			
-		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, 
+
+
+		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 			     const double* Arns, size_t rda, bool RNS_MAJOR=false) const
 		{
 			integer hM= (_M-1)>>1;
-			size_t  mn= m*n; 
-			double *A_beta= new double[mn*_ldm]; 
+			size_t  mn= m*n;
+			double *A_beta= new double[mn*_ldm];
 
 			if (RNS_MAJOR==false)
-				// compute A_beta = Ap^T x M_beta 			
-				cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans, mn, _ldm, _size, 1.0 , Arns, rda, _crt_out.data(), _ldm, 0., A_beta,_ldm);
-			else // compute A_beta = Ap x M_Beta 
-				cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, mn, _ldm, _size, 1.0 , Arns, _size, _crt_out.data(), _ldm, 0., A_beta,_ldm);
+				// compute A_beta = Ap^T x M_beta
+				cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm);
+			else // compute A_beta = Ap x M_Beta
+				cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 			integer* Aiter= A;
@@ -244,28 +244,28 @@ namespace FFPACK {
 			m0_d = m0[0]->_mp_d;
 			m1_d = m1[0]->_mp_d;
 			m2_d = m2[0]->_mp_d;
-			m3_d = m3[0]->_mp_d;			
-			m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = k4;
-			m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = k4;
-			for(size_t i=0;i<m;i++)	
+			m3_d = m3[0]->_mp_d;
+			m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) k4;
+			m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) k4;
+			for(size_t i=0;i<m;i++)
 				for (size_t j=0;j<n;j++){
 					size_t idx=i*n+j;
 					for (size_t l=0;l<k;l++){
-						uint64_t tmp=A_beta[l+idx*k];
+						uint64_t tmp=(uint64_t)A_beta[l+idx*k];
 						uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
 						A0[l  ]= tptr[0];
 						A1[l+1]= tptr[1];
 						A2[l+2]= tptr[2];
 						A3[l+3]= tptr[3];
-					}					
-					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3				
+					}
+					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 					m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
 					m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
 					m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
-					m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);				
+					m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
 					res = a0;res+= a1;res+= a2;res+= a3;
 					res%=_M;
-					
+
 					// get the correct result according to the expected sign of A
 					if (res>hM)
 						res-=_M;
@@ -280,15 +280,15 @@ namespace FFPACK {
 							else{
 								Aiter[j+i*lda]*=gamma;
 								Aiter[j+i*lda]+=res;
-							}								
-				
+							}
+
 				}
 			m0[0]->_mp_d = m0_d;
 			m1[0]->_mp_d = m1_d;
 			m2[0]->_mp_d = m2_d;
 			m3[0]->_mp_d = m3_d;
-			m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc= m3[0]->_mp_alloc = 1;			
-			m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size = m3[0]->_mp_size  = 0;		
+			m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc= m3[0]->_mp_alloc = 1;
+			m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size = m3[0]->_mp_size  = 0;
 
 			delete[] A_beta;
 #ifdef CHECK_RNS
@@ -302,17 +302,17 @@ namespace FFPACK {
 			cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<endl;
 #endif
 
-		}		       
+		}
 	}; // end of struct rns_double
-	
+
 
 } // end of namespace FFPACK
- 
+
 namespace FFLAS {
 	template<>
 	inline void fflas_delete (FFPACK::rns_double_elt_ptr A) {delete[] A._ptr;}
-	
+
 }
- 
+
 #endif
 #endif

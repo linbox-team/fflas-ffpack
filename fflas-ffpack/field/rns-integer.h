@@ -30,7 +30,7 @@
  * @brief  representation of <code>Z</code> using RNS representation (note: fixed precision)
  */
 
-#ifndef __FFPACK_unparametric_rns_double_H 
+#ifndef __FFPACK_unparametric_rns_double_H
 #define __FFPACK_unparametric_rns_double_H
 
 #include "fflas-ffpack/field/integer.h"
@@ -41,33 +41,33 @@
 
 
 namespace FFPACK {
-	
-	
+
+
 	template<typename RNS>
 	class RNSInteger {
 	protected:
 		const RNS *_rns; // the rns structure
 		typedef typename RNS::BasisElement BasisElement;
-		
+
 	public:
 		typedef typename RNS::Element                   Element;
 		typedef typename RNS::Element_ptr           Element_ptr;
 		typedef typename RNS::ConstElement_ptr ConstElement_ptr;
 
 		Element                one, mOne,zero;
-		
-		RNSInteger(const RNS& rns) : _rns(&rns) 
+
+		RNSInteger(const RNS& myrns) : _rns(&myrns)
 		{
 			init(one,1);
 			init(zero,0);
-			init(mOne,-1);			
+			init(mOne,-1);
 		}
-		
-		
+
+
 		const RNS& rns() const {return *_rns;}
 
 		size_t size() const {return _rns->_size;}
-		
+
 		bool isOne(const Element& x) const {
 			bool isone=true;
 			for (size_t i=0;i<_rns->_size;i++)
@@ -90,7 +90,7 @@ namespace FFPACK {
 		}
 
 		integer characteristic(integer &p) const { return p=0;}
-		
+
 		integer cardinality(integer &p) const { return p=-1;}
 
 		Element& init(Element& x) const{
@@ -111,7 +111,7 @@ namespace FFPACK {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
 			return x;
 		}
-		
+
 		Element& assign(Element& x, const Element& y) const {
 			for(size_t i=0;i<_rns->_size;i++)
 				x._ptr[i*x._stride] = y._ptr[i*y._stride];
@@ -135,20 +135,20 @@ namespace FFPACK {
 
 
 	}; // end of class Unparametric<rns_double>
-	
+
 
 }  // end of namespace FFPACK
 
 namespace FFLAS {
- 
+
 	// specialization for the fflas alloc function
 	template<>
-	inline FFPACK::rns_double_elt_ptr 
+	inline FFPACK::rns_double_elt_ptr
 	fflas_new(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n){
 		double *ptr=new double[m*n*F.size()];
 		return FFPACK::rns_double_elt_ptr(ptr,m*n);
 	}
-		
+
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)
 	template<typename RNS>
 	void finit(const FFPACK::RNSInteger<RNS> &F, const size_t m, const size_t n, size_t k,
@@ -160,13 +160,13 @@ namespace FFLAS {
 	template<typename RNS>
 	void fconvert(const FFPACK::RNSInteger<RNS> &F, const size_t m, const size_t n,
 		      FFPACK::integer alpha, FFPACK::integer *B, const size_t ldb, typename FFPACK::RNSInteger<RNS>::ConstElement_ptr A)
-	{		
+	{
 		F.rns().convert(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
 
 
-}; // end of namespace FFLAS
- 
+} // end of namespace FFLAS
+
 #endif
-#endif 
- 
+#endif
+

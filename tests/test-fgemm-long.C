@@ -257,10 +257,10 @@ bool launch_MM_dispatch(const Field &F,
 		m = 1+(size_t)random()%nn;
 		n = 1+(size_t)random()%nn;
 		k = 1+(size_t)random()%nn;
-		
-		int logdim = floor(log2(std::min(std::min(m,k),n)));
+
+		int logdim = (int)floor(log2(std::min(std::min(m,k),n)));
 		int nw = std::min (logdim,nbw);
-		
+
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
@@ -283,13 +283,13 @@ template <class Field>
 bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bool par ){
 	bool ok = true ;
 	int p=q;
-	int nbit=iters;
+	int nbit=(int)iters;
 	while (ok &&  nbit){
 		typedef typename  Field::Element Element ;
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
 		if (nbw<0)
-			nbw = random() % 7;
+			nbw = (int) random() % 7;
 		if (q==-1){
 			b = 2 + (rand() % (int)floor(log2(Field::getMaxModulus())+1));
 		}
@@ -305,10 +305,10 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bo
 			}while( (p < 2) );
 		}
 		if (p > (unsigned long)Field::getMaxModulus()){
-			IPD.prevprime( tmp, Field::getMaxModulus()+1 );	
+			IPD.prevprime( tmp, Field::getMaxModulus()+1 );
 			p=tmp;
 		}
-		p = std::max((unsigned long) Field::getMinModulus(),(unsigned long)p);
+		p = (int)std::max((unsigned long) Field::getMinModulus(),(unsigned long)p);
 		Field F(p);
 
 		Randiter R1(F);
@@ -372,7 +372,7 @@ int main(int argc, char** argv)
 	srand48(time(NULL));
 
 	static size_t iters = 3 ;
-	static long p = -1 ;
+	static int p = -1 ;
 	static unsigned long b = 0 ;
 	static size_t n = 50 ;
 	static int nbw = -1 ;

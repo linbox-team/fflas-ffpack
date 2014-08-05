@@ -114,11 +114,11 @@ namespace FFLAS {
 			const int numthreads;
 			const CuttingStrategy method;
 			Parallel(int n=NUM_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
-			
+
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
 				return out << "Parallel: " << p.numthreads << ',' << p.method;
 			}
-            
+
 		};
 		struct Sequential{
 			Sequential() {}
@@ -149,11 +149,11 @@ namespace FFLAS {
 	inline double getFieldMax (const FFPACK::ModularBalanced<Element>& F){
 		return ((double) F.characteristic()-1)/2;
 	}
-	
+
        /*! FGEMM Helper
 	*/
-	template<class Field, 
-		 typename AlgoTrait = MMHelperAlgo::Auto, 
+	template<class Field,
+		 typename AlgoTrait = MMHelperAlgo::Auto,
 		 typename FieldTrait = typename FieldTraits<Field>::value,
 		 typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
@@ -237,7 +237,7 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
-				delayedField(F.characteristic()), 
+				delayedField(F.characteristic()),
 				parseq(_PS)	{}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
@@ -248,7 +248,7 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
-				delayedField(F.characteristic()),
+				delayedField((int32_t)F.characteristic()),
 				parseq(_PS) {}
 
 		// copy constructor from other Field and Algo Traits
@@ -277,7 +277,7 @@ namespace FFLAS {
 
 		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)  {
             return out <<"Helper: "
-                <<typeid(AlgoTrait).name()<<' ' 
+                <<typeid(AlgoTrait).name()<<' '
                 <<typeid(FieldTrait).name()<< ' '
                        << M.parseq <<std::endl
                 <<"  recLevel = "<<M.recLevel<<std::endl
@@ -311,7 +311,7 @@ namespace FFLAS {
         FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n) const {
             return pMMH(D,m,k,n,this->parseq);
         }
-        
+
 	};
 
 

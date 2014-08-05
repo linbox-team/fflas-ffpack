@@ -29,19 +29,19 @@
 
 /*! @file field/integer.h
  * @ingroup field
- * @brief  multiprecision integer from Givaro 
+ * @brief  multiprecision integer from Givaro
  */
 
 #include "fflas-ffpack/config.h"
 #ifdef __FFLASFFPACK_HAVE_GIVARO
 #ifndef __FFLASFFPACK_NOINTEGER
- 
+
 #include "givaro/givinteger.h"
 namespace FFPACK {
   typedef Givaro::Integer Integer;
   typedef Givaro::Integer integer;
   #define __FFLASFFPACK_HAVE_INTEGER
-};
+}
 #endif
-#endif 
- 
+#endif // __FFLASFFPACK_HAVE_GIVARO
+

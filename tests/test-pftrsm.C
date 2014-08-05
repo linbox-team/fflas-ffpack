@@ -27,7 +27,7 @@
  */
 
 //--------------------------------------------------------------------------
-//                        Test for pftrsm 
+//                        Test for pftrsm
 //
 //--------------------------------------------------------------------------
 // Ziad Sultan
@@ -114,18 +114,18 @@ bool check_TRSM(const Field                   & F,
 
 //BEGIN_PARALLEL_MAIN(int argc, char** argv)
 int main(int argc, char** argv)
-{                                                                                                                                      
-        srand((int)time(NULL));                                                                                                        
-        srand48(time(NULL));                                                                                                           
-        size_t m,n,k,p, nbit, iters;                                                                                              
-        iters=5;                                                                                                                       
-        p=65521;                                                                                                                       
-        n=100;                                                                                                                         
+{
+        srand((int)time(NULL));
+        srand48(time(NULL));
+        size_t m,n,k,p, nbit, iters;
+        iters=5;
+        p=65521;
+        n=100;
         n=20+(size_t)random()%n;
 	m=n;
 	k=n;
 
-	int s = 1; int u = 0; int t = 1; int d = 0; 
+	int s = 1; int u = 0; int t = 1; int d = 0;
 
 
         static Argument as[] = {
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
                 END_OF_ARGUMENTS
         };
 
-	FFLAS::parseArguments(argc,argv,as);                                                                                                                         
+	FFLAS::parseArguments(argc,argv,as);
 
 
 	FFLAS::FFLAS_SIDE side =  (s) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
@@ -147,10 +147,10 @@ int main(int argc, char** argv)
 	FFLAS::FFLAS_TRANSPOSE trans = t ? FFLAS::FflasTrans :  FFLAS::FflasNoTrans;
 	FFLAS::FFLAS_DIAG diag = d ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
 	//cout<<"s: "<<s<<"u: "<<u<<"t: "<<t<<"d: "<<d<<endl;
-	        m = k ;                                                                                                                        
-	        n = m ;                                                                                                                        
+	        m = k ;
+	        n = m ;
 
-        
+
 	srand48(BaseTimer::seed());
 
 	Field F(p);
@@ -165,8 +165,8 @@ int main(int argc, char** argv)
 	Field::Element * B = new Field::Element[m*n];
 	Field::Element * B2 = new Field::Element[m*n];
 
-	A = makemat(RF,k,k);
-	B = makemat(RF,m,n);
+	A = makemat(RF,(int)k,(int)k);
+	B = makemat(RF,(int)m,(int)n);
 
 	for (size_t i=0; i<m;++i){
 		for(size_t j=0; j<n; ++j)
@@ -190,14 +190,14 @@ int main(int argc, char** argv)
 
 		PAR_REGION{
 			FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));	
+					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
 			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
 		}
 		BARRIER;
 
 		if (i+1<nbit)
-                        for (size_t i=0; i<m*n;++i)
-                                F.assign(*(B+i),*(B2+i));
+                        for (size_t j=0; j<m*n;++j)
+                                F.assign(*(B+j),*(B2+j));
 
 	}
 
