@@ -21,6 +21,7 @@ const size_t selec[] = {
 	,3
 	,4
 	,5
+	// ,6
 };
 
 const char * descr[] = {
@@ -30,6 +31,7 @@ const char * descr[] = {
 	, "223 low mem"
 	, "232 first 1"
 	, "232 all tmp"
+	// , "322 sqrt"
 };
 
 namespace FFLAS {
@@ -1422,6 +1424,196 @@ namespace FFLAS {
 
 		}
 
+#if 0
+		template<class Field>
+		double *
+		gemm_bini_322_sqrt(const Field & F
+				  , const size_t m
+				  , const size_t n
+				  , const size_t k
+				  , const double *A , const size_t lda
+				  , const double *B , const size_t ldb
+				  , double *C , const size_t ldc
+				  , int rec
+				  , const double & epsilon
+				 )
+		{
+			FFPACK::UnparametricField<double>   NoField;
+			// const double p = (double)F.characteristic();
+			size_t M = (n>m)?std::min(k,m):std::min(k,n);
+			// std::cout << rec << ',' <<  M  << std::endl;
+			// Field G(p*p);
+
+			if ( M < TRE  || rec <= 0) {
+				// std::cout << "ffw" << std::endl;
+				return gemm_fflas(F, m,n,k, A,lda, B,ldb, C, ldc);
+				// return gemm_fflas(NoField, m,n,k, A,lda, B,ldb, C, ldc);
+			}
+
+			assert(k/2*2==k); // k divisible par 2
+			assert(n/3*3==n); // n divisible par 2
+			assert(m/2*2==m); // m divisible par 3
+
+			// std::cout << "tested" << std::endl;
+
+			size_t m2 = m/2;
+			size_t k2 = k/2;
+			size_t n3 = n/3;
+
+			// std::cout << "€ = " << epsilon << std::endl;
+
+			// sub matrices in A
+			const double * A11 = A;
+			const double * A12 = A   +k2;
+			const double * A21 = A   +lda*m2;
+			const double * A22 = A21 +k2;
+
+			// sub matrices in C
+			double * C11 = C;
+			double * C12 = C   +n3;
+			double * C13 = C   +2*n3;
+			double * C21 = C   +ldc*m2;
+			double * C22 = C21 +n3;
+			double * C23 = C21 +2*n3;
+
+
+
+			// sub matrices in B
+			const double * B11 = B;
+			const double * B12 = B   +n3;
+			const double * B13 = B   +2*n3;
+			const double * B21 = B   +ldb*k2;
+			const double * B22 = B21 +n3;
+			const double * B23 = B21 +2*n3;
+
+
+			FFLAS::fzero(F,m,n,C,ldc);
+
+			/*
+			 * Algo :
+			 * S1  := B11  +B22;
+			 * S4  := e*B21+B22;
+			 * S5  := B11  +e*B21;
+			 * S6  := B12  +B23;
+			 * S9  := B12  +e*B13;
+			 * S3 := e*B13+B23;
+			 *
+			 * T1  := e*A11 +A22;
+			 * T2  := A12   +A22;
+			 * T4  := -e*A11+A12;
+			 * T5  := e*A21 +A22;
+			 * T6  := A11   +e*A22;
+			 * T7  := A11   +A21;
+			 * T9  := A21   -e*A22;
+			 * T3  := A11   +e*A12;
+			 *
+			 * P1 := S1 *T1;
+			 * P2 := T2 * B22;
+			 * P10 := A22 * B11;
+			 * P4 := S4 *T4;
+			 * P5 := S5 *T5;
+			 * P6 := S6 *T6;
+			 * P7 := T7*B12;
+			 * P8 := A11*B23;
+			 * P9 := S9 *T9;
+			 * P3 := S3*T3;
+			 *
+			 * C11 := (P1-P2-P10+P4)/e;
+			 * C21 := (P10-P5)/(-e) ;
+			 * C12 := P4+P6-P3 ;
+			 * C22 := P1-P5+P9;
+			 * C13 := (-P8+P3)/e;
+			 * C23 := (P6-P7-P8+P9)/e;
+			 *
+			 */
+
+
+			// P10
+			gemm_bini_223_mem(F,m2,n3,k2,A22,lda,B11,ldb,C11,ldc,rec-1,epsilon);
+			// S5
+			double * Y = new double[k2*n3];
+			add(k2,n3,epsilon,B21,ldb,B11,ldb,Y,n3);
+			// T5
+			double * X = new double[m2*k2];
+			add(m2,k2,epsilon,A21,lda,A22,lda,X,k2);
+			// P5
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C22,ldc,rec-1,epsilon);
+			// C12
+			subscal(NoField,m2,n3,C22,ldc,C11,ldc,(double)1/epsilon,C21,ldc);
+			// T2
+			FFLAS::fadd(NoField,m2,k2,A12,lda,A22,lda,X,k2);
+			// P2
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,B22,ldb,C13,ldc,rec-1,epsilon);
+			// C11
+			FFLAS::faddin(NoField,m2,n3,C13,ldc,C11,ldc);
+			// S1
+			FFLAS::fadd(NoField,k2,n3,B11,ldb,B22,ldb,Y,n3);
+			// T1
+			add(m2,k2,epsilon,A11,lda,A22,lda,X,k2);
+			// P1
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C12,ldc,rec-1,epsilon);
+			// C22
+			FFLAS::fsub(NoField,m2,n3,C12,ldc,C22,ldc,C22,ldc);
+			// C11
+			FFLAS::fsub(NoField,m2,n3,C12,ldc,C11,ldc,C11,ldc);
+			// S4
+			add(k2,n3,epsilon,B21,ldb,B22,ldb,Y,n3);
+			// T4
+			add(m2,k2,-epsilon,A11,lda,A12,lda,X,k2);
+			// P4
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C12,ldc,rec-1,epsilon);
+			// C11
+			addscalinf(NoField,m2,n3,C12,ldc,(double)1/epsilon,C11,ldc);
+			// S9
+			add(k2,n3,epsilon,B13,ldb,B12,ldb,Y,n3);
+			// T9
+			add(m2,k2,-epsilon,A22,lda,A21,lda,X,k2);
+			// P9
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C23,ldc,rec-1,epsilon);
+			//  C22
+			FFLAS::faddin(NoField,m2,n3,C23,ldc,C22,ldc);
+			// S6
+			FFLAS::fadd(NoField,k2,n3,B12,ldb,B23,ldb,Y,n3);
+			// T6
+			add(m2,k2,epsilon,A22,lda,A11,lda,X,k2);
+			// P6
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C13,ldc,rec-1,epsilon);
+			// C21
+			FFLAS::faddin(NoField,m2,n3,C13,ldc,C12,ldc);
+			// C32
+			FFLAS::faddin(NoField,m2,n3,C13,ldc,C23,ldc);
+			// T7
+			FFLAS::fadd(NoField,m2,k2,A11,lda,A21,lda,X,k2);
+			// P7
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,B12,ldb,C13,ldc,rec-1,epsilon);
+			// if (epsilon > 1 && rec == 2) { FFLAS::finit(G,m2,n3,C31,ldc);}
+			// C32
+			FFLAS::fsubin(NoField,m2,n3,C13,ldc,C23,ldc);
+			// S3
+			add(k2,n3,epsilon,B13,ldb,B23,ldb,Y,n3);
+			// T3
+			add(m2,k2,epsilon,A12,lda,A11,lda,X,k2);
+			// P3
+			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C13,ldc,rec-1,epsilon);
+			delete[] Y ;
+			delete[] X ;
+			// C21
+			FFLAS::fsubin(NoField,m2,n3,C13,ldc,C12,ldc);
+			// P8
+			Y = new double[m2*n3];
+			gemm_bini_223_mem(F,m2,n3,k2,A11,lda,B23,ldb,Y,n3,rec-1,epsilon);
+			// C31
+			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C13,ldc);
+			// C32
+			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C23,ldc);
+			delete[] Y ;
+
+
+			return C;
+
+		}
+#endif
+
 
 	} // Rec
 
@@ -1477,6 +1669,20 @@ namespace FFLAS {
 				Rec::gemm_bini_232_3(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
 				FFLAS::finit_fuzzy(F,m,n,C,ldc);
 				break;
+#if 0
+		case 6 : {
+				 double epsilon2 = sqrt((double)epsilon);
+				 std::cout << epsilon2 << std::endl;
+				 Rec::gemm_bini_322_sqrt(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon2);
+				 // FFLAS::finit_fuzzy(F,m,n,C,ldc);
+				 for(size_t i = 0  ; i < m ; ++i) {
+					 for(size_t j = 0  ; j < n ; ++j)
+						 C[i*ldc+j] = rint(fmod(C[i*ldc+j],epsilon2));
+				 }
+				break;
+			 }
+#endif
+
 		default :
 			std::cout << " not an algo :" << algo << std::endl;;
 			exit(-1);
@@ -1622,6 +1828,20 @@ void test_algo(const Field &F, size_t m, size_t n, size_t k
 
 #if 1
 	if (faux && (n<20)) {
+		std::cout << "OK" << std::endl;
+		for (size_t i = 0 ; i < m ; ++i) {
+			for (size_t j = 0 ; j < n ; ++j)
+				std::cout << D[i*n+j] << ' ';
+			std::cout << std::endl;
+		}
+		std::cout << "KO" << std::endl;
+		for (size_t i = 0 ; i < m ; ++i) {
+			for (size_t j = 0 ; j < n ; ++j)
+				std::cout << E[i*n+j] << ' ';
+			std::cout << std::endl;
+		}
+
+
 		std::cout << "Diff" << std::endl;
 		for (size_t i = 0 ; i < m ; ++i) {
 			for (size_t j = 0 ; j < n ; ++j)
@@ -1731,6 +1951,10 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 		tmp.stop(); tam += tmp ;
 
 		for (size_t i = 0 ; i < algos ; ++i) {
+			// if (with_e && i < algos-1) {
+				// std::cout << "skiped e and algos " << algos - 1 << std::endl;
+				// continue;
+			// }
 			test_algo(F,m,n,k,A,k,B,n,C,n,D,n,E,n,r,selec[i],tim_e[i],tim_p[i],tom,ok_e[i],ok_p[i],with_e);
 		}
 

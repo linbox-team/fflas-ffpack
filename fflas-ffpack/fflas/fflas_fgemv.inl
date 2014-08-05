@@ -99,6 +99,7 @@ namespace FFLAS {
 			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
 	}
 }// FFLAS
+
 namespace FFLAS {
 
 	//---------------------------------------------------------------------
@@ -106,6 +107,7 @@ namespace FFLAS {
 	// Computes  Y <- alpha.op(A).X + beta.Y
 	// A is M*N,
 	//---------------------------------------------------------------------
+
 	template<class Field>
 	inline typename Field::Element_ptr
 	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
@@ -167,6 +169,9 @@ namespace FFLAS {
 
 		return Y;
 	}
+
+
+
 }
 
 namespace FFLAS{

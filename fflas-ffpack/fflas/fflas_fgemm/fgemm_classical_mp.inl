@@ -89,7 +89,7 @@ namespace FFLAS {
 	}
 
 
-	// fgemm for UnparametricField<Integer> with Winograd Helper
+	// fgemm for UnparametricField<Integer> with Winograd Helper (bb: file is classical ??)
 	inline FFPACK::Integer* fgemm (const FFPACK::UnparametricField<FFPACK::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
@@ -178,6 +178,23 @@ namespace FFLAS {
 
 		return C;
 	}
+
+	// BB hack. might not work.
+	inline FFPACK::Integer* fgemv (const FFPACK::UnparametricField<FFPACK::Integer>& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const size_t m, const size_t n,
+				       const FFPACK::Integer alpha,
+				       FFPACK::Integer* A, const size_t lda,
+				       FFPACK::Integer* X, const size_t ldx,
+				       FFPACK::Integer beta,
+				       FFPACK::Integer* Y, const size_t ldy,
+				       MMHelper<FFPACK::UnparametricField<FFPACK::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+	{
+		MMHelper<FFPACK::UnparametricField<FFPACK::Integer>, MMHelperAlgo::Winograd, FieldCategories:: MultiPrecisionTag,ParSeqHelper::Sequential> H2(F,0) ;
+		fgemm(F,ta,FFLAS::FflasNoTrans,m,n,1,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
+		return Y;
+	}
+
 
 
 	/************************************
