@@ -49,7 +49,7 @@ namespace FFLAS {
 		FFPACK::Integer normA,normB;
 		MMHelper() : normA(0), normB(0) {}
 		MMHelper(FFPACK::Integer Amax, FFPACK::Integer Bmax) : normA(Amax), normB(Bmax) {}
-		MMHelper(const Field& F, size_t m, size_t n, size_t k, ParSeqTrait PS) {F.characteristic(normA);F.characteristic(normB);}
+		MMHelper(const Field& F, size_t m=0, size_t n=0, size_t k=0, ParSeqTrait PS=ParSeqTrait()) {F.characteristic(normA);F.characteristic(normB);}
 	};
 
 
