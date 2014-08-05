@@ -95,7 +95,7 @@ void launch_wino(const Field  &F,
 
     //using namespace LinBox;
 int main (int argc, char ** argv) {
-    const size_t p       = argc>1 ? atoi(argv[1]) : 1009;
+    const unsigned long p= argc>1 ? atoi(argv[1]) : 1009;
     const size_t n       = argc>2 ? atoi(argv[2]) : 1000;
     const size_t NB      = argc>3 ? atoi(argv[3]) : 1;
     const size_t winomax = argc>4 ? atoi(argv[4]) : 7;

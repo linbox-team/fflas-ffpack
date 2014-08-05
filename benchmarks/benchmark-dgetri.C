@@ -52,9 +52,9 @@ int main(int argc, char** argv) {
 
   // parameter: p, n, iteration, file
 
-  int    p    = atoi(argv[1]);
-  int n    = atoi(argv[2]);
-  size_t iter = atoi(argv[3]);
+  int    p    = argc>1 ? atoi(argv[1]) : 1009;
+  int    n    = argc>2 ? atoi(argv[2]) : 2000;
+  size_t iter = argc>3 ? atoi(argv[3]) :    1;
 
 
   typedef FFPACK::Modular<double> Field;
