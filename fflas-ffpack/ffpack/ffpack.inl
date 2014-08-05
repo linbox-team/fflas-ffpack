@@ -171,7 +171,7 @@ namespace FFPACK {
 				return NSdim ;
 			}
 
-			NS = fflas_new (F, N, ldn);
+			NS = FFLAS::fflas_new (F, N, ldn);
 
 			if (R == 0) {
 				delete[] P;
@@ -209,7 +209,7 @@ namespace FFPACK {
 				return NSdim;
 			}
 
-			NS = fflas_new (F, NSdim, ldn);
+			NS = FFLAS::fflas_new (F, NSdim, ldn);
 
 
 			if (R == 0) {
@@ -353,12 +353,12 @@ namespace FFPACK {
 
 		size_t * rowindices, * colindices;
 	
-		typename Field::Element_ptr A2 = fflas_new (F, M, N) ;
+		typename Field::Element_ptr A2 = FFLAS::fflas_new (F, M, N) ;
 		FFLAS::fcopy(F,M,N,A,lda,A2,N);
 
 		RowRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
-		X = fflas_new (F, R, R);
+		X = FFLAS::fflas_new (F, R, R);
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
@@ -376,12 +376,12 @@ namespace FFPACK {
 
 		size_t * rowindices, * colindices;
 
-		typename Field::Element_ptr A2 = fflas_new (F, M, N);
+		typename Field::Element_ptr A2 = FFLAS::fflas_new (F, M, N);
 		FFLAS::fcopy(F,M,N,A,lda,A2,N);
 
 		ColRankProfileSubmatrixIndices (F, M, N, A2, N, rowindices, colindices, R);
 
-		X = fflas_new (F, R, R);
+		X = FFLAS::fflas_new (F, R, R);
 		for (size_t i=0; i<R; ++i)
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));

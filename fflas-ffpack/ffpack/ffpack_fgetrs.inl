@@ -129,7 +129,7 @@ namespace FFPACK {
 			// F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M > N){ // Cannot copy B into X
-				W = fflas_new (F, M, NRHS);
+				W = FFLAS::fflas_new (F, M, NRHS);
 				ldw = NRHS;
 				FFLAS::fcopy(F,M,NRHS,B,ldb,W,ldw);
 
@@ -199,7 +199,7 @@ namespace FFPACK {
 			// F.assign (*(X+i*ldx+j), F.zero);
 
 			if (M < N) {
-				W = fflas_new (F, NRHS, N);
+				W = FFLAS::fflas_new (F, NRHS, N);
 				ldw = N;
 				FFLAS::fcopy (F,NRHS, N, B, ldb, W, ldw);
 

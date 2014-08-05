@@ -212,7 +212,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	       F.one, A31, lda, A22, lda, F.one, A32, lda);
 
 	// A22 <- A21*A22
-	typename Field::Element_ptr tmp = fflas_new (F, r1, colsize-recsize);
+	typename Field::Element_ptr tmp = FFLAS::fflas_new (F, r1, colsize-recsize);
 	for (size_t i = 0; i < r1; ++i)
 		fcopy (F, colsize-recsize, A22+i*lda, 1, tmp+i*(colsize-recsize), 1);
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r1, colsize-recsize, r1,
@@ -242,7 +242,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	       F.one, U32, lda, U21, lda, F.one, U31, lda);
 
 	// U21 <- U22*U21
-	tmp = fflas_new (F, r2, r1);
+	tmp = FFLAS::fflas_new (F, r2, r1);
 	for (size_t i = 0; i < r2; ++i)
 		fcopy (F, r1, U21+i*lda, 1, tmp+i*r1, 1);
 
@@ -256,7 +256,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 		size_t nrow = rowbeg + r1;
 		typename Field::Element_ptr NZ1 = A11+r1;
 
-		tmp = fflas_new (F, nrow, ncol);
+		tmp = FFLAS::fflas_new (F, nrow, ncol);
 		for (size_t i=0; i < nrow; ++i)
 			fcopy (F, ncol, NZ1 + i*lda, 1, tmp+i*ncol, 1);
 		for (size_t i=0; i < M; ++i)

@@ -391,7 +391,7 @@ namespace FFPACK {
 		if (m > 1) {
 			const size_t mun(m-1);
 
-			typename Field::Element_ptr b = fflas_new (F, n, 1);
+			typename Field::Element_ptr b = FFLAS::fflas_new (F, n, 1);
 			typename Field::Element_ptr Ai = A+mun*lda;
 			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
 

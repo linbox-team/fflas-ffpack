@@ -48,7 +48,7 @@ namespace FFPACK {
 
 		// nRow is the number of row in the krylov base already computed
 		size_t j, k, nRow = 2;
-		typename Field::Element_ptr B = fflas_new (F, N, N);
+		typename Field::Element_ptr B = FFLAS::fflas_new (F, N, N);
 		typename Polynomial::iterator it;
 		typename Field::Element_ptr Xi, *Ui;
 		typename Field::RandIter g (F);
@@ -89,7 +89,7 @@ namespace FFPACK {
 			return minP;
 		}
 		// m contains the k first coefs of the minpoly
-		typename Field::Element_ptr m= fflas_new (F,k,1);
+		typename Field::Element_ptr m= FFLAS::fflas_new (F,k,1);
 		fcopy( F, k, X+k*N, 1, m, 1);
 		ftrsv( F, FflasLower, FflasTrans, FflasNonUnit, k, X, N, m, 1);
 		//delete[] X;

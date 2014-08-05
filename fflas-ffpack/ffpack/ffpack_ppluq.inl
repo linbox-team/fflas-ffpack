@@ -214,7 +214,7 @@ namespace FFPACK {
 		  //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		  WAIT;
 
-		  typename Field::Element_ptr temp = fflas_new (F, R3, R2);
+		  typename Field::Element_ptr temp = FFLAS::fflas_new (F, R3, R2);
 		  /*    for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
 		  */
