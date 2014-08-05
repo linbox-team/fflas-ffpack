@@ -42,8 +42,7 @@ int main(int argc, char** argv) {
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
 
 
-  typedef FFPACK::Modular<double> Field;
-  // typedef FFPACK::ModularBalanced<double> Field;
+  typedef FFPACK::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
   Field F(p);
@@ -89,7 +88,7 @@ int main(int argc, char** argv) {
     delete[] C;
   }
 
-  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<std::endl;
+  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl; 
 
   return 0;
 }

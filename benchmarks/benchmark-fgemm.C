@@ -41,11 +41,7 @@ int main(int argc, char** argv) {
   int    n    = argc>2 ? atoi(argv[2]) : 2000;
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
 
-
-  // typedef FFPACK::Modular<double> Field;
-  // typedef FFPACK::Modular<float> Field;
-  // typedef FFPACK::ModularBalanced<double> Field;
-  typedef FFPACK::ModularBalanced<float> Field;
+  typedef FFPACK::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
   Field F(p);
