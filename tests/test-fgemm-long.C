@@ -309,7 +309,7 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bo
 			p=tmp;
 		}
 		p = (int)std::max((unsigned long) Field::getMinModulus(),(unsigned long)p);
-		Field F(p);
+		Field F((int)p);
 
 		Randiter R1(F);
 		NonzeroRandIter<Field,Randiter> R(F,R1);
