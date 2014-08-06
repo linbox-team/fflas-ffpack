@@ -306,7 +306,7 @@ namespace FFLAS { /*  CSR */
 				index_t j_loc = j;
 				index_t j_end = st[i+1];
 				index_t block = (j_end - j_loc)/kmax ;
-				for (size_t l = 0 ; l < block ; ++l) {
+				for (size_t l = 0 ; l < (size_t) block ; ++l) {
 					j_loc += block ;
 					for ( ; j < j_loc ; ++j) {
 						y[i] += dat[j] * x[col[j]];

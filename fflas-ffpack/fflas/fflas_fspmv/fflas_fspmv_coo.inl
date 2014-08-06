@@ -178,7 +178,7 @@ namespace FFLAS { /*  COO */
 						y[i] = y[i] * b;
 					}
 				}
-				for (index_t j = 0 ; j < z ; ++j)
+				for (index_t j = 0 ; j < (index_t)z ; ++j)
 					y[row[i]] += dat[j] * x[col[j]];
 			}
 #endif // __FFLASFFPACK_HAVE_MKL
@@ -235,7 +235,7 @@ namespace FFLAS { /*  COO */
 						y[i] = y[i] * b;
 					}
 				}
-				for (index_t j = 0 ; j < z ; ++j)
+				for (index_t j = 0 ; j < (index_t) z ; ++j)
 					y[row[i]] += dat[j] * x[col[j]];
 			}
 #endif // __FFLASFFPACK_HAVE_MKL
@@ -272,7 +272,7 @@ namespace FFLAS { /*  COO */
 
 			while ( w < z) {
 				if ( row[w] == last_i ) { // same line
-					if (accu < kmax) {
+					if (accu < (size_t)kmax) {
 						e += dat[w] * x[col[w]] ;
 						accu += 1 ;
 					}

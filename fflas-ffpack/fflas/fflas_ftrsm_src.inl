@@ -49,7 +49,7 @@
  #ifdef __FFLAS__TRANSPOSE
    #define __FFLAS__Acopcolinc __FFLAS__Na
    #define __FFLAS__Acoprowinc 1
- #else
+ #else // __FFLAS__NOTRANSPOSE
    #define __FFLAS__Acopcolinc 1
    #define __FFLAS__Acoprowinc __FFLAS__Na
  #endif
@@ -80,7 +80,7 @@
   #define __FFLAS__B1 B
   #define __FFLAS__B2 B + nsplit * ldb
   #define __FFLAS__Normdim i
-#else
+#else // __FFLAS__UPPER
   #define __FFLAS__Atriang A + (__FFLAS__Na - (i + 1) * nsplit) * (lda + 1)
   #define __FFLAS__Aupdate A + (__FFLAS__Na  - (i + 1) * nsplit) * __FFLAS__Acolinc
   #define __FFLAS__Arest A
@@ -96,14 +96,14 @@
   #define __FFLAS__B2 B
   #define __FFLAS__Normdim __FFLAS__Na-i-1
  #endif
-#else
+#else  // __FFLAS__RIGHT
  #define __FFLAS__SIDE Right
  #define __FFLAS__Na N
  #define __FFLAS__Nb nsplit
  #ifdef __FFLAS__TRANSPOSE
    #define __FFLAS__Acopcolinc __FFLAS__Na
    #define __FFLAS__Acoprowinc 1
- #else
+ #else // __FFLAS__NOTRANSPOSE
    #define __FFLAS__Acopcolinc 1
    #define __FFLAS__Acoprowinc __FFLAS__Na
  #endif
@@ -134,7 +134,7 @@
   #define __FFLAS__B1 B
   #define __FFLAS__B2 B + nsplit
   #define __FFLAS__Normdim i
-#else
+#else // __FFLAS__LOWER
   #define __FFLAS__Atriang A + (__FFLAS__Na - (i + 1) * nsplit) * (lda + 1)
   #define __FFLAS__Aupdate A + (__FFLAS__Na - (i + 1) * nsplit) * __FFLAS__Arowinc
   #define __FFLAS__Arest A
@@ -198,9 +198,9 @@ public:
 template<class Field, class ParSeqTrait>
 void delayed (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
-	      typename Field::ConstElement_ptr 
+	      typename Field::ConstElement_ptr
 #else
-	      typename Field::Element_ptr 
+	      typename Field::Element_ptr
 #endif
 	      A, const size_t lda,
 	      typename Field::Element_ptr B, const size_t ldb,
@@ -323,14 +323,14 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 
 #ifdef __FFLAS__RIGHT
-		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS), 
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
-		       __FFLAS__B1, ldb, __FFLAS__A2, lda, 
+		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0,
+		       __FFLAS__B1, ldb, __FFLAS__A2, lda,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #else
-		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans, 
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0, 
-		       __FFLAS__A2, lda, __FFLAS__B1, ldb, 
+		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans,
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0,
+		       __FFLAS__A2, lda, __FFLAS__B1, ldb,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #endif
 
@@ -341,12 +341,12 @@ void delayed (const Field& F, const size_t M, const size_t N,
 template <class Field, class ParSeqTrait>
 void operator () (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
-		  typename Field::ConstElement_ptr 
+		  typename Field::ConstElement_ptr
 #else
-		  typename Field::Element_ptr 
+		  typename Field::Element_ptr
 #endif
 		  A, const size_t lda,
-		  typename Field::Element_ptr B, const size_t ldb, 
+		  typename Field::Element_ptr B, const size_t ldb,
 		  TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 {
 
@@ -380,7 +380,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
-		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, 
+		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb,
 		       F.one, __FFLAS__Bupdate, ldb, H.parseq);
 #endif
 	}
@@ -401,9 +401,9 @@ public:
 template<class Field, class ParSeqTrait>
 void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
-		 typename Field::ConstElement_ptr 
+		 typename Field::ConstElement_ptr
 #else
-		 typename Field::Element_ptr 
+		 typename Field::Element_ptr
 #endif
 		 A, const size_t lda,
 		 typename Field::Element_ptr B, const size_t ldb,
@@ -430,12 +430,12 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       __FFLAS__B1, ldb, __FFLAS__A2, lda, 
+		       __FFLAS__B1, ldb, __FFLAS__A2, lda,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
-		       __FFLAS__A2, lda, __FFLAS__B1, ldb, 
+		       __FFLAS__A2, lda, __FFLAS__B1, ldb,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #endif
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);
