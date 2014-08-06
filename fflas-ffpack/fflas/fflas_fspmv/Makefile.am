@@ -22,7 +22,7 @@
 #/
 
 
-pkgincludesubdir=$(pkgincludedir)/fflas/fflas_fgemm
+pkgincludesubdir=$(pkgincludedir)/fflas/fflas_fspmv
 
 EXTRA_DIST=fspmv.doxy
 
