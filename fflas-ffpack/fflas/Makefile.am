@@ -26,8 +26,8 @@ pkgincludesubdir=$(pkgincludedir)/fflas
 
 SUBDIRS=fflas_fgemm
 
-sparse=fflas_sparse_fgemv.h \
-       fflas_sparse_fgemv.inl
+#  sparse=fflas_fspmv.h \
+       #  fflas_fspmv.inl
 
 multiprecision= fflas_ftrsm_mp.inl
 
@@ -60,6 +60,6 @@ pkgincludesub_HEADERS=       \
 	   fflas_helpers.inl     \
 	   fflas_memory.inl	 \
 	   ${sparse}		 \
-	   ${multiprecision}		 
+	   ${multiprecision}
 
 EXTRA_DIST=fflas.doxy
