@@ -166,6 +166,40 @@ namespace FFLAS { /*  ELL */
 	struct ELLR ;
 } // FFLAS
 
+namespace FFLAS { /* SELL */
+
+	template<class Element>
+	struct SELL;
+
+	template<class Element>
+	struct SELL_sub;
+
+	template<class Element>
+	struct SELL_ZO;
+
+	template<class Field>
+	void sp_spmv(const Field & F,
+	 			 const SELL<typename Field::Element> & A,
+	  			 const VECT<typename Field::Element> & x,
+	  			 const typename Field::Element b,
+	  			 VECT<typename Field::Element> & y);
+
+	template<class Field>
+	void sp_spmv(const Field & F,
+	 			 const SELL_sub<typename Field::Element> & A,
+	  			 const VECT<typename Field::Element> & x,
+	  			 const typename Field::Element b,
+	  			 VECT<typename Field::Element> & y);
+
+	template<class Field>
+	void sp_spmv(const Field & F,
+	 			 const SELL_ZO<typename Field::Element> & A,
+	  			 const VECT<typename Field::Element> & x,
+	  			 const typename Field::Element b,
+	  			 VECT<typename Field::Element> & y);
+	
+}
+
 namespace FFLAS { /*  BCSR */
 
 } // FFLAS
