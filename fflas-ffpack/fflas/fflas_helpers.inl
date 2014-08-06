@@ -181,11 +181,11 @@ namespace FFLAS {
 				Outmax = beta*Cmax;
 			}
 			if (alpha >0){
-				Outmin += k*alpha*std::min(Amin*Bmax, Amax*Bmin);
-				Outmax += k*alpha*std::max(Amin*Bmin, Amax*Bmax);
+				Outmin += double(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
+				Outmax += double(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
 			}else{
-				Outmin += k*alpha*std::max(Amin*Bmin, Amax*Bmax);
-				Outmax += k*alpha*std::min(Amin*Bmax, Amax*Bmin);
+				Outmin += double(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
+				Outmax += double(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
 			}
 		}
 
