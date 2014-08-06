@@ -26,179 +26,65 @@
  *.
  */
 
-/** @file fflas/fflas_sparse_fgemv.h
+/** @file fflas/fflas_fspmv.inl
 */
 
-#ifndef __FFLASFFPACK_fflas_fflas_sparse_fgemv_H
-#define __FFLASFFPACK_fflas_fflas_sparse_fgemv_H
+#ifndef __FFLASFFPACK_fflas_fflas_fspmv_INL
+#define __FFLASFFPACK_fflas_fflas_fspmv_INL
 
-
-#ifndef index_t
-#define index_t size_t
-#endif
-
-#include "fflas-ffpack/config.h"
-#include "fflas-ffpack/config-blas.h"
-
-#ifdef __FFLASFFPACK_HAVE_MKL
-// #include <mkl.h>
-// #include <mkl_spblas.h>
-#ifndef _MKL_H_ // temporary
-// #include <mkl.h>
-#error "MKL (mkl.h) not present, while you have MKL enabled"
-#endif
-#undef index_t
-#define index_t MKL_INT
-#endif
+#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/fflas/fflas_bounds.inl"
 
 namespace FFLAS { /*  DNS */
 
 	template<class Element>
-	struct VECT ;
+	struct VECT {
+		size_t m ;
+		size_t inc ;
+		Element * dat ;
+	};
 
 	template<class Element>
-	struct DNS ;
+	struct DNS {
 
-}
-
-namespace FFLAS { /*  COO */
-
-	template<class Element>
-	struct COO ;
-
-	template<class Element>
-	struct COO_sub ;
-
-	template<class Element>
-	struct COO_ZO ;
-
-
-	template<class Field>
-	void sp_fgemv(
-		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
-		     );
-
-
-	template<class Field>
-	void sp_fgemv(
-		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO_sub<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
-		     );
-
-	template<class Field>
-	void sp_fgemv(
-		      const Field & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO_ZO<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
-		     );
+		size_t n ;
+		size_t ld ;
+		Element * dat ;
+	};
 
 } // FFLAS
 
-namespace FFLAS { /*  CSR */
-
+namespace FFLAS { /* HYB */
+#if 0
 	template<class Element>
-	struct CSR ;
+	struct SPADD {
+		size_t ncsr;
+		CSR<Element> * csr;
+		size_t ncoo;
+		COO<Element> * coo;
+		size_t ndns;
+		DNS<Element> * dns;
+		size_t nell;
+		ELL<Element> * ell;
+		size_t nellr ;
+		ELLR<Element> * ellr ;
+		size_t ndia ;
+		DIA<Element> * dia;
 
-	template<class Element>
-	struct CSR_sub ;
-
-	template<class Element>
-	struct CSR_ZO ;
-
-
-	template<class Field>
-	void sp_fgemv(
-		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const CSR<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
-		     );
-
-
-	// y = A.x + b y
-	template<class Field>
-	void sp_fgemv(
-		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const CSR_sub<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
-		     );
-
-	template<class Field>
-	void sp_fgemv(
-		      const Field & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const CSR_ZO<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
-		     );
-
-
-}
-
-namespace FFLAS { /*  CSC */
+		SPADD() :
+			ncsr(0)  ,csr(NULL)
+			,ncoo(0) ,coo(NULL)
+			,ndns(0) ,dns(NULL)
+			,ndia(0) ,dia(NULL)
+			,nell(0) ,ell(NULL)
+			,nellr(0),ellr(NULL)
+		{}
+	};
+#endif
 
 } // FFLAS
 
-namespace FFLAS { /*  ELL */
-
-	template<class Element>
-	struct ELL ;
-
-	template<class Element>
-	struct ELLR ;
-} // FFLAS
-
-namespace FFLAS { /* SELL */
-
-	template<class Element>
-	struct SELL;
-
-	template<class Element>
-	struct SELL_sub;
-
-	template<class Element>
-	struct SELL_ZO;
-
-	template<class Field>
-	void sp_spmv(const Field & F,
-	 			 const SELL<typename Field::Element> & A,
-	  			 const VECT<typename Field::Element> & x,
-	  			 const typename Field::Element b,
-	  			 VECT<typename Field::Element> & y);
-
-	template<class Field>
-	void sp_spmv(const Field & F,
-	 			 const SELL_sub<typename Field::Element> & A,
-	  			 const VECT<typename Field::Element> & x,
-	  			 const typename Field::Element b,
-	  			 VECT<typename Field::Element> & y);
-
-	template<class Field>
-	void sp_spmv(const Field & F,
-	 			 const SELL_ZO<typename Field::Element> & A,
-	  			 const VECT<typename Field::Element> & x,
-	  			 const typename Field::Element b,
-	  			 VECT<typename Field::Element> & y);
-	
-}
 
 namespace FFLAS { /*  BCSR */
 
@@ -216,7 +102,4 @@ namespace FFLAS { /*  JAG */
 
 } // FFLAS
 
-
-#include "fflas-ffpack/fflas/fflas_sparse_fgemv.inl"
-
-#endif // __FFLASFFPACK_fflas_fflas_sparse_fgemv_H
+#endif // __FFLASFFPACK_fflas_fflas_fspmv_INL
