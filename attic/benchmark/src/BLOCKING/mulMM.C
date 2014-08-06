@@ -58,13 +58,13 @@ public:
   { for (int i=size*size; --i; ) _data[i] =val; return *this; }
   inline void mul( const Matrix<T>& A, const Matrix<T>& B)
   {
-    register const T* Ai = A._data;
+    const T* Ai = A._data;
     T* Ci = _data;
     for (int i=size; --i; Ai += size, Ci += size)
     {
       for (int j=size; --j; )
       {
-        register const T* Bj = &B._data[j];
+        const T* Bj = &B._data[j];
         T sum =0;
         for (int k=size; --k; Bj+=size)
           sum += Ai[k] * *Bj;
@@ -83,13 +83,13 @@ public:
 
   inline void addmul( const Matrix<T>& A, const Matrix<T>& B)
   {
-    register const T* Ai = A._data;
+    const T* Ai = A._data;
     T* Ci = _data;
     for (int i=size; --i; Ai += size, Ci += size)
     {
       for (int j=size; --j; )
       {
-        register const T* Bj = &B._data[j];
+        const T* Bj = &B._data[j];
         T sum =0;
         for (int k=size; --k; Bj+=size)
           sum += Ai[k] * *Bj;

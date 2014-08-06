@@ -177,7 +177,7 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 		template<bool positive, bool round> // no default argument unless C++11
 		inline void modp( double *T, const double * U, size_t n, double p, double invp, double min, double max)
 		{
-			register __m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX;
+			__m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX;
 			P   = _mm256_set1_pd(p);
 			NEGP= _mm256_set1_pd(-p);
 			INVP= _mm256_set1_pd(invp);
@@ -246,7 +246,7 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 		template<bool positive, bool round>
 		inline void modp( float *T, const float * U,  size_t n, float p, float invp, float min, float max)
 		{
-			register __m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX;
+			__m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX;
 			P   = _mm256_set1_ps(p);
 			NEGP= _mm256_set1_ps(-p);
 			INVP= _mm256_set1_ps(invp);
@@ -400,7 +400,7 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 		template<bool positive> // no default argument unless C++11
 		inline void addp( double *T, const double * TA, const double * TB, size_t n, double p, double min, double max)
 		{
-			register __m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			__m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
 			P   = _mm256_set1_pd(p);
 			NEGP= _mm256_set1_pd(-p);
 			MIN = _mm256_set1_pd(min);
@@ -458,7 +458,7 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 		template<bool positive> // no default argument unless C++11
 		inline void addp( float *T, const float * TA, const float * TB, size_t n, float p, float min, float max)
 		{
-			register __m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			__m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
 			P   = _mm256_set1_ps(p);
 			NEGP= _mm256_set1_ps(-p);
 			MIN = _mm256_set1_ps(min);
@@ -516,7 +516,7 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 #if 0
 		inline void addp( float *T, const float * TA, const float * TB, size_t n)
 		{
-			register __m256 A,B,C;
+			__m256 A,B,C;
 			long st=long(T)%32;
 			size_t i=0;
 			if (n < 8) {
@@ -635,7 +635,7 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 		template<bool positive> // no default argument unless C++11
 		inline void subp( double *T, const double * TA, const double * TB, size_t n, double p, double min, double max)
 		{
-			register __m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			__m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
 			P   = _mm256_set1_pd(p);
 			NEGP= _mm256_set1_pd(-p);
 			MIN = _mm256_set1_pd(min);
@@ -693,7 +693,7 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 		template<bool positive> // no default argument unless C++11
 		inline void subp( float *T, const float * TA, const float * TB, size_t n, float p, float min, float max)
 		{
-			register __m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			__m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
 			P   = _mm256_set1_ps(p);
 			NEGP= _mm256_set1_ps(-p);
 			MIN = _mm256_set1_ps(min);
@@ -751,7 +751,7 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 #if 0
 		inline void subp( float *T, const float * TA, const float * TB, size_t n)
 		{
-			register __m256 A,B,C;
+			__m256 A,B,C;
 			long st=long(T)%32;
 			size_t i=0;
 			if (n < 8) {
@@ -903,7 +903,7 @@ namespace FFLAS { namespace vectorised { /*  FSCAL */
 
 		inline void scalp( double *T, const double alpha, const double * U, size_t n, double p, double invp, double min, double max)
 		{
-			register __m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+			__m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
 			ALPHA= _mm256_set1_pd(alpha);
 			P   = _mm256_set1_pd(p);
 			NEGP= _mm256_set1_pd(-p);
@@ -947,7 +947,7 @@ namespace FFLAS { namespace vectorised { /*  FSCAL */
 
 		inline void scalp( float *T, const float alpha, const float * U,  size_t n, float p, float invp, float min, float max)
 		{
-			register __m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+			__m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
 			ALPHA= _mm256_set1_ps(alpha);
 			P   = _mm256_set1_ps(p);
 			NEGP= _mm256_set1_ps(-p);
