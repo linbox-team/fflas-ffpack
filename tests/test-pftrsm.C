@@ -60,14 +60,26 @@ typedef ModularBalanced<double> Field;
 
 
 
-Field::Element* assignmat(Field::Element* res, const Field::RandIter& RF,int m, int n){
-    for (long i = 0; i < m; ++i)
-        for (long j = 0; j < n; ++j) {
-            RF.random(res[j+i*n]);
-            
-        }
-    
-    return res;
+Field::Element_ptr makemat(const Field& F, int m, int n){
+	Field::Element_ptr res = FFLAS::fflas_new(F,m,n);
+	Field::RandIter RF(F);
+        for (long i = 0; i < m; ++i)
+                for (long j = 0; j < n; ++j) {
+                        RF.random(res[j+i*n]);
+                }
+        return res;
+}
+
+Field::Element_ptr maketriangmat(const Field& F, int n){
+	Field::Element_ptr res = FFLAS::fflas_new(F, n,n);
+	Field::RandIter RF(F);
+	Field::NonZeroRandIter NRF(F,RF);
+        for (long i = 0; i < n; ++i){
+                for (long j = 0; j < n; ++j) 
+                        RF.random(res[j+i*n]);
+		NRF.random(res[i*(n+1)]);
+	}
+        return res;
 }
 
 
@@ -159,17 +171,11 @@ int main(int argc, char** argv)
 
 	nbit= iters; // number of times the product is performed
 
-	Field::Element * A = new Field::Element[k*k];
-	Field::Element * B = new Field::Element[m*n];
-	Field::Element * B2 = new Field::Element[m*n];
 
-	assignmat(A,RF,(int)k,(int)k);
-	assignmat(B, RF,(int)m,(int)n);
-
-	for (size_t i=0; i<m;++i){
-		for(size_t j=0; j<n; ++j)
-			F.assign(*(B2+i*n+j),*(B+i*n+j));
-	}
+	Field::Element_ptr A = maketriangmat (F,k);
+	Field::Element_ptr B = makemat(F,m,n);
+	Field::Element_ptr B2 = FFLAS::fflas_new (F, m,n);
+	FFLAS::fcopy(F, m, n, B2, n, B, n);
 
 	Field::Element alpha;
 	F.init (alpha, 1.0);
@@ -203,9 +209,9 @@ int main(int argc, char** argv)
 	bool wrong = false;
 	wrong &= check_TRSM(F, side, uplo, trans, diag, m, n, k, alpha, A, B, B2);
 
-	delete[] A;
-	delete[] B;
-	delete[] B2;
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(B);
+	FFLAS::fflas_delete(B2);
 	return wrong;
 }
 //END_PARALLEL_MAIN()
