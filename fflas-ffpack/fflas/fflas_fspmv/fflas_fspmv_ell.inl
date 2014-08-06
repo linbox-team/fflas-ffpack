@@ -29,7 +29,7 @@
 
 /** @file fflas/fflas_fspmv_ell.inl
  * NO DOC
-*/
+ */
 
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_ell_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_ell_INL
