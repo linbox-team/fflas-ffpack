@@ -60,8 +60,8 @@ namespace FFPACK
 
 	public:
 		typedef double Element;
-		typedef Element* Element_ptr;
-		typedef const Element_ptr ConstElement_ptr;
+		typedef double* Element_ptr;
+		typedef const double* ConstElement_ptr;
 
 		typedef unsigned long FieldInt;
 		typedef ModularBalancedRandIter<double> RandIter;
