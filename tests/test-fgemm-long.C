@@ -280,7 +280,7 @@ bool launch_MM_dispatch(const Field &F,
 	return ok ;
 }
 template <class Field>
-bool run_with_field (unsigned long q, unsigned long b, size_t n, int nbw, size_t iters, bool par ){
+bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bool par ){
 	bool ok = true ;
 	unsigned long p=q;
 	int nbit=(int)iters;
