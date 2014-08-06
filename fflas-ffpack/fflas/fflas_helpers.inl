@@ -170,7 +170,7 @@ namespace FFLAS {
 		void initOut(){Outmin = FieldMin; Outmax = FieldMax;}
 
 
-		size_t MaxDelayedDim(double beta){return (size_t) std::max (0.0, floor ( (MaxStorableValue - abs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));}
+		size_t MaxDelayedDim(double beta){ return (size_t) std::max (0.0, floor ( (MaxStorableValue - fabs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));}
 
 		void setOutBounds(const size_t k, const double alpha, const double beta){
 			if (beta<0){
