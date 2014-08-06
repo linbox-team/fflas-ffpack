@@ -58,7 +58,7 @@ namespace FFPACK {
 	  {
 
 		  const FFLAS::CuttingStrategy method = FFLAS::BLOCK_THREADS;
-		  size_t NUM = NUM_THREADS;
+		  size_t NUM = (size_t) NUM_THREADS;
 		  for (size_t i=0; i<M; ++i) P[i] = i;
 		  for (size_t i=0; i<N; ++i) Q[i] = i;
 		  if (std::min(M,N) == 0) return 0;

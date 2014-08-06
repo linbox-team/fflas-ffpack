@@ -237,7 +237,7 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
-				delayedField(F.characteristic()),
+				delayedField((uint32_t)F.characteristic()),
 				parseq(_PS)	{}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
@@ -273,7 +273,7 @@ namespace FFLAS {
 				Bmin(_Bmin), Bmax(_Bmax),
 				Cmin(_Cmin), Cmax(_Cmax),
 				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField_t::Element>())-1)),
-				delayedField(F.characteristic()) {}
+				delayedField((uint32_t)F.characteristic()) {}
 
 		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)  {
             return out <<"Helper: "

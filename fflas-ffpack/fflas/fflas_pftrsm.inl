@@ -66,23 +66,23 @@ namespace FFLAS {
                 // const size_t numThreads)
 	{
 		if(Side == FflasRight){
-			ForStrategy1D iter(m, H.parseq.method, H.parseq.numthreads);
+			ForStrategy1D iter(m, H.parseq.method, (size_t)H.parseq.numthreads);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
 			}
 		} else {
-			ForStrategy1D iter(n, H.parseq.method, H.parseq.numthreads);
+			ForStrategy1D iter(n, H.parseq.method, (size_t)H.parseq.numthreads);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
 			}
 		}
-		WAIT;		      
+		WAIT;
 		return B;
 	}
 
 } // FFLAS
 
 
-#endif // __FFLASFFPACK_fflas_pftrsm_INL 
+#endif // __FFLASFFPACK_fflas_pftrsm_INL
