@@ -265,7 +265,7 @@ namespace FFLAS { /*  COO */
 		{
 			// XXX bug, do it as in linbox.
 			size_t w = 0 ;
-			size_t last_i = 0;
+			index_t last_i = 0;
 			typename Field::Element e ;
 			F.init(e,y[last_i]);
 			size_t accu = 0 ;
