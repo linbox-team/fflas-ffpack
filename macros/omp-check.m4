@@ -25,49 +25,49 @@ dnl
 dnl turn on OpenMP if available
 
 AC_DEFUN([FF_CHECK_OMP],
-		[ AC_ARG_ENABLE(openmp,
-			[AC_HELP_STRING([--enable-openmp],
+	[ AC_ARG_ENABLE(openmp,
+		[AC_HELP_STRING([--enable-openmp],
 				[ Use OpenMP ])
-			],
-			[ avec_omp=$enable_openmp],
-			[ avec_omp=yes ]
-			)
-			AC_MSG_CHECKING(for OpenMP)
-			AS_IF([ test "x$avec_omp" != "xno" ],
-			[
-			BACKUP_CXXFLAGS=${CXXFLAGS}
-			OMPFLAGS="-fopenmp"
-			CXXFLAGS="${BACKUP_CXXFLAGS} ${OMPFLAGS}"
-			AC_TRY_RUN([
+		],
+		[ avec_omp=$enable_openmp],
+		[ avec_omp=yes ]
+		)
+	  AC_MSG_CHECKING(for OpenMP)
+	  AS_IF([ test "x$avec_omp" != "xno" ],
+		[
+		BACKUP_CXXFLAGS=${CXXFLAGS}
+		OMPFLAGS="-fopenmp"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${OMPFLAGS}"
+		AC_TRY_RUN([
 #include <omp.h>
-				int main() {
-				int p = omp_get_num_threads();
-				return 0;
-				}
-				],
-				[ omp_found="yes" ],
-				[ omp_found="no" ],
-				[
-				echo "cross compiling...disabling"
-				omp_found="no"
-				])
-			AS_IF([ test "x$omp_found" = "xyes" ],
-					[
-					AC_DEFINE(USE_OPENMP,1,[Define if OMP is available])
-					AC_SUBST(OMPFLAGS)
-					AC_MSG_RESULT(yes)
-					HAVE_OMP=yes
-					],
-					[
-					OMPFLAGS=
-					AC_SUBST(OMPFLAGS)
-                                        AC_MSG_RESULT(no)
-                                        ]
-			     )
-			CXXFLAGS=${BACKUP_CXXFLAGS}
+			int main() {
+			int p = omp_get_num_threads();
+			return 0;
+			}
+		],
+		[ omp_found="yes" ],
+		[ omp_found="no" ],
+		[
+			echo "cross compiling...disabling"
+			omp_found="no"
+		])
+		AS_IF(	[ test "x$omp_found" = "xyes" ],
+			[
+				AC_DEFINE(USE_OPENMP,1,[Define if OMP is available])
+				AC_SUBST(OMPFLAGS)
+				AC_MSG_RESULT(yes)
+				HAVE_OMP=yes
 			],
-			[ AC_MSG_RESULT(no) ]
-			)
+			[
+				OMPFLAGS=
+				AC_SUBST(OMPFLAGS)
+				AC_MSG_RESULT(no)
 			]
-			AM_CONDITIONAL(FFLASFFPACK_HAVE_OMP, test "x$HAVE_OMP" = "xyes")
-			)
+		)
+		CXXFLAGS=${BACKUP_CXXFLAGS}
+		],
+		[ AC_MSG_RESULT(no) ]
+	)
+	]
+	AM_CONDITIONAL(FFLASFFPACK_HAVE_OMP, test "x$HAVE_OMP" = "xyes")
+)
