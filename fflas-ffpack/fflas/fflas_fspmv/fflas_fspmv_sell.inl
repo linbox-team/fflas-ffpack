@@ -34,6 +34,9 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 
+namespace FFLAS {
+ 
+} /* FFLAS */
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 
