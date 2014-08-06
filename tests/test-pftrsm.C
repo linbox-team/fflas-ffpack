@@ -129,26 +129,24 @@ int main(int argc, char** argv)
 {
         srand((int)time(NULL));
         srand48(time(NULL));
-        size_t m,n,k, nbit, iters;
-	unsigned long p;
-        iters=5;
-        p=65521;
-        n=100;
-        n=20+(size_t)random()%n;
-	m=n;
-	k=n;
-
+	size_t m,n,q, nbit, iters;                                                                                            iters=5;
+	q=65521;
+        m = 20+(size_t)random()% 100;
+        n = 20+(size_t)random()% 100;
+	bool p = false;
 	int s = 1; int u = 0; int t = 1; int d = 0;
 
 
         static Argument as[] = {
-                { 'p', "-p P", "Set the field characteristic.",                TYPE_INT , &p },
-                { 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &k },
+                { 'q', "-q Q", "Set the field characteristic.",                TYPE_INT , &q },
+                { 'm', "-m M", "Set the row dimension of unknown matrix.",      TYPE_INT , &m },
+                { 'n', "-n N", "Set the column dimension of the unknown matrix.", TYPE_INT , &n },
                 { 's', "-s Side", "Set the side of the matrix.",               TYPE_INT , &s },
                 { 'u', "-u UpLow", "Set the triangular side of the matrix.",   TYPE_INT , &u },
                 { 't', "-t Trans", "Set the transposition of the matrix.",     TYPE_INT , &t },
                 { 'd', "-d Diag", "Set the Diag of the matrix.",                TYPE_INT , &d },
                 { 'i', "-i i", "Set number of repetitions.",               TYPE_INT , &iters },
+		{ 'p', "-par Y/N", "run the parallel ftrsm.", TYPE_BOOL , &p },
                 END_OF_ARGUMENTS
         };
 
@@ -159,19 +157,16 @@ int main(int argc, char** argv)
 	FFLAS::FFLAS_UPLO uplo =  u ? FFLAS::FflasLower : FFLAS::FflasUpper;
 	FFLAS::FFLAS_TRANSPOSE trans = t ? FFLAS::FflasTrans :  FFLAS::FflasNoTrans;
 	FFLAS::FFLAS_DIAG diag = d ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
-	//cout<<"s: "<<s<<"u: "<<u<<"t: "<<t<<"d: "<<d<<endl;
-	        m = k ;
-	        n = m ;
-
 
 	srand48(BaseTimer::seed());
 
-	Field F(p);
-	Field::RandIter RF(F);
-
+	Field F(q);
+	
 	nbit= iters; // number of times the product is performed
 
-
+	size_t k = m;
+	if (side == FFLAS::FflasRight)
+		k = n;
 	Field::Element_ptr A = maketriangmat (F,k);
 	Field::Element_ptr B = makemat(F,m,n);
 	Field::Element_ptr B2 = FFLAS::fflas_new (F, m,n);
@@ -191,14 +186,16 @@ int main(int argc, char** argv)
 
 	for(size_t i = 0;i<nbit;++i){
 
-
-		PAR_REGION{
-			FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-					  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
-			FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
+		if (p){
+			PAR_REGION{
+				FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
+						  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
+				FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
 		}
-		BARRIER;
-
+			BARRIER;
+		} else {
+			FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n);
+		}
 		if (i+1<nbit)
                         for (size_t j=0; j<m*n;++j)
                                 F.assign(*(B+j),*(B2+j));
