@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # Coypright (c) 2011 FFLAS-FFPACK
 # written by BB <bboyer@imag.fr>
 # adapted from LinBox configuration
@@ -23,10 +22,7 @@
 # ========LICENCE========
 #/
 
-
-
 # Run this to generate all the initial makefiles, etc.
-
 
 # Recover command line, with double-quotes
 CMDLINE=""
@@ -199,7 +195,7 @@ cd "$ORIGDIR"
 if test x$NOCONFIGURE = x; then
 	echo Running $srcdir/configure $conf_flags "$@" ...
 	$srcdir/configure $conf_flags "$@" \
-		&& echo "Now type \`make install' to install $PROJECT (and \`make check' to check for problems)" || exit 1
+		&& echo "Now type \`make install' to compile $PROJECT" || exit 1
 else
 	echo Skipping configure process.
 fi
