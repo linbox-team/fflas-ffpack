@@ -901,7 +901,7 @@ namespace FFLAS { /*  COO */
 						y[i] = y[i] * b;
 					}
 				}
-				for (index_t j = 0 ; j < z ; ++j)
+				for (size_t j = 0 ; j < z ; ++j)
 					y[row[i]] += dat[j] * x[col[j]];
 			}
 #endif // __FFLASFFPACK_HAVE_MKL
@@ -958,7 +958,7 @@ namespace FFLAS { /*  COO */
 						y[i] = y[i] * b;
 					}
 				}
-				for (index_t j = 0 ; j < z ; ++j)
+				for (size_t j = 0 ; j < z ; ++j)
 					y[row[i]] += dat[j] * x[col[j]];
 			}
 #endif // __FFLASFFPACK_HAVE_MKL
