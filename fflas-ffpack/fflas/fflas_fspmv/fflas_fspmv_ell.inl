@@ -51,6 +51,7 @@ namespace FFLAS { /*  ELL */
 
 	namespace details {
 
+	// y = A x + b y ; (generic)
 		template<class Field>
 		void sp_fgemv(
 			      const Field& F,
@@ -79,13 +80,119 @@ namespace FFLAS { /*  ELL */
 				}
 				// XXX can be delayed
 				for (index_t j = 0 ; j < ld ; ++j) {
-					if (F.isZero(dat[i*ld+j])
-					    break;
+					if (F.isZero(dat[i*ld+j]))
+						break;
 					F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
 				}
 			}
 		}
 
+		// double
+		template<>
+		void sp_fgemv(
+			      const DoubleDomain& F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const index_t * col,
+			      const size_t ld,
+			      const double*  dat,
+			      const double* x ,
+			      const double& b,
+			      double * y
+			     )
+		{
+			for (size_t i = 0 ; i < m ; ++i) {
+				if ( b != 1) {
+					if ( b == 0.) {
+						y[i] = 0;
+					}
+					else if ( b == -1 ) {
+						y[i]= -y[i];
+					}
+					else {
+						y[i] = y[i] * b;
+					}
+				}
+				for (index_t j = 0 ; j < ld ; ++j) {
+					if (dat[i*ld+j] == 0)
+						break;
+					y[i] += dat[i*ld+j]*x[col[i*ld+j]];
+				}
+			}
+		}
+
+		// float
+		template<>
+		void sp_fgemv(
+			      const DoubleDomain& F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const index_t * col,
+			      const size_t ld,
+			      const float*  dat,
+			      const float* x ,
+			      const float& b,
+			      float * y
+			     )
+		{
+			for (size_t i = 0 ; i < m ; ++i) {
+				if ( b != 1) {
+					if ( b == 0.) {
+						y[i] = 0;
+					}
+					else if ( b == -1 ) {
+						y[i]= -y[i];
+					}
+					else {
+						y[i] = y[i] * b;
+					}
+				}
+				for (index_t j = 0 ; j < ld ; ++j) {
+					if (dat[i*ld+j] == 0)
+						break;
+					y[i] += dat[i*ld+j]*x[col[i*ld+j]];
+				}
+			}
+		}
+
+
+		// delayed by kmax
+		template<class Field>
+		void sp_fgemv(
+			      const Field& F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const index_t * col,
+			      const size_t ld,
+			      const typename Field::Element *  dat,
+			      const typename Field::Element * x ,
+			      // const typename Field::Element & b,
+			      typename Field::Element * y,
+			      const index_t & kmax
+			     )
+		{
+			for (size_t i = 0 ; i < m ; ++i) {
+				// y[i] = 0;
+				index_t j = st[i];
+				index_t j_loc = j;
+				index_t j_end = st[i+1];
+				index_t block = (j_end - j_loc)/kmax ;
+				for (size_t l = 0 ; l < block ; ++l) {
+					j_loc += block ;
+					for ( ; j < j_loc ; ++j) {
+						y[i] += dat[j] * x[col[j]];
+					}
+					F.init(y[i],y[i]);
+				}
+				for ( ; j < j_end ; ++j) {
+					y[i] += dat[j] * x[col[j]];
+				}
+				F.init(y[i],y[i]);
+			}
+		}
 	} // details
 
 } // FFLAS

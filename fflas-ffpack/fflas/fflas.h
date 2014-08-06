@@ -198,7 +198,7 @@ namespace FFLAS {
 //---------------------------------------------------------------------
 
 
-// #include "fflas_sparse_fgemv.h"
+#include "fflas_fspmv.h"
 
 #if 0
 //BB

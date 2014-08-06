@@ -246,6 +246,7 @@ namespace FFLAS { /*  COO */
 
 
 
+		// delayed by kmax
 		template<class Field>
 		void sp_fgemv(
 			      const Field& F,

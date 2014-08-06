@@ -284,6 +284,7 @@ namespace FFLAS { /*  CSR */
 #endif // __FFLASFFPACK_HAVE_CUDA
 
 
+		// delayed by kmax
 		template<class Field>
 		void sp_fgemv(
 			      const Field& F,
