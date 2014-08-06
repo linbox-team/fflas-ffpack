@@ -117,7 +117,8 @@ int main(int argc, char** argv)
 {
         srand((int)time(NULL));
         srand48(time(NULL));
-        size_t m,n,k,p, nbit, iters;
+        size_t m,n,k, nbit, iters;
+	unsigned long p;
         iters=5;
         p=65521;
         n=100;
@@ -155,12 +156,9 @@ int main(int argc, char** argv)
 
 	Field F(p);
 	Field::RandIter RF(F);
-	Field::Element zero, one;
 
 	nbit= iters; // number of times the product is performed
 
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	Field::Element * A = new Field::Element[k*k];
 	Field::Element * B = new Field::Element[m*n];
 	Field::Element * B2 = new Field::Element[m*n];
