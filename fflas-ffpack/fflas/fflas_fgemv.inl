@@ -294,7 +294,8 @@ namespace FFLAS{
 		}
 
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                        if (abs(alpha)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+                    double al; F.convert(al, alpha);
+                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				finit (F, Ydim, Y, incY);
 				Hfp.initOut();
 			}

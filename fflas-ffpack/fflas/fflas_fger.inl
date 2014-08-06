@@ -134,7 +134,8 @@ namespace FFLAS{
 		fger (H.delayedField, M, N, alphadf, x, incx, y, incy, A, lda, Hfp);
 
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                        if (abs(alpha)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+                    double al; F.convert(al, alpha);
+                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				finit (F, M, N, A, lda);
 				Hfp.initOut();
 			}
@@ -171,7 +172,8 @@ template<class Field>
 		fger (H.delayedField, M, N, alphadf, x, incx, y, incy, A, lda, Hfp);
 
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                        if (abs(alpha)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+                    double al; F.convert(al, alpha);
+                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				finit (F, M, N, A, lda);
 				Hfp.initOut();
 			}
