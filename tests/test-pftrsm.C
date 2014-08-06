@@ -60,14 +60,14 @@ typedef ModularBalanced<double> Field;
 
 
 
-Field::Element* makemat(const Field::RandIter& RF,int m, int n){
-	Field::Element * res = new Field::Element[m*n];
-
-        for (long i = 0; i < m; ++i)
-                for (long j = 0; j < n; ++j) {
-                        RF.random(res[j+i*n]);
-                }
-        return res;
+Field::Element* assignmat(Field::Element* res, const Field::RandIter& RF,int m, int n){
+    for (long i = 0; i < m; ++i)
+        for (long j = 0; j < n; ++j) {
+            RF.random(res[j+i*n]);
+            
+        }
+    
+    return res;
 }
 
 
@@ -163,8 +163,8 @@ int main(int argc, char** argv)
 	Field::Element * B = new Field::Element[m*n];
 	Field::Element * B2 = new Field::Element[m*n];
 
-	A = makemat(RF,(int)k,(int)k);
-	B = makemat(RF,(int)m,(int)n);
+	assignmat(A,RF,(int)k,(int)k);
+	assignmat(B, RF,(int)m,(int)n);
 
 	for (size_t i=0; i<m;++i){
 		for(size_t j=0; j<n; ++j)
