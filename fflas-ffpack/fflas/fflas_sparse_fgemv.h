@@ -33,7 +33,9 @@
 #define __FFLASFFPACK_fflas_fflas_sparse_fgemv_H
 
 
+#ifndef index_t
 #define index_t size_t
+#endif
 
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
