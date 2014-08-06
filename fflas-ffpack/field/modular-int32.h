@@ -118,6 +118,7 @@ namespace FFPACK
 			if (_two64 >= value) _two64 -= value;
 		}
 
+#if 0
 		Modular (unsigned long int value) :
 			modulus((Element) value),lmodulus(value)
 			,one(1),zero(0),mOne(modulus -1)
@@ -153,6 +154,7 @@ namespace FFPACK
 			if ((long int)_two64 >= value)
 				_two64 = _two64 - (int32_t) value;
 		}
+#endif
 
 
 		Modular(const Modular<int32_t>& mf) :
