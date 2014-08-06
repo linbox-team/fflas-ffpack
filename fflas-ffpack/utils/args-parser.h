@@ -233,7 +233,7 @@ namespace FFLAS {
                     std::cout << "Writing report data to cout (intermingled with brief report)" << std::endl << std::endl;
                     std::cout.flush ();
                 }
-                else if (argv[i][1] == 'h' || argv[i][1] == '?') {
+                else if (argv[i][1] == 'h' || argv[i][1] == '?' || argv[i][1] == '-') {
                     printHelpMessage (argv[0], args, printDefaults);
                     exit (1);
                 }
