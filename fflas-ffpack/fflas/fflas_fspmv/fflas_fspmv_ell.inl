@@ -51,15 +51,15 @@ namespace FFLAS { /*  ELL */
 
 	namespace details {
 
-	// y = A x + b y ; (generic)
+		// y = A x + b y ; (generic)
 		template<class Field>
 		void sp_fgemv(
 			      const Field& F,
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
-			      const index_t * col,
 			      const size_t ld,
+			      const index_t * col,
 			      const typename Field::Element *  dat,
 			      const typename Field::Element * x ,
 			      const typename Field::Element & b,
@@ -94,8 +94,8 @@ namespace FFLAS { /*  ELL */
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
-			      const index_t * col,
 			      const size_t ld,
+			      const index_t * col,
 			      const double*  dat,
 			      const double* x ,
 			      const double& b,
@@ -125,12 +125,12 @@ namespace FFLAS { /*  ELL */
 		// float
 		template<>
 		void sp_fgemv(
-			      const DoubleDomain& F,
+			      const FloatDomain& F,
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
-			      const index_t * col,
 			      const size_t ld,
+			      const index_t * col,
 			      const float*  dat,
 			      const float* x ,
 			      const float& b,
@@ -165,8 +165,8 @@ namespace FFLAS { /*  ELL */
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
-			      const index_t * col,
 			      const size_t ld,
+			      const index_t * col,
 			      const typename Field::Element *  dat,
 			      const typename Field::Element * x ,
 			      // const typename Field::Element & b,
@@ -174,26 +174,238 @@ namespace FFLAS { /*  ELL */
 			      const index_t & kmax
 			     )
 		{
+
+			index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
 			for (size_t i = 0 ; i < m ; ++i) {
 				// y[i] = 0;
-				index_t j = st[i];
-				index_t j_loc = j;
-				index_t j_end = st[i+1];
-				index_t block = (j_end - j_loc)/kmax ;
+				index_t j = 0;
+				index_t j_loc = 0 ;
+				bool term = false ;
 				for (size_t l = 0 ; l < block ; ++l) {
 					j_loc += block ;
-					for ( ; j < j_loc ; ++j) {
-						y[i] += dat[j] * x[col[j]];
+					for ( ; j < j_loc ; ++j ) {
+						if (dat[i*ld+j] = 0) { break; }
+						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 					}
 					F.init(y[i],y[i]);
 				}
-				for ( ; j < j_end ; ++j) {
-					y[i] += dat[j] * x[col[j]];
+				if (! term ) {
+					for ( ; j < ld  ; ++j) {
+						if (dat[i*ld+j] = 0) { break; }
+						y[i] += dat[i*ld+j] * x[i*ld+col[j]];
+					}
+					F.init(y[i],y[i]);
 				}
-				F.init(y[i],y[i]);
 			}
 		}
 	} // details
+
+	// y = A x + b y ; (generic)
+	// it is supposed that no reduction is needed.
+	template<class Field>
+	void sp_fgemv(
+		      const Field& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<typename Field::Element> & A,
+		      const VECT<typename Field::Element> & x,
+		      const typename Field::Element & b,
+		      VECT<typename Field::Element> & y
+		     )
+	{
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const DoubleDomain& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<double> & A,
+		      const VECT<double> & x,
+		      const double& b,
+		      VECT<double> & y
+		     )
+	{
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const FloatDomain& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<float> & A,
+		      const VECT<float> & x,
+		      const float& b,
+		      VECT<float> & y
+		     )
+	{
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const Modular<double>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<double> & A,
+		      const VECT<double> & x,
+		      const double& b,
+		      VECT<double> & y
+		     )
+	{
+		details::sp_fgemv(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		finit(F,A.m,y.dat,1);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const Modular<float>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<float> & A,
+		      const VECT<float> & x,
+		      const float& b,
+		      VECT<float> & y
+		     )
+	{
+		details::sp_fgemv(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		finit(F,A.m,y.dat,1);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const ModularBalanced<double>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<double> & A,
+		      const VECT<double> & x,
+		      const double& b,
+		      VECT<double> & y
+		     )
+	{
+		details::sp_fgemv(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		finit(F,A.m,y.dat,1);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const ModularBalanced<float>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL_sub<float> & A,
+		      const VECT<float> & x,
+		      const float& b,
+		      VECT<float> & y
+		     )
+	{
+		details::sp_fgemv(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		finit(F,A.m,y.dat,1);
+	}
+
+
+	// y = A x + b y ; (generic)
+	// reductions are delayed.
+	template<class Field>
+	void sp_fgemv(
+		      const Field& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<typename Field::Element> & A,
+		      const VECT<typename Field::Element> & x,
+		      const typename Field::Element & b,
+		      VECT<typename Field::Element> & y
+		     )
+	{
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const DoubleDomain & F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<double> & A,
+		      const VECT<double> & x,
+		      const double & b,
+		      VECT<double> & y
+		     )
+	{
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const FloatDomain & F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<float> & A,
+		      const VECT<float> & x,
+		      const float & b,
+		      VECT<float> & y
+		     )
+	{
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+	}
+
+
+
+	template<>
+	void sp_fgemv(
+		      const FFPACK::Modular<double>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<double> & A,
+		      const VECT<double> & x,
+		      const double & b,
+		      VECT<double> & y
+		     )
+	{
+		// std::cout << "here" << std::endl;
+		fscalin(F,A.m,b,y.dat,1);
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
+
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const FFPACK::ModularBalanced<double>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<double> & A,
+		      const VECT<double> & x,
+		      const double & b,
+		      VECT<double> & y
+		     )
+	{
+		fscalin(F,A.m,b,y.dat,1);
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
+
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const FFPACK::Modular<float>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<float> & A,
+		      const VECT<float> & x,
+		      const float & b,
+		      VECT<float> & y
+		     )
+	{
+		fscalin(F,A.m,b,y.dat,1);
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
+
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t)kmax);
+	}
+
+	template<>
+	void sp_fgemv(
+		      const FFPACK::ModularBalanced<float>& F,
+		      // const FFLAS_TRANSPOSE tA,
+		      const ELL<float> & A,
+		      const VECT<float> & x,
+		      const float & b,
+		      VECT<float> & y
+		     )
+	{
+		fscalin(F,A.m,b,y.dat,1);
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
+
+		details::sp_fgemv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+	}
+
 
 } // FFLAS
 

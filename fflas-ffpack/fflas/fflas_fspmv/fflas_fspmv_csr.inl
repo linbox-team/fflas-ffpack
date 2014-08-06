@@ -439,7 +439,6 @@ namespace FFLAS { /*  CSR */
 	} // details
 
 	// y = A x + b y ; (generic)
-	// in CSR_sub, i0, j0 is an offset in the original vectors x and y
 	// it is supposed that no reduction is needed.
 	template<class Field>
 	void sp_fgemv(
