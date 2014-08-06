@@ -46,14 +46,48 @@ namespace FFLAS { /*  ELL */
 	};
 
 	template<class Element>
-	struct ELLR {
-		size_t m ;
-		size_t n ;
-		size_t  ld ;
-		index_t  * row ;
-		index_t  * col ;
-		Element * dat ;
-	};
+	struct ELL_sub : public ELL<Element> {
+	}
+
+	namespace details {
+
+		template<class Field>
+		void sp_fgemv(
+			      const Field& F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const index_t * col,
+			      const size_t ld,
+			      const typename Field::Element *  dat,
+			      const typename Field::Element * x ,
+			      const typename Field::Element & b,
+			      typename Field::Element * y
+			     )
+		{
+			for (size_t i = 0 ; i < m ; ++i) {
+				if (! F.isOne(b)) {
+					if (F.isZero(b)) {
+						F.assign(y[i],F.zero);
+					}
+					else if (F.isMone(b)) {
+						F.negin(y[i]);
+					}
+					else {
+						F.mulin(y[i],b);
+					}
+				}
+				// XXX can be delayed
+				for (index_t j = 0 ; j < ld ; ++j) {
+					if (F.isZero(dat[i*ld+j])
+					    break;
+					F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
+				}
+			}
+		}
+
+	} // details
+
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_ell_INL

@@ -34,6 +34,34 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_ellr_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_ellr_INL
 
+namespace FFLAS { /*  ELL */
+
+	template<class Element>
+	struct ELLR {
+		size_t m ;
+		size_t n ;
+		size_t  ld ;
+		index_t  * row ;
+		index_t  * col ;
+		Element * dat ;
+	};
+
+	template<class Element>
+	struct ELLR_sub : public ELLR<Element> {
+	}
+
+	template<class Element>
+	struct ELLR {
+		size_t m ;
+		size_t n ;
+		size_t  ld ;
+		index_t  * row ;
+		index_t  * col ;
+		Element cst ;
+	};
+
+
+} // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_ellr_INL
 
