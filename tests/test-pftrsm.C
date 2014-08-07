@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 	Field::Element_ptr A = maketriangmat (F,k);
 	Field::Element_ptr B = makemat(F,m,n);
 	Field::Element_ptr B2 = FFLAS::fflas_new (F, m,n);
-	FFLAS::fcopy(F, m, n, B2, n, B, n);
+	FFLAS::fcopy(F, m, n, B, n, B2, n);
 
 	Field::Element alpha;
 	F.init (alpha, 1.0);

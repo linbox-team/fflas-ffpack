@@ -69,7 +69,7 @@ namespace FFPACK {
 
 		Element &random (Element &a) const
 		{
-			return _F.init(a,rand());
+			return _F.init(a,lrand48());
 		}
 
 	private:
@@ -83,13 +83,20 @@ namespace FFPACK {
 	template <class Element>
 	class ModularBalancedRandIter {
 	public:
-		ModularBalancedRandIter (const ModularBalanced<Element> &F):_F(F){}
+		ModularBalancedRandIter (const ModularBalanced<Element> &F, size_t seed=0):_F(F){
+                        if (seed==0) {
+                                struct timeval tp;
+                                gettimeofday(&tp, 0) ;
+                                seed = (size_t) tp.tv_usec;
+                        }
+                        srand48((long)seed);                    
+                }
 		ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R) :
 			_F (R._F)
 		{}
 		Element &random (Element &a) const
 		{
-			return _F.init(a,rand());
+			return _F.init(a,lrand48());
 		}
 	private:
 		ModularBalanced<Element> _F;
