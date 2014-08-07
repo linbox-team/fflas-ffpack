@@ -291,7 +291,7 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bo
 		if (nbw<0)
 			nbw = (int) random() % 7;
 		if (q==-1){
-			b = 2 + (rand() % (int)floor(log2(Field::getMaxModulus())+1));
+			b = 2 + (rand() % (int)floor(log(Field::getMaxModulus())/log(2.)+1));
 		}
 		Givaro::IntPrimeDom IPD;
 		Givaro::Integer tmp;
