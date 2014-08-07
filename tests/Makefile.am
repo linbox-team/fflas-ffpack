@@ -56,7 +56,6 @@ NOT_A_TEST =  \
 		test-redrowechelon     \
 		test-ftrtri            \
 		test-redechelon        \
-		test-ftrsm             \
 		test-fgemm             \
 		test-frobenius         \
 		test-fgesv             \
