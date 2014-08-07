@@ -129,7 +129,9 @@ int main(int argc, char** argv)
 {
         srand((int)time(NULL));
         srand48(time(NULL));
-	size_t m,n,q, nbit, iters;                                                                                            iters=5;
+	size_t m,n, nbit, iters;
+	iters=5;
+	unsigned long q;
 	q=65521;
         m = 20+(size_t)random()% 100;
         n = 20+(size_t)random()% 100;
