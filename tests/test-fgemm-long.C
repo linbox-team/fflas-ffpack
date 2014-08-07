@@ -258,7 +258,7 @@ bool launch_MM_dispatch(const Field &F,
 		n = 1+(size_t)random()%nn;
 		k = 1+(size_t)random()%nn;
 
-		int logdim = (int)floor(log2(std::min(std::min(m,k),n)));
+		int logdim = (int)floor(log(std::min(std::min(m,k),n))/log(2.));
 		int nw = std::min (logdim,nbw);
 
 		lda = std::max(k,m)+(size_t)random()%ld;
