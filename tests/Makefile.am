@@ -38,7 +38,9 @@ BASIC_TESTS =              \
 		test-compressQ \
 		regression-check
 
-GIVA_TESTS =  	test-fgemm-long
+GIVA_TESTS =  	test-fgemm-long\
+		test-ftrsm             \
+
 
 NOT_A_TEST =  \
 		test-lqup2              \
@@ -62,7 +64,7 @@ NOT_A_TEST =  \
 		test-invert            \
 		test-nullspace		\
 		test-ftrsm-mp           \
-		test-fegmm-mp           \
+		test-fgemm-mp           \
 		test-igemm-mp             
 
 INFINITE_TEST= \
