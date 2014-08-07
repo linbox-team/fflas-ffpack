@@ -75,7 +75,7 @@ Field::Element_ptr maketriangmat(const Field& F, int n){
 	Field::RandIter RF(F);
 	Field::NonZeroRandIter NRF(F,RF);
         for (long i = 0; i < n; ++i){
-                for (long j = 0; j < n; ++j) 
+                for (long j = 0; j < n; ++j)
                         RF.random(res[j+i*n]);
 		NRF.random(res[i*(n+1)]);
 	}
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 	srand48(BaseTimer::seed());
 
 	Field F(q);
-	
+
 	nbit= iters; // number of times the product is performed
 
 	size_t k = m;
@@ -205,12 +205,12 @@ int main(int argc, char** argv)
 	}
 
 
-	bool wrong = false;
-	wrong &= check_TRSM(F, side, uplo, trans, diag, m, n, k, alpha, A, B, B2);
+	bool ok = true ;
+	ok &= check_TRSM(F, side, uplo, trans, diag, m, n, k, alpha, A, B, B2);
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(B2);
-	return wrong;
+	return !ok ;
 }
 //END_PARALLEL_MAIN()
