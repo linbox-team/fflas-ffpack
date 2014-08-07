@@ -114,7 +114,7 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<typename HelperType::DelayedField_t,
+		MMHelper<typename HelperType::DelayedField_v,
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
 		

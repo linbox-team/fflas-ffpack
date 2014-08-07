@@ -319,7 +319,10 @@ namespace FFLAS {
 	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
 	struct TRSMHelper {
 		ParSeqTrait parseq;
-		TRSMHelper(ParSeqTrait _PS):parseq(_PS){}
+		TRSMHelper(ParSeqHelper::Parallel _PS):parseq(_PS){}
+		TRSMHelper(ParSeqHelper::Sequential _PS):parseq(_PS){}
+		template<typename RIT, typename PST>
+		TRSMHelper(TRSMHelper<RIT,PST>& _TH):parseq(_TH.parseq){}
 
         template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
         FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n, ParSeqTrait p) const {

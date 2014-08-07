@@ -161,11 +161,13 @@ template<class Field>
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
 	{
-		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag>::DelayedField_t::Element alphadf;
+		typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> HelperType;
+
+		typename HelperType::DelayedField_v::Element alphadf;
 		if (F.isMOne( alpha)) alphadf = -1.0;
 		else alphadf = 1.0;
 
-		MMHelper<typename associatedDelayedField<Field>::value,
+		MMHelper<typename HelperType::DelayedField_v,
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
 

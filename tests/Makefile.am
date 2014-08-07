@@ -38,9 +38,8 @@ BASIC_TESTS =              \
 		test-compressQ \
 		regression-check
 
-GIVA_TESTS =  	test-fgemm-long\
-		test-ftrsm             \
-
+GIVA_TESTS =  	test-fgemm\
+		test-ftrsm
 
 NOT_A_TEST =  \
 		test-lqup2              \
@@ -58,7 +57,6 @@ NOT_A_TEST =  \
 		test-redrowechelon     \
 		test-ftrtri            \
 		test-redechelon        \
-		test-fgemm             \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
@@ -74,8 +72,7 @@ INFINITE_TEST= \
 
 EXTRA_DIST= test-utils.h
 
-OMP_TESTS = test-pfgemm	               \
-            test-pftrsm
+OMP_TESTS = test-pfgemm
 
 if FFLASFFPACK_HAVE_OMP
 USE_OMP_TESTS = $(OMP_TESTS)
@@ -99,7 +96,7 @@ test_lqup_SOURCES              = test-lqup.C
 test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
 test_echelon_SOURCES           = test-echelon.C
-test_fgemm_long_SOURCES             = test-fgemm-long.C
+test_fgemm_SOURCES             = test-fgemm.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 #  test_charpoly_SOURCES          = test-charpoly.C
 #  benchfgemm_SOURCES             = benchfgemm.C
@@ -109,7 +106,7 @@ test_fgemm_long_SOURCES             = test-fgemm-long.C
 #  test_ftrmm_SOURCES             = test-ftrmm.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
-#  test_ftrsm_SOURCES             = test-ftrsm.C
+test_ftrsm_SOURCES             = test-ftrsm.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C
 #  test_ftrtri_SOURCES            = test-ftrtri.C
@@ -126,7 +123,7 @@ test_fgemm_long_SOURCES             = test-fgemm-long.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 
 test_pfgemm_SOURCES = test-pfgemm.C
-test_pftrsm_SOURCES = test-pftrsm.C
+#test_pftrsm_SOURCES = test-pftrsm.C
 regression_check_SOURCES = regression-check.C
 
 dense_generator: dense_generator.C
