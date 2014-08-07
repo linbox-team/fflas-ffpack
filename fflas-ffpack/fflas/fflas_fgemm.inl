@@ -257,7 +257,7 @@ namespace FFLAS {
 // fgemm
 namespace FFLAS {
 
-	template<typename Field, typename ParSeqTrait = ParSeqHelper::Sequential>
+	template<typename Field>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -270,11 +270,37 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       const ParSeqTrait parseq)
+	       const ParSeqHelper::Sequential seq)
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqTrait > HW (F, m, k, n, parseq);
+		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
+		    // For the sake of simplicity: only one specialization available with non const A and B.
+		    // However, we guarantee that A and B will never be modified
+
+		return 	fgemm (F, ta, tb, m, n, k, alpha, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
+			       beta, C, ldc, HW);
+	}
+	template<typename Field>
+	inline typename Field::Element_ptr
+	fgemm( const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+	       const ParSeqHelper::Parallel par)
+	{
+		    // The entry point to fgemm.
+		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
+		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
 		return 	fgemm (F, ta, tb, m, n, k, alpha, 

@@ -105,11 +105,11 @@ namespace FFLAS{
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
-		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_v::Element alphadf;
 		if (F.isMOne( alpha)) alphadf = -1.0;
 		else alphadf = 1.0;
 
-		MMHelper<typename associatedDelayedField<Field>::value,
+		MMHelper<typename associatedDelayedField<const Field>::field,
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
 

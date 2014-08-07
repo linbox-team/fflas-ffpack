@@ -72,19 +72,19 @@ using namespace FFPACK;
 // checks that D = alpha . C + beta . A ^ta * B ^tb
 template<class Field>
 bool check_MM(const Field                   & F,
-	      const typename Field::Element * Cd, // c0
+	      const typename Field::Element_ptr  Cd, // c0
 	      enum FFLAS::FFLAS_TRANSPOSE   & ta,
 	      enum FFLAS::FFLAS_TRANSPOSE   & tb,
 	      const size_t                    m,
 	      const size_t                    n,
 	      const size_t                    k,
 	      const typename Field::Element & alpha,
-	      const typename Field::Element * A,
+	      const typename Field::Element_ptr  A,
 	      const size_t                    lda,
-	      const typename Field::Element * B,
+	      const typename Field::Element_ptr  B,
 	      const size_t                    ldb,
 	      const typename Field::Element & beta,
-	      const typename Field::Element * C, // res
+	      const typename Field::Element_ptr  C, // res
 	      const size_t                    ldc
 	      )
 {
@@ -206,6 +206,7 @@ bool launch_MM(const Field & F,
 		}
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fcopy(F,m,n,C,ldc,D,n);
+		    //write_field(F, std::cerr<<"C="<<std::endl, C, m,n,ldc);
 		if (par){
 			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw,FFLAS::ParSeqHelper::Parallel());
 			PAR_REGION{
@@ -406,10 +407,10 @@ int main(int argc, char** argv)
 		ok &= run_with_field<Modular<int32_t> >(p,b,n,nbw,iters,par);
 		std::cout<<"ModularBalanced<int32_t>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<int32_t> >(p,b,n,nbw,iters,par);
-		    // std::cout<<"Modular<int64_t>"<<std::endl;
-		// ok &= run_with_field<Modular<int64_t> >(p,b,n,nbw,iters);
+		    //std::cout<<"Modular<int64_t>"<<std::endl;
+		    //ok &= run_with_field<Modular<int64_t> >(p,b,n,nbw,iters, par);
 		// std::cout<<"ModularBalanced<int64_t>"<<std::endl;
-		// ok &= run_with_field<ModularBalanced<int64_t> >(p,b,n,nbw,iters);
+		// ok &= run_with_field<ModularBalanced<int64_t> >(p,b,n,nbw,iters, par);
 	} while (loop && ok);
 
 	return !ok ;

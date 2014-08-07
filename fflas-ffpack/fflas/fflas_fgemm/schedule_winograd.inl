@@ -58,7 +58,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
 
-		typename MMH_t::DelayedField_t & DF = WH.delayedField;
+		const typename MMH_t::DelayedField_v & DF = WH.delayedField;
 
 		size_t lb, cb, la, ca, ldX2;
 		    // size_t x3rd = std::max(mr,kr);

@@ -59,7 +59,7 @@ namespace FFLAS {
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
 		
-		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf, betadf;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_v::Element alphadf, betadf;
 		F.convert (betadf, beta);
 		if (F.isMOne (alpha)) {
 			alphadf = -1.0;
@@ -114,10 +114,10 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<typename associatedDelayedField<Field>::value, 
+		MMHelper<typename associatedDelayedField<Field>::field, 
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
-
+		
 		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, A+nblock*shiftA, lda,
 		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
 

@@ -204,7 +204,7 @@ namespace FFLAS { namespace BLAS3 {
 	{
 		typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
 
-		typename MMH_t::DelayedField_t & DF = WH.delayedField;
+		const typename MMH_t::DelayedField_v & DF = WH.delayedField;
 
 		FFLASFFPACK_check(!DF.isZero(beta));
 
@@ -216,7 +216,7 @@ namespace FFLAS { namespace BLAS3 {
 		
 		typename Field::Element mbeta;
 		F.neg(mbeta,beta);
-		typename MMH_t::DelayedField_t::Element betadf;
+		typename MMH_t::DelayedField_v::Element betadf;
 		if (F.isMOne(beta))
 			DF.assign(betadf,DF.mOne);
 		else

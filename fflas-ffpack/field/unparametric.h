@@ -325,6 +325,9 @@ namespace FFPACK
 			}  // assuming q is a prime or zero.
 		//@}
 
+		template<class T>
+		UnparametricField (const T& ) : _p(0), _card(-1), one(1), zero(0), mOne(-one){}
+
 		/// construct this field as copy of F.
 		UnparametricField (const UnparametricField &F) :
 			_p(F._p), _card(F._card)

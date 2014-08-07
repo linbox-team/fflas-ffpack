@@ -49,15 +49,30 @@ namespace FFLAS{ namespace Protected{
 namespace FFLAS {
 
 	template <class Field>
-	struct associatedDelayedField{typedef Field value;};
+	struct associatedDelayedField{
+		typedef Field field;
+		typedef Field& value; // reference to avoid copying heavy fields 	
+	};
 	template <>
-	struct associatedDelayedField<FFPACK::Modular<float> >{typedef FloatDomain value;};
+	struct associatedDelayedField<const FFPACK::Modular<float> >{
+		typedef FloatDomain field;
+		typedef FloatDomain value;
+	};
 	template <>
-	struct associatedDelayedField<FFPACK::ModularBalanced<float> >{typedef FloatDomain value;};
+	struct associatedDelayedField<const FFPACK::ModularBalanced<float> >{
+		typedef FloatDomain field;	
+		typedef FloatDomain value;
+	};
 	template <>
-	struct associatedDelayedField<FFPACK::Modular<double> >{typedef DoubleDomain value;};
+	struct associatedDelayedField<const FFPACK::Modular<double> >{
+		typedef DoubleDomain field;
+		typedef DoubleDomain value;
+};
 	template <>
-	struct associatedDelayedField<FFPACK::ModularBalanced<double> >{typedef DoubleDomain value;};
+	struct associatedDelayedField<const FFPACK::ModularBalanced<double> >{
+		typedef DoubleDomain field;
+		typedef DoubleDomain value;
+	};
 
 	// Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
@@ -161,8 +176,10 @@ namespace FFLAS {
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
 		double MaxStorableValue;
-		typedef  typename associatedDelayedField<Field>::value DelayedField_t;
-		DelayedField_t delayedField;
+		typedef typename associatedDelayedField<const Field>::value DelayedField_t;
+		typedef typename associatedDelayedField<const Field>::field DelayedField_v;
+		
+		const DelayedField_t delayedField;
 		ParSeqTrait parseq;
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
 		void initA(){Amin = FieldMin; Amax = FieldMax;}

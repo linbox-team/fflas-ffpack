@@ -262,18 +262,18 @@ namespace FFLAS {
 	 * \param H helper, driving the computation (algorithm, delayed modular reduction, switch of base type, etc)
 	 * @warning \f$\alpha\f$ \e must be invertible
 	 */
-	template<class Field, class AlgoT, class FieldTrait, class ParSeqTrait>
-	inline  typename Field::Element_ptr
-	fgemm (const Field& F,
-	       const FFLAS_TRANSPOSE ta,
-	       const FFLAS_TRANSPOSE tb,
-	       const size_t m, const size_t n, const size_t k,
-	       const typename Field::Element alpha,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr B, const size_t ldb,
-	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, AlgoT, FieldTrait, ParSeqTrait> & H);
+	// template<class Field, class AlgoT, class FieldTrait, class ParSeqTrait>
+	// inline  typename Field::Element_ptr
+	// fgemm (const Field& F,
+	//        const FFLAS_TRANSPOSE ta,
+	//        const FFLAS_TRANSPOSE tb,
+	//        const size_t m, const size_t n, const size_t k,
+	//        const typename Field::Element alpha,
+	//        typename Field::Element_ptr A, const size_t lda,
+	//        typename Field::Element_ptr B, const size_t ldb,
+	//        const typename Field::Element beta,
+	//        typename Field::Element_ptr C, const size_t ldc,
+	//        MMHelper<Field, AlgoT, FieldTrait, ParSeqTrait> & H);
 
 } // FFLAS
 
