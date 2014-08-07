@@ -120,7 +120,7 @@ bool check_TRSM(const Field                   & F,
 	}
 	//	else   cerr<<"PASS"<<endl;
 
-	return wrong;
+	return !wrong;
 }
 
 
@@ -206,11 +206,11 @@ int main(int argc, char** argv)
 
 
 	bool ok = true ;
-	ok &= check_TRSM(F, side, uplo, trans, diag, m, n, k, alpha, A, B, B2);
+	ok = ok && check_TRSM(F, side, uplo, trans, diag, m, n, k, alpha, A, B, B2);
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(B2);
-	return !ok ;
+	return ok ? 0 : -1;
 }
 //END_PARALLEL_MAIN()
