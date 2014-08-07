@@ -206,9 +206,11 @@ bool launch_MM(const Field & F,
 		}
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fcopy(F,m,n,C,ldc,D,n);
-		    //write_field(F, std::cerr<<"C="<<std::endl, C, m,n,ldc);
 		if (par){
-			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw,FFLAS::ParSeqHelper::Parallel());
+			FFLAS::MMHelper<Field,
+					FFLAS::MMHelperAlgo::Winograd, 
+					typename FFLAS::FieldTraits<Field>::value,
+					FFLAS::ParSeqHelper::Parallel> WH(F,nbw,FFLAS::ParSeqHelper::Parallel());
 			PAR_REGION{
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
@@ -369,24 +371,25 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bo
 int main(int argc, char** argv)
 {
 	std::cout<<setprecision(17);
+	std::cerr<<setprecision(17);
 	srand((int)time(NULL));
 	srand48(time(NULL));
 
 	static size_t iters = 3 ;
-	static int p = -1 ;
+	static int q = -1 ;
 	static unsigned long b = 0 ;
 	static size_t n = 50 ;
 	static int nbw = -1 ;
 	static bool loop = false;
-	static bool par = false;
+	static bool p = false;
 	static Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &p },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		{ 'p', "-par Y/N", "run the parallel fgemm.", TYPE_BOOL , &par },
+		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
 		END_OF_ARGUMENTS
 	};
 
@@ -396,21 +399,21 @@ int main(int argc, char** argv)
 	bool ok = true;
 	do{
 		std::cout<<"Modular<double>"<<std::endl;
-		ok &= run_with_field<Modular<double> >(p,b,n,nbw,iters,par);
+		ok &= run_with_field<Modular<double> >(q,b,n,nbw,iters,p);
 		std::cout<<"ModularBalanced<double>"<<std::endl;
-		ok &= run_with_field<ModularBalanced<double> >(p,b,n,nbw,iters,par);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,n,nbw,iters,p);
 		std::cout<<"Modular<float>"<<std::endl;
-		ok &= run_with_field<Modular<float> >(p,b,n,nbw,iters,par);
+		ok &= run_with_field<Modular<float> >(q,b,n,nbw,iters,p);
 		std::cout<<"ModularBalanced<float>"<<std::endl;
-		ok &= run_with_field<ModularBalanced<float> >(p,b,n,nbw,iters,par);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,n,nbw,iters,p);
 		std::cout<<"Modular<int32_t>"<<std::endl;
-		ok &= run_with_field<Modular<int32_t> >(p,b,n,nbw,iters,par);
+		ok &= run_with_field<Modular<int32_t> >(q,b,n,nbw,iters,p);
 		std::cout<<"ModularBalanced<int32_t>"<<std::endl;
-		ok &= run_with_field<ModularBalanced<int32_t> >(p,b,n,nbw,iters,par);
-		    //std::cout<<"Modular<int64_t>"<<std::endl;
-		    //ok &= run_with_field<Modular<int64_t> >(p,b,n,nbw,iters, par);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,nbw,iters,p);
+		//std::cout<<"Modular<int64_t>"<<std::endl;
+		//ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p);
 		// std::cout<<"ModularBalanced<int64_t>"<<std::endl;
-		// ok &= run_with_field<ModularBalanced<int64_t> >(p,b,n,nbw,iters, par);
+		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
 	} while (loop && ok);
 
 	return !ok ;

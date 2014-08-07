@@ -137,7 +137,8 @@ namespace FFLAS {
 		};
 		struct Sequential{
 			Sequential() {}
-			template<class T> Sequential(T) {}
+			    //template<class T> 
+			Sequential(Parallel& ) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
 				return out << "Sequential";
 			}
@@ -255,7 +256,7 @@ namespace FFLAS {
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
 				delayedField((typename Field::Element)F.characteristic()),
-				parseq(_PS)	{}
+				parseq(_PS) {}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
 				recLevel(w), //base(FflasDouble),

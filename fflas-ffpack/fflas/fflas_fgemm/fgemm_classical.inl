@@ -58,8 +58,8 @@ namespace FFLAS {
                 // Input matrices are unreduced: need to figure out the best option between:
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
-		
-		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_v::Element alphadf, betadf;
+		typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> HelperType;
+		typename HelperType::DelayedField_v::Element alphadf, betadf;
 		F.convert (betadf, beta);
 		if (F.isMOne (alpha)) {
 			alphadf = -1.0;
@@ -114,13 +114,13 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<typename associatedDelayedField<Field>::field, 
+		MMHelper<typename HelperType::DelayedField_t,
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
 		
 		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, A+nblock*shiftA, lda,
 		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
-
+		
 		for (size_t i = 0; i < nblock; ++i) {
 			finit(F,m,n,C,ldc);
 			Hfp.initC();
@@ -237,9 +237,7 @@ namespace FFLAS {
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
-
                 H.setOutBounds(k, alpha, beta);
- 
 		cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 			     (int)m, (int)n, (int)k, (FloatDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (FloatDomain::Element) beta,Cd, (int)ldc);

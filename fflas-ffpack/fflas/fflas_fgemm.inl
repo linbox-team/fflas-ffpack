@@ -197,13 +197,13 @@ namespace FFLAS{ namespace Protected{
 				 const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                    double al; F.convert(al, alpha);
-                    if (fabs(al)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
-                        finit (F, N, X, incX);
-                        fscalin (F, N, alpha, X, incX);
-                    } else {
-                        fscalin (H.delayedField, N, alpha, X, incX);
-                        finit(F, N, X, incX);
+			double al; F.convert(al, alpha);
+			if (fabs(al)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+				finit (F, N, X, incX);
+				fscalin (F, N, alpha, X, incX);
+			} else {
+				fscalin (H.delayedField, N, alpha, X, incX);
+				finit(F, N, X, incX);
                     }
 		} else
 			finit(F, N, X, incX);
@@ -216,7 +216,7 @@ namespace FFLAS{ namespace Protected{
 				 const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                    double al; F.convert(al, alpha);
+			double al; F.convert(al, alpha);
 			if (fabs(al)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
 				finit (F, M, N, A, lda);
 				fscalin (F, M, N, alpha, A, lda);
@@ -383,7 +383,7 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag>  HD(H);
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 		Protected::ScalAndInit (F, m, n, alpha, C, ldc, HD);
-		
+
 		H.initOut();
 
 		return C;
