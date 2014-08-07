@@ -56,7 +56,7 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 
 #if defined(__AVX2__) || defined(__AVX__)
 #if defined(__AVX2__)
-		
+
 		// compute C modulo P in the range [MIN, MAX]
 #define VEC_MODF_D(C,Q,P,NEGP,INVP,T,MIN,MAX)			\
 		{						\
@@ -70,7 +70,7 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 			Q = _mm256_or_pd(Q,T);			\
 			C = _mm256_add_pd(C,Q);			\
 		}
-	
+
 		// compute C modulo P in the range [MIN, MAX]
 #define VEC_MODF_S(C,Q,P,NEGP,INVP,T,MIN,MAX)			\
 		{						\
@@ -84,10 +84,10 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 			Q = _mm256_or_ps(Q,T);			\
 			C = _mm256_add_ps(C,Q);			\
 		}
-	
-		/* CP not working: 
-		 *   the code assumes that the result of fnmadd is positive, and hence 
-		 *   does not test <0, which unfortunately can happen. 
+
+		/* CP not working:
+		 *   the code assumes that the result of fnmadd is positive, and hence
+		 *   does not test <0, which unfortunately can happen.
 		 * Solution: always use VEC_MODF_{S,D} above
 		 // compute C modulo P in the range [O, P-1] (not sure faster)
 		 #define VEC_MODF_D_POS(C,Q,P,INVP,T)                  \
@@ -109,8 +109,8 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 		 Q = _mm256_cmp_ps(Q,P,_CMP_GE_OS);    \
 		 Q = _mm256_and_ps(Q,P);               \
 		 C = _mm256_sub_ps(C,Q);               \
-		 }		
-		*/ 	
+		 }
+		*/
 
 
 #else //  defined(__AVX__)
@@ -144,9 +144,9 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 			C = _mm256_add_ps(C,Q);			\
 		}
 
-		/* CP not working: 
-		 *   the code assumes that the result of fnmadd is positive, and hence 
-		 *   does not test <0, which unfortunately can happen. 
+		/* CP not working:
+		 *   the code assumes that the result of fnmadd is positive, and hence
+		 *   does not test <0, which unfortunately can happen.
 		 * Solution: always use VEC_MODF_{S,D} above
 		 // compute C modulo P in the range [O, P-1] (not sure faster)
 		 #define VEC_MODF_D_POS(C,Q,P,INVP,T)                  \
@@ -177,13 +177,6 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 		template<bool positive, bool round> // no default argument unless C++11
 		inline void modp( double *T, const double * U, size_t n, double p, double invp, double min, double max)
 		{
-			__m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX;
-			P   = _mm256_set1_pd(p);
-			NEGP= _mm256_set1_pd(-p);
-			INVP= _mm256_set1_pd(invp);
-			MIN = _mm256_set1_pd(min);
-			MAX = _mm256_set1_pd(max);
-			long st=long(T)%32;
 			size_t i=0;
 			if (n < 4) {
 				for (;i<n;i++){
@@ -200,6 +193,13 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 				return;
 
 			}
+			__m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX;
+			P   = _mm256_set1_pd(p);
+			NEGP= _mm256_set1_pd(-p);
+			INVP= _mm256_set1_pd(invp);
+			MIN = _mm256_set1_pd(min);
+			MAX = _mm256_set1_pd(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=8,i++){
 					if (round) {
@@ -246,13 +246,6 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 		template<bool positive, bool round>
 		inline void modp( float *T, const float * U,  size_t n, float p, float invp, float min, float max)
 		{
-			__m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX;
-			P   = _mm256_set1_ps(p);
-			NEGP= _mm256_set1_ps(-p);
-			INVP= _mm256_set1_ps(invp);
-			MIN= _mm256_set1_ps(min);
-			MAX= _mm256_set1_ps(max);
-			long st=long(T)%32;
 			size_t i=0;;
 			if (n < 8) {
 				for (;i<n;i++){
@@ -268,6 +261,13 @@ namespace FFLAS {  namespace vectorised { /*  FMOD */
 				}
 				return;
 			}
+			__m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX;
+			P   = _mm256_set1_ps(p);
+			NEGP= _mm256_set1_ps(-p);
+			INVP= _mm256_set1_ps(invp);
+			MIN= _mm256_set1_ps(min);
+			MAX= _mm256_set1_ps(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=4,i++){
 					if (round) {
@@ -400,12 +400,6 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 		template<bool positive> // no default argument unless C++11
 		inline void addp( double *T, const double * TA, const double * TB, size_t n, double p, double min, double max)
 		{
-			__m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
-			P   = _mm256_set1_pd(p);
-			NEGP= _mm256_set1_pd(-p);
-			MIN = _mm256_set1_pd(min);
-			MAX = _mm256_set1_pd(max);
-			long st=long(T)%32;
 			size_t i=0;
 			if (n < 4) {
 				for (;i<n;i++){
@@ -417,6 +411,12 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 				return;
 
 			}
+			__m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			P   = _mm256_set1_pd(p);
+			NEGP= _mm256_set1_pd(-p);
+			MIN = _mm256_set1_pd(min);
+			MAX = _mm256_set1_pd(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=8,i++){
 					T[i]=TA[i] + TB[i];
@@ -458,12 +458,6 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 		template<bool positive> // no default argument unless C++11
 		inline void addp( float *T, const float * TA, const float * TB, size_t n, float p, float min, float max)
 		{
-			__m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
-			P   = _mm256_set1_ps(p);
-			NEGP= _mm256_set1_ps(-p);
-			MIN = _mm256_set1_ps(min);
-			MAX = _mm256_set1_ps(max);
-			long st=long(T)%32;
 			size_t i=0;
 			if (n < 8) {
 				for (;i<n;i++){
@@ -475,6 +469,12 @@ namespace FFLAS { namespace vectorised { /*  FADD  */
 				return;
 
 			}
+			__m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			P   = _mm256_set1_ps(p);
+			NEGP= _mm256_set1_ps(-p);
+			MIN = _mm256_set1_ps(min);
+			MAX = _mm256_set1_ps(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=4,i++){
 					T[i]=TA[i] + TB[i];
@@ -635,12 +635,6 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 		template<bool positive> // no default argument unless C++11
 		inline void subp( double *T, const double * TA, const double * TB, size_t n, double p, double min, double max)
 		{
-			__m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
-			P   = _mm256_set1_pd(p);
-			NEGP= _mm256_set1_pd(-p);
-			MIN = _mm256_set1_pd(min);
-			MAX = _mm256_set1_pd(max);
-			long st=long(T)%32;
 			size_t i=0;
 			if (n < 4) {
 				for (;i<n;i++){
@@ -652,6 +646,12 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 				return;
 
 			}
+			__m256d A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			P   = _mm256_set1_pd(p);
+			NEGP= _mm256_set1_pd(-p);
+			MIN = _mm256_set1_pd(min);
+			MAX = _mm256_set1_pd(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=8,i++){
 					T[i]=TA[i] - TB[i];
@@ -693,12 +693,6 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 		template<bool positive> // no default argument unless C++11
 		inline void subp( float *T, const float * TA, const float * TB, size_t n, float p, float min, float max)
 		{
-			__m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
-			P   = _mm256_set1_ps(p);
-			NEGP= _mm256_set1_ps(-p);
-			MIN = _mm256_set1_ps(min);
-			MAX = _mm256_set1_ps(max);
-			long st=long(T)%32;
 			size_t i=0;
 			if (n < 8) {
 				for (;i<n;i++){
@@ -710,6 +704,12 @@ namespace FFLAS { namespace vectorised { /*  FSUB */
 				return;
 
 			}
+			__m256 A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+			P   = _mm256_set1_ps(p);
+			NEGP= _mm256_set1_ps(-p);
+			MIN = _mm256_set1_ps(min);
+			MAX = _mm256_set1_ps(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=4,i++){
 					T[i]=TA[i] - TB[i];
@@ -903,14 +903,6 @@ namespace FFLAS { namespace vectorised { /*  FSCAL */
 
 		inline void scalp( double *T, const double alpha, const double * U, size_t n, double p, double invp, double min, double max)
 		{
-			__m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
-			ALPHA= _mm256_set1_pd(alpha);
-			P   = _mm256_set1_pd(p);
-			NEGP= _mm256_set1_pd(-p);
-			INVP= _mm256_set1_pd(invp);
-			MIN = _mm256_set1_pd(min);
-			MAX = _mm256_set1_pd(max);
-			long st=long(T)%32;
 			size_t i=0;
 			if (n < 4) {
 				for (;i<n;i++){
@@ -921,6 +913,14 @@ namespace FFLAS { namespace vectorised { /*  FSCAL */
 				return;
 
 			}
+			__m256d C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+			ALPHA= _mm256_set1_pd(alpha);
+			P   = _mm256_set1_pd(p);
+			NEGP= _mm256_set1_pd(-p);
+			INVP= _mm256_set1_pd(invp);
+			MIN = _mm256_set1_pd(min);
+			MAX = _mm256_set1_pd(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=8,i++){
 					T[i]=fmod(alpha*U[i],p);
@@ -947,14 +947,6 @@ namespace FFLAS { namespace vectorised { /*  FSCAL */
 
 		inline void scalp( float *T, const float alpha, const float * U,  size_t n, float p, float invp, float min, float max)
 		{
-			__m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
-			ALPHA= _mm256_set1_ps(alpha);
-			P   = _mm256_set1_ps(p);
-			NEGP= _mm256_set1_ps(-p);
-			INVP= _mm256_set1_ps(invp);
-			MIN= _mm256_set1_ps(min);
-			MAX= _mm256_set1_ps(max);
-			long st=long(T)%32;
 			size_t i=0;;
 			if (n < 8) {
 				for (;i<n;i++){
@@ -964,6 +956,14 @@ namespace FFLAS { namespace vectorised { /*  FSCAL */
 				}
 				return;
 			}
+			__m256 C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+			ALPHA= _mm256_set1_ps(alpha);
+			P   = _mm256_set1_ps(p);
+			NEGP= _mm256_set1_ps(-p);
+			INVP= _mm256_set1_ps(invp);
+			MIN= _mm256_set1_ps(min);
+			MAX= _mm256_set1_ps(max);
+			long st=long(T)%32;
 			if (st){ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j=(size_t)st;j<32;j+=4,i++){
 					T[i]=fmodf(alpha*U[i],p);

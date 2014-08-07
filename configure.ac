@@ -21,8 +21,6 @@
 # ========LICENCE========
 #/
 
-
-
 AC_PREREQ([2.61])
 
 AC_INIT([FFLAS-FFPACK], [1.8.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
@@ -80,18 +78,9 @@ AC_SUBST([DEFAULT_CFLAGS])
 AC_SUBST([DEBUG_CFLAGS])
 AC_SUBST([TESTS_CFLAGS])
 
-
-echo "-----------------------------------------------"
-FF_CHECK_OMP
-FF_CHECK_AVX
-echo "-----------------------------------------------"
-AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
-AC_SUBST([PARLIBS],['${OMPFLAGS}'])
-
-TESTS_CFLAGS="-O0 -Wno-vla -Wno-variadic-macros" 
+TESTS_CFLAGS="-O0"
 DEBUG_CFLAGS="-g"
-
-DEFAULT_CFLAGS="-pipe -Wno-vla  -Wno-variadic-macros"
+DEFAULT_CFLAGS=""
 WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...
@@ -99,7 +88,7 @@ if test "x$DBG" = "xyes" ; then
 	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} " #those are CXXFLAGS
 	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
 else
-	DEFAULT_CFLAGS="-O2 -march=native ${DEFAULT_CFLAGS} "
+	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} "
 	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DNDEBUG -UFFLASFFPACK_DEBUG -UFFLASFFPACK_DEBUG"
 fi
 
@@ -120,7 +109,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		xgcc|xgcc44)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long  -Wno-variadic-macros -Wno-vla"
 			fi
 			if test "x${HAVE_CXX11}" = "x0" ; then
 				WARN_CFLAGS="${WARN_CFLAGS} -ansi"
@@ -129,7 +118,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		xgcc48)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long  -Wno-variadic-macros -Wno-vla"
 				# WARN_CFLAGS="${WARN_CFLAGS} -fsanitize=address"
 			fi
 			if test "x${HAVE_CXX11}" = "x0" ; then
@@ -141,13 +130,16 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 		xclang)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -Wno-vla-extension -Wno-variadic-macros"
+				WARN_CFLAGS="${WARN_CFLAGS} -D__STRICT_ANSI__"
 			fi
 			;;
 		xclang31)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
-				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long -fsanitize=address -g"
+				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long  -g -Wno-vla-extension -Wno-variadic-macros"
+				WARN_CFLAGS="${WARN_CFLAGS} -D__STRICT_ANSI__"
+				# WARN_CFLAGS="${WARN_CFLAGS} -fsanitize=address"
 			fi
 			;;
 
@@ -175,6 +167,16 @@ LT_INIT
 
 
 echo "-----------------------------------------------"
+echo "     START  FFLAS-FFPACK CONFIG                "
+echo "-----------------------------------------------"
+
+
+echo "-----------------------------------------------"
+FF_CHECK_OMP
+FF_CHECK_AVX
+echo "-----------------------------------------------"
+AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
+AC_SUBST([PARLIBS],['${OMPFLAGS}'])
 
 # Machine characteristics
 
@@ -187,7 +189,7 @@ AC_CHECK_SIZEOF(__int64, 64)
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([float.h limits.h stddef.h stdlib.h string.h sys/time.h stdint.h])
+AC_CHECK_HEADERS([float.h limits.h stddef.h stdlib.h string.h sys/time.h stdint.h pthread.h])
 
 
 # check endianness of the architecture
@@ -198,59 +200,6 @@ AC_C_BIGENDIAN(
 
 # Create some useful data types of fixed, known lengths
 
-# We hereby assume that a character is always one byte
-# LINBOX_INT8="char";
-
-# case $ac_cv_sizeof_char in
-  # 1)
-     # TWO_BYTES=2;
-     # FOUR_BYTES=4;
-     # EIGHT_BYTES=8;
-     # ;;
-  # 8)
-     # TWO_BYTES=16;
-     # FOUR_BYTES=32;
-     # EIGHT_BYTES=64;
-# esac
-
-# case $TWO_BYTES in
-  # $ac_cv_sizeof_short)
-     # LINBOX_INT16="short";
-     # ;;
-  # $ac_cv_sizeof_int)
-     # LINBOX_INT16="int";
-     # ;;
-# esac
-
-# case $FOUR_BYTES in
-  # $ac_cv_sizeof_short)
-     # LINBOX_INT32="short";
-     # ;;
-  # $ac_cv_sizeof_int)
-     # LINBOX_INT32="int";
-     # ;;
-  # $ac_cv_sizeof_long)
-     # LINBOX_INT32="long";
-     # ;;
-# esac
-
-# case $EIGHT_BYTES in
-  # $ac_cv_sizeof_short)
-     # LINBOX_INT64="short";
-     # ;;
-  # $ac_cv_sizeof_int)
-     # LINBOX_INT64="int";
-     # ;;
-  # $ac_cv_sizeof_long)
-     # LINBOX_INT64="long";
-     # ;;
-  # $ac_cv_sizeof_long_long)
-     # LINBOX_INT64="long long";
-     # ;;
-  # $ac_cv_sizeof___int64)
-     # LINBOX_INT64="__int64";
-     # ;;
-# esac
 
 # AC_DEFINE_UNQUOTED(INT8, $LINBOX_INT8, Canonical 8-bit data type)
 # AC_DEFINE_UNQUOTED(INT16, $LINBOX_INT16, Canonical 16-bit data type)
@@ -360,6 +309,8 @@ FF_DOC
 CXXFLAGS="${GMP_CFLAGS} ${CXXFLAGS}"
 AC_SUBST(CXXFLAGS)
 
+echo "-----------------------------------------------"
+echo "          END FFLAS-FFPACK CONFIG              "
 echo "-----------------------------------------------"
 
 AC_CONFIG_FILES([

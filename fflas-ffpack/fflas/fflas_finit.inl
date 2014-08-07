@@ -321,5 +321,6 @@ namespace FFLAS {
 	}
 
 } // end of namespace FFLAS
+
 #endif // __FFLASFFPACK_fflas_init_INL
 
