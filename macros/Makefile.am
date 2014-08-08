@@ -25,11 +25,7 @@ SUBDIRS=CodeChunk
 
 EXTRA_DIST=            \
 	aclocal-include.m4 \
-	blas-check.m4      \
-	blasATLAS-check.m4 \
-	blasGOTO-check.m4  \
-	blasGSL-check.m4   \
-	blas-pkg-config.m4   \
+	fflas-ffpack-blas.m4 \
 	config-header.m4   \
 	debug.m4           \
 	fflas-ffpack-doc.m4    \
@@ -37,7 +33,6 @@ EXTRA_DIST=            \
 	fflas-ffpack-opt.m4    \
 	givaro-check.m4    \
 	gmp-check.m4       \
-	lapack-check.m4 \
 	mkl-check.m4 \
 	omp-check.m4 \
 	cuda-check.m4
