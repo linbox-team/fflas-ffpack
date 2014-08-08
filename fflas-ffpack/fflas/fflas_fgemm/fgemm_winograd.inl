@@ -134,7 +134,7 @@ namespace FFLAS { namespace Protected {
 			const typename Field::Element beta,
 			typename Field::Element_ptr C, const size_t ldc,
 			MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
-			const double Cmin, const double Cmax) 
+			const double Cmin, const double Cmax)
 	{
 		typename Field::Element_ptr a12, a21, b12, b21;
 		size_t inca12, inca21, incb12, incb21, ma, na, mb, nb;
@@ -256,17 +256,17 @@ namespace FFLAS { namespace Protected {
 			b12 = B+(n-nr);
 			b21 = B+(k-kr)*ldb;
 		}
-		
+
 		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> Hacc(H);
 		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HModd(H);
 		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HNodd(H);
-			
+
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
 		HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
 		HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
 		HNodd.Cmin = Cmin; HNodd.Cmax = Cmax;
-		
+
 		switch (mkn) {
 		case 1: // n oddsized
 			fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
@@ -407,18 +407,18 @@ namespace FFLAS { namespace Protected {
 
 
 namespace FFLAS{
-	template<class Field, class FieldTrait> 
+	template<class Field, class FieldTrait>
 	inline  typename Field::Element_ptr
-	fgemm (const Field& F, 
-	       const FFLAS_TRANSPOSE ta, 
-	       const FFLAS_TRANSPOSE tb, 
-	       const size_t m, const size_t n, const size_t k, 
-	       const typename Field::Element alpha, 
-	       typename Field::Element_ptr A, const size_t lda, 
-	       typename Field::Element_ptr B, const size_t ldb, 
-	       const typename Field::Element beta, 
-	       typename Field::Element_ptr C, const size_t ldc, 
-	       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H) 
+	fgemm (const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m, const size_t n, const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+	       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
 	{
 		if (!m || !n ) return C;
 
@@ -449,7 +449,7 @@ namespace FFLAS{
 
 		Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, H, Cmin, Cmax);
 #else
-		size_t ww = H.recLevel ;
+		size_t ww = (size_t)H.recLevel ;
 		size_t m2 = (m >> ww) << (ww-1) ;
 		size_t n2 = (n >> ww) << (ww-1) ;
 		size_t k2 = (k >> ww) << (ww-1) ;
