@@ -51,7 +51,7 @@ namespace FFLAS {
 	template <class Field>
 	struct associatedDelayedField{
 		typedef Field field;
-		typedef Field& value; // reference to avoid copying heavy fields 	
+		typedef Field& value; // reference to avoid copying heavy fields
 	};
 	template <>
 	struct associatedDelayedField<const FFPACK::Modular<float> >{
@@ -60,7 +60,7 @@ namespace FFLAS {
 	};
 	template <>
 	struct associatedDelayedField<const FFPACK::ModularBalanced<float> >{
-		typedef FloatDomain field;	
+		typedef FloatDomain field;
 		typedef FloatDomain value;
 	};
 	template <>
@@ -137,7 +137,7 @@ namespace FFLAS {
 		};
 		struct Sequential{
 			Sequential() {}
-			    //template<class T> 
+			    //template<class T>
 			Sequential(Parallel& ) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
 				return out << "Sequential";
@@ -179,7 +179,7 @@ namespace FFLAS {
 		double MaxStorableValue;
 		typedef typename associatedDelayedField<const Field>::value DelayedField_t;
 		typedef typename associatedDelayedField<const Field>::field DelayedField_v;
-		
+
 		const DelayedField_t delayedField;
 		ParSeqTrait parseq;
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
@@ -255,7 +255,8 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
-				delayedField((typename Field::Element)F.characteristic()),
+				delayedField(F),
+				// delayedField((typename Field::Element)F.characteristic()),
 				parseq(_PS) {}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
@@ -266,7 +267,7 @@ namespace FFLAS {
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
-				delayedField((typename Field::Element)F.characteristic()),
+				delayedField(F),
 				parseq(_PS) {}
 
 		// copy constructor from other Field and Algo Traits
@@ -291,7 +292,7 @@ namespace FFLAS {
 				Bmin(_Bmin), Bmax(_Bmax),
 				Cmin(_Cmin), Cmax(_Cmax),
 				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
-				delayedField((typename Field::Element)F.characteristic()) {}
+				delayedField(F) {}
 
 		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)  {
             return out <<"Helper: "

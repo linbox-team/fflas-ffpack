@@ -37,6 +37,10 @@
 #define index_t size_t
 #endif
 
+#ifndef DIVIDE_INTO
+#define DIVIDE_INTO(x,y) (((x) + (y) - 1)/(y))
+#endif
+
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 
