@@ -35,7 +35,7 @@
 //#include "fflas_fgemm/fflas_bounds_winograd.inl"
 
 namespace FFLAS { namespace Protected{
-		
+
 	template <typename FloatElement, class Field, class FieldTrait>
 	inline typename Field::Element_ptr
 	fgemm_convert (const Field& F,
@@ -61,7 +61,7 @@ namespace FFLAS { namespace Protected{
 		G.init(betaf, tmp);
 		F.convert (tmp, alpha);
 		G.init(alphaf, tmp);
-		
+
 		FloatElement* Af = new FloatElement[m*k];
 		FloatElement* Bf = new FloatElement[k*n];
 		FloatElement* Cf = new FloatElement[m*n];
@@ -77,7 +77,7 @@ namespace FFLAS { namespace Protected{
 		finit(G, ma, ka, Af, ka);
 		fconvert(F, kb, nb, Bf, nb, B, ldb);
 		finit(G, kb, nb, Bf, nb);
-		
+
 		if (!F.isZero(beta)){
 			fconvert(F, m, n, Cf, n, C, ldc);
 			finit (G, m, n, Cf, n);
@@ -97,27 +97,27 @@ namespace FFLAS { namespace Protected{
 
 namespace FFLAS{ namespace Protected{
 	template <class Field, class AlgoT>
-	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
+	inline bool NeedPreAddReduction (double& Outmin, double& Outmax,
+					 double& Op1min, double& Op1max,
+					 double& Op2min, double& Op2max,
 					 MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
 	{
 		Outmin = Op1min + Op2min;
 		Outmax = Op1max + Op2max;
 		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
 			// Reducing both Op1 and Op2
-			Op1min = Op2min = WH.FieldMin; 
+			Op1min = Op2min = WH.FieldMin;
 			Op1max = Op2max = WH.FieldMax;
 			Outmin = 2*WH.FieldMin;
-			Outmax = 2*WH.FieldMax;	
+			Outmax = 2*WH.FieldMax;
 			return true;
 		} else return false;
 	}
 
 	template <class Field, class AlgoT, class FieldT>
-	inline bool NeedPreAddReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
+	inline bool NeedPreAddReduction (double& Outmin, double& Outmax,
+					 double& Op1min, double& Op1max,
+					 double& Op2min, double& Op2max,
 					 MMHelper<Field, AlgoT, FieldT >& WH)
 	{
 		Outmin = WH.FieldMin;
@@ -126,16 +126,16 @@ namespace FFLAS{ namespace Protected{
 	}
 
 	template <class Field, class AlgoT>
-	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
+	inline bool NeedPreSubReduction (double& Outmin, double& Outmax,
+					 double& Op1min, double& Op1max,
+					 double& Op2min, double& Op2max,
 					 MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
 	{
 		Outmin = Op1min - Op2max;
 		Outmax = Op1max - Op2min;
 		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
 			// Reducing both Op1 and Op2
-			Op1min = Op2min = WH.FieldMin; 
+			Op1min = Op2min = WH.FieldMin;
 			Op1max = Op2max = WH.FieldMax;
 			Outmin = WH.FieldMin-WH.FieldMax;
 			Outmax = -Outmin;
@@ -144,9 +144,9 @@ namespace FFLAS{ namespace Protected{
 	}
 
 	template <class Field, class AlgoT, class FieldT>
-	inline bool NeedPreSubReduction (double& Outmin, double& Outmax, 
-					 double& Op1min, double& Op1max, 
-					 double& Op2min, double& Op2max, 
+	inline bool NeedPreSubReduction (double& Outmin, double& Outmax,
+					 double& Op1min, double& Op1max,
+					 double& Op2min, double& Op2max,
 					 MMHelper<Field, AlgoT, FieldT >& WH)
 	{
 		    // Necessary?
@@ -157,34 +157,34 @@ namespace FFLAS{ namespace Protected{
 
 
 	template<class Field, class AlgoT>
-	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max, 
-					       double& Out2min, double& Out2max, 
-					       double& Op1min, double& Op1max, 
+	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max,
+					       double& Out2min, double& Out2max,
+					       double& Op1min, double& Op1max,
 					       double& Op2min, double& Op2max, double beta,
 					       MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH){
 		// Testing if P5 need to be reduced
-		Out2min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+		Out2min = Op1min + std::min(beta*Op2min,beta*Op2max);
 		Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
-		Out1min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+		Out1min = Op1min + std::min(beta*Op2min,beta*Op2max);
 		Out1max = Op1max + std::max(beta*Op2min,beta*Op2max);
 		if (std::max(-Out2min, std::max(Out2max, std::max(-Out1min, Out1max))) > WH.MaxStorableValue){
-			Out2min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+			Out2min = Op1min + std::min(beta*Op2min,beta*Op2max);
 			Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
-			Out1min = Op1min + std::min(beta*Op2min,beta*Op2max); 
+			Out1min = Op1min + std::min(beta*Op2min,beta*Op2max);
 			Out1max = Op1max + std::max(beta*Op2min,beta*Op2max);
 			return true;
 		} else return false;
 	}
 
 	template<class Field, class AlgoT, class FieldT>
-	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max, 
-					       double& Out2min, double& Out2max, 
-					       double& Op1min, double& Op1max, 
+	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max,
+					       double& Out2min, double& Out2max,
+					       double& Op1min, double& Op1max,
 					       double& Op2min, double& Op2max, double beta,
 					       MMHelper<Field, AlgoT, FieldT >& WH)
 	{
 		Out2min = WH.FieldMin;
-		Out2max = WH.FieldMax;	
+		Out2max = WH.FieldMax;
 		Out1min = WH.FieldMin;
 		Out1max = WH.FieldMax;
 		return false;
@@ -232,20 +232,20 @@ namespace FFLAS{ namespace Protected{
 } // FFLAS
 
 namespace FFLAS {
-	
-	template<class Field> 
+
+	template<class Field>
 	inline  typename Field::Element_ptr
-	fgemm (const Field& F, 
-	       const FFLAS_TRANSPOSE ta, 
-	       const FFLAS_TRANSPOSE tb, 
-	       const size_t m, const size_t n, const size_t k, 
-	       const typename Field::Element alpha, 
-	       typename Field::Element_ptr A, const size_t lda, 
-	       typename Field::Element_ptr B, const size_t ldb, 
-	       const typename Field::Element beta, 
-	       typename Field::Element_ptr C, const size_t ldc, 
+	fgemm (const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m, const size_t n, const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag> & H)
-	{ 
+	{
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else
@@ -278,9 +278,9 @@ namespace FFLAS {
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
 
-		return 	fgemm (F, ta, tb, m, n, k, alpha, 
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
+		return 	fgemm (F, ta, tb, m, n, k, alpha,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb,
 			       beta, C, ldc, HW);
 	}
 	template<typename Field>
@@ -303,9 +303,9 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
-		return 	fgemm (F, ta, tb, m, n, k, alpha, 
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda, 
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb, 
+		return 	fgemm (F, ta, tb, m, n, k, alpha,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb,
 			       beta, C, ldc, HW);
 	}
 
@@ -325,7 +325,7 @@ namespace FFLAS {
 	{
         return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
     }
-           
+
 
 	template<class Field>
 	inline typename Field::Element_ptr
@@ -340,7 +340,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H) 
+	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H)
 	{
 		if (!m || !n) {return C;}
 
@@ -368,7 +368,7 @@ namespace FFLAS {
 #endif
 		if (Protected::AreEqual<Field, FFPACK::Modular<double> >::value ||
 		    Protected::AreEqual<Field, FFPACK::ModularBalanced<double> >::value){
-			    // Modular<double> need to switch to float if p too small	
+			    // Modular<double> need to switch to float if p too small
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		}
@@ -416,8 +416,8 @@ namespace FFLAS {
 
 		//! @bug why double ?
 		// Double  matrices initialisation
-		DoubleDomain::Element_ptr Ad = fflas_new (F,n,n);
-		DoubleDomain::Element_ptr Cd = fflas_new (F,n,n);
+		DoubleDomain::Element_ptr Ad = fflas_new (DoubleDomain(),n,n);
+		DoubleDomain::Element_ptr Cd = fflas_new (DoubleDomain(),n,n);
 		// Conversion finite Field = >  double
 		fconvert (F, n, n, Ad, n, A, lda);
 		if (!F.isZero(beta)) fconvert(F, n, n, Cd, n, C, ldc);
