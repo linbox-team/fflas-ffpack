@@ -180,7 +180,7 @@ namespace FFLAS {
 		typedef typename associatedDelayedField<const Field>::value DelayedField_t;
 		typedef typename associatedDelayedField<const Field>::field DelayedField_v;
 		
-		DelayedField_t delayedField;
+		const DelayedField_t delayedField;
 		ParSeqTrait parseq;
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
 		void initA(){Amin = FieldMin; Amax = FieldMax;}
