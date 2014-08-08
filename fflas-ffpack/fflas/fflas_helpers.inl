@@ -51,27 +51,27 @@ namespace FFLAS {
 	template <class Field>
 	struct associatedDelayedField{
 		typedef Field field;
-		typedef Field& value; // reference to avoid copying heavy fields
+		typedef Field& type; // reference to avoid copying heavy fields
 	};
 	template <>
 	struct associatedDelayedField<const FFPACK::Modular<float> >{
 		typedef FloatDomain field;
-		typedef FloatDomain value;
+		typedef FloatDomain type;
 	};
 	template <>
 	struct associatedDelayedField<const FFPACK::ModularBalanced<float> >{
 		typedef FloatDomain field;
-		typedef FloatDomain value;
+		typedef FloatDomain type;
 	};
 	template <>
 	struct associatedDelayedField<const FFPACK::Modular<double> >{
 		typedef DoubleDomain field;
-		typedef DoubleDomain value;
+		typedef DoubleDomain type;
 };
 	template <>
 	struct associatedDelayedField<const FFPACK::ModularBalanced<double> >{
 		typedef DoubleDomain field;
-		typedef DoubleDomain value;
+		typedef DoubleDomain type;
 	};
 
 	// Traits and categories will need to be placed in a proper file later
@@ -177,8 +177,8 @@ namespace FFLAS {
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
 		double MaxStorableValue;
-		typedef typename associatedDelayedField<const Field>::value DelayedField_t;
-		typedef typename associatedDelayedField<const Field>::field DelayedField_v;
+		typedef typename associatedDelayedField<const Field>::type DelayedField_t;
+		typedef typename associatedDelayedField<const Field>::field DelayedField;
 
 		const DelayedField_t delayedField;
 		ParSeqTrait parseq;
@@ -254,7 +254,7 @@ namespace FFLAS {
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
-				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
+				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
 				delayedField(F),
 				// delayedField((typename Field::Element)F.characteristic()),
 				parseq(_PS) {}
@@ -266,7 +266,7 @@ namespace FFLAS {
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
 				Outmin(0.0), Outmax(0.0),
-				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
+				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
 				delayedField(F),
 				parseq(_PS) {}
 
@@ -291,7 +291,7 @@ namespace FFLAS {
 				Amin(_Amin), Amax(_Amax),
 				Bmin(_Bmin), Bmax(_Bmax),
 				Cmin(_Cmin), Cmax(_Cmax),
-				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField_v::Element>())-1)),
+				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
 				delayedField(F) {}
 
 		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)  {

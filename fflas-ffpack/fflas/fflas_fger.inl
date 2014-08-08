@@ -40,9 +40,9 @@ namespace FFLAS {
 	      typename Field::Element_ptr A, const size_t lda)
 	{
 		MMHelper<Field, MMHelperAlgo::Classic> H(F,0);
-		fger (F, M, N, alpha, 
-		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(x), incx, 
-		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(y), incy, 
+		fger (F, M, N, alpha,
+		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(x), incx,
+		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(y), incy,
 		      A, lda, H);
 		finit (F, M, N, A, lda);
 	}
@@ -105,7 +105,7 @@ namespace FFLAS{
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
-		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_v::Element alphadf;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField::Element alphadf;
 		if (F.isMOne( alpha)) alphadf = -1.0;
 		else alphadf = 1.0;
 
@@ -114,7 +114,7 @@ namespace FFLAS{
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
 
 		if (Hfp.MaxDelayedDim(1.0) < 1){
-			
+
 			if (Hfp.Amin < H.FieldMin || Hfp.Amax>H.FieldMax){
 				Hfp.initA();
 				finit(F, M, x, incx);
@@ -163,11 +163,11 @@ template<class Field>
 	{
 		typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> HelperType;
 
-		typename HelperType::DelayedField_v::Element alphadf;
+		typename HelperType::DelayedField::Element alphadf;
 		if (F.isMOne( alpha)) alphadf = -1.0;
 		else alphadf = 1.0;
 
-		MMHelper<typename HelperType::DelayedField_v,
+		MMHelper<typename HelperType::DelayedField,
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
 
@@ -181,7 +181,7 @@ template<class Field>
 			}
 			fscalin(F, M, N, alpha, A, lda);
 		}
-		H.initOut();		
+		H.initOut();
 	}
 
 	template<class Field>

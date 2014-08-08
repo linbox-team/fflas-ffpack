@@ -54,12 +54,12 @@ namespace FFLAS {
                            typename Field::Element_ptr C, const size_t ldc,
                            MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
-		
+
                 // Input matrices are unreduced: need to figure out the best option between:
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
 		typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> HelperType;
-		typename HelperType::DelayedField_v::Element alphadf, betadf;
+		typename HelperType::DelayedField::Element alphadf, betadf;
 		F.convert (betadf, beta);
 		if (F.isMOne (alpha)) {
 			alphadf = -1.0;
@@ -72,9 +72,9 @@ namespace FFLAS {
 				F.div (betadf, beta, alpha);
 			}
 		}
-			
+
 		if (F.isMOne(betadf)) betadf = -1.0;
-		
+
 		size_t kmax = H.MaxDelayedDim (betadf);
 
 		if (kmax <=  k/2 ){
@@ -93,13 +93,13 @@ namespace FFLAS {
 			}
 			kmax = H.MaxDelayedDim (betadf);
 		}
-		
+
 		if (!kmax){
 			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> HG(H);
 			H.initOut();
 			return fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
 		}
-		
+
 		size_t k2 = std::min(k,kmax);
 		size_t nblock = k / kmax;
 		size_t remblock = k % kmax;
@@ -107,20 +107,20 @@ namespace FFLAS {
 			remblock = kmax;
 			--nblock;
 		}
-                
+
 		size_t shiftA, shiftB;
 		if (ta == FflasTrans) shiftA = k2*lda;
 		else shiftA = k2;
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<typename HelperType::DelayedField_v,
+		MMHelper<typename HelperType::DelayedField,
 			 MMHelperAlgo::Classic,
 			 typename FieldCategories::FloatingPointTag > Hfp(H);
-		
+
 		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, A+nblock*shiftA, lda,
 		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
-		
+
 		for (size_t i = 0; i < nblock; ++i) {
 			finit(F,m,n,C,ldc);
 			Hfp.initC();
@@ -215,7 +215,7 @@ namespace FFLAS {
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
-		
+
                 H.setOutBounds(k, alpha, beta);
 
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,

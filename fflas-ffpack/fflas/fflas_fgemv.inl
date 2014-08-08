@@ -220,7 +220,7 @@ namespace FFLAS{
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
-		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_v::Element alphadf=alpha, betadf=beta;
+		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField_t::Element alphadf=alpha, betadf=beta;
 
 		 size_t Ydim = (ta==FflasNoTrans)?M:N;
 		 size_t Xdim = (ta==FflasNoTrans)?N:M;

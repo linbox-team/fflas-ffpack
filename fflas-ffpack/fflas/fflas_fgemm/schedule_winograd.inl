@@ -58,7 +58,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
 
-		const typename MMH_t::DelayedField_v & DF = WH.delayedField;
+		const typename MMH_t::DelayedField & DF = WH.delayedField;
 
 		size_t lb, cb, la, ca, ldX2;
 		    // size_t x3rd = std::max(mr,kr);
@@ -161,7 +161,7 @@ namespace FFLAS { namespace BLAS3 {
 			finit(F, mr,nr,C21,ldc);
 		}
 		faddin(DF,mr,nr,C12,ldc,C21,ldc);
-		
+
 
 		// U4 = P5 + U2 in C12    and
 		double U4Min, U4Max;
@@ -171,7 +171,7 @@ namespace FFLAS { namespace BLAS3 {
 			finit(F,mr,nr,C12,ldc);
 		}
 		faddin(DF,mr,nr,C22,ldc,C12,ldc);
-		
+
 
 		// U7 = P5 + U3 in C22    and
 		double U7Min, U7Max;
@@ -209,7 +209,7 @@ namespace FFLAS { namespace BLAS3 {
 			finit(F,mr,nr,C21,ldc);
 		}
 		fsubin(DF,mr,nr,C11,ldc,C21,ldc);
-		
+
 		// P2 = alpha . A12 * B21  in C11
 		MMH_t H2(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H2);
