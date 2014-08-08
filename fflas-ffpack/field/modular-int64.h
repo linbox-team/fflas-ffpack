@@ -46,7 +46,6 @@
 #endif
 #endif
 
-// Namespace in which all LinBox code resides
 namespace FFPACK
 {
 
@@ -216,7 +215,7 @@ namespace FFPACK
 			return is;
 		}
 
-		inline Element &init (Element & x, const double &y) const
+		Element &init (Element & x, const double &y) const
 		{
 			double z = fmod(y, (double)modulus);
 			if (z < 0) z += (double)modulus;
@@ -234,6 +233,13 @@ namespace FFPACK
 		{
 			x = (Element) y % modulus;
 			if (x < 0) x += modulus;
+			return x;
+		}
+
+		inline Element& init(Element& x, const size_t &y) const
+		{
+			x = (Element)(y % (size_t) modulus);
+			if ( x < 0 ) x += (Element)modulus;
 			return x;
 		}
 

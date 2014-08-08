@@ -4,7 +4,6 @@
  * Adapted by B Boyer <brice.boyer@imag.fr>
  * (from other modular-balanced* files)
  *
- *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
  *
@@ -50,8 +49,6 @@
 #endif
 
 // todo INT64_MAX
-
-
 namespace FFPACK
 {
 
@@ -198,6 +195,18 @@ namespace FFPACK
 			return is;
 		}
 
+		Element &init (Element & x, const double &y) const
+		{
+			x = (Element) fmod(y,(double)modulus);
+			if (x < mhalf_mod) return x += modulus;
+			else if (x > half_mod) return x -= modulus;
+			else return x;
+		}
+
+		inline Element &init (Element & x, const float &y) const
+		{
+			return init(x , (double) y);
+		}
 
 		template<class Element1>
 		Element &init (Element & x, const Element1 &y) const
@@ -206,24 +215,17 @@ namespace FFPACK
 
 			if ( x < mhalf_mod ) return x += modulus;
 			else if (x > half_mod ) return x -= modulus;
-                        else return x;
+                        else
+				return x;
 		}
-
-		Element &init (Element &x, const double &y) const
-		{
-			x = (Element) fmod(y,(double)modulus);
-			if (x < mhalf_mod) return x += modulus;
-			else if (x > half_mod) return x -= modulus;
-			else return x;
-		}
-
 
 		Element &init (Element &x, const size_t &y) const
 		{
 			x = (Element)y % Element(modulus);
 			if (x < mhalf_mod) return x += modulus;
 			else if (x > half_mod) return x -= modulus;
-			else return x;
+			else
+				return x;
 		}
 
 
@@ -233,7 +235,8 @@ namespace FFPACK
 
 			if ( x < mhalf_mod ) return x += modulus;
 			else if (x > half_mod ) return x -= modulus;
-                        else return x;
+                        else
+				return x;
 		}
 
 		inline Element& init(Element& x, long y) const
@@ -241,14 +244,14 @@ namespace FFPACK
 			x = y % modulus;
 			if ( x < mhalf_mod ) return x += modulus;
 			else if ( x > half_mod ) return x -= modulus;
-                        else return x;
+                        else
+				return x;
 		}
 
 		inline Element& assign(Element& x, const Element& y) const
 		{
 			return x = y;
 		}
-
 
 		inline bool areEqual (const Element &x, const Element &y) const
 		{
@@ -267,7 +270,7 @@ namespace FFPACK
 
 		inline bool isMOne (const Element &x) const
 		{
-			return x == mOne;
+			return x == mOne ;
 		}
 
 		inline Element &add (Element &x, const Element &y, const Element &z) const
