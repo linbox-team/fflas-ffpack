@@ -63,7 +63,7 @@ NOT_A_TEST =  \
 		test-nullspace		\
 		test-ftrsm-mp           \
 		test-fgemm-mp           \
-		test-igemm-mp             
+		test-igemm-mp
 
 INFINITE_TEST= \
 		testeur_fgemm          \
@@ -86,7 +86,7 @@ EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS) $(USE_OMP_TESTS) $(USE_GIVARO_TESTS)
 
 CLEANFILES =           \
-		$(NOT_A_TEST) $(EXTRA_PROGRAMS) 
+		$(NOT_A_TEST) $(EXTRA_PROGRAMS)
 
 TESTS =     $(EXTRA_PROGRAMS)
 
@@ -134,4 +134,4 @@ dense_generator: dense_generator.C
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
 %:%.C
-	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
