@@ -105,7 +105,7 @@ namespace FFLAS { /*  ELL */
 		{
 			using simd = Simd<typename Field::Element>;
 			using vect_t = typename simd::vect_t;
-			 
+
 			for (size_t i = 0 ; i < m ; ++i) {
 				if (! F.isOne(b)) {
 					if (F.isZero(b)) {
@@ -127,6 +127,7 @@ namespace FFLAS { /*  ELL */
 			}
 		}
 
+#define BLOCKSIZE 4
 		// double
 		template<>
 		void sp_fgemv(
@@ -140,26 +141,83 @@ namespace FFLAS { /*  ELL */
 			      const double* x ,
 			      const double& b,
 			      double * y
+			      ,bool simd_true
 			     )
 		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if ( b != 1) {
-					if ( b == 0.) {
-						y[i] = 0;
+			if (simd_true) {
+				for ( size_t i = 0 ;  i < m   ; ++i ) {
+					if ( b != 1) {
+						if ( b == 0.) {
+							y[i] = 0;
+						}
+						else if ( b == -1 ) {
+							y[i]= -y[i];
+						}
+						else {
+							y[i] = y[i] * b;
+						}
 					}
-					else if ( b == -1 ) {
-						y[i]= -y[i];
+					for (index_t j = 0 ; j < ld ; ++j) {
+						// if (dat[i*ld+j] == 0) { break; }
+						y[i] += dat[i*ld+j]*x[col[i*ld+j]];
 					}
-					else {
-						y[i] = y[i] * b;
-					}
-				}
-				for (index_t j = 0 ; j < ld ; ++j) {
-					if (dat[i*ld+j] == 0)
-						break;
-					y[i] += dat[i*ld+j]*x[col[i*ld+j]];
 				}
 			}
+			else {
+				size_t i = 0 ;
+				using simd = Simd<double>;
+				using vect_t = typename simd::vect_t;
+				vect_t X,Y,D ;
+				for ( ; i < m ; i += BLOCKSIZE) {
+
+					if ( b != 1) {
+						if ( b == 0.) {
+							// y[i] = 0;
+							Y = simd::zero();
+						}
+						else if ( b == -1 ) {
+							// y[i]= -y[i];
+							Y = simd::load(y+i);
+							Y = simd::sub(simd::zero(),Y);
+						}
+						else {
+							// y[i] = y[i] * b;
+							Y = simd::load(y+i);
+							Y = simd::mul(Y,simd::set1(b));
+						}
+					}
+					for (index_t j = 0 ; j < ld ; ++j) {
+						D = simd::load(dat+i*BLOCKSIZE*ld+j*BLOCKSIZE);
+						X = simd::gather(x,col+i*BLOCKSIZE*ld+j*BLOCKSIZE);
+						Y = simd::madd(Y,D,X);
+					}
+					simd::store(y+i,Y);
+				}
+				if ( b != 1) {
+					if ( b == 0.) {
+						for (size_t ii = i*BLOCKSIZE ; ii < m ; ++ii) {
+							y[ii] = 0;
+						}
+					}
+					else if ( b == -1 ) {
+						for (size_t ii = i*BLOCKSIZE ; ii < m ; ++ii) {
+							y[ii]= -y[ii];
+						}
+					}
+					else {
+						for (size_t ii = i*BLOCKSIZE ; ii < m ; ++ii) {
+							y[ii] = y[ii] * b;
+						}
+					}
+				}
+				size_t deplacement = m -i*BLOCKSIZE ;
+				for (index_t j = 0 ; j < ld ; ++j) {
+					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
+						y[i*BLOCKSIZE+ii] += dat[i*BLOCKSIZE*ld+j*deplacement + ii]*x[col[i*BLOCKSIZE*ld+j*deplacement + ii]];
+					}
+				}
+			}
+
 		}
 
 		// float
