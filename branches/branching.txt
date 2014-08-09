@@ -1,0 +1,4 @@
+# creating a new branch :
+svn copy ^/trunk ^/branches/a.b -m "new branch a.b created"
+# syncing in branches/a.b :
+svn merge ^/trunk
