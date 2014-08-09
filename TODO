@@ -1,0 +1,36 @@
+Repenser la structure de fgemm:
+  * plus de template, moins de tests
+  * templater DoubleDomain/FLoatDomain?
+  * plus rapide avec des petites matrices
+  * Meilleure strategie de calcul des parametres
+  * Automatic tuning des thresholds Float/Double
+
+LUdivine
+  * Automatic tuning des thresholds gauss/LUdivine
+  * Plus de localite?
+
+TRSM/TRMM
+  * Traitement automatique float/double depuis int
+  * Securiser les bornes t_update: quand winograd intervient
+  * remplacer BLAS-trsm par le code de reference de ATLAS
+
+FTRTRI/FTRTRM
+  * generation automatique du code
+  * traitement des cas de base (seuil > 1)
+ 
+Idee: 
+1/ Pourquoi templater FFLAS?
+  --> integration au sein de ATLAS (C et corps definitif)
+2/ ameliorer les cas terminaux de ftrsm ftrmm: copier les ATL_reftrsm sur double et float
+  --> introduire un nouveau seuil dans trsm: celui ou on fait des boucles et pas de la recursivite
+2/ Conversion des le debut vers modular double/float (evite les conv multiples)
+3/ Implantations non template de fgemm, trsm, .... sur double
+4/ Compilation des noyaux
+
+A discuter en fonction du besoin d'un FFLAS generique
+
+
+Verifier la validite avec modular<int> (sage révele des det faux)
+
+Revoir la structure des bornes dans winograd: trop de reductions
+   modulaires quand il y a des etapes de wino dans le corps fini.
