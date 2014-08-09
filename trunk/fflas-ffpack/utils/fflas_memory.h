@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_memory.inl
+/* fflas/fflas_memory.h
  * Copyright (C) 2014 fflas-ffpack group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
@@ -27,18 +27,25 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_memory_INL
-#define __FFLASFFPACK_memory_INL
+#ifndef __FFLASFFPACK_memory_H
+#define __FFLASFFPACK_memory_H
+
+#include "fflas-ffpack/utils/align-allocator.h"
 
 namespace FFLAS{
-    
+
     template<class Field>
-    inline typename Field::Element_ptr fflas_new (const Field& F, size_t m, size_t n){
-        return new typename Field::Element[m*n];
+    inline typename Field::Element_ptr fflas_new (const Field& F, size_t m, size_t n)
+    {
+	// return new typename Field::Element[m*n];
+	return malloc_align<typename Field::Element>(m*n, Alignment::AVX);
     }
 
     template<class Element_ptr>
-    inline void fflas_delete (Element_ptr A) {delete[] A;}
-    
+    inline void fflas_delete (Element_ptr A)
+    {
+	    delete[] A;
+    }
+
 }
-#endif // __FFLASFFPACK_memory_INL
+#endif // __FFLASFFPACK_memory_H

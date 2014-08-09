@@ -22,10 +22,16 @@
 pkgincludesubdir=$(pkgincludedir)/utils
 
 pkgincludesub_HEADERS=       \
-		args-parser.h        \
-		print-utils.h        \
-		debug.h              \
-		Matio.h
+	     align-allocator.h  \
+	     args-parser.h  \
+	     debug.h  \
+	     fflas_memory.h \
+	     flimits.h \
+	     Makefile.am \
+	     Matio.h  \
+	     print-utils.h \
+	     simd.h
+
 
 ### is this really extra dist ?
 ### this is wrong in a header only lib
