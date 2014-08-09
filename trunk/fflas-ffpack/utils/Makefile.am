@@ -35,6 +35,6 @@ pkgincludesub_HEADERS=       \
 
 ### is this really extra dist ?
 ### this is wrong in a header only lib
-EXTRA_DIST=timer.h timer.C
+EXTRA_DIST=timer.h
 
 

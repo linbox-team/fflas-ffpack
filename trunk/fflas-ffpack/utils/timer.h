@@ -41,154 +41,25 @@
  * providing runtime commentary to the user)
  */
 
-#ifndef __TIMER_H
-#define __TIMER_H
-
-#include <iostream>
-
-class BaseTimer {
-    public:
-	enum {
-		MSPSEC = 1000000  // microsecond per second
-	};
-
-	// -- Clear timer :
-	inline void clear() { _t = 0; }
-
-	// -- total amount of second spent
-	inline double time() const { return _t; }
-
-	// -- Return a value to initialize random generator
-	static long seed();
-
-	// -- basic methods:
-	std::ostream& print( std::ostream& ) const;
-
-	// -- Some arithmetic operators to compute cumulative time :
-	BaseTimer& operator = (const BaseTimer & T) ;
-	const BaseTimer operator - (const BaseTimer & T)  const;
-	const BaseTimer operator - () ;
-	const BaseTimer operator +  (const BaseTimer & T)  const;
-	BaseTimer& operator += (const BaseTimer & T) { return *this = *this + T; };
-	BaseTimer& operator -= (const BaseTimer & T) { return *this = *this - T; };
-
-    public:
-	double _t;        // time
-};
-
-inline std::ostream &operator << (std::ostream &o, const BaseTimer &BT)
-	{ return BT.print(o); }
-
-class RealTimer : public BaseTimer {
-    public:
-	inline RealTimer (const BaseTimer &BT) : BaseTimer (BT) {};
-	inline RealTimer () {};
-	void start ();
-	void stop ();
-};
+#ifndef __FFLASFFPACK_timer_H
+#define __FFLASFFPACK_timer_H
 
 
-class UserTimer : public BaseTimer {
-    public:
-	inline UserTimer (const BaseTimer &BT) : BaseTimer (BT) {};
-	inline UserTimer () {};
-	void start ();
-	void stop ();
-};
-
-
-class SysTimer : public BaseTimer {
-    public:
-	inline SysTimer (const BaseTimer &BT): BaseTimer (BT) {};
-	inline SysTimer () {};
-	void start ();
-	void stop ();
-};
-
-
-class Timer {
-public :
-
-	// Clear timer :
-	void clear();
-
-	// Start timer
-	void start();
-
-	// Stop timer
-	void stop();
-
-	// total amount of second spent in user mode
-	double usertime() const { return ut.time(); }
-
-	// total amount of second spent in system mode
-	double systime () const { return st.time(); }
-
-	// real total amount of second spent.
-	double realtime () const { return rt.time(); }
-
-	// retourne une petite graine
-	// long seed() const { return RealTimer::seed(); }
-
-	// Some arithmetic operators to compute cumulative time :
-	Timer& operator = (const Timer & T) ;
-	const Timer operator - (const Timer & T)  const;
-	const Timer operator - () ;
-	const Timer operator + (const Timer & T)  const;
-	/* const */Timer& operator += (const Timer & T) { return *this = *this + T; };
-	/* const */Timer& operator -= (const Timer & T) { return *this = *this - T; };
-
-	// -- methods :
-	std::ostream &print (std::ostream &) const;
-
-
-
-	RealTimer rt;
-	UserTimer ut;
-	SysTimer  st;
-};
-
-// inline std::ostream &operator << (std::ostream &o, const Timer &T)
-// 	{ return T.print (o); }
-
-inline std::ostream &operator << (std::ostream &o, const Timer &T)
-{
-	double ut = T.usertime();
-	if (ut < 0.0000000001) ut = 0;
-	return o << T.realtime() << "s (" << ut << " cpu) ";
-}
+#include <time.h>
 
 #ifdef __FFLASFFPACK_USE_OPENMP
-#include <omp.h>
-struct OMPTimer {
-	double _c;
-	void start() { _c = omp_get_wtime(); }
-	void stop() { _c = omp_get_wtime() - _c; }
-	void clear() { _c = 0.0; }
-	double realtime() const { return _c; }
-	double usertime() const { return _c; }
-	OMPTimer& operator =(const OMPTimer& t) { _c = t._c; return *this; }
-	OMPTimer& operator+=(const OMPTimer& t) { _c += t._c; return *this; }
-	OMPTimer& operator-=(const OMPTimer& t) { _c -= t._c; return *this; }
-	OMPTimer  operator +(const OMPTimer& t) const
-	{
-		OMPTimer r; r._c = _c + t._c; return r;
-	}
-	OMPTimer  operator -(const OMPTimer& t) const
-	{
-		OMPTimer r; r._c = _c - t._c; return r;
-	}
-	OMPTimer  operator -() { OMPTimer r; r._c = - _c; return r; }
-};
-//#endif
-//
-inline std::ostream &operator << (std::ostream &o, const OMPTimer &T)
-{
-	return o << T.usertime() << "s" ;
+#  ifndef __GIVARO_USE_OPENMP
+#    define __GIVARO_USE_OPENMP 1
+#  endif
+#endif
+
+#include <givaro/givtimer.h>
+
+namespace FFLAS {
+	typedef Givaro::Timer Timer  ;
+	typedef Givaro::BaseTimer BaseTimer ;
+	typedef Givaro::UserTimer UserTimer ;
+	typedef Givaro::SysTimer SysTimer ;
 }
-#endif
 
-
-#include "timer.C"
-
-#endif
+#endif // __FFLASFFPACK_timer_H
