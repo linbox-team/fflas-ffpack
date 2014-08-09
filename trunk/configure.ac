@@ -114,7 +114,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 			if test "x${HAVE_CXX11}" = "x0" ; then
 				WARN_CFLAGS="${WARN_CFLAGS} -ansi"
 			fi
-		;;
+			;;
 		xgcc48)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
@@ -176,6 +176,15 @@ FF_CHECK_OMP
 FF_CHECK_AVX
 echo "-----------------------------------------------"
 AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
+	case x${CCNAM} in
+		xgcc|xgcc44|xgcc48)
+	# With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
+			# have overloads for both types without linking error.
+			AVXFLAGS="${AVXFLAGS} -fabi-version=6"
+			;;
+		*)
+	esac
+
 AC_SUBST([PARLIBS],['${OMPFLAGS}'])
 
 # Machine characteristics

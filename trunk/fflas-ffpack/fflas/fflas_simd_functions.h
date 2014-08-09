@@ -37,13 +37,38 @@
 
 #include "fflas-ffpack/utils/simd.h"
 
- namespace FFLAS {  
+ namespace FFLAS {
  	namespace vectorised {
+
+		template<class T>
+		T monfmod(T A, T B)
+		{
+			return fmod(A,B);
+		}
+
+		template<>
+		float monfmod(float A, float B)
+		{
+			return fmodf(A,B);
+		}
+
+		template<class T>
+		T monrint(T A)
+		{
+			return rint(A);
+		}
+
+		template<>
+		float monrint(float A)
+		{
+			return rintf(A);
+		}
+
 
 		template<class SimdT>
 		inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 		VEC_MOD(SimdT & C, SimdT & Q, SimdT & T, const SimdT & P, const SimdT & NEGP, const SimdT & INVP, const SimdT & MIN,  const SimdT & MAX)
-		{	
+		{
 			using simd = Simd<typename simdToType<SimdT>::type>;
 			Q = simd::mul(C, INVP);
 			Q = simd::floor(Q);
@@ -60,23 +85,23 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		modp(Element * T, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
 		{
-			Element min(min_), max(max_);
+			Element min = (Element)min_, max = (Element)max_;
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
-			
+
 			size_t i = 0;
- 			if (n < simd::vect_size) 
+ 			if (n < simd::vect_size)
  			{
 				for (; i < n ; i++)
 				{
-					if (round) 
+					if (round)
 					{
-						T[i] = rint(U[i]);
-						T[i] = fmod(T[i],p);
+						T[i] = monrint(U[i]);
+						T[i] = monfmod(T[i],p);
 					}
 					else
 					{
-						T[i]=fmod(U[i],p);
+						T[i]=monfmod(U[i],p);
 					}
 					if (!positive)
 					{
@@ -88,21 +113,21 @@
 			}
 
 			long st = long(T) % simd::alignment;
-			
+
 			// the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
-			
+
 			if (st)
-			{ 
+			{
 				for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
 				{
 					if (round)
 					{
-						T[i] = rint(U[i]);
-						T[i] = fmod(T[i],p);
+						T[i] = monrint(U[i]);
+						T[i] = monfmod(T[i],p);
 					}
 					else
 					{
-						T[i] = fmod(U[i],p);
+						T[i] = monfmod(U[i],p);
 					}
 					if (!positive)
 					{
@@ -111,7 +136,7 @@
 					T[i] += (T[i] < min) ? p : 0;
 				}
 			}
-			
+
 			FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
 
 			vect_t C, Q, TMP;
@@ -143,12 +168,12 @@
 			{
 				if (round)
 				{
-					T[i] = rint(U[i]);
-					T[i] = fmod(T[i],p);
+					T[i] = monrint(U[i]);
+					T[i] = monfmod(T[i],p);
 				}
 				else
 				{
-					T[i] = fmod(U[i],p);
+					T[i] = monfmod(U[i],p);
 				}
 				if (!positive)
 				{
@@ -176,13 +201,13 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		addp(Element * T, const Element * TA, const Element * TB,  size_t n,  Element p,  T1 min_,  T2 max_)
 		{
-			Element min(min_), max(max_);
+			Element min= (Element)min_, max= (Element)max_;
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 
 			size_t i = 0;
 
-			if (n < simd::vect_size) 
+			if (n < simd::vect_size)
 			{
 				for (; i < n ; i++)
 				{
@@ -253,7 +278,7 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
 		{
-			Element min(min_), max(max_);
+			Element min = (Element)min_, max = (Element)max_;
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 
@@ -288,7 +313,7 @@
 				}
 			}
 			FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
-			if ( (long(TA+i) % simd::alignment == 0) && (long(TB+i) % simd::alignment == 0)) 
+			if ( (long(TA+i) % simd::alignment == 0) && (long(TB+i) % simd::alignment == 0))
 			{
 				// perform the loop using 256 bits SIMD
 				for (; i <= n - simd::vect_size ; i += simd::vect_size)
@@ -300,7 +325,7 @@
 					simd::store(T+i, C);
 				}
 			}
-			
+
 			// perform the last elt from T without SIMD
 			for (; i < n ; i++)
 			{
@@ -332,7 +357,7 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		scalp(Element *T, const Element alpha, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
 		{
-			Element min(min_), max(max_);
+			Element min = (Element)min_, max=(Element)max_;
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 
@@ -342,7 +367,7 @@
 			{
 				for (; i < n ; i++)
 				{
-					T[i]=fmod(alpha*U[i], p);
+					T[i]=monfmod(alpha*U[i], p);
 					T[i] -= (T[i] > max) ? p : 0;
 					T[i] += (T[i] < min) ? p : 0;
 				}
@@ -361,7 +386,7 @@
 			{ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
 				for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j+=sizeof(Element), i++)
 				{
-					T[i] = fmod(alpha*U[i], p);
+					T[i] = monfmod(alpha*U[i], p);
 					T[i] -= (T[i] > max) ? p : 0;
 					T[i] += (T[i] < min) ? p : 0;
 				}
@@ -380,7 +405,7 @@
 			// perform the last elt from T without SIMD
 			for (; i < n ; i++)
 			{
-				T[i] = fmod(alpha*U[i],p);
+				T[i] = monfmod(alpha*U[i],p);
 				T[i] -= (T[i] > max) ? p : 0;
 				T[i] += (T[i] < min) ? p : 0;
 			}
