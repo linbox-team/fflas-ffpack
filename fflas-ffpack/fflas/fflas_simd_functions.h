@@ -47,8 +47,7 @@
 			using simd = Simd<typename simdToType<SimdT>::type>;
 			Q = simd::mul(C, INVP);
 			Q = simd::floor(Q);
-			T = simd::mul(Q, P);
-			C = simd::sub(C, T);
+			C = simd::nmadd(Q, P, C);
 			Q = simd::greater(C, MAX);
 			T = simd::lesser(C, MIN);
 			Q = simd::vand(Q, NEGP);
@@ -61,7 +60,7 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		modp(Element * T, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
 		{
-			Element min = min_, max = max_;
+			Element min(min_), max(max_);
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 			
@@ -177,7 +176,7 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		addp(Element * T, const Element * TA, const Element * TB,  size_t n,  Element p,  T1 min_,  T2 max_)
 		{
-			Element min = min_, max = max_;
+			Element min(min_), max(max_);
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 
@@ -254,7 +253,7 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
 		{
-			Element min = min_, max = max_;
+			Element min(min_), max(max_);
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 
@@ -333,7 +332,7 @@
 		inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
 		scalp(Element *T, const Element alpha, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
 		{
-			Element min = min_, max = max_;
+			Element min(min_), max(max_);
 			using simd = Simd<Element>;
 			using vect_t = typename simd::vect_t;
 
@@ -390,7 +389,7 @@
 } /* FFLAS */
 
 #else /* C++11 */
-#pragma warning("You need a c++11 compiler")
+#error "You need a c++11 compiler."
 #endif /* c++11 */
 
 #endif /* __FFLASFFPACK_fflas_simd_functions_H */
