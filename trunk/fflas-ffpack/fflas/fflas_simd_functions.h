@@ -346,7 +346,7 @@
 			Q = simd::mul(C,INVP);
 			C = simd::mul(C,ALPHA);
 			Q = simd::floor(Q);
-			C = simd::nmadd(Q,P,C);
+			C = simd::nmadd(C,Q,P);
 			Q = simd::greater(C,MAX);
 			T = simd::lesser(C,MIN);
 			Q = simd::vand(Q,NEGP);
