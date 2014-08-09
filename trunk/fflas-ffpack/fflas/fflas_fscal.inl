@@ -30,6 +30,7 @@
 #ifndef __FFLASFFPACK_fscal_INL
 #define __FFLASFFPACK_fscal_INL
 
+#include "fflas-ffpack/fflas/fflas_simd_functions.h"
 
 namespace FFLAS {
 
