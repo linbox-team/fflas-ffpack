@@ -322,7 +322,7 @@ struct Simd<float>
 #ifdef __AVX2__
         return _mm256_nmadd_ps(a, b, c);
 #else
-        return _mm256_add_ps(c, _mm256_mul_ps(a, b));
+        return _mm256_sub_ps(c, _mm256_mul_ps(a, b));
 #endif
     }
 
@@ -395,7 +395,7 @@ struct Simd<float>
     }
 
     static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_fadd_ps(c, _mm_mul_ps(a, b));
+        return _mm_fsub_ps(c, _mm_mul_ps(a, b));
     }
 
     static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
