@@ -41,6 +41,13 @@ namespace FFLAS{
 	return malloc_align<typename Field::Element>(m*n, Alignment::AVX);
     }
 
+    template<class Element >
+    inline Element* fflas_new (size_t m)
+    {
+	// return new typename Field::Element[m*n];
+	return malloc_align<Element>(m, Alignment::AVX);
+    }
+
     template<class Element_ptr>
     inline void fflas_delete (Element_ptr A)
     {

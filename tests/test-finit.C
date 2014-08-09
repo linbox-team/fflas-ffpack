@@ -15,8 +15,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n)
 {
 	typedef typename Field::Element T ;
 
-	T * A = new T[m*n];
-	T * B = new T[m*n];
+	T * A = FFLAS::fflas_new<T>(m*n);
+	T * B = FFLAS::fflas_new<T>(m*n);
 
 	FFPACK::ModularBalanced<T> E(101);
 

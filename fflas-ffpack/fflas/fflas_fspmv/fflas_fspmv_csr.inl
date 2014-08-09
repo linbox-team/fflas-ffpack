@@ -145,7 +145,7 @@ namespace FFLAS { /*  CSR */
 				yd = y;
 			}
 			else {
-				yd = new double [m];
+				yd = FFLAS::fflas_new<double >(m);
 				fscalin(F,m,b,y,1);
 			}
 			// mkl_dcsrgemv (bug, not zero based)
@@ -199,7 +199,7 @@ namespace FFLAS { /*  CSR */
 				yd = y;
 			}
 			else {
-				yd = new float [m];
+				yd = FFLAS::fflas_new<float >(m);
 				fscalin(F,m,b,y,1);
 			}
 			// mkl_scsrgemv
@@ -674,7 +674,7 @@ namespace FFLAS { /*  CSR */
 			details::sp_fgemv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat);
 		}
 		else {
-			typename Field::Element * xd = new typename Field::Element [A.n] ;
+			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
 			fscal(F,A.n,A.cst,x.dat,1,xd,1);
 			details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.st,A.col,xd,y.dat);
 		}

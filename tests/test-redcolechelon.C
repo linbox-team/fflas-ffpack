@@ -69,8 +69,8 @@ int main(int argc, char** argv){
 
 	A = read_field(F,argv[2],&m,&n);
 
-	size_t *P = new size_t[n];
-	size_t *Q = new size_t[m];
+	size_t *P = FFLAS::fflas_new<size_t>(n);
+	size_t *Q = FFLAS::fflas_new<size_t>(m);
 
 	//	size_t cutoff = atoi(argv[3]);
 	nbf = atoi(argv[3]);
@@ -105,9 +105,9 @@ int main(int argc, char** argv){
 // 		cerr<<Q[i]<<" ";
 // 	cerr<<"]"<<endl;
 #if DEBUG
-	Field::Element * L = new Field::Element[m*n];
-	Field::Element * U = new Field::Element[n*n];
-	Field::Element * X = new Field::Element[m*n];
+	Field::Element * L = FFLAS::fflas_new<Field::Element>(m*n);
+	Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
+	Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
 
 	Field::Element zero,one;
 	F.init(zero,0.0);

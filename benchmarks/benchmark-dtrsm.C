@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         A = read_field (F, argv[4], &n, &n);
     }
     else{
-      A = new Element[n*n];
+      A = FFLAS::fflas_new<Element>(n*n);
 		  for (size_t j = 0; j< (size_t)n*n; ++j)
 			  G.random(*(A+j));
     }
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
       B = read_field (F, argv[5], &n, &n);
     }
     else{
-      B = new Element[n*n];
+      B = FFLAS::fflas_new<Element>(n*n);
 		  for (size_t j=0 ; j< (size_t)n*n; ++j)
 			  G.random(*(A+j));
     }

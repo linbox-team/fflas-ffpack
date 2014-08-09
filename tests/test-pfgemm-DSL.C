@@ -121,7 +121,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, FFLAS::FieldTraits<Field>::value,
 			FFLAS::ParSeqHelper::Parallel> pWH (F, nbw,FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
         for(int i = 0;i<nbit;++i){
-		C = new Field::Element[m*n];
+		C = FFLAS::fflas_new<Field::Element>(m*n);
                 clock_gettime(CLOCK_REALTIME, &t0);
 
 		PAR_REGION{
@@ -153,7 +153,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	Field::Element zero;
         F.init(zero, 0.0);
 	Field::Element * Cd;
-	Cd  = new Field::Element[m*n];
+	Cd  = FFLAS::fflas_new<Field::Element>(m*n);
 	for (int i=0; i<m*n; ++i)
 		F.assign (*(Cd+i), zero);
 

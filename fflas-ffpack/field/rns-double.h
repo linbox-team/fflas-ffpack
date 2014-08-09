@@ -168,7 +168,7 @@ namespace FFPACK {
 				FFPACK::Failure(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
 
 			size_t mn=m*n;
-			double *A_beta = new double [mn*k];
+			double *A_beta = FFLAS::fflas_new<double >(mn*k);
 			const integer* Aiter=A;
 			// split A into A_beta according to a Kronecker transform in base 2^16
 			for(size_t i=0;i<m;i++)
@@ -221,7 +221,7 @@ namespace FFPACK {
 		{
 			integer hM= (_M-1)>>1;
 			size_t  mn= m*n;
-			double *A_beta= new double[mn*_ldm];
+			double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
 			if (RNS_MAJOR==false)
 				// compute A_beta = Ap^T x M_beta

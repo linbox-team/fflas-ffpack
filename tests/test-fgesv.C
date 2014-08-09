@@ -76,11 +76,11 @@ int main(int argc, char** argv){
 	size_t rhs = (side == FFLAS::FflasLeft) ? nb : mb;
 	if (m != n) {
 		if (side == FFLAS::FflasLeft){
-			X = new Field::Element[n*nb];
+			X = FFLAS::fflas_new<Field::Element>(n*nb);
 			ldx = nb;
 		}
 		else {
-			X = new Field::Element[mb*m];
+			X = FFLAS::fflas_new<Field::Element>(mb*m);
 			ldx = m;
 		}
 	}
@@ -128,7 +128,7 @@ int main(int argc, char** argv){
 
 	A = read_field(F,argv[2],&m,&n);
 
-	B2 = new Field::Element[mb*nb];
+	B2 = FFLAS::fflas_new<Field::Element>(mb*nb);
 
 
 	if (m==n)

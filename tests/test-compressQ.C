@@ -73,9 +73,9 @@ int main(int argc, char** argv)
 
 	Field F(65521);
 	size_t N = 17;
-	double * A = new double[N*N];
-	double * tmp = new double[N*N];
-	size_t * deg = new size_t[N];
+	double * A = FFLAS::fflas_new<double>(N*N);
+	double * tmp = FFLAS::fflas_new<double>(N*N);
+	size_t * deg = FFLAS::fflas_new<size_t>(N);
 
 	for (size_t i=0; i<(size_t)N*N; ++i)
 		A[i] = 0;
@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 	for (size_t i=0; i<size_t(N); ++i)
 		A[11+i*N] = A[7+i*N] = A[3+i*N] = double(i % 10);
 
-	double * B = new double[N*N] ;
+	double * B = FFLAS::fflas_new<double>(N*N) ;
 	FFLAS::fcopy(F,N*N,A,1,B,1);
 
 	// write_field(F, cerr, A, N, N, N);

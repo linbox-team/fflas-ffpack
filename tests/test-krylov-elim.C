@@ -72,7 +72,7 @@ int main(int argc, char** argv){
 	F.init(one, 1UL);
 	Field::Element * A = read_field<Field> (F,argv[2],(int*)&m,(int*)&n);
 
-	Field::Element * B = new Field::Element[(m+n)*n];
+	Field::Element * B = FFLAS::fflas_new<Field::Element>((m+n)*n);
 	for (size_t i=0; i<(n+m)*n;++i) *(B+i)=0;
 
 	size_t deg = (n-1)/m+1;
@@ -95,12 +95,12 @@ int main(int argc, char** argv){
 	write_field (F, cout<<"A = "<<endl, A,(int) m,(int) n,(int) n);
 	write_field (F, cout<<"B = "<<endl, B, (int) (m+n),(int) n,(int) n);
 
-	size_t *rp = new size_t[n];
+	size_t *rp = FFLAS::fflas_new<size_t>(n);
 
 	FFPACK::SpecRankProfile(F, m, n, A, n, deg,rp);
 
-	size_t * P = new size_t[n];
-	size_t * Q = new size_t[n+m];
+	size_t * P = FFLAS::fflas_new<size_t>(n);
+	size_t * Q = FFLAS::fflas_new<size_t>(n+m);
 	FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,(int)m+n, n, B, n, P, Q, FFPACK::FfpackLQUP);
 
 	printvect (cout<<"RankProfile (A) = "<<endl, rp, n)<<endl;

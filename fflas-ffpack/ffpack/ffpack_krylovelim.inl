@@ -156,10 +156,10 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 {
 
 	//size_t deg = (N-1)/M+1; // Number of trivial iterates per blocs
-	size_t * Q = new size_t[M];
-	size_t * P = new size_t[N];
-	size_t * iterates = new size_t[N];
-	size_t * inviterates = new size_t[N+1];
+	size_t * Q = FFLAS::fflas_new<size_t>(M);
+	size_t * P = FFLAS::fflas_new<size_t>(N);
+	size_t * iterates = FFLAS::fflas_new<size_t>(N);
+	size_t * inviterates = FFLAS::fflas_new<size_t>(N+1);
 	for (size_t i=0; i < N; ++i)
 		inviterates[i+1] = iterates[i] = i+1;
 

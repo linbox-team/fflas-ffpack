@@ -342,17 +342,17 @@ namespace FFLAS {
 			 *
 			 */
 
-			double * S1 = new double[m3*k2] ;
-			// double * C11t = new double[n2*m3] ;
+			double * S1 = FFLAS::fflas_new<double>(m3*k2) ;
+			// double * C11t = FFLAS::fflas_new<double>(n2*m3) ;
 			// S1  := A11  +A22;
 			FFLAS::fadd(NoField,m3,k2,A11,lda,A22,lda,S1,k2);
 			// T1  := e*B11 +B22;
-			double * T1 = new double[n2*k2] ; // ou aire
+			double * T1 = FFLAS::fflas_new<double>(n2*k2) ; // ou aire
 			add(k2,n2,epsilon,B11,ldb,B22,ldb,T1,n2);
 			// P1 := S1 *T1; (dans C22)
 			gemm_bini_322_0(F,m3,n2,k2,S1,k2,T1,n2,C22,ldc,rec-1,epsilon);
 			// S4  := e*A12+A22;
-			double * eA12 = new double [m3*k2];
+			double * eA12 = FFLAS::fflas_new<double >(m3*k2);
 			FFLAS::fscal(NoField,m3,k2,epsilon,A12,lda,eA12,k2) ;
 			FFLAS::fadd(NoField,m3,k2,eA12,k2,A22,lda,S1,k2);
 			// T4  := -e*B11+B21;
@@ -364,7 +364,7 @@ namespace FFLAS {
 			// T2  := B21  +B22;
 			FFLAS::fadd(NoField,k2,n2,B21,ldb,B22,ldb,T1,n2);
 			// P2 := A22*T2;
-			double * P1 = new double[n2*m3] ; // ou aire
+			double * P1 = FFLAS::fflas_new<double>(n2*m3) ; // ou aire
 			gemm_bini_322_0(F,m3,n2,k2,A22,lda,T1,n2,P1,n2,rec-1,epsilon);
 			// P3 := A11*B22; (dans C12)
 			gemm_bini_322_0(F,m3,n2,k2,A11,lda,B22,ldb,C12,ldc,rec-1,epsilon);
@@ -375,7 +375,7 @@ namespace FFLAS {
 			// T5  := e*B12 +B22;
 			add(k2,n2,epsilon,B12,ldb,B22,ldb,T1,n2);
 			// P5 := S5 *T5;
-			double * P2 = new double[n2*m3] ; // ou aire
+			double * P2 = FFLAS::fflas_new<double>(n2*m3) ; // ou aire
 			gemm_bini_322_0(F,m3,n2,k2,S1,k2,T1,n2,P2,n2,rec-1,epsilon);
 			// C12 -= P5
 			subscalinf(NoField,m3,n2,P2,n2,-(double)1/epsilon,C12,ldc);
@@ -533,11 +533,11 @@ namespace FFLAS {
 			// P10
 			gemm_bini_322_mem(F,m3,n2,k2,A11,lda,B22,ldb,C11,ldc,rec-1,epsilon);
 			// S5
-			double * X = new double[m3*k2];
+			double * X = FFLAS::fflas_new<double>(m3*k2);
 			add(m3,k2,epsilon,A12,lda,A11,lda,X,k2);
 			// T5
-			// double * Y = new double[std::max(k2,m3)*n2];
-			double * Y = new double[k2*n2];
+			// double * Y = FFLAS::fflas_new<double>(std::max(k2,m3)*n2);
+			double * Y = FFLAS::fflas_new<double>(k2*n2);
 			add(k2,n2,epsilon,B12,ldb,B22,ldb,Y,n2);
 			// P5
 			gemm_bini_322_mem(F,m3,n2,k2,X,k2,Y,n2,C22,ldc,rec-1,epsilon);
@@ -603,7 +603,7 @@ namespace FFLAS {
 			// C21
 			FFLAS::fsubin(NoField,m3,n2,C31,ldc,C21,ldc);
 			// P8
-			Y = new double[m3*n2];
+			Y = FFLAS::fflas_new<double>(m3*n2);
 			gemm_bini_322_mem(F,m3,n2,k2,A32,lda,B11,ldb,Y,n2,rec-1,epsilon);
 			// C31
 			subscalinf(NoField,m3,n2,Y,n2,(double)1/epsilon,C31,ldc);
@@ -726,10 +726,10 @@ namespace FFLAS {
 			// P10
 			gemm_bini_223_mem(F,m2,n3,k2,A22,lda,B11,ldb,C11,ldc,rec-1,epsilon);
 			// S5
-			double * Y = new double[k2*n3];
+			double * Y = FFLAS::fflas_new<double>(k2*n3);
 			add(k2,n3,epsilon,B21,ldb,B11,ldb,Y,n3);
 			// T5
-			double * X = new double[m2*k2];
+			double * X = FFLAS::fflas_new<double>(m2*k2);
 			add(m2,k2,epsilon,A21,lda,A22,lda,X,k2);
 			// P5
 			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C22,ldc,rec-1,epsilon);
@@ -795,7 +795,7 @@ namespace FFLAS {
 			// C21
 			FFLAS::fsubin(NoField,m2,n3,C13,ldc,C12,ldc);
 			// P8
-			Y = new double[m2*n3];
+			Y = FFLAS::fflas_new<double>(m2*n3);
 			gemm_bini_223_mem(F,m2,n3,k2,A11,lda,B23,ldb,Y,n3,rec-1,epsilon);
 			// C31
 			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C13,ldc);
@@ -908,10 +908,10 @@ namespace FFLAS {
 			 *
 			 */
 
-			double * U = new double[m3*n2];
-			double * V = new double[m3*n2];
-			double * X = new double[m3*std::max(k2,n2)];
-			double * Y = new double[std::max(k2,m3)*n2];
+			double * U = FFLAS::fflas_new<double>(m3*n2);
+			double * V = FFLAS::fflas_new<double>(m3*n2);
+			double * X = FFLAS::fflas_new<double>(m3*std::max(k2,n2));
+			double * Y = FFLAS::fflas_new<double>(std::max(k2,m3)*n2);
 
 			// S4
 			add(m3,k2,epsilon,A12,lda,A22,lda,X,k2);
@@ -1099,10 +1099,10 @@ namespace FFLAS {
 			 *
 			 */
 
-			double * U = new double[m2*n2];
-			double * V = new double[m2*n2];
-			double * X = new double[m2*k3];
-			double * Y = new double[k3*n2];
+			double * U = FFLAS::fflas_new<double>(m2*n2);
+			double * V = FFLAS::fflas_new<double>(m2*n2);
+			double * X = FFLAS::fflas_new<double>(m2*k3);
+			double * Y = FFLAS::fflas_new<double>(k3*n2);
 
 			// S1
 			add(m2,k3,epsilon,A22,lda,A11,lda,X,k3);
@@ -1322,13 +1322,13 @@ namespace FFLAS {
 
 
 
-			double * U = new double[m2*n2];
-			double * V = new double[std::max(k3,m2)*n2];
-			double * X = new double[m2*k3];
-			double * Y = new double[k3*n2];
+			double * U = FFLAS::fflas_new<double>(m2*n2);
+			double * V = FFLAS::fflas_new<double>(std::max(k3,m2)*n2);
+			double * X = FFLAS::fflas_new<double>(m2*k3);
+			double * Y = FFLAS::fflas_new<double>(k3*n2);
 
 			// S1
-			double * eA22 = new double[std::max(m2,n2)*k3];
+			double * eA22 = FFLAS::fflas_new<double>(std::max(m2,n2)*k3);
 			FFLAS::fscal(NoField,m2,k3,epsilon,A22,lda,eA22,k3);
 			FFLAS::fadd(NoField,m2,k3,eA22,k3,A11,lda,X,k3);
 			// T1
@@ -1342,7 +1342,7 @@ namespace FFLAS {
 			// C22 = (P1+P3)/e
 			addscal(NoField,m2,n2,U,n2,V,n2,(double)1/epsilon,C22,ldc);
 			// S6
-			double * eA12 = new double[m2*k3];
+			double * eA12 = FFLAS::fflas_new<double>(m2*k3);
 			FFLAS::fscal(NoField,m2,k3,epsilon,A12,lda,eA12,k3);
 			FFLAS::fadd(NoField,m2,k3,eA12,k3,A23,lda,X,k3);
 			// T6
@@ -1362,7 +1362,7 @@ namespace FFLAS {
 			// S4
 			FFLAS::fadd(NoField,m2,k3,eA12,k3,A11,lda,X,k3);
 			// T4
-			double * eB12 = V ; // new double[n2*k3];
+			double * eB12 = V ; // FFLAS::fflas_new<double>(n2*k3);
 			FFLAS::fscal(NoField,k3,n2,epsilon,B12,ldb,eB12,n2);
 			FFLAS::fadd(NoField,k3,n2,eB12,n2,B22,ldb,Y,n2);
 			// P4 (in U)
@@ -1531,10 +1531,10 @@ namespace FFLAS {
 			// P10
 			gemm_bini_223_mem(F,m2,n3,k2,A22,lda,B11,ldb,C11,ldc,rec-1,epsilon);
 			// S5
-			double * Y = new double[k2*n3];
+			double * Y = FFLAS::fflas_new<double>(k2*n3);
 			add(k2,n3,epsilon,B21,ldb,B11,ldb,Y,n3);
 			// T5
-			double * X = new double[m2*k2];
+			double * X = FFLAS::fflas_new<double>(m2*k2);
 			add(m2,k2,epsilon,A21,lda,A22,lda,X,k2);
 			// P5
 			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C22,ldc,rec-1,epsilon);
@@ -1600,7 +1600,7 @@ namespace FFLAS {
 			// C21
 			FFLAS::fsubin(NoField,m2,n3,C13,ldc,C12,ldc);
 			// P8
-			Y = new double[m2*n3];
+			Y = FFLAS::fflas_new<double>(m2*n3);
 			gemm_bini_223_mem(F,m2,n3,k2,A11,lda,B23,ldb,Y,n3,rec-1,epsilon);
 			// C31
 			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C13,ldc);
@@ -1873,11 +1873,11 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 
 	typedef typename Field::Element Element;
 
-	Element * A = new Element[m*k];
-	Element * B = new Element[n*k];
-	Element * C = new Element[m*n];
-	Element * D = new Element[m*n];
-	Element * E = new Element[m*n];
+	Element * A = FFLAS::fflas_new<Element>(m*k);
+	Element * B = FFLAS::fflas_new<Element>(n*k);
+	Element * C = FFLAS::fflas_new<Element>(m*n);
+	Element * D = FFLAS::fflas_new<Element>(m*n);
+	Element * E = FFLAS::fflas_new<Element>(m*n);
 
 
 	Field F(p);
@@ -1886,9 +1886,9 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 	typedef typename changeField<Field>::other Field_f  ;
 	typedef typename Field_f::Element Element_f ;
 	Field_f F_f(p);
-	Element_f * A_f = new Element_f[m*k];
-	Element_f * B_f = new Element_f[n*k];
-	Element_f * C_f = new Element_f[m*n];
+	Element_f * A_f = FFLAS::fflas_new<Element_f>(m*k);
+	Element_f * B_f = FFLAS::fflas_new<Element_f>(n*k);
+	Element_f * C_f = FFLAS::fflas_new<Element_f>(m*n);
 
 #if defined(NOTRANDOM)
 	size_t i0 ;

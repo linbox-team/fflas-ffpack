@@ -82,7 +82,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	FFLASFFPACK_check(c);
 
-	size_t * rp = new size_t[2*N];
+	size_t * rp = FFLAS::fflas_new<size_t>(2*N);
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
 	size_t Nnoc = N*noc;
 
@@ -93,8 +93,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		// K[i] = F.zero;
 	size_t ldk = N;
 
-	size_t *dA = new size_t[N]; //PA
-	size_t *dK = new size_t[noc*c];
+	size_t *dA = FFLAS::fflas_new<size_t>(N); //PA
+	size_t *dK = FFLAS::fflas_new<size_t>(noc*c);
 	for (size_t i=0; i<noc; ++i)
 		dK[i]=0;
 
@@ -124,8 +124,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	for (size_t i=0; i<noc*c; ++i)
 		FFLAS::fcopy (F, N, K2+i*ldk, 1, (K+i*ldk), 1);
 
-	size_t * Pk = new size_t[N];
-	size_t * Qk = new size_t[N];
+	size_t * Pk = FFLAS::fflas_new<size_t>(N);
+	size_t * Qk = FFLAS::fflas_new<size_t>(N);
 	for (size_t i=0; i<N; ++i)
 		Qk[i] = 0;
 	for (size_t i=0; i<N; ++i)
@@ -408,8 +408,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 				dK+nb_full_blocks, deg, Mk-nb_full_blocks);
 
 		// K <- K^-1 K
-		size_t *P=new size_t[Mk];
-		size_t *Q=new size_t[Mk];
+		size_t *P=FFLAS::fflas_new<size_t>(Mk);
+		size_t *Q=FFLAS::fflas_new<size_t>(Mk);
 		if (LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Mk, Mk , K3 + (Ncurr-Mk)*ldk, ldk, P, Q, FfpackLQUP) < Mk){
 			// should never happen (not a LAS VEGAS check)
 			//std::cerr<<"FAIL R2 < MK"<<std::endl;

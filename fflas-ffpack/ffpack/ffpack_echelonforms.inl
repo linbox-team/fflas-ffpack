@@ -272,7 +272,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 		for (size_t i=rowbeg+r1; i<M; ++i)
 			for (size_t j=0; j<recsize-r1; ++j)
 				F.assign(*(NZ1+i*lda+j), F.zero);
-		// size_t * temp = new size_t[recsize-r1];
+		// size_t * temp = FFLAS::fflas_new<size_t>(recsize-r1);
 		// for (size_t i=0,j = colbeg+r1; j<colbeg+recsize; ++i,++j)
 		//  	temp[i] = P[j];
 		// for (size_t  i = colbeg+recsize, j = colbeg+r1; i<colbeg+recsize+r2; ++i,++j)

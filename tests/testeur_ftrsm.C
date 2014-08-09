@@ -127,10 +127,10 @@ int main(int argc, char** argv){
 
 		while (F.isZero(RValue.random (alpha)));
 
-		A = new Field::Element[K*K];
-		B = new Field::Element[M*N];
-		Abis = new Field::Element[K*K];
-		Bbis = new Field::Element[M*N];
+		A = FFLAS::fflas_new<Field::Element>(K*K);
+		B = FFLAS::fflas_new<Field::Element>(M*N);
+		Abis = FFLAS::fflas_new<Field::Element>(K*K);
+		Bbis = FFLAS::fflas_new<Field::Element>(M*N);
 		for (size_t i = 0; i < M; ++i)
 			for (size_t j = 0; j < N; ++j){
 				RValue.random (*(B + i*N + j));

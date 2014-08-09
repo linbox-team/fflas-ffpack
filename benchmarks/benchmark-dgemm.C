@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     }
     else{
       Field::RandIter G(F);
-      A = new Element[n*n];
+      A = FFLAS::fflas_new<Element>(n*n);
 		  for (size_t j=0; j<(size_t)n*n; ++j)
 			  G.random (*(A+j));
     }
@@ -69,12 +69,12 @@ int main(int argc, char** argv) {
     }
     else{
       Field::RandIter G(F);
-      B = new Element[n*n];
+      B = FFLAS::fflas_new<Element>(n*n);
 		  for (size_t j=0; j<(size_t)n*n; ++j)
 			  G.random(*(B+j));
     }
 
-    C = new Element[n*n];
+    C = FFLAS::fflas_new<Element>(n*n);
 
     chrono.clear();
     chrono.start();

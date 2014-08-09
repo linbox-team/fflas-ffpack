@@ -62,9 +62,9 @@ namespace FFLAS { namespace Protected{
 		F.convert (tmp, alpha);
 		G.init(alphaf, tmp);
 
-		FloatElement* Af = new FloatElement[m*k];
-		FloatElement* Bf = new FloatElement[k*n];
-		FloatElement* Cf = new FloatElement[m*n];
+		FloatElement* Af = FFLAS::fflas_new<FloatElement>(m*k);
+		FloatElement* Bf = FFLAS::fflas_new<FloatElement>(k*n);
+		FloatElement* Cf = FFLAS::fflas_new<FloatElement>(m*n);
 
 		size_t ma, ka, kb, nb; //mb, na
 		if (ta == FflasTrans) { ma = k; ka = m; }

@@ -149,7 +149,7 @@ namespace FFLAS { /*  COO */
 				yd = y;
 			}
 			else {
-				yd = new double [m];
+				yd = FFLAS::fflas_new<double >(m);
 				// std::cout << "yd : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << yd[i] << ' '  ; std::cout << std::endl;
 				fscalin(F,m,b,y,1);
 			}
@@ -211,7 +211,7 @@ namespace FFLAS { /*  COO */
 				yd = y;
 			}
 			else {
-				yd = new float [m];
+				yd = FFLAS::fflas_new<float >(m);
 				fscalin(F,m,b,y,1);
 			}
 			// mkl_scoogemv
@@ -615,7 +615,7 @@ namespace FFLAS { /*  COO */
 			details::sp_fgemv_zo<Field,false>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat);
 		}
 		else {
-			typename Field::Element * xd = new typename Field::Element [A.n] ;
+			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
 			fscal(F,A.n,A.cst,x.dat,1,xd,1);
 			details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,xd,y.dat);
 		}

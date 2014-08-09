@@ -41,8 +41,8 @@ namespace FFPACK {
 		if (M == 0 and  N  == 0)
 			return 0 ;
 
-		size_t *P = new size_t[N];
-		size_t *Q = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(N);
+		size_t *Q = FFLAS::fflas_new<size_t>(M);
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
 				     A, lda, P, Q, FfpackLQUP);
 		delete[] Q;
@@ -63,8 +63,8 @@ namespace FFPACK {
 			return  true ;
 
 
-		size_t *P = new size_t[N];
-		size_t *Q = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(N);
+		size_t *Q = FFLAS::fflas_new<size_t>(M);
 		bool singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
 					    A, lda, P, Q, FfpackSingular);
 
@@ -87,8 +87,8 @@ namespace FFPACK {
 
 		typename Field::Element det; F.init(det);
 		bool singular;
-		size_t *P = new size_t[N];
-		size_t *Q = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(N);
+		size_t *Q = FFLAS::fflas_new<size_t>(M);
 		singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,  M, N,
 				       A, lda, P, Q, FfpackSingular);
 		if (singular){
@@ -122,8 +122,8 @@ namespace FFPACK {
 	       typename Field::ConstElement_ptr b, const int incb )
 	{
 
-		size_t *P = new size_t[M];
-		size_t *rowP = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(M);
+		size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
 		if (LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP) < M){
 			std::cerr<<"SINGULAR MATRIX"<<std::endl;
@@ -156,8 +156,8 @@ namespace FFPACK {
 			       size_t& NSdim)
 	{
 		if (Side == FFLAS::FflasRight) { // Right NullSpace
-			size_t* P = new size_t[N];
-			size_t* Qt = new size_t[M];
+			size_t* P = FFLAS::fflas_new<size_t>(N);
+			size_t* Qt = FFLAS::fflas_new<size_t>(M);
 
 			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
 			delete [] Qt;
@@ -194,8 +194,8 @@ namespace FFPACK {
 			return NSdim;
 		}
 		else { // Left NullSpace
-			size_t* P = new size_t[M];
-			size_t* Qt = new size_t[N];
+			size_t* P = FFLAS::fflas_new<size_t>(M);
+			size_t* Qt = FFLAS::fflas_new<size_t>(N);
 
 			size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
 			delete [] Qt;
@@ -240,12 +240,12 @@ namespace FFPACK {
 			       typename Field::Element_ptr A, const size_t lda,
 			       size_t* &rkprofile)
 	{
-		size_t *P = new size_t[N];
-		size_t *Q = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(N);
+		size_t *Q = FFLAS::fflas_new<size_t>(M);
 		size_t R;
 
 		R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q);
-		rkprofile = new size_t[R];
+		rkprofile = FFLAS::fflas_new<size_t>(R);
 
 		for (size_t i=0; i<R; ++i)
 			rkprofile[i] = Q[i];
@@ -259,12 +259,12 @@ namespace FFPACK {
 				  typename Field::Element_ptr A, const size_t lda,
 				  size_t* &rkprofile)
 	{
-		size_t *P = new size_t[M];
-		size_t *Q = new size_t[N];
+		size_t *P = FFLAS::fflas_new<size_t>(M);
+		size_t *Q = FFLAS::fflas_new<size_t>(N);
 		size_t R;
 
 		R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
-		rkprofile = new size_t[R];
+		rkprofile = FFLAS::fflas_new<size_t>(R);
 
 		for (size_t i=0; i<R; ++i)
 			rkprofile[i] = Q[i];
@@ -282,12 +282,12 @@ namespace FFPACK {
 					       size_t*& colindices,
 					       size_t& R)
 	{
-		size_t *P = new size_t[N];
-		size_t *Q = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(N);
+		size_t *Q = FFLAS::fflas_new<size_t>(M);
 
 		R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q);
-		rowindices = new size_t[M];
-		colindices = new size_t[N];
+		rowindices = FFLAS::fflas_new<size_t>(M);
+		colindices = FFLAS::fflas_new<size_t>(N);
 		for (size_t i=0; i<R; ++i){
 			rowindices [i] = Q [i];
 		}
@@ -317,12 +317,12 @@ namespace FFPACK {
 					       size_t*& colindices,
 					       size_t& R)
 	{
-		size_t *P = new size_t[M];
-		size_t *Q = new size_t[N];
+		size_t *P = FFLAS::fflas_new<size_t>(M);
+		size_t *Q = FFLAS::fflas_new<size_t>(N);
 
 		R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Q);
-		rowindices = new size_t[M];
-		colindices = new size_t[N];
+		rowindices = FFLAS::fflas_new<size_t>(M);
+		colindices = FFLAS::fflas_new<size_t>(N);
 		for (size_t i=0; i<R; ++i)
 			colindices [i] = Q [i];
 

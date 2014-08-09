@@ -47,8 +47,8 @@ void launch_wino(const Field  &F,
 	double basetime(0.0), time(0.0);
 
 	Element *A, *C;
-	A = new Element[n*n];
-	C = new Element[n*n];
+	A = FFLAS::fflas_new<Element>(n*n);
+	C = FFLAS::fflas_new<Element>(n*n);
 	for (size_t i=0; i<n*n;++i)
 		G.random(A[i]);
 
@@ -56,7 +56,7 @@ void launch_wino(const Field  &F,
 	Timer chrono;
 	for(size_t i=0; i<NB; ++i) {
 		chrono.start();
-                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, 
+                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
                              n,n,n, F.one,
                              A, n, A, n, F.zero, C,n);
 		chrono.stop();
@@ -70,7 +70,7 @@ void launch_wino(const Field  &F,
 
 	for(size_t w=0; w<winomax; ++w) {
 
-                FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,w);
+                FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,(int)w);
                 time = 0. ;
 		chrono.clear();
 		for(size_t i=0; i<NB; ++i) {
@@ -104,7 +104,7 @@ int main (int argc, char ** argv) {
 
 	FFPACK::Modular<double> F1(p);
 	FFPACK::Modular<float>  F2(p);
-	FFPACK::Modular<int>    F3(p);
+	FFPACK::Modular<int>    F3((uint32_t)p);
 	FFPACK::ModularBalanced<double> F4(p);
 	FFPACK::ModularBalanced<float>  F5(p);
 	FFPACK::ModularBalanced<int>    F6((int)p);

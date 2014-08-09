@@ -147,11 +147,11 @@ namespace FFLAS {
 		Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
 		Cp = FFLAS::fflas_new(Zrns,m,n);
 
-		//Ap._ptr = new double[m*k*RNS._size];
+		//Ap._ptr = FFLAS::fflas_new<double>(m*k*RNS._size);
 		//Ap._stride = m*k;
-		// Bp._ptr = new double[k*n*RNS._size];
+		// Bp._ptr = FFLAS::fflas_new<double>(k*n*RNS._size);
 		// Bp._stride = k*n;
-		// Cp._ptr = new double[m*n*RNS._size];
+		// Cp._ptr = FFLAS::fflas_new<double>(m*n*RNS._size);
 		// Cp._stride = m*n;
 
 		// convert the input matrices to RNS representation

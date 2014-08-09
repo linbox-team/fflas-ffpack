@@ -109,26 +109,26 @@ int main(int argc, char** argv){
 
 		if (random()%2){
 			ta = FFLAS::FflasTrans;
-			L = new Field::Element[M*N];
-			U = new Field::Element[N*N];
-			P = new size_t[M];
-			Q = new size_t[N];
+			L = FFLAS::fflas_new<Field::Element>(M*N);
+			U = FFLAS::fflas_new<Field::Element>(N*N);
+			P = FFLAS::fflas_new<size_t>(M);
+			Q = FFLAS::fflas_new<size_t>(N);
 			for (size_t i=0; i<M; ++i) P[i] = 0;
 			for (size_t i=0; i<N; ++i) Q[i] = 0;
 		}
 		else{
 			ta = FFLAS::FflasNoTrans;
-			L = new Field::Element[M*M];
-			U = new Field::Element[M*N];
-			P = new size_t[N];
-			Q = new size_t[M];
+			L = FFLAS::fflas_new<Field::Element>(M*M);
+			U = FFLAS::fflas_new<Field::Element>(M*N);
+			P = FFLAS::fflas_new<size_t>(N);
+			Q = FFLAS::fflas_new<size_t>(M);
 			for (size_t i=0; i<N; ++i) P[i] = 0;
 			for (size_t i=0; i<M; ++i) Q[i] = 0;
 		}
 
 		size_t R=0;
-		Field::Element * G = new Field::Element[M*M];
-		Field::Element * H = new Field::Element[M*N];
+		Field::Element * G = FFLAS::fflas_new<Field::Element>(M*M);
+		Field::Element * H = FFLAS::fflas_new<Field::Element>(M*N);
 		size_t t;
 		do{
 			t = (size_t) random() % 10;
@@ -153,16 +153,16 @@ int main(int argc, char** argv){
 
 // 		write_field(F,cerr<<"G = "<<endl,G,M,M,M);
 // 		write_field(F,cerr<<"H = "<<endl,H,M,N,N);
-		A = new Field::Element[M*N];
+		A = FFLAS::fflas_new<Field::Element>(M*N);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, M, one, G, M, H, N, zero, A, N);
 		delete[] G;
 		delete[] H;
 
-		Abis = new Field::Element[M*N];
+		Abis = FFLAS::fflas_new<Field::Element>(M*N);
 		for (size_t i=0; i<M*N; ++i)
 			*(Abis+i) = *(A+i);
 
-		X = new Field::Element[M*N];
+		X = FFLAS::fflas_new<Field::Element>(M*N);
 
 
 		cout <<"p = "<<(size_t)p<<" M = "<<M
