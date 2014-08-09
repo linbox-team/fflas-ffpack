@@ -29,8 +29,6 @@ EXTRA_DIST=matmul.doxy
 multiprecision=fgemm_classical_mp.inl
 
 pkgincludesub_HEADERS=            \
-	fflas_bounds_classic.inl  \
-	fflas_bounds_winograd.inl \
 	fgemm_classical.inl       \
 	fgemm_winograd.inl        \
 	schedule_winograd.inl              \
@@ -38,4 +36,4 @@ pkgincludesub_HEADERS=            \
 	schedule_bini.inl                  \
 	schedule_winograd_acc_ip.inl       \
 	schedule_winograd_ip.inl           \
-	${multiprecision} 
+	${multiprecision}

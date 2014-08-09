@@ -47,7 +47,6 @@ namespace FFLAS { namespace BLAS3 {
 				    typename Field::Element_ptr B,const size_t ldb,
 				    const typename Field::Element  beta,
 				    typename Field::Element_ptr C, const size_t ldc,
-				    // const size_t kmax, const size_t w, const FFLAS_BASE base
 				    const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				   )
 	{
@@ -175,7 +174,6 @@ namespace FFLAS { namespace BLAS3 {
 				     typename Field::Element_ptr B,const size_t ldb,
 				     const typename Field::Element  beta,
 				     typename Field::Element_ptr C, const size_t ldc,
-				     // const size_t kmax, const size_t w, const FFLAS_BASE base
 				     const MMHelper<Field, MMHelperAlgo::Winograd,FieldTrait > & WH
 				    )
 	{
@@ -305,7 +303,6 @@ namespace FFLAS { namespace BLAS3 {
 				     const typename Field::Element_ptr B,const size_t ldb,
 				     const typename Field::Element  beta,
 				     typename Field::Element_ptr C, const size_t ldc,
-				     // const size_t kmax, const size_t w, const FFLAS_BASE base
 				     const MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > & WH
 				    )
 	{

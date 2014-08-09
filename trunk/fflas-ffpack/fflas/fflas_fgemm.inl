@@ -32,7 +32,6 @@
 #ifndef __FFLASFFPACK_fgemm_INL
 #define __FFLASFFPACK_fgemm_INL
 
-//#include "fflas_fgemm/fflas_bounds_winograd.inl"
 
 namespace FFLAS { namespace Protected{
 
