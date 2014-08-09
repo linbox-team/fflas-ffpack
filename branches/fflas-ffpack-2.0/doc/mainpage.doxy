@@ -1,0 +1,72 @@
+# Copyright (c) 2011 FFLAS-FFPACK
+# written by BB <bboyer@imag.fr>
+# adapted from LinBox documentation
+#
+# ========LICENCE========
+# This file is part of the library FFLAS-FFPACK.
+#
+# FFLAS-FFPACK is free software: you can redistribute it and/or modify
+# it under the terms of the  GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+# ========LICENCE========
+#/
+
+
+/** @mainpage FFLAS-FFPACK Documentation.
+ *
+ * \section intro Introduction
+ *
+ * \section goals Goals
+ *
+ * \section desig Design
+ *
+ * \section using Using FFLAS-FFPACK.
+ *  - \subpage copy.
+ *  - \subpage tuto. This is a brief introduction to %FFLAS-FFPACK
+ *  capabilities.
+ *  - \subpage inst. Explains how to configure/install from sources or from the latest
+ *  svn version.
+ *  - \subpage arch. Describes how FFLAS-FFPACK is organized
+ *  - <a href="../fflas-ffpack-html/index.html"     style="color: blue  ;
+ *  font-weight: bold">Documentation for Users</a>. If everything around is
+ *  blue, then you are reading the lighter, user-oriented, documentation.
+ *  - <a href="../fflas-ffpack-dev-html/index.html" style="color: green ;
+ *  font-weight: bold">Documentation for Developers</a>. If everything around
+ *  is green, then you can get to everything (not necessarily yet) documented.
+ *  .
+ *
+ *\section contrib Contributing to fflas-ffpack, getting assistance.
+ *
+ *\version 1.4.0
+ */
+
+/** @page inst Configuring and Installing FFLAS-FFPACK
+ * FFLAS-FFPACK is a header-only package. Hower configuration process can be tweaked a lot.
+ * Configure looks for BLAS and LAPACK routine.
+ * See the output of <code>./configure --help</code> for information about the LAPACK/BLAS discovering strategies.
+ * For now, Givaro is not compulsory
+ */
+
+/** @page copy Copying and Licence
+ * @brief no doc.
+ */
+
+/** @page tuto Tutorial
+ * @brief no doc.
+ */
+
+/** @page arch Architecture of the library.
+ * @brief no doc.
+ */
+
+// vim:syn=doxygen
