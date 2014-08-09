@@ -48,7 +48,7 @@ namespace FFLAS { /*  ELLR */
 
 	template<class Element>
 	struct ELLR_sub : public ELLR<Element> {
-	}
+	};
 
 	template<class Element>
 	struct ELLR {
