@@ -36,7 +36,6 @@
 #ifndef __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 #define __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 
-//#include "fflas_bounds_classic.inl"
 #include "fflas-ffpack/field/field-general.h"
 
 namespace FFLAS {
