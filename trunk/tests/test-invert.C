@@ -79,7 +79,7 @@ int main(int argc, char** argv){
 
 #if DEBUG
 	Field::Element *Ab = read_field(F,argv[2],&n,&n);
-	Field::Element *I = new Field::Element[n*n];
+	Field::Element *I = FFLAS::fflas_new<Field::Element>(n*n);
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n, n, n,
 		      1.0, Ab, n, A, n, 0.0, I, n);
 	bool wrong = false;

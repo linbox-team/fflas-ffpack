@@ -13,10 +13,10 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
 {
 	typedef typename Field::Element T ;
 
-	T * A = new T[m*n];
-	T * B = new T[m*n];
-	T * C = new T[m*n];
-	T * D = new T[m*n];
+	T * A = FFLAS::fflas_new<T>(m*n);
+	T * B = FFLAS::fflas_new<T>(m*n);
+	T * C = FFLAS::fflas_new<T>(m*n);
+	T * D = FFLAS::fflas_new<T>(m*n);
 
 	std::cout << ">>>" << std::endl ;
 
@@ -68,9 +68,9 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n)
 {
 	typedef typename Field::Element T ;
 
-	T * A = new T[m*n];
-	T * C = new T[m*n];
-	T * D = new T[m*n];
+	T * A = FFLAS::fflas_new<T>(m*n);
+	T * C = FFLAS::fflas_new<T>(m*n);
+	T * D = FFLAS::fflas_new<T>(m*n);
 
 	std::cout << ">>>" << std::endl ;
 	F.write(std::cout << "Field ") << std::endl;
@@ -121,10 +121,10 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n)
 {
 	typedef typename Field::Element T ;
 
-	T * A = new T[m*n];
-	T * B = new T[m*n];
-	T * C = new T[m*n];
-	T * D = new T[m*n];
+	T * A = FFLAS::fflas_new<T>(m*n);
+	T * B = FFLAS::fflas_new<T>(m*n);
+	T * C = FFLAS::fflas_new<T>(m*n);
+	T * D = FFLAS::fflas_new<T>(m*n);
 
 	std::cout << ">>>" << std::endl ;
 
@@ -176,9 +176,9 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n)
 {
 	typedef typename Field::Element T ;
 
-	T * A = new T[m*n];
-	T * C = new T[m*n];
-	T * D = new T[m*n];
+	T * A = FFLAS::fflas_new<T>(m*n);
+	T * C = FFLAS::fflas_new<T>(m*n);
+	T * D = FFLAS::fflas_new<T>(m*n);
 
 	std::cout << ">>>" << std::endl ;
 	F.write(std::cout << "Field ") << std::endl;

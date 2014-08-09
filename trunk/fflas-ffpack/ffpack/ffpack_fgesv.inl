@@ -51,8 +51,8 @@ template <class Field>
 		else
 			Na = N;
 
-		size_t* P = new size_t[Na];
-		size_t* Q = new size_t[Na];
+		size_t* P = FFLAS::fflas_new<size_t>(Na);
+		size_t* Q = FFLAS::fflas_new<size_t>(Na);
 
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Na, Na, A, lda, P, Q, FfpackLQUP);
 
@@ -75,8 +75,8 @@ template <class Field>
 	       int * info)
 	{
 
-		size_t* P = new size_t[N];
-		size_t* Q = new size_t[M];
+		size_t* P = FFLAS::fflas_new<size_t>(N);
+		size_t* Q = FFLAS::fflas_new<size_t>(M);
 
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Q, FfpackLQUP);
 

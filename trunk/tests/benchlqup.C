@@ -56,13 +56,13 @@ int main(int argc, char** argv) {
 
 	for (size_t i=0;i<iter;++i){
 
-		A = new Element[n*n];
+		A = FFLAS::fflas_new<Element>(n*n);
 		Field::RandIter G(F);
 		for (size_t i=0; i< (size_t)n*n; ++i)
 			G.random(*(A+i));
 
-		size_t * P = new size_t[n];
-		size_t * Q = new size_t[n];
+		size_t * P = FFLAS::fflas_new<size_t>(n);
+		size_t * Q = FFLAS::fflas_new<size_t>(n);
 
 		chrono.clear();
 		chrono.start();

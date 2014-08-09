@@ -118,7 +118,7 @@ namespace FFPACK {
 
 		Element& init(Element& x) const{
 			if (x._ptr == NULL){
-				x._ptr = new BasisElement[_rns->_size];
+				x._ptr = FFLAS::fflas_new<BasisElement>(_rns->_size);
 				x._stride=1;
 				x._alloc=true;
 			}
@@ -169,8 +169,8 @@ namespace FFPACK {
 
 			size_t _size= _rns->_size;
 			BasisElement *Gamma, *alpha;
-			Gamma = new BasisElement[n*_size];
-			alpha = new BasisElement[n];
+			Gamma = FFLAS::fflas_new<BasisElement>(n*_size);
+			alpha = FFLAS::fflas_new<BasisElement>(n);
 
 			// compute Gamma
 			for(size_t i=0;i<_size;i++)
@@ -207,9 +207,9 @@ namespace FFPACK {
 			size_t _size= _rns->_size;
 			size_t mn=m*n;
 			BasisElement *Gamma, *alpha, *z;
-			Gamma = new BasisElement[mn*_size];
-			alpha = new BasisElement[mn];
-			z     = new BasisElement[mn*_size];
+			Gamma = FFLAS::fflas_new<BasisElement>(mn*_size);
+			alpha = FFLAS::fflas_new<BasisElement>(mn);
+			z     = FFLAS::fflas_new<BasisElement>(mn*_size);
 
 			// compute Gamma
 			for(size_t i=0;i<_size;i++)
@@ -251,7 +251,7 @@ namespace FFLAS {
 	template<>
 	inline FFPACK::rns_double_elt_ptr
 	fflas_new(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m,  const size_t n){
-		return FFPACK::rns_double_elt_ptr(new double[m*n*F.size()],m*n);
+		return FFPACK::rns_double_elt_ptr(FFLAS::fflas_new<double>(m*n*F.size()),m*n);
 	}
 
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)

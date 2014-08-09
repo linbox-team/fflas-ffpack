@@ -64,19 +64,19 @@ bool
 test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 {
 	typedef typename Field::Element Element ;
-	Element * A = new Element[m*n];
-	Element * B = new Element[m*n];
+	Element * A = FFLAS::fflas_new<Element>(m*n);
+	Element * B = FFLAS::fflas_new<Element>(m*n);
 
-	Element * L = new Element[m*n];
-	Element * U = new Element[n*n];
-	Element * X = new Element[m*n];
+	Element * L = FFLAS::fflas_new<Element>(m*n);
+	Element * U = FFLAS::fflas_new<Element>(n*n);
+	Element * X = FFLAS::fflas_new<Element>(m*n);
 
 
 	// A = read_field(F,argv[2],&m,&n);
 	size_t lda = n; //!@todo check lda
 
-	size_t *P = new size_t[n];
-	size_t *Q = new size_t[m];
+	size_t *P = FFLAS::fflas_new<size_t>(n);
+	size_t *Q = FFLAS::fflas_new<size_t>(m);
 	size_t R = (size_t)-1;
 
 	//	size_t cutoff = atoi(argv[3]);

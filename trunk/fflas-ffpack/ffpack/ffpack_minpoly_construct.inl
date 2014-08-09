@@ -54,7 +54,7 @@ namespace FFPACK {
 		typename Field::RandIter g (F);
 		bool KeepOn=true;
 		// Creating the Krylov Base copy matrix X where to factorize
-		//typename Field::Element_ptr X = new elt[(N+1)*N];
+		//typename Field::Element_ptr X = FFLAS::fflas_new<elt>((N+1)*N);
 #ifdef LB_DEBUG
 		for (j=0;j<(N+1)*N;j++)
 			X[j] = zero;

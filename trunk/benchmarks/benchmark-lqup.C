@@ -56,14 +56,14 @@ int main(int argc, char** argv) {
       A = read_field (F, argv[4], &n, &n);
     }
     else{
-      A = new Element[n*n];
+      A = FFLAS::fflas_new<Element>(n*n);
       Field::RandIter G(F);
       for (size_t j=0; j< (size_t)n*n; ++j)
 	G.random(*(A+j));
     }
 
-    size_t * P = new size_t[n];
-    size_t * Q = new size_t[n];
+    size_t * P = FFLAS::fflas_new<size_t>(n);
+    size_t * Q = FFLAS::fflas_new<size_t>(n);
 
     chrono.clear();
     chrono.start();

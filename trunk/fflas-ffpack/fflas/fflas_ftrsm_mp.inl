@@ -85,9 +85,9 @@ namespace FFLAS {
 #endif	
 		// compute A and B in RNS
 		FFPACK::rns_double::Element_ptr Ap,Bp;		
-		Ap._ptr = new double[K*K*RNS._size];
+		Ap._ptr = FFLAS::fflas_new<double>(K*K*RNS._size);
 		Ap._stride = K*K;
-		Bp._ptr = new double[M*N*RNS._size];
+		Bp._ptr = FFLAS::fflas_new<double>(M*N*RNS._size);
 		Bp._stride = M*N;
 		finit(Zp,K,K,(logp/16)+(logp%16?1:0),A,lda,Ap); 
 		finit(Zp,M,N,(logp/16)+(logp%16?1:0),B,ldb,Bp);		

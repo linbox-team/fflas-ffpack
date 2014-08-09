@@ -55,9 +55,9 @@ namespace FFLAS{ namespace Protected {
 		if (ta == FflasTrans) { ma = N; na = M; }
 		else { ma = M; na = N; }
 		// sizet ldaf = na;
-		FloatElement* Af = new FloatElement[M*N];
-		FloatElement* Xf = new FloatElement[na];
-		FloatElement* Yf = new FloatElement[ma];
+		FloatElement* Af = FFLAS::fflas_new<FloatElement>(M*N);
+		FloatElement* Xf = FFLAS::fflas_new<FloatElement>(na);
+		FloatElement* Yf = FFLAS::fflas_new<FloatElement>(ma);
 
 		fconvert(F, M, N, Af, N, A, lda);
 		finit (G, M, N, Af, N);

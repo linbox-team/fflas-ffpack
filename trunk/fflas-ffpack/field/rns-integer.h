@@ -95,7 +95,7 @@ namespace FFPACK {
 
 		Element& init(Element& x) const{
 			if (x._ptr == NULL){
-				x._ptr = new BasisElement[_rns->_size];
+				x._ptr = FFLAS::fflas_new<BasisElement>(_rns->_size);
 				x._stride=1;
 				x._alloc=true;
 			}
@@ -145,7 +145,7 @@ namespace FFLAS {
 	template<>
 	inline FFPACK::rns_double_elt_ptr
 	fflas_new(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n){
-		double *ptr=new double[m*n*F.size()];
+		double *ptr=FFLAS::fflas_new<double>(m*n*F.size());
 		return FFPACK::rns_double_elt_ptr(ptr,m*n);
 	}
 

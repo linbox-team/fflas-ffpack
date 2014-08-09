@@ -66,10 +66,10 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	typedef typename Field::Element Element;
 	Element * A, *B, *B2, *C, tmp;
 	size_t k = (side==FFLAS::FflasLeft?m:n);
-	A  = new Element[k*k];
-	B  = new Element[m*n];
-	B2 = new Element[m*n];
-	C  = new Element[m*n]; 
+	A  = FFLAS::fflas_new<Element>(k*k);
+	B  = FFLAS::fflas_new<Element>(m*n);
+	B2 = FFLAS::fflas_new<Element>(m*n);
+	C  = FFLAS::fflas_new<Element>(m*n); 
 	
 	typename Field::RandIter Rand(F);
 	

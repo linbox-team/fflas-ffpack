@@ -399,11 +399,11 @@ extern "C" {
 #ifndef __FFLASFFPACK_AUTOIMPLEMENT_DGETRI
 		// the optimum size of work can be determinted via the
 		// Lapack function ilaenv.
-		work= new double[N];
+		work= FFLAS::fflas_new<double>(N);
 		dgetri_ (&N, A, &lda, ipiv, work, &N,  &info);
 		delete[] work;
 #else
-		work= new double[N*N];
+		work= FFLAS::fflas_new<double>(N*N);
 		dtrtri_("U","N", &N, A, &lda, &info);
 		if (info > 0)
 			return 0;

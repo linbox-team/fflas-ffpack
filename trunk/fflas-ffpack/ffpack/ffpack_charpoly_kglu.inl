@@ -120,12 +120,12 @@ namespace FFPACK {
 			typename Field::Element_ptr V = FFLAS::fflas_new (F, N, N);     // to store A^2^i.U
 			typename Field::Element_ptr X = FFLAS::fflas_new (F, 2*N, N);   // to compute the LSP factorization
 			typename Field::Element_ptr Ui, Uj, Uk, Ukp1, Ukp1new, Bi, Vi, Vk, Xi=X, Xj;
-			size_t * P = new size_t[N]; // Column Permutation for LQUP
-			size_t * Q = new size_t[2*N]; // Row Permutation for LQUP
+			size_t * P = FFLAS::fflas_new<size_t>(N); // Column Permutation for LQUP
+			size_t * Q = FFLAS::fflas_new<size_t>(2*N); // Row Permutation for LQUP
 
-			size_t * d= new size_t[N];   // dimensions of Vect(ei, Aei...)
-			size_t * dv = new size_t[N];
-			size_t * dold = new size_t[N]; // copy of d
+			size_t * d= FFLAS::fflas_new<size_t>(N);   // dimensions of Vect(ei, Aei...)
+			size_t * dv = FFLAS::fflas_new<size_t>(N);
+			size_t * dold = FFLAS::fflas_new<size_t>(N); // copy of d
 			// vector of the opposite of the coefficient of computed minpolys
 			std::vector< std::vector< typename Field::Element > > m(N);
 			typename Polynomial::iterator it;

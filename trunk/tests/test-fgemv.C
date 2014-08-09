@@ -78,7 +78,7 @@ int main(int argc, char** argv){
 	A = read_field(F,argv[2],&m,&n);
 
 	Field::Element * c;
-	c = new Field::Element[n];
+	c = FFLAS::fflas_new<Field::Element>(n);
 
 
 
@@ -94,7 +94,7 @@ int main(int argc, char** argv){
 	}
 
 #if DEBUG
-	Field::Element *d = new Field::Element[n];
+	Field::Element *d = FFLAS::fflas_new<Field::Element>(n);
 	for (int i=0; i<m; ++i)
 		F.mul (d[i], beta, b[i]);
 	for (int i=0; i<m; ++i)

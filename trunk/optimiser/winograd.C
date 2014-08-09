@@ -76,8 +76,8 @@ int main () {
 	bool bound=false;
 
 	Element *A, *C;
-	A = new Element[nmax*nmax];
-	C = new Element[nmax*nmax];
+	A = FFLAS::fflas_new<Element>(nmax*nmax);
+	C = FFLAS::fflas_new<Element>(nmax*nmax);
 	for (size_t i=0; i<nmax*nmax;++i){
 		A[i]=2.;
 	}

@@ -121,13 +121,13 @@ namespace FFPACK {
 		Randiter R(F);
 		NonzeroRandIter<Field,Randiter> nzR(F,R);
 
-		size_t * P = new size_t[n];
-		size_t * Q = new size_t[m];
+		size_t * P = FFLAS::fflas_new<size_t>(n);
+		size_t * Q = FFLAS::fflas_new<size_t>(m);
 		for (size_t i = 0 ; i < m ; ++i ) Q[i] = 0;
 		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
 
-		Element * U = new Element[m*lda];
-		Element * L = new Element[m*m];
+		Element * U = FFLAS::fflas_new<Element>(m*lda);
+		Element * L = FFLAS::fflas_new<Element>(m*m);
 
 
 		/*  Create L, lower invertible */
@@ -210,13 +210,13 @@ namespace FFPACK {
 		Randiter R(F);
 		NonzeroRandIter<Field,Randiter> nzR(F,R);
 
-		size_t * P = new size_t[n];
-		size_t * Q = new size_t[n];
+		size_t * P = FFLAS::fflas_new<size_t>(n);
+		size_t * Q = FFLAS::fflas_new<size_t>(n);
 		for (size_t i = 0 ; i < n ; ++i ) Q[i] = 0;
 		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
 
-		Element * U = new Element[n*lda];
-		Element * L = new Element[n*n];
+		Element * U = FFLAS::fflas_new<Element>(n*lda);
+		Element * L = FFLAS::fflas_new<Element>(n*n);
 
 		/*  Create a random P,Q */
 

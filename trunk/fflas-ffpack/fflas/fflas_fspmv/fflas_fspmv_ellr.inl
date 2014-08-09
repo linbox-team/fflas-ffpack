@@ -521,7 +521,7 @@ namespace FFLAS { /*  ELLR */
 			details::sp_fgemv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
 		}
 		else {
-			typename Field::Element * xd = new typename Field::Element [A.n] ;
+			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
 			fscal(F,A.n,A.cst,x.dat,1,xd,1);
 			details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,xd,y.dat);
 		}

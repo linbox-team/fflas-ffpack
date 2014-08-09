@@ -45,8 +45,8 @@ template <class Field>
 			return NULL ;
 		}
 
-		size_t * P = new size_t[M];
-		size_t * Q = new size_t[M];
+		size_t * P = FFLAS::fflas_new<size_t>(M);
+		size_t * Q = FFLAS::fflas_new<size_t>(M);
 		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
 		nullity = (int)(M - R);
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
@@ -91,8 +91,8 @@ template <class Field>
 			return NULL ;
 		}
 
-		size_t *P = new size_t[M];
-		size_t *rowP = new size_t[M];
+		size_t *P = FFLAS::fflas_new<size_t>(M);
+		size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
 
 		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP));

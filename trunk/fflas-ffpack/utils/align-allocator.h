@@ -33,6 +33,8 @@
 #ifndef __FFLASFFPACK_align_allocator_H
 #define __FFLASFFPACK_align_allocator_H
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 #ifdef __FFLASFFPACK_HAVE_CXX11
 
 #include <memory>
@@ -55,7 +57,7 @@ enum class Alignment : size_t {
  * ex : int* tab = malloc_align<int>(100, Alignment::AVX)
  */
 template<class T>
-T* malloc_align(size_t size, Alignment alignment) noexcept
+T* malloc_align(size_t size, Alignment alignment = Alignment::AVX) noexcept
 {
   void* p;
   int err = 0;

@@ -73,8 +73,8 @@ namespace FFPACK {
 					// for (size_t i=0; i<mc; ++i)
 						// FFLAS::fcopy( F, mc, C+i*lda, 1, LUP+i*mc, 1);
 					FFLAS::fcopy(F,mc,mc,C,lda,LUP,mc);
-					size_t * P = new size_t[mc];
-					size_t * Q = new size_t[mc];
+					size_t * P = FFLAS::fflas_new<size_t>(mc);
+					size_t * Q = FFLAS::fflas_new<size_t>(mc);
 
 					if ( (/*r = */LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mc, mc,
 							    LUP, mc, P, Q, FfpackLQUP)) < mc ){

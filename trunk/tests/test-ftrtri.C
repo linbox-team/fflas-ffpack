@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	Field F(atoi(argv[1]));
 	Field::Element * A,*Ab;
 	A = read_field(F,argv[2],&n,&n);
-	Ab = new Field::Element[n*n];
+	Ab = FFLAS::fflas_new<Field::Element>(n*n);
 
 	for (int i=0; i<n;++i){
 		for(int j=0; j<i; ++j)
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 	}
 
 
-	Field::Element * X = new Field::Element[n*n];
+	Field::Element * X = FFLAS::fflas_new<Field::Element>(n*n);
 
 	Timer tim,t; t.clear();tim.clear();
 

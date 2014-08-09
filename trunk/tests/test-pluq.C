@@ -66,8 +66,8 @@ int main(int argc, char** argv){
 		maxP = n;
 		maxQ = m;
 	}
-	size_t *P = new size_t[maxP];
-	size_t *Q = new size_t[maxQ];
+	size_t *P = FFLAS::fflas_new<size_t>(maxP);
+	size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
 	//write_field (F,cerr<<"A = "<<endl, A, m,n,n);
 	size_t * RRP, *CRP;
@@ -97,8 +97,8 @@ int main(int argc, char** argv){
 		timlud.stop();
 		timludc+=timlud;
 //		std::cerr<<"Fini LUdivine"<<std::endl;
-		RRP = new size_t[R];
-		CRP = new size_t[R];
+		RRP = FFLAS::fflas_new<size_t>(R);
+		CRP = FFLAS::fflas_new<size_t>(R);
 //		RankProfilesFromPLUQ(RRP, CRP, P, Q, m, n, R);
 	}
 	    // cerr<<"Row Rank Profile = ";
@@ -135,10 +135,10 @@ int main(int argc, char** argv){
 	// 	cerr<<Q[i]<<" ";
 	// cerr<<"]"<<endl;
 #if DEBUG
-	Field::Element * X = new Field::Element[m*n];
+	Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
 	Field::Element * L, *U;
-	L = new Field::Element[m*R];
-	U = new Field::Element[R*n];
+	L = FFLAS::fflas_new<Field::Element>(m*R);
+	U = FFLAS::fflas_new<Field::Element>(R*n);
 
 	Field::Element zero,one;
 	F.init(zero,0.0);

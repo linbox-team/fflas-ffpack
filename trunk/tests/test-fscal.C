@@ -15,9 +15,9 @@ bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m
 {
 	typedef typename Field::Element T ;
 
-	T * A = new T[m*n];
-	T * C = new T[m*n];
-	T * D = new T[m*n];
+	T * A = FFLAS::fflas_new<T>(m*n);
+	T * C = FFLAS::fflas_new<T>(m*n);
+	T * D = FFLAS::fflas_new<T>(m*n);
 
 	std::cout << ">>>" << std::endl ;
 
@@ -88,8 +88,8 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 {
 	typedef typename Field::Element T ;
 
-	T * C = new T[m*n];
-	T * D = new T[m*n];
+	T * C = FFLAS::fflas_new<T>(m*n);
+	T * D = FFLAS::fflas_new<T>(m*n);
 
 	std::cout << ">>>" << std::endl ;
 

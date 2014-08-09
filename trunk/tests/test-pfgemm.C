@@ -70,7 +70,7 @@ typedef Modular<double> Field;
 
 //#ifdef  __FFLASFFPACK_USE_OPENMP
 Field::Element* makemat(const Field::RandIter& RF,int m, int n){
-	Field::Element * res = new Field::Element[m*n];
+	Field::Element * res = FFLAS::fflas_new<Field::Element>(m*n);
 #pragma omp parallel for
 	for (long i = 0; i < m; ++i)
 		for (long j = 0; j < n; ++j) {
@@ -172,7 +172,7 @@ int main(int argc, char** argv){
 
 	OMPTimer tim,t; t.clear();tim.clear();
 	for(size_t i = 0;i<nbit+1;++i){
-        C = new Field::Element[m*n];
+        C = FFLAS::fflas_new<Field::Element>(m*n);
 		t.clear();
 		t.start();
         PAR_REGION{
@@ -192,7 +192,7 @@ int main(int argc, char** argv){
 	Field::Element zero;
 	F.init(zero, 0.0);
 	Field::Element * Cd;
-		Cd  = new Field::Element[m*n];
+		Cd  = FFLAS::fflas_new<Field::Element>(m*n);
 		for (size_t i=0; i<m*n; ++i)
 			F.assign (*(Cd+i), zero);
 
@@ -267,7 +267,7 @@ int main(int argc, char** argv){
 
 	OMPTimer tims,ts; ts.clear();tims.clear();
 	for(int i = 0;i<nbit;++i){
-        C = new Field::Element[m*n];
+        C = FFLAS::fflas_new<Field::Element>(m*n);
 		ts.clear();
 		ts.start();
 		FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb,

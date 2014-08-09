@@ -119,7 +119,7 @@ namespace FFPACK {
 				const size_t R1, const size_t R2,
 				const size_t R3, const size_t R4)
 	{
-		Element* tmp = new Element [(M2-R1-R2)*width];
+		Element* tmp = FFLAS::fflas_new<Element >((M2-R1-R2)*width);
 		doApplyS (A, lda, tmp, width, M2, R1, R2, R3, R4);
 		delete[] tmp;
 	}
@@ -166,7 +166,7 @@ namespace FFPACK {
 				const size_t R1, const size_t R2,
 				const size_t R3, const size_t R4)
 	{
-		Element* tmp = new Element [(N2-R1)*width];
+		Element* tmp = FFLAS::fflas_new<Element >((N2-R1)*width);
 		doApplyT (A, lda, tmp, width, N2, R1, R2, R3, R4);
 		delete[] tmp;
 	}
@@ -194,8 +194,8 @@ namespace FFPACK {
 	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
 					 const size_t N)
 	{
-		size_t * T = new size_t[N];
-		size_t * Tinv = new size_t[N];
+		size_t * T = FFLAS::fflas_new<size_t>(N);
+		size_t * Tinv = FFLAS::fflas_new<size_t>(N);
 		for (size_t i=0; i<N; i++){
 			T[i] =i;
 			Tinv[i] = i;
@@ -281,9 +281,9 @@ namespace FFPACK {
 				const size_t blo(sizeof(Base_t));
 				// const size_t bmu(blo*mun);
 				const size_t bnu(blo*nun);
-				Base_t * b = new Base_t[mun];
+				Base_t * b = FFLAS::fflas_new<Base_t>(mun);
 				for(size_t i=0; i<mun; ++i) b[i] = A[i*lda+nun];
-				Base_t * dc = new Base_t[n];
+				Base_t * dc = FFLAS::fflas_new<Base_t>(n);
 				memcpy(dc+1,A+mun*lda,bnu);
 				*dc = A[mun*lda+nun]; // this is d
 				    // dc = [ d c ]
@@ -308,7 +308,7 @@ namespace FFPACK {
 				const size_t bnu(blo*nun);
 				Base_t d = A[nun];
 //  std::cerr << "d: " << d << std::endl;
-				Base_t * tmp = new Base_t[nun];
+				Base_t * tmp = FFLAS::fflas_new<Base_t>(nun);
 				memcpy(tmp,A,bnu);
 				memcpy(A+1,tmp,bnu);
 //				std::copy(A,A+nun,A+1);
@@ -327,12 +327,12 @@ namespace FFPACK {
 			if (n > 1) {
 				const size_t nun(n-1);
 
-				Base_t * b = new Base_t[mun];
+				Base_t * b = FFLAS::fflas_new<Base_t>(mun);
 				Base_t * Ainun = A+nun;
 				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
 
 				    // dc = [ d c ]
-				Base_t * dc = new Base_t[n];
+				Base_t * dc = FFLAS::fflas_new<Base_t>(n);
 				std::copy(Ainun-nun, Ainun, dc+1);
 
 				    // this is d

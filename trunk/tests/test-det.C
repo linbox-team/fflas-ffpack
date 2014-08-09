@@ -51,7 +51,7 @@ bool test_det(Field &F, size_t n, int iter)
 {
 	typedef typename Field::Element Element;
 	//! @todo test with stride
-	Element * A = new Element[n*n];
+	Element * A = FFLAS::fflas_new<Element>(n*n);
 	// A = read_field(F,argv[2],&n,&n);
 
 	bool pass = true;

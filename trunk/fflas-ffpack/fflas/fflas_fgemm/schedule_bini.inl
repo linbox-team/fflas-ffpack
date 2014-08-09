@@ -299,14 +299,14 @@ namespace FFLAS { namespace BLAS3 {
 						 *
 						 */
 
-						double * eA12 = new double [m3*k2];
+						double * eA12 = FFLAS::fflas_new<double >(m3*k2);
 						double * eA31 = eA12 ;
 
-						double * S1 = new double[m3*k2] ;
-						double * T1 = new double[n2*k2] ; // ou aire
-						double * P1 = new double[n2*m3] ; // ou aire
-						double * P2 = new double[n2*m3] ; // ou aire
-						// double * C11t = new double[n2*m3] ;
+						double * S1 = FFLAS::fflas_new<double>(m3*k2) ;
+						double * T1 = FFLAS::fflas_new<double>(n2*k2) ; // ou aire
+						double * P1 = FFLAS::fflas_new<double>(n2*m3) ; // ou aire
+						double * P2 = FFLAS::fflas_new<double>(n2*m3) ; // ou aire
+						// double * C11t = FFLAS::fflas_new<double>(n2*m3) ;
 						// S1  := A11  +A22;
 						// XXX add(m3,k2,A11,lda,A22,lda,S1,k2);
 						FFLAS::fadd(NoField,m3,k2,A11,lda,A22,lda,S1,k2);

@@ -111,12 +111,12 @@ namespace FFPACK {
 			size_t me=N-mc;
 			// B[i] = j, the row of the 1 if the col Ai is sparse;
 			// B[i] = n+k, if the col Ai is the kth col of E
-			size_t * B = new size_t[N];
-			bool * allowedRows = new bool[N];
+			size_t * B = FFLAS::fflas_new<size_t>(N);
+			bool * allowedRows = FFLAS::fflas_new<bool>(N);
 			for (size_t i=0;i<(N+1)/2;++i)
 				allowedRows[i]=true;
 			// T[i] = j si T_i,j = 1
-			size_t * T = new size_t[N];
+			size_t * T = FFLAS::fflas_new<size_t>(N);
 			for (size_t i=0;i<N;++i)
 				T[i]=i;
 			size_t lambda=0;
@@ -162,8 +162,8 @@ namespace FFPACK {
 					write_field (F,std::cerr<<"LUP="<<std::endl,LUP,lambda+me,ncols,ncols);
 					std::cerr<<"LQUP(C1)";
 #endif
-					size_t * P = new size_t[ncols];
-					size_t * Q = new size_t[lambda+me];
+					size_t * P = FFLAS::fflas_new<size_t>(ncols);
+					size_t * Q = FFLAS::fflas_new<size_t>(lambda+me);
 					for (size_t i=0; i<ncols;++i)
 						P[i]=0;
 					for (size_t i=0; i<lambda+me;++i)
@@ -279,7 +279,7 @@ namespace FFPACK {
 					std::cerr<<".";
 #endif
 					// F <- Q^T F
-					size_t * tempP = new size_t[lambda+me+mc];
+					size_t * tempP = FFLAS::fflas_new<size_t>(lambda+me+mc);
 					for (size_t i=0; i< lambda+me+mc; ++i)
 						tempP[i] = i;
 

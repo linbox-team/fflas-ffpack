@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 //#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas_memory.h"
 
 // Reading and writing matrices over double
 
@@ -45,7 +46,7 @@ double * read_dbl(char * mat_file,int* tni,int* tnj)
 		is_gzipped = 1;
 		File_Name = "/tmp/bbXXXXXX_";
 		mkstemp(File_Name);
-		UT = new char[s+34+strlen(File_Name)];
+		UT = FFLAS::fflas_new<char>(s+34+strlen(File_Name));
 		sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
 		system(UT);
 		sprintf(UT,"\\rm %s", File_Name);
@@ -54,11 +55,11 @@ double * read_dbl(char * mat_file,int* tni,int* tnj)
 
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
-		char * tmp = new char[200];// usigned long tni, tnj;
+		char * tmp = FFLAS::fflas_new<char>(200);// usigned long tni, tnj;
 		fscanf(FileDes,"%d %d %s\n",tni, tnj, &tmp) ;
 		int n=*tni;
 		int p=*tnj;
-		X = new double[n*p];
+		X = FFLAS::fflas_new<double>(n*p);
 		for (int i=0;i<n*p;++i)
 			X[i] = (double) 0;
 		long i,j; long val;
@@ -107,7 +108,7 @@ typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,i
 		if (mkstemp(File_Name))
 			printf("Error opening file]\n");
 
-		UT = new char[s+34+strlen(File_Name)];
+		UT = FFLAS::fflas_new<char>(s+34+strlen(File_Name));
 		sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
 		if (system(UT))
 			printf("Error uncompressing file\n");
@@ -121,7 +122,7 @@ typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,i
 			printf("Error Reading first line of file \n");
 		int n=*tni;
 		int p=*tnj;
-		X = new typename Field::Element[n*p];
+		X = FFLAS::fflas_new<typename Field::Element>(n*p);
 		for (int i=0;i<n*p;++i)
 			F.assign(X[i], F.zero);
 		long i,j; long val;
@@ -160,7 +161,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 		char tmp_nam [] = "/tmp/bbXXXXXX_";
 		File_Name = tmp_nam ;
 		mkstemp(File_Name);
-		UT = new char[s+34+strlen(File_Name)];
+		UT = FFLAS::fflas_new<char>(s+34+strlen(File_Name));
 		sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
 		system(UT);
 		sprintf(UT,"\\rm %s", File_Name);
@@ -170,17 +171,17 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	}
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
-		char * tmp = new char[200];// usigned long tni, tnj;
+		char * tmp = FFLAS::fflas_new<char>(200);// usigned long tni, tnj;
 		fscanf(FileDes,"%d %d %199s\n",tni, tnj, tmp) ;
 		delete[] tmp;
 		int n=*tni;
 		int p=*tnj;
 		int no2= n>>1;
 		int po2 = p>>1;
-		NW = new typename Field::Element[no2*po2];
-		NE = new typename Field::Element[no2*(p-po2)];
-		SW = new typename Field::Element[(n-no2)*po2];
-		SE = new typename Field::Element[(n-no2)*(p-po2)];
+		NW = FFLAS::fflas_new<typename Field::Element>(no2*po2);
+		NE = FFLAS::fflas_new<typename Field::Element>(no2*(p-po2));
+		SW = FFLAS::fflas_new<typename Field::Element>((n-no2)*po2);
+		SE = FFLAS::fflas_new<typename Field::Element>((n-no2)*(p-po2));
 
 		for (int i=0;i<no2*po2;++i)
 			F.assign(NW[i],F.zero);

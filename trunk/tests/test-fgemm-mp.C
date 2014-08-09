@@ -121,9 +121,9 @@ int main(int argc, char** argv){
 
 	typename Field::RandIter Rand(F,seed);
 	FFPACK::Integer *A,*B,*C;
-	C= new FFPACK::Integer[m*n];
-	A= new FFPACK::Integer[m*k];
-	B= new FFPACK::Integer[k*n];
+	C= FFLAS::fflas_new<FFPACK::Integer>(m*n);
+	A= FFLAS::fflas_new<FFPACK::Integer>(m*k);
+	B= FFLAS::fflas_new<FFPACK::Integer>(k*n);
 	
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<k;++j)

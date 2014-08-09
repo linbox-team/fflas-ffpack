@@ -72,7 +72,7 @@ bool test_lu(const Field & F,
 {
 	bool fail = false;
 	typedef typename Field::Element Element ;
-	Element * B = new Element[m*lda] ;
+	Element * B = FFLAS::fflas_new<Element>(m*lda) ;
 	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fcopy !
 	FFLAS::fcopy(F,m,n,A,lda,B,lda);
 
@@ -87,8 +87,8 @@ bool test_lu(const Field & F,
 		maxQ = m;
 	}
 
-	size_t * P = new size_t[maxP] ;
-	size_t * Q = new size_t[maxQ] ;
+	size_t * P = FFLAS::fflas_new<size_t>(maxP) ;
+	size_t * Q = FFLAS::fflas_new<size_t>(maxQ) ;
 
 	size_t R = FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q,
 				     FFPACK::FfpackLQUP);
@@ -101,12 +101,12 @@ bool test_lu(const Field & F,
 		return fail = true;
 	}
 
-	Element * C = new Element[m*n]; // compute C=LQUP and check C == A
+	Element * C = FFLAS::fflas_new<Element>(m*n); // compute C=LQUP and check C == A
 	/*  Build L,U */
 	Element * L, *U;
 	if (trans == FFLAS::FflasNoTrans){
-		L = new Element[m*m];
-		U = new Element[m*n];
+		L = FFLAS::fflas_new<Element>(m*m);
+		U = FFLAS::fflas_new<Element>(m*n);
 
 		Element zero,one;
 		F.init(zero,0.0);
@@ -165,8 +165,8 @@ bool test_lu(const Field & F,
 	}
 	else { /*  trans == FFLAS::FflasTrans */
 
-		L = new Element[m*n];
-		U = new Element[n*n];
+		L = FFLAS::fflas_new<Element>(m*n);
+		U = FFLAS::fflas_new<Element>(n*n);
 
 
 		Element zero,one;
@@ -269,13 +269,13 @@ bool test_lu(const Field & F,
 // 	bool fail = false;
 // 	size_t M = m + k ;
 // 	typedef typename Field::Element Element ;
-// 	Element * Acop = new Element[m*lda] ;
+// 	Element * Acop = FFLAS::fflas_new<Element>(m*lda) ;
 // 	FFLAS::fcopy(F,m,n,A,lda,Acop,lda) ;
 
-// 	Element * Bcop = new Element[k*lda] ;
+// 	Element * Bcop = FFLAS::fflas_new<Element>(k*lda) ;
 // 	FFLAS::fcopy(F,k,n,B,lda,Bcop,lda) ;
 
-// 	Element * Append = new Element[M*lda];
+// 	Element * Append = FFLAS::fflas_new<Element>(M*lda);
 // 	FFLAS::fcopy(F,m,n,A,lda,Append,lda) ;
 // 	FFLAS::fcopy(F,k,n,B,lda,Append+m*lda,lda) ;
 
@@ -292,7 +292,7 @@ bool test_lu(const Field & F,
 // 	}
 // #endif
 
-// 	Element * Afull = new Element[M*lda];
+// 	Element * Afull = FFLAS::fflas_new<Element>(M*lda);
 // 	FFLAS::fcopy(F,M,n,Append,lda,Afull,lda) ;
 // 	// FFLAS::fcopy(F,m,n,A,lda,Afull,lda) ;
 // 	// FFLAS::fcopy(F,k,n,B,lda,Afull+m*lda,lda) ;
@@ -345,11 +345,11 @@ bool test_lu(const Field & F,
 // 		maxQ = M;
 // 	}
 
-// 	size_t * P = new size_t[maxP] ;
-// 	size_t * Q = new size_t[maxQ] ;
+// 	size_t * P = FFLAS::fflas_new<size_t>(maxP) ;
+// 	size_t * Q = FFLAS::fflas_new<size_t>(maxQ) ;
 
-// 	size_t * PP = new size_t[maxP] ;
-// 	size_t * QQ = new size_t[maxQ] ;
+// 	size_t * PP = FFLAS::fflas_new<size_t>(maxP) ;
+// 	size_t * QQ = FFLAS::fflas_new<size_t>(maxQ) ;
 
 // 	/* valgrind says the following leaks. Just incroyable. */
 // 	size_t R  = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ,
@@ -393,12 +393,12 @@ bool test_lu(const Field & F,
 // 	}
 
 // 	// compute C=LQUP and check C == A
-// 	Element * C = new Element[M*lda];
+// 	Element * C = FFLAS::fflas_new<Element>(M*lda);
 // 	/*  Build L,U */
 // 	Element * L, *U;
 // 	if (trans == FFLAS::FflasNoTrans){
-// 		L = new Element[M*M];
-// 		U = new Element[M*n];
+// 		L = FFLAS::fflas_new<Element>(M*M);
+// 		U = FFLAS::fflas_new<Element>(M*n);
 
 // 		Element zero,one;
 // 		F.init(zero,0.0);
@@ -473,8 +473,8 @@ bool test_lu(const Field & F,
 // #if 0 /*  not working */
 // 	else { /*  trans == FFLAS::FflasTrans */
 
-// 		L = new Element[M*n];
-// 		U = new Element[n*n];
+// 		L = FFLAS::fflas_new<Element>(M*n);
+// 		U = FFLAS::fflas_new<Element>(n*n);
 
 
 // 		Element zero,one;
@@ -548,10 +548,10 @@ bool test_lu(const Field & F,
 // #endif
 // #if 0 /*  check CC == LL UU */
 // 	Element * LL, *UU;
-// 	Element * CC = new Element[M*lda];
+// 	Element * CC = FFLAS::fflas_new<Element>(M*lda);
 // 	if (trans == FFLAS::FflasNoTrans){
-// 		LL = new Element[M*M];
-// 		UU = new Element[M*n];
+// 		LL = FFLAS::fflas_new<Element>(M*M);
+// 		UU = FFLAS::fflas_new<Element>(M*n);
 
 // 		Element zero,one;
 // 		F.init(zero,0.0);
@@ -613,8 +613,8 @@ bool test_lu(const Field & F,
 // 	}
 // 	else { /*  trans == FFLAS::FflasTrans */
 
-// 		LL = new Element[M*n];
-// 		UU = new Element[n*n];
+// 		LL = FFLAS::fflas_new<Element>(M*n);
+// 		UU = FFLAS::fflas_new<Element>(n*n);
 
 
 // 		Element zero,one;
@@ -724,7 +724,7 @@ bool launch_test(const Field & F,
 	bool fail = false ;
 	{ /*  user given and lda bigger */
 		size_t lda = n+10 ;
-		Element * A = new Element[m*lda];
+		Element * A = FFLAS::fflas_new<Element>(m*lda);
 		RandomMatrixWithRank(F,A,r,m,n,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -733,7 +733,7 @@ bool launch_test(const Field & F,
 	{ /*  user given and lda bigger. Rank is max */
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
-		Element * A = new Element[m*lda];
+		Element * A = FFLAS::fflas_new<Element>(m*lda);
 		RandomMatrixWithRank(F,A,R,m,n,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -742,7 +742,7 @@ bool launch_test(const Field & F,
 	{ /*  user given and lda bigger. Rank is min */
 		size_t lda = n+10 ;
 		size_t R = 0;
-		Element * A = new Element[m*lda];
+		Element * A = FFLAS::fflas_new<Element>(m*lda);
 		RandomMatrixWithRank(F,A,R,m,n,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -753,7 +753,7 @@ bool launch_test(const Field & F,
 		size_t N = M ;
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
-		Element * A = new Element[M*lda];
+		Element * A = FFLAS::fflas_new<Element>(M*lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -764,7 +764,7 @@ bool launch_test(const Field & F,
 		size_t N = 2*M ;
 		size_t R = 3*M/4 ;
 		size_t lda = N+5 ;
-		Element * A = new Element[M*lda];
+		Element * A = FFLAS::fflas_new<Element>(M*lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -775,7 +775,7 @@ bool launch_test(const Field & F,
 		size_t N = M/2 ;
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
-		Element * A = new Element[M*lda];
+		Element * A = FFLAS::fflas_new<Element>(M*lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -795,8 +795,8 @@ bool launch_test(const Field & F,
 // 	{ /*  user given and lda bigger */
 // 		size_t lda = n+10 ;
 // 		size_t k = m/2+1 ;
-// 		Element * A = new Element[m*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(m*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,r,m,n,lda);
 // 		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
@@ -808,8 +808,8 @@ bool launch_test(const Field & F,
 // 		size_t lda = n+10 ;
 // 		size_t R = std::min(m,n);
 // 		size_t k = m/2+1 ;
-// 		Element * A = new Element[m*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(m*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,R,m,n,lda);
 // 		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
@@ -821,8 +821,8 @@ bool launch_test(const Field & F,
 // 		size_t lda = n+10 ;
 // 		size_t R = std::min(m,n);
 // 		size_t k = m/2+1 ;
-// 		Element * A = new Element[m*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(m*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,R,m,n,lda);
 // 		RandomMatrixWithRank(F,B,0,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
@@ -834,8 +834,8 @@ bool launch_test(const Field & F,
 // 		size_t lda = n+10 ;
 // 		size_t R = 0;
 // 		size_t k = m/2+1 ;
-// 		Element * A = new Element[m*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(m*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,R,m,n,lda);
 // 		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
@@ -849,8 +849,8 @@ bool launch_test(const Field & F,
 // 		size_t R = M/2 ;
 // 		size_t lda = N+10 ;
 // 		size_t k = R ;
-// 		Element * A = new Element[M*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(M*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,R,M,N,lda);
 // 		RandomMatrixWithRank(F,B,R/2,k,N,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
@@ -864,8 +864,8 @@ bool launch_test(const Field & F,
 // 		size_t R = M/2 ;
 // 		size_t k = R ;
 // 		size_t lda = N+10 ;
-// 		Element * A = new Element[M*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(M*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,R,M,N,lda);
 // 		RandomMatrixWithRank(F,B,k/2,k,N,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
@@ -881,8 +881,8 @@ bool launch_test(const Field & F,
 // 		size_t R = M/3 ;
 // 		size_t k = N ;
 // 		size_t lda = N+10 ;
-// 		Element * A = new Element[M*lda];
-// 		Element * B = new Element[k*lda];
+// 		Element * A = FFLAS::fflas_new<Element>(M*lda);
+// 		Element * B = FFLAS::fflas_new<Element>(k*lda);
 // 		RandomMatrixWithRank(F,A,R,M,N,lda);
 // 		RandomMatrixWithRank(F,A,std::min(k/2,M/2),k,N,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);

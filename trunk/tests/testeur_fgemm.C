@@ -112,11 +112,11 @@ int main(int argc, char** argv){
 			ldb = N;
 		}
 		
-		A = new Field::Element[M*K];
-		B = new Field::Element[K*N];
-		C = new Field::Element[M*N];
-		Cbis = new Field::Element[M*N];
-		Cter = new Field::Element[M*N];
+		A = FFLAS::fflas_new<Field::Element>(M*K);
+		B = FFLAS::fflas_new<Field::Element>(K*N);
+		C = FFLAS::fflas_new<Field::Element>(M*N);
+		Cbis = FFLAS::fflas_new<Field::Element>(M*N);
+		Cter = FFLAS::fflas_new<Field::Element>(M*N);
 		
 		for( size_t i = 0; i < M*K; ++i )
 			RValue.random( *(A+i) );

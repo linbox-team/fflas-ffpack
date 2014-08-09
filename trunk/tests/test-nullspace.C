@@ -85,7 +85,7 @@ int main(int argc, char** argv){
 
 #if DEBUG
 	Field::Element *Ab = read_field(F,argv[2],&m,&n);
-	Field::Element *C = new Field::Element[NSdim*n];
+	Field::Element *C = FFLAS::fflas_new<Field::Element>(NSdim*n);
  	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n,
  		      1.0, Ab, n, NS, ldn, 0.0, C, NSdim);
 // 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NSdim, n, m,

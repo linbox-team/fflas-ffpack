@@ -163,7 +163,7 @@ namespace FFPACK {
 			charp.clear();
 			int nbfac = 0;
 			while (Ncurr > 0){
-				size_t *P = new size_t[(size_t)Ncurr];
+				size_t *P = FFLAS::fflas_new<size_t>((size_t)Ncurr);
 				Polynomial minP;//=new Polynomial();
 				FFPACK::MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
 				int k = int(minP.size()-1); // degre of minpoly
@@ -236,7 +236,7 @@ namespace FFPACK {
 				Polynomial *minP = new Polynomial();
 				typename Field::ConstElement_ptr Ai;
 				typename Field::Element_ptr A2i, Xi;
-				size_t *P = new size_t[N];
+				size_t *P = FFLAS::fflas_new<size_t>(N);
 
 				FFPACK::MinPoly (F, *minP, N, A, lda, X, ldx, P, FfpackKGF, kg_mc, kg_mb, kg_j);
 				size_t k = minP->size()-1; // degre of minpoly

@@ -110,8 +110,8 @@ namespace FFPACK {
 		  size_t N2 = N >> 1;
 		  //    size_t M2 = size_t(M/3);
 		  //    size_t N2 = size_t(N/3);
-		  size_t * P1 = new size_t [M2];
-		  size_t * Q1 = new size_t [N2];
+		  size_t * P1 = FFLAS::fflas_new<size_t >(M2);
+		  size_t * Q1 = FFLAS::fflas_new<size_t >(N2);
 		  size_t R1,R2,R3,R4;
 
 		  // A1 = P1 [ L1 ] [ U1 V1 ] Q1
@@ -155,15 +155,15 @@ namespace FFPACK {
 
 		  WAIT;
 
-		  size_t * P2 = new size_t [M2-R1];
-		  size_t * Q2 = new size_t [N-N2];
+		  size_t * P2 = FFLAS::fflas_new<size_t >(M2-R1);
+		  size_t * Q2 = FFLAS::fflas_new<size_t >(N-N2);
 		  // F = P2 [ L2 ] [ U2 V2 ] Q2
 		  //        [ M2 ]
 		  TASK(READ(Fi), WRITE(R2), READWRITE(F, P2, Q2), PPLUQ, R2, Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 		  //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 
-		  size_t * P3 = new size_t [M-M2];
-		  size_t * Q3 = new size_t [N2-R1];
+		  size_t * P3 = FFLAS::fflas_new<size_t >(M-M2);
+		  size_t * Q3 = FFLAS::fflas_new<size_t >(N2-R1);
 		  // G = P3 [ L3 ] [ U3 V3 ] Q3
 		  //        [ M3 ]
 		  TASK(READ(Fi), WRITE(R3), READWRITE(G, P3, Q3), PPLUQ, R3, Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
@@ -248,8 +248,8 @@ namespace FFPACK {
 
 		  WAIT;
 
-		  size_t * P4 = new size_t [M-M2-R3];
-		  size_t * Q4 = new size_t [N-N2-R2];
+		  size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
+		  size_t * Q4 = FFLAS::fflas_new<size_t >(N-N2-R2);
 
     // H4 = P4 [ L4 ] [ U4 V4 ] Q4
     //         [ M4 ]
@@ -269,7 +269,7 @@ namespace FFPACK {
 		  TASK(READ(Fi, Q4), NOWRITE(), READWRITE(A2), papplyP, Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 		  //applyP( Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 
-		  size_t* MathP = new size_t[M];
+		  size_t* MathP = FFLAS::fflas_new<size_t>(M);
     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
     //               [      P2 ]      [      P4 ]
 		  composePermutationsP (MathP, P1, P2, R1, M2);
@@ -289,7 +289,7 @@ namespace FFPACK {
 
 		  // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		  //            [      Q3 ]      [      P4 ]
-		  size_t * MathQ = new size_t [N];
+		  size_t * MathQ = FFLAS::fflas_new<size_t >(N);
 		  composePermutationsQ (MathQ, Q1, Q3, R1, N2);
 		  composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
 		  for (size_t i=N2; i<N; ++i)

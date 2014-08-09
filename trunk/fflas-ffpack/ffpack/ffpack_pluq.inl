@@ -44,8 +44,8 @@ namespace FFPACK {
 		int row = 0;
 		int rank = 0;
 		typename Field::Element_ptr CurrRow=A;
-		size_t * MathP = new size_t[M];
-		size_t * MathQ = new size_t[N];
+		size_t * MathP = FFLAS::fflas_new<size_t>(M);
+		size_t * MathQ = FFLAS::fflas_new<size_t>(N);
 		for (size_t i=0; i<M; ++i) MathP[i] = i;
 		for (size_t i=0; i<N; ++i) MathQ[i] = i;
 		while (((size_t)row<M) && ((size_t)rank<N)){
@@ -181,8 +181,8 @@ namespace FFPACK {
 		FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
 		size_t M2 = M >> 1;
 		size_t N2 = N >> 1;
-		size_t * P1 = new size_t [M2];
-		size_t * Q1 = new size_t [N2];
+		size_t * P1 = FFLAS::fflas_new<size_t >(M2);
+		size_t * Q1 = FFLAS::fflas_new<size_t >(N2);
 		size_t R1,R2,R3,R4;
 
 		    // A1 = P1 [ L1 ] [ U1 V1 ] Q1
@@ -210,13 +210,13 @@ namespace FFPACK {
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda);
                     // F = P2 [ L2 ] [ U2 V2 ] Q2
 		    //        [ M2 ]
-		size_t * P2 = new size_t [M2-R1];
-		size_t * Q2 = new size_t [N-N2];
+		size_t * P2 = FFLAS::fflas_new<size_t >(M2-R1);
+		size_t * Q2 = FFLAS::fflas_new<size_t >(N-N2);
 		R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 		    // G = P3 [ L3 ] [ U3 V3 ] Q3
 		    //        [ M3 ]
-		size_t * P3 = new size_t [M-M2];
-		size_t * Q3 = new size_t [N2-R1];
+		size_t * P3 = FFLAS::fflas_new<size_t >(M-M2);
+		size_t * Q3 = FFLAS::fflas_new<size_t >(N2-R1);
 		R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
@@ -252,8 +252,8 @@ namespace FFPACK {
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
 		    //         [ M4 ]
-		size_t * P4 = new size_t [M-M2-R3];
-		size_t * Q4 = new size_t [N-N2-R2];
+		size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
+		size_t * Q4 = FFLAS::fflas_new<size_t >(N-N2-R2);
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
@@ -266,7 +266,7 @@ namespace FFPACK {
 
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
-		size_t* MathP = new size_t[M];
+		size_t* MathP = FFLAS::fflas_new<size_t>(M);
 		composePermutationsP (MathP, P1, P2, R1, M2);
 		composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
 		delete[] P1;
@@ -286,7 +286,7 @@ namespace FFPACK {
 
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		    //            [      Q3 ]      [      P4 ]
-		size_t * MathQ = new size_t [N];
+		size_t * MathQ = FFLAS::fflas_new<size_t >(N);
 		composePermutationsQ (MathQ, Q1, Q3, R1, N2);
 		composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
 		delete[] Q1;
@@ -313,8 +313,8 @@ namespace FFPACK {
 			      const size_t * P, const size_t * Q,
 			      const size_t M, const size_t N, const size_t R)
 	{
-		size_t * RRP=new size_t[M];
-		size_t * CRP=new size_t[N];
+		size_t * RRP=FFLAS::fflas_new<size_t>(M);
+		size_t * CRP=FFLAS::fflas_new<size_t>(N);
 		for (size_t i=0;i < M; ++i)
 			RRP [i]=i;
 		for (size_t i=0;i < N; ++i)

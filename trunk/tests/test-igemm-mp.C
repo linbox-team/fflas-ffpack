@@ -98,9 +98,9 @@ int main(int argc, char** argv){
 	ldc=n;;
 	Integer::seeding(seed);
 	Integer *A,*B,*C;
-	C= new Integer[m*n];
-	A= new Integer[m*k];
-	B= new Integer[k*n];
+	C= FFLAS::fflas_new<Integer>(m*n);
+	A= FFLAS::fflas_new<Integer>(m*k);
+	B= FFLAS::fflas_new<Integer>(k*n);
 	
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<k;++j)

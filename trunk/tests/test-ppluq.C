@@ -50,10 +50,10 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
-  Field::Element * X = new Field::Element[m*n];
+  Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
   Field::Element * L, *U;
-  L = new Field::Element[m*R];
-  U = new Field::Element[R*n];
+  L = FFLAS::fflas_new<Field::Element>(m*R);
+  U = FFLAS::fflas_new<Field::Element>(R*n);
 
   for (size_t i=0; i<m*R; ++i)
     F.init(L[i], 0.0);
@@ -154,13 +154,13 @@ int main(int argc, char** argv)
 	Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
-	// Field::Element * U = new Field::Element[n*n];
+	// Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
 
 	typename Field::Element* A = read_field(F,argv[2],&m,&n);
-// new Field::Element[n*m];
-	Field::Element* Acop = new Field::Element[n*m];
+// FFLAS::fflas_new<Field::Element>(n*m);
+	Field::Element* Acop = FFLAS::fflas_new<Field::Element>(n*m);
 #ifdef DEBUG 
-	Field::Element* Adebug = new Field::Element[n*m];
+	Field::Element* Adebug = FFLAS::fflas_new<Field::Element>(n*m);
 #endif
 	// std::vector<size_t> Index_P(r);
 
@@ -178,8 +178,8 @@ int main(int argc, char** argv)
                 maxP = m;
                 maxQ = n;
 
-        size_t *P = new size_t[maxP];
-        size_t *Q = new size_t[maxQ];
+        size_t *P = FFLAS::fflas_new<size_t>(maxP);
+        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
 	for(int i=0; i<n*m; i++){
 	  Acop[i]=A[i];
@@ -230,8 +230,8 @@ int main(int argc, char** argv)
 	struct timespec  tt0, tt1;
 	double avrgg;
 	//call sequential PLUQ
-	size_t * PP = new size_t[maxP];
-	size_t * QQ = new size_t[maxQ];
+	size_t * PP = FFLAS::fflas_new<size_t>(maxP);
+	size_t * QQ = FFLAS::fflas_new<size_t>(maxQ);
 	for (size_t j=0;j<maxP;j++)
 	  PP[j]=0;
 	for (size_t j=0;j<maxQ;j++)
