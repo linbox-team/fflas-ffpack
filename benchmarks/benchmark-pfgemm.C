@@ -35,6 +35,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
+#ifdef __FFLASFFPACK_USE_OPENMP
   // parameter: p, n, iteration, file1, file2
 
   int    p    = argc>1 ? atoi(argv[1]) : 1009;
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
 
   Field F(p);
 
-  OMPTimer chrono;
+   FFLAS::OMPTimer chrono;
   double time=0.0;// time2=0.0;
 
   Element * A, * B, * C;
@@ -82,27 +83,27 @@ int main(int argc, char** argv) {
           const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
           enum FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans;
           enum FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans;
-          Field::Element alpha,beta; 
+          Field::Element alpha,beta;
           F.init(alpha); F.init(beta);
-          
+
           F.assign( alpha, F.one);
           F.assign( beta, F.zero);
-        
-          
+
+
 	  chrono.clear();
 	  chrono.start();
           PAR_REGION{
-              FFLAS::MMHelper<Field, 
-                  FFLAS::MMHelperAlgo::Winograd, 
+              FFLAS::MMHelper<Field,
+                  FFLAS::MMHelperAlgo::Winograd,
                   FFLAS::FieldTraits<Field>::value,
-                  FFLAS::ParSeqHelper::Parallel> 
+                  FFLAS::ParSeqHelper::Parallel>
                   pWH (F, n,n,n, FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
-              
-              FFLAS::fgemm(F, ta, tb,n,n,n,alpha, A,n, B,n, beta,C,n, pWH);   
+
+              FFLAS::fgemm(F, ta, tb,n,n,n,alpha, A,n, B,n, beta,C,n, pWH);
 
           }
           BARRIER;
-       
+
 	  chrono.stop();
 	  time+=chrono.usertime();
 
@@ -113,6 +114,9 @@ int main(int argc, char** argv) {
   }
 
   std::cout<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl;
+#else
+  std::cout << "you need openmp here"
+#endif
 
   return 0;
 }

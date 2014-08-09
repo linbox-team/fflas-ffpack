@@ -56,7 +56,7 @@ bool test_det(Field &F, size_t n, int iter)
 
 	bool pass = true;
 #ifdef TIME_IT
-	Timer tim,t; t.clear();tim.clear();
+ FFLAS::Timer tim,t; t.clear();tim.clear();
 #endif
 	Element d=0;
 	Element dt=-4;

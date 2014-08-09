@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
 	Field F(p);
 
-	Timer chrono;
+ FFLAS::Timer chrono;
 	double time=0.0;
 	// int singular;
 

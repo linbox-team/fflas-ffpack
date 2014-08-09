@@ -1761,10 +1761,10 @@ void test_algo(const Field &F, size_t m, size_t n, size_t k
 	       , typename Field::Element * C, size_t ldc
 	       , typename Field::Element * D, size_t ldd
 	       , typename Field::Element * E, size_t lde
-	       , int r, size_t algo, Timer & tim_e, Timer & tim_p, Timer & tom, int & ok_e, int & ok_p,
+	       , int r, size_t algo, FFLAS::Timer & tim_e, FFLAS::Timer & tim_p, FFLAS::Timer & tom, int & ok_e, int & ok_p,
 	       bool with_e)
 {
-	Timer tmp ;
+ FFLAS::Timer tmp ;
 
 	if (with_e) {
 	tmp.clear();tmp.start();
@@ -1923,9 +1923,9 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 
 	std::vector<Timer> tim_e(algos);
 	std::vector<Timer> tim_p(algos);
-	Timer tom; tom.clear();
-	Timer tam; tam.clear();
-	Timer tmp;
+ FFLAS::Timer tom; tom.clear();
+ FFLAS::Timer tam; tam.clear();
+ FFLAS::Timer tmp;
 	for (size_t i = 0 ; i < algos ; ++i) {
 		tim_e[i].clear();
 		tim_p[i].clear();

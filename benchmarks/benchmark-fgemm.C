@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
   Field F(p);
 
-  Timer chrono, freidvals;
+  FFLAS::Timer chrono, freidvals;
   double time=0.0, timev=0.0;
 
   Element * A, * B, * C;

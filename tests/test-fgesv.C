@@ -91,7 +91,7 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 	int info=0;
-	Timer t; t.clear();
+ FFLAS::Timer t; t.clear();
 	double time=0.0;
 	//write_field(F, cerr<<"A="<<endl, A, k,k,k);
 	size_t R=0;

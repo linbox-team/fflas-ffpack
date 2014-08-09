@@ -141,7 +141,7 @@ int main(int argc, char** argv){
 	beta=0;
 	
 
-	Timer chrono;
+ FFLAS::Timer chrono;
 #ifdef	BENCH_FLINT	
 	// FLINT MUL //
 	fmpz_t modp,tmp;

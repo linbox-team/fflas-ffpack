@@ -53,7 +53,7 @@ int main(int argc, char** argv){
 	//	size_t cutoff = atoi(argv[3]);
 	size_t nbf = atoi(argv[3]);
 
-	Timer tim,timc, timlud,timludc;
+ FFLAS::Timer tim,timc, timlud,timludc;
 	timc.clear();
 	timludc.clear();
 

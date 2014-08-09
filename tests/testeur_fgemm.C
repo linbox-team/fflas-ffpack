@@ -39,7 +39,7 @@ typedef Modular<float> Field;
 //typedef GFqDom<Std32> Field;
 
 int main(int argc, char** argv){
-	Timer tim;
+ FFLAS::Timer tim;
 	IntPrimeDom IPD;
 	Field::Element alpha, beta;
 	long p;

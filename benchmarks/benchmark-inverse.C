@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
   Field F(p);
   Field::Element * A;
 
-  Timer chrono;
+  FFLAS::Timer chrono;
   double time=0.0;
 
   for (size_t i=0;i<iter;++i){

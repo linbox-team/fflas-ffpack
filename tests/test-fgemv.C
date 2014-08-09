@@ -82,7 +82,7 @@ int main(int argc, char** argv){
 
 
 
-	Timer tim,t; t.clear();tim.clear();
+ FFLAS::Timer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit;++i){
 		c = read_field(F,argv[7],&m,&k);
 		t.clear();

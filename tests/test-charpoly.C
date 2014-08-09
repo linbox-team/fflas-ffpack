@@ -72,7 +72,7 @@ template<class Field>
 bool launch_test(const Field & F, typename Field::Element * A, int n,
 		 size_t p, size_t nbit)
 {
-	Timer tim,t; t.clear();tim.clear();
+ FFLAS::Timer tim,t; t.clear();tim.clear();
 	list<Polynomial> P_list;
 	for(size_t i = 0;i<nbit;++i){
 		P_list.clear();

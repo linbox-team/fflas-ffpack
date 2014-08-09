@@ -22,7 +22,7 @@ bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m
 	std::cout << ">>>" << std::endl ;
 
 	int iter = 3 ;
-	Timer tim, tom, tam ;
+ FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -94,7 +94,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 	std::cout << ">>>" << std::endl ;
 
 	int iter = 3 ;
-	Timer tim, tom, tam ;
+ FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {

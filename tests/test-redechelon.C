@@ -75,7 +75,7 @@ int main(int argc, char** argv){
 	//	size_t cutoff = atoi(argv[3]);
 	nbf = atoi(argv[3]);
 
-	Timer tim,timc;
+ FFLAS::Timer tim,timc;
 	timc.clear();
 
 

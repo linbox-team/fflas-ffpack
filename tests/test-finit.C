@@ -28,8 +28,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n)
 		// RandomMatrix(E,B,m,k,n);
 		FFLAS::fcopy(E,m,k,A,n,B,n);
 
-		Timer tim;
-		Timer tom;
+	 FFLAS::Timer tim;
+	 FFLAS::Timer tom;
 		F.write(std::cout << "Field ") << std::endl;
 		tim.clear();tim.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -61,8 +61,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n)
 		FFLAS::fcopy(E,m,n,A,n,B,n);
 		size_t incX = 2 ;
 
-		Timer tim;
-		Timer tom;
+	 FFLAS::Timer tim;
+	 FFLAS::Timer tom;
 		F.write(std::cout << "Modular ") << std::endl;
 		tim.clear();tim.start();
 		for (size_t i = 1 ; i < m*n ; i += incX) {

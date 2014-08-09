@@ -49,7 +49,8 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #  ifndef __GIVARO_USE_OPENMP
-#    define __GIVARO_USE_OPENMP 1
+// #warning "FFLAS have OMP but not GIVARO
+// #    define __GIVARO_USE_OPENMP 1
 #  endif
 #endif
 
@@ -60,6 +61,9 @@ namespace FFLAS {
 	typedef Givaro::BaseTimer BaseTimer ;
 	typedef Givaro::UserTimer UserTimer ;
 	typedef Givaro::SysTimer SysTimer ;
+#ifdef __GIVARO_USE_OPENMP
+	typedef Givaro::OMPTimer OMPTimer ;
+#endif
 }
 
 #endif // __FFLASFFPACK_timer_H

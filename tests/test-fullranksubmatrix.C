@@ -64,7 +64,7 @@ int main(int argc, char** argv){
 	A = read_field(F,argv[2],&m ,&n);
 	write_field (F, cerr<<"A = "<<endl, A, m, n, n);
 
-	Timer tim,t; t.clear();tim.clear();
+ FFLAS::Timer tim,t; t.clear();tim.clear();
 	size_t R;
 
 	FFPACK::ColRankProfileSubmatrix (F, m, n, A, n, X, R);

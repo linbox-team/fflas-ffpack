@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 	FFLAS::FFLAS_TRANSPOSE trans = t ? FFLAS::FflasTrans :  FFLAS::FflasNoTrans;
 	FFLAS::FFLAS_DIAG diag = d ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
 
-	srand48(BaseTimer::seed());
+	srand48( FFLAS::BaseTimer::seed());
 
 	Field F(q);
 
