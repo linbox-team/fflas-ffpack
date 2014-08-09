@@ -302,7 +302,7 @@ struct Simd<float>
 
     static INLINE PURE vect_t loadu(const float * const p) {return _mm256_loadu_ps(p);}
 
-    static INLINE void store(const float * p, vect_t v) {_mm256_store_ps(const_cast<float*>(p), v);}
+    static INLINE void store(const float * p, const vect_t v) {_mm256_store_ps(const_cast<float*>(p), v);}
 
     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm256_add_ps(a, b);}
 
