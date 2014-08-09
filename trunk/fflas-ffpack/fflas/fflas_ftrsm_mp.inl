@@ -54,7 +54,7 @@ namespace FFLAS {
 		
 #ifdef BENCH_PERF_TRSM
 		double t_init=0, t_trsm=0, t_mod=0, t_rec=0;
-		Timer chrono;
+	 FFLAS::Timer chrono;
 		chrono.start(); 
 #endif
 		FFPACK::Integer p;

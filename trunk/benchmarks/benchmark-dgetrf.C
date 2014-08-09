@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   Field F(p);
   Field::Element * A;
 
-  Timer chrono;
+  FFLAS::Timer chrono;
   double time=0.0;
 
   std::vector<int> Piv(n,0);

@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 	F.init(one, 1.0);
 	F.init(zero,0.0);
 
-	Timer chrono;
+ FFLAS::Timer chrono;
 	double time=0.0;
 	// double time2=0.0;
 	// int singular;

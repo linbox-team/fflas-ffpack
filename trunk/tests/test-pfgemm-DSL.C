@@ -88,7 +88,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
                     <<endl;
                 exit(-1);
         }
-        srand48(BaseTimer::seed());
+        srand48( FFLAS::BaseTimer::seed());
         int m,n, k;
 
         Field F(atoi(argv[1]));

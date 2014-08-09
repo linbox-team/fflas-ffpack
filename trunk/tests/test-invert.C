@@ -66,7 +66,7 @@ int main(int argc, char** argv){
 	Field::Element * A;
 	A = read_field(F,argv[2],&n,&n);
 
-	Timer tim,t; t.clear();tim.clear();
+ FFLAS::Timer tim,t; t.clear();tim.clear();
 	int nullity=0;
 
 	for(int i = 0;i<nbit;++i){

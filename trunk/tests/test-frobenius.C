@@ -76,7 +76,7 @@ int main(int argc, char** argv){
 	size_t c = atoi(argv[3]);
 
 	std::list<vector<Field::Element> > frobForm;
-	Timer tim;
+ FFLAS::Timer tim;
 	tim.clear();
 	tim.start();
 	FFPACK::CharpolyArithProg (F, frobForm, n, A, n, c);

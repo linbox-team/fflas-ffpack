@@ -83,7 +83,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 	// iters = atoi(argv[3]);
 
 #ifdef TIME_IT
-	Timer tim,timc;
+ FFLAS::Timer tim,timc;
 	timc.clear();
 #endif
 

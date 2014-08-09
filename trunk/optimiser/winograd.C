@@ -72,7 +72,7 @@ int main () {
 	Field F(17);
 	typedef Field::Element Element ;
 	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
-	Timer chrono;
+ FFLAS::Timer chrono;
 	bool bound=false;
 
 	Element *A, *C;

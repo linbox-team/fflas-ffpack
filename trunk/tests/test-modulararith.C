@@ -278,7 +278,7 @@ int TestField(const Field& F, const int seed)
 
 int main(int argc, char ** argv)
 {/*{{{*/
-    int seed = int (argc>1?atoi(argv[1]):BaseTimer::seed());
+    int seed = int (argc>1?atoi(argv[1]): FFLAS::BaseTimer::seed());
 #ifdef FFLASFFPACK_DEBUG
     std::cerr << "seed: " << seed << std::endl;
 #endif

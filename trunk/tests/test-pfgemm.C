@@ -128,7 +128,7 @@ int main(int argc, char** argv){
 	nbit = iters;
 	//        bool ok = true ;
 
-        srand48(BaseTimer::seed());
+        srand48( FFLAS::BaseTimer::seed());
 
 	cerr<<setprecision(10);
 	Field::Element alpha,beta;
@@ -170,7 +170,7 @@ int main(int argc, char** argv){
 	    FFLAS::FieldTraits<Field>::value,
 	    FFLAS::ParSeqHelper::Parallel> pWH (F,(int)nbw,FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
 
-	OMPTimer tim,t; t.clear();tim.clear();
+	 FFLAS::OMPTimer tim,t; t.clear();tim.clear();
 	for(size_t i = 0;i<nbit+1;++i){
         C = FFLAS::fflas_new<Field::Element>(m*n);
 		t.clear();
@@ -265,7 +265,7 @@ int main(int argc, char** argv){
 
 	FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw, FFLAS::ParSeqHelper::Sequential());
 
-	OMPTimer tims,ts; ts.clear();tims.clear();
+	 FFLAS::OMPTimer tims,ts; ts.clear();tims.clear();
 	for(int i = 0;i<nbit;++i){
         C = FFLAS::fflas_new<Field::Element>(m*n);
 		ts.clear();

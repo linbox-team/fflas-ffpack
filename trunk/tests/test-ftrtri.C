@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 
 	Field::Element * X = FFLAS::fflas_new<Field::Element>(n*n);
 
-	Timer tim,t; t.clear();tim.clear();
+ FFLAS::Timer tim,t; t.clear();tim.clear();
 
 	for(int i = 0;i<nbit;++i){
 		t.clear();

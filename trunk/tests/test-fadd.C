@@ -21,7 +21,7 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
 	std::cout << ">>>" << std::endl ;
 
 	int iter = 3 ;
-	Timer tim, tom, tam ;
+ FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -75,7 +75,7 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n)
 	std::cout << ">>>" << std::endl ;
 	F.write(std::cout << "Field ") << std::endl;
 	int iter = 3 ;
-	Timer tim, tom, tam ;
+ FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -129,7 +129,7 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n)
 	std::cout << ">>>" << std::endl ;
 
 	int iter = 3 ;
-	Timer tim, tom, tam ;
+ FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
@@ -183,7 +183,7 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n)
 	std::cout << ">>>" << std::endl ;
 	F.write(std::cout << "Field ") << std::endl;
 	int iter = 3 ;
-	Timer tim, tom, tam ;
+ FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {

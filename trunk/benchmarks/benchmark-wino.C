@@ -53,7 +53,7 @@ void launch_wino(const Field  &F,
 		G.random(A[i]);
 
 
-	Timer chrono;
+ FFLAS::Timer chrono;
 	for(size_t i=0; i<NB; ++i) {
 		chrono.start();
                 FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
@@ -99,7 +99,7 @@ int main (int argc, char ** argv) {
     const size_t n       = argc>2 ? atoi(argv[2]) : 1000;
     const size_t NB      = argc>3 ? atoi(argv[3]) : 1;
     const size_t winomax = argc>4 ? atoi(argv[4]) : 7;
-    const size_t seed    = argc>5 ? atoi(argv[5]) : BaseTimer::seed() ;
+    const size_t seed    = argc>5 ? atoi(argv[5]) :  FFLAS::BaseTimer::seed() ;
         srand((unsigned int)seed);
 
 	FFPACK::Modular<double> F1(p);
