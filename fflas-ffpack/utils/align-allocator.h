@@ -4,7 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by <bastien.vialla@lirmm.fr>
- * 
+ *
  *  STL align allocator inspired by MAlloc from Stephan T. Lavavej, Visual C++ Libraries Developer
  *  (http://blogs.msdn.com/b/vcblog/archive/2008/08/28/the-mallocator.aspx)
  *  Update to c++11
@@ -30,10 +30,10 @@
  *.
  */
 
-#ifndef _FFLASFFPACK_align_allocator_h
-#define _FFLASFFPACK_align_allocator_h
+#ifndef __FFLASFFPACK_align_allocator_H
+#define __FFLASFFPACK_align_allocator_H
 
-#ifdef __cplusplus >= 201103L
+#ifdef __FFLASFFPACK_HAVE_CXX11
 
 #include <memory>
 #include <utility>
@@ -42,7 +42,7 @@
 #include <iostream>
 
 // Alignment Type
-enum class Alignment : std::size_t {
+enum class Alignment : size_t {
   Normal = sizeof(void*),
   SSE = 16,
   AVX = 32,
@@ -55,11 +55,11 @@ enum class Alignment : std::size_t {
  * ex : int* tab = malloc_align<int>(100, Alignment::AVX)
  */
 template<class T>
-T* malloc_align(size_t size, size_t alignment) noexcept
+T* malloc_align(size_t size, Alignment alignment) noexcept
 {
   void* p;
   int err = 0;
-  err = posix_memalign(&p, alignment, size*sizeof(T));
+  err = posix_memalign(&p, (size_t) alignment, size*sizeof(T));
   if(err)
     std::cout << "posix_memalign error" << std::endl;
   return new(p) T[size];
@@ -89,7 +89,7 @@ void deallocate(void* ptr) noexcept { return free(ptr); }
 
 /* STL Aligned Allocator
  * ex : std::vector<T, AlignedAllocator<T, Alignment::AVX>>;
- * 
+ *
  * template<class T> using vector = std::vector<T, AlignedAllocator<T, Alignment::AVX>>;
  */
 

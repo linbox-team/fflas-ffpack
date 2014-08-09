@@ -26,8 +26,8 @@
  *.
  */
 
-#ifndef _FFLASFFPACK_limits_H
-#define _FFLASFFPACK_limits_H
+#ifndef __FFLASFFPACK_limits_H
+#define __FFLASFFPACK_limits_H
 
 #include <cstddef>
 #include <climits>

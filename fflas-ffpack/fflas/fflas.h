@@ -149,7 +149,7 @@ namespace FFLAS {
 
 } // FFLAS
 
-#include "fflas_memory.inl"
+#include "fflas-ffpack/utils/fflas_memory.h"
 //---------------------------------------------------------------------
 // Level 1 routines
 //---------------------------------------------------------------------
