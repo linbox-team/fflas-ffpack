@@ -34,9 +34,11 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_ell_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_ell_INL
 
+#include "fflas-ffpack/utils/simd.h"
+
 namespace FFLAS { /*  ELL */
 
-	template<class Element>
+	template<class Element, size_t Simd>
 	struct ELL {
 		size_t m ;
 		size_t n ;
@@ -45,9 +47,9 @@ namespace FFLAS { /*  ELL */
 		Element * dat ;
 	};
 
-	template<class Element>
-	struct ELL_sub : public ELL<Element> {
-	}
+	template<class Element, size_t Simd>
+	struct ELL_sub : public ELL<Element, Simd> {
+	};
 
 	namespace details {
 
@@ -66,6 +68,44 @@ namespace FFLAS { /*  ELL */
 			      typename Field::Element * y
 			     )
 		{
+			for (size_t i = 0 ; i < m ; ++i) {
+				if (! F.isOne(b)) {
+					if (F.isZero(b)) {
+						F.assign(y[i],F.zero);
+					}
+					else if (F.isMone(b)) {
+						F.negin(y[i]);
+					}
+					else {
+						F.mulin(y[i],b);
+					}
+				}
+				// XXX can be delayed
+				for (index_t j = 0 ; j < ld ; ++j) {
+					if (F.isZero(dat[i*ld+j]))
+						break;
+					F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
+				}
+			}
+		}
+
+		template<class Field>
+		void sp_fgemv_vec(
+			      const Field& F,
+			      // const FFLAS_TRANSPOSE tA,
+			      const size_t m,
+			      const size_t n,
+			      const size_t ld,
+			      const index_t * col,
+			      const typename Field::Element *  dat,
+			      const typename Field::Element * x ,
+			      const typename Field::Element & b,
+			      typename Field::Element * y
+			     )
+		{
+			using simd = Simd<typename Field::Element>;
+			using vect_t = typename simd::vect_t;
+			 
 			for (size_t i = 0 ; i < m ; ++i) {
 				if (! F.isOne(b)) {
 					if (F.isZero(b)) {
@@ -206,7 +246,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<typename Field::Element> & A,
+		      const ELL_sub<typename Field::Element, 1> & A,
 		      const VECT<typename Field::Element> & x,
 		      const typename Field::Element & b,
 		      VECT<typename Field::Element> & y
@@ -219,7 +259,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const DoubleDomain& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<double> & A,
+		      const ELL_sub<double, 1> & A,
 		      const VECT<double> & x,
 		      const double& b,
 		      VECT<double> & y
@@ -232,7 +272,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const FloatDomain& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<float> & A,
+		      const ELL_sub<float, 1> & A,
 		      const VECT<float> & x,
 		      const float& b,
 		      VECT<float> & y
@@ -245,7 +285,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const Modular<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<double> & A,
+		      const ELL_sub<double, 1> & A,
 		      const VECT<double> & x,
 		      const double& b,
 		      VECT<double> & y
@@ -259,7 +299,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const Modular<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<float> & A,
+		      const ELL_sub<float, 1> & A,
 		      const VECT<float> & x,
 		      const float& b,
 		      VECT<float> & y
@@ -273,7 +313,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const ModularBalanced<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<double> & A,
+		      const ELL_sub<double, 1> & A,
 		      const VECT<double> & x,
 		      const double& b,
 		      VECT<double> & y
@@ -287,7 +327,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const ModularBalanced<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<float> & A,
+		      const ELL_sub<float, 1> & A,
 		      const VECT<float> & x,
 		      const float& b,
 		      VECT<float> & y
@@ -304,7 +344,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL<typename Field::Element> & A,
+		      const ELL<typename Field::Element, 1> & A,
 		      const VECT<typename Field::Element> & x,
 		      const typename Field::Element & b,
 		      VECT<typename Field::Element> & y
@@ -330,7 +370,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const FloatDomain & F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL<float> & A,
+		      const ELL<float, 1> & A,
 		      const VECT<float> & x,
 		      const float & b,
 		      VECT<float> & y
@@ -345,7 +385,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const FFPACK::Modular<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL<double> & A,
+		      const ELL<double, 1> & A,
 		      const VECT<double> & x,
 		      const double & b,
 		      VECT<double> & y
@@ -362,7 +402,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const FFPACK::ModularBalanced<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL<double> & A,
+		      const ELL<double, 1> & A,
 		      const VECT<double> & x,
 		      const double & b,
 		      VECT<double> & y
@@ -378,7 +418,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const FFPACK::Modular<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL<float> & A,
+		      const ELL<float, 1> & A,
 		      const VECT<float> & x,
 		      const float & b,
 		      VECT<float> & y
@@ -394,7 +434,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const FFPACK::ModularBalanced<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL<float> & A,
+		      const ELL<float, 1> & A,
 		      const VECT<float> & x,
 		      const float & b,
 		      VECT<float> & y
