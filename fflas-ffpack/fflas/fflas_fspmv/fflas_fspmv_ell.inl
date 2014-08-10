@@ -140,8 +140,8 @@ namespace FFLAS { /*  ELL */
 			      const double*  dat,
 			      const double* x ,
 			      const double& b,
-			      double * y
-			      ,bool simd_true
+			      double * y,
+			      bool simd_true
 			     )
 		{
 			if (simd_true) {
@@ -168,7 +168,7 @@ namespace FFLAS { /*  ELL */
 				using simd = Simd<double>;
 				using vect_t = typename simd::vect_t;
 				vect_t X,Y,D ;
-				for ( ; i < m ; i += BLOCKSIZE) {
+				for ( ; i < m ; i += simd::vect_size) {
 
 					if ( b != 1) {
 						if ( b == 0.) {
@@ -187,33 +187,33 @@ namespace FFLAS { /*  ELL */
 						}
 					}
 					for (index_t j = 0 ; j < ld ; ++j) {
-						D = simd::load(dat+i*BLOCKSIZE*ld+j*BLOCKSIZE);
-						X = simd::gather(x,col+i*BLOCKSIZE*ld+j*BLOCKSIZE);
+						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
+						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
 						Y = simd::madd(Y,D,X);
 					}
 					simd::store(y+i,Y);
 				}
 				if ( b != 1) {
 					if ( b == 0.) {
-						for (size_t ii = i*BLOCKSIZE ; ii < m ; ++ii) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
 							y[ii] = 0;
 						}
 					}
 					else if ( b == -1 ) {
-						for (size_t ii = i*BLOCKSIZE ; ii < m ; ++ii) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
 							y[ii]= -y[ii];
 						}
 					}
 					else {
-						for (size_t ii = i*BLOCKSIZE ; ii < m ; ++ii) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
 							y[ii] = y[ii] * b;
 						}
 					}
 				}
-				size_t deplacement = m -i*BLOCKSIZE ;
+				size_t deplacement = m -i*simd::vect_size ;
 				for (index_t j = 0 ; j < ld ; ++j) {
 					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
-						y[i*BLOCKSIZE+ii] += dat[i*BLOCKSIZE*ld+j*deplacement + ii]*x[col[i*BLOCKSIZE*ld+j*deplacement + ii]];
+						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii]*x[col[i*simd::vect_size*ld+j*deplacement + ii]];
 					}
 				}
 			}

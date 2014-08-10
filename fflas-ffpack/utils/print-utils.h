@@ -37,8 +37,8 @@ namespace std
 	 * @param v vector
 	 * @warning <<(ostream&,T&) exists !
 	 */
-	template<class T>
-	std::ostream & operator<<(std::ostream&o, const std::vector<T> & v)
+	template<class T, class Alloc>
+	std::ostream & operator<<(std::ostream&o, const std::vector<T, Alloc> & v)
 	{
 		o << '[' ;
 		if (v.size()) {
@@ -69,8 +69,8 @@ namespace std
 	 * @param C a pair
 	 * @warning <<(ostream&,T&) exists !
 	 */
-	template<class T>
-	std::ostream& operator<< (std::ostream& o, const std::list<T> & L)
+	template<class T, class Alloc>
+	std::ostream& operator<< (std::ostream& o, const std::list<T, Alloc> & L)
 	{
 		typename std::list<T>::const_iterator it = L.begin() ;
 		o << '{' ;
@@ -91,8 +91,8 @@ namespace std
 	 * @param C a pair
 	 * @warning <<(ostream&,T&) exists !
 	 */
-	template<class T>
-	std::ostream& operator<< (std::ostream& o, const std::set<T> & L)
+	template<class T, class Alloc>
+	std::ostream& operator<< (std::ostream& o, const std::set<T, Alloc> & L)
 	{
 		typename std::set<T>::const_iterator it = L.begin() ;
 		o << '|' ;

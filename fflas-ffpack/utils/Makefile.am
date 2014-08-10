@@ -30,7 +30,9 @@ pkgincludesub_HEADERS=       \
 	     Makefile.am \
 	     Matio.h  \
 	     print-utils.h \
-	     simd.h
+	     simd.h \
+	     simd128.inl \
+	     simd256.inl
 
 
 ### is this really extra dist ?
