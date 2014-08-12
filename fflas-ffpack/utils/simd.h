@@ -51,8 +51,8 @@
 #define PURE
 #endif
 
-#include "fflas-ffpack/utils/Simd128.inl"
-#include "fflas-ffpack/utils/Simd256.inl"
+#include "fflas-ffpack/utils/simd128.inl"
+#include "fflas-ffpack/utils/simd256.inl"
 
 template<class T>
  struct simdToType;
