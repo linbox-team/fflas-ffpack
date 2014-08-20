@@ -28,5 +28,7 @@ EXTRA_DIST=            \
        cblas.C         \
        givaro.C        \
        cuda.C          \
+       sse.C           \
+       avx.C           \
        gmp.C
 
