@@ -30,6 +30,7 @@
 #define __FFLASFFPACK_fflas_init_INL
 
 #include "fflas-ffpack/fflas/fflas_simd_functions.h"
+
 #include "fflas-ffpack/field/unparametric.h"
 
 #define FFLASFFPACK_COPY_INIT 100
