@@ -4,6 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
+ * BB <bbboyer@ncsu.edu>
  *
  *
  * ========LICENCE========
@@ -78,15 +79,15 @@ struct Simd128<double>
         return _mm_sub_pd(_mm_mul_pd(a, b), c);
     }
 
-     static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmp_pd(a, b, 0);}
+     static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_pd(a, b);}
 
-     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmp_pd(a, b, 1);}
+     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_pd(a, b);}
 
-     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmp_pd(a, b, 2);}
+     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_pd(a, b);}
 
-     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmp_pd(a, b, 14);}
+     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_pd(a, b);}
 
-     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmp_pd(a, b, 13);}
+     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_pd(a, b);}
 
      static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_pd(a, b);}
 
@@ -148,15 +149,15 @@ struct Simd128<float>
         return _mm_sub_ps(_mm_mul_ps(a, b), c);
     }
 
-    static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmp_ps(a, b, 0);}
+    static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_ps(a, b);}
 
-    static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmp_ps(a, b, 1);}
+    static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_ps(a, b);}
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmp_ps(a, b, 2);}
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_ps(a, b);}
 
-    static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmp_ps(a, b, 14);}
+    static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_ps(a, b);}
 
-    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmp_ps(a, b, 13);}
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_ps(a, b);}
 
     static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_ps(a, b);}
 

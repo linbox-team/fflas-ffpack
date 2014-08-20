@@ -34,6 +34,8 @@ EXTRA_DIST=            \
 	givaro-check.m4    \
 	gmp-check.m4       \
 	mkl-check.m4 \
+	avx-check.m4 \
+	sse-check.m4 \
 	omp-check.m4 \
 	cuda-check.m4
 

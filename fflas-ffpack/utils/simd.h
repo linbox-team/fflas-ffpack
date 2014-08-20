@@ -54,7 +54,9 @@
 // SSE
 #include "fflas-ffpack/utils/simd128.inl"
 // AVX
+#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 #include "fflas-ffpack/utils/simd256.inl"
+#endif
 
 template<class T>
  struct simdToType;
