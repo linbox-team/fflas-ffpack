@@ -26,8 +26,8 @@
  *.
  */
 
-#ifndef _FFLASFFPAC_simd_h
-#define _FFLASFFPAC_simd_h
+#ifndef __FFLASFFPACK_utils_simd_H
+#define __FFLASFFPACK_utils_simd_H
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 
@@ -51,7 +51,9 @@
 #define PURE
 #endif
 
+// SSE
 #include "fflas-ffpack/utils/simd128.inl"
+// AVX
 #include "fflas-ffpack/utils/simd256.inl"
 
 template<class T>
@@ -141,8 +143,9 @@ using Simd = Simd128<T>;
 #error "You need a c++11 compiler."
 #endif /* c++11 */
 
+
 #undef INLINE
 #undef PURE
 #undef CONST
 
-#endif /* _FFLASFFPAC_simd_h */
+#endif /* __FFLASFFPACK_utils_simd_H */

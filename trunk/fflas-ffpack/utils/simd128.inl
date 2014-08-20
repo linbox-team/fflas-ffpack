@@ -26,6 +26,10 @@
  *.
  */
 
+
+#ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
+#define __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
+
 template<class T>
 struct Simd128;
 
@@ -205,4 +209,4 @@ struct Simd128<char>
 	/* TODO */
 };
 
-
+#endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_INL

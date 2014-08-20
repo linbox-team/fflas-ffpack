@@ -26,6 +26,9 @@
  *.
  */
 
+#ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
+#define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
+
 template<class T>
 struct Simd256;
 
@@ -203,6 +206,7 @@ struct Simd256<float>
 #endif
 };
 
+#ifdef __FFLASFFPACK_USE_AVX2
 
 template<>
 struct Simd256<long long>
@@ -276,4 +280,6 @@ struct Simd256<char>
 #endif
 };
 
+#endif
 
+#endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
