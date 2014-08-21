@@ -4,6 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
+ * BB <bbboyer@ncsu.edu>
  *
  *
  * ========LICENCE========
@@ -51,40 +52,8 @@
 #define PURE
 #endif
 
-// SSE
-#include "fflas-ffpack/utils/simd128.inl"
-// AVX
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
-#include "fflas-ffpack/utils/simd256.inl"
-#endif
-
 template<class T>
  struct simdToType;
-
- template<>
- struct simdToType<__m256d>
- {
-    using type = double;
- };
-
-template<>
- struct simdToType<__m128d>
- {
-    using type = double;
- };
-
- template<>
- struct simdToType<__m256>
- {
-    using type = float;
- };
-
- template<>
- struct simdToType<__m128>
- {
-    using type = float;
- };
-
 
 /*
  * is_simd trait
@@ -97,18 +66,20 @@ template<class T>
     using type = std::integral_constant<bool, false>;
  };
 
+// SSE
+#if defined(__FFLASFFPACK_USE_SSE)
+#include "fflas-ffpack/utils/simd128.inl"
+
  template<>
- struct is_simd<__m256d>
+ struct simdToType<__m128d>
  {
-     static const constexpr bool value = true;
-     using type = std::integral_constant<bool, true>;
+    using type = double;
  };
 
 template<>
- struct is_simd<__m256>
+ struct simdToType<__m128>
  {
-     static const constexpr bool value = true;
-     using type = std::integral_constant<bool, true>;
+    using type = float;
  };
 
 template<>
@@ -125,6 +96,44 @@ template<>
      using type = std::integral_constant<bool, true>;
  };
 
+#endif // SSE
+
+// AVX
+#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#include "fflas-ffpack/utils/simd256.inl"
+
+ template<>
+ struct simdToType<__m256d>
+ {
+    using type = double;
+ };
+
+template<>
+ struct simdToType<__m256>
+ {
+    using type = float;
+ };
+
+ template<>
+ struct is_simd<__m256d>
+ {
+     static const constexpr bool value = true;
+     using type = std::integral_constant<bool, true>;
+ };
+
+template<>
+ struct is_simd<__m256>
+ {
+     static const constexpr bool value = true;
+     using type = std::integral_constant<bool, true>;
+ };
+
+
+#endif // AVX
+
+
+
+
 /*
  * Simd functors
  */
@@ -134,7 +143,7 @@ template<>
 template<class T>
 using Simd = Simd256<T>;
 
-#else
+#elif defined(__SSE__)
 
 template<class T>
 using Simd = Simd128<T>;

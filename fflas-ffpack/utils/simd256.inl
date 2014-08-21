@@ -107,7 +107,7 @@ struct Simd256<double>
 
      static INLINE CONST vect_t floor(const vect_t a) {return _mm256_floor_pd(a);}
 
-     static INLINE CONST vect_t round(const vect_t a) {return _mm256_round_pd(a, _MM_FROUND_TO_NEAREST_INT);}
+     static INLINE CONST vect_t round(const vect_t a) {return _mm256_round_pd(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);}
 
      static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {return _mm256_hadd_pd(a, b);}
 
@@ -194,7 +194,7 @@ struct Simd256<float>
 
     static INLINE CONST vect_t floor(const vect_t a) {return _mm256_floor_ps(a);}
 
-    static INLINE CONST vect_t round(const vect_t a) {return _mm256_round_ps(a, _MM_FROUND_TO_NEAREST_INT);}
+    static INLINE CONST vect_t round(const vect_t a) {return _mm256_round_ps(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);}
 
     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {return _mm256_hadd_ps(a, b);}
 

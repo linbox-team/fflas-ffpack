@@ -93,11 +93,27 @@ struct Simd128<double>
 
      static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_pd(a, b);}
 
-     static INLINE CONST vect_t floor(const vect_t a) {return _mm_floor_pd(a);}
+#ifdef __SSE4_1__
+     static INLINE CONST vect_t floor(const vect_t a) {
+	     return _mm_floor_pd(a);
+// #else
+// #error "cannot do without 64 bits"
+     }
+#endif
 
-     static INLINE CONST vect_t round(const vect_t a) {return _mm_round_pd(a, _MM_FROUND_TO_NEAREST_INT);}
+#ifdef __SSE4_1__
+     static INLINE CONST vect_t round(const vect_t a) {
+	     return _mm_round_pd(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+// #else
+// #error "cannot do without 64 bits"
+     }
+#endif
 
-     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {return _mm_hadd_pd(a, b);}
+#ifdef __SSE3__
+     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
+	     return _mm_hadd_pd(a, b);
+     }
+#endif
 
      static INLINE CONST double hadd_to_scal(const vect_t a) {
          return ((const double*)&a)[0] + ((const double*)&a)[1];
@@ -163,11 +179,29 @@ struct Simd128<float>
 
     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_ps(a, b);}
 
-    static INLINE CONST vect_t floor(const vect_t a) {return _mm_floor_ps(a);}
+    static INLINE CONST vect_t floor(const vect_t a) {
+#ifdef __SSE4_1__
+	    return _mm_floor_ps(a);
+#else
+	    __m128 one = _mm_set1_ps(1.0f);
+	     __m128 fval = _mm_cvtepi32_ps(_mm_cvttps_epi32(a));
+	     return _mm_sub_ps(fval, _mm_and_ps(_mm_cmplt_ps(a, fval), one));
+#endif
+    }
 
-    static INLINE CONST vect_t round(const vect_t a) {return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT);}
+    static INLINE CONST vect_t round(const vect_t a) {
+#ifdef __SSE4_1__
+	    return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+#else
+	    return _mm_cvtepi32_ps(_mm_cvtps_epi32(a));
+#endif
+    }
 
-    static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {return _mm_hadd_ps(a, b);}
+	    #ifdef __SSE3__
+    static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
+	     return _mm_hadd_ps(a, b);
+    }
+#endif
 
     static INLINE CONST float hadd_to_scal(const vect_t a) {
         return ((const float*)&a)[0] + ((const float*)&a)[1] + ((const float*)&a)[2] + ((const float*)&a)[3];
