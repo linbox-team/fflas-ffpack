@@ -40,17 +40,20 @@ namespace FFLAS { /*  DNS */
 
 	template<class Element>
 	struct VECT {
-		size_t m ;
-		size_t inc ;
-		Element * dat ;
+		size_t m = 0;
+		size_t inc = 0;
+		Element * dat = nullptr;
+
+		Element * data() {return dat;}
 	};
 
 	template<class Element>
 	struct DNS {
-
-		size_t n ;
-		size_t ld ;
-		Element * dat ;
+		size_t n = 0;
+		size_t ld = 0;
+		Element * dat = nullptr;
+		
+		Element * data() {return dat;}
 	};
 
 } // FFLAS
