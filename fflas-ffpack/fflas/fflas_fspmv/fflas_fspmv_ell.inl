@@ -38,16 +38,16 @@
 
 namespace FFLAS { /*  ELL */
 
-	template<class Element, size_t Simd>
+	template<class Element>
 	struct ELL {
-		size_t m ;
-		size_t n ;
-		size_t  ld ;
-		index_t  * col ;
-		Element * dat ;
+		size_t m = 0;
+		size_t n = 0;
+		size_t  ld = 0;
+		index_t  * col = nullptr;
+		Element * dat = nullptr;
 	};
 
-	template<class Element, size_t Simd>
+	template<class Element>
 	struct ELL_sub : public ELL<Element, Simd> {
 	};
 
@@ -66,68 +66,80 @@ namespace FFLAS { /*  ELL */
 			      const typename Field::Element * x ,
 			      const typename Field::Element & b,
 			      typename Field::Element * y
+			      bool simd_true
 			     )
 		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if (! F.isOne(b)) {
-					if (F.isZero(b)) {
-						F.assign(y[i],F.zero);
+			if(!simd_true)
+			{
+				for (size_t i = 0 ; i < m ; ++i) {
+					if (! F.isOne(b)) {
+						if (F.isZero(b)) {
+							F.assign(y[i],F.zero);
+						}
+						else if (F.isMone(b)) {
+							F.negin(y[i]);
+						}
+						else {
+							F.mulin(y[i],b);
+						}
 					}
-					else if (F.isMone(b)) {
-						F.negin(y[i]);
-					}
-					else {
-						F.mulin(y[i],b);
+					// XXX can be delayed
+					for (index_t j = 0 ; j < ld ; ++j) {
+						F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
 					}
 				}
-				// XXX can be delayed
+			}
+			else
+			{
+				size_t i = 0 ;
+				using simd = Simd<typename Field::Element>;
+				using vect_t = typename simd::vect_t;
+				for ( ; i < m ; i += simd::vect_size) {
+					if ( b != 1) {
+						if ( b == 0.) {
+							for(size_t k = 0 ; k < simd::vect_size ; ++k)
+								F.assifgn(y[i*simd::vect_size+k], F.zero);
+						}
+						else if ( b == -1 ) {
+							for(size_t k = 0 ; k < simd::vect_size ; ++k)
+								F.negin(y[i*simd::vect_size+k]);
+						}
+						else {
+							for(size_t k = 0 ; k < simd::vect_size ; ++k)
+								F.mulin(y[i*simd::vect_size+k]);
+						}
+					}
+					for (index_t j = 0 ; j < ld ; ++j) {
+						for(size_t k = 0 ; k < simd::vect_size ; ++k)
+								F.axpyin(y[i*simd::vect_size+k], dat[i*simd::vect_size*ld+j*simd::vect_size+k], x[col[i*simd::vect_size*ld+j*simd::vect_size+k]]);
+					}
+				}
+				if ( b != 1) {
+					if ( b == 0.) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
+							F.assign(y[ii], F.zero);
+						}
+					}
+					else if ( b == -1 ) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
+							F.negin(y[ii]);
+						}
+					}
+					else {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
+							F.mulin(y[ii], b);
+						}
+					}
+				}
+				size_t deplacement = m -i*simd::vect_size ;
 				for (index_t j = 0 ; j < ld ; ++j) {
-					if (F.isZero(dat[i*ld+j]))
-						break;
-					F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
+					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
+						F.axpyin(y[i*simd::vect_size+ii], dat[i*simd::vect_size*ld+j*deplacement + ii], x[col[i*simd::vect_size*ld+j*deplacement + ii]]);
+					}
 				}
 			}
 		}
 
-		template<class Field>
-		void sp_fgemv_vec(
-			      const Field& F,
-			      // const FFLAS_TRANSPOSE tA,
-			      const size_t m,
-			      const size_t n,
-			      const size_t ld,
-			      const index_t * col,
-			      const typename Field::Element *  dat,
-			      const typename Field::Element * x ,
-			      const typename Field::Element & b,
-			      typename Field::Element * y
-			     )
-		{
-			using simd = Simd<typename Field::Element>;
-			using vect_t = typename simd::vect_t;
-
-			for (size_t i = 0 ; i < m ; ++i) {
-				if (! F.isOne(b)) {
-					if (F.isZero(b)) {
-						F.assign(y[i],F.zero);
-					}
-					else if (F.isMone(b)) {
-						F.negin(y[i]);
-					}
-					else {
-						F.mulin(y[i],b);
-					}
-				}
-				// XXX can be delayed
-				for (index_t j = 0 ; j < ld ; ++j) {
-					if (F.isZero(dat[i*ld+j]))
-						break;
-					F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
-				}
-			}
-		}
-
-#define BLOCKSIZE 4
 		// double
 		template<>
 		void sp_fgemv(
@@ -144,7 +156,7 @@ namespace FFLAS { /*  ELL */
 			      bool simd_true
 			     )
 		{
-			if (simd_true) {
+			if (!simd_true) {
 				for ( size_t i = 0 ;  i < m   ; ++i ) {
 					if ( b != 1) {
 						if ( b == 0.) {
@@ -158,7 +170,6 @@ namespace FFLAS { /*  ELL */
 						}
 					}
 					for (index_t j = 0 ; j < ld ; ++j) {
-						// if (dat[i*ld+j] == 0) { break; }
 						y[i] += dat[i*ld+j]*x[col[i*ld+j]];
 					}
 				}
@@ -232,29 +243,83 @@ namespace FFLAS { /*  ELL */
 			      const float*  dat,
 			      const float* x ,
 			      const float& b,
-			      float * y
+			      float * y,
+			      bool simd_true
 			     )
 		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if ( b != 1) {
-					if ( b == 0.) {
-						y[i] = 0;
+			if (!simd_true) {
+				for ( size_t i = 0 ;  i < m   ; ++i ) {
+					if ( b != 1) {
+						if ( b == 0.) {
+							y[i] = 0;
+						}
+						else if ( b == -1 ) {
+							y[i]= -y[i];
+						}
+						else {
+							y[i] = y[i] * b;
+						}
 					}
-					else if ( b == -1 ) {
-						y[i]= -y[i];
-					}
-					else {
-						y[i] = y[i] * b;
+					for (index_t j = 0 ; j < ld ; ++j) {
+						y[i] += dat[i*ld+j]*x[col[i*ld+j]];
 					}
 				}
+			}
+			else {
+				size_t i = 0 ;
+				using simd = Simd<float>;
+				using vect_t = typename simd::vect_t;
+				vect_t X,Y,D ;
+				for ( ; i < m ; i += simd::vect_size) {
+
+					if ( b != 1) {
+						if ( b == 0.) {
+							// y[i] = 0;
+							Y = simd::zero();
+						}
+						else if ( b == -1 ) {
+							// y[i]= -y[i];
+							Y = simd::load(y+i);
+							Y = simd::sub(simd::zero(),Y);
+						}
+						else {
+							// y[i] = y[i] * b;
+							Y = simd::load(y+i);
+							Y = simd::mul(Y,simd::set1(b));
+						}
+					}
+					for (index_t j = 0 ; j < ld ; ++j) {
+						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
+						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
+						Y = simd::madd(Y,D,X);
+					}
+					simd::store(y+i,Y);
+				}
+				if ( b != 1) {
+					if ( b == 0.) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
+							y[ii] = 0;
+						}
+					}
+					else if ( b == -1 ) {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
+							y[ii]= -y[ii];
+						}
+					}
+					else {
+						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
+							y[ii] = y[ii] * b;
+						}
+					}
+				}
+				size_t deplacement = m -i*simd::vect_size ;
 				for (index_t j = 0 ; j < ld ; ++j) {
-					if (dat[i*ld+j] == 0)
-						break;
-					y[i] += dat[i*ld+j]*x[col[i*ld+j]];
+					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
+						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii]*x[col[i*simd::vect_size*ld+j*deplacement + ii]];
+					}
 				}
 			}
 		}
-
 
 		// delayed by kmax
 		template<class Field>
@@ -269,30 +334,31 @@ namespace FFLAS { /*  ELL */
 			      const typename Field::Element * x ,
 			      // const typename Field::Element & b,
 			      typename Field::Element * y,
-			      const index_t & kmax
+			      const index_t & kmax, 
+			      bool simd_true
 			     )
 		{
-
-			index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
-			for (size_t i = 0 ; i < m ; ++i) {
-				// y[i] = 0;
-				index_t j = 0;
-				index_t j_loc = 0 ;
-				bool term = false ;
-				for (size_t l = 0 ; l < block ; ++l) {
-					j_loc += block ;
-					for ( ; j < j_loc ; ++j ) {
-						if (dat[i*ld+j] = 0) { break; }
-						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
+			if(!simd_true)
+			{
+				index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
+				for (size_t i = 0 ; i < m ; ++i)
+				{
+					index_t j = 0;
+					index_t j_loc = 0 ;
+					bool term = false ;
+					for (size_t l = 0 ; l < block ; ++l) {
+						j_loc += block ;
+						for ( ; j < j_loc ; ++j ) {
+							y[i] += dat[i*ld+j] * x[col[i*ld+j]];
+						}
+						F.init(y[i],y[i]);
 					}
-					F.init(y[i],y[i]);
-				}
-				if (! term ) {
-					for ( ; j < ld  ; ++j) {
-						if (dat[i*ld+j] = 0) { break; }
-						y[i] += dat[i*ld+j] * x[i*ld+col[j]];
+					if (! term ) {
+						for ( ; j < ld  ; ++j) {
+							y[i] += dat[i*ld+j] * x[i*ld+col[j]];
+						}
+						F.init(y[i],y[i]);
 					}
-					F.init(y[i],y[i]);
 				}
 			}
 		}

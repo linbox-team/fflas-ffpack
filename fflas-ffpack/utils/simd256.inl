@@ -36,7 +36,7 @@ struct Simd256;
 template<>
 struct Simd256<double>
 {
-#ifdef __AVX__
+#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
     using vect_t = __m256d;
 
      static const constexpr size_t vect_size = 4;
@@ -68,7 +68,7 @@ struct Simd256<double>
      static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm256_mul_pd(a, b);}
 
      static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __AVX2__
+#ifdef __FMA__
         return _mm256_madd_pd(a, b, c);
 #else
         return _mm256_add_pd(c, _mm256_mul_pd(a, b));
@@ -76,7 +76,7 @@ struct Simd256<double>
     }
 
     static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __AVX2__
+#ifdef __FMA__
         return _mm256_nmadd_pd(a, b, c);
 #else
         return _mm256_sub_pd(c, _mm256_mul_pd(a, b));
@@ -84,7 +84,7 @@ struct Simd256<double>
     }
 
      static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __AVX2__
+#ifdef __FMA__
         return _mm256_msub_pd(a, b, c);
 #else
         return _mm256_sub_pd(_mm256_mul_pd(a, b), c);
@@ -123,7 +123,7 @@ struct Simd256<double>
 template<>
 struct Simd256<float>
 {
-    #ifdef __AVX__
+#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
     using vect_t = __m256;
 
     static const constexpr size_t vect_size = 8;
@@ -155,7 +155,7 @@ struct Simd256<float>
     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm256_mul_ps(a, b);}
 
     static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __AVX2__
+#ifdef __FMA__
         return _mm256_madd_ps(a, b, c);
 #else
         return _mm256_add_ps(c, _mm256_mul_ps(a, b));
@@ -163,7 +163,7 @@ struct Simd256<float>
     }
 
     static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __AVX2__
+#ifdef __FMA__
         return _mm256_nmadd_ps(a, b, c);
 #else
         return _mm256_sub_ps(c, _mm256_mul_ps(a, b));
@@ -171,7 +171,7 @@ struct Simd256<float>
     }
 
     static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __AVX2__
+#ifdef __FMA__
         return _mm256_msub_ps(a, b, c);
 #else
         return _mm256_sub_ps(_mm256_mul_ps(a, b), c);
@@ -206,81 +206,5 @@ struct Simd256<float>
 #error "You need AVX instructions to perform 256bits operations on float"
 #endif
 };
-
-#ifdef __FFLASFFPACK_USE_AVX2
-
-template<>
-struct Simd256<long long>
-{
-#ifdef __AVX2__
-
-	/* TODO */
-
-#else // __AVX2__
-#error "You need AVX2 instructions to perform 256bits operations on float"
-#endif
-};
-
-template<>
-struct Simd256<unsigned long long>
-{
-#ifdef __AVX2__
-
-	/* TODO */
-
-#else // __AVX2__
-#error "You need AVX2 instructions to perform 256bits operations on float"
-#endif
-};
-
-template<>
-struct Simd256<int>
-{
-#ifdef __AVX2__
-
-	/* TODO */
-
-#else // __AVX2__
-#error "You need AVX2 instructions to perform 256bits operations on float"
-#endif
-};
-
-template<>
-struct Simd256<unsigned int>
-{
-#ifdef __AVX2__
-
-	/* TODO */
-
-#else // __AVX2__
-#error "You need AVX2 instructions to perform 256bits operations on float"
-#endif
-};
-
-template<>
-struct Simd256<unsigned char>
-{
-#ifdef __AVX2__
-
-	/* TODO */
-
-#else // __AVX2__
-#error "You need AVX2 instructions to perform 256bits operations on float"
-#endif
-};
-
-template<>
-struct Simd256<char>
-{
-#ifdef __AVX2__
-
-	/* TODO */
-
-#else // __AVX2__
-#error "You need AVX2 instructions to perform 256bits operations on float"
-#endif
-};
-
-#endif
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL

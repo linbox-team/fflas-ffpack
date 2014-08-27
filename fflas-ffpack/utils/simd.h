@@ -128,22 +128,25 @@ template<>
      using type = std::integral_constant<bool, true>;
  };
 
-
 #endif // AVX
-
-
-
 
 /*
  * Simd functors
  */
 
-#ifdef __AVX__
+#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 
 template<class T>
 using Simd = Simd256<T>;
 
-#elif defined(__SSE__)
+// template<class T>
+// class Simd{
+// using self_t = Simd256<T>;
+
+// using self_t = Simd128<T>;
+// };
+
+#elif defined(__FFLASFFPACK_USE_SSE)
 
 template<class T>
 using Simd = Simd128<T>;

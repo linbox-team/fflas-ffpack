@@ -93,27 +93,32 @@ struct Simd128<double>
 
      static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_pd(a, b);}
 
-#ifdef __SSE4_1__
      static INLINE CONST vect_t floor(const vect_t a) {
-	     return _mm_floor_pd(a);
-// #else
-// #error "cannot do without 64 bits"
-     }
-#endif
-
 #ifdef __SSE4_1__
+	     return _mm_floor_pd(a);
+#else
+         return _mm_set_pd(std::floor(((const double*)&a)[1]), std::floor(((const double*)&a)[0]));
+#endif
+     }
+
+
      static INLINE CONST vect_t round(const vect_t a) {
+#ifdef __SSE4_1__        
 	     return _mm_round_pd(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+#else
+         return _mm_set_pd(std::round(((const double*)&a)[1]), std::round(((const double*)&a)[0]));
+#endif         
 // #else
 // #error "cannot do without 64 bits"
      }
-#endif
 
-#ifdef __SSE3__
      static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
+#ifdef __SSE3__
 	     return _mm_hadd_pd(a, b);
-     }
+#else
+         return _mm_set1_pd(tmp, ((const double*)&a)[0] + ((const double*)&a)[1]);
 #endif
+     }
 
      static INLINE CONST double hadd_to_scal(const vect_t a) {
          return ((const double*)&a)[0] + ((const double*)&a)[1];
@@ -197,7 +202,7 @@ struct Simd128<float>
 #endif
     }
 
-	    #ifdef __SSE3__
+#ifdef __SSE3__
     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
 	     return _mm_hadd_ps(a, b);
     }
@@ -206,42 +211,6 @@ struct Simd128<float>
     static INLINE CONST float hadd_to_scal(const vect_t a) {
         return ((const float*)&a)[0] + ((const float*)&a)[1] + ((const float*)&a)[2] + ((const float*)&a)[3];
     }
-};
-
-template<>
-struct Simd128<long long>
-{
-	/* TODO */
-};
-
-template<>
-struct Simd128<unsigned long long>
-{
-	/* TODO */
-};
-
-template<>
-struct Simd128<int>
-{
-	/* TODO */
-};
-
-template<>
-struct Simd128<unsigned int>
-{
-	/* TODO */
-};
-
-template<>
-struct Simd128<unsigned char>
-{
-	/* TODO */
-};
-
-template<>
-struct Simd128<char>
-{
-	/* TODO */
 };
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
