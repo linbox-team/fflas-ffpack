@@ -41,6 +41,8 @@
 // #endif
 
 // #define WINOTHRESHOLD 100
+// #define OLD_DYNAMIC_PEELING
+
 
 #define TIME 1
 
