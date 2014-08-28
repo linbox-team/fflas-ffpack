@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <28 Aug 14 10:55:17 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <28 Aug 14 11:28:09 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -61,6 +61,12 @@ namespace FFLAS {
 		typename Field::Element_ptr C, const size_t ldc,
 		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
 	{
+
+        if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
+            std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
+            return C;
+        }
+
 		ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
 		for (iter.begin(); ! iter.end(); ++iter){
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
