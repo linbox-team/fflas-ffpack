@@ -59,7 +59,7 @@ enum class Alignment : size_t {
 template<class T>
 T* malloc_align(size_t size, Alignment alignment = Alignment::AVX) noexcept
 {
-  void* p;
+  void* p = nullptr;
   int err = 0;
   err = posix_memalign(&p, (size_t) alignment, size*sizeof(T));
   if(err)
