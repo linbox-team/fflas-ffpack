@@ -52,7 +52,7 @@ namespace FFLAS { namespace BLAS3 {
 				  )
 	{
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> H = WH ;
-		H.w = H.w - 1 ;
+		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(F.isZero(beta));
 
@@ -159,7 +159,7 @@ namespace FFLAS { namespace BLAS3 {
 				)
 	{
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
-		H.w = H.w - 1 ;
+		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(F.isZero(beta));
 
@@ -265,7 +265,7 @@ namespace FFLAS { namespace BLAS3 {
 				)
 	{
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > H = WH ;
-		H.w = H.w - 1 ;
+		H.recLevel = H.recLevel - 1 ;
 
 		FFLASFFPACK_check(F.isZero(beta));
 
