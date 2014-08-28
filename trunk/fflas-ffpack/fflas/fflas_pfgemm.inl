@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <30 Jun 14 15:30:43 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <28 Aug 14 10:55:17 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
