@@ -60,14 +60,6 @@ AC_DEFUN([FF_CHECK_AVX],
 					[
 					#define __try_avx2
 					${CODE_AVX}
-					#include <immintrin.h>
-					int main() {
-					register __m256d P ;
-					double p = 0;
-					P = _mm256_set1_pd(p);
-					P = _mm256_fnmadd_pd(P,P,P);
-					return 0;
-					}
 					],
 					[ avx2_found="yes" ],
 					[ avx2_found="no" ],
