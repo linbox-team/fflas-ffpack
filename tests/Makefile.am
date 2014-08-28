@@ -39,6 +39,7 @@ BASIC_TESTS =              \
 		regression-check
 
 GIVA_TESTS =  	test-fgemm\
+		test-fger             \
 		test-ftrsm
 
 NOT_A_TEST =  \
@@ -97,6 +98,7 @@ test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
 test_echelon_SOURCES           = test-echelon.C
 test_fgemm_SOURCES             = test-fgemm.C
+test_fger_SOURCES             = test-fger.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 #  test_charpoly_SOURCES          = test-charpoly.C
 #  benchfgemm_SOURCES             = benchfgemm.C
