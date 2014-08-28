@@ -114,8 +114,7 @@ struct Simd128<double>
 #ifdef __SSE3__
 	     return _mm_hadd_pd(a, b);
 #else
-	vect_t tmp ;
-        return _mm_set_pd(tmp, ((const double*)&a)[0] + ((const double*)&a)[1], ((const double*)&b)[0] + ((const double*)&b)[1]);
+        return _mm_set_pd(((const double*)&a)[0] + ((const double*)&a)[1], ((const double*)&b)[0] + ((const double*)&b)[1]);
 #endif
      }
 
