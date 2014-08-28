@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
   int    p    = argc>1 ? atoi(argv[1]) : 1009;
   int    n    = argc>2 ? atoi(argv[2]) : 2000;
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
+  int    w    = argc>4 ? atoi(argv[4]) :   -1;
 
 
   // typedef FFPACK::Modular<double> Field;
@@ -58,8 +59,8 @@ int main(int argc, char** argv) {
 
   for (size_t i=0;i<iter;++i){
 
-	  if (argc > 4){
-		  A = read_field (F, argv[4], &n, &n);
+	  if (argc > 5){
+		  A = read_field (F, argv[5], &n, &n);
 	  }
 	  else{
 		  Field::RandIter G(F);
@@ -68,8 +69,8 @@ int main(int argc, char** argv) {
 			  G.random (*(A+j));
 	  }
 
-	  if (argc == 6){
-		  B = read_field (F, argv[5], &n, &n);
+	  if (argc == 7){
+		  B = read_field (F, argv[6], &n, &n);
 	  }
 	  else{
 		  Field::RandIter G(F);
@@ -92,18 +93,18 @@ int main(int argc, char** argv) {
 
 	  chrono.clear();
 	  chrono.start();
-          PAR_REGION{
-              FFLAS::MMHelper<Field,
-                  FFLAS::MMHelperAlgo::Winograd,
-                  FFLAS::FieldTraits<Field>::value,
-                  FFLAS::ParSeqHelper::Parallel>
-                  pWH (F, n,n,n, FFLAS::ParSeqHelper::Parallel(omp_get_max_threads(),Strategy));
-
-              FFLAS::fgemm(F, ta, tb,n,n,n,alpha, A,n, B,n, beta,C,n, pWH);
-
-          }
-          BARRIER;
-
+      FFLAS::MMHelper<Field,
+          FFLAS::MMHelperAlgo::Winograd,
+          FFLAS::FieldTraits<Field>::value,
+          FFLAS::ParSeqHelper::Parallel>
+          pWH (F, w, FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
+      
+      PAR_REGION{
+          FFLAS::fgemm(F, ta, tb,n,n,n,alpha, A,n, B,n, beta,C,n, pWH);
+          
+      }
+      BARRIER;
+      
 	  chrono.stop();
 	  time+=chrono.usertime();
 

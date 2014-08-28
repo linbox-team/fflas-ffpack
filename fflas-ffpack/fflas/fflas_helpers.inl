@@ -128,7 +128,7 @@ namespace FFLAS {
 		struct Parallel{
 			const int numthreads;
 			const CuttingStrategy method;
-			Parallel(int n=NUM_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
+			Parallel(int n=MAX_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
 				return out << "Parallel: " << p.numthreads << ',' << p.method;
@@ -248,7 +248,7 @@ namespace FFLAS {
 		    //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
 		    // correct but semantically not satisfactory
 		MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) :
-		                recLevel(Protected::WinogradSteps (F, min3(m,k,n))),
+                recLevel(-1),
 				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
@@ -257,7 +257,8 @@ namespace FFLAS {
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
 				delayedField(F),
 				// delayedField((typename Field::Element)F.characteristic()),
-				parseq(_PS) {}
+				parseq(_PS) {
+        }
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
 				recLevel(w), //base(FflasDouble),
@@ -268,7 +269,8 @@ namespace FFLAS {
 				Outmin(0.0), Outmax(0.0),
 				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
 				delayedField(F),
-				parseq(_PS) {}
+				parseq(_PS) {
+        }
 
 		// copy constructor from other Field and Algo Traits
 		template<class F2, typename AlgoT2, typename FT2, typename PS2>
