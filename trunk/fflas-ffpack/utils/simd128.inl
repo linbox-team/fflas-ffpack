@@ -103,20 +103,19 @@ struct Simd128<double>
 
 
      static INLINE CONST vect_t round(const vect_t a) {
-#ifdef __SSE4_1__        
+#ifdef __SSE4_1__
 	     return _mm_round_pd(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
 #else
          return _mm_set_pd(std::round(((const double*)&a)[1]), std::round(((const double*)&a)[0]));
-#endif         
-// #else
-// #error "cannot do without 64 bits"
+#endif
      }
 
      static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
 #ifdef __SSE3__
 	     return _mm_hadd_pd(a, b);
 #else
-         return _mm_set1_pd(tmp, ((const double*)&a)[0] + ((const double*)&a)[1]);
+	__m128d tmp ;
+        _mm_set_pd(tmp, ((const double*)&a)[0] + ((const double*)&a)[1], ((const double*)&b)[0] + ((const double*)&b)[1]);
 #endif
      }
 
