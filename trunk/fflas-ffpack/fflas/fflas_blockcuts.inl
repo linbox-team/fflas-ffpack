@@ -250,26 +250,12 @@ namespace FFLAS {
                       m, n, method, numthreads);
 
             BLOCKS = numRowBlock * numColBlock;
-// std::cout<<"RBLOCKSIZE : "<<rowBlockSize<<std::endl;
-// std::cout<<"CBLOCKSIZE : "<<colBlockSize<<std::endl;
-// std::cout<<"changeRBS    : "<<changeRBS<<std::endl;
-// std::cout<<"changeCBS    : "<<changeCBS<<std::endl;
-// std::cout<<"lastRBS    : "<<lastRBS<<std::endl;
-// std::cout<<"lastCBS    : "<<lastCBS<<std::endl;
-// std::cout<<"NrowBlocks : "<<numRowBlock<<std::endl;
-// std::cout<<"NcolBlocks : "<<numColBlock<<std::endl;
         }
 
 
         size_t begin() {
             ibeg = 0; iend = rowBlockSize;
             jbeg = 0; jend = colBlockSize;
-// std::cout << "FS2D curr: " << 0 << '/' << BLOCKS << std::endl;
-// std::cout << "FS2D ibeg: " << ibeg << std::endl;
-// std::cout << "FS2D iend: " << iend << std::endl;
-// std::cout << "FS2D jbeg: " << jbeg << std::endl;
-// std::cout << "FS2D jend: " << jend << std::endl;
-
             return current = 0;
         }
         bool end() const { return current == BLOCKS; }
@@ -287,16 +273,26 @@ namespace FFLAS {
                 jbeg = 0;
                 jend = colBlockSize;
             }
-// std::cout << "FS2D curr: " << current << '/' << BLOCKS << std::endl;
-// std::cout << "FS2D ibeg: " << ibeg << std::endl;
-// std::cout << "FS2D iend: " << iend << std::endl;
-// std::cout << "FS2D jbeg: " << jbeg << std::endl;
-// std::cout << "FS2D jend: " << jend << std::endl;
-
             return current;
         }
 
-
+        friend std::ostream& operator<<(std::ostream& out, const ForStrategy2D& FS2D) {
+            out<<"RBLOCKSIZE: "<<FS2D.rowBlockSize<<std::endl;
+            out<<"CBLOCKSIZE: "<<FS2D.colBlockSize<<std::endl;
+            out<<"changeRBS : "<<FS2D.changeRBS<<std::endl;
+            out<<"changeCBS : "<<FS2D.changeCBS<<std::endl;
+            out<<"lastRBS   : "<<FS2D.lastRBS<<std::endl;
+            out<<"lastCBS   : "<<FS2D.lastCBS<<std::endl;
+            out<<"NrowBlocks: "<<FS2D.numRowBlock<<std::endl;
+            out<<"NcolBlocks: "<<FS2D.numColBlock<<std::endl;
+            out<<"curr: " << FS2D.current << '/' << FS2D.BLOCKS << std::endl;
+            out<<"ibeg: " << FS2D.ibeg << std::endl;
+            out<<"iend: " << FS2D.iend << std::endl;
+            out<<"jbeg: " << FS2D.jbeg << std::endl;
+            out<<"jend: " << FS2D.jend << std::endl;
+            return out;
+        }
+                
 
 
 //         size_t begin() { current = 0; return setCurrentBlock(); }
