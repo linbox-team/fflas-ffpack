@@ -29,6 +29,7 @@
 
 #ifndef __FFLASFFPACK_fger_INL
 #define __FFLASFFPACK_fger_INL
+
 namespace FFLAS {
 
 	template<class Field>
@@ -49,6 +50,7 @@ namespace FFLAS {
 } //FFLAS
 
 namespace FFLAS { namespace Protected {
+
 	template<class FloatElement, class Field>
 	inline void
 	fger_convert (const Field& F, const size_t M, const size_t N,
@@ -81,6 +83,7 @@ namespace FFLAS { namespace Protected {
 }// FFLAS
 
 namespace FFLAS{
+
 	template<class Field>
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
@@ -90,6 +93,7 @@ namespace FFLAS{
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
 	{
+		if (F.isZero(alpha)) { return ; }
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
 		else
@@ -105,13 +109,14 @@ namespace FFLAS{
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
+		if (F.isZero(alpha)) { return ; }
 		typename MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag>::DelayedField::Element alphadf;
 		if (F.isMOne( alpha)) alphadf = -1.0;
 		else alphadf = 1.0;
 
 		MMHelper<typename associatedDelayedField<const Field>::field,
-			 MMHelperAlgo::Classic,
-			 typename FieldCategories::FloatingPointTag > Hfp(H);
+		MMHelperAlgo::Classic,
+		typename FieldCategories::FloatingPointTag > Hfp(H);
 
 		if (Hfp.MaxDelayedDim(1.0) < 1){
 
@@ -134,8 +139,8 @@ namespace FFLAS{
 		fger (H.delayedField, M, N, alphadf, x, incx, y, incy, A, lda, Hfp);
 
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                    double al; F.convert(al, alpha);
-                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+			double al; F.convert(al, alpha);
+			if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				finit (F, M, N, A, lda);
 				Hfp.initOut();
 			}
@@ -152,7 +157,8 @@ namespace FFLAS{
 			H.Outmax = Hfp.Outmax;
 		}
 	}
-template<class Field>
+
+	template<class Field>
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
@@ -161,6 +167,7 @@ template<class Field>
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
 	{
+		if (F.isZero(alpha)) { return ; }
 		typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> HelperType;
 
 		typename HelperType::DelayedField::Element alphadf;
@@ -168,14 +175,14 @@ template<class Field>
 		else alphadf = 1.0;
 
 		MMHelper<typename HelperType::DelayedField,
-			 MMHelperAlgo::Classic,
-			 typename FieldCategories::FloatingPointTag > Hfp(H);
+		MMHelperAlgo::Classic,
+		typename FieldCategories::FloatingPointTag > Hfp(H);
 
 		fger (H.delayedField, M, N, alphadf, x, incx, y, incy, A, lda, Hfp);
 
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                    double al; F.convert(al, alpha);
-                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+			double al; F.convert(al, alpha);
+			if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				finit (F, M, N, A, lda);
 				Hfp.initOut();
 			}
@@ -193,12 +200,11 @@ template<class Field>
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
 	{
+		if (F.isZero(alpha)) { return ; }
 
 		typename Field::Element tmp;
 		typename Field::ConstElement_ptr xi=x, yj=y;
 		typename Field::Element_ptr Ai=A;
-
-		if (F.isZero(alpha)) return ;
 
 
 		if ( M < N ){
@@ -256,7 +262,7 @@ template<class Field>
 	      DoubleDomain::Element_ptr A, const size_t lda,
 	      MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
-		if (F.isZero(alpha)) return ;
+		if (F.isZero(alpha)) { return ; }
 
 		FFLASFFPACK_check(lda);
 		cblas_dger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
@@ -271,7 +277,7 @@ template<class Field>
 	      FloatDomain::Element_ptr A, const size_t lda,
 	      MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
-		if (F.isZero(alpha)) return ;
+		if (F.isZero(alpha)) { return ; }
 
 		FFLASFFPACK_check(lda);
 		cblas_sger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
