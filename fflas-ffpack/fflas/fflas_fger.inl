@@ -67,7 +67,7 @@ namespace FFLAS { namespace Protected {
 
 		fconvert(F, M, N, Af, N, A, lda);
 		fconvert(F, M, Xf, 1, x, incx);
-		fconvert(F, M, Yf, 1, y, incy);
+		fconvert(F, N, Yf, 1, y, incy);
 
 		fger (G, M, N, alphaf, Xf, 1, Yf, 1, Af, N);
 
