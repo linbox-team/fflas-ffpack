@@ -9,7 +9,7 @@
 
 // using namespace FFPACK;
 template<class Field>
-bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
+bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
 
@@ -18,12 +18,12 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-	std::cout << ">>>" << std::endl ;
+	if (timing)	std::cout << ">>>" << std::endl ;
 
 	int iter = 3 ;
  FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
-	F.write(std::cout << "Field ") << std::endl;
+		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,B,m,k,n);
@@ -46,15 +46,15 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-					std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+					if (timing)		std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
 	}
-	std::cout << "fadd (___): " << tim.usertime()/iter << 's' << std::endl;
-	std::cout << "fadd (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+		if (timing)	std::cout << "fadd (___): " << tim.usertime()/iter << 's' << std::endl;
+		if (timing)	std::cout << "fadd (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
 
-	std::cout << "<<<" << std::endl;
+		if (timing)	std::cout << "<<<" << std::endl;
 	delete[] A ;
 	delete[] B;
 	delete[] C ;
@@ -64,7 +64,7 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n)
 }
 
 template<class Field>
-bool test_faddin(const Field & F, size_t m, size_t k, size_t n)
+bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
 
@@ -72,8 +72,8 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n)
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-	std::cout << ">>>" << std::endl ;
-	F.write(std::cout << "Field ") << std::endl;
+		if (timing)	std::cout << ">>>" << std::endl ;
+		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	int iter = 3 ;
  FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
@@ -99,16 +99,16 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n)
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-					std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+						if (timing)	std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
 	}
-	std::cout << "faddin (___): " << tim.usertime()/iter << 's' << std::endl;
-	std::cout << "faddin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+		if (timing)	std::cout << "faddin (___): " << tim.usertime()/iter << 's' << std::endl;
+		if (timing)	std::cout << "faddin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
 
 
-	std::cout << "<<<" << std::endl;
+		if (timing)	std::cout << "<<<" << std::endl;
 	delete[] A ;
 	delete[] C ;
 	delete[] D ;
@@ -117,7 +117,7 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n)
 }
 
 template<class Field>
-bool test_fsub(const Field & F, size_t m, size_t k, size_t n)
+bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
 
@@ -126,12 +126,12 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n)
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-	std::cout << ">>>" << std::endl ;
+		if (timing)	std::cout << ">>>" << std::endl ;
 
 	int iter = 3 ;
  FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
-	F.write(std::cout << "Field ") << std::endl;
+		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,B,m,k,n);
@@ -154,15 +154,15 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n)
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-					std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+						if (timing)	std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
 	}
-	std::cout << "fsub (___): " << tim.usertime()/iter << 's' << std::endl;
-	std::cout << "fsub (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+		if (timing)	std::cout << "fsub (___): " << tim.usertime()/iter << 's' << std::endl;
+		if (timing)	std::cout << "fsub (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
 
-	std::cout << "<<<" << std::endl;
+		if (timing)	std::cout << "<<<" << std::endl;
 	delete[] A ;
 	delete[] B;
 	delete[] C ;
@@ -172,7 +172,7 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n)
 }
 
 template<class Field>
-bool test_fsubin(const Field & F, size_t m, size_t k, size_t n)
+bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
 
@@ -180,8 +180,8 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n)
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
-	std::cout << ">>>" << std::endl ;
-	F.write(std::cout << "Field ") << std::endl;
+	if (timing)  std::cout << ">>>" << std::endl ;
+	if (timing)  F.write(std::cout << "Field ") << std::endl;
 	int iter = 3 ;
  FFLAS::Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
@@ -207,16 +207,16 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n)
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(C[i*n+j],D[i*n+j])) {
-					std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
+					if (timing)  std::cout  <<  i << ',' << j << " : " <<  C[i*n+j] << "!= (ref)" << D[i*n+j] << std::endl;
 					return false ;
 				}
 #endif
 	}
-	std::cout << "fsubin (___): " << tim.usertime()/iter << 's' << std::endl;
-	std::cout << "fsubin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+if (timing)	std::cout << "fsubin (___): " << tim.usertime()/iter << 's' << std::endl;
+	if (timing) std::cout << "fsubin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
 
 
-	std::cout << "<<<" << std::endl;
+	if (timing) std::cout << "<<<" << std::endl;
 	delete[] A ;
 	delete[] C ;
 	delete[] D ;
@@ -231,6 +231,7 @@ int main(int ac, char **av) {
 	static size_t k = 300 ;
 	static size_t p = 7;
 	int seed = (int) time(NULL);
+	static bool timing = false ;
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",  TYPE_INT , &p },
@@ -238,8 +239,11 @@ int main(int ac, char **av) {
 		{ 'm', "-m N", "Set the number of rows in C.",   TYPE_INT , &m },
 		{ 'k', "-k N", "Set the number of rows in B.",   TYPE_INT , &k },
 		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 't', "-timing", "Output timings"            , TYPE_NONE, &timing},
 		END_OF_ARGUMENTS
 	};
+
+
 	FFLAS::parseArguments(ac,av,as);
 
 	if (n < k) {
@@ -250,214 +254,214 @@ int main(int ac, char **av) {
 	srand(seed);
 	srand48(seed);
 
-	std::cout << seed << std::endl;
+	// std::cout << seed << std::endl;
 
 	bool pass  = true ;
 	{ /*  fadd  */
 		{
 			FFPACK:: Modular<float> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<float> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<double> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<double> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int32_t> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int64_t> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int64_t> F(p) ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 #if 1
 		{
 			FFPACK:: UnparametricField<float> F ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<double> F ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int32_t> F;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int64_t> F ;
-			pass &= test_fadd(F,m,k,n);
+			pass &= test_fadd(F,m,k,n,timing);
 		}
 #endif
 	}
 	{ /*  faddin  */
 		{
 			FFPACK:: Modular<float> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<float> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<double> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<double> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int32_t> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int64_t> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int64_t> F(p) ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 #if 1
 		{
 			FFPACK:: UnparametricField<float> F ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<double> F ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int32_t> F;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int64_t> F ;
-			pass &= test_faddin(F,m,k,n);
+			pass &= test_faddin(F,m,k,n,timing);
 		}
 #endif
 	}
 	{ /*  fsub */
 		{
 			FFPACK:: Modular<float> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<float> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<double> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<double> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int32_t> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int64_t> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int64_t> F(p) ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 #if 1
 		{
 			FFPACK:: UnparametricField<float> F ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<double> F ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int32_t> F;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int64_t> F ;
-			pass &= test_fsub(F,m,k,n);
+			pass &= test_fsub(F,m,k,n,timing);
 		}
 #endif
 	}
 	{ /*  fsubin */
 		{
 			FFPACK:: Modular<float> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<float> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<double> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<double> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int32_t> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int64_t> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int64_t> F(p) ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 #if 1
 		{
 			FFPACK:: UnparametricField<float> F ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<double> F ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int32_t> F;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int64_t> F ;
-			pass &= test_fsubin(F,m,k,n);
+			pass &= test_fsubin(F,m,k,n,timing);
 		}
 #endif
 	}

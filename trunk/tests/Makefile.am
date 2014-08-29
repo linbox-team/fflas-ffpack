@@ -36,11 +36,15 @@ BASIC_TESTS =              \
 		test-det               \
 		test-echelon           \
 		test-compressQ \
+		test-fadd \
+		test-finit \
+		test-fscal \
 		regression-check
 
 GIVA_TESTS =  	test-fgemm\
 		test-fger             \
 		test-ftrsm
+
 
 NOT_A_TEST =  \
 		test-lqup2              \
@@ -123,6 +127,9 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
+test_fadd_SOURCES = test-fadd.C
+test_fscal_SOURCES = test-fscal.C
+test_finit_SOURCES = test-finit.C
 
 test_pfgemm_SOURCES = test-pfgemm.C
 #test_pftrsm_SOURCES = test-pftrsm.C
