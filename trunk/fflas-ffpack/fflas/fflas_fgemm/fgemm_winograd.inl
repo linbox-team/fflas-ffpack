@@ -427,6 +427,9 @@ namespace FFLAS{
 			fscalin(F,m,n,beta,C,ldc);
 			return C;
 		}
+		if (H.recLevel < 0) {
+			H.recLevel = Protected::WinogradSteps (F, min3(m,k,n));
+		}
 
 		if (H.recLevel == 0){
 			MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
@@ -435,10 +438,6 @@ namespace FFLAS{
 			H.Outmin = HC.Outmin;
 			return C;
 		}
-
-        if (H.recLevel < 0) {
-            H.recLevel = Protected::WinogradSteps (F, min3(m,k,n));
-        }
 
 		// Then w >0
 		double Cmin = H.Cmin;
