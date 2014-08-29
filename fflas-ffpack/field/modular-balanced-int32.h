@@ -89,7 +89,7 @@ namespace FFPACK
 			modulus(value)
 			,one(1),zero(0),mOne(-1)
 		{
-			FFLASFFPACK_check(isOdd(modulus));
+			// FFLASFFPACK_check(isOdd(modulus));
 			half_mod = (modulus >> 1);
 			mhalf_mod = half_mod-modulus+1;
 			modulusinv = 1 / ((double) value);
@@ -98,7 +98,7 @@ namespace FFPACK
 			if(value <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			// std::cout << value << '<' << getMaxModulus() << std::endl;
 			if(value > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-			if( ! (value % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
+			// if( ! (value % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
 #endif
 
 		}

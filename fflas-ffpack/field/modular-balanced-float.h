@@ -79,7 +79,7 @@ namespace FFPACK {
 			lmodulus ((unsigned int)p)
 			,one(1),zero(0),mOne(-1.f)
 		{
-			FFLASFFPACK_check(isOdd(modulus));
+			// FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if(modulus <= 1)
 				throw Failure(__func__,__FILE__,

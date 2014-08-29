@@ -96,12 +96,12 @@ namespace FFPACK
 			half_mod = (modulus >> 1);
 			mhalf_mod = half_mod-modulus+1;
 			modulusinv = 1 / ((double) value);
-			FFLASFFPACK_check(isOdd(modulus));
+			// FFLASFFPACK_check(isOdd(modulus));
 #ifdef DEBUG
 			if(exp != 1) throw Failure(__func__,__FILE__,__LINE__,"exponent must be 1");
 			if(value <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if(value > getMaxModulus() ) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-			if( ! (value % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
+			// if( ! (value % 2) ) throw Failure(__func__,__FILE__,__LINE__,"modulus must be odd");
 #endif
 
 		}
