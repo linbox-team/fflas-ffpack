@@ -89,7 +89,7 @@ bool check_fger(const Field                   & F,
 			F.axpyin(*(D+i*n+j), tmp, *(y+j) );
 			if ( !F.areEqual( *(D+i*n+j), *(C+i*ldc+j) ) ) {
 				wrong = true;
-			}			
+			}
 		}
 	}
 //     write_field(F,std::cerr <<"d:=",D, m, n, ldc, true) << ';' << std::endl;
@@ -124,7 +124,7 @@ bool check_fger(const Field                   & F,
 	}
 	FFLAS::fflas_delete (D);
 
-	return !wrong ;	
+	return !wrong ;
 }
 
 
@@ -186,7 +186,7 @@ bool launch_fger_dispatch(const Field &F,
 		//!@bug test for incx equal
 		//!@bug test for transpo
 		//!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
-	size_t ld = 13 ;
+	// size_t ld = 13 ;
 	{
 		m = 1+(size_t)random()%nn;
 		n = 1+(size_t)random()%nn;
@@ -200,7 +200,7 @@ bool launch_fger_dispatch(const Field &F,
 
 // 		ldc = n+(size_t)random()%ld;
 		ldc = n;
-		
+
 
 		std::cout <<"q = "<<F.characteristic()<<" m,n = "<<m<<", "<<n<<" C := "
 			  <<alpha<<".x * y^T + C";
