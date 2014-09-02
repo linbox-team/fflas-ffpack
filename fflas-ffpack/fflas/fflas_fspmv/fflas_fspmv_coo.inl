@@ -84,30 +84,23 @@ namespace FFLAS { /*  COO */
 			      typename Field::Element * y
 			     )
 		{
-#if 0
-			if (tA == FflasNoTrans)  {
-#endif
-				for (size_t i = 0 ; i < m ; ++i) {
-					if (! F.isOne(b)) {
-						if (F.isZero(b)) {
-							F.assign(y[i],F.zero);
-						}
-						else if (F.isMone(b)) {
-							F.negin(y[i]);
-						}
-						else {
-							F.mulin(y[i],b);
-						}
-					}
-					// XXX can be delayed
-					for (index_t j = 0 ; j < z ; ++j)
-						F.axpyin(y[row[i]],dat[j],x[col[j]]);
+			if (! F.isOne(b)) {
+				if (F.isZero(b)) {
+					for (size_t i = 0 ; i < m ; ++i)
+						F.assign(y[i],F.zero);
 				}
-#if 0
+				else if (F.isMone(b)) {
+					for (size_t i = 0 ; i < m ; ++i)
+						F.negin(y[i]);
+				}
+				else {
+					for (size_t i = 0 ; i < m ; ++i)
+						F.mulin(y[i],b);
+				}
 			}
-			else {
-			}
-#endif
+			// XXX can be delayed
+			for (index_t j = 0 ; j < z ; ++j)
+				F.axpyin(y[row[j]],dat[j],x[col[j]]);
 		}
 
 		// Double
@@ -126,60 +119,49 @@ namespace FFLAS { /*  COO */
 			      double * y
 			     )
 		{
-			// std::cout << m << 'x' << n << std::endl;
-			// std::cout << "y : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << y[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "x : " ; for (size_t i = 0 ; i < n ; ++i) std::cout << x[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "row : " ; for (size_t i = 0 ; i < m+1 ; ++i) std::cout << row[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "col : " ; for (size_t i = 0 ; i < row[m] ; ++i) std::cout << col[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "dat : " ; for (size_t i = 0 ; i < row[m] ; ++i) std::cout << dat[i] << ' '  ; std::cout << std::endl;
 
-
-			// std::cout << "MKL ?" << std::endl;
 #ifdef __FFLASFFPACK_HAVE_MKL
-			// std::cout << "MKL" << std::endl;
-			// fscalin(F,m,b,y,1);
-
 			// char * transa = (ta==FflasNoTrans)?'n':'t';
 			char   transa = 'N';
 			index_t m_ = (index_t) m ;
 			index_t z_ = (index_t) z ;
-			// index_t n_ = n ;
 			double * yd ;
 			if ( b == 0) {
 				yd = y;
 			}
 			else {
 				yd = FFLAS::fflas_new<double >(m);
-				// std::cout << "yd : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << yd[i] << ' '  ; std::cout << std::endl;
 				fscalin(F,m,b,y,1);
 			}
 			// mkl_dcoogemv (bug too ?)
 			mkl_cspblas_dcoogemv
 			(&transa, &m_, const_cast<double*>(dat), const_cast<index_t*>(row) , const_cast<index_t*>(col),
 			 &z_, const_cast<double*>(x), yd);
-			// std::cout << "yd : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << yd[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "y : " ; for (size_t i = 0 ; i < m ; ++i) std::cout << y[i] << ' '  ; std::cout << std::endl;
-			// std::cout << "x : " ; for (size_t i = 0 ; i < n ; ++i) std::cout << x[i] << ' '  ; std::cout << std::endl;
 
 			if ( b != 0) {
 				faddin(F,m,yd,1,y,1);
 				delete[] yd ;
 			}
 #else
-			for (size_t i = 0 ; i < m ; ++i) {
-				if ( b != 1) {
-					if ( b == 0.) {
+			if ( b != 1) {
+				if ( b == 0.) {
+					for (size_t i = 0 ; i < m ; ++i) {
 						y[i] = 0;
 					}
-					else if ( b == -1 ) {
+				}
+				else if ( b == -1 ) {
+					for (size_t i = 0 ; i < m ; ++i) {
 						y[i]= -y[i];
 					}
-					else {
+				}
+				else {
+					for (size_t i = 0 ; i < m ; ++i) {
 						y[i] = y[i] * b;
 					}
 				}
-				for (index_t j = 0 ; j < (index_t)z ; ++j)
-					y[row[i]] += dat[j] * x[col[j]];
+			}
+			for (size_t i = 0 ; i < z ; ++i) {
+					y[row[i]] += dat[i] * x[col[i]];
 			}
 #endif // __FFLASFFPACK_HAVE_MKL
 		}
@@ -223,27 +205,26 @@ namespace FFLAS { /*  COO */
 				delete[] yd ;
 			}
 #else
-			for (size_t i = 0 ; i < m ; ++i) {
+			{
 				if ( b != 1) {
 					if ( b == 0.) {
-						y[i] = 0;
+						for (size_t i = 0 ; i < m ; ++i)
+							y[i] = 0;
 					}
 					else if ( b == -1 ) {
-						y[i]= -y[i];
+						for (size_t i = 0 ; i < m ; ++i)
+							y[i]= -y[i];
 					}
 					else {
-						y[i] = y[i] * b;
+						for (size_t i = 0 ; i < m ; ++i)
+							y[i] = y[i] * b;
 					}
 				}
-				for (index_t j = 0 ; j < (index_t) z ; ++j)
-					y[row[i]] += dat[j] * x[col[j]];
 			}
+			for (index_t j = 0 ; j < (index_t) z ; ++j)
+				y[row[j]] += dat[j] * x[col[j]];
 #endif // __FFLASFFPACK_HAVE_MKL
 		}
-
-
-
-
 
 
 		// delayed by kmax
@@ -430,7 +411,6 @@ namespace FFLAS { /*  COO */
 		      VECT<double> & y
 		     )
 	{
-		// std::cout << "there" << std::endl;
 		sp_fgemv(DoubleDomain(),A,x,b,y);
 		finit(F,A.m,y.dat,1);
 	}
@@ -535,7 +515,6 @@ namespace FFLAS { /*  COO */
 		      VECT<double> & y
 		     )
 	{
-		// std::cout << "here" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
