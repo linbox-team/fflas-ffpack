@@ -160,10 +160,10 @@ namespace FFLAS { /*  CSC */
 
 namespace FFLAS { /*  ELL */
 
-	template<class Element>
+	template<class Element, bool simd>
 	struct ELL ;
 
-	template<class Element>
+	template<class Element, bool simd>
 	struct ELLR ;
 } // FFLAS
 
@@ -221,7 +221,7 @@ namespace FFLAS { /*  JAG */
 #include "fflas-ffpack/fflas/fflas_fspmv.inl"
 #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_coo.inl"
 #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_csr.inl"
-// #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ell.inl"
+#include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ell.inl"
 // #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ellr.inl"
 // #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_sell.inl"
 
