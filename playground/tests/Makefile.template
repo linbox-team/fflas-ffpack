@@ -1,0 +1,48 @@
+#----------------------------------------------------------
+# Parameters to be configured by the user
+
+# root for the blas library, for ex. /home/foo/ATLAS/lib/Linux_P4SSE2
+BLASROOT = 
+
+# ATLAS BLAS users : uncomment these lines:
+#CXXFLAGS+=-D__LINBOX_HAVE_CBLAS
+#LOADLIBES+=-L${BLASROOT} -lcblas -latlas
+
+# GotoBlas BLAS users : uncomment this line:
+#LOADLIBES+=-L${BLASROOT} -lgoto
+
+# Other BLAS users, uncomment this line:
+#LOADLIBES+=-L${BLASROOT} -lcblas
+
+# architecture parameter for gcc: 
+#ARCH = -march=pentium3 
+#ARCH = -march=pentium4
+#ARCH = -march=athlon
+#ARCH = -march=opteron 
+#ARCH = -m64 -mtune=k8
+
+# Givaro/GMP root (only necessary for compiling the regression tests testeur_fgemm, testeur_lqup and testeur_ftrsm)
+#GIVARO_ROOT=
+#GMP_ROOT=
+#INCLUDES+= -I ${GIVARO_ROOT}/include -I ${GMP_ROOT}/include
+#LOADLIBES+= -L ${GIVARO_ROOT}/lib -lgivaro -L ${GMP_ROOT}/lib -lgmp -lgmpxx
+
+#----------------------------------------------------------
+
+OPTFLAGS+=-O3
+#OPTFLAGS+=-g
+OPTFLAGS+= ${ARCH}
+
+CXXFLAGS+=${OPTFLAGS} 
+
+INCLUDES+=-I. -I../include 
+
+
+CXX=g++ ${INCLUDES}
+
+all: test-fgemm test-invert test-det test-rank test-charpoly test-lqup test-nullspace dense_generator
+
+regression: testeur_fgemm testeur_lqup testeur_ftrsm
+
+clean:
+	rm -f test-fgemm test-fgemv test-invert test-det test-rank test-charpoly test-lqup dense_generator testeur_fgemm testeur_lqup testeur_ftrsm
