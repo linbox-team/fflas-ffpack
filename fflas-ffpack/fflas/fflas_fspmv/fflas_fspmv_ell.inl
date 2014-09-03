@@ -87,7 +87,7 @@ namespace FFLAS { /*  ELL */
 						if (F.isZero(b)) {
 							F.assign(y[i],F.zero);
 						}
-						else if (F.isMone(b)) {
+						else if (F.isMOne(b)) {
 							F.negin(y[i]);
 						}
 						else {
@@ -102,6 +102,7 @@ namespace FFLAS { /*  ELL */
 			}
 			else
 			{
+#ifdef __FFLASFFPACK_HAVE_SIMD
 				size_t i = 0 ;
 				using simd = Simd<typename Field::Element>;
 				using vect_t = typename simd::vect_t;
@@ -148,6 +149,9 @@ namespace FFLAS { /*  ELL */
 						F.axpyin(y[i*simd::vect_size+ii], dat[i*simd::vect_size*ld+j*deplacement + ii], x[col[i*simd::vect_size*ld+j*deplacement + ii]]);
 					}
 				}
+#else
+				// #error "simd must be enabled"
+#endif
 			}
 		}
 
@@ -185,6 +189,7 @@ namespace FFLAS { /*  ELL */
 				}
 			}
 			else {
+#ifdef __FFLASFFPACK_HAVE_SIMD
 				size_t i = 0 ;
 				using simd = Simd<double>;
 				using vect_t = typename simd::vect_t;
@@ -237,6 +242,9 @@ namespace FFLAS { /*  ELL */
 						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii]*x[col[i*simd::vect_size*ld+j*deplacement + ii]];
 					}
 				}
+#else
+				// #error "simd must be enabled"
+#endif
 			}
 
 		}
@@ -275,6 +283,7 @@ namespace FFLAS { /*  ELL */
 				}
 			}
 			else {
+#ifdef __FFLASFFPACK_HAVE_SIMD
 				size_t i = 0 ;
 				using simd = Simd<float>;
 				using vect_t = typename simd::vect_t;
@@ -327,13 +336,16 @@ namespace FFLAS { /*  ELL */
 						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii]*x[col[i*simd::vect_size*ld+j*deplacement + ii]];
 					}
 				}
+#else
+				// #error "simd must be enabled"
+#endif
 			}
+
 		}
 
 		// delayed by kmax
-		template<class Field,
-		bool simd_true
-		>
+		//! @bug check field is M(B)<f|d>
+		template<class Field, bool simd_true >
 		void sp_fgemv(
 			      const Field& F,
 			      // const FFLAS_TRANSPOSE tA,
@@ -347,14 +359,14 @@ namespace FFLAS { /*  ELL */
 			      typename Field::Element * y,
 			      const index_t & kmax			     )
 		{
-			if(!simd_true)
+			// if(!simd_true)
 			{
 				index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
 				for (size_t i = 0 ; i < m ; ++i)
 				{
 					index_t j = 0;
 					index_t j_loc = 0 ;
-					bool term = false ;
+					// bool term = false ;
 					for (size_t l = 0 ; l < block ; ++l) {
 						j_loc += block ;
 						for ( ; j < j_loc ; ++j ) {
@@ -362,12 +374,12 @@ namespace FFLAS { /*  ELL */
 						}
 						F.init(y[i],y[i]);
 					}
-					if (! term ) {
+					// if (! term ) {
 						for ( ; j < ld  ; ++j) {
-							y[i] += dat[i*ld+j] * x[i*ld+col[j]];
+							y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 						}
 						F.init(y[i],y[i]);
-					}
+					// }
 				}
 			}
 		}
@@ -421,7 +433,7 @@ namespace FFLAS { /*  ELL */
 
 	template< bool simd_true >
 	void sp_fgemv(
-		      const Modular<double>& F,
+		      const FFPACK::Modular<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL_sub<double, simd_true> & A,
 		      const VECT<double> & x,
@@ -435,7 +447,7 @@ namespace FFLAS { /*  ELL */
 
 	template< bool simd_true >
 	void sp_fgemv(
-		      const Modular<float>& F,
+		      const FFPACK::Modular<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL_sub<float, simd_true> & A,
 		      const VECT<float> & x,
@@ -449,7 +461,7 @@ namespace FFLAS { /*  ELL */
 
 	template< bool simd_true >
 	void sp_fgemv(
-		      const ModularBalanced<double>& F,
+		      const FFPACK::ModularBalanced<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL_sub<double, simd_true> & A,
 		      const VECT<double> & x,
@@ -463,7 +475,7 @@ namespace FFLAS { /*  ELL */
 
 	template<bool simd_true>
 	void sp_fgemv(
-		      const ModularBalanced<float>& F,
+		      const FFPACK::ModularBalanced<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL_sub<float, simd_true> & A,
 		      const VECT<float> & x,
@@ -532,7 +544,6 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		// std::cout << "here" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
