@@ -281,24 +281,6 @@ namespace FFLAS {
 
 namespace FFLAS {
 
-
-	//Parallel ftrsm with OpenMP tasks
-	template<class Field>
-	typename Field::Element_ptr
-	pftrsm( const Field& F,
-		const FFLAS_SIDE Side,
-		const FFLAS_UPLO UpLo,
-		const FFLAS_TRANSPOSE TA,
-		const FFLAS_DIAG Diag,
-		const size_t m,
-		const size_t n,
-		const typename Field::Element alpha,
-		typename Field::ConstElement_ptr A, const size_t lda,
-		typename Field::Element_ptr B, const size_t ldb,
-		const FFLAS::CuttingStrategy method,
-                const size_t numThreads = (size_t) NUM_THREADS);
-	//#endif
-
 	/** @brief fsquare: Squares a matrix.
 	 * compute \f$ C \gets \alpha \mathrm{op}(A) \mathrm{op}(A) + \beta C\f$ over a Field \p F
 	 * Avoid the conversion of B
