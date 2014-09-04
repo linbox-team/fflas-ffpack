@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
   int    p    = argc>1 ? atoi(argv[1]) : 1009;
   int    n    = argc>2 ? atoi(argv[2]) : 2000;
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
-
+  size_t strat= argc>4 ? atoi(argv[4]) :    1; // 1 for pIter-sRec ; 2 for pRec
 
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
 
   for (size_t i=0;i<iter;++i){
 	  Field::RandIter G(F);
-	  if (argc > 4){
-		  A = read_field (F, argv[4], &n, &n);
+	  if (argc > 5){
+		  A = read_field (F, argv[5], &n, &n);
 	  }
 	  else{
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
 			  G.random(*(A+j));
 	  }
 
-	  if (argc == 6){
-		  B = read_field (F, argv[5], &n, &n);
+	  if (argc == 7){
+		  B = read_field (F, argv[6], &n, &n);
 	  }
 	  else{
 		  B = FFLAS::fflas_new<Element>(n*n);
@@ -80,13 +80,23 @@ int main(int argc, char** argv) {
 	  chrono.start();
 
       PAR_REGION{
-          FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-              FFLAS::ParSeqHelper::Parallel> PH 
-              (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,Strategy));      
-          
-          FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
-                         FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-                         n,n, F.one, A, n, B, n, PH);
+          if (strat == 1) {
+              FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
+                  FFLAS::ParSeqHelper::Parallel> PH 
+                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,Strategy));      
+              
+              FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
+                            FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
+                            n,n, F.one, A, n, B, n, PH);
+          } else {
+              FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive,
+                  FFLAS::ParSeqHelper::Parallel> PH 
+                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,Strategy));      
+              
+              FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
+                            FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
+                            n,n, F.one, A, n, B, n, PH);              
+          }
           
       }
       BARRIER;
