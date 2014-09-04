@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <28 Aug 14 11:28:09 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <04 Sep 14 14:08:06 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -62,12 +62,15 @@ namespace FFLAS {
 		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
 	{
 
-        if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
-            std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
-            return C;
-        }
-
+            if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
+                std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
+                return C;
+            }
+            
 		ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
+		if (H.recLevel < 0) {
+			H.recLevel = Protected::WinogradSteps (F, min3(iter.rowBlockSize,k,iter.colBlockSize));
+		}
 		for (iter.begin(); ! iter.end(); ++iter){
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
 			TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A + iter.ibeg*lda, lda, B +iter.jbeg, ldb, beta, C+ iter.ibeg*ldc+iter.jbeg, ldc, SeqH);
