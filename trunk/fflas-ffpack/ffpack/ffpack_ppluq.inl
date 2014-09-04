@@ -141,12 +141,12 @@ namespace FFPACK {
 
 		  WAIT;
 		  // D <- L1^-1 B1
-		  TASK(READ(Fi, A, R1), NOWRITE(), READWRITE(A2), pftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
+		  TASK(READ(Fi, A, R1), NOWRITE(), READWRITE(A2), ftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
 		  //    pftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda,  method, NUM);
 		  //ftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda);
 
 		  // E <- C1 U1^-1
-		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), pftrsm,Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  PH);
+		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), ftrsm,Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  PH);
 		  //pftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  method, NUM);
 		  //ftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 
@@ -215,7 +215,7 @@ namespace FFPACK {
 
       // I <- H1 U2^-1
       // K <- H3 U2^-1
-		  TASK(READ(Fi, R2, F), NOWRITE(), READWRITE(A4), pftrsm, Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, PH);
+		  TASK(READ(Fi, R2, F), NOWRITE(), READWRITE(A4), ftrsm, Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, PH);
 		  //pftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda,  method, NUM);
 		  //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		  WAIT;
@@ -227,12 +227,12 @@ namespace FFPACK {
 		  FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
 
     // J <- L3^-1 I (in a temp)
-		  TASK(READ(Fi, R2, G), NOWRITE(), READWRITE(temp), pftrsm,  Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2, PH);
+		  TASK(READ(Fi, R2, G), NOWRITE(), READWRITE(temp), ftrsm,  Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2, PH);
 		  //pftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2,  method, NUM);
 		  //ftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 
    // N <- L3^-1 H2
-		  TASK(READ(Fi, R3, G), NOWRITE(), READWRITE(A4), pftrsm,Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda, PH);
+		  TASK(READ(Fi, R3, G), NOWRITE(), READWRITE(A4), ftrsm,Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda, PH);
 		  //    pftrsm(Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda,  method, NUM);
 		  //ftrsm(Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		  WAIT;
