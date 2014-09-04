@@ -316,10 +316,10 @@ namespace FFLAS {
 //         size_t operator++() { ++current; return setCurrentBlock(); }
 
         size_t ibeg, iend, jbeg, jend;
+        size_t rowBlockSize, colBlockSize;
 
     protected:
         size_t current;
-        size_t rowBlockSize; size_t colBlockSize;
         size_t lastRBS; size_t lastCBS;
         size_t changeRBS; size_t changeCBS;
         size_t numRowBlock; size_t numColBlock;
