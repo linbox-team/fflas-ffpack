@@ -74,7 +74,6 @@ int main(int argc, char** argv) {
 	  for (size_t k=0;k<(size_t)n;++k)
 		  while (F.isZero( G.random(*(A+k*(n+1)))));
       
-      const FFLAS::CuttingStrategy Strategy = FFLAS::BLOCK_THREADS;
 
 	  chrono.clear();
 	  chrono.start();
@@ -83,7 +82,7 @@ int main(int argc, char** argv) {
           if (strat == 1) {
               FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
                   FFLAS::ParSeqHelper::Parallel> PH 
-                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,Strategy));      
+                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));      
               
               FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
                             FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
@@ -91,7 +90,7 @@ int main(int argc, char** argv) {
           } else {
               FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive,
                   FFLAS::ParSeqHelper::Parallel> PH 
-                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,Strategy));      
+                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::COLUMN_THREADS));      
               
               FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
                             FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
