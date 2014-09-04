@@ -44,7 +44,7 @@
 #define TIME 1
 #endif
 
-#define DEBUG 1
+//#define DEBUG 0
 #include <iomanip>
 #include <iostream>
 using namespace std;

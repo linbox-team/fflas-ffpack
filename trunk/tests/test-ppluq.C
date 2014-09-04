@@ -201,7 +201,7 @@ int main(int argc, char** argv)
 	      }
 	    
 	    clock_gettime(CLOCK_REALTIME, &t0);
-	    HPAC_PAR_REGION{
+	    PAR_REGION{
 		R = pPLUQ(F, diag, m, n, A, n, P, Q);// Parallel PLUQ
 	    }
 	    clock_gettime(CLOCK_REALTIME, &t1);
@@ -215,7 +215,7 @@ int main(int argc, char** argv)
 	std::cerr<<"Parallel : "<<m<<" "<<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
 	  //#ifdef  __FFLASFFPACK_USE_OPENMP
-		 <<HPAC_NUM_THREADS<<endl;
+		 <<NUM_THREADS<<endl;
 	//#else
 	//<<endl;
 	//#endi
@@ -249,4 +249,3 @@ int main(int argc, char** argv)
         delete[] A;
 	return 0;
 }
-

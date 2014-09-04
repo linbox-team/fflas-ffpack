@@ -1,9 +1,10 @@
+
+
 /*   
 *******************************************************
         Parallel PLUQ quad recurisve with OpenMP
 *******************************************************
 
-g++ -D__FFLASFFPACK_HAVE_CBLAS -Wall -g -fopenmp -O3 -march=native -mavx -I/home/sultan/soft/fflas-ffpack/ -I/usr/local/soft/givaro-3.7.1/include  test-ppluq.C -L/home/pernet/Logiciels/ATLAS_1TH/lib -lcblas -latlas -L/usr/local/soft/givaro-3.7.1/lib -lgivaro -lm -lrt -Wl,-rpath -Wl,/usr/local/soft/givaro-3.7.1/lib  -o test-ppluq
 */
 
 #include <iostream>
@@ -201,7 +202,8 @@ int main(int argc, char** argv)
 	      }
 	    
 	    clock_gettime(CLOCK_REALTIME, &t0);
-	    HPAC_PAR_REGION{
+
+	    PAR_REGION{
 		R = pPLUQ(F, diag, m, n, A, n, P, Q);// Parallel PLUQ
 	    }
 	    clock_gettime(CLOCK_REALTIME, &t1);
@@ -215,7 +217,7 @@ int main(int argc, char** argv)
 	std::cerr<<"Parallel : "<<m<<" "<<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
 	  //#ifdef  __FFLASFFPACK_USE_OPENMP
-		 <<HPAC_NUM_THREADS<<endl;
+		 <<NUM_THREADS<<endl;
 	//#else
 	//<<endl;
 	//#endi
