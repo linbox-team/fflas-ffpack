@@ -74,8 +74,7 @@ namespace FFLAS {
 #endif
 	       A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb,
-           const ParSeqHelper::Sequential& PSH
-           )
+	       const ParSeqHelper::Sequential& PSH)
 	{
 		TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> H(PSH);
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
@@ -96,8 +95,7 @@ namespace FFLAS {
 #endif
 	       A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb,
-           const ParSeqHelper::Parallel& PSH
-           )
+	       const ParSeqHelper::Parallel& PSH)
 	{
 		TRSMHelper<StructureHelper::Iterative, ParSeqHelper::Parallel> H(PSH);
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
