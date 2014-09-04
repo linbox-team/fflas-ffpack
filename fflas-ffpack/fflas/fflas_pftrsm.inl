@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <19 Jun 14 16:37:30 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <04 Sep 14 14:49:03 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -46,7 +46,7 @@ namespace FFLAS {
 
 	template<class Field>
 	inline typename Field::Element_ptr
-	pftrsm( const Field& F,
+	ftrsm( const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const FFLAS::FFLAS_UPLO UpLo,
 		const FFLAS::FFLAS_TRANSPOSE TA,
