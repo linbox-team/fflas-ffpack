@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
           } else {
               FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive,
                   FFLAS::ParSeqHelper::Parallel> PH 
-                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::COLUMN_THREADS));      
+                  (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));      
               
               FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
                             FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
