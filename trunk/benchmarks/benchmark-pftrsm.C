@@ -82,9 +82,9 @@ int main(int argc, char** argv) {
       PAR_REGION{
           FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
               FFLAS::ParSeqHelper::Parallel> PH 
-              (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));      
+              (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,Strategy));      
           
-          FFLAS::pftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
+          FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
                          FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
                          n,n, F.one, A, n, B, n, PH);
           

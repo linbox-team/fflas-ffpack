@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 			PAR_REGION{
 				FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
 						  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS,Strategy));
-				FFLAS::pftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
+				FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n, PH);
 		}
 			BARRIER;
 		} else {
