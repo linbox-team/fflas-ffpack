@@ -64,7 +64,8 @@ T* malloc_align(size_t size, Alignment alignment = Alignment::AVX) noexcept
   err = posix_memalign(&p, (size_t) alignment, size*sizeof(T));
   if(err)
     std::cout << "posix_memalign error" << std::endl;
-  return new(p) T[size];
+  //return new(p) T[size];
+  return (T*)p;
 }
 
 namespace detail {
