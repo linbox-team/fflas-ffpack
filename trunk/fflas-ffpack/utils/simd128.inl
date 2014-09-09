@@ -121,6 +121,7 @@ struct Simd128<double>
      static INLINE CONST double hadd_to_scal(const vect_t a) {
          return ((const double*)&a)[0] + ((const double*)&a)[1];
      }
+
 };
 
 template<>

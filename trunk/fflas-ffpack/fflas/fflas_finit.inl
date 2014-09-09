@@ -108,9 +108,7 @@ namespace FFLAS {
 			double p, invp;
 			p=(double)F.cardinality();
 			invp=1./p;
-			double pmax = (p-1)/2 ;
-			double pmin = pmax-p+1;
-			vectorised::modp<false,false>(A,A,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -137,9 +135,7 @@ namespace FFLAS {
 			float p, invp;
 			p=(float)F.cardinality();
 			invp=1.f/p;
-			float pmax = (p-1)/2 ;
-			float pmin = pmax-p+1;
-			vectorised::modp<false,false>(A,A,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
 			if (m < FFLASFFPACK_COPY_INIT) {
@@ -210,9 +206,7 @@ namespace FFLAS {
 			double p, invp;
 			p=(double)F.cardinality();
 			invp=1./p;
-			double pmax = (p-1)/2 ;
-			double pmin = pmax-p+1;
-			vectorised::modp<false,false>(A,B,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,B,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else {
 			double * Xi = A ;
@@ -231,9 +225,7 @@ namespace FFLAS {
 			float p, invp;
 			p=(float)F.cardinality();
 			invp=1.f/p;
-			float pmax = (p-1)/2 ;
-			float pmin = pmax-p+1;
-			vectorised::modp<false,false>(A,B,m,p,invp,pmin,pmax);
+			vectorised::modp<false,false>(A,B,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else {
 			float * Xi = A ;

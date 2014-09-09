@@ -70,9 +70,7 @@ namespace FFLAS {
 	{
 		if (inca == 1 && incb == 1 && incc == 1) {
 			double p = (double)F.characteristic();
-			double pmax = (p-1)/2 ;
-			double pmin = pmax-p+1;
-			vectorised::addp<false>(C,A,B,N,p,pmin, pmax);
+			vectorised::addp<false>(C,A,B,N,p,F.minElement(), F.maxElement());
 		}
 		else {
 			for (size_t i=0; i<N; i++)
@@ -125,9 +123,7 @@ namespace FFLAS {
 	{
 		if (inca == 1 && incb == 1 && incc == 1) {
 			double p = (double)F.characteristic();
-			double pmax = (p-1)/2 ;
-			double pmin = pmax-p+1;
-			vectorised::subp<false>(C,A,B,N,p,pmin, pmax);
+			vectorised::subp<false>(C,A,B,N,p,F.minElement(), F.maxElement());
 
 		}
 		else {
@@ -164,9 +160,7 @@ namespace FFLAS {
 	{
 		if (inca == 1 && incb == 1 && incc == 1) {
 			float p = (float)F.characteristic();
-			float pmax = (p-1)/2 ;
-			float pmin = pmax-p+1;
-			vectorised::subp<false>(C,A,B,N,p,pmin, pmax);
+			vectorised::subp<false>(C,A,B,N,p,F.minElement(), F.maxElement());
 
 		}
 		else {

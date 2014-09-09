@@ -446,6 +446,16 @@ namespace FFPACK
 		}
 		static  Element getMinModulus()	{return 3.0;}
 
+		Element minElement() const
+		{
+			return mhalf_mod ;
+		}
+
+		Element maxElement() const
+		{
+			return half_mod ;
+		}
+
 	private:
 
 		inline static int64_t& XINV(int64_t& d, int64_t& s, int64_t a, int64_t b)

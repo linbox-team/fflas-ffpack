@@ -80,6 +80,7 @@ namespace FFLAS { /*  ELL */
 			      typename Field::Element * y
 			     )
 		{
+			// std::cout << "details: generic " << std::endl;
 			if(!simd_true)
 			{
 				for (size_t i = 0 ; i < m ; ++i) {
@@ -103,11 +104,10 @@ namespace FFLAS { /*  ELL */
 			else
 			{
 #ifdef __FFLASFFPACK_USE_SIMD
-				std::cout << "a" << std::endl;
 				size_t i = 0 ;
 				using simd = Simd<typename Field::Element>;
-				using vect_t = typename simd::vect_t;
-				for ( ; i < m ; i += simd::vect_size) {
+				// using vect_t = typename simd::vect_t;
+				for ( ; i < m/simd::vect_size ; ++i ) {
 					if ( b != 1) {
 						if ( b == 0.) {
 							for(size_t k = 0 ; k < simd::vect_size ; ++k)
@@ -172,6 +172,7 @@ namespace FFLAS { /*  ELL */
 			      double * y
 			     )
 		{
+			// std::cout << "details: double" << std::endl;
 			if (!simd_true) {
 				for ( size_t i = 0 ;  i < m   ; ++i ) {
 					if ( b != 1) {
@@ -192,12 +193,11 @@ namespace FFLAS { /*  ELL */
 			}
 			else {
 #ifdef __FFLASFFPACK_USE_SIMD
-				std::cout << "b" << std::endl;
 				size_t i = 0 ;
 				using simd = Simd<double>;
 				using vect_t = typename simd::vect_t;
 				vect_t X,Y,D ;
-				for ( ; i < m ; i += simd::vect_size) {
+				for ( ; i < m/simd::vect_size ; ++i ) {
 
 					if ( b != 1) {
 						if ( b == 0.) {
@@ -206,21 +206,24 @@ namespace FFLAS { /*  ELL */
 						}
 						else if ( b == -1 ) {
 							// y[i]= -y[i];
-							Y = simd::load(y+i);
+							Y = simd::load(y+i*simd::vect_size);
 							Y = simd::sub(simd::zero(),Y);
 						}
 						else {
 							// y[i] = y[i] * b;
-							Y = simd::load(y+i);
+							Y = simd::load(y+i*simd::vect_size);
 							Y = simd::mul(Y,simd::set1(b));
 						}
+					}
+					else {
+							Y = simd::load(y+i*simd::vect_size);
 					}
 					for (index_t j = 0 ; j < ld ; ++j) {
 						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
 						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
 						Y = simd::madd(Y,D,X);
 					}
-					simd::store(y+i,Y);
+					simd::store(y+i*simd::vect_size,Y);
 				}
 				if ( b != 1) {
 					if ( b == 0.) {
@@ -287,12 +290,11 @@ namespace FFLAS { /*  ELL */
 			}
 			else {
 #ifdef __FFLASFFPACK_USE_SIMD
-				std::cout << "c" << std::endl;
 				size_t i = 0 ;
 				using simd = Simd<float>;
 				using vect_t = typename simd::vect_t;
 				vect_t X,Y,D ;
-				for ( ; i < m ; i += simd::vect_size) {
+				for ( ; i < m/simd::vect_size ; ++i ) {
 
 					if ( b != 1) {
 						if ( b == 0.) {
@@ -301,21 +303,24 @@ namespace FFLAS { /*  ELL */
 						}
 						else if ( b == -1 ) {
 							// y[i]= -y[i];
-							Y = simd::load(y+i);
+							Y = simd::load(y+i*simd::vect_size);
 							Y = simd::sub(simd::zero(),Y);
 						}
 						else {
 							// y[i] = y[i] * b;
-							Y = simd::load(y+i);
+							Y = simd::load(y+i*simd::vect_size);
 							Y = simd::mul(Y,simd::set1(b));
 						}
+					}
+					else {
+							Y = simd::load(y+i*simd::vect_size);
 					}
 					for (index_t j = 0 ; j < ld ; ++j) {
 						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
 						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
 						Y = simd::madd(Y,D,X);
 					}
-					simd::store(y+i,Y);
+					simd::store(y+i*simd::vect_size,Y);
 				}
 				if ( b != 1) {
 					if ( b == 0.) {
@@ -347,6 +352,7 @@ namespace FFLAS { /*  ELL */
 
 		}
 
+
 		// delayed by kmax
 		//! @bug check field is M(B)<f|d>
 		template<class Field, bool simd_true >
@@ -363,14 +369,14 @@ namespace FFLAS { /*  ELL */
 			      typename Field::Element * y,
 			      const index_t & kmax			     )
 		{
-			std::cout << "1" << std::endl;
+			index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
+			// std::cout << "Field delayed" << std::endl;
 			if(!simd_true) {
-				index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
 				for (size_t i = 0 ; i < m ; ++i) {
 					index_t j = 0;
 					index_t j_loc = 0 ;
 					for (size_t l = 0 ; l < block ; ++l) {
-						j_loc += block ;
+						j_loc += kmax ;
 						for ( ; j < j_loc ; ++j ) {
 							y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 						}
@@ -384,6 +390,60 @@ namespace FFLAS { /*  ELL */
 			}
 			else {
 #ifdef __FFLASFFPACK_USE_SIMD
+				using simd = Simd<typename Field::Element>;
+				size_t i = 0 ;
+				using vect_t = typename simd::vect_t;
+				vect_t X,Y,D ;
+
+				vect_t C, Q, TMP;
+				double p = (double)F.characteristic();
+				vect_t P = simd::set1(p);
+				vect_t NEGP = simd::set1(-p);
+				vect_t INVP = simd::set1(1./p);
+				vect_t MIN = simd::set1(F.minElement());
+				vect_t MAX = simd::set1(F.maxElement());
+
+
+				for ( ; i < m/simd::vect_size ; ++i ) {
+					index_t j = 0 ;
+					index_t j_loc = 0 ;
+					Y = simd::load(y+i*simd::vect_size);
+					for (size_t l = 0 ; l < block ; ++l) {
+						j_loc += kmax ;
+
+						for ( ; j < j_loc ; ++j) {
+							D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
+							X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
+							Y = simd::madd(Y,D,X);
+						}
+						vectorised::VEC_MOD(Y,Y,TMP, P, NEGP,INVP,MIN,MAX);
+					}
+					for ( ; j < ld ; ++j) {
+						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
+						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
+						Y = simd::madd(Y,D,X);
+					}
+					vectorised::VEC_MOD(Y,Q,TMP, P, NEGP,INVP,MIN,MAX);
+					simd::store(y+i*simd::vect_size,Y);
+
+				}
+				size_t deplacement = m -i*simd::vect_size ;
+				for (size_t ii = 0 ; ii < deplacement ; ++ii) {
+					index_t j = 0 ;
+					index_t j_loc = 0 ;
+					for (size_t l = 0 ; l < block ; ++l) {
+						j_loc += kmax ;
+						for ( ; j < j_loc ; ++j) {
+							y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii] * x[col[i*simd::vect_size*ld+j*deplacement + ii]];
+						}
+						F.init( y[i*simd::vect_size+ii],  y[i*simd::vect_size+ii]);
+					}
+					for ( ; j < ld ; ++j) {
+						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii] * x[col[i*simd::vect_size*ld+j*deplacement + ii]];
+					}
+					F.init( y[i*simd::vect_size+ii],  y[i*simd::vect_size+ii]);
+				}
+
 #else
 				// #error "simd must be enabled"
 #endif
@@ -403,7 +463,7 @@ namespace FFLAS { /*  ELL */
 	void sp_fgemv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<typename Field::Element, 1> & A,
+		      const ELL_sub<typename Field::Element, simd_true> & A,
 		      const VECT<typename Field::Element> & x,
 		      const typename Field::Element & b,
 		      VECT<typename Field::Element> & y
@@ -422,7 +482,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template< bool simd_true >
@@ -435,7 +495,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template< bool simd_true >
@@ -448,7 +508,8 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		// std::cout << "Moduar double ELL_sub" << std::endl;
+		details::sp_fgemv<simd_true>(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
@@ -462,7 +523,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
@@ -476,7 +537,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
@@ -490,7 +551,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
@@ -523,7 +584,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template<bool simd_true>
@@ -536,7 +597,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 
@@ -551,7 +612,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		std::cout << "1" << std::endl;
+		// std::cout << "Modular Double ELL" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
