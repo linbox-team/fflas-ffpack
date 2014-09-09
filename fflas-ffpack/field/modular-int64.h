@@ -472,6 +472,16 @@ namespace FFPACK
 		}
 		static  Element getMinModulus()	{return 2.0;}
 
+		Element minElement() const
+		{
+			return zero ;
+		}
+
+		Element maxElement() const
+		{
+			return mOne ;
+		}
+
 	private:
 
 		static void XGCD(int64_t& d, int64_t& s, int64_t& t, int64_t a, int64_t b)

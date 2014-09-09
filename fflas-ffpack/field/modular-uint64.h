@@ -353,6 +353,16 @@ namespace FFPACK
 			return is;
 		}
 
+		Element minElement() const
+		{
+			return zero ;
+		}
+
+		Element maxElement() const
+		{
+			return mOne ;
+		}
+
 	private:
 		void init_two_64 ()
 		{

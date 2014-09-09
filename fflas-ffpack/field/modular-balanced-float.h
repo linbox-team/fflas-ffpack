@@ -480,6 +480,16 @@ namespace FFPACK {
 
 		static  Element getMinModulus()	{return 3.0;}
 
+		Element minElement() const
+		{
+			return mhalf_mod ;
+		}
+
+		Element maxElement() const
+		{
+			return half_mod ;
+		}
+
 	};
 
 } // FFPACK

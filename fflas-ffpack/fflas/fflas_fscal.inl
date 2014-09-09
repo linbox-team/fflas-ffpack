@@ -173,9 +173,7 @@ namespace FFLAS {
 			float p, invp;
 			p=(float)F.cardinality();
 			invp=a/p;
-			float pmax = (p-1)/2 ;
-			float pmin = pmax-p+1;
-			vectorised::scalp(X,a,X,N,p,invp,pmin,pmax);
+			vectorised::scalp(X,a,X,N,p,invp,F.minElement(),F.maxElement());
 		}
 		else {
 			float * Xi = X ;
@@ -237,9 +235,7 @@ namespace FFLAS {
 			double p, invp;
 			p=(double)F.cardinality();
 			invp=a/p;
-			double pmax = (p-1)/2 ;
-			double pmin = pmax-p+1;
-			vectorised::scalp(X,a,X,N,p,invp,pmin,pmax);
+			vectorised::scalp(X,a,X,N,p,invp,F.minElement(),F.maxElement());
 		}
 		else {
 			double * Xi = X ;

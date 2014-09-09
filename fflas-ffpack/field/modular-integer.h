@@ -64,7 +64,7 @@ namespace FFPACK {
 
 	public:
 		const Element one  ;
-		const Element zero ; 
+		const Element zero ;
 		const Element mOne ;
 
 		typedef ModularRandIter<Element> RandIter;
@@ -254,7 +254,7 @@ namespace FFPACK {
 			 x = tx;
 			 if ( x<zero )
 				 x += modulus;
-			 return x;			
+			 return x;
 		}
 
 		 Element &axpy (Element &r,
@@ -332,6 +332,16 @@ namespace FFPACK {
 			init(r,r);
 			if (r<zero) r += modulus;
 			return r;
+		}
+
+		Element minElement() const
+		{
+			return zero ;
+		}
+
+		Element maxElement() const
+		{
+			return mOne ;
 		}
 
 	};
