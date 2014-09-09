@@ -367,7 +367,8 @@ namespace FFLAS { /*  ELL */
 			      const typename Field::Element * x ,
 			      // const typename Field::Element & b,
 			      typename Field::Element * y,
-			      const index_t & kmax			     )
+			      const index_t & kmax
+			      )
 		{
 			index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
 			// std::cout << "Field delayed" << std::endl;
@@ -450,6 +451,7 @@ namespace FFLAS { /*  ELL */
 
 			}
 		}
+
 	} // details
 
 	/* ******* */

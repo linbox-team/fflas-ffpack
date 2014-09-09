@@ -1602,6 +1602,575 @@ int test2_ell_simd()
 
 #endif
 
+int test1_ellr()
+{
+	Modular<double> F(1051);
+
+	ELLR<double> Mat ;
+	// size_t nbnz = 20 ;
+	Mat.m = 10 ;
+	Mat.n = 13 ;
+	size_t ld = 10 ;
+	Mat.ld = ld ;
+	Mat.col = FFLAS::fflas_new<index_t>(ld*Mat.m);
+	Mat.row = FFLAS::fflas_new<index_t>(Mat.m);
+	Mat.dat = FFLAS::fflas_new<double >(ld*Mat.m);
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.col[i]  = 0 ;
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.dat[i]  = 0 ;
+	for (size_t i = 0 ; i < Mat.m ; ++i) Mat.row[i]  = 0 ;
+
+	size_t j = 0 ;
+	++j ;
+	Mat.dat[j*ld+0] = 1 ;
+	Mat.dat[j*ld+1] = 2 ;
+	Mat.dat[j*ld+2] = 3 ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = -1 ;
+	Mat.dat[j*ld+1] = 10 ;
+	++j;
+	Mat.dat[j*ld+0] = 1 ;
+	Mat.dat[j*ld+1] = 2 ;
+	Mat.dat[j*ld+2] = 3 ;
+	Mat.dat[j*ld+3] = 4 ;
+	Mat.dat[j*ld+4] = 7 ;
+	Mat.dat[j*ld+5] = 8 ;
+	Mat.dat[j*ld+6] = 9 ;
+	Mat.dat[j*ld+7] = 11 ;
+	Mat.dat[j*ld+8] = 12 ;
+	Mat.dat[j*ld+9] = 13 ;
+	++j;
+	Mat.dat[j*ld+0] = -2 ;
+	Mat.dat[j*ld+1] = -3 ;
+	Mat.dat[j*ld+2] = 4 ;
+	Mat.dat[j*ld+3] = 5 ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = 1 ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = 8 ;
+
+	j = 0 ;
+	++j ;
+	Mat.col[j*ld+0] = 1 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 8 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 2 ;
+	Mat.col[j*ld+1] = 6 ;
+	++j;
+	Mat.col[j*ld+0] = 0 ;
+	Mat.col[j*ld+1] = 1 ;
+	Mat.col[j*ld+2] = 2 ;
+	Mat.col[j*ld+3] = 3 ;
+	Mat.col[j*ld+4] = 6 ;
+	Mat.col[j*ld+5] = 7 ;
+	Mat.col[j*ld+6] = 8 ;
+	Mat.col[j*ld+7] = 10 ;
+	Mat.col[j*ld+8] = 11 ;
+	Mat.col[j*ld+9] = 12 ;
+	++j;
+	Mat.col[j*ld+0] = 3 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 5 ;
+	Mat.col[j*ld+3] = 6 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 12 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 11 ;
+
+	Mat.row[0] = 0 ;
+	Mat.row[1] = 3 ;
+	Mat.row[2] = 0 ;
+	Mat.row[3] = 2 ;
+	Mat.row[4] = 10 ;
+	Mat.row[5] = 4 ;
+	Mat.row[6] = 0 ;
+	Mat.row[7] = 1 ;
+	Mat.row[8] = 0 ;
+	Mat.row[9] = 1 ;
+
+
+	VECT<double> x,y ;
+	x.m = Mat.n ;
+	x.inc = 1 ;
+	x.dat = FFLAS::fflas_new<double>(x.m);
+
+	y.m = Mat.m ;
+	y.inc = 1 ;
+	y.dat = FFLAS::fflas_new<double>(y.m);
+
+	for (size_t i = 0 ; i < x.m ; ++i) {
+		F.init(x.dat[i],i+1) ;
+	}
+
+	for (size_t i = 0 ; i < y.m ; ++i) {
+		F.init(y.dat[i] ,i+1) ;
+	}
+
+	// y
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y = Ax + 0 y
+	sp_fgemv(F,Mat,x,0,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+
+	// y = Ax + y ( y = 2 Ax)
+	sp_fgemv(F,Mat,x,1,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y = Ax - y (y = - Ax)
+	sp_fgemv(F,Mat,x,-1,y);
+
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y += Ax + 3 y (y = - Ax)
+	sp_fgemv(F,Mat,x,2,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y += Ax + y (y = 0)
+	sp_fgemv(F,Mat,x,1,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+
+
+	return 0 ;
+
+
+}
+
+int test2_ellr()
+{
+	Modular<double> F(1051);
+
+	ELLR_sub<double> Mat ;
+	// size_t nbnz = 20 ;
+	Mat.m = 10 ;
+	Mat.n = 13 ;
+	size_t ld = 10 ;
+	Mat.ld = ld ;
+	Mat.col = FFLAS::fflas_new<index_t>(ld*Mat.m);
+	Mat.dat = FFLAS::fflas_new<double >(ld*Mat.m);
+	Mat.row = FFLAS::fflas_new<index_t>(Mat.m);
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.col[i]  = 0 ;
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.dat[i]  = 0 ;
+	for (size_t i = 0 ; i < Mat.m ; ++i) Mat.row[i]  = 0 ;
+
+	size_t j = 0 ;
+	++j ;
+	Mat.dat[j*ld+0] = 1 ;
+	Mat.dat[j*ld+1] = 2 ;
+	Mat.dat[j*ld+2] = 3 ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = -1 ;
+	Mat.dat[j*ld+1] = 10 ;
+	++j;
+	Mat.dat[j*ld+0] = 1 ;
+	Mat.dat[j*ld+1] = 2 ;
+	Mat.dat[j*ld+2] = 3 ;
+	Mat.dat[j*ld+3] = 4 ;
+	Mat.dat[j*ld+4] = 7 ;
+	Mat.dat[j*ld+5] = 8 ;
+	Mat.dat[j*ld+6] = 9 ;
+	Mat.dat[j*ld+7] = 11 ;
+	Mat.dat[j*ld+8] = 12 ;
+	Mat.dat[j*ld+9] = 13 ;
+	++j;
+	Mat.dat[j*ld+0] = -2 ;
+	Mat.dat[j*ld+1] = -3 ;
+	Mat.dat[j*ld+2] = 4 ;
+	Mat.dat[j*ld+3] = 5 ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = 1 ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = 8 ;
+
+	j = 0 ;
+	++j ;
+	Mat.col[j*ld+0] = 1 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 8 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 2 ;
+	Mat.col[j*ld+1] = 6 ;
+	++j;
+	Mat.col[j*ld+0] = 0 ;
+	Mat.col[j*ld+1] = 1 ;
+	Mat.col[j*ld+2] = 2 ;
+	Mat.col[j*ld+3] = 3 ;
+	Mat.col[j*ld+4] = 6 ;
+	Mat.col[j*ld+5] = 7 ;
+	Mat.col[j*ld+6] = 8 ;
+	Mat.col[j*ld+7] = 10 ;
+	Mat.col[j*ld+8] = 11 ;
+	Mat.col[j*ld+9] = 12 ;
+	++j;
+	Mat.col[j*ld+0] = 3 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 5 ;
+	Mat.col[j*ld+3] = 6 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 12 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 11 ;
+
+	Mat.row[0] = 0 ;
+	Mat.row[1] = 3 ;
+	Mat.row[2] = 0 ;
+	Mat.row[3] = 2 ;
+	Mat.row[4] = 10 ;
+	Mat.row[5] = 4 ;
+	Mat.row[6] = 0 ;
+	Mat.row[7] = 1 ;
+	Mat.row[8] = 0 ;
+	Mat.row[9] = 1 ;
+
+
+
+
+	VECT<double> x,y ;
+	x.m = Mat.n ;
+	x.inc = 1 ;
+	x.dat = FFLAS::fflas_new<double>(x.m);
+
+	y.m = Mat.m ;
+	y.inc = 1 ;
+	y.dat = FFLAS::fflas_new<double>(y.m);
+
+	for (size_t i = 0 ; i < x.m ; ++i) {
+		F.init(x.dat[i],i+1) ;
+	}
+
+	for (size_t i = 0 ; i < y.m ; ++i) {
+		F.init(y.dat[i] ,i+1) ;
+	}
+
+	// y
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y = Ax + 0 y
+	sp_fgemv(F,Mat,x,0,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+
+	// y = Ax + y ( y = 2 Ax)
+	sp_fgemv(F,Mat,x,1,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y = Ax - y (y = - Ax)
+	sp_fgemv(F,Mat,x,-1,y);
+
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y += Ax + 3 y (y = - Ax)
+	sp_fgemv(F,Mat,x,2,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+	// y += Ax + y (y = 0)
+	sp_fgemv(F,Mat,x,1,y);
+	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+	std::cout << std::endl;
+
+
+
+	return 0 ;
+
+
+}
+
+int test3_ellr(int CST)
+{
+
+	{
+		Modular<double> F(1051);
+
+		ELLR<double> Mat ;
+	Mat.m = 10 ;
+	Mat.n = 13 ;
+	size_t ld = 10 ;
+	Mat.ld = ld ;
+	Mat.col = FFLAS::fflas_new<index_t>(ld*Mat.m);
+	Mat.dat = FFLAS::fflas_new<double >(ld*Mat.m);
+	Mat.row = FFLAS::fflas_new<index_t>(Mat.m);
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.col[i]  = 0 ;
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.dat[i]  = 0 ;
+	for (size_t i = 0 ; i < Mat.m ; ++i) Mat.row[i]  = 0 ;
+
+	size_t j = 0 ;
+	++j ;
+	Mat.dat[j*ld+0] = CST ;
+	Mat.dat[j*ld+1] = CST ;
+	Mat.dat[j*ld+2] = CST ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = CST ;
+	Mat.dat[j*ld+1] = CST ;
+	++j;
+	Mat.dat[j*ld+0] = CST ;
+	Mat.dat[j*ld+1] = CST ;
+	Mat.dat[j*ld+2] = CST ;
+	Mat.dat[j*ld+3] = CST ;
+	Mat.dat[j*ld+4] = CST ;
+	Mat.dat[j*ld+5] = CST ;
+	Mat.dat[j*ld+6] = CST ;
+	Mat.dat[j*ld+7] = CST ;
+	Mat.dat[j*ld+8] = CST ;
+	Mat.dat[j*ld+9] = CST ;
+	++j;
+	Mat.dat[j*ld+0] = CST ;
+	Mat.dat[j*ld+1] = CST ;
+	Mat.dat[j*ld+2] = CST ;
+	Mat.dat[j*ld+3] = CST ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = CST ;
+	++j;
+	++j;
+	Mat.dat[j*ld+0] = CST ;
+
+	j = 0 ;
+	++j ;
+	Mat.col[j*ld+0] = 1 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 8 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 2 ;
+	Mat.col[j*ld+1] = 6 ;
+	++j;
+	Mat.col[j*ld+0] = 0 ;
+	Mat.col[j*ld+1] = 1 ;
+	Mat.col[j*ld+2] = 2 ;
+	Mat.col[j*ld+3] = 3 ;
+	Mat.col[j*ld+4] = 6 ;
+	Mat.col[j*ld+5] = 7 ;
+	Mat.col[j*ld+6] = 8 ;
+	Mat.col[j*ld+7] = 10 ;
+	Mat.col[j*ld+8] = 11 ;
+	Mat.col[j*ld+9] = 12 ;
+	++j;
+	Mat.col[j*ld+0] = 3 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 5 ;
+	Mat.col[j*ld+3] = 6 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 12 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 11 ;
+
+	Mat.row[0] = 0 ;
+	Mat.row[1] = 3 ;
+	Mat.row[2] = 0 ;
+	Mat.row[3] = 2 ;
+	Mat.row[4] = 10 ;
+	Mat.row[5] = 4 ;
+	Mat.row[6] = 0 ;
+	Mat.row[7] = 1 ;
+	Mat.row[8] = 0 ;
+	Mat.row[9] = 1 ;
+
+
+
+		// Mat.z =  nbnz;
+
+
+		VECT<double> x,y ;
+		x.m = Mat.n ;
+		x.inc = 1 ;
+		x.dat = FFLAS::fflas_new<double>(x.m);
+
+		y.m = Mat.m ;
+		y.inc = 1 ;
+		y.dat = FFLAS::fflas_new<double>(y.m);
+
+		for (size_t i = 0 ; i < x.m ; ++i) {
+			F.init(x.dat[i],i+1) ;
+		}
+
+		for (size_t i = 0 ; i < y.m ; ++i) {
+			F.init(y.dat[i] ,i+1) ;
+		}
+
+		// y
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+		// y = Ax + 0 y
+		sp_fgemv(F,Mat,x,0,y);
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+
+		// y = Ax + y ( y = 2 Ax)
+		// sp_fgemv(F,Mat,x,1,y);
+		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		// std::cout << std::endl;
+
+		// y = Ax - y (y = - Ax)
+		// sp_fgemv(F,Mat,x,-1,y);
+
+		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		// std::cout << std::endl;
+
+		// y += Ax + 3 y (y = - Ax)
+		// sp_fgemv(F,Mat,x,2,y);
+		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		// std::cout << std::endl;
+
+		// y += Ax + y (y = 0)
+		// sp_fgemv(F,Mat,x,1,y);
+		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		// std::cout << std::endl;
+
+
+	}
+
+	{
+		Modular<double> F(1051);
+		ELLR_ZO<double> Mat ;
+
+	Mat.m = 10 ;
+	Mat.n = 13 ;
+	size_t ld = 10 ;
+	Mat.ld = ld ;
+	Mat.col = FFLAS::fflas_new<index_t>(ld*Mat.m);
+	Mat.row = FFLAS::fflas_new<index_t>(Mat.m);
+	for (size_t i = 0 ; i < ld*Mat.m ; ++i) Mat.col[i]  = 0 ;
+	for (size_t i = 0 ; i < Mat.m ; ++i) Mat.row[i]  = 0 ;
+
+	size_t j = 0 ;
+
+	++j ;
+	Mat.col[j*ld+0] = 1 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 8 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 2 ;
+	Mat.col[j*ld+1] = 6 ;
+	++j;
+	Mat.col[j*ld+0] = 0 ;
+	Mat.col[j*ld+1] = 1 ;
+	Mat.col[j*ld+2] = 2 ;
+	Mat.col[j*ld+3] = 3 ;
+	Mat.col[j*ld+4] = 6 ;
+	Mat.col[j*ld+5] = 7 ;
+	Mat.col[j*ld+6] = 8 ;
+	Mat.col[j*ld+7] = 10 ;
+	Mat.col[j*ld+8] = 11 ;
+	Mat.col[j*ld+9] = 12 ;
+	++j;
+	Mat.col[j*ld+0] = 3 ;
+	Mat.col[j*ld+1] = 4 ;
+	Mat.col[j*ld+2] = 5 ;
+	Mat.col[j*ld+3] = 6 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 12 ;
+	++j;
+	++j;
+	Mat.col[j*ld+0] = 11 ;
+
+	Mat.row[0] = 0 ;
+	Mat.row[1] = 3 ;
+	Mat.row[2] = 0 ;
+	Mat.row[3] = 2 ;
+	Mat.row[4] = 10 ;
+	Mat.row[5] = 4 ;
+	Mat.row[6] = 0 ;
+	Mat.row[7] = 1 ;
+	Mat.row[8] = 0 ;
+	Mat.row[9] = 1 ;
+
+	Mat.cst = CST ;
+
+
+
+		// Mat.z =  nbnz;
+
+
+		VECT<double> x,y ;
+		x.m = Mat.n ;
+		x.inc = 1 ;
+		x.dat = FFLAS::fflas_new<double>(x.m);
+
+		y.m = Mat.m ;
+		y.inc = 1 ;
+		y.dat = FFLAS::fflas_new<double>(y.m);
+
+		for (size_t i = 0 ; i < x.m ; ++i) {
+			F.init(x.dat[i],i+1) ;
+		}
+
+		for (size_t i = 0 ; i < y.m ; ++i) {
+			F.init(y.dat[i] ,i+1) ;
+		}
+
+		// y
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+		// y = Ax + 0 y
+		sp_fgemv(F,Mat,x,0,y);
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+
+		// y = Ax + y ( y = 2 Ax)
+		sp_fgemv(F,Mat,x,1,y);
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+		// y = Ax - y (y = - Ax)
+		sp_fgemv(F,Mat,x,-1,y);
+
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+		// y += Ax + 3 y (y = - Ax)
+		sp_fgemv(F,Mat,x,2,y);
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+		// y += Ax + y (y = 0)
+		sp_fgemv(F,Mat,x,1,y);
+		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
+		std::cout << std::endl;
+
+
+
+
+	}
+
+	return 0 ;
+
+}
+
+
 
 int main()
 {
@@ -1639,6 +2208,17 @@ int main()
 	test2_ell_simd();
 
 #endif
+
+	std::cout << "test (ELLR)        " << std::endl;
+	test1_ellr();
+
+	std::cout << "test (ELLR) SUB    " << std::endl;
+	test2_ellr();
+
+	std::cout << "test (ELLR) ZO     " << std::endl;
+	test3_ellr(1);
+	test3_ellr(2);
+
 
 
 
