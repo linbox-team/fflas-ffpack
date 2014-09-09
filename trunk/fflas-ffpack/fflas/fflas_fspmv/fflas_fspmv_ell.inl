@@ -39,7 +39,7 @@
 namespace FFLAS { /*  ELL */
 
 	template<class _Element, bool _Simd =
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
 	true
 #else
 	false
@@ -54,7 +54,7 @@ namespace FFLAS { /*  ELL */
 	};
 
 	template<class _Element, bool _Simd =
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
 	true
 #else
 	false
@@ -102,7 +102,8 @@ namespace FFLAS { /*  ELL */
 			}
 			else
 			{
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
+				std::cout << "a" << std::endl;
 				size_t i = 0 ;
 				using simd = Simd<typename Field::Element>;
 				using vect_t = typename simd::vect_t;
@@ -110,7 +111,7 @@ namespace FFLAS { /*  ELL */
 					if ( b != 1) {
 						if ( b == 0.) {
 							for(size_t k = 0 ; k < simd::vect_size ; ++k)
-								F.assifgn(y[i*simd::vect_size+k], F.zero);
+								F.assign(y[i*simd::vect_size+k], F.zero);
 						}
 						else if ( b == -1 ) {
 							for(size_t k = 0 ; k < simd::vect_size ; ++k)
@@ -118,10 +119,11 @@ namespace FFLAS { /*  ELL */
 						}
 						else {
 							for(size_t k = 0 ; k < simd::vect_size ; ++k)
-								F.mulin(y[i*simd::vect_size+k]);
+								F.mulin(y[i*simd::vect_size+k],b);
 						}
 					}
 					for (index_t j = 0 ; j < ld ; ++j) {
+						// simd part
 						for(size_t k = 0 ; k < simd::vect_size ; ++k)
 							F.axpyin(y[i*simd::vect_size+k], dat[i*simd::vect_size*ld+j*simd::vect_size+k], x[col[i*simd::vect_size*ld+j*simd::vect_size+k]]);
 					}
@@ -189,7 +191,8 @@ namespace FFLAS { /*  ELL */
 				}
 			}
 			else {
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
+				std::cout << "b" << std::endl;
 				size_t i = 0 ;
 				using simd = Simd<double>;
 				using vect_t = typename simd::vect_t;
@@ -283,7 +286,8 @@ namespace FFLAS { /*  ELL */
 				}
 			}
 			else {
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
+				std::cout << "c" << std::endl;
 				size_t i = 0 ;
 				using simd = Simd<float>;
 				using vect_t = typename simd::vect_t;
@@ -359,14 +363,12 @@ namespace FFLAS { /*  ELL */
 			      typename Field::Element * y,
 			      const index_t & kmax			     )
 		{
-			// if(!simd_true)
-			{
+			std::cout << "1" << std::endl;
+			if(!simd_true) {
 				index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
-				for (size_t i = 0 ; i < m ; ++i)
-				{
+				for (size_t i = 0 ; i < m ; ++i) {
 					index_t j = 0;
 					index_t j_loc = 0 ;
-					// bool term = false ;
 					for (size_t l = 0 ; l < block ; ++l) {
 						j_loc += block ;
 						for ( ; j < j_loc ; ++j ) {
@@ -374,13 +376,18 @@ namespace FFLAS { /*  ELL */
 						}
 						F.init(y[i],y[i]);
 					}
-					// if (! term ) {
-						for ( ; j < ld  ; ++j) {
-							y[i] += dat[i*ld+j] * x[col[i*ld+j]];
-						}
-						F.init(y[i],y[i]);
-					// }
+					for ( ; j < ld  ; ++j) {
+						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
+					}
+					F.init(y[i],y[i]);
 				}
+			}
+			else {
+#ifdef __FFLASFFPACK_USE_SIMD
+#else
+				// #error "simd must be enabled"
+#endif
+
 			}
 		}
 	} // details
@@ -544,6 +551,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
+		std::cout << "1" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
