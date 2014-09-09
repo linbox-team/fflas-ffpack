@@ -18,7 +18,7 @@
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Lesser General Public License for more ellr_details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
@@ -51,7 +51,7 @@ namespace FFLAS { /*  ELLR */
 	};
 
 	template<class Element>
-	struct ELLR {
+	struct ELLR_ZO {
 		size_t m ;
 		size_t n ;
 		size_t  ld ;
@@ -60,8 +60,7 @@ namespace FFLAS { /*  ELLR */
 		Element cst ;
 	};
 
-
-	namespace details {
+	namespace ellr_details {
 
 		// y = A x + b y ; (generic)
 		template<class Field>
@@ -84,7 +83,7 @@ namespace FFLAS { /*  ELLR */
 					if (F.isZero(b)) {
 						F.assign(y[i],F.zero);
 					}
-					else if (F.isMone(b)) {
+					else if (F.isMOne(b)) {
 						F.negin(y[i]);
 					}
 					else {
@@ -187,19 +186,17 @@ namespace FFLAS { /*  ELLR */
 
 			for (size_t i = 0 ; i < m ; ++i) {
 				index_t block = (row[i])/kmax ; // use DIVIDE_INTO from fspmvgpu
-				// y[i] = 0;
 				index_t j = 0;
 				index_t j_loc = 0 ;
-				bool term = false ;
 				for (size_t l = 0 ; l < block ; ++l) {
-					j_loc += block ;
+					j_loc += kmax ;
 					for ( ; j < j_loc ; ++j ) {
 						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 					}
 					F.init(y[i],y[i]);
 				}
 				for ( ; j < row[i]  ; ++j) {
-					y[i] += dat[i*ld+j] * x[i*ld+col[j]];
+					y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 				}
 				F.init(y[i],y[i]);
 			}
@@ -289,7 +286,12 @@ namespace FFLAS { /*  ELLR */
 			}
 		}
 
-	} // details
+	} // ellr_details
+
+	/* ******* */
+	/* ELLR_sub */
+	/* ******* */
+
 
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
@@ -303,7 +305,7 @@ namespace FFLAS { /*  ELLR */
 		      VECT<typename Field::Element> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template<>
@@ -316,7 +318,7 @@ namespace FFLAS { /*  ELLR */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template<>
@@ -329,12 +331,12 @@ namespace FFLAS { /*  ELLR */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template<>
 	void sp_fgemv(
-		      const Modular<double>& F,
+		      const FFPACK::Modular<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELLR_sub<double> & A,
 		      const VECT<double> & x,
@@ -342,13 +344,13 @@ namespace FFLAS { /*  ELLR */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv(DoubleDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(DoubleDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
 	template<>
 	void sp_fgemv(
-		      const Modular<float>& F,
+		      const FFPACK::Modular<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELLR_sub<float> & A,
 		      const VECT<float> & x,
@@ -356,13 +358,13 @@ namespace FFLAS { /*  ELLR */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv(FloatDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(FloatDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
 	template<>
 	void sp_fgemv(
-		      const ModularBalanced<double>& F,
+		      const FFPACK::ModularBalanced<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELLR_sub<double> & A,
 		      const VECT<double> & x,
@@ -370,13 +372,13 @@ namespace FFLAS { /*  ELLR */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv(DoubleDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(DoubleDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
 	template<>
 	void sp_fgemv(
-		      const ModularBalanced<float>& F,
+		      const FFPACK::ModularBalanced<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELLR_sub<float> & A,
 		      const VECT<float> & x,
@@ -384,10 +386,13 @@ namespace FFLAS { /*  ELLR */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv(FloatDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(FloatDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 		finit(F,A.m,y.dat,1);
 	}
 
+	/* ***** */
+	/* ELL_R */
+	/* ***** */
 
 	// y = A x + b y ; (generic)
 	// reductions are delayed.
@@ -401,7 +406,7 @@ namespace FFLAS { /*  ELLR */
 		      VECT<typename Field::Element> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template<>
@@ -414,7 +419,7 @@ namespace FFLAS { /*  ELLR */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 	template<>
@@ -427,7 +432,7 @@ namespace FFLAS { /*  ELLR */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
 	}
 
 
@@ -446,7 +451,7 @@ namespace FFLAS { /*  ELLR */
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
 	template<>
@@ -462,7 +467,7 @@ namespace FFLAS { /*  ELLR */
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
 	template<>
@@ -478,7 +483,7 @@ namespace FFLAS { /*  ELLR */
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t)kmax);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t)kmax);
 	}
 
 	template<>
@@ -494,7 +499,7 @@ namespace FFLAS { /*  ELLR */
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
 	// this is the cst data special case.
@@ -515,15 +520,15 @@ namespace FFLAS { /*  ELLR */
 		FFLASFFPACK_check(!F.isZero(A.cst));
 
 		if (A.cst == F.one) {
-			details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
+			ellr_details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
 		}
 		else if (A.cst == F.mOne) {
-			details::sp_fgemv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
+			ellr_details::sp_fgemv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
 		}
 		else {
 			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
 			fscal(F,A.n,A.cst,x.dat,1,xd,1);
-			details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,xd,y.dat);
+			ellr_details::sp_fgemv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,xd,y.dat);
 		}
 
 		finit(F,A.m,y.dat,1);
