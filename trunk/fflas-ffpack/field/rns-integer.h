@@ -144,8 +144,8 @@ namespace FFLAS {
 	// specialization for the fflas alloc function
 	template<>
 	inline FFPACK::rns_double_elt_ptr
-	fflas_new(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n){
-		double *ptr=FFLAS::fflas_new<double>(m*n*F.size());
+	fflas_new(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n, const Alignment align){
+		double *ptr=FFLAS::fflas_new<double>(m*n*F.size(), align);
 		return FFPACK::rns_double_elt_ptr(ptr,m*n);
 	}
 
