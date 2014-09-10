@@ -67,7 +67,7 @@ namespace FFLAS {
 	struct associatedDelayedField<const FFPACK::Modular<double> >{
 		typedef DoubleDomain field;
 		typedef DoubleDomain type;
-};
+	};
 	template <>
 	struct associatedDelayedField<const FFPACK::ModularBalanced<double> >{
 		typedef DoubleDomain field;

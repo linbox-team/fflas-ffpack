@@ -4,6 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   BB <bbboyer@ncsu.edu>
+ *				Bastien Vialla <bastien.vialla@lirmm.fr>
  *
  *
  * ========LICENCE========
@@ -35,6 +36,7 @@
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
+#include "fflas-ffpack/fflas/fflas_helpers.inl"
 
 namespace FFLAS { /*  DNS */
 
@@ -44,7 +46,7 @@ namespace FFLAS { /*  DNS */
 		size_t inc = 0;
 		Element * dat = nullptr;
 
-		Element * data() {return dat;}
+		inline Element * data() {return dat;}
 	};
 
 	template<class Element>
@@ -53,7 +55,7 @@ namespace FFLAS { /*  DNS */
 		size_t ld = 0;
 		Element * dat = nullptr;
 		
-		Element * data() {return dat;}
+		inline Element * data() {return dat;}
 	};
 
 } // FFLAS
@@ -104,5 +106,54 @@ namespace FFLAS { /*  SKY */
 namespace FFLAS { /*  JAG */
 
 } // FFLAS
+
+namespace FFLAS{
+	namespace details {
+
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element * y, FieldCategories::FloatingPointTag)
+		{
+			if(b != -1)
+			{
+				if(b == 0)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i] = 0;
+				}
+				else if(b == -1)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i] *= -1;	
+				}
+				else
+				{
+					fscalin(F, m, b, y, 1);
+				}
+			}
+		}
+
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element * y, FieldCategories::GenericTag)
+		{
+			if(!F.isOne(b))
+			{
+				if(F.isZero(b))
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						F.assign(y[i], F.zero);
+				}
+				else if(F.isMone(b))
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						F.neg(y[i]);
+				}
+				else
+				{
+					fscalin(F, m, b, y, 1);
+				}
+			}
+		}		
+	}/* details */
+}/* FFLAS */
 
 #endif // __FFLASFFPACK_fflas_fflas_fspmv_INL
