@@ -69,7 +69,7 @@ namespace FFLAS { namespace vectorised {
 		return rintf(A);
 	}
 
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#ifdef __FFLASFFPACK_USE_SIMD
 
 	template<class SimdT>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
