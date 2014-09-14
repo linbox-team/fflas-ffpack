@@ -120,10 +120,10 @@ int main(int argc, char** argv){
 	ldc=n;;
 
 	typename Field::RandIter Rand(F,seed);
-	FFPACK::Integer *A,*B,*C;
-	C= FFLAS::fflas_new<FFPACK::Integer>(m*n);
-	A= FFLAS::fflas_new<FFPACK::Integer>(m*k);
-	B= FFLAS::fflas_new<FFPACK::Integer>(k*n);
+	Field::Element_ptr A,B,C;
+	C= FFLAS::fflas_new(F,m,n);
+	A= FFLAS::fflas_new(F,m,k);
+	B= FFLAS::fflas_new(F,k,n);
 	
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<k;++j)
@@ -133,15 +133,15 @@ int main(int argc, char** argv){
 			Rand.random(B[i*n+j]);				
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
-			Rand.random(C[i*n+j]);			
+			Rand.random(C[i*n+j]);	 		
 	
 	
 	FFPACK::Integer alpha,beta;
 	alpha=1;
 	beta=0;
-	
+	   
 
- FFLAS::Timer chrono;
+	FFLAS::Timer chrono;
 #ifdef	BENCH_FLINT	
 	// FLINT MUL //
 	fmpz_t modp,tmp;
@@ -194,9 +194,11 @@ int main(int argc, char** argv){
 #else
 	cout<<" RNS MUL LA: "<<chrono.usertime()<<endl;
 #endif
-	delete[] A;
-	delete[] B;
-	delete[] C;
+
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(B);
+	FFLAS::fflas_delete(C);
+
 	return 0;
 }
  

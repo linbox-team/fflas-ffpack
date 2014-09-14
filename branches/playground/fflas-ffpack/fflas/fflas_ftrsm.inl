@@ -59,6 +59,48 @@ namespace FFLAS {
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
 	}
 
+	template<class Field>
+	inline void
+	ftrsm (const Field& F, const FFLAS_SIDE Side,
+	       const FFLAS_UPLO Uplo,
+	       const FFLAS_TRANSPOSE TransA,
+	       const FFLAS_DIAG Diag,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+#ifdef __FFLAS__TRSM_READONLY
+	       typename Field::ConstElement_ptr
+#else
+	       typename Field::Element_ptr
+#endif
+	       A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
+	       const ParSeqHelper::Sequential& PSH)
+	{
+		TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> H(PSH);
+		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
+	}
+
+	template<class Field>
+	inline void
+	ftrsm (const Field& F, const FFLAS_SIDE Side,
+	       const FFLAS_UPLO Uplo,
+	       const FFLAS_TRANSPOSE TransA,
+	       const FFLAS_DIAG Diag,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+#ifdef __FFLAS__TRSM_READONLY
+	       typename Field::ConstElement_ptr
+#else
+	       typename Field::Element_ptr
+#endif
+	       A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
+	       const ParSeqHelper::Parallel& PSH)
+	{
+		TRSMHelper<StructureHelper::Iterative, ParSeqHelper::Parallel> H(PSH);
+		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
+	}
+
 	template<class Field, class ParSeqTrait=ParSeqHelper::Sequential>
 	inline void
 	ftrsm (const Field& F, const FFLAS_SIDE Side,

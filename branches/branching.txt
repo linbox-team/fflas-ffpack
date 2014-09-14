@@ -1,4 +1,16 @@
-# creating a new branch :
+#####################################
+# >> creating a new branch :
 svn copy ^/trunk ^/branches/a.b -m "new branch a.b created"
-# syncing in branches/a.b :
+
+#####################################
+# >> syncing in branches/a.b :
 svn merge ^/trunk
+
+# >> if that does not work (ie with linbox, fflas-ffpack...)
+# >> in the branch :
+svn log --stop-on-copy | tail
+# << last copy output is r38
+cd ../../trunk ; svn up
+# << last commit output is r42
+# >> go back to branch and upgrade:
+cd - ; svn merge -r38:42 svn://linalg.org/fflas-ffpack/trunk ;

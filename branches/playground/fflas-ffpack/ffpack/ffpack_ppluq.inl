@@ -57,8 +57,6 @@ namespace FFPACK {
 	      size_t* P, size_t* Q)
 	  {
 
-		  const FFLAS::CuttingStrategy method = FFLAS::BLOCK_THREADS;
-		  size_t NUM = (size_t) NUM_THREADS;
 		  for (size_t i=0; i<M; ++i) P[i] = i;
 		  for (size_t i=0; i<N; ++i) Q[i] = i;
 		  if (std::min(M,N) == 0) return 0;
@@ -110,8 +108,8 @@ namespace FFPACK {
 		  size_t N2 = N >> 1;
 		  //    size_t M2 = size_t(M/3);
 		  //    size_t N2 = size_t(N/3);
-		  size_t * P1 = FFLAS::fflas_new<size_t >(M2);
-		  size_t * Q1 = FFLAS::fflas_new<size_t >(N2);
+		  size_t * P1 = new size_t [M2];
+		  size_t * Q1 = new size_t [N2];
 		  size_t R1,R2,R3,R4;
 
 		  // A1 = P1 [ L1 ] [ U1 V1 ] Q1
@@ -124,6 +122,14 @@ namespace FFPACK {
 		  typename Field::Element_ptr F = A2 + R1*lda;
 		  typename Field::Element_ptr G = A3 + R1;
 
+		  const FFLAS::CuttingStrategy method = FFLAS::BLOCK_THREADS;
+                  int nbw = -1;
+		  FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value,
+				  typename FFLAS::ParSeqHelper::Parallel> pWH (Fi, nbw, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, method));
+
+		  FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
+			  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS, method));
+
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]
 		  TASK(READ(Fi, P1), NOWRITE(), READWRITE(A2), papplyP, Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
@@ -135,35 +141,35 @@ namespace FFPACK {
 
 		  WAIT;
 		  // D <- L1^-1 B1
-		  TASK(READ(Fi, A, R1), NOWRITE(), READWRITE(A2), pftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda,  method, NUM);
+		  TASK(READ(Fi, A, R1), NOWRITE(), READWRITE(A2), ftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
 		  //    pftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda,  method, NUM);
 		  //ftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda);
 
 		  // E <- C1 U1^-1
-		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), pftrsm,Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  method, NUM);
+		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), ftrsm,Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  PH);
 		  //pftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  method, NUM);
 		  //ftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 
 		  WAIT;
 		  // F <- B2 - M1 D
-		  TASK(READ(Fi, A), NOWRITE(), READWRITE(A2), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, method, NUM_THREADS);
+		  TASK(READ(Fi, A), NOWRITE(), READWRITE(A2), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
 
 		  // G <- C2 - E V1
-		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda,  method, NUM_THREADS);
+		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
 
 		  WAIT;
 
-		  size_t * P2 = FFLAS::fflas_new<size_t >(M2-R1);
-		  size_t * Q2 = FFLAS::fflas_new<size_t >(N-N2);
+		  size_t * P2 = new size_t [M2-R1];
+		  size_t * Q2 = new size_t [N-N2];
 		  // F = P2 [ L2 ] [ U2 V2 ] Q2
 		  //        [ M2 ]
 		  TASK(READ(Fi), WRITE(R2), READWRITE(F, P2, Q2), PPLUQ, R2, Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 		  //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 
-		  size_t * P3 = FFLAS::fflas_new<size_t >(M-M2);
-		  size_t * Q3 = FFLAS::fflas_new<size_t >(N2-R1);
+		  size_t * P3 = new size_t [M-M2];
+		  size_t * Q3 = new size_t [N2-R1];
 		  // G = P3 [ L3 ] [ U3 V3 ] Q3
 		  //        [ M3 ]
 		  TASK(READ(Fi), WRITE(R3), READWRITE(G, P3, Q3), PPLUQ, R3, Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
@@ -173,7 +179,7 @@ namespace FFPACK {
 
 
 		  // H <- A4 - ED
-		  TASK(READ(Fi, M2, N2, R1, A3, A2), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, 0,  method, NUM_THREADS);
+		  TASK(READ(Fi, M2, N2, R1, A3, A2), NOWRITE(), READWRITE(A4), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda);
 		  //		  std::cout<<"NUM "<<NUM_THREADS<<std::endl;
 
@@ -209,47 +215,47 @@ namespace FFPACK {
 
       // I <- H1 U2^-1
       // K <- H3 U2^-1
-		  TASK(READ(Fi, R2, F), NOWRITE(), READWRITE(A4), pftrsm, Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda,  method, NUM);
+		  TASK(READ(Fi, R2, F), NOWRITE(), READWRITE(A4), ftrsm, Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, PH);
 		  //pftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda,  method, NUM);
 		  //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		  WAIT;
 
-		  typename Field::Element_ptr temp = FFLAS::fflas_new (F, R3, R2);
+		  typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
 		  /*    for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
 		  */
 		  FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
 
     // J <- L3^-1 I (in a temp)
-		  TASK(READ(Fi, R2, G), NOWRITE(), READWRITE(temp), pftrsm,  Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2,  method, NUM);
+		  TASK(READ(Fi, R2, G), NOWRITE(), READWRITE(temp), ftrsm,  Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2, PH);
 		  //pftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2,  method, NUM);
 		  //ftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 
    // N <- L3^-1 H2
-		  TASK(READ(Fi, R3, G), NOWRITE(), READWRITE(A4), pftrsm,Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda,  method, NUM);
+		  TASK(READ(Fi, R3, G), NOWRITE(), READWRITE(A4), ftrsm,Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda, PH);
 		  //    pftrsm(Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda,  method, NUM);
 		  //ftrsm(Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		  WAIT;
 
    // O <- N - J V2
-		  TASK(READ(Fi, R2, temp, F), NOWRITE(), READWRITE(A4), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda,  method, NUM_THREADS);
+		  TASK(READ(Fi, R2, temp, F), NOWRITE(), READWRITE(A4), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
 
 		  typename Field::Element_ptr R = A4 + R2 + R3*lda;
   // R <- H4 - K V2
-		  TASK(READ(Fi, R2, A4, F), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda,  method, NUM_THREADS);
+		  TASK(READ(Fi, R2, A4, F), NOWRITE(), READWRITE(R), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		  WAIT;
 
 		  FFLAS::fflas_delete (temp);
     // R <- R - M3 O
-		  TASK(READ(Fi, R3, A4, G), NOWRITE(), READWRITE(R), pfgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda,  method, NUM_THREADS);
+		  TASK(READ(Fi, R3, A4, G), NOWRITE(), READWRITE(R), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 
 		  WAIT;
 
-		  size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
-		  size_t * Q4 = FFLAS::fflas_new<size_t >(N-N2-R2);
+		  size_t * P4 = new size_t [M-M2-R3];
+		  size_t * Q4 = new size_t [N-N2-R2];
 
     // H4 = P4 [ L4 ] [ U4 V4 ] Q4
     //         [ M4 ]
@@ -269,7 +275,7 @@ namespace FFPACK {
 		  TASK(READ(Fi, Q4), NOWRITE(), READWRITE(A2), papplyP, Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 		  //applyP( Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
 
-		  size_t* MathP = FFLAS::fflas_new<size_t>(M);
+		  size_t* MathP = new size_t[M];
     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
     //               [      P2 ]      [      P4 ]
 		  composePermutationsP (MathP, P1, P2, R1, M2);
@@ -281,7 +287,7 @@ namespace FFPACK {
 		  if (R1+R2 < M2){
 			  // A <-  S^T A
 			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyS, F, A, lda, N, M2, R1, R2, R3, R4);
-			  MatrixApplyS(F, A, lda, N, M2, R1, R2, R3, R4);
+			  MatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
 
 			  // P <- P S
 			  PermApplyS( MathP, 1,1, M2, R1, R2, R3, R4);
@@ -289,7 +295,7 @@ namespace FFPACK {
 
 		  // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		  //            [      Q3 ]      [      P4 ]
-		  size_t * MathQ = FFLAS::fflas_new<size_t >(N);
+		  size_t * MathQ = new size_t [N];
 		  composePermutationsQ (MathQ, Q1, Q3, R1, N2);
 		  composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
 		  for (size_t i=N2; i<N; ++i)
@@ -300,7 +306,7 @@ namespace FFPACK {
 			  PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
 			  // A <-   A T^T
 			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyT, F, A, lda, M, N2, R1, R2, R3, R4);
-			  MatrixApplyT(F, A, lda, M, N2, R1, R2, R3, R4);
+			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
 		  }
 		  MathPerm2LAPACKPerm (Q, MathQ, N);
 		  MathPerm2LAPACKPerm (P, MathP, M);

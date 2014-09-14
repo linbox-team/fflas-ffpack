@@ -440,8 +440,18 @@ namespace FFPACK {
 			// return  1 << (DBL_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
 			// return 94906265 ;
 		}
-		
+
 		static  Element getMinModulus()	{return 2.0;}
+
+		Element minElement() const
+		{
+			return zero ;
+		}
+
+		Element maxElement() const
+		{
+			return mOne ;
+		}
 
 	};
 

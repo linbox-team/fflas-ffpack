@@ -34,24 +34,32 @@
 
 namespace FFLAS{
 
+    // template<class Field>
+    // inline typename Field::Element_ptr fflas_new (const Field& F, size_t m, size_t n)
+    // {
+	   //  //return new typename Field::Element[m*n];
+	   //  return malloc_align<typename Field::Element>(m*n, Alignment::AVX);
+    // }
+ 
     template<class Field>
-    inline typename Field::Element_ptr fflas_new (const Field& F, size_t m, size_t n)
+    inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const size_t n, const Alignment align = Alignment::AVX)
     {
-	// return new typename Field::Element[m*n];
-	return malloc_align<typename Field::Element>(m*n, Alignment::AVX);
+        //return new typename Field::Element[m*n];
+        return malloc_align<typename Field::Element>(m*n, align);
     }
 
     template<class Element >
-    inline Element* fflas_new (size_t m)
+    inline Element* fflas_new (const size_t m, const Alignment align = Alignment::AVX)
     {
-	// return new typename Field::Element[m*n];
-	return malloc_align<Element>(m, Alignment::AVX);
+	   // return new typename Field::Element[m*n];
+	   return malloc_align<Element>(m, align);
     }
 
     template<class Element_ptr>
     inline void fflas_delete (Element_ptr A)
     {
-	    delete[] A;
+	    //delete[] A;
+	    free(A);
     }
 
 }

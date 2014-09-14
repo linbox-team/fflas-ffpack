@@ -130,6 +130,7 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
+test_fspmv_SOURCES = test-fspmv.C
 
 test_pfgemm_SOURCES = test-pfgemm.C
 #test_pftrsm_SOURCES = test-pftrsm.C

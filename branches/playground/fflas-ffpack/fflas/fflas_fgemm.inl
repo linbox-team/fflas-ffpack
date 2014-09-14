@@ -322,8 +322,8 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc)
 	{
-        return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
-    }
+		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+	}
 
 
 	template<class Field>

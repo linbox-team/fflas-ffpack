@@ -23,7 +23,7 @@
 
 AC_PREREQ([2.61])
 
-AC_INIT([FFLAS-FFPACK], [2.0.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.1.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[http://www.linalg.org/projects/fflas-ffpack])
 
 AC_CONFIG_MACRO_DIR([macros])
@@ -306,7 +306,7 @@ FF_DOC
 	# mkdir ./benchmarks/data  ;
 # fi
 
-CXXFLAGS="${GMP_CFLAGS} ${CXXFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${GMP_CFLAGS} "
 AC_SUBST(CXXFLAGS)
 
 echo "-----------------------------------------------"

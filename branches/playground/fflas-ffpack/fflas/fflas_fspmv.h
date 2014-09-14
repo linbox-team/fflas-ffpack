@@ -43,6 +43,8 @@
 
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
+#include <type_traits> 
+ // #include "fflas-ffpack/fflas/fflas_helpers.inl"
 
 #ifdef __FFLASFFPACK_HAVE_MKL
 #ifndef _MKL_H_ // temporary
@@ -160,41 +162,47 @@ namespace FFLAS { /*  CSC */
 
 namespace FFLAS { /*  ELL */
 
-	template<class Element>
+	template<class Element, bool simd>
 	struct ELL ;
 
-	template<class Element>
+	template<class Element/*  , bool simd*/>
 	struct ELLR ;
+
+	template<class Element, bool simd>
+	struct ELL_sub;
+
+	template<class Element, bool simd>
+	struct ELL_ZO;
 } // FFLAS
 
 namespace FFLAS { /* SELL */
 
-	template<class Element>
+	template<class Element, bool simd>
 	struct SELL;
 
-	template<class Element>
+	template<class Element, bool simd>
 	struct SELL_sub;
 
-	template<class Element>
+	template<class Element, bool simd>
 	struct SELL_ZO;
 
-	template<class Field>
+	template<class Field, bool bSimd>
 	void sp_spmv(const Field & F,
-	 			 const SELL<typename Field::Element> & A,
+	 			 const SELL<typename Field::Element, bSimd> & A,
 	  			 const VECT<typename Field::Element> & x,
 	  			 const typename Field::Element b,
 	  			 VECT<typename Field::Element> & y);
 
-	template<class Field>
+	template<class Field, bool bSimd>
 	void sp_spmv(const Field & F,
-	 			 const SELL_sub<typename Field::Element> & A,
+	 			 const SELL_sub<typename Field::Element, bSimd> & A,
 	  			 const VECT<typename Field::Element> & x,
 	  			 const typename Field::Element b,
 	  			 VECT<typename Field::Element> & y);
 
-	template<class Field>
+	template<class Field, bool bSimd>
 	void sp_spmv(const Field & F,
-	 			 const SELL_ZO<typename Field::Element> & A,
+	 			 const SELL_ZO<typename Field::Element, bSimd> & A,
 	  			 const VECT<typename Field::Element> & x,
 	  			 const typename Field::Element b,
 	  			 VECT<typename Field::Element> & y);
@@ -221,8 +229,8 @@ namespace FFLAS { /*  JAG */
 #include "fflas-ffpack/fflas/fflas_fspmv.inl"
 #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_coo.inl"
 #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_csr.inl"
-// #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ell.inl"
-// #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ellr.inl"
+#include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ell.inl"
+#include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_ellr.inl"
 // #include "fflas-ffpack/fflas/fflas_fspmv/fflas_fspmv_sell.inl"
 
 #endif // __FFLASFFPACK_fflas_fflas_fspmv_H

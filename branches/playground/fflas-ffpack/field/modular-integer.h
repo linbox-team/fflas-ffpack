@@ -40,12 +40,17 @@
 #include <math.h>
 #include "fflas-ffpack/utils/debug.h"
 #include "fflas-ffpack/field/field-general.h"
+#include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/integer.h"
 
 // activate only if FFLAS-FFPACK haves multiprecision integer
 #ifdef __FFLASFFPACK_HAVE_INTEGER
 
 namespace FFPACK {
+
+	template <>
+        class ModularRandIter<Integer>;
+
 	template <>
 	class Modular<Integer> {
 	public:
@@ -59,7 +64,7 @@ namespace FFPACK {
 
 	public:
 		const Element one  ;
-		const Element zero ; 
+		const Element zero ;
 		const Element mOne ;
 
 		typedef ModularRandIter<Element> RandIter;
@@ -107,6 +112,11 @@ namespace FFPACK {
 			F.assign(const_cast<Element&>(zero),F.zero);
 			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
+		}
+
+		Integer characteristic() const
+		{
+			return modulus ;
 		}
 
 		Integer &characteristic(Integer &c) const
@@ -244,7 +254,7 @@ namespace FFPACK {
 			 x = tx;
 			 if ( x<zero )
 				 x += modulus;
-			 return x;			
+			 return x;
 		}
 
 		 Element &axpy (Element &r,
@@ -322,6 +332,16 @@ namespace FFPACK {
 			init(r,r);
 			if (r<zero) r += modulus;
 			return r;
+		}
+
+		Element minElement() const
+		{
+			return zero ;
+		}
+
+		Element maxElement() const
+		{
+			return mOne ;
 		}
 
 	};

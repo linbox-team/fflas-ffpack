@@ -38,8 +38,12 @@
 
 namespace FFLAS { /*  ELL */
 
+ 	/*
+     * When using SIMD, we suppose that the matrix is padded with rows of zeros if necessary.
+ 	 */
+
 	template<class _Element, bool _Simd =
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
 	true
 #else
 	false
@@ -49,12 +53,17 @@ namespace FFLAS { /*  ELL */
 		size_t m = 0;
 		size_t n = 0;
 		size_t  ld = 0;
+#ifdef __FFLASFFPACK_USE_SIMD
+		size_t chunk = Simd<_Element>::vect_size;
+#else
+		size_t chunk = 0;
+#endif // SiMD
 		index_t  * col = nullptr;
 		_Element * dat = nullptr;
 	};
 
 	template<class _Element, bool _Simd =
-#ifdef __FFLASFFPACK_HAVE_SIMD
+#ifdef __FFLASFFPACK_USE_SIMD
 	true
 #else
 	false
@@ -63,37 +72,38 @@ namespace FFLAS { /*  ELL */
 	struct ELL_sub : public ELL<_Element, _Simd> {
 	};
 
+template<class _Element, bool _Simd =
+#ifdef __FFLASFFPACK_USE_SIMD
+	true
+#else
+	false
+#endif // SiMD
+	>
+	struct ELL_ZO : public ELL<_Element, _Simd> {
+		_Element cst = 1;
+	};
+
 	namespace details {
 
 		// y = A x + b y ; (generic)
 		template<class Field, bool simd_true>
-		void sp_fgemv(
+		inline void sp_fgemv(
 			      const Field& F,
-			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
+			      const size_t chunk,
 			      const index_t * col,
 			      const typename Field::Element *  dat,
 			      const typename Field::Element * x ,
-			      const typename Field::Element & b,
-			      typename Field::Element * y
+			      typename Field::Element * y,
+			      FieldCategories::GenericTag
 			     )
 		{
+			// std::cout << "details: generic " << std::endl;
 			if(!simd_true)
 			{
 				for (size_t i = 0 ; i < m ; ++i) {
-					if (! F.isOne(b)) {
-						if (F.isZero(b)) {
-							F.assign(y[i],F.zero);
-						}
-						else if (F.isMone(b)) {
-							F.negin(y[i]);
-						}
-						else {
-							F.mulin(y[i],b);
-						}
-					}
 					// XXX can be delayed
 					for (index_t j = 0 ; j < ld ; ++j) {
 						F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
@@ -102,275 +112,266 @@ namespace FFLAS { /*  ELL */
 			}
 			else
 			{
-				size_t i = 0 ;
-				using simd = Simd<typename Field::Element>;
-				using vect_t = typename simd::vect_t;
-				for ( ; i < m ; i += simd::vect_size) {
-					if ( b != 1) {
-						if ( b == 0.) {
-							for(size_t k = 0 ; k < simd::vect_size ; ++k)
-								F.assifgn(y[i*simd::vect_size+k], F.zero);
-						}
-						else if ( b == -1 ) {
-							for(size_t k = 0 ; k < simd::vect_size ; ++k)
-								F.negin(y[i*simd::vect_size+k]);
-						}
-						else {
-							for(size_t k = 0 ; k < simd::vect_size ; ++k)
-								F.mulin(y[i*simd::vect_size+k]);
-						}
-					}
+				size_t end = (m % chunk == 0) ? m : m + m%chunk;
+				for ( size_t i = 0 ; i < end/chunk ; ++i ) {
 					for (index_t j = 0 ; j < ld ; ++j) {
-						for(size_t k = 0 ; k < simd::vect_size ; ++k)
-							F.axpyin(y[i*simd::vect_size+k], dat[i*simd::vect_size*ld+j*simd::vect_size+k], x[col[i*simd::vect_size*ld+j*simd::vect_size+k]]);
-					}
-				}
-				if ( b != 1) {
-					if ( b == 0.) {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							F.assign(y[ii], F.zero);
-						}
-					}
-					else if ( b == -1 ) {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							F.negin(y[ii]);
-						}
-					}
-					else {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							F.mulin(y[ii], b);
-						}
-					}
-				}
-				size_t deplacement = m -i*simd::vect_size ;
-				for (index_t j = 0 ; j < ld ; ++j) {
-					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
-						F.axpyin(y[i*simd::vect_size+ii], dat[i*simd::vect_size*ld+j*deplacement + ii], x[col[i*simd::vect_size*ld+j*deplacement + ii]]);
+						for(size_t k = 0 ; k < chunk ; ++k)
+							F.axpyin(y[i*chunk+k], dat[i*chunk*ld+j*chunk+k], x[col[i*chunk*ld+j*chunk+k]]);
 					}
 				}
 			}
 		}
 
-		// double
-		template<bool simd_true>
-		void sp_fgemv(
-			      const DoubleDomain& F,
+		
+		template<class Field, bool simd_true>
+		inline void sp_fgemv(
+			      const Field & F,
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
+			      const size_t chunk,
 			      const index_t * col,
 			      const double*  dat,
 			      const double* x ,
-			      const double& b,
-			      double * y
+			      double * y,
+			      FieldCategories::FloatingPointTag
 			     )
 		{
+			// std::cout << "details: double" << std::endl;
 			if (!simd_true) {
 				for ( size_t i = 0 ;  i < m   ; ++i ) {
-					if ( b != 1) {
-						if ( b == 0.) {
-							y[i] = 0;
-						}
-						else if ( b == -1 ) {
-							y[i]= -y[i];
-						}
-						else {
-							y[i] = y[i] * b;
-						}
-					}
 					for (index_t j = 0 ; j < ld ; ++j) {
 						y[i] += dat[i*ld+j]*x[col[i*ld+j]];
 					}
 				}
 			}
 			else {
-				size_t i = 0 ;
-				using simd = Simd<double>;
+#ifdef __FFLASFFPACK_USE_SIMD
+				using simd = Simd<typename Field::Element>;
 				using vect_t = typename simd::vect_t;
+				size_t end = (m%chunk == 0)? m : m+m%chunk;
 				vect_t X,Y,D ;
-				for ( ; i < m ; i += simd::vect_size) {
+				for( size_t i = 0 ; i < end/chunk ; ++i ) {
 
-					if ( b != 1) {
-						if ( b == 0.) {
-							// y[i] = 0;
-							Y = simd::zero();
-						}
-						else if ( b == -1 ) {
-							// y[i]= -y[i];
-							Y = simd::load(y+i);
-							Y = simd::sub(simd::zero(),Y);
-						}
-						else {
-							// y[i] = y[i] * b;
-							Y = simd::load(y+i);
-							Y = simd::mul(Y,simd::set1(b));
-						}
-					}
+					Y = simd::load(y+i*simd::vect_size);
 					for (index_t j = 0 ; j < ld ; ++j) {
-						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
-						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
+						D = simd::load(dat+i*chunk*ld+j*chunk);
+						X = simd::gather(x,col+i*chunk*ld+j*chunk);
 						Y = simd::madd(Y,D,X);
 					}
-					simd::store(y+i,Y);
+					simd::store(y+i*chunk,Y);
 				}
-				if ( b != 1) {
-					if ( b == 0.) {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							y[ii] = 0;
-						}
-					}
-					else if ( b == -1 ) {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							y[ii]= -y[ii];
-						}
-					}
-					else {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							y[ii] = y[ii] * b;
+#else
+				size_t end = (m%chunk == 0)? m : m+m%chunk;
+				for( size_t i = 0 ; i < end/chunk ; ++i ) {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						for(size_t k = 0 ; k < chunk ; ++k)
+						{
+							y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
 						}
 					}
 				}
-				size_t deplacement = m -i*simd::vect_size ;
-				for (index_t j = 0 ; j < ld ; ++j) {
-					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
-						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii]*x[col[i*simd::vect_size*ld+j*deplacement + ii]];
+#endif
+			}
+		}
+
+		template<class Field, bool simd_true>
+		inline void sp_fgemv_zo(
+			      const Field& F,
+			      const size_t m,
+			      const size_t n,
+			      const size_t ld,
+			      const size_t chunk,
+			      const index_t * col,
+			      const typename Field::Element *  dat,
+			      const typename Field::Element * x ,
+			      typename Field::Element * y,
+			      FieldCategories::GenericTag
+			     )
+		{
+			// std::cout << "details: generic " << std::endl;
+			if(!simd_true)
+			{
+				for (size_t i = 0 ; i < m ; ++i) {
+					// XXX can be delayed
+					for (index_t j = 0 ; j < ld ; ++j) {
+						F.addin(y[i],x[col[i*ld+j]]);
 					}
 				}
 			}
-
+			else
+			{
+				size_t end = (m % chunk == 0) ? m : m + m%chunk;
+				for ( size_t i = 0 ; i < end/chunk ; ++i ) {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						for(size_t k = 0 ; k < chunk ; ++k)
+							F.addin(y[i*chunk+k], x[col[i*chunk*ld+j*chunk+k]]);
+					}
+				}
+			}
 		}
 
-		// float
-		template<bool simd_true>
-		void sp_fgemv(
-			      const FloatDomain& F,
+		
+		template<class Field, bool simd_true>
+		inline void sp_fgemv_zo(
+			      const Field & F,
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
+			      const size_t chunk,
 			      const index_t * col,
-			      const float*  dat,
-			      const float* x ,
-			      const float& b,
-			      float * y
+			      const double*  dat,
+			      const double* x ,
+			      double * y,
+			      FieldCategories::FloatingPointTag
 			     )
 		{
+			// std::cout << "details: double" << std::endl;
 			if (!simd_true) {
 				for ( size_t i = 0 ;  i < m   ; ++i ) {
-					if ( b != 1) {
-						if ( b == 0.) {
-							y[i] = 0;
-						}
-						else if ( b == -1 ) {
-							y[i]= -y[i];
-						}
-						else {
-							y[i] = y[i] * b;
-						}
-					}
 					for (index_t j = 0 ; j < ld ; ++j) {
-						y[i] += dat[i*ld+j]*x[col[i*ld+j]];
+						y[i] += x[col[i*ld+j]];
 					}
 				}
 			}
 			else {
-				size_t i = 0 ;
-				using simd = Simd<float>;
+#ifdef __FFLASFFPACK_USE_SIMD
+				using simd = Simd<typename Field::Element>;
 				using vect_t = typename simd::vect_t;
+				size_t end = (m%chunk == 0)? m : m+m%chunk;
 				vect_t X,Y,D ;
-				for ( ; i < m ; i += simd::vect_size) {
+				for( size_t i = 0 ; i < end/chunk ; ++i ) {
 
-					if ( b != 1) {
-						if ( b == 0.) {
-							// y[i] = 0;
-							Y = simd::zero();
-						}
-						else if ( b == -1 ) {
-							// y[i]= -y[i];
-							Y = simd::load(y+i);
-							Y = simd::sub(simd::zero(),Y);
-						}
-						else {
-							// y[i] = y[i] * b;
-							Y = simd::load(y+i);
-							Y = simd::mul(Y,simd::set1(b));
-						}
-					}
+					Y = simd::load(y+i*simd::vect_size);
 					for (index_t j = 0 ; j < ld ; ++j) {
-						D = simd::load(dat+i*simd::vect_size*ld+j*simd::vect_size);
-						X = simd::gather(x,col+i*simd::vect_size*ld+j*simd::vect_size);
-						Y = simd::madd(Y,D,X);
+						X = simd::gather(x,col+i*chunk*ld+j*chunk);
+						Y = simd::add(Y,X);
 					}
-					simd::store(y+i,Y);
+					simd::store(y+i*chunk,Y);
 				}
-				if ( b != 1) {
-					if ( b == 0.) {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							y[ii] = 0;
-						}
-					}
-					else if ( b == -1 ) {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							y[ii]= -y[ii];
-						}
-					}
-					else {
-						for (size_t ii = i*simd::vect_size ; ii < m ; ++ii) {
-							y[ii] = y[ii] * b;
+#else
+				size_t end = (m%chunk == 0)? m : m+m%chunk;
+				for( size_t i = 0 ; i < end/chunk ; ++i ) {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						for(size_t k = 0 ; k < chunk ; ++k)
+						{
+							y[i*chunk+k] += x[col[i*chunk*ld+j*chunk+k]];
 						}
 					}
 				}
-				size_t deplacement = m -i*simd::vect_size ;
-				for (index_t j = 0 ; j < ld ; ++j) {
-					for (size_t ii = 0 ; ii < deplacement ; ++ii) {
-						y[i*simd::vect_size+ii] += dat[i*simd::vect_size*ld+j*deplacement + ii]*x[col[i*simd::vect_size*ld+j*deplacement + ii]];
-					}
-				}
+#endif
 			}
 		}
 
 		// delayed by kmax
-		template<class Field,
-		bool simd_true
-		>
-		void sp_fgemv(
+		//! @bug check field is M(B)<f|d>
+		template<class Field, bool simd_true >
+		inline void sp_fgemv(
 			      const Field& F,
 			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
+			      const size_t chunk,
 			      const index_t * col,
 			      const typename Field::Element *  dat,
 			      const typename Field::Element * x ,
-			      // const typename Field::Element & b,
 			      typename Field::Element * y,
-			      const index_t & kmax			     )
+			      const index_t & kmax, 
+			      FieldCategories::ModularFloatingPointTag
+			      )
 		{
-			if(!simd_true)
-			{
-				index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
-				for (size_t i = 0 ; i < m ; ++i)
-				{
+			index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
+			// std::cout << "Field delayed" << std::endl;
+			if(!simd_true) {
+				for (size_t i = 0 ; i < m ; ++i) {
 					index_t j = 0;
 					index_t j_loc = 0 ;
-					bool term = false ;
 					for (size_t l = 0 ; l < block ; ++l) {
-						j_loc += block ;
+						j_loc += kmax ;
 						for ( ; j < j_loc ; ++j ) {
 							y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 						}
 						F.init(y[i],y[i]);
 					}
-					if (! term ) {
-						for ( ; j < ld  ; ++j) {
-							y[i] += dat[i*ld+j] * x[i*ld+col[j]];
-						}
-						F.init(y[i],y[i]);
+					for ( ; j < ld  ; ++j) {
+						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 					}
+					F.init(y[i],y[i]);
 				}
 			}
+			else {
+#ifdef __FFLASFFPACK_USE_SIMD
+				using simd = Simd<typename Field::Element>;
+				using vect_t = typename simd::vect_t;
+				vect_t X, Y, D, C, Q, TMP;
+				double p = (typename Field::Element)F.characteristic();
+				vect_t P = simd::set1(p);
+				vect_t NEGP = simd::set1(-p);
+				vect_t INVP = simd::set1(1./p);
+				vect_t MIN = simd::set1(F.minElement());
+				vect_t MAX = simd::set1(F.maxElement());
+
+				size_t end = (m%chunk == 0)? m : m+m%chunk;
+
+				for ( size_t i = 0; i < end/chunk ; ++i ) {
+					index_t j = 0 ;
+					index_t j_loc = 0 ;
+					Y = simd::load(y+i*chunk);
+					for (size_t l = 0 ; l < block ; ++l) {
+						j_loc += kmax ;
+
+						for ( ; j < j_loc ; ++j) {
+							D = simd::load(dat+i*chunk*ld+j*chunk);
+							X = simd::gather(x,col+i*chunk*ld+j*chunk);
+							Y = simd::madd(Y,D,X);
+						}
+						vectorised::VEC_MOD(Y,Y,TMP, P, NEGP,INVP,MIN,MAX);
+					}
+					for ( ; j < ld ; ++j) {
+						D = simd::load(dat+i*chunk*ld+j*chunk);
+						X = simd::gather(x,col+i*chunk*ld+j*chunk);
+						Y = simd::madd(Y,D,X);
+					}
+					vectorised::VEC_MOD(Y,Q,TMP, P, NEGP,INVP,MIN,MAX);
+					simd::store(y+i*chunk,Y);
+				}
+#else
+				for ( size_t i = 0; i < end/chunk ; ++i ) {
+					index_t j = 0 ;
+					index_t j_loc = 0 ;
+					for (size_t l = 0 ; l < block ; ++l) {
+						j_loc += kmax ;
+
+						for ( ; j < j_loc ; ++j) {
+							for(size_t k = 0 ; k < chunk ; ++k)
+							{
+								y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
+							}
+						}
+						for(size_t k = 0 ; k < chunk ; ++k)
+						{
+							F.init(y[i*chunk+k], y[i*chunk+k]);
+						}
+					}
+					for ( ; j < ld ; ++j) {
+						for(size_t k = 0 ; k < chunk ; ++k)
+						{
+							y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
+						}
+					}
+					for(size_t k = 0 ; k < chunk ; ++k)
+					{
+						F.init(y[i*chunk+k], y[i*chunk+k]);
+					}
+				}
+#endif
+
+			}
 		}
+
 	} // details
 
 	/* ******* */
@@ -381,98 +382,62 @@ namespace FFLAS { /*  ELL */
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
 	template<class Field, bool simd_true >
-	void sp_fgemv(
+	inline void sp_fgemv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<typename Field::Element, 1> & A,
+		      const ELL_sub<typename Field::Element, simd_true> & A,
 		      const VECT<typename Field::Element> & x,
 		      const typename Field::Element & b,
 		      VECT<typename Field::Element> & y
 		     )
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		sp_spmv(F, A, x, b, y, FieldTraits<Field>::value);
 	}
 
-	template< bool simd_true >
-	void sp_fgemv(
-		      const DoubleDomain& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<double, simd_true> & A,
-		      const VECT<double> & x,
-		      const double& b,
-		      VECT<double> & y
-		     )
+	template<class Field, bool simd_true>
+	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 	}
 
-	template< bool simd_true >
-	void sp_fgemv(
-		      const FloatDomain& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<float, simd_true> & A,
-		      const VECT<float> & x,
-		      const float& b,
-		      VECT<float> & y
-		     )
+	template<class Field, bool simd_true>
+	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
-	}
-
-	template< bool simd_true >
-	void sp_fgemv(
-		      const Modular<double>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<double, simd_true> & A,
-		      const VECT<double> & x,
-		      const double& b,
-		      VECT<double> & y
-		     )
-	{
-		details::sp_fgemv<DoubleDomain,simd_true>(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 		finit(F,A.m,y.dat,1);
 	}
 
-	template< bool simd_true >
-	void sp_fgemv(
-		      const Modular<float>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<float, simd_true> & A,
-		      const VECT<float> & x,
-		      const float& b,
-		      VECT<float> & y
+	/* ******* */
+	/* ELL_ZO  */
+	/* ******* */
+
+
+	// y = A x + b y ; (generic)
+	// it is supposed that no reduction is needed.
+	template<class Field, bool simd_true >
+	inline void sp_fgemv(
+		      const Field& F,
+		      const ELL_ZO<typename Field::Element, simd_true> & A,
+		      const VECT<typename Field::Element> & x,
+		      const typename Field::Element & b,
+		      VECT<typename Field::Element> & y
 		     )
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
-		finit(F,A.m,y.dat,1);
+		sp_spmv(F, A, x, b, y, FieldTraits<Field>::value);
 	}
 
-	template< bool simd_true >
-	void sp_fgemv(
-		      const ModularBalanced<double>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<double, simd_true> & A,
-		      const VECT<double> & x,
-		      const double& b,
-		      VECT<double> & y
-		     )
+	template<class Field, bool simd_true>
+	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(DoubleDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
-		finit(F,A.m,y.dat,1);
+		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
+		fscalin(F, A.m, A.cst, y.dat, 1);
 	}
 
-	template<bool simd_true>
-	void sp_fgemv(
-		      const ModularBalanced<float>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELL_sub<float, simd_true> & A,
-		      const VECT<float> & x,
-		      const float& b,
-		      VECT<float> & y
-		     )
+	template<class Field, bool simd_true>
+	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(FloatDomain(),A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 		finit(F,A.m,y.dat,1);
+		fscalin(F, A.m, A.cst, y.dat, 1);
 	}
 
 	/* *** */
@@ -491,7 +456,8 @@ namespace FFLAS { /*  ELL */
 		      VECT<typename Field::Element> & y
 		     )
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::init_y(F, A.m, b, y, FieldTraits<Field>::value);
+		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 	}
 
 	template<bool simd_true>
@@ -504,7 +470,8 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		details::sp_fgemv<DoubleDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::init_y(F, A.m, b, y, FieldCategories::FloatingPointTag());
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 	}
 
 	template<bool simd_true>
@@ -517,7 +484,8 @@ namespace FFLAS { /*  ELL */
 		      VECT<float> & y
 		     )
 	{
-		details::sp_fgemv<FloatDomain,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,b,y.dat);
+		details::init_y(F, A.m, b, y, FieldCategories::FloatingPointTag());
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 	}
 
 
@@ -532,7 +500,7 @@ namespace FFLAS { /*  ELL */
 		      VECT<double> & y
 		     )
 	{
-		// std::cout << "here" << std::endl;
+		// std::cout << "Modular Double ELL" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
@@ -587,6 +555,143 @@ namespace FFLAS { /*  ELL */
 		details::sp_fgemv<FFPACK::ModularBalanced<float>,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
+	template<class Field, class ColT, class RowT>
+	inline void sp_ell_from_csr(
+								const Field & F,
+								const size_t CSR_m,
+								const size_t CSR_n,
+								const index_t * CSR_col,
+								const index_t * CSR_row,
+								const typename Field::Element * CSR_dat,
+								size_t & ELL_m,
+								size_t & ELL_n,
+								size_t & ld,
+								size_t & chunk,
+								index_t * ELL_col,
+								typename Field::Element * ELL_dat,
+								const bool bSimd,
+								const bool ZO
+								)
+	{
+		ld = 0;
+		ELL_m = CSR_m;
+		ELL_n = CSR_n;
+		for(size_t i = 0 ; i < CSR_m ; ++i){
+			if(CSR_row[i+1]-CSR_row[i] > ld){
+				ld = CSR_row[i+1]-CSR_row[i];
+			}
+		}
+		if(bSimd){
+			chunk = Simd<typename Field::Element>::vect_size;
+			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+CSR_m%chunk;
+
+			ELL_col = fflas_new<index_t>(ld*m, Alignment::CACHE_LINE);
+			ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+
+			size_t i = 0;
+			for( ; i < m ; i+= chunk){
+				for(size_t k = 0 ; k < chunk ; ++k){
+					size_t start = CSR_row[i*chunk+k], stop = CSR_row[i*chunk+k+1];
+					for(size_t j = 0 ; j < ld ; ++j){
+						if(start + j  < stop){
+							if(!ZO){
+								ELL_dat[i*chunk*ld+j*chunk+k] = CSR_dat[start+j];
+							}
+							ELL_col[i*chunk*ld+j*chunk+k] = CSR_col[start+j];
+						}
+						else{
+							if(!ZO){
+								F.init(ELL_dat[i*chunk*ld+j*chunk+k]);
+							}
+							ELL_col[i*chunk*ld+j*chunk+k] = 0;	
+						}
+					}
+				}
+			}
+
+			for(size_t k = 0 ; k < chunk ; ++k){
+				if(i + k < CSR_m){
+					size_t start = CSR_row[i*chunk+k], stop = CSR_row[i*chunk+k+1];
+					for(size_t j = 0 ; j < ld ; ++j){
+						if(start + j  < stop){
+							if(!ZO){
+								ELL_dat[i*chunk*ld+j*chunk+k] = CSR_dat[start+j];
+							}
+							ELL_col[i*chunk*ld+j*chunk+k] = CSR_col[start+j];
+						}
+						else{
+							if(!ZO){
+								F.init(ELL_dat[i*chunk*ld+j*chunk+k]);
+							}
+							ELL_col[i*chunk*ld+j*chunk+k] = 0;	
+						}
+					}
+				}
+				else{
+					for(size_t j = 0 ; j < ld ; ++j){
+						if(!ZO){
+							F.init(ELL_dat[i*chunk*ld+j*chunk+k]);
+						}
+						ELL_col[i*chunk*ld+j*chunk+k] = 0;
+					}
+				}
+		}
+		}else{
+			
+			ELL_col = fflas_new<index_t>(ld*ELL_m, Alignment::CACHE_LINE);
+			ELL_dat = fflas_new<typename Field::Element>(ld*ELL_m, Alignment::CACHE_LINE);
+
+			for(size_t i = 0 ; i < CSR_m ; ++i){
+				size_t start = CSR_row[i], stop = CSR_row[i+1];
+				for(size_t j = 0 ; j < ld ; ++j){
+					if(start + j < stop){
+						if(!ZO){
+							ELL_dat[i*ld+j] = CSR_dat[i*ld+j];
+						}
+						ELL_col[i*ld+j] = CSR_col[i*ld+j];
+					}
+					else{
+						if(!ZO){
+							F.init(ELL_dat[i*ld+j]);
+						}
+						ELL_col[i*ld+j] = 0;
+					}
+				}
+			}
+		}
+	}
+
+	template<class Field, class ColT, class RowT>
+	inline void sp_ell_from_coo(
+								const Field & F,
+								const size_t COO_m,
+								const size_t COO_n,
+								const index_t * COO_col,
+								const index_t * COO_row,
+								const typename Field::Element * COO_dat,
+								size_t & ELL_m,
+								size_t & ELL_n,
+								size_t & ld,
+								size_t & chunk,
+								index_t * ELL_col,
+								typename Field::Element * ELL_dat,
+								const bool bSimd,
+								const bool ZO
+								)
+	{
+		index_t * row = fflas_new<index_t>(COO_m+1);
+		for(size_t i = 0 ; i < COO_m+1 ; ++i){
+			row[i] = 0;
+		}
+		for(size_t i = 0 ; i < COO_m ; ++i){
+			row[COO_row[i]]++;
+		}
+		for(size_t i = 1 ; i < COO_m+1 ; ++i){
+			row[i+1]+=row[i];
+		}
+		sp_ell_from_csr(F, COO_m, COO_n, COO_col, row, COO_dat, ELL_m, ELL_n, ld, chunk, ELL_col, ELL_dat, bSimd, ZO);
+		fflas_delete(row);
+	}
 
 } // FFLAS
 

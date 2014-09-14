@@ -132,7 +132,21 @@ namespace FFPACK {
 				_M*=prime;
 				if (rnsmod) sum+=prime;
 			}
-
+			precompute_cst(); 
+		}
+		
+		rns_double(const vector<double>& basis, bool rnsmod=false, long seed=time(NULL))
+			:  _basis(basis), _M(1), _size(basis.size()), _pbits(0) 
+		{
+			for(size_t i=0;i<_size;i++){			
+				_M*=_basis[i];
+				_pbits=std::max(_pbits, integer(_basis[i]).bitsize());
+			}
+			precompute_cst();
+		}
+		
+		
+		void precompute_cst(){
 			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
 			_invbasis.resize(_size);
 			_field_rns.resize(_size);
@@ -161,7 +175,16 @@ namespace FFPACK {
 			}
 		}
 
-		// Arns must be an array of m*n*_size
+		// Arns must be an array of m*n*_size 
+		// abs(||A||) <= maxA 
+		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda,
+			  const integer& maxA, bool RNS_MAJOR=false) const 
+		{			
+			init(m,n,Arns,rda,A,lda, maxA.bitsize()/16 + (maxA.bitsize()%16?1:0),RNS_MAJOR);
+		}
+
+		// Arns must be an array of m*n*_size 
+		// abs(||A||) < 2^(16k) 
 		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const
 		{
 			if (k>_ldm)
