@@ -1048,7 +1048,7 @@ int test1_ell()
 {
 	Modular<double> F(1051);
 
-	ELL<double,false> Mat ;
+	ELL<double,false> Mat;
 	// size_t nbnz = 20 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;

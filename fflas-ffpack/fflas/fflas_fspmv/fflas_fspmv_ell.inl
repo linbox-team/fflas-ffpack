@@ -39,7 +39,7 @@
 namespace FFLAS { /*  ELL */
 
  	/*
-     * When using SIMD, we suppose that the matrix is padded with rows of zeros if necessary.
+	 * When using SIMD, we suppose that the matrix is padded with rows of zeros if necessary.
  	 */
 
 	template<class _Element, bool _Simd =
@@ -52,7 +52,7 @@ namespace FFLAS { /*  ELL */
 	struct ELL {
 		size_t m = 0;
 		size_t n = 0;
-		size_t  ld = 0;
+		size_t ld = 0;
 #ifdef __FFLASFFPACK_USE_SIMD
 		size_t chunk = Simd<_Element>::vect_size;
 #else
@@ -378,7 +378,6 @@ template<class _Element, bool _Simd =
 	/* ELL_sub */
 	/* ******* */
 
-
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
 	template<class Field, bool simd_true >
@@ -390,17 +389,17 @@ template<class _Element, bool _Simd =
 		      VECT<typename Field::Element> & y
 		     )
 	{
-		sp_spmv(F, A, x, b, y, FieldTraits<Field>::value);
+		sp_spmv(F, A, x, b, y, typename FieldTraits<Field>::value());
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
+	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element, simd_true> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
 	{
 		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
+	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element, simd_true> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
 	{
 		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 		finit(F,A.m,y.dat,1);
@@ -409,7 +408,6 @@ template<class _Element, bool _Simd =
 	/* ******* */
 	/* ELL_ZO  */
 	/* ******* */
-
 
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
@@ -426,14 +424,14 @@ template<class _Element, bool _Simd =
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
+	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element, simd_true> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
 	{
 		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 		fscalin(F, A.m, A.cst, y.dat, 1);
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
+	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element, simd_true> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
 	{
 		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 		finit(F,A.m,y.dat,1);
@@ -457,7 +455,7 @@ template<class _Element, bool _Simd =
 		     )
 	{
 		details::init_y(F, A.m, b, y, FieldTraits<Field>::value);
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
+		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 	}
 
 	template<bool simd_true>
@@ -471,7 +469,7 @@ template<class _Element, bool _Simd =
 		     )
 	{
 		details::init_y(F, A.m, b, y, FieldCategories::FloatingPointTag());
-		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 	}
 
 	template<bool simd_true>
@@ -485,7 +483,7 @@ template<class _Element, bool _Simd =
 		     )
 	{
 		details::init_y(F, A.m, b, y, FieldCategories::FloatingPointTag());
-		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
+		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 	}
 
 
@@ -504,7 +502,7 @@ template<class _Element, bool _Simd =
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
-		details::sp_fgemv<FFPACK::Modular<double>,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+		details::sp_fgemv<FFPACK::Modular<double>,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat,(index_t) kmax, FieldCategories::ModularFloatingPointTag());
 	}
 
 	template<bool simd_true>
@@ -520,7 +518,7 @@ template<class _Element, bool _Simd =
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
 
-		details::sp_fgemv<FFPACK::ModularBalanced<double>,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+		details::sp_fgemv<FFPACK::ModularBalanced<double>,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat,(index_t) kmax, FieldCategories::ModularFloatingPointTag());
 	}
 
 	template<bool simd_true>
@@ -536,7 +534,7 @@ template<class _Element, bool _Simd =
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
 
-		details::sp_fgemv<FFPACK::Modular<float>,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t)kmax);
+		details::sp_fgemv<FFPACK::Modular<float>,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat,(index_t)kmax, FieldCategories::ModularFloatingPointTag());
 	}
 
 	template<bool simd_true>
@@ -552,26 +550,26 @@ template<class _Element, bool _Simd =
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
 
-		details::sp_fgemv<FFPACK::ModularBalanced<float>,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
+		details::sp_fgemv<FFPACK::ModularBalanced<float>,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat,(index_t) kmax, FieldCategories::ModularFloatingPointTag());
 	}
 
 	template<class Field, class ColT, class RowT>
 	inline void sp_ell_from_csr(
-								const Field & F,
-								const size_t CSR_m,
-								const size_t CSR_n,
-								const index_t * CSR_col,
-								const index_t * CSR_row,
-								const typename Field::Element * CSR_dat,
-								size_t & ELL_m,
-								size_t & ELL_n,
-								size_t & ld,
-								size_t & chunk,
-								index_t * ELL_col,
-								typename Field::Element * ELL_dat,
-								const bool bSimd,
-								const bool ZO
-								)
+		const Field & F,
+		const size_t CSR_m,
+		const size_t CSR_n,
+		const index_t * CSR_col,
+		const index_t * CSR_row,
+		const typename Field::Element * CSR_dat,
+		size_t & ELL_m,
+		size_t & ELL_n,
+		size_t & ld,
+		size_t & chunk,
+		index_t * ELL_col,
+		typename Field::Element * ELL_dat,
+		const bool bSimd,
+		const bool ZO
+		)
 	{
 		ld = 0;
 		ELL_m = CSR_m;
@@ -586,7 +584,9 @@ template<class _Element, bool _Simd =
 			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+CSR_m%chunk;
 
 			ELL_col = fflas_new<index_t>(ld*m, Alignment::CACHE_LINE);
-			ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+			if(!ZO){
+				ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+			}
 
 			size_t i = 0;
 			for( ; i < m ; i+= chunk){
@@ -639,7 +639,9 @@ template<class _Element, bool _Simd =
 		}else{
 			
 			ELL_col = fflas_new<index_t>(ld*ELL_m, Alignment::CACHE_LINE);
-			ELL_dat = fflas_new<typename Field::Element>(ld*ELL_m, Alignment::CACHE_LINE);
+			if(!ZO){
+				ELL_dat = fflas_new<typename Field::Element>(ld*ELL_m, Alignment::CACHE_LINE);
+			}
 
 			for(size_t i = 0 ; i < CSR_m ; ++i){
 				size_t start = CSR_row[i], stop = CSR_row[i+1];

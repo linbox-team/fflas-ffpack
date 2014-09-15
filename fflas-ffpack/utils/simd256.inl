@@ -30,11 +30,11 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
-template<class T>
-struct Simd256;
+template<bool Int, bool Signed, int Size>
+struct Simd256_impl;
 
 template<>
-struct Simd256<double>
+struct Simd256_impl<false, true, 8>
 {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	using vect_t = __m256d;
@@ -121,7 +121,7 @@ struct Simd256<double>
 };
 
 template<>
-struct Simd256<float>
+struct Simd256_impl<false, true, 4>
 {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	using vect_t = __m256;
@@ -202,39 +202,62 @@ struct Simd256<float>
 		return ((const float*)&a)[0] + ((const float*)&a)[1] + ((const float*)&a)[2] + ((const float*)&a)[3] + ((const float*)&a)[4] + ((const float*)&a)[5] + ((const float*)&a)[6] + ((const float*)&a)[7];
 	}
 
+
+
 #else // __AVX__
 #error "You need AVX instructions to perform 256bits operations on float"
 #endif
 };
 
 template<>
-struct Simd256<int64_t>
-{
-	using vect_t = __m256i;
-
-	static const constexpr size_t vect_size = 2;
-
-	static const constexpr size_t alignment = 16;
-
-	static INLINE PURE vect_t load(const int64_t * const p) {return _mm256_load_si256(p);}
-
-	static INLINE PURE vect_t loadu(const int64_t * const p) {return _mm256_loadu_si256(p);}
-
-	static INLINE void store(const int64_t * p, vect_t v) {_mm256_store_si256(reinterpret_cast<__m256i*>(p), v);}
-
-	static INLINE void storeu(const int64_t * p, vect_t v) {_mm256_storeu_si256(reinterpret_cast<__m256i*>(p), v);}
-
-	static INLINE CONST vect_t set1(const int64_t x) {return _mm256_set1_epi64x(x);} // actually set2
-
-	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm256_add_epi64(a, b);}
-
-	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm256_add_epi32(a, b);}
-
-	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
-		return _mm256_add_epi64(c, __mm256_mul_epi32(a,b));
-	}
-
+// int8_t
+struct Simd256_impl<true, true, 1>{
+    // static void hello(){std::cout << "int8_t" << std::endl;}
 };
 
+template<>
+// int16_t
+struct Simd256_impl<true, true, 2>{
+    // static void hello(){std::cout << "int16_t" << std::endl;}
+};
+
+template<>
+// int32_t
+struct Simd256_impl<true, true, 4>{
+    // static void hello(){std::cout << "int32_t" << std::endl;}
+};
+
+template<>
+// int64_t
+struct Simd256_impl<true, true, 8>{
+    // static void hello(){std::cout << "int64_t" << std::endl;}
+};
+
+template<>
+// uint8_t
+struct Simd256_impl<true, false, 1>{
+    // static void hello(){std::cout << "uint8_t" << std::endl;}
+};
+
+template<>
+// uint16_t
+struct Simd256_impl<true, false, 2>{
+    // static void hello(){std::cout << "uint16_t" << std::endl;}
+};
+
+template<>
+// uint32_t
+struct Simd256_impl<true, false, 4>{
+    // static void hello(){std::cout << "uint32_t" << std::endl;}
+};
+
+template<>
+// uint64_t
+struct Simd256_impl<true, false, 8>{
+    // static void hello(){std::cout << "uint64_t" << std::endl;}
+};
+
+template<class T>
+using Simd256 = Simd256_impl<std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL

@@ -31,102 +31,24 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 
-template<class T>
-struct Simd128;
+template<bool Int, bool Signed, int Size>
+struct Simd128_impl;
 
+// template<>
+// struct Simd128<double>
+// {
+    
+// };
+
+// template<>
+// struct Simd128<float>
+// {
+    
+// };
+
+// float
 template<>
-struct Simd128<double>
-{
-    using vect_t = __m128d;
-
-     static const constexpr size_t vect_size = 2;
-
-     static const constexpr size_t alignment = 16;
-
-     static INLINE CONST vect_t zero() {return _mm_setzero_pd();}
-
-     static INLINE CONST vect_t set1(const double x) {return _mm_set1_pd(x);}
-
-     static INLINE CONST vect_t set(const double x1, const double x2) {return _mm_set_pd(x2, x1);}
-
-     template<class T>
-     static INLINE PURE vect_t gather(const double * const p, const T * const idx) {
-        // TODO AVX2 Gather
-        return _mm_set_pd(p[idx[1]], p[idx[0]]);
-    }
-
-    static INLINE PURE vect_t load(const double * const p) {return _mm_load_pd(p);}
-
-     static INLINE PURE vect_t loadu(const double * const p) {return _mm_loadu_pd(p);}
-
-     static INLINE void store(const double * p, vect_t v) {_mm_store_pd(const_cast<double*>(p), v);}
-
-     static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_pd(a, b);}
-
-     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_pd(a, b);}
-
-     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm_mul_pd(a, b);}
-
-     static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_add_pd(c, _mm_mul_pd(a, b));
-    }
-
-    static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_sub_pd(c, _mm_mul_pd(a, b));
-    }
-
-    static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_sub_pd(_mm_mul_pd(a, b), c);
-    }
-
-     static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_pd(a, b);}
-
-     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_pd(a, b);}
-
-     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_pd(a, b);}
-
-     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_pd(a, b);}
-
-     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_pd(a, b);}
-
-     static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_pd(a, b);}
-
-     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_pd(a, b);}
-
-     static INLINE CONST vect_t floor(const vect_t a) {
-#ifdef __SSE4_1__
-	     return _mm_floor_pd(a);
-#else
-         return _mm_set_pd(std::floor(((const double*)&a)[1]), std::floor(((const double*)&a)[0]));
-#endif
-     }
-
-
-     static INLINE CONST vect_t round(const vect_t a) {
-#ifdef __SSE4_1__
-	     return _mm_round_pd(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
-#else
-         return _mm_set_pd(std::round(((const double*)&a)[1]), std::round(((const double*)&a)[0]));
-#endif
-     }
-
-     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
-#ifdef __SSE3__
-	     return _mm_hadd_pd(a, b);
-#else
-        return _mm_set_pd(((const double*)&a)[0] + ((const double*)&a)[1], ((const double*)&b)[0] + ((const double*)&b)[1]);
-#endif
-     }
-
-     static INLINE CONST double hadd_to_scal(const vect_t a) {
-         return ((const double*)&a)[0] + ((const double*)&a)[1];
-     }
-
-};
-
-template<>
-struct Simd128<float>
-{
+struct Simd128_impl<false, true, 4>{
     using vect_t = __m128;
 
     static const constexpr size_t vect_size = 4;
@@ -185,25 +107,25 @@ struct Simd128<float>
 
     static INLINE CONST vect_t floor(const vect_t a) {
 #ifdef __SSE4_1__
-	    return _mm_floor_ps(a);
+        return _mm_floor_ps(a);
 #else
-	    __m128 one = _mm_set1_ps(1.0f);
-	     __m128 fval = _mm_cvtepi32_ps(_mm_cvttps_epi32(a));
-	     return _mm_sub_ps(fval, _mm_and_ps(_mm_cmplt_ps(a, fval), one));
+        __m128 one = _mm_set1_ps(1.0f);
+         __m128 fval = _mm_cvtepi32_ps(_mm_cvttps_epi32(a));
+         return _mm_sub_ps(fval, _mm_and_ps(_mm_cmplt_ps(a, fval), one));
 #endif
     }
 
     static INLINE CONST vect_t round(const vect_t a) {
 #ifdef __SSE4_1__
-	    return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+        return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
 #else
-	    return _mm_cvtepi32_ps(_mm_cvtps_epi32(a));
+        return _mm_cvtepi32_ps(_mm_cvtps_epi32(a));
 #endif
     }
 
 #ifdef __SSE3__
     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
-	     return _mm_hadd_ps(a, b);
+         return _mm_hadd_ps(a, b);
     }
 #endif
 
@@ -211,6 +133,147 @@ struct Simd128<float>
         return ((const float*)&a)[0] + ((const float*)&a)[1] + ((const float*)&a)[2] + ((const float*)&a)[3];
     }
 };
+
+// double
+template<>
+struct Simd128_impl<false, true, 8>{
+    using vect_t = __m128d;
+
+     static const constexpr size_t vect_size = 2;
+
+     static const constexpr size_t alignment = 16;
+
+     static INLINE CONST vect_t zero() {return _mm_setzero_pd();}
+
+     static INLINE CONST vect_t set1(const double x) {return _mm_set1_pd(x);}
+
+     static INLINE CONST vect_t set(const double x1, const double x2) {return _mm_set_pd(x2, x1);}
+
+     template<class T>
+     static INLINE PURE vect_t gather(const double * const p, const T * const idx) {
+        // TODO AVX2 Gather
+        return _mm_set_pd(p[idx[1]], p[idx[0]]);
+    }
+
+    static INLINE PURE vect_t load(const double * const p) {return _mm_load_pd(p);}
+
+     static INLINE PURE vect_t loadu(const double * const p) {return _mm_loadu_pd(p);}
+
+     static INLINE void store(const double * p, vect_t v) {_mm_store_pd(const_cast<double*>(p), v);}
+
+     static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_pd(a, b);}
+
+     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_pd(a, b);}
+
+     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm_mul_pd(a, b);}
+
+     static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
+        return _mm_add_pd(c, _mm_mul_pd(a, b));
+    }
+
+    static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
+        return _mm_sub_pd(c, _mm_mul_pd(a, b));
+    }
+
+    static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
+        return _mm_sub_pd(_mm_mul_pd(a, b), c);
+    }
+
+     static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_pd(a, b);}
+
+     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_pd(a, b);}
+
+     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_pd(a, b);}
+
+     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_pd(a, b);}
+
+     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_pd(a, b);}
+
+     static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_pd(a, b);}
+
+     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_pd(a, b);}
+
+     static INLINE CONST vect_t floor(const vect_t a) {
+#ifdef __SSE4_1__
+         return _mm_floor_pd(a);
+#else
+         return _mm_set_pd(std::floor(((const double*)&a)[1]), std::floor(((const double*)&a)[0]));
+#endif
+     }
+
+
+     static INLINE CONST vect_t round(const vect_t a) {
+#ifdef __SSE4_1__
+         return _mm_round_pd(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+#else
+         return _mm_set_pd(std::round(((const double*)&a)[1]), std::round(((const double*)&a)[0]));
+#endif
+     }
+
+     static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
+#ifdef __SSE3__
+         return _mm_hadd_pd(a, b);
+#else
+        return _mm_set_pd(((const double*)&a)[0] + ((const double*)&a)[1], ((const double*)&b)[0] + ((const double*)&b)[1]);
+#endif
+     }
+
+     static INLINE CONST double hadd_to_scal(const vect_t a) {
+         return ((const double*)&a)[0] + ((const double*)&a)[1];
+     }
+
+};
+
+// int8_t
+template<>
+struct Simd128_impl<true, true, 1>{
+    // static void hello(){std::cout << "int8_t" << std::endl;}
+};
+
+// int16_t
+template<>
+struct Simd128_impl<true, true, 2>{
+    // static void hello(){std::cout << "int16_t" << std::endl;}
+};
+
+// int32_t
+template<>
+struct Simd128_impl<true, true, 4>{
+    // static void hello(){std::cout << "int32_t" << std::endl;}
+};
+
+// int64_t
+template<>
+struct Simd128_impl<true, true, 8>{
+    // static void hello(){std::cout << "int64_t" << std::endl;}
+};
+
+// uint8_t
+template<>
+struct Simd128_impl<true, false, 1>{
+    // static void hello(){std::cout << "uint8_t" << std::endl;}
+};
+
+// uint16_t
+template<>
+struct Simd128_impl<true, false, 2>{
+    // static void hello(){std::cout << "uint16_t" << std::endl;}
+};
+
+// uint32_t
+template<>
+struct Simd128_impl<true, false, 4>{
+    // static void hello(){std::cout << "uint32_t" << std::endl;}
+};
+
+// uint64_t
+template<>
+struct Simd128_impl<true, false, 8>{
+    // static void hello(){std::cout << "uint64_t" << std::endl;}
+};
+
+template<class T>
+using Simd128 = Simd128_impl<std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 template<>
 struct Simd128<int64_t>
