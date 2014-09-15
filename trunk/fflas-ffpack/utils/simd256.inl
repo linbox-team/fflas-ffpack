@@ -207,4 +207,34 @@ struct Simd256<float>
 #endif
 };
 
+template<>
+struct Simd256<int64_t>
+{
+	using vect_t = __m256i;
+
+	static const constexpr size_t vect_size = 2;
+
+	static const constexpr size_t alignment = 16;
+
+	static INLINE PURE vect_t load(const int64_t * const p) {return _mm256_load_si256(p);}
+
+	static INLINE PURE vect_t loadu(const int64_t * const p) {return _mm256_loadu_si256(p);}
+
+	static INLINE void store(const int64_t * p, vect_t v) {_mm256_store_si256(reinterpret_cast<__m256i*>(p), v);}
+
+	static INLINE void storeu(const int64_t * p, vect_t v) {_mm256_storeu_si256(reinterpret_cast<__m256i*>(p), v);}
+
+	static INLINE CONST vect_t set1(const int64_t x) {return _mm256_set1_epi64x(x);} // actually set2
+
+	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm256_add_epi64(a, b);}
+
+	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm256_add_epi32(a, b);}
+
+	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
+		return _mm256_add_epi64(c, __mm256_mul_epi32(a,b));
+	}
+
+};
+
+
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL

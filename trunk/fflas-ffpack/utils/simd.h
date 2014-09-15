@@ -52,49 +52,66 @@
 #define PURE
 #endif
 
+
+void prefetch(const int64_t* addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
+
+
 template<class T>
- struct simdToType;
+struct simdToType;
 
 /*
  * is_simd trait
  */
 
 template<class T>
- struct is_simd
- {
-    static const constexpr bool value = false;
-    using type = std::integral_constant<bool, false>;
- };
+struct is_simd
+{
+	static const constexpr bool value = false;
+	using type = std::integral_constant<bool, false>;
+};
 
 // SSE
 #if defined(__FFLASFFPACK_USE_SSE)
 #include "fflas-ffpack/utils/simd128.inl"
 
- template<>
- struct simdToType<__m128d>
- {
-    using type = double;
- };
+template<>
+struct simdToType<__m128d>
+{
+	using type = double;
+};
 
 template<>
- struct simdToType<__m128>
- {
-    using type = float;
- };
+struct simdToType<__m128>
+{
+	using type = float;
+};
 
 template<>
- struct is_simd<__m128d>
- {
-     static const constexpr bool value = true;
-     using type = std::integral_constant<bool, true>;
- };
+struct simdToType<__m128i>
+{
+	using type = int64_t ;
+}
 
 template<>
- struct is_simd<__m128>
- {
-     static const constexpr bool value = true;
-     using type = std::integral_constant<bool, true>;
- };
+struct is_simd<__m128d>
+{
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+template<>
+struct is_simd<__m128>
+{
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+template<>
+struct is_simd<__m128i>
+{
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
 
 #endif // SSE
 
@@ -102,31 +119,46 @@ template<>
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 #include "fflas-ffpack/utils/simd256.inl"
 
- template<>
- struct simdToType<__m256d>
- {
-    using type = double;
- };
+template<>
+struct simdToType<__m256d>
+{
+	using type = double;
+};
 
 template<>
- struct simdToType<__m256>
- {
-    using type = float;
- };
-
- template<>
- struct is_simd<__m256d>
- {
-     static const constexpr bool value = true;
-     using type = std::integral_constant<bool, true>;
- };
+struct simdToType<__m256>
+{
+	using type = float;
+};
 
 template<>
- struct is_simd<__m256>
- {
-     static const constexpr bool value = true;
-     using type = std::integral_constant<bool, true>;
- };
+struct simdToType<__m256i>
+{
+	using type = int64_t ;
+}
+
+
+template<>
+struct is_simd<__m256d>
+{
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+template<>
+struct is_simd<__m256>
+{
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+template<>
+struct is_simd<__m256i>
+{
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
 
 #endif // AVX
 
