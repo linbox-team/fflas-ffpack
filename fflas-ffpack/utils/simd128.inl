@@ -294,19 +294,19 @@ struct Simd128<int64_t>
 
 	static INLINE PURE half_t loadu_half(const int64_t * const p) {return _mm_loadu_si128(reinterpret_cast<const half_t*>(p));}
 
-	static INLINE void store(const int64_t * p, vect_t v) {_mm_store_si128(reinterpret_cast<vect_t*>(p), v);}
+	static INLINE void store(const int64_t * p, vect_t v) {_mm_store_si128(reinterpret_cast<vec_t*>(const_cast<int64_t*>(p)), v);}
 
-	static INLINE void storeu(const int64_t * p, vect_t v) {_mm_storeu_si128(reinterpret_cast<vect_t*>(p), v);}
+	static INLINE void storeu(const int64_t * p, vect_t v) {_mm_storeu_si128(reinterpret_cast<vect_t*>(const_cast<int64_t*>(p)), v);}
 
-	static INLINE void store_half(const int64_t * p, half_t v) {_mm_store_si128(reinterpret_cast<half_t*>(p), v);}
+	static INLINE void store_half(const int64_t * p, half_t v) {_mm_store_si128(reinterpret_cast<half_t*>(const_cast<int64_t*>(p), v);}
 
-	static INLINE void storeu_half(const int64_t * p, half_t v) {_mm_storeu_si128(reinterpret_cast<half_t*>(p), v);}
+	static INLINE void storeu_half(const int64_t * p, half_t v) {_mm_storeu_si128(reinterpret_cast<half_t*>(const_cast<int64_t*>(p), v);}
 
 	static INLINE CONST vect_t set1(const int64_t x) {return _mm_set1_epi64x(x);} // actually set2
 
 	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_epi64(a, b);}
 
-	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_add_epi32(a, b);}
+	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_mul_epi32(a, b);}
 
 	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
 		return _mm_add_epi64(c, __mm_mul_epi32(a,b));
