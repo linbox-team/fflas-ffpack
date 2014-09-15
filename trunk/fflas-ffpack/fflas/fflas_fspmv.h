@@ -162,17 +162,17 @@ namespace FFLAS { /*  CSC */
 
 namespace FFLAS { /*  ELL */
 
-	template<class Element, bool simd>
-	struct ELL ;
+	 template<class Element, bool simd>
+	 struct ELL;
 
-	template<class Element/*  , bool simd*/>
-	struct ELLR ;
+	 template<class Element/*  , bool simd*/>
+	 struct ELLR ;
 
-	template<class Element, bool simd>
-	struct ELL_sub;
+	 template<class Element, bool simd>
+	 struct ELL_sub;
 
-	template<class Element, bool simd>
-	struct ELL_ZO;
+	 template<class Element, bool simd>
+	 struct ELL_ZO;
 } // FFLAS
 
 namespace FFLAS { /* SELL */
@@ -185,28 +185,6 @@ namespace FFLAS { /* SELL */
 
 	template<class Element, bool simd>
 	struct SELL_ZO;
-
-	template<class Field, bool bSimd>
-	void sp_spmv(const Field & F,
-	 			 const SELL<typename Field::Element, bSimd> & A,
-	  			 const VECT<typename Field::Element> & x,
-	  			 const typename Field::Element b,
-	  			 VECT<typename Field::Element> & y);
-
-	template<class Field, bool bSimd>
-	void sp_spmv(const Field & F,
-	 			 const SELL_sub<typename Field::Element, bSimd> & A,
-	  			 const VECT<typename Field::Element> & x,
-	  			 const typename Field::Element b,
-	  			 VECT<typename Field::Element> & y);
-
-	template<class Field, bool bSimd>
-	void sp_spmv(const Field & F,
-	 			 const SELL_ZO<typename Field::Element, bSimd> & A,
-	  			 const VECT<typename Field::Element> & x,
-	  			 const typename Field::Element b,
-	  			 VECT<typename Field::Element> & y);
-
 }
 
 namespace FFLAS { /*  BCSR */
