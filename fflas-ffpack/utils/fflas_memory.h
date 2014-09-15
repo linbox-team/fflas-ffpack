@@ -40,7 +40,7 @@ namespace FFLAS{
 	   //  //return new typename Field::Element[m*n];
 	   //  return malloc_align<typename Field::Element>(m*n, Alignment::AVX);
     // }
- 
+
     template<class Field>
     inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const size_t n, const Alignment align = Alignment::AVX)
     {
@@ -60,6 +60,75 @@ namespace FFLAS{
     {
 	    //delete[] A;
 	    free(A);
+    }
+
+    template<class Element_ptr>
+    void fflas_free(Element_ptr A)
+    {
+	    delete [] A ;
+    }
+
+#define __CPUID(abcd,func,id) \
+    __asm__ __volatile__ ("cpuid": "=a" (abcd[0]), "=b" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "a" (func), "c" (id) );
+
+    inline void getCacheSize(int& l1, int& l2, int& l3)
+    {
+	    int abcd[4];
+	    l1 = l2 = l3 = 0;
+	    int cache_id = 0;
+	    int cache_type = 0;
+	    do {
+		    abcd[0] = abcd[1] = abcd[2] = abcd[3] = 0;
+		    __CPUID(abcd,0x4,cache_id);
+		    cache_type  = (abcd[0] & 0x0F) >> 0;
+		    if(cache_type==1||cache_type==3) // data or unified cache
+		    {
+			    int cache_level = (abcd[0] & 0xE0) >> 5;  // A[7:5]
+			    int ways        = (abcd[1] & 0xFFC00000) >> 22; // B[31:22]
+			    int partitions  = (abcd[1] & 0x003FF000) >> 12; // B[21:12]
+			    int line_size   = (abcd[1] & 0x00000FFF) >>  0; // B[11:0]
+			    int sets        = (abcd[2]);                    // C[31:0]
+			    int cache_size = (ways+1) * (partitions+1) * (line_size+1) * (sets+1);
+			    switch(cache_level)
+			    {
+			    case 1: l1 = cache_size; break;
+			    case 2: l2 = cache_size; break;
+			    case 3: l3 = cache_size; break;
+			    default: break;
+			    }
+		    }
+		    cache_id++;
+	    } while(cache_type>0 && cache_id<16);
+    }
+
+    inline void getTLBSize(int& tlb)
+    {
+	    int abcd[4]={};
+	    int sTLB, lTLB;
+	    __CPUID(abcd,0x2,0);
+	    unsigned char * bytes = reinterpret_cast<unsigned char *>(abcd)+2;
+	    for(int i=0; i<14; ++i)
+		    switch(bytes[i]){
+		    case 0x03: sTLB=64; break;
+		    case 0x04: lTLB=8;  break;
+		    case 0x05: lTLB=32; break;
+		    case 0x56: lTLB=16; break;
+		    case 0x57: sTLB=16; break;
+		    case 0x59: sTLB=16; break;
+		    case 0x5A: lTLB=32; break;
+		    case 0x5B: sTLB=lTLB=64;  break;
+		    case 0x5C: sTLB=lTLB=128; break;
+		    case 0x5D: sTLB=lTLB=256; break;
+		    case 0xB3: sTLB=128; break;
+		    case 0xB4: sTLB=256; break;
+		    case 0xBA: sTLB=64;  break;
+		    case 0xC0: sTLB=lTLB=8; break;
+		    case 0xCA: sTLB=512; break;
+		    default: break;
+		    }
+	    //cout<<"small TLB: "<<sTLB<<endl;
+	    //cout<<"large TLB: "<<lTLB<<endl;
+	    tlb=sTLB*4096;
     }
 
 }

@@ -24,12 +24,12 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas
 
-SUBDIRS=fflas_fgemm fflas_fspmv
+SUBDIRS=fflas_fgemm fflas_fspmv fflas_igemm
 
 sparse=fflas_fspmv.h \
        fflas_fspmv.inl
 
-multiprecision= fflas_ftrsm_mp.inl
+multiprecision= fflas_ftrsm_mp.inl fflas_igemm.h
 
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \

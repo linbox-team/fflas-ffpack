@@ -212,4 +212,33 @@ struct Simd128<float>
     }
 };
 
+template<>
+struct Simd128<int64_t>
+{
+	using vect_t = __m128i;
+
+	static const constexpr size_t vect_size = 2;
+
+	static const constexpr size_t alignment = 16;
+
+	static INLINE PURE vect_t load(const int64_t * const p) {return _mm_load_si128(p);}
+
+	static INLINE PURE vect_t loadu(const int64_t * const p) {return _mm_loadu_si128(p);}
+
+	static INLINE void store(const int64_t * p, vect_t v) {_mm_store_si128(reinterpret_cast<__m128i*>(p), v);}
+
+	static INLINE void storeu(const int64_t * p, vect_t v) {_mm_storeu_si128(reinterpret_cast<__m128i*>(p), v);}
+
+	static INLINE CONST vect_t set1(const int64_t x) {return _mm_set1_epi64x(x);} // actually set2
+
+	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_epi64(a, b);}
+
+	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_add_epi32(a, b);}
+
+	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
+		return _mm_add_epi64(c, __mm_mul_epi32(a,b));
+	}
+
+};
+
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
