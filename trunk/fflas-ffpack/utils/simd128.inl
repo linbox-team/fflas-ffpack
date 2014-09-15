@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 
-template<bool Int, bool Signed, int Size>
+template<bool ArithType, bool Int, bool Signed, int Size>
 struct Simd128_impl;
 
 // template<>
@@ -48,7 +48,7 @@ struct Simd128_impl;
 
 // float
 template<>
-struct Simd128_impl<false, true, 4>{
+struct Simd128_impl<true, false, true, 4>{
     using vect_t = __m128;
 
     static const constexpr size_t vect_size = 4;
@@ -136,7 +136,7 @@ struct Simd128_impl<false, true, 4>{
 
 // double
 template<>
-struct Simd128_impl<false, true, 8>{
+struct Simd128_impl<true, false, true, 8>{
     using vect_t = __m128d;
 
      static const constexpr size_t vect_size = 2;
@@ -226,82 +226,82 @@ struct Simd128_impl<false, true, 8>{
 
 // int8_t
 template<>
-struct Simd128_impl<true, true, 1>{
+struct Simd128_impl<true, true, true, 1>{
     // static void hello(){std::cout << "int8_t" << std::endl;}
 };
 
 // int16_t
 template<>
-struct Simd128_impl<true, true, 2>{
+struct Simd128_impl<true, true, true, 2>{
     // static void hello(){std::cout << "int16_t" << std::endl;}
 };
 
 // int32_t
 template<>
-struct Simd128_impl<true, true, 4>{
+struct Simd128_impl<true, true, true, 4>{
     // static void hello(){std::cout << "int32_t" << std::endl;}
 };
 
 // int64_t
 template<>
-struct Simd128_impl<true, true, 8>{
+struct Simd128_impl<true, true, true, 8>{
     // static void hello(){std::cout << "int64_t" << std::endl;}
 };
 
 // uint8_t
 template<>
-struct Simd128_impl<true, false, 1>{
+struct Simd128_impl<true, true, false, 1>{
     // static void hello(){std::cout << "uint8_t" << std::endl;}
 };
 
 // uint16_t
 template<>
-struct Simd128_impl<true, false, 2>{
+struct Simd128_impl<true, true, false, 2>{
     // static void hello(){std::cout << "uint16_t" << std::endl;}
 };
 
 // uint32_t
 template<>
-struct Simd128_impl<true, false, 4>{
+struct Simd128_impl<true, true, false, 4>{
     // static void hello(){std::cout << "uint32_t" << std::endl;}
 };
 
 // uint64_t
 template<>
-struct Simd128_impl<true, false, 8>{
+struct Simd128_impl<true, true, false, 8>{
     // static void hello(){std::cout << "uint64_t" << std::endl;}
 };
 
 template<class T>
-using Simd128 = Simd128_impl<std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
+using Simd128 = Simd128_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
-template<>
-struct Simd128<int64_t>
-{
-	using vect_t = __m128i;
+// template<>
+// struct Simd128<int64_t>
+// {
+// 	using vect_t = __m128i;
 
-	static const constexpr size_t vect_size = 2;
+// 	static const constexpr size_t vect_size = 2;
 
-	static const constexpr size_t alignment = 16;
+// 	static const constexpr size_t alignment = 16;
 
-	static INLINE PURE vect_t load(const int64_t * const p) {return _mm_load_si128(p);}
+// 	static INLINE PURE vect_t load(const int64_t * const p) {return _mm_load_si128(p);}
 
-	static INLINE PURE vect_t loadu(const int64_t * const p) {return _mm_loadu_si128(p);}
+// 	static INLINE PURE vect_t loadu(const int64_t * const p) {return _mm_loadu_si128(p);}
 
-	static INLINE void store(const int64_t * p, vect_t v) {_mm_store_si128(reinterpret_cast<__m128i*>(p), v);}
+// 	static INLINE void store(const int64_t * p, vect_t v) {_mm_store_si128(reinterpret_cast<__m128i*>(p), v);}
 
-	static INLINE void storeu(const int64_t * p, vect_t v) {_mm_storeu_si128(reinterpret_cast<__m128i*>(p), v);}
+// 	static INLINE void storeu(const int64_t * p, vect_t v) {_mm_storeu_si128(reinterpret_cast<__m128i*>(p), v);}
 
-	static INLINE CONST vect_t set1(const int64_t x) {return _mm_set1_epi64x(x);} // actually set2
+// 	static INLINE CONST vect_t set1(const int64_t x) {return _mm_set1_epi64x(x);} // actually set2
 
-	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_epi64(a, b);}
+// 	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_epi64(a, b);}
 
-	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_add_epi32(a, b);}
+// 	static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_add_epi32(a, b);}
 
-	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
-		return _mm_add_epi64(c, __mm_mul_epi32(a,b));
-	}
+// 	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
+// 		return _mm_add_epi64(c, __mm_mul_epi32(a,b));
+// 	}
 
-};
+// };
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
