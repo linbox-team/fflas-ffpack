@@ -33,79 +33,89 @@
 namespace FFLAS { namespace details {
 
 	template<>
-		inline void duplicate_vect<2>(int64_t* XX, const int64_t* X, size_t n){
-			int64_t *p=XX;
-			for(size_t i=0;i<n;i++){
-				p[0]=X[i];
-				p[1]=X[i];
-				p+=2;
-			}
+	inline void duplicate_vect<2>(int64_t* XX, const int64_t* X, size_t n){
+		int64_t *p=XX;
+		for(size_t i=0;i<n;i++){
+			p[0]=X[i];
+			p[1]=X[i];
+			p+=2;
 		}
+	}
 
 	template<>
-		inline void duplicate_vect<4>(int64_t* XX, const int64_t* X, size_t n){
-			int64_t *p=XX;
-			for(size_t i=0;i<n;i++){
-				p[0]=X[i];
-				p[1]=X[i];
-				p[2]=X[i];
-				p[3]=X[i];
-				p+=4;
-			}
+	inline void duplicate_vect<4>(int64_t* XX, const int64_t* X, size_t n){
+		int64_t *p=XX;
+		for(size_t i=0;i<n;i++){
+			p[0]=X[i];
+			p[1]=X[i];
+			p[2]=X[i];
+			p[3]=X[i];
+			p+=4;
 		}
+	}
 
 	// store each rows x k submatrices of Rhs in row major mode
 	// if k does not divide cols, the remaining column are not packed
 	template<size_t k>
-		void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
-			size_t cols_by_k=(cols/k)*k;
-			size_t p=0;
-			// pack by k columns
-			for(size_t j=0;j<cols_by_k;j+=k){
-				for(size_t i=0;i<rows;i++)
-					for (size_t l=0;l<k;l++,p++)
-						XX[p]=X[i+(j+l)*ldx];
-			}
-			// the remaining columns are not packed
-			for(size_t j=cols_by_k;j<cols;j++)
-				for(size_t i=0;i<rows;i++,p++)
-					XX[p]=X[i+j*ldx];
+	void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
+		size_t cols_by_k=(cols/k)*k;
+		size_t p=0;
+		// pack by k columns
+		for(size_t j=0;j<cols_by_k;j+=k){
+			for(size_t i=0;i<rows;i++)
+				for (size_t l=0;l<k;l++,p++)
+					XX[p]=X[i+(j+l)*ldx];
 		}
+		// the remaining columns are not packed
+		for(size_t j=cols_by_k;j<cols;j++)
+			for(size_t i=0;i<rows;i++,p++)
+				XX[p]=X[i+j*ldx];
+	}
 
 
 	// store each k x cols submatrices of Lhs in column major mode
 	// if k does not divide rows, the remaining rows are not packed
 	template<size_t k>
-		void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
-			size_t p=0;
-			size_t rows_by_k=(rows/k)*k;
-			// pack rows by group of k
-			for(size_t i=0;i<rows_by_k;i+=k)
-				for(size_t j=0;j<cols;j++)
-					//for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
-					for (size_t l=0;l<k;l+=4){
-						__m128i T0,T1;
-						SSE_LOADU(T0,X[i+l+  j*ldx]);
-						SSE_LOADU(T1,X[i+l+2+j*ldx]);
-						SSE_STORE(XX[p],T0);p+=2;
-						SSE_STORE(XX[p],T1);p+=2;
-					}
-			// the remaining rows are packed by group of StepA (if possible)
-			if (rows-rows_by_k>=StepA){
-				for(size_t j=0;j<cols;j++)
-					for (size_t l=0;l<StepA;l+=2){
-						__m128i T0;
-						SSE_LOADU(T0,X[rows_by_k+l+j*ldx]);
-						SSE_STORE(XX[p],T0);p+=2;
-					}
-				rows_by_k+=StepA;
-			}
-			for(size_t i=rows_by_k;i<rows;i++)
-				for(size_t j=0;j<cols;j++,p++){
-					XX[p]=X[i+j*ldx];
+	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
+		using simd = Simd<int64_t> ;
+		using vect_t =  typename simd::half_t;
+		size_t p=0;
+		size_t rows_by_k=(rows/k)*k;
+		// pack rows by group of k
+		for(size_t i=0;i<rows_by_k;i+=k)
+			for(size_t j=0;j<cols;j++)
+				//for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
+				for (size_t l=0;l<k;l+=4){
+					// __m128i T0,T1;
+					half_t T0,T1;
+					T0 = simd::loadu_half(X[i+l+  j*ldx]);
+					// SSE_LOADU(T0,X[i+l+  j*ldx]);
+					T1 = simd::loadu_half(X[i+l+2+j*ldx]);
+					// SSE_LOADU(T1,X[i+l+2+j*ldx]);
+					simd::store_half(XX[p],T0);p+=2;
+					// SSE_STORE(XX[p],T0);p+=2;
+					simd::store_half(XX[p],T1);p+=2;
+					// SSE_STORE(XX[p],T1);p+=2;
 				}
-
+		// the remaining rows are packed by group of StepA (if possible)
+		if (rows-rows_by_k>=StepA){
+			for(size_t j=0;j<cols;j++)
+				for (size_t l=0;l<StepA;l+=2){
+					half_t T0;
+					// __m128i T0;
+					// SSE_LOADU(T0,X[rows_by_k+l+j*ldx]);
+					T0 = simd::loadu(X[rows_by_k+l+j*ldx]);
+					simd::store(XX[p],T0);p+=2;
+					// SSE_STORE(XX[p],T0);p+=2;
+				}
+			rows_by_k+=StepA;
 		}
+		for(size_t i=rows_by_k;i<rows;i++)
+			for(size_t j=0;j<cols;j++,p++){
+				XX[p]=X[i+j*ldx];
+			}
+
+	}
 
 	void BlockingFactor(size_t& m, size_t& n, size_t& k)
 	{
