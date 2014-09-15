@@ -30,11 +30,11 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
-template<bool Int, bool Signed, int Size>
+template<bool ArithType, bool Int, bool Signed, int Size>
 struct Simd256_impl;
 
 template<>
-struct Simd256_impl<false, true, 8>
+struct Simd256_impl<true, false, true, 8>
 {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	using vect_t = __m256d;
@@ -121,7 +121,7 @@ struct Simd256_impl<false, true, 8>
 };
 
 template<>
-struct Simd256_impl<false, true, 4>
+struct Simd256_impl<true, false, true, 4>
 {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	using vect_t = __m256;
@@ -211,53 +211,53 @@ struct Simd256_impl<false, true, 4>
 
 template<>
 // int8_t
-struct Simd256_impl<true, true, 1>{
+struct Simd256_impl<true, true, true, 1>{
     // static void hello(){std::cout << "int8_t" << std::endl;}
 };
 
 template<>
 // int16_t
-struct Simd256_impl<true, true, 2>{
+struct Simd256_impl<true, true, true, 2>{
     // static void hello(){std::cout << "int16_t" << std::endl;}
 };
 
 template<>
 // int32_t
-struct Simd256_impl<true, true, 4>{
+struct Simd256_impl<true, true, true, 4>{
     // static void hello(){std::cout << "int32_t" << std::endl;}
 };
 
 template<>
 // int64_t
-struct Simd256_impl<true, true, 8>{
+struct Simd256_impl<true, true, true, 8>{
     // static void hello(){std::cout << "int64_t" << std::endl;}
 };
 
 template<>
 // uint8_t
-struct Simd256_impl<true, false, 1>{
+struct Simd256_impl<true, true, false, 1>{
     // static void hello(){std::cout << "uint8_t" << std::endl;}
 };
 
 template<>
 // uint16_t
-struct Simd256_impl<true, false, 2>{
+struct Simd256_impl<true, true, false, 2>{
     // static void hello(){std::cout << "uint16_t" << std::endl;}
 };
 
 template<>
 // uint32_t
-struct Simd256_impl<true, false, 4>{
+struct Simd256_impl<true, true, false, 4>{
     // static void hello(){std::cout << "uint32_t" << std::endl;}
 };
 
 template<>
 // uint64_t
-struct Simd256_impl<true, false, 8>{
+struct Simd256_impl<true, true, false, 8>{
     // static void hello(){std::cout << "uint64_t" << std::endl;}
 };
 
 template<class T>
-using Simd256 = Simd256_impl<std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
+using Simd256 = Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
