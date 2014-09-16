@@ -240,6 +240,14 @@ struct Simd256<int64_t>
 #ifdef __AVX2__
 		return _mm256_add_epi64(a, b);
 #else
+		half_t aa = _mm256_extractf128_si256(a,1);
+		half_t ab = _mm256_extractf128_si256(a,2);
+		half_t ba = _mm256_extractf128_si256(b,1);
+		half_t bb = _mm256_extractf128_si256(b,2);
+		vect_t res ;
+		_mm256_insertf128_si256(res,_mm_add_epi64(aa,ab),0);
+		_mm256_insertf128_si256(res,_mm_add_epi64(ba,bb),1);
+		return res ;
 #endif
 	}
 
@@ -247,6 +255,16 @@ struct Simd256<int64_t>
 #ifdef __AVX2__
 		return _mm256_mul_epi32(a, b);
 #else
+		half_t aa = _mm256_extractf128_si256(a,1);
+		half_t ab = _mm256_extractf128_si256(a,2);
+		half_t ba = _mm256_extractf128_si256(b,1);
+		half_t bb = _mm256_extractf128_si256(b,2);
+		vect_t res ;
+		_mm256_insertf128_si256(res,_mm_mul_epi32(aa,ab),0);
+		_mm256_insertf128_si256(res,_mm_mul_epi32(ba,bb),1);
+		return res ;
+
+
 #endif
 	}
 
@@ -254,6 +272,7 @@ struct Simd256<int64_t>
 #ifdef __AVX2__
 		return _mm256_add_epi64(c, __mm256_mul_epi32(a,b));
 #else
+		return add(mul(a,b),c);
 #endif
 	}
 
