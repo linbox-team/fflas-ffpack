@@ -68,6 +68,10 @@ namespace FFLAS{
 	    delete [] A ;
     }
 
+
+    void prefetch(const int64_t* addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
+
+
 #define __CPUID(abcd,func,id) \
     __asm__ __volatile__ ("cpuid": "=a" (abcd[0]), "=b" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "a" (func), "c" (id) );
 

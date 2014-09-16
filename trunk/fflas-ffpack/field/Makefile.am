@@ -24,27 +24,35 @@
 
 pkgincludesubdir=$(pkgincludedir)/field
 
-pkgincludesub_HEADERS=          	\
-	  modular-balanced.h        	\
-	  modular-balanced-double.h 	\
-	  modular-balanced-float.h  	\
-	  modular-balanced-int32.h  	\
-	  modular-balanced-int64.h  	\
-	  modular-positive.h        	\
+MODULAR_POS= modular-positive.h        	\
 	  modular-float.h           	\
 	  modular-double.h          	\
 	  modular-int32.h           	\
 	  modular-uint32.h           	\
 	  modular-int64.h           	\
 	  modular-uint64.h           	\
+	  modular-integer.h
+
+MODULAR_BAL=modular-balanced.h        	\
+	  modular-balanced-double.h 	\
+	  modular-balanced-float.h  	\
+	  modular-balanced-int32.h  	\
+	  modular-balanced-int64.h
+
+RNS=rns.h			        \
+    rns-double.h			\
+    rns-integer.h			\
+    rns-integer-mod.h
+
+pkgincludesub_HEADERS=          	\
+	  field.h                       \
+	  field-general.h		\
+	  $(MODULAR_POS)                \
+	  $(MODULAR_BAL)                \
 	  nonzero-randiter.h        	\
 	  modular-randiter.h        	\
 	  unparametric.h            	\
-	  field-general.h		\
 	  integer.h			\
-	  modular-integer.h		\
-	  rns-double.h			\
-	  rns-integer.h			\
-	  rns-integer-mod.h
+	  $(RNS)
 
 EXTRA_DIST=field.doxy
