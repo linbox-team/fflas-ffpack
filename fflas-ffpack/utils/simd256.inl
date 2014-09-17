@@ -30,14 +30,18 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
-template<class T>
-struct Simd256;
+template<bool ArithType, bool Int, bool Signed, int Size>
+struct Simd256_impl;
 
+// double
 template<>
-struct Simd256<double>
+struct Simd256_impl<true, false, true, 8>
 {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+
 	using vect_t = __m256d;
+
+	using saclar_t = double;
 
 	static const constexpr size_t vect_size = 4;
 
@@ -45,21 +49,21 @@ struct Simd256<double>
 
 	static INLINE CONST vect_t zero() {return _mm256_setzero_pd();}
 
-	static INLINE CONST vect_t set1(const double x) {return _mm256_set1_pd(x);}
+	static INLINE CONST vect_t set1(const scalar_t x) {return _mm256_set1_pd(x);}
 
-	static INLINE CONST vect_t set(const double x1, const double x2, const double x3, const double x4) {return _mm256_set_pd(x4, x3, x2, x1);}
+	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4) {return _mm256_set_pd(x4, x3, x2, x1);}
 
 	template<class T>
-	static INLINE PURE vect_t gather(const double * const p, const T * const idx) {
+	static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx) {
 		// TODO AVX2 Gather
 		return _mm256_set_pd(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
 	}
 
-	static INLINE PURE vect_t load(const double * const p) {return _mm256_load_pd(p);}
+	static INLINE PURE vect_t load(const scalar_t * const p) {return _mm256_load_pd(p);}
 
-	static INLINE PURE vect_t loadu(const double * const p) {return _mm256_loadu_pd(p);}
+	static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm256_loadu_pd(p);}
 
-	static INLINE void store(const double * p, vect_t v) {_mm256_store_pd(const_cast<double*>(p), v);}
+	static INLINE void store(const scalar_t * p, vect_t v) {_mm256_store_pd(const_cast<scalar_t*>(p), v);}
 
 	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm256_add_pd(a, b);}
 
@@ -111,20 +115,22 @@ struct Simd256<double>
 
 	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {return _mm256_hadd_pd(a, b);}
 
-	static INLINE CONST double hadd_to_scal(const vect_t a) {
-		return ((const double*)&a)[0] + ((const double*)&a)[1] + ((const double*)&a)[2] + ((const double*)&a)[3];
+	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
+		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
 	}
-
 #else // __AVX__
 #error "You need AVX instructions to perform 256bits operations on double"
 #endif
 };
 
+// float
 template<>
-struct Simd256<float>
+struct Simd256_impl<true, false, true, 4>
 {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	using vect_t = __m256;
+
+	using scalar_t = float;
 
 	static const constexpr size_t vect_size = 8;
 
@@ -132,21 +138,21 @@ struct Simd256<float>
 
 	static INLINE CONST vect_t zero() {return _mm256_setzero_ps();}
 
-	static INLINE CONST vect_t set1(const float x) {return _mm256_set1_ps(x);}
+	static INLINE CONST vect_t set1(const scalar_t x) {return _mm256_set1_ps(x);}
 
-	static INLINE CONST vect_t set(const float x1, const float x2, const float x3, const float x4, const float x5, const float x6, const float x7, const float x8) {return _mm256_set_ps(x8, x7, x6, x5, x4, x3, x2, x1);}
+	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7, const scalar_t x8) {return _mm256_set_ps(x8, x7, x6, x5, x4, x3, x2, x1);}
 
 	template<class T>
-	static INLINE PURE vect_t gather(const float * const p, const T * const idx) {
+	static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx) {
 		// TODO AVX2 Gather
 		return _mm256_set_ps(p[idx[7]], p[idx[6]], p[idx[5]], p[idx[4]], p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
 	}
 
-	static INLINE PURE vect_t load(const float * const p) {return _mm256_load_ps(p);}
+	static INLINE PURE vect_t load(const scalar_t * const p) {return _mm256_load_ps(p);}
 
-	static INLINE PURE vect_t loadu(const float * const p) {return _mm256_loadu_ps(p);}
+	static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm256_loadu_ps(p);}
 
-	static INLINE void store(const float * p, const vect_t v) {_mm256_store_ps(const_cast<float*>(p), v);}
+	static INLINE void store(const scalar_t * p, const vect_t v) {_mm256_store_ps(const_cast<scalar_t*>(p), v);}
 
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm256_add_ps(a, b);}
 
@@ -198,8 +204,8 @@ struct Simd256<float>
 
 	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {return _mm256_hadd_ps(a, b);}
 
-	static INLINE CONST float hadd_to_scal(const vect_t a) {
-		return ((const float*)&a)[0] + ((const float*)&a)[1] + ((const float*)&a)[2] + ((const float*)&a)[3] + ((const float*)&a)[4] + ((const float*)&a)[5] + ((const float*)&a)[6] + ((const float*)&a)[7];
+	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
+		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3] + ((const scalar_t*)&a)[4] + ((const scalar_t*)&a)[5] + ((const scalar_t*)&a)[6] + ((const scalar_t*)&a)[7];
 	}
 
 #else // __AVX__
@@ -207,16 +213,89 @@ struct Simd256<float>
 #endif
 };
 
+// template<>
+// struct Simd256<int64_t>
+// {
+// #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+// 	using vect_t = __m256i;
+// 	using half_t = __m128i;
+
+// 	static const constexpr size_t vect_size = 2;
+
+// 	static const constexpr size_t alignment = 32;
+
+// 	static INLINE PURE vect_t load(const int64_t * const p) {return _mm256_load_si256(reinterpret_cast<const vect_t*>(p));}
+
+// 	static INLINE PURE vect_t loadu(const int64_t * const p) {return _mm256_loadu_si256(reinterpret_cast<const vect_t*>(p));}
+
+// 	static INLINE PURE half_t load_half(const int64_t * const p) {return _mm_load_si128(reinterpret_cast<const half_t*>(p));}
+
+// 	static INLINE PURE half_t loadu_half(const int64_t * const p) {return _mm_loadu_si128(reinterpret_cast<const half_t*>(p));}
+
+// 	static INLINE void store(const int64_t * p, vect_t v) {_mm256_store_si256(reinterpret_cast<vect_t*>(const_cast<int64_t*>(p)), v);}
+
+// 	static INLINE void storeu(const int64_t * p, vect_t v) {_mm256_storeu_si256(reinterpret_cast<vect_t*>(const_cast<int64_t*>(p)), v);}
+
+// 	static INLINE void store_half(const int64_t * p, half_t v) {_mm_store_si128(reinterpret_cast<half_t*>(const_cast<int64_t*>(p)), v);}
+
+// 	static INLINE void storeu_half(const int64_t * p, half_t v) {_mm_storeu_si128(reinterpret_cast<half_t*>(const_cast<int64_t*>(p)), v);}
+
+// 	static INLINE CONST vect_t set1(const int64_t x) {return _mm256_set1_epi64x(x);} // actually set2
+
+// 	static INLINE CONST vect_t add(vect_t a, vect_t b) {
+// #ifdef __AVX2__
+// 		return _mm256_add_epi64(a, b);
+// #else
+// #endif
+// 	}
+
+// 	static INLINE CONST vect_t mul(vect_t a, vect_t b) {
+// #ifdef __AVX2__
+// 		return _mm256_mul_epi32(a, b);
+// #else
+// #endif
+// 	}
+
+// 	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
+// #ifdef __AVX2__
+// 		return _mm256_add_epi64(c, __mm256_mul_epi32(a,b));
+// #else
+// #endif
+// 	}
+
+// 	static INLINE CONST vect_t zero() {return _mm256_setzero_si256();}
+// #endif
+
+// };
+
+// int8_t
 template<>
-struct Simd256<int64_t>
-{
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+struct Simd256_impl<true, true, true, 1>{
+    // static void hello(){std::cout << "int8_t" << std::endl;}
+};
+
+// int16_t
+template<>
+struct Simd256_impl<true, true, true, 2>{
+    // static void hello(){std::cout << "int16_t" << std::endl;}
+};
+
+// int32_t
+template<>
+struct Simd256_impl<true, true, true, 4>{
+    // static void hello(){std::cout << "int32_t" << std::endl;}
+};
+
+// int64_t
+template<>
+struct Simd256_impl<true, true, true, 8>{
+    #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	using vect_t = __m256i;
 	using half_t = __m128i;
 
-	static const constexpr size_t vect_size = 2;
+	static const constexpr size_t vect_size = 4;
 
-	static const constexpr size_t alignment = 16;
+	static const constexpr size_t alignment = 32;
 
 	static INLINE PURE vect_t load(const int64_t * const p) {return _mm256_load_si256(reinterpret_cast<const vect_t*>(p));}
 
@@ -278,8 +357,34 @@ struct Simd256<int64_t>
 
 	static INLINE CONST vect_t zero() {return _mm256_setzero_si256();}
 #endif
-
 };
+
+// uint8_t
+template<>
+struct Simd256_impl<true, true, false, 1>{
+    // static void hello(){std::cout << "uint8_t" << std::endl;}
+};
+
+// uint16_t
+template<>
+struct Simd256_impl<true, true, false, 2>{
+    // static void hello(){std::cout << "uint16_t" << std::endl;}
+};
+
+// uint32_t
+template<>
+struct Simd256_impl<true, true, false, 4>{
+    // static void hello(){std::cout << "uint32_t" << std::endl;}
+};
+
+// uint64_t
+template<>
+struct Simd256_impl<true, true, false, 8>{
+    // static void hello(){std::cout << "uint64_t" << std::endl;}
+};
+
+template<class T>
+using Simd256 = Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
