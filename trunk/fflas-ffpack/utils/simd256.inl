@@ -65,7 +65,8 @@ struct Simd256_impl<true, false, true, 8>
 
 	static INLINE void store(const scalar_t * p, vect_t v) {_mm256_store_pd(const_cast<scalar_t*>(p), v);}
 
-	static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm256_add_pd(a, b);}
+	static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm256_add_pd(a, b);}
+	static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm256_sub_pd(a, b);}
 
@@ -78,6 +79,9 @@ struct Simd256_impl<true, false, true, 8>
 		return _mm256_add_pd(c, _mm256_mul_pd(a, b));
 #endif
 	}
+
+	static INLINE CONST vect_t maddin( vect_t & c, const vect_t a, const vect_t b) { return c = madd(c,a,b); }
+
 
 	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
 #ifdef __FMA__
@@ -155,6 +159,7 @@ struct Simd256_impl<true, false, true, 4>
 	static INLINE void store(const scalar_t * p, const vect_t v) {_mm256_store_ps(const_cast<scalar_t*>(p), v);}
 
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm256_add_ps(a, b);}
+	static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm256_sub_ps(a, b);}
 
@@ -167,6 +172,7 @@ struct Simd256_impl<true, false, true, 4>
 		return _mm256_add_ps(c, _mm256_mul_ps(a, b));
 #endif
 	}
+	static INLINE CONST vect_t maddin(vect_t & c, const vect_t a, const vect_t b) { return c = madd(c,a,b); }
 
 	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
 #ifdef __FMA__
@@ -319,41 +325,43 @@ struct Simd256_impl<true, true, true, 8>{
 #ifdef __AVX2__
 		return _mm256_add_epi64(a, b);
 #else
-		half_t aa = _mm256_extractf128_si256(a,1);
-		half_t ab = _mm256_extractf128_si256(a,2);
-		half_t ba = _mm256_extractf128_si256(b,1);
-		half_t bb = _mm256_extractf128_si256(b,2);
+		half_t aa = _mm256_extractf128_si256(a,0);
+		half_t ab = _mm256_extractf128_si256(a,1);
+		half_t ba = _mm256_extractf128_si256(b,0);
+		half_t bb = _mm256_extractf128_si256(b,1);
 		vect_t res ;
-		_mm256_insertf128_si256(res,_mm_add_epi64(aa,ab),0);
-		_mm256_insertf128_si256(res,_mm_add_epi64(ba,bb),1);
+		res=_mm256_insertf128_si256(res,_mm_add_epi64(aa,ab),0);
+		res=_mm256_insertf128_si256(res,_mm_add_epi64(ba,bb),1);
 		return res ;
 #endif
 	}
+	static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
 	static INLINE CONST vect_t mul(vect_t a, vect_t b) {
 #ifdef __AVX2__
 		return _mm256_mul_epi32(a, b);
 #else
-		half_t aa = _mm256_extractf128_si256(a,1);
-		half_t ab = _mm256_extractf128_si256(a,2);
-		half_t ba = _mm256_extractf128_si256(b,1);
-		half_t bb = _mm256_extractf128_si256(b,2);
+		half_t aa = _mm256_extractf128_si256(a,0);
+		half_t ab = _mm256_extractf128_si256(a,1);
+		half_t ba = _mm256_extractf128_si256(b,0);
+		half_t bb = _mm256_extractf128_si256(b,1);
 		vect_t res ;
-		_mm256_insertf128_si256(res,_mm_mul_epi32(aa,ab),0);
-		_mm256_insertf128_si256(res,_mm_mul_epi32(ba,bb),1);
+		res=_mm256_insertf128_si256(res,_mm_mul_epi32(aa,ab),0);
+		res=_mm256_insertf128_si256(res,_mm_mul_epi32(ba,bb),1);
 		return res ;
 
 
 #endif
 	}
 
-	static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
+	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
 #ifdef __AVX2__
 		return _mm256_add_epi64(c, __mm256_mul_epi32(a,b));
 #else
 		return add(mul(a,b),c);
 #endif
 	}
+	static INLINE  vect_t maddin( vect_t & c, const vect_t a, const vect_t b) { return c = madd(c,a,b); }
 
 	static INLINE CONST vect_t zero() {return _mm256_setzero_si256();}
 #endif
