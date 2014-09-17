@@ -41,14 +41,14 @@ namespace FFLAS{
 	}
 
 	template<>
-	bool alignable<FFPACK::Integer>() {
+	bool alignable<FFPACK::Integer*>() {
 		return false;
 	}
 
     template<class Field>
     inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const size_t n, const Alignment align = Alignment::DEFAULT)
     {
-	    if (alignable<typename Field::Element>() )
+	    if (alignable<typename Field::Element_ptr>() )
 		    //return new typename Field::Element[m*n];
 		    return malloc_align<typename Field::Element>(m*n, align);
 	    else
@@ -68,8 +68,10 @@ namespace FFLAS{
     template<class Element_ptr>
     inline void fflas_delete (Element_ptr A)
     {
-	    //delete[] A;
-	    free(A);
+	    if (alignable<Element_ptr>() )
+		    free(A);
+	    else
+		    delete[] A;
     }
 
     template<class Element_ptr>

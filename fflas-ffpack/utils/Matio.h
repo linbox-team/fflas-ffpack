@@ -232,15 +232,19 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 template<class Field>
 std::ostream& write_field(const Field& F,std::ostream& c,
 			  typename Field::ConstElement_ptr E,
-			  int n, int m, int id, bool mapleFormat = false)
+			  int n, int m, int id, bool mapleFormat = false, bool column_major=false)
 {
 
-	double tmp;
+	FFPACK::Integer tmp;
+	// double tmp;
 	if (mapleFormat) c << "Matrix(" << n <<',' << m << ", [" ;
 	for (int i = 0; i<n;++i){
 		if (mapleFormat) c << '[';
 		for (int j=0; j<m;++j){
-			F.convert(tmp,*(E+j+id*i));
+			if (column_major)
+				F.convert(tmp,*(E+j+id*i));
+			else
+				F.convert(tmp,*(E+i+id*j));
 			c << tmp;
 			if (mapleFormat && j<m-1) c << ',';
 			c << ' ';
