@@ -45,11 +45,20 @@
 
 // Alignment Type
 enum class Alignment : size_t {
+  NONE = 0,
   Normal = sizeof(void*),
   SSE = 16,
   AVX = 32,
   XEON_PHI = 64,
   CACHE_LINE = 64,
+  DEFAULT =
+#ifdef __FFLASFFPACK_USE_AVX
+  16
+#elif defined(__FFLASFFPACK_USE_SSE)
+  32
+#else
+  sizeof(void*)
+#endif
 };
 
 /*
