@@ -41,7 +41,7 @@ struct Simd256_impl<true, false, true, 8>
 
 	using vect_t = __m256d;
 
-	using saclar_t = double;
+	using scalar_t = double;
 
 	static const constexpr size_t vect_size = 4;
 

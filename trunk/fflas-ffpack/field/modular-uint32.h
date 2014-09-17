@@ -98,14 +98,15 @@ namespace FFPACK
 
 		Element &init (Element &x, const long int &y ) const
 		{
-			x = abs (y) % (long int) (_modulus);
+			x = (Element)(labs (y) % (long int) (_modulus));
+
 			if (y < 0) x = _modulus - x;
 			return x;
 		}
 
 		Element &init (Element &x, const int &y ) const
 		{
-			x = abs (y) % (long int) (_modulus);
+			x = (Element)(abs ((long int)y) % (long int) (_modulus));
 			if (y < 0) x = _modulus - x;
 			return x;
 		}
