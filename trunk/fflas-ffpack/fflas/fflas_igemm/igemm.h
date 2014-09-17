@@ -45,8 +45,8 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS { /*  igemm */
 	inline void igemm_(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
-			  const int K, const double alpha, const double *A, const int lda, const double *B, const int ldb,
-			  const double beta, double *C, const int ldc);
+			  const int K, const int64_t alpha, const int64_t *A, const int lda, const int64_t *B, const int ldb,
+			  const int64_t beta, int64_t *C, const int ldc);
 
 
 } // FFLAS

@@ -176,6 +176,28 @@ namespace FFPACK {
 			return x=zero;
 		}
 
+		Element & convert(Element&x, const Element& y) const
+		{
+			return x = y ;
+		}
+
+		int64_t & convert(int64_t &x, const Element& y) const
+		{
+			return x = (int64_t) y ;
+		}
+
+		uint64_t & convert(uint64_t &x, const Element& y) const
+		{
+			return x = (uint64_t) y ;
+		}
+
+
+		double & convert(double &x, const Element& y) const
+		{
+			return x = (double) y ;
+		}
+
+
 		 Element& assign(Element& x, const Element& y) const
 		{
 			return x = y;
