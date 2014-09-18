@@ -53,7 +53,8 @@
 #include <immintrin.h>
 #include <type_traits>
 
-
+// to activate SIMD with integers
+//#define SIMD_INT
 
 
 template<class T>
