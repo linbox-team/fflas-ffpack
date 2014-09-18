@@ -219,6 +219,8 @@ struct Simd256_impl<true, false, true, 4>
 #endif
 };
 
+#ifdef SIMD_INT
+
 // template<>
 // struct Simd256<int64_t>
 // {
@@ -408,6 +410,8 @@ template<>
 struct Simd256_impl<true, true, false, 8>{
     // static void hello(){std::cout << "uint64_t" << std::endl;}
 };
+
+#endif //#ifdef SIMD_INT
 
 template<class T>
 using Simd256 = Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;

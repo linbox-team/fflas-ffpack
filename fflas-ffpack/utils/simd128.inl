@@ -218,6 +218,7 @@ struct Simd128_impl<true, false, true, 8>{
 
 };
 
+#ifdef SIMD_INT
 // Trop d'instructions SSE manquantes pour les int8_t
 
 // int8_t
@@ -364,7 +365,7 @@ struct Simd128_impl<true, true, true, 2>{
 
     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_epi16(a, b);}
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_epi16(a, b);}
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_epi16(a, b);}
 
     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_epi16(a, b);}
 
@@ -584,6 +585,9 @@ template<>
 struct Simd128_impl<true, true, false, 8>{
     // static void hello(){std::cout << "uint64_t" << std::endl;}
 };
+
+
+#endif //#ifdef SIMD_INT
 
 template<class T>
 using Simd128 = Simd128_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
