@@ -53,11 +53,9 @@ enum class Alignment : size_t {
   CACHE_LINE = 64,
   DEFAULT =
 #ifdef __FFLASFFPACK_USE_AVX
-  16
-#elif defined(__FFLASFFPACK_USE_SSE)
   32
 #else
-  sizeof(void*)
+  16
 #endif
 };
 
