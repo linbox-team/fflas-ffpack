@@ -36,12 +36,12 @@
 namespace FFLAS{
 
 	template<class Element>
-	bool alignable() {
+	inline bool alignable() {
 		return true ;
 	}
 
 	template<>
-	bool alignable<FFPACK::Integer*>() {
+	inline bool alignable<FFPACK::Integer*>() {
 		return false;
 	}
 
@@ -54,9 +54,6 @@ namespace FFLAS{
 	    else
 		    return new typename Field::Element[m*n];
     }
-
-
-
 
     template<class Element >
     inline Element* fflas_new (const size_t m, const Alignment align = Alignment::AVX)
@@ -79,7 +76,6 @@ namespace FFLAS{
     {
 	    delete [] A ;
     }
-
 
     void prefetch(const int64_t* addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
 

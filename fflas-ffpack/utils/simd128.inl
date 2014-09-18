@@ -27,7 +27,6 @@
  *.
  */
 
-
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_INL
 
@@ -219,70 +218,95 @@ struct Simd128_impl<true, false, true, 8>{
 
 };
 
+// Trop d'instructions SSE manquantes pour les int8_t
+
 // int8_t
-template<>
-struct Simd128_impl<true, true, true, 1>{
-    using vect_t = __m128i;
+// template<>
+// struct Simd128_impl<true, true, true, 1>{
+//     using vect_t = __m128i;
 
-    using scalar_t = int16_t;
+//     using scalar_t = int8_t;
 
-    static const constexpr size_t vect_size = 16;
+//     static const constexpr size_t vect_size = 16;
 
-    static const constexpr size_t alignment = 16;
+//     static const constexpr size_t alignment = 16;
 
-    static INLINE PURE vect_t zero(){return _mm_setzero_si128();}
+//     static INLINE PURE vect_t zero(){return _mm_setzero_si128();}
 
-    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(p);}
+//     static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(p);}
 
-    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(p);}
+//     static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(p);}
 
-    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(const_cast<scalar_t*>(p), v);}
+//     static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(const_cast<scalar_t*>(p), v);}
 
-    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(const_cast<scalar_t*>(p), v);}
+//     static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(const_cast<scalar_t*>(p), v);}
 
-    static INLINE CONST vect_t set1(const scalar_t x) {return _mm_set1_epi16(x);} // actually set2
+//     static INLINE CONST vect_t set1(const scalar_t x) {return _mm_set1_epi16(x);} // actually set2
 
-    static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7, const scalar_t x8, const scalar_t x9, const scalar_t x10, const scalar_t x11, const scalar_t x12, const scalar_t x13, const scalar_t x14, const scalar_t x15, const scalar_t x16){
-        return _mm_set_epi16(x16,x15,x14,x13,x12,x11,x10,x9,x8, x7, x6, x5, x4, x3, x2, x1);
-    }
+//     static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7, const scalar_t x8, const scalar_t x9, const scalar_t x10, const scalar_t x11, const scalar_t x12, const scalar_t x13, const scalar_t x14, const scalar_t x15, const scalar_t x16){
+//         return _mm_set_epi16(x16,x15,x14,x13,x12,x11,x10,x9,x8, x7, x6, x5, x4, x3, x2, x1);
+//     }
 
-    static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_epi8(a, b);}
-    static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+//     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_epi8(a, b);}
+//     static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
-    static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_epi8(a, b);}
+//     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_epi8(a, b);}
 
-    static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm_mul_epi8(a,b);}
+//     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm_mul_epi8(a,b);}
 
-    static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_add_epi8(c,_mm_mul_epi8(a,b));
-    }
+//     static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
+//         return _mm_add_epi8(c,_mm_mul_epi8(a,b));
+//     }
 
-    static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_sub_epi8(c,_mm_mul_epi8(a,b));
-    }
+//     static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
+//         return _mm_sub_epi8(c,_mm_mul_epi8(a,b));
+//     }
 
-    static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
-        return _mm_sub_epi8(_mm_mul_epi8(a,b),c);
-    }
+//     static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
+//         return _mm_sub_epi8(_mm_mul_epi8(a,b),c);
+//     }
 
-    static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_epi8(a, b);}
+//     static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_epi8(a, b);}
 
-    static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_epi8(a, b);}
+//     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_epi8(a, b);}
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_epi8(a, b);}
+//     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_epi8(a, b);}
 
-    static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_epi8(a, b);}
+//     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_epi8(a, b);}
 
-    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_epi8(a, b);}
+//     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_epi8(a, b);}
 
-    static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_epi8(a, b);}
+//     static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_epi8(a, b);}
 
-    static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_epi8(a, b);}
+//     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_epi8(a, b);}
 
-    // static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
-    //   return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
-    //  }
-};
+//     static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
+// #pragma warning "The simd mullo function is emulate, it will induce bad performances."
+//         vect_t x2 = x0, x3 = x1;
+//         x3 = _mm_unpacklo_epi8(x0, x3);
+//         x2 = _mm_unpacklo_epi8(x1, x2);
+//         x1 = _mm_unpackhi_epi8(x1, x2);
+//         x0 = _mm_unpackhi_epi8(x0, x1);
+//     }
+
+//     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b){
+//         return _mm_mulh_epi(a, b););
+//     }
+
+//     static INLINE CONST vect_t mulx(const vect_t a, const vect_t b){
+// #pragma warning "The simd mulhx function is emulate, it will induce bad performances."
+//         vect_t ah, al;
+//         ah = mullhi(a, b);
+//         al = mullo(a,b);
+//         return set(_mm_extract_epi16(ah,1),_mm_extract_epi16(al,1),_mm_extract_epi16(ah,3),_mm_extract_epi16(al,3),_mm_extract_epi16(ah,5),_mm_extract_epi16(al,5),_mm_extract_epi16(ah,7),_mm_extract_epi16(al,7));
+//     }
+
+//     static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b){
+// #pragma warning "The simd mulhi function is emulate, it will induce bad performances."
+//         return _mm_add_epi32(mulx(a, b),c);
+//     }
+
+// };
 
 // int16_t
 template<>
@@ -297,13 +321,13 @@ struct Simd128_impl<true, true, true, 2>{
 
     static INLINE PURE vect_t zero(){return _mm_setzero_si128();}
 
-    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(p);}
+    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(static_cast<const vect_t *>(p));}
 
-    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(p);}
+    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(static_cast<const vect_t *>(p));}
 
-    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(const_cast<scalar_t*>(p), v);}
+    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(static_cast<const vect_t *>(const_cast<scalar_t*>(p)), v);}
 
-    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(const_cast<scalar_t*>(p), v);}
+    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(static_cast<const vect_t *>(const_cast<scalar_t*>(p)), v);}
 
     static INLINE CONST vect_t set1(const scalar_t x) {return _mm_set1_epi16(x);} // actually set2
 
@@ -312,6 +336,7 @@ struct Simd128_impl<true, true, true, 2>{
     }
 
     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_epi16(a, b);}
+
     static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_epi16(a, b);}
@@ -345,6 +370,25 @@ struct Simd128_impl<true, true, true, 2>{
 
     static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_epi16(a, b);}
 
+    static INLINE CONST vect_t mullo(const vect_t a, const vect_t b){return _mm_mullo_epi16(a, b);}
+
+    static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b){
+        return _mm_mulh_epi16(a, b););
+    }
+
+    static INLINE CONST vect_t mulx(const vect_t a, const vect_t b){
+#pragma warning "The simd mulx function is emulate, it may impact the performances."
+        vect_t ah, al;
+        ah = mullhi(a, b);
+        al = mullo(a,b);
+        return set(_mm_extract_epi16(ah,1),_mm_extract_epi16(al,1),_mm_extract_epi16(ah,3),_mm_extract_epi16(al,3),_mm_extract_epi16(ah,5),_mm_extract_epi16(al,5),_mm_extract_epi16(ah,7),_mm_extract_epi16(al,7));
+    }
+
+    static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b){
+#pragma warning "The simd maddx function is emulate, it may impact the performances."
+        return _mm_add_epi32(mulx(a, b),c);
+    }
+
     // static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
     //   return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
     //  }
@@ -363,13 +407,13 @@ struct Simd128_impl<true, true, true, 4>{
 
     static INLINE PURE vect_t zero(){return _mm_setzero_si128();}
 
-    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(p);}
+    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(static_cast<const vect_t *>(p));}
 
-    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(p);}
+    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(static_cast<const vect_t *>(p));}
 
-    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(const_cast<scalar_t*>(p), v);}
+    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(static_cast<const vect_t *>(const_cast<scalar_t*>(p)), v);}
 
-    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(const_cast<scalar_t*>(p), v);}
+    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(static_cast<const vect_t *>(const_cast<scalar_t*>(p)), v);}
 
     static INLINE CONST vect_t set1(const scalar_t x) {return _mm_set1_epi32(x);} // actually set2
 
@@ -414,11 +458,25 @@ struct Simd128_impl<true, true, true, 4>{
       return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
      }
 
-    // static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_add_epi32(a, b);}
+    static INLINE CONST vect_t mullo(const vect_t a, const vect_t b){return _mm_mullo_epi32(a, b);}
 
-    // static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
-    //     return _mm_add_epi64(c, __mm_mul_epi32(a,b));
-    // }
+    static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b){
+#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+        vect_t a1, a2, b1, b2;
+        a1 = set(0, _mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 1));
+        a2 = set(0, _mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3));
+        b1 = set(0, _mm_extract_epi32(b, 0), 0, _mm_extract_epi32(b, 1));
+        b2 = set(0, _mm_extract_epi32(b, 1), 0, _mm_extract_epi32(b, 3));
+        a1 = _mm_mul_epi32(a1,b1);
+        a2 = _mm_mul_epi32(a2,b2);
+        return set(_mm_extract_epi32(a1,0),_mm_extract_epi32(a1,2),_mm_extract_epi32(b1,0),_mm_extract_epi32(b2,0));
+    }
+
+    static INLINE CONST vect_t mulx(const vect_t a, const vect_t b){return _mm_mul_epi32(a,b);}
+
+    static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b){
+        return _mm_add_epi64(_mm_mul_epi32(a, b),c);
+    }
 };
 
 // int64_t
@@ -432,13 +490,13 @@ struct Simd128_impl<true, true, true, 8>{
 
     static const constexpr size_t alignment = 16;
 
-    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(p);}
+    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_si128(static_cast<const vect_t *>(p));}
 
-    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(p);}
+    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_si128(static_cast<const vect_t *>(p));}
 
-    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(const_cast<scalar_t*>(p), v);}
+    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_si128(static_cast<const vect_t *>(const_cast<scalar_t*>(p)), v);}
 
-    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(const_cast<scalar_t*>(p), v);}
+    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_si128(static_cast<const vect_t *>(const_cast<scalar_t*>(p)), v);}
 
     static INLINE void set(const scalar_t x1, const scalar_t x2){return _mm_set_epi64(x2, x1);}
 
@@ -466,11 +524,33 @@ struct Simd128_impl<true, true, true, 8>{
       return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1];
      }
 
-    // static INLINE CONST vect_t mul(vect_t a, vect_t b) {return _mm_add_epi32(a, b);}
+     static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1){
+#pragma warning "The simd mullo function is emulate, it may impact the performances."
+        // karatsuba
+        vect_t x2, x3, x4;
+        x2 = x0;
+        x0 = _mm_mul_epi32(x1, x0);
+        x3 = x1;
+        x4 = x2;
+        x3 = _mm_srli_epi64(x3, 32);
+        x2 = _mm_mul_epi32(x3, x2);
+        x4 = _mm_srli_epi64(x4, 32);
+        x1 = _mm_mul_epi32(x4, x1);
+        x1 = _mm_add_epi64(x2, x1);
+        x1 = _mm_srli_epi64(x1, 32);
+        x0 = _mm_add_epi64(x1, x0);
+        return x0;
+     }
 
-    // static INLINE CONST vect_t madd(const vect_t c, vect_t a, vect_t b) {
-    //     return _mm_add_epi64(c, __mm_mul_epi32(a,b));
-    // }
+     static INLINE CONST vect_t mullhi(const vect_t x0, const vect_t x1){
+#pragma warning "The simd mulhifunction is emulate, it may impact the performances."
+        // karatsuba
+        // TODO
+     }
+
+     static INLINE CONST vect_t mulx(const vect_t x0, const vect_t x1){
+#pragma warning "The simd mulx function does not make sense, rethink your code :)"
+     }
 };
 
 // uint8_t
