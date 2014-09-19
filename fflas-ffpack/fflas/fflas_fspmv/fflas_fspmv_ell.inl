@@ -122,7 +122,7 @@ template<class _Element, bool _Simd =
 			}
 		}
 
-		
+
 		template<class Field, bool simd_true>
 		inline void sp_fgemv(
 			      const Field & F,
@@ -212,7 +212,7 @@ template<class _Element, bool _Simd =
 			}
 		}
 
-		
+
 		template<class Field, bool simd_true>
 		inline void sp_fgemv_zo(
 			      const Field & F,
@@ -279,7 +279,7 @@ template<class _Element, bool _Simd =
 			      const typename Field::Element *  dat,
 			      const typename Field::Element * x ,
 			      typename Field::Element * y,
-			      const index_t & kmax, 
+			      const index_t & kmax,
 			      FieldCategories::ModularFloatingPointTag
 			      )
 		{
@@ -303,6 +303,7 @@ template<class _Element, bool _Simd =
 				}
 			}
 			else {
+				size_t end = (m%chunk == 0)? m : m+m%chunk;
 #ifdef __FFLASFFPACK_USE_SIMD
 				using simd = Simd<typename Field::Element>;
 				using vect_t = typename simd::vect_t;
@@ -314,7 +315,6 @@ template<class _Element, bool _Simd =
 				vect_t MIN = simd::set1(F.minElement());
 				vect_t MAX = simd::set1(F.maxElement());
 
-				size_t end = (m%chunk == 0)? m : m+m%chunk;
 
 				for ( size_t i = 0; i < end/chunk ; ++i ) {
 					index_t j = 0 ;
@@ -580,6 +580,7 @@ template<class _Element, bool _Simd =
 			}
 		}
 		if(bSimd){
+#ifdef __FFLASFFPACK_USE_SIMD
 			chunk = Simd<typename Field::Element>::vect_size;
 			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+CSR_m%chunk;
 
@@ -603,7 +604,7 @@ template<class _Element, bool _Simd =
 							if(!ZO){
 								F.init(ELL_dat[i*chunk*ld+j*chunk+k]);
 							}
-							ELL_col[i*chunk*ld+j*chunk+k] = 0;	
+							ELL_col[i*chunk*ld+j*chunk+k] = 0;
 						}
 					}
 				}
@@ -623,7 +624,7 @@ template<class _Element, bool _Simd =
 							if(!ZO){
 								F.init(ELL_dat[i*chunk*ld+j*chunk+k]);
 							}
-							ELL_col[i*chunk*ld+j*chunk+k] = 0;	
+							ELL_col[i*chunk*ld+j*chunk+k] = 0;
 						}
 					}
 				}
@@ -636,8 +637,11 @@ template<class _Element, bool _Simd =
 					}
 				}
 		}
+#else
+			FFLASFFPACK_check(false);
+#endif
 		}else{
-			
+
 			ELL_col = fflas_new<index_t>(ld*ELL_m, Alignment::CACHE_LINE);
 			if(!ZO){
 				ELL_dat = fflas_new<typename Field::Element>(ld*ELL_m, Alignment::CACHE_LINE);

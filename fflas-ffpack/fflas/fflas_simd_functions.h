@@ -35,9 +35,6 @@
 
 #include <type_traits>
 
-#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
-#define __FFLASFFPACK_USE_SIMD // see configure...
-#endif
 
 #ifdef __FFLASFFPACK_USE_SIMD
 #include "fflas-ffpack/utils/simd.h"

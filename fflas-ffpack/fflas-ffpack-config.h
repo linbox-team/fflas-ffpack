@@ -37,6 +37,10 @@
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/fflas-ffpack-optimise.h"
 
+#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#define __FFLASFFPACK_USE_SIMD // see configure...
+#endif
+
 // winograd algorithm threshold (for double)
 #ifndef __FFLASFFPACK_WINOTHRESHOLD
 #define __FFLASFFPACK_WINOTHRESHOLD 1000

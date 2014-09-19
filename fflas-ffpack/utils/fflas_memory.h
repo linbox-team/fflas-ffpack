@@ -78,7 +78,9 @@ namespace FFLAS{
 	    delete [] A ;
     }
 
+#ifdef __FFLASFFPACK_USE_SIMD
     void prefetch(const int64_t* addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
+#endif
 
 
 #define __CPUID(abcd,func,id) \
