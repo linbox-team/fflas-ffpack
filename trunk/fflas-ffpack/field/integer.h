@@ -36,12 +36,14 @@
 #ifdef __FFLASFFPACK_HAVE_GIVARO
 #ifndef __FFLASFFPACK_NOINTEGER
 
-#include "givaro/givinteger.h"
+#include <givaro/givinteger.h>
+
 namespace FFPACK {
-  typedef Givaro::Integer Integer;
-  typedef Givaro::Integer integer;
-  #define __FFLASFFPACK_HAVE_INTEGER
+	typedef Givaro::Integer Integer;
+	typedef Givaro::Integer integer;
+#define __FFLASFFPACK_HAVE_INTEGER // BB should be done in configure and trust config.h
 }
+
 #endif
 #endif // __FFLASFFPACK_HAVE_GIVARO
 

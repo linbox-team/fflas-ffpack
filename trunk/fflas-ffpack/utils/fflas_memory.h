@@ -31,6 +31,7 @@
 #define __FFLASFFPACK_memory_H
 
 #include "fflas-ffpack/utils/align-allocator.h"
+#include "fflas-ffpack/field/integer.h"
 
 
 namespace FFLAS{

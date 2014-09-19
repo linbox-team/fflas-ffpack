@@ -322,6 +322,7 @@ fflas-ffpack/Makefile
 fflas-ffpack/fflas/Makefile
 fflas-ffpack/fflas/fflas_fgemm/Makefile
 fflas-ffpack/fflas/fflas_fspmv/Makefile
+fflas-ffpack/fflas/fflas_igemm/Makefile
 fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
