@@ -330,13 +330,13 @@ struct Simd256_impl<true, true, true, 8>{
 #ifdef __AVX2__
 		return _mm256_add_epi64(a, b);
 #else
-		half_t a1 = _mm256_extractf128_si256(a,1);
-		half_t a2 = _mm256_extractf128_si256(a,2);
-		half_t b1 = _mm256_extractf128_si256(b,1);
-		half_t b2 = _mm256_extractf128_si256(b,2);
+		half_t a1 = _mm256_extractf128_si256(a,0);
+		half_t a2 = _mm256_extractf128_si256(a,1);
+		half_t b1 = _mm256_extractf128_si256(b,0);
+		half_t b2 = _mm256_extractf128_si256(b,1);
 		vect_t res ;
-		_mm256_insertf128_si256(res,_mm_add_epi64(a1,b1),0);
-		_mm256_insertf128_si256(res,_mm_add_epi64(a2,b2),1);
+		res=_mm256_insertf128_si256(res,_mm_add_epi64(a1,b1),0);
+		res=_mm256_insertf128_si256(res,_mm_add_epi64(a2,b2),1);
 		return res;
 #endif
 	}
@@ -384,6 +384,8 @@ struct Simd256_impl<true, true, true, 8>{
 	static INLINE  vect_t maddin( vect_t & c, const vect_t a, const vect_t b) { return c = madd(c,a,b); }
 
 	static INLINE CONST vect_t zero() {return _mm256_setzero_si256();}
+#else
+#error "no avx"
 #endif
 };
 
