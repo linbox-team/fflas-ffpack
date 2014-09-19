@@ -344,6 +344,9 @@ struct Simd256_impl<true, true, true, 8>{
 
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1){
 #ifdef __AVX2__
+		return _mm256_mullo_epi32(x0,x1);
+
+#else
 		vect_t x2, x3, x4;
 		x2 = _mm256_mul_epi32(x1, x0);
 		x4 = _mm256_srli_epi32(x0, 32);
@@ -354,7 +357,6 @@ struct Simd256_impl<true, true, true, 8>{
 		x1 = _mm256_srll_epi32(x1, 32);
 		x0 = _mm256_add_epi64(x2, x1);
 		return x0;
-#else
 
 #endif
 	}
