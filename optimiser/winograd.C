@@ -37,7 +37,7 @@
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
 // #include "fflas-ffpack/fflas-ffpack-optimise.h"
-#define __FFLASFFPACK_NOINTEGER
+// #define __FFLASFFPACK_NOINTEGER
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -86,7 +86,7 @@ int main () {
 	outlog.open("optim.log", std::ofstream::out | std::ofstream::app);
 #ifdef __FFLASFFPACK_HAVE_CXX11
     std::time_t result = std::time(NULL);
-    outlog << std::endl << 
+    outlog << std::endl <<
         "---------------------------------------------------------------------"
            << std::endl << std::asctime(std::localtime(&result));
 #endif
