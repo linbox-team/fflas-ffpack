@@ -1,4 +1,4 @@
-dnl Check for AVX
+dnl Check for SSE
 dnl  Copyright (c) 2011 FFLAS-FFPACK
 dnl Created by BB, 2014-03-25
 dnl ========LICENCE========
@@ -20,28 +20,29 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  U
 dnl ========LICENCE========
 dnl
 
-dnl FF_CHECK_AVX
+dnl FF_CHECK_SSE
 dnl
-dnl turn on AVX or AVX2 extensions if available
+dnl turn on  SSE4.1 extensions if available
 
 AC_DEFUN([FF_CHECK_SSE],
 		[
 		AC_ARG_ENABLE(sse,
 			[AC_HELP_STRING([--enable-sse],
-				[ Use Intel(r) AVX ])
+				[ Use Intel(r) SSE 4.1])
 			],
 			[ avec_sse=$enable_sse ],
 			[ avec_sse=yes ]
 			)
-		AC_MSG_CHECKING(for AVX)
+		AC_MSG_CHECKING(for SSE 4.1)
 		AS_IF([ test  "x$avec_sse" != "xno" ],
 			[
 			BACKUP_CXXFLAGS=${CXXFLAGS}
 			dnl  SSEFLAGS="-msse2"
+			SSEFLAGS="-msse4.1"
 			CXXFLAGS="${BACKUP_CXXFLAGS} ${SSEFLAGS}"
-			CODE_AVX=`cat macros/CodeChunk/sse.C`
+			CODE_SSE=`cat macros/CodeChunk/sse.C`
 			AC_TRY_RUN([
-				${CODE_AVX}
+				${CODE_SSE}
 				],
 				[ sse_found="yes" ],
 				[ sse_found="no" ],
@@ -51,12 +52,11 @@ AC_DEFUN([FF_CHECK_SSE],
 				])
 			AS_IF([ test "x$sse_found" = "xyes" ],[
 				AC_DEFINE(USE_SSE,1,[Define if SSE is available])
-				dnl  AC_SUBST(AVXFLAGS)
 				AC_MSG_RESULT(yes (SSE))
 				],
 				[
-				AVXFLAGS=
-				AC_SUBST(AVXFLAGS)
+				SSEFLAGS="-msse4.1"
+				AC_SUBST(SSEFLAGS)
 				AC_MSG_RESULT(no)
 				]
 				)

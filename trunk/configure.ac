@@ -178,6 +178,8 @@ FF_CHECK_OMP
 FF_CHECK_SSE
 FF_CHECK_AVX
 
+AVXFLAGS="${SSEFLAGS} ${AVXFLAGS}"
+
 echo "-----------------------------------------------"
 AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
 	case x${CCNAM} in
