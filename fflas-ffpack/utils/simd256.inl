@@ -347,15 +347,17 @@ struct Simd256_impl<true, true, true, 8>{
 		return _mm256_mullo_epi32(x0,x1);
 
 #else
-		vect_t x2, x3, x4;
-		x2 = _mm256_mul_epi32(x1, x0);
-		x4 = _mm256_srli_epi32(x0, 32);
-		x3 = _mm256_srli_epi32(x1, 32);
-		x1 = _mm256_mul_epi32(x1, x4);
-		x0 = _mm256_mul_epi32(x0, x3);
-		x1 = _mm256_add_epi64(x1, x0);
-		x1 = _mm256_srll_epi32(x1, 32);
-		x0 = _mm256_add_epi64(x2, x1);
+		// vect_t x2, x3, x4;
+		// x2 = _mm256_mul_epi32(x1, x0);
+		// x4 = _mm256_srli_epi32(x0, 32);
+		// x3 = _mm256_srli_epi32(x1, 32);
+		// x1 = _mm256_mul_epi32(x1, x4);
+		// x0 = _mm256_mul_epi32(x0, x3);
+		// x1 = _mm256_add_epi64(x1, x0);
+		// x1 = _mm256_srll_epi32(x1, 32);
+		// x0 = _mm256_add_epi64(x2, x1);
+
+		/* use two _mm_mullo_epi32 ? */
 		return x0;
 
 #endif
