@@ -63,7 +63,7 @@ struct Simd128_impl<true, false, true, 4>{
     static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_ps(const_cast<scalar_t*>(p), v);}
 
     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_ps(a, b);}
-     static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+     static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_ps(a, b);}
 
@@ -156,7 +156,7 @@ struct Simd128_impl<true, false, true, 8>{
      static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_pd(const_cast<scalar_t*>(p), v);}
 
      static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_pd(a, b);}
-     static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+     static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
      static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_pd(a, b);}
 
@@ -250,7 +250,7 @@ struct Simd128_impl<true, false, true, 8>{
 //     }
 
 //     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_epi8(a, b);}
-//     static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+//     static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
 //     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_epi8(a, b);}
 
@@ -338,7 +338,7 @@ struct Simd128_impl<true, true, true, 2>{
     }
 
     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_epi16(a, b);}
-    static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+    static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_epi16(a, b);}
 
@@ -427,7 +427,7 @@ struct Simd128_impl<true, true, true, 4>{
     }
 
     static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_epi32(a, b);}
-    static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+    static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
     static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_epi32(a, b);}
 
@@ -520,7 +520,7 @@ struct Simd128_impl<true, true, true, 8>{
     static INLINE CONST vect_t set1(const scalar_t x) {return _mm_set1_epi64x(x);} // actually set2
 
     static INLINE CONST vect_t add(vect_t a, vect_t b) {return _mm_add_epi64(a, b);}
-     static INLINE CONST vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
+     static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
     static INLINE CONST vect_t sub(vect_t a, vect_t b) {return _mm_sub_epi64(a, b);}
 
