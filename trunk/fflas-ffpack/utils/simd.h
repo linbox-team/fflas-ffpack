@@ -30,6 +30,10 @@
 #ifndef __FFLASFFPACK_utils_simd_H
 #define __FFLASFFPACK_utils_simd_H
 
+
+#include <immintrin.h>
+#include "fflas-ffpack/config.h"
+
 #ifdef __FFLASFFPACK_HAVE_CXX11
 
 #if defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
@@ -50,7 +54,6 @@
 #define PURE
 #endif
 
-#include <immintrin.h>
 #include <type_traits>
 
 // to activate SIMD with integers
