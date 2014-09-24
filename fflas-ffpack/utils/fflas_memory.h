@@ -65,18 +65,12 @@ namespace FFLAS{
     }
 
     template<class Element_ptr>
-    inline void fflas_delete (Element_ptr A)
+    inline void fflas_delete(Element_ptr A)
     {
 	    if (alignable<Element_ptr>() )
 		    free(A);
 	    else
 		    delete[] A;
-    }
-
-    template<class Element_ptr>
-    void fflas_free(Element_ptr A)
-    {
-	    delete [] A ;
     }
 
 #ifdef __FFLASFFPACK_USE_SIMD
