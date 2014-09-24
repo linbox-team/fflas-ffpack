@@ -30,190 +30,297 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL
 
-// float
+/*
+ * Simd128 specialized for float
+ */
 template<>
-struct Simd128_impl<true, false, true, 4> {
+struct Simd128_impl<true, false, true, 4>{
+    /*
+     * alias to 128 bit simd register
+     */
+    using vect_t = __m128;
 
-#if defined(__FFLASFFPACK_USE_SIMD)
+    /*
+     * define the scalar type corresponding to the specialization
+     */
+    using scalar_t = float;
 
-	using vect_t = __m128;
+    /*
+     *  number of scalar_t in a simd register
+     */
+    static const constexpr size_t vect_size = 4;
 
-	using scalar_t = float;
+    /*
+     *  alignement required by scalar_t pointer to be loaded in a vect_t
+     */
+    static const constexpr size_t alignment = 16;
 
-	static const constexpr size_t vect_size = 4;
+    /*
+     *  Return vector of type vect_t with all elements set to zero
+     *  Return [0,0,0,0]
+     */
+    static INLINE CONST vect_t zero() {return _mm_setzero_ps();}
 
-	static const constexpr size_t alignment = 16;
+    /*
+     *  Broadcast single-precision (32-bit) floating-point value x to all elements of vect_t.
+     *  Return [x,x,x,x]
+     */
+    static INLINE CONST vect_t set1(const scalar_t x) {return _mm_set1_ps(x);}
 
-	static INLINE CONST vect_t zero()
-	{
-		return _mm_setzero_ps();
-	}
+    /*
+     *  Set packed single-precision (32-bit) floating-point elements in vect_t with the supplied values.
+     *  Return [x1,x2,x3,x4]
+     */
+    static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4) {return _mm_set_ps(x4, x3, x2, x1);}
 
+    /*
+     *  Gather single-precision (32-bit) floating-point elements with indexes idx[0], ..., idx[3] from the address p in vect_t.
+     *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]]
+     */
+    template<class T>
+    static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx) {
+        return _mm256_set_ps(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
+    }
 
-	static INLINE CONST vect_t set1(const scalar_t x)
-	{
-		return _mm_set1_ps(x);
-	}
+    /*
+     * Load 128-bits (composed of 4 packed single-precision (32-bit) floating-point elements) from memory into vect_t.
+     * p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
+     * Return [p[0], p[1], p[2], p[3]]
+     */
+    static INLINE PURE vect_t load(const scalar_t * const p) {return _mm_load_ps(p);}
 
+    /*
+     * Load 128-bits (composed of 4 packed single-precision (32-bit) floating-point elements) from memory into vect_t.
+     * p does not need to be aligned on any particular boundary.
+     * Return [p[0], p[1], p[2], p[3]]
+     */
+    static INLINE PURE vect_t loadu(const scalar_t * const p) {return _mm_loadu_ps(p);}
 
-	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4
-				       )
-	{
-		return _mm_set_ps(x4, x3, x2, x1);
-	}
+    /*
+     * Store 128-bits (composed of 4 packed single-precision (32-bit) floating-point elements) from a into memory.
+     * p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
+     */
+    static INLINE void store(const scalar_t * p, vect_t v) {_mm_store_ps(const_cast<scalar_t*>(p), v);}
 
+    /*
+     * Store 128-bits (composed of 4 packed single-precision (32-bit) floating-point elements) from a into memory.
+     * p does not need to be aligned on any particular boundary.
+     */
+    static INLINE void storeu(const scalar_t * p, vect_t v) {_mm_storeu_ps(const_cast<scalar_t*>(p), v);}
 
-	template<class T>
-	static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx)
-	{
-		// TODO AVX2 Gather
-		return _mm256_set_ps(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
-	}
+    /*
+     * Add packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0+b0, a1+b1, a2+b2, a3+b3]
+     */
+    static INLINE CONST vect_t add(const vect_t a, const vect_t b) {return _mm_add_ps(a, b);}
 
+    static INLINE vect_t addin(vect_t &a, const vect_t b) {return a = add(a,b);}
 
-	static INLINE PURE vect_t load(const scalar_t * const p)
-	{
-		return _mm_load_ps(p);
-	}
+    /*
+     * Subtract packed single-precision (32-bit) floating-point elements in b from packed single-precision (32-bit) floating-point elements in a, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0-b0, a1-b1, a2-b2, a3-b3]
+     */
+    static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {return _mm_sub_ps(a, b);}
 
+    static INLINE CONST vect_t subin(vect_t &a, const vect_t b) {return a = sub(a,b);}
 
-	static INLINE PURE vect_t loadu(const scalar_t * const p)
-	{
-		return _mm_loadu_ps(p);
-	}
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3]
+     */
+    static INLINE CONST vect_t mul(const vect_t a, const vect_t b) {return _mm_mul_ps(a, b);}
 
+    static INLINE CONST vect_t mulin(vect_t &a, const vect_t b) {return a = mul(a,b);}    
 
-	static INLINE void store(const scalar_t * p, const vect_t v)
-	{
-		_mm_store_ps(const_cast<scalar_t*>(p), v);
-	}
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to packed elements in c, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+     */
+    static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) {
+        return _mm_add_ps(c, _mm_mul_ps(a, b));
+    }
 
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to packed elements in c, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+     */
+    static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) {
+        return fnmadd(c, a, b);
+    }
 
-	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
-	{
-		return _mm_add_ps(a, b);
-	}
+    static INLINE CONST vect_t maddin(vect_t & c, const vect_t a, const vect_t b) {return c = fmadd(c, a, b);}
 
-	static INLINE vect_t addin(vect_t &a, const vect_t b)
-	{
-		return a = add(a,b);
-	}
+    static INLINE CONST vect_t fmaddin(vect_t & c, const vect_t a, const vect_t b) {return c = fmadd(c, a, b);}
 
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to packed elements in c, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4]
+     */
+    static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b) {
+        return _mm_sub_ps(c, _mm_mul_ps(a, b));
+    }
 
-	static INLINE CONST vect_t sub(const vect_t a, const vect_t b)
-	{
-		return _mm_sub_ps(a, b);
-	}
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to packed elements in c, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4]
+     */
+    static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) {
+        return fnmadd(c, a, b);
+    }
 
+    static INLINE CONST vect_t nmaddin(vect_t & c, const vect_t a, const vect_t b) {return c = fnmadd(c, a, b);}
 
-	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
-	{
-		return _mm_mul_ps(a, b);
-	}
+    static INLINE CONST vect_t fnmaddin(vect_t & c, const vect_t a, const vect_t b) {return c = fnmadd(c, a, b);}
 
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, subtract packed elements in c from the intermediate result, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+     * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3]
+     */
+    static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) {
+        return _mm_sub_ps(_mm_mul_ps(a, b), c);
+    }
 
-	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
-	{
-		return add(c, mul(a, b));
-	}
+    /*
+     * Multiply packed single-precision (32-bit) floating-point elements in a and b, subtract packed elements in c from the intermediate result, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+     * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3]
+     */
+    static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) {
+        return fmsub(c, a, b);
+    }
 
-	static INLINE vect_t maddin(vect_t & c, const vect_t a, const vect_t b)
-	{
-		return c = madd(c,a,b);
-	}
+    static INLINE CONST vect_t msubin(vect_t & c, const vect_t a, const vect_t b) {return c = fmsub(c, a, b);}
 
-	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b)
-	{
-		return sub(c, mul(a, b));
-	}
+    static INLINE CONST vect_t fmsubin(vect_t & c, const vect_t a, const vect_t b) {return c = fmsub(c, a, b);}
 
+    /*
+     * Compare packed single-precision (32-bit) floating-point elements in a and b for equality, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [(a0==b0) ? 0xFFFFFFFF : 0,
+                 (a1==b1) ? 0xFFFFFFFF : 0,
+                 (a2==b2) ? 0xFFFFFFFF : 0,
+                 (a3==b3) ? 0xFFFFFFFF : 0]
+     */
+    static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {return _mm_cmpeq_ps(a, b);}
 
-	static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b)
-	{
-		return sub(mul(a, b), c);
-	}
+    /*
+     * Compare packed single-precision (32-bit) floating-point elements in a and b for lesser-than, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [(a0<b0) ? 0xFFFFFFFF : 0,
+                 (a1<b1) ? 0xFFFFFFFF : 0,
+                 (a2<b2) ? 0xFFFFFFFF : 0,
+                 (a3<b3) ? 0xFFFFFFFF : 0]
+     */
+    static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {return _mm_cmplt_ps(a, b);}
 
+    /*
+     * Compare packed single-precision (32-bit) floating-point elements in a and b for lesser or equal than, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [(a0<=b0) ? 0xFFFFFFFF : 0,
+                 (a1<=b1) ? 0xFFFFFFFF : 0,
+                 (a2<=b2) ? 0xFFFFFFFF : 0,
+                 (a3<=b3) ? 0xFFFFFFFF : 0]
+     */
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {return _mm_cmple_ps(a, b);}
 
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b)
-	{
-		return _mm_cmpeq_ps(a, b);
-	}
+    /*
+     * Compare packed single-precision (32-bit) floating-point elements in a and b for greater-than, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [(a0>b0) ? 0xFFFFFFFF : 0,
+                 (a1>b1) ? 0xFFFFFFFF : 0,
+                 (a2>b2) ? 0xFFFFFFFF : 0,
+                 (a3>b3) ? 0xFFFFFFFF : 0]
+    */
+    static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {return _mm_cmpgt_ps(a, b);}
 
+    /*
+     * Compare packed single-precision (32-bit) floating-point elements in a and b for greater or equal than, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [(a0>=b0) ? 0xFFFFFFFF : 0,
+                 (a1>=b1) ? 0xFFFFFFFF : 0,
+                 (a2>=b2) ? 0xFFFFFFFF : 0,
+                 (a3>=b3) ? 0xFFFFFFFF : 0]
+     */
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {return _mm_cmpge_ps(a, b);}
 
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
-	{
-		return _mm_cmplt_ps(a, b);
-	}
+    /*
+     * Compute the bitwise AND of packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3]
+     */
+    static INLINE CONST vect_t vand(const vect_t a, const vect_t b) {return _mm_and_ps(a, b);}
 
+    /*
+     * Compute the bitwise OR of packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3]
+     */
+    static INLINE CONST vect_t vor(const vect_t a, const vect_t b) {return _mm_or_ps(a, b);}
 
-	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
-	{
-		return _mm_cmple_ps(a, b);
-	}
+    /*
+     * Compute the bitwise XOR of packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3]
+     */
+    static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) {return _mm_xor_ps(a, b);}
+    
+    /*
+     * Compute the bitwise AND NOT of packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3]
+     */
+    static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) {return _mm_andnot_ps(a, b);}
 
+    /*
+     * Round the packed single-precision (32-bit) floating-point elements in a down to an integer value, and store the results as packed double-precision floating-point elements in vect_t.
+     * Args   : [a0, a1, a2, a3]
+     * Return : [floor(a0), floor(a1), floor(a2), floor(a3)]
+     */
+    static INLINE CONST vect_t floor(const vect_t a) {
+        return _mm_floor_ps(a);
+    }
 
-	static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
-	{
-		return _mm_cmpgt_ps(a, b);
-	}
+    /*
+     * Round the packed single-precision (32-bit) floating-point elements in a up to an integer value, and store the results as packed single-precision floating-point elements in vect_t.
+     * Args   : [a0, a1, a2, a3]
+     * Return : [ceil(a0), ceil(a1), ceil(a2), ceil(a3)]
+     */
+    static INLINE CONST vect_t ceil(const vect_t a) {return _mm_ceil_ps(a);}
 
+    /*
+     * Round the packed single-precision (32-bit) floating-point elements in a, and store the results as packed single-precision floating-point elements in vect_t.
+     * Args   : [a0, a1, a2, a3]
+     * Return : [round(a0), round(a1), round(a2), round(a3)]
+     */
+    static INLINE CONST vect_t round(const vect_t a) {
+        return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
+    }
 
-	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
-	{
-		return _mm_cmpge_ps(a, b);
-	}
+    /*
+     * Horizontally add adjacent pairs of single-precision (32-bit) floating-point elements in a and b, and pack the results in vect_t.
+     * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+     * Return : [a0+a1, b0+b1, a2+a3, b2+b3]
+     */
+    static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
+         return _mm_hadd_ps(a, b);
+    }
 
-
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
-	{
-		return _mm_and_ps(a, b);
-	}
-
-
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
-	{
-		return _mm_or_ps(a, b);
-	}
-
-
-	static INLINE CONST vect_t floor(const vect_t a)
-	{
-#ifdef __SSE4_1__
-		return _mm_floor_ps(a);
-#else
-		__m128 one = _mm_set1_ps(1.0f);
-		__m128 fval = _mm_cvtepi32_ps(_mm_cvttps_epi32(a));
-		return _mm_sub_ps(fval, _mm_and_ps(_mm_cmplt_ps(a, fval), one));
-#endif
-	}
-
-
-	static INLINE CONST vect_t round(const vect_t a)
-	{
-#ifdef __SSE4_1__
-		return _mm_round_ps(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
-#else
-		return _mm_cvtepi32_ps(_mm_cvtps_epi32(a));
-#endif
-	}
-
-
-	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b)
-	{
-#ifdef __SSE3__
-		return _mm_hadd_ps(a, b);
-#endif
-	}
-
-	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
-	{
-		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
-	}
-
-#else // SIMD
-#error "You need SSE instructions to perform 128 bits operations on float"
-#endif
-
-} ;
+    /*
+     * Horizontally add single-precision (32-bit) floating-point elements in a.
+     * Args   : [a0, a1, a2, a3]
+     * Return : a0+a1+a2+a3
+     */
+    static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
+        return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
+    }
+};
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL
