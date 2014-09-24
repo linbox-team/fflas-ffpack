@@ -80,36 +80,38 @@ namespace FFLAS { namespace details {
 	template<size_t k>
 	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
 		using simd = Simd<int64_t> ;
-		using half_t =  typename simd::half_t;
+		// using half_t =  typename simd::half_t;
 		size_t p=0;
 		size_t rows_by_k=(rows/k)*k;
 		// pack rows by group of k
 		for(size_t i=0;i<rows_by_k;i+=k)
 			for(size_t j=0;j<cols;j++)
-				//for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
-				for (size_t l=0;l<k;l+=4){
+				for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
+				// for (size_t l=0;l<k;l+= simd::vect_size){
 					// __m128i T0,T1;
-					half_t T0,T1;
-					T0 = simd::loadu_half(&X[i+l+  j*ldx]);
+					// half_t T0,T1;
+					// T0 = simd::loadu_half(&X[i+l+  j*ldx]);
 					// SSE_LOADU(T0,X[i+l+  j*ldx]);
-					T1 = simd::loadu_half(&X[i+l+2+j*ldx]);
+					// T1 = simd::loadu_half(&X[i+l+2+j*ldx]);
 					// SSE_LOADU(T1,X[i+l+2+j*ldx]);
-					simd::store_half(&XX[p],T0);p+=2;
+					// simd::store_half(&XX[p],T0);p+=2;
 					// SSE_STORE(XX[p],T0);p+=2;
-					simd::store_half(&XX[p],T1);p+=2;
+					// simd::store_half(&XX[p],T1);p+=2;
 					// SSE_STORE(XX[p],T1);p+=2;
-				}
+					// simd::store(XX[p],simd::loadu(&X[i+l+j*ldx]));
+				// }
 		// the remaining rows are packed by group of StepA (if possible)
 		if (rows-rows_by_k>=StepA){
 			for(size_t j=0;j<cols;j++)
-				for (size_t l=0;l<StepA;l+=2){
-					half_t T0;
+				for (size_t l=0;l<StepA;l+=2,p+=2) XX[p]=X[rows_by_k+l+j*ldx];
+				// for (size_t l=0;l<StepA;l+=2){
+					// half_t T0;
 					// __m128i T0;
-					T0 = simd::loadu_half(&X[rows_by_k+l+j*ldx]);
+					// T0 = simd::loadu_half(&X[rows_by_k+l+j*ldx]);
 					// SSE_LOADU(T0,X[rows_by_k+l+j*ldx]);
-					simd::store_half(&XX[p],T0);p+=2;
+					// simd::store_half(&XX[p],T0);p+=2;
 					// SSE_STORE(XX[p],T0);p+=2;
-				}
+				// }
 			rows_by_k+=StepA;
 		}
 		for(size_t i=rows_by_k;i<rows;i++)

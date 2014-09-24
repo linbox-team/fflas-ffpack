@@ -60,7 +60,7 @@ struct Simd128_impl<true, true, true, 4> {
 	}
 
 
-	static INLINE PURE store(const scalar_t * p, vect_t v)
+	static INLINE void store(const scalar_t * p, vect_t v)
 	{
 		_mm_store_si128(reinterpret_cast<vect_t *>(const_cast<scalar_t*>(p)), v);
 	}
@@ -197,7 +197,8 @@ struct Simd128_impl<true, true, true, 4> {
 
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
 	{
-		return _mm_mul_epi16(a,b);
+		// return _mm_mul_epi16(a,b);
+		// TODO
 	}
 
 	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
@@ -219,9 +220,9 @@ struct Simd128_impl<true, true, false, 4>
 {
 
 	// static void hello()
-	{
-		std::cout << "uint32_t" << std::endl;
-	}
+	// {
+		// std::cout << "uint32_t" << std::endl;
+	// }
 
 
 } ;
