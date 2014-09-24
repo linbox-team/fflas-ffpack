@@ -118,8 +118,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	}
 
 	if (timing)	std::cout << "<<<" << std::endl;
-	delete[] A ;
-	delete[] B;
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( B);
 
 	return true;
 }

@@ -103,9 +103,9 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 
   else
     std::cerr<<"PASS"<<std::endl;
-  delete[] U;
-  delete[] L;
-  delete[] X;
+  FFLAS::fflas_delete( U);
+  FFLAS::fflas_delete( L);
+  FFLAS::fflas_delete( X);
 }
 
 int main(int argc, char** argv)
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 #ifdef DEBUG
 	cout<<"check equality A == PLUQ ?"<<endl;
         verification_PLUQ(F,Adebug,A,P,Q,m,n,R);
-        delete[] Adebug;
+        FFLAS::fflas_delete( Adebug);
 #endif
 #if SEQ
 	struct timespec  tt0, tt1;
@@ -239,13 +239,13 @@ int main(int argc, char** argv)
 	clock_gettime(CLOCK_REALTIME, &tt0);
 	size_t R2 = PLUQ(F, diag, m, n, Acop, n, PP, QQ);
 	clock_gettime(CLOCK_REALTIME, &tt1);
-        delete[] Acop;
+        FFLAS::fflas_delete( Acop);
 	avrgg = (double)(tt1.tv_sec-tt0.tv_sec)+(double)(tt1.tv_nsec-tt0.tv_nsec)/1000000000;
 	//verification
 	std::cerr<<"Sequential : "<<m<<" "<<R2<<" "
                  <<avrgg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrgg))<<endl;
 #endif
 
-        delete[] A;
+        FFLAS::fflas_delete( A);
 	return 0;
 }

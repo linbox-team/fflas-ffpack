@@ -85,10 +85,10 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 		if (timing)	std::cout << "fadd (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
 
 		if (timing)	std::cout << "<<<" << std::endl;
-	delete[] A ;
-	delete[] B;
-	delete[] C ;
-	delete[] D ;
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( C );
+	FFLAS::fflas_delete( D );
 
 	return true;
 }
@@ -139,9 +139,9 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 
 
 		if (timing)	std::cout << "<<<" << std::endl;
-	delete[] A ;
-	delete[] C ;
-	delete[] D ;
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( C );
+	FFLAS::fflas_delete( D );
 
 	return true;
 }
@@ -193,10 +193,10 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 		if (timing)	std::cout << "fsub (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
 
 		if (timing)	std::cout << "<<<" << std::endl;
-	delete[] A ;
-	delete[] B;
-	delete[] C ;
-	delete[] D ;
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( C );
+	FFLAS::fflas_delete( D );
 
 	return true;
 }
@@ -247,9 +247,9 @@ if (timing)	std::cout << "fsubin (___): " << tim.usertime()/iter << 's' << std::
 
 
 	if (timing) std::cout << "<<<" << std::endl;
-	delete[] A ;
-	delete[] C ;
-	delete[] D ;
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( C );
+	FFLAS::fflas_delete( D );
 
 	return true;
 }

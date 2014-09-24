@@ -86,6 +86,6 @@ int main(int argc, char** argv){
 		printvect (cout, *(it++));
 	}
 	cerr<<c<<" "<<tim.usertime()<<" "<<4.55*n*n/1000000.0*n/tim.usertime()<<endl;
-	delete[] A;
+	FFLAS::fflas_delete( A);
 	return 0;
 }

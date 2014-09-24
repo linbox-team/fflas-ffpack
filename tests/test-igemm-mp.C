@@ -164,8 +164,8 @@ int main(int argc, char** argv){
 	cout<<" RNS MUL LA: "<<chrono<<endl;
 #endif
 	
-	delete[] A;
-	delete[] B;
-	delete[] C;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( C);
 	return 0;
 }

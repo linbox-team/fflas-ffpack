@@ -178,10 +178,10 @@ namespace FFPACK {
 			      m,n,m, 1.0, L,m, U,lda, 0.0, A,lda);
 		//! @todo compute LU with ftrtr
 
-		delete[] P;
-		delete[] L;
-		delete[] U;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( L);
+		FFLAS::fflas_delete( U);
+		FFLAS::fflas_delete( Q);
 
 		return A;
 
@@ -275,10 +275,10 @@ namespace FFPACK {
 			      n,n,n, 1.0, L,n, U,lda, 0.0, A,lda);
 		//! @todo compute LU with ftrtr
 
-		delete[] P;
-		delete[] L;
-		delete[] U;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( L);
+		FFLAS::fflas_delete( U);
+		FFLAS::fflas_delete( Q);
 
 		return A;
 

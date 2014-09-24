@@ -109,9 +109,9 @@ int main(int argc, char** argv){
 
 
 
-	delete[] rp ;
-	delete[] A ;
-	delete[] B ;
+	FFLAS::fflas_delete( rp );
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( B );
 
 	return 0;
 }

@@ -75,7 +75,7 @@ bool test_det(Field &F, size_t n, int iter)
 		tim+=t;
 #endif
 		// if (i+1<iter){
-		// delete[] A;
+		// FFLAS::fflas_delete( A);
 		// A = read_field(F,argv[2],&n,&n);
 		if (dt != d) {
 			pass = false;
@@ -94,7 +94,7 @@ bool test_det(Field &F, size_t n, int iter)
 
 	std::cout<<n<<" "<<mflops<<" "<<tim.usertime()/iter<<std::endl;
 #endif
-	delete[] A;
+	FFLAS::fflas_delete( A);
 	return pass;
 	}
 

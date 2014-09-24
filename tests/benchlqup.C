@@ -71,9 +71,9 @@ int main(int argc, char** argv) {
 		chrono.stop();
 
 		time+=chrono.realtime();
-		delete[] P;
-		delete[] Q;
-		delete[] A;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
+		FFLAS::fflas_delete( A);
 
 	}
 

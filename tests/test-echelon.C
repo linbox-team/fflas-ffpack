@@ -92,7 +92,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 	for (size_t  l=0;l<iters;l++){
 		// if (i) {
-		// delete[] A;
+		// FFLAS::fflas_delete( A);
 		// A = read_field(F,argv[2],&m,&n);
 		// }
 		R = (size_t)-1;
@@ -176,7 +176,7 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0,
 			      B, n, U, n, 0.0, X,n);
-		//delete[] A;
+		//FFLAS::fflas_delete( A);
 
 		bool fail = false;
 		for (size_t i=0; i<m; ++i)
@@ -205,19 +205,19 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		// 				std::cout<<i+1<<" "<<j+1<<" "<<(*(A+i*n+j))<<std::endl;
 		// 	std::cout<<"0 0 0"<<std::endl;
 
-		// delete[] U;
-		// delete[] L;
-		// delete[] X;
+		// FFLAS::fflas_delete( U);
+		// FFLAS::fflas_delete( L);
+		// FFLAS::fflas_delete( X);
 		// #endif
 	}
 
-	delete[] U;
-	delete[] L;
-	delete[] X;
-	delete[] B;
-	delete[] A;
-	delete[] P;
-	delete[] Q;
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( X);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
 
 #ifdef TIME_IT
 	double t = timc.usertime();

@@ -110,16 +110,16 @@ int main(int argc, char** argv){
 		t.stop();
 		time+=t.usertime();
 		if (i+1<nbit){
-			delete[]A;
+			FFLAS::fflas_delete(A);
 			A = read_field(F,argv[2],&m,&n);
-			delete[] B;
+			FFLAS::fflas_delete( B);
 			B = read_field(F,argv[3],&mb,&nb);
 		}
 	}
 
 #if DEBUG
 	Field::Element  *B2=NULL;
-	delete[] A;
+	FFLAS::fflas_delete( A);
 
 	if (info > 0){
 		std::cerr<<"System inconsistent"<<std::endl;
@@ -145,8 +145,8 @@ int main(int argc, char** argv){
 		else
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
 				      one, X, ldx, A, n, zero, B2, nb);
-	delete[] B;
-	delete[] X;
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( X);
 
 	B = read_field(F,argv[3],&mb,&nb);
 
@@ -170,11 +170,11 @@ int main(int argc, char** argv){
 	}
 
 
-	delete[] B2;
+	FFLAS::fflas_delete( B2);
 #endif
 
-	delete[] A;
-	delete[] B;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( B);
 #if TIME
 	double mflops;
 	double cplx = (double)n*m*m-(double)m*m*m/3;

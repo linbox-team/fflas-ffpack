@@ -117,7 +117,10 @@ int main(int argc, char** argv)
 			break ;
 		}
 
-	delete[] A ; delete[] tmp ; delete[] deg ; delete[] B ;
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( tmp) ;
+	FFLAS::fflas_delete(deg) ;
+	FFLAS::fflas_delete(  B );
 
 	return ok ;
 
