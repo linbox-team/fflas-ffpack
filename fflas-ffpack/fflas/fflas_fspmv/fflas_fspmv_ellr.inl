@@ -188,7 +188,7 @@ namespace FFLAS { /*  ELLR */
 				index_t block = (row[i])/kmax ; // use DIVIDE_INTO from fspmvgpu
 				index_t j = 0;
 				index_t j_loc = 0 ;
-				for (size_t l = 0 ; l < block ; ++l) {
+				for (index_t l = 0 ; l < block ; ++l) {
 					j_loc += kmax ;
 					for ( ; j < j_loc ; ++j ) {
 						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
