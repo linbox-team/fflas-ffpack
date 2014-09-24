@@ -62,7 +62,7 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 
-	static INLINE PURE store(const scalar_t * p, vect_t v)
+	static INLINE void store(const scalar_t * p, vect_t v)
 	{
 		_mm_store_si128(reinterpret_cast<vect_t *>(const_cast<scalar_t*>(p)), v);
 	}
@@ -82,7 +82,7 @@ struct Simd128_impl<true, true, true, 8> {
 	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2
 				       )
 	{
-		return _mm_set_epi64(x2, x1);
+		return _mm_set_epi64x(x2, x1);
 	}
 
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
@@ -232,6 +232,9 @@ struct Simd128_impl<true, true, true, 8> {
 		return c = maddx(c,a,b);
 	}
 
+#else
+#error "You need SSE instructions to perform 128 bits operations on int64"
+#endif
 
 } ;
 
@@ -240,9 +243,9 @@ template<>
 struct Simd128_impl<true, true, false, 8> {
 
 	// static void hello()
-	{
-		std::cout << "uint64_t" << std::endl;
-	}
+	// {
+		// std::cout << "uint64_t" << std::endl;
+	// }
 
 
 } ;

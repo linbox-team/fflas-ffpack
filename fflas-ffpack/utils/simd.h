@@ -32,7 +32,7 @@
 
 
 #include <immintrin.h>
-#include "fflas-ffpack/config.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 
