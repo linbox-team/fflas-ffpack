@@ -48,11 +48,12 @@ namespace FFLAS { namespace Protected {
 		size_t sizeB = kc*cols;
 		size_t sizeW = simd::vect_size*kc*_nr; // store data duplicated by the number of elements fitting in vector register
 
-		// these data must be (_vect_align) byte aligned
+		// these data must be (simd::alignment byte aligned
 		int64_t *blockA, *blockB, *blockW;
-		// posix_memalign(reinterpret_cast<void**>(&blockA),_vect_align, sizeof(int64_t)*sizeA);;
-		// posix_memalign(reinterpret_cast<void**>(&blockB),_vect_align, sizeof(int64_t)*sizeB);;
-		// posix_memalign(reinterpret_cast<void**>(&blockW),_vect_align, sizeof(int64_t)*sizeW);;
+
+		// std::cout << sizeB << ';' << ldb * cols<< ';' << rows << 'x' << depth << 'x' << cols << std::endl;
+		// std::cout << mc << ',' << nc << ',' << kc << std::endl;
+
 		blockA = fflas_new<int64_t>(sizeA, (Alignment)simd::alignment);
 		blockB = fflas_new<int64_t>(sizeB, (Alignment)simd::alignment);
 		blockW = fflas_new<int64_t>(sizeW, (Alignment)simd::alignment);
@@ -62,7 +63,9 @@ namespace FFLAS { namespace Protected {
 		for(size_t k2=0; k2<depth; k2+=kc){
 
 			const size_t actual_kc = std::min(k2+kc,depth)-k2;
+			FFLASFFPACK_check(actual_kc+k2 <= depth);
 
+			// std::cout << k2  << '+' << actual_kc << ',' << cols << std::endl;
 			// pack horizontal panel of B into sequential memory (L2 cache)
 			FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
 
@@ -71,7 +74,7 @@ namespace FFLAS { namespace Protected {
 
 				const size_t actual_mc = std::min(i2+mc,rows)-i2;
 
-				//cout<<"mc= "<<actual_mc<<" kc= "<<actual_mc<<endl;
+				// cout<<"mc= "<<actual_mc<<" kc= "<<actual_mc<<endl;
 
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
 				FFLAS::details::pack_lhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
@@ -88,7 +91,7 @@ namespace FFLAS { namespace Protected {
 
 	void igemm(size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, int64_t* A, size_t lda, int64_t* B, size_t ldb)
 	{
-		igemm_colmajor(cols, rows, depth, C, ldc, A, lda, B, ldb);
+		igemm_colmajor(rows, cols, depth, C, ldc, A, lda, B, ldb);
 	}
 
 } // Protected

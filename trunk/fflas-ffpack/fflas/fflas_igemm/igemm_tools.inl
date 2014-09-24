@@ -65,13 +65,18 @@ namespace FFLAS { namespace details {
 		// pack by k columns
 		for(size_t j=0;j<cols_by_k;j+=k){
 			for(size_t i=0;i<rows;i++)
-				for (size_t l=0;l<k;l++,p++)
+				for (size_t l=0;l<k;l++,p++) {
+					// std::cout << p << ',' << (i+(j+l)*ldx) << std::endl;
 					XX[p]=X[i+(j+l)*ldx];
+				}
 		}
 		// the remaining columns are not packed
 		for(size_t j=cols_by_k;j<cols;j++)
-			for(size_t i=0;i<rows;i++,p++)
+			for(size_t i=0;i<rows;i++,p++) {
+				// std::cout << p << ',' << i+j*ldx << std::endl;
+				// std::cout << X[i+j*ldx] << std::endl;
 				XX[p]=X[i+j*ldx];
+			}
 	}
 
 
@@ -87,7 +92,7 @@ namespace FFLAS { namespace details {
 		for(size_t i=0;i<rows_by_k;i+=k)
 			for(size_t j=0;j<cols;j++)
 				for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
-				// for (size_t l=0;l<k;l+= simd::vect_size){
+				// for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
 					// __m128i T0,T1;
 					// half_t T0,T1;
 					// T0 = simd::loadu_half(&X[i+l+  j*ldx]);
@@ -98,7 +103,7 @@ namespace FFLAS { namespace details {
 					// SSE_STORE(XX[p],T0);p+=2;
 					// simd::store_half(&XX[p],T1);p+=2;
 					// SSE_STORE(XX[p],T1);p+=2;
-					// simd::store(XX[p],simd::loadu(&X[i+l+j*ldx]));
+					// simd::store(&XX[p],simd::loadu(&X[i+l+j*ldx]));
 				// }
 		// the remaining rows are packed by group of StepA (if possible)
 		if (rows-rows_by_k>=StepA){
