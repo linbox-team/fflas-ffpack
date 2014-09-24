@@ -41,6 +41,7 @@ namespace FFLAS{
 		return true ;
 	}
 
+	// BB : segfault in Givaro::Integer::logcpy otherwise
 	template<>
 	inline bool alignable<FFPACK::Integer*>() {
 		return false;

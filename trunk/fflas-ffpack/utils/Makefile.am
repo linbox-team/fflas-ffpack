@@ -21,6 +21,21 @@
 
 pkgincludesubdir=$(pkgincludedir)/utils
 
+SIMD128= simd128.inl \
+	 simd128_double.inl \
+	 simd128_float.inl   \
+	 simd128_int16.inl \
+	 simd128_int32.inl \
+	 simd128_int64.inl
+
+SIMD256= simd256.inl \
+	 simd256_double.inl \
+	 simd256_float.inl   \
+	 simd256_int16.inl \
+	 simd256_int32.inl \
+	 simd256_int64.inl
+
+
 pkgincludesub_HEADERS=       \
 	     align-allocator.h  \
 	     args-parser.h  \
@@ -31,8 +46,8 @@ pkgincludesub_HEADERS=       \
 	     Matio.h  \
 	     print-utils.h \
 	     simd.h \
-	     simd128.inl \
-	     simd256.inl
+	     $(SIMD128) \
+	     $(SIMD256)
 
 
 ### is this really extra dist ?
