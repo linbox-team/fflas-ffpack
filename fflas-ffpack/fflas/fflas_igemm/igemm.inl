@@ -51,8 +51,6 @@ namespace FFLAS { namespace Protected {
 		// these data must be (simd::alignment byte aligned
 		int64_t *blockA, *blockB, *blockW;
 
-		// std::cout << sizeB << ';' << ldb * cols<< ';' << rows << 'x' << depth << 'x' << cols << std::endl;
-		// std::cout << mc << ',' << nc << ',' << kc << std::endl;
 
 		blockA = fflas_new<int64_t>(sizeA, (Alignment)simd::alignment);
 		blockB = fflas_new<int64_t>(sizeB, (Alignment)simd::alignment);
@@ -65,7 +63,6 @@ namespace FFLAS { namespace Protected {
 			const size_t actual_kc = std::min(k2+kc,depth)-k2;
 			FFLASFFPACK_check(kc <= depth);
 
-			// std::cout << k2  << '+' << actual_kc << ',' << cols << std::endl;
 			// pack horizontal panel of B into sequential memory (L2 cache)
 			FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
 
@@ -74,7 +71,6 @@ namespace FFLAS { namespace Protected {
 
 				const size_t actual_mc = std::min(i2+mc,rows)-i2;
 
-				// cout<<"mc= "<<actual_mc<<" kc= "<<actual_mc<<endl;
 
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
