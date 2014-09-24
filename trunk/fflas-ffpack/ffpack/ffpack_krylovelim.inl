@@ -186,10 +186,10 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 #ifdef LB_DEBUG
 						std::cerr<<"FAIL itere dependant intercale"<<std::endl;
 #endif
-						delete[] P;
-						delete[] Q;
-						delete[] iterates;
-						delete[] inviterates;
+						FFLAS::fflas_delete( P);
+						FFLAS::fflas_delete( Q);
+						FFLAS::fflas_delete( iterates);
+						FFLAS::fflas_delete( inviterates);
 						throw CharpolyFailed();
 					}
 #ifdef LB_DEBUG
@@ -219,10 +219,10 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 #endif
 		curr_row++;
 	}
-	delete[] P;
-	delete[] Q;
-	delete[] inviterates;
-	delete[] iterates;
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
+	FFLAS::fflas_delete( inviterates);
+	FFLAS::fflas_delete( iterates);
 
 	return rp_idx;
 }

@@ -114,9 +114,9 @@ namespace FFPACK {
 		// std::cerr<<std::endl;
 
 		MathPerm2LAPACKPerm (Q, MathQ, N);
-		delete[] MathQ;
+		FFLAS::fflas_delete( MathQ);
 		MathPerm2LAPACKPerm (P, MathP, M);
-		delete[] MathP;
+		FFLAS::fflas_delete( MathP);
 		FFLAS::fzero (Fi, M-rank, N-rank, A+rank*(1+lda), lda);
 
 		return (size_t) rank;
@@ -269,10 +269,10 @@ namespace FFPACK {
 		size_t* MathP = FFLAS::fflas_new<size_t>(M);
 		composePermutationsP (MathP, P1, P2, R1, M2);
 		composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
-		delete[] P1;
-		delete[] P2;
-		delete[] P3;
-		delete[] P4;
+		FFLAS::fflas_delete( P1);
+		FFLAS::fflas_delete( P2);
+		FFLAS::fflas_delete( P3);
+		FFLAS::fflas_delete( P4);
 		for (size_t i=M2; i<M; ++i)
 			MathP[i] += M2;
 		if (R1+R2 < M2){
@@ -282,17 +282,17 @@ namespace FFPACK {
 			MatrixApplyS (Fi, A, lda, N, M2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (P, MathP, M);
-		delete[] MathP;
+		FFLAS::fflas_delete( MathP);
 
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		    //            [      Q3 ]      [      P4 ]
 		size_t * MathQ = FFLAS::fflas_new<size_t >(N);
 		composePermutationsQ (MathQ, Q1, Q3, R1, N2);
 		composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
-		delete[] Q1;
-		delete[] Q2;
-		delete[] Q3;
-		delete[] Q4;
+		FFLAS::fflas_delete( Q1);
+		FFLAS::fflas_delete( Q2);
+		FFLAS::fflas_delete( Q3);
+		FFLAS::fflas_delete( Q4);
 		for (size_t i=N2; i<N; ++i)
 			MathQ[i] += N2;
 
@@ -303,7 +303,7 @@ namespace FFPACK {
 			MatrixApplyT (Fi, A, lda, M, N2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (Q, MathQ, N);
-		delete[] MathQ;
+		FFLAS::fflas_delete( MathQ);
 
 		return R1+R2+R3+R4;
 	}
@@ -348,8 +348,8 @@ namespace FFPACK {
 		// for (size_t i=0; i<N; ++i)
 		// 	std::cerr<<CRP[i]<<" ";
 		// std::cerr<<std::endl;
-		delete[] RRP;
-		delete[] CRP;
+		FFLAS::fflas_delete( RRP);
+		FFLAS::fflas_delete( CRP);
 	}
 
 

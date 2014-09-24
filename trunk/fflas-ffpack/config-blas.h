@@ -401,7 +401,7 @@ extern "C" {
 		// Lapack function ilaenv.
 		work= FFLAS::fflas_new<double>(N);
 		dgetri_ (&N, A, &lda, ipiv, work, &N,  &info);
-		delete[] work;
+		FFLAS::fflas_delete( work);
 #else
 		work= FFLAS::fflas_new<double>(N*N);
 		dtrtri_("U","N", &N, A, &lda, &info);
@@ -427,7 +427,7 @@ extern "C" {
 				dswap_ (&N, &A[i*lda],&incr , &A[ip*lda], &incr);
 		}
 
-		delete[] work;
+		FFLAS::fflas_delete( work);
 #endif
 		return info;
 	}

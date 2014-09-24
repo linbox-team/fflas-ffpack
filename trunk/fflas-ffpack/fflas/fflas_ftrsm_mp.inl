@@ -122,8 +122,8 @@ namespace FFLAS {
 		cout<<"  ***  rns  rec  : "<<t_rec<<endl;
 #endif	
 
-		delete[] Ap._ptr;
-		delete[] Bp._ptr;
+		FFLAS::fflas_delete( Ap._ptr);
+		FFLAS::fflas_delete( Bp._ptr);
 	} 
 
 

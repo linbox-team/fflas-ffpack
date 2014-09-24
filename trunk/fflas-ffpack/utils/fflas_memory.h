@@ -60,8 +60,12 @@ namespace FFLAS{
     template<class Element >
     inline Element* fflas_new (const size_t m, const Alignment align = Alignment::AVX)
     {
-	   // return new typename Field::Element[m*n];
-	   return malloc_align<Element>(m, align);
+	    if (alignable<Element>() )
+		    // return new typename Field::Element[m*n];
+		    return malloc_align<Element>(m, align);
+	    else
+		    return new Element[m];
+
     }
 
     template<class Element_ptr>

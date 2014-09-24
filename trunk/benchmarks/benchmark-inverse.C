@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	  chrono.stop();
 
 	  time+=chrono.usertime();
-	  delete[] A;
+	  FFLAS::fflas_delete( A);
   }
 
   cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;

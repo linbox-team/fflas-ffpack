@@ -58,8 +58,8 @@ template <class Field>
 
 		fgetrs (F, Side, M, N, R, A, lda, P, Q, B, ldb, info);
 
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 
 		return R;
 	}
@@ -82,8 +82,8 @@ template <class Field>
 
 		fgetrs (F, Side, M, N, NRHS, R, A, lda, P, Q, X, ldx, B, ldb, info);
 
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 
 		return R;
 	}

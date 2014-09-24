@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
 
     chrono.stop();
     time+=chrono.usertime();
-    delete[] A;
-    delete[] B;
+    FFLAS::fflas_delete( A);
+    FFLAS::fflas_delete( B);
 
   }
 

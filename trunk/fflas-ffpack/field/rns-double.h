@@ -55,7 +55,7 @@ namespace FFPACK {
 		size_t  _stride;
 		bool     _alloc; // specify wether Element owns its memory; alloc is true only through F.init() and _ptr==NULL (this is to handle Element allocated within a matrix)
 		rns_double_elt(): _ptr(NULL), _alloc(false){}
-		~rns_double_elt(){ if (_alloc) delete[] _ptr; }
+		~rns_double_elt(){ if (_alloc) FFLAS::fflas_delete( _ptr); }
 
 		rns_double_elt(double* p, size_t r, size_t a=false) : _ptr(p), _stride(r), _alloc(a) {}
 
@@ -224,7 +224,7 @@ namespace FFPACK {
 				for(size_t i=0;i<_size;i++)
 					FFLAS::finit(_field_rns[i],mn,Arns+i,_size);
 			}
-			delete[] A_beta;
+			FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
 			bool ok=true;
@@ -313,7 +313,7 @@ namespace FFPACK {
 			m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc= m3[0]->_mp_alloc = 1;
 			m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size = m3[0]->_mp_size  = 0;
 
-			delete[] A_beta;
+			FFLAS::fflas_delete( A_beta);
 #ifdef CHECK_RNS
 			bool ok=true;
 			for (size_t i=0;i<m;i++)
@@ -333,7 +333,7 @@ namespace FFPACK {
 
 namespace FFLAS {
 	template<>
-	inline void fflas_delete (FFPACK::rns_double_elt_ptr A) {delete[] A._ptr;}
+	inline void fflas_delete (FFPACK::rns_double_elt_ptr A) {FFLAS::fflas_delete( A._ptr);}
 
 }
 

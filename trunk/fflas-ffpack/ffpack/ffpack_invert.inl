@@ -98,8 +98,8 @@ template <class Field>
 		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP));
 
 		if (nullity > 0){
-			delete[] P;
-			delete[] rowP;
+			FFLAS::fflas_delete( P);
+			FFLAS::fflas_delete( rowP);
 			return NULL;
 		}
 		else {
@@ -128,8 +128,8 @@ template <class Field>
 			applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 				M, 0,(int) M, X, ldx, P );
 
-			delete[] P;
-			delete[] rowP;
+			FFLAS::fflas_delete( P);
+			FFLAS::fflas_delete( rowP);
 			return X;
 		}
 	}

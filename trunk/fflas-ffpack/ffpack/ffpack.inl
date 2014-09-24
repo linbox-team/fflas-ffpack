@@ -45,8 +45,8 @@ namespace FFPACK {
 		size_t *Q = FFLAS::fflas_new<size_t>(M);
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
 				     A, lda, P, Q, FfpackLQUP);
-		delete[] Q;
-		delete[] P;
+		FFLAS::fflas_delete( Q);
+		FFLAS::fflas_delete( P);
 		return R;
 	}
 
@@ -68,8 +68,8 @@ namespace FFPACK {
 		bool singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N,
 					    A, lda, P, Q, FfpackSingular);
 
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 		return singular;
 	}
 
@@ -93,8 +93,8 @@ namespace FFPACK {
 				       A, lda, P, Q, FfpackSingular);
 		if (singular){
 			F.assign(det,F.zero);
-			delete[] P;
-			delete[] Q;
+			FFLAS::fflas_delete( P);
+			FFLAS::fflas_delete( Q);
 			return det;
 		}
 		else{
@@ -109,8 +109,8 @@ namespace FFPACK {
 			if ((count&1) == 1)
 				F.negin(det);
 		}
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 		return det;
 	}
 
@@ -127,8 +127,8 @@ namespace FFPACK {
 
 		if (LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP) < M){
 			std::cerr<<"SINGULAR MATRIX"<<std::endl;
-			delete[] P;
-			delete[] rowP;
+			FFLAS::fflas_delete( P);
+			FFLAS::fflas_delete( rowP);
 			return x;
 		}
 		else{
@@ -140,8 +140,8 @@ namespace FFPACK {
 			      A, lda , x, incx);
 			applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
 				M, 0,(int) M, x, incx, P );
-			delete[] rowP;
-			delete[] P;
+			FFLAS::fflas_delete( rowP);
+			FFLAS::fflas_delete( P);
 
 			return x;
 
@@ -166,7 +166,7 @@ namespace FFPACK {
 			NSdim = ldn;
 
 			if (NSdim == 0) {
-				delete[] P;
+				FFLAS::fflas_delete( P);
 				NS = NULL ;
 				return NSdim ;
 			}
@@ -174,7 +174,7 @@ namespace FFPACK {
 			NS = FFLAS::fflas_new (F, N, ldn);
 
 			if (R == 0) {
-				delete[] P;
+				FFLAS::fflas_delete( P);
 				FFLAS::fidentity(F,N,ldn,NS,ldn);
 				return NSdim;
 			}
@@ -204,7 +204,7 @@ namespace FFPACK {
 			NSdim = M-R;
 
 			if (NSdim == 0) {
-				delete[] P;
+				FFLAS::fflas_delete( P);
 				NS = NULL;
 				return NSdim;
 			}
@@ -213,7 +213,7 @@ namespace FFPACK {
 
 
 			if (R == 0) {
-				delete[] P;
+				FFLAS::fflas_delete( P);
 				FFLAS::fidentity(F,NSdim,ldn,NS,ldn);
 				return NSdim;
 			}
@@ -249,8 +249,8 @@ namespace FFPACK {
 
 		for (size_t i=0; i<R; ++i)
 			rkprofile[i] = Q[i];
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 		return R;
 	}
 
@@ -268,8 +268,8 @@ namespace FFPACK {
 
 		for (size_t i=0; i<R; ++i)
 			rkprofile[i] = Q[i];
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 		return R;
 	}
 
@@ -302,8 +302,8 @@ namespace FFPACK {
 			}
 		}
 
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 
 		return R;
 	}
@@ -337,8 +337,8 @@ namespace FFPACK {
 				rowindices[P[i]] = tmp;
 			}
 		}
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 
 		return R;
 	}
@@ -363,8 +363,8 @@ namespace FFPACK {
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
 		FFLAS::fflas_delete (A2);
-		delete[] rowindices;
-		delete[] colindices;
+		FFLAS::fflas_delete( rowindices);
+		FFLAS::fflas_delete( colindices);
 		return R;
 	}
 
@@ -386,8 +386,8 @@ namespace FFPACK {
 			for (size_t j=0; j<R; ++j)
 				F.assign (*(X + i*R + j), *(A + rowindices[i]*lda + colindices[j]));
 		FFLAS::fflas_delete (A2);
-		delete[] colindices;
-		delete[] rowindices;
+		FFLAS::fflas_delete( colindices);
+		FFLAS::fflas_delete( rowindices);
 		return R;
 	}
 

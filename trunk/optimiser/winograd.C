@@ -176,8 +176,8 @@ int main () {
 	outlog << "defined __FFLASFFPACK_WINOTHRESHOLD to " << nbest << "" << std::endl;
 	outlog.close();
 
-	delete[] A;
-	delete[] C;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( C);
 
 	return 0;
 }

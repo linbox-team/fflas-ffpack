@@ -121,7 +121,7 @@ namespace FFPACK {
 	{
 		Element* tmp = FFLAS::fflas_new<Element >((M2-R1-R2)*width);
 		doApplyS (A, lda, tmp, width, M2, R1, R2, R3, R4);
-		delete[] tmp;
+		FFLAS::fflas_delete( tmp);
 	}
 
 
@@ -168,7 +168,7 @@ namespace FFPACK {
 	{
 		Element* tmp = FFLAS::fflas_new<Element >((N2-R1)*width);
 		doApplyT (A, lda, tmp, width, N2, R1, R2, R3, R4);
-		delete[] tmp;
+		FFLAS::fflas_delete( tmp);
 	}
 
             /**
@@ -209,8 +209,8 @@ namespace FFPACK {
 			T[i] = tmp;
 			Tinv[tmp] = i;
 		}
-		delete[] T;
-		delete[] Tinv;
+		FFLAS::fflas_delete( T);
+		FFLAS::fflas_delete( Tinv);
 	}
 
 	    /**
