@@ -83,58 +83,58 @@ namespace FFLAS { namespace details { /*  kernels */
 			A1 = simd::load( blA+1*StepA);
 			B0 = simd::load( blB+0*StepB);
 			B1 = simd::load( blB+1*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			B2 = simd::load( blB+2*StepB);
-			simd::maddin(C4,A1,B0); // B0
+			simd::maddxin(C4,A1,B0); // B0
 			B3 = simd::load( blB+3*StepB);
 			B0 = simd::load( blB+4*StepB);
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C5,A1,B1); // B1
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C5,A1,B1); // B1
 			B1 = simd::load( blB+5*StepB);
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C6,A1,B2); // B2
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C6,A1,B2); // B2
 			B2 = simd::load( blB+6*StepB);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C3,A0,B3);
 			A0 = simd::load( blA+2*StepA);
-			simd::maddin(C7,A1,B3); // B3
+			simd::maddxin(C7,A1,B3); // B3
 			A1 = simd::load( blA+3*StepA);
 			B3 = simd::load( blB+7*StepB);
-			simd::maddin(C0,A0,B0);
-			simd::maddin(C4,A1,B0); // B0
+			simd::maddxin(C0,A0,B0);
+			simd::maddxin(C4,A1,B0); // B0
 			B0 = simd::load( blB+8*StepB);
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C5,A1,B1); // B1
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C5,A1,B1); // B1
 			B1 = simd::load( blB+9*StepB);
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C6,A1,B2); // B2
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C6,A1,B2); // B2
 			B2 = simd::load( blB+10*StepB);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C3,A0,B3);
 			A0 = simd::load( blA+4*StepA);
-			simd::maddin(C7,A1,B3); // B3
+			simd::maddxin(C7,A1,B3); // B3
 			A1 = simd::load( blA+5*StepA);
 			B3 = simd::load( blB+11*StepB);
-			simd::maddin(C0,A0,B0);
-			simd::maddin(C4,A1,B0); // B0
+			simd::maddxin(C0,A0,B0);
+			simd::maddxin(C4,A1,B0); // B0
 			B0 = simd::load( blB+12*StepB);
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C5,A1,B1); // B1
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C5,A1,B1); // B1
 			B1 = simd::load( blB+13*StepB);
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C6,A1,B2); // B2
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C6,A1,B2); // B2
 			B2 = simd::load( blB+14*StepB);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C3,A0,B3);
 			A0 = simd::load( blA+6*StepA);
-			simd::maddin(C7,A1,B3); // B3
+			simd::maddxin(C7,A1,B3); // B3
 			A1 = simd::load( blA+7*StepA);
 			B3 = simd::load( blB+15*StepB);
-			simd::maddin(C0,A0,B0);
-			simd::maddin(C4,A1,B0); // B0
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C5,A1,B1); // B1
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C6,A1,B2); // B2
-			simd::maddin(C3,A0,B3);
-			simd::maddin(C7,A1,B3); // B3
+			simd::maddxin(C0,A0,B0);
+			simd::maddxin(C4,A1,B0); // B0
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C5,A1,B1); // B1
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C6,A1,B2); // B2
+			simd::maddxin(C3,A0,B3);
+			simd::maddxin(C7,A1,B3); // B3
 			blA+= 8*StepA;
 			blB+=16*StepB;
 		}
@@ -146,16 +146,16 @@ namespace FFLAS { namespace details { /*  kernels */
 			A1 = simd::load( blA+1*StepA);
 			B0 = simd::load( blB+0*StepB);
 			B1 = simd::load( blB+1*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			B2 = simd::load( blB+2*StepB);
-			simd::maddin(C4,A1,B0); // B0
+			simd::maddxin(C4,A1,B0); // B0
 			B3 = simd::load( blB+3*StepB);
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C5,A1,B1);  // B1
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C6,A1,B2); // B2
-			simd::maddin(C3,A0,B3);
-			simd::maddin(C7,A1,B3); // B3
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C5,A1,B1);  // B1
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C6,A1,B2); // B2
+			simd::maddxin(C3,A0,B3);
+			simd::maddxin(C7,A1,B3); // B3
 			blA+=2*StepA;
 			blB+=4*StepB;
 		}
@@ -211,39 +211,39 @@ namespace FFLAS { namespace details { /*  kernels */
 			A0 = simd::load( blA+0*StepA);
 			B0 = simd::load( blB+0*StepB);
 			B1 = simd::load( blB+1*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			B2 = simd::load( blB+2*StepB);
 			B3 = simd::load( blB+3*StepB);
 			B0 = simd::load( blB+4*StepB);
-			simd::maddin(C1,A0,B1);
+			simd::maddxin(C1,A0,B1);
 			B1 = simd::load( blB+5*StepB);
-			simd::maddin(C2,A0,B2);
+			simd::maddxin(C2,A0,B2);
 			B2 = simd::load( blB+6*StepB);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C3,A0,B3);
 			A0 = simd::load( blA+1*StepA);
 			B3 = simd::load( blB+7*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			B0 = simd::load( blB+8*StepB);
-			simd::maddin(C1,A0,B1);
+			simd::maddxin(C1,A0,B1);
 			B1 = simd::load( blB+9*StepB);
-			simd::maddin(C2,A0,B2);
+			simd::maddxin(C2,A0,B2);
 			B2 = simd::load( blB+10*StepB);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C3,A0,B3);
 			A0 = simd::load( blA+2*StepA);
 			B3 = simd::load( blB+11*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			B0 = simd::load( blB+12*StepB);
-			simd::maddin(C1,A0,B1);
+			simd::maddxin(C1,A0,B1);
 			B1 = simd::load( blB+13*StepB);
-			simd::maddin(C2,A0,B2);
+			simd::maddxin(C2,A0,B2);
 			B2 = simd::load( blB+14*StepB);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C3,A0,B3);
 			A0 = simd::load( blA+3*StepA);
 			B3 = simd::load( blB+15*StepB);
-			simd::maddin(C0,A0,B0);
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C0,A0,B0);
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C3,A0,B3);
 			blA+= 4*StepA;
 			blB+=16*StepB;
 		}
@@ -254,12 +254,12 @@ namespace FFLAS { namespace details { /*  kernels */
 			A0 = simd::load( blA+0*StepA);
 			B0 = simd::load( blB+0*StepB);
 			B1 = simd::load( blB+1*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			B2 = simd::load( blB+2*StepB);
 			B3 = simd::load( blB+3*StepB);
-			simd::maddin(C1,A0,B1);
-			simd::maddin(C2,A0,B2);
-			simd::maddin(C3,A0,B3);
+			simd::maddxin(C1,A0,B1);
+			simd::maddxin(C2,A0,B2);
+			simd::maddxin(C3,A0,B3);
 			blA+=StepA;
 			blB+=4*StepB;
 		}
@@ -320,8 +320,8 @@ namespace FFLAS { namespace details { /*  kernels */
 			A0 = simd::load( blA+0*StepA);
 			A1 = simd::load( blA+1*StepA);
 			B0 = simd::load( blB+0*StepB);
-			simd::maddin(C0,A0,B0);
-			simd::maddin(C4,A1,B0); //! bug ,B0 dans VEC_MADD_32 ?
+			simd::maddxin(C0,A0,B0);
+			simd::maddxin(C4,A1,B0); //! bug ,B0 dans VEC_MADD_32 ?
 			blA+= 2*StepA;
 			blB+= 1*StepB;
 		}
@@ -351,7 +351,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			vect_t B0;
 			A0 = simd::load( blA+0*StepA);
 			B0 = simd::load( blB+0*StepB);
-			simd::maddin(C0,A0,B0);
+			simd::maddxin(C0,A0,B0);
 			blA+= 1*StepA;
 			blB+= 1*StepB;
 		}

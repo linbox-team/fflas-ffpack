@@ -11,12 +11,12 @@ int main()
 	typedef FFPACK::Modular<FFPACK::Integer> IField ;
 	IField Z(std::pow(2,63));
 
-	size_t m = 8 ;
-	size_t n = 8 ;
-	size_t k = 8 ;
-	size_t lda = 8 ;
-	size_t ldb = 8 ;
-	size_t ldc = 8 ;
+	size_t m = 9 ;
+	size_t n = 9 ;
+	size_t k = 9 ;
+	size_t lda = 10 ;
+	size_t ldb = 11 ;
+	size_t ldc = 12 ;
 
 	int seed=0;
 	typename IField::RandIter Rand(Z,seed);

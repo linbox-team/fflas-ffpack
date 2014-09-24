@@ -242,9 +242,9 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 		if (mapleFormat) c << '[';
 		for (int j=0; j<m;++j){
 			if (column_major)
-				F.convert(tmp,*(E+j+id*i));
-			else
 				F.convert(tmp,*(E+i+id*j));
+			else
+				F.convert(tmp,*(E+j+id*i));
 			c << tmp;
 			if (mapleFormat && j<m-1) c << ',';
 			c << ' ';
