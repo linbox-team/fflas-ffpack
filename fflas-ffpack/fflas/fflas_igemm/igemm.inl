@@ -63,7 +63,7 @@ namespace FFLAS { namespace Protected {
 		for(size_t k2=0; k2<depth; k2+=kc){
 
 			const size_t actual_kc = std::min(k2+kc,depth)-k2;
-			FFLASFFPACK_check(actual_kc+k2 <= depth);
+			FFLASFFPACK_check(kc <= depth);
 
 			// std::cout << k2  << '+' << actual_kc << ',' << cols << std::endl;
 			// pack horizontal panel of B into sequential memory (L2 cache)
@@ -76,6 +76,7 @@ namespace FFLAS { namespace Protected {
 
 				// cout<<"mc= "<<actual_mc<<" kc= "<<actual_mc<<endl;
 
+				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
 				FFLAS::details::pack_lhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
 				// call block*panel kernel
