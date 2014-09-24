@@ -75,7 +75,7 @@ int main(int argc, char** argv){
 		t.stop();
 		tim+=t;
 		if (i+1<nbit){
-			delete[] A;
+			FFLAS::fflas_delete( A);
 			A = read_field(F,argv[2],&m,&n);
 		}
 	}

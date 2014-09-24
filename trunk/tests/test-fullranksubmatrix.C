@@ -77,6 +77,6 @@ int main(int argc, char** argv){
 
 
 
-	delete[]X;
-	delete[]A;
+	FFLAS::fflas_delete(X);
+	FFLAS::fflas_delete(A);
 }

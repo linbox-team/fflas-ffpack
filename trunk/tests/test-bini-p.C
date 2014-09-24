@@ -407,21 +407,21 @@ namespace FFLAS {
 			addscalinf(NoField,m3,n2,P1,n2,(double)1/epsilon,C32,ldc);
 			// C22+= P9-P5
 			addsub(m3,n2,P1,n2,P2,n2,C22,ldc);
-			delete[] P2;
+			FFLAS::fflas_delete( P2);
 			// S10 := e*A31+A32;
 			FFLAS::fadd(NoField,m3,k2,eA31,k2,A32,lda,S1,k2);
-			delete[] eA12 ;
+			FFLAS::fflas_delete( eA12 );
 			// T10 := B11   +e*B21;
 			add(k2,n2,epsilon,B21,ldb,B11,ldb,T1,n2);
 			// P10:= S10*T10;
 			gemm_bini_322_0(F,m3,n2,k2,S1,k2,T1,n2,P1,n2,rec-1,epsilon);
-			delete[] S1;
-			delete[] T1;
+			FFLAS::fflas_delete( S1);
+			FFLAS::fflas_delete( T1);
 			// C21-= P10
 			FFLAS::fsubin(NoField,m3,n2,P1,n2,C21,ldc);
 			// C31= (C31-P10)/(-epsilon)
 			subscalinf(NoField,m3,n2,P1,n2,-(double)1/epsilon,C31,ldc);
-			delete[] P1;
+			FFLAS::fflas_delete( P1);
 			// C11 := (P1+P-P3+P4)/e;
 			FFLAS::fscalin(NoField,m3,n2,(double)1/epsilon,C11,ldc);
 
@@ -598,8 +598,8 @@ namespace FFLAS {
 			add(k2,n2,epsilon,B21,ldb,B11,ldb,Y,n2);
 			// P3
 			gemm_bini_322_mem(F,m3,n2,k2,X,k2,Y,n2,C31,ldc,rec-1,epsilon);
-			delete[] X;
-			delete[] Y ;
+			FFLAS::fflas_delete( X);
+			FFLAS::fflas_delete( Y );
 			// C21
 			FFLAS::fsubin(NoField,m3,n2,C31,ldc,C21,ldc);
 			// P8
@@ -612,7 +612,7 @@ namespace FFLAS {
 			subscalinf(NoField,m3,n2,Y,n2,(double)1/epsilon,C32,ldc);
 			// FFLAS::fsubin(NoField,m3,n2,Y,n2,C32,ldc);
 			// FFLAS::fscalin(NoField,m3,n,(double)1/epsilon,C31,ldc);
-			delete[] Y ;
+			FFLAS::fflas_delete( Y );
 
 
 			return C;
@@ -790,8 +790,8 @@ namespace FFLAS {
 			add(m2,k2,epsilon,A12,lda,A11,lda,X,k2);
 			// P3
 			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C13,ldc,rec-1,epsilon);
-			delete[] Y ;
-			delete[] X ;
+			FFLAS::fflas_delete( Y );
+			FFLAS::fflas_delete( X );
 			// C21
 			FFLAS::fsubin(NoField,m2,n3,C13,ldc,C12,ldc);
 			// P8
@@ -801,7 +801,7 @@ namespace FFLAS {
 			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C13,ldc);
 			// C32
 			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C23,ldc);
-			delete[] Y ;
+			FFLAS::fflas_delete( Y );
 
 
 			return C;
@@ -987,10 +987,10 @@ namespace FFLAS {
 			subscalacc(NoField,m3,n2,U,n2,V,n2,1./epsilon,C32,ldc);
 
 
-			delete[] X;
-			delete[] Y ;
-			delete[] U;
-			delete[] V;
+			FFLAS::fflas_delete( X);
+			FFLAS::fflas_delete( Y );
+			FFLAS::fflas_delete( U);
+			FFLAS::fflas_delete( V);
 
 
 			return C;
@@ -1181,10 +1181,10 @@ namespace FFLAS {
 			add(m2,n2,(double)1/epsilon,U,n2,C11,ldc,C11,ldc);
 
 
-			delete[] X ;
-			delete[] Y ;
-			delete[] U ;
-			delete[] V ;
+			FFLAS::fflas_delete( X );
+			FFLAS::fflas_delete( Y );
+			FFLAS::fflas_delete( U );
+			FFLAS::fflas_delete( V );
 
 
 			return C;
@@ -1375,7 +1375,7 @@ namespace FFLAS {
 			FFLAS::fsub(NoField,m2,k3,A21,lda,eA22,k3,X,k3);
 			// T5
 			FFLAS::fadd(NoField,k3,n2,eB12,n2,B11,ldb,Y,n2);
-			// delete[] eB12;
+			// FFLAS::fflas_delete( eB12);
 			// P5 (in V)
 			gemm_bini_232_2(F,m2,n2,k3,X,k3,Y,n2,V,n2,rec-1,epsilon);
 			// C22 += (P5-P2)/e
@@ -1402,10 +1402,10 @@ namespace FFLAS {
 			FFLAS::faddin(NoField,m2,n2,V,n2,C21,ldc);
 			// S10
 			FFLAS::fsub(NoField,m2,k3,A13,lda,eA12,k3,X,k3);
-			delete[] eA12;
+			FFLAS::fflas_delete( eA12);
 			// T10
 			FFLAS::fadd(NoField,k3,n2,eB31,n2,B32,ldb,Y,n2);
-			delete[] eA22;
+			FFLAS::fflas_delete( eA22);
 			// P10 (in U)
 			gemm_bini_232_2(F,m2,n2,k3,X,k3,Y,n2,U,n2,rec-1,epsilon);
 			// C12 += P10
@@ -1414,10 +1414,10 @@ namespace FFLAS {
 			add(m2,n2,(double)1/epsilon,U,n2,C11,ldc,C11,ldc);
 
 
-			delete[] X ;
-			delete[] Y ;
-			delete[] U ;
-			delete[] V ;
+			FFLAS::fflas_delete( X );
+			FFLAS::fflas_delete( Y );
+			FFLAS::fflas_delete( U );
+			FFLAS::fflas_delete( V );
 
 
 			return C;
@@ -1595,8 +1595,8 @@ namespace FFLAS {
 			add(m2,k2,epsilon,A12,lda,A11,lda,X,k2);
 			// P3
 			gemm_bini_223_mem(F,m2,n3,k2,X,k2,Y,n3,C13,ldc,rec-1,epsilon);
-			delete[] Y ;
-			delete[] X ;
+			FFLAS::fflas_delete( Y );
+			FFLAS::fflas_delete( X );
 			// C21
 			FFLAS::fsubin(NoField,m2,n3,C13,ldc,C12,ldc);
 			// P8
@@ -1606,7 +1606,7 @@ namespace FFLAS {
 			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C13,ldc);
 			// C32
 			subscalinf(NoField,m2,n3,Y,n3,(double)1/epsilon,C23,ldc);
-			delete[] Y ;
+			FFLAS::fflas_delete( Y );
 
 
 			return C;
@@ -2022,15 +2022,15 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 
 
 
-		delete[] A ;
-		delete[] B;
-		delete[] C;
-		delete[] D;
-		delete[] E;
+		FFLAS::fflas_delete( A );
+		FFLAS::fflas_delete( B);
+		FFLAS::fflas_delete( C);
+		FFLAS::fflas_delete( D);
+		FFLAS::fflas_delete( E);
 
-		delete[] A_f ;
-		delete[] B_f;
-		delete[] C_f;
+		FFLAS::fflas_delete( A_f );
+		FFLAS::fflas_delete( B_f);
+		FFLAS::fflas_delete( C_f);
 	}
 
 

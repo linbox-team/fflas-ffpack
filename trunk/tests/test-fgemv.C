@@ -111,11 +111,11 @@ int main(int argc, char** argv){
 		cerr<<"FAIL"<<endl;
 	else
 		cerr<<"PASS"<<endl;
-	delete[] d;
+	FFLAS::fflas_delete( d);
 #endif
-	delete[] A;
-	delete[] b;
-	delete[] c;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( b);
+	FFLAS::fflas_delete( c);
 #if TIME
 	double mflops = (2.0*(m*n/1000000.0)*nbit/tim.usertime());
 	cerr << m <<"x" <<n <<" : fgemv over Z/"

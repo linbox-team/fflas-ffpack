@@ -85,9 +85,9 @@ int main(int argc, char** argv)
 		chrono.stop();
 		time+=chrono.realtime();
 
-		delete[] A;
-		delete[] B;
-		delete[] C;
+		FFLAS::fflas_delete( A);
+		FFLAS::fflas_delete( B);
+		FFLAS::fflas_delete( C);
 	}
 
 	std::cerr<<"n: "<<n <<" p: "<<p<<" w: "<<w<<std::endl

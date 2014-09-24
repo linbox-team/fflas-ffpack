@@ -95,9 +95,9 @@ bool test_lu(const Field & F,
 
 	if (R != r) {
 		std::cout << "rank is wrong (expected " << R << " but got " << r << ")" << std::endl;
-		delete[] B ;
-		delete[] P ;
-		delete[] Q ;
+		FFLAS::fflas_delete( B );
+		FFLAS::fflas_delete( P );
+		FFLAS::fflas_delete( Q );
 		return fail = true;
 	}
 
@@ -161,7 +161,7 @@ bool test_lu(const Field & F,
 				n,0,(int)R, U, n, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 			      m,n,m, 1.0, L,m, U,n, 0.0, C,n);
-		//delete[] A;
+		//FFLAS::fflas_delete( A);
 	}
 	else { /*  trans == FFLAS::FflasTrans */
 
@@ -233,12 +233,12 @@ bool test_lu(const Field & F,
 			}
 	}
 
-	delete[] P;
-	delete[] L;
-	delete[] U;
-	delete[] Q;
-	delete[] B;
-	delete[] C;
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( Q);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( C);
 	return fail;
 
 
@@ -381,13 +381,13 @@ bool test_lu(const Field & F,
 
 // 	if (R2 != R) {
 // 		std::cout << "error, bad rank " << R2 << " <> " << R << " (expected) " << std::endl;
-// 		delete[] Bcop ;
-// 		delete[] Acop ;
-// 		delete[] Append ;
-// 		delete[] PP;
-// 		delete[] QQ;
-// 		delete[] P ;
-// 		delete[] Q ;
+// 		FFLAS::fflas_delete( Bcop );
+// 		FFLAS::fflas_delete( Acop );
+// 		FFLAS::fflas_delete( Append );
+// 		FFLAS::fflas_delete( PP);
+// 		FFLAS::fflas_delete( QQ);
+// 		FFLAS::fflas_delete( P );
+// 		FFLAS::fflas_delete( Q );
 // 		return fail=true;
 
 // 	}
@@ -468,7 +468,7 @@ bool test_lu(const Field & F,
 // 				n,0,(int)R, U, n, Q);
 // 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 // 			      M,n,M, 1.0, L,M, U,n, 0.0, C,lda);
-// 		//delete[] A;
+// 		//FFLAS::fflas_delete( A);
 // 	}
 // #if 0 /*  not working */
 // 	else { /*  trans == FFLAS::FflasTrans */
@@ -609,7 +609,7 @@ bool test_lu(const Field & F,
 // 				n,0,(int)R, UU, n, Q);
 // 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 // 			      M,n,M, 1.0, LL,M, UU,n, 0.0, CC,lda);
-// 		//delete[] A;
+// 		//FFLAS::fflas_delete( A);
 // 	}
 // 	else { /*  trans == FFLAS::FflasTrans */
 
@@ -696,17 +696,17 @@ bool test_lu(const Field & F,
 // 			}
 // 	}
 
-// 	delete[] PP;
-// 	delete[] P;
-// 	delete[] L;
-// 	delete[] U;
-// 	delete[] Q;
-// 	delete[] QQ;
-// 	delete[] Acop;
-// 	delete[] Bcop;
-// 	delete[] Append;
-// 	delete[] Afull;
-// 	delete[] C;
+// 	FFLAS::fflas_delete( PP);
+// 	FFLAS::fflas_delete( P);
+// 	FFLAS::fflas_delete( L);
+// 	FFLAS::fflas_delete( U);
+// 	FFLAS::fflas_delete( Q);
+// 	FFLAS::fflas_delete( QQ);
+// 	FFLAS::fflas_delete( Acop);
+// 	FFLAS::fflas_delete( Bcop);
+// 	FFLAS::fflas_delete( Append);
+// 	FFLAS::fflas_delete( Afull);
+// 	FFLAS::fflas_delete( C);
 
 // 	return fail;
 
@@ -728,7 +728,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRank(F,A,r,m,n,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
-		delete[] A ;
+		FFLAS::fflas_delete( A );
 	}
 	{ /*  user given and lda bigger. Rank is max */
 		size_t lda = n+10 ;
@@ -737,7 +737,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRank(F,A,R,m,n,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
-		delete[] A ;
+		FFLAS::fflas_delete( A );
 	}
 	{ /*  user given and lda bigger. Rank is min */
 		size_t lda = n+10 ;
@@ -746,7 +746,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRank(F,A,R,m,n,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
-		delete[] A ;
+		FFLAS::fflas_delete( A );
 	}
 	{ /*  square  */
 		size_t M = std::max(m,n);
@@ -757,7 +757,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
-		delete[] A ;
+		FFLAS::fflas_delete( A );
 	}
 	{ /*  wide  */
 		size_t M = std::max(m,n);
@@ -768,7 +768,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
-		delete[] A ;
+		FFLAS::fflas_delete( A );
 	}
 	{ /*  narrow  */
 		size_t M = std::max(m,n);
@@ -779,7 +779,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
-		delete[] A ;
+		FFLAS::fflas_delete( A );
 	}
 
 	return fail;
@@ -801,8 +801,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // 	{ /*  user given and lda bigger. Rank is max */
 // 		size_t lda = n+10 ;
@@ -814,8 +814,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // 	{ /*  user given and lda bigger. Appended Rank is min */
 // 		size_t lda = n+10 ;
@@ -827,8 +827,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,B,0,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // 	{ /*  user given and lda bigger. Rank is min */
 // 		size_t lda = n+10 ;
@@ -840,8 +840,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,B,k/2+1,k,n,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // 	{ /*  square  */
 // 		size_t M = std::max(m,n);
@@ -855,8 +855,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,B,R/2,k,N,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // 	{ /*  wide  */
 // 		size_t M = std::max(m,n);
@@ -870,8 +870,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,B,k/2,k,N,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // 	//! @bug leaks :
 // #if 0 /*  leak here */
@@ -887,8 +887,8 @@ bool launch_test(const Field & F,
 // 		RandomMatrixWithRank(F,A,std::min(k/2,M/2),k,N,lda);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		delete[] A ;
-// 		delete[] B ;
+// 		FFLAS::fflas_delete( A );
+// 		FFLAS::fflas_delete( B );
 // 	}
 // #endif
 

@@ -133,10 +133,10 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	} else
 		cerr<<"PASSED ("<<time<<")"<<endl;
 	
-	delete[] A;
-	delete[] B;
-	delete[] B2;
-	delete[] C;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( B2);
+	FFLAS::fflas_delete( C);
 	
 }
 

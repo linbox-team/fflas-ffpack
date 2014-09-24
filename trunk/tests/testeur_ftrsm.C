@@ -186,10 +186,10 @@ int main(int argc, char** argv){
 			cout<<" Passed "
 			    <<double(M*N)/1000000.0*double(K)/tim.usertime()<<" Mfops"<<endl;
 
-			delete[] B;
-			delete[] Bbis;
-			delete[] A;
-			delete[] Abis;
+			FFLAS::fflas_delete( B);
+			FFLAS::fflas_delete( Bbis);
+			FFLAS::fflas_delete( A);
+			FFLAS::fflas_delete( Abis);
 		} else {
 
 			cerr<<endl;
@@ -229,9 +229,9 @@ int main(int argc, char** argv){
 				    <<endl;
 	cerr<<"0 0 0"<<endl<<endl;
 
-	delete[] A;
-	delete[] Abis;
-	delete[] B;
-	delete[] Bbis;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( Abis);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( Bbis);
 }
 

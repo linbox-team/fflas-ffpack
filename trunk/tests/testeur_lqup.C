@@ -155,8 +155,8 @@ int main(int argc, char** argv){
 // 		write_field(F,cerr<<"H = "<<endl,H,M,N,N);
 		A = FFLAS::fflas_new<Field::Element>(M*N);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, M, one, G, M, H, N, zero, A, N);
-		delete[] G;
-		delete[] H;
+		FFLAS::fflas_delete( G);
+		FFLAS::fflas_delete( H);
 
 		Abis = FFLAS::fflas_new<Field::Element>(M*N);
 		for (size_t i=0; i<M*N; ++i)
@@ -222,7 +222,7 @@ int main(int argc, char** argv){
 			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					N,0,(int) R, U, N, Q);
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,M, 1.0, L,M, U,N, 0.0, X,N);
-			//delete[] A;
+			//FFLAS::fflas_delete( A);
 		} else {
 
 			for (size_t i=0; i<R; ++i){
@@ -279,13 +279,13 @@ int main(int argc, char** argv){
 			cout<<"R = "<<R
 			    <<" Passed "
 			    <<(double(M*M)/1000.0*(double(N)-double(M)/3.0)/tim.usertime()/1000.0)<<"Mfops"<<endl;
-			delete[] A;
-			delete[] L;
-			delete[] U;
-			delete[] Abis;
-			delete[] X;
-			delete[] P;
-			delete[] Q;
+			FFLAS::fflas_delete( A);
+			FFLAS::fflas_delete( L);
+			FFLAS::fflas_delete( U);
+			FFLAS::fflas_delete( Abis);
+			FFLAS::fflas_delete( X);
+			FFLAS::fflas_delete( P);
+			FFLAS::fflas_delete( Q);
 		}
 		else{
 			cerr<<"Abis = "<<endl;
@@ -306,13 +306,13 @@ int main(int argc, char** argv){
 				cerr<<i+1<<" "<<j+1<<" "<<((int) *(Abis+i*lda+j) )<<endl;
 	cerr<<"0 0 0"<<endl<<endl;
 
-	delete[] A;
-	delete[] Abis;
-	delete[] L;
-	delete[] U;
-	delete[] X;
-	delete[] P;
-	delete[] Q;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( Abis);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( X);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
 }
 
 

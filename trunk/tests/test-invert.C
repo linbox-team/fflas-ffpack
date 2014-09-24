@@ -102,11 +102,11 @@ int main(int argc, char** argv){
 	} else {
 		cerr<<"PASS"<<endl;
 	}
-	delete[] I;
-	delete[] Ab;
+	FFLAS::fflas_delete( I);
+	FFLAS::fflas_delete( Ab);
 
 #endif
-	delete[] A;
+	FFLAS::fflas_delete( A);
 
 #if TIME
 	double mflops = 2*(n*n/1000000.0)*nbit*n/tim.usertime();

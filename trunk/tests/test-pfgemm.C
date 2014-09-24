@@ -183,7 +183,7 @@ int main(int argc, char** argv){
         }
         t.stop();
 		if (i) tim+=t;
-//         if (i<nbit) delete[] C;
+//         if (i<nbit) FFLAS::fflas_delete( C);
 	}
 
 	//#ifdef DEBUG
@@ -244,7 +244,7 @@ int main(int argc, char** argv){
 	// else{
 	// 	cerr<<"PASS"<<endl;
 	// }
-	delete[] Cd;
+	FFLAS::fflas_delete( Cd);
 	//#endif
 	/*
 #if TIME
@@ -275,7 +275,7 @@ int main(int argc, char** argv){
 		ts.stop();
 		//if (i)
 			tims+=ts;
-//         if (i<nbit) delete[] C;
+//         if (i<nbit) FFLAS::fflas_delete( C);
 	}
 
 
@@ -299,9 +299,9 @@ int main(int argc, char** argv){
 
     std::cerr << "Speed-up: " << tims.realtime()/tim.realtime() << std::endl;
 	*/
-	delete[] C;
-	delete[] A;
-	delete[] B;
+	FFLAS::fflas_delete( C);
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( B);
 	//#else
 	//	std::cerr << "no openmp available" << std::endl;
 

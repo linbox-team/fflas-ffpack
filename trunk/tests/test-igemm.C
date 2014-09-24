@@ -49,10 +49,10 @@ int main(int argc, char** argv)
 		for (size_t j=0;j<n;++j)
 			// Rand.random(B[i*ldb+j]);
 			B[i*ldb+j] = rand() %10;
-	// for (size_t i=0;i<m;++i)
-		// for (size_t j=0;j<n;++j)
+	for (size_t i=0;i<m;++i)
+		for (size_t j=0;j<n;++j)
 			// Rand.random(C[i*ldc+j]);
-			// C[i*ldc+j] = rand() % 10;
+			C[i*ldc+j] = rand() % 10;
 
 	write_field(Z,std::cout << "A", A, m, k, lda,true,false) <<std::endl;
 	write_field(Z,std::cout << "B", B, k, n, ldb,true,false) <<std::endl;

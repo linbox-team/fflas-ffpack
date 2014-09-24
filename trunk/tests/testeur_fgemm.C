@@ -180,11 +180,11 @@ int main(int argc, char** argv){
 		if (keepon){
 			cout<<"Passed "
 			    <<(2*M*N/1000.0*K/tim.usertime()/1000.0)<<"Mfops"<<endl; 
-			delete[] A;
-			delete[] B;
-			delete[] C;
-			delete[] Cbis;
-			delete[] Cter;
+			FFLAS::fflas_delete( A);
+			FFLAS::fflas_delete( B);
+			FFLAS::fflas_delete( C);
+			FFLAS::fflas_delete( Cbis);
+			FFLAS::fflas_delete( Cter);
 		}
 		else{
 			// cerr<<"C="<<endl;
@@ -251,11 +251,11 @@ int main(int argc, char** argv){
 			cerr<<i+1<<" "<<j+1<<" "<<((int) *(Cter+i*N+j) )<<endl;
 	cerr<<"0 0 0"<<endl;
 
-	delete[] A;
-	delete[] B;
-	delete[] C;
-	delete[] Cbis;
-	delete[] Cter;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( C);
+	FFLAS::fflas_delete( Cbis);
+	FFLAS::fflas_delete( Cter);
 }
 
 

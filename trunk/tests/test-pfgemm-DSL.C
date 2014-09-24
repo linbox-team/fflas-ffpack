@@ -196,12 +196,12 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
         else{
                 cerr<<"PASS"<<endl;
         }
-        delete[] Cd;
+        FFLAS::fflas_delete( Cd);
 #endif
 
-        delete[] C;
-        delete[] A;
-        delete[] B;
+        FFLAS::fflas_delete( C);
+        FFLAS::fflas_delete( A);
+        FFLAS::fflas_delete( B);
 
 
 }

@@ -81,7 +81,7 @@ int main(int argc, char** argv){
 
 	for ( i=0;i<nbf;i++){
 		if (i) {
-			delete[] A;
+			FFLAS::fflas_delete( A);
 			A = read_field(F,argv[2],&m,&n);
 		}
 		for (j=0;j<n;j++)
@@ -154,7 +154,7 @@ int main(int argc, char** argv){
 
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0,
 		      B, n, U, n, 0.0, X,n);
-	//delete[] A;
+	//FFLAS::fflas_delete( A);
 
 	bool fail = false;
 	for (int i=0; i<m; ++i)
@@ -165,7 +165,7 @@ int main(int argc, char** argv){
 // 	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
 //   	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
 
-	delete[] B;
+	FFLAS::fflas_delete( B);
 	if (fail)
 		cerr<<"FAIL"<<endl;
 
@@ -180,13 +180,13 @@ int main(int argc, char** argv){
 // 				cout<<i+1<<" "<<j+1<<" "<<(*(A+i*n+j))<<endl;
 // 	cout<<"0 0 0"<<endl;
 
-	delete[] U;
-	delete[] L;
-	delete[] X;
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( X);
 #endif
-	delete[] A;
-	delete[] P;
-	delete[] Q;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
 
 	double t = timc.usertime();
 	double numops = 2*m*m/1000.0*n;

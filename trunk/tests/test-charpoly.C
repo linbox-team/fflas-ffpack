@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 		const char * filestring = file.c_str();
 		A = read_field<Field>(F,const_cast<char*>(filestring),&n,&n);
 		bool passed = launch_test<Field>(F,A,n,p,nbit);
-		delete[] A;
+		FFLAS::fflas_delete( A);
 		return !passed ;
 	}
 	else {

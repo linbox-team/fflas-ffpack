@@ -73,9 +73,9 @@ int main(int argc, char** argv){
 	size_t * RRP, *CRP;
 	for ( size_t i=0;i<nbf;i++){
 		if (i) {
-			delete[] A;
-			delete[] RRP;
-			delete[] CRP;
+			FFLAS::fflas_delete( A);
+			FFLAS::fflas_delete( RRP);
+			FFLAS::fflas_delete( CRP);
 			A = read_field(F,argv[2],&m,&n);
 		}
 
@@ -89,7 +89,7 @@ int main(int argc, char** argv){
 		R = FFPACK::PLUQ_basecaseCrout (F, diag, m, n, A, n, P, Q);
 		tim.stop();
 		timc+=tim;
-		delete[] A;
+		FFLAS::fflas_delete( A);
 		A = read_field(F,argv[2],&m,&n);
 		timlud.clear();
 		timlud.start();
@@ -121,8 +121,8 @@ int main(int argc, char** argv){
 	// cerr<<endl;
 
 	if (nbf){
-		delete[] RRP;
-		delete[] CRP;
+		FFLAS::fflas_delete( RRP);
+		FFLAS::fflas_delete( CRP);
 	}
 //	write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
 
@@ -170,7 +170,7 @@ int main(int argc, char** argv){
 	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 		      1.0, L,R, U,n, 0.0, X,n);
-	    //delete[] A;
+	    //FFLAS::fflas_delete( A);
 
 //////
 	    //write_field(F,cerr<<"L = "<<endl,L,m ,n,n);
@@ -198,20 +198,20 @@ int main(int argc, char** argv){
 			}
 	// write_field(F,cerr<<"X = "<<endl,X,m,n,n);
 	// write_field(F,cerr<<"B = "<<endl,B,m,n,n);
-	delete[] B;
+	FFLAS::fflas_delete( B);
 	if (fail)
 		cerr<<"FAIL"<<endl;
 
 
 	else
 		cerr<<"PASS"<<endl;
-	delete[] U;
-	delete[] L;
-	delete[] X;
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( X);
 #endif
-	delete[] A;
-	delete[] P;
-	delete[] Q;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
 
 	double t = timc.usertime();
 	double tlud = timludc.usertime();
