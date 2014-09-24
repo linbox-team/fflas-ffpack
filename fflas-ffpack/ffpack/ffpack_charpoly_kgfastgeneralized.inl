@@ -304,7 +304,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 					std::cerr<<".";
 #endif
-					delete[] tempP;
+					FFLAS::fflas_delete( tempP);
 
 #ifdef LB_DEBUG
 					std::cerr<<std::endl<<"Avant B<-BQ"<<std::endl;
@@ -361,8 +361,8 @@ namespace FFPACK {
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					      r, mc-r, F.one, LUP, mc , C+r, lda);
 					FFLAS::fflas_delete (LUP);
-					delete[] P;
-					delete[] Q;
+					FFLAS::fflas_delete( P);
+					FFLAS::fflas_delete( Q);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -621,9 +621,9 @@ namespace FFPACK {
 
 			}
 
-			delete[] B ;
-			delete[] T ;
-			delete[] allowedRows ;
+			FFLAS::fflas_delete( B );
+			FFLAS::fflas_delete( T );
+			FFLAS::fflas_delete( allowedRows );
 
 			if (exit_value)
 				exit(exit_value);

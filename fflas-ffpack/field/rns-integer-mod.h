@@ -197,8 +197,8 @@ namespace FFPACK {
 			for (size_t i=0;i<_size;i++)
 				FFLAS::finit(_rns->_field_rns[i], n, A+i*rda, 1);
 
-			delete[] Gamma;
-			delete[] alpha;
+			FFLAS::fflas_delete( Gamma);
+			FFLAS::fflas_delete( alpha);
 
 	 	}
 
@@ -235,9 +235,9 @@ namespace FFPACK {
 			for (size_t i=0;i<_size;i++)
 				FFLAS::finit(_rns->_field_rns[i], m, n, A+i*rda, lda);
 
-			delete[] Gamma;
-			delete[] alpha;
-			delete[] z;
+			FFLAS::fflas_delete( Gamma);
+			FFLAS::fflas_delete( alpha);
+			FFLAS::fflas_delete( z);
 		}
 
 	}; // end of class RNSIntegerMod

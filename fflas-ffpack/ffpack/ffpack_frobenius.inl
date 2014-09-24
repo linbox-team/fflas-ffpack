@@ -146,8 +146,12 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			// std::cerr << "FAIL in preconditionning phase:"
 			//           << " degree sequence is not monotonically not increasing"
 			// 	     << std::endl;
-			delete[] rp; FFLAS::fflas_delete (K);
-			delete[] Pk; delete[] Qk; delete[] dA; delete[] dK;
+			FFLAS::fflas_delete( rp);
+			FFLAS::fflas_delete (K);
+			FFLAS::fflas_delete( Pk);
+			FFLAS::fflas_delete( Qk);
+			FFLAS::fflas_delete(dA);
+			FFLAS::fflas_delete( dK);
 			throw CharpolyFailed();
 		}
 		dK[k] = dold = d;
@@ -199,9 +203,14 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			for (size_t j = offset+1; j<R; ++j)
 				if (!F.isZero(*(K4 + i*ldk + j))){
 					//std::cerr<<"FAIL C != 0 in preconditionning"<<std::endl;
-					FFLAS::fflas_delete (K3); FFLAS::fflas_delete (K4); FFLAS::fflas_delete (K);
-					delete[] Pk; delete[] Qk; delete[] rp;
-					delete[] dA; delete[] dK;
+					FFLAS::fflas_delete (K3);
+					FFLAS::fflas_delete (K4);
+					FFLAS::fflas_delete (K);
+					FFLAS::fflas_delete( Pk);
+					FFLAS::fflas_delete(Qk);
+					FFLAS::fflas_delete( rp);
+					FFLAS::fflas_delete( dA);
+					FFLAS::fflas_delete( dK);
 					throw CharpolyFailed();
 				}
 			Polynomial P (dK [i]+1);
@@ -220,9 +229,14 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		for (size_t i=0; i<nb_full_blocks + 1; ++i)
 			for (size_t j=R; j<N; ++j){
 				if (!F.isZero( *(K4+i*ldk+j) )){
-					FFLAS::fflas_delete (K3); FFLAS::fflas_delete (K4); FFLAS::fflas_delete (K);
-					delete[] Pk; delete[] Qk; delete[] rp;
-					delete[] dA; delete[] dK;
+					FFLAS::fflas_delete (K3);
+					FFLAS::fflas_delete (K4);
+					FFLAS::fflas_delete (K);
+					FFLAS::fflas_delete( Pk);
+					FFLAS::fflas_delete( Qk);
+					FFLAS::fflas_delete( rp);
+					FFLAS::fflas_delete( dA);
+					FFLAS::fflas_delete( dK);
 					throw CharpolyFailed();
 				}
 			}
@@ -278,8 +292,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		frobeniusForm.merge(polyList);
 	}
 
-	delete[] Pk;
-	delete[] Qk;
+	FFLAS::fflas_delete( Pk);
+	FFLAS::fflas_delete( Qk);
 	size_t deg = c+1;
 	for (size_t i=0; i<Mk; ++i)
  		dA[i] = dK[i];
@@ -315,14 +329,24 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		try{
 			RR = SpecRankProfile (F, Ma, Ncurr, Arp, ldarp, deg-1, rp);
 		} catch (CharpolyFailed){
-			FFLAS::fflas_delete (Arp); FFLAS::fflas_delete (Ac); FFLAS::fflas_delete (K); FFLAS::fflas_delete (K3);
-			delete[] rp; delete[] dA; delete[] dK;
+			FFLAS::fflas_delete (Arp);
+			FFLAS::fflas_delete (Ac);
+			FFLAS::fflas_delete (K);
+			FFLAS::fflas_delete (K3);
+			FFLAS::fflas_delete( rp);
+			FFLAS::fflas_delete( dA);
+			FFLAS::fflas_delete( dK);
 			throw CharpolyFailed();
 		}
 		if (RR < Ncurr){
 			//std::cerr<<"FAIL RR<Ncurr"<<std::endl;
-			FFLAS::fflas_delete (Arp); FFLAS::fflas_delete (Ac); FFLAS::fflas_delete (K); FFLAS::fflas_delete (K3);
-			delete[] rp; delete[] dA; delete[] dK;
+			FFLAS::fflas_delete (Arp);
+			FFLAS::fflas_delete (Ac);
+			FFLAS::fflas_delete (K);
+			FFLAS::fflas_delete (K3);
+			FFLAS::fflas_delete( rp);
+			FFLAS::fflas_delete( dA);
+			FFLAS::fflas_delete( dK);
 			throw CharpolyFailed();
 		}
 
@@ -337,8 +361,13 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			do {gg++; rp_val++; it_idx++;}
 			while ( /*(gg<Ncurr ) &&*/ (rp[gg] == rp_val) && (it_idx < deg ));
 			if ((block_idx)&&(it_idx > dK[block_idx-1])){
-				FFLAS::fflas_delete (Arp); FFLAS::fflas_delete (Ac); FFLAS::fflas_delete (K); FFLAS::fflas_delete (K3);
-				delete[] rp; delete[] dA; delete[] dK;
+				FFLAS::fflas_delete (Arp);
+				FFLAS::fflas_delete (Ac);
+				FFLAS::fflas_delete (K);
+				FFLAS::fflas_delete (K3);
+				FFLAS::fflas_delete( rp);
+				FFLAS::fflas_delete( dA);
+				FFLAS::fflas_delete(dK);
 				throw CharpolyFailed();
 				//std::cerr<<"FAIL d non decroissant"<<std::endl;
 				//exit(-1);
@@ -423,8 +452,8 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			Mk, 0,(int) Mk, K+(Ncurr-Mk)*ldk,ldk, P);
 		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ncurr-Mk, Mk, Mk,F.mOne,
 		       K3, ldk, K+(Ncurr-Mk)*ldk,ldk,F.one, K, ldk);
-		delete[] P;
-		delete[] Q;
+		FFLAS::fflas_delete( P);
+		FFLAS::fflas_delete( Q);
 
 		// K <- PK^T K
 		Protected::DeCompressRows (F, Mk, Ncurr, K, ldk, Arp, ldarp, dK, Mk);
@@ -455,15 +484,20 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			for (size_t j=0; j<nb_full_blocks+1; ++j){
 				if (!F.isZero( *(K+i*ldk+j) )){
 					//std::cerr<<"FAIL C != 0"<<std::endl;
-					delete[] rp; FFLAS::fflas_delete (Arp); FFLAS::fflas_delete (Ac);
-					FFLAS::fflas_delete (K); FFLAS::fflas_delete (K3);
-					delete[] dA; delete[] dK;
+					FFLAS::fflas_delete( rp);
+					FFLAS::fflas_delete (Arp);
+					FFLAS::fflas_delete (Ac);
+					FFLAS::fflas_delete (K);
+					FFLAS::fflas_delete (K3);
+					FFLAS::fflas_delete( dA);
+					FFLAS::fflas_delete( dK);
 					throw CharpolyFailed();
 				}
 			}
 
 		// A <- K
-		FFLAS::fflas_delete (Ac); FFLAS::fflas_delete (Arp);
+		FFLAS::fflas_delete (Ac);
+		FFLAS::fflas_delete (Arp);
 		Ac = FFLAS::fflas_new (F, Ncurr, Mk);
 		ldac = Mk;
 		Arp = FFLAS::fflas_new (F, Ncurr, Mk);
@@ -481,8 +515,13 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	for (size_t j=0; j < dK[0]; ++j)
 		F.neg( Pl[j], *(K  + j*ldk));
 	frobeniusForm.push_front(Pl);
-	delete[] rp; FFLAS::fflas_delete (Arp); FFLAS::fflas_delete (Ac); FFLAS::fflas_delete (K); FFLAS::fflas_delete (K3);
-	delete[] dA; delete[] dK;
+	FFLAS::fflas_delete( rp);
+	FFLAS::fflas_delete (Arp);
+	FFLAS::fflas_delete (Ac);
+	FFLAS::fflas_delete (K);
+	FFLAS::fflas_delete (K3);
+	FFLAS::fflas_delete( dA);
+	FFLAS::fflas_delete( dK);
 	return frobeniusForm;
 }
 

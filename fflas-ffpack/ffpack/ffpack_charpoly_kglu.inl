@@ -256,10 +256,10 @@ namespace FFPACK {
 			FFLAS::fflas_delete (U);
 			FFLAS::fflas_delete (V);
 			FFLAS::fflas_delete (B);
-			delete[] P;
-			delete[] Q;
-			delete[] dv;
-			delete[] dold;
+			FFLAS::fflas_delete( P);
+			FFLAS::fflas_delete( Q);
+			FFLAS::fflas_delete( dv);
+			FFLAS::fflas_delete( dold);
 
 			k = Protected::updateD( F, d, k, m);
 			// Constructing the CharPoly
@@ -272,7 +272,7 @@ namespace FFPACK {
 				charp.push_back( *minP );
 			}
 			FFLAS::fflas_delete (X);
-			delete[] d;
+			FFLAS::fflas_delete( d);
 			return charp;
 		}
 

@@ -64,7 +64,7 @@ namespace FFPACK {
 		// LUP factorization of the Krylov Base Matrix
 		k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, X, ldx, U, P, true,
 					MinTag, kg_mc, kg_mb, kg_j);
-		//delete[] U;
+		//FFLAS::fflas_delete( U);
 		minP.resize(k+1);
 		minP[k] = F.one;
 		if ( (k==1) && F.isZero(*(X+ldx))){ // minpoly is X

@@ -400,11 +400,11 @@ namespace FFLAS { namespace BLAS3 {
 						// Field F2 (F.characteristic()*F.characteristic());
 						// FFLAS::finit(F2,m,n,C,ldc);
 
-						delete[] P1;
-						delete[] P2;
-						delete[] S1;
-						delete[] T1;
-						delete[] eA12 ;
+						FFLAS::fflas_delete( P1);
+						FFLAS::fflas_delete( P2);
+						FFLAS::fflas_delete( S1);
+						FFLAS::fflas_delete( T1);
+						FFLAS::fflas_delete( eA12 );
 
 						return C;
 

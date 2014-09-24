@@ -109,9 +109,9 @@ int main(int argc, char** argv) {
 	  time+=chrono.usertime();
 
       std::cerr << *A << ' ' << *B << ' ' << *C << std::endl;
-	  delete[] A;
-	  delete[] B;
-	  delete[] C;
+	  FFLAS::fflas_delete( A);
+	  FFLAS::fflas_delete( B);
+	  FFLAS::fflas_delete( C);
   }
 
   std::cout<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl;

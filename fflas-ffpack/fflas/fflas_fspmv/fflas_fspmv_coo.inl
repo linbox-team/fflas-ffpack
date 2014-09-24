@@ -140,7 +140,7 @@ namespace FFLAS { /*  COO */
 
 			if ( b != 0) {
 				faddin(F,m,yd,1,y,1);
-				delete[] yd ;
+				FFLAS::fflas_delete( yd );
 			}
 #else
 			if ( b != 1) {
@@ -202,7 +202,7 @@ namespace FFLAS { /*  COO */
 			 &z_, const_cast<float*>(x), yd);
 			if ( b != 0) {
 				faddin(F,m,yd,1,y,1);
-				delete[] yd ;
+				FFLAS::fflas_delete( yd );
 			}
 #else
 			{

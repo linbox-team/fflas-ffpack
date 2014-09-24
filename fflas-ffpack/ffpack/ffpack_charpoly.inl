@@ -181,7 +181,7 @@ namespace FFPACK {
 				nbfac++;
 				charp.push_front (minP);
 				if (k==Ncurr){
-					delete[] P;
+					FFLAS::fflas_delete( P);
 					return charp;
 				}
 				size_t Nrest = (size_t)(Ncurr-k);
@@ -201,7 +201,7 @@ namespace FFPACK {
 				// X2_ = X2_ . P^t (=  (P A^t P^t)2_)
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					Nrest, 0, (int)k, X21, ldx, P);
-				delete[] P ;
+				FFLAS::fflas_delete( P );
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper,
 				      FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, (size_t)k,
@@ -255,7 +255,7 @@ namespace FFPACK {
 				if (k==N){
 					charp.clear();
 					charp.push_front(*minP); // CharPoly = MinPoly
-					delete[] P;
+					FFLAS::fflas_delete( P);
 					return charp;
 				}
 
@@ -339,7 +339,7 @@ namespace FFPACK {
 				// Recursive call on X22
 				LUKrylov_KGFast (F, charp, Nrest, A2, Nrest, X22, ldx);
 				charp.push_front (*minP);
-				delete[] P;
+				FFLAS::fflas_delete( P);
 				FFLAS::fflas_delete (A2);
 				return charp;
 			}

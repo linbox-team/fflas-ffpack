@@ -81,8 +81,8 @@ namespace FFPACK {
 						* kg_mc = mc;
 						* kg_mb = mb;
 						* kg_j = j;
-						delete[] P;
-						delete[] Q;
+						FFLAS::fflas_delete( P);
+						FFLAS::fflas_delete( Q);
 						FFLAS::fflas_delete (LUP);
 						return -1;
 
@@ -99,8 +99,8 @@ namespace FFPACK {
 					FFLAS::fflas_delete (LUP);
 					applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, mb, 0, (int)mc, B, lda, P );
 
-					delete[] P;
-					delete[] Q;
+					FFLAS::fflas_delete( P);
+					FFLAS::fflas_delete( Q);
 #if 0
 					std::cerr<<"Apres B1<-C1^-1"<<std::endl;
 					write_field( F, std::cerr, A, N, N, lda );

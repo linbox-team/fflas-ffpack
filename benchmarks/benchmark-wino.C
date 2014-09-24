@@ -89,8 +89,8 @@ void launch_wino(const Field  &F,
 	std::cout << std::endl;
 	std::cout << std::endl;
 
-	delete[] A;
-	delete[] C;
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( C);
 }
 
     //using namespace LinBox;

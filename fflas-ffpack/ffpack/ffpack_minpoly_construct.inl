@@ -92,7 +92,7 @@ namespace FFPACK {
 		typename Field::Element_ptr m= FFLAS::fflas_new (F,k,1);
 		fcopy( F, k, X+k*N, 1, m, 1);
 		ftrsv( F, FflasLower, FflasTrans, FflasNonUnit, k, X, N, m, 1);
-		//delete[] X;
+		//FFLAS::fflas_delete( X);
 		it = minP.begin();
 		for (j=0; j<k; ++j, it++){
 			F.neg(*it, m[j]);

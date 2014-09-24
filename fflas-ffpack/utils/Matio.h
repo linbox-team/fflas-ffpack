@@ -140,7 +140,7 @@ typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,i
 		if (system(UT))
 			printf("Error uncompressing file\n");
 	if (UT != NULL)
-		delete[] UT;
+		FFLAS::fflas_delete( UT);
 	return X;
 }
 
@@ -173,7 +173,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 	if (FileDes != NULL) {
 		char * tmp = FFLAS::fflas_new<char>(200);// usigned long tni, tnj;
 		fscanf(FileDes,"%d %d %199s\n",tni, tnj, tmp) ;
-		delete[] tmp;
+		FFLAS::fflas_delete( tmp);
 		int n=*tni;
 		int p=*tnj;
 		int no2= n>>1;
@@ -225,7 +225,7 @@ void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
 
 	if (is_gzipped) system(UT);
 	if (UT != NULL)
-		delete[] UT ;
+		FFLAS::fflas_delete( UT );
 }
 
 // Displays a matrix

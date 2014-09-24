@@ -153,7 +153,7 @@ namespace FFLAS { /*  CSR */
 			(&transa, &m_, const_cast<double*>(dat), const_cast<index_t*>(st) , const_cast<index_t*>(col), const_cast<double*>(x), yd);
 			if ( b != 0) {
 				faddin(F,m,yd,1,y,1);
-				delete[] yd ;
+				FFLAS::fflas_delete( yd );
 			}
 #else
 			for (size_t i = 0 ; i < m ; ++i) {
@@ -207,7 +207,7 @@ namespace FFLAS { /*  CSR */
 			(&transa, &m_, const_cast<float*>(dat), const_cast<index_t*>(st), const_cast<index_t*>(col), const_cast<float*>(x), yd);
 			if ( b != 0) {
 				faddin(F,m,yd,1,y,1);
-				delete[] yd ;
+				FFLAS::fflas_delete( yd );
 			}
 #else
 			for (size_t i = 0 ; i < m ; ++i) {
