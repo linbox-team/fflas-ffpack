@@ -34,6 +34,7 @@
 template<>
 struct Simd128_impl<true, true, true, 4> {
 
+#if defined(__FFLASFFPACK_USE_SIMD)
 	using vect_t = __m128i;
 
 	using scalar_t = int32_t;
@@ -84,7 +85,6 @@ struct Simd128_impl<true, true, true, 4> {
 		return _mm_set_epi32(x4, x3, x2, x1);
 	}
 
-
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
 	{
 		return _mm_add_epi32(a, b);
@@ -105,23 +105,23 @@ struct Simd128_impl<true, true, true, 4> {
 		return _mm_mul_epi32(a,b);
 	}
 
-	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return add(c,mul(a,b));
 	}
 
-	static INLINE vect_t maddin(vect_t & c, const vect_t a, const vect_t b)
+	static INLINE vect_t fmaddin(vect_t & c, const vect_t a, const vect_t b)
 	{
-		return c = madd(c,a,b);
+		return c = fmadd(c,a,b);
 	}
 
-	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(c,mul(a,b));
 	}
 
 
-	static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(mul(a,b),c);
 	}
@@ -201,23 +201,25 @@ struct Simd128_impl<true, true, true, 4> {
 		// TODO
 	}
 
-	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return add(mulx(a, b),c);
 	}
 
-	static INLINE vect_t maddxin(vect_t & c, const vect_t a, const vect_t b)
+	static INLINE vect_t fmaddxin(vect_t & c, const vect_t a, const vect_t b)
 	{
-		return c = maddx(c,a,b);
+		return c = fmaddx(c,a,b);
 	}
 
+#else
+#error "You need SSE instructions to perform 128 bits operations on int64"
+#endif
 
 } ;
 
 // uint32_t
 template<>
-struct Simd128_impl<true, true, false, 4>
-{
+struct Simd128_impl<true, true, false, 4> {
 
 	// static void hello()
 	// {

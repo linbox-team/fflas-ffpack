@@ -107,23 +107,23 @@ struct Simd128_impl<true, true, true, 8> {
 		FFLASFFPACK_abort("The simd mul function does not make sense, rethink your code :)");
 	}
 
-	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return add(c,mul(a,b));
 	}
 
-	static INLINE vect_t maddin(vect_t & c, const vect_t a, const vect_t b)
+	static INLINE vect_t fmaddin(vect_t & c, const vect_t a, const vect_t b)
 	{
-		return c = madd(c,a,b);
+		return c = fmadd(c,a,b);
 	}
 
-	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(c,mul(a,b));
 	}
 
 
-	static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(mul(a,b),c);
 	}
@@ -222,14 +222,14 @@ struct Simd128_impl<true, true, true, 8> {
 		return _mm_mul_epi32(a,b);
 	}
 
-	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return add(mulx(a, b),c);
 	}
 
-	static INLINE vect_t maddxin(vect_t & c, const vect_t a, const vect_t b)
+	static INLINE vect_t fmaddxin(vect_t & c, const vect_t a, const vect_t b)
 	{
-		return c = maddx(c,a,b);
+		return c = fmaddx(c,a,b);
 	}
 
 #else

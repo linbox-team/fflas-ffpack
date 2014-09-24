@@ -75,7 +75,7 @@ namespace FFLAS { namespace vectorised {
 		using simd = Simd<typename simdToType<SimdT>::type>;
 		Q = simd::mul(C, INVP);
 		Q = simd::floor(Q);
-		C = simd::nmadd(C,Q,P);
+		C = simd::fnmadd(C,Q,P);
 		Q = simd::greater(C, MAX);
 		T = simd::lesser(C, MIN);
 		Q = simd::vand(Q, NEGP);
@@ -347,7 +347,7 @@ namespace FFLAS { namespace vectorised {
 		Q = simd::mul(C,INVP);
 		C = simd::mul(C,ALPHA);
 		Q = simd::floor(Q);
-		C = simd::nmadd(C,Q,P);
+		C = simd::fnmadd(C,Q,P);
 		Q = simd::greater(C,MAX);
 		T = simd::lesser(C,MIN);
 		Q = simd::vand(Q,NEGP);
