@@ -91,8 +91,8 @@ namespace FFLAS { namespace details {
 		// pack rows by group of k
 		for(size_t i=0;i<rows_by_k;i+=k)
 			for(size_t j=0;j<cols;j++)
-				for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
-				// for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
+				// for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
+				for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
 					// __m128i T0,T1;
 					// half_t T0,T1;
 					// T0 = simd::loadu_half(&X[i+l+  j*ldx]);
@@ -103,20 +103,21 @@ namespace FFLAS { namespace details {
 					// SSE_STORE(XX[p],T0);p+=2;
 					// simd::store_half(&XX[p],T1);p+=2;
 					// SSE_STORE(XX[p],T1);p+=2;
-					// simd::store(&XX[p],simd::loadu(&X[i+l+j*ldx]));
-				// }
+					simd::store(&XX[p],simd::loadu(&X[i+l+j*ldx]));
+				}
 		// the remaining rows are packed by group of StepA (if possible)
 		if (rows-rows_by_k>=StepA){
 			for(size_t j=0;j<cols;j++)
-				for (size_t l=0;l<StepA;l+=2,p+=2) XX[p]=X[rows_by_k+l+j*ldx];
-				// for (size_t l=0;l<StepA;l+=2){
+				// for (size_t l=0;l<StepA;l++,p++) XX[p]=X[rows_by_k+l+j*ldx];
+				for (size_t l=0;l<StepA;l+=simd::vect_size,p+=simd::vect_size){
 					// half_t T0;
 					// __m128i T0;
 					// T0 = simd::loadu_half(&X[rows_by_k+l+j*ldx]);
 					// SSE_LOADU(T0,X[rows_by_k+l+j*ldx]);
 					// simd::store_half(&XX[p],T0);p+=2;
 					// SSE_STORE(XX[p],T0);p+=2;
-				// }
+					simd::store(&XX[p],simd::loadu(&X[rows_by_k+l+j*ldx]));
+				}
 			rows_by_k+=StepA;
 		}
 		for(size_t i=rows_by_k;i<rows;i++)

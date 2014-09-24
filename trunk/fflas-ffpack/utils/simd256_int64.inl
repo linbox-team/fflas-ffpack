@@ -83,7 +83,7 @@ struct Simd256_impl<true, true, true, 8> {
 				       , const scalar_t x3, const scalar_t x4
 				       )
 	{
-		return _mm256_set_epi64(x4, x3, x2, x1);
+		return _mm256_set_epi64x(x4, x3, x2, x1);
 	}
 
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
@@ -196,13 +196,34 @@ struct Simd256_impl<true, true, true, 8> {
 
 	static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
 	{
-		return _mm256_and_si128(a, b);
+#ifdef __AVX2__
+		return _mm256_and_si256(a, b);
+#else
+	half_t aa = _mm256_extractf128_si256(a,0);
+		half_t ab = _mm256_extractf128_si256(a,1);
+		half_t ba = _mm256_extractf128_si256(b,0);
+		half_t bb = _mm256_extractf128_si256(b,1);
+		vect_t res ;
+		res=_mm256_insertf128_si256(res,_mm_or_si128(aa,ab),0);
+		res=_mm256_insertf128_si256(res,_mm_or_si128(ba,bb),1);
+
+#endif
 	}
 
 
 	static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
 	{
-		return _mm256_or_si128(a, b);
+#ifdef __AVX2__
+		return _mm256_or_si256(a, b);
+#else
+		half_t aa = _mm256_extractf128_si256(a,0);
+		half_t ab = _mm256_extractf128_si256(a,1);
+		half_t ba = _mm256_extractf128_si256(b,0);
+		half_t bb = _mm256_extractf128_si256(b,1);
+		vect_t res ;
+		res=_mm256_insertf128_si256(res,_mm_and_si128(aa,ab),0);
+		res=_mm256_insertf128_si256(res,_mm_and_si128(ba,bb),1);
+#endif
 	}
 
 
@@ -233,10 +254,11 @@ struct Simd256_impl<true, true, true, 8> {
 		return x0;
 
 #endif
+	}
 
 
 
-	static INLINE CONST vect_t mul(vect_t a, vect_t b)
+	static INLINE CONST vect_t mulx(vect_t a, vect_t b)
 	{
 
 #ifdef __AVX2__
@@ -255,20 +277,15 @@ struct Simd256_impl<true, true, true, 8> {
 	}
 
 
-	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
 	{
 
-#ifdef __AVX2__
-		return _mm256_add_epi64(c, __mm256_mul_epi32(a,b));
-#else
-		return add(mul(a,b),c);
-#endif
-
+		return add(mulx(a,b),c);
 	}
 
-	static INLINE  vect_t maddin( vect_t & c, const vect_t a, const vect_t b)
+	static INLINE  vect_t maddxin( vect_t & c, const vect_t a, const vect_t b)
 	{
-		return c = madd(c,a,b);
+		return c = maddx(c,a,b);
 	}
 
 
@@ -284,9 +301,9 @@ template<>
 struct Simd256_impl<true, true, false, 8> {
 
 	// static void hello()
-	{
-		std::cout << "uint64_t" << std::endl;
-	}
+	// {
+		// std::cout << "uint64_t" << std::endl;
+	// }
 
 
 } ;
