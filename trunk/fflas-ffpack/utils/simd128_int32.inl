@@ -77,10 +77,10 @@ struct Simd128_impl<true, true, true, 4> {
 		return _mm_set1_epi32(x);
 	}
 
-
-	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4)
+	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2
+				       , const scalar_t x3, const scalar_t x4
+				       )
 	{
-
 		return _mm_set_epi32(x4, x3, x2, x1);
 	}
 
@@ -95,48 +95,35 @@ struct Simd128_impl<true, true, true, 4> {
 		return a = add(a,b);
 	}
 
-
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b)
 	{
 		return _mm_sub_epi32(a, b);
 	}
-
 
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
 	{
 		return _mm_mul_epi32(a,b);
 	}
 
-
-
 	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
-
 	{
-
 		return add(c,mul(a,b));
-
 	}
-
 
 	static INLINE vect_t maddin(vect_t & c, const vect_t a, const vect_t b)
 	{
 		return c = madd(c,a,b);
 	}
 
-
 	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
-
 		return sub(c,mul(a,b));
-
 	}
 
 
 	static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b)
 	{
-
-		return _mm_sub_epi32(_mm_mul_epi32(a,b),c);
-
+		return sub(mul(a,b),c);
 	}
 
 
@@ -145,7 +132,6 @@ struct Simd128_impl<true, true, true, 4> {
 		return _mm_cmpeq_epi32(a, b);
 	}
 
-
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
 	{
 		return _mm_cmplt_epi32(a, b);
@@ -153,11 +139,8 @@ struct Simd128_impl<true, true, true, 4> {
 
 
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
-
 	{
-
 		return vor(eq(a,b),lesser(a,b));
-
 	}
 
 
@@ -173,35 +156,33 @@ struct Simd128_impl<true, true, true, 4> {
 	}
 
 
-	// static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
 	{
-		return _mm_and_epi32(a, b);
+		return _mm_and_si128(a, b);
 	}
 
 
-	// static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
 	{
-		return _mm_or_epi32(a, b);
+		return _mm_or_si128(a, b);
 	}
 
 
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
 	{
-
 		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
-
 	}
 
 
-	static INLINE CONST vect_t mullo(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1)
 	{
-		return _mm_mullo_epi32(a, b);
+		return _mm_mullo_epi16(x0, x1);
 	}
 
 
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b)
 	{
-
+		// _mm_mulhi_epi32 emul
 #pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		vect_t a1, a2, b1, b2;
 		a1 = set(0, _mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 1));
@@ -211,26 +192,26 @@ struct Simd128_impl<true, true, true, 4> {
 		a1 = _mm_mul_epi32(a1,b1);
 		a2 = _mm_mul_epi32(a2,b2);
 		return set(_mm_extract_epi32(a1,0),_mm_extract_epi32(a1,2),_mm_extract_epi32(b1,0),_mm_extract_epi32(b2,0));
-
 	}
 
 
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
 	{
-		return _mm_mul_epi32(a,b);
+		return _mm_mul_epi16(a,b);
 	}
-
 
 	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
 	{
+		return add(mulx(a, b),c);
+	}
 
-		return _mm_add_epi64(_mm_mul_epi32(a, b),c);
-
+	static INLINE vect_t maddxin(vect_t & c, const vect_t a, const vect_t b)
+	{
+		return c = maddx(c,a,b);
 	}
 
 
-}
-;
+} ;
 
 // uint32_t
 template<>

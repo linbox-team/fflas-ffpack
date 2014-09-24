@@ -101,8 +101,13 @@
 if (!(check)) {\
 throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); /*BB : should work on non gnu compilers too */ \
 }
+#define FFLASFFPACK_abort(msg) \
+{\
+throw FFPACK::Failure (__func__, __FILE__, __LINE__, msg); /*BB : should work on non gnu compilers too */ \
+}
 #else
 #define FFLASFFPACK_check(check) ((void) 0)
+#define FFLASFFPACK_abort(mst) ((void) 0)
 #endif
 
 
