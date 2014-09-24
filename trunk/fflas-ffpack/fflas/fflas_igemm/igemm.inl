@@ -83,9 +83,9 @@ namespace FFLAS { namespace Protected {
 			}
 		}
 
-		fflas_free(blockA);
-		fflas_free(blockB);
-		fflas_free(blockW);
+		fflas_delete(blockA);
+		fflas_delete(blockB);
+		fflas_delete(blockW);
 
 	}
 
