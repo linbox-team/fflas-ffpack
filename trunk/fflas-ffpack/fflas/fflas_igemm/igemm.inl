@@ -64,7 +64,7 @@ namespace FFLAS { namespace Protected {
 			const size_t actual_kc = std::min(k2+kc,depth)-k2;
 
 			// pack horizontal panel of B into sequential memory (L2 cache)
-			FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldc, actual_kc, cols);
+			FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
 
 			// For each mc x kc block of the lhs's vertical panel...
 			for(size_t i2=0; i2<rows; i2+=mc){
