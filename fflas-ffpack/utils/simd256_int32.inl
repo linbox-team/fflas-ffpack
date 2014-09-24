@@ -27,29 +27,21 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
-#define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
+#ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_int32_INL
+#define __FFLASFFPACK_fflas_ffpack_utils_simd256_int32_INL
 
-template<bool ArithType, bool Int, bool Signed, int Size>
-struct Simd256_impl;
+// int32_t
+template<>
+struct Simd256_impl<true, true, true, 4>{
+    // static void hello(){std::cout << "int32_t" << std::endl;}
+};
 
-
-#include "simd256_float.inl"
-#include "simd256_double.inl"
-
-#ifdef SIMD_INT
-// Trop d'instructions SSE manquantes pour les int8_t
-
-
-#include "simd256_int16.inl"
-#include "simd256_int32.inl"
-#include "simd256_int64.inl"
+// uint32_t
+template<>
+struct Simd256_impl<true, true, false, 4>{
+    // static void hello(){std::cout << "uint32_t" << std::endl;}
+};
 
 
-#endif //#ifdef SIMD_INT
+#endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_int32_INL
 
-template<class T>
-using Simd256 = Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
-
-
-#endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
