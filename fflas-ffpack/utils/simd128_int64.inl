@@ -34,6 +34,7 @@
 template<>
 struct Simd128_impl<true, true, true, 8> {
 
+#if defined(__FFLASFFPACK_USE_SIMD)
 	using vect_t = __m128i;
 	using half_t = __m128i;
 
@@ -45,7 +46,7 @@ struct Simd128_impl<true, true, true, 8> {
 
 	static INLINE CONST vect_t zero()
 	{
-		return _mm_setzero_si128 ();
+		return _mm_setzero_si128();
 	}
 
 
@@ -61,12 +62,6 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 
-	static INLINE PURE vect_t loadu_half(const scalar_t * const p)
-	{
-		return loadu(p) ;
-	}
-
-
 	static INLINE PURE store(const scalar_t * p, vect_t v)
 	{
 		_mm_store_si128(reinterpret_cast<vect_t *>(const_cast<scalar_t*>(p)), v);
@@ -79,25 +74,16 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 
-	static INLINE void storeu_half(const scalar_t * p, vect_t v)
-	{
-		storeu(p,v) ;
-	}
-
-	static INLINE void store_half(const scalar_t * p, vect_t v)
-	{
-		store(p,v) ;
-	}
-
 	static INLINE CONST vect_t set1(const scalar_t x)
 	{
 		return _mm_set1_epi64x(x);
 	}
 
+	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2
+				       )
 	{
 		return _mm_set_epi64(x2, x1);
 	}
-
 
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
 	{
@@ -109,10 +95,37 @@ struct Simd128_impl<true, true, true, 8> {
 		return a = add(a,b);
 	}
 
-
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b)
 	{
 		return _mm_sub_epi64(a, b);
+	}
+
+	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
+	{
+		// _mm_mul_epi64
+		// FFLASFFPACK_abort("not implemented yet");
+		FFLASFFPACK_abort("The simd mul function does not make sense, rethink your code :)");
+	}
+
+	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
+	{
+		return add(c,mul(a,b));
+	}
+
+	static INLINE vect_t maddin(vect_t & c, const vect_t a, const vect_t b)
+	{
+		return c = madd(c,a,b);
+	}
+
+	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b)
+	{
+		return sub(c,mul(a,b));
+	}
+
+
+	static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b)
+	{
+		return sub(mul(a,b),c);
 	}
 
 
@@ -121,57 +134,60 @@ struct Simd128_impl<true, true, true, 8> {
 		return _mm_cmpeq_epi64(a, b);
 	}
 
-
-	/* could do in 4.2 using cmp(eq-gt)_epi64 */
-
-	// static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
 	{
-		return _mm_cmplt_epi64(a, b);
+#ifdef __SSE4_2__
+		return _mm_cmpgt_epi64(b, a);
+#else
+		FFLASFFPACK_abort("not implemented yet");
+#endif
 	}
 
 
-	// static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
 	{
-		return _mm_cmple_epi64(a, b);
+		return vor(eq(a,b),lesser(a,b));
 	}
 
 
-	// static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
 	{
+#ifdef __SSE4_2__
 		return _mm_cmpgt_epi64(a, b);
+#else
+		// TODO
+		FFLASFFPACK_abort("not implemented yet");
+#endif
 	}
 
 
-	// static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
 	{
-		return _mm_cmpge_epi64(a, b);
+		return vor(eq(a,b),lesser(a,b));
 	}
 
 
-	// static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
 	{
-		return _mm_and_epi64(a, b);
+		return _mm_and_si128(a, b);
 	}
 
 
-	// static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
+	static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
 	{
-		return _mm_or_epi64(a, b);
+		return _mm_or_si128(a, b);
 	}
 
 
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
 	{
-
 		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1];
-
 	}
 
 
-	// XXX bug : x0 read-only
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1)
 	{
-
+		// _mm_mullo_epi32 emul
 #pragma warning "The simd mullo function is emulate, it may impact the performances."
 		// karatsuba
 		vect_t x2, x3, x4;
@@ -188,50 +204,40 @@ struct Simd128_impl<true, true, true, 8> {
 		x1_t = _mm_srli_epi64(x1_t, 32);
 		x0_t = _mm_add_epi64(x1_t, x0_t);
 		return x0_t;
-
 	}
 
 
-	static INLINE CONST vect_t mulhi(const vect_t x0, const vect_t x1)
+	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b)
 	{
-
+		// _mm_mulhi_epi64 emul
 #pragma warning "The simd mulhifunction is emulate, it may impact the performances."
 		// karatsuba
 		// TODO
-
+		FFLASFFPACK_abort("not implemented yet");
 	}
 
 
-	static INLINE CONST vect_t mulx(const vect_t x0, const vect_t x1)
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
 	{
-
-#pragma warning "The simd mulx function does not make sense, rethink your code :)"
-
+		return _mm_mul_epi32(a,b);
 	}
 
-
-	// I NEED THOSE
-	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
 	{
-
-		return _mm_add_epi64(c,_mm_mul_epi32(a,b));
-
+		return add(mulx(a, b),c);
 	}
 
-	static INLINE vect_t maddin(vect_t & c, const vect_t a, const vect_t b)
+	static INLINE vect_t maddxin(vect_t & c, const vect_t a, const vect_t b)
 	{
-		return c = madd(c,a,b);
+		return c = maddx(c,a,b);
 	}
 
 
-
-}
-;
+} ;
 
 // uint64_t
 template<>
-struct Simd128_impl<true, true, false, 8>
-{
+struct Simd128_impl<true, true, false, 8> {
 
 	// static void hello()
 	{

@@ -638,7 +638,7 @@ template<class _Element, bool _Simd =
 				}
 		}
 #else
-			FFLASFFPACK_check(false);
+			FFLASFFPACK_abort("you should have SIMD...");
 #endif
 		}else{
 
