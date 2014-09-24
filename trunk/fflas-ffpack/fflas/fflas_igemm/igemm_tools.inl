@@ -65,16 +65,15 @@ namespace FFLAS { namespace details {
 		// pack by k columns
 		for(size_t j=0;j<cols_by_k;j+=k){
 			for(size_t i=0;i<rows;i++)
+				//! @bug this is fcopy
 				for (size_t l=0;l<k;l++,p++) {
-					// std::cout << p << ',' << (i+(j+l)*ldx) << std::endl;
 					XX[p]=X[i+(j+l)*ldx];
 				}
 		}
 		// the remaining columns are not packed
 		for(size_t j=cols_by_k;j<cols;j++)
+			//! @bug this is fcopy
 			for(size_t i=0;i<rows;i++,p++) {
-				// std::cout << p << ',' << i+j*ldx << std::endl;
-				// std::cout << X[i+j*ldx] << std::endl;
 				XX[p]=X[i+j*ldx];
 			}
 	}
@@ -92,6 +91,7 @@ namespace FFLAS { namespace details {
 		for(size_t i=0;i<rows_by_k;i+=k)
 			for(size_t j=0;j<cols;j++)
 				// for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
+				//! @bug this is fcopy
 				for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
 					// __m128i T0,T1;
 					// half_t T0,T1;
@@ -120,10 +120,12 @@ namespace FFLAS { namespace details {
 				}
 			rows_by_k+=StepA;
 		}
-		for(size_t i=rows_by_k;i<rows;i++)
+		for(size_t i=rows_by_k;i<rows;i++) {
+			//! @bug this is fcopy
 			for(size_t j=0;j<cols;j++,p++){
 				XX[p]=X[i+j*ldx];
 			}
+		}
 
 	}
 
