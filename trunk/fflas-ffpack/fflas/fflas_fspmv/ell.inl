@@ -54,7 +54,7 @@ namespace FFLAS { /*  ELL */
 		size_t n = 0;
 		size_t ld = 0;
 #ifdef __FFLASFFPACK_USE_SIMD
-		size_t chunk = Simd<_Element>::vect_size;
+		size_t chunk = Simd<_Element >::vect_size;
 #else
 		size_t chunk = 0;
 #endif // SiMD
@@ -83,14 +83,15 @@ namespace FFLAS { /*  ELL */
 		_Element cst = 1;
 	};
 
-}
+} // FFLAS
 
 namespace FFLAS { namespace details {
 
 	// y = A x + b y ; (generic)
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(
+	inline void fspmv(
 			     const Field& F,
+			     // const FFLAS_TRANSPOSE tA,
 			     const size_t m,
 			     const size_t n,
 			     const size_t ld,
@@ -98,8 +99,8 @@ namespace FFLAS { namespace details {
 			     const index_t * col,
 			     const typename Field::Element *  dat,
 			     const typename Field::Element * x ,
-			     typename Field::Element * y,
-			     FieldCategories::GenericTag
+			     typename Field::Element * y
+			     , FieldCategories::GenericTag
 			    )
 	{
 		// std::cout << "details: generic " << std::endl;
@@ -126,7 +127,7 @@ namespace FFLAS { namespace details {
 
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(
+	inline void fspmv(
 			     const Field & F,
 			     // const FFLAS_TRANSPOSE tA,
 			     const size_t m,
@@ -136,8 +137,8 @@ namespace FFLAS { namespace details {
 			     const index_t * col,
 			     const typename Field::Element *  dat,
 			     const typename Field::Element * x ,
-			     typename Field::Element * y,
-			     FieldCategories::UnparametricTag
+			     typename Field::Element * y
+			     , FieldCategories::UnparametricTag
 			    )
 	{
 		// std::cout << "details: double" << std::endl;
@@ -150,7 +151,7 @@ namespace FFLAS { namespace details {
 		}
 		else {
 #ifdef __FFLASFFPACK_USE_SIMD
-			using simd = Simd<typename Field::Element>;
+			using simd = Simd<typename Field::Element >;
 			using vect_t = typename simd::vect_t;
 			size_t end = (m%chunk == 0)? m : m+m%chunk;
 			vect_t X,Y,D ;
@@ -180,9 +181,8 @@ namespace FFLAS { namespace details {
 
 
 	// delayed by kmax
-	//! @bug check field is M(B)<f|d>
 	template<class Field, bool simd_true >
-	inline void sp_fgemv(
+	inline void fspmv(
 			     const Field& F,
 			     // const FFLAS_TRANSPOSE tA,
 			     const size_t m,
@@ -219,7 +219,7 @@ namespace FFLAS { namespace details {
 		else {
 			size_t end = (m%chunk == 0)? m : m+m%chunk;
 #ifdef __FFLASFFPACK_USE_SIMD
-			using simd = Simd<typename Field::Element>;
+			using simd = Simd<typename Field::Element >;
 			using vect_t = typename simd::vect_t;
 			vect_t X, Y, D, C, Q, TMP;
 			double p = (typename Field::Element)F.characteristic();
@@ -298,52 +298,49 @@ namespace FFLAS {
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
 	template<class Field, bool simd_true >
-	inline void sp_fgemv(
+	inline void fspmv(
 			     const Field& F,
+			     // const FFLAS_TRANSPOSE tA,
 			     const ELL_sub<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
+			     const VECT<typename Field::Element > & x,
 			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y
+			     VECT<typename Field::Element > & y
 			    )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
-		sp_fgemv( F, A, x, b, y, typename FieldTraits<Field>::category());
+		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F,
+	inline void fspmv(const Field & F,
 			     const ELL_sub<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
-			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y,
+			     const VECT<typename Field::Element > & x,
+			     VECT<typename Field::Element > & y,
 			     FieldCategories::ModularTag)
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
+		details::fspmv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 		finit(F,A.m,y.dat,1);
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F,
+	inline void fspmv(const Field & F,
 			     const ELL_sub<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
-			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y,
+			     const VECT<typename Field::Element > & x,
+			     VECT<typename Field::Element > & y,
 			     FieldCategories::UnparametricTag)
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag() );
+		details::fspmv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag() );
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F,
+	inline void fspmv(const Field & F,
 			     const ELL_sub<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
-			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y,
+			     const VECT<typename Field::Element > & x,
+			     VECT<typename Field::Element > & y,
 			     FieldCategories::GenericTag)
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag() );
+		details::fspmv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag() );
 	}
-
 
 	/* *** */
 	/* ELL */
@@ -352,89 +349,91 @@ namespace FFLAS {
 	// y = A x + b y ; (generic)
 	// reductions are delayed.
 	template<class Field, bool simd_true>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL<typename Field::Element, simd_true> & A,
-		      const VECT<typename Field::Element> & x,
+		      const VECT<typename Field::Element > & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<typename Field::Element > & y
 		     )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
-		sp_fgemv(F,A,x,y, typename FieldTraits<Field>::category());
-
+		fspmv(F,A,x,y, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field, bool simd_true>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL<typename Field::Element, simd_true> & A,
-		      const VECT<typename Field::Element> & x,
-		      // const typename Field::Element & b,
-		      VECT<typename Field::Element> & y,
-		      FieldCategories::GenericTag
+		      const VECT<typename Field::Element > & x,
+		      VECT<typename Field::Element > & y
+		      , FieldCategories::GenericTag
 		     )
 	{
-		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
+		details::fspmv<simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
 
 	template<class Field, bool simd_true>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL<typename Field::Element, simd_true> & A,
-		      const VECT<typename Field::Element> & x,
-		      // const typename Field::Element & b,
-		      VECT<typename Field::Element> & y,
-		      FieldCategories::UnparametricTag
+		      const VECT<typename Field::Element > & x,
+		      VECT<typename Field::Element > & y
+		      , FieldCategories::UnparametricTag
 		     )
 	{
-		details::sp_fgemv<simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
+		details::fspmv<simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 	}
 
 	template<class Field, bool simd_true>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const ELL<typename Field::Element, simd_true> & A,
-		      const VECT<typename Field::Element> & x,
-		      // const typename Field::Element & b,
-		      VECT<typename Field::Element> & y,
-		      FieldCategories::ModularTag
+		      const VECT<typename Field::Element > & x,
+		      VECT<typename Field::Element > & y
+		      , FieldCategories::ModularTag
 		     )
 	{
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, (index_t) kmax);
+		details::fspmv<Field,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, (index_t) kmax);
 	}
-
 
 
 } // FFLAS
 
 namespace FFLAS { namespace details { /*  ZO */
-	template<class Field, bool simd_true>
-	inline void sp_fgemv_zo(
-				const Field& F,
+
+	// generic
+	template<class Field, bool add, bool simd_true>
+	inline void fspmv_zo(
+				const Field & F,
+				// const FFLAS_TRANSPOSE tA,
 				const size_t m,
 				const size_t n,
 				const size_t ld,
 				const size_t chunk,
 				const index_t * col,
-				const typename Field::Element *  dat,
 				const typename Field::Element * x ,
-				typename Field::Element * y,
-				FieldCategories::GenericTag
+				typename Field::Element * y
+				, FieldCategories::GenericTag
 			       )
 	{
-		// std::cout << "details: generic " << std::endl;
 		if(!simd_true)
 		{
 			for (size_t i = 0 ; i < m ; ++i) {
-				// XXX can be delayed
-				for (index_t j = 0 ; j < ld ; ++j) {
-					F.addin(y[i],x[col[i*ld+j]]);
+				if (add == true) {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						F.addin(y[i],x[col[i*ld+j]]);
+					}
+				}
+				else {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						F.subin(y[i],x[col[i*ld+j]]);
+					}
 				}
 			}
 		}
@@ -443,16 +442,22 @@ namespace FFLAS { namespace details { /*  ZO */
 			size_t end = (m % chunk == 0) ? m : m + m%chunk;
 			for ( size_t i = 0 ; i < end/chunk ; ++i ) {
 				for (index_t j = 0 ; j < ld ; ++j) {
-					for(size_t k = 0 ; k < chunk ; ++k)
-						F.addin(y[i*chunk+k], x[col[i*chunk*ld+j*chunk+k]]);
+					if (add == true) {
+						for(size_t k = 0 ; k < chunk ; ++k)
+							F.addin(y[i*chunk+k], x[col[i*chunk*ld+j*chunk+k]]);
+					}
+					else {
+						for(size_t k = 0 ; k < chunk ; ++k)
+							F.subin(y[i*chunk+k], x[col[i*chunk*ld+j*chunk+k]]);
+					}
 				}
 			}
 		}
 	}
 
 
-	template<class Field, bool simd_true>
-	inline void sp_fgemv_zo(
+	template<class Field, bool add, bool simd_true>
+	inline void fspmv_zo(
 				const Field & F,
 				// const FFLAS_TRANSPOSE tA,
 				const size_t m,
@@ -460,32 +465,45 @@ namespace FFLAS { namespace details { /*  ZO */
 				const size_t ld,
 				const size_t chunk,
 				const index_t * col,
-				const typename Field::Element*  dat,
-				const typename Field::Element* x ,
-				typename Field::Element * y,
-				FieldCategories::UnparametricTag
+				const typename Field::Element * x ,
+				typename Field::Element * y
+				, FieldCategories::UnparametricTag
 			       )
 	{
-		// std::cout << "details: double" << std::endl;
 		if (!simd_true) {
 			for ( size_t i = 0 ;  i < m   ; ++i ) {
-				for (index_t j = 0 ; j < ld ; ++j) {
-					y[i] += x[col[i*ld+j]];
+				if (add == true) {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						y[i] += x[col[i*ld+j]];
+					}
+				}
+				else {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						y[i] += x[col[i*ld+j]];
+					}
 				}
 			}
 		}
 		else {
 #ifdef __FFLASFFPACK_USE_SIMD
-			using simd = Simd<typename Field::Element>;
+			using simd = Simd<typename Field::Element >;
 			using vect_t = typename simd::vect_t;
 			size_t end = (m%chunk == 0)? m : m+m%chunk;
 			vect_t X,Y,D ;
 			for( size_t i = 0 ; i < end/chunk ; ++i ) {
 
 				Y = simd::load(y+i*simd::vect_size);
-				for (index_t j = 0 ; j < ld ; ++j) {
-					X = simd::gather(x,col+i*chunk*ld+j*chunk);
-					Y = simd::add(Y,X);
+				if (add == true) {
+					for (index_t j = 0 ; j < ld ; ++j) {
+						X = simd::gather(x,col+i*chunk*ld+j*chunk);
+						Y = simd::add(Y,X);
+					}
+				}
+				else{
+					for (index_t j = 0 ; j < ld ; ++j) {
+						X = simd::gather(x,col+i*chunk*ld+j*chunk);
+						Y = simd::sub(Y,X);
+					}
 				}
 				simd::store(y+i*chunk,Y);
 			}
@@ -493,15 +511,23 @@ namespace FFLAS { namespace details { /*  ZO */
 			size_t end = (m%chunk == 0)? m : m+m%chunk;
 			for( size_t i = 0 ; i < end/chunk ; ++i ) {
 				for (index_t j = 0 ; j < ld ; ++j) {
-					for(size_t k = 0 ; k < chunk ; ++k)
-					{
-						y[i*chunk+k] += x[col[i*chunk*ld+j*chunk+k]];
+					if (add == true) {
+						for(size_t k = 0 ; k < chunk ; ++k) {
+							y[i*chunk+k] += x[col[i*chunk*ld+j*chunk+k]];
+						}
+					}
+					else  {
+						for(size_t k = 0 ; k < chunk ; ++k) {
+							y[i*chunk+k] -= x[col[i*chunk*ld+j*chunk+k]];
+						}
 					}
 				}
 			}
 #endif
 		}
 	}
+
+
 } // details
 } // FFLAS
 
@@ -514,53 +540,90 @@ namespace FFLAS { /*  ZO */
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
 	template<class Field, bool simd_true >
-	inline void sp_fgemv(
-			     const Field& F,
+	inline void fspmv(
+			     const Field & F,
+			     // const FFLAS_TRANSPOSE tA,
 			     const ELL_ZO<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
+			     const VECT<typename Field::Element > & x,
 			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y
+			     VECT<typename Field::Element > & y
 			    )
 	{
-		sp_spmv(F, A, x, b, y, typename FieldTraits<Field>::category() );
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F,
-			     const ELL_ZO<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
-			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y,
-			     FieldCategories::GenericTag)
+	inline void fspmv(
+			     const Field & F,
+			     // const FFLAS_TRANSPOSE tA,
+			     const ELL_ZO<typename Field::Element, simd_true > & A,
+			     const VECT<typename Field::Element > & x,
+			     VECT<typename Field::Element > & y
+			     , FieldCategories::GenericTag
+			    )
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
-		fscalin(F, A.m, A.cst, y.dat, 1);
+		if (A.cst == F.one) {
+			details::fspmv<Field,true,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+		}
+		else if (A.cst == F.mOne) {
+			details::fspmv<Field,false,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+		}
+		else {
+			typename Field::Element * xd = fflas_new<typename Field::Element >(A.n) ;
+			fscal(F,A.n,A.cst,x.dat,1,xd,1);
+			details::fspmv<Field,true,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+		}
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F,
-			     const ELL_ZO<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
-			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y,
-			     FieldCategories::UnparametricTag)
+	inline void fspmv(
+			     const Field & F,
+			     // const FFLAS_TRANSPOSE tA,
+			     const ELL_ZO<typename Field::Element, simd_true > & A,
+			     const VECT<typename Field::Element > & x,
+			     VECT<typename Field::Element > & y
+			     , FieldCategories::UnparametricTag
+			    )
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
-		fscalin(F, A.m, A.cst, y.dat, 1);
+		if (A.cst == F.one) {
+			details::fspmv<Field,true,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else if (A.cst == F.mOne) {
+			details::fspmv<Field,false,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else {
+			typename Field::Element * xd = fflas_new<typename Field::Element >(A.n) ;
+			fscal(F,A.n,A.cst,x.dat,1,xd,1);
+			details::fspmv<Field,true,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
 	}
 
 	template<class Field, bool simd_true>
-	inline void sp_fgemv(const Field & F,
-			     const ELL_ZO<typename Field::Element, simd_true> & A,
-			     const VECT<typename Field::Element> & x,
-			     const typename Field::Element & b,
-			     VECT<typename Field::Element> & y,
-			     FieldCategories::ModularTag)
+	inline void fspmv(
+			     const Field & F,
+			     // const FFLAS_TRANSPOSE tA,
+			     const ELL_ZO<typename Field::Element, simd_true > & A,
+			     const VECT<typename Field::Element > & x,
+			     VECT<typename Field::Element > & y
+			     , FieldCategories::ModularTag
+			    )
 	{
-		details::sp_fgemv<Field,simd_true>(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
-		finit(F,A.m,y.dat,1);
-		fscalin(F, A.m, A.cst, y.dat, 1);
+		if (A.cst == F.one) {
+			details::fspmv<Field,true,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else if (A.cst == F.mOne) {
+			details::fspmv<Field,false,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else {
+			typename Field::Element * xd = fflas_new<typename Field::Element >(A.n) ;
+			fscal(F,A.n,A.cst,x.dat,1,xd,1);
+			details::fspmv<Field,true,simd_true>(F,A.m,A.n,A.ld,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		finit(F,y.m,y.dat,1);
 	}
+
+
 } // FFLAS
 
 namespace FFLAS { /*  conversions */
@@ -593,12 +656,12 @@ namespace FFLAS { /*  conversions */
 		}
 		if(bSimd){
 #ifdef __FFLASFFPACK_USE_SIMD
-			chunk = Simd<typename Field::Element>::vect_size;
+			chunk = Simd<typename Field::Element >::vect_size;
 			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+CSR_m%chunk;
 
-			ELL_col = fflas_new<index_t>(ld*m, Alignment::CACHE_LINE);
+			ELL_col = fflas_new<index_t >(ld*m, Alignment::CACHE_LINE);
 			if(!ZO){
-				ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+				ELL_dat = fflas_new<typename Field::Element >(ld*m, Alignment::CACHE_LINE);
 			}
 
 			size_t i = 0;
@@ -654,9 +717,9 @@ namespace FFLAS { /*  conversions */
 #endif
 		}else{
 
-			ELL_col = fflas_new<index_t>(ld*ELL_m, Alignment::CACHE_LINE);
+			ELL_col = fflas_new<index_t >(ld*ELL_m, Alignment::CACHE_LINE);
 			if(!ZO){
-				ELL_dat = fflas_new<typename Field::Element>(ld*ELL_m, Alignment::CACHE_LINE);
+				ELL_dat = fflas_new<typename Field::Element >(ld*ELL_m, Alignment::CACHE_LINE);
 			}
 
 			for(size_t i = 0 ; i < CSR_m ; ++i){
@@ -697,7 +760,7 @@ namespace FFLAS { /*  conversions */
 				    const bool ZO
 				   )
 	{
-		index_t * row = fflas_new<index_t>(COO_m+1);
+		index_t * row = fflas_new<index_t >(COO_m+1);
 		for(size_t i = 0 ; i < COO_m+1 ; ++i){
 			row[i] = 0;
 		}
@@ -714,4 +777,3 @@ namespace FFLAS { /*  conversions */
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_ell_INL
-

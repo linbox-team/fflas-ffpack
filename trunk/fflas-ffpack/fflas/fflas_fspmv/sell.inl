@@ -62,7 +62,7 @@ template<class _Element>
 
 		// y = A x + b y ; (generic)
 		template<class Field>
-		inline void sp_fgemv(
+		inline void fspmv(
 			      const Field& F,
 			      const size_t m,
 			      const size_t n,
@@ -88,7 +88,7 @@ template<class _Element>
 		}
 
 		template<class Field>
-		inline void sp_fgemv(
+		inline void fspmv(
 			      const Field& F,
 			      const size_t m,
 			      const size_t n,
@@ -133,7 +133,7 @@ template<class _Element>
 
 		// y = A x + b y ; (generic)
 		template<class Field>
-		inline void sp_fgemv_zo(
+		inline void fspmv_zo(
 			      const Field& F,
 			      const size_t m,
 			      const size_t n,
@@ -159,7 +159,7 @@ template<class _Element>
 		}
 
 		template<class Field>
-		inline void sp_fgemv_zo(
+		inline void fspmv_zo(
 			      const Field& F,
 			      const size_t m,
 			      const size_t n,
@@ -206,7 +206,7 @@ template<class _Element>
 		// delayed by kmax
 		//! @bug check field is M(B)<f|d>
 		template<class Field >
-		inline void sp_fgemv(
+		inline void fspmv(
 			      const Field& F,
 			      const size_t m,
 			      const size_t n,
@@ -311,7 +311,7 @@ template<class _Element>
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
 	template<class Field>
-	inline void sp_fgemv(
+	inline void fspmv(
 		      const Field& F,
 		      const SELL_sub<typename Field::Element, simd_true> & A,
 		      const VECT<typename Field::Element> & x,
@@ -323,15 +323,15 @@ template<class _Element>
 	}
 
 	template<class Field>
-	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
+	inline void fspmv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
 	{
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::ModularFloatingPointTag());
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::ModularFloatingPointTag());
 	}
 
 	template<class Field>
-	inline void sp_fgemv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
+	inline void fspmv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
 	{
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 		finit(F,A.m,y.dat,1);
 	}
 
@@ -340,7 +340,7 @@ template<class _Element>
 	/* ******* */
 
 	template<class Field>
-	inline void sp_fgemv(
+	inline void fspmv(
 		      const Field& F,
 		      const SELL_ZO<typename Field::Element, simd_true> & A,
 		      const VECT<typename Field::Element> & x,
@@ -348,20 +348,20 @@ template<class _Element>
 		      VECT<typename Field::Element> & y
 		     )
 	{
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 	}
 
 	template<class Field>
-	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
+	inline void fspmv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularFloatingPointTag)
 	{
-		details::sp_fgemv_zo(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::ModularFloatingPointTag());
+		details::fspmv_zo(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::ModularFloatingPointTag());
 		fscalin(F, A.m, A.cst, y.dat, 1);
 	}
 
 	template<class Field>
-	inline void sp_fgemv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
+	inline void fspmv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::FloatingPointTag)
 	{
-		details::sp_fgemv_zo(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
+		details::fspmv_zo(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 		finit(F,A.m,y.dat,1);
 		fscalin(F, A.m, A.cst, y.dat, 1);
 	}
@@ -373,7 +373,7 @@ template<class _Element>
 	// y = A x + b y ; (generic)
 	// reductions are delayed.
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<typename Field::Element> & A,
@@ -383,10 +383,10 @@ template<class _Element>
 		     )
 	{
 		details::init_y(F, A.m, b, y, FieldTraits<Field>::value);
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldTraits<Field>::value);
 	}
 
-	void sp_fgemv(
+	void fspmv(
 		      const DoubleDomain & F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<double> & A,
@@ -396,10 +396,10 @@ template<class _Element>
 		     )
 	{
 		details::init_y(F, A.m, b, y, FieldCategories::FloatingPointTag());
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 	}
 
-	void sp_fgemv(
+	void fspmv(
 		      const FloatDomain & F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<float> & A,
@@ -409,10 +409,10 @@ template<class _Element>
 		     )
 	{
 		details::init_y(F, A.m, b, y, FieldCategories::FloatingPointTag());
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::FloatingPointTag());
 	}
 
-	void sp_fgemv(
+	void fspmv(
 		      const FFPACK::Modular<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<double> & A,
@@ -425,10 +425,10 @@ template<class _Element>
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
-	void sp_fgemv(
+	void fspmv(
 		      const FFPACK::ModularBalanced<double>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<double> & A,
@@ -440,10 +440,10 @@ template<class _Element>
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
-	void sp_fgemv(
+	void fspmv(
 		      const FFPACK::Modular<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<float, simd_true> & A,
@@ -455,10 +455,10 @@ template<class _Element>
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t)kmax);
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t)kmax);
 	}
 
-	void sp_fgemv(
+	void fspmv(
 		      const FFPACK::ModularBalanced<float>& F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const SELL<float, simd_true> & A,
@@ -470,7 +470,7 @@ template<class _Element>
 		fscalin(F,A.m,b,y.dat,1);
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
-		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
+		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
 
 	template<class Field, class ColT, class RowT>

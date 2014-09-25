@@ -153,29 +153,29 @@ int test1_coo()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -291,29 +291,29 @@ int test2_coo()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -430,29 +430,29 @@ int test3_coo(int CST)
 		std::cout << std::endl;
 
 		// y = Ax + 0 y
-		sp_fgemv(F,Mat,x,0,y);
+		fspmv(F,Mat,x,0,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 
 		// y = Ax + y ( y = 2 Ax)
-		// sp_fgemv(F,Mat,x,1,y);
+		// fspmv(F,Mat,x,1,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y = Ax - y (y = - Ax)
-		// sp_fgemv(F,Mat,x,-1,y);
+		// fspmv(F,Mat,x,-1,y);
 
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y += Ax + 3 y (y = - Ax)
-		// sp_fgemv(F,Mat,x,2,y);
+		// fspmv(F,Mat,x,2,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y += Ax + y (y = 0)
-		// sp_fgemv(F,Mat,x,1,y);
+		// fspmv(F,Mat,x,1,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
@@ -541,29 +541,29 @@ int test3_coo(int CST)
 		std::cout << std::endl;
 
 		// y = Ax + 0 y
-		sp_fgemv(F,Mat,x,0,y);
+		fspmv(F,Mat,x,0,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 
 		// y = Ax + y ( y = 2 Ax)
-		sp_fgemv(F,Mat,x,1,y);
+		fspmv(F,Mat,x,1,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y = Ax - y (y = - Ax)
-		sp_fgemv(F,Mat,x,-1,y);
+		fspmv(F,Mat,x,-1,y);
 
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y += Ax + 3 y (y = - Ax)
-		sp_fgemv(F,Mat,x,2,y);
+		fspmv(F,Mat,x,2,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y += Ax + y (y = 0)
-		sp_fgemv(F,Mat,x,1,y);
+		fspmv(F,Mat,x,1,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
@@ -664,25 +664,25 @@ int test1_csr()
 		F.init(y.dat[i] ,i+1) ;
 	}
 
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -781,25 +781,25 @@ int test2_csr()
 		F.init(y.dat[i] ,i+1) ;
 	}
 
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -908,29 +908,29 @@ int test3_csr(int CST)
 		std::cout << std::endl;
 
 		// y = Ax + 0 y
-		sp_fgemv(F,Mat,x,0,y);
+		fspmv(F,Mat,x,0,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 
 		// y = Ax + y ( y = 2 Ax)
-		// sp_fgemv(F,Mat,x,1,y);
+		// fspmv(F,Mat,x,1,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y = Ax - y (y = - Ax)
-		// sp_fgemv(F,Mat,x,-1,y);
+		// fspmv(F,Mat,x,-1,y);
 
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y += Ax + 3 y (y = - Ax)
-		// sp_fgemv(F,Mat,x,2,y);
+		// fspmv(F,Mat,x,2,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y += Ax + y (y = 0)
-		// sp_fgemv(F,Mat,x,1,y);
+		// fspmv(F,Mat,x,1,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
@@ -1009,29 +1009,29 @@ int test3_csr(int CST)
 		std::cout << std::endl;
 
 		// y = Ax + 0 y
-		sp_fgemv(F,Mat,x,0,y);
+		fspmv(F,Mat,x,0,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 
 		// y = Ax + y ( y = 2 Ax)
-		sp_fgemv(F,Mat,x,1,y);
+		fspmv(F,Mat,x,1,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y = Ax - y (y = - Ax)
-		sp_fgemv(F,Mat,x,-1,y);
+		fspmv(F,Mat,x,-1,y);
 
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y += Ax + 3 y (y = - Ax)
-		sp_fgemv(F,Mat,x,2,y);
+		fspmv(F,Mat,x,2,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y += Ax + y (y = 0)
-		sp_fgemv(F,Mat,x,1,y);
+		fspmv(F,Mat,x,1,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
@@ -1147,29 +1147,29 @@ int test1_ell()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -1283,29 +1283,29 @@ int test2_ell()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -1441,29 +1441,29 @@ int test1_ell_simd()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -1595,29 +1595,29 @@ int test2_ell_simd()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -1745,29 +1745,29 @@ int test1_ellr()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -1895,29 +1895,29 @@ int test2_ellr()
 	std::cout << std::endl;
 
 	// y = Ax + 0 y
-	sp_fgemv(F,Mat,x,0,y);
+	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 
 	// y = Ax + y ( y = 2 Ax)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y = Ax - y (y = - Ax)
-	sp_fgemv(F,Mat,x,-1,y);
+	fspmv(F,Mat,x,-1,y);
 
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + 3 y (y = - Ax)
-	sp_fgemv(F,Mat,x,2,y);
+	fspmv(F,Mat,x,2,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
 	// y += Ax + y (y = 0)
-	sp_fgemv(F,Mat,x,1,y);
+	fspmv(F,Mat,x,1,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
 
@@ -2048,29 +2048,29 @@ int test3_ellr(int CST)
 		std::cout << std::endl;
 
 		// y = Ax + 0 y
-		sp_fgemv(F,Mat,x,0,y);
+		fspmv(F,Mat,x,0,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 
 		// y = Ax + y ( y = 2 Ax)
-		// sp_fgemv(F,Mat,x,1,y);
+		// fspmv(F,Mat,x,1,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y = Ax - y (y = - Ax)
-		// sp_fgemv(F,Mat,x,-1,y);
+		// fspmv(F,Mat,x,-1,y);
 
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y += Ax + 3 y (y = - Ax)
-		// sp_fgemv(F,Mat,x,2,y);
+		// fspmv(F,Mat,x,2,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
 		// y += Ax + y (y = 0)
-		// sp_fgemv(F,Mat,x,1,y);
+		// fspmv(F,Mat,x,1,y);
 		// for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		// std::cout << std::endl;
 
@@ -2163,29 +2163,29 @@ int test3_ellr(int CST)
 		std::cout << std::endl;
 
 		// y = Ax + 0 y
-		sp_fgemv(F,Mat,x,0,y);
+		fspmv(F,Mat,x,0,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 
 		// y = Ax + y ( y = 2 Ax)
-		sp_fgemv(F,Mat,x,1,y);
+		fspmv(F,Mat,x,1,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y = Ax - y (y = - Ax)
-		sp_fgemv(F,Mat,x,-1,y);
+		fspmv(F,Mat,x,-1,y);
 
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y += Ax + 3 y (y = - Ax)
-		sp_fgemv(F,Mat,x,2,y);
+		fspmv(F,Mat,x,2,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 
 		// y += Ax + y (y = 0)
-		sp_fgemv(F,Mat,x,1,y);
+		fspmv(F,Mat,x,1,y);
 		for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 		std::cout << std::endl;
 

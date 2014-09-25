@@ -28,8 +28,8 @@ EXTRA_DIST=fspmv.doxy
 
 
 pkgincludesub_HEADERS=            \
-            fflas_fspmv_coo.inl  \
-	    fflas_fspmv_csr.inl  \
-	    fflas_fspmv_ell.inl  \
-	    fflas_fspmv_ellr.inl \
-	    fflas_fspmv_sell.inl
+            coo.inl  \
+	    csr.inl  \
+	    ell.inl  \
+	    ellr.inl \
+	    sell.inl
