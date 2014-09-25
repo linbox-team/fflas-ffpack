@@ -35,7 +35,7 @@
 #define __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 
 namespace FFLAS {
- 
+
 template<class _Element>
 	struct SELL {
 		size_t m = 0;
@@ -106,7 +106,7 @@ template<class _Element>
 #ifdef __FFLASFFPACK_USE_SIMD
 			using simd = Simd<typename Field::Element>;
 			using vect_t = typename simd::vect_t;
-			
+
 			vect_t vx, vy, vdat;
 
 			for(size_t i = 0 ; i < nChunks ; ++i){
@@ -177,7 +177,7 @@ template<class _Element>
 #ifdef __FFLASFFPACK_USE_SIMD
 			using simd = Simd<typename Field::Element>;
 			using vect_t = typename simd::vect_t;
-			
+
 			vect_t vx, vy, vdat;
 
 			for(size_t i = 0 ; i < nChunks ; ++i){
@@ -218,7 +218,7 @@ template<class _Element>
 			      const typename Field::Element * dat,
 			      const typename Field::Element * x ,
 			      typename Field::Element * y,
-			      const index_t & kmax, 
+			      const index_t & kmax,
 			      FieldCategories::ModularFloatingPointTag
 			      )
 		{
@@ -423,7 +423,7 @@ template<class _Element>
 	{
 		// std::cout << "Modular Double ELL" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
@@ -438,7 +438,7 @@ template<class _Element>
 		     )
 	{
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
@@ -453,7 +453,7 @@ template<class _Element>
 		     )
 	{
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t)kmax);
 	}
@@ -468,7 +468,7 @@ template<class _Element>
 		     )
 	{
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		details::sp_fgemv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat,(index_t) kmax);
 	}

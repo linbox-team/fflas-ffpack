@@ -43,7 +43,8 @@
 
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
-#include <type_traits> 
+#include "fflas-ffpack/field/field-traits.h"
+#include <type_traits>
  // #include "fflas-ffpack/fflas/fflas_helpers.inl"
 
 #ifdef __FFLASFFPACK_HAVE_MKL

@@ -1328,7 +1328,7 @@ int test1_ell_simd()
 
 	ELL<double,true> Mat ;
 	// size_t nbnz = 20 ;
-	Mat.m = 10 ;
+	Mat.m = 12 ; // multiple de 2 et 4
 	Mat.n = 13 ;
 	size_t ld = 10 ;
 
@@ -1482,7 +1482,7 @@ int test2_ell_simd()
 
 	ELL_sub<double,true> Mat ;
 	// size_t nbnz = 20 ;
-	Mat.m = 10 ;
+	Mat.m = 12 ;
 	Mat.n = 13 ;
 	size_t ld = 10 ;
 

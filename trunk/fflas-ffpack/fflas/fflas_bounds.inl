@@ -80,16 +80,14 @@ namespace FFLAS { namespace Protected {
 
 	template <class Field>
 	inline size_t DotProdBoundClassic (const Field& F,
-					   const typename Field::Element& beta,
-					   const FFLAS_BASE base)
+					   const typename Field::Element& beta
+					  )
 	{
 
 		FFLAS_INT_TYPE p=0;
 		F.characteristic(p);
 
 		unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
-
-		//(base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;
 
 		if (p == 0)
 			return 1;
@@ -111,7 +109,7 @@ namespace FFLAS { namespace Protected {
 			kmax = floor ( (double (double(1ULL << mantissa) - cplt)) / (c*c));
 			if (kmax  <= 1) return 1;
 		}
-		    //kmax--; // we computed a strict upper bound
+		//kmax--; // we computed a strict upper bound
 		return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
 	}
 

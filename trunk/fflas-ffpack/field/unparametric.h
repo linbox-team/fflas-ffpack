@@ -394,6 +394,8 @@ namespace FFPACK
 			return FFPACK::Caster (x,y);
 		}
 
+		size_t minElement() const { return 0 ; }
+		size_t maxElement() const { return 0 ; }
 	};
 } // FFPACK
 
