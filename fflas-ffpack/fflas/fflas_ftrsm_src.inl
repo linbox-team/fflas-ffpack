@@ -356,13 +356,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	static __FFLAS__DOMAIN D;
 	size_t nblas = TRSMBound<Field> (F);
 
-	size_t ndel = DotProdBoundClassic (F, F.one,
-#ifdef __FFLAS__DOUBLE
-				    FflasDouble
-#else
-	                            FflasFloat
-#endif
-				    );
+	size_t ndel = DotProdBoundClassic (F, F.one);
         ndel = (ndel / nblas)*nblas;
 	size_t nsplit = ndel;
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;

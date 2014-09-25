@@ -55,7 +55,7 @@ namespace FFLAS { /*  DNS */
 		size_t n = 0;
 		size_t ld = 0;
 		Element * dat = nullptr;
-		
+
 		inline Element * data() {return dat;}
 	};
 
@@ -124,7 +124,7 @@ namespace FFLAS{
 				else if(b == -1)
 				{
 					for(size_t i = 0 ; i < m ; ++i)
-						y[i] *= -1;	
+						y[i] *= -1;
 				}
 				else
 				{
@@ -143,17 +143,17 @@ namespace FFLAS{
 					for(size_t i = 0 ; i < m ; ++i)
 						F.assign(y[i], F.zero);
 				}
-				else if(F.isMone(b))
+				else if(F.isMOne(b))
 				{
 					for(size_t i = 0 ; i < m ; ++i)
-						F.neg(y[i]);
+						F.negin(y[i]);
 				}
 				else
 				{
 					fscalin(F, m, b, y, 1);
 				}
 			}
-		}		
+		}
 	}/* details */
 }/* FFLAS */
 

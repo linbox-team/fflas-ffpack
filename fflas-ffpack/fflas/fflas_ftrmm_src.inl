@@ -40,7 +40,7 @@
   #define __FFLAS__LOWER
  #else
   #define __FFLAS__UPPER
- #endif 
+ #endif
  #define __FFLAS__Acolinc 1
  #define __FFLAS__Arowinc lda
 #endif
@@ -189,13 +189,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	if (!M || !N ) return;
 
-	size_t nsplit = DotProdBoundClassic (F,  F.one,
-#ifdef __FFLAS__DOUBLE
-				    FflasDouble
-#else
-                                    FflasFloat
-#endif
-				    );
+	size_t nsplit = DotProdBoundClassic (F,  F.one);
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;
 	size_t nrestsplit = ((__FFLAS__Na-1) % nsplit) +1;
 	FFLASFFPACK_check(__FFLAS__Na == nsplit*nbblocsplit+nrestsplit);

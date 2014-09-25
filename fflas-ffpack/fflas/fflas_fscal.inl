@@ -46,6 +46,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr X, const size_t incX,
 	       typename Field::Element_ptr Y, const size_t incY )
 	{
+		// details::fscal(F,N,a,X,incX,Y,incY, typename FieldTraits<Field>::value() );
 		if (F.isOne(a)) {
 			fcopy(F,N,X,incX,Y,incY);
 			return ;

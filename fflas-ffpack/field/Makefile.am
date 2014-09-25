@@ -47,6 +47,7 @@ RNS=rns.h			        \
 pkgincludesub_HEADERS=          	\
 	  field.h                       \
 	  field-general.h		\
+	  field-traits.h                \
 	  $(MODULAR_POS)                \
 	  $(MODULAR_BAL)                \
 	  nonzero-randiter.h        	\

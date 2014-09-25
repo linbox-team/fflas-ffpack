@@ -33,6 +33,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_mmhelper_INL
 #define __FFLASFFPACK_fflas_fflas_mmhelper_INL
 
+#include "fflas-ffpack/field/field-traits.h"
 #include "parallel.h"
 
 namespace FFLAS{ namespace Protected{
@@ -48,69 +49,6 @@ namespace FFLAS{ namespace Protected{
 
 namespace FFLAS {
 
-	template <class Field>
-	struct associatedDelayedField{
-		typedef Field field;
-		typedef Field& type; // reference to avoid copying heavy fields
-	};
-	template <>
-	struct associatedDelayedField<const FFPACK::Modular<float> >{
-		typedef FloatDomain field;
-		typedef FloatDomain type;
-	};
-	template <>
-	struct associatedDelayedField<const FFPACK::ModularBalanced<float> >{
-		typedef FloatDomain field;
-		typedef FloatDomain type;
-	};
-	template <>
-	struct associatedDelayedField<const FFPACK::Modular<double> >{
-		typedef DoubleDomain field;
-		typedef DoubleDomain type;
-	};
-	template <>
-	struct associatedDelayedField<const FFPACK::ModularBalanced<double> >{
-		typedef DoubleDomain field;
-		typedef DoubleDomain type;
-	};
-
-	// Traits and categories will need to be placed in a proper file later
-	namespace FieldCategories {
-		//! generic ring.
-		struct GenericTag{};
-		//! If it can init/convert elements to/from floating point types: float, double
-		struct FloatingPointConvertibleTag : public  GenericTag{};
-		//! If it is a Modular or ModularBalanced templated by float or double
-		struct ModularFloatingPointTag : public GenericTag{};
-		//! If it is a Modular or ModularBalanced templated by float or double, and result is not reduced
-		struct DelayedModularFloatingPointTag : public GenericTag{};
-		//! If it is a multiprecision field
-		struct MultiPrecisionTag : public  GenericTag{};
-		//! If it is DoubleDomain or a FloatDomain
-		struct FloatingPointTag : public GenericTag{};
-	}
-
-	/*! FieldTrait
-	*/
-	template <class Field>
-	struct FieldTraits {typedef typename FieldCategories::GenericTag value;};
-	template<>
-	struct FieldTraits<FFPACK::Modular<double> > {typedef  FieldCategories::ModularFloatingPointTag value;};
-	template<>
-	struct FieldTraits<FFPACK::Modular<float> > {typedef FieldCategories::ModularFloatingPointTag value;};
-	template<>
-	struct FieldTraits<FFPACK::ModularBalanced<double> > {typedef FieldCategories::ModularFloatingPointTag value;};
-	template<>
-	struct FieldTraits<FFPACK::ModularBalanced<float> > {typedef FieldCategories::ModularFloatingPointTag value;};
-	template<>
-	struct FieldTraits<DoubleDomain> {typedef FieldCategories::FloatingPointTag value;};
-	template<>
-	struct FieldTraits<FloatDomain> {typedef FieldCategories::FloatingPointTag value;};
-	template<>
-	struct FieldTraits<FFPACK::Modular<int32_t> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
-	template<>
-	struct FieldTraits<FFPACK::ModularBalanced<int32_t> > {typedef FieldCategories::FloatingPointConvertibleTag value;};
-	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
 
 
 	enum CuttingStrategy {
@@ -152,19 +90,6 @@ namespace FFLAS {
 		struct Bini{};
 	}
 
-	// TODO: fieldMin and fieldMax could be offered by the Field object directly ?
-	template <class Field>
-	inline double getFieldMin (const Field& F){return 0;}
-	template <class Field>
-	inline double getFieldMax (const Field& F){return (double) F.characteristic()-1;}
-	template<class Element>
-	inline double getFieldMin (const FFPACK::ModularBalanced<Element>& F){
-		return -((double) F.characteristic()-1)/2;
-	}
-	template<class Element>
-	inline double getFieldMax (const FFPACK::ModularBalanced<Element>& F){
-		return ((double) F.characteristic()-1)/2;
-	}
 
        /*! FGEMM Helper
 	*/
@@ -249,7 +174,7 @@ namespace FFLAS {
 		    // correct but semantically not satisfactory
 		MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) :
                 recLevel(-1),
-				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
+				FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
@@ -262,7 +187,7 @@ namespace FFLAS {
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
 				recLevel(w), //base(FflasDouble),
-				FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
+				FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
 				Amin(FieldMin), Amax(FieldMax),
 				Bmin(FieldMin), Bmax(FieldMax),
 				Cmin(FieldMin), Cmax(FieldMax),
@@ -289,7 +214,7 @@ namespace FFLAS {
 			 double _Amin, double _Amax,
 			 double _Bmin, double _Bmax,
 			 double _Cmin, double _Cmax):
-				recLevel(w), FieldMin(getFieldMin(F)), FieldMax(getFieldMax(F)),
+				recLevel(w), FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
 				Amin(_Amin), Amax(_Amax),
 				Bmin(_Bmin), Bmax(_Bmax),
 				Cmin(_Cmin), Cmax(_Cmax),

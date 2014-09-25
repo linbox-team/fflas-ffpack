@@ -449,7 +449,7 @@ namespace FFLAS { /*  ELLR */
 	{
 		// std::cout << "here" << std::endl;
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
@@ -465,7 +465,7 @@ namespace FFLAS { /*  ELLR */
 		     )
 	{
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasDouble) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
@@ -481,7 +481,7 @@ namespace FFLAS { /*  ELLR */
 		     )
 	{
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t)kmax);
 	}
@@ -497,7 +497,7 @@ namespace FFLAS { /*  ELLR */
 		     )
 	{
 		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one,FflasFloat) ;
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 
 		ellr_details::sp_fgemv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
 	}
