@@ -36,7 +36,7 @@
 template<>
 struct Simd256_impl<true, true, true, 8> {
 
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_USE_AVX2)
 	/*
      * alias to 256 bit simd register
      */

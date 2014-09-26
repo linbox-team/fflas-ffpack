@@ -142,15 +142,41 @@ template<>
  * Simd functors
  */
 
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+
+
+#if defined(__FFLASFFPACK_USE_SSE)
+
+template<class T>
+using Simd = Simd128<T>;
+
+#elif defined(__FFLASFFPACK_USE_AVX)
 
 template<class T>
 using Simd = Simd256<T>;
 
-#elif defined(__FFLASFFPACK_USE_SSE)
+template<>
+using Simd =Simd128<int64_t>;
+
+template<>
+using Simd =Simd128<int32_t>;
+
+template<>
+using Simd =Simd128<int16_t>;
+
+template<>
+using Simd =Simd128<uint64_t>;
+
+template<>
+using Simd =Simd128<uint32_t>;
+
+template<>
+using Simd =Simd128<uint16_t>;
+
+
+#elif defined(__FFLASFFPACK_USE_AVX2)
 
 template<class T>
-using Simd = Simd128<T>;
+using Simd = Simd256<T>;
 
 #endif
 
