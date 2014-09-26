@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_fflas_igemm_igemm_tools_INL
 #define __FFLASFFPACK_fflas_igemm_igemm_tools_INL
 
-#include "fflas-ffpack/utils/simd.h"
+#include "fflas-ffpack/fflas/fflas_simd.h"
 
 namespace FFLAS { namespace details {
 

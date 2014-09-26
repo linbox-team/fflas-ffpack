@@ -75,8 +75,8 @@ template<class T>
  };
 
 // SSE
-#if defined(__FFLASFFPACK_USE_SSE)
-#include "fflas-ffpack/utils/simd128.inl"
+#if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
+#include "fflas-ffpack/fflas/fflas_simd/simd128.inl"
 
  template<>
  struct simdToType<__m128d>
@@ -108,7 +108,7 @@ template<>
 
 // AVX
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
-#include "fflas-ffpack/utils/simd256.inl"
+#include "fflas-ffpack/fflas/fflas_simd/simd256.inl"
 
  template<>
  struct simdToType<__m256d>

@@ -37,7 +37,7 @@
 
 
 #ifdef __FFLASFFPACK_USE_SIMD
-#include "fflas-ffpack/utils/simd.h"
+#include "fflas-ffpack/fflas/fflas_simd.h"
 #endif
 
 namespace FFLAS { namespace vectorised {
