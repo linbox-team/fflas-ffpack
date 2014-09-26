@@ -41,9 +41,11 @@ struct Simd256_impl;
 // Trop d'instructions SSE manquantes pour les int8_t
 
 
-// #include "simd256_int16.inl"
-// #include "simd256_int32.inl"
+#if defined(__FFLASFFPACK_USE_AVX2)
+#include "simd256_int16.inl"
+#include "simd256_int32.inl"
 #include "simd256_int64.inl"
+#endif
 
 
 #endif //#ifdef SIMD_INT
