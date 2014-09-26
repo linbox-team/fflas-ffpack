@@ -27,7 +27,7 @@
  *.
  */
 
- #include "fflas-ffpack/utils/simd.h"
+ #include "fflas-ffpack/fflas/fflas_simd.h"
  #include "fflas-ffpack/utils/args-parser.h"
  #include "fflas-ffpack/utils/align-allocator.h"
  #include <vector>
@@ -70,7 +70,7 @@ template<class Element>
 bool test_float(size_t seed)
 {
  	using simd = Simd<Element>;
- 	
+
  	std::mt19937 generator(seed);
  	std::uniform_real_distribution<> dist(1, 100);
 
@@ -98,7 +98,7 @@ bool test_float(size_t seed)
 	std::fill(a1.begin(), a1.end(), 0);
 	std::fill(a2.begin(), a2.end(), 0);
 	std::fill(b1.begin(), b1.end(), 0);
-	std::fill(b2.begin(), b2.end(), 0);	
+	std::fill(b2.begin(), b2.end(), 0);
 
 	std::generate(a1.begin(), a1.end(), [&](){return dist(generator);});
 	std::generate(b1.begin(), b1.end(), [&](){return dist(generator);});
@@ -115,7 +115,7 @@ bool test_float(size_t seed)
 	std::fill(a1.begin(), a1.end(), 0);
 	std::fill(a2.begin(), a2.end(), 0);
 	std::fill(b1.begin(), b1.end(), 0);
-	std::fill(b2.begin(), b2.end(), 0);	
+	std::fill(b2.begin(), b2.end(), 0);
 
 	std::generate(a1.begin(), a1.end(), [&](){return dist(generator);});
 	std::generate(b1.begin(), b1.end(), [&](){return dist(generator);});
@@ -132,7 +132,7 @@ bool test_float(size_t seed)
 	std::fill(a1.begin(), a1.end(), 0);
 	std::fill(a2.begin(), a2.end(), 0);
 	std::fill(b1.begin(), b1.end(), 0);
-	std::fill(b2.begin(), b2.end(), 0);	
+	std::fill(b2.begin(), b2.end(), 0);
 
 	return true;
 }

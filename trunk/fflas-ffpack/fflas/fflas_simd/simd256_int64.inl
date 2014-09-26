@@ -36,7 +36,7 @@
 template<>
 struct Simd256_impl<true, true, true, 8> {
 
-#if defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	/*
      * alias to 256 bit simd register
      */
@@ -69,7 +69,7 @@ struct Simd256_impl<true, true, true, 8> {
 
 	/*
 	 * Converter from vect_t to a tab.
-	 * exple: 
+	 * exple:
 	 *		Converter conv;
 	 *		conv.v = a;
 	 *		scalar_t x = conv.t[i]
@@ -83,7 +83,7 @@ struct Simd256_impl<true, true, true, 8> {
      *  Return vector of type vect_t with all elements set to zero
      *  Return [0,0,0,0] int64_t
      */
-	static INLINE CONST vect_t zero() 
+	static INLINE CONST vect_t zero()
 	{
 		return _mm256_setzero_si256();
 	}
@@ -92,9 +92,9 @@ struct Simd256_impl<true, true, true, 8> {
      *  Broadcast 64-bit integer a to all all elements of dst. This intrinsic may generate the vpbroadcastw.
      *  Return [x,x,x,x] int64_t
      */
-	static INLINE CONST vect_t set1(const scalar_t x) 
+	static INLINE CONST vect_t set1(const scalar_t x)
 	{
-		return _mm256_set1_epi64X(x);
+		return _mm256_set1_epi64x(x);
 	}
 
 	/*
@@ -111,7 +111,7 @@ struct Simd256_impl<true, true, true, 8> {
      *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]] int64_t
      */
     template<class T>
-    static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx) 
+    static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx)
     {
         return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]);
     }
@@ -121,7 +121,7 @@ struct Simd256_impl<true, true, true, 8> {
      * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
      * Return [p[0],p[1],p[2],p[3]] int32_t
      */
-	static INLINE PURE vect_t load(const scalar_t * const p) 
+	static INLINE PURE vect_t load(const scalar_t * const p)
 	{
 		return _mm256_load_si256(reinterpret_cast<const vect_t*>(p));
 	}
@@ -131,7 +131,7 @@ struct Simd256_impl<true, true, true, 8> {
      * p does not need to be aligned on any particular boundary.
      * Return [p[0],p[1],p[2],p[3]] int64_t
      */
-	static INLINE PURE vect_t loadu(const scalar_t * const p) 
+	static INLINE PURE vect_t loadu(const scalar_t * const p)
 	{
 		return _mm256_loadu_si256(reinterpret_cast<const vect_t*>(p));
 	}
@@ -140,7 +140,7 @@ struct Simd256_impl<true, true, true, 8> {
 	 * Store 256-bits of integer data from a into memory.
 	 * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
 	 */
-	static INLINE void store(const scalar_t * p, vect_t v) 
+	static INLINE void store(const scalar_t * p, vect_t v)
 	{
 		_mm256_store_si256(reinterpret_cast<vect_t*>(const_cast<scalar_t*>(p)), v);
 	}
@@ -149,7 +149,7 @@ struct Simd256_impl<true, true, true, 8> {
 	 * Store 256-bits of integer data from a into memory.
 	 * p does not need to be aligned on any particular boundary.
 	 */
-	static INLINE void storeu(const scalar_t * p, vect_t v) 
+	static INLINE void storeu(const scalar_t * p, vect_t v)
 	{
 		_mm256_storeu_si256(reinterpret_cast<vect_t*>(const_cast<scalar_t*>(p)), v);
 	}
@@ -160,12 +160,12 @@ struct Simd256_impl<true, true, true, 8> {
      			[b0, b1, b2, b3] 						   int64_t
      * Return : [a0+b0, a1+b1, a2+b2, a3+b3]   int64_t
      */
-	static INLINE CONST vect_t add(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
 	{
 		return _mm256_add_epi64(a, b);
 	}
 
-	static INLINE vect_t addin(vect_t &a, const vect_t b) 
+	static INLINE vect_t addin(vect_t &a, const vect_t b)
 	{
 		return a = add(a,b);
 	}
@@ -176,18 +176,18 @@ struct Simd256_impl<true, true, true, 8> {
      			[b0, b1, b2, b3] 						  int64_t
      * Return : [a0-b0, a1-b1, a2-b2, a3-b3]  int64_t
      */
-	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t sub(const vect_t a, const vect_t b)
 	{
 		return _mm256_sub_epi64(a, b);
 	}
 
-	static INLINE CONST vect_t subin(vect_t &a, const vect_t b) 
+	static INLINE CONST vect_t subin(vect_t &a, const vect_t b)
 	{
 		return a = sub(a,b);
 	}
 
 	/*
-     * Shift packed 64-bit integers in a left by s while shifting in zeros, and store the results in vect_t. 
+     * Shift packed 64-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3] int64_t
      * Return : [a0 << s, a1 << s, a2 << s, a3 << s] int64_t
      */
@@ -197,7 +197,7 @@ struct Simd256_impl<true, true, true, 8> {
      }
 
      /*
-     * Shift packed 64-bit integers in a right by s while shifting in zeros, and store the results in vect_t. 
+     * Shift packed 64-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3] int64_t
      * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int64_t
      */
@@ -207,12 +207,12 @@ struct Simd256_impl<true, true, true, 8> {
      }
 
 	/*
-     * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t. 
+     * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1, a2, a3]           						     int64_t
      			[b0, b1, b2, b3]  		 							 int64_t
      * Return : [a0*b0 mod 2^64-1, a1*b1 mod 2^64-1, a2*b2 mod 2^64-1, a3*b3 mod 2^64-1] int64_t
      */
-	static INLINE CONST vect_t mullo(vect_t a, vect_t b) 
+	static INLINE CONST vect_t mullo(vect_t a, vect_t b)
 	{
 		vect_t x2, x3, x4;
 		x2 = _mm256_mul_epu32(a, b);
@@ -227,7 +227,7 @@ struct Simd256_impl<true, true, true, 8> {
 	}
 
 	/*
-     * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t. 
+     * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1, a2, a3]           						     int64_t
      			[b0, b1, b2, b3]  		 							 int64_t
      * Return : [a0*b0 mod 2^64-1, a1*b1 mod 2^64-1, a2*b2 mod 2^64-1, a3*b3 mod 2^64-1] int64_t
@@ -279,12 +279,12 @@ struct Simd256_impl<true, true, true, 8> {
 	}
 
 	/*
-     * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the high 64 bits of the intermediate integers in vect_t. 
+     * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the high 64 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1, a2, a3]           						     int64_t
      			[b0, b1, b2, b3]  		 							 int64_t
-     * Return : 
+     * Return :
      */
-	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) 
+	static INLINE CONST vect_t mulhi(vect_t a, vect_t b)
 	{
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
@@ -292,15 +292,15 @@ struct Simd256_impl<true, true, true, 8> {
 		ca.v = a;
 		cb.v = b;
 		return set((__int128(ca.t[0])*cb.t[0]) >> 64, (__int128(ca.t[1])*cb.t[1]) >> 64, (__int128(ca.t[2])*cb.t[2]) >> 64, (__int128(ca.t[3])*cb.t[3]) >> 64);
-	}	
+	}
 
 	/*
-     * Multiply the low 64-bits integers from each packed 128-bit element in a and b, and store the signed 128-bit results in dst. 
+     * Multiply the low 64-bits integers from each packed 128-bit element in a and b, and store the signed 128-bit results in dst.
      * Args   : [0, a1, 0, a3]    int64_t
      			[0, b1, 0, b3]    int64_t
      * Return : [a1*b1, a3*b2] int128_t
      */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
 	{
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
@@ -317,7 +317,7 @@ struct Simd256_impl<true, true, true, 8> {
      * Return : [(a0==b0) ? 0xFFFF : 0, (a1==b1) ? 0xFFFF : 0,
                  (a2==b2) ? 0xFFFF : 0, (a3==b3) ? 0xFFFF : 0]                     int32_t
      */
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b)
 	{
 		return _mm256_cmpeq_epi64(a, b);
 	}
@@ -329,7 +329,7 @@ struct Simd256_impl<true, true, true, 8> {
      * Return : [(a0>b0) ? 0xFFFF : 0, (a1>b1) ? 0xFFFF : 0,
                  (a2>b2) ? 0xFFFF : 0, (a3>b3) ? 0xFFFF : 0]                     	int32_t
      */
-	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
 	{
 		return _mm256_cmpgt_epi64(a, b);
 	}
@@ -341,7 +341,7 @@ struct Simd256_impl<true, true, true, 8> {
      * Return : [(a0<b0) ? 0xFFFF : 0, (a1<b1) ? 0xFFFF : 0,
                  (a2<b2) ? 0xFFFF : 0, (a3<b3) ? 0xFFFF : 0] 					  int32_t
      */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
 	{
 		return _mm256_cmpgt_epi64(b, a);
 	}
@@ -355,7 +355,7 @@ struct Simd256_impl<true, true, true, 8> {
                  (a4>=b4) ? 0xFFFF : 0, (a5>=b5) ? 0xFFFF : 0,
                  (a6>=b6) ? 0xFFFF : 0, (a7>=b7) ? 0xFFFF : 0]					  int32_t
      */
-	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
 	{
 		return vor(greater(a, b), eq(a, b));
 	}
@@ -367,18 +367,18 @@ struct Simd256_impl<true, true, true, 8> {
      * Return : [(a0<=b0) ? 0xFFFF : 0, (a1<=b1) ? 0xFFFF : 0,
                  (a2<=b2) ? 0xFFFF : 0, (a3<=b3) ? 0xFFFF : 0] 		int32_t
      */
-	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
 	{
 		return vor(lesser(a, b), eq(a, b));
 	}
 
 	/*
      * Compute the bitwise AND of packed 64-bits integer in a and b, and store the results in vect_t.
-     * Args   : [a0, a1, a2, a3] 
+     * Args   : [a0, a1, a2, a3]
      			[b0, b1, b2, b3]
      * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3]
      */
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
 	{
 		return _mm256_and_si256(b, a);
 	}
@@ -389,7 +389,7 @@ struct Simd256_impl<true, true, true, 8> {
      			[b0, b1, b2, b3]
      * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3]
      */
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
 	{
 		return _mm256_or_si256(b, a);
 	}
@@ -400,7 +400,7 @@ struct Simd256_impl<true, true, true, 8> {
      			[b0, b1, b2, b3]
      * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3]
      */
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b)
 	{
 		return _mm256_xor_si256(b, a);
 	}
@@ -411,7 +411,7 @@ struct Simd256_impl<true, true, true, 8> {
      			[b0, b1, b2, b3]
      * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3]
      */
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) 
+	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b)
 	{
 		return _mm256_andnot_si256(b, a);
 	}

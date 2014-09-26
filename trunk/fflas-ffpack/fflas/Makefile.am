@@ -24,7 +24,7 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas
 
-SUBDIRS=fflas_fgemm fflas_fspmv fflas_igemm
+SUBDIRS=fflas_fgemm fflas_fspmv fflas_igemm fflas_simd
 
 sparse=fflas_fspmv.h \
        fflas_fspmv.inl
@@ -59,6 +59,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_ftrsv.inl       \
 	   fflas_finit.inl       \
 	   fflas_helpers.inl     \
+	   fflas_simd.h          \
 	   ${sparse}		 \
 	   ${multiprecision}
 

@@ -34,7 +34,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_ell_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_ell_INL
 
-#include "fflas-ffpack/utils/simd.h"
+#include "fflas-ffpack/fflas/fflas_simd.h"
 
 namespace FFLAS { /*  ELL */
 
