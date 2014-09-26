@@ -103,7 +103,7 @@ struct Simd128_impl<true, true, true, 8> {
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
 	{
 		// _mm_mul_epi64
-		// FFLASFFPACK_abort("not implemented yet");
+		FFLASFFPACK_abort("not implemented yet");
 		//FFLASFFPACK_abort("The simd mul function does not make sense, rethink your code :)");
 	}
 

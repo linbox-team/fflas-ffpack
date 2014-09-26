@@ -144,39 +144,36 @@ template<>
 
 
 
-#if defined(__FFLASFFPACK_USE_SSE)
+
+#if defined(__FFLASFFPACK_USE_AVX)
+
+template< class T, bool = std::is_integral<T>::value >
+struct SimdChooser { };
+
 
 template<class T>
-using Simd = Simd128<T>;
-
-#elif defined(__FFLASFFPACK_USE_AVX)
+struct SimdChooser<T,false> {
+	typedef Simd256<T> value ;
+};
 
 template<class T>
-using Simd = Simd256<T>;
+struct SimdChooser<T,true> {
+	typedef Simd128<T> value ;
+};
 
-template<>
-using Simd =Simd128<int64_t>;
-
-template<>
-using Simd =Simd128<int32_t>;
-
-template<>
-using Simd =Simd128<int16_t>;
-
-template<>
-using Simd =Simd128<uint64_t>;
-
-template<>
-using Simd =Simd128<uint32_t>;
-
-template<>
-using Simd =Simd128<uint16_t>;
+template<class T>
+using Simd = typename SimdChooser<T>::value;
 
 
 #elif defined(__FFLASFFPACK_USE_AVX2)
 
 template<class T>
 using Simd = Simd256<T>;
+
+#elif defined(__FFLASFFPACK_USE_SSE) // not AVX
+
+template<class T>
+using Simd = Simd128<T>;
 
 #endif
 
