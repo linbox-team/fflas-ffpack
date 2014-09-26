@@ -35,7 +35,7 @@
 #define __FFLASFFPACK_field_field_traits_H
 
 
-namespace FFLAS {
+namespace FFLAS { /*  Categories */
 
 	//! Traits and categories will need to be placed in a proper file later
 	namespace FieldCategories {
@@ -60,8 +60,7 @@ namespace FFLAS {
 
 } // FFLAS
 
-
-namespace FFLAS {
+namespace FFLAS { /*  Traits */
 
 	/*! FieldTrait
 	*/
@@ -76,22 +75,22 @@ namespace FFLAS {
 	template<>
 	struct FieldTraits<FFPACK::Modular<double> > {
 		typedef  FieldCategories::ModularFloatingPointTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<float> > {
 		typedef FieldCategories::ModularFloatingPointTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<double> > {
 		typedef FieldCategories::ModularFloatingPointTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<float> > {
 		typedef FieldCategories::ModularFloatingPointTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 
 
@@ -101,62 +100,62 @@ namespace FFLAS {
 	template<>
 	struct FieldTraits<FFPACK::Modular<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<uint32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<int64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<uint64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<int16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<uint16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<uint32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<int64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<uint64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<int16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<uint16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::ModularTag category;
+		typedef FieldCategories::ModularTag category;
 	};
 
 
@@ -164,12 +163,12 @@ namespace FFLAS {
 	template<>
 	struct FieldTraits<DoubleDomain> {
 		typedef FieldCategories::FloatingPointTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 	template<>
 	struct FieldTraits<FloatDomain> {
 		typedef FieldCategories::FloatingPointTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 
 
@@ -177,32 +176,32 @@ namespace FFLAS {
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<uint32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<int64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<uint64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<int16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<uint16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
-		typedef typename FieldCategories::UnparametricTag category;
+		typedef FieldCategories::UnparametricTag category;
 	};
 
 	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};

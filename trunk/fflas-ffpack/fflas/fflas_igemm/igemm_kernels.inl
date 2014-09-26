@@ -31,12 +31,12 @@
 #define __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 
 
-#ifdef __AVX__
+#ifdef __AVX2__
 #define _nr 4
 #define _mr 8
 #define StepA 4
 #define StepB 4
-#elif defined(__SSE4_1__)
+#elif defined(__SSE4_1__) or defined(__AVX__)
 #define _nr 4
 #define _mr 4
 #define StepA 2
