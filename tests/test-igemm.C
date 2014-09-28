@@ -6,6 +6,7 @@
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
+#define COL_MAJOR false
 
 int main(int argc, char** argv)
 {
@@ -36,8 +37,9 @@ int main(int argc, char** argv)
 	int seed=0;
 	typename IField::RandIter Rand(Z,seed);
 
-	IField::Element_ptr A,B,C;
+	IField::Element_ptr A,B,C,D;
 	C= FFLAS::fflas_new(Z,m,ldc);
+	D= FFLAS::fflas_new(Z,m,n);
 	A= FFLAS::fflas_new(Z,m,lda);
 	B= FFLAS::fflas_new(Z,k,ldb);
 
@@ -52,20 +54,20 @@ int main(int argc, char** argv)
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
 			// Rand.random(C[i*ldc+j]);
-			C[i*ldc+j] = rand() % 10;
+			D[i*n+j]=C[i*ldc+j] = rand() % 10;
 
-	write_field(Z,std::cout << "A", A, m, k, lda,true,false) <<std::endl;
-	write_field(Z,std::cout << "B", B, k, n, ldb,true,false) <<std::endl;
+	write_field(Z,std::cout << "A:=", A, m, k, lda,true,false) <<';' <<std::endl;
+	write_field(Z,std::cout << "B:=", B, k, n, ldb,true,false) <<';' <<std::endl;
 
 
 
 	IField::Element alpha,beta ;
 	alpha = Z.one ;
-	beta = Z.zero ;
+	beta = Z.one ;
 
 	FFLAS::fgemm(Z,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 
-	write_field(Z,std::cout << "C", C, m, n, ldc,true,false) <<std::endl;
+	write_field(Z,std::cout << "C:=", C, m, n, ldc,true,false) <<';' <<std::endl;
 	std::cout << "==========================" << std::endl;
 
 
@@ -73,6 +75,7 @@ int main(int argc, char** argv)
 	FField F ;
 
 	FField::Element_ptr Cc,Aa,Bb;
+#if COL_MAJOR
 	Cc= FFLAS::fflas_new(F,ldC,n);
 	Aa= FFLAS::fflas_new(F,ldA,k);
 	Bb= FFLAS::fflas_new(F,ldB,n);
@@ -85,15 +88,38 @@ int main(int argc, char** argv)
 			F.init(Bb[j*ldB+i],B[i*ldb+j]);
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
-			F.init(Cc[j*ldC+i],0UL);
+			F.init(Cc[j*ldC+i],D[i*n+j]);
+#else
+	Cc= FFLAS::fflas_new(F,m,ldC);
+	Aa= FFLAS::fflas_new(F,m,ldA);
+	Bb= FFLAS::fflas_new(F,k,ldB);
 
-	write_field(F,std::cout << "A", Aa, m, k, ldA,true,true) <<std::endl;
-	write_field(F,std::cout << "B", Bb, k, n, ldB,true,true) <<std::endl;
+	for (size_t i=0;i<m;++i)
+		for (size_t j=0;j<k;++j)
+			F.init(Aa[i*ldA+j],A[i*lda+j]);
+	for (size_t i=0;i<k;++i)
+		for (size_t j=0;j<n;++j)
+			F.init(Bb[i*ldB+j],B[i*ldb+j]);
+	for (size_t i=0;i<m;++i)
+		for (size_t j=0;j<n;++j)
+			F.init(Cc[i*ldC+j],D[i*n+j]);
 
-	FFLAS::igemm_(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1, Aa, ldA, Bb, ldB, 0, Cc, ldC);
+#endif
+
+	write_field(F,std::cout << "A:=", Aa, m, k, ldA,true,COL_MAJOR)  <<';'<<std::endl;
+	write_field(F,std::cout << "B:=", Bb, k, n, ldB,true,COL_MAJOR) <<';' <<std::endl;
+
+	FField::Element a,b ;
+	a=F.one;
+	b=F.one;
+#if 0
+	FFLAS::igemm_(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, a, Aa, ldA, Bb, ldB, b, Cc, ldC);
+#else
+	FFLAS::igemm_(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, a, Aa, ldA, Bb, ldB, b, Cc, ldC);
+#endif
 
 
-	write_field(F,std::cout << "C", Cc, m, n, ldC,true,true) <<std::endl;
+	write_field(F,std::cout << "C:=", Cc, m, n, ldC,true,COL_MAJOR) <<';' <<std::endl;
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
