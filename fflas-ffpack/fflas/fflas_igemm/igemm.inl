@@ -35,7 +35,9 @@
 namespace FFLAS { namespace Protected {
 
 	// Assume matrices A,B,C are stored in column major order
-	void igemm_colmajor(size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, int64_t* A, size_t lda, int64_t* B, size_t ldb)
+	void igemm_colmajor(size_t rows, size_t cols, size_t depth,
+			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
+			    int64_t* C, size_t ldc)
 	{
 
 		using simd = Simd<int64_t> ;
@@ -86,9 +88,24 @@ namespace FFLAS { namespace Protected {
 
 	}
 
-	void igemm(size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, int64_t* A, size_t lda, int64_t* B, size_t ldb)
+	void igemm( const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB,
+		    size_t rows, size_t cols, size_t depth
+		    , const int64_t alpha
+		    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
+		    , const int64_t beta
+		    , int64_t* C, size_t ldc
+		    )
 	{
-		igemm_colmajor(rows, cols, depth, C, ldc, A, lda, B, ldb);
+		if (beta != 1 || alpha != 1) {
+			std::cout << __func__ << " alpha, beta are 1 and 1" << std::endl;
+			exit(-1);
+		}
+
+		if (TransA !=   TransB && TransA != CblasNoTrans ) {
+			std::cout << __func__ << " transpose not surpported ";
+			exit(-1);
+		}
+		igemm_colmajor(rows, cols, depth, A, lda, B, ldb, C, ldc);
 	}
 
 } // Protected
@@ -103,19 +120,12 @@ namespace FFLAS {
 			   const int64_t alpha, const int64_t *A, const int lda, const int64_t *B, const int ldb,
 			   const int64_t beta, int64_t *C, const int ldc)
 	{
-		if (beta != 0 || alpha != 1) {
-			std::cout << __func__ << " alpha, beta are 1 and 0" << std::endl;
-			exit(-1);
-		}
-		if (TransA !=  CblasNoTrans || TransB !=  CblasNoTrans) {
-			std::cout << __func__ << " transpose not surpported ";
-			exit(-1);
-		}
-		if (Order != CblasColMajor) {
-			std::cout << __func__ << " transpose not surpported ";
-			exit(-1);
-		}
-		Protected::igemm(M,N,K,C,ldc,const_cast<int64_t*>(A),lda,const_cast<int64_t*>(B),ldb);
+
+
+		if (Order == CblasColMajor)
+			Protected::igemm(TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);
+		else
+			Protected::igemm(TransB,TransA,N,M,K,alpha,B,ldb,A,lda,beta,C,ldc);
 	}
 
 
