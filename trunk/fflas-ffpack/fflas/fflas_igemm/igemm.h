@@ -36,18 +36,30 @@
 
 namespace FFLAS { namespace Protected {
 
-	void igemm_colmajor(size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, int64_t* A, size_t lda, int64_t* B, size_t ldb) ;
+	void igemm_colmajor(size_t rows, size_t cols, size_t depth
+			    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
+			    , int64_t* C, size_t ldc
+			   ) ;
 
-	void igemm(size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, int64_t* A, size_t lda, int64_t* B, size_t ldb) ;
+	void igemm(const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB
+		   , size_t rows, size_t cols, size_t depth
+		   , const int64_t alpha
+		   , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
+		   , const int64_t beta
+		   , int64_t* C, size_t ldc
+		  ) ;
 
 } // Protected
 } // FFLAS
 
 namespace FFLAS { /*  igemm */
 
-	inline void igemm_(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
-			   const int K, const int64_t alpha, const int64_t *A, const int lda, const int64_t *B, const int ldb,
-			   const int64_t beta, int64_t *C, const int ldc);
+	inline void igemm_(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB
+			   , const int M, const int N, const int K
+			   , const int64_t alpha
+			   , const int64_t *A, const int lda, const int64_t *B, const int ldb
+			   , const int64_t beta
+			   , int64_t *C, const int ldc);
 
 
 } // FFLAS
