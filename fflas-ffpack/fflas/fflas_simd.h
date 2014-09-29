@@ -55,6 +55,7 @@
 #endif
 
 #include <type_traits>
+#include <limits>
 
 // to activate SIMD with integers
 //#define SIMD_INT
@@ -143,8 +144,6 @@ template<>
  */
 
 
-
-
 #if defined(__FFLASFFPACK_USE_AVX)
 
 template< class T, bool = std::is_integral<T>::value >
@@ -158,17 +157,16 @@ struct SimdChooser<T,false> {
 
 template<class T>
 struct SimdChooser<T,true> {
+#if defined(__FFLASFFPACK_USE_AVX2)
+    typedef Simd256<T> value;
+#else    
 	typedef Simd128<T> value ;
+#endif // __FFLASFFPACK_USE_AVX2
 };
 
 template<class T>
 using Simd = typename SimdChooser<T>::value;
 
-
-#elif defined(__FFLASFFPACK_USE_AVX2)
-
-template<class T>
-using Simd = Simd256<T>;
 
 #elif defined(__FFLASFFPACK_USE_SSE) // not AVX
 
@@ -176,6 +174,7 @@ template<class T>
 using Simd = Simd128<T>;
 
 #endif
+
 
 #else /* C++11 */
 #error "You need a c++11 compiler."

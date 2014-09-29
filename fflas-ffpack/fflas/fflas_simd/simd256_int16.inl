@@ -317,32 +317,31 @@ struct Simd256_impl<true, true, true, 2>{
 		return _mm256_mulhi_epi16(a, b);
 	}
 
-	/*
-     * Multiply the low 16-bit integers from each packed 32-bit element in a and b, and store the signed 32-bit results in dst.
-     * Args   : [0, a1, 0, a3, 0, a5, 0, a7, 0, a9, 0, a11, 0, a13, 0, a15]    int16_t
-     			[0, b1, 0, b3, 0, b5, 0, b7, 0, b9, 0, b11, 0, b13, 0, b15]    int16_t
-     * Return : [a1*b1, a3*b2, a5*b5, a7*b7, a9*b9, a11*b11, a13*b14, a15*b15] int32_t
+    /*
+     * Multiply the low 8-bit integers from each packed 16-bit element in a and b, and store the signed 16-bit results in dst.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15]    int16_t
+                [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]    int16_t
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3, a4*b4, a5*b5, a6*b6, a7*b7, a8*b8, a9*b9, a10*b10, a11*b11, a12*b12, a13*b13, a14*b14, a15*b15] int16_t
      */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
-	{
-		vect_t ah, al;
-		ah = mulhi(a, b);
-		al = mullo(a, b);
-		return set(_mm_extract_epi16(ah,1),_mm_extract_epi16(al,1),_mm_extract_epi16(ah,3),_mm_extract_epi16(al,3),_mm_extract_epi16(ah,5),_mm_extract_epi16(al,5),_mm_extract_epi16(ah,7),_mm_extract_epi16(al,7),
-			       _mm_extract_epi16(ah,9),_mm_extract_epi16(al,9),_mm_extract_epi16(ah,11),_mm_extract_epi16(al,11),_mm_extract_epi16(ah,13),_mm_extract_epi16(al,13),_mm_extract_epi16(ah,15),_mm_extract_epi16(al,15));
-	}
+    static INLINE CONST vect_t mulx(vect_t a, vect_t b)
+    {
+        vect_t mask = set1(0x00FF);
+        a = vand(a, mask);
+        b = vand(b, mask);
+        return mullo(a, b);
+    }
 
-	/*
+    /*
      *
-     * Args   : [0, a1, 0, a3, 0, a5, 0, a7, 0, a9, 0, a11, 0, a13, 0, a15] int16_t
-     			[0, b1, 0, b3, 0, b5, 0, b7, 0, b9, 0, b11, 0, b13, 0, b15] int16_t
-     			[c0, c1, c2, c3, c4, c5, c6, c7] 							int32_t
-     * Return : [c0+a1*b1, c1+a3*b2, c2+a5*b5, c3+a7*b7, c4+a9*b9, c5+a11*b11, c6+a13*b14, c7+a15*b15] int32_t
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15]    int16_t
+                [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]    int16_t
+                [c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]    int16_t
+     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7, a8*b8+c8, a9*b9+c9, a10*b10+c10, a11*b11+c11, a12*b12+c12, a13*b13+c13, a14*b14+c14, a15*b15+c15] int16_t
      */
-	static INLINE CONST vect_t maddx(vect_t c, const vect_t a, const vect_t b)
-	{
-		return simd256<int32_t>::add(c, mulx(a, b));
-	}
+    static INLINE CONST vect_t fmaddx(vect_t c, const vect_t a, const vect_t b)
+    {
+        return add(c, mulx(a, b));
+    }
 
 	/*
      * Compare packed 16-bits in a and b for equality, and store the results in vect_t.
