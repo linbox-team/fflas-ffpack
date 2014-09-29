@@ -57,6 +57,18 @@ struct Simd128_impl<true, true, true, 2>{
     static const constexpr size_t alignment = 16;
 
     /*
+     * Converter from vect_t to a tab.
+     * exple:
+     *      Converter conv;
+     *      conv.v = a;
+     *      scalart_t x = conv.t[1]
+     */
+    union Converter{
+        vect_t v;
+        scalar_t t[vect_size];
+    };
+
+    /*
      *  Return vector of type vect_t with all elements set to zero
      *  Return [0,0,0,0,0,0,0,0] int16_t
      */
@@ -190,29 +202,29 @@ struct Simd128_impl<true, true, true, 2>{
     }
 
     /*
-     * Multiply the low 16-bit integers from each packed 32-bit element in a and b, and store the signed 32-bit results in dst.
-     * Args   : [0, a1, 0, a3, 0, a5, 0, a7]    int16_t
-                [0, b1, 0, b3, 0, b5, 0, b7]    int16_t
-     * Return : [a1*b1, a3*b2, a5*b5, a7*b7]    int32_t
+     * Multiply the low 8-bit integers from each packed 16-bit element in a and b, and store the signed 16-bit results in dst.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]    int16_t
+                [b0, b1, b2, b3, b4, b5, b6, b7]    int16_t
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3, a4*b4, a5*b5, a6*b6, a7*b7]    int16_t
      */
-    static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
+    static INLINE CONST vect_t mulx(vect_t a, vect_t b)
     {
-        vect_t ah, al;
-        ah = mulhi(a, b);
-        al = mullo(a, b);
-        return set(_mm_extract_epi16(ah,1),_mm_extract_epi16(al,1),_mm_extract_epi16(ah,3),_mm_extract_epi16(al,3),_mm_extract_epi16(ah,5),_mm_extract_epi16(al,5),_mm_extract_epi16(ah,7),_mm_extract_epi16(al,7));
+        vect_t mask = set(0x00FF);
+        a = vand(a, mask);
+        b = vand(b, mask);
+        return _mm_mullo_epi16(a, b);
     }
 
     /*
      *
-     * Args   : [0, a1, 0, a3, 0, a5, 0, a7] int16_t
-                [0, b1, 0, b3, 0, b5, 0, b7] int16_t
-                [c0, c1, c2, c3]                            int32_t
-     * Return : [c0+a1*b1, c1+a3*b2, c2+a5*b5, c3+a7*b7] int32_t
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]    int16_t
+                [b0, b1, b2, b3, b4, b5, b6, b7]    int16_t
+                [c0, c1, c2, c3, c4, c5, c6, c7]    int16_t
+     * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]    int16_t
      */
-    static INLINE CONST vect_t maddx(vect_t c, const vect_t a, const vect_t b)
+    static INLINE CONST vect_t fmaddx(vect_t c, const vect_t a, const vect_t b)
     {
-        return simd128<int32_t>::add(c, mulx(a, b));
+        return add(c, mulx(a, b));
     }
 
     /*
@@ -327,6 +339,18 @@ struct Simd128_impl<true, true, true, 2>{
     static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b)
     {
         return _mm_andnot_si128(b, a);
+    }
+
+    /*
+     * Horizontally add 16-bits elements of a.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+     * Return : a0+a1+a2+a3
+     */
+    static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
+    {
+        Converter conv;
+        conv.v = a;
+        return conv.t[0] + conv.t[1] + conv.t[2] + conv.t[3] + conv.t[4] + conv.t[5] + conv.t[6] + conv.t[7];
     }
 
 #else

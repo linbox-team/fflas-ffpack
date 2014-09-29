@@ -207,6 +207,25 @@ struct Simd256_impl<true, false, true, 8> {
 #endif
 	}
 
+	/*
+	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to packed elements in c, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+	 */
+	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b)
+	{
+		return fmadd(c, a, b);
+	}
+
+	/*
+	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to packed elements in c, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+	 */
+	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b)
+	{
+		return fmadd(c, a, b);
+	}
 
 	static INLINE CONST vect_t fmaddin( vect_t & c, const vect_t a, const vect_t b)
 	{

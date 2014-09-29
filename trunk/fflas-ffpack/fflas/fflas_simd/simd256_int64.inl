@@ -295,19 +295,26 @@ struct Simd256_impl<true, true, true, 8> {
 	}
 
 	/*
-     * Multiply the low 64-bits integers from each packed 128-bit element in a and b, and store the signed 128-bit results in dst.
-     * Args   : [0, a1, 0, a3]    int64_t
-     			[0, b1, 0, b3]    int64_t
-     * Return : [a1*b1, a3*b2] int128_t
+     * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results in dst.
+     * Args   : [a0, a1, a2, a3]    int64_t
+     			[b0, b1, b2, b3]    int64_t
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3] int64_t
      */
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
 	{
-		// ugly solution, but it works.
-		// tested with gcc, clang, icc
-		Converter ca, cb;
-		ca.v = a;
-		cb.v = b;
-		return set((__int128(ca.t[1])*cb.t[1]) >> 64, (__int128(ca.t[1])*cb.t[1]), (__int128(ca.t[2])*cb.t[2]) >> 64, (__int128(ca.t[2])*cb.t[2]));
+		return _mm256_mul_epi32(a, b);
+	}
+
+	/*
+     *
+     * Args   : [a0, a1, a2, a3]    int64_t
+     			[b0, b1, b2, b3]    int64_t
+     			[c0, c1, c2, c3] 			 int64_t
+     * Return : [c0+a1*b1, c1+a3*b2, c2+a5*b5, c3+a7*b7] int64_t
+     */
+	static INLINE CONST vect_t maddx(vect_t c, const vect_t a, const vect_t b)
+	{
+		return add(c, mulx(a, b));
 	}
 
 	/*

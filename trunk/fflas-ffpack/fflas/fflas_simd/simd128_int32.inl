@@ -57,6 +57,18 @@ struct Simd128_impl<true, true, true, 4> {
     static const constexpr size_t alignment = 16;
 	
     /*
+     * Converter from vect_t to a tab.
+     * exple:
+     *      Converter conv;
+     *      conv.v = a;
+     *      scalart_t x = conv.t[1]
+     */
+    union Converter{
+        vect_t v;
+        scalar_t t[vect_size];
+    };
+
+    /*
      *  Return vector of type vect_t with all elements set to zero
      *  Return [0,0,0,0] int32_t
      */
@@ -164,7 +176,7 @@ struct Simd128_impl<true, true, true, 4> {
     }
 
     /*
-     * Multiply the packed 32-bit integers in a and b, producing intermediate 32-bit integers, and store the low 16 bits of the intermediate integers in vect_t. 
+     * Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers, and store the low 32 bits of the intermediate integers in vect_t. 
      * Args   : [a0, a1, a2, a3]           int32_t
                 [b0, b1, b2, b3]           int32_t
      * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1, a2*b2 mod 2^16-1, a3*b3 mod 2^16-1] int32_t
@@ -175,7 +187,7 @@ struct Simd128_impl<true, true, true, 4> {
     }
 
 	/*
-     * Multiply the packed 32-bit integers in a and b, producing intermediate 32-bit integers, and store the high 16 bits of the intermediate integers in vect_t.
+     * Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers, and store the high 32 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1, a2, a3] int32_t
                 [b0, b1, b2, b3] int32_t
      * Return : 
@@ -195,21 +207,34 @@ struct Simd128_impl<true, true, true, 4> {
 	}
 
 	/*
-     * Multiply the low 32-bit integers from each packed 32-bit element in a and b, and store the signed 32-bit results in vect_t. 
-     * Args   : [0, a1, 0, a3]    int32_t
-                [0, b1, 0, b3]    int32_t
-     * Return : [a1*b1, a3*b2]    int64_t
+     * Multiply the low 16-bit integers from each packed 32-bit element in a and b, and store the signed 32-bit results in vect_t. 
+     * Args   : [a0, a1, a2, a3]    int32_t
+                [b0, b1, b2, b3]    int32_t
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3]    int32_t
      */
     static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) 
     {
         return _mm_mul_epi32(a, b);
     }
 
+    /*
+     * Multiply the packed 32-bit integers in a and b, producing intermediate 32-bit integers, and store the low 16 bits of the intermediate integers in vect_t. 
+     * Args   : [a0, a1, a2, a3]           int32_t
+                [b0, b1, b2, b3]           int32_t
+     * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1, a2*b2 mod 2^16-1, a3*b3 mod 2^16-1] int32_t
+     */
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
 	{
 		return mullo(a, b);
 	}
 
+    /*
+     * 
+     * Args   : [a0, a1, a2, a3]           int32_t
+                [b0, b1, b2, b3]           int32_t
+                [c0, c1, c2, c3]    int32_t
+     * Return : [(a0*b0 mod 2^16-1)+c0, (a1*b1 mod 2^16-1)+c1, (a2*b2 mod 2^16-1)+c2, (a3*b3 mod 2^16-1)+c3] int32_t
+     */
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return add(c,mul(a,b));
@@ -220,24 +245,55 @@ struct Simd128_impl<true, true, true, 4> {
 		return c = fmadd(c,a,b);
 	}
 
+    /*
+     * 
+     * Args   : [a0, a1, a2, a3]           int32_t
+                [b0, b1, b2, b3]           int32_t
+                [c0, c1, c2, c3]    int32_t
+     * Return : [-(a0*b0 mod 2^16-1)+c0, -(a1*b1 mod 2^16-1)+c1, -(a2*b2 mod 2^16-1)+c2, -(a3*b3 mod 2^16-1)+c3] int32_t
+     */
 	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(c,mul(a,b));
 	}
 
+    static INLINE CONST vect_t fnmaddin(vect_t c, const vect_t a, const vect_t b)
+    {
+        return c = sub(c,mul(a,b));
+    }
+
+    /*
+     * 
+     * Args   : [a0, a1, a2, a3]           int32_t
+                [b0, b1, b2, b3]           int32_t
+                [c0, c1, c2, c3]    int32_t
+     * Return : [(a0*b0 mod 2^16-1)-c0, (a1*b1 mod 2^16-1)-c1, (a2*b2 mod 2^16-1)-c2, (a3*b3 mod 2^16-1)-c3] int32_t
+     */
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(mul(a,b),c);
 	}
 
+    /*
+     * 
+     * Args   : [a0, a1, a2, a3]           int32_t
+                [b0, b1, b2, b3]           int32_t
+                [c0, c1, c2, c3]    int32_t
+     * Return : [(a0*b0 mod 2^16-1)-c0, (a1*b1 mod 2^16-1)-c1, (a2*b2 mod 2^16-1)-c2, (a3*b3 mod 2^16-1)-c3] int32_t
+     */
+    static INLINE CONST vect_t fmsubin(vect_t c, const vect_t a, const vect_t b)
+    {
+        return c = sub(mul(a,b),c);
+    }
+
 	/*
      * Compare packed 32-bits in a and b for equality, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
                 [b0, b1, b2, b3, b4, b5, b6, b7] int32_t
-     * Return : [(a0==b0) ? 0xFFFF : 0, (a1==b1) ? 0xFFFF : 0,
-                 (a2==b2) ? 0xFFFF : 0, (a3==b3) ? 0xFFFF : 0,
-                 (a4==b4) ? 0xFFFF : 0, (a5==b5) ? 0xFFFF : 0,
-                 (a6==b6) ? 0xFFFF : 0, (a7==b7) ? 0xFFFF : 0]                     int32_t
+     * Return : [(a0==b0) ? 0xFFFFFFFF : 0, (a1==b1) ? 0xFFFFFFFF : 0,
+                 (a2==b2) ? 0xFFFFFFFF : 0, (a3==b3) ? 0xFFFFFFFF : 0,
+                 (a4==b4) ? 0xFFFFFFFF : 0, (a5==b5) ? 0xFFFFFFFF : 0,
+                 (a6==b6) ? 0xFFFFFFFF : 0, (a7==b7) ? 0xFFFFFFFF : 0]                     int32_t
      */
     static INLINE CONST vect_t eq(const vect_t a, const vect_t b) 
     {
@@ -248,10 +304,10 @@ struct Simd128_impl<true, true, true, 4> {
      * Compare packed 32-bits in a and b for greater-than, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
                 [b0, b1, b2, b3, b4, b5, b6, b7] int32_t
-     * Return : [(a0>b0) ? 0xFFFF : 0, (a1>b1) ? 0xFFFF : 0,
-                 (a2>b2) ? 0xFFFF : 0, (a3>b3) ? 0xFFFF : 0,
-                 (a4>b4) ? 0xFFFF : 0, (a5>b5) ? 0xFFFF : 0,
-                 (a6>b6) ? 0xFFFF : 0, (a7>b7) ? 0xFFFF : 0]                      int32_t
+     * Return : [(a0>b0) ? 0xFFFFFFFF : 0, (a1>b1) ? 0xFFFFFFFF : 0,
+                 (a2>b2) ? 0xFFFFFFFF : 0, (a3>b3) ? 0xFFFFFFFF : 0,
+                 (a4>b4) ? 0xFFFFFFFF : 0, (a5>b5) ? 0xFFFFFFFF : 0,
+                 (a6>b6) ? 0xFFFFFFFF : 0, (a7>b7) ? 0xFFFFFFFF : 0]                      int32_t
      */
     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) 
     {
@@ -262,10 +318,10 @@ struct Simd128_impl<true, true, true, 4> {
      * Compare packed 32-bits in a and b for lesser-than, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
                 [b0, b1, b2, b3, b4, b5, b6, b7] int32_t
-     * Return : [(a0<b0) ? 0xFFFF : 0, (a1<b1) ? 0xFFFF : 0,
-                 (a2<b2) ? 0xFFFF : 0, (a3<b3) ? 0xFFFF : 0,
-                 (a4<b4) ? 0xFFFF : 0, (a5<b5) ? 0xFFFF : 0,
-                 (a6<b6) ? 0xFFFF : 0, (a7<b7) ? 0xFFFF : 0]                      int32_t
+     * Return : [(a0<b0) ? 0xFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFF : 0,
+                 (a2<b2) ? 0xFFFFFFFF : 0, (a3<b3) ? 0xFFFFFFFF : 0,
+                 (a4<b4) ? 0xFFFFFFFF : 0, (a5<b5) ? 0xFFFFFFFF : 0,
+                 (a6<b6) ? 0xFFFFFFFF : 0, (a7<b7) ? 0xFFFFFFFF : 0]                      int32_t
      */
     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) 
     {
@@ -276,10 +332,10 @@ struct Simd128_impl<true, true, true, 4> {
      * Compare packed 32-bits in a and b for greater or equal than, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
                 [b0, b1, b2, b3, b4, b5, b6, b7] int32_t
-     * Return : [(a0>=b0) ? 0xFFFF : 0, (a1>=b1) ? 0xFFFF : 0,
-                 (a2>=b2) ? 0xFFFF : 0, (a3>=b3) ? 0xFFFF : 0,
-                 (a4>=b4) ? 0xFFFF : 0, (a5>=b5) ? 0xFFFF : 0,
-                 (a6>=b6) ? 0xFFFF : 0, (a7>=b7) ? 0xFFFF : 0]                    int32_t
+     * Return : [(a0>=b0) ? 0xFFFFFFFF : 0, (a1>=b1) ? 0xFFFFFFFF : 0,
+                 (a2>=b2) ? 0xFFFFFFFF : 0, (a3>=b3) ? 0xFFFFFFFF : 0,
+                 (a4>=b4) ? 0xFFFFFFFF : 0, (a5>=b5) ? 0xFFFFFFFF : 0,
+                 (a6>=b6) ? 0xFFFFFFFF : 0, (a7>=b7) ? 0xFFFFFFFF : 0]                    int32_t
      */
     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
     {
@@ -290,10 +346,10 @@ struct Simd128_impl<true, true, true, 4> {
      * Compare packed 32-bits in a and b for lesser or equal than, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
                 [b0, b1, b2, b3, b4, b5, b6, b7] int32_t
-     * Return : [(a0<=b0) ? 0xFFFF : 0, (a1<=b1) ? 0xFFFF : 0,
-                 (a2<=b2) ? 0xFFFF : 0, (a3<=b3) ? 0xFFFF : 0,
-                 (a4<=b4) ? 0xFFFF : 0, (a5<=b5) ? 0xFFFF : 0,
-                 (a6<=b6) ? 0xFFFF : 0, (a7<=b7) ? 0xFFFF : 0]                     int32_t
+     * Return : [(a0<=b0) ? 0xFFFFFFFF : 0, (a1<=b1) ? 0xFFFFFFFF : 0,
+                 (a2<=b2) ? 0xFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFF : 0,
+                 (a4<=b4) ? 0xFFFFFFFF : 0, (a5<=b5) ? 0xFFFFFFFF : 0,
+                 (a6<=b6) ? 0xFFFFFFFF : 0, (a7<=b7) ? 0xFFFFFFFF : 0]                     int32_t
      */
     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
     {
@@ -344,12 +400,17 @@ struct Simd128_impl<true, true, true, 4> {
         return _mm_andnot_si128(b, a);
     }
 
-
+    /*
+     * Horizontally add 32-bits elements of a.
+     * Args   : [a0, a1, a2, a3]
+     * Return : a0+a1+a2+a3
+     */
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
 	{
-		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
+        Converter conv;
+        conv.v = a;
+		return conv.t[0] + conv.t[1] + conv.t[2] + conv.t[3];
 	}
-
 
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
@@ -369,12 +430,6 @@ struct Simd128_impl<true, true, true, 4> {
 // uint32_t
 template<>
 struct Simd128_impl<true, true, false, 4> {
-
-	// static void hello()
-	// {
-		// std::cout << "uint32_t" << std::endl;
-	// }
-
 
 } ;
 

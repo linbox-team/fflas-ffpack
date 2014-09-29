@@ -308,16 +308,19 @@ struct Simd256_impl<true, true, true, 4>{
 		return set(ca.t[0], ca.t[2], ca.t[4], ca.t[6], cb.t[0], cb.t[2], cb.t[4], cb.t[6])
 	}
 
-	/*
-     * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results in dst.
-     * Args   : [0, a1, 0, a3, 0, a5, 0, a7]    int32_t
-     			[0, b1, 0, b3, 0, b5, 0, b7]    int32_t
-     * Return : [a1*b1, a3*b2, a5*b5, a7*b7] int64_t
+    /*
+     * Multiply the low 16-bit integers from each packed 32-bit element in a and b, and store the signed 32-bit results in dst.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]    int32_t
+                [b0, b1, b2, b3, b4, b5, b6, b7]    int32_t
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3, a4*b4, a5*b5, a6*b6, a7*b7] int32_t
      */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
-	{
-		return _mm256_mul_epi32(a,b);
-	}
+    static INLINE CONST vect_t mulx(vect_t a, vect_t b)
+    {
+        vect_t mask = set(0x0000FFFF);
+        a = vand(a, mask);
+        b = vand(b, mask);
+        return mullo(a, b);
+    }
 
 	/*
      *
@@ -326,9 +329,9 @@ struct Simd256_impl<true, true, true, 4>{
      			[c0, c1, c2, c3] 			 int64_t
      * Return : [c0+a1*b1, c1+a3*b2, c2+a5*b5, c3+a7*b7] int64_t
      */
-	static INLINE CONST vect_t maddx(vect_t c, const vect_t a, const vect_t b)
+	static INLINE CONST vect_t fmaddx(vect_t c, const vect_t a, const vect_t b)
 	{
-		return simd256<int64_t>::add(c, mulx(a, b));
+		return add(c, mulx(a, b));
 	}
 
 	/*
