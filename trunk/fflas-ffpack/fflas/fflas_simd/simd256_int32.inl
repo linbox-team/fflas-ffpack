@@ -298,14 +298,14 @@ struct Simd256_impl<true, true, true, 4>{
 		ca.v = a;
 		cb.v = b;
 		vect_t a1, a2, b1, b2, c1, c2;
-		a1 = set(0, ca.t[0], 0, ca.t[1], 0, ca.t[2], 0; ca.t[3]);
-		a2 = set(0, ca.t[4], 0, ca.t[5], 0, ca.t[6], 0; ca.t[7]);
-		b1 = set(0, cb.t[0], 0, cb.t[1], 0, cb.t[2], 0; cb.t[3]);
-		b2 = set(0, cb.t[4], 0, cb.t[5], 0, cb.t[6], 0; cb.t[7]);
+		a1 = set(0, ca.t[0], 0, ca.t[1], 0, ca.t[2], 0, ca.t[3]);
+		a2 = set(0, ca.t[4], 0, ca.t[5], 0, ca.t[6], 0, ca.t[7]);
+		b1 = set(0, cb.t[0], 0, cb.t[1], 0, cb.t[2], 0, cb.t[3]);
+		b2 = set(0, cb.t[4], 0, cb.t[5], 0, cb.t[6], 0, cb.t[7]);
 		c1 = mulx(a1, b1);
 		c2 = mulx(a2, b2);
 		ca.v = c1; cb.v = c2;
-		return set(ca.t[0], ca.t[2], ca.t[4], ca.t[6], cb.t[0], cb.t[2], cb.t[4], cb.t[6])
+		return set(ca.t[0], ca.t[2], ca.t[4], ca.t[6], cb.t[0], cb.t[2], cb.t[4], cb.t[6]);
 	}
 
     /*
@@ -316,7 +316,7 @@ struct Simd256_impl<true, true, true, 4>{
      */
     static INLINE CONST vect_t mulx(vect_t a, vect_t b)
     {
-        vect_t mask = set(0x0000FFFF);
+        vect_t mask = set1(0x0000FFFF);
         a = vand(a, mask);
         b = vand(b, mask);
         return mullo(a, b);
@@ -488,7 +488,7 @@ struct Simd256_impl<true, true, true, 4>{
 
 // uint16_t
 template<>
-struct Simd256_impl<true, true, false, 4> : public Simd128_impl<true, true, true, 4> {
+struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true, true, true, 4> {
 #if defined(__FFLASFFPACK_USE_AVX2)
 
     using scalar_t = uint32_t;
