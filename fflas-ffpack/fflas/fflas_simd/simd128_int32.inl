@@ -429,8 +429,37 @@ struct Simd128_impl<true, true, true, 4> {
 
 // uint32_t
 template<>
-struct Simd128_impl<true, true, false, 4> {
+struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true, true, true, 4> {
+    using scalar_t = uint32_t;
+    
+    static INLINE CONST vect_t greater(vect_t a, vect_t b) 
+    {
 
-} ;
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm_cmpgt_epi32(a, b);
+    }
+
+    static INLINE CONST vect_t lesser(vect_t a, vect_t b) 
+    {
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm_cmpgt_epi32(a, b);
+    }
+
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+    {
+        return vor(greater(a, b), eq(a, b));
+    }
+
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+    {
+        return vor(lesser(a, b), eq(a, b));
+    }
+};
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_int32_INL
