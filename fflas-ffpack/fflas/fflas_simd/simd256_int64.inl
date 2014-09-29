@@ -217,7 +217,7 @@ struct Simd256_impl<true, true, true, 8> {
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
-		return set((__int128(ca.t[0])*cb.t[0]), (__int128(ca.t[1])*cb.t[1]), (__int128(ca.t[2])*cb.t[2]), (__int128(ca.t[3])*cb.t[3]))
+		return set((__int128(ca.t[0])*cb.t[0]), (__int128(ca.t[1])*cb.t[1]), (__int128(ca.t[2])*cb.t[2]), (__int128(ca.t[3])*cb.t[3]));
 	}
 
 	/*
@@ -449,7 +449,7 @@ struct Simd256_impl<true, true, true, 8> {
 
 // uint64_t
 template<>
-struct Simd256_impl<true, true, false, 8> : public Simd128_impl<true, true, true, 8> {
+struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true, true, true, 8> {
     using scalar_t = uint64_t;
 
 #if defined(__FFLASFFPACK_USE_AVX2) 

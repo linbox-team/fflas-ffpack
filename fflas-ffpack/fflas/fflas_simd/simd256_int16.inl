@@ -521,7 +521,7 @@ struct Simd256_impl<true, true, true, 2>{
 
 // uint16_t
 template<>
-struct Simd256_impl<true, true, false, 2> : public Simd128_impl<true, true, true, 2> {
+struct Simd256_impl<true, true, false, 2> : public Simd256_impl<true, true, true, 2> {
     using scalar_t = uint16_t;
 
 #if defined(__FFLASFFPACK_USE_AVX2)
