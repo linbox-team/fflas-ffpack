@@ -315,14 +315,52 @@ struct Simd128_impl<true, true, true, 8> {
 
 // uint64_t
 template<>
-struct Simd128_impl<true, true, false, 8> {
+struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true, true, true, 8> {
+    using scalar_t = uint64_t;
 
-	// static void hello()
-	// {
-		// std::cout << "uint64_t" << std::endl;
-	// }
+    static INLINE CONST vect_t greater(vect_t a, vect_t b) 
+    {
+#ifdef __SSE4_2__
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm_cmpgt_epi64(a, b);
+#else
+#pragma warning "The simd greater function is emulate, it may impact the performances."
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+#endif
+    }
 
+    static INLINE CONST vect_t lesser(vect_t a, vect_t b) 
+    {
+#ifdef __SSE4_2__
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm_cmpgt_epi64(a, b);
+#else
+#pragma warning "The simd greater function is emulate, it may impact the performances."
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+#endif
+    }
 
-} ;
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+    {
+        return vor(greater(a, b), eq(a, b));
+    }
+
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+    {
+        return vor(lesser(a, b), eq(a, b));
+    }
+};
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_int64_INL

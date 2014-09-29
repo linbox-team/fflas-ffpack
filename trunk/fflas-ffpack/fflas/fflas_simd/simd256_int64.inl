@@ -214,16 +214,10 @@ struct Simd256_impl<true, true, true, 8> {
      */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b)
 	{
-		vect_t x2, x3, x4;
-		x2 = _mm256_mul_epu32(a, b);
-		x4 = srl(a, 32);
-		x3 = srl(b, 32);
-		b = _mm256_mul_epu32(b, x4);
-		a = _mm256_mul_epu32(a, x3);
-		a = add(a, x3);
-		b = sll(x1, 32);
-		a = add(x1, x2);
-		return a;
+		Converter ca, cb;
+		ca.v = a;
+		cb.v = b;
+		return set((__int128(ca.t[0])*cb.t[0]), (__int128(ca.t[1])*cb.t[1]), (__int128(ca.t[2])*cb.t[2]), (__int128(ca.t[3])*cb.t[3]))
 	}
 
 	/*
@@ -437,17 +431,12 @@ struct Simd256_impl<true, true, true, 8> {
 
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
-		// mulx : 64bits x 64bits -> 128bits
-		// add : 64bits x 64bits -> 64bits
-		// this operation does not make sense :)
-		FFLASFFPACK_abort("not implemented yet");
-		return zero();
+		return maddx(c, a, b);
 	}
 
 	static INLINE  vect_t fmaddxin(vect_t & c, const vect_t a, const vect_t b)
 	{
 		return c = fmaddx(c,a,b);
-		return zero();
 	}
 
 #else
@@ -460,8 +449,45 @@ struct Simd256_impl<true, true, true, 8> {
 
 // uint64_t
 template<>
-struct Simd256_impl<true, true, false, 8> {
+struct Simd256_impl<true, true, false, 8> : public Simd128_impl<true, true, true, 8> {
+    using scalar_t = uint64_t;
 
-} ;
+#if defined(__FFLASFFPACK_USE_AVX2) 
+
+    static INLINE CONST vect_t greater(vect_t a, vect_t b) 
+    {
+
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm256_cmpgt_epi64(a, b);
+    }
+
+    static INLINE CONST vect_t lesser(vect_t a, vect_t b) 
+    {
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm256_cmpgt_epi64(a, b);
+    }
+
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+    {
+        return vor(greater(a, b), eq(a, b));
+    }
+
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+    {
+        return vor(lesser(a, b), eq(a, b));
+    }
+
+#else
+
+#error "You need AVX2 instructions to perform 256bits operations on uint64_t"
+
+#endif // defined(__FFLASFFPACK_USE_AVX2)        
+};
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_int64_INL
