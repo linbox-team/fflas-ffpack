@@ -194,8 +194,6 @@
 #define NOWRITE(void)
 #define NOREADWRITE(void)
 
-#define RETURNPARAM(f, P1, Args...) do{	\
-	P1=f(Args);							\
-  }while(0)
+#define RETURNPARAM(f, P1, Args...) P1=f(Args)
 
 #endif //__FFLASFFPACK_fflas_parallel_H
