@@ -123,7 +123,6 @@ namespace FFPACK {
 		  typename Field::Element_ptr G = A3 + R1;
 
 		  const FFLAS::CuttingStrategy method = FFLAS::BLOCK_THREADS;
-                  int nbw = -1;
 		  
 		  typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
 
