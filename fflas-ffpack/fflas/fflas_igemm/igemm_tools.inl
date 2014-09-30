@@ -35,7 +35,8 @@
 namespace FFLAS { namespace details {
 
 	template<>
-	inline void duplicate_vect<2>(int64_t* XX, const int64_t* X, size_t n){
+	inline void duplicate_vect<2>(int64_t* XX, const int64_t* X, size_t n)
+	{
 		int64_t *p=XX;
 		for(size_t i=0;i<n;i++){
 			p[0]=X[i];
@@ -45,7 +46,8 @@ namespace FFLAS { namespace details {
 	}
 
 	template<>
-	inline void duplicate_vect<4>(int64_t* XX, const int64_t* X, size_t n){
+	inline void duplicate_vect<4>(int64_t* XX, const int64_t* X, size_t n)
+	{
 		int64_t *p=XX;
 		for(size_t i=0;i<n;i++){
 			p[0]=X[i];
@@ -59,7 +61,8 @@ namespace FFLAS { namespace details {
 	// store each rows x k submatrices of Rhs in row major mode
 	// if k does not divide cols, the remaining column are not packed
 	template<size_t k>
-	void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
+	void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols)
+	{
 		size_t cols_by_k=(cols/k)*k;
 		size_t p=0;
 		// pack by k columns
@@ -82,7 +85,8 @@ namespace FFLAS { namespace details {
 	// store each k x cols submatrices of Lhs in column major mode
 	// if k does not divide rows, the remaining rows are not packed
 	template<size_t k>
-	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols){
+	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols)
+	{
 		using simd = Simd<int64_t> ;
 		// using half_t =  typename simd::half_t;
 		size_t p=0;

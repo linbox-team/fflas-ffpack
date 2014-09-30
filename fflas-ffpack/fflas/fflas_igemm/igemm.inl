@@ -35,6 +35,7 @@
 namespace FFLAS { namespace Protected {
 
 	// Assume matrices A,B,C are stored in column major order
+	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB>
 	void igemm_colmajor(size_t rows, size_t cols, size_t depth,
 			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
 			    int64_t* C, size_t ldc)
@@ -50,7 +51,7 @@ namespace FFLAS { namespace Protected {
 		size_t sizeB = kc*cols;
 		size_t sizeW = simd::vect_size*kc*_nr; // store data duplicated by the number of elements fitting in vector register
 
-		// these data must be (simd::alignment byte aligned
+		// these data must be simd::alignment byte aligned
 		int64_t *blockA, *blockB, *blockW;
 
 
@@ -66,7 +67,12 @@ namespace FFLAS { namespace Protected {
 			FFLASFFPACK_check(kc <= depth);
 
 			// pack horizontal panel of B into sequential memory (L2 cache)
-			FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
+			if (tA == CblasNoTrans) {
+				FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
+			}
+			else {
+				FFLAS::details::pack_lhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
+			}
 
 			// For each mc x kc block of the lhs's vertical panel...
 			for(size_t i2=0; i2<rows; i2+=mc){
@@ -76,7 +82,12 @@ namespace FFLAS { namespace Protected {
 
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
-				FFLAS::details::pack_lhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
+				if (tB == CblasNoTrans) {
+					FFLAS::details::pack_lhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
+				}
+				else {
+					FFLAS::details::pack_rhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
+				}
 				// call block*panel kernel
 				FFLAS::details::igebp(actual_mc, cols, actual_kc, C+i2, ldc, blockA, actual_kc, blockB, actual_kc, blockW);
 			}
@@ -94,18 +105,34 @@ namespace FFLAS { namespace Protected {
 		    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
 		    , const int64_t beta
 		    , int64_t* C, size_t ldc
-		    )
+		  )
 	{
+		// ATLAS/src/blas/gemm/ATL_gemm.c
 		if (beta != 1 || alpha != 1) {
-			std::cout << __func__ << " alpha, beta are 1 and 1" << std::endl;
+			std::cout << __func__ << " *** erreur *** alpha, beta are 1 and 1" << std::endl;
 			exit(-1);
 		}
 
-		if (TransA !=   TransB && TransA != CblasNoTrans ) {
-			std::cout << __func__ << " transpose not surpported ";
-			exit(-1);
+		if (TransA !=   CblasNoTrans && TransA != CblasNoTrans ) {
+			std::cout << __func__ << " *** warning *** transpose not surpported " <<std::endl;
+			// exit(-1);
 		}
-		igemm_colmajor(rows, cols, depth, A, lda, B, ldb, C, ldc);
+		if (TransA == CblasNoTrans) {
+			if (TransB == CblasNoTrans) {
+				igemm_colmajor<CblasNoTrans,CblasNoTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+			}
+			else {
+				igemm_colmajor<CblasNoTrans,CblasTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+			}
+		}
+		else {
+			if (TransB == CblasNoTrans) {
+				igemm_colmajor<CblasTrans,CblasNoTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+			}
+			else {
+				igemm_colmajor<CblasTrans,CblasTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+			}
+		}
 	}
 
 } // Protected

@@ -36,7 +36,8 @@
 
 namespace FFLAS { namespace Protected {
 
-	void igemm_colmajor(size_t rows, size_t cols, size_t depth
+	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB>
+	void igemm_colmajor( size_t rows, size_t cols, size_t depth
 			    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
 			    , int64_t* C, size_t ldc
 			   ) ;
