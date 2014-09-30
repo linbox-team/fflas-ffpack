@@ -253,6 +253,11 @@ namespace FFPACK {
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
 
 		  WAIT;
+#if(DEBUG!=0)
+struct timespec tsi;
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "P4: " << tsi.tv_nsec << std::endl;
+#endif
 
 		  size_t * P4 = FFLAS::fflas_new<size_t>(M-M2-R3);
 		  size_t * Q4 = FFLAS::fflas_new<size_t>(N-N2-R2);
@@ -260,8 +265,12 @@ namespace FFPACK {
     // H4 = P4 [ L4 ] [ U4 V4 ] Q4
     //         [ M4 ]
 		  //TASK(READ(Fi), NOWRITE(R4), READWRITE(R, P4, Q4), PPLUQ, R4, Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
-		  R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
+		  R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		  //WAIT;
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "R4: " << tsi.tv_nsec << std::endl;
+#endif
 
     // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
     // [ E22 M32 0 K2 ]
@@ -284,6 +293,10 @@ namespace FFPACK {
 			  MathP[i] += M2;
 
 		  WAIT;
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "M2: " << tsi.tv_nsec << std::endl;
+#endif
 		  if (R1+R2 < M2){
 			  // A <-  S^T A
 			  TASK(READ(Fi, R1, R2, R3, R4), NOWRITE(), READWRITE(A), pMatrixApplyS, Fi, A, lda, N, M2, R1, R2, R3, R4);
@@ -305,6 +318,10 @@ namespace FFPACK {
 			  // Q <- T Q
 			  PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
 			  WAIT;
+#if(DEBUG!=0)
+          clock_gettime(CLOCK_REALTIME, &tsi);
+          std::cerr << "pMatAppT: " << tsi.tv_nsec << std::endl;
+#endif
 			  // A <-   A T^T
 			  TASK(READ(Fi, R1, R2, R3, R4), NOWRITE(), READWRITE(A), pMatrixApplyT, Fi, A, lda, M, N2, R1, R2, R3, R4);
 			  //			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
@@ -312,6 +329,10 @@ namespace FFPACK {
 		  MathPerm2LAPACKPerm (Q, MathQ, N);
 		  MathPerm2LAPACKPerm (P, MathP, M);
 		  WAIT;
+#if(DEBUG!=0)
+          clock_gettime(CLOCK_REALTIME, &tsi);
+          std::cerr << "de: " << tsi.tv_nsec << std::endl;
+#endif
 
     FFLAS::fflas_delete( MathQ);
     FFLAS::fflas_delete( MathP);

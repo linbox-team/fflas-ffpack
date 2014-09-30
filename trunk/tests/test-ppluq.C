@@ -160,19 +160,19 @@ int main(int argc, char** argv)
 	F.init(beta,0.0);
 	// Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
 
-	typename Field::Element* A;
+	typename Field::Element* Acop;
     if (argc > 5) {
-        A = read_field(F,argv[5],&m,&n);
+        Acop = read_field(F,argv[5],&m,&n);
     } else {
         Field::RandIter G(F);
-        A = FFLAS::fflas_new<Field::Element>(m*n);
+        Acop = FFLAS::fflas_new<Field::Element>(m*n);
         PAR_FOR(size_t i=0; i<(size_t)m; ++i)
             for (size_t j=0; j<(size_t)n; ++j)
-                G.random (*(A+i*n+j));
+                G.random (*(Acop+i*n+j));
     }
     
 // FFLAS::fflas_new<Field::Element>(n*m);
-	Field::Element* Acop = FFLAS::fflas_new<Field::Element>(n*m);
+	Field::Element* A = FFLAS::fflas_new<Field::Element>(n*m);
 #if(DEBUG==1)
 	Field::Element* Adebug = FFLAS::fflas_new<Field::Element>(n*m);
 #endif
@@ -197,9 +197,9 @@ int main(int argc, char** argv)
     
     PAR_FOR(size_t i=0; i<(size_t)m; ++i)
         for (size_t j=0; j<(size_t)n; ++j) {
-            *(Acop+i*n+j) = *(A+i*n+j) ;
+            *(A+i*n+j) = *(Acop+i*n+j) ;
 #if(DEBUG==1) 
-            *(Adebug+i*n+j) = *(A+i*n+j) ;
+            *(Adebug+i*n+j) = *(Acop+i*n+j) ;
 #endif
         }
     
