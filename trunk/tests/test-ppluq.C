@@ -146,11 +146,6 @@ int main(int argc, char** argv)
     
         enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
         size_t R;
-#if(MODULO==1)        
-	typedef FFPACK::Modular<double> Field;
-#else
-	typedef FFPACK::UnparametricField<double> Field;
-#endif
 
 	const Field F((double)p);
 	// Field::RandIter G(F, seed1);
