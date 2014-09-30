@@ -44,13 +44,14 @@
 #include <algorithm>
 #include <typeinfo>
 
+#include "fflas-ffpack/field/unparametric-randiter.h"
 #include "fflas-ffpack/field/integer.h"
 
 namespace FFPACK
 {
 	template<class _Element>
 	class UnparametricField ;
-
+	
 	template <typename Target, typename Source>
 	Target& Caster (Target& t, const Source& s)
 	{
@@ -301,6 +302,8 @@ namespace FFPACK
 		 * Type K must provide a default constructor,
 		 * a copy constructor, a destructor, and an assignment operator.
 		 */
+		typedef UnparametricRandIter<Element> RandIter;
+		typedef NonzeroRandIter<UnparametricField<Element>, RandIter > NonZeroRandIter;
 
 		typedef typename UnparametricOperations<_Element>::Element Element;
 		typedef Element* Element_ptr;
