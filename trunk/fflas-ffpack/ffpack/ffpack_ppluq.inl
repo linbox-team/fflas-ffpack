@@ -178,14 +178,14 @@ std::cerr << "R2 : " << tsi.tv_nsec << std::endl;
 		  size_t * Q2 = FFLAS::fflas_new<size_t>(N-N2);
 		  // F = P2 [ L2 ] [ U2 V2 ] Q2
 		  //        [ M2 ]
-		  TASK(READ(Fi), WRITE(R2), READWRITE(F, P2, Q2), PPLUQ, R2, Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
+		  TASK(READ(Fi), WRITE(R2), READWRITE(F, P2, Q2), RETURNPARAM, pPLUQ, R2, Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 		  //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 
 		  size_t * P3 = FFLAS::fflas_new<size_t>(M-M2);
 		  size_t * Q3 = FFLAS::fflas_new<size_t>(N2-R1);
 		  // G = P3 [ L3 ] [ U3 V3 ] Q3
 		  //        [ M3 ]
-		  TASK(READ(Fi), WRITE(R3), READWRITE(G, P3, Q3), PPLUQ, R3, Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
+		  TASK(READ(Fi), WRITE(R3), READWRITE(G, P3, Q3), RETURNPARAM, pPLUQ, R3, Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 		  //		  R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 
 		  //		  WAIT;

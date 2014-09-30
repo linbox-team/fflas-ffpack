@@ -194,8 +194,8 @@
 #define NOWRITE(void)
 #define NOREADWRITE(void)
 
-#define PPLUQ(Rank, F, Diag, M, N, A, lda, P, Q) do{\
-  Rank = pPLUQ(F, Diag, M, N, A, lda, P, Q);\
+#define RETURNPARAM(f, P1, Args...) do{	\
+	P1=f(Args);							\
   }while(0)
 
 #endif //__FFLASFFPACK_fflas_parallel_H
