@@ -65,8 +65,9 @@ int main(int argc, char** argv) {
 	  else{
 		  Field::RandIter G(F);
 		  A = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random (*(A+j));
+          PAR_FOR(size_t i=0; i<(size_t)n; ++i)
+              for (size_t j=0; j<(size_t)n; ++j)
+                  G.random (*(A+i*n+j));
 	  }
 
 	  if (argc == 7){
@@ -75,8 +76,9 @@ int main(int argc, char** argv) {
 	  else{
 		  Field::RandIter G(F);
 		  B = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random(*(B+j));
+          PAR_FOR(size_t i=0; i<(size_t)n; ++i)
+              for (size_t j=0; j<(size_t)n; ++j)
+                  G.random (*(B+i*n+j));
 	  }
 
 	  C = FFLAS::fflas_new<Element>(n*n);
