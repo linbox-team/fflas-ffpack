@@ -241,6 +241,63 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc);
 
+
+	template<class Field>
+        typename Field::Element*
+        pfgemm_1D_rec( const Field& F,
+                       const FFLAS_TRANSPOSE ta,
+                       const FFLAS_TRANSPOSE tb,
+                       const size_t m,
+                       const size_t n,
+                       const size_t k,
+                       const typename Field::Element alpha,
+                       const typename Field::Element_ptr A, const size_t lda,
+                       const typename Field::Element_ptr B, const size_t ldb,
+                       const typename Field::Element beta,
+                       typename Field::Element * C, const size_t ldc, size_t seuil);
+
+	template<class Field>
+	typename Field::Element*
+	pfgemm_2D_rec( const Field& F,
+		       const FFLAS_TRANSPOSE ta,
+		       const FFLAS_TRANSPOSE tb,
+		       const size_t m,
+		       const size_t n,
+		       const size_t k,
+		       const typename Field::Element alpha,
+		       const typename Field::Element_ptr A, const size_t lda,
+		       const typename Field::Element_ptr B, const size_t ldb,
+		       const typename Field::Element beta,
+		       typename Field::Element * C, const size_t ldc, size_t seuil);
+
+	template<class Field>
+	typename Field::Element*
+	pfgemm_3D_rec( const Field& F,
+		       const FFLAS_TRANSPOSE ta,
+		       const FFLAS_TRANSPOSE tb,
+		       const size_t m,
+		       const size_t n,
+		       const size_t k,
+		       const typename Field::Element alpha,
+		       const typename Field::Element_ptr A, const size_t lda,
+		       const typename Field::Element_ptr B, const size_t ldb,
+		       const typename Field::Element beta,
+		       typename Field::Element_ptr C, const size_t ldc, size_t seuil, size_t * x);
+
+	template<class Field>
+	typename Field::Element_ptr
+	pfgemm_3D_rec2( const Field& F,
+			const FFLAS_TRANSPOSE ta,
+			const FFLAS_TRANSPOSE tb,
+			const size_t m,
+			const size_t n,
+			const size_t k,
+			const typename Field::Element alpha,
+			const typename Field::Element_ptr A, const size_t lda,
+			const typename Field::Element_ptr B, const size_t ldb,
+			const typename Field::Element beta,
+			typename Field::Element_ptr C, const size_t ldc, size_t seuil, size_t *x);
+
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
 	 * Computes \f$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C\f$
