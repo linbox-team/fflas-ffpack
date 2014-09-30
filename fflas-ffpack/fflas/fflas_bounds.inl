@@ -90,7 +90,7 @@ namespace FFLAS { namespace Protected {
 		unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
 
 		if (p == 0)
-			return 1;
+			return std::numeric_limits<size_t>::max();
 
 		double kmax;
 		{
