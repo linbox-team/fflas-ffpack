@@ -59,6 +59,7 @@
 #define WAIT
 #define BARRIER
 #define PAR_REGION
+#define PAR_FOR for
 #define NUM_THREADS 1
 #define MAX_THREADS 1
 
@@ -86,6 +87,9 @@
 
 #define BARRIER
 
+// parallel for
+#define PAR_FOR  PRAGMA_OMP_TASK_IMPL( omp parallel for ) \
+  for
 // parallel region
 #define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
   PRAGMA_OMP_TASK_IMPL( omp single )
@@ -121,6 +125,7 @@
   }while(0)
 
 #define PAR_REGION
+#define PAR_FOR for
 
 // Number of threads
 #  define NUM_THREADS kaapi_getconcurrency_cpu()
