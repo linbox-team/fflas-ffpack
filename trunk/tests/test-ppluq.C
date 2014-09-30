@@ -32,7 +32,9 @@ g++ -D__FFLASFFPACK_HAVE_CBLAS -Wall -g -fopenmp -O3 -march=native -mavx -I/home
 using namespace std;
 using namespace FFLAS;
 using namespace FFPACK;
+#ifndef MODULO
 #define MODULO 1
+#endif
 
 #if(MODULO==1)
 typedef FFPACK::Modular<double> Field;
@@ -40,11 +42,13 @@ typedef FFPACK::Modular<double> Field;
 typedef FFPACK::UnparametricField<double> Field;
 #endif
 
-#define DEBUG 
+#ifndef DEBUG
+#define DEBUG 1
+#endif 
+
+#ifndef SEQ
 #define SEQ 1
-
-
-typedef FFPACK::Modular<double> Field;
+#endif
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
@@ -159,7 +163,7 @@ int main(int argc, char** argv)
 	typename Field::Element* A = read_field(F,argv[2],&m,&n);
 // FFLAS::fflas_new<Field::Element>(n*m);
 	Field::Element* Acop = FFLAS::fflas_new<Field::Element>(n*m);
-#ifdef DEBUG 
+#if(DEBUG==1)
 	Field::Element* Adebug = FFLAS::fflas_new<Field::Element>(n*m);
 #endif
 	// std::vector<size_t> Index_P(r);
@@ -183,7 +187,7 @@ int main(int argc, char** argv)
 
 	for(int i=0; i<n*m; i++){
 	  Acop[i]=A[i];
-#ifdef DEBUG 
+#if(DEBUG==1) 
           Adebug[i]=A[i];
 #endif
         }
@@ -212,21 +216,25 @@ int main(int argc, char** argv)
 	    
         }
         avrg = t_total/nbf;
+        std::cerr << "MODULO: " << (MODULO?p:0) << std::endl;
+        
+	    PAR_REGION{
 	std::cerr<<"Parallel : "<<m<<" "<<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
 	  //#ifdef  __FFLASFFPACK_USE_OPENMP
 		 <<NUM_THREADS<<endl;
 	//#else
+	    }
 	//<<endl;
 	//#endi
 
 	//	std::cout<<typeid(A).name()<<endl;
-#ifdef DEBUG
+#if(DEBUG==1)
 	cout<<"check equality A == PLUQ ?"<<endl;
         verification_PLUQ(F,Adebug,A,P,Q,m,n,R);
         FFLAS::fflas_delete( Adebug);
 #endif
-#if SEQ
+#if(SEQ==1)
 	struct timespec  tt0, tt1;
 	double avrgg;
 	//call sequential PLUQ
