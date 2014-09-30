@@ -117,19 +117,19 @@ int main(int argc, char** argv)
 
     int p, n, m, nbf;
 
-	if (argc!=4){
-		std::cerr<<"usage : PLUQ-rec-omp <p> <file>  <i>"<<std::endl
+	if (argc > 6){
+		std::cerr<<"usage : PLUQ-rec-omp <p> <m> <n> <i> <file>"<<std::endl
 //		std::cerr<<"usage : PLUQ-rec-omp <m> <n> <p> <r> <i>"<<std::endl
 		    <<std::endl;
 		exit(-1);
 	}
    
-	p = atoi( argv[1] );
+	p = (argc>1 ? atoi( argv[1] ) : 1009);
 
-	// m = atoi( argv[1] );
-	// n = atoi( argv[2] );
+	m = (argc>2 ? atoi( argv[2] ) : 1024);
+	n = (argc>3 ? atoi( argv[3] ) : 1024);
 	// r = atoi( argv[4] );
-	nbf = atoi( argv[3] );
+	nbf = (argc>4 ? atoi( argv[4] ) : 1);
 	
 	//	size_t lda = n;
 
@@ -160,7 +160,17 @@ int main(int argc, char** argv)
 	F.init(beta,0.0);
 	// Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
 
-	typename Field::Element* A = read_field(F,argv[2],&m,&n);
+	typename Field::Element* A;
+    if (argc > 5) {
+        A = read_field(F,argv[5],&m,&n);
+    } else {
+        Field::RandIter G(F);
+        A = FFLAS::fflas_new<Field::Element>(m*n);
+        PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+            for (size_t j=0; j<(size_t)n; ++j)
+                G.random (*(A+i*n+j));
+    }
+    
 // FFLAS::fflas_new<Field::Element>(n*m);
 	Field::Element* Acop = FFLAS::fflas_new<Field::Element>(n*m);
 #if(DEBUG==1)
@@ -178,61 +188,61 @@ int main(int argc, char** argv)
 	double delay, avrg;//, avrgg;
 	double t_total=0;
 
-        size_t maxP, maxQ;
-                maxP = m;
-                maxQ = n;
-
-        size_t *P = FFLAS::fflas_new<size_t>(maxP);
-        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
-
-	for(int i=0; i<n*m; i++){
-	  Acop[i]=A[i];
+    size_t maxP, maxQ;
+    maxP = m;
+    maxQ = n;
+    
+    size_t *P = FFLAS::fflas_new<size_t>(maxP);
+    size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
+    
+    PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+        for (size_t j=0; j<(size_t)n; ++j) {
+            *(Acop+i*n+j) = *(A+i*n+j) ;
 #if(DEBUG==1) 
-          Adebug[i]=A[i];
+            *(Adebug+i*n+j) = *(A+i*n+j) ;
 #endif
         }
-
-        for ( int i=0;i<nbf+1;i++){
-            for (size_t j=0;j<maxP;j++)
-                P[j]=0;
-            for (size_t j=0;j<maxQ;j++)
-                Q[j]=0;
-	    //            #pragma omp parallel for shared(A, Acop)    
-	    for(int k=0; k<n*m; k++)
-	      {
-		
-		A[k]=Acop[k];
-	      }
+    
+    
+    for ( int i=0;i<nbf+1;i++){
+        for (size_t j=0;j<maxP;j++)
+            P[j]=0;
+        for (size_t j=0;j<maxQ;j++)
+            Q[j]=0;
+        
+        PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+            for (size_t j=0; j<(size_t)n; ++j)
+                *(A+i*n+j) = *(Acop+i*n+j) ;
 	    
 	    clock_gettime(CLOCK_REALTIME, &t0);
 	    PAR_REGION{
-		R = pPLUQ(F, diag, m, n, A, n, P, Q);// Parallel PLUQ
+            R = pPLUQ(F, diag, m, n, A, n, P, Q);// Parallel PLUQ
 	    }
 	    clock_gettime(CLOCK_REALTIME, &t1);
 	    delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
-
-	    if(i)
-	      t_total +=delay;
-	    
-        }
-        avrg = t_total/nbf;
-        std::cerr << "MODULO: " << (MODULO?p:0) << std::endl;
         
-	    PAR_REGION{
-	std::cerr<<"Parallel : "<<m<<" "<<R<<" "
+	    if(i)
+            t_total +=delay;
+	    
+    }
+    avrg = t_total/nbf;
+    std::cerr << "MODULO: " << (MODULO?p:0) << std::endl;
+    
+    PAR_REGION{
+        std::cerr<<"Parallel --- m: "<<m<<" , n: " n << " , r: " <<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
-	  //#ifdef  __FFLASFFPACK_USE_OPENMP
-		 <<NUM_THREADS<<endl;
-	//#else
-	    }
-	//<<endl;
-	//#endi
-
-	//	std::cout<<typeid(A).name()<<endl;
+                //#ifdef  __FFLASFFPACK_USE_OPENMP
+                 <<NUM_THREADS<<endl;
+            //#else
+    }
+        //<<endl;
+        //#endi
+    
+        //	std::cout<<typeid(A).name()<<endl;
 #if(DEBUG==1)
 	cout<<"check equality A == PLUQ ?"<<endl;
-        verification_PLUQ(F,Adebug,A,P,Q,m,n,R);
-        FFLAS::fflas_delete( Adebug);
+    verification_PLUQ(F,Adebug,A,P,Q,m,n,R);
+    FFLAS::fflas_delete( Adebug);
 #endif
 #if(SEQ==1)
 	struct timespec  tt0, tt1;
