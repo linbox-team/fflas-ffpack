@@ -229,7 +229,7 @@ int main(int argc, char** argv)
     std::cerr << "MODULO: " << (MODULO?p:0) << std::endl;
     
     PAR_REGION{
-        std::cerr<<"Parallel --- m: "<<m<<" , n: " n << " , r: " <<R<<" "
+        std::cerr<<"Parallel --- m: "<<m<<" , n: " << n << " , r: " <<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
                 //#ifdef  __FFLASFFPACK_USE_OPENMP
                  <<NUM_THREADS<<endl;
