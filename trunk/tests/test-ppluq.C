@@ -59,26 +59,26 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
   L = FFLAS::fflas_new<Field::Element>(m*R);
   U = FFLAS::fflas_new<Field::Element>(R*n);
 
-  for (size_t i=0; i<m*R; ++i)
+  PAR_FOR (size_t i=0; i<m*R; ++i)
     F.init(L[i], 0.0);
 
-  for (size_t i=0; i<m*R; ++i)
+  PAR_FOR (size_t i=0; i<m*R; ++i)
     F.init(U[i], 0.0);
 
-  for (size_t i=0; i<m*n; ++i)
+  PAR_FOR (size_t i=0; i<m*n; ++i)
     F.init(X[i], 0.0);
 
 
   Field::Element zero,one;
   F.init(zero,0.0);
   F.init(one,1.0);
-  for (size_t i=0; i<R; ++i){
+  PAR_FOR (size_t i=0; i<R; ++i){
     for (size_t j=0; j<i; ++j)
       F.assign ( *(U + i*n + j), zero);
     for (size_t j=i; j<n; ++j)
       F.assign (*(U + i*n + j), *(A+ i*n+j));
   }
-  for ( size_t j=0; j<R; ++j ){
+  PAR_FOR ( size_t j=0; j<R; ++j ){
     for (size_t i=0; i<=j; ++i )
       F.assign( *(L+i*R+j), zero);
     F.assign(*(L+j*R+j), one);
@@ -92,21 +92,22 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
   FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 		1.0, L,R, U,n, 0.0, X,n);
   bool fail = false;
-  for (size_t i=0; i<m; ++i)
+  PAR_FOR (size_t i=0; i<m; ++i)
     for (size_t j=0; j<n; ++j)
       if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
-	std::cerr << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
-		  << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
-		  << std::endl;
-	fail=true;
+          std::stringstream errs;
+          errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
+                    << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
+                    << std::endl;
+          std::cerr << errs;
+          fail=true;
       }
-
+  
   if (fail)
-    std::cerr<<"FAIL"<<std::endl;
-
-
+      std::cerr<<"FAIL"<<std::endl;
   else
-    std::cerr<<"PASS"<<std::endl;
+      std::cerr<<"PASS"<<std::endl;
+
   FFLAS::fflas_delete( U);
   FFLAS::fflas_delete( L);
   FFLAS::fflas_delete( X);
