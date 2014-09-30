@@ -146,12 +146,12 @@ clock_gettime(CLOCK_REALTIME, &tsi);
 std::cerr << "R1 : " << tsi.tv_nsec << std::endl;
 #endif
 		  // D <- L1^-1 B1
-		  TASK(READ(Fi, A, R1), NOWRITE(), READWRITE(A2), ftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
+		  TASK(READ(Fi, A, R1, PH), NOWRITE(), READWRITE(A2), ftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
 		  //    pftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda,  method, NUM);
 		  //ftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda);
 
 		  // E <- C1 U1^-1
-		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), ftrsm,Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  PH);
+		  TASK(READ(Fi, R1, A, PH), NOWRITE(), READWRITE(A3), ftrsm,Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  PH);
 		  //pftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda,  method, NUM);
 		  //ftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 
@@ -161,11 +161,11 @@ clock_gettime(CLOCK_REALTIME, &tsi);
 std::cerr << "F  : " << tsi.tv_nsec << std::endl;
 #endif
 		  // F <- B2 - M1 D
-		  TASK(READ(Fi, A), NOWRITE(), READWRITE(A2), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, pWH);
+		  TASK(READ(Fi, A, pWH), NOWRITE(), READWRITE(A2), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
 
 		  // G <- C2 - E V1
-		  TASK(READ(Fi, R1, A), NOWRITE(), READWRITE(A3), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda, pWH);
+		  TASK(READ(Fi, R1, A, pWH), NOWRITE(), READWRITE(A3), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
 
 		  WAIT;
