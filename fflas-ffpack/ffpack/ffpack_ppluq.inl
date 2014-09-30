@@ -124,11 +124,11 @@ namespace FFPACK {
 
 		  const FFLAS::CuttingStrategy method = FFLAS::BLOCK_THREADS;
                   int nbw = -1;
-		  FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value,
-				  typename FFLAS::ParSeqHelper::Parallel> pWH (Fi, nbw, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, method));
+		  
+		  typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
 
-		  FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-			  FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(MAX_THREADS, method));
+
+		  typename FFLAS::ParSeqHelper::Parallel PH (MAX_THREADS/2, method);
 
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]
