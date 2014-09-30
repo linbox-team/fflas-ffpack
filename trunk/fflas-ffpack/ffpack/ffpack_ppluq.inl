@@ -140,6 +140,11 @@ namespace FFPACK {
 		  //papplyP( Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 
 		  WAIT;
+#if(DEBUG!=0)
+struct timespec tsi;
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "R1 : " << tsi.tv_nsec << std::endl;
+#endif
 		  // D <- L1^-1 B1
 		  TASK(READ(Fi, A, R1), NOWRITE(), READWRITE(A2), ftrsm, Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
 		  //    pftrsm( Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2 , lda,  method, NUM);
@@ -151,6 +156,10 @@ namespace FFPACK {
 		  //ftrsm(Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 
 		  WAIT;
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "F  : " << tsi.tv_nsec << std::endl;
+#endif
 		  // F <- B2 - M1 D
 		  TASK(READ(Fi, A), NOWRITE(), READWRITE(A2), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
@@ -161,6 +170,10 @@ namespace FFPACK {
 
 		  WAIT;
 
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "R2 : " << tsi.tv_nsec << std::endl;
+#endif
 		  size_t * P2 = FFLAS::fflas_new<size_t>(M2-R1);
 		  size_t * Q2 = FFLAS::fflas_new<size_t>(N-N2);
 		  // F = P2 [ L2 ] [ U2 V2 ] Q2
@@ -184,6 +197,10 @@ namespace FFPACK {
 		  //		  std::cout<<"NUM "<<NUM_THREADS<<std::endl;
 
 		  WAIT;
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "aq2: " << tsi.tv_nsec << std::endl;
+#endif
 
 		  // [ H1 H2 ] <- P3^T H Q2^T
 		  // [ H3 H4 ]
@@ -195,6 +212,10 @@ namespace FFPACK {
 		  //applyP( Fi, FflasLeft, FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
 		  WAIT;
 
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "ap3: " << tsi.tv_nsec << std::endl;
+#endif
       // [ E1 ] <- P3^T E
       // [ E2 ]
 		  TASK(READ(Fi,P3), NOWRITE(), READWRITE(A3), papplyP,  Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
@@ -220,6 +241,10 @@ namespace FFPACK {
 		  //ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		  WAIT;
 
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "R3 : " << tsi.tv_nsec << std::endl;
+#endif
 		  typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
 		  /*    for (size_t i=0; i<R3; ++i)
 			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
@@ -237,6 +262,10 @@ namespace FFPACK {
 		  //ftrsm(Fi, FflasLeft, FflasLower, FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		  WAIT;
 
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "mm3: " << tsi.tv_nsec << std::endl;
+#endif
    // O <- N - J V2
 		  TASK(READ(Fi, R2, temp, F), NOWRITE(), READWRITE(A4), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
@@ -247,6 +276,10 @@ namespace FFPACK {
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		  WAIT;
 
+#if(DEBUG!=0)
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "mm4: " << tsi.tv_nsec << std::endl;
+#endif
 		  FFLAS::fflas_delete (temp);
     // R <- R - M3 O
 		  TASK(READ(Fi, R3, A4, G), NOWRITE(), READWRITE(R), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda, pWH);
@@ -254,9 +287,8 @@ namespace FFPACK {
 
 		  WAIT;
 #if(DEBUG!=0)
-struct timespec tsi;
 clock_gettime(CLOCK_REALTIME, &tsi);
-std::cerr << "P4: " << tsi.tv_nsec << std::endl;
+std::cerr << "P4 : " << tsi.tv_nsec << std::endl;
 #endif
 
 		  size_t * P4 = FFLAS::fflas_new<size_t>(M-M2-R3);
@@ -269,7 +301,7 @@ std::cerr << "P4: " << tsi.tv_nsec << std::endl;
 		  //WAIT;
 #if(DEBUG!=0)
 clock_gettime(CLOCK_REALTIME, &tsi);
-std::cerr << "R4: " << tsi.tv_nsec << std::endl;
+std::cerr << "R4 : " << tsi.tv_nsec << std::endl;
 #endif
 
     // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
@@ -295,7 +327,7 @@ std::cerr << "R4: " << tsi.tv_nsec << std::endl;
 		  WAIT;
 #if(DEBUG!=0)
 clock_gettime(CLOCK_REALTIME, &tsi);
-std::cerr << "M2: " << tsi.tv_nsec << std::endl;
+std::cerr << "M2 : " << tsi.tv_nsec << std::endl;
 #endif
 		  if (R1+R2 < M2){
 			  // A <-  S^T A
@@ -319,8 +351,8 @@ std::cerr << "M2: " << tsi.tv_nsec << std::endl;
 			  PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
 			  WAIT;
 #if(DEBUG!=0)
-          clock_gettime(CLOCK_REALTIME, &tsi);
-          std::cerr << "pMatAppT: " << tsi.tv_nsec << std::endl;
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "pMatAppT: " << tsi.tv_nsec << std::endl;
 #endif
 			  // A <-   A T^T
 			  TASK(READ(Fi, R1, R2, R3, R4), NOWRITE(), READWRITE(A), pMatrixApplyT, Fi, A, lda, M, N2, R1, R2, R3, R4);
@@ -330,8 +362,8 @@ std::cerr << "M2: " << tsi.tv_nsec << std::endl;
 		  MathPerm2LAPACKPerm (P, MathP, M);
 		  WAIT;
 #if(DEBUG!=0)
-          clock_gettime(CLOCK_REALTIME, &tsi);
-          std::cerr << "de: " << tsi.tv_nsec << std::endl;
+clock_gettime(CLOCK_REALTIME, &tsi);
+std::cerr << "de : " << tsi.tv_nsec << std::endl;
 #endif
 
     FFLAS::fflas_delete( MathQ);
