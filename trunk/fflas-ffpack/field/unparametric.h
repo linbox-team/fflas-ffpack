@@ -302,10 +302,10 @@ namespace FFPACK
 		 * Type K must provide a default constructor,
 		 * a copy constructor, a destructor, and an assignment operator.
 		 */
-		typedef UnparametricRandIter<Element> RandIter;
-		typedef NonzeroRandIter<UnparametricField<Element>, RandIter > NonZeroRandIter;
 
 		typedef typename UnparametricOperations<_Element>::Element Element;
+		typedef UnparametricRandIter<Element> RandIter;
+		typedef NonzeroRandIter<UnparametricField<Element>, RandIter > NonZeroRandIter;
 		typedef Element* Element_ptr;
 		typedef const Element* ConstElement_ptr;
 		const Element one  ; // peut pas être static... :(
