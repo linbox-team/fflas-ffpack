@@ -286,8 +286,8 @@ namespace FFPACK {
 		  WAIT;
 		  if (R1+R2 < M2){
 			  // A <-  S^T A
-			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyS, F, A, lda, N, M2, R1, R2, R3, R4);
-			  MatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
+			  TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), pMatrixApplyS, Fi, A, lda, N, M2, R1, R2, R3, R4);
+			  //MatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
 
 			  // P <- P S
 			  PermApplyS( MathP, 1,1, M2, R1, R2, R3, R4);
@@ -304,9 +304,10 @@ namespace FFPACK {
 		  if (R1 < N2){
 			  // Q <- T Q
 			  PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
+			  WAIT;
 			  // A <-   A T^T
-			  //TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), papplyT, F, A, lda, M, N2, R1, R2, R3, R4);
-			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
+			  TASK(READ(R1, R2, R3, R4), NOWRITE(), READWRITE(A), pMatrixApplyT, Fi, A, lda, M, N2, R1, R2, R3, R4);
+			  //			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
 		  }
 		  MathPerm2LAPACKPerm (Q, MathQ, N);
 		  MathPerm2LAPACKPerm (P, MathP, M);
