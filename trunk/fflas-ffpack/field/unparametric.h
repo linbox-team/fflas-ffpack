@@ -45,6 +45,7 @@
 #include <typeinfo>
 
 #include "fflas-ffpack/field/unparametric-randiter.h"
+#include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/field/integer.h"
 
 namespace FFPACK
