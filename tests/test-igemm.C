@@ -11,9 +11,9 @@
 
 int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB)
 {
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	typedef FFPACK::Modular<FFPACK::Integer> IField ;
-	IField Z(std::pow(2,63));
+	IField Z(1UL<<63);
 
 
 	size_t lda = k;//+rand() % 3 ; // k
@@ -51,8 +51,8 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 			// Rand.random(C[i*ldc+j]);
 			D[i*n+j]=C[i*ldc+j] = 0 ; //rand() % 10;
 
-	write_field(Z,std::cout << "A:=", A, m, k, lda,true,false) <<';' <<std::endl;
-	write_field(Z,std::cout << "B:=", B, k, n, ldb,true,false) <<';' <<std::endl;
+	write_field(Z,std::cout << "A:=", A, (int)m, (int)k, (int)lda,true,false) <<';' <<std::endl;
+	write_field(Z,std::cout << "B:=", B, (int)k, (int)n, (int)ldb,true,false) <<';' <<std::endl;
 
 
 
@@ -62,7 +62,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 	FFLAS::fgemm(Z,(FFLAS::FFLAS_TRANSPOSE)tA,(FFLAS::FFLAS_TRANSPOSE)tB,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 
-	write_field(Z,std::cout << "C:=", C, m, n, ldc,true,false) <<';' <<std::endl;
+	write_field(Z,std::cout << "C:=", C, (int)m, (int)n, (int)ldc,true,false) <<';' <<std::endl;
 	std::cout << "==========================" << std::endl;
 
 
@@ -101,8 +101,8 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 #endif
 
-	write_field(F,std::cout << "A:=", Aa, m, k, ldA,true,COL_MAJOR)  <<';'<<std::endl;
-	write_field(F,std::cout << "B:=", Bb, k, n, ldB,true,COL_MAJOR) <<';' <<std::endl;
+	write_field(F,std::cout << "A:=", Aa, (int)m, (int)k, (int)ldA,true,COL_MAJOR)  <<';'<<std::endl;
+	write_field(F,std::cout << "B:=", Bb, (int)k, (int)n, (int)ldB,true,COL_MAJOR) <<';' <<std::endl;
 
 	FField::Element a,b ;
 	a=F.one;
@@ -110,11 +110,11 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 #if 0
 	FFLAS::igemm_(CblasColMajor, tA, tB, m, n, k, a, Aa, ldA, Bb, ldB, b, Cc, ldC);
 #else
-	FFLAS::igemm_(CblasRowMajor,tA,tB, m, n, k, a, Aa, ldA, Bb, ldB, b, Cc, ldC);
+	FFLAS::igemm_(CblasRowMajor,tA,tB, (int)m, (int)n, (int)k, a, Aa, (int)ldA, Bb, (int)ldB, b, Cc, (int)ldC);
 #endif
 
 
-	write_field(F,std::cout << "C:=", Cc, m, n, ldC,true,COL_MAJOR) <<';' <<std::endl;
+	write_field(F,std::cout << "C:=", Cc, (int)m, (int)n, (int)ldC,true,COL_MAJOR) <<';' <<std::endl;
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
