@@ -35,7 +35,7 @@ template<>
 struct Simd128_impl<true, true, true, 8> {
 
 #if defined(__FFLASFFPACK_USE_SIMD)
-	
+
 	/*
      * alias to 128 bit simd register
      */
@@ -171,7 +171,7 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 	/*
-     * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t. 
+     * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1]           int64_t
                 [b0, b1]           int64_t
      * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
@@ -184,11 +184,11 @@ struct Simd128_impl<true, true, true, 8> {
 		Converter c0, c1;
 		c0.v = x0;
 		c1.v = x1;
-		return set((__int128(c0.t[0])*c1.t[0]), (__int128(c0.t[1])*c1.t[1]));
+		return set((__int128_t(c0.t[0])*c1.t[0]), (__int128_t(c0.t[1])*c1.t[1]));
 	}
 
 	/*
-     * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t. 
+     * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1]           int64_t
                 [b0, b1]           int64_t
      * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
@@ -204,7 +204,7 @@ struct Simd128_impl<true, true, true, 8> {
 		Converter c0, c1;
 		c0.v = a;
 		c1.v = b;
-		return set((__int128(c0.t[0])*c1.t[0]) >> 64, (__int128(c0.t[1])*c1.t[1]) >> 64);
+		return set((__int128_t(c0.t[0])*c1.t[0]) >> 64, (__int128_t(c0.t[1])*c1.t[1]) >> 64);
 	}
 
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b)
@@ -318,7 +318,7 @@ template<>
 struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true, true, true, 8> {
     using scalar_t = uint64_t;
 
-    static INLINE CONST vect_t greater(vect_t a, vect_t b) 
+    static INLINE CONST vect_t greater(vect_t a, vect_t b)
     {
 #ifdef __SSE4_2__
         vect_t x;
@@ -335,7 +335,7 @@ struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true, true, true
 #endif
     }
 
-    static INLINE CONST vect_t lesser(vect_t a, vect_t b) 
+    static INLINE CONST vect_t lesser(vect_t a, vect_t b)
     {
 #ifdef __SSE4_2__
         vect_t x;
@@ -352,12 +352,12 @@ struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true, true, true
 #endif
     }
 
-    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
     {
         return vor(greater(a, b), eq(a, b));
     }
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
     {
         return vor(lesser(a, b), eq(a, b));
     }
