@@ -53,6 +53,7 @@ pkgincludesub_HEADERS=          	\
 	  nonzero-randiter.h        	\
 	  modular-randiter.h        	\
 	  unparametric.h            	\
+	  unparametric-randiter.h            	\
 	  integer.h			\
 	  $(RNS)
 
