@@ -34,3 +34,6 @@ Verifier la validite avec modular<int> (sage révele des det faux)
 
 Revoir la structure des bornes dans winograd: trop de reductions
    modulaires quand il y a des etapes de wino dans le corps fini.
+----------
+10/01/2014
+--> Move fields to Givaro
