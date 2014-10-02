@@ -63,7 +63,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	FFLAS::fgemm(Z,(FFLAS::FFLAS_TRANSPOSE)tA,(FFLAS::FFLAS_TRANSPOSE)tB,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 
 	write_field(Z,std::cout << "C:=", C, (int)m, (int)n, (int)ldc,true,false) <<';' <<std::endl;
-	std::cout << "==========================" << std::endl;
+	std::cout << "---------------------------------------------" << std::endl;
 
 
 	typedef FFPACK::UnparametricField<int64_t> FField ;
@@ -116,6 +116,16 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 	write_field(F,std::cout << "C:=", Cc, (int)m, (int)n, (int)ldC,true,COL_MAJOR) <<';' <<std::endl;
 
+	for (size_t i = 0 ; i < m ; ++i) {
+		for (size_t j = 0 ; j < n ; ++j) {
+			if (Cc[i*ldC+j] == (typename IField::Element) C[i*ldc+j])
+				std::cout << 'o' ;
+			else
+				std::cout << 'o' ;
+		}
+		std::cout << std::endl;
+	}
+
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(C);
@@ -145,11 +155,11 @@ int main(int argc, char** argv)
 
 
 	test_igemm(m,n,k,CblasNoTrans, CblasNoTrans);
-	std::cout << "xxxxxxxxxxxxxxxxxxxxxx" << std::endl;
+	std::cout << "=============================================" << std::endl;
 	test_igemm(m,n,k,CblasTrans, CblasNoTrans);
-	std::cout << "xxxxxxxxxxxxxxxxxxxxxx" << std::endl;
+	std::cout << "=============================================" << std::endl;
 	test_igemm(m,n,k,CblasNoTrans, CblasTrans);
-	std::cout << "xxxxxxxxxxxxxxxxxxxxxx" << std::endl;
+	std::cout << "=============================================" << std::endl;
 	test_igemm(m,n,k,CblasTrans, CblasTrans);
 
 

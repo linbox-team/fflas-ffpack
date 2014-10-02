@@ -256,14 +256,14 @@ namespace FFLAS {
 
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)
 	template<typename RNS>
-	void finit(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
+	void finit_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
 		   const FFPACK::integer *B, const size_t ldb, typename RNS::Element_ptr A)
 	{
 		F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
 	}
 	// function to convert from RNS to integer (note: this is not the fconvert function from FFLAS, extra alpha)
 	template<typename RNS>
-	void fconvert(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
+	void fconvert_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
 		      FFPACK::integer alpha, FFPACK::integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
 	{
 		F.rns().convert(m,n,alpha,B,ldb,A._ptr,A._stride);
