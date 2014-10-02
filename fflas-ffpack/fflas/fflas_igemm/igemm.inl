@@ -67,11 +67,11 @@ namespace FFLAS { namespace Protected {
 			FFLASFFPACK_check(kc <= depth);
 
 			// pack horizontal panel of B into sequential memory (L2 cache)
-			if (tA == CblasNoTrans) {
+			if (tB == CblasNoTrans) {
 				FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
 			}
 			else {
-				FFLAS::details::pack_lhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
+				FFLAS::details::pack_lhs<_nr>(blockB, B+k2, ldb, cols, actual_kc);
 			}
 
 			// For each mc x kc block of the lhs's vertical panel...
@@ -82,11 +82,11 @@ namespace FFLAS { namespace Protected {
 
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
-				if (tB == CblasNoTrans) {
+				if (tA == CblasNoTrans) {
 					FFLAS::details::pack_lhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
 				}
 				else {
-					FFLAS::details::pack_rhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
+					FFLAS::details::pack_rhs<_mr>(blockA, A+i2+k2*lda, lda, actual_kc, actual_mc);
 				}
 				// call block*panel kernel
 				FFLAS::details::igebp(actual_mc, cols, actual_kc, C+i2, ldc, blockA, actual_kc, blockB, actual_kc, blockW);

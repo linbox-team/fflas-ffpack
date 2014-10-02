@@ -15,17 +15,21 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	typedef FFPACK::Modular<FFPACK::Integer> IField ;
 	IField Z(1UL<<63);
 
+	size_t ra = (tA==CblasNoTrans) ? m : k ;
+	size_t ca = (tA==CblasNoTrans) ? k : m ;
+	size_t rb = (tB==CblasNoTrans) ? k : n;
+	size_t cb = (tB==CblasNoTrans) ? n : k;
 
-	size_t lda = k;//+rand() % 3 ; // k
-	size_t ldb = n;//+rand() % 3 ; // n
+	size_t lda = ca;//+rand() % 3 ; // k
+	size_t ldb = cb;//+rand() % 3 ; // n
 	size_t ldc = n;//+rand() % 3 ; // n
 #if COL_MAJOR
 	size_t ldA = m;//+rand() % 3 ; // m
 	size_t ldB = k;//+rand() % 3 ; // k
 	size_t ldC = m;//+rand() % 3 ; // m
 #else
-	size_t ldA = k;//+rand() % 3 ; // k
-	size_t ldB = n;//+rand() % 3 ; // n
+	size_t ldA = ca;//+rand() % 3 ; // k
+	size_t ldB = cb;//+rand() % 3 ; // n
 	size_t ldC = n;//+rand() % 3 ; // n
 #endif
 
@@ -35,24 +39,26 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	IField::Element_ptr A,B,C,D;
 	C= FFLAS::fflas_new(Z,m,ldc);
 	D= FFLAS::fflas_new(Z,m,n);
-	A= FFLAS::fflas_new(Z,m,lda);
-	B= FFLAS::fflas_new(Z,k,ldb);
+	A= FFLAS::fflas_new(Z,ra,lda);
+	B= FFLAS::fflas_new(Z,rb,ldb) ;
 
-	for (size_t i=0;i<m;++i)
-		for (size_t j=0;j<k;++j)
+	for (size_t i=0;i<ra;++i)
+		for (size_t j=0;j<ca;++j)
 			// Rand.random(A[i*lda+j]);
-			A[i*lda+j] = rand() % 10 ;
-	for (size_t i=0;i<k;++i)
-		for (size_t j=0;j<n;++j)
+			A[i*lda+j] = rand() % 10;
+	for (size_t i=0;i<rb;++i)
+		for (size_t j=0;j<cb;++j)
 			// Rand.random(B[i*ldb+j]);
-			B[i*ldb+j] = rand() %10;
+			B[i*ldb+j] = rand() % 10;
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
 			// Rand.random(C[i*ldc+j]);
 			D[i*n+j]=C[i*ldc+j] = 0 ; //rand() % 10;
 
-	write_field(Z,std::cout << "A:=", A, (int)m, (int)k, (int)lda,true,false) <<';' <<std::endl;
-	write_field(Z,std::cout << "B:=", B, (int)k, (int)n, (int)ldb,true,false) <<';' <<std::endl;
+	write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,false) <<';' <<std::endl;
+	// write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,(tA==CblasTrans))  <<';'<<std::endl;
+	write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,false) <<';' <<std::endl;
+	// write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,(tB==CblasTrans)) <<';' <<std::endl;
 
 
 
@@ -60,9 +66,35 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	alpha = Z.one ;
 	beta = Z.one ;
 
+#if TRUST_FGEMM
 	FFLAS::fgemm(Z,(FFLAS::FFLAS_TRANSPOSE)tA,(FFLAS::FFLAS_TRANSPOSE)tB,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+#else
+	IField::Element_ptr ail,blj;
+	IField::Element tmp;
+	for (size_t i = 0; i < m; ++i)
+		for (size_t j = 0; j < n; ++j){
+			Z.mulin(*(C+i*n+j),beta);
+			Z.assign (tmp, Z.zero);
+			for ( size_t l = 0; l < k ; ++l ){
+				if ( tA == CblasNoTrans )
+					ail = A+i*lda+l;
+				else
+					ail = A+l*lda+i;
+				if ( tB == CblasNoTrans )
+					blj = B+l*ldb+j;
+				else
+					blj = B+j*ldb+l;
+				Z.axpyin (tmp, *ail, *blj);
+			}
+			Z.axpyin (*(C+i*n+j), alpha, tmp);
+		}
+
+#endif
 
 	write_field(Z,std::cout << "C:=", C, (int)m, (int)n, (int)ldc,true,false) <<';' <<std::endl;
+	std::cout << ((tA == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
+	std::cout << ((tB == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
+
 	std::cout << "---------------------------------------------" << std::endl;
 
 
@@ -86,14 +118,14 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 			F.init(Cc[j*ldC+i],D[i*n+j]);
 #else
 	Cc= FFLAS::fflas_new(F,m,ldC);
-	Aa= FFLAS::fflas_new(F,m,ldA);
-	Bb= FFLAS::fflas_new(F,k,ldB);
+	Aa= FFLAS::fflas_new(F,ra,ldA);
+	Bb= FFLAS::fflas_new(F,rb,ldB);
 
-	for (size_t i=0;i<m;++i)
-		for (size_t j=0;j<k;++j)
+	for (size_t i=0;i<ra;++i)
+		for (size_t j=0;j<ca;++j)
 			F.init(Aa[i*ldA+j],A[i*lda+j]);
-	for (size_t i=0;i<k;++i)
-		for (size_t j=0;j<n;++j)
+	for (size_t i=0;i<rb;++i)
+		for (size_t j=0;j<cb;++j)
 			F.init(Bb[i*ldB+j],B[i*ldb+j]);
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
@@ -101,8 +133,10 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 #endif
 
-	write_field(F,std::cout << "A:=", Aa, (int)m, (int)k, (int)ldA,true,COL_MAJOR)  <<';'<<std::endl;
-	write_field(F,std::cout << "B:=", Bb, (int)k, (int)n, (int)ldB,true,COL_MAJOR) <<';' <<std::endl;
+	write_field(F,std::cout << "A:=", Aa, (int)ra, (int)ca, (int)ldA,true,COL_MAJOR)  <<';'<<std::endl;
+	// write_field(F,std::cout << "A:=", Aa, (int)ra, (int)ca, (int)ldA,true,(tA==CblasTrans))  <<';'<<std::endl;
+	write_field(F,std::cout << "B:=", Bb, (int)rb, (int)cb, (int)ldB,true,COL_MAJOR) <<';' <<std::endl;
+	// write_field(F,std::cout << "B:=", Bb, (int)rb, (int)cb, (int)ldB,true,(tB==CblasTrans)) <<';' <<std::endl;
 
 	FField::Element a,b ;
 	a=F.one;
@@ -115,13 +149,15 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 
 	write_field(F,std::cout << "C:=", Cc, (int)m, (int)n, (int)ldC,true,COL_MAJOR) <<';' <<std::endl;
+	std::cout << ((tA == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
+	std::cout << ((tB == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
 
 	for (size_t i = 0 ; i < m ; ++i) {
 		for (size_t j = 0 ; j < n ; ++j) {
 			if (Cc[i*ldC+j] == (typename IField::Element) C[i*ldc+j])
 				std::cout << 'o' ;
 			else
-				std::cout << 'o' ;
+				std::cout << 'x' ;
 		}
 		std::cout << std::endl;
 	}
@@ -133,6 +169,8 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	FFLAS::fflas_delete(Aa);
 	FFLAS::fflas_delete(Bb);
 	FFLAS::fflas_delete(Cc);
+
+	FFLAS::fflas_delete(D);
 
 	return true;
 }
@@ -154,12 +192,13 @@ int main(int argc, char** argv)
 	FFLAS::parseArguments(argc,argv,as);
 
 
+	std::cout << " A B==========================================" << std::endl;
 	test_igemm(m,n,k,CblasNoTrans, CblasNoTrans);
-	std::cout << "=============================================" << std::endl;
+	std::cout << "tA B==========================================" << std::endl;
 	test_igemm(m,n,k,CblasTrans, CblasNoTrans);
-	std::cout << "=============================================" << std::endl;
+	std::cout << " AtB==========================================" << std::endl;
 	test_igemm(m,n,k,CblasNoTrans, CblasTrans);
-	std::cout << "=============================================" << std::endl;
+	std::cout << "tAtB==========================================" << std::endl;
 	test_igemm(m,n,k,CblasTrans, CblasTrans);
 
 
