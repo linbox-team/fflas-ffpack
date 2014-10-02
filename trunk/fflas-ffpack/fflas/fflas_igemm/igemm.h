@@ -30,17 +30,40 @@
 #ifndef __FFLASFFPACK_fflas_igemm_igemm_H
 #define __FFLASFFPACK_fflas_igemm_igemm_H
 
+namespace FFLAS {
+
+	enum number_kind {
+		zero  =0,
+		one   =1,
+		mone  =-1,
+		other =2
+	}  ;
+
+} // FFLAS
+
 #include "igemm_kernels.h"
 #include "igemm_tools.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
 
 namespace FFLAS { namespace Protected {
 
+
+
 	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB>
 	void igemm_colmajor( size_t rows, size_t cols, size_t depth
+			    , const int64_t alpha
 			    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
 			    , int64_t* C, size_t ldc
 			   ) ;
+
+	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB, enum number_kind alpha_kind>
+	void igemm_colmajor( size_t rows, size_t cols, size_t depth
+			    , const int64_t alpha
+			    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
+			    , int64_t* C, size_t ldc
+			   ) ;
+
+
 
 	void igemm(const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB
 		   , size_t rows, size_t cols, size_t depth

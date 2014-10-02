@@ -170,6 +170,12 @@ struct Simd128_impl<true, true, true, 8> {
 		return _mm_sub_epi64(a, b);
 	}
 
+	static INLINE vect_t subin(vect_t &a, const vect_t b)
+	{
+		return a = sub(a,b);
+	}
+
+
 	/*
      * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
      * Args   : [a0, a1]           int64_t

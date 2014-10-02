@@ -37,7 +37,8 @@ MODULAR_BAL=modular-balanced.h        	\
 	  modular-balanced-double.h 	\
 	  modular-balanced-float.h  	\
 	  modular-balanced-int32.h  	\
-	  modular-balanced-int64.h
+	  modular-balanced-int64.h      \
+	  modular-balanced-integer.h
 
 RNS=rns.h			        \
     rns-double.h			\

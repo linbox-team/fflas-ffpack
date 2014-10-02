@@ -60,7 +60,7 @@ namespace FFLAS { namespace details {
 
 	// store each rows x k submatrices of Rhs in row major mode
 	// if k does not divide cols, the remaining column are not packed
-	template<size_t k>
+	template<size_t k, bool transpose>
 	void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols)
 	{
 		size_t cols_by_k=(cols/k)*k;
@@ -73,6 +73,15 @@ namespace FFLAS { namespace details {
 					XX[p]=X[i+(j+l)*ldx];
 				}
 		}
+		if (transpose){
+			if (cols-cols_by_k>=StepA){
+				for(size_t i=0;i<rows;i++) {
+					for (size_t l=0;l<StepA;l++,p++)
+						XX[p]=X[i+(cols_by_k+l)*ldx];
+				}
+				cols_by_k+=StepA;
+			}
+		}
 		// the remaining columns are not packed
 		for(size_t j=cols_by_k;j<cols;j++)
 			//! @bug this is fcopy
@@ -84,7 +93,7 @@ namespace FFLAS { namespace details {
 
 	// store each k x cols submatrices of Lhs in column major mode
 	// if k does not divide rows, the remaining rows are not packed
-	template<size_t k>
+	template<size_t k, bool transpose>
 	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols)
 	{
 		using simd = Simd<int64_t> ;
@@ -102,15 +111,17 @@ namespace FFLAS { namespace details {
 				}
 			}
 		// the remaining rows are packed by group of StepA (if possible)
-		if (rows-rows_by_k>=StepA){
-			for(size_t j=0;j<cols;j++) {
-				// for (size_t l=0;l<StepA;l++,p++) XX[p]=X[rows_by_k+l+j*ldx];
-				FFLASFFPACK_check(StepA%simd::vect_size == 0);
-				for (size_t l=0;l<StepA;l+=simd::vect_size,p+=simd::vect_size){
-					simd::store(&XX[p],simd::loadu(&X[rows_by_k+l+j*ldx]));
+		if (!transpose) {
+			if (rows-rows_by_k>=StepA){
+				for(size_t j=0;j<cols;j++) {
+					// for (size_t l=0;l<StepA;l++,p++) XX[p]=X[rows_by_k+l+j*ldx];
+					FFLASFFPACK_check(StepA%simd::vect_size == 0);
+					for (size_t l=0;l<StepA;l+=simd::vect_size,p+=simd::vect_size){
+						simd::store(&XX[p],simd::loadu(&X[rows_by_k+l+j*ldx]));
+					}
 				}
+				rows_by_k+=StepA;
 			}
-			rows_by_k+=StepA;
 		}
 		for(size_t i=rows_by_k;i<rows;i++) {
 			//! @bug this is fcopy
