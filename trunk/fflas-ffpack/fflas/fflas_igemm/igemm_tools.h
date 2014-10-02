@@ -42,13 +42,13 @@ namespace FFLAS { namespace details { /*  tools */
 	inline void duplicate_vect (int64_t* XX, const int64_t* X, size_t n){}
 
 	template<size_t k>
-		void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);
+	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);
 
 	template<size_t k>
-		void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);
+	void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);
 
 	void gebp(size_t rows, size_t cols, size_t depth,int64_t* C, size_t ldc, const int64_t* blockA, size_t lda,
-			const int64_t* BlockB, size_t ldb, int64_t* BlockW);
+		  const int64_t* BlockB, size_t ldb, int64_t* BlockW);
 
 	void BlockingFactor(size_t& m, size_t& n, size_t& k);
 
