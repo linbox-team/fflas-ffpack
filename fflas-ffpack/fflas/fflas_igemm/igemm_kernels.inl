@@ -53,7 +53,12 @@
 
 namespace FFLAS { namespace details { /*  kernels */
 
-	inline void igebb44(size_t i, size_t j, size_t depth, size_t pdepth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB)
+	template<enum number_kind K>
+	inline void igebb44(size_t i, size_t j, size_t depth, size_t pdepth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			   )
 	{
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
@@ -160,6 +165,8 @@ namespace FFLAS { namespace details { /*  kernels */
 			blB+=4*StepB;
 		}
 		vect_t R0, R1, R2, R3, R4, R5, R6;
+		vect_t A0 ;
+		A0 = simd::set1(alpha);
 		R0 = simd::loadu( r0);
 		R1 = simd::loadu( r1);
 		R2 = simd::loadu( r2);
@@ -167,16 +174,44 @@ namespace FFLAS { namespace details { /*  kernels */
 		R4 = simd::loadu( r0+simd::vect_size);
 		R5 = simd::loadu( r1+simd::vect_size);
 		R6 = simd::loadu( r2+simd::vect_size);
-		simd::addin(R0,C0);
+		if (K == number_kind::one) {
+			simd::addin(R0,C0);
+		}
+		if (K == number_kind::mone) {
+			simd::subin(R0,C0);
+		}
+		if (K == number_kind::other) {
+			simd::fmaddxin(R0,A0,C0);
+		}
 		simd::storeu(r0,R0);
 		R0 = simd::loadu( r3+simd::vect_size);
-		simd::addin(R1,C1);
-		simd::addin(R2,C2);
-		simd::addin(R3,C3);
-		simd::addin(R4,C4);
-		simd::addin(R5,C5);
-		simd::addin(R6,C6);
-		simd::addin(R0,C7);
+		if (K == number_kind::one) {
+			simd::addin(R1,C1);
+			simd::addin(R2,C2);
+			simd::addin(R3,C3);
+			simd::addin(R4,C4);
+			simd::addin(R5,C5);
+			simd::addin(R6,C6);
+			simd::addin(R0,C7);
+		}
+		if (K == number_kind::mone) {
+			simd::subin(R1,C1);
+			simd::subin(R2,C2);
+			simd::subin(R3,C3);
+			simd::subin(R4,C4);
+			simd::subin(R5,C5);
+			simd::subin(R6,C6);
+			simd::subin(R0,C7);
+		}
+		if (K == number_kind::other) {
+			simd::fmaddxin(R1,A0,C1);
+			simd::fmaddxin(R2,A0,C2);
+			simd::fmaddxin(R3,A0,C3);
+			simd::fmaddxin(R4,A0,C4);
+			simd::fmaddxin(R5,A0,C5);
+			simd::fmaddxin(R6,A0,C6);
+			simd::fmaddxin(R0,A0,C7);
+		}
 		simd::storeu(r1,R1);
 		simd::storeu(r2,R2);
 		simd::storeu(r3,R3);
@@ -188,7 +223,12 @@ namespace FFLAS { namespace details { /*  kernels */
 	}
 
 
-	inline void igebb24(size_t i, size_t j, size_t depth, size_t pdepth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB)
+	template<enum number_kind K>
+	inline void igebb24(size_t i, size_t j, size_t depth, size_t pdepth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			   )
 	{
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
@@ -264,14 +304,30 @@ namespace FFLAS { namespace details { /*  kernels */
 			blB+=4*StepB;
 		}
 		vect_t R0, R1, R2, R3;
+		vect_t A0 ;
+		A0 = simd::set1(alpha);
 		R0 = simd::loadu( r0);
 		R1 = simd::loadu( r1);
 		R2 = simd::loadu( r2);
 		R3 = simd::loadu( r3);
-		simd::addin(R0,C0);
-		simd::addin(R1,C1);
-		simd::addin(R2,C2);
-		simd::addin(R3,C3);
+		if ( K == number_kind::one) {
+			simd::addin(R0,C0);
+			simd::addin(R1,C1);
+			simd::addin(R2,C2);
+			simd::addin(R3,C3);
+		}
+		if ( K == number_kind::mone) {
+			simd::subin(R0,C0);
+			simd::subin(R1,C1);
+			simd::subin(R2,C2);
+			simd::subin(R3,C3);
+		}
+		if ( K == number_kind::other) {
+			simd::fmaddxin(R0,A0,C0);
+			simd::fmaddxin(R1,A0,C1);
+			simd::fmaddxin(R2,A0,C2);
+			simd::fmaddxin(R3,A0,C3);
+		}
 		simd::storeu(r0,R0);
 		simd::storeu(r1,R1);
 		simd::storeu(r2,R2);
@@ -280,7 +336,12 @@ namespace FFLAS { namespace details { /*  kernels */
 	}
 
 
-	inline void igebb14(size_t i, size_t j, size_t depth, size_t pdepth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB)
+	template<enum number_kind K>
+	inline void igebb14(size_t i, size_t j, size_t depth, size_t pdepth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			   )
 	{
 		// using simd = Simd<int64_t>;
 		// using vect_t =  typename simd::vect_t;
@@ -291,17 +352,38 @@ namespace FFLAS { namespace details { /*  kernels */
 		int64_t *r2 = r1+ldc;
 		int64_t *r3 = r2+ldc;
 		for(k=0;k<depth;k++){
-			r0[0]+=blA[0]*blB[0];
-			r1[0]+=blA[0]*blB[1];
-			r2[0]+=blA[0]*blB[2];
-			r3[0]+=blA[0]*blB[3];
+			if (K == number_kind::one) {
+				r0[0]+=blA[0]*blB[0];
+				r1[0]+=blA[0]*blB[1];
+				r2[0]+=blA[0]*blB[2];
+				r3[0]+=blA[0]*blB[3];
+			}
+			if (K == number_kind::mone) {
+				r0[0]-=blA[0]*blB[0];
+				r1[0]-=blA[0]*blB[1];
+				r2[0]-=blA[0]*blB[2];
+				r3[0]-=blA[0]*blB[3];
+			}
+			if (K == number_kind::other) {
+				int64_t abla = alpha*blA[0];
+				r0[0]+=abla*blB[0];
+				r1[0]+=abla*blB[1];
+				r2[0]+=abla*blB[2];
+				r3[0]+=abla*blB[3];
+			}
+
 			blA++;
 			blB+=4;
 		}
 	}
 
 
-	inline void igebb41(size_t i, size_t j, size_t depth, size_t pdepth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB)
+	template<enum number_kind K>
+	inline void igebb41(size_t i, size_t j, size_t depth, size_t pdepth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			   )
 	{
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
@@ -328,14 +410,31 @@ namespace FFLAS { namespace details { /*  kernels */
 		vect_t R0, R4;
 		R0 = simd::loadu( r0);
 		R4 = simd::loadu( r4);
-		simd::addin(R0,C0);
-		simd::addin(R4,C4);
+		vect_t A0 ;
+		A0 = simd::set1(alpha);
+		if (K == number_kind::one) {
+			simd::addin(R0,C0);
+			simd::addin(R4,C4);
+		}
+		if (K == number_kind::mone) {
+			simd::subin(R0,C0);
+			simd::subin(R4,C4);
+		}
+		if (K == number_kind::other) {
+			simd::fmaddxin(R0,A0,C0);
+			simd::fmaddxin(R4,A0,C4);
+		}
 		simd::storeu(r0,R0);
 		simd::storeu(r4,R4);
 	}
 
 
-	inline void igebb21(size_t i, size_t j, size_t depth, size_t pdepth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB)
+	template<enum number_kind K>
+	inline void igebb21(size_t i, size_t j, size_t depth, size_t pdepth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			   )
 	{
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
@@ -356,13 +455,26 @@ namespace FFLAS { namespace details { /*  kernels */
 			blB+= 1*StepB;
 		}
 		vect_t R0;
+		vect_t A0 ;
+		A0 = simd::set1(alpha);
+
 		R0 = simd::loadu( r0);
-		simd::addin(R0,C0);
+		if ( K == number_kind::one)
+			simd::addin(R0,C0);
+		if ( K == number_kind::mone)
+			simd::subin(R0,C0);
+		if ( K == number_kind::other)
+			simd::fmaddxin(R0,A0,C0);
 		simd::storeu(r0,R0);
 	}
 
 
-	inline void igebb11(size_t i, size_t j, size_t depth, size_t pdepth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB)
+	template<enum number_kind K>
+	inline void igebb11(size_t i, size_t j, size_t depth, size_t pdepth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			   )
 	{
 		// using simd = Simd<int64_t>;
 		// using vect_t =  typename simd::vect_t;
@@ -370,7 +482,12 @@ namespace FFLAS { namespace details { /*  kernels */
 		size_t k;
 		int64_t *r0 = C+j*ldc+i;
 		for(k=0;k<depth;k++){
-			r0[0]+=blA[k]*blB[k];
+			if (K == number_kind::one)
+				r0[0]+=blA[k]*blB[k];
+			if ( K == number_kind::mone)
+				r0[0]-=blA[k]*blB[k];
+			if ( K == number_kind::other)
+				r0[0]+=alpha*blA[k]*blB[k];
 		}
 	}
 
@@ -385,8 +502,13 @@ namespace FFLAS { namespace details { /*  kernels */
 
 namespace FFLAS { namespace details { /*  main */
 
-	void igebp( size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, const int64_t* blockA, size_t lda,
-		    const int64_t* blockB, size_t ldb, int64_t* blockW)
+	template<enum number_kind K>
+	void igebp( size_t rows, size_t cols, size_t depth
+		    , const int64_t alpha
+		    , const int64_t* blockA, size_t lda,
+		    const int64_t* blockB, size_t ldb,
+		    int64_t* C, size_t ldc,
+		    int64_t* blockW)
 	{
 
 		using simd = Simd<int64_t>;
@@ -405,19 +527,19 @@ namespace FFLAS { namespace details { /*  main */
 			for (i=0;i<prows;i+=_mr){
 				const int64_t* blA = blockA+i*lda;
 				prefetch(blA);
-				igebb44(i, j, depth, pdepth, C, ldc, blA, blockW);
+				igebb44<K>(i, j, depth, pdepth, alpha, blA, blockW, C, ldc);
 			}
 			i=prows;
 			// process the (rows%_mr) remainings rows
 			int rem=(int)(rows-prows);
 			while (rem >0) {
 				if (rem>=(int)simd::vect_size){
-					igebb24(i  ,j,depth, pdepth, C, ldc, blockA+i*lda, blockW);
+					igebb24<K>(i  ,j,depth, pdepth, alpha , blockA+i*lda, blockW, C, ldc);
 					i+=simd::vect_size;
 					rem-=(int)simd::vect_size;
 				}
 				else{	// use blockB since no vectorization
-					igebb14(i,j,depth, pdepth, C, ldc, blockA+i*lda, blockB+j*ldb);
+					igebb14<K>(i,j,depth, pdepth, alpha, blockA+i*lda, blockB+j*ldb, C, ldc);
 					i++;
 					rem--;
 				}
@@ -431,19 +553,19 @@ namespace FFLAS { namespace details { /*  main */
 			for (i=0;i<prows;i+=_mr){
 				const int64_t* blA = blockA+i*lda;
 				prefetch(blA);
-				igebb41(i, j, depth, pdepth, C, ldc, blA, blockW);
+				igebb41<K>(i, j, depth, pdepth, alpha, blA, blockW, C, ldc);
 			}
 			i=prows;
 			// process the (rows%_mr) remainings rows
 			int rem=(int)(rows-prows);
 			while (rem >0) {
 				if (rem>=(int)simd::vect_size){
-					igebb21(i  ,j,depth, pdepth, C, ldc, blockA+i*lda, blockW);
+					igebb21<K>(i  ,j,depth, pdepth, alpha, blockA+i*lda, blockW, C, ldc);
 					i+=simd::vect_size;
 					rem-=(int)(simd::vect_size);
 				}
 				else{   // use blockB since no vectorization
-					igebb11(i,j,depth, pdepth, C, ldc, blockA+i*lda, blockB+j*ldb);
+					igebb11<K>(i,j,depth, pdepth, alpha, blockA+i*lda, blockB+j*ldb, C, ldc);
 					i++;
 					rem--;
 				}

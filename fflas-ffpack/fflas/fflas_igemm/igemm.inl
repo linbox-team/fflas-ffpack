@@ -34,9 +34,38 @@
 
 namespace FFLAS { namespace Protected {
 
+
 	// Assume matrices A,B,C are stored in column major order
 	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB>
 	void igemm_colmajor(size_t rows, size_t cols, size_t depth,
+			    const int64_t alpha,
+			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
+			    int64_t* C, size_t ldc)
+	{
+		FFLASFFPACK_check(alpha != 0);
+		switch(alpha) {
+		case 1:
+			igemm_colmajor<tA,tB,number_kind::one>(rows,cols,depth,
+							       alpha,A,lda,B,ldb,
+							       C,ldc);
+			break;
+		case -1:
+			igemm_colmajor<tA,tB,number_kind::mone>(rows,cols,depth,
+								alpha,A,lda,B,ldb,
+								C,ldc);
+			break;
+		default:
+			igemm_colmajor<tA,tB,number_kind::other>(rows,cols,depth,
+								 alpha,A,lda,B,ldb,
+								 C,ldc);
+
+
+		}
+	}
+
+	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB, enum number_kind alpha_kind>
+	void igemm_colmajor(size_t rows, size_t cols, size_t depth,
+			    const int64_t alpha,
 			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
 			    int64_t* C, size_t ldc)
 	{
@@ -60,6 +89,8 @@ namespace FFLAS { namespace Protected {
 		blockW = fflas_new<int64_t>(sizeW, (Alignment)simd::alignment);
 
 
+
+
 		// For each horizontal panel of B, and corresponding vertical panel of A
 		for(size_t k2=0; k2<depth; k2+=kc){
 
@@ -68,10 +99,10 @@ namespace FFLAS { namespace Protected {
 
 			// pack horizontal panel of B into sequential memory (L2 cache)
 			if (tB == CblasNoTrans) {
-				FFLAS::details::pack_rhs<_nr>(blockB, B+k2, ldb, actual_kc, cols);
+				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
 			}
 			else {
-				FFLAS::details::pack_lhs<_nr>(blockB, B+k2, ldb, cols, actual_kc);
+				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2, ldb, cols, actual_kc);
 			}
 
 			// For each mc x kc block of the lhs's vertical panel...
@@ -83,13 +114,19 @@ namespace FFLAS { namespace Protected {
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
 				if (tA == CblasNoTrans) {
-					FFLAS::details::pack_lhs<_mr>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
+					FFLAS::details::pack_lhs<_mr,false>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
 				}
 				else {
-					FFLAS::details::pack_rhs<_mr>(blockA, A+i2+k2*lda, lda, actual_kc, actual_mc);
+					FFLAS::details::pack_rhs<_mr,true>(blockA, A+i2+k2*lda, lda, actual_kc, actual_mc);
 				}
 				// call block*panel kernel
-				FFLAS::details::igebp(actual_mc, cols, actual_kc, C+i2, ldc, blockA, actual_kc, blockB, actual_kc, blockW);
+				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
+								  , alpha
+								  , blockA, actual_kc, blockB, actual_kc
+								  , C+i2, ldc
+								  , blockW);
+
+
 			}
 		}
 
@@ -107,30 +144,31 @@ namespace FFLAS { namespace Protected {
 		    , int64_t* C, size_t ldc
 		  )
 	{
-		// ATLAS/src/blas/gemm/ATL_gemm.c
-		if (beta != 1 || alpha != 1) {
-			std::cout << __func__ << " *** erreur *** alpha, beta are 1 and 1" << std::endl;
-			exit(-1);
+		if (!rows || !cols) {
+			return ;
 		}
 
-		if (TransA !=   CblasNoTrans && TransA != CblasNoTrans ) {
-			std::cout << __func__ << " *** warning *** transpose not surpported " <<std::endl;
-			// exit(-1);
+		//! @todo use primitive (no Field()) and  specialise for int64.
+		// fscalin(FFPACK::UnparametricField<int64_t>(),rows,cols,beta,C,ldc);
+
+		if (!depth || alpha == 0) {
+			return ;
 		}
+
 		if (TransA == CblasNoTrans) {
 			if (TransB == CblasNoTrans) {
-				igemm_colmajor<CblasNoTrans,CblasNoTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+				igemm_colmajor<CblasNoTrans,CblasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 			else {
-				igemm_colmajor<CblasNoTrans,CblasTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+				igemm_colmajor<CblasNoTrans,CblasTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 		}
 		else {
 			if (TransB == CblasNoTrans) {
-				igemm_colmajor<CblasTrans,CblasNoTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+				igemm_colmajor<CblasTrans,CblasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 			else {
-				igemm_colmajor<CblasTrans,CblasTrans>(rows, cols, depth, A, lda, B, ldb, C, ldc);
+				igemm_colmajor<CblasTrans,CblasTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 		}
 	}
@@ -159,4 +197,3 @@ namespace FFLAS {
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_igemm_igemm_INL
-

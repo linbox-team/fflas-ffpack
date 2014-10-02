@@ -282,6 +282,7 @@ namespace FFLAS {
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb,
 			       beta, C, ldc, HW);
 	}
+
 	template<typename Field>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,

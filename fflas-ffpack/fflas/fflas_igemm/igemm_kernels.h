@@ -32,24 +32,65 @@
 
 namespace FFLAS { namespace details {
 
+
 	/* ************* */
 	/*  GEBP KERNELS */
 	/* ************* */
 
-	inline void igebb44(size_t i, size_t j, size_t depth, size_t pdeth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB);
-	inline void igebb24(size_t i, size_t j, size_t depth, size_t pdeth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB);
-	inline void igebb14(size_t i, size_t j, size_t depth, size_t pdeth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB);
-	inline void igebb41(size_t i, size_t j, size_t depth, size_t pdeth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB);
-	inline void igebb21(size_t i, size_t j, size_t depth, size_t pdeth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB);
-	inline void igebb11(size_t i, size_t j, size_t depth, size_t pdeth, int64_t* C, size_t ldc, const int64_t *blA, const int64_t* blB);
+	template<enum number_kind K>
+	inline void igebb44(size_t i, size_t j, size_t depth, size_t pdeth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			    );
+
+	template<enum number_kind K>
+	inline void igebb24(size_t i, size_t j, size_t depth, size_t pdeth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			    );
+
+	template<enum number_kind K>
+	inline void igebb14(size_t i, size_t j, size_t depth, size_t pdeth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			    );
+
+	template<enum number_kind K>
+	inline void igebb41(size_t i, size_t j, size_t depth, size_t pdeth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			    );
+
+	template<enum number_kind K>
+	inline void igebb21(size_t i, size_t j, size_t depth, size_t pdeth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			    );
+
+	template<enum number_kind K>
+	inline void igebb11(size_t i, size_t j, size_t depth, size_t pdeth
+			    , const int64_t alpha
+			    , const int64_t *blA, const int64_t* blB
+			    , int64_t* C, size_t ldc
+			    );
 
 
 	/*************************
 	 *  MAIN GEBP OPERATION  *
 	 ************************/
 
-	void igebp( size_t rows, size_t cols, size_t depth, int64_t* C, size_t ldc, const int64_t* blockA, size_t lda,
-		    const int64_t* blockB, size_t ldb, int64_t* blockW);
+	template<enum number_kind K>
+	void igebp( size_t rows, size_t cols, size_t depth
+		    , const int64_t alpha
+		    , const int64_t* blockA, size_t lda,
+		    const int64_t* blockB, size_t ldb,
+		    int64_t* C, size_t ldc,
+		    int64_t* blockW);
 
 } // details
 } // FFLAS

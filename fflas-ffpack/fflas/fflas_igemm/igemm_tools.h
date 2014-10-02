@@ -41,10 +41,10 @@ namespace FFLAS { namespace details { /*  tools */
 	template<size_t N>
 	inline void duplicate_vect (int64_t* XX, const int64_t* X, size_t n){}
 
-	template<size_t k>
+	template<size_t k,bool transpose>
 	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);
 
-	template<size_t k>
+	template<size_t k, bool transpose>
 	void pack_rhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);
 
 	void gebp(size_t rows, size_t cols, size_t depth,int64_t* C, size_t ldc, const int64_t* blockA, size_t lda,

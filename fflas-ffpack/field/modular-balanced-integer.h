@@ -34,8 +34,8 @@
  */
 
 
-#ifndef __FFLASFFPACK_modular_integer_H
-#define __FFLASFFPACK_modular_integer_H
+#ifndef __FFLASFFPACK_modular_balanced_integer_H
+#define __FFLASFFPACK_modular_balanced_integer_H
 
 #include <math.h>
 #include "fflas-ffpack/utils/debug.h"
@@ -52,7 +52,7 @@ namespace FFPACK {
         class ModularRandIter<Integer>;
 
 	template <>
-	class Modular<Integer> {
+	class ModularBalanced<Integer> {
 	public:
 		typedef Integer        	      	Element;
 		typedef Element*        	Element_ptr;
@@ -67,15 +67,23 @@ namespace FFPACK {
 		const Element zero ;
 		const Element mOne ;
 
-		typedef ModularRandIter<Element> RandIter;
+	protected:
+		Element half_mod ;
+		Element mhalf_mod ;
 
-		Modular () : modulus(0),one(0),zero(0),mOne(0)
+	public:
+
+		typedef ModularBalancedRandIter<Element> RandIter;
+
+		ModularBalanced () : modulus(0),one(0),zero(0),mOne(0)
+				     ,half_mod(0),mhalf_mod(0)
 		{}
 
 
-		Modular (Element p) :
+		ModularBalanced (Element p) :
 			modulus(p)
-			,one(1),zero(0),mOne(modulus -1)
+			,one(1),zero(0),mOne(-1)
+				     ,half_mod((p-1)/2),mhalf_mod(half_mod-modulus+1)
 		{
 #ifdef DEBUG
 			if( modulus <= 1 )
@@ -83,8 +91,9 @@ namespace FFPACK {
 #endif
 		}
 
-		Modular (unsigned long int p) :
-			modulus((Element)p),one(1),zero(0),mOne(modulus -1)
+		ModularBalanced (unsigned long int p) :
+			modulus((Element)p),one(1),zero(0),mOne(-1)
+				     ,half_mod((p-1)/2),mhalf_mod(half_mod-modulus+1)
 		{
 #ifdef DEBUG
 			if( (Element) modulus <= 1 )
@@ -92,25 +101,30 @@ namespace FFPACK {
 #endif
 		}
 
-		Modular(const Modular<Element>& mf) :
+		ModularBalanced(const ModularBalanced<Element>& mf) :
 			modulus(mf.modulus),one(mf.one),zero(mf.zero),mOne(mf.mOne)
+				     ,half_mod(mf.half_mod),mhalf_mod(mf.mhalf_mod)
 		{}
 
-		Modular<Element> & assign(const Modular<Element> &F)
+		ModularBalanced<Element> & assign(const ModularBalanced<Element> &F)
 		{
 			modulus = F.modulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
 			F.assign(const_cast<Element&>(mOne),F.mOne);
+			F.assign(const_cast<Element&>(half_mod),F.half_mod);
+			F.assign(const_cast<Element&>(mhalf_mod),F.mhalf_mod);
 			return *this;
 		}
 
-		const Modular &operator=(const Modular<Element> &F)
+		const ModularBalanced &operator=(const ModularBalanced<Element> &F)
 		{
 			modulus = F.modulus;
 			F.assign(const_cast<Element&>(one),F.one);
 			F.assign(const_cast<Element&>(zero),F.zero);
 			F.assign(const_cast<Element&>(mOne),F.mOne);
+			F.assign(const_cast<Element&>(mhalf_mod),F.half_mod);
+			F.assign(const_cast<Element&>(mhalf_mod),F.mhalf_mod);
 			return *this;
 		}
 
@@ -133,9 +147,10 @@ namespace FFPACK {
 		{
 			return modulus;
 		}
+
 		std::ostream &write (std::ostream &os) const
 		{
-			return os << "Integer mod " << modulus;
+			return os << "Integer balanced mod " << modulus;
 		}
 
 		std::istream &read (std::istream &is)
@@ -167,7 +182,8 @@ namespace FFPACK {
 		{
 			x = y ;
 			x%= modulus;
-			if (x < zero) x += modulus;
+			if (x > half_mod) x -= modulus;
+
 			return x;
 		}
 
@@ -226,14 +242,16 @@ namespace FFPACK {
 		 Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x >= modulus ) x -= modulus;
+			if ( x > half_mod ) x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
 			return x;
 		}
 
 		 Element &sub (Element &x, const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x < zero) x += modulus;
+			if ( x > half_mod ) x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
 			return x;
 		}
 
@@ -253,7 +271,7 @@ namespace FFPACK {
 		 Element &neg (Element &x, const Element &y) const
 		{
 			if(y == zero) return x = zero;
-			else return x = modulus - y;
+			else return x = - y; // hopefully
 		}
 
 		 Element &inv (Element &x, const Element &y) const
@@ -274,8 +292,10 @@ namespace FFPACK {
 			 }
 			 // now x_int = gcd (modulus,residue)
 			 x = tx;
-			 if ( x<zero )
-				 x += modulus;
+
+			 if (x > half_mod ) return x -= modulus;
+			 else if ( x < mhalf_mod ) return x += modulus;
+
 			 return x;
 		}
 
@@ -309,19 +329,24 @@ namespace FFPACK {
 		 Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if (  x >= modulus ) x -= modulus;
+			if (x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+
 			return x;
 		}
 
 		 Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if (x <zero) x += modulus;
+			if (x > half_mod ) return x -= modulus;
+			else if ( x < mhalf_mod ) return x += modulus;
+
 			return x;
 		}
 
 		 Element &mulin (Element &x, const Element &y) const
 		{
+
 			return mul(x,x,y);
 		}
 
@@ -333,7 +358,7 @@ namespace FFPACK {
 		 Element &negin (Element &x) const
 		{
 			if (x == zero) return x;
-			else return x = modulus - x;
+			else return x =  - x;
 		}
 
 		 Element &invin (Element &x) const
@@ -352,27 +377,29 @@ namespace FFPACK {
 		{
 			r = r - a * x;
 			init(r,r);
-			// if (r<zero) r += modulus;
+			// if (x > half_mod ) return x -= modulus;
+			// else if ( x < mhalf_mod ) return x += modulus;
+
 			return r;
 		}
 
 		Element minElement() const
 		{
-			return zero ;
+			return mhalf_mod;
 		}
 
 		Element maxElement() const
 		{
-			return mOne ;
+			return half_mod;
 		}
 
 	};
 
 	template <>
-        class ModularRandIter<Integer> {
+        class ModularBalancedRandIter<Integer> {
         public:
 		typedef Integer Element;
-                ModularRandIter (const Modular<Element> &F, size_t seed=0) :
+                ModularBalancedRandIter (const ModularBalanced<Element> &F, size_t seed=0) :
                         _F(F)
                 {
                         if (seed==0) {
@@ -383,7 +410,7 @@ namespace FFPACK {
 			Integer::seeding(seed);
                 }
 
-                ModularRandIter (const ModularRandIter<Element> &R) :
+                ModularBalancedRandIter (const ModularBalancedRandIter<Element> &R) :
                         _F (R._F)
                 {}
 
@@ -394,9 +421,9 @@ namespace FFPACK {
                 }
 
         private:
-                Modular<Integer> _F;
+                ModularBalanced<Integer> _F;
 
-        }; // end of class Modular<Integer>
+        }; // end of class ModularBalanced<Integer>
 
 } // FFPACK
 
