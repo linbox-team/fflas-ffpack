@@ -60,6 +60,22 @@
 // to activate SIMD with integers
 //#define SIMD_INT
 
+namespace FFLAS {
+template<class T>
+struct support_simd  : public std::false_type {} ;
+
+template<>
+struct support_simd<float> : public std::true_type {} ;
+template<>
+struct support_simd<double> : public std::true_type {} ;
+#ifdef SIMD_INT
+template<>
+struct support_simd<int32_t> : public std::true_type {} ;
+template<>
+struct support_simd<int64_t> : public std::true_type {} ;
+#endif
+
+}
 
 template<class T>
  struct simdToType;
@@ -159,7 +175,7 @@ template<class T>
 struct SimdChooser<T,true> {
 #if defined(__FFLASFFPACK_USE_AVX2)
     typedef Simd256<T> value;
-#else    
+#else
 	typedef Simd128<T> value ;
 #endif // __FFLASFFPACK_USE_AVX2
 };

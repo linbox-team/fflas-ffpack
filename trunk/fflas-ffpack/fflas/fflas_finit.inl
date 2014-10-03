@@ -35,233 +35,166 @@
 
 #define FFLASFFPACK_COPY_INIT 100
 
+namespace FFLAS { namespace details {
+
+
+	// specialised
+	template<class Field>
+	typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value, void>::type
+	finit (const Field & F, const size_t m,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::ModularTag
+	      )
+	{
+		if(incX == 1) {
+			typename Field::Element p, invp;
+			p=(typename Field::Element)F.cardinality();
+			invp=(typename Field::Element)1/p;
+			vectorised::modp<!FieldTraits<Field>::balanced,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
+		}
+		else { /*  faster with copy, use incX=1, copy back ? */
+			if (m < FFLASFFPACK_COPY_INIT) {
+				typename Field::Element_ptr Xi = A ;
+				for (; Xi < A+m*incX; Xi+=incX )
+					F.init( *Xi , *Xi);
+			}
+			else {
+				typename Field::Element_ptr Ac = fflas_new (F,m,1) ;
+				fcopy(F,m,A,incX,Ac,1);
+				finit(F,m,Ac,1,FieldCategories::ModularTag());
+				fcopy(F,m,Ac,1,A,incX);
+				fflas_delete (Ac);
+			}
+		}
+	}
+
+	template<class Field>
+	typename std::enable_if<!FFLAS::support_simd<typename Field::Element>::value, void>::type
+	finit (const Field & F, const size_t m,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::ModularTag
+	      )
+	{ /* ??? ( faster with copy, use incX=1, copy back ? */
+		typename Field::Element_ptr  Xi = A ;
+		for (; Xi < A+m*incX; Xi+=incX )
+			F.init( *Xi , *Xi);
+	}
+
+	template<class Field>
+	void
+	finit (const Field & F, const size_t m,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::GenericTag
+	      )
+	{
+		typename Field::Element_ptr Xi = A ;
+		for (; Xi < A+m*incX; Xi+=incX )
+			F.init( *Xi , *Xi);
+	}
+
+	template<class Field>
+	void
+	finit (const Field & F, const size_t m,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::UnparametricTag
+	      )
+	{
+		return;
+	}
+
+	template<class Field>
+	typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value, void>::type
+	finit (const Field & F, const size_t m,
+	       typename Field::ConstElement_ptr  B, const size_t incY,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::ModularTag
+	       )
+	{
+		if(incX == 1 && incY == 1) {
+			typename Field::Element p, invp;
+			p=(typename Field::Element)F.cardinality();
+			invp=1./p;
+			vectorised::modp<!FieldTraits<Field>::balanced,false>(A,B,m,p,invp,F.minElement(),F.maxElement());
+		}
+		else {
+			typename Field::Element_ptr Xi = A ;
+			typename Field::ConstElement_ptr Yi = B ;
+			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+				F.init( *Xi , *Yi);
+		}
+	}
+
+	template<class Field>
+	typename std::enable_if<!FFLAS::support_simd<typename Field::Element>::value, void>::type
+	finit (const Field & F, const size_t m,
+	       typename Field::ConstElement_ptr  B, const size_t incY,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::ModularTag
+	       )
+	{
+
+		typename Field::Element_ptr Xi = A ;
+		typename Field::ConstElement_ptr Yi = B ;
+		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+			F.init( *Xi , *Yi);
+	}
+
+	template<class Field>
+	void
+	finit (const Field & F, const size_t m,
+	       typename Field::ConstElement_ptr  B, const size_t incY,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::GenericTag
+	       )
+	{
+
+		typename Field::Element_ptr Xi = A ;
+		typename Field::ConstElement_ptr Yi = B ;
+		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+			F.init( *Xi , *Yi);
+	}
+
+	template<class Field>
+	void
+	finit (const Field & F, const size_t m,
+	       typename Field::ConstElement_ptr  B, const size_t incY,
+	       typename Field::Element_ptr A, const size_t incX
+	       , FieldCategories::UnparametricTag
+	      )
+	{
+		return;
+	}
+
+
+} // details
+} // FFLAS
+
 namespace FFLAS {
 
 	/***************************/
 	/*         LEVEL 1         */
 	/***************************/
 
-
-	// specialised
-
-	template<>
-	void finit (const FFPACK:: Modular<double> & F, const size_t m,
-		    double * A, const size_t incX)
+	template<class Field>
+	void
+	finit (const Field & F, const size_t m,
+	       typename Field::ConstElement_ptr  B, const size_t incY,
+	       typename Field::Element_ptr A, const size_t incX
+	      )
 	{
-		if(incX == 1) {
-			double p, invp;
-			p=(double)F.cardinality();
-			invp=1./p;
-			vectorised::modp<true,false>(A,A,m,p,invp,0,p-1);
-		}
-		else { /*  faster with copy, use incX=1, copy back ? */
-			if (m < FFLASFFPACK_COPY_INIT) {
-				double * Xi = A ;
-				for (; Xi < A+m*incX; Xi+=incX )
-					F.init( *Xi , *Xi);
-			}
-			else {
-				double * Ac = fflas_new (F,m,1) ;
-				fcopy(F,m,A,incX,Ac,1);
-				finit(F,m,Ac,1);
-				fcopy(F,m,Ac,1,A,incX);
-				fflas_delete (Ac);
-			}
-		}
+		return details::finit(F,m,B,incY,A,incX,typename FieldTraits<Field>::category());
 	}
-
-
-	template<>
-	void finit (const FFPACK:: Modular<float> & F, const size_t m,
-		    float * A, const size_t incX)
-	{
-		if(incX == 1) {
-			float p, invp;
-			p=(float)F.cardinality();
-			invp=1.f/p;
-			vectorised::modp<true,false>(A,A,m,p,invp,0,p-1);
-		}
-		else { /*  faster with copy, use incX=1, copy back ? */
-			if (m < FFLASFFPACK_COPY_INIT) {
-				float * Xi = A ;
-				for (; Xi < A+m*incX; Xi+=incX )
-					F.init( *Xi , *Xi);
-			}
-			else {
-				float * Ac = fflas_new (F,m,1) ;
-				fcopy(F,m,A,incX,Ac,1);
-				finit(F,m,Ac,1);
-				fcopy(F,m,Ac,1,A,incX);
-				fflas_delete (Ac);
-			}
-
-		}
-
-	}
-
-
-	template<>
-	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m,
-		    double * A, const size_t incX)
-	{
-		if(incX == 1) {
-			double p, invp;
-			p=(double)F.cardinality();
-			invp=1./p;
-			vectorised::modp<false,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
-		}
-		else { /*  faster with copy, use incX=1, copy back ? */
-			if (m < FFLASFFPACK_COPY_INIT) {
-				double * Xi = A ;
-				for (; Xi < A+m*incX; Xi+=incX )
-					F.init( *Xi , *Xi);
-			}
-			else {
-				double * Ac = fflas_new (F,m,1);
-				fcopy(F,m,A,incX,Ac,1);
-				finit(F,m,Ac,1);
-				fcopy(F,m,Ac,1,A,incX);
-				fflas_delete (Ac);
-			}
-		}
-
-	}
-
-	template<>
-	void finit (const FFPACK:: ModularBalanced<float> & F, const size_t m,
-		    float * A, const size_t incX)
-	{
-		if(incX == 1) {
-			float p, invp;
-			p=(float)F.cardinality();
-			invp=1.f/p;
-			vectorised::modp<false,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
-		}
-		else { /*  faster with copy, use incX=1, copy back ? */
-			if (m < FFLASFFPACK_COPY_INIT) {
-				float * Xi = A ;
-				for (; Xi < A+m*incX; Xi+=incX )
-					F.init( *Xi , *Xi);
-			}
-			else {
-				float * Ac = fflas_new (F,m,1);
-				fcopy(F,m,A,incX,Ac,1);
-				finit(F,m,Ac,1);
-				fcopy(F,m,Ac,1,A,incX);
-				fflas_delete (Ac);
-			}
-		}
-
-	}
-
-
-
-	template<>
-	void finit (const FFPACK:: Modular<double> & F, const size_t m,
-		    const double * B, const size_t incY,
-		    double * A, const size_t incX)
-	{
-		if(incX == 1 && incY == 1) {
-			double p, invp;
-			p=(double)F.cardinality();
-			invp=1./p;
-			vectorised::modp<true,false>(A,B,m,p,invp,0,p-1);
-		}
-		else {
-			double * Xi = A ;
-			const double * Yi = B ;
-			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
-		}
-	}
-
-
-	template<>
-	void finit (const FFPACK:: Modular<float> & F, const size_t m,
-		    const float * B, const size_t incY,
-		    float * A, const size_t incX)
-	{
-		if(incX == 1) {
-			float p, invp;
-			p=(float)F.cardinality();
-			invp=1.f/p;
-			vectorised::modp<true,false>(A,B,m,p,invp,0,p-1);
-		}
-		else {
-			float * Xi = A ;
-			const float * Yi = B ;
-			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
-		}
-
-	}
-
-
-	template<>
-	void finit (const FFPACK:: ModularBalanced<double> & F, const size_t m,
-		    const double * B, const size_t incY,
-		    double * A, const size_t incX)
-	{
-		if(incX == 1) {
-			double p, invp;
-			p=(double)F.cardinality();
-			invp=1./p;
-			vectorised::modp<false,false>(A,B,m,p,invp,F.minElement(),F.maxElement());
-		}
-		else {
-			double * Xi = A ;
-			const double * Yi = B ;
-			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
-		}
-	}
-
-	template<>
-	void finit (const FFPACK:: ModularBalanced<float> & F, const size_t m,
-		    const float * B, const size_t incY,
-		    float * A, const size_t incX)
-	{
-		if(incX == 1) {
-			float p, invp;
-			p=(float)F.cardinality();
-			invp=1.f/p;
-			vectorised::modp<false,false>(A,B,m,p,invp,F.minElement(),F.maxElement());
-		}
-		else {
-			float * Xi = A ;
-			const float * Yi = B ;
-			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
-		}
-
-	}
-
-
-	// just to make sure
-#if 0
-	template<class T>
-	void finit (const FFPACK:: UnparametricField<T> & , const size_t ,
-		    T * , const size_t)
-	{
-		return ;
-	}
-#endif
 
 	template<class Field>
 	void
-	finit (const Field& F, const size_t n,
-	       typename Field::Element_ptr X, const size_t incX)
+	finit (const Field & F, const size_t m,
+	       typename Field::Element_ptr A, const size_t incX
+	      )
 	{
-		typename Field::Element_ptr Xi = X ;
-
-		if (incX == 1 )
-			for (; Xi < X + n ; ++Xi)
-				F.init( *Xi, *Xi);
-		else
-			for (; Xi < X+n*incX; Xi+=incX )
-				F.init( *Xi, *Xi );
+		return details::finit(F,m,A,incX,typename FieldTraits<Field>::category());
 	}
 
+	// OOOPS
 	template<class Field, class ConstOtherElement_ptr>
 	void
 	finit (const Field& F, const size_t n,
@@ -283,7 +216,6 @@ namespace FFLAS {
 	/***************************/
 	/*         LEVEL 2         */
 	/***************************/
-
 
 
 	template<class Field>

@@ -27,6 +27,7 @@
  *.
  */
 
+// #define SIMD_INT
 
 #include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"
@@ -38,6 +39,7 @@
 #include "assert.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include <typeinfo>
+
 
 // using namespace FFPACK;
 template<class Field>

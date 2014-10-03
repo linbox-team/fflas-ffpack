@@ -438,6 +438,14 @@ struct Simd128_impl<true, false, true, 4>{
 		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3];
 	}
 
+	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	{
+		Q = mul(C, INVP);
+		Q = floor(Q);
+		C = fnmadd(C,Q,P);
+		return C;
+	}
+
 #else // __AVX__
 #error "You need SSE instructions to perform 128bits operations on double"
 #endif

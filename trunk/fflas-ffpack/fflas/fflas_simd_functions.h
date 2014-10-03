@@ -72,10 +72,12 @@ namespace FFLAS { namespace vectorised {
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_MOD(SimdT & C, SimdT & Q, SimdT & T, const SimdT & P, const SimdT & NEGP, const SimdT & INVP, const SimdT & MIN,  const SimdT & MAX)
 	{
+		// std::cout << "CALLED" << std::endl;
 		using simd = Simd<typename simdToType<SimdT>::type>;
-		Q = simd::mul(C, INVP);
-		Q = simd::floor(Q);
-		C = simd::fnmadd(C,Q,P);
+		// Q = simd::mul(C, INVP);
+		// Q = simd::floor(Q);
+		// C = simd::fnmadd(C,Q,P);
+		C = simd::lazy_mod( C, Q, P, INVP );
 		Q = simd::greater(C, MAX);
 		T = simd::lesser(C, MIN);
 		Q = simd::vand(Q, NEGP);
@@ -85,7 +87,7 @@ namespace FFLAS { namespace vectorised {
 	}
 
 	template<bool positive, bool round, class Element, class T1, class T2>
-	inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
+	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
 	modp(Element * T, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
@@ -201,7 +203,7 @@ namespace FFLAS { namespace vectorised {
 	}
 
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
+	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
 	addp(Element * T, const Element * TA, const Element * TB,  size_t n,  Element p,  T1 min_,  T2 max_)
 	{
 		Element min= (Element)min_, max= (Element)max_;
@@ -263,6 +265,26 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
+	template<bool positive, class Element, class T1, class T2>
+	inline typename std::enable_if<!FFLAS::support_simd<Element>::value, void>::type
+	addp(Element * T, const Element * TA, const Element * TB,  size_t n,  Element p,  T1 min_,  T2 max_)
+	{
+		Element min= (Element)min_, max= (Element)max_;
+
+		size_t i = 0;
+
+		for (; i < n ; i++)
+		{
+			T[i] = TA[i] + TB[i];
+			T[i] -= (T[i] > max) ? p : 0;
+			if (!positive)
+			{
+				T[i] += (T[i] < min) ? p : 0;
+			}
+		}
+		return;
+	}
+
 	template<class SimdT>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_SUB(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
@@ -278,7 +300,7 @@ namespace FFLAS { namespace vectorised {
 	}
 
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
+	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
 	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
@@ -336,6 +358,27 @@ namespace FFLAS { namespace vectorised {
 			if (!positive)
 				T[i] -= (T[i] > max) ? p : 0;
 			T[i] += (T[i] < min) ? p : 0;
+		}
+	}
+
+	template<bool positive, class Element, class T1, class T2>
+	inline typename std::enable_if<!FFLAS::support_simd<Element>::value, void>::type
+	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
+	{
+		Element min = (Element)min_, max = (Element)max_;
+
+		size_t i = 0;
+
+		{
+			for (; i < n ; i++)
+			{
+				T[i] = TA[i] - TB[i];
+				if (!positive)
+					T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+			return;
+
 		}
 	}
 

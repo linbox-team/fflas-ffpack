@@ -97,7 +97,6 @@ namespace FFLAS { namespace details {
 	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols)
 	{
 		using simd = Simd<int64_t> ;
-		// using half_t =  typename simd::half_t;
 		size_t p=0;
 		size_t rows_by_k=(rows/k)*k;
 		// pack rows by group of k

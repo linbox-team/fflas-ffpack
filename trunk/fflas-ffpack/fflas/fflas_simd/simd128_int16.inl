@@ -353,6 +353,12 @@ struct Simd128_impl<true, true, true, 2>{
         return conv.t[0] + conv.t[1] + conv.t[2] + conv.t[3] + conv.t[4] + conv.t[5] + conv.t[6] + conv.t[7];
     }
 
+	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	{
+		C = _mm_rem_epi16(C,P)
+		return C;
+	}
+
 #else
 #error "You need SSE instructions to perform 128 bits operations on int16"
 #endif // defined(__FFLASFFPACK_USE_AVX2)
@@ -364,8 +370,8 @@ struct Simd128_impl<true, true, true, 2>{
 template<>
 struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true, true, true, 2> {
     using scalar_t = uint16_t;
-    
-    static INLINE CONST vect_t greater(vect_t a, vect_t b) 
+
+    static INLINE CONST vect_t greater(vect_t a, vect_t b)
     {
 
         vect_t x;
@@ -375,7 +381,7 @@ struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true, true, true
         return _mm_cmpgt_epi16(a, b);
     }
 
-    static INLINE CONST vect_t lesser(vect_t a, vect_t b) 
+    static INLINE CONST vect_t lesser(vect_t a, vect_t b)
     {
         vect_t x;
         x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
@@ -384,12 +390,12 @@ struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true, true, true
         return _mm_cmpgt_epi16(a, b);
     }
 
-    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
     {
         return vor(greater(a, b), eq(a, b));
     }
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
     {
         return vor(lesser(a, b), eq(a, b));
     }
