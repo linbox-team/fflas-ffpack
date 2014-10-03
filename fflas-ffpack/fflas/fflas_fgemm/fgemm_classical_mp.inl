@@ -52,15 +52,13 @@ namespace FFLAS {
 		MMHelper(const Field& F, size_t m=0, size_t n=0, size_t k=0, ParSeqTrait PS=ParSeqTrait()) {F.characteristic(normA);F.characteristic(normB);}
 	};
 
-
+	// move to field-traits
 	template<typename RNS>
 	struct FieldTraits<FFPACK::RNSInteger<RNS> > {typedef FieldCategories::MultiPrecisionTag value;};
+
 	template<typename RNS>
 	struct FieldTraits<FFPACK::RNSIntegerMod<RNS> > {typedef FieldCategories::MultiPrecisionTag value;};
-	template<>
-	struct FieldTraits<FFPACK::Modular<FFPACK::Integer> > {typedef FieldCategories::MultiPrecisionTag value;};
-	template<>
-	struct FieldTraits<FFPACK::UnparametricField<FFPACK::Integer> > {typedef FieldCategories::MultiPrecisionTag value;};
+
 
 
 	/***********************************

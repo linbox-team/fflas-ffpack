@@ -2,9 +2,9 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas-ffpack/modular-positive.h
- * Copyright (C) 2014 Pascal Giorgi
+ * Copyright (C) 2014 The FFLAS-FFPACK group
  *
- * Written by  Pascal Giorgi  <pascal.giorgi@lirmm.fr>
+ * Written by BB <brice.boyer@lip6.fr>
  *
  * ------------------------------------
  *
@@ -28,9 +28,10 @@
  * ========LICENCE========
  *.
  */
-/*! @file field/modular-integer.h
+
+/*! @file field/modular-balanced-integer.h
  * @ingroup field
- * @brief  representation of <code>Z/mZ</code> over \c multiprecision integer.
+ * @brief  balanced representation of <code>Z/mZ</code> over \c multiprecision integer.
  */
 
 
@@ -427,6 +428,6 @@ namespace FFPACK {
 
 } // FFPACK
 
-#endif
+#endif // __FFLASFFPACK_HAVE_INTEGER
 
-#endif
+#endif // __FFLASFFPACK_modular_balanced_integer_H

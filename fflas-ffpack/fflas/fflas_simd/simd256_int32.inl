@@ -479,6 +479,13 @@ struct Simd256_impl<true, true, true, 4>{
 	{
 		_mm_storeu_si128(reinterpret_cast<half_t*>(const_cast<scalar_t*>(p)), v);
 	}
+
+	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	{
+		C = _mm256_rem_epi32(C,P)
+		return C;
+	}
+
 #else
 
 #error "You need AVX2 instructions to perform 256bits operations on int32_t"
@@ -492,8 +499,8 @@ struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true, true, true
 #if defined(__FFLASFFPACK_USE_AVX2)
 
     using scalar_t = uint32_t;
-    
-    static INLINE CONST vect_t greater(vect_t a, vect_t b) 
+
+    static INLINE CONST vect_t greater(vect_t a, vect_t b)
     {
 
         vect_t x;
@@ -503,7 +510,7 @@ struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true, true, true
         return _mm256_cmpgt_epi32(a, b);
     }
 
-    static INLINE CONST vect_t lesser(vect_t a, vect_t b) 
+    static INLINE CONST vect_t lesser(vect_t a, vect_t b)
     {
         vect_t x;
         x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
@@ -512,12 +519,12 @@ struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true, true, true
         return _mm256_cmpgt_epi32(a, b);
     }
 
-    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) 
+    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
     {
         return vor(greater(a, b), eq(a, b));
     }
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) 
+    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
     {
         return vor(lesser(a, b), eq(a, b));
     }
@@ -525,7 +532,7 @@ struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true, true, true
 
 #error "You need AVX2 instructions to perform 256bits operations on uint32_t"
 
-#endif // defined(__FFLASFFPACK_USE_AVX2)        
+#endif // defined(__FFLASFFPACK_USE_AVX2)
 };
 
 

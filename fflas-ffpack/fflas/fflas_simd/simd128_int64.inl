@@ -313,6 +313,12 @@ struct Simd128_impl<true, true, true, 8> {
 		return c = fmaddx(c,a,b);
 	}
 
+	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	{
+		C = _mm_rem_epi64(C,P)
+		return C;
+	}
+
 #else
 #error "You need SSE instructions to perform 128 bits operations on int64"
 #endif

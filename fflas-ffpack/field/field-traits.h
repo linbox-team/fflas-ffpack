@@ -34,6 +34,7 @@
 #ifndef __FFLASFFPACK_field_field_traits_H
 #define __FFLASFFPACK_field_field_traits_H
 
+#include <type_traits> // CXX11
 
 namespace FFLAS { /*  Categories */
 
@@ -41,24 +42,34 @@ namespace FFLAS { /*  Categories */
 	namespace FieldCategories {
 		//! generic ring.
 		struct GenericTag{};
+		//! This is a <code>Modular<T></code> or <code>ModularBalanced<T></code>
+		struct ModularTag : public GenericTag {} ;
+		//! This is an <code>UnparametricField<T></code>
+		struct UnparametricTag : public GenericTag {} ;
+
+		//! If it is a machine floating point (ie \c float or \c double)
+		struct FloatingPointTag : public GenericTag{};
+		//! If it is a machine int (ie  \c intX_t or \c uintX_t)
+		struct IntegralTag : public GenericTag{};
+		//! If it is a multiprecision field (ie \c Givaro::Integer)
+		struct MultiPrecisionTag : public  GenericTag{};
+		//! If it can support SIMD operations (ie \c double or \c int32_t, etc)
+		struct SIMDTag : public GenericTag{};
+
+
+		// this is weird :
 		//! If it can init/convert elements to/from floating point types: float, double
 		struct FloatingPointConvertibleTag : public  GenericTag{};
 		//! If it is a Modular or ModularBalanced templated by float or double
 		struct ModularFloatingPointTag : public GenericTag{};
 		//! If it is a Modular or ModularBalanced templated by float or double, and result is not reduced
 		struct DelayedModularFloatingPointTag : public GenericTag{};
-		//! If it is a multiprecision field
-		struct MultiPrecisionTag : public  GenericTag{};
-		//! If it is DoubleDomain or a FloatDomain
-		struct FloatingPointTag : public GenericTag{};
 
-		//! This is a Modular<T> or ModularBalanced<T>
-		struct ModularTag : public GenericTag {} ;
-		//! This is an UnparametricField<T>
-		struct UnparametricTag : public GenericTag {} ;
+
 	}
 
 } // FFLAS
+
 
 namespace FFLAS { /*  Traits */
 
@@ -68,6 +79,8 @@ namespace FFLAS { /*  Traits */
 	struct FieldTraits {
 		typedef typename FieldCategories::GenericTag value;
 		typedef typename FieldCategories::GenericTag category;
+		// typedef false_type balanced ;
+		static  const bool balanced = false ;
 	};
 
 	// Modular <double|float>
@@ -76,23 +89,28 @@ namespace FFLAS { /*  Traits */
 	struct FieldTraits<FFPACK::Modular<double> > {
 		typedef  FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<float> > {
 		typedef FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<double> > {
 		typedef FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<float> > {
 		typedef FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
-
 
 
 	// Modular< intX >
@@ -101,62 +119,98 @@ namespace FFLAS { /*  Traits */
 	struct FieldTraits<FFPACK::Modular<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<uint32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<int64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<uint64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<int16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::Modular<uint16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<uint32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<int64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<uint64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<int16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::ModularBalanced<uint16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
 	};
+
+	// Modular< intX >
+	// ModularBalanced < intX >
+	template<>
+	struct FieldTraits<FFPACK::Modular<FFPACK::Integer> > {
+		typedef FieldCategories::MultiPrecisionTag value;
+		typedef FieldCategories::ModularTag category;
+		static  const bool balanced = false ;
+	};
+
+	template<>
+	struct FieldTraits<FFPACK::ModularBalanced<FFPACK::Integer> > {
+		typedef FieldCategories::MultiPrecisionTag value;
+		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = true ;
+	};
+
 
 
 	// UnparametricField<float| double>
@@ -164,11 +218,13 @@ namespace FFLAS { /*  Traits */
 	struct FieldTraits<DoubleDomain> {
 		typedef FieldCategories::FloatingPointTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FloatDomain> {
 		typedef FieldCategories::FloatingPointTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 
 
@@ -177,34 +233,49 @@ namespace FFLAS { /*  Traits */
 	struct FieldTraits<FFPACK::UnparametricField<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<uint32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<int64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<uint64_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<int16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<FFPACK::UnparametricField<uint16_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
 	};
 
-	//template<> struct FieldTraits<Modular<integer> > {typedef FieldCategories::MultiPrecisionTag value;};
+	// UnparametricField<Integer>
+	template<>
+	struct FieldTraits<FFPACK::UnparametricField<FFPACK::Integer> >
+	{
+		typedef FieldCategories::MultiPrecisionTag value;
+		typedef FieldCategories::UnparametricTag category;
+		static  const bool balanced = false ;
+	};
+
+	// RNS ?
 
 
 } // FFLAS

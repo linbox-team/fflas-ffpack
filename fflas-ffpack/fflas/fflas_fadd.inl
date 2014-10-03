@@ -32,176 +32,128 @@
 
 #include "fflas-ffpack/fflas/fflas_simd_functions.h"
 
+namespace FFLAS { namespace details {
+
+	/**** Specialised ****/
+
+	template <class Field, bool ADD>
+	typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value, void>::type
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::ModularTag
+	     )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			typename Field::Element p = (typename Field::Element) F.characteristic();
+			if (ADD)
+				FFLAS::vectorised::addp<!FieldTraits<Field>::balanced>(C,A,B,N,p,F.minElement(),F.maxElement());
+			else
+				FFLAS::vectorised::subp<!FieldTraits<Field>::balanced>(C,A,B,N,p,F.minElement(),F.maxElement());
+		}
+		else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+					F.add (C[i*incc], A[i*inca], B[i*incb]);
+				else
+					F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
+	}
+
+	template <class Field, bool ADD>
+	typename std::enable_if<!FFLAS::support_simd<typename Field::Element>::value, void>::type
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::ModularTag
+	     )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+				for (size_t i=0; i<N; i++)
+				if (ADD)
+					F.add (C[i], A[i], B[i]);
+				else
+					F.sub (C[i], A[i], B[i]);
+		}
+		else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+				F.add (C[i*incc], A[i*inca], B[i*incb]);
+				else
+				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
+	}
+
+
+
+	template <class Field, bool ADD>
+	void
+	fadd (const Field & F,  const size_t N,
+	      const double* A, const size_t inca,
+	      const double* B, const size_t incb,
+	      double* C, const size_t incc
+	      , FieldCategories::GenericTag
+	      )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			for (size_t i=0; i<N; i++) {
+				if (ADD)
+				F.add (C[i], A[i], B[i]);
+				else
+				F.sub (C[i], A[i], B[i]);
+			}
+		}
+		else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+				F.add (C[i*incc], A[i*inca], B[i*incb]);
+				else
+				F.add (C[i*incc], A[i*inca], B[i*incb]);
+		}
+	}
+
+	template <class Field, bool ADD>
+	void
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::UnparametricTag
+	     )
+	{
+		for (size_t i=0; i<N; i++)
+			if (ADD)
+				C[i] = A[i] + B[i];
+			else
+				C[i] = A[i] - B[i];
+	}
+
+
+
+} // details
+} // FFLAS
+
+
 namespace FFLAS {
 
 	/***************************/
 	/*         LEVEL 1         */
 	/***************************/
 
-
-	/**** Specialised ****/
-
-
-	template <>
-	void
-	fadd (const FFPACK:: Modular<double> & F,  const size_t N,
-	      const double* A, const size_t inca,
-	      const double* B, const size_t incb,
-	      double* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			double p = (double)F.characteristic();
-			vectorised::addp<true>(C,A,B,N,p,0,p-1);
-
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.add (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-
-	template <>
-	void
-	fadd (const FFPACK:: ModularBalanced<double> & F,  const size_t N,
-	      const double* A, const size_t inca,
-	      const double* B, const size_t incb,
-	      double* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			double p = (double)F.characteristic();
-			vectorised::addp<false>(C,A,B,N,p,F.minElement(), F.maxElement());
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.add (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-	template <>
-	void
-	fadd (const FFPACK:: Modular<float> & F,  const size_t N,
-	      const float* A, const size_t inca,
-	      const float* B, const size_t incb,
-	      float* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			float p = (float)F.characteristic();
-			vectorised::addp<true>(C,A,B,N,p,0,p-1);
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.add (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-	template <>
-	void
-	fsub (const FFPACK:: Modular<double> & F,  const size_t N,
-	      const double* A, const size_t inca,
-	      const double* B, const size_t incb,
-	      double* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			double p = (double)F.characteristic();
-			vectorised::subp<true>(C,A,B,N,p,0,p-1);
-
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.sub (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-
-	template <>
-	void
-	fsub (const FFPACK:: ModularBalanced<double> & F,  const size_t N,
-	      const double* A, const size_t inca,
-	      const double* B, const size_t incb,
-	      double* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			double p = (double)F.characteristic();
-			vectorised::subp<false>(C,A,B,N,p,F.minElement(), F.maxElement());
-
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.sub (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-	template <>
-	void
-	fsub (const FFPACK:: Modular<float> & F,  const size_t N,
-	      const float* A, const size_t inca,
-	      const float* B, const size_t incb,
-	      float* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			float p = (float)F.characteristic();
-			vectorised::subp<true>(C,A,B,N,p,0,p-1);
-
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.sub (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-
-	template <>
-	void
-	fsub (const FFPACK:: ModularBalanced<float> & F,  const size_t N,
-	      const float* A, const size_t inca,
-	      const float* B, const size_t incb,
-	      float* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			float p = (float)F.characteristic();
-			vectorised::subp<false>(C,A,B,N,p,F.minElement(), F.maxElement());
-
-		}
-		else {
-			for (size_t i=0; i<N; i++)
-				F.sub (C[i*incc], A[i*inca], B[i*incb]);
-		}
-	}
-
-#if 0
-	template <>
-	void
-	fadd (const FFPACK:: UnparametricField<float> & F,  const size_t N,
-	      const float* A, const size_t inca,
-	      const float* B, const size_t incb,
-	      float* C, const size_t incc)
-	{
-		if (inca == 1 && incb == 1 && incc == 1) {
-			vectorised::addp(C,A,B,N);
-		}
-		else
-			for (size_t i=0; i<N; i++)
-				F.add (C[i*incc], A[i*inca], B[i*incb]);
-	}
-#endif
-
-	/****   Generic   ****/
-
 	template <class Field>
 	void
-	fadd (const Field& F,  const size_t N,
+	fadd (const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
 	      typename Field::Element_ptr C, const size_t incc)
 	{
-		if (inca == 1 && incb == 1 && incc == 1)
-			for (size_t i=0; i<N; i++)
-				F.add (C[i], A[i], B[i]);
-		else
-			for (size_t i=0; i<N; i++)
-				F.add (C[i*incc], A[i*inca], B[i*incb]);
+		details::fadd<Field, true>(F,N,A,inca,B,incb,C,incc
+					   , typename FieldTraits<Field>::category() );
 	}
+
+
 
 	template <class Field>
 	void
@@ -211,32 +163,21 @@ namespace FFLAS {
 	{
 		fadd(F,N,B,incb,C,incc,C,incc);
 		return;
-
-#if 0
-		if (incb == 1 && incc == 1)
-			for (size_t i=0; i<N; i++)
-				F.addin (C[i], B[i]);
-		else
-			for (size_t i=0; i<N; i++)
-				F.addin (C[i*incc], B[i*incb]);
-#endif
 	}
 
 	template <class Field>
 	void
-	fsub (const Field& F,  const size_t N,
+	fsub(const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
 	      typename Field::Element_ptr C, const size_t incc)
 	{
-		if (inca == 1 && incb == 1 && incc == 1)
-			for (size_t i=0; i<N; i++)
-				F.sub (C[i], A[i], B[i]);
-		else
-			for (size_t i=0; i<N; i++)
-				F.sub (C[i*incc], A[i*inca], B[i*incb]);
 
+		details::fadd<Field, false>(F,N,A,inca,B,incb,C,incc
+					    , typename FieldTraits<Field>::category() );
 	}
+
+
 
 	template <class Field>
 	void
@@ -244,10 +185,9 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr B, const size_t incb,
 		typename Field::Element_ptr C, const size_t incc)
 	{
-
 		fsub(F,N,C,incc,B,incb,C,incc);
+		return;
 	}
-
 
 	// C = A + a B
 	template <class Field>
