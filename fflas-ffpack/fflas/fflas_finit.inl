@@ -47,9 +47,9 @@ namespace FFLAS { namespace details {
 	      )
 	{
 		if(incX == 1) {
-			typename Field::Element p, invp;
+			typename Field::Element p;
 			p=(typename Field::Element)F.cardinality();
-			invp=(typename Field::Element)1/p;
+			double invp=1/(double)p;
 			vectorised::modp<!FieldTraits<Field>::balanced,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
@@ -111,9 +111,9 @@ namespace FFLAS { namespace details {
 	       )
 	{
 		if(incX == 1 && incY == 1) {
-			typename Field::Element p, invp;
+			typename Field::Element p;
 			p=(typename Field::Element)F.cardinality();
-			invp=1./p;
+			double invp=1./(double)p;
 			vectorised::modp<!FieldTraits<Field>::balanced,false>(A,B,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else {

@@ -41,6 +41,7 @@ struct Simd128_impl<true, false, true, 8>{
 	 * alias to 128 bit simd register
 	 */
 	using vect_t = __m128d;
+	using float_t = __m128d ;
 
 	/*
 	 * define the scalar type corresponding to the specialization
@@ -82,7 +83,7 @@ struct Simd128_impl<true, false, true, 8>{
 	 *  Return [x1,x2]
 	 */
 	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2
-				       )
+				      )
 	{
 		return _mm_set_pd(x2, x1);
 	}
@@ -427,11 +428,15 @@ struct Simd128_impl<true, false, true, 8>{
 		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1];
 	}
 
-	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	static INLINE vect_t mod(vect_t & C, const vect_t & P
+				 , const vect_t & INVP, const vect_t & NEGP
+				 , const vect_t & MIN, const vect_t & MAX
+				 , vect_t & Q, vect_t & T
+				)
 	{
-		Q = mul(C, INVP);
-		Q = floor(Q);
-		C = fnmadd(C,Q,P);
+		FLOAT_MOD(C,P,INVP,Q);
+		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
+
 		return C;
 	}
 
