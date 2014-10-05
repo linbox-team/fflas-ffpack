@@ -90,8 +90,20 @@ namespace FFLAS {
 	template<>
 	struct support_simd<double> : public std::true_type {} ;
 #ifdef SIMD_INT
+	template<>
+	struct support_simd<int64_t> : public std::true_type {} ;
+#endif
+
+	template<class T>
+	struct support_simd_mod  : public std::false_type {} ;
+
+	template<>
+	struct support_simd_mod<float> : public std::true_type {} ;
+	template<>
+	struct support_simd_mod<double> : public std::true_type {} ;
+#ifdef SIMD_INT
 	// template<>
-	// struct support_simd<int64_t> : public std::true_type {} ;
+	// struct support_simd_mod<int64_t> : public std::true_type {} ;
 #endif
 
 }

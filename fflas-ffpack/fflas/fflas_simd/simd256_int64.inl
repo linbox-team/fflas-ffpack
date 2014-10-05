@@ -462,8 +462,8 @@ struct Simd256_impl<true, true, true, 8> {
 #ifdef __INTEL_COMPILER
 		C = _mm256_rem_epi64(C,P)
 #else
-		C = fnmaddx(C,_mm256_castpd_si128(_mm256_floor_pd(_mm256_mul_pd(INVP,_mm256_castsi128_pd(C)))),P);
-		C = fnmaddx(C,_mm256_castpd_si128(_mm256_floor_pd(_mm256_mul_pd(INVP,_mm256_castsi128_pd(C)))),P);
+		FFLASFFPACK_abort("pas implementé");
+		// C = fnmaddx(C,_mm256_castpd_si128(_mm256_floor_pd(_mm256_mul_pd(INVP,_mm256_castsi128_pd(C)))),P);
 #endif
 		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
 		return C;
