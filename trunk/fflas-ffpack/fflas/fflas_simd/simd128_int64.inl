@@ -339,10 +339,9 @@ struct Simd128_impl<true, true, true, 8> {
 		C = _mm_rem_epi64(C,P)
 		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
 #else
-		C = fnmaddx(C,_mm_castpd_si128((_mm_mul_pd(INVP,_mm_castsi128_pd(C)))),P);
-		C = fnmaddx(C,_mm_castpd_si128((_mm_mul_pd(INVP,_mm_castsi128_pd(C)))),P);
-		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
+		FFLASFFPACK_abort("pas implementé");
 #endif
+		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
 
 
 		return C;

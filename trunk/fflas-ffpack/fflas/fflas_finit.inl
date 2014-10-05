@@ -40,7 +40,7 @@ namespace FFLAS { namespace details {
 
 	// specialised
 	template<class Field>
-	typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value, void>::type
+	typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	finit (const Field & F, const size_t m,
 	       typename Field::Element_ptr A, const size_t incX
 	       , FieldCategories::ModularTag
@@ -69,7 +69,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template<class Field>
-	typename std::enable_if<!FFLAS::support_simd<typename Field::Element>::value, void>::type
+	typename std::enable_if<!FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	finit (const Field & F, const size_t m,
 	       typename Field::Element_ptr A, const size_t incX
 	       , FieldCategories::ModularTag
@@ -103,7 +103,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template<class Field>
-	typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value, void>::type
+	typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	finit (const Field & F, const size_t m,
 	       typename Field::ConstElement_ptr  B, const size_t incY,
 	       typename Field::Element_ptr A, const size_t incX
@@ -125,7 +125,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template<class Field>
-	typename std::enable_if<!FFLAS::support_simd<typename Field::Element>::value, void>::type
+	typename std::enable_if<!FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	finit (const Field & F, const size_t m,
 	       typename Field::ConstElement_ptr  B, const size_t incY,
 	       typename Field::Element_ptr A, const size_t incX

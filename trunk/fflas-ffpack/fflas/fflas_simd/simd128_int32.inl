@@ -448,8 +448,8 @@ struct Simd128_impl<true, true, true, 4> {
 #ifdef __INTEL_COMPILER
 		C = _mm_rem_epi32(C,P)
 #else
-		C = fnmadd(C,_mm_castps_si128(_mm_floor_ps(_mm_mul_ps(INVP,_mm_castsi128_ps(C)))),P);
-		C = fnmadd(C,_mm_castps_si128(_mm_floor_ps(_mm_mul_ps(INVP,_mm_castsi128_ps(C)))),P);
+		FFLASFFPACK_abort("pas implementé");
+		// C = fnmadd(C,_mm_castps_si128(_mm_floor_ps(_mm_mul_ps(INVP,_mm_castsi128_ps(C)))),P);
 #endif
 		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
 		return C;
