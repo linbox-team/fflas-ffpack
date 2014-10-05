@@ -42,6 +42,8 @@ struct Simd256_impl<true, false, true, 4>
 	 */
 	using vect_t = __m256;
 
+	using float_t = __m256;
+
 	/*
 	 * define the scalar type corresponding to the specialization
 	 */
@@ -85,7 +87,7 @@ struct Simd256_impl<true, false, true, 4>
 				       , const scalar_t x3, const scalar_t x4
 				       , const scalar_t x5, const scalar_t x6
 				       , const scalar_t x7, const scalar_t x8
-				       )
+				      )
 	{
 		return _mm256_set_ps(x8, x7, x6, x5, x4, x3, x2, x1);
 	}
@@ -480,13 +482,20 @@ struct Simd256_impl<true, false, true, 4>
 		return ((const scalar_t*)&a)[0] + ((const scalar_t*)&a)[1] + ((const scalar_t*)&a)[2] + ((const scalar_t*)&a)[3] + ((const scalar_t*)&a)[4] + ((const scalar_t*)&a)[5] + ((const scalar_t*)&a)[6] + ((const scalar_t*)&a)[7];
 	}
 
-	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	static INLINE vect_t mod(vect_t & C, const vect_t & P
+				 , const vect_t & INVP, const vect_t & NEGP
+				 , const vect_t & MIN, const vect_t & MAX
+				 , vect_t & Q, vect_t & T
+				)
 	{
-		Q = mul(C, INVP);
-		Q = floor(Q);
-		C = fnmadd(C,Q,P);
+		FLOAT_MOD(C,P,INVP,Q);
+		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
+
+
 		return C;
 	}
+
+
 
 #else // __AVX__
 #error "You need AVX instructions to perform 256bits operations on float"

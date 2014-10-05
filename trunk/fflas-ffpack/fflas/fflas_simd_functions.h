@@ -49,16 +49,43 @@ namespace FFLAS { namespace vectorised {
 	}
 
 	template<>
+	// typename std::enable_if<is_integral<T>::value, T>::type
+	int64_t monfmod(int64_t A, int64_t B)
+	{
+		return A % B; // B > 0
+	}
+
+	template<>
 	float monfmod(float A, float B)
 	{
 		return fmodf(A,B);
 	}
+
+	template<>
+	double monfmod(double A, double B)
+	{
+		return fmod(A,B);
+	}
+
 
 	template<class T>
 	T monrint(T A)
 	{
 		return rint(A);
 	}
+
+	template<>
+	int64_t monrint(int64_t A)
+	{
+		return A ;
+	}
+
+	template<>
+	double monrint(double A)
+	{
+		return rint(A);
+	}
+
 
 	template<>
 	float monrint(float A)
@@ -68,31 +95,23 @@ namespace FFLAS { namespace vectorised {
 
 #ifdef __FFLASFFPACK_USE_SIMD
 
-	template<class SimdT>
+	template<class SimdT, class Element>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
-	VEC_MOD(SimdT & C, SimdT & Q, SimdT & T, const SimdT & P, const SimdT & NEGP, const SimdT & INVP, const SimdT & MIN,  const SimdT & MAX)
+	VEC_MOD(SimdT & C, SimdT & Q, SimdT & T, const SimdT & P, const SimdT & NEGP, const typename Simd<Element>::float_t & INVP, const SimdT & MIN,  const SimdT & MAX)
 	{
-		// std::cout << "CALLED" << std::endl;
-		using simd = Simd<typename simdToType<SimdT>::type>;
-		// Q = simd::mul(C, INVP);
-		// Q = simd::floor(Q);
-		// C = simd::fnmadd(C,Q,P);
-		C = simd::lazy_mod( C, Q, P, INVP );
-		Q = simd::greater(C, MAX);
-		T = simd::lesser(C, MIN);
-		Q = simd::vand(Q, NEGP);
-		T = simd::vand(T, P);
-		Q = simd::vor(Q, T);
-		C = simd::add(C, Q);
+		using simd = Simd<Element>;
+		C = simd::mod( C, P, INVP, NEGP, MIN, MAX, Q, T );
 	}
 
 	template<bool positive, bool round, class Element, class T1, class T2>
 	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
-	modp(Element * T, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
+	modp(Element * T, const Element * U, size_t n, Element p, double invp, T1 min_, T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
 		using simd = Simd<Element>;
+		using simd_float = typename floating_simd<Element>::value ;
 		using vect_t = typename simd::vect_t;
+		using float_ = typename simd_float::vect_t;
 
 		size_t i = 0;
 		if (n < simd::vect_size)
@@ -147,7 +166,7 @@ namespace FFLAS { namespace vectorised {
 		vect_t C, Q, TMP;
 		vect_t P = simd::set1(p);
 		vect_t NEGP = simd::set1(-p);
-		vect_t INVP = simd::set1(invp);
+		float_ INVP = simd_float::set1(invp);
 		vect_t MIN = simd::set1(min);
 		vect_t MAX = simd::set1(max);
 
@@ -163,7 +182,7 @@ namespace FFLAS { namespace vectorised {
 					C = simd::round(C);
 				}
 
-				VEC_MOD(C,Q,TMP, P, NEGP,INVP,MIN,MAX);
+				VEC_MOD<vect_t,Element>(C,Q,TMP, P, NEGP,INVP,MIN,MAX);
 				simd::store(T+i, C);
 			}
 		}
@@ -188,11 +207,11 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-	template<class SimdT>
+	template<class SimdT, class Element>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_ADD(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
 	{
-		using simd = Simd<typename simdToType<SimdT>::type>;
+		using simd = Simd<Element>;
 		C = simd::add(A, B);
 		Q = simd::greater(C, MAX);
 		T = simd::lesser(C, MIN);
@@ -251,7 +270,7 @@ namespace FFLAS { namespace vectorised {
 				C = simd::load(T+i);
 				A = simd::load(TA+i);
 				B = simd::load(TB+i);
-				VEC_ADD(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
+				VEC_ADD<vect_t,Element>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
 				simd::store(T+i, C);
 			}
 		}
@@ -285,11 +304,11 @@ namespace FFLAS { namespace vectorised {
 		return;
 	}
 
-	template<class SimdT>
+	template<class SimdT, class Element>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_SUB(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
 	{
-		using simd = Simd<typename simdToType<SimdT>::type>;
+		using simd = Simd<Element>;
 		C = simd::sub(A, B);
 		Q = simd::greater(C, MAX);
 		T = simd::lesser(C, MIN);
@@ -346,7 +365,7 @@ namespace FFLAS { namespace vectorised {
 				C = simd::load(T+i);
 				A = simd::load(TA+i);
 				B = simd::load(TB+i);
-				VEC_SUB(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
+				VEC_SUB<vect_t,Element>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
 				simd::store(T+i, C);
 			}
 		}
@@ -382,11 +401,11 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-	template<class SimdT>
+	template<class SimdT, class Element>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_SCAL(SimdT & C, SimdT & ALPHA, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & INVP, SimdT & MIN, SimdT & MAX)
 	{
-		using simd = Simd<typename simdToType<SimdT>::type>;
+		using simd = Simd<Element>;
 		Q = simd::mul(C,INVP);
 		C = simd::mul(C,ALPHA);
 		Q = simd::floor(Q);
@@ -444,7 +463,7 @@ namespace FFLAS { namespace vectorised {
 			for (;i <= n - simd::vect_size ; i += simd::vect_size)
 			{
 				C = simd::load(U+i);
-				VEC_SCAL(C, ALPHA, Q, TMP, P, NEGP, INVP, MIN, MAX);
+				VEC_SCAL<vect_t,Element>(C, ALPHA, Q, TMP, P, NEGP, INVP, MIN, MAX);
 				simd::store(T+i,C);
 			}
 		}

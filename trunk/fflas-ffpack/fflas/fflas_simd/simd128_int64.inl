@@ -37,118 +37,119 @@ struct Simd128_impl<true, true, true, 8> {
 #if defined(__FFLASFFPACK_USE_SIMD)
 
 	/*
-     * alias to 128 bit simd register
-     */
-    using vect_t = __m128i;
-
-    /*
-     * define the scalar type corresponding to the specialization
-     */
-    using scalar_t = int64_t;
-
-    /*
-     *  number of scalar_t in a simd register
-     */
-    static const constexpr size_t vect_size = 2;
-
-    /*
-     *  alignement required by scalar_t pointer to be loaded in a vect_t
-     */
-    static const constexpr size_t alignment = 16;
+	 * alias to 128 bit simd register
+	 */
+	using vect_t = __m128i;
+	using float_t = __m128d;
 
 	/*
-    * Converter from vect_t to a tab.
-    * exple:
-    *      Converter conv;
-    *      conv.v = a;
-    *      scalart_t x = conv.t[1]
-    */
-    union Converter{
-        vect_t v;
-        scalar_t t[vect_size];
-    };
+	 * define the scalar type corresponding to the specialization
+	 */
+	using scalar_t = int64_t;
 
-    /*
-     *  Return vector of type vect_t with all elements set to zero
-     *  Return [0,0] int64_t
-     */
-    static INLINE CONST vect_t zero()
-    {
-        return _mm_setzero_si128();
-    }
+	/*
+	 *  number of scalar_t in a simd register
+	 */
+	static const constexpr size_t vect_size = 2;
 
-    /*
-     *  Broadcast 64-bit integer a to all all elements of dst. This intrinsic may generate the vpbroadcastw.
-     *  Return [x,x] int64_t
-     */
-    static INLINE CONST vect_t set1(const scalar_t x)
-    {
-        return _mm_set1_epi64x(x);
-    }
+	/*
+	 *  alignement required by scalar_t pointer to be loaded in a vect_t
+	 */
+	static const constexpr size_t alignment = 16;
 
-    /*
-     *  Broadcast 64-bit integer a to all all elements of dst. This intrinsic may generate the vpbroadcastw.
-     *  Return [x0,x1] int64_t
-     */
-    static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1)
-    {
-        return _mm_set_epi64x(x1,x0);
-    }
+	/*
+	 * Converter from vect_t to a tab.
+	 * exple:
+	 *      Converter conv;
+	 *      conv.v = a;
+	 *      scalart_t x = conv.t[1]
+	 */
+	union Converter{
+		vect_t v;
+		scalar_t t[vect_size];
+	};
 
-    /*
-     *  Gather 64-bit integer elements with indexes idx[0], ..., idx[1] from the address p in vect_t.
-     *  Return [p[idx[0]], p[idx[1]]] int64_t
-     */
-    template<class T>
-    static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx)
-    {
-        return set(p[idx[0]], p[idx[1]]);
-    }
+	/*
+	 *  Return vector of type vect_t with all elements set to zero
+	 *  Return [0,0] int64_t
+	 */
+	static INLINE CONST vect_t zero()
+	{
+		return _mm_setzero_si128();
+	}
 
-    /*
-     * Load 128-bits of integer data from memory into dst.
-     * p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
-     * Return [p[0],p[1]] int64_t
-     */
-    static INLINE PURE vect_t load(const scalar_t * const p)
-    {
-        return _mm_load_si128(reinterpret_cast<const vect_t*>(p));
-    }
+	/*
+	 *  Broadcast 64-bit integer a to all all elements of dst. This intrinsic may generate the vpbroadcastw.
+	 *  Return [x,x] int64_t
+	 */
+	static INLINE CONST vect_t set1(const scalar_t x)
+	{
+		return _mm_set1_epi64x(x);
+	}
 
-    /*
-     * Load 128-bits of integer data from memory into dst.
-     * p does not need to be aligned on any particular boundary.
-     * Return [p[0],p[1]] int64_t
-     */
-    static INLINE PURE vect_t loadu(const scalar_t * const p)
-    {
-        return _mm_loadu_si128(reinterpret_cast<const vect_t*>(p));
-    }
+	/*
+	 *  Broadcast 64-bit integer a to all all elements of dst. This intrinsic may generate the vpbroadcastw.
+	 *  Return [x0,x1] int64_t
+	 */
+	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1)
+	{
+		return _mm_set_epi64x(x1,x0);
+	}
 
-    /*
-     * Store 128-bits of integer data from a into memory.
-     * p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
-     */
-    static INLINE void store(const scalar_t * p, vect_t v)
-    {
-        _mm_store_si128(reinterpret_cast<vect_t*>(const_cast<scalar_t*>(p)), v);
-    }
+	/*
+	 *  Gather 64-bit integer elements with indexes idx[0], ..., idx[1] from the address p in vect_t.
+	 *  Return [p[idx[0]], p[idx[1]]] int64_t
+	 */
+	template<class T>
+	static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx)
+	{
+		return set(p[idx[0]], p[idx[1]]);
+	}
 
-    /*
-     * Store 128-bits of integer data from a into memory.
-     * p does not need to be aligned on any particular boundary.
-     */
-    static INLINE void storeu(const scalar_t * p, vect_t v)
-    {
-        _mm_storeu_si128(reinterpret_cast<vect_t*>(const_cast<scalar_t*>(p)), v);
-    }
+	/*
+	 * Load 128-bits of integer data from memory into dst.
+	 * p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
+	 * Return [p[0],p[1]] int64_t
+	 */
+	static INLINE PURE vect_t load(const scalar_t * const p)
+	{
+		return _mm_load_si128(reinterpret_cast<const vect_t*>(p));
+	}
 
-    /*
-     * Add packed 64-bits integer in a and b, and store the results in vect_t.
-     * Args   : [a0, a1] int64_t
-                [b0, b1] int64_t
-     * Return : [a0+b0, a1+b1]   int64_t
-     */
+	/*
+	 * Load 128-bits of integer data from memory into dst.
+	 * p does not need to be aligned on any particular boundary.
+	 * Return [p[0],p[1]] int64_t
+	 */
+	static INLINE PURE vect_t loadu(const scalar_t * const p)
+	{
+		return _mm_loadu_si128(reinterpret_cast<const vect_t*>(p));
+	}
+
+	/*
+	 * Store 128-bits of integer data from a into memory.
+	 * p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
+	 */
+	static INLINE void store(const scalar_t * p, vect_t v)
+	{
+		_mm_store_si128(reinterpret_cast<vect_t*>(const_cast<scalar_t*>(p)), v);
+	}
+
+	/*
+	 * Store 128-bits of integer data from a into memory.
+	 * p does not need to be aligned on any particular boundary.
+	 */
+	static INLINE void storeu(const scalar_t * p, vect_t v)
+	{
+		_mm_storeu_si128(reinterpret_cast<vect_t*>(const_cast<scalar_t*>(p)), v);
+	}
+
+	/*
+	 * Add packed 64-bits integer in a and b, and store the results in vect_t.
+	 * Args   : [a0, a1] int64_t
+	 [b0, b1] int64_t
+	 * Return : [a0+b0, a1+b1]   int64_t
+	 */
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b)
 	{
 		return _mm_add_epi64(a, b);
@@ -160,11 +161,11 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 	/*
-     * Subtract packed 64-bit integers in b from packed 64-bit integers in a, and store the results in vect_t.
-     * Args   : [a0, a1] int64_t
-                [b0, b1] int64_t
-     * Return : [a0-b0, a1-b1]  int64_t
-     */
+	 * Subtract packed 64-bit integers in b from packed 64-bit integers in a, and store the results in vect_t.
+	 * Args   : [a0, a1] int64_t
+	 [b0, b1] int64_t
+	 * Return : [a0-b0, a1-b1]  int64_t
+	 */
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b)
 	{
 		return _mm_sub_epi64(a, b);
@@ -177,11 +178,11 @@ struct Simd128_impl<true, true, true, 8> {
 
 
 	/*
-     * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
-     * Args   : [a0, a1]           int64_t
-                [b0, b1]           int64_t
-     * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
-     */
+	 * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
+	 * Args   : [a0, a1]           int64_t
+	 [b0, b1]           int64_t
+	 * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
+	 */
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1)
 	{
 		// _mm_mullo_epi32 emul
@@ -194,11 +195,11 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 	/*
-     * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
-     * Args   : [a0, a1]           int64_t
-                [b0, b1]           int64_t
-     * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
-     */
+	 * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
+	 * Args   : [a0, a1]           int64_t
+	 [b0, b1]           int64_t
+	 * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
+	 */
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
 	{
 		return mullo(a, b);
@@ -247,9 +248,9 @@ struct Simd128_impl<true, true, true, 8> {
 #else
 #pragma warning "The simd lesser function is emulate, it may impact the performances."
 		Converter ca, cb;
-        ca.v = a;
-        cb.v = b;
-        return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+		ca.v = a;
+		cb.v = b;
+		return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
 #endif
 	}
 
@@ -265,10 +266,10 @@ struct Simd128_impl<true, true, true, 8> {
 		return _mm_cmpgt_epi64(a, b);
 #else
 #pragma warning "The simd greater function is emulate, it may impact the performances."
-        Converter ca, cb;
-        ca.v = a;
-        cb.v = b;
-        return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+		Converter ca, cb;
+		ca.v = a;
+		cb.v = b;
+		return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
 #endif
 	}
 
@@ -293,8 +294,8 @@ struct Simd128_impl<true, true, true, 8> {
 
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
 	{
-        Converter c;
-        c.v = a;
+		Converter c;
+		c.v = a;
 		return c.t[0] + c.t[1];
 	}
 
@@ -313,12 +314,39 @@ struct Simd128_impl<true, true, true, 8> {
 		return c = fmaddx(c,a,b);
 	}
 
-	static INLINE vect_t lazy_mod(vect_t & C, vect_t & Q, const vect_t & P, const vect_t & INVP)
+	static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
-		C = _mm_rem_epi64(C,P)
-		return C;
+		return sub(c, mulx(a, b));
 	}
 
+	static INLINE vect_t fnmaddxin(vect_t & c, const vect_t a, const vect_t b)
+	{
+		return c = fnmaddx(c,a,b);
+	}
+
+	static INLINE CONST vect_t round(const vect_t a)
+	{
+		return a ;
+	}
+
+	static INLINE vect_t mod(vect_t & C, const vect_t & P
+				 , const float_t & INVP, const vect_t & NEGP
+				 , const vect_t & MIN, const vect_t & MAX
+				 , vect_t & Q, vect_t & T
+				)
+	{
+#ifdef __INTEL_COMPILER
+		C = _mm_rem_epi64(C,P)
+		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
+#else
+		C = fnmaddx(C,_mm_castpd_si128((_mm_mul_pd(INVP,_mm_castsi128_pd(C)))),P);
+		C = fnmaddx(C,_mm_castpd_si128((_mm_mul_pd(INVP,_mm_castsi128_pd(C)))),P);
+		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
+#endif
+
+
+		return C;
+	}
 #else
 #error "You need SSE instructions to perform 128 bits operations on int64"
 #endif
@@ -328,51 +356,51 @@ struct Simd128_impl<true, true, true, 8> {
 // uint64_t
 template<>
 struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true, true, true, 8> {
-    using scalar_t = uint64_t;
+	using scalar_t = uint64_t;
 
-    static INLINE CONST vect_t greater(vect_t a, vect_t b)
-    {
+	static INLINE CONST vect_t greater(vect_t a, vect_t b)
+	{
 #ifdef __SSE4_2__
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(a, b);
+		vect_t x;
+		x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+		a = sub(x, a);
+		b = sub(x, b);
+		return _mm_cmpgt_epi64(a, b);
 #else
 #pragma warning "The simd greater function is emulate, it may impact the performances."
-        Converter ca, cb;
-        ca.v = a;
-        cb.v = b;
-        return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+		Converter ca, cb;
+		ca.v = a;
+		cb.v = b;
+		return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
 #endif
-    }
+	}
 
-    static INLINE CONST vect_t lesser(vect_t a, vect_t b)
-    {
+	static INLINE CONST vect_t lesser(vect_t a, vect_t b)
+	{
 #ifdef __SSE4_2__
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(a, b);
+		vect_t x;
+		x = set1(-(static_cast<scalar_t>(1)<<(sizeof(scalar_t)*8-1)));
+		a = sub(x, a);
+		b = sub(x, b);
+		return _mm_cmpgt_epi64(a, b);
 #else
 #pragma warning "The simd greater function is emulate, it may impact the performances."
-        Converter ca, cb;
-        ca.v = a;
-        cb.v = b;
-        return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+		Converter ca, cb;
+		ca.v = a;
+		cb.v = b;
+		return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
 #endif
-    }
+	}
 
-    static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
-    {
-        return vor(greater(a, b), eq(a, b));
-    }
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
+	{
+		return vor(greater(a, b), eq(a, b));
+	}
 
-    static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
-    {
-        return vor(lesser(a, b), eq(a, b));
-    }
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
+	{
+		return vor(lesser(a, b), eq(a, b));
+	}
 };
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_int64_INL
