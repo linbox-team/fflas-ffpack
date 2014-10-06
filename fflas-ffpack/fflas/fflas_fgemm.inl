@@ -160,7 +160,8 @@ namespace FFLAS{ namespace Protected{
 					       double& Out2min, double& Out2max,
 					       double& Op1min, double& Op1max,
 					       double& Op2min, double& Op2max, double beta,
-					       MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH){
+					       MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
+	{
 		// Testing if P5 need to be reduced
 		Out2min = Op1min + std::min(beta*Op2min,beta*Op2max);
 		Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
@@ -203,7 +204,7 @@ namespace FFLAS{ namespace Protected{
 			} else {
 				fscalin (H.delayedField, N, alpha, X, incX);
 				finit(F, N, X, incX);
-                    }
+			}
 		} else
 			finit(F, N, X, incX);
 	}
