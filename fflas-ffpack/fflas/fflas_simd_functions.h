@@ -97,21 +97,36 @@ namespace FFLAS { namespace vectorised {
 
 	template<class SimdT, class Element>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
-	VEC_MOD(SimdT & C, SimdT & Q, SimdT & T, const SimdT & P, const SimdT & NEGP, const typename Simd<Element>::float_t & INVP, const SimdT & MIN,  const SimdT & MAX)
+	VEC_MOD(SimdT & C, SimdT & Q, SimdT & T, const SimdT & P, const SimdT & NEGP
+		// , const typename Simd<Element>::float_t & INVP
+		, const SimdT & INVP
+		, const SimdT & MIN,  const SimdT & MAX)
 	{
 		using simd = Simd<Element>;
 		C = simd::mod( C, P, INVP, NEGP, MIN, MAX, Q, T );
+		// Q = simd::mul(C, INVP);
+		// Q = simd::floor(Q);
+		// C = simd::fnmadd(C,Q,P);
+
+		// Q = simd::greater(C, MAX);
+		// T = simd::lesser(C, MIN);
+		// Q = simd::vand(Q, NEGP);
+		// T = simd::vand(T, P);
+		// Q = simd::vor(Q, T);
+		// C = simd::add(C, Q);
+
+
 	}
 
 	template<bool positive, bool round, class Element, class T1, class T2>
 	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
-	modp(Element * T, const Element * U, size_t n, Element p, double invp, T1 min_, T2 max_)
+	modp(Element * T, const Element * U, size_t n, Element p, Element invp, T1 min_, T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
 		using simd = Simd<Element>;
-		using simd_float = typename floating_simd<Element>::value ;
+		// using simd_float = typename floating_simd<Element>::value ;
 		using vect_t = typename simd::vect_t;
-		using float_ = typename simd_float::vect_t;
+		// using float_ = typename simd_float::vect_t;
 
 		size_t i = 0;
 		if (n < simd::vect_size)
@@ -166,7 +181,8 @@ namespace FFLAS { namespace vectorised {
 		vect_t C, Q, TMP;
 		vect_t P = simd::set1(p);
 		vect_t NEGP = simd::set1(-p);
-		float_ INVP = simd_float::set1(invp);
+		// float_ INVP = simd_float::set1(invp);
+		vect_t INVP = simd::set1(invp);
 		vect_t MIN = simd::set1(min);
 		vect_t MAX = simd::set1(max);
 

@@ -49,7 +49,7 @@ namespace FFLAS { namespace details {
 		if(incX == 1) {
 			typename Field::Element p;
 			p=(typename Field::Element)F.cardinality();
-			double invp=1/(double)p;
+			typename Field::Element invp=1/(typename Field::Element) p;
 			vectorised::modp<!FieldTraits<Field>::balanced,false>(A,A,m,p,invp,F.minElement(),F.maxElement());
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */

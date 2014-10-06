@@ -225,7 +225,8 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 	if  (timing) {
 		FFLAS::Timer tom;
-		FFPACK::Modular<double> G(65537);
+		// FFPACK::Modular<double> G(65537);
+		FFPACK::UnparametricField<double> G;
 		double af, bf ;
 		G.init(af,alpha);
 		G.init(bf,beta);
