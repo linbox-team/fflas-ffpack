@@ -53,8 +53,8 @@ namespace FFLAS { /*  Categories */
 		struct IntegralTag : public GenericTag{};
 		//! If it is a multiprecision field (ie \c Givaro::Integer)
 		struct MultiPrecisionTag : public  GenericTag{};
-		//! If it can support SIMD operations (ie \c double or \c int32_t, etc)
-		struct SIMDTag : public GenericTag{};
+		//- If it can support SIMD operations (ie \c double or \c int32_t, etc)
+		// struct SIMDTag : public GenericTag{};
 
 
 		// this is weird :

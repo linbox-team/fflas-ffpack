@@ -2,6 +2,9 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* Copyright (C) 2010 LinBox
  *
+ * Adapted by B Boyer <brice.boyer@imag.fr>
+ * (from other modular-balanced* files)
+
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -32,7 +35,6 @@
 #define __FFLASFFPACK_modular_int32_H
 
 #include <math.h>
-#include <sys/time.h>
 #include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
@@ -41,7 +43,11 @@
 #define LINBOX_MAX_INT INT32_MAX
 #endif
 
-// Namespace in which all LinBox code resides
+#define NORMALISE(x) \
+{ \
+	if (x < 0) x += modulus; \
+}
+
 namespace FFPACK
 {
 
@@ -72,19 +78,20 @@ namespace FFPACK
 		unsigned long lmodulus;
 		int32_t _two64;
 
+	public:
 
-	public :
 		typedef int32_t Element;
 		typedef int32_t* Element_ptr;
 		typedef const int32_t* ConstElement_ptr;
+
 		const Element one   ;
 		const Element zero  ;
-		const Element mOne ; // can't be const because of operator=
+		const Element mOne ;
 
 	public:
 
-
 		static const bool balanced = false ;
+
 		typedef ModularRandIter<Element> RandIter;
 		typedef NonzeroRandIter<Modular<Element>, ModularRandIter<Element> > NonZeroRandIter;
 
@@ -95,12 +102,12 @@ namespace FFPACK
 		{
 			modulusinv=1/(double)65521;
 
-			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) 65521);
+			_two64 = (Element) ((uint64_t) (-1) % (uint64_t) 65521);
 			_two64 += 1;
 			if (_two64 >= 65521) _two64 -= 65521;
 		}
 
-		Modular (int32_t value, int32_t exp = 1) :
+		Modular (Element value, int32_t exp = 1) :
 			modulus(value),lmodulus((unsigned long)value)
 			,one(1),zero(0),mOne(modulus -1)
 		{
@@ -113,55 +120,17 @@ namespace FFPACK
 				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 			}
 #endif
-			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
+			_two64 = (Element) ((uint64_t) (-1) % (uint64_t) value);
 			_two64 += 1;
 			if (_two64 >= value) _two64 -= value;
 		}
 
-#if 0
-		Modular (unsigned long int value) :
-			modulus((Element) value),lmodulus(value)
-			,one(1),zero(0),mOne(modulus -1)
-		{
-			modulusinv = 1 / ((double) value);
-#ifdef DEBUG
-			if(value<=1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			if (value>INT32_MAX)  // stupidly big ?
-				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-			if((Element)value>getMaxModulus()) // we can cast now
-				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-#endif
-			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
-			_two64 += 1;
-			if ((unsigned long)_two64 >= value)
-				_two64 = _two64 - (int32_t) value;
-		}
-
-		Modular (long int value) :
-			modulus((Element) value), lmodulus((unsigned long int)value)
-			,one(1),zero(0),mOne(modulus -1)
-		{
-			modulusinv = 1 / ((double) value);
-#ifdef DEBUG
-			if(value<=1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
-			if (value>INT32_MAX)  // stupidly big ?
-				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-			if((Element)value>getMaxModulus()) // we can cast now
-				throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
-#endif
-			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) value);
-			_two64 += 1;
-			if ((long int)_two64 >= value)
-				_two64 = _two64 - (int32_t) value;
-		}
-#endif
-
-
-		Modular(const Modular<int32_t>& mf) :
+		Modular(const Modular<Element>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv)
 			,lmodulus(mf.lmodulus),_two64(mf._two64)
 			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
-		{}
+		{
+		}
 
 		Modular <Element>& assign(const Modular<Element> &F)
 		{
@@ -177,7 +146,7 @@ namespace FFPACK
 		}
 
 #if 1
-		const Modular &operator=(const Modular<int32_t> &F)
+		const Modular &operator=(const Modular<Element> &F)
 		{
 			modulus = F.modulus;
 			modulusinv = F.modulusinv;
@@ -191,49 +160,48 @@ namespace FFPACK
 		}
 #endif
 
-
-		unsigned long &cardinality (unsigned long &c) const
+		inline unsigned long &cardinality ( unsigned long &c) const
 		{
 			return c = lmodulus;
 		}
 
-		unsigned long &characteristic (unsigned long &c) const
+		inline unsigned long &characteristic (unsigned long &c) const
 		{
 			return c = lmodulus;
 		}
 
-		unsigned long characteristic () const
+		inline unsigned long characteristic () const
 		{
 			return lmodulus;
 		}
 
-		unsigned long cardinality () const
+		inline unsigned long cardinality () const
 		{
 			return lmodulus;
 		}
 
 
-		int32_t &convert (int32_t &x, const Element &y) const
+		inline Element &convert (Element &x, const Element &y) const
 		{
 			return x = y;
 		}
 
-		double &convert (double &x, const Element &y) const
+		inline double & convert(double &x, const Element &y) const
 		{
 			return x = (double) y;
 		}
 
-		float &convert (float &x, const Element &y) const
+		inline float & convert(float &x, const Element &y) const
 		{
 			return x = (float) y;
 		}
 
-		std::ostream &write (std::ostream &os) const
+		inline std::ostream &write (std::ostream &os) const
 		{
 			return os << "int32_t mod " << modulus;
 		}
 
-		std::istream &read (std::istream &is)
+		inline std::istream &read (std::istream &is)
 		{
 			is >> modulus;
 			modulusinv = 1 /((double) modulus );
@@ -241,79 +209,91 @@ namespace FFPACK
 			if(modulus <= 1) throw Failure(__func__,__FILE__,__LINE__,"modulus must be > 1");
 			if(modulus > getMaxModulus()) throw Failure(__func__,__FILE__,__LINE__,"modulus is too big");
 #endif
-			_two64 = (int32_t) ((uint64_t) (-1) % (uint64_t) modulus);
+			_two64 = (Element) ((uint64_t) (-1) % (uint64_t) modulus);
 			_two64 += 1;
 			if (_two64 >= modulus) _two64 -= modulus;
 
 			return is;
 		}
 
-		std::ostream &write (std::ostream &os, const Element &x) const
+		inline std::ostream &write (std::ostream &os, const Element &x) const
 		{
 			return os << x;
 		}
 
-		std::istream &read (std::istream &is, Element &x) const
+		inline std::istream &read (std::istream &is, Element &x) const
 		{
-			int32_t tmp;
+			Element tmp;
 			is >> tmp;
 			init(x,tmp);
 			return is;
 		}
 
-		Element &init (Element & x, const double &y) const
+		inline Element &init (Element & x, const double &y) const
 		{
 			double z = fmod(y, (double)modulus);
-			if (z < 0)
-				z += (double)modulus;
-			//z += 0.5; // C Pernet Sounds nasty and not necessary
+			if (z < 0) z += (double)modulus;
 			return x = static_cast<Element>(z); //rounds towards 0
 		}
 
-		Element &init (Element & x, const float &y) const
+		inline Element &init (Element & x, const float &y) const
 		{
 			return init(x , (double) y);
 		}
 
 		template<class Element1>
-		Element &init (Element & x, const Element1 &y) const
+		inline Element &init (Element & x, const Element1 &y) const
 		{
 			x = Element(y) % modulus;
-			if (x < 0) x += modulus;
+
+			NORMALISE(x);
 			return x;
 		}
 
-		Element& init(Element& x, int y =0) const
+		inline Element& init(Element& x, Element y = 0) const
 		{
-			x = y % modulus;
-			if ( x < 0 ) x += modulus;
+			x = (y % modulus);
+			NORMALISE(x);
 			return x;
 		}
 
-		Element& init(Element& x, long y) const
+		inline Element& init(Element& x, int64_t y ) const
 		{
-			x = Element(y % (long)modulus);
-			if ( x < 0 ) x += modulus;
+			x = Element(y % (int64_t)modulus);
+			NORMALISE(x);
 			return x;
 		}
 
-		Element& assign(Element& x, const Element& y) const
+		inline Element& init(Element& x, uint32_t y ) const
+		{
+			x = (Element)(y % lmodulus);
+			if ( x < 0 ) x += (Element)modulus;
+			return x;
+		}
+
+		inline Element& init (Element& x, uint64_t y) const
+		{
+			x = (Element)(y % lmodulus);
+			if ( x < 0 ) x += (Element)modulus;
+			return x;
+		}
+
+		inline Element& assign(Element& x, const Element& y) const
 		{
 			return x = y;
 		}
 
-
-		bool areEqual (const Element &x, const Element &y) const
+		inline bool areEqual (const Element &x, const Element &y) const
 		{
 			return x == y;
 		}
 
-		bool isZero (const Element &x) const
+		inline  bool isZero (const Element &x) const
 		{
 			return x == 0;
 		}
 
-		bool isOne (const Element &x) const
+		inline bool isOne (const Element &x) const
 		{
 			return x == 1;
 		}
@@ -323,55 +303,50 @@ namespace FFPACK
 			return x == mOne ;
 		}
 
-		Element &add (Element &x, const Element &y, const Element &z) const
+		inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x >= modulus ) x -= modulus;
+			NORMALISE(x);
 			return x;
 		}
 
-		Element &sub (Element &x, const Element &y, const Element &z) const
+		inline Element &sub (Element &x, const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x < 0)
-				x += (Element) modulus;
+			NORMALISE(x);
 			return x;
 		}
 
-		Element &mul (Element &x, const Element &y, const Element &z) const
+		inline Element &mul (Element &x, const Element &y, const Element &z) const
 		{
-			int32_t q;
+			Element q;
 
-			q  = (int32_t) ((((double) y)*((double) z)) * modulusinv);  // q could be off by (+/-) 1
-			x = (int32_t) (y*z - q*modulus);
-
+			q  = (Element) ((((double) y) * ((double) z)) * modulusinv);  // q could be off by (+/-) 1
+			x = (Element) (y*z - q*modulus);
 
 			if (x >= modulus)
 				x -= (Element) modulus;
 			else if (x < 0)
 				x += (Element) modulus;
-
 			return x;
 		}
 
-		Element &div (Element &x, const Element &y, const Element &z) const
+		inline Element &div (Element &x, const Element &y, const Element &z) const
 		{
-			FFLASFFPACK_check(!isZero(z));
 			Element temp;
-			inv (temp, z);
-			return mul (x, y, temp);
+			return mul (x, y, inv(temp,z));
 		}
 
-		Element &neg (Element &x, const Element &y) const
+		inline Element &neg (Element &x, const Element &y) const
 		{
 			if(y == 0) return x=0;
 			else return x = modulus-y;
 		}
 
-		Element &inv (Element &x, const Element &y) const
+		inline Element &inv (Element &x, const Element &y) const
 		{
 			FFLASFFPACK_check(!isZero(y));
-			int32_t d, t;
+			Element d, t;
 			XGCD(d, x, t, y, modulus);
 			if (d != 1)
 			{
@@ -385,15 +360,15 @@ namespace FFPACK
 
 		}
 
-		Element &axpy (Element &r,
+		inline Element &axpy (Element &r,
 			       const Element &a,
 			       const Element &x,
 			       const Element &y) const
 		{
-			int32_t q;
+			Element q;
 
-			q  = (int32_t) (((((double) a) * ((double) x)) + (double)y) * modulusinv);  // q could be off by (+/-) 1
-			r = (int32_t) (a * x + y - q*modulus);
+			q  = (Element) (((((double) a) * ((double) x)) + (double)y) * modulusinv);  // q could be off by (+/-) 1
+			r = (Element) (a * x + y - q*modulus);
 
 
 			if (r >= modulus)
@@ -405,15 +380,15 @@ namespace FFPACK
 
 		}
 
-		Element &axmy (Element &r,
+		inline Element &axmy (Element &r,
 			       const Element &a,
 			       const Element &x,
 			       const Element &y) const
 		{
-			int32_t q;
+			Element q;
 
-			q  = (int32_t) (((((double) a) * ((double) x)) - (double)y) * modulusinv);  // q could be off by (+/-) 1
-			r = (int32_t) (a * x - y - q*modulus);
+			q  = (Element) (((((double) a) * ((double) x)) - (double)y) * modulusinv);  // q could be off by (+/-) 1
+			r = (Element) (a * x - y - q*modulus);
 
 
 			if (r >= modulus)
@@ -425,7 +400,7 @@ namespace FFPACK
 
 		}
 
-		Element &maxpy (Element &r,
+		inline Element &maxpy (Element &r,
 			       const Element &a,
 			       const Element &x,
 			       const Element &y) const
@@ -433,48 +408,47 @@ namespace FFPACK
 			return negin(axmy(r,a,x,y));
 		}
 
-		Element &addin (Element &x, const Element &y) const
+		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if (  x >= modulus ) x -= modulus;
+			NORMALISE(x);
 			return x;
 		}
 
-		Element &subin (Element &x, const Element &y) const
+		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if (x < 0) x += modulus;
+			NORMALISE(x);
 			return x;
 		}
 
-		Element &mulin (Element &x, const Element &y) const
+		inline Element &mulin (Element &x, const Element &y) const
 		{
 			return mul(x,x,y);
 		}
 
-		Element &divin (Element &x, const Element &y) const
+		inline Element &divin (Element &x, const Element &y) const
 		{
 			return div(x,x,y);
 		}
 
-		Element &negin (Element &x) const
+		inline Element &negin (Element &x) const
 		{
 			if (x == 0) return x;
 			else return x = modulus - x;
 		}
 
-		Element &invin (Element &x) const
+		inline Element &invin (Element &x) const
 		{
-			FFLASFFPACK_check(!isZero(x));
 			return inv (x, x);
 		}
 
-		Element &axpyin (Element &r, const Element &a, const Element &x) const
+		inline Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
-			int32_t q;
+			Element q;
 
-			q  = (int32_t) (((((double) a) * ((double) x)) + (double) r) * modulusinv);  // q could be off by (+/-) 1
-			r = (int32_t) (a * x + r - q*modulus);
+			q  = (Element) (((((double) a) * ((double) x)) + (double) r) * modulusinv);  // q could be off by (+/-) 1
+			r = (Element) (a * x + r - q*modulus);
 
 
 			if (r >= modulus)
@@ -485,41 +459,15 @@ namespace FFPACK
 			return r;
 		}
 
-		Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
 		{
 			Element q;
             maxpy(q,a,x,r);
             return assign(r,q);
 		}
 
-		unsigned long AccBound(const Element&r) const
+		static  inline Element getMaxModulus()
 		{
-			// Element one, zero ;
-			// init(one,1UL) ;
-			// init(zero,0UL);
-			double max_double = (double) (INT32_MAX) - modulus ;
-			double p = modulus-1 ;
-			if (isZero(r))
-				return (unsigned long) (max_double/p) ;
-			else if (isOne(r))
-			{
-				if (modulus>= getMaxModulus())
-					return 0 ;
-				else
-					return (unsigned long) max_double/(unsigned long)(modulus*modulus) ;
-			} else
-				throw "Bad input, expecting 0 or 1";
-			return 0;
-		}
-
-
-		static  int32_t getMaxModulus()
-		{
-			// return INT32_MAX ; // 2^31-1
-			// return 1073741824;// 2^30
-            // return 65536;
-
-            // (p-1)^2+(p-1) < 2^{31}
 			return 46341 ;
 
 		}
@@ -537,25 +485,24 @@ namespace FFPACK
 
 	private:
 
-		static void XGCD(int32_t& d, int32_t& s, int32_t& t, int32_t a, int32_t b)
+		static void XGCD(Element& d, Element& s, Element& t, Element a, Element b)
 		{
-			int32_t  u, v, u0, v0, u1, v1, u2, v2, q, r;
+			Element  u, v, u0, v0, u1, v1, u2, v2, q, r;
+			Element aneg = 0, bneg = 0;
 
-			int32_t aneg = 0, bneg = 0;
-
-			if (a < 0)
-			{
+			if (a < 0) {
 #ifdef DEBUG
-				if (a < -LINBOX_MAX_INT) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
+				if (a < -LINBOX_MAX_INT)
+					throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
 #endif
 				a = -a;
 				aneg = 1;
 			}
 
-			if (b < 0)
-			{
+			if (b < 0) {
 #ifdef DEBUG
-				if (b < -LINBOX_MAX_INT) throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
+				if (b < -LINBOX_MAX_INT)
+					throw Failure(__func__,__FILE__,__LINE__,"XGCD: integer overflow");
 #endif
 				b = -b;
 				bneg = 1;
@@ -565,8 +512,7 @@ namespace FFPACK
 			u2 = 0; v2 = 1;
 			u = a; v = b;
 
-			while (v != 0)
-			{
+			while (v != 0) {
 				q = u / v;
 				r = u % v;
 				u = v;
@@ -592,14 +538,10 @@ namespace FFPACK
 
 	};
 
-
 }
 
-// const int32_t FFPACK::Modular<int32_t>::one  =  1UL;
-// const int32_t FFPACK::Modular<int32_t>::zero =  0UL;
-
-
-
+#undef LINBOX_MAX_INT
+#undef NORMALISE
 
 #include "field-general.h"
 
