@@ -44,7 +44,7 @@ namespace FFLAS{ namespace Protected{
 	template<class Field>
 	int WinogradSteps (const Field & F, const size_t & m);
 
-	}//Protected
+}//Protected
 }//FFLAS
 
 namespace FFLAS {
@@ -61,7 +61,7 @@ namespace FFLAS {
 	};
 
 	/*! ParSeqHelper for both fgemm and ftrsm
-	 */
+	*/
 	namespace ParSeqHelper {
 		struct Parallel{
 			const int numthreads;
@@ -75,7 +75,7 @@ namespace FFLAS {
 		};
 		struct Sequential{
 			Sequential() {}
-			    //template<class T>
+			//template<class T>
 			Sequential(Parallel& ) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
 				return out << "Sequential";
@@ -91,12 +91,12 @@ namespace FFLAS {
 	}
 
 
-       /*! FGEMM Helper
+	/*! FGEMM Helper
 	*/
 	template<class Field,
-		 typename AlgoTrait = MMHelperAlgo::Auto,
-		 typename FieldTrait = typename FieldTraits<Field>::value,
-		 typename ParSeqTrait = ParSeqHelper::Sequential >
+	typename AlgoTrait = MMHelperAlgo::Auto,
+	typename FieldTrait = typename FieldTraits<Field>::value,
+	typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
 		typedef MMHelper<Field,AlgoTrait,FieldTrait,ParSeqTrait> Self_t;
 		int recLevel ;
@@ -113,9 +113,13 @@ namespace FFLAS {
 		void initOut(){Outmin = FieldMin; Outmax = FieldMax;}
 
 
-		size_t MaxDelayedDim(double beta){ return (size_t) std::max (0.0, floor ( (MaxStorableValue - fabs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));}
+		size_t MaxDelayedDim(double beta)
+		{
+			return (size_t) std::max (0.0, floor ( (MaxStorableValue - fabs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));
+		}
 
-		void setOutBounds(const size_t k, const double alpha, const double beta){
+		void setOutBounds(const size_t k, const double alpha, const double beta)
+		{
 			if (beta<0){
 				Outmin = beta*Cmax;
 				Outmax = beta*Cmin;
@@ -133,7 +137,8 @@ namespace FFLAS {
 		}
 
 		bool checkA(const Field& F, const size_t M, const size_t N,
-			    typename Field::ConstElement_ptr A, const size_t lda ){
+			    typename Field::ConstElement_ptr A, const size_t lda )
+		{
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
@@ -144,8 +149,10 @@ namespace FFLAS {
 #endif
 			return true;
 		}
+
 		bool checkB(const Field& F, const size_t M, const size_t N,
-			    typename Field::ConstElement_ptr A, const size_t lda ){
+			    typename Field::ConstElement_ptr A, const size_t lda )
+		{
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
@@ -156,6 +163,7 @@ namespace FFLAS {
 #endif
 			return true;
 		}
+
 		bool checkOut(const Field& F, const size_t M, const size_t N,
 			      typename Field::ConstElement_ptr A, const size_t lda ){
 #ifdef DEBUG
@@ -170,80 +178,88 @@ namespace FFLAS {
 		}
 
 		MMHelper(){}
-		    //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
-		    // correct but semantically not satisfactory
+		//TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
+		// correct but semantically not satisfactory
 		MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) :
-                recLevel(-1),
-				FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
-				Amin(FieldMin), Amax(FieldMax),
-				Bmin(FieldMin), Bmax(FieldMax),
-				Cmin(FieldMin), Cmax(FieldMax),
-				Outmin(0.0), Outmax(0.0),
-				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
-				delayedField(F),
-				// delayedField((typename Field::Element)F.characteristic()),
-				parseq(_PS) {
-        }
+			recLevel(-1),
+			FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
+			Amin(FieldMin), Amax(FieldMax),
+			Bmin(FieldMin), Bmax(FieldMax),
+			Cmin(FieldMin), Cmax(FieldMax),
+			Outmin(0.0), Outmax(0.0),
+			MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
+			delayedField(F),
+			// delayedField((typename Field::Element)F.characteristic()),
+			parseq(_PS)
+		{
+		}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
-				recLevel(w), //base(FflasDouble),
-				FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
-				Amin(FieldMin), Amax(FieldMax),
-				Bmin(FieldMin), Bmax(FieldMax),
-				Cmin(FieldMin), Cmax(FieldMax),
-				Outmin(0.0), Outmax(0.0),
-				MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
-				delayedField(F),
-				parseq(_PS) {
-        }
+			recLevel(w), //base(FflasDouble),
+			FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
+			Amin(FieldMin), Amax(FieldMax),
+			Bmin(FieldMin), Bmax(FieldMax),
+			Cmin(FieldMin), Cmax(FieldMax),
+			Outmin(0.0), Outmax(0.0),
+			MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
+			delayedField(F),
+			parseq(_PS)
+		{
+		}
 
 		// copy constructor from other Field and Algo Traits
 		template<class F2, typename AlgoT2, typename FT2, typename PS2>
 		MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) :
-		                recLevel(WH.recLevel),
-				FieldMin(WH.FieldMin), FieldMax(WH.FieldMax),
-				Amin(WH.Amin), Amax(WH.Amax),
-				Bmin(WH.Bmin), Bmax(WH.Bmax),
-				Cmin(WH.Cmin), Cmax(WH.Cmax),
-				Outmin(WH.Outmin), Outmax(WH.Outmax),
-				MaxStorableValue(WH.MaxStorableValue),
-				delayedField(WH.delayedField),
-				parseq(WH.parseq) {}
+			recLevel(WH.recLevel),
+			FieldMin(WH.FieldMin), FieldMax(WH.FieldMax),
+			Amin(WH.Amin), Amax(WH.Amax),
+			Bmin(WH.Bmin), Bmax(WH.Bmax),
+			Cmin(WH.Cmin), Cmax(WH.Cmax),
+			Outmin(WH.Outmin), Outmax(WH.Outmax),
+			MaxStorableValue(WH.MaxStorableValue),
+			delayedField(WH.delayedField),
+			parseq(WH.parseq)
+		{
+		}
 
 		MMHelper(const Field& F, int w,
 			 double _Amin, double _Amax,
 			 double _Bmin, double _Bmax,
 			 double _Cmin, double _Cmax):
-				recLevel(w), FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
-				Amin(_Amin), Amax(_Amax),
-				Bmin(_Bmin), Bmax(_Bmax),
-				Cmin(_Cmin), Cmax(_Cmax),
-				MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
-				delayedField(F) {}
+			recLevel(w), FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
+			Amin(_Amin), Amax(_Amax),
+			Bmin(_Bmin), Bmax(_Bmax),
+			Cmin(_Cmin), Cmax(_Cmax),
+			MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
+			delayedField(F)
+		{
+		}
 
-		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)  {
-            return out <<"Helper: "
-                <<typeid(AlgoTrait).name()<<' '
-                <<typeid(FieldTrait).name()<< ' '
-                       << M.parseq <<std::endl
-                <<"  recLevel = "<<M.recLevel<<std::endl
-                <<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
-                <<"  Amin = "<<M.Amin<<" Amax = "<<M.Amax<<std::endl
-                <<"  Bmin = "<<M.Bmin<<" Bmax = "<<M.Bmax<<std::endl
-                <<"  Cmin = "<<M.Cmin<<" Cmax = "<<M.Cmax<<std::endl
-                <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
+		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+		{
+			return out <<"Helper: "
+			<<typeid(AlgoTrait).name()<<' '
+			<<typeid(FieldTrait).name()<< ' '
+			<< M.parseq <<std::endl
+			<<"  recLevel = "<<M.recLevel<<std::endl
+			<<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
+			<<"  Amin = "<<M.Amin<<" Amax = "<<M.Amax<<std::endl
+			<<"  Bmin = "<<M.Bmin<<" Bmax = "<<M.Bmax<<std::endl
+			<<"  Cmin = "<<M.Cmin<<" Cmax = "<<M.Cmax<<std::endl
+			<<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
 		}
 	}; // MMHelper
 
 
 	/*! StructureHelper for ftrsm
-	 */
+	*/
 	namespace StructureHelper {
 		struct Recursive{};
 		struct Iterative{};
 	}
+
 	/*! TRSM Helper
-	 */
+	*/
 	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
 	struct TRSMHelper {
 		ParSeqTrait parseq;
@@ -252,14 +268,15 @@ namespace FFLAS {
 		template<typename RIT, typename PST>
 		TRSMHelper(TRSMHelper<RIT,PST>& _TH):parseq(_TH.parseq){}
 
-        template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
-        FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n, ParSeqTrait p) const {
-            return FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait>(D,m,k,n,p);
-        }
-        template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
-        FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n) const {
-            return pMMH(D,m,k,n,this->parseq);
-        }
+		template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
+		FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n, ParSeqTrait p) const {
+			return FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait>(D,m,k,n,p);
+		}
+
+		template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
+		FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n) const {
+			return pMMH(D,m,k,n,this->parseq);
+		}
 
 	};
 

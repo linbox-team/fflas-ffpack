@@ -217,6 +217,15 @@ namespace FFPACK {
 			return is;
 		}
 
+#ifdef __FFLASFFPACK_HAVE_INTEGER
+		Element &init (Element &x, const Integer &y) const
+		{
+			x = Element(y % lmodulus);
+			if (x < 0.) x += modulus;
+			return x;
+		}
+#endif
+
 		Element &init (Element &x, const unsigned long &y) const
 		{
 			x = Element(y % lmodulus);

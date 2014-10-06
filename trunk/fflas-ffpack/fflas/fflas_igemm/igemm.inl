@@ -102,7 +102,7 @@ namespace FFLAS { namespace Protected {
 				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
 			}
 			else {
-				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2, ldb, cols, actual_kc);
+				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2*ldb, ldb, cols, actual_kc);
 			}
 
 			// For each mc x kc block of the lhs's vertical panel...
@@ -117,7 +117,7 @@ namespace FFLAS { namespace Protected {
 					FFLAS::details::pack_lhs<_mr,false>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
 				}
 				else {
-					FFLAS::details::pack_rhs<_mr,true>(blockA, A+i2+k2*lda, lda, actual_kc, actual_mc);
+					FFLAS::details::pack_rhs<_mr,true>(blockA, A+i2*lda+k2, lda, actual_kc, actual_mc);
 				}
 				// call block*panel kernel
 				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
