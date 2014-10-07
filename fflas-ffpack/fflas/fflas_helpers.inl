@@ -57,15 +57,19 @@ namespace FFLAS {
 		BLOCK_FIXED	,
 		ROW_THREADS	,
 		COLUMN_THREADS	,
-		BLOCK_THREADS	//,
+		BLOCK_THREADS	,
+		ONE_D,
+		TWO_D,
+		THREE_D_INPLACE,
+		THREE_D
 	};
 
 	/*! ParSeqHelper for both fgemm and ftrsm
 	*/
 	namespace ParSeqHelper {
 		struct Parallel{
-			const int numthreads;
-			const CuttingStrategy method;
+			int numthreads;
+			CuttingStrategy method;
 			Parallel(int n=MAX_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
