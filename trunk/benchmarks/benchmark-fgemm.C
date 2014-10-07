@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-
+//#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	size_t k = 2000 ;
 	size_t n = 2000 ;
 	int nbw = -1 ;
-	bool p=false;
+	int p=0;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 		{ 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
-		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
+		{ 'p', "-p P", "0 for sequential, 1 for BLOCK_THREADS, 2 for ONE_D, 3 for TWO_D, 4 for THREE_D_INPLACE, 5 for THREE_D.", TYPE_INT , &p },
 		END_OF_ARGUMENTS
 	};
 
@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
 
 
   typedef FFPACK::ModularBalanced<double> Field;
+//  typedef FFPACK::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
   Field F(q);
@@ -103,7 +104,13 @@ int main(int argc, char** argv) {
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 			      typename FFLAS::FieldTraits<Field>::value,
 			      FFLAS::ParSeqHelper::Parallel> WH (F, nbw, FFLAS::ParSeqHelper::Parallel());
-
+	      switch (p){
+		  case 1: WH.parseq.method=FFLAS::BLOCK_THREADS;break;
+		  case 2: WH.parseq.method=FFLAS::ONE_D;break;
+		  case 3: WH.parseq.method=FFLAS::TWO_D;break;
+		  case 4: WH.parseq.method=FFLAS::THREE_D_INPLACE;break;
+		  case 5: WH.parseq.method=FFLAS::THREE_D;break;
+	      }
 	      PAR_REGION{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 	      }
