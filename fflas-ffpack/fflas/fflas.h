@@ -109,10 +109,6 @@ namespace FFLAS {
 
 
 
-	/* Representations of Z with floating point elements*/
-
-	typedef FFPACK::UnparametricField<float> FloatDomain;
-	typedef FFPACK::UnparametricField<double> DoubleDomain;
 
 	namespace Protected {
 

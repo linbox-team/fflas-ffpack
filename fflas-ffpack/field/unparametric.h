@@ -52,7 +52,7 @@ namespace FFPACK
 {
 	template<class _Element>
 	class UnparametricField ;
-	
+
 	template <typename Target, typename Source>
 	Target& Caster (Target& t, const Source& s)
 	{
@@ -402,6 +402,14 @@ namespace FFPACK
 		size_t maxElement() const { return 0 ; }
 	};
 } // FFPACK
+
+namespace FFLAS {
+/* Representations of Z with floating point elements*/
+
+	typedef FFPACK::UnparametricField<float> FloatDomain;
+	typedef FFPACK::UnparametricField<double> DoubleDomain;
+
+}
 
 #include "field-general.h"
 

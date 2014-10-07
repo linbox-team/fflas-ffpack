@@ -27,7 +27,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
- *.
+ *
  */
 
 /*! @file field/modular-double.h
@@ -44,34 +44,45 @@
 #include "fflas-ffpack/utils/debug.h"
 #include <float.h>
 
+#define NORMALISE_LO(x) \
+{ \
+			if (x < 0.) x += modulus; \
+}
+
+#define NORMALISE_HI(x) \
+{ \
+			if (x >= modulus) x -= modulus; \
+}
+
+
 namespace FFPACK {
 
 	template <>
 	class Modular<double> {
-	public:
-		typedef double Element;
-		typedef double* Element_ptr;
-		typedef const double* ConstElement_ptr;
 
 	protected:
 
-		Element         modulus;
+		double modulus;
 		unsigned long   lmodulus;
-
 		//double inv_modulus;
 
 	public:
-		typedef unsigned long FieldInt;
+
+		typedef double Element;
+		typedef double* Element_ptr;
+		typedef const double* ConstElement_ptr;
 
 		const Element one  ;
 		const Element zero ;
 		const Element mOne ;
 
+	public:
 
 		static const bool balanced = false ;
 
-		typedef ModularRandIter<double> RandIter;
-		typedef NonzeroRandIter<Modular<double>, ModularRandIter<double> > NonZeroRandIter;
+		typedef unsigned long FieldInt;
+		typedef ModularRandIter<Element> RandIter;
+		typedef NonzeroRandIter<Modular<Element>, RandIter> NonZeroRandIter;
 
 
 		Modular () :
@@ -147,51 +158,49 @@ namespace FFPACK {
 			F.assign(const_cast<Element&>(mOne),F.mOne);
 			return *this;
 		}
-
 #endif
 
-
-		unsigned long &cardinality (unsigned long &c) const
+		inline FieldInt &cardinality (FieldInt &c) const
 		{
-			return c = lmodulus ;
+			return c = lmodulus;
 		}
 
-		unsigned long cardinality () const
+		inline FieldInt cardinality () const
 		{
 			return lmodulus ;
 		}
 
-		unsigned long & characteristic (unsigned long &c) const
+		inline FieldInt &characteristic (FieldInt &c) const
 		{
 			return c = lmodulus ;
 		}
 
-		unsigned long characteristic () const
+		inline FieldInt characteristic() const
 		{
 			return lmodulus;
 		}
 
-		unsigned long &convert (unsigned long &x, const Element &y) const
+		inline FieldInt &convert (FieldInt &x, const Element &y) const
 		{
-			return x = (unsigned long)(y);
+			return x = (FieldInt)y;
 		}
 
-		Element &convert (Element &x, const Element& y) const
+		inline Element &convert (Element &x, const Element& y) const
 		{
-			return x=y;
+			return x = y;
 		}
 
-		float &convert (float &x, const Element& y) const
+		inline float &convert (float &x, const Element& y) const
 		{
-			return x=(float)y;
+			return x = (float)y;
 		}
 
-		std::ostream &write (std::ostream &os) const
+		inline std::ostream &write (std::ostream &os) const
 		{
 			return os << "double mod " << (int)modulus;
 		}
 
-		std::istream &read (std::istream &is)
+		inline std::istream &read (std::istream &is)
 		{
 			is >> modulus;
 #ifdef DEBUG
@@ -204,14 +213,14 @@ namespace FFPACK {
 			return is;
 		}
 
-		std::ostream &write (std::ostream &os, const Element &x) const
+		inline std::ostream &write (std::ostream &os, const Element &x) const
 		{
-			return os << (int)x;
+			return os << x;
 		}
 
-		std::istream &read (std::istream &is, Element &x) const
+		inline std::istream &read (std::istream &is, Element &x) const
 		{
-			double tmp = 0.;
+			Element tmp;
 			is >> tmp;
 			init(x,tmp);
 			return is;
@@ -221,121 +230,120 @@ namespace FFPACK {
 		Element &init (Element &x, const Integer &y) const
 		{
 			x = Element(y % lmodulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 #endif
 
-		Element &init (Element &x, const unsigned long &y) const
+		inline Element &init (Element &x, const unsigned long &y) const
 		{
 			x = Element(y % lmodulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		Element &init (Element &x, const long &y) const
+		inline Element &init (Element &x, const long &y) const
 		{
 			// no problem here because double<long
 			x = Element(y % (long)lmodulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		Element &init (Element &x, const unsigned int &y) const
+		inline Element &init (Element &x, const unsigned int &y) const
 		{
 			x = Element(y % lmodulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		Element &init (Element &x, const int &y) const
+		inline Element &init (Element &x, const int &y) const
 		{
 			// no problem here because int<=long
 			x = Element(y % (long)lmodulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		Element& init(Element& x, Element y) const
+		inline Element& init(Element& x, Element y) const
 		{
 
 			x = fmod (y, modulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		Element& init(Element& x, float y) const
+		inline Element& init(Element& x, float y) const
 		{
 
 			x = fmod ((Element)y, modulus);
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		Element& init(Element& x) const
+		inline Element& init(Element& x) const
 		{
-			return x=0.;
+			return x = 0.;
 		}
 
-		 Element& assign(Element& x, const Element& y) const
+		 inline Element& assign(Element& x, const Element& y) const
 		{
 			return x = y;
 		}
 
-		 bool areEqual (const Element &x, const Element &y) const
+		 inline bool areEqual (const Element &x, const Element &y) const
 		{
 			return x == y;
 		}
 
-		  bool isZero (const Element &x) const
+		  inline bool isZero (const Element &x) const
 		{
 			return x == 0.;
 		}
 
-		 bool isOne (const Element &x) const
+		 inline bool isOne (const Element &x) const
 		{
 			return x == 1.;
 		}
 
 		 inline bool isMOne (const Element &x) const
 		{
-			return x == mOne;
+			return x == mOne ;
 		}
 
-		 Element &add (Element &x, const Element &y, const Element &z) const
+		 inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
-			if ( x >= modulus ) x -= modulus;
+			NORMALISE_HI(x);
 			return x;
 		}
 
-		 Element &sub (Element &x, const Element &y, const Element &z) const
+		inline  Element &sub (Element &x, const Element &y, const Element &z) const
 		{
 			x = y - z;
-			if (x < 0) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		 Element &mul (Element &x, const Element &y, const Element &z) const
+		 inline Element &mul (Element &x, const Element &y, const Element &z) const
 		{
 			x = y*z;
 			return init(x,x);
 		}
 
-		 Element &div (Element &x, const Element &y, const Element &z) const
+		 inline Element &div (Element &x, const Element &y, const Element &z) const
 		{
 			Element temp;
-			inv (temp, z);
-			return mul (x, y, temp);
+			return mul (x, y, inv(temp,z));
 		}
 
-		 Element &neg (Element &x, const Element &y) const
+		 inline Element &neg (Element &x, const Element &y) const
 		{
-			if(y == 0) return x = 0;
-			else return x = modulus - y;
+			if(y == 0) return x=0;
+			else return x = modulus-y;
 		}
 
-		 Element &inv (Element &x, const Element &y) const
+		 inline Element &inv (Element &x, const Element &y) const
 		 {
 			// The extended Euclidean algoritm
 			int x_int, y_int, tx, ty;
@@ -356,15 +364,16 @@ namespace FFPACK {
 				tx = temp;
 			}
 
-			if (tx < 0) tx += (int)modulus;
+			x = (Element) tx ;
+			NORMALISE_LO(x);
 
 			// now x_int = gcd (modulus,residue)
-			return x = (Element)tx;
+			return x ;
 
 
 		}
 
-		 Element &axpy (Element &r,
+		 inline Element &axpy (Element &r,
 				      const Element &a,
 				      const Element &x,
 				      const Element &y) const
@@ -373,7 +382,7 @@ namespace FFPACK {
 			return init(r,r);
 		}
 
-		 Element &axmy (Element &r,
+		 inline Element &axmy (Element &r,
 				      const Element &a,
 				      const Element &x,
 				      const Element &y) const
@@ -382,7 +391,7 @@ namespace FFPACK {
 			return init(r,r);
 		}
 
-		 Element &maxpy (Element &r,
+		 inline Element &maxpy (Element &r,
 				      const Element &a,
 				      const Element &x,
 				      const Element &y) const
@@ -391,63 +400,60 @@ namespace FFPACK {
 			return init(r,r);
 		}
 
-		 Element &addin (Element &x, const Element &y) const
+		 inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			if (  x >= modulus ) x -= modulus;
+			NORMALISE_HI(x);
 			return x;
 		}
 
-		 Element &subin (Element &x, const Element &y) const
+		 inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			if (x < 0.) x += modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		 Element &mulin (Element &x, const Element &y) const
+		 inline Element &mulin (Element &x, const Element &y) const
 		{
 			return mul(x,x,y);
 		}
 
-		 Element &divin (Element &x, const Element &y) const
+		 inline Element &divin (Element &x, const Element &y) const
 		{
 			return div(x,x,y);
 		}
 
-		 Element &negin (Element &x) const
+		inline Element &negin (Element &x) const
 		{
 			if (x == 0.) return x;
 			else return x = modulus - x;
 		}
 
-		 Element &invin (Element &x) const
+		 inline Element &invin (Element &x) const
 		{
 			return inv (x, x);
 		}
 
-		 Element &axpyin (Element &r, const Element &a, const Element &x) const
+		 inline Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r = r + a * x;
 			return r = fmod(r, modulus);
 
 		}
 
-		 Element &maxpyin (Element &r, const Element &a, const Element &x) const
+		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r = r - a * x;
 			r = fmod(r, modulus);
-			if (r<0) r += modulus;
+			NORMALISE_LO(r);
 			return r;
 
 		}
 
-		static  Element getMaxModulus()
+		static inline Element getMaxModulus()
 		{
-			    //return 33554432.0; // 2^25
 			return 67108864.0f;  // 2^26
-			// return  1 << (DBL_MANT_DIG >> 1);  // 2^(DBL_MANT_DIG/2)
-			// return 94906265 ;
 		}
 
 		static  Element getMinModulus()	{return 2.0;}
@@ -468,6 +474,8 @@ namespace FFPACK {
 
 
 
+#undef NORMALISE_LO
+#undef NORMALISE_HI
 
 #include "field-general.h"
 
