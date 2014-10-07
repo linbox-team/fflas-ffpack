@@ -30,89 +30,115 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/args-parser.h"
+#include "tests/test-utils.h"
 
 using namespace std;
 
 int main(int argc, char** argv) {
 
-  // parameter: p, n, iteration, file1, file2
+	size_t iter = 3 ;
+	int q = 131071 ;
+	size_t m = 2000 ;
+	size_t k = 2000 ;
+	size_t n = 2000 ;
+	int nbw = -1 ;
+	bool p=false;
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
+		{ 'k', "-k K", "Set the col dimension of A.",      TYPE_INT , &k },
+		{ 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
+		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
+		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
+		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
+		END_OF_ARGUMENTS
+	};
 
-  int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  size_t iter = argc>3 ? atoi(argv[3]) :    1;
+	FFLAS::parseArguments(argc,argv,as);
+
 
   typedef FFPACK::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
-  Field F(p);
+  Field F(q);
 
   FFLAS::Timer chrono, freidvals;
   double time=0.0, timev=0.0;
 
   Element * A, * B, * C;
-  Element *v, *w, *y;
+  Element *v, *w, *y, *x;
 
+  Field::RandIter G(F);
+  A = FFLAS::fflas_new<Element>(m*k);
+  PAR_FOR (size_t j=0; j<(size_t)m*k; ++j)
+	  G.random (*(A+j));
+      
+  B = FFLAS::fflas_new<Element>(k*n);
+  PAR_FOR (size_t j=0; j<(size_t)k*n; ++j)
+	  G.random(*(B+j));
+
+  C = FFLAS::fflas_new<Element>(m*n);
+  
   for (size_t i=0;i<iter;++i){
 
-	  if (argc > 4){
-		  A = read_field (F, argv[4], &n, &n);
-	  }
-	  else{
-		  Field::RandIter G(F);
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random (*(A+j));
-	  }
-
-	  if (argc == 6){
-		  B = read_field (F, argv[5], &n, &n);
-	  }
-	  else{
-		  Field::RandIter G(F);
-		  B = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random(*(B+j));
-	  }
-
-	  C = FFLAS::fflas_new<Element>(n*n);
+	  // if (argc > 4){
+	  // 	  A = read_field (F, argv[4], &n, &n);
+	  // }
+	  // else{
 
       v = FFLAS::fflas_new<Element>(n);
-      {
-          Field::RandIter G(F);
-          for(size_t j=0; j<(size_t)n; ++j)
-              G.random(*(v+j));
-      }
       
-      w = FFLAS::fflas_new<Element>(n);
-      y = FFLAS::fflas_new<Element>(n);
+	  //Field::RandIter G(F);
+      for(size_t j=0; j<(size_t)n; ++j)
+              G.random(*(v+j));
+      
+      w = FFLAS::fflas_new<Element>(m);
+      x = FFLAS::fflas_new<Element>(m);
+      y = FFLAS::fflas_new<Element>(k);
+      
+      chrono.clear();
+      chrono.start();
+      if (p){
+	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
+			      typename FFLAS::FieldTraits<Field>::value,
+			      FFLAS::ParSeqHelper::Parallel> WH (F, nbw, FFLAS::ParSeqHelper::Parallel());
 
-	  chrono.clear();
-	  chrono.start();
-	  FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,n, F.one,
-                    A, n, B, n, F.zero, C,n);
-	  chrono.stop();
-	  time+=chrono.usertime();
+	      PAR_REGION{
+		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+	      }
+      }else{
+	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd>//,
+			  //typename FFLAS::FieldTraits<Field>::value,
+			  //FFLAS::ParSeqHelper::Parallel>
+	      WH (F, nbw);
 
+	      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+      }
+      chrono.stop();
+      time+=chrono.realtime();
+      
       freidvals.clear();
       freidvals.start();
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, n,n, F.one, 
+      FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.one, 
                    C, n, v, 1, F.zero, w, 1);
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, n,n, F.one, 
+      FFLAS::fgemv(F, FFLAS::FflasNoTrans, k,n, F.one, 
                    B, n, v, 1, F.zero, y, 1);
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, n,n, F.one, 
-                   A, n, y, 1, F.zero, v, 1);
+      FFLAS::fgemv(F, FFLAS::FflasNoTrans, m,k, F.one, 
+                   A, k, y, 1, F.zero, x, 1);
       bool pass=true;
-      for(size_t j=0; j<(size_t)n; ++j) pass &= ( *(w+j) == *(v+j) );
+      for(size_t j=0; j<(size_t)m; ++j) pass &= ( *(w+j) == *(x+j) );
       freidvals.stop();
       timev+=freidvals.usertime();
 
       std::cerr << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
-	  FFLAS::fflas_delete( A);
-	  FFLAS::fflas_delete( B);
-	  FFLAS::fflas_delete( C);
   }
-
-  std::cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl;  
+  FFLAS::fflas_delete( A);
+  FFLAS::fflas_delete( B);
+  FFLAS::fflas_delete( C);
+  
+  std::cerr<<"m: "<<m<<" k: "<<k<<" n: "<<n<<" q: "<<q<<" time: "<<time/(double)iter<<" Gfops: "<<(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0/*-m/1000.*n/1000.*/)/time*double(iter)<<std::endl;  
+  
   std::cerr<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
 
   return 0;
