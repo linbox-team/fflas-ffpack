@@ -44,7 +44,7 @@ doc/fflas-ffpack-dev-html/index.html:
 #  (cd examples; make examples)
 
 benchmarks:
-	(cd benchmarks; make benchmarks)
+	(cd benchmarks; ${MAKE} benchmarks)
 
 uninstall-hook:
 	(test -d "$(includedir)/fflas-ffpack" && rm -rf \
