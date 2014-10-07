@@ -33,6 +33,7 @@
 
 #include <immintrin.h>
 #include "fflas-ffpack/fflas-ffpack-config.h"
+#include <iostream>
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 
@@ -261,6 +262,29 @@ struct floating_simd<int64_t> {
 	typedef Simd128<double> value;
 #endif
 };
+
+
+namespace FFLAS { /*  print helper */
+
+	// need friend ?
+	template<class simdT>
+	std::ostream & print(std::ostream & os, const typename simdT::vect_t & P)
+	{
+		typename simdT::scalar_t p[simdT::vect_size]  ;
+		os << '<' ;
+		simdT::store(p,P);
+		for (size_t i = 0 ; i < simdT::vect_size ; ++i) {
+			os << p[i] ;
+			if (i < simdT::vect_size - 1)
+				os << '|';
+		}
+		os << '>' ;
+
+		return os;
+
+	}
+
+} // FFLAS
 
 #endif
 
