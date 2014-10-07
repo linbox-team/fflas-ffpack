@@ -32,12 +32,14 @@
 #define __FFPACK_ftrsm_mp_INL
 
 #include <math.h>
+
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 #ifdef __FFLASFFPACK_HAVE_INTEGER
+
 
 namespace FFLAS {
 

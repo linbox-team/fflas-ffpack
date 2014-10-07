@@ -31,7 +31,9 @@
 
 #include "fflas-ffpack/fflas/fflas_simd_functions.h"
 
+#include "fflas-ffpack/field/field-traits.h"
 #include "fflas-ffpack/field/unparametric.h"
+#include "fflas-ffpack/fflas/fflas_fcopy.inl"
 
 #define FFLASFFPACK_COPY_INIT 100
 

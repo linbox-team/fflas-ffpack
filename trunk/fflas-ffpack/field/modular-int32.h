@@ -1,10 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* Copyright (C) 2010 LinBox
- *
+/* Copyright (C) 2010,2014 LinBox
  * Adapted by B Boyer <brice.boyer@imag.fr>
  * (from other modular-balanced* files)
-
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -43,13 +41,18 @@
 #define LINBOX_MAX_INT INT32_MAX
 #endif
 
-#define NORMALISE(x) \
+#define NORMALISE_LO(x) \
 { \
-	if (x < 0) x += modulus; \
+			if (x < 0.) x += modulus; \
 }
 
-namespace FFPACK
-{
+#define NORMALISE_HI(x) \
+{ \
+			if (x >= modulus) x -= modulus; \
+}
+
+
+namespace FFPACK {
 
 	template< class Element >
 	class Modular;
@@ -93,7 +96,7 @@ namespace FFPACK
 		static const bool balanced = false ;
 
 		typedef ModularRandIter<Element> RandIter;
-		typedef NonzeroRandIter<Modular<Element>, ModularRandIter<Element> > NonZeroRandIter;
+		typedef NonzeroRandIter<Modular<Element>, RandIter> NonZeroRandIter;
 
 		//default modular field,taking 65521 as default modulus
 		Modular () :
@@ -125,7 +128,7 @@ namespace FFPACK
 			if (_two64 >= value) _two64 -= value;
 		}
 
-		Modular(const Modular<Element>& mf) :
+		Modular (const Modular<Element>& mf) :
 			modulus(mf.modulus),modulusinv(mf.modulusinv)
 			,lmodulus(mf.lmodulus),_two64(mf._two64)
 			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
@@ -165,6 +168,11 @@ namespace FFPACK
 			return c = lmodulus;
 		}
 
+		inline unsigned long cardinality () const
+		{
+			return lmodulus;
+		}
+
 		inline unsigned long &characteristic (unsigned long &c) const
 		{
 			return c = lmodulus;
@@ -175,13 +183,7 @@ namespace FFPACK
 			return lmodulus;
 		}
 
-		inline unsigned long cardinality () const
-		{
-			return lmodulus;
-		}
-
-
-		inline Element &convert (Element &x, const Element &y) const
+			inline Element &convert (Element &x, const Element &y) const
 		{
 			return x = y;
 		}
@@ -231,9 +233,9 @@ namespace FFPACK
 
 		inline Element &init (Element & x, const double &y) const
 		{
-			double z = fmod(y, (double)modulus);
-			if (z < 0) z += (double)modulus;
-			return x = static_cast<Element>(z); //rounds towards 0
+			x = (Element) fmod(y,(double)modulus);
+			NORMALISE_LO(x);
+			return x;
 		}
 
 		inline Element &init (Element & x, const float &y) const
@@ -246,35 +248,40 @@ namespace FFPACK
 		{
 			x = Element(y) % modulus;
 
-			NORMALISE(x);
+			NORMALISE_LO(x);
 			return x;
 		}
 
-		inline Element& init(Element& x, Element y = 0) const
+		inline Element& init(Element&x) const
+		{
+			return x = 0;
+		}
+
+		inline Element& init(Element& x, Element y) const
 		{
 			x = (y % modulus);
-			NORMALISE(x);
+			NORMALISE_LO(x);
 			return x;
 		}
 
 		inline Element& init(Element& x, int64_t y ) const
 		{
 			x = Element(y % (int64_t)modulus);
-			NORMALISE(x);
+			NORMALISE_LO(x);
 			return x;
 		}
 
 		inline Element& init(Element& x, uint32_t y ) const
 		{
 			x = (Element)(y % lmodulus);
-			if ( x < 0 ) x += (Element)modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
 		inline Element& init (Element& x, uint64_t y) const
 		{
 			x = (Element)(y % lmodulus);
-			if ( x < 0 ) x += (Element)modulus;
+			NORMALISE_LO(x);
 			return x;
 		}
 
@@ -306,14 +313,14 @@ namespace FFPACK
 		inline Element &add (Element &x, const Element &y, const Element &z) const
 		{
 			x = y + z;
-			NORMALISE(x);
+			NORMALISE_HI(x);
 			return x;
 		}
 
 		inline Element &sub (Element &x, const Element &y, const Element &z) const
 		{
 			x = y - z;
-			NORMALISE(x);
+			NORMALISE_LO(x);
 			return x;
 		}
 
@@ -324,10 +331,8 @@ namespace FFPACK
 			q  = (Element) ((((double) y) * ((double) z)) * modulusinv);  // q could be off by (+/-) 1
 			x = (Element) (y*z - q*modulus);
 
-			if (x >= modulus)
-				x -= (Element) modulus;
-			else if (x < 0)
-				x += (Element) modulus;
+			NORMALISE_LO(x);
+			NORMALISE_HI(x);
 			return x;
 		}
 
@@ -354,8 +359,7 @@ namespace FFPACK
 				throw Failure(__func__,__FILE__,__LINE__,"InvMod: Input is not invertible ");
 #endif
 			}
-			if (x < 0)
-				x += modulus;
+			NORMALISE_LO(x);
 			return x;
 
 		}
@@ -370,11 +374,8 @@ namespace FFPACK
 			q  = (Element) (((((double) a) * ((double) x)) + (double)y) * modulusinv);  // q could be off by (+/-) 1
 			r = (Element) (a * x + y - q*modulus);
 
-
-			if (r >= modulus)
-				r -= modulus;
-			else if (r < 0)
-				r += modulus;
+			NORMALISE_LO(r);
+			NORMALISE_HI(r);
 
 			return r;
 
@@ -390,11 +391,8 @@ namespace FFPACK
 			q  = (Element) (((((double) a) * ((double) x)) - (double)y) * modulusinv);  // q could be off by (+/-) 1
 			r = (Element) (a * x - y - q*modulus);
 
-
-			if (r >= modulus)
-				r -= modulus;
-			else if (r < 0)
-				r += modulus;
+			NORMALISE_LO(r);
+			NORMALISE_HI(r);
 
 			return r;
 
@@ -411,14 +409,14 @@ namespace FFPACK
 		inline Element &addin (Element &x, const Element &y) const
 		{
 			x += y;
-			NORMALISE(x);
+			NORMALISE_HI(x);
 			return x;
 		}
 
 		inline Element &subin (Element &x, const Element &y) const
 		{
 			x -= y;
-			NORMALISE(x);
+			NORMALISE_LO(x);
 			return x;
 		}
 
@@ -450,11 +448,8 @@ namespace FFPACK
 			q  = (Element) (((((double) a) * ((double) x)) + (double) r) * modulusinv);  // q could be off by (+/-) 1
 			r = (Element) (a * x + r - q*modulus);
 
-
-			if (r >= modulus)
-				r -= modulus;
-			else if (r < 0)
-				r += modulus;
+			NORMALISE_LO(r);
+			NORMALISE_HI(r);
 
 			return r;
 		}
@@ -466,11 +461,11 @@ namespace FFPACK
             return assign(r,q);
 		}
 
-		static  inline Element getMaxModulus()
+		static inline Element getMaxModulus()
 		{
 			return 46341 ;
-
 		}
+
 		static  Element getMinModulus()	{return 2.0;}
 
 		Element minElement() const
@@ -541,7 +536,8 @@ namespace FFPACK
 }
 
 #undef LINBOX_MAX_INT
-#undef NORMALISE
+#undef NORMALISE_LO
+#undef NORMALISE_HI
 
 #include "field-general.h"
 

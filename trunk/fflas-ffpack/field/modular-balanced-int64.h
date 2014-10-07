@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* Copyright (C) 2010 LinBox
+/* Copyright (C) 2010,2014 LinBox
  * Adapted by B Boyer <brice.boyer@imag.fr>
  * (from other modular-balanced* files)
  *
@@ -46,10 +46,16 @@
 #define LINBOX_MAX_INT64 INT64_MAX
 #endif
 #endif
+
 #define NORMALISE(x) \
 { \
 	if (x < mhalf_mod) return x += modulus; \
 	else if (x > half_mod) return x -= modulus; \
+}
+
+#define NORMALISE_HI(x) \
+{ \
+			if (x > half_mod) x -= modulus; \
 }
 
 namespace FFPACK
@@ -59,7 +65,9 @@ namespace FFPACK
 	/// \ingroup field
 	template <>
 	class ModularBalanced<int64_t>  {
+
 	protected:
+
 		int64_t modulus;
 		int64_t half_mod;
 		int64_t mhalf_mod;
@@ -80,7 +88,7 @@ namespace FFPACK
 		static const bool balanced = true ;
 
 		typedef ModularBalancedRandIter<Element> RandIter;
-		typedef NonzeroRandIter<ModularBalanced<Element>, ModularRandIter<Element> > NonZeroRandIter;
+		typedef NonzeroRandIter<ModularBalanced<Element>, RandIter> NonZeroRandIter;
 
 		//default modular field,taking 65521 as default modulus
 		ModularBalanced () :
@@ -93,7 +101,7 @@ namespace FFPACK
 			FFLASFFPACK_check(isOdd(modulus));
 		}
 
-		ModularBalanced (Element value, int32_t exp = 1)  :
+		ModularBalanced (Element value, int32_t exp = 1) :
 			modulus(value)
 			,one(1),zero(0),mOne(-1)
 		{
@@ -152,6 +160,11 @@ namespace FFPACK
 			return c = (unsigned long)modulus;
 		}
 
+		inline unsigned long cardinality () const
+		{
+			return (unsigned long) modulus;
+		}
+
 		inline unsigned long &characteristic (unsigned long &c) const
 		{
 			return c = (unsigned long) modulus;
@@ -161,12 +174,6 @@ namespace FFPACK
 		{
 		       	return (unsigned long)modulus;
 		}
-
-		inline unsigned long cardinality () const
-		{
-			return (unsigned long) modulus;
-		}
-
 
 		inline Element &convert (Element &x, const Element &y) const
 		{
@@ -237,7 +244,12 @@ namespace FFPACK
 			return x;
 		}
 
-		inline Element& init(Element& x, Element y = 0) const
+		inline Element& init(Element&x) const
+		{
+			return x = 0;
+		}
+
+		inline Element& init(Element& x, Element y) const
 		{
 			x = (y % modulus);
 			NORMALISE(x);
@@ -254,14 +266,14 @@ namespace FFPACK
 		inline Element& init(Element& x, uint32_t y ) const
 		{
 			x = y % modulus;
-                        if (x > half_mod ) return x -= modulus;
+			NORMALISE_HI(x);
 			return x;
 		}
 
 		inline Element& init (Element& x, uint64_t y) const
 		{
 			x = (Element)y % (uint64_t)modulus;
-			if ( x > half_mod ) return x -= modulus;
+			NORMALISE_HI(x);
 			return x;
 		}
 
@@ -351,6 +363,7 @@ namespace FFPACK
 
 
 			NORMALISE(r);
+
                         return r;
 
 		}
@@ -422,6 +435,7 @@ namespace FFPACK
 
 
 			NORMALISE(r);
+
                         return r;
 		}
 
@@ -440,6 +454,7 @@ namespace FFPACK
 			return 6074001000LL;
 #endif
 		}
+
 		static  Element getMinModulus()	{return 3.0;}
 
 		Element minElement() const
@@ -494,6 +509,7 @@ namespace FFPACK
 
 #undef LINBOX_MAX_INT64
 #undef NORMALISE
+#undef NORMALISE_HI
 
 #include "field-general.h"
 
