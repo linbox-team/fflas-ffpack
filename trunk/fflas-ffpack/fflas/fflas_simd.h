@@ -207,7 +207,6 @@ struct is_simd<__m256i>
  * Simd functors
  */
 
-
 #if defined(__FFLASFFPACK_USE_AVX)
 
 template< class T, bool = std::is_integral<T>::value >
@@ -239,6 +238,8 @@ using Simd = Simd128<T>;
 
 #endif
 
+#if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
+
 template<class T>
 struct floating_simd ;
 
@@ -261,7 +262,7 @@ struct floating_simd<int64_t> {
 #endif
 };
 
-
+#endif
 
 #else /* C++11 */
 #error "You need a c++11 compiler."

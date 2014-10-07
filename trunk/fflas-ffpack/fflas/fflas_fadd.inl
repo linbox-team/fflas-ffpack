@@ -30,6 +30,7 @@
 #ifndef __FFLASFFPACK_fadd_INL
 #define __FFLASFFPACK_fadd_INL
 
+#include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/fflas/fflas_simd_functions.h"
 
 namespace FFLAS { namespace details {
