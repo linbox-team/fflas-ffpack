@@ -156,7 +156,7 @@ namespace FFLAS { namespace details {
 		char   transa = 'n';
 		index_t m_ = (index_t) m ;
 		float * yd = FFLAS::fflas_new<float >(m);
-		fscalin(F,m,b,y,1);
+		fscalin(F,m,n,y,1);
 		// mkl_scsrgemv
 		mkl_cspblas_scsrgemv
 		(&transa, &m_, const_cast<float*>(dat), const_cast<index_t*>(st), const_cast<index_t*>(col), const_cast<float*>(x), yd);
