@@ -29,11 +29,8 @@
 #ifndef __FFLASFFPACK_fflas_init_INL
 #define __FFLASFFPACK_fflas_init_INL
 
-#include "fflas-ffpack/fflas/fflas_simd_functions.h"
 
-#include "fflas-ffpack/field/field-traits.h"
-#include "fflas-ffpack/field/unparametric.h"
-#include "fflas-ffpack/fflas/fflas_fcopy.inl"
+#include "fflas-ffpack/fflas/fflas_fcopy.h"
 
 #define FFLASFFPACK_COPY_INIT 100
 
@@ -170,84 +167,6 @@ namespace FFLAS { namespace details {
 
 } // details
 } // FFLAS
-
-namespace FFLAS {
-
-	/***************************/
-	/*         LEVEL 1         */
-	/***************************/
-
-	template<class Field>
-	void
-	finit (const Field & F, const size_t m,
-	       typename Field::ConstElement_ptr  B, const size_t incY,
-	       typename Field::Element_ptr A, const size_t incX
-	      )
-	{
-		return details::finit(F,m,B,incY,A,incX,typename FieldTraits<Field>::category());
-	}
-
-	template<class Field>
-	void
-	finit (const Field & F, const size_t m,
-	       typename Field::Element_ptr A, const size_t incX
-	      )
-	{
-		return details::finit(F,m,A,incX,typename FieldTraits<Field>::category());
-	}
-
-	// OOOPS
-	template<class Field, class ConstOtherElement_ptr>
-	void
-	finit (const Field& F, const size_t n,
-	       ConstOtherElement_ptr Y, const size_t incY,
-	       typename Field::Element_ptr X, const size_t incX)
-	{
-		typename Field::Element_ptr Xi = X ;
-		ConstOtherElement_ptr Yi = Y ;
-
-		if (incX == 1 && incY == 1)
-			for (; Yi < Y + n ; ++Xi, ++Yi)
-				F.init( *Xi , *Yi);
-		else
-			for (; Yi < Y+n*incY; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
-	}
-
-
-	/***************************/
-	/*         LEVEL 2         */
-	/***************************/
-
-
-	template<class Field>
-	void
-	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element_ptr A, const size_t lda)
-	{
-		if (n == lda)
-			finit(F,n*m,A,1);
-		else
-			for (size_t i = 0 ; i < m ; ++i)
-				finit(F,n,A+i*lda,1);
-		return;
-	}
-
-	template<class Field, class OtherElement_ptr>
-	void
-	finit (const Field& F, const size_t m , const size_t n,
-	       const OtherElement_ptr B, const size_t ldb,
-	       typename Field::Element_ptr A, const size_t lda)
-	{
-		if (n == lda && n == ldb)
-			finit(F,n*m,B,1,A,1);
-		else
-			for (size_t i = 0 ; i < m ; ++i)
-				finit(F,n,B+i*ldb,1,A+i*lda,1);
-		return;
-	}
-
-} // end of namespace FFLAS
 
 #endif // __FFLASFFPACK_fflas_init_INL
 

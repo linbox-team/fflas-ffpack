@@ -2,9 +2,10 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
- * Copyright (C) FFLAS group
+ * Copyright (C) 2014 FFLAS-FFPACK group
  *
- * Written by BB <brice.boyer@lip6.fr>
+ * Written by BB <bbboyer@ncsu.edu>
+ *
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -23,25 +24,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
- *
+ *.
  */
 
+#ifndef __FFLASFFPACK_fscal_H
+#define __FFLASFFPACK_fscal_H
 
-/*! @file field/field.h
- * @ingroup field
- * @brief just include them all
- */
+#include "fflas-ffpack/fflas/fflas_simd_functions.h"
+//! @todo traits
+#include "fflas_fscal.inl"
 
-#ifndef __FFLASFFPACK_field_field_H
-#define __FFLASFFPACK_field_field_H
+#endif // __FFLASFFPACK_fscal_H
 
-#include "field-general.h"
-#include "modular-balanced.h"
-#include "modular-positive.h"
-#include "nonzero-randiter.h"
-#include "modular-randiter.h"
-#include "unparametric.h"
-// #include   "rns.h" // needs all of fflas...
-
-
-#endif // __FFLASFFPACK_field_field_H

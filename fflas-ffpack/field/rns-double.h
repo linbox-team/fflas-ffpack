@@ -40,7 +40,7 @@ using namespace std;
 #include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/field/modular-double.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
-#include "fflas-ffpack/fflas/fflas_finit.inl"
+#include "fflas-ffpack/fflas/fflas_finit.h" // potential circle include
 
 // activate only if FFLAS-FFPACK haves multiprecision integer
 #ifdef __FFLASFFPACK_HAVE_INTEGER
