@@ -49,9 +49,9 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #  ifndef __GIVARO_USE_OPENMP
-// #warning "FFLAS have OMP but not GIVARO
-// #    define __GIVARO_USE_OPENMP 1
+#    warning "FFLAS have OMP but not GIVARO"
 #  endif
+#  define __GIVARO_USE_OPENMP 1
 #endif
 
 #include <givaro/givtimer.h>
