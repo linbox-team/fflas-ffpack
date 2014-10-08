@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 	  if (!p)
 		  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 				FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-				m,n, F.one, A, n, B, n);
+				m,n, F.one, A, m, B, n);
 	  else{
 	  PAR_REGION{
 	      switch (p) {
@@ -105,18 +105,18 @@ int main(int argc, char** argv) {
 			      (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));
 			  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 					FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-					m,n, F.one, A, n, B, n, PH);
+					m,n, F.one, A, m, B, n, PH);
 			  break;}
 		  case 2: {FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive, FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));
 			  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 					FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-					m,n, F.one, A, n, B, n, PH); 
+					m,n, F.one, A, m, B, n, PH); 
 			  break;}
 		  case 3: 
 			  FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));
 			  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 					FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-					m,n, F.one, A, n, B, n, PH);
+					m,n, F.one, A, m, B, n, PH);
 			  break;
 	      }
       
