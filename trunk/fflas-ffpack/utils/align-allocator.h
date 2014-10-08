@@ -42,7 +42,7 @@
 #include <assert.h>
 #include <cstddef>
 #include <iostream>
-
+#include <immintrin.h>
 // Alignment Type
 enum class Alignment : size_t {
   NONE = 0,
