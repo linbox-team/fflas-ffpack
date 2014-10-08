@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_pftrsm_INL
 #define __FFLASFFPACK_fflas_pftrsm_INL
 
-
+#define PTRSM_HYBRID_THRESHOLD 256
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
 #endif
@@ -75,6 +75,59 @@ namespace FFLAS {
 			ForStrategy1D iter(n, H.parseq.method, (size_t)H.parseq.numthreads);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
+				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
+			}
+		}
+		WAIT;
+		return B;
+	}
+	template<class Field>
+	inline typename Field::Element_ptr
+	ftrsm( const Field& F,
+		const FFLAS::FFLAS_SIDE Side,
+		const FFLAS::FFLAS_UPLO UpLo,
+		const FFLAS::FFLAS_TRANSPOSE TA,
+		const FFLAS::FFLAS_DIAG Diag,
+		const size_t m,
+		const size_t n,
+		const typename Field::Element alpha,
+#ifdef __FFLAS__TRSM_READONLY
+		typename Field::ConstElement_ptr
+#else
+		typename Field::Element_ptr
+#endif
+		 A, const size_t lda,
+		typename Field::Element_ptr B, const size_t ldb,
+		TRSMHelper <StructureHelper::Hybrid, ParSeqHelper::Parallel> & H)
+		// const FFLAS::CuttingStrategy method,
+                // const size_t numThreads)
+	{
+		if(Side == FflasRight){
+			int nt = H.parseq.numthreads;
+			int nt_it,nt_rec;
+			if ((int)m/PTRSM_HYBRID_THRESHOLD < nt){
+				nt_it = ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
+				nt_rec = ceil(double(nt)/nt_it);
+			} else { nt_it = nt; nt_rec = 1;}
+			ForStrategy1D iter(m, H.parseq.method, (size_t)nt_it);
+			for (iter.begin(); ! iter.end(); ++iter) {
+				ParSeqHelper::Parallel psh(nt_rec);
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
+				std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
+				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
+			}
+		} else {
+			int nt = H.parseq.numthreads;
+			int nt_it,nt_rec;
+			if ((int)m/PTRSM_HYBRID_THRESHOLD < nt){
+				nt_it = ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
+				nt_rec = ceil(double(nt)/nt_it);
+			} else { nt_it = nt; nt_rec = 1;}
+			ForStrategy1D iter(n, H.parseq.method, (size_t)nt_it);
+			for (iter.begin(); ! iter.end(); ++iter) {
+				ParSeqHelper::Parallel psh(nt_rec);
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
+				std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
 			}
 		}

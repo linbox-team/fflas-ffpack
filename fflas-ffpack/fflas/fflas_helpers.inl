@@ -260,6 +260,7 @@ namespace FFLAS {
 	namespace StructureHelper {
 		struct Recursive{};
 		struct Iterative{};
+		struct Hybrid{};
 	}
 
 	/*! TRSM Helper
