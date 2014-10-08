@@ -31,6 +31,12 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 
+#ifdef __FFLASFFPACK_USE_OPENMP
+typedef FFLAS::OMPTimer TTimer;
+#else
+typedef FFLAS::Timer TTimer;
+#endif
+
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -47,7 +53,7 @@ int main(int argc, char** argv) {
 
   Field F(p);
 
-  FFLAS::Timer chrono;
+  TTimer chrono;
   double time=0.0;// time2=0.0;
 
   Element * A, * B, * C;

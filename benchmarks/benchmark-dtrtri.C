@@ -32,6 +32,12 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 
+#ifdef __FFLASFFPACK_USE_OPENMP
+typedef FFLAS::OMPTimer TTimer;
+#else
+typedef FFLAS::Timer TTimer;
+#endif
+
 
 using namespace std;
 
@@ -51,7 +57,7 @@ int main(int argc, char** argv) {
   Field F(p);
   Element * A;
 
-  FFLAS::Timer chrono;
+  TTimer chrono;
   double time=0.0;
 
   Field::RandIter G(F);
@@ -76,7 +82,7 @@ int main(int argc, char** argv) {
 
   }
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
+  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" n^3/3/time/10^9: "<<(double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter)/3.)<<endl;
 
 
   return 0;
