@@ -57,6 +57,11 @@ bool balanced(const FFPACK::ModularBalanced<T>&)
 	return true;
 }
 
+#ifdef __FFLASFFPACK_USE_OPENMP
+typedef FFLAS::OMPTimer TTimer;
+#else
+typedef FFLAS::Timer TTimer;
+#endif
 
 #define MFLOPS (2.0/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
 
@@ -72,7 +77,7 @@ int main () {
 	Field F(17);
 	typedef Field::Element Element ;
 	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
- FFLAS::Timer chrono;
+    TTimer chrono;
 	bool bound=false;
 
 	Element *A, *C;
