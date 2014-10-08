@@ -45,6 +45,12 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 
+#ifdef __FFLASFFPACK_USE_OPENMP
+typedef FFLAS::OMPTimer TTimer;
+#else
+typedef FFLAS::Timer TTimer;
+#endif
+
 
 using namespace std;
 
@@ -64,7 +70,7 @@ int main(int argc, char** argv) {
   Field F(p);
   Field::Element * A;
 
-  FFLAS::Timer chrono;
+  TTimer chrono;
   double time=0.0;
 
   for (size_t i=0;i<iter;++i){
@@ -89,7 +95,7 @@ int main(int argc, char** argv) {
     FFLAS::fflas_delete( A);
   }
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
+  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<endl;
 
 
   return 0;
