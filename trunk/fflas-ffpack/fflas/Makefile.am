@@ -34,6 +34,7 @@ multiprecision= fflas_ftrsm_mp.inl
 
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
+	   fflas_fcopy.h       \
 	   fflas_fcopy.inl       \
 	   fflas_ftrmm.inl       \
 	   fflas.h               \
@@ -41,6 +42,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_level2.inl \
 	   fflas_level3.inl \
 	   fflas_simd_functions.h \
+	   fflas_fadd.h        \
 	   fflas_fadd.inl        \
 	   fflas_fdot.inl        \
 	   fflas_ftrmm_src.inl   \
@@ -52,11 +54,13 @@ pkgincludesub_HEADERS=       \
 	   fflas_pftrsm.inl      \
 	   fflas_ftrsm.inl       \
 	   fflas_fgemv.inl       \
+	   fflas_fscal.h       \
 	   fflas_fscal.inl       \
 	   fflas_ftrsm_src.inl   \
 	   fflas_faxpy.inl       \
 	   fflas_fger.inl        \
 	   fflas_ftrsv.inl       \
+	   fflas_finit.h         \
 	   fflas_finit.inl       \
 	   fflas_helpers.inl     \
 	   fflas_simd.h          \

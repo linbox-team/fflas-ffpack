@@ -168,10 +168,10 @@ namespace FFLAS {
 // specialisatons
 //---------------------------------------------------------------------
 
-#include "fflas_fadd.inl"
-#include "fflas_fscal.inl"
-#include "fflas_fcopy.inl"
-#include "fflas_finit.inl"
+#include "fflas_fadd.h"
+#include "fflas_fscal.h"
+#include "fflas_fcopy.h"
+#include "fflas_finit.h"
 
 #include "fflas_fgemv.inl"
 #include "fflas_fger.inl"
