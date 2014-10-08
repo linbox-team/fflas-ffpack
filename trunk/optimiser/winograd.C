@@ -57,10 +57,10 @@ bool balanced(const FFPACK::ModularBalanced<T>&)
 	return true;
 }
 
-#ifdef __FFLASFFPACK_USE_OPENMP
-typedef FFLAS::OMPTimer TTimer;
+#ifdef __GIVARO_USE_OPENMP
+typedef Givaro::OMPTimer TTimer;
 #else
-typedef FFLAS::Timer TTimer;
+typedef Givaro::Timer TTimer;
 #endif
 
 #define MFLOPS (2.0/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
