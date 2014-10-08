@@ -35,6 +35,12 @@
 #define __FFLASFFPACK_fflas_ffpack_configuration_H
 
 #include "fflas-ffpack/config.h"
+#ifdef __FFLASFFPACK_USE_OPENMP
+#  ifndef __GIVARO_USE_OPENMP
+#    define __GIVARO_USE_OPENMP 1
+#  endif
+#endif
+
 #include "fflas-ffpack/fflas-ffpack-optimise.h"
 
 #if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
