@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-#define __FFLASFFPACK_USE_OPENMP4
+//#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
