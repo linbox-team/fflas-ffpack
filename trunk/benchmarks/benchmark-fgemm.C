@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -72,12 +72,14 @@ int main(int argc, char** argv) {
 
   Field::RandIter G(F);
   A = FFLAS::fflas_new<Element>(m*k);
-  PAR_FOR (size_t j=0; j<(size_t)m*k; ++j)
-	  G.random (*(A+j));
+  PAR_FOR (size_t i=0; i<(size_t)m; ++i)
+	  for (size_t j=0; j<(size_t)k; ++j)
+		  G.random (*(A+i*k+j));
       
   B = FFLAS::fflas_new<Element>(k*n);
-  PAR_FOR (size_t j=0; j<(size_t)k*n; ++j)
-	  G.random(*(B+j));
+  PAR_FOR (size_t i=0; i<(size_t)k; ++i)
+	  for (size_t j=0; j<(size_t)n; ++j)
+		  G.random(*(B+i*n+j));
 
   C = FFLAS::fflas_new<Element>(m*n);
   
@@ -101,16 +103,19 @@ int main(int argc, char** argv) {
       chrono.clear();
       chrono.start();
       if (p){
+	      FFLAS::CuttingStrategy meth;
+	      switch (p){
+		  case 1: meth = FFLAS::BLOCK_THREADS;break;
+		  case 2: meth = FFLAS::ONE_D;break;
+		  case 3: meth = FFLAS::TWO_D;break;
+		  case 4: meth = FFLAS::THREE_D_INPLACE;break;
+		  case 5: meth = FFLAS::THREE_D;break;
+		  default: meth = FFLAS::BLOCK_THREADS;break;
+	      }
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 			      typename FFLAS::FieldTraits<Field>::value,
-			      FFLAS::ParSeqHelper::Parallel> WH (F, nbw, FFLAS::ParSeqHelper::Parallel());
-	      switch (p){
-		  case 1: WH.parseq.method=FFLAS::BLOCK_THREADS;break;
-		  case 2: WH.parseq.method=FFLAS::ONE_D;break;
-		  case 3: WH.parseq.method=FFLAS::TWO_D;break;
-		  case 4: WH.parseq.method=FFLAS::THREE_D_INPLACE;break;
-		  case 5: WH.parseq.method=FFLAS::THREE_D;break;
-	      }
+			      FFLAS::ParSeqHelper::Parallel> 
+		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
 	      PAR_REGION{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 	      }
