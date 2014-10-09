@@ -52,11 +52,10 @@ AC_DEFUN([FF_CHECK_SSE],
 				])
 			AS_IF([ test "x$sse_found" = "xyes" ],[
 				AC_DEFINE(USE_SSE,1,[Define if SSE is available])
+				AC_SUBST(SSEFLAGS)
 				AC_MSG_RESULT(yes (SSE))
 				],
 				[
-				SSEFLAGS="-msse4.1"
-				AC_SUBST(SSEFLAGS)
 				AC_MSG_RESULT(no)
 				]
 				)
