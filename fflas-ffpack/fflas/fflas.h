@@ -122,6 +122,7 @@ namespace FFLAS {
 		};
 	} // Protected
 } // class FFLAS
+#include <algorithm>
 
 namespace FFLAS {
 
