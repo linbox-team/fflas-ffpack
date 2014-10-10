@@ -20,17 +20,16 @@
 #include <algorithm>
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "test-utils.h"
 
 using namespace std;
 using namespace FFPACK;
 
-//typedef Modular<double> Field;
-typedef ModularBalanced<double> Field;
-//typedef Modular<float> Field;
-//typedef ModularBalanced<float> Field;
+
+typedef Modular<FFPACK::Integer> Field;
+
 
 int main(int argc, char** argv){
 	    //cerr<<setprecision(20);

@@ -5,7 +5,7 @@
  * Copyright (C) FFLAS-FFPACK
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
  * This file is Free Software and part of FFLAS-FFPACK.
- *
+ * 
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
  *
@@ -26,8 +26,7 @@
  *.
  */
 
-
-#include <iomanip>
+#include <iomanip> 
 #include <iostream>
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -66,10 +65,10 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	typedef typename Field::Element Element;
 	Element * A, *B, *B2, *C, tmp;
 	size_t k = (side==FFLAS::FflasLeft?m:n);
-	A  = FFLAS::fflas_new<Element>(k*k);
-	B  = FFLAS::fflas_new<Element>(m*n);
-	B2 = FFLAS::fflas_new<Element>(m*n);
-	C  = FFLAS::fflas_new<Element>(m*n); 
+	A  = FFLAS::fflas_new(F,k,k);
+	B  = FFLAS::fflas_new(F,m,n);
+	B2 = FFLAS::fflas_new(F,m,n);
+	C  = FFLAS::fflas_new(F,m,n); 
 	
 	typename Field::RandIter Rand(F);
 	
@@ -93,11 +92,11 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	cerr.fill('.');
 	cerr.width(35);
 	cerr<<ss;
-
-	::Timer t; t.clear();
-	double time=0.0;	
+ 
+	FFLAS::Timer t; t.clear();
+	double time=0.0;	 
 	t.clear();
-	t.start();
+	t.start(); 
 	FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n);
 	t.stop();
 	time+=t.usertime();
@@ -107,12 +106,12 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	F.init(invalpha);
 	F.inv(invalpha, alpha);	
 		
-	FFLAS::ftrmm (F, side, uplo, trans, diag, m, n, invalpha, A, k, B, n);
+	//FFLAS::ftrmm (F, side, uplo, trans, diag, m, n, invalpha, A, k, B, n);
 	
-	// if (side == FFLAS::FflasLeft)
-	// 	FFLAS::fgemm(F, trans, FFLAS::FflasNoTrans, m, n, m, invalpha, A, k, B, n, F.zero, C, n);
-	// else
-	// 	FFLAS::fgemm(F, FFLAS::FflasNoTrans, trans, m, n, n, invalpha, B, n, A, k, F.zero, C, n);
+	if (side == FFLAS::FflasLeft)
+		FFLAS::fgemm(F, trans, FFLAS::FflasNoTrans, m, n, m, invalpha, A, k, B, n, F.zero, C, n);
+	else
+		FFLAS::fgemm(F, FFLAS::FflasNoTrans, trans, m, n, n, invalpha, B, n, A, k, F.zero, C, n);
 
 
 	F.mulin(invalpha,alpha);
@@ -123,21 +122,19 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 
 	for (int i=0;i<m;++i)
 		for (int j=0;j<n;++j)
-			if ( !F.areEqual(*(B2+i*n+j), *(B+i*n+j))){
+			if ( !F.areEqual(*(B2+i*n+j), *(C+i*n+j))){
 				wrong = true;
-			}
-	
+			}	
 	if ( wrong ){
 		cerr<<"FAILED ("<<time<<")"<<endl;
 		
 	} else
 		cerr<<"PASSED ("<<time<<")"<<endl;
 	
-	FFLAS::fflas_delete( A);
-	FFLAS::fflas_delete( B);
-	FFLAS::fflas_delete( B2);
-	FFLAS::fflas_delete( C);
-	
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(B);
+	FFLAS::fflas_delete(B2);
+	FFLAS::fflas_delete(C);	
 }
 
 
@@ -165,21 +162,22 @@ int main(int argc, char** argv)
 	
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);
 
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);	
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);		
 
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);
+
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
 
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);		
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
 	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
 	

@@ -35,8 +35,9 @@
 #include <string>
 using namespace std; 
 
-#include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/field/modular-integer.h"
 
 
 #ifdef	BENCH_FLINT
@@ -116,7 +117,7 @@ int main(int argc, char** argv){
 	Field F(p);
 	size_t lda,ldb,ldc;
 	lda=k;
-	ldb=n;
+	ldb=n; 
 	ldc=n;;
 
 	typename Field::RandIter Rand(F,seed);
@@ -188,13 +189,12 @@ int main(int argc, char** argv){
 	// RNS MUL_LA
 	chrono.clear();chrono.start();	
 	FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
-	chrono.stop();
+	chrono.stop();	
 #ifdef BENCH_FLINT
 	cout<<" RNS MUL LA: "<<chrono.usertime()<<check_res(m,n,C,n,CC)<<" "<<endl;	 
 #else
 	cout<<" RNS MUL LA: "<<chrono.usertime()<<endl;
 #endif
-
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(C);

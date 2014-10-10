@@ -4,7 +4,7 @@
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Ziad Sultan
- * This file is Free Software and part of FFLAS-FFPACK.
+ * This file is Free Software and part of FFLAS-FFPACK. 
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -118,7 +118,7 @@ bool check_TRSM(const Field                   & F,
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
 	}
-	//	else   cerr<<"PASS"<<endl;
+	else   cerr<<"PASS"<<endl;
 
 	return !wrong;
 }
