@@ -118,6 +118,7 @@ namespace FFPACK {
 		FFLASFFPACK_check(n <= lda);
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
+		typedef typename Field::Element_ptr  Element_ptr;
 		Randiter R(F);
 		NonzeroRandIter<Field,Randiter> nzR(F,R);
 
@@ -126,8 +127,8 @@ namespace FFPACK {
 		for (size_t i = 0 ; i < m ; ++i ) Q[i] = 0;
 		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
 
-		Element * U = FFLAS::fflas_new<Element>(m*lda);
-		Element * L = FFLAS::fflas_new<Element>(m*m);
+		Element_ptr U = FFLAS::fflas_new(F,m,lda);
+		Element_ptr L = FFLAS::fflas_new(F,m,m);
 
 
 		/*  Create L, lower invertible */
@@ -178,10 +179,10 @@ namespace FFPACK {
 			      m,n,m, 1.0, L,m, U,lda, 0.0, A,lda);
 		//! @todo compute LU with ftrtr
 
-		FFLAS::fflas_delete( P);
-		FFLAS::fflas_delete( L);
-		FFLAS::fflas_delete( U);
-		FFLAS::fflas_delete( Q);
+		FFLAS::fflas_delete(P);
+		FFLAS::fflas_delete(L);
+		FFLAS::fflas_delete(U);
+		FFLAS::fflas_delete(Q);
 
 		return A;
 
