@@ -31,7 +31,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/field/modular-integer.h"
-
+#include "fflas-ffpack/utils/args-parser.h"
 using namespace std;
 
 
@@ -60,7 +60,7 @@ void write_matrix(FFPACK::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
 
 template<typename Field>
-void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Element &alpha, FFLAS::FFLAS_SIDE side, FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, FFLAS::FFLAS_DIAG diag){
+bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Element &alpha, FFLAS::FFLAS_SIDE side, FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, FFLAS::FFLAS_DIAG diag){
 
 	typedef typename Field::Element Element;
 	Element * A, *B, *B2, *C, tmp;
@@ -135,51 +135,57 @@ void check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(B2);
 	FFLAS::fflas_delete(C);	
+	return !wrong;
 }
 
 
 int main(int argc, char** argv)
 {
 	cerr<<setprecision(10);
-	
-	if (argc != 5)	{ 
-		cerr<<"Usage : test-ftrsm <pbits> <m> <n> <alpha>"
-		    <<endl;
-		exit(-1);
-	}
-	size_t b=atoi(argv[1]);
-	size_t m=atoi(argv[2]);
-	size_t n=atoi(argv[3]);
+	size_t b=128;
+	size_t m=128;
+	size_t n=128;
+	size_t s=1;
+	static Argument as[] = {
+                { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
+                { 'm', "-m M", "Set the row dimension of unknown matrix.",      TYPE_INT , &m },
+                { 'n', "-n N", "Set the column dimension of the unknown matrix.", TYPE_INT , &n },
+                { 's', "-s S", "Set the scaling of trsm",                         TYPE_INT , &s },
+                END_OF_ARGUMENTS
+        };
 
+	FFLAS::parseArguments(argc,argv,as);
+	
+	
 	FFPACK::Integer p;
 	FFPACK::Integer::random_exact_2exp(p, b);			
 	nextprime(p,p);
 	Field F((Field::Element)p);
 	cout<<F<<endl;
 	Field::Element alpha;
-	F.init (alpha, (Field::Element)FFPACK::Integer(argv[4])); 
+	F.init (alpha, (Field::Element)FFPACK::Integer(s)); 
 
+	bool ok= true;
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);
+
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);	
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);		
+
+
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
+
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
+	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
 	
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);
-
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);	
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);		
-
-
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-	check_ftrsm(F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-	
-	return 0;
+	return !ok;
 }
