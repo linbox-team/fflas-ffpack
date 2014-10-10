@@ -117,7 +117,7 @@ namespace FFPACK {
 		FFLASFFPACK_check(r <= std::min(m,n));
 		FFLASFFPACK_check(n <= lda);
 		typedef typename Field::RandIter Randiter ;
-		typedef typename Field::Element  Element ;
+		//typedef typename Field::Element  Element ;
 		typedef typename Field::Element_ptr  Element_ptr;
 		Randiter R(F);
 		NonzeroRandIter<Field,Randiter> nzR(F,R);
