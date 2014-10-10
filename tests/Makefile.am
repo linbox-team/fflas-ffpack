@@ -45,6 +45,8 @@ GIVA_TESTS =  	test-fgemm\
 		test-fger             \
 		test-ftrsm
 
+MULTIPRECISION_TEST = \
+		test-ftrsm-mp
 
 NOT_A_TEST =  \
 		test-lqup2              \
@@ -66,7 +68,6 @@ NOT_A_TEST =  \
 		test-fgesv             \
 		test-invert            \
 		test-nullspace		\
-		test-ftrsm-mp           \
 		test-fgemm-mp           \
 		test-igemm-mp
 
@@ -84,8 +85,9 @@ USE_OMP_TESTS = $(OMP_TESTS)
 endif
 
 if FFLASFFPACK_HAVE_GIVARO
-USE_GIVARO_TESTS = $(GIVA_TESTS)
+USE_GIVARO_TESTS = $(GIVA_TESTS) $(MULTIPRECISION_TEST)
 endif
+
 
 EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS) $(USE_OMP_TESTS) $(USE_GIVARO_TESTS)
@@ -135,6 +137,8 @@ test_fspmv_SOURCES = test-fspmv.C
 test_pfgemm_SOURCES = test-pfgemm.C
 #test_pftrsm_SOURCES = test-pftrsm.C
 regression_check_SOURCES = regression-check.C
+
+test_ftrsm_mp_SOURCES = test-ftrsm-mp.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
