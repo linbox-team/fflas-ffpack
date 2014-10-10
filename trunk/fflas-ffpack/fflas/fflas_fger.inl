@@ -299,4 +299,5 @@ namespace FFLAS{
 	}
 
 } // FFLAS
+#include "fflas-ffpack/fflas/fflas_fger_mp.inl"
 #endif // __FFLASFFPACK_fger_INL

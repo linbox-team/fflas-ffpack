@@ -224,8 +224,9 @@ namespace FFLAS{ namespace Protected{
 				fscalin (H.delayedField, M, N, alpha, A, lda);
 				finit(F, M, N, A, lda);
 			}
-		} else
+		} else{
 			finit(F, M, N, A, lda);
+		}
 	}
 
 } // Protected
@@ -342,7 +343,7 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H)
-	{
+	{		
 		if (!m || !n) {return C;}
 
 		if (!k || F.isZero (alpha)){
@@ -383,6 +384,7 @@ namespace FFLAS {
 		}
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag>  HD(H);
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
+
 		Protected::ScalAndInit (F, m, n, alpha, C, ldc, HD);
 
 		H.initOut();

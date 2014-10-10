@@ -131,8 +131,9 @@ namespace FFLAS { namespace vectorised {
 		size_t i = 0;
 		if (n < simd::vect_size)
 		{
+
 			for (; i < n ; i++)
-			{
+			{				
 				if (round)
 				{
 					T[i] = monrint(U[i]);
@@ -146,7 +147,7 @@ namespace FFLAS { namespace vectorised {
 				{
 					T[i]-=(T[i]>max)?p:0;
 				}
-				T[i]+=(T[i]<min)?p:0;
+				T[i]+=(T[i]<min)?p:0;				
 			}
 			return;
 		}
