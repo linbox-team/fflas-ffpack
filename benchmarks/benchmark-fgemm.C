@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
 	size_t n = 2000 ;
 	int nbw = -1 ;
 	int p=0;
+	int t=MAX_THREADS;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
@@ -52,6 +53,7 @@ int main(int argc, char** argv) {
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
 		{ 'p', "-p P", "0 for sequential, 1 for BLOCK_THREADS, 2 for ONE_D, 3 for TWO_D, 4 for THREE_D_INPLACE, 5 for THREE_D.", TYPE_INT , &p },
+		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
 		END_OF_ARGUMENTS
 	};
 
@@ -70,13 +72,14 @@ int main(int argc, char** argv) {
   Element * A, * B, * C;
   Element *v, *w, *y, *x;
 
-  Field::RandIter G(F);
+  Field::RandIter G(F); 
   A = FFLAS::fflas_new<Element>(m*k);
-  PAR_FOR (size_t i=0; i<(size_t)m; ++i)
+  for (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)k; ++j)
 		  G.random (*(A+i*k+j));
       
   B = FFLAS::fflas_new<Element>(k*n);
+//#pragma omp parallel for collapse(2) schedule(runtime) 
   PAR_FOR (size_t i=0; i<(size_t)k; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random(*(B+i*n+j));
@@ -115,7 +118,7 @@ int main(int argc, char** argv) {
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 			      typename FFLAS::FieldTraits<Field>::value,
 			      FFLAS::ParSeqHelper::Parallel> 
-		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth));
 	      PAR_REGION{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 	      }
@@ -142,8 +145,9 @@ int main(int argc, char** argv) {
       for(size_t j=0; j<(size_t)m; ++j) pass &= ( *(w+j) == *(x+j) );
       freidvals.stop();
       timev+=freidvals.usertime();
-
-      std::cerr << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
+      if (!pass) 
+	      std::cerr<<"FAILED"<<std::endl;
+	  //std::cerr << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
   }
   FFLAS::fflas_delete( A);
   FFLAS::fflas_delete( B);
@@ -151,7 +155,7 @@ int main(int argc, char** argv) {
   
   std::cerr<<"m: "<<m<<" k: "<<k<<" n: "<<n<<" q: "<<q<<" time: "<<time/(double)iter<<" Gfops: "<<(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0/*-m/1000.*n/1000.*/)/time*double(iter)<<std::endl;  
   
-  std::cerr<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
+      //std::cerr<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
 
   return 0;
 }
