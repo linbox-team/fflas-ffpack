@@ -8,6 +8,5 @@ int main() {
 	P = _mm_add_pd(P,P);
 	// SSE 4.1
 	P = _mm_floor_pd(P);
-
 	return 0;
 }

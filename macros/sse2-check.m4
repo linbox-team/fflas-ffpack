@@ -56,6 +56,7 @@ AC_DEFUN([FF_CHECK_SSE],
 				AC_MSG_RESULT(yes (SSE))
 				],
 				[
+				SSEFLAGS=""
 				AC_MSG_RESULT(no)
 				]
 				)
