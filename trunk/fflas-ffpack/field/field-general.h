@@ -51,6 +51,13 @@ namespace FFPACK {
 	class ModularBalanced ;
 
 	template<class T>
+	class RNSInteger;
+
+	template<class T>
+	class RNSIntegerMod;
+
+
+	template<class T>
 	std::ostream & operator<<( std::ostream & o, const Modular<T> & F)
 	{
 		return F.write(o);

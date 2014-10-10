@@ -40,6 +40,7 @@
 #include <math.h>
 #include "fflas-ffpack/utils/debug.h"
 #include "fflas-ffpack/field/field-general.h"
+#include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/modular-randiter.h"
 #include "fflas-ffpack/field/integer.h"
 
@@ -401,5 +402,4 @@ namespace FFPACK {
 } // FFPACK
 
 #endif
-
 #endif

@@ -35,6 +35,7 @@
 #define __FFLASFFPACK_field_field_traits_H
 
 #include <type_traits> // CXX11
+#include "fflas-ffpack/field/field-general.h"
 
 namespace FFLAS { /*  Categories */
 
@@ -275,7 +276,23 @@ namespace FFLAS { /*  Traits */
 		static  const bool balanced = false ;
 	};
 
-	// RNS ?
+	// RNSInteger	
+	template<typename T>
+	struct FieldTraits<FFPACK::RNSInteger<T> > {
+		typedef FieldCategories::MultiPrecisionTag value;
+		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = false ;
+	};
+	// RNSIntegerMod	
+	template<typename T>
+	struct FieldTraits<FFPACK::RNSIntegerMod<T> >{
+		typedef FieldCategories::MultiPrecisionTag value;
+		typedef FieldCategories::ModularTag category;
+		// typedef true_type balanced ;
+		static  const bool balanced = false ;
+	};
+
 
 
 } // FFLAS
@@ -307,6 +324,7 @@ namespace FFLAS { /* associatedDelayedField */
 		typedef DoubleDomain field;
 		typedef DoubleDomain type;
 	};
+
 
 } // FFLAS
 
