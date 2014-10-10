@@ -24,6 +24,8 @@
 
 pkgincludesubdir=$(pkgincludedir)/ffpack
 
+multiprecision= ffpack_ludivine_mp
+
 pkgincludesub_HEADERS=        \
 		ffpack_charpoly_danilevski.inl        \
 		ffpack_charpoly.inl                   \
@@ -44,7 +46,8 @@ pkgincludesub_HEADERS=        \
 		ffpack_fgesv.inl\
 		ffpack_fgetrs.inl\
 		ffpack_permutation.inl\
-		ffpack_ftrtr.inl
+		ffpack_ftrtr.inl\
+		$(multiprecision)
 
 
 EXTRA_DIST=ffpack.doxy
