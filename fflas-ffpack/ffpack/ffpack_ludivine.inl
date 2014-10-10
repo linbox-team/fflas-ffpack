@@ -102,8 +102,9 @@ namespace FFPACK {
 
 			if ( !(M && N) ) return 0;
 			typedef typename Field::Element elt;
-			elt * Aini = A;
-			elt * Acurr;
+			typedef typename Field::Element_ptr elt_ptr;
+			elt_ptr Aini = A;
+			elt_ptr Acurr;
 			size_t rowp = 0;
 			size_t R = 0;
 			size_t k = 0;
@@ -354,7 +355,6 @@ namespace FFPACK {
 					if (!F.isZero(*(Aini+i)))
 						F.init(*(Aini+i), *(Aini+i));
 
-
 				if (Diag == FFLAS::FflasUnit) {
 					// for (size_t j=1; j<N-k; ++j)
 						// if (!F.isZero(*(Aini+j)))
@@ -416,7 +416,7 @@ namespace FFPACK {
 		  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
 		 )
 	{
-
+		//std::cout<<"LUDivine ("<<M<<","<<N<<")"<<std::endl;
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
 		size_t MN = std::min(M,N);
@@ -439,7 +439,7 @@ namespace FFPACK {
 			return LUdivine_small (F, Diag, trans, M, N, A, lda, P, Q, LuTag);
 		}
 		else { // recursively :
-			if (MN == 1){
+			if (MN == 1){//std::cout<<"MN=1"<<std::endl;
 				size_t ip=0;
 				while (F.isZero (*(A+ip*incCol)))
 					if (++ip == colDim)
@@ -480,9 +480,10 @@ namespace FFPACK {
 				*P=ip;
 				if (ip!=0){
 					// swap the pivot
-					typename Field::Element tmp=*A;
-					*A = *(A + ip*incCol);
-					*(A + ip*incCol) = tmp;
+					typename Field::Element tmp;
+					F.assign(tmp,*A);
+					F.assign(*A, *(A + ip*incCol));
+					F.assign(*(A + ip*incCol), tmp);
 				}
 				elt invpiv;
 				F.inv(invpiv, *A);
@@ -547,7 +548,6 @@ namespace FFPACK {
 					typename Field::Element_ptr Ac = A + R*incCol;     // NE
 					typename Field::Element_ptr An = Ar+ R*incCol;     // SE
 
-
 					if (!R){
 						if (LuTag == FFPACK::FfpackSingular )
 							return 0;
@@ -607,7 +607,7 @@ namespace FFPACK {
 							Q[i] = t;
 						}
 					}
-				}
+				}				
 				return R + R2;
 			}
 		}
