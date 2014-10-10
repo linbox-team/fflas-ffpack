@@ -232,7 +232,7 @@ namespace FFPACK {
 		template<class Element1>
 		inline Element &init (Element & x, const Element1 &y) const
 		{
-			x = Element(y) % modulus;
+			x = Element(y) %  modulus;
 
 			NORMALISE_LO(x);
 			return x;
