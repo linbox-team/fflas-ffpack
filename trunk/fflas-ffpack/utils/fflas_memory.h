@@ -49,7 +49,7 @@ namespace FFLAS{
 
     template<class Field>
     inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const size_t n, const Alignment align = Alignment::DEFAULT)
-    {
+    {	 
 	    if (alignable<typename Field::Element_ptr>() ) {
 		    return malloc_align<typename Field::Element>(m*n, align);
 	    }
@@ -147,5 +147,5 @@ namespace FFLAS{
 	    tlb=sTLB*4096;
     }
 
-}
+} // namespace FFLAS
 #endif // __FFLASFFPACK_memory_H
