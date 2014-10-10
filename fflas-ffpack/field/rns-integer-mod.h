@@ -34,16 +34,24 @@
 #ifndef __FFPACK_rns_integer_mod_H
 #define __FFPACK_rns_integer_mod_H
 
+// activate only if FFLAS-FFPACK haves multiprecision integer
+#ifdef __FFLASFFPACK_HAVE_INTEGER
+
 #include <vector>
 using namespace std;
+
 
 #include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/rns-double.h"
-#include "fflas-ffpack/fflas/fflas.h"
-// activate only if FFLAS-FFPACK haves multiprecision integer
-#ifdef __FFLASFFPACK_HAVE_INTEGER
-
+#include "fflas-ffpack/fflas/fflas_level1.inl"
+#include "fflas-ffpack/fflas/fflas_level2.inl"
+#include "fflas-ffpack/fflas/fflas_level3.inl"
+ 
+#if defined(BENCH_PERF_FGEMM_MP) || defined(BENCH_PERF_TRSM_MP) || defined(BENCH_PERF_LQUP_MP)
+#define BENCH_PERF_SCAL_MP
+#define BENCH_MODP
+#endif
 
 namespace FFPACK {
 
@@ -65,6 +73,12 @@ namespace FFPACK {
 	public:
 		Element                one, mOne,zero;
 
+#ifdef BENCH_MODP
+		mutable double t_modp, t_igemm, t_scal; 
+		mutable size_t n_modp;
+#endif
+
+
 		RNSIntegerMod(const integer& p, const RNS& myrns) : _p(p),
 								  _Mi_modp_rns(myrns._size*myrns._size),
 								  _iM_modp_rns(myrns._size*myrns._size),
@@ -85,6 +99,10 @@ namespace FFPACK {
 				iM+=myrns._M;iM%=_p;
 				sum+=myrns._basis[i];
 			}
+#ifdef BENCH_MODP
+		t_modp=t_igemm=t_scal=0.;
+		n_modp=0;
+#endif
 		}
 
 		const rns_double& rns() const {return *_rns;}
@@ -106,10 +124,15 @@ namespace FFPACK {
 		}
 
 		bool isZero(const Element& x) const {
+			//write(std::cout,x)<<" == ";
+			//write(std::cout,zero)<<std::endl;
+			// integer t1;
+			// std::cout<<convert(t1,x)%_p<<std::endl;
 			bool iszero=true;
 			for (size_t i=0;i<_rns->_size;i++)
-				iszero&= (zero._ptr[i]== x._ptr[i]);
-			return isZero;
+				iszero&= (zero._ptr[i]==x._ptr[i]);
+			//std::cout<<(iszero?"zero":"nonzero")<<std::endl;
+			return iszero;
 		}
 
 		integer characteristic(integer &p) const { return p=_p;}
@@ -130,6 +153,18 @@ namespace FFPACK {
 			_rns->init(1,1,x._ptr,x._stride, &y,1,k);
 			return x;
 		}
+
+		// assume this is the mod p operation
+		Element& init(Element& x, const Element& y) const{
+			init(x);
+			FFPACK::Integer tmp;
+			convert(tmp,y);
+			tmp%=_p;
+			init(x,tmp);
+			return x;
+		}
+
+
 		FFPACK::Integer convert(FFPACK::Integer& x, const Element& y)const {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
 			return x;
@@ -141,6 +176,46 @@ namespace FFPACK {
 			return x;
 		}
 
+		Element& add(Element& x, const Element& y, const Element& z) const {
+			for(size_t i=0;i<_rns->_size;i++)
+				_rns->_field_rns[i].add((x._ptr)[i*x._stride],
+							(y._ptr)[i*y._stride],
+							(z._ptr)[i*z._stride]);
+			return x;
+		}
+
+		Element& sub(Element& x, const Element& y, const Element& z) const {
+			for(size_t i=0;i<_rns->_size;i++)
+				_rns->_field_rns[i].sub((x._ptr)[i*x._stride],
+							(y._ptr)[i*y._stride],
+							(z._ptr)[i*z._stride]);
+			return x;
+		}
+
+		Element& neg(Element& x, const Element& y) const {
+			for(size_t i=0;i<_rns->_size;i++)
+				_rns->_field_rns[i].neg((x._ptr)[i*x._stride],
+							(y._ptr)[i*y._stride]);						
+			return x;
+		}
+
+		Element& mul(Element& x, const Element& y, const Element& z) const {
+			for(size_t i=0;i<_rns->_size;i++)
+				_rns->_field_rns[i].mul((x._ptr)[i*x._stride],
+							(y._ptr)[i*y._stride],
+							(z._ptr)[i*z._stride]);
+			return x;
+		}
+
+
+		Element& axpyin(Element& x, const Element& y, const Element& z) const {
+			for(size_t i=0;i<_rns->_size;i++)
+				_rns->_field_rns[i].axpyin((x._ptr)[i*x._stride],
+							   (y._ptr)[i*y._stride],
+							   (z._ptr)[i*z._stride]);
+			return x;
+		}
+
 		Element& inv(Element& x, const Element& y) const {
 			FFPACK::Integer tmp;
 			convert(tmp,y);
@@ -149,6 +224,12 @@ namespace FFPACK {
 			return x;
 		}
 
+		bool areEqual(const Element& x, const Element& y) const {
+			for(size_t i=0;i<_rns->_size;i++)
+				if (!_rns->_field_rns[i].areEqual((x._ptr)[i*x._stride],(y._ptr)[i*y._stride]))
+					return false;
+			return true;
+		}
 		ostream& write(ostream& os, const Element& y) const {
 			os<<"[ "<< (long) (y._ptr)[0];
 			for(size_t i=1;i<_rns->_size;i++)
@@ -166,23 +247,26 @@ namespace FFPACK {
 
 
 		void reduce_modp(size_t n, BasisElement* A, size_t rda) const{
-
+#ifdef BENCH_MODP
+			FFLAS::Timer chrono; chrono.start();
+#endif
 			size_t _size= _rns->_size;
 			BasisElement *Gamma, *alpha;
-			Gamma = FFLAS::fflas_new<BasisElement>(n*_size);
-			alpha = FFLAS::fflas_new<BasisElement>(n);
+			UnparametricField<BasisElement> D;
+			Gamma = FFLAS::fflas_new(D,_size,n);
+			alpha = FFLAS::fflas_new(D,n,1);
 
 			// compute Gamma
 			for(size_t i=0;i<_size;i++)
 				FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i*rda, 1, Gamma+i*n,1);
-
-			UnparametricField<BasisElement> D;
-
+						
 			// compute A = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
-
+			
+			//std::cout<<"fgemv (Y)...";
 			// compute alpha = _invbase.Gamma
 			FFLAS::fgemv(D,FFLAS::FflasTrans, _size, n, D.one, Gamma, n, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+			//std::cout<<"done"<<std::endl;
 
 			// compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
 			for(size_t i=0;i<_size;i++){
@@ -197,12 +281,20 @@ namespace FFPACK {
 			for (size_t i=0;i<_size;i++)
 				FFLAS::finit(_rns->_field_rns[i], n, A+i*rda, 1);
 
-			FFLAS::fflas_delete( Gamma);
-			FFLAS::fflas_delete( alpha);
+			FFLAS::fflas_delete(Gamma);
+			FFLAS::fflas_delete(alpha);
+
+#ifdef BENCH_MODP
+			chrono.stop();
+			t_modp+=chrono.usertime();
+#endif
 
 	 	}
 
 		void reduce_modp(size_t m, size_t n, BasisElement* A, size_t lda, size_t rda) const{
+#ifdef BENCH_MODP
+			FFLAS::Timer chrono; chrono.start();
+#endif
 			//cout<<"REDUCE MOD WITH LDA!=N"<<endl;
 			size_t _size= _rns->_size;
 			size_t mn=m*n;
@@ -217,10 +309,13 @@ namespace FFPACK {
 
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			UnparametricField<BasisElement> D;
+		
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
 
 			// compute alpha = _invbase.Gamma
+			//std::cout<<"fgemv (X)..."<<m<<"x"<<n<<" -> "<<_size<<"  "<<lda<<endl;;
 			FFLAS::fgemv(D, FFLAS::FflasTrans, _size, mn, D.one, Gamma, mn, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+			//std::cout<<"done"<<std::endl; 
 
 			// compute A=((Gamma--(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
  			for(size_t k=0;k<_size;k++){
@@ -238,6 +333,10 @@ namespace FFPACK {
 			FFLAS::fflas_delete( Gamma);
 			FFLAS::fflas_delete( alpha);
 			FFLAS::fflas_delete( z);
+#ifdef BENCH_MODP
+			chrono.stop();
+			t_modp+=chrono.usertime();
+#endif
 		}
 
 	}; // end of class RNSIntegerMod
@@ -259,8 +358,15 @@ namespace FFLAS {
 	void finit_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
 		   const FFPACK::integer *B, const size_t ldb, typename RNS::Element_ptr A)
 	{
-		F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
+			F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
 	}
+	template<typename RNS>
+	void finit_trans_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
+			     const FFPACK::integer *B, const size_t ldb, typename RNS::Element_ptr A)
+	{
+		F.rns().init_transpose(m,n,A._ptr,A._stride, B,ldb,k);
+	}
+
 	// function to convert from RNS to integer (note: this is not the fconvert function from FFLAS, extra alpha)
 	template<typename RNS>
 	void fconvert_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
@@ -268,44 +374,11 @@ namespace FFLAS {
 	{
 		F.rns().convert(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
-
-	// specialization of the level1 finit function for the field RNSInteger<rns_double>
-	template<>
-	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t n, FFPACK::rns_double::Element_ptr A, size_t inc)
+	template<typename RNS>
+	void fconvert_trans_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
+				FFPACK::integer alpha, FFPACK::integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
 	{
-		if (inc==1)
-			F.reduce_modp(n,A._ptr,A._stride);
-		else
-			F.reduce_modp(n,1,A._ptr,inc,A._stride);
-       		//throw FFPACK::Failure(__func__,__FILE__,__LINE__,"finit RNSIntegerMod  -> (inc!=1) NOT SUPPORTED");
-	}
-	// specialization of the level2 finit function for the field RNSInteger<rns_double>
-	template<>
-	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n, FFPACK::rns_double::Element_ptr A, size_t lda)
-	{
-		if (lda == n)
-			F.reduce_modp(m*n,A._ptr,A._stride);
-		else
-			F.reduce_modp(m,n,A._ptr,lda,A._stride); // seems to be buggy
-	}
-	// specialization of the level1 fscalin function for the field RNSInteger<rns_double>
-	template<>
-	void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
-		     const FFPACK::rns_double::Element alpha,
-		     FFPACK::rns_double::Element_ptr A, const size_t inc) {
-
-		for (size_t i=0;i<F.size();i++)
-			fscalin(F.rns()._field_rns[i], n, alpha._ptr[i], A._ptr+i*A._stride,inc);
-		finit(F,n,A,inc);
-	}
-	// specialization of the level2 fscalin function for the field RNSInteger<rns_double>
-	template<>
-	void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m, const size_t n,
-		     const FFPACK::rns_double::Element alpha,
-		     FFPACK::rns_double::Element_ptr A, const size_t lda) {
-		for (size_t i=0;i<F.size();i++)
-			fscalin(F.rns()._field_rns[i], m, n, alpha._ptr[i], A._ptr+i*A._stride,lda);
-		finit(F,m,n,A,lda);
+		F.rns().convert_transpose(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
 
 } // end of namespace FFLAS

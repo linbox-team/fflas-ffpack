@@ -62,7 +62,13 @@ namespace FFPACK {
 			init(zero,0);
 			init(mOne,-1);
 		}
-
+		template<typename T>
+		RNSInteger(const T &F) : _rns(&(F.rns()))
+		{
+			init(one,1);
+			init(zero,0);
+			init(mOne,-1);
+		}
 
 		const RNS& rns() const {return *_rns;}
 
