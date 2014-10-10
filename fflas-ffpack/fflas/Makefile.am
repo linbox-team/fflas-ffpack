@@ -29,8 +29,10 @@ SUBDIRS=fflas_fgemm fflas_fspmv fflas_igemm fflas_simd
 sparse=fflas_fspmv.h \
        fflas_fspmv.inl
 
-multiprecision= fflas_ftrsm_mp.inl
-# fflas_igemm.h
+multiprecision= fflas_ftrsm_mp.inl \
+		fflas_fscal_mp.inl \
+		fflas_finit_mp.inl \
+		fflas_fger_mp.inl	
 
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \

@@ -112,4 +112,6 @@ namespace FFLAS {
 
 } // end of namespace FFLAS
 
+#include "fflas_finit_mp.inl"
+
 #endif // __FFLASFFPACK_fflas_init_H

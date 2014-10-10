@@ -32,16 +32,17 @@
 
 #ifndef __FFPACK_fgemm_classical_INL
 #define __FFPACK_fgemm_classical_INL
+#ifdef __FFLASFFPACK_HAVE_INTEGER
 
 #include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
-
-#ifdef __FFLASFFPACK_HAVE_INTEGER
+#include "fflas-ffpack/field/field-traits.h"
+#include "fflas-ffpack/fflas/fflas_helpers.inl" 
 
 namespace FFLAS {
-
+ 
 	template<typename Field,
 		 typename AlgoTrait,
 		 typename ParSeqTrait>
@@ -52,14 +53,16 @@ namespace FFLAS {
 		MMHelper(const Field& F, size_t m=0, size_t n=0, size_t k=0, ParSeqTrait PS=ParSeqTrait()) {F.characteristic(normA);F.characteristic(normB);}
 	};
 
-	// move to field-traits
-	template<typename RNS>
-	struct FieldTraits<FFPACK::RNSInteger<RNS> > {typedef FieldCategories::MultiPrecisionTag value;};
-
-	template<typename RNS>
-	struct FieldTraits<FFPACK::RNSIntegerMod<RNS> > {typedef FieldCategories::MultiPrecisionTag value;};
-
-
+	template <>
+	struct associatedDelayedField<const FFPACK::Modular<FFPACK::Integer>>{
+		typedef FFPACK::UnparametricField<FFPACK::Integer> field;
+		typedef FFPACK::UnparametricField<FFPACK::Integer> type;
+	};
+	template <typename RNS>
+	struct associatedDelayedField<const FFPACK::RNSIntegerMod<RNS> >{
+		typedef FFPACK::RNSInteger<RNS> field;
+		typedef FFPACK::RNSInteger<RNS> type;
+	};
 
 	/***********************************
 	 *** MULTIPRECISION FGEMM OVER Z ***
@@ -77,11 +80,15 @@ namespace FFLAS {
 								     const typename FFPACK::RNSInteger<RNS>::Element beta,
 								     typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
 								     MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
-	{
+	{		
 		// compute each fgemm componentwise
 		for(size_t i=0;i<F.size();i++){
 			FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,//FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
-				     m, n, k, alpha._ptr[i], Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb, beta._ptr[i], Cd._ptr+i*Cd._stride, ldc);
+				     m, n, k, alpha._ptr[i*alpha._stride],
+				     Ad._ptr+i*Ad._stride, lda, 
+				     Bd._ptr+i*Bd._stride, ldb, 
+				     beta._ptr[i*beta._stride], 
+				     Cd._ptr+i*Cd._stride, ldc);			
 		}
 		return Cd;
 	}
@@ -133,13 +140,14 @@ namespace FFLAS {
 		FFPACK::rns_double RNS(mC, prime_bitsize);
 		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
 		RnsDomain Zrns(RNS);
-
+		
 		size_t Acold,Bcold;
 		if (ta == FFLAS::FflasNoTrans){  Acold = k; }
 		else { Acold = m;}
 		if (tb == FFLAS::FflasNoTrans){  Bcold = n; }
 		else { Bcold = k;}
-		    // allocate data for RNS representation
+		
+		// allocate data for RNS representation
 		typename RnsDomain::Element_ptr Ap,Bp,Cp;
 		Ap = FFLAS::fflas_new(Zrns,m,k);
 		Bp = FFLAS::fflas_new(Zrns,k,n);
@@ -159,7 +167,7 @@ namespace FFLAS {
 
 		// call  fgemm
 		fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
-
+		
 		// convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) )
 		fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);
 
@@ -195,22 +203,29 @@ namespace FFLAS {
 	// fgemm for RNSIntegerMod  with Winograd Helper
 	template<typename RNS>
 	inline typename RNS::Element_ptr fgemm (const FFPACK::RNSIntegerMod<RNS> &F,
-						 const FFLAS_TRANSPOSE ta,
-						 const FFLAS_TRANSPOSE tb,
-						 const size_t m, const size_t n,const size_t k,
-						 const typename RNS::Element alpha,
-						 typename RNS::Element_ptr Ad, const size_t lda,
-						 typename RNS::Element_ptr Bd, const size_t ldb,
-						 const typename RNS::Element beta,
-						 typename RNS::Element_ptr Cd, const size_t ldc,
-						 MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
+						const FFLAS_TRANSPOSE ta,
+						const FFLAS_TRANSPOSE tb,
+						const size_t m, const size_t n,const size_t k,
+						const typename RNS::Element alpha,
+						typename RNS::Element_ptr Ad, const size_t lda,
+						typename RNS::Element_ptr Bd, const size_t ldb,
+						const typename RNS::Element beta,
+						typename RNS::Element_ptr Cd, const size_t ldc,
+						MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
 	{
 		// compute the product over Z
 		typedef FFPACK::RNSInteger<RNS> RnsDomain;
 		MMHelper<RnsDomain, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> H2;
-		RnsDomain Zrns(F.rns());
-		fgemm(Zrns,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
 
+		RnsDomain Zrns(F.rns());
+#ifdef BENCH_PERF_FGEMM_MP
+		FFLAS::Timer chrono;chrono.start();
+#endif
+		fgemm(Zrns,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
+#ifdef BENCH_PERF_FGEMM_MP
+		chrono.stop();
+		F.t_igemm+=chrono.usertime();
+#endif
 		// reduce the product mod p (note that entries are larger than p, due to RNS modulo reduction)
 		finit(F,m,n,Cd,ldc);
 		return Cd;
@@ -235,8 +250,9 @@ namespace FFLAS {
 		F.cardinality(p);
 		IntegerDomain Z;
 		MMHelper<IntegerDomain, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> H2(p,p);//H2(Z,0,H.parseq);
-		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 
+		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
+		
 		// reduce the product mod p
 		finit(F,m,n,C,ldc);
 

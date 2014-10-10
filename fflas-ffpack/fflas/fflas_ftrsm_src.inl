@@ -186,7 +186,11 @@
  #define __FFLAS__ELEMENT Element
 #endif
 
-
+#ifdef __FFLAS_MULTIPRECISION
+#define __FFLAS__ELEMENT FFPACK::rns_double_elt
+#define __FFLAS__DOMAIN FFPACK::RNSInteger<FFPACK::rns_double>
+ #define __FFLAS__BLAS_PREFIX imp
+#endif
 
 #ifndef __FFLAS__GENERIC
 template <>
@@ -199,41 +203,41 @@ template<class Field, class ParSeqTrait>
 void delayed (const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
 	      typename Field::ConstElement_ptr
-#else
+#else //__FFLAS__TRSM_READONLY
 	      typename Field::Element_ptr
-#endif
+#endif //__FFLAS__TRSM_READONLY
 	      A, const size_t lda,
 	      typename Field::Element_ptr B, const size_t ldb,
 	      const size_t nblas, size_t nbblocsblas,
 	      TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 
 {
-
-	static __FFLAS__DOMAIN D; // is this safe ??
+	
+	//static __FFLAS__DOMAIN D(F); // is this safe ??
+	__FFLAS__DOMAIN D(F); // is this safe ??
 
 	if ( __FFLAS__Na <= nblas ){
 		finit(F,M,N,B,ldb);
-		// for (size_t i=0; i < M; ++i)
-			// for (size_t j = 0; j < N; ++j)
-				// F.init( *(B + i*ldb + j), *( B + i*ldb + j));
+	
 #define __FFLAS__Atrsm A
 #define __FFLAS__Atrsm_lda lda
 #ifndef __FFLAS__UNIT
-  #ifdef __FFLAS__TRSM_READONLY
+#ifdef __FFLAS__TRSM_READONLY
 		//! @warning this is C99 (-Wno-vla)
-		typename Field::Element Acop[__FFLAS__Na*__FFLAS__Na];
+		//typename Field::Element Acop[__FFLAS__Na*__FFLAS__Na];
+		typename Field::Element_ptr Acop = FFLAS::fflas_new(F,__FFLAS__Na,__FFLAS__Na);
 		typename Field::Element_ptr Acopi = Acop;
-    #undef __FFLAS__Atrsm
-    #undef __FFLAS__Atrsm_lda
+#undef __FFLAS__Atrsm
+#undef __FFLAS__Atrsm_lda
     #define __FFLAS__Atrsm Acop
     #define __FFLAS__Atrsm_lda __FFLAS__Na
-  #endif
+#endif //__FFLAS__TRSM_READONLY
 		typename Field::Element inv;
 #ifdef __FFLAS__TRSM_READONLY
 		typename Field::ConstElement_ptr
-#else
+#else //__FFLAS__TRSM_READONLY
 		typename Field::Element_ptr
-#endif
+#endif //__FFLAS__TRSM_READONLY
 			Ai = A;
 		typename Field::Element_ptr Bi = B;
 #ifdef __FFLAS__LEFT
@@ -241,77 +245,72 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		Ai += __FFLAS__Acolinc;
 #ifdef __FFLAS__TRSM_READONLY
 		Acopi += __FFLAS__Acopcolinc;
-#endif
-#endif
-#endif
+#endif //__FFLAS__TRSM_READONLY
+#endif //__FFLAS__UP
+#endif //__FFLAS__LEFT
 #ifdef __FFLAS__RIGHT
 #ifdef __FFLAS__LOW
 		Ai += __FFLAS__Arowinc;
 #ifdef __FFLAS__TRSM_READONLY
 		Acopi += __FFLAS__Acoprowinc;
-#endif
-#endif
-#endif
+#endif //__FFLAS__TRSM_READONLY
+#endif //__FFLAS__LOW
+#endif //__FFLAS__RIGHT
 		for (size_t i = 0; i < __FFLAS__Na; ++i){
 #ifdef _FF_DEBUG
 			if ( F.isZero(*(A+i*(lda+1))) ) throw PreconditionFailed(__func__,__FILE__,__LINE__,"Triangular matrix not invertible");
-#endif
+#endif //_FF_DEBUG
 			F.inv (inv, *(A + i * (lda+1)));
+#ifndef __FFLAS_MULTIPRECISION
 #ifdef __FFLAS__TRSM_READONLY
-			// typename Field::ConstElement_ptr Acurr;
-			// typename Field::Element_ptr Acopcurr;
-			// for (Acurr = Ai,  Acopcurr = Acopi;
-			     // Acurr != Ai +  (__FFLAS__Anorminc) * (__FFLAS__Normdim);
-			     // Acurr += __FFLAS__Anorminc,
-				     // Acopcurr += __FFLAS__Acopnorminc){
-				// F.mul (*Acopcurr, *Acurr, inv);
-			// }
 			fscal (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc, Acopi, __FFLAS__Acopnorminc);
 			Acopi += __FFLAS__Acopnormnext;
-#else
+#else //__FFLAS__TRSM_READONLY
 			fscalin (F, __FFLAS__Normdim, inv, Ai, __FFLAS__Anorminc);
-#endif
-			fscalin (F, __FFLAS__Bdim, inv, Bi, __FFLAS__Bnorminc);
+#endif //__FFLAS__TRSM_READONLY
+#endif //__FFLAS_MULTIPRECISION
+			FFLAS::fscalin (F, __FFLAS__Bdim, inv, Bi, __FFLAS__Bnorminc);
 			Ai += __FFLAS__Anormnext;
 			Bi += __FFLAS__Bnormnext;
+		
 		}
 #endif // __FFLAS__UNIT
+#ifndef __FFLAS_MULTIPRECISION
 		Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trsm))
 			(CblasRowMajor,
 			 Mjoin (Cblas, __FFLAS__SIDE),
 			 Mjoin (Cblas, __FFLAS__UPLO),
 			 Mjoin (Cblas, __FFLAS__TRANS),
 			 CblasUnit,
-			 (int)M, (int)N, 1.0, __FFLAS__Atrsm, (int)__FFLAS__Atrsm_lda, B, (int)ldb );
+			 (int)M, (int)N, D.one, __FFLAS__Atrsm, (int)__FFLAS__Atrsm_lda, B, (int)ldb );
 		finit(F,M,N,B,ldb);
-		// for (size_t i = 0; i < M; ++i)
-			// for (size_t j = 0; j < N; ++j)
-				// F.init (*(B + i*ldb + j), *(B + i*ldb + j));
+#endif //__FFLAS_MULTIPRECISION
 
 #ifndef __FFLAS__UNIT
 		Ai = A;
-//		Acopi = Acop;
 #ifdef __FFLAS__LEFT
 #ifdef __FFLAS__UP
 		Ai += __FFLAS__Acolinc;
-//		Acopi += __FFLAS__Acopcolinc;
-
-#endif
-#endif
+#endif //__FFLAS__UP
+#endif //__FFLAS__LEFT
 #ifdef __FFLAS__RIGHT
 #ifdef __FFLAS__LOW
 		Ai += __FFLAS__Arowinc;
-//		Acopi += __FFLAS__Acoprowinc;
-
-#endif
-#endif
+#endif //__FFLAS__LOW
+#endif //__FFLAS__RIGHT
 
 #ifndef __FFLAS__TRSM_READONLY
+#ifndef __FFLAS_MULTIPRECISION
 		for (size_t i = 0; i < __FFLAS__Na; ++i){
 			fscalin( F, __FFLAS__Normdim, *(A + i * (lda+1)) , Ai, __FFLAS__Anorminc);
 			Ai += __FFLAS__Anormnext;
 		}
-#endif
+#endif //__FFLAS_MULTIPRECISION
+#endif //__FFLAS__TRSM_READONLY
+ 
+#ifdef __FFLAS__TRSM_READONLY
+		FFLAS::fflas_delete(Acop);
+#endif //__FFLAS__TRSM_READONLY
 #endif // __FFLAS__UNIT
 	} else { // __FFLAS__Na <= nblas
 		size_t nbblocsup = (nbblocsblas + 1) / 2;
@@ -324,15 +323,15 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 #ifdef __FFLAS__RIGHT
 		fgemm (D, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0,
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, D.mOne,
 		       __FFLAS__B1, ldb, __FFLAS__A2, lda,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
 #else
 		fgemm (D, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans,
-		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, -1.0,
+		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, D.mOne,
 		       __FFLAS__A2, lda, __FFLAS__B1, ldb,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
-#endif
+#endif //__FFLAS__RIGHT
 
 		this->delayed (F, __FFLAS__Mb2, __FFLAS__Nb2,
 			       __FFLAS__A3, lda, __FFLAS__B2, ldb, nblas, nbblocsblas - nbblocsup, H);
@@ -344,7 +343,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 		  typename Field::ConstElement_ptr
 #else
 		  typename Field::Element_ptr
-#endif
+#endif //__FFLAS__TRSM_READONLY
 		  A, const size_t lda,
 		  typename Field::Element_ptr B, const size_t ldb,
 		  TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
@@ -353,7 +352,8 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	if (!M || !N ) return;
 
 
-	static __FFLAS__DOMAIN D;
+	//static __FFLAS__DOMAIN D(F);
+	__FFLAS__DOMAIN D(F);
 	size_t nblas = TRSMBound<Field> (F);
 
 	size_t ndel = DotProdBoundClassic (F, F.one);
@@ -376,7 +376,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.mOne,
 		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb,
 		       F.one, __FFLAS__Bupdate, ldb, H.parseq);
-#endif
+#endif //__FFLAS__RIGHT
 	}
 	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
@@ -391,7 +391,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 template <class Element>
 class Mjoin(ftrsm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
 public:
-
+	
 template<class Field, class ParSeqTrait>
 void operator()	(const Field& F, const size_t M, const size_t N,
 #ifdef __FFLAS__TRSM_READONLY
@@ -403,7 +403,6 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		 typename Field::Element_ptr B, const size_t ldb,
 		 TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 {
-
 	if (__FFLAS__Na == 1){
 
 #ifndef __FFLAS__UNIT
@@ -411,7 +410,7 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 		F.init(inv);
 #ifdef _FF_DEBUG
 		if ( F.isZero(*A) ) throw PreconditionFailed(__func__,__FILE__,__LINE__,"Triangular matrix not invertible");
-#endif
+#endif //_FF_DEBUG
 		F.inv(inv, *A);
 		FFLAS::fscalin(F, __FFLAS__Bdim, inv, B, __FFLAS__Bnorminc);
 
@@ -419,19 +418,17 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 	} else { // __FFLAS__Na > 1
 		size_t nsplit = __FFLAS__Na >> 1;
 		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A1, lda, __FFLAS__B1, ldb, H);
-
-
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
 		       __FFLAS__B1, ldb, __FFLAS__A2, lda,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
-#else
+#else //__FFLAS__RIGHT
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FFLAS::FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.mOne,
 		       __FFLAS__A2, lda, __FFLAS__B1, ldb,
 		       F.one, __FFLAS__B2, ldb, H.parseq);
-#endif
+#endif //__FFLAS__RIGHT
 		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);
 	}
 }

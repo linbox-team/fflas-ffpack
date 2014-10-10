@@ -40,9 +40,6 @@
 
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
-#include "fflas-ffpack/field/unparametric.h"
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-positive.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
@@ -145,6 +142,13 @@ namespace FFLAS {
 
 } // FFLAS
 
+// include fields for specialisation
+#include "fflas-ffpack/field/unparametric.h"
+#include "fflas-ffpack/field/modular-balanced.h"
+#include "fflas-ffpack/field/modular-positive.h"
+#include "fflas-ffpack/field/rns.h"
+
+
 #include "fflas-ffpack/utils/fflas_memory.h"
 //---------------------------------------------------------------------
 // Level 1 routines
@@ -185,8 +189,8 @@ namespace FFLAS {
 //---------------------------------------------------------------------
 // MultiPrecision routines
 //---------------------------------------------------------------------
-#include "fflas_ftrsm_mp.inl"
 #include "fflas_fgemm/fgemm_classical_mp.inl"
+#include "fflas_ftrsm_mp.inl"
 
 
 //---------------------------------------------------------------------

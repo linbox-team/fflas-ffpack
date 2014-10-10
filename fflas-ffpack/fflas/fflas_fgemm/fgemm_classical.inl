@@ -52,8 +52,7 @@ namespace FFLAS {
                            const typename Field::Element beta,
                            typename Field::Element_ptr C, const size_t ldc,
                            MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
-	{
-
+	{		
                 // Input matrices are unreduced: need to figure out the best option between:
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
@@ -92,7 +91,7 @@ namespace FFLAS {
 			}
 			kmax = H.MaxDelayedDim (betadf);
 		}
-
+		
 		if (!kmax){
 			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> HG(H);
 			H.initOut();
@@ -200,7 +199,7 @@ namespace FFLAS {
 		fscalin(F,m,n,alpha,C,ldc);
         }
 
-	inline void fgemm (const DoubleDomain& ,
+	inline void fgemm (const DoubleDomain& F,
 			   const FFLAS_TRANSPOSE ta,
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,

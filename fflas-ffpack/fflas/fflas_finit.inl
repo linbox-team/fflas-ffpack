@@ -45,6 +45,7 @@ namespace FFLAS { namespace details {
 	       , FieldCategories::ModularTag
 	      )
 	{
+
 		if(incX == 1) {
 			typename Field::Element p;
 			p=(typename Field::Element)F.cardinality();
