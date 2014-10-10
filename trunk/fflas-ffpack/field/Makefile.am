@@ -41,9 +41,11 @@ MODULAR_BAL=modular-balanced.h        	\
 	  modular-balanced-integer.h
 
 RNS=rns.h			        \
-    rns-double.h			\
-    rns-integer.h			\
-    rns-integer-mod.h
+	rns-double.h			\
+	rns-double-elt.h		\
+	rns-double.inl			\
+	rns-integer.h			\
+	rns-integer-mod.h
 
 pkgincludesub_HEADERS=          	\
 	  field.h                       \
