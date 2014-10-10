@@ -55,9 +55,9 @@ namespace FFPACK {
 #include "fflas-ffpack/field/modular-int32.h"
 #include "fflas-ffpack/field/modular-uint32.h"
 #include "fflas-ffpack/field/modular-integer.h"
-#ifdef __x86_64__
+// #ifdef __x86_64__
 #include "fflas-ffpack/field/modular-int64.h"
 #include "fflas-ffpack/field/modular-uint64.h"
-#endif
+// #endif
 
 #endif // __FFLASFFPACK_modular_positive_H
