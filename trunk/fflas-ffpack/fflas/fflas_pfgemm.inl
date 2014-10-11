@@ -117,6 +117,8 @@ namespace FFLAS {
 		 typename Field::Element_ptr A1= A;
 		 typename Field::Element_ptr A2= A+K2;
 		     //#pragma omp task shared(F, A1, B1)                                                                  
+		 H1.parseq.numthreads = H.parseq.numthreads;
+		 H2.parseq.numthreads = H.parseq.numthreads;
 		 pfgemm_1D_rec(F, ta, tb, m, n, K2, a, A1, lda, B1, ldb, b, C, ldc, H1);
 		 b=1;
 		 pfgemm_1D_rec(F, ta, tb, m, n, k-K2, a, A2, lda, B2, ldb, b, C, ldc, H2);
