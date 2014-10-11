@@ -89,12 +89,12 @@ namespace FFLAS {
 		 
 		     // 2 multiply (1 split on dimension m)
 		
-                 #pragma omp task shared(F, A1, C1) depend(in:A1,B) depend(inout:C1)
+#pragma omp task shared(F, A1, C1) //depend(in:A1,B) depend(inout:C1)
 		 pfgemm_1D_rec(F, ta, tb, M2, n, k, alpha, A1, lda, B, ldb, beta, C1, ldc, H1);
 		 
-                 #pragma omp task shared(F, A2, C2) depend(inout:C2) depend(in:A2,B)
+#pragma omp task shared(F, A2, C2) //depend(inout:C2) depend(in:A2,B)
 		 pfgemm_1D_rec(F, ta, tb, m-M2, n, k, alpha, A2, lda, B, ldb, beta, C2, ldc, H2);
-		     //                #pragma omp taskwait
+#pragma omp taskwait
 	 } else if (n >= k) {
 		 size_t N2 = n>>1;
 		 typename Field::Element_ptr B1= B;
@@ -103,12 +103,12 @@ namespace FFLAS {
 		 typename Field::Element_ptr C1= C;
 		 typename Field::Element_ptr C2= C+N2;
 		 
-                 #pragma omp task shared(F, B1, C1) depend(in:A,B1) depend(inout:C1)
+                 #pragma omp task shared(F, B1, C1) //depend(in:A,B1) depend(inout:C1)
 		 pfgemm_1D_rec(F, ta, tb, m, N2, k, a, A, lda, B1, ldb, b, C1, ldc, H1);
 
-                 #pragma omp task shared(F, B2, C2) depend(in:A,B2) depend(inout:C2)
+                 #pragma omp task shared(F, B2, C2) //depend(in:A,B2) depend(inout:C2)
 		 pfgemm_1D_rec(F, ta, tb, m, n-N2, k, a, A, lda, B2, ldb, b,C2, ldc, H2);
-		     //                #pragma omp taskwait
+#pragma omp taskwait
 	 } else {
 		 size_t K2 = k>>1;
 		 
@@ -121,7 +121,7 @@ namespace FFLAS {
 		 b=1;
 		 pfgemm_1D_rec(F, ta, tb, m, n, k-K2, a, A2, lda, B2, ldb, b, C, ldc, H2);
 	  }
-          #pragma omp taskwait                                                                                
+//#pragma omp taskwait                                                                                
 	  return C;
  }
 
@@ -182,17 +182,17 @@ namespace FFLAS {
 		 H1.parseq.numthreads = std::max(nt/4,1);
 		 H2.parseq.numthreads = std::max(nt/4,1);
 		 H3.parseq.numthreads = std::max(nt/4,1);
-		 H4.parseq.numthreads = nt - H1.parseq.numthreads -H2.parseq.numthreads -H3.parseq.numthreads;
-                 #pragma omp task shared(F, A1, B1, C11) depend(inout:C11) depend(in:A1,B1)
+		 H4.parseq.numthreads = std::max(1,nt - H1.parseq.numthreads -H2.parseq.numthreads -H3.parseq.numthreads);
+#pragma omp task shared(F, A1, B1, C11) depend(inout:C11) depend(in:A1,B1)
 		 pfgemm_2D_rec(F, ta, tb, M2, N2, k, alpha, A1, lda, B1, ldb, beta, C11, ldc, H1);
 
-                 #pragma omp task shared(F, A1, B2, C12) depend(inout:C12) depend(in:A1,B2)
+#pragma omp task shared(F, A1, B2, C12) depend(inout:C12) depend(in:A1,B2)
 		 pfgemm_2D_rec(F, ta, tb, M2, n-N2, k, alpha, A1, lda, B2, ldb, beta, C12, ldc, H2);
 
-                 #pragma omp task shared(F, A2, B1, C21) depend(inout:C21) depend(in:A2,B1)
+#pragma omp task shared(F, A2, B1, C21) depend(inout:C21) depend(in:A2,B1)
 		 pfgemm_2D_rec(F, ta, tb, m-M2, N2, k, a, A2, lda, B1, ldb, b, C21, ldc, H3);
 
-                 #pragma omp task shared(F, A2, B2, C22) depend(inout:C22) depend(in:A2,B2)
+#pragma omp task shared(F, A2, B2, C22) depend(inout:C22) depend(in:A2,B2)
 		 pfgemm_2D_rec(F, ta, tb, m-M2, n-N2, k, a, A2, lda, B2, ldb, b,C22, ldc, H4);
 
 	 }
@@ -255,32 +255,32 @@ pfgemm_3D_rec( const Field& F,
 		size_t * x4;
 
 // 1/ 4 multiply
-                #pragma omp task shared(F, A11, B11, C11) depend(inout:x1)
+#pragma omp task shared(F, A11, B11, C11) //depend(inout:x1)
 		pfgemm_3D_rec(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, seuil, x1);
 
-                #pragma omp task shared(F, A12, B22, C12) depend(out:x2)
+#pragma omp task shared(F, A12, B22, C12) //depend(out:x2)
 		pfgemm_3D_rec(F, ta, tb, M2, n-N2, k-K2, alpha, A12, lda, B22, ldb, beta, C12, ldc,seuil, x2);
 
-                #pragma omp task shared(F, A22, B21, C21) depend(out:x3)
+#pragma omp task shared(F, A22, B21, C21) //depend(out:x3)
 		pfgemm_3D_rec(F, ta, tb, m-M2, N2, k-K2, alpha, A22, lda, B21, ldb, beta, C21, ldc,seuil, x3);
 
-                #pragma omp task shared(F, A21, B12, C22) depend(out:x4)
+#pragma omp task shared(F, A21, B12, C22) //depend(out:x4)
 		pfgemm_3D_rec(F, ta, tb, m-M2, n-N2, K2, alpha, A21, lda, B12, ldb, beta, C22, ldc,seuil, x4);
 // Sync
-//		#pragma omp taskwait
+#pragma omp taskwait
 
 // 2/ 4 add+multiply
 		
-                #pragma omp task shared(F, A12, B21, C11)  depend(out:x1)
+#pragma omp task shared(F, A12, B21, C11)  //:depend(out:x1)
 		pfgemm_3D_rec(F, ta, tb, M2, N2, k-K2, a, A12, lda, B21, ldb, b,C11, ldc,seuil, x1);
 
-		#pragma omp task shared(F, A11, B12, C12)  depend(out:x2)
+#pragma omp task shared(F, A11, B12, C12)  //depend(out:x2)
 		pfgemm_3D_rec(F, ta, tb, M2, n-N2, K2, a, A11, lda, B12, ldb, b,C12, ldc,seuil, x2);
 
-		#pragma omp task shared(F, A21, B11, C21)  depend(out:x3)
+#pragma omp task shared(F, A21, B11, C21)  //depend(out:x3)
 		pfgemm_3D_rec(F, ta, tb, m-M2, N2, K2, a, A21, lda, B11, ldb, b,C21, ldc,seuil, x3);
 
-		#pragma omp task shared(F, A22, B22, C22)  depend(out:x4)
+#pragma omp task shared(F, A22, B22, C22)  //depend(out:x4)
 		pfgemm_3D_rec(F, ta, tb, m-M2, n-N2, k-K2, a, A22, lda, B22, ldb, b,C22, ldc,seuil, x4);
 
 		#pragma omp taskwait
@@ -351,38 +351,38 @@ pfgemm_3D_rec2( const Field& F,
 		size_t * x4;
 
 		// 1/ 8 multiply in parallel
-                #pragma omp task shared(F, A11, B11, C11) depend(in:x1)
+#pragma omp task shared(F, A11, B11, C11) //depend(in:x1)
 		pfgemm_3D_rec2(F, ta, tb, M2, N2, K2, a, A11, lda, B11, ldb, b,C11, ldc, seuil, x1);
-                #pragma omp task shared(F, A12, B21, C_11) depend(in:x1)
+#pragma omp task shared(F, A12, B21, C_11) //depend(in:x1)
 		pfgemm_3D_rec2(F, ta, tb, M2, N2, k-K2, a, A12, lda, B21, ldb, b,C_11, N2,seuil,x1);
 
-#pragma omp task shared(F, A12, B22, C12) depend(in:x2)
+#pragma omp task shared(F, A12, B22, C12) //depend(in:x2)
 		pfgemm_3D_rec2(F, ta, tb, M2, n-N2, k-K2, a, A12, lda, B22, ldb, b,C12, ldc,seuil,x2);
-		#pragma omp task shared(F, A11, B12, C_12) depend(in:x2)
+		#pragma omp task shared(F, A11, B12, C_12) //depend(in:x2)
 		pfgemm_3D_rec2(F, ta, tb, M2, n-N2, K2, a, A11, lda, B12, ldb, b, C_12, n-N2,seuil,x2);
 
-                #pragma omp task shared(F,A22, B21, C21) depend(in:x3)
+                #pragma omp task shared(F,A22, B21, C21) //depend(in:x3)
 		pfgemm_3D_rec2(F, ta, tb, m-M2, N2, k-K2, a, A22, lda, B21, ldb, b,C21, ldc,seuil,x3);
-		#pragma omp task shared(F, A21, B11, C_21) depend(in:x3)
+		#pragma omp task shared(F, A21, B11, C_21) //depend(in:x3)
 		pfgemm_3D_rec2(F, ta, tb, m-M2, N2, K2, a, A21, lda, B11, ldb, b,C_21, N2,seuil,x3);
 
-                #pragma omp task shared(F, A21, B12, C22) depend(in:x4)
+                #pragma omp task shared(F, A21, B12, C22) //depend(in:x4)
 		pfgemm_3D_rec2(F, ta, tb, m-M2, n-N2, K2, a, A21, lda, B12, ldb, b,C22, ldc,seuil,x4);
-		#pragma omp task shared(F, A22, B22, C_22) depend(in:x4)
+		#pragma omp task shared(F, A22, B22, C_22) //depend(in:x4)
 		pfgemm_3D_rec2(F, ta, tb, m-M2, n-N2, k-K2, a, A22, lda, B22, ldb, b,C_22, n-N2,seuil,x4);
 
-		//#pragma omp taskwait
+#pragma omp taskwait
 		
 		// 2/ final add
 		// modifier les add, 
 
-                #pragma omp task shared(F, C11, C_11) depend(inout:x1)
+                #pragma omp task shared(F, C11, C_11) //depend(inout:x1)
 		faddin(F, M2, N2, C_11, N2, C11, ldc);
-                #pragma omp task shared(F, C12, C_12) depend(inout:x2)
+                #pragma omp task shared(F, C12, C_12) //depend(inout:x2)
 		faddin(F, M2, n-N2, C_12, n-N2, C12, ldc);
-                #pragma omp task shared(F, C21, C_21) depend(inout:x3)
+                #pragma omp task shared(F, C21, C_21) //depend(inout:x3)
 		faddin(F, m-M2, N2, C_21, N2, C21, ldc);
-                #pragma omp task shared(F, C22, C_22) depend(inout:x4)
+                #pragma omp task shared(F, C22, C_22) //depend(inout:x4)
 		faddin(F, m-M2, n-N2, C_22, n-N2, C22, ldc);
                 #pragma omp taskwait	
 
@@ -420,8 +420,9 @@ pfgemm_3D_rec2( const Field& F,
 		return C;
 	}
 	if(H.parseq.numthreads <= 1){	// threshold
+		    //FFLAS::MMHelper<typename MMHelper<Field, AlgoT, FieldTrait,FFLAS::ParSeqHelper::Parallel>::DelayedField, AlgoT, FieldCategories::FloatingPointTag,FFLAS::ParSeqHelper::Sequential> WH (H);
 		FFLAS::MMHelper<Field, AlgoT, FieldTrait,FFLAS::ParSeqHelper::Sequential> WH (H);
-		return fgemm(F, ta, tb, m, n, k, a, A, lda, B, ldb, b, C, ldc, WH);
+		return fgemm(F/*H.delayedField*/, ta, tb, m, n, k, a, A, lda, B, ldb, b, C, ldc, WH);
 	}
 	else
 	{
@@ -458,7 +459,7 @@ pfgemm_3D_rec2( const Field& F,
 		*/
 		// 1/ 8 multiply in parallel
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C11));
-
+		
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H1(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H3(H);
@@ -475,7 +476,7 @@ pfgemm_3D_rec2( const Field& F,
 		H5.parseq.numthreads = std::max(nt/8,1);
 		H6.parseq.numthreads = std::max(nt/8,1);
 		H7.parseq.numthreads = std::max(nt/8,1);
-		H8.parseq.numthreads = nt - H1.parseq.numthreads - H2.parseq.numthreads- H3.parseq.numthreads - H4.parseq.numthreads- H5.parseq.numthreads - H6.parseq.numthreads - H6.parseq.numthreads - H7.parseq.numthreads;
+		H8.parseq.numthreads = std::max(1,nt - H1.parseq.numthreads - H2.parseq.numthreads- H3.parseq.numthreads - H4.parseq.numthreads- H5.parseq.numthreads - H6.parseq.numthreads - H7.parseq.numthreads);
                 #pragma omp task shared(F, A11, B11, C11) depend(out:C11) depend(in:A11,B11)
 		pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, K2, a, A11, lda, B11, ldb, b,C11, ldc, H1);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_11));
@@ -501,7 +502,7 @@ pfgemm_3D_rec2( const Field& F,
                 #pragma omp task shared(F, A22, B22, C_22) depend(out:C_22) depend(in:A22,B22)
 		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, n-N2, k-K2, a, A22, lda, B22, ldb, b,C_22, n-N2, H8);
 
-		//#pragma omp taskwait
+//#pragma omp taskwait
 		
 		// 2/ final add
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C11));
@@ -516,7 +517,7 @@ pfgemm_3D_rec2( const Field& F,
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C22));
                 #pragma omp task shared(F, C22, C_22) depend(inout:C22) depend(in:C_22)
 		faddin(F, m-M2, n-N2, C_22, n-N2, C22, ldc);
-                #pragma omp taskwait	
+#pragma omp taskwait	
 		
         	FFLAS::fflas_delete (C_11);
 		FFLAS::fflas_delete (C_12);
@@ -541,8 +542,6 @@ pfgemm_3D_rec2( const Field& F,
 		  typename Field::Element_ptr C, const size_t ldc, 
 		  MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
 	
-	size_t a = 1;
-	size_t b = 1;
 	
 	if (!m || !n) {return C;}
 	if (!k || F.isZero (alpha)){
@@ -552,7 +551,7 @@ pfgemm_3D_rec2( const Field& F,
 
 	if(H.parseq.numthreads <= 1){	// threshold
 		FFLAS::MMHelper<Field, AlgoT, FieldTrait,FFLAS::ParSeqHelper::Sequential> WH (H);
-		return fgemm(F, ta, tb, m, n, k, a, A, lda, B, ldb, b, C, ldc, WH);
+		return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, WH);
 	}else{
 		size_t M2= m>>1;
 		size_t N2= n>>1;
@@ -576,19 +575,11 @@ pfgemm_3D_rec2( const Field& F,
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H3(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H4(H);
-		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H5(H);
-		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H6(H);
-		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H7(H);
-		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H8(H);
 		int nt = H.parseq.numthreads;
-		H1.parseq.numthreads = std::max(nt/8, 1);
-		H2.parseq.numthreads = std::max(nt/8, 1);
-		H3.parseq.numthreads = std::max(nt/8, 1);
-		H4.parseq.numthreads = std::max(nt/8, 1);
-		H5.parseq.numthreads = std::max(nt/8, 1);
-		H6.parseq.numthreads = std::max(nt/8, 1);
-		H7.parseq.numthreads = std::max(nt/8, 1);
-		H8.parseq.numthreads = nt - H1.parseq.numthreads - H2.parseq.numthreads- H3.parseq.numthreads - H4.parseq.numthreads- H5.parseq.numthreads - H6.parseq.numthreads - H6.parseq.numthreads - H7.parseq.numthreads;
+		H1.parseq.numthreads = std::max(nt/4, 1);
+		H2.parseq.numthreads = std::max(nt/4, 1);
+		H3.parseq.numthreads = std::max(nt/4, 1);
+		H4.parseq.numthreads = std::max(1,nt - H1.parseq.numthreads - H2.parseq.numthreads- H3.parseq.numthreads);
 // 1/ 4 multiply
                 #pragma omp task shared(F, A11, B11, C11) depend(inout:C11) depend(in:A11, B11)
 		pfgemm_3D_rec_V2(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, H1);
@@ -602,21 +593,22 @@ pfgemm_3D_rec2( const Field& F,
                 #pragma omp task shared(F, A21, B12, C22) depend(inout:C22) depend(in:A21, B12)
 		pfgemm_3D_rec_V2(F, ta, tb, m-M2, n-N2, K2, alpha, A21, lda, B12, ldb, beta, C22, ldc, H4);
 
+//#pragma omp taskwait
 // 2/ 4 add+multiply
 		
-                #pragma omp task shared(F, A12, B21, C11)  depend(inout:C11) depend(in:A12, B21)
-		pfgemm_3D_rec_V2(F, ta, tb, M2, N2, k-K2, a, A12, lda, B21, ldb, b,C11, ldc, H1);
+                #pragma omp task shared(F, A12, B21, C11) depend(inout:C11) depend(in:A12, B21)
+		pfgemm_3D_rec_V2(F, ta, tb, M2, N2, k-K2, alpha, A12, lda, B21, ldb, F.one, C11, ldc, H1);
 
                 #pragma omp task shared(F, A11, B12, C12)  depend(inout:C12) depend(in:A11, B12)
-		pfgemm_3D_rec_V2(F, ta, tb, M2, n-N2, K2, a, A11, lda, B12, ldb, b,C12, ldc, H2);
+		pfgemm_3D_rec_V2(F, ta, tb, M2, n-N2, K2, alpha, A11, lda, B12, ldb, F.one, C12, ldc, H2);
 
                 #pragma omp task shared(F, A21, B11, C21)  depend(inout:C21) depend(in:B11, A21)
-		pfgemm_3D_rec_V2(F, ta, tb, m-M2, N2, K2, a, A21, lda, B11, ldb, b,C21, ldc, H3);
+		pfgemm_3D_rec_V2(F, ta, tb, m-M2, N2, K2, alpha, A21, lda, B11, ldb, F.one, C21, ldc, H3);
 
                 #pragma omp task shared(F, A22, B22, C22)  depend(inout:C22) depend(in:A22, B22)
-		pfgemm_3D_rec_V2(F, ta, tb, m-M2, n-N2, k-K2, a, A22, lda, B22, ldb, b,C22, ldc, H4);
+		pfgemm_3D_rec_V2(F, ta, tb, m-M2, n-N2, k-K2, alpha, A22, lda, B22, ldb, F.one, C22, ldc, H4);
 
-		#pragma omp taskwait
+#pragma omp taskwait
 	}
 	return C;
 }
