@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -35,6 +35,36 @@
 
 using namespace std;
 
+#ifdef __FFLASFFPACK_USE_OPENMP4
+template<class Element>
+void Initialize(Element * C, size_t BS, size_t m, size_t n)
+{
+
+#pragma omp parallel for collapse(2) schedule(runtime)
+	for(size_t p=0; p<m; p+=BS) ///row
+		for(size_t pp=0; pp<n; pp+=BS) //column
+		{
+			size_t M=BS, MM=BS;
+			if(!(p+BS<n))
+				M=m-p;
+			if(!(pp+BS<n))
+				MM=n-pp;
+			
+			for(size_t j=0; j<M; j++)
+				for(size_t jj=0; jj<MM; jj++)
+					C[(p+j)*n+pp+jj]=0;
+		}
+	// for (size_t i=0; i<n; i+=128)
+	// {
+	// 	for (size_t j=0; j<n; j+=512)
+	// 	{
+	// 		int ld = omp_get_locality_domain_num_for( &C[i*n+j] );
+	// 		printf("%i ", ld);
+	// 	}
+	// 	printf("\n");
+	// }
+}
+#endif
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
@@ -74,17 +104,25 @@ int main(int argc, char** argv) {
 
   Field::RandIter G(F); 
   A = FFLAS::fflas_new<Element>(m*k);
+//#pragma omp parallel for collapse(2) schedule(runtime) 
+  Initialize(A,m/t,m,k);
   for (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)k; ++j)
 		  G.random (*(A+i*k+j));
       
   B = FFLAS::fflas_new<Element>(k*n);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  PAR_FOR (size_t i=0; i<(size_t)k; ++i)
+  Initialize(B,k/t,k,n);
+  for (size_t i=0; i<(size_t)k; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random(*(B+i*n+j));
 
   C = FFLAS::fflas_new<Element>(m*n);
+//#pragma omp parallel for collapse(2) schedule(runtime) 
+  Initialize(C,m/t,m,n);
+  for (size_t i=0; i<(size_t)m; ++i)
+	  for (size_t j=0; j<(size_t)n; ++j)
+		  G.random (*(C+i*n+j));
   
   for (size_t i=0;i<iter;++i){
 
