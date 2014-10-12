@@ -41,22 +41,22 @@
 
 namespace FFLAS { /*  DNS */
 
-	template<class Element>
+	template<class Field>
 	struct VECT {
 		size_t m = 0;
 		size_t inc = 0;
-		Element * dat = nullptr;
+		typename Field::Element_ptr dat = nullptr;
 
-		inline Element * data() {return dat;}
+		inline typename Field::Element_ptr data() {return dat;}
 	};
 
-	template<class Element>
+	template<class Field>
 	struct DNS {
 		size_t n = 0;
 		size_t ld = 0;
-		Element * dat = nullptr;
+		typename Field::Element_ptr dat = nullptr;
 
-		inline Element * data() {return dat;}
+		inline typename Field::Element_ptr data() {return dat;}
 	};
 
 } // FFLAS
@@ -112,7 +112,7 @@ namespace FFLAS{
 	namespace details {
 
 		template<class Field>
-		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element * y, FieldCategories::FloatingPointTag)
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::ModularTag)
 		{
 			if(b != -1)
 			{
@@ -134,7 +134,29 @@ namespace FFLAS{
 		}
 
 		template<class Field>
-		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element * y, FieldCategories::GenericTag)
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::UnparametricTag)
+		{
+			if(b != -1)
+			{
+				if(b == 0)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i] = 0;
+				}
+				else if(b == -1)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i] *= -1;
+				}
+				else
+				{
+					fscalin(F, m, b, y, 1);
+				}
+			}
+		}
+
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::GenericTag)
 		{
 			if(!F.isOne(b))
 			{

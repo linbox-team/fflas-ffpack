@@ -67,7 +67,6 @@ struct Simd128_impl<true, false, true, 8>{
 		return _mm_setzero_pd();
 	}
 
-
 	/*
 	 * Broadcast double-precision (64-bit) floating-point value a to all elements of vect_t.
 	 * Return [x,x]
@@ -76,7 +75,6 @@ struct Simd128_impl<true, false, true, 8>{
 	{
 		return _mm_set1_pd(x);
 	}
-
 
 	/*
 	 *  Set packed double-precision (64-bit) floating-point elements in vec_t with the supplied values.

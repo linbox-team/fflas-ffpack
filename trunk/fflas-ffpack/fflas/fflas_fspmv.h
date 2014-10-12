@@ -57,79 +57,75 @@
 
 namespace FFLAS { /*  DNS */
 
-	template<class Element>
+	template<class Field>
 	struct VECT ;
 
-	template<class Element>
+	template<class Fiedl>
 	struct DNS ;
 
 }
 
 namespace FFLAS { /*  COO */
 
-	template<class Element>
+	template<class Field>
 	struct COO ;
 
-	template<class Element>
+	template<class Field>
 	struct COO_sub ;
 
-	template<class Element>
+	template<class Field>
 	struct COO_ZO ;
 
 
 	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
+		      const COO<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<Field> & y
 		     );
 
 
 	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO_sub<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
+		      const COO_sub<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<Field> & y
 		     );
 
 	template<class Field>
 	void sp_fgemv(
 		      const Field & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO_ZO<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
+		      const COO_ZO<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
+		      VECT<Field> & y
 		     );
 
 } // FFLAS
 
 namespace FFLAS { /*  CSR */
 
-	template<class Element>
+	template<class Field>
 	struct CSR ;
 
-	template<class Element>
+	template<class Field>
 	struct CSR_sub ;
 
-	template<class Element>
+	template<class Field>
 	struct CSR_ZO ;
 
 
 	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const CSR<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
+		      const CSR<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<Field> & y
 		     );
 
 
@@ -137,21 +133,19 @@ namespace FFLAS { /*  CSR */
 	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const CSR_sub<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
+		      const CSR_sub<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<Field> & y
 		     );
 
 	template<class Field>
 	void sp_fgemv(
 		      const Field & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const CSR_ZO<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
+		      const CSR_ZO<Field> & A,
+		      const VECT<Field > & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
+		      VECT<Field> & y
 		     );
 
 
@@ -163,28 +157,39 @@ namespace FFLAS { /*  CSC */
 
 namespace FFLAS { /*  ELL */
 
-	 template<class Element, bool simd>
+	 template<class Field, bool simd>
 	 struct ELL;
 
-	 template<class Element/*  , bool simd*/>
-	 struct ELLR ;
-
-	 template<class Element, bool simd>
+	 template<class Field, bool simd>
 	 struct ELL_sub;
 
-	 template<class Element, bool simd>
+	 template<class Field, bool simd>
 	 struct ELL_ZO;
+
+} // FFLAS
+
+namespace FFLAS{ /* ELLR */
+
+	template<class Field>
+	struct ELLR;
+
+	template<class Field>
+	struct ELLR_sub;
+
+	template<class Field>
+	struct ELLR_ZO;
+
 } // FFLAS
 
 namespace FFLAS { /* SELL */
 
-	template<class Element, bool simd>
+	template<class Element>
 	struct SELL;
 
-	template<class Element, bool simd>
+	template<class Element>
 	struct SELL_sub;
 
-	template<class Element, bool simd>
+	template<class Element>
 	struct SELL_ZO;
 }
 

@@ -36,27 +36,23 @@
 
 namespace FFLAS { /*  COO */
 
-	template<class _Element >
+	template<class Field>
 	struct COO {
 		size_t m ;
 		size_t n ;
 		size_t z ;
 		index_t  * row  ;
 		index_t  * col ;
-		_Element * dat ;
-		// int mc ;
-		// int ml ;
+		typename Field::Element_ptr dat;
 	};
 
-	template<class _Element >
-	struct COO_sub : public COO<_Element > {
-		// size_t i0 ;
-		// size_t j0 ;
+	template<class Field>
+	struct COO_sub : public COO<Field> {
 	};
 
-	template<class _Element >
-	struct COO_ZO : public COO<_Element >{
-		_Element cst = 1 ;
+	template<class Field>
+	struct COO_ZO : public COO<Field >{
+		typename Field::Element cst = 1;
 	};
 
 } // FFLAS
@@ -67,15 +63,14 @@ namespace FFLAS { namespace details {
 	template<class Field>
 	inline void fspmv(
 			     const Field& F,
-			     // const FFLAS_TRANSPOSE tA,
 			     const size_t m,
 			     const size_t n,
 			     const size_t z,
 			     const index_t * row,
 			     const index_t * col,
-			     const typename Field::Element *  dat,
-			     const typename Field::Element * x ,
-			     typename Field::Element * y
+			     const typename Field::Element_ptr dat,
+			     const typename Field::Element_ptr x ,
+			     typename Field::Element_ptr y
 			     , FieldCategories::GenericTag
 			    )
 	{
@@ -86,15 +81,14 @@ namespace FFLAS { namespace details {
 	template<class Field>
 	void fspmv(
 		      const Field & F,
-		      // const FFLAS_TRANSPOSE tA,
 		      const size_t m,
 		      const size_t n,
 		      const size_t z,
 		      const index_t * row,
 		      const index_t * col,
-		      const typename Field::Element *  dat,
-		      const typename Field::Element * x ,
-		      typename Field::Element * y
+		      const typename Field::Element_ptr dat,
+		      const typename Field::Element_ptr x ,
+		      typename Field::Element_ptr y
 		      , FieldCategories::UnparametricTag
 		     )
 	{
@@ -107,15 +101,14 @@ namespace FFLAS { namespace details {
 	template<>
 	void fspmv(
 		      const DoubleDomain & F,
-		      // const FFLAS_TRANSPOSE tA,
 		      const size_t m,
 		      const size_t n,
 		      const size_t z,
 		      const index_t * row,
 		      const index_t * col,
-		      const double *  dat,
-		      const double * x ,
-		      double * y
+		      const typename DoubleDomain::Element_ptr  dat,
+		      const typename DoubleDomain::Element_ptr x ,
+		      typename DoubleDomain::Element_ptr y
 		      , FieldCategories::UnparametricTag
 		     )
 	{
@@ -143,15 +136,14 @@ namespace FFLAS { namespace details {
 	template<>
 	void fspmv(
 		      const FloatDomain & F,
-		      // const FFLAS_TRANSPOSE tA,
 		      const size_t m,
 		      const size_t n,
 		      const size_t z,
 		      const index_t * row,
 		      const index_t * col,
-		      const float *  dat,
-		      const float * x ,
-		      float * y
+		      const typename FloatDomain::Element_ptr dat,
+		      const typename FloatDomain::Element_ptr x ,
+		      typename FloatDomain::Element_ptr y
 		      , FieldCategories::UnparametricTag
 		     )
 	{
@@ -177,17 +169,15 @@ namespace FFLAS { namespace details {
 	template<class Field>
 	inline void fspmv(
 			     const Field& F,
-			     // const FFLAS_TRANSPOSE tA,
 			     const size_t m,
 			     const size_t n,
 			     const size_t z,
 			     const index_t * row,
 			     const index_t * col,
-			     const typename Field::Element *  dat,
-			     const typename Field::Element * x ,
-			     typename Field::Element * y,
+			     const typename Field::Element_ptr dat,
+			     const typename Field::Element_ptr x ,
+			     typename Field::Element_tr y,
 			     const index_t & kmax
-			     // , FieldCategories::ModularTag
 			    )
 	{
 		size_t w = 0 ;
@@ -214,13 +204,9 @@ namespace FFLAS { namespace details {
 				e += dat[w] * x[col[w]];
 				accu = 1 ;
 			}
-
 			++w ;
-
 		}
-
 		F.init(y[last_i],e);
-
 	}
 
 } // details
@@ -237,46 +223,45 @@ namespace FFLAS {
 	template<class Field>
 	inline void fspmv(
 			     const Field& F,
-			     // const FFLAS_TRANSPOSE tA,
-			     const COO_sub<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
+			     const COO_sub<Field> & A,
+			     const VECT<Field> & x,
 			     const typename Field::Element & b,
-			     VECT<typename Field::Element > & y
+			     VECT<Field> & y
 			    )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
 		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
-	template<class Field, bool simd_true>
+	template<class Field>
 	inline void fspmv(const Field & F,
-			     const COO_sub<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
-			     VECT<typename Field::Element > & y,
+			     const COO_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
 			     FieldCategories::ModularTag)
 	{
 		details::fspmv(F,A.m,A.n,A.z,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 		finit(F,A.m,y.dat,1);
 	}
 
-	template<class Field, bool simd_true>
+	template<class Field>
 	inline void fspmv(const Field & F,
-			     const COO_sub<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
-			     VECT<typename Field::Element > & y,
+			     const COO_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
 			     FieldCategories::UnparametricTag)
 	{
 		details::fspmv(F,A.m,A.n,A.z,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 	}
 
-	template<class Field, bool simd_true>
+	template<class Field>
 	inline void fspmv(const Field & F,
-			     const COO_sub<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
-			     VECT<typename Field::Element > & y,
+			     const COO_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
 			     FieldCategories::GenericTag)
 	{
-		details::fspmv(F,A.m,A.n,A.z,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag ());
+		details::fspmv(F,A.m,A.n,A.z,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
 
 	/* *** */
@@ -288,11 +273,10 @@ namespace FFLAS {
 	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO<typename Field::Element > & A,
-		      const VECT<typename Field::Element > & x,
+		      const COO<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
+		      VECT<Field> & y
 		     )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
@@ -302,10 +286,9 @@ namespace FFLAS {
 	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO<typename Field::Element > & A,
-		      const VECT<typename Field::Element > & x,
-		      VECT<typename Field::Element > & y
+		      const COO<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y
 		      , FieldCategories::GenericTag
 		     )
 	{
@@ -315,10 +298,9 @@ namespace FFLAS {
 	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO<typename Field::Element > & A,
-		      const VECT<typename Field::Element > & x,
-		      VECT<typename Field::Element > & y
+		      const COO<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y
 		      , FieldCategories::UnparametricTag
 		     )
 	{
@@ -328,10 +310,9 @@ namespace FFLAS {
 	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const COO<typename Field::Element > & A,
-		      const VECT<typename Field::Element > & x,
-		      VECT<typename Field::Element > & y
+		      const COO<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y
 		      , FieldCategories::ModularTag
 		     )
 	{
@@ -348,18 +329,17 @@ namespace FFLAS { namespace details { /*  ZO */
 	template<class Field, bool add>
 	inline void fspmv_zo(
 				const Field & F,
-				// const FFLAS_TRANSPOSE tA,
 				const size_t m,
 				const size_t n,
 				const size_t z,
 				const index_t * row,
 				const index_t * col,
-				const typename Field::Element * x ,
-				typename Field::Element * y
+				const typename Field::Element_ptr x ,
+				typename Field::Element_ptr y
 				, FieldCategories::GenericTag
 			       )
 	{
-		if (add == true) {
+		if (add) {
 			for (index_t j = 0 ; j < z ; ++j)
 				F.addin(y[row[j]], x[col[j]]);
 		}
@@ -372,18 +352,17 @@ namespace FFLAS { namespace details { /*  ZO */
 	template<class Field, bool add>
 	inline void fspmv_zo(
 				const Field & F,
-				// const FFLAS_TRANSPOSE tA,
 				const size_t m,
 				const size_t n,
 				const size_t z,
 				const index_t * row,
 				const index_t * col,
-				const typename Field::Element * x ,
-				typename Field::Element * y
+				const typename Field::Element_ptr x ,
+				typename Field::Element_ptr y
 				, FieldCategories::UnparametricTag
 			       )
 	{
-		if (add == true) {
+		if (add) {
 			for (index_t j = 0 ; j < z ; ++j)
 				y[row[j]] +=  x[col[j]];
 		}
@@ -409,11 +388,10 @@ namespace FFLAS { /*  ZO */
 	template<class Field>
 	inline void fspmv(
 			     const Field & F,
-			     // const FFLAS_TRANSPOSE tA,
-			     COO_ZO<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
+			     COO_ZO<Field> & A,
+			     const VECT<Field> & x,
 			     const typename Field::Element & b,
-			     VECT<typename Field::Element > & y
+			     VECT<Field> & y
 			    )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
@@ -423,10 +401,9 @@ namespace FFLAS { /*  ZO */
 	template<class Field>
 	inline void fspmv(
 			     const Field & F,
-			     // const FFLAS_TRANSPOSE tA,
-			     COO_ZO<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
-			     VECT<typename Field::Element > & y
+			     COO_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y
 			     , FieldCategories::GenericTag
 			    )
 	{
@@ -437,19 +414,17 @@ namespace FFLAS { /*  ZO */
 			details::fspmv_zo<Field,false>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat, FieldCategories::GenericTag());
 		}
 		else {
-			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
-			fscal(F,A.n,A.cst,x.dat,1,xd,1);
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,xd,y.dat, FieldCategories::GenericTag());
+			details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+			fscalin(F,A.n,A.cst,y.dat,1);
 		}
 	}
 
 	template<class Field>
 	inline void fspmv(
 			     const Field & F,
-			     // const FFLAS_TRANSPOSE tA,
-			     COO_ZO<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
-			     VECT<typename Field::Element > & y
+			     COO_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y
 			     , FieldCategories::UnparametricTag
 			    )
 	{
@@ -460,19 +435,17 @@ namespace FFLAS { /*  ZO */
 			details::fspmv_zo<Field,false>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else {
-			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
-			fscal(F,A.n,A.cst,x.dat,1,xd,1);
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,xd,y.dat, FieldCategories::UnparametricTag());
+			details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			fscalin(F,A.n,A.cst,y.dat,1);
 		}
 	}
 
 	template<class Field>
 	inline void fspmv(
 			     const Field & F,
-			     // const FFLAS_TRANSPOSE tA,
-			     COO_ZO<typename Field::Element > & A,
-			     const VECT<typename Field::Element > & x,
-			     VECT<typename Field::Element > & y
+			     COO_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y
 			     , FieldCategories::ModularTag
 			    )
 	{
@@ -483,14 +456,11 @@ namespace FFLAS { /*  ZO */
 			details::fspmv_zo<Field,false>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else {
-			typename Field::Element * xd = FFLAS::fflas_new<typename Field::Element >(A.n) ;
-			fscal(F,A.n,A.cst,x.dat,1,xd,1);
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,xd,y.dat, FieldCategories::UnparametricTag());
+			details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			fscalin(F,A.n,A.cst,y.dat,1);
 		}
 		finit(F,y.m, y.dat,1);
 	}
-
-
 } // FFLAS
 
 namespace FFLAS { /*  conversions */

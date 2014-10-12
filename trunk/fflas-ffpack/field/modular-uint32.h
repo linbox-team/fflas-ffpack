@@ -378,6 +378,7 @@ namespace FFPACK
 
 			_two_64 = (Element) two_64;
 		}
+
 	public: /*  ?? */
 
 		Element _two_64;

@@ -128,7 +128,6 @@ namespace FFPACK {
 #endif
 		}
 
-
 		Modular(const Modular<Element>& mf) :
 			modulus(mf.modulus), lmodulus(mf.lmodulus)//inv_modulus(mf.inv_modulus)
 			,one(mf.one),zero(mf.zero),mOne(mf.mOne)
@@ -470,7 +469,7 @@ namespace FFPACK {
 
 		Element maxElement() const
 		{
-			return mOne ;
+			return mOne;
 		}
 
 	};
