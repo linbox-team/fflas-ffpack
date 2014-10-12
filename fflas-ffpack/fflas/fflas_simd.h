@@ -76,9 +76,6 @@
 	C = fnmadd(C,Q,P);   \
 }
 
-
-
-
 // to activate SIMD with integers
 //#define SIMD_INT
 
@@ -287,6 +284,8 @@ namespace FFLAS { /*  print helper */
 } // FFLAS
 
 #endif
+
+#include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
 
 #else /* C++11 */
 #error "You need a c++11 compiler."

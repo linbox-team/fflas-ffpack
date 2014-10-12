@@ -50,15 +50,16 @@ using namespace FFPACK ;
 
 int test1_coo()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	COO<double> Mat ;
+	COO<Modular<double>> Mat ;
 	size_t nbnz = 21 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
 	Mat.row = FFLAS::fflas_new<index_t>(nbnz) ;
 	Mat.col = FFLAS::fflas_new<index_t>(nbnz);
-	Mat.dat = FFLAS::fflas_new<double >(nbnz);
+	Mat.dat = FFLAS::fflas_new<double>(nbnz);
 
 	Mat.dat[0] = 1 ;
 	Mat.dat[1] = 2 ;
@@ -131,7 +132,7 @@ int test1_coo()
 	Mat.z =  nbnz;
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -156,7 +157,6 @@ int test1_coo()
 	fspmv(F,Mat,x,0,y);
 	for (size_t i = 0 ; i < y.m ; ++i) std::cout << y.dat[i] << ' '  ;
 	std::cout << std::endl;
-
 
 	// y = Ax + y ( y = 2 Ax)
 	fspmv(F,Mat,x,1,y);
@@ -188,9 +188,10 @@ int test1_coo()
 
 int test2_coo()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	COO_sub<double> Mat ;
+	COO_sub<Field> Mat ;
 	size_t nbnz = 21 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -269,7 +270,7 @@ int test2_coo()
 	Mat.z =  nbnz;
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -325,11 +326,11 @@ int test2_coo()
 
 int test3_coo(int CST)
 {
-
+	using Field = Modular<double>;
 	{
 		Modular<double> F(1051);
 
-		COO<double> Mat ;
+		COO<Field> Mat ;
 		size_t nbnz = 21 ;
 		Mat.m = 10 ;
 		Mat.n = 13 ;
@@ -408,7 +409,7 @@ int test3_coo(int CST)
 		Mat.z =  nbnz;
 
 
-		VECT<double> x,y ;
+		VECT<Field> x,y ;
 		x.m = Mat.n ;
 		x.inc = 1 ;
 		x.dat = FFLAS::fflas_new<double>(x.m);
@@ -461,7 +462,7 @@ int test3_coo(int CST)
 
 	{
 		Modular<double> F(1051);
-		COO_ZO<double> Mat ;
+		COO_ZO<Field> Mat ;
 
 		size_t nbnz = 21 ;
 		Mat.m = 10 ;
@@ -519,7 +520,7 @@ int test3_coo(int CST)
 		Mat.z =  nbnz;
 
 
-		VECT<double> x,y ;
+		VECT<Field> x,y ;
 		x.m = Mat.n ;
 		x.inc = 1 ;
 		x.dat = FFLAS::fflas_new<double>(x.m);
@@ -578,9 +579,10 @@ int test3_coo(int CST)
 
 int test1_csr()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	CSR<double> Mat ;
+	CSR<Field> Mat ;
 	size_t nbnz = 21 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -647,7 +649,7 @@ int test1_csr()
 
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -695,9 +697,10 @@ int test1_csr()
 
 int test2_csr()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	CSR_sub<double> Mat ;
+	CSR_sub<Field> Mat ;
 	size_t nbnz = 21 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -764,7 +767,7 @@ int test2_csr()
 
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -812,11 +815,12 @@ int test2_csr()
 
 int test3_csr(int CST)
 {
+	using Field = Modular<double>;
 
 	{
 		Modular<double> F(1051);
 
-		CSR<double> Mat ;
+		CSR<Field> Mat ;
 		size_t nbnz = 21 ;
 		Mat.m = 10 ;
 		Mat.n = 13 ;
@@ -886,7 +890,7 @@ int test3_csr(int CST)
 		// Mat.z =  nbnz;
 
 
-		VECT<double> x,y ;
+		VECT<Field> x,y ;
 		x.m = Mat.n ;
 		x.inc = 1 ;
 		x.dat = FFLAS::fflas_new<double>(x.m);
@@ -939,7 +943,7 @@ int test3_csr(int CST)
 
 	{
 		Modular<double> F(1051);
-		CSR_ZO<double> Mat ;
+		CSR_ZO<Field> Mat ;
 
 		size_t nbnz = 21 ;
 		Mat.m = 10 ;
@@ -987,7 +991,7 @@ int test3_csr(int CST)
 		// Mat.z =  nbnz;
 
 
-		VECT<double> x,y ;
+		VECT<Field> x,y ;
 		x.m = Mat.n ;
 		x.inc = 1 ;
 		x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1046,9 +1050,10 @@ int test3_csr(int CST)
 
 int test1_ell()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	ELL<double,false> Mat;
+	ELL<Field,false> Mat;
 	// size_t nbnz = 20 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -1125,7 +1130,7 @@ int test1_ell()
 
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1182,9 +1187,10 @@ int test1_ell()
 
 int test2_ell()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	ELL_sub<double,false> Mat ;
+	ELL_sub<Field,false> Mat ;
 	// size_t nbnz = 20 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -1261,7 +1267,7 @@ int test2_ell()
 
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1322,11 +1328,12 @@ int test2_ell()
 
 int test1_ell_simd()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 	using simd = Simd<double>;
 	// using vect_t = typename simd::vect_t;
 
-	ELL<double,true> Mat ;
+	ELL<Field,true> Mat ;
 	// size_t nbnz = 20 ;
 	Mat.m = 12 ; // multiple de 2 et 4
 	Mat.n = 13 ;
@@ -1419,7 +1426,7 @@ int test1_ell_simd()
 
 	}
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1476,11 +1483,12 @@ int test1_ell_simd()
 
 int test2_ell_simd()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 	using simd = Simd<double>;
 	// using vect_t = typename simd::vect_t;
 
-	ELL_sub<double,true> Mat ;
+	ELL_sub<Field,true> Mat ;
 	// size_t nbnz = 20 ;
 	Mat.m = 12 ;
 	Mat.n = 13 ;
@@ -1573,7 +1581,7 @@ int test2_ell_simd()
 
 	}
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1632,9 +1640,10 @@ int test2_ell_simd()
 
 int test1_ellr()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	ELLR<double> Mat ;
+	ELLR<Field> Mat ;
 	// size_t nbnz = 20 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -1723,7 +1732,7 @@ int test1_ellr()
 	Mat.row[9] = 1 ;
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1780,9 +1789,10 @@ int test1_ellr()
 
 int test2_ellr()
 {
+	using Field = Modular<double>;
 	Modular<double> F(1051);
 
-	ELLR_sub<double> Mat ;
+	ELLR_sub<Field> Mat ;
 	// size_t nbnz = 20 ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -1873,7 +1883,7 @@ int test2_ellr()
 
 
 
-	VECT<double> x,y ;
+	VECT<Field> x,y ;
 	x.m = Mat.n ;
 	x.inc = 1 ;
 	x.dat = FFLAS::fflas_new<double>(x.m);
@@ -1930,11 +1940,11 @@ int test2_ellr()
 
 int test3_ellr(int CST)
 {
-
+	using Field = Modular<double>;
 	{
 		Modular<double> F(1051);
 
-		ELLR<double> Mat ;
+		ELLR<Field> Mat ;
 	Mat.m = 10 ;
 	Mat.n = 13 ;
 	size_t ld = 10 ;
@@ -2026,7 +2036,7 @@ int test3_ellr(int CST)
 		// Mat.z =  nbnz;
 
 
-		VECT<double> x,y ;
+		VECT<Field> x,y ;
 		x.m = Mat.n ;
 		x.inc = 1 ;
 		x.dat = FFLAS::fflas_new<double>(x.m);
@@ -2079,7 +2089,7 @@ int test3_ellr(int CST)
 
 	{
 		Modular<double> F(1051);
-		ELLR_ZO<double> Mat ;
+		ELLR_ZO<Field> Mat ;
 
 	Mat.m = 10 ;
 	Mat.n = 13 ;
@@ -2141,7 +2151,7 @@ int test3_ellr(int CST)
 		// Mat.z =  nbnz;
 
 
-		VECT<double> x,y ;
+		VECT<Field> x,y ;
 		x.m = Mat.n ;
 		x.inc = 1 ;
 		x.dat = FFLAS::fflas_new<double>(x.m);

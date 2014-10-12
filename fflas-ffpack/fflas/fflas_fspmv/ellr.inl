@@ -36,28 +36,23 @@
 
 namespace FFLAS { /*  ELLR */
 
-	template<class Element>
+	template<class Field>
 	struct ELLR {
 		size_t m ;
 		size_t n ;
 		size_t  ld ;
 		index_t  * row ;
 		index_t  * col ;
-		Element * dat ;
+		typename Field::Element_ptr dat ;
 	};
 
-	template<class Element>
-	struct ELLR_sub : public ELLR<Element> {
+	template<class Field>
+	struct ELLR_sub : public ELLR<Field> {
 	};
 
-	template<class Element>
-	struct ELLR_ZO {
-		size_t m ;
-		size_t n ;
-		size_t  ld ;
-		index_t  * row ;
-		index_t  * col ;
-		Element cst ;
+	template<class Field>
+	struct ELLR_ZO  : ELLR<Field>{
+		typename Field::Element cst ;
 	};
 
 	namespace ellr_details {
@@ -66,120 +61,58 @@ namespace FFLAS { /*  ELLR */
 		template<class Field>
 		void fspmv(
 			      const Field& F,
-			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
 			      const index_t * row,
 			      const index_t * col,
-			      const typename Field::Element *  dat,
-			      const typename Field::Element * x ,
-			      const typename Field::Element & b,
-			      typename Field::Element * y
+			      const typename Field::Element_ptr  dat,
+			      const typename Field::Element_ptr x ,
+			      typename Field::Element_ptr y,
+			      FieldCategories::GenericTag
 			     )
 		{
 			for (size_t i = 0 ; i < m ; ++i) {
-				if (! F.isOne(b)) {
-					if (F.isZero(b)) {
-						F.assign(y[i],F.zero);
-					}
-					else if (F.isMOne(b)) {
-						F.negin(y[i]);
-					}
-					else {
-						F.mulin(y[i],b);
-					}
-				}
-				// XXX can be delayed
 				for (index_t j = 0 ; j < row[i] ; ++j) {
 					F.axpyin(y[i],dat[i*ld+j],x[col[i*ld+j]]);
 				}
 			}
 		}
 
-		// double
-		template<>
+		// y = A x + b y ; (generic)
+		template<class Field>
 		void fspmv(
-			      const DoubleDomain& F,
-			      // const FFLAS_TRANSPOSE tA,
+			      const Field& F,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
 			      const index_t * row,
 			      const index_t * col,
-			      const double*  dat,
-			      const double* x ,
-			      const double& b,
-			      double * y
+			      const typename Field::Element_ptr  dat,
+			      const typename Field::Element_ptr x ,
+			      typename Field::Element_ptr y,
+			      FieldCategories::UnparametricTag
 			     )
 		{
 			for (size_t i = 0 ; i < m ; ++i) {
-				if ( b != 1) {
-					if ( b == 0.) {
-						y[i] = 0;
-					}
-					else if ( b == -1 ) {
-						y[i]= -y[i];
-					}
-					else {
-						y[i] = y[i] * b;
-					}
-				}
 				for (index_t j = 0 ; j < row[i] ; ++j) {
 					y[i] += dat[i*ld+j]*x[col[i*ld+j]];
 				}
 			}
 		}
-
-		// float
-		template<>
-		void fspmv(
-			      const FloatDomain& F,
-			      // const FFLAS_TRANSPOSE tA,
-			      const size_t m,
-			      const size_t n,
-			      const size_t ld,
-			      const index_t * row,
-			      const index_t * col,
-			      const float*  dat,
-			      const float* x ,
-			      const float& b,
-			      float * y
-			     )
-		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if ( b != 1) {
-					if ( b == 0.) {
-						y[i] = 0;
-					}
-					else if ( b == -1 ) {
-						y[i]= -y[i];
-					}
-					else {
-						y[i] = y[i] * b;
-					}
-				}
-				for (index_t j = 0 ; j < row[i] ; ++j) {
-					y[i] += dat[i*ld+j]*x[col[i*ld+j]];
-				}
-			}
-		}
-
 
 		// delayed by kmax
 		template<class Field>
 		void fspmv(
 			      const Field& F,
-			      // const FFLAS_TRANSPOSE tA,
 			      const size_t m,
 			      const size_t n,
 			      const size_t ld,
 			      const index_t * row,
 			      const index_t * col,
-			      const typename Field::Element *  dat,
-			      const typename Field::Element * x ,
-			      // const typename Field::Element & b,
-			      typename Field::Element * y,
+			      const typename Field::Element_ptr  dat,
+			      const typename Field::Element_ptr x ,
+			      typename Field::Element_ptr y,
 			      const index_t & kmax
 			     )
 		{
@@ -206,82 +139,55 @@ namespace FFLAS { /*  ELLR */
 		template<class Field, bool add>
 		void fspmv_zo(
 				 const Field & F,
-				 // const FFLAS_TRANSPOSE tA,
 				 const size_t m,
 				 const size_t n,
 				 const size_t ld,
 				 const index_t * row,
 				 const index_t * col,
-				 const typename Field::Element * x ,
-				 // const typename Field::Element & b,
-				 typename Field::Element * y
+				 const typename Field::Element_ptr x ,
+				 typename Field::Element_ptr y,
+				 FieldCategories::GenericTag
 				)
 		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if (add == true) {
-					for (index_t j = 0 ; j < row[i] ; ++j)
+			if(add){
+				for (size_t i = 0 ; i < m ; ++i) {
+					for (index_t j = 0 ; j < row[i] ; ++j){ 
 						F.addin(y[i], x[col[i*ld+j]]);
+					}
 				}
-				else{
-					for (index_t j = 0 ; j < row[i] ; ++j)
+			}else{
+				for (size_t i = 0 ; i < m ; ++i) {
+					for (index_t j = 0 ; j < row[i] ; ++j){
 						F.subin(y[i], x[col[i*ld+j]]);
+					}
 				}
-				// F.init(y[i],y[i]);
 			}
 		}
 
-		// Double
-		template<bool add>
+		template<class Field, bool add>
 		void fspmv_zo(
-				 const DoubleDomain & ,
-				 // const FFLAS_TRANSPOSE tA,
+				 const Field & F,
 				 const size_t m,
 				 const size_t n,
 				 const size_t ld,
 				 const index_t * row,
 				 const index_t * col,
-				 const double * x ,
-				 // const double & b,
-				 double * y
+				 const typename Field::Element_ptr x ,
+				 typename Field::Element_ptr y,
+				 FieldCategories::UnparametricTag
 				)
 		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if (add == true) {
-					for (index_t j = 0 ; j < row[i] ; ++j)
-						y[i] +=  x[col[i*ld+j]];
+			if(add){
+				for (size_t i = 0 ; i < m ; ++i) {
+					for (index_t j = 0 ; j < row[i] ; ++j){ 
+						y[i] += x[col[i*ld+j]];
+					}
 				}
-				else
-				{
-					for (index_t j = 0 ; j < row[i] ; ++j)
-						y[i] -=  x[col[i*ld+j]];
-				}
-			}
-		}
-
-		// Float
-		template<bool add>
-		void fspmv_zo(
-				 const FloatDomain & ,
-				 // const FFLAS_TRANSPOSE tA,
-				 const size_t m,
-				 const size_t n,
-				 const size_t ld,
-				 const index_t * row,
-				 const index_t * col,
-				 const float * x ,
-				 const float & b,
-				 float * y
-				)
-		{
-			for (size_t i = 0 ; i < m ; ++i) {
-				if (add == true) {
-					for (index_t j = 0 ; j < row[i] ; ++j)
-						y[i] +=  x[col[i*ld+j]];
-				}
-				else
-				{
-					for (index_t j = 0 ; j < row[i] ; ++j)
-						y[i] -=  x[col[i*ld+j]];
+			}else{
+				for (size_t i = 0 ; i < m ; ++i) {
+					for (index_t j = 0 ; j < row[i] ; ++j){
+						y[i] -= x[col[i*ld+j]];
+					}
 				}
 			}
 		}
@@ -292,102 +198,50 @@ namespace FFLAS { /*  ELLR */
 	/* ELLR_sub */
 	/* ******* */
 
-
 	// y = A x + b y ; (generic)
 	// it is supposed that no reduction is needed.
 	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
+		      const ELLR_sub<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<Field> & y
 		     )
 	{
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		fspmv(F, A, x, y, typename FieldTraits<Field>::value());
 	}
 
-	template<>
-	void fspmv(
-		      const DoubleDomain& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<double> & A,
-		      const VECT<double> & x,
-		      const double& b,
-		      VECT<double> & y
-		     )
+	template<class Field>
+	inline void fspmv(const Field & F,
+			     const ELLR_sub<typename Field::Element> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::ModularTag)
 	{
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-	}
-
-	template<>
-	void fspmv(
-		      const FloatDomain& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<float> & A,
-		      const VECT<float> & x,
-		      const float& b,
-		      VECT<float> & y
-		     )
-	{
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-	}
-
-	template<>
-	void fspmv(
-		      const FFPACK::Modular<double>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<double> & A,
-		      const VECT<double> & x,
-		      const double& b,
-		      VECT<double> & y
-		     )
-	{
-		ellr_details::fspmv(DoubleDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 		finit(F,A.m,y.dat,1);
 	}
 
-	template<>
-	void fspmv(
-		      const FFPACK::Modular<float>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<float> & A,
-		      const VECT<float> & x,
-		      const float& b,
-		      VECT<float> & y
-		     )
+	template<class Field>
+	inline void fspmv(const Field & F,
+			     const ELLR_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::UnparametricTag)
 	{
-		ellr_details::fspmv(FloatDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-		finit(F,A.m,y.dat,1);
+		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag() );
 	}
 
-	template<>
-	void fspmv(
-		      const FFPACK::ModularBalanced<double>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<double> & A,
-		      const VECT<double> & x,
-		      const double& b,
-		      VECT<double> & y
-		     )
+	template<class Field>
+	inline void fspmv(const Field & F,
+			     const ELLR_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::GenericTag)
 	{
-		ellr_details::fspmv(DoubleDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-		finit(F,A.m,y.dat,1);
-	}
-
-	template<>
-	void fspmv(
-		      const FFPACK::ModularBalanced<float>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR_sub<float> & A,
-		      const VECT<float> & x,
-		      const float& b,
-		      VECT<float> & y
-		     )
-	{
-		ellr_details::fspmv(FloatDomain(),A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-		finit(F,A.m,y.dat,1);
+		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag() );
 	}
 
 	/* ***** */
@@ -399,142 +253,131 @@ namespace FFLAS { /*  ELLR */
 	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
+		      const ELLR<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
+		      VECT<Field> & y
 		     )
 	{
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		fspmv(F,A,x,y, typename FieldTraits<Field>::category());
 	}
 
-	template<>
-	void fspmv(
-		      const DoubleDomain & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<double> & A,
-		      const VECT<double> & x,
-		      const double & b,
-		      VECT<double> & y
-		     )
-	{
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-	}
-
-	template<>
-	void fspmv(
-		      const FloatDomain & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<float> & A,
-		      const VECT<float> & x,
-		      const float & b,
-		      VECT<float> & y
-		     )
-	{
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,b,y.dat);
-	}
-
-
-
-	template<>
-	void fspmv(
-		      const FFPACK::Modular<double>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<double> & A,
-		      const VECT<double> & x,
-		      const double & b,
-		      VECT<double> & y
-		     )
-	{
-		// std::cout << "here" << std::endl;
-		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
-
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
-	}
-
-	template<>
-	void fspmv(
-		      const FFPACK::ModularBalanced<double>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<double> & A,
-		      const VECT<double> & x,
-		      const double & b,
-		      VECT<double> & y
-		     )
-	{
-		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
-
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
-	}
-
-	template<>
-	void fspmv(
-		      const FFPACK::Modular<float>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<float> & A,
-		      const VECT<float> & x,
-		      const float & b,
-		      VECT<float> & y
-		     )
-	{
-		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
-
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t)kmax);
-	}
-
-	template<>
-	void fspmv(
-		      const FFPACK::ModularBalanced<float>& F,
-		      // const FFLAS_TRANSPOSE tA,
-		      const ELLR<float> & A,
-		      const VECT<float> & x,
-		      const float & b,
-		      VECT<float> & y
-		     )
-	{
-		fscalin(F,A.m,b,y.dat,1);
-		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
-
-		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat,(index_t) kmax);
-	}
-
-	// this is the cst data special case.
-	// Viewed as a submatrix.
-	// it is assumed that no reduction is needed while adding.
 	template<class Field>
 	void fspmv(
-		      const Field & F,
-		      // const FFLAS_TRANSPOSE tA,
-		      ELLR_ZO<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
+		      const Field& F,
+		      const ELLR<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y
+		      , FieldCategories::GenericTag
 		     )
 	{
-		fscalin(F,A.m,b,y.dat,1);
-
-		FFLASFFPACK_check(!F.isZero(A.cst));
-
-		if (A.cst == F.one) {
-			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
-		}
-		else if (A.cst == F.mOne) {
-			ellr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat);
-		}
-		else {
-			typename Field::Element * xd = fflas_new<typename Field::Element >(A.n) ;
-			fscal(F,A.n,A.cst,x.dat,1,xd,1);
-			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,xd,y.dat);
-		}
-
-		finit(F,A.m,y.dat,1);
+		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
 
+	template<class Field>
+	void fspmv(
+		      const Field& F,
+		      const ELLR<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y
+		      , FieldCategories::UnparametricTag
+		     )
+	{
+		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
+	}
 
+	template<class Field>
+	void fspmv(
+		      const Field& F,
+		      const ELLR<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y
+		      , FieldCategories::ModularTag
+		     )
+	{
+		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
+		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, (index_t) kmax);
+	}
+
+	// y = A x + b y ; (generic)
+	// it is supposed that no reduction is needed.
+	template<class Field>
+	inline void fspmv(
+			     const Field & F,
+			     const ELLR_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     const typename Field::Element & b,
+			     VECT<Field> & y
+			    )
+	{
+		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
+	}
+
+	template<class Field>
+	inline void fspmv(
+			     const Field & F,
+			     const ELLR_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y
+			     , FieldCategories::GenericTag
+			    )
+	{
+		if (A.cst == F.one) {
+			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+		}
+		else if (A.cst == F.mOne) {
+			ellr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+		}
+		else {
+			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+			fscalin(F,A.n,A.cst,y.dat,1);
+		}
+	}
+
+	template<class Field>
+	inline void fspmv(
+			     const Field & F,
+			     const ELLR_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y
+			     , FieldCategories::UnparametricTag
+			    )
+	{
+		if (A.cst == F.one) {
+			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else if (A.cst == F.mOne) {
+			ellr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else {
+			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			fscalin(F,A.n,A.cst,y.dat,1);
+		}
+	}
+
+	template<class Field>
+	inline void fspmv(
+			     const Field & F,
+			     const ELLR_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y
+			     , FieldCategories::ModularTag
+			    )
+	{
+		if (A.cst == F.one) {
+			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else if (A.cst == F.mOne) {
+			ellr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else {
+			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			fscalin(F,A.n,A.cst,y.dat,1);
+		}
+		finit(F,y.m,y.dat,1);
+	}
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_ellr_INL

@@ -40,8 +40,8 @@ struct Simd128_impl;
 // Trop d'instructions SSE manquantes pour les int8_t
 
 
-// #include "simd128_int16.inl"
-// #include "simd128_int32.inl"
+#include "simd128_int16.inl"
+#include "simd128_int32.inl"
 #include "simd128_int64.inl"
 
 
