@@ -42,8 +42,6 @@ struct Simd256_impl<true, true, true, 8> {
 	 */
 	using vect_t = __m256i;
 
-	using float_t = __m256d;
-
 	/*
 	 * alias to 256 bit simd register
 	 */
@@ -208,6 +206,19 @@ struct Simd256_impl<true, true, true, 8> {
 		return _mm256_srli_epi64(a, s);
 	}
 
+	static INLINE CONST vect_t sra(const vect_t a, const int s)
+	{
+#ifdef __AVX512__
+		return _mm_sra_epi64(a,s);
+#else
+		const int b = 63 - s;
+		__m128i m = sll(set1(1),b);
+		__m128i x = srl(a, s);
+		__m128i result = sub(vxor(x, m), m); //result = x^m - m
+		return result;
+#endif
+	}
+
 	/*
 	 * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
 	 * Args   : [a0, a1, a2, a3]           						     int64_t
@@ -290,6 +301,7 @@ struct Simd256_impl<true, true, true, 8> {
 		return set((__int128(ca.t[0])*cb.t[0]) >> 64, (__int128(ca.t[1])*cb.t[1]) >> 64, (__int128(ca.t[2])*cb.t[2]) >> 64, (__int128(ca.t[3])*cb.t[3]) >> 64);
 	}
 
+
 	/*
 	 * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results in dst.
 	 * Args   : [a0, a1, a2, a3]    int64_t
@@ -300,6 +312,18 @@ struct Simd256_impl<true, true, true, 8> {
 	{
 		return _mm256_mul_epi32(a, b);
 	}
+
+	/*
+	 * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit results in dst.
+	 * Args   : [a0, a1, a2, a3]    int64_t
+	 [b0, b1, b2, b3]    int64_t
+	 * Return : [a0*b0, a1*b1, a2*b2, a3*b3] uint64_t
+	 */
+	static INLINE CONST vect_t mulux(const vect_t a, const vect_t b)
+	{
+		return _mm256_mul_epu32(a, b);
+	}
+
 
 
 	/*
@@ -453,8 +477,56 @@ struct Simd256_impl<true, true, true, 8> {
 		return a ;
 	}
 
+	// mask the high 32 bits of a 64 bits, that is 00000000FFFFFFFF
+	static INLINE CONST vect_t mask_high()
+	{
+		return	srl(_mm256_set1_epi8(-1),32);
+	}
+
+	static INLINE CONST vect_t signbits(const vect_t x)
+	{
+		// vect_t hiBitsDuped = _m256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1));
+		// vect_t signBits = _mm_srai_epi32(hiBitsDuped, 31);
+		vect_t signBits = sub(zero(),srl(v,63));
+		return signBits;
+	}
+
+	// warning : may be off by 1 multiple, but we save a mul...
+	static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y)
+	{
+		// unsigned mulhi starts:
+		const vect_t mask = mask_high();
+		// print_sse(mask,true);
+
+		vect_t x0 = vand(x, mask), x1 = srl(x, 32);
+		vect_t y0 = vand(y, mask), y1 = srl(y, 32);
+
+		x0 = mulux(x0, y1); // x0y1
+		y0 = mulux(x1, y0); // x1y0
+		y1 = mulux(x1, y1); // x1y1
+
+		x1 = vand(y0, mask), y0 = srl(y0, 32); // x1y0_lo = x1 // y1yo_hi = y0
+		x1 = srl(add(x1, x0), 32);
+		y0 = add(y1, y0);
+
+		x1 = add(x1, y0);
+
+		// unsigned mulhi ends
+		// fixing signs
+		x0 = vand(signbits(x), y);
+		x1 = _sub(x1, x0);
+		x0 = vand(signbits(y), x);
+		x1 = sub(x1, x0);
+		// end fixing
+		return x1;
+
+	}
+
+
+	template<bool overflow, bool poweroftow>
 	static INLINE vect_t mod(vect_t & C, const vect_t & P
-				 , const float_t & INVP, const vect_t & NEGP
+				 , const scalar_t & shifter, const vect_t & magic
+				 , const vect_t & NEGP
 				 , const vect_t & MIN, const vect_t & MAX
 				 , vect_t & Q, vect_t & T
 				)
@@ -462,8 +534,28 @@ struct Simd256_impl<true, true, true, 8> {
 #ifdef __INTEL_COMPILER
 		C = _mm256_rem_epi64(C,P)
 #else
-		FFLASFFPACK_abort("pas implementé");
-		// C = fnmaddx(C,_mm256_castpd_si128(_mm256_floor_pd(_mm256_mul_pd(INVP,_mm256_castsi128_pd(C)))),P);
+		if (poweroftow) {
+			Q = srl(C,63);
+			vect_t un = set1(1);
+			T = sub(sll(un,shifter),un);
+			Q = add(C,vand(Q,T));
+			Q = sll(srl(Q,shifter),shifter);
+			C = sub(C,Q);
+			// Q = vand(greater(ze,Q),P) ;
+			// C = add(C,Q);
+		}
+		else {
+			 Q = mulhi_fast(C,magic);
+			 if (overflow) {
+				 Q = add(Q,C);
+			 }
+			 Q = sra(Q,shifter);
+			 __m128i q1 = mulux(Q,P);
+			 __m128i q2 = sll(mulux(srl(Q,32),P),32);
+			 C = sub(C,add(q1,q2));
+			 __m128i s1 = greater_eq(C,P);
+			 C = sub(Q,vand(s1,P));
+		}
 #endif
 		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
 		return C;

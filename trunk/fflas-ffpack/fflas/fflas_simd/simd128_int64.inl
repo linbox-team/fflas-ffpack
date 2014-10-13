@@ -40,7 +40,6 @@ struct Simd128_impl<true, true, true, 8> {
 	 * alias to 128 bit simd register
 	 */
 	using vect_t = __m128i;
-	using float_t = __m128d;
 
 	/*
 	 * define the scalar type corresponding to the specialization
@@ -330,7 +329,7 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 	static INLINE vect_t mod(vect_t & C, const vect_t & P
-				 , const float_t & INVP, const vect_t & NEGP
+				 , const vect_t & INVP, const vect_t & NEGP
 				 , const vect_t & MIN, const vect_t & MAX
 				 , vect_t & Q, vect_t & T
 				)
