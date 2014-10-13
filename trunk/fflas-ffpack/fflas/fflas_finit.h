@@ -30,9 +30,10 @@
 #ifndef __FFLASFFPACK_fflas_init_H
 #define __FFLASFFPACK_fflas_init_H
 
-#include "fflas-ffpack/fflas/fflas_simd_functions.h"
+#include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/field/field-traits.h"
-#include "fflas_finit.inl"
+
+#include "fflas-ffpack/fflas/fflas_finit.inl"
 
 namespace FFLAS {
 

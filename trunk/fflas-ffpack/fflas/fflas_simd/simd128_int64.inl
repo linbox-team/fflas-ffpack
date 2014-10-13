@@ -30,12 +30,13 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_int64_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_int64_INL
 
-// int64_t
+/*
+ * Simd128 specialized for int64_t
+ */
 template<>
 struct Simd128_impl<true, true, true, 8> {
 
 #if defined(__FFLASFFPACK_USE_SIMD)
-
 	/*
 	 * alias to 128 bit simd register
 	 */
@@ -175,6 +176,38 @@ struct Simd128_impl<true, true, true, 8> {
 		return a = sub(a,b);
 	}
 
+	/*
+	 * Shift packed 64-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3] int64_t
+	 * Return : [a0 << s, a1 << s, a2 << s, a3 << s] int64_t
+	 */
+	static INLINE CONST vect_t sll(const vect_t a, const int s)
+	{
+		return _mm_slli_epi64(a, s);
+	}
+
+	/*
+	 * Shift packed 64-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3] int64_t
+	 * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int64_t
+	 */
+	static INLINE CONST vect_t srl(const vect_t a, const int s)
+	{
+		return _mm_srli_epi64(a, s);
+	}
+
+	static INLINE CONST vect_t sra(const vect_t a, const int s)
+	{
+#ifdef __AVX512__
+		return _mm_sra_epi64(a,s);
+#else
+		const int b = 63 - s;
+		__m128i m = sll(set1(1),b);
+		__m128i x = srl(a, s);
+		__m128i result = sub(vxor(x, m), m); //result = x^m - m
+		return result;
+#endif // 512
+	}
 
 	/*
 	 * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64 bits of the intermediate integers in vect_t.
@@ -191,6 +224,11 @@ struct Simd128_impl<true, true, true, 8> {
 		c0.v = x0;
 		c1.v = x1;
 		return set((scalar_t)(__int128_t(c0.t[0])*c1.t[0]), (scalar_t)(__int128_t(c0.t[1])*c1.t[1]));
+	}
+
+	static INLINE CONST vect_t mullox(const vect_t x0, const vect_t x1)
+	{
+		return _mm_mullo_epi32(x0,x1);
 	}
 
 	/*
@@ -234,10 +272,32 @@ struct Simd128_impl<true, true, true, 8> {
 		return sub(mul(a,b),c);
 	}
 
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
+	{
+		return _mm_mul_epi32(a,b);
+	}
+
+	static INLINE CONST vect_t mulux(const vect_t a, const vect_t b)
+	{
+		return _mm_mul_epu32(a, b);
+	}
 
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b)
 	{
 		return _mm_cmpeq_epi64(a, b);
+	}
+
+	static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
+	{
+#ifdef __SSE4_2__
+		return _mm_cmpgt_epi64(a, b);
+#else
+#pragma warning "The simd greater function is emulate, it may impact the performances."
+		Converter ca, cb;
+		ca.v = a;
+		cb.v = b;
+		return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+#endif // __SSE4_2__
 	}
 
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
@@ -250,32 +310,20 @@ struct Simd128_impl<true, true, true, 8> {
 		ca.v = a;
 		cb.v = b;
 		return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif
+#endif // __SSE4_2__
 	}
 
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
 	{
-		return vor(eq(a,b),lesser(a,b));
+		return vor(greater(a, b), eq(a, b));
 	}
 
 
-	static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
-	{
-#ifdef __SSE4_2__
-		return _mm_cmpgt_epi64(a, b);
-#else
-#pragma warning "The simd greater function is emulate, it may impact the performances."
-		Converter ca, cb;
-		ca.v = a;
-		cb.v = b;
-		return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif
-	}
 
 
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
 	{
-		return vor(eq(a,b),lesser(a,b));
+		return vor(lesser(a, b), eq(a, b));
 	}
 
 
@@ -290,6 +338,16 @@ struct Simd128_impl<true, true, true, 8> {
 		return _mm_or_si128(a, b);
 	}
 
+	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b)
+	{
+		return _mm_xor_si128(b, a);
+	}
+
+	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b)
+	{
+		return _mm_andnot_si128(b, a);
+	}
+
 
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
 	{
@@ -298,14 +356,10 @@ struct Simd128_impl<true, true, true, 8> {
 		return c.t[0] + c.t[1];
 	}
 
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b)
-	{
-		return _mm_mul_epi32(a,b);
-	}
 
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
-		return add(mulx(a, b),c);
+		return add(c, mulx(a, b));
 	}
 
 	static INLINE vect_t fmaddxin(vect_t & c, const vect_t a, const vect_t b)
@@ -328,26 +382,95 @@ struct Simd128_impl<true, true, true, 8> {
 		return a ;
 	}
 
+	// mask the high 32 bits of a 64 bits, that is 00000000FFFFFFFF
+	static INLINE CONST vect_t mask_high()
+	{
+		return	srl(_mm_set1_epi8(-1),32);
+	}
+
+	static INLINE CONST vect_t signbits(const vect_t x)
+	{
+		// vect_t hiBitsDuped = _mm_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1));
+		// vect_t signBits = _mm_srai_epi32(hiBitsDuped, 31);
+		vect_t signBits = sub(zero(),srl(x,63));
+		return signBits;
+	}
+
+	// warning : may be off by 1 multiple, but we save a mul...
+	static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y)
+	{
+		// unsigned mulhi starts:
+		const vect_t mask = mask_high();
+		// print_sse(mask,true);
+
+		vect_t x0 = vand(x, mask), x1 = srl(x, 32);
+		vect_t y0 = vand(y, mask), y1 = srl(y, 32);
+
+		x0 = mulux(x0, y1); // x0y1
+		y0 = mulux(x1, y0); // x1y0
+		y1 = mulux(x1, y1); // x1y1
+
+		x1 = vand(y0, mask), y0 = srl(y0, 32); // x1y0_lo = x1 // y1yo_hi = y0
+		x1 = srl(add(x1, x0), 32);
+		y0 = add(y1, y0);
+
+		x1 = add(x1, y0);
+
+		// unsigned mulhi ends
+		// fixing signs
+		x0 = vand(signbits(x), y);
+		x1 = sub(x1, x0);
+		x0 = vand(signbits(y), x);
+		x1 = sub(x1, x0);
+		// end fixing
+		return x1;
+
+	}
+
+	template<bool overflow, bool poweroftwo>
 	static INLINE vect_t mod(vect_t & C, const vect_t & P
-				 , const vect_t & INVP, const vect_t & NEGP
+				 , const int8_t & shifter, const vect_t & magic
+				 , const vect_t & NEGP
 				 , const vect_t & MIN, const vect_t & MAX
 				 , vect_t & Q, vect_t & T
 				)
 	{
 #ifdef __INTEL_COMPILER
-		C = _mm_rem_epi64(C,P)
-		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
+#warning "not tested"
+		C = _mm_rem_epi64(C,P) ; // really ?
 #else
-		FFLASFFPACK_abort("pas implementé");
+		if (poweroftwo) {
+			Q = srl(C,63);
+			vect_t un = set1(1);
+			T = sub(sll(un,shifter),un);
+			Q = add(C,vand(Q,T));
+			Q = sll(srl(Q,shifter),shifter);
+			C = sub(C,Q);
+			// Q = vand(greater(ze,Q),P) ;
+			// C = add(C,Q);
+		}
+		else {
+			 Q = mulhi_fast(C,magic);
+			 if (overflow) {
+				 Q = add(Q,C);
+			 }
+			 Q = sra(Q,shifter);
+			 vect_t q1 = mulux(Q,P);
+			 vect_t q2 = sll(mulux(srl(Q,32),P),32);
+			 C = sub(C,add(q1,q2));
+			 vect_t s1 = greater_eq(C,P);
+			 C = sub(Q,vand(s1,P));
+		}
 #endif
 		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);
-
-
 		return C;
 	}
+
 #else
+
 #error "You need SSE instructions to perform 128 bits operations on int64"
-#endif
+
+#endif // __FFLASFFPACK_USE_SIMD
 
 } ;
 

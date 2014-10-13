@@ -35,7 +35,6 @@
 
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/fflas/fflas_simd_functions.h"
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/fflas/fflas_helpers.inl"
 

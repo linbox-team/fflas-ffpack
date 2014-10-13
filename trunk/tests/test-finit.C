@@ -46,6 +46,7 @@ template<class Field>
 bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
+	int repet = 3 ;
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * B = FFLAS::fflas_new<T>(m*n);
@@ -55,25 +56,25 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	if (timing)	std::cout << ">>>" << std::endl ;
 	if (timing)	std::cout << "=== inc == 1 ===" << std::endl ;
 
-	for (size_t b = 0 ; b < 3 ; ++b) {
+	FFLAS::Timer chrono, tim, tom ;
+	tim.clear(); tom.clear();
+	if (timing)		F.write(std::cout << "Field ") << std::endl;
+	for (size_t b = 0 ; b < repet ; ++b) {
 		RandomMatrix(E,A,m,k,n);
 		// RandomMatrix(E,B,m,k,n);
 		FFLAS::fcopy(E,m,k,A,n,B,n);
 
-	 FFLAS::Timer tim;
-	 FFLAS::Timer tom;
-	if (timing)		F.write(std::cout << "Field ") << std::endl;
-		tim.clear();tim.start();
+		chrono.clear();chrono.start();
 		for (size_t i = 0 ; i < m ; ++i)
 			for (size_t j = 0 ; j < k ; ++j)
 				F.init(A[i*n+j],A[i*n+j]);
-		tim.stop();
-		if (timing)	std::cout << "finit (___): " << tim.usertime() << 's' << std::endl;
+		chrono.stop();
+		tim += chrono ;
 
-		tim.clear();tim.start();
+		chrono.clear();chrono.start();
 		FFLAS::finit(F,m,k,B,n);
-		tim.stop();
-		if (timing)	std::cout << "finit (AVX): " << tim.usertime() << 's'<<  std::endl << std::endl;
+		chrono.stop();
+		tom += chrono ;
 
 #if 1
 		for (size_t i =0 ; i < m ; ++i)
@@ -85,41 +86,48 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 #endif
 	}
 
+	if (timing)	std::cout << repet << " finit (___): " << tim.usertime() << 's' << std::endl;
+	if (timing)	std::cout << repet << " finit (AVX): " << tom.usertime() << 's'<<  std::endl << std::endl;
+
 	if (timing)	std::cout << "=== inc != 1 ===" << std::endl ;
 
-
-	for (size_t b = 0 ; b < 3 ; ++b) {
+	tim.clear() ; tom.clear();
+	if (timing)	F.write(std::cout << "Modular ") << std::endl;
+	for (size_t b = 0 ; b < repet ; ++b) {
 		RandomMatrix(E,A,m,n,n);
 		FFLAS::fcopy(E,m,n,A,n,B,n);
 		size_t incX = 2 ;
 
-	 FFLAS::Timer tim;
-	 FFLAS::Timer tom;
-		if (timing)	F.write(std::cout << "Modular ") << std::endl;
-		tim.clear();tim.start();
+		chrono.clear();chrono.start();
 		for (size_t i = 1 ; i < m*n ; i += incX) {
-				F.init(A[i],A[i]);
+			F.init(A[i],A[i]);
 		}
+		chrono.stop();
+		tim += chrono ;
 
-		tim.stop();
 		size_t cnt = (size_t)floor((double)(m*n)/(double)incX) ;
-		if (timing)	std::cout << "finit (___): " << tim.usertime() << 's' << std::endl;
-		tim.clear();tim.start();
+
+		chrono.clear();chrono.start();
 		FFLAS::finit(F,cnt,B+1,incX);
-		tim.stop();
-	if (timing)		std::cout << "finit (AVX): " << tim.usertime() << 's'<<  std::endl << std::endl;
+		chrono.stop();
+		tom += chrono ;
+
 
 #if 1
 		for (size_t i =1 ; i < m*n ; i+=incX)
-				if (! F.areEqual(B[i],A[i])) {
+			if (! F.areEqual(B[i],A[i])) {
 				if (timing)		std::cout <<  i << " : " << B[i] << "!= (ref)" << A[i] << std::endl;
-					return false ;
-				}
+				return false ;
+			}
 #endif
 
 	}
 
+	if (timing)	std::cout << repet << " finit (___): " << tim.usertime() << 's' << std::endl;
+	if (timing)	std::cout << repet << " finit (AVX): " << tom.usertime() << 's'<<  std::endl << std::endl;
+
 	if (timing)	std::cout << "<<<" << std::endl;
+
 	FFLAS::fflas_delete( A );
 	FFLAS::fflas_delete( B);
 
@@ -159,55 +167,55 @@ int main(int ac, char **av) {
 
 	bool pass  = true ;
 	{ /*  finit */
-	{
-		FFPACK:: Modular<float> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: ModularBalanced<float> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: Modular<double> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: ModularBalanced<double> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: Modular<int32_t> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: Modular<int64_t> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: ModularBalanced<int64_t> F(p) ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
+		{
+			FFPACK:: Modular<float> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: ModularBalanced<float> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: Modular<double> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: ModularBalanced<double> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: Modular<int32_t> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: Modular<int64_t> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: ModularBalanced<int64_t> F(p) ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
 #if 1
-	{
-		FFPACK:: UnparametricField<float> F ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: UnparametricField<double> F ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: UnparametricField<int32_t> F;
-		pass &= test_finit(F,m,k,n,timing);
-	}
-	{
-		FFPACK:: UnparametricField<int64_t> F ;
-		pass &= test_finit(F,m,k,n,timing);
-	}
+		{
+			FFPACK:: UnparametricField<float> F ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: UnparametricField<double> F ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: UnparametricField<int32_t> F;
+			pass &= test_finit(F,m,k,n,timing);
+		}
+		{
+			FFPACK:: UnparametricField<int64_t> F ;
+			pass &= test_finit(F,m,k,n,timing);
+		}
 #endif
 	}
 

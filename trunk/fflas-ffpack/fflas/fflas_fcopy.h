@@ -33,5 +33,5 @@
 //! @todo field traits here too
 #include "fflas_fcopy.inl"
 
-#endif
+#endif // __FFLASFFPACK_fcopy_H
 

@@ -181,7 +181,7 @@ struct Simd256_impl<true, true, true, 8> {
 		return _mm256_sub_epi64(a, b);
 	}
 
-	static INLINE CONST vect_t subin(vect_t &a, const vect_t b)
+	static INLINE vect_t subin(vect_t &a, const vect_t b)
 	{
 		return a = sub(a,b);
 	}
@@ -209,7 +209,7 @@ struct Simd256_impl<true, true, true, 8> {
 	static INLINE CONST vect_t sra(const vect_t a, const int s)
 	{
 #ifdef __AVX512__
-		return _mm_sra_epi64(a,s);
+		return _mm256_sra_epi64(a,s);
 #else
 		const int b = 63 - s;
 		__m128i m = sll(set1(1),b);
@@ -227,10 +227,16 @@ struct Simd256_impl<true, true, true, 8> {
 	 */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b)
 	{
+#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
 		return set((__int128(ca.t[0])*cb.t[0]), (__int128(ca.t[1])*cb.t[1]), (__int128(ca.t[2])*cb.t[2]), (__int128(ca.t[3])*cb.t[3]));
+	}
+
+	static INLINE CONST vect_t mullox(const vect_t x0, const vect_t x1)
+	{
+		return _mm256_mullo_epi32(x0,x1);
 	}
 
 	/*
@@ -242,6 +248,22 @@ struct Simd256_impl<true, true, true, 8> {
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b)
 	{
 		return mullo(a, b);
+	}
+
+	/*
+	 * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the high 64 bits of the intermediate integers in vect_t.
+	 * Args   : [a0, a1, a2, a3]           						     int64_t
+	 [b0, b1, b2, b3]  		 							 int64_t
+	 * Return :
+	 */
+	static INLINE CONST vect_t mulhi(vect_t a, vect_t b)
+	{
+		// ugly solution, but it works.
+		// tested with gcc, clang, icc
+		Converter ca, cb;
+		ca.v = a;
+		cb.v = b;
+		return set((__int128(ca.t[0])*cb.t[0]) >> 64, (__int128(ca.t[1])*cb.t[1]) >> 64, (__int128(ca.t[2])*cb.t[2]) >> 64, (__int128(ca.t[3])*cb.t[3]) >> 64);
 	}
 
 	/*
@@ -283,22 +305,6 @@ struct Simd256_impl<true, true, true, 8> {
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b)
 	{
 		return sub(mul(a,b),c);
-	}
-
-	/*
-	 * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the high 64 bits of the intermediate integers in vect_t.
-	 * Args   : [a0, a1, a2, a3]           						     int64_t
-	 [b0, b1, b2, b3]  		 							 int64_t
-	 * Return :
-	 */
-	static INLINE CONST vect_t mulhi(vect_t a, vect_t b)
-	{
-		// ugly solution, but it works.
-		// tested with gcc, clang, icc
-		Converter ca, cb;
-		ca.v = a;
-		cb.v = b;
-		return set((__int128(ca.t[0])*cb.t[0]) >> 64, (__int128(ca.t[1])*cb.t[1]) >> 64, (__int128(ca.t[2])*cb.t[2]) >> 64, (__int128(ca.t[3])*cb.t[3]) >> 64);
 	}
 
 
@@ -347,7 +353,12 @@ struct Simd256_impl<true, true, true, 8> {
 	 */
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b)
 	{
+#ifdef __AVX2__
 		return _mm256_cmpgt_epi64(a, b);
+#else
+#warning "not implemented"
+#endif
+
 	}
 
 	/*
@@ -359,7 +370,11 @@ struct Simd256_impl<true, true, true, 8> {
 	 */
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b)
 	{
+#ifdef __AVX2__
 		return _mm256_cmpgt_epi64(b, a);
+#else
+#warning "not implemented"
+#endif
 	}
 
 	/*
@@ -487,7 +502,7 @@ struct Simd256_impl<true, true, true, 8> {
 	{
 		// vect_t hiBitsDuped = _m256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1));
 		// vect_t signBits = _mm_srai_epi32(hiBitsDuped, 31);
-		vect_t signBits = sub(zero(),srl(v,63));
+		vect_t signBits = sub(zero(),srl(x,63));
 		return signBits;
 	}
 
@@ -514,7 +529,7 @@ struct Simd256_impl<true, true, true, 8> {
 		// unsigned mulhi ends
 		// fixing signs
 		x0 = vand(signbits(x), y);
-		x1 = _sub(x1, x0);
+		x1 = sub(x1, x0);
 		x0 = vand(signbits(y), x);
 		x1 = sub(x1, x0);
 		// end fixing
@@ -522,19 +537,19 @@ struct Simd256_impl<true, true, true, 8> {
 
 	}
 
-
-	template<bool overflow, bool poweroftow>
+	template<bool overflow, bool poweroftwo>
 	static INLINE vect_t mod(vect_t & C, const vect_t & P
-				 , const scalar_t & shifter, const vect_t & magic
+				 , const int8_t & shifter, const vect_t & magic
 				 , const vect_t & NEGP
 				 , const vect_t & MIN, const vect_t & MAX
 				 , vect_t & Q, vect_t & T
 				)
 	{
 #ifdef __INTEL_COMPILER
-		C = _mm256_rem_epi64(C,P)
+#warning "not tested"
+		C = _mm256_rem_epi64(C,P) ; // really ?
 #else
-		if (poweroftow) {
+		if (poweroftwo) {
 			Q = srl(C,63);
 			vect_t un = set1(1);
 			T = sub(sll(un,shifter),un);
@@ -550,10 +565,10 @@ struct Simd256_impl<true, true, true, 8> {
 				 Q = add(Q,C);
 			 }
 			 Q = sra(Q,shifter);
-			 __m128i q1 = mulux(Q,P);
-			 __m128i q2 = sll(mulux(srl(Q,32),P),32);
+			 vect_t q1 = mulux(Q,P);
+			 vect_t q2 = sll(mulux(srl(Q,32),P),32);
 			 C = sub(C,add(q1,q2));
-			 __m128i s1 = greater_eq(C,P);
+			 vect_t s1 = greater_eq(C,P);
 			 C = sub(Q,vand(s1,P));
 		}
 #endif
