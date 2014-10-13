@@ -41,7 +41,6 @@ struct Simd256_impl<true, false, true, 8> {
 	 * alias to 256 bit simd register
 	 */
 	using vect_t = __m256d;
-	using float_t = __m256d;
 
 	/*
 	 * define the scalar type corresponding to the specialization
@@ -79,7 +78,7 @@ struct Simd256_impl<true, false, true, 8> {
 
 
 	/*
-	 *	Set packed double-precision (64-bit) floating-point elements in vec_t with the supplied values.
+	 *	Set packed double-precision (64-bit) floating-point elements in vect_t with the supplied values.
 	 *  Return [x1,x2,x3,x4]
 	 */
 	static INLINE CONST vect_t set(const scalar_t x1, const scalar_t x2

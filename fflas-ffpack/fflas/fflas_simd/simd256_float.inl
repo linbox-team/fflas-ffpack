@@ -42,7 +42,6 @@ struct Simd256_impl<true, false, true, 4>
 	 */
 	using vect_t = __m256;
 
-	using float_t = __m256;
 
 	/*
 	 * define the scalar type corresponding to the specialization

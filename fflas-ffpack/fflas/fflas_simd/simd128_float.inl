@@ -41,7 +41,6 @@ struct Simd128_impl<true, false, true, 4>{
 	 * alias to 128 bit simd register
 	 */
 	using vect_t = __m128;
-	using float_t = __m128 ;
 
 	/*
 	 * define the scalar type corresponding to the specialization
@@ -452,7 +451,7 @@ struct Simd128_impl<true, false, true, 4>{
 	}
 #else // __AVX__
 #error "You need SSE instructions to perform 128bits operations on double"
-#endif
+#endif // __FFLASFFPACK_USE_SIMD
 };
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL
