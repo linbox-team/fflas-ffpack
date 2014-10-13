@@ -71,7 +71,6 @@ namespace FFLAS { /*  Categories */
 
 } // FFLAS
 
-
 namespace FFLAS { /*  Traits */
 
 	/*! FieldTrait
@@ -276,7 +275,7 @@ namespace FFLAS { /*  Traits */
 		static  const bool balanced = false ;
 	};
 
-	// RNSInteger	
+	// RNSInteger
 	template<typename T>
 	struct FieldTraits<FFPACK::RNSInteger<T> > {
 		typedef FieldCategories::MultiPrecisionTag value;
@@ -284,7 +283,7 @@ namespace FFLAS { /*  Traits */
 		// typedef true_type balanced ;
 		static  const bool balanced = false ;
 	};
-	// RNSIntegerMod	
+	// RNSIntegerMod
 	template<typename T>
 	struct FieldTraits<FFPACK::RNSIntegerMod<T> >{
 		typedef FieldCategories::MultiPrecisionTag value;

@@ -33,8 +33,8 @@
 
 #ifndef __FFPACK_rns_double_H
 #define __FFPACK_rns_double_H
+
 #include <vector>
-using namespace std;
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/integer.h"
@@ -54,15 +54,15 @@ namespace FFPACK {
 	 */
 	struct rns_double {
 		typedef Modular<double> ModField;
-		vector<double>       _basis; // the rns moduli (mi)
-		vector<double>    _invbasis; // the inverse of rns moduli (1/mi)
-		vector<ModField> _field_rns; // the associated prime field for each mi
+		std::vector<double>       _basis; // the rns moduli (mi)
+		std::vector<double>    _invbasis; // the inverse of rns moduli (1/mi)
+		std::vector<ModField> _field_rns; // the associated prime field for each mi
 		integer                  _M; // the product of the mi's
-		vector<integer>         _Mi; // _M/mi
-		vector<double>         _MMi; // (_Mi)^(-1) mod mi
-		vector<double>      _crt_in; //  2^(16*j) mod mi
-		vector<double>     _crt_out; //  (_Mi._MMi) written in base 2^16
- 		size_t                _size; // the size of the rns basis (number of mi's)
+		std::vector<integer>         _Mi; // _M/mi
+		std::vector<double>         _MMi; // (_Mi)^(-1) mod mi
+		std::vector<double>      _crt_in; //  2^(16*j) mod mi
+		std::vector<double>     _crt_out; //  (_Mi._MMi) written in base 2^16
+		size_t                _size; // the size of the rns basis (number of mi's)
 		size_t               _pbits; // the size in bit of the mi's
 		size_t                 _ldm; // log[2^16](_M)
 
@@ -72,7 +72,7 @@ namespace FFPACK {
 		typedef rns_double_elt_cstptr     ConstElement_ptr;
 
 		rns_double(const integer& bound, size_t pbits, bool rnsmod=false, long seed=time(NULL))
-			:  _M(1), _size(0), _pbits(pbits)
+		:  _M(1), _size(0), _pbits(pbits)
 		{
 			integer::seeding(seed);
 			integer prime;
@@ -91,8 +91,8 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
-		rns_double(const vector<double>& basis, bool rnsmod=false, long seed=time(NULL))
-			:  _basis(basis), _M(1), _size(basis.size()), _pbits(0)
+		rns_double(const std::vector<double>& basis, bool rnsmod=false, long seed=time(NULL))
+		:  _basis(basis), _M(1), _size(basis.size()), _pbits(0)
 		{
 			for(size_t i=0;i<_size;i++){
 				_M*=_basis[i];
@@ -143,10 +143,11 @@ namespace FFPACK {
 		void init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
 		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 		void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
-				
-		
+
+
 
 	}; // end of struct rns_double
+
 } // end of namespace FFPACK
 
 #include "rns-double.inl"
@@ -160,5 +161,6 @@ namespace FFLAS {
 
 }
 
-#endif
-#endif
+#endif // __FFLASFFPACK_HAVE_INTEGER
+
+#endif // __FFPACK_rns_double_H

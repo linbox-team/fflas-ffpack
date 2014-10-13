@@ -30,8 +30,8 @@
  * @brief  representation of <code>Z</code> using RNS representation (note: fixed precision)
  */
 
-#ifndef __FFPACK_unparametric_rns_double_H
-#define __FFPACK_unparametric_rns_double_H
+#ifndef __FFPACK_unparametric_rns_integer_H
+#define __FFPACK_unparametric_rns_integer_H
 
 #include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/field/rns-double.h"
@@ -123,7 +123,7 @@ namespace FFPACK {
 				x._ptr[i*x._stride] = y._ptr[i*y._stride];
 			return x;
 		}
-		ostream& write(ostream& os, const Element& y) const {
+		std::ostream& write(std::ostream& os, const Element& y) const {
 			os<<"[ "<< (long) (y._ptr)[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) (y._ptr)[i*y._stride];
@@ -131,11 +131,11 @@ namespace FFPACK {
 		}
 
 
-		ostream& write(ostream& os) const {
+		std::ostream& write(std::ostream& os) const {
 			os<<"M:=[ "<< (long) _rns->_basis[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) _rns->_basis[i];
-			return os<<" ]"<<endl;
+			return os<<" ]"<<std::endl;
 		}
 
 
@@ -173,6 +173,7 @@ namespace FFLAS {
 
 } // end of namespace FFLAS
 
-#endif
-#endif
+#endif // __FFLASFFPACK_HAVE_INTEGER
+
+#endif // __FFPACK_unparametric_rns_integer_H
 
