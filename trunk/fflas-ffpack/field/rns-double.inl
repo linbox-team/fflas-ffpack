@@ -26,7 +26,11 @@
  *.
  */
 
-#include "fflas-ffpack/fflas/fflas_finit.h" 
+
+#ifndef __FFLASFFPACK_field_rns_double_INL
+#define __FFLASFFPACK_field_rns_double_INL
+
+#include "fflas-ffpack/fflas/fflas_finit.h"
 
 namespace FFPACK {
 
@@ -72,19 +76,19 @@ namespace FFPACK {
 				FFLAS::finit(_field_rns[i],mn,Arns+i,_size);
 		}
 		FFLAS::fflas_delete( A_beta);
-			
+
 #ifdef CHECK_RNS
 		bool ok=true;
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++)
 					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);
-		cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<endl;
+		std::cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 
-	// Arns must be an array of m*n*_size 
-	// abs(||A||) < 2^(16k) 
+	// Arns must be an array of m*n*_size
+	// abs(||A||) < 2^(16k)
 	void rns_double::init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm)
@@ -94,7 +98,7 @@ namespace FFPACK {
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
 		const integer* Aiter=A;
 		// split A into A_beta according to a Kronecker transform in base 2^16
-		for(size_t j=0;j<n;j++){							
+		for(size_t j=0;j<n;j++){
 			for(size_t i=0;i<m;i++){
 				size_t idx=i+j*m;
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
@@ -126,21 +130,21 @@ namespace FFPACK {
 				FFLAS::finit(_field_rns[i],mn,Arns+i,_size);
 		}
 		FFLAS::fflas_delete( A_beta);
-			
+
 #ifdef CHECK_RNS
 		bool ok=true;
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++)
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0)) 
+					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
 					      == (long) Arns[j*m+i+k*rda]);
-		cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<endl;
+		std::cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 
 
 	void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
-		     const double* Arns, size_t rda, bool RNS_MAJOR) const
+				 const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
@@ -188,7 +192,7 @@ namespace FFPACK {
 				m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
 				res = a0;res+= a1;res+= a2;res+= a3;
 				res%=_M;
-					
+
 				// get the correct result according to the expected sign of A
 				if (res>hM)
 					res-=_M;
@@ -218,16 +222,16 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]% (long) _basis[k]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);						
-					//cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<endl;
+					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]% (long) _basis[k]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);
+					//std::cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
-		cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<endl;
+		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 
 	}
 
 	void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
-			       const double* Arns, size_t rda, bool RNS_MAJOR) const
+					   const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
@@ -277,7 +281,7 @@ namespace FFPACK {
 				m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
 				res = a0;res+= a1;res+= a2;res+= a3;
 				res%=_M;
-					
+
 				// get the correct result according to the expected sign of A
 				if (res>hM)
 					res-=_M;
@@ -307,12 +311,14 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]% (long) _basis[k]<0?(long)_basis[k]:0)) == (long) Arns[i+j*m+k*rda]);						
-					//cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<endl;
+					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]% (long) _basis[k]<0?(long)_basis[k]:0)) == (long) Arns[i+j*m+k*rda]);
+					//std::cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
-		cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<endl;
-#endif
+		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
+#endif // CHECK_RNS
 
 	}
 
-}
+} // FFPACK
+
+#endif // __FFLASFFPACK_field_rns_double_INL

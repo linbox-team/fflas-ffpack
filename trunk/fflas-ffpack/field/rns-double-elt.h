@@ -32,6 +32,8 @@
  */
 
 
+#ifndef __FFLASFFPACK_field_rns_double_elt_INL
+#define __FFLASFFPACK_field_rns_double_elt_INL
 
 namespace FFPACK {
 
@@ -59,7 +61,7 @@ namespace FFPACK {
 		rns_double_elt_ptr(const rns_double_elt_ptr &x)    : rns_double_elt(x._ptr,x._stride,false){}
 		rns_double_elt_ptr(const rns_double_elt_cstptr &x);
 		inline  operator rns_double_elt_cstptr();
-		inline rns_double_elt_ptr* operator&(){return this;} 
+		inline rns_double_elt_ptr* operator&(){return this;}
 		inline rns_double_elt&     operator*()  {return static_cast<rns_double_elt&>(*this);}
 		inline rns_double_elt&     operator[](size_t i) {return *((*this)+i);}
 		inline rns_double_elt_ptr  operator++() {return rns_double_elt_ptr(_ptr++,_stride);}
@@ -74,42 +76,42 @@ namespace FFPACK {
 		rns_double_elt_cstptr(double* p, size_t r)      : rns_double_elt(p,r,false){}
 		rns_double_elt_cstptr(const rns_double_elt_ptr& x)    : rns_double_elt(x._ptr,x._stride,false){}
 		rns_double_elt_cstptr(const rns_double_elt_cstptr& x) : rns_double_elt(x._ptr,x._stride,false){}
-		inline rns_double_elt_cstptr* operator&(){return this;} 
+		inline rns_double_elt_cstptr* operator&(){return this;}
 		inline rns_double_elt&     operator*() const  {
 			return *const_cast<rns_double_elt*>(static_cast<const rns_double_elt*>(this));
-		}		
+		}
 		inline rns_double_elt&     operator[](size_t i)const {return *((*this)+i);}
 		inline rns_double_elt_cstptr  operator++() {return rns_double_elt_cstptr(_ptr++,_stride);}
 		inline rns_double_elt_cstptr  operator+(size_t inc)const {return rns_double_elt_cstptr(_ptr+inc,_stride);}
 		inline rns_double_elt_cstptr& operator+=(size_t inc) {_ptr+=inc;return *this;}
-		inline rns_double_elt_cstptr& operator=(const rns_double_elt_cstptr& x);		
+		inline rns_double_elt_cstptr& operator=(const rns_double_elt_cstptr& x);
 		bool operator< (const rns_double_elt_cstptr& x) {return _ptr < x._ptr;}
 		bool operator!= (const rns_double_elt_cstptr& x) {return _ptr != x._ptr;}
 	};
 
 	inline rns_double_elt_ptr& rns_double_elt_ptr::operator=(const rns_double_elt_ptr& x)  {
 		if (this != &x){
-			if (_alloc) delete[] _ptr; 
+			if (_alloc) delete[] _ptr;
 			_ptr= x._ptr;
 			_stride=x._stride;
 			_alloc=false;
-		}			
+		}
 		return *this;
 	}
 	inline rns_double_elt_cstptr& rns_double_elt_cstptr::operator=(const rns_double_elt_cstptr& x)  {
 			if (this != &x){
-				if (_alloc) delete[] _ptr; 
+				if (_alloc) delete[] _ptr;
 				_ptr= x._ptr;
 				_stride=x._stride;
 				_alloc=false;
-			}			
+			}
 			return *this;
 		}
 
-	rns_double_elt_ptr::rns_double_elt_ptr(const rns_double_elt_cstptr &x) 
+	rns_double_elt_ptr::rns_double_elt_ptr(const rns_double_elt_cstptr &x)
 		: rns_double_elt(x._ptr,x._stride,false){}
-	rns_double_elt_ptr::operator rns_double_elt_cstptr(){return rns_double_elt_cstptr(_ptr,_stride);}	
-	rns_double_elt_ptr    rns_double_elt::operator&()       {return 	rns_double_elt_ptr(_ptr,_stride);}	
+	rns_double_elt_ptr::operator rns_double_elt_cstptr(){return rns_double_elt_cstptr(_ptr,_stride);}
+	rns_double_elt_ptr    rns_double_elt::operator&()       {return 	rns_double_elt_ptr(_ptr,_stride);}
 	rns_double_elt_cstptr rns_double_elt::operator&() const {return 	rns_double_elt_cstptr(_ptr,_stride);}
 
 
@@ -120,3 +122,5 @@ namespace FFPACK {
 
 
 } // end namespace FFPACK:
+
+#endif // __FFLASFFPACK_field_rns_double_elt_INL
