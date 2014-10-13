@@ -58,6 +58,20 @@
 #include <type_traits>
 #include <limits>
 
+namespace FFLAS {
+	template<class T>
+	struct support_simd  : public std::false_type {} ;
+
+	template<>
+	struct support_simd<float> : public std::true_type {} ;
+	template<>
+	struct support_simd<double> : public std::true_type {} ;
+#ifdef SIMD_INT
+	template<>
+	struct support_simd<int64_t> : public std::true_type {} ;
+#endif
+
+} // FFLAS
 
 #define NORML_MOD(C,P,NEGP,MIN,MAX,Q,T) \
 {                            \
@@ -78,33 +92,6 @@
 
 // to activate SIMD with integers
 //#define SIMD_INT
-
-namespace FFLAS {
-	template<class T>
-	struct support_simd  : public std::false_type {} ;
-
-	template<>
-	struct support_simd<float> : public std::true_type {} ;
-	template<>
-	struct support_simd<double> : public std::true_type {} ;
-#ifdef SIMD_INT
-	template<>
-	struct support_simd<int64_t> : public std::true_type {} ;
-#endif
-
-	template<class T>
-	struct support_simd_mod  : public std::false_type {} ;
-
-	template<>
-	struct support_simd_mod<float> : public std::true_type {} ;
-	template<>
-	struct support_simd_mod<double> : public std::true_type {} ;
-#ifdef SIMD_INT
-	// template<>
-	// struct support_simd_mod<int64_t> : public std::true_type {} ;
-#endif
-
-}
 
 template<class T>
 struct simdToType;
@@ -234,7 +221,7 @@ using Simd = typename SimdChooser<T>::value;
 template<class T>
 using Simd = Simd128<T>;
 
-#endif
+#endif // __FFLASFFPACK_USE_AVX
 
 #if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
 
@@ -283,7 +270,7 @@ namespace FFLAS { /*  print helper */
 
 } // FFLAS
 
-#endif
+#endif // __FFLASFFPACK_USE_SIMD
 
 #include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
 

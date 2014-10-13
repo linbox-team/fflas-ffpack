@@ -160,7 +160,7 @@ namespace FFLAS {
 	}
 
 
-}
+} // FFLAS
 
 
 #endif // __FFLASFFPACK_fcopy_INL

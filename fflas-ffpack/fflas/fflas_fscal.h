@@ -30,7 +30,6 @@
 #ifndef __FFLASFFPACK_fscal_H
 #define __FFLASFFPACK_fscal_H
 
-#include "fflas-ffpack/fflas/fflas_simd_functions.h"
 //! @todo traits
 #include "fflas_fscal.inl"
 #include "fflas_fscal_mp.inl"

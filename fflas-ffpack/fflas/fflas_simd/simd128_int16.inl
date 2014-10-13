@@ -209,7 +209,7 @@ struct Simd128_impl<true, true, true, 2>{
 	 */
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b)
 	{
-		vect_t mask = set(0x00FF);
+		vect_t mask = set1(0x00FF); // ???
 		a = vand(a, mask);
 		b = vand(b, mask);
 		return _mm_mullo_epi16(a, b);

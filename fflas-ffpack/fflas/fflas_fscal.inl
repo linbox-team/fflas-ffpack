@@ -30,6 +30,111 @@
 #ifndef __FFLASFFPACK_fscal_INL
 #define __FFLASFFPACK_fscal_INL
 
+namespace FFLAS { namespace vectorised {
+
+#ifdef __FFLASFFPACK_USE_SIMD
+
+	template<class SimdT, class Element>
+	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
+	VEC_SCAL(SimdT & C, SimdT & ALPHA, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & INVP, SimdT & MIN, SimdT & MAX)
+	{
+		using simd = Simd<Element>;
+		Q = simd::mul(C,INVP);
+		C = simd::mul(C,ALPHA);
+		Q = simd::floor(Q);
+		C = simd::fnmadd(C,Q,P);
+		Q = simd::greater(C,MAX);
+		T = simd::lesser(C,MIN);
+		Q = simd::vand(Q,NEGP);
+		T = simd::vand(T,P);
+		Q = simd::vor(Q,T);
+		C = simd::add(C,Q);
+	}
+
+	template<class Element, class T1, class T2>
+	inline typename std::enable_if<std::is_floating_point<Element>::value, void>::type
+	scalp(Element *T, const Element alpha, const Element * U, const size_t n, const Element p, const Element invp, const T1 min_, const T2 max_)
+	{
+		Element min = (Element)min_, max=(Element)max_;
+		using simd = Simd<Element>;
+		using vect_t = typename simd::vect_t;
+
+		size_t i = 0;
+
+		if (n < simd::vect_size)
+		{
+			for (; i < n ; i++)
+			{
+				T[i]=monfmod(alpha*U[i], p);
+				T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+			return;
+
+		}
+		vect_t C,Q,P,NEGP,INVP,TMP,MIN,MAX,ALPHA;
+		ALPHA = simd::set1(alpha);
+		P   = simd::set1(p);
+		NEGP = simd::set1(-p);
+		INVP = simd::set1(invp);
+		MIN = simd::set1(min);
+		MAX = simd::set1(max);
+		long st = long(T) % simd::alignment;
+		if (st)
+		{ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j+=sizeof(Element), i++)
+			{
+				T[i] = monfmod(alpha*U[i], p);
+				T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+		}
+		FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
+		if ((long(U+i)%simd::alignment==0))
+		{
+			// perform the loop using 256 bits SIMD
+			for (;i <= n - simd::vect_size ; i += simd::vect_size)
+			{
+				C = simd::load(U+i);
+				VEC_SCAL<vect_t,Element>(C, ALPHA, Q, TMP, P, NEGP, INVP, MIN, MAX);
+				simd::store(T+i,C);
+			}
+		}
+		// perform the last elt from T without SIMD
+		for (; i < n ; i++)
+		{
+			T[i] = monfmod(alpha*U[i],p);
+			T[i] -= (T[i] > max) ? p : 0;
+			T[i] += (T[i] < min) ? p : 0;
+		}
+	}
+
+#else
+
+	template<class Element, class T1, class T2>
+	void
+	scalp(Element *T, const Element alpha, const Element * U, const size_t n, const Element p, const Element invp, const T1 min_, const T2 max_)
+	{
+		Element min = (Element)min_, max=(Element)max_;
+
+		size_t i = 0;
+
+		{
+			for (; i < n ; i++)
+			{
+				T[i]=monfmod(alpha*U[i], p);
+				T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+			return;
+
+		}
+
+	}
+
+#endif // __FFLASFFPACK_USE_SIMD
+} // vectorised
+} // FFLAS
 
 namespace FFLAS {
 
