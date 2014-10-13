@@ -30,6 +30,7 @@ pkgincludesub_HEADERS=       \
 	     flimits.h \
 	     Makefile.am \
 	     Matio.h  \
+	     bit_manipulation.h \
 	     print-utils.h
 
 

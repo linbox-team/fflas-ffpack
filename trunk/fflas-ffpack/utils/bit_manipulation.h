@@ -1,0 +1,148 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+/*
+ * Copyright (C) 2014 FFLAS-FFPACK group
+ *
+ * Written by BB <bbboyer@ncsu.edu>
+ *
+ *
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ *.
+ */
+
+
+#ifndef __FFLASFFPACK_utils_bit_manipulation_H
+#define __FFLASFFPACK_utils_bit_manipulation_H
+
+#ifndef __has_builtin
+#define __has_builtin(x) 0  // Compatibility with non-clang compilers.
+#endif
+
+
+// count leading zeros
+inline int32_t clz(uint64_t val) {
+#if __GNUC__ || __has_builtin(__builtin_clzll)
+	return __builtin_clzll(val);
+#else
+	if (! val) return 64 ;
+	int32_t result = 0;
+	while (! (val & (1ULL << 63))) {
+		val <<= 1;
+		result++;
+	}
+	return result;
+#endif
+}
+
+inline int32_t clz(uint32_t val) {
+#if __GNUC__ || __has_builtin(__builtin_clzll)
+	return __builtin_clz(val);
+#else
+	if (! val) return 32 ;
+	int32_t result = 0;
+	while (! (val & (1UL << 31))) {
+		val <<= 1;
+		result++;
+	}
+	return result;
+#endif
+}
+
+// count trailing zeros
+inline int32_t ctz(uint32_t val) {
+#if __GNUC__ || __has_builtin(__builtin_ctz)
+	return __builtin_ctz(val);
+#else
+	if (!val) return 32;
+	int32_t result = 0;
+	val = (val ^ (val - 1)) >> 1;  // Set v's trailing 0s to 1s and zero rest
+	while (val) {
+		val >>= 1;
+		result++;
+	}
+	return result;
+#endif
+}
+
+// count trailing zeros
+inline int32_t ctz(uint64_t val) {
+#if __GNUC__ || __has_builtin(__builtin_ctzll)
+	return __builtin_ctzll(val);
+#else
+	if (!val) return 64;
+	uint32_t lo = val & 0xFFFFFFFF;
+	if (lo != 0) return ctz(lo);
+	return 32 + ctz(val >> 32);
+#endif
+}
+
+// division 128bits by 64 bits
+// __int128(u1,u0) = u1*2^64+u0, div v, rem v
+// return quo
+// toto guard against __asm__
+static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
+{
+	// u0 -> rax
+	// u1 -> rdx
+	// divq
+	uint64_t result;
+	__asm__("divq %[v]"
+			: "=a"(result), "=d"(*r)
+			: [v] "r"(v), "a"(u0), "d"(u1)
+	       );
+	return result;
+}
+
+
+static inline int64_t mulhi_64(int64_t x, int64_t y) {
+#if 1 // todo check this type
+        __int128_t xl = x, yl = y;
+        __int128_t rl = xl * yl;
+        return (int64_t)(rl >> 64);
+#else
+    const uint32_t mask = 0xFFFFFFFF;
+    const uint32_t x0 = (uint32_t)(x & mask), y0 = (uint32_t)(y & mask);
+    const int32_t x1 = (int32_t)(x >> 32), y1 = (int32_t)(y >> 32);
+    const uint32_t x0y0_hi = libdivide__mullhi_u32(x0, y0);
+    const int64_t t = x1*(int64_t)y0 + x0y0_hi;
+    const int64_t w1 = x0*(int64_t)y1 + (t & mask);
+    return x1*(int64_t)y1 + (t >> 32) + (w1 >> 32);
+#endif
+}
+
+static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
+#if 0 // todo check this type
+        __int128_t xl = x, yl = y;
+        __int128_t rl = xl * yl;
+        return (int64_t)(rl >> 64);
+#else
+    const uint32_t mask = 0xFFFFFFFF;
+    const uint32_t x0 = (uint32_t)(x & mask), y0 = (uint32_t)(y & mask);
+    const int32_t x1 = (int32_t)(x >> 32), y1 = (int32_t)(y >> 32);
+    // const uint32_t x0y0_hi = libdivide__mullhi_u32(x0, y0);
+    const int64_t t = x1*(int64_t)y0  ; // + x0y0_hi;
+    const int64_t w1 = x0*(int64_t)y1 ; // + (t & mask);
+    return x1*(int64_t)y1 + (t >> 32) + (w1 >> 32);
+#endif
+}
+
+
+
+#endif // __FFLASFFPACK_utils_bit_manipulation_H
