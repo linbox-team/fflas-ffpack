@@ -53,5 +53,4 @@ struct Simd256_impl;
 template<class T>
 using Simd256 = Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
-
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL

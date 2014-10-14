@@ -167,8 +167,10 @@ namespace FFLAS { namespace vectorised {
 	void fast_mod_generate(bool & overflow, bool & poweroftwo, int8_t & shift, int64_t & magic, int64_t denom)
 	{
 
-		overflow = false ;
-		poweroftwo = false ;
+		// overflow = false ;
+		// poweroftwo = false ;
+		// shift = 0 ;
+		// magic = 0 ;
 		if ((denom & (denom- 1)) == 0) {
 			shift = (int8_t)ctz((uint64_t)denom) ;
 			magic = 0;
@@ -206,19 +208,25 @@ namespace FFLAS { namespace vectorised {
 
 	template<class Field>
 	struct HelperMod<Field, FieldCategories::IntegralTag> {
-		bool overflow ;
-		bool poweroftwo ;
-		int8_t shift ;
-		typename Field::Element magic ;
+		bool overflow  = false ;
+		bool poweroftwo = false ;
+		int8_t shift = 0 ;
+		typename Field::Element magic = (typename Field::Element)0 ;
 		typename Field::Element p;
 
-		HelperMod() {} ;
+		HelperMod()
+		{
+			// std::cout << "empty cstor called" << std::endl;
+		} ;
 
 		HelperMod( const Field & F)
 		{
+			// std::cout << "field cstor called" << std::endl;
 			p =  (typename Field::Element) F.characteristic();
 			fast_mod_generate(overflow, poweroftwo, shift, magic, p);
 			// std::cout << overflow << ',' << poweroftwo << std::endl;
+			// std::cout << (int) shift << ',' << magic << std::endl;
+			// std::cout << this->shift << std::endl;
 		}
 
 		int getAlgo() const
@@ -300,6 +308,7 @@ namespace FFLAS { namespace vectorised {
 		HelperModSimd ( const Field & F) :
 			HelperMod<Field>(F)
 		{
+			// std::cout << "HelperMod constructed " << this->shift << std::endl;
 			// p = F.characteristic();
 			P = SimdT::set1(this->p);
 			NEGP = SimdT::set1(-this->p);
@@ -316,8 +325,9 @@ namespace FFLAS { namespace vectorised {
 			this->shift=G.shift;
 			this->magic=G.magic;
 			this->p=G.p;
+			// std::cout << "magic is = " << this->magic<< ',' <<  G.magic<< std::endl;
 			P = SimdT::set1(this->p);
-			NEGP = SimdT::set1(-this->p);
+			NEGP = SimdT::set1(-(this->p));
 			MIN = SimdT::set1(F.minElement());
 			MAX = SimdT::set1(F.maxElement());
 			// fast_mod_generate(overflow, shift, magic, p);
@@ -341,7 +351,7 @@ namespace FFLAS { namespace vectorised {
 			HelperMod<Field>(F)
 		{
 			P = SimdT::set1(this->p);
-			NEGP = SimdT::set1(-this->p);
+			NEGP = SimdT::set1(-(this->p));
 			// MIN = SimdT::set1(max);
 			MIN = SimdT::set1(F.minElement());
 			// MAX = SimdT::set1(min);
@@ -424,18 +434,20 @@ namespace FFLAS { namespace vectorised {
 	inline void
 	VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,FieldCategories::IntegralTag> & H)
 	{
+		// std::cout << "magic " << H.magic<< std::endl;
+		// std::cout << H.P << std::endl;
 		switch (ALGO) {
 		case 0 :
 			C = SimdT::template mod<false,false>( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		case 1 :
-			C = SimdT::template mod<true,false>( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<true,false> ( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		case 2 :
-			C = SimdT::template mod<false,true>( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<false,true> ( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		case 3 :
-			C = SimdT::template mod<true,true>( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
+			C = SimdT::template mod<true,true>  ( C, H.P, H.shift, H.M,  H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 			break;
 		}
 	}
