@@ -61,6 +61,8 @@ namespace FFLAS {
 		ONE_D,
 		TWO_D,
 		THREE_D_INPLACE,
+		THREE_D_ADAPT,
+		TWO_D_ADAPT,
 		THREE_D
 	};
 
