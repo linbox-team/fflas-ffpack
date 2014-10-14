@@ -212,9 +212,9 @@ struct Simd256_impl<true, true, true, 8> {
 		return _mm256_sra_epi64(a,s);
 #else
 		const int b = 63 - s;
-		__m128i m = sll(set1(1),b);
-		__m128i x = srl(a, s);
-		__m128i result = sub(vxor(x, m), m); //result = x^m - m
+		vect_t m = sll(set1(1),b);
+		vect_t x = srl(a, s);
+		vect_t result = sub(vxor(x, m), m); //result = x^m - m
 		return result;
 #endif
 	}
@@ -510,8 +510,8 @@ struct Simd256_impl<true, true, true, 8> {
 	static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y)
 	{
 		// unsigned mulhi starts:
+		// x1 = xy_high = mulhiu_fast(x,y)
 		const vect_t mask = mask_high();
-		// print_sse(mask,true);
 
 		vect_t x0 = vand(x, mask), x1 = srl(x, 32);
 		vect_t y0 = vand(y, mask), y1 = srl(y, 32);
@@ -520,13 +520,14 @@ struct Simd256_impl<true, true, true, 8> {
 		y0 = mulux(x1, y0); // x1y0
 		y1 = mulux(x1, y1); // x1y1
 
-		x1 = vand(y0, mask), y0 = srl(y0, 32); // x1y0_lo = x1 // y1yo_hi = y0
+		x1 = vand(y0, mask) ;
+		y0 = srl(y0, 32); // x1y0_lo = x1 // y1yo_hi = y0
 		x1 = srl(add(x1, x0), 32);
 		y0 = add(y1, y0);
 
 		x1 = add(x1, y0);
-
 		// unsigned mulhi ends
+
 		// fixing signs
 		x0 = vand(signbits(x), y);
 		x1 = sub(x1, x0);
@@ -556,8 +557,8 @@ struct Simd256_impl<true, true, true, 8> {
 			Q = add(C,vand(Q,T));
 			Q = sll(srl(Q,shifter),shifter);
 			C = sub(C,Q);
-			// Q = vand(greater(ze,Q),P) ;
-			// C = add(C,Q);
+			Q = vand(greater(zero(),Q),P) ;
+			C = add(C,Q);
 		}
 		else {
 			 Q = mulhi_fast(C,magic);
@@ -568,8 +569,8 @@ struct Simd256_impl<true, true, true, 8> {
 			 vect_t q1 = mulux(Q,P);
 			 vect_t q2 = sll(mulux(srl(Q,32),P),32);
 			 C = sub(C,add(q1,q2));
-			 vect_t s1 = greater_eq(C,P);
-			 C = sub(Q,vand(s1,P));
+			 T = greater_eq(C,P);
+			 C = sub(C,vand(T,P));
 		}
 #endif
 		NORML_MOD(C,P,NEGP,MIN,MAX,Q,T);

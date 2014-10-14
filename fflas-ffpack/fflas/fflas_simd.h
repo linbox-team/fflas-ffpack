@@ -58,6 +58,75 @@
 #include <type_traits>
 #include <limits>
 
+#ifdef __FFLASFFPACK_USE_SIMD
+namespace std {
+	std::ostream & operator<<(std::ostream&o
+				  , const __m128 & v
+				 )
+	{
+		o << '<' ;
+		o << v[0] << ',' << v[1] ;
+		o << '>' ;
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const __m128i & v
+				 )
+	{
+		o << '<' ;
+		o << v[0] << ',' << v[1] ;
+		o << '>' ;
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const __m128d & v
+				 )
+	{
+		o << '<' ;
+		o << v[0] << ',' << v[1] ;
+		o << '>' ;
+		return o ;
+	}
+} // std
+
+#ifdef __AVX__
+namespace std {
+	std::ostream & operator<<(std::ostream&o
+				  , const __m256 & v
+				 )
+	{
+		o << '<' ;
+		o << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3];
+		o << '>' ;
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const __m256i & v
+				 )
+	{
+		o << '<' ;
+		o << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3];
+		o << '>' ;
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const __m256d & v
+				 )
+	{
+		o << '<' ;
+		o << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3];
+		o << '>' ;
+		return o ;
+	}
+} // std
+#endif // __AVX__
+
+#endif // __FFLASFFPACK_USE_SIMD
+
 namespace FFLAS {
 	template<class T>
 	struct support_simd  : public std::false_type {} ;
@@ -249,6 +318,9 @@ struct floating_simd<int64_t> {
 #endif
 };
 
+#endif
+
+#ifdef __FFLASFFPACK_USE_SIMD
 
 namespace FFLAS { /*  print helper */
 
@@ -271,6 +343,85 @@ namespace FFLAS { /*  print helper */
 	}
 
 } // FFLAS
+
+namespace std {
+	// cannot be instanciated, T is not déductible
+	template<class T>
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd128<T>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd128<T> >(o,v);
+		return o ;
+	}
+
+#if 0
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd128<int64_t>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd128<int64_t> >(o,v);
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd128<double>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd128<double> >(o,v);
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd128<float>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd128<float> >(o,v);
+		return o ;
+	}
+#endif
+
+} // std
+
+#ifdef __AVX__
+namespace std {
+	// cannot be instanciated, T is not déductible
+	template<class T>
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd256<T>::vect_t & v
+				  )
+	{
+		FFLAS::print(o,v);
+		return o ;
+	}
+
+#if 0
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd256<int64_t>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd256<int64_t> >(o,v);
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd256<double>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd256<double> >(o,v);
+		return o ;
+	}
+
+	std::ostream & operator<<(std::ostream&o
+				  , const typename Simd256<float>::vect_t & v
+				 )
+	{
+		FFLAS::print<Simd256<float> >(o,v);
+		return o ;
+	}
+#endif
+}
+#endif // __AVX__
 
 #include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
 

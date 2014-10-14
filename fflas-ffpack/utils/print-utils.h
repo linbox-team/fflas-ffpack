@@ -132,7 +132,9 @@ namespace std
 		return o << std::endl;
 	}
 
+
 #endif
+
 }
 
 #endif // __FFLASFFPACK_print_utils_H
