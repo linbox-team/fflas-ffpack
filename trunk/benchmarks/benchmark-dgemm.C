@@ -58,16 +58,17 @@ int main(int argc, char** argv) {
 
   Element * A, * B, * C;
 
-  for (size_t i=0;i<iter;++i){
-
+  if (iter>1) {
     if (argc > 4){
       A = read_field (F, argv[4], &n, &n);
     }
     else{
       Field::RandIter G(F);
       A = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random (*(A+j));
+#pragma omp parallel for
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
+              G.random(*(A+i*n+j));
     }
 
     if (argc == 6){
@@ -76,8 +77,46 @@ int main(int argc, char** argv) {
     else{
       Field::RandIter G(F);
       B = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random(*(B+j));
+#pragma omp parallel for
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
+              G.random(*(B+i*n+j));
+    }
+
+    C = FFLAS::fflas_new<Element>(n*n);
+
+    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
+		 A, n, B, n, F.zero, C,n);
+
+    FFLAS::fflas_delete( A);
+    FFLAS::fflas_delete( B);
+    FFLAS::fflas_delete( C);
+  }
+
+  for (size_t i=0;i<iter;++i){
+
+    if (argc > 4){
+      A = read_field (F, argv[4], &n, &n);
+    }
+    else{
+      Field::RandIter G(F);
+      A = FFLAS::fflas_new<Element>(n*n);
+#pragma omp parallel for
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
+              G.random(*(A+i*n+j));
+    }
+
+    if (argc == 6){
+      B = read_field (F, argv[5], &n, &n);
+    }
+    else{
+      Field::RandIter G(F);
+      B = FFLAS::fflas_new<Element>(n*n);
+#pragma omp parallel for
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
+              G.random(*(B+i*n+j));
     }
 
     C = FFLAS::fflas_new<Element>(n*n);
