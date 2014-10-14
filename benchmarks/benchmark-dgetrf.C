@@ -64,6 +64,22 @@ int main(int argc, char** argv) {
   double time=0.0;
 
   std::vector<int> Piv(n,0);
+  if (iter>1) {
+	  if (argc > 4){
+		  A = read_field(F, argv[4], &n, &n);
+	  }
+	  else {
+		  A = FFLAS::fflas_new<Element>(n*n);
+		  Field::RandIter G(F);
+#pragma omp parallel for
+		  for (size_t i=0; i<n; ++i)
+              for (size_t j=0; j<n; ++j)
+                  G.random(*(A+i*n+j));
+	  }
+	  clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
+	  FFLAS::fflas_delete( A);
+  }
+
   for (size_t i=0;i<iter;++i){
 	  if (argc > 4){
 		  A = read_field(F, argv[4], &n, &n);
@@ -71,8 +87,10 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random(*(A+j));
+#pragma omp parallel for
+		  for (size_t i=0; i<n; ++i)
+              for (size_t j=0; j<n; ++j)
+                  G.random(*(A+i*n+j));
 	  }
 
 	  chrono.clear();
