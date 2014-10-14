@@ -62,6 +62,7 @@ namespace FFLAS {
 	template<class T>
 	struct support_simd  : public std::false_type {} ;
 
+#if defined(__FFLASFFPACK_USE_SIMD)
 	template<>
 	struct support_simd<float> : public std::true_type {} ;
 	template<>
@@ -69,6 +70,7 @@ namespace FFLAS {
 #ifdef SIMD_INT
 	template<>
 	struct support_simd<int64_t> : public std::true_type {} ;
+#endif
 #endif
 
 } // FFLAS
@@ -270,9 +272,9 @@ namespace FFLAS { /*  print helper */
 
 } // FFLAS
 
-#endif // __FFLASFFPACK_USE_SIMD
-
 #include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
+
+#endif // __FFLASFFPACK_USE_SIMD
 
 #else /* C++11 */
 #error "You need a c++11 compiler."
