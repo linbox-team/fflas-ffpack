@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_fflas_parfgemm_INL
 
 #define __FFLASFFPACK_SEQPARTHRESHOLD 220
-#define __FFLASFFPACK_DIMKPENALTY 2
+#define __FFLASFFPACK_DIMKPENALTY 1
 
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include <kaapi++>
@@ -79,7 +79,7 @@ namespace FFLAS {
 	 }
 	  MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H1(H);
 	  MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
-	  if(__FFLASFFPACK_DIMKPENALTY*m >= k && m >= n) {
+	  if(__FFLASFFPACK_DIMKPENALTY*m > k && m >= n) {
 		 size_t M2= m>>1;
 		 H1.parseq.numthreads /=2;
 		 H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
@@ -96,7 +96,7 @@ namespace FFLAS {
 #pragma omp task shared(F, A2, C2) depend(inout:C2) depend(in:A2,B)
 		 pfgemm_3D_rec_adapt(F, ta, tb, m-M2, n, k, alpha, A2, lda, B, ldb, beta, C2, ldc, H2);
 #pragma omp taskwait
-	 } else if (__FFLASFFPACK_DIMKPENALTY*n >= k) {
+	 } else if (__FFLASFFPACK_DIMKPENALTY*n > k) {
 		 size_t N2 = n>>1;
 		 H1.parseq.numthreads /=2;
 		 H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
@@ -158,7 +158,7 @@ namespace FFLAS {
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
-		if (H.parseq.numthreads<=1){
+		if (H.parseq.numthreads<=1 || m*n<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
 			MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Sequential> SeqH(H);
 			return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, SeqH);
 		}
@@ -184,9 +184,9 @@ namespace FFLAS {
 			typename Field::Element_ptr C1= C;
 			typename Field::Element_ptr C2= C+N2;
 #pragma omp task shared(F, B1, C1) depend(in:A,B1) depend(inout:C1)
-			pfgemm_3D_rec_adapt(F, ta, tb, m, N2, k, a, A, lda, B1, ldb, b, C1, ldc, H1);
+			pfgemm_2D_rec_adapt(F, ta, tb, m, N2, k, a, A, lda, B1, ldb, b, C1, ldc, H1);
 #pragma omp task shared(F, B2, C2) depend(in:A,B2) depend(inout:C2)
-			pfgemm_3D_rec_adapt(F, ta, tb, m, n-N2, k, a, A, lda, B2, ldb, b,C2, ldc, H2);
+			pfgemm_2D_rec_adapt(F, ta, tb, m, n-N2, k, a, A, lda, B2, ldb, b,C2, ldc, H2);
 #pragma omp taskwait
 		}
 	

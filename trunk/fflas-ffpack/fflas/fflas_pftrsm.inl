@@ -111,21 +111,28 @@ namespace FFLAS {
 			} else { nt_it = nt; nt_rec = 1;}
 			ForStrategy1D iter(m, H.parseq.method, (size_t)nt_it);
 			for (iter.begin(); ! iter.end(); ++iter) {
-				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::COLUMN_THREADS);
+				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
 			}
 		} else {
 			int nt = H.parseq.numthreads;
-			int nt_it,nt_rec;
-			if ((int)n/PTRSM_HYBRID_THRESHOLD < nt){
-				nt_it = std::min(nt,(int)ceil(double(n)/PTRSM_HYBRID_THRESHOLD));
-				nt_rec = ceil(double(nt)/nt_it);
-			} else { nt_it = nt; nt_rec = 1;}
+			int nt_it=nt;
+			int nt_rec=1;
+			while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
+				nt_it>>=1;
+				nt_rec<<=1;
+			}
+			nt_it<<=1;
+			nt_rec>>=1;
+			// if ((int)n/PTRSM_HYBRID_THRESHOLD < nt){
+			// 	nt_it = std::min(nt,(int)ceil(double(n)/PTRSM_HYBRID_THRESHOLD));
+			// 	nt_rec = ceil(double(nt)/nt_it);
+			// } else { nt_it = nt; nt_rec = 1;}
 			ForStrategy1D iter(n, H.parseq.method, (size_t)nt_it);
 			for (iter.begin(); ! iter.end(); ++iter) {
-				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::ROW_THREADS);
+				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				    //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
