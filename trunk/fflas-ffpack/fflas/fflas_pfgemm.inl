@@ -290,10 +290,10 @@ namespace FFLAS {
 			   const typename Field::Element beta,
 			   typename Field::Element_ptr C, const size_t ldc, 
 			   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
-	
+		/*
 	size_t a = 1.0;
 	size_t b = 0.0;
-	
+		*/
 	//	int wino = WWINO;
 	if (!m || !n) {return C;}
 	if (!k || F.isZero (alpha)){
@@ -302,10 +302,13 @@ namespace FFLAS {
 	}
 	if(H.parseq.numthreads <= 1|| std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){	// threshold
 		FFLAS::MMHelper<Field, AlgoT, FieldTrait,FFLAS::ParSeqHelper::Sequential> WH (H);
-		return fgemm(F, ta, tb, m, n, k, a, A, lda, B, ldb, b, C, ldc, WH);
+		return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, WH);
 	}
 	else
 	{
+		typename Field::Element a = alpha;
+		typename Field::Element b = 0;
+
 		size_t M2= m>>1;
 		size_t N2= n>>1;
 		size_t K2= k>>1;
@@ -355,25 +358,25 @@ namespace FFLAS {
 		H8.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
 
                 #pragma omp task shared(F, A11, B11, C11) depend(out:C11) depend(in:A11,B11)
-		pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, K2, a, A11, lda, B11, ldb, b,C11, ldc, H1);
+		pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, H1);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_11));
                 #pragma omp task shared(F, A12, B21, C_11) depend(out:C_11) depend(in:A12,B21)
 		pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, k-K2, a, A12, lda, B21, ldb, b,C_11, N2, H2);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C12));
                 #pragma omp task shared(F, A12, B22, C12) depend(out:C12) depend(in:A12,B22)
-		pfgemm_3D_rec2_V2(F, ta, tb, M2, n-N2, k-K2, a, A12, lda, B22, ldb, b,C12, ldc, H3);
+		pfgemm_3D_rec2_V2(F, ta, tb, M2, n-N2, k-K2, alpha, A12, lda, B22, ldb, beta, C12, ldc, H3);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_12));
                 #pragma omp task shared(F, A11, B12, C_12) depend(out:C_12) depend(in:A11,B12)
 		pfgemm_3D_rec2_V2(F, ta, tb, M2, n-N2, K2, a, A11, lda, B12, ldb, b, C_12, n-N2, H4);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C21));
                 #pragma omp task shared(F,A22, B21, C21) depend(out:C21) depend(in:A22,B21)
-		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, N2, k-K2, a, A22, lda, B21, ldb, b,C21, ldc, H5);
+		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, N2, k-K2, alpha, A22, lda, B21, ldb, beta, C21, ldc, H5);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_21));
                 #pragma omp task shared(F, A21, B11, C_21) depend(out:C_21) depend(in:A21, B11)
 		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, N2, K2, a, A21, lda, B11, ldb, b,C_21, N2, H6);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C22));
                 #pragma omp task shared(F, A21, B12, C22) depend(out:C22) depend(in:A21,B12)
-		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, n-N2, K2, a, A21, lda, B12, ldb, b,C22, ldc, H7);
+		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, n-N2, K2, alpha, A21, lda, B12, ldb, beta, C22, ldc, H7);
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_22));
                 #pragma omp task shared(F, A22, B22, C_22) depend(out:C_22) depend(in:A22,B22)
 		pfgemm_3D_rec2_V2(F, ta, tb, m-M2, n-N2, k-K2, a, A22, lda, B22, ldb, b,C_22, n-N2, H8);
@@ -553,8 +556,12 @@ namespace FFLAS{
                 return C;
             }
 
+	    /*	    std::cout<<H.parseq.numthreads<<" "<<std::endl;
+	    std::cout<<(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))<<std::endl;
+	    std::cout<<"computation"<<std::endl;
+	    */
 		// Threshold: no need to slice to blocks smaller than __FFLASFFPACK_SEQPARTHRESHOLD
-	    H.parseq.numthreads = std::min(H.parseq.numthreads, m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD));
+	    H.parseq.numthreads = std::min(H.parseq.numthreads, std::max(1,(int)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
 	    ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
 	    if (H.recLevel < 0) 
 		    H.recLevel = Protected::WinogradSteps (F, min3(iter.rowBlockSize,k,iter.colBlockSize));
