@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-#define __FFLASFFPACK_USE_OPENMP4
+//#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -32,37 +32,46 @@
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "tests/test-utils.h"
-
+#include "libkomp.h"
 using namespace std;
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
-template<class Element>
-void Initialize(Element * C, size_t BS, size_t m, size_t n)
-{
 
-#pragma omp parallel for collapse(2) schedule(runtime)
+
+template<class Element>
+void Initialize(Element * C, int BS, size_t m, size_t n)
+{
+//#pragma omp parallel for collapse(2) schedule(runtime) 
+	BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
+	PAR_REGION{
 	for(size_t p=0; p<m; p+=BS) ///row
 		for(size_t pp=0; pp<n; pp+=BS) //column
 		{
 			size_t M=BS, MM=BS;
-			if(!(p+BS<n))
+			if(!(p+BS<m))
 				M=m-p;
 			if(!(pp+BS<n))
 				MM=n-pp;
-			
+#pragma omp task 
+			{
 			for(size_t j=0; j<M; j++)
 				for(size_t jj=0; jj<MM; jj++)
 					C[(p+j)*n+pp+jj]=0;
+			}
 		}
-	// for (size_t i=0; i<n; i+=128)
-	// {
-	// 	for (size_t j=0; j<n; j+=512)
-	// 	{
-	// 		int ld = omp_get_locality_domain_num_for( &C[i*n+j] );
-	// 		printf("%i ", ld);
-	// 	}
-	// 	printf("\n");
-	// }
+	#pragma omp taskwait
+	}
+	// printf("A = \n");
+	// for (size_t i=0; i<m; i+=128)
+	//  {
+	//  	for (size_t j=0; j<n; j+=128)
+	//  	{
+	//  		int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
+	//  		printf("%i ", ld);
+	//  	}
+	//  	printf("\n");
+	//  }
+
 }
 #endif
 int main(int argc, char** argv) {
@@ -75,6 +84,7 @@ int main(int argc, char** argv) {
 	int nbw = -1 ;
 	int p=0;
 	int t=MAX_THREADS;
+	int NBK = -1;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
@@ -82,14 +92,15 @@ int main(int argc, char** argv) {
 		{ 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
-		{ 'p', "-p P", "0 for sequential, 1 for BLOCK_THREADS, 2 for ONE_D, 3 for TWO_D, 4 for THREE_D_INPLACE, 5 for THREE_D.", TYPE_INT , &p },
+		{ 'p', "-p P", "0 for sequential, 1 for 2D iterative, 2 for 2D rec, 3 for 2D rec adaptive, 4 for 3D rc in-place, 5 for 3D rec, 6 for 3D rec adaptive.", TYPE_INT , &p },
 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
 		END_OF_ARGUMENTS
 	};
 
 	FFLAS::parseArguments(argc,argv,as);
 
-
+	if (NBK==-1) NBK = t;
   typedef FFPACK::ModularBalanced<double> Field;
 //  typedef FFPACK::ModularBalanced<float> Field;
   typedef Field::Element Element;
@@ -103,27 +114,27 @@ int main(int argc, char** argv) {
   Element *v, *w, *y, *x;
 
   Field::RandIter G(F); 
-  A = FFLAS::fflas_new<Element>(m*k);
+  A = FFLAS::fflas_new(F,m,k,Alignment::PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(A,m/t,m,k);
+  Initialize(A,m/NBK,m,k);
   for (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)k; ++j)
 		  G.random (*(A+i*k+j));
       
-  B = FFLAS::fflas_new<Element>(k*n);
+  B = FFLAS::fflas_new(F,k,n,Alignment::PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(B,k/t,k,n);
+  Initialize(B,k/NBK,k,n);
   for (size_t i=0; i<(size_t)k; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random(*(B+i*n+j));
 
-  C = FFLAS::fflas_new<Element>(m*n);
+  C = FFLAS::fflas_new(F,m,n,Alignment::PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(C,m/t,m,n);
+  Initialize(C,m/NBK,m,n);
   for (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random (*(C+i*n+j));
-  
+
   for (size_t i=0;i<iter;++i){
 
 	  // if (argc > 4){
@@ -133,7 +144,7 @@ int main(int argc, char** argv) {
 
       v = FFLAS::fflas_new<Element>(n);
       
-	  //Field::RandIter G(F);
+      Field::RandIter G(F);
       for(size_t j=0; j<(size_t)n; ++j)
               G.random(*(v+j));
       
@@ -147,10 +158,11 @@ int main(int argc, char** argv) {
 	      FFLAS::CuttingStrategy meth;
 	      switch (p){
 		  case 1: meth = FFLAS::BLOCK_THREADS;break;
-		  case 2: meth = FFLAS::ONE_D;break;
-		  case 3: meth = FFLAS::TWO_D;break;
+		  case 2: meth = FFLAS::TWO_D;break;
+		  case 3: meth = FFLAS::TWO_D_ADAPT;break;
 		  case 4: meth = FFLAS::THREE_D_INPLACE;break;
 		  case 5: meth = FFLAS::THREE_D;break;
+		  case 6: meth = FFLAS::THREE_D_ADAPT;break;
 		  default: meth = FFLAS::BLOCK_THREADS;break;
 	      }
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,

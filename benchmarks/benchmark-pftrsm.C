@@ -22,8 +22,9 @@
 * ========LICENCE========
 */
 
-#include <iostream>
+//#define __FFLASFFPACK_USE_OPENMP4
 
+#include <iostream>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -33,6 +34,45 @@
 
 
 using namespace std;
+#ifdef __FFLASFFPACK_USE_OPENMP4
+
+
+template<class Element>
+void Initialize(Element * C, int BS, size_t m, size_t n)
+{
+//#pragma omp parallel for collapse(2) schedule(runtime) 
+	BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
+	PAR_REGION{
+	for(size_t p=0; p<m; p+=BS) ///row
+		for(size_t pp=0; pp<n; pp+=BS) //column
+		{
+			size_t M=BS, MM=BS;
+			if(!(p+BS<m))
+				M=m-p;
+			if(!(pp+BS<n))
+				MM=n-pp;
+#pragma omp task 
+			{
+			for(size_t j=0; j<M; j++)
+				for(size_t jj=0; jj<MM; jj++)
+					C[(p+j)*n+pp+jj]=0;
+			}
+		}
+	#pragma omp taskwait
+	}
+	// printf("A = \n");
+	// for (size_t i=0; i<m; i+=128)
+	//  {
+	//  	for (size_t j=0; j<n; j+=128)
+	//  	{
+	//  		int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
+	//  		printf("%i ", ld);
+	//  	}
+	//  	printf("\n");
+	//  }
+
+}
+#endif
 
 int main(int argc, char** argv) {
 
@@ -47,15 +87,22 @@ int main(int argc, char** argv) {
   size_t m = 2000 ;
   size_t n = 2000 ;
   int p=1; // 0 for sequential 1 for pIter-sRec ; 2 for pRec; 3 for hybrid
+  int t=MAX_THREADS;
+  int NBK = -1;
+
   Argument as[] = {
 	  { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 	  { 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
 	  { 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
 	  { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
+	  { 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+	  { 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
 	  { 'p', "-p P", "0 for sequential, 1 for Iterative, 2 for Recursive, 3 for Hybrid.", TYPE_INT , &p },
 	  END_OF_ARGUMENTS
 	};
   FFLAS::parseArguments(argc,argv,as);
+  
+  if (NBK==-1) NBK = t;
 
   typedef FFPACK::ModularBalanced<double> Field;
   typedef Field::Element Element;
@@ -72,18 +119,22 @@ int main(int argc, char** argv) {
       // 	  A = read_field (F, argv[5], &n, &n);
       // }
       // else{
-  A = FFLAS::fflas_new<Element>(m*m);
-  for (size_t j = 0; j< (size_t)m*m; ++j)
-	  G.random(*(A+j));
+  A = FFLAS::fflas_new (F,m,m,Alignment::PAGESIZE);
+  Initialize(A,m/NBK,m,m);
+  PAR_FOR (size_t i = 0; i< (size_t)m; ++i)
+	  for (size_t j = 0; j< (size_t)m; ++j)
+		  G.random(*(A+i*m+j));
       //}
   
       // if (argc == 7){
       // 	  B = read_field (F, argv[6], &n, &n);
       // }
 	  // else{
-  B = FFLAS::fflas_new<Element>(m*n);
-  for (size_t j=0 ; j< (size_t)m*n; ++j)
-	  G.random(*(A+j));
+  B = FFLAS::fflas_new(F,m,n,Alignment::PAGESIZE);
+  Initialize(B,m/NBK,m,n);
+  PAR_FOR (size_t i=0 ; i< (size_t)m; ++i)
+	  for (size_t j=0 ; j< (size_t)n; ++j)
+		  G.random(*(A+i*m+j));
       //}
   for (size_t k=0;k<(size_t)m;++k)
 	  while (F.isZero( G.random(*(A+k*(m+1)))));
@@ -101,19 +152,22 @@ int main(int argc, char** argv) {
 	      switch (p) {
 		  case 1: {
 			  FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-					    FFLAS::ParSeqHelper::Parallel> PH 
-			      (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));
+					    FFLAS::ParSeqHelper::Parallel> 
+				  PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::BLOCK_THREADS));
 			  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 					FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 					m,n, F.one, A, m, B, n, PH);
 			  break;}
-		  case 2: {FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive, FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));
+		  case 2: {FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive, 
+					     FFLAS::ParSeqHelper::Parallel> 
+				      PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW_THREADS));
 			  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 					FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 					m,n, F.one, A, m, B, n, PH); 
 			  break;}
 		  case 3: 
-			  FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel> PH (FFLAS::ParSeqHelper::Parallel(NUM_THREADS,FFLAS::BLOCK_THREADS));
+			  FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel> 
+				  PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW_THREADS));
 			  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 					FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 					m,n, F.one, A, m, B, n, PH);
@@ -130,7 +184,7 @@ int main(int argc, char** argv) {
   FFLAS::fflas_delete( A);
   FFLAS::fflas_delete( B);
 
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" n^3/time/10^9: "<<(double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<endl;
+  cerr<<"n: "<<n<<" q: "<<q<<" time: "<<time/(double)iter<<" Gfops: "<<(double(m)/1000.*double(m)/1000.*double(n)/1000./time*double(iter))<<endl;
 
 
   return 0;
