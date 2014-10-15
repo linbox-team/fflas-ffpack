@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random (*(C+i*n+j));
 
-  for (size_t i=0;i<iter;++i){
+  for (size_t i=0;i<=iter;++i){
 
 	  // if (argc > 4){
 	  // 	  A = read_field (F, argv[4], &n, &n);
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
       y = FFLAS::fflas_new<Element>(k);
       
       chrono.clear();
-      chrono.start();
+      if (i) chrono.start();
       if (p){
 	      FFLAS::CuttingStrategy meth;
 	      switch (p){
@@ -180,8 +180,7 @@ int main(int argc, char** argv) {
 
 	      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
       }
-      chrono.stop();
-      time+=chrono.realtime();
+      if (i) {chrono.stop(); time+=chrono.realtime();}
       
       freidvals.clear();
       freidvals.start();

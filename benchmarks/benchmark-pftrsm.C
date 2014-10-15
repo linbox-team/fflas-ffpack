@@ -22,7 +22,7 @@
 * ========LICENCE========
 */
 
-//#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_OPENMP4
 
 #include <iostream>
 #include "fflas-ffpack/fflas-ffpack.h"
@@ -138,10 +138,10 @@ int main(int argc, char** argv) {
       //}
   for (size_t k=0;k<(size_t)m;++k)
 	  while (F.isZero( G.random(*(A+k*(m+1)))));
-  for (size_t i=0;i<iter;++i){
+  for (size_t i=0;i<=iter;++i){
       
 	  chrono.clear();
-	  chrono.start();
+	  if (i) chrono.start();
 
 	  if (!p)
 		  FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
@@ -177,8 +177,7 @@ int main(int argc, char** argv) {
 	  }
 	  BARRIER;
 	  }
-	  chrono.stop();
-	  time+=chrono.realtime();
+	  if (i) {chrono.stop(); time+=chrono.realtime();}
 
   }
   FFLAS::fflas_delete( A);
