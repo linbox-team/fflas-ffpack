@@ -27,6 +27,7 @@
  *.
  */
 
+// #define SIMD_INT
 
 #include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"

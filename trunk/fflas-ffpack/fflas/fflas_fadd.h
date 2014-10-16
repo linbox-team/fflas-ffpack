@@ -30,6 +30,28 @@
 #ifndef __FFLASFFPACK_fadd_H
 #define __FFLASFFPACK_fadd_H
 
+namespace FFLAS {
+
+	template<class T>
+	struct support_simd_add  : public std::false_type {} ;
+
+#ifdef __FFLASFFPACK_USE_SIMD
+	template<>
+	struct support_simd_add<float> : public std::true_type {} ;
+	template<>
+	struct support_simd_add<double> : public std::true_type {} ;
+ #ifdef SIMD_INT
+	template<>
+	struct support_simd_add<int64_t> : public std::true_type {} ;
+	template<>
+	struct support_simd_add<int32_t> : public std::true_type {} ;
+
+ #endif  // SIMD_INT
+
+#endif // __FFLASFFPACK_USE_SIMD
+
+} // FFLAS
+
 #include "fflas_fadd.inl"
 
 namespace FFLAS {
