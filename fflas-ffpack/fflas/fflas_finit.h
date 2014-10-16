@@ -33,6 +33,26 @@
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/field/field-traits.h"
 
+
+namespace FFLAS {
+
+	template<class T>
+	struct support_simd_mod  : public std::false_type {} ;
+
+#ifdef __FFLASFFPACK_USE_SIMD
+	template<>
+	struct support_simd_mod<float> : public std::true_type {} ;
+	template<>
+	struct support_simd_mod<double> : public std::true_type {} ;
+#ifdef SIMD_INT
+	template<>
+	struct support_simd_mod<int64_t> : public std::true_type {} ;
+#endif  // SIMD_INT
+
+#endif // __FFLASFFPACK_USE_SIMD
+
+} // FFLAS
+
 #include "fflas-ffpack/fflas/fflas_finit.inl"
 
 namespace FFLAS {

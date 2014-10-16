@@ -35,22 +35,22 @@ namespace FFLAS { namespace vectorised {
 
 #ifdef __FFLASFFPACK_USE_SIMD
 
-	template<class SimdT, class Element>
+	template<class SimdT, class Element, bool positive>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_ADD(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
 	{
 		using simd = Simd<Element>;
 		C = simd::add(A, B);
-		Q = simd::greater(C, MAX);
-		T = simd::lesser(C, MIN);
-		Q = simd::vand(Q, NEGP);
-		T = simd::vand(T, P);
-		Q = simd::vor(Q, T);
+		Q = simd::vand(simd::greater(C, MAX),NEGP);
+		if (!positive) {
+			T = simd::vand(simd::lesser(C, MIN),P);
+			Q = simd::vor(Q, T);
+		}
 		C = simd::add(C, Q);
 	}
 
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
+	inline typename std::enable_if<FFLAS::support_simd_add<Element>::value, void>::type
 	addp(Element * T, const Element * TA, const Element * TB,  size_t n,  Element p,  T1 min_,  T2 max_)
 	{
 		Element min= (Element)min_, max= (Element)max_;
@@ -98,7 +98,7 @@ namespace FFLAS { namespace vectorised {
 				C = simd::load(T+i);
 				A = simd::load(TA+i);
 				B = simd::load(TB+i);
-				VEC_ADD<vect_t,Element>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
+				VEC_ADD<vect_t,Element,positive>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
 				simd::store(T+i, C);
 			}
 		}
@@ -112,22 +112,22 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-	template<class SimdT, class Element>
+	template<class SimdT, class Element,bool positive>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_SUB(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
 	{
 		using simd = Simd<Element>;
 		C = simd::sub(A, B);
-		Q = simd::greater(C, MAX);
-		T = simd::lesser(C, MIN);
-		Q = simd::vand(Q, NEGP);
-		T = simd::vand(T, P);
-		Q = simd::vor(Q, T);
-		C = simd::add(C, Q);
+		T = simd::vand(simd::lesser(C, MIN),P);
+		if (!positive) {
+			Q = simd::vand(simd::greater(C, MAX),NEGP);
+			T = simd::vor(Q, T);
+		}
+		C = simd::add(C, T);
 	}
 
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<FFLAS::support_simd<Element>::value, void>::type
+	inline typename std::enable_if<FFLAS::support_simd_add<Element>::value, void>::type
 	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
@@ -173,7 +173,7 @@ namespace FFLAS { namespace vectorised {
 				C = simd::load(T+i);
 				A = simd::load(TA+i);
 				B = simd::load(TB+i);
-				VEC_SUB<vect_t,Element>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
+				VEC_SUB<vect_t,Element,positive>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
 				simd::store(T+i, C);
 			}
 		}
@@ -190,7 +190,7 @@ namespace FFLAS { namespace vectorised {
 
 #else
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<!FFLAS::support_simd<Element>::value, void>::type
+	inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
 	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
@@ -211,7 +211,7 @@ namespace FFLAS { namespace vectorised {
 	}
 
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<!FFLAS::support_simd<Element>::value, void>::type
+	inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
 	addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
 	{
 		Element min= (Element)min_, max= (Element)max_;
@@ -241,7 +241,7 @@ namespace FFLAS { namespace details {
 	/**** Specialised ****/
 
 	template <class Field, bool ADD>
-	typename std::enable_if<FFLAS::support_simd<typename Field::Element>::value, void>::type
+	typename std::enable_if<FFLAS::support_simd_add<typename Field::Element>::value, void>::type
 	fadd (const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
@@ -266,7 +266,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template <class Field, bool ADD>
-	typename std::enable_if<!FFLAS::support_simd<typename Field::Element>::value, void>::type
+	typename std::enable_if<!FFLAS::support_simd_add<typename Field::Element>::value, void>::type
 	fadd (const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
