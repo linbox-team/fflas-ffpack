@@ -29,9 +29,10 @@
 #ifndef __FFLASFFPACK_config_blas_H
 #define __FFLASFFPACK_config_blas_H
 
-#ifndef __FFLASFFPACK_CONFIGURATION
-#include "fflas-ffpack/fflas-ffpack-config.h"
-#endif
+#include "fflas-ffpack/utils/fflas_memory.h"
+// #ifndef __FFLASFFPACK_CONFIGURATION
+// #include "fflas-ffpack/fflas-ffpack-config.h"
+// #endif
 
 // #ifdef OPTIMISATION_MODE
 // #include "fflas-ffpack/config.h"
