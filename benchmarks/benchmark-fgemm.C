@@ -75,6 +75,10 @@ void Initialize(Element * C, int BS, size_t m, size_t n)
 	//  }
 
 }
+#else
+template<class Element>
+void Initialize(Element * C, int BS, size_t m, size_t n)
+{}
 #endif
 int main(int argc, char** argv) {
 
