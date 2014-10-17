@@ -37,6 +37,15 @@ typedef FFLAS::OMPTimer TTimer;
 typedef FFLAS::Timer TTimer;
 #endif
 
+#ifndef __SGEMM__
+typedef double Floats;
+#define CBLAS_GEMM cblas_dgemm
+#else
+typedef float Floats;
+#define CBLAS_GEMM cblas_sgemm
+#endif
+
+
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -48,7 +57,7 @@ int main(int argc, char** argv) {
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
 
 
-  typedef FFPACK::ModularBalanced<double> Field;
+  typedef FFPACK::ModularBalanced<Floats> Field;
   typedef Field::Element Element;
 
   Field F(p);
@@ -66,8 +75,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       A = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (size_t i=0; i<n; ++i)
-          for (size_t j=0; j<n; ++j)
+      for (int i=0; i<n; ++i)
+          for (int j=0; j<n; ++j)
               G.random(*(A+i*n+j));
     }
 
@@ -78,14 +87,14 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       B = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (size_t i=0; i<n; ++i)
-          for (size_t j=0; j<n; ++j)
+      for (int i=0; i<n; ++i)
+          for (int j=0; j<n; ++j)
               G.random(*(B+i*n+j));
     }
 
     C = FFLAS::fflas_new<Element>(n*n);
 
-    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
+    CBLAS_GEMM (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
 		 A, n, B, n, F.zero, C,n);
 
     FFLAS::fflas_delete( A);
@@ -102,8 +111,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       A = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (size_t i=0; i<n; ++i)
-          for (size_t j=0; j<n; ++j)
+      for (int i=0; i<n; ++i)
+          for (int j=0; j<n; ++j)
               G.random(*(A+i*n+j));
     }
 
@@ -114,8 +123,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       B = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (size_t i=0; i<n; ++i)
-          for (size_t j=0; j<n; ++j)
+      for (int i=0; i<n; ++i)
+          for (int j=0; j<n; ++j)
               G.random(*(B+i*n+j));
     }
 
@@ -123,7 +132,7 @@ int main(int argc, char** argv) {
 
     chrono.clear();
     chrono.start();
-    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
+    CBLAS_GEMM (CblasRowMajor, CblasNoTrans, CblasNoTrans, n,n,n, F.one,
 		 A, n, B, n, F.zero, C,n);
     chrono.stop();
     time+=chrono.usertime();
