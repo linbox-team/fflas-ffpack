@@ -55,6 +55,10 @@
 
 #include <givaro/givtimer.h>
 
+#ifdef __GIVARO_USE_OPENMP
+#include <givaro/givomptimer.h>
+#endif
+
 namespace FFLAS {
 	typedef Givaro::Timer Timer  ;
 	typedef Givaro::BaseTimer BaseTimer ;
