@@ -33,7 +33,7 @@
 #ifndef __FFLASFFPACK_align_allocator_H
 #define __FFLASFFPACK_align_allocator_H
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/config.h"
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 
