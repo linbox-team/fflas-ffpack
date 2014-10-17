@@ -45,6 +45,49 @@ typedef FFLAS::OMPTimer TTimer;
 typedef FFLAS::Timer TTimer;
 #endif
 
+#ifdef __FFLASFFPACK_USE_OPENMP4
+template<class Element>
+void Initialize(Element * C, int BS, size_t m, size_t n)
+{
+//#pragma omp parallel for collapse(2) schedule(runtime)
+    std::cerr << "Initialize PAR_REGION " << BS << ", " << m << 'x' << n << std::endl;
+    
+        BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
+        PAR_REGION{
+        for(size_t p=0; p<m; p+=BS) ///row
+                for(size_t pp=0; pp<n; pp+=BS) //column
+                {
+                        size_t M=BS, MM=BS;
+                        if(!(p+BS<m))
+                                M=m-p;
+                        if(!(pp+BS<n))
+                                MM=n-pp;
+#pragma omp task
+                        {
+                        for(size_t j=0; j<M; j++)
+                                for(size_t jj=0; jj<MM; jj++)
+                                        C[(p+j)*n+pp+jj]=0;
+                        }
+                }
+        #pragma omp taskwait
+        }
+        // printf("A = \n");
+        // for (size_t i=0; i<m; i+=128)
+        //  {
+        //      for (size_t j=0; j<n; j+=128)
+        //      {
+        //              int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
+        //              printf("%i ", ld);
+        //      }
+        //      printf("\n");
+        //  }
+
+}
+#endif
+
+
+
+
 int main(int argc, char** argv) {
 
   // parameter: p, n, iteration, file
@@ -52,7 +95,7 @@ int main(int argc, char** argv) {
   int    p    = argc>1 ? atoi(argv[1]) : 1009;
   int    n    = argc>2 ? atoi(argv[2]) : 2000;
   size_t iter = argc>3 ? atoi(argv[3]) :    1;
-
+  size_t NBK = MAX_THREADS;
 
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
@@ -71,6 +114,9 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
+#ifdef __FFLASFFPACK_USE_OPENMP4
+          Initialize(A,n/NBK,n,n);
+#endif
 #pragma omp parallel for
 		  for (size_t i=0; i<n; ++i)
               for (size_t j=0; j<n; ++j)
@@ -87,6 +133,9 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
+#ifdef __FFLASFFPACK_USE_OPENMP4
+          Initialize(A,n/NBK,n,n);
+#endif
 #pragma omp parallel for
 		  for (size_t i=0; i<n; ++i)
               for (size_t j=0; j<n; ++j)
