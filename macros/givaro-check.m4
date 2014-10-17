@@ -53,8 +53,8 @@ dnl GIVARO VERSION dnl
 dnl -------------- dnl
 
 dnl those versions are really any if we only need Integer
-version_min=30800
-version_max=30900
+version_min=30900
+version_max=31000
 
 dnl Check for existence
 
