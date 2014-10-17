@@ -32,7 +32,9 @@
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "tests/test-utils.h"
+#ifdef __FFLASFFPACK_USE_KAAPI
 #include "libkomp.h"
+#endif
 using namespace std;
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
