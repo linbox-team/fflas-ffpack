@@ -38,8 +38,6 @@
 using namespace std;
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
-
-
 template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {
@@ -123,14 +121,14 @@ int main(int argc, char** argv) {
   A = FFLAS::fflas_new(F,m,k,Alignment::PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(A,m/NBK,m,k);
-#pragma omp for
+//#pragma omp for
   for (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)k; ++j)
 		  G.random (*(A+i*k+j));
   B = FFLAS::fflas_new(F,k,n,Alignment::PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(B,k/NBK,k,n);
-#pragma omp parallel for
+//#pragma omp parallel for
   for (size_t i=0; i<(size_t)k; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random(*(B+i*n+j));
@@ -155,7 +153,6 @@ int main(int argc, char** argv) {
       y = FFLAS::fflas_new<Element>(k);
       
       chrono.clear();
-      if (i) chrono.start();
       if (p){
 	      FFLAS::CuttingStrategy meth;
 	      switch (p){
@@ -170,19 +167,22 @@ int main(int argc, char** argv) {
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 			      typename FFLAS::FieldTraits<Field>::value,
 			      FFLAS::ParSeqHelper::Parallel> 
-		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth));
+		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth));	
+	      if (i) chrono.start();
 	      PAR_REGION{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 	      }
+	      if (i) {chrono.stop(); time+=chrono.realtime();}
+      
       }else{
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd>//,
 			  //typename FFLAS::FieldTraits<Field>::value,
 			  //FFLAS::ParSeqHelper::Parallel>
-	      WH (F, nbw);
-
-	      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
+	      if (i) chrono.start();
+      	      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+	      if (i) {chrono.stop(); time+=chrono.realtime();}
       }
-      if (i) {chrono.stop(); time+=chrono.realtime();}
       
       freidvals.clear();
       freidvals.start();
