@@ -122,9 +122,9 @@ namespace FFLAS {
 //#pragma omp task shared(F, A1, B1)                                                                  
 		 H1.parseq.numthreads /= 2;
 		 H2.parseq.numthreads = H.parseq.numthreads-H1.parseq.numthreads;
-#pragma omp task shared(F) depend(in:A1,B1) depend(inout:C)
+#pragma omp task shared(F, A1, C1) depend(in:A1,B1) depend(inout:C)
 		 pfgemm_3D_rec_adapt(F, ta, tb, m, n, K2, a, A1, lda, B1, ldb, b, C, ldc, H1);
-#pragma omp task shared(F) depend(in:A2,B2) depend(inout:C2)
+#pragma omp task shared(F, A2, C2) depend(in:A2,B2) depend(inout:C2)
 		 pfgemm_3D_rec_adapt(F, ta, tb, m, n, k-K2, a, A2, lda, B2, ldb, F.zero, C2, n, H2);
 #pragma omp task shared(F) depend(inout:C) depend(in:C2)
 		faddin(F, n, m, C2, n, C, ldc);
@@ -520,6 +520,7 @@ namespace FFLAS {
 		case THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
 			return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
+			H.parseq.numthreads = std::min(H.parseq.numthreads, int(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)));
 			ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
 			// if (H.recLevel < 0) 
 			// 	H.recLevel = Protected::WinogradSteps (F, min3(iter.rowBlockSize,k,iter.colBlockSize));
