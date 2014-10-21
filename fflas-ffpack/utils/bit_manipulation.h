@@ -113,8 +113,8 @@ static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 
 static inline int64_t mulhi_64(int64_t x, int64_t y) {
 #if 1 // todo check this type
-        __int128_t xl = x, yl = y;
-        __int128_t rl = xl * yl;
+        __int128 xl = x, yl = y;
+        __int128 rl = xl * yl;
         return (int64_t)(rl >> 64);
 #else
     const uint32_t mask = 0xFFFFFFFF;
@@ -129,8 +129,8 @@ static inline int64_t mulhi_64(int64_t x, int64_t y) {
 
 static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
 #if 0 // todo check this type
-        __int128_t xl = x, yl = y;
-        __int128_t rl = xl * yl;
+        __int128 xl = x, yl = y;
+        __int128 rl = xl * yl;
         return (int64_t)(rl >> 64);
 #else
     const uint32_t mask = 0xFFFFFFFF;
