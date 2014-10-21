@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_pftrsm_INL
 #define __FFLASFFPACK_fflas_pftrsm_INL
 
-#define PTRSM_HYBRID_THRESHOLD 220
+#define PTRSM_HYBRID_THRESHOLD 256
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
 #endif
@@ -120,7 +120,7 @@ namespace FFLAS {
 			int nt = H.parseq.numthreads;
 			int nt_it=nt;
 			int nt_rec=1;
-			while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
+			while(nt_it*PTRSM_HYBRID_THRESHOLD >= (int)n){
 				nt_it>>=1;
 				nt_rec<<=1;
 			}
