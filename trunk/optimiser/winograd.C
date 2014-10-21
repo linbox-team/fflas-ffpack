@@ -61,7 +61,7 @@ typedef Givaro::OMPTimer TTimer;
 typedef Givaro::Timer TTimer;
 #endif
 
-#define MFLOPS (2.0/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
+#define MFLOPS (2.0*iter/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 #include <ctime>
@@ -77,13 +77,18 @@ int main () {
 	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
     TTimer chrono;
 	bool bound=false;
+	Field::RandIter G(F); 
 
-	Element *A, *C;
+	Element *A,*B,*C;
 	A = FFLAS::fflas_new<Element>(nmax*nmax);
+	B = FFLAS::fflas_new<Element>(nmax*nmax);
 	C = FFLAS::fflas_new<Element>(nmax*nmax);
-	for (size_t i=0; i<nmax*nmax;++i){
-		A[i]=2.;
-	}
+	for (size_t i=0; i<nmax*nmax;++i)
+		G.random(A[i]);
+
+	for (size_t i=0; i<nmax*nmax;++i)
+		G.random(B[i]);
+	
 
 	std::ofstream outlog;
 	outlog.open("optim.log", std::ofstream::out | std::ofstream::app);
@@ -98,38 +103,46 @@ int main () {
 	F.write(outlog << "(using ") << ')' << std::endl;
 	do {
 	double basetime, time;
-		chrono.start();
 		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> ClassicH(F,0, FFLAS::ParSeqHelper::Sequential());
 		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WinogradH(F,1, FFLAS::ParSeqHelper::Sequential());
 
+		int iter=10;
+		    //warm up computation
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				n, n, n, F.one, A, n, A, n, F.zero, C, n, ClassicH);
+				n, n, n, F.one, A, n, B, n, F.zero, C, n, ClassicH);
+		chrono.start();
+		for (int i=0;i<iter;i++)
+			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n, n, n, F.one, A, n, B, n, F.zero, C, n, ClassicH);
 		chrono.stop();
 		std::cout << std::endl
 			<< "fgemm " << n << "x" << n << ": "
-			<< chrono.usertime() << " s, "
+			<< chrono.realtime()/iter << " s, "
 			<< MFLOPS << " Mffops"
 			<< std::endl;
 		outlog << std::endl
 			<< "fgemm " << n << "x" << n << ": "
-			<< chrono.usertime() << " s, "
+			<< chrono.realtime()/iter << " s, "
 			<< MFLOPS << " Mffops"
 			<< std::endl;
-		basetime= chrono.usertime();
+		basetime= chrono.realtime();
+		    //warm up
+		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+			     n, n, n, 1., A, n, B, n, 0., C, n, WinogradH);
 		chrono.clear();
 		chrono.start();
-		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				n, n, n, 1., A, n, A, n, 0., C, n, WinogradH);
+		for (int i=0; i<iter; i++)
+			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+				     n, n, n, 1., A, n, B,n, 0., C, n, WinogradH);
 		chrono.stop();
 		std::cout << "1Wino " << n << "x" << n << ": "
-			<< chrono.usertime() << " s, "
+			<< chrono.realtime()/iter << " s, "
 			<< MFLOPS  << " Mffops"
 			<< std::endl;
 		outlog << "1Wino " << n << "x" << n << ": "
-			<< chrono.usertime() << " s, "
+			<< chrono.realtime()/iter << " s, "
 			<< MFLOPS  << " Mffops"
 			<< std::endl;
-		time= chrono.usertime();
+		time= chrono.realtime();
 
 		if (basetime > time ){
 			count++;

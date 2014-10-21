@@ -43,6 +43,7 @@
 
 #include "fflas_blockcuts.inl"
 #include "parallel.h"
+#include "fflas-ffpack/utils/timer.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
 namespace FFLAS {
@@ -122,7 +123,7 @@ namespace FFLAS {
 //#pragma omp task shared(F, A1, B1)                                                                  
 		 H1.parseq.numthreads /= 2;
 		 H2.parseq.numthreads = H.parseq.numthreads-H1.parseq.numthreads;
-#pragma omp task shared(F, A1, C1) depend(in:A1,B1) depend(inout:C)
+#pragma omp task shared(F, A1, C) depend(in:A1,B1) depend(inout:C)
 		 pfgemm_3D_rec_adapt(F, ta, tb, m, n, K2, a, A1, lda, B1, ldb, b, C, ldc, H1);
 #pragma omp task shared(F, A2, C2) depend(in:A2,B2) depend(inout:C2)
 		 pfgemm_3D_rec_adapt(F, ta, tb, m, n, k-K2, a, A2, lda, B2, ldb, F.zero, C2, n, H2);
