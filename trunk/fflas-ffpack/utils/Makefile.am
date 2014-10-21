@@ -31,8 +31,8 @@ pkgincludesub_HEADERS=       \
 	     Makefile.am \
 	     Matio.h  \
 	     bit_manipulation.h \
-	     print-utils.h
-
+	     print-utils.h\
+	     timer.h		
 
 ### is this really extra dist ?
 ### this is wrong in a header only lib

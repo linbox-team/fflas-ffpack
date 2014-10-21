@@ -39,9 +39,11 @@ SIMD256= simd256.inl \
 	 simd256_int32.inl \
 	 simd256_int64.inl
 
+SIMD_MOD= simd_modular.inl
 
 
 pkgincludesub_HEADERS=            \
 	     $(SIMD128) \
-	     $(SIMD256)
+	     $(SIMD256)\
+	     $(SIMD_MOD)
 
