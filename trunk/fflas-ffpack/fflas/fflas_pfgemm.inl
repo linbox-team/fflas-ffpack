@@ -521,7 +521,7 @@ namespace FFLAS {
 		case THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
 			return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
-			H.parseq.numthreads = std::min(H.parseq.numthreads, int(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)));
+			H.parseq.numthreads = std::min(H.parseq.numthreads, std::max(1,int(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
 			ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
 			// if (H.recLevel < 0) 
 			// 	H.recLevel = Protected::WinogradSteps (F, min3(iter.rowBlockSize,k,iter.colBlockSize));
