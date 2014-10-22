@@ -183,10 +183,10 @@ namespace FFPACK {
       // [ B2 ]
 #pragma omp task shared(P1, A2, Fi) depend(inout:A2) depend(in:P1)
       //#pragma omp task depend(in:A2, Fi)
-      applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
+      papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
       // [ C1 C2 ] <- A3 Q1^T                                          
 #pragma omp task  shared(Q1, A3, Fi) depend(inout:A3) depend(in:Q1)
-      applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
+      papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
     
       //#pragma omp taskwait
 
@@ -237,38 +237,41 @@ namespace FFPACK {
 #pragma omp task shared(P3, Q3, G, Fi, R3) depend(inout:P3,Q3,G) depend(out: R3)
     R3 = pPLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 
-    #pragma omp taskwait
+
 
     // [ H1 H2 ] <- P3^T H Q2^T                                                                                     
     // [ H3 H4 ]                                                                                     
     #pragma omp task shared(Fi, A4, Q2, P3) depend(inout:A4) depend(in:P3, Q2)
     {
-    applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
+    papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
+    papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
 	  }
+    #pragma omp taskwait
     // [ E1 ] <- P3^T E                                                                                            
     // [ E2 ]                                                                                   
 #pragma omp task shared( P3, A3, Fi) depend(in:P3) depend(inout:A3)
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
+    papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
+
     // [ M11 ] <- P2^T M1                                      
     // [ M12 ]
 #pragma omp task shared( P2, A, Fi) depend(inout:AR1lda) depend(in:P2)
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, AR1lda, lda, P2); // pas de dependence ?????
+    papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, AR1lda, lda, P2); // pas de dependence ?????
+
     // [ D1 D2 ] <- D Q2^T
 #pragma omp task  shared( Q2, A2, Fi) depend(in:Q2) depend(inout:A2)
-    applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2);
+    papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2);
+
     // [ V1 V2 ] <- V1 Q3^T
 #pragma omp task shared(Q3, A, Fi) depend(in:Q3) depend(inout:AR1)
-    applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, AR1, lda, Q3);
+    papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, AR1, lda, Q3);
 
-    //#pragma omp taskwait
 
       //#pragma omp task firstprivate(M2, R2, lda) shared(F, A4, Fi)
     // I <- H U2^-1
     // K <- H3 U2^-1            
 #pragma omp task shared(Fi, A4, F, R2, PH) depend(in:F, R2) depend(inout:A4)
     ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, PH);
-    #pragma omp taskwait
+    //    #pragma omp taskwait
     //#pragma omp task shared(temp, A4R2) depend(in:R2, R3) depend(out:temp, A4R2)
     
 
@@ -325,13 +328,13 @@ namespace FFPACK {
     // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]                                                    
     // [ E22 M32 0 K2 ]                                                                                       
 #pragma omp task shared(A3R3lda, P4, Fi) depend(in:P4) depend(inout:A3R3lda)
-    applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3R3lda, lda, P4);
+    papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3R3lda, lda, P4);
     // [ D21 D22 ]     [ D2 ]                         
     // [ V21 V22 ]  <- [ V2 ] Q4^T                   
     // [  0   0  ]     [  0 ]                                                  
     // [ O1   O2 ]     [  O ]                                                                   
 #pragma omp task shared(A2R2, Q4, Fi) depend(in:Q4) depend(inout:A2R2)
-    applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2R2, lda, Q4);
+    papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2R2, lda, Q4);
     #pragma omp taskwait
     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])     
     //               [      P2 ]      [      P4 ]                            
