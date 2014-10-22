@@ -413,7 +413,7 @@ namespace FFPACK {
 		  TASK(READ(Fi, Q1), NOWRITE(), READWRITE(A3), papplyP, Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 		  //papplyP( Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 
-		  //WAIT;
+		  WAIT;
 #if(DEBUG!=0)
 struct timespec tsi;
 clock_gettime(CLOCK_REALTIME, &tsi);

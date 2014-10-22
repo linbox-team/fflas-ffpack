@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
 	       
 	       if (i) chrono.start();
 	       PAR_REGION{
-		       R = pPLUQ(F, diag, m, n, A, n, P, Q);
+		       R = pPLUQ(F, diag, m, n, A, n, P, Q, t);
 	       }
 	       if (i) {chrono.stop(); time+=chrono.realtime();}
 	       
