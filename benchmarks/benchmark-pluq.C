@@ -22,7 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-#define __FFLASFFPACK_USE_OPENMP4
+//#define __FFLASFFPACK_USE_OPENMP4
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -58,7 +58,7 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
 	std::vector<size_t> Z(n);
 	PAR_FOR(size_t i=0; i<n; ++i) Z[i]=i;
 	P.resize(r);
-	PAR_FOR(size_t i=0; i<r; ++i) {
+	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
 		P[i] = Z[ index ];
 		Z.erase(Z.begin()+index);
@@ -87,13 +87,13 @@ typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t 
 	std::vector<size_t> Z(m);
 	PAR_FOR(size_t i=0; i<m; ++i) Z[i]=i;
 	std::vector<size_t> Q(r);
-	PAR_FOR(size_t i=0; i<r; ++i) {
+	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
 		Q[i] = Z[ index ];
 		Z.erase(Z.begin()+index);
 	}
 	
-	PAR_FOR(size_t i=0; i<r; ++i) {
+	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % E.size();
 		size_t perm = E[ index ];
 		
@@ -177,6 +177,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 #pragma omp task shared(F, L, U, X)
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 			      F.one, L,R, U,n, F.zero, X,n, pWH);
+
 	}
 	bool fail = false;
 	//  PAR_FOR (size_t i=0; i<m; ++i)
