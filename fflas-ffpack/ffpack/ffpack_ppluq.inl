@@ -94,10 +94,12 @@ namespace FFPACK {
 	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
-	      size_t* P, size_t* Q)
+	      size_t* P, size_t* Q, int nt)
 	  {
 
-
+		  // if (std::min(M,N) < 1000)
+		  // 	  return PLUQ(Fi, Diag, M, N, A, lda, P, Q);
+		  
 
 
     for (size_t i=0; i<M; ++i) P[i] = i;
@@ -152,29 +154,28 @@ namespace FFPACK {
     size_t * P1 = new size_t [M2];
     size_t * Q1 = new size_t [N2];
     size_t R1,R2,R3,R4;
-
+	//if (M>8000) std::cerr<<"PLUQ 1"<<std::endl;
     // A1 = P1 [ L1 ] [ U1 V1 ] Q1                                                          
-    //        [ M1 ]                                                                                                                    
-    //#pragma omp task shared(Fi, A, P1, Q1, R1) depend(inout:A) depend(out:P1, Q1, R1)
-    R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1);
-    //#pragma omp taskwait
+    //        [ M1 ]
+    R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1,nt);
+
     typename Field::Element * A2 = A + N2;
     typename Field::Element * A3 = A + M2*lda;
     typename Field::Element * A4 = A3 + N2;
     typename Field::Element * F = A2 + R1*lda;
     typename Field::Element * G = A3 + R1;
 
-    const FFLAS::CuttingStrategy meth = FFLAS::BLOCK_THREADS;
-    //    const FFLAS::CuttingStrategy method = FFLAS::TWO_D;
-    const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
+//    const FFLAS::CuttingStrategy meth = FFLAS::BLOCK_THREADS;
+    const FFLAS::CuttingStrategy meth = FFLAS::TWO_D_ADAPT;
+//    const FFLAS::CuttingStrategy meth = FFLAS::THREE_D_ADAPT;
     /*
     FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 		    typename FFLAS::FieldTraits<Field>::value,
 		    FFLAS::ParSeqHelper::Parallel>
 	    pWH (Fi, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, method));
     */
-    typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
-    typename FFLAS::ParSeqHelper::Parallel PH (std::max(MAX_THREADS/2,1), meth);
+    typename FFLAS::ParSeqHelper::Parallel pWH (nt, meth);
+    typename FFLAS::ParSeqHelper::Parallel PH (std::max(nt,1), meth);
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
     //#pragma omp parallel firstprivate(M2, N2) shared(P1, Q1, A2, A3, Fi)
@@ -190,53 +191,55 @@ namespace FFPACK {
     
       //#pragma omp taskwait
 
-	// D <- L1^-1 B1           
+      // D <- L1^-1 B1           
+//    if (M>8000) std::cerr<<"TRSMs D,E"<<std::endl;
 #pragma omp task  shared( A2, A, Fi, N2, R1, PH) depend(in:A) depend(inout:A2)
-    ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
+      ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
 
+      // E <- C1 U1^-1
 #pragma omp task  shared(A, A3, Fi, M2, R1, PH) depend(in:A) depend(inout:A3)
-    // E <- C1 U1^-1
-    ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda, PH);
+      ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda, PH);
 
-    //    #pragma omp taskwait
+//#pragma omp taskwait
 
 
     typename Field::Element * AR1lda = A + R1*lda;    
     typename Field::Element * AR1 = A + R1;    
     //    typename Field::Element * A3R1 = A3 + R1;    
 
-    //    #pragma omp parallel
-    
+//    if (M>8000) std::cerr<<"GEMMs F,G"<<std::endl;
     // F <- B2 - M1 D 
 #pragma omp task  shared(A, A2, Fi, F, pWH) depend(in: A2)  depend(inout:F) //depend(inout:A2[R1*lda:M2-R1])
     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, AR1lda, lda, A2, lda, Fi.one, F, lda, pWH);
     // G <- C2 - E V1                                                                                
 #pragma omp task shared(A, A3, Fi, G, pWH) depend(in:A3) depend(inout:G)
-	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, AR1, lda, Fi.one, G, lda, pWH);
-
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, AR1, lda, Fi.one, G, lda, pWH);
+    
+//    if (M>8000) std::cerr<<"GEMM H"<<std::endl;
     // H <- A4 - ED  
 #pragma omp task shared(A3, A2, A4, Fi, pWH) depend(in:A3,A2) depend(inout:A4)
-	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, pWH);    
+    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, pWH);
 
-	    //#pragma omp taskwait
+//#pragma omp taskwait
+//    if (M>8000) std::cerr<<"PLUQ 2"<<std::endl;
     // F = P2 [ L2 ] [ U2 V2 ] Q2
-    //        [ M2 ]                                                                                                                
+    //        [ M2 ]
     size_t * P2 = new size_t [M2-R1];
     size_t * Q2 = new size_t [N-N2];
     typename Field::Element * A4R2 = 0;
-#pragma omp task shared(P2, Q2, F, Fi, R2, A4R2) depend(inout:P2,Q2,F) depend(out: R2, A4R2) // P2 Q2 should be out only
+#pragma omp task shared(P2, Q2, F, Fi, R2, A4R2) depend(inout:F) depend(out: P2,Q2,R2, A4R2) // P2 Q2 should be out only
     {
-	    R2 = pPLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
+	    R2 = pPLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2,nt/2);
 	    A4R2 = A4 + R2;    
     }
-    // G = P3 [ L3 ] [ U3 V3 ] Q3                                                                                                    
-    //        [ M3 ]                                                                                                                 
+    // G = P3 [ L3 ] [ U3 V3 ] Q3
+    //        [ M3 ]
     size_t * P3 = new size_t [M-M2];
     size_t * Q3 = new size_t [N2-R1];
+//    if (M>8000) std::cerr<<"PLUQ 3"<<std::endl;
 
 #pragma omp task shared(P3, Q3, G, Fi, R3) depend(inout:P3,Q3,G) depend(out: R3)
-    R3 = pPLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
-
+    R3 = pPLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3,nt/2);
 
 
     // [ H1 H2 ] <- P3^T H Q2^T                                                                                     
@@ -245,7 +248,7 @@ namespace FFPACK {
     {
     papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
     papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
-	  }
+    }
     #pragma omp taskwait
     // [ E1 ] <- P3^T E                                                                                            
     // [ E2 ]                                                                                   
@@ -268,39 +271,45 @@ namespace FFPACK {
 
       //#pragma omp task firstprivate(M2, R2, lda) shared(F, A4, Fi)
     // I <- H U2^-1
-    // K <- H3 U2^-1            
+    // K <- H3 U2^-1  
+//    if (M>8000) std::cerr<<"TRSM I, K"<<std::endl;
+          
 #pragma omp task shared(Fi, A4, F, R2, PH) depend(in:F, R2) depend(inout:A4)
     ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, PH);
     //    #pragma omp taskwait
     //#pragma omp task shared(temp, A4R2) depend(in:R2, R3) depend(out:temp, A4R2)
     
 
-	    typename Field::Element * temp = 0;
-    /*
+    typename Field::Element * temp = 0;
+	/*
     for (size_t i=0; i<R3; ++i)
       fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
     */
 #pragma omp task  shared(temp, Fi, R3, R2, A4) depend(in:A4, R2, R3) depend(out:temp)
-	    {
-		    temp = new typename Field::Element [R3*R2];	                                                 
-		    FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
-	    }
+    {
+	    temp = new typename Field::Element [R3*R2];	                                                 
+	    FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
+    }
+//    if (M>8000) std::cerr<<"TRSMs J, N"<<std::endl;
     // J <- L3^-1 I (in a temp)                
 #pragma omp task  shared(G, temp, Fi, R3, R2, A4) depend(in:A4, G, R2, R3) depend(inout:temp)
     ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2, PH);
     // N <- L3^-1 H2                                	    
 #pragma omp task  shared(G, A4R2, Fi, R3, R2) depend(in:G, R3, R2) depend(inout:A4R2)
     ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4R2, lda, PH);
-     #pragma omp taskwait
+	// #pragma omp taskwait
 
     //    typename Field::Element * FR2 = F + R2;
-    // O <- N - J V2                         
+    // O <- N - J V2      
+//    if (M>8000) std::cerr<<"GEMM O"<<std::endl;
+                   
 #pragma omp task shared(F,R2, A4R2, Fi,temp, R3) depend(inout:A4R2,temp) depend(in:F,R2, R3)
     {
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4R2, lda, pWH);
-    delete[] temp;
-    temp=0;
+	    delete[] temp;
+	    temp=0;
     }
+//    if (M>8000)  std::cerr<<"done GEMM O"<<std::endl;
     // R <- H4 - K V2 - M3 O                                                              
     typename Field::Element * R = 0;
 
@@ -310,6 +319,8 @@ namespace FFPACK {
 	    R = A4 + R2 + R3*lda;
 	    typename Field::Element * A4R3lda = A4 + R3*lda;
 	    typename Field::Element * GR3lda = G+ R3*lda;
+//	    if (M>8000) std::cerr<<"GEMMs R"<<std::endl;
+	    
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4R3lda, lda, F+R2, lda, Fi.one, R, lda, pWH);
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, GR3lda, lda, A4R2, lda, Fi.one, R, lda, pWH);
     }
@@ -321,9 +332,9 @@ namespace FFPACK {
     typename Field::Element * A3R3lda = A3 + R3*lda;    
     typename Field::Element * A2R2 = A2 + R2;    
 
-
-    //#pragma omp task shared(Fi, P4, Q4, R) depend(inout:R) depend(out:R4, P4, Q4)
-    R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
+//#pragma omp task shared(Fi, P4, Q4, R) depend(inout:R) depend(out:R4, P4, Q4)
+//    if (M>8000) std::cerr<<"PLUQ 4"<<std::endl;
+    R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4,nt);
 
     // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]                                                    
     // [ E22 M32 0 K2 ]                                                                                       
@@ -335,7 +346,8 @@ namespace FFPACK {
     // [ O1   O2 ]     [  O ]                                                                   
 #pragma omp task shared(A2R2, Q4, Fi) depend(in:Q4) depend(inout:A2R2)
     papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2R2, lda, Q4);
-    #pragma omp taskwait
+#pragma omp taskwait // To be removed?
+
     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])     
     //               [      P2 ]      [      P4 ]                            
     size_t* MathP = new size_t[M];
@@ -364,14 +376,14 @@ namespace FFPACK {
       MathQ[i] += N2;
 
     if (R1 < N2){
-#pragma omp task shared(MathQ) depend(inout:MathQ)
-      // Q <- T Q                                                                                                                           
-      PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
+//#pragma omp task shared(MathQ) depend(inout:MathQ)
+		// Q <- T Q
+	    PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
       // A <-   A T^T
-#pragma omp task shared (Fi, A) depend(inout:A)                                                                                                                       
-      pMatrixApplyT( Fi, A, lda, M, N2, R1, R2, R3, R4);
+#pragma omp task shared (Fi, A) depend(inout:A)                                 
+	    pMatrixApplyT( Fi, A, lda, M, N2, R1, R2, R3, R4);
 
-      //      applyT (A, lda, M, N2, R1, R2, R3, R4);
+		//      applyT (A, lda, M, N2, R1, R2, R3, R4);
     }
 #pragma omp taskwait
     MathPerm2LAPACKPerm (Q, MathQ, N);
@@ -390,7 +402,7 @@ namespace FFPACK {
     return R1+R2+R3+R4;
 
 
-#else
+#else // use __FFLASFFPACK_USE_OPENMP4
 
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]
@@ -401,7 +413,7 @@ namespace FFPACK {
 		  TASK(READ(Fi, Q1), NOWRITE(), READWRITE(A3), papplyP, Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 		  //papplyP( Fi, FflasRight, FflasTrans, M-M2, 0, N2, A3, lda, Q1);
 
-		  WAIT;
+		  //WAIT;
 #if(DEBUG!=0)
 struct timespec tsi;
 clock_gettime(CLOCK_REALTIME, &tsi);
@@ -423,11 +435,11 @@ clock_gettime(CLOCK_REALTIME, &tsi);
 std::cerr << "F  : " << tsi.tv_nsec << std::endl;
 #endif
 		  // F <- B2 - M1 D
-		  TASK(READ(Fi, A, pWH), NOWRITE(), READWRITE(A2), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, pWH);
+                  TASK(READ(Fi, A, pWH), WRITE(F), READWRITE(A2),  fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
 
 		  // G <- C2 - E V1
-		  TASK(READ(Fi, R1, A, pWH), NOWRITE(), READWRITE(A3), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda, pWH);
+		  TASK(READ(Fi, R1, A, pWH), WRITE(G), READWRITE(A3), fgemm, Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda, pWH);
 		  //fgemm( Fi, FflasNoTrans, FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
 
 		  WAIT;
@@ -440,14 +452,14 @@ std::cerr << "R2 : " << tsi.tv_nsec << std::endl;
 		  size_t * Q2 = FFLAS::fflas_new<size_t>(N-N2);
 		  // F = P2 [ L2 ] [ U2 V2 ] Q2
 		  //        [ M2 ]
-		  TASK(READ(Fi), WRITE(R2), READWRITE(F, P2, Q2), RETURNPARAM, pPLUQ, R2, Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
+		  TASK(READ(Fi), WRITE(R2), READWRITE(F, P2, Q2), RETURNPARAM, pPLUQ, R2, Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2,nt/2);
 		  //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
 
 		  size_t * P3 = FFLAS::fflas_new<size_t>(M-M2);
 		  size_t * Q3 = FFLAS::fflas_new<size_t>(N2-R1);
 		  // G = P3 [ L3 ] [ U3 V3 ] Q3
 		  //        [ M3 ]
-		  TASK(READ(Fi), WRITE(R3), READWRITE(G, P3, Q3), RETURNPARAM, pPLUQ, R3, Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
+		  TASK(READ(Fi), WRITE(R3), READWRITE(G, P3, Q3), RETURNPARAM, pPLUQ, R3, Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3,nt/2);
 		  //		  R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 
 
@@ -558,7 +570,7 @@ std::cerr << "P4 : " << tsi.tv_nsec << std::endl;
     // H4 = P4 [ L4 ] [ U4 V4 ] Q4
     //         [ M4 ]
 		  //TASK(READ(Fi), NOWRITE(R4), READWRITE(R, P4, Q4), PPLUQ, R4, Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
-		  R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
+		  R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4,nt);
 
 #if(DEBUG!=0)
 clock_gettime(CLOCK_REALTIME, &tsi);
