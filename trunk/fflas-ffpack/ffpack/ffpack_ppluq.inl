@@ -173,7 +173,7 @@ namespace FFPACK {
 		    FFLAS::ParSeqHelper::Parallel>
 	    pWH (Fi, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, method));
     */
-    typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth);
+    typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
     typename FFLAS::ParSeqHelper::Parallel PH (std::max(MAX_THREADS/2,1), meth);
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
@@ -189,7 +189,7 @@ namespace FFPACK {
       applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
     
       //#pragma omp taskwait
-    
+
 	// D <- L1^-1 B1           
 #pragma omp task  shared( A2, A, Fi, N2, R1, PH) depend(in:A) depend(inout:A2)
     ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
@@ -203,7 +203,7 @@ namespace FFPACK {
 
     typename Field::Element * AR1lda = A + R1*lda;    
     typename Field::Element * AR1 = A + R1;    
-    typename Field::Element * A3R1 = A3 + R1;    
+    //    typename Field::Element * A3R1 = A3 + R1;    
 
     //    #pragma omp parallel
     
@@ -260,7 +260,7 @@ namespace FFPACK {
     // [ V1 V2 ] <- V1 Q3^T
 #pragma omp task shared(Q3, A, Fi) depend(in:Q3) depend(inout:AR1)
     applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, AR1, lda, Q3);
-    
+
     //#pragma omp taskwait
 
       //#pragma omp task firstprivate(M2, R2, lda) shared(F, A4, Fi)
@@ -332,7 +332,7 @@ namespace FFPACK {
     // [ O1   O2 ]     [  O ]                                                                   
 #pragma omp task shared(A2R2, Q4, Fi) depend(in:Q4) depend(inout:A2R2)
     applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2R2, lda, Q4);
-    //#pragma omp taskwait
+    #pragma omp taskwait
     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])     
     //               [      P2 ]      [      P4 ]                            
     size_t* MathP = new size_t[M];
@@ -351,7 +351,7 @@ namespace FFPACK {
       pMatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
       //      applyS (A, lda, N, M2, R1, R2, R3, R4);
     }
-
+    
     // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
     //            [      Q3 ]      [      P4 ]                                                                                        
     size_t * MathQ = new size_t [N];
