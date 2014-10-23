@@ -35,7 +35,7 @@ namespace FFLAS {
 	template<class T>
 	struct support_simd_add  : public std::false_type {} ;
 
-#ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_USE_SIMD
 	template<>
 	struct support_simd_add<float> : public std::true_type {} ;
 	template<>
@@ -48,7 +48,7 @@ namespace FFLAS {
 
  #endif  // SIMD_INT
 
-#endif // __FFLASFFPACK_USE_SIMD
+// #endif // __FFLASFFPACK_USE_SIMD
 
 } // FFLAS
 
