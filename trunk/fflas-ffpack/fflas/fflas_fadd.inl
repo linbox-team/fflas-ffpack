@@ -39,7 +39,6 @@ namespace FFLAS { namespace vectorised {
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_ADD(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
 	{
-		std::cout << "called" << std::endl;
 		using simd = Simd<Element>;
 		C = simd::add(A, B);
 		Q = simd::vand(simd::greater(C, MAX),NEGP);
