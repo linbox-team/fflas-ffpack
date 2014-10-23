@@ -127,43 +127,28 @@ namespace FFPACK {
 		for (size_t i = 0 ; i < m ; ++i ) Q[i] = 0;
 		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
 
-		Element_ptr U = FFLAS::fflas_new(F,m,lda);
+		Element_ptr U = FFLAS::fflas_new(F,m,n);
 		Element_ptr L = FFLAS::fflas_new(F,m,m);
 
 
 		/*  Create L, lower invertible */
-		for (size_t i=0 ; i<m ; ++i)
-			for (size_t j= 0; j<i ;++j)
-				R.random( L[i*m+j] );
-
-		for (size_t i=0 ; i<m ; ++i)
-			nzR.random( L[i*m+i] );
-
-		for (size_t i=0 ; i<m ; ++i)
-			for (size_t j= i+1; j<m ;++j)
-				F.init(L[i*m+j],0UL);
-
+		for (size_t i=0 ; i<m ; ++i){
+			for (size_t j= 0; j<i ;++j) R.random( L[i*m+j] );
+			nzR.random( L[i*m+i] );			
+			for (size_t j= i+1; j<m ;++j) F.init(L[i*m+j],F.zero);
+		}
 
 		/*  Create U, upper or rank r */
-		for (size_t i=0 ; i<r ; ++i)
-			for (size_t j= i+1; j<r ;++j)
-				R.random( U[i*lda+j] );
-		for (size_t i=0 ; i<r ; ++i)
-			nzR.random( U[i*lda+i] );
-		for (size_t i=0 ; i<r ; ++i)
-			for (size_t j= 0 ; j<i ;++j)
-				F.init(U[i*lda+j],0UL);
-
+		for (size_t i=0 ; i<r ; ++i){
+			for (size_t j= 0 ; j<i ;++j) F.init(U[i*n+j],0UL);
+			nzR.random( U[i*n+i] );
+			for (size_t j= i+1; j<n ;++j) R.random( U[i*n+j] );
+		}			
 		for (size_t i=r ; i<m ; ++i)
 			for (size_t j= 0 ; j<n ;++j)
-				F.init(U[i*lda+j],0UL);
-
-		for (size_t i=0 ; i<r ; ++i)
-			for (size_t j= r ; j<n ;++j)
-				R.random( U[i*lda+j] );
-
+				F.init(U[i*n+j],F.zero);
+		
 		/*  Create a random P,Q */
-
 		for (size_t i = 0 ; i < n ; ++i)
 			P[i] = i + RandInt(0UL,n-i);
 		for (size_t i = 0 ; i < m ; ++i)
@@ -172,11 +157,11 @@ namespace FFPACK {
 		/*  compute product */
 
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-				m,0,(int)n, U, lda, P);
+				m,0,(int)n, U, n, P);
 		FFPACK::applyP (F, FFLAS::FflasLeft,  FFLAS::FflasNoTrans,
 				m,0,(int)m, L, m, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-			      m,n,m, 1.0, L,m, U,lda, 0.0, A,lda);
+			      m, n, m, F.one, L, m, U, n, F.zero, A, lda);
 		//! @todo compute LU with ftrtr
 
 		FFLAS::fflas_delete(P);

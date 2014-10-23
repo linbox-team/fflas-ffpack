@@ -43,6 +43,7 @@ namespace FFLAS {
 	template<>
 	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t n, FFPACK::rns_double::Element_ptr A, size_t inc)
 	{
+		//cout<<"finit: "<<n<<" with "<<inc<<endl;
 		if (inc==1)
 			F.reduce_modp(n,A._ptr,A._stride);
 		else
@@ -53,6 +54,7 @@ namespace FFLAS {
 	template<>
 	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n, FFPACK::rns_double::Element_ptr A, size_t lda)
 	{
+		//cout<<"finit: "<<m<<" x "<<n<<" "<<lda<<endl;
 		if (lda == n)
 			F.reduce_modp(m*n,A._ptr,A._stride);
 		else

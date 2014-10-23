@@ -126,13 +126,14 @@ namespace FFPACK {
 		bool isZero(const Element& x) const {
 			//write(std::cout,x)<<" == ";
 			//write(std::cout,zero)<<std::endl;
-			// integer t1;
-			// std::cout<<convert(t1,x)%_p<<std::endl;
+			integer t1; 
+			t1=convert(t1,x)%_p;
+			//std::cout<<"t1="<<t1<<std::endl;
 			bool iszero=true;
 			for (size_t i=0;i<_rns->_size;i++)
 				iszero&= (zero._ptr[i]==x._ptr[i]);
-			//std::cout<<(iszero?"zero":"nonzero")<<std::endl;
-			return iszero;
+			//std::cout<<(iszero || (t1==integer(0))?"zero":"nonzero")<<std::endl;
+			return iszero || (t1==integer(0));
 		}
 
 		integer characteristic(integer &p) const { return p=_p;}
@@ -264,6 +265,7 @@ namespace FFPACK {
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
 			
 			//std::cout<<"fgemv (Y)...";
+			//std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
 			// compute alpha = _invbase.Gamma
 			FFLAS::fgemv(D,FFLAS::FflasTrans, _size, n, D.one, Gamma, n, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
 			//std::cout<<"done"<<std::endl;
@@ -311,7 +313,7 @@ namespace FFPACK {
 			UnparametricField<BasisElement> D;
 		
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
-
+			
 			// compute alpha = _invbase.Gamma
 			//std::cout<<"fgemv (X)..."<<m<<"x"<<n<<" -> "<<_size<<"  "<<lda<<endl;;
 			FFLAS::fgemv(D, FFLAS::FflasTrans, _size, mn, D.one, Gamma, mn, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
@@ -329,10 +331,9 @@ namespace FFPACK {
 			// reduce each row of A modulo m_i
 			for (size_t i=0;i<_size;i++)
 				FFLAS::finit(_rns->_field_rns[i], m, n, A+i*rda, lda);
-
-			FFLAS::fflas_delete( Gamma);
-			FFLAS::fflas_delete( alpha);
-			FFLAS::fflas_delete( z);
+			FFLAS::fflas_delete(Gamma);
+			FFLAS::fflas_delete(alpha);
+			FFLAS::fflas_delete(z);
 #ifdef BENCH_MODP
 			chrono.stop();
 			t_modp+=chrono.usertime();

@@ -149,7 +149,7 @@ namespace FFPACK {
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
-
+		
 		if (RNS_MAJOR==false)
 			// compute A_beta = Ap^T x M_beta
 			cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm);
@@ -217,7 +217,8 @@ namespace FFPACK {
 		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc= m3[0]->_mp_alloc = 1;
 		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size = m3[0]->_mp_size  = 0;
 		FFLAS::fflas_delete( A_beta);
-#ifdef CHECK_RNS
+
+#ifdef CHECK_RNS 
 		bool ok=true;
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)

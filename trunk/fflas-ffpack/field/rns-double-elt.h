@@ -34,6 +34,7 @@
 
 #ifndef __FFLASFFPACK_field_rns_double_elt_INL
 #define __FFLASFFPACK_field_rns_double_elt_INL
+#include "fflas-ffpack/utils/fflas_memory.h"
 
 namespace FFPACK {
 
@@ -47,7 +48,7 @@ namespace FFPACK {
 		size_t  _stride;
 		bool     _alloc; // specify wether Element owns its memory; alloc is true only through F.init() and _ptr==NULL (this is to handle Element allocated within a matrix)
 		rns_double_elt(): _ptr(NULL), _alloc(false){}
-		~rns_double_elt(){ if (_alloc) delete[] _ptr;}
+		~rns_double_elt(){ if (_alloc) FFLAS::fflas_delete(_ptr);}
 		rns_double_elt(double* p, size_t r, size_t a=false) : _ptr(p), _stride(r), _alloc(a) {}
 		inline  rns_double_elt_ptr    operator&() ;
 		inline  rns_double_elt_cstptr operator&()const ;
@@ -91,7 +92,7 @@ namespace FFPACK {
 
 	inline rns_double_elt_ptr& rns_double_elt_ptr::operator=(const rns_double_elt_ptr& x)  {
 		if (this != &x){
-			if (_alloc) delete[] _ptr;
+			if (_alloc) FFLAS::fflas_delete(_ptr);
 			_ptr= x._ptr;
 			_stride=x._stride;
 			_alloc=false;
@@ -100,7 +101,7 @@ namespace FFPACK {
 	}
 	inline rns_double_elt_cstptr& rns_double_elt_cstptr::operator=(const rns_double_elt_cstptr& x)  {
 			if (this != &x){
-				if (_alloc) delete[] _ptr;
+				if (_alloc) FFLAS::fflas_delete(_ptr);
 				_ptr= x._ptr;
 				_stride=x._stride;
 				_alloc=false;

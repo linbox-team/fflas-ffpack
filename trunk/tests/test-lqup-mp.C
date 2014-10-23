@@ -40,7 +40,8 @@
 #include <iostream>
 #include <iomanip>
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-integer.h"
+#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/field/modular-integer.h" 
 #include "fflas-ffpack/ffpack/ffpack.h" 
 #include "test-utils.h"
 
@@ -109,6 +110,7 @@ bool test_lu(const Field & F,
 	Element_ptr C = FFLAS::fflas_new(F,m,n); // compute C=LQUP and check C == A
 	/*  Build L,U */
 	Element_ptr L, U;
+
 	if (trans == FFLAS::FflasNoTrans){
 		L = FFLAS::fflas_new(F,m,m);
 		U = FFLAS::fflas_new(F,m,n);
@@ -153,9 +155,7 @@ bool test_lu(const Field & F,
 				F.assign (*(U+i*(n+1)),one);
 			}
 		}
-		//write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-
+		
 		/*  Compute LQUP */
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 				m,0,(int) R, U, n, P);
@@ -164,25 +164,29 @@ bool test_lu(const Field & F,
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 			      m,n,m, F.one, L,m, U,n, F.zero, C,n);
 
+		// write_field(F,cout<<"L := ",L,m,m,m,true);
+		// write_field(F,cerr<<"U := ",U,m,n,n,true);
+		// write_field(F,cerr<<"A := ",A,m,n,lda,true);
+		// write_field(F,cerr<<"B := ",B,m,n,lda,true);
+		// write_field(F,cerr<<"C := ",C,m,n,n,true);
+
+
 	}
 	else { /*  trans == FFLAS::FflasTrans */
 
-		L = FFLAS::fflas_new(F,m,m);
-		U = FFLAS::fflas_new(F,m,n);
+		L = FFLAS::fflas_new(F,m,n);
+		U = FFLAS::fflas_new(F,n,n);
 
-		Element zero,one;
-		F.init(zero,0.0);
-		F.init(one,1.0);
 		/*  build L */
 		for (size_t i=0; i<R; ++i){
 			for (size_t j=0; j<i; ++j)
-				F.assign ( *(L + i + j*n), zero);
+				F.assign ( *(L + i + j*n), F.zero);
 			for (size_t j=i+1; j<m; ++j)
 				F.assign (*(L + i + j*n), *(B+ i+j*lda));
 		}
 		for (size_t i=R;i<n; ++i) {
 			for (size_t j=0; j<m; ++j)
-				F.assign(*(L+i+j*n), zero);
+				F.assign(*(L+i+j*n), F.zero);
 		}
 		/*  build U */
 		for ( size_t i=0; i<n; ++i ){
@@ -190,7 +194,7 @@ bool test_lu(const Field & F,
 			for (;  j< ((i<R)?i:R) ; ++j )
 				F.assign( *(U + i+j*n), *(B+i+j*lda));
 			for (; j<n; ++j )
-				F.assign( *(U+i+j*n), zero);
+				F.assign( *(U+i+j*n), F.zero);
 		}
 		//write_field(F,cerr<<"L = "<<endl,L,m,n,n);
 		//write_field(F,cerr<<"U = "<<endl,U,n,n,n);
@@ -199,7 +203,7 @@ bool test_lu(const Field & F,
 				n,0,(int)R, U, n, Q);
 
 		for (size_t i=0; i<n; ++i)
-			F.assign (*(U+i*(n+1)),one);
+			F.assign (*(U+i*(n+1)),F.one);
 
 		/*  reconstruct the diagonal */
 		if (diag == FFLAS::FflasNonUnit) {
@@ -209,7 +213,7 @@ bool test_lu(const Field & F,
 		else{ // diag == FFLAS::FflasUnit
 			for ( size_t i=0; i<R; ++i ){
 				*(U+Q[i]*(n+1)) = *(B+Q[i]+i*lda);
-				F.assign (*(L+i*(n+1)),one);
+				F.assign (*(L+i*(n+1)),F.one);
 			}
 		}
 		// write_field(F,cerr<<"L = "<<endl,L,m,n,n);
@@ -225,14 +229,15 @@ bool test_lu(const Field & F,
 
 		
 	}
+
 	/*  check equality */
 	for (size_t i=0; i<m; ++i) {
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(C+i*n+j))){
 			
-				// std::cerr << " A["<<i<<","<<j<<"]    = " << (*(A+i*lda+j))
-				// 	  << " PLUQ["<<i<<","<<j<<"] = " << (*(C+i*n+j))
-				// 	  << endl;
+				std::cerr << " A["<<i<<","<<j<<"]    = " << (*(A+i*lda+j))
+					  << " PLUQ["<<i<<","<<j<<"] = " << (*(C+i*n+j))
+					  << endl;
 				fail|=true;
 			}
 	}
@@ -244,21 +249,22 @@ bool test_lu(const Field & F,
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(C);
 
-	cout<<" LQUP MP: "<<(fail?"FAILED":"PASSED")<<" ("<<chrono.usertime()<<")"<<endl;
+	cout<<" LQUP MP: "<<(fail?"FAILED":"PASSED")<<" [rank="<<R<<"] ("<<chrono.usertime()<<")"<<endl;
 	
 	return fail;
 }
 
 
-
+//#define __ALL
 template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
 bool launch_test(const Field & F,
 		 size_t r,
 		 size_t m, size_t n)
 {
-	typedef typename Field::Element Element ;
+	//typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
 	bool fail = false ;
+
 	{ /*  user given and lda bigger */
 		size_t lda = n;//+10 ;
 		Element_ptr A = FFLAS::fflas_new(F,m,lda);
@@ -266,14 +272,14 @@ bool launch_test(const Field & F,
 		fail |= test_lu<Field,diag,trans>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
-	}  
+	}
 #ifdef __ALL
 	{ /*  user given and lda bigger. Rank is max */ 
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
 		Element_ptr A = FFLAS::fflas_new(F,m,lda);
 		RandomMatrixWithRank(F,A,R,m,n,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
+		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);  
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -286,12 +292,13 @@ bool launch_test(const Field & F,
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
+
 	{ /*  square  */
 		size_t M = std::max(m,n);
 		size_t N = M ;
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
-		Element_ptr A = FFLAS::fflas_new(F,m,lda);
+		Element_ptr A = FFLAS::fflas_new(F,M,lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -302,7 +309,7 @@ bool launch_test(const Field & F,
 		size_t N = 2*M ;
 		size_t R = 3*M/4 ;
 		size_t lda = N+5 ;
-		Element_ptr A = FFLAS::fflas_new(F,m,lda);
+		Element_ptr A = FFLAS::fflas_new(F,M,lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -313,7 +320,7 @@ bool launch_test(const Field & F,
 		size_t N = M/2 ;
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
-		Element_ptr A = FFLAS::fflas_new(F,m,lda);
+		Element_ptr A = FFLAS::fflas_new(F,M,lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
 		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed" << std::endl;
@@ -352,13 +359,13 @@ int main(int argc, char** argv)
 	FFPACK::Integer::random_exact_2exp(p, b);			
 	nextprime(p,p);
 	Field F(p);
-
+	cout<<"p:="<<p<<";"<<endl;
 	for (int i = 0 ; i < iter ; ++i) {
 		 fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		 //fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		// fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-		// fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n); 
-	}
+		 fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+		 fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+		 fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n); 
+	 }
 	
 	cout<<(fail?"FAILED":"PASSED")<<endl;
 

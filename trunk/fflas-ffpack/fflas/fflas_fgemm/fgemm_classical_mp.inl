@@ -90,6 +90,7 @@ namespace FFLAS {
 				     beta._ptr[i*beta._stride], 
 				     Cd._ptr+i*Cd._stride, ldc);			
 		}
+		
 		return Cd;
 	}
 

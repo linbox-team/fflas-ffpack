@@ -116,25 +116,25 @@ int main(int argc, char** argv){
 	
 	Field F(p);
 	size_t lda,ldb,ldc;
-	lda=k;
-	ldb=n; 
-	ldc=n;;
+	lda=k+5;
+	ldb=n+7; 
+	ldc=n+11;
 
 	typename Field::RandIter Rand(F,seed);
 	Field::Element_ptr A,B,C;
-	C= FFLAS::fflas_new(F,m,n);
-	A= FFLAS::fflas_new(F,m,k);
-	B= FFLAS::fflas_new(F,k,n);
+	A= FFLAS::fflas_new(F,m,lda);
+	B= FFLAS::fflas_new(F,k,ldb);
+	C= FFLAS::fflas_new(F,m,ldc);
 	
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<k;++j)
-			Rand.random(A[i*k+j]);			
+			Rand.random(A[i*lda+j]);			
 	for (size_t i=0;i<k;++i)
 		for (size_t j=0;j<n;++j)
-			Rand.random(B[i*n+j]);				
+			Rand.random(B[i*ldb+j]);				
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
-			Rand.random(C[i*n+j]);	 		
+			Rand.random(C[i*ldc+j]);	 		
 	
 	
 	FFPACK::Integer alpha,beta;
@@ -160,13 +160,13 @@ int main(int argc, char** argv){
 
  	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<k;++j)
-			fmpz_set_mpz(fmpz_mat_entry(AA,i,j),*(reinterpret_cast<const mpz_t*>(A+i*k+j)));
+			fmpz_set_mpz(fmpz_mat_entry(AA,i,j),*(reinterpret_cast<const mpz_t*>(A+i*lda+j)));
 	for (size_t i=0;i<k;++i)
 		for (size_t j=0;j<n;++j)
-			fmpz_set_mpz(fmpz_mat_entry(BB,i,j),*(reinterpret_cast<const mpz_t*>(B+i*n+j)));
+			fmpz_set_mpz(fmpz_mat_entry(BB,i,j),*(reinterpret_cast<const mpz_t*>(B+i*ldb+j)));
 	for (size_t i=0;i<m;++i)
 		for (size_t j=0;j<n;++j)
-			fmpz_set_mpz(fmpz_mat_entry(CC,i,j),*(reinterpret_cast<const mpz_t*>(C+i*n+j)));				
+			fmpz_set_mpz(fmpz_mat_entry(CC,i,j),*(reinterpret_cast<const mpz_t*>(C+i*ldc+j)));				
 	chrono.clear();chrono.start();
 	// DD= A.B
 	fmpz_mat_mul(DD,AA,BB);	
@@ -191,7 +191,7 @@ int main(int argc, char** argv){
 	FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 	chrono.stop();	
 #ifdef BENCH_FLINT
-	cout<<" RNS MUL LA: "<<chrono.usertime()<<check_res(m,n,C,n,CC)<<" "<<endl;	 
+	cout<<" RNS MUL LA: "<<chrono.usertime()<<check_res(m,n,C,ldc,CC)<<" "<<endl;	 
 #else
 	cout<<" RNS MUL LA: "<<chrono.usertime()<<endl;
 #endif
