@@ -30,6 +30,10 @@
 #define __FFPACK_ludivine_mp_INL
 
 #ifdef __FFLASFFPACK_HAVE_INTEGER
+
+#ifdef BENCH_PERF_LQUP_MP
+#define BENCH_PERF_FGEMM_MP
+#endif
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/modular-integer.h"
@@ -83,29 +87,35 @@ namespace FFPACK {
 		Ap = FFLAS::fflas_new(Zp,M,N);		
 		FFLAS::finit_rns(Zp,M,N,(logp/16)+(logp%16?1:0),A,lda,Ap); 
 
+		
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
 		t_mod+=chrono.usertime();
 		chrono.clear();chrono.start();
 #endif		
 		// call lqup in rns		
-		size_t R=FFPACK::LUdivine(Zp, Diag, trans, M, N, Ap, lda, P, Q, LuTag, cutoff); 
-		std::cout<<"LUDivine RNS done"<<std::endl;
+		size_t R=FFPACK::LUdivine(Zp, Diag, trans, M, N, Ap, N, P, Q, LuTag, cutoff); 
+		//std::cout<<"LUDivine RNS done"<<std::endl;
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
 		t_lqup+=chrono.usertime();
 		chrono.clear();chrono.start();
 #endif			
 		//Zp.write(std::cout,*Ap);
-		// reconstruct the result 
-		FFLAS::fconvert_rns(Zp,M,N,F.zero,A,lda,Ap);	
-		// reduce it modulo p 		
+		// reconstruct the result	
+		FFLAS::fconvert_rns(Zp,M,N,F.zero,A,lda,Ap);
+#ifdef BENCH_PERF_LQUP_MP
+		chrono.stop();
+		t_rec+=chrono.usertime();
+		chrono.clear();chrono.start();
+#endif			
+		// reduce it modulo p
 		FFLAS::finit(F,M,N,A,lda);
 		//F.write(std::cout,*A);
 		
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
-		t_rec+=chrono.usertime();		
+		//t_rec+=chrono.usertime();		
 		cout<<"FLQUP RNS PERF:"<<endl;
 		cout<<"  ---  RNS basis size: "<<Zp.size() <<endl;
 		cout<<"  ***      init  : "<<t_init<<endl;
@@ -113,6 +123,8 @@ namespace FFPACK {
 		cout<<"  ***  rns lqup  : "<<t_lqup<<" ( igemm="<<Zp.t_igemm<<" scal="<<Zp.t_scal
 		    <<" modp="<<Zp.t_modp<<endl;
 		cout<<"  ***  rns  rec  : "<<t_rec<<endl;
+		cout<<"  ***       mod  : "<<chrono.usertime()<<endl;
+		
 #endif	
 		FFLAS::fflas_delete(Ap);
 		return R;

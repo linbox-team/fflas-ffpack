@@ -65,24 +65,28 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	typedef typename Field::Element Element;
 	Element * A, *B, *B2, *C, tmp;
 	size_t k = (side==FFLAS::FflasLeft?m:n);
-	A  = FFLAS::fflas_new(F,k,k);
-	B  = FFLAS::fflas_new(F,m,n);
-	B2 = FFLAS::fflas_new(F,m,n);
-	C  = FFLAS::fflas_new(F,m,n); 
+	size_t lda,ldb,ldc;
+	lda=k+13;
+	ldb=n+14;
+	ldc=n+15;
+	A  = FFLAS::fflas_new(F,k,lda);
+	B  = FFLAS::fflas_new(F,m,ldb);
+	B2 = FFLAS::fflas_new(F,m,ldb);
+	C  = FFLAS::fflas_new(F,m,ldc); 
 	
 	typename Field::RandIter Rand(F);
 	
 	for (size_t i=0;i<k;++i){
 		for (size_t j=0;j<i;++j) 
-			A[i*k+j]= (uplo == FFLAS::FflasLower)? Rand.random(tmp) : F.zero;
-		A[i*k+i]= (diag == FFLAS::FflasNonUnit)? Rand.random(tmp) : F.one;
+			A[i*lda+j]= (uplo == FFLAS::FflasLower)? Rand.random(tmp) : F.zero;
+		A[i*lda+i]= (diag == FFLAS::FflasNonUnit)? Rand.random(tmp) : F.one;
 		for (size_t j=i+1;j<k;++j) 
-			A[i*k+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
+			A[i*lda+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
 	}
 	for (size_t i=0;i<m;++i){
 		for(int j=0; j<n; ++j){
-			B[i*n+j]= Rand.random(tmp);
-			B2[i*n+j]=B[i*n+j];
+			B[i*ldb+j]= Rand.random(tmp);
+			B2[i*ldb+j]=B[i*ldb+j];
 		}  
 	}
 	
@@ -97,7 +101,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	double time=0.0;	 
 	t.clear();
 	t.start(); 
-	FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, k, B, n);
+	FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 	t.stop();
 	time+=t.usertime();
 	
@@ -109,9 +113,9 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	//FFLAS::ftrmm (F, side, uplo, trans, diag, m, n, invalpha, A, k, B, n);
 	
 	if (side == FFLAS::FflasLeft)
-		FFLAS::fgemm(F, trans, FFLAS::FflasNoTrans, m, n, m, invalpha, A, k, B, n, F.zero, C, n);
+		FFLAS::fgemm(F, trans, FFLAS::FflasNoTrans, m, n, m, invalpha, A, lda, B, ldb, F.zero, C, ldc);
 	else
-		FFLAS::fgemm(F, FFLAS::FflasNoTrans, trans, m, n, n, invalpha, B, n, A, k, F.zero, C, n);
+		FFLAS::fgemm(F, FFLAS::FflasNoTrans, trans, m, n, n, invalpha, B, ldb, A, lda, F.zero, C, ldc);
 
 
 	F.mulin(invalpha,alpha);
@@ -122,7 +126,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 
 	for (int i=0;i<m;++i)
 		for (int j=0;j<n;++j)
-			if ( !F.areEqual(*(B2+i*n+j), *(C+i*n+j))){
+			if ( !F.areEqual(*(B2+i*ldb+j), *(C+i*ldc+j))){
 				wrong = true;
 			}	
 	if ( wrong ){

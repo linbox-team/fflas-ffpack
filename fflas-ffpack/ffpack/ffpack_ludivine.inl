@@ -99,7 +99,6 @@ namespace FFPACK {
 			    typename Field::Element_ptr A, const size_t lda, size_t*P,
 			    size_t *Q, const FFPACK::FFPACK_LUDIVINE_TAG LuTag)
 		{
-
 			if ( !(M && N) ) return 0;
 			typedef typename Field::Element elt;
 			typedef typename Field::Element_ptr elt_ptr;
@@ -417,6 +416,7 @@ namespace FFPACK {
 		 )
 	{
 		//std::cout<<"LUDivine ("<<M<<","<<N<<")"<<std::endl;
+		
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
 		size_t MN = std::min(M,N);
@@ -439,7 +439,7 @@ namespace FFPACK {
 			return LUdivine_small (F, Diag, trans, M, N, A, lda, P, Q, LuTag);
 		}
 		else { // recursively :
-			if (MN == 1){//std::cout<<"MN=1"<<std::endl;
+			if (MN == 1){
 				size_t ip=0;
 				while (F.isZero (*(A+ip*incCol)))
 					if (++ip == colDim)
@@ -464,6 +464,7 @@ namespace FFPACK {
 								if (++ip < rowDim)
 									FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
 								elt tmp;
+								F.init(tmp);
 								F.assign(tmp, *(A+oldip*incRow));
 								F.assign( *(A+oldip*incRow), *A);
 								F.assign( *A, tmp);
@@ -487,7 +488,7 @@ namespace FFPACK {
 				}
 				elt invpiv;
 				F.inv(invpiv, *A);
-				if ( Diag == FFLAS::FflasUnit ){
+				if ( Diag == FFLAS::FflasUnit && colDim>1){
 					// Normalisation of the row
 					FFLAS::fscalin(F,colDim-1,invpiv,A+incCol,incCol);
 				}
@@ -524,8 +525,9 @@ namespace FFPACK {
 						       FFLAS::FflasNoTrans, Diag, R, Ndown,
 						       F.one, A, lda, Ar, lda);
 						// An <- An - Ac*Ar
-						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
-						       F.mOne, Ac, lda, Ar, lda, F.one, An, lda);
+						if (colDim>R)
+							fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, colDim-R, Ndown, R,
+							       F.mOne, Ac, lda, Ar, lda, F.one, An, lda);
 					}
 					// Recursive call on SE
 					R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
@@ -561,8 +563,9 @@ namespace FFPACK {
 						       FFLAS::FflasNoTrans, Diag, Ndown, R,
 						       F.one, A, lda, Ar, lda);
 						// An <- An - Ar*Ac
-						fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
-						       F.mOne, Ar, lda, Ac, lda, F.one, An, lda );
+						if (colDim>R)
+							fgemm( F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Ndown, colDim-R, R,
+							       F.mOne, Ar, lda, Ac, lda, F.one, An, lda );
 
 					}
 					// Recursive call on SE
@@ -659,7 +662,7 @@ namespace FFPACK {
 				if ( Diag == FFLAS::FflasUnit ){
 					typename Field::Element invpiv;
 					F.inv(invpiv, *X);
-
+					
 					// Normalisation of the row
 					// for (size_t k=1; k<N; k++)
 						// F.mulin(*(X+k), invpiv);

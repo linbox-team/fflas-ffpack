@@ -82,7 +82,7 @@ namespace FFLAS {
 		for (size_t i=0;i<F.size();i++)
 			fscalin(F.rns()._field_rns[i], m, n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,lda);
 #ifdef BENCH_PERF_SCAL_MP
-				chrono.stop();F.t_scal+=chrono.usertime();
+		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
 		finit(F,m,n,A,lda);
 	}
@@ -99,7 +99,7 @@ namespace FFLAS {
 #ifdef BENCH_PERF_SCAL_MP
 		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
-		finit(F,n,B,ldb);
+		finit(F,m,n,B,ldb);
 	}
 
 } //end of namespace FFLAS

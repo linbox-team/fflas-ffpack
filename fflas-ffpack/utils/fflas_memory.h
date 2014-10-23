@@ -51,10 +51,10 @@ namespace FFLAS{
     inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const size_t n, const Alignment align = Alignment::DEFAULT)
     {	 
 	    if (alignable<typename Field::Element_ptr>() ) {
-		    return malloc_align<typename Field::Element>(m*n, align);
+	    	    return malloc_align<typename Field::Element>(m*n, align);
 	    }
 	    else {
-		    return new typename Field::Element[m*n];
+	    	    return new typename Field::Element[m*n];
 	    }
     }
 
@@ -62,10 +62,10 @@ namespace FFLAS{
     inline Element* fflas_new (const size_t m, const Alignment align = Alignment::AVX)
     {
 	    if (alignable<Element*>() ) {
-		    return malloc_align<Element>(m, align);
+	    	    return malloc_align<Element>(m, align);
 	    }
 	    else {
-		    return new Element[m];
+	    	    return new Element[m];
 	    }
 
     }
@@ -74,7 +74,7 @@ namespace FFLAS{
     inline void fflas_delete(Element_ptr A)
     {
 	    if (alignable<Element_ptr>() )
-		    free(A);
+	    	    free(A);
 	    else
 		    delete[] A;
     }
