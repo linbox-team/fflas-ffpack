@@ -39,6 +39,7 @@ namespace FFLAS { namespace vectorised {
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
 	VEC_ADD(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
 	{
+		std::cout << "called" << std::endl;
 		using simd = Simd<Element>;
 		C = simd::add(A, B);
 		Q = simd::vand(simd::greater(C, MAX),NEGP);
@@ -188,9 +189,10 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-#else
+#else // no simd, but faster than F.init()
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	void
 	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
 	{
 		Element min = (Element)min_, max = (Element)max_;
@@ -211,7 +213,8 @@ namespace FFLAS { namespace vectorised {
 	}
 
 	template<bool positive, class Element, class T1, class T2>
-	inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	void
 	addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
 	{
 		Element min= (Element)min_, max= (Element)max_;
