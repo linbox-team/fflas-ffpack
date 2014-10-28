@@ -30,7 +30,7 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(GMP_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
 FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
-BLAS_BENCH =    benchmark-dgemm  benchmark-dtrsm
+BLAS_BENCH =    benchmark-dgemmd benchmark-dgemmf benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
 OMP_BENCH = benchmark-pfgemm benchmark-pftrsm
@@ -63,7 +63,8 @@ CLEANFILES = $(BENCHMARKS)
 
 EXTRA_PROGRAMS = $(BENCHMARKS)
 
-benchmark_dgemm_SOURCES = benchmark-dgemm.C
+benchmark_dgemmd_SOURCES = benchmark-dgemm.C
+benchmark_dgemmf_SOURCES = benchmark-dgemm.C
 benchmark_dtrsm_SOURCES = benchmark-dtrsm.C
 
 benchmark_fgemm_SOURCES = benchmark-fgemm.C
@@ -73,7 +74,7 @@ benchmark_ftrtri_SOURCES = benchmark-ftrtri.C
 benchmark_inverse_SOURCES = benchmark-inverse.C
 benchmark_lqup_SOURCES = benchmark-lqup.C
 
-
+benchmark_dgemmd_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
 # for compilation of new benchmarks
 FFLASFFPACK_BIN=@bindir@
