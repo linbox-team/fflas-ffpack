@@ -29,7 +29,7 @@
 #ifndef __FFLASFFPACK_config_blas_H
 #define __FFLASFFPACK_config_blas_H
 
-#include "fflas-ffpack/utils/fflas_memory.h"
+// #include "fflas-ffpack/utils/fflas_memory.h"
 // #ifndef __FFLASFFPACK_CONFIGURATION
 // #include "fflas-ffpack/fflas-ffpack-config.h"
 // #endif
@@ -400,11 +400,11 @@ extern "C" {
 #ifndef __FFLASFFPACK_AUTOIMPLEMENT_DGETRI
 		// the optimum size of work can be determinted via the
 		// Lapack function ilaenv.
-		work= FFLAS::fflas_new<double>(N);
+		work= new double[N];
 		dgetri_ (&N, A, &lda, ipiv, work, &N,  &info);
-		FFLAS::fflas_delete( work);
+		delete[] work;
 #else
-		work= FFLAS::fflas_new<double>(N*N);
+		work= new double[N*N];
 		dtrtri_("U","N", &N, A, &lda, &info);
 		if (info > 0)
 			return 0;
@@ -428,7 +428,7 @@ extern "C" {
 				dswap_ (&N, &A[i*lda],&incr , &A[ip*lda], &incr);
 		}
 
-		FFLAS::fflas_delete( work);
+		delete[] work;
 #endif
 		return info;
 	}
