@@ -65,7 +65,7 @@ enum class Alignment : size_t {
  * ex : int* tab = malloc_align<int>(100, Alignment::AVX)
  */
 template<class T>
-T* malloc_align(size_t size, Alignment alignment = Alignment::AVX) noexcept
+T* malloc_align(size_t size, Alignment alignment = Alignment::DEFAULT) noexcept
 {
   void* p = nullptr;
   int err = 0;
