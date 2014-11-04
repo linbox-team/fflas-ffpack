@@ -49,7 +49,7 @@ namespace FFLAS{
 
     template<class Field>
     inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const size_t n, const Alignment align = Alignment::DEFAULT)
-    {	 
+    {
 	    if (alignable<typename Field::Element_ptr>() ) {
 	    	    return malloc_align<typename Field::Element>(m*n, align);
 	    }
@@ -59,7 +59,7 @@ namespace FFLAS{
     }
 
     template<class Element >
-    inline Element* fflas_new (const size_t m, const Alignment align = Alignment::AVX)
+    inline Element* fflas_new (const size_t m, const Alignment align = Alignment::DEFAULT)
     {
 	    if (alignable<Element*>() ) {
 	    	    return malloc_align<Element>(m, align);
