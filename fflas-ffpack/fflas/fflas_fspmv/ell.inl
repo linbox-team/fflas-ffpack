@@ -616,7 +616,7 @@ namespace FFLAS { /*  ZO */
 			ell_details::fspmv_zo<Field,true,simd_true>(F,A.m,A.n,A.ld,A.chunk,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
-		finit(F,y.m,y.dat,1);
+		finit(F,A.m,y.dat,1);
 	}
 
 
