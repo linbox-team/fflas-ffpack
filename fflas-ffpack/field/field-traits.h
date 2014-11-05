@@ -331,6 +331,14 @@ namespace FFLAS { /*  Traits */
 		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
+	// Givaro::ZpzDom<Givaro::Integer>
+	template<>
+	struct FieldTraits<Givaro::ZpzDom<Givaro::Integer> > {
+		typedef FieldCategories::MultiPrecisionTag value;
+		typedef FieldCategories::ModularTag category;
+		typedef typename FieldCategories::MultiPrecisionTag rep_t ;
+		static  const bool balanced = false ;
+	};
 
 
 } // FFLAS
