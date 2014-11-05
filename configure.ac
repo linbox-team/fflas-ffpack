@@ -331,6 +331,7 @@ fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
 doc/Makefile
 tests/Makefile
+tests/data/Makefile
 benchmarks/Makefile
 optimiser/Makefile
 ])
