@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
       // 	  A = read_field (F, argv[5], &n, &n);
       // }
       // else{
-  A = FFLAS::fflas_new (F,m,m,Alignment::PAGESIZE);
+  A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
   Initialize(A,m/NBK,m,m);
   PAR_FOR (size_t i = 0; i< (size_t)m; ++i)
 	  for (size_t j = 0; j< (size_t)m; ++j)
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
       // 	  B = read_field (F, argv[6], &n, &n);
       // }
 	  // else{
-  B = FFLAS::fflas_new(F,m,n,Alignment::PAGESIZE);
+  B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
   Initialize(B,m/NBK,m,n);
   PAR_FOR (size_t i=0 ; i< (size_t)m; ++i)
 	  for (size_t j=0 ; j< (size_t)n; ++j)

@@ -7,6 +7,7 @@
  * Written by Pascal Giorgi <Pascal.Giorgi@lirmm.fr>
  * BB<bboyer@ncsu.edu>
  *
+ * Part of this code is taken from http://libdivide.com/
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.

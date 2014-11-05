@@ -6,6 +6,7 @@
  *
  * Written by BB <bbboyer@ncsu.edu>
  *
+ * Part of this code is taken from http://libdivide.com/
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -97,9 +98,8 @@ inline int32_t ctz(uint64_t val) {
 
 #ifdef __x86_64__
 // division 128bits by 64 bits
-// __int128(u1,u0) = u1*2^64+u0, div v, rem v
+// __int128(u1,u0) = u1*2^64+u0, div v, rem r
 // return quo
-// toto guard against __asm__
 static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 {
 	// u0 -> rax
