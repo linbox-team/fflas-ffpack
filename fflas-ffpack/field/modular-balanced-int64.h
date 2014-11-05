@@ -155,24 +155,24 @@ namespace FFPACK
 		}
 #endif
 
-		inline unsigned long &cardinality ( unsigned long &c) const
+		inline uint64_t &cardinality ( uint64_t &c) const
 		{
-			return c = (unsigned long)modulus;
+			return c = (uint64_t)modulus;
 		}
 
-		inline unsigned long cardinality () const
+		inline uint64_t cardinality () const
 		{
-			return (unsigned long) modulus;
+			return (uint64_t) modulus;
 		}
 
-		inline unsigned long &characteristic (unsigned long &c) const
+		inline uint64_t &characteristic (uint64_t &c) const
 		{
-			return c = (unsigned long) modulus;
+			return c = (uint64_t) modulus;
 		}
 
-		inline unsigned long characteristic () const
+		inline uint64_t characteristic () const
 		{
-		       	return (unsigned long)modulus;
+		       	return (uint64_t)modulus;
 		}
 
 		inline Element &convert (Element &x, const Element &y) const
@@ -468,40 +468,20 @@ namespace FFPACK
 		}
 
 	private:
-
-		inline static Element& XINV(Element& d, Element& s, Element a, Element b)
-		{
-			Element  v, u2;
-			Element aneg = 0;
-
-			if (a < 0) {
-#ifdef DEBUG
-                            if (a < -LINBOX_MAX_INT64)
-				    throw Failure(__func__,__FILE__,__LINE__,"XINV: integer overflow");
-#endif
-                            v = -a;
-                            aneg = 1;
-			} else {
-                            v = a;
-                        }
-
-			s = 0;
-			u2 = 1;
-			d = b;
-
-			while (v != 0) {
-				Element  q = d / v;
-				Element  r = d % v;
-				d = v;
-				v = r;
-				r = u2;
-				u2 = s - q*u2;
-				s = r;
-			}
-
-			if (aneg) return s = -s;
-                        else return s;
-		}
+            inline static Element& XINV(Element& q, Element& u, Element a, Element b) {
+                int64_t u3;
+                int64_t v1,v3;
+                u = 1; u3 = a;
+                v1 = 0; v3 = b;
+                while (v3 != 0)
+                {
+                    int64_t q , t1, t3;
+                    q = u3 / v3;
+                    t1 = u - q * v1; t3 = u3 - q * v3;
+                    u = v1; u3 = v3; v1 = t1; v3 = t3;
+                }
+                return (u3<0?u=-u:u);
+            }
 
 	};
 
