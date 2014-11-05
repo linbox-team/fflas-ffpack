@@ -80,8 +80,7 @@ namespace FFPACK {
 			{
 				size_t attempts=0;
 				bool cont = false;
-				FFLAS_INT_TYPE p;
-				F.characteristic(p);
+				FFLAS_INT_TYPE p = F.characteristic();
 				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
 				if ((unsigned long) (p) < N)
 					return CharPoly (F, charp, N, A, lda, FfpackLUK);
