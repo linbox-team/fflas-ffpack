@@ -1761,7 +1761,9 @@ void test_algo(const Field &F, size_t m, size_t n, size_t k
 	       , typename Field::Element * C, size_t ldc
 	       , typename Field::Element * D, size_t ldd
 	       , typename Field::Element * E, size_t lde
-	       , int r, size_t algo, FFLAS::Timer & tim_e, FFLAS::Timer & tim_p, FFLAS::Timer & tom, int & ok_e, int & ok_p,
+	       , int r, size_t algo, FFLAS::Timer & tim_e
+	       , FFLAS::Timer & tim_p, FFLAS::Timer & tom
+	       , int & ok_e, int & ok_p,
 	       bool with_e)
 {
  FFLAS::Timer tmp ;

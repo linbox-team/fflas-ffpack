@@ -323,6 +323,15 @@ namespace FFLAS { /*  Traits */
 	};
 
 
+	// Givaro::ZpzDom<Givaro::Std32>
+	template<>
+	struct FieldTraits<Givaro::ZpzDom<Givaro::Std32> > {
+		typedef FieldCategories::FloatingPointConvertibleTag value;
+		typedef FieldCategories::ModularTag category;
+		typedef typename FieldCategories::IntegralTag rep_t ;
+		static  const bool balanced = false ;
+	};
+
 
 } // FFLAS
 
