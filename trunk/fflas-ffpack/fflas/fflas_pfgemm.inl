@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <01 Oct 14 09:56:36 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <05 Nov 14 16:19:02 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -119,7 +119,7 @@ namespace FFLAS {
 		 typename Field::Element_ptr B2= B+K2*ldb;
 		 typename Field::Element_ptr A1= A;
 		 typename Field::Element_ptr A2= A+K2;
-		 typename Field::Element_ptr C2 = fflas_new (F, m, n,Alignment::PAGESIZE);
+		 typename Field::Element_ptr C2 = fflas_new (F, m, n,Alignment::CACHE_PAGESIZE);
 //#pragma omp task shared(F, A1, B1)                                                                  
 		 H1.parseq.numthreads /= 2;
 		 H2.parseq.numthreads = H.parseq.numthreads-H1.parseq.numthreads;
@@ -324,16 +324,16 @@ namespace FFLAS {
 		typename Field::Element_ptr B22= B+N2+K2*ldb;
 
 		typename Field::Element_ptr C11= C;
-		typename Field::Element_ptr C_11 = fflas_new (F, M2, N2,Alignment::PAGESIZE);
+		typename Field::Element_ptr C_11 = fflas_new (F, M2, N2,Alignment::CACHE_PAGESIZE);
 		
 		typename Field::Element_ptr C12= C+N2;
-		typename Field::Element_ptr C_12 = fflas_new (F, M2, n-N2,Alignment::PAGESIZE);
+		typename Field::Element_ptr C_12 = fflas_new (F, M2, n-N2,Alignment::CACHE_PAGESIZE);
 		
 		typename Field::Element_ptr C21= C+M2*ldc;
-		typename Field::Element_ptr C_21 = fflas_new (F, m-M2, N2,Alignment::PAGESIZE);		
+		typename Field::Element_ptr C_21 = fflas_new (F, m-M2, N2,Alignment::CACHE_PAGESIZE);		
 
 		typename Field::Element_ptr C22= C+N2+M2*ldc;
-		typename Field::Element_ptr C_22 = fflas_new (F, m-M2, n-N2,Alignment::PAGESIZE);
+		typename Field::Element_ptr C_22 = fflas_new (F, m-M2, n-N2,Alignment::CACHE_PAGESIZE);
 
 		// 1/ 8 multiply in parallel
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C11));

@@ -163,7 +163,10 @@ namespace FFLAS { namespace vectorised {
 
 			/*the dividend here is 2**(floor_log_2_d + 63), so the low 64 bit word is 0 and the high word is floor_log_2_d - 1 */
 			uint64_t rem, proposed_m;
-			proposed_m = divide_128(1ULL << (floor_log_2_d - 1), 0, denom, &rem);
+                            // proposed_m = divide_128(1ULL << (floor_log_2_d - 1), 0, denom, &rem);
+
+                        proposed_m = getpoweroftwoden_128(floor_log_2_d, denom, &rem);
+                        
 			const uint64_t e = denom- rem;
 
 			/* We are going to start with a power of floor_log_2_d - 1.  This works if works if e < 2**floor_log_2_d. */

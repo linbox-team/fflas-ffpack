@@ -93,6 +93,9 @@ inline int32_t ctz(uint64_t val) {
 #endif
 }
 
+
+
+#ifdef __x86_64__
 // division 128bits by 64 bits
 // __int128(u1,u0) = u1*2^64+u0, div v, rem v
 // return quo
@@ -109,10 +112,31 @@ static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 	       );
 	return result;
 }
+#endif
 
+static uint64_t getpoweroftwoden_128(uint32_t d, uint64_t q, uint64_t *r) {
+#ifdef __x86_64__
+    return divide_128(1ULL << (d - 1), 0, q, r);
+#else
+    lldiv_t ta;
+    ta = lldiv(1ULL<<63,q);
+    lldiv_t br;
+    br = lldiv(ta.rem<<d,q);
+    *r = br.rem;
+    return (ta.quot<<d)+br.quot;
+#endif
+}
+
+
+
+static inline uint32_t mullhi_u32(uint32_t x, uint32_t y) {
+    uint64_t xl = x, yl = y;
+    uint64_t rl = xl * yl;
+    return (uint32_t)(rl >> 32);
+}
 
 static inline int64_t mulhi_64(int64_t x, int64_t y) {
-#if 1 // todo check this type
+#ifdef __x86_64__ 
         __int128 xl = x, yl = y;
         __int128 rl = xl * yl;
         return (int64_t)(rl >> 64);
@@ -120,7 +144,7 @@ static inline int64_t mulhi_64(int64_t x, int64_t y) {
     const uint32_t mask = 0xFFFFFFFF;
     const uint32_t x0 = (uint32_t)(x & mask), y0 = (uint32_t)(y & mask);
     const int32_t x1 = (int32_t)(x >> 32), y1 = (int32_t)(y >> 32);
-    const uint32_t x0y0_hi = libdivide__mullhi_u32(x0, y0);
+    const uint32_t x0y0_hi = mullhi_u32(x0, y0);
     const int64_t t = x1*(int64_t)y0 + x0y0_hi;
     const int64_t w1 = x0*(int64_t)y1 + (t & mask);
     return x1*(int64_t)y1 + (t >> 32) + (w1 >> 32);
