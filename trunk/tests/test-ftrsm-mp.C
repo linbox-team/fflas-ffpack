@@ -84,7 +84,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 			A[i*lda+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
 	}
 	for (size_t i=0;i<m;++i){
-		for(int j=0; j<n; ++j){
+		for(size_t j=0; j<n; ++j){
 			B[i*ldb+j]= Rand.random(tmp);
 			B2[i*ldb+j]=B[i*ldb+j];
 		}  
@@ -124,8 +124,8 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	}
 	bool wrong = false;
 
-	for (int i=0;i<m;++i)
-		for (int j=0;j<n;++j)
+	for (size_t i=0;i<m;++i)
+		for (size_t j=0;j<n;++j)
 			if ( !F.areEqual(*(B2+i*ldb+j), *(C+i*ldc+j))){
 				wrong = true;
 			}	

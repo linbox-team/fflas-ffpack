@@ -46,7 +46,7 @@ template<class Field>
 bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
-	int repet = 3 ;
+	size_t repet = 3 ;
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * B = FFLAS::fflas_new<T>(m*n);
