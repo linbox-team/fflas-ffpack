@@ -20,7 +20,7 @@
 # ========LICENCE========
 #/
 
-SUBDIRS =
+SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
