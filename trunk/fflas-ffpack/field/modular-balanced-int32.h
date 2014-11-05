@@ -150,24 +150,24 @@ namespace FFPACK {
 		}
 #endif
 
-		inline unsigned long &cardinality ( unsigned long &c) const
+		inline uint32_t &cardinality ( uint32_t &c) const
 		{
-			return c = (unsigned long)modulus;
+			return c = (uint32_t)modulus;
 		}
 
-		inline unsigned long cardinality () const
+		inline uint32_t cardinality () const
 		{
-			return (unsigned long) modulus;
+			return (uint32_t) modulus;
 		}
 
-		inline unsigned long &characteristic (unsigned long &c) const
+		inline uint32_t &characteristic (uint32_t &c) const
 		{
-			return c = (unsigned long) modulus;
+			return c = (uint32_t) modulus;
 		}
 
-		inline unsigned long characteristic () const
+		inline uint32_t characteristic () const
 		{
-			return (unsigned long) modulus;
+			return (uint32_t) modulus;
 		}
 
 		inline Element &convert (Element &x, const Element &y) const

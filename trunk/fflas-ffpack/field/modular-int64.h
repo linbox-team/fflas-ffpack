@@ -72,7 +72,7 @@ namespace FFPACK {
 
 		int64_t modulus;
 		double modulusinv;
-		unsigned long lmodulus ;
+		uint64_t lmodulus ;
 		int64_t _two64 ;
 
 	public:
@@ -94,7 +94,7 @@ namespace FFPACK {
 
 		//default modular field,taking 65521 as default modulus
 		Modular () :
-			modulus(65521),lmodulus((unsigned long)modulus)
+			modulus(65521),lmodulus((uint64_t)modulus)
 				,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv=1/(double)65521;
@@ -104,7 +104,7 @@ namespace FFPACK {
 		}
 
 		Modular (Element value, int32_t exp = 1) :
-			modulus(value),lmodulus((unsigned long)modulus)
+			modulus(value),lmodulus((uint64_t)modulus)
 				,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1. / ((double) value);
@@ -119,7 +119,7 @@ namespace FFPACK {
 		}
 
 		Modular (const Modular<Element>& mf) :
-			modulus(mf.modulus),modulusinv(mf.modulusinv),lmodulus((unsigned long)modulus),_two64(mf._two64)
+			modulus(mf.modulus),modulusinv(mf.modulusinv),lmodulus((uint64_t)modulus),_two64(mf._two64)
 				,one(mf.one),zero(mf.zero),mOne(mf.mOne)
 		{
 		}
@@ -152,22 +152,22 @@ namespace FFPACK {
 		}
 #endif
 
-		inline unsigned long &cardinality ( unsigned long &c) const
+		inline uint64_t &cardinality ( uint64_t &c) const
 		{
 			return c = lmodulus;
 		}
 
-		inline unsigned long cardinality () const
+		inline uint64_t cardinality () const
 		{
 			return lmodulus;
 		}
 
-		inline unsigned long &characteristic (unsigned long &c) const
+		inline uint64_t &characteristic (uint64_t &c) const
 		{
 			return c = lmodulus;
 		}
 
-		inline unsigned long characteristic () const
+		inline uint64_t characteristic () const
 		{
 			return lmodulus;
 		}

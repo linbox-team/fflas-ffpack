@@ -78,7 +78,7 @@ namespace FFPACK {
 
 		int32_t modulus;
 		double modulusinv;
-		unsigned long lmodulus;
+		uint32_t lmodulus;
 		int32_t _two64;
 
 	public:
@@ -100,7 +100,7 @@ namespace FFPACK {
 
 		//default modular field,taking 65521 as default modulus
 		Modular () :
-			modulus(65521),lmodulus((unsigned long) modulus)
+			modulus(65521),lmodulus((uint32_t) modulus)
 			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv=1/(double)65521;
@@ -111,7 +111,7 @@ namespace FFPACK {
 		}
 
 		Modular (Element value, int32_t exp = 1) :
-			modulus(value),lmodulus((unsigned long)value)
+			modulus(value),lmodulus((uint32_t)value)
 			,one(1),zero(0),mOne(modulus -1)
 		{
 			modulusinv = 1 / ((double) value);
@@ -163,22 +163,22 @@ namespace FFPACK {
 		}
 #endif
 
-		inline unsigned long &cardinality ( unsigned long &c) const
+		inline uint32_t &cardinality ( uint32_t &c) const
 		{
 			return c = lmodulus;
 		}
 
-		inline unsigned long cardinality () const
+		inline uint32_t cardinality () const
 		{
 			return lmodulus;
 		}
 
-		inline unsigned long &characteristic (unsigned long &c) const
+		inline uint32_t &characteristic (uint32_t &c) const
 		{
 			return c = lmodulus;
 		}
 
-		inline unsigned long characteristic () const
+		inline uint32_t characteristic () const
 		{
 			return lmodulus;
 		}

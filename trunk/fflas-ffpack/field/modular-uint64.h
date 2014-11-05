@@ -92,27 +92,27 @@ namespace FFPACK
 			return *this;
 		}
 
-		Element &init (Element &x, const long int &y ) const
+		Element &init (Element &x, const uint32_t &y ) const
 		{
-			x = (Element) (labs (y) % (long int) (_modulus));
+			x = (Element) (labs (y) % (int64_t) (_modulus));
 			if (y < 0) x = _modulus - x;
 			return x;
 		}
 
-		Element &init (Element &x, const int &y ) const
+		Element &init (Element &x, const int32_t &y ) const
 		{
-			x = abs (y) % (long int) (_modulus);
+			x = abs (y) % (int64_t) (_modulus);
 			if (y < 0) x = _modulus - x;
 			return x;
 		}
 
-		Element &init (Element &x, const long unsigned int &y ) const
+		Element &init (Element &x, const uint64_t &y ) const
 		{
 			x = Element(y %  (_modulus));
 			return x;
 		}
 
-		Element &init (Element &x, const unsigned int &y ) const
+		Element &init (Element &x, const uint32_t &y ) const
 		{
 			x = Element(y %  (_modulus));
 			return x;
@@ -280,21 +280,21 @@ namespace FFPACK
 			return x = y;
 		}
 
-		unsigned long &cardinality (unsigned long &c) const
+		uint64_t &cardinality (uint64_t &c) const
 		{
 			return c = _modulus;
 		}
-		unsigned long cardinality () const
+		uint64_t cardinality () const
 		{
 			return  _modulus;
 		}
 
-		unsigned long &characteristic (unsigned long &c) const
+		uint64_t &characteristic (uint64_t &c) const
 		{
 			return c = _modulus;
 		}
 
-		unsigned long characteristic () const
+		uint64_t characteristic () const
 		{
 			return  _modulus;
 		}
