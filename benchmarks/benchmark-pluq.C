@@ -281,8 +281,8 @@ int main(int argc, char** argv) {
 	if (NBK==-1) NBK = t;
 	typedef Field::Element Element;
 	Element * A, * Acop;
-	A = FFLAS::fflas_new(F,m,n,Alignment::PAGESIZE);
-	Acop = FFLAS::fflas_new(F,m,n,Alignment::PAGESIZE);
+	A = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+	Acop = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 
 	Field::Element * U = new Field::Element[n*n];
 	// random seed                                                                                         

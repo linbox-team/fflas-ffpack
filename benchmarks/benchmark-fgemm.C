@@ -118,21 +118,21 @@ int main(int argc, char** argv) {
   Element *v, *w, *y, *x;
 
   Field::RandIter G(F); 
-  A = FFLAS::fflas_new(F,m,k,Alignment::PAGESIZE);
+  A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(A,m/NBK,m,k);
 //#pragma omp for
   for (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)k; ++j)
 		  G.random (*(A+i*k+j));
-  B = FFLAS::fflas_new(F,k,n,Alignment::PAGESIZE);
+  B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
   for (size_t i=0; i<(size_t)k; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random(*(B+i*n+j));
-  C = FFLAS::fflas_new(F,m,n,Alignment::PAGESIZE);
+  C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(C,m/NBK,m,n);
   for (size_t i=0;i<=iter;++i){
