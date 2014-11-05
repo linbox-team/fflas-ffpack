@@ -41,9 +41,9 @@ namespace FFLAS { /*  ELLR */
 		size_t m ;
 		size_t n ;
 		size_t  ld ;
-		index_t  * row ;
-		index_t  * col ;
-		typename Field::Element_ptr dat ;
+		index_t * row ;
+		index_t * col ;
+		typename Field::Element_ptr dat;
 	};
 
 	template<class Field>

@@ -458,17 +458,7 @@ namespace FFLAS { /*  ZO */
 			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
-		std::cout << " mod : " << F.characteristic() << std::endl;
-		for(size_t i = 0 ; i < 10 ;  ++i)
-			std::cout << y.dat[i] << " ";
-		std::cout << std::endl;
-
-		finit(F,y.m,y.dat,1);
-		
-		for(size_t i = 0 ; i < 10 ;  ++i)
-			std::cout << y.dat[i] << " ";
-		std::cout << std::endl;
-		std::cout << "ZO Ok" << std::endl;
+		finit(F,A.m,y.dat,1);
 	}
 
 
