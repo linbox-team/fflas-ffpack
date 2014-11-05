@@ -313,42 +313,83 @@ struct Simd128_impl<true, true, true, 8> {
 #endif // __SSE4_2__
 	}
 
-	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
+	/*
+	 * Compare packed 64-bits in a and b for greater or equal than, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
+	 [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
+	 * Return : [(a0>=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1>=b1) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a2>=b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4>=b4) ? 0xFFFFFFFFFFFFFFFF : 0, (a5>=b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6>=b6) ? 0xFFFFFFFFFFFFFFFF : 0, (a7>=b7) ? 0xFFFFFFFFFFFFFFFF : 0]                    int64_t
+	 */
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
 	{
 		return vor(greater(a, b), eq(a, b));
 	}
 
-
-
-
-	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b)
+	/*
+	 * Compare packed 64-bits in a and b for lesser or equal than, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
+	 [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
+	 * Return : [(a0<=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<=b1) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4<=b4) ? 0xFFFFFFFFFFFFFFFF : 0, (a5<=b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6<=b6) ? 0xFFFFFFFFFFFFFFFF : 0, (a7<=b7) ? 0xFFFFFFFFFFFFFFFF : 0]                     int64_t
+	 */
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b)
 	{
 		return vor(lesser(a, b), eq(a, b));
 	}
 
-
+	/*
+	 * Compute the bitwise AND of packed 64-bits integer in a and b, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3, a4 AND b4, a5 AND b5, a6 AND b6, a7 AND b7]
+	 */
 	static INLINE CONST vect_t vand(const vect_t a, const vect_t b)
 	{
 		return _mm_and_si128(a, b);
 	}
 
-
+	/*
+	 * Compute the bitwise OR of packed 64-bits integer in a and b, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3, a4 OR b4, a5 OR b5, a6 OR b6, a7 OR b7]
+	 */
 	static INLINE CONST vect_t vor(const vect_t a, const vect_t b)
 	{
 		return _mm_or_si128(a, b);
 	}
 
+	/*
+	 * Compute the bitwise XOR of packed 64-bits integer in a and b, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3, a4 XOR b4, a5 XOR b5, a6 XOR b6, a7 XOR b7]
+	 */
 	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b)
 	{
 		return _mm_xor_si128(b, a);
 	}
 
+	/*
+	 * Compute the bitwise AND NOT of packed 64-bits integer in a and b, and store the results in vect_t.
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3, a4 ANDNOT b4, a5 ANDNOT b5, a6 ANDNOT b6, a7 ANDNOT b7]
+	 */
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b)
 	{
 		return _mm_andnot_si128(b, a);
 	}
 
-
+	/*
+	 * Horizontally add 64-bits elements of a.
+	 * Args   : [a0, a1, a2, a3]
+	 * Return : a0+a1+a2+a3
+	 */
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a)
 	{
 		Converter c;

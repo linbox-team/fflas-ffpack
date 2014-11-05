@@ -424,7 +424,7 @@ struct Simd128_impl<true, true, true, 4> {
 
 	static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b)
 	{
-		return sub(mulx(a, b),c);
+		return sub(c, mulx(a, b));
 	}
 
 	static INLINE vect_t fnmaddxin(vect_t & c, const vect_t a, const vect_t b)

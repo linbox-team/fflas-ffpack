@@ -184,7 +184,7 @@ struct Simd256_impl<true, true, true, 4>{
 		return _mm256_sub_epi32(a, b);
 	}
 
-	static INLINE CONST vect_t subin(vect_t &a, const vect_t b)
+	static INLINE vect_t subin(vect_t &a, const vect_t b)
 	{
 		return a = sub(a,b);
 	}
