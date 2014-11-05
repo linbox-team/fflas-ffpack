@@ -501,7 +501,7 @@ namespace FFLAS { /*  conversions */
         for(size_t i = 0 ; i < COO_nnz ; ++i){
             CSR_row[COO_row[i]+1]++;
         }
-        CSR_maxrow = *(std::max_element(CSR_row, CSR_row+COO_nnz+1));
+        CSR_maxrow = *(std::max_element(CSR_row, CSR_row+COO_rowdim+1));
         for(size_t i = 1 ; i <= COO_rowdim ; ++i){
             CSR_row[i] += CSR_row[i-1];
         }
