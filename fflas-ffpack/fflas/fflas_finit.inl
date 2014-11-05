@@ -167,7 +167,7 @@ namespace FFLAS { namespace vectorised {
                             // proposed_m = divide_128(1ULL << (floor_log_2_d - 1), 0, denom, &rem);
 
                         proposed_m = getpoweroftwoden_128(floor_log_2_d, denom, &rem);
-                        
+
 			const uint64_t e = denom- rem;
 
 			/* We are going to start with a power of floor_log_2_d - 1.  This works if works if e < 2**floor_log_2_d. */
@@ -363,6 +363,7 @@ namespace FFLAS { namespace vectorised {
 #endif // __FFLASFFPACK_USE_SIMD
 
 
+#ifdef __x86_64__
 	template<class Field, int ALGO>
 	typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
 	monfmod (typename Field::Element A, HelperMod<Field,FieldCategories::IntegralTag> & H)
@@ -384,10 +385,15 @@ namespace FFLAS { namespace vectorised {
 			FFLASFFPACK_abort("unknown algo");
 		}
 	}
+#endif // __x86_64__
 
 
 	template<class Field, int ALGO>
+#ifdef __x86_64__
 	typename std::enable_if< ! std::is_same<typename Field::Element,int64_t>::value , typename Field::Element>::type
+#else
+	typename Field::Element
+#endif // __x86_64__
 	monfmod (typename Field::Element A, HelperMod<Field,FieldCategories::IntegralTag> & H)
 	{
 		return monfmod(A,H.p);
