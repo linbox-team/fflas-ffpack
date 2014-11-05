@@ -74,6 +74,9 @@ namespace FFPACK
 		const Element zero,one,mOne ;
 		int32_t _modulus;
 
+		typedef ModularRandIter<Element> RandIter;
+		typedef NonzeroRandIter<Modular<Element>, RandIter> NonZeroRandIter;
+
 		Modular () :
 			zero(0),one(1),mOne(0)
 		{}
