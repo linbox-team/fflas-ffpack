@@ -37,6 +37,8 @@
  #include <type_traits>
  #include <string>
  #include <iterator>
+ #include <limits>
+ #include <cmath>
 
 /**********************************************************************************
  *
@@ -103,7 +105,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element 
  		simd::store(c2.data()+i, vc2);
  	}
 
- 	bool res = std::equal(c1.begin(), c1.end(), c2.begin());
+ 	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
  	if(!res)
  	{
  		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name << std::endl;
@@ -138,7 +140,7 @@ test_op(SimdFunc && fsimd, ScalFunc && fscal, size_t seed, size_t vectorSize, El
  		simd::store(c2.data()+i, c2);
  	}
 
- 	bool res = std::equal(c1.begin(), c1.end(), c2.begin());
+ 	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
  	if(!res)
  	{
  		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name << std::endl;
@@ -179,7 +181,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element 
  		simd::store(c2.data()+i, vc2);
  	}
 
- 	bool res = std::equal(c1.begin(), c1.end(), c2.begin());
+ 	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
  	if(!res)
  	{
  		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name << std::endl;
@@ -199,7 +201,6 @@ typename std::enable_if<
 					   , bool>::type
 test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
 	
-	// using simd = SimdT<Element>;
 	using vect_t = typename simd::vect_t;
 
 	std::mt19937 generator(seed);
@@ -225,7 +226,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element 
  		simd::store(d2.data()+i, fsimd(vc2, va2, vb2));
  	}
 
- 	bool res = std::equal(d1.begin(), d1.end(), d2.begin());
+ 	bool res = std::equal(d1.begin(), d1.end(), d2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
  	if(!res)
  	{
  		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name << std::endl;
@@ -251,6 +252,11 @@ bool test_float_impl(size_t seed, size_t vectorSize, Element max){
 	btest &= test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return x1+x3*x2;}, seed, vectorSize, max, "fmadd");
 	btest &= test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return -x1+x3*x2;}, seed, vectorSize, max, "fmsub");
 	btest &= test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return x1-x3*x2;}, seed, vectorSize, max, "fnmadd");
+	btest &= test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?NAN:0;}, seed, vectorSize, max, "lesser");
+	btest &= test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
+	btest &= test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
+	btest &= test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
+	btest &= test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
 
 	return btest;
 }
