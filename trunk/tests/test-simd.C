@@ -261,9 +261,13 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	sse = test_float_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
 	if(!sse)
 		std::cout << "bug sse" << std::endl;
+	else
+		std::cout << "SSE OK" << std::endl;
 	avx = test_float_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
 	if(!avx)
 		std::cout << "bug avx" << std::endl;
+	else
+		std::cout << "AVX OK" << std::endl;
 	return sse && avx;
 }
 
