@@ -4,7 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   BB <bbboyer@ncsu.edu>
- *				Bastien Vialla <bastien.vialla@lirmm.fr>
+ *		Bastien Vialla <bastien.vialla@lirmm.fr>
  *
  *
  * ========LICENCE========
@@ -60,6 +60,101 @@ namespace FFLAS { /*  DNS */
 
 } // FFLAS
 
+namespace FFLAS{ /* ELL */
+	
+	template<class Field>
+	struct ELL {
+		size_t m = 0;
+		size_t n = 0;
+		size_t ld = 0;
+		index_t  * col = nullptr;
+		typename Field::Element_ptr dat = nullptr;
+	};
+
+	template<class Field>
+	struct ELL_sub : public ELL<Field> {
+	};
+
+	template<class Field>
+	struct ELL_ZO : public ELL<Field> {
+		typename Field::Element cst = 1;
+	};
+}
+#include "fflas-ffpack/fflas/fflas_fspmv/ell.inl"
+
+namespace FFLAS{
+
+	template<class Field>
+	struct ELL_simd
+	{
+		size_t m = 0;
+		size_t n = 0;
+		size_t ld = 0;
+		index_t  * col = nullptr;
+		typename Field::Element_ptr dat = nullptr;
+	};
+
+	template<class Field>
+	struct ELL_sub : public ELL<Field> {
+	};
+
+	template<class Field>
+	struct ELL_ZO : public ELL<Field> {
+		typename Field::Element cst = 1;
+	};
+}
+#include "fflas-ffpack/fflas/fflas_fspmv/ell_simd.inl"
+
+namespace FFLAS{ /* CSR */
+	template<class Field>
+	struct CSR {
+		index_t m = 0;
+		index_t n = 0;
+		index_t maxrow = 0;
+		index_t  * st = nullptr;
+		index_t  * col = nullptr;
+		typename Field::Element_ptr dat ;
+	};
+
+	template<class Field>
+	struct CSR_sub : public CSR<Field> {
+	};
+
+	template<class Field>
+	struct CSR_ZO : public CSR<Field> {
+		typename Field::Element cst = 1;
+	};
+}
+#include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
+
+
+
+namespace FFLAS{ /* COO */
+
+	template<class Field>
+	struct COO {
+		index_t m  = 0;
+		index_t n  = 0;
+		uint64_t z = 0;
+		index_t maxrow = 0;
+		index_t  * row  ;
+		index_t  * col ;
+		typename Field::Element_ptr dat;
+	};
+
+	template<class Field>
+	struct COO_sub : public COO<Field> {
+	};
+
+	template<class Field>
+	struct COO_ZO : public COO<Field >{
+		typename Field::Element cst = 1;
+	};
+}
+#include "fflas-ffpack/fflas/fflas_fspmv/coo.inl"
+
+
+
 namespace FFLAS { /* HYB */
 #if 0
 	template<class Element>
@@ -113,7 +208,7 @@ namespace FFLAS{
 		template<class Field>
 		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::ModularTag)
 		{
-			if(b != -1)
+			if(b != 1)
 			{
 				if(b == 0)
 				{
@@ -135,7 +230,7 @@ namespace FFLAS{
 		template<class Field>
 		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::UnparametricTag)
 		{
-			if(b != -1)
+			if(b != 1)
 			{
 				if(b == 0)
 				{
