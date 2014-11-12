@@ -31,5 +31,6 @@ pkgincludesub_HEADERS=            \
             coo.inl  \
 	    csr.inl  \
 	    ell.inl  \
+	    ell_simd.inl \
 	    ellr.inl \
 	    sell.inl

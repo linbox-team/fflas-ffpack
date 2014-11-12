@@ -34,30 +34,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_csr_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_csr_INL
 
-namespace FFLAS { /*  CSR */
-
-	template<class Field>
-	struct CSR {
-		index_t m = 0;
-		index_t n = 0;
-		index_t maxrow = 0;
-		index_t  * st = nullptr;
-		index_t  * col = nullptr;
-		typename Field::Element_ptr dat ;
-	};
-
-	template<class Field>
-	struct CSR_sub : public CSR<Field> {
-	};
-
-	template<class Field>
-	struct CSR_ZO : public CSR<Field> {
-		typename Field::Element cst = 1;
-	};
-
-} // FFLAS
-
-namespace FFLAS { namespace details {
+namespace FFLAS { namespace csr_details {
 
 	// y = A x + b y ; (generic)
 	template<class Field>
@@ -95,7 +72,6 @@ namespace FFLAS { namespace details {
 			for (index_t j = st[i] ; j < st[i+1] ; ++j)
 				y[i] += dat[j] * x[col[j]];
 	}
-
 
 	// Double
 	template<>
@@ -226,7 +202,7 @@ namespace FFLAS {
 			     VECT<Field> & y,
 			     FieldCategories::ModularTag)
 	{
-		details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
+		csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 		finit(F,A.m,y.dat,1);
 	}
 
@@ -237,7 +213,7 @@ namespace FFLAS {
 			     VECT<Field> & y,
 			     FieldCategories::UnparametricTag)
 	{
-		details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
+		csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 	}
 
 	template<class Field, bool simd_true>
@@ -247,7 +223,7 @@ namespace FFLAS {
 			     VECT<Field> & y,
 			     FieldCategories::GenericTag)
 	{
-		details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag ());
+		csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag ());
 	}
 
 	/* *** */
@@ -278,7 +254,7 @@ namespace FFLAS {
 		      , FieldCategories::GenericTag
 		     )
 	{
-		details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
+		csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
 
 	template<class Field>
@@ -290,7 +266,7 @@ namespace FFLAS {
 		      , FieldCategories::UnparametricTag
 		     )
 	{
-		details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
+		csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 	}
 
 	template<class Field>
@@ -305,15 +281,15 @@ namespace FFLAS {
 		index_t kmax = Protected::DotProdBoundClassic(F,F.one);
 		if(kmax > A.maxrow)
 		{
-			details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 			finit(F, A.m, y.dat, 1);
 		}else{
-			details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat,(index_t) kmax);	
+			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat,(index_t) kmax);	
 		}		
 	}
 } // FFLAS
 
-namespace FFLAS { namespace details { /*  ZO */
+namespace FFLAS { namespace csr_details { /*  ZO */
 
 	// generic
 	template<class Field, bool add>
@@ -401,15 +377,15 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		if (A.cst == F.one) {
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::GenericTag());
 		}
 		else if (A.cst == F.mOne) {
-			details::fspmv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::GenericTag());
+			csr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::GenericTag());
 		}
 		else {
 			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
 			fscal(F, A.n, A.cst, x.dat, 1, x1, 1);
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::GenericTag());
+			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::GenericTag());
 			fflas_delete(x1);	
 		}
 	}
@@ -424,15 +400,15 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		if (A.cst == F.one) {
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else if (A.cst == F.mOne) {
-			details::fspmv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else {
 			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
 			fscal(F, A.n, A.cst, x.dat, 1, x1, 1);
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
 	}
@@ -447,15 +423,15 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		if (A.cst == F.one) {
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else if (A.cst == F.mOne) {
-			details::fspmv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv_zo<Field,false>(F,A.m,A.n,A.st,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else {
 			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
 			fscal(F, A.n, A.cst, x.dat, 1, x1, 1);
-			details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::UnparametricTag());
+			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
 		finit(F,A.m,y.dat,1);
@@ -471,7 +447,7 @@ namespace FFLAS { /*  conversions */
                          const uint64_t COO_nnz, const IdxT * COO_row, const IdxT * COO_col,
                          const typename Field::Element_ptr COO_val, index_t & CSR_rowdim,
                          index_t & CSR_coldim, index_t & CSR_maxrow, index_t *& CSR_row, index_t *& CSR_col,
-                         typename Field::Element_ptr& CSR_val, bool ZO){
+                         typename Field::Element_ptr & CSR_val, bool ZO){
         CSR_col = fflas_new<index_t>(COO_nnz, Alignment::CACHE_LINE);
         CSR_row = fflas_new<index_t>(COO_rowdim+1, Alignment::CACHE_LINE);
         if(!ZO){
@@ -522,7 +498,7 @@ namespace FFLAS{ /* Delete matrix */
     }
 }
 
-namespace FFLAS { namespace details {
+namespace FFLAS { namespace csr_details {
 #ifdef __FFLASFFPACK_HAVE_CUDA
 	// Double
 	template<>
@@ -577,7 +553,6 @@ namespace FFLAS { namespace details {
 
 	// need cuda finit code (need nvcc)
 #endif // __FFLASFFPACK_HAVE_CUDA
-
 
 } // details
 } // FFLAS
