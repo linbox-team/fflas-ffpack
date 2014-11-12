@@ -4,6 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   BB <bbboyer@ncsu.edu>
+ *              Bastien Vialla <bastien.vialla@lirmm.fr>
  *
  *
  * ========LICENCE========
@@ -86,7 +87,6 @@ namespace FFLAS { /*  COO */
 		      VECT<Field> & y
 		     );
 
-
 	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
@@ -166,6 +166,34 @@ namespace FFLAS { /*  ELL */
 	 template<class Field, bool simd>
 	 struct ELL_ZO;
 
+	 template<class Field, bool simd>
+	void sp_fgemv(
+		      const Field& F,
+		      const ELL<Field, simd> & A,
+		      const VECT<Field> & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
+	// y = A.x + b y
+	template<class Field, bool simd>
+	void sp_fgemv(
+		      const Field& F,
+		      const ELL_sub<Field, simd> & A,
+		      const VECT<Field> & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
+	template<class Field, bool simd>
+	void sp_fgemv(
+		      const Field & F,
+		      const ELL_ZO<Field, simd> & A,
+		      const VECT<Field > & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
 } // FFLAS
 
 namespace FFLAS{ /* ELLR */
@@ -193,28 +221,22 @@ namespace FFLAS { /* SELL */
 	struct SELL_ZO;
 }
 
-namespace FFLAS { /*  BCSR */
+namespace FFLAS{
+	namespace details{
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::ModularTag);
 
-} // FFLAS
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::UnparametricTag);
 
-namespace FFLAS { /*  DIA */
-
-} // FFLAS
-
-namespace FFLAS { /*  SKY */
-
-} // FFLAS
-
-namespace FFLAS { /*  JAG */
-
-} // FFLAS
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::GenericTag);		
+	}	
+}
 
 
 #include "fflas-ffpack/fflas/fflas_fspmv.inl"
-#include "fflas-ffpack/fflas/fflas_fspmv/coo.inl"
-#include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
-#include "fflas-ffpack/fflas/fflas_fspmv/ell.inl"
-#include "fflas-ffpack/fflas/fflas_fspmv/ellr.inl"
+// #include "fflas-ffpack/fflas/fflas_fspmv/ellr.inl"
 // #include "fflas-ffpack/fflas/fflas_fspmv/sell.inl"
 
 #endif // __FFLASFFPACK_fflas_fflas_fspmv_H
