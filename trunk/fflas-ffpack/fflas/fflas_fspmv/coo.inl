@@ -34,30 +34,6 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_coo_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_coo_INL
 
-namespace FFLAS { /*  COO */
-
-	template<class Field>
-	struct COO {
-		index_t m  = 0;
-		index_t n  = 0;
-		uint64_t z = 0;
-		index_t maxrow = 0;
-		index_t  * row  ;
-		index_t  * col ;
-		typename Field::Element_ptr dat;
-	};
-
-	template<class Field>
-	struct COO_sub : public COO<Field> {
-	};
-
-	template<class Field>
-	struct COO_ZO : public COO<Field >{
-		typename Field::Element cst = 1;
-	};
-
-} // FFLAS
-
 namespace FFLAS { namespace coo_details {
 
 	// y = A x + b y ; (generic)
@@ -495,9 +471,5 @@ namespace FFLAS{ /* delete Matrix */
 
 namespace FFLAS { /*  conversions */
 } // FFLAS
-
-
-
-
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_coo_INL
