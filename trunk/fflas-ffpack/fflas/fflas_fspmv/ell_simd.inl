@@ -41,17 +41,17 @@ namespace FFLAS { namespace ell_simd_details {
 	// y = A x + b y ; (generic)
 	template<class Field>
 	inline void fspmv(
-			     const Field& F,
-			     const size_t m,
-			     const size_t n,
-			     const size_t ld,
-			     const size_t chunk,
-			     const index_t * col,
-			     const typename Field::Element_ptr dat,
-			     const typename Field::Element_ptr x ,
-			     typename Field::Element_ptr y,
-			     FieldCategories::GenericTag
-			    )
+			  const Field& F,
+			  const size_t m,
+			  const size_t n,
+			  const size_t ld,
+			  const size_t chunk,
+			  const index_t * col,
+			  const typename Field::Element_ptr dat,
+			  const typename Field::Element_ptr x ,
+			  typename Field::Element_ptr y,
+			  FieldCategories::GenericTag
+			 )
 	{
 		size_t end = (m % chunk == 0) ? m : m + m%chunk;
 		for ( size_t i = 0 ; i < end/chunk ; ++i, y+=chunk ) {
@@ -65,18 +65,18 @@ namespace FFLAS { namespace ell_simd_details {
 
 	template<class Field>
 	inline void fspmv(
-			     const Field & F,
-			     const size_t m,
-			     const size_t n,
-			     const size_t ld,
-			     const size_t chunk,
-			     const index_t * col,
-			     typename Field::Element_ptr dat,
-			     typename Field::Element_ptr x ,
-			     typename Field::Element_ptr y,
-			     FieldCategories::UnparametricTag
-			    )
-	{		
+			  const Field & F,
+			  const size_t m,
+			  const size_t n,
+			  const size_t ld,
+			  const size_t chunk,
+			  const index_t * col,
+			  typename Field::Element_ptr dat,
+			  typename Field::Element_ptr x ,
+			  typename Field::Element_ptr y,
+			  FieldCategories::UnparametricTag
+			 )
+	{
 		using simd = Simd<typename Field::Element>;
 		using vect_t = typename simd::vect_t;
 		int end = (m%chunk == 0) ? m : m+(chunk-(m%chunk));
@@ -92,94 +92,94 @@ namespace FFLAS { namespace ell_simd_details {
 		}
 	}
 	/* NO SIMD VERSION */
-// 			size_t end = (m%chunk == 0)? m : m+m%chunk;
-// 			for( size_t i = 0 ; i < end ; i+=chunk) {
-// 				for (index_t j = 0 ; j < ld ; ++j, dat+=chunk, col+=chunk) {
-// 					for(size_t k = 0 ; k < chunk ; ++k)
-// 					{
-// 						y[i+k] += dat[k]*x[col[k]];
-// 					}
-// 				}
-// 			}
+	// 			size_t end = (m%chunk == 0)? m : m+m%chunk;
+	// 			for( size_t i = 0 ; i < end ; i+=chunk) {
+	// 				for (index_t j = 0 ; j < ld ; ++j, dat+=chunk, col+=chunk) {
+	// 					for(size_t k = 0 ; k < chunk ; ++k)
+	// 					{
+	// 						y[i+k] += dat[k]*x[col[k]];
+	// 					}
+	// 				}
+	// 			}
 
 
 	// delayed by kmax
 	template<class Field>
 	inline void fspmv(
-			     const Field& F,
-			     const size_t m,
-			     const size_t n,
-			     const size_t ld,
-			     const size_t chunk,
-			     const index_t * col,
-			     const typename Field::Element_ptr dat,
-			     const typename Field::Element_ptr x ,
-			     typename Field::Element_ptr y,
-			     const index_t & kmax
-			    )
+			  const Field& F,
+			  const size_t m,
+			  const size_t n,
+			  const size_t ld,
+			  const size_t chunk,
+			  const index_t * col,
+			  const typename Field::Element_ptr dat,
+			  const typename Field::Element_ptr x ,
+			  typename Field::Element_ptr y,
+			  const index_t & kmax
+			 )
 	{
 		index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
-			size_t end = (m%chunk == 0)? m : m+m%chunk;
-			// using simd = Simd<typename Field::Element >;
-			// using vect_t = typename simd::vect_t;
-			// FieldSimd<Field> FSimd(F);
-			// vect_t X, Y, D, C, Q, TMP;
-			// // double p = (typename Field::Element)F.characteristic();
+		size_t end = (m%chunk == 0)? m : m+m%chunk;
+		// using simd = Simd<typename Field::Element >;
+		// using vect_t = typename simd::vect_t;
+		// FieldSimd<Field> FSimd(F);
+		// vect_t X, Y, D, C, Q, TMP;
+		// // double p = (typename Field::Element)F.characteristic();
 
-			// for ( size_t i = 0; i < end/chunk ; ++i ) {
-			// 	index_t j = 0 ;
-			// 	index_t j_loc = 0 ;
-			// 	Y = simd::load(y+i*chunk);
-			// 	for (size_t l = 0 ; l < block ; ++l) {
-			// 		j_loc += kmax ;
+		// for ( size_t i = 0; i < end/chunk ; ++i ) {
+		// 	index_t j = 0 ;
+		// 	index_t j_loc = 0 ;
+		// 	Y = simd::load(y+i*chunk);
+		// 	for (size_t l = 0 ; l < block ; ++l) {
+		// 		j_loc += kmax ;
 
-			// 		for ( ; j < j_loc ; ++j) {
-			// 			D = simd::load(dat+i*chunk*ld+j*chunk);
-			// 			X = simd::gather(x,col+i*chunk*ld+j*chunk);
-			// 			Y = simd::fmadd(Y,D,X);
-			// 		}
-			// 		// vectorised::VEC_MOD(Y,Y,TMP, P, NEGP,INVP,MIN,MAX);
-			// 		Y = FSimd.mod(Y);
-			// 	}
-			// 	for ( ; j < ld ; ++j) {
-			// 		D = simd::load(dat+i*chunk*ld+j*chunk);
-			// 		X = simd::gather(x,col+i*chunk*ld+j*chunk);
-			// 		Y = simd::fmadd(Y,D,X);
-			// 	}
-			// 	Y = FSimd.mod(Y);
-			// 	// vectorised::VEC_MOD(Y,Q,TMP, P, NEGP,INVP,MIN,MAX);
-			// 	simd::store(y+i*chunk,Y);
-			// }
+		// 		for ( ; j < j_loc ; ++j) {
+		// 			D = simd::load(dat+i*chunk*ld+j*chunk);
+		// 			X = simd::gather(x,col+i*chunk*ld+j*chunk);
+		// 			Y = simd::fmadd(Y,D,X);
+		// 		}
+		// 		// vectorised::VEC_MOD(Y,Y,TMP, P, NEGP,INVP,MIN,MAX);
+		// 		Y = FSimd.mod(Y);
+		// 	}
+		// 	for ( ; j < ld ; ++j) {
+		// 		D = simd::load(dat+i*chunk*ld+j*chunk);
+		// 		X = simd::gather(x,col+i*chunk*ld+j*chunk);
+		// 		Y = simd::fmadd(Y,D,X);
+		// 	}
+		// 	Y = FSimd.mod(Y);
+		// 	// vectorised::VEC_MOD(Y,Q,TMP, P, NEGP,INVP,MIN,MAX);
+		// 	simd::store(y+i*chunk,Y);
+		// }
 	}
 	/* NO SIMD VERSION */
-			// 	for ( size_t i = 0; i < end/chunk ; ++i ) {
-			// 	index_t j = 0 ;
-			// 	index_t j_loc = 0 ;
-			// 	for (size_t l = 0 ; l < block ; ++l) {
-			// 		j_loc += kmax ;
+	// 	for ( size_t i = 0; i < end/chunk ; ++i ) {
+	// 	index_t j = 0 ;
+	// 	index_t j_loc = 0 ;
+	// 	for (size_t l = 0 ; l < block ; ++l) {
+	// 		j_loc += kmax ;
 
-			// 		for ( ; j < j_loc ; ++j) {
-			// 			for(size_t k = 0 ; k < chunk ; ++k)
-			// 			{
-			// 				y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
-			// 			}
-			// 		}
-			// 		for(size_t k = 0 ; k < chunk ; ++k)
-			// 		{
-			// 			F.init(y[i*chunk+k], y[i*chunk+k]);
-			// 		}
-			// 	}
-			// 	for ( ; j < ld ; ++j) {
-			// 		for(size_t k = 0 ; k < chunk ; ++k)
-			// 		{
-			// 			y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
-			// 		}
-			// 	}
-			// 	for(size_t k = 0 ; k < chunk ; ++k)
-			// 	{
-			// 		F.init(y[i*chunk+k], y[i*chunk+k]);
-			// 	}
-			// }
+	// 		for ( ; j < j_loc ; ++j) {
+	// 			for(size_t k = 0 ; k < chunk ; ++k)
+	// 			{
+	// 				y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
+	// 			}
+	// 		}
+	// 		for(size_t k = 0 ; k < chunk ; ++k)
+	// 		{
+	// 			F.init(y[i*chunk+k], y[i*chunk+k]);
+	// 		}
+	// 	}
+	// 	for ( ; j < ld ; ++j) {
+	// 		for(size_t k = 0 ; k < chunk ; ++k)
+	// 		{
+	// 			y[i*chunk+k] += dat[i*chunk*ld+j*chunk+k]*x[col[i*chunk*ld+j*chunk+k]];
+	// 		}
+	// 	}
+	// 	for(size_t k = 0 ; k < chunk ; ++k)
+	// 	{
+	// 		F.init(y[i*chunk+k], y[i*chunk+k]);
+	// 	}
+	// }
 
 } // details
 } // FFLAS
@@ -189,15 +189,15 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 	// generic
 	template<class Field, bool add>
 	inline void fspmv_zo(
-				const Field & F,
-				const size_t m,
-				const size_t n,
-				const size_t ld,
-				const size_t chunk,
-				const index_t * col,
-				const typename Field::Element_ptr x ,
-				typename Field::Element_ptr y,
-				FieldCategories::GenericTag
+			     const Field & F,
+			     const size_t m,
+			     const size_t n,
+			     const size_t ld,
+			     const size_t chunk,
+			     const index_t * col,
+			     const typename Field::Element_ptr x ,
+			     typename Field::Element_ptr y,
+			     FieldCategories::GenericTag
 			    )
 	{
 		size_t end = (m % chunk == 0) ? m : m + (chunk - m%chunk);
@@ -221,15 +221,15 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 
 	template<class Field, bool add>
 	inline void fspmv_zo(
-				const Field & F,
-				const size_t m,
-				const size_t n,
-				const size_t ld,
-				const size_t chunk,
-				const index_t * col,
-				const typename Field::Element_ptr x ,
-				typename Field::Element_ptr y,
-				FieldCategories::UnparametricTag
+			     const Field & F,
+			     const size_t m,
+			     const size_t n,
+			     const size_t ld,
+			     const size_t chunk,
+			     const index_t * col,
+			     const typename Field::Element_ptr x ,
+			     typename Field::Element_ptr y,
+			     FieldCategories::UnparametricTag
 			    )
 	{
 		using simd = Simd<typename Field::Element >;
@@ -258,24 +258,24 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 	}
 	/* NO SIMD VERSION */
 
-			// size_t end = (m%chunk == 0)? m : m+(chunk-m%chunk);
-			// if(add){
-			// 	for( size_t i = 0 ; i < end/chunk ; ++i ) {
-			// 		for (index_t j = 0 ; j < ld ; ++j) {
-			// 			for(size_t k = 0 ; k < chunk ; ++k) {
-			// 				y[i*chunk+k] += x[col[i*chunk*ld+j*chunk+k]];
-			// 			}
-			// 		}
-			// 	}
-			// }else{
-			// 	for( size_t i = 0 ; i < end/chunk ; ++i ) {
-			// 		for (index_t j = 0 ; j < ld ; ++j) {
-			// 			for(size_t k = 0 ; k < chunk ; ++k) {
-			// 				y[i*chunk+k] -= x[col[i*chunk*ld+j*chunk+k]];
-			// 			}
-			// 		}
-			// 	}
-			// }
+	// size_t end = (m%chunk == 0)? m : m+(chunk-m%chunk);
+	// if(add){
+	// 	for( size_t i = 0 ; i < end/chunk ; ++i ) {
+	// 		for (index_t j = 0 ; j < ld ; ++j) {
+	// 			for(size_t k = 0 ; k < chunk ; ++k) {
+	// 				y[i*chunk+k] += x[col[i*chunk*ld+j*chunk+k]];
+	// 			}
+	// 		}
+	// 	}
+	// }else{
+	// 	for( size_t i = 0 ; i < end/chunk ; ++i ) {
+	// 		for (index_t j = 0 ; j < ld ; ++j) {
+	// 			for(size_t k = 0 ; k < chunk ; ++k) {
+	// 				y[i*chunk+k] -= x[col[i*chunk*ld+j*chunk+k]];
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 } // details
 } // FFLAS
@@ -290,12 +290,12 @@ namespace FFLAS {
 	// it is supposed that no reduction is needed.
 	template<class Field>
 	inline void fspmv(
-			     const Field& F,
-			     const ELL_simd_sub<Field> & A,
-			     const VECT<Field> & x,
-			     const typename Field::Element & b,
-			     VECT<Field> & y
-			    )
+			  const Field& F,
+			  const ELL_simd_sub<Field> & A,
+			  const VECT<Field> & x,
+			  const typename Field::Element & b,
+			  VECT<Field> & y
+			 )
 	{
 		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
 		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
@@ -303,10 +303,10 @@ namespace FFLAS {
 
 	template<class Field>
 	inline void fspmv(const Field & F,
-			     const ELL_simd_sub<Field> & A,
-			     const VECT<Field> & x,
-			     VECT<Field> & y,
-			     FieldCategories::ModularTag)
+			  const ELL_simd_sub<Field> & A,
+			  const VECT<Field> & x,
+			  VECT<Field> & y,
+			  FieldCategories::ModularTag)
 	{
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
 		finit(F,A.m,y.dat,1);
@@ -314,20 +314,20 @@ namespace FFLAS {
 
 	template<class Field>
 	inline void fspmv(const Field & F,
-			     const EL_simd_sub<Field> & A,
-			     const VECT<Field> & x,
-			     VECT<Field> & y,
-			     FieldCategories::UnparametricTag)
+			  const EL_simd_sub<Field> & A,
+			  const VECT<Field> & x,
+			  VECT<Field> & y,
+			  FieldCategories::UnparametricTag)
 	{
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 	}
 
 	template<class Field>
 	inline void fspmv(const Field & F,
-			     const ELL_simd_sub<Field> & A,
-			     const VECT<Field> & x,
-			     VECT<Field> & y,
-			     FieldCategories::GenericTag)
+			  const ELL_simd_sub<Field> & A,
+			  const VECT<Field> & x,
+			  VECT<Field> & y,
+			  FieldCategories::GenericTag)
 	{
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
@@ -340,12 +340,12 @@ namespace FFLAS {
 	// reductions are delayed.
 	template<class Field>
 	void fspmv(
-		      const Field& F,
-		      const ELL<Field> & A,
-		      const VECT<Field> & x,
-		      const typename Field::Element & b,
-		      VECT<Field> & y
-		     )
+		   const Field& F,
+		   const ELL<Field> & A,
+		   const VECT<Field> & x,
+		   const typename Field::Element & b,
+		   VECT<Field> & y
+		  )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
 		fspmv(F,A,x,y,typename FieldTraits<Field>::category());
@@ -353,36 +353,36 @@ namespace FFLAS {
 
 	template<class Field>
 	void fspmv(
-		      const Field& F,
-		      const ELL_simd<Field> & A,
-		      const VECT<Field> & x,
-		      VECT<Field> & y,
-		      FieldCategories::GenericTag
-		     )
+		   const Field& F,
+		   const ELL_simd<Field> & A,
+		   const VECT<Field> & x,
+		   VECT<Field> & y,
+		   FieldCategories::GenericTag
+		  )
 	{
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
 
 	template<class Field>
 	void fspmv(
-		      const Field& F,
-		      const ELL_simd<Field> & A,
-		      const VECT<Field> & x,
-		      VECT<Field> & y, 
-		      FieldCategories::UnparametricTag
-		     )
+		   const Field& F,
+		   const ELL_simd<Field> & A,
+		   const VECT<Field> & x,
+		   VECT<Field> & y,
+		   FieldCategories::UnparametricTag
+		  )
 	{
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 	}
 
 	template<class Field>
 	void fspmv(
-		      const Field& F,
-		      const ELL_simd<Field> & A,
-		      const VECT<Field> & x,
-		      VECT<Field> & y,
-		      FieldCategories::ModularTag
-		     )
+		   const Field& F,
+		   const ELL_simd<Field> & A,
+		   const VECT<Field> & x,
+		   VECT<Field> & y,
+		   FieldCategories::ModularTag
+		  )
 	{
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, (index_t) kmax);
@@ -399,12 +399,12 @@ namespace FFLAS { /*  ZO */
 	// it is supposed that no reduction is needed.
 	template<class Field>
 	inline void fspmv(
-			     const Field & F,
-			     const ELL_simd_ZO<Field> & A,
-			     const VECT<Field> & x,
-			     const typename Field::Element & b,
-			     VECT<Field> & y
-			    )
+			  const Field & F,
+			  const ELL_simd_ZO<Field> & A,
+			  const VECT<Field> & x,
+			  const typename Field::Element & b,
+			  VECT<Field> & y
+			 )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
 		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
@@ -412,12 +412,12 @@ namespace FFLAS { /*  ZO */
 
 	template<class Field>
 	inline void fspmv(
-			     const Field & F,
-			     const ELL_simd_ZO<Field > & A,
-			     const VECT<Field> & x,
-			     VECT<Field> & y,
-			     FieldCategories::GenericTag
-			    )
+			  const Field & F,
+			  const ELL_simd_ZO<Field > & A,
+			  const VECT<Field> & x,
+			  VECT<Field> & y,
+			  FieldCategories::GenericTag
+			 )
 	{
 		if (A.cst == F.one) {
 			ell_simd_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.chunk,A.col,x.dat,y.dat, FieldCategories::GenericTag());
@@ -435,12 +435,12 @@ namespace FFLAS { /*  ZO */
 
 	template<class Field>
 	inline void fspmv(
-			     const Field & F,
-			     const ELL_simd_ZO<Field> & A,
-			     const VECT<Field> & x,
-			     VECT<Field> & y,
-			     FieldCategories::UnparametricTag
-			    )
+			  const Field & F,
+			  const ELL_simd_ZO<Field> & A,
+			  const VECT<Field> & x,
+			  VECT<Field> & y,
+			  FieldCategories::UnparametricTag
+			 )
 	{
 		if (A.cst == F.one) {
 			ell_simd_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.chunk,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
@@ -458,12 +458,12 @@ namespace FFLAS { /*  ZO */
 
 	template<class Field>
 	inline void fspmv(
-			     const Field & F,
-			     const ELL_simd_ZO<Field> & A,
-			     const VECT<Field> & x,
-			     VECT<Field> & y,
-			     FieldCategories::ModularTag
-			    )
+			  const Field & F,
+			  const ELL_simd_ZO<Field> & A,
+			  const VECT<Field> & x,
+			  VECT<Field> & y,
+			  FieldCategories::ModularTag
+			 )
 	{
 		if (A.cst == F.one) {
 			ell_simd_simd_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.chunk,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
@@ -481,7 +481,7 @@ namespace FFLAS { /*  ZO */
 	}
 } // FFLAS
 
-namespace FFLAS{ 
+namespace FFLAS{
 
 	template<class Field>
 	inline void print_ell(const ELL_simd<Field> & M)
@@ -504,7 +504,7 @@ namespace FFLAS{
 				    const Field & F,
 				    const size_t CSR_m,
 				    const size_t CSR_n,
-				    const size_t nnz, 
+				    const size_t nnz,
 				    const ColT * CSR_col,
 				    const RowT * CSR_row,
 				    const typename Field::Element_ptr CSR_dat,
@@ -526,19 +526,19 @@ namespace FFLAS{
 			}
 		}
 		if(bSimd){
-		chunk = Simd<typename Field::Element >::vect_size;
-				
-		size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+(chunk-CSR_m%chunk);
-		std::cout << "ELL simd ; mod " << CSR_m%chunk << " ; m : " << m <<std::endl; 
+			chunk = Simd<typename Field::Element >::vect_size;
 
-		ELL_col = fflas_new<index_t >(ld*m, Alignment::CACHE_LINE);
-		if(!ZO){
-			ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
-		}
+			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+(chunk-CSR_m%chunk);
+			std::cout << "ELL simd ; mod " << CSR_m%chunk << " ; m : " << m <<std::endl;
 
-		size_t i = 0;
-			
-		for(; i < CSR_m ; i+=chunk){
+			ELL_col = fflas_new<index_t >(ld*m, Alignment::CACHE_LINE);
+			if(!ZO){
+				ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+			}
+
+			size_t i = 0;
+
+			for(; i < CSR_m ; i+=chunk){
 				for(size_t k = 0 ; k < chunk ; ++k){
 					size_t start = CSR_row[i+k], stop = CSR_row[i+k+1];
 					for(size_t j = 0 ; j < ld ; ++j){
@@ -555,31 +555,32 @@ namespace FFLAS{
 						}
 					}
 				}
-		}
-		if(CSR_m != m)
-		{
-			for(size_t k = 0 ; k < chunk ; ++k){
-				if(i + k < CSR_m){
-					size_t start = CSR_row[i+k], stop = CSR_row[i+k+1];
-					for(size_t j = 0 ; j < ld ; ++j){
-						if(start + j < stop){
-							if(!ZO){
-								ELL_dat[i*ld+j*chunk+k] = CSR_dat[start+j];
+			}
+			if(CSR_m != m)
+			{
+				for(size_t k = 0 ; k < chunk ; ++k){
+					if(i + k < CSR_m){
+						size_t start = CSR_row[i+k], stop = CSR_row[i+k+1];
+						for(size_t j = 0 ; j < ld ; ++j){
+							if(start + j < stop){
+								if(!ZO){
+									ELL_dat[i*ld+j*chunk+k] = CSR_dat[start+j];
+								}
+								ELL_col[i*ld+j*chunk+k] = CSR_col[start+j];
+							}else{
+								if(!ZO){
+									ELL_dat[i*ld+j*chunk+k] = 0;
+								}
+								ELL_col[i*ld+j*chunk+k] = 0;
 							}
-							ELL_col[i*ld+j*chunk+k] = CSR_col[start+j];
-						}else{
-							if(!ZO){
-								ELL_dat[i*ld+j*chunk+k] = 0;
-							}
-							ELL_col[i*ld+j*chunk+k] = 0;
 						}
-					}
-				}else{
-					for(size_t j = 0 ; j < ld ; ++j){
+					}else{
+						for(size_t j = 0 ; j < ld ; ++j){
 							if(!ZO){
 								ELL_dat[i*ld+j+k] = 0;
 							}
 							ELL_col[i*ld+j+k] = 0;
+						}
 					}
 				}
 			}
@@ -606,14 +607,14 @@ namespace FFLAS{
 	{
 		index_t * row = fflas_new<index_t >(COO_m+1);
 		for(size_t i = 0 ; i <= COO_m+1 ; ++i){
-            row[i] = 0;
-        }
-        for(size_t i = 0 ; i < COO_nnz ; ++i){
-            row[COO_row[i]+1]++;
-        }
-        for(size_t i = 1 ; i <= COO_m ; ++i){
-            row[i] += row[i-1];
-        }
+			row[i] = 0;
+		}
+		for(size_t i = 0 ; i < COO_nnz ; ++i){
+			row[COO_row[i]+1]++;
+		}
+		for(size_t i = 1 ; i <= COO_m ; ++i){
+			row[i] += row[i-1];
+		}
 		sp_ell_from_csr(F, COO_m, COO_n, COO_nnz, COO_col, row, COO_dat, ELL_m, ELL_n, ld, chunk, ELL_col, ELL_dat, ZO);
 		fflas_delete(row);
 	}
