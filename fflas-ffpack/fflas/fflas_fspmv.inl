@@ -42,23 +42,25 @@ namespace FFLAS { /*  DNS */
 
 	template<class Field>
 	struct VECT {
-		size_t m = 0;
-		size_t inc = 0;
-		typename Field::Element_ptr dat = nullptr;
+		size_t m;
+		size_t inc;
+		typename Field::Element_ptr dat;
 
 		inline typename Field::Element_ptr data() {return dat;}
 	};
 
 	template<class Field>
 	struct DNS {
-		size_t n = 0;
-		size_t ld = 0;
-		typename Field::Element_ptr dat = nullptr;
+		size_t n;
+		size_t ld;
+		typename Field::Element_ptr dat;
 
 		inline typename Field::Element_ptr data() {return dat;}
 	};
 
 } // FFLAS
+
+#if defined(__FFLASFFPACK_HAVE_CXX11)
 
 namespace FFLAS{ /* ELL */
 	
@@ -95,11 +97,11 @@ namespace FFLAS{
 	};
 
 	template<class Field>
-	struct ELL_sub : public ELL<Field> {
+	struct ELL_simd_sub : public ELL_simd<Field> {
 	};
 
 	template<class Field>
-	struct ELL_ZO : public ELL<Field> {
+	struct ELL_simd_ZO : public ELL<Field> {
 		typename Field::Element cst = 1;
 	};
 }
@@ -186,22 +188,6 @@ namespace FFLAS { /* HYB */
 } // FFLAS
 
 
-namespace FFLAS { /*  BCSR */
-
-} // FFLAS
-
-namespace FFLAS { /*  DIA */
-
-} // FFLAS
-
-namespace FFLAS { /*  SKY */
-
-} // FFLAS
-
-namespace FFLAS { /*  JAG */
-
-} // FFLAS
-
 namespace FFLAS{
 	namespace details {
 
@@ -272,5 +258,7 @@ namespace FFLAS{
 		}
 	}/* details */
 }/* FFLAS */
+
+#endif // __FFLASFFPACK_HAVE_CXX11
 
 #endif // __FFLASFFPACK_fflas_fflas_fspmv_INL
