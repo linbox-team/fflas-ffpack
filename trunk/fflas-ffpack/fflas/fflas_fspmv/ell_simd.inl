@@ -314,7 +314,7 @@ namespace FFLAS {
 
 	template<class Field>
 	inline void fspmv(const Field & F,
-			  const EL_simd_sub<Field> & A,
+			  const ELL_simd_sub<Field> & A,
 			  const VECT<Field> & x,
 			  VECT<Field> & y,
 			  FieldCategories::UnparametricTag)
@@ -341,7 +341,7 @@ namespace FFLAS {
 	template<class Field>
 	void fspmv(
 		   const Field& F,
-		   const ELL<Field> & A,
+		   const ELL_simd<Field> & A,
 		   const VECT<Field> & x,
 		   const typename Field::Element & b,
 		   VECT<Field> & y
@@ -466,7 +466,7 @@ namespace FFLAS { /*  ZO */
 			 )
 	{
 		if (A.cst == F.one) {
-			ell_simd_simd_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.chunk,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
+			ell_simd_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.chunk,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
 		else if (A.cst == F.mOne) {
 			ell_simd_details::fspmv_zo<Field,false>(F,A.m,A.n,A.ld,A.chunk,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
@@ -500,7 +500,7 @@ namespace FFLAS{
 	}
 
 	template<class Field, class ColT, class RowT>
-	inline void sp_ell_from_csr(
+	inline void sp_ell_simd_from_csr(
 				    const Field & F,
 				    const size_t CSR_m,
 				    const size_t CSR_n,
@@ -525,7 +525,7 @@ namespace FFLAS{
 				ld = CSR_row[i+1]-CSR_row[i];
 			}
 		}
-		if(bSimd){
+
 			chunk = Simd<typename Field::Element >::vect_size;
 
 			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+(chunk-CSR_m%chunk);
@@ -584,11 +584,10 @@ namespace FFLAS{
 					}
 				}
 			}
-		}
 	}
 
 	template<class Field, class ColT, class RowT>
-	inline void sp_ell_from_coo(
+	inline void sp_ell_simd_from_coo(
 				    const Field & F,
 				    const size_t COO_m,
 				    const size_t COO_n,

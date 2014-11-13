@@ -157,38 +157,38 @@ namespace FFLAS { /*  CSC */
 
 namespace FFLAS { /*  ELL */
 
-	 template<class Field, bool simd>
+	 template<class Field>
 	 struct ELL;
 
-	 template<class Field, bool simd>
-	 struct ELL_sub;
+	template<class Field>
+	struct ELL_sub;
 
-	 template<class Field, bool simd>
-	 struct ELL_ZO;
+	template<class Field>
+	struct ELL_ZO;
 
-	 template<class Field, bool simd>
+	 template<class Field>
 	void sp_fgemv(
 		      const Field& F,
-		      const ELL<Field, simd> & A,
+		      const ELL<Field> & A,
 		      const VECT<Field> & x,
 		      const typename Field::Element & b,
 		      VECT<Field> & y
 		     );
 
 	// y = A.x + b y
-	template<class Field, bool simd>
+	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
-		      const ELL_sub<Field, simd> & A,
+		      const ELL_sub<Field> & A,
 		      const VECT<Field> & x,
 		      const typename Field::Element & b,
 		      VECT<Field> & y
 		     );
 
-	template<class Field, bool simd>
+	template<class Field>
 	void sp_fgemv(
 		      const Field & F,
-		      const ELL_ZO<Field, simd> & A,
+		      const ELL_ZO<Field> & A,
 		      const VECT<Field > & x,
 		      const typename Field::Element & b,
 		      VECT<Field> & y

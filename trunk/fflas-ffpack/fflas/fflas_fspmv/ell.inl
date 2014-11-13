@@ -254,7 +254,7 @@ namespace FFLAS { namespace ell_details { /*  ZO */
 	}
 
 
-	template<class Field>
+	template<class Field, bool add>
 	inline void fspmv_zo(
 				const Field & F,
 				const size_t m,
