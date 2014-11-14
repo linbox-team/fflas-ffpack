@@ -74,7 +74,7 @@ int main () {
 	typedef FFPACK:: FLTTYPE Field ;
 	Field F(17);
 	typedef Field::Element Element ;
-	size_t n=1000, nmax=5000, prec=512, nbest=0, count=0;
+	size_t n=768, nmax=5000, prec=512, nbest=0, count=0;
     TTimer chrono;
 	bool bound=false;
 	Field::RandIter G(F); 
