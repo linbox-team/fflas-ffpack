@@ -30,19 +30,32 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 using namespace std;
 
 int main(int argc, char** argv) {
 
 #ifdef __FFLASFFPACK_USE_OPENMP
-  // parameter: p, n, iteration, file1, file2
+  
+	size_t iter = 1;
+	int    q    = 1009;
+	int    n    = 2000;
+	int    w    = -1;
+	std::string file1 = "";
+	std::string file2 = "";
+  
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+		{ 'w', "-w W", "-------.",               TYPE_INT , &w },
+		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 'f', "-f FILE", "Set the first input file (empty for random).",   TYPE_STR , &file1 },
+		{ 'g', "-g FILE", "Set the second input file (empty for random).",  TYPE_STR , &file2 },
+		END_OF_ARGUMENTS
+	};
 
-  int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  size_t iter = argc>3 ? atoi(argv[3]) :    1;
-  int    w    = argc>4 ? atoi(argv[4]) :   -1;
-
+	FFLAS::parseArguments(argc,argv,as);
 
   // typedef FFPACK::Modular<double> Field;
   // typedef FFPACK::Modular<float> Field;
@@ -50,7 +63,7 @@ int main(int argc, char** argv) {
   // typedef FFPACK::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
-  Field F(p);
+  Field F(q);
 
    FFLAS::OMPTimer chrono;
   double time=0.0;// time2=0.0;
@@ -110,14 +123,24 @@ int main(int argc, char** argv) {
 	  chrono.stop();
 	  time+=chrono.usertime();
 
-      std::cerr << *A << ' ' << *B << ' ' << *C << std::endl;
+      // std::cerr << *A << ' ' << *B << ' ' << *C << std::endl;
 	  FFLAS::fflas_delete( A);
 	  FFLAS::fflas_delete( B);
 	  FFLAS::fflas_delete( C);
   }
-
-  std::cout<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<std::endl;
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << 2. * double(n)/1000. * double(n)/1000. * double(n)/1000. / time * double(iter);
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+  
 #else
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Error: You need OpenMP to execute this benchmark.";
+	
   std::cout << "you need openmp here"
 #endif
 

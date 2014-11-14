@@ -34,9 +34,8 @@
 
 
 using namespace std;
+
 #ifdef __FFLASFFPACK_USE_OPENMP4
-
-
 template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {
@@ -72,16 +71,10 @@ void Initialize(Element * C, int BS, size_t m, size_t n)
 	//  }
 
 }
-#endif
+#endif // __FFLASFFPACK_USE_OPENMP4
 
 int main(int argc, char** argv) {
 
-  // parameter: p, n, iteration, file1, file2
-
-  // int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  // int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  // size_t iter = argc>3 ? atoi(argv[3]) :    1;
-  // size_t strat= argc>4 ? atoi(argv[4]) :    1;
   size_t iter = 3 ;
   int q = 131071 ;
   size_t m = 2000 ;
@@ -182,9 +175,12 @@ int main(int argc, char** argv) {
   }
   FFLAS::fflas_delete( A);
   FFLAS::fflas_delete( B);
-
-  cerr<<"n: "<<n<<" q: "<<q<<" time: "<<time/(double)iter<<" Gfops: "<<(double(m)/1000.*double(m)/1000.*double(n)/1000./time*double(iter))<<endl;
-
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << double(m)/1000. * double(m)/1000. * double(n)/1000. / time * double(iter);
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   return 0;
 }

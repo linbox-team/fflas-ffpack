@@ -89,13 +89,14 @@ int main(int argc, char** argv) {
 	int p=0;
 	int t=MAX_THREADS;
 	int NBK = -1;
+
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
 		{ 'k', "-k K", "Set the col dimension of A.",      TYPE_INT , &k },
 		{ 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
-		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
+		{ 'i', "-i R", "Set number of repetitions.",       TYPE_INT , &iter },
 		{ 'p', "-p P", "0 for sequential, 1 for 2D iterative, 2 for 2D rec, 3 for 2D rec adaptive, 4 for 3D rc in-place, 5 for 3D rec, 6 for 3D rec adaptive.", TYPE_INT , &p },
 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
 		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
@@ -204,7 +205,11 @@ int main(int argc, char** argv) {
   FFLAS::fflas_delete( B);
   FFLAS::fflas_delete( C);
   
-  std::cerr<<"m: "<<m<<" k: "<<k<<" n: "<<n<<" q: "<<q<<" time: "<<time/(double)iter<<" Gfops: "<<(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0/*-m/1000.*n/1000.*/)/time*double(iter)<<std::endl;  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
   
       //std::cerr<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
 
