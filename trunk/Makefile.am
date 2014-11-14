@@ -33,12 +33,12 @@ SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser
 docs:doc/fflas-ffpack-html/index.html
 
 doc/fflas-ffpack-html/index.html:
-	(cd doc; make docs)
+	(cd doc; ${MAKE} docs)
 
 docs_dev:doc/fflas-ffpack-dev-html/index.html
 
 doc/fflas-ffpack-dev-html/index.html:
-	(cd doc; make docs_dev)
+	(cd doc; ${MAKE} docs_dev)
 
 #  examples:
 #  (cd examples; make examples)

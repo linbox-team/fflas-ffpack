@@ -63,6 +63,7 @@ namespace FFLAS { namespace ell_simd_details {
 	}
 
 
+#ifdef __FFLASFFPACK_USE_SIMD // Added by Alexis - 14/11
 	template<class Field>
 	inline void fspmv(
 			  const Field & F,
@@ -91,6 +92,8 @@ namespace FFLAS { namespace ell_simd_details {
 			simd::stream(y+i,Y);
 		}
 	}
+#endif // __FFLASFFPACK_USE_SIMD Added by Alexis - 14/11
+
 	/* NO SIMD VERSION */
 	// 			size_t end = (m%chunk == 0)? m : m+m%chunk;
 	// 			for( size_t i = 0 ; i < end ; i+=chunk) {
@@ -219,6 +222,7 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 	}
 
 
+#ifdef __FFLASFFPACK_USE_SIMD // Added by Alexis - 14/11
 	template<class Field, bool add>
 	inline void fspmv_zo(
 			     const Field & F,
@@ -256,6 +260,8 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 			}
 		}
 	}
+#endif // __FFLASFFPACK_USE_SIMD Added by Alexis - 14/11
+
 	/* NO SIMD VERSION */
 
 	// size_t end = (m%chunk == 0)? m : m+(chunk-m%chunk);
@@ -499,6 +505,7 @@ namespace FFLAS{
 		}
 	}
 
+#ifdef __FFLASFFPACK_USE_SIMD // Added by Alexis - 14/11
 	template<class Field, class ColT, class RowT>
 	inline void sp_ell_simd_from_csr(
 				    const Field & F,
@@ -585,6 +592,7 @@ namespace FFLAS{
 				}
 			}
 	}
+#endif // __FFLASFFPACK_USE_SIMD Added by Alexis - 14/11
 
 	template<class Field, class ColT, class RowT>
 	inline void sp_ell_simd_from_coo(
