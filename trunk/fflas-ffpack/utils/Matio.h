@@ -93,9 +93,10 @@ std::ostream& write_dbl(std::ostream& c,
 
 // Reading a matrice from a (eventually zipped) file
 template<class Field>
-typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,int* tnj)
+typename Field::Element_ptr read_field(const Field& F, const char * mat_file,int* tni,int* tnj)
 {
-	char *UT = NULL, *File_Name;
+	char *UT = NULL;
+	const char* File_Name;
 	int is_gzipped = 0;
 	size_t s = strlen(mat_file);
 	typename Field::Element_ptr X = NULL;
@@ -104,17 +105,19 @@ typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,i
 	    (mat_file[--s] == '.')) {
 		is_gzipped = 1;
 		char tmp_nam[] = "/tmp/bbXXXXXX_";
-		File_Name  = tmp_nam;
-		if (mkstemp(File_Name))
+		if (mkstemp(tmp_nam))
 			printf("Error opening file]\n");
+		File_Name  = tmp_nam;
 
 		UT = FFLAS::fflas_new<char>(s+34+strlen(File_Name));
 		sprintf(UT,"gunzip -c %s > %s", mat_file, File_Name);
 		if (system(UT))
 			printf("Error uncompressing file\n");
 		sprintf(UT,"\\rm %s", File_Name);
-	} else
+	} else {
 		File_Name = mat_file;
+	}
+	
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
 		char  tmp [200];// unsigned long tni, tnj;
@@ -145,7 +148,7 @@ typename Field::Element_ptr read_field(const Field& F,char * mat_file,int* tni,i
 }
 
 template<class Field>
-void read_field4(const Field& F,char * mat_file,int* tni,int* tnj,
+void read_field4(const Field& F, const char * mat_file,int* tni,int* tnj,
 		 typename Field::Element_ptr& NW,typename Field::Element_ptr& NE,
 		 typename Field::Element_ptr& SW,typename Field::Element_ptr& SE)
 {

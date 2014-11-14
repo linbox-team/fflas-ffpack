@@ -72,10 +72,6 @@ namespace FFLAS {
     void parseArguments (int argc, char **argv, Argument *args, bool printDefaults = true);
 }
 
-
-/** writes the values of all arguments, preceded by the programName */
-std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName);
-
 void printHelpMessage (const char *program, Argument *args, bool printDefaults = false)
 {
 	int i, l;
@@ -127,7 +123,7 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 				std::cout << *(std::list<int> *) args[i].data ;
 				break;
 			case TYPE_STR:
-				std::cout << *(std::string *) args[i].data ;
+				std::cout << "\"" << *(std::string *) args[i].data << "\"" ;
 				break;
 			}
 			std::cout << ")";
@@ -310,36 +306,40 @@ namespace FFLAS {
             }
         }
     }
-}
 
-
-std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName)
-{
-	os << programName;
-	for (int i = 0; args[i].c != '\0'; ++i) {
-		os << " -" << args[i].c;
-		switch (args[i].type) {
-		case TYPE_NONE:
-			if (! (*(bool *)args[i].data)) os << " N";
-			break;
-		case TYPE_INT:
-			os << ' ' << *(int *) args[i].data;
-			break;
-		case TYPE_INTEGER:
-			os << ' ' << *(long int *) args[i].data;
-			break;
-		case TYPE_DOUBLE:
-			os << ' ' << *(double *) args[i].data;
-			break;
-		case TYPE_INTLIST:
-			os << ' ' << *(std::list<int> *) args[i].data;
-			break;
-		case TYPE_STR:
-			os << ' ' << *(std::string *) args[i].data;
-			break;
+	/** writes the values of all arguments, preceded by the programName */
+	std::ostream& writeCommandString (std::ostream& os, Argument *args, char* programName = nullptr)
+	{
+		if (programName != nullptr)
+			os << programName;
+		
+		for (int i = 0; args[i].c != '\0'; ++i) {
+			os << " -" << args[i].c;
+			switch (args[i].type) {
+			case TYPE_NONE:
+				if ((*(bool *)args[i].data)) os << " Y";
+				else os << " N";
+				break;
+			case TYPE_INT:
+				os << ' ' << *(int *) args[i].data;
+				break;
+			case TYPE_INTEGER:
+				os << ' ' << *(long int *) args[i].data;
+				break;
+			case TYPE_DOUBLE:
+				os << ' ' << *(double *) args[i].data;
+				break;
+			case TYPE_INTLIST:
+				os << ' ' << *(std::list<int> *) args[i].data;
+				break;
+			case TYPE_STR:
+				os << " \"" << *(std::string *) args[i].data << "\"";
+				break;
+			}
 		}
+		
+		return os;
 	}
-	return os << std::endl;
 }
 
 #undef type_integer

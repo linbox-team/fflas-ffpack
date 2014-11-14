@@ -23,12 +23,12 @@
  * ========LICENCE========
  */
 
-//#define LinBoxSrcOnly
 #include <iostream>
 #include <fstream>
 #include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 #define CUBE(x) ((x)*(x)*(x))
 
@@ -36,13 +36,17 @@ template<class Field>
 void launch_wino(const Field  &F,
 		 const size_t &n,
 		 const size_t &NB,
-		 const size_t &winomax,
-		 const size_t &seed)
+		 const size_t &wino,
+		 const bool   &asmax,
+		 const size_t &seed,
+		 const bool   compare)
 {
 
 	typedef typename Field::Element Element ;
 	typename Field::RandIter G(F);
-	F.write(std::cout<< "Field " ) << std::endl;
+	
+	if (compare)
+		F.write(std::cout << "Field ") << std::endl;
 
 	double basetime(0.0), time(0.0);
 
@@ -52,78 +56,122 @@ void launch_wino(const Field  &F,
 	for (size_t i=0; i<n*n;++i)
 		G.random(A[i]);
 
-
- FFLAS::Timer chrono;
-	for(size_t i=0; i<NB; ++i) {
-		chrono.start();
-                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-                             n,n,n, F.one,
-                             A, n, A, n, F.zero, C,n);
-		chrono.stop();
-		basetime+= chrono.usertime();
+	// ----- Compare with fgemm
+	FFLAS::Timer chrono;
+	if (compare) {
+		for(size_t i=0; i<NB; ++i) {
+			chrono.start();
+		            FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+		                         n,n,n, F.one,
+		                         A, n, A, n, F.zero, C,n);
+			chrono.stop();
+			basetime+= chrono.usertime();
+		}
+				  
+		std::cerr << "Time: " << basetime / double(NB)
+				  << " Gflops: " << 2. * CUBE(double(n)/1000.0) / basetime * double(NB)
+				  << " [fgemm result]" << std::endl;
 	}
-	std::cout << std::endl
-	<< "fgemm " << n << "x" << n << ": "
-	<< basetime/(double)NB << " s, "
-	<< (2.0/basetime*(double)NB*CUBE((double)n/100.0)) << " Mffops"
-	<< std::endl;
 
-	for(size_t w=0; w<winomax; ++w) {
-
-                FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,(int)w);
-                time = 0. ;
+	// ----- Winograd
+	for(size_t w = (asmax)? 0 : wino; w <= wino; ++w) {
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,(int)w);
+		time = 0. ;
 		chrono.clear();
 		for(size_t i=0; i<NB; ++i) {
 			chrono.start();
 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				     n, n, n, F.one, A, n, A, n, F.zero, C, n, WH);
+					 n, n, n, F.one, A, n, A, n, F.zero, C, n, WH);
 			chrono.stop();
 			time+= chrono.usertime();
 		}
-		std::cout << w << "Wino " << n << "x" << n << ": "
-		<< time/(double)NB << " s, "
-		<< (2.0/time*(double)NB*CUBE((double)n/100.0)) << " Mffops"
-		<< std::endl;
+		
+		// -----------
+		// Standard output for benchmark - Alexis Breust 2014/11/14
+		std::cerr << "Time: " << time / double(NB)
+				  << " Gflops: " << 2. * CUBE(double(n)/1000.0) / time * double(NB);
+				  
+		if (compare || asmax)
+			std::cerr << " [wino" << w << " result]" << std::endl;
 	}
+	
+	if (compare)
+		std::cerr << std::endl;
 
-	std::cout << std::endl;
-	std::cout << std::endl;
-
-	FFLAS::fflas_delete( A);
-	FFLAS::fflas_delete( C);
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(C);
 }
 
-    //using namespace LinBox;
 int main (int argc, char ** argv) {
-    const unsigned long p= argc>1 ? atoi(argv[1]) : 1009;
-    const size_t n       = argc>2 ? atoi(argv[2]) : 1000;
-    const size_t NB      = argc>3 ? atoi(argv[3]) : 1;
-    const size_t winomax = argc>4 ? atoi(argv[4]) : 7;
-    const size_t seed    = argc>5 ? atoi(argv[5]) :  FFLAS::BaseTimer::seed() ;
-        srand((unsigned int)seed);
+  
+	size_t iter = 1;
+	unsigned long q  = 1009;
+	int n       = 1000;
+	int w       = 7;
+	int seed    = -1;
+	bool compare = true;
+	bool balanced = false;
+	std::string type = "double";
+	bool levelasmax = true;
+  
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+		{ 'w', "-w N", "Set the winograd level.",                        TYPE_INT , &w },
+		{ 'l', "-l {YN}", "Use -w info a max (Yes or No).",              TYPE_BOOL , &levelasmax },
+		{ 's', "-s S", "Set the seed for randomness (-1 for random).",   TYPE_INT , &seed },
+		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 'c', "-c {YN}", "Compare mode, overrides -b and -t options (Yes or No).", TYPE_BOOL , &compare },
+		{ 'b', "-b {YN}", "Use balanced modular (Yes or No).",           TYPE_BOOL , &balanced },
+		{ 't', "-t TYPE", "Set the field type (double/float/int).",      TYPE_STR , &type },
+		END_OF_ARGUMENTS
+	};
 
-	FFPACK::Modular<double> F1(p);
-	FFPACK::Modular<float>  F2(p);
-	FFPACK::Modular<int>    F3((uint32_t)p);
-	FFPACK::ModularBalanced<double> F4(p);
-	FFPACK::ModularBalanced<float>  F5(p);
-	FFPACK::ModularBalanced<int>    F6((int)p);
-	//! @bug no randiter in UnparametricField !!
-	// UnparametricField<double> F7;
-	// UnparametricField<float>  F8;
-	// UnparametricField<int>    F9;
+	FFLAS::parseArguments(argc,argv,as);
+	
+	if (seed == -1)
+		seed = FFLAS::BaseTimer::seed();
+    srand((uint32_t)seed);
+    
+    if (compare) {
+		FFPACK::Modular<double> F1(q);
+		FFPACK::Modular<float>  F2(q);
+		FFPACK::Modular<int>    F3(q);
+		FFPACK::ModularBalanced<double> F4(q);
+		FFPACK::ModularBalanced<float>  F5(q);
+		FFPACK::ModularBalanced<int>    F6(q);
+		//! @bug no randiter in UnparametricField !!
+		// UnparametricField<double> F7;
+		// UnparametricField<float>  F8;
+		// UnparametricField<int>    F9;
 
+		launch_wino(F1,n,iter,w,levelasmax,seed,true);
+		launch_wino(F2,n,iter,w,levelasmax,seed,true);
+		launch_wino(F3,n,iter,w,levelasmax,seed,true);
+		launch_wino(F4,n,iter,w,levelasmax,seed,true);
+		launch_wino(F5,n,iter,w,levelasmax,seed,true);
+		launch_wino(F6,n,iter,w,levelasmax,seed,true);
+		// launch_wino(F7,n,iter,winomax,seed);
+		// launch_wino(F8,n,iter,winomax,seed);
+		// launch_wino(F9,n,iter,winomax,seed);
+	}
+	else {
+		if (balanced) {
+			if (type == "double")     launch_wino(FFPACK::ModularBalanced<double>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "float") launch_wino(FFPACK::ModularBalanced<float>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "int")   launch_wino(FFPACK::ModularBalanced<int>(q),n,iter,w,levelasmax,seed,false);
+		}
+		else {
+			if (type == "double")     launch_wino(FFPACK::Modular<double>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "float") launch_wino(FFPACK::Modular<float>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "int")   launch_wino(FFPACK::Modular<int>(q),n,iter,w,levelasmax,seed,false);
+		}
+	}
+	
+	if (compare || levelasmax)
+		std::cerr << "Lauch with:";
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
-	launch_wino(F1,n,NB,winomax,seed);
-	launch_wino(F2,n,NB,winomax,seed);
-	launch_wino(F3,n,NB,winomax,seed);
-	launch_wino(F4,n,NB,winomax,seed);
-	launch_wino(F5,n,NB,winomax,seed);
-	launch_wino(F6,n,NB,winomax,seed);
-	// launch_wino(F7,n,NB,winomax,seed);
-	// launch_wino(F8,n,NB,winomax,seed);
-	// launch_wino(F9,n,NB,winomax,seed);
-
-        return 0;
-    }
+    return 0;
+}
 

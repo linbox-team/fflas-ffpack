@@ -35,6 +35,7 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 
 using namespace std;
@@ -54,19 +55,19 @@ void Initialize(Element * C, int BS, size_t m, size_t n)
     
         BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
         PAR_REGION{
-        for(size_t p=0; p<m; p+=BS) ///row
+        for(size_t q=0; q<m; q+=BS) ///row
                 for(size_t pp=0; pp<n; pp+=BS) //column
                 {
                         size_t M=BS, MM=BS;
-                        if(!(p+BS<m))
-                                M=m-p;
+                        if(!(q+BS<m))
+                                M=m-q;
                         if(!(pp+BS<n))
                                 MM=n-pp;
 #pragma omp task
                         {
                         for(size_t j=0; j<M; j++)
                                 for(size_t jj=0; jj<MM; jj++)
-                                        C[(p+j)*n+pp+jj]=0;
+                                        C[(q+j)*n+pp+jj]=0;
                         }
                 }
         #pragma omp taskwait
@@ -89,18 +90,30 @@ void Initialize(Element * C, int BS, size_t m, size_t n)
 
 
 int main(int argc, char** argv) {
+  
+	size_t iter = 1;
+	int    q    = 1009;
+	int    n    = 2000;
+	std::string file = "";
+	
+#ifdef __FFLASFFPACK_USE_OPENMP4
+	size_t NBK = MAX_THREADS;
+#endif
+  
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		END_OF_ARGUMENTS
+	};
 
-  // parameter: p, n, iteration, file
-
-  int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  size_t iter = argc>3 ? atoi(argv[3]) :    1;
-  size_t NBK = MAX_THREADS;
+	FFLAS::parseArguments(argc,argv,as);
 
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
-  Field F(p);
+  Field F(q);
   Field::Element * A;
 
   TTimer chrono;
@@ -108,8 +121,8 @@ int main(int argc, char** argv) {
 
   std::vector<int> Piv(n,0);
   if (iter>1) {
-	  if (argc > 4){
-		  A = read_field(F, argv[4], &n, &n);
+	  if (!file.empty()){
+		  A = read_field(F, file.c_str(), &n, &n);
 	  }
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -118,8 +131,8 @@ int main(int argc, char** argv) {
           Initialize(A,n/NBK,n,n);
 #endif
 #pragma omp parallel for
-		  for (size_t i=0; i<n; ++i)
-              for (size_t j=0; j<n; ++j)
+		  for (int i=0; i<n; ++i)
+              for (int j=0; j<n; ++j)
                   G.random(*(A+i*n+j));
 	  }
 	  clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
@@ -127,8 +140,8 @@ int main(int argc, char** argv) {
   }
 
   for (size_t i=0;i<iter;++i){
-	  if (argc > 4){
-		  A = read_field(F, argv[4], &n, &n);
+	  if (!file.empty()){
+		  A = read_field(F, file.c_str(), &n, &n);
 	  }
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -137,8 +150,8 @@ int main(int argc, char** argv) {
           Initialize(A,n/NBK,n,n);
 #endif
 #pragma omp parallel for
-		  for (size_t i=0; i<n; ++i)
-              for (size_t j=0; j<n; ++j)
+		  for (int i=0; i<n; ++i)
+              for (int j=0; j<n; ++j)
                   G.random(*(A+i*n+j));
 	  }
 
@@ -150,9 +163,12 @@ int main(int argc, char** argv) {
 	  time+=chrono.usertime();
 	  FFLAS::fflas_delete( A);
   }
-
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" 2n^3/3/time/10^9: "<<(2.*double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter)/3.)<<endl;
-
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter) / 3.;
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   return 0;
 }

@@ -338,13 +338,12 @@ int main(int argc, char** argv) {
 	       if (i) {chrono.stop(); time+=chrono.realtime();}
 	       
        }
-       
-       
-       
-       std::cerr<<"m: "<<m<<" n: "<<n<<" R: "<<R<<" q: "<<q<<" time: "<<time/(double)iter
-		<<" Gfops: "<<(2.0*n*n*n)/(double(3.0*(1000000000)*time/(double)iter))<<std::endl;  
-       
-       
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << (2.0*n*n*n) / double(3.0*(1000000000)*time/(double)iter);
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
        
        //verification
        if(v)

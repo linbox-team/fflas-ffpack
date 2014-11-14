@@ -29,31 +29,40 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 
 using namespace std;
 
 int main(int argc, char** argv) {
+  
+	size_t iter = 1;
+	int    q    = 1009;
+	int    n    = 2000;
+	std::string file = "";
+  
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		END_OF_ARGUMENTS
+	};
 
-  // parameter: p, n, iteration, file
-
-  int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  size_t iter = argc>3 ? atoi(argv[3]) :    1;
-
+	FFLAS::parseArguments(argc,argv,as);
 
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
-  Field F(p);
+  Field F(q);
   Field::Element * A;
 
   FFLAS::Timer chrono;
   double time=0.0;
 
   for (size_t i=0;i<iter;++i){
-	  if (argc > 4){
-		  A = read_field(F, argv[4],  &n, &n);
+	  if (!file.empty()){
+		  A = read_field(F, file.c_str(),  &n, &n);
 	  }
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -71,8 +80,12 @@ int main(int argc, char** argv) {
 	  time+=chrono.usertime();
 	  FFLAS::fflas_delete( A);
   }
-
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<endl;
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << "Irrelevant";
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
 
   return 0;

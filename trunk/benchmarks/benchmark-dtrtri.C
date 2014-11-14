@@ -31,6 +31,7 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 typedef FFLAS::OMPTimer TTimer;
@@ -42,19 +43,26 @@ typedef FFLAS::Timer TTimer;
 using namespace std;
 
 int main(int argc, char** argv) {
+  
+	size_t iter = 1;
+	int    q    = 1009;
+	int    n    = 2000;
+	std::string file = "";
+  
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		END_OF_ARGUMENTS
+	};
 
-  // parameter: p, n, iteration, file
-
-
-  int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  size_t iter = argc>3 ? atoi(argv[3]) :    1;
-
+	FFLAS::parseArguments(argc,argv,as);
 
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
-  Field F(p);
+  Field F(q);
   Element * A;
 
   TTimer chrono;
@@ -62,8 +70,8 @@ int main(int argc, char** argv) {
 
   Field::RandIter G(F);
   for (size_t i=0;i<iter;++i){
-    if (argc > 4){
-      A = read_field (F, argv[4], &n, &n);
+    if (!file.empty()){
+      A = read_field (F, file.c_str(), &n, &n);
     } else {
       A = FFLAS::fflas_new<Element>(n*n);
       for (size_t j=0; j<(size_t) n*n; ++j)
@@ -81,9 +89,12 @@ int main(int argc, char** argv) {
     FFLAS::fflas_delete( A);
 
   }
-
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" n^3/3/time/10^9: "<<(double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter)/3.)<<endl;
-
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter) / 3.;
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   return 0;
 }

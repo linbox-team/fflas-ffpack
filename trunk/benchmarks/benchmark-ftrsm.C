@@ -28,23 +28,33 @@
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
-
+#include "fflas-ffpack/utils/args-parser.h"
 
 using namespace std;
 
 int main(int argc, char** argv) {
+  
+	size_t iter = 1;
+	int    q    = 1009;
+	int    n    = 2000;
+	std::string file1 = "";
+	std::string file2 = "";
+  
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 'f', "-f FILE", "Set the first input file (empty for random).",   TYPE_STR , &file1 },
+		{ 'g', "-g FILE", "Set the second input file (empty for random).",  TYPE_STR , &file2 },
+		END_OF_ARGUMENTS
+	};
 
-  // parameter: p, n, iteration, file1, file2
-
-  int    p    = argc>1 ? atoi(argv[1]) : 1009;
-  int    n    = argc>2 ? atoi(argv[2]) : 2000;
-  size_t iter = argc>3 ? atoi(argv[3]) :    1;
-
+	FFLAS::parseArguments(argc,argv,as);
 
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
-  Field F(p);
+  Field F(q);
   Element * A;
   Element * B;
 
@@ -53,8 +63,8 @@ int main(int argc, char** argv) {
 
   for (size_t i=0;i<iter;++i){
 	  Field::RandIter G(F);
-	  if (argc > 4){
-		  A = read_field (F, argv[4], &n, &n);
+	  if (!file1.empty()){
+		  A = read_field (F, file1.c_str(), &n, &n);
 	  }
 	  else{
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -62,8 +72,8 @@ int main(int argc, char** argv) {
 			  G.random(*(A+j));
 	  }
 
-	  if (argc == 6){
-		  B = read_field (F, argv[5], &n, &n);
+	  if (!file2.empty()){
+		  B = read_field (F, file2.c_str(), &n, &n);
 	  }
 	  else{
 		  B = FFLAS::fflas_new<Element>(n*n);
@@ -81,14 +91,17 @@ int main(int argc, char** argv) {
 
 	  chrono.stop();
 	  time+=chrono.usertime();
-      std::cerr << *A << ' ' << *B << std::endl;
+      // std::cerr << *A << ' ' << *B << std::endl;
 	  FFLAS::fflas_delete( A);
 	  FFLAS::fflas_delete( B);
 
   }
-
-  cerr<<"n: "<<n<<" p: "<<p<<" time: "<<time/(double)iter<<" n^3/time/10^9: "<<(double(n)/1000.*double(n)/1000.*double(n)/1000./time*double(iter))<<endl;
-
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+			  << " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter);
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   return 0;
 }
