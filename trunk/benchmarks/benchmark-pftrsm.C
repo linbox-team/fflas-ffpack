@@ -22,8 +22,6 @@
 * ========LICENCE========
 */
 
-#define __FFLASFFPACK_USE_OPENMP4
-
 #include <iostream>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/field/modular-balanced.h"
@@ -32,6 +30,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "tests/test-utils.h"
 
+#define __FFLASFFPACK_USE_OPENMP4
 
 using namespace std;
 
@@ -178,9 +177,9 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << double(m)/1000. * double(m)/1000. * double(n)/1000. / time * double(iter);
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;
 }

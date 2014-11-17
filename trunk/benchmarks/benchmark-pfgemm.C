@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 	  chrono.stop();
 	  time+=chrono.usertime();
 
-      // std::cerr << *A << ' ' << *B << ' ' << *C << std::endl;
+      // std::cout << *A << ' ' << *B << ' ' << *C << std::endl;
 	  FFLAS::fflas_delete( A);
 	  FFLAS::fflas_delete( B);
 	  FFLAS::fflas_delete( C);
@@ -131,15 +131,15 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << 2. * double(n)/1000. * double(n)/1000. * double(n)/1000. / time * double(iter);
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
   
 #else
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Error: You need OpenMP to execute this benchmark.";
+	std::cout << "Error: You need OpenMP to execute this benchmark.";
 	
   std::cout << "you need openmp here"
 #endif

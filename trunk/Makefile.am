@@ -39,6 +39,11 @@ docs_dev:doc/fflas-ffpack-dev-html/index.html
 
 doc/fflas-ffpack-dev-html/index.html:
 	(cd doc; ${MAKE} docs_dev)
+	
+perfpublisher: benchmarks/perfpublisher
+
+benchmarks/perfpublisher:
+	(cd benchmarks; ${MAKE} perfpublisher)
 
 #  examples:
 #  (cd examples; make examples)
