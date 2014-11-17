@@ -184,7 +184,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	for(size_t i=0; i<m; ++i)
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
-				std::cerr << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
+				std::cout << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 					  << " Result"<<i<<","<<j<<"] = " << (*(X+i*n+j))
 					  << std::endl;
 
@@ -192,16 +192,16 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 				errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 				     << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
 				     << std::endl;
-				std::cerr << errs;
+				std::cout << errs;
 				fail=true;
 				std::cout<<" end verification"<<std::endl;
 				exit(1);
 			}
 	
 	if (fail)
-		std::cerr<<"FAIL"<<std::endl;
+		std::cout<<"FAIL"<<std::endl;
 	else
-		std::cerr<<"PASS"<<std::endl;
+		std::cout<<"PASS"<<std::endl;
 	
 	FFLAS::fflas_delete( U);
 	FFLAS::fflas_delete( L);
@@ -341,9 +341,9 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << (2.0*n*n*n) / double(3.0*(1000000000)*time/(double)iter);
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
        
        //verification
        if(v)

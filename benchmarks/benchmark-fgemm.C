@@ -198,8 +198,8 @@ int main(int argc, char** argv) {
       freidvals.stop();
       timev+=freidvals.usertime();
       if (!pass) 
-	      std::cerr<<"FAILED"<<std::endl;
-	  //std::cerr << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
+	      std::cout<<"FAILED"<<std::endl;
+	  //std::cout << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
   }
   FFLAS::fflas_delete( A);
   FFLAS::fflas_delete( B);
@@ -207,11 +207,11 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
   
-      //std::cerr<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
+      //std::cout<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
 
   return 0;
 }

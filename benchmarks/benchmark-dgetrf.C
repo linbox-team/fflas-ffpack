@@ -51,7 +51,7 @@ template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime)
-    std::cerr << "Initialize PAR_REGION " << BS << ", " << m << 'x' << n << std::endl;
+    std::cout << "Initialize PAR_REGION " << BS << ", " << m << 'x' << n << std::endl;
     
         BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
         PAR_REGION{
@@ -166,9 +166,9 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter) / 3.;
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;
 }

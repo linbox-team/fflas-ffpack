@@ -88,9 +88,9 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << "Irrelevant";
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;
 }

@@ -68,7 +68,7 @@ void launch_wino(const Field  &F,
 			basetime+= chrono.usertime();
 		}
 				  
-		std::cerr << "Time: " << basetime / double(NB)
+		std::cout << "Time: " << basetime / double(NB)
 				  << " Gflops: " << 2. * CUBE(double(n)/1000.0) / basetime * double(NB)
 				  << " [fgemm result]" << std::endl;
 	}
@@ -88,15 +88,15 @@ void launch_wino(const Field  &F,
 		
 		// -----------
 		// Standard output for benchmark - Alexis Breust 2014/11/14
-		std::cerr << "Time: " << time / double(NB)
+		std::cout << "Time: " << time / double(NB)
 				  << " Gflops: " << 2. * CUBE(double(n)/1000.0) / time * double(NB);
 				  
 		if (compare || asmax)
-			std::cerr << " [wino" << w << " result]" << std::endl;
+			std::cout << " [wino" << w << " result]" << std::endl;
 	}
 	
 	if (compare)
-		std::cerr << std::endl;
+		std::cout << std::endl;
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(C);
@@ -169,8 +169,8 @@ int main (int argc, char ** argv) {
 	}
 	
 	if (compare || levelasmax)
-		std::cerr << "Lauch with:";
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+		std::cout << "Lauch with:";
+	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
     return 0;
 }

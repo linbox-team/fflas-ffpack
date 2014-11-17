@@ -59,7 +59,7 @@ BENCHMARKS =			\
         $(USE_LAPACK_BENCH) \
         $(USE_OMP_BENCH)
 
-CLEANFILES = $(BENCHMARKS)
+CLEANFILES = $(BENCHMARKS) perfpublisher.xml
 
 EXTRA_PROGRAMS = $(BENCHMARKS)
 
@@ -76,11 +76,15 @@ benchmark_lqup_SOURCES = benchmark-lqup.C
 
 benchmark_dgemmd_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
+# Perfpublisher script interaction - AB 2014/11/17
+perfpublisher: clean
+	./perfpublisher.sh "$(BENCHMARKS)"
+
 # for compilation of new benchmarks
 FFLASFFPACK_BIN=@bindir@
 
 define other_compilation
-	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
 endef
 
 %:%.C
