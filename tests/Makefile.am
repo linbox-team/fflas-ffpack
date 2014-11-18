@@ -93,7 +93,7 @@ EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS) $(USE_OMP_TESTS) $(USE_GIVARO_TESTS)
 
 CLEANFILES =           \
-		$(NOT_A_TEST) $(EXTRA_PROGRAMS)
+		$(NOT_A_TEST) $(EXTRA_PROGRAMS) perfpublisher.xml
 
 TESTS =     $(EXTRA_PROGRAMS)
 
@@ -144,6 +144,10 @@ dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
 
 #  dense_generator_SOURCES        = dense_generator.C
+
+# Perfpublisher script interaction - AB 2014/11/17
+perfpublisher: clean
+	+./perfpublisher.sh "$(EXTRA_PROGRAMS)"
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
