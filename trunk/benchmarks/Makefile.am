@@ -78,7 +78,7 @@ benchmark_dgemmd_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher: clean
-	./perfpublisher.sh "$(BENCHMARKS)"
+	+./perfpublisher.sh "$(BENCHMARKS)"
 
 # for compilation of new benchmarks
 FFLASFFPACK_BIN=@bindir@

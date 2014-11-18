@@ -40,10 +40,13 @@ docs_dev:doc/fflas-ffpack-dev-html/index.html
 doc/fflas-ffpack-dev-html/index.html:
 	(cd doc; ${MAKE} docs_dev)
 	
-perfpublisher: benchmarks/perfpublisher
+perfpublisher: benchmarks/perfpublisher tests/perfpublisher
 
 benchmarks/perfpublisher:
 	(cd benchmarks; ${MAKE} perfpublisher)
+
+tests/perfpublisher:
+	(cd tests; ${MAKE} perfpublisher)
 
 #  examples:
 #  (cd examples; make examples)

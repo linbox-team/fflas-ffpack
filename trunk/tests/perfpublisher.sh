@@ -1,18 +1,18 @@
 #!/bin/bash
-# Script to format benchmarks results into a single xml file.
+# Script to format tests results into a single xml file.
 # See https://wiki.jenkins-ci.org/display/JENKINS/PerfPublisher+Plugin
 # -----
 # 2014/11/17 - Written by AB <Alexis.Breust@imag.fr>
 
 XMLFILE="perfpublisher.xml"
-benchmarks=$1
+tests=$1
 
 #========#
 # Header #
 #========#
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' >> $XMLFILE
-echo '<report name="benchmarks-report" categ="report">' >> $XMLFILE
+echo '<report name="tests-report" categ="report">' >> $XMLFILE
 
 #=======#
 # Start #
@@ -23,16 +23,16 @@ echo '<date format="YYYYMMDD" val="'$(date +%Y%m%d)'" />' >> $XMLFILE
 echo '<time format="HHMMSS" val="'$(date +%H%M%S)'" />' >> $XMLFILE
 echo '</start>' >> $XMLFILE
 
-#============#
-# Benchmarks #
-#============#
+#=======#
+# Tests #
+#=======#
 
-for benchmark in $benchmarks
+for test in $tests
 do
-	echo '[Compiling]' $benchmark
+	echo '[Compiling]' $test
 
 	COMPILESTART=$(date +%s%3N)
-	COMPILELOG=$(make $benchmark 2>&1; echo 'Returned state: '$?)
+	COMPILELOG=$(make $test 2>&1; echo 'Returned state: '$?)
 	COMPILEEND=$(date +%s%3N)
 	COMPILETIME=$(($COMPILEEND - $COMPILESTART))
 	COMPILECHECK=$(echo $COMPILELOG | grep -o '[^ ]*$')
@@ -45,10 +45,8 @@ do
 		STATE='0'
 		EXECUTIONLOG=''
 		EXECUTIONTIME='0.0'
-		PERFORMANCEFLOPS='0.0'
 		COMPILETIMERELEVANT='false'
 		EXECUTIONTIMERELEVANT='false'
-		PERFORMANCEFLOPSRELEVANT='false'
 		ERRORLOG='Does not compile.'
 		echo '-> Does not compile.'
 	else
@@ -56,40 +54,32 @@ do
 		EXECUTED='yes'
 		COMPILETIMERELEVANT='true'
 
-		echo '[Executing]' $benchmark
+		echo '[Executing]' $test
 
-		EXECUTIONLOG=$(./$benchmark 2>&1)
-		if [[ $EXECUTIONLOG != "Time:"* ]]
+		EXECUTIONSTART=$(date +%s%3N)
+		EXECUTIONLOG=$(./$test  2>&1; echo 'Returned state: '$?)
+		EXECUTIONEND=$(date +%s%3N)
+		EXECUTIONTIME=$(($EXECUTIONEND - $EXECUTIONSTART))
+		EXECUTIONCHECK=$(echo $EXECUTIONLOG | grep -o '[^ ]*$')
+		if [[ $EXECUTIONCHECK -ne 0 ]]
 		then
 			#Execution failure
 			PASSED='no'
 			STATE='0'
-			EXECUTIONTIME='0.0'
-			PERFORMANCEFLOPS='0.0'
 			EXECUTIONTIMERELEVANT='false'
-			PERFORMANCEFLOPSRELEVANT='false'
-			ERRORLOG='Unexpected output.'
-			echo '-> Unexpected output.'
+			ERRORLOG='Execution failure.'
+			echo '-> Execution failure.'
 		else
 			#Execution success
 			PASSED='yes'
 			STATE='100'
-			EXECUTIONTIME=$(echo $EXECUTIONLOG | cut -d' ' -f2)
-			PERFORMANCEFLOPS=$(echo $EXECUTIONLOG | cut -d' ' -f4)
 			EXECUTIONTIMERELEVANT='true'
-			if [[ $PERFORMANCEFLOPS != "Irrelevant" ]]
-			then
-				PERFORMANCEFLOPSRELEVANT='true'
-			else
-				PERFORMANCEFLOPSRELEVANT='false'
-				PERFORMANCEFLOPS='0.0'
-			fi
 			ERRORLOG=''
 		fi
 	fi
 
-	echo '<test name="'$benchmark'" executed="'$EXECUTED'">' >> $XMLFILE
-	echo '<targets><target>BENCHMARK</target></targets>' >> $XMLFILE
+	echo '<test name="'$test'" executed="'$EXECUTED'">' >> $XMLFILE
+	echo '<targets><target>TEST</target></targets>' >> $XMLFILE
 	echo '<result>' >> $XMLFILE
 	
 	# Logs
@@ -100,8 +90,7 @@ do
 	
 	# Times
 	echo '<compiletime unit="ms" mesure="'$COMPILETIME'" isRelevant="'$COMPILETIMERELEVANT'" />' >> $XMLFILE
-	echo '<executiontime unit="s" mesure="'$EXECUTIONTIME'" isRelevant="'$EXECUTIONTIMERELEVANT'" />' >> $XMLFILE
-	echo '<performance unit="GFLOPS" mesure="'$PERFORMANCEFLOPS'" isRelevant="'$PERFORMANCEFLOPSRELEVANT'" />' >> $XMLFILE
+	echo '<executiontime unit="ms" mesure="'$EXECUTIONTIME'" isRelevant="'$EXECUTIONTIMERELEVANT'" />' >> $XMLFILE
 	
 	echo '</result>' >> $XMLFILE
 	echo '</test>' >> $XMLFILE
