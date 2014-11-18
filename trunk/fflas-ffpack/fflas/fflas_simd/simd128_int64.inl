@@ -145,6 +145,15 @@ struct Simd128_impl<true, true, true, 8> {
 	}
 
 	/*
+	 * Store 128-bits of integer data from a into memory using a non-temporal memory hint.
+	 * p must be aligned on a 16-byte boundary or a general-protection exception may be generated.
+	 */
+	static INLINE void stream(const scalar_t * p, const vect_t v)
+	{
+		_mm256_stream_si128(const_cast<scalar_t*>(p), v);
+	}
+
+	/*
 	 * Add packed 64-bits integer in a and b, and store the results in vect_t.
 	 * Args   : [a0, a1] int64_t
 	 [b0, b1] int64_t

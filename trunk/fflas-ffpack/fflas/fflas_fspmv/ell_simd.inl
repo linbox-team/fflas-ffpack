@@ -63,7 +63,6 @@ namespace FFLAS { namespace ell_simd_details {
 	}
 
 
-#ifdef __FFLASFFPACK_USE_SIMD // Added by Alexis - 14/11
 	template<class Field>
 	inline void fspmv(
 			  const Field & F,
@@ -81,8 +80,9 @@ namespace FFLAS { namespace ell_simd_details {
 		using simd = Simd<typename Field::Element>;
 		using vect_t = typename simd::vect_t;
 		int end = (m%chunk == 0) ? m : m+(chunk-(m%chunk));
+		std::cout << "end " << end << endl;
 		vect_t X,Y,D,T ;
-		for( int i = 0 ; i < end ; i+=chunk) {
+		for(int i = 0 ; i < end ; i+=chunk) {
 			Y = simd::load(y+i);
 			for (index_t j = 0 ; j < ld ; ++j) {
 				D = simd::load(dat+i*ld+j*chunk);
@@ -92,7 +92,6 @@ namespace FFLAS { namespace ell_simd_details {
 			simd::stream(y+i,Y);
 		}
 	}
-#endif // __FFLASFFPACK_USE_SIMD Added by Alexis - 14/11
 
 	/* NO SIMD VERSION */
 	// 			size_t end = (m%chunk == 0)? m : m+m%chunk;
@@ -123,36 +122,40 @@ namespace FFLAS { namespace ell_simd_details {
 	{
 		index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
 		size_t end = (m%chunk == 0)? m : m+m%chunk;
-		// using simd = Simd<typename Field::Element >;
-		// using vect_t = typename simd::vect_t;
-		// FieldSimd<Field> FSimd(F);
-		// vect_t X, Y, D, C, Q, TMP;
-		// // double p = (typename Field::Element)F.characteristic();
+		using simd = Simd<typename Field::Element >;
+		using vect_t = typename simd::vect_t;
+		
+		vect_t X, Y, D, C, Q, TMP, NEGP, INVP, MIN, MAX, P;
+		double p = (typename Field::Element)F.characteristic();
+		
+		P = simd::set1(p);
+		NEGP = simd::set1(-p);
+		INVP = simd::set1(1/p);
+		MIN = simd::set1(F.minElement());
+		MAX = simd::set1(F.maxElement());
 
-		// for ( size_t i = 0; i < end/chunk ; ++i ) {
-		// 	index_t j = 0 ;
-		// 	index_t j_loc = 0 ;
-		// 	Y = simd::load(y+i*chunk);
-		// 	for (size_t l = 0 ; l < block ; ++l) {
-		// 		j_loc += kmax ;
+		for ( size_t i = 0; i < end/chunk ; ++i ) {
+			index_t j = 0 ;
+			index_t j_loc = 0 ;
+			Y = simd::load(y+i*chunk);
+			for (size_t l = 0 ; l < block ; ++l) {
+				j_loc += kmax ;
 
-		// 		for ( ; j < j_loc ; ++j) {
-		// 			D = simd::load(dat+i*chunk*ld+j*chunk);
-		// 			X = simd::gather(x,col+i*chunk*ld+j*chunk);
-		// 			Y = simd::fmadd(Y,D,X);
-		// 		}
-		// 		// vectorised::VEC_MOD(Y,Y,TMP, P, NEGP,INVP,MIN,MAX);
-		// 		Y = FSimd.mod(Y);
-		// 	}
-		// 	for ( ; j < ld ; ++j) {
-		// 		D = simd::load(dat+i*chunk*ld+j*chunk);
-		// 		X = simd::gather(x,col+i*chunk*ld+j*chunk);
-		// 		Y = simd::fmadd(Y,D,X);
-		// 	}
-		// 	Y = FSimd.mod(Y);
-		// 	// vectorised::VEC_MOD(Y,Q,TMP, P, NEGP,INVP,MIN,MAX);
-		// 	simd::store(y+i*chunk,Y);
-		// }
+				for ( ; j < j_loc ; ++j) {
+					D = simd::load(dat+i*chunk*ld+j*chunk);
+					X = simd::gather(x,col+i*chunk*ld+j*chunk);
+					Y = simd::fmadd(Y,D,X);
+				}
+				simd::mod(Y,P, INVP, NEGP, MIN, MAX, Q, TMP);
+			}
+			for ( ; j < ld ; ++j) {
+				D = simd::load(dat+i*chunk*ld+j*chunk);
+				X = simd::gather(x,col+i*chunk*ld+j*chunk);
+				Y = simd::fmadd(Y,D,X);
+			}
+			simd::mod(Y,P, INVP, NEGP, MIN, MAX, Q, TMP);
+			simd::store(y+i*chunk,Y);
+		}
 	}
 	/* NO SIMD VERSION */
 	// 	for ( size_t i = 0; i < end/chunk ; ++i ) {
@@ -222,7 +225,6 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 	}
 
 
-#ifdef __FFLASFFPACK_USE_SIMD // Added by Alexis - 14/11
 	template<class Field, bool add>
 	inline void fspmv_zo(
 			     const Field & F,
@@ -260,7 +262,6 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 			}
 		}
 	}
-#endif // __FFLASFFPACK_USE_SIMD Added by Alexis - 14/11
 
 	/* NO SIMD VERSION */
 
@@ -494,10 +495,12 @@ namespace FFLAS{
 	{
 		size_t m  = 0, ld = M.ld, chunk = M.chunk;
 		m = (M.m % M.chunk == 0) ? M.m : M.m + (M.chunk-(M.m%M.chunk));
+		// std::cout << "limit : " << m*ld << std::endl;
 		for(size_t i = 0 ; i < m ; i+=chunk){
 			for(size_t k = 0 ; k < chunk ; ++k){
 				std::cout << i+k << " | ";
 				for(size_t j = 0 ; j < ld ; ++j){
+					// std::cout << i*ld+j*chunk+k << " " << std::endl;
 					std::cout << M.dat[i*ld+j*chunk+k] << " ";
 				}
 				std::cout << std::endl;
@@ -505,7 +508,6 @@ namespace FFLAS{
 		}
 	}
 
-#ifdef __FFLASFFPACK_USE_SIMD // Added by Alexis - 14/11
 	template<class Field, class ColT, class RowT>
 	inline void sp_ell_simd_from_csr(
 				    const Field & F,
@@ -533,66 +535,64 @@ namespace FFLAS{
 			}
 		}
 
-			chunk = Simd<typename Field::Element >::vect_size;
+		chunk = Simd<typename Field::Element >::vect_size;
 
-			size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+(chunk-CSR_m%chunk);
-			std::cout << "ELL simd ; mod " << CSR_m%chunk << " ; m : " << m <<std::endl;
+		size_t m = (CSR_m%chunk == 0) ? CSR_m : CSR_m+(chunk-CSR_m%chunk);
+		// std::cout << "ELL simd ; mod " << CSR_m%chunk << " ; m : " << m << " CSR_m : " << CSR_m << std::endl;
 
-			ELL_col = fflas_new<index_t >(ld*m, Alignment::CACHE_LINE);
-			if(!ZO){
-				ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+		ELL_col = fflas_new<index_t>(ld*m, Alignment::CACHE_LINE);
+		if(!ZO){
+			ELL_dat = fflas_new<typename Field::Element>(ld*m, Alignment::CACHE_LINE);
+		}
+
+		size_t i = 0;
+		size_t end = CSR_m/chunk;
+		for(; i < end ; ++i){
+			for(size_t k = 0 ; k < chunk ; ++k){
+				size_t start = CSR_row[i*chunk+k], stop = CSR_row[i*chunk+k+1];
+				for(size_t j = 0 ; j < ld ; ++j){
+					if(start + j < stop){
+						if(!ZO){
+							ELL_dat[i*chunk*ld+j*chunk+k] = CSR_dat[start+j];
+						}
+						ELL_col[i*ld*chunk+j*chunk+k] = CSR_col[start+j];
+					}else{
+						if(!ZO){
+							ELL_dat[i*ld*chunk+j*chunk+k] = 0;
+						}
+						ELL_col[i*ld*chunk+j*chunk+k] = 0;
+					}
+				}
 			}
-
-			size_t i = 0;
-
-			for(; i < CSR_m ; i+=chunk){
+		}
+		if(CSR_m != m)
+		{
+			for(size_t j = 0 ; j < ld ; ++j){
 				for(size_t k = 0 ; k < chunk ; ++k){
-					size_t start = CSR_row[i+k], stop = CSR_row[i+k+1];
-					for(size_t j = 0 ; j < ld ; ++j){
+					if(i*chunk+k < CSR_m){
+						size_t start = CSR_row[i*chunk+k], stop = CSR_row[i*chunk+k+1];
 						if(start + j < stop){
 							if(!ZO){
-								ELL_dat[i*ld+j*chunk+k] = CSR_dat[start+j];
+								ELL_dat[i*chunk*ld+j*chunk+k] = CSR_dat[start+j];
 							}
-							ELL_col[i*ld+j*chunk+k] = CSR_col[start+j];
+							ELL_col[i*ld*chunk+j*chunk+k] = CSR_col[start+j];
 						}else{
 							if(!ZO){
-								ELL_dat[i*ld+j*chunk+k] = 0;
+								ELL_dat[i*ld*chunk+j*chunk+k] = 0;
 							}
-							ELL_col[i*ld+j*chunk+k] = 0;
-						}
-					}
-				}
-			}
-			if(CSR_m != m)
-			{
-				for(size_t k = 0 ; k < chunk ; ++k){
-					if(i + k < CSR_m){
-						size_t start = CSR_row[i+k], stop = CSR_row[i+k+1];
-						for(size_t j = 0 ; j < ld ; ++j){
-							if(start + j < stop){
-								if(!ZO){
-									ELL_dat[i*ld+j*chunk+k] = CSR_dat[start+j];
-								}
-								ELL_col[i*ld+j*chunk+k] = CSR_col[start+j];
-							}else{
-								if(!ZO){
-									ELL_dat[i*ld+j*chunk+k] = 0;
-								}
-								ELL_col[i*ld+j*chunk+k] = 0;
-							}
+							ELL_col[i*ld*chunk+j*chunk+k] = 0;
 						}
 					}else{
-						for(size_t j = 0 ; j < ld ; ++j){
-							if(!ZO){
-								ELL_dat[i*ld+j+k] = 0;
+						if(!ZO){
+							
+								ELL_dat[i*ld*chunk+j*chunk+k] = 0;
 							}
-							ELL_col[i*ld+j+k] = 0;
-						}
+							ELL_dat[i*ld*chunk+j*chunk+k] = 0;
 					}
 				}
 			}
+		}
 	}
-#endif // __FFLASFFPACK_USE_SIMD Added by Alexis - 14/11
 
 	template<class Field, class ColT, class RowT>
 	inline void sp_ell_simd_from_coo(
@@ -622,8 +622,25 @@ namespace FFLAS{
 		for(size_t i = 1 ; i <= COO_m ; ++i){
 			row[i] += row[i-1];
 		}
-		sp_ell_from_csr(F, COO_m, COO_n, COO_nnz, COO_col, row, COO_dat, ELL_m, ELL_n, ld, chunk, ELL_col, ELL_dat, ZO);
+		sp_ell_simd_from_csr(F, COO_m, COO_n, COO_nnz, COO_col, row, COO_dat, ELL_m, ELL_n, ld, chunk, ELL_col, ELL_dat, ZO);
 		fflas_delete(row);
+	}
+
+	template<class Field>
+	void sp_delete(ELL_simd<Field> & M){
+		fflas_delete(M.dat);
+		fflas_delete(M.col);
+	}
+
+	template<class Field>
+	void sp_delete(ELL_simd_sub<Field> & M){
+		fflas_delete(M.dat);
+		fflas_delete(M.col);
+	}
+
+	template<class Field>
+	void sp_delete(ELL_simd_ZO<Field> & M){
+		fflas_delete(M.col);
 	}
 
 }// FFLAS

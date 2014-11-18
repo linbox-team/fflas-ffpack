@@ -141,6 +141,14 @@ struct Simd256_impl<true, false, true, 8> {
 		_mm256_storeu_pd(const_cast<scalar_t*>(p), v);
 	}
 
+	/*
+	 * Store 256-bits (composed of 4 packed double-precision (64-bit) floating-point elements) from a into memory using a non-temporal memory hint.
+	 * p must be aligned on a 32-byte boundary or a general-protection exception may be generated.
+	 */
+	static INLINE void stream(const scalar_t * p, const vect_t v)
+	{
+		_mm256_stream_pd(const_cast<scalar_t*>(p), v);
+	}
 
 	/*
 	 * Add packed double-precision (64-bit) floating-point elements in a and b, and store the results in vect_t.

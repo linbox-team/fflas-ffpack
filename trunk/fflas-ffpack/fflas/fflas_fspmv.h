@@ -151,10 +151,6 @@ namespace FFLAS { /*  CSR */
 
 }
 
-namespace FFLAS { /*  CSC */
-
-} // FFLAS
-
 namespace FFLAS { /*  ELL */
 
 	 template<class Field>
@@ -166,7 +162,7 @@ namespace FFLAS { /*  ELL */
 	template<class Field>
 	struct ELL_ZO;
 
-	 template<class Field>
+	template<class Field>
 	void sp_fgemv(
 		      const Field& F,
 		      const ELL<Field> & A,
@@ -211,14 +207,42 @@ namespace FFLAS{ /* ELLR */
 
 namespace FFLAS { /* SELL */
 
-	template<class Element>
+	template<class Field>
 	struct SELL;
 
-	template<class Element>
+	template<class Field>
 	struct SELL_sub;
 
-	template<class Element>
+	template<class Field>
 	struct SELL_ZO;
+
+	template<class Field>
+	void sp_fgemv(
+		      const Field& F,
+		      const SELL<Field> & A,
+		      const VECT<Field> & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
+	// y = A.x + b y
+	template<class Field>
+	void sp_fgemv(
+		      const Field& F,
+		      const SELL_sub<Field> & A,
+		      const VECT<Field> & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
+	template<class Field>
+	void sp_fgemv(
+		      const Field & F,
+		      const SELL_ZO<Field> & A,
+		      const VECT<Field > & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
 }
 
 namespace FFLAS{

@@ -137,6 +137,14 @@ struct Simd128_impl<true, false, true, 8>{
 		_mm_storeu_pd(const_cast<scalar_t*>(p), v);
 	}
 
+	/*
+	 * Store 128-bits (composed of 2 packed double-precision (64-bit) floating-point elements) from a into memory using a non-temporal memory hint.
+	 * p must be aligned on a 16-byte boundary or a general-protection exception may be generated.
+	 */
+	static INLINE void stream(const scalar_t * p, const vect_t v)
+	{
+		_mm_stream_pd(const_cast<scalar_t*>(p), v);
+	}
 
 	/*
 	 * Add packed double-precision (64-bit) floating-point elements in a and b, and store the results in vect_t.

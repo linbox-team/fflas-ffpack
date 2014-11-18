@@ -42,7 +42,6 @@ struct Simd256_impl<true, false, true, 4>
 	 */
 	using vect_t = __m256;
 
-
 	/*
 	 * define the scalar type corresponding to the specialization
 	 */
@@ -142,6 +141,15 @@ struct Simd256_impl<true, false, true, 4>
 	static INLINE void storeu(const scalar_t * p, const vect_t v)
 	{
 		_mm256_storeu_ps(const_cast<scalar_t*>(p), v);
+	}
+
+	/*
+	 * Store 256-bits (composed of 8 packed double-precision (32-bit) floating-point elements) from a into memory using a non-temporal memory hint.
+	 * p must be aligned on a 32-byte boundary or a general-protection exception may be generated.
+	 */
+	static INLINE void stream(const scalar_t * p, const vect_t v)
+	{
+		_mm256_stream_ps(const_cast<scalar_t*>(p), v);
 	}
 
 

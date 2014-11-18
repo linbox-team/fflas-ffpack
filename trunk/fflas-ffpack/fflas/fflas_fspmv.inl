@@ -82,7 +82,10 @@ namespace FFLAS{ /* ELL */
 		typename Field::Element cst = 1;
 	};
 }
+
 #include "fflas-ffpack/fflas/fflas_fspmv/ell.inl"
+
+#ifdef __FFLASFFPACK_USE_SIMD
 
 namespace FFLAS{
 
@@ -92,6 +95,7 @@ namespace FFLAS{
 		size_t m = 0;
 		size_t n = 0;
 		size_t ld = 0;
+		size_t chunk = 0;
 		index_t  * col = nullptr;
 		typename Field::Element_ptr dat = nullptr;
 	};
@@ -105,7 +109,38 @@ namespace FFLAS{
 		typename Field::Element cst = 1;
 	};
 }
+
 #include "fflas-ffpack/fflas/fflas_fspmv/ell_simd.inl"
+
+namespace FFLAS{ /* SELL */
+
+	template<class Field>
+	struct SELL
+	{
+		size_t m = 0;
+		size_t n = 0;
+		size_t chunk = 0;
+		size_t nChunks = 0;
+		uint32_t * col = nullptr;
+		uint64_t * perm = nullptr;
+		uint64_t * ptr = nullptr;
+		uint32_t * chs = nullptr;
+		typename Field::Element_ptr dat;
+	};
+
+	template<class Field>
+	struct SELL_sub : public SELL<Field>
+	{};
+
+	template<class Field>
+	struct SELL_ZO : public SELL<Field>
+	{
+		typename Field::Element cst = 1;
+	};
+
+}
+
+#endif // __FFLASFFPACK_USE_SIMD
 
 namespace FFLAS{ /* CSR */
 	template<class Field>
@@ -127,6 +162,7 @@ namespace FFLAS{ /* CSR */
 		typename Field::Element cst = 1;
 	};
 }
+
 #include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
 
 
@@ -139,8 +175,8 @@ namespace FFLAS{ /* COO */
 		index_t n  = 0;
 		uint64_t z = 0;
 		index_t maxrow = 0;
-		index_t  * row  ;
-		index_t  * col ;
+		index_t  * row  = nullptr;
+		index_t  * col = nullptr;
 		typename Field::Element_ptr dat;
 	};
 
@@ -153,6 +189,7 @@ namespace FFLAS{ /* COO */
 		typename Field::Element cst = 1;
 	};
 }
+
 #include "fflas-ffpack/fflas/fflas_fspmv/coo.inl"
 
 
@@ -258,7 +295,45 @@ namespace FFLAS{
 		}
 	}/* details */
 }/* FFLAS */
+#else // __FFLASFFPACK_HAVE_CXX11
+namespace FFLAS{
 
+	template<class Field>
+	struct COO {
+		index_t m;
+		index_t n;
+		uint64_t z;
+		index_t maxrow;
+		index_t  * row  ;
+		index_t  * col ;
+		typename Field::Element_ptr dat;
+	};
+
+	template<class Field>
+	void sp_delete(COO<Field> & M){
+		fflas_delete(row);
+		fflas_delete(col);
+		fflas_delete(dat);
+	}
+
+	template<class Field>
+	void sp_fgemv(const Field& F, const COO<Field> & A, const VECT<Field> & x, const typename Field::Element & b, VECT<Field> & y){
+		if(!F.isOne(b)){
+			if(F.isMOne(b))
+			{
+				fnegin(F, A.m, y.dat, 1);
+			}else if(F.isZero(b)){
+				for(size_t i = 0 ; i < A.m ; ++i)
+					F.assign(y.dat[i], F.zero);
+			}
+			else{
+				fscalin(F, A.m, b,  y.dat, 1);
+			}
+		}
+		for (index_t j = 0 ; j < A.z ; ++j)
+			F.axpyin(y.dat[A.row[j]],A.dat[j],x.dat[A.col[j]]);
+	}
+}
 #endif // __FFLASFFPACK_HAVE_CXX11
 
 #endif // __FFLASFFPACK_fflas_fflas_fspmv_INL

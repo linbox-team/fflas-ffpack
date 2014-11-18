@@ -34,31 +34,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 #define __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 
-namespace FFLAS {
-
-template<class _Element>
-	struct SELL {
-		size_t m = 0;
-		size_t n = 0;
-		size_t chunk = 0;
-		size_t nChunks = 0;
-		uint32_t * col = nullptr;
-		uint64_t * perm = nullptr;
-		uint64_t * ptr = nullptr;
-		uint32_t * chs = nullptr;
-		_Element * dat = nullptr;
-	};
-
-	template<class _Element>
-	struct SELL_sub : public ELL<_Element> {
-	};
-
-template<class _Element>
-	struct SELL_ZO : public ELL<_Element> {
-		_Element cst = 1;
-	};
-
-	namespace details{
+namespace FFLAS {	namespace sell_details{
 
 		// y = A x + b y ; (generic)
 		template<class Field>
@@ -103,32 +79,21 @@ template<class _Element>
 			      FieldCategories::UnparametricTag
 			     )
 		{
-#ifdef __FFLASFFPACK_USE_SIMD
 			using simd = Simd<typename Field::Element>;
 			using vect_t = typename simd::vect_t;
 
 			vect_t vx, vy, vdat;
 
 			for(size_t i = 0 ; i < nChunks ; ++i){
-				vy = simd::zero();
+				vy = simd::load(y+i*chunk);
 				for(size_t j = 0 ; j < chs[i] ; ++j){
 					size_t start = ptr[i];
 					vdat = simd::load(dat+start+j*chunk);
 					vx = simd::gather(x, col+start+j*chunk);
-					vy = madd(vy, vx, vdat);
+					vy = simd::fmadd(vy, vx, vdat);
 				}
-				simd::store(y+i*chunk, vy);
+				simd::stream(y+i*chunk, vy);
 			}
-#else
-			for(size_t i = 0 ; i < nChunks ; ++i){
-				for(size_t j = 0 ; j < chs[i] ; ++j){
-					size_t start = ptr[i];
-					for(size_t k = 0 ; k < chunk ; ++k){
-						y[i*chunk]+=dat[start+j*chunk+k]*x[col[start+j*chunk+k]];
-					}
-				}
-			}
-#endif
 		}
 
 		// y = A x + b y ; (generic)
@@ -185,7 +150,6 @@ template<class _Element>
 			      FieldCategories::UnparametricTag
 			     )
 		{
-#ifdef __FFLASFFPACK_USE_SIMD
 			using simd = Simd<typename Field::Element>;
 			using vect_t = typename simd::vect_t;
 
@@ -193,7 +157,7 @@ template<class _Element>
 			if(add)
 			{
 				for(size_t i = 0 ; i < nChunks ; ++i){
-					vy = simd::zero();
+					vy = simd::load(y+i*chunk);
 					for(size_t j = 0 ; j < chs[i] ; ++j){
 						size_t start = ptr[i];
 						vdat = simd::load(dat+start+j*chunk);
@@ -204,7 +168,7 @@ template<class _Element>
 				}
 			}else{
 				for(size_t i = 0 ; i < nChunks ; ++i){
-					vy = simd::zero();
+					vy = simd::load(y+i*chunk);
 					for(size_t j = 0 ; j < chs[i] ; ++j){
 						size_t start = ptr[i];
 						vdat = simd::load(dat+start+j*chunk);
@@ -214,33 +178,10 @@ template<class _Element>
 					simd::store(y+i*chunk, vy);
 				}
 			}
-#else
-			if(add)
-			{
-				for(size_t i = 0 ; i < nChunks ; ++i){
-					for(size_t j = 0 ; j < chs[i] ; ++j){
-						size_t start = ptr[i];
-						for(size_t k = 0 ; k < chunk ; ++k){
-							y[i*chunk]+=x[col[start+j*chunk+k]];
-						}
-					}
-				}
-			}else{
-				for(size_t i = 0 ; i < nChunks ; ++i){
-					for(size_t j = 0 ; j < chs[i] ; ++j){
-						size_t start = ptr[i];
-						for(size_t k = 0 ; k < chunk ; ++k){
-							y[i*chunk]-=x[col[start+j*chunk+k]];
-						}
-					}
-				}
-			}		
-#endif
 		}
 
 
 		// delayed by kmax
-		//! @bug check field is M(B)<f|d>
 		template<class Field >
 		inline void fspmv(
 			      const Field& F,
@@ -258,73 +199,7 @@ template<class _Element>
 			      FieldCategories::ModularFloatingPointTag
 			      )
 		{
-// #ifdef __FFLASFFPACK_USE_SIMD
-// 			using simd = Simd<typename Field::Element>;
-// 			using vect_t = typename simd::vect_t;
-// 			vect_t X, Y, D, C, Q, TMP;
-// 			double p = (typename Field::Element)F.characteristic();
-// 			vect_t P = simd::set1(p);
-// 			vect_t NEGP = simd::set1(-p);
-// 			vect_t INVP = simd::set1(1./p);
-// 			vect_t MIN = simd::set1(F.minElement());
-// 			vect_t MAX = simd::set1(F.maxElement());
 
-// 			size_t end = (m%chunk == 0)? m : m+m%chunk;
-
-// 			for ( size_t i = 0; i < end/chunk ; ++i ) {
-// 				index_t j = 0 ;
-// 				index_t j_loc = 0 ;
-// 				Y = simd::load(y+i*chunk);
-// 				for (size_t l = 0 ; l < block ; ++l) {
-// 					j_loc += kmax ;
-// 					for ( ; j < j_loc ; ++j) {
-// 						D = simd::load(dat+i*chunk*ld+j*chunk);
-// 						X = simd::gather(x,col+i*chunk*ld+j*chunk);
-// 						Y = simd::madd(Y,D,X);
-// 					}
-// 					vectorised::VEC_MOD(Y,Y,TMP, P, NEGP,INVP,MIN,MAX);
-// 				}
-// 				for ( ; j < ld ; ++j) {
-// 					D = simd::load(dat+i*chunk*ld+j*chunk);
-// 					X = simd::gather(x,col+i*chunk*ld+j*chunk);
-// 					Y = simd::madd(Y,D,X);
-// 				}
-// 				vectorised::VEC_MOD(Y,Q,TMP, P, NEGP,INVP,MIN,MAX);
-// 				simd::store(y+i*chunk,Y);
-// 			}
-// #else
-
-// 			for(size_t i = 0 ; i < nChunks ; ++i){
-// 				for(size_t j = 0 ; j < chs[i] ; ++j){
-// 					size_t start = ptr[i];
-// 					for(size_t k = 0 ; k < chunk ; ++k){
-// 						y[i*chunk]+=x[col[start+j*chunk+k]];
-// 					}
-// 				}
-// 			}
-// 			for(size_t i = 0 ; i < nChunks ; ++i){
-// 				size_t j = 0, j_loc = 0;
-// 				for(size_t l = 0 ; l < block ; ++l, j_loc=+kmax){
-// 					size_t start = ptr[i];
-// 					for(; j < j_loc ; ++j){
-// 						for(size_t k = 0 ; k < chunk ; ++k){
-// 							y[i*chunk+k] += dat[start+j*chunk+k]*x[col[start+j*chunk+k]];
-// 						}
-// 						for(size_t k = 0 ; k < chunk ; ++k){
-// 							F.init(y[i*chunk+k], y[i*chunk+k]);
-// 						}
-// 					}
-// 					for( ; j < ld ; ++j){
-// 						for(size_t k = 0 ; k < chunk ; ++k){
-// 							y[i*chunk+k] += dat[start+j*chunk+k]*x[col[start+j*chunk+k]];
-// 						}
-// 					}
-// 					for(size_t k = 0 ; k < chunk ; ++k){
-// 						F.init(y[i*chunk+k], y[i*chunk+k]);
-// 					}
-// 				}
-// 			}
-// #endif
 		}
 
 	} // details
@@ -337,160 +212,192 @@ template<class _Element>
 	// it is supposed that no reduction is needed.
 	template<class Field>
 	inline void fspmv(
-		      const Field& F,
-		      const SELL_sub<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
-		     )
+			     const Field& F,
+			     const SELL_sub<Field> & A,
+			     const VECT<Field> & x,
+			     const typename Field::Element & b,
+			     VECT<Field> & y
+			    )
 	{
-		details::init_y(F, A.m, b, y, typename FieldTraits<Field>::value());
-		sp_spmv(F, A, x, b, y, typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field>
-	inline void fspmv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::UnparametricTag)
+	inline void fspmv(const Field & F,
+			     const SELL_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::ModularTag)
 	{
-		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
-	}
-
-	template<class Field>
-	inline void fspmv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::GenericTag)
-	{
-		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
-	}
-
-	template<class Field>
-	inline void fspmv(const Field & F, const ELL_sub<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularTag)
-	{
-		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::ModularTag());
+		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 		finit(F,A.m,y.dat,1);
 	}
 
+	template<class Field>
+	inline void fspmv(const Field & F,
+			     const SELL_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::UnparametricTag)
+	{
+		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
+	}
+
+	template<class Field>
+	inline void fspmv(const Field & F,
+			     const SELL_sub<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::GenericTag)
+	{
+		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
+	}
+
+
 	/* ******* */
-	/* SELL_ZO */
+	/* SELL_ZO  */
 	/* ******* */
+
+	// y = A x + b y ; (generic)
+	// it is supposed that no reduction is needed.
+	template<class Field>
+	inline void fspmv(
+			     const Field & F,
+			     const SELL_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     const typename Field::Element & b,
+			     VECT<Field> & y
+			    )
+	{
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
+	}
 
 	template<class Field>
 	inline void fspmv(
-		      const Field& F,
-		      const SELL_ZO<typename Field::Element> & A,
-		      const VECT<typename Field::Element> & x,
-		      const typename Field::Element & b,
-		      VECT<typename Field::Element> & y
-		     )
+			     const Field & F,
+			     const SELL_ZO<Field > & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::GenericTag
+			    )
 	{
-		details::init_y(F, A.m, b, y, typename FieldTraits<Field>::value());
-		details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, typename FieldTraits<Field>::value());
-	}
-
-	template<class Field>
-	inline void fspmv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::UnparametricTag)
-	{
-		if(A.cst == F.one)
-		{
-			details::fspmv<typename Field::Element, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::UnparametricTag());
+		if (A.cst == F.one) {
+			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::GenericTag());
 		}
-		else if(A.cst = F.mone)
-		{
-			details::fspmv<typename Field::Element, false>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::UnparametricTag());	
-		}else
-		{
-			details::fspmv<typename Field::Element, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::UnparametricTag());
-			fscalin(F,A.n,A.cst,y.dat,1);
+		else if (A.cst == F.mOne) {
+			sell_details::fspmv<Field, false>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::GenericTag());
+		}
+		else {
+			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+			fscal(F, A.n, A.cst, x.dat, 1, x1, 1);
+			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::GenericTag());
+			fflas_delete(x1);
 		}
 	}
 
 	template<class Field>
-	inline void fspmv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::GenericTag)
+	inline void fspmv(
+			     const Field & F,
+			     const SELL_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::UnparametricTag
+			    )
 	{
-		if(A.cst == F.one)
-		{
-			details::fspmv<typename Field::Element, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::GenericTag());
+		if (A.cst == F.one) {
+			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::UnparametricTag());
 		}
-		else if(A.cst = F.mone)
-		{
-			details::fspmv<typename Field::Element, false>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::GenericTag());	
-		}else
-		{
-			details::fspmv<typename Field::Element, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::GenericTag());
-			fscalin(F,A.n,A.cst,y.dat,1);
+		else if (A.cst == F.mOne) {
+			sell_details::fspmv<Field, false>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::UnparametricTag());
+		}
+		else {
+			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+			fscal(F, A.n, A.cst, x.dat, 1, x1, 1);
+			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::UnparametricTag());
+			fflas_delete(x1);
 		}
 	}
 
 	template<class Field>
-	inline void fspmv(const Field & F, const ELL_ZO<typename Field::Element> & A, const VECT<typename Field::Element> & x, const typename Field::Element & b, VECT<typename Field::Element> & y, FieldCategories::ModularTag)
+	inline void fspmv(
+			     const Field & F,
+			     const ELL_ZO<Field> & A,
+			     const VECT<Field> & x,
+			     VECT<Field> & y,
+			     FieldCategories::ModularTag
+			    )
 	{
-		if(A.cst == F.one)
-		{
-			details::fspmv<typename Field::Element, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());
+		if (A.cst == F.one) {
+			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());
 		}
-		else if(A.cst = F.mone)
-		{
-			details::fspmv<typename Field::Element, false>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());	
-		}else
-		{
-			details::fspmv<typename Field::Element, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());
-			fscalin(F,A.n,A.cst,y.dat,1);
+		else if (A.cst == F.mOne) {
+			sell_details::fspmv<Field, false>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());
+		}
+		else {
+			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+			fscal(F, A.n, A.cst, x.dat, 1, x1, 1);
+			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());
+			fflas_delete(x1);
 		}
 		finit(F,A.m,y.dat,1);
 	}
 
 	/* *** */
-	/* ELL */
+	/* SELL */
 	/* *** */
 
 	// y = A x + b y ; (generic)
 	// reductions are delayed.
-	template<class Field, bool simd_true>
+	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      const SELL<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
+		      const SELL<Field> & A,
+		      const VECT<Field> & x,
 		      const typename Field::Element & b,
-		      VECT<typename Field::Element > & y
+		      VECT<Field> & y
 		     )
 	{
 		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
-		fspmv(F,A,x,y, typename FieldTraits<Field>::category());
+		fspmv(F,A,x,y,typename FieldTraits<Field>::category());
 	}
 
-	template<class Field, bool simd_true>
+	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      const ELL<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
-		      VECT<typename Field::Element > & y
-		      , FieldCategories::GenericTag
+		      const SELL<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y,
+		      FieldCategories::GenericTag
 		     )
 	{
-
-		details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.nbChunk,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
+		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::GenericTag());
 	}
 
-	template<class Field, bool simd_true>
+	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      const ELL<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
-		      VECT<typename Field::Element > & y
-		      , FieldCategories::UnparametricTag
+		      const SELL<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y, 
+		      FieldCategories::UnparametricTag
 		     )
 	{
-		details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.nbChunk,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
+		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
 	}
 
-	template<class Field, bool simd_true>
+	template<class Field>
 	void fspmv(
 		      const Field& F,
-		      const ELL<typename Field::Element> & A,
-		      const VECT<typename Field::Element > & x,
-		      VECT<typename Field::Element > & y
-		      , FieldCategories::ModularTag
+		      const SELL<Field> & A,
+		      const VECT<Field> & x,
+		      VECT<Field> & y,
+		      FieldCategories::ModularTag
 		     )
 	{
 		size_t kmax = Protected::DotProdBoundClassic(F,F.one) ;
-		details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.nbChunk,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, (index_t)kmax);
+		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, kmax);
 	}
 
 namespace details{
