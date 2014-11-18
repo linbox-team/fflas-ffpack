@@ -4,15 +4,15 @@
 # -----
 # 2014/11/17 - Written by AB <Alexis.Breust@imag.fr>
 
-XMLFILE="perfpublisher.xml"
-benchmarks=$1
+XMLFILE=$1
+benchmarks=$2
 
 #========#
 # Header #
 #========#
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' >> $XMLFILE
-echo '<report name="benchmarks-report" categ="report">' >> $XMLFILE
+echo '<report name="benchmarks-report" categ="benchmarks">' >> $XMLFILE
 
 #=======#
 # Start #

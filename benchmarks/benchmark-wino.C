@@ -109,10 +109,10 @@ int main (int argc, char ** argv) {
 	int n       = 1000;
 	int w       = 7;
 	int seed    = -1;
-	bool compare = true;
+	bool compare = false;
 	bool balanced = false;
 	std::string type = "double";
-	bool levelasmax = true;
+	bool levelasmax = false;
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },

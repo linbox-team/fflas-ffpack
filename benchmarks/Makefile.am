@@ -29,6 +29,8 @@ AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(GMP_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
+PERFPUBLISHERFILE=benchmarks-report.xml
+
 FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup 
 BLAS_BENCH =    benchmark-dgemmd benchmark-dgemmf benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
@@ -59,7 +61,7 @@ BENCHMARKS =			\
         $(USE_LAPACK_BENCH) \
         $(USE_OMP_BENCH)
 
-CLEANFILES = $(BENCHMARKS) perfpublisher.xml
+CLEANFILES = $(BENCHMARKS) $(PERFPUBLISHERFILE)
 
 EXTRA_PROGRAMS = $(BENCHMARKS)
 
@@ -78,7 +80,7 @@ benchmark_dgemmd_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher: clean
-	+./perfpublisher.sh "$(BENCHMARKS)"
+	+./perfpublisher.sh "$(PERFPUBLISHERFILE)" "$(BENCHMARKS)"
 
 # for compilation of new benchmarks
 FFLASFFPACK_BIN=@bindir@

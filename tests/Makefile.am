@@ -30,6 +30,8 @@ AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(GMP_LIBS) $(CUDA_LIBS) $(PARFLAGS)
 AM_LDFLAGS=-static
 
+PERFPUBLISHERFILE=tests-report.xml
+
 BASIC_TESTS =              \
 		test-lqup              \
 		test-modulararith      \
@@ -93,7 +95,7 @@ EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS) $(USE_OMP_TESTS) $(USE_GIVARO_TESTS)
 
 CLEANFILES =           \
-		$(NOT_A_TEST) $(EXTRA_PROGRAMS) perfpublisher.xml
+		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)
 
 TESTS =     $(EXTRA_PROGRAMS)
 
@@ -147,7 +149,7 @@ dense_generator: dense_generator.C
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher: clean
-	+./perfpublisher.sh "$(EXTRA_PROGRAMS)"
+	+./perfpublisher.sh "$(PERFPUBLISHERFILE)" "$(EXTRA_PROGRAMS)"
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
