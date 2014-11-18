@@ -125,7 +125,7 @@ int main(int argc, char** argv){
     std::string path;
        
     COO<Field> Mat;
-    CSR_ZO<Field> Mat2;
+    ELL_simd<Field> Mat2;
     
     // mpolyout2.sms
     path = "matrix/EX6.sms";
@@ -139,22 +139,23 @@ int main(int argc, char** argv){
         tmpv[Mat.row[i]]++;
     Mat.maxrow = *(std::max_element(tmpv.begin(), tmpv.end()));
 
-    // sp_ell_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, true, false);
-    sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, true);
+    //sp_ell_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.col, Mat2.dat, false);
+    sp_ell_simd_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, false);
+    //sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, false);
     
     VECT<Field> x, y, y2;
     cout << "Mat " << Mat.m << " " << Mat.n << " ; Mat 2 " << Mat2.m << " " << Mat2.n << endl;
     x.dat = fflas_new(F, Mat.n, 1);
     y.dat = fflas_new(F, Mat.m, 1);
-    y2.dat = fflas_new(F, Mat2.m, 1);
+    y2.dat = fflas_new(F, Mat2.m+4, 1);
 
     cout << "fllas_new ok" << endl;
     
-    // print_ell(Mat2);
+    print_ell(Mat2);
 
     for(size_t i = 0 ; i < Mat.m ; ++i)
     {
-        x.dat[i] = 10;
+        x.dat[i] = 1;
     }
     
     for(size_t i = 0 ; i < Mat.n ; ++i)
@@ -167,20 +168,21 @@ int main(int argc, char** argv){
     cout << "Mat ok" << endl;
     fspmv(F, Mat2, x, 1, y2);
     cout << "Mat2 ok" << endl;
-    // finit(F, Mat2.m, y2.dat, 1);
     
-    for(size_t i = 0 ; i < 10 ; ++i)
+    for(size_t i = 0 ; i < 12 ; ++i)
     {
         cout << y.dat[i] << " ";
     }    
     cout << endl;
     
-    for(size_t i = 0 ; i < 10 ; ++i)
+    for(size_t i = 0 ; i < 12 ; ++i)
     {
         cout << y2.dat[i] << " ";
     }    
     cout << endl;
     
+    cout << ((std::equal(y.dat, y.dat+Mat.m, y2.dat)) ? "CORRECT" : "ERROR") << endl;
+
     sp_delete(Mat);
     sp_delete(Mat2);
     

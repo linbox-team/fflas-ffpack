@@ -404,7 +404,6 @@ namespace FFLAS { /*  conversions */
 				    size_t & ELL_m,
 				    size_t & ELL_n,
 				    size_t & ld,
-				    size_t & chunk,
 				    index_t *& ELL_col,
 				    typename Field::Element_ptr& ELL_dat,
 				    const bool ZO
@@ -419,12 +418,10 @@ namespace FFLAS { /*  conversions */
 			}
 		}
 		std::cout << "ELL no simd " << std::endl; 
-		chunk = 1;
 		ELL_col = fflas_new<index_t >(ld*ELL_m, Alignment::CACHE_LINE);
 		if(!ZO){
 			ELL_dat = fflas_new<typename Field::Element >(ld*ELL_m, Alignment::CACHE_LINE);
 		}
-		size_t it = 0;
 		for(size_t i = 0 ; i < CSR_m ; ++i){
 			size_t start = CSR_row[i], stop = CSR_row[i+1];
 			for(size_t j = 0 ; j < ld ; ++j){
@@ -456,7 +453,6 @@ namespace FFLAS { /*  conversions */
 				    size_t & ELL_m,
 				    size_t & ELL_n,
 				    size_t & ld,
-				    size_t & chunk,
 				    index_t * &ELL_col,
 				    typename Field::Element_ptr &ELL_dat,
 				    const bool ZO
@@ -472,7 +468,7 @@ namespace FFLAS { /*  conversions */
         for(size_t i = 1 ; i <= COO_m ; ++i){
             row[i] += row[i-1];
         }
-		sp_ell_from_csr(F, COO_m, COO_n, COO_nnz, COO_col, row, COO_dat, ELL_m, ELL_n, ld, chunk, ELL_col, ELL_dat, ZO);
+		sp_ell_from_csr(F, COO_m, COO_n, COO_nnz, COO_col, row, COO_dat, ELL_m, ELL_n, ld, ELL_col, ELL_dat, ZO);
 		fflas_delete(row);
 	}
 

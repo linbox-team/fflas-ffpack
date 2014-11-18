@@ -158,6 +158,15 @@ struct Simd256_impl<true, true, true, 4>{
 	}
 
 	/*
+	 * Store 256-bits of integer data from a into memory using a non-temporal memory hint.
+	 * p must be aligned on a 32-byte boundary or a general-protection exception may be generated.
+	 */
+	static INLINE void stream(const scalar_t * p, const vect_t v)
+	{
+		_mm256_stream_si256(const_cast<scalar_t*>(p), v);
+	}
+
+	/*
 	 * Add packed 32-bits integer in a and b, and store the results in vect_t.
 	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] 						   int32_t
 	 [b0, b1, b2, b3, b4, b5, b6, b7] 						   int32_t
