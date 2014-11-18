@@ -4,15 +4,15 @@
 # -----
 # 2014/11/17 - Written by AB <Alexis.Breust@imag.fr>
 
-XMLFILE="perfpublisher.xml"
-tests=$1
+XMLFILE=$1
+tests=$2
 
 #========#
 # Header #
 #========#
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' >> $XMLFILE
-echo '<report name="tests-report" categ="report">' >> $XMLFILE
+echo '<report name="tests-report" categ="tests">' >> $XMLFILE
 
 #=======#
 # Start #
