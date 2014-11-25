@@ -79,7 +79,7 @@ namespace FFLAS { /*  COO */
 
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const COO<Field> & A,
 		      const VECT<Field> & x,
@@ -88,7 +88,7 @@ namespace FFLAS { /*  COO */
 		     );
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const COO_sub<Field> & A,
 		      const VECT<Field> & x,
@@ -97,12 +97,42 @@ namespace FFLAS { /*  COO */
 		     );
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field & F,
 		      const COO_ZO<Field> & A,
 		      const VECT<Field> & x,
 		      const typename Field::Element & b,
 		      VECT<Field> & y
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const COO<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y 
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const COO_sub<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y 
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field & F,
+		      const COO_ZO<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y 
 		     );
 
 } // FFLAS
@@ -120,7 +150,7 @@ namespace FFLAS { /*  CSR */
 
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const CSR<Field> & A,
 		      const VECT<Field> & x,
@@ -131,7 +161,7 @@ namespace FFLAS { /*  CSR */
 
 	// y = A.x + b y
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const CSR_sub<Field> & A,
 		      const VECT<Field> & x,
@@ -140,7 +170,7 @@ namespace FFLAS { /*  CSR */
 		     );
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field & F,
 		      const CSR_ZO<Field> & A,
 		      const VECT<Field > & x,
@@ -163,7 +193,7 @@ namespace FFLAS { /*  ELL */
 	struct ELL_ZO;
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const ELL<Field> & A,
 		      const VECT<Field> & x,
@@ -173,7 +203,7 @@ namespace FFLAS { /*  ELL */
 
 	// y = A.x + b y
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const ELL_sub<Field> & A,
 		      const VECT<Field> & x,
@@ -182,7 +212,7 @@ namespace FFLAS { /*  ELL */
 		     );
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field & F,
 		      const ELL_ZO<Field> & A,
 		      const VECT<Field > & x,
@@ -203,6 +233,34 @@ namespace FFLAS{ /* ELLR */
 	template<class Field>
 	struct ELLR_ZO;
 
+	template<class Field>
+	void fspmv(
+		      const Field& F,
+		      const ELLR<Field> & A,
+		      const VECT<Field> & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
+	// y = A.x + b y
+	template<class Field>
+	void fspmv(
+		      const Field& F,
+		      const ELLR_sub<Field> & A,
+		      const VECT<Field> & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
+	template<class Field>
+	void fspmv(
+		      const Field & F,
+		      const ELLR_ZO<Field> & A,
+		      const VECT<Field > & x,
+		      const typename Field::Element & b,
+		      VECT<Field> & y
+		     );
+
 } // FFLAS
 
 namespace FFLAS { /* SELL */
@@ -217,7 +275,7 @@ namespace FFLAS { /* SELL */
 	struct SELL_ZO;
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const SELL<Field> & A,
 		      const VECT<Field> & x,
@@ -227,7 +285,7 @@ namespace FFLAS { /* SELL */
 
 	// y = A.x + b y
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field& F,
 		      const SELL_sub<Field> & A,
 		      const VECT<Field> & x,
@@ -236,7 +294,7 @@ namespace FFLAS { /* SELL */
 		     );
 
 	template<class Field>
-	void sp_fgemv(
+	void fspmv(
 		      const Field & F,
 		      const SELL_ZO<Field> & A,
 		      const VECT<Field > & x,

@@ -116,8 +116,8 @@ void readSmsFormat(const std::string& path, const Field& f,
 }
 
 int main(int argc, char** argv){
-    // using Field = UnparametricField<double>;
-    using Field = Modular<double>;
+    using Field = UnparametricField<double>;
+    // using Field = Modular<double>;
     using Element = typename Field::Element;
     
     Field F(11);
@@ -125,7 +125,7 @@ int main(int argc, char** argv){
     std::string path;
        
     COO<Field> Mat;
-    ELL_simd<Field> Mat2;
+    CSR_sub<Field> Mat2;
     
     // mpolyout2.sms
     path = "matrix/EX6.sms";
@@ -140,8 +140,8 @@ int main(int argc, char** argv){
     Mat.maxrow = *(std::max_element(tmpv.begin(), tmpv.end()));
 
     //sp_ell_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.col, Mat2.dat, false);
-    sp_ell_simd_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, false);
-    //sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, false);
+    // sp_ell_simd_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, false);
+    sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, false);
     
     VECT<Field> x, y, y2;
     cout << "Mat " << Mat.m << " " << Mat.n << " ; Mat 2 " << Mat2.m << " " << Mat2.n << endl;
@@ -151,7 +151,7 @@ int main(int argc, char** argv){
 
     cout << "fllas_new ok" << endl;
     
-    print_ell(Mat2);
+    // print_ell(Mat2);
 
     for(size_t i = 0 ; i < Mat.m ; ++i)
     {
@@ -166,8 +166,12 @@ int main(int argc, char** argv){
     
     fspmv(F, Mat, x, 1, y);
     cout << "Mat ok" << endl;
-    fspmv(F, Mat2, x, 1, y2);
-    cout << "Mat2 ok" << endl;
+    Timer t;
+    t.start();
+    for(size_t i = 0 ; i < 10 ; ++i)
+        fspmv(F, Mat2, x, 1, y2);
+    t.stop();
+    cout << "time :" << t << endl;
     
     for(size_t i = 0 ; i < 12 ; ++i)
     {

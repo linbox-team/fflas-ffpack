@@ -423,7 +423,7 @@ namespace std {
 }
 #endif // __AVX__
 
-#include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
+// #include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
 
 #endif // __FFLASFFPACK_USE_SIMD
 
