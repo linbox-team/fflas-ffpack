@@ -73,7 +73,12 @@ struct Simd128_impl<true, false, true, 4>{
 	 */
 	static INLINE CONST vect_t set1(const scalar_t x)
 	{
+#ifdef __AVX__
+		// return _mm_broadcast_ss(&x);
 		return _mm_set1_ps(x);
+#else
+		return _mm_set1_ps(x);
+#endif
 	}
 
 

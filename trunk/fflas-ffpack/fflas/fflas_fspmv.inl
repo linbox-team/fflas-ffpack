@@ -251,6 +251,28 @@ namespace FFLAS{
 		}
 
 		template<class Field>
+		inline void init_y(const Field & F, const int lda, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::ModularTag)
+		{
+			if(b != 1)
+			{
+				if(b == 0)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i*lda] = 0;
+				}
+				else if(b == -1)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i*lda] *= -1;
+				}
+				else
+				{
+					fscalin(F, m, b, y, lda);
+				}
+			}
+		}
+
+		template<class Field>
 		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::UnparametricTag)
 		{
 			if(b != 1)
@@ -268,6 +290,28 @@ namespace FFLAS{
 				else
 				{
 					fscalin(F, m, b, y, 1);
+				}
+			}
+		}
+
+		template<class Field>
+		inline void init_y(const Field & F, const int lda, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::UnparametricTag)
+		{
+			if(b != 1)
+			{
+				if(b == 0)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i*lda] = 0;
+				}
+				else if(b == -1)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i*lda] *= -1;
+				}
+				else
+				{
+					fscalin(F, m, b, y, lda);
 				}
 			}
 		}
@@ -293,6 +337,29 @@ namespace FFLAS{
 				}
 			}
 		}
+
+		template<class Field>
+		inline void init_y(const Field & F, const int lda, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::GenericTag)
+		{
+			if(b != 1)
+			{
+				if(b == 0)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i*lda] = 0;
+				}
+				else if(b == -1)
+				{
+					for(size_t i = 0 ; i < m ; ++i)
+						y[i*lda] *= -1;
+				}
+				else
+				{
+					fscalin(F, m, b, y, lda);
+				}
+			}
+		}
+
 	}/* details */
 }/* FFLAS */
 #else // __FFLASFFPACK_HAVE_CXX11
