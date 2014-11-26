@@ -83,7 +83,7 @@ namespace FFLAS{ /* ELL */
 	};
 }
 
-#include "fflas-ffpack/fflas/fflas_fspmv/ell.inl"
+// #include "fflas-ffpack/fflas/fflas_fspmv/ell.inl"
 
 #ifdef __FFLASFFPACK_USE_SIMD
 
@@ -163,7 +163,7 @@ namespace FFLAS{ /* CSR */
 	};
 }
 
-#include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
+// #include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
 
 
 
@@ -251,23 +251,25 @@ namespace FFLAS{
 		}
 
 		template<class Field>
-		inline void init_y(const Field & F, const int lda, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::ModularTag)
+		inline void init_y(const Field & F, const size_t m, const size_t n,
+						  const typename Field::Element b, typename Field::Element_ptr y,
+						  const int lda, FieldCategories::ModularTag)
 		{
-			if(b != 1)
-			{
-				if(b == 0)
-				{
-					for(size_t i = 0 ; i < m ; ++i)
-						y[i*lda] = 0;
-				}
-				else if(b == -1)
-				{
-					for(size_t i = 0 ; i < m ; ++i)
-						y[i*lda] *= -1;
-				}
-				else
-				{
-					fscalin(F, m, b, y, lda);
+			if(b != 1){
+				if(b == 0){
+					for(size_t i = 0 ; i < m ; ++i){
+						for(size_t j = 0 ; j < n ; ++j){
+							y[i*lda+j] = 0;
+						}
+					}
+				}else if(b == -1){
+					for(size_t i = 0 ; i < m ; ++i){
+						for(size_t j = 0 ; j < n ; ++j){
+							y[i*lda+j] *= -1;
+						}
+					}
+				}else{
+					fscalin(F, m, n, y, lda);
 				}
 			}
 		}
@@ -295,23 +297,25 @@ namespace FFLAS{
 		}
 
 		template<class Field>
-		inline void init_y(const Field & F, const int lda, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::UnparametricTag)
+		inline void init_y(const Field & F, const size_t m, const size_t n,
+						  const typename Field::Element b, typename Field::Element_ptr y,
+						  const int lda, FieldCategories::UnparametricTag)
 		{
-			if(b != 1)
-			{
-				if(b == 0)
-				{
-					for(size_t i = 0 ; i < m ; ++i)
-						y[i*lda] = 0;
-				}
-				else if(b == -1)
-				{
-					for(size_t i = 0 ; i < m ; ++i)
-						y[i*lda] *= -1;
-				}
-				else
-				{
-					fscalin(F, m, b, y, lda);
+			if(b != 1){
+				if(b == 0){
+					for(size_t i = 0 ; i < m ; ++i){
+						for(size_t j = 0 ; j < n ; ++j){
+							y[i*lda+j] = 0;
+						}
+					}
+				}else if(b == -1){
+					for(size_t i = 0 ; i < m ; ++i){
+						for(size_t j = 0 ; j < n ; ++j){
+							y[i*lda+j] *= -1;
+						}
+					}
+				}else{
+					fscalin(F, m, n, y, lda);
 				}
 			}
 		}
@@ -339,23 +343,25 @@ namespace FFLAS{
 		}
 
 		template<class Field>
-		inline void init_y(const Field & F, const int lda, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::GenericTag)
+		inline void init_y(const Field & F, const size_t m, const size_t n,
+						  const typename Field::Element b, typename Field::Element_ptr y,
+						  const int lda, FieldCategories::GenericTag)
 		{
-			if(b != 1)
-			{
-				if(b == 0)
-				{
-					for(size_t i = 0 ; i < m ; ++i)
-						y[i*lda] = 0;
-				}
-				else if(b == -1)
-				{
-					for(size_t i = 0 ; i < m ; ++i)
-						y[i*lda] *= -1;
-				}
-				else
-				{
-					fscalin(F, m, b, y, lda);
+			if(b != 1){
+				if(b == 0){
+					for(size_t i = 0 ; i < m ; ++i){
+						for(size_t j = 0 ; j < n ; ++j){
+							F.assign(y[i*lda+j], F.zero);
+						}
+					}
+				}else if(b == -1){
+					for(size_t i = 0 ; i < m ; ++i){
+						for(size_t j = 0 ; j < n ; ++j){
+							F.negin(y[i*lda+j]);
+						}
+					}
+				}else{
+					fscalin(F, m, n, y, lda);
 				}
 			}
 		}

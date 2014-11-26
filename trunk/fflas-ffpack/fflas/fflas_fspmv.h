@@ -111,8 +111,10 @@ namespace FFLAS { /*  COO */
 		      const COO<Field> & A,
 		      const int blockSize,
 		      const typename Field::Element_ptr & x,
+		      const int ldx,
 		      const typename Field::Element & b,
-		      typename Field::Element_ptr & y 
+		      typename Field::Element_ptr & y,
+		      const int ldy
 		     );
 
 	template<class Field>
@@ -121,18 +123,22 @@ namespace FFLAS { /*  COO */
 		      const COO_sub<Field> & A,
 		      const int blockSize,
 		      const typename Field::Element_ptr & x,
+		      const int ldx,
 		      const typename Field::Element & b,
-		      typename Field::Element_ptr & y 
+		      typename Field::Element_ptr & y,
+		      const int ldy
 		     );
 
 	template<class Field>
 	void fspmm(
-		      const Field & F,
+		      const Field& F,
 		      const COO_ZO<Field> & A,
 		      const int blockSize,
 		      const typename Field::Element_ptr & x,
+		      const int ldx,
 		      const typename Field::Element & b,
-		      typename Field::Element_ptr & y 
+		      typename Field::Element_ptr & y,
+		      const int ldy
 		     );
 
 } // FFLAS
@@ -313,6 +319,21 @@ namespace FFLAS{
 
 		template<class Field>
 		inline void init_y(const Field & F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y, FieldCategories::GenericTag);		
+
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const size_t n,
+						  const typename Field::Element b, typename Field::Element_ptr y,
+						  const int lda, FieldCategories::UnparametricTag);
+
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const size_t n,
+						  const typename Field::Element b, typename Field::Element_ptr y,
+						  const int lda, FieldCategories::GenericTag);
+
+		template<class Field>
+		inline void init_y(const Field & F, const size_t m, const size_t n,
+						  const typename Field::Element b, typename Field::Element_ptr y,
+						  const int lda, FieldCategories::ModularTag);
 	}	
 }
 
