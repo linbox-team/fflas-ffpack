@@ -125,7 +125,6 @@ int main(int argc, char** argv){
     std::string path;
        
     COO<Field> Mat;
-    CSR_sub<Field> Mat2;
     
     // mpolyout2.sms
     path = "matrix/EX6.sms";
@@ -139,39 +138,34 @@ int main(int argc, char** argv){
         tmpv[Mat.row[i]]++;
     Mat.maxrow = *(std::max_element(tmpv.begin(), tmpv.end()));
 
-    //sp_ell_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.col, Mat2.dat, false);
-    // sp_ell_simd_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, false);
-    sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, false);
+    // //sp_ell_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.col, Mat2.dat, false);
+    // // sp_ell_simd_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, false);
+    // sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, false);
     
     VECT<Field> x, y, y2;
-    cout << "Mat " << Mat.m << " " << Mat.n << " ; Mat 2 " << Mat2.m << " " << Mat2.n << endl;
-    x.dat = fflas_new(F, Mat.n, 1);
-    y.dat = fflas_new(F, Mat.m, 1);
-    y2.dat = fflas_new(F, Mat2.m+4, 1);
+    int blockSize = 4;
+    cout << "Mat " << Mat.m << " " << Mat.n << endl;// " ; Mat 2 " << Mat2.m << " " << Mat2.n << endl;
+    x.dat = fflas_new(F, Mat.n*blockSize, 1, Alignment::CACHE_PAGESIZE);
+    y.dat = fflas_new(F, Mat.m*blockSize, 1, Alignment::CACHE_PAGESIZE);
+
 
     cout << "fllas_new ok" << endl;
     
     // print_ell(Mat2);
 
-    for(size_t i = 0 ; i < Mat.m ; ++i)
+    for(size_t i = 0 ; i < Mat.m*blockSize ; ++i)
     {
         x.dat[i] = 1;
     }
     
-    for(size_t i = 0 ; i < Mat.n ; ++i)
+    for(size_t i = 0 ; i < Mat.n*blockSize ; ++i)
     {
         y.dat[i] = 0;
-        y2.dat[i] = 0;
     }
-    
-    fspmv(F, Mat, x, 1, y);
+
+    fspmm(F, Mat, blockSize, x, blockSize, 1, y, Mat.n);
     cout << "Mat ok" << endl;
     Timer t;
-    t.start();
-    for(size_t i = 0 ; i < 10 ; ++i)
-        fspmv(F, Mat2, x, 1, y2);
-    t.stop();
-    cout << "time :" << t << endl;
     
     for(size_t i = 0 ; i < 12 ; ++i)
     {
@@ -181,14 +175,14 @@ int main(int argc, char** argv){
     
     for(size_t i = 0 ; i < 12 ; ++i)
     {
-        cout << y2.dat[i] << " ";
+        
     }    
     cout << endl;
     
-    cout << ((std::equal(y.dat, y.dat+Mat.m, y2.dat)) ? "CORRECT" : "ERROR") << endl;
+    // cout << ((std::equal(y.dat, y.dat+Mat.m, y2.dat)) ? "CORRECT" : "ERROR") << endl;
 
     sp_delete(Mat);
-    sp_delete(Mat2);
+    // sp_delete(Mat2);
     
     return 0;
 }
