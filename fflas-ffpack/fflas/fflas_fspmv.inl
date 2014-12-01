@@ -60,7 +60,7 @@ namespace FFLAS { /*  DNS */
 
 } // FFLAS
 
-#if defined(__FFLASFFPACK_HAVE_CXX11)
+#if defined(__FFLASFFPACK_HAVE_CXX11) && defined(__FFLASFFPACK_USE_SIMD)
 
 namespace FFLAS{ /* ELL */
 	
