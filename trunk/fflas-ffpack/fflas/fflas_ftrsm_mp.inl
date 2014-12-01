@@ -52,7 +52,7 @@ namespace FFLAS {
 		    const FFLAS_DIAG Diag,
 		    const size_t M, const size_t N,
 		    const FFPACK::Integer alpha,
-		    FFPACK::Integer * A, const size_t lda,
+		    const FFPACK::Integer * A, const size_t lda,
 		    FFPACK::Integer * B, const size_t ldb){
 
 #ifdef BENCH_PERF_TRSM_MP
@@ -154,7 +154,7 @@ namespace FFLAS {
 				  const enum CBLAS_TRANSPOSE TransA,
 				  const enum CBLAS_DIAG Diag, 
 				  const int M, const int N, const FFPACK::rns_double_elt alpha, 
-				  const FFPACK::rns_double_elt_ptr A, const int lda,
+				  FFPACK::rns_double_elt_cstptr A, const int lda,
 				  FFPACK::rns_double_elt_ptr B, const int ldb) {}
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS	

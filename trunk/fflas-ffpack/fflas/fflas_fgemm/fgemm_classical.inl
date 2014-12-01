@@ -47,8 +47,8 @@ namespace FFLAS {
                            const FFLAS_TRANSPOSE tb,
                            const size_t m, const size_t n,const size_t k,
                            const typename Field::Element alpha,
-                           typename Field::Element_ptr A, const size_t lda,
-                           typename Field::Element_ptr B, const size_t ldb,
+                           typename Field::ConstElement_ptr A, const size_t lda,
+                           typename Field::ConstElement_ptr B, const size_t ldb,
                            const typename Field::Element beta,
                            typename Field::Element_ptr C, const size_t ldc,
                            MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
@@ -79,11 +79,13 @@ namespace FFLAS {
                         // Might as well reduce inputs
                         if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
 				H.initA();
-				finit(F, (ta==FflasNoTrans)?m:k, (ta==FflasNoTrans)?k:m, A, lda);
+				finit (F, (ta==FflasNoTrans)?m:k, (ta==FflasNoTrans)?k:m, 
+				       const_cast<typename Field::Element_ptr>(A), lda);
 			}
 			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
 				H.initB();
-				finit(F, (tb==FflasNoTrans)?k:n, (tb==FflasNoTrans)?n:k, B, ldb);
+				finit (F, (tb==FflasNoTrans)?k:n, (tb==FflasNoTrans)?n:k, 
+				       const_cast<typename Field::Element_ptr>(B), ldb);
 			}
 			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
 				H.initC();
@@ -159,8 +161,8 @@ namespace FFLAS {
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
 			   const typename Field::Element alpha,
-			   typename Field::Element_ptr A, const size_t lda,
-			   typename Field::Element_ptr B, const size_t ldb,
+			   typename Field::ConstElement_ptr A, const size_t lda,
+			   typename Field::ConstElement_ptr B, const size_t ldb,
 			   const typename Field::Element beta,
 			   typename Field::Element_ptr C, const size_t ldc,
 			   MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
@@ -204,8 +206,8 @@ namespace FFLAS {
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
 			   const DoubleDomain::Element alpha,
-			   DoubleDomain::Element_ptr Ad, const size_t lda,
-			   DoubleDomain::Element_ptr Bd, const size_t ldb,
+			   DoubleDomain::ConstElement_ptr Ad, const size_t lda,
+			   DoubleDomain::ConstElement_ptr Bd, const size_t ldb,
 			   const DoubleDomain::Element beta,
 			   DoubleDomain::Element_ptr Cd, const size_t ldc,
 			   MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> &H)
@@ -226,8 +228,8 @@ namespace FFLAS {
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
 			   const FloatDomain::Element alpha,
-			   FloatDomain::Element_ptr Ad, const size_t lda,
-			   FloatDomain::Element_ptr Bd, const size_t ldb,
+			   FloatDomain::ConstElement_ptr Ad, const size_t lda,
+			   FloatDomain::ConstElement_ptr Bd, const size_t ldb,
 			   const FloatDomain::Element beta,
 			   FloatDomain::Element_ptr Cd, const size_t ldc,
 			   MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)

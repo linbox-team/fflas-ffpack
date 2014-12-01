@@ -75,8 +75,8 @@ namespace FFLAS {
 								     const FFLAS_TRANSPOSE tb,
 								     const size_t m, const size_t n,const size_t k,
 								     const typename FFPACK::RNSInteger<RNS>::Element alpha,
-								     typename FFPACK::RNSInteger<RNS>::Element_ptr Ad, const size_t lda,
-								     typename FFPACK::RNSInteger<RNS>::Element_ptr Bd, const size_t ldb,
+								     typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Ad, const size_t lda,
+								     typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
 								     const typename FFPACK::RNSInteger<RNS>::Element beta,
 								     typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
 								     MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
@@ -101,8 +101,8 @@ namespace FFLAS {
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n,const size_t k,
 				       const FFPACK::Integer alpha,
-				       FFPACK::Integer* A, const size_t lda,
-				       FFPACK::Integer* B, const size_t ldb,
+				       const FFPACK::Integer* A, const size_t lda,
+				       const FFPACK::Integer* B, const size_t ldb,
 				       FFPACK::Integer beta,
 				       FFPACK::Integer* C, const size_t ldc,
 				       MMHelper<FFPACK::UnparametricField<FFPACK::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
@@ -208,8 +208,8 @@ namespace FFLAS {
 						const FFLAS_TRANSPOSE tb,
 						const size_t m, const size_t n,const size_t k,
 						const typename RNS::Element alpha,
-						typename RNS::Element_ptr Ad, const size_t lda,
-						typename RNS::Element_ptr Bd, const size_t ldb,
+						typename RNS::ConstElement_ptr Ad, const size_t lda,
+						typename RNS::ConstElement_ptr Bd, const size_t ldb,
 						const typename RNS::Element beta,
 						typename RNS::Element_ptr Cd, const size_t ldc,
 						MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
@@ -239,8 +239,8 @@ namespace FFLAS {
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n,const size_t k,
 				       const FFPACK::Integer alpha,
-				       FFPACK::Integer *A, const size_t lda,
-				       FFPACK::Integer *B, const size_t ldb,
+				       const FFPACK::Integer *A, const size_t lda,
+				       const FFPACK::Integer *B, const size_t ldb,
 				       const FFPACK::Integer beta,
 				       FFPACK::Integer* C, const size_t ldc,
 				       MMHelper<FFPACK::Modular<FFPACK::integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)

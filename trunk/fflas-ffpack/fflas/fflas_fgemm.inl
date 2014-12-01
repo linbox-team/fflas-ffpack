@@ -42,8 +42,8 @@ namespace FFLAS { namespace Protected{
 		       const FFLAS_TRANSPOSE tb,
 		       const size_t m, const size_t n, const size_t k,
 		       const typename Field::Element alpha,
-		       typename Field::Element_ptr A,const size_t lda,
-		       typename Field::Element_ptr B,const size_t ldb,
+		       typename Field::ConstElement_ptr A,const size_t lda,
+		       typename Field::ConstElement_ptr B,const size_t ldb,
 		       const typename Field::Element beta,
 		       typename Field::Element_ptr C, const size_t ldc,
 		       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
@@ -241,8 +241,8 @@ namespace FFLAS {
 	       const FFLAS_TRANSPOSE tb,
 	       const size_t m, const size_t n, const size_t k,
 	       const typename Field::Element alpha,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr B, const size_t ldb,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag> & H)
@@ -279,10 +279,7 @@ namespace FFLAS {
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
 
-		return 	fgemm (F, ta, tb, m, n, k, alpha,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb,
-			       beta, C, ldc, HW);
+		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
 	template<typename Field>
@@ -305,10 +302,7 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
-		return 	fgemm (F, ta, tb, m, n, k, alpha,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(B), ldb,
-			       beta, C, ldc, HW);
+		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
 	template<typename Field>
@@ -338,8 +332,8 @@ namespace FFLAS {
 	       const size_t n,
 	       const size_t k,
 	       const typename Field::Element alpha,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr B, const size_t ldb,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H)
@@ -405,7 +399,7 @@ namespace FFLAS {
 	fsquare (const Field& F,
 		 const FFLAS_TRANSPOSE ta,
 		 const size_t n, const typename Field::Element alpha,
-		  typename Field::Element_ptr A, const size_t lda,
+		  typename Field::ConstElement_ptr A, const size_t lda,
 		 const typename Field::Element beta,
 		 typename Field::Element_ptr C, const size_t ldc)
 	{
@@ -446,7 +440,7 @@ namespace FFLAS {
 		fsquareCommon (const Field& F,
 			       const FFLAS_TRANSPOSE ta,
 			       const size_t n, const typename Field::Element alpha,
-			       typename Field::Element_ptr A, const size_t lda,
+			       typename Field::ConstElement_ptr A, const size_t lda,
 			       const typename Field::Element beta,
 			       typename Field::Element_ptr C, const size_t ldc)
 		{
@@ -470,7 +464,7 @@ namespace FFLAS {
 	inline double* fsquare (const  FFPACK:: ModularBalanced<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
-				double* A, const size_t lda,
+				const double* A, const size_t lda,
 				const double beta,
 				double* C, const size_t ldc)
 	{
@@ -481,7 +475,7 @@ namespace FFLAS {
 	inline float * fsquare (const  FFPACK:: ModularBalanced<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
-				float* A, const size_t lda,
+				const float* A, const size_t lda,
 				const float beta,
 				float* C, const size_t ldc)
 	{
@@ -492,7 +486,7 @@ namespace FFLAS {
 	inline double* fsquare (const  FFPACK:: Modular<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
-				 double* A, const size_t lda,
+				const double* A, const size_t lda,
 				const double beta,
 				double* C, const size_t ldc)
 	{
@@ -503,7 +497,7 @@ namespace FFLAS {
 	inline float * fsquare (const  FFPACK:: Modular<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
-				float* A, const size_t lda,
+				const float* A, const size_t lda,
 				const float beta,
 				float* C, const size_t ldc)
 	{
