@@ -515,7 +515,7 @@ namespace FFLAS {
 			     const int ldy,
 			     FieldCategories::GenericTag)
 	{
-		if(ldx == A.n && ldy == blockSize)
+		if(ldx == A.n && ldy == blockSize){
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
 		}else{
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
@@ -607,7 +607,7 @@ namespace FFLAS {
 		      FieldCategories::GenericTag
 		     )
 	{
-		if(ldx == A.n && ldy == blockSize)
+		if(ldx == A.n && ldy == blockSize){
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 		}else{
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
@@ -1037,7 +1037,7 @@ namespace FFLAS { /*  ZO */
 			     FieldCategories::GenericTag
 			    )
 	{
-		if(ldx == A.n && ldy == blockSize)
+		if(ldx == A.n && ldy == blockSize){
 			if (A.cst == F.one) {
 				coo_details::fspmm_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 			}
@@ -1051,7 +1051,7 @@ namespace FFLAS { /*  ZO */
 				fflas_delete(x1);
 			}
 		}else{
-			if (A.cst == F.one) {
+			if (A.cst == F.one){
 				coo_details::fspmm_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
 			}
 			else if (A.cst == F.mOne) {
@@ -1079,7 +1079,7 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		using simd=Simd<typename Field::Element>;
-		if(ldx == A.n && ldy == blockSize)
+		if(ldx == A.n && ldy == blockSize){
 			if (A.cst == F.one){
 				if(blockSize % simd::vect_size == 0)
 					coo_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
@@ -1137,7 +1137,7 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		using simd=Simd<typename Field::Element>;
-		if(ldx == A.n && ldy == blockSize)
+		if(ldx == A.n && ldy == blockSize){
 			if (A.cst == F.one){
 				if(blockSize % simd::vect_size == 0)
 					coo_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
