@@ -184,6 +184,42 @@ namespace FFLAS { /*  CSR */
 		      VECT<Field> & y
 		     );
 
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const CSR<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const int ldx,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y,
+		      const int ldy
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const CSR_sub<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const int ldx,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y,
+		      const int ldy
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const CSR_ZO<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const int ldx,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y,
+		      const int ldy
+		     );
+
 
 }
 
@@ -224,6 +260,42 @@ namespace FFLAS { /*  ELL */
 		      const VECT<Field > & x,
 		      const typename Field::Element & b,
 		      VECT<Field> & y
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const ELL<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const int ldx,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y,
+		      const int ldy
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const ELL_sub<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const int ldx,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y,
+		      const int ldy
+		     );
+
+	template<class Field>
+	void fspmm(
+		      const Field& F,
+		      const ELL_ZO<Field> & A,
+		      const int blockSize,
+		      const typename Field::Element_ptr & x,
+		      const int ldx,
+		      const typename Field::Element & b,
+		      typename Field::Element_ptr & y,
+		      const int ldy
 		     );
 
 } // FFLAS
