@@ -85,5 +85,4 @@ namespace FFPACK {
 	// }
 }
 
-
 #endif // __FFLASFFPACK_field_general_H

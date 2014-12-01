@@ -121,7 +121,7 @@ namespace FFPACK {
 	Fi.inv(invpivot, *A);
 	// for (size_t i=piv+1; i<N; ++i)
 	  // Fi.mulin (A[i], invpivot);
-	FFLAS::fscalin(Fi,N-piv-1,invpivot,A+piv+1,1)
+	FFLAS::fscalin(Fi,N-piv-1,invpivot,A+piv+1,1);
       }
       return 1;
     }

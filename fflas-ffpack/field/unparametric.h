@@ -292,11 +292,93 @@ namespace FFPACK
 
 	};
 
+	    /** Class ZZ
+	     * Ring of integers, using the templatedElement base type
+	     * Provides the implementation of a field/ring (of char >0 or 0) using 
+	     */
+	template<class _Element>
+	class ZZ : public UnparametricOperations<_Element> {
 
+	public:
+
+		/** The field's element type.
+		 * Type Element must provide a default constructor,
+		 * a copy constructor, a destructor, and an assignment operator.
+		 */
+
+		typedef _Element Element;
+		typedef ZZ<Element> Self_t;
+		typedef UnparametricRandIter<Element> RandIter;
+		typedef NonzeroRandIter<Self_t, RandIter > NonZeroRandIter;
+		typedef Element* Element_ptr;
+		typedef const Element* ConstElement_ptr;
+		const Element one  ;
+		const Element zero ;
+		const Element mOne ;
+
+		/** @name Field Object Basics.
+		*/
+		//@{
+
+		/** Builds this field. Assumes q=0 and e = 1.
+		 * Ensures consistency with field interface.
+		 */
+		ZZ(long int q = 0, size_t e = 1):
+				one(1),zero(0),mOne(-one)
+				    // ,one(Element(1L)),zero(Element(0L)),mOne(Element(-1L))
+			{}  
+		//@}
+
+		template<class T>
+		ZZ (const T& ) : one(1), zero(0), mOne(-one){}
+
+		/// construct this field as copy of F.
+		ZZ (const ZZ &F) : one(F.one),zero(F.zero),mOne(F.mOne){}
+
+		FFPACK::Integer &cardinality (FFPACK::Integer &c) const {return c = 0;}
+
+		FFPACK::Integer &characteristic (FFPACK::Integer &c) const{return c = 0;}
+
+		int64_t &cardinality (int64_t &c) const {return c = 0;}
+
+		int64_t &characteristic (int64_t &c) const {return c = 0;}
+
+		int64_t cardinality () const {return 0;}
+
+		int64_t characteristic () const {return 0;}
+
+		ZZ<Element> operator=(const ZZ<Element> &e) {return *this ;}
+
+		/// x := y.
+		template <typename Src>
+		Element& init (Element& x, const Src& s) const {return FFPACK::Caster (x, s);}
+
+		/// x :=  y.
+
+		template <typename T>
+		T& convert (T &x, const Element &y) const {return FFPACK::Caster (x, y);}
+
+		    // To ensure interface consistency
+		size_t minElement() const {return 0;}
+		size_t maxElement() const {return 0;}
+
+	};
+
+	    /** Class UnparametricField
+	     * Provides the implementation of a field/ring (of char >0 or 0) using 
+	     * the arithmetic provided by UnparametricOperations.
+	     * UnparametricOperations is an empty class wrapping infix +,*,-,/,etc 
+	     * operations into add, mul, sub, div, etc.
+	     * UnparametricField contains characteristic and cardinality members and accessors.
+	     * This is used for instance to represent Z/pZ with NTL's implementation
+	     * - UnparametricField<NTL::zz_p>
+	     * @warning: prefer ZZ<double>, ZZ<integer> over UnparametricField<double> 
+	     * and UnparametricField<integer>
+	     */
 	template<class _Element>
 	class UnparametricField : public UnparametricOperations<_Element> {
 	protected:
-		long int _p ; long int _card ; // why do we have them (not used anywhere, just copied along.)
+		long int _p ; long int _card ;
 	public:
 
 		/** The field's element type.
@@ -309,7 +391,7 @@ namespace FFPACK
 		typedef NonzeroRandIter<UnparametricField<Element>, RandIter > NonZeroRandIter;
 		typedef Element* Element_ptr;
 		typedef const Element* ConstElement_ptr;
-		const Element one  ; // peut pas être static... :(
+		const Element one  ;
 		const Element zero ;
 		const Element mOne ;
 

@@ -35,6 +35,7 @@
 
 #include "fflas-ffpack/field/field-traits.h"
 #include "parallel.h"
+#include "fflas-ffpack/utils/flimits.h"
 
 namespace FFLAS{ namespace Protected{
 	/** \brief Computes the number of recursive levels to perform.
@@ -193,7 +194,7 @@ namespace FFLAS {
 			Bmin(FieldMin), Bmax(FieldMax),
 			Cmin(FieldMin), Cmax(FieldMax),
 			Outmin(0.0), Outmax(0.0),
-			MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
+			MaxStorableValue ((double)(limits<typename DelayedField::Element>::max())),
 			delayedField(F),
 			// delayedField((typename Field::Element)F.characteristic()),
 			parseq(_PS)
@@ -207,7 +208,7 @@ namespace FFLAS {
 			Bmin(FieldMin), Bmax(FieldMax),
 			Cmin(FieldMin), Cmax(FieldMax),
 			Outmin(0.0), Outmax(0.0),
-			MaxStorableValue ((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
+			MaxStorableValue ((double)(limits<typename DelayedField::Element>::max())),
 			delayedField(F),
 			parseq(_PS)
 		{
@@ -236,7 +237,7 @@ namespace FFLAS {
 			Amin(_Amin), Amax(_Amax),
 			Bmin(_Bmin), Bmax(_Bmax),
 			Cmin(_Cmin), Cmax(_Cmax),
-			MaxStorableValue((double)((1ULL << Protected::Mantissa<typename DelayedField::Element>())-1)),
+			MaxStorableValue((double)(limits<typename DelayedField::Element>::max())),
 			delayedField(F)
 		{
 		}
