@@ -57,8 +57,8 @@ namespace FFLAS {
 			const size_t n,
 			const size_t k,
 			const typename Field::Element alpha,
-			const typename Field::Element_ptr A, const size_t lda,
-			const typename Field::Element_ptr B, const size_t ldb,
+			const typename Field::ConstElement_ptr A, const size_t lda,
+			const typename Field::ConstElement_ptr B, const size_t ldb,
 			const typename Field::Element beta,
 			typename Field::Element * C, const size_t ldc, 
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
@@ -85,10 +85,10 @@ namespace FFLAS {
 		 H1.parseq.numthreads /=2;
 		 H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
 		 
-		 typename Field::Element_ptr A1= A;
-		 typename Field::Element_ptr A2= A+M2*lda;
-		 typename Field::Element_ptr C1= C;
-		 typename Field::Element_ptr C2= C+M2*ldc;
+		 typename Field::ConstElement_ptr A1= A;
+		 typename Field::ConstElement_ptr A2= A+M2*lda;
+		 typename Field::ConstElement_ptr C1= C;
+		 typename Field::ConstElement_ptr C2= C+M2*ldc;
 		 
 		     // 2 multiply (1 split on dimension m)
 		
@@ -101,8 +101,8 @@ namespace FFLAS {
 		 size_t N2 = n>>1;
 		 H1.parseq.numthreads /=2;
 		 H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
-		 typename Field::Element_ptr B1= B;
-		 typename Field::Element_ptr B2= B+N2;
+		 typename Field::ConstElement_ptr B1= B;
+		 typename Field::ConstElement_ptr B2= B+N2;
 		 
 		 typename Field::Element_ptr C1= C;
 		 typename Field::Element_ptr C2= C+N2;
@@ -115,10 +115,10 @@ namespace FFLAS {
 	 } else {
 		 size_t K2 = k>>1;
 		 
-		 typename Field::Element_ptr B1= B;
-		 typename Field::Element_ptr B2= B+K2*ldb;
-		 typename Field::Element_ptr A1= A;
-		 typename Field::Element_ptr A2= A+K2;
+		 typename Field::ConstElement_ptr B1= B;
+		 typename Field::ConstElement_ptr B2= B+K2*ldb;
+		 typename Field::ConstElement_ptr A1= A;
+		 typename Field::ConstElement_ptr A2= A+K2;
 		 typename Field::Element_ptr C2 = fflas_new (F, m, n,Alignment::CACHE_PAGESIZE);
 //#pragma omp task shared(F, A1, B1)                                                                  
 		 H1.parseq.numthreads /= 2;
@@ -145,8 +145,8 @@ namespace FFLAS {
 			     const size_t n,
 			     const size_t k,
 			     const typename Field::Element alpha,
-			     const typename Field::Element_ptr A, const size_t lda,
-			     const typename Field::Element_ptr B, const size_t ldb,
+			     const typename Field::ConstElement_ptr A, const size_t lda,
+			     const typename Field::ConstElement_ptr B, const size_t ldb,
 			     const typename Field::Element beta,
 			     typename Field::Element * C, const size_t ldc, 
 			     MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
@@ -169,8 +169,8 @@ namespace FFLAS {
 		H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
 		if(m >= n) {
 			size_t M2= m>>1;
-			typename Field::Element_ptr A1= A;
-			typename Field::Element_ptr A2= A+M2*lda;
+			typename Field::ConstElement_ptr A1= A;
+			typename Field::ConstElement_ptr A2= A+M2*lda;
 			typename Field::Element_ptr C1= C;
 			typename Field::Element_ptr C2= C+M2*ldc;
 #pragma omp task shared(F, A1, C1) depend(in:A1,B) depend(inout:C1)
@@ -180,8 +180,8 @@ namespace FFLAS {
 #pragma omp taskwait
 		} else {
 			size_t N2 = n>>1;
-			typename Field::Element_ptr B1= B;
-			typename Field::Element_ptr B2= B+N2;
+			typename Field::ConstElement_ptr B1= B;
+			typename Field::ConstElement_ptr B2= B+N2;
 			typename Field::Element_ptr C1= C;
 			typename Field::Element_ptr C2= C+N2;
 #pragma omp task shared(F, B1, C1) depend(in:A,B1) depend(inout:C1)
@@ -204,8 +204,8 @@ namespace FFLAS {
 			const size_t n,
 			const size_t k,
 			const typename Field::Element alpha,
-			const typename Field::Element_ptr A, const size_t lda,
-			const typename Field::Element_ptr B, const size_t ldb,
+			const typename Field::ConstElement_ptr A, const size_t lda,
+			const typename Field::ConstElement_ptr B, const size_t ldb,
 			const typename Field::Element beta,
 			typename Field::Element * C, const size_t ldc, 
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
@@ -229,10 +229,10 @@ namespace FFLAS {
 		 size_t M2= m>>1;
 		 size_t N2= n>>1;
 		 
-		 typename Field::Element_ptr A1= A;
-		 typename Field::Element_ptr A2= A+M2*lda;
-		 typename Field::Element_ptr B1= B;
-		 typename Field::Element_ptr B2= B+N2;
+		 typename Field::ConstElement_ptr A1= A;
+		 typename Field::ConstElement_ptr A2= A+M2*lda;
+		 typename Field::ConstElement_ptr B1= B;
+		 typename Field::ConstElement_ptr B2= B+N2;
 
 		 typename Field::Element_ptr C11= C;
 		 typename Field::Element_ptr C21= C+M2*ldc;
@@ -286,8 +286,8 @@ namespace FFLAS {
 			   const size_t n,
 			   const size_t k,
 			   const typename Field::Element alpha,
-			   const typename Field::Element_ptr A, const size_t lda,
-			   const typename Field::Element_ptr B, const size_t ldb,
+			   const typename Field::ConstElement_ptr A, const size_t lda,
+			   const typename Field::ConstElement_ptr B, const size_t ldb,
 			   const typename Field::Element beta,
 			   typename Field::Element_ptr C, const size_t ldc, 
 			   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
@@ -313,15 +313,15 @@ namespace FFLAS {
 		size_t M2= m>>1;
 		size_t N2= n>>1;
 		size_t K2= k>>1;
-		typename Field::Element_ptr A11= A;
-		typename Field::Element_ptr A12= A+K2;
-		typename Field::Element_ptr A21= A+M2*lda;
-		typename Field::Element_ptr A22= A+K2+M2*lda;
+		typename Field::ConstElement_ptr A11= A;
+		typename Field::ConstElement_ptr A12= A+K2;
+		typename Field::ConstElement_ptr A21= A+M2*lda;
+		typename Field::ConstElement_ptr A22= A+K2+M2*lda;
 
-		typename Field::Element_ptr B11= B;
-		typename Field::Element_ptr B12= B+N2;
-		typename Field::Element_ptr B21= B+K2*ldb;
-		typename Field::Element_ptr B22= B+N2+K2*ldb;
+		typename Field::ConstElement_ptr B11= B;
+		typename Field::ConstElement_ptr B12= B+N2;
+		typename Field::ConstElement_ptr B21= B+K2*ldb;
+		typename Field::ConstElement_ptr B22= B+N2+K2*ldb;
 
 		typename Field::Element_ptr C11= C;
 		typename Field::Element_ptr C_11 = fflas_new (F, M2, N2,Alignment::CACHE_PAGESIZE);
@@ -415,8 +415,8 @@ namespace FFLAS {
 			const size_t n,
 			const size_t k,
 			const typename Field::Element alpha,
-			const typename Field::Element_ptr A, const size_t lda,
-			const typename Field::Element_ptr B, const size_t ldb,
+			const typename Field::ConstElement_ptr A, const size_t lda,
+			const typename Field::ConstElement_ptr B, const size_t ldb,
 		  const typename Field::Element beta,
 		  typename Field::Element_ptr C, const size_t ldc, 
 		  MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H){
@@ -435,15 +435,15 @@ namespace FFLAS {
 		size_t M2= m>>1;
 		size_t N2= n>>1;
 		size_t K2= k>>1;
-		typename Field::Element_ptr A11= A;
-		typename Field::Element_ptr A12= A+K2;
-		typename Field::Element_ptr A21= A+M2*lda;
-		typename Field::Element_ptr A22= A+K2+M2*lda;
+		typename Field::ConstElement_ptr A11= A;
+		typename Field::ConstElement_ptr A12= A+K2;
+		typename Field::ConstElement_ptr A21= A+M2*lda;
+		typename Field::ConstElement_ptr A22= A+K2+M2*lda;
 
-		typename Field::Element_ptr B11= B;
-		typename Field::Element_ptr B12= B+N2;
-		typename Field::Element_ptr B21= B+K2*ldb;
-		typename Field::Element_ptr B22= B+N2+K2*ldb;
+		typename Field::ConstElement_ptr B11= B;
+		typename Field::ConstElement_ptr B12= B+N2;
+		typename Field::ConstElement_ptr B21= B+K2*ldb;
+		typename Field::ConstElement_ptr B22= B+N2+K2*ldb;
 
 		typename Field::Element_ptr C11= C;
 		typename Field::Element_ptr C12= C+N2;
@@ -497,8 +497,8 @@ namespace FFLAS {
 		const size_t n,
 		const size_t k,
 		const typename Field::Element alpha,
-		typename Field::Element_ptr A, const size_t lda,
-		typename Field::Element_ptr B, const size_t ldb,
+		typename Field::ConstElement_ptr A, const size_t lda,
+		typename Field::ConstElement_ptr B, const size_t ldb,
 		const typename Field::Element beta,
 		typename Field::Element_ptr C, const size_t ldc,
 		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
@@ -546,8 +546,8 @@ namespace FFLAS{
 		const size_t n,
 		const size_t k,
 		const typename Field::Element alpha,
-		typename Field::Element_ptr A, const size_t lda,
-		typename Field::Element_ptr B, const size_t ldb,
+		typename Field::ConstElement_ptr A, const size_t lda,
+		typename Field::ConstElement_ptr B, const size_t ldb,
 		const typename Field::Element beta,
 		typename Field::Element_ptr C, const size_t ldc,
 		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
