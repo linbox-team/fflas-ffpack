@@ -61,7 +61,7 @@ typedef Givaro::OMPTimer TTimer;
 typedef Givaro::Timer TTimer;
 #endif
 
-#define MFLOPS (2.0*iter/chrono.usertime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
+#define MFLOPS (2.0*iter/chrono.realtime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 #include <ctime>
@@ -106,7 +106,7 @@ int main () {
 		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> ClassicH(F,0, FFLAS::ParSeqHelper::Sequential());
 		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WinogradH(F,1, FFLAS::ParSeqHelper::Sequential());
 
-		int iter=10;
+		int iter=3;
 		    //warm up computation
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 				n, n, n, F.one, A, n, B, n, F.zero, C, n, ClassicH);
