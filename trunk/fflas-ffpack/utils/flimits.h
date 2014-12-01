@@ -99,15 +99,14 @@ template <> struct limits<long long> {
 };
 
 template <> struct limits<float> {
-  constexpr inline static int32_t max() noexcept { return (1 << 23) - 1; }
-  constexpr inline static int32_t min() noexcept {return -((1 << 23) - 1); }
+  constexpr inline static int32_t max() noexcept { return (1 << FLT_MANT_DIG) - 1; }
+  constexpr inline static int32_t min() noexcept {return -((1 << FLT_MANT_DIG) - 1); }
 };
 
 template <> struct limits<double> {
-  constexpr inline static int64_t max() noexcept {
-    return (uint64_t(1) << 53) - 1;
+  constexpr inline static int64_t max() noexcept {return (uint64_t(1) << DBL_MANT_DIG) - 1;
   }
-  constexpr inline static int64_t min() noexcept {return -((uint64_t(1) << 53) - 1);}
+  constexpr inline static int64_t min() noexcept {return -((uint64_t(1) << DBL_MANT_DIG) - 1);}
 };
 
 /*
@@ -118,21 +117,21 @@ template<class T, class E>
 typename std::enable_if<std::is_signed<T>::value == std::is_signed<E>::value, bool>::type
 in_range(E e)
 {
-    return (e >= std::limits<T>::min() && e <= std::limits<T>::max());
+    return (e >= limits<T>::min() && e <= limits<T>::max());
 }
 
 template<class T, class E>
 typename std::enable_if<(std::is_signed<T>::value) && !(std::is_signed<E>::value), bool>::type
 in_range(E e)
 {
-    return (e <= static_cast<E>(std::limits<T>::max()));
+    return (e <= static_cast<E>(limits<T>::max()));
 }
 
 template<class T, class E>
 typename std::enable_if<!(std::is_signed<T>::value) && (std::is_signed<E>::value), bool>::type
 in_range(E e)
 {
-    return ((e >= 0) && (static_cast<T>(e) <= std::limits<T>::max()));
+    return ((e >= 0) && (static_cast<T>(e) <= limits<T>::max()));
 }
 
 

@@ -33,20 +33,7 @@
 #define FFLAS_INT_TYPE long unsigned int
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-
-namespace FFLAS { namespace Protected {
-
-		template<class T>
-		unsigned long Mantissa () {return DBL_MANT_DIG;}
-		template<>
-		unsigned long Mantissa<float> () {return FLT_MANT_DIG;}
-		// unsigned long Mantissa (const FFLAS_BASE base)
-		// {return (base == FflasDouble) ? DBL_MANT_DIG : FLT_MANT_DIG;}
-
-
-} // Protected
-
-} // FFLAS
+#include "fflas-ffpack/utils/flimits.h"
 
 namespace FFLAS { namespace Protected {
 
@@ -87,7 +74,7 @@ namespace FFLAS { namespace Protected {
 		FFLAS_INT_TYPE p=0;
 		F.characteristic(p);
 
-		unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
+		    //unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
 
 		if (p == 0)
 			return std::numeric_limits<size_t>::max();
@@ -106,7 +93,7 @@ namespace FFLAS { namespace Protected {
 					cplt = fabs(be)*c;
 				}
 			}
-			kmax = floor ( (double (double(1ULL << mantissa) - cplt)) / (c*c));
+			kmax = floor ( (double (double(limits<typename Field::Element>::max()) + 1 - cplt)) / (c*c));
 			if (kmax  <= 1) return 1;
 		}
 		//kmax--; // we computed a strict upper bound
@@ -178,8 +165,8 @@ namespace FFLAS { namespace Protected {
 		double p1 = 1.0, p2 = 1.0;
 		double pm1 = (p - 1) / 2;
 		size_t nmax = 0;
-		unsigned long long max = 1ULL << Protected::Mantissa<Element>();
-		while ( (p1 + p2)*pm1 < max ){
+		unsigned long long max = limits<Element>::max();
+		while ( (p1 + p2)*pm1 <= max ){
 			p1*=p;
 			p2*=p-2;
 			nmax++;
@@ -203,8 +190,8 @@ namespace FFLAS { namespace Protected {
 		double pm1 = (pi - 1) / 2;
 		double p1 = 1.0;
 		size_t nmax = 0;
-		double max = 1ULL << Protected::Mantissa<Element>();
-		while (pm1*p1 < max){
+		double max = limits<Element>::max();
+		while (pm1*p1 <= max){
 			p1 *= pp1;
 			nmax++;
 		}
