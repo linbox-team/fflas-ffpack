@@ -272,7 +272,7 @@ namespace FFLAS { namespace csr_details {
 			     const int blockSize,
 			     const typename Field::Element_ptr x,
 			     const int ldx,
-			     typename Field::Element_ptr y
+			     typename Field::Element_ptr y,
 			     const int ldy,
 			     FieldCategories::UnparametricTag
 			    )
@@ -646,7 +646,7 @@ namespace FFLAS {
 			if(blockSize % simd::vectize == 0)
 				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());	
 			else
-				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldt, FieldCategories::UnparametricTag ());
+				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());
 		}
 		finit(F,blockSize,A.m,y.dat,ldy);
 	}
@@ -834,7 +834,7 @@ namespace FFLAS {
 		if(ldx == A.n && ldy == blockSize){
 			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 		}else{
-			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
 		}
 		
 	}
@@ -1232,7 +1232,7 @@ namespace FFLAS { /*  ZO */
 			     const VECT<Field> & x,
 			     const int ldx,
 			     VECT<Field> & y,
-			     const int ldy
+			     const int ldy,
 			     FieldCategories::GenericTag
 			    )
 	{
@@ -1403,7 +1403,7 @@ namespace FFLAS { /*  ZO */
 				fflas_delete(x1);
 			}
 		}
-		finit(F,blockSize,A.m,y.dat,lda);
+		finit(F,blockSize,A.m,y.dat,ldy);
 	}
 
 } // FFLAS

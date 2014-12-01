@@ -31,7 +31,11 @@
 #include "fflas-ffpack/fflas/fflas_fspmv.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/field/modular-double.h"
-#include "fflas-ffpack/field/unparametric.h" 
+#include "fflas-ffpack/field/unparametric.h"
+// #include "fflas-ffpack/utils/flimits.h"
+// #include "fllas-ffpack/utils/print-utils.h"
+
+#include "fflas-ffpack/field/rns.h" 
 
 #include <vector>
 #include <iostream>
@@ -116,9 +120,11 @@ void readSmsFormat(const std::string& path, const Field& f,
 }
 
 int main(int argc, char** argv){
-    using Field = UnparametricField<double>;
-    // using Field = Modular<double>;
+    // using Field = UnparametricField<double>;
+    using Field = Modular<double>;
+    // using Field = class RNSInteger;
     using Element = typename Field::Element;
+
     
     Field F(11);
     
@@ -138,9 +144,6 @@ int main(int argc, char** argv){
         tmpv[Mat.row[i]]++;
     Mat.maxrow = *(std::max_element(tmpv.begin(), tmpv.end()));
 
-    // //sp_ell_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.col, Mat2.dat, false);
-    // // sp_ell_simd_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.col, Mat.row, Mat.dat, Mat2.m, Mat2.n, Mat2.ld, Mat2.chunk, Mat2.col, Mat2.dat, false);
-    // sp_csr_from_coo(F, Mat.m, Mat.n, Mat.z, Mat.row, Mat.col, Mat.dat, Mat2.m, Mat2.n, Mat2.maxrow, Mat2.st, Mat2.col, Mat2.dat, false);
     
     VECT<Field> x, y, y2;
     int blockSize = 4;
@@ -151,8 +154,6 @@ int main(int argc, char** argv){
 
     cout << "fllas_new ok" << endl;
     
-    // print_ell(Mat2);
-
     for(size_t i = 0 ; i < Mat.m*blockSize ; ++i)
     {
         x.dat[i] = 1;
