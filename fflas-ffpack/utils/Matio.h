@@ -148,7 +148,7 @@ typename Field::Element_ptr read_field(const Field& F, const char * mat_file,int
 }
 
 template<class Field>
-void read_field4(const Field& F, const char * mat_file,int* tni,int* tnj,
+void read_field4(const Field& F, char * mat_file,int* tni,int* tnj,
 		 typename Field::Element_ptr& NW,typename Field::Element_ptr& NE,
 		 typename Field::Element_ptr& SW,typename Field::Element_ptr& SE)
 {

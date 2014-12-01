@@ -31,6 +31,7 @@
 
 #include <cstddef>
 #include <climits>
+#include <limits>
 #include <type_traits>
 
 template <class T> struct limits

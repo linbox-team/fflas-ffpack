@@ -163,9 +163,7 @@ namespace FFLAS{ /* CSR */
 	};
 }
 
-// #include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
-
-
+#include "fflas-ffpack/fflas/fflas_fspmv/csr.inl"
 
 namespace FFLAS{ /* COO */
 

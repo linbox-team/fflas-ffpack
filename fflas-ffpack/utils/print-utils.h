@@ -2,6 +2,7 @@
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* tests/print-utils.h
  * Copyright (C) 2011, Brice Boyer <bboyer@imag.fr>
+ * 					   Bastien Vialla <bastien.vialla@lirmm.fr>
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
  *
@@ -41,12 +42,13 @@ namespace std
 	std::ostream & operator<<(std::ostream&o, const std::vector<T, Alloc> & v)
 	{
 		o << '[' ;
-		if (v.size()) {
-			size_t i = 0  ;
-			for (; i < v.size()-1 ; ++i)
-				o << v[i] << ',' ;
-			o <<  v[i] ;
-		}
+		std::copy(v.begin(), v.end(), std::ostream_iterator<T>(o, " "));
+		// if (v.size()) {
+		// 	size_t i = 0  ;
+		// 	for (; i < v.size()-1 ; ++i)
+		// 		o << v[i] << ',' ;
+		// 	o <<  v[i] ;
+		// }
 		return o << ']' ;
 	}
 
@@ -72,17 +74,19 @@ namespace std
 	template<class T, class Alloc>
 	std::ostream& operator<< (std::ostream& o, const std::list<T, Alloc> & L)
 	{
-		typename std::list<T>::const_iterator it = L.begin() ;
 		o << '{' ;
-		if (it != L.end() )
-			while(true) {
-				o << *it ;
-				if (++it != L.end())
-					o << ", " ;
-				else
-					break;
-			}
+		std::copy(L.begin(), L.end(), std::ostream_iterator<T>(o, " "));
 		return o << '}' ;
+
+		// typename std::list<T>::const_iterator it = L.begin() ;
+		// if (it != L.end() )
+		// 	while(true) {
+		// 		o << *it ;
+		// 		if (++it != L.end())
+		// 			o << ", " ;
+		// 		else
+		// 			break;
+		// 	}
 	}
 
 
@@ -92,19 +96,22 @@ namespace std
 	 * @warning <<(ostream&,T&) exists !
 	 */
 	template<class T, class Alloc>
-	std::ostream& operator<< (std::ostream& o, const std::set<T, Alloc> & L)
+	std::ostream& operator<< (std::ostream& o, const std::set<T, Alloc> & S)
 	{
-		typename std::set<T>::const_iterator it = L.begin() ;
 		o << '|' ;
-		if (it != L.end() )
-			while(true) {
-				o << *it ;
-				if (++it != L.end())
-					o << ", " ;
-				else
-					break;
-			}
+		std::copy(S.begin(), S.end(), std::ostream_iterator<T>(o, " "));
 		return o << '|' ;
+		// typename std::set<T>::const_iterator it = L.begin() ;
+		// o << '|' ;
+		// if (it != L.end() )
+		// 	while(true) {
+		// 		o << *it ;
+		// 		if (++it != L.end())
+		// 			o << ", " ;
+		// 		else
+		// 			break;
+		// 	}
+		// return o << '|' ;
 	}
 
 
