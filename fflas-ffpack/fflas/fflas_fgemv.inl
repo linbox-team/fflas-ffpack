@@ -87,8 +87,8 @@ namespace FFLAS {
 	       const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr X, const size_t incX,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
@@ -120,8 +120,8 @@ namespace FFLAS {
 	{
 		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
 		return 	fgemv (F, ta, M, N, alpha,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
+			       const_cast<typename Field::Element_ptr>(A), lda,
+			       const_cast<typename Field::Element_ptr>(X), incX,
 			       beta, Y, incY, HW);
 	}
 
@@ -160,8 +160,8 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag > HD(F,0);
 
 		fgemv (F, ta, M, N, alpha_,
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
-		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
+		       const_cast<typename Field::Element_ptr>(A), lda,
+		       const_cast<typename Field::Element_ptr>(X), incX,
 		       beta_, Y, incY, HD);
 
 		Protected::ScalAndInit (F, Ydim, alpha, Y, incY, HD);
@@ -214,8 +214,8 @@ namespace FFLAS{
 	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
-	       typename Field::Element_ptr A, const size_t lda,
-	       typename Field::Element_ptr X, const size_t incX,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr X, const size_t incX,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
@@ -242,11 +242,13 @@ namespace FFLAS{
                         // Might as well reduce inputs
                         if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
 				H.initA();
-				finit(F, M, N, A, lda);
+				finit(F, M, N,
+				      const_cast<typename Field::Element_ptr>(A), lda);
 			}
 			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
 				H.initB();
-				finit(F, Xdim, X, incX);
+				finit(F, Xdim, 
+				      const_cast<typename Field::Element_ptr>(X), incX);
 			}
 			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
 				H.initC();
@@ -320,8 +322,8 @@ namespace FFLAS{
 	fgemv (const DoubleDomain& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
 	       const DoubleDomain::Element alpha,
-	       const DoubleDomain::Element_ptr A, const size_t lda,
-	       const DoubleDomain::Element_ptr X, const size_t incX,
+	       const DoubleDomain::ConstElement_ptr A, const size_t lda,
+	       const DoubleDomain::ConstElement_ptr X, const size_t incX,
 	       const DoubleDomain::Element beta,
 	       DoubleDomain::Element_ptr Y, const size_t incY,
 	       MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
@@ -342,8 +344,8 @@ namespace FFLAS{
 	fgemv (const FloatDomain& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
 	       const FloatDomain::Element alpha,
-	       const FloatDomain::Element_ptr A, const size_t lda,
-	       const FloatDomain::Element_ptr X, const size_t incX,
+	       const FloatDomain::ConstElement_ptr A, const size_t lda,
+	       const FloatDomain::ConstElement_ptr X, const size_t incX,
 	       const FloatDomain::Element beta,
 	       FloatDomain::Element_ptr Y, const size_t incY,
 	       MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)

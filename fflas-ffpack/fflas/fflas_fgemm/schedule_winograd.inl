@@ -45,8 +45,8 @@ namespace FFLAS { namespace BLAS3 {
 			      const FFLAS_TRANSPOSE tb,
 			      const size_t mr, const size_t nr, const size_t kr,
 			      const typename Field::Element alpha,
-			       typename Field::Element_ptr A,const size_t lda,
-			       typename Field::Element_ptr B,const size_t ldb,
+			      typename Field::ConstElement_ptr A,const size_t lda,
+			      typename Field::ConstElement_ptr B,const size_t ldb,
 			      const typename Field::Element  beta,
 			      typename Field::Element_ptr C, const size_t ldc,
 			      // const size_t kmax, const size_t w, const FFLAS_BASE base
@@ -62,8 +62,8 @@ namespace FFLAS { namespace BLAS3 {
 
 		size_t lb, cb, la, ca, ldX2;
 		    // size_t x3rd = std::max(mr,kr);
-		typename Field::Element_ptr A11=A, A12, A21, A22;
-		typename Field::Element_ptr B11=B, B12, B21, B22;
+		typename Field::ConstElement_ptr A11=A, A12, A21, A22;
+		typename Field::ConstElement_ptr B11=B, B12, B21, B22;
 		typename Field::Element_ptr C11=C, C12=C+nr, C21=C+mr*ldc, C22=C21+nr;
 
 		size_t x1rd = std::max(nr,kr);

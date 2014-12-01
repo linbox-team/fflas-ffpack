@@ -41,10 +41,7 @@ namespace FFLAS {
 	      typename Field::Element_ptr A, const size_t lda)
 	{
 		MMHelper<Field, MMHelperAlgo::Classic> H(F,0);
-		fger (F, M, N, alpha,
-		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(x), incx,
-		      FFPACK::fflas_const_cast<typename Field::Element_ptr>(y), incy,
-		      A, lda, H);
+		fger (F, M, N, alpha, x, incx, y, incy, A, lda, H);
 		finit (F, M, N, A, lda);
 	}
 } //FFLAS
@@ -88,8 +85,8 @@ namespace FFLAS{
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element_ptr x, const size_t incx,
-	      typename Field::Element_ptr y, const size_t incy,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
 	{
@@ -167,8 +164,8 @@ namespace FFLAS{
 	inline void
 	fger( const DoubleDomain& F, const size_t M, const size_t N,
 	      const DoubleDomain::Element alpha,
-	      const DoubleDomain::Element_ptr x, const size_t incx,
-	      const DoubleDomain::Element_ptr y, const size_t incy,
+	      const DoubleDomain::ConstElement_ptr x, const size_t incx,
+	      const DoubleDomain::ConstElement_ptr y, const size_t incy,
 	      DoubleDomain::Element_ptr A, const size_t lda,
 	      MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
@@ -182,8 +179,8 @@ namespace FFLAS{
 	inline void
 	fger( const FloatDomain& F, const size_t M, const size_t N,
 	      const FloatDomain::Element alpha,
-	      const FloatDomain::Element_ptr x, const size_t incx,
-	      const FloatDomain::Element_ptr y, const size_t incy,
+	      const FloatDomain::ConstElement_ptr x, const size_t incx,
+	      const FloatDomain::ConstElement_ptr y, const size_t incy,
 	      FloatDomain::Element_ptr A, const size_t lda,
 	      MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
@@ -201,8 +198,8 @@ namespace FFLAS{
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element_ptr x, const size_t incx,
-	      typename Field::Element_ptr y, const size_t incy,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
 	{
@@ -220,11 +217,11 @@ namespace FFLAS{
         if (Hfp.MaxDelayedDim(1.0) < 1){
             if (Hfp.Amin < H.FieldMin || Hfp.Amax>H.FieldMax){
                 Hfp.initA();
-                finit(F, M, x, incx);
+                finit(F, M, const_cast<typename Field::Element_ptr>(x), incx);
             }
             if (Hfp.Bmin < H.FieldMin || Hfp.Bmax>H.FieldMax){
                 Hfp.initB();
-                finit(F, N, y, incy);
+                finit(F, N, const_cast<typename Field::Element_ptr>(y), incy);
             }
             if (Hfp.Cmin < H.FieldMin || Hfp.Cmax>H.FieldMax){
                 Hfp.initC();
@@ -261,8 +258,8 @@ namespace FFLAS{
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
-	      typename Field::Element_ptr x, const size_t incx,
-	      typename Field::Element_ptr y, const size_t incy,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
 	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
 	{
