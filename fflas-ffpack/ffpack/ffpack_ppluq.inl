@@ -56,11 +56,11 @@ namespace FFPACK {
 		size_t H1, H2, H3;
 		size_t M2 = m>>1;
 		size_t N2 = n>>1;
-		
+
 		H1 = ((m-N2)*r*(N2-r))<<1;
 		H2 = ((M2-r)*r*(n-N2))<<1;
 		H3 = ((m-M2)*r*(n-N2))<<1;
-		
+
 		// if we take into account 2 concurrent pluq calls....
 		size_t h;
 		size_t z1= h*((m-M2)*(N2-r)*(N2-r)-(N2-r)*(N2-r)*(N2-r)/3);
@@ -78,7 +78,7 @@ namespace FFPACK {
 		W1-= gamma*z1/(z1+z2);
 		W2-= gamma*(1-z1/(z1+z2));
 		W3+= gamma;
-		
+
 	}
 
 	template<class Field>
@@ -99,7 +99,7 @@ namespace FFPACK {
 
 		  // if (std::min(M,N) < 1000)
 		  // 	  return PLUQ(Fi, Diag, M, N, A, lda, P, Q);
-		  
+
 
 
     for (size_t i=0; i<M; ++i) P[i] = i;
@@ -119,8 +119,9 @@ namespace FFPACK {
       if (Diag== FFLAS::FflasUnit){
 	typename Field::Element invpivot;
 	Fi.inv(invpivot, *A);
-	for (size_t i=piv+1; i<N; ++i)
-	  Fi.mulin (A[i], invpivot);
+	// for (size_t i=piv+1; i<N; ++i)
+	  // Fi.mulin (A[i], invpivot);
+	FFLAS::fscalin(Fi,N-piv-1,invpivot,A+piv+1,1)
       }
       return 1;
     }
@@ -137,8 +138,9 @@ namespace FFPACK {
       if (Diag== FFLAS::FflasNonUnit){
 	typename Field::Element invpivot;
 	Fi.inv(invpivot, *A);
-	for (size_t i=piv+1; i<M; ++i)
-	  Fi.mulin (*(A+i*lda), invpivot);
+	// for (size_t i=piv+1; i<M; ++i)
+	  // Fi.mulin (*(A+i*lda), invpivot);
+	FFLAS::fscalin(Fi,M-piv-1,invpivot,A+(piv+1)*lda,lda);
       }
       return 1;
     }
@@ -148,14 +150,14 @@ namespace FFPACK {
       return PLUQ_basecaseCrout (Fi, Diag, M, N, A, lda, P, Q);
     #endif
     FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
-    
+
     size_t M2 = M >> 1;
     size_t N2 = N >> 1;
     size_t * P1 = new size_t [M2];
     size_t * Q1 = new size_t [N2];
     size_t R1,R2,R3,R4;
 	//if (M>8000) std::cerr<<"PLUQ 1"<<std::endl;
-    // A1 = P1 [ L1 ] [ U1 V1 ] Q1                                                          
+    // A1 = P1 [ L1 ] [ U1 V1 ] Q1
     //        [ M1 ]
     R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1,nt);
 
@@ -179,19 +181,19 @@ namespace FFPACK {
 
 #ifdef __FFLASFFPACK_USE_OPENMP4
     //#pragma omp parallel firstprivate(M2, N2) shared(P1, Q1, A2, A3, Fi)
-    
-      // [ B1 ] <- P1^T A2                          
+
+      // [ B1 ] <- P1^T A2
       // [ B2 ]
 #pragma omp task shared(P1, A2, Fi) depend(inout:A2) depend(in:P1)
       //#pragma omp task depend(in:A2, Fi)
       papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
-      // [ C1 C2 ] <- A3 Q1^T                                          
+      // [ C1 C2 ] <- A3 Q1^T
 #pragma omp task  shared(Q1, A3, Fi) depend(inout:A3) depend(in:Q1)
       papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
-    
+
       //#pragma omp taskwait
 
-      // D <- L1^-1 B1           
+      // D <- L1^-1 B1
 //    if (M>8000) std::cerr<<"TRSMs D,E"<<std::endl;
 #pragma omp task  shared( A2, A, Fi, N2, R1, PH) depend(in:A) depend(inout:A2)
       ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda, PH);
@@ -203,20 +205,20 @@ namespace FFPACK {
 //#pragma omp taskwait
 
 
-    typename Field::Element * AR1lda = A + R1*lda;    
-    typename Field::Element * AR1 = A + R1;    
-    //    typename Field::Element * A3R1 = A3 + R1;    
+    typename Field::Element * AR1lda = A + R1*lda;
+    typename Field::Element * AR1 = A + R1;
+    //    typename Field::Element * A3R1 = A3 + R1;
 
 //    if (M>8000) std::cerr<<"GEMMs F,G"<<std::endl;
-    // F <- B2 - M1 D 
+    // F <- B2 - M1 D
 #pragma omp task  shared(A, A2, Fi, F, pWH) depend(in: A2)  depend(inout:F) //depend(inout:A2[R1*lda:M2-R1])
     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, AR1lda, lda, A2, lda, Fi.one, F, lda, pWH);
-    // G <- C2 - E V1                                                                                
+    // G <- C2 - E V1
 #pragma omp task shared(A, A3, Fi, G, pWH) depend(in:A3) depend(inout:G)
     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, AR1, lda, Fi.one, G, lda, pWH);
-    
+
 //    if (M>8000) std::cerr<<"GEMM H"<<std::endl;
-    // H <- A4 - ED  
+    // H <- A4 - ED
 #pragma omp task shared(A3, A2, A4, Fi, pWH) depend(in:A3,A2) depend(inout:A4)
     fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda, pWH);
 
@@ -230,7 +232,7 @@ namespace FFPACK {
 #pragma omp task shared(P2, Q2, F, Fi, R2, A4R2) depend(inout:F) depend(out: P2,Q2,R2, A4R2) // P2 Q2 should be out only
     {
 	    R2 = pPLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2,nt/2);
-	    A4R2 = A4 + R2;    
+	    A4R2 = A4 + R2;
     }
     // G = P3 [ L3 ] [ U3 V3 ] Q3
     //        [ M3 ]
@@ -242,20 +244,20 @@ namespace FFPACK {
     R3 = pPLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3,nt/2);
 
 
-    // [ H1 H2 ] <- P3^T H Q2^T                                                                                     
-    // [ H3 H4 ]                                                                                     
+    // [ H1 H2 ] <- P3^T H Q2^T
+    // [ H3 H4 ]
     #pragma omp task shared(Fi, A4, Q2, P3) depend(inout:A4) depend(in:P3, Q2)
     {
     papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
     papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
     }
     #pragma omp taskwait
-    // [ E1 ] <- P3^T E                                                                                            
-    // [ E2 ]                                                                                   
+    // [ E1 ] <- P3^T E
+    // [ E2 ]
 #pragma omp task shared( P3, A3, Fi) depend(in:P3) depend(inout:A3)
     papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
 
-    // [ M11 ] <- P2^T M1                                      
+    // [ M11 ] <- P2^T M1
     // [ M12 ]
 #pragma omp task shared( P2, A, Fi) depend(inout:AR1lda) depend(in:P2)
     papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, AR1lda, lda, P2); // pas de dependence ?????
@@ -271,14 +273,14 @@ namespace FFPACK {
 
       //#pragma omp task firstprivate(M2, R2, lda) shared(F, A4, Fi)
     // I <- H U2^-1
-    // K <- H3 U2^-1  
+    // K <- H3 U2^-1
 //    if (M>8000) std::cerr<<"TRSM I, K"<<std::endl;
-          
+
 #pragma omp task shared(Fi, A4, F, R2, PH) depend(in:F, R2) depend(inout:A4)
     ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda, PH);
     //    #pragma omp taskwait
     //#pragma omp task shared(temp, A4R2) depend(in:R2, R3) depend(out:temp, A4R2)
-    
+
 
     typename Field::Element * temp = 0;
 	/*
@@ -287,22 +289,22 @@ namespace FFPACK {
     */
 #pragma omp task  shared(temp, Fi, R3, R2, A4) depend(in:A4, R2, R3) depend(out:temp)
     {
-	    temp = new typename Field::Element [R3*R2];	                                                 
+	    temp = new typename Field::Element [R3*R2];
 	    FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
     }
 //    if (M>8000) std::cerr<<"TRSMs J, N"<<std::endl;
-    // J <- L3^-1 I (in a temp)                
+    // J <- L3^-1 I (in a temp)
 #pragma omp task  shared(G, temp, Fi, R3, R2, A4) depend(in:A4, G, R2, R3) depend(inout:temp)
     ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2, PH);
-    // N <- L3^-1 H2                                	    
+    // N <- L3^-1 H2
 #pragma omp task  shared(G, A4R2, Fi, R3, R2) depend(in:G, R3, R2) depend(inout:A4R2)
     ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4R2, lda, PH);
 	// #pragma omp taskwait
 
     //    typename Field::Element * FR2 = F + R2;
-    // O <- N - J V2      
+    // O <- N - J V2
 //    if (M>8000) std::cerr<<"GEMM O"<<std::endl;
-                   
+
 #pragma omp task shared(F,R2, A4R2, Fi,temp, R3) depend(inout:A4R2,temp) depend(in:F,R2, R3)
     {
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4R2, lda, pWH);
@@ -310,7 +312,7 @@ namespace FFPACK {
 	    temp=0;
     }
 //    if (M>8000)  std::cerr<<"done GEMM O"<<std::endl;
-    // R <- H4 - K V2 - M3 O                                                              
+    // R <- H4 - K V2 - M3 O
     typename Field::Element * R = 0;
 
 
@@ -320,36 +322,36 @@ namespace FFPACK {
 	    typename Field::Element * A4R3lda = A4 + R3*lda;
 	    typename Field::Element * GR3lda = G+ R3*lda;
 //	    if (M>8000) std::cerr<<"GEMMs R"<<std::endl;
-	    
+
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4R3lda, lda, F+R2, lda, Fi.one, R, lda, pWH);
 	    fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, GR3lda, lda, A4R2, lda, Fi.one, R, lda, pWH);
     }
 #pragma omp taskwait // R2, R, P4 and Q4 are computed
-    // H4 = P4 [ L4 ] [ U4 V4 ] Q4                                                          
-    //         [ M4 ]                                          
+    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
+    //         [ M4 ]
     size_t * P4 = new size_t [M-M2-R3];
     size_t * Q4 = new size_t [N-N2-R2];
-    typename Field::Element * A3R3lda = A3 + R3*lda;    
-    typename Field::Element * A2R2 = A2 + R2;    
+    typename Field::Element * A3R3lda = A3 + R3*lda;
+    typename Field::Element * A2R2 = A2 + R2;
 
 //#pragma omp task shared(Fi, P4, Q4, R) depend(inout:R) depend(out:R4, P4, Q4)
 //    if (M>8000) std::cerr<<"PLUQ 4"<<std::endl;
     R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4,nt);
 
-    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]                                                    
-    // [ E22 M32 0 K2 ]                                                                                       
+    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
+    // [ E22 M32 0 K2 ]
 #pragma omp task shared(A3R3lda, P4, Fi) depend(in:P4) depend(inout:A3R3lda)
     papplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3R3lda, lda, P4);
-    // [ D21 D22 ]     [ D2 ]                         
-    // [ V21 V22 ]  <- [ V2 ] Q4^T                   
-    // [  0   0  ]     [  0 ]                                                  
-    // [ O1   O2 ]     [  O ]                                                                   
+    // [ D21 D22 ]     [ D2 ]
+    // [ V21 V22 ]  <- [ V2 ] Q4^T
+    // [  0   0  ]     [  0 ]
+    // [ O1   O2 ]     [  O ]
 #pragma omp task shared(A2R2, Q4, Fi) depend(in:Q4) depend(inout:A2R2)
     papplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2R2, lda, Q4);
 #pragma omp taskwait // To be removed?
 
-    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])     
-    //               [      P2 ]      [      P4 ]                            
+    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
+    //               [      P2 ]      [      P4 ]
     size_t* MathP = new size_t[M];
     composePermutationsP (MathP, P1, P2, R1, M2);
     composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
@@ -357,18 +359,18 @@ namespace FFPACK {
     for (size_t i=M2; i<M; ++i)
       MathP[i] += M2;
     if (R1+R2 < M2){
-      // P <- P S                             
+      // P <- P S
 #pragma omp task shared(MathP) depend(inout:MathP)
       PermApplyS (MathP, 1,1, M2, R1, R2, R3, R4);
 
-      // A <-  S^T A                         
+      // A <-  S^T A
 #pragma omp task shared(Fi, A) depend(inout:A)
       pMatrixApplyS(Fi, A, lda, N, M2, R1, R2, R3, R4);
       //      applyS (A, lda, N, M2, R1, R2, R3, R4);
     }
-    
+
     // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
-    //            [      Q3 ]      [      P4 ]                                                                                        
+    //            [      Q3 ]      [      P4 ]
     size_t * MathQ = new size_t [N];
     composePermutationsQ (MathQ, Q1, Q3, R1, N2);
     composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
@@ -380,7 +382,7 @@ namespace FFPACK {
 		// Q <- T Q
 	    PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4);
       // A <-   A T^T
-#pragma omp task shared (Fi, A) depend(inout:A)                                 
+#pragma omp task shared (Fi, A) depend(inout:A)
 	    pMatrixApplyT( Fi, A, lda, M, N2, R1, R2, R3, R4);
 
 		//      applyT (A, lda, M, N2, R1, R2, R3, R4);
@@ -398,7 +400,7 @@ namespace FFPACK {
     delete[] P1;
     delete[] P2;
     delete[] P3;
-    delete[] P4;    
+    delete[] P4;
     return R1+R2+R3+R4;
 
 
