@@ -463,7 +463,7 @@ namespace FFLAS {
 			     FieldCategories::ModularTag)
 	{
 		using simd = Simd<typename Field::Element>;
-		if(ldy == A.n && ldx == blockSize)
+		if(ldx == A.n && ldy == blockSize)
 		{
 			if(blockSize % simd::vect_size == 0)
 				coo_details::fspmm<Field, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
@@ -490,7 +490,7 @@ namespace FFLAS {
 			     FieldCategories::UnparametricTag)
 	{
 		using simd = Simd<typename Field::Element>;
-		if(ldy == A.n && ldx == blockSize)
+		if(ldx == A.n && ldy == blockSize)
 		{
 			if(blockSize % simd::vect_size == 0)
 				coo_details::fspmm<Field, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
@@ -515,7 +515,7 @@ namespace FFLAS {
 			     const int ldy,
 			     FieldCategories::GenericTag)
 	{
-		if(ldy == A.n && ldx == blockSize){
+		if(ldx == A.n && ldy == blockSize)
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
 		}else{
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
@@ -607,7 +607,7 @@ namespace FFLAS {
 		      FieldCategories::GenericTag
 		     )
 	{
-		if(ldy == A.n && ldx == blockSize){
+		if(ldx == A.n && ldy == blockSize)
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 		}else{
 			coo_details::fspmm(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
@@ -627,7 +627,7 @@ namespace FFLAS {
 		     )
 	{
 		using simd = Simd<typename Field::Element>;
-		if(ldy == A.n && ldx == blockSize)
+		if(ldx == A.n && ldy == blockSize)
 		{
 			if(blockSize % simd::vect_size == 0)
 				coo_details::fspmm<Field, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
@@ -655,7 +655,7 @@ namespace FFLAS {
 		     )
 	{
 		index_t kmax = static_cast<index_t>(Protected::DotProdBoundClassic(F,F.one));
-		if(A.n == ldy && blockSize == ldx)
+		if(ldx == A.n && ldy == blockSize)
         	coo_details::fspmm(F, A.m, A.n, A.z, A.row, A.col, A.dat, blockSize, x.dat, y.dat, kmax);
         else
         	coo_details::fspmm(F, A.m, A.n, A.z, A.row, A.col, A.dat, blockSize, x.dat, ldx, y.dat, ldy, kmax);
@@ -1037,7 +1037,7 @@ namespace FFLAS { /*  ZO */
 			     FieldCategories::GenericTag
 			    )
 	{
-		if(A.n == ldy && ldx == blockSize){
+		if(ldx == A.n && ldy == blockSize)
 			if (A.cst == F.one) {
 				coo_details::fspmm_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 			}
@@ -1079,7 +1079,7 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		using simd=Simd<typename Field::Element>;
-		if(A.n == ldy && ldx == blockSize){
+		if(ldx == A.n && ldy == blockSize)
 			if (A.cst == F.one){
 				if(blockSize % simd::vect_size == 0)
 					coo_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
@@ -1137,7 +1137,7 @@ namespace FFLAS { /*  ZO */
 			    )
 	{
 		using simd=Simd<typename Field::Element>;
-		if(A.n == ldy && ldx == blockSize){
+		if(ldx == A.n && ldy == blockSize)
 			if (A.cst == F.one){
 				if(blockSize % simd::vect_size == 0)
 					coo_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());

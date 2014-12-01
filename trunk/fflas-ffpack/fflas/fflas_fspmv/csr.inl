@@ -76,7 +76,7 @@ namespace FFLAS { namespace csr_details {
 			{
 				for(int k = 0 ; k < blockSize ; ++k)
 				{
-					F.axpyin(y[i+k],dat[j],x[col[j]+k]);
+					F.axpyin(y[i*blockSize+k],dat[j],x[col[j]*blockSize+k]);
 				}
 			}
 		}
@@ -91,11 +91,12 @@ namespace FFLAS { namespace csr_details {
 			     const index_t * st,
 			     const index_t * col,
 			     const typename Field::Element_ptr dat,
-				 const int lda,
 			     const int blockSize,
 			     const typename Field::Element_ptr x ,
-			     typename Field::Element_ptr y
-			     , FieldCategories::GenericTag
+			     const int ldx,
+			     typename Field::Element_ptr y,
+			     const int ldy,
+			     FieldCategories::GenericTag
 			    )
 	{
 		for (index_t i = 0 ; i < m ; ++i)
@@ -104,7 +105,7 @@ namespace FFLAS { namespace csr_details {
 			{
 				for(int k = 0 ; k < blockSize ; ++k)
 				{
-					F.axpyin(y[i*lda+k],dat[j],x[col[j]*lda+k]);
+					F.axpyin(y[i*ldy*blockSize+k],dat[j],x[col[j]*ldx*blockSize+k]);
 				}
 			}
 		}
@@ -219,12 +220,12 @@ namespace FFLAS { namespace csr_details {
 					int k = 0;
 					vdat = simd::set1(dat+j);
 					for(; k < end ; k+=simd::vect_size){
-						vy = simd::load(y+i+k);
-						vx = simd::load(x+col[j]+k);
-						simd::store(y+i+k, simd::fmadd(vy, vdat, vx));
+						vy = simd::load(y+i*blockSize+k);
+						vx = simd::load(x+col[j]*blockSize+k);
+						simd::store(y+i*blockSize+k, simd::fmadd(vy, vdat, vx));
 					}
 					for(; k < blockSize ; ++k){
-						y[i+k] += dat[j]*x[col[j]+k];
+						y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 					}
 				}
 			}
@@ -234,13 +235,13 @@ namespace FFLAS { namespace csr_details {
 					int k = 0;
 					vdat = simd::set1(dat+j);
 					for(; k < end ; k+=simd::vect_size){
-						vy = simd::loadu(y+i+k);
-						vx = simd::loadu(x+col[j]+k);
+						vy = simd::loadu(y+i*blockSize+k);
+						vx = simd::loadu(x+col[j]*blockSize+k);
 						vdat = simd::set1(dat+j);
-						simd::storeu(y+i+k, simd::fmadd(vy, vdat, vx));
+						simd::storeu(y+i*blockSize+k, simd::fmadd(vy, vdat, vx));
 					}
 					for(; k < blockSize ; ++k){
-						y[i+k] += dat[j]*x[col[j]+k];
+						y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 					}
 				}
 			}
@@ -252,7 +253,7 @@ namespace FFLAS { namespace csr_details {
 			{
 				for(int k = 0 ; k < blockSize ; ++k)
 				{
-					y[i+k] += dat[j]*x[col[j]+k];
+					y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 				}
 			}
 		}
@@ -268,11 +269,12 @@ namespace FFLAS { namespace csr_details {
 			     const index_t * st,
 			     const index_t * col,
 			     const typename Field::Element_ptr dat,
-			     const int lda,
 			     const int blockSize,
-			     const typename Field::Element_ptr x ,
+			     const typename Field::Element_ptr x,
+			     const int ldx,
 			     typename Field::Element_ptr y
-			     , FieldCategories::UnparametricTag
+			     const int ldy,
+			     FieldCategories::UnparametricTag
 			    )
 	{
 #if defined(__FFLASFFPACK_USE_SIMD)
@@ -288,12 +290,12 @@ namespace FFLAS { namespace csr_details {
 					int k = 0;
 					vdat = simd::set1(dat+j);
 					for(; k < end ; k+=simd::vect_size){
-						vy = simd::load(y+i*lda+k);
-						vx = simd::load(x+col[j]*lda+k);
-						simd::store(y+i*lda+k, simd::fmadd(vy, vdat, vx));
+						vy = simd::load(y+i*ldy*blockSize+k);
+						vx = simd::load(x+col[j]*ldx*blockSize+k);
+						simd::store(y+i*ldy*blockSize+k, simd::fmadd(vy, vdat, vx));
 					}
 					for(; k < blockSize ; ++k){
-						y[i*lda+k] += dat[j]*x[col[j]*lda+k];
+						y[i*ldy*blockSize+k] += dat[j]*x[col[j]*ldx*blockSize+k];
 					}
 				}
 			}
@@ -303,13 +305,13 @@ namespace FFLAS { namespace csr_details {
 					int k = 0;
 					vdat = simd::set1(dat+j);
 					for(; k < end ; k+=simd::vect_size){
-						vy = simd::loadu(y+i*lda+k);
-						vx = simd::loadu(x+col[j]*lda+k);
+						vy = simd::loadu(y+i*ldy*blockSize+k);
+						vx = simd::loadu(x+col[j]*ldx*blockSize+k);
 						vdat = simd::set1(dat+j);
-						simd::storeu(y+i*lda+k, simd::fmadd(vy, vdat, vx));
+						simd::storeu(y+i*ldy*blockSize+k, simd::fmadd(vy, vdat, vx));
 					}
 					for(; k < blockSize ; ++k){
-						y[i*lda+k] += dat[j]*x[col[j]*lda+k];
+						y[i*ldy*blockSize+k] += dat[j]*x[col[j]*ldx*blockSize+k];
 					}
 				}
 			}
@@ -321,7 +323,7 @@ namespace FFLAS { namespace csr_details {
 			{
 				for(int k = 0 ; k < blockSize ; ++k)
 				{
-					y[i*lda+k] += dat[j]*x[col[j]*lda+k];
+					y[i*ldy*blockSize+k] += dat[j]*x[col[j]*ldx*blockSize+k];
 				}
 			}
 		}
@@ -394,42 +396,42 @@ namespace FFLAS { namespace csr_details {
 					vdat = simd::set1(dat+j);
 					for(; k < end ; k+=simd::vect_size){
 						if(Aligned){
-							vy = simd::load(y+i+k);
-							vx = simd::load(x+col[j]+k);
-							simd::store(y+i+k, simd::fmadd(vy, vdat, vx));	
+							vy = simd::load(y+i*blockSize+k);
+							vx = simd::load(x+col[j]*blockSize+k);
+							simd::store(y+i*blockSize+k, simd::fmadd(vy, vdat, vx));	
 						}else{
-							vy = simd::loadu(y+i+k);
-							vx = simd::loadu(x+col[j]+k);
-							simd::storeu(y+i+k, simd::fmadd(vy, vdat, vx));
+							vy = simd::loadu(y+i*blockSize+k);
+							vx = simd::loadu(x+col[j]*blockSize+k);
+							simd::storeu(y+i*blockSize+k, simd::fmadd(vy, vdat, vx));
 						}
 					}
 					for(; k < blockSize ; ++k)
 					{
-						y[i+k] += dat[j]*x[col[j]+k];
+						y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 					}
 				}
-				finit(F, blockSize, y+i, 1);
+				finit(F, blockSize, y+i*blockSize, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				int k = 0;
 				for(; k < end ; k+=simd::vect_size){
 					vdat = simd::set1(dat+j);
 					if(Aligned){
-						vy = simd::load(y+i+k);
-						vx = simd::load(x+col[j]+k);
-						simd::store(y+i+k, simd::fmadd(vy, vdat, vx));	
+						vy = simd::load(y+i*blockSize+k);
+						vx = simd::load(x+col[j]*blockSize+k);
+						simd::store(y+i*blockSize+k, simd::fmadd(vy, vdat, vx));	
 					}else{
-						vy = simd::loadu(y+i+k);
-						vx = simd::loadu(x+col[j]+k);
-						simd::storeu(y+i+k, simd::fmadd(vy, vdat, vx));
+						vy = simd::loadu(y+i*blockSize+k);
+						vx = simd::loadu(x+col[j]*blockSize+k);
+						simd::storeu(y+i*blockSize+k, simd::fmadd(vy, vdat, vx));
 					}
 				}
 				for(; k < blockSize ; ++k)
 				{
-					y[i+k] += dat[j]*x[col[j]+k];
+					y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 				}
 			}
-			finit(F, blockSize, y+i, 1);
+			finit(F, blockSize, y+i*blockSize, 1);
 		}
 #else		
 		for (index_t i = 0 ; i < m ; ++i) {
@@ -441,17 +443,17 @@ namespace FFLAS { namespace csr_details {
 				j_loc += kmax ;
 				for ( ; j < j_loc ; ++j) {
 					for(int k = 0 ; k < blockSize ; ++k){
-						y[i+k] += dat[j] * x[col[j+k]];
+						y[i*blockSize+k] += dat[j] * x[col[j]*blockSize+k];
 					}
 				}
-				finit(F, blockSize, y+i, 1);
+				finit(F, blockSize, y+i*blockSize, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				for(int k = 0 ; k < blockSize ; ++k){
-					y[i+k] += dat[j] * x[col[j]+k];
+					y[i*blockSize+k] += dat[j] * x[col[j]*blockSize+k];
 				}
 			}
-			finit(F, blockSize, y+i, 1);
+			finit(F, blockSize, y+i*blockSize, 1);
 		}
 #endif // __FFLASFFPACK_USE_SIMD
 	}
@@ -465,10 +467,11 @@ namespace FFLAS { namespace csr_details {
 			     const index_t * st,
 			     const index_t * col,
 			     const typename Field::Element_ptr dat,
-			     const int lda,
 			     const int blockSize,
 			     const typename Field::Element_ptr x ,
+			     const int ldx,
 			     typename Field::Element * y,
+			     const int ldy,
 			     const index_t & kmax
 			    )
 	{
@@ -490,43 +493,42 @@ namespace FFLAS { namespace csr_details {
 					vdat = simd::set1(dat+j);
 					for(; k < end ; k+=simd::vect_size){
 						if(Aligned){
-							vy = simd::load(y+i*lda+k);
-							vx = simd::load(x+col[j]*lda+k);
-							simd::store(y+i*lda+k, simd::fmadd(vy, vdat, vx));	
+							vy = simd::load(y+i*blockSize*ldy+k);
+							vx = simd::load(x+col[j]*blockSize*ldx+k);
+							simd::store(y+i*blockSize*ldy+k, simd::fmadd(vy, vdat, vx));	
 						}else{
-							vy = simd::loadu(y+i*lda+k);
-							vx = simd::loadu(x+col[j]*lda+k);
-							simd::storeu(y+i*lda+k, simd::fmadd(vy, vdat, vx));
+							vy = simd::loadu(y+i*blockSize*ldy+k);
+							vx = simd::loadu(x+col[j]*blockSize*ldx+k);
+							simd::storeu(y+i*blockSize*ldy+k, simd::fmadd(vy, vdat, vx));
 						}
 					}
 					for(; k < blockSize ; ++k)
 					{
-						y[i*lda+k] += dat[j]*x[col[j]*lda+k];
+						y[i*blockSize*ldy+k] += dat[j]*x[col[j]*blockSize*ldx+k];
 					}
 				}
-				finit(F, blockSize, y+i*lda, 1);
+				finit(F, blockSize, y+i*blockSize*ldy, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				int k = 0;
-				vdat = simd::set1(dat+j);
 				for(; k < end ; k+=simd::vect_size){
+					vdat = simd::set1(dat+j);
 					if(Aligned){
-						vy = simd::load(y+i*lda+k);
-						vx = simd::load(x+col[j]*lda+k);
-						simd::store(y+i*lda+k, simd::fmadd(vy, vdat, vx));	
+						vy = simd::load(y+i*blockSize*ldy+k);
+						vx = simd::load(x+col[j]*blockSize*ldx+k);
+						simd::store(y+i*blockSize*ldy+k, simd::fmadd(vy, vdat, vx));	
 					}else{
-						vy = simd::loadu(y+i*lda+k);
-						vx = simd::loadu(x+col[j]*lda+k);
-						simd::storeu(y+i*lda+k, simd::fmadd(vy, vdat, vx));
+						vy = simd::loadu(y+i*blockSize*ldy+k);
+						vx = simd::loadu(x+col[j]*blockSize*ldx+k);
+						simd::storeu(y+i*blockSize*ldy+k, simd::fmadd(vy, vdat, vx));
 					}
-					
 				}
 				for(; k < blockSize ; ++k)
 				{
-					y[i*lda+k] += dat[j]*x[col[j]*lda+k];
+					y[i*blockSize*ldy+k] += dat[j]*x[col[j]*blockSize*ldx+k];
 				}
 			}
-			finit(F, blockSize, y+i*lda, 1);
+			finit(F, blockSize, y+i*blockSize*ldy, 1);
 		}
 #else		
 		for (index_t i = 0 ; i < m ; ++i) {
@@ -538,17 +540,17 @@ namespace FFLAS { namespace csr_details {
 				j_loc += kmax ;
 				for ( ; j < j_loc ; ++j) {
 					for(int k = 0 ; k < blockSize ; ++k){
-						y[i*lda+k] += dat[j] * x[col[j]*lda+k];
+						y[i*blockSize*ldy+k] += dat[j] * x[col[j]*blockSize*ldx+k];
 					}
 				}
-				finit(F, blockSize, y+i*lda, 1);
+				finit(F, blockSize, y+i*blockSize*ldy, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				for(int k = 0 ; k < blockSize ; ++k){
-					y[i*lda+k] += dat[j] * x[col[j]*lda+k];
+					y[i*blockSize*ldy+k] += dat[j] * x[col[j]*blockSize*ldx+k];
 				}
 			}
-			finit(F, blockSize, y+i*lda, 1);
+			finit(F, blockSize, y+i*blockSize*ldy, 1);
 		}
 #endif // __FFLASFFPACK_USE_SIMD
 	}
@@ -612,77 +614,81 @@ namespace FFLAS {
 	inline void fspmm(
 			     const Field& F,
 			     const CSR_sub<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     const typename Field::Element & b,
-			     VECT<Field> & y
+			     VECT<Field> & y,
+			     const int ldy
 			    )
 	{
-		details::init_y(F, lda, A.m*blockSize, b, y.dat,  typename FieldTraits<Field>::value());
-		fspmm(F, A, lda, blockSize, x, y, typename FieldTraits<Field>::category());
+		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::value());
+		fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const CSR_sub<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy,
 			     FieldCategories::ModularTag)
 	{
 		using simd = Simd<typename Field::Element>;
-		if(A.n == lda){
+		if(ldx == A.n && ldy == blockSize){
 			if(blockSize % simd::vectize == 0)
 				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());	
 			else
 				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());	
 		}else{
 			if(blockSize % simd::vectize == 0)
-				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());	
+				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());	
 			else
-				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldt, FieldCategories::UnparametricTag ());
 		}
-		finit(F,blockSize,A.m,y.dat,lda);
+		finit(F,blockSize,A.m,y.dat,ldy);
 	}
 
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const CSR_sub<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy,
 			     FieldCategories::UnparametricTag)
 	{
 		using simd = Simd<typename Field::Element>;
-		if(A.n == lda){
+		if(ldx == A.n && ldy == blockSize){
 			if(blockSize % simd::vectize == 0)
 				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());	
 			else
 				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());	
 		}else{
 			if(blockSize % simd::vectize == 0)
-				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());	
+				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());	
 			else
-				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());
 		}
 	}
 
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const CSR_sub<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy,
 			     FieldCategories::GenericTag)
 	{
-		if(A.n == lda){
+		if(ldx == A.n && ldy == blockSize){
 			csr_details::fspmm(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::GenericTag ());	
 		}else{
-			csr_details::fspmm(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::GenericTag ());
+			csr_details::fspmm(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag ());
 		}
 	}
 
@@ -752,61 +758,64 @@ namespace FFLAS {
 	inline void fspmm(
 			     const Field& F,
 			     const CSR<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     const typename Field::Element & b,
+			     const int ldy,
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, lda, A.m*blockSize, b, y.dat,  typename FieldTraits<Field>::value());
-		fspmm(F, A, lda, blockSize, x, y, typename FieldTraits<Field>::category());
+		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::value());
+		fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const CSR<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy,
 			     FieldCategories::ModularTag)
 	{
 		using simd = Simd<typename Field::Element>;
 		index_t kmax = Protected::DotProdBoundClassic(F,F.one);
-		if(A.n == lda){
+		if(ldx == A.n && ldy == blockSize){
 			if(blockSize % simd::vect_size == 0)
 				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat,kmax);
 			else
 				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat,kmax);	
 		}else{
 			if(blockSize % simd::vect_size == 0)
-				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat,kmax);
+				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy,kmax);
 			else
-				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat,kmax);
+				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy,kmax);
 		}
 	}
 
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const CSR<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy,
 			     FieldCategories::UnparametricTag)
 	{
 		using simd = Simd<typename Field::Element>;
-		if(A.n == lda){
+		if(ldx == A.n && ldy == blockSize){
 			if(blockSize % simd::vect_size == 0)
 				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
 			else
 				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
 		}else{
 			if(blockSize % simd::vect_size == 0)
-				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+				csr_details::fspmm<Field, true>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());
 			else
-				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat, ldx ,y.dat,ldy, FieldCategories::UnparametricTag ());
 		}
 	}
 
@@ -814,14 +823,15 @@ namespace FFLAS {
 	void fspmm(
 		      const Field& F,
 		      const CSR<Field> & A,
-		      const int lda,
 		      const int blockSize,
 		      const VECT<Field> & x,
+		      const int ldx,
 		      VECT<Field> & y,
+		      const int ldy,
 		      FieldCategories::GenericTag
 		     )
 	{
-		if(A.n == lda){
+		if(ldx == A.n && ldy == blockSize){
 			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 		}else{
 			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,lda,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
@@ -1202,110 +1212,134 @@ namespace FFLAS { /*  ZO */
 	inline void fspmm(
 			     const Field & F,
 			     CSR_ZO<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     const typename Field::Element & b,
-			     VECT<Field> & y
+			     VECT<Field> & y,
+			     const int ldy
 			    )
 	{
-		details::init_y(F, lda, A.m*blockSize, b, y.dat,  typename FieldTraits<Field>::value());
-		fspmm(F, A, lda, blockSize, x, y, typename FieldTraits<Field>::category() );
+		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::value());
+		fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category() );
 	}
 
 	template<class Field>
 	inline void fspmm(
 			     const Field & F,
 			     CSR_ZO<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy
 			     FieldCategories::GenericTag
 			    )
 	{
-		if(A.n == lda){
+		using simd = Simd<typename Field::Element>;
+
+		if(ldx == A.n && ldy == blockSize){
 			if (A.cst == F.one) {
-				csr_details::fspmm_zo<Field,true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 			}
 			else if (A.cst == F.mOne) {
-				csr_details::fspmm_zo<Field,false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+				else
+					csr_details::fspmm_zo<Field,false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
 			}
 			else {
 				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
-				fscal(F, A.n*blockSize, A.cst, x.dat, lda, x1, 1);
-				csr_details::fspmm_zo<Field,true>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::GenericTag());
+				fscal(F, A.n*blockSize, A.cst, x.dat, ldx, x1, 1);
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::GenericTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::GenericTag());
 				fflas_delete(x1);
 			}
 		}else{
 			if (A.cst == F.one) {
-				csr_details::fspmm_zo<Field,true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
 			}
 			else if (A.cst == F.mOne) {
-				csr_details::fspmm_zo<Field,false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::GenericTag());
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
+				else
+					csr_details::fspmm_zo<Field,false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::GenericTag());
 			}
 			else {
 				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
-				fscal(F, A.n*blockSize, A.cst, x.dat, lda, x1, 1);
-				csr_details::fspmm_zo<Field,true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x1,y.dat, FieldCategories::GenericTag());
+				fscal(F, A.n*blockSize, A.cst, x.dat, ldx, x1, 1);
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x1,blockSize,y.dat,ldy, FieldCategories::GenericTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x1,blockSize,y.dat,ldy, FieldCategories::GenericTag());
 				fflas_delete(x1);
 			}
 		}
-
 	}
 
 	template<class Field>
 	inline void fspmm(
 			     const Field & F,
 			     CSR_ZO<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
+			     const int ldx,
 			     VECT<Field> & y,
+			     const int ldy,
 			     FieldCategories::UnparametricTag
 			    )
 	{
 		using simd=Simd<typename Field::Element>;
-		if(A.n == lda){
-			if (A.cst == F.one){
+		if(ldx == A.n && ldy == blockSize){
+			if (A.cst == F.one) {
 				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-			}else if (A.cst == F.mOne) {
-				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				else
-					csr_details::fspmm_zo<Field, false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-			}else {
-				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
-				fscal(F, A.n*blockSize, A.cst, x.dat, lda, x1, 1);
-				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				fflas_delete(x1);
-			}
-		}else{
-			if (A.cst == F.one){
-				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 			}
 			else if (A.cst == F.mOne) {
 				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, false, true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 				else
-					csr_details::fspmm_zo<Field, false, false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 			}
 			else {
 				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
-				fscal(F, A.n*blockSize, A.cst, x.dat, lda, x1, 1);
+				fscal(F, A.n*blockSize, A.cst, x.dat, ldx, x1, 1);
 				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::UnparametricTag());
 				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::UnparametricTag());
+				fflas_delete(x1);
+			}
+		}else{
+			if (A.cst == F.one) {
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+			}
+			else if (A.cst == F.mOne) {
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+				else
+					csr_details::fspmm_zo<Field,false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+			}
+			else {
+				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
+				fscal(F, A.n*blockSize, A.cst, x.dat, ldx, x1, 1);
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x1,blockSize,y.dat,ldy, FieldCategories::UnparametricTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x1,blockSize,y.dat,ldy, FieldCategories::UnparametricTag());
 				fflas_delete(x1);
 			}
 		}
@@ -1315,54 +1349,57 @@ namespace FFLAS { /*  ZO */
 	inline void fspmm(
 			     const Field & F,
 			     CSR_ZO<Field> & A,
-			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
-			     VECT<Field> & y
-			     , FieldCategories::ModularTag
+			     const int ldx,
+			     VECT<Field> & y,
+			     const int ldy,
+			     FieldCategories::ModularTag
 			    )
 	{
 		using simd=Simd<typename Field::Element>;
-		if(A.n == lda){
-			if (A.cst == F.one){
+		if(ldx == A.n && ldy == blockSize){
+			if (A.cst == F.one) {
 				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-			}else if (A.cst == F.mOne) {
-				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				else
-					csr_details::fspmm_zo<Field, false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-			}else {
-				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
-				fscal(F, A.n*blockSize, A.cst, x.dat, lda, x1, 1);
-				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				fflas_delete(x1);
-			}
-		}else{
-			if (A.cst == F.one){
-				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
-				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 			}
 			else if (A.cst == F.mOne) {
 				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, false, true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 				else
-					csr_details::fspmm_zo<Field, false, false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag());
 			}
 			else {
 				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
-				fscal(F, A.n*blockSize, A.cst, x.dat, lda, x1, 1);
+				fscal(F, A.n*blockSize, A.cst, x.dat, ldx, x1, 1);
 				if(blockSize % simd::vect_size == 0)
-					csr_details::fspmm_zo<Field, true, true>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::UnparametricTag());
 				else
-					csr_details::fspmm_zo<Field, true, false>(F,A.m,A.n,A.st,A.col,lda,blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x1,y.dat, FieldCategories::UnparametricTag());
+				fflas_delete(x1);
+			}
+		}else{
+			if (A.cst == F.one) {
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+			}
+			else if (A.cst == F.mOne) {
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,false, true>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+				else
+					csr_details::fspmm_zo<Field,false, false>(F,A.m,A.n,A.st,A.col,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag());
+			}
+			else {
+				auto x1 = fflas_new(F, A.n, blockSize, Alignment::CACHE_LINE);
+				fscal(F, A.n*blockSize, A.cst, x.dat, ldx, x1, 1);
+				if(blockSize % simd::vect_size == 0)
+					csr_details::fspmm_zo<Field,true, true>(F,A.m,A.n,A.st,A.col,blockSize,x1,blockSize,y.dat,ldy, FieldCategories::UnparametricTag());
+				else
+					csr_details::fspmm_zo<Field,true, false>(F,A.m,A.n,A.st,A.col,blockSize,x1,blockSize,y.dat,ldy, FieldCategories::UnparametricTag());
 				fflas_delete(x1);
 			}
 		}
