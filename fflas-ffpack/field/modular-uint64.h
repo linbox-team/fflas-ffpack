@@ -98,14 +98,14 @@ namespace FFPACK
 		Element &init (Element &x, const uint32_t &y ) const
 		{
 			x = (Element) (labs (y) % (int64_t) (_modulus));
-			if (y < 0) x = _modulus - x;
+			// if (y < 0) x = _modulus - x;
 			return x;
 		}
 
 		Element &init (Element &x, const int32_t &y ) const
 		{
 			x = abs (y) % (int64_t) (_modulus);
-			if (y < 0) x = _modulus - x;
+			// if (y < 0) x = _modulus - x;
 			return x;
 		}
 
