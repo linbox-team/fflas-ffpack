@@ -83,7 +83,7 @@ namespace FFPACK {
 					F.assign( *(A+i*N+j), F.zero);
 				F.assign( *(A+B[j]*lda+j), F.one);
 			} else {
-				FFLAS::fcopy (F, N, E+B[j]-N, lda, A+j, N);
+				FFLAS::fassign (F, N, E+B[j]-N, lda, A+j, N);
 			}
 		for (size_t j=lambda+me; j<lambda+me+mu; ++j)
 			for (size_t i=0;i<N;++i)
@@ -91,9 +91,9 @@ namespace FFPACK {
 		for (size_t i=0; i<mu; ++i)
 			F.assign( *(A+(lambda+me+mc+i)*lda+lambda+me+T[i]), F.one);
 		for (size_t j=0; j<mc; ++j)
-			FFLAS::fcopy(F,N,C+j,lda,A+N-mc+j,N);
+			FFLAS::fassign(F,N,C+j,lda,A+N-mc+j,N);
 		//! @bug is this :
-		// FFLAS::fcopy(F,N,mc,C,lda,A+N-mc,N);
+		// FFLAS::fassign(F,N,mc,C,lda,A+N-mc,N);
 		return A;
 	}
 
@@ -153,7 +153,7 @@ namespace FFPACK {
 					typename Field::Element_ptr LUP = FFLAS::fflas_new (F, lambda+me, ncols);
 					for (size_t i=0;i < lambda + me; ++i)
 						if (allowedRows[i])
-							FFLAS::fcopy (F, ncols, C+i*lda, 1, LUP+i*ncols, 1);
+							FFLAS::fassign (F, ncols, C+i*lda, 1, LUP+i*ncols, 1);
 						else
 							for (size_t j = 0; j < ncols; ++j)
 								F.assign (*(LUP+i*ncols+j), F.zero);
@@ -330,7 +330,7 @@ namespace FFPACK {
 					// grouping the bloc L in LUP
 					for (size_t i=0; i<r; ++i)
 						if (Q[i]>i)
-							FFLAS::fcopy(F, i, LUP+Q[i]*mc,1, LUP+i*mc, 1);
+							FFLAS::fassign(F, i, LUP+Q[i]*mc,1, LUP+i*mc, 1);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -400,11 +400,11 @@ namespace FFPACK {
 #endif
 					typename Field::Element_ptr tmp = FFLAS::fflas_new (F, r, me);
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, me, E+i*lda, 1, tmp+i*me, 1);
+						FFLAS::fassign (F, me, E+i*lda, 1, tmp+i*me, 1);
 					for (size_t i=r; i< N; ++i)
-						FFLAS::fcopy (F, me, E+i*lda, 1, E+(i-r)*lda, 1);
+						FFLAS::fassign (F, me, E+i*lda, 1, E+(i-r)*lda, 1);
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, me, tmp+i*me, 1, E+(i+N-r)*lda, 1);
+						FFLAS::fassign (F, me, tmp+i*me, 1, E+(i+N-r)*lda, 1);
 					FFLAS::fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -414,11 +414,11 @@ namespace FFPACK {
 #endif
 					tmp = FFLAS::fflas_new (F, r, mc-r);
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, tmp+i*(mc-r), 1);
+						FFLAS::fassign (F, mc-r, C+r+i*lda, 1, tmp+i*(mc-r), 1);
 					for (size_t i=r; i< N; ++i)
-						FFLAS::fcopy (F, mc-r, C+r+i*lda, 1, C+r+(i-r)*lda, 1);
+						FFLAS::fassign (F, mc-r, C+r+i*lda, 1, C+r+(i-r)*lda, 1);
 					for (size_t i=0; i<r; ++i)
-						FFLAS::fcopy (F, mc-r, tmp+i*(mc-r), 1, C+r+(i+N-r)*lda, 1);
+						FFLAS::fassign (F, mc-r, tmp+i*(mc-r), 1, C+r+(i+N-r)*lda, 1);
 					FFLAS::fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -435,9 +435,9 @@ namespace FFPACK {
 					tmp = FFLAS::fflas_new (F, mu, r);
 					typename Field::Element_ptr C2 = C+(N-mu-mc)*lda;
 					for (size_t i=0; i<mu; ++i)
-						FFLAS::fcopy (F, r, C2+T[i]*lda, 1, tmp+i*r, 1);
+						FFLAS::fassign (F, r, C2+T[i]*lda, 1, tmp+i*r, 1);
 					for (size_t i=0; i<mu; ++i)
-						FFLAS::fcopy (F, r, tmp+i*r, 1, C2+i*lda, 1);
+						FFLAS::fassign (F, r, tmp+i*r, 1, C2+i*lda, 1);
 					FFLAS::fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -448,7 +448,7 @@ namespace FFPACK {
 					tmp = FFLAS::fflas_new (F, me, r);
 					for (size_t i=0; i<lambda+me; ++i)
 						if (B[i] >= N){
-							FFLAS::fcopy (F, r, C+i*lda, 1, tmp+(B[i]-N)*r, 1);
+							FFLAS::fassign (F, r, C+i*lda, 1, tmp+(B[i]-N)*r, 1);
 						}
 					fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mu + r, r, me,
 					       F.one, E+(N-mu-r)*lda, lda, tmp, r,
@@ -464,10 +464,10 @@ namespace FFPACK {
 					tmp = FFLAS::fflas_new (F, mc-r, r);
 					typename Field::Element_ptr C4 = C + (N-mc+r)*lda;
 					for (size_t i=0; i < (mc-r); ++i){
-						FFLAS::fcopy (F, r, C4 + i*lda, 1, tmp+i*r, 1);
+						FFLAS::fassign (F, r, C4 + i*lda, 1, tmp+i*r, 1);
 					}
 					for (int i = int(N-1); i >= (int) (N -mu-r); --i)
-						FFLAS::fcopy (F, r, C+((size_t)i-mc+r)*lda, 1, C+i*(int)lda, 1);
+						FFLAS::fassign (F, r, C+((size_t)i-mc+r)*lda, 1, C+i*(int)lda, 1);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
@@ -483,7 +483,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"saving in row "<<B[i]-N<<std::endl;
 #endif
-							FFLAS::fcopy (F, r, C+i*lda, 1, tmp2+(B[i]-N)*r, 1);
+							FFLAS::fassign (F, r, C+i*lda, 1, tmp2+(B[i]-N)*r, 1);
 						}
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -499,7 +499,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"copie de la ligne "<<i<<std::endl;
 #endif
-							FFLAS::fcopy (F, r, C + i*lda, 1, tmp3 + i*r, 1);
+							FFLAS::fassign (F, r, C + i*lda, 1, tmp3 + i*r, 1);
 						}
 #ifdef LB_DEBUG
 					std::cerr<<"1"<<std::endl;
@@ -515,7 +515,7 @@ namespace FFPACK {
 						std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
 #endif
 						if (B[i] < N)
-							FFLAS::fcopy (F, r, tmp3+i*r, 1, C+(B[i]-r)*lda, 1);
+							FFLAS::fassign (F, r, tmp3+i*r, 1, C+(B[i]-r)*lda, 1);
 					}
 #ifdef LB_DEBUG
 					std::cerr<<"3"<<std::endl;
@@ -553,11 +553,11 @@ namespace FFPACK {
 #endif
 					tmp = FFLAS::fflas_new (F, N, r);
 					for (size_t j = 0; j<r; ++j)
-						FFLAS::fcopy (F, N, C+j, lda, tmp+j, r);
+						FFLAS::fassign (F, N, C+j, lda, tmp+j, r);
 					for (size_t j = r; j<mc; ++j)
-						FFLAS::fcopy (F, N, C+j, lda, C+j-r, lda);
+						FFLAS::fassign (F, N, C+j, lda, C+j-r, lda);
 					for (size_t j = 0; j<r; ++j)
-						FFLAS::fcopy (F, N, tmp+j, r, C+mc-r+j, lda);
+						FFLAS::fassign (F, N, tmp+j, r, C+mc-r+j, lda);
 					FFLAS::fflas_delete (tmp);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
@@ -579,7 +579,7 @@ namespace FFPACK {
 #ifdef LB_DEBUG
 							std::cerr<<"B["<<j-r<<"] = "<<N+nme<<std::endl;
 #endif
-							FFLAS::fcopy (F, N, E+(B[j]-N), lda, tmp2+nme, me);
+							FFLAS::fassign (F, N, E+(B[j]-N), lda, tmp2+nme, me);
 							B[j-r] = N + nme;
 							nme++;
 						} else {
@@ -592,7 +592,7 @@ namespace FFPACK {
 						}
 					}
 					for (size_t j=0; j<nme; ++j)
-						FFLAS::fcopy (F, N, tmp2+j, me, E+j, lda);
+						FFLAS::fassign (F, N, tmp2+j, me, E+j, lda);
 					lambda = nlambda;
 					me = nme;
 #ifdef LB_DEBUG

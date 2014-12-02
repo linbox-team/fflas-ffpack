@@ -46,7 +46,7 @@ faxpy( const Field& F, const size_t N,
 		return ;
 
 	if (F.isOne(a))
-		return fcopy(F,N,X,incX,Y,incY);
+		return fassign(F,N,X,incX,Y,incY);
 
 	if (F.isMOne(a))
 		return fneg(F,N,X,incX,Y,incY);
@@ -91,7 +91,7 @@ faxpy( const Field& F, const size_t m, const size_t n,
 		return ;
 
 	if (F.isOne(a))
-		return fcopy(F,m,n,X,ldX,Y,ldY);
+		return fassign(F,m,n,X,ldX,Y,ldY);
 
 	if (F.isMOne(a))
 		return fneg(F,m,n,X,ldX,Y,ldY);

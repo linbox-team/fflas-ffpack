@@ -175,7 +175,7 @@ namespace FFLAS {
 
 #include "fflas_fadd.h"
 #include "fflas_fscal.h"
-#include "fflas_fcopy.h"
+#include "fflas_fassign.h"
 #include "fflas_finit.h"
 
 #include "fflas_fgemv.inl"

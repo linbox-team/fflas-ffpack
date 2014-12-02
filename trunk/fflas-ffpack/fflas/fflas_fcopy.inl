@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_fcopy.inl
+/* fflas/fflas_fassign.inl
  * Copyright (C) 2007 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
@@ -28,8 +28,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fcopy_INL
-#define __FFLASFFPACK_fcopy_INL
+#ifndef __FFLASFFPACK_fassign_INL
+#define __FFLASFFPACK_fassign_INL
 
 #include <string.h>
 
@@ -43,7 +43,7 @@ namespace FFLAS {
 
 	template<class Field>
 	inline void
-	fcopy (const Field& F, const size_t N,
+	fassign (const Field& F, const size_t N,
 	       typename Field::ConstElement_ptr Y, const size_t incY,
 	       typename Field::Element_ptr X, const size_t incX)
 	{
@@ -64,7 +64,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fcopy (const FFPACK:: Modular<float>& F, const size_t N,
+	fassign (const FFPACK:: Modular<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -76,7 +76,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fcopy (const FFPACK:: ModularBalanced<float>& F, const size_t N,
+	fassign (const FFPACK:: ModularBalanced<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -88,7 +88,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fcopy (const FFPACK:: UnparametricField<float>& F, const size_t N,
+	fassign (const FFPACK:: UnparametricField<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -100,7 +100,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fcopy (const FFPACK:: Modular<double>& F, const size_t N,
+	fassign (const FFPACK:: Modular<double>& F, const size_t N,
 	       const double * Y, const size_t incY,
 	       double * X, const size_t incX)
 	{
@@ -112,7 +112,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fcopy (const FFPACK:: ModularBalanced<double>& F, const size_t N,
+	fassign (const FFPACK:: ModularBalanced<double>& F, const size_t N,
 	       const double * Y, const size_t incY,
 	       double * X, const size_t incX)
 	{
@@ -124,7 +124,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fcopy (const FFPACK:: UnparametricField<double>& F, const size_t N,
+	fassign (const FFPACK:: UnparametricField<double>& F, const size_t N,
 	       const double * Y, const size_t incY ,
 	       double * X, const size_t incX)
 	{
@@ -141,19 +141,19 @@ namespace FFLAS {
 
 
 	template<class Field>
-	void fcopy (const Field& F, const size_t m, const size_t n,
+	void fassign (const Field& F, const size_t m, const size_t n,
 		    typename Field::ConstElement_ptr B, const size_t ldb ,
 		    typename Field::Element_ptr A, const size_t lda)
 	{
 		FFLASFFPACK_check(n<=std::min(lda,ldb));
 		// if possible, copy one big block
 		if (lda == n && ldb == n) {
-			fcopy(F,m*n,B,1,A,1);
+			fassign(F,m*n,B,1,A,1);
 			return ;
 		}
 		// else, copy row after row
 		for (size_t i = 0 ; i < m ; ++i) {
-			fcopy(F,n,B+i*ldb,1,A+i*lda,1);
+			fassign(F,n,B+i*ldb,1,A+i*lda,1);
 		}
 		return;
 
@@ -163,4 +163,4 @@ namespace FFLAS {
 } // FFLAS
 
 
-#endif // __FFLASFFPACK_fcopy_INL
+#endif // __FFLASFFPACK_fassign_INL

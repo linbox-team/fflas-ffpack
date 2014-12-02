@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_fcopy.inl
+/* fflas/fflas_fassign.inl
  * Copyright (C) 2014 FFLAS FFPACK group
  *
  * Written by BB <brice.boyer@lip6.fr>
@@ -27,11 +27,11 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fcopy_H
-#define __FFLASFFPACK_fcopy_H
+#ifndef __FFLASFFPACK_fassign_H
+#define __FFLASFFPACK_fassign_H
 
 //! @todo field traits here too
-#include "fflas_fcopy.inl"
+#include "fflas_fassign.inl"
 
-#endif // __FFLASFFPACK_fcopy_H
+#endif // __FFLASFFPACK_fassign_H
 

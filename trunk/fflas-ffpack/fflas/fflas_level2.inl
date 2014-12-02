@@ -40,7 +40,7 @@ namespace FFLAS {
 	// Level 2 routines
 	//---------------------------------------------------------------------
 
-	/** \brief fcopy : \f$A \gets B \f$.
+	/** \brief fassign : \f$A \gets B \f$.
 	 * @param F field
 	 * @param m number of rows to copy
 	 * @param n number of cols to copy
@@ -51,7 +51,7 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	void
-	fcopy (const Field& F, const size_t m, const size_t n,
+	fassign (const Field& F, const size_t m, const size_t n,
 	       typename Field::ConstElement_ptr B, const size_t ldb ,
 	       typename Field::Element_ptr A, const size_t lda );
 
@@ -285,7 +285,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb )
 	{
-		fcopy(F,m,n,A,lda,B,ldb);
+		fassign(F,m,n,A,lda,B,ldb);
 		fzero(F,m,n,B,ldb);
 	}
 

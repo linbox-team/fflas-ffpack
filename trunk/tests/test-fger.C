@@ -81,7 +81,7 @@ bool check_fger(const Field                   & F,
 // 	std::cerr << "q:=" << F.characteristic() << ';' << std::endl;
 
 	Element_ptr D  = FFLAS::fflas_new (F,m,n);
-	FFLAS::fcopy(F,m,n,Cd,n,D,n);
+	FFLAS::fassign(F,m,n,Cd,n,D,n);
 	for(size_t i=0; i<m; ++i) {
 		Element tmp; F.init(tmp);
 		F.mul(tmp, alpha, *(x+i*incx) );
@@ -155,7 +155,7 @@ bool launch_fger(const Field & F,
 		B = FFLAS::fflas_new (F, n*incb, 1);
 		RandomMatrix(F,B,n*incb,1,1);
 		RandomMatrix(F,C,m,n,ldc);
-		FFLAS::fcopy(F,m,n,C,ldc,D,n);
+		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		FFLAS::fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
 		ok &= check_fger(F, D, m,n,alpha, A, inca, B, incb, C,ldc);
 

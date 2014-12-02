@@ -90,7 +90,7 @@ namespace FFPACK {
 		}
 		// m contains the k first coefs of the minpoly
 		typename Field::Element_ptr m= FFLAS::fflas_new (F,k,1);
-		fcopy( F, k, X+k*N, 1, m, 1);
+		fassign( F, k, X+k*N, 1, m, 1);
 		ftrsv( F, FflasLower, FflasTrans, FflasNonUnit, k, X, N, m, 1);
 		//FFLAS::fflas_delete( X);
 		it = minP.begin();

@@ -446,7 +446,7 @@ namespace FFLAS {
 		{
 			if (C==A) {
 				typename Field::Element_ptr Ad = fflas_new (F, n, n);
-				fcopy(F,n,n,A,lda,Ad,n);
+				fassign(F,n,n,A,lda,Ad,n);
 				fgemm (F, ta, ta, n, n, n, alpha, Ad, n, Ad, n, beta, C, ldc);
 				fflas_delete (Ad);
 			}

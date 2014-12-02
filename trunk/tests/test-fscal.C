@@ -58,7 +58,7 @@ if (timing)	std::cout << ">>>" << std::endl ;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,C,m,k,n);
-		FFLAS::fcopy(F,m,k,C,n,D,n);
+		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -129,7 +129,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F,C,m,k,n);
-		FFLAS::fcopy(F,m,k,C,n,D,n);
+		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)

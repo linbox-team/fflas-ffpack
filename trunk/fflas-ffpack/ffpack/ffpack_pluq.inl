@@ -84,7 +84,7 @@ namespace FFPACK {
 					cyclic_shift_row(Fi, A+rank*lda, row-rank+1, rank, lda);
 					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
 					    // Row rotation for U (not moving the 0 block)
-					FFLAS::fcopy (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
+					FFLAS::fassign (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
 					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
 					FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
 					Fi.assign(CurrRow[i],Fi.zero); // only needed once here
@@ -238,8 +238,8 @@ namespace FFPACK {
 		    // J <- L3^-1 I (in a temp)
 		typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
 		// for (size_t i=0; i<R3; ++i)
-			// FFLAS::fcopy (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
-		FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
+			// FFLAS::fassign (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
+		FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 		    // N <- L3^-1 H2
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);

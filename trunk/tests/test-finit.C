@@ -62,7 +62,7 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	for (size_t b = 0 ; b < repet ; ++b) {
 		RandomMatrix(E,A,m,k,n);
 		// RandomMatrix(E,B,m,k,n);
-		FFLAS::fcopy(E,m,k,A,n,B,n);
+		FFLAS::fassign(E,m,k,A,n,B,n);
 
 		chrono.clear();chrono.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -95,7 +95,7 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	if (timing)	F.write(std::cout << "Modular ") << std::endl;
 	for (size_t b = 0 ; b < repet ; ++b) {
 		RandomMatrix(E,A,m,n,n);
-		FFLAS::fcopy(E,m,n,A,n,B,n);
+		FFLAS::fassign(E,m,n,A,n,B,n);
 		size_t incX = 2 ;
 
 		chrono.clear();chrono.start();

@@ -95,7 +95,7 @@ template<class Field>
 	void trinv_left( const Field& F, const size_t N, typename Field::ConstElement_ptr L, const size_t ldl,
 			 typename Field::Element_ptr X, const size_t ldx )
 	{
-		FFLAS::fcopy(F,N,N,L,ldl,X,ldx);
+		FFLAS::fassign(F,N,N,L,ldl,X,ldx);
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, N, X, ldx);
 		//invL(F,N,L,ldl,X,ldx);
 	}

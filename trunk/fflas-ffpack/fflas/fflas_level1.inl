@@ -156,7 +156,7 @@ namespace FFLAS {
 		}
 	}
 
-	/** \brief fcopy : \f$x \gets y \f$.
+	/** \brief fassign : \f$x \gets y \f$.
 	 * X is preallocated
 	 * @todo variant for triagular matrix
 	 * @param F field
@@ -168,7 +168,7 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	void
-	fcopy (const Field& F, const size_t N,
+	fassign (const Field& F, const size_t N,
 	       typename Field::ConstElement_ptr Y, const size_t incY ,
 	       typename Field::Element_ptr X, const size_t incX);
 

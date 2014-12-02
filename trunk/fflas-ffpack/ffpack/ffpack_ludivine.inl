@@ -52,7 +52,7 @@ namespace FFPACK {
 			if (p < N){
 				P[r] = p;
 				if (r < k){
-					FFLAS::fcopy (F, N-r, (A+k*lda+r),1, (A + r*(lda+1)), 1);
+					FFLAS::fassign (F, N-r, (A+k*lda+r),1, (A + r*(lda+1)), 1);
 					Acurr = A+r+k*lda;
 					for (size_t i=r; i<N; ++i)
 						F.assign(*(Acurr++),F.zero);
@@ -177,7 +177,7 @@ namespace FFPACK {
 			}
 			for (size_t i=0; i<R; ++i, Aini += lda+1) {
 				if (Q[i] > i){
-					FFLAS::fcopy (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
+					FFLAS::fassign (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
 					for (size_t j=0; j<l-i; ++j)
 						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
@@ -287,7 +287,7 @@ namespace FFPACK {
 			}
 			for (size_t i=0; i<R; ++i, Aini += lda+1) {
 				if (Q[i] > i){
-					FFLAS::fcopy (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
+					FFLAS::fassign (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
 					for (size_t j=0; j<l-i; ++j)
 						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
@@ -395,7 +395,7 @@ namespace FFPACK {
 			}
 			for (size_t i=0; i<R; ++i, Aini += lda+1) {
 				if (Q[i] > i){
-					FFLAS::fcopy (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
+					FFLAS::fassign (F, l-i, Aini+(Q[i]-i)*lda, 1, Aini, 1);
 					for (size_t j=0; j<l-i; ++j)
 						F.assign (*(Aini+(Q[i]-i)*lda+j), F.zero);
 				}
@@ -587,7 +587,7 @@ namespace FFPACK {
 					// Permutation of the 0 rows
 					if (Diag == FFLAS::FflasNonUnit){
 						for ( size_t i = Nup, j = R ; i < Nup + R2; ++i, ++j){
-							FFLAS::fcopy( F, colDim - j, A + i*incRow + j*incCol, incCol, A + j * (lda + 1), incCol);
+							FFLAS::fassign( F, colDim - j, A + i*incRow + j*incCol, incCol, A + j * (lda + 1), incCol);
 							for (typename Field::Element_ptr Ai = A + i*incRow + j*incCol;
 							     Ai != A + i*incRow + colDim*incCol; Ai+=incCol)
 								F.assign (*Ai, F.zero);
@@ -599,7 +599,7 @@ namespace FFPACK {
 					}
 					else { // Diag == FFLAS::FflasUnit
 						for ( size_t i = Nup, j = R+1 ; i < Nup + R2; ++i, ++j){
-							FFLAS::fcopy( F, colDim - j,
+							FFLAS::fassign( F, colDim - j,
 								      A + i*incRow + j*incCol, incCol,
 								      A + (j-1)*incRow + j*incCol, incCol);
 							for (typename Field::Element_ptr Ai = A + i*incRow + j*incCol;
@@ -690,13 +690,13 @@ namespace FFPACK {
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 								fgemv(F, FFLAS::FflasNoTrans, N, N, F.one,
 								      A, lda, u, 1, F.zero, Xi,1);
-								FFLAS::fcopy(F, N,Xi, 1, u,1);
+								FFLAS::fassign(F, N,Xi, 1, u,1);
 							}
 						else // Keller-Gehrig Fast algorithm's matrix
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 								FFPACK::Protected::fgemv_kgf( F, N, A, lda, u, 1, Xi, 1,
 											      kg_mc, kg_mb, kg_j );
-								FFLAS::fcopy(F, N,Xi, 1, u,1);
+								FFLAS::fassign(F, N,Xi, 1, u,1);
 							}
 					}
 					// Apply the permutation on SW

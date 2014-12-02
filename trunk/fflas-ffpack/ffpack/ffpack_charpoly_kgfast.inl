@@ -71,8 +71,8 @@ namespace FFPACK {
 					// B1 <- C1^-1.B1
 					typename Field::Element_ptr LUP = FFLAS::fflas_new (F, mc, mc);
 					// for (size_t i=0; i<mc; ++i)
-						// FFLAS::fcopy( F, mc, C+i*lda, 1, LUP+i*mc, 1);
-					FFLAS::fcopy(F,mc,mc,C,lda,LUP,mc);
+						// FFLAS::fassign( F, mc, C+i*lda, 1, LUP+i*mc, 1);
+					FFLAS::fassign(F,mc,mc,C,lda,LUP,mc);
 					size_t * P = FFLAS::fflas_new<size_t>(mc);
 					size_t * Q = FFLAS::fflas_new<size_t>(mc);
 
@@ -119,14 +119,14 @@ namespace FFPACK {
 					// Shifting B: B1;B2 -> B2;B1
 					typename Field::Element_ptr tmp = FFLAS::fflas_new (F, mc, mb);
 					// for (size_t i=0; i<mc; ++i)
-						// FFLAS::fcopy( F, mb, B+i*lda, 1, tmp+i*mb, 1);
-					FFLAS::fcopy(F,mc,mb,B,lda,tmp,mb);
+						// FFLAS::fassign( F, mb, B+i*lda, 1, tmp+i*mb, 1);
+					FFLAS::fassign(F,mc,mb,B,lda,tmp,mb);
 					// for (size_t i=mc; i<N; ++i)
-						// FFLAS::fcopy( F, mb, B+i*lda, 1, B+(i-mc)*lda, 1);
-					FFLAS::fcopy(F,N-mc,mb,B+mc*lda,lda,B,lda);
+						// FFLAS::fassign( F, mb, B+i*lda, 1, B+(i-mc)*lda, 1);
+					FFLAS::fassign(F,N-mc,mb,B+mc*lda,lda,B,lda);
 					// for (size_t i=0; i<mc; ++i)
-						// FFLAS::fcopy( F, mb, tmp+i*mb, 1, B+(i+N-mc)*lda, 1);
-					FFLAS::fcopy(F,mc,mb,tmp,mb,B+(N-mc)*lda,lda);
+						// FFLAS::fassign( F, mb, tmp+i*mb, 1, B+(i+N-mc)*lda, 1);
+					FFLAS::fassign(F,mc,mb,tmp,mb,B+(N-mc)*lda,lda);
 					FFLAS::fflas_delete (tmp);
 #if 0
 					std::cerr<<"Apres shift de B"<<std::endl;
@@ -157,8 +157,8 @@ namespace FFPACK {
 
 						// tmp2 <- C1
 						// for (int i=0; i<lambda; ++i)
-							// FFLAS::fcopy( F, mc, C+i*(int)lda, 1, tmp2+i*(int)mc, 1);
-						FFLAS::fcopy(F,(size_t)lambda,mc,C,lda,tmp2,mc);
+							// FFLAS::fassign( F, mc, C+i*(int)lda, 1, tmp2+i*(int)mc, 1);
+						FFLAS::fassign(F,(size_t)lambda,mc,C,lda,tmp2,mc);
 
 						// C1' <- B1.C2
 						fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, mc, mb,
@@ -172,8 +172,8 @@ namespace FFPACK {
 
 						// C2' <- tmp2
 						// for (int i=0; i<lambda; ++i)
-							// FFLAS::fcopy( F, mc, tmp2+(size_t)i*mc, 1, C+(mb+(size_t)i)*lda, 1);
-						FFLAS::fcopy(F,(size_t)lambda,mc,tmp2,mc,C+mb*lda,lda);
+							// FFLAS::fassign( F, mc, tmp2+(size_t)i*mc, 1, C+(mb+(size_t)i)*lda, 1);
+						FFLAS::fassign(F,(size_t)lambda,mc,tmp2,mc,C+mb*lda,lda);
 						FFLAS::fflas_delete (tmp2);
 					}
 					else if ( lambda > 0 ){
@@ -194,13 +194,13 @@ namespace FFPACK {
 
 						// C2' <- C1
 						// for (int i=0; i<lambda; ++i)
-							// FFLAS::fcopy( F, mc, C+i*(int)lda, 1, C+(mb+(size_t)i)*lda, 1);
-						FFLAS::fcopy(F,(size_t)lambda,mc,C,lda,C+mb*lda,lda);
+							// FFLAS::fassign( F, mc, C+i*(int)lda, 1, C+(mb+(size_t)i)*lda, 1);
+						FFLAS::fassign(F,(size_t)lambda,mc,C,lda,C+mb*lda,lda);
 
 						// C1' <- tmp2
 						// for (size_t i=0; i<mb; ++i)
-							// FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
-						FFLAS::fcopy(F,mb,mc,tmp2,mc,C,lda);
+							// FFLAS::fassign( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+						FFLAS::fassign(F,mb,mc,tmp2,mc,C,lda);
 						FFLAS::fflas_delete (tmp2);
 					}
 					else{
@@ -217,8 +217,8 @@ namespace FFPACK {
 
 						// C1' <- tmp2
 						// for (size_t i=0; i<mb; ++i)
-							// FFLAS::fcopy( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
-						FFLAS::fcopy(F,mb,mc,tmp2,mc,C,lda);
+							// FFLAS::fassign( F, mc, tmp2+i*mc, 1, C+i*lda, 1);
+						FFLAS::fassign(F,mb,mc,tmp2,mc,C,lda);
 						FFLAS::fflas_delete (tmp2);
 					}
 
@@ -253,11 +253,11 @@ namespace FFPACK {
 			size_t big_truc =kg_mb-kg_mc*(kg_j+1) ;
 			size_t lambda = (N<big_truc)?(0):(N-big_truc);
 			// Y1 <- X2
-			FFLAS::fcopy ( F, lambda, X+(kg_mb+kg_mc)*incX, incX, Y, incY );
+			FFLAS::fassign ( F, lambda, X+(kg_mb+kg_mc)*incX, incX, Y, incY );
 			// Y2 <- X.B
 			fgemv( F, FFLAS::FflasTrans, N, kg_mb, F.one, A+N-kg_mc-kg_mb, lda, X, incX, F.zero, Y+lambda*incY, incY );
 			// Y3 <- X3
-			FFLAS::fcopy ( F, kg_j*kg_mc, X+(lambda+kg_mb+kg_mc)*incX, incX, Y+(lambda+kg_mb)*incY, incY );
+			FFLAS::fassign ( F, kg_j*kg_mc, X+(lambda+kg_mb+kg_mc)*incX, incX, Y+(lambda+kg_mb)*incY, incY );
 			// Y4 <- X.C
 			fgemv( F, FFLAS::FflasTrans, N, kg_mc, F.one, A+N-kg_mc, lda, X, incX, F.zero, Y+(N-kg_mc)*incY, incY );
 		}
