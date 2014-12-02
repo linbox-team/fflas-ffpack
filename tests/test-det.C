@@ -88,11 +88,11 @@ bool test_det(Field &F, size_t n, int iter)
 	double mflops = 2.0/3.0*(n*n/1000000.0)*iter*n/tim.usertime();
 	F.write (std::cerr<<"n = "<<n<<" Det (A) = ",d)
 	<< " mod "<<atoi(argv[1])<<" : t= "
-	<< tim.usertime()/iter
+	<< tim.usertime()/(double)iter
 	<< " s, Mffops = "<<mflops
 	<< std::endl;
 
-	std::cout<<n<<" "<<mflops<<" "<<tim.usertime()/iter<<std::endl;
+	std::cout<<n<<" "<<mflops<<" "<<tim.usertime()/(double)iter<<std::endl;
 #endif
 	FFLAS::fflas_delete( A);
 	return pass;

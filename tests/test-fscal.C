@@ -81,8 +81,8 @@ if (timing)	std::cout << ">>>" << std::endl ;
 				}
 #endif
 	}
-	if (timing)	std::cout << "fscal(___): " << tim.usertime()/iter << 's' << std::endl;
-	if (timing)	std::cout << "fscal (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+	if (timing)	std::cout << "fscal(___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing)	std::cout << "fscal (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 	if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( A );
@@ -152,8 +152,8 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 				}
 #endif
 	}
-	if (timing)	std::cout << "fscalin(___): " << tim.usertime()/iter << 's' << std::endl;
-	if (timing)	std::cout << "fscalin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+	if (timing)	std::cout << "fscalin(___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing)	std::cout << "fscalin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 	if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( C );
