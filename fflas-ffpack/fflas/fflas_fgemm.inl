@@ -247,7 +247,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag> & H)
 	{
-		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else
 			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
