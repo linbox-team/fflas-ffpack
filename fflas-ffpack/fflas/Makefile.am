@@ -36,8 +36,8 @@ multiprecision= fflas_ftrsm_mp.inl \
 
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \
-	   fflas_fcopy.h       \
-	   fflas_fcopy.inl       \
+	   fflas_fassign.h       \
+	   fflas_fassign.inl       \
 	   fflas_ftrmm.inl       \
 	   fflas.h               \
 	   fflas_level1.inl \
