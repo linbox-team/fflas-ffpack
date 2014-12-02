@@ -475,7 +475,7 @@ namespace FFPACK
                 v1 = 0; v3 = b;
                 while (v3 != 0)
                 {
-                    int64_t q , t1, t3;
+                    int64_t t1, t3;
                     q = u3 / v3;
                     t1 = u - q * v1; t3 = u3 - q * v3;
                     u = v1; u3 = v3; v1 = t1; v3 = t3;
