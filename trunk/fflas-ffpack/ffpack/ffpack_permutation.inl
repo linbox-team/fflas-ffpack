@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_ffpack_permutation_INL
 
 #include "fflas-ffpack/field/unparametric.h"
-#include "fflas-ffpack/fflas/fflas_fcopy.h"
+#include "fflas-ffpack/fflas/fflas_fassign.h"
 
 namespace FFPACK {
 
@@ -421,7 +421,7 @@ namespace FFPACK {
 			for(size_t i=0; i<n; ++i, Ai+=1) F.assign(b[i] , *Ai);
 
 			for(typename T::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
-				FFLAS::fcopy(F, n, Ac-lda, 1, Ac, 1);
+				FFLAS::fassign(F, n, Ac-lda, 1, Ac, 1);
 
 			typename T::Element_ptr Aii = A;
 			for(size_t i=0; i<n; ++i, Aii+=1) F.assign(*Aii, b[i]);
