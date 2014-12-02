@@ -1,8 +1,8 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_finit.inl
- * Copyright (C) 2014 FFLAS FFPACK group
+/*
+ * Copyright (C) 2014 FFLAS-FFPACK group
  *
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
  *
@@ -27,46 +27,42 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_init_mp_INL
-#define __FFLASFFPACK_fflas_init_mp_INL
-
-
+#ifndef __FFLASFFPACK_fgemv_mp_INL
+#define __FFLASFFPACK_fgemv_mp_INL
 // activate only if FFLAS-FFPACK haves multiprecision integer
 #ifdef __FFLASFFPACK_HAVE_INTEGER
-#include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
-
 
 namespace FFLAS {
 
-	// specialization of the level1 finit function for the field RNSInteger<rns_double>
-	template<>
-	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t n, FFPACK::rns_double::Element_ptr A, size_t inc)
+	// specialization of the fgemv function for the field RNSIntegerMod<rns_double>
+	//template<>
+	inline FFPACK::rns_double::Element_ptr
+	fgemv (const FFPACK::RNSIntegerMod<FFPACK::rns_double>& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const FFPACK::rns_double::Element alpha,
+	       FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
+	       FFPACK::rns_double::ConstElement_ptr X, const size_t incX,
+	        const FFPACK::rns_double::Element beta,
+	       FFPACK::rns_double::Element_ptr Y, const size_t incY)
 	{
-		if (n==0) return;
-		//cout<<"finit: "<<n<<" with "<<inc<<endl;
-		if (inc==1)
-			F.reduce_modp(n,A._ptr,A._stride);
-		else
-			F.reduce_modp(n,1,A._ptr,inc,A._stride);
-		//throw FFPACK::Failure(__func__,__FILE__,__LINE__,"finit RNSIntegerMod  -> (inc!=1) NOT SUPPORTED");
-	}
-	// specialization of the level2 finit function for the field RNSInteger<rns_double>
-	template<>
-	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n, FFPACK::rns_double::Element_ptr A, size_t lda)
-	{
-		if (n==0||m==0) return;
-		//cout<<"finit: "<<m<<" x "<<n<<" "<<lda<<endl;
-		if (lda == n)
-			F.reduce_modp(m*n,A._ptr,A._stride);
-		else
-			F.reduce_modp(m,n,A._ptr,lda,A._stride); // seems to be buggy
-	}
+		if (M!=0 && N !=0){
+			for (size_t i=0;i<F.size();i++)
+				fgemv(F.rns()._field_rns[i], ta,
+				      M, N,
+				      alpha._ptr[i*alpha._stride],
+				      A._ptr+i*A._stride, lda,
+				      X._ptr+i*X._stride, incX,
+				      beta._ptr[i*beta._stride],
+				      Y._ptr+i*Y._stride, incY
+				      );
+			size_t Ydim = (ta == FflasNoTrans)?M:N;
+			finit(F,Ydim,Y,incY);
+		}
+		return Y;
+	} 
+} // end namespace FFLAS 
 
-
-
-} // end of namespace FFLAS
-
-#endif
+#endif // __FFLASFFPACK_HAVE_INTEGER
 
 #endif

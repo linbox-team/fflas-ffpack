@@ -34,15 +34,16 @@
 // of A over Z/pZ
 //-------------------------------------------------------------------------
 
-
-
+ 
 //#define __LUDIVINE_CUTOFF 1
 #include <iostream>
 #include <iomanip>
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/field/modular-integer.h" 
-#include "fflas-ffpack/ffpack/ffpack.h" 
+#include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack_ludivine_mp.inl" 
+#include "fflas-ffpack/ffpack/ffpack_pluq_mp.inl" 
 #include "test-utils.h"
 
 #include "fflas-ffpack/utils/args-parser.h"
@@ -67,15 +68,16 @@ template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
 bool test_lu(const Field & F,
 	     const typename Field::Element_ptr A,
 	     size_t r,
-	     size_t m, size_t n, size_t lda)
+	     size_t m, size_t n, size_t lda, bool pluq=false)
 {
 
 	bool fail = false;
 	typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
 	Element_ptr  B = FFLAS::fflas_new(F,m,lda) ;
-	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fassign !
-	FFLAS::fassign(F,m,n,A,lda,B,lda);
+
+	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fcopy !
+	FFLAS::fcopy(F,m,n,A,lda,B,lda);
 
 	size_t maxP, maxQ ;
 
@@ -94,10 +96,14 @@ bool test_lu(const Field & F,
 
 	FFLAS::Timer chrono;
 	chrono.start();
-	size_t R = FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q,
-				     FFPACK::FfpackLQUP);
+	size_t R;
+	if (!pluq)
+		R=FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q, FFPACK::FfpackLQUP);
+	else
+		R=FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
+		
 	chrono.stop();
-	std::cout<<"Ludivine done"<<std::endl;
+	//std::cout<<"Ludivine done"<<std::endl;
 
 	if (R != r) { 
 		std::cout << "rank is wrong (expected " << r << " but got " << R << ")" << std::endl;
@@ -259,7 +265,7 @@ bool test_lu(const Field & F,
 template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
 bool launch_test(const Field & F,
 		 size_t r,
-		 size_t m, size_t n)
+		 size_t m, size_t n, bool pluq=false)
 {
 	//typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
@@ -269,7 +275,7 @@ bool launch_test(const Field & F,
 		size_t lda = n;//+10 ;
 		Element_ptr A = FFLAS::fflas_new(F,m,lda);
 		RandomMatrixWithRank(F,A,r,m,n,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,r,m,n,lda);
+		fail |= test_lu<Field,diag,trans>(F,A,r,m,n,lda,pluq);
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -279,7 +285,7 @@ bool launch_test(const Field & F,
 		size_t R = std::min(m,n);
 		Element_ptr A = FFLAS::fflas_new(F,m,lda);
 		RandomMatrixWithRank(F,A,R,m,n,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);  
+		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda,pluq);  
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -288,7 +294,7 @@ bool launch_test(const Field & F,
 		size_t R = 0;
 		Element_ptr A = FFLAS::fflas_new(F,m,lda);
 		RandomMatrixWithRank(F,A,R,m,n,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda);
+		fail |= test_lu<Field,diag,trans>(F,A,R,m,n,lda,pluq);
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -300,7 +306,7 @@ bool launch_test(const Field & F,
 		size_t lda = N+10 ;
 		Element_ptr A = FFLAS::fflas_new(F,M,lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
+		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda,pluq);
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -311,7 +317,7 @@ bool launch_test(const Field & F,
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new(F,M,lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
+		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda,pluq);
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -322,7 +328,7 @@ bool launch_test(const Field & F,
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new(F,M,lda);
 		RandomMatrixWithRank(F,A,R,M,N,lda);
-		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda);
+		fail |= test_lu<Field,diag,trans>(F,A,R,M,N,lda,pluq);
 		if (fail) std::cout << "failed" << std::endl;
 		FFLAS::fflas_delete(A);
 	}
@@ -361,10 +367,15 @@ int main(int argc, char** argv)
 	Field F(p);
 	cout<<"p:="<<p<<";"<<endl;
 	for (int i = 0 ; i < iter ; ++i) {
-		 fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		 fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		 fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-		 fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n); 
+		/** LUdivine test **/
+		fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+		fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+		//fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+		//fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n); 
+		/** PLUQ test **/
+		fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n,true);
+		fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n,true);
+
 	 }
 	
 	cout<<(fail?"FAILED":"PASSED")<<endl;

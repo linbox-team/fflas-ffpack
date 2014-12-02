@@ -30,6 +30,8 @@
 #ifndef __FFLASFFPACK_ffpack_permutation_INL
 #define __FFLASFFPACK_ffpack_permutation_INL
 
+#include "fflas-ffpack/field/unparametric.h"
+#include "fflas-ffpack/fflas/fflas_fcopy.h"
 
 namespace FFPACK {
 
@@ -87,66 +89,66 @@ namespace FFPACK {
 
 	}
 
-	template <class Element_ptr>
-	inline void doApplyS (Element_ptr A, const size_t lda, Element_ptr tmp, 
-			    const size_t width, const size_t M2,
-			    const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4)
+
+	template<class Field>
+	inline void doApplyS (const Field& F,
+			      typename Field::Element_ptr A, const size_t lda, typename Field::Element_ptr tmp, 
+			      const size_t width, const size_t M2,
+			      const size_t R1, const size_t R2,
+			      const size_t R3, const size_t R4)
 	{
 		for (size_t i = 0, j = R1+R2; j < M2; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
-				tmp [i*width + k] = A [j*lda + k];
+				F.assign(tmp [i*width + k], A [j*lda + k]);
 		for (size_t i = M2, j = R1+R2; i < M2+R3+R4; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
-				A [j*lda + k] = A [i*lda +k];
+				F.assign(A [j*lda + k] , A [i*lda +k]);
 		for (size_t i = 0, j = R1+R2+R3+R4; i < M2-R1-R2; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
-				A [j*lda + k] = tmp [i*width + k];
+				F.assign(A [j*lda + k] , tmp [i*width + k]);
 	}
 	template <class Field>
 	inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, 
 				  const size_t width, const size_t M2,
 				  const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4)
+				  const size_t R3, const size_t R4)
 	{
 		typename Field::Element_ptr tmp = FFLAS::fflas_new (F, M2-R1-R2, width);
-		doApplyS (A, lda, tmp, width, M2, R1, R2, R3, R4);
+		doApplyS (F, A, lda, tmp, width, M2, R1, R2, R3, R4);
 		FFLAS::fflas_delete (tmp);
 	}
-	template <class Element>
-	inline void PermApplyS (Element* A, const size_t lda, 
+	template <class T>
+	inline void PermApplyS (T* A, const size_t lda, 
 				const size_t width, const size_t M2,
 				const size_t R1, const size_t R2,
 				const size_t R3, const size_t R4)
 	{
-		Element* tmp = FFLAS::fflas_new<Element >((M2-R1-R2)*width);
-		doApplyS (A, lda, tmp, width, M2, R1, R2, R3, R4);
+		FFPACK::UnparametricField<T> D;
+		T* tmp = FFLAS::fflas_new<T>((M2-R1-R2)*width);
+		doApplyS (D, A, lda, tmp, width, M2, R1, R2, R3, R4);
 		FFLAS::fflas_delete( tmp);
 	}
 
 
 
-	template <class Element_ptr>
-	inline void doApplyT (Element_ptr A, const size_t lda, Element_ptr tmp,
+	template <class Field>
+	inline void doApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda, typename Field::Element_ptr tmp,
 			      const size_t width, const size_t N2,
 			      const size_t R1, const size_t R2,
 			      const size_t R3, const size_t R4)
 	{
 		for (size_t k = 0; k < width; ++k){
 			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
-				tmp [i + k*(N2-R1)] = A [k*lda + j];
+				F.assign(tmp [i + k*(N2-R1)] , A [k*lda + j]);
 			}
-
 			for (size_t i = N2, j = R1; i < N2+R2; ++i, ++j)
-				A [k*lda + j] = A [k*lda + i];
-
+				F.assign(A [k*lda + j] , A [k*lda + i]);
 			for (size_t i = 0, j = R1+R2; i < R3; ++i, ++j)
-				A [k*lda + j] = tmp [k*(N2-R1) + i];
-
+				F.assign(A [k*lda + j] , tmp [k*(N2-R1) + i]);
 			for (size_t i = N2+R2, j = R1+R2+R3; i < N2+R2+R4; ++i,++j)
-				A [k*lda + j] = A [k*lda + i];
+				F.assign(A [k*lda + j] , A [k*lda + i]);
 			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
-				A [k*lda + j] = tmp [k*(N2-R1) + i];
+				F.assign(A [k*lda + j] , tmp [k*(N2-R1) + i]);
 		}
 	}
 
@@ -157,25 +159,26 @@ namespace FFPACK {
 				  const size_t R3, const size_t R4)
 	{
 		typename Field::Element_ptr tmp = FFLAS::fflas_new (F, N2-R1, width);
-		doApplyT (A, lda, tmp, width, N2, R1, R2, R3, R4);
+		doApplyT (F, A, lda, tmp, width, N2, R1, R2, R3, R4);
 		FFLAS::fflas_delete (tmp);
 	}
-	template <class Element>
-	inline void PermApplyT (Element* A, const size_t lda, 
+	template <class T>
+	inline void PermApplyT (T* A, const size_t lda, 
 				const size_t width, const size_t N2,
 				const size_t R1, const size_t R2,
 				const size_t R3, const size_t R4)
 	{
-		Element* tmp = FFLAS::fflas_new<Element >((N2-R1)*width);
-		doApplyT (A, lda, tmp, width, N2, R1, R2, R3, R4);
+		FFPACK::UnparametricField<T> D;
+		T* tmp = FFLAS::fflas_new<T >((N2-R1)*width);
+		doApplyT (D, A, lda, tmp, width, N2, R1, R2, R3, R4);
 		FFLAS::fflas_delete( tmp);
 	}
 
-            /**
-	     * Conversion of a permutation from LAPACK format to Math format
-	     */
+	/**
+	 * Conversion of a permutation from LAPACK format to Math format
+	 */
 	inline void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
-				  const size_t N)
+					 const size_t N)
 	{
 		for (size_t i=0; i<N; i++)
 			MathP[i] = i;
@@ -188,9 +191,9 @@ namespace FFPACK {
 		}
 	}
 
-	    /**
-	     * Conversion of a permutation from Maths format to LAPACK format
-	     */
+	/**
+	 * Conversion of a permutation from Maths format to LAPACK format
+	 */
 	inline void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
 					 const size_t N)
 	{
@@ -213,14 +216,14 @@ namespace FFPACK {
 		FFLAS::fflas_delete( Tinv);
 	}
 
-	    /**
-	     * Computes P1 [ I_R     ] stored in MathPermutation format
-	     *             [     P_2 ]
-	     */
+	/**
+	 * Computes P1 [ I_R     ] stored in MathPermutation format
+	 *             [     P_2 ]
+	 */
 	inline void composePermutationsP (size_t * MathP,
-				  const size_t * P1,
-				  const size_t * P2,
-				  const size_t R, const size_t N)
+					  const size_t * P1,
+					  const size_t * P2,
+					  const size_t R, const size_t N)
 	{
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
@@ -236,9 +239,9 @@ namespace FFPACK {
 	}
 
 	inline void composePermutationsQ (size_t * MathP,
-				  const size_t * Q1,
-				  const size_t * Q2,
-				  const size_t R, const size_t N)
+					  const size_t * Q1,
+					  const size_t * Q2,
+					  const size_t R, const size_t N)
 	{
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
@@ -258,25 +261,25 @@ namespace FFPACK {
 	{
                 size_t tmp;
                 tmp = *(P+s-1);
-		    //memmove(P+1, P, (s)*sizeof(size_t));
+		//memmove(P+1, P, (s)*sizeof(size_t));
 		size_t * Pi = P;
 		std::copy(Pi, Pi+s-1, Pi+1);
 
                 *(P)=tmp;
 	}
-	    // @BUG highly not portable to other fields than modular<basis type>
-	    // Need a rewrite in order to support RNSModP field
+	// @BUG highly not portable to other fields than modular<basis type>
+	// Need a rewrite in order to support RNSModP field
 	template<typename Base_t>
 	inline void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda)
 	{
 
 #ifdef MEMCOPY
-//		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
+		//		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
 
 		if (m > 1) {
 			const size_t mun(m-1);
 			if (n > 1) {
-//     std::cerr << "m: " << m << ", n: " << n << std::endl;
+				//     std::cerr << "m: " << m << ", n: " << n << std::endl;
 				const size_t nun(n-1);
 				const size_t blo(sizeof(Base_t));
 				// const size_t bmu(blo*mun);
@@ -286,7 +289,7 @@ namespace FFPACK {
 				Base_t * dc = FFLAS::fflas_new<Base_t>(n);
 				memcpy(dc+1,A+mun*lda,bnu);
 				*dc = A[mun*lda+nun]; // this is d
-				    // dc = [ d c ]
+				// dc = [ d c ]
 
 				for(size_t i=mun; i>0; --i)
 					memcpy(A+1+i*lda, A+(i-1)*lda, bnu);
@@ -307,21 +310,21 @@ namespace FFPACK {
 				const size_t blo(sizeof(Base_t));
 				const size_t bnu(blo*nun);
 				Base_t d = A[nun];
-//  std::cerr << "d: " << d << std::endl;
+				//  std::cerr << "d: " << d << std::endl;
 				Base_t * tmp = FFLAS::fflas_new<Base_t>(nun);
 				memcpy(tmp,A,bnu);
 				memcpy(A+1,tmp,bnu);
-//				std::copy(A,A+nun,A+1);
+				//				std::copy(A,A+nun,A+1);
 				*A=d;
 				delete [] tmp;
 
 			}
 		}
-//		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
+		//		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
 
 #else
 
-		    //	std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
+		//	std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
 		if (m > 1) {
 			const size_t mun(m-1);
 			if (n > 1) {
@@ -331,11 +334,11 @@ namespace FFPACK {
 				Base_t * Ainun = A+nun;
 				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
 
-				    // dc = [ d c ]
+				// dc = [ d c ]
 				Base_t * dc = FFLAS::fflas_new<Base_t>(n);
 				std::copy(Ainun-nun, Ainun, dc+1);
 
-				    // this is d
+				// this is d
 				*dc = *Ainun;
 
 				Base_t * Ai=A+(mun-1)*lda;
@@ -377,7 +380,7 @@ namespace FFPACK {
 
 			typename Field::Element_ptr b = FFLAS::fflas_new (F,n,1);
 			typename Field::Element_ptr Ai = A+mun*lda;
-			    //@BUG not safe with RNSModp field
+			//@BUG not safe with RNSModp field
 			memcpy (b,Ai,n*sizeof(typename Field::Element));
 
 			for(typename Field::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
@@ -396,7 +399,7 @@ namespace FFPACK {
 			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
 
 			for(typename Field::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
-                std::copy(Ac-lda,Ac-lda+n, Ac);
+				std::copy(Ac-lda,Ac-lda+n, Ac);
 
 			typename Field::Element_ptr Aii = A;
 			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = b[i];
@@ -406,6 +409,26 @@ namespace FFPACK {
 
 #endif
 	}
+	
+	template<typename T>
+	inline void cyclic_shift_row(const RNSIntegerMod<T>& F, typename T::Element_ptr A, size_t m, size_t n, size_t lda)
+	{
+		if (m > 1) {
+			const size_t mun(m-1);
+
+			typename T::Element_ptr b = FFLAS::fflas_new (F, n, 1);
+			typename T::Element_ptr Ai = A+mun*lda;
+			for(size_t i=0; i<n; ++i, Ai+=1) F.assign(b[i] , *Ai);
+
+			for(typename T::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
+				FFLAS::fcopy(F, n, Ac-lda, 1, Ac, 1);
+
+			typename T::Element_ptr Aii = A;
+			for(size_t i=0; i<n; ++i, Aii+=1) F.assign(*Aii, b[i]);
+
+			FFLAS::fflas_delete (b);
+		}
+	}
 
 	template<class Field>
 	inline void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda)
@@ -413,16 +436,34 @@ namespace FFPACK {
 		if (n > 1) {
 			const size_t nun(n-1);
 			for(typename Field::Element_ptr Ai=A; Ai!= A+m*lda; Ai+=lda)
-			{
-				typename Field::Element tmp = Ai[nun];
-				    //@BUG: not safe with RNSModP field
-				std::copy_backward(Ai, Ai+nun, Ai+n);
-				*Ai=tmp;
-			}
+				{
+					typename Field::Element tmp = Ai[nun];
+					//@BUG: not safe with RNSModP field
+					std::copy_backward(Ai, Ai+nun, Ai+n);
+					*Ai=tmp;
+				}
 		}
 	}
-
-
+	
+	template<typename T>
+	inline void cyclic_shift_col(const RNSIntegerMod<T>& F, typename T::Element_ptr A, size_t m, size_t n, size_t lda)
+	{
+		if (n > 1) {
+			const size_t nun(n-1);
+			for(typename T::Element_ptr Ai=A; Ai!= A+m*lda; Ai+=lda)
+				{
+					typename T::Element tmp; F.init(tmp);
+					F.assign(tmp, Ai[nun]);
+					//std::copy_backward(Ai, Ai+nun, Ai+n);
+					typename T::Element_ptr Xi = Ai+n;
+					typename T::ConstElement_ptr Yi=Ai+nun;					
+					for (; Ai < Yi; ++Xi, --Yi)
+						F.assign(*Xi,*Yi);					
+					F.assign(*Ai,tmp);
+				}
+		}		
+	}
+	
 
 #if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
 	template<class Field>
@@ -442,13 +483,13 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-		{
-			size_t BlockDim = BLOCKSIZE;
-			if (t == NBlocks-1)
-				BlockDim = LastBlockSize;
+			{
+				size_t BlockDim = BLOCKSIZE;
+				if (t == NBlocks-1)
+					BlockDim = LastBlockSize;
 #pragma omp task shared (A, P, F) firstprivate(BlockDim)
-			applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P);
-		}
+				applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P);
+			}
 #pragma omp taskwait
 	}
 
@@ -467,13 +508,13 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-		{
-			size_t BlockDim = BLOCKSIZE;
-			if (t == NBlocks-1)
-				BlockDim = LastBlockSize;
+			{
+				size_t BlockDim = BLOCKSIZE;
+				if (t == NBlocks-1)
+					BlockDim = LastBlockSize;
 #pragma omp task shared (F, A) firstprivate(BlockDim)
-			MatrixApplyT (F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
-		}
+				MatrixApplyT (F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
+			}
 #pragma omp taskwait
 	}
 
@@ -493,13 +534,13 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-		{
-			size_t BlockDim = BLOCKSIZE;
-			if (t == NBlocks-1)
-				BlockDim = LastBlockSize;
+			{
+				size_t BlockDim = BLOCKSIZE;
+				if (t == NBlocks-1)
+					BlockDim = LastBlockSize;
 #pragma omp task shared (F, A) firstprivate(BlockDim)
-			MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
-		}
+				MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
+			}
 #pragma omp taskwait
 	}
 

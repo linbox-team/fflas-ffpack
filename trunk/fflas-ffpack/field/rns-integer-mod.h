@@ -74,7 +74,7 @@ namespace FFPACK {
 		Element                one, mOne,zero;
 
 #ifdef BENCH_MODP
-		mutable double t_modp, t_igemm, t_scal; 
+		mutable double t_modp, t_igemm, t_scal,t_trsm; 
 		mutable size_t n_modp;
 #endif
 
@@ -100,7 +100,7 @@ namespace FFPACK {
 				sum+=myrns._basis[i];
 			}
 #ifdef BENCH_MODP
-		t_modp=t_igemm=t_scal=0.;
+		t_modp=t_igemm=t_scal=t_trsm=0.;
 		n_modp=0;
 #endif
 		}
@@ -234,7 +234,7 @@ namespace FFPACK {
 		ostream& write(ostream& os, const Element& y) const {
 			os<<"[ "<< (long) (y._ptr)[0];
 			for(size_t i=1;i<_rns->_size;i++)
-				os<<" , "<< (long) (y._ptr)[i*y._stride];
+				os<<" , "<< (long) ((y._ptr)[i*y._stride]);
 			return os<<" ]";
 		}
 

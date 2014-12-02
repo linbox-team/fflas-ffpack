@@ -26,8 +26,8 @@
  *.
  */
 
-#ifndef __FFPACK_ludivine_mp_INL
-#define __FFPACK_ludivine_mp_INL
+#ifndef __FFPACK_pluq_mp_INL
+#define __FFPACK_pluq_mp_INL
 
 #ifdef __FFLASFFPACK_HAVE_INTEGER
 
@@ -39,20 +39,17 @@
 #include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/ffpack/ffpack_ludivine.inl"
+#include "fflas-ffpack/ffpack/ffpack_pluq.inl"
 
 namespace FFPACK {
 
 	template <>
 	inline size_t
-	LUdivine (const Modular<FFPACK::Integer>& F,
-		  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
-		  const size_t M, const size_t N,
-		  typename FFPACK::Integer* A, const size_t lda,
-		  size_t*P, size_t *Q,
-		  const FFPACK::FFPACK_LUDIVINE_TAG LuTag,
-		  const size_t cutoff
-		  )
+	PLUQ (const Modular<FFPACK::Integer>& F,
+	      const FFLAS::FFLAS_DIAG Diag,
+	      const size_t M, const size_t N,
+	      typename FFPACK::Integer* A, const size_t lda,
+	      size_t*P, size_t *Q)
 	{
 
 #ifdef BENCH_PERF_LQUP_MP
@@ -94,9 +91,8 @@ namespace FFPACK {
 		chrono.clear();chrono.start();
 #endif		
 		// call lqup in rns		
-		size_t R=FFPACK::LUdivine(Zp, Diag, trans, M, N, Ap, N, P, Q, LuTag, cutoff);
+		size_t R=FFPACK::PLUQ(Zp, Diag, M, N, Ap, N, P, Q);
 
-		//std::cout<<"LUDivine RNS done"<<std::endl;
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
 		t_lqup+=chrono.usertime();
@@ -117,7 +113,7 @@ namespace FFPACK {
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
 		//t_rec+=chrono.usertime();		
-		cout<<"LUDIVINE RNS PERF:"<<endl;
+		cout<<"PLUQ RNS PERF:"<<endl;
 		cout<<"  ---  RNS basis size: "<<Zp.size() <<endl;
 		cout<<"  ***      init  : "<<t_init<<endl;
 		cout<<"  ***  rns  mod  : "<<t_mod<<endl;
@@ -133,6 +129,7 @@ namespace FFPACK {
 	}
 
 } // namespace FFPACK
+
 #endif //__FFLASFFPACK_HAVE_INTEGER
 
 #endif 
