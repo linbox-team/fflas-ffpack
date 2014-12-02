@@ -228,11 +228,11 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 	    << ((double)iters/1000.0*(double)numops / t)
 	    << " MFops "
 	    << " in "
-	    << t/iters<<"s"
+	    << t/(double)iters<<"s"
 	    <<"]"<< std::endl;
 // 	std::cout<<m
 // 	    <<" "<<((double)iters/1000.0*(double)numops / t)
-// 	    <<" "<<t/iters
+// 	    <<" "<<t/(double)iters
 // 	    <<std::endl;
 #endif
 

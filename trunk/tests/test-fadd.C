@@ -82,8 +82,8 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 				}
 #endif
 	}
-		if (timing)	std::cout << "fadd (___): " << tim.usertime()/iter << 's' << std::endl;
-		if (timing)	std::cout << "fadd (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+		if (timing)	std::cout << "fadd (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+		if (timing)	std::cout << "fadd (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 		if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( A );
@@ -135,8 +135,8 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 				}
 #endif
 	}
-		if (timing)	std::cout << "faddin (___): " << tim.usertime()/iter << 's' << std::endl;
-		if (timing)	std::cout << "faddin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+		if (timing)	std::cout << "faddin (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+		if (timing)	std::cout << "faddin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 
 		if (timing)	std::cout << "<<<" << std::endl;
@@ -190,8 +190,8 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 				}
 #endif
 	}
-		if (timing)	std::cout << "fsub (___): " << tim.usertime()/iter << 's' << std::endl;
-		if (timing)	std::cout << "fsub (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+		if (timing)	std::cout << "fsub (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+		if (timing)	std::cout << "fsub (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 		if (timing)	std::cout << "<<<" << std::endl;
 	FFLAS::fflas_delete( A );
@@ -243,8 +243,8 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 				}
 #endif
 	}
-if (timing)	std::cout << "fsubin (___): " << tim.usertime()/iter << 's' << std::endl;
-	if (timing) std::cout << "fsubin (AVX): " << tom.usertime()/iter << 's'<<  std::endl;
+if (timing)	std::cout << "fsubin (___): " << tim.usertime()/(double)iter << 's' << std::endl;
+	if (timing) std::cout << "fsubin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 
 	if (timing) std::cout << "<<<" << std::endl;
