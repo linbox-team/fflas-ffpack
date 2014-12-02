@@ -140,10 +140,9 @@ int main (int argc, char ** argv) {
 		FFPACK::ModularBalanced<double> F4(q);
 		FFPACK::ModularBalanced<float>  F5(q);
 		FFPACK::ModularBalanced<int>    F6(q);
-		//! @bug no randiter in UnparametricField !!
-		// UnparametricField<double> F7;
-		// UnparametricField<float>  F8;
-		// UnparametricField<int>    F9;
+		// ZZ<double> F7;
+		// ZZ<float>  F8;
+		// ZZ<int>    F9;
 
 		launch_wino(F1,n,iter,w,levelasmax,seed,true);
 		launch_wino(F2,n,iter,w,levelasmax,seed,true);

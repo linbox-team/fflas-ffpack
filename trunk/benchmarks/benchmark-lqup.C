@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
 		END_OF_ARGUMENTS
 	};
 
+  FFLAS::parseArguments(argc,argv,as);
   typedef FFPACK::Modular<double> Field;
   typedef Field::Element Element;
 
