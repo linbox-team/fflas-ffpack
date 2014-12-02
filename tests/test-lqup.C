@@ -73,8 +73,8 @@ bool test_lu(const Field & F,
 	bool fail = false;
 	typedef typename Field::Element Element ;
 	Element * B = FFLAS::fflas_new<Element>(m*lda) ;
-	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fcopy !
-	FFLAS::fcopy(F,m,n,A,lda,B,lda);
+	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fassign !
+	FFLAS::fassign(F,m,n,A,lda,B,lda);
 
 	size_t maxP, maxQ ;
 
@@ -270,14 +270,14 @@ bool test_lu(const Field & F,
 // 	size_t M = m + k ;
 // 	typedef typename Field::Element Element ;
 // 	Element * Acop = FFLAS::fflas_new<Element>(m*lda) ;
-// 	FFLAS::fcopy(F,m,n,A,lda,Acop,lda) ;
+// 	FFLAS::fassign(F,m,n,A,lda,Acop,lda) ;
 
 // 	Element * Bcop = FFLAS::fflas_new<Element>(k*lda) ;
-// 	FFLAS::fcopy(F,k,n,B,lda,Bcop,lda) ;
+// 	FFLAS::fassign(F,k,n,B,lda,Bcop,lda) ;
 
 // 	Element * Append = FFLAS::fflas_new<Element>(M*lda);
-// 	FFLAS::fcopy(F,m,n,A,lda,Append,lda) ;
-// 	FFLAS::fcopy(F,k,n,B,lda,Append+m*lda,lda) ;
+// 	FFLAS::fassign(F,m,n,A,lda,Append,lda) ;
+// 	FFLAS::fassign(F,k,n,B,lda,Append+m*lda,lda) ;
 
 // #if 0 /*  paranoid check */
 // 	for (size_t i = 0 ; i < m ; ++i) {
@@ -293,9 +293,9 @@ bool test_lu(const Field & F,
 // #endif
 
 // 	Element * Afull = FFLAS::fflas_new<Element>(M*lda);
-// 	FFLAS::fcopy(F,M,n,Append,lda,Afull,lda) ;
-// 	// FFLAS::fcopy(F,m,n,A,lda,Afull,lda) ;
-// 	// FFLAS::fcopy(F,k,n,B,lda,Afull+m*lda,lda) ;
+// 	FFLAS::fassign(F,M,n,Append,lda,Afull,lda) ;
+// 	// FFLAS::fassign(F,m,n,A,lda,Afull,lda) ;
+// 	// FFLAS::fassign(F,k,n,B,lda,Afull+m*lda,lda) ;
 
 // #if 0
 // std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;

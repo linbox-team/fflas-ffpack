@@ -59,7 +59,7 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,B,m,k,n);
 		RandomMatrix(F,C,m,k,n);
-		FFLAS::fcopy(F,m,k,C,n,D,n);
+		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -112,7 +112,7 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,C,m,k,n);
-		FFLAS::fcopy(F,m,k,C,n,D,n);
+		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -167,7 +167,7 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,B,m,k,n);
 		RandomMatrix(F,C,m,k,n);
-		FFLAS::fcopy(F,m,k,C,n,D,n);
+		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -220,7 +220,7 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F,A,m,k,n);
 		RandomMatrix(F,C,m,k,n);
-		FFLAS::fcopy(F,m,k,C,n,D,n);
+		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)

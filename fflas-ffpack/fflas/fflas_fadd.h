@@ -124,7 +124,7 @@ namespace FFLAS {
 			return fsub(F,N,A,inca,B,incb,C,incc);
 		}
 		if (F.isZero(alpha))
-			return fcopy(F,N,A,inca,C,incc);
+			return fassign(F,N,A,inca,C,incc);
 
 		if (inca == 1 && incb == 1 && incc == 1) {
 			for (size_t i = 0 ; i < N ; ++i) {
@@ -225,7 +225,7 @@ namespace FFLAS {
 		if (F.isMOne(alpha))
 			return fsub(F,M,N,A,lda,B,ldb,C,ldc);
 		if (F.isZero(alpha))
-			return fcopy(F,M,N,A,lda,C,ldc);
+			return fassign(F,M,N,A,lda,C,ldc);
 
 		if (N == lda && N == ldb && N == ldc)
 			return fadd(F,M*N,A,1,alpha,B,1,C,1);

@@ -74,8 +74,8 @@ bool test_lu(const Field & F,
 	typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
 	Element_ptr  B = FFLAS::fflas_new(F,m,lda) ;
-	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fcopy !
-	FFLAS::fcopy(F,m,n,A,lda,B,lda);
+	// memcpy(B,A,m*lda*sizeof(Element)); // probably faster than ::fassign !
+	FFLAS::fassign(F,m,n,A,lda,B,lda);
 
 	size_t maxP, maxQ ;
 

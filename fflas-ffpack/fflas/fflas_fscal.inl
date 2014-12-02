@@ -152,7 +152,7 @@ namespace FFLAS {
 	{
 		// details::fscal(F,N,a,X,incX,Y,incY, typename FieldTraits<Field>::value() );
 		if (F.isOne(a)) {
-			fcopy(F,N,X,incX,Y,incY);
+			fassign(F,N,X,incX,Y,incY);
 			return ;
 		}
 
@@ -393,7 +393,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr B, const size_t ldb)
 	{
 		if (F.isOne(a)) {
-			fcopy(F,m,n,A,lda,B,ldb) ;
+			fassign(F,m,n,A,lda,B,ldb) ;
 		}
 		else if (F.isZero(a)) {
 			fzero(F,m,n,B,ldb);

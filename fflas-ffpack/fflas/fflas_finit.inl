@@ -33,7 +33,7 @@
 #define __FFLASFFPACK_fflas_init_INL
 
 
-#include "fflas-ffpack/fflas/fflas_fcopy.h"
+#include "fflas-ffpack/fflas/fflas_fassign.h"
 #include "fflas-ffpack/utils/bit_manipulation.h"
 
 #define FFLASFFPACK_COPY_INIT 100 /*  TO BENCMARK LATER */
@@ -650,9 +650,9 @@ namespace FFLAS { namespace details {
 			}
 			else {
 				typename Field::Element_ptr Ac = fflas_new (F,m,1) ;
-				fcopy(F,m,A,incX,Ac,1);
+				fassign(F,m,A,incX,Ac,1);
 				finit(F,m,Ac,1,FieldCategories::ModularTag());
-				fcopy(F,m,Ac,1,A,incX);
+				fassign(F,m,Ac,1,A,incX);
 				fflas_delete (Ac);
 			}
 		}

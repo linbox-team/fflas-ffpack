@@ -131,7 +131,7 @@ namespace FFPACK {
 			if (M > N){ // Cannot copy B into X
 				W = FFLAS::fflas_new (F, M, NRHS);
 				ldw = NRHS;
-				FFLAS::fcopy(F,M,NRHS,B,ldb,W,ldw);
+				FFLAS::fassign(F,M,NRHS,B,ldb,W,ldw);
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, W, ldw);
 
@@ -154,7 +154,7 @@ namespace FFPACK {
 				ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 				       R, NRHS, F.one, A, lda , W, ldw);
 
-				FFLAS::fcopy(F,R,NRHS,W,ldw,X,ldx);
+				FFLAS::fassign(F,R,NRHS,W,ldw,X,ldx);
 
 				FFLAS::fflas_delete (W);
 				applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
@@ -163,7 +163,7 @@ namespace FFPACK {
 			}
 			else { // Copy B to X directly
 
-				FFLAS::fcopy(F,M,NRHS,B,ldb,X,ldx);
+				FFLAS::fassign(F,M,NRHS,B,ldb,X,ldx);
 
 				solveLB2 (F, FFLAS::FflasLeft, M, NRHS, R, A, lda, Q, X, ldx);
 
@@ -201,7 +201,7 @@ namespace FFPACK {
 			if (M < N) {
 				W = FFLAS::fflas_new (F, NRHS, N);
 				ldw = N;
-				FFLAS::fcopy (F,NRHS, N, B, ldb, W, ldw);
+				FFLAS::fassign (F,NRHS, N, B, ldb, W, ldw);
 
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, W, ldw, P);
@@ -224,7 +224,7 @@ namespace FFPACK {
 					return X;
 				}
 				// The last N-R cols of W are now supposed to be 0
-				FFLAS::fcopy (F, NRHS,R,  W , ldb, X ,ldx);
+				FFLAS::fassign (F, NRHS,R,  W , ldb, X ,ldx);
 				FFLAS::fflas_delete (W);
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					NRHS, 0,(int) R, X, ldx, Q);
@@ -233,7 +233,7 @@ namespace FFPACK {
 
 			}
 			else { // M >=N
-				FFLAS::fcopy(F,NRHS,N,B,ldb,X,ldx);
+				FFLAS::fassign(F,NRHS,N,B,ldb,X,ldx);
 
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					NRHS, 0,(int) R, X, ldx, P);

@@ -285,12 +285,12 @@ namespace FFPACK {
     typename Field::Element * temp = 0;
 	/*
     for (size_t i=0; i<R3; ++i)
-      fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
+      fassign (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
     */
 #pragma omp task  shared(temp, Fi, R3, R2, A4) depend(in:A4, R2, R3) depend(out:temp)
     {
 	    temp = new typename Field::Element [R3*R2];
-	    FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
+	    FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
     }
 //    if (M>8000) std::cerr<<"TRSMs J, N"<<std::endl;
     // J <- L3^-1 I (in a temp)
@@ -522,9 +522,9 @@ std::cerr << "R3 : " << tsi.tv_nsec << std::endl;
 #endif
 		  typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
 		  /*    for (size_t i=0; i<R3; ++i)
-			fcopy (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
+			fassign (Fi, R2, temp + i*R2, 1, A4 + i*lda, 1);
 		  */
-		  FFLAS::fcopy (Fi, R3, R2, A4 , lda, temp , R2);
+		  FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
 
     // J <- L3^-1 I (in a temp)
 		  TASK(READ(Fi, R2, G), NOWRITE(), READWRITE(temp), ftrsm,  Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2, PH);

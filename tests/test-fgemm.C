@@ -98,7 +98,7 @@ bool check_MM(const Field                   & F,
 	Element tmp;
 	ConstElement_ptr ail,blj;
 	Element_ptr D  = FFLAS::fflas_new (F,m,n);
-	FFLAS::fcopy(F,m,n,Cd,n,D,n);
+	FFLAS::fassign(F,m,n,Cd,n,D,n);
 
 	for (size_t i = 0; i < m; ++i)
 		for (size_t j = 0; j < n; ++j){
@@ -207,7 +207,7 @@ bool launch_MM(const Field & F,
 			RandomMatrix(F,B,n,k,ldb);
 		}
 		RandomMatrix(F,C,m,n,ldc);
-		FFLAS::fcopy(F,m,n,C,ldc,D,n);
+		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		if (par){
             FFLAS::MMHelper<Field,
                 FFLAS::MMHelperAlgo::Winograd,

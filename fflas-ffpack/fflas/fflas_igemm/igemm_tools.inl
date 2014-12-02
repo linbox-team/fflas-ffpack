@@ -68,7 +68,7 @@ namespace FFLAS { namespace details {
 		// pack by k columns
 		for(size_t j=0;j<cols_by_k;j+=k){
 			for(size_t i=0;i<rows;i++)
-				//! @bug this is fcopy
+				//! @bug this is fassign
 				for (size_t l=0;l<k;l++,p++) {
 					XX[p]=X[i+(j+l)*ldx];
 				}
@@ -84,7 +84,7 @@ namespace FFLAS { namespace details {
 		}
 		// the remaining columns are not packed
 		for(size_t j=cols_by_k;j<cols;j++)
-			//! @bug this is fcopy
+			//! @bug this is fassign
 			for(size_t i=0;i<rows;i++,p++) {
 				XX[p]=X[i+j*ldx];
 			}
@@ -104,7 +104,7 @@ namespace FFLAS { namespace details {
 			for(size_t j=0;j<cols;j++) {
 				// for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
 				FFLASFFPACK_check(k%simd::vect_size == 0);
-				//! @bug this is fcopy
+				//! @bug this is fassign
 				for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
 					simd::store(&XX[p],simd::loadu(&X[i+l+j*ldx]));
 				}
@@ -123,7 +123,7 @@ namespace FFLAS { namespace details {
 			}
 		}
 		for(size_t i=rows_by_k;i<rows;i++) {
-			//! @bug this is fcopy
+			//! @bug this is fassign
 			for(size_t j=0;j<cols;j++,p++){
 				XX[p]=X[i+j*ldx];
 			}

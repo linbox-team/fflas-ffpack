@@ -332,19 +332,19 @@ namespace FFLAS { namespace Protected {
 		Element_ptr Bc;
 		if (ta == FflasNoTrans) {
 			Ac = fflas_new (F, mr*2, lda);
-			fcopy(F,mr*2,kr*2,A,lda,Ac,lda);
+			fassign(F,mr*2,kr*2,A,lda,Ac,lda);
 		}
 		else {
 			Ac = fflas_new (F, kr*2, lda);
-			fcopy(F,kr*2,mr*2,A,lda,Ac,lda);
+			fassign(F,kr*2,mr*2,A,lda,Ac,lda);
 		}
 		if (tb == FflasNoTrans) {
 			Bc = fflas_new (F, kr*2, ldb);
-			fcopy(F,kr*2,nr*2,B,ldb,Bc,ldb);
+			fassign(F,kr*2,nr*2,B,ldb,Bc,ldb);
 		}
 		else {
 			Bc = fflas_new (F, nr*2, ldb);
-			fcopy(F,nr*2,kr*2,B,ldb,Bc,ldb);
+			fassign(F,nr*2,kr*2,B,ldb,Bc,ldb);
 		}
 #endif
 
