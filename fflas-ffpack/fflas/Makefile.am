@@ -32,7 +32,8 @@ sparse=fflas_fspmv.h \
 multiprecision= fflas_ftrsm_mp.inl \
 		fflas_fscal_mp.inl \
 		fflas_finit_mp.inl \
-		fflas_fger_mp.inl
+		fflas_fger_mp.inl  \
+		fflas_fgemv_mp.inl
 
 pkgincludesub_HEADERS=       \
 	   fflas_bounds.inl      \

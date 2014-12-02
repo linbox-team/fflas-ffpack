@@ -47,7 +47,7 @@ namespace FFPACK {
 		double    *_ptr;
 		size_t  _stride;
 		bool     _alloc; // specify wether Element owns its memory; alloc is true only through F.init() and _ptr==NULL (this is to handle Element allocated within a matrix)
-		rns_double_elt(): _ptr(NULL), _alloc(false){}
+		rns_double_elt(): _ptr(NULL), _stride(0), _alloc(false) {}
 		~rns_double_elt(){ if (_alloc) FFLAS::fflas_delete(_ptr);}
 		rns_double_elt(double* p, size_t r, size_t a=false) : _ptr(p), _stride(r), _alloc(a) {}
 		inline  rns_double_elt_ptr    operator&() ;
@@ -57,34 +57,48 @@ namespace FFPACK {
 
 	// pointer to element of the rns structure (allow virtualization of element from an array of double)
 	struct rns_double_elt_ptr : public rns_double_elt {
+		rns_double_elt other;
 		rns_double_elt_ptr(){}
-		rns_double_elt_ptr(double* p, size_t r)      : rns_double_elt(p,r,false){}
+		rns_double_elt_ptr(double* p, size_t r)            : rns_double_elt(p,r,false){}
 		rns_double_elt_ptr(const rns_double_elt_ptr &x)    : rns_double_elt(x._ptr,x._stride,false){}
 		rns_double_elt_ptr(const rns_double_elt_cstptr &x);
-		inline  operator rns_double_elt_cstptr();
+		rns_double_elt_ptr(rns_double_elt_ptr &&)=default;		
+		//inline  operator rns_double_elt_cstptr();
 		inline rns_double_elt_ptr* operator&(){return this;}
 		inline rns_double_elt&     operator*()  {return static_cast<rns_double_elt&>(*this);}
-		inline rns_double_elt&     operator[](size_t i) {return *((*this)+i);}
+		inline rns_double_elt      operator[](size_t i)const {return rns_double_elt(_ptr+i,_stride);}
+		inline rns_double_elt&     operator[](size_t i) {other=rns_double_elt(_ptr+i,_stride);return other;} // BUGGY
 		inline rns_double_elt_ptr  operator++() {return rns_double_elt_ptr(_ptr++,_stride);}
+		inline rns_double_elt_ptr  operator--() {return rns_double_elt_ptr(_ptr--,_stride);}
 		inline rns_double_elt_ptr  operator+(size_t inc) {return rns_double_elt_ptr(_ptr+inc,_stride);}
+		inline rns_double_elt_ptr  operator-(size_t inc) {return rns_double_elt_ptr(_ptr-inc,_stride);}
 		inline rns_double_elt_ptr& operator+=(size_t inc) {_ptr+=inc;return *this;}
+		inline rns_double_elt_ptr& operator-=(size_t inc) {_ptr-=inc;return *this;}
 		inline rns_double_elt_ptr& operator=(const rns_double_elt_ptr& x);
 		bool operator< (const rns_double_elt_ptr& x) {return _ptr < x._ptr;}
 		bool operator!= (const rns_double_elt_ptr& x) {return _ptr != x._ptr;}
 	};
 	struct rns_double_elt_cstptr : public rns_double_elt {
+		rns_double_elt other;
 		rns_double_elt_cstptr(){}
-		rns_double_elt_cstptr(double* p, size_t r)      : rns_double_elt(p,r,false){}
+		rns_double_elt_cstptr(double* p, size_t r)            : rns_double_elt(p,r,false){}
 		rns_double_elt_cstptr(const rns_double_elt_ptr& x)    : rns_double_elt(x._ptr,x._stride,false){}
 		rns_double_elt_cstptr(const rns_double_elt_cstptr& x) : rns_double_elt(x._ptr,x._stride,false){}
+		rns_double_elt_cstptr(rns_double_elt_cstptr &&)=default;
 		inline rns_double_elt_cstptr* operator&(){return this;}
 		inline rns_double_elt&     operator*() const  {
 			return *const_cast<rns_double_elt*>(static_cast<const rns_double_elt*>(this));
 		}
-		inline rns_double_elt&     operator[](size_t i)const {return *((*this)+i);}
+		inline rns_double_elt      operator[](size_t i)const {return rns_double_elt(_ptr+i,_stride);}
+		inline rns_double_elt&     operator[](size_t i) {other=rns_double_elt(_ptr+i,_stride);return other;} // BUGGY
+		
+		//inline rns_double_elt&     operator[](size_t i)const {return *((*this)+i);}// BUGGY
 		inline rns_double_elt_cstptr  operator++() {return rns_double_elt_cstptr(_ptr++,_stride);}
+		inline rns_double_elt_cstptr  operator--() {return rns_double_elt_cstptr(_ptr--,_stride);}
 		inline rns_double_elt_cstptr  operator+(size_t inc)const {return rns_double_elt_cstptr(_ptr+inc,_stride);}
+		inline rns_double_elt_cstptr  operator-(size_t inc)const {return rns_double_elt_cstptr(_ptr-inc,_stride);}
 		inline rns_double_elt_cstptr& operator+=(size_t inc) {_ptr+=inc;return *this;}
+		inline rns_double_elt_cstptr& operator-=(size_t inc) {_ptr-=inc;return *this;}
 		inline rns_double_elt_cstptr& operator=(const rns_double_elt_cstptr& x);
 		bool operator< (const rns_double_elt_cstptr& x) {return _ptr < x._ptr;}
 		bool operator!= (const rns_double_elt_cstptr& x) {return _ptr != x._ptr;}
@@ -111,7 +125,7 @@ namespace FFPACK {
 
 	rns_double_elt_ptr::rns_double_elt_ptr(const rns_double_elt_cstptr &x)
 		: rns_double_elt(x._ptr,x._stride,false){}
-	rns_double_elt_ptr::operator rns_double_elt_cstptr(){return rns_double_elt_cstptr(_ptr,_stride);}
+	//rns_double_elt_ptr::operator rns_double_elt_cstptr(){return rns_double_elt_cstptr(_ptr,_stride);}
 	rns_double_elt_ptr    rns_double_elt::operator&()       {return 	rns_double_elt_ptr(_ptr,_stride);}
 	rns_double_elt_cstptr rns_double_elt::operator&() const {return 	rns_double_elt_cstptr(_ptr,_stride);}
 

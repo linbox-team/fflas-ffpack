@@ -28,6 +28,7 @@
 
 // functions wih _r are relaxed, meaning no modular reduction
 
+
  template<class _Field>
  class FieldSimd{
  public:

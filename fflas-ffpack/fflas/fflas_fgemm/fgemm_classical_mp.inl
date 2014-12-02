@@ -223,12 +223,13 @@ namespace FFLAS {
 		FFLAS::Timer chrono;chrono.start();
 #endif
 		fgemm(Zrns,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
+		// reduce the product mod p (note that entries are larger than p, due to RNS modulo reduction)
+		finit(F,m,n,Cd,ldc);
 #ifdef BENCH_PERF_FGEMM_MP
 		chrono.stop();
 		F.t_igemm+=chrono.usertime();
 #endif
-		// reduce the product mod p (note that entries are larger than p, due to RNS modulo reduction)
-		finit(F,m,n,Cd,ldc);
+
 		return Cd;
 	}
 

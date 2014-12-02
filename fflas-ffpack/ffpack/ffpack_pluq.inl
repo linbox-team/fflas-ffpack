@@ -32,6 +32,7 @@
 #define CROUT
 #define BASECASE_K 256
 
+
 namespace FFPACK {
 
         // Base Case based on a CUP decomp with rotations
@@ -49,7 +50,7 @@ namespace FFPACK {
 		for (size_t i=0; i<M; ++i) MathP[i] = i;
 		for (size_t i=0; i<N; ++i) MathQ[i] = i;
 		while (((size_t)row<M) && ((size_t)rank<N)){
-			    // Updating row where pivot will be searched for	
+			// Updating row where pivot will be searched for	
 			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
 			int i = rank-1;
 			while(Fi.isZero (CurrRow[++i]) && (i<(int)N-1));
@@ -60,8 +61,9 @@ namespace FFPACK {
 				// pivotRows [row] = true;
 				// P [rank] = row;
 				fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
-				    // Normalization
+				// Normalization
 				typename Field::Element invpiv;
+				Fi.init(invpiv);
 				Fi.inv (invpiv, CurrRow[i]);
 				if (Diag == FFLAS::FflasUnit)
 					FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
@@ -129,7 +131,6 @@ namespace FFPACK {
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
-
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
 		if (std::min (M,N) == 0) return 0;
@@ -178,6 +179,7 @@ namespace FFPACK {
 		if (std::min(M,N) < BASECASE_K)
 			return PLUQ_basecaseCrout (Fi, Diag, M, N, A, lda, P, Q);
 #endif
+
 		FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
 		size_t M2 = M >> 1;
 		size_t N2 = N >> 1;

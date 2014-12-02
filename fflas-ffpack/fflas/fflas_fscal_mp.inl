@@ -67,8 +67,7 @@ namespace FFLAS {
 #ifdef BENCH_PERF_SCAL_MP
 		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
-		finit(F,n,B,Binc);
-		
+		finit(F,n,B,Binc);		
 	}
 	
 	// specialization of the level2 fscalin function for the field RNSInteger<rns_double>

@@ -192,6 +192,7 @@ namespace FFLAS {
 //---------------------------------------------------------------------
 #include "fflas_fgemm/fgemm_classical_mp.inl"
 #include "fflas_ftrsm_mp.inl"
+#include "fflas_fgemv_mp.inl"
 
 
 //---------------------------------------------------------------------
