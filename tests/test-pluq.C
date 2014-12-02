@@ -37,8 +37,8 @@ int main(int argc, char** argv){
 	size_t R;
 
 	if (argc!=4){
-		cerr<<"usage : test-lqup <p> <A>  <i>"<<endl
-		    <<"        to do i LQUP factorisation of A"
+		cerr<<"usage : test-plup <p> <A>  <i>"<<endl
+		    <<"        to do i PLUQ factorisation of A"
 		    <<endl;
 		exit(-1);
 	}
