@@ -73,6 +73,7 @@ namespace FFLAS { namespace vectorised {
 			return;
 
 		}
+
 		vect_t A,B,C,Q,P,NEGP,TMP,MIN,MAX;
 		P   = simd::set1(p);
 		NEGP= simd::set1(-p);
@@ -95,7 +96,7 @@ namespace FFLAS { namespace vectorised {
 			// perform the loop using 256 bits SIMD
 			for (; i <= n - simd::vect_size ; i += simd::vect_size)
 			{
-				C = simd::load(T+i);
+				// C = simd::load(T+i);
 				A = simd::load(TA+i);
 				B = simd::load(TB+i);
 				VEC_ADD<vect_t,Element,positive>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
@@ -170,7 +171,7 @@ namespace FFLAS { namespace vectorised {
 			// perform the loop using 256 bits SIMD
 			for (; i <= n - simd::vect_size ; i += simd::vect_size)
 			{
-				C = simd::load(T+i);
+				// C = simd::load(T+i);
 				A = simd::load(TA+i);
 				B = simd::load(TB+i);
 				VEC_SUB<vect_t,Element,positive>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
@@ -198,7 +199,6 @@ namespace FFLAS { namespace vectorised {
 
 		size_t i = 0;
 
-		{
 			for (; i < n ; i++)
 			{
 				T[i] = TA[i] - TB[i];
@@ -208,7 +208,6 @@ namespace FFLAS { namespace vectorised {
 			}
 			return;
 
-		}
 	}
 
 	template<bool positive, class Element, class T1, class T2>

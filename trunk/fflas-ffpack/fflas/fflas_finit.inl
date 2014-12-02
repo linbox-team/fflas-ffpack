@@ -36,7 +36,7 @@
 #include "fflas-ffpack/fflas/fflas_fcopy.h"
 #include "fflas-ffpack/utils/bit_manipulation.h"
 
-#define FFLASFFPACK_COPY_INIT 100
+#define FFLASFFPACK_COPY_INIT 100 /*  TO BENCMARK LATER */
 
 
 

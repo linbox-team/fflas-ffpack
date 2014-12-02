@@ -124,10 +124,10 @@ namespace FFLAS { namespace ell_simd_details {
 		size_t end = (m%chunk == 0)? m : m+m%chunk;
 		using simd = Simd<typename Field::Element >;
 		using vect_t = typename simd::vect_t;
-		
+
 		vect_t X, Y, D, C, Q, TMP, NEGP, INVP, MIN, MAX, P;
 		double p = (typename Field::Element)F.characteristic();
-		
+
 		P = simd::set1(p);
 		NEGP = simd::set1(-p);
 		INVP = simd::set1(1/p);
@@ -226,23 +226,21 @@ namespace FFLAS { namespace ell_simd_details { /*  ZO */
 
 
 	template<class Field, bool add>
-	inline void fspmv_zo(
-			     const Field & F,
+	inline void fspmv_zo(const Field & F,
 			     const size_t m,
 			     const size_t n,
 			     const size_t ld,
 			     const size_t chunk,
 			     const index_t * col,
-			     const typename Field::Element_ptr x ,
+			     const typename Field::Element_ptr x,
 			     typename Field::Element_ptr y,
-			     FieldCategories::UnparametricTag
-			    )
+			     FieldCategories::UnparametricTag)
 	{
 		using simd = Simd<typename Field::Element >;
 		using vect_t = typename simd::vect_t;
 		size_t end = (m%chunk == 0)? m : m+(chunk-m%chunk);
 		vect_t X,Y,D ;
-		if(add){
+		if(add){ /*  this is compile time decision */
 			for( size_t i = 0 ; i < end/chunk ; ++i ) {
 				Y = simd::load(y+i*simd::vect_size);
 				for (index_t j = 0 ; j < ld ; ++j) {
@@ -584,7 +582,7 @@ namespace FFLAS{
 						}
 					}else{
 						if(!ZO){
-							
+
 								ELL_dat[i*ld*chunk+j*chunk+k] = 0;
 							}
 							ELL_dat[i*ld*chunk+j*chunk+k] = 0;
