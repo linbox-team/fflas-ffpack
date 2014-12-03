@@ -52,7 +52,9 @@ using namespace std;
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 using namespace FFPACK;
-typedef Modular<double> Field;
+// typedef Modular<int16_t> Field;
+typedef Modular<int32_t> Field;
+// typedef Modular<double> Field;
 
 int main(int argc, char** argv){
 	cerr<<setprecision(20);
