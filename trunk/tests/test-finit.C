@@ -86,8 +86,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 #endif
 	}
 
-	if (timing)	std::cout  << " finit (___): " << tim.usertime()/repet << 's' << std::endl;
-	if (timing)	std::cout  << " finit (AVX): " << tom.usertime()/repet << 's'<<  std::endl << std::endl;
+	if (timing)	std::cout  << " finit (___): " << tim.usertime()/(double)repet << 's' << std::endl;
+	if (timing)	std::cout  << " finit (AVX): " << tom.usertime()/(double)repet << 's'<<  std::endl << std::endl;
 
 	if (timing)	std::cout << "=== inc != 1 ===" << std::endl ;
 
@@ -123,8 +123,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 
 	}
 
-	if (timing)	std::cout <<  " finit (___): " << tim.usertime()/repet << 's' << std::endl;
-	if (timing)	std::cout <<  " finit (AVX): " << tom.usertime()/repet << 's'<<  std::endl << std::endl;
+	if (timing)	std::cout <<  " finit (___): " << tim.usertime()/(double)repet << 's' << std::endl;
+	if (timing)	std::cout <<  " finit (AVX): " << tom.usertime()/(double)repet << 's'<<  std::endl << std::endl;
 
 	if (timing)	std::cout << "<<<" << std::endl;
 
