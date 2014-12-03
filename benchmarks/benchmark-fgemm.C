@@ -116,7 +116,6 @@ int main(int argc, char** argv) {
   double time=0.0, timev=0.0;
 
   Element * A, * B, * C;
-  Element *v, *w, *y, *x;
 
   Field::RandIter G(F); 
   A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
@@ -143,15 +142,6 @@ int main(int argc, char** argv) {
 	  // }
 	  // else{
 
-      v = FFLAS::fflas_new<Element>(n);
-      
-      for(size_t j=0; j<(size_t)n; ++j)
-              G.random(*(v+j));
-      
-      w = FFLAS::fflas_new<Element>(m);
-      x = FFLAS::fflas_new<Element>(m);
-      y = FFLAS::fflas_new<Element>(k);
-      
       chrono.clear();
       if (p){
 	      FFLAS::CuttingStrategy meth;
@@ -186,14 +176,7 @@ int main(int argc, char** argv) {
       
       freivalds.clear();
       freivalds.start();
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.one, 
-                   C, n, v, 1, F.zero, w, 1);
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, k,n, F.one, 
-                   B, n, v, 1, F.zero, y, 1);
-      FFLAS::fgemv(F, FFLAS::FflasNoTrans, m,k, F.one, 
-                   A, k, y, 1, F.zero, x, 1);
-      bool pass=true;
-      for(size_t j=0; j<(size_t)m; ++j) pass &= ( *(w+j) == *(x+j) );
+      bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
       freivalds.stop();
       timev+=freivalds.usertime();
       if (!pass) 
@@ -210,7 +193,9 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
   
-      //std::cout<<"Freivalds vtime: "<<timev/(double)iter<<std::endl;
+#if DEBUG
+        std::cout<<"Freivalds vtime: "<<timev/(double)iter<<std::endl;
+#endif
 
   return 0;
 }
