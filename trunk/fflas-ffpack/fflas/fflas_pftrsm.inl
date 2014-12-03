@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <04 Sep 14 14:49:03 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <03 Dec 14 11:35:13 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -106,8 +106,8 @@ namespace FFLAS {
 			int nt = H.parseq.numthreads;
 			int nt_it,nt_rec;
 			if ((int)m/PTRSM_HYBRID_THRESHOLD < nt){
-				nt_it = ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
-				nt_rec = ceil(double(nt)/nt_it);
+				nt_it = (int)ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
+				nt_rec = (int)ceil(double(nt)/nt_it);
 			} else { nt_it = nt; nt_rec = 1;}
 			ForStrategy1D iter(m, H.parseq.method, (size_t)nt_it);
 			for (iter.begin(); ! iter.end(); ++iter) {
