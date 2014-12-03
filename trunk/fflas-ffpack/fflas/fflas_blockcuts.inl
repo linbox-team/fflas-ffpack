@@ -44,7 +44,7 @@ namespace FFLAS {
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t numthreads) {
-        RBLOCKSIZE = __FFLASFFPACK_MINBLOCKCUTS;
+        RBLOCKSIZE = std::min(m,__FFLASFFPACK_MINBLOCKCUTS);
         CBLOCKSIZE = n;
     }
 
@@ -55,7 +55,7 @@ namespace FFLAS {
                                  const size_t m, const size_t n,
                                  const size_t numthreads) {
         RBLOCKSIZE = m;
-        CBLOCKSIZE =__FFLASFFPACK_MINBLOCKCUTS;
+        CBLOCKSIZE = std::min(n,__FFLASFFPACK_MINBLOCKCUTS);
     }
 
 
@@ -64,8 +64,8 @@ namespace FFLAS {
                                 size_t& CBLOCKSIZE,
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
-        RBLOCKSIZE =__FFLASFFPACK_MINBLOCKCUTS;
-        CBLOCKSIZE =__FFLASFFPACK_MINBLOCKCUTS;
+        RBLOCKSIZE = std::min(m,__FFLASFFPACK_MINBLOCKCUTS);
+        CBLOCKSIZE = std::min(n,__FFLASFFPACK_MINBLOCKCUTS);
     }
 
     template<>
