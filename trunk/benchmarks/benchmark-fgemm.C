@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 
   Field F(q);
 
-  FFLAS::Timer chrono, freidvals;
+  FFLAS::Timer chrono, freivalds;
   double time=0.0, timev=0.0;
 
   Element * A, * B, * C;
@@ -145,7 +145,6 @@ int main(int argc, char** argv) {
 
       v = FFLAS::fflas_new<Element>(n);
       
-      Field::RandIter G(F);
       for(size_t j=0; j<(size_t)n; ++j)
               G.random(*(v+j));
       
@@ -185,8 +184,8 @@ int main(int argc, char** argv) {
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
       }
       
-      freidvals.clear();
-      freidvals.start();
+      freivalds.clear();
+      freivalds.start();
       FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.one, 
                    C, n, v, 1, F.zero, w, 1);
       FFLAS::fgemv(F, FFLAS::FflasNoTrans, k,n, F.one, 
@@ -195,8 +194,8 @@ int main(int argc, char** argv) {
                    A, k, y, 1, F.zero, x, 1);
       bool pass=true;
       for(size_t j=0; j<(size_t)m; ++j) pass &= ( *(w+j) == *(x+j) );
-      freidvals.stop();
-      timev+=freidvals.usertime();
+      freivalds.stop();
+      timev+=freivalds.usertime();
       if (!pass) 
 	      std::cout<<"FAILED"<<std::endl;
 	  //std::cout << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
@@ -211,7 +210,7 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
   
-      //std::cout<<"Freidvals vtime: "<<timev/(double)iter<<std::endl;
+      //std::cout<<"Freivalds vtime: "<<timev/(double)iter<<std::endl;
 
   return 0;
 }
