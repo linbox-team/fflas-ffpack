@@ -56,6 +56,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_pftrsm.inl      \
 	   fflas_ftrsm.inl       \
 	   fflas_fgemv.inl       \
+	   fflas_freivalds.inl       \
 	   fflas_fscal.h       \
 	   fflas_fscal.inl       \
 	   fflas_ftrsm_src.inl   \
