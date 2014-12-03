@@ -80,8 +80,8 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	for (size_t i=0; i<r; ++i){
 		if ( Qt[i]> (size_t) i ){
 			FFLAS::fswap( F, i,
-			       A + Qt[i]*lda, 1,
-			       A + i*lda, 1 );
+				      A + Qt[i]*lda, 1,
+				      A + i*lda, 1 );
 		}
 	}
 	if (transform){
@@ -92,11 +92,20 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	} else {
 		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r,
 		       F.one, A, lda, A+r*lda, lda);
-		for (size_t i=0; i<r; i++){
+#if 0
+		for (size_t i=0; i<r; i++)
 			for (size_t j=0; j<N; j++)
 				F.assign (*(A+i*lda+j), F.zero);
+		F.assign (*(A + i*(lda+1)), F.one);
+#else
+		// for (size_t i=0; i<r; i++)
+		// for (size_t j=0; j<N; j++)
+		// F.assign (*(A+i*lda+j), F.zero);
+		FFLAS::fzero(F,r,N,A,lda);
+		for (size_t i=0; i<r; i++)
 			F.assign (*(A + i*(lda+1)), F.one);
-		}
+
+#endif
 		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 		       r, 0,(int) r, A, lda, Qt);
 	}
@@ -129,11 +138,20 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 	} else {
 		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r,
 		       F.one, A, lda, A+r, lda);
+#if 0
 		for (size_t i=0; i<r; i++){
 			for (size_t j=0; j<M; j++)
 				F.assign (*(A+j*lda+i), F.zero);
 			F.assign (*(A + i*(lda+1)), F.one);
 		}
+#else
+		// for (size_t j=0; j<M; j++)
+			// for (size_t i=0; i<r; i++)
+				// F.assign (*(A+j*lda+i), F.zero);
+		FFLAS::fzero(F,M,r,A,lda);
+		for (size_t i=0; i<r; i++)
+			F.assign (*(A + i*(lda+1)), F.one);
+#endif
 		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 		       r, 0, (int)r, A, lda, Qt);
 	}
@@ -269,9 +287,13 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 			fassign (F, ncol, tmp+i*ncol,1, NZ1 + i*lda, 1);
 		FFLAS::fflas_delete (tmp);
 
+#if 0
 		for (size_t i=rowbeg+r1; i<M; ++i)
 			for (size_t j=0; j<recsize-r1; ++j)
 				F.assign(*(NZ1+i*lda+j), F.zero);
+#else
+		FFLAS::fzero(F,M-rowbeg-r1,recsize-r1,NZ1+(rowbeg+r1)*lda,lda);
+#endif
 		// size_t * temp = FFLAS::fflas_new<size_t>(recsize-r1);
 		// for (size_t i=0,j = colbeg+r1; j<colbeg+recsize; ++i,++j)
 		//  	temp[i] = P[j];
