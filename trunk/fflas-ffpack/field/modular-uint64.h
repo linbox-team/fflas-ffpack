@@ -37,6 +37,8 @@
 #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
 
+#include <inttypes.h> // for imaxabs
+
 
 // Namespace in which all LinBox code resides
 namespace FFPACK
@@ -97,7 +99,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const uint32_t &y ) const
 		{
-			x = (Element) (labs (y) % (int64_t) (_modulus));
+			x = (Element) (imaxabs (y) % (int64_t) (_modulus));
 			// if (y < 0) x = _modulus - x;
 			return x;
 		}
