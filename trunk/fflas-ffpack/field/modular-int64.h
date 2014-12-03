@@ -103,7 +103,7 @@ namespace FFPACK {
 			if (_two64 >= 65521) _two64 -= 65521;
 		}
 
-		Modular (Element value, int32_t exp = 1) :
+		Modular (Element value, int64_t exp = 1) :
 			modulus(value),lmodulus((uint64_t)modulus)
 				,one(1),zero(0),mOne(modulus -1)
 		{

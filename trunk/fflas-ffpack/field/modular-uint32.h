@@ -116,7 +116,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const uint64_t &y ) const
 		{
-			x = Element(y %  (_modulus));
+			x = Element(y %  ((uint64_t)(_modulus));
 			return x;
 		}
 
