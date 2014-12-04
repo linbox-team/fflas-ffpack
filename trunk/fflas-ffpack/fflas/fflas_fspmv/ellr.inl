@@ -126,12 +126,12 @@ namespace FFLAS { /*  ELLR */
 					for ( ; j < j_loc ; ++j ) {
 						y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 					}
-					F.init(y[i],y[i]);
+					F.reduce(y[i]);
 				}
 				for ( ; j < row[i]  ; ++j) {
 					y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 				}
-				F.init(y[i],y[i]);
+				F.reduce (y[i]);
 			}
 		}
 
@@ -221,7 +221,7 @@ namespace FFLAS { /*  ELLR */
 			     FieldCategories::ModularTag)
 	{
 		ellr_details::fspmv(F,A.m,A.n,A.ld,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -376,7 +376,7 @@ namespace FFLAS { /*  ELLR */
 			ellr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.row,A.col,x.dat,y.dat, FieldCategories::UnparametricTag());
 			fscalin(F,A.n,A.cst,y.dat,1);
 		}
-		finit(F,y.m,y.dat,1);
+		freduce (F,y.m,y.dat,1);
 	}
 } // FFLAS
 

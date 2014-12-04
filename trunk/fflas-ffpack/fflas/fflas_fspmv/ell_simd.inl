@@ -172,7 +172,7 @@ namespace FFLAS { namespace ell_simd_details {
 	// 		}
 	// 		for(size_t k = 0 ; k < chunk ; ++k)
 	// 		{
-	// 			F.init(y[i*chunk+k], y[i*chunk+k]);
+	// 			F.reduce (y[i*chunk+k]);
 	// 		}
 	// 	}
 	// 	for ( ; j < ld ; ++j) {
@@ -183,7 +183,7 @@ namespace FFLAS { namespace ell_simd_details {
 	// 	}
 	// 	for(size_t k = 0 ; k < chunk ; ++k)
 	// 	{
-	// 		F.init(y[i*chunk+k], y[i*chunk+k]);
+	// 		F.reduce (y[i*chunk+k]);
 	// 	}
 	// }
 
@@ -314,7 +314,7 @@ namespace FFLAS {
 			  FieldCategories::ModularTag)
 	{
 		ell_simd_details::fspmv(F,A.m,A.n,A.ld,A.chunk,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -482,7 +482,7 @@ namespace FFLAS { /*  ZO */
 			ell_simd_details::fspmv_zo<Field,true>(F,A.m,A.n,A.chunk,A.ld,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 } // FFLAS
 

@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_finit.inl
+/* fflas/fflas_freduce_mp.inl
  * Copyright (C) 2014 FFLAS FFPACK group
  *
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
@@ -27,8 +27,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_init_mp_INL
-#define __FFLASFFPACK_fflas_init_mp_INL
+#ifndef __FFLASFFPACK_fflas_freduce_mp_INL
+#define __FFLASFFPACK_fflas_freduce_mp_INL
 
 
 // activate only if FFLAS-FFPACK haves multiprecision integer
@@ -39,24 +39,26 @@
 
 namespace FFLAS {
 
-	// specialization of the level1 finit function for the field RNSInteger<rns_double>
+	// specialization of the level1 freduce function for the field RNSInteger<rns_double>
 	template<>
-	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t n, FFPACK::rns_double::Element_ptr A, size_t inc)
+	void freduce (const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,
+		      const size_t n, FFPACK::rns_double::Element_ptr A, size_t inc)
 	{
 		if (n==0) return;
-		//cout<<"finit: "<<n<<" with "<<inc<<endl;
+		//cout<<"freduce: "<<n<<" with "<<inc<<endl;
 		if (inc==1)
 			F.reduce_modp(n,A._ptr,A._stride);
 		else
 			F.reduce_modp(n,1,A._ptr,inc,A._stride);
-		//throw FFPACK::Failure(__func__,__FILE__,__LINE__,"finit RNSIntegerMod  -> (inc!=1) NOT SUPPORTED");
+		//throw FFPACK::Failure(__func__,__FILE__,__LINE__,"freduce RNSIntegerMod  -> (inc!=1) NOT SUPPORTED");
 	}
-	// specialization of the level2 finit function for the field RNSInteger<rns_double>
+	// specialization of the level2 freduce function for the field RNSInteger<rns_double>
 	template<>
-	void finit(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n, FFPACK::rns_double::Element_ptr A, size_t lda)
+	void freduce (const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,
+		      const size_t m, const size_t n, FFPACK::rns_double::Element_ptr A, size_t lda)
 	{
 		if (n==0||m==0) return;
-		//cout<<"finit: "<<m<<" x "<<n<<" "<<lda<<endl;
+		//cout<<"freduce: "<<m<<" x "<<n<<" "<<lda<<endl;
 		if (lda == n)
 			F.reduce_modp(m*n,A._ptr,A._stride);
 		else

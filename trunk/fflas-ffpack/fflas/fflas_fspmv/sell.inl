@@ -231,7 +231,7 @@ namespace FFLAS {	namespace sell_details{
 			     FieldCategories::ModularTag)
 	{
 		sell_details::fspmv(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -341,7 +341,7 @@ namespace FFLAS {	namespace sell_details{
 			sell_details::fspmv<Field, true>(F,A.m,A.n,A.chunk,A.nChunks,A.col,A.ptr,A.chs,x.dat,y.dat, FieldCategories::ModularTag());
 			fflas_delete(x1);
 		}
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	/* *** */

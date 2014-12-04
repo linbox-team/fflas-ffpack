@@ -249,12 +249,12 @@ namespace FFLAS { namespace ell_details {
 				for ( ; j < j_loc ; ++j ) {
 					y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 				}
-				F.init(y[i],y[i]);
+				F.reduce (y[i]);
 			}
 			for ( ; j < ld  ; ++j) {
 				y[i] += dat[i*ld+j] * x[col[i*ld+j]];
 			}
-			F.init(y[i],y[i]);
+			F.reduce (y[i]);
 		}
 	}
 
@@ -301,7 +301,7 @@ namespace FFLAS { namespace ell_details {
 						y[i+k] += dat[i*ld+j] * x[col[i*ld+j]+k];
 				}
 				for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i+k],y[i+k]);
+					F.reduce (y[i+k]);
 			}
 			for ( ; j < ld  ; ++j) {
 				int k = 0;
@@ -319,7 +319,7 @@ namespace FFLAS { namespace ell_details {
 				}
 			}
 			for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i+k],y[i+k]);
+					F.reduce (y[i+k]);
 		}
 #else
 		index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
@@ -333,14 +333,14 @@ namespace FFLAS { namespace ell_details {
 						y[i+k] += dat[i*ld+j] * x[col[i*ld+j]+k];
 				}
 				for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i+k],y[i+k]);
+					F.reduce (y[i+k]);
 			}
 			for ( ; j < ld  ; ++j) {
 				for(int k = 0 ; k < blockSize ; ++k)
 						y[i+k] += dat[i*ld+j] * x[col[i*ld+j]+k];
 			}
 			for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i+k],y[i+k]);
+					F.reduce (y[i+k]);
 		}
 #endif // __FFLASFFPACK_USE_SIMD
 	}
@@ -391,7 +391,7 @@ namespace FFLAS { namespace ell_details {
 						y[i*lda+k] += dat[i*ld+j] * x[col[i*ld+j]*lda+k];
 				}
 				for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i*lda+k],y[i*lda+k]);
+					F.reduce (y[i*lda+k]);
 			}
 			for ( ; j < ld  ; ++j) {
 				int k = 0;
@@ -409,7 +409,7 @@ namespace FFLAS { namespace ell_details {
 				}
 			}
 			for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i*lda+k],y[i*lda+k]);
+					F.reduce(y[i*lda+k]);
 		}
 #else
 		index_t block = (ld)/kmax ; // use DIVIDE_INTO from fspmvgpu
@@ -423,14 +423,14 @@ namespace FFLAS { namespace ell_details {
 						y[i*lda+k] += dat[i*ld+j] * x[col[i*ld+j]*lda+k];
 				}
 				for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i*lda+k],y[i*lda+k]);
+					F.reduce (y[i*lda+k]);
 			}
 			for ( ; j < ld  ; ++j) {
 				for(int k = 0 ; k < blockSize ; ++k)
 						y[i*lda+k] += dat[i*ld+j] * x[col[i*ld+j]*lda+k];
 			}
 			for(int k = 0 ; k < blockSize ; ++k)
-					F.init(y[i*lda+k],y[i*lda+k]);
+					F.reduce (y[i*lda+k]);
 		}
 #endif // __FFLASFFPACK_USE_SIMD
 	}
@@ -467,7 +467,7 @@ namespace FFLAS {
 			     FieldCategories::ModularTag)
 	{
 		ell_details::fspmv(F,A.m,A.n,A.ld,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -528,7 +528,7 @@ namespace FFLAS {
 				ell_details::fspmm<Field, false>(F,A.m,A.n,A.ld,A.col,A.dat,lda, blockSize,x.dat,y.dat, FieldCategories::UnparametricTag ());
 			}
 		}
-		finit(F,blockSize,A.m,y.dat,lda);
+		freduce (F,blockSize,A.m,y.dat,lda);
 	}
 
 	template<class Field>
@@ -1073,7 +1073,7 @@ namespace FFLAS { /*  ZO */
 			ell_details::fspmv_zo<Field,true>(F,A.m,A.n,A.ld,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -1244,7 +1244,7 @@ namespace FFLAS { /*  ZO */
 				fflas_delete(x1);
 			}
 		}
-		finit(F,blockSize,A.m,y.dat,lda);
+		freduce (F,blockSize,A.m,y.dat,lda);
 	}
 
 

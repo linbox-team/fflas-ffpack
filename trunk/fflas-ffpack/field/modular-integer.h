@@ -167,10 +167,21 @@ namespace FFPACK {
 		Element &init (Element &x, const T &y) const
 		{
 			x = y ;
-			x%= modulus;
+			return reduce (x);
+		}
+		Element &reduce (Element &x, const Element &y) const
+		{
+			x = y % modulus;
 			if (x < zero) x += modulus;
 			return x;
 		}
+		Element &reduce (Element &x) const
+		{
+			x %= modulus;
+			if (x < zero) x += modulus;
+			return x;
+		}
+
 
 		Element& init(Element& x) const
 		{
@@ -241,7 +252,7 @@ namespace FFPACK {
 		 Element &mul (Element &x, const Element &y, const Element &z) const
 		{
 			x = y*z;
-			return init(x,x);
+			return reduce (x);
 		}
 
 		 Element &div (Element &x, const Element &y, const Element &z) const
@@ -286,7 +297,7 @@ namespace FFPACK {
 				      const Element &y) const
 		{
 			r = a * x + y;
-			return init(r,r);
+			return reduce (r);
 		}
 
 		 Element &axmy (Element &r,
@@ -295,7 +306,7 @@ namespace FFPACK {
 				      const Element &y) const
 		{
 			r = a * x - y;
-			return init(r,r);
+			return reduce (r);
 		}
 
 		 Element &maxpy (Element &r,
@@ -304,7 +315,7 @@ namespace FFPACK {
 				      const Element &y) const
 		{
 			r = y - a * x;
-			return init(r,r);
+			return reduce (r);
 		}
 
 		 Element &addin (Element &x, const Element &y) const
@@ -345,14 +356,14 @@ namespace FFPACK {
 		 Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r = r + a * x;
-			return init(r,r);
+			return reduce (r);
 
 		}
 
 		 Element &maxpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r = r - a * x;
-			init(r,r);
+			reduce (r);
 			// if (r<zero) r += modulus;
 			return r;
 		}

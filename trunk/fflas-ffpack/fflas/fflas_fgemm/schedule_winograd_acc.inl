@@ -274,7 +274,7 @@ namespace FFLAS { namespace BLAS3 {
 		double C12Min, C12Max;
 		// This test will be optimized out
 		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, C22Min, C22Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
-			finit(F,mr,nr,X1,nr);
+			freduce(F,mr,nr,X1,nr);
 			H5.initOut();
 		}
 
@@ -301,8 +301,8 @@ namespace FFLAS { namespace BLAS3 {
 		//  U1 = P2 + P1 in C11
 		double U1Min, U1Max;
 		if (Protected::NeedPreAddReduction (U1Min,U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
-			finit(F,mr,nr,X1,nr);
-			finit(F,mr,nr,C11,ldc);
+			freduce(F,mr,nr,X1,nr);
+			freduce(F,mr,nr,C11,ldc);
 		}
 		faddin(DF,mr,nr,X1,nr,C11,ldc);
 
@@ -322,8 +322,8 @@ namespace FFLAS { namespace BLAS3 {
 		// U4 = U2 + C12 in C12
 		double U4Min, U4Max;
 		if (Protected::NeedPreAddReduction (U4Min, U4Max, H6.Outmin, H6.Outmax, C12Min, C12Max, WH)){
-			finit(F,mr,nr,C12,ldc);
-			finit(F,mr,nr,X1,nr);
+			freduce(F,mr,nr,C12,ldc);
+			freduce(F,mr,nr,X1,nr);
 		}
 		faddin(DF,mr,nr,X1,nr,C12,ldc);
 
@@ -366,16 +366,16 @@ namespace FFLAS { namespace BLAS3 {
 		// U7 =  U3 + C22 in C22
 		double U7Min, U7Max;
 		if (Protected::NeedPreAddReduction (U7Min, U7Max, H7.Outmin, H7.Outmax, C22Min, C22Max, WH)){
-			finit(F,mr,nr,X1,nr);
-			finit(F,mr,nr,C22,ldc);
+			freduce(F,mr,nr,X1,nr);
+			freduce(F,mr,nr,C22,ldc);
 		}
 		faddin(DF,mr,nr,X1,nr,C22,ldc);
 
 		// U6 = U3 - P4 in C21
 		double U6Min, U6Max;
 		if (Protected::NeedPreSubReduction(U6Min, U6Max, H7.Outmin, H7.Outmax, H4.Outmin, H4.Outmax, WH)){
-			finit(F,mr,nr,X1,nr);
-			finit(F,mr,nr,C21,ldc);
+			freduce(F,mr,nr,X1,nr);
+			freduce(F,mr,nr,C21,ldc);
 		}
 		fsub(DF,mr,nr,X1,nr,C21,ldc,C21,ldc);
 

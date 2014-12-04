@@ -282,7 +282,7 @@ namespace FFPACK {
 
 		inline Element &init (Element &x, const long &y) const
 		{
-			// pas de pbème : float tout petit !
+			// no pb : float is small !
 			x  = Element(y % (long) lmodulus);
 			NORMALISE(x);
 			return x;
@@ -290,7 +290,7 @@ namespace FFPACK {
 
 		inline Element &init (Element &x, const int &y) const
 		{
-			// pas de pbème : float tout petit !
+			// no pb : float is small !
 			x  = Element(y % (long) lmodulus);
 			NORMALISE(x);
 			return x;
@@ -303,10 +303,21 @@ namespace FFPACK {
 			return x ;
 		}
 
-		inline Element& init(Element& x, const Element y) const
+		inline Element& init (Element& x, const Element y) const
 		{
+			return reduce (x,y);
+		}
 
+		inline Element& reduce (Element& x, const Element y) const
+		{
 			x = fmodf (y, modulus);
+			NORMALISE(x);
+			return x ;
+		}
+
+		inline Element& reduce (Element& x) const
+		{
+			x = fmodf (x, modulus);
 			NORMALISE(x);
 			return x ;
 		}
@@ -358,7 +369,7 @@ namespace FFPACK {
 		inline Element &mul (Element &x, const Element &y, const Element &z) const
 		{
 			x = y * z;
-			return init (x,x);
+			return reduce (x);
 		}
 
 		inline Element &div (Element &x, const Element &y, const Element &z) const
@@ -404,7 +415,7 @@ namespace FFPACK {
 				      const Element &y) const
 		{
 			r = a * x + y;
-			return init (r, r);
+			return reduce (r);
 		}
 
 		inline Element &axmy (Element &r,
@@ -413,7 +424,7 @@ namespace FFPACK {
 				      const Element &y) const
 		{
 			r = a * x - y;
-			return init (r, r);
+			return reduce (r);
 		}
 
 		inline Element &maxpy (Element &r,
@@ -422,7 +433,7 @@ namespace FFPACK {
 				       const Element &y) const
 		{
 			r = y - a * x;
-			return init (r, r);
+			return reduce (r);
 		}
 
 		inline Element &addin (Element &x, const Element &y) const
@@ -462,13 +473,13 @@ namespace FFPACK {
 		inline Element &axpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r += a * x;
-			return init (r, r);
+			return reduce (r);
 		}
 
 		inline Element &maxpyin (Element &r, const Element &a, const Element &x) const
 		{
 			r -= a * x;
-			return init (r, r);
+			return reduce (r);
 		}
 
 		static inline Element getMaxModulus()

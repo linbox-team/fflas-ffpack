@@ -217,7 +217,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	__FFLAS__DOMAIN D(F); // is this safe ??
 
 	if ( __FFLAS__Na <= nblas ){
-		finit(F,M,N,B,ldb);
+		freduce (F, M, N, B, ldb);
 	
 #define __FFLAS__Atrsm A
 #define __FFLAS__Atrsm_lda lda
@@ -283,7 +283,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 			 Mjoin (Cblas, __FFLAS__TRANS),
 			 CblasUnit,
 			 (int)M, (int)N, D.one, __FFLAS__Atrsm, (int)__FFLAS__Atrsm_lda, B, (int)ldb );
-		finit(F,M,N,B,ldb);
+		freduce (F, M, N, B, ldb);
 #endif //__FFLAS_MULTIPRECISION
 
 #ifndef __FFLAS__UNIT

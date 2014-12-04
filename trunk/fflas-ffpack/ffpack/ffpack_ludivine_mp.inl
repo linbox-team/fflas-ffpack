@@ -111,7 +111,7 @@ namespace FFPACK {
 		chrono.clear();chrono.start();
 #endif			
 		// reduce it modulo p
-		FFLAS::finit(F,M,N,A,lda);
+		FFLAS::freduce (F,M,N,A,lda);
 		//F.write(std::cout,*A);
 		
 #ifdef BENCH_PERF_LQUP_MP

@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_finit.inl
+/* fflas/fflas_freduce.inl
  * Copyright (C) 2014 Pascal Giorgi
  *
  * Written by Pascal Giorgi <Pascal.Giorgi@lirmm.fr>
@@ -29,14 +29,14 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_init_INL
-#define __FFLASFFPACK_fflas_init_INL
+#ifndef __FFLASFFPACK_fflas_freduce_INL
+#define __FFLASFFPACK_fflas_freduce_INL
 
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 #include "fflas-ffpack/utils/bit_manipulation.h"
 
-#define FFLASFFPACK_COPY_INIT 100 /*  TO BENCMARK LATER */
+#define FFLASFFPACK_COPY_REDUCE 100 /*  TO BENCMARK LATER */
 
 
 
@@ -633,26 +633,23 @@ namespace FFLAS { namespace details {
 	// specialised
 	template<class Field>
 	typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-	finit (const Field & F, const size_t m,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::ModularTag
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
 	{
-
 		if(incX == 1) {
 			vectorised::modp<Field,false>(F,A,m,A);
 		}
 		else { /*  faster with copy, use incX=1, copy back ? */
-			if (m < FFLASFFPACK_COPY_INIT) {
+			if (m < FFLASFFPACK_COPY_REDUCE) {
 				typename Field::Element_ptr Xi = A ;
 				for (; Xi < A+m*incX; Xi+=incX )
-					F.init( *Xi , *Xi);
+					F.reduce(*Xi);
 			}
 			else {
 				typename Field::Element_ptr Ac = fflas_new (F,m,1) ;
-				fassign(F,m,A,incX,Ac,1);
-				finit(F,m,Ac,1,FieldCategories::ModularTag());
-				fassign(F,m,Ac,1,A,incX);
+				fassign (F,m,A,incX,Ac,1);
+				freduce (F,m,Ac,1,FieldCategories::ModularTag());
+				fassign (F,m,Ac,1,A,incX);
 				fflas_delete (Ac);
 			}
 		}
@@ -660,10 +657,8 @@ namespace FFLAS { namespace details {
 
 	template<class Field>
 	typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-	finit (const Field & F, const size_t m,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::ModularTag
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
 	{ /* ??? ( faster with copy, use incX=1, copy back ? */
 		if(incX == 1) {
 			vectorised::modp<Field,false>(F,A,m,A);
@@ -671,39 +666,34 @@ namespace FFLAS { namespace details {
 		else {
 			typename Field::Element_ptr  Xi = A ;
 			for (; Xi < A+m*incX; Xi+=incX )
-				F.init( *Xi , *Xi);
+				F.reduce(*Xi);
 		}
 	}
 
 	template<class Field>
 	void
-	finit (const Field & F, const size_t m,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::GenericTag
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::Element_ptr A, const size_t incX,
+		 FieldCategories::GenericTag)
 	{
 		typename Field::Element_ptr Xi = A ;
 		for (; Xi < A+m*incX; Xi+=incX )
-			F.init( *Xi , *Xi);
+			F.reduce (*Xi);
 	}
 
 	template<class Field>
 	void
-	finit (const Field & F, const size_t m,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::UnparametricTag
-	      )
-	{
-		return;
-	}
+	freduce (const Field & F, const size_t m,
+		 typename Field::Element_ptr A, const size_t incX,
+		 FieldCategories::UnparametricTag)
+	{return;}
 
 	template<class Field>
 	typename std::enable_if< FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-	finit (const Field & F, const size_t m,
-	       typename Field::ConstElement_ptr  B, const size_t incY,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::ModularTag
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::ConstElement_ptr  B, const size_t incY,
+		 typename Field::Element_ptr A, const size_t incX, 
+		 FieldCategories::ModularTag)
 	{
 		if(incX == 1 && incY == 1) {
 			vectorised::modp<Field,false>(F,B,m,A);
@@ -712,55 +702,48 @@ namespace FFLAS { namespace details {
 			typename Field::Element_ptr Xi = A ;
 			typename Field::ConstElement_ptr Yi = B ;
 			for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-				F.init( *Xi , *Yi);
+				F.reduce (*Xi , *Yi);
 		}
 	}
 
 	template<class Field>
 	typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
-	finit (const Field & F, const size_t m,
-	       typename Field::ConstElement_ptr  B, const size_t incY,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::ModularTag
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::ConstElement_ptr  B, const size_t incY,
+		 typename Field::Element_ptr A, const size_t incX,
+		 FieldCategories::ModularTag)
 	{
-
+		
 		typename Field::Element_ptr Xi = A ;
 		typename Field::ConstElement_ptr Yi = B ;
 		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-			F.init( *Xi , *Yi);
+			F.reduce (*Xi , *Yi);
 	}
 
 	template<class Field>
 	void
-	finit (const Field & F, const size_t m,
-	       typename Field::ConstElement_ptr  B, const size_t incY,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::GenericTag
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::ConstElement_ptr  B, const size_t incY,
+		 typename Field::Element_ptr A, const size_t incX,
+		 FieldCategories::GenericTag)
 	{
-
 		typename Field::Element_ptr Xi = A ;
 		typename Field::ConstElement_ptr Yi = B ;
 		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
-			F.init( *Xi , *Yi);
+			F.reduce (*Xi , *Yi);
 	}
 
 	template<class Field>
 	void
-	finit (const Field & F, const size_t m,
-	       typename Field::ConstElement_ptr  B, const size_t incY,
-	       typename Field::Element_ptr A, const size_t incX
-	       , FieldCategories::UnparametricTag
-	      )
-	{
-		return;
-	}
-
+	freduce (const Field & F, const size_t m,
+		 typename Field::ConstElement_ptr  B, const size_t incY,
+		 typename Field::Element_ptr A, const size_t incX,
+		 FieldCategories::UnparametricTag)
+	{return;}
 
 } // details
 } // FFLAS
 
 
-#endif // __FFLASFFPACK_fflas_init_INL
+#endif // __FFLASFFPACK_fflas_freduce_INL
 

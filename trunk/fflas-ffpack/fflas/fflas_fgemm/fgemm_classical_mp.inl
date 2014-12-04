@@ -224,7 +224,7 @@ namespace FFLAS {
 #endif
 		fgemm(Zrns,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
 		// reduce the product mod p (note that entries are larger than p, due to RNS modulo reduction)
-		finit(F,m,n,Cd,ldc);
+		freduce (F, m, n, Cd, ldc);
 #ifdef BENCH_PERF_FGEMM_MP
 		chrono.stop();
 		F.t_igemm+=chrono.usertime();
@@ -256,7 +256,7 @@ namespace FFLAS {
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 		
 		// reduce the product mod p
-		finit(F,m,n,C,ldc);
+		freduce (F, m, n, C, ldc);
 
 		return C;
 	}

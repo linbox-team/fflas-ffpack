@@ -413,7 +413,7 @@ namespace FFLAS {
 			     FieldCategories::ModularTag)
 	{
 		coo_details::fspmv(F,A.m,A.n,A.z,A.row,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
-		finit(F,A.m,y.dat,1);
+		freduce(F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -476,7 +476,7 @@ namespace FFLAS {
 			else
 				coo_details::fspmm<Field, false>(F,A.m,A.n,A.z,A.row,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());
 		}
-		finit(F,blockSize,A.m,y.dat,ldy);
+		freduce(F,blockSize,A.m,y.dat,ldy);
 	}
 
 	template<class Field>
@@ -1006,7 +1006,7 @@ namespace FFLAS { /*  ZO */
 			coo_details::fspmv_zo<Field,true>(F,A.m,A.n,A.z,A.row,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
-		finit(F,A.m,y.dat,1);
+		freduce(F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -1180,7 +1180,7 @@ namespace FFLAS { /*  ZO */
 				fflas_delete(x1);
 			}
 		}
-		finit(F,blockSize,A.m,y.dat,ldy);
+		freduce(F,blockSize,A.m,y.dat,ldy);
 	}
 } // FFLAS
 

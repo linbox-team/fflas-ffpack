@@ -128,7 +128,7 @@ namespace FFLAS {
 		}	
 	
 		// reduce it modulo p
-		finit(F,M,N,B,ldb);
+		freduce (F, M, N, B, ldb);
 		// scale it with alpha
 		if (!F.isOne(alpha))
 			fscalin(F,M,N,alpha,B,ldb);

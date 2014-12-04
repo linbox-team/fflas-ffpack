@@ -113,7 +113,7 @@ namespace FFPACK {
 				//Find non zero pivot
 				colp = k;
 				Acurr = Aini;
-				while ((F.isZero(*Acurr)) || (F.isZero (F.init (*Acurr, *Acurr))))
+				while ((F.isZero(*Acurr)) || (F.isZero (F.reduce (*Acurr))))
 					if (++colp == N){
 						if (rowp==M-1)
 							break;
@@ -134,15 +134,16 @@ namespace FFPACK {
 
 				//Normalization
 				elt invpiv;
-				F.init(*Aini,*Aini);
+				F.init (invpiv);
+				F.reduce (*Aini);
 				F.inv (invpiv,*Aini);
 
 				for (size_t j=1; j<N-k; ++j)
 					if (!F.isZero(*(Aini+j)))
-						F.init(*(Aini+j), *(Aini+j));
+						F.reduce (*(Aini+j));
 				for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
 					if (!F.isZero(*(Aini+i)))
-						F.init(*(Aini+i), *(Aini+i));
+						F.reduce (*(Aini+i));
 
 
 				if (Diag == FFLAS::FflasUnit) {
@@ -213,7 +214,7 @@ namespace FFPACK {
 				//Find non zero pivot
 				colp = k;
 				Acurr = Aini;
-				while ((F.isZero(*Acurr)) || (F.isZero (F.init (*Acurr, *Acurr))))
+				while ((F.isZero(*Acurr)) || (F.isZero (F.reduce (*Acurr))))
 					if (++colp == N){
 						if (rowp==M-1)
 							break;
@@ -234,15 +235,15 @@ namespace FFPACK {
 
 				//Normalization
 				elt invpiv;
-				F.init(*Aini,*Aini);
+				F.reduce (*Aini);
 				F.inv (invpiv,*Aini);
 
 				for (size_t j=1; j<N-k; ++j)
 					if (!F.isZero(*(Aini+j)))
-						F.init(*(Aini+j), *(Aini+j));
+						F.reduce (*(Aini+j));
 				for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
 					if (!F.isZero(*(Aini+i)))
-						F.init(*(Aini+i), *(Aini+i));
+						F.reduce(*(Aini+i));
 
 
 				if (Diag == FFLAS::FflasUnit) {
@@ -260,7 +261,7 @@ namespace FFPACK {
 
 				if (delay++ >= kmax){ // Reduction has to be done
 					delay = 0;
-					FFLAS::finit(F, M-rowp-1,N-k-1, Aini+lda+1, lda);
+					FFLAS::freduce (F, M-rowp-1,N-k-1, Aini+lda+1, lda);
 					// for (size_t i=1; i<M-rowp; ++i)
 					// 	for (size_t j=1; j<N-k; ++j)
 					// 		F.init(	*(Aini+i*lda+j),*(Aini+i*lda+j));
@@ -323,7 +324,7 @@ namespace FFPACK {
 				//Find non zero pivot
 				colp = k;
 				Acurr = Aini;
-				while ((F.isZero(*Acurr)) || (F.isZero (F.init (*Acurr, *Acurr))))
+				while ((F.isZero(*Acurr)) || (F.isZero (F.reduce (*Acurr))))
 					if (++colp == N){
 						if (rowp==M-1)
 							break;
@@ -344,15 +345,16 @@ namespace FFPACK {
 
 				//Normalization
 				elt invpiv;
-				F.init(*Aini,*Aini);
+				F.init(invpiv);
+				F.reduce (*Aini);
 				F.inv (invpiv,*Aini);
 
 				for (size_t j=1; j<N-k; ++j)
 					if (!F.isZero(*(Aini+j)))
-						F.init(*(Aini+j), *(Aini+j));
+						F.reduce (*(Aini+j));
 				for (size_t i=lda; i<(M-rowp)*lda; i+=lda)
 					if (!F.isZero(*(Aini+i)))
-						F.init(*(Aini+i), *(Aini+i));
+						F.reduce (*(Aini+i));
 
 				if (Diag == FFLAS::FflasUnit) {
 					// for (size_t j=1; j<N-k; ++j)
@@ -369,9 +371,10 @@ namespace FFPACK {
 
 				if (delay++ >= kmax){ // Reduction has to be done
 					delay = 0;
-					for (size_t i=1; i<M-rowp; ++i)
-						for (size_t j=1; j<N-k; ++j)
-							F.init(	*(Aini+i*lda+j),*(Aini+i*lda+j));
+					FFLAS::freduce (F, M-rowp-1, N-k-1, Aini+lda+1, lda);
+					// for (size_t i=1; i<M-rowp; ++i)
+					// 	for (size_t j=1; j<N-k; ++j)
+					// 		F.reduce (*(Aini+i*lda+j));
 				}
 				//Elimination
 				for (size_t i=1; i<M-rowp; ++i)

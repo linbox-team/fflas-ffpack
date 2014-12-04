@@ -156,13 +156,22 @@ namespace FFPACK {
 		}
 
 		// assume this is the mod p operation
-		Element& init(Element& x, const Element& y) const{
-			init(x);
+		Element& reduce (Element& x, const Element& y) const{
 			FFPACK::Integer tmp;
 			convert(tmp,y);
-			tmp%=_p;
-			init(x,tmp);
+			tmp %= _p;
+			init (x,tmp);
 			return x;
+		}
+
+		Element& reduce (Element& x) const{
+			FFPACK::Integer tmp;
+			convert (tmp, x);
+			tmp %= _p;
+			return init (x, tmp);
+		}
+		Element& init(Element& x, const Element& y) const{
+			return reduce (x, y);
 		}
 
 
@@ -281,7 +290,7 @@ namespace FFPACK {
 
 			// reduce each row of A modulo m_i
 			for (size_t i=0;i<_size;i++)
-				FFLAS::finit(_rns->_field_rns[i], n, A+i*rda, 1);
+				FFLAS::freduce (_rns->_field_rns[i], n, A+i*rda, 1);
 
 			FFLAS::fflas_delete(Gamma);
 			FFLAS::fflas_delete(alpha);
@@ -330,7 +339,7 @@ namespace FFPACK {
 
 			// reduce each row of A modulo m_i
 			for (size_t i=0;i<_size;i++)
-				FFLAS::finit(_rns->_field_rns[i], m, n, A+i*rda, lda);
+				FFLAS::freduce (_rns->_field_rns[i], m, n, A+i*rda, lda);
 			FFLAS::fflas_delete(Gamma);
 			FFLAS::fflas_delete(alpha);
 			FFLAS::fflas_delete(z);
