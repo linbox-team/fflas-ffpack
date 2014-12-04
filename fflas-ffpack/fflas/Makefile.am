@@ -31,7 +31,7 @@ sparse=fflas_fspmv.h \
 
 multiprecision= fflas_ftrsm_mp.inl \
 		fflas_fscal_mp.inl \
-		fflas_finit_mp.inl \
+		fflas_freduce_mp.inl \
 		fflas_fger_mp.inl  \
 		fflas_fgemv_mp.inl
 
@@ -63,8 +63,8 @@ pkgincludesub_HEADERS=       \
 	   fflas_faxpy.inl       \
 	   fflas_fger.inl        \
 	   fflas_ftrsv.inl       \
-	   fflas_finit.h         \
-	   fflas_finit.inl       \
+	   fflas_freduce.h         \
+	   fflas_freduce.inl       \
 	   fflas_helpers.inl     \
 	   fflas_simd.h          \
 	   ${sparse}		 \

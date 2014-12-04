@@ -148,8 +148,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U2Min, U2Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax, WH)){
-			finit(F,mr,nr,X1,nr);
-			finit(F,mr,nr,C12,ldc);
+			freduce (F, mr, nr, X1, nr);
+			freduce (F, mr, nr, C12, ldc);
 		}
 		faddin(DF,mr,nr,X1,nr,C12,ldc);
 
@@ -157,8 +157,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U3Min, U3Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.Outmin, H7.Outmax, WH)){
-			finit(F, mr,nr,C12,ldc);
-			finit(F, mr,nr,C21,ldc);
+			freduce (F, mr, nr, C12, ldc);
+			freduce (F, mr, nr, C21, ldc);
 		}
 		faddin(DF,mr,nr,C12,ldc,C21,ldc);
 
@@ -167,8 +167,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U4Min, U4Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.Outmin, H5.Outmax, WH)){
-			finit(F,mr,nr,C22,ldc);
-			finit(F,mr,nr,C12,ldc);
+			freduce (F, mr, nr, C22, ldc);
+			freduce (F, mr, nr, C12, ldc);
 		}
 		faddin(DF,mr,nr,C22,ldc,C12,ldc);
 
@@ -177,8 +177,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U7Min, U7Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.Outmin,H5.Outmax, WH) ){
-			finit(F,mr,nr,C21,ldc);
-			finit(F,mr,nr,C22,ldc);
+			freduce (F, mr, nr, C21, ldc);
+			freduce (F, mr, nr, C22, ldc);
 		}
 		faddin(DF,mr,nr,C21,ldc,C22,ldc);
 
@@ -187,8 +187,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U5Min, U5Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.Outmin, H3.Outmax, WH) ){
-			finit(F,mr,nr,C12,ldc);
-			finit(F,mr,nr,C11,ldc);
+			freduce (F, mr, nr, C12, ldc);
+			freduce (F, mr, nr, C11, ldc);
 		}
 		faddin(DF,mr,nr,C11,ldc,C12,ldc);
 
@@ -205,8 +205,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U6Min, U6Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreSubReduction (U6Min,U6Max, U3Min, U3Max, H4.Outmin,H4.Outmax, WH) ){
-			finit(F,mr,nr,C11,ldc);
-			finit(F,mr,nr,C21,ldc);
+			freduce (F, mr, nr, C11, ldc);
+			freduce (F, mr, nr, C21, ldc);
 		}
 		fsubin(DF,mr,nr,C11,ldc,C21,ldc);
 
@@ -218,8 +218,8 @@ namespace FFLAS { namespace BLAS3 {
 		double U1Min, U1Max;
 		    // This test will be optimized out
 		if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
-			finit(F,mr,nr,X1,nr);
-			finit(F,mr,nr,C11,ldc);
+			freduce (F, mr, nr, X1, nr);
+			freduce (F, mr, nr, C11, ldc);
 		}
 		faddin(DF,mr,nr,X1,nr,C11,ldc);
 

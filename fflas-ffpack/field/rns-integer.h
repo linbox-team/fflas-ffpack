@@ -113,6 +113,10 @@ namespace FFPACK {
 			_rns->init(1,1,x._ptr,x._stride, &y,1,k);
 			return x;
 		}
+		Element& reduce (Element& x, const Element& y) const {return assign (x,y);}
+
+		Element& reduce (Element& x) const {return x;}
+
 		FFPACK::Integer convert(FFPACK::Integer& x, const Element& y)const {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
 			return x;

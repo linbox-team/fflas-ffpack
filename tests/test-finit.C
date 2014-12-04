@@ -43,7 +43,7 @@
 
 // using namespace FFPACK;
 template<class Field>
-bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
+bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
 	typedef typename Field::Element T ;
 	size_t repet = 3 ;
@@ -72,7 +72,7 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 		tim += chrono ;
 
 		chrono.clear();chrono.start();
-		FFLAS::finit(F,m,k,B,n);
+		FFLAS::freduce (F,m,k,B,n);
 		chrono.stop();
 		tom += chrono ;
 
@@ -86,8 +86,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 #endif
 	}
 
-	if (timing)	std::cout  << " finit (___): " << tim.usertime()/(double)repet << 's' << std::endl;
-	if (timing)	std::cout  << " finit (AVX): " << tom.usertime()/(double)repet << 's'<<  std::endl << std::endl;
+	if (timing)	std::cout  << " freduce (___): " << tim.usertime()/(double)repet << 's' << std::endl;
+	if (timing)	std::cout  << " freduce (AVX): " << tom.usertime()/(double)repet << 's'<<  std::endl << std::endl;
 
 	if (timing)	std::cout << "=== inc != 1 ===" << std::endl ;
 
@@ -108,7 +108,7 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 		size_t cnt = (size_t)floor((double)(m*n)/(double)incX) ;
 
 		chrono.clear();chrono.start();
-		FFLAS::finit(F,cnt,B+1,incX);
+		FFLAS::freduce (F,cnt,B+1,incX);
 		chrono.stop();
 		tom += chrono ;
 
@@ -123,8 +123,8 @@ bool test_finit(const Field & F, size_t m, size_t k, size_t n, bool timing)
 
 	}
 
-	if (timing)	std::cout <<  " finit (___): " << tim.usertime()/(double)repet << 's' << std::endl;
-	if (timing)	std::cout <<  " finit (AVX): " << tom.usertime()/(double)repet << 's'<<  std::endl << std::endl;
+	if (timing)	std::cout <<  " freduce (___): " << tim.usertime()/(double)repet << 's' << std::endl;
+	if (timing)	std::cout <<  " freduce (AVX): " << tom.usertime()/(double)repet << 's'<<  std::endl << std::endl;
 
 	if (timing)	std::cout << "<<<" << std::endl;
 
@@ -166,55 +166,55 @@ int main(int ac, char **av) {
 	// std::cout << seed << std::endl;
 
 	bool pass  = true ;
-	{ /*  finit */
+	{ /*  freduce */
 		{
 			FFPACK:: Modular<float> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<float> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<double> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<double> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int32_t> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: Modular<int64_t> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: ModularBalanced<int64_t> F(p) ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 #if 1
 		{
 			FFPACK:: UnparametricField<float> F ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<double> F ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int32_t> F;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
 			FFPACK:: UnparametricField<int64_t> F ;
-			pass &= test_finit(F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing);
 		}
 #endif
 	}

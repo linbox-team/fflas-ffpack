@@ -353,6 +353,10 @@ namespace FFPACK
 		template <typename Src>
 		Element& init (Element& x, const Src& s) const {return FFPACK::Caster (x, s);}
 
+		Element& reduce (Element& x, const Element& y) const {return init (x,y);}
+
+		Element& reduce (Element& x) const {return init (x,x);}
+
 		/// x :=  y.
 
 		template <typename T>
@@ -470,7 +474,10 @@ namespace FFPACK
 		{
 			return FFPACK::Caster (x, s);
 		}
+		
+		Element& reduce (Element& x, const Element& y) const {return init (x,y);}
 
+		Element& reduce (Element& x) const {return init (x,x);}
 
 		/// x :=  y.  Caution: it is via cast to long.  Good candidate for specialization. --dpritcha
 

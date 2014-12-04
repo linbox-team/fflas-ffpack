@@ -60,22 +60,22 @@ typedef ModularBalanced<double> Field;
 
 
 
-Field::Element_ptr makemat(const Field& F, int m, int n){
+Field::Element_ptr makemat(const Field& F, size_t m, size_t n){
 	Field::Element_ptr res = FFLAS::fflas_new(F,m,n);
 	Field::RandIter RF(F);
-        for (long i = 0; i < m; ++i)
-                for (long j = 0; j < n; ++j) {
+        for (size_t i = 0; i < m; ++i)
+                for (size_t j = 0; j < n; ++j) {
                         RF.random(res[j+i*n]);
                 }
         return res;
 }
 
-Field::Element_ptr maketriangmat(const Field& F, int n){
+Field::Element_ptr maketriangmat(const Field& F, size_t n){
 	Field::Element_ptr res = FFLAS::fflas_new(F, n,n);
 	Field::RandIter RF(F);
 	Field::NonZeroRandIter NRF(F,RF);
-        for (long i = 0; i < n; ++i){
-                for (long j = 0; j < n; ++j)
+        for (size_t i = 0; i < n; ++i){
+                for (size_t j = 0; j < n; ++j)
                         RF.random(res[j+i*n]);
 		NRF.random(res[i*(n+1)]);
 	}

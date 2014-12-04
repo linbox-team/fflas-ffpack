@@ -79,17 +79,15 @@ namespace FFLAS {
                         // Might as well reduce inputs
                         if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
 				H.initA();
-				finit (F, (ta==FflasNoTrans)?m:k, (ta==FflasNoTrans)?k:m, 
-				       const_cast<typename Field::Element_ptr>(A), lda);
+				freduce_constoverride (F, (ta==FflasNoTrans)?m:k, (ta==FflasNoTrans)?k:m, A, lda);
 			}
 			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
 				H.initB();
-				finit (F, (tb==FflasNoTrans)?k:n, (tb==FflasNoTrans)?n:k, 
-				       const_cast<typename Field::Element_ptr>(B), ldb);
+				freduce_constoverride (F, (tb==FflasNoTrans)?k:n, (tb==FflasNoTrans)?n:k, B, ldb);
 			}
 			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
 				H.initC();
-				finit(F, m, n, C, ldc);
+				freduce (F, m, n, C, ldc);
 			}
 			kmax = H.MaxDelayedDim (betadf);
 		}
@@ -122,7 +120,7 @@ namespace FFLAS {
 		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
 
 		for (size_t i = 0; i < nblock; ++i) {
-			finit(F,m,n,C,ldc);
+			freduce (F, m, n, C, ldc);
 			Hfp.initC();
 			fgemm (H.delayedField, ta, tb, m, n, k2, alphadf, A+i*shiftA, lda,
 			       B+i*shiftB, ldb, F.one, C, ldc, Hfp);
@@ -131,7 +129,7 @@ namespace FFLAS {
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
                     double al; F.convert(al, alpha);
                         if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
-				finit(F,m,n,C,ldc);
+				freduce (F, m, n, C, ldc);
 				Hfp.initOut();
 			}
 

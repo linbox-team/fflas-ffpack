@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_field_rns_double_INL
 #define __FFLASFFPACK_field_rns_double_INL
 
-#include "fflas-ffpack/fflas/fflas_finit.h"
+#include "fflas-ffpack/fflas/fflas_freduce.h"
 
 namespace FFPACK {
 
@@ -66,14 +66,14 @@ namespace FFPACK {
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 			// reduce each row i of Arns modulo moduli[i]
 			for(size_t i=0;i<_size;i++)
-				FFLAS::finit(_field_rns[i],mn,Arns+i*rda,1);
+				FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
 		}
 		else {
 			// Arns =  A_beta x _crt_in^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
 			// reduce each column j of Arns modulo moduli[i]
 			for(size_t i=0;i<_size;i++)
-				FFLAS::finit(_field_rns[i],mn,Arns+i,_size);
+				FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 		}
 		FFLAS::fflas_delete( A_beta);
 
@@ -83,7 +83,7 @@ namespace FFPACK {
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++)
 					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);
-		std::cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<std::endl;
+		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 
@@ -120,14 +120,14 @@ namespace FFPACK {
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 			// reduce each row i of Arns modulo moduli[i]
 			for(size_t i=0;i<_size;i++)
-				FFLAS::finit(_field_rns[i],mn,Arns+i*rda,1);
+				FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
 		}
 		else {
 			// Arns =  A_beta x _crt_in^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
 			// reduce each column j of Arns modulo moduli[i]
 			for(size_t i=0;i<_size;i++)
-				FFLAS::finit(_field_rns[i],mn,Arns+i,_size);
+				FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 		}
 		FFLAS::fflas_delete( A_beta);
 
@@ -138,7 +138,7 @@ namespace FFPACK {
 				for(size_t k=0;k<_size;k++)
 					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
 					      == (long) Arns[j*m+i+k*rda]);
-		std::cout<<"RNS finit ... "<<(ok?"OK":"ERROR")<<std::endl;
+		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 

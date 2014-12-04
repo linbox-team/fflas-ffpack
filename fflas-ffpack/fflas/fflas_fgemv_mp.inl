@@ -57,7 +57,7 @@ namespace FFLAS {
 				      Y._ptr+i*Y._stride, incY
 				      );
 			size_t Ydim = (ta == FflasNoTrans)?M:N;
-			finit(F,Ydim,Y,incY);
+			freduce (F, Ydim, Y, incY);
 		}
 		return Y;
 	} 

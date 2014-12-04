@@ -103,7 +103,7 @@ namespace FFLAS {
 			F.assign(A[i*lda+i],F.one);
 	}
 
-	/** finit
+	/** freduce
 	 * \f$A \gets  A mod F\f$.
 	 * @param F field
 	 * @param m number of rows
@@ -114,8 +114,25 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	void
-	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element_ptr A, const size_t lda);
+	freduce (const Field& F, const size_t m , const size_t n,
+		 typename Field::Element_ptr A, const size_t lda);
+
+	/** freduce
+	 * \f$A \gets  B mod F\f$.
+	 * @param F field
+	 * @param m number of rows
+	 * @param n number of cols
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 * \param B matrix in \p Element
+	 * \param ldb stride of \p B
+	 * @internal
+	 */
+	template<class Field>
+	void
+	freduce (const Field& F, const size_t m , const size_t n,
+		 typename Field::ConstElement_ptr B, const size_t ldb,
+		 typename Field::Element_ptr A, const size_t lda);
 
 	/** finit
 	 * \f$A \gets  B mod F\f$.

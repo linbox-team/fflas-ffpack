@@ -42,7 +42,7 @@ namespace FFLAS {
 	// Level 1 routines
 	//---------------------------------------------------------------------
 
-	/** finit
+	/** freduce
 	 * \f$x \gets  x mod F\f$.
 	 * @param F field
 	 * @param n size of the vectors
@@ -52,8 +52,24 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	void
-	finit (const Field& F, const size_t n,
-	       typename Field::Element_ptr X, const size_t incX);
+	freduce (const Field& F, const size_t n,
+		 typename Field::Element_ptr X, const size_t incX);
+
+	/** freduce
+	 * \f$x \gets  y mod F\f$.
+	 * @param F field
+	 * @param n size of the vectors
+	 * \param Y vector of \p Element
+	 * \param incY stride of \p Y
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 * @bug use cblas_(d)scal when possible
+	 */
+	template<class Field>
+	void
+	freduce (const Field& F, const size_t n,
+		 typename Field::ConstElement_ptr Y, const size_t incY,
+		 typename Field::Element_ptr X, const size_t incX);
 
 	/** finit
 	 * \f$x \gets  y mod F\f$.

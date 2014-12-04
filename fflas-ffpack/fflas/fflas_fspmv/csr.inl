@@ -354,12 +354,12 @@ namespace FFLAS { namespace csr_details {
 				for ( ; j < j_loc ; ++j) {
 					y[i] += dat[j] * x[col[j]];
 				}
-				F.init(y[i],y[i]);
+				F.reduce (y[i]);
 			}
 			for ( ; j < j_end ; ++j) {
 				y[i] += dat[j] * x[col[j]];
 			}
-			F.init(y[i],y[i]);
+			F.reduce (y[i]);
 		}
 	}
 
@@ -410,7 +410,7 @@ namespace FFLAS { namespace csr_details {
 						y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 					}
 				}
-				finit(F, blockSize, y+i*blockSize, 1);
+				freduce (F, blockSize, y+i*blockSize, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				int k = 0;
@@ -431,7 +431,7 @@ namespace FFLAS { namespace csr_details {
 					y[i*blockSize+k] += dat[j]*x[col[j]*blockSize+k];
 				}
 			}
-			finit(F, blockSize, y+i*blockSize, 1);
+			freduce (F, blockSize, y+i*blockSize, 1);
 		}
 #else		
 		for (index_t i = 0 ; i < m ; ++i) {
@@ -446,14 +446,14 @@ namespace FFLAS { namespace csr_details {
 						y[i*blockSize+k] += dat[j] * x[col[j]*blockSize+k];
 					}
 				}
-				finit(F, blockSize, y+i*blockSize, 1);
+				freduce (F, blockSize, y+i*blockSize, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				for(int k = 0 ; k < blockSize ; ++k){
 					y[i*blockSize+k] += dat[j] * x[col[j]*blockSize+k];
 				}
 			}
-			finit(F, blockSize, y+i*blockSize, 1);
+			freduce (F, blockSize, y+i*blockSize, 1);
 		}
 #endif // __FFLASFFPACK_USE_SIMD
 	}
@@ -507,7 +507,7 @@ namespace FFLAS { namespace csr_details {
 						y[i*blockSize*ldy+k] += dat[j]*x[col[j]*blockSize*ldx+k];
 					}
 				}
-				finit(F, blockSize, y+i*blockSize*ldy, 1);
+				freduce (F, blockSize, y+i*blockSize*ldy, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				int k = 0;
@@ -528,7 +528,7 @@ namespace FFLAS { namespace csr_details {
 					y[i*blockSize*ldy+k] += dat[j]*x[col[j]*blockSize*ldx+k];
 				}
 			}
-			finit(F, blockSize, y+i*blockSize*ldy, 1);
+			freduce (F, blockSize, y+i*blockSize*ldy, 1);
 		}
 #else		
 		for (index_t i = 0 ; i < m ; ++i) {
@@ -543,14 +543,14 @@ namespace FFLAS { namespace csr_details {
 						y[i*blockSize*ldy+k] += dat[j] * x[col[j]*blockSize*ldx+k];
 					}
 				}
-				finit(F, blockSize, y+i*blockSize*ldy, 1);
+				freduce (F, blockSize, y+i*blockSize*ldy, 1);
 			}
 			for ( ; j < j_end ; ++j) {
 				for(int k = 0 ; k < blockSize ; ++k){
 					y[i*blockSize*ldy+k] += dat[j] * x[col[j]*blockSize*ldx+k];
 				}
 			}
-			finit(F, blockSize, y+i*blockSize*ldy, 1);
+			freduce (F, blockSize, y+i*blockSize*ldy, 1);
 		}
 #endif // __FFLASFFPACK_USE_SIMD
 	}
@@ -586,7 +586,7 @@ namespace FFLAS {
 			     FieldCategories::ModularTag)
 	{
 		csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag ());
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -648,7 +648,7 @@ namespace FFLAS {
 			else
 				csr_details::fspmm<Field, false>(F,A.m,A.n,A.st,A.col,A.dat,blockSize,x.dat,ldx,y.dat,ldy, FieldCategories::UnparametricTag ());
 		}
-		finit(F,blockSize,A.m,y.dat,ldy);
+		freduce (F,blockSize,A.m,y.dat,ldy);
 	}
 
 	template<class Field>
@@ -748,7 +748,7 @@ namespace FFLAS {
 		if(kmax > A.maxrow)
 		{
 			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat, FieldCategories::UnparametricTag());
-			finit(F, A.m, y.dat, 1);
+			freduce (F, A.m, y.dat, 1);
 		}else{
 			csr_details::fspmv(F,A.m,A.n,A.st,A.col,A.dat,x.dat,y.dat,(index_t) kmax);	
 		}		
@@ -1205,7 +1205,7 @@ namespace FFLAS { /*  ZO */
 			csr_details::fspmv_zo<Field,true>(F,A.m,A.n,A.st,A.col,x1,y.dat, FieldCategories::UnparametricTag());
 			fflas_delete(x1);
 		}
-		finit(F,A.m,y.dat,1);
+		freduce (F,A.m,y.dat,1);
 	}
 
 	template<class Field>
@@ -1403,7 +1403,7 @@ namespace FFLAS { /*  ZO */
 				fflas_delete(x1);
 			}
 		}
-		finit(F,blockSize,A.m,y.dat,ldy);
+		freduce (F,blockSize,A.m,y.dat,ldy);
 	}
 
 } // FFLAS
@@ -1519,7 +1519,7 @@ namespace FFLAS { namespace csr_details {
 
 	}
 
-	// need cuda finit code (need nvcc)
+	// need cuda freduce code (need nvcc)
 #endif // __FFLASFFPACK_HAVE_CUDA
 
 } // details

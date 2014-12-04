@@ -88,7 +88,7 @@ namespace FFLAS{
 		FFLAS::fger(Zrns,M,N,alpha,x,incx,y,incy,A,lda,H2);
 		
 		// reduce the result mod p
-		finit(F,M,N,A,lda);
+		freduce (F, M, N, A, lda);
 	}
 
 

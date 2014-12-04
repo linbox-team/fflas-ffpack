@@ -51,7 +51,7 @@ namespace FFLAS {
 #ifdef BENCH_PERF_SCAL_MP
 		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
-		finit(F,n,A,inc);
+		freduce (F, n, A, inc);
 	}
 	template<>
 	void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
@@ -67,7 +67,7 @@ namespace FFLAS {
 #ifdef BENCH_PERF_SCAL_MP
 		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
-		finit(F,n,B,Binc);		
+		freduce (F, n, B, Binc);		
 	}
 	
 	// specialization of the level2 fscalin function for the field RNSInteger<rns_double>
@@ -83,7 +83,7 @@ namespace FFLAS {
 #ifdef BENCH_PERF_SCAL_MP
 		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
-		finit(F,m,n,A,lda);
+		freduce (F, m, n, A, lda);
 	}
 	template<>
 	void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n,
@@ -98,7 +98,7 @@ namespace FFLAS {
 #ifdef BENCH_PERF_SCAL_MP
 		chrono.stop();F.t_scal+=chrono.usertime();
 #endif
-		finit(F,m,n,B,ldb);
+		freduce (F, m, n, B, ldb);
 	}
 
 } //end of namespace FFLAS

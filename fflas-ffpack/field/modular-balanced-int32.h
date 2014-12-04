@@ -232,10 +232,21 @@ namespace FFPACK {
 		}
 
 		template<class Element1>
-		inline Element &init (Element & x, const Element1 &y) const
+		inline Element& init (Element & x, const Element1 &y) const
 		{
-			x = Element(y) % modulus;
+			return reduce (x, Element(y));
+		}
 
+		inline Element& reduce (Element & x, const Element &y) const
+		{
+			x = (y % modulus);
+			NORMALISE(x);
+			return x;
+		}
+
+		inline Element& reduce (Element & x) const
+		{
+			x %= modulus;
 			NORMALISE(x);
 			return x;
 		}
@@ -243,13 +254,6 @@ namespace FFPACK {
 		inline Element& init(Element&x) const
 		{
 			return x = 0;
-		}
-
-		inline Element& init(Element& x, Element y) const
-		{
-			x = (y % modulus);
-			NORMALISE(x);
-			return x;
 		}
 
 		inline Element& init(Element& x, int64_t y ) const

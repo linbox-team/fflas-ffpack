@@ -60,13 +60,13 @@ namespace FFLAS{ namespace Protected {
 		FloatElement* Yf = FFLAS::fflas_new<FloatElement>(ma);
 
 		fconvert(F, M, N, Af, N, A, lda);
-		finit (G, M, N, Af, N);
+		freduce (G, M, N, Af, N);
 		fconvert(F, na, Xf, 1, X, incX);
-		finit (G, na, Xf, 1);
+		freduce (G, na, Xf, 1);
 
 		if (!F.isZero(beta)){
 			fconvert (F, ma, Yf, 1, Y, incY);
-			finit (G, ma, Yf, 1);
+			freduce (G, ma, Yf, 1);
 		}
 
 		fgemv (G, ta, M, N, alphaf, Af, N, Xf, 1, betaf, Yf, 1);
@@ -164,7 +164,7 @@ namespace FFLAS {
 		       const_cast<typename Field::Element_ptr>(X), incX,
 		       beta_, Y, incY, HD);
 
-		Protected::ScalAndInit (F, Ydim, alpha, Y, incY, HD);
+		Protected::ScalAndReduce (F, Ydim, alpha, Y, incY, HD);
 		H.initOut();
 
 		return Y;
@@ -242,17 +242,15 @@ namespace FFLAS{
                         // Might as well reduce inputs
                         if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
 				H.initA();
-				finit(F, M, N,
-				      const_cast<typename Field::Element_ptr>(A), lda);
+				freduce_constoverride (F, M, N, A, lda);
 			}
 			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
 				H.initB();
-				finit(F, Xdim, 
-				      const_cast<typename Field::Element_ptr>(X), incX);
+				freduce_constoverride (F, Xdim, X, incX);
 			}
 			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
 				H.initC();
-				finit(F, Ydim, Y, incY);
+				freduce (F, Ydim, Y, incY);
 			}
 			kmax = H.MaxDelayedDim (betadf);
 		}
@@ -289,19 +287,19 @@ namespace FFLAS{
 		       X+nblock*k2*incX, incX, betadf, Y, incY, Hfp);
 
 		for (size_t i = 0; i < nblock; ++i) {
-			finit(F, Ydim ,Y, incY);
+			freduce (F, Ydim ,Y, incY);
 			Hfp.initC();
 			fgemv (H.delayedField, ta, Mi, Ni, alphadf, A+i*shiftA, lda,
 			       X+i*k2*incX, incX, F.one, Y, incY, Hfp);
 		}
 
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                    double al; F.convert(al, alpha);
-                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
-				finit (F, Ydim, Y, incY);
+			double al; F.convert(al, alpha);
+			if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+				freduce (F, Ydim, Y, incY);
 				Hfp.initOut();
 			}
-			fscalin(H.delayedField, Ydim, alpha, Y, incY);
+			fscalin (H.delayedField, Ydim, alpha, Y, incY);
 			if (alpha>0){
 				H.Outmin = alpha*Hfp.Outmin;
 				H.Outmax = alpha*Hfp.Outmax;

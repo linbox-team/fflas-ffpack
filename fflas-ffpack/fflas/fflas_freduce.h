@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_finit.inl
+/* fflas/fflas_freduce.inl
  * Copyright (C) 2014 FFLAS FFPACK group
  *
  * Written by  BB<bboyer@ncsu.edu>
@@ -27,8 +27,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_init_H
-#define __FFLASFFPACK_fflas_init_H
+#ifndef __FFLASFFPACK_fflas_freduce_H
+#define __FFLASFFPACK_fflas_freduce_H
 
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/field/field-traits.h"
@@ -53,7 +53,7 @@ namespace FFLAS {
 
 } // FFLAS
 
-#include "fflas-ffpack/fflas/fflas_finit.inl"
+#include "fflas-ffpack/fflas/fflas_freduce.inl"
 
 namespace FFLAS {
 
@@ -63,24 +63,31 @@ namespace FFLAS {
 
 	template<class Field>
 	void
-	finit (const Field & F, const size_t m,
-	       typename Field::ConstElement_ptr  B, const size_t incY,
-	       typename Field::Element_ptr A, const size_t incX
-	      )
+	freduce (const Field & F, const size_t m,
+		 typename Field::ConstElement_ptr  B, const size_t incY,
+		 typename Field::Element_ptr A, const size_t incX)
 	{
-		return details::finit(F,m,B,incY,A,incX,typename FieldTraits<Field>::category());
+		return details::freduce (F,m,B,incY,A,incX,typename FieldTraits<Field>::category());
 	}
 
 	template<class Field>
-	void
-	finit (const Field & F, const size_t m,
-	       typename Field::Element_ptr A, const size_t incX
-	      )
+	void 
+	freduce (const Field & F, const size_t m,
+		 typename Field::Element_ptr A, const size_t incX)
 	{
-		return details::finit(F,m,A,incX,typename FieldTraits<Field>::category());
+		return details::freduce (F,m,A,incX,typename FieldTraits<Field>::category());
+	}
+
+	template<class Field>
+	void 
+	freduce_constoverride(const Field & F, const size_t m, 
+			      typename Field::ConstElement_ptr A, const size_t incX)
+	{
+		return freduce(F, m, FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), incX);
 	}
 
 	// OOOPS
+        // CP: to be moved to a fflas_finit field, if ever needed
 	template<class Field, class ConstOtherElement_ptr>
 	void
 	finit (const Field& F, const size_t n,
@@ -105,18 +112,28 @@ namespace FFLAS {
 
 
 	template<class Field>
-	void
-	finit (const Field& F, const size_t m , const size_t n,
-	       typename Field::Element_ptr A, const size_t lda)
+	void 
+	freduce (const Field& F, const size_t m , const size_t n,
+		 typename Field::Element_ptr A, const size_t lda)
 	{
 		if (n == lda)
-			finit(F,n*m,A,1);
+			freduce (F, n*m, A, 1);
 		else
 			for (size_t i = 0 ; i < m ; ++i)
-				finit(F,n,A+i*lda,1);
+				freduce (F, n, A+i*lda, 1);
 		return;
 	}
 
+	template<class Field>
+	void 
+	freduce_constoverride(const Field & F, const size_t m, const size_t n,
+			      typename Field::ConstElement_ptr A, const size_t lda)
+	{
+		return freduce(F, m, n, 
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda);
+	}
+
+        // CP: to be moved to a fflas_finit field, if ever needed
 	template<class Field, class OtherElement_ptr>
 	void
 	finit (const Field& F, const size_t m , const size_t n,
@@ -124,15 +141,15 @@ namespace FFLAS {
 	       typename Field::Element_ptr A, const size_t lda)
 	{
 		if (n == lda && n == ldb)
-			finit(F,n*m,B,1,A,1);
+			finit (F, n*m, B, 1, A, 1);
 		else
 			for (size_t i = 0 ; i < m ; ++i)
-				finit(F,n,B+i*ldb,1,A+i*lda,1);
+				finit (F, n, B + i*ldb, 1, A + i*lda, 1);
 		return;
 	}
 
 } // end of namespace FFLAS
 
-#include "fflas_finit_mp.inl"
+#include "fflas_freduce_mp.inl"
 
-#endif // __FFLASFFPACK_fflas_init_H
+#endif // __FFLASFFPACK_fflas_freduce_H

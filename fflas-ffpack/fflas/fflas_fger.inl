@@ -42,7 +42,7 @@ namespace FFLAS {
 	{
 		MMHelper<Field, MMHelperAlgo::Classic> H(F,0);
 		fger (F, M, N, alpha, x, incx, y, incy, A, lda, H);
-		finit (F, M, N, A, lda);
+		freduce (F, M, N, A, lda);
 	}
 } //FFLAS
 
@@ -70,7 +70,7 @@ namespace FFLAS { namespace Protected {
 
 		fger (G, M, N, alphaf, Xf, 1, Yf, 1, Af, N);
 
-		finit(F, M, N, Af, N, A, lda);
+		finit (F, M, N, Af, N, A, lda);
 
 		fflas_delete (Af);
 		fflas_delete (Xf);
@@ -217,15 +217,15 @@ namespace FFLAS{
         if (Hfp.MaxDelayedDim(1.0) < 1){
             if (Hfp.Amin < H.FieldMin || Hfp.Amax>H.FieldMax){
                 Hfp.initA();
-                finit(F, M, const_cast<typename Field::Element_ptr>(x), incx);
+                freduce_constoverride (F, M, x, incx);
             }
             if (Hfp.Bmin < H.FieldMin || Hfp.Bmax>H.FieldMax){
                 Hfp.initB();
-                finit(F, N, const_cast<typename Field::Element_ptr>(y), incy);
+                freduce_constoverride (F, N, y, incy);
             }
             if (Hfp.Cmin < H.FieldMin || Hfp.Cmax>H.FieldMax){
                 Hfp.initC();
-                finit(F, M, N, A, lda);
+                freduce (F, M, N, A, lda);
             }
         }
         Hfp.Outmin = Hfp.FieldMin;

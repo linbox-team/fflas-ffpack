@@ -235,7 +235,6 @@ namespace FFPACK {
 
 		inline Element& init(Element& x, long int y) const
 		{
-
 			x = (Element)(y % (long)lmodulus);
 
 			NORMALISE_LO(x);
@@ -244,15 +243,25 @@ namespace FFPACK {
 
 		inline Element& init(Element& x, Element y ) const
 		{
+			return reduce (x,y);
+		}
 
+		inline Element& reduce (Element& x, Element y ) const
+		{
 			x = fmodf (y, modulus);
+			NORMALISE_LO(x);
+			return x;
+		}
+
+		inline Element& reduce (Element& x) const
+		{
+			x = fmodf (x, modulus);
 			NORMALISE_LO(x);
 			return x;
 		}
 
 		inline Element& init(Element& x, double y ) const
 		{
-
 			x = (Element)fmod (y, (double)modulus);
 			NORMALISE_LO(x);
 			return x;
@@ -260,7 +269,6 @@ namespace FFPACK {
 
 		inline Element& init(Element& x, int y ) const
 		{
-
 			x = (Element) (y%(int) lmodulus);
 			NORMALISE_LO(x);
 			return x;
@@ -268,7 +276,6 @@ namespace FFPACK {
 
 		inline Element& init(Element& x, unsigned int y ) const
 		{
-
 			x = (Element)(y % (unsigned int)lmodulus);
 			NORMALISE_LO(x);
 			return x;
@@ -322,8 +329,6 @@ namespace FFPACK {
 		{
 			Element tmp= y*z;
 			x= fmodf(tmp, modulus);
-			//x= tmp - floor(tmp*inv_modulus)*modulus;
-
 			return x;
 		}
 
