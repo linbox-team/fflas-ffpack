@@ -146,6 +146,16 @@ namespace FFPACK
 			return x = zero ;
 		}
 
+		inline Element &reduce (Element & x, const Element &y) const
+		{
+			return x = (y % _modulus);
+		}
+
+		inline Element &reduce (Element & x) const
+		{
+			return x %= _modulus;
+		}
+
 		Element &convert (Element &x, const Element &y) const
 		{
 			return x = y;
