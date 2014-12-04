@@ -148,8 +148,8 @@ dense_generator: dense_generator.C
 #  dense_generator_SOURCES        = dense_generator.C
 
 # Perfpublisher script interaction - AB 2014/11/17
-perfpublisher: clean
-	+./perfpublisher.sh "$(PERFPUBLISHERFILE)" "$(EXTRA_PROGRAMS)"
+perfpublisher:
+	+./perfpublisher.sh "$(PERFPUBLISHERFILE)" "$(EXTRA_PROGRAMS)" "$(CXX)"
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
