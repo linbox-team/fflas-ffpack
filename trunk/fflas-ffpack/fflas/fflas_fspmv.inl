@@ -382,9 +382,9 @@ namespace FFLAS{
 
 	template<class Field>
 	void sp_delete(COO<Field> & M){
-		fflas_delete(row);
-		fflas_delete(col);
-		fflas_delete(dat);
+		fflas_delete(M.row);
+		fflas_delete(M.col);
+		fflas_delete(M.dat);
 	}
 
 	template<class Field>
