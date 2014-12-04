@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
 		END_OF_ARGUMENTS
 	};
+	
+	FFLAS::parseArguments(argc,argv,as);
 
   FFLAS::parseArguments(argc,argv,as);
   typedef FFPACK::Modular<double> Field;
@@ -89,8 +91,9 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
+	#define CUBE(x) ((x)*(x)*(x))
 	std::cout << "Time: " << time / double(iter)
-			  << " Gflops: " << "Irrelevant";
+			  << " Gflops: " << 2. * CUBE(double(n)/1000.) / 3. / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;
