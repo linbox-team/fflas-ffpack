@@ -169,8 +169,7 @@ namespace FFPACK {
 					for (size_t i=0; i<lambda+me;++i)
 						Q[i]=0;
 
-					size_t r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, lambda + me, ncols, LUP, ncols,
-							     P, Q, FfpackLQUP);
+					size_t r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, lambda + me, ncols, LUP, ncols, P, Q);
 #ifdef LB_DEBUG
 					std::cerr<<"..done"<<std::endl;
 #endif

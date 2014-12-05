@@ -95,7 +95,7 @@ template <class Field>
 		size_t *rowP = FFLAS::fflas_new<size_t>(M);
 
 
-		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP, FfpackLQUP));
+		nullity = int(M - LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, M, A, lda, P, rowP));
 
 		if (nullity > 0){
 			FFLAS::fflas_delete( P);

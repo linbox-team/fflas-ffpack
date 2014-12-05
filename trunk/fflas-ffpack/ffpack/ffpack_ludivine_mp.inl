@@ -50,7 +50,7 @@ namespace FFPACK {
 		  const size_t M, const size_t N,
 		  typename FFPACK::Integer* A, const size_t lda,
 		  size_t*P, size_t *Q,
-		  const FFPACK::FFPACK_LUDIVINE_TAG LuTag,
+		  const FFPACK::FFPACK_LU_TAG LuTag,
 		  const size_t cutoff
 		  )
 	{

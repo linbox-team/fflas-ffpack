@@ -101,13 +101,11 @@ int main(int argc, char** argv){
 
 	size_t * P = FFLAS::fflas_new<size_t>(n);
 	size_t * Q = FFLAS::fflas_new<size_t>(n+m);
-	FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,(int)m+n, n, B, n, P, Q, FFPACK::FfpackLQUP);
+	FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,(int)m+n, n, B, n, P, Q);
 
 	printvect (cout<<"RankProfile (A) = "<<endl, rp, n)<<endl;
 
 	printvect (cout<<"RankProfile (B) = "<<endl, Q, n)<<endl;
-
-
 
 	FFLAS::fflas_delete( rp );
 	FFLAS::fflas_delete( A );

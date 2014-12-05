@@ -26,22 +26,9 @@
  *.
  */
 
-
 //--------------------------------------------------------------------------
 //          Test for the echelon factorisation
 //--------------------------------------------------------------------------
-// usage: test-echelon p A n, for n lsp factorization
-// of A over Z/pZ
-//-------------------------------------------------------------------------
-
-//-------------------------------------------------------------------------
-//#define DEBUG 1
-// Debug option  0: no debug
-//               1: check A = LQUP
-//-------------------------------------------------------------------------
-// using namespace std;
-
-
 
 //#define __LUDIVINE_CUTOFF 1
 #include <iostream>
@@ -61,122 +48,38 @@ using namespace FFPACK;
 //!@bug does not check that the form is actually correct, just that the product is ok.
 template<class Field>
 bool
-test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new<Element>(m*n);
 	Element * B = FFLAS::fflas_new<Element>(m*n);
-
 	Element * L = FFLAS::fflas_new<Element>(m*n);
 	Element * U = FFLAS::fflas_new<Element>(n*n);
-	Element * X = FFLAS::fflas_new<Element>(m*n);
-
-
-	// A = read_field(F,argv[2],&m,&n);
+	Element * X = FFLAS::fflas_new<Element>(m*n);     
 	size_t lda = n; //!@todo check lda
 
 	size_t *P = FFLAS::fflas_new<size_t>(n);
 	size_t *Q = FFLAS::fflas_new<size_t>(m);
 	size_t R = (size_t)-1;
 
-	//	size_t cutoff = atoi(argv[3]);
-	// iters = atoi(argv[3]);
-
-#ifdef TIME_IT
- FFLAS::Timer tim,timc;
-	timc.clear();
-#endif
-
 	bool pass=true;
 
-
 	for (size_t  l=0;l<iters;l++){
-		// if (i) {
-		// FFLAS::fflas_delete( A);
-		// A = read_field(F,argv[2],&m,&n);
-		// }
 		R = (size_t)-1;
 		RandomMatrixWithRank(F,A,r,m,n,lda);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
-		for (size_t j=0;j<n;j++)
-			P[j]=0;
-		for (size_t j=0;j<m;j++)
-			Q[j]=0;
-#ifdef TIME_IT
-		tim.clear();
-		tim.start();
-#endif
+		for (size_t j=0;j<n;j++) P[j]=0;
+		for (size_t j=0;j<m;j++) Q[j]=0;
+
 		R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q);
-		if (R != r) {
-			pass = false;
-			break;
-		}
-#ifdef TIME_IT
-		tim.stop();
-		timc+=tim;
-#endif
-		//write_field (F,std::cerr<<"Result = "<<std::endl, A, m,n,n);
 
-		// 	std::cerr<<"P = [";
-		// 	for (size_t i=0; i<n; ++i)
-		// 		std::cerr<<P[i]<<" ";
-		// 	std::cerr<<"]"<<std::endl;
-		// 	std::cerr<<"Q = [";
-		// 	for (size_t i=0; i<m; ++i)
-		// 		std::cerr<<Q[i]<<" ";
-		// 	std::cerr<<"]"<<std::endl;
-		// #if DEBUG
+		if (R != r) {pass = false; break;}
 
-		Element one=F.one;
-		// F.init(zero,0.0);
-		// F.init(one,1.0);
-		// for (size_t i=0; i<R; ++i){
-		// 	for (size_t j=0; j<=i; ++j)
-		// 		F.assign ( *(U + i*n + j), zero);
-		// 	F.init (*(U+i*(n+1)),one);
-		// 	for (size_t j=i+1; j<n; ++j)
-		// 		F.assign (*(U + i*n + j), *(A+ i*n+j));
-		// }
-		// for (size_t i=R;i<n; ++i){
-		// 	for (size_t j=0; j<n; ++j)
-		// 		F.assign(*(U+i*n+j), zero);
-		// 	F.assign(*(U+i*(n+1)),one);
-		// }
-		FFPACK::TriangularFromLU (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, n,
-					  R, U, n, A, n);
-		    // Adding I_{n-R} on the bottom right corner
-		for (size_t i=R;i<n; ++i)
-			F.assign (*(U+i*(n+1)),one);
+		FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,A,lda,U,n);
 
-		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, n, 0, (int)R, U, n, P);
+		FFPACK::getEchelonForm (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,A,n,L,n);
 
-		FFPACK::EchelonFromLU (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,L,n,A,n);
-
-		// for ( size_t i=0; i<m; ++i ){
-		// 	size_t j=0;
-		// 	for (; j <= ((i<R)?i:R) ; ++j )
-		// 		F.assign( *(L + i*n+j), *(A+i*n+j));
-		// 	for (; j<m; ++j )
-		// 		F.assign( *(L+i*n+j), zero);
-		// }
-		// 	std::cerr<<"P = ";
-		// 	for (size_t i=0; i<n;++i)
-		// 		std::cerr<<" "<<P[i];
-		// 	std::cerr<<std::endl;
-		// 	std::cerr<<"Q = ";
-		// 	for (size_t i=0; i<m;++i)
-		// 		std::cerr<<" "<<Q[i];
-		// 	std::cerr<<std::endl;
-
-		// 	write_field(F,std::cerr<<"A = "<<std::endl,A,m,n,n);
-		//  	write_field(F,std::cerr<<"L = "<<std::endl,L,m,n,n);
-		//  	write_field(F,std::cerr<<"U = "<<std::endl,U,m,n,n);
-
-		// Element * B =  read_field(F,argv[2],&m,&n);
-
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0,
-			      B, n, U, n, 0.0, X,n);
-		//FFLAS::fflas_delete( A);
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
 		bool fail = false;
 		for (size_t i=0; i<m; ++i)
@@ -184,31 +87,11 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 				if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
 					fail=true;
 
-		// write_field(F,std::cerr<<"X = "<<std::endl,X,m,n,n);
-		// write_field(F,std::cerr<<"L = "<<std::endl,L,m,n,n);
-		// write_field(F,std::cerr<<"A = "<<std::endl,A,m,n,n);
-
 		if (fail) {
 			std::cerr<<"FAIL"<<std::endl;
 			pass = false;
 			break;
 		}
-
-
-		// else
-		// std::cerr<<"PASS"<<std::endl;
-
-		// 	std::cout<<m<<" "<<n<<" M"<<std::endl;
-		// 	for (size_t i=0; i<m; ++i)
-		// 		for (size_t j=0; j<n; ++j)
-		// 			if (!F.isZero(*(A+i*n+j)))
-		// 				std::cout<<i+1<<" "<<j+1<<" "<<(*(A+i*n+j))<<std::endl;
-		// 	std::cout<<"0 0 0"<<std::endl;
-
-		// FFLAS::fflas_delete( U);
-		// FFLAS::fflas_delete( L);
-		// FFLAS::fflas_delete( X);
-		// #endif
 	}
 
 	FFLAS::fflas_delete( U);
@@ -218,28 +101,65 @@ test_echelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 	FFLAS::fflas_delete( A);
 	FFLAS::fflas_delete( P);
 	FFLAS::fflas_delete( Q);
-
-#ifdef TIME_IT
-	double t = timc.usertime();
-	double numops = m*m/1000.0*(n-m/3.0);
-
-	std::cerr<<m<<"x"<< n
-	    << " : rank = " << R << "  ["
-	    << ((double)iters/1000.0*(double)numops / t)
-	    << " MFops "
-	    << " in "
-	    << t/(double)iters<<"s"
-	    <<"]"<< std::endl;
-// 	std::cout<<m
-// 	    <<" "<<((double)iters/1000.0*(double)numops / t)
-// 	    <<" "<<t/(double)iters
-// 	    <<std::endl;
-#endif
-
 	return pass;
-
 }
+template<class Field>
+bool
+test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+{
+	typedef typename Field::Element Element ;
+	Element * A = FFLAS::fflas_new<Element>(m*n);
+	Element * B = FFLAS::fflas_new<Element>(m*n);
+	Element * L = FFLAS::fflas_new<Element>(m*n);
+	Element * U = FFLAS::fflas_new<Element>(n*n);
+	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	size_t lda = n; //!@todo check lda
 
+	size_t *P = FFLAS::fflas_new<size_t>(n);
+	size_t *Q = FFLAS::fflas_new<size_t>(m);
+	size_t R = (size_t)-1;
+
+	bool pass=true;
+
+	for (size_t  l=0;l<iters;l++){
+		R = (size_t)-1;
+		RandomMatrixWithRank(F,A,r,m,n,lda);
+		FFLAS::fassign(F,m,n,A,lda,B,lda);
+		for (size_t j=0;j<n;j++) P[j]=0;
+		for (size_t j=0;j<m;j++) Q[j]=0;
+
+		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q);
+
+		if (R != r) {pass = false; break;}
+
+		FFPACK::getReducedEchelonTransform (F, FFLAS::FflasLower, m,n,R,P,A,lda,U,n);
+
+		FFPACK::getReducedEchelonForm (F, FFLAS::FflasLower, m,n,R,Q,A,n,L,n);
+
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
+
+		bool fail = false;
+		for (size_t i=0; i<m; ++i)
+			for (size_t j=0; j<n; ++j)
+				if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
+					fail=true;
+
+		if (fail) {
+			std::cerr<<"FAIL"<<std::endl;
+			pass = false;
+			break;
+		}
+	}
+
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( X);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
+	return pass;
+}
 int main(int argc, char** argv){
 	std::cerr<<std::setprecision(20);
 
@@ -261,16 +181,10 @@ int main(int argc, char** argv){
 
 	FFLAS::parseArguments(argc,argv,as);
 
-
-	// if (argc!=4){
-		// std::cerr<<"usage : test-lqup <p> <A> <i>"<<std::endl
-		    // <<"        to do i Echelon factorisation of A with "
-		    // <<std::endl;
-		// exit(-1);
-	// }
 	bool pass = true ;
 	typedef Modular<double> Field;
 	Field F(p);
-	pass &= test_echelon(F,m,n,r,iters);
+	pass &= test_colechelon(F,m,n,r,iters);
+	pass &= test_redcolechelon(F,m,n,r,iters);
 	return !pass ;
 }

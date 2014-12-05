@@ -90,8 +90,7 @@ bool test_lu(const Field & F,
 	size_t * P = FFLAS::fflas_new<size_t>(maxP) ;
 	size_t * Q = FFLAS::fflas_new<size_t>(maxQ) ;
 
-	size_t R = FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q,
-				     FFPACK::FfpackLQUP);
+	size_t R = FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q);
 
 	if (R != r) {
 		std::cout << "rank is wrong (expected " << R << " but got " << r << ")" << std::endl;
@@ -352,11 +351,9 @@ bool test_lu(const Field & F,
 // 	size_t * QQ = FFLAS::fflas_new<size_t>(maxQ) ;
 
 // 	/* valgrind says the following leaks. Just incroyable. */
-// 	size_t R  = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ,
-// 				      FFPACK::FfpackLQUP);
+// 	size_t R  = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ);
 
-// 	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q,
-// 				      FFPACK::FfpackLQUP);
+// 	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q);
 
 // 	size_t R2 = FFPACK::LUpdate  (F,diag,trans,m,n,Acop,lda,R1,k,Bcop,lda,P,Q,
 // 				      FFPACK::FfpackLQUP);

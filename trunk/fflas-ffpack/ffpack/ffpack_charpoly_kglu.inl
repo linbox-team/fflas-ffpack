@@ -156,7 +156,7 @@ namespace FFPACK {
 				P[i]=0;
 			for ( i=0;i<2*N;++i)
 				Q[i]=0;
-			LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, 2*N, N, X, N, P, Q, FfpackLQUP);
+			LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, 2*N, N, X, N, P, Q);
 
 			k = Protected::newD( F,d, KeepOn, l, N, X, Q, m);
 
@@ -248,7 +248,7 @@ namespace FFPACK {
 					P[i]=0;
 				for ( i=0;i<2*N;++i)
 					Q[i]=0;
-				LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, nrowX, N, X, N, P, Q, FfpackLQUP);
+				LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, nrowX, N, X, N, P, Q);
 
 				// Recompute the degrees of the list factors
 				k = Protected::newD(F, d, KeepOn, l, N, X,Q, m);
