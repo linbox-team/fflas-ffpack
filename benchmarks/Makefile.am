@@ -32,7 +32,7 @@ AM_LDFLAGS=-static $(PARLIBS)
 PERFPUBLISHERFILE=benchmarks-report.xml
 
 FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-pfgemm  benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup benchmark-pluq benchmark-charpoly
-BLAS_BENCH =    benchmark-dgemmd benchmark-dgemmf benchmark-dtrsm
+BLAS_BENCH =    benchmark-sgemm benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
 OMP_BENCH = benchmark-pfgemm benchmark-pftrsm
@@ -65,8 +65,8 @@ CLEANFILES = $(BENCHMARKS) $(PERFPUBLISHERFILE)
 
 EXTRA_PROGRAMS = $(BENCHMARKS)
 
-benchmark_dgemmd_SOURCES = benchmark-dgemm.C
-benchmark_dgemmf_SOURCES = benchmark-dgemm.C
+benchmark_sgemm_SOURCES = benchmark-dgemm.C
+benchmark_dgemm_SOURCES = benchmark-dgemm.C
 benchmark_dtrsm_SOURCES = benchmark-dtrsm.C
 
 benchmark_fgemm_SOURCES = benchmark-fgemm.C
@@ -78,7 +78,7 @@ benchmark_charpoly_SOURCES = benchmark-charpoly.C
 benchmark_lqup_SOURCES = benchmark-lqup.C
 benchmark_pluq_SOURCES = benchmark-pluq.C
 
-benchmark_dgemmd_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
+benchmark_sgemm_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher:
