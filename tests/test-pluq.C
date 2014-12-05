@@ -92,7 +92,7 @@ int main(int argc, char** argv){
 		A = read_field(F,argv[2],&m,&n);
 		timlud.clear();
 		timlud.start();
-		R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackLQUP);
+		R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
 		timlud.stop();
 		timludc+=timlud;
 //		std::cerr<<"Fini LUdivine"<<std::endl;

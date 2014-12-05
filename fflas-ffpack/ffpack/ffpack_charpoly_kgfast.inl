@@ -76,8 +76,7 @@ namespace FFPACK {
 					size_t * P = FFLAS::fflas_new<size_t>(mc);
 					size_t * Q = FFLAS::fflas_new<size_t>(mc);
 
-					if ( (/*r = */LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mc, mc,
-							    LUP, mc, P, Q, FfpackLQUP)) < mc ){
+					if ( (LUdivine( F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, mc, mc, LUP, mc, P, Q)) < mc ){
 						* kg_mc = mc;
 						* kg_mb = mb;
 						* kg_j = j;

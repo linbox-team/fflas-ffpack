@@ -131,7 +131,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	for (size_t i=0; i<N; ++i)
 		Pk[i] = 0;
 
-	size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk, FfpackLQUP);
+	size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk);
 
 	size_t row_idx = 0;
 	size_t ii=0;
@@ -439,7 +439,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		// K <- K^-1 K
 		size_t *P=FFLAS::fflas_new<size_t>(Mk);
 		size_t *Q=FFLAS::fflas_new<size_t>(Mk);
-		if (LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Mk, Mk , K3 + (Ncurr-Mk)*ldk, ldk, P, Q, FfpackLQUP) < Mk){
+		if (LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, Mk, Mk , K3 + (Ncurr-Mk)*ldk, ldk, P, Q) < Mk){
 			// should never happen (not a LAS VEGAS check)
 			//std::cerr<<"FAIL R2 < MK"<<std::endl;
 			//			exit(-1);

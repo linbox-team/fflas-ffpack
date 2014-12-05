@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* ffpack.h
  * Copyright (C) 2005 Clement Pernet
  *               2014 FFLAS-FFPACK group
@@ -69,10 +69,11 @@
  */
 namespace FFPACK  { /* tags */
 
-	enum FFPACK_LUDIVINE_TAG
+	enum FFPACK_LU_TAG
 	{
-		FfpackLQUP=1,
-		FfpackSingular=2
+		FfpackSlabRecursive = 1,
+		FfpackTileRecursive = 2,
+		FfpackSingular = 3
 	};
 
 	enum FFPACK_CHARPOLY_TAG
@@ -402,8 +403,8 @@ namespace FFPACK { /* ftrtr */
 
 namespace FFPACK { /* PLUQ */
 	void RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-				   const size_t * P, const size_t * Q,
-				   const size_t M, const size_t N, const size_t R);
+							   const size_t * P, const size_t * Q,
+							   const size_t M, const size_t N, const size_t R);
 
 	/** @brief Compute the PLUQ factorization of the given matrix.
 	 * Using a block algorithm and return its rank.
@@ -463,12 +464,11 @@ namespace FFPACK { /* ludivine */
 	template <class Field>
 	size_t
 	LUdivine (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
-		  const size_t M, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  size_t* P, size_t* Qt
-		  , const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP
-		  , const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF
-		 );
+			  const size_t M, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  size_t* P, size_t* Qt,
+			  const FFPACK_LU_TAG LuTag = FfpackSlabRecursive,
+			  const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF);
 
 	template<class Element>
 	class callLUdivine_small;
@@ -480,7 +480,7 @@ namespace FFPACK { /* ludivine */
 			const size_t M, const size_t N,
 			typename Field::Element_ptr A, const size_t lda,
 			size_t* P, size_t* Q,
-			const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
+			const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	//! LUdivine gauss
 	template <class Field>
@@ -489,7 +489,7 @@ namespace FFPACK { /* ludivine */
 			const size_t M, const size_t N,
 			typename Field::Element_ptr A, const size_t lda,
 			size_t* P, size_t* Q,
-			const FFPACK_LUDIVINE_TAG LuTag=FfpackLQUP);
+			const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	namespace Protected {
 
@@ -556,8 +556,8 @@ namespace FFPACK { /* echelon */
 
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
-	 * After the computation A = [ L \ M ] such that L A = R is a row echelon
-	 * decomposition of A, with L =  [ L  0   ] P  and R = M + [Ir 0] Q^T
+	 * After the computation A = [ L \ M ] such that X A = R is a row echelon
+	 * decomposition of A, with X =  [ L  0   ] P  and R = M + [Ir 0] Q^T
 	 *                               [    In-r]
 	 * Qt = Q^T
 	 * If transform=false, the matrix L is not computed.
@@ -579,12 +579,12 @@ namespace FFPACK { /* echelon */
 
 	/** Compute the Reduced Column Echelon form of the input matrix in-place.
 	 *
-	 * After the computation A = [ V   ] such that AU = R is a reduced col echelon
+	 * After the computation A = [ V   ] such that AX = R is a reduced col echelon
 	 *                           [ M 0 ]
-	 * decomposition of A, where U = P^T [ V      ] and R = Q [ Ir   ]
+	 * decomposition of A, where X = P^T [ V      ] and R = Q [ Ir   ]
 	 *                                   [ 0 In-r ]           [ M  0 ]
 	 * Qt = Q^T
-	 * If transform=false, the matrix U is not computed and the matrix A = R
+	 * If transform=false, the matrix X is not computed and the matrix A = R
 	 *
 	 * @param F
 	 * @param M
@@ -603,12 +603,12 @@ namespace FFPACK { /* echelon */
 
 	/** Compute the Reduced Row Echelon form of the input matrix in-place.
 	 *
-	 * After the computation A = [ V1 M ] such that L A = R is a reduced row echelon
+	 * After the computation A = [ V1 M ] such that X A = R is a reduced row echelon
 	 *                           [ V2 0 ]
-	 * decomposition of A, where L =  [ V1  0   ] P and R =  [ Ir M  ] Q^T
+	 * decomposition of A, where X =  [ V1  0   ] P and R =  [ Ir M  ] Q^T
 	 *                                [ V2 In-r ]            [ 0     ]
 	 * Qt = Q^T
-	 * If transform=false, the matrix U is not computed and the matrix A = R
+	 * If transform=false, the matrix X is not computed and the matrix A = R
 	 * @param F
 	 * @param M
 	 * @param N
@@ -1074,7 +1074,7 @@ namespace FFPACK { /* Solutions */
 					       size_t*& colindices,
 					       size_t& R);
 
-	/** Compute the r*r submatrix X of A, by picking the row rank profile rows of A.
+	/** Computes the r*r submatrix X of A, by picking the row rank profile rows of A.
 	 *
 	 * @param F
 	 * @param M
@@ -1115,36 +1115,56 @@ namespace FFPACK { /* Solutions */
 					typename Field::Element_ptr A, const size_t lda,
 					typename Field::Element_ptr& X, size_t& R);
 
-	/***********/
-	/* FROM LU */
-	/***********/
+	/*********************************************/
+	/* Accessors to Triangular and Echelon forms */
+	/*********************************************/
 
 	/** Extracts a triangular matrix from a compact storage A=L\U of rank R.
-	 * row and column dimension of T are greater or equal to that of A and
-	 * if UpLo = FflasLower, rowdim(T) = rowdim(A), else coldim(T) = coldim (A)
+	 * if OnlyNonZeroVectors is false, then T and A have the same dimensions
+	 * Otherwise, T is R x N if UpLo = FflasUpper, else T is  M x R
 	 * @param F: base field
 	 * @param UpLo: selects if the upper or lower triangular matrix is returned
 	 * @param diag: selects if the triangular matrix unit-diagonal
 	 * @param M: row dimension of T
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+	 * @param A: input matrix
+	 * @param lda: leading dimension of A
 	 * @param T: output matrix
 	 * @param ldt: leading dimension of T
-	 * @param A: input matrix
+	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
+	 */
+	template <class Field>
+	void
+	getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+				   const FFLAS::FFLAS_DIAG diag,
+				   const size_t M, const size_t N, const size_t R,
+				   typename Field::ConstElement_ptr A, const size_t lda,
+				   typename Field::Element_ptr T, const size_t ldt,
+				   const bool OnlyNonZeroVectors = false);
+
+	/** Cleans up a compact storage A=L\U to reveal a triangular matrix of rank R.
+	 * @param F: base field
+	 * @param UpLo: selects if the upper or lower triangular matrix is revealed
+	 * @param diag: selects if the triangular matrix unit-diagonal
+	 * @param M: row dimension of A
+	 * @param N: column dimension of A
+	 * @param R: rank of the triangular matrix
+	 * @param A: input/output matrix
 	 * @param lda: leading dimension of A
 	 */
 	template <class Field>
 	void
-	TriangularFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-			  const FFLAS::FFLAS_DIAG diag,
-			  const size_t M, const size_t N, const size_t R,
-			  typename Field::Element_ptr T, const size_t ldt,
-			  typename Field::ConstElement_ptr A, const size_t lda);
+	getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+				   const FFLAS::FFLAS_DIAG diag,
+				   const size_t M, const size_t N, const size_t R,
+				   typename Field::Element_ptr A, const size_t lda);
 
-	/** Extracts an echelon matrix from a compact storage A=L\U of rank R.
-	 * Either L or U is in Echelon form (depending on Uplo
+	/** Extracts a matrix in echelon form from a compact storage A=L\U of rank R obtained by
+	 * RowEchelonForm or ColumnEchelonForm.
+	 * Either L or U is in Echelon form (depending on Uplo)
 	 * The echelon structure is defined by the first R values of the array P.
-	 * row and column dimension of T are equal to that of A
+	 * row and column dimension of T are greater or equal to that of A
 	 * @param F: base field
 	 * @param UpLo: selects if the upper or lower triangular matrix is returned
 	 * @param diag: selects if the echelon matrix has unit pivots
@@ -1152,19 +1172,152 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
 	 * @param P: positions of the R pivots
-	 * @param T: output matrix
-	 * @param ldt: leading dimension of T
 	 * @param A: input matrix
 	 * @param lda: leading dimension of A
+	 * @param T: output matrix
+	 * @param ldt: leading dimension of T
+	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
+	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
 	 */
 	template <class Field>
 	void
-	EchelonFromLU (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-		       const FFLAS::FFLAS_DIAG diag,
-		       const size_t M, const size_t N, const size_t R, const size_t* P,
-		       typename Field::Element_ptr T, const size_t ldt,
-		       typename Field::ConstElement_ptr A, const size_t lda);
+	getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+					const FFLAS::FFLAS_DIAG diag,
+					const size_t M, const size_t N, const size_t R, const size_t* P,
+					typename Field::ConstElement_ptr A, const size_t lda,
+					typename Field::Element_ptr T, const size_t ldt,
+					const bool OnlyNonZeroVectors = false,
+					const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
+    /** Cleans up a compact storage A=L\U obtained by RowEchelonForm or ColumnEchelonForm
+	 * to reveal an echelon form of rank R.
+	 * Either L or U is in Echelon form (depending on Uplo)
+	 * The echelon structure is defined by the first R values of the array P.
+	 * @param F: base field
+	 * @param UpLo: selects if the upper or lower triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param M: row dimension of A
+	 * @param N: column dimension of A
+	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+	 * @param P: positions of the R pivots
+	 * @param A: input/output matrix
+	 * @param lda: leading dimension of A
+	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+	 */
+	template <class Field>
+	void
+	getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+					const FFLAS::FFLAS_DIAG diag,
+					const size_t M, const size_t N, const size_t R, const size_t* P,
+					typename Field::Element_ptr A, const size_t lda,
+					const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+
+	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U 
+	 * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
+	 * If Uplo == FflasLower:
+	 *   T is N x N (already allocated) such that A T = C is a transformation of A in 
+	 *   Column echelon form
+	 * Else
+	 *   T is M x M (already allocated) such that T A = E is a transformation of A in 
+	 *   Row Echelon form
+	 * @param F: base field
+	 * @param UpLo: Lower means Transformation to Column Echelon Form, Upper, to Row Echelon Form
+	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param M: row dimension of A
+	 * @param N: column dimension of A
+	 * @param R: rank of the triangular matrix
+	 * @param P: permutation matrix
+	 * @param A: input matrix
+	 * @param lda: leading dimension of A
+	 * @param T: output matrix
+	 * @param ldt: leading dimension of T
+	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+	 */
+	template <class Field>
+	void
+	getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+						 const FFLAS::FFLAS_DIAG diag,
+						 const size_t M, const size_t N, const size_t R, const size_t* P,
+						 typename Field::ConstElement_ptr A, const size_t lda,
+						 typename Field::Element_ptr T, const size_t ldt,
+						 const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+	/** Extracts a matrix in echelon form from a compact storage A=L\U of rank R obtained by
+	 * ReducedRowEchelonForm or ReducedColumnEchelonForm with transform = true.
+	 * Either L or U is in Echelon form (depending on Uplo)
+	 * The echelon structure is defined by the first R values of the array P.
+	 * row and column dimension of T are greater or equal to that of A
+	 * @param F: base field
+	 * @param UpLo: selects if the upper or lower triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param M: row dimension of T
+	 * @param N: column dimension of T
+	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+	 * @param P: positions of the R pivots
+	 * @param A: input matrix
+	 * @param lda: leading dimension of A
+	 * @param ldt: leading dimension of T
+	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
+	 */
+	template <class Field>
+	void
+	getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+						   const size_t M, const size_t N, const size_t R, const size_t* P,
+						   typename Field::ConstElement_ptr A, const size_t lda,
+						   typename Field::Element_ptr T, const size_t ldt,
+						   const bool OnlyNonZeroVectors = false,
+						   const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+
+    /** Cleans up a compact storage A=L\U of rank R obtained by ReducedRowEchelonForm or
+	 * ReducedColumnEchelonForm with transform = true. 
+	 * Either L or U is in Echelon form (depending on Uplo)
+	 * The echelon structure is defined by the first R values of the array P.
+	 * @param F: base field
+	 * @param UpLo: selects if the upper or lower triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param M: row dimension of A
+	 * @param N: column dimension of A
+	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
+	 * @param P: positions of the R pivots
+	 * @param A: input/output matrix
+	 * @param lda: leading dimension of A
+	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+	 */
+	template <class Field>
+	void
+	getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+						   const size_t M, const size_t N, const size_t R, const size_t* P,
+						   typename Field::Element_ptr A, const size_t lda,
+						   const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+
+	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U 
+	 * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
+	 * If Uplo == FflasLower:
+	 *   T is N x N (already allocated) such that A T = C is a transformation of A in 
+	 *   Column echelon form
+	 * Else
+	 *   T is M x M (already allocated) such that T A = E is a transformation of A in 
+	 *   Row Echelon form
+	 * @param F: base field
+	 * @param UpLo: selects Col or Row Echelon Form
+	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param M: row dimension of A
+	 * @param N: column dimension of A
+	 * @param R: rank of the triangular matrix
+	 * @param P: permutation matrix
+	 * @param A: input matrix
+	 * @param lda: leading dimension of A
+	 * @param T: output matrix
+	 * @param ldt: leading dimension of T
+	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
+	 */
+	template <class Field>
+	void
+	getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
+								const size_t M, const size_t N, const size_t R, const size_t* P,
+								typename Field::ConstElement_ptr A, const size_t lda,
+								typename Field::Element_ptr T, const size_t ldt,
+								const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
 } // FFPACK
 // #include "ffpack.inl"
