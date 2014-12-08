@@ -64,8 +64,9 @@ namespace std {
 				  , const __m128 & v
 				 )
 	{
+		float* vArray = (float*)(&v);
 		o << '<' ;
-		o << v[0] << ',' << v[1] ;
+		o << vArray[0] << ',' << vArray[1] ;
 		o << '>' ;
 		return o ;
 	}
@@ -74,8 +75,9 @@ namespace std {
 				  , const __m128i & v
 				 )
 	{
+		int64_t* vArray = (int64_t*)(&v);
 		o << '<' ;
-		o << v[0] << ',' << v[1] ;
+		o << vArray[0] << ',' << vArray[1] ;
 		o << '>' ;
 		return o ;
 	}
@@ -84,8 +86,9 @@ namespace std {
 				  , const __m128d & v
 				 )
 	{
+		double* vArray = (double*)(&v);
 		o << '<' ;
-		o << v[0] << ',' << v[1] ;
+		o << vArray[0] << ',' << vArray[1] ;
 		o << '>' ;
 		return o ;
 	}
@@ -97,8 +100,9 @@ namespace std {
 				  , const __m256 & v
 				 )
 	{
+		float* vArray = (float*)(&v);
 		o << '<' ;
-		o << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3];
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
 		o << '>' ;
 		return o ;
 	}
@@ -107,8 +111,9 @@ namespace std {
 				  , const __m256i & v
 				 )
 	{
+		int64_t* vArray = (int64_t*)(&v);
 		o << '<' ;
-		o << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3];
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
 		o << '>' ;
 		return o ;
 	}
@@ -117,8 +122,9 @@ namespace std {
 				  , const __m256d & v
 				 )
 	{
+		double* vArray = (double*)(&v);
 		o << '<' ;
-		o << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3];
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
 		o << '>' ;
 		return o ;
 	}
