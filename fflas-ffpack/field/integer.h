@@ -37,7 +37,7 @@
 #ifndef __FFLASFFPACK_NOINTEGER
 
 #include <givaro/givinteger.h>
-#include <givaro/givzpz.h>
+#include <givaro/modular.h>
 
 namespace FFPACK {
 	typedef Givaro::Integer Integer;
