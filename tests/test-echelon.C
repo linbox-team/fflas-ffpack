@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -45,7 +45,6 @@
 
 using namespace FFPACK;
 
-//!@bug does not check that the form is actually correct, just that the product is ok.
 template<class Field>
 bool
 test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
@@ -71,7 +70,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
 
-		R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q);
+		R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true);
 
 		if (R != r) {pass = false; break;}
 
@@ -79,17 +78,25 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 		FFPACK::getEchelonForm (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,A,n,L,n);
 
+		// Testing if C is in col echelon form
+		size_t nextpiv = 0;
+		for (size_t j=0; j<R; ++j){
+			size_t i=0;
+			while ((i < m) && F.isZero (L[i*n+j])) i++;
+			if (i==m) // zero column in the first R columns
+				pass = false;
+			if (i < nextpiv)  // not in echelon form
+				pass = false;
+			nextpiv = i+1;
+		}
+		pass &= FFLAS::fiszero (F, m, n-R, L+R, n);
+		// Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
-		bool fail = false;
-		for (size_t i=0; i<m; ++i)
-			for (size_t j=0; j<n; ++j)
-				if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
-					fail=true;
+		pass &= FFLAS::fequal(F, m, n, L, n, X, n);
 
-		if (fail) {
+		if (!pass) {
 			std::cerr<<"FAIL"<<std::endl;
-			pass = false;
 			break;
 		}
 	}
@@ -103,6 +110,74 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 	FFLAS::fflas_delete( Q);
 	return pass;
 }
+
+template<class Field>
+bool
+test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+{
+	typedef typename Field::Element Element ;
+	Element * A = FFLAS::fflas_new<Element>(m*n);
+	Element * B = FFLAS::fflas_new<Element>(m*n);
+	Element * L = FFLAS::fflas_new<Element>(m*m);
+	Element * U = FFLAS::fflas_new<Element>(m*n);
+	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	size_t lda = n; //!@todo check lda
+
+	size_t *P = FFLAS::fflas_new<size_t>(m);
+	size_t *Q = FFLAS::fflas_new<size_t>(n);
+	size_t R = (size_t)-1;
+
+	bool pass=true;
+
+	for (size_t  l=0;l<iters;l++){
+		R = (size_t)-1;
+		RandomMatrixWithRank(F,A,r,m,n,lda);
+		FFLAS::fassign(F,m,n,A,lda,B,lda);
+		for (size_t j=0;j<m;j++) P[j]=0;
+		for (size_t j=0;j<n;j++) Q[j]=0;
+
+		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true);
+
+		if (R != r) {pass = false; break;}
+
+		FFPACK::getEchelonTransform (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,P,A,lda,L,m);
+
+		FFPACK::getEchelonForm (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,Q,A,n,U,n);
+		
+		// Testing if U is in row echelon form
+		size_t nextpiv = 0;
+		for (size_t j=0; j<R; ++j){
+			size_t i=0;
+			while ((i < n) && F.isZero (U[i+j*n])) i++;
+			if (i==n) // zero row in the first R columns
+				pass = false;
+			if (i < nextpiv)  // not in echelon form
+				pass = false;
+			nextpiv = i+1;
+		}
+		pass &= FFLAS::fiszero (F, m-R, n, U+R*n, n);
+
+		// Testing A U = L
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0, L, m, B, n, 0.0, X,n);
+		
+		pass &= FFLAS::fequal(F, m, n, U, n, X, n);
+
+		if (!pass) {
+			std::cerr<<"FAIL"<<std::endl;
+			break;
+		}
+	}
+
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( X);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
+	return pass;
+}
+
 template<class Field>
 bool
 test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
@@ -128,7 +203,9 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
 
-		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q);
+		// write_field (F, std::cerr<<std::endl<<"A= "<<std::endl, A, m,n,lda);
+
+		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true);
 
 		if (R != r) {pass = false; break;}
 
@@ -136,17 +213,32 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 		FFPACK::getReducedEchelonForm (F, FFLAS::FflasLower, m,n,R,Q,A,n,L,n);
 
+		// write_field (F, std::cerr<<"Ainplace = "<<std::endl, A, m,n,n);
+		// write_field (F, std::cerr<<"C = "<<std::endl, L, m,n,n);
+		// write_field (F, std::cerr<<"X = "<<std::endl, U, n,n,n);
+
+		// Testing if C is in reduced col echelon form
+		size_t nextpiv = 0;
+		for (size_t j=0; j<R; ++j){
+			size_t i=0;
+			while ((i < m) && F.isZero (L[i*n+j])) i++;
+			if (i==m) // zero column in the first R columns
+				pass = false;
+			if (i < nextpiv)  // not in echelon form
+				pass = false;
+			if (j) // is pivot row reduced
+				pass &= FFLAS::fiszero(F, j-1, L + i*n, 1);
+			pass &= F.isOne(L[j+i*n]);
+			nextpiv = i+1;
+		}
+		pass &= FFLAS::fiszero (F, m, n-R, L+R, n);
+        // Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
-		bool fail = false;
-		for (size_t i=0; i<m; ++i)
-			for (size_t j=0; j<n; ++j)
-				if (!F.areEqual (*(L+i*n+j), *(X+i*n+j)))
-					fail=true;
+		pass &= FFLAS::fequal(F, m, n, L, n, X, n);
 
-		if (fail) {
+		if (!pass) {
 			std::cerr<<"FAIL"<<std::endl;
-			pass = false;
 			break;
 		}
 	}
@@ -160,6 +252,76 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 	FFLAS::fflas_delete( Q);
 	return pass;
 }
+template<class Field>
+bool
+test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+{
+	typedef typename Field::Element Element ;
+	Element * A = FFLAS::fflas_new<Element>(m*n);
+	Element * B = FFLAS::fflas_new<Element>(m*n);
+	Element * L = FFLAS::fflas_new<Element>(m*m);
+	Element * U = FFLAS::fflas_new<Element>(m*n);
+	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	size_t lda = n; //!@todo check lda
+
+	size_t *P = FFLAS::fflas_new<size_t>(m);
+	size_t *Q = FFLAS::fflas_new<size_t>(n);
+	size_t R = (size_t)-1;
+
+	bool pass=true;
+
+	for (size_t  l=0;l<iters;l++){
+		R = (size_t)-1;
+		RandomMatrixWithRank(F,A,r,m,n,lda);
+		FFLAS::fassign(F,m,n,A,lda,B,lda);
+		for (size_t j=0;j<m;j++) P[j]=0;
+		for (size_t j=0;j<n;j++) Q[j]=0;
+
+		R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true);
+
+		if (R != r) {pass = false; break;}
+
+		FFPACK::getReducedEchelonTransform (F, FFLAS::FflasUpper, m,n,R,P,A,lda,L,m);
+
+		FFPACK::getReducedEchelonForm (F, FFLAS::FflasUpper, m,n,R,Q,A,n,U,n);
+		
+		// Testing if U is in row echelon form
+		size_t nextpiv = 0;
+		for (size_t j=0; j<R; ++j){
+			size_t i=0;
+			while ((i < n) && F.isZero (U[i+j*n])) i++;
+			if (i==n) // zero row in the first R columns
+				pass = false;
+			if (i < nextpiv)  // not in echelon form
+				pass = false;
+			if (j) // is pivot row reduced
+				pass &= FFLAS::fiszero(F, j-1, U + i, n);
+			pass &= F.isOne(U[j*n+i]);
+			nextpiv = i+1;
+		}
+		pass &= FFLAS::fiszero (F, m-R, n, U+R*n, n);
+
+		// Testing A U = L
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0, L, m, B, n, 0.0, X,n);
+		
+		pass &= FFLAS::fequal(F, m, n, U, n, X, n);
+
+		if (!pass) {
+			std::cerr<<"FAIL"<<std::endl;
+			break;
+		}
+	}
+
+	FFLAS::fflas_delete( U);
+	FFLAS::fflas_delete( L);
+	FFLAS::fflas_delete( X);
+	FFLAS::fflas_delete( B);
+	FFLAS::fflas_delete( A);
+	FFLAS::fflas_delete( P);
+	FFLAS::fflas_delete( Q);
+	return pass;
+}
+
 int main(int argc, char** argv){
 	std::cerr<<std::setprecision(20);
 
@@ -175,10 +337,10 @@ int main(int argc, char** argv){
 		{ 'm', "-m N", "Set the number of rows in the matrix.", TYPE_INT , &m },
 		{ 'r', "-r r", "Set the rank of the matrix."          , TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		// { 'f', "-f file", "Set input file", TYPE_STR, &file },
+		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
-
+	r = std::min(r, std::min(m,n));
 	FFLAS::parseArguments(argc,argv,as);
 
 	bool pass = true ;
@@ -186,5 +348,7 @@ int main(int argc, char** argv){
 	Field F(p);
 	pass &= test_colechelon(F,m,n,r,iters);
 	pass &= test_redcolechelon(F,m,n,r,iters);
+	pass &= test_rowechelon(F,m,n,r,iters);
+	pass &= test_redrowechelon(F,m,n,r,iters);
 	return !pass ;
 }

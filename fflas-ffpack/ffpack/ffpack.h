@@ -552,7 +552,7 @@ namespace FFPACK { /* echelon */
 	size_t
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 			   typename Field::Element_ptr A, const size_t lda,
-			   size_t* P, size_t* Qt, bool transform = true);
+			   size_t* P, size_t* Qt, bool transform = false);
 
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
@@ -599,7 +599,7 @@ namespace FFPACK { /* echelon */
 	size_t
 	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 				  typename Field::Element_ptr A, const size_t lda,
-				  size_t* P, size_t* Qt, const bool transform = true);
+				  size_t* P, size_t* Qt, const bool transform = false);
 
 	/** Compute the Reduced Row Echelon form of the input matrix in-place.
 	 *
@@ -622,7 +622,7 @@ namespace FFPACK { /* echelon */
 	size_t
 	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 			       typename Field::Element_ptr A, const size_t lda,
-			       size_t* P, size_t* Qt, const bool transform = true);
+			       size_t* P, size_t* Qt, const bool transform = false);
 
 	/**  Variant by the block recursive algorithm.
 	 * (See A. Storjohann Thesis 2000)
