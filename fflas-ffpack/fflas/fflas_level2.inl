@@ -95,7 +95,6 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr A, const size_t lda,
 		typename Field::ConstElement_ptr B, const size_t ldb)
 	{
-		if (m != n) return false;
 		bool res=true;
 		for (size_t i = 0 ; i < m ; ++i)
 			res &= fequal (F, n, A + i*lda, 1, B + i*ldb, 1);
