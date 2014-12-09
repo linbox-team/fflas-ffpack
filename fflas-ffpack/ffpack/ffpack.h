@@ -177,7 +177,7 @@ namespace FFPACK { /* Permutations */
 		const size_t M, const int ibeg, const int iend,
 		typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
- 
+
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 
@@ -193,7 +193,7 @@ namespace FFPACK { /* Permutations */
 
 	//! Parallel applyT with OPENMP tasks
 	template <class Field>
-	void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda, 
+	void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
 		      const size_t width, const size_t N2,
 		      const size_t R1, const size_t R2,
 		      const size_t R3, const size_t R4) ;
@@ -207,7 +207,7 @@ namespace FFPACK { /* Permutations */
 			    const size_t R3, const size_t R4) ;
 
 	template<class Field>
-	size_t 
+	size_t
 	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
@@ -418,7 +418,7 @@ namespace FFPACK { /* PLUQ */
 	 * @param A input matrix
 	 * @param lda leading dimension of \p A
 	 * @param P the column permutation
-	 * @param Q the row permutation 
+	 * @param Q the row permutation
 
 	 * @return the rank of \p A
 	 * @bib

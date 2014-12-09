@@ -67,6 +67,8 @@ namespace std {
 		float* vArray = (float*)(&v);
 		o << '<' ;
 		o << vArray[0] << ',' << vArray[1] ;
+		o << ',';
+		o << vArray[2] << ',' << vArray[3] ;
 		o << '>' ;
 		return o ;
 	}
@@ -102,7 +104,9 @@ namespace std {
 	{
 		float* vArray = (float*)(&v);
 		o << '<' ;
-		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3] ;
+		o << ',';
+		o << vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
 		o << '>' ;
 		return o ;
 	}
