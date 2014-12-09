@@ -171,6 +171,43 @@ namespace FFLAS {
 				F.assign(*(X+i*incX), F.zero);
 		}
 	}
+	
+       /** \brief fiszero : test \f$X = 0 \f$.
+	 * @param F field
+	 * @param n vector dimension
+	 * \param X vector in \p F
+	 * \param incX increment of \p X
+	 */
+	template<class Field>
+	bool
+	fiszero (const Field& F, const size_t n,
+		 typename Field::ConstElement_ptr X, const size_t incX)
+	{
+		bool res=true;
+		for (size_t i = 0 ; i < n ; ++i)
+			res &= F.isZero (X [i*incX]);
+		return res;
+	}
+
+       /** \brief fequal : test \f$X = Y \f$.
+	 * @param F field
+	 * @param n vector dimension
+	 * \param X vector in \p F
+	 * \param incX increment of \p X
+	 * \param Y vector in \p F
+	 * \param incY increment of \p Y
+	 */
+	template<class Field>
+	bool
+	fequal (const Field& F, const size_t n,
+		typename Field::ConstElement_ptr X, const size_t incX,
+		typename Field::ConstElement_ptr Y, const size_t incY)
+	{
+		bool res=true;
+		for (size_t i = 0 ; i < n ; ++i)
+			res &= F.areEqual (X [i*incX], Y [i*incY]);
+		return res;
+	}
 
 	/** \brief fassign : \f$x \gets y \f$.
 	 * X is preallocated

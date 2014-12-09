@@ -80,6 +80,44 @@ namespace FFLAS {
 				fzero(F,n,A+i*lda,1);
 		}
 	}
+        /** \brief fequal : test \f$A = B \f$.
+	 * @param F field
+	 * @param m row dimension
+	 * @param n column dimension
+	 * \param A m x n matrix in \p F
+	 * \param lda leading dimension of A
+	 * \param B m x n matrix in \p F
+	 * \param ldb leading dimension of B
+	 */
+	template<class Field>
+	bool
+	fequal (const Field& F, const size_t m, const size_t n,
+		typename Field::ConstElement_ptr A, const size_t lda,
+		typename Field::ConstElement_ptr B, const size_t ldb)
+	{
+		if (m != n) return false;
+		bool res=true;
+		for (size_t i = 0 ; i < m ; ++i)
+			res &= fequal (F, n, A + i*lda, 1, B + i*ldb, 1);
+		return res;
+	}
+        /** \brief fiszero : test \f$A = 0 \f$.
+	 * @param F field
+	 * @param m row dimension
+	 * @param n column dimension
+	 * \param A m x n matrix in \p F
+	 * \param lda leading dimension of A
+	 */
+	template<class Field>
+	bool
+	fiszero (const Field& F, const size_t m, const size_t n,
+		 typename Field::ConstElement_ptr A, const size_t lda)
+	{
+		bool res=true;
+		for (size_t i = 0 ; i < m ; ++i)
+			res &= fiszero (F, n, A + i*lda, 1);
+		return res;
+	}
 
 	//! creates a diagonal matrix
 	template<class Field>
