@@ -2,7 +2,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- *
+ *<ziad.sultan@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -56,6 +56,7 @@
 // TASK is a function call
 #define TASK(r,w,rw,f,Args...) f(Args)
 
+
 #define WAIT
 #define BARRIER
 #define PAR_REGION
@@ -66,6 +67,19 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
+
+// for strategy 1D
+#define TASKFOR1D(Args...) \
+  ForStrategy1D iter(Args);                     \
+  for(iter.begin(); !iter.end(); ++iter)
+
+
+// for strategy 2D
+#define TASKFOR2D(iter,Args...)			\
+  ForStrategy2D iter(Args);                     \
+  for(iter.begin(); !iter.end(); ++iter)
+
+
 #endif // Macro for sequential
 
 
@@ -75,38 +89,20 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
 
-#define GLOBALSHARED(a, Args...) shared(Args)
-#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
+//#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
 
-// Task definition with OpenMP
-#define TASK(r, w, rw, f, Args...)				\
-  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) ) \
-  f(Args)
+//computes dependencies (no wait here)
+#define CHECK_DEPENDENCIES
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
 
-#define BARRIER
-
-// parallel for
-#define PAR_FOR  PRAGMA_OMP_TASK_IMPL( omp parallel for ) \
-  for
-// parallel region
-#define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
-  PRAGMA_OMP_TASK_IMPL( omp single )
-// get number of threads in the parallel region
-# define NUM_THREADS omp_get_num_threads()
-// get number of threads specified with the global variable OMP_NUM_THREADS
-# define MAX_THREADS omp_get_max_threads()
-
-#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
-#define END_PARALLEL_MAIN(void)  return 0; }
-
-#ifdef __FFLASFFPACK_USE_OPENMP4
-
-
-#define TASKDEPEND(r, w, rw, f, Args...)				\
+#define TASK(r, w, rw, f, Args...)				\
   PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) DEPENDS(in, x r) DEPENDS(out, x w) DEPENDS(inout, x rw) ) \
   f(Args)
+
+#define BEGINTASK(r, w, rw)						\
+  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) DEPENDS(in, x r) DEPENDS(out, x w) DEPENDS(inout, x rw) ) {
 
 #define DEPENDS(...)\
   PP_NARG_(__VA_ARGS__,PP_RSEQ_N())(__VA_ARGS__)
@@ -127,17 +123,67 @@
     DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
     DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
     DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,\
+    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
     DEPENDS_NOTHING /*x*/, DEPENDS_NOTHING/*mode*/,DEPENDS_NOTHING/*none*/
 
 #define DEPENDS_NOTHING(...) /* nothing */
 #define DEPENDS_( mode, x, ... )             \
   depend( mode: __VA_ARGS__ )
-#else
+
+#else // OPENMP3.1 (explicit synch mode)
+
+#define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL( omp taskwait )
 
 #define DEPENDS(...) /*NOTHING*/
 
-#endif
+
+// Task definition with OpenMP
+#define TASK(r, w, rw, f, Args...)				\
+  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) ) \
+  f(Args)
+
+#define BEGINTASK(r, w, rw)						\
+    PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) {
+    
+
+#endif // end DATAFLOW FLAG
+
+#define ENDTASK(void) }
+
+// macro omp taskwait (waits for all childs of current task)
+#define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
+
+#define GLOBALSHARED(a, Args...) shared(Args)
+#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
+
+#define BARRIER
+
+// parallel for
+#define PAR_FOR  PRAGMA_OMP_TASK_IMPL( omp parallel for ) \
+  for
+
+// for strategy 1D
+#define TASKFOR1D(Args...) \
+  ForStrategy1D iter(Args);                     \
+  for(iter.begin(); !iter.end(); ++iter)
+
+
+// for strategy 2D
+#define TASKFOR2D(iter, Args...)                 \
+  ForStrategy2D iter(Args);                     \
+  for(iter.begin(); !iter.end(); ++iter)
+
+
+// parallel region
+#define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
+  PRAGMA_OMP_TASK_IMPL( omp single )
+// get number of threads in the parallel region
+# define NUM_THREADS omp_get_num_threads()
+// get number of threads specified with the global variable OMP_NUM_THREADS
+# define MAX_THREADS omp_get_max_threads()
+
+#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
+#define END_PARALLEL_MAIN(void)  return 0; }
 
 #endif // OpenMP macros
 
