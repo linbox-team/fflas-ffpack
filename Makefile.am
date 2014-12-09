@@ -39,7 +39,7 @@ docs_dev:doc/fflas-ffpack-dev-html/index.html
 
 doc/fflas-ffpack-dev-html/index.html:
 	(cd doc; ${MAKE} docs_dev)
-	
+
 perfpublisher: benchmarks/perfpublisher tests/perfpublisher
 
 benchmarks/perfpublisher:
@@ -49,23 +49,21 @@ tests/perfpublisher:
 	(cd tests; ${MAKE} perfpublisher)
 
 #  examples:
-#  (cd examples; make examples)
+#  (cd examples; ${MAKE} examples)
 
 benchmarks:
 	(cd benchmarks; ${MAKE} benchmarks)
 
 uninstall-hook:
-	(test -d "$(includedir)/fflas-ffpack" && rm -rf \
-	       	"$(mandir)/man1" \
-		"$(mandir)" \
-		"$(includedir)/fflas-ffpack/fflas" \
-		"$(includedir)/fflas-ffpack/fflas/fflas_fgemm" \
-		"$(includedir)/fflas-ffpack/ffpack" \
-		"$(includedir)/fflas-ffpack/field" \
-		"$(includedir)/fflas-ffpack/utils" \
-		"$(includedir)/fflas-ffpack/"  \
-		"$(datarootdir)/" \
-		) || true
+	(test -d "$(includedir)/fflas-ffpack" && rm -rf			\
+	       	"$(mandir)/man1" "$(mandir)"				\
+	       	"$(includedir)/fflas-ffpack/fflas"			\
+	       	"$(includedir)/fflas-ffpack/fflas/fflas_fgemm"		\
+	       	"$(includedir)/fflas-ffpack/ffpack"			\
+	       	"$(includedir)/fflas-ffpack/field"			\
+	       	"$(includedir)/fflas-ffpack/utils"			\
+	       	"$(includedir)/fflas-ffpack/" "$(datarootdir)/" ) ||	\
+	       	true
 
 .PHONY:examples benchmarks
 
