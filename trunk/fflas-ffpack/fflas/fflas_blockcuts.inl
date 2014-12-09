@@ -184,13 +184,13 @@ namespace FFLAS {
 namespace FFLAS {
 
     struct ForStrategy1D {
-        ForStrategy1D(const size_t n, const CuttingStrategy method, const size_t numthreads) {
+        ForStrategy1D(const size_t n, const ParSeqHelper::Parallel H) {
 //             std::cout<<"FS1D n : "<<n<<std::endl;
 //             std::cout<<"FS1D method    : "<<method<<std::endl;
 //             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
 
-            if ( method == BLOCK_THREADS || method == ROW_THREADS || method == COLUMN_THREADS) {
-                numBlock = std::max(numthreads,(size_t)1);
+            if ( H.method == BLOCK_THREADS || H.method == ROW_THREADS || H.method == COLUMN_THREADS) {
+                numBlock = std::max(H.numthreads,(size_t)1);
             } else {
                 numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(size_t)1);
             }
@@ -242,12 +242,12 @@ namespace FFLAS {
 
 
     struct ForStrategy2D {
-        ForStrategy2D(const size_t m, const size_t n, const CuttingStrategy method, const size_t numthreads) {
+        ForStrategy2D(const size_t m, const size_t n, const ParSeqHelper::Parallel H) {
             BlockCuts(rowBlockSize, colBlockSize,
                       lastRBS, lastCBS,
                       changeRBS, changeCBS,
                       numRowBlock, numColBlock,
-                      m, n, method, numthreads);
+                      m, n, H.method, H.numthreads);
 
             BLOCKS = numRowBlock * numColBlock;
         }

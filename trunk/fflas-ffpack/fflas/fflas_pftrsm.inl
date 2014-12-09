@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <03 Dec 14 11:35:13 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <09 Dec 14 10:01:06 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -66,13 +66,13 @@ namespace FFLAS {
                 // const size_t numThreads)
 	{
 		if(Side == FflasRight){
-			ForStrategy1D iter(m, H.parseq.method, (size_t)H.parseq.numthreads);
+			ForStrategy1D iter(m, H.parseq);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
 			}
 		} else {
-			ForStrategy1D iter(n, H.parseq.method, (size_t)H.parseq.numthreads);
+			ForStrategy1D iter(n, H.parseq);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
 				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
@@ -109,7 +109,7 @@ namespace FFLAS {
 				nt_it = (int)ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
 				nt_rec = (int)ceil(double(nt)/nt_it);
 			} else { nt_it = nt; nt_rec = 1;}
-			ForStrategy1D iter(m, H.parseq.method, (size_t)nt_it);
+			ForStrategy1D iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 			for (iter.begin(); ! iter.end(); ++iter) {
 				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
@@ -130,7 +130,8 @@ namespace FFLAS {
 			// 	nt_it = std::min(nt,(int)ceil(double(n)/PTRSM_HYBRID_THRESHOLD));
 			// 	nt_rec = ceil(double(nt)/nt_it);
 			// } else { nt_it = nt; nt_rec = 1;}
-			ForStrategy1D iter(n, H.parseq.method, (size_t)nt_it);
+
+			ForStrategy1D iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 			for (iter.begin(); ! iter.end(); ++iter) {
 				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
