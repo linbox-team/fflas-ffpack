@@ -466,7 +466,7 @@ getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
 	} else { // Triangular is lower triangular
 		FFLAS::fzero (F, R, Tdim - R, T + R, ldt);
-		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, MaxPidx, T, ldt, P);
 	}
 }
 template <class Field>
@@ -487,7 +487,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			FFLAS::fzero (F, M-R, N, T + R*ldt, ldt);
 	} else { // Extracting a reduced column echelon form
 		FFLAS::fassign(F, M-R, R, A+R*lda, lda, T+R*ldt, ldt);
-		applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R, 0, MaxPidx, T, ldt, P);
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, R, 0, MaxPidx, T, ldt, P);
 		if (!OnlyNonZeroVectors)
 			FFLAS::fzero (F, M, N-R, T + R, ldt);
 	}
@@ -505,7 +505,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R, 0, MaxPidx, A, lda, P);
 		FFLAS::fzero (F, M-R, N, A + R*lda, lda);
 	} else { // Extracting a reduced column echelon form
-		applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R, 0, MaxPidx, A, lda, P);
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, R, 0, MaxPidx, A, lda, P);
 		FFLAS::fzero (F, M, N-R, A + R, lda);
 	}
 }
@@ -530,7 +530,7 @@ getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	} else { // Triangular is lower triangular
 		FFLAS::fassign (F, M, R, A, lda, T, ldt);
 		FFLAS::fzero (F, R, Tdim - R, T + R, ldt);
-		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, MaxPidx, T, ldt, P);
 	}
 }
 
