@@ -323,9 +323,9 @@ namespace FFLAS { /*  Traits */
 	};
 
 
-	// Givaro::ZpzDom<Givaro::Std32>
+	// Givaro::ZpzDom<int32_t>
 	template<>
-	struct FieldTraits<Givaro::ZpzDom<Givaro::Std32> > {
+	struct FieldTraits<Givaro::ZpzDom<int32_t> > {
 		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
 		typedef typename FieldCategories::IntegralTag rep_t ;

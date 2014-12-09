@@ -24,7 +24,7 @@ using namespace std;
 
 
 #include "givaro/givintprime.h"
-#include "givaro/givzpz.h"
+#include "givaro/modular.h"
 #include "givaro/givgfq.h"
 
 using namespace FFPACK;
@@ -35,8 +35,8 @@ using namespace Givaro;
 //typedef Modular<double> Field;
 typedef Modular<float> Field;
 //typedef Modular<int> Field; //-> bug avec w>=1 (olddynamic pealing)
-//typedef  ZpzDom<Std32> Field;
-//typedef GFqDom<Std32> Field;
+//typedef  ZpzDom<int32_t> Field;
+//typedef GFqDom<int32_t> Field;
 
 int main(int argc, char** argv){
  FFLAS::Timer tim;

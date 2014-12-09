@@ -55,7 +55,7 @@ typedef ModularBalanced<double> Field;
 //typedef Modular<float> Field;
 //typedef ModularBalanced<float> Field;
 //typedef Modular<int> Field;
-//typedef GivaroZpz<Std32> Field;
+//typedef GivaroZpz<int32_t> Field;
 //typedef GivaroGfq Field;
 
 int main(int argc, char** argv){
