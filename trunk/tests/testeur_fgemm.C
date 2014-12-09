@@ -35,7 +35,7 @@ using namespace Givaro;
 //typedef Modular<double> Field;
 typedef Modular<float> Field;
 //typedef Modular<int> Field; //-> bug avec w>=1 (olddynamic pealing)
-//typedef  ZpzDom<int32_t> Field;
+//typedef  Modular<int32_t> Field;
 //typedef GFqDom<int32_t> Field;
 
 int main(int argc, char** argv){
