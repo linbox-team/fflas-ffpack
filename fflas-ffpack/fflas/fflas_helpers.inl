@@ -70,9 +70,9 @@ namespace FFLAS {
 	*/
 	namespace ParSeqHelper {
 		struct Parallel{
-			int numthreads;
+			size_t numthreads;
 			CuttingStrategy method;
-			Parallel(int n=MAX_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
+			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
 				return out << "Parallel: " << p.numthreads << ',' << p.method;

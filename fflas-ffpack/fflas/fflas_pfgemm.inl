@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <05 Nov 14 16:19:02 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <09 Dec 14 10:02:11 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -522,7 +522,7 @@ namespace FFLAS {
 			return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
 			H.parseq.numthreads = std::min(H.parseq.numthreads, std::max(1,int(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
-			ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
+			ForStrategy2D iter(m,n,H.parseq);
 			// if (H.recLevel < 0) 
 			// 	H.recLevel = Protected::WinogradSteps (F, min3(iter.rowBlockSize,k,iter.colBlockSize));
 			for (iter.begin(); ! iter.end(); ++iter){
@@ -563,8 +563,8 @@ namespace FFLAS{
 	    std::cout<<"computation"<<std::endl;
 	    */
 		// Threshold: no need to slice to blocks smaller than __FFLASFFPACK_SEQPARTHRESHOLD
-	    H.parseq.numthreads = std::min(H.parseq.numthreads, std::max(1,(int)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
-	    ForStrategy2D iter(m,n,H.parseq.method,H.parseq.numthreads);
+	    H.parseq.numthreads = std::min(H.parseq.numthreads, std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
+	    ForStrategy2D iter(m,n,H.parseq);
 	    if (H.recLevel < 0) 
 		    H.recLevel = Protected::WinogradSteps (F, min3(iter.rowBlockSize,k,iter.colBlockSize));
 	    for (iter.begin(); ! iter.end(); ++iter){
