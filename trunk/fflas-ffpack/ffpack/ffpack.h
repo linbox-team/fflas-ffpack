@@ -552,7 +552,8 @@ namespace FFPACK { /* echelon */
 	size_t
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 			   typename Field::Element_ptr A, const size_t lda,
-			   size_t* P, size_t* Qt, bool transform = false);
+					   size_t* P, size_t* Qt, bool transform = false,
+					   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
@@ -574,8 +575,9 @@ namespace FFPACK { /* echelon */
 	template <class Field>
 	size_t
 	RowEchelonForm (const Field& F, const size_t M, const size_t N,
-			typename Field::Element_ptr A, const size_t lda,
-			size_t* P, size_t* Qt, const bool transform = false);
+					typename Field::Element_ptr A, const size_t lda,
+					size_t* P, size_t* Qt, const bool transform = false,
+					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	/** Compute the Reduced Column Echelon form of the input matrix in-place.
 	 *
@@ -598,8 +600,9 @@ namespace FFPACK { /* echelon */
 	template <class Field>
 	size_t
 	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-				  typename Field::Element_ptr A, const size_t lda,
-				  size_t* P, size_t* Qt, const bool transform = false);
+							  typename Field::Element_ptr A, const size_t lda,
+							  size_t* P, size_t* Qt, const bool transform = false,
+							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	/** Compute the Reduced Row Echelon form of the input matrix in-place.
 	 *
@@ -622,7 +625,8 @@ namespace FFPACK { /* echelon */
 	size_t
 	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 			       typename Field::Element_ptr A, const size_t lda,
-			       size_t* P, size_t* Qt, const bool transform = false);
+						   size_t* P, size_t* Qt, const bool transform = false,
+						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	/**  Variant by the block recursive algorithm.
 	 * (See A. Storjohann Thesis 2000)
@@ -1237,7 +1241,7 @@ namespace FFPACK { /* Solutions */
 	void
 	getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 						 const FFLAS::FFLAS_DIAG diag,
-						 const size_t M, const size_t N, const size_t R, const size_t* P,
+						 const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 						 typename Field::ConstElement_ptr A, const size_t lda,
 						 typename Field::Element_ptr T, const size_t ldt,
 						 const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
@@ -1314,10 +1318,15 @@ namespace FFPACK { /* Solutions */
 	template <class Field>
 	void
 	getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-								const size_t M, const size_t N, const size_t R, const size_t* P,
+								const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 								typename Field::ConstElement_ptr A, const size_t lda,
 								typename Field::Element_ptr T, const size_t ldt,
 								const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
+		/** Auxiliary routine: determines the permutation that changes a PLUQ decomposition 
+		 * into a echelon form revealing PLUQ decomposition 
+		 */
+	void 
+	PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm);
 
 } // FFPACK
 // #include "ffpack.inl"
