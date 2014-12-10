@@ -33,11 +33,18 @@
 template <class Field>
 size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 								  typename Field::Element_ptr A, const size_t lda,
-								  size_t* P, size_t* Qt, const bool transform)
+								  size_t* P, size_t* Qt, const bool transform,
+								  const FFPACK_LU_TAG LuTag)
 {
 	size_t r;
-	r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
-	
+	if (LuTag == FFPACK::FfpackSlabRecursive)
+		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
+	else {
+		r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P);
+		// for (int i=M-1; i-->0;)
+		// 	if ( Qt[i]> (size_t) i )
+		// 		FFLAS::fswap( F, i, A + Qt[i]*lda, 1, A + i*lda, 1 );
+	}
 	if (transform){
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda);
@@ -49,10 +56,14 @@ size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N
 template <class Field>
 size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 							   typename Field::Element_ptr A, const size_t lda,
-							   size_t* P, size_t* Qt, const bool transform)
+							   size_t* P, size_t* Qt, const bool transform,
+							   const FFPACK_LU_TAG LuTag)
 {
 	size_t r;
-	r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
+	if (LuTag == FFPACK::FfpackSlabRecursive)
+		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
+	else
+		r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt);
 
 	if (transform){
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda);
@@ -66,10 +77,11 @@ template <class Field>
 size_t
 FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 								  typename Field::Element_ptr A, const size_t lda,
-								  size_t* P, size_t* Qt, const bool transform)
+								  size_t* P, size_t* Qt, const bool transform, 
+								  const FFPACK_LU_TAG LuTag)
 {
 	size_t r;
-	r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform);
+	r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
 	// M = Q^T M
 	for (size_t i=0; i<r; ++i){
 		if ( Qt[i]> (size_t) i ){
@@ -94,11 +106,12 @@ template <class Field>
 size_t
 FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 							   typename Field::Element_ptr A, const size_t lda,
-							   size_t* P, size_t* Qt, const bool transform)
+							   size_t* P, size_t* Qt, const bool transform, 
+							   const FFPACK_LU_TAG LuTag)
 {
 
 	size_t r;
-	r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform);
+	r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
 	// M = M Q
 	for (size_t i=0; i<r; ++i)
 		if ( Qt[i]> i )
@@ -342,7 +355,7 @@ void
 getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			   const FFLAS::FFLAS_DIAG diag,
 			   const size_t M, const size_t N, const size_t R,
-			   typename Field::ConstElement_ptr A, const size_t lda)
+			   typename Field::Element_ptr A, const size_t lda)
 {
 	typename Field::ConstElement_ptr Ai = A;
 	if (Uplo == FFLAS::FflasUpper){
@@ -362,6 +375,28 @@ getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 		FFLAS::fzero(F, M-R, N-R, Ai+R, lda);
 	}
 }
+
+void 
+PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm)
+{
+	size_t * MP = new size_t[N];
+	size_t * CRP = new size_t[R];
+	size_t * Perm = new size_t[R];
+	size_t * invMP = new size_t[N];
+	LAPACKPerm2MathPerm (MP, P, N);
+	for (size_t i=0; i<N; ++i) 
+		invMP[MP[i]] = i;
+	std::copy(MP,MP+R,CRP);
+	std::sort(CRP,CRP+R);
+	for (size_t i=0;i<R; ++i)
+		Perm[i] = invMP [CRP [i]];
+	MathPerm2LAPACKPerm (outPerm, Perm, R);
+	delete[] MP;
+	delete[] CRP;
+	delete[] Perm;
+	delete[] invMP;
+}
+
 template <class Field>
 void
 getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
@@ -402,12 +437,27 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			if (!OnlyNonZeroVectors)
 				FFLAS::fzero(F,M,N-R,Ti,ldt);
 		}
-	} else {
+	} else { // TileRecursive
 		getTriangular (F, Uplo, diag, M, N, R, A, lda, T, ldt, OnlyNonZeroVectors);
-		if (Uplo == FFLAS::FflasLower)
-			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, OnlyNonZeroVectors ? R : N, 0, M, T, ldt, P);
-		else
+		if (Uplo == FFLAS::FflasLower){
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, OnlyNonZeroVectors ? R : N, 0, M, T, ldt, P);
+
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (M, R, P, LPerm); 
+
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, T, ldt, LPerm);
+
+			delete[] LPerm;
+		} else{
 			applyP (F, FFLAS::FflasRight,FFLAS::FflasNoTrans, OnlyNonZeroVectors ? R : M, 0, N, T, ldt, P);
+
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (N, R, P, LPerm); 
+
+			applyP (F, FFLAS::FflasLeft,FFLAS::FflasNoTrans, N, 0, R, T, ldt, LPerm);
+
+			delete[] LPerm;
+		}
 	}
 }
 template <class Field>
@@ -437,19 +487,36 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			}
 			FFLAS::fzero(F,M,N-R,Ai,lda);
 		}
-	} else {
+	} else { // TileRecursive
 		getTriangular (F, Uplo, diag, M, N, R, A, lda);
-		if (Uplo == FFLAS::FflasLower)
-			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, M, A, lda, P);
-		else
+
+		if (Uplo == FFLAS::FflasLower){
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0, M, A, lda, P);
+
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (M, R, P, LPerm);
+			
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, A, lda, LPerm);
+			
+			delete[] LPerm;
+		} else {
 			applyP (F, FFLAS::FflasRight,FFLAS::FflasNoTrans, M, 0, N, A, lda, P);
+
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (N, R, P, LPerm);
+
+			applyP (F, FFLAS::FflasLeft,FFLAS::FflasNoTrans, N, 0, R, A, lda, LPerm);
+
+			delete[] LPerm;
+		}
 	}
 }
+
 template <class Field>
 void
 getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 					 const FFLAS::FFLAS_DIAG diag,
-					 const size_t M, const size_t N, const size_t R, const size_t* P,
+					 const size_t M, const size_t N, const size_t R, const size_t* P, const size_t * Q,
 					 typename Field::ConstElement_ptr A, const size_t lda,
 					 typename Field::Element_ptr T, const size_t ldt,
 					 const FFPACK_LU_TAG LuTag)
@@ -460,13 +527,35 @@ getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	size_t MaxPidx = (LuTag == FfpackSlabRecursive) ? R : Tdim;
 
 	getTriangular (F, oppUpLo, oppDiag, M, N, R, A, lda, T, ldt, true);
+
 	FFLAS::fidentity (F, Tdim-R, Tdim-R, T + R*ldt +R, ldt);
+
 	if (oppUpLo == FFLAS::FflasUpper){ // Transform is upper triangular
 		FFLAS::fzero (F, Tdim - R, R, T + R*ldt, ldt);
+
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
-	} else { // Triangular is lower triangular
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (M, R, Q, LPerm);
+
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, 0, R, T, ldt, LPerm);
+
+			delete[] LPerm;
+		}
+	} else { // Transform is lower triangular
 		FFLAS::fzero (F, R, Tdim - R, T + R, ldt);
+
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, MaxPidx, T, ldt, P);
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (N, R, Q, LPerm);
+
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, M, 0, R, T, ldt, LPerm);
+
+			delete[] LPerm;
+		}
 	}
 }
 template <class Field>
@@ -479,23 +568,48 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 					   const FFPACK_LU_TAG LuTag)
 {
 	size_t MaxPidx = (LuTag == FfpackSlabRecursive) ? R : ((Uplo == FFLAS::FflasUpper)?N:M);
+	
 	FFLAS::fidentity (F, R, R, T, ldt);
+
 	if (Uplo == FFLAS::FflasUpper){  // Extracting a reduced row echelon form
 		FFLAS::fassign(F, R, N-R, A+R, lda, T+R, ldt);
+	
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R, 0, MaxPidx, T, ldt, P);
+		
 		if (!OnlyNonZeroVectors)
 			FFLAS::fzero (F, M-R, N, T + R*ldt, ldt);
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (N, R, P, LPerm);
+
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, T, ldt, LPerm);
+
+			delete[] LPerm;
+		}
+
 	} else { // Extracting a reduced column echelon form
 		FFLAS::fassign(F, M-R, R, A+R*lda, lda, T+R*ldt, ldt);
+
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, R, 0, MaxPidx, T, ldt, P);
+
 		if (!OnlyNonZeroVectors)
 			FFLAS::fzero (F, M, N-R, T + R, ldt);
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (M, R, P, LPerm);
+			
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, T, ldt, LPerm);
+
+			delete[] LPerm;
+		}
 	}
 }
 template <class Field>
 void
 getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-					   const size_t M, const size_t N, const size_t R, const size_t* P,
+					   const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 					   typename Field::Element_ptr A, const size_t lda,
 					   const FFPACK_LU_TAG LuTag)
 {
@@ -503,17 +617,38 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	FFLAS::fidentity (F, R, R, A, lda);
 	if (Uplo == FFLAS::FflasUpper){  // Extracting a reduced row echelon form
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R, 0, MaxPidx, A, lda, P);
+
 		FFLAS::fzero (F, M-R, N, A + R*lda, lda);
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (N, R, Q, LPerm);
+			
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, A, lda, LPerm);
+			
+			delete[] LPerm;
+		}
+		
 	} else { // Extracting a reduced column echelon form
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, R, 0, MaxPidx, A, lda, P);
+
 		FFLAS::fzero (F, M, N-R, A + R, lda);
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (M, R, Q, LPerm);
+			
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, A, lda, LPerm);
+			
+			delete[] LPerm;
+		}
 	}
 }
 
 template <class Field>
 void
 getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-							const size_t M, const size_t N, const size_t R, const size_t* P,
+							const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 							typename Field::ConstElement_ptr A, const size_t lda,
 							typename Field::Element_ptr T, const size_t ldt,
 							const FFPACK_LU_TAG LuTag)
@@ -523,14 +658,37 @@ getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	size_t MaxPidx = (LuTag == FfpackSlabRecursive) ? R : Tdim;
 
 	FFLAS::fidentity (F, Tdim-R, Tdim-R, T + R*ldt +R, ldt);
+
 	if (oppUpLo == FFLAS::FflasUpper){ // Transform is upper triangular
 		FFLAS::fassign (F, R, N, A, lda, T, ldt);
+
 		FFLAS::fzero (F, Tdim - R, R, T + R*ldt, ldt);
+
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
+
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (M, R, Q, LPerm);
+			
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, R, T, ldt, LPerm);
+			
+			delete[] LPerm;
+		}
 	} else { // Triangular is lower triangular
 		FFLAS::fassign (F, M, R, A, lda, T, ldt);
+
 		FFLAS::fzero (F, R, Tdim - R, T + R, ldt);
+
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, MaxPidx, T, ldt, P);
+		
+		if (LuTag==FfpackTileRecursive){
+			size_t * LPerm = new size_t[R];
+			PLUQtoEchelonPermutation (N, R, Q, LPerm);
+			
+			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, Tdim, 0, R, T, ldt, LPerm);
+			
+			delete[] LPerm;
+		}
 	}
 }
 

@@ -47,7 +47,7 @@ using namespace FFPACK;
 
 template<class Field>
 bool
-test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new<Element>(m*n);
@@ -70,13 +70,13 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
 
-		R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true);
+		R = FFPACK::ColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
 		if (R != r) {pass = false; break;}
 
-		FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,A,lda,U,n);
+		FFPACK::getEchelonTransform (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,U,n, LuTag);
 
-		FFPACK::getEchelonForm (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,A,n,L,n);
+		FFPACK::getEchelonForm (F, FFLAS::FflasLower, FFLAS::FflasUnit, m,n,R,Q,A,n,L,n,false, LuTag);
 
 		// Testing if C is in col echelon form
 		size_t nextpiv = 0;
@@ -97,6 +97,10 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 		if (!pass) {
 			std::cerr<<"FAIL"<<std::endl;
+			// write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
+			// write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			// write_field(F,std::cerr<<"CoLEchelon = "<<std::endl,L,m,n,n);
+			// write_field(F,std::cerr<<"Transform = "<<std::endl,U,n,n,n);
 			break;
 		}
 	}
@@ -113,7 +117,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 template<class Field>
 bool
-test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new<Element>(m*n);
@@ -135,14 +139,14 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
-
-		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true);
+			//std::cerr<<"=========================="<<std::endl;
+		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
 		if (R != r) {pass = false; break;}
 
-		FFPACK::getEchelonTransform (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,P,A,lda,L,m);
+		FFPACK::getEchelonTransform (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,P,Q,A,lda,L,m, LuTag);
 
-		FFPACK::getEchelonForm (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,Q,A,n,U,n);
+		FFPACK::getEchelonForm (F, FFLAS::FflasUpper, FFLAS::FflasUnit, m,n,R,Q,A,n,U,n, false, LuTag);
 		
 		// Testing if U is in row echelon form
 		size_t nextpiv = 0;
@@ -164,6 +168,13 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 		if (!pass) {
 			std::cerr<<"FAIL"<<std::endl;
+			// write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
+			// write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			// std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
+			// std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
+
+			// write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
+			// write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
 			break;
 		}
 	}
@@ -180,7 +191,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 
 template<class Field>
 bool
-test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new<Element>(m*n);
@@ -203,19 +214,13 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
 
-		// write_field (F, std::cerr<<std::endl<<"A= "<<std::endl, A, m,n,lda);
-
-		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true);
+		R = FFPACK::ReducedColumnEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
 		if (R != r) {pass = false; break;}
 
-		FFPACK::getReducedEchelonTransform (F, FFLAS::FflasLower, m,n,R,P,A,lda,U,n);
+		FFPACK::getReducedEchelonTransform (F, FFLAS::FflasLower, m,n,R,P,Q,A,lda,U,n, LuTag);
 
-		FFPACK::getReducedEchelonForm (F, FFLAS::FflasLower, m,n,R,Q,A,n,L,n);
-
-		// write_field (F, std::cerr<<"Ainplace = "<<std::endl, A, m,n,n);
-		// write_field (F, std::cerr<<"C = "<<std::endl, L, m,n,n);
-		// write_field (F, std::cerr<<"X = "<<std::endl, U, n,n,n);
+		FFPACK::getReducedEchelonForm (F, FFLAS::FflasLower, m,n,R,Q,A,n,L,n, false, LuTag);
 
 		// Testing if C is in reduced col echelon form
 		size_t nextpiv = 0;
@@ -254,7 +259,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 }
 template<class Field>
 bool
-test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
+test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new<Element>(m*n);
@@ -277,13 +282,13 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters)
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
 
-		R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true);
+		R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
 		if (R != r) {pass = false; break;}
 
-		FFPACK::getReducedEchelonTransform (F, FFLAS::FflasUpper, m,n,R,P,A,lda,L,m);
+		FFPACK::getReducedEchelonTransform (F, FFLAS::FflasUpper, m,n,R,P,Q,A,lda,L,m, LuTag);
 
-		FFPACK::getReducedEchelonForm (F, FFLAS::FflasUpper, m,n,R,Q,A,n,U,n);
+		FFPACK::getReducedEchelonForm (F, FFLAS::FflasUpper, m,n,R,Q,A,n,U,n, false, LuTag);
 		
 		// Testing if U is in row echelon form
 		size_t nextpiv = 0;
@@ -326,10 +331,10 @@ int main(int argc, char** argv){
 	std::cerr<<std::setprecision(20);
 
 	int    p = 101;
-	size_t m = 50;
-	size_t n = 50;
+	size_t m = 150;
+	size_t n = 200;
 	size_t r = 20;
-	size_t iters = 2 ;
+	size_t iters = 10 ;
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
@@ -346,9 +351,13 @@ int main(int argc, char** argv){
 	bool pass = true ;
 	typedef Modular<double> Field;
 	Field F(p);
-	pass &= test_colechelon(F,m,n,r,iters);
-	pass &= test_redcolechelon(F,m,n,r,iters);
-	pass &= test_rowechelon(F,m,n,r,iters);
-	pass &= test_redrowechelon(F,m,n,r,iters);
+	pass &= test_colechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+	pass &= test_colechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+	pass &= test_redcolechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+//	pass &= test_redcolechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive); // @bug FAILING on occasionally; work in progress
+	pass &= test_rowechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+	pass &= test_rowechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+	pass &= test_redrowechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+//	pass &= test_redrowechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive); // @bug FAILING on  occasionally; work in progress
 	return !pass ;
 }
