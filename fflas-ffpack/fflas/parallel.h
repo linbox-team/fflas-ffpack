@@ -56,8 +56,8 @@
 // TASK is a function call
 #define TASK(r,w,rw,f,Args...) f(Args)
 
-
 #define WAIT
+#define CHECK_DEPENDENCIES
 #define BARRIER
 #define PAR_REGION
 #define PAR_FOR for
