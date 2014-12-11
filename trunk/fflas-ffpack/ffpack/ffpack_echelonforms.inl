@@ -82,12 +82,15 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 {
 	size_t r;
 	r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
-	// M = Q^T M
-	for (size_t i=0; i<r; ++i){
-		if ( Qt[i]> (size_t) i ){
-			FFLAS::fswap( F, i,
-				      A + Qt[i]*lda, 1,
-				      A + i*lda, 1 );
+
+	if (LuTag == FfpackSlabRecursive){
+			// Putting Echelon in compressed triangular form : M = Q^T M
+		for (size_t i=0; i<r; ++i){
+			if ( Qt[i]> (size_t) i ){
+				FFLAS::fswap( F, i,
+							  A + Qt[i]*lda, 1,
+							  A + i*lda, 1 );
+			}
 		}
 	}
 	if (transform){
@@ -112,13 +115,16 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 
 	size_t r;
 	r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
-	// M = M Q
-	for (size_t i=0; i<r; ++i)
-		if ( Qt[i]> i )
-			FFLAS::fswap (F, i, A + Qt[i], lda, A + i, lda );
+	if (LuTag == FfpackSlabRecursive){
+			// Putting Echelon in compressed triangular form : M = M Q
+		for (size_t i=0; i<r; ++i)
+			if ( Qt[i]> i )
+				FFLAS::fswap (F, i, A + Qt[i], lda, A + i, lda );
+	}
 	if (transform){
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
+
 		ftrtrm (F, FFLAS::FflasUnit, r, A, lda);
 	} else {
 		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
