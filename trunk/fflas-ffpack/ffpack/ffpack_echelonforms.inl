@@ -386,20 +386,15 @@ void
 PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm)
 {
 	size_t * MP = new size_t[N];
-	size_t * CRP = new size_t[R];
-	size_t * Perm = new size_t[R];
 	size_t * invMP = new size_t[N];
 	LAPACKPerm2MathPerm (MP, P, N);
 	for (size_t i=0; i<N; ++i) 
 		invMP[MP[i]] = i;
-	std::copy(MP,MP+R,CRP);
-	std::sort(CRP,CRP+R);
+	std::sort(MP,MP+R);
 	for (size_t i=0;i<R; ++i)
-		Perm[i] = invMP [CRP [i]];
-	MathPerm2LAPACKPerm (outPerm, Perm, R);
+		MP[i] = invMP [MP [i]];
+	MathPerm2LAPACKPerm (outPerm, MP, R);
 	delete[] MP;
-	delete[] CRP;
-	delete[] Perm;
 	delete[] invMP;
 }
 
