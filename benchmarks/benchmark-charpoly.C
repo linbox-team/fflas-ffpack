@@ -37,7 +37,7 @@ using namespace std;
 int main(int argc, char** argv) {
   
 	size_t iter = 1;
-	int    q    = 1009;
+	int    q    = 131071;
 	int    n    = 2000;
 	std::string file = "";
   
