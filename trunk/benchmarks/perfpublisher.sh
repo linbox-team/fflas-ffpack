@@ -77,10 +77,12 @@ do
 	if [[ $COMPILECHECK -ne 0 ]]
 	then
 		#Compilation failure
-		EXECUTED='no'
+		# EXECUTED='no' - keep it to yes so that Jenkins
+		# uses it within its results
+		EXECUTED='yes'
 		PASSED='no'
 		STATE='0'
-		EXECUTIONLOG=''
+		EXECUTIONLOG='(Not executed)'
 		EXECUTIONTIME='0.0'
 		PERFORMANCEFLOPS='0.0'
 		COMPILETIMERELEVANT='false'
