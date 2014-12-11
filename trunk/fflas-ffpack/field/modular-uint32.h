@@ -111,7 +111,7 @@ namespace FFPACK
 
 		Element &init (Element &x, const int32_t &y ) const
 		{
-			x = (Element)(abs ((int64_t)y) % (int64_t) (_modulus));
+			x = (Element)(std::abs ((int64_t)y) % (int64_t) (_modulus));
 			if (y < 0) x = _modulus - x;
 			return x;
 		}
