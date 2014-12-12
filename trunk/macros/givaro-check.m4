@@ -67,15 +67,12 @@ for GIVARO_HOME in ${GIVARO_HOME_PATH}
  do
 if test -r "$GIVARO_HOME/include/givaro/givconfig.h"; then
 
-	if test "x$GIVARO_HOME" != "x/usr" -a "x$GIVARO_HOME" != "x/usr/local"; then
-		GIVARO_CFLAGS="-I${GIVARO_HOME}/include"
-		GIVARO_LIBS="-L${GIVARO_HOME}/lib -lgivaro"
-	else
-		GIVARO_CFLAGS=
-		GIVARO_LIBS="-lgivaro"
-	fi
-	CXXFLAGS="${BACKUP_CXXFLAGS} ${GIVARO_CFLAGS} ${GMP_CFLAGS}"
-	LIBS="${BACKUP_LIBS} ${GIVARO_LIBS} ${GMP_LIBS}"
+	# Givaro Libs + CFlags contains GMP info - AB 2014-12-12
+	GIVARO_LIBS=`$GIVARO_HOME/bin/givaro-config --libs`
+	GIVARO_CFLAGS=`$GIVARO_HOME/bin/givaro-config --cflags`
+
+	CXXFLAGS="${BACKUP_CXXFLAGS} ${GIVARO_CFLAGS}"
+	LIBS="${BACKUP_LIBS} ${GIVARO_LIBS}"
 
 	AC_TRY_LINK(
 	[#include <givaro/givinteger.h>],
@@ -117,6 +114,7 @@ if test "x$givaro_found" = "xyes" ; then
 	dnl  echo $GIVARO_CFLAGS $GIVARO_LIBS
 	AC_DEFINE(HAVE_GIVARO,1,[Define if GIVARO is installed])
 	HAVE_GIVARO=yes
+	
 	if test "x$givaro_cross" != "xyes"; then
 		AC_MSG_RESULT(found)
 	else
@@ -124,6 +122,7 @@ if test "x$givaro_found" = "xyes" ; then
 		echo "WARNING: You appear to be cross compiling, so there is no way to determine"
 		echo "whether your GIVARO version is new enough. I am assuming it is."
 	fi
+	
 	ifelse([$2], , :, [$2])
 elif test -n "$givaro_problem"; then
 	AC_MSG_RESULT(problem)
