@@ -229,7 +229,9 @@ AC_LANG_CPLUSPLUS
 
 echo "-----------------------------------------------"
 
-FF_CHECK_GMP
+# Getting GMP from Givaro - AB 2014-12-12
+#FF_CHECK_GMP
+
 FF_CHECK_GIVARO(,,[
 echo '*******************************************************************************'
 echo ' WARNING: GIVARO not found!'
@@ -307,7 +309,7 @@ FF_DOC
 	# mkdir ./benchmarks/data  ;
 # fi
 
-CXXFLAGS="${GMP_CFLAGS} ${CXXFLAGS}"
+CXXFLAGS="${CXXFLAGS}"
 AC_SUBST(CXXFLAGS)
 
 echo "-----------------------------------------------"

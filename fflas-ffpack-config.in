@@ -99,9 +99,7 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ @CXXFLAGS@ @GMP_CFLAGS@ @GIVARO_CFLAGS@  # @PARFLAGS@ # @CUDA_CFLAGS@
-# @GMP_CFLAGS@ @GIVARO_CFLAGS@
-# @CBLAS_FLAG@
+			echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ @CXXFLAGS@ @GIVARO_CFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
 			;;
 
 		--blas-cflags)
@@ -109,8 +107,7 @@ while test $# -gt 0; do
 			;;
 
 		--libs)
-			echo  @CBLAS_LIBS@ @GMP_LIBS@ @GIVARO_LIBS@
-# @CUDA_LIBS@
+			echo @CBLAS_LIBS@ @GIVARO_LIBS@ # @CUDA_LIBS@
 			;;
 
 		--blas-libs)
