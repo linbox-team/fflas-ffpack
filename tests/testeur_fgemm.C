@@ -21,7 +21,7 @@ using namespace std;
 
 #include "givaro/givintprime.h"
 #include "givaro/modular.h"
-#include "givaro/givgfq.h"
+#include "givaro/gfq.h"
 
 using namespace FFPACK;
 using namespace Givaro;
