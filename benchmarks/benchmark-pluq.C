@@ -332,9 +332,14 @@ int main(int argc, char** argv) {
 	       chrono.clear();
 	       
 	       if (i) chrono.start();
+// Added by AB 2014-12-15
+#ifdef __FFLASFFPACK_USE_OPENMP
 	       PAR_REGION{
 		       R = pPLUQ(F, diag, m, n, A, n, P, Q, t);
 	       }
+#else
+		       R = PLUQ(F, diag, m, n, A, n, P, Q);
+#endif
 	       if (i) {chrono.stop(); time+=chrono.realtime();}
 	       
        }
