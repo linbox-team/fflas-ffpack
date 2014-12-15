@@ -50,14 +50,9 @@ benchmark_dgetri_SOURCES = benchmark-dgetri.C
 benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
 endif
 
-if FFLASFFPACK_HAVE_GIVARO
-USE_GIVARO_BENCH = $(GIVA_BENCH)
-endif
-
 BENCHMARKS =			\
         $(FFLA_BENCH)   \
         $(BLAS_BENCH)   \
-        $(USE_GIVARO_BENCH) \
         $(USE_LAPACK_BENCH) \
         $(USE_OMP_BENCH)
 

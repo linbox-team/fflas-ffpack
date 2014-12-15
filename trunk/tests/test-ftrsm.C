@@ -34,9 +34,8 @@
 //-------------------------------------------------------------------------
 
 
-#define __FFLASFFPACK_USE_OPENMP
+//#define __FFLASFFPACK_USE_OPENMP
 //#define __FFLASFFPACK_USE_KAAPI
-
 //#define __FFLASFFPACK_FORCE_SEQ
 
 #define __FFLAS__TRSM_READONLY

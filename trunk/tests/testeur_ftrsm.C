@@ -42,10 +42,6 @@
 using namespace std;
 using namespace FFPACK;
 
-#ifndef __FFLASFFPACK_HAVE_GIVARO
-#error you need givaro (and gmp) here
-#endif
-
 //typedef Modular<int> Field;
 //typedef Modular<float> Field;
 typedef ModularBalanced<double> Field;

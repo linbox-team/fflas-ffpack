@@ -33,7 +33,6 @@
  */
 
 #include "fflas-ffpack/config.h"
-#ifdef __FFLASFFPACK_HAVE_GIVARO
 #ifndef __FFLASFFPACK_NOINTEGER
 
 #include <givaro/givinteger.h>
@@ -46,5 +45,4 @@ namespace FFPACK {
 }
 
 #endif
-#endif // __FFLASFFPACK_HAVE_GIVARO
 

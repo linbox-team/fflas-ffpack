@@ -30,6 +30,8 @@ AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS)
 AM_LDFLAGS=-static
 
+EXTRA_DIST= test-utils.h
+
 PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =              \
@@ -41,11 +43,10 @@ BASIC_TESTS =              \
 		test-fadd \
 		test-finit \
 		test-fscal \
-		regression-check
-
-GIVA_TESTS =  	test-fgemm\
+		test-fgemm\
 		test-fger             \
-		test-ftrsm
+		test-ftrsm\
+		regression-check
 
 MULTIPRECISION_TEST = \
 		test-ftrsm-mp
@@ -78,21 +79,14 @@ INFINITE_TEST= \
 		testeur_ftrsm          \
 		testeur_lqup
 
-EXTRA_DIST= test-utils.h
-
 OMP_TESTS = test-pfgemm
 
 if FFLASFFPACK_HAVE_OMP
 USE_OMP_TESTS = $(OMP_TESTS)
 endif
 
-if FFLASFFPACK_HAVE_GIVARO
-USE_GIVARO_TESTS = $(GIVA_TESTS) $(MULTIPRECISION_TEST)
-endif
-
-
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS) $(USE_OMP_TESTS) $(USE_GIVARO_TESTS)
+		$(BASIC_TESTS) $(MULTIPRECISION_TEST) $(USE_OMP_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)

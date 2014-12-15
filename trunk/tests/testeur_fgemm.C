@@ -18,10 +18,6 @@ using namespace std;
 #include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
-//#ifndef __FFLASFFPACK_HAVE_GIVARO
-//#error you need givaro (and gmp) here
-//#endif 
-
 
 #include "givaro/givintprime.h"
 #include "givaro/modular.h"
