@@ -22,7 +22,9 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_OPENMP
+
+//#define __FFLASFFPACK_USE_DATAFLOW
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -37,7 +39,7 @@
 #endif
 using namespace std;
 
-#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {

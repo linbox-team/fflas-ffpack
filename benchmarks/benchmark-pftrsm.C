@@ -30,11 +30,11 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "tests/test-utils.h"
 
-#define __FFLASFFPACK_USE_OPENMP4
+#define __FFLASFFPACK_USE_DATAFLOW
 
 using namespace std;
 
-#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {
@@ -70,7 +70,7 @@ void Initialize(Element * C, int BS, size_t m, size_t n)
 	//  }
 
 }
-#endif // __FFLASFFPACK_USE_OPENMP4
+#endif // __FFLASFFPACK_USE_DATAFLOW
 
 int main(int argc, char** argv) {
 
