@@ -22,7 +22,8 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_OPENMP4
+//#define __FFLASFFPACK_USE_DATAFLOW
+//#define FICTIF
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -38,7 +39,7 @@
 using namespace std;
 
   typedef FFPACK::ModularBalanced<double> Field;
-
+//typedef FFPACK::UnparametricField<double> Field;
 
 // random generator function:                                                                                          
 ptrdiff_t myrandom (ptrdiff_t i) { return rand()%i;}
@@ -210,7 +211,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 
 
 
-//#ifdef __FFLASFFPACK_USE_OPENMP4
+
 template<class Element>
 void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 {

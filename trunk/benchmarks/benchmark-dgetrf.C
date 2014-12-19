@@ -46,7 +46,7 @@ typedef FFLAS::OMPTimer TTimer;
 typedef FFLAS::Timer TTimer;
 #endif
 
-#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 	int    n    = 2000;
 	std::string file = "";
 	
-#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
 	size_t NBK = MAX_THREADS;
 #endif
   
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
-#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
           Initialize(A,n/NBK,n,n);
 #endif
 #pragma omp parallel for
@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
-#ifdef __FFLASFFPACK_USE_OPENMP4
+#ifdef __FFLASFFPACK_USE_DATAFLOW
           Initialize(A,n/NBK,n,n);
 #endif
 #pragma omp parallel for
