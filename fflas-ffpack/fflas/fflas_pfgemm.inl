@@ -42,43 +42,15 @@
 #endif
 
 
-//#endif
-
 #include "fflas_blockcuts.inl"
 #include "parallel.h"
 #include "fflas-ffpack/utils/timer.h"
 
-//#ifdef __FFLASFFPACK_USE_DATAFLOW
-#include "fflas_pfgemm_variants.inl"
 
-//#else
+#include "fflas_pfgemm_variants.inl"
 
 namespace FFLAS {
 
-	template<class Field, class AlgoT, class FieldTrait>
-	inline typename Field::Element_ptr
-	fgemm_iter( const Field& F,
-		    ForStrategy2D iter,
-		    const FFLAS::FFLAS_TRANSPOSE ta,
-		    const FFLAS::FFLAS_TRANSPOSE tb,
-		    const size_t m,
-		    const size_t n,
-		    const size_t k,
-		    const typename Field::Element alpha,
-		    typename Field::ConstElement_ptr A, const size_t lda,
-		    typename Field::ConstElement_ptr B, const size_t ldb,
-		    const typename Field::Element beta,
-		    typename Field::Element_ptr C, const size_t ldc,
-		    MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> & H){
-
-		A = A+iter.ibeg*lda;
-		B = B+iter.jbeg;
-		C = C+iter.ibeg*ldc+iter.jbeg;
-
-		fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A, lda, B, ldb, beta, C, ldc, H);
-		return C;
-	}
-	
 	template<class Field, class AlgoT, class FieldTrait>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
@@ -113,34 +85,11 @@ namespace FFLAS {
 			return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
 			H.parseq.numthreads = std::min(H.parseq.numthreads, std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
-			/*
-			typename Field::Element_ptr CC = 0;
-			typename Field::ConstElement_ptr AA = 0;
-			typename Field::ConstElement_ptr BB = 0;
-			*/
-			//			ForStrategy2D iter(m,n,H.parseq);
-
-			//			for (iter.begin(); ! iter.end(); ++iter){
-				//				CC = C+iter.ibeg*ldc+iter.jbeg;
+						
+			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
 			TASKFOR2D(iter,m,n,H.parseq){
+				TASK( MODE(READ(A[iter.ibeg*lda],B[iter.jbeg]) REFERENCE(F) READWRITE(C[iter.ibeg*ldc+iter.jbeg])), fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A+iter.ibeg*lda, lda, B+iter.jbeg, ldb, beta, C+iter.ibeg*ldc+iter.jbeg, ldc, SeqH ));
 				
-				MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
-
-				TASK(READ(A,B,F), NOWRITE(), READWRITE(C), fgemm, F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A+iter.ibeg*lda, lda, B+iter.jbeg, ldb, beta, C+iter.ibeg*ldc+iter.jbeg, ldc, SeqH);
-				//				BEGINTASK(TASK(READ(A,B,F), NOWRITE(), READWRITE(CC))
-				//				typename Field::Element_ptr CCC=0;
-				/*				
-#pragma omp task shared(AA, BB, CC, F) depend(in:AA, BB) depend(out:CC)
-				{
-					  AA = A+iter.ibeg*lda;
-					  BB = B+iter.jbeg;
-
-					  CC = C+iter.ibeg*ldc+iter.jbeg;
-					  cout<<" iter.ibeg "<<iter.ibeg<<"iter.jbeg "<<iter.jbeg<<endl;
-					  fgemm(F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, AA, lda, BB, ldb, beta, CC, ldc, SeqH);
-				}
-					  //		ENDTASK
-					  */
 			}
 			WAIT;
 	    }
@@ -150,6 +99,6 @@ namespace FFLAS {
 
 
 }
-//#endif //DATAFLOW
+
 #endif // __FFLASFFPACK_fflas_parfgemm_INL
 

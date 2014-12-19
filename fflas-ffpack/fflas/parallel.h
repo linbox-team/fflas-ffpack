@@ -94,15 +94,14 @@
 
 //computes dependencies (no wait here)
 #define CHECK_DEPENDENCIES
-// macro omp taskwait (waits for all childs of current task)
+
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
 
-#define TASK(r, w, rw, f, Args...)				\
-  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) DEPENDS(in, x r) DEPENDS(out, x w) DEPENDS(inout, x rw) ) \
-  f(Args)
+#define READ(Args...) depend(in: Args)
+#define WRITE(Args...) depend(out: Args)
+#define READWRITE(Args...) depend(inout: Args)
 
-#define BEGINTASK(r, w, rw)						\
-  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) DEPENDS(in, x r) DEPENDS(out, x w) DEPENDS(inout, x rw) ) {
+
 
 #define DEPENDS(...)\
   PP_NARG_(__VA_ARGS__,PP_RSEQ_N())(__VA_ARGS__)
@@ -136,25 +135,18 @@
 
 #define DEPENDS(...) /*NOTHING*/
 
-
-// Task definition with OpenMP
-#define TASK(r, w, rw, f, Args...)				\
-  PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) ) \
-  f(Args)
-
-#define BEGINTASK(r, w, rw)						\
-    PRAGMA_OMP_TASK_IMPL( omp task GLOBALSHARED(x  r w rw) {
-    
+#define READ(Args...)
+#define WRITE(Args...)
+#define READWRITE(Args...)
 
 #endif // end DATAFLOW FLAG
-
-#define ENDTASK(void) }
 
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
 
 #define GLOBALSHARED(a, Args...) shared(Args)
-#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
+
+
 
 #define BARRIER
 
@@ -162,7 +154,7 @@
 #define PAR_FOR  PRAGMA_OMP_TASK_IMPL( omp parallel for ) \
   for
 
-// for strategy 1D
+// for strategy 1D : TASKFOR1D or FOR1D ??
 #define TASKFOR1D(Args...) \
   ForStrategy1D iter(Args);                     \
   for(iter.begin(); !iter.end(); ++iter)
@@ -184,6 +176,17 @@
 
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
+
+
+
+//#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
+
+#define PRAGMA_OMP_TASK_IMPL( Args... ) _Pragma( #Args )
+#define SPACE  
+#define TASK(M, I) \
+  PRAGMA_OMP_TASK_IMPL( omp task M) \
+  {I;}
+
 
 #endif // OpenMP macros
 
@@ -270,14 +273,22 @@
 #endif
 
 // common macros
+
+#define REFERENCE(Args...) shared(Args)
+
+
+
 #define COMMA ,
+#define MODE(...)  __VA_ARGS__
+
+/*
 #define READ(Args...) COMMA Args
 #define WRITE(Args...) COMMA Args
 #define READWRITE(Args...) COMMA Args
 #define NOREAD(void)
 #define NOWRITE(void)
 #define NOREADWRITE(void)
-
+*/
 #define RETURNPARAM(f, P1, Args...) P1=f(Args)
 
 #endif //__FFLASFFPACK_fflas_parallel_H

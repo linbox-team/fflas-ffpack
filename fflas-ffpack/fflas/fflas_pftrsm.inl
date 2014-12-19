@@ -69,13 +69,13 @@ namespace FFLAS {
 			ForStrategy1D iter(m, H.parseq);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
-				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH));
 			}
 		} else {
 			ForStrategy1D iter(n, H.parseq);
 			for (iter.begin(); ! iter.end(); ++iter) {
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
-				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH));
 			}
 		}
 		WAIT;
@@ -114,7 +114,7 @@ namespace FFLAS {
 				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH);
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH));
 			}
 		} else {
 			int nt = H.parseq.numthreads;
@@ -136,7 +136,7 @@ namespace FFLAS {
 				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				    //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-				TASK(READ(F, A), NOWRITE(), READWRITE(B), ftrsm, F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH);
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH));
 			}
 		}
 		WAIT;
