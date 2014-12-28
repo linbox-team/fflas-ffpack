@@ -54,7 +54,7 @@
 #ifdef __FFLASFFPACK_SEQUENTIAL // MACRO for sequential execution
 
 // TASK is a function call
-#define TASK(r,w,rw,f,Args...) f(Args)
+#define TASK(M, I) {I;}
 
 #define WAIT
 #define CHECK_DEPENDENCIES
