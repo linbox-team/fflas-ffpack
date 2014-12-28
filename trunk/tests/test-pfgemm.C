@@ -177,8 +177,9 @@ int main(int argc, char** argv){
 		t.start();
         PAR_REGION{
 
-                TASK(READ(A, B),NOWRITE(), READWRITE(C), fgemm, F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
-                               beta,C,n, pWH );
+                TASK(MODE(REFERENCE(F) READ(A, B) READWRITE(C)), 
+	{ fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,n, pWH ); }
+	);
 
         }
         t.stop();
