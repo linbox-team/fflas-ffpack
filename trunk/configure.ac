@@ -325,6 +325,14 @@ fflas-ffpack/Makefile
 fflas-ffpack/fflas/Makefile
 fflas-ffpack/fflas/fflas_fgemm/Makefile
 fflas-ffpack/fflas/fflas_fspmv/Makefile
+fflas-ffpack/fflas/fflas_sparse/Makefile
+fflas-ffpack/fflas/fflas_sparse/coo/Makefile
+fflas-ffpack/fflas/fflas_sparse/csr/Makefile
+fflas-ffpack/fflas/fflas_sparse/ell/Makefile
+fflas-ffpack/fflas/fflas_sparse/ell_simd/Makefile
+fflas-ffpack/fflas/fflas_sparse/csr_hyb/Makefile
+fflas-ffpack/fflas/fflas_sparse/sell/Makefile
+fflas-ffpack/fflas/fflas_sparse/hyb_zo/Makefile
 fflas-ffpack/fflas/fflas_igemm/Makefile
 fflas-ffpack/fflas/fflas_simd/Makefile
 fflas-ffpack/ffpack/Makefile
