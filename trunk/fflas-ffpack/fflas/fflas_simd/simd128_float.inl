@@ -101,7 +101,7 @@ struct Simd128_impl<true, false, true, 4>{
 	template<class T>
 	static INLINE PURE vect_t gather(const scalar_t * const p, const T * const idx)
 	{
-		return _mm256_set_ps(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
+		return _mm_set_ps(p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
 	}
 
 	/*
