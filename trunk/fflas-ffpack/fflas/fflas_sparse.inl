@@ -194,7 +194,7 @@ inline void fspmv(const Field &F, const SM &A,
 // ZO matrix
 template <class Field, class SM>
 inline void
-fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
+fspmv(const Field &F, const SM &A,
       typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
       FieldCategories::GenericTag, std::true_type) {
     using Element = typename Field::Element;
@@ -218,7 +218,7 @@ fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
 
 template <class Field, class SM>
 inline void
-fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
+fspmv(const Field &F, const SM &A,
       typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
       FieldCategories::UnparametricTag, std::true_type) {
     using Element = typename Field::Element;
@@ -279,7 +279,7 @@ fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
 
 template <class Field, class SM>
 inline void
-fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
+fspmv(const Field &F, const SM &A,
       typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
       FieldCategories::ModularTag, std::true_type) {
     sparse_details::fspmv<Field, SM>(
@@ -321,7 +321,7 @@ inline void pfspmv(const Field &F, const SM &A,
 // ZO matrix
 template <class Field, class SM>
 inline void
-pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
+pfspmv(const Field &F, const SM &A,
        typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
        FieldCategories::GenericTag, std::true_type) {
     using Element = typename Field::Element;
@@ -345,7 +345,7 @@ pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
 
 template <class Field, class SM>
 inline void
-pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
+pfspmv(const Field &F, const SM &A,
        typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
        FieldCategories::UnparametricTag, std::true_type) {
     using Element = typename Field::Element;
