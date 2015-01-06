@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  * ========LICENCE========
  *.
  */
@@ -35,57 +35,45 @@
 
 namespace FFLAS { /*  ELL_simd */
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::ELL_simd>
-	{
-		bool delayed = false;
-		int chunk = 0;
-		index_t m = 0;
-		index_t n = 0;
-		index_t ld = 0;
-		uint64_t kmax = 0;
-		uint64_t nnz = 0;
-		uint64_t maxrow = 0;
-		uint64_t nChunks = 0;
-		index_t * col = nullptr;
-		typename _Field::Element_ptr dat;
-	};
+template <class _Field> struct Sparse<_Field, SparseMatrix_t::ELL_simd> {
+    bool delayed = false;
+    int chunk = 0;
+    index_t m = 0;
+    index_t n = 0;
+    index_t ld = 0;
+    uint64_t kmax = 0;
+    uint64_t nnz = 0;
+    uint64_t maxrow = 0;
+    uint64_t nChunks = 0;
+    index_t *col = nullptr;
+    typename _Field::Element_ptr dat;
+};
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::ELL_simd_ZO> : public Sparse<_Field, SparseMatrix_t::ELL_simd>
-	{
-		typename _Field::Element cst = 1;
-	};
+template <class _Field>
+struct Sparse<_Field, SparseMatrix_t::ELL_simd_ZO>
+    : public Sparse<_Field, SparseMatrix_t::ELL_simd> {
+    typename _Field::Element cst = 1;
+};
 
-	template<class Field, class IndexT>
-	inline void sparse_init(
-						const Field & F,
-						Sparse<Field, SparseMatrix_t::ELL_simd> & A,
-						const IndexT * row,
-						const IndexT * col,
-						typename Field::ConstElement_ptr dat,
-						uint64_t rowdim,
-						uint64_t coldim,
-						uint64_t nnz
-						);
+template <class Field, class IndexT>
+inline void sparse_init(const Field &F,
+                        Sparse<Field, SparseMatrix_t::ELL_simd> &A,
+                        const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
+                        uint64_t coldim, uint64_t nnz);
 
-	template<class Field, class IndexT>
-	inline void sparse_init(
-						const Field & F,
-						Sparse<Field, SparseMatrix_t::ELL_simd_ZO> & A,
-						const IndexT * row,
-						const IndexT * col,
-						typename Field::ConstElement_ptr dat,
-						uint64_t rowdim,
-						uint64_t coldim,
-						uint64_t nnz
-						);
-	
-	template<class Field>
-	inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd> & A);
+template <class Field, class IndexT>
+inline void sparse_init(const Field &F,
+                        Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A,
+                        const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
+                        uint64_t coldim, uint64_t nnz);
 
-	template<class Field>
-	inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd_ZO> & A);
+template <class Field>
+inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd> &A);
+
+template <class Field>
+inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A);
 } // FFLAS
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell_simd/ell_simd_utils.inl"

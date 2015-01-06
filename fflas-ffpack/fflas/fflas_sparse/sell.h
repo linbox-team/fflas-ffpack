@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  * ========LICENCE========
  *.
  */
@@ -35,30 +35,28 @@
 
 namespace FFLAS { /*  SELL */
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::SELL>
-	{
-		bool delayed = false;
-		int chunk = 0;
-		index_t kmax = 0;
-		index_t m = 0;
-		index_t n = 0;
-		index_t maxrow = 0; 
-		index_t sigma = 0;
-		index_t nChunks = 0;
-		uint64_t nnz = 0;
-		index_t * perm = nullptr;
-		uint64_t * st = nullptr;
-		index_t * chunkSize = nullptr;
-		index_t * col = nullptr;
-		typename _Field::Element_ptr dat;
-	};
+template <class _Field> struct Sparse<_Field, SparseMatrix_t::SELL> {
+    bool delayed = false;
+    int chunk = 0;
+    index_t kmax = 0;
+    index_t m = 0;
+    index_t n = 0;
+    index_t maxrow = 0;
+    index_t sigma = 0;
+    index_t nChunks = 0;
+    uint64_t nnz = 0;
+    index_t *perm = nullptr;
+    uint64_t *st = nullptr;
+    index_t *chunkSize = nullptr;
+    index_t *col = nullptr;
+    typename _Field::Element_ptr dat;
+};
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::SELL_ZO> : public Sparse<_Field, SparseMatrix_t::SELL>
-	{
-		typename _Field::Element cst = 1;
-	};
+template <class _Field>
+struct Sparse<_Field, SparseMatrix_t::SELL_ZO>
+    : public Sparse<_Field, SparseMatrix_t::SELL> {
+    typename _Field::Element cst = 1;
+};
 
 } // FFLAS
 

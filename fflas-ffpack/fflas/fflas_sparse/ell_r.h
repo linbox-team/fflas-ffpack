@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  * ========LICENCE========
  *.
  */
@@ -35,69 +35,47 @@
 
 namespace FFLAS { /*  ELL_R */
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::ELL_R>
-	{
-		bool delayed = false;
-		uint64_t kmax = 0;
-		index_t m = 0;
-		index_t n = 0;
-		index_t ld = 0;
-		uint64_t nnz = 0;
-		uint64_t maxrow = 0;
-		uint64_t mRow = 0;
-		index_t * col = nullptr;
-		index_t * row = nullptr;
-		typename _Field::Element_ptr dat;
-	};
+template <class _Field> struct Sparse<_Field, SparseMatrix_t::ELL_R> {
+    bool delayed = false;
+    uint64_t kmax = 0;
+    index_t m = 0;
+    index_t n = 0;
+    index_t ld = 0;
+    uint64_t nnz = 0;
+    uint64_t maxrow = 0;
+    uint64_t mRow = 0;
+    index_t *col = nullptr;
+    index_t *row = nullptr;
+    typename _Field::Element_ptr dat;
+};
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::ELL_R_ZO> : public Sparse<_Field, SparseMatrix_t::ELL_R>
-	{
-		typename _Field::Element cst = 1;
-	};
+template <class _Field>
+struct Sparse<_Field, SparseMatrix_t::ELL_R_ZO>
+    : public Sparse<_Field, SparseMatrix_t::ELL_R> {
+    typename _Field::Element cst = 1;
+};
 
-	template<class Field>
-	void fspmv(
-		      const Field& F,
-		      const Sparse<Field, SparseMatrix_t::ELL_R> & A,
-		      typename Field::ConstElement_ptr x,
-		      const typename Field::Element & beta,
-		      typename Field::Element_ptr y
-		     );
+template <class Field>
+void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
+           typename Field::ConstElement_ptr x,
+           const typename Field::Element &beta, typename Field::Element_ptr y);
 
-	template<class Field>
-	void fspmv(
-		      const Field & F,
-		      const Sparse<Field, SparseMatrix_t::ELL_R_ZO> & A,
-		      typename Field::ConstElement_ptr x,
-		      const typename Field::Element & beta,
-		      typename Field::Element_ptr y
-		     );
+template <class Field>
+void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
+           typename Field::ConstElement_ptr x,
+           const typename Field::Element &beta, typename Field::Element_ptr y);
 
-	template<class Field>
-	void fspmm(
-		      const Field& F,
-		      const Sparse<Field, SparseMatrix_t::ELL_R> & A,
-		      const int blockSize,
-		      const typename Field::Element_ptr & x,
-		      const int ldx,
-		      const typename Field::Element & beta,
-		      typename Field::Element_ptr & y,
-		      const int ldy
-		     );
+template <class Field>
+void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
+           const int blockSize, const typename Field::Element_ptr &x,
+           const int ldx, const typename Field::Element &beta,
+           typename Field::Element_ptr &y, const int ldy);
 
-	template<class Field>
-	void fspmm(
-		      const Field& F,
-		      const Sparse<Field, SparseMatrix_t::ELL_R_ZO> & A,
-		      const int blockSize,
-		      const typename Field::Element_ptr & x,
-		      const int ldx,
-		      const typename Field::Element & beta,
-		      typename Field::Element_ptr & y,
-		      const int ldy
-		     );
+template <class Field>
+void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
+           const int blockSize, const typename Field::Element_ptr &x,
+           const int ldx, const typename Field::Element &beta,
+           typename Field::Element_ptr &y, const int ldy);
 } // FFLAS
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell_r_spmv.inl"
