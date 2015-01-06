@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  * ========LICENCE========
  *.
  */
@@ -35,19 +35,17 @@
 
 namespace FFLAS { /*  HYB_ZO */
 
-	template<class _Field>
-	struct Sparse<_Field,  SparseMatrix_t::HYB_ZO>
-	{
-		bool delayed = false;
-		uint64_t kmax = 0;
-		index_t m = 0;
-		index_t n = 0;
-		uint64_t nnz = 0;
-		uint64_t maxrow = 0; 
-		Sparse<_Field, SparseMatrix_t::CSR> * dat = nullptr;
-		Sparse<_Field, SparseMatrix_t::CSR_ZO> * one = nullptr;
-		Sparse<_Field, SparseMatrix_t::CSR_ZO> * mone = nullptr;
-	};
+template <class _Field> struct Sparse<_Field, SparseMatrix_t::HYB_ZO> {
+    bool delayed = false;
+    uint64_t kmax = 0;
+    index_t m = 0;
+    index_t n = 0;
+    uint64_t nnz = 0;
+    uint64_t maxrow = 0;
+    Sparse<_Field, SparseMatrix_t::CSR> *dat = nullptr;
+    Sparse<_Field, SparseMatrix_t::CSR_ZO> *one = nullptr;
+    Sparse<_Field, SparseMatrix_t::CSR_ZO> *mone = nullptr;
+};
 
 } // FFLAS
 

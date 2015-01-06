@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  * ========LICENCE========
  *.
  */
@@ -29,93 +29,98 @@
 #ifndef __FFLASFFPACK_fflas_sparse_CSR_HYB_spmv_INL
 #define __FFLASFFPACK_fflas_sparse_CSR_HYB_spmv_INL
 
+namespace FFLAS {
+namespace sparse_details_impl {
+template <class Field>
+inline void fspmv(const Field &F,
+                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
+                  typename Field::ConstElement_ptr x,
+                  typename Field::Element_ptr y, FieldCategories::GenericTag) {
+    for (uint64_t i = 0; i < A.m; ++i) {
+        index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
+        for (uint64_t j = start; j < stop; ++j) {
+            F.subin(y[i], x[A.col[j]]);
+        }
+        start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
+        for (uint64_t j = start; j < stop; ++j) {
+            F.addin(y[i], x[A.col[j]]);
+        }
+        start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
+        index_t startDat = A.st[4 * i + 3];
+        for (uint64_t j = start, k = 0; j < stop; ++j, ++k) {
+            F.axpyin(y[i], A.dat[startDat + k], x[A.col[j]]);
+        }
+    }
+}
 
-namespace FFLAS{
-	namespace sparse_details_impl{
-	template<class Field>
-	inline void fspmv(const Field & F, const Sparse<Field, SparseMatrix_t::CSR_HYB> & A, typename Field::ConstElement_ptr x,
-		      typename Field::Element_ptr y, FieldCategories::GenericTag){
-		for(uint64_t i = 0 ; i < A.m ; ++i){
-			index_t start = A.st[4*i], stop = A.st[4*i+1];
-			for(uint64_t j = start; j < stop ; ++j){
-				F.subin(y[i], x[A.col[j]]);
-			}
-			start = A.st[4*i+1], stop = A.st[4*i+2];
-			for(uint64_t j = start ; j < stop ; ++j){
-				F.addin(y[i], x[A.col[j]]);
-			}
-			start = A.st[4*i+2], stop = A.st[4*(i+1)];
-			index_t startDat = A.st[4*i+3];
-			for(uint64_t j = start, k = 0 ; j < stop ; ++j, ++k){
-				F.axpyin(y[i], A.dat[startDat+k], x[A.col[j]]);
-			}
-		}
-	}
+template <class Field>
+inline void
+fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
+      typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+      FieldCategories::UnparametricTag) {
+    for (uint64_t i = 0; i < A.m; ++i) {
+        index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
+        index_t diff = stop - start;
+        typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
+        uint64_t j = 0;
+        for (; j < ROUND_DOWN(diff, 4); j += 4) {
+            y1 += x[A.col[start + j]];
+            y2 += x[A.col[start + j + 1]];
+            y3 += x[A.col[start + j + 2]];
+            y4 += x[A.col[start + j + 3]];
+        }
+        for (; j < diff; ++j) {
+            y1 += x[A.col[start + j]];
+        }
+        y[i] -= y1 + y2 + y3 + y4;
+        y1 = 0;
+        y2 = 0;
+        y3 = 0;
+        y4 = 0;
+        start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
+        diff = stop - start;
+        j = 0;
+        for (; j < ROUND_DOWN(diff, 4); j += 4) {
+            y1 += x[A.col[start + j]];
+            y2 += x[A.col[start + j + 1]];
+            y3 += x[A.col[start + j + 2]];
+            y4 += x[A.col[start + j + 3]];
+        }
+        for (; j < diff; ++j) {
+            y1 += x[A.col[start + j]];
+        }
+        y[i] += y1 + y2 + y3 + y4;
+        y1 = 0;
+        y2 = 0;
+        y3 = 0;
+        y4 = 0;
+        start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
+        diff = stop - start;
+        index_t startDat = A.st[4 * i + 3];
+        j = 0;
+        for (; j < ROUND_DOWN(diff, 4); j += 4) {
+            y1 += A.dat[startDat + j] * x[A.col[start + j]];
+            y2 += A.dat[startDat + j + 1] * x[A.col[start + j + 1]];
+            y3 += A.dat[startDat + j + 2] * x[A.col[start + j + 2]];
+            y4 += A.dat[startDat + j + 3] * x[A.col[start + j + 3]];
+        }
+        for (; j < diff; ++j) {
+            y1 += A.dat[startDat + j] * x[A.col[start + j]];
+        }
+        y[i] += y1 + y2 + y3 + y4;
+    }
+}
 
-	template<class Field>
-	inline void fspmv(const Field & F, const Sparse<Field, SparseMatrix_t::CSR_HYB> & A, typename Field::ConstElement_ptr x,
-		      typename Field::Element_ptr y, FieldCategories::UnparametricTag){
-		for(uint64_t i = 0 ; i < A.m ; ++i){
-			index_t start = A.st[4*i], stop = A.st[4*i+1];
-			index_t diff = stop-start;
-			typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
-			uint64_t j = 0;
-			for( ; j < ROUND_DOWN(diff, 4) ; j+=4){
-				y1 += x[A.col[start+j]];
-				y2 += x[A.col[start+j+1]];
-				y3 += x[A.col[start+j+2]];
-				y4 += x[A.col[start+j+3]];
-			}
-			for(; j < diff ; ++j){
-				y1 += x[A.col[start+j]];
-			}
-			y[i] -= y1+y2+y3+y4;
-			y1 = 0;
-			y2 = 0;
-			y3 = 0;
-			y4 = 0;
-			start = A.st[4*i+1], stop = A.st[4*i+2];
-			diff = stop - start;
-			j = 0;
-			for( ; j < ROUND_DOWN(diff, 4) ; j+=4){
-				y1 += x[A.col[start+j]];
-				y2 += x[A.col[start+j+1]];
-				y3 += x[A.col[start+j+2]];
-				y4 += x[A.col[start+j+3]];
-			}
-			for(; j < diff ; ++j){
-				y1 += x[A.col[start+j]];
-			}
-			y[i] += y1+y2+y3+y4;
-			y1 = 0;
-			y2 = 0;
-			y3 = 0;
-			y4 = 0;
-			start = A.st[4*i+2], stop = A.st[4*(i+1)];
-			diff = stop - start;
-			index_t startDat = A.st[4*i+3];
-			j = 0;
-			for( ; j < ROUND_DOWN(diff, 4) ; j+=4){
-				y1 += A.dat[startDat+j]*x[A.col[start+j]];
-				y2 += A.dat[startDat+j+1]*x[A.col[start+j+1]];
-				y3 += A.dat[startDat+j+2]*x[A.col[start+j+2]];
-				y4 += A.dat[startDat+j+3]*x[A.col[start+j+3]];
-			}
-			for(; j < diff ; ++j){
-				y1 += A.dat[startDat+j]*x[A.col[start+j]];
-			}
-			y[i] += y1+y2+y3+y4;
-		}
-	}
+template <class Field>
+inline void fspmv(const Field &F,
+                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
+                  typename Field::ConstElement_ptr x,
+                  typename Field::Element_ptr y, const uint64_t kmax) {
+    return;
+    // TODO
+}
 
-	template<class Field>
-	inline void fspmv(const Field & F, const Sparse<Field, SparseMatrix_t::CSR_HYB> & A, typename Field::ConstElement_ptr x,
-		      typename Field::Element_ptr y, const uint64_t kmax){
-		return;
-		// TODO
-	}
-
-}// CSR_HYB_details
+} // CSR_HYB_details
 
 } // FFLAS
 
