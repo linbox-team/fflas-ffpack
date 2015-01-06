@@ -40,10 +40,18 @@
 #include <string>
 #include <iterator>
 #include <cstdlib>
+#include <sstream>
 
 using namespace FFLAS;
 using namespace FFPACK;
 using namespace std;
+
+template <typename T> T from_string(std::string const & s) {
+    std::stringstream ss(s);
+    T result;
+    ss >> result;    // TODO handle errors
+    return result;
+}
 
 namespace details_spmv {
 template <class Field> struct Coo {
@@ -80,8 +88,10 @@ void readSmsFormat(const std::string &path, const Field &f, index_t *&row,
     std::copy(std::istream_iterator<std::string>(is),
               std::istream_iterator<std::string>(),
               std::back_inserter<std::vector<std::string>>(tokens));
-    rowdim = static_cast<index_t>(stoul(tokens[0].c_str(),0,10));
-    coldim = static_cast<index_t>(stoul(tokens[1].c_str(),0,10));
+    rowdim = from_string<index_t>(tokens[0]);
+    //static_cast<index_t>(stoul(tokens[0].c_str(),0,10));
+    coldim = from_string<index_t>(tokens[0]);
+    // static_cast<index_t>(stoul(tokens[1].c_str(),0,10));
     std::vector<Coo<Field>> data;
     nnz = 0;
     while (std::getline(file, line)) {
@@ -94,9 +104,11 @@ void readSmsFormat(const std::string &path, const Field &f, index_t *&row,
 
         if (!(tokens[0] == "0" && tokens[1] == "0" && tokens[2] == "0")) {
             typename Field::Element v;
-            f.init(v, stol(tokens[2].c_str(),0,10));
-            index_t r = (index_t)(stoul(tokens[0].c_str(),0,10)) - 1;
-            index_t c = (index_t)(stoul(tokens[1].c_str(),0,10)) - 1;
+            f.init(v, from_string<int64_t>(tokens[2]));
+            index_t r = from_string<index_t>(tokens[0]) - 1;
+            // (index_t)(stoul(tokens[0].c_str(),0,10)) - 1;
+            index_t c = from_string<index_t>(tokens[0]) - 1;
+            // (index_t)(stoul(tokens[1].c_str(),0,10)) - 1;
             data.emplace_back(v, r, c);
         }
     }
