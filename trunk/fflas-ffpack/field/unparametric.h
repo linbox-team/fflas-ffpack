@@ -77,7 +77,7 @@ namespace FFPACK
 	class UnparametricOperations {
 	public:
 		typedef K Element;
-
+        
 		UnparametricOperations(){}
 		//@{
 		~UnparametricOperations () {}
@@ -391,10 +391,12 @@ namespace FFPACK
 		 */
 
 		typedef typename UnparametricOperations<_Element>::Element Element;
+        typedef Element FieldInt;
 		typedef UnparametricRandIter<Element> RandIter;
 		typedef NonzeroRandIter<UnparametricField<Element>, RandIter > NonZeroRandIter;
 		typedef Element* Element_ptr;
 		typedef const Element* ConstElement_ptr;
+
 		const Element one  ;
 		const Element zero ;
 		const Element mOne ;
