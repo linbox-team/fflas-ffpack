@@ -40,7 +40,7 @@ namespace FFPACK {
 	applyP( const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const FFLAS::FFLAS_TRANSPOSE Trans,
-		const size_t M, const int ibeg, const int iend,
+		const size_t M, const size_t ibeg, const size_t iend,
 		typename Field::Element_ptr A, const size_t lda, const size_t * P )
 	{
 
@@ -59,7 +59,7 @@ namespace FFPACK {
 				}
 			else // Trans == FFLAS::FflasNoTrans
 				for (size_t j = 0 ; j < M ; ++j){
-					for (int i=iend; i-->ibeg; )
+					for (size_t i=iend; i-->ibeg; )
 						if ( P[i]!=(size_t)i ) {
 							F.assign(tmp,A[j*lda+P[i]]);
 							F.assign(A[j*lda+P[i]],A[j*lda+(size_t)i]);
@@ -78,7 +78,7 @@ namespace FFPACK {
 							      A + i*lda, 1 );
 				}
 			else // Trans == FFLAS::FflasTrans
-				for (int i=iend; i-->ibeg; ){
+				for (size_t i=iend; i-->ibeg; ){
 					if ( P[i]!= (size_t) i ){
 						FFLAS::fswap( F, M,
 							      A + P[i]*lda, 1,

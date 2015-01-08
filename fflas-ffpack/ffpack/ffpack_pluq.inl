@@ -197,9 +197,9 @@ namespace FFPACK {
 		typename Field::Element_ptr G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M2, A2, lda, P1);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M2, A2, lda, P1);
 		    // [ C1 C2 ] <- A3 Q1^T
-		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N2, A3, lda, Q1);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1);
 		    // D <- L1^-1 B1
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda);
 		    // E <- C1 U1^-1
@@ -222,18 +222,18 @@ namespace FFPACK {
 		R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
-		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, 0, N-N2, A4, lda, Q2);
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, 0, M-M2, A4, lda, P3);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N-N2, A4, lda, Q2);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M-M2, A4, lda, P3);
 		    // [ E1 ] <- P3^T E
 		    // [ E2 ]
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M-M2, A3, lda, P3);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3);
 		    // [ M11 ] <- P2^T M1
 		    // [ M12 ]
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, 0, M2-R1, A+R1*lda, lda, P2);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2);
 		    // [ D1 D2 ] <- D Q2^T
-		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N-N2, A2, lda, Q2);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N-N2, A2, lda, Q2);
 		    // [ V1 V2 ] <- V1 Q3^T
-		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, 0, N2-R1, A+R1, lda, Q3);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2-R1, A+R1, lda, Q3);
 		    // I <- H U2^-1
 		    // K <- H3 U2^-1
 		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
@@ -259,12 +259,12 @@ namespace FFPACK {
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
 		    // [ V21 V22 ]  <- [ V2 ] Q4^T
 		    // [  0   0  ]     [  0 ]
 		    // [ O1   O2 ]     [  O ]
-		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N-N2-R2, A2+R2, lda, Q4);
 
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
