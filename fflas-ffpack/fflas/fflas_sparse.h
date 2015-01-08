@@ -46,6 +46,13 @@
 #define __FFLASFFPACK_CACHE_LINE_SIZE 64
 #endif
 
+#if __GNUC_MINOR__ >= 7
+#define assume_aligned(pout, pin, v)                                                                                   \
+    const decltype(pin) pout = static_cast<decltype(pin)>(__builtin_assume_aligned(pin, v));
+#else
+#define assume_aligned(pout, pin, v) const decltype(pin) pout = pin;
+#endif
+
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/field-traits.h"
@@ -97,75 +104,44 @@ namespace FFLAS {
 
 template <class F, class M> struct isSparseMatrix : public std::false_type {};
 
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR>>
-    : public std::true_type {};
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_ZO>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO_ZO>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_ZO>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL_ZO>> : public std::true_type {};
+
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd>> : public std::true_type {};
 
 template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_ZO>>
-    : public std::true_type {};
+struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>> : public std::true_type {};
 
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO>>
-    : public std::true_type {};
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_HYB>> : public std::true_type {};
 
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO_ZO>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_ZO>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL_ZO>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_HYB>>
-    : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::HYB_ZO>>
-    : public std::true_type {};
+template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::HYB_ZO>> : public std::true_type {};
 
 template <class F, class M> struct isZOSparseMatrix : public std::false_type {};
 
-template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_ZO>>
-    : public std::true_type {};
+template <class Field> struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_ZO>> : public std::true_type {};
+
+template <class Field> struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO_ZO>> : public std::true_type {};
+
+template <class Field> struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_ZO>> : public std::true_type {};
 
 template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO_ZO>>
-    : public std::true_type {};
+struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL_ZO>> : public std::true_type {};
 
 template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_ZO>>
-    : public std::true_type {};
-
-template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL_ZO>>
-    : public std::true_type {};
-
-template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>>
-    : public std::true_type {};
+struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>> : public std::true_type {};
 
 /*********************************************************************************************************************
  *
@@ -175,37 +151,28 @@ struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>>
 
 namespace sparse_details {
 template <class Field>
-inline void init_y(const Field &F, const size_t m,
-                   const typename Field::Element b,
-                   typename Field::Element_ptr y, FieldCategories::ModularTag);
+inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y,
+                   FieldCategories::ModularTag);
 
 template <class Field>
-inline void
-init_y(const Field &F, const size_t m, const typename Field::Element b,
-       typename Field::Element_ptr y, FieldCategories::UnparametricTag);
-
-template <class Field>
-inline void init_y(const Field &F, const size_t m,
-                   const typename Field::Element b,
-                   typename Field::Element_ptr y, FieldCategories::GenericTag);
-
-template <class Field>
-inline void init_y(const Field &F, const size_t m, const size_t n,
-                   const typename Field::Element b,
-                   typename Field::Element_ptr y, const int ldy,
+inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y,
                    FieldCategories::UnparametricTag);
 
 template <class Field>
-inline void init_y(const Field &F, const size_t m, const size_t n,
-                   const typename Field::Element b,
-                   typename Field::Element_ptr y, const int ldy,
+inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y,
                    FieldCategories::GenericTag);
 
 template <class Field>
-inline void init_y(const Field &F, const size_t m, const size_t n,
-                   const typename Field::Element b,
-                   typename Field::Element_ptr y, const int ldy,
-                   FieldCategories::ModularTag);
+inline void init_y(const Field &F, const size_t m, const size_t n, const typename Field::Element b,
+                   typename Field::Element_ptr y, const int ldy, FieldCategories::UnparametricTag);
+
+template <class Field>
+inline void init_y(const Field &F, const size_t m, const size_t n, const typename Field::Element b,
+                   typename Field::Element_ptr y, const int ldy, FieldCategories::GenericTag);
+
+template <class Field>
+inline void init_y(const Field &F, const size_t m, const size_t n, const typename Field::Element b,
+                   typename Field::Element_ptr y, const int ldy, FieldCategories::ModularTag);
 }
 
 /*********************************************************************************************************************
@@ -215,37 +182,22 @@ inline void init_y(const Field &F, const size_t m, const size_t n,
  *********************************************************************************************************************/
 
 template <class Field, class SM>
-inline void
-fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x,
-      const typename Field::Element &beta, typename Field::Element_ptr y);
+inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
+                  typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void
-pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x,
-       const typename Field::Element &beta, typename Field::Element_ptr y);
+inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
+                   typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void
-fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x,
-      const typename Field::Element &beta, typename Field::Element_ptr y);
+inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
+                  typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void
-pfspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x,
-       const typename Field::Element &beta, typename Field::Element_ptr y);
+inline void pfspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
+                   typename Field::Element_ptr y);
 }
 
 #include "fflas-ffpack/fflas/fflas_sparse.inl"
-
-#if defined(__FFLASFFPACK_USE_SIMD)
-
-// #include "fflas-ffpack/fflas/fflas_sparse/ell_simd.h"
-/* SELL : Bug in init with std::sort g++ 4.9.2 for big matrices */
-// #include "fflas-ffpack/fflas/fflas_sparse/sell.h"
-
-#endif
-
-// #include "fflas-ffpack/fflas/fflas_sparse/esb.h"
-// #include "fflas-ffpack/fflas/fflas_sparse/ell_r.h"
 
 #endif // __FFLASFFPACK_fflas_fflas_sparse_H

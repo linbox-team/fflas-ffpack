@@ -32,24 +32,20 @@
 namespace FFLAS {
 
 template <class Field>
-inline void fspmv(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::SELL_ZO> &A,
-                  typename Field::ConstElement_ptr x,
+inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL_ZO> &A, typename Field::ConstElement_ptr x,
                   typename Field::Element_ptr y, FieldCategories::ModularTag) {
     fspmv(F, A, x, y, FieldCategories::UnparametricTag());
     freduce(F, A.m, y, 1);
 }
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::SELL> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::SELL> &A) {
     fflas_delete(A.dat);
     fflas_delete(A.col);
     fflas_delete(A.st);
     fflas_delete(A.chunkSize);
 }
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::SELL_ZO> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::SELL_ZO> &A) {
     fflas_delete(A.col);
     fflas_delete(A.st);
     fflas_delete(A.chunkSize);
@@ -88,8 +84,7 @@ template <class ValT, class IdxT> struct Coo {
 };
 }
 
-template <class Field>
-inline void sparse_print(const Sparse<Field, SparseMatrix_t::SELL> &A) {
+template <class Field> inline void sparse_print(const Sparse<Field, SparseMatrix_t::SELL> &A) {
     uint64_t it = 0;
     for (size_t i = 0; i < A.nChunks; ++i) {
         for (size_t k = 0; k < A.chunk; ++k) {
@@ -104,10 +99,9 @@ inline void sparse_print(const Sparse<Field, SparseMatrix_t::SELL> &A) {
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz, uint64_t sigma = 0) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A, const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz,
+                        uint64_t sigma = 0) {
     using namespace sell_details;
     using coo = Coo<typename Field::Element, IndexT>;
     if (!sigma)
@@ -144,9 +138,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
     }
 
     A.maxrow = (std::max_element(infos.begin(), infos.end(),
-                                 [](const Info &a, const Info &b) {
-                    return a.size >= b.size;
-                }))->size;
+                                 [](const Info &a, const Info &b) { return a.size >= b.size; }))->size;
 
     // cout << "maxrow : " << A.maxrow << endl;
 
@@ -166,13 +158,11 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
 
     uint64_t it = 0;
     for (; it < ROUND_DOWN(rowdim, sigma); it += sigma) {
-        std::sort(
-            infos.begin() + it, infos.begin() + it + sigma,
-            [](const Info &a, const Info &b) { return a.size >= b.size; });
+        std::sort(infos.begin() + it, infos.begin() + it + sigma,
+                  [](const Info &a, const Info &b) { return a.size >= b.size; });
     }
     if (it != rowdim) {
-        std::sort(infos.begin() + it, infos.end(),
-                  [](Info a, Info b) { return a.size >= b.size; });
+        std::sort(infos.begin() + it, infos.end(), [](Info a, Info b) { return a.size >= b.size; });
     }
 
     // cout << "sorted : " << std::is_sorted(infos.begin(), infos.end(), [](Info
@@ -182,9 +172,8 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
 
     for (size_t i = 0; i < infos.size(); ++i) {
         if (infos[i].begin > nnz)
-            cout << "ERROR sort " << i << " size : " << infos[i].size
-                 << " begin : " << infos[i].begin << " perm : " << infos[i].perm
-                 << endl;
+            cout << "ERROR sort " << i << " size : " << infos[i].size << " begin : " << infos[i].begin
+                 << " perm : " << infos[i].perm << endl;
     }
 
 #ifdef SELL_DEBUG
@@ -239,6 +228,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
 #endif
     A.col = fflas_new<index_t>(sum * A.chunk, Alignment::CACHE_LINE);
     A.dat = fflas_new(F, sum * A.chunk, 1, Alignment::CACHE_LINE);
+    A.nElements = sum * A.chunk;
 
     for (uint64_t i = 0; i < sum * A.chunk; ++i) {
         A.col[i] = 0;
@@ -250,14 +240,12 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
         for (uint64_t k = 0; k < A.chunk; ++k) {
             uint64_t start = infos[i * A.chunk + k].begin;
 #ifdef SELL_DEBUG
-            cout << it << " " << start << " " << infos[i * A.chunk + k].size
-                 << endl;
+            cout << it << " " << start << " " << infos[i * A.chunk + k].size << endl;
             cout << "	";
 #endif
             for (uint64_t j = 0; j < infos[i * A.chunk + k].size; ++j) {
                 if (it + k + j * A.chunk >= sum * A.chunk)
-                    cout << "error : " << it + k + j *A.chunk << " "
-                         << sum *A.chunk << endl;
+                    cout << "error : " << it + k + j *A.chunk << " " << sum *A.chunk << endl;
                 A.dat[it + k + j * A.chunk] = data[start + j].val;
                 A.col[it + k + j * A.chunk] = data[start + j].col;
 #ifdef SELL_DEBUG
@@ -287,10 +275,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A,
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::SELL_ZO> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {}
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL_ZO> &A, const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {}
 } // FFLAS
 #endif

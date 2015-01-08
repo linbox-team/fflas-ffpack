@@ -29,35 +29,36 @@
 #ifndef __FFLASFFPACK_fflas_sparse_ELL_utils_INL
 #define __FFLASFFPACK_fflas_sparse_ELL_utils_INL
 
+#include <vector>
+
 namespace FFLAS {
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL> &A) {
     fflas_delete(A.dat);
     fflas_delete(A.col);
 }
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_ZO> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_ZO> &A) {
     fflas_delete(A.col);
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL> &A, const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     A.kmax = Protected::DotProdBoundClassic(F, F.one);
     A.m = rowdim;
     A.n = coldim;
     A.nnz = nnz;
+    // cout << A.m << " " << A.n << endl;
     std::vector<uint64_t> rows(A.m, 0);
     for (uint64_t i = 0; i < A.nnz; ++i)
         rows[row[i]]++;
     A.maxrow = *(std::max_element(rows.begin(), rows.end()));
+    // cout << "maxrow : " << A.maxrow << endl;
     A.ld = A.maxrow;
     if (A.kmax > A.maxrow)
         A.delayed = true;
-
+    // cout << A.ld << " " << rowdim << " " << nnz << " " << A.ld*rowdim << endl;
+    A.nElements = A.m * A.ld;
     A.col = fflas_new<index_t>(rowdim * A.ld, Alignment::CACHE_LINE);
     A.dat = fflas_new(F, rowdim * A.ld, 1, Alignment::CACHE_LINE);
 
@@ -67,7 +68,6 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL> &A,
     }
 
     size_t currow = row[0], it = 0;
-
     for (size_t i = 0; i < nnz; ++i) {
         if (row[i] != currow) {
             it = 0;
@@ -80,11 +80,8 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL> &A,
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::ELL_ZO> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL_ZO> &A, const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     A.kmax = Protected::DotProdBoundClassic(F, F.one);
     A.m = rowdim;
     A.n = coldim;
@@ -96,7 +93,7 @@ inline void sparse_init(const Field &F,
     A.ld = A.maxrow;
     if (A.kmax > A.maxrow)
         A.delayed = true;
-
+    A.nElements = A.m * A.ld;
     A.col = fflas_new<index_t>(rowdim * A.ld, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < rowdim * A.ld; ++i) {

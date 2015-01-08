@@ -32,22 +32,17 @@
 namespace FFLAS {
 namespace sparse_details_impl {
 template <class Field>
-inline void fspmm(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  int blockSize, typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, FieldCategories::GenericTag) {
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::GenericTag) {
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.subin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
-                F.subin(y[i * blockSize + k + 1],
-                        x[A.col[j] * blockSize + k + 1]);
-                F.subin(y[i * blockSize + k + 2],
-                        x[A.col[j] * blockSize + k + 2]);
-                F.subin(y[i * blockSize + k + 3],
-                        x[A.col[j] * blockSize + k + 3]);
+                F.subin(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
+                F.subin(y[i * blockSize + k + 2], x[A.col[j] * blockSize + k + 2]);
+                F.subin(y[i * blockSize + k + 3], x[A.col[j] * blockSize + k + 3]);
             }
             for (; k < blockSize; ++k)
                 F.subin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
@@ -57,12 +52,9 @@ inline void fspmm(const Field &F,
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.addin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
-                F.addin(y[i * blockSize + k + 1],
-                        x[A.col[j] * blockSize + k + 1]);
-                F.addin(y[i * blockSize + k + 2],
-                        x[A.col[j] * blockSize + k + 2]);
-                F.addin(y[i * blockSize + k + 3],
-                        x[A.col[j] * blockSize + k + 3]);
+                F.addin(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
+                F.addin(y[i * blockSize + k + 2], x[A.col[j] * blockSize + k + 2]);
+                F.addin(y[i * blockSize + k + 3], x[A.col[j] * blockSize + k + 3]);
             }
             for (; k < blockSize; ++k)
                 F.addin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
@@ -72,27 +64,21 @@ inline void fspmm(const Field &F,
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.axpyin(y[i * blockSize + k], A.dat[startDat + k],
-                         x[A.col[j] * blockSize + k]);
-                F.axpyin(y[i * blockSize + k + 1], A.dat[startDat + k],
-                         x[A.col[j] * blockSize + k + 1]);
-                F.axpyin(y[i * blockSize + k + 2], A.dat[startDat + k],
-                         x[A.col[j] * blockSize + k + 2]);
-                F.axpyin(y[i * blockSize + k + 3], A.dat[startDat + k],
-                         x[A.col[j] * blockSize + k + 3]);
+                F.axpyin(y[i * blockSize + k], A.dat[startDat + k], x[A.col[j] * blockSize + k]);
+                F.axpyin(y[i * blockSize + k + 1], A.dat[startDat + k], x[A.col[j] * blockSize + k + 1]);
+                F.axpyin(y[i * blockSize + k + 2], A.dat[startDat + k], x[A.col[j] * blockSize + k + 2]);
+                F.axpyin(y[i * blockSize + k + 3], A.dat[startDat + k], x[A.col[j] * blockSize + k + 3]);
             }
             for (; k < blockSize; ++k)
-                F.axpyin(y[i * blockSize + k], A.dat[startDat + k],
-                         x[A.col[j] * blockSize + k]);
+                F.axpyin(y[i * blockSize + k], A.dat[startDat + k], x[A.col[j] * blockSize + k]);
         }
     }
 }
 
 template <class Field>
-inline void
-fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-      int blockSize, typename Field::ConstElement_ptr x, int ldx,
-      typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag) {
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  FieldCategories::GenericTag) {
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
@@ -123,27 +109,20 @@ fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.axpyin(y[i * ldy + k], A.dat[startDat + k],
-                         x[A.col[j] * ldx + k]);
-                F.axpyin(y[i * ldy + k + 1], A.dat[startDat + k],
-                         x[A.col[j] * ldx + k + 1]);
-                F.axpyin(y[i * ldy + k + 2], A.dat[startDat + k],
-                         x[A.col[j] * ldx + k + 2]);
-                F.axpyin(y[i * ldy + k + 3], A.dat[startDat + k],
-                         x[A.col[j] * ldx + k + 3]);
+                F.axpyin(y[i * ldy + k], A.dat[startDat + k], x[A.col[j] * ldx + k]);
+                F.axpyin(y[i * ldy + k + 1], A.dat[startDat + k], x[A.col[j] * ldx + k + 1]);
+                F.axpyin(y[i * ldy + k + 2], A.dat[startDat + k], x[A.col[j] * ldx + k + 2]);
+                F.axpyin(y[i * ldy + k + 3], A.dat[startDat + k], x[A.col[j] * ldx + k + 3]);
             }
             for (; k < blockSize; ++k)
-                F.axpyin(y[i * ldy + k], A.dat[startDat + k],
-                         x[A.col[j] * ldx + k]);
+                F.axpyin(y[i * ldy + k], A.dat[startDat + k], x[A.col[j] * ldx + k]);
         }
     }
 }
 
 template <class Field>
-inline void
-fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-      int blockSize, typename Field::ConstElement_ptr x,
-      typename Field::Element_ptr y, FieldCategories::UnparametricTag) {
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::UnparametricTag) {
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
@@ -174,27 +153,20 @@ fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                y[i * blockSize + k] +=
-                    A.dat[startDat + j] * x[A.col[j] * blockSize + k];
-                y[i * blockSize + k + 1] +=
-                    A.dat[startDat + j] * x[A.col[j] * blockSize + k + 1];
-                y[i * blockSize + k + 2] +=
-                    A.dat[startDat + j] * x[A.col[j] * blockSize + k + 2];
-                y[i * blockSize + k + 3] +=
-                    A.dat[startDat + j] * x[A.col[j] * blockSize + k + 3];
+                y[i * blockSize + k] += A.dat[startDat + j] * x[A.col[j] * blockSize + k];
+                y[i * blockSize + k + 1] += A.dat[startDat + j] * x[A.col[j] * blockSize + k + 1];
+                y[i * blockSize + k + 2] += A.dat[startDat + j] * x[A.col[j] * blockSize + k + 2];
+                y[i * blockSize + k + 3] += A.dat[startDat + j] * x[A.col[j] * blockSize + k + 3];
             }
             for (; k < blockSize; ++k)
-                y[i * blockSize + k] +=
-                    A.dat[startDat + j] * x[A.col[j] * blockSize + k];
+                y[i * blockSize + k] += A.dat[startDat + j] * x[A.col[j] * blockSize + k];
         }
     }
 }
 
 template <class Field>
-inline void fspmm(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::UnparametricTag) {
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
@@ -227,12 +199,9 @@ inline void fspmm(const Field &F,
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += A.dat[startDat + j] * x[A.col[j] * ldx + k];
-                y[i * ldy + k + 1] +=
-                    A.dat[startDat + j] * x[A.col[j] * ldx + k + 1];
-                y[i * ldy + k + 2] +=
-                    A.dat[startDat + j] * x[A.col[j] * ldx + k + 2];
-                y[i * ldy + k + 3] +=
-                    A.dat[startDat + j] * x[A.col[j] * ldx + k + 3];
+                y[i * ldy + k + 1] += A.dat[startDat + j] * x[A.col[j] * ldx + k + 1];
+                y[i * ldy + k + 2] += A.dat[startDat + j] * x[A.col[j] * ldx + k + 2];
+                y[i * ldy + k + 3] += A.dat[startDat + j] * x[A.col[j] * ldx + k + 3];
             }
             for (; k < blockSize; ++k)
                 y[i * ldy + k] += A.dat[startDat + j] * x[A.col[j] * ldx + k];
@@ -242,10 +211,8 @@ inline void fspmm(const Field &F,
 
 #ifdef __FFLASFFPACK_USE_SIMD
 template <class Field, class LFunc, class SFunc>
-inline void fspmm(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  int blockSize, typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, LFunc &&lfunc, SFunc &&sfunc,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, LFunc &&lfunc, SFunc &&sfunc,
                   FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
@@ -254,18 +221,15 @@ inline void fspmm(const Field &F,
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size);
-                 k += 2 * simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
                 vx1 = lfunc(y + A.col[j] * blockSize + k);
                 vx2 = lfunc(y + A.col[j] * blockSize + k + simd::vect_size);
                 sfunc(y + i * blockSize + k, simd::sub(vy1, vx1));
-                sfunc(y + i * blockSize + k + simd::vect_size,
-                      simd::sub(vy2, vx2));
+                sfunc(y + i * blockSize + k + simd::vect_size, simd::sub(vy2, vx2));
             }
-            for (; k < ROUND_DOWN(blockSize, simd::vect_size);
-                 k += simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vx1 = lfunc(y + A.col[j] * blockSize + k);
                 sfunc(y + i * blockSize + k, simd::sub(vy1, vx1));
@@ -276,18 +240,15 @@ inline void fspmm(const Field &F,
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size);
-                 k += 2 * simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
                 vx1 = lfunc(y + A.col[j] * blockSize + k);
                 vx2 = lfunc(y + A.col[j] * blockSize + k + simd::vect_size);
                 sfunc(y + i * blockSize + k, simd::add(vy1, vx1));
-                sfunc(y + i * blockSize + k + simd::vect_size,
-                      simd::add(vy2, vx2));
+                sfunc(y + i * blockSize + k + simd::vect_size, simd::add(vy2, vx2));
             }
-            for (; k < ROUND_DOWN(blockSize, simd::vect_size);
-                 k += simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vx1 = lfunc(y + A.col[j] * blockSize + k);
                 sfunc(y + i * blockSize + k, simd::add(vy1, vx1));
@@ -301,35 +262,29 @@ inline void fspmm(const Field &F,
             for (uint64_t j = start; j < stop; ++j) {
                 int k = 0;
                 vdat = simd::set1(A.dat[startDat + j]);
-                for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size);
-                     k += 2 * simd::vect_size) {
+                for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
                     vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
                     vx1 = lfunc(y + A.col[j] * blockSize + k);
                     vx2 = lfunc(y + A.col[j] * blockSize + k + simd::vect_size);
                     sfunc(y + i * blockSize + k, simd::fmadd(vy1, vdat, vx1));
-                    sfunc(y + i * blockSize + k + simd::vect_size,
-                          simd::fmadd(vy2, vdat, vx2));
+                    sfunc(y + i * blockSize + k + simd::vect_size, simd::fmadd(vy2, vdat, vx2));
                 }
-                for (; k < ROUND_DOWN(blockSize, simd::vect_size);
-                     k += simd::vect_size) {
+                for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
                     vx1 = lfunc(y + A.col[j] * blockSize + k);
                     sfunc(y + i * blockSize + k, simd::fmadd(vy1, vdat, vx1));
                 }
                 for (; k < blockSize; ++k)
-                    y[i * blockSize + k] -=
-                        A.dat[startDat + j] * x[A.col[j] * blockSize + k];
+                    y[i * blockSize + k] -= A.dat[startDat + j] * x[A.col[j] * blockSize + k];
             }
         }
     }
 }
 
 template <class Field, class LFunc, class SFunc>
-inline void fspmm(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, LFunc &&lfunc,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, LFunc &&lfunc,
                   SFunc &&sfunc, FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
@@ -338,8 +293,7 @@ inline void fspmm(const Field &F,
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size);
-                 k += 2 * simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vy2 = lfunc(y + i * ldy + k + simd::vect_size);
                 vx1 = lfunc(y + A.col[j] * ldx + k);
@@ -347,8 +301,7 @@ inline void fspmm(const Field &F,
                 sfunc(y + i * ldy + k, simd::sub(vy1, vx1));
                 sfunc(y + i * ldy + k + simd::vect_size, simd::sub(vy2, vx2));
             }
-            for (; k < ROUND_DOWN(blockSize, simd::vect_size);
-                 k += simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vx1 = lfunc(y + A.col[j] * ldx + k);
                 sfunc(y + i * ldy + k, simd::sub(vy1, vx1));
@@ -359,8 +312,7 @@ inline void fspmm(const Field &F,
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
             int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size);
-                 k += 2 * simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vy2 = lfunc(y + i * ldy + k + simd::vect_size);
                 vx1 = lfunc(y + A.col[j] * ldx + k);
@@ -368,8 +320,7 @@ inline void fspmm(const Field &F,
                 sfunc(y + i * ldy + k, simd::add(vy1, vx1));
                 sfunc(y + i * ldy + k + simd::vect_size, simd::add(vy2, vx2));
             }
-            for (; k < ROUND_DOWN(blockSize, simd::vect_size);
-                 k += simd::vect_size) {
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vx1 = lfunc(y + A.col[j] * ldx + k);
                 sfunc(y + i * ldy + k, simd::add(vy1, vx1));
@@ -383,25 +334,21 @@ inline void fspmm(const Field &F,
             for (uint64_t j = start; j < stop; ++j) {
                 int k = 0;
                 vdat = simd::set1(A.dat[startDat + j]);
-                for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size);
-                     k += 2 * simd::vect_size) {
+                for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * ldy + k);
                     vy2 = lfunc(y + i * ldy + k + simd::vect_size);
                     vx1 = lfunc(y + A.col[j] * ldx + k);
                     vx2 = lfunc(y + A.col[j] * ldx + k + simd::vect_size);
                     sfunc(y + i * ldy + k, simd::fmadd(vy1, vdat, vx1));
-                    sfunc(y + i * ldy + k + simd::vect_size,
-                          simd::fmadd(vy2, vdat, vx2));
+                    sfunc(y + i * ldy + k + simd::vect_size, simd::fmadd(vy2, vdat, vx2));
                 }
-                for (; k < ROUND_DOWN(blockSize, simd::vect_size);
-                     k += simd::vect_size) {
+                for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                     vy1 = lfunc(y + i * ldy + k);
                     vx1 = lfunc(y + A.col[j] * ldx + k);
                     sfunc(y + i * ldy + k, simd::fmadd(vy1, vdat, vx1));
                 }
                 for (; k < blockSize; ++k)
-                    y[i * ldy + k] -=
-                        A.dat[startDat + j] * x[A.col[j] * ldx + k];
+                    y[i * ldy + k] -= A.dat[startDat + j] * x[A.col[j] * ldx + k];
             }
         }
     }
@@ -409,18 +356,15 @@ inline void fspmm(const Field &F,
 #endif
 
 template <class Field>
-inline void fspmm(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  int blockSize, typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, const int64_t kmax) {
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, const int64_t kmax) {
     // TODO
 }
 
 template <class Field>
-inline void fspmm(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, const int64_t kmax) {
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  const int64_t kmax) {
     // TODO
 }
 

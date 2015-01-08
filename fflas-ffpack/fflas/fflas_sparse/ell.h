@@ -42,6 +42,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::ELL> {
     index_t n = 0;
     index_t ld = 0;
     uint64_t nnz = 0;
+    uint64_t nElements = 0;
     uint64_t maxrow = 0;
     index_t *col = nullptr;
     typename _Field::Element_ptr dat;
@@ -75,12 +76,12 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_ZO> &A);
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_spmv.inl"
-#include "fflas-ffpack/fflas/fflas_sparse/ell/ell_spmm.inl"
+// #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_spmm.inl"
 
 #if defined(__FFLASFFPACK_USE_OPENMP) || defined(__FFLASFFPACK_USE_TBB)
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_pspmv.inl"
-#include "fflas-ffpack/fflas/fflas_sparse/ell/ell_pspmm.inl"
+// #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_pspmm.inl"
 
 #endif
 

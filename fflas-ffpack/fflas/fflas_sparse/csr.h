@@ -41,6 +41,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::CSR> {
     index_t m = 0;
     index_t n = 0;
     uint64_t nnz = 0;
+    uint64_t nElements = 0;
     uint64_t maxrow = 0;
     index_t *col = nullptr;
     index_t *st = nullptr;
@@ -77,12 +78,12 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_ZO> &A);
 
 #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_spmv.inl"
-#include "fflas-ffpack/fflas/fflas_sparse/csr/csr_spmm.inl"
+// #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_spmm.inl"
 
 #if defined(__FFLASFFPACK_USE_OPENMP) || defined(__FFLASFFPACK_USE_TBB)
 
 #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_pspmv.inl"
-#include "fflas-ffpack/fflas/fflas_sparse/csr/csr_pspmm.inl"
+// #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_pspmm.inl"
 
 #endif
 
