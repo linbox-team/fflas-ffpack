@@ -31,19 +31,16 @@
 
 namespace FFLAS {
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd> &A) {
     fflas_delete(A.dat);
     fflas_delete(A.col);
 }
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A) {
     fflas_delete(A.col);
 }
 
-template <class Field>
-inline void sparse_print(const Sparse<Field, SparseMatrix_t::ELL_simd> &A) {
+template <class Field> inline void sparse_print(const Sparse<Field, SparseMatrix_t::ELL_simd> &A) {
     for (size_t i = 0; i < A.nChunks; ++i) {
         for (size_t k = 0; k < A.chunk; ++k) {
             std::cout << i *A.chunk + k << " : ";
@@ -56,11 +53,9 @@ inline void sparse_print(const Sparse<Field, SparseMatrix_t::ELL_simd> &A) {
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::ELL_simd> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL_simd> &A, const IndexT *row,
+                        const IndexT *col, typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim,
+                        uint64_t nnz) {
 #ifdef __FFLASFFPACK_USE_SIMD
     using simd = Simd<typename Field::Element>;
     A.chunk = simd::vect_size;
@@ -87,9 +82,10 @@ inline void sparse_init(const Field &F,
     // " " << m/A.chunk << endl;
     A.nChunks = m / A.chunk;
 
-    A.col =
-        fflas_new<index_t>(A.nChunks * A.chunk * A.ld, Alignment::CACHE_LINE);
+    A.col = fflas_new<index_t>(A.nChunks * A.chunk * A.ld, Alignment::CACHE_LINE);
     A.dat = fflas_new(F, A.nChunks * A.chunk * A.ld, 1, Alignment::CACHE_LINE);
+
+    A.nElements = A.nChunks * A.chunk * A.ld;
 
     for (size_t i = 0; i < A.nChunks * A.chunk * A.ld; ++i) {
         A.col[i] = 0;
@@ -99,14 +95,11 @@ inline void sparse_init(const Field &F,
     for (size_t i = 0; i < A.nChunks; ++i) {
         for (size_t k = 0; k < A.chunk; ++k) {
             if (i * A.chunk + k < rowdim) {
-                uint64_t start = rows[i * A.chunk + k],
-                         stop = rows[i * A.chunk + k + 1];
+                uint64_t start = rows[i * A.chunk + k], stop = rows[i * A.chunk + k + 1];
                 // cout << "start " << start << " stop " << stop << endl;
                 for (size_t j = 0; j < stop - start; ++j) {
-                    A.dat[i * A.chunk * A.ld + j * A.chunk + k] =
-                        dat[start + j];
-                    A.col[i * A.chunk * A.ld + j * A.chunk + k] =
-                        col[start + j];
+                    A.dat[i * A.chunk * A.ld + j * A.chunk + k] = dat[start + j];
+                    A.col[i * A.chunk * A.ld + j * A.chunk + k] = col[start + j];
                 }
             }
         }
@@ -114,11 +107,9 @@ inline void sparse_init(const Field &F,
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A, const IndexT *row,
+                        const IndexT *col, typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim,
+                        uint64_t nnz) {
 #ifdef __FFLASFFPACK_USE_SIMD
     using simd = Simd<typename Field::Element>;
     A.chunk = simd::vect_size;
@@ -145,24 +136,21 @@ inline void sparse_init(const Field &F,
     // " " << m/A.chunk << endl;
     A.nChunks = m / A.chunk;
 
-    A.col =
-        fflas_new<index_t>(A.nChunks * A.chunk * A.ld, Alignment::CACHE_LINE);
+    A.col = fflas_new<index_t>(A.nChunks * A.chunk * A.ld, Alignment::CACHE_LINE);
+
+    A.nElements = A.nChunks * A.chunk * A.ld;
 
     for (size_t i = 0; i < A.nChunks * A.chunk * A.ld; ++i) {
         A.col[i] = 0;
     }
 
-    size_t currow = row[0], it = 0;
-
     for (size_t i = 0; i < A.nChunks; ++i) {
         for (size_t k = 0; k < A.chunk; ++k) {
             if (i * A.chunk + k < rowdim) {
-                uint64_t start = rows[i * A.chunk + k],
-                         stop = rows[i * A.chunk + k + 1];
+                uint64_t start = rows[i * A.chunk + k], stop = rows[i * A.chunk + k + 1];
                 // cout << "start " << start << " stop " << stop << endl;
                 for (size_t j = 0; j < stop - start; ++j) {
-                    A.col[i * A.chunk * A.ld + j * A.chunk + k] =
-                        col[start + j];
+                    A.col[i * A.chunk * A.ld + j * A.chunk + k] = col[start + j];
                 }
             }
         }

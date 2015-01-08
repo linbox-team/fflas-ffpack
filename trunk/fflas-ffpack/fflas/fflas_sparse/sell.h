@@ -45,6 +45,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::SELL> {
     index_t sigma = 0;
     index_t nChunks = 0;
     uint64_t nnz = 0;
+    uint64_t nElements = 0;
     index_t *perm = nullptr;
     uint64_t *st = nullptr;
     index_t *chunkSize = nullptr;

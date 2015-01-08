@@ -42,6 +42,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::HYB_ZO> {
     index_t n = 0;
     uint64_t nnz = 0;
     uint64_t maxrow = 0;
+    uint64_t nElements = 0;
     Sparse<_Field, SparseMatrix_t::CSR> *dat = nullptr;
     Sparse<_Field, SparseMatrix_t::CSR_ZO> *one = nullptr;
     Sparse<_Field, SparseMatrix_t::CSR_ZO> *mone = nullptr;

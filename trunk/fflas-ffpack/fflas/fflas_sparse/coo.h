@@ -36,15 +36,16 @@
 namespace FFLAS { /*  COO */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::COO> {
+    index_t *col = nullptr;
+    index_t *row = nullptr;
+    typename _Field::Element_ptr dat;
     bool delayed = false;
     uint64_t kmax = 0;
     index_t m = 0;
     index_t n = 0;
     uint64_t nnz = 0;
+    uint64_t nElements = 0;
     uint64_t maxrow = 0;
-    index_t *col = nullptr;
-    index_t *row = nullptr;
-    typename _Field::Element_ptr dat;
 };
 
 template <class _Field>

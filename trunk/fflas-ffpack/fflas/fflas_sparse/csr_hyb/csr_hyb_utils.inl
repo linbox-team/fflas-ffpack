@@ -33,8 +33,7 @@
 
 namespace FFLAS {
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_HYB> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_HYB> &A) {
     fflas_delete(A.dat);
     fflas_delete(A.col);
     fflas_delete(A.st);
@@ -74,11 +73,8 @@ template <class ValT, class IdxT> struct Coo {
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR_HYB> &A, const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     using namespace csr_hyb_details;
     using coo = Coo<typename Field::Element, index_t>;
 
@@ -86,25 +82,22 @@ inline void sparse_init(const Field &F,
     A.m = rowdim;
     A.n = coldim;
     A.nnz = nnz;
-    vector<coo> data(nnz);
+    A.nElements = nnz;
+    std::vector<coo> data;
     for (uint64_t i = 0; i < nnz; ++i) {
-        data[i].val = dat[i];
-        data[i].col = col[i];
-        data[i].row = row[i];
+        data.emplace_back(dat[i], col[i], row[i]);
+        // data[i].val = dat[i];
+        // data[i].col = col[i];
+        // data[i].row = row[i];
     }
 
     // sort nnz by row with order -1 1 L
     std::sort(data.begin(), data.end(), [&F](const coo &a, const coo &b) {
-        return (a.row < b.row) ||
-               ((a.row == b.row) && ((F.isOne(a.val)) && !(F.isOne(b.val)))) ||
-               ((a.row == b.row) &&
-                ((F.isMOne(a.val)) && !(F.isOne(b.val) && F.isMOne(b.val)))) ||
-               ((a.row == b.row) && (F.isOne(a.val) == F.isOne(b.val)) &&
-                (a.col < b.col)) ||
-               ((a.row == b.row) && (F.isMOne(a.val) == F.isMOne(b.val)) &&
-                (a.col < b.col)) ||
-               ((a.row == b.row) && (!(F.isOne(a.val) && F.isMOne(a.val)) ==
-                                     !(F.isOne(b.val) && F.isMOne(b.val))) &&
+        return (a.row < b.row) || ((a.row == b.row) && ((F.isOne(a.val)) && !(F.isOne(b.val)))) ||
+               ((a.row == b.row) && ((F.isMOne(a.val)) && !(F.isOne(b.val) && F.isMOne(b.val)))) ||
+               ((a.row == b.row) && (F.isOne(a.val) == F.isOne(b.val)) && (a.col < b.col)) ||
+               ((a.row == b.row) && (F.isMOne(a.val) == F.isMOne(b.val)) && (a.col < b.col)) ||
+               ((a.row == b.row) && (!(F.isOne(a.val) && F.isMOne(a.val)) == !(F.isOne(b.val) && F.isMOne(b.val))) &&
                 (a.col < b.col));
     });
 
@@ -150,12 +143,16 @@ inline void sparse_init(const Field &F,
 
     for (uint64_t i = 0; i < data.size(); ++i) {
         auto x = data[i];
-        if (F.isOne(x.val))
+        if (F.isOne(x.val)) {
             rows[3 * x.row + 1]++;
-        else if (F.isMOne(x.val))
+            A.nOnes++;
+        } else if (F.isMOne(x.val)) {
             rows[3 * x.row]++;
-        else
+            A.nMOnes++;
+        } else {
             rows[3 * x.row + 2]++;
+            A.nOthers++;
+        }
     }
 
     A.st[1] = rows[0];
@@ -179,8 +176,8 @@ inline void sparse_init(const Field &F,
     cout << endl;
 
     for (uint64_t i = 0; i < rowdim; ++i)
-        cout << "(" << A.st[4 * i] << " , " << A.st[4 * i + 1] << " , "
-             << A.st[4 * i + 2] << " , " << A.st[4 * i + 3] << ") " << endl;
+        cout << "(" << A.st[4 * i] << " , " << A.st[4 * i + 1] << " , " << A.st[4 * i + 2] << " , " << A.st[4 * i + 3]
+             << ") " << endl;
     cout << endl;
     cout << endl;
     for (uint64_t i = 0; i < rowdim; ++i) {
@@ -204,8 +201,7 @@ inline void sparse_init(const Field &F,
         index_t startDat = A.st[4 * i + 3];
         cout << "  l : ";
         for (uint64_t j = 0; j < diff; ++j) {
-            cout << "(" << A.col[start + j] << " , " << A.dat[startDat + j]
-                 << ") ";
+            cout << "(" << A.col[start + j] << " , " << A.dat[startDat + j] << ") ";
         }
         cout << endl;
     }

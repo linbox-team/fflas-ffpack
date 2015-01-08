@@ -33,63 +33,34 @@ namespace FFLAS {
 namespace sparse_details_impl {
 
 template <class Field>
-inline void pfspmv(const Field &F,
-                   const Sparse<Field, SparseMatrix_t::HYB_ZO> &A,
-                   typename Field::ConstElement_ptr x,
+inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
                    typename Field::Element_ptr y, FieldCategories::GenericTag) {
-    using Element = typename Field::Element;
     if (A.one != nullptr)
-        sparse_details_impl::pfspmv(
-            F, *(A.one), x, y,
-            [F](Element &a, const Element &b) { F.addin(a, b); },
-            FieldCategories::GenericTag());
+        sparse_details_impl::pfspmv_one(F, *(A.one), x, y, FieldCategories::GenericTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmv(
-            F, *(A.mone), x, y,
-            [F](Element &a, const Element &b) { F.subin(a, b); },
-            FieldCategories::GenericTag());
+        sparse_details_impl::pfspmv_mone(F, *(A.mone), x, y, FieldCategories::GenericTag());
     if (A.dat != nullptr)
-        sparse_details_impl::pfspmv(F, *(A.dat), x, y,
-                                    FieldCategories::GenericTag());
+        sparse_details_impl::pfspmv(F, *(A.dat), x, y, FieldCategories::GenericTag());
 }
 
 template <class Field>
-inline void
-pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A,
-       typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-       FieldCategories::UnparametricTag) {
-    using Element = typename Field::Element;
+inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
+                   typename Field::Element_ptr y, FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
-        sparse_details_impl::pfspmv(
-            F, *(A.one), x, y,
-            [F](Element &a, const Element &b) { F.addin(a, b); },
-            FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmv_one(F, *(A.one), x, y, FieldCategories::UnparametricTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmv(
-            F, *(A.mone), x, y,
-            [F](Element &a, const Element &b) { F.subin(a, b); },
-            FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmv_mone(F, *(A.mone), x, y, FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
-        sparse_details_impl::pfspmv(F, *(A.dat), x, y,
-                                    FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmv(F, *(A.dat), x, y, FieldCategories::UnparametricTag());
 }
 
 template <class Field>
-inline void pfspmv(const Field &F,
-                   const Sparse<Field, SparseMatrix_t::HYB_ZO> &A,
-                   typename Field::ConstElement_ptr x,
+inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, typename Field::ConstElement_ptr x,
                    typename Field::Element_ptr y, uint64_t kmax) {
-    using Element = typename Field::Element;
     if (A.one != nullptr)
-        sparse_details_impl::pfspmv(
-            F, *(A.one), x, y,
-            [F](Element &a, const Element &b) { F.addin(a, b); },
-            FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmv_one(F, *(A.one), x, y, FieldCategories::UnparametricTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmv(
-            F, *(A.mone), x, y,
-            [F](Element &a, const Element &b) { F.subin(a, b); },
-            FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmv_mone(F, *(A.mone), x, y, FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
         sparse_details_impl::pfspmv(F, *(A.dat), x, y, kmax);
 }

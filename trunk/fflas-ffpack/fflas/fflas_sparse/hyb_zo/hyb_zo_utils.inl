@@ -33,8 +33,7 @@ namespace FFLAS {
 
 // #define HYB_ZO_DEBUG 1
 
-template <class Field>
-inline void sparse_delete(const Sparse<Field, SparseMatrix_t::HYB_ZO> &A) {
+template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatrix_t::HYB_ZO> &A) {
     if (A.dat != nullptr)
         sparse_delete(*(A.dat));
     if (A.one != nullptr)
@@ -44,17 +43,14 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::HYB_ZO> &A) {
 }
 
 template <class Field, class IndexT>
-inline void sparse_init(const Field &F,
-                        Sparse<Field, SparseMatrix_t::HYB_ZO> &A,
-                        const IndexT *row, const IndexT *col,
-                        typename Field::ConstElement_ptr dat, uint64_t rowdim,
-                        uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::HYB_ZO> &A, const IndexT *row, const IndexT *col,
+                        typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
 
     A.m = rowdim;
     A.n = coldim;
     A.nnz = nnz;
     A.delayed = true;
-
+    A.nElements = nnz;
     uint64_t nOnes = 0, nMOnes = 0, nOthers = 0;
     for (uint64_t i = 0; i < nnz; ++i) {
         if (F.isOne(dat[i]))
@@ -66,8 +62,8 @@ inline void sparse_init(const Field &F,
     }
 
     typename Field::Element_ptr dat2;
-    index_t *colOne = nullptr, *colMOne = nullptr, *colOther = nullptr,
-            *rowOne = nullptr, *rowMOne = nullptr, *rowOther = nullptr;
+    index_t *colOne = nullptr, *colMOne = nullptr, *colOther = nullptr, *rowOne = nullptr, *rowMOne = nullptr,
+            *rowOther = nullptr;
     if (nOnes) {
         colOne = fflas_new<index_t>(nOnes, Alignment::CACHE_LINE);
         rowOne = fflas_new<index_t>(nOnes, Alignment::CACHE_LINE);
@@ -102,19 +98,16 @@ inline void sparse_init(const Field &F,
 
     if (nOnes) {
         A.one = new Sparse<Field, SparseMatrix_t::CSR_ZO>();
-        sparse_init(F, *(A.one), rowOne, colOne, nullptr, rowdim, coldim,
-                    nOnes);
+        sparse_init(F, *(A.one), rowOne, colOne, nullptr, rowdim, coldim, nOnes);
     }
     if (nMOnes) {
         A.mone = new Sparse<Field, SparseMatrix_t::CSR_ZO>();
-        sparse_init(F, *(A.mone), rowMOne, colMOne, nullptr, rowdim, coldim,
-                    nMOnes);
+        sparse_init(F, *(A.mone), rowMOne, colMOne, nullptr, rowdim, coldim, nMOnes);
         A.mone->cst = -1;
     }
     if (nOthers) {
         A.dat = new Sparse<Field, SparseMatrix_t::CSR>();
-        sparse_init(F, *(A.dat), rowOther, colOther, dat2, rowdim, coldim,
-                    nOthers);
+        sparse_init(F, *(A.dat), rowOther, colOther, dat2, rowdim, coldim, nOthers);
     }
 
     if (nOnes) {

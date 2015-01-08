@@ -32,90 +32,95 @@
 namespace FFLAS {
 namespace sparse_details_impl {
 template <class Field>
-inline void fspmv(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, FieldCategories::GenericTag) {
+inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, typename Field::ConstElement_ptr x_,
+                  typename Field::Element_ptr y_, FieldCategories::GenericTag) {
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     for (uint64_t i = 0; i < A.m; ++i) {
-        index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
+        index_t start = st[4 * i], stop = st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            F.subin(y[i], x[A.col[j]]);
+            F.subin(y[i], x[col[j]]);
         }
-        start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
+        start = st[4 * i + 1], stop = st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            F.addin(y[i], x[A.col[j]]);
+            F.addin(y[i], x[col[j]]);
         }
-        start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
-        index_t startDat = A.st[4 * i + 3];
+        start = st[4 * i + 2], stop = st[4 * (i + 1)];
+        index_t startDat = st[4 * i + 3];
         for (uint64_t j = start, k = 0; j < stop; ++j, ++k) {
-            F.axpyin(y[i], A.dat[startDat + k], x[A.col[j]]);
+            F.axpyin(y[i], dat[startDat + k], x[col[j]]);
         }
     }
 }
 
 template <class Field>
-inline void
-fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-      typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-      FieldCategories::UnparametricTag) {
+inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, typename Field::ConstElement_ptr x_,
+                  typename Field::Element_ptr y_, FieldCategories::UnparametricTag) {
+    std::cout << "ones : " << A.nOnes << " mones : " << A.nMOnes << " others : " << A.nOthers << endl;
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     for (uint64_t i = 0; i < A.m; ++i) {
-        index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
+        index_t start = st[4 * i], stop = st[4 * i + 1];
         index_t diff = stop - start;
         typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
         uint64_t j = 0;
         for (; j < ROUND_DOWN(diff, 4); j += 4) {
-            y1 += x[A.col[start + j]];
-            y2 += x[A.col[start + j + 1]];
-            y3 += x[A.col[start + j + 2]];
-            y4 += x[A.col[start + j + 3]];
+            y1 += x[col[start + j]];
+            y2 += x[col[start + j + 1]];
+            y3 += x[col[start + j + 2]];
+            y4 += x[col[start + j + 3]];
         }
         for (; j < diff; ++j) {
-            y1 += x[A.col[start + j]];
+            y1 += x[col[start + j]];
         }
         y[i] -= y1 + y2 + y3 + y4;
         y1 = 0;
         y2 = 0;
         y3 = 0;
         y4 = 0;
-        start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
+        start = st[4 * i + 1], stop = st[4 * i + 2];
         diff = stop - start;
         j = 0;
         for (; j < ROUND_DOWN(diff, 4); j += 4) {
-            y1 += x[A.col[start + j]];
-            y2 += x[A.col[start + j + 1]];
-            y3 += x[A.col[start + j + 2]];
-            y4 += x[A.col[start + j + 3]];
+            y1 += x[col[start + j]];
+            y2 += x[col[start + j + 1]];
+            y3 += x[col[start + j + 2]];
+            y4 += x[col[start + j + 3]];
         }
         for (; j < diff; ++j) {
-            y1 += x[A.col[start + j]];
+            y1 += x[col[start + j]];
         }
         y[i] += y1 + y2 + y3 + y4;
         y1 = 0;
         y2 = 0;
         y3 = 0;
         y4 = 0;
-        start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
+        start = st[4 * i + 2], stop = st[4 * (i + 1)];
         diff = stop - start;
-        index_t startDat = A.st[4 * i + 3];
+        index_t startDat = st[4 * i + 3];
         j = 0;
         for (; j < ROUND_DOWN(diff, 4); j += 4) {
-            y1 += A.dat[startDat + j] * x[A.col[start + j]];
-            y2 += A.dat[startDat + j + 1] * x[A.col[start + j + 1]];
-            y3 += A.dat[startDat + j + 2] * x[A.col[start + j + 2]];
-            y4 += A.dat[startDat + j + 3] * x[A.col[start + j + 3]];
+            y1 += dat[startDat + j] * x[col[start + j]];
+            y2 += dat[startDat + j + 1] * x[col[start + j + 1]];
+            y3 += dat[startDat + j + 2] * x[col[start + j + 2]];
+            y4 += dat[startDat + j + 3] * x[col[start + j + 3]];
         }
         for (; j < diff; ++j) {
-            y1 += A.dat[startDat + j] * x[A.col[start + j]];
+            y1 += dat[startDat + j] * x[col[start + j]];
         }
         y[i] += y1 + y2 + y3 + y4;
     }
 }
 
 template <class Field>
-inline void fspmv(const Field &F,
-                  const Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
-                  typename Field::ConstElement_ptr x,
-                  typename Field::Element_ptr y, const uint64_t kmax) {
+inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, typename Field::ConstElement_ptr x_,
+                  typename Field::Element_ptr y_, const uint64_t kmax) {
     return;
     // TODO
 }

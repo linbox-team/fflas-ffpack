@@ -43,6 +43,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::ELL_simd> {
     index_t ld = 0;
     uint64_t kmax = 0;
     uint64_t nnz = 0;
+    uint64_t nElements = 0;
     uint64_t maxrow = 0;
     uint64_t nChunks = 0;
     index_t *col = nullptr;
