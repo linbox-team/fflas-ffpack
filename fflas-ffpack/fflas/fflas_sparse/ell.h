@@ -76,7 +76,7 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_ZO> &A);
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_spmv.inl"
-// #include "fflas-ffpack/fflas/fflas_sparse/ell/ell_spmm.inl"
+#include "fflas-ffpack/fflas/fflas_sparse/ell/ell_spmm.inl"
 
 #if defined(__FFLASFFPACK_USE_OPENMP) || defined(__FFLASFFPACK_USE_TBB)
 
