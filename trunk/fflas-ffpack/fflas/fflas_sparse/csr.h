@@ -78,7 +78,7 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::CSR_ZO> &A);
 
 #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_spmv.inl"
-// #include "fflas-ffpack/fflas/fflas_sparse/csr/csr_spmm.inl"
+#include "fflas-ffpack/fflas/fflas_sparse/csr/csr_spmm.inl"
 
 #if defined(__FFLASFFPACK_USE_OPENMP) || defined(__FFLASFFPACK_USE_TBB)
 

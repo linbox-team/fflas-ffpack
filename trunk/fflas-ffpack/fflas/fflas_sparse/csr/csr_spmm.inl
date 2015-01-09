@@ -31,148 +31,133 @@
 
 namespace FFLAS {
 namespace sparse_details_impl {
-template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::GenericTag) {
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.axpyin(y[i * blockSize + k], A.dat[j], x[A.col[j] * blockSize + k]);
-                F.axpyin(y[i * blockSize + k + 1], A.dat[j], x[A.col[j] * blockSize + k + 1]);
-                F.axpyin(y[i * blockSize + k + 2], A.dat[j], x[A.col[j] * blockSize + k + 2]);
-                F.axpyin(y[i * blockSize + k + 3], A.dat[j], x[A.col[j] * blockSize + k + 3]);
-            }
-            for (; k < blockSize; ++k)
-                F.axpyin(y[i * blockSize + k], A.dat[j], x[A.col[j] * blockSize + k]);
-        }
-    }
-}
 
 template <class Field>
 inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                   FieldCategories::GenericTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
+        auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.axpyin(y[i * ldy + k], A.dat[j], x[A.col[j] * ldx + k]);
-                F.axpyin(y[i * ldy + k + 1], A.dat[j], x[A.col[j] * ldx + k + 1]);
-                F.axpyin(y[i * ldy + k + 2], A.dat[j], x[A.col[j] * ldx + k + 2]);
-                F.axpyin(y[i * ldy + k + 3], A.dat[j], x[A.col[j] * ldx + k + 3]);
+                F.axpyin(y[i * ldy + k], dat[j], x[col[j] * ldx + k]);
+                F.axpyin(y[i * ldy + k + 1], dat[j], x[col[j] * ldx + k + 1]);
+                F.axpyin(y[i * ldy + k + 2], dat[j], x[col[j] * ldx + k + 2]);
+                F.axpyin(y[i * ldy + k + 3], dat[j], x[col[j] * ldx + k + 3]);
             }
             for (; k < blockSize; ++k)
-                F.axpyin(y[i * ldy + k], A.dat[j], x[A.col[j] * ldx + k]);
+                F.axpyin(y[i * ldy + k], dat[j], x[col[j] * ldx + k]);
         }
     }
 }
 
-template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::UnparametricTag) {
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                y[i * blockSize + k] += A.dat[j] * x[A.col[j] * blockSize + k];
-                y[i * blockSize + k + 1] += A.dat[j] * x[A.col[j] * blockSize + k + 1];
-                y[i * blockSize + k + 2] += A.dat[j] * x[A.col[j] * blockSize + k + 2];
-                y[i * blockSize + k + 3] += A.dat[j] * x[A.col[j] * blockSize + k + 3];
-            }
-            for (; k < blockSize; ++k)
-                y[i * blockSize + k] += A.dat[j] * x[A.col[j] * blockSize + k];
-        }
-    }
-}
 
 template <class Field>
 inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                   FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
+        auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                y[i * ldy + k] += A.dat[j] * x[A.col[j] * ldx + k];
-                y[i * ldy + k + 1] += A.dat[j] * x[A.col[j] * ldx + k + 1];
-                y[i * ldy + k + 2] += A.dat[j] * x[A.col[j] * ldx + k + 2];
-                y[i * ldy + k + 3] += A.dat[j] * x[A.col[j] * ldx + k + 3];
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+                y[i * ldy + k + 1] += dat[j] * x[col[j] * ldx + k + 1];
+                y[i * ldy + k + 2] += dat[j] * x[col[j] * ldx + k + 2];
+                y[i * ldy + k + 3] += dat[j] * x[col[j] * ldx + k + 3];
             }
             for (; k < blockSize; ++k)
-                y[i * ldy + k] += A.dat[j] * x[A.col[j] * ldx + k];
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
         }
     }
 }
 
 #ifdef __FFLASFFPACK_USE_SIMD
-template <class Field, class LFunc, class SFunc>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, LFunc &&lfunc, SFunc &&sfunc,
-                  FieldCategories::UnparametricTag) {
+
+template <class Field>
+inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                   FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
+        auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
-            vect_t y1, x1, y2, x2, dat;
+            vect_t y1, x1, y2, x2, vdat;
             y1 = simd::zero();
             y2 = simd::zero();
             int k = 0;
-            dat = simd::set1(A.dat[j]);
+            vdat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * blockSize + k);
-                x2 = lfunc(x + A.col[j] * blockSize + k + simd::vect_size);
-                y1 = simd::fmadd(y1, x1, dat);
-                y2 = simd::fmadd(y2, x2, dat);
-                sfunc(y + i * blockSize + k, y1);
-                sfunc(y + i * blockSize + k + simd::vect_size, y2);
+                x1 = simd::load(x + col[j] * ldx + k);
+                x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+                y1 = simd::fmadd(y1, x1, vdat);
+                y2 = simd::fmadd(y2, x2, vdat);
+                simd::store(y + i * ldy + k, y1);
+                simd::store(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * blockSize + k);
-                y1 = simd::fmadd(y1, x1, dat);
-                sfunc(y + i * blockSize + k, y1);
+                x1 = simd::load(x + col[j] * ldx + k);
+                y1 = simd::fmadd(y1, x1, vdat);
+                simd::store(y + i * ldy + k, y1);
             }
             for (; k < blockSize; ++k) {
-                y[i * blockSize + k] += A.dat[j] * x[A.col[j] * blockSize + k];
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
             }
         }
     }
 }
 
-template <class Field, class LFunc, class SFunc>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, LFunc &&lfunc,
-                  SFunc &&sfunc, FieldCategories::UnparametricTag) {
+template <class Field>
+inline void fspmm_simd_ualigned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                   FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
+        auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2, dat;
             y1 = simd::zero();
             y2 = simd::zero();
             int k = 0;
-            dat = simd::set1(A.dat[j]);
+            dat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * ldx + k);
-                x2 = lfunc(x + A.col[j] * ldx + k + simd::vect_size);
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                 y1 = simd::fmadd(y1, x1, dat);
                 y2 = simd::fmadd(y2, x2, dat);
-                sfunc(y + i * ldy + k, y1);
-                sfunc(y + i * ldy + k + simd::vect_size, y2);
+                simd::storeu(y + i * ldy + k, y1);
+                simd::storeu(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * ldx + k);
+                x1 = simd::loadu(x + col[j] * ldx + k);
                 y1 = simd::fmadd(y1, x1, dat);
-                sfunc(y + i * ldy + k, y1);
+                simd::storeu(y + i * ldy + k, y1);
             }
             for (; k < blockSize; ++k) {
-                y[i * ldy + k] += A.dat[j] * x[A.col[j] * ldx + k];
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
             }
         }
     }
@@ -181,49 +166,23 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, i
 
 template <class Field>
 inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, typename Field::Element_ptr y, const int64_t kmax) {
-    for (index_t i = 0; i < A.m; ++i) {
-        index_t j = A.st[i];
-        index_t j_loc = j;
-        index_t j_end = A.st[i + 1];
-        index_t block = (j_end - j_loc) / kmax;
-        for (index_t l = 0; l < (index_t)block; ++l) {
-            j_loc += kmax;
-            for (; j < j_loc; ++j) {
-                for (int k = 0; k < blockSize; ++k) {
-                    y[i * blockSize + k] += A.dat[j] * x[A.col[j] * blockSize + k];
-                }
-            }
-            // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
-                F.reduce(y[i * blockSize + k]);
-            }
-        }
-        for (; j < j_end; ++j) {
-            for (int k = 0; k < blockSize; ++k) {
-                y[i * blockSize + k] += A.dat[j] * x[A.col[j] * blockSize + k];
-            }
-        }
-        for (int k = 0; k < blockSize; ++k) {
-            F.reduce(y[i * blockSize + k]);
-        }
-    }
-}
-
-template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                   const int64_t kmax) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     for (index_t i = 0; i < A.m; ++i) {
-        index_t j = A.st[i];
+        index_t j = st[i];
         index_t j_loc = j;
-        index_t j_end = A.st[i + 1];
+        index_t j_end = st[i + 1];
         index_t block = (j_end - j_loc) / kmax;
         for (index_t l = 0; l < (index_t)block; ++l) {
             j_loc += kmax;
             for (; j < j_loc; ++j) {
                 for (int k = 0; k < blockSize; ++k) {
-                    y[i * ldy + k] += A.dat[j] * x[A.col[j] * ldx + k];
+                    y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
                 }
             }
             // TODO : replace with freduce
@@ -233,7 +192,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, i
         }
         for (; j < j_end; ++j) {
             for (int k = 0; k < blockSize; ++k) {
-                y[i * ldy + k] += A.dat[j] * x[A.col[j] * ldx + k];
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
             }
         }
         for (int k = 0; k < blockSize; ++k) {
@@ -242,102 +201,336 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, i
     }
 }
 
-template <class Field, class Func>
-inline void fspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
-                     typename Field::ConstElement_ptr x, typename Field::Element_ptr y, Func &&func) {
+#ifdef __FFLASFFPACK_USE_SIMD
+
+template <class Field>
+inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                  const int64_t kmax) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    using simd = Simd<typename Field::Element>;
+    using vect_t = typename simd::vect_t;
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
+        index_t j = st[i];
+        index_t j_loc = j;
+        index_t j_end = st[i + 1];
+        index_t block = (j_end - j_loc) / kmax;
+        for (index_t l = 0; l < (index_t)block; ++l) {
+            j_loc += kmax;
+            for (; j < j_loc; ++j) {
+                vect_t y1, x1, y2, x2, vdat;
+            y1 = simd::zero();
+            y2 = simd::zero();
             int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                func(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
-                func(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
-                func(y[i * blockSize + k + 2], x[A.col[j] * blockSize + k + 2]);
-                func(y[i * blockSize + k + 3], x[A.col[j] * blockSize + k + 3]);
+            vdat = simd::set1(dat[j]);
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+                y1 = simd::fmadd(y1, x1, vdat);
+                y2 = simd::fmadd(y2, x2, vdat);
+                simd::storeu(y + i * ldy + k, y1);
+                simd::storeu(y + i * ldy + k + simd::vect_size, y2);
             }
-            for (; k < blockSize; ++k)
-                func(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                y1 = simd::fmadd(y1, x1, vdat);
+                simd::storeu(y + i * ldy + k, y1);
+            }
+            for (; k < blockSize; ++k) {
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+            }
+            }
+            // TODO : replace with freduce
+            for (int k = 0; k < blockSize; ++k) {
+                F.reduce(y[i * ldy + k]);
+            }
+        }
+        for (; j < j_end; ++j) {
+            vect_t y1, x1, y2, x2, vdat;
+            y1 = simd::zero();
+            y2 = simd::zero();
+            int k = 0;
+            vdat = simd::set1(dat[j]);
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+                y1 = simd::fmadd(y1, x1, vdat);
+                y2 = simd::fmadd(y2, x2, vdat);
+                simd::storeu(y + i * ldy + k, y1);
+                simd::storeu(y + i * ldy + k + simd::vect_size, y2);
+            }
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                y1 = simd::fmadd(y1, x1, vdat);
+                simd::storeu(y + i * ldy + k, y1);
+            }
+            for (; k < blockSize; ++k) {
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+            }
+        }
+        for (int k = 0; k < blockSize; ++k) {
+            F.reduce(y[i * ldy + k]);
         }
     }
 }
 
-template <class Field, class Func>
-// inline typename  std::enable_if<std::is_function<Func>::value>::type
-inline void fspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
-                     typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, Func &&func) {
+template <class Field>
+inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
+                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                  const int64_t kmax) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    using simd = Simd<typename Field::Element>;
+    using vect_t = typename simd::vect_t;
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
+        index_t j = st[i];
+        index_t j_loc = j;
+        index_t j_end = st[i + 1];
+        index_t block = (j_end - j_loc) / kmax;
+        for (index_t l = 0; l < (index_t)block; ++l) {
+            j_loc += kmax;
+            for (; j < j_loc; ++j) {
+                vect_t y1, x1, y2, x2, vdat;
+            y1 = simd::zero();
+            y2 = simd::zero();
             int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                func(y[i * ldy + k], x[A.col[j] * ldx + k]);
-                func(y[i * ldy + k + 1], x[A.col[j] * ldx + k + 1]);
-                func(y[i * ldy + k + 2], x[A.col[j] * ldx + k + 2]);
-                func(y[i * ldy + k + 3], x[A.col[j] * ldx + k + 3]);
+            vdat = simd::set1(dat[j]);
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                x1 = simd::load(x + col[j] * ldx + k);
+                x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+                y1 = simd::fmadd(y1, x1, vdat);
+                y2 = simd::fmadd(y2, x2, vdat);
+                simd::store(y + i * ldy + k, y1);
+                simd::store(y + i * ldy + k + simd::vect_size, y2);
             }
-            for (; k < blockSize; ++k)
-                func(y[i * ldy + k], x[A.col[j] * ldx + k]);
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                x1 = simd::load(x + col[j] * ldx + k);
+                y1 = simd::fmadd(y1, x1, vdat);
+                simd::store(y + i * ldy + k, y1);
+            }
+            for (; k < blockSize; ++k) {
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+            }
+            }
+            // TODO : replace with freduce
+            for (int k = 0; k < blockSize; ++k) {
+                F.reduce(y[i * ldy + k]);
+            }
+        }
+        for (; j < j_end; ++j) {
+            vect_t y1, x1, y2, x2, vdat;
+            y1 = simd::zero();
+            y2 = simd::zero();
+            int k = 0;
+            vdat = simd::set1(dat[j]);
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                x1 = simd::load(x + col[j] * ldx + k);
+                x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+                y1 = simd::fmadd(y1, x1, vdat);
+                y2 = simd::fmadd(y2, x2, vdat);
+                simd::store(y + i * ldy + k, y1);
+                simd::store(y + i * ldy + k + simd::vect_size, y2);
+            }
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                x1 = simd::load(x + col[j] * ldx + k);
+                y1 = simd::fmadd(y1, x1, vdat);
+                simd::store(y + i * ldy + k, y1);
+            }
+            for (; k < blockSize; ++k) {
+                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+            }
+        }
+        for (int k = 0; k < blockSize; ++k) {
+            F.reduce(y[i * ldy + k]);
         }
     }
 }
+
+#endif // SIMD
+
+template <class Field>
+inline void fspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                     typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy, FieldCategories::GenericTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        for (index_t j = start; j < stop; ++j) {
+            int k = 0;
+            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
+                F.addin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
+                F.addin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
+                F.addin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
+            }
+            for (; k < blockSize; ++k)
+                F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
+        }
+    }
+}
+
+template <class Field>
+inline void fspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                     typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy, FieldCategories::GenericTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        for (index_t j = start; j < stop; ++j) {
+            int k = 0;
+            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
+                F.subin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
+                F.subin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
+                F.subin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
+            }
+            for (; k < blockSize; ++k)
+                F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
+        }
+    }
+}
+
 
 #ifdef __FFLASFFPACK_USE_SIMD
 
-template <class Field, class LFunc, class SFunc, class FuncVect, class FuncScal>
-inline void fspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
-                     typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FuncVect &&funcv,
-                     FuncScal &&funcs, LFunc &&lfunc, SFunc &&sfunc) {
+template <class Field>
+inline void fspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                     typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy, FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
+        auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2;
             y1 = simd::zero();
             y2 = simd::zero();
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * blockSize + k);
-                x2 = lfunc(x + A.col[j] * blockSize + k + simd::vect_size);
-                sfunc(y + i * blockSize + k, funcv(y1, x1));
-                sfunc(y + i * blockSize + k + simd::vect_size, funcv(y2, x2));
+                x1 = simd::load(x + col[j] * ldx + k);
+                x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+                simd::store(y + i * ldy + k, simd::add(y1, x1));
+                simd::store(y + i * ldy + k + simd::vect_size, simd::add(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * blockSize + k);
-                sfunc(y + i * blockSize + k, funcv(y1, x1));
+                x1 = simd::load(x + col[j] * ldx + k);
+                simd::store(y + i * ldy + k, simd::add(y1, x1));
             }
             for (; k < blockSize; ++k) {
-                funs(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
+                y[i * ldy + k] += x[col[j] * ldx + k];
             }
         }
     }
 }
 
-template <class Field, class LFunc, class SFunc, class FuncVect, class FuncScal>
-inline void fspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
-                     typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                     FuncVect &&funcv, FuncScal &&funs, LFunc &&lfunc, SFunc &&sfunc) {
+template <class Field>
+inline void fspmm_one_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                     typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy, FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
     for (index_t i = 0; i < A.m; ++i) {
-        auto start = A.st[i], stop = A.st[i + 1];
+        auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2;
             y1 = simd::zero();
             y2 = simd::zero();
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * ldx + k);
-                x2 = lfunc(x + A.col[j] * ldx + k + simd::vect_size);
-                sfunc(y + i * ldy + k, funcv(y1, x1));
-                sfunc(y + i * ldy + k + simd::vect_size, funcv(y2, x2));
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+                simd::storeu(y + i * ldy + k, simd::add(y1, x1));
+                simd::storeu(y + i * ldy + k + simd::vect_size, simd::add(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
-                x1 = lfunc(x + A.col[j] * ldx + k);
-                sfunc(y + i * ldy + k, funcv(y1, x1));
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                simd::storeu(y + i * ldy + k, simd::add(y1, x1));
             }
             for (; k < blockSize; ++k) {
-                funcs(y[i * ldy + k], x[A.col[j] * ldx + k]);
+                y[i * ldy + k] += x[col[j] * ldx + k];
+            }
+        }
+    }
+}
+
+template <class Field>
+inline void fspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                     typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy, FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    using simd = Simd<typename Field::Element>;
+    using vect_t = typename simd::vect_t;
+    for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        for (index_t j = start; j < stop; ++j) {
+            vect_t y1, x1, y2, x2;
+            y1 = simd::zero();
+            y2 = simd::zero();
+            int k = 0;
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                x1 = simd::load(x + col[j] * ldx + k);
+                x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+                simd::store(y + i * ldy + k, simd::sub(y1, x1));
+                simd::store(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
+            }
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                x1 = simd::load(x + col[j] * ldx + k);
+                simd::store(y + i * ldy + k, simd::sub(y1, x1));
+            }
+            for (; k < blockSize; ++k) {
+                y[i * ldy + k] -= x[col[j] * ldx + k];
+            }
+        }
+    }
+}
+
+template <class Field>
+inline void fspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                     typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy, FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    using simd = Simd<typename Field::Element>;
+    using vect_t = typename simd::vect_t;
+    for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        for (index_t j = start; j < stop; ++j) {
+            vect_t y1, x1, y2, x2;
+            y1 = simd::zero();
+            y2 = simd::zero();
+            int k = 0;
+            for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+                simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
+                simd::storeu(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
+            }
+            for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                x1 = simd::loadu(x + col[j] * ldx + k);
+                simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
+            }
+            for (; k < blockSize; ++k) {
+                y[i * ldy + k] -= x[col[j] * ldx + k];
             }
         }
     }
