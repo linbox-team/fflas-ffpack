@@ -54,7 +54,6 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, i
     }
 }
 
-
 template <class Field>
 inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, int blockSize,
                   typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
@@ -140,18 +139,17 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, i
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, int blockSize,
-                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
-                  const int64_t kmax) {
+                               typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                               const int64_t kmax) {
     // TODO
 }
 
 template <class Field>
 inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, int blockSize,
-                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
-                  const int64_t kmax) {
+                                 typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                                 const int64_t kmax) {
     // TODO
 }
-
 
 template <class Field>
 inline void fspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::COO_ZO> &A, int blockSize,

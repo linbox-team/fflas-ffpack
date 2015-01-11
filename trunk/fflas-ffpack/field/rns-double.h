@@ -40,6 +40,7 @@
 #include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/field/modular-double.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
+#include "fflas-ffpack/utils/align-allocator.h"
 
 
 // activate only if FFLAS-FFPACK haves multiprecision integer
@@ -54,8 +55,8 @@ namespace FFPACK {
 	 */
 	struct rns_double {
 		typedef Modular<double> ModField;
-		std::vector<double>       _basis; // the rns moduli (mi)
-		std::vector<double>    _invbasis; // the inverse of rns moduli (1/mi)
+		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _basis; // the rns moduli (mi)
+		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>    _invbasis; // the inverse of rns moduli (1/mi)
 		std::vector<ModField> _field_rns; // the associated prime field for each mi
 		integer                  _M; // the product of the mi's
 		std::vector<integer>         _Mi; // _M/mi
@@ -91,7 +92,7 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
-		rns_double(const std::vector<double>& basis, bool rnsmod=false, long seed=time(NULL))
+		rns_double(const std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>& basis, bool rnsmod=false, long seed=time(NULL))
 		:  _basis(basis), _M(1), _size(basis.size()), _pbits(0)
 		{
 			for(size_t i=0;i<_size;i++){

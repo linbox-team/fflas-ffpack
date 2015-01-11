@@ -64,7 +64,7 @@ void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR_HYB> &A,
 #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb/csr_hyb_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb/csr_hyb_spmv.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb/csr_hyb_pspmv.inl"
-// #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb/csr_hyb_spmm.inl"
+#include "fflas-ffpack/fflas/fflas_sparse/csr_hyb/csr_hyb_spmm.inl"
 // #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb/csr_hyb_pspmm.inl"
 
 #endif // __FFLASFFPACK_fflas_sparse_CSR_HYB_H

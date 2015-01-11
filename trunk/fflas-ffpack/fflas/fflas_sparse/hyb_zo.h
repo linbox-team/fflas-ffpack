@@ -53,7 +53,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::HYB_ZO> {
 #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo/hyb_zo_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo/hyb_zo_spmv.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo/hyb_zo_pspmv.inl"
-// #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo/hyb_zo_spmm.inl"
+#include "fflas-ffpack/fflas/fflas_sparse/hyb_zo/hyb_zo_spmm.inl"
 // #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo/hyb_zo_pspmm.inl"
 
 #endif // __FFLASFFPACK_fflas_sparse_HYB_ZO_H

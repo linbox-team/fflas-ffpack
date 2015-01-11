@@ -83,30 +83,13 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR_HYB> &
     A.n = coldim;
     A.nnz = nnz;
     A.nElements = nnz;
-    std::vector<coo> data;
+    std::vector<coo> data(nnz);
     for (uint64_t i = 0; i < nnz; ++i) {
-        data.emplace_back(dat[i], col[i], row[i]);
-        // data[i].val = dat[i];
-        // data[i].col = col[i];
-        // data[i].row = row[i];
+        // data.emplace_back(dat[i], col[i], row[i]);
+        data[i].val = dat[i];
+        data[i].col = col[i];
+        data[i].row = row[i];
     }
-
-    // sort nnz by row with order -1 1 L
-    std::sort(data.begin(), data.end(), [&F](const coo &a, const coo &b) {
-        return (a.row < b.row) || ((a.row == b.row) && ((F.isOne(a.val)) && !(F.isOne(b.val)))) ||
-               ((a.row == b.row) && ((F.isMOne(a.val)) && !(F.isOne(b.val) && F.isMOne(b.val)))) ||
-               ((a.row == b.row) && (F.isOne(a.val) == F.isOne(b.val)) && (a.col < b.col)) ||
-               ((a.row == b.row) && (F.isMOne(a.val) == F.isMOne(b.val)) && (a.col < b.col)) ||
-               ((a.row == b.row) && (!(F.isOne(a.val) && F.isMOne(a.val)) == !(F.isOne(b.val) && F.isMOne(b.val))) &&
-                (a.col < b.col));
-    });
-
-#ifdef CSR_HYB_DEBUG
-    for (auto &x : data) {
-        cout << "(" << x.row << "," << x.col << "," << x.val << ") ";
-    }
-    cout << endl;
-#endif
 
     std::vector<uint64_t> rows(rowdim, 0);
 
@@ -118,28 +101,9 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR_HYB> &
     if (A.kmax > A.maxrow)
         A.delayed = true;
 
-    A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
-    A.st = fflas_new<index_t>(4 * (rowdim + 1), Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, nnz, 1, Alignment::CACHE_LINE);
-
-    for (size_t i = 0; i < nnz; ++i) {
-        A.col[i] = static_cast<index_t>(data[i].col);
-    }
-
-    uint64_t it = 0;
-    for (size_t i = 0; i < data.size(); ++i) {
-        if (!F.isOne(data[i].val) && !F.isMOne(data[i].val)) {
-            A.dat[it] = data[i].val;
-            ++it;
-        }
-    }
-
     rows.resize(3 * (rowdim + 1));
     for (auto &x : rows)
         x = 0;
-
-    for (uint64_t i = 0; i < 4 * (rowdim + 1); ++i)
-        A.st[i] = 0;
 
     for (uint64_t i = 0; i < data.size(); ++i) {
         auto x = data[i];
@@ -152,6 +116,45 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR_HYB> &
         } else {
             rows[3 * x.row + 2]++;
             A.nOthers++;
+        }
+    }
+
+    A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+    A.st = fflas_new<index_t>(4 * (rowdim + 1), Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, A.nOthers, 1, Alignment::CACHE_LINE);
+
+    for (uint64_t i = 0; i < 4 * (rowdim + 1); ++i)
+        A.st[i] = 0;
+
+    for (size_t i = 0; i < nnz; ++i) {
+        A.col[i] = static_cast<index_t>(data[i].col);
+    }
+
+    data.shrink_to_fit();
+
+    // sort nnz by row with order -1 1 L
+
+    std::sort(data.begin(), data.end(), [&F](const coo &a, const coo &b) {
+        return (a.row < b.row) || ((a.row == b.row) && (F.isMOne(a.val) && !F.isMOne(b.val))) ||
+               ((a.row == b.row) && (F.isMOne(a.val) && F.isMOne(b.val) && (a.col < b.col))) ||
+               ((a.row == b.row) && (F.isOne(a.val) && !F.isOne(b.val) && !F.isMOne(b.val))) ||
+               ((a.row == b.row) && (F.isOne(a.val) && F.isOne(b.val) && (a.col < b.col))) ||
+               ((a.row == b.row) && (!F.isOne(a.val) && !F.isMOne(a.val) && !F.isOne(b.val) && !F.isMOne(b.val)) &&
+                (a.col < b.col));
+    });
+
+#ifdef CSR_HYB_DEBUG
+    for (auto &x : data) {
+        cout << "(" << x.row << "," << x.col << "," << x.val << ") ";
+    }
+    cout << endl;
+#endif
+
+    uint64_t it = 0;
+    for (size_t i = 0; i < data.size(); ++i) {
+        if (!F.isOne(data[i].val) && !F.isMOne(data[i].val)) {
+            A.dat[it] = data[i].val;
+            ++it;
         }
     }
 

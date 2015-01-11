@@ -89,23 +89,6 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, t
         }
         y[i] += y1 + y2 + y3 + y4;
     }
-
-    // for (index_t i = 0; i < A.m; ++i) {
-    //     auto start = A.st[i], stop = A.st[i + 1];
-    //     index_t j = 0;
-    //     index_t diff = stop - start;
-    //     typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
-    //     for (; j < ROUND_DOWN(diff, 4); j += 4) {
-    //         y1 += A.dat[start + j] * x[A.col[start + j]];
-    //         y2 += A.dat[start + j + 1] * x[A.col[start + j + 1]];
-    //         y3 += A.dat[start + j + 2] * x[A.col[start + j + 2]];
-    //         y4 += A.dat[start + j + 3] * x[A.col[start + j + 3]];
-    //     }
-    //     for (; j < diff; ++j) {
-    //         y1 += A.dat[start + j] * x[A.col[start + j]];
-    //     }
-    //     y[i] += y1 + y2 + y3 + y4;
-    // }
 }
 
 template <class Field>
@@ -135,59 +118,6 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, t
         F.reduce(y[i]);
     }
 }
-
-// template <class Field, class Func>
-// inline void
-// fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
-//       typename Field::ConstElement_ptr x_, typename Field::Element_ptr y_,
-//       Func &&func, FieldCategories::GenericTag) {
-//     for (index_t i = 0; i < A.m; ++i) {
-//         auto start = A.st[i], stop = A.st[i + 1];
-//         index_t j = 0;
-//         index_t diff = stop - start;
-//         typename Field::Element y1, y2, y3, y4;
-//         F.assign(y1, F.zero);
-//         F.assign(y2, F.zero);
-//         F.assign(y3, F.zero);
-//         F.assign(y4, F.zero);
-//         for (; j < ROUND_DOWN(diff, 4); j += 4) {
-//             func(y1, x[A.col[start + j]]);
-//             func(y2, x[A.col[start + j + 1]]);
-//             func(y3, x[A.col[start + j + 2]]);
-//             func(y4, x[A.col[start + j + 3]]);
-//         }
-//         for (; j < diff; ++j) {
-//             func(y1, x[A.col[start + j]]);
-//         }
-//         F.addin(y[i], y1);
-//         F.addin(y[i], y2);
-//         F.addin(y[i], y3);
-//         F.addin(y[i], y4);
-//     }
-// }
-
-// template <class Field, class Func>
-// inline void
-// fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
-//       typename Field::ConstElement_ptr x_, typename Field::Element_ptr y_,
-//       Func &&func, FieldCategories::UnparametricTag) {
-//     for (index_t i = 0; i < A.m; ++i) {
-//         auto start = A.st[i], stop = A.st[i + 1];
-//         index_t j = 0;
-//         index_t diff = stop - start;
-//         typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
-//         for (; j < ROUND_DOWN(diff, 4); j += 4) {
-//             func(y1, x[A.col[start + j]]);
-//             func(y2, x[A.col[start + j + 1]]);
-//             func(y3, x[A.col[start + j + 2]]);
-//             func(y4, x[A.col[start + j + 3]]);
-//         }
-//         for (; j < diff; ++j) {
-//             func(y1, x[A.col[start + j]]);
-//         }
-//         func(y[i], y1 + y2 + y3 + y4);
-//     }
-// }
 
 template <class Field>
 inline void fspmv_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A,
