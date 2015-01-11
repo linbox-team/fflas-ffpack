@@ -40,6 +40,9 @@
 #include <string>
 #include <iterator>
 #include <cstdlib>
+#include <cstdio>
+// #include <stdlib.h>
+
 #include <sstream>
 
 using namespace FFLAS;
@@ -250,10 +253,10 @@ int main(int argc, char **argv) {
     index_t rowdim, coldim;
     uint64_t nnz;
 
-    // if(argc > 1)
-    //     path = argv[1];
+    if(argc > 1)
+        path = argv[1];
 
-    path = "data/mat11.sms";
+    // path = "data/mat11.sms";
 
     readSmsFormat(path, F, row, col, dat, rowdim, coldim, nnz);
 
@@ -280,6 +283,28 @@ int main(int argc, char **argv) {
     test_spmv<Sparse<Field, SparseMatrix_t::CSR>>(F, row, col, dat, rowdim,
                                                   coldim, nnz, x, y, 1);
     cout << "CSR: OK" << endl;
+
+    test_spmv<Sparse<Field, SparseMatrix_t::CSR_ZO>>(F, row, col, dat, rowdim,
+                                                  coldim, nnz, x, y1, 1);
+
+    // for(size_t i = 0 ; i < 10 ; ++i)
+    // {
+    //     cout << y[i] << " ";
+    // }
+    // cout << endl;
+
+    // for(size_t i = 0 ; i < 10 ; ++i)
+    // {
+    //     cout << y1[i] << " ";
+    // }
+    // cout << endl;    
+
+    cout << "CSR_ZO: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
+         << endl;
+
+    for (size_t i = 0; i < rowdim; ++i) {
+        y1[i] = 0;
+    }
 
     test_spmv<Sparse<Field, SparseMatrix_t::COO>>(F, row, col, dat, rowdim,
                                                   coldim, nnz, x, y1, 1);

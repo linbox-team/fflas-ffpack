@@ -59,7 +59,6 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
 template <class Field>
 inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, typename Field::ConstElement_ptr x_,
                   typename Field::Element_ptr y_, FieldCategories::UnparametricTag) {
-    std::cout << "ones : " << A.nOnes << " mones : " << A.nMOnes << " others : " << A.nOthers << endl;
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
