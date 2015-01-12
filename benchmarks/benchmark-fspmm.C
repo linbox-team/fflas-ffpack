@@ -264,9 +264,10 @@ std::pair<double, uint64_t> test_fspmm(size_t iter, const Field &F, IndexT *row,
     return make_pair(time.usertime(), matrix.nElements);
 }
 
-template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t iter, T as, int blocksize = 1) {
+template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t iter, T as, int blocksize) {
+//	cout << 2*p.second*blocksize*iter << endl;
     std::cout << "Time: " << p.first / double(iter)
-              << " Gflops: " << (2 * blocksize * p.second) / 1000000000. / p.first * double(iter);
+              << " Gflops: " << ((2*blocksize*p.second)/(1000000.*p.first))*(double(iter)/1000) ;
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 }
 
@@ -336,7 +337,15 @@ int main(int argc, char **argv) {
     auto csr = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::CSR>>(iter, F, row, col, dat, rowdim, coldim, nnz,
                                                                      blocksize, x, blocksize, 1, y, blocksize);
     cout << "CSR : ";
-    print_res(csr, iter, as);
+    print_res(csr, iter, as, blocksize);
+    auto ell = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::ELL>>(iter, F, row, col, dat, rowdim, coldim, nnz,
+                                                                     blocksize, x, blocksize, 1, y, blocksize);
+    cout << "ELL : ";
+    print_res(ell, iter, as, blocksize);
+    auto ellzo = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::ELL_ZO>>(iter, F, row, col, dat, rowdim, coldim, nnz,
+                                                                     blocksize, x, blocksize, 1, y, blocksize);
+    cout << "ELL_ZO : ";
+    print_res(ellzo, iter, as, blocksize);
     // auto csrzo = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::CSR_ZO>>(iter, F, row, col, dat, rowdim, coldim,
     // nnz, blocksize, x, blocksize, 1, y, blocksize);
     // cout << "CSR_ZO : ";
@@ -352,11 +361,11 @@ int main(int argc, char **argv) {
     auto hybzo = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::HYB_ZO>>(iter, F, row, col, dat, rowdim, coldim, nnz,
                                                                           blocksize, x, blocksize, 1, y, blocksize);
     cout << "HYB_ZO : ";
-    print_res(hybzo, iter, as);
+    print_res(hybzo, iter, as, blocksize);
     auto csrhyb = test_fspmm<Sparse<Field, FFLAS::SparseMatrix_t::CSR_HYB>>(iter, F, row, col, dat, rowdim, coldim, nnz,
                                                                             blocksize, x, blocksize, 1, y, blocksize);
     cout << "CSR_HYB : ";
-    print_res(csrhyb, iter, as);
+    print_res(csrhyb, iter, as, blocksize);
     // for (size_t i = 0; i < 10*blocksize; ++i) {
     //   std::cout << y[i] << " ";
     // }
