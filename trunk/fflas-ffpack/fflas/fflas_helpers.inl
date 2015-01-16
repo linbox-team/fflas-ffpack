@@ -93,6 +93,7 @@ namespace FFLAS {
 		struct Auto{};
 		struct Classic{};
 		struct Winograd{};
+		struct WinogradPar{};
 		struct Bini{};
 	}
 

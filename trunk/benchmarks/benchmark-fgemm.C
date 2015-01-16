@@ -24,7 +24,10 @@
 */
 #define __FFLASFFPACK_USE_OPENMP
 
-//#define __FFLASFFPACK_USE_DATAFLOW
+#define __FFLASFFPACK_USE_DATAFLOW
+
+//#define WINO_PARALLEL_TMPS
+
 #include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
@@ -124,14 +127,14 @@ int main(int argc, char** argv) {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(A,m/NBK,m,k);
 //#pragma omp for
-  for (size_t i=0; i<(size_t)m; ++i)
+  PAR_FOR (size_t i=0; i<(size_t)m; ++i)
 	  for (size_t j=0; j<(size_t)k; ++j)
 		  G.random (*(A+i*k+j));
   B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
-  for (size_t i=0; i<(size_t)k; ++i)
+  PAR_FOR (size_t i=0; i<(size_t)k; ++i)
 	  for (size_t j=0; j<(size_t)n; ++j)
 		  G.random(*(B+i*n+j));
   C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
@@ -145,7 +148,7 @@ int main(int argc, char** argv) {
 	  // else{
 
       chrono.clear();
-      if (p){
+      if (p && p!=7){
 	      FFLAS::CuttingStrategy meth;
 	      switch (p){
 		  case 1: meth = FFLAS::BLOCK_THREADS;break;
@@ -165,16 +168,34 @@ int main(int argc, char** argv) {
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 	      }
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
-      
+
+	      
       }else{
-	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd>//,
-			  //typename FFLAS::FieldTraits<Field>::value,
-			  //FFLAS::ParSeqHelper::Parallel>
-		      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
-	      if (i) chrono.start();
-      	      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-	      if (i) {chrono.stop(); time+=chrono.realtime();}
+	      if(p==7){
+
+		      FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::WinogradPar>
+			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
+		      //		      cout<<"wino parallel"<<endl;
+		      if (i) chrono.start();
+		      PAR_REGION
+		      {
+			      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      }
+		      if (i) {chrono.stop(); time+=chrono.realtime();}
+	      }
+	      else{
+
+		      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd>//,
+			      //typename FFLAS::FieldTraits<Field>::value,
+			      //FFLAS::ParSeqHelper::Parallel>
+			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
+		      if (i) chrono.start();
+		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      if (i) {chrono.stop(); time+=chrono.realtime();}
+	      }
       }
+
+
       
       freivalds.clear();
       freivalds.start();

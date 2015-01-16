@@ -508,14 +508,16 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		for (size_t t = 0; t < NBlocks; ++t)
-			{
-				size_t BlockDim = BLOCKSIZE;
-				if (t == NBlocks-1)
-					BlockDim = LastBlockSize;
-#pragma omp task shared (F, A) firstprivate(BlockDim)
-				MatrixApplyT (F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);
-			}
-#pragma omp taskwait
+		{
+			size_t BlockDim = BLOCKSIZE;
+			if (t == NBlocks-1)
+				BlockDim = LastBlockSize;
+			//#pragma omp task shared (F, A) firstprivate(BlockDim)
+			TASK(MODE(REFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])), 
+			     MatrixApplyT (F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4););
+		}
+		//#pragma omp taskwait
+		WAIT;
 	}
 
 
