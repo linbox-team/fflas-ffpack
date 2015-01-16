@@ -35,10 +35,6 @@
 
 #define __FFLAS__TRSM_READONLY
 
-
-#define MEMCOPY
-#define LEFTLOOKING
-#define CROUT
 #define PBASECASE_K 256
 //#define PBASECASE_K 5
 
