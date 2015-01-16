@@ -401,6 +401,9 @@ namespace FFLAS { namespace Protected {
 
 	} // WinogradCalc
 
+
+		
+		
 #define OLD_DYNAMIC_PEELING
 
 }// namespace Protected
@@ -474,6 +477,81 @@ namespace FFLAS{
 		return C;
 	} // fgemm
 
+
+	template<class Field, class FieldTrait>
+	inline  typename Field::Element_ptr
+	fgemm (const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m, const size_t n, const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+	       MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait> & H)
+	{
+		if (!m || !n ) return C;
+
+		if (!k){
+			    //TODO: update helper
+			fscalin(F,m,n,beta,C,ldc);
+			return C;
+		}
+		if (H.recLevel < 0) {
+			H.recLevel = Protected::WinogradSteps (F, min3(m,k,n));
+		}
+
+		if (H.recLevel == 0){
+
+			MMHelper<Field,MMHelperAlgo::Winograd>//,
+				//typename FFLAS::FieldTraits<Field>::value,
+				//FFLAS::ParSeqHelper::Parallel>
+				HC (F, 0,ParSeqHelper::Sequential());
+			
+			
+			//		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
+
+			fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
+			H.Outmax = HC.Outmax;
+			H.Outmin = HC.Outmin;
+			return C;
+		}
+
+		// Then w >0
+		double Cmin = H.Cmin;
+		double Cmax = H.Cmax;
+#ifdef OLD_DYNAMIC_PEELING
+
+		BLAS3::WinoPar (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);
+
+		FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
+		FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
+		FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HC(H);
+		Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, HC, Cmin, Cmax);
+#else
+		size_t ww = (size_t)H.recLevel ;
+		size_t m2 = (m >> ww) << (ww-1) ;
+		size_t n2 = (n >> ww) << (ww-1) ;
+		size_t k2 = (k >> ww) << (ww-1) ;
+
+		BLAS3::WinoPar (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb, beta, C, ldc, H);
+
+		size_t mr = m -2*m2;
+		size_t nr = n -2*n2;
+		size_t kr = k -2*k2;
+
+		FFLASFFPACK_check(m == m2*2+mr);
+		FFLASFFPACK_check(n == n2*2+nr);
+		FFLASFFPACK_check(k == k2*2+kr);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HC(H);
+		Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC, Cmin, Cmax);
+#endif
+		return C;
+	} // fgemm
+
+	
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_fflas_fgemm_winograd_INL
