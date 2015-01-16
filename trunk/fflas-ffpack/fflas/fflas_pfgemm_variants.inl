@@ -232,13 +232,13 @@ namespace FFLAS
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H6(H);
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H7(H);
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H8(H);
-		 int nt = H.parseq.numthreads;
-		 int nt_rec = nt/4;
-		 int nt_mod = nt%4;
-		 H1.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 H2.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 H3.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 H4.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
+		 size_t nt = H.parseq.numthreads;
+		 size_t nt_rec = nt/4;
+		 size_t nt_mod = nt%4;
+		 H1.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		 H2.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		 H3.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		 H4.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
 
 		 TASK(MODE(REFERENCE(F) READ(A1,B1) READWRITE(C11)), pfgemm_2D_rec(F, ta, tb, M2, N2, k, alpha, A1, lda, B1, ldb, beta, C11, ldc, H1));
 
@@ -321,17 +321,17 @@ namespace FFLAS
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H6(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H7(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H8(H);
-		int nt = H.parseq.numthreads;
-		int nt_rec = nt/8;
-		int nt_mod = nt % 8 ;
-		H1.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0));
-		H2.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H3.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H4.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H5.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H6.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H7.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H8.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
+		size_t nt = H.parseq.numthreads;
+		size_t nt_rec = nt/8;
+		size_t nt_mod = nt % 8 ;
+		H1.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0));
+		H2.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H3.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H4.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H5.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H6.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H7.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H8.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
 
 		TASK(MODE(REFERENCE(F) READ(A11,B11) READWRITE(C11)), pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, H1));
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_11));
@@ -417,13 +417,13 @@ namespace FFLAS
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H3(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H4(H);
-		int nt = H.parseq.numthreads;
-		int nt_rec = nt/4;
-		int nt_mod = nt%4;
-		H1.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H2.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H3.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H4.parseq.numthreads = std::max(1,nt_rec + ((nt_mod-- > 0)?1:0)); 
+		size_t nt = H.parseq.numthreads;
+		size_t nt_rec = nt/4;
+		size_t nt_mod = nt%4;
+		H1.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H2.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H3.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
+		H4.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
 
                 // 1/ 4 multiply
 		TASK(MODE(REFERENCE(F) READ(A11,B11) READWRITE(C11)), pfgemm_3D_rec_V2(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, H1));
