@@ -396,7 +396,7 @@ namespace FFPACK { /* ftrtr */
 	template<class Field>
 	void
 	ftrtrm (const Field& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
-		typename Field::Element_ptr A, const size_t lda);
+			typename Field::Element_ptr A, const size_t lda);
 
 } // FFPACK ftrtr
 // #include "ffpack_ftrtr.inl"
@@ -417,8 +417,8 @@ namespace FFPACK { /* PLUQ */
 	 * @param N matrix column dimension
 	 * @param A input matrix
 	 * @param lda leading dimension of \p A
-	 * @param P the column permutation
-	 * @param Q the row permutation
+	 * @param P the row permutation
+	 * @param Q the column permutation
 
 	 * @return the rank of \p A
 	 * @bib
@@ -477,20 +477,20 @@ namespace FFPACK { /* ludivine */
 	template <class Field>
 	size_t
 	LUdivine_small (const Field& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
-			const size_t M, const size_t N,
-			typename Field::Element_ptr A, const size_t lda,
-			size_t* P, size_t* Q,
-			const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+					const size_t M, const size_t N,
+					typename Field::Element_ptr A, const size_t lda,
+					size_t* P, size_t* Q,
+					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	//! LUdivine gauss
 	template <class Field>
 	size_t
 	LUdivine_gauss (const Field& F, const FFLAS::FFLAS_DIAG Diag,
-			const size_t M, const size_t N,
-			typename Field::Element_ptr A, const size_t lda,
-			size_t* P, size_t* Q,
-			const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
-
+					const size_t M, const size_t N,
+					typename Field::Element_ptr A, const size_t lda,
+					size_t* P, size_t* Q,
+					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+	
 	namespace Protected {
 
 
@@ -551,7 +551,7 @@ namespace FFPACK { /* echelon */
 	template <class Field>
 	size_t
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-			   typename Field::Element_ptr A, const size_t lda,
+					   typename Field::Element_ptr A, const size_t lda,
 					   size_t* P, size_t* Qt, bool transform = false,
 					   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
@@ -698,9 +698,9 @@ namespace FFPACK { /* invert */
 	template <class Field>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::ConstElement_ptr A, const size_t lda,
-		typename Field::Element_ptr X, const size_t ldx,
-		int& nullity);
+			typename Field::ConstElement_ptr A, const size_t lda,
+			typename Field::Element_ptr X, const size_t ldx,
+			int& nullity);
 
 	/** @brief Invert the given matrix or computes its nullity if it is singular.
 	 *
@@ -727,9 +727,9 @@ namespace FFPACK { /* invert */
 	template <class Field>
 	typename Field::Element_ptr
 	Invert2( const Field& F, const size_t M,
-		 typename Field::Element_ptr A, const size_t lda,
-		 typename Field::Element_ptr X, const size_t ldx,
-		 int& nullity);
+			 typename Field::Element_ptr A, const size_t lda,
+			 typename Field::Element_ptr X, const size_t ldx,
+			 int& nullity);
 
 } // FFPACK invert
 // #include "ffpack_invert.inl"
@@ -747,8 +747,8 @@ namespace FFPACK { /* charpoly */
 	template <class Field, class Polynomial>
 	std::list<Polynomial>&
 	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+			  typename Field::Element_ptr A, const size_t lda,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 	template<class Polynomial, class Field>
 	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
@@ -1006,9 +1006,9 @@ namespace FFPACK { /* Solutions */
 	 */
 	template <class Field>
 	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
-			       typename Field::Element_ptr A, const size_t lda,
-			       size_t* &rkprofile);
-
+						   typename Field::Element_ptr A, const size_t lda,
+						   size_t* &rkprofile);
+	
 	/**  Computes the column rank profile of A.
 	 *
 	 * @param F
@@ -1024,9 +1024,9 @@ namespace FFPACK { /* Solutions */
 	 */
 	template <class Field>
 	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
-				  typename Field::Element_ptr A, const size_t lda,
-				  size_t* &rkprofile);
-
+							  typename Field::Element_ptr A, const size_t lda,
+							  size_t* &rkprofile);
+	
 	/** RowRankProfileSubmatrixIndices.
 	 * Computes the indices of the submatrix r*r X of A whose rows correspond to
 	 * the row rank profile of A.
@@ -1046,12 +1046,12 @@ namespace FFPACK { /* Solutions */
 	 */
 	template <class Field>
 	size_t RowRankProfileSubmatrixIndices (const Field& F,
-					       const size_t M, const size_t N,
-					       typename Field::Element_ptr A,
-					       const size_t lda,
-					       size_t*& rowindices,
-					       size_t*& colindices,
-					       size_t& R);
+										   const size_t M, const size_t N,
+										   typename Field::Element_ptr A,
+										   const size_t lda,
+										   size_t*& rowindices,
+										   size_t*& colindices,
+										   size_t& R);
 
 	/** Computes the indices of the submatrix r*r X of A whose columns correspond to
 	 * the column rank profile of A.
@@ -1094,11 +1094,11 @@ namespace FFPACK { /* Solutions */
 	 */
 	template <class Field>
 	size_t RowRankProfileSubmatrix (const Field& F,
-					const size_t M, const size_t N,
-					typename Field::Element_ptr A,
-					const size_t lda,
-					typename Field::Element_ptr& X, size_t& R);
-
+									const size_t M, const size_t N,
+									typename Field::Element_ptr A,
+									const size_t lda,
+									typename Field::Element_ptr& X, size_t& R);
+	
 	/** Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
 	 *
 	 *
