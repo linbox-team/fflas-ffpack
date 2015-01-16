@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
 	//	int p=0;
 	int t=MAX_THREADS;
 	int NBK = -1;
-	
+	bool par=false;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
@@ -273,12 +273,15 @@ int main(int argc, char** argv) {
 		{ 'v', "-v V", "Set 1 if need verification of result else 0.",            TYPE_INT , &v },
 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
 		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
+		{ 'p', "-p P", "whether to run or not the parallel PLUQ", TYPE_BOOL , &par },
 		END_OF_ARGUMENTS
 	};
 	//		{ 'p', "-p P", "0 for sequential, 1 for 2D iterative,
 //2 for 2D rec, 3 for 2D rec adaptive, 4 for 3D rc in-place, 5 for 3D rec, 6 for 3D rec adaptive.", TYPE_INT , &p },
         FFLAS::parseArguments(argc,argv,as);
-	
+	if (!par){
+		t=1;NBK=1;
+	}
 	if (NBK==-1) NBK = t;
 	typedef Field::Element Element;
 	Element * A, * Acop;
@@ -327,20 +330,18 @@ int main(int argc, char** argv) {
 	       PAR_FOR(size_t j=0;j<maxQ;j++)
 		       Q[j]=0;
 	       
-	       PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+	       PAR_FOR(size_t k=0; k<(size_t)m; ++k)
 		       for (size_t j=0; j<(size_t)n; ++j)
-			       *(A+i*n+j) = *(Acop+i*n+j) ;  
+			       *(A+k*n+j) = *(Acop+k*n+j) ;  
 	       chrono.clear();
 	       
 	       if (i) chrono.start();
-// Added by AB 2014-12-15
-#ifdef __FFLASFFPACK_USE_OPENMP
-	       PAR_REGION{
-		       R = pPLUQ(F, diag, m, n, A, n, P, Q, t);
-	       }
-#else
+	       if (par)
+		       PAR_REGION{
+			       R = pPLUQ(F, diag, m, n, A, n, P, Q, t);
+		       }
+	       else
 		       R = PLUQ(F, diag, m, n, A, n, P, Q);
-#endif
 	       if (i) {chrono.stop(); time+=chrono.realtime();}
 	       
        }
@@ -348,8 +349,9 @@ int main(int argc, char** argv) {
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
 	#define CUBE(x) ((x)*(x)*(x))
+       double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
 	std::cout << "Time: " << time / double(iter)
-			  << " Gflops: " << 2. * CUBE(double(n)/1000.) / 3. / time * double(iter);
+		  << " Gflops: " << gflop / time * double(iter-1);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
        
        //verification
@@ -359,5 +361,5 @@ int main(int argc, char** argv) {
        FFLAS::fflas_delete( Acop);
        
        return 0;
-}
+	}
 
