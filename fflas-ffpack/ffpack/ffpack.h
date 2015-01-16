@@ -188,7 +188,7 @@ namespace FFPACK { /* Permutations */
 	papplyP( const Field& F,
 		 const FFLAS::FFLAS_SIDE Side,
 		 const FFLAS::FFLAS_TRANSPOSE Trans,
-		 const size_t m, const int ibeg, const int iend,
+		 const size_t m, const size_t ibeg, const size_t iend,
 		 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
 	//! Parallel applyT with OPENMP tasks
