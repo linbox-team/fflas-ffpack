@@ -65,7 +65,7 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
 		Z.erase(Z.begin()+index);
 	}
 
-	PAR_FOR(size_t i=0; i<r; ++i) {
+	for (size_t i=0; i<r; ++i) {
       		while( F.isZero( G.random(U[ P[i]*lda+P[i] ]) ) ) {}
 		for(size_t j=P[i]+1;j<n;++j)
 			G.random(U[ P[i]*lda+j]);
@@ -217,7 +217,7 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 {
 
 	Field::RandIter G(F); 
-#pragma omp parallel for collapse(2) schedule(runtime) 
+//#pragma omp parallel for collapse(2) schedule(runtime) 
 	
 	for(size_t p=0; p<m; p+=BS) ///row
 		for(size_t pp=0; pp<n; pp+=BS) //column
@@ -309,7 +309,7 @@ int main(int argc, char** argv) {
        A = M_randgen(F, A, U, r, m, n);
        size_t R;
        FFLAS::Timer chrono;
-       double time=0.0;
+       double *time=new double[iter];
        
        enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
        size_t maxP, maxQ;
@@ -319,18 +319,18 @@ int main(int argc, char** argv) {
        size_t *P = FFLAS::fflas_new<size_t>(maxP);
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
-       PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+       for/*PAR_FOR*/(size_t i=0; i<(size_t)m; ++i)
 	       for (size_t j=0; j<(size_t)n; ++j)
 		       Acop[i*n+j]= (*(A+i*n+j));
        
        for (size_t i=0;i<=iter;++i){
 	       	       
-	       PAR_FOR(size_t j=0;j<maxP;j++)
+	       /*PAR_FOR*/for(size_t j=0;j<maxP;j++)
 		       P[j]=0;
-	       PAR_FOR(size_t j=0;j<maxQ;j++)
+	       /*PAR_FOR*/for(size_t j=0;j<maxQ;j++)
 		       Q[j]=0;
 	       
-	       PAR_FOR(size_t k=0; k<(size_t)m; ++k)
+	       /*PAR_FOR*/for(size_t k=0; k<(size_t)m; ++k)
 		       for (size_t j=0; j<(size_t)n; ++j)
 			       *(A+k*n+j) = *(Acop+k*n+j) ;  
 	       chrono.clear();
@@ -342,16 +342,18 @@ int main(int argc, char** argv) {
 		       }
 	       else
 		       R = PLUQ(F, diag, m, n, A, n, P, Q);
-	       if (i) {chrono.stop(); time+=chrono.realtime();}
+	       if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
 	       
        }
-  
+       std::sort(time, time+iter);
+       double meantime = time[iter/2];
+       delete[] time;
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
 	#define CUBE(x) ((x)*(x)*(x))
        double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
-	std::cout << "Time: " << time / double(iter)
-		  << " Gflops: " << gflop / time * double(iter-1);
+	std::cout << "Time: " << meantime
+		  << " Gflops: " << gflop / meantime;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
        
        //verification
