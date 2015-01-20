@@ -50,9 +50,6 @@
 namespace FFPACK {
 
 	template <>
-        class ModularRandIter<Integer>;
-
-	template <>
 	class ModularBalanced<Integer> {
 	public:
 		typedef Integer        	      	Element;

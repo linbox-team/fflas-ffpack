@@ -121,7 +121,7 @@ void readSmsFormat(const std::string& path, const Field& f,
 
 int main(int argc, char** argv){
     // using Field = UnparametricField<double>;
-    using Field = Modular<double>;
+    using Field = Givaro::Modular<double>;
     // using Field = class RNSInteger;
     using Element = typename Field::Element;
 

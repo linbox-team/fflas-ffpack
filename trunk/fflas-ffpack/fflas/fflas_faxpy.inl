@@ -59,10 +59,10 @@ faxpy( const Field& F, const size_t N,
 
 template<>
 inline void
-faxpy( const DoubleDomain& , const size_t N,
-       const DoubleDomain::Element a,
-       DoubleDomain::ConstElement_ptr x, const size_t incx,
-       DoubleDomain::Element_ptr y, const size_t incy )
+faxpy( const Givaro::DoubleDomain& , const size_t N,
+       const Givaro::DoubleDomain::Element a,
+       Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
+       Givaro::DoubleDomain::Element_ptr y, const size_t incy )
 {
 
 	cblas_daxpy( (int)N, a, x, (int)incx, y, (int)incy);
@@ -70,10 +70,10 @@ faxpy( const DoubleDomain& , const size_t N,
 
 template<>
 inline void
-faxpy( const FloatDomain& , const size_t N,
-       const FloatDomain::Element a,
-       FloatDomain::ConstElement_ptr x, const size_t incx,
-       FloatDomain::Element_ptr y, const size_t incy )
+faxpy( const Givaro::FloatDomain& , const size_t N,
+       const Givaro::FloatDomain::Element a,
+       Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
+       Givaro::FloatDomain::Element_ptr y, const size_t incy )
 {
 
 	cblas_saxpy( (int)N, a, x, (int)incx, y, (int)incy);

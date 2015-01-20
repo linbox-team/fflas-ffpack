@@ -39,18 +39,21 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include <givaro/modular-int32.h>
+#include <givaro/modular-balanced.h>
+#include <givaro/givintprime.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
-//#include "fflas-ffpack/field/modular-positive.h"
-//#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-int32.h"
-
 #include "fflas-ffpack/utils/args-parser.h"
-#include "test-utils.h"
-#include "givaro/givintprime.h"
 
+#include "test-utils.h"
+#include "Matio.h"
+
+using namespace std;
+using namespace FFPACK;
+using Givaro::Modular;
+using Givaro::ModularBalanced;
 
 // checks that D = alpha . x . y^T + C
 
@@ -201,16 +204,19 @@ bool launch_fger_dispatch(const Field &F,
 // 		ldc = n+(size_t)random()%ld;
 		ldc = n;
 
-
+#ifdef DEBUG
 		std::cout <<"q = "<<F.characteristic()<<" m,n = "<<m<<", "<<n<<" C := "
 			  <<alpha<<".x * y^T + C";
+#endif
 		ok &= launch_fger<Field>(F,m,n,
 				       alpha,
 				       ldc,
 				       inca,
 				       incb,
 				       iters);
+#ifdef DEBUG
 		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
+#endif
 	}
 	return ok ;
 }
@@ -244,6 +250,10 @@ bool run_with_field (int q, unsigned long b, size_t n, size_t iters){
 		p = (int)std::max((unsigned long) Field::getMinModulus(),(unsigned long)p);
 		Field F((int)p);
 
+#ifdef DEBUG
+		F.write(std::cout) << std::endl;
+#endif
+
 		Randiter R1(F);
 		FFPACK::NonzeroRandIter<Field,Randiter> R(F,R1);
 
@@ -266,11 +276,6 @@ bool run_with_field (int q, unsigned long b, size_t n, size_t iters){
 	}
 	return ok;
 }
-
-using namespace std;
-using namespace FFPACK;
-
-typedef Modular<double> Field;
 
 int main(int argc, char** argv)
 {
@@ -298,21 +303,13 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		std::cout<<"Modular<double>"<<std::endl;
 		ok &= run_with_field<Modular<double> >(q,b,n,iters);
-		std::cout<<"ModularBalanced<double>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<double> >(q,b,n,iters);
-		std::cout<<"Modular<float>"<<std::endl;
 		ok &= run_with_field<Modular<float> >(q,b,n,iters);
-		std::cout<<"ModularBalanced<float>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters);
-		std::cout<<"Modular<int32_t>"<<std::endl;
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,iters);
-		std::cout<<"ModularBalanced<int32_t>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters);
-		//std::cout<<"Modular<int64_t>"<<std::endl;
 		//ok &= run_with_field<Modular<int64_t> >(q,b,n,iters);
-		// std::cout<<"ModularBalanced<int64_t>"<<std::endl;
 		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters);
 	} while (loop && ok);
 

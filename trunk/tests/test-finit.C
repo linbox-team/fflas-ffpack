@@ -29,19 +29,19 @@
 
 // #define SIMD_INT
 
+#include <typeinfo>
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-int64.h"
-#include "fflas-ffpack/field/modular-balanced-int64.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/utils/args-parser.h"
+
+#include "Matio.h"
 #include "test-utils.h"
 #include "assert.h"
-#include "fflas-ffpack/utils/args-parser.h"
-#include <typeinfo>
 
-
-// using namespace FFPACK;
 template<class Field>
 bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
@@ -51,7 +51,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * B = FFLAS::fflas_new<T>(m*n);
 
-	FFPACK::ModularBalanced<T> E(101);
+	Givaro::ModularBalanced<T> E(101);
 
 	if (timing)	std::cout << ">>>" << std::endl ;
 	if (timing)	std::cout << "=== inc == 1 ===" << std::endl ;
@@ -60,7 +60,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear(); tom.clear();
 	if (timing)		F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < repet ; ++b) {
-		RandomMatrix(E,A,m,k,n);
+		FFPACK::RandomMatrix(E,A,m,k,n);
 		// RandomMatrix(E,B,m,k,n);
 		FFLAS::fassign(E,m,k,A,n,B,n);
 
@@ -80,7 +80,9 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 		for (size_t i =0 ; i < m ; ++i)
 			for (size_t j =0 ; j < k ; ++j)
 				if (! F.areEqual(B[i*n+j],A[i*n+j])) {
-					if (timing)	std::cout  <<  i << ',' << j << " : " <<  B[i*n+j] << "!= (ref)" << A[i*n+j] << std::endl;
+					F.write(std::cout) << std::endl <<  i << ',' << j  << " : ";
+					F.write(std::cout, B[i*n+j]) << "!= (ref)";
+					F.write(std::cout, A[i*n+j]) << std::endl;
 					return false ;
 				}
 #endif
@@ -94,7 +96,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear();
 	if (timing)	F.write(std::cout << "Modular ") << std::endl;
 	for (size_t b = 0 ; b < repet ; ++b) {
-		RandomMatrix(E,A,m,n,n);
+		FFPACK::RandomMatrix(E,A,m,n,n);
 		FFLAS::fassign(E,m,n,A,n,B,n);
 		size_t incX = 2 ;
 
@@ -112,11 +114,12 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 		chrono.stop();
 		tom += chrono ;
 
-
 #if 1
 		for (size_t i =1 ; i < m*n ; i+=incX)
 			if (! F.areEqual(B[i],A[i])) {
-				if (timing)		std::cout <<  i << " : " << B[i] << "!= (ref)" << A[i] << std::endl;
+				F.write(std::cout) << std::endl <<  i << " : ";
+				F.write(std::cout, B[i]) << "!= (ref)";
+				F.write(std::cout, A[i]) << std::endl;
 				return false ;
 			}
 #endif
@@ -163,57 +166,55 @@ int main(int ac, char **av) {
 	srand(seed);
 	srand48(seed);
 
-	// std::cout << seed << std::endl;
-
 	bool pass  = true ;
 	{ /*  freduce */
 		{
-			FFPACK:: Modular<float> F(p) ;
+			Givaro::Modular<float> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<float> F(p) ;
+			Givaro::ModularBalanced<float> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<double> F(p) ;
+			Givaro::Modular<double> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<double> F(p) ;
+			Givaro::ModularBalanced<double> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int64_t> F(p) ;
+			Givaro::Modular<int64_t> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int64_t> F(p) ;
+			Givaro::ModularBalanced<int64_t> F(p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 #if 1
 		{
-			FFPACK:: UnparametricField<float> F ;
+			Givaro::UnparametricRing<float> F ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<double> F ;
+			Givaro::UnparametricRing<double> F ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int32_t> F;
+			Givaro::UnparametricRing<int32_t> F;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int64_t> F ;
+			Givaro::UnparametricRing<int64_t> F ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 #endif

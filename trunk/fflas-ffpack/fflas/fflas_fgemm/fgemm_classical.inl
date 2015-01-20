@@ -36,7 +36,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 #define __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 
-#include "fflas-ffpack/field/field-general.h"
+#include "fflas-ffpack/field/field-traits.h"
 
 namespace FFLAS {
 
@@ -199,16 +199,16 @@ namespace FFLAS {
 		fscalin(F,m,n,alpha,C,ldc);
         }
 
-	inline void fgemm (const DoubleDomain& F,
+	inline void fgemm (const Givaro::DoubleDomain& F,
 			   const FFLAS_TRANSPOSE ta,
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
-			   const DoubleDomain::Element alpha,
-			   DoubleDomain::ConstElement_ptr Ad, const size_t lda,
-			   DoubleDomain::ConstElement_ptr Bd, const size_t ldb,
-			   const DoubleDomain::Element beta,
-			   DoubleDomain::Element_ptr Cd, const size_t ldc,
-			   MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> &H)
+			   const Givaro::DoubleDomain::Element alpha,
+			   Givaro::DoubleDomain::ConstElement_ptr Ad, const size_t lda,
+			   Givaro::DoubleDomain::ConstElement_ptr Bd, const size_t ldb,
+			   const Givaro::DoubleDomain::Element beta,
+			   Givaro::DoubleDomain::Element_ptr Cd, const size_t ldc,
+			   MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> &H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
@@ -217,28 +217,28 @@ namespace FFLAS {
                 H.setOutBounds(k, alpha, beta);
 
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
-			     (int)m, (int)n, (int)k, (DoubleDomain::Element) alpha,
-			     Ad, (int)lda, Bd, (int)ldb, (DoubleDomain::Element) beta, Cd, (int)ldc);
+			     (int)m, (int)n, (int)k, (Givaro::DoubleDomain::Element) alpha,
+			     Ad, (int)lda, Bd, (int)ldb, (Givaro::DoubleDomain::Element) beta, Cd, (int)ldc);
 	}
 
-	inline void fgemm (const FloatDomain& F,
+	inline void fgemm (const Givaro::FloatDomain& F,
 			   const FFLAS_TRANSPOSE ta,
 			   const FFLAS_TRANSPOSE tb,
 			   const size_t m, const size_t n,const size_t k,
-			   const FloatDomain::Element alpha,
-			   FloatDomain::ConstElement_ptr Ad, const size_t lda,
-			   FloatDomain::ConstElement_ptr Bd, const size_t ldb,
-			   const FloatDomain::Element beta,
-			   FloatDomain::Element_ptr Cd, const size_t ldc,
-			   MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+			   const Givaro::FloatDomain::Element alpha,
+			   Givaro::FloatDomain::ConstElement_ptr Ad, const size_t lda,
+			   Givaro::FloatDomain::ConstElement_ptr Bd, const size_t ldb,
+			   const Givaro::FloatDomain::Element beta,
+			   Givaro::FloatDomain::Element_ptr Cd, const size_t ldc,
+			   MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
                 H.setOutBounds(k, alpha, beta);
 		cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
-			     (int)m, (int)n, (int)k, (FloatDomain::Element) alpha,
-			     Ad, (int)lda, Bd, (int)ldb, (FloatDomain::Element) beta,Cd, (int)ldc);
+			     (int)m, (int)n, (int)k, (Givaro::FloatDomain::Element) alpha,
+			     Ad, (int)lda, Bd, (int)ldb, (Givaro::FloatDomain::Element) beta,Cd, (int)ldc);
 	}
 } // FFLAS
 

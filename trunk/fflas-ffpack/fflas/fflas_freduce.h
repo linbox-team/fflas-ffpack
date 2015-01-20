@@ -32,7 +32,7 @@
 
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/field/field-traits.h"
-
+#include "fflas-ffpack/utils/cast.h"
 
 namespace FFLAS {
 

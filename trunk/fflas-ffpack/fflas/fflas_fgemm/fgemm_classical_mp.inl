@@ -32,11 +32,12 @@
 
 #ifndef __FFPACK_fgemm_classical_INL
 #define __FFPACK_fgemm_classical_INL
-#ifdef __FFLASFFPACK_HAVE_INTEGER
 
-#include "fflas-ffpack/field/unparametric.h"
+#include <givaro/modular-integer.h>
+#include <givaro/unparametric.h>
+
+#include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/field-traits.h"
 #include "fflas-ffpack/fflas/fflas_helpers.inl" 
@@ -47,21 +48,10 @@ namespace FFLAS {
 		 typename AlgoTrait,
 		 typename ParSeqTrait>
 	struct MMHelper<Field, AlgoTrait,FieldCategories::MultiPrecisionTag, ParSeqTrait> {
-		FFPACK::Integer normA,normB;
+		Givaro::Integer normA,normB;
 		MMHelper() : normA(0), normB(0) {}
-		MMHelper(FFPACK::Integer Amax, FFPACK::Integer Bmax) : normA(Amax), normB(Bmax) {}
+		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax) {}
 		MMHelper(const Field& F, size_t m=0, size_t n=0, size_t k=0, ParSeqTrait PS=ParSeqTrait()) {F.characteristic(normA);F.characteristic(normB);}
-	};
-
-	template <>
-	struct associatedDelayedField<const FFPACK::Modular<FFPACK::Integer>>{
-		typedef FFPACK::UnparametricField<FFPACK::Integer> field;
-		typedef FFPACK::UnparametricField<FFPACK::Integer> type;
-	};
-	template <typename RNS>
-	struct associatedDelayedField<const FFPACK::RNSIntegerMod<RNS> >{
-		typedef FFPACK::RNSInteger<RNS> field;
-		typedef FFPACK::RNSInteger<RNS> type;
 	};
 
 	/***********************************
@@ -96,16 +86,16 @@ namespace FFLAS {
 
 
 	// fgemm for UnparametricField<Integer> with Winograd Helper (bb: file is classical ??)
-	inline FFPACK::Integer* fgemm (const FFPACK::UnparametricField<FFPACK::Integer>& F,
+	inline Givaro::Integer* fgemm (const Givaro::UnparametricRing<Givaro::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n,const size_t k,
-				       const FFPACK::Integer alpha,
-				       const FFPACK::Integer* A, const size_t lda,
-				       const FFPACK::Integer* B, const size_t ldb,
-				       FFPACK::Integer beta,
-				       FFPACK::Integer* C, const size_t ldc,
-				       MMHelper<FFPACK::UnparametricField<FFPACK::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+				       const Givaro::Integer alpha,
+				       const Givaro::Integer* A, const size_t lda,
+				       const Givaro::Integer* B, const size_t ldb,
+				       Givaro::Integer beta,
+				       Givaro::Integer* C, const size_t ldc,
+				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
 	{
 		// compute bit size of feasible prime for FFLAS
 		size_t _k=k,lk=0;
@@ -113,14 +103,14 @@ namespace FFLAS {
 		size_t prime_bitsize= (53-lk)>>1;
 
 		// compute bound on the output
-		FFPACK::Integer  mA,mB,mC;
+		Givaro::Integer  mA,mB,mC;
 		size_t logA,logB;
 		mA=H.normA;
 		mB=H.normB;
 		if (H.normA==0){
 			logA=A[0].bitsize();
 			for (size_t i=1;i<m*k;i++)
-				logA = max(logA,A[i].bitsize());
+				logA = std::max(logA,A[i].bitsize());
 			H.normA=1; H.normA<<=(logA);
 		}
 		else {
@@ -129,7 +119,7 @@ namespace FFLAS {
 		if (H.normB==0){
 			logB=B[0].bitsize();
 			for (size_t i=1;i<k*n;i++)
-				logB=max(logB,B[i].bitsize());
+				logB=std::max(logB,B[i].bitsize());
 			H.normB=1; H.normB<<=(logB);
 		}
 		else {
@@ -180,17 +170,17 @@ namespace FFLAS {
 	}
 
 	// BB hack. might not work.
-	inline FFPACK::Integer* fgemv (const FFPACK::UnparametricField<FFPACK::Integer>& F,
+	inline Givaro::Integer* fgemv (const Givaro::UnparametricRing<Givaro::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const size_t m, const size_t n,
-				       const FFPACK::Integer alpha,
-				       FFPACK::Integer* A, const size_t lda,
-				       FFPACK::Integer* X, const size_t ldx,
-				       FFPACK::Integer beta,
-				       FFPACK::Integer* Y, const size_t ldy,
-				       MMHelper<FFPACK::UnparametricField<FFPACK::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+				       const Givaro::Integer alpha,
+				       Givaro::Integer* A, const size_t lda,
+				       Givaro::Integer* X, const size_t ldx,
+				       Givaro::Integer beta,
+				       Givaro::Integer* Y, const size_t ldy,
+				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
 	{
-		MMHelper<FFPACK::UnparametricField<FFPACK::Integer>, MMHelperAlgo::Winograd, FieldCategories:: MultiPrecisionTag,ParSeqHelper::Sequential> H2(F,0) ;
+		MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories:: MultiPrecisionTag,ParSeqHelper::Sequential> H2(F,0) ;
 		fgemm(F,ta,FFLAS::FflasNoTrans,m,n,1,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
 		return Y;
 	}
@@ -235,20 +225,20 @@ namespace FFLAS {
 
 
 	// fgemm for IntegerDomain with Winograd Helper
-	inline FFPACK::integer* fgemm (const FFPACK::Modular<FFPACK::Integer>& F,
+	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n,const size_t k,
-				       const FFPACK::Integer alpha,
-				       const FFPACK::Integer *A, const size_t lda,
-				       const FFPACK::Integer *B, const size_t ldb,
-				       const FFPACK::Integer beta,
-				       FFPACK::Integer* C, const size_t ldc,
-				       MMHelper<FFPACK::Modular<FFPACK::integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+				       const Givaro::Integer alpha,
+				       const Givaro::Integer *A, const size_t lda,
+				       const Givaro::Integer *B, const size_t ldb,
+				       const Givaro::Integer beta,
+				       Givaro::Integer* C, const size_t ldc,
+				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
 	{
 		// compute the product over Z
-		typedef FFPACK::UnparametricField<FFPACK::Integer> IntegerDomain;
-		FFPACK::Integer p;
+		typedef Givaro::UnparametricRing<Givaro::Integer> IntegerDomain;
+		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
 		MMHelper<IntegerDomain, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> H2(p,p);//H2(Z,0,H.parseq);
@@ -266,4 +256,4 @@ namespace FFLAS {
 }// END of namespace FFLAS
 
 #endif
-#endif
+

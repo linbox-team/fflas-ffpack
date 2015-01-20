@@ -32,6 +32,10 @@
 #ifndef __FFLASFFPACK_fgemm_INL
 #define __FFLASFFPACK_fgemm_INL
 
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+
+#include "fflas-ffpack/utils/debug.h"
 
 namespace FFLAS { namespace Protected{
 
@@ -52,7 +56,7 @@ namespace FFLAS { namespace Protected{
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
 
-		FFPACK::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
+		Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement tmp,alphaf, betaf;
 		    // This conversion is quite tricky, but convert and init are required
 		    // in sequence e.g. for when F is a ModularBalanced field and alpha == -1
@@ -81,7 +85,7 @@ namespace FFLAS { namespace Protected{
 			fconvert(F, m, n, Cf, n, C, ldc);
 			freduce (G, m, n, Cf, n);
 		}
-		MMHelper<FFPACK::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel, ParSeqHelper::Sequential());
+		MMHelper<Givaro::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel, ParSeqHelper::Sequential());
 		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 		finit (F, m, n, Cf, n, C, ldc);
@@ -362,9 +366,9 @@ namespace FFLAS {
 		// detect fger
 		if (k==1 and ...) {}
 #endif
-		if (Protected::AreEqual<Field, FFPACK::Modular<double> >::value ||
-		    Protected::AreEqual<Field, FFPACK::ModularBalanced<double> >::value){
-			    // Modular<double> need to switch to float if p too small
+		if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
+		    Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
+			    //Givaro::Modular<double> need to switch to float if p too small
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		}
@@ -413,8 +417,8 @@ namespace FFLAS {
 
 		//! @bug why double ?
 		// Double  matrices initialisation
-		DoubleDomain::Element_ptr Ad = fflas_new (DoubleDomain(),n,n);
-		DoubleDomain::Element_ptr Cd = fflas_new (DoubleDomain(),n,n);
+		Givaro::DoubleDomain::Element_ptr Ad = fflas_new (Givaro::DoubleDomain(),n,n);
+		Givaro::DoubleDomain::Element_ptr Cd = fflas_new (Givaro::DoubleDomain(),n,n);
 		// Conversion finite Field = >  double
 		fconvert (F, n, n, Ad, n, A, lda);
 		if (!F.isZero(beta)) fconvert(F, n, n, Cd, n, C, ldc);
@@ -423,8 +427,8 @@ namespace FFLAS {
 		FFLASFFPACK_check(n);
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,
 			     (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
-			     (DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
-			     (DoubleDomain::Element) betad, Cd, (int)n);
+			     (Givaro::DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
+			     (Givaro::DoubleDomain::Element) betad, Cd, (int)n);
 		// Conversion double = >  Finite Field
 		fflas_delete (Ad);
 		finit (F,n,n, Cd, n, C, ldc);
@@ -459,7 +463,7 @@ namespace FFLAS {
 	} // Protected
 
 	template <>
-	inline double* fsquare (const  FFPACK:: ModularBalanced<double> & F,
+	inline double* fsquare (const  Givaro::ModularBalanced<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
 				const double* A, const size_t lda,
@@ -470,7 +474,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline float * fsquare (const  FFPACK:: ModularBalanced<float> & F,
+	inline float * fsquare (const  Givaro::ModularBalanced<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
 				const float* A, const size_t lda,
@@ -481,7 +485,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline double* fsquare (const  FFPACK:: Modular<double> & F,
+	inline double* fsquare (const  Givaro::Modular<double> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const double alpha,
 				const double* A, const size_t lda,
@@ -492,7 +496,7 @@ namespace FFLAS {
 	}
 
 	template <>
-	inline float * fsquare (const  FFPACK:: Modular<float> & F,
+	inline float * fsquare (const  Givaro::Modular<float> & F,
 				const FFLAS_TRANSPOSE ta,
 				const size_t n, const float alpha,
 				const float* A, const size_t lda,

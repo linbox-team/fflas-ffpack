@@ -29,15 +29,15 @@
 #ifndef __FFPACK_ludivine_mp_INL
 #define __FFPACK_ludivine_mp_INL
 
-#ifdef __FFLASFFPACK_HAVE_INTEGER
+#include <givaro/modular-integer.h>
+#include <givaro/givinteger.h>
 
 #ifdef BENCH_PERF_LQUP_MP
 #define BENCH_PERF_FGEMM_MP
 #endif
+
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-integer.h"
-#include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack_ludivine.inl"
 
@@ -45,10 +45,10 @@ namespace FFPACK {
 
 	template <>
 	inline size_t
-	LUdivine (const Modular<FFPACK::Integer>& F,
+	LUdivine (const Givaro::Modular<Givaro::Integer>& F,
 		  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 		  const size_t M, const size_t N,
-		  typename FFPACK::Integer* A, const size_t lda,
+		  typename Givaro::Integer* A, const size_t lda,
 		  size_t*P, size_t *Q,
 		  const FFPACK::FFPACK_LU_TAG LuTag,
 		  const size_t cutoff
@@ -60,18 +60,18 @@ namespace FFPACK {
 		FFLAS::Timer chrono;
 		chrono.start(); 
 #endif
-		FFPACK::Integer p;
+		Givaro::Integer p;
 		F.cardinality(p);
 		size_t logp=p.bitsize();
 		size_t K = std::max(M,N);
 		
 		// compute bit size of feasible prime 
-		size_t _k=max(K,logp/20), lk=0;
+		size_t _k=std::max(K,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}    
 		size_t prime_bitsize= (53-lk)>>1;	
 	
 		// construct rns basis
-		FFPACK::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
+		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
 		size_t n_pr =maxC.bitsize()/prime_bitsize;				
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
 				
@@ -133,6 +133,5 @@ namespace FFPACK {
 	}
 
 } // namespace FFPACK
-#endif //__FFLASFFPACK_HAVE_INTEGER
 
 #endif 

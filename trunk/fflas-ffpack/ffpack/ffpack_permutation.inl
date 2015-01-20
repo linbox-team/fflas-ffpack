@@ -30,7 +30,8 @@
 #ifndef __FFLASFFPACK_ffpack_permutation_INL
 #define __FFLASFFPACK_ffpack_permutation_INL
 
-#include "fflas-ffpack/field/unparametric.h"
+#include <givaro/unparametric.h>
+
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
 namespace FFPACK {
@@ -123,7 +124,7 @@ namespace FFPACK {
 				const size_t R1, const size_t R2,
 				const size_t R3, const size_t R4)
 	{
-		FFPACK::UnparametricField<T> D;
+		Givaro::UnparametricRing<T> D;
 		T* tmp = FFLAS::fflas_new<T>((M2-R1-R2)*width);
 		doApplyS (D, A, lda, tmp, width, M2, R1, R2, R3, R4);
 		FFLAS::fflas_delete( tmp);
@@ -168,7 +169,7 @@ namespace FFPACK {
 				const size_t R1, const size_t R2,
 				const size_t R3, const size_t R4)
 	{
-		FFPACK::UnparametricField<T> D;
+		Givaro::UnparametricRing<T> D;
 		T* tmp = FFLAS::fflas_new<T >((N2-R1)*width);
 		doApplyT (D, A, lda, tmp, width, N2, R1, R2, R3, R4);
 		FFLAS::fflas_delete( tmp);

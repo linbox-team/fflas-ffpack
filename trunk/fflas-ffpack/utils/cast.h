@@ -1,7 +1,9 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* Copyright (C) 2011 FFLAS-FFPACK
- * Written by <brice.boyer@imag.fr>
+/* 
+ * This file is part of FFLAS-FFPACK
+ * Copyright (C) 2011 Brice Boyer <bboyer@imag.fr>
+ *
+ * ------------------------------------
+ *
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -20,20 +22,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
- *
+ *.
  */
 
-/*! @file fflas-ffpack/fflas-ffpack.h
- * @ingroup fflas-ffpack
- * @brief Includes FFLAS and FFPACK
- */
+#ifndef __FFLASFFPACK_const_H
+#define __FFLASFFPACK_const_H
 
+namespace FFPACK {
 
-#ifndef __FFLASFFPACK_fflas_ffpack_H
-#define __FFLASFFPACK_fflas_ffpack_H
+	template<class T, class CT = const T>
+	T fflas_const_cast (CT x)
+	{
+		return const_cast<T>(x);
+	}
+	
+}
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
-#include "fflas/fflas.h"
-#include "ffpack/ffpack.h"
+#endif
 
-#endif // __FFLASFFPACK_fflas_ffpack_H

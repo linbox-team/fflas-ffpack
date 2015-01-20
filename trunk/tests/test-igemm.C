@@ -21,7 +21,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	 FFLAS::Timer tim;
 
 	srand((unsigned int)time(NULL));
-	typedef FFPACK::ModularBalanced<FFPACK::Integer> IField ;
+	typedef Givaro::ModularBalanced<Givaro::Integer> IField ;
 	IField Z(1UL<<63);
 
 	size_t ra = (tA==CblasNoTrans) ? m : k ;
@@ -128,7 +128,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	std::cout << "---------------------------------------------" << std::endl;
 
 
-	typedef FFPACK::UnparametricField<int64_t> FField ;
+	typedef Givaro::UnparametricRing<int64_t> FField ;
 	FField F ;
 
 	FField::Element_ptr Ci,Ai,Bi;
@@ -225,8 +225,8 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 	if  (timing) {
 		FFLAS::Timer tom;
-		// FFPACK::Modular<double> G(65537);
-		FFPACK::UnparametricField<double> G;
+		// Givaro::Modular<double> G(65537);
+		Givaro::UnparametricRing<double> G;
 		double af, bf ;
 		G.init(af,alpha);
 		G.init(bf,beta);

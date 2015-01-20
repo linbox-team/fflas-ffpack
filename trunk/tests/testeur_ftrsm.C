@@ -42,8 +42,8 @@
 using namespace std;
 using namespace FFPACK;
 
-//typedef Modular<int> Field;
-//typedef Modular<float> Field;
+//typedef Givaro::Modular<int> Field;
+//typedef Givaro::Modular<float> Field;
 typedef ModularBalanced<double> Field;
 
 int main(int argc, char** argv){

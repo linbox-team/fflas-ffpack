@@ -207,10 +207,10 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscal( const DoubleDomain& , const size_t N,
-	       const DoubleDomain::Element a,
-	       DoubleDomain::ConstElement_ptr x, const size_t incx,
-	       DoubleDomain::Element_ptr y, const size_t incy )
+	fscal( const Givaro::DoubleDomain& , const size_t N,
+	       const Givaro::DoubleDomain::Element a,
+	       Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
+	       Givaro::DoubleDomain::Element_ptr y, const size_t incy )
 	{
 		cblas_dcopy( (int)N, x, (int)incy, y, (int)incy);
 		cblas_dscal( (int)N, a, y, (int)incy);
@@ -218,10 +218,10 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscal( const FloatDomain& , const size_t N,
-	       const FloatDomain::Element a,
-	       FloatDomain::ConstElement_ptr x, const size_t incx,
-	       FloatDomain::Element_ptr y, const size_t incy )
+	fscal( const Givaro::FloatDomain& , const size_t N,
+	       const Givaro::FloatDomain::Element a,
+	       Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
+	       Givaro::FloatDomain::Element_ptr y, const size_t incy )
 	{
 		cblas_scopy( (int)N, x, (int)incy, y, (int)incy);
 		cblas_sscal( (int)N, a, y, (int)incy);
@@ -229,9 +229,9 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscalin( const DoubleDomain& , const size_t N,
-	       const DoubleDomain::Element a,
-	       DoubleDomain::Element_ptr y, const size_t incy )
+	fscalin( const Givaro::DoubleDomain& , const size_t N,
+	       const Givaro::DoubleDomain::Element a,
+	       Givaro::DoubleDomain::Element_ptr y, const size_t incy )
 	{
 
 		cblas_dscal( (int)N, a, y, (int)incy);
@@ -239,9 +239,9 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscalin( const FloatDomain& , const size_t N,
-	       const FloatDomain::Element a,
-	       FloatDomain::Element_ptr y, const size_t incy )
+	fscalin( const Givaro::FloatDomain& , const size_t N,
+	       const Givaro::FloatDomain::Element a,
+	       Givaro::FloatDomain::Element_ptr y, const size_t incy )
 	{
 
 		cblas_sscal( (int)N, a, y, (int)incy);
@@ -250,7 +250,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscalin( const FFPACK:: Modular<float>& F , const size_t N,
+	fscalin( const Givaro::Modular<float>& F , const size_t N,
 	       const float a,
 	       float * X, const size_t incX )
 	{
@@ -270,7 +270,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscalin( const FFPACK:: ModularBalanced<float>& F , const size_t N,
+	fscalin( const Givaro::ModularBalanced<float>& F , const size_t N,
 	       const float a,
 	       float * X, const size_t incX )
 	{
@@ -290,7 +290,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscalin( const FFPACK:: Modular<double>& F , const size_t N,
+	fscalin( const Givaro::Modular<double>& F , const size_t N,
 	       const double a,
 	       double * X, const size_t incX )
 	{
@@ -310,7 +310,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscal( const FFPACK:: Modular<double>& F , const size_t N,
+	fscal( const Givaro::Modular<double>& F , const size_t N,
 	       const double a,
 		 const double * X, const size_t incX,
 		 double * Y, const size_t incY )
@@ -332,7 +332,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fscalin( const FFPACK:: ModularBalanced<double>& F , const size_t N,
+	fscalin( const Givaro::ModularBalanced<double>& F , const size_t N,
 	       const double a,
 	       double * X, const size_t incX )
 	{

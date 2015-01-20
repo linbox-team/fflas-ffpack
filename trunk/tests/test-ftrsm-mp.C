@@ -25,22 +25,23 @@
  * ========LICENCE========
  *.
  */
+ 
+#include <givaro/modular-integer.h>
 
 #include <iomanip> 
 #include <iostream>
+
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/utils/args-parser.h"
+
 using namespace std;
-
-
-typedef FFPACK::Modular<FFPACK::integer> Field;
-//typedef FFPACK::Modular<double> Field;
+typedef Givaro::Modular<Givaro::Integer> Field;
+//typedef Givaro::Modular<double> Field;
 
 
 template<typename T>
-void write_matrix(FFPACK::Integer p, size_t m, size_t n, T* C, size_t ldc){
+void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
 	size_t www=(p.bitsize()*log(2.))/log(10.);
 	for (size_t i=0;i<m;++i){
@@ -161,13 +162,13 @@ int main(int argc, char** argv)
 	FFLAS::parseArguments(argc,argv,as);
 	
 	
-	FFPACK::Integer p;
-	FFPACK::Integer::random_exact_2exp(p, b);			
+	Givaro::Integer p;
+	Givaro::Integer::random_exact_2exp(p, b);			
 	nextprime(p,p);
 	Field F((Field::Element)p);
-	cout<<F<<endl;
+	F.write(cout) << endl;
 	Field::Element alpha;
-	F.init (alpha, (Field::Element)FFPACK::Integer(s)); 
+	F.init (alpha, (Field::Element)Givaro::Integer(s)); 
 
 	bool ok= true;
 	ok = ok && check_ftrsm(F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);

@@ -44,9 +44,9 @@
 //#define DEBUG
 #include <iomanip>
 #include <iostream>
+#include <givaro/modular.h>
 using namespace std;
 
-#include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -62,11 +62,11 @@ T& myrand (T& r, long size) {
         return r = T(  lrand48() % size ) ;
 }
 
-typedef Modular<double> Field;
-//typedef Modular<float> Field;
+typedef Givaro::Modular<double> Field;
+//typedef Givaro::Modular<float> Field;
 //typedef ModularBalanced<double> Field;
 //typedef ModularBalanced<float> Field;
-//typedef Modular<int> Field;
+//typedef Givaro::Modular<int> Field;
 
 //#ifdef  __FFLASFFPACK_USE_OPENMP
 Field::Element* makemat(const Field::RandIter& RF,int m, int n){

@@ -40,16 +40,16 @@
 #include <iostream>
 #include <list>
 #include <vector>
-#include "Matio.h"
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-
 #include "fflas-ffpack/utils/args-parser.h"
+
+#include "Matio.h"
+
 using namespace std;
-
-
-typedef FFPACK:: Modular<double> Field;
+typedef Givaro::Modular<double> Field;
 
 //! @bug does not belong here
 template<class T>

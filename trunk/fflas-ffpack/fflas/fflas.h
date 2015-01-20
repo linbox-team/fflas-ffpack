@@ -144,9 +144,6 @@ namespace FFLAS {
 } // FFLAS
 
 // include fields for specialisation
-#include "fflas-ffpack/field/unparametric.h"
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-positive.h"
 #include "fflas-ffpack/field/rns.h"
 
 

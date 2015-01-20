@@ -38,17 +38,21 @@
 
 #include <ostream>
 
+namespace Givaro {
+
+	template<class T>
+	class Modular;
+
+	template<class T>
+	class ModularBalanced ;
+
+}
+
 namespace FFPACK {
 
 
 	template<class T>
 	class UnparametricField ;
-
-	template<class T>
-	class Modular ;
-
-	template<class T>
-	class ModularBalanced ;
 
 	template<class T>
 	class RNSInteger;
@@ -58,13 +62,13 @@ namespace FFPACK {
 
 
 	template<class T>
-	std::ostream & operator<<( std::ostream & o, const Modular<T> & F)
+	std::ostream & operator<<( std::ostream & o, const Givaro::Modular<T> & F)
 	{
 		return F.write(o);
 	}
 
 	template<class T>
-	std::ostream & operator<<( std::ostream & o, const ModularBalanced<T> & F)
+	std::ostream & operator<<( std::ostream & o, const Givaro::ModularBalanced<T> & F)
 	{
 		return F.write(o);
 	}

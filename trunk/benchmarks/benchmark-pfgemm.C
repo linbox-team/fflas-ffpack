@@ -25,9 +25,10 @@
 
 #include <iostream>
 #include <omp.h>
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -57,10 +58,10 @@ int main(int argc, char** argv) {
 
 	FFLAS::parseArguments(argc,argv,as);
 
-  // typedef FFPACK::Modular<double> Field;
-  // typedef FFPACK::Modular<float> Field;
-  typedef FFPACK::ModularBalanced<double> Field;
-  // typedef FFPACK::ModularBalanced<float> Field;
+  // typedef Givaro::Modular<double> Field;
+  // typedef Givaro::Modular<float> Field;
+  typedef Givaro::ModularBalanced<double> Field;
+  // typedef Givaro::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
   Field F(q);

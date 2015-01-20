@@ -24,11 +24,11 @@
 */
 
 #include <iostream>
+#include <givaro/modular.h>
 
 #define __FFLASFFPACK_HAVE_DTRTRI 1
 
 #include "fflas-ffpack/fflas-ffpack.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
 	FFLAS::parseArguments(argc,argv,as);
 
-  typedef FFPACK::Modular<double> Field;
+  typedef Givaro::Modular<double> Field;
   typedef Field::Element Element;
 
   Field F(q);

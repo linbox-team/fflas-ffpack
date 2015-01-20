@@ -80,7 +80,7 @@ namespace FFLAS { namespace ell_simd_details {
 		using simd = Simd<typename Field::Element>;
 		using vect_t = typename simd::vect_t;
 		int end = (m%chunk == 0) ? m : m+(chunk-(m%chunk));
-		std::cout << "end " << end << endl;
+		std::cout << "end " << end << std::endl;
 		vect_t X,Y,D,T ;
 		for(int i = 0 ; i < end ; i+=chunk) {
 			Y = simd::load(y+i);

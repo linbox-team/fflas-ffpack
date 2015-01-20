@@ -50,8 +50,8 @@ using namespace FFPACK ;
 
 int test1_coo()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	COO<Modular<double>> Mat ;
 	size_t nbnz = 21 ;
@@ -188,8 +188,8 @@ int test1_coo()
 
 int test2_coo()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	COO_sub<Field> Mat ;
 	size_t nbnz = 21 ;
@@ -326,9 +326,9 @@ int test2_coo()
 
 int test3_coo(int CST)
 {
-	using Field = Modular<double>;
+	using Field = Givaro::Modular<double>;
 	{
-		Modular<double> F(1051);
+	Givaro::Modular<double> F(1051);
 
 		COO<Field> Mat ;
 		size_t nbnz = 21 ;
@@ -461,7 +461,7 @@ int test3_coo(int CST)
 	}
 
 	{
-		Modular<double> F(1051);
+	Givaro::Modular<double> F(1051);
 		COO_ZO<Field> Mat ;
 
 		size_t nbnz = 21 ;
@@ -579,8 +579,8 @@ int test3_coo(int CST)
 
 int test1_csr()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	CSR<Field> Mat ;
 	size_t nbnz = 21 ;
@@ -697,8 +697,8 @@ int test1_csr()
 
 int test2_csr()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	CSR_sub<Field> Mat ;
 	size_t nbnz = 21 ;
@@ -815,10 +815,10 @@ int test2_csr()
 
 int test3_csr(int CST)
 {
-	using Field = Modular<double>;
+	using Field = Givaro::Modular<double>;
 
 	{
-		Modular<double> F(1051);
+	Givaro::Modular<double> F(1051);
 
 		CSR<Field> Mat ;
 		size_t nbnz = 21 ;
@@ -942,7 +942,7 @@ int test3_csr(int CST)
 	}
 
 	{
-		Modular<double> F(1051);
+	Givaro::Modular<double> F(1051);
 		CSR_ZO<Field> Mat ;
 
 		size_t nbnz = 21 ;
@@ -1050,8 +1050,8 @@ int test3_csr(int CST)
 
 int test1_ell()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	ELL<Field,false> Mat;
 	// size_t nbnz = 20 ;
@@ -1187,8 +1187,8 @@ int test1_ell()
 
 int test2_ell()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	ELL_sub<Field,false> Mat ;
 	// size_t nbnz = 20 ;
@@ -1328,8 +1328,8 @@ int test2_ell()
 
 int test1_ell_simd()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 	using simd = Simd<double>;
 	// using vect_t = typename simd::vect_t;
 
@@ -1483,8 +1483,8 @@ int test1_ell_simd()
 
 int test2_ell_simd()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 	using simd = Simd<double>;
 	// using vect_t = typename simd::vect_t;
 
@@ -1640,8 +1640,8 @@ int test2_ell_simd()
 
 int test1_ellr()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	ELLR<Field> Mat ;
 	// size_t nbnz = 20 ;
@@ -1789,8 +1789,8 @@ int test1_ellr()
 
 int test2_ellr()
 {
-	using Field = Modular<double>;
-	Modular<double> F(1051);
+	using Field = Givaro::Modular<double>;
+Givaro::Modular<double> F(1051);
 
 	ELLR_sub<Field> Mat ;
 	// size_t nbnz = 20 ;
@@ -1940,9 +1940,9 @@ int test2_ellr()
 
 int test3_ellr(int CST)
 {
-	using Field = Modular<double>;
+	using Field = Givaro::Modular<double>;
 	{
-		Modular<double> F(1051);
+	Givaro::Modular<double> F(1051);
 
 		ELLR<Field> Mat ;
 	Mat.m = 10 ;
@@ -2088,7 +2088,7 @@ int test3_ellr(int CST)
 	}
 
 	{
-		Modular<double> F(1051);
+	Givaro::Modular<double> F(1051);
 		ELLR_ZO<Field> Mat ;
 
 	Mat.m = 10 ;

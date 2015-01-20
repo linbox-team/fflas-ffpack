@@ -34,7 +34,9 @@
 
 #ifndef __FFLASFFPACK_field_rns_double_elt_INL
 #define __FFLASFFPACK_field_rns_double_elt_INL
+
 #include "fflas-ffpack/utils/fflas_memory.h"
+#include "fflas-ffpack/utils/cast.h"
 
 namespace FFPACK {
 

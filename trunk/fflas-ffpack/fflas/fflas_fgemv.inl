@@ -31,6 +31,8 @@
 #ifndef __FFLASFFPACK_fgemv_INL
 #define __FFLASFFPACK_fgemv_INL
 
+#include <givaro/zring.h> // DoubleDomain
+
 namespace FFLAS{ namespace Protected {
 	template <typename FloatElement, class Field>
 	inline typename Field::Element_ptr
@@ -45,7 +47,7 @@ namespace FFLAS{ namespace Protected {
 	{
 		FFLASFFPACK_check(lda);
 
-		FFPACK::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
+		Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement tmp,alphaf, betaf;
 		F.convert (tmp, beta);
 		G.init(betaf,tmp);
@@ -147,9 +149,9 @@ namespace FFLAS {
 		typename Field::Element alpha_,beta_;
 		F.assign (alpha_,alpha);
 		F.assign (beta_,beta);
-		if (Protected::AreEqual<Field, FFPACK::Modular<double> >::value ||
-		    Protected::AreEqual<Field, FFPACK::ModularBalanced<double> >::value){
-			    // Modular<double> need to switch to float if p too small
+		if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
+		    Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
+			    //Givaro::Modular<double> need to switch to float if p too small
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X,incX,beta,Y,incY);
 		}
@@ -316,15 +318,15 @@ namespace FFLAS{
 }
 
 namespace FFLAS{
-	inline DoubleDomain::Element_ptr
-	fgemv (const DoubleDomain& F, const FFLAS_TRANSPOSE ta,
+	inline Givaro::DoubleDomain::Element_ptr
+	fgemv (const Givaro::DoubleDomain& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
-	       const DoubleDomain::Element alpha,
-	       const DoubleDomain::ConstElement_ptr A, const size_t lda,
-	       const DoubleDomain::ConstElement_ptr X, const size_t incX,
-	       const DoubleDomain::Element beta,
-	       DoubleDomain::Element_ptr Y, const size_t incY,
-	       MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+	       const Givaro::DoubleDomain::Element alpha,
+	       const Givaro::DoubleDomain::ConstElement_ptr A, const size_t lda,
+	       const Givaro::DoubleDomain::ConstElement_ptr X, const size_t incX,
+	       const Givaro::DoubleDomain::Element beta,
+	       Givaro::DoubleDomain::Element_ptr Y, const size_t incY,
+	       MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		// FFLASFFPACK_check(ldb);
@@ -333,20 +335,20 @@ namespace FFLAS{
                 H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
 		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
-			     (int)M, (int)N, (DoubleDomain::Element) alpha,
-			     A, (int)lda, X, (int)incX, (DoubleDomain::Element) beta, Y, (int)incY);
+			     (int)M, (int)N, (Givaro::DoubleDomain::Element) alpha,
+			     A, (int)lda, X, (int)incX, (Givaro::DoubleDomain::Element) beta, Y, (int)incY);
 		return Y;
 	}
 
-	inline FloatDomain::Element_ptr
-	fgemv (const FloatDomain& F, const FFLAS_TRANSPOSE ta,
+	inline Givaro::FloatDomain::Element_ptr
+	fgemv (const Givaro::FloatDomain& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
-	       const FloatDomain::Element alpha,
-	       const FloatDomain::ConstElement_ptr A, const size_t lda,
-	       const FloatDomain::ConstElement_ptr X, const size_t incX,
-	       const FloatDomain::Element beta,
-	       FloatDomain::Element_ptr Y, const size_t incY,
-	       MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+	       const Givaro::FloatDomain::Element alpha,
+	       const Givaro::FloatDomain::ConstElement_ptr A, const size_t lda,
+	       const Givaro::FloatDomain::ConstElement_ptr X, const size_t incX,
+	       const Givaro::FloatDomain::Element beta,
+	       Givaro::FloatDomain::Element_ptr Y, const size_t incY,
+	       MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		// FFLASFFPACK_check(ldb);
@@ -355,8 +357,8 @@ namespace FFLAS{
 		H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
 		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
-			     (int)M, (int)N, (FloatDomain::Element) alpha,
-			     A, (int)lda, X, (int)incX, (FloatDomain::Element) beta, Y, (int)incY);
+			     (int)M, (int)N, (Givaro::FloatDomain::Element) alpha,
+			     A, (int)lda, X, (int)incX, (Givaro::FloatDomain::Element) beta, Y, (int)incY);
 		return Y;
 	}
 

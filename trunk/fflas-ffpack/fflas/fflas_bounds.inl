@@ -49,7 +49,7 @@ namespace FFLAS { namespace Protected {
 	 * Specializations for ModularPositive and ModularBalanced over double and float
 	 *************************************************************************************/
 	template <>
-	inline double computeFactorClassic (const FFPACK:: ModularBalanced<double>& F)
+	inline double computeFactorClassic (const Givaro::ModularBalanced<double>& F)
 	{
 		FFLAS_INT_TYPE p;
 		F.characteristic(p);
@@ -58,7 +58,7 @@ namespace FFLAS { namespace Protected {
 
 	//BB: ajout, pourquoi pas ?
 	template <>
-	inline double computeFactorClassic (const FFPACK:: ModularBalanced<float>& F)
+	inline double computeFactorClassic (const Givaro::ModularBalanced<float>& F)
 	{
 		FFLAS_INT_TYPE p;
 		F.characteristic(p);
@@ -131,7 +131,7 @@ namespace FFLAS { namespace Protected {
 	//  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 	//  */
 	// template<>
-	// inline size_t TRSMBound (const FFPACK:: Modular<double>& F)
+	// inline size_t TRSMBound (const Givaro::Modular<double>& F)
 	// {
 
 	// 	FFLAS_INT_TYPE pi;
@@ -156,7 +156,7 @@ namespace FFLAS { namespace Protected {
 	 * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 	 */
 	template<class Element>
-	inline size_t TRSMBound (const FFPACK:: Modular<Element>& F)
+	inline size_t TRSMBound (const Givaro::Modular<Element>& F)
 	{
 
 		FFLAS_INT_TYPE pi;
@@ -181,7 +181,7 @@ namespace FFLAS { namespace Protected {
 	 * - Dumas Giorgi Pernet 06, arXiv:cs/0601133
 	 */
 	template<class Element>
-	inline size_t TRSMBound (const FFPACK:: ModularBalanced<Element>& F)
+	inline size_t TRSMBound (const Givaro::ModularBalanced<Element>& F)
 	{
 
 		FFLAS_INT_TYPE pi;
@@ -204,7 +204,7 @@ namespace FFLAS { namespace Protected {
 	//  * See [Dumas Giorgi Pernet 06, arXiv:cs/0601133]
 	//  */
 	// template<>
-	// inline size_t TRSMBound (const FFPACK:: ModularBalanced<float>& F)
+	// inline size_t TRSMBound (const Givaro::ModularBalanced<float>& F)
 	// {
 
 	// 	FFLAS_INT_TYPE pi;

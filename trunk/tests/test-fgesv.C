@@ -49,7 +49,7 @@ using namespace std;
 
 using namespace FFPACK;
 
-typedef Modular<double> Field;
+typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 

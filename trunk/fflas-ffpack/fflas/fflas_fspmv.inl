@@ -33,8 +33,6 @@
 #ifndef __FFLASFFPACK_fflas_fflas_fspmv_INL
 #define __FFLASFFPACK_fflas_fflas_fspmv_INL
 
-#include "fflas-ffpack/field/modular-positive.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/fflas/fflas_helpers.inl"
 

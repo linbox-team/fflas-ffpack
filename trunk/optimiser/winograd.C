@@ -41,7 +41,7 @@
 #include "fflas-ffpack/fflas/fflas.h"
 
 #ifndef FLTTYPE
-#define FLTTYPE Modular<double>
+#define FLTTYPEGivaro::Modular<double>
 #endif
 template<class Field>
 bool balanced(const Field & )
@@ -50,7 +50,7 @@ bool balanced(const Field & )
 }
 
 template <class T>
-bool balanced(const FFPACK::ModularBalanced<T>&)
+bool balanced(const Givaro::ModularBalanced<T>&)
 {
 	return true;
 }

@@ -52,9 +52,9 @@ using namespace std;
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 using namespace FFPACK;
-// typedef Modular<int16_t> Field;
-typedef Modular<int32_t> Field;
-// typedef Modular<double> Field;
+// typedef Givaro::Modular<int16_t> Field;
+typedef Givaro::Modular<int32_t> Field;
+// typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 	cerr<<setprecision(20);

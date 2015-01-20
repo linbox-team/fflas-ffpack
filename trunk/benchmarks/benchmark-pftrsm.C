@@ -23,11 +23,13 @@
 */
 
 #include <iostream>
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/fflas-ffpack.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
+
 #include "tests/test-utils.h"
 
 #define __FFLASFFPACK_USE_DATAFLOW
@@ -96,7 +98,7 @@ int main(int argc, char** argv) {
   
   if (NBK==-1) NBK = t;
 
-  typedef FFPACK::ModularBalanced<double> Field;
+  typedef Givaro::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
   Field F(q);

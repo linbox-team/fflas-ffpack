@@ -25,21 +25,24 @@
 //#define __FFLASFFPACK_USE_DATAFLOW
 //#define FICTIF
 #include <iostream>
+#include <givaro/modular.h>
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
+
 #include "tests/test-utils.h"
+
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include "libkomp.h"
 #endif
+
 using namespace std;
 
-  typedef FFPACK::ModularBalanced<double> Field;
-//typedef FFPACK::UnparametricField<double> Field;
+  typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::UnparametricRing<double> Field;
 
 // random generator function:                                                                                          
 ptrdiff_t myrandom (ptrdiff_t i) { return rand()%i;}
@@ -338,10 +341,10 @@ int main(int argc, char** argv) {
 	       if (i) chrono.start();
 	       if (par)
 		       PAR_REGION{
-			       R = pPLUQ(F, diag, m, n, A, n, P, Q, t);
+			       R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
 		       }
 	       else
-		       R = PLUQ(F, diag, m, n, A, n, P, Q);
+		       R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
 	       if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
 	       
        }

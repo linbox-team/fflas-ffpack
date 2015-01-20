@@ -48,7 +48,7 @@
 using namespace std;
 using namespace FFPACK;
 
-typedef Modular<float> Field;
+typedef Givaro::Modular<float> Field;
 
 int main(int argc, char** argv)
 {

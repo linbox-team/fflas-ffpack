@@ -59,8 +59,8 @@ WINO=`cat optimiser/winograd.C`
 ADDFLAGS="-DOPTIMISATION_MODE"
 
 dnl for Wino threshold for double
-echo "  == Wino/BLAS threshold for Modular<double> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<double> ${ADDFLAGS}"
+echo "  == Wino/BLAS threshold for Givaro::Modular<double> == "
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Givaro::Modular<double> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -85,8 +85,8 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 dnl for WinoThreshold for float
-echo "  == Wino/BLAS threshold for Modular<float> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Modular<float> ${ADDFLAGS}"
+echo "  == Wino/BLAS threshold for Givaro::Modular<float> == "
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Givaro::Modular<float> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;

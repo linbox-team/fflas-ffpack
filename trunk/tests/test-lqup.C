@@ -37,12 +37,12 @@
 
 
 //#define __LUDIVINE_CUTOFF 1
+#include <givaro/modular-balanced.h>
 #include <iostream>
 #include <iomanip>
+
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "test-utils.h"
 
@@ -914,7 +914,7 @@ int main(int argc, char** argv)
 	FFLAS::parseArguments(argc,argv,as);
 
 	{
-		typedef ModularBalanced<double> Field;
+		typedef Givaro::ModularBalanced<double> Field;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {
@@ -933,27 +933,7 @@ int main(int argc, char** argv)
 	}
 
 	{
-		typedef Modular<double> Field;
-		Field F(p);
-
-		for (int i = 0 ; i < iter ; ++i) {
-			fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-			fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
-
-#if 0 /*  may be bogus */
-			fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-			fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-			// fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-			// fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
-#endif
-
-		}
-	}
-
-	{
-		typedef ModularBalanced<float> Field;
+		typedef Givaro::Modular<double> Field;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {
@@ -973,7 +953,27 @@ int main(int argc, char** argv)
 	}
 
 	{
-		typedef Modular<float> Field;
+		typedef Givaro::ModularBalanced<float> Field;
+		Field F(p);
+
+		for (int i = 0 ; i < iter ; ++i) {
+			fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+
+#if 0 /*  may be bogus */
+			fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
+			// fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
+			// fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+#endif
+
+		}
+	}
+
+	{
+		typedef Givaro::Modular<float> Field;
 		Field F(p);
 
 		for (int i = 0 ; i < iter ; ++i) {

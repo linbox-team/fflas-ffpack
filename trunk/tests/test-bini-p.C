@@ -12,7 +12,7 @@
 
 const int algos = 6 ;
 using FFPACK::Modular;
-using FFPACK::ModularBalanced;
+using Givaro::ModularBalanced;
 
 const size_t selec[] = {
 	0
@@ -229,7 +229,7 @@ namespace FFLAS {
 			    double * C, size_t ldc,
 			    int rec =  0)
 	{
-		FFLAS::DoubleDomain R;
+		Givaro::DoubleDomain R;
 		FFLAS::fgemm(R,
 			     FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 			     m,n,k,
@@ -245,7 +245,7 @@ namespace FFLAS {
 
 	namespace Protected { namespace Rec {
 
-		// Field must be Modular<double>
+		// Field must be Givaro::Modular<double>
 		template<class Field>
 		double *
 		gemm_bini_322_0(const Field & F
@@ -259,7 +259,7 @@ namespace FFLAS {
 				, const double & epsilon
 			       )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// std::cout << rec << ',' <<  M  << std::endl;
@@ -429,7 +429,7 @@ namespace FFLAS {
 
 		}
 
-		// Field must be Modular<double>
+		// Field must be Givaro::Modular<double>
 		template<class Field>
 		double *
 		gemm_bini_322_mem(const Field & F
@@ -443,7 +443,7 @@ namespace FFLAS {
 				  , const double & epsilon
 				 )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// std::cout << rec << ',' <<  M  << std::endl;
@@ -619,7 +619,7 @@ namespace FFLAS {
 
 		}
 
-		// Field must be Modular<double>
+		// Field must be Givaro::Modular<double>
 		template<class Field>
 		double *
 		gemm_bini_223_mem(const Field & F
@@ -633,7 +633,7 @@ namespace FFLAS {
 				  , const double & epsilon
 				 )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// std::cout << rec << ',' <<  M  << std::endl;
@@ -808,7 +808,7 @@ namespace FFLAS {
 
 		}
 
-		// Field must be Modular<double>
+		// Field must be Givaro::Modular<double>
 		template<class Field>
 		double *
 		gemm_bini_322_2(const Field & F
@@ -822,7 +822,7 @@ namespace FFLAS {
 				, const double & epsilon
 			       )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// std::cout << rec << ',' <<  M  << std::endl;
@@ -998,7 +998,7 @@ namespace FFLAS {
 		}
 
 
-		// Field must be Modular<double>
+		// Field must be Givaro::Modular<double>
 		template<class Field>
 		double *
 		gemm_bini_232_2(const Field & F
@@ -1012,7 +1012,7 @@ namespace FFLAS {
 				, const double & epsilon
 			       )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// Field G(p*p);
@@ -1206,7 +1206,7 @@ namespace FFLAS {
 		{
 			if (rec != 0)
 				exit(-1);
-			FFLAS::DoubleDomain R;
+			Givaro::DoubleDomain R;
 			FFLAS::fgemm(R,
 			     FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 			     m,n,k,
@@ -1231,7 +1231,7 @@ namespace FFLAS {
 				, const double & epsilon
 			       )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// Field G(p*p);
@@ -1438,7 +1438,7 @@ namespace FFLAS {
 				  , const double & epsilon
 				 )
 		{
-			FFPACK::UnparametricField<double>   NoField;
+			Givaro::UnparametricRing<double>   NoField;
 			// const double p = (double)F.characteristic();
 			size_t M = (n>m)?std::min(k,m):std::min(k,n);
 			// std::cout << rec << ',' <<  M  << std::endl;
@@ -1861,7 +1861,7 @@ struct changeField {
 
 template<>
 struct changeField<Modular<double> > {
-typedef Modular<float> other;
+typedef Givaro::Modular<float> other;
 };
 
 template<>

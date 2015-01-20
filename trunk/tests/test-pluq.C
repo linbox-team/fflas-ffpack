@@ -28,7 +28,7 @@ using namespace std;
 using namespace FFPACK;
 
 
-typedef Modular<FFPACK::Integer> Field;
+typedef Givaro::Modular<Givaro::Integer> Field;
 
 
 int main(int argc, char** argv){

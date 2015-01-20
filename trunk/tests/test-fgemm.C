@@ -48,28 +48,28 @@
 
 #include <iomanip>
 #include <iostream>
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+#include <givaro/givintprime.h>
 
-//#include "fflas-ffpack/field/modular-positive.h"
-//#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-int32.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 #include "fflas-ffpack/utils/args-parser.h"
 #include "test-utils.h"
-#include "givaro/givintprime.h"
+#include "Matio.h"
 
 
 using namespace std;
 using namespace FFPACK;
+using Givaro::Modular;
+using Givaro::ModularBalanced;
 
-
-//typedef Modular<double> Field;
-//typedef Modular<float> Field;
+//typedef Givaro::Modular<double> Field;
+//typedef Givaro::Modular<float> Field;
 // typedef ModularBalanced<double> Field;
 //typedef ModularBalanced<float> Field;
-//typedef Modular<int> Field;
+//typedef Givaro::Modular<int> Field;
 
 // checks that D = alpha . C + beta . A ^ta * B ^tb
 template<class Field>
@@ -272,18 +272,22 @@ bool launch_MM_dispatch(const Field &F,
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
+#ifdef DEBUG
 		std::cout <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
 			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
 			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
 		if (!F.isZero(beta))
 			cout<<" + "<<beta<<" C";
+#endif
 		ok &= launch_MM<Field>(F,m,n,k,
 				       alpha,beta,
 				       ldc,
 				       lda, ta,
 				       ldb, tb,
 				       iters,nw, par);
+#ifdef DEBUG
 		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
+#endif
 	}
 	return ok ;
 }
@@ -292,6 +296,7 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bo
 	bool ok = true ;
 	unsigned long p=q;
 	int nbit=(int)iters;
+	
 	while (ok &&  nbit){
 		typedef typename  Field::Element Element ;
 		typedef typename Field::RandIter Randiter ;
@@ -318,6 +323,10 @@ bool run_with_field (int q, unsigned long b, size_t n, int nbw, size_t iters, bo
 		}
 		p = (int)std::max((unsigned long) Field::getMinModulus(),(unsigned long)p);
 		Field F((int)p);
+
+#ifdef DEBUG
+		F.write(std::cout) << std::endl;
+#endif
 
 		Randiter R1(F);
 		NonzeroRandIter<Field,Randiter> R(F,R1);
@@ -403,21 +412,13 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		std::cout<<"Modular<double>"<<std::endl;
 		ok &= run_with_field<Modular<double> >(q,b,n,nbw,iters,p);
-		std::cout<<"ModularBalanced<double>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<double> >(q,b,n,nbw,iters,p);
-		std::cout<<"Modular<float>"<<std::endl;
 		ok &= run_with_field<Modular<float> >(q,b,n,nbw,iters,p);
-		std::cout<<"ModularBalanced<float>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,nbw,iters,p);
-		std::cout<<"Modular<int32_t>"<<std::endl;
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,nbw,iters,p);
-		std::cout<<"ModularBalanced<int32_t>"<<std::endl;
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,nbw,iters,p);
-		//std::cout<<"Modular<int64_t>"<<std::endl;
 		//ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p);
-		// std::cout<<"ModularBalanced<int64_t>"<<std::endl;
 		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
 	} while (loop && ok);
 

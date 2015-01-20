@@ -56,7 +56,7 @@ namespace FFLAS { namespace Protected {
 		      typename Field::ConstElement_ptr y, const size_t incy,
 		      typename Field::Element_ptr A, const size_t lda)
 	{
-		FFPACK::Modular<FloatElement> G((FloatElement) F.characteristic());
+		Givaro::Modular<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement alphaf;
 		F.convert (alphaf, alpha);
 
@@ -162,12 +162,12 @@ namespace FFLAS{
 	}
 
 	inline void
-	fger( const DoubleDomain& F, const size_t M, const size_t N,
-	      const DoubleDomain::Element alpha,
-	      const DoubleDomain::ConstElement_ptr x, const size_t incx,
-	      const DoubleDomain::ConstElement_ptr y, const size_t incy,
-	      DoubleDomain::Element_ptr A, const size_t lda,
-	      MMHelper<DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+	fger( const Givaro::DoubleDomain& F, const size_t M, const size_t N,
+	      const Givaro::DoubleDomain::Element alpha,
+	      const Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
+	      const Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy,
+	      Givaro::DoubleDomain::Element_ptr A, const size_t lda,
+	      MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
@@ -177,12 +177,12 @@ namespace FFLAS{
 	}
 
 	inline void
-	fger( const FloatDomain& F, const size_t M, const size_t N,
-	      const FloatDomain::Element alpha,
-	      const FloatDomain::ConstElement_ptr x, const size_t incx,
-	      const FloatDomain::ConstElement_ptr y, const size_t incy,
-	      FloatDomain::Element_ptr A, const size_t lda,
-	      MMHelper<FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+	fger( const Givaro::FloatDomain& F, const size_t M, const size_t N,
+	      const Givaro::FloatDomain::Element alpha,
+	      const Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
+	      const Givaro::FloatDomain::ConstElement_ptr y, const size_t incy,
+	      Givaro::FloatDomain::Element_ptr A, const size_t lda,
+	      MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 

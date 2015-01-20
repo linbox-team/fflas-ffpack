@@ -25,7 +25,8 @@
 
 #include <iostream>
 #include <fstream>
-#include "fflas-ffpack/field/modular-positive.h"
+#include <givaro/modular.h>
+
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -134,12 +135,12 @@ int main (int argc, char ** argv) {
     srand((uint32_t)seed);
     
     if (compare) {
-		FFPACK::Modular<double> F1(q);
-		FFPACK::Modular<float>  F2(q);
-		FFPACK::Modular<int>    F3(q);
-		FFPACK::ModularBalanced<double> F4(q);
-		FFPACK::ModularBalanced<float>  F5(q);
-		FFPACK::ModularBalanced<int>    F6(q);
+		Givaro::Modular<double> F1(q);
+		Givaro::Modular<float>  F2(q);
+		Givaro::Modular<int>    F3(q);
+		Givaro::ModularBalanced<double> F4(q);
+		Givaro::ModularBalanced<float>  F5(q);
+		Givaro::ModularBalanced<int>    F6(q);
 		// ZZ<double> F7;
 		// ZZ<float>  F8;
 		// ZZ<int>    F9;
@@ -156,14 +157,14 @@ int main (int argc, char ** argv) {
 	}
 	else {
 		if (balanced) {
-			if (type == "double")     launch_wino(FFPACK::ModularBalanced<double>(q),n,iter,w,levelasmax,seed,false);
-			else if (type == "float") launch_wino(FFPACK::ModularBalanced<float>(q),n,iter,w,levelasmax,seed,false);
-			else if (type == "int")   launch_wino(FFPACK::ModularBalanced<int>(q),n,iter,w,levelasmax,seed,false);
+			if (type == "double")     launch_wino(Givaro::ModularBalanced<double>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "float") launch_wino(Givaro::ModularBalanced<float>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "int")   launch_wino(Givaro::ModularBalanced<int>(q),n,iter,w,levelasmax,seed,false);
 		}
 		else {
-			if (type == "double")     launch_wino(FFPACK::Modular<double>(q),n,iter,w,levelasmax,seed,false);
-			else if (type == "float") launch_wino(FFPACK::Modular<float>(q),n,iter,w,levelasmax,seed,false);
-			else if (type == "int")   launch_wino(FFPACK::Modular<int>(q),n,iter,w,levelasmax,seed,false);
+			if (type == "double")     launch_wino(Givaro::Modular<double>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "float") launch_wino(Givaro::Modular<float>(q),n,iter,w,levelasmax,seed,false);
+			else if (type == "int")   launch_wino(Givaro::Modular<int>(q),n,iter,w,levelasmax,seed,false);
 		}
 	}
 	

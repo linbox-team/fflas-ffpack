@@ -29,8 +29,6 @@
 #ifndef __FFPACK_pluq_mp_INL
 #define __FFPACK_pluq_mp_INL
 
-#ifdef __FFLASFFPACK_HAVE_INTEGER
-
 #ifdef BENCH_PERF_LQUP_MP
 #define BENCH_PERF_FGEMM_MP
 #endif
@@ -45,10 +43,10 @@ namespace FFPACK {
 
 	template <>
 	inline size_t
-	PLUQ (const Modular<FFPACK::Integer>& F,
+	PLUQ (const Givaro::Modular<Givaro::Integer>& F,
 	      const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
-	      typename FFPACK::Integer* A, const size_t lda,
+	      typename Givaro::Integer* A, const size_t lda,
 	      size_t*P, size_t *Q)
 	{
 
@@ -57,7 +55,7 @@ namespace FFPACK {
 		FFLAS::Timer chrono;
 		chrono.start(); 
 #endif
-		FFPACK::Integer p;
+		Givaro::Integer p;
 		F.cardinality(p);
 		size_t logp=p.bitsize();
 		size_t K = std::max(M,N);
@@ -68,7 +66,7 @@ namespace FFPACK {
 		size_t prime_bitsize= (53-lk)>>1;	
 	
 		// construct rns basis
-		FFPACK::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
+		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
 		size_t n_pr =maxC.bitsize()/prime_bitsize;				
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
 				
@@ -130,6 +128,5 @@ namespace FFPACK {
 
 } // namespace FFPACK
 
-#endif //__FFLASFFPACK_HAVE_INTEGER
-
 #endif 
+

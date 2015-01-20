@@ -74,11 +74,11 @@ using namespace std;
 
 using namespace FFPACK;
 
-typedef Modular<double> Field;
-//typedef Modular<float> Field;
+typedef Givaro::Modular<double> Field;
+//typedef Givaro::Modular<float> Field;
 //typedef ModularBalanced<double> Field;
 //typedef ModularBalanced<float> Field;
-//typedef Modular<int> Field;
+//typedef Givaro::Modular<int> Field;
 
 BEGIN_PARALLEL_MAIN(int argc, char** argv)
 {

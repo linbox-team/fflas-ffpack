@@ -49,10 +49,10 @@ using namespace std;
 
 //typedef ModularBalanced<double> Field;
 //typedef ModularBalanced<float> Field;
-//typedef Modular<double> Field;
-//typedef Modular<float> Field;
-//typedef FFPACK:: Modular<int> Field;
-typedef FFPACK:: Modular<double> Field;
+//typedef Givaro::Modular<double> Field;
+//typedef Givaro::Modular<float> Field;
+//typedef Givaro::Modular<int> Field;
+typedef Givaro::Modular<double> Field;
 
 typedef vector<Field::Element> Polynomial;
 

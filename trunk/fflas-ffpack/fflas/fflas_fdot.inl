@@ -55,20 +55,20 @@ namespace FFLAS {
 	}
 
 	template<>
-	inline DoubleDomain::Element
-	fdot( const DoubleDomain& , const size_t N,
-	      DoubleDomain::ConstElement_ptr x, const size_t incx,
-	      DoubleDomain::ConstElement_ptr y, const size_t incy )
+	inline Givaro::DoubleDomain::Element
+	fdot( const Givaro::DoubleDomain& , const size_t N,
+	      Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
+	      Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy )
 	{
 
 		return cblas_ddot( (int)N, x, (int)incx, y, (int)incy );
 	}
 
 	template<>
-	inline FloatDomain::Element
-	fdot( const FloatDomain& , const size_t N,
-	      FloatDomain::ConstElement_ptr x, const size_t incx,
-	      FloatDomain::ConstElement_ptr y, const size_t incy )
+	inline Givaro::FloatDomain::Element
+	fdot( const Givaro::FloatDomain& , const size_t N,
+	      Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
+	      Givaro::FloatDomain::ConstElement_ptr y, const size_t incy )
 	{
 
 		return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );
