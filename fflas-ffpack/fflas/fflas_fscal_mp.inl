@@ -30,8 +30,6 @@
 #ifndef __FFLASFFPACK_fscal_mp_INL
 #define __FFLASFFPACK_fscal_mp_INL
 
-// activate only if FFLAS-FFPACK haves multiprecision integer
-#ifdef __FFLASFFPACK_HAVE_INTEGER
 #include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
 
@@ -103,7 +101,6 @@ namespace FFLAS {
 
 } //end of namespace FFLAS
 
-#endif // __FFLASFFPACK_HAVE_INTEGER
-
 
 #endif 
+

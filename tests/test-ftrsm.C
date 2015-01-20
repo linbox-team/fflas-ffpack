@@ -42,20 +42,22 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "time.h"
 #include "fflas-ffpack/utils/args-parser.h"
+
+#include "time.h"
 
 
 using namespace std;
 using namespace FFPACK;
 
-//typedef Modular<double> Field;
-typedef ModularBalanced<double> Field;
-//typedef ModularBalanced<float> Field;
+//typedef Givaro::Modular<double> Field;
+typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::ModularBalanced<float> Field;
 
 
 

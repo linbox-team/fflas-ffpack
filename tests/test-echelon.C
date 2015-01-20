@@ -33,15 +33,14 @@
 //#define __LUDIVINE_CUTOFF 1
 #include <iostream>
 #include <iomanip>
-#include "Matio.h"
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-
-#include "test-utils.h"
-
 #include "fflas-ffpack/utils/args-parser.h"
 
+#include "test-utils.h"
+#include "Matio.h"
 
 using namespace FFPACK;
 
@@ -352,7 +351,7 @@ int main(int argc, char** argv){
 	FFLAS::parseArguments(argc,argv,as);
 
 	bool pass = true ;
-	typedef Modular<double> Field;
+	typedef Givaro::Modular<double> Field;
 	Field F(p);
 	pass &= test_colechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
 	pass &= test_colechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);

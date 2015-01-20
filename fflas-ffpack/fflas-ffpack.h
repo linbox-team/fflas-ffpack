@@ -35,6 +35,5 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas/fflas.h"
 #include "ffpack/ffpack.h"
-#include "field/field.h"
 
 #endif // __FFLASFFPACK_fflas_ffpack_H

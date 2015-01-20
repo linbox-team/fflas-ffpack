@@ -172,13 +172,13 @@
 
 #ifdef __FFLAS__DOUBLE
  #define __FFLAS__ELEMENT double
- #define __FFLAS__DOMAIN DoubleDomain
+ #define __FFLAS__DOMAIN Givaro::DoubleDomain
  #define __FFLAS__BLAS_PREFIX d
 #endif
 
 #ifdef __FFLAS__FLOAT
  #define __FFLAS__ELEMENT float
- #define __FFLAS__DOMAIN FloatDomain
+ #define __FFLAS__DOMAIN Givaro::FloatDomain
  #define __FFLAS__BLAS_PREFIX s
 #endif
 

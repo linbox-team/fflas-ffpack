@@ -35,17 +35,12 @@
 #define __FFPACK_rns_double_H
 
 #include <vector>
+#include <givaro/modular-double.h>
+#include <givaro/givinteger.h>
 
 #include "fflas-ffpack/config-blas.h"
-#include "fflas-ffpack/field/integer.h"
-#include "fflas-ffpack/field/modular-double.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/utils/align-allocator.h"
-
-
-// activate only if FFLAS-FFPACK haves multiprecision integer
-#ifdef __FFLASFFPACK_HAVE_INTEGER
-
 #include "fflas-ffpack/field/rns-double-elt.h"
 
 namespace FFPACK {
@@ -54,7 +49,9 @@ namespace FFPACK {
 	 * support sign representation (i.e. the bound must be twice larger then ||A||)
 	 */
 	struct rns_double {
-		typedef Modular<double> ModField;
+		typedef Givaro::Integer integer;
+		typedef Givaro::Modular<double> ModField;
+		
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _basis; // the rns moduli (mi)
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>    _invbasis; // the inverse of rns moduli (1/mi)
 		std::vector<ModField> _field_rns; // the associated prime field for each mi
@@ -162,6 +159,5 @@ namespace FFLAS {
 
 }
 
-#endif // __FFLASFFPACK_HAVE_INTEGER
-
 #endif // __FFPACK_rns_double_H
+

@@ -32,6 +32,11 @@
 #define __FFLASFFPACK_fassign_INL
 
 #include <string.h>
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+#include <givaro/unparametric.h>
+
+#include "fflas-ffpack/utils/debug.h"
 
 namespace FFLAS {
 
@@ -64,7 +69,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const FFPACK:: Modular<float>& F, const size_t N,
+	fassign (const Givaro::Modular<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -76,7 +81,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const FFPACK:: ModularBalanced<float>& F, const size_t N,
+	fassign (const Givaro::ModularBalanced<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -88,7 +93,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const FFPACK:: UnparametricField<float>& F, const size_t N,
+	fassign (const Givaro::UnparametricRing<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -100,7 +105,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const FFPACK:: Modular<double>& F, const size_t N,
+	fassign (const Givaro::Modular<double>& F, const size_t N,
 	       const double * Y, const size_t incY,
 	       double * X, const size_t incX)
 	{
@@ -112,7 +117,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const FFPACK:: ModularBalanced<double>& F, const size_t N,
+	fassign (const Givaro::ModularBalanced<double>& F, const size_t N,
 	       const double * Y, const size_t incY,
 	       double * X, const size_t incX)
 	{
@@ -124,7 +129,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const FFPACK:: UnparametricField<double>& F, const size_t N,
+	fassign (const Givaro::UnparametricRing<double>& F, const size_t N,
 	       const double * Y, const size_t incY ,
 	       double * X, const size_t incX)
 	{

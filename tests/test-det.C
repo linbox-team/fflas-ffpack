@@ -36,14 +36,15 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include <givaro/modular-balanced.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
+#include "Matio.h"
 
-#include "fflas-ffpack/utils/args-parser.h"
 
 // using namespace std;
 template<class Field>
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
 	}
 #endif
 	bool pass = true ;
-	typedef FFPACK:: ModularBalanced<double> Field;
+	typedef Givaro::ModularBalanced<double> Field;
 	Field F(p);
 	pass &= test_det(F,n,iters);
 	// pass &= test_det(F,0,iters);

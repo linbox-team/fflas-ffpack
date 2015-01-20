@@ -28,10 +28,10 @@ using namespace Givaro;
 
 //typedef ModularBalanced<float> Field; 
 //typedef ModularBalanced<double> Field;
-//typedef Modular<double> Field;
-typedef Modular<float> Field;
-//typedef Modular<int> Field; //-> bug avec w>=1 (olddynamic pealing)
-//typedef  Modular<int32_t> Field;
+//typedef Givaro::Modular<double> Field;
+typedef Givaro::Modular<float> Field;
+//typedef Givaro::Modular<int> Field; //-> bug avec w>=1 (olddynamic pealing)
+//typedef Givaro::Modular<int32_t> Field;
 //typedef GFqDom<int32_t> Field;
 
 int main(int argc, char** argv){

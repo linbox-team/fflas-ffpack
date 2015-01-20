@@ -35,10 +35,11 @@
 #ifndef __FFLASFFPACK_fflas_fflas_fgemm_winograd_INL
 #define __FFLASFFPACK_fflas_fflas_fgemm_winograd_INL
 
-#include "fgemm_classical.inl"
 #include <stdint.h>
+#include <givaro/modular.h>
+#include <givaro/unparametric.h>
 
-
+#include "fgemm_classical.inl"
 #include "schedule_winograd.inl"
 #include "schedule_winograd_acc.inl"
 #include "schedule_winograd_acc_ip.inl"
@@ -75,7 +76,7 @@ namespace FFLAS { namespace Protected {
 	}
 
 	template<>
-	inline int WinogradSteps (const FFPACK:: Modular<double> & F, const size_t & m)
+	inline int WinogradSteps (const Givaro::Modular<double> & F, const size_t & m)
 	{
 		int w = 0;
 		size_t mt = m;
@@ -87,7 +88,7 @@ namespace FFLAS { namespace Protected {
 	}
 
 	template<>
-	inline int WinogradSteps (const FFPACK:: ModularBalanced<double> & F, const size_t & m)
+	inline int WinogradSteps (const Givaro::ModularBalanced<double> & F, const size_t & m)
 	{
 		int w = 0;
 		size_t mt = m;
@@ -99,7 +100,7 @@ namespace FFLAS { namespace Protected {
 	}
 
 	template<>
-	inline int WinogradSteps (const FFPACK:: Modular<float> & F, const size_t & m)
+	inline int WinogradSteps (const Givaro::Modular<float> & F, const size_t & m)
 	{
 		int w = 0;
 		size_t mt = m;
@@ -111,7 +112,7 @@ namespace FFLAS { namespace Protected {
 	}
 
 	template<>
-	inline int WinogradSteps (const FFPACK:: ModularBalanced<float> & F, const size_t & m)
+	inline int WinogradSteps (const Givaro::ModularBalanced<float> & F, const size_t & m)
 	{
 		int w = 0;
 		size_t mt = m;

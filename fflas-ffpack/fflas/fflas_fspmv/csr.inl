@@ -132,14 +132,14 @@ namespace FFLAS { namespace csr_details {
 	// Double
 	template<>
 	void fspmv(
-		      const DoubleDomain & F,
+		      const Givaro::DoubleDomain & F,
 		      const index_t m,
 		      const index_t n,
 		      const index_t * st,
 		      const index_t * col,
-		      const typename DoubleDomain::Element_ptr  dat,
-		      const typename DoubleDomain::Element_ptr x ,
-		      typename DoubleDomain::Element_ptr y
+		      const typename Givaro::DoubleDomain::Element_ptr  dat,
+		      const typename Givaro::DoubleDomain::Element_ptr x ,
+		      typename Givaro::DoubleDomain::Element_ptr y
 		      , FieldCategories::UnparametricTag
 		     )
 	{
@@ -164,14 +164,14 @@ namespace FFLAS { namespace csr_details {
 	// Float
 	template<>
 	void fspmv(
-		      const FloatDomain & F,
+		      const Givaro::FloatDomain & F,
 		      const index_t m,
 		      const index_t n,
 		      const index_t * st,
 		      const index_t * col,
-		      const typename FloatDomain::Element_ptr dat,
-		      const typename FloatDomain::Element_ptr x ,
-		      typename FloatDomain::Element_ptr y
+		      const typename Givaro::FloatDomain::Element_ptr dat,
+		      const typename Givaro::FloatDomain::Element_ptr x ,
+		      typename Givaro::FloatDomain::Element_ptr y
 		      , FieldCategories::UnparametricTag
 		     )
 	{
@@ -1471,7 +1471,7 @@ namespace FFLAS { namespace csr_details {
 	// Double
 	template<>
 	void fspmv(
-		      const DoubleDomain & F,
+		      const Givaro::DoubleDomain & F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const index_t m,
 		      const index_t n,
@@ -1496,7 +1496,7 @@ namespace FFLAS { namespace csr_details {
 	// Float
 	template<>
 	void fspmv(
-		      const FloatDomain & F,
+		      const Givaro::FloatDomain & F,
 		      // const FFLAS_TRANSPOSE tA,
 		      const index_t m,
 		      const index_t n,

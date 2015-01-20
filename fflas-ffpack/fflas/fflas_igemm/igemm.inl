@@ -149,7 +149,7 @@ namespace FFLAS { namespace Protected {
 		}
 
 		//! @todo use primitive (no Field()) and  specialise for int64.
-		// fscalin(FFPACK::UnparametricField<int64_t>(),rows,cols,beta,C,ldc);
+		// fscalin(Givaro::UnparametricRing<int64_t>(),rows,cols,beta,C,ldc);
 
 		if (!depth || alpha == 0) {
 			return ;

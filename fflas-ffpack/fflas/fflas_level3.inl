@@ -35,6 +35,8 @@
 #ifndef __FFLASFFPACK_fflas_fflas_level3_INL
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
+#include <givaro/zring.h>
+
 #include "fflas_bounds.inl"
 #include "fflas_helpers.inl"
 
@@ -50,14 +52,14 @@ namespace FFLAS { namespace Protected {
 	//---------------------------------------------------------------------
 	template<class Field>
 	void MatF2MatD_Triangular (const Field& F,
-				   DoubleDomain::Element_ptr S, const size_t lds,
+				   Givaro::DoubleDomain::Element_ptr S, const size_t lds,
 				   typename Field::ConstElement_ptr const E,
 				   const size_t lde,
 				   const size_t m, const size_t n)
 	{
 
 		typename Field::ConstElement_ptr Ei = E;
-		DoubleDomain::Element_ptr Si = S;
+		Givaro::DoubleDomain::Element_ptr Si = S;
 		size_t i=0, j;
 		for ( ; i<m;++i, Ei+=lde, Si+=lds)
 			for ( j=i; j<n;++j)
@@ -72,14 +74,14 @@ namespace FFLAS { namespace Protected {
 	//! @todo do fconvert(...,FFLAS_TRANS,FFLAS_DIAG)
 	template<class Field>
 	void MatF2MatFl_Triangular (const Field& F,
-				    FloatDomain::Element_ptr S, const size_t lds,
+				    Givaro::FloatDomain::Element_ptr S, const size_t lds,
 				    typename Field::ConstElement_ptr const E,
 				    const size_t lde,
 				    const size_t m, const size_t n)
 	{
 
 		typename Field::ConstElement_ptr Ei = E;
-		FloatDomain::Element_ptr Si = S;
+		Givaro::FloatDomain::Element_ptr Si = S;
 		size_t i=0, j;
 		for ( ; i<m;++i, Ei+=lde, Si+=lds)
 			for ( j=i; j<n;++j)

@@ -46,8 +46,8 @@ int main(int argc, char** argv)
 	size_t w = atoi (argv[3]);
 	size_t iter = atoi(argv[4]);
 
-//	typedef Modular<float> Field;
-//	typedef Modular<double> Field;
+//	typedef Givaro::Modular<float> Field;
+//	typedef Givaro::Modular<double> Field;
 //	typedef ModularBalanced<double> Field;
       typedef ModularBalanced<float> Field;
 	typedef Field::Element Element;

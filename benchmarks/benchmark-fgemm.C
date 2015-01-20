@@ -22,24 +22,27 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-#define __FFLASFFPACK_USE_OPENMP
 
-#define __FFLASFFPACK_USE_DATAFLOW
-
+// Please do not commit with any of these defines on - AB 2015-01-12
+//#define __FFLASFFPACK_USE_OPENMP 
+//#define __FFLASFFPACK_USE_DATAFLOW
 //#define WINO_PARALLEL_TMPS
 
 #include <iostream>
+#include <givaro/modular-balanced.h>
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
+
 #include "tests/test-utils.h"
+
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include "libkomp.h"
 #endif
+
 using namespace std;
 
 #ifdef __FFLASFFPACK_USE_DATAFLOW
@@ -111,8 +114,8 @@ int main(int argc, char** argv) {
 	FFLAS::parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-  typedef FFPACK::ModularBalanced<double> Field;
-//  typedef FFPACK::ModularBalanced<float> Field;
+  typedef Givaro::ModularBalanced<double> Field;
+//  typedef Givaro::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
   Field F(q);

@@ -51,7 +51,7 @@ namespace FFPACK {
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t l=0;
-				size_t maxs=min(k,(Aiter[j+i*lda].size())<<2);
+				size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]=  m0_ptr[l];
@@ -104,7 +104,7 @@ namespace FFPACK {
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t l=0;
-				size_t maxs=min(k,(Aiter[j+i*lda].size())<<2);
+				size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]=  m0_ptr[l];
@@ -160,7 +160,7 @@ namespace FFPACK {
 		integer* Aiter= A;
 		size_t k=_ldm;
 		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
-		vector<uint16_t> A0(k4<<2,0),A1(k4<<2,0),A2(k4<<2,0),A3(k4<<2,0);
+		std::vector<uint16_t> A0(k4<<2,0),A1(k4<<2,0),A2(k4<<2,0),A3(k4<<2,0);
 		integer a0,a1,a2,a3,res;
 		mpz_t *m0,*m1,*m2,*m3;
 		m0= reinterpret_cast<mpz_t*>(&a0);
@@ -248,7 +248,7 @@ namespace FFPACK {
 		integer* Aiter= A;
 		size_t k=_ldm;
 		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
-		vector<uint16_t> A0(k4<<2,0),A1(k4<<2,0),A2(k4<<2,0),A3(k4<<2,0);
+		std::vector<uint16_t> A0(k4<<2,0),A1(k4<<2,0),A2(k4<<2,0),A3(k4<<2,0);
 		integer a0,a1,a2,a3,res;
 		mpz_t *m0,*m1,*m2,*m3;
 		m0= reinterpret_cast<mpz_t*>(&a0);

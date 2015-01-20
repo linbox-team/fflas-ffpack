@@ -29,16 +29,19 @@
 
 // #define SIMD_INT
 
+#include <typeinfo>
+#include <givaro/modular-balanced.h>
+#include <givaro/unparametric.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/utils/args-parser.h"
+
+#include "Matio.h"
 #include "test-utils.h"
 #include "assert.h"
-#include "fflas-ffpack/utils/args-parser.h"
-#include <typeinfo>
 
-// using namespace FFPACK;
 template<class Field>
 bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 {
@@ -56,9 +59,9 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
-		RandomMatrix(F,A,m,k,n);
-		RandomMatrix(F,B,m,k,n);
-		RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,A,m,k,n);
+		FFPACK::RandomMatrix(F,B,m,k,n);
+		FFPACK::RandomMatrix(F,C,m,k,n);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -110,8 +113,8 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
-		RandomMatrix(F,A,m,k,n);
-		RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,A,m,k,n);
+		FFPACK::RandomMatrix(F,C,m,k,n);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -164,9 +167,9 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
-		RandomMatrix(F,A,m,k,n);
-		RandomMatrix(F,B,m,k,n);
-		RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,A,m,k,n);
+		FFPACK::RandomMatrix(F,B,m,k,n);
+		FFPACK::RandomMatrix(F,C,m,k,n);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -218,8 +221,8 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
-		RandomMatrix(F,A,m,k,n);
-		RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,A,m,k,n);
+		FFPACK::RandomMatrix(F,C,m,k,n);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -290,208 +293,208 @@ int main(int ac, char **av) {
 	bool pass  = true ;
 	{ /*  fadd  */
 		{
-			FFPACK:: Modular<float> F(p) ;
+			Givaro::Modular<float> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<float> F(p) ;
+			Givaro::ModularBalanced<float> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<double> F(p) ;
+			Givaro::Modular<double> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<double> F(p) ;
+			Givaro::ModularBalanced<double> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int64_t> F(p) ;
+			Givaro::Modular<int64_t> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int64_t> F(p) ;
+			Givaro::ModularBalanced<int64_t> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 #if 1
 		{
-			FFPACK:: UnparametricField<float> F ;
+			Givaro::UnparametricRing<float> F ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<double> F ;
+			Givaro::UnparametricRing<double> F ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int32_t> F;
+			Givaro::UnparametricRing<int32_t> F;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int64_t> F ;
+			Givaro::UnparametricRing<int64_t> F ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 #endif
 	}
 	{ /*  faddin  */
 		{
-			FFPACK:: Modular<float> F(p) ;
+			Givaro::Modular<float> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<float> F(p) ;
+			Givaro::ModularBalanced<float> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<double> F(p) ;
+			Givaro::Modular<double> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<double> F(p) ;
+			Givaro::ModularBalanced<double> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int64_t> F(p) ;
+			Givaro::Modular<int64_t> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int64_t> F(p) ;
+			Givaro::ModularBalanced<int64_t> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 #if 1
 		{
-			FFPACK:: UnparametricField<float> F ;
+			Givaro::UnparametricRing<float> F ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<double> F ;
+			Givaro::UnparametricRing<double> F ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int32_t> F;
+			Givaro::UnparametricRing<int32_t> F;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int64_t> F ;
+			Givaro::UnparametricRing<int64_t> F ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 #endif
 	}
 	{ /*  fsub */
 		{
-			FFPACK:: Modular<float> F(p) ;
+			Givaro::Modular<float> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<float> F(p) ;
+			Givaro::ModularBalanced<float> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<double> F(p) ;
+			Givaro::Modular<double> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<double> F(p) ;
+			Givaro::ModularBalanced<double> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int64_t> F(p) ;
+			Givaro::Modular<int64_t> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int64_t> F(p) ;
+			Givaro::ModularBalanced<int64_t> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 #if 1
 		{
-			FFPACK:: UnparametricField<float> F ;
+			Givaro::UnparametricRing<float> F ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<double> F ;
+			Givaro::UnparametricRing<double> F ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int32_t> F;
+			Givaro::UnparametricRing<int32_t> F;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int64_t> F ;
+			Givaro::UnparametricRing<int64_t> F ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 #endif
 	}
 	{ /*  fsubin */
 		{
-			FFPACK:: Modular<float> F(p) ;
+			Givaro::Modular<float> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<float> F(p) ;
+			Givaro::ModularBalanced<float> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<double> F(p) ;
+			Givaro::Modular<double> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<double> F(p) ;
+			Givaro::ModularBalanced<double> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: Modular<int64_t> F(p) ;
+			Givaro::Modular<int64_t> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: ModularBalanced<int64_t> F(p) ;
+			Givaro::ModularBalanced<int64_t> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 #if 1
 		{
-			FFPACK:: UnparametricField<float> F ;
+			Givaro::UnparametricRing<float> F ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<double> F ;
+			Givaro::UnparametricRing<double> F ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int32_t> F;
+			Givaro::UnparametricRing<int32_t> F;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			FFPACK:: UnparametricField<int64_t> F ;
+			Givaro::UnparametricRing<int64_t> F ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 #endif

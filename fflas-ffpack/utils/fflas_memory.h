@@ -31,8 +31,6 @@
 #define __FFLASFFPACK_memory_H
 
 #include "fflas-ffpack/utils/align-allocator.h"
-#include "fflas-ffpack/field/integer.h"
-
 
 namespace FFLAS{
 
@@ -43,7 +41,7 @@ namespace FFLAS{
 
 	// BB : segfault in Givaro::Integer::logcpy otherwise
 	template<>
-	inline bool alignable<FFPACK::Integer*>() {
+	inline bool alignable<Givaro::Integer*>() {
 		return false;
 	}
 

@@ -37,9 +37,9 @@ using namespace FFPACK;
 #endif
 
 #if(MODULO==1)
-typedef FFPACK::Modular<double> Field;
+typedef Givaro::Modular<double> Field;
 #else
-typedef FFPACK::UnparametricField<double> Field;
+typedef Givaro::UnparametricRing<double> Field;
 #endif
 
 #ifndef DEBUG

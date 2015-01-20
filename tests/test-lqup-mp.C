@@ -360,9 +360,9 @@ int main(int argc, char** argv)
 	FFLAS::parseArguments(argc,argv,as);
 	r=dr*std::min(m,n);
 	
-	typedef Modular<integer> Field;
-	FFPACK::Integer p;
-	FFPACK::Integer::random_exact_2exp(p, b);			
+	typedef Givaro::Modular<integer> Field;
+	Givaro::Integer p;
+	Givaro::Integer::random_exact_2exp(p, b);			
 	nextprime(p,p);
 	Field F(p);
 	cout<<"p:="<<p<<";"<<endl;

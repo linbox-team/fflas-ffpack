@@ -22,20 +22,20 @@
 pkgincludesubdir=$(pkgincludedir)/utils
 
 
-pkgincludesub_HEADERS=       \
-	     align-allocator.h  \
-	     args-parser.h  \
-	     debug.h  \
-	     fflas_memory.h \
-	     flimits.h \
-	     Makefile.am \
-	     Matio.h  \
-	     bit_manipulation.h \
-	     print-utils.h\
-	     timer.h		
+pkgincludesub_HEADERS= 	\
+	align-allocator.h  	\
+	args-parser.h  		\
+	debug.h  			\
+	fflas_memory.h 		\
+	flimits.h 			\
+	Matio.h  			\
+	bit_manipulation.h 	\
+	print-utils.h		\
+	timer.h				\
+	cast.h
 
 ### is this really extra dist ?
 ### this is wrong in a header only lib
-EXTRA_DIST=timer.h
+# EXTRA_DIST=timer.h
 
 

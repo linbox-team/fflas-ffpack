@@ -46,11 +46,11 @@ using namespace std;
 
 using namespace FFPACK;
 
-//typedef Modular<double> Field;
+//typedef Givaro::Modular<double> Field;
 typedef ModularBalanced<double> Field;
-//typedef Modular<float> Field;
+//typedef Givaro::Modular<float> Field;
 //typedef ModularBalanced<float> Field;
-//typedef Modular<int> Field;
+//typedef Givaro::Modular<int> Field;
 //typedef GivaroZpz<int32_t> Field;
 //typedef GivaroGfq Field;
 

@@ -34,15 +34,12 @@
 #ifndef __FFPACK_rns_integer_mod_H
 #define __FFPACK_rns_integer_mod_H
 
-// activate only if FFLAS-FFPACK haves multiprecision integer
-#ifdef __FFLASFFPACK_HAVE_INTEGER
-
 #include <vector>
-using namespace std;
+//using namespace std; // NO WAY! A.B. - 2014-12-18
 
+#include <givaro/modular-integer.h>
+#include <givaro/givinteger.h>
 
-#include "fflas-ffpack/field/integer.h"
-#include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
@@ -64,12 +61,14 @@ namespace FFPACK {
 
 	protected:
 		typedef typename RNS::BasisElement BasisElement;
-		typedef FFPACK::Modular<BasisElement> ModField;
+		typedef Givaro::Modular<BasisElement> ModField;
+		typedef Givaro::Integer integer;
+		
 		integer                              _p;
-		vector<BasisElement>       _Mi_modp_rns;
-		vector<BasisElement>       _iM_modp_rns;
+		std::vector<BasisElement>       _Mi_modp_rns;
+		std::vector<BasisElement>       _iM_modp_rns;
 		const RNS                         *_rns;
-		FFPACK::Modular<FFPACK::Integer>     _F;
+		Givaro::Modular<Givaro::Integer>     _F;
 	public:
 		Element                one, mOne,zero;
 
@@ -148,7 +147,7 @@ namespace FFPACK {
 			}
 			return x;
 		}
-		Element& init(Element& x, const FFPACK::Integer& y) const{
+		Element& init(Element& x, const Givaro::Integer& y) const{
 			init(x);
 			size_t k =(_p.bitsize())/16+((_p.bitsize())%16?1:0);
 			_rns->init(1,1,x._ptr,x._stride, &y,1,k);
@@ -157,7 +156,7 @@ namespace FFPACK {
 
 		// assume this is the mod p operation
 		Element& reduce (Element& x, const Element& y) const{
-			FFPACK::Integer tmp;
+			Givaro::Integer tmp;
 			convert(tmp,y);
 			tmp %= _p;
 			init (x,tmp);
@@ -165,7 +164,7 @@ namespace FFPACK {
 		}
 
 		Element& reduce (Element& x) const{
-			FFPACK::Integer tmp;
+			Givaro::Integer tmp;
 			convert (tmp, x);
 			tmp %= _p;
 			return init (x, tmp);
@@ -175,7 +174,7 @@ namespace FFPACK {
 		}
 
 
-		FFPACK::Integer convert(FFPACK::Integer& x, const Element& y)const {
+		Givaro::Integer convert(Givaro::Integer& x, const Element& y)const {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
 			return x;
 		}
@@ -227,7 +226,7 @@ namespace FFPACK {
 		}
 
 		Element& inv(Element& x, const Element& y) const {
-			FFPACK::Integer tmp;
+			Givaro::Integer tmp;
 			convert(tmp,y);
 			_F.invin(tmp);
 			init(x,tmp);
@@ -240,7 +239,7 @@ namespace FFPACK {
 					return false;
 			return true;
 		}
-		ostream& write(ostream& os, const Element& y) const {
+		std::ostream& write(std::ostream& os, const Element& y) const {
 			os<<"[ "<< (long) (y._ptr)[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) ((y._ptr)[i*y._stride]);
@@ -248,11 +247,11 @@ namespace FFPACK {
 		}
 
 
-		ostream& write(ostream& os) const {
+		std::ostream& write(std::ostream& os) const {
 			os<<"M:=[ "<< (long) _rns->_basis[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) _rns->_basis[i];
-			return os<<" ]"<<endl;
+			return os<<" ]"<<std::endl;
 		}
 
 
@@ -262,7 +261,7 @@ namespace FFPACK {
 #endif
 			size_t _size= _rns->_size;
 			BasisElement *Gamma, *alpha;
-			UnparametricField<BasisElement> D;
+			Givaro::UnparametricRing<BasisElement> D;
 			Gamma = FFLAS::fflas_new(D,_size,n);
 			alpha = FFLAS::fflas_new(D,n,1);
 
@@ -319,7 +318,7 @@ namespace FFPACK {
 				FFLAS::fscal(_rns->_field_rns[i], m, n, _rns->_MMi[i], A+i*rda, lda, Gamma+i*mn,n);
 
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
-			UnparametricField<BasisElement> D;
+			Givaro::UnparametricRing<BasisElement> D;
 		
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
 			
@@ -366,13 +365,13 @@ namespace FFLAS {
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)
 	template<typename RNS>
 	void finit_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
-		   const FFPACK::integer *B, const size_t ldb, typename RNS::Element_ptr A)
+		   const Givaro::Integer *B, const size_t ldb, typename RNS::Element_ptr A)
 	{
 			F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
 	}
 	template<typename RNS>
 	void finit_trans_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
-			     const FFPACK::integer *B, const size_t ldb, typename RNS::Element_ptr A)
+			     const Givaro::Integer *B, const size_t ldb, typename RNS::Element_ptr A)
 	{
 		F.rns().init_transpose(m,n,A._ptr,A._stride, B,ldb,k);
 	}
@@ -380,19 +379,18 @@ namespace FFLAS {
 	// function to convert from RNS to integer (note: this is not the fconvert function from FFLAS, extra alpha)
 	template<typename RNS>
 	void fconvert_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
-		      FFPACK::integer alpha, FFPACK::integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
+		      Givaro::Integer alpha, Givaro::Integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
 	{
 		F.rns().convert(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
 	template<typename RNS>
 	void fconvert_trans_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
-				FFPACK::integer alpha, FFPACK::integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
+				Givaro::Integer alpha, Givaro::Integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
 	{
 		F.rns().convert_transpose(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
 
 } // end of namespace FFLAS
 
-#endif
 #endif
 

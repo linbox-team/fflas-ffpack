@@ -27,6 +27,9 @@
  * ========LICENCE========
  *.
  */
+ 
+#include <givaro/modular.h>
+ 
 #include "fflas-ffpack/fflas-ffpack.h"
 
 /*  #1  */
@@ -35,8 +38,8 @@ bool check1 () ;
 /*  #2  */
 bool check2()
 {
-	FFPACK::Modular<double> F(2);
-	FFPACK::Modular<double>::RandIter R(F);
+	Givaro::Modular<double> F(2);
+	Givaro::Modular<double>::RandIter R(F);
 
 	size_t ok = 0 ;
 	size_t tot = 500 ;
@@ -55,7 +58,7 @@ bool check2()
 /*  #3  */
 bool check3()
 {
-	FFPACK::Modular<double> F(2);
+	Givaro::Modular<double> F(2);
 	double * A = NULL ;
 	double d = FFPACK::Det(F,0,0,A,0);
 	return F.areEqual(d,F.one);
@@ -65,8 +68,8 @@ bool check3()
 /*  #4  */
 bool check4()
 {
-        typedef int32_t Element;
-	FFPACK::Modular<Element> F(2);
+    typedef int32_t Element;
+	Givaro::Modular<Element> F(2);
 	Element * A = NULL ;
 	Element * X = NULL ;
 	int nul;

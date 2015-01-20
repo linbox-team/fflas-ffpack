@@ -88,7 +88,7 @@ int main(int argc, char** argv){
 	if (argc==6)
 		seed=atoi(argv[5]);
 	 
-	typedef FFPACK::UnparametricField<FFPACK::Integer> IntegerDomain; 
+	typedef Givaro::UnparametricRing<Givaro::Integer> IntegerDomain; 
 	
 
 	IntegerDomain Z;

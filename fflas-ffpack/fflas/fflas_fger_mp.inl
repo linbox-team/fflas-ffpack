@@ -33,27 +33,26 @@
 #ifndef __FFPACK_fger_mp_INL
 #define __FFPACK_fger_mp_INL
 
-#ifdef __FFLASFFPACK_HAVE_INTEGER
+#include <givaro/modular-integer.h>
+#include <givaro/unparametric.h>
 
 #include "fflas-ffpack/fflas/fflas_helpers.inl" 
 #include "fflas-ffpack/fflas/fflas_fgemm/fgemm_classical_mp.inl" 
-#include "fflas-ffpack/field/unparametric.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
 
 namespace FFLAS{
 
 	 
 	inline void
-	fger (const FFPACK::Modular<FFPACK::Integer>& F, const size_t M, const size_t N,
-	      const typename FFPACK::Integer alpha,
-	      typename FFPACK::Integer* x, const size_t incx,
-	      typename FFPACK::Integer* y, const size_t incy,
-	      typename FFPACK::Integer* A, const size_t lda,
-	      MMHelper<FFPACK::Modular<FFPACK::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag> & H)
+	fger (const Givaro::Modular<Givaro::Integer>& F, const size_t M, const size_t N,
+	      const typename Givaro::Integer alpha,
+	      typename Givaro::Integer* x, const size_t incx,
+	      typename Givaro::Integer* y, const size_t incy,
+	      typename Givaro::Integer* A, const size_t lda,
+	      MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag> & H)
 	{
-		MMHelper<FFPACK::Modular<FFPACK::Integer>, MMHelperAlgo::Classic, FieldCategories::GenericTag>  H2;
+		MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::GenericTag>  H2;
 		FFLAS::fger(F,M,N,alpha,x,incx,y,incy,A,lda,H2);
 	}
 
@@ -95,4 +94,4 @@ namespace FFLAS{
 } // namespace FFLAS
 
 #endif
-#endif
+

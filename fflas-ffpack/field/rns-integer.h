@@ -33,12 +33,9 @@
 #ifndef __FFPACK_unparametric_rns_integer_H
 #define __FFPACK_unparametric_rns_integer_H
 
-#include "fflas-ffpack/field/integer.h"
+#include <givaro/givinteger.h>
+
 #include "fflas-ffpack/field/rns-double.h"
-
-// activate only if FFLAS-FFPACK haves multiprecision integer
-#ifdef __FFLASFFPACK_HAVE_INTEGER
-
 
 namespace FFPACK {
 
@@ -48,6 +45,7 @@ namespace FFPACK {
 	protected:
 		const RNS *_rns; // the rns structure
 		typedef typename RNS::BasisElement BasisElement;
+		typedef Givaro::Integer integer;
 
 	public:
 		typedef typename RNS::Element                   Element;
@@ -107,7 +105,7 @@ namespace FFPACK {
 			}
 			return x;
 		}
-		Element& init(Element& x, const FFPACK::Integer& y) const{
+		Element& init(Element& x, const Givaro::Integer& y) const{
 			init(x);
 			size_t k =(y.bitsize())/16+((y.bitsize())%16?1:0);
 			_rns->init(1,1,x._ptr,x._stride, &y,1,k);
@@ -117,7 +115,7 @@ namespace FFPACK {
 
 		Element& reduce (Element& x) const {return x;}
 
-		FFPACK::Integer convert(FFPACK::Integer& x, const Element& y)const {
+		Givaro::Integer convert(Givaro::Integer& x, const Element& y)const {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
 			return x;
 		}
@@ -162,22 +160,20 @@ namespace FFLAS {
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)
 	template<typename RNS>
 	void finit_rns(const FFPACK::RNSInteger<RNS> &F, const size_t m, const size_t n, size_t k,
-		   const FFPACK::integer *B, const size_t ldb, typename FFPACK::RNSInteger<RNS>::Element_ptr A)
+		   const Givaro::Integer *B, const size_t ldb, typename FFPACK::RNSInteger<RNS>::Element_ptr A)
 	{
 		F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
 	}
 	// function to convert from RNS to integer (note: this is not the fconvert function from FFLAS, extra alpha)
 	template<typename RNS>
 	void fconvert_rns(const FFPACK::RNSInteger<RNS> &F, const size_t m, const size_t n,
-		      FFPACK::integer alpha, FFPACK::integer *B, const size_t ldb, typename FFPACK::RNSInteger<RNS>::ConstElement_ptr A)
+		      Givaro::Integer alpha, Givaro::Integer *B, const size_t ldb, typename FFPACK::RNSInteger<RNS>::ConstElement_ptr A)
 	{
 		F.rns().convert(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
 
 
 } // end of namespace FFLAS
-
-#endif // __FFLASFFPACK_HAVE_INTEGER
 
 #endif // __FFPACK_unparametric_rns_integer_H
 

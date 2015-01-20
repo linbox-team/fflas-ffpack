@@ -52,7 +52,7 @@ extern "C" {
  
 
 template<typename T>
-void write_matrix(FFPACK::Integer p, size_t m, size_t n, T* C, size_t ldc){
+void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
 	size_t www=(p.bitsize()*log(2.))/log(10.);
 	for (size_t i=0;i<m;++i){ 
@@ -71,7 +71,7 @@ void write_matrix(FFPACK::Integer p, size_t m, size_t n, T* C, size_t ldc){
 }
 
 
-string check_res(size_t m, size_t n, FFPACK::Integer* A, size_t lda, const fmpz_mat_t & B){
+string check_res(size_t m, size_t n, Givaro::Integer* A, size_t lda, const fmpz_mat_t & B){
 	fmpz_t tmp; fmpz_init(tmp);
 	bool allz=true;
 	for (size_t i=0;i<m;i++) 
@@ -81,7 +81,7 @@ string check_res(size_t m, size_t n, FFPACK::Integer* A, size_t lda, const fmpz_
 				{
 					return " (result is wrong)";	
 				}
-			if (A[i*lda+j]!=FFPACK::Integer(0))
+			if (A[i*lda+j]!=Givaro::Integer(0))
 				allz=false;
 		}
 	return (allz ? "(result: allzero) " :" (result is correct)");
@@ -108,10 +108,10 @@ int main(int argc, char** argv){
 	if (argc==6)
 		seed=atoi(argv[5]);
 	 
-	typedef FFPACK::Modular<FFPACK::integer> Field;
+	typedef Givaro::Modular<Givaro::Integer> Field;
 	
-	FFPACK::Integer p;
-	FFPACK::Integer::random_exact_2exp(p, b);			
+	Givaro::Integer p;
+	Givaro::Integer::random_exact_2exp(p, b);			
 	nextprime(p,p);
 	
 	Field F(p);
@@ -137,7 +137,7 @@ int main(int argc, char** argv){
 			Rand.random(C[i*ldc+j]);	 		
 	
 	
-	FFPACK::Integer alpha,beta;
+	Givaro::Integer alpha,beta;
 	alpha=1;
 	beta=0;
 	   

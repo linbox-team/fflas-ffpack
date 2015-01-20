@@ -57,7 +57,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 	}
 
 	template<>
-	FFPACK::Integer monfmod(FFPACK::Integer  A, FFPACK::Integer B) // @bug B is not integer, but uint64_t usually
+	Givaro::Integer monfmod(Givaro::Integer  A, Givaro::Integer B) // @bug B is not integer, but uint64_t usually
 	{
 		return A % B; // B > 0
 	}
@@ -103,7 +103,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 	}
 
 	template<>
-	FFPACK::Integer monrint(FFPACK::Integer A) // @bug B is not integer, but uint64_t usually
+	Givaro::Integer monrint(Givaro::Integer A) // @bug B is not integer, but uint64_t usually
 	{
 		return A ; // B > 0
 	}

@@ -31,36 +31,34 @@
 #ifndef __FFPACK_ftrsm_mp_INL
 #define __FFPACK_ftrsm_mp_INL
 
-#ifdef __FFLASFFPACK_HAVE_INTEGER
-
 #include <math.h>
+#include <givaro/modular-integer.h>
+#include <givaro/givinteger.h>
 
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-integer.h"
-#include "fflas-ffpack/field/integer.h"
 
 namespace FFLAS {
 
 
-	void ftrsm (const FFPACK::Modular<FFPACK::integer> & F,
+	void ftrsm (const Givaro::Modular<Givaro::Integer> & F,
 		    const FFLAS_SIDE Side,
 		    const FFLAS_UPLO Uplo,
 		    const FFLAS_TRANSPOSE TransA,
 		    const FFLAS_DIAG Diag,
 		    const size_t M, const size_t N,
-		    const FFPACK::Integer alpha,
-		    const FFPACK::Integer * A, const size_t lda,
-		    FFPACK::Integer * B, const size_t ldb){
+		    const Givaro::Integer alpha,
+		    const Givaro::Integer * A, const size_t lda,
+		    Givaro::Integer * B, const size_t ldb){
 
 #ifdef BENCH_PERF_TRSM_MP
 		double t_init=0, t_trsm=0, t_mod=0, t_rec=0;
 		FFLAS::Timer chrono;
 		chrono.start();
 #endif
-		FFPACK::Integer p;
+		Givaro::Integer p;
 		F.cardinality(p);
 		size_t logp=p.bitsize();
 		size_t K;
@@ -70,12 +68,12 @@ namespace FFLAS {
 			K=N;
 
 		// compute bit size of feasible prime
-		size_t _k=max(K,logp/20), lk=0;
+		size_t _k=std::max(K,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}
 		size_t prime_bitsize= (53-lk)>>1;
 
 		// construct rns basis
-		FFPACK::Integer maxC= (p-1)*(p-1)*(p-1)*K;
+		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K;
 		size_t n_pr =maxC.bitsize()/prime_bitsize;
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr;
 
@@ -170,7 +168,7 @@ namespace FFLAS {
 		inline size_t DotProdBoundClassic (const FFPACK::RNSIntegerMod<FFPACK::rns_double>& F,
 						   const FFPACK::rns_double_elt& beta)
 		{
-			FFPACK::Integer p,b,M;
+			Givaro::Integer p,b,M;
 			F.cardinality(p);
 			p--;
 			F.convert(b,beta);
@@ -352,4 +350,4 @@ namespace FFLAS {
 } // END OF NAMESPACE FFLAS
 		
 #endif
-#endif
+

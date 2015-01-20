@@ -46,7 +46,7 @@ using namespace std;
 
 
 using namespace FFPACK;
-typedef Modular<double> Field;
+typedef Givaro::Modular<double> Field;
 
 template<class T>
 std::ostream& printvect(std::ostream& o, T* vect, size_t dim)
