@@ -41,7 +41,7 @@
 #include "fflas-ffpack/fflas/fflas.h"
 
 #ifndef FLTTYPE
-#define FLTTYPEGivaro::Modular<double>
+#define FLTTYPE Givaro::Modular<double>
 #endif
 template<class Field>
 bool balanced(const Field & )
@@ -71,7 +71,7 @@ typedef Givaro::Timer TTimer;
 int main () {
 	using namespace std;
 
-	typedef FFPACK:: FLTTYPE Field ;
+	typedef FLTTYPE Field ;
 	Field F(17);
 	typedef Field::Element Element ;
 	size_t n=768, nmax=5000, prec=512, nbest=0, count=0;
