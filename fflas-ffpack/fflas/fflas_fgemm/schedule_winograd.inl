@@ -6,7 +6,7 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  *            BB <bbboyer@ncsu.edu>
- *
+ *            Ziad Sultan <ziad.sultan@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -98,6 +98,7 @@ namespace FFLAS { namespace BLAS3 {
 			ldX2 = cb = nr;
 		}
 
+		//		std::cout<<"mr: "<<mr<<" nr: "<<nr<<" kr: "<<kr<<" x1rd: "<<x1rd<<std::endl;
 		// 11 temporary submatrices are required
 		typename Field::Element_ptr X21 = fflas_new (F, kr, nr);
 		typename Field::Element_ptr X11 = fflas_new (F,mr,x1rd);
@@ -115,12 +116,11 @@ namespace FFLAS { namespace BLAS3 {
 		typename Field::Element_ptr C_11 = fflas_new (F,mr,nr);
 		typename Field::Element_ptr CC_11 = fflas_new (F,mr,nr);
 
-		//		std::cout<<"recursion... "<<std::endl;
 
 		// P1 = alpha . A11 * B11 in X1
 		MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
 		TASK(MODE(READ(A11, B11) WRITE(X15) REFERENCE(F)),
-		     fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X15, nr, H1););
+		     fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X15, x1rd, H1););
 		
 		// T3 = B22 - B12 in X21  and S3 = A11 - A21 in X11
 		TASK(MODE(READ(B22, B12) WRITE(X21) REFERENCE(DF)),
@@ -204,36 +204,36 @@ namespace FFLAS { namespace BLAS3 {
 		// U7 = P5 + U3 in C22    and
 		// U5 = P3 + U4 in C12
 		// BIG TASK with 5 Addin function calls
-		TASK(MODE(READWRITE(X15, C12, C21, C22, CC_11) REFERENCE(DF, F, WH)),
+		TASK(MODE(READWRITE(X15, C12) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax, WH)){
-			     freduce (F, mr, nr, X15, nr);
+			     freduce (F, mr, x1rd, X15, x1rd);
 			     freduce (F, mr, nr, C12, ldc);
 		     }
-		     faddin(DF,mr,nr,X15,nr,C12,ldc);
-		     //);
+		     faddin(DF,mr,nr,X15,x1rd,C12,ldc);
+		     );
 		
-		//		TASK(MODE(READWRITE(C12, C21) REFERENCE(DF, F, WH)),
+		TASK(MODE(READWRITE(C12, C21) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.Outmin, H7.Outmax, WH)){
 			     freduce (F, mr, nr, C12, ldc);
 			     freduce (F, mr, nr, C21, ldc);
 		     }
 		     faddin(DF,mr,nr,C12,ldc,C21,ldc);
-		     //);
-		//		TASK(MODE(READWRITE(C12, C22) REFERENCE(DF, F, WH)),
+		     );
+		TASK(MODE(READWRITE(C12, C22) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.Outmin, H5.Outmax, WH)){
 			     freduce (F, mr, nr, C22, ldc);
 			     freduce (F, mr, nr, C12, ldc);
 		     }
 		     faddin(DF,mr,nr,C22,ldc,C12,ldc);
-		     //);
-		     //		TASK(MODE(READWRITE(C22, C21) REFERENCE(DF, F, WH)),
+		     );
+		TASK(MODE(READWRITE(C22, C21) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.Outmin,H5.Outmax, WH) ){
 			     freduce (F, mr, nr, C21, ldc);
 			     freduce (F, mr, nr, C22, ldc);
 		     }
 		     faddin(DF,mr,nr,C21,ldc,C22,ldc);
-		     //);
-		     //		TASK(MODE(READWRITE(C12, CC_11) REFERENCE(DF, F, WH)),
+		     );
+		TASK(MODE(READWRITE(C12, CC_11) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.Outmin, H3.Outmax, WH) ){
 			     freduce (F, mr, nr, C12, ldc);
 			     freduce (F, mr, nr, CC_11, nr);
@@ -257,10 +257,10 @@ namespace FFLAS { namespace BLAS3 {
 		double U1Min, U1Max;
 		TASK(MODE(READWRITE(C11, X15/*, X14, X13, X12, X11*/) REFERENCE(DF, F, WH)),
 		if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
-			freduce (F, mr, nr, X15, nr);
+			freduce (F, mr, nr, X15, x1rd);
 			freduce (F, mr, nr, C11, ldc);
 		}
-		     faddin(DF,mr,nr,X15,nr,C11,ldc);
+		     faddin(DF,mr,nr,X15,x1rd,C11,ldc);
 		
 		     );
 
@@ -343,6 +343,7 @@ namespace FFLAS { namespace BLAS3 {
 			lb = kr;
 			ldX2 = cb = nr;
 		}
+		//		std::cout<<"mr: "<<mr<<" nr: "<<nr<<" kr: "<<kr<<" x1rd: "<<x1rd<<" ldX1: "<<ldX1<<" ldX2: "<<ldX2<<std::endl;
 		// Two temporary submatrices are required
 		typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
 
