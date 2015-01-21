@@ -88,6 +88,9 @@ int main () {
 
 	for (size_t i=0; i<nmax*nmax;++i)
 		G.random(B[i]);
+
+	for (size_t i=0; i<nmax*nmax;++i)
+		G.random(C[i]);
 	
 
 	std::ofstream outlog;
@@ -109,10 +112,10 @@ int main () {
 		int iter=3;
 		    //warm up computation
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				n, n, n, F.one, A, n, B, n, F.zero, C, n, ClassicH);
+				n, n, n, F.mOne, A, n, B, n, F.one, C, n, ClassicH);
 		chrono.start();
 		for (int i=0;i<iter;i++)
-			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n, n, n, F.one, A, n, B, n, F.zero, C, n, ClassicH);
+			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n, n, n, F.mOne, A, n, B, n, F.one, C, n, ClassicH);
 		chrono.stop();
 		std::cout << std::endl
 			<< "fgemm " << n << "x" << n << ": "
@@ -127,12 +130,12 @@ int main () {
 		basetime= chrono.realtime();
 		    //warm up
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-			     n, n, n, 1., A, n, B, n, 0., C, n, WinogradH);
+			     n, n, n, F.mOne, A, n, B, n, F.one, C, n, WinogradH);
 		chrono.clear();
 		chrono.start();
 		for (int i=0; i<iter; i++)
 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				     n, n, n, 1., A, n, B,n, 0., C, n, WinogradH);
+				     n, n, n, F.mOne, A, n, B,n, F.one, C, n, WinogradH);
 		chrono.stop();
 		std::cout << "1Wino " << n << "x" << n << ": "
 			<< chrono.realtime()/iter << " s, "
