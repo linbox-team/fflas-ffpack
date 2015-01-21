@@ -64,59 +64,21 @@ namespace FFLAS { namespace Protected {
 	 * \param m the common dimension in the product AxB
 	 */
 	template<class Field>
+	inline int WinogradThreshold(const Field& F) {return __FFLASFFPACK_WINOTHRESHOLD;}
+	template<>
+	inline int WinogradThreshold (const Givaro::Modular<float>& F) {return __FFLASFFPACK_WINOTHRESHOLD_FLT;}
+	template<>
+	inline int WinogradThreshold (const Givaro::ModularBalanced<double> & F) {return __FFLASFFPACK_WINOTHRESHOLD_BAL;}
+	template<>
+	inline int WinogradThreshold (const Givaro::ModularBalanced<float> & F) {return __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT;}
+		
+	template<class Field>
 	inline int WinogradSteps (const Field & F, const size_t & m)
 	{
 		int w = 0;
-		size_t mt = m;
-		while ( mt >= WINOTHRESHOLD ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const Givaro::Modular<double> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const Givaro::ModularBalanced<double> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const Givaro::Modular<float> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_FLT ) {
-			++w;
-			mt >>= 1;
-		}
-		return w;
-	}
-
-	template<>
-	inline int WinogradSteps (const Givaro::ModularBalanced<float> & F, const size_t & m)
-	{
-		int w = 0;
-		size_t mt = m;
-		while ( mt >= __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT ) {
+		int th = WinogradThreshold<Field>(F);
+		size_t mt = m>>1;
+		while ( mt >= th) {
 			++w;
 			mt >>= 1;
 		}
@@ -505,19 +467,32 @@ namespace FFLAS{
 
 		if (H.recLevel == 0){
 
-			MMHelper<Field,MMHelperAlgo::Winograd>//,
-				//typename FFLAS::FieldTraits<Field>::value,
-				//FFLAS::ParSeqHelper::Parallel>
-				HC (F, 0,ParSeqHelper::Sequential());
-			
-			
-			//		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
+#ifdef WINO_SEQ
+			MMHelper<Field,MMHelperAlgo::Winograd>
+                                HC (F, -1,ParSeqHelper::Sequential());
+#elif defined CLASSIC_SEQ
+			MMHelper<Field,MMHelperAlgo::Winograd>
+                                HC (F, 0,ParSeqHelper::Sequential());
+#elif defined PFGEMM_WINO_SEQ
+                        MMHelper<Field,MMHelperAlgo::Winograd,
+				 typename FFLAS::FieldTraits<Field>::value,
+				 FFLAS::ParSeqHelper::Parallel>
+                                HC (F, -1, ParSeqHelper::Parallel(32, TWO_D_ADAPT));
+#else
+                        MMHelper<Field,MMHelperAlgo::Winograd,
+                                 typename FFLAS::FieldTraits<Field>::value,
+                                 FFLAS::ParSeqHelper::Parallel>
+                                HC (F, 0, ParSeqHelper::Parallel(32, TWO_D_ADAPT));
+#endif
+                        //              MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
 
-			fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
-			H.Outmax = HC.Outmax;
-			H.Outmin = HC.Outmin;
-			return C;
-		}
+                        fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
+                        H.Outmax = HC.Outmax;
+                        H.Outmin = HC.Outmin;
+                        return C;
+                } 
+
+///
 
 		// Then w >0
 		double Cmin = H.Cmin;
