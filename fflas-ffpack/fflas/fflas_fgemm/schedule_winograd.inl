@@ -211,7 +211,7 @@ namespace FFLAS { namespace BLAS3 {
 		     }
 		     faddin(DF,mr,nr,X15,x1rd,C12,ldc);
 		     );
-		
+		CHECK_DEPENDENCIES;
 		TASK(MODE(READWRITE(C12, C21) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.Outmin, H7.Outmax, WH)){
 			     freduce (F, mr, nr, C12, ldc);
@@ -219,6 +219,7 @@ namespace FFLAS { namespace BLAS3 {
 		     }
 		     faddin(DF,mr,nr,C12,ldc,C21,ldc);
 		     );
+		CHECK_DEPENDENCIES;
 		TASK(MODE(READWRITE(C12, C22) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.Outmin, H5.Outmax, WH)){
 			     freduce (F, mr, nr, C22, ldc);
@@ -226,6 +227,7 @@ namespace FFLAS { namespace BLAS3 {
 		     }
 		     faddin(DF,mr,nr,C22,ldc,C12,ldc);
 		     );
+		CHECK_DEPENDENCIES;
 		TASK(MODE(READWRITE(C22, C21) REFERENCE(DF, F, WH)),
 		     if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.Outmin,H5.Outmax, WH) ){
 			     freduce (F, mr, nr, C21, ldc);
