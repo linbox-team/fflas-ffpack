@@ -110,8 +110,8 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 dnl for Wino threshold for double
-echo "  == Wino/BLAS threshold for ModularBalanced<double> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<double> ${ADDFLAGS}"
+echo "  == Wino/BLAS threshold for Givaro::ModularBalanced<double> == "
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Givaro::ModularBalanced<double> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
@@ -136,8 +136,8 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		])
 
 dnl for WinoThreshold for float
-echo "  == Wino/BLAS threshold for ModularBalanced<float> == "
-CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=ModularBalanced<float> ${ADDFLAGS}"
+echo "  == Wino/BLAS threshold for Givaro::ModularBalanced<float> == "
+CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Givaro::ModularBalanced<float> ${ADDFLAGS}"
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$ d' fflas-ffpack/fflas-ffpack-optimise.h ;
