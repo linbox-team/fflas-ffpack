@@ -221,9 +221,9 @@ namespace FFLAS { namespace Protected {
 			b21 = B+(k-kr)*ldb;
 		}
 
-		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> Hacc(H);
-		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HModd(H);
-		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HNodd(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> Hacc(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HModd(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HNodd(H);
 
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
@@ -367,7 +367,7 @@ namespace FFLAS { namespace Protected {
 
 		
 		
-#define OLD_DYNAMIC_PEELING
+//#define OLD_DYNAMIC_PEELING
 
 }// namespace Protected
 } // FFLAS
