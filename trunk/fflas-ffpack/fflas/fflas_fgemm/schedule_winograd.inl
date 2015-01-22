@@ -253,7 +253,7 @@ namespace FFLAS { namespace BLAS3 {
 		}
 		     fsubin(DF,mr,nr,C_11,nr,C21,ldc););
 		
-		CHECK_DEPENDENCIES;
+		    //CHECK_DEPENDENCIES;
 
 		//  U1 = P2 + P1 in C11
 		double U1Min, U1Max;
