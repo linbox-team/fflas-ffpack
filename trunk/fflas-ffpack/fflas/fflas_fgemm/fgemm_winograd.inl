@@ -225,7 +225,8 @@ namespace FFLAS { namespace Protected {
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HModd(H);
 		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HNodd(H);
 
-		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
+		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax; 
+		Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
 		HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
 		HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
@@ -477,7 +478,7 @@ namespace FFLAS{
                         MMHelper<Field,MMHelperAlgo::Winograd,
 				 typename FFLAS::FieldTraits<Field>::value,
 				 FFLAS::ParSeqHelper::Parallel>
-                                HC (F, -1, ParSeqHelper::Parallel(32, TWO_D_ADAPT));
+                                HC (F, -1, ParSeqHelper::Parallel(PFGEMM_WINO_SEQ, TWO_D_ADAPT));
 #else
                         MMHelper<Field,MMHelperAlgo::Winograd,
                                  typename FFLAS::FieldTraits<Field>::value,
