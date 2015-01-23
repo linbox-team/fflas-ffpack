@@ -28,6 +28,10 @@
 //#define __FFLASFFPACK_USE_DATAFLOW
 //#define WINO_PARALLEL_TMPS
 
+//#define PFGEMM_WINO_SEQ 32
+//#define CLASSIC_SEQ
+//#define WINO_SEQ
+
 #include <iostream>
 #include <givaro/modular-balanced.h>
 
@@ -42,6 +46,7 @@
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include "libkomp.h"
 #endif
+
 
 using namespace std;
 
