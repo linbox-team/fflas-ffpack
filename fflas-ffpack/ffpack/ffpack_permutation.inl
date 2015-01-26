@@ -488,10 +488,12 @@ namespace FFPACK {
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
-#pragma omp task shared (A, P, F) firstprivate(BlockDim)
-				applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P);
+				//#pragma omp task shared (A, P, F) firstprivate(BlockDim)
+				TASK(MODE(REFERENCE(A,P,F) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
+					  applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
 			}
-#pragma omp taskwait
+				     //#pragma omp taskwait
+				     WAIT;
 	}
 
 	template <class Field>
@@ -541,10 +543,12 @@ namespace FFPACK {
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
-#pragma omp task shared (F, A) firstprivate(BlockDim)
-				MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4);
+				//#pragma omp task shared (F, A) firstprivate(BlockDim)
+				TASK(MODE(REFERENCE(F,A) READ(A[BLOCKSIZE*t])),
+				     MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4););
 			}
-#pragma omp taskwait
+		//#pragma omp taskwait
+		WAIT;
 	}
 
 #endif // __FFLASFFPACK_USE_OPENMP

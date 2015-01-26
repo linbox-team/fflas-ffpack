@@ -23,7 +23,7 @@
 * ========LICENCE========
 */
 //#define __FFLASFFPACK_USE_DATAFLOW
-//#define FICTIF
+
 #include <iostream>
 #include <givaro/modular.h>
 
@@ -322,18 +322,18 @@ int main(int argc, char** argv) {
        size_t *P = FFLAS::fflas_new<size_t>(maxP);
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
-       for/*PAR_FOR*/(size_t i=0; i<(size_t)m; ++i)
+       PAR_FOR(size_t i=0; i<(size_t)m; ++i)
 	       for (size_t j=0; j<(size_t)n; ++j)
 		       Acop[i*n+j]= (*(A+i*n+j));
        
        for (size_t i=0;i<=iter;++i){
 	       	       
-	       /*PAR_FOR*/for(size_t j=0;j<maxP;j++)
+	       PAR_FOR(size_t j=0;j<maxP;j++)
 		       P[j]=0;
-	       /*PAR_FOR*/for(size_t j=0;j<maxQ;j++)
+	       PAR_FOR(size_t j=0;j<maxQ;j++)
 		       Q[j]=0;
 	       
-	       /*PAR_FOR*/for(size_t k=0; k<(size_t)m; ++k)
+	       PAR_FOR(size_t k=0; k<(size_t)m; ++k)
 		       for (size_t j=0; j<(size_t)n; ++j)
 			       *(A+k*n+j) = *(Acop+k*n+j) ;  
 	       chrono.clear();
@@ -345,7 +345,7 @@ int main(int argc, char** argv) {
 		       }
 	       else
 		       R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
-	       if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
+	       if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 	       
        }
        std::sort(time, time+iter);
