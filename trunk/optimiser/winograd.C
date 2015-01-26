@@ -33,17 +33,18 @@
 
 #include <iostream>
 #include <fstream>
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "givaro/modular.h"
-#include "givaro/modular-balanced.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 #ifndef FLTTYPE
 #define FLTTYPE Givaro::Modular<double>
 #endif
+
 template<class Field>
 bool balanced(const Field & )
 {
