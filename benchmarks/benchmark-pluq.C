@@ -171,16 +171,20 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	}
 	
 	PAR_REGION{
-#pragma omp task shared(F, P, L)
-		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
-#pragma omp task shared(F, Q, U)
-		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
-#pragma omp taskwait
+		//#pragma omp task shared(F, P, L)
+		TASK(MODE(REFERENCE(F,P,L)),
+		     FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
+		//#pragma omp task shared(F, Q, U)
+		TASK(MODE(REFERENCE(F,Q,U)),
+		     FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
+		WAIT;
+		//#pragma omp taskwait
 		const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
 		typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
-#pragma omp task shared(F, L, U, X)
+		//#pragma omp task shared(F, L, U, X)
+		TASK(MODE(REFERENCE(F,U,L,X)),
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
-			      F.one, L,R, U,n, F.zero, X,n, pWH);
+			      F.one, L,R, U,n, F.zero, X,n, pWH););
 
 	}
 	bool fail = false;
@@ -230,13 +234,14 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 					M=m-p;
 				if(!(pp+BS<n))
 					MM=n-pp;
-				//#pragma omp task 
+				//#pragma omp task
+				TASK(MODE(REFERENCE(G)),
 				{
 					for(size_t j=0; j<M; j++)
 						for(size_t jj=0; jj<MM; jj++)
 							//		C[(p+j)*n+pp+jj]=0;
 							G.random (*(C+(p+j)*n+pp+jj));
-				}
+				});
 			}
 	//		#pragma omp taskwait
 	//	}
