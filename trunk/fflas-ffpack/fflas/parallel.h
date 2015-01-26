@@ -67,18 +67,17 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
-
-// for strategy 1D
-#define TASKFOR1D(Args...) \
-  ForStrategy1D iter(Args);                     \
-  for(iter.begin(); !iter.end(); ++iter)
-
+// for strategy 1D 
+#define FOR1D(iter, m, Helper, I)				\
+  ForStrategy1D iter(m, Helper);				\
+  for(iter.begin(); !iter.end(); ++iter)			\
+    {I;}
 
 // for strategy 2D
-#define TASKFOR2D(iter,Args...)			\
-  ForStrategy2D iter(Args);                     \
-  for(iter.begin(); !iter.end(); ++iter)
-
+#define FOR2D(iter, m, n, Helper, I)			\
+  ForStrategy2D iter(m,n,Helper);				\
+  for(iter.begin(); !iter.end(); ++iter)			\
+    {I;}
 
 #endif // Macro for sequential
 
@@ -89,8 +88,7 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
 
-//#ifdef __FFLASFFPACK_USE_OPENMP4
-#ifdef __FFLASFFPACK_USE_DATAFLOW
+#ifdef __FFLASFFPACK_USE_DATAFLOW // OMP dataflow synch DSL features
 
 //computes dependencies (no wait here)
 #define CHECK_DEPENDENCIES
@@ -103,37 +101,9 @@
 
 
 
-#define DEPENDS(...)\
-  PP_NARG_(__VA_ARGS__,PP_RSEQ_N())(__VA_ARGS__)
-#define PP_NARG_(...)\
-  PP_ARG_N(__VA_ARGS__)
-#define PP_ARG_N(\
-  _1, _2, _3, _4, _5, _6, _7, _8, _9,_10,\
-  _11,_12,_13,_14,_15,_16,_17,_18,_19,_20,\
-  _21,_22,_23,_24,_25,_26,_27,_28,_29,_30,\
-  _31,_32,_33,_34,_35,_36,_37,_38,_39,_40,\
-  _41,_42,_43,_44,_45,_46,_47,_48,_49,_50,\
-  _51,_52,_53,_54,_55,_56,_57,_58,_59,_60,\
-  _61,_62,_63,N,...) N
-#define PP_RSEQ_N()   \
-  DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,   \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_,DEPENDS_, \
-    DEPENDS_NOTHING /*x*/, DEPENDS_NOTHING/*mode*/,DEPENDS_NOTHING/*none*/
-
-#define DEPENDS_NOTHING(...) /* nothing */
-#define DEPENDS_( mode, x, ... )             \
-  depend( mode: __VA_ARGS__ )
-
 #else // OPENMP3.1 (explicit synch mode)
 
 #define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL( omp taskwait )
-
-#define DEPENDS(...) /*NOTHING*/
 
 #define READ(Args...)
 #define WRITE(Args...)
@@ -141,30 +111,28 @@
 
 #endif // end DATAFLOW FLAG
 
+
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
-
 #define GLOBALSHARED(a, Args...) shared(Args)
-
-
-
-#define BARRIER
+#define REFERENCE(Args...) shared(Args)
+#define BARRIER PRAGMA_OMP_TASK_IMPL( omp barrier )
 
 // parallel for
 #define PAR_FOR  PRAGMA_OMP_TASK_IMPL( omp parallel for ) \
   for
 
-// for strategy 1D : TASKFOR1D or FOR1D ??
-#define TASKFOR1D(Args...) \
-  ForStrategy1D iter(Args);                     \
-  for(iter.begin(); !iter.end(); ++iter)
-
+// for strategy 1D 
+#define FOR1D(iter, m, Helper, I)				\
+  ForStrategy1D iter(m, Helper);				\
+  for(iter.begin(); !iter.end(); ++iter)			\
+    {I;}
 
 // for strategy 2D
-#define TASKFOR2D(iter, Args...)                 \
-  ForStrategy2D iter(Args);                     \
-  for(iter.begin(); !iter.end(); ++iter)
-
+#define FOR2D(iter, m, n, Helper, I)			\
+  ForStrategy2D iter(m,n,Helper);				\
+  for(iter.begin(); !iter.end(); ++iter)			\
+    {I;}
 
 // parallel region
 #define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
@@ -177,12 +145,8 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
-
-
-//#define PRAGMA_OMP_TASK_IMPL( F ) _Pragma( #F )
-
 #define PRAGMA_OMP_TASK_IMPL( Args... ) _Pragma( #Args )
-#define SPACE  
+
 #define TASK(M, I) \
   PRAGMA_OMP_TASK_IMPL( omp task M) \
   {I;}
@@ -236,8 +200,59 @@
 
 
 
-// Macro computes number of Arguments
+#endif // KAAPI macros
 
+
+/*********************************************************/
+/******************* TBB(coming sooon) *******************/ 
+/*********************************************************/
+#ifdef __FFLASFFPACK_USE_TBB
+
+#define TASK(M, I) {I;}
+
+#define WAIT
+#define CHECK_DEPENDENCIES
+#define BARRIER
+#define PAR_REGION
+#define PAR_FOR for
+#define NUM_THREADS 1
+#define MAX_THREADS 1
+
+#define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
+#define END_PARALLEL_MAIN(void)  return 0; }
+
+// for strategy 1D 
+#define FOR1D(iter, m, Helper, I)				\
+  ForStrategy1D iter(m, Helper);				\
+  for(iter.begin(); !iter.end(); ++iter)			\
+    {I;}
+
+// for strategy 2D
+#define FOR2D(iter, m, n, Helper, I)			\
+  ForStrategy2D iter(m,n,Helper);				\
+  for(iter.begin(); !iter.end(); ++iter)			\
+    {I;}
+
+// tbb parallel for 1D
+#define PARFOR1D(r, m, Helper, I)					\
+  tbb::parallel_for(							\
+		    tbb::blocked_range<index_t>(0, m, Helper), \
+		    [&](const tbb::blocked_range<index_t> & r){		\
+		      for(index_t i = r.begin(), end = r.end() ; i < end ; ++i) \
+			{I;}});
+
+#endif
+
+
+/*********************************************************/
+/********************* common macros *********************/ 
+/*********************************************************/
+
+#define COMMA ,
+#define MODE(...)  __VA_ARGS__
+#define RETURNPARAM(f, P1, Args...) P1=f(Args)
+
+// Macro computes number of Arguments
 #define NUMARGS(...)				\
   PP_NARG_(__VA_ARGS__,PP_RSEQ_N())
 #define PP_NARG_(...)				\
@@ -258,37 +273,5 @@
     29,28,27,26,25,24,23,22,21,20, \
     19,18,17,16,15,14,13,12,11,10, \
     9,8,7,6,5,4,3,2,1,0
-#endif // KAAPI macros
-
-
-
-
-/*********************************************************/
-/******************* TBB(coming sooon) *******************/ 
-/*********************************************************/
-#ifdef __FFLASFFPACK_USE_TBB
-
-
-
-#endif
-
-// common macros
-
-#define REFERENCE(Args...) shared(Args)
-
-
-
-#define COMMA ,
-#define MODE(...)  __VA_ARGS__
-
-/*
-#define READ(Args...) COMMA Args
-#define WRITE(Args...) COMMA Args
-#define READWRITE(Args...) COMMA Args
-#define NOREAD(void)
-#define NOWRITE(void)
-#define NOREADWRITE(void)
-*/
-#define RETURNPARAM(f, P1, Args...) P1=f(Args)
 
 #endif //__FFLASFFPACK_fflas_parallel_H
