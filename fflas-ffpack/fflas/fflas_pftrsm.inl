@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <09 Dec 14 10:01:06 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Jan 15 17:34:07 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -32,13 +32,6 @@
 #define __FFLASFFPACK_fflas_pftrsm_INL
 
 #define PTRSM_HYBRID_THRESHOLD 256
-#ifdef __FFLASFFPACK_USE_OPENMP
-#include <omp.h>
-#endif
-#ifdef __FFLASFFPACK_USE_KAAPI
-#include <kaapi++>
-#include "fflas-ffpack/fflas/kaapi_routines.inl"
-#endif
 
 #include "fflas-ffpack/fflas/parallel.h"
 
@@ -65,18 +58,17 @@ namespace FFLAS {
 		// const FFLAS::CuttingStrategy method,
                 // const size_t numThreads)
 	{
+        typedef TRSMHelper<StructureHelper::Recursive,ParSeqHelper::Sequential> seqRecHelper;
 		if(Side == FflasRight){
-			ForStrategy1D iter(m, H.parseq);
-			for (iter.begin(); ! iter.end(); ++iter) {
-				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH));
-			}
+            FOR1D(iter, m, H.parseq,
+				seqRecHelper SeqH (H);
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+                  );
 		} else {
-			ForStrategy1D iter(n, H.parseq);
-			for (iter.begin(); ! iter.end(); ++iter) {
-				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> SeqH (H);
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH));
-			}
+            FOR1D(iter, n, H.parseq,
+				seqRecHelper SeqH (H);
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+                  );
 		}
 		WAIT;
 		return B;

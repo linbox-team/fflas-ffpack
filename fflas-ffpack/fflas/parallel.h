@@ -36,6 +36,7 @@
 #elif defined (__FFLASFFPACK_USE_KAAPI)
 #undef __FFLASFFPACK_SEQUENTIAL
 #include "kaapi++"
+#include "fflas-ffpack/fflas/kaapi_routines.inl"
 #endif
 
 #ifdef __FFLASFFPACK_FORCE_SEQ
@@ -60,7 +61,12 @@
 #define CHECK_DEPENDENCIES
 #define BARRIER
 #define PAR_REGION
-#define PAR_FOR for
+
+#define PARFOR1D (iter, m, Helper, I) \
+	for(size_t iter=0; iter<m; ++iter) \
+		{ I; }
+
+    
 #define NUM_THREADS 1
 #define MAX_THREADS 1
 
@@ -69,15 +75,15 @@
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)				\
-  ForStrategy1D iter(m, Helper);				\
-  for(iter.begin(); !iter.end(); ++iter)			\
-    {I;}
+  { ForStrategy1D iter(m, Helper);				\
+  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
+    {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)			\
-  ForStrategy2D iter(m,n,Helper);				\
-  for(iter.begin(); !iter.end(); ++iter)			\
-    {I;}
+  { ForStrategy2D iter(m,n,Helper);				\
+  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
+    {I;} }
 
 #endif // Macro for sequential
 
@@ -119,20 +125,23 @@
 #define BARRIER PRAGMA_OMP_TASK_IMPL( omp barrier )
 
 // parallel for
-#define PAR_FOR  PRAGMA_OMP_TASK_IMPL( omp parallel for ) \
-  for
+#define PARFOR1D(iter, m, Helper, I) \
+  { ForStrategy1D OMPstrategyIterator(m, Helper); \
+PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks()) ) \
+  for(size_t iter=0; iter<m; ++iter) \
+	{ I; } }
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)				\
-  ForStrategy1D iter(m, Helper);				\
-  for(iter.begin(); !iter.end(); ++iter)			\
-    {I;}
+  { ForStrategy1D iter(m, Helper);				\
+  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
+    {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)			\
-  ForStrategy2D iter(m,n,Helper);				\
-  for(iter.begin(); !iter.end(); ++iter)			\
-    {I;}
+  { ForStrategy2D iter(m,n,Helper);				\
+  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
+    {I;} }
 
 // parallel region
 #define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
@@ -176,7 +185,7 @@
   }while(0)
 
 #define PAR_REGION
-#define PAR_FOR for
+#define PARFOR1D for
 
 // Number of threads
 #  define NUM_THREADS kaapi_getconcurrency_cpu()
@@ -214,7 +223,7 @@
 #define CHECK_DEPENDENCIES
 #define BARRIER
 #define PAR_REGION
-#define PAR_FOR for
+#define PARFOR1D for
 #define NUM_THREADS 1
 #define MAX_THREADS 1
 
@@ -223,24 +232,26 @@
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)				\
-  ForStrategy1D iter(m, Helper);				\
-  for(iter.begin(); !iter.end(); ++iter)			\
-    {I;}
+  { ForStrategy1D iter(m, Helper);				\
+  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
+    {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)			\
-  ForStrategy2D iter(m,n,Helper);				\
-  for(iter.begin(); !iter.end(); ++iter)			\
-    {I;}
+  { ForStrategy2D iter(m,n,Helper);				\
+  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
+    {I;} }
 
 // tbb parallel for 1D
-#define PARFOR1D(r, m, Helper, I)					\
+#define PARFOR1D(iter, m, Helper, I)					\
+  { ForStrategy1D TBBstrategyIterator(m, Helper);	
   tbb::parallel_for(							\
-		    tbb::blocked_range<index_t>(0, m, Helper), \
-		    [&](const tbb::blocked_range<index_t> & r){		\
-		      for(index_t i = r.begin(), end = r.end() ; i < end ; ++i) \
-			{I;}});
-
+		    tbb::blocked_range<index_t>(0, m, TBBstrategyIterator.blocksize() ), \
+            [&](const tbb::blocked_range<index_t> &TBBblockrangeIterator) { \
+    		for(index_t i = TBBblockrangeIterator.begin();
+                i < TBBblockrangeIterator.end() ; ++i){ \
+                    {I;} }}); \
+  }
 #endif
 
 

@@ -17,9 +17,8 @@ g++ -D__FFLASFFPACK_HAVE_CBLAS -Wall -g -fopenmp -O3 -march=native -mavx -I/home
 #define __FFLAS__TRSM_READONLY
 #define __PFTRSM_FOR_PLUQ
 #include "fflas-ffpack/utils/Matio.h"
+#include <givaro/modular-balanced.h>
 //#include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -58,33 +57,41 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
   Field::Element * L, *U;
   L = FFLAS::fflas_new<Field::Element>(m*R);
   U = FFLAS::fflas_new<Field::Element>(R*n);
+  ParSeqHelper::Parallel H;
 
-  PAR_FOR (size_t i=0; i<m*R; ++i)
+  PARFOR1D (i,m*R, H,
     F.init(L[i], 0.0);
+            );
+  
 
-  PAR_FOR (size_t i=0; i<m*R; ++i)
+  PARFOR1D (i,m*R, H,
     F.init(U[i], 0.0);
+            );
+  
 
-  PAR_FOR (size_t i=0; i<m*n; ++i)
+  PARFOR1D (i,m*n, H,
     F.init(X[i], 0.0);
-
+            );
+  
 
   Field::Element zero,one;
   F.init(zero,0.0);
   F.init(one,1.0);
-  PAR_FOR (size_t i=0; i<R; ++i){
+  PARFOR1D (i,R, H,
     for (size_t j=0; j<i; ++j)
       F.assign ( *(U + i*n + j), zero);
     for (size_t j=i; j<n; ++j)
       F.assign (*(U + i*n + j), *(A+ i*n+j));
-  }
-  PAR_FOR ( size_t j=0; j<R; ++j ){
+    );
+  
+  PARFOR1D (j,R, H,
     for (size_t i=0; i<=j; ++i )
       F.assign( *(L+i*R+j), zero);
     F.assign(*(L+j*R+j), one);
     for (size_t i=j+1; i<m; i++)
       F.assign( *(L + i*R+j), *(A+i*n+j));
-  }
+  );
+  
 
   FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 
@@ -92,7 +99,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
   FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 		1.0, L,R, U,n, 0.0, X,n);
   bool fail = false;
-  PAR_FOR (size_t i=0; i<m; ++i)
+  PARFOR1D (i,m, H,
     for (size_t j=0; j<n; ++j)
       if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
           std::stringstream errs;
@@ -102,6 +109,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
           std::cerr << errs;
           fail=true;
       }
+            );
   
   if (fail)
       std::cerr<<"FAIL"<<std::endl;
@@ -156,15 +164,19 @@ int main(int argc, char** argv)
 	F.init(beta,0.0);
 	// Field::Element * U = FFLAS::fflas_new<Field::Element>(n*n);
 
+    ParSeqHelper::Parallel H;
+
 	typename Field::Element* Acop;
     if (argc > 5) {
         Acop = read_field(F,argv[5],&m,&n);
     } else {
         Field::RandIter G(F);
         Acop = FFLAS::fflas_new<Field::Element>(m*n);
-        PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+        PARFOR1D(i,(size_t)m, H,
             for (size_t j=0; j<(size_t)n; ++j)
                 G.random (*(Acop+i*n+j));
+        );
+        
     }
     
 // FFLAS::fflas_new<Field::Element>(n*m);
@@ -191,13 +203,16 @@ int main(int argc, char** argv)
     size_t *P = FFLAS::fflas_new<size_t>(maxP);
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
     
-    PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+
+    PARFOR1D(i, (size_t)m, H,
         for (size_t j=0; j<(size_t)n; ++j) {
             *(A+i*n+j) = *(Acop+i*n+j) ;
 #if(DEBUG==1) 
             *(Adebug+i*n+j) = *(Acop+i*n+j) ;
 #endif
         }
+    );
+    
     
     
     for ( int i=0;i<nbf+1;i++){
@@ -206,13 +221,16 @@ int main(int argc, char** argv)
         for (size_t j=0;j<maxQ;j++)
             Q[j]=0;
         
-        PAR_FOR(size_t i=0; i<(size_t)m; ++i)
+        PARFOR1D(i, (size_t)m, H,
             for (size_t j=0; j<(size_t)n; ++j)
-                *(A+i*n+j) = *(Acop+i*n+j) ;
+            *(A+i*n+j) = *(Acop+i*n+j) ;
+        );
+        
+        
 	    
 	    clock_gettime(CLOCK_REALTIME, &t0);
 	    PAR_REGION{
-            R = pPLUQ(F, diag, m, n, A, n, P, Q);// Parallel PLUQ
+            R = pPLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, NUM_THREADS);// Parallel PLUQ
 	    }
 	    clock_gettime(CLOCK_REALTIME, &t1);
 	    delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;

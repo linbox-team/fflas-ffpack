@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <09 Dec 14 10:02:11 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Jan 15 16:18:01 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -88,7 +88,7 @@ namespace FFLAS {
 						
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
 			FOR2D(iter,m,n,H.parseq,
-				  TASK( MODE(READ(A[iter.ibeg*lda],B[iter.jbeg]) REFERENCE(F) READWRITE(C[iter.ibeg*ldc+iter.jbeg])), fgemm( F, ta, tb, iter.iend-iter.ibeg, iter.jend-iter.jbeg, k, alpha, A+iter.ibeg*lda, lda, B+iter.jbeg, ldb, beta, C+iter.ibeg*ldc+iter.jbeg, ldc, SeqH ));
+				  TASK( MODE(READ(A[iter.ibegin()*lda],B[iter.jbegin()]) REFERENCE(F) READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH ));
 					  );
 				
 			
