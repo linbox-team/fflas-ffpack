@@ -89,8 +89,9 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
-		rns_double(const std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>& basis, bool rnsmod=false, long seed=time(NULL))
-		:  _basis(basis), _M(1), _size(basis.size()), _pbits(0)
+		template<typename Vect>
+		rns_double(const Vect& basis, bool rnsmod=false, long seed=time(NULL))
+			:  _basis(basis.begin(),basis.end()), _M(1), _size(basis.size()), _pbits(0)
 		{
 			for(size_t i=0;i<_size;i++){
 				_M*=_basis[i];

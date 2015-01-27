@@ -76,7 +76,6 @@ namespace FFLAS {
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K;
 		size_t n_pr =maxC.bitsize()/prime_bitsize;
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr;
-
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);
 #ifdef BENCH_PERF_TRSM_MP
@@ -102,6 +101,7 @@ namespace FFLAS {
 		t_mod+=chrono.usertime();
 		chrono.clear();chrono.start();
 #endif
+		
 		// call ftrsm in rns
 		//ftrsm(Zp, Side, Uplo, TransA, Diag, M, N, Zp.one, Ap, K, Bp, N);
 		if (Side == FFLAS::FflasLeft)
@@ -112,7 +112,6 @@ namespace FFLAS {
 			else
 				ftrsm(Zp, FFLAS::FflasLeft, FFLAS::FflasUpper, TransA, Diag, N, M, Zp.one, Ap, K, Bp, M);
 		}
-
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_trsm+=chrono.usertime();
