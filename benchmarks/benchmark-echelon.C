@@ -24,14 +24,14 @@
 #include <iostream>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-balanced.h"
+#include <givaro/modular-balanced.h>
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "tests/test-utils.h"
 using namespace std;
 
-typedef FFPACK::ModularBalanced<double> Field;
+typedef Givaro::ModularBalanced<double> Field;
 
 // random generator function:                                    
 ptrdiff_t myrandom (ptrdiff_t i) { return rand()%i;}
@@ -43,13 +43,17 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
 {
 	size_t lda = n;
 	Field::Element *U=new Field::Element[n*n];
+    
+    FFLAS::ParSeqHelper::Parallel H;
 
 	std::vector<size_t> E(r);
-	PAR_FOR(size_t i=0; i<r; ++i) E[i]=i;
+	PARFOR1D(i,r,H, E[i]=i; );
+    
     
 	srand48(commonseed);
 	std::vector<size_t> Z(n);
-	PAR_FOR(size_t i=0; i<n; ++i) Z[i]=i;
+	PARFOR1D(i,n,H, Z[i]=i;);
+    
 	P.resize(r);
 	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
@@ -57,28 +61,31 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
 		Z.erase(Z.begin()+index);
 	}
 
-	PAR_FOR(size_t i=0; i<r; ++i) {
-      		while( F.isZero( G.random(U[ P[i]*lda+P[i] ]) ) ) {}
-		for(size_t j=P[i]+1;j<n;++j)
-			G.random(U[ P[i]*lda+j]);
-	}
+	PARFOR1D(i,r,H,
+             while( F.isZero( G.random(U[ P[i]*lda+P[i] ]) ) ) {}
+             for(size_t j=P[i]+1;j<n;++j)
+             	G.random(U[ P[i]*lda+j]);
+             );
     
-	return U;
+    return U;
 }
 
 typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t m, size_t r, const std::vector<size_t>& P, size_t seed)
 {
+    FFLAS::ParSeqHelper::Parallel H;
+
 	size_t lda = m;
 	size_t taille=m*m;
 	Field::Element * L= new Field::Element[taille];
-	PAR_FOR(size_t i=0;i<taille; ++i) F.init(L[i],F.zero);
+	PARFOR1D(i,taille,H, F.init(L[i],F.zero); );
 	
 	std::vector<size_t> E(r);
-	PAR_FOR(size_t i=0; i<r; ++i) E[i]=i;
+	PARFOR1D(i,r,H, E[i]=i;);
 	
 	srand48(seed);
 	std::vector<size_t> Z(m);
-	PAR_FOR(size_t i=0; i<m; ++i) Z[i]=i;
+	PARFOR1D(i,m,H, Z[i]=i; );
+    
 	std::vector<size_t> Q(r);
 	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
@@ -127,37 +134,36 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
+    FFLAS::ParSeqHelper::Parallel H;
+
 	Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
 	Field::Element * L, *U;
 	L = FFLAS::fflas_new<Field::Element>(m*R);
 	U = FFLAS::fflas_new<Field::Element>(R*n);
 	
-	PAR_FOR (size_t i=0; i<m*R; ++i)
-		F.init(L[i], 0.0);
+	PARFOR1D (i,m*R,H, F.init(L[i], 0.0); );
 	
-	PAR_FOR (size_t i=0; i<n*R; ++i)
-		F.init(U[i], 0.0);
+	PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
 	
-	PAR_FOR (size_t i=0; i<m*n; ++i)
-		F.init(X[i], 0.0);
+	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );
 	
 	
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	PAR_FOR (size_t i=0; i<R; ++i){
-		for (size_t j=0; j<i; ++j)
-			F.assign ( *(U + i*n + j), zero);
-		for (size_t j=i; j<n; ++j)
-			F.assign (*(U + i*n + j), *(A+ i*n+j));
-	}
-	PAR_FOR ( size_t j=0; j<R; ++j ){
-		for (size_t i=0; i<=j; ++i )
-			F.assign( *(L+i*R+j), zero);
-		F.assign(*(L+j*R+j), one);
-    for (size_t i=j+1; i<m; i++)
-	    F.assign( *(L + i*R+j), *(A+i*n+j));
-	}
+	PARFOR1D (i,R,H,
+              for (size_t j=0; j<i; ++j)
+              	F.assign ( *(U + i*n + j), zero);
+              for (size_t j=i; j<n; ++j)
+				F.assign (*(U + i*n + j), *(A+ i*n+j));
+              );
+	PARFOR1D (j,R,H,
+              for (size_t i=0; i<=j; ++i )
+              	F.assign( *(L+i*R+j), zero);
+              F.assign(*(L+j*R+j), one);
+              for (size_t i=j+1; i<m; i++)
+              	F.assign( *(L + i*R+j), *(A+i*n+j));
+              );
 	
 	PAR_REGION{
 #pragma omp task shared(F, P, L)
@@ -173,7 +179,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 
 	}
 	bool fail = false;
-	//  PAR_FOR (size_t i=0; i<m; ++i)
+	//  PARFOR1D (size_t i=0; i<m; ++i)
 	for(size_t i=0; i<m; ++i)
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
@@ -310,20 +316,24 @@ int main(int argc, char** argv) {
        size_t *P = FFLAS::fflas_new<size_t>(maxP);
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
-       PAR_FOR(size_t i=0; i<(size_t)m; ++i)
-	       for (size_t j=0; j<(size_t)n; ++j)
-		       Acop[i*n+j]= (*(A+i*n+j));
+       FFLAS::ParSeqHelper::Parallel H;
+
+       PARFOR1D(i,(size_t)m,H,
+                for (size_t j=0; j<(size_t)n; ++j)
+                	Acop[i*n+j]= (*(A+i*n+j));
+                );
        
        for (size_t i=0;i<=iter;++i){
 	       	       
-	       PAR_FOR(size_t j=0;j<maxP;j++)
-		       P[j]=0;
-	       PAR_FOR(size_t j=0;j<maxQ;j++)
-		       Q[j]=0;
+	       PARFOR1D(j,maxP,H, P[j]=0; );
+           
+	       PARFOR1D(j,maxQ,H, Q[j]=0; );
 	       
-	       PAR_FOR(size_t k=0; k<(size_t)m; ++k)
-		       for (size_t j=0; j<(size_t)n; ++j)
-			       *(A+k*n+j) = *(Acop+k*n+j) ;  
+	       PARFOR1D(k,(size_t)m,H,
+                    for (size_t j=0; j<(size_t)n; ++j)
+                    	*(A+k*n+j) = *(Acop+k*n+j) ;  
+                    );
+           
 	       chrono.clear();
 	       
 	       if (i) chrono.start();

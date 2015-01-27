@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <27 Jan 15 17:34:07 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Jan 15 18:08:21 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -106,7 +106,7 @@ namespace FFLAS {
 				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.iend-iter.ibeg, n, alpha, A, lda, B + iter.ibeg*ldb, ldb, SeqH));
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 			}
 		} else {
 			int nt = H.parseq.numthreads;
@@ -128,7 +128,7 @@ namespace FFLAS {
 				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				    //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.ibeg])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.iend-iter.ibeg, alpha, A , lda, B + iter.ibeg, ldb, SeqH));
+				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 			}
 		}
 		WAIT;

@@ -75,13 +75,13 @@
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)				\
-  { ForStrategy1D iter(m, Helper);				\
+  { FFLAS::ForStrategy1D iter(m, Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)			\
-  { ForStrategy2D iter(m,n,Helper);				\
+  { FFLAS::ForStrategy2D iter(m,n,Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
@@ -126,20 +126,20 @@
 
 // parallel for
 #define PARFOR1D(iter, m, Helper, I) \
-  { ForStrategy1D OMPstrategyIterator(m, Helper); \
+  { FFLAS::ForStrategy1D OMPstrategyIterator(m, Helper); \
 PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks()) ) \
   for(size_t iter=0; iter<m; ++iter) \
 	{ I; } }
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)				\
-  { ForStrategy1D iter(m, Helper);				\
+  { FFLAS::ForStrategy1D iter(m, Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)			\
-  { ForStrategy2D iter(m,n,Helper);				\
+  { FFLAS::ForStrategy2D iter(m,n,Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
@@ -232,19 +232,19 @@ PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)				\
-  { ForStrategy1D iter(m, Helper);				\
+  { FFLAS::ForStrategy1D iter(m, Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)			\
-  { ForStrategy2D iter(m,n,Helper);				\
+  { FFLAS::ForStrategy2D iter(m,n,Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
 // tbb parallel for 1D
 #define PARFOR1D(iter, m, Helper, I)					\
-  { ForStrategy1D TBBstrategyIterator(m, Helper);	
+  { FFLAS::ForStrategy1D TBBstrategyIterator(m, Helper);	
   tbb::parallel_for(							\
 		    tbb::blocked_range<index_t>(0, m, TBBstrategyIterator.blocksize() ), \
             [&](const tbb::blocked_range<index_t> &TBBblockrangeIterator) { \
