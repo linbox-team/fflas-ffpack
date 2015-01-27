@@ -115,9 +115,14 @@ int main(int argc, char** argv) {
       // else{
   A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
   Initialize(A,m/NBK,m,m);
-  PAR_FOR (size_t i = 0; i< (size_t)m; ++i)
-	  for (size_t j = 0; j< (size_t)m; ++j)
-		  G.random(*(A+i*m+j));
+
+  FFLAS::ParSeqHelper::Parallel H;
+
+  PARFOR1D (i,(size_t)m, H,
+            for (size_t j = 0; j< (size_t)m; ++j)
+            	G.random(*(A+i*m+j));
+            );
+  
       //}
   
       // if (argc == 7){
@@ -126,9 +131,11 @@ int main(int argc, char** argv) {
 	  // else{
   B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
   Initialize(B,m/NBK,m,n);
-  PAR_FOR (size_t i=0 ; i< (size_t)m; ++i)
-	  for (size_t j=0 ; j< (size_t)n; ++j)
-		  G.random(*(A+i*m+j));
+  PARFOR1D (i,(size_t)m,H,
+            for (size_t j=0 ; j< (size_t)n; ++j)
+            	G.random(*(A+i*m+j));
+            );
+  
       //}
   for (size_t k=0;k<(size_t)m;++k)
 	  while (F.isZero( G.random(*(A+k*(m+1)))));

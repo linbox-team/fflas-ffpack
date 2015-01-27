@@ -134,17 +134,24 @@ int main(int argc, char** argv) {
   A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(A,m/NBK,m,k);
+
+  FFLAS::ParSeqHelper::Parallel H;
+
 //#pragma omp for
-  PAR_FOR (size_t i=0; i<(size_t)m; ++i)
-	  for (size_t j=0; j<(size_t)k; ++j)
-		  G.random (*(A+i*k+j));
+  PARFOR1D (i,(size_t)m,H,
+           for (size_t j=0; j<(size_t)k; ++j)
+           		G.random (*(A+i*k+j));
+           );
+  
   B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
-  PAR_FOR (size_t i=0; i<(size_t)k; ++i)
-	  for (size_t j=0; j<(size_t)n; ++j)
-		  G.random(*(B+i*n+j));
+  PARFOR1D (i,(size_t)k,H,
+            for (size_t j=0; j<(size_t)n; ++j)
+            	G.random(*(B+i*n+j));
+            );
+  
   C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(C,m/NBK,m,n);
