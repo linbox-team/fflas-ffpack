@@ -106,7 +106,6 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	t.stop();
 	time+=t.usertime();
 	
-	
 	Element invalpha;
 	F.init(invalpha);
 	F.inv(invalpha, alpha);	
@@ -167,6 +166,7 @@ int main(int argc, char** argv)
 	nextprime(p,p);
 	Field F((Field::Element)p);
 	F.write(cout) << endl;
+	F.cardinality(p);
 	Field::Element alpha;
 	F.init (alpha, (Field::Element)Givaro::Integer(s)); 
 

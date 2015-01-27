@@ -351,13 +351,13 @@ void operator () (const Field& F, const size_t M, const size_t N,
 #if defined(__FFLAS_MULTIPRECISION) && defined(BENCH_PERF_FTRSM_MP)
 	FFLAS::Timer chrono;chrono.start();
 #endif
+
 	
 	if (!M || !N ) return;
 
 	//static __FFLAS__DOMAIN D(F);
 	__FFLAS__DOMAIN D(F);
-	size_t nblas = TRSMBound<Field> (F);
-
+	size_t nblas = TRSMBound<Field> (F);	
 	size_t ndel = DotProdBoundClassic (F, F.one);
         ndel = (ndel / nblas)*nblas;
 	size_t nsplit = ndel;
@@ -383,6 +383,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
 			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb, nblas, nrestsplit / nblas, H);
+
 #if defined(__FFLAS_MULTIPRECISION) && defined(BENCH_PERF_FTRSM_MP)
 	chrono.stop();
 	F.t_trsm+=chrono.usertime();
