@@ -953,7 +953,8 @@ int main(int argc, char** argv)
 		}
 	}
 
-	{
+	if (p<Givaro::ModularBalanced<float>::getMaxModulus()){
+		{
 		typedef Givaro::ModularBalanced<float> Field;
 		Field F(p);
 
@@ -992,6 +993,7 @@ int main(int argc, char** argv)
 
 
 		}
+	}
 	}
 
 	return fail ;
