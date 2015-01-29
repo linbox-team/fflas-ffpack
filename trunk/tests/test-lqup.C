@@ -906,6 +906,7 @@ int main(int argc, char** argv)
 		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
 		{ 'n', "-n N", "Set the number of cols in the matrix.", TYPE_INT , &n },
 		{ 'm', "-m N", "Set the number of rows in the matrix.", TYPE_INT , &m },
+		{ 'r', "-r R", "Set the rank.", TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
 		// { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
