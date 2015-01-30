@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* ffpack/ffpack_ludivine.inl
  * Copyright (C) 2005 Clement Pernet
  *
@@ -453,7 +453,7 @@ namespace FFPACK {
 					if (colDim == 1){
 						//while (ip<M && !F.isUnit(*(A+ip*lda)))
 						while (ip<rowDim && F.isZero(*(A + ip*incRow))){
-							Q[ip]=ip;
+								//	Q[ip]=ip;
 							ip++;
 						}
 						if (ip == rowDim) {
@@ -467,10 +467,11 @@ namespace FFPACK {
 								if (++ip < rowDim)
 									FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
 								elt tmp;
-								F.init(tmp);
-								F.assign(tmp, *(A+oldip*incRow));
-								F.assign( *(A+oldip*incRow), *A);
-								F.assign( *A, tmp);
+//								F.init(tmp);
+//								F.assign(tmp, *(A+oldip*incRow));
+//								F.assign( *(A+oldip*incRow), *A);
+								F.assign( *A,*(A+oldip*incRow));
+								F.assign( *(A+oldip*incRow), F.zero);
 							}
 							*Q=oldip;
 
@@ -495,10 +496,10 @@ namespace FFPACK {
 					// Normalisation of the row
 					FFLAS::fscalin(F,colDim-1,invpiv,A+incCol,incCol);
 				}
-				else  {
-					if ( colDim==1 )
-						if (++ip < rowDim)
+				else if ( (colDim==1) &&(Diag==FFLAS::FflasNonUnit) ){
+						if (++ip < rowDim){
 							FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
+						}
 				}
 				return 1;
 			}
