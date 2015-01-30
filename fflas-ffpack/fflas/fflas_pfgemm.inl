@@ -59,7 +59,7 @@ namespace FFLAS {
 		const size_t m,
 		const size_t n,
 		const size_t k,
-		const typename Field::Element alpha,
+		const typename Field::Element alpha, 
 		typename Field::ConstElement_ptr A, const size_t lda,
 		typename Field::ConstElement_ptr B, const size_t ldb,
 		const typename Field::Element beta,

@@ -213,7 +213,7 @@ namespace FFPACK {
 				Element * vtemp_it = vtemp +rank;
 				for (size_t i=0; i<M; ++i)
 					if (!pivotRows[i])
-                        Fi.assign (*(vtemp_it++), A2[i*lda]);
+						Fi.assign (*(vtemp_it++), A2[i*lda]);
 				    // Left looking update
 				ftrsv (Fi, FFLAS::FflasLower, FFLAS::FflasNoTrans,
 				       (Diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit:FFLAS::FflasUnit,

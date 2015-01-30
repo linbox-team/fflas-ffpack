@@ -37,7 +37,7 @@ using namespace std;
 
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/field/modular-integer.h"
+#include "givaro/modular-integer.h"
 
 
 #ifdef	BENCH_FLINT

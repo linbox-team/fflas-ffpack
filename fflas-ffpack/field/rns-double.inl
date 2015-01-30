@@ -146,6 +146,14 @@ namespace FFPACK {
 	void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 				 const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
+#ifdef CHECK_RNS
+		integer* Acopy=new integer[m*n];
+		for(size_t i=0;i<m;i++)
+			for(size_t j=0;j<n;j++)
+				Acopy[i*n+j]=A[i*lda+j];
+
+#endif
+
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
@@ -223,7 +231,9 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]% (long) _basis[k]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);
+					long _p =(long) _basis[k];
+					integer curr=A[i*lda+j] - gamma*Acopy[i*n+j];
+					ok&= ( curr% _p +(curr%_p<0?_p:0) == (long) Arns[i*n+j+k*rda]);
 					//std::cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
