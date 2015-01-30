@@ -66,10 +66,10 @@ namespace FFPACK {
 
 	template<class T >
 	T * RandomMatrix(const Givaro::UnparametricRing< T > & F,
-					       T * A,
-					       size_t m, size_t n, size_t lda)
+			 T * A,
+			 size_t m, size_t n, size_t lda)
 	{
-	Givaro::Modular<T> G(101);
+		Givaro::Modular<T> G(101);
 		RandomMatrix(G,A,m,n,lda);
 		return A;
 

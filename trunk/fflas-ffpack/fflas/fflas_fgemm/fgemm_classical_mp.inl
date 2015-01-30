@@ -49,9 +49,16 @@ namespace FFLAS {
 		 typename ParSeqTrait>
 	struct MMHelper<Field, AlgoTrait,FieldCategories::MultiPrecisionTag, ParSeqTrait> {
 		Givaro::Integer normA,normB;
-		MMHelper() : normA(0), normB(0) {}
-		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax) {}
-		MMHelper(const Field& F, size_t m=0, size_t n=0, size_t k=0, ParSeqTrait PS=ParSeqTrait()) {F.characteristic(normA);F.characteristic(normB);}
+		int recLevel;
+		ParSeqTrait parseq;
+		MMHelper() : normA(0), normB(0), recLevel(-1) {}
+		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
+		MMHelper(const Field& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
+			: recLevel(-1), parseq(PS)
+		{F.characteristic(normA);F.characteristic(normB);}
+		MMHelper(const Field& F, size_t wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
+		{F.characteristic(normA);F.characteristic(normB);}
+		void setNorm(Givaro::Integer p){normA=normB=p;}
 	};
 
 	/***********************************
@@ -69,10 +76,12 @@ namespace FFLAS {
 								     typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
 								     const typename FFPACK::RNSInteger<RNS>::Element beta,
 								     typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
-								     MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
+								     MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Winograd> & H)
 	{		
+
 		// compute each fgemm componentwise
 		for(size_t i=0;i<F.size();i++){
+			MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> H2(F.rns()._field_rns[i], H.recLevel, H.parseq);
 			FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,//FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 				     m, n, k, alpha._ptr[i*alpha._stride],
 				     Ad._ptr+i*Ad._stride, lda, 
@@ -82,7 +91,7 @@ namespace FFLAS {
 		}
 		
 		return Cd;
-	}
+	} 
 
 
 	// fgemm for UnparametricField<Integer> with Winograd Helper (bb: file is classical ??)
@@ -95,8 +104,12 @@ namespace FFLAS {
 				       const Givaro::Integer* B, const size_t ldb,
 				       Givaro::Integer beta,
 				       Givaro::Integer* C, const size_t ldc,
-				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>,MMHelperAlgo::Winograd> & H)
 	{
+		if (alpha == 0){
+			fscalin(F,m,n,beta,C,ldc);
+			return C;
+		}
 		// compute bit size of feasible prime for FFLAS
 		size_t _k=k,lk=0;
 		while ( _k ) {_k>>=1; ++lk;}
@@ -132,24 +145,24 @@ namespace FFLAS {
 		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
 		RnsDomain Zrns(RNS);
 		
-		size_t Acold,Bcold;
-		if (ta == FFLAS::FflasNoTrans){  Acold = k; }
-		else { Acold = m;}
-		if (tb == FFLAS::FflasNoTrans){  Bcold = n; }
-		else { Bcold = k;}
+		size_t Acold,Arowd,Bcold,Browd;
+		if (ta == FFLAS::FflasNoTrans){Arowd=m; Acold = k; }
+		else { Arowd=k; Acold = m;}
+		if (tb == FFLAS::FflasNoTrans){Browd=k; Bcold = n; }
+		else { Browd=n; Bcold = k;}
 		
 		// allocate data for RNS representation
 		typename RnsDomain::Element_ptr Ap,Bp,Cp;
-		Ap = FFLAS::fflas_new(Zrns,m,k);
-		Bp = FFLAS::fflas_new(Zrns,k,n);
+		Ap = FFLAS::fflas_new(Zrns,Arowd,Acold);
+		Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
 		Cp = FFLAS::fflas_new(Zrns,m,n);
 
 		// convert the input matrices to RNS representation
-		finit_rns(Zrns,m,k,(logA/16)+((logA%16)?1:0),A,lda,Ap);
-		finit_rns(Zrns,k,n,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
+		finit_rns(Zrns,Arowd,Acold,(logA/16)+((logA%16)?1:0),A,lda,Ap);
+		finit_rns(Zrns,Browd,Bcold,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
 
 		// perform the fgemm in RNS
-		MMHelper<RnsDomain, MMHelperAlgo::Winograd> H2;// H2(Zrns,0,H.parseq);
+		MMHelper<RnsDomain, MMHelperAlgo::Winograd> H2(Zrns,H.recLevel,H.parseq);
 
 		// compute alpha and beta in RNS
 		typename RnsDomain::Element alphap, betap;
@@ -180,7 +193,8 @@ namespace FFLAS {
 				       Givaro::Integer* Y, const size_t ldy,
 				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
 	{
-		MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories:: MultiPrecisionTag,ParSeqHelper::Sequential> H2(F,0) ;
+		MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd,
+			 FieldCategories:: MultiPrecisionTag,ParSeqHelper::Sequential> H2;
 		fgemm(F,ta,FFLAS::FflasNoTrans,m,n,1,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
 		return Y;
 	}
@@ -202,13 +216,12 @@ namespace FFLAS {
 						typename RNS::ConstElement_ptr Bd, const size_t ldb,
 						const typename RNS::Element beta,
 						typename RNS::Element_ptr Cd, const size_t ldc,
-						MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag, ParSeqHelper::Sequential> & H)
+						MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Winograd> & H)
 	{
 		// compute the product over Z
 		typedef FFPACK::RNSInteger<RNS> RnsDomain;
-		MMHelper<RnsDomain, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> H2;
-
 		RnsDomain Zrns(F.rns());
+		MMHelper<RnsDomain, MMHelperAlgo::Winograd> H2(Zrns, H.recLevel,H.parseq);
 #ifdef BENCH_PERF_FGEMM_MP
 		FFLAS::Timer chrono;chrono.start();
 #endif
@@ -234,15 +247,18 @@ namespace FFLAS {
 				       const Givaro::Integer *B, const size_t ldb,
 				       const Givaro::Integer beta,
 				       Givaro::Integer* C, const size_t ldc,
-				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd> & H)
+	//MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
+
 	{
 		// compute the product over Z
 		typedef Givaro::UnparametricRing<Givaro::Integer> IntegerDomain;
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
-		MMHelper<IntegerDomain, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> H2(p,p);//H2(Z,0,H.parseq);
-
+		MMHelper<IntegerDomain,MMHelperAlgo::Winograd> H2(Z,H.recLevel,H.parseq);
+		H2.setNorm(p);
+		
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 		
 		// reduce the product mod p
@@ -251,7 +267,49 @@ namespace FFLAS {
 		return C;
 	}
 
+	// fgemm for IntegerDomain with Winograd Helper
+	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const FFLAS_TRANSPOSE tb,
+				       const size_t m, const size_t n,const size_t k,
+				       const Givaro::Integer alpha,
+				       const Givaro::Integer *A, const size_t lda,
+				       const Givaro::Integer *B, const size_t ldb,
+				       const Givaro::Integer beta,
+				       Givaro::Integer* C, const size_t ldc,
+				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, FieldCategories::MultiPrecisionTag,ParSeqHelper::Parallel> & H)
 
+	{
+		// compute the product over Z
+		typedef Givaro::UnparametricRing<Givaro::Integer> IntegerDomain;
+		Givaro::Integer p;
+		F.cardinality(p);
+		IntegerDomain Z;
+		MMHelper<IntegerDomain,MMHelperAlgo::Winograd> H2(Z,H.recLevel);
+		H2.setNorm(p);
+		
+		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
+		
+		// reduce the product mod p
+		freduce (F, m, n, C, ldc);
+
+		return C;
+	}
+
+	// PARALLEL VERSION (NOT PARALLEL YET)
+	inline Givaro::Integer* fgemm (const Givaro::UnparametricRing<Givaro::Integer>& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const FFLAS_TRANSPOSE tb,
+				       const size_t m, const size_t n,const size_t k,
+				       const Givaro::Integer alpha,
+				       const Givaro::Integer* A, const size_t lda,
+				       const Givaro::Integer* B, const size_t ldb,
+				       Givaro::Integer beta,
+				       Givaro::Integer* C, const size_t ldc,
+				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::MultiPrecisionTag,ParSeqHelper::Parallel> & H){
+		MMHelper<Givaro::UnparametricRing<Givaro::Integer>,MMHelperAlgo::Winograd> H2(F,H.recLevel);
+		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,lda,beta,C,ldc,H2);
+	}
 
 }// END of namespace FFLAS
 
