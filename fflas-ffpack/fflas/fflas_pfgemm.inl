@@ -87,11 +87,15 @@ namespace FFLAS {
 			H.parseq.numthreads = std::min(H.parseq.numthreads, std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
 						
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
-			FOR2D(iter,m,n,H.parseq,
-				  TASK( MODE(READ(A[iter.ibegin()*lda],B[iter.jbegin()]) REFERENCE(F) READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH ));
-					  );
-				
+			PARALLEL_GROUP;
 			
+			FOR2D(iter,m,n,H.parseq,
+				  TASK( MODE(
+						READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
+						CONSTREFERENCE(F, SeqH) 
+						READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
+					fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH););
+					  );	    
 			WAIT;
 	    }
 		return C;

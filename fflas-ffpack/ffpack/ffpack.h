@@ -179,7 +179,7 @@ namespace FFPACK { /* Permutations */
 
 
 
-#ifdef __FFLASFFPACK_USE_OPENMP
+//#ifdef __FFLASFFPACK_USE_OPENMP
 
 
 	//! Parallel applyP with OPENMP tasks
@@ -214,7 +214,7 @@ namespace FFPACK { /* Permutations */
 	      size_t* P, size_t* Q, int nt);
 
 
-#endif
+//#endif
 
 } // FFPACK permutations
 // #include "ffpack_permutation.inl"

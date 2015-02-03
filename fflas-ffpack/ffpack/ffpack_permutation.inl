@@ -466,7 +466,7 @@ namespace FFPACK {
 	}
 	
 
-#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
+//#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
 	template<class Field>
 	void
 	papplyP( const Field& F,
@@ -475,7 +475,7 @@ namespace FFPACK {
 		 const size_t m, const size_t ibeg, const size_t iend,
 		 typename Field::Element_ptr A, const size_t lda, const size_t * P )
 	{
-		int numthreads = omp_get_max_threads();
+		int numthreads = MAX_THREADS;//omp_get_max_threads();
 		size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
 		size_t NBlocks = m/BLOCKSIZE;
 		size_t LastBlockSize = m % BLOCKSIZE;
@@ -483,13 +483,15 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
+		PARALLEL_GROUP;
+		
 		for (size_t t = 0; t < NBlocks; ++t)
 			{
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
 				//#pragma omp task shared (A, P, F) firstprivate(BlockDim)
-				TASK(MODE(REFERENCE(A,P,F) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
+				TASK(MODE(CONSTREFERENCE(F, A,P) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
 					  applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
 			}
 				     //#pragma omp taskwait
@@ -502,7 +504,7 @@ namespace FFPACK {
 			    const size_t R1, const size_t R2,
 			    const size_t R3, const size_t R4)
 	{
-		int numthreads = omp_get_max_threads();
+		int numthreads = MAX_THREADS;//omp_get_max_threads();
 		size_t BLOCKSIZE=std::max(width/numthreads,(size_t)1);
 		size_t NBlocks = width/BLOCKSIZE;
 		size_t LastBlockSize = width % BLOCKSIZE;
@@ -510,13 +512,15 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
+		PARALLEL_GROUP;
+		
 		for (size_t t = 0; t < NBlocks; ++t)
 		{
 			size_t BlockDim = BLOCKSIZE;
 			if (t == NBlocks-1)
 				BlockDim = LastBlockSize;
 			//#pragma omp task shared (F, A) firstprivate(BlockDim)
-			TASK(MODE(REFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])), 
+			TASK(MODE(CONSTREFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])), 
 			     MatrixApplyT (F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4););
 		}
 		//#pragma omp taskwait
@@ -530,7 +534,7 @@ namespace FFPACK {
 			    const size_t R1, const size_t R2,
 			    const size_t R3, const size_t R4)
 	{
-		int numthreads = omp_get_max_threads();
+		int numthreads = MAX_THREADS;//omp_get_max_threads();
 		size_t BLOCKSIZE=std::max(width/numthreads,(size_t)1);
 		size_t NBlocks = width/BLOCKSIZE;
 		size_t LastBlockSize = width % BLOCKSIZE;
@@ -538,20 +542,22 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
+		PARALLEL_GROUP;
+		
 		for (size_t t = 0; t < NBlocks; ++t)
 			{
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
 				//#pragma omp task shared (F, A) firstprivate(BlockDim)
-				TASK(MODE(REFERENCE(F,A) READ(A[BLOCKSIZE*t])),
+				TASK(MODE(CONSTREFERENCE(F,A) READ(A[BLOCKSIZE*t])),
 				     MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4););
 			}
 		//#pragma omp taskwait
 		WAIT;
 	}
 
-#endif // __FFLASFFPACK_USE_OPENMP
+//#endif // __FFLASFFPACK_USE_OPENMP
 
 } // FFPACK
 
