@@ -59,15 +59,17 @@ namespace FFLAS {
                 // const size_t numThreads)
 	{
         typedef TRSMHelper<StructureHelper::Recursive,ParSeqHelper::Sequential> seqRecHelper;
+	PARALLEL_GROUP;
+	
 		if(Side == FflasRight){
             FOR1D(iter, m, H.parseq,
 				seqRecHelper SeqH (H);
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+				TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
                   );
 		} else {
             FOR1D(iter, n, H.parseq,
 				seqRecHelper SeqH (H);
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+		  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
                   );
 		}
 		WAIT;
@@ -94,6 +96,8 @@ namespace FFLAS {
 		// const FFLAS::CuttingStrategy method,
                 // const size_t numThreads)
 	{
+		PARALLEL_GROUP;
+		
 		if(Side == FflasRight){
 			int nt = H.parseq.numthreads;
 			int nt_it,nt_rec;
@@ -106,7 +110,7 @@ namespace FFLAS {
 				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+				TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 			}
 		} else {
 			int nt = H.parseq.numthreads;
@@ -128,7 +132,7 @@ namespace FFLAS {
 				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 				    //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-				TASK(MODE(READ(A) REFERENCE(F, A, B) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+				TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 			}
 		}
 		WAIT;

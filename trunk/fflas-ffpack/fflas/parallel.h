@@ -27,26 +27,58 @@
 #ifndef __FFLASFFPACK_fflas_parallel_H
 #define __FFLASFFPACK_fflas_parallel_H
 
-
 #define __FFLASFFPACK_SEQUENTIAL
 
 #ifdef __FFLASFFPACK_USE_OPENMP
-#undef __FFLASFFPACK_SEQUENTIAL
-#include "omp.h"
+   #undef __FFLASFFPACK_SEQUENTIAL
+   #undef __FFLASFFPACK_USE_TBB
+   #undef __FFLASFFPACK_USE_KAAPI
+   #include "omp.h"
 #elif defined (__FFLASFFPACK_USE_KAAPI)
-#undef __FFLASFFPACK_SEQUENTIAL
-#include "kaapi++"
-#include "fflas-ffpack/fflas/kaapi_routines.inl"
+   #undef __FFLASFFPACK_SEQUENTIAL
+   #undef __FFLASFFPACK_USE_TBB
+   #undef __FFLASFFPACK_USE_OPENMP
+   #include "kaapi++"
+   #include "fflas-ffpack/fflas/kaapi_routines.inl"
+#elif defined __FFLASFFPACK_USE_TBB
+   #undef __FFLASFFPACK_SEQUENTIAL
+   #undef __FFLASFFPACK_USE_OPENMP
+   #undef __FFLASFFPACK_USE_KAAPI
+   #include </usr/include/tbb/tbb.h>
+   #include </usr/include/tbb/task.h>
+   #include </usr/include/tbb/parallel_for.h>
+   #include </usr/include/tbb/task_group.h>
+/*    
+ extern "C" 
+   {
+      tbb::task_group g;
+   }
+*/
+#ifdef __FFLASFFPACK_HAVE_MKL
+#ifndef _MKL_H_ // temporary
+#error "MKL (mkl.h) not present, while you have MKL enabled"
+#endif
+#undef index_t
+#define index_t MKL_INT
+#endif // __FFLASFFPACK_HAVE_MKL
+
+
 #endif
 
 #ifdef __FFLASFFPACK_FORCE_SEQ
 
-#undef __FFLASFFPACK_USE_OPENMP
-#undef __FFLASFFPACK_USE_KAAPI
-#undef __FFLASFFPACK_USE_TBB
-#define __FFLASFFPACK_SEQUENTIAL
+   #undef __FFLASFFPACK_USE_OPENMP
+   #undef __FFLASFFPACK_USE_KAAPI
+   #undef __FFLASFFPACK_USE_TBB
+   #define __FFLASFFPACK_SEQUENTIAL
 
 #endif
+
+#ifndef index_t
+#define index_t size_t
+#endif
+
+
 
 /*********************************************************/
 /*********************** SEQUENTIAL***********************/
@@ -62,28 +94,35 @@
 #define BARRIER
 #define PAR_REGION
 
-#define PARFOR1D (iter, m, Helper, I) \
-	for(size_t iter=0; iter<m; ++iter) \
-		{ I; }
+#define PARFOR1D(iter, m, Helper, I)      \
+    for(size_t iter=0; iter<m; ++iter)     \
+    { I; }
 
+#define PARALLEL_GROUP     
     
 #define NUM_THREADS 1
 #define MAX_THREADS 1
+
+#define READ(Args...) 
+#define WRITE(Args...) 
+#define READWRITE(Args...) 
+#define CONSTREFERENCE(...)
+#define VALUE(...)
 
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
 // for strategy 1D 
-#define FOR1D(iter, m, Helper, I)				\
-  { FFLAS::ForStrategy1D iter(m, Helper);				\
-  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
-    {I;} }
+#define FOR1D(iter, m, Helper, I)                                       \
+    { FFLAS::ForStrategy1D iter(m, Helper);				\
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {I;} }
 
 // for strategy 2D
-#define FOR2D(iter, m, n, Helper, I)			\
-  { FFLAS::ForStrategy2D iter(m,n,Helper);				\
-  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
-    {I;} }
+#define FOR2D(iter, m, n, Helper, I)                                    \
+    { FFLAS::ForStrategy2D iter(m,n,Helper);				\
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {I;} }
 
 #endif // Macro for sequential
 
@@ -94,6 +133,8 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
 
+//////////////////////////////////////////////
+/////////////// dataflow macros //////////////
 #ifdef __FFLASFFPACK_USE_DATAFLOW // OMP dataflow synch DSL features
 
 //computes dependencies (no wait here)
@@ -116,36 +157,47 @@
 #define READWRITE(Args...)
 
 #endif // end DATAFLOW FLAG
-
+///////////////////////////////////////////////
+///////////////////////////////////////////////
 
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
 #define GLOBALSHARED(a, Args...) shared(Args)
-#define REFERENCE(Args...) shared(Args)
+#define CONSTREFERENCE(Args...) shared(Args)
+#define VALUE(Args...) firstprivate(Args)
 #define BARRIER PRAGMA_OMP_TASK_IMPL( omp barrier )
 
-// parallel for
-#define PARFOR1D(iter, m, Helper, I) \
-  { FFLAS::ForStrategy1D OMPstrategyIterator(m, Helper); \
-PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks()) ) \
-  for(size_t iter=0; iter<m; ++iter) \
-	{ I; } }
+// parallel for 1D, overloaded macro
+#define PF1D_4(iter, m, Helper, I)                                      \
+   { FFLAS::ForStrategy1D OMPstrategyIterator(m, Helper);               \
+       PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks()) ) \
+           for(decltype(m) iter=0; iter<m; ++iter)                      \
+           { I; } }
+
+#define PF1D_5(iter, m, ref, Helper, I)                                 \
+    { FFLAS::ForStrategy1D OMPstrategyIterator(m, Helper);              \
+        PRAGMA_OMP_TASK_IMPL( omp parallel for ref num_threads(OMPstrategyIterator.numblocks()) ) \
+            for(decltype(m) iter=0; iter<m; ++iter)                     \
+            { I; } }
+
+#define GET_PF1D(_1,_2,_3,_4,_5, NAME,...) NAME
+#define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_5,PF1D_4)(__VA_ARGS__)
 
 // for strategy 1D 
-#define FOR1D(iter, m, Helper, I)				\
-  { FFLAS::ForStrategy1D iter(m, Helper);				\
-  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
-    {I;} }
+#define FOR1D(iter, m, Helper, I)                                       \
+    { FFLAS::ForStrategy1D iter(m, Helper);				\
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {I;} }
 
 // for strategy 2D
-#define FOR2D(iter, m, n, Helper, I)			\
-  { FFLAS::ForStrategy2D iter(m,n,Helper);				\
-  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
-    {I;} }
+#define FOR2D(iter, m, n, Helper, I)                                    \
+    { FFLAS::ForStrategy2D iter(m,n,Helper);				\
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {I;} }
 
 // parallel region
-#define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )  \
-  PRAGMA_OMP_TASK_IMPL( omp single )
+#define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )        \
+    PRAGMA_OMP_TASK_IMPL( omp single )
 // get number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
 // get number of threads specified with the global variable OMP_NUM_THREADS
@@ -156,10 +208,11 @@ PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks
 
 #define PRAGMA_OMP_TASK_IMPL( Args... ) _Pragma( #Args )
 
-#define TASK(M, I) \
-  PRAGMA_OMP_TASK_IMPL( omp task M) \
-  {I;}
+#define TASK(M, I)                              \
+    PRAGMA_OMP_TASK_IMPL( omp task M)           \
+    {I;}
 
+#define PARALLEL_GROUP     
 
 #endif // OpenMP macros
 
@@ -207,31 +260,70 @@ PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks
     catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
     return 0;}
 
+#define PARALLEL_GROUP     
 
 
 #endif // KAAPI macros
 
 
 /*********************************************************/
-/******************* TBB(coming sooon) *******************/ 
+/*************************** TBB  ************************/ 
 /*********************************************************/
 #ifdef __FFLASFFPACK_USE_TBB
 
-#define TASK(M, I) {I;}
+// workaround to overload macro CONSTREFERENCE
 
-#define WAIT
-#define CHECK_DEPENDENCIES
+// CONSTREFERENCE macro
+#define REF1(a) =,&a
+#define REF2(a,b) =,&a, &b
+#define REF3(a,b,c) =,&a,&b,&c
+#define REF4(a,b,c,d) =,&a,&b,&c,&d
+#define REF5(a,b,c,d,e) =,&a,&b,&c,&d,&e
+#define REF6(a,b,c,d,e,f) =,&a,&b,&c,&d,&e,&f
+#define REF7(a,b,c,d,e,f,g) =,&a,&b,&c,&d,&e,&f,&g
+#define REF8(a,b,c,d,e,f,g,h) =,&a,&b,&c,&d,&e,&f,&g,&h
+#define REF9(a,b,c,d,e,f,g,h,i) =,&a,&b,&c,&d,&e,&f,&g,&h,&i
+#define REF10(a,b,c,d,e,f,g,h,i,enough) =,&a,&b,&c,&d,&e,&f,&g,&h,&i,&enough
+#define GET_REF(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10, NAME,...) NAME
+#define CONSTREFERENCE(...) GET_REF(__VA_ARGS__, REF10,REF9,REF8,REF7,REF6,REF5,REF4,REF3,REF2,REF1)(__VA_ARGS__)
+
+// workaround to overload macro VALUE
+#define VAL1(a) ,a
+#define VAL2(a,b) ,a, b
+#define VAL3(a,b,c) ,a,b,c
+#define VAL4(a,b,c,d) ,a,b,c,d
+#define VAL5(a,b,c,d,e) ,a,b,c,d,e
+
+#define GET_VAL(_1,_2,_3,_4,_5, NAME,...) NAME
+#define VALUE(...) GET_VAL(__VA_ARGS__, VAL5,VAL4,VAL3,VAL2,VAL1)(__VA_ARGS__)
+
+// need task_group to lunch a group of tasks in parallel
+#define PARALLEL_GROUP tbb::task_group g;
+
+// TBB task
+#define TASK(M, I)                              \
+    {                                           \
+        g.run([M](){I;});                       \
+    }
+    
+//#define MODE(Args...) Args
+#define WAIT g.wait()
+#define CHECK_DEPENDENCIES g.wait()
 #define BARRIER
-#define PAR_REGION
-#define PARFOR1D for
-#define NUM_THREADS 1
-#define MAX_THREADS 1
+#define PAR_REGION //tbb::task_group g; ???
+
+#define NUM_THREADS tbb::task_scheduler_init::default_num_threads()
+#define MAX_THREADS tbb::task_scheduler_init::default_num_threads()
+#define READ(Args...) 
+#define WRITE(Args...) 
+#define READWRITE(Args...) 
 
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
+#define CAPTURE(Args...) [Args]
 
-// for strategy 1D 
-#define FOR1D(iter, m, Helper, I)				\
+// for strategy 1D
+#define FOR1D(iter, m, Helper, I)                                       \
   { FFLAS::ForStrategy1D iter(m, Helper);				\
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
@@ -242,17 +334,32 @@ PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks
   for(iter.initialize(); !iter.isTerminated(); ++iter)			\
     {I;} }
 
-// tbb parallel for 1D
-#define PARFOR1D(iter, m, Helper, I)					\
-  { FFLAS::ForStrategy1D TBBstrategyIterator(m, Helper);	
-  tbb::parallel_for(							\
-		    tbb::blocked_range<index_t>(0, m, TBBstrategyIterator.blocksize() ), \
-            [&](const tbb::blocked_range<index_t> &TBBblockrangeIterator) { \
-    		for(index_t i = TBBblockrangeIterator.begin();
-                i < TBBblockrangeIterator.end() ; ++i){ \
-                    {I;} }}); \
+// tbb parallel for 1D // Overload macro
+#define PF1D_4(i, m, Helper, I)                                         \
+    {FFLAS::ForStrategy1D TBBstrategyIterator(m, Helper);               \
+        tbb::parallel_for(                                              \
+            tbb::blocked_range<decltype(m)>(0, m, TBBstrategyIterator.blocksize() ), \
+            [=](const tbb::blocked_range<decltype(m)> &TBBblockrangeIterator) { \
+                for(decltype(m) i = TBBblockrangeIterator.begin();      \
+                    i < TBBblockrangeIterator.end() ; ++i){             \
+                    {I;} }});                                           \
+    }
+
+#define PF1D_5(i, m, ref, Helper, I)                                    \
+  {FFLAS::ForStrategy1D TBBstrategyIterator(m, Helper);                 \
+      tbb::parallel_for(                                                \
+          tbb::blocked_range<decltype(m)>(0, m, TBBstrategyIterator.blocksize() ), \
+          CAPTURE(ref)(const tbb::blocked_range<decltype(m)> &TBBblockrangeIterator) { \
+              for(decltype(m) i = TBBblockrangeIterator.begin();        \
+                  i < TBBblockrangeIterator.end() ; ++i){               \
+                  {I;} }});                                             \
   }
-#endif
+
+#define GET_PF1D(_1,_2,_3,_4,_5, NAME,...) NAME
+#define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_5,PF1D_4)(__VA_ARGS__)
+
+
+#endif // end TBB macros
 
 
 /*********************************************************/

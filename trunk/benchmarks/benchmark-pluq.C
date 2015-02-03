@@ -23,7 +23,7 @@
 * ========LICENCE========
 */
 //#define __FFLASFFPACK_USE_DATAFLOW
-
+//#define __FFLASFFPACK_USE_TBB
 #include <iostream>
 #include <givaro/modular.h>
 
@@ -58,12 +58,15 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
     FFLAS::ParSeqHelper::Parallel H;
     
 	std::vector<size_t> E(r);
-	PARFOR1D(i,r,H, E[i]=i;);
-    
+//	PARFOR1D(i,r, H, E[i]=i;);
+	for(size_t i=0; i<r; i++)
+		E[i]=i;
+	
 	srand48(commonseed);
 	std::vector<size_t> Z(n);
-	PARFOR1D(i,n,H, Z[i]=i; );
-    
+//	PARFOR1D(i,n,H, Z[i]=i; );
+	for(size_t i=0; i<r; i++)
+		Z[i]=i;
 	P.resize(r);
 	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
@@ -88,14 +91,22 @@ typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t 
 	size_t taille=m*m;
 	Field::Element * L= new Field::Element[taille];
 	PARFOR1D(i,taille,H, F.init(L[i],F.zero); );
+	PARALLEL_GROUP;
 	
 	std::vector<size_t> E(r);
-	PARFOR1D(i,r,H, E[i]=i; );
+	for(size_t i=0; i<r; i++)
+		E[i]=i;
 	
+//		TASK(MODE(READWRITE(E[i])),E[i]=i;);	//does not compile with tbb
 	srand48(seed);
 	std::vector<size_t> Z(m);
-	PARFOR1D(i,m,H, Z[i]=i;);
-    
+	for(size_t i=0; i<r; i++)
+		Z[i]=i;
+	
+//		TASK(MODE(CONSTREFERENCE(i, Z) READWRITE(Z[i])),Z[i]=i;); //does not compile with tbb
+	
+	WAIT;
+	
 	std::vector<size_t> Q(r);
 	for(size_t i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
@@ -155,9 +166,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	
 	PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
 	
-	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );
-    
-	
+	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );	
 	
 	Field::Element zero,one;
 	F.init(zero,0.0);
@@ -178,18 +187,20 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
               );
 	
 	PAR_REGION{
+		PARALLEL_GROUP;
+		
 		//#pragma omp task shared(F, P, L)
-		TASK(MODE(REFERENCE(F,P,L)),
+		TASK(MODE(CONSTREFERENCE(F,P,L)),
 		     FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
 		//#pragma omp task shared(F, Q, U)
-		TASK(MODE(REFERENCE(F,Q,U)),
+		TASK(MODE(CONSTREFERENCE(F,Q,U)),
 		     FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
 		WAIT;
 		//#pragma omp taskwait
 		const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
 		typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
 		//#pragma omp task shared(F, L, U, X)
-		TASK(MODE(REFERENCE(F,U,L,X)),
+		TASK(MODE(CONSTREFERENCE(F,U,L,X)),
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 			      F.one, L,R, U,n, F.zero, X,n, pWH););
 
@@ -232,6 +243,7 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 
 	Field::RandIter G(F); 
 //#pragma omp parallel for collapse(2) schedule(runtime) 
+	PARALLEL_GROUP;
 	
 	for(size_t p=0; p<m; p+=BS) ///row
 		for(size_t pp=0; pp<n; pp+=BS) //column
@@ -242,7 +254,7 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 				if(!(pp+BS<n))
 					MM=n-pp;
 				//#pragma omp task
-				TASK(MODE(REFERENCE(G)),
+				TASK(MODE(CONSTREFERENCE(G)),
 				{
 					for(size_t j=0; j<M; j++)
 						for(size_t jj=0; jj<MM; jj++)
@@ -250,6 +262,8 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 							G.random (*(C+(p+j)*n+pp+jj));
 				});
 			}
+	WAIT;
+	
 	//		#pragma omp taskwait
 	//	}
 	// printf("A = \n");
@@ -352,10 +366,12 @@ int main(int argc, char** argv) {
 	       chrono.clear();
 	       
 	       if (i) chrono.start();
-	       if (par)
+	       if (par){
+		       
 		       PAR_REGION{
 			       R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
 		       }
+	       }
 	       else
 		       R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
 	       if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
