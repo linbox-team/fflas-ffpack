@@ -294,11 +294,6 @@ bool launch_MM_dispatch(const Field &F,
 	return ok ;
 }
 
-template<typename Field>
-Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();} 
-template<>
-Givaro::Integer maxFieldElt<Givaro::UnparametricRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
-
 template <class Field>
 bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size_t iters, bool par ){
 	bool ok = true ;
@@ -307,86 +302,78 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 	
 	while (ok &&  nbit){
 		typedef typename Field::Element Element ;
+		// choose Field 
+		Field* F= chooseField<Field>(q,b);
+		if (F==nullptr)
+			return true;
+
+		std::ostringstream oss;
+		F->write(oss);		
+		std::cerr.fill('.');
+		std::cerr<<"Checking ";
+		std::cerr.width(40);
+		std::cerr<<oss.str();
+		std::cerr<<" ... ";
+
+		if (nbw<0)
+			nbw = (int) random() % 7;			 
+#ifdef DEBUG
+		F->write(std::cout) << std::endl;
+#endif
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
-		if (nbw<0)
-			nbw = (int) random() % 7;
-		Givaro::Integer maxV= maxFieldElt<Field>();
-		/*** Choice of the field ***/
-		if (maxV>0 && (q> maxV || b> maxV.bitsize()))
-			return true;
-		if (b<=1){
-			b = 2 +  rand() % maxV.bitsize();
-			//b = 2 + (rand() % (int)floor(log(Field::getMaxModulus())/log(2.)+1));
-		}
-		Givaro::IntPrimeDom IPD;
-		Givaro::Integer tmp,p;
-		if (q==-1){
-			// Choose characteristic as a random prime of b bits
-			do{
-				Givaro::Integer _p;
-				Givaro::Integer::random_exact_2exp(_p,b);
-				IPD.prevprime( tmp, _p+1 );
-				p =  tmp;
-			}while( (p < 2) );
-		}
-		else p=q;
-
-		Field F(p);
-		// Field is chosen
-		 
-#ifdef DEBUG
-		F.write(std::cout) << std::endl;
-#endif
-
-		Randiter R1(F);
-		NonzeroRandIter<Field,Randiter> R(F,R1);
+		Randiter R1(*F);
+		NonzeroRandIter<Field,Randiter> R(*F,R1);
 
 		//size_t k = 0 ;
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.zero,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,F->zero,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.zero,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,F->zero,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.zero,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,F->zero,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.one,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,F->one,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.one,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,F->one,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.one,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,F->one,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,F.mOne,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,F->mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,F.mOne,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,F->mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,F.mOne,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,F->mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha,beta ;
 		R.random(alpha);
-
-		ok &= launch_MM_dispatch<Field>(F,n,F.one ,alpha,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.zero,alpha,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,F.mOne,alpha,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.one ,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->one ,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.zero,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->zero,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(F,n,alpha,F.mOne,iters,nbw, par);
+		ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 
 		for (size_t j = 0 ; j < 3 ; ++j) {
 			R.random(alpha);
 			R.random(beta);
-			ok &= launch_MM_dispatch<Field>(F,n,alpha,beta,iters,nbw, par);
+			ok &= launch_MM_dispatch<Field>(*F,n,alpha,beta,iters,nbw, par);
 			//std::cout << k << "/24" << std::endl; ++k;
 		}
 		//std::cout<<std::endl;
 		nbit--;
+		if ( !ok )
+			std::cerr << "\033[1;31mFAILED\033[0m "<<std::endl;		
+		else
+			std::cerr << "\033[1;32mPASSED\033[0m "<<std::endl;
+		delete F;
 	}
 	return ok;
 }
@@ -426,8 +413,8 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,nbw,iters,p);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n,nbw,iters,p);
-		ok &= run_with_field<UnparametricRing<Givaro::Integer> >(0,(b?b:512),n,nbw,iters,p);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
+		ok &= run_with_field<UnparametricRing<Givaro::Integer> >(0,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 		
 		//ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p);
 		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
