@@ -24,8 +24,6 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/csr_hyb
 
-EXTRA_DIST=fspmv.doxy
-
 pkgincludesub_HEADERS=            \
         csr_hyb_spmv.inl \
         csr_hyb_spmm.inl \

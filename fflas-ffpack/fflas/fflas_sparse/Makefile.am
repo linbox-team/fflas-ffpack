@@ -27,7 +27,6 @@ pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse
 SUBDIRS=coo csr csr_hyb ell ell_simd hyb_zo sell
 
 
-EXTRA_DIST=fspmv.doxy
 
 pkgincludesub_HEADERS=            \
         coo.h  \

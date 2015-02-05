@@ -24,8 +24,6 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/ell
 
-EXTRA_DIST=fspmv.doxy
-
 pkgincludesub_HEADERS=            \
         ell_spmv.inl \
         ell_spmm.inl \

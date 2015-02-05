@@ -24,7 +24,5 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/sell
 
-EXTRA_DIST=fspmv.doxy
-
 pkgincludesub_HEADERS=            \
         sell_spmv.inl 

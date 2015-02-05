@@ -24,8 +24,6 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/ell_simd
 
-EXTRA_DIST=fspmv.doxy
-
 pkgincludesub_HEADERS=            \
         ell_simd_spmv.inl \
         ell_simd_pspmv.inl \
