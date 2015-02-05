@@ -82,11 +82,12 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	C  = FFLAS::fflas_new(F,m,ldc); 
 	
 	typename Field::RandIter Rand(F);
+	typename Field::NonZeroRandIter NZRand(F,Rand);
 	
 	for (size_t i=0;i<k;++i){
 		for (size_t j=0;j<i;++j) 
 			A[i*lda+j]= (uplo == FFLAS::FflasLower)? Rand.random(tmp) : F.zero;
-		A[i*lda+i]= (diag == FFLAS::FflasNonUnit)? Rand.random(tmp) : F.one;
+		A[i*lda+i]= (diag == FFLAS::FflasNonUnit)? NZRand.random(tmp) : F.one;
 		for (size_t j=i+1;j<k;++j) 
 			A[i*lda+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
 	}
