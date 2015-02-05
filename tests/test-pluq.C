@@ -20,7 +20,7 @@
 #include <algorithm>
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/field/modular-integer.h"
+#include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "test-utils.h"
 

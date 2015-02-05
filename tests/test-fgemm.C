@@ -410,7 +410,7 @@ int main(int argc, char** argv)
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		{ 'l', "-loop Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
+		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
 		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
 		END_OF_ARGUMENTS
 	};
