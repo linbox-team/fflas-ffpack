@@ -38,6 +38,10 @@
 #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "givaro/givinteger.h"
+#include <givaro/givintprime.h>
+#include <chrono>
+#include <random>
 
 namespace FFPACK {
 
@@ -267,9 +271,47 @@ namespace FFPACK {
 		FFLAS::fflas_delete( Q);
 
 		return A;
-
+ 
 	}
 
 
+	template<typename Field>
+	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();} 
+	template<>
+	Givaro::Integer maxFieldElt<Givaro::UnparametricRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
+
+	/*** Field chooser for test according to characteristic q and bitsize b ***/
+	/* if q=-1 -> field is chosen randomly with a charateristic of b bits
+	   if b=0 -> bitsize is chosen randomly according to maxFieldElt
+	 */
+	template<typename Field>
+	Field* chooseField(Givaro::Integer q, unsigned long b){
+		Givaro::Integer maxV= maxFieldElt<Field>();
+		auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		std::mt19937 mt_rand(seed);
+		if (maxV>0 && (q> maxV || b> maxV.bitsize()))
+			return nullptr;
+		if (b<=1){
+			//srand((double)std::chrono::high_resolution_clock::now());
+			auto bitrand = std::bind(std::uniform_int_distribution<unsigned long>(2,maxV.bitsize()-1),
+						 mt_rand);
+			b = bitrand();
+		}
+		Givaro::IntPrimeDom IPD;
+		Givaro::Integer tmp,p;
+		if (q==-1){
+			// Choose characteristic as a random prime of b bits
+			do{
+				Givaro::Integer _p;
+				Givaro::Integer::seeding(Givaro::Integer(mt_rand()));
+				Givaro::Integer::random_exact_2exp(_p,b);
+				IPD.prevprime( tmp, _p+1 );
+				p =  tmp;
+			}while( (p < 2) );
+		}
+		else p=q;
+
+		return new Field(p);
+	}	
 } // FFPACK
 #endif

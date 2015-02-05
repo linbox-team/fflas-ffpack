@@ -707,7 +707,7 @@ bool launch_test(const Field & F,
 		 size_t r,
 		 size_t m, size_t n)
 {
-	typedef typename Field::Element Element ;
+	//typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
 	bool fail = false ;
 	{ /*  user given and lda bigger */
@@ -769,8 +769,8 @@ bool launch_test(const Field & F,
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		FFLAS::fflas_delete( A );
 	}
-	
-	return fail;
+
+	return !fail;
 }
 
 // template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
@@ -885,59 +885,81 @@ bool launch_test(const Field & F,
 
 
 template<class Field>
-bool test_field(int p, size_t m, size_t n, size_t r, size_t iter){
-	Field F(p);
-	bool fail=false;
-	for (int i = 0 ; i < iter ; ++i) {
-		fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		fail |= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-		fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		fail |= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size_t r, size_t iters){
+	bool ok = true ;
+	int nbit=(int)iters;
+	
+	while (ok &&  nbit){
+		// choose Field 
+		Field* F= chooseField<Field>(q,b);
+		if (F==nullptr)
+			return true;
+		std::ostringstream oss;
+		F->write(oss);
 		
+		std::cerr.fill('.');
+		std::cerr<<"Checking ";
+		std::cerr.width(40);
+		std::cerr<<oss.str();
+		std::cerr<<" ... ";
+
+
+		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>    (*F,r,m,n);
+		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>      (*F,r,m,n);
+		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans> (*F,r,m,n);
+		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>   (*F,r,m,n);		
 #if 0 /*  may be bogus */
-		fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(F,r,m,n);
-		    // fail |= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>(F,r,m,n);
-		    // fail |= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>(F,r,m,n);
+		ok&= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>   (*F,r,m,n);
+		ok&= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(*F,r,m,n);
+		ok&= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>     (*F,r,m,n);
+		ok&= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>  (*F,r,m,n);
 #endif
+		nbit--;
+		if ( !ok )
+			std::cerr << "\033[1;31mFAILED\033[0m "<<std::endl;		
+		else
+			std::cerr << "\033[1;32mPASSED\033[0m "<<std::endl;
+		delete F;
 	}
-	return fail;
+	return ok;
 }
 
 int main(int argc, char** argv)
 {
 	cerr<<setprecision(20);
-	int p = 101;
-	size_t m = 50;
-	size_t n = 50;
-	size_t r = 20;
-	int iter = 2 ;
-	bool fail = false;
-	bool loop = false;
+	static Givaro::Integer q=-1;
+	static size_t b=0;
+	static size_t m=50;
+	static size_t n=50;
+	static size_t r=20;
+	static size_t iters=2;
+	static bool loop=false;
 	static Argument as[] = {
-		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
-		{ 'n', "-n N", "Set the number of cols in the matrix.", TYPE_INT , &n },
-		{ 'm', "-m N", "Set the number of rows in the matrix.", TYPE_INT , &m },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
+		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
+		{ 'm', "-m M", "Set the row dimension of the matrix.",      TYPE_INT , &m },
+		{ 'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT , &n },
 		{ 'r', "-r R", "Set the rank.", TYPE_INT , &r },
-		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iter },
-		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		// { 'f', "-f file", "Set input file", TYPE_STR, &file },
-		END_OF_ARGUMENTS
-	};
+		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+                END_OF_ARGUMENTS
+        };
+
 	FFLAS::parseArguments(argc,argv,as);
 
 	if (r > std::min (m,n)) 
 		r = std::min (m, n);
-	
+
+	bool ok=true;
 	do{
-		fail|=test_field<Givaro::Modular<double> >(p,m,n,r,iter);
-		fail|=test_field<Givaro::ModularBalanced<double> >(p,m,n,r,iter);
-		fail|=test_field<Givaro::ModularBalanced<int> >(p,m,n,r,iter);
-		fail|=test_field<Givaro::ModularBalanced<Givaro::Integer> >(p,m,n,r,iter);
-		if (p<Givaro::ModularBalanced<float>::getMaxModulus())
-			fail|=test_field<Givaro::ModularBalanced<float> >(p,m,n,r,iter);
-		if (p<Givaro::Modular<float>::getMaxModulus())
-			fail|=test_field<Givaro::Modular<float> >(p,m,n,r,iter);
-	} while (loop && (!fail));
-	return fail;
+		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m,n,r,iters);		
+	} while (loop && ok);
+
+	return !ok;
 }
