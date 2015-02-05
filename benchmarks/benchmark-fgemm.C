@@ -24,6 +24,7 @@
 */
 
 // Please do not commit with any of these defines on - AB 2015-01-12
+//#define __FFLASFFPACK_USE_TBB
 //#define __FFLASFFPACK_USE_OPENMP 
 //#define __FFLASFFPACK_USE_DATAFLOW
 //#define WINO_PARALLEL_TMPS
@@ -136,18 +137,18 @@ int main(int argc, char** argv) {
   Initialize(A,m/NBK,m,k);
 
   FFLAS::ParSeqHelper::Parallel H;
-
+  size_t i;
 //#pragma omp for
-  PARFOR1D (i,(size_t)m,H,
-           for (size_t j=0; j<(size_t)k; ++j)
-           		G.random (*(A+i*k+j));
-           );
+  PARFOR1D (i,0, m,H,
+	    for (size_t j=0; j<(size_t)k; ++j)
+		    G.random (*(A+i*k+j));
+	    );
   
   B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
-  PARFOR1D (i,(size_t)k,H,
+  PARFOR1D (i, 0, k,H,
             for (size_t j=0; j<(size_t)n; ++j)
             	G.random(*(B+i*n+j));
             );

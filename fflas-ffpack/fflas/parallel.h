@@ -94,8 +94,8 @@
 #define BARRIER
 #define PAR_REGION
 
-#define PARFOR1D(iter, m, Helper, I)      \
-    for(size_t iter=0; iter<m; ++iter)     \
+#define PARFOR1D(iter,debut,  m, Helper, I) \
+    for(decltype(iter) iter=debut; iter<m+debut; ++iter) \
     { I; }
 
 #define PARALLEL_GROUP     
@@ -114,13 +114,13 @@
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)                                       \
-    { FFLAS::ForStrategy1D iter(m, Helper);				\
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)                                    \
-    { FFLAS::ForStrategy2D iter(m,n,Helper);				\
+    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper);				\
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {I;} }
 
@@ -133,33 +133,6 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
 
-//////////////////////////////////////////////
-/////////////// dataflow macros //////////////
-#ifdef __FFLASFFPACK_USE_DATAFLOW // OMP dataflow synch DSL features
-
-//computes dependencies (no wait here)
-#define CHECK_DEPENDENCIES
-
-#define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
-
-#define READ(Args...) depend(in: Args)
-#define WRITE(Args...) depend(out: Args)
-#define READWRITE(Args...) depend(inout: Args)
-
-
-
-#else // OPENMP3.1 (explicit synch mode)
-
-#define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL( omp taskwait )
-
-#define READ(Args...)
-#define WRITE(Args...)
-#define READWRITE(Args...)
-
-#endif // end DATAFLOW FLAG
-///////////////////////////////////////////////
-///////////////////////////////////////////////
-
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
 #define GLOBALSHARED(a, Args...) shared(Args)
@@ -168,30 +141,30 @@
 #define BARRIER PRAGMA_OMP_TASK_IMPL( omp barrier )
 
 // parallel for 1D, overloaded macro
-#define PF1D_4(iter, m, Helper, I)                                      \
-   { FFLAS::ForStrategy1D OMPstrategyIterator(m, Helper);               \
+#define PF1D_5(iter,debut,  m, Helper, I)                                \
+   { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);               \
        PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks()) ) \
-           for(decltype(m) iter=0; iter<m; ++iter)                      \
+           for(iter=debut; iter<m+debut; ++iter)                      \
            { I; } }
 
-#define PF1D_5(iter, m, ref, Helper, I)                                 \
-    { FFLAS::ForStrategy1D OMPstrategyIterator(m, Helper);              \
+#define PF1D_6(iter, debut, m, ref, Helper, I)                           \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);              \
         PRAGMA_OMP_TASK_IMPL( omp parallel for ref num_threads(OMPstrategyIterator.numblocks()) ) \
-            for(decltype(m) iter=0; iter<m; ++iter)                     \
+            for(iter=debut; iter<m+debut; ++iter)                     \
             { I; } }
 
-#define GET_PF1D(_1,_2,_3,_4,_5, NAME,...) NAME
-#define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_5,PF1D_4)(__VA_ARGS__)
+#define GET_PF1D(_1,_2,_3,_4,_5,_6,  NAME,...) NAME
+#define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_6,PF1D_5)(__VA_ARGS__)
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, I)                                       \
-    { FFLAS::ForStrategy1D iter(m, Helper);				\
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {I;} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)                                    \
-    { FFLAS::ForStrategy2D iter(m,n,Helper);				\
+    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {I;} }
 
@@ -213,6 +186,31 @@
     {I;}
 
 #define PARALLEL_GROUP     
+
+
+//////////////////////////////////////////////
+/////////////// dataflow macros //////////////
+#ifdef __FFLASFFPACK_USE_DATAFLOW // OMP dataflow synch DSL features
+
+  #define READ(Args...) depend(in: Args)
+  #define WRITE(Args...) depend(out: Args)
+  #define READWRITE(Args...) depend(inout: Args)
+  //computes dependencies (no wait here)
+  #define CHECK_DEPENDENCIES
+
+#else // OPENMP3.1 (explicit synch mode)
+
+  #define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL( omp taskwait )
+
+  #define READ(Args...)
+  #define WRITE(Args...)
+  #define READWRITE(Args...)
+
+#endif // end DATAFLOW FLAG
+///////////////////////////////////////////////
+///////////////////////////////////////////////
+
+
 
 #endif // OpenMP macros
 
@@ -324,39 +322,39 @@
 
 // for strategy 1D
 #define FOR1D(iter, m, Helper, I)                                       \
-  { FFLAS::ForStrategy1D iter(m, Helper);				\
-  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
-    {I;} }
-
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {I;} }
+    
 // for strategy 2D
-#define FOR2D(iter, m, n, Helper, I)			\
-  { FFLAS::ForStrategy2D iter(m,n,Helper);				\
-  for(iter.initialize(); !iter.isTerminated(); ++iter)			\
-    {I;} }
+#define FOR2D(iter, m, n, Helper, I)                                    \
+    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {I;} }
 
 // tbb parallel for 1D // Overload macro
-#define PF1D_4(i, m, Helper, I)                                         \
-    {FFLAS::ForStrategy1D TBBstrategyIterator(m, Helper);               \
+#define PF1D_5(i, debut,  m, Helper, I)                                 \
+    { FFLAS::ForStrategy1D<decltype(i)> TBBstrategyIterator(m, Helper);              \
         tbb::parallel_for(                                              \
-            tbb::blocked_range<decltype(m)>(0, m, TBBstrategyIterator.blocksize() ), \
-            [=](const tbb::blocked_range<decltype(m)> &TBBblockrangeIterator) { \
-                for(decltype(m) i = TBBblockrangeIterator.begin();      \
+            tbb::blocked_range<decltype(i)>(debut, m+debut, TBBstrategyIterator.blocksize() ), \
+            [=, &i](const tbb::blocked_range<decltype(i)> &TBBblockrangeIterator) { \
+                for(i = TBBblockrangeIterator.begin();                  \
                     i < TBBblockrangeIterator.end() ; ++i){             \
                     {I;} }});                                           \
     }
 
-#define PF1D_5(i, m, ref, Helper, I)                                    \
-  {FFLAS::ForStrategy1D TBBstrategyIterator(m, Helper);                 \
-      tbb::parallel_for(                                                \
-          tbb::blocked_range<decltype(m)>(0, m, TBBstrategyIterator.blocksize() ), \
-          CAPTURE(ref)(const tbb::blocked_range<decltype(m)> &TBBblockrangeIterator) { \
-              for(decltype(m) i = TBBblockrangeIterator.begin();        \
-                  i < TBBblockrangeIterator.end() ; ++i){               \
-                  {I;} }});                                             \
-  }
+#define PF1D_6(i, debut,  m, ref, Helper, I)                             \
+    { FFLAS::ForStrategy1D<decltype(i)> TBBstrategyIterator(m, Helper);              \
+        tbb::parallel_for(                                              \
+            tbb::blocked_range<decltype(i)>(debut, m+debut, TBBstrategyIterator.blocksize() ), \
+            CAPTURE(ref)(const tbb::blocked_range<decltype(i)> &TBBblockrangeIterator) { \
+                for(i = TBBblockrangeIterator.begin();                  \
+                i < TBBblockrangeIterator.end() ; ++i){                 \
+                    {I;} }});                                           \
+    }
 
-#define GET_PF1D(_1,_2,_3,_4,_5, NAME,...) NAME
-#define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_5,PF1D_4)(__VA_ARGS__)
+#define GET_PF1D(_1,_2,_3,_4,_5,_6, NAME,...) NAME
+#define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_6,PF1D_5)(__VA_ARGS__)
 
 
 #endif // end TBB macros

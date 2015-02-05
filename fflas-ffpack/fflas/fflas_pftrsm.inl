@@ -105,7 +105,7 @@ namespace FFLAS {
 				nt_it = (int)ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
 				nt_rec = (int)ceil(double(nt)/nt_it);
 			} else { nt_it = nt; nt_rec = 1;}
-			ForStrategy1D iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
+			ForStrategy1D<size_t> iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 			for (iter.begin(); ! iter.end(); ++iter) {
 				ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
@@ -127,7 +127,7 @@ namespace FFLAS {
 			// 	nt_rec = ceil(double(nt)/nt_it);
 			// } else { nt_it = nt; nt_rec = 1;}
 
-			ForStrategy1D iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
+			ForStrategy1D<size_t> iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 			for (iter.begin(); ! iter.end(); ++iter) {
 				ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);

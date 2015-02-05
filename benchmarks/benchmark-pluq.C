@@ -22,8 +22,12 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-//#define __FFLASFFPACK_USE_DATAFLOW
+
+//#define __FFLASFFPACK_USE_OPENMP
 //#define __FFLASFFPACK_USE_TBB
+
+//#define __FFLASFFPACK_USE_DATAFLOW
+
 #include <iostream>
 #include <givaro/modular.h>
 
@@ -58,13 +62,13 @@ typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t 
     FFLAS::ParSeqHelper::Parallel H;
     
 	std::vector<size_t> E(r);
-//	PARFOR1D(i,r, H, E[i]=i;);
+//	PARFOR1D(i,0, r, H, E[i]=i;);
 	for(size_t i=0; i<r; i++)
 		E[i]=i;
 	
 	srand48(commonseed);
 	std::vector<size_t> Z(n);
-//	PARFOR1D(i,n,H, Z[i]=i; );
+//	PARFOR1D(i,0,n,H, Z[i]=i; );
 	for(size_t i=0; i<r; i++)
 		Z[i]=i;
 	P.resize(r);
@@ -90,7 +94,9 @@ typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t 
 	size_t lda = m;
 	size_t taille=m*m;
 	Field::Element * L= new Field::Element[taille];
-	PARFOR1D(i,taille,H, F.init(L[i],F.zero); );
+	size_t i;
+	
+	PARFOR1D(i,0, taille,H, F.init(L[i],F.zero); );
 	PARALLEL_GROUP;
 	
 	std::vector<size_t> E(r);
@@ -161,24 +167,26 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	Field::Element * L, *U;
 	L = FFLAS::fflas_new<Field::Element>(m*R);
 	U = FFLAS::fflas_new<Field::Element>(R*n);
+	size_t i;
 	
-	PARFOR1D (i,m*R,H, F.init(L[i], 0.0); );
+	PARFOR1D (i,0, m*R,H, F.init(L[i], 0.0); );
 	
-	PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
+	PARFOR1D (i,0,n*R,H, F.init(U[i], 0.0); );
 	
-	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );	
+	PARFOR1D (i,0,m*n,H, F.init(X[i], 0.0); );	
 	
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	PARFOR1D (i,R,H,
+	PARFOR1D (i,0,R,H,
               for (size_t j=0; j<i; ++j)
               	F.assign ( *(U + i*n + j), zero);
               for (size_t j=i; j<n; ++j)
               	F.assign (*(U + i*n + j), *(A+ i*n+j));
               );
+	size_t j;
 	
-	PARFOR1D (j,R,H, 
+	PARFOR1D (j,0,R,H, 
               for (size_t i=0; i<=j; ++i )
               	F.assign( *(L+i*R+j), zero);
               F.assign(*(L+j*R+j), one);
@@ -349,17 +357,20 @@ int main(int argc, char** argv) {
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
        FFLAS::ParSeqHelper::Parallel H;
+       size_t i;
        
-       PARFOR1D(i,(size_t)m,H, 
+       PARFOR1D(i,0,(size_t)m,H, 
                 for (size_t j=0; j<(size_t)n; ++j)
                 	Acop[i*n+j]= (*(A+i*n+j));
                 );
-       
+       size_t j;
+       size_t k;
+              
        for (size_t i=0;i<=iter;++i){
 	       	       
-	       PARFOR1D(j,maxP,H, P[j]=0; );
-	       PARFOR1D(j,maxQ,H, Q[j]=0; );
-	       PARFOR1D(k,(size_t)m,H,
+	       PARFOR1D(j,0,maxP,H, P[j]=0; );
+	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
+	       PARFOR1D(k,0,(size_t)m,H,
                     for (size_t j=0; j<(size_t)n; ++j)
                     	*(A+k*n+j) = *(Acop+k*n+j) ;  
                     );
