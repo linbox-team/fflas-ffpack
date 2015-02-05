@@ -97,6 +97,7 @@ namespace FFPACK {
 				_M*=_basis[i];
 				_pbits=std::max(_pbits, integer(_basis[i]).bitsize());
 			}
+			std::cout<<"M="<<_M<<std::endl;
 			precompute_cst();
 		}
 

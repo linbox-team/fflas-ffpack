@@ -54,7 +54,6 @@ namespace FFPACK {
 		  const size_t cutoff
 		  )
 	{
-
 #ifdef BENCH_PERF_LQUP_MP
 		double t_init=0, t_lqup=0, t_mod=0, t_rec=0;
 		FFLAS::Timer chrono;
@@ -74,7 +73,7 @@ namespace FFPACK {
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
 		size_t n_pr =maxC.bitsize()/prime_bitsize;				
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
-				
+		
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);			
 #ifdef BENCH_PERF_LQUP_MP

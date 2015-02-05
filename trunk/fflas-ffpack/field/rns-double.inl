@@ -38,9 +38,10 @@ namespace FFPACK {
 	// abs(||A||) < 2^(16k)
 	void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
-		if (k>_ldm)
+		if (k>_ldm){
 			FFPACK::Failure(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
-
+			std::cerr<<"k="<<k<<" _ldm="<<_ldm<<std::endl;
+		}
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
 		const integer* Aiter=A;
@@ -81,8 +82,17 @@ namespace FFPACK {
 		bool ok=true;
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
-				for(size_t k=0;k<_size;k++)
+				for(size_t k=0;k<_size;k++){
 					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);
+					if (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
+					    != (long) Arns[i*n+j+k*rda])
+						{
+							std::cout<<((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
+								 <<" != "
+								 <<(long) Arns[i*n+j+k*rda]
+								 <<std::endl;							      
+						}						
+				}
 		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
