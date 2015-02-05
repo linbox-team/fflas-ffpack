@@ -88,7 +88,7 @@ namespace FFLAS {
 						
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
 			PARALLEL_GROUP;
-			
+						
 			FOR2D(iter,m,n,H.parseq,
 				  TASK( MODE(
 						READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 

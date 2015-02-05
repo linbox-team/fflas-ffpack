@@ -144,7 +144,6 @@ namespace FFLAS {
     }
 
 
-
     void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
                    size_t& lastRBS, size_t& lastCBS,
                    size_t& changeRBS, size_t& changeCBS,
@@ -192,23 +191,23 @@ namespace FFLAS {
 
 
 namespace FFLAS {
-
+	template <typename blocksize_t=size_t>
     struct ForStrategy1D {
-        ForStrategy1D(const size_t n, const ParSeqHelper::Parallel H) {
+        ForStrategy1D(const blocksize_t n, const ParSeqHelper::Parallel H) {
 //             std::cout<<"FS1D n : "<<n<<std::endl;
 //             std::cout<<"FS1D method    : "<<method<<std::endl;
 //             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
 
             if ( H.method == BLOCK_THREADS || H.method == ROW_THREADS || H.method == COLUMN_THREADS) {
-                numBlock = std::max(H.numthreads,(size_t)1);
+                numBlock = std::max(H.numthreads,(blocksize_t)1);
             } else if ( H.method == GRAIN_SIZE ) { 
-                numBlock = std::max(n/ H.numthreads, (size_t)1);
+                numBlock = std::max(n/ H.numthreads, (blocksize_t)1);
             } else {
-                numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(size_t)1);
+                numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(blocksize_t)1);
             }
             firstBlockSize = n/numBlock;
             if (firstBlockSize<1) {
-                firstBlockSize = (size_t)1;
+                firstBlockSize = (blocksize_t)1;
                 numBlock = n;
             }
             changeBS = n - numBlock*firstBlockSize;
@@ -221,7 +220,7 @@ namespace FFLAS {
 //             std::cout<<"FS1D NBlocks : "<<numBlock<<std::endl;
         }
 
-        size_t initialize() {
+        blocksize_t initialize() {
             ibeg = 0; iend = firstBlockSize;
 //             std::cout << "FS1D 0   : " << 0 << std::endl;
 //             std::cout << "FS1D ibeg: " << ibeg << std::endl;
@@ -231,14 +230,14 @@ namespace FFLAS {
         }
         bool isTerminated() const { return current == numBlock; }
 
-        size_t begin() const { return ibeg; }
-        size_t end() const { return iend; }
+        blocksize_t begin() const { return ibeg; }
+        blocksize_t end() const { return iend; }
         
-        size_t blocksize() const { return firstBlockSize; }
-        size_t numblocks() const { return numBlock; }
+        blocksize_t blocksize() const { return firstBlockSize; }
+        blocksize_t numblocks() const { return numBlock; }
                 
 
-        size_t operator++() {
+        blocksize_t operator++() {
             ibeg = iend;
             iend += (++current<changeBS?firstBlockSize:lastBlockSize);
 
@@ -251,18 +250,18 @@ namespace FFLAS {
         }
 
     protected:
-        size_t ibeg, iend;
+        blocksize_t ibeg, iend;
 
-        size_t current;
-        size_t firstBlockSize,lastBlockSize;
-        size_t changeBS;
-        size_t numBlock;
+        blocksize_t current;
+        blocksize_t firstBlockSize,lastBlockSize;
+        blocksize_t changeBS;
+        blocksize_t numBlock;
 
     };
 
-
+	template <typename blocksize_t=size_t>
     struct ForStrategy2D {
-        ForStrategy2D(const size_t m, const size_t n, const ParSeqHelper::Parallel H) {
+        ForStrategy2D(const blocksize_t m, const blocksize_t n, const ParSeqHelper::Parallel H) {
             BlockCuts(rowBlockSize, colBlockSize,
                       lastRBS, lastCBS,
                       changeRBS, changeCBS,
@@ -273,23 +272,23 @@ namespace FFLAS {
         }
 
 
-        size_t initialize() {
+        blocksize_t initialize() {
             _ibeg = 0; _iend = rowBlockSize;
             _jbeg = 0; _jend = colBlockSize;
             return current = 0;
         }
         bool isTerminated() const { return current == BLOCKS; }
 
-        size_t ibegin() const { return _ibeg; }
-        size_t jbegin() const { return _jbeg; }
-        size_t iend() const { return _iend; }
-        size_t jend() const { return _jend; }
+        blocksize_t ibegin() const { return _ibeg; }
+        blocksize_t jbegin() const { return _jbeg; }
+        blocksize_t iend() const { return _iend; }
+        blocksize_t jend() const { return _jend; }
         
 
-        size_t operator++() {
+        blocksize_t operator++() {
             ++current;
-            size_t icurr = current/numColBlock;
-            size_t jcurr = current%numColBlock;
+            blocksize_t icurr = current/numColBlock;
+            blocksize_t jcurr = current%numColBlock;
             if (jcurr) {
                 _jbeg = _jend;
                 _jend += (jcurr<changeCBS?colBlockSize:lastCBS);
@@ -319,21 +318,21 @@ namespace FFLAS {
             return out;
         }
                 
-        size_t rowblocksize() const { return rowBlockSize; }
-        size_t rownumblocks() const { return numRowBlock; }
-        size_t colblocksize() const { return colBlockSize; }
-        size_t colnumblocks() const { return numColBlock; }
+        blocksize_t rowblocksize() const { return rowBlockSize; }
+        blocksize_t rownumblocks() const { return numRowBlock; }
+        blocksize_t colblocksize() const { return colBlockSize; }
+        blocksize_t colnumblocks() const { return numColBlock; }
 
 
     protected:
-        size_t _ibeg, _iend, _jbeg, _jend;
-        size_t rowBlockSize, colBlockSize;
+        blocksize_t _ibeg, _iend, _jbeg, _jend;
+        blocksize_t rowBlockSize, colBlockSize;
 
-        size_t current;
-        size_t lastRBS; size_t lastCBS;
-        size_t changeRBS; size_t changeCBS;
-        size_t numRowBlock; size_t numColBlock;
-        size_t BLOCKS;
+        blocksize_t current;
+        blocksize_t lastRBS; blocksize_t lastCBS;
+        blocksize_t changeRBS; blocksize_t changeCBS;
+        blocksize_t numRowBlock; blocksize_t numColBlock;
+        blocksize_t BLOCKS;
 
    };
 
