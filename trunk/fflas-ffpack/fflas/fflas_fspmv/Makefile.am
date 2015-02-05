@@ -34,3 +34,4 @@ pkgincludesub_HEADERS=            \
 	    ell_simd.inl \
 	    ellr.inl \
 	    sell.inl
+

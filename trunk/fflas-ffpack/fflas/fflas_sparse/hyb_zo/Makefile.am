@@ -24,7 +24,5 @@
 
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/hyb_zo
 
-EXTRA_DIST=fspmv.doxy
-
 pkgincludesub_HEADERS=            \
         hyb_zo_spmv.inl 
