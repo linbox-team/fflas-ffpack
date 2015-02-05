@@ -52,7 +52,8 @@ namespace FFLAS {
 		    const Givaro::Integer alpha,
 		    const Givaro::Integer * A, const size_t lda,
 		    Givaro::Integer * B, const size_t ldb){
-
+		
+		
 #ifdef BENCH_PERF_TRSM_MP
 		double t_init=0, t_trsm=0, t_mod=0, t_rec=0;
 		FFLAS::Timer chrono;
@@ -67,6 +68,8 @@ namespace FFLAS {
 		else
 			K=N;
 
+		if (K==0) return;
+		
 		// compute bit size of feasible prime
 		size_t _k=std::max(K,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}
@@ -74,6 +77,7 @@ namespace FFLAS {
 
 		// construct rns basis
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K;
+		
 		size_t n_pr =maxC.bitsize()/prime_bitsize;
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr;
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		

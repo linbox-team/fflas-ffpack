@@ -110,6 +110,7 @@ namespace FFLAS {
 			fscalin(F,m,n,beta,C,ldc);
 			return C;
 		}
+		if (k==0) return C;
 		// compute bit size of feasible prime for FFLAS
 		size_t _k=k,lk=0;
 		while ( _k ) {_k>>=1; ++lk;}

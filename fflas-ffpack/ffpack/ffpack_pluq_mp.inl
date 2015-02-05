@@ -34,11 +34,11 @@
 #endif
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-integer.h"
-#include "fflas-ffpack/field/integer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack_pluq.inl"
 
+#include "givaro/givinteger.h"
+#include "givaro/modular-integer.h"
 namespace FFPACK {
 
 	template <>
@@ -61,7 +61,7 @@ namespace FFPACK {
 		size_t K = std::max(M,N);
 		
 		// compute bit size of feasible prime 
-		size_t _k=max(K,logp/20), lk=0;
+		size_t _k=std::max(K,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}    
 		size_t prime_bitsize= (53-lk)>>1;	
 	
@@ -69,7 +69,7 @@ namespace FFPACK {
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
 		size_t n_pr =maxC.bitsize()/prime_bitsize;				
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
-				
+
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);			
 #ifdef BENCH_PERF_LQUP_MP
