@@ -48,9 +48,6 @@ BASIC_TESTS =              \
 		test-ftrsm\
 		regression-check
 
-MULTIPRECISION_TEST = \
-		test-ftrsm-mp
-
 NOT_A_TEST =  \
 		test-lqup2              \
 		test-charpoly          \
@@ -71,8 +68,6 @@ NOT_A_TEST =  \
 		test-fgesv             \
 		test-invert            \
 		test-nullspace		\
-		test-fgemm-mp           \
-		test-igemm-mp
 
 INFINITE_TEST= \
 		testeur_fgemm          \
@@ -86,7 +81,7 @@ USE_OMP_TESTS = $(OMP_TESTS)
 endif
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS) $(MULTIPRECISION_TEST) $(USE_OMP_TESTS)
+		$(BASIC_TESTS)  $(USE_OMP_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)
@@ -134,7 +129,6 @@ test_pfgemm_SOURCES = test-pfgemm.C
 #test_pftrsm_SOURCES = test-pftrsm.C
 regression_check_SOURCES = regression-check.C
 
-test_ftrsm_mp_SOURCES = test-ftrsm-mp.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
