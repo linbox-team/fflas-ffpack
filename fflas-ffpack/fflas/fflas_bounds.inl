@@ -83,7 +83,7 @@ namespace FFLAS { namespace Protected {
 		{
 
 			double c = computeFactorClassic(F);
-
+			
 			double cplt=0;
 			if (!F.isZero (beta)){
 				if (F.isOne (beta) || F.areEqual (beta, F.mOne)) cplt = c;
@@ -96,6 +96,7 @@ namespace FFLAS { namespace Protected {
 			kmax = floor ( (double (double(limits<typename Field::Element>::max()) + 1 - cplt)) / (c*c));
 			if (kmax  <= 1) return 1;
 		}
+			
 		//kmax--; // we computed a strict upper bound
 		return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
 	}
@@ -171,7 +172,7 @@ namespace FFLAS { namespace Protected {
 			p2*=p-2;
 			nmax++;
 		}
-		return nmax;
+		return std::max(1UL,nmax);
 	}
 
 	/**
@@ -195,7 +196,7 @@ namespace FFLAS { namespace Protected {
 			p1 *= pp1;
 			nmax++;
 		}
-		return 1;//nmax;
+		return std::max(1UL,nmax);
 	}
 
 	// /**
