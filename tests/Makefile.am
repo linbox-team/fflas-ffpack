@@ -74,11 +74,6 @@ INFINITE_TEST= \
 		testeur_ftrsm          \
 		testeur_lqup
 
-OMP_TESTS = test-pfgemm
-
-if FFLASFFPACK_HAVE_OMP
-USE_OMP_TESTS = $(OMP_TESTS)
-endif
 
 EXTRA_PROGRAMS =       \
 		$(BASIC_TESTS)  $(USE_OMP_TESTS)
@@ -125,8 +120,6 @@ test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
 #  test_fspmv_SOURCES = test-fspmv.C
 
-test_pfgemm_SOURCES = test-pfgemm.C
-#test_pftrsm_SOURCES = test-pftrsm.C
 regression_check_SOURCES = regression-check.C
 
 

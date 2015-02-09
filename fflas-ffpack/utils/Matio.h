@@ -238,7 +238,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 			  int n, int m, int id, bool mapleFormat = false, bool column_major=false)
 {
 
-	typename Field::FieldInt tmp;
+	typename Field::Element tmp;
 	// double tmp;
 	if (mapleFormat) c << "Matrix(" << n <<',' << m << ", [" ;
 	for (int i = 0; i<n;++i){
