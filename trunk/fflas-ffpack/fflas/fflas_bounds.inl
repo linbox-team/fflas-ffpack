@@ -172,7 +172,7 @@ namespace FFLAS { namespace Protected {
 			p2*=p-2;
 			nmax++;
 		}
-		return std::max(1UL,nmax);
+		return std::max((size_t)1,nmax);
 	}
 
 	/**
@@ -196,7 +196,7 @@ namespace FFLAS { namespace Protected {
 			p1 *= pp1;
 			nmax++;
 		}
-		return std::max(1UL,nmax);
+		return std::max((size_t) 1,nmax);
 	}
 
 	// /**
