@@ -404,7 +404,6 @@ int main(int argc, char** argv)
 
 	FFLAS::parseArguments(argc,argv,as);
 
-
 	bool ok = true;
 	do{
 		ok &= run_with_field<Modular<double> >(q,b,n,nbw,iters,p);

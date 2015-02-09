@@ -52,7 +52,9 @@ namespace FFPACK {
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t l=0;
-				size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+				//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+				
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]=  m0_ptr[l];
@@ -114,7 +116,8 @@ namespace FFPACK {
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t l=0;
-				size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+				//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2); // to ensure 32 bits portability
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]=  m0_ptr[l];
@@ -190,8 +193,8 @@ namespace FFPACK {
 		m1_d = m1[0]->_mp_d;
 		m2_d = m2[0]->_mp_d;
 		m3_d = m3[0]->_mp_d;
-		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) k4;
-		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) k4;
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
 		for(size_t i=0;i<m;i++)
 			for (size_t j=0;j<n;j++){
 				size_t idx=i*n+j;
@@ -280,8 +283,8 @@ namespace FFPACK {
 		m1_d = m1[0]->_mp_d;
 		m2_d = m2[0]->_mp_d;
 		m3_d = m3[0]->_mp_d;
-		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) k4;
-		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) k4;
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
 		for (size_t j=0;j<n;j++)
 			for(size_t i=0;i<m;i++){
 
