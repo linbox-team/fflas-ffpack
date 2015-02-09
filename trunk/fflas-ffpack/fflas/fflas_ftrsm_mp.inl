@@ -177,7 +177,8 @@ namespace FFLAS {
 			F.convert(b,beta);
 			M=F.rns()._M;
 			size_t kmax= (M-b*p)/(p*p);
-			return std::max((size_t) 1, kmax);
+			return  std::max(1UL,kmax);
+			//return kmax;
 		}
 		
 #ifndef __FTRSM_MP_FAST
