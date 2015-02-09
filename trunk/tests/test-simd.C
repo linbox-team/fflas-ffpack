@@ -261,6 +261,25 @@ bool test_float_impl(size_t seed, size_t vectorSize, Element max){
 	return btest;
 }
 
+template<class simd, class Element>
+bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
+	bool btest = true;
+
+	btest &= test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
+	btest &= test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
+	btest &= test_op<simd>(simd::mullo, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
+	btest &= test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return x1+x3*x2;}, seed, vectorSize, max, "fmadd");
+	// btest &= test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return -x1+x3*x2;}, seed, vectorSize, max, "fmsub");
+	// btest &= test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return x1-x3*x2;}, seed, vectorSize, max, "fnmadd");
+	btest &= test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?-1:0;}, seed, vectorSize, max, "lesser");
+	btest &= test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?-1:0;}, seed, vectorSize, max, "lesser_eq");
+	btest &= test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
+	btest &= test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
+	btest &= test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
+
+	return btest;
+}
+
 template<class Element>
 bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
@@ -278,9 +297,21 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 }
 
  template<class Element>
- bool test_integer()
- {
- 	return true;
+ bool test_integer(size_t seed, size_t vectorSize, size_t max_){
+ 	bool sse = true, avx = true;
+	sse = test_integer_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
+	if(!sse)
+		std::cout << "bug sse" << std::endl;
+	else
+		std::cout << "SSE OK" << std::endl;
+#ifdef __AVX2__	
+	avx = test_integer_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
+	if(!avx)
+		std::cout << "bug avx" << std::endl;
+	else
+		std::cout << "AVX OK" << std::endl;
+#endif
+	return sse && avx;
  }
 
 
@@ -288,9 +319,11 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	int seed = (int) time(NULL);
 	int vectorSize = 32;
 	int max = 100;
+	int loop = false;
 
 	static Argument as[] = {
 		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 'l', "-l N", "Set the loop execution       .", TYPE_INT , &loop },
 		END_OF_ARGUMENTS
 	};
 
@@ -301,12 +334,32 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 
 	bool pass  = true ;
 	{ 
+		do{
 		{
 			pass &= test_float<float>(seed, vectorSize, max);
 		}
 		{
 			pass &= test_float<double>(seed, vectorSize, max);
 		}
+		{
+			pass &= test_integer<int16_t>(seed, vectorSize, max);
+		}
+		{
+			pass &= test_integer<int32_t>(seed, vectorSize, max);
+		}
+		{
+			pass &= test_integer<int64_t>(seed, vectorSize, max);
+		}
+		// {
+		// 	pass &= test_integer<uint16_t>(seed, vectorSize, max);
+		// }
+		// {
+		// 	pass &= test_integer<uint32_t>(seed, vectorSize, max);
+		// }
+		// {
+		// 	pass &= test_integer<uint64_t>(seed, vectorSize, max);
+		// }
+	}while(loop);
 	}
 	std::cout << std::boolalpha << pass << std::endl;
 	return (pass?0:1) ;
