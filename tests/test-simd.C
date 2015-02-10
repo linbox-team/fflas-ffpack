@@ -39,6 +39,7 @@
  #include <iterator>
  #include <limits>
  #include <cmath>
+#include<iomanip>
 
 /**********************************************************************************
  *
@@ -230,8 +231,11 @@ test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element 
  	if(!res)
  	{
  		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name << std::endl;
-  		std::copy(d1.begin(), d1.end(), std::ostream_iterator<Element>(std::cout, " "));
-  		std::cout << std::endl;
+
+		std::transform(d1.begin(), d1.end(), d2.begin(), d2.begin(), [](Element x1, Element x2){return x1-x2;});		
+
+  		//std::copy(d1.begin(), d1.end(), std::ostream_iterator<Element>(std::cout, " "));
+  		//std::cout << std::endl;
   		std::copy(d2.begin(), d2.end(), std::ostream_iterator<Element>(std::cout, " "));
   		std::cout << std::endl;
  	}
@@ -249,9 +253,9 @@ bool test_float_impl(size_t seed, size_t vectorSize, Element max){
 	btest &= test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
 	btest &= test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
 	btest &= test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mul");
-	btest &= test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return x1+x3*x2;}, seed, vectorSize, max, "fmadd");
-	btest &= test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return -x1+x3*x2;}, seed, vectorSize, max, "fmsub");
-	btest &= test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return x1-x3*x2;}, seed, vectorSize, max, "fnmadd");
+	btest &= test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,x1);}, seed, vectorSize, max, "fmadd");
+	btest &= test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,-x1);}, seed, vectorSize, max, "fmsub");
+	btest &= test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return std::fma(-x3,x2,x1);}, seed, vectorSize, max, "fnmadd");
 	btest &= test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?NAN:0;}, seed, vectorSize, max, "lesser");
 	btest &= test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
 	btest &= test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
