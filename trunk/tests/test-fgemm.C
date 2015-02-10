@@ -309,11 +309,11 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 
 		std::ostringstream oss;
 		F->write(oss);		
-		std::cerr.fill('.');
-		std::cerr<<"Checking ";
-		std::cerr.width(40);
-		std::cerr<<oss.str();
-		std::cerr<<" ... ";
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(40);
+		std::cout<<oss.str();
+		std::cout<<" ... ";
 
 		if (nbw<0)
 			nbw = (int) random() % 7;			 
@@ -370,9 +370,9 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 		//std::cout<<std::endl;
 		nbit--;
 		if ( !ok )
-			std::cerr << "\033[1;31mFAILED\033[0m "<<std::endl;		
+			std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;		
 		else
-			std::cerr << "\033[1;32mPASSED\033[0m "<<std::endl;
+			std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
 		delete F;
 	}
 	return ok;
