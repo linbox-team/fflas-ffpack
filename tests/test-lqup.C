@@ -897,11 +897,11 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 		std::ostringstream oss;
 		F->write(oss);
 		
-		std::cerr.fill('.');
-		std::cerr<<"Checking ";
-		std::cerr.width(40);
-		std::cerr<<oss.str();
-		std::cerr<<" ... ";
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(40);
+		std::cout<<oss.str();
+		std::cout<<" ... ";
 
 
 		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>    (*F,r,m,n);
@@ -916,9 +916,9 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 #endif
 		nbit--;
 		if ( !ok )
-			std::cerr << "\033[1;31mFAILED\033[0m "<<std::endl;		
+			std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;		
 		else
-			std::cerr << "\033[1;32mPASSED\033[0m "<<std::endl;
+			std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
 		delete F;
 	}
 	return ok;

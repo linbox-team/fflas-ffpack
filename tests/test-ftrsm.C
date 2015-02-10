@@ -100,10 +100,10 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	
 	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((side == FFLAS::FflasLeft)?"Left_":"Right_")+string((trans == FFLAS::FflasTrans)?"Trans_":"NoTrans_")+string((diag == FFLAS::FflasUnit)?"Unit":"NonUnit");
 
-	cerr<<std::left<<"Checking FTRSM_";
-	cerr.fill('.');
-	cerr.width(35);
-	cerr<<ss;
+	cout<<std::left<<"Checking FTRSM_";
+	cout.fill('.');
+	cout.width(35);
+	cout<<ss;
 
  
 	FFLAS::Timer t; t.clear();
@@ -133,11 +133,11 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 				wrong = true;
 			}	
 	if ( wrong ){
-		cerr << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
+		cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
 		//cerr<<"FAILED ("<<time<<")"<<endl;
 		
 	} else
-		cerr << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
+		cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
 	//cerr<<"PASSED ("<<time<<")"<<endl;
 	
 	F.mulin(invalpha,alpha);
@@ -165,7 +165,7 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t m, size_t n, int
 		
 		typename Field::Element alpha;
 		F->init (alpha, (typename Field::Element)s); 
-		cerr<<"Checking with ";F->write(cerr)<<endl;
+		cout<<"Checking with ";F->write(cout)<<endl;
 		
 		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
 		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
