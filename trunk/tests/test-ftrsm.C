@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -133,12 +133,14 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 				wrong = true;
 			}	
 	if ( wrong ){
-		cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
+		    //cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
+		cout << "FAILED ("<<time<<")"<<endl;
 		//cerr<<"FAILED ("<<time<<")"<<endl;
 		
 	} else
-		cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
-	//cerr<<"PASSED ("<<time<<")"<<endl;
+		    //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
+		cout << "PASSED ("<<time<<")"<<endl;
+	    //cerr<<"PASSED ("<<time<<")"<<endl;
 	
 	F.mulin(invalpha,alpha);
 	if (!F.isOne(invalpha)){
