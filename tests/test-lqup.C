@@ -916,9 +916,11 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 #endif
 		nbit--;
 		if ( !ok )
-			std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;		
+				//std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;		
+			std::cout << "FAILED "<<std::endl;		
 		else
-			std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+				//std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+			std::cout << "PASSED "<<std::endl;
 		delete F;
 	}
 	return ok;

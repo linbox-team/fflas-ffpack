@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /*
@@ -370,9 +370,11 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 		//std::cout<<std::endl;
 		nbit--;
 		if ( !ok )
-			std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;		
+			    //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
+			std::cout << "FAILED "<<std::endl;
 		else
-			std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+			    //std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+			std::cout << "PASSED "<<std::endl;
 		delete F;
 	}
 	return ok;
