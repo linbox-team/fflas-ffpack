@@ -64,6 +64,39 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, t
     }
 }
 
+// template <class Field>
+// inline void fspmv_task(const Field &F, const index_t start_, const index_t size_ const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,
+//                   typename Field::Element_ptr y_, FieldCategories::GenericTag) {
+//     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+//     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+//     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+//     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+//     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+//     for (index_t i = start_; i < start_+size_; ++i) {
+//         auto start = st[i], stop = st[i + 1];
+//         index_t j = 0;
+//         index_t diff = stop - start;
+//         typename Field::Element y1, y2, y3, y4;
+//         F.assign(y1, F.zero);
+//         F.assign(y2, F.zero);
+//         F.assign(y3, F.zero);
+//         F.assign(y4, F.zero);
+//         for (; j < ROUND_DOWN(diff, 4); j += 4) {
+//             F.axpyin(y1, dat[start + j], x[col[start + j]]);
+//             F.axpyin(y2, dat[start + j + 1], x[col[start + j + 1]]);
+//             F.axpyin(y3, dat[start + j + 2], x[col[start + j + 2]]);
+//             F.axpyin(y4, dat[start + j + 3], x[col[start + j + 3]]);
+//         }
+//         for (; j < diff; ++j) {
+//             F.axpyin(y1, dat[start + j], x[col[start + j]]);
+//         }
+//         F.addin(y[i], y1);
+//         F.addin(y[i], y2);
+//         F.addin(y[i], y3);
+//         F.addin(y[i], y4);
+//     }
+// }
+
 template <class Field>
 inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,
                   typename Field::Element_ptr y_, FieldCategories::UnparametricTag) {
@@ -74,6 +107,33 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, t
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
     for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        index_t j = 0;
+        index_t diff = stop - start;
+        typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
+        for (; j < ROUND_DOWN(diff, 4); j += 4) {
+            y1 += dat[start + j] * x[col[start + j]];
+            y2 += dat[start + j + 1] * x[col[start + j + 1]];
+            y3 += dat[start + j + 2] * x[col[start + j + 2]];
+            y4 += dat[start + j + 3] * x[col[start + j + 3]];
+        }
+        for (; j < diff; ++j) {
+            y1 += dat[start + j] * x[col[start + j]];
+        }
+        y[i] += y1 + y2 + y3 + y4;
+    }
+}
+
+template <class Field>
+inline void fspmv_task(const Field &F, const index_t start_, const index_t size_, const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,
+                  typename Field::Element_ptr y_, FieldCategories::UnparametricTag) {
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+    for (index_t i = start_; i < start_+size_; ++i) {
         auto start = st[i], stop = st[i + 1];
         index_t j = 0;
         index_t diff = stop - start;

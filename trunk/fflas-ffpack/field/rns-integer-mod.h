@@ -169,10 +169,74 @@ namespace FFPACK {
 			tmp %= _p;
 			return init (x, tmp);
 		}
+
 		Element& init(Element& x, const Element& y) const{
 			return reduce (x, y);
 		}
 
+		void multiReduce(size_t n, BasisElement* A) const{
+#ifdef __FFLASFFPACK_USE_SIMD
+			using simd = Simd<BasisElement>;
+			using vect_t = typename simd::vect_t;
+		
+			if(_rns->_size % simd::vect_size){
+				for(size_t i = 0 ; i < n ; i += _rns->_size){
+					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+					for(size_t j = 0 ; j < _rns->_size ; j+=simd::vect_size){
+						basis = simd::load(_rns->_basis.data()+j);
+						inv = simd::load(_rns->_invbasis.data()+j);
+						max = simd::load(_rns->_basisMax.data()+j);
+						neg = simd::load(_rns->_negbasis.data()+j);
+						v = simd::load(A+i+j);
+						tmp1 = simd::floor(simd::mul(v, inv));				
+						tmp2 = simd::fnmadd(v, tmp1, basis);
+						tmp1 = simd::greater(tmp2, max);
+						tmp3 = simd::lesser(tmp2, simd::zero());
+						tmp1 = simd::vand(tmp1, neg);
+						tmp3 = simd::vand(tmp3, basis);
+						tmp1 = simd::vor(tmp1, tmp3);
+						tmp2 = simd::add(tmp2, tmp1);
+						simd::store(A+i+j, tmp2);
+					}
+				}
+			}else{
+				for(size_t i = 0 ; i < n ; i += _rns->_size){
+					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+					size_t j = 0;
+					for( ; j < _rns->_size ; j+=simd::vect_size){
+						basis = simd::load(_rns->_basis.data()+j);
+						inv = simd::load(_rns->_invbasis.data()+j);
+						max = simd::load(_rns->_basisMax.data()+j);
+						neg = simd::load(_rns->_negbasis.data()+j);
+						v = simd::loadu(A+i+j);
+						tmp1 = simd::floor(simd::mul(v, inv));				
+						tmp2 = simd::fnmadd(v, tmp1, basis);
+						tmp1 = simd::greater(tmp2, max);
+						tmp3 = simd::lesser(tmp2, simd::zero());
+						tmp1 = simd::vand(tmp1, neg);
+						tmp3 = simd::vand(tmp3, basis);
+						tmp1 = simd::vor(tmp1, tmp3);
+						tmp2 = simd::add(tmp2, tmp1);
+					}
+					for( ; j < _rns->_size ; ++j){
+						auto x = std::floor(A[i+j] * _rns->_invbasis[j]);
+						A[i+j] = std::fma(A[i+j], -x, _rns->_basis[j]);
+						if(A[i+j] >= _rns->_basis[j]){
+							A[i+j] -= _rns->_basis[j]; 
+						}else if(A[i+j] < 0){
+							A[i+j] += _rns->_basis[j]; 
+						}
+					}
+				}
+			}
+#else
+			for(size_t i = 0 ; i < n ; i+= _rns->_size){
+				for(size_t j = 0 ; j < _rns->_size ; ++j){
+					_rns->_field_rns.reduce(A+i+j);
+				}
+			}
+#endif
+		}
 
 		Givaro::Integer convert(Givaro::Integer& x, const Element& y)const {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
@@ -298,7 +362,6 @@ namespace FFPACK {
 			chrono.stop();
 			t_modp+=chrono.usertime();
 #endif
-
 	 	}
 
 		void reduce_modp(size_t m, size_t n, BasisElement* A, size_t lda, size_t rda) const{

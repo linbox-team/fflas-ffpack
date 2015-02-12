@@ -153,7 +153,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A, 
     for (auto &x : infos) {
         cout << x.size << " ";
     }
-    cout << endl;
+    std::cout << std::endl;
 #endif
 
     uint64_t it = 0;
@@ -172,15 +172,15 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A, 
 
     for (size_t i = 0; i < infos.size(); ++i) {
         if (infos[i].begin > nnz)
-            cout << "ERROR sort " << i << " size : " << infos[i].size << " begin : " << infos[i].begin
-                 << " perm : " << infos[i].perm << endl;
+            std::cout << "ERROR sort " << i << " size : " << infos[i].size << " begin : " << infos[i].begin
+                 << " perm : " << infos[i].perm << std::endl;
     }
 
 #ifdef SELL_DEBUG
     for (auto &x : infos) {
         cout << x.size << " ";
     }
-    cout << endl;
+    std::cout << std::endl;
 #endif
 
     A.perm = fflas_new<index_t>(rowdim, Alignment::CACHE_LINE);
@@ -245,7 +245,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A, 
 #endif
             for (uint64_t j = 0; j < infos[i * A.chunk + k].size; ++j) {
                 if (it + k + j * A.chunk >= sum * A.chunk)
-                    cout << "error : " << it + k + j *A.chunk << " " << sum *A.chunk << endl;
+                    std::cout << "error : " << it + k + j *A.chunk << " " << sum *A.chunk << std::endl;
                 A.dat[it + k + j * A.chunk] = data[start + j].val;
                 A.col[it + k + j * A.chunk] = data[start + j].col;
 #ifdef SELL_DEBUG

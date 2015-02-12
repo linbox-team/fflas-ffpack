@@ -273,7 +273,7 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 
 int main(int argc, char **argv) {
 
-    using Field = FFPACK::Modular<double>;
+    using Field = FFPACK::Modular<long>;
     using Element = typename Field::Element;
 
     size_t iter = 10;

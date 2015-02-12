@@ -34,6 +34,8 @@
 #include "tbb/blocked_range.h"
 #endif
 
+ #include <thread>
+
 namespace FFLAS {
 namespace sparse_details_impl {
 template <class Field>
@@ -102,6 +104,32 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
 #endif
 }
 
+template<class Field>
+inline void pfspmv_task(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,
+                   typename Field::Element_ptr y_, const index_t iStart, const index_t iStop, FieldCategories::UnparametricTag) {
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    for(index_t i = iStart ; i < iStop ; ++i){
+        auto start = st[i], stop = st[i + 1];
+        index_t j = 0;
+        index_t diff = stop - start;
+        typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
+        for (; j < ROUND_DOWN(diff, 4); j += 4) {
+            y1 += dat[start + j] * x[col[start + j]];
+            y2 += dat[start + j + 1] * x[col[start + j + 1]];
+            y3 += dat[start + j + 2] * x[col[start + j + 2]];
+            y4 += dat[start + j + 3] * x[col[start + j + 3]];
+        }
+        for (; j < diff; ++j) {
+            y1 += dat[start + j] * x[col[start + j]];
+        }
+        y[i] += y1 + y2 + y3 + y4;
+    }
+}
+
 template <class Field>
 inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,
                    typename Field::Element_ptr y_, FieldCategories::UnparametricTag) {
@@ -132,23 +160,25 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
         }
     });
 #else
-#pragma omp parallel for schedule(static, 8)
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
-        index_t j = 0;
-        index_t diff = stop - start;
-        typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
-        for (; j < ROUND_DOWN(diff, 4); j += 4) {
-            y1 += dat[start + j] * x[col[start + j]];
-            y2 += dat[start + j + 1] * x[col[start + j + 1]];
-            y3 += dat[start + j + 2] * x[col[start + j + 2]];
-            y4 += dat[start + j + 3] * x[col[start + j + 3]];
-        }
-        for (; j < diff; ++j) {
-            y1 += dat[start + j] * x[col[start + j]];
-        }
-        y[i] += y1 + y2 + y3 + y4;
-    }
+// #pragma omp parallel for schedule(static, 8)
+//     for (index_t i = 0; i < A.m; ++i) {
+//         auto start = st[i], stop = st[i + 1];
+//         index_t j = 0;
+//         index_t diff = stop - start;
+//         typename Field::Element y1 = 0, y2 = 0, y3 = 0, y4 = 0;
+//         for (; j < ROUND_DOWN(diff, 4); j += 4) {
+//             y1 += dat[start + j] * x[col[start + j]];
+//             y2 += dat[start + j + 1] * x[col[start + j + 1]];
+//             y3 += dat[start + j + 2] * x[col[start + j + 2]];
+//             y4 += dat[start + j + 3] * x[col[start + j + 3]];
+//         }
+//         for (; j < diff; ++j) {
+//             y1 += dat[start + j] * x[col[start + j]];
+//         }
+//         y[i] += y1 + y2 + y3 + y4;
+//     }
+    std::vector<std::thread> pool(6);
+
 #endif
 }
 

@@ -145,7 +145,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      * p must be aligned on a 32-byte boundary or a general-protection exception may be generated.
      */
     static INLINE void stream(const scalar_t *p, const vect_t v) {
-	    _mm256_stream_si256(reinterpret_cast<vect_t *>(const_cast<scalar_t *>(p)), v);
+        _mm256_stream_si256(reinterpret_cast<vect_t *>(const_cast<scalar_t *>(p)), v);
     }
 
     /*

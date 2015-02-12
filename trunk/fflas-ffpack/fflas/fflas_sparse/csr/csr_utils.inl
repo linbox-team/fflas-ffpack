@@ -41,17 +41,17 @@ template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatri
 
 template <class Field> inline void sparse_print(const Sparse<Field, SparseMatrix_t::CSR> &A) {
     for (size_t i = 0; i <= A.m; ++i)
-        cout << A.st[i] << " ";
-    cout << endl;
+        std::cout << A.st[i] << " ";
+    std::cout << std::endl;
     for (index_t i = 0; i < A.m; ++i) {
         auto start = A.st[i], stop = A.st[i + 1];
         index_t j = 0;
         index_t diff = stop - start;
-        cout << i << " : ";
+        std::cout << i << " : ";
         for (; j < diff; ++j) {
-            cout << A.dat[start + j] << " ";
+            std::cout << A.dat[start + j] << " ";
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 }
 
