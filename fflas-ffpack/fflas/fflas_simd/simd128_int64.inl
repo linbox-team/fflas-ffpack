@@ -132,7 +132,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
      * Store 128-bits of integer data from a into memory using a non-temporal memory hint.
      * p must be aligned on a 16-byte boundary or a general-protection exception may be generated.
      */
-    //static INLINE void stream(scalar_t *p, const vect_t v) { _mm_stream_si128(static_cast<vect_t *>(p), v); }
+    // static INLINE void stream(scalar_t *p, const vect_t v) { _mm_stream_si128(static_cast<vect_t *>(p), v); }
 
     /*
      * Add packed 64-bits integer in a and b, and store the results in vect_t.
@@ -189,7 +189,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
      */
     static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
 // _mm_mullo_epi32 emul
-#pragma warning "The simd mullo function is emulate, it may impact the performances."
+// #pragma warning "The simd mullo function is emulate, it may impact the performances."
 
         Converter c0, c1;
         c0.v = x0;
@@ -209,7 +209,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return mullo(a, b); }
 
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+// #pragma warning "The simd mulhi function is emulate, it may impact the performances."
         Converter c0, c1;
         c0.v = a;
         c1.v = b;
@@ -414,11 +414,11 @@ template <> struct Simd128_impl<true, true, true, 8> {
 template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true, true, true, 8> {
     using scalar_t = uint64_t;
 
-     /*
-     * Load 128-bits of unsigned integer data from memory into dst.
-     * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
-     * Return [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]] int16_t
-     */
+    /*
+    * Load 128-bits of unsigned integer data from memory into dst.
+    * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
+    * Return [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]] int16_t
+    */
     static INLINE PURE vect_t load(const scalar_t *const p) {
         return _mm_load_si128(reinterpret_cast<const vect_t *>(p));
     }

@@ -36,6 +36,7 @@
 namespace FFLAS { /*  CSR */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::CSR> {
+ using Field = _Field;
     bool delayed = false;
     uint64_t kmax = 0;
     index_t m = 0;
@@ -51,6 +52,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::CSR> {
 template <class _Field>
 struct Sparse<_Field, SparseMatrix_t::CSR_ZO>
     : public Sparse<_Field, SparseMatrix_t::CSR> {
+        using Field = _Field;
     typename _Field::Element cst = 1;
     bool delayed = false;
 };

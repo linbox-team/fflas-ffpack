@@ -173,7 +173,7 @@ template <> struct Simd128_impl<true, true, true, 4> {
      */
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 // _mm_mulhi_epi32 emul
-#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         vect_t a1, a2, b1, b2;
         a1 = set(0, _mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 1));
         a2 = set(0, _mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3));
@@ -373,11 +373,11 @@ template <> struct Simd128_impl<true, true, true, 4> {
 template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true, true, true, 4> {
     using scalar_t = uint32_t;
 
-     /*
-     * Load 128-bits of unsigned integer data from memory into dst.
-     * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
-     * Return [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]] int16_t
-     */
+    /*
+    * Load 128-bits of unsigned integer data from memory into dst.
+    * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
+    * Return [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]] int16_t
+    */
     static INLINE PURE vect_t load(const scalar_t *const p) {
         return _mm_load_si128(reinterpret_cast<const vect_t *>(p));
     }

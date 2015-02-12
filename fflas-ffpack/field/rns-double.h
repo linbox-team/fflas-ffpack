@@ -53,6 +53,8 @@ namespace FFPACK {
 		typedef Givaro::Modular<double> ModField;
 		
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _basis; // the rns moduli (mi)
+		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _basisMax; // (mi-1)
+		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _negbasis; // (-mi)
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>    _invbasis; // the inverse of rns moduli (1/mi)
 		std::vector<ModField> _field_rns; // the associated prime field for each mi
 		integer                  _M; // the product of the mi's
@@ -77,11 +79,15 @@ namespace FFPACK {
 			integer sum=1;
 			while (_M < bound*sum) {
 				_basis.resize(_size+1);
+				_negbasis.resize(_size+1);
+				_basisMax.resize(_size+1);
 				do {
 					integer::random_exact_2exp(prime, _pbits-1);
 					nextprime(prime, prime);
 				} while (_M%prime == 0);
 				_basis[_size]=prime;
+				_basisMax[_size] = prime-1;
+				_negbasis[_size] = 0-prime;
 				_size++;
 				_M*=prime;
 				if (rnsmod) sum+=prime;
@@ -96,6 +102,8 @@ namespace FFPACK {
 			for(size_t i=0;i<_size;i++){
 				_M*=_basis[i];
 				_pbits=std::max(_pbits, integer(_basis[i]).bitsize());
+				_basisMax = _basis[i]-1;
+				_negbasis = 0-_basis[i];
 			}
 			std::cout<<"M="<<_M<<std::endl;
 			precompute_cst();
@@ -143,8 +151,6 @@ namespace FFPACK {
 		void init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
 		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 		void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
-
-
 
 	}; // end of struct rns_double
 

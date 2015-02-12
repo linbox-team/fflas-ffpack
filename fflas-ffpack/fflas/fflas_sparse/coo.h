@@ -36,6 +36,7 @@
 namespace FFLAS { /*  COO */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::COO> {
+ using Field = _Field;
     index_t *col = nullptr;
     index_t *row = nullptr;
     typename _Field::Element_ptr dat;
@@ -51,6 +52,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::COO> {
 template <class _Field>
 struct Sparse<_Field, SparseMatrix_t::COO_ZO>
     : public Sparse<_Field, SparseMatrix_t::COO> {
+        using Field = _Field;
     typename _Field::Element cst = 1;
 };
 

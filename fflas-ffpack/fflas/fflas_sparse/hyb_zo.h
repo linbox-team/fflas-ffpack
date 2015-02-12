@@ -36,6 +36,7 @@
 namespace FFLAS { /*  HYB_ZO */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::HYB_ZO> {
+ using Field = _Field;
     bool delayed = false;
     uint64_t kmax = 0;
     index_t m = 0;

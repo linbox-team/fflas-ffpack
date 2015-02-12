@@ -36,6 +36,7 @@
 namespace FFLAS { /*  SELL */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::SELL> {
+ using Field = _Field;
     bool delayed = false;
     int chunk = 0;
     index_t kmax = 0;
@@ -56,6 +57,7 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::SELL> {
 template <class _Field>
 struct Sparse<_Field, SparseMatrix_t::SELL_ZO>
     : public Sparse<_Field, SparseMatrix_t::SELL> {
+        using Field = _Field;
     typename _Field::Element cst = 1;
 };
 

@@ -36,6 +36,7 @@
 namespace FFLAS { /*  CSR_HYB */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::CSR_HYB> {
+ using Field = _Field;
     bool delayed = false;
     index_t *col = nullptr;
     index_t *st = nullptr;

@@ -66,86 +66,70 @@
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
 namespace FFLAS {
 
-	// public:
-	/// Is matrix transposed ?
-	enum FFLAS_TRANSPOSE
-	{
-		FflasNoTrans=111, /**< Matrix is not transposed */
-		FflasTrans  =112  /**< Matrix is transposed */
-	};
-	/// Is triangular matrix's shape upper ?
-	enum FFLAS_UPLO
-	{
-		FflasUpper=121,  /**< Triangular matrix is Upper triangular (if \f$i>j\f$ then \f$T_{i,j} = 0\f$)*/
-		FflasLower=122   /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
-	};
+// public:
+/// Is matrix transposed ?
+enum FFLAS_TRANSPOSE {
+    FflasNoTrans = 111, /**< Matrix is not transposed */
+    FflasTrans = 112    /**< Matrix is transposed */
+};
+/// Is triangular matrix's shape upper ?
+enum FFLAS_UPLO {
+    FflasUpper = 121, /**< Triangular matrix is Upper triangular (if \f$i>j\f$ then \f$T_{i,j} = 0\f$)*/
+    FflasLower = 122  /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
+};
 
-	/// Is the triangular matrix implicitly unit diagonal ?
-	enum FFLAS_DIAG
-	{
-		FflasNonUnit=131 ,  /**< Triangular matrix has an explicit general diagonal */
-		FflasUnit   =132    /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*//**< */
-	};
+/// Is the triangular matrix implicitly unit diagonal ?
+enum FFLAS_DIAG {
+    FflasNonUnit = 131, /**< Triangular matrix has an explicit general diagonal */
+    FflasUnit = 132 /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*/ /**< */
+};
 
-	/// On what side ?
-	enum FFLAS_SIDE
-	{
-		FflasLeft  = 141, /**< Operator applied on the left */
-		FflasRight = 142  /**< Operator applied on the rigth*/
-	};
+/// On what side ?
+enum FFLAS_SIDE {
+    FflasLeft = 141, /**< Operator applied on the left */
+    FflasRight = 142 /**< Operator applied on the rigth*/
+};
 
-	/** \p FFLAS_BASE  determines the type of the element representation for Matrix Mult kernel.  */
-	enum FFLAS_BASE
-	{
-		FflasDouble  = 151,  /**<  to use the double precision BLAS */
-		FflasFloat   = 152,  /**<  to use the single precison BLAS */
-		FflasGeneric = 153   /**< for any other domain, that can not be converted to floating point integers */
-	};
+/** \p FFLAS_BASE  determines the type of the element representation for Matrix Mult kernel.  */
+enum FFLAS_BASE {
+    FflasDouble = 151, /**<  to use the double precision BLAS */
+    FflasFloat = 152,  /**<  to use the single precison BLAS */
+    FflasGeneric = 153 /**< for any other domain, that can not be converted to floating point integers */
+};
 
+namespace Protected {
 
+template <class X, class Y> class AreEqual {
+  public:
+    static const bool value = false;
+};
 
-
-
-
-	namespace Protected {
-
-		template <class X,class Y>
-		class AreEqual {
-		public:
-			static const bool value = false;
-		};
-
-		template <class X>
-		class AreEqual<X,X> {
-		public:
-			static const bool value = true;
-		};
-	} // Protected
+template <class X> class AreEqual<X, X> {
+  public:
+    static const bool value = true;
+};
+} // Protected
 } // class FFLAS
 #include <algorithm>
 
 namespace FFLAS {
 
-	template <class T>
-	const T& min3(const T & m, const T & n , const T & k)	{return std::min(m,std::min(n,k));}
+template <class T> const T &min3(const T &m, const T &n, const T &k) { return std::min(m, std::min(n, k)); }
 
-	template <class T>
-	const T& max3(const T & m, const T & n , const T & k)	{return std::max(m,std::min(n,k));}
+template <class T> const T &max3(const T &m, const T &n, const T &k) { return std::max(m, std::min(n, k)); }
 
-	template <class T>
-	const T& min4(const T & m, const T & n , const T & k, const T & l)
-	{return std::min(std::min(m,n),std::min(k,l));}
+template <class T> const T &min4(const T &m, const T &n, const T &k, const T &l) {
+    return std::min(std::min(m, n), std::min(k, l));
+}
 
-	template <class T>
-	const T& max4(const T & m, const T & n , const T & k, const T & l)
-	{return std::max(std::max(m,n),std::max(k,l));}
-
+template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l) {
+    return std::max(std::max(m, n), std::max(k, l));
+}
 
 } // FFLAS
 
 // include fields for specialisation
 #include "fflas-ffpack/field/rns.h"
-
 
 #include "fflas-ffpack/utils/fflas_memory.h"
 //---------------------------------------------------------------------
@@ -192,13 +176,11 @@ namespace FFLAS {
 #include "fflas_ftrsm_mp.inl"
 #include "fflas_fgemv_mp.inl"
 
-
 //---------------------------------------------------------------------
 // Sparse routines
 //---------------------------------------------------------------------
 
-
-#include "fflas_fspmv.h"
+#include "fflas_sparse.h"
 
 #if 0
 //BB
@@ -207,9 +189,6 @@ namespace FFLAS {
 #endif
 #endif
 
-
 #undef LB_TRTR
 
 #endif // __FFLASFFPACK_fflas_H
-
-
