@@ -35,6 +35,7 @@
 #define __FFPACK_rns_integer_mod_H
 
 #include <vector>
+#include <cmath> 
 //using namespace std; // NO WAY! A.B. - 2014-12-18
 
 #include <givaro/modular-integer.h>
