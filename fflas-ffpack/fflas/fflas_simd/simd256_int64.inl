@@ -206,8 +206,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-        return set((__int128(ca.t[0]) * cb.t[0]), (__int128(ca.t[1]) * cb.t[1]), (__int128(ca.t[2]) * cb.t[2]),
-                   (__int128(ca.t[3]) * cb.t[3]));
+        return set(ca.t[0] * cb.t[0], ca.t[1] * cb.t[1], ca.t[2] * cb.t[2], ca.t[3] * cb.t[3]);
     }
 
     static INLINE CONST vect_t mullox(const vect_t x0, const vect_t x1) { return _mm256_mullo_epi32(x0, x1); }

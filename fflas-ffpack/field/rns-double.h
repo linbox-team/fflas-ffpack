@@ -152,6 +152,12 @@ namespace FFPACK {
 		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 		void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 
+		
+		// reduce entries of Arns to be less than the rns basis elements
+		void reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR=false) const;
+		
+
+		
 	}; // end of struct rns_double
 
 } // end of namespace FFPACK

@@ -68,16 +68,19 @@ namespace FFPACK {
 			// Arns = _crt_in x A_beta^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 			// reduce each row i of Arns modulo moduli[i]
-			for(size_t i=0;i<_size;i++)
-				FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
+			//for(size_t i=0;i<_size;i++)
+			//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
 		}
 		else {
 			// Arns =  A_beta x _crt_in^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
 			// reduce each column j of Arns modulo moduli[i]
-			for(size_t i=0;i<_size;i++)
-				FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
+			//for(size_t i=0;i<_size;i++)
+			//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 		}
+
+		reduce(mn,Arns,rda,RNS_MAJOR);
+		
 		FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
@@ -132,16 +135,18 @@ namespace FFPACK {
 			// Arns = _crt_in x A_beta^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 			// reduce each row i of Arns modulo moduli[i]
-			for(size_t i=0;i<_size;i++)
-				FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
+			//for(size_t i=0;i<_size;i++)
+			//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
 		}
 		else {
 			// Arns =  A_beta x _crt_in^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
 			// reduce each column j of Arns modulo moduli[i]
-			for(size_t i=0;i<_size;i++)
-				FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
+			//for(size_t i=0;i<_size;i++)
+			//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 		}
+		reduce(mn,Arns,rda,RNS_MAJOR);
+		
 		FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
@@ -343,6 +348,84 @@ namespace FFPACK {
 
 	}
 
+	// reduce entries of Arns to be less than the rns basis elements
+	void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
+
+		if (RNS_MAJOR) {		
+#ifdef __FFLASFFPACK_USE_SIMD
+			using simd = Simd<double>;
+			using vect_t = typename simd::vect_t;
+		
+			if(_size % simd::vect_size){
+				for(size_t i = 0 ; i < n ; i++){
+					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+					for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
+						basis = simd::load(_basis.data()+j);
+						inv   = simd::load(_invbasis.data()+j);
+						max   = simd::load(_basisMax.data()+j);
+						neg   = simd::load(_negbasis.data()+j);
+						v     = simd::load(Arns+i*_size+j);
+						tmp1  = simd::floor(simd::mul(v, inv));				
+						tmp2  = simd::fnmadd(v, tmp1, basis);
+						tmp1  = simd::greater(tmp2, max);
+						tmp3  = simd::lesser(tmp2, simd::zero());
+						tmp1  = simd::vand(tmp1, neg);
+						tmp3  = simd::vand(tmp3, basis);
+						tmp1  = simd::vor(tmp1, tmp3);
+						tmp2  = simd::add(tmp2, tmp1);
+						simd::store(Arns+i*_size+j, tmp2);
+					}
+				}
+			}else{
+				for(size_t i = 0 ; i < n ; i++){
+					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+					size_t j = 0;
+					for( ; j < _size-simd::vect_size ; j+=simd::vect_size){
+						basis = simd::load(_basis.data()+j);
+						inv   = simd::load(_invbasis.data()+j);
+						max   = simd::load(_basisMax.data()+j);
+						neg   = simd::load(_negbasis.data()+j);
+						v     = simd::loadu(Arns+i*_size+j);
+						tmp1  = simd::floor(simd::mul(v, inv));				
+						tmp2  = simd::fnmadd(v, tmp1, basis);
+						tmp1  = simd::greater(tmp2, max);
+						tmp3  = simd::lesser(tmp2, simd::zero());
+						tmp1  = simd::vand(tmp1, neg);
+						tmp3  = simd::vand(tmp3, basis);
+						tmp1  = simd::vor(tmp1, tmp3);
+						tmp2  = simd::add(tmp2, tmp1);
+						simd::store(Arns+i*_size+j, tmp2);
+					}
+					for( ; j < _size ; ++j){
+						auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
+						Arns[i+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
+						if(Arns[i*_size+j] >= _basis[j]){
+							Arns[i*_size+j] -= _basis[j]; 
+						}else if(Arns[i*_size+j] < 0){
+							Arns[i*_size+j] += _basis[j]; 
+						}
+					}
+				}
+			}
+#else
+			for(size_t i = 0 ; i < n ; i+= _size){
+				for(size_t j = 0 ; j < _size ; ++j){
+					_field_rns.reduce(Arns+i*_size+j);
+				}
+			}
+#endif
+		}
+		else { // NOT IN RNS MAJOR
+			for(size_t i=0;i<_size;i++)
+				FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
+
+		}
+		
+	}
+
+		
+	
+	
 } // FFPACK
 
 #endif // __FFLASFFPACK_field_rns_double_INL
