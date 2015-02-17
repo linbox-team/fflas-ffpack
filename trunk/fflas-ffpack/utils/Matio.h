@@ -240,7 +240,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 
 	typename Field::Element tmp;
 	// double tmp;
-	if (mapleFormat) c << "Matrix(" << n <<',' << m << ", [" ;
+	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",\n[" ;
 	for (int i = 0; i<n;++i){
 		if (mapleFormat) c << '[';
 		for (int j=0; j<m;++j){
@@ -271,7 +271,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 {
 
 	double tmp;
-	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",[";
+	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",\n[";
 	for (int i = 0; i<n;++i){
 		if (mapleFormat) c << '[';
 		// under diag
