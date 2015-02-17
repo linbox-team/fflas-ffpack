@@ -98,6 +98,9 @@ extern "C" {
 	void dcopy_  (const int *, const double *, const int *, double *, const int *);
 	void scopy_  (const int *, const float  *, const int *, float  *, const int *);
 
+	void dscal_  (const int *, const double *, double *, const int *);
+	void sscal_  (const int *, const float  *, float  *, const int *);
+
 
 
 	// level 3 routines
@@ -199,7 +202,7 @@ extern "C" {
 
 	void cblas_dscal(const int N, const double alpha,  double *Y, const int incY)
 	{
-		dscal_(&N,X,Y,&incY);
+		dscal_(&N,&alpha,Y,&incY);
 	}
 
 	void cblas_sscal(const int N, const float alpha,  float *Y, const int incY)

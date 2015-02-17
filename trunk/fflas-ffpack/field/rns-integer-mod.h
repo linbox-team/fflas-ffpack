@@ -336,7 +336,7 @@ namespace FFPACK {
 						A[j+i*lda+k*rda]= z[j+i*n+k*mn]-_iM_modp_rns[aa+k*_size];
 					}
 			}
-
+			
 			// reduce each row of A modulo m_i
 			for (size_t i=0;i<_size;i++)
 				FFLAS::freduce (_rns->_field_rns[i], m, n, A+i*rda, lda);
@@ -348,6 +348,53 @@ namespace FFPACK {
 			t_modp+=chrono.usertime();
 #endif
 		}
+
+		
+		void reduce_modp_rnsmajor(size_t n, BasisElement* A) const{
+#ifdef BENCH_MODP
+                        FFLAS::Timer chrono; chrono.start();
+#endif
+                        size_t _size= _rns->_size;
+                        BasisElement *Gamma, *alpha;
+			Givaro::UnparametricRing<BasisElement> D;
+                        Gamma = FFLAS::fflas_new(D,n,_size);
+                        alpha = FFLAS::fflas_new(D,n,1);
+			
+                        // compute Gamma (NOT EFFICIENT)
+                        for(size_t i=0;i<_size;i++)
+                                FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i*n,1);
+			
+                        // compute A = Gamma._Mi_modp_rns^T (note must be reduced mod m_i, but this is postpone to the end)
+                        FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
+                        
+                        //std::cout<<"fgemv (Y)...";
+                        //std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
+                        // compute alpha = Gamma._invbasis
+                        FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+                        //std::cout<<"done"<<std::endl;
+			
+                        // compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
+                        for(size_t i=0;i<_size;i++){
+                                for(size_t j=0;j<n;j++){
+                                        //long aa=floor(alpha[j]+0.5);
+                                        long aa= (long)rint(alpha[j]);
+                                        A[j*_size+i]-=_iM_modp_rns[aa+i*_size];
+                                }
+                        }
+
+                        // reduce each column of A modulo m_i (NOT EFFICIENT)
+			_rns->reduce(n,A,1,true);
+
+
+                        FFLAS::fflas_delete(Gamma);
+                        FFLAS::fflas_delete(alpha);
+#ifdef BENCH_MODP
+                        chrono.stop();
+                        t_modp+=chrono.usertime();
+#endif
+
+                }
+
 
 	}; // end of class RNSIntegerMod
 
