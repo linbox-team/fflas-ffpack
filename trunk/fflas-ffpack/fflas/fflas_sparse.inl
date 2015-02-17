@@ -884,4 +884,5 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
 // }
 }
 
+
 #endif // __FFLASFFPACK_fflas_fflas_sparse_INL
