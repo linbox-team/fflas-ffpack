@@ -356,7 +356,7 @@ namespace FFPACK {
 			using simd = Simd<double>;
 			using vect_t = typename simd::vect_t;
 		
-			if(_size % simd::vect_size){
+			if(_size % simd::vect_size == 0){
 				for(size_t i = 0 ; i < n ; i++){
 					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
 					for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
@@ -394,7 +394,7 @@ namespace FFPACK {
 						tmp3  = simd::vand(tmp3, basis);
 						tmp1  = simd::vor(tmp1, tmp3);
 						tmp2  = simd::add(tmp2, tmp1);
-						simd::store(Arns+i*_size+j, tmp2);
+						simd::storeu(Arns+i*_size+j, tmp2);
 					}
 					for( ; j < _size ; ++j){
 						auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
