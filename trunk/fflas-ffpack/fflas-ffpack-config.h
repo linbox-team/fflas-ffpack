@@ -47,6 +47,18 @@
 #define __FFLASFFPACK_USE_SIMD // see configure...
 #endif
 
+#ifdef __CYGWIN__
+#  ifndef _GLIBCXX_USE_C99_MATH_TR1
+#    include <math.h>
+#    undef fma
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  using ::fma;
+}
+#  endif
+#endif
+
 // winograd algorithm threshold (for double)
 #ifndef __FFLASFFPACK_WINOTHRESHOLD
 #define __FFLASFFPACK_WINOTHRESHOLD 1000
