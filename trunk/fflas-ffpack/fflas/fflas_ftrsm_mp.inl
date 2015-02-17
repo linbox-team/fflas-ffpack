@@ -31,7 +31,7 @@
 #ifndef __FFPACK_ftrsm_mp_INL
 #define __FFPACK_ftrsm_mp_INL
 
-#include <math.h>
+#include <cmath>
 #include <givaro/modular-integer.h>
 #include <givaro/givinteger.h>
 
