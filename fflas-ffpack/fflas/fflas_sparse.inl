@@ -590,7 +590,7 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
     }
 #else
     if (F.isOne(A.cst)) {
-        sparse_details_impl::fspmm__one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+        sparse_details_impl::fspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     } else if (F.isMOne(A.cst)) {
         sparse_details_impl::fspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     } else {
