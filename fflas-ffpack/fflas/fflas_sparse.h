@@ -60,6 +60,7 @@
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/fflas/parallel.h"
 
 #ifdef __FFLASFFPACK_USE_SIMD
 #include "fflas-ffpack/fflas/fflas_simd.h"
@@ -98,6 +99,7 @@ template <class Field, SparseMatrix_t> struct Sparse;
 
 } // FFLAS
 
+#include "fflas-ffpack/fflas/fflas_sparse/utils.h"
 #include "fflas-ffpack/fflas/fflas_sparse/csr.h"
 #include "fflas-ffpack/fflas/fflas_sparse/coo.h"
 #include "fflas-ffpack/fflas/fflas_sparse/ell.h"
@@ -246,28 +248,36 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
 /*************************************
         fspmm
 **************************************/
+template<class Field, class SM, class FCat, class MZO>
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::MultiPrecisionTag, FCat fc, MZO mz);
+
+template<class Field, class SM, class FCat, class MZO>
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, FCat fc, MZO mz);
+
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::GenericTag, std::false_type);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::UnparametricTag, std::false_type);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::ModularTag, std::false_type);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::GenericTag, std::true_type);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::UnparametricTag, std::true_type);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::ModularTag, std::true_type);
 }
 
@@ -295,5 +305,8 @@ inline void pfspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr
 }
 
 #include "fflas-ffpack/fflas/fflas_sparse.inl"
+
+#undef ROUND_DOWN
+#undef assume_aligned
 
 #endif // __FFLASFFPACK_fflas_fflas_sparse_H

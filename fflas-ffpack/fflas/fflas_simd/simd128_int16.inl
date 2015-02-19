@@ -56,6 +56,18 @@ template <> struct Simd128_impl<true, true, true, 2> {
     static const constexpr size_t alignment = 16;
 
     /*
+     * Check if the pointer p is a multiple of alignemnt
+     */
+    template<class T>
+    static constexpr bool valid(T* p) {return p%alignment == 0;}
+
+    /*
+     * Check if the number n is a multiple of vect_size
+     */
+    template<class T>
+    static constexpr bool compliant(T n) {return n%vect_size == 0;}
+
+    /*
      * Converter from vect_t to a tab.
      * exple:
      *      Converter conv;

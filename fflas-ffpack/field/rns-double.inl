@@ -380,7 +380,7 @@ namespace FFPACK {
 				for(size_t i = 0 ; i < n ; i++){
 					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
 					size_t j = 0;
-					for( ; j < _size-simd::vect_size ; j+=simd::vect_size){
+					for( ; j < ROUND_DOWN(_size, simd::vect_size) ; j+=simd::vect_size){
 						basis = simd::load(_basis.data()+j);
 						inv   = simd::load(_invbasis.data()+j);
 						max   = simd::load(_basisMax.data()+j);
@@ -397,8 +397,10 @@ namespace FFPACK {
 						simd::storeu(Arns+i*_size+j, tmp2);
 					}
 					for( ; j < _size ; ++j){
-						auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
-						Arns[i+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
+						// std::cout << j << std::endl;
+						// auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
+						Arns[i*_size+j] -= std::floor(Arns[i*_size+j]*_invbasis[j])*_basis[j];
+						// Arns[i*_size+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
 						if(Arns[i*_size+j] >= _basis[j]){
 							Arns[i*_size+j] -= _basis[j]; 
 						}else if(Arns[i*_size+j] < 0){

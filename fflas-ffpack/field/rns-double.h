@@ -34,6 +34,11 @@
 #ifndef __FFPACK_rns_double_H
 #define __FFPACK_rns_double_H
 
+// Bigger multiple of s lesser or equal than x, s must be a power of two
+#ifndef ROUND_DOWN
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+#endif
+
 #include <vector>
 #include <givaro/modular-double.h>
 #include <givaro/givinteger.h>
