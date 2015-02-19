@@ -356,13 +356,13 @@ namespace FFPACK {
 #endif
                         size_t _size= _rns->_size;
                         BasisElement *Gamma, *alpha;
-			Givaro::UnparametricRing<BasisElement> D;
+						Givaro::UnparametricRing<BasisElement> D;
                         Gamma = FFLAS::fflas_new(D,n,_size);
                         alpha = FFLAS::fflas_new(D,n,1);
 			
                         // compute Gamma (NOT EFFICIENT)
                         for(size_t i=0;i<_size;i++)
-                                FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i*n,1);
+                                FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
 			
                         // compute A = Gamma._Mi_modp_rns^T (note must be reduced mod m_i, but this is postpone to the end)
                         FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
@@ -383,7 +383,7 @@ namespace FFPACK {
                         }
 
                         // reduce each column of A modulo m_i (NOT EFFICIENT)
-			_rns->reduce(n,A,1,true);
+						_rns->reduce(n,A,1,true);
 
 
                         FFLAS::fflas_delete(Gamma);

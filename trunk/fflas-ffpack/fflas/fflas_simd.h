@@ -33,9 +33,12 @@
 #define SIMD_INT 1
 
 #include <immintrin.h>
+#include <iostream>
+#include <type_traits>
+#include <limits>
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/debug.h"
-#include <iostream>
 
 #if defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
 #define INLINE __attribute__((always_inline)) inline
@@ -54,9 +57,6 @@
 #else
 #define PURE
 #endif
-
-#include <type_traits>
-#include <limits>
 
 #ifdef __FFLASFFPACK_USE_SIMD
 namespace std {
@@ -220,43 +220,78 @@ template <> struct is_simd<__m256i> {
  * Simd functors
  */
 
-#if defined(__FFLASFFPACK_USE_AVX)
+struct NoSimd
+{
+    // Test if the pointer p is multiple of alignment
+    template<class T>
+    static constexpr bool valid(T p){return false;}
 
-template <class T, bool = std::is_integral<T>::value> struct SimdChooser {};
+    // Test if n is multiple of vect_size
+    template<class T>
+    static constexpr bool compliant(T n){return false;}
+};
 
-template <class T> struct SimdChooser<T, false> { typedef Simd256<T> value; };
+// #if defined(__FFLASFFPACK_USE_AVX)
 
-template <class T> struct SimdChooser<T, true> {
-#if defined(__FFLASFFPACK_USE_AVX2)
-    typedef Simd256<T> value;
+template<class T, bool = std::is_arithmetic<T>::value, bool = std::is_integral<T>::value> struct SimdChooser {};
+
+template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSimd; };
+
+template<class T>
+struct SimdChooser<T, true, false> // floating number
+{    
+#ifdef __FFLASFFPACK_USE_AVX
+    using value = Simd256<T>;
+#elif defined(__FFLASFFPACK_USE_SSE)
+    using value = Simd128<T>;
 #else
-    typedef Simd128<T> value;
-#endif // __FFLASFFPACK_USE_AVX2
+    using value = NoSimd;
+#endif
+};
+
+template<class T>
+struct SimdChooser<T, true, true> // integral number
+{    
+#ifdef __FFLASFFPACK_USE_AVX2
+    using value = Simd256<T>;
+#elif __FFLASFFPACK_USE_SSE 
+    using value = Simd128<T>;
+#else
+    using value = NoSimd;
+#endif
 };
 
 template <class T> using Simd = typename SimdChooser<T>::value;
 
-#elif defined(__FFLASFFPACK_USE_SSE) // not AVX
+// template <class T> struct SimdChooser<T, true> {
+// #if defined(__FFLASFFPACK_USE_AVX2)
+//     typedef Simd256<T> value;
+// #else
+//     typedef Simd128<T> value;
+// #endif // __FFLASFFPACK_USE_AVX2
+// };
 
-template <class T> using Simd = Simd128<T>;
+// #elif defined(__FFLASFFPACK_USE_SSE) // not AVX
 
-#endif // __FFLASFFPACK_USE_AVX
+// template <class T> using Simd = Simd128<T>;
+
+// #endif // __FFLASFFPACK_USE_AVX
 
 #if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
 
-template <class T> struct floating_simd;
+// template <class T> struct floating_simd;
 
-template <> struct floating_simd<float> { typedef Simd<float> value; };
+// template <> struct floating_simd<float> { typedef Simd<float> value; };
 
-template <> struct floating_simd<double> { typedef Simd<double> value; };
+// template <> struct floating_simd<double> { typedef Simd<double> value; };
 
-template <> struct floating_simd<int64_t> {
-#if defined(__FFLASFFPACK_USE_AVX2)
-// typedef Simd256<double> value;
-#else
-    typedef Simd128<double> value;
-#endif
-};
+// template <> struct floating_simd<int64_t> {
+// #if defined(__FFLASFFPACK_USE_AVX2)
+// // typedef Simd256<double> value;
+// #else
+//     typedef Simd128<double> value;
+// #endif
+// };
 
 #endif
 
@@ -287,33 +322,6 @@ template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd
     FFLAS::print<Simd128<T>>(o, v);
     return o;
 }
-
-#if 0
-	std::ostream & operator<<(std::ostream&o
-				  , const typename Simd128<int64_t>::vect_t & v
-				 )
-	{
-		FFLAS::print<Simd128<int64_t> >(o,v);
-		return o ;
-	}
-
-	std::ostream & operator<<(std::ostream&o
-				  , const typename Simd128<double>::vect_t & v
-				 )
-	{
-		FFLAS::print<Simd128<double> >(o,v);
-		return o ;
-	}
-
-	std::ostream & operator<<(std::ostream&o
-				  , const typename Simd128<float>::vect_t & v
-				 )
-	{
-		FFLAS::print<Simd128<float> >(o,v);
-		return o ;
-	}
-#endif
-
 } // std
 
 #ifdef __AVX__
@@ -323,36 +331,8 @@ template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd
     FFLAS::print(o, v);
     return o;
 }
-
-#if 0
-	std::ostream & operator<<(std::ostream&o
-				  , const typename Simd256<int64_t>::vect_t & v
-				 )
-	{
-		FFLAS::print<Simd256<int64_t> >(o,v);
-		return o ;
-	}
-
-	std::ostream & operator<<(std::ostream&o
-				  , const typename Simd256<double>::vect_t & v
-				 )
-	{
-		FFLAS::print<Simd256<double> >(o,v);
-		return o ;
-	}
-
-	std::ostream & operator<<(std::ostream&o
-				  , const typename Simd256<float>::vect_t & v
-				 )
-	{
-		FFLAS::print<Simd256<float> >(o,v);
-		return o ;
-	}
-#endif
 }
 #endif // __AVX__
-
-// #include "fflas-ffpack/fflas/fflas_simd/simd_modular.inl"
 
 #endif // __FFLASFFPACK_USE_SIMD
 

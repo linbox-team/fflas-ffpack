@@ -57,6 +57,18 @@ template <> struct Simd128_impl<true, false, true, 4> {
     static const constexpr size_t alignment = 16;
 
     /*
+     * Check if the pointer p is a multiple of alignemnt
+     */
+    template<class T>
+    static constexpr bool valid(T* p) {return p%alignment == 0;}
+
+    /*
+     * Check if the number n is a multiple of vect_size
+     */
+    template<class T>
+    static constexpr bool compliant(T n) {return n%vect_size == 0;}
+
+    /*
      *  Return vector of type vect_t with all elements set to zero
      *  Return [0,0,0,0]
      */

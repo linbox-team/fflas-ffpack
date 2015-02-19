@@ -29,6 +29,7 @@ SUBDIRS=coo csr csr_hyb ell ell_simd hyb_zo sell
 
 
 pkgincludesub_HEADERS=            \
+        utils.h \
         coo.h  \
 	    csr.h  \
 	    ell.h  \
