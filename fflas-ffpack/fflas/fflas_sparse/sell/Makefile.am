@@ -25,4 +25,6 @@
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/sell
 
 pkgincludesub_HEADERS=            \
-        sell_spmv.inl 
+        sell_spmv.inl \
+        sell_utils.inl \
+        sell_pspmv.inl
