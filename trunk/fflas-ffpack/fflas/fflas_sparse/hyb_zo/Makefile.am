@@ -25,4 +25,9 @@
 pkgincludesubdir=$(pkgincludedir)/fflas/fflas_sparse/hyb_zo
 
 pkgincludesub_HEADERS=            \
-        hyb_zo_spmv.inl 
+        hyb_zo_spmv.inl \
+        hyb_zo_spmm.inl \
+        hyb_zo_pspmm.inl \
+        hyb_zo_pspmv.inl \
+        hyb_zo_utils.inl
+
