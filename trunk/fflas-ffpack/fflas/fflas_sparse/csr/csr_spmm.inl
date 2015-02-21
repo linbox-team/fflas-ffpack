@@ -88,6 +88,7 @@ template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
                                typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                FieldCategories::UnparametricTag) {
+    // std::cout << "spmm simd Unparam aligned" << std::endl;
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
@@ -128,6 +129,7 @@ template <class Field>
 inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
                                 typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                 FieldCategories::UnparametricTag) {
+    // std::cout << "spmm simd Unparam unaligned" << std::endl;
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
@@ -138,25 +140,23 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
-            vect_t y1, x1, y2, x2, dat;
-            // y1 = simd::zero();
-            // y2 = simd::zero();
+            vect_t y1, x1, y2, x2, vdat;
             int k = 0;
-            dat = simd::set1(dat[j]);
+            vdat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 y1 = simd::loadu(y+i*ldy+k);
                 y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
-                y1 = simd::fmadd(y1, x1, dat);
-                y2 = simd::fmadd(y2, x2, dat);
+                y1 = simd::fmadd(y1, x1, vdat);
+                y2 = simd::fmadd(y2, x2, vdat);
                 simd::storeu(y + i * ldy + k, y1);
                 simd::storeu(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
                 y1 = simd::loadu(y+i*ldy+k);
                 x1 = simd::loadu(x + col[j] * ldx + k);
-                y1 = simd::fmadd(y1, x1, dat);
+                y1 = simd::fmadd(y1, x1, vdat);
                 simd::storeu(y + i * ldy + k, y1);
             }
             for (; k < blockSize; ++k) {
