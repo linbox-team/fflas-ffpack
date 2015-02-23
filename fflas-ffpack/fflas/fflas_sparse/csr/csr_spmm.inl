@@ -146,8 +146,8 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 y1 = simd::loadu(y+i*ldy+k);
                 y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
-                x1 = simd::loadu(x + col[j] * ldx + k);
-                x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+                x1 = simd::loadu(x + A.col[j] * ldx + k);
+                x2 = simd::loadu(x + A.col[j] * ldx + k + simd::vect_size);
                 y1 = simd::fmadd(y1, x1, vdat);
                 y2 = simd::fmadd(y2, x2, vdat);
                 simd::storeu(y + i * ldy + k, y1);
