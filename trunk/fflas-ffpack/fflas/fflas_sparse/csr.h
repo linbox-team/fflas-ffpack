@@ -53,7 +53,7 @@ template <class _Field>
 struct Sparse<_Field, SparseMatrix_t::CSR_ZO>
     : public Sparse<_Field, SparseMatrix_t::CSR> {
         using Field = _Field;
-    typename _Field::Element cst = 1;
+    int64_t cst = 1;
     bool delayed = false;
 };
 

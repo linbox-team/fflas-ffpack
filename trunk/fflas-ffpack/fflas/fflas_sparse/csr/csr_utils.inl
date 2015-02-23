@@ -40,16 +40,16 @@ template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatri
 }
 
 template <class Field> inline void sparse_print(const Sparse<Field, SparseMatrix_t::CSR> &A) {
-    for (size_t i = 0; i <= A.m; ++i)
-        std::cout << A.st[i] << " ";
-    std::cout << std::endl;
+    // for (size_t i = 0; i <= A.m; ++i)
+    //     std::cout << A.st[i] << " ";
+    // std::cout << std::endl;
     for (index_t i = 0; i < A.m; ++i) {
         auto start = A.st[i], stop = A.st[i + 1];
         index_t j = 0;
         index_t diff = stop - start;
         std::cout << i << " : ";
         for (; j < diff; ++j) {
-            std::cout << A.dat[start + j] << " ";
+            std::cout << A.col[start + j] << " ";
         }
         std::cout << std::endl;
     }
@@ -72,10 +72,49 @@ inline void sparse_init(const Givaro::Modular<Givaro::Integer> &F, Sparse<Givaro
     A.st = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
     A.dat = fflas_new(F, nnz, 1, Alignment::CACHE_LINE);
 
+    for(size_t i = 0 ; i < nnz ; ++i){
+        if(col[i] >= coldim){
+            std::cout << "Error col index too big" << std::endl;
+        }
+    }
+
     for (size_t i = 0; i < nnz; ++i) {
         A.col[i] = static_cast<index_t>(col[i]);
         A.dat[i] = dat[i];
     }
+
+    A.st[0] = 0;
+    for (size_t i = 1; i <= rowdim; ++i) {
+        A.st[i] = A.st[i - 1] + rows[i - 1];
+    }
+}
+
+template <class IndexT>
+inline void sparse_init(const Givaro::Modular<Givaro::Integer> &F, Sparse<Givaro::Modular<Givaro::Integer>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
+                        Givaro::Integer* dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
+    A.m = rowdim;
+    A.n = coldim;
+    A.nnz = nnz;
+    A.nElements = nnz;
+    std::vector<uint64_t> rows(rowdim, 0);
+    for (uint64_t i = 0; i < A.nnz; ++i)
+        rows[row[i]]++;
+
+    A.delayed = true;
+
+    A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+    A.st = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
+
+    for(size_t i = 0 ; i < nnz ; ++i){
+        if(col[i] >= coldim){
+            std::cout << "Error col index too big" << std::endl;
+        }
+    }
+
+    for (size_t i = 0; i < nnz; ++i) {
+        A.col[i] = static_cast<index_t>(col[i]);
+    }
+
     A.st[0] = 0;
     for (size_t i = 1; i <= rowdim; ++i) {
         A.st[i] = A.st[i - 1] + rows[i - 1];
