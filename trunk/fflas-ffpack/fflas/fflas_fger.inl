@@ -296,5 +296,5 @@ namespace FFLAS{
 	}
 
 } // FFLAS
-#include "fflas-ffpack/fflas/fflas_fger_mp.inl"
+//#include "fflas-ffpack/fflas/fflas_fger_mp.inl" moved to fflas.h
 #endif // __FFLASFFPACK_fger_INL

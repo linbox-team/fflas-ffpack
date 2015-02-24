@@ -31,71 +31,93 @@
 #define __FFLASFFPACK_fscal_mp_INL
 
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/rns-integer-mod.h"
-
 namespace FFLAS {
 
-	// specialization of the level1 fscalin function for the field RNSInteger<rns_double>
+	/*
+	 *  specialization for the field RNSInteger<rns_double> 
+	 */
+	
+	// level 1 : fscalin
+	template<>
+	void fscalin(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t n,
+		     const FFPACK::rns_double::Element alpha,
+		     FFPACK::rns_double::Element_ptr A, const size_t inc) 
+	{
+		for (size_t i=0;i<F.size();i++)
+			fscalin(F.rns()._field_rns[i], n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,inc);		
+	}
+	// level 1 : fscal
+	template<>
+	void fscal(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t n,
+		   const FFPACK::rns_double::Element alpha,
+		   FFPACK::rns_double::ConstElement_ptr A, const size_t Ainc,
+		   FFPACK::rns_double::Element_ptr B, const size_t Binc) 
+	{
+		for (size_t i=0;i<F.size();i++)
+			fscal(F.rns()._field_rns[i], n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,Ainc, B._ptr+i*B._stride,Binc);
+	}
+	// level 2 : fscalin
+	template<>
+	void fscalin(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t m, const size_t n,
+		     const FFPACK::rns_double::Element alpha,
+		     FFPACK::rns_double::Element_ptr A, const size_t lda) {
+		for (size_t i=0;i<F.size();i++)
+			fscalin(F.rns()._field_rns[i], m, n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,lda);
+	}
+	// level 2 : fscal
+	template<>
+	void fscal(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n,
+		   const FFPACK::rns_double::Element alpha,
+		   FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
+		   FFPACK::rns_double::Element_ptr B, const size_t ldb) {
+		for (size_t i=0;i<F.size();i++)
+			fscal(F.rns()._field_rns[i], m, n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride, lda, B._ptr+i*B._stride, ldb);
+
+	}
+}
+
+#include "fflas-ffpack/fflas/fflas_freduce_mp.inl"
+namespace FFLAS {
+	/*
+	 *  specialization for the field RNSIntegerMod<rns_double> 
+	 */
+	
+	// level 1 : fscalin
 	template<>
 	void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
 		     const FFPACK::rns_double::Element alpha,
 		     FFPACK::rns_double::Element_ptr A, const size_t inc) 
 	{
-#ifdef BENCH_PERF_SCAL_MP
-		FFLAS::Timer chrono;chrono.start();
-#endif
-		for (size_t i=0;i<F.size();i++)
-			fscalin(F.rns()._field_rns[i], n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,inc);
-#ifdef BENCH_PERF_SCAL_MP
-		chrono.stop();F.t_scal+=chrono.usertime();
-#endif
+		fscalin(F.delayed(),n,alpha,A,inc);
 		freduce (F, n, A, inc);
 	}
+	// level 1 : fscal
 	template<>
 	void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t Ainc,
 		   FFPACK::rns_double::Element_ptr B, const size_t Binc) 
 	{
-#ifdef BENCH_PERF_SCAL_MP
-		FFLAS::Timer chrono;chrono.start();
-#endif
-		for (size_t i=0;i<F.size();i++)
-			fscal(F.rns()._field_rns[i], n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,Ainc, B._ptr+i*B._stride,Binc);
-#ifdef BENCH_PERF_SCAL_MP
-		chrono.stop();F.t_scal+=chrono.usertime();
-#endif
+		fscal(F.delayed(),n,alpha,A,Ainc,B,Binc);
 		freduce (F, n, B, Binc);		
 	}
-	
-	// specialization of the level2 fscalin function for the field RNSInteger<rns_double>
+	// level 2 : fscalin
 	template<>
 	void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m, const size_t n,
 		     const FFPACK::rns_double::Element alpha,
-		     FFPACK::rns_double::Element_ptr A, const size_t lda) {
-#ifdef BENCH_PERF_SCAL_MP
-		FFLAS::Timer chrono;chrono.start();
-#endif
-		for (size_t i=0;i<F.size();i++)
-			fscalin(F.rns()._field_rns[i], m, n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride,lda);
-#ifdef BENCH_PERF_SCAL_MP
-		chrono.stop();F.t_scal+=chrono.usertime();
-#endif
+		     FFPACK::rns_double::Element_ptr A, const size_t lda)
+	{
+		fscalin(F.delayed(),m,n,alpha,A,lda);
 		freduce (F, m, n, A, lda);
 	}
+	// level 2 : fscal
 	template<>
 	void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n,
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
-		   FFPACK::rns_double::Element_ptr B, const size_t ldb) {
-#ifdef BENCH_PERF_SCAL_MP
-		FFLAS::Timer chrono;chrono.start();
-#endif
-		for (size_t i=0;i<F.size();i++)
-			fscal(F.rns()._field_rns[i], m, n, alpha._ptr[i*alpha._stride], A._ptr+i*A._stride, lda, B._ptr+i*B._stride, ldb);
-#ifdef BENCH_PERF_SCAL_MP
-		chrono.stop();F.t_scal+=chrono.usertime();
-#endif
+		   FFPACK::rns_double::Element_ptr B, const size_t ldb)
+	{
+		fscal(F.delayed(),m,n,alpha,A,lda,B,ldb);
 		freduce (F, m, n, B, ldb);
 	}
 

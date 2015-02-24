@@ -32,6 +32,10 @@
 #ifndef __FFLASFFPACK_fflas_fflas_sparse_utils_H
 #define __FFLASFFPACK_fflas_fflas_sparse_utils_H
 
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
 struct StatsMatrix {
     uint64_t rowdim = 0;
     uint64_t coldim = 0;
