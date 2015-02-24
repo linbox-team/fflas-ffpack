@@ -331,14 +331,14 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
 
 template<class Field, class SM, class FCat, class MZO>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::MultiPrecisionTag, FCat fc, MZO mz) {
+                  typename Field::Element_ptr y, int ldy, FieldCategories::MultiPrecisionTag, FCat, MZO) {
     // std::cout << "fspmm multi" << std::endl;
     sparse_details::fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::GenericTag(), MZO());
 }
 
 template<class Field, class SM, class FCat, class MZO>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, FCat fc, MZO mz) {
+                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, FCat, MZO) {
     // std::cout << "fspmm not multi" << std::endl;
     sparse_details::fspmm(F, A, blockSize, x, ldx, y, ldy, FCat(), MZO());
 }
@@ -371,7 +371,7 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
 template <class Field, class SM>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::false_type) {
-    // std::cout << "no ZO Modular" << endl;
+    // std::cout << "no ZO Modular" << std::endl;
     if (A.delayed) {
         sparse_details::fspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag(),
                               typename std::false_type());
@@ -395,7 +395,7 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
 template <class Field, class SM>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::true_type) {
-    // std::cout << "ZO Generic" << endl;
+    // std::cout << "ZO Generic" << std::endl;
     if (F.isOne(A.cst)) {
         sparse_details_impl::fspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
     } else if (F.isMOne(A.cst)) {
@@ -411,17 +411,17 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
 template <class Field, class SM>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::true_type) {
-// std::cout << "ZO Unparametric" << endl;
+// std::cout << "ZO Unparametric" << std::endl;
 #ifdef __FFLASFFPACK_USE_SIMD
     using simd = Simd<typename Field::Element>;
     if (F.isOne(A.cst)) {
         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
             (blockSize % simd::vect_size == 0)) {
-            // std::cout << "ZO Unparametric aligned" << endl;
+            // std::cout << "ZO Unparametric aligned" << std::endl;
             sparse_details_impl::fspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
                                                         FieldCategories::UnparametricTag());
         } else {
-            // std::cout << "ZO Unparametric unaligned" << endl;
+            // std::cout << "ZO Unparametric unaligned" << std::endl;
             sparse_details_impl::fspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
                                                           FieldCategories::UnparametricTag());
         }
@@ -464,7 +464,7 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
 template <class Field, class SM>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::true_type) {
-    // std::cout << "ZO Modular" << endl;
+    // std::cout << "ZO Modular" << std::endl;
     if (A.delayed) {
         sparse_details::fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::UnparametricTag(),
                               typename std::true_type());
@@ -491,24 +491,24 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::false_type) {
-    // std::cout << "no ZO Generic" << endl;
+    // std::cout << "no ZO Generic" << std::endl;
     sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
 }
 
 template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::false_type) {
-// std::cout << "no ZO Unparametric" << endl;
+// std::cout << "no ZO Unparametric" << std::endl;
 #ifdef __FFLASFFPACK_USE_SIMD
     using simd = Simd<typename Field::Element>;
     if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
         (blockSize % simd::vect_size == 0)) {
-        // std::cout << "no ZO Unparametric algined" << endl;
+        // std::cout << "no ZO Unparametric algined" << std::endl;
         sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     }
-// else{
-//     sparse_details_impl::fspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-// }
+else{
+    sparse_details_impl::fspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+}
 #else
     sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
 #endif
@@ -517,7 +517,7 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::false_type) {
-    // std::cout << "no ZO Modular" << endl;
+    // std::cout << "no ZO Modular" << std::endl;
     if (A.delayed) {
         sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag(),
                               typename std::false_type());
@@ -541,7 +541,7 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::true_type) {
-    // std::cout << "ZO Generic" << endl;
+    // std::cout << "ZO Generic" << std::endl;
     if (F.isOne(A.cst)) {
         sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
     } else if (F.isMOne(A.cst)) {
@@ -557,17 +557,17 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::true_type) {
-// std::cout << "ZO Unparametric" << endl;
+// std::cout << "ZO Unparametric" << std::endl;
 #ifdef __FFLASFFPACK_USE_SIMD
     using simd = Simd<typename Field::Element>;
     if (F.isOne(A.cst)) {
         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
             (blockSize % simd::vect_size == 0)) {
-            // std::cout << "ZO Unparametric aligned" << endl;
+            // std::cout << "ZO Unparametric aligned" << std::endl;
             sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
                                                         FieldCategories::UnparametricTag());
         } else {
-            // std::cout << "ZO Unparametric unaligned" << endl;
+            // std::cout << "ZO Unparametric unaligned" << std::endl;
             sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
                                                           FieldCategories::UnparametricTag());
         }
@@ -610,7 +610,7 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::true_type) {
-    // std::cout << "ZO Modular" << endl;
+    // std::cout << "ZO Modular" << std::endl;
     if (A.delayed) {
         sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::UnparametricTag(),
                               typename std::true_type());

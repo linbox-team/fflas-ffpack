@@ -41,6 +41,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+#pragma omp parallel for schedule(static, 32)// num_threads(6)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -88,6 +89,7 @@ template <class Field>
 inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
                                typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                FieldCategories::UnparametricTag) {
+    // std::cout << "pfspmm unparam simd aligned" << std::endl;
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
@@ -95,16 +97,16 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-#pragma omp parallel for schedule(static, 32)// num_threads(6)
+#pragma omp parallel for schedule(static, 128)// num_threads(6)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2, vdat;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             vdat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
+                y2 = simd::load(y+i*ldy+k+simd::vect_size);
                 x1 = simd::load(x + col[j] * ldx + k);
                 x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
                 y1 = simd::fmadd(y1, x1, vdat);
@@ -113,6 +115,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
                 simd::store(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
                 x1 = simd::load(x + col[j] * ldx + k);
                 y1 = simd::fmadd(y1, x1, vdat);
                 simd::store(y + i * ldy + k, y1);
@@ -125,7 +128,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
 }
 
 template <class Field>
-inline void pfspmm_simd_ualigned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
+inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
                                 typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                 FieldCategories::UnparametricTag) {
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
@@ -135,15 +138,17 @@ inline void pfspmm_simd_ualigned(const Field &F, const Sparse<Field, SparseMatri
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
+    // std::cout << "pfspmm unparam simd unaligned" << std::endl;
+#pragma omp parallel for schedule(static, 128)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2, dat;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             dat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
+                y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                 y1 = simd::fmadd(y1, x1, dat);
@@ -152,6 +157,7 @@ inline void pfspmm_simd_ualigned(const Field &F, const Sparse<Field, SparseMatri
                 simd::storeu(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 y1 = simd::fmadd(y1, x1, dat);
                 simd::storeu(y + i * ldy + k, y1);
@@ -223,11 +229,11 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
             j_loc += kmax;
             for (; j < j_loc; ++j) {
                 vect_t y1, x1, y2, x2, vdat;
-                y1 = simd::zero();
-                y2 = simd::zero();
                 int k = 0;
                 vdat = simd::set1(dat[j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                    y1 = simd::loadu(y+i*ldy+k);
+                    y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                     x1 = simd::loadu(x + col[j] * ldx + k);
                     x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                     y1 = simd::fmadd(y1, x1, vdat);
@@ -236,6 +242,7 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
                     simd::storeu(y + i * ldy + k + simd::vect_size, y2);
                 }
                 for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                    y1 = simd::loadu(y+i*ldy+k);
                     x1 = simd::loadu(x + col[j] * ldx + k);
                     y1 = simd::fmadd(y1, x1, vdat);
                     simd::storeu(y + i * ldy + k, y1);
@@ -251,11 +258,11 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
         }
         for (; j < j_end; ++j) {
             vect_t y1, x1, y2, x2, vdat;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             vdat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
+                y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                 y1 = simd::fmadd(y1, x1, vdat);
@@ -264,6 +271,7 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
                 simd::storeu(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 y1 = simd::fmadd(y1, x1, vdat);
                 simd::storeu(y + i * ldy + k, y1);
@@ -298,11 +306,11 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
             j_loc += kmax;
             for (; j < j_loc; ++j) {
                 vect_t y1, x1, y2, x2, vdat;
-                y1 = simd::zero();
-                y2 = simd::zero();
                 int k = 0;
                 vdat = simd::set1(dat[j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                    y1 = simd::load(y+i*ldy+k);
+                    y2 = simd::load(y+i*ldy+k+simd::vect_size);
                     x1 = simd::load(x + col[j] * ldx + k);
                     x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
                     y1 = simd::fmadd(y1, x1, vdat);
@@ -311,6 +319,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
                     simd::store(y + i * ldy + k + simd::vect_size, y2);
                 }
                 for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                    y1 = simd::load(y+i*ldy+k);
                     x1 = simd::load(x + col[j] * ldx + k);
                     y1 = simd::fmadd(y1, x1, vdat);
                     simd::store(y + i * ldy + k, y1);
@@ -331,6 +340,8 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
             int k = 0;
             vdat = simd::set1(dat[j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
+                y2 = simd::load(y+i*ldy+k+simd::vect_size);
                 x1 = simd::load(x + col[j] * ldx + k);
                 x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
                 y1 = simd::fmadd(y1, x1, vdat);
@@ -339,6 +350,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
                 simd::store(y + i * ldy + k + simd::vect_size, y2);
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
                 x1 = simd::load(x + col[j] * ldx + k);
                 y1 = simd::fmadd(y1, x1, vdat);
                 simd::store(y + i * ldy + k, y1);
@@ -363,6 +375,7 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+#pragma omp parallel for schedule(static, 32)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -387,6 +400,7 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+#pragma omp parallel for schedule(static, 32)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -415,20 +429,22 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
+#pragma omp parallel for schedule(static, 32)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
+                y2 = simd::load(y+i*ldy+k+simd::vect_size);
                 x1 = simd::load(x + col[j] * ldx + k);
                 x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
                 simd::store(y + i * ldy + k, simd::add(y1, x1));
                 simd::store(y + i * ldy + k + simd::vect_size, simd::add(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
                 x1 = simd::load(x + col[j] * ldx + k);
                 simd::store(y + i * ldy + k, simd::add(y1, x1));
             }
@@ -449,20 +465,22 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
+#pragma omp parallel for schedule(static, 32)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
+                y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                 simd::storeu(y + i * ldy + k, simd::add(y1, x1));
                 simd::storeu(y + i * ldy + k + simd::vect_size, simd::add(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 simd::storeu(y + i * ldy + k, simd::add(y1, x1));
             }
@@ -483,20 +501,22 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
+#pragma omp parallel for schedule(static, 32)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
+                y2 = simd::load(y+i*ldy+k+simd::vect_size);
                 x1 = simd::load(x + col[j] * ldx + k);
                 x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
                 simd::store(y + i * ldy + k, simd::sub(y1, x1));
                 simd::store(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::load(y+i*ldy+k);
                 x1 = simd::load(x + col[j] * ldx + k);
                 simd::store(y + i * ldy + k, simd::sub(y1, x1));
             }
@@ -517,20 +537,22 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
+#pragma omp parallel for schedule(static, 32)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             vect_t y1, x1, y2, x2;
-            y1 = simd::zero();
-            y2 = simd::zero();
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
+                y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                 simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
                 simd::storeu(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+                y1 = simd::loadu(y+i*ldy+k);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
             }
