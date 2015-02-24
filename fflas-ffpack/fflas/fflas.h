@@ -128,37 +128,35 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 
 } // FFLAS
 
-// include fields for specialisation
-#include "fflas-ffpack/field/rns.h"
 
 #include "fflas-ffpack/utils/fflas_memory.h"
 //---------------------------------------------------------------------
 // Level 1 routines
 //---------------------------------------------------------------------
-
 #include "fflas_level1.inl"
 
 //---------------------------------------------------------------------
 // Level 2 routines
 //---------------------------------------------------------------------
-
 #include "fflas_level2.inl"
 
 //---------------------------------------------------------------------
 // Level 3 routines
 //---------------------------------------------------------------------
-
 #include "fflas_level3.inl"
 
 //---------------------------------------------------------------------
-// specialisatons
+// specialisations
 //---------------------------------------------------------------------
 
+#include "fflas_freduce.h"
 #include "fflas_fadd.h"
 #include "fflas_fscal.h"
 #include "fflas_fassign.h"
-#include "fflas_freduce.h"
 
+#include "fflas_fgemm.inl"
+#include "fflas_pfgemm.inl"
+// fgemm must be before fgemv according to ScalAndReduce function declaration ?!? PG
 #include "fflas_fgemv.inl"
 #include "fflas_freivalds.inl"
 #include "fflas_fger.inl"
@@ -172,9 +170,17 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 //---------------------------------------------------------------------
 // MultiPrecision routines
 //---------------------------------------------------------------------
+
+// include multiprecision fields for specialisation
+
+#include "fflas-ffpack/field/rns.h" //forward declaration of the multiprecision field
+#include "fflas_fscal_mp.inl"
+#include "fflas_freduce_mp.inl" 
+#include "fflas-ffpack/fflas/fflas_fger_mp.inl"
 #include "fflas_fgemm/fgemm_classical_mp.inl"
 #include "fflas_ftrsm_mp.inl"
 #include "fflas_fgemv_mp.inl"
+#include "fflas-ffpack/field/rns.inl" // real implementaiton of the multiprecision field
 
 //---------------------------------------------------------------------
 // Sparse routines

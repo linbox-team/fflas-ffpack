@@ -45,14 +45,14 @@ using namespace FFPACK;
 using Givaro::UnparametricRing;;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
-
+ 
 template<typename T>
 void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
 	size_t www=(p.bitsize()*log(2.))/log(10.);
 	for (size_t i=0;i<m;++i){
-		cout<<"[ ";
-		cout.width(www+1);
+		cout<<"[ "; 
+		cout.width(www+1); 
 		cout<<std::right<<C[i*ldc];
 		for (size_t j=1;j<n;++j){
 			cout<<" ";

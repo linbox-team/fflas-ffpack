@@ -36,8 +36,12 @@
 #ifndef __FFLASFFPACK_field_rns_H
 #define __FFLASFFPACK_field_rns_H
 
-#include   "rns-double.h"
-#include   "rns-integer.h"
-#include   "rns-integer-mod.h"
+namespace FFPACK{
+	template<typename RNS>
+	class RNSInteger;
+	template<typename RNS>
+	class RNSIntegerMod;
+}
+
 
 #endif // __FFLASFFPACK_field_rns_H

@@ -30,7 +30,6 @@
 #ifndef __FFLASFFPACK_fflas_freduce_mp_INL
 #define __FFLASFFPACK_fflas_freduce_mp_INL
 
-#include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
 
 namespace FFLAS {
@@ -43,9 +42,9 @@ namespace FFLAS {
 		if (n==0) return;
 		//cout<<"freduce: "<<n<<" with "<<inc<<endl;
 		if (inc==1)
-			F.reduce_modp(n,A._ptr,A._stride);
+			F.reduce_modp(n,A);
 		else
-			F.reduce_modp(n,1,A._ptr,inc,A._stride);
+			F.reduce_modp(n,1,A,inc);
 		//throw FFPACK::Failure(__func__,__FILE__,__LINE__,"freduce RNSIntegerMod  -> (inc!=1) NOT SUPPORTED");
 	}
 	// specialization of the level2 freduce function for the field RNSInteger<rns_double>
@@ -56,9 +55,9 @@ namespace FFLAS {
 		if (n==0||m==0) return;
 		//cout<<"freduce: "<<m<<" x "<<n<<" "<<lda<<endl;
 		if (lda == n)
-			F.reduce_modp(m*n,A._ptr,A._stride);
+			F.reduce_modp(m*n,A);
 		else
-			F.reduce_modp(m,n,A._ptr,lda,A._stride); // seems to be buggy
+			F.reduce_modp(m,n,A,lda); // seems to be buggy
 	}
 
 

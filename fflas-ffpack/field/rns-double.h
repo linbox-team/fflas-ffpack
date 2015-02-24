@@ -107,8 +107,8 @@ namespace FFPACK {
 			for(size_t i=0;i<_size;i++){
 				_M*=_basis[i];
 				_pbits=std::max(_pbits, integer(_basis[i]).bitsize());
-				_basisMax = _basis[i]-1;
-				_negbasis = 0-_basis[i];
+				_basisMax[i] = _basis[i]-1;
+				_negbasis[i] = 0-_basis[i];
 			}
 			std::cout<<"M="<<_M<<std::endl;
 			precompute_cst();

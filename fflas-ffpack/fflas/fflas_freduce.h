@@ -150,6 +150,6 @@ namespace FFLAS {
 
 } // end of namespace FFLAS
 
-#include "fflas_freduce_mp.inl"
+//#include "fflas_freduce_mp.inl" moved to fflas.h
 
 #endif // __FFLASFFPACK_fflas_freduce_H

@@ -35,6 +35,10 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/flimits.h"
 
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+
+
 namespace FFLAS { namespace Protected {
 
 	template <class Field>

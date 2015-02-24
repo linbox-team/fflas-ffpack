@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fgemv_INL
 #define __FFLASFFPACK_fgemv_INL
 
-#include <givaro/zring.h> // DoubleDomain
+#include <givaro/unparametric.h> // DoubleDomain
 
 namespace FFLAS{ namespace Protected {
 	template <typename FloatElement, class Field>

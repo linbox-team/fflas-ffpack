@@ -42,9 +42,14 @@
 #include <givaro/givinteger.h>
 
 #include "fflas-ffpack/field/rns-double.h"
+#include "fflas-ffpack/field/rns-integer.h"
+
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
+
+
+#include "fflas-ffpack/fflas/fflas_fscal_mp.inl"
  
 #if defined(BENCH_PERF_FGEMM_MP) || defined(BENCH_PERF_TRSM_MP) || defined(BENCH_PERF_LQUP_MP)
 #define BENCH_PERF_SCAL_MP
@@ -70,6 +75,7 @@ namespace FFPACK {
 		std::vector<BasisElement>       _iM_modp_rns;
 		const RNS                         *_rns;
 		Givaro::Modular<Givaro::Integer>     _F;
+		RNSInteger<RNS>                  _RNSdelayed;
 	public:
 		Element                one, mOne,zero;
 
@@ -83,7 +89,8 @@ namespace FFPACK {
 								  _Mi_modp_rns(myrns._size*myrns._size),
 								  _iM_modp_rns(myrns._size*myrns._size),
 								  _rns(&myrns),
-								  _F(p){
+								    _F(p),
+								    _RNSdelayed(myrns){
 			init(one,1);
 			init(zero,0);
 			init(mOne,-1);
@@ -106,7 +113,8 @@ namespace FFPACK {
 		}
 
 		const rns_double& rns() const {return *_rns;}
-
+		const RNSInteger<RNS>& delayed() const {return _RNSdelayed;}
+		
 		size_t size() const {return _rns->_size;}
 
 		bool isOne(const Element& x) const {
@@ -257,20 +265,24 @@ namespace FFPACK {
 		}
 
 
-		void reduce_modp(size_t n, BasisElement* A, size_t rda) const{
+		void reduce_modp(size_t n, Element_ptr B) const{
 #ifdef BENCH_MODP
 			FFLAS::Timer chrono; chrono.start();
-#endif
+#endif			
 			size_t _size= _rns->_size;
-			BasisElement *Gamma, *alpha;
+			BasisElement *Gamma, *alpha, *A;
+			A=B._ptr;
+			size_t rda = B._stride;
 			Givaro::UnparametricRing<BasisElement> D;
 			Gamma = FFLAS::fflas_new(D,_size,n);
 			alpha = FFLAS::fflas_new(D,n,1);
 
 			// compute Gamma
-			for(size_t i=0;i<_size;i++)
-				FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i*rda, 1, Gamma+i*n,1);
-						
+			//for(size_t i=0;i<_size;i++)
+			//	FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i*rda, 1, Gamma+i*n,1);
+			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
+			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,n), 1);
+			
 			// compute A = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
 			
@@ -279,7 +291,7 @@ namespace FFPACK {
 			// compute alpha = _invbase.Gamma
 			FFLAS::fgemv(D,FFLAS::FflasTrans, _size, n, D.one, Gamma, n, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
 			//std::cout<<"done"<<std::endl;
-
+                        			
 			// compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
 			for(size_t i=0;i<_size;i++){
 				for(size_t j=0;j<n;j++){
@@ -302,27 +314,31 @@ namespace FFPACK {
 #endif
 	 	}
 
-		void reduce_modp(size_t m, size_t n, BasisElement* A, size_t lda, size_t rda) const{
+		void reduce_modp(size_t m, size_t n, Element_ptr B, size_t lda) const{
 #ifdef BENCH_MODP
 			FFLAS::Timer chrono; chrono.start();
 #endif
 			//cout<<"REDUCE MOD WITH LDA!=N"<<endl;
 			size_t _size= _rns->_size;
 			size_t mn=m*n;
-			BasisElement *Gamma, *alpha, *z;
+			BasisElement *Gamma, *alpha, *z, *A;
+			A=B._ptr;
+			size_t rda=B._stride;
 			Gamma = FFLAS::fflas_new<BasisElement>(mn*_size);
 			alpha = FFLAS::fflas_new<BasisElement>(mn);
 			z     = FFLAS::fflas_new<BasisElement>(mn*_size);
 
 			// compute Gamma
-			for(size_t i=0;i<_size;i++)
-				FFLAS::fscal(_rns->_field_rns[i], m, n, _rns->_MMi[i], A+i*rda, lda, Gamma+i*mn,n);
-
+			//for(size_t i=0;i<_size;i++)
+			//	FFLAS::fscal(_rns->_field_rns[i], m, n, _rns->_MMi[i], A+i*rda, lda, Gamma+i*mn,n);
+			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
+			FFLAS::fscal(_RNSdelayed, m, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,mn), 1);
+			
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			Givaro::UnparametricRing<BasisElement> D;
 		
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
-			
+						
 			// compute alpha = _invbase.Gamma
 			//std::cout<<"fgemv (X)..."<<m<<"x"<<n<<" -> "<<_size<<"  "<<lda<<endl;;
 			FFLAS::fgemv(D, FFLAS::FflasTrans, _size, mn, D.one, Gamma, mn, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
@@ -350,23 +366,27 @@ namespace FFPACK {
 		}
 
 		
-		void reduce_modp_rnsmajor(size_t n, BasisElement* A) const{
+		void reduce_modp_rnsmajor(size_t n, Element_ptr B) const{
 #ifdef BENCH_MODP
                         FFLAS::Timer chrono; chrono.start();
 #endif
                         size_t _size= _rns->_size;
-                        BasisElement *Gamma, *alpha;
-						Givaro::UnparametricRing<BasisElement> D;
+                        BasisElement *Gamma, *alpha, *A;
+			A=B._ptr;
+			Givaro::UnparametricRing<BasisElement> D;
                         Gamma = FFLAS::fflas_new(D,n,_size);
                         alpha = FFLAS::fflas_new(D,n,1);
 			
                         // compute Gamma (NOT EFFICIENT)
-                        for(size_t i=0;i<_size;i++)
-                                FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
+                        //for(size_t i=0;i<_size;i++)
+                        //        FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
+			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
+			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,1), 1);
+			
 			
                         // compute A = Gamma._Mi_modp_rns^T (note must be reduced mod m_i, but this is postpone to the end)
                         FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
-                        
+			
                         //std::cout<<"fgemv (Y)...";
                         //std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
                         // compute alpha = Gamma._invbasis
@@ -382,8 +402,8 @@ namespace FFPACK {
                                 }
                         }
 
-                        // reduce each column of A modulo m_i (NOT EFFICIENT)
-						_rns->reduce(n,A,1,true);
+                        // reduce each column of A modulo m_i 
+			_rns->reduce(n,A,1,true);
 
 
                         FFLAS::fflas_delete(Gamma);

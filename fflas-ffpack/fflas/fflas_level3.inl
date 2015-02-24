@@ -35,7 +35,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_level3_INL
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
-#include <givaro/zring.h>
+#include <givaro/unparametric.h>
 
 #include "fflas_bounds.inl"
 #include "fflas_helpers.inl"
@@ -366,8 +366,5 @@ namespace FFLAS {
 
 
 } // FFLAS
-
-#include "fflas_fgemm.inl"
-#include "fflas_pfgemm.inl"
 
 #endif // __FFLASFFPACK_fflas_fflas_level3_INL
