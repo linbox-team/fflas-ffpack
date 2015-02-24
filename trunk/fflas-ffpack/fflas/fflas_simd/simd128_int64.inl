@@ -222,10 +222,14 @@ template <> struct Simd128_impl<true, true, true, 8> {
 
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 // #pragma warning "The simd mulhi function is emulate, it may impact the performances."
+#ifdef __X86_64__
         Converter c0, c1;
         c0.v = a;
         c1.v = b;
         return set((scalar_t)((__int128(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)((__int128(c0.t[1]) * c1.t[1]) >> 64));
+#else
+        return zero();
+#endif
     }
 
     static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) { return add(c, mul(a, b)); }
