@@ -107,6 +107,24 @@ namespace FFLAS { /*  Traits */
 		// typedef false_type balanced ;
 		static  const bool balanced = false ;
 	};
+	
+
+	// RecInt
+	template<size_t K>
+	struct FieldTraits<Givaro::UnparametricRing<RecInt::ruint<K>> > {
+		typedef FieldCategories::FloatingPointConvertibleTag value;
+		typedef FieldCategories::UnparametricTag category;
+		typedef typename FieldCategories::IntegralTag rep_t ;
+		static  const bool balanced = false ;
+	};
+	
+	template<size_t K, int MG>
+	struct FieldTraits<Givaro::UnparametricRing<RecInt::rmint<K, MG>> > {
+		typedef FieldCategories::FloatingPointConvertibleTag value;
+		typedef FieldCategories::ModularTag category;
+		typedef typename FieldCategories::IntegralTag rep_t ;
+		static  const bool balanced = false ;
+	};
 
 	// Modular <double|float>
 	// ModularBalanced <double|float>
