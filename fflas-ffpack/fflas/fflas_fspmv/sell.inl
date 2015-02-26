@@ -130,7 +130,7 @@ namespace FFLAS {	namespace sell_details{
 							F.subin(y[i*chunk], x[col[start+j*chunk+k]]);
 						}
 					}
-				}	
+				}
 			}
 		}
 
@@ -219,7 +219,7 @@ namespace FFLAS {	namespace sell_details{
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::category());
 		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
@@ -270,7 +270,7 @@ namespace FFLAS {	namespace sell_details{
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
 	}
 
@@ -359,7 +359,7 @@ namespace FFLAS {	namespace sell_details{
 		      VECT<Field> & y
 		     )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F,A,x,y,typename FieldTraits<Field>::category());
 	}
 
@@ -380,7 +380,7 @@ namespace FFLAS {	namespace sell_details{
 		      const Field& F,
 		      const SELL<Field> & A,
 		      const VECT<Field> & x,
-		      VECT<Field> & y, 
+		      VECT<Field> & y,
 		      FieldCategories::UnparametricTag
 		     )
 	{
@@ -439,7 +439,7 @@ namespace details{
 		size_t currow = 0; // current row
 		Ctn::vector<Infos> rowsInfos(Rowdim);
         rowsInfos[0].begin = 0;
-        
+
         for(size_t i = 0, end = data.size() ; i < end ; ++i)
 		{
 			if(data[i].row > currow)
@@ -449,7 +449,7 @@ namespace details{
 			}
 			rowsInfos[data[i].row].size++;
 		}
-        
+
         for(size_t i = 0 ; i < Rowdim; ++i){
             rowsInfos[i].rowIndex = i;
         }
@@ -458,7 +458,7 @@ namespace details{
 		{
 			return a.size > b.size;
 		});
-		       
+
         // compute row permutation
         perm.resize(Rowdim);
         perm = fflas_new<uint64_t>(Rowdim);
@@ -489,7 +489,7 @@ namespace details{
 		{
 			chs[Rowdim/Chunk] = 0;
 		}
-        
+
         cout << "kmax : " << (*(std::max_element(rowsInfos.begin(), rowsInfos.end(), [](Infos & a, Infos & b){
                 return a.size < b.size;
             }))).size << endl;
@@ -500,7 +500,7 @@ namespace details{
         {
         	vectorIndexesSize += chs[i]*Chunk;
         }
-        
+
         // store indexes
 //        idx_.resize(vectorIndexesSize);
         i = 0;
@@ -540,7 +540,7 @@ namespace details{
         }
         idx_.shrink_to_fit();
         std::cout << "idx_ size " << idx_.size() << std::endl;
-        
+
         // store pointers to chunks
         ptr_.resize(chs_.size()+1);
         ptr_[0] = 0;
@@ -548,7 +548,7 @@ namespace details{
         {
             ptr_[i] = ptr_[i-1]+chs_[i]*Chunk;
         }
-            
+
 #ifdef DEBUG
         for(i = 0 ; i < Chunk ; ++i)
         {
@@ -587,4 +587,4 @@ namespace details{
 
 #endif // __FFLASFFPACK_fflas_fflas_spmv_sell_INL
 
- 
+

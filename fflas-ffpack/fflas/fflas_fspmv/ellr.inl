@@ -151,7 +151,7 @@ namespace FFLAS { /*  ELLR */
 		{
 			if(add){
 				for (size_t i = 0 ; i < m ; ++i) {
-					for (index_t j = 0 ; j < row[i] ; ++j){ 
+					for (index_t j = 0 ; j < row[i] ; ++j){
 						F.addin(y[i], x[col[i*ld+j]]);
 					}
 				}
@@ -179,7 +179,7 @@ namespace FFLAS { /*  ELLR */
 		{
 			if(add){
 				for (size_t i = 0 ; i < m ; ++i) {
-					for (index_t j = 0 ; j < row[i] ; ++j){ 
+					for (index_t j = 0 ; j < row[i] ; ++j){
 						y[i] += x[col[i*ld+j]];
 					}
 				}
@@ -209,8 +209,8 @@ namespace FFLAS { /*  ELLR */
 		      VECT<Field> & y
 		     )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
-		fspmv(F, A, x, y, typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
+		fspmv(F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field>
@@ -259,7 +259,7 @@ namespace FFLAS { /*  ELLR */
 		      VECT<Field> & y
 		     )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F,A,x,y, typename FieldTraits<Field>::category());
 	}
 
@@ -311,7 +311,7 @@ namespace FFLAS { /*  ELLR */
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::category());
 		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
 	}
 

@@ -118,7 +118,7 @@ namespace FFLAS { namespace coo_details {
 					vx =simd::load(x+col[j]*blockSize+k);
 				}else{
 					vy =simd::loadu(y+row[j]*blockSize+k);
-					vx =simd::loadu(x+col[j]*blockSize+k);	
+					vx =simd::loadu(x+col[j]*blockSize+k);
 				}
 				vdat =simd::set1(dat[j]);
 				if(Aligned){
@@ -163,7 +163,7 @@ namespace FFLAS { namespace coo_details {
 					simd::store(y+row[j]*ldy*blockSize+k, simd::fmadd(vy, vdat, vx));
 				}else{
 					vy =simd::loadu(y+row[j]*ldy*blockSize+k);
-					vx =simd::loadu(x+col[j]*ldx*blockSize+k);	
+					vx =simd::loadu(x+col[j]*ldx*blockSize+k);
 					simd::storeu(y+row[j]*ldy*blockSize+k, simd::fmadd(vy, vdat, vx));
 				}
 			}
@@ -298,12 +298,12 @@ namespace FFLAS { namespace coo_details {
 					  const index_t * col, const typename Field::Element_ptr dat, const int blockSize, const typename Field::Element_ptr x,
 					  typename Field::Element_ptr y, const index_t & kmax){
 		index_t currentRow = row[0];
-		
+
 		auto e = fflas_new(F, blockSize, 1);
 		for(int i = 0 ; i < blockSize ; ++i){
 			F.init(e[i], y[currentRow*blockSize+i]);
 		}
-		
+
 		int accu = 0;
 
 		for(uint64_t i = 0 ; i < z ; ++i){
@@ -343,12 +343,12 @@ namespace FFLAS { namespace coo_details {
 					  const typename Field::Element_ptr x, const int ldx,
 					  typename Field::Element_ptr y, const int ldy, const index_t & kmax){
 		index_t currentRow = row[0];
-		
+
 		auto e = fflas_new(F, blockSize, 1);
 		for(int i = 0 ; i < blockSize ; ++i){
 			F.init(e[i], y[currentRow*ldy*blockSize+i]);
 		}
-		
+
 		int accu = 0;
 
 		for(uint64_t i = 0 ; i < z ; ++i){
@@ -401,7 +401,7 @@ namespace FFLAS {
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, A.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, A.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
@@ -444,11 +444,11 @@ namespace FFLAS {
 			     const VECT<Field> & x,
 			     const int ldx,
 			     const typename Field::Element & b,
-			     VECT<Field> & y, 
+			     VECT<Field> & y,
 			     const int ldy
 			    )
 	{
-		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::value());
+		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::category());
 		fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category());
 	}
 
@@ -538,7 +538,7 @@ namespace FFLAS {
 		      VECT<Field> & y
 		     )
 	{
-		details::init_y(F, A.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, A.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F,A,x,y, typename FieldTraits<Field>::category());
 	}
 
@@ -591,7 +591,7 @@ namespace FFLAS {
 		      const int ldy
 		     )
 	{
-		details::init_y(F, A.m, blockSize, b, y.dat, ldy, typename FieldTraits<Field>::value());
+		details::init_y(F, A.m, blockSize, b, y.dat, ldy, typename FieldTraits<Field>::category());
 		fspmm(F, A, blockSize, x,ldx, y,ldy, typename FieldTraits<Field>::category());
 	}
 
@@ -790,7 +790,7 @@ namespace FFLAS { namespace coo_details { /*  ZO */
 		vect_t vy, vx;
 		if(add){
 			for (index_t j = 0 ; j < z ; ++j)
-			{	
+			{
 				int k = 0;
 				for(; k < end ; k+=simd::vect_size){
 					if(Aligned){
@@ -806,10 +806,10 @@ namespace FFLAS { namespace coo_details { /*  ZO */
 				for(; k < blockSize ; ++k){
 					y[row[j]+k] +=  x[col[j]+k];
 				}
-			}	
+			}
 		}else{
 			for (index_t j = 0 ; j < z ; ++j)
-			{	
+			{
 				int k = 0;
 				for(; k < end ; k+=simd::vect_size){
 					if(Aligned){
@@ -825,7 +825,7 @@ namespace FFLAS { namespace coo_details { /*  ZO */
 				for(; k < blockSize ; ++k){
 					y[row[j]+k] +=  x[col[j]+k];
 				}
-			}	
+			}
 		}
 #else
 		if (add){
@@ -866,7 +866,7 @@ namespace FFLAS { namespace coo_details { /*  ZO */
 		vect_t vy, vx;
 		if(add){
 			for (index_t j = 0 ; j < z ; ++j)
-			{	
+			{
 				int k = 0;
 				for(; k < end ; k+=simd::vect_size){
 					if(Aligned){
@@ -882,10 +882,10 @@ namespace FFLAS { namespace coo_details { /*  ZO */
 				for(; k < blockSize ; ++k){
 					y[row[j]*ldy+k] +=  x[col[j]*ldx+k];
 				}
-			}	
+			}
 		}else{
 			for (index_t j = 0 ; j < z ; ++j)
-			{	
+			{
 				int k = 0;
 				for(; k < end ; k+=simd::vect_size){
 					if(Aligned){
@@ -901,7 +901,7 @@ namespace FFLAS { namespace coo_details { /*  ZO */
 				for(; k < blockSize ; ++k){
 					y[row[j]*ldy+k] +=  x[col[j]*ldx+k];
 				}
-			}	
+			}
 		}
 #else
 		if (add){
@@ -935,7 +935,7 @@ namespace FFLAS { /*  ZO */
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, A.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, A.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
 	}
 
@@ -1021,7 +1021,7 @@ namespace FFLAS { /*  ZO */
 			     const int ldy
 			    )
 	{
-		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::value());
+		details::init_y(F, A.m, blockSize, b, y.dat, ldy,  typename FieldTraits<Field>::category());
 		fspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category() );
 	}
 
@@ -1191,14 +1191,14 @@ namespace FFLAS{ /* delete Matrix */
         fflas_delete(M.row);
         fflas_delete(M.dat);
     }
-    
+
     template<class Field>
     inline void sp_delete(COO_sub<Field> & M){
         fflas_delete(M.col);
         fflas_delete(M.row);
         fflas_delete(M.dat);
     }
-    
+
     template<class Field>
     inline void sp_delete(COO_ZO<Field> & M){
         fflas_delete(M.col);

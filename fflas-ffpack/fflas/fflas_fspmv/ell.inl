@@ -455,7 +455,7 @@ namespace FFLAS {
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::category());
 		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
@@ -501,14 +501,14 @@ namespace FFLAS {
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, lda, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		details::init_y(F, lda, y.m, b, y.dat, typename FieldTraits<Field>::category());
 		fspmm( F, A, lda, blockSize, x, y, typename FieldTraits<Field>::category());
 	}
 
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const ELL_sub<Field> & A,
-			     const int lda, 
+			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
 			     VECT<Field> & y,
@@ -534,7 +534,7 @@ namespace FFLAS {
 	template<class Field>
 	inline void fspmm(const Field & F,
 			     const ELL_sub<Field> & A,
-			     const int lda, 
+			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
 			     VECT<Field> & y,
@@ -559,7 +559,7 @@ namespace FFLAS {
 	template<class Field>
 	inline void fspmv(const Field & F,
 			     const ELL_sub<Field> & A,
-			     const int lda, 
+			     const int lda,
 			     const int blockSize,
 			     const VECT<Field> & x,
 			     VECT<Field> & y,
@@ -587,7 +587,7 @@ namespace FFLAS {
 		      VECT<Field> & y
 		     )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F,A,x,y,typename FieldTraits<Field>::category());
 	}
 
@@ -608,7 +608,7 @@ namespace FFLAS {
 		      const Field& F,
 		      const ELL<Field> & A,
 		      const VECT<Field> & x,
-		      VECT<Field> & y, 
+		      VECT<Field> & y,
 		      FieldCategories::UnparametricTag
 		     )
 	{
@@ -640,7 +640,7 @@ namespace FFLAS {
 		      VECT<Field> & y
 		     )
 	{
-		details::init_y(F, lda, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, lda, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F,A,lda, blockSize,x,y,typename FieldTraits<Field>::category());
 	}
 
@@ -671,7 +671,7 @@ namespace FFLAS {
 		      const int lda,
 		      const int blockSize,
 		      const VECT<Field> & x,
-		      VECT<Field> & y, 
+		      VECT<Field> & y,
 		      FieldCategories::UnparametricTag
 		     )
 	{
@@ -742,13 +742,13 @@ namespace FFLAS { namespace ell_details { /*  ZO */
 				for (index_t j = 0 ; j < ld ; ++j) {
 					F.addin(y[i],x[col[i*ld+j]]);
 				}
-			}	
+			}
 		}else{
 			for (size_t i = 0 ; i < m ; ++i) {
 				for (index_t j = 0 ; j < ld ; ++j) {
 					F.subin(y[i],x[col[i*ld+j]]);
 				}
-			}	
+			}
 		}
 	}
 
@@ -769,16 +769,16 @@ namespace FFLAS { namespace ell_details { /*  ZO */
 			for (size_t i = 0 ; i < m ; ++i) {
 				for (index_t j = 0 ; j < ld ; ++j) {
 					for(int k = 0 ; k < blockSize ; ++k)
-						F.addin(y[i+k],x[col[i*ld+j]+k]);	
+						F.addin(y[i+k],x[col[i*ld+j]+k]);
 				}
-			}	
+			}
 		}else{
 			for (size_t i = 0 ; i < m ; ++i) {
 				for (index_t j = 0 ; j < ld ; ++j) {
 					for(int k = 0 ; k < blockSize ; ++k)
-						F.subin(y[i+k],x[col[i*ld+j]+k]);	
+						F.subin(y[i+k],x[col[i*ld+j]+k]);
 				}
-			}	
+			}
 		}
 	}
 
@@ -800,16 +800,16 @@ namespace FFLAS { namespace ell_details { /*  ZO */
 			for (size_t i = 0 ; i < m ; ++i) {
 				for (index_t j = 0 ; j < ld ; ++j) {
 					for(int k = 0 ; k < blockSize ; ++k)
-						F.addin(y[i*lda+k],x[col[i*ld+j]*lda+k]);	
+						F.addin(y[i*lda+k],x[col[i*ld+j]*lda+k]);
 				}
-			}	
+			}
 		}else{
 			for (size_t i = 0 ; i < m ; ++i) {
 				for (index_t j = 0 ; j < ld ; ++j) {
 					for(int k = 0 ; k < blockSize ; ++k)
-						F.subin(y[i*lda+k],x[col[i*ld+j]*lda+k]);	
+						F.subin(y[i*lda+k],x[col[i*ld+j]*lda+k]);
 				}
-			}	
+			}
 		}
 	}
 
@@ -908,7 +908,7 @@ namespace FFLAS { namespace ell_details { /*  ZO */
 			}
 		}
 #endif
-	}	
+	}
 
 	template<class Field, bool add, bool Aligned>
 	inline void fspmm_zo(
@@ -1002,7 +1002,7 @@ namespace FFLAS { /*  ZO */
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
 	}
 
@@ -1087,7 +1087,7 @@ namespace FFLAS { /*  ZO */
 			     VECT<Field> & y
 			    )
 	{
-		details::init_y(F, lda, A.m*blockSize, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, lda, A.m*blockSize, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmm(F, A, lda, blockSize, x, y, typename FieldTraits<Field>::category() );
 	}
 
@@ -1268,7 +1268,7 @@ namespace FFLAS { /*  conversions */
 				    const Field & F,
 				    const size_t CSR_m,
 				    const size_t CSR_n,
-				    const size_t nnz, 
+				    const size_t nnz,
 				    const ColT * CSR_col,
 				    const RowT * CSR_row,
 				    const typename Field::Element_ptr CSR_dat,
@@ -1288,7 +1288,7 @@ namespace FFLAS { /*  conversions */
 				ld = CSR_row[i+1]-CSR_row[i];
 			}
 		}
-		std::cout << "ELL no simd " << std::endl; 
+		std::cout << "ELL no simd " << std::endl;
 		ELL_col = fflas_new<index_t >(ld*ELL_m, Alignment::CACHE_LINE);
 		if(!ZO){
 			ELL_dat = fflas_new<typename Field::Element >(ld*ELL_m, Alignment::CACHE_LINE);
