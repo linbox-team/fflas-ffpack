@@ -374,40 +374,132 @@ namespace FFPACK {
                         BasisElement *Gamma, *alpha, *A;
 			A=B._ptr;
 			Givaro::UnparametricRing<BasisElement> D;
+			FFLAS::Timer T;
+			// T.start();
                         Gamma = FFLAS::fflas_new(D,n,_size);
                         alpha = FFLAS::fflas_new(D,n,1);
-			
+                        // T.stop();
+                        // std::cout << "Alloc: " << T << std::endl;
                         // compute Gamma (NOT EFFICIENT)
                         //for(size_t i=0;i<_size;i++)
-                        //        FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
+                        // 
+			       // FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
+                        T.start();
+#ifdef __FFLASFFPACK_USE_SIMD
+                        using simd = Simd<BasisElement>;
+                        using vect_t = typename simd::vect_t;
+
+                       if(((int64_t)A%simd::alignment == 0) && (_size%simd::vect_size==0)){
+                        	auto MMi = _rns->_MMi.data();
+                        	for(size_t i = 0 ; i < n ; ++i){
+                        		vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+                        		size_t k = 0;
+                        		for( ; k < ROUND_DOWN(_size, simd::vect_size) ; k+=simd::vect_size){
+                        			basis = simd::load(_rns->_basis.data()+k);
+									inv   = simd::load(_rns->_invbasis.data()+k);
+									max   = simd::load(_rns->_basisMax.data()+k);
+									neg   = simd::load(_rns->_negbasis.data()+k);                        			
+                        			vA1 = simd::load(A+i*_size+k);
+                        			vMi1 = simd::load(MMi+k);
+                        			v = simd::mul(vA1, vMi1);
+                        			tmp1  = simd::floor(simd::mul(v, inv));				
+									tmp2  = simd::fnmadd(v, tmp1, basis);
+									tmp1  = simd::greater(tmp2, max);
+									tmp3  = simd::lesser(tmp2, simd::zero());
+									tmp1  = simd::vand(tmp1, neg);
+									tmp3  = simd::vand(tmp3, basis);
+									tmp1  = simd::vor(tmp1, tmp3);
+									tmp2  = simd::add(tmp2, tmp1);
+                        			simd::store(Gamma+i*_size+k, tmp2);
+                        		}
+                        	}
+                        }else{
+                        	vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+                        	auto MMi = _rns->_MMi.data();
+                        	for(size_t i = 0 ; i < n ; ++i){
+                        		size_t k = 0;
+                        		for( ; k < ROUND_DOWN(_size, simd::vect_size) ; k+=simd::vect_size){
+                        			basis = simd::load(_rns->_basis.data()+k);
+									inv   = simd::load(_rns->_invbasis.data()+k);
+									max   = simd::load(_rns->_basisMax.data()+k);
+									neg   = simd::load(_rns->_negbasis.data()+k);                        			
+                        			vA1 = simd::loadu(A+i*_size+k);
+                        			vMi1 = simd::loadu(MMi+k);
+                        			v = simd::mul(vA1, vMi1);
+                        			tmp1  = simd::floor(simd::mul(v, inv));				
+									tmp2  = simd::fnmadd(v, tmp1, basis);
+									tmp1  = simd::greater(tmp2, max);
+									tmp3  = simd::lesser(tmp2, simd::zero());
+									tmp1  = simd::vand(tmp1, neg);
+									tmp3  = simd::vand(tmp3, basis);
+									tmp1  = simd::vor(tmp1, tmp3);
+									tmp2  = simd::add(tmp2, tmp1);
+                        			simd::storeu(Gamma+i*_size+k, tmp2);
+                        		}
+                        		for(; k < _size ; ++k){
+                        			Gamma[i*_size+k] = A[i*_size+k]*MMi[k];
+                        			Gamma[i*_size+k] -= std::floor(Gamma[i*_size+k]*_rns->_invbasis[k])*_rns->_basis[k];
+									if(Gamma[i*_size+k] >= _rns->_basis[k]){
+										Gamma[i*_size+k] -= _rns->_basis[k]; 
+									}else if(Gamma[i*_size+k] < 0){
+										Gamma[i*_size+k] += _rns->_basis[k]; 
+									}
+                        		}
+                        	}
+                        }
+                        // _rns->reduce(n,Gamma,1,true);
+#else
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,1), 1);
+#endif	
+					T.stop();
+					// std::cout << "Gamma: " << T << std::endl;
 			
 			
                         // compute A = Gamma._Mi_modp_rns^T (note must be reduced mod m_i, but this is postpone to the end)
+					T.start();
                         FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
-			
-                        //std::cout<<"fgemv (Y)...";
+					T.stop();
+					// std::cout << "fgemm: " << T << std::endl;
+                        // std::cout<<"fgemv (Y)...";
                         //std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
                         // compute alpha = Gamma._invbasis
+					T.start();
                         FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+                        T.stop();
+					// std::cout << "fgemv: " << T << std::endl;
                         //std::cout<<"done"<<std::endl;
-			
+					T.start();
                         // compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
-                        for(size_t i=0;i<_size;i++){
-                                for(size_t j=0;j<n;j++){
+                        for(size_t j=0;j<n;j++){
+                        	long aa= (long)rint(alpha[j]);
+                        	for(size_t i=0;i<_size;i++){
                                         //long aa=floor(alpha[j]+0.5);
-                                        long aa= (long)rint(alpha[j]);
                                         A[j*_size+i]-=_iM_modp_rns[aa+i*_size];
                                 }
                         }
-
+                        // vect_t viM;
+                        // auto iM = _iM_modp_rns.data();
+                        // for(size_t j = 0 ; j < n ; ++j){
+                        // 	long aa= (long)rint(alpha[j]);
+                        // 	for(int i = 0 ; i < ROUND_DOWN(_size, simd::vect_size) ; i+=simd::vect_size){
+                        // 		vA = simd::load(A+j*_size+i);
+                        // 		viM = simd::load(iM+aa)
+                        // 	}
+                        // }
+                        T.stop();
+					// std::cout << "last: " << T << std::endl;
+					T.start();
                         // reduce each column of A modulo m_i 
-			_rns->reduce(n,A,1,true);
+					_rns->reduce(n,A,1,true);
+					T.stop();
+					// std::cout << "reduce: "<< T << std::endl;
 
-
+						// T.start();
                         FFLAS::fflas_delete(Gamma);
                         FFLAS::fflas_delete(alpha);
+                        // T.stop();
+                        // std::cout << "delete: " << T << std::endl;
 #ifdef BENCH_MODP
                         chrono.stop();
                         t_modp+=chrono.usertime();
