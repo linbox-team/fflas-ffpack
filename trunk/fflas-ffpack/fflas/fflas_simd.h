@@ -87,7 +87,7 @@ std::ostream &operator<<(std::ostream &o, const __m128d &v) {
 }
 } // std
 
-#ifdef __AVX__
+#ifdef __FFLASFFPACK_USE_AVX
 namespace std {
 std::ostream &operator<<(std::ostream &o, const __m256 &v) {
     const float *vArray = (const float *)(&v);
@@ -115,7 +115,7 @@ std::ostream &operator<<(std::ostream &o, const __m256d &v) {
     return o;
 }
 } // std
-#endif // __AVX__
+#endif // __FFLASFFPACK_USE_AVX
 
 #endif // __FFLASFFPACK_USE_SIMD
 
@@ -324,7 +324,7 @@ template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd
 }
 } // std
 
-#ifdef __AVX__
+#ifdef __FFLASFFPACK_USE_AVX
 namespace std {
 // cannot be instanciated, T is not déductible
 template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd256<T>::vect_t &v) {
@@ -332,7 +332,7 @@ template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd
     return o;
 }
 }
-#endif // __AVX__
+#endif // __FFLASFFPACK_USE_AVX
 
 #endif // __FFLASFFPACK_USE_SIMD
 
