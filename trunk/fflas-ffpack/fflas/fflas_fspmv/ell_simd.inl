@@ -302,7 +302,7 @@ namespace FFLAS {
 			  VECT<Field> & y
 			 )
 	{
-		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat, typename FieldTraits<Field>::category());
 		fspmv( F, A, x, y, typename FieldTraits<Field>::category());
 	}
 
@@ -352,7 +352,7 @@ namespace FFLAS {
 		   VECT<Field> & y
 		  )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F,A,x,y,typename FieldTraits<Field>::category());
 	}
 
@@ -411,7 +411,7 @@ namespace FFLAS { /*  ZO */
 			  VECT<Field> & y
 			 )
 	{
-		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::value());
+		details::init_y(F, y.m, b, y.dat,  typename FieldTraits<Field>::category());
 		fspmv(F, A, x, y, typename FieldTraits<Field>::category() );
 	}
 
