@@ -102,11 +102,11 @@ namespace FFLAS {
 	/*! FGEMM Helper
 	*/
 	template<class Field,
-	typename AlgoTrait = MMHelperAlgo::Auto,
-	typename FieldTrait = typename FieldTraits<Field>::value,
-	typename ParSeqTrait = ParSeqHelper::Sequential >
+		 typename AlgoTrait = MMHelperAlgo::Auto,
+		 typename ModeTrait = typename ModeTraits<Field>::value,
+		 typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
-		typedef MMHelper<Field,AlgoTrait,FieldTrait,ParSeqTrait> Self_t;
+		typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
 		int recLevel ;
 		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
 		double MaxStorableValue;
@@ -247,7 +247,7 @@ namespace FFLAS {
 		{
 			return out <<"Helper: "
 			<<typeid(AlgoTrait).name()<<' '
-			<<typeid(FieldTrait).name()<< ' '
+			<<typeid(ModeTrait).name()<< ' '
 			<< M.parseq <<std::endl
 			<<"  recLevel = "<<M.recLevel<<std::endl
 			<<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
@@ -277,13 +277,13 @@ namespace FFLAS {
 		template<typename RIT, typename PST>
 		TRSMHelper(TRSMHelper<RIT,PST>& _TH):parseq(_TH.parseq){}
 
-		template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
-		FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n, ParSeqTrait p) const {
-			return FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait>(D,m,k,n,p);
+		template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class ModeT=typename FFLAS::ModeTraits<Dom>::value>
+		FFLAS::MMHelper<Dom, Algo, ModeT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n, ParSeqTrait p) const {
+			return FFLAS::MMHelper<Dom, Algo, ModeT, ParSeqTrait>(D,m,k,n,p);
 		}
 
-		template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class FieldT=typename FFLAS::FieldTraits<Dom>::value>
-		FFLAS::MMHelper<Dom, Algo, FieldT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n) const {
+		template<class Dom, class Algo=FFLAS::MMHelperAlgo::Winograd, class ModeT=typename FFLAS::ModeTraits<Dom>::value>
+		FFLAS::MMHelper<Dom, Algo, ModeT, ParSeqTrait> pMMH (Dom& D, size_t m, size_t k, size_t n) const {
 			return pMMH(D,m,k,n,this->parseq);
 		}
 

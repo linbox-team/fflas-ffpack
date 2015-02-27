@@ -51,7 +51,7 @@
 
 namespace FFLAS {
 
-	template<class Field, class AlgoT, class FieldTrait>
+	template<class Field, class AlgoT, class ModeTrait>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 		const FFLAS::FFLAS_TRANSPOSE ta,
@@ -64,7 +64,7 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr B, const size_t ldb,
 		const typename Field::Element beta,
 		typename Field::Element_ptr C, const size_t ldc,
-		MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel> & H) 
+		MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel> & H) 
 	{
 
             if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
@@ -86,7 +86,7 @@ namespace FFLAS {
 		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
 			H.parseq.numthreads = std::min(H.parseq.numthreads, std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
 						
-			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Sequential> SeqH (H);
+			MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
 			PARALLEL_GROUP;
 						
 			FOR2D(iter,m,n,H.parseq,

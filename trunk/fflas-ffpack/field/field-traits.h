@@ -35,7 +35,8 @@
 #define __FFLASFFPACK_field_field_traits_H
 
 #include <type_traits> // CXX11
-
+#include "fflas-ffpack/field/rns-double-elt.h"
+#include "recint/rmint.h"
 // ----- Forward declarations
 
 namespace Givaro {
@@ -67,43 +68,121 @@ namespace FFPACK {
 namespace FFLAS { /*  Categories */
 
 	//! Traits and categories will need to be placed in a proper file later
+
 	namespace FieldCategories {
+	
+		    // Classify
 		//! generic ring.
 		struct GenericTag{};
 		//! This is a <code>Modular<T></code> or <code>ModularBalanced<T></code>
-		struct ModularTag : public GenericTag {} ;
-		//! This is an <code>UnparametricRing<T></code>
-		struct UnparametricTag : public GenericTag {} ;
-
-		//! If it is a machine floating point (ie \c float or \c double)
-		struct FloatingPointTag : public GenericTag{};
-		//! If it is a machine int (ie  \c intX_t or \c uintX_t)
-		struct IntegralTag : public GenericTag{};
+		struct ModularTag{};
 		//! If it is a multiprecision field (ie \c Givaro::Integer)
-		struct MultiPrecisionTag : public  GenericTag{};
+		struct MultiPrecisionTag{};
+		//! If the field uses a representation with infix operators
+		struct UnparametricTag{};
+	}
+
+	    //! Specifies the mode of action for an algorithm w.r.t. its field
+	    //! 
+	namespace ModeCategories {
+		    //! No specific mode of action: use standard field operations
+		struct DefaultTag{};
+		    //! Force conversion to appropriate element type of ElementCategory T.
+		    //! e.g. 
+		    //!    - ConvertTo<ElementCategories::MachineFloatTag> tries conversion 
+		    //!      of Modular<int> to Modular<double>
+		    //!    - ConvertTo<ElementCategories::FixedPrecIntTag> tries conversion 
+                    //!      of Modular<Integer> to Modular<RecInt<K> >
+		    //!    - ConvertTo<ElementCategories::ArbitraryPrecIntTag> tries conversion 
+		    //!     of Modular<Integer> to RNSInteger
+		    //! .
+		template<class T>
+		struct ConvertTo{};
+		    //! Performs field operations with delayed mod reductions. Ensures result is reduced.
+		struct DelayedTag{};
+		    //! Performs field operations with delayed mod only when necessary. Result may not be reduced.
+		struct LazyTag{};
+	}
+
+	namespace ElementCategories {
+		    //! default is generic
+		struct GenericTag{};
+		    //! float or double
+		struct MachineFloatTag{};
+		    //! short, int, long, long long, and unsigned variants
+		struct MachineIntTag{};
+		    //! Fixed precision integers above machine precision: Givaro::recInt
+		struct FixedPrecIntTag{};
+		    //! Arbitrary precision integers: GMP
+		struct ArbitraryPrecIntTag{};
+		    //! Representation in a Residue Number System 
+		struct RNSElementTag{};
 		//- If it can support SIMD operations (ie \c double or \c int32_t, etc)
 		// struct SIMDTag : public GenericTag{};
-
-		// this is weird :
-		//! If it can init/convert elements to/from floating point types: float, double
-		struct FloatingPointConvertibleTag : public  GenericTag{};
-		//! If it is a Modular or ModularBalanced templated by float or double
-		struct ModularFloatingPointTag : public GenericTag{};
-		//! If it is a Modular or ModularBalanced templated by float or double, and result is not reduced
-		struct DelayedModularFloatingPointTag : public GenericTag{};
 	}
 
 } // FFLAS
 
 namespace FFLAS { /*  Traits */
 
+	/*! ElementTraits
+	*/
+	template <class Element>
+	struct ElementTraits {typedef typename ElementCategories::GenericTag value;};
+	
+	template<> struct ElementTraits<float> {typedef ElementCategories::MachineFloatTag value;};
+	template<> struct ElementTraits<double> {typedef ElementCategories::MachineFloatTag value;};
+	template<> struct ElementTraits<int8_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<int16_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<int32_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<int64_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<uint8_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<uint16_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<uint32_t> {typedef ElementCategories::MachineIntTag value;};
+	template<> struct ElementTraits<uint64_t> {typedef ElementCategories::MachineIntTag value;};
+	template<>
+	struct ElementTraits<Givaro::Integer> {typedef ElementCategories::ArbitraryPrecIntTag value;};
+	template<size_t K> 
+	struct ElementTraits<RecInt::ruint<K> > {typedef ElementCategories::FixedPrecIntTag value;};
+	template<size_t K, int MG> 
+	struct ElementTraits<RecInt::rmint<K, MG> >{typedef ElementCategories::FixedPrecIntTag value;};
+	template<>
+	struct ElementTraits<FFPACK::rns_double_elt>{typedef ElementCategories::RNSElementTag value;};
+
+
+	/*! ModeTraits
+	*/
+	template <class Field> 
+	struct ModeTraits {typedef typename ModeCategories::DefaultTag value;};
+	template <> struct ModeTraits<Givaro::Modular<float> >{typedef typename ModeCategories::DelayedTag value;};
+	template <> struct ModeTraits<Givaro::Modular<double> > {typedef typename ModeCategories::DelayedTag value;};
+	template <> struct ModeTraits<Givaro::Modular<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<int16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<int32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<int64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<uint8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<uint16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<uint32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<uint64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::Modular<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<float> >{typedef typename ModeCategories::DelayedTag value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<double> > {typedef typename ModeCategories::DelayedTag value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<int16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<int32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<int64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<uint8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<uint16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<uint32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<uint64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template <> struct ModeTraits<Givaro::ModularBalanced<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	template <> struct ModeTraits<Givaro::UnparametricRing<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+
 	/*! FieldTrait
 	*/
 	template <class Field>
 	struct FieldTraits {
-		typedef typename FieldCategories::GenericTag value;
 		typedef typename FieldCategories::GenericTag category;
-		typedef typename FieldCategories::GenericTag rep_t ;
 		// typedef false_type balanced ;
 		static  const bool balanced = false ;
 	};
@@ -111,18 +190,16 @@ namespace FFLAS { /*  Traits */
 
 	// RecInt
 	template<size_t K>
-	struct FieldTraits<Givaro::UnparametricRing<RecInt::ruint<K>> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+	struct FieldTraits<Givaro::UnparametricRing<RecInt::ruint<K> > > {
+		    //typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	
 	template<size_t K, int MG>
-	struct FieldTraits<Givaro::UnparametricRing<RecInt::rmint<K, MG>> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+	struct FieldTraits<Givaro::UnparametricRing<RecInt::rmint<K, MG> > > {
+		    //typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 
@@ -130,31 +207,27 @@ namespace FFLAS { /*  Traits */
 	// ModularBalanced <double|float>
 	template<>
 	struct FieldTraits<Givaro::Modular<double> > {
-		typedef  FieldCategories::ModularFloatingPointTag value;
+//		typedef  FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::Modular<float> > {
-		typedef FieldCategories::ModularFloatingPointTag value;
+//		typedef FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<double> > {
-		typedef FieldCategories::ModularFloatingPointTag value;
+//		typedef FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<float> > {
-		typedef FieldCategories::ModularFloatingPointTag value;
+//		typedef FieldCategories::ModularFloatingPointTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
@@ -164,91 +237,79 @@ namespace FFLAS { /*  Traits */
 	// ModularBalanced < intX >
 	template<>
 	struct FieldTraits<Givaro::Modular<int16_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::Modular<uint16_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::Modular<int32_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::Modular<uint32_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::Modular<int64_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::Modular<uint64_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<int32_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<uint32_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<int64_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<uint64_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<int16_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<uint16_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
@@ -257,17 +318,15 @@ namespace FFLAS { /*  Traits */
 	// ModularBalanced < intX >
 	template<>
 	struct FieldTraits<Givaro::Modular<Givaro::Integer> > {
-		typedef FieldCategories::MultiPrecisionTag value;
+//		typedef FieldCategories::MultiPrecisionTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::MultiPrecisionTag rep_t ;
 		static  const bool balanced = false ;
 	};
 
 	template<>
 	struct FieldTraits<Givaro::ModularBalanced<Givaro::Integer> > {
-		typedef FieldCategories::MultiPrecisionTag value;
+//		typedef FieldCategories::MultiPrecisionTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::MultiPrecisionTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = true ;
 	};
@@ -276,75 +335,64 @@ namespace FFLAS { /*  Traits */
 	// ZRing< float|double >
 	template<>
 	struct FieldTraits<Givaro::ZRing<double>> {
-		typedef FieldCategories::FloatingPointTag value;
+//		typedef FieldCategories::FloatingPointTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::ZRing<float>> {
-		typedef FieldCategories::FloatingPointTag value;
+//		typedef FieldCategories::FloatingPointTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		static  const bool balanced = false ;
 	};
-
 
 	// UnparametricRing< intX >
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<int16_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<uint16_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<int32_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<uint32_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<int64_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<uint64_t> > {
-		typedef FieldCategories::FloatingPointConvertibleTag value;
+//		typedef FieldCategories::FloatingPointConvertibleTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::IntegralTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
-	struct FieldTraits<Givaro::UnparametricRing<double>> {
-		typedef FieldCategories::FloatingPointTag value;
+	struct FieldTraits<Givaro::UnparametricRing<double> > {
+//		typedef FieldCategories::FloatingPointTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		static  const bool balanced = false ;
 	};
 	template<>
-	struct FieldTraits<Givaro::UnparametricRing<float>> {
-		typedef FieldCategories::FloatingPointTag value;
+	struct FieldTraits<Givaro::UnparametricRing<float> > {
+//		typedef FieldCategories::FloatingPointTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::FloatingPointTag rep_t ;
 		static  const bool balanced = false ;
 	};
 
@@ -352,27 +400,24 @@ namespace FFLAS { /*  Traits */
 	template<>
 	struct FieldTraits<Givaro::UnparametricRing<Givaro::Integer> >
 	{
-		typedef FieldCategories::MultiPrecisionTag value;
+//		typedef FieldCategories::MultiPrecisionTag value;
 		typedef FieldCategories::UnparametricTag category;
-		typedef typename FieldCategories::MultiPrecisionTag rep_t ;
 		static  const bool balanced = false ;
 	};
 
 	// RNSInteger
 	template<typename T>
 	struct FieldTraits<FFPACK::RNSInteger<T> > {
-		typedef FieldCategories::MultiPrecisionTag value;
+//		typedef FieldCategories::MultiPrecisionTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::MultiPrecisionTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = false ;
 	};
 	// RNSIntegerMod
 	template<typename T>
 	struct FieldTraits<FFPACK::RNSIntegerMod<T> >{
-		typedef FieldCategories::MultiPrecisionTag value;
+//		typedef FieldCategories::MultiPrecisionTag value;
 		typedef FieldCategories::ModularTag category;
-		typedef typename FieldCategories::MultiPrecisionTag rep_t ;
 		// typedef true_type balanced ;
 		static  const bool balanced = false ;
 	};
@@ -408,7 +453,7 @@ namespace FFLAS { /* associatedDelayedField */
 		typedef Givaro::UnparametricRing<double> type;
 	};
 	template <>
-	struct associatedDelayedField<const Givaro::Modular<Givaro::Integer>>{
+	struct associatedDelayedField<const Givaro::Modular<Givaro::Integer> >{
 		typedef Givaro::UnparametricRing<Givaro::Integer> field;
 		typedef Givaro::UnparametricRing<Givaro::Integer> type;
 	};
@@ -416,6 +461,16 @@ namespace FFLAS { /* associatedDelayedField */
 	struct associatedDelayedField<const FFPACK::RNSIntegerMod<RNS> >{
 		typedef FFPACK::RNSInteger<RNS> field;
 		typedef FFPACK::RNSInteger<RNS> type;
+	};
+	template <size_t K, int MG>
+	struct associatedDelayedField<const Givaro::Modular<RecInt::rmint<K, MG> > >{
+		typedef Givaro::UnparametricRing<RecInt::rmint<K, MG> > field;
+		typedef Givaro::UnparametricRing<RecInt::rmint<K, MG> > type;
+	};
+	template <size_t K, int MG>
+	struct associatedDelayedField<const Givaro::ModularBalanced<RecInt::rmint<K, MG> > >{
+		typedef Givaro::UnparametricRing<RecInt::rmint<K, MG> > field;
+		typedef Givaro::UnparametricRing<RecInt::rmint<K, MG> > type;
 	};
 
 

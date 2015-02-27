@@ -51,12 +51,12 @@ namespace FFLAS {
                            typename Field::ConstElement_ptr B, const size_t ldb,
                            const typename Field::Element beta,
                            typename Field::Element_ptr C, const size_t ldc,
-                           MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
+                           MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & H)
 	{		
                 // Input matrices are unreduced: need to figure out the best option between:
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
-		typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> HelperType;
+		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
 		typename HelperType::DelayedField::Element alphadf, betadf;
 		F.convert (betadf, beta);
 		if (F.isMOne (alpha)) {
@@ -93,7 +93,7 @@ namespace FFLAS {
 		}
 		
 		if (!kmax){
-			MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> HG(H);
+			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
 			H.initOut();
 			return fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
 		}
@@ -112,9 +112,7 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<typename HelperType::DelayedField,
-			 MMHelperAlgo::Classic,
-			 typename FieldCategories::FloatingPointTag > Hfp(H);
+		MMHelper<typename HelperType::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hfp(H);
 
 		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, A+nblock*shiftA, lda,
 		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
@@ -163,13 +161,14 @@ namespace FFLAS {
 			   typename Field::ConstElement_ptr B, const size_t ldb,
 			   const typename Field::Element beta,
 			   typename Field::Element_ptr C, const size_t ldc,
-			   MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
+			   MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
                 // Standard algorithm is performed over the Field, without conversion
                 if (F.isZero (beta))
                         fzero (F, m, n, C, ldc);
 		else {
 			typename Field::Element betadivalpha;
+			F.init(betadivalpha);
 			FFLASFFPACK_check(!F.isZero(alpha));
 			F.div (betadivalpha, beta, alpha);
 			fscalin(F,m,n,betadivalpha,C,ldc);
@@ -208,7 +207,7 @@ namespace FFLAS {
 			   Givaro::DoubleDomain::ConstElement_ptr Bd, const size_t ldb,
 			   const Givaro::DoubleDomain::Element beta,
 			   Givaro::DoubleDomain::Element_ptr Cd, const size_t ldc,
-			   MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> &H)
+			   MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic> &H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
@@ -230,7 +229,7 @@ namespace FFLAS {
 			   Givaro::FloatDomain::ConstElement_ptr Bd, const size_t ldb,
 			   const Givaro::FloatDomain::Element beta,
 			   Givaro::FloatDomain::Element_ptr Cd, const size_t ldc,
-			   MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+			   MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);

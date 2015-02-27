@@ -99,11 +99,11 @@ namespace FFLAS {
 		PARALLEL_GROUP;
 		
 		if(Side == FflasRight){
-			int nt = H.parseq.numthreads;
-			int nt_it,nt_rec;
-			if ((int)m/PTRSM_HYBRID_THRESHOLD < nt){
+			size_t nt = H.parseq.numthreads;
+			size_t nt_it,nt_rec;
+			if (m/PTRSM_HYBRID_THRESHOLD < nt){
 				nt_it = (int)ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
-				nt_rec = (int)ceil(double(nt)/nt_it);
+				nt_rec = (int)ceil(double(nt)/double(nt_it));
 			} else { nt_it = nt; nt_rec = 1;}
 			ForStrategy1D<size_t> iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 			for (iter.begin(); ! iter.end(); ++iter) {
@@ -113,10 +113,10 @@ namespace FFLAS {
 				TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 			}
 		} else {
-			int nt = H.parseq.numthreads;
-			int nt_it=nt;
-			int nt_rec=1;
-			while(nt_it*PTRSM_HYBRID_THRESHOLD >= (int)n){
+			size_t nt = H.parseq.numthreads;
+			size_t nt_it=nt;
+			size_t nt_rec=1;
+			while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
 				nt_it>>=1;
 				nt_rec<<=1;
 			}

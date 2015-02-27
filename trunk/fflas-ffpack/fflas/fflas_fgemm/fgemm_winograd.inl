@@ -76,8 +76,8 @@ namespace FFLAS { namespace Protected {
 	inline int WinogradSteps (const Field & F, const size_t & m)
 	{
 		int w = 0;
-		int th = WinogradThreshold<Field>(F);
-		int mt = m>>1;
+		size_t th = WinogradThreshold<Field>(F);
+		size_t mt = m>>1;
 		while ( mt >= th) {
 			++w;
 			mt >>= 1;
@@ -85,7 +85,7 @@ namespace FFLAS { namespace Protected {
 		return w;
 	}
 
-	template  < class Field, class FieldTrait >
+	template  < class Field, class FieldMode >
 	inline void
 	DynamicPeeling (const Field& F,
 			const FFLAS_TRANSPOSE ta,
@@ -97,7 +97,7 @@ namespace FFLAS { namespace Protected {
 			typename Field::ConstElement_ptr B, const size_t ldb,
 			const typename Field::Element beta,
 			typename Field::Element_ptr C, const size_t ldc,
-			MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
+			MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H,
 			const double Cmin, const double Cmax)
 	{
 		typename Field::ConstElement_ptr a12, a21, b12, b21;
@@ -124,9 +124,9 @@ namespace FFLAS { namespace Protected {
 			b12 = B+n-1; incb12 = ldb;
 			b21 = B+(k-1)*ldb; incb21 = 1;
 		}
-		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> Hacc(H);
-		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HModd(H);
-		MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HNodd(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldMode> Hacc(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldMode> HModd(H);
+		MMHelper<Field, MMHelperAlgo::Classic, FieldMode> HNodd(H);
 
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
@@ -185,7 +185,7 @@ namespace FFLAS { namespace Protected {
 		H.checkOut(F, m,n, C, ldc);
 	}
 
-		template  < class Field, class FieldTrait >
+		template  < class Field, class FieldMode >
 	inline void
 	DynamicPeeling2 (const Field& F,
 			 const FFLAS_TRANSPOSE ta,
@@ -197,7 +197,7 @@ namespace FFLAS { namespace Protected {
 			 typename Field::ConstElement_ptr B, const size_t ldb,
 			 const typename Field::Element beta,
 			 typename Field::Element_ptr C, const size_t ldc,
-			 MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H,
+			 MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H,
 			 const double Cmin, const double Cmax)
 	{
 		size_t mkn =(size_t)( (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2));
@@ -221,9 +221,9 @@ namespace FFLAS { namespace Protected {
 			b21 = B+(k-kr)*ldb;
 		}
 
-		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> Hacc(H);
-		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HModd(H);
-		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HNodd(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> Hacc(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HModd(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HNodd(H);
 
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax; 
 		Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
@@ -278,7 +278,7 @@ namespace FFLAS { namespace Protected {
 	// #define NEWACCIP
 
 	// Switch between the scheduling for Strassen-Winograd Multiplication
-	template < class Field, class FieldTrait >
+	template < class Field, class FieldMode >
 	inline void WinogradCalc (const Field& F,
 				  const FFLAS_TRANSPOSE ta,
 				  const FFLAS_TRANSPOSE tb,
@@ -288,7 +288,7 @@ namespace FFLAS { namespace Protected {
 				  typename Field::ConstElement_ptr B,const size_t ldb,
 				  const typename Field::Element beta,
 				  typename Field::Element_ptr C, const size_t ldc,
-				  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
+				  MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H)
 	{
 #if defined(NEWIP) or defined(NEWACCIP)  /*  XXX TESTS ONLY */
 		typedef typename Field::Element Element ;
@@ -375,7 +375,7 @@ namespace FFLAS { namespace Protected {
 
 
 namespace FFLAS{
-	template<class Field, class FieldTrait>
+	template<class Field, class ModeT>
 	inline  typename Field::Element_ptr
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -386,7 +386,7 @@ namespace FFLAS{
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeT> & H)
 	{
 		if (!m || !n ) return C;
 
@@ -400,7 +400,7 @@ namespace FFLAS{
 		}
 
 		if (H.recLevel == 0){
-			MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
+			MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(H);
 			fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
 			H.Outmax = HC.Outmax;
 			H.Outmin = HC.Outmin;
@@ -442,7 +442,7 @@ namespace FFLAS{
 	} // fgemm
 
 
-	template<class Field, class FieldTrait>
+	template<class Field, class ModeT>
 	inline  typename Field::Element_ptr
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -453,7 +453,7 @@ namespace FFLAS{
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait> & H)
+	       MMHelper<Field, MMHelperAlgo::WinogradPar, ModeT> & H)
 	{
 		if (!m || !n ) return C;
 
@@ -475,17 +475,17 @@ namespace FFLAS{
 			MMHelper<Field,MMHelperAlgo::Winograd>
                                 HC (F, 0,ParSeqHelper::Sequential());
 #elif defined PFGEMM_WINO_SEQ
-                        MMHelper<Field,MMHelperAlgo::Winograd,
-				 typename FFLAS::FieldTraits<Field>::value,
+                        MMHelper<Field,MMHelperAlgo::Winograd
+				 typename FFLAS::ModeTraits<Field>::value,
 				 FFLAS::ParSeqHelper::Parallel>
                                 HC (F, -1, ParSeqHelper::Parallel(PFGEMM_WINO_SEQ, TWO_D_ADAPT));
 #else
                         MMHelper<Field,MMHelperAlgo::Winograd,
-                                 typename FFLAS::FieldTraits<Field>::value,
-                                 FFLAS::ParSeqHelper::Parallel>
+				 typename FFLAS::ModeTraits<Field>::value,
+				 FFLAS::ParSeqHelper::Parallel>
                                 HC (F, 0, ParSeqHelper::Parallel(32, TWO_D_ADAPT));
 #endif
-                        //              MMHelper<Field, MMHelperAlgo::Classic, FieldTrait> HC(H);
+                        //              MMHelper<Field, MMHelperAlgo::Classic, ModeTraits> HC(H);
 
                         fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
                         H.Outmax = HC.Outmax;
@@ -505,7 +505,7 @@ namespace FFLAS{
 		FFLASFFPACK_check(m-(m/2)*2 == (m&0x1));
 		FFLASFFPACK_check(n-(n/2)*2 == (n&0x1));
 		FFLASFFPACK_check(k-(k/2)*2 == (k&0x1));
-		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HC(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, ModeT> HC(H);
 		Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, HC, Cmin, Cmax);
 #else
 		size_t ww = (size_t)H.recLevel ;
@@ -522,7 +522,7 @@ namespace FFLAS{
 		FFLASFFPACK_check(m == m2*2+mr);
 		FFLASFFPACK_check(n == n2*2+nr);
 		FFLASFFPACK_check(k == k2*2+kr);
-		MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> HC(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, ModeT> HC(H);
 		Protected::DynamicPeeling2 (F, ta, tb, m, n, k, mr, nr, kr, alpha, A, lda, B, ldb, beta, C, ldc, HC, Cmin, Cmax);
 #endif
 		return C;

@@ -50,9 +50,9 @@ namespace FFLAS{
 	      typename Givaro::Integer* x, const size_t incx,
 	      typename Givaro::Integer* y, const size_t incy,
 	      typename Givaro::Integer* A, const size_t lda,
-	      MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag> & H)
+	      MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
 	{
-		MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::GenericTag>  H2;
+		MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  H2;
 		FFLAS::fger(F,M,N,alpha,x,incx,y,incy,A,lda,H2);
 	}
 
@@ -63,7 +63,7 @@ namespace FFLAS{
 	      typename FFPACK::RNSInteger<RNS>::Element_ptr x, const size_t incx,
 	      typename FFPACK::RNSInteger<RNS>::Element_ptr y, const size_t incy,
 	      typename FFPACK::RNSInteger<RNS>::Element_ptr A, const size_t lda,
-	      MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag> & H)
+	      MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		for(size_t i=0;i<F.size();i++){
 			FFLAS::fger(F.rns()._field_rns[i],M,N,

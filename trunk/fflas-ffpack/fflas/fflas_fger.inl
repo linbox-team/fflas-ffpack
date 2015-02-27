@@ -88,7 +88,7 @@ namespace FFLAS{
 	      typename Field::ConstElement_ptr x, const size_t incx,
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
-	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::FloatingPointConvertibleTag> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
@@ -105,7 +105,7 @@ namespace FFLAS{
 	      typename Field::ConstElement_ptr x, const size_t incx,
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
-	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::GenericTag> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
@@ -167,7 +167,7 @@ namespace FFLAS{
 	      const Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
 	      const Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy,
 	      Givaro::DoubleDomain::Element_ptr A, const size_t lda,
-	      MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+	      MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
@@ -182,7 +182,7 @@ namespace FFLAS{
 	      const Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
 	      const Givaro::FloatDomain::ConstElement_ptr y, const size_t incy,
 	      Givaro::FloatDomain::Element_ptr A, const size_t lda,
-	      MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> & H)
+	      MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
@@ -201,16 +201,16 @@ namespace FFLAS{
 	      typename Field::ConstElement_ptr x, const size_t incx,
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
-	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
-
-        typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::DelayedModularFloatingPointTag> ModularHelperType;
+		
+	typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> ModularHelperType;
         typedef typename ModularHelperType::DelayedField	delayedField;
         typedef typename delayedField::Element				delayedElement;
         typedef typename Field::Element						Element;
         typedef typename Field::Element_ptr					Element_ptr;
-        typedef MMHelper<delayedField, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag> DelayedHelperType;
+        typedef MMHelper<delayedField, MMHelperAlgo::Classic> DelayedHelperType;
         
         DelayedHelperType Hfp(H);
 
@@ -261,17 +261,17 @@ namespace FFLAS{
 	      typename Field::ConstElement_ptr x, const size_t incx,
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
-	      MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
 
-        typedef MMHelper<Field, MMHelperAlgo::Classic, FieldCategories::ModularFloatingPointTag> ModularHelperType; 
+        typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> ModularHelperType; 
         typedef typename ModularHelperType::DelayedField	delayedField;
         typedef typename delayedField::Element				delayedElement;
         typedef typename Field::Element						Element;
         typedef typename Field::Element_ptr					Element_ptr;
-        typedef MMHelper<delayedField, MMHelperAlgo::Classic, FieldCategories::FloatingPointTag > DelayedHelperType;
+        typedef MMHelper<delayedField, MMHelperAlgo::Classic> DelayedHelperType;
 
         DelayedHelperType Hfp(H);
 

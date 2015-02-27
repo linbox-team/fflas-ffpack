@@ -193,12 +193,14 @@ namespace FFPACK {
     
     size_t * P2 = FFLAS::fflas_new<size_t>(M2-R1);
     size_t * Q2 = FFLAS::fflas_new<size_t>(N-N2);
-    typename Field::Element * A4R2 = 0;
+	//typename Field::Element * A4R2 = 0;
     // F = P2 [ L2 ] [ U2 V2 ] Q2
     //        [ M2 ]
-    TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F, A4R2, R2) WRITE(R2, A4R2[0]) READWRITE(F[0], P2, Q2) ),
-	 R2 = pPLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2,nt/2);
-	 A4R2 = A4+R2;);
+    TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
+	 R2 = pPLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2,nt/2)
+       //A4R2 = A4+R2;
+	 );	     
+
     //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
     
     size_t * P3 = FFLAS::fflas_new<size_t>(M-M2);
@@ -356,10 +358,10 @@ namespace FFPACK {
     //            [      Q3 ]      [      P4 ]
     size_t * MathQ = FFLAS::fflas_new<size_t>(N);
     TASK(MODE(CONSTREFERENCE(Q1, Q2, Q3, Q4, R1, R2) READ(Q1, Q2, Q3, Q4, R1, R2) READWRITE(MathQ)),
-    composePermutationsQ (MathQ, Q1, Q3, R1, N2);
-    composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
-    for (size_t i=N2; i<N; ++i)
-	    MathQ[i] += N2;
+	 composePermutationsQ (MathQ, Q1, Q3, R1, N2);
+	 composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
+	 for (size_t i=N2; i<N; ++i)
+		 MathQ[i] += N2;
 	 );
     CHECK_DEPENDENCIES;
 
@@ -375,8 +377,8 @@ namespace FFPACK {
     }
     CHECK_DEPENDENCIES;
     TASK(MODE(CONSTREFERENCE(MathP, MathQ) READ(MathP, MathQ) READWRITE(P, Q)),
-    MathPerm2LAPACKPerm (Q, MathQ, N);
-    MathPerm2LAPACKPerm (P, MathP, M);
+	 MathPerm2LAPACKPerm (Q, MathQ, N);
+	 MathPerm2LAPACKPerm (P, MathP, M);
 	 );
     WAIT;
     

@@ -106,10 +106,10 @@ void launch_wino(const Field  &F,
 int main (int argc, char ** argv) {
   
 	size_t iter = 1;
-	unsigned long q  = 1009;
+	int q  = 1009;
 	int n       = 1000;
 	int w       = 7;
-	int seed    = -1;
+	size_t seed    = 0;
 	bool compare = false;
 	bool balanced = false;
 	std::string type = "double";
@@ -120,7 +120,7 @@ int main (int argc, char ** argv) {
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'w', "-w N", "Set the winograd level.",                        TYPE_INT , &w },
 		{ 'l', "-l {YN}", "Use -w info a max (Yes or No).",              TYPE_BOOL , &levelasmax },
-		{ 's', "-s S", "Set the seed for randomness (-1 for random).",   TYPE_INT , &seed },
+		{ 's', "-s S", "Set the seed for randomness (0 for random).",   TYPE_INT , &seed },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'c', "-c {YN}", "Compare mode, overrides -b and -t options (Yes or No).", TYPE_BOOL , &compare },
 		{ 'b', "-b {YN}", "Use balanced modular (Yes or No).",           TYPE_BOOL , &balanced },
@@ -130,9 +130,9 @@ int main (int argc, char ** argv) {
 
 	FFLAS::parseArguments(argc,argv,as);
 	
-	if (seed == -1)
+	if (!seed)
 		seed = FFLAS::BaseTimer::seed();
-    srand((uint32_t)seed);
+	srand((uint32_t)seed);
     
     if (compare) {
 		Givaro::Modular<double> F1(q);

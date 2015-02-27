@@ -38,10 +38,10 @@ using namespace std;
 
 #ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
-void Initialize(Element * C, int BS, size_t m, size_t n)
+void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-	BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
+	BS=std::max(BS, (size_t) __FFLASFFPACK_WINOTHRESHOLD_BAL );
 	PAR_REGION{
 	for(size_t p=0; p<m; p+=BS) ///row
 		for(size_t pp=0; pp<n; pp+=BS) //column
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
       //}
   for (size_t k=0;k<(size_t)m;++k)
 	  while (F.isZero( G.random(*(A+k*(m+1)))));
-  for (size_t i=0;i<=iter;++i){
+  for (i=0;i<=iter;++i){
       
 	  chrono.clear();
 	  if (i) chrono.start();

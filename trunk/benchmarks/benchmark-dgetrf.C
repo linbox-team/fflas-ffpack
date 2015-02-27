@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 	  FFLAS::fflas_delete( A);
   }
 
-  for (size_t i=0;i<iter;++i){
+  for (size_t it=0;it<iter;++it){
 	  if (!file.empty()){
 		  A = read_field(F, file.c_str(), &n, &n);
 	  }
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
           Initialize(A,n/NBK,n,n);
 #endif
 #pragma omp parallel for
-		  for (int i=0; i<n; ++i)
+	  for (int i=0; i<n; ++i)
               for (int j=0; j<n; ++j)
                   G.random(*(A+i*n+j));
 	  }
