@@ -188,12 +188,12 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-	template<class Field, class FieldTraits = typename FieldTraits<Field>::rep_t >
+	template<class Field, class ElementTraits = typename ElementTraits<typename Field::Element>::value>
 	struct HelperMod  ;
 
 
 	template<class Field>
-	struct HelperMod<Field, FieldCategories::IntegralTag> {
+	struct HelperMod<Field, ElementCategories::MachineIntTag> {
 		bool overflow  = false ;
 		bool poweroftwo = false ;
 		int8_t shift = 0 ;
@@ -226,7 +226,7 @@ namespace FFLAS { namespace vectorised {
 	} ;
 
 	template<class Field>
-	struct HelperMod<Field, FFLAS::FieldCategories::FloatingPointTag> {
+	struct HelperMod<Field, FFLAS::ElementCategories::MachineFloatTag> {
 		typename Field::Element p;
 		typename Field::Element invp;
 		// typename Field::Elmeent min ;
@@ -249,7 +249,7 @@ namespace FFLAS { namespace vectorised {
 	} ;
 
 	template<class Field>
-	struct HelperMod<Field, FFLAS::FieldCategories::MultiPrecisionTag> {
+	struct HelperMod<Field, FFLAS::ElementCategories::ArbitraryPrecIntTag> {
 		typename Field::Element p;
 		// typename Field::Element invp;
 		// typename Field::Elmeent min ;
@@ -273,11 +273,11 @@ namespace FFLAS { namespace vectorised {
 
 
 #ifdef __FFLASFFPACK_USE_SIMD
-	template<class Field, class SimdT, class FieldTraits = typename FieldTraits<Field>::rep_t >
+	template<class Field, class SimdT, class ElementTraits = typename ElementTraits<typename Field::Element>::value>
 	struct HelperModSimd  ;
 
 	template<class Field, class SimdT>
-	struct HelperModSimd<Field, SimdT, FieldCategories::IntegralTag> : public HelperMod<Field> {
+	struct HelperModSimd<Field, SimdT, ElementCategories::MachineIntTag> : public HelperMod<Field> {
 		typedef typename SimdT::vect_t vect_t ;
 		// bool overflow ;
 		// int8_t shift ;
@@ -323,7 +323,7 @@ namespace FFLAS { namespace vectorised {
 	} ;
 
 	template<class Field, class SimdT>
-	struct HelperModSimd<Field, SimdT, FieldCategories::FloatingPointTag>  : public HelperMod<Field> {
+	struct HelperModSimd<Field, SimdT, ElementCategories::MachineFloatTag>  : public HelperMod<Field> {
 		typedef typename SimdT::vect_t vect_t ;
 		vect_t INVP;
 		vect_t MIN ;
@@ -366,7 +366,7 @@ namespace FFLAS { namespace vectorised {
 #ifdef __x86_64__
 	template<class Field, int ALGO>
 	typename std::enable_if< std::is_same<typename Field::Element,int64_t>::value , int64_t>::type
-	monfmod (typename Field::Element A, HelperMod<Field,FieldCategories::IntegralTag> & H)
+	monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
 	{
 		switch(ALGO) {
 		case 3 :
@@ -394,19 +394,19 @@ namespace FFLAS { namespace vectorised {
 #else
 	typename Field::Element
 #endif // __x86_64__
-	monfmod (typename Field::Element A, HelperMod<Field,FieldCategories::IntegralTag> & H)
+	monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineIntTag> & H)
 	{
 		return monfmod(A,H.p);
 	}
 
 	template<class Field, int ALGO>
-	typename Field::Element monfmod (typename Field::Element A, HelperMod<Field,FieldCategories::FloatingPointTag> & H)
+	typename Field::Element monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::MachineFloatTag> & H)
 	{
 		return monfmod(A,H.p);
 	}
 
 	template<class Field, int ALGO>
-	typename Field::Element monfmod (typename Field::Element A, HelperMod<Field,FieldCategories::MultiPrecisionTag> & H)
+	typename Field::Element monfmod (typename Field::Element A, HelperMod<Field,ElementCategories::ArbitraryPrecIntTag> & H)
 	{
 		return monfmod(A,H.p);
 	}
@@ -417,14 +417,14 @@ namespace FFLAS { namespace vectorised {
 
 	template<class Field, class SimdT, int ALGO>
 	inline void
-	VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,FieldCategories::FloatingPointTag> & H)
+	VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,ElementCategories::MachineFloatTag> & H)
 	{
 		C = SimdT::mod( C, H.P, H.INVP, H.NEGP, H.MIN, H.MAX, H.Q, H.T );
 	}
 
 	template<class Field, class SimdT, int ALGO>
 	inline void
-	VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,FieldCategories::IntegralTag> & H)
+	VEC_MOD(typename SimdT::vect_t & C, HelperModSimd<Field,SimdT,ElementCategories::MachineIntTag> & H)
 	{
 		// std::cout << "magic " << H.magic<< std::endl;
 		// std::cout << H.P << std::endl;

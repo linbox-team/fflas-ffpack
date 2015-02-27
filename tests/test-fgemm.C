@@ -213,10 +213,7 @@ bool launch_MM(const Field & F,
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		if (par){
-			FFLAS::MMHelper<Field,
-					FFLAS::MMHelperAlgo::Winograd,
-					typename FFLAS::FieldTraits<Field>::value,
-					FFLAS::ParSeqHelper::Parallel>
+			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel>
 				WH (F, nbw, FFLAS::ParSeqHelper::Parallel());    
 			PAR_REGION{
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);

@@ -39,7 +39,7 @@
 
 namespace FFLAS { namespace Protected{
 
-	template <typename FloatElement, class Field, class FieldTrait>
+	template <typename FloatElement, class Field, class FieldMode>
 	inline typename Field::Element_ptr
 	fgemm_convert (const Field& F,
 		       const FFLAS_TRANSPOSE ta,
@@ -50,7 +50,7 @@ namespace FFLAS { namespace Protected{
 		       typename Field::ConstElement_ptr B,const size_t ldb,
 		       const typename Field::Element beta,
 		       typename Field::Element_ptr C, const size_t ldc,
-		       MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & H)
+		       MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
@@ -85,7 +85,9 @@ namespace FFLAS { namespace Protected{
 			fconvert(F, m, n, Cf, n, C, ldc);
 			freduce (G, m, n, Cf, n);
 		}
-		MMHelper<Givaro::ModularBalanced<FloatElement>, MMHelperAlgo::Winograd > HG(G,H.recLevel, ParSeqHelper::Sequential());
+		MMHelper<Givaro::ModularBalanced<FloatElement>, 
+			 MMHelperAlgo::Winograd> 
+			HG(G,H.recLevel, ParSeqHelper::Sequential());
 		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 		finit (F, m, n, Cf, n, C, ldc);
@@ -103,7 +105,7 @@ namespace FFLAS{ namespace Protected{
 	inline bool NeedPreAddReduction (double& Outmin, double& Outmax,
 					 double& Op1min, double& Op1max,
 					 double& Op2min, double& Op2max,
-					 MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
+					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		Outmin = Op1min + Op2min;
 		Outmax = Op1max + Op2max;
@@ -117,11 +119,11 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class Field, class AlgoT, class FieldT>
+	template <class Field, class AlgoT, class ModeT>
 	inline bool NeedPreAddReduction (double& Outmin, double& Outmax,
 					 double& Op1min, double& Op1max,
 					 double& Op2min, double& Op2max,
-					 MMHelper<Field, AlgoT, FieldT >& WH)
+					 MMHelper<Field, AlgoT, ModeT >& WH)
 	{
 		Outmin = WH.FieldMin;
 		Outmax = WH.FieldMax;
@@ -132,7 +134,7 @@ namespace FFLAS{ namespace Protected{
 	inline bool NeedPreSubReduction (double& Outmin, double& Outmax,
 					 double& Op1min, double& Op1max,
 					 double& Op2min, double& Op2max,
-					 MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
+					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		Outmin = Op1min - Op2max;
 		Outmax = Op1max - Op2min;
@@ -146,11 +148,11 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class Field, class AlgoT, class FieldT>
+	template <class Field, class AlgoT, class ModeT>
 	inline bool NeedPreSubReduction (double& Outmin, double& Outmax,
 					 double& Op1min, double& Op1max,
 					 double& Op2min, double& Op2max,
-					 MMHelper<Field, AlgoT, FieldT >& WH)
+					 MMHelper<Field, AlgoT, ModeT >& WH)
 	{
 		    // Necessary?
 		Outmin = WH.FieldMin;
@@ -164,7 +166,7 @@ namespace FFLAS{ namespace Protected{
 					       double& Out2min, double& Out2max,
 					       double& Op1min, double& Op1max,
 					       double& Op2min, double& Op2max, double beta,
-					       MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& WH)
+					       MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		// Testing if P5 need to be reduced
 		Out2min = Op1min + std::min(beta*Op2min,beta*Op2max);
@@ -180,12 +182,12 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template<class Field, class AlgoT, class FieldT>
+	template<class Field, class AlgoT, class ModeT>
 	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max,
 					       double& Out2min, double& Out2max,
 					       double& Op1min, double& Op1max,
 					       double& Op2min, double& Op2max, double beta,
-					       MMHelper<Field, AlgoT, FieldT >& WH)
+					       MMHelper<Field, AlgoT, ModeT>& WH)
 	{
 		Out2min = WH.FieldMin;
 		Out2max = WH.FieldMax;
@@ -198,7 +200,7 @@ namespace FFLAS{ namespace Protected{
 	inline void ScalAndReduce (const Field& F, const size_t N,
 				   const typename Field::Element alpha,
 				   typename Field::Element_ptr X, const size_t incX,
-				   const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
+				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			double al; F.convert(al, alpha);
@@ -217,7 +219,7 @@ namespace FFLAS{ namespace Protected{
 	inline void ScalAndReduce (const Field& F, const size_t M, const size_t N,
 				   const typename Field::Element alpha,
 				   typename Field::Element_ptr A, const size_t lda,
-				   const MMHelper<Field, AlgoT, FieldCategories::DelayedModularFloatingPointTag >& H)
+				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			double al; F.convert(al, alpha);
@@ -249,7 +251,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::FloatingPointConvertibleTag> & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
 	{
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
@@ -279,7 +281,7 @@ namespace FFLAS {
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
+		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
 
@@ -303,7 +305,7 @@ namespace FFLAS {
 	{
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::FieldTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
+		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
 		    // For the sake of simplicity: only one specialization available with non const A and B.
 		    // However, we guarantee that A and B will never be modified
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
@@ -340,7 +342,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::ModularFloatingPointTag> & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag> & H)
 	{		
 		if (!m || !n) {return C;}
 
@@ -380,7 +382,7 @@ namespace FFLAS {
 			F.assign (alpha_,alpha);
 			F.assign (beta_,beta);
 		}
-		MMHelper<Field, MMHelperAlgo::Winograd, FieldCategories::DelayedModularFloatingPointTag>  HD(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);

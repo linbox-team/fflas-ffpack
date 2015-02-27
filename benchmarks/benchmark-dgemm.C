@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
   
 	size_t iter = 1;
 	int    q    = 1009;
-	int    n    = 2000;
+	int n    = 2000;
 	std::string file1 = "";
 	std::string file2 = "";
   
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     FFLAS::fflas_delete( C);
   }
 
-  for (size_t i=0;i<iter;++i){
+  for (size_t it=0;it<iter;++it){
 
     if (!file1.empty()){
       A = read_field (F, file1.c_str(), &n, &n);

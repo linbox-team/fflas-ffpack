@@ -100,13 +100,13 @@ typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t 
 	PARALLEL_GROUP;
 	
 	std::vector<size_t> E(r);
-	for(size_t i=0; i<r; i++)
+	for(i=0; i<r; i++)
 		E[i]=i;
 	
 //		TASK(MODE(READWRITE(E[i])),E[i]=i;);	//does not compile with tbb
 	srand48(seed);
 	std::vector<size_t> Z(m);
-	for(size_t i=0; i<r; i++)
+	for(i=0; i<r; i++)
 		Z[i]=i;
 	
 //		TASK(MODE(CONSTREFERENCE(i, Z) READWRITE(Z[i])),Z[i]=i;); //does not compile with tbb
@@ -114,13 +114,13 @@ typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t 
 	WAIT;
 	
 	std::vector<size_t> Q(r);
-	for(size_t i=0; i<r; ++i) {
+	for(i=0; i<r; ++i) {
 		size_t index=lrand48() % Z.size();
 		Q[i] = Z[ index ];
 		Z.erase(Z.begin()+index);
 	}
 	
-	for(size_t i=0; i<r; ++i) {
+	for(i=0; i<r; ++i) {
 		size_t index=lrand48() % E.size();
 		size_t perm = E[ index ];
 		
@@ -187,12 +187,12 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	size_t j;
 	
 	PARFOR1D (j,0,R,H, 
-              for (size_t i=0; i<=j; ++i )
-              	F.assign( *(L+i*R+j), zero);
-              F.assign(*(L+j*R+j), one);
-              for (size_t i=j+1; i<m; i++)
-              	F.assign( *(L + i*R+j), *(A+i*n+j));
-              );
+		  for (i=0; i<=j; ++i )
+			  F.assign( *(L+i*R+j), zero);
+		  F.assign(*(L+j*R+j), one);
+		  for (i=j+1; i<m; i++)
+			  F.assign( *(L + i*R+j), *(A+i*n+j));
+		  );
 	
 	PAR_REGION{
 		PARALLEL_GROUP;
@@ -215,8 +215,8 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	}
 	bool fail = false;
 	//  PAR_FOR (size_t i=0; i<m; ++i)
-	for(size_t i=0; i<m; ++i)
-		for (size_t j=0; j<n; ++j)
+	for(i=0; i<m; ++i)
+		for (j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
 				std::cout << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 					  << " Result"<<i<<","<<j<<"] = " << (*(X+i*n+j))
@@ -366,12 +366,12 @@ int main(int argc, char** argv) {
        size_t j;
        size_t k;
               
-       for (size_t i=0;i<=iter;++i){
+       for (i=0;i<=iter;++i){
 	       	       
 	       PARFOR1D(j,0,maxP,H, P[j]=0; );
 	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
 	       PARFOR1D(k,0,(size_t)m,H,
-                    for (size_t j=0; j<(size_t)n; ++j)
+                    for (j=0; j<(size_t)n; ++j)
                     	*(A+k*n+j) = *(Acop+k*n+j) ;  
                     );
 	       chrono.clear();

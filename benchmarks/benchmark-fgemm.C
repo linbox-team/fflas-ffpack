@@ -53,7 +53,7 @@ using namespace std;
 
 #ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
-void Initialize(Element * C, int BS, size_t m, size_t n)
+void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
 	BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
@@ -89,7 +89,7 @@ void Initialize(Element * C, int BS, size_t m, size_t n)
 }
 #else
 template<class Element>
-void Initialize(Element * C, int BS, size_t m, size_t n)
+void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {}
 #endif
 int main(int argc, char** argv) {
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
   Field::RandIter G(F); 
   A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(A,m/NBK,m,k);
+  Initialize(A,m/size_t(NBK),m,k);
 
   FFLAS::ParSeqHelper::Parallel H;
   size_t i;
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
   C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   Initialize(C,m/NBK,m,n);
-  for (size_t i=0;i<=iter;++i){
+  for (i=0;i<=iter;++i){
 
 	  // if (argc > 4){
 	  // 	  A = read_field (F, argv[4], &n, &n);
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
 		  default: meth = FFLAS::BLOCK_THREADS;break;
 	      }
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
-			      typename FFLAS::FieldTraits<Field>::value,
+			      typename FFLAS::ModeTraits<Field>::value,
 			      FFLAS::ParSeqHelper::Parallel> 
 		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth));	
 	      if (i) chrono.start();
