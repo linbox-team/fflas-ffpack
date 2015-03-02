@@ -45,7 +45,6 @@ namespace FFLAS {
 			F.reduce_modp(n,A);
 		else
 			F.reduce_modp(n,1,A,inc);
-		//throw FFPACK::Failure(__func__,__FILE__,__LINE__,"freduce RNSIntegerMod  -> (inc!=1) NOT SUPPORTED");
 	}
 	// specialization of the level2 freduce function for the field RNSInteger<rns_double>
 	template<>
@@ -57,7 +56,7 @@ namespace FFLAS {
 		if (lda == n)
 			F.reduce_modp(m*n,A);
 		else
-			F.reduce_modp(m,n,A,lda); // seems to be buggy
+			F.reduce_modp(m,n,A,lda); 
 	}
 
 
