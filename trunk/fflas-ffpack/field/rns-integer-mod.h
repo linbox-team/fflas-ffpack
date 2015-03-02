@@ -47,8 +47,6 @@
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
-
-
 #include "fflas-ffpack/fflas/fflas_fscal_mp.inl"
  
 #if defined(BENCH_PERF_FGEMM_MP) || defined(BENCH_PERF_TRSM_MP) || defined(BENCH_PERF_LQUP_MP)
@@ -314,6 +312,20 @@ namespace FFPACK {
 #endif
 	 	}
 
+		std::ostream& write_matrix(std::ostream& c,
+					double* E,
+					int n, int m, int lda) const
+		{
+			c<<std::endl<<"***********************"<<std::endl;
+			for (int i = 0; i<n;++i){
+				for (int j=0; j<m;++j)
+					c << (long)*(E+j+lda*i) << " ";
+				c << std::endl;
+			}
+			c<<"***********************"<<std::endl;
+			return c << std::endl;
+		}
+		
 		void reduce_modp(size_t m, size_t n, Element_ptr B, size_t lda) const{
 #ifdef BENCH_MODP
 			FFLAS::Timer chrono; chrono.start();
@@ -332,13 +344,15 @@ namespace FFPACK {
 			//for(size_t i=0;i<_size;i++)
 			//	FFLAS::fscal(_rns->_field_rns[i], m, n, _rns->_MMi[i], A+i*rda, lda, Gamma+i*mn,n);
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
-			FFLAS::fscal(_RNSdelayed, m, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,mn), 1);
+			FFLAS::fscal(_RNSdelayed, m, n, mmi, B, lda, typename RNS::Element_ptr(Gamma,mn), n);
 			
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			Givaro::UnparametricRing<BasisElement> D;
 		
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
-						
+
+			//write_matrix(std::cout,Gamma, mn, _size, mn);
+					
 			// compute alpha = _invbase.Gamma
 			//std::cout<<"fgemv (X)..."<<m<<"x"<<n<<" -> "<<_size<<"  "<<lda<<endl;;
 			FFLAS::fgemv(D, FFLAS::FflasTrans, _size, mn, D.one, Gamma, mn, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
@@ -396,20 +410,20 @@ namespace FFPACK {
                         		size_t k = 0;
                         		for( ; k < ROUND_DOWN(_size, simd::vect_size) ; k+=simd::vect_size){
                         			basis = simd::load(_rns->_basis.data()+k);
-									inv   = simd::load(_rns->_invbasis.data()+k);
-									max   = simd::load(_rns->_basisMax.data()+k);
-									neg   = simd::load(_rns->_negbasis.data()+k);                        			
-                        			vA1 = simd::load(A+i*_size+k);
+						inv   = simd::load(_rns->_invbasis.data()+k);
+						max   = simd::load(_rns->_basisMax.data()+k);
+						neg   = simd::load(_rns->_negbasis.data()+k);
+						vA1  = simd::load(A+i*_size+k);
                         			vMi1 = simd::load(MMi+k);
                         			v = simd::mul(vA1, vMi1);
                         			tmp1  = simd::floor(simd::mul(v, inv));				
-									tmp2  = simd::fnmadd(v, tmp1, basis);
-									tmp1  = simd::greater(tmp2, max);
-									tmp3  = simd::lesser(tmp2, simd::zero());
-									tmp1  = simd::vand(tmp1, neg);
-									tmp3  = simd::vand(tmp3, basis);
-									tmp1  = simd::vor(tmp1, tmp3);
-									tmp2  = simd::add(tmp2, tmp1);
+						tmp2  = simd::fnmadd(v, tmp1, basis);
+						tmp1  = simd::greater(tmp2, max);
+						tmp3  = simd::lesser(tmp2, simd::zero());
+						tmp1  = simd::vand(tmp1, neg);
+						tmp3  = simd::vand(tmp3, basis);
+						tmp1  = simd::vor(tmp1, tmp3);
+						tmp2  = simd::add(tmp2, tmp1);
                         			simd::store(Gamma+i*_size+k, tmp2);
                         		}
                         	}
@@ -427,23 +441,23 @@ namespace FFPACK {
                         			vMi1 = simd::loadu(MMi+k);
                         			v = simd::mul(vA1, vMi1);
                         			tmp1  = simd::floor(simd::mul(v, inv));				
-									tmp2  = simd::fnmadd(v, tmp1, basis);
-									tmp1  = simd::greater(tmp2, max);
-									tmp3  = simd::lesser(tmp2, simd::zero());
-									tmp1  = simd::vand(tmp1, neg);
-									tmp3  = simd::vand(tmp3, basis);
-									tmp1  = simd::vor(tmp1, tmp3);
-									tmp2  = simd::add(tmp2, tmp1);
+						tmp2  = simd::fnmadd(v, tmp1, basis);
+						tmp1  = simd::greater(tmp2, max);
+						tmp3  = simd::lesser(tmp2, simd::zero());
+						tmp1  = simd::vand(tmp1, neg);
+						tmp3  = simd::vand(tmp3, basis);
+						tmp1  = simd::vor(tmp1, tmp3);
+						tmp2  = simd::add(tmp2, tmp1);
                         			simd::storeu(Gamma+i*_size+k, tmp2);
                         		}
                         		for(; k < _size ; ++k){
                         			Gamma[i*_size+k] = A[i*_size+k]*MMi[k];
                         			Gamma[i*_size+k] -= std::floor(Gamma[i*_size+k]*_rns->_invbasis[k])*_rns->_basis[k];
-									if(Gamma[i*_size+k] >= _rns->_basis[k]){
-										Gamma[i*_size+k] -= _rns->_basis[k]; 
-									}else if(Gamma[i*_size+k] < 0){
-										Gamma[i*_size+k] += _rns->_basis[k]; 
-									}
+						if(Gamma[i*_size+k] >= _rns->_basis[k]){
+							Gamma[i*_size+k] -= _rns->_basis[k]; 
+						}else if(Gamma[i*_size+k] < 0){
+							Gamma[i*_size+k] += _rns->_basis[k]; 
+						}
                         		}
                         	}
                         }
