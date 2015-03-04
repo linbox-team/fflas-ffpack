@@ -492,7 +492,7 @@ template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::false_type) {
     // std::cout << "no ZO Generic" << std::endl;
-    sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+    /*sparse_details_impl::*/pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
 }
 
 template <class Field, class SM>
@@ -595,7 +595,7 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
     }
 #else
     if (F.isOne(A.cst)) {
-        sparse_details_impl::pfspmm__one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     } else if (F.isMOne(A.cst)) {
         sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     } else {
