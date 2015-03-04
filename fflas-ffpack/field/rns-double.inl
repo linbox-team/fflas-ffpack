@@ -412,7 +412,8 @@ namespace FFPACK {
 #else
 			for(size_t i = 0 ; i < n ; i+= _size){
 				for(size_t j = 0 ; j < _size ; ++j){
-					_field_rns.reduce(Arns+i*_size+j);
+					//_field_rns.reduce(Arns+i*_size+j);
+					_field_rns[i].reduce(Arns[i*_size+j]);
 				}
 			}
 #endif
