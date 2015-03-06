@@ -328,17 +328,20 @@ inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr 
                   typename Field::Element_ptr y);
 
 template <class Field, class SM>
+inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
+                  typename Field::Element_ptr y);
+
+#if defined(__FFLASFFPACK_HAVE_OPENMP)
+template <class Field, class SM>
 inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
                    typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
-                  typename Field::Element_ptr y);
-
-template <class Field, class SM>
 inline void pfspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
                    typename Field::Element_ptr y);
+#endif
 }
+
 
 #include "fflas-ffpack/fflas/fflas_sparse.inl"
 

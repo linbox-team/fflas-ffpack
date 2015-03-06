@@ -198,6 +198,8 @@ inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr 
 
 /***************************** pfspmv ******************************/
 
+#if defined(__FFLASFFPACK_HAVE_OPENMP)
+
 template <class Field, class SM, class FC, class MZO>
 inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
                   FieldCategories::MultiPrecisionTag ,FC fc, MZO mzo) {
@@ -326,6 +328,7 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
     sparse_details::pfspmv<Field, SM>(F, A, x, y, FieldCategories::UnparametricTag(), std::true_type());
     freduce(F, A.m, y, 1);
 }
+#endif
 
 // /***************************** fspmm *****************************/
 
@@ -476,149 +479,149 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
 
 // /***************************** pfspmm *****************************/
 
-template<class Field, class SM, class FCat, class MZO>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::MultiPrecisionTag, FCat fc, MZO mz) {
-    sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::GenericTag(), MZO());
-}
+// template<class Field, class SM, class FCat, class MZO>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::MultiPrecisionTag, FCat fc, MZO mz) {
+//     sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::GenericTag(), MZO());
+// }
 
-template<class Field, class SM, class FCat, class MZO>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, FCat fc, MZO mz) {
-    sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FCat(), MZO());
-}
+// template<class Field, class SM, class FCat, class MZO>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, FCat fc, MZO mz) {
+//     sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FCat(), MZO());
+// }
 
-template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::false_type) {
-    // std::cout << "no ZO Generic" << std::endl;
-    /*sparse_details_impl::*/pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
-}
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::false_type) {
+//     // std::cout << "no ZO Generic" << std::endl;
+//     /*sparse_details_impl::*/pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+// }
 
-template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::false_type) {
-// std::cout << "no ZO Unparametric" << std::endl;
-#ifdef __FFLASFFPACK_USE_SIMD
-    using simd = Simd<typename Field::Element>;
-    if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
-        (blockSize % simd::vect_size == 0)) {
-        // std::cout << "no ZO Unparametric algined" << std::endl;
-        sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-    }
-else{
-    sparse_details_impl::fspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-}
-#else
-    sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-#endif
-}
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::false_type) {
+// // std::cout << "no ZO Unparametric" << std::endl;
+// #ifdef __FFLASFFPACK_USE_SIMD
+//     using simd = Simd<typename Field::Element>;
+//     if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
+//         (blockSize % simd::vect_size == 0)) {
+//         // std::cout << "no ZO Unparametric algined" << std::endl;
+//         sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+//     }
+// else{
+//     sparse_details_impl::fspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+// }
+// #else
+//     sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+// #endif
+// }
 
-template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::false_type) {
-    // std::cout << "no ZO Modular" << std::endl;
-    if (A.delayed) {
-        sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag(),
-                              typename std::false_type());
-        freduce(F, A.m, blockSize, y, ldy);
-    } else {
-#ifdef __FFLASFFPACK_USE_SIMD
-        using simd = Simd<typename Field::Element>;
-        if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
-            (blockSize % simd::vect_size == 0)) {
-            sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, A.kmax);
-        } else {
-            sparse_details_impl::pfspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, A.kmax);
-        }
-#else
-        sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, A.kmax);
-#endif
-    }
-}
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::false_type) {
+//     // std::cout << "no ZO Modular" << std::endl;
+//     if (A.delayed) {
+//         sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag(),
+//                               typename std::false_type());
+//         freduce(F, A.m, blockSize, y, ldy);
+//     } else {
+// #ifdef __FFLASFFPACK_USE_SIMD
+//         using simd = Simd<typename Field::Element>;
+//         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
+//             (blockSize % simd::vect_size == 0)) {
+//             sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+//         } else {
+//             sparse_details_impl::pfspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+//         }
+// #else
+//         sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+// #endif
+//     }
+// }
 
-// ZO matrix
-template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::true_type) {
-    // std::cout << "ZO Generic" << std::endl;
-    if (F.isOne(A.cst)) {
-        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
-    } else if (F.isMOne(A.cst)) {
-        sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
-    } else {
-        auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
-        fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
-        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
-        fflas_delete(x1);
-    }
-}
+// // ZO matrix
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, std::true_type) {
+//     // std::cout << "ZO Generic" << std::endl;
+//     if (F.isOne(A.cst)) {
+//         sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+//     } else if (F.isMOne(A.cst)) {
+//         sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+//     } else {
+//         auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
+//         fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
+//         sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+//         fflas_delete(x1);
+//     }
+// }
 
-template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::true_type) {
-// std::cout << "ZO Unparametric" << std::endl;
-#ifdef __FFLASFFPACK_USE_SIMD
-    using simd = Simd<typename Field::Element>;
-    if (F.isOne(A.cst)) {
-        if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
-            (blockSize % simd::vect_size == 0)) {
-            // std::cout << "ZO Unparametric aligned" << std::endl;
-            sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
-                                                        FieldCategories::UnparametricTag());
-        } else {
-            // std::cout << "ZO Unparametric unaligned" << std::endl;
-            sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
-                                                          FieldCategories::UnparametricTag());
-        }
-    } else if (F.isMOne(A.cst)) {
-        if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
-            (blockSize % simd::vect_size == 0)) {
-            sparse_details_impl::pfspmm_mone_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
-                                                         FieldCategories::UnparametricTag());
-        } else {
-            sparse_details_impl::pfspmm_mone_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
-                                                           FieldCategories::UnparametricTag());
-        }
-    } else {
-        auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
-        fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
-        if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
-            (blockSize % simd::vect_size == 0)) {
-            sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
-                                                        FieldCategories::UnparametricTag());
-        } else {
-            sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
-                                                          FieldCategories::UnparametricTag());
-        }
-        fflas_delete(x1);
-    }
-#else
-    if (F.isOne(A.cst)) {
-        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-    } else if (F.isMOne(A.cst)) {
-        sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-    } else {
-        auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
-        fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
-        sparse_details_impl::pfspmm_one(F, A, blockSize, x1, ldx, y, ldy, FieldCategories::UnparametricTag());
-        fflas_delete(x1);
-    }
-#endif
-}
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::true_type) {
+// // std::cout << "ZO Unparametric" << std::endl;
+// #ifdef __FFLASFFPACK_USE_SIMD
+//     using simd = Simd<typename Field::Element>;
+//     if (F.isOne(A.cst)) {
+//         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
+//             (blockSize % simd::vect_size == 0)) {
+//             // std::cout << "ZO Unparametric aligned" << std::endl;
+//             sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
+//                                                         FieldCategories::UnparametricTag());
+//         } else {
+//             // std::cout << "ZO Unparametric unaligned" << std::endl;
+//             sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
+//                                                           FieldCategories::UnparametricTag());
+//         }
+//     } else if (F.isMOne(A.cst)) {
+//         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
+//             (blockSize % simd::vect_size == 0)) {
+//             sparse_details_impl::pfspmm_mone_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
+//                                                          FieldCategories::UnparametricTag());
+//         } else {
+//             sparse_details_impl::pfspmm_mone_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
+//                                                            FieldCategories::UnparametricTag());
+//         }
+//     } else {
+//         auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
+//         fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
+//         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
+//             (blockSize % simd::vect_size == 0)) {
+//             sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
+//                                                         FieldCategories::UnparametricTag());
+//         } else {
+//             sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
+//                                                           FieldCategories::UnparametricTag());
+//         }
+//         fflas_delete(x1);
+//     }
+// #else
+//     if (F.isOne(A.cst)) {
+//         sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+//     } else if (F.isMOne(A.cst)) {
+//         sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+//     } else {
+//         auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
+//         fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
+//         sparse_details_impl::pfspmm_one(F, A, blockSize, x1, ldx, y, ldy, FieldCategories::UnparametricTag());
+//         fflas_delete(x1);
+//     }
+// #endif
+// }
 
-template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::true_type) {
-    // std::cout << "ZO Modular" << std::endl;
-    if (A.delayed) {
-        sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::UnparametricTag(),
-                              typename std::true_type());
-        freduce(F, blockSize, A.m, y, ldy);
-    } else {
-        sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, A.kmax);
-    }
-}
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+//                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, std::true_type) {
+//     // std::cout << "ZO Modular" << std::endl;
+//     if (A.delayed) {
+//         sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::UnparametricTag(),
+//                               typename std::true_type());
+//         freduce(F, blockSize, A.m, y, ldy);
+//     } else {
+//         sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+//     }
+// }
 
 } // sparse details
 
@@ -631,14 +634,6 @@ inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr 
 }
 
 template <class Field, class SM>
-inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
-                   typename Field::Element_ptr y) {
-    sparse_details::init_y(F, A.m, beta, y);
-    sparse_details::pfspmv<Field, SM>(F, A, x, y, typename FieldTraits<Field>::value(), typename FieldTraits<Field>::category(),
-                                      typename isZOSparseMatrix<Field, SM>::type());
-}
-
-template <class Field, class SM>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   const typename Field::Element &beta, typename Field::Element_ptr y, int ldy) {
     sparse_details::init_y(F, A.m, blockSize, beta, y, ldy);
@@ -647,17 +642,26 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
                  typename FieldTraits<Field>::category(), typename isZOSparseMatrix<Field, SM>::type());
 }
 
+#if defined(__FFLASFFPACK_HAVE_OPENMP)
 template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize,
-                   typename Field::ConstElement_ptr x, int ldx,
-                   const typename Field::Element &beta,
-                   typename Field::Element_ptr y, int ldy) {
-    sparse_details::init_y(F, A.m, blockSize, beta, y, ldy);
-    sparse_details::pfspmm<Field, SM>(
-        F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::value(),
-        typename FieldTraits<Field>::category(),
-        typename isZOSparseMatrix<Field, SM>::type());
+inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
+                   typename Field::Element_ptr y) {
+    sparse_details::init_y(F, A.m, beta, y);
+    sparse_details::pfspmv<Field, SM>(F, A, x, y, typename FieldTraits<Field>::value(), typename FieldTraits<Field>::category(),
+                                      typename isZOSparseMatrix<Field, SM>::type());
 }
+#endif
+// template <class Field, class SM>
+// inline void pfspmm(const Field &F, const SM &A, int blockSize,
+//                    typename Field::ConstElement_ptr x, int ldx,
+//                    const typename Field::Element &beta,
+//                    typename Field::Element_ptr y, int ldy) {
+//     sparse_details::init_y(F, A.m, blockSize, beta, y, ldy);
+//     sparse_details::pfspmm<Field, SM>(
+//         F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::value(),
+//         typename FieldTraits<Field>::category(),
+//         typename isZOSparseMatrix<Field, SM>::type());
+// }
 }
 
 
