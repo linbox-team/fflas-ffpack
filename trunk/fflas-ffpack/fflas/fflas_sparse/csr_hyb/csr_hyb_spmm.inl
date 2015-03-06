@@ -188,7 +188,6 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
         start = st[4 * i + 2], stop = st[4 * (i + 1)];
         index_t startDat = st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            for (uint64_t j = start; j < stop; ++j) {
                 int k = 0;
                 vdat = simd::set1(dat[startDat + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
@@ -207,7 +206,6 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
                 for (; k < blockSize; ++k)
                     y[i * ldy + k] -= dat[startDat + j] * x[col[j] * ldx + k];
             }
-        }
     }
 }
 
@@ -264,7 +262,6 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
         }
         start = st[4 * i + 2], stop = st[4 * (i + 1)];
         index_t startDat = st[4 * i + 3];
-        for (uint64_t j = start; j < stop; ++j) {
             for (uint64_t j = start; j < stop; ++j) {
                 int k = 0;
                 vdat = simd::set1(dat[startDat + j]);
@@ -284,7 +281,6 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
                 for (; k < blockSize; ++k)
                     y[i * ldy + k] -= dat[startDat + j] * x[col[j] * ldx + k];
             }
-        }
     }
 }
 #endif
