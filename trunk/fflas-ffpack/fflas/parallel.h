@@ -134,22 +134,22 @@
 #ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
 
 // macro omp taskwait (waits for all childs of current task)
-#define WAIT PRAGMA_OMP_TASK_IMPL( omp taskwait )
+#define WAIT PRAGMA_OMP_TASK_IMPL(omp taskwait)
 #define GLOBALSHARED(a, Args...) shared(Args)
 #define CONSTREFERENCE(Args...) shared(Args)
 #define VALUE(Args...) firstprivate(Args)
-#define BARRIER PRAGMA_OMP_TASK_IMPL( omp barrier )
+#define BARRIER PRAGMA_OMP_TASK_IMPL(omp barrier)
 
 // parallel for 1D, overloaded macro
 #define PF1D_5(iter,debut,  m, Helper, I)                                \
    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);               \
-       PRAGMA_OMP_TASK_IMPL( omp parallel for num_threads(OMPstrategyIterator.numblocks()) ) \
+       PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks())) \
            for(iter=debut; iter<m+debut; ++iter)                      \
            { I; } }
 
 #define PF1D_6(iter, debut, m, ref, Helper, I)                           \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);              \
-        PRAGMA_OMP_TASK_IMPL( omp parallel for ref num_threads(OMPstrategyIterator.numblocks()) ) \
+        PRAGMA_OMP_TASK_IMPL(omp parallel for ref num_threads(OMPstrategyIterator.numblocks())) \
             for(iter=debut; iter<m+debut; ++iter)                     \
             { I; } }
 
@@ -169,8 +169,8 @@
         {I;} }
 
 // parallel region
-#define PAR_REGION  PRAGMA_OMP_TASK_IMPL( omp parallel )        \
-    PRAGMA_OMP_TASK_IMPL( omp single )
+#define PAR_REGION  PRAGMA_OMP_TASK_IMPL(omp parallel)        \
+    PRAGMA_OMP_TASK_IMPL(omp single)
 // get number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
 // get number of threads specified with the global variable OMP_NUM_THREADS
@@ -179,10 +179,10 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
-#define PRAGMA_OMP_TASK_IMPL( Args... ) _Pragma( #Args )
+#define PRAGMA_OMP_TASK_IMPL(Args...) _Pragma(#Args)
 
 #define TASK(M, I)                              \
-    PRAGMA_OMP_TASK_IMPL( omp task M)           \
+    PRAGMA_OMP_TASK_IMPL(omp task M)           \
     {I;}
 
 #define PARALLEL_GROUP     
@@ -200,7 +200,7 @@
 
 #else // OPENMP3.1 (explicit synch mode)
 
-  #define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL( omp taskwait )
+  #define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL(omp taskwait)
 
   #define READ(Args...)
   #define WRITE(Args...)

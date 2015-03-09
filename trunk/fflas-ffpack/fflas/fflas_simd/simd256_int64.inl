@@ -214,7 +214,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      * Return : [a0*b0 mod 2^64-1, a1*b1 mod 2^64-1, a2*b2 mod 2^64-1, a3*b3 mod 2^64-1] int64_t
      */
     static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
-#pragma warning "The simd mullo function is emulate, it may impact the performances."
+#warning "The simd mullo function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -316,11 +316,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      (a2>b2) ? 0xFFFF : 0, (a3>b3) ? 0xFFFF : 0]                     	int32_t
      */
     static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
-#ifdef __AVX2__
         return _mm256_cmpgt_epi64(a, b);
-#else
-#warning "not implemented"
-#endif
     }
 
     /*
@@ -331,11 +327,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      (a2<b2) ? 0xFFFF : 0, (a3<b3) ? 0xFFFF : 0] 					  int32_t
      */
     static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
-#ifdef __AVX2__
         return _mm256_cmpgt_epi64(b, a);
-#else
-#warning "not implemented"
-#endif
     }
 
     /*
@@ -463,8 +455,8 @@ template <> struct Simd256_impl<true, true, true, 8> {
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
-#warning "not tested"
-        C = _mm256_rem_epi64(C, P); // really ?
+        // Works fine with ICC 15.0.1 - A.B.
+        C = _mm256_rem_epi64(C, P);
 #else
         if (poweroftwo) {
             Q = srl(C, 63);
