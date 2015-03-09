@@ -321,11 +321,11 @@ template <> struct Simd128_impl<true, true, true, 2> {
 
     {
 #ifdef __INTEL_COMPILER
-        C = _mm_rem_epi16(C, P)
+        C = _mm_rem_epi16(C, P);
 #else
-        FFLASFFPACK_abort("pas implementé");
+        FFLASFFPACK_abort("not implemented");
 #endif
-            NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+        NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
         return C;
     }
 

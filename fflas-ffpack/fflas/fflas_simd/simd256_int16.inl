@@ -459,12 +459,11 @@ template <> struct Simd256_impl<true, true, true, 2> {
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
                              const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
-        C = _mm256_rem_epi16(C, P)
+        C = _mm256_rem_epi16(C, P);
 #else
         FFLASFFPACK_abort("pas implementé");
 #endif
-            NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
-
+        NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
         return C;
     }
 

@@ -367,12 +367,12 @@ template <> struct Simd128_impl<true, true, true, 4> {
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
                              const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
-        C = _mm_rem_epi32(C, P)
+        C = _mm_rem_epi32(C, P);
 #else
         FFLASFFPACK_abort("pas implementé");
 // C = fnmadd(C,_mm_castps_si128(_mm_floor_ps(_mm_mul_ps(INVP,_mm_castsi128_ps(C)))),P);
 #endif
-            NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
+        NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
         return C;
     }
 

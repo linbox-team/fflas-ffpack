@@ -250,7 +250,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 #ifdef __SSE4_2__
         return _mm_cmpgt_epi64(a, b);
 #else
-#pragma warning "The simd greater function is emulate, it may impact the performances."
+#warning "The simd greater function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -262,7 +262,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 #ifdef __SSE4_2__
         return _mm_cmpgt_epi64(b, a);
 #else
-#pragma warning "The simd lesser function is emulate, it may impact the performances."
+#warning "The simd lesser function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -390,8 +390,9 @@ template <> struct Simd128_impl<true, true, true, 8> {
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
-#warning "not tested"
-        C = _mm_rem_epi64(C, P); // really ?
+// Works fine with ICC 15.0.1 - A.B.
+// #warning "not tested"
+        C = _mm_rem_epi64(C, P);
 #else
         if (poweroftwo) {
             Q = srl(C, 63);
@@ -464,7 +465,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
         b = sub(x, b);
         return _mm_cmpgt_epi64(a, b);
 #else
-#pragma warning "The simd greater function is emulate, it may impact the performances."
+#warning "The simd greater function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -480,7 +481,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
         b = sub(x, b);
         return _mm_cmpgt_epi64(a, b);
 #else
-#pragma warning "The simd greater function is emulate, it may impact the performances."
+#warning "The simd greater function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
