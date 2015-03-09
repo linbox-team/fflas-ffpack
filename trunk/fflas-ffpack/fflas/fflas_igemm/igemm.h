@@ -49,14 +49,14 @@ namespace FFLAS { namespace Protected {
 
 
 
-	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB>
+	template<enum FFLAS_TRANSPOSE tA, enum FFLAS_TRANSPOSE tB>
 	void igemm_colmajor( size_t rows, size_t cols, size_t depth
 			    , const int64_t alpha
 			    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
 			    , int64_t* C, size_t ldc
 			   ) ;
 
-	template<enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB, enum number_kind alpha_kind>
+	template<enum FFLAS_TRANSPOSE tA, enum FFLAS_TRANSPOSE tB, enum number_kind alpha_kind>
 	void igemm_colmajor( size_t rows, size_t cols, size_t depth
 			    , const int64_t alpha
 			    , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
@@ -65,7 +65,7 @@ namespace FFLAS { namespace Protected {
 
 
 
-	void igemm(const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB
+	void igemm(const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB
 		   , size_t rows, size_t cols, size_t depth
 		   , const int64_t alpha
 		   , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
@@ -78,7 +78,7 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS { /*  igemm */
 
-	inline void igemm_(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB
+	inline void igemm_(const enum FFLAS_ORDER Order, const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB
 			   , const int M, const int N, const int K
 			   , const int64_t alpha
 			   , const int64_t *A, const int lda, const int64_t *B, const int ldb

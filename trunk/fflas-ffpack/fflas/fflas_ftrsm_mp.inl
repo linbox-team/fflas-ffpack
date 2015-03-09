@@ -52,8 +52,8 @@ namespace FFLAS {
 		    const Givaro::Integer alpha,
 		    const Givaro::Integer * A, const size_t lda,
 		    Givaro::Integer * B, const size_t ldb){
-		
-		
+
+
 #ifdef BENCH_PERF_TRSM_MP
 		double t_init=0, t_trsm=0, t_mod=0, t_rec=0;
 		FFLAS::Timer chrono;
@@ -69,7 +69,7 @@ namespace FFLAS {
 			K=N;
 
 		if (K==0) return;
-		
+
 		// compute bit size of feasible prime
 		size_t _k=std::max(K,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}
@@ -77,10 +77,10 @@ namespace FFLAS {
 
 		// construct rns basis
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K;
-		
+
 		size_t n_pr =maxC.bitsize()/prime_bitsize;
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr;
-		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		
+		FFPACK::rns_double RNS(maxC, prime_bitsize, true);
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
@@ -98,14 +98,14 @@ namespace FFLAS {
 		}
 		else {
 			finit_trans_rns(Zp,K,K,(logp/16)+(logp%16?1:0),A,lda,Ap);
-			finit_trans_rns(Zp,M,N,(logp/16)+(logp%16?1:0),B,ldb,Bp);					
-		}		
+			finit_trans_rns(Zp,M,N,(logp/16)+(logp%16?1:0),B,ldb,Bp);
+		}
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_mod+=chrono.usertime();
 		chrono.clear();chrono.start();
 #endif
-		
+
 		// call ftrsm in rns
 		//ftrsm(Zp, Side, Uplo, TransA, Diag, M, N, Zp.one, Ap, K, Bp, N);
 		if (Side == FFLAS::FflasLeft)
@@ -126,8 +126,8 @@ namespace FFLAS {
 			fconvert_rns(Zp,M,N,F.zero,B,ldb,Bp);
 		else{
 			fconvert_trans_rns(Zp,M,N,F.zero,B,ldb,Bp);
-		}	
-	
+		}
+
 		// reduce it modulo p
 		freduce (F, M, N, B, ldb);
 		// scale it with alpha
@@ -148,17 +148,18 @@ namespace FFLAS {
 		FFLAS::fflas_delete(Bp);
 	}
 
+	/*  bb: do not use CBLAS_ORDER, or make it compatible with MLK */
 
-	inline void cblas_imptrsm(const enum CBLAS_ORDER Order, 
-				  const enum CBLAS_SIDE Side, 
-				  const enum CBLAS_UPLO Uplo, 
-				  const enum CBLAS_TRANSPOSE TransA,
-				  const enum CBLAS_DIAG Diag, 
-				  const int M, const int N, const FFPACK::rns_double_elt alpha, 
+	inline void cblas_imptrsm(const enum FFLAS_ORDER Order,
+				  const enum FFLAS_SIDE Side,
+				  const enum FFLAS_UPLO Uplo,
+				  const enum FFLAS_TRANSPOSE TransA,
+				  const enum FFLAS_DIAG Diag,
+				  const int M, const int N, const FFPACK::rns_double_elt alpha,
 				  FFPACK::rns_double_elt_cstptr A, const int lda,
 				  FFPACK::rns_double_elt_ptr B, const int ldb) {}
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS	
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 	namespace Protected {
 
 		template<>
@@ -166,7 +167,7 @@ namespace FFLAS {
 		{
 			return 1;
 		}
-	
+
 		template <>
 		inline size_t DotProdBoundClassic (const FFPACK::RNSIntegerMod<FFPACK::rns_double>& F,
 						   const FFPACK::rns_double_elt& beta)
@@ -180,7 +181,7 @@ namespace FFLAS {
 			return  std::max((size_t)1,kmax);
 			//return kmax;
 		}
-		
+
 #ifndef __FTRSM_MP_FAST
 #define __FFLAS_MULTIPRECISION
 
@@ -347,11 +348,11 @@ namespace FFLAS {
 #undef __FFLAS__LOW
 #undef __FFLAS__TRANSPOSE
 #undef __FFLAS__UNIT
-#endif // #ifdef __FTRSM_MP_FAST	
-		
+#endif // #ifdef __FTRSM_MP_FAST
+
 	} // end of namespace protected
-#endif // #ifndef DOXYGEN_SHOULD_SKIP_THIS	
+#endif // #ifndef DOXYGEN_SHOULD_SKIP_THIS
 } // END OF NAMESPACE FFLAS
-		
+
 #endif
 
