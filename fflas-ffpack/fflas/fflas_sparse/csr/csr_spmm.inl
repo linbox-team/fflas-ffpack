@@ -189,18 +189,20 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, i
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
-                F.reduce(y[i * ldy + k]);
-            }
+	    FFLAS::freduce(F,blockSize,y+i*ldy,1);
+	    // for (int k = 0; k < blockSize; ++k) {
+		// F.reduce(y[i * ldy + k]);
+	    // }
         }
         for (; j < j_end; ++j) {
             for (int k = 0; k < blockSize; ++k) {
                 y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
             }
         }
-        for (int k = 0; k < blockSize; ++k) {
-            F.reduce(y[i * ldy + k]);
-        }
+	FFLAS::freduce(F,blockSize,y+i*ldy,1);
+	// for (int k = 0; k < blockSize; ++k) {
+	    // F.reduce(y[i * ldy + k]);
+	// }
     }
 }
 
@@ -249,9 +251,11 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
-                F.reduce(y[i * ldy + k]);
-            }
+	    //
+	    FFLAS::freduce(F,blockSize,y+i*ldy,1);
+	    // for (int k = 0; k < blockSize; ++k) {
+		// F.reduce(y[i * ldy + k]);
+	    // }
         }
         for (; j < j_end; ++j) {
             vect_t y1, x1, y2, x2, vdat;
@@ -279,9 +283,10 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
                 y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
             }
         }
-        for (int k = 0; k < blockSize; ++k) {
-            F.reduce(y[i * ldy + k]);
-        }
+	    FFLAS::freduce(F,blockSize,y+i*ldy,1);
+	// for (int k = 0; k < blockSize; ++k) {
+	    // F.reduce(y[i * ldy + k]);
+	// }
     }
 }
 
@@ -328,9 +333,10 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
-                F.reduce(y[i * ldy + k]);
-            }
+	    FFLAS::freduce(F,blockSize,y+i*ldy,1);
+	    // for (int k = 0; k < blockSize; ++k) {
+		// F.reduce(y[i * ldy + k]);
+	    // }
         }
         for (; j < j_end; ++j) {
             vect_t y1, x1, y2, x2, vdat;
@@ -356,9 +362,10 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
                 y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
             }
         }
-        for (int k = 0; k < blockSize; ++k) {
-            F.reduce(y[i * ldy + k]);
-        }
+	FFLAS::freduce(F,blockSize,y+i*ldy,1);
+	// for (int k = 0; k < blockSize; ++k) {
+	    // F.reduce(y[i * ldy + k]);
+	// }
     }
 }
 
