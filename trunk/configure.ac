@@ -324,7 +324,6 @@ fflas-ffpack-config
 fflas-ffpack/Makefile
 fflas-ffpack/fflas/Makefile
 fflas-ffpack/fflas/fflas_fgemm/Makefile
-fflas-ffpack/fflas/fflas_fspmv/Makefile
 fflas-ffpack/fflas/fflas_sparse/Makefile
 fflas-ffpack/fflas/fflas_sparse/coo/Makefile
 fflas-ffpack/fflas/fflas_sparse/csr/Makefile
