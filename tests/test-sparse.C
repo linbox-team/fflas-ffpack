@@ -27,7 +27,6 @@
  */
 
 #include "fflas-ffpack/fflas/fflas.h"
-// #include "fflas-ffpack/fflas/fflas_fspmv.h"
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/field/modular-double.h"
@@ -297,7 +296,7 @@ int main(int argc, char **argv) {
     // {
     //     cout << y1[i] << " ";
     // }
-    // cout << endl;    
+    // cout << endl;
 
     cout << "CSR_ZO: " << ((std::equal(y, y + rowdim, y1)) ? "OK" : "ERROR")
          << endl;
