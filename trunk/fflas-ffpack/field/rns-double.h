@@ -100,9 +100,29 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
+		rns_double(size_t pbits, size_t size, long seed=time(NULL))
+		:  _M(1), _size(size), _pbits(pbits)
+		{
+			integer::seeding(seed);
+			integer prime;
+			integer sum=1;
+			_basis.resize(size);
+			_negbasis.resize(size);
+			_basisMax.resize(size);
+			for(size_t i = 0 ; i < _size ; ++i){
+				integer::random_exact_2exp(prime, _pbits-1);
+				nextprime(prime, prime);
+				_basis[i]=prime;
+				_basisMax[i] = prime-1;
+				_negbasis[i] = 0-prime;
+				_M*=prime;
+			}
+			precompute_cst();
+		}		
+
 		template<typename Vect>
 		rns_double(const Vect& basis, bool rnsmod=false, long seed=time(NULL))
-			:  _basis(basis.begin(),basis.end()), _M(1), _size(basis.size()), _pbits(0)
+			:  _basis(basis.begin(),basis.end()), _basisMax(basis.size()), _negbasis(basis.size()), _M(1), _size(basis.size()), _pbits(0)
 		{
 			for(size_t i=0;i<_size;i++){
 				_M*=_basis[i];

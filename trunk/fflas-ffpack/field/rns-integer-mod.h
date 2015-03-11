@@ -36,6 +36,9 @@
 
 #include <vector>
 #include <cmath> 
+// extern "C" {
+// 	#include <quadmath.h>
+// }
 //using namespace std; // NO WAY! A.B. - 2014-12-18
 
 #include <givaro/modular-integer.h>
@@ -379,8 +382,113 @@ namespace FFPACK {
 #endif
 		}
 
-		
+#ifdef __DLP_CHALLENGE		
+		void reduce_modp_rnsmajor_scal(size_t n, Element_ptr B) const {
+			std::cout << "modp scalar" << std::endl;
+			size_t _size= _rns->_size;
+            BasisElement *Gamma, *A;
+            const BasisElement *Mi_modp = _Mi_modp_rns.data();
+            const BasisElement *inv_basis = _rns->_invbasis.data();
+			A=B._ptr;
+			Givaro::UnparametricRing<BasisElement> D;
+			FFLAS::Timer T;
+			
+            Gamma = FFLAS::fflas_new(D,n,1);
+            for(size_t i = 0 ; i < n; ++i){
+            	// Compute Gamma
+            	for(size_t k = 0; k < _size ; ++k){
+                	Gamma[k] = A[i*_size+k]*_rns->_MMi[k];
+                    Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
+					if(Gamma[k] >= _rns->_basis[k]){
+						Gamma[k] -= _rns->_basis[k]; 
+					}else if(Gamma[k] < 0){
+						Gamma[k] += _rns->_basis[k]; 
+					}
+                }
+                
+                // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
+                // Mul by Mi_modp
+                for(size_t k = 0 ; k < _size ; ++k){
+                	A[i*_size+k] = 0;
+                	for(size_t j = 0 ; j < _size ; ++j){
+                		A[i*_size+k] += Gamma[k] * Mi_modp[j*_size+k];
+                	}
+                }
+
+                // compute alpha
+                // FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+                BasisElement alpha = 0;
+                for(size_t k = 0 ; k < _size ; ++k){
+                	alpha += Gamma[k]*inv_basis[k];
+                }
+
+                // -= alpha
+                long aa= (long)rint(alpha);
+                for(size_t k = 0; k < _size ; k++){
+                	A[i*_size+k] -= _iM_modp_rns[aa+k*_size];
+                }
+            }
+            _rns->reduce(n,A,1,true);
+            FFLAS::fflas_delete(Gamma);
+		}
+
+		void reduce_modp_rnsmajor_scal_quad(size_t n, Element_ptr B) const {
+			std::cout << "modp scalar quad" << std::endl;
+			FFLAS::Timer T;
+			size_t _size= _rns->_size;
+
+			// A=B._ptr;
+			Givaro::UnparametricRing<BasisElement> D;		
+#pragma omp parallel for schedule(static, 32)
+            for(size_t i = 0 ; i < n; ++i){
+            	__int128_t *A;
+            	BasisElement *Gamma;
+            	Gamma = FFLAS::fflas_new<BasisElement>(_size);
+            	A = FFLAS::fflas_new<__int128_t>(_size);
+            	// Compute Gamma
+            	for(size_t k = 0; k < _size ; ++k){
+                	Gamma[k] = B._ptr[i*_size+k]*_rns->_MMi[k];
+                    Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
+					if(Gamma[k] >= _rns->_basis[k]){
+						Gamma[k] -= _rns->_basis[k]; 
+					}else if(Gamma[k] < 0){
+						Gamma[k] += _rns->_basis[k]; 
+					}
+                }
+                // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
+                // Mul by Mi_modp
+                for(size_t k = 0 ; k < _size ; ++k){
+                	A[k] = 0;
+                	for(size_t j = 0 ; j < _size ; ++j){
+                		A[k] += (__int128_t)(Gamma[k])*(int64_t)_Mi_modp_rns[j*_size+k];
+                		// A[k], mul_q(QFloat(Gamma[k], 0), _Mi_modp_rns[j*_size+k]));
+                		// A[i*_size+k] += Gamma[k] * Mi_modp[j*_size+k];
+                	}
+                }
+
+                // compute alpha
+                // FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+                __int128_t alpha = 0;
+                for(size_t k = 0 ; k < _size ; ++k){
+                	alpha += (__int128_t)Gamma[k]*(int64_t)_rns->_invbasis[k];
+                }
+
+                // -= alpha
+                long aa= (long)alpha;
+                for(size_t k = 0; k < _size ; k++){
+                	A[k] -= (int64_t)_iM_modp_rns[aa+k*_size];
+                	A[k] %= (int64_t)_rns->_basis[k];
+                	B._ptr[k] = (double)((int64_t)A[k]);
+                }
+                FFLAS::fflas_delete(Gamma);
+            	FFLAS::fflas_delete(A);
+            }
+            // _rns->reduce(n,A,1,true);
+		}
+#endif // __DLP_CHALLENGE		
+
 		void reduce_modp_rnsmajor(size_t n, Element_ptr B) const{
+			// std::cout << "modp BLAS" << std::endl;
 #ifdef BENCH_MODP
                         FFLAS::Timer chrono; chrono.start();
 #endif
