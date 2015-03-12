@@ -36,6 +36,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/field/nonzero-randiter.h"
 
 #include "tests/test-utils.h"
 
@@ -45,8 +46,6 @@
 
 using namespace std;
 
-  typedef Givaro::ModularBalanced<double> Field;
-//typedef Givaro::UnparametricRing<double> Field;
 
 // random generator function:                                                                                          
 ptrdiff_t myrandom (ptrdiff_t i) { return rand()%i;}
@@ -54,119 +53,71 @@ ptrdiff_t myrandom (ptrdiff_t i) { return rand()%i;}
 // pointer object to it:                                                                                               
 ptrdiff_t (*p_myrandom)(ptrdiff_t) = myrandom;
 
-typename Field::Element* construct_U(const Field& F, Field::RandIter& G, size_t n, size_t r, std::vector<size_t>& P, size_t commonseed, size_t seed)
-{
-	size_t lda = n;
-	Field::Element *U=new Field::Element[n*n];
-
-    FFLAS::ParSeqHelper::Parallel H;
-    
-	std::vector<size_t> E(r);
-//	PARFOR1D(i,0, r, H, E[i]=i;);
-	for(size_t i=0; i<r; i++)
-		E[i]=i;
-	
-	srand48(commonseed);
-	std::vector<size_t> Z(n);
-//	PARFOR1D(i,0,n,H, Z[i]=i; );
-	for(size_t i=0; i<r; i++)
-		Z[i]=i;
-	P.resize(r);
-	for(size_t i=0; i<r; ++i) {
-		size_t index=lrand48() % Z.size();
-		P[i] = Z[ index ];
-		Z.erase(Z.begin()+index);
+template<class Field>
+void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t lda, size_t M, size_t N, size_t R, size_t seed){
+	    // generate the r pivots in the rank profile matrix E
+	size_t curr = 0;
+	std::vector<bool> rows(M,false);
+	std::vector<bool> cols(N,false);
+	int pivot_r[R];
+	int pivot_c[R];
+	typedef typename Field::RandIter Randiter ;
+	Randiter RI(F);
+	FFPACK::NonzeroRandIter<Field,Randiter> nzR(F,RI);
+	while (curr<R){
+		int i,j;
+		while (rows [i = rand() % M]);
+		while (cols [j = rand() % N]);
+		rows[i] = true;
+		cols[i] = true;
+		pivot_r[curr] = i;
+		pivot_c[curr] = j;
+		curr++;
 	}
-
-	for (size_t i=0; i<r; ++i) {
-      		while( F.isZero( G.random(U[ P[i]*lda+P[i] ]) ) ) {}
-		for(size_t j=P[i]+1;j<n;++j)
-			G.random(U[ P[i]*lda+j]);
+	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
+	for (size_t k = 0; k < R; ++k){
+		size_t i = pivot_r[k];
+		size_t j = pivot_c[k];
+		if (!cols [j])
+			FFLAS::fzero(F, M, L+j, N);
+		else{
+			nzR.random (L [i*N+j]);
+			for (size_t l=i+1; l < M; ++l)
+				RI.random (L [l*N+j]);
+		}
 	}
-    
-	return U;
-}
-
-typename Field::Element* construct_L(const Field& F, Field::RandIter& G, size_t m, size_t r, const std::vector<size_t>& P, size_t seed)
-{
-    FFLAS::ParSeqHelper::Parallel H;
-
-	size_t lda = m;
-	size_t taille=m*m;
-	Field::Element * L= new Field::Element[taille];
-	size_t i;
-	
-	PARFOR1D(i,0, taille,H, F.init(L[i],F.zero); );
-	PARALLEL_GROUP;
-	
-	std::vector<size_t> E(r);
-	for(i=0; i<r; i++)
-		E[i]=i;
-	
-//		TASK(MODE(READWRITE(E[i])),E[i]=i;);	//does not compile with tbb
-	srand48(seed);
-	std::vector<size_t> Z(m);
-	for(i=0; i<r; i++)
-		Z[i]=i;
-	
-//		TASK(MODE(CONSTREFERENCE(i, Z) READWRITE(Z[i])),Z[i]=i;); //does not compile with tbb
-	
-	WAIT;
-	
-	std::vector<size_t> Q(r);
-	for(i=0; i<r; ++i) {
-		size_t index=lrand48() % Z.size();
-		Q[i] = Z[ index ];
-		Z.erase(Z.begin()+index);
+	typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
+	for (size_t i = 0; i < N; ++i){
+		nzR.random (U [i*N+i]);
+		for (size_t j=i+1; j < N; ++j)
+			RI.random (U [i*N+j]);
 	}
 	
-	for(i=0; i<r; ++i) {
-		size_t index=lrand48() % E.size();
-		size_t perm = E[ index ];
-		
-		E.erase(E.begin()+index);
-		F.init(L[Q[perm]*lda+P[perm]],F.one);
-		for(size_t j=Q[perm]+1;j<m;++j)
-			G.random(L[j*lda+P[perm]]);
-	}
-	return L;
-}
-
-
-typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,typename Field::Element* U, size_t r, size_t m, size_t n)
-{
-	Field::Element alpha, beta;
+	
+	typename Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
-	size_t lda = n;
-	Field::Element * A = new Field::Element[m*n];
-
-	// Computing produit L * U (ideally should use parallel ftrmm
-
-	/*
-	  FFLAS::ftrmm(F,  FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, m,n,1.0, U, lda, L, lda);
-	*/
-
-	const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
-	typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
 	PAR_REGION{
-	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-				m,n,r, alpha, L,r, U,
-		      lda,beta,A,lda,pWH);
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel());
 	}
-	return L;
+	FFLAS::fflas_delete(L);
+	FFLAS::fflas_delete(U);
+	
 }
+
+typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::UnparametricRing<double> Field;
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
-    FFLAS::ParSeqHelper::Parallel H;
+	FFLAS::ParSeqHelper::Parallel H;
 
-	Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
+	Field::Element * X = FFLAS::fflas_new (F, m,n);
 	Field::Element * L, *U;
-	L = FFLAS::fflas_new<Field::Element>(m*R);
-	U = FFLAS::fflas_new<Field::Element>(R*n);
+	L = FFLAS::fflas_new(F, m,R);
+	U = FFLAS::fflas_new(F, R,n);
 	size_t i;
 	
 	PARFOR1D (i,0, m*R,H, F.init(L[i], 0.0); );
@@ -219,7 +170,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		for (j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
 				std::cout << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
-					  << " Result"<<i<<","<<j<<"] = " << (*(X+i*n+j))
+					  << " Result["<<i<<","<<j<<"] = " << (*(X+i*n+j))
 					  << std::endl;
 
 				std::stringstream errs;
@@ -228,8 +179,6 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 				     << std::endl;
 				std::cout << errs;
 				fail=true;
-				std::cout<<" end verification"<<std::endl;
-				exit(1);
 			}
 	
 	if (fail)
@@ -316,16 +265,21 @@ int main(int argc, char** argv) {
 	//		{ 'p', "-p P", "0 for sequential, 1 for 2D iterative,
 //2 for 2D rec, 3 for 2D rec adaptive, 4 for 3D rc in-place, 5 for 3D rec, 6 for 3D rec adaptive.", TYPE_INT , &p },
         FFLAS::parseArguments(argc,argv,as);
+
+	if (r > std::min(m,n)){
+		std::cerr<<"Warning: rank can not be greater than min (m,n). It has been forced to min (m,n)"<<std::endl;
+		r=std::min(m,n);
+	}
 	if (!par){
 		t=1;NBK=1;
 	}
 	if (NBK==-1) NBK = t;
 	typedef Field::Element Element;
 	Element * A, * Acop;
-	A = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
-	Acop = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+	// A = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+	// Acop = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+	A = FFLAS::fflas_new(F,m,n);
 
-	Field::Element * U = new Field::Element[n*n];
 	// random seed                                                                                         
         ifstream f("/dev/urandom");
         size_t seed1, seed2, seed3,seed4;
@@ -338,12 +292,14 @@ int main(int argc, char** argv) {
 
        Initialize(F,A,m/NBK,m,n);
        
-       //       std::cout<<"Construct U"<<endl;
-       U = construct_U(F,GG, n, r, Index_P, seed4, seed3);
-       //       std::cout<<"Construct L"<<endl;
-       A = construct_L(F,GG, m, r, Index_P, seed2);
-       //       std::cout<<"randgen"<<endl;
-       A = M_randgen(F, A, U, r, m, n);
+       matrixWithRandRPM(F, A, n, m, n, r, seed1);
+       // //       std::cout<<"Construct U"<<endl;
+       // construct_U(F, U, GG, n, r, Index_P, seed4, seed3);
+       // //       std::cout<<"Construct L"<<endl;
+       // A = construct_L(F,GG, m, r, Index_P, seed2);
+       // //       std::cout<<"randgen"<<endl;
+       // A = M_randgen(F, A, U, r, m, n);
+       
        size_t R;
        FFLAS::Timer chrono;
        double *time=new double[iter];
@@ -359,9 +315,10 @@ int main(int argc, char** argv) {
        FFLAS::ParSeqHelper::Parallel H;
        size_t i;
        
+       Acop = FFLAS::fflas_new(F,m,n);
        PARFOR1D(i,0,(size_t)m,H, 
                 for (size_t j=0; j<(size_t)n; ++j)
-                	Acop[i*n+j]= (*(A+i*n+j));
+                	Acop[i*n+j]= A[i*n+j];
                 );
        size_t j;
        size_t k;
@@ -372,7 +329,7 @@ int main(int argc, char** argv) {
 	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
 	       PARFOR1D(k,0,(size_t)m,H,
                     for (j=0; j<(size_t)n; ++j)
-                    	*(A+k*n+j) = *(Acop+k*n+j) ;  
+			    F.assign( A[k*n+j] , Acop[k*n+j]) ;  
                     );
 	       chrono.clear();
 	       
@@ -402,8 +359,11 @@ int main(int argc, char** argv) {
        //verification
        if(v)
 	       verification_PLUQ(F,Acop,A,P,Q,m,n,R);
-       FFLAS::fflas_delete( A);
-       FFLAS::fflas_delete( Acop);
+       
+       FFLAS::fflas_delete (P);
+       FFLAS::fflas_delete (Q);
+       FFLAS::fflas_delete (A);
+       FFLAS::fflas_delete (Acop);
        
        return 0;
 	}
