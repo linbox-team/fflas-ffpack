@@ -58,14 +58,12 @@ template <> struct Simd128_impl<true, true, true, 4> {
     /*
      * Check if the pointer p is a multiple of alignemnt
      */
-    template<class T>
-    static constexpr bool valid(T* p) {return (int64_t)p%alignment == 0;}
+    template <class T> static constexpr bool valid(T *p) { return (int64_t)p % alignment == 0; }
 
     /*
      * Check if the number n is a multiple of vect_size
      */
-    template<class T>
-    static constexpr bool compliant(T n) {return n%vect_size == 0;}
+    template <class T> static constexpr bool compliant(T n) { return n % vect_size == 0; }
 
     /*
      * Converter from vect_t to a tab.
@@ -184,8 +182,8 @@ template <> struct Simd128_impl<true, true, true, 4> {
      * Return :
      */
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-// _mm_mulhi_epi32 emul
-//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+        // _mm_mulhi_epi32 emul
+        //#pragma warning "The simd mulhi function is emulate, it may impact the performances."
         vect_t a1, a2, b1, b2;
         a1 = set(0, _mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 1));
         a2 = set(0, _mm_extract_epi32(a, 1), 0, _mm_extract_epi32(a, 3));

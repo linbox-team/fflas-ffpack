@@ -222,26 +222,23 @@ template <> struct is_simd<__m256i> {
  * Simd functors
  */
 
-struct NoSimd
-{
+struct NoSimd {
     // Test if the pointer p is multiple of alignment
-    template<class T>
-    static constexpr bool valid(T p){return false;}
+    template <class T> static constexpr bool valid(T p) { return false; }
 
     // Test if n is multiple of vect_size
-    template<class T>
-    static constexpr bool compliant(T n){return false;}
+    template <class T> static constexpr bool compliant(T n) { return false; }
 };
 
 // #if defined(__FFLASFFPACK_USE_AVX)
 
-template<class T, bool = std::is_arithmetic<T>::value, bool = std::is_integral<T>::value> struct SimdChooser {};
+template <class T, bool = std::is_arithmetic<T>::value, bool = std::is_integral<T>::value> struct SimdChooser {};
 
 template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSimd; };
 
-template<class T>
+template <class T>
 struct SimdChooser<T, true, false> // floating number
-{    
+    {
 #ifdef __FFLASFFPACK_USE_AVX
     using value = Simd256<T>;
 #elif defined(__FFLASFFPACK_USE_SSE)
@@ -251,12 +248,12 @@ struct SimdChooser<T, true, false> // floating number
 #endif
 };
 
-template<class T>
+template <class T>
 struct SimdChooser<T, true, true> // integral number
-{    
+    {
 #ifdef __FFLASFFPACK_USE_AVX2
     using value = Simd256<T>;
-#elif __FFLASFFPACK_USE_SSE 
+#elif __FFLASFFPACK_USE_SSE
     using value = Simd128<T>;
 #else
     using value = NoSimd;

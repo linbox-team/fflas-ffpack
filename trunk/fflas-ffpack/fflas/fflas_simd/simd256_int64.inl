@@ -69,14 +69,12 @@ template <> struct Simd256_impl<true, true, true, 8> {
     /*
      * Check if the pointer p is a multiple of alignemnt
      */
-    template<class T>
-    static constexpr bool valid(T* p) {return (int64_t)p%alignment == 0;}
+    template <class T> static constexpr bool valid(T *p) { return (int64_t)p % alignment == 0; }
 
     /*
      * Check if the number n is a multiple of vect_size
      */
-    template<class T>
-    static constexpr bool compliant(T n) {return n%vect_size == 0;}
+    template <class T> static constexpr bool compliant(T n) { return n % vect_size == 0; }
 
     /*
      * Converter from vect_t to a tab.
@@ -315,9 +313,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      * Return : [(a0>b0) ? 0xFFFF : 0, (a1>b1) ? 0xFFFF : 0,
      (a2>b2) ? 0xFFFF : 0, (a3>b3) ? 0xFFFF : 0]                     	int32_t
      */
-    static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
-        return _mm256_cmpgt_epi64(a, b);
-    }
+    static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm256_cmpgt_epi64(a, b); }
 
     /*
      * Compare packed 64-bits in a and b for lesser-than, and store the results in vect_t.
@@ -326,9 +322,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      * Return : [(a0<b0) ? 0xFFFF : 0, (a1<b1) ? 0xFFFF : 0,
      (a2<b2) ? 0xFFFF : 0, (a3<b3) ? 0xFFFF : 0] 					  int32_t
      */
-    static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
-        return _mm256_cmpgt_epi64(b, a);
-    }
+    static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm256_cmpgt_epi64(b, a); }
 
     /*
      * Compare packed 64-bits in a and b for greater or equal than, and store the results in vect_t.
