@@ -78,10 +78,10 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
                                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                  FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
-        sparse_details_impl::fspmm_mone_simd_unaligned(F, *(A.one), blockSize, x, ldx, y, ldy,
+        sparse_details_impl::fspmm_one_simd_unaligned(F, *(A.one), blockSize, x, ldx, y, ldy,
                                                        FieldCategories::UnparametricTag());
     if (A.mone != nullptr)
-        sparse_details_impl::fspmm_one_simd_unaligned(F, *(A.mone), blockSize, x, ldx, y,
+        sparse_details_impl::fspmm_mone_simd_unaligned(F, *(A.mone), blockSize, x, ldx, y, ldy,
                                                       FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
         sparse_details_impl::fspmm_simd_unaligned(F, *(A.dat), blockSize, x, ldx, y, ldy,

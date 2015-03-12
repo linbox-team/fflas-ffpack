@@ -29,6 +29,7 @@ SUBDIRS=coo csr csr_hyb ell ell_simd hyb_zo sell
 
 
 pkgincludesub_HEADERS=            \
+        sparse_matrix_traits.h \
         utils.h \
         coo.h  \
 	    csr.h  \

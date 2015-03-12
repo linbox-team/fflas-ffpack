@@ -127,6 +127,8 @@ template <> struct support_simd<float> : public std::true_type {};
 template <> struct support_simd<double> : public std::true_type {};
 #ifdef SIMD_INT
 template <> struct support_simd<int64_t> : public std::true_type {};
+template <> struct support_simd<int32_t> : public std::true_type {};
+template <> struct support_simd<int16_t> : public std::true_type {};
 #endif
 #endif
 
