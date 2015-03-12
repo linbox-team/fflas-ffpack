@@ -31,7 +31,7 @@ AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 			])
 		CBLAS_FLAG="$with_blas_cflags -D__FFLASFFPACK_HAVE_CBLAS"
 		AC_SUBST(CBLAS_FLAG)
-		echo $CBLAS_FLAG;
+		dnl  echo $CBLAS_FLAG;
 		]
 	)
 
@@ -43,7 +43,7 @@ AC_DEFUN([FF_CHECK_BLAS_LIBS],
 			])
 		CBLAS_LIBS="$with_blas_libs"
 		AC_SUBST(CBLAS_LIBS)
-		echo $CBLAS_LIBS;
+		dnl  echo $CBLAS_LIBS;
 		]
 	)
 
@@ -97,6 +97,9 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 					[AC_MSG_RESULT(unknown)
 					echo "WARNING: You appear to be cross compiling, so there is no way to determine"
 					echo "whether your BLAS are good. I am assuming it is."])
+				],
+				[
+				AC_MSG_RESULT(problem)
 				]
 		)
 
@@ -162,7 +165,7 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 			)
 
 
-		dnl  
+		dnl
 		AM_CONDITIONAL(FFLASFFPACK_HAVE_LAPACK, test "x$HAVE_LAPACK" = "xyes")
 		CXXFLAGS=${BACKUP_CXXFLAGS}
 		LIBS=${BACKUP_LIBS}

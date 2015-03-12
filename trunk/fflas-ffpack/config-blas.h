@@ -38,6 +38,26 @@
 // #include "fflas-ffpack/config.h"
 // #endif
 
+#ifdef HAVE_MKL
+#define __FFLASFFPACK_HAVE_MKL
+#endif
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+#include <mkl.h>
+
+#endif
+
+
+#ifndef CBLAS_INT
+#ifdef blasint /*  openblas */
+#define CBLAS_INT blasint
+#elif defined( MKL_INT )
+#define CBLAS_INT MKL_INT
+#else
+#define CBLAS_INT int
+#endif /* blasint */
+#endif /*  CBLAS_INT */
+
 #ifdef CUDA_BLAS
 
 #define sgemv_ cublas_sgemv
@@ -57,7 +77,7 @@
 	enum CBLAS_DIAG  {CblasNonUnit=131, CblasUnit=132};
 	enum CBLAS_SIDE  {CblasLeft=141, CblasRight=142};
 
-#define CBLAS_INDEX int
+// #define CBLAS_INDEX int
 
 
 #ifndef __FFLASFFPACK_HAVE_CBLAS
@@ -351,6 +371,14 @@ extern "C" {
 }
 #endif // CBLAS ?
 
+#endif // __FFLASFFPACK_HAVE_MKL
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+#define blas_enum
+#else
+#define blas_enum enum
+#endif
+
 #ifdef __FFLASFFPACK_HAVE_LAPACK
 
 #ifndef __FFLASFFPACK_HAVE_CLAPACK
@@ -373,10 +401,10 @@ extern "C" {
 // define external link to LAPACK routines
 extern "C" {
 	//!@bug we should also allow lapacke from MLK
-        void dgetrf_ (const int *, const int *, double *, const int *, int *, int *);
-        void dgetri_ (const int *, double *, const int *, const int *, double *, const int *, int *);
-        void dtrtri_ (const char *, const char *, const int *, double *, const int *, int *);
-	void dswap_ (const int *, double *, const int *, double *, const int *);
+        void dgetrf_ (const CBLAS_INT *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *, CBLAS_INT *);
+        void dgetri_ (const CBLAS_INT *, double *, const CBLAS_INT *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *);
+        void dtrtri_ (const char *, const char *, const CBLAS_INT *, double *, const CBLAS_INT *, CBLAS_INT *);
+	void dswap_ (const CBLAS_INT *, double *, const CBLAS_INT *, double *, const CBLAS_INT *);
 }
 
 // define C wrappers
@@ -386,22 +414,22 @@ extern "C" {
 	// return A=P.L.U (L unitary) with ColMajor
 	// return A=L.U.P (U unitary) with RowMajor
 	//! @bug Order is not used. we should use ATLAS/interfaces/lapack/C/src/clapack_dgetrf.c or similar
-	inline int clapack_dgetrf(const enum CBLAS_ORDER Order, const int M, const int N,
-			   double *A, const int lda, int *ipiv)
+	inline CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER Order, const CBLAS_INT M, const CBLAS_INT N,
+			   double *A, const CBLAS_INT lda, CBLAS_INT *ipiv)
         {
-            int info;
+            CBLAS_INT info;
 	    dgetrf_ ( &M, &N, A, &lda, ipiv, &info);
             return info;
         }
 
-	inline int clapack_dgetri(const enum CBLAS_ORDER Order, const int N, double *A,
-			   const int lda, const int *ipiv)
+	inline CBLAS_INT clapack_dgetri(const blas_enum CBLAS_ORDER Order, const CBLAS_INT N, double *A,
+			   const CBLAS_INT lda, const CBLAS_INT *ipiv)
 	{
-		int info;
+		CBLAS_INT info;
 		double *work;
 
 #ifndef __FFLASFFPACK_AUTOIMPLEMENT_DGETRI
-		// the optimum size of work can be determinted via the
+		// the optimum size of work can be determCBLAS_INTed via the
 		// Lapack function ilaenv.
 		work= new double[N];
 		dgetri_ (&N, A, &lda, ipiv, work, &N,  &info);
@@ -412,8 +440,8 @@ extern "C" {
 		if (info > 0)
 			return 0;
 
-		for (int i=0;i<N;++i){
-			for(int j=i;j<N;++j){
+		for (CBLAS_INT i=0;i<N;++i){
+			for(CBLAS_INT j=i;j<N;++j){
 				work[i*N+j]=A[i*N+j];
 				if (j>i) A[i*N+j]=0.0;
 			}
@@ -423,9 +451,9 @@ extern "C" {
 		double cst=1.;
 		dtrsm_ ("R", "L", "N", "U", &N, &N, &cst, work, &N, A, &N);
 
-		int ip;
-		const int incr=1;
-		for (int i=0; i<N; ++i){
+		CBLAS_INT ip;
+		const CBLAS_INT incr=1;
+		for (CBLAS_INT i=0; i<N; ++i){
 			ip = ipiv[i]-1;
 			if (ip != i)
 				dswap_ (&N, &A[i*lda],&incr , &A[ip*lda], &incr);
@@ -436,10 +464,10 @@ extern "C" {
 		return info;
 	}
 
-	inline int clapack_dtrtri(const enum CBLAS_ORDER Order,const enum CBLAS_UPLO Uplo,
-			   const enum CBLAS_DIAG Diag,const int N, double *A, const int lda)
+	inline CBLAS_INT clapack_dtrtri(const blas_enum CBLAS_ORDER Order,const blas_enum CBLAS_UPLO Uplo,
+			   const blas_enum CBLAS_DIAG Diag,const CBLAS_INT N, double *A, const CBLAS_INT lda)
 	{
-		int info;
+		CBLAS_INT info;
 		if (Order == CblasRowMajor)
 			dtrtri_ (EXT_BLAS_UPLO_tr(Uplo), EXT_BLAS_DIAG(Diag), &N, A, &lda, &info);
 		else
@@ -456,22 +484,17 @@ extern "C" {
 extern "C" {
 	// LAPACK routines
 
-	int clapack_dgetrf(const enum CBLAS_ORDER Order, const int M, const int N,
-			   double *A, const int lda, int *ipiv);
-	int clapack_dgetri(const enum CBLAS_ORDER Order, const int N, double *A,
-			   const int lda, const int *ipiv);
-	int clapack_dtrtri(const enum CBLAS_ORDER Order,const enum CBLAS_UPLO Uplo,
-			   const enum CBLAS_DIAG Diag,const int N, double *A, const int lda);
+	CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER Order, const CBLAS_INT M, const CBLAS_INT N,
+			   double *A, const CBLAS_INT lda, CBLAS_INT *ipiv);
+	CBLAS_INT clapack_dgetri(const blas_enum CBLAS_ORDER Order, const CBLAS_INT N, double *A,
+			   const CBLAS_INT lda, const CBLAS_INT *ipiv);
+	CBLAS_INT clapack_dtrtri(const blas_enum CBLAS_ORDER Order,const blas_enum CBLAS_UPLO Uplo,
+			   const blas_enum CBLAS_DIAG Diag,const CBLAS_INT N, double *A, const CBLAS_INT lda);
 
 }
 #endif // CLAPACK ?
 
 #endif // LAPACK ?
 
-#else // MKL present
-
-#include <mkl.h>
-
-#endif // __FFLASFFPACK_HAVE_MKL
 
 #endif //__FFLASFFPACK_config_blas_H

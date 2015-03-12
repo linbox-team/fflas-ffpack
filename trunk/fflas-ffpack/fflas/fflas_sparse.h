@@ -46,7 +46,7 @@
 #define __FFLASFFPACK_CACHE_LINE_SIZE 64
 #endif
 
-#if __GNUC_MINOR__ >= 7
+#if (__GNUC_MAJOR > 4 || (__GNUC_MAJOR == 4 &&__GNUC_MINOR__ >= 7))
 #define assume_aligned(pout, pin, v) decltype(pin) pout = static_cast<decltype(pin)>(__builtin_assume_aligned(pin, v));
 #else
 #define assume_aligned(pout, pin, v) decltype(pin) pout = pin;
@@ -76,7 +76,17 @@
 #endif
 #undef index_t
 #define index_t MKL_INT
-#endif
+
+namespace MKL_CONFIG {
+	static const double dalpha = 1;
+	static const float  salpha = 1;
+	static const double dbeta = 0;
+	static const float  sbeta = 0;
+	static const char metaChar[4] = {'G', ' ', ' ', 'C'};
+	static const char trans[1] = {'N'};
+}
+
+#endif // __FFLASFFPACK_HAVE_MKL
 
 namespace FFLAS {
 

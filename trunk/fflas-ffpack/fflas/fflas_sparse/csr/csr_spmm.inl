@@ -58,8 +58,10 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, i
 }
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
-                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A,
+		  index_t blockSize,
+                  typename Field::ConstElement_ptr x_, index_t ldx,
+		  typename Field::Element_ptr y_, index_t ldy,
                   FieldCategories::UnparametricTag) {
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
@@ -81,6 +83,45 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, i
         }
     }
 }
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+inline void fspmm_mkl(const Givaro::DoubleDomain &F, const Sparse<Givaro::DoubleDomain, SparseMatrix_t::CSR> &A,
+		      index_t blockSize,
+		      Givaro::DoubleDomain::ConstElement_ptr x_, index_t ldx,
+                  Givaro::DoubleDomain::Element_ptr y_, index_t ldy,
+		  FieldCategories::UnparametricTag) {
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+    mkl_dcsrmm(MKL_CONFIG::trans, &A.m , &blockSize, &A.n, &MKL_CONFIG::dalpha, MKL_CONFIG::metaChar,
+	       A.dat, A.col, A.st, A.st+1, x_,  &ldx, &MKL_CONFIG::dbeta, y_ , &ldy);
+
+    // void mkl_dcsrmm (char *transa, MKL_INT *m, MKL_INT *n, MKL_INT *k, double *alpha, char *matdescra, double *val, MKL_INT *indx, MKL_INT *pntrb, MKL_INT *pntre, double *b, MKL_INT *ldb, double *beta, double *c, MKL_INT *ldc);
+
+}
+inline void fspmm_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDomain, SparseMatrix_t::CSR> &A,
+		      index_t blockSize,
+		      Givaro::FloatDomain::ConstElement_ptr x_, index_t ldx,
+                  Givaro::FloatDomain::Element_ptr y_, index_t ldy,
+		  FieldCategories::UnparametricTag) {
+    assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+    mkl_scsrmm(MKL_CONFIG::trans, &A.m , &blockSize, &A.n, &MKL_CONFIG::salpha, MKL_CONFIG::metaChar,
+	       A.dat, A.col, A.st, A.st+1, x_,  &ldx, &MKL_CONFIG::sbeta, y_ , &ldy);
+
+    // void mkl_scsrmm (char *transa, MKL_INT *m, MKL_INT *n, MKL_INT *k, float *alpha, char *matdescra, float *val, MKL_INT *indx, MKL_INT *pntrb, MKL_INT *pntre, float *b, MKL_INT *ldb, float *beta, float *c, MKL_INT *ldc);i
+
+}
+#endif // __FFLASFFPACK_HAVE_MKL
+
+
 
 #ifdef __FFLASFFPACK_USE_SIMD
 
