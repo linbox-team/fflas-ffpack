@@ -59,14 +59,12 @@ template <> struct Simd128_impl<true, true, true, 8> {
     /*
      * Check if the pointer p is a multiple of alignemnt
      */
-    template<class T>
-    static constexpr bool valid(T* p) {return (int64_t)p%alignment == 0;}
+    template <class T> static constexpr bool valid(T *p) { return (int64_t)p % alignment == 0; }
 
     /*
      * Check if the number n is a multiple of vect_size
      */
-    template<class T>
-    static constexpr bool compliant(T n) {return n%vect_size == 0;}
+    template <class T> static constexpr bool compliant(T n) { return n % vect_size == 0; }
 
     /*
      * Converter from vect_t to a tab.
@@ -200,8 +198,8 @@ template <> struct Simd128_impl<true, true, true, 8> {
      * Return : [a0*b0 mod 2^16-1, a1*b1 mod 2^16-1] int64_t
      */
     static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
-// _mm_mullo_epi32 emul
-// #pragma warning "The simd mullo function is emulate, it may impact the performances."
+        // _mm_mullo_epi32 emul
+        // #pragma warning "The simd mullo function is emulate, it may impact the performances."
 
         Converter c0, c1;
         c0.v = x0;
@@ -390,8 +388,8 @@ template <> struct Simd128_impl<true, true, true, 8> {
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
                              const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
-// Works fine with ICC 15.0.1 - A.B.
-// #warning "not tested"
+        // Works fine with ICC 15.0.1 - A.B.
+        // #warning "not tested"
         C = _mm_rem_epi64(C, P);
 #else
         if (poweroftwo) {
