@@ -1,5 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:rows=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -70,6 +70,44 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, t
         y[row[j]] += dat[j] * x[col[j]];
     }
 }
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+inline void fspmv_mkl(const Givaro::DoubleDomain &F, const Sparse<Givaro::DoubleDomain, SparseMatrix_t::COO> &A,
+		Givaro::DoubleDomain::ConstElement_ptr x_,
+		Givaro::DoubleDomain::Element_ptr y_, FieldCategories::UnparametricTag) {
+	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+	MKL_INT A_nnz = A.nnz ;
+	mkl_dcoomv(MKL_CONFIG::trans, &A.m , &A.n, &MKL_CONFIG::dalpha, MKL_CONFIG::metaChar,
+		   A.dat, A.row, A.col, &A_nnz, x_,  &MKL_CONFIG::dbeta, y_ );
+
+	// void mkl_dcoomv (char *transa, MKL_INT *m, MKL_INT *k, double *alpha, char *matdescra, double *val, MKL_INT *rowind, MKL_INT *colind, MKL_INT *nnz, double *x, double *beta, double *y);
+
+}
+
+inline void fspmv_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDomain, SparseMatrix_t::COO> &A,
+		Givaro::FloatDomain::ConstElement_ptr x_,
+		Givaro::FloatDomain::Element_ptr y_, FieldCategories::UnparametricTag) {
+	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+	MKL_INT A_nnz = A.nnz ;
+	mkl_scoomv(MKL_CONFIG::trans, &A.m , &A.n, &MKL_CONFIG::salpha, MKL_CONFIG::metaChar,
+		   A.dat, A.row, A.col, &A_nnz, x_,  &MKL_CONFIG::sbeta, y_ );
+
+	// void mkl_scoomv (char *transa, MKL_INT *m, MKL_INT *k, float *alpha, char *matdescra, float *val, MKL_INT *rowind, MKL_INT *colind, MKL_INT *nnz, float *x, float *beta, float *y);
+
+}
+#endif // __FFLASFFPACK_HAVE_MKL
+
+
 
 template <class Field>
 inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, typename Field::ConstElement_ptr x_,

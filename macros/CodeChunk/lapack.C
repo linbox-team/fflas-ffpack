@@ -30,7 +30,7 @@
 #include "fflas-ffpack/config-blas.h"
 int main () {
 	double a[4] = {1.,2.,3.,4.};
-	int ipiv[2];
+	CBLAS_INT ipiv[2];
 	clapack_dgetrf(CblasRowMajor, 2, 2, a, 2, ipiv);
 	if ( (a[0]!=2.) && (a[1]!=0.5) && (a[2]!=4.) && (a[3]!=1.))
 		return -1;

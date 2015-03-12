@@ -29,7 +29,7 @@
 int main ()
 {
 	double a[4] = {1.,2.,3.,4.};
-	double b[4]= {4.,3.,2.,1.};
+	double b[4] = {4.,3.,2.,1.};
 	double c[4];
 	cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,2,2,2,1., a,2,b,2,0.,c,2);
 	if ( (c[0]!=8.) && (c[1]!=5.) && (c[2]!=20.) && (c[3]!=13))

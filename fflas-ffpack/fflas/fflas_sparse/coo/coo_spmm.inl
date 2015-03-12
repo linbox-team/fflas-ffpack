@@ -76,6 +76,48 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, i
     }
 }
 
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+inline void fspmm_mkl(const Givaro::DoubleDomain &F, const Sparse<Givaro::DoubleDomain, SparseMatrix_t::COO> &A,
+		      index_t blockSize ,
+		Givaro::DoubleDomain::ConstElement_ptr x_, index_t ldx,
+		Givaro::DoubleDomain::Element_ptr y_, index_t ldy,
+		FieldCategories::UnparametricTag) {
+	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+	MKL_INT A_nnz = A.nnz ;
+	mkl_dcoomm(MKL_CONFIG::trans, &A.m , &blockSize, &A.n, &MKL_CONFIG::dalpha, MKL_CONFIG::metaChar,
+		   A.dat, A.row, A.col, &A_nnz, x_, &ldx,  &MKL_CONFIG::dbeta, y_, &ldy );
+
+	// void mkl_dcoomv (char *transa, MKL_INT *m, MKL_INT *k, double *alpha, char *matdescra, double *val, MKL_INT *rowind, MKL_INT *colind, MKL_INT *nnz, double *x, double *beta, double *y);
+
+}
+
+inline void fspmm_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDomain, SparseMatrix_t::COO> &A,
+		      index_t blockSize ,
+		Givaro::FloatDomain::ConstElement_ptr x_, index_t ldx,
+		Givaro::FloatDomain::Element_ptr y_, index_t ldy,
+		FieldCategories::UnparametricTag) {
+	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+	MKL_INT A_nnz = A.nnz ;
+	mkl_scoomm(MKL_CONFIG::trans, &A.m , &blockSize, &A.n, &MKL_CONFIG::salpha, MKL_CONFIG::metaChar,
+		   A.dat, A.row, A.col, &A_nnz, x_, &ldx,  &MKL_CONFIG::sbeta, y_, &ldy );
+
+	// void mkl_scoomm (char *transa, MKL_INT *m, MKL_INT *n, MKL_INT *k, float *alpha, char *matdescra, float *val, MKL_INT *rowind, MKL_INT *colind, MKL_INT *nnz, float *b, MKL_INT *ldb, float *beta, float *c, MKL_INT *ldc);
+
+}
+#endif // __FFLASFFPACK_HAVE_MKL
+
+
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
