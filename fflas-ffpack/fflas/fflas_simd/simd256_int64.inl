@@ -70,7 +70,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      * Check if the pointer p is a multiple of alignemnt
      */
     template<class T>
-    static constexpr bool valid(T* p) {return p%alignment == 0;}
+    static constexpr bool valid(T* p) {return (int64_t)p%alignment == 0;}
 
     /*
      * Check if the number n is a multiple of vect_size

@@ -296,15 +296,15 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
-                               typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
-                               const int64_t kmax) {
+                               typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                               uint64_t kmax) {
     // TODO
 }
 
 template <class Field>
 inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
-                                 typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
-                                 const int64_t kmax) {
+                               typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                               uint64_t kmax) {
     // TODO
 }
 

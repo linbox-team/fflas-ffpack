@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
 
     index_t *row = nullptr, *col = nullptr;
     typename Field::Element_ptr dat;
-    index_t rowdim, coldim;
+    index_t rowdim = 0, coldim = 0;
     uint64_t nnz;
 
     if (matrixFile.find(".sms") != std::string::npos) {
@@ -350,14 +350,14 @@ int main(int argc, char **argv) {
         test_fspmv<Sparse<Field, FFLAS::SparseMatrix_t::ELL_ZO>>(iter, F, row, col, dat, rowdim, coldim, nnz, x, y, 1);
     cout << "ELL_ZO : ";
     print_res(ellzo, iter, as);
-    auto ellsimd = test_fspmv<Sparse<Field, FFLAS::SparseMatrix_t::ELL_simd>>(iter, F, row, col, dat, rowdim, coldim,
-                                                                              nnz, x, y, 1);
-    cout << "ELL_simd : ";
-    print_res(ellsimd, iter, as);
-    auto ellsimdzo = test_fspmv<Sparse<Field, FFLAS::SparseMatrix_t::ELL_simd_ZO>>(iter, F, row, col, dat, rowdim,
-                                                                                   coldim, nnz, x, y, 1);
-    cout << "ELL_simd_ZO : ";
-    print_res(ellsimdzo, iter, as);
+    // auto ellsimd = test_fspmv<Sparse<Field, FFLAS::SparseMatrix_t::ELL_simd>>(iter, F, row, col, dat, rowdim, coldim,
+                                                                              // nnz, x, y, 1);
+    // cout << "ELL_simd : ";
+    // print_res(ellsimd, iter, as);
+    // auto ellsimdzo = test_fspmv<Sparse<Field, FFLAS::SparseMatrix_t::ELL_simd_ZO>>(iter, F, row, col, dat, rowdim,
+    //                                                                                coldim, nnz, x, y, 1);
+    // cout << "ELL_simd_ZO : ";
+    // print_res(ellsimdzo, iter, as);
     auto csrhyb =
         test_fspmv<Sparse<Field, FFLAS::SparseMatrix_t::CSR_HYB>>(iter, F, row, col, dat, rowdim, coldim, nnz, x, y, 1);
     cout << "CSR_HYB : ";

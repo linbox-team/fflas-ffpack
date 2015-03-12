@@ -95,10 +95,10 @@ enum class SparseMatrix_t {
     HYB_ZO
 };
 
-template <class Field, SparseMatrix_t> struct Sparse;
+template <class Field, SparseMatrix_t, class IdxT = index_t, class PtrT = index_t> struct Sparse;
 
 } // FFLAS
-
+#include "fflas-ffpack/fflas/fflas_sparse/sparse_matrix_traits.h"
 #include "fflas-ffpack/fflas/fflas_sparse/utils.h"
 #include "fflas-ffpack/fflas/fflas_sparse/csr.h"
 #include "fflas-ffpack/fflas/fflas_sparse/coo.h"
@@ -109,55 +109,6 @@ template <class Field, SparseMatrix_t> struct Sparse;
 #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo.h"
 
 namespace FFLAS {
-/****************************
- *
- *  SparseMatrix Traits
- *
- ****************************/
-
-template <class F, class M> struct isSparseMatrix : public std::false_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_ZO>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO_ZO>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_ZO>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL_ZO>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd>> : public std::true_type {};
-
-template <class Field>
-struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_HYB>> : public std::true_type {};
-
-template <class Field> struct isSparseMatrix<Field, Sparse<Field, SparseMatrix_t::HYB_ZO>> : public std::true_type {};
-
-template <class F, class M> struct isZOSparseMatrix : public std::false_type {};
-
-template <class Field> struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::CSR_ZO>> : public std::true_type {};
-
-template <class Field> struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::COO_ZO>> : public std::true_type {};
-
-template <class Field> struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_ZO>> : public std::true_type {};
-
-template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::SELL_ZO>> : public std::true_type {};
-
-template <class Field>
-struct isZOSparseMatrix<Field, Sparse<Field, SparseMatrix_t::ELL_simd_ZO>> : public std::true_type {};
-
-using ZOSparseMatrix = std::true_type;
-using NotZOSparseMatrix = std::false_type;
 
 /*********************************************************************************************************************
  *
@@ -168,55 +119,143 @@ using NotZOSparseMatrix = std::false_type;
 namespace sparse_details {
 
 template <class Field>
-inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y,
-                   FieldCategories::ModularTag);
-
-template <class Field>
-inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y,
-                   FieldCategories::UnparametricTag);
-
-template <class Field>
-inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y,
-                   FieldCategories::GenericTag);
+inline void init_y(const Field &F, const size_t m, const typename Field::Element b, typename Field::Element_ptr y);
 
 template <class Field>
 inline void init_y(const Field &F, const size_t m, const size_t n, const typename Field::Element b,
-                   typename Field::Element_ptr y, const int ldy, FieldCategories::UnparametricTag);
-
-template <class Field>
-inline void init_y(const Field &F, const size_t m, const size_t n, const typename Field::Element b,
-                   typename Field::Element_ptr y, const int ldy, FieldCategories::GenericTag);
-
-template <class Field>
-inline void init_y(const Field &F, const size_t m, const size_t n, const typename Field::Element b,
-                   typename Field::Element_ptr y, const int ldy, FieldCategories::ModularTag);
+                   typename Field::Element_ptr y, const int ldy);
 
 /*************************************
         fspmv
 **************************************/
+
+template <class Field, class SM, class FC, class MZO>
+inline typename std::enable_if<
+                            !(std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
+                              std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value)
+                            >::type
+fspmv_dispatch(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FC fc, MZO mzo);
+
+template <class Field, class SM, class FC, class MZO>
+inline typename std::enable_if<
+                            std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
+                            std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value
+                            >::type
+fspmv_dispatch(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,FC fc, MZO mzo);
+
+// non ZO matrix
 template <class Field, class SM>
-inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-                  FieldCategories::GenericTag, std::false_type);
+inline void
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+                  FieldCategories::GenericTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
-inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-                  FieldCategories::UnparametricTag, std::false_type);
+inline typename std::enable_if<!isSparseMatrixSimdFormat<Field, SM>::value>::type
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+                  FieldCategories::UnparametricTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
-inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-                  FieldCategories::ModularTag, std::false_type);
+inline typename std::enable_if<isSparseMatrixSimdFormat<Field, SM>::value>::type
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+                  FieldCategories::UnparametricTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
-inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-                  FieldCategories::GenericTag, std::true_type);
+inline typename std::enable_if<!isSparseMatrixSimdFormat<Field, SM>::value>::type
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+                  FieldCategories::ModularTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
-inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-                  FieldCategories::UnparametricTag, std::true_type);
+inline typename std::enable_if<isSparseMatrixSimdFormat<Field, SM>::value>::type
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+                  FieldCategories::ModularTag, NotZOSparseMatrix);
+
+// ZO matrix
 
 template <class Field, class SM>
-inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+inline void
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
+                  FieldCategories::GenericTag, ZOSparseMatrix);
+
+template <class Field, class SM>
+inline typename std::enable_if<!isSparseMatrixSimdFormat<Field, SM>::value>::type
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x,
+                  typename Field::Element_ptr y, FieldCategories::UnparametricTag, ZOSparseMatrix);
+
+template <class Field, class SM>
+inline typename std::enable_if<isSparseMatrixSimdFormat<Field, SM>::value>::type
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x,
+                  typename Field::Element_ptr y, FieldCategories::UnparametricTag, ZOSparseMatrix);
+
+template <class Field, class SM>
+inline void 
+fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
                   FieldCategories::ModularTag, std::true_type);
+
+/*************************************
+        fspmm
+**************************************/
+
+template<class Field, class SM, class FCat, class MZO>
+inline typename std::enable_if<
+                            !(std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
+                              std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value)
+                            >::type
+fspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FCat, MZO) ;
+
+template<class Field, class SM, class FCat, class MZO>
+inline typename std::enable_if<
+                            std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
+                              std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value
+                            >::type
+fspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FCat, MZO) ;
+
+template <class Field, class SM>
+inline void
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, NotZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline typename std::enable_if< !support_simd<typename Field::Element>::value >::type
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix) ;
+
+// ZO matrix
+template <class Field, class SM>
+inline void
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, ZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix) ;
+
+template <class Field, class SM>
+inline void
+fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, ZOSparseMatrix) ;
 
 /*************************************
         pfspmv
@@ -244,41 +283,6 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
 template <class Field, class SM>
 inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
                    FieldCategories::ModularTag, std::true_type);
-
-/*************************************
-        fspmm
-**************************************/
-template<class Field, class SM, class FCat, class MZO>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::MultiPrecisionTag, FCat fc, MZO mz);
-
-template<class Field, class SM, class FCat, class MZO>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
-                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, FCat fc, MZO mz);
-
-template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                  FieldCategories::GenericTag, std::false_type);
-
-template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                  FieldCategories::UnparametricTag, std::false_type);
-
-template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                  FieldCategories::ModularTag, std::false_type);
-
-template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                  FieldCategories::GenericTag, std::true_type);
-
-template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                  FieldCategories::UnparametricTag, std::true_type);
-
-template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                  FieldCategories::ModularTag, std::true_type);
 
 /*************************************
         pfspmm
@@ -328,8 +332,8 @@ inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr 
                   typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
-                  typename Field::Element_ptr y);
+inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx, const typename Field::Element &beta,
+                  typename Field::Element_ptr y, int ldy);
 
 #if defined(__FFLASFFPACK_HAVE_OPENMP)
 template <class Field, class SM>
@@ -337,8 +341,8 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
                    typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
-                   typename Field::Element_ptr y);
+inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,  const typename Field::Element &beta,
+                   typename Field::Element_ptr y, int ldy);
 #endif
 }
 

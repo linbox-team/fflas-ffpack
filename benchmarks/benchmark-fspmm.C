@@ -273,7 +273,7 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 
 int main(int argc, char **argv) {
 
-    using Field = FFPACK::Modular<long>;
+    using Field = Givaro::Modular<double>;
     using Element = typename Field::Element;
 
     size_t iter = 10;
@@ -308,9 +308,9 @@ int main(int argc, char **argv) {
     readSmsFormat(matrixFile, F, row, col, dat, rowdim, coldim, nnz);
 
     if (s) {
-        auto stats = sparse_details::getStat(F, row, col, dat, rowdim, coldim, nnz);
-        std::cout << "Sparse Matrix statistics : " << std::endl;
-        stats.print();
+        // auto stats = sparse_details::getStat(F, row, col, dat, rowdim, coldim, nnz);
+        // std::cout << "Sparse Matrix statistics : " << std::endl;
+        // stats.print();
         std::cout << std::endl;
     }
 
