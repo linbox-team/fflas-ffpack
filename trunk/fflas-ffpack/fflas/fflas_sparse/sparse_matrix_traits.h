@@ -103,59 +103,61 @@ using NoSimdSparseMatrix = std::false_type;
  *
  ********************************************************************************************************/
 
-// #define function_to_functor(X) 					 \
-// 	struct tfn_##X { 							 \
-// 	 template <typename... Args> 				 \
-// 	 auto operator()(Args&&... args) const 		 \
-// 	 ->decltype(X(std::forward<Args>(args)...)){ \
-// 	 return X(std::forward<Args>(args)...); } }
+#if 0
+#define function_to_functor(X) 					 \
+	struct tfn_##X { 							 \
+	 template <typename... Args> 				 \
+	 auto operator()(Args&&... args) const 		 \
+	 ->decltype(X(std::forward<Args>(args)...)){ \
+	 return X(std::forward<Args>(args)...); } }
+#endif
 
-struct tfn_plus { 
-   template <typename... Args> 
-   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))  
-   { 
-       return operator+(std::forward<Args>(args)...); 
-   } 
+struct tfn_plus {
+   template <typename... Args>
+   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))
+   {
+       return operator+(std::forward<Args>(args)...);
+   }
 };
 
-struct tfn_mul { 
-   template <typename... Args> 
-   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))  
-   { 
-       return operator*(std::forward<Args>(args)...); 
-   } 
+struct tfn_mul {
+   template <typename... Args>
+   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))
+   {
+       return operator*(std::forward<Args>(args)...);
+   }
 };
 
-struct tfn_mul_eq { 
-   template <typename... Args> 
-   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))  
-   { 
-       return operator*=(std::forward<Args>(args)...); 
-   } 
+struct tfn_mul_eq {
+   template <typename... Args>
+   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))
+   {
+       return operator*=(std::forward<Args>(args)...);
+   }
 };
 
-struct tfn_minus { 
-   template <typename... Args> 
-   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))  
-   { 
-       return operator-(std::forward<Args>(args)...); 
-   } 
+struct tfn_minus {
+   template <typename... Args>
+   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))
+   {
+       return operator-(std::forward<Args>(args)...);
+   }
 };
 
-struct tfn_plus_eq { 
-   template <typename... Args> 
-   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))  
-   { 
-       return operator+=(std::forward<Args>(args)...); 
-   } 
+struct tfn_plus_eq {
+   template <typename... Args>
+   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))
+   {
+       return operator+=(std::forward<Args>(args)...);
+   }
 };
 
-struct tfn_minus_eq { 
-   template <typename... Args> 
-   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))  
-   { 
-       return operator+=(std::forward<Args>(args)...); 
-   } 
+struct tfn_minus_eq {
+   template <typename... Args>
+   auto operator()(Args&&... args) const ->decltype(operator+(std::forward<Args>(args)...))
+   {
+       return operator+=(std::forward<Args>(args)...);
+   }
 };
 
 template<typename C>
@@ -313,7 +315,7 @@ using has_mul_eq = typename std::conditional<std::is_arithmetic<T>::value, std::
 
 template<class T>
 struct has_operation{
-	static constexpr bool value = (has_plus<T>::value && has_minus<T>::value && has_equal<T>::value && 
+	static constexpr bool value = (has_plus<T>::value && has_minus<T>::value && has_equal<T>::value &&
 								   has_plus_eq<T>::value && has_minus_eq<T>::value && has_mul<T>::value && has_mul_eq<T>::value);
 };
 
