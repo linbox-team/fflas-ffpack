@@ -414,7 +414,7 @@ extern "C" {
 	// return A=P.L.U (L unitary) with ColMajor
 	// return A=L.U.P (U unitary) with RowMajor
 	//! @bug Order is not used. we should use ATLAS/interfaces/lapack/C/src/clapack_dgetrf.c or similar
-	inline CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER Order, const CBLAS_INT M, const CBLAS_INT N,
+	inline CBLAS_INT clapack_dgetrf(const blas_enum CBLAS_ORDER, const CBLAS_INT M, const CBLAS_INT N,
 			   double *A, const CBLAS_INT lda, CBLAS_INT *ipiv)
         {
             CBLAS_INT info;
@@ -422,7 +422,7 @@ extern "C" {
             return info;
         }
 
-	inline CBLAS_INT clapack_dgetri(const blas_enum CBLAS_ORDER Order, const CBLAS_INT N, double *A,
+	inline CBLAS_INT clapack_dgetri(const blas_enum CBLAS_ORDER, const CBLAS_INT N, double *A,
 			   const CBLAS_INT lda, const CBLAS_INT *ipiv)
 	{
 		CBLAS_INT info;

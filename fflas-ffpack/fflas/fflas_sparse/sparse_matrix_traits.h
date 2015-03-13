@@ -85,17 +85,31 @@ using ZOSparseMatrix = std::true_type;
 using NotZOSparseMatrix = std::false_type;
 
 
-template<class F, class M> struct isSparseMatrixSimdFormat{
-  static constexpr bool value = false;
-};
+template<class F, class M> struct isSparseMatrixSimdFormat : public std::false_type {};
+
+#ifdef __FFLASFFPACK_USE_SIMD
 
 template<class Field> struct isSparseMatrixSimdFormat<Field, Sparse<Field, SparseMatrix_t::SELL>> : public support_simd<typename Field::Element>::type {};
 
 template<class Field> struct isSparseMatrixSimdFormat<Field, Sparse<Field, SparseMatrix_t::ELL_simd>> : public support_simd<typename Field::Element>::type {};
 
+#endif // __FFLASFFPACK_USE_SIMD
+
 using SimdSparseMatrix = std::true_type;
 using NoSimdSparseMatrix = std::false_type;
 
+
+template<class F, class M> struct isSparseMatrixMKLFormat : public std::false_type {};
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+
+template<class Field> struct isSparseMatrixMKLFormat<Field, Sparse<Field, SparseMatrix_t::CSR>> : public std::true_type {};
+template<class Field> struct isSparseMatrixMKLFormat<Field, Sparse<Field, SparseMatrix_t::CSC>> : public std::true_type {};
+
+#endif // __FFLASFFPACK_HAVE_MKL
+
+using MKLSparseMatrixFormat = std::true_type;
+using NotMKLSparseMatrixFormat = std::false_type;
 
 /********************************************************************************************************
  *

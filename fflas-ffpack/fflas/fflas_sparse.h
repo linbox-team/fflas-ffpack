@@ -46,10 +46,14 @@
 #define __FFLASFFPACK_CACHE_LINE_SIZE 64
 #endif
 
-#if (__GNUC_MAJOR > 4 || (__GNUC_MAJOR == 4 &&__GNUC_MINOR__ >= 7))
-#define assume_aligned(pout, pin, v) decltype(pin) pout = static_cast<decltype(pin)>(__builtin_assume_aligned(pin, v));
+#if (__GNUC_MAJOR > 4 || (__GNUC_MAJOR == 4 &&__GNUC_MINOR__ >= 7)) || defined(__clang__)
+  #define assume_aligned(pout, pin, v) decltype(pin) __restrict__ pout = static_cast<decltype(pin)>(__builtin_assume_aligned(pin, v));
+#elif defined(__INTEL_COMPILER)
+  #define assume_aligned(pout, pin, v) \
+        decltype(pin) __restrict pout = pin; \
+        __assume_aligned(pout)
 #else
-#define assume_aligned(pout, pin, v) decltype(pin) pout = pin;
+ #define assume_aligned(pout, pin, v) decltype(pin) pout = pin;
 #endif
 
 #define DENSE_THRESHOLD 0.5
@@ -77,16 +81,16 @@
 #undef index_t
 #define index_t MKL_INT
 
-namespace MKL_CONFIG {
-	static const double dalpha = 1;
-	static const float  salpha = 1;
-	static const double dbeta = 0;
-	static const float  sbeta = 0;
-	static const char metaChar[4] = {'G', ' ', ' ', 'C'};
-	static const char trans[1] = {'N'};
-}
-
 #endif // __FFLASFFPACK_HAVE_MKL
+
+namespace MKL_CONFIG {
+  static const double dalpha = 1;
+  static const float  salpha = 1;
+  static const double dbeta = 0;
+  static const float  sbeta = 0;
+  static const char metaChar[4] = {'G', ' ', ' ', 'C'};
+  static const char trans[1] = {'N'};
+}
 
 namespace FFLAS {
 
