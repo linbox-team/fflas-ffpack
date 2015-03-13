@@ -220,22 +220,7 @@ namespace FFLAS {
 		return C;
 	}
 
-	// BB hack. might not work.
-	inline Givaro::Integer* fgemv (const Givaro::UnparametricRing<Givaro::Integer>& F,
-				       const FFLAS_TRANSPOSE ta,
-				       const size_t m, const size_t n,
-				       const Givaro::Integer alpha,
-				       Givaro::Integer* A, const size_t lda,
-				       Givaro::Integer* X, const size_t ldx,
-				       Givaro::Integer beta,
-				       Givaro::Integer* Y, const size_t ldy,
-				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag,ParSeqHelper::Sequential> & H)
-	{
-		MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
-		fgemm(F,ta,FFLAS::FflasNoTrans,m,n,1,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
-		return Y;
-	}
-
+	
 
 
 	/************************************

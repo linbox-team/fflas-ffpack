@@ -60,7 +60,7 @@ namespace FFPACK {
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _basis; // the rns moduli (mi)
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _basisMax; // (mi-1)
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _negbasis; // (-mi)
-		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>    _invbasis; // the inverse of rns moduli (1/mi)
+		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _invbasis; // the inverse of rns moduli (1/mi)
 		std::vector<ModField> _field_rns; // the associated prime field for each mi
 		integer                  _M; // the product of the mi's
 		std::vector<integer>         _Mi; // _M/mi
@@ -84,15 +84,11 @@ namespace FFPACK {
 			integer sum=1;
 			while (_M < bound*sum) {
 				_basis.resize(_size+1);
-				_negbasis.resize(_size+1);
-				_basisMax.resize(_size+1);
 				do {
 					integer::random_exact_2exp(prime, _pbits-1);
 					nextprime(prime, prime);
 				} while (_M%prime == 0);
 				_basis[_size]=prime;
-				_basisMax[_size] = prime-1;
-				_negbasis[_size] = 0-prime;
 				_size++;
 				_M*=prime;
 				if (rnsmod) sum+=prime;
@@ -127,8 +123,6 @@ namespace FFPACK {
 			for(size_t i=0;i<_size;i++){
 				_M*=_basis[i];
 				_pbits=std::max(_pbits, integer(_basis[i]).bitsize());
-				_basisMax[i] = _basis[i]-1;
-				_negbasis[i] = 0-_basis[i];
 			}
 			std::cout<<"M="<<_M<<std::endl;
 			precompute_cst();
@@ -138,6 +132,8 @@ namespace FFPACK {
 		void precompute_cst(){
 			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
 			_invbasis.resize(_size);
+			_basisMax.resize(_size);
+			_negbasis.resize(_size);
 			_field_rns.resize(_size);
 			_Mi.resize(_size);
 			_MMi.resize(_size);
@@ -146,6 +142,8 @@ namespace FFPACK {
 			const unsigned int MASK=0xFFFF;
 			for (size_t i=0;i<_size;i++){
 				_invbasis[i]  = 1./_basis[i];
+				_basisMax[i] = _basis[i]-1;
+				_negbasis[i] = 0-_basis[i];
 				_field_rns[i] = ModField(_basis[i]);
 				_Mi[i]        = _M/(unsigned long)_basis[i];
 				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);

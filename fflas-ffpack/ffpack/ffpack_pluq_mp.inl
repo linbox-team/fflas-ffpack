@@ -34,8 +34,7 @@
 #endif
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/ffpack/ffpack_pluq.inl"
+#include "fflas-ffpack/fflas-ffpack.h"
 
 #include "givaro/givinteger.h"
 #include "givaro/modular-integer.h"
