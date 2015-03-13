@@ -125,7 +125,7 @@ namespace FFLAS { namespace Protected {
 	 *
 	 */
 	template <class Field>
-	inline size_t TRSMBound (const Field& F)
+	inline size_t TRSMBound (const Field&)
 	{
 		return 1;
 	}

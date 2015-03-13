@@ -123,7 +123,7 @@ inline void fspmm_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDo
 
 
 
-#ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
@@ -206,7 +206,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
         }
     }
 }
-#endif
+// #endif
 
 template <class Field>
 inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,

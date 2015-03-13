@@ -84,7 +84,7 @@ namespace FFLAS {
 			Sequential() {}
 			//template<class T>
 			Sequential(Parallel& ) {}
-			friend std::ostream& operator<<(std::ostream& out, const Sequential& p) {
+			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
 				return out << "Sequential";
 			}
 		};

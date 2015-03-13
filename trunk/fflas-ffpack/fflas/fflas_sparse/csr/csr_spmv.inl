@@ -162,7 +162,7 @@ inline void fspmv_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDo
 }
 #endif // __FFLASFFPACK_HAVE_MKL
 
-
+#if 0
 template <class Field>
 inline void fspmv_task(const Field &F, const index_t start_, const index_t size_, const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,
                   typename Field::Element_ptr y_, FieldCategories::UnparametricTag) {
@@ -189,6 +189,7 @@ inline void fspmv_task(const Field &F, const index_t start_, const index_t size_
         y[i] += y1 + y2 + y3 + y4;
     }
 }
+#endif
 
 template <class Field>
 inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, typename Field::ConstElement_ptr x_,

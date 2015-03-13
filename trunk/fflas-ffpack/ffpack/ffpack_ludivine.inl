@@ -466,7 +466,7 @@ namespace FFPACK {
 								F.inv(invpiv,*(A+ip*incRow));
 								if (++ip < rowDim)
 									FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
-								elt tmp;
+								// elt tmp;
 //								F.init(tmp);
 //								F.assign(tmp, *(A+oldip*incRow));
 //								F.assign( *(A+oldip*incRow), *A);
