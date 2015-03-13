@@ -460,7 +460,7 @@ inline void fspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     }
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
 inline void fspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
@@ -602,7 +602,7 @@ inline void fspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     }
 }
 
-#endif //__FFLASFFPACK_USE_SIMD
+// #endif //__FFLASFFPACK_USE_SIMD
 
 } // CSR_details
 

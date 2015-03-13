@@ -425,7 +425,7 @@ inline void fspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
     }
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
 inline void fspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, int blockSize,
@@ -555,7 +555,7 @@ inline void fspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     }
 }
 
-#endif
+// #endif /*  __FFLASFFPACK_USE_SIMD */
 
 } // ell_details
 
