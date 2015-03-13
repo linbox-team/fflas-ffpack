@@ -122,9 +122,9 @@ namespace FFLAS {
 	{
 		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
 		return 	fgemv (F, ta, M, N, alpha,
-			       const_cast<typename Field::Element_ptr>(A), lda,
-			       const_cast<typename Field::Element_ptr>(X), incX,
-			       beta, Y, incY, HW);
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
+			       beta, Y, incY, HW);	
 	}
 
 	template<class Field>
@@ -162,8 +162,8 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HD(F,0);
 
 		fgemv (F, ta, M, N, alpha_,
-		       const_cast<typename Field::Element_ptr>(A), lda,
-		       const_cast<typename Field::Element_ptr>(X), incX,
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
+		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
 		       beta_, Y, incY, HD);
 
 		Protected::ScalAndReduce (F, Ydim, alpha, Y, incY, HD);

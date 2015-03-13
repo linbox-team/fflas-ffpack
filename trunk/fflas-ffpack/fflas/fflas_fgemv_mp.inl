@@ -34,16 +34,17 @@
 
 namespace FFLAS {
 
-	// specialization of the fgemv function for the field RNSIntegerMod<rns_double>
-	//template<>
+	
+	// specialization of the fgemv function for the field RNSInteger<rns_double>
 	inline FFPACK::rns_double::Element_ptr
-	fgemv (const FFPACK::RNSIntegerMod<FFPACK::rns_double>& F, const FFLAS_TRANSPOSE ta,
+	fgemv (const FFPACK::RNSInteger<FFPACK::rns_double>& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
 	       const FFPACK::rns_double::Element alpha,
 	       FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
 	       FFPACK::rns_double::ConstElement_ptr X, const size_t incX,
 	        const FFPACK::rns_double::Element beta,
-	       FFPACK::rns_double::Element_ptr Y, const size_t incY)
+	       FFPACK::rns_double::Element_ptr Y, const size_t incY,
+	       MMHelper<FFPACK::RNSInteger<FFPACK::rns_double>, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		if (M!=0 && N !=0){
 			for (size_t i=0;i<F.size();i++)
@@ -55,11 +56,67 @@ namespace FFLAS {
 				      beta._ptr[i*beta._stride],
 				      Y._ptr+i*Y._stride, incY
 				      );
-			size_t Ydim = (ta == FflasNoTrans)?M:N;
-			freduce (F, Ydim, Y, incY);
 		}
 		return Y;
 	} 
+
+	
+	// specialization of the fgemv function for the field RNSIntegerMod<rns_double>
+	inline FFPACK::rns_double::Element_ptr
+	fgemv (const FFPACK::RNSIntegerMod<FFPACK::rns_double>& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const FFPACK::rns_double::Element alpha,
+	       FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
+	       FFPACK::rns_double::ConstElement_ptr X, const size_t incX,
+	        const FFPACK::rns_double::Element beta,
+	       FFPACK::rns_double::Element_ptr Y, const size_t incY,
+	       MMHelper<FFPACK::RNSIntegerMod<FFPACK::rns_double>, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
+	{
+		//std::cout<<"HERE 1"<<std::endl;
+		MMHelper<FFPACK::RNSInteger<FFPACK::rns_double>, MMHelperAlgo::Classic, ModeCategories::DefaultTag >  H2;
+		//std::cout<<"HERE 2"<<std::endl;
+		fgemv(F.delayed(),ta,M,N,alpha,A,lda,X,incX, beta,Y,incY,H2);
+		//std::cout<<"HERE 3"<<std::endl;
+		size_t Ydim = (ta == FflasNoTrans)?M:N;
+		freduce (F, Ydim, Y, incY);
+		return Y;
+	}
+
+
+	// BB hack. might not work.
+	// specialization of the fgemv function for the field Givaro::UnparametricRing<Givaro::Integer>
+	inline Givaro::Integer* fgemv (const Givaro::UnparametricRing<Givaro::Integer>& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const size_t m, const size_t n,
+				       const Givaro::Integer alpha,
+				       Givaro::Integer* A, const size_t lda,
+				       Givaro::Integer* X, const size_t ldx,
+				       Givaro::Integer beta,
+				       Givaro::Integer* Y, const size_t ldy,
+				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
+	{
+		MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
+		fgemm(F,ta,FFLAS::FflasNoTrans,m,n,1,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
+		return Y;
+	}
+
+	// specialization of the fgemv function for the field Givaro::Modular<Givaro::Integer>
+	inline Givaro::Integer* fgemv (const Givaro::Modular<Givaro::Integer>& F,
+				       const FFLAS_TRANSPOSE ta,
+				       const size_t m, const size_t n,
+				       const Givaro::Integer alpha,
+				       Givaro::Integer* A, const size_t lda,
+				       Givaro::Integer* X, const size_t ldx,
+				       Givaro::Integer beta,
+				       Givaro::Integer* Y, const size_t ldy,
+				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
+	{
+		MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
+		fgemm(F,ta,FFLAS::FflasNoTrans,m,n,1,alpha,A,lda,X,ldx,beta,Y,ldy,H2);
+		return Y;
+	}
+
+
 } // end namespace FFLAS 
 
 #endif
