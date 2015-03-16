@@ -330,7 +330,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr Y, const size_t incY )
 	{
 
-		typename Field::Element tmp;
+		typename Field::Element tmp; F.init(tmp);
 		typename Field::Element_ptr Xi = X;
 		typename Field::Element_ptr Yi=Y;
 		for (; Xi < X+N*incX; Xi+=incX, Yi+=incY ){

@@ -47,6 +47,7 @@ namespace FFPACK {
 
 		if ( Side == FFLAS::FflasRight ) {
 			typename Field::Element tmp;
+			F.init(tmp);
 			if ( Trans == FFLAS::FflasTrans )
 				for (size_t j = 0 ; j < M ; ++j){
 					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
@@ -438,7 +439,9 @@ namespace FFPACK {
 			const size_t nun(n-1);
 			for(typename Field::Element_ptr Ai=A; Ai!= A+m*lda; Ai+=lda)
 				{
-					typename Field::Element tmp = Ai[nun];
+					typename Field::Element tmp;
+					F.init(tmp);
+					F.assign(tmp, Ai[nun]);
 					//@BUG: not safe with RNSModP field
 					std::copy_backward(Ai, Ai+nun, Ai+n);
 					*Ai=tmp;
@@ -455,11 +458,11 @@ namespace FFPACK {
 				{
 					typename T::Element tmp; F.init(tmp);
 					F.assign(tmp, Ai[nun]);
-					//std::copy_backward(Ai, Ai+nun, Ai+n);
-					typename T::Element_ptr Xi = Ai+n;
-					typename T::ConstElement_ptr Yi=Ai+nun;					
-					for (; Ai < Yi; ++Xi, --Yi)
-						F.assign(*Xi,*Yi);					
+					    //std::copy_backward(Ai, Ai+nun, Ai+n);
+					typename T::Element_ptr Xi = Ai+nun;
+					typename T::ConstElement_ptr Yi=Ai+nun-1;
+					for (; Ai < Yi; --Xi, --Yi)
+						F.assign(*Xi,*Yi);
 					F.assign(*Ai,tmp);
 				}
 		}		
