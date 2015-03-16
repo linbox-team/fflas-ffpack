@@ -103,7 +103,7 @@ namespace FFPACK {
 	}
 
 	/*! @brief  Random Matrix with prescribed rank.
-	 * Creates a \c m x \c n matrix with random entries and rank \c r.
+	 * Creates an \c m x \c n matrix with random entries and rank \c r.
 	 * @param F field
 	 * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
 	 * @param r rank of the matrix to build
@@ -113,10 +113,9 @@ namespace FFPACK {
 	 * @return pointer to \c A.
 	 */
 	template<class Field>
-	typename Field::Element * RandomMatrixWithRank(const Field & F,
-						       typename Field::Element * A,
-						       size_t r,
-						       size_t m, size_t n, size_t lda)
+	typename Field::Element_ptr RandomMatrixWithRank (const Field & F,
+							  typename Field::Element_ptr A, size_t lda,
+							  size_t r, size_t m, size_t n)
 	{
 		FFLASFFPACK_check(r <= std::min(m,n));
 		FFLASFFPACK_check(n <= lda);
@@ -177,6 +176,76 @@ namespace FFPACK {
 
 	}
 
+	template<class Field>
+
+	/*! @brief  Random Matrix with prescribed rank, with random  rank profile matrix
+	 * Creates an \c m x \c n matrix with random entries, rank \c r and with a rank profile matrix
+	 * chosen uniformly at random.
+	 * @param F field
+	 * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+	 * @param r rank of the matrix to build
+	 * @param m number of rows in \p A
+	 * @param n number of cols in \p A
+	 * @param lda leading dimension of \p A
+	 * @return pointer to \c A.
+	 */
+	void RandomMatrixWithRankandRandomRPM (const Field& F, typename Field::Element_ptr A, size_t lda,
+					       size_t R, size_t M, size_t N){
+		    // generate the r pivots in the rank profile matrix E
+	size_t curr = 0;
+	std::vector<bool> rows(M,false);
+	std::vector<bool> cols(N,false);
+	int pivot_r[R];
+	int pivot_c[R];
+	typedef typename Field::RandIter Randiter ;
+	Randiter RI(F);
+	FFPACK::NonzeroRandIter<Field,Randiter> nzR(F,RI);
+	while (curr<R){
+		int i,j;
+		while (rows [i = rand() % M]);
+		while (cols [j = rand() % N]);
+		rows[i] = true;
+		cols[j] = true;
+		pivot_r[curr] = i;
+		pivot_c[curr] = j;
+		curr++;
+	}
+	// std::cerr<<"pivot_r = [ ";;
+	// for (size_t i = 0; i<R; i++)
+	// 	std::cerr<<pivot_r[i]<<" ";
+	// std::cerr<<"]"<<std::endl;
+	// std::cerr<<"pivot_c = [ ";;
+	// for (size_t i = 0; i<R; i++)
+	// 	std::cerr<<pivot_c[i]<<" ";
+	// std::cerr<<"]"<<std::endl;
+	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
+	FFLAS::fzero(F, M, N, L, N);
+	for (size_t k = 0; k < R; ++k){
+		size_t i = pivot_r[k];
+		size_t j = pivot_c[k];
+		nzR.random (L [i*N+j]);
+		for (size_t l=i+1; l < M; ++l)
+			RI.random (L [l*N+j]);
+	}
+	typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
+	FFLAS::fzero(F, N, N, U, N);
+	for (size_t i = 0; i < N; ++i){
+		nzR.random (U [i*N+i]);
+		for (size_t j=i+1; j < N; ++j)
+			RI.random (U [i*N+j]);
+	}
+	
+	
+	typename Field::Element alpha, beta;
+	F.init(alpha,1.0);
+	F.init(beta,0.0);
+	PAR_REGION{
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel());
+	}
+	FFLAS::fflas_delete(L);
+	FFLAS::fflas_delete(U);
+	
+}
 	/*! @brief  Random Matrix with prescribed det.
 	 * @bug duplicate with linbox
 	 * Creates a \c m x \c n matrix with random entries and rank \c r.

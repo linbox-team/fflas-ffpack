@@ -49,11 +49,11 @@ bool
 test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
-	Element * A = FFLAS::fflas_new<Element>(m*n);
-	Element * B = FFLAS::fflas_new<Element>(m*n);
-	Element * L = FFLAS::fflas_new<Element>(m*n);
-	Element * U = FFLAS::fflas_new<Element>(n*n);
-	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	Element * A = FFLAS::fflas_new (F,m,n);
+	Element * B = FFLAS::fflas_new (F,m,n);
+	Element * L = FFLAS::fflas_new (F,m,n);
+	Element * U = FFLAS::fflas_new (F,n,n);
+	Element * X = FFLAS::fflas_new (F,m,n);     
 	size_t lda = n; //!@todo check lda
 
 	size_t *P = FFLAS::fflas_new<size_t>(n);
@@ -64,7 +64,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,r,m,n,lda);
+		RandomMatrixWithRank(F,A,lda,r,m,n);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
@@ -115,11 +115,11 @@ bool
 test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
-	Element * A = FFLAS::fflas_new<Element>(m*n);
-	Element * B = FFLAS::fflas_new<Element>(m*n);
-	Element * L = FFLAS::fflas_new<Element>(m*m);
-	Element * U = FFLAS::fflas_new<Element>(m*n);
-	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	Element * A = FFLAS::fflas_new (F,m,n);
+	Element * B = FFLAS::fflas_new (F,m,n);
+	Element * L = FFLAS::fflas_new (F,m,m);
+	Element * U = FFLAS::fflas_new (F,m,n);
+	Element * X = FFLAS::fflas_new (F,m,n);     
 	size_t lda = n; //!@todo check lda
 
 	size_t *P = FFLAS::fflas_new<size_t>(m);
@@ -130,7 +130,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,r,m,n,lda);
+		RandomMatrixWithRank(F,A,lda,r,m,n);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
@@ -189,11 +189,11 @@ bool
 test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
-	Element * A = FFLAS::fflas_new<Element>(m*n);
-	Element * B = FFLAS::fflas_new<Element>(m*n);
-	Element * L = FFLAS::fflas_new<Element>(m*n);
-	Element * U = FFLAS::fflas_new<Element>(n*n);
-	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	Element * A = FFLAS::fflas_new (F,m,n);
+	Element * B = FFLAS::fflas_new (F,m,n);
+	Element * L = FFLAS::fflas_new (F,m,n);
+	Element * U = FFLAS::fflas_new (F,n,n);
+	Element * X = FFLAS::fflas_new (F,m,n);     
 	size_t lda = n; //!@todo check lda
 
 	size_t *P = FFLAS::fflas_new<size_t>(n);
@@ -204,7 +204,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,r,m,n,lda);
+		RandomMatrixWithRank(F,A,lda,r,m,n);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
@@ -257,11 +257,11 @@ bool
 test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
 {
 	typedef typename Field::Element Element ;
-	Element * A = FFLAS::fflas_new<Element>(m*n);
-	Element * B = FFLAS::fflas_new<Element>(m*n);
-	Element * L = FFLAS::fflas_new<Element>(m*m);
-	Element * U = FFLAS::fflas_new<Element>(m*n);
-	Element * X = FFLAS::fflas_new<Element>(m*n);     
+	Element * A = FFLAS::fflas_new (F,m,n);
+	Element * B = FFLAS::fflas_new (F,m,n);
+	Element * L = FFLAS::fflas_new (F,m,m);
+	Element * U = FFLAS::fflas_new (F,m,n);
+	Element * X = FFLAS::fflas_new (F,m,n);     
 	size_t lda = n; //!@todo check lda
 
 	size_t *P = FFLAS::fflas_new<size_t>(m);
@@ -272,7 +272,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,r,m,n,lda);
+		RandomMatrixWithRank(F,A,lda,r,m,n);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
