@@ -35,7 +35,7 @@ EXTRA_DIST= test-utils.h
 PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =              \
-		test-lqup              \
+		test-lu              \
 		test-modulararith      \
 		test-det               \
 		test-echelon           \
@@ -84,7 +84,7 @@ CLEANFILES =           \
 TESTS =     $(EXTRA_PROGRAMS)
 
 test_compressQ_SOURCES         = test-compressQ.C
-test_lqup_SOURCES              = test-lqup.C
+test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
