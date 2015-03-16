@@ -463,6 +463,7 @@ namespace FFPACK {
 							size_t oldip = ip;
 							if ( Diag == FFLAS::FflasNonUnit ){
 								elt invpiv;
+								F.init(invpiv);
 								F.inv(invpiv,*(A+ip*incRow));
 								if (++ip < rowDim)
 									FFLAS::fscalin(F,rowDim-ip,invpiv,A+ip*incRow,incRow);
@@ -486,11 +487,13 @@ namespace FFPACK {
 				if (ip!=0){
 					// swap the pivot
 					typename Field::Element tmp;
+					F.init(tmp);
 					F.assign(tmp,*A);
 					F.assign(*A, *(A + ip*incCol));
 					F.assign(*(A + ip*incCol), tmp);
 				}
 				elt invpiv;
+				F.init(invpiv);
 				F.inv(invpiv, *A);
 				if ( Diag == FFLAS::FflasUnit && colDim>1){
 					// Normalisation of the row
@@ -659,7 +662,9 @@ namespace FFPACK {
 				*P=ip;
 				if (ip!=0){
 					// swap the pivot
-					typename Field::Element tmp=*X;
+					typename Field::Element tmp;
+					F.init(tmp);
+					F.assign(tmp,*X);
 					*X = *(X+ip);
 					*(X+ip) = tmp;
 				}
