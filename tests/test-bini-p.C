@@ -5,14 +5,18 @@
 #include "test-utils.h"
 #include "assert.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/flimits.h"
 
 // using namespace FFPACK;
 #define NEWWINO
 // #define NOTRANDOM
+//
+#define DIVIDE_INTO(x,y) (((x) + (y) - 1))
 
 const int algos = 8 ;
-using FFPACK::Modular;
+using Givaro::Modular;
 using Givaro::ModularBalanced;
+using Givaro::Timer;
 
 const size_t selec[] = {
 	0
@@ -45,13 +49,14 @@ namespace FFLAS { /*  compression */
 
 	template<>
 	struct Packer<double,2> {
-		uint64_t bits = (limits<double>::digits/2) ;
+		uint64_t bits = (limits<double>::digits()/2) ;
 		double   base = (double) (1UL << bits) ;
-		uint64_t mask = (1UL << bits) - 1UL
+		uint64_t mask = (1UL << bits) - 1UL ;
 
+		template<class T>
 		void accu(double * p, T * w) {
 			*p *= base ;
-			p += *w ;
+			*p += (double)*w ;
 		}
 	} ;
 
@@ -61,14 +66,14 @@ namespace FFLAS { /*  compression */
 	/* ****** */
 
 	/*  pack nb words (a,b,c) -> [a|b|c] */
-	template<class wide_T, const pack_T, int Nb>
+	template<class wide_T, class pack_T, int Nb>
 	void pack_word( pack_T * packed,
 			const wide_T * words, int32_t stride,
 			Packer<pack_T,Nb> & packer) ;
 
 
 	template<class wide_T>
-	void pack_word<wide_T,double,2>( double * packed,
+	void pack_word/*<wide_T,double,2>*/( double * packed,
 				     const wide_T * words, int32_t stride,
 				     Packer<double,2> & packer)
 	{
@@ -80,13 +85,13 @@ namespace FFLAS { /*  compression */
 	}
 
 	/*  pack nb words (a,b) -> [a|b|0]  filling with zeros */
-	template<class wide_T, const pack_T, int Nb>
+	template<class wide_T, class pack_T, int Nb>
 	void pack_word_part( pack_T * packed, int32_t nb,
 			     const wide_T * words, int32_t stride,
 			     Packer<pack_T,Nb> & packer) ;
 
 	template<class wide_T>
-	void pack_word_part<wide_T,double,2>( double * packed, int32_t nb,
+	void pack_word_part/* <wide_T,double,2> */( double * packed, int32_t nb,
 					  const wide_T * words, int32_t stride,
 					  Packer<double,2> & packer)
 	{
@@ -101,15 +106,15 @@ namespace FFLAS { /*  compression */
 	/* unpack */
 	/* ****** */
 
-	template<class wide_T, const pack_T, int Nb>
+	template<class wide_T, class pack_T, int Nb>
 	void unpack_word( wide_T * words, int32_t stride,
 			  const pack_T * packed,
 			  Packer<pack_T,Nb> & packer);
 
 	template<class wide_T>
-	void unpack_word<wide_T,double,2>( wide_T * words, int32_t stride,
+	void unpack_word/* <wide_T,double,2> */( wide_T * words, int32_t stride,
 			  const double * packed,
-			  Packer<double ,Nb> & packer)
+			  Packer<double ,2> & packer)
 	{
 		words += stride ;
 		uint64_t pck = (uint64_t) *packed ;
@@ -120,13 +125,13 @@ namespace FFLAS { /*  compression */
 	}
 
 
-	template<class wide_T, const pack_T, int Nb>
+	template<class wide_T, class pack_T, int Nb>
 	void unpack_word_part( wide_T * words, int32_t stride,
 			       const pack_T * packed, int32_t nb,
 			       Packer<pack_T,Nb> & packer);
 
 	template<class wide_T>
-	void unpack_word_part<wide_T,double,2>( wide_T * words, int32_t stride,
+	void unpack_word_part/* <wide_T,double,2> */( wide_T * words, int32_t stride,
 			       const double * packed, int32_t nb,
 			       Packer<double,2> & packer)
 	{
@@ -143,7 +148,7 @@ namespace FFLAS { /*  compression */
 	/*  pack  */
 	/* ****** */
 
-	template<class wide_T, const pack_T, int Nb, bool row_packed>
+	template<class wide_T, class pack_T, int Nb, bool row_packed>
 	void pack_matrix( pack_T * packed, int32_t row_p, int32_t col_p, int32_t ldm_p,
 			  const wide_T * elemts, int32_t row_e, int32_t col_e, int32_t ldm_e,
 			  Packer<pack_T,Nb> & packer)
@@ -154,11 +159,11 @@ namespace FFLAS { /*  compression */
 				pack_T * p_p = packed + i * ldm_p ;
 				int32_t j = 0 ;
 				for ( ; j < col_e/Nb ;  j+=Nb, e_p+=Nb, p_p++) {
-					pack_word<wide_T,pack_T,Nb>(p_p,e_p,1,packer);
+					pack_word<wide_T>(p_p,e_p,1,packer);
 
 				}
 				if (j < col_e)
-					pack_word_part<wide_T,pack_T,Nb>(p_p,col_e-j,e_p,1,packer);
+					pack_word_part<wide_T>(p_p,col_e-j,e_p,1,packer);
 			}
 		}
 		else { /*  col_packed */
@@ -168,12 +173,12 @@ namespace FFLAS { /*  compression */
 				const wide_T * e_p = elemts + i * ldm_e ;
 				pack_T * p_p = packed + ii * ldm_p ;
 				for (int32_t j = 0 ; j < col_e ;  j++, e_p++, p_p++) {
-					pack_word<wide_T,pack_T,Nb>(p_p,e_p,ldm_e,packer);
+					pack_word<wide_T>(p_p,e_p,ldm_e,packer);
 
 				}
 			}
 			if (i < row_e)
-				pack_word_part<wide_T,pack_T,Nb>(packed+i*ldm_p,row_e-i,elemts+ii*ldm_e,ldm_e,packer);
+				pack_word_part<wide_T>(packed+i*ldm_p,row_e-i,elemts+ii*ldm_e,ldm_e,packer);
 
 		}
 	}
@@ -182,43 +187,44 @@ namespace FFLAS { /*  compression */
 	/* unpack */
 	/* ****** */
 
-	template<class wide_T, const pack_T, int Nb, bool row_packed>
+	template<class wide_T, class pack_T, int Nb, bool row_packed>
 	void unpack_matrix( wide_T * elemts, int32_t row_e, int32_t col_e, int32_t ldm_e,
 			    const pack_T * packed, int32_t row_p, int32_t col_p, int32_t ldm_p,
 			  Packer<pack_T,Nb> & packer)
 	{
 		if (row_packed == true) {
 			for (int32_t i = 0 ; i < row_e ;  i++ ) {
-				const wide_T * e_p = elemts + i * ldm_e ;
-				pack_T * p_p = packed + i * ldm_p ;
+				wide_T * e_p = elemts + i * ldm_e ;
+				const pack_T * p_p = packed + i * ldm_p ;
 				int32_t j = 0 ;
 				for ( ; j < col_e/Nb ;  j+=Nb, e_p+=Nb, p_p++) {
-					unpack_word<wide_T,pack_T,Nb>(e_p,1,p_p,packer);
+					unpack_word<wide_T>(e_p,1,p_p,packer);
 
 				}
 				if (j < col_e)
-					unpack_word_part<wide_T,pack_T,Nb>(e_p,1,p_p,col_e-j,packer);
+					unpack_word_part<wide_T>(e_p,1,p_p,col_e-j,packer);
 			}
 		}
 		else { /*  col_packed */
 			int32_t i = 0 ;
 			int32_t ii = 0 ;
 			for ( ; i < row_e/Nb ;  i += Nb , ii++) {
-				const wide_T * e_p = elemts + i * ldm_e ;
-				pack_T * p_p = packed + ii * ldm_p ;
+				wide_T * e_p = elemts + i * ldm_e ;
+				const pack_T * p_p = packed + ii * ldm_p ;
 				for (int32_t j = 0 ; j < col_e ;  j++, e_p++, p_p++) {
-					pack_word<wide_T,pack_T,Nb>(e_p,ldm_e,p_p,packer);
+					unpack_word<wide_T>(e_p,ldm_e,p_p,packer);
 
 				}
 			}
 			if (i < row_e)
-				pack_word_part<wide_T,pack_T,Nb>(elemts+i*ldm_e,ldm_e,packed+ii*ldm_p,row_e-i,packer);
+				unpack_word_part<wide_T>(elemts+i*ldm_e,ldm_e,packed+ii*ldm_p,row_e-i,packer);
 
 		}
 	}
 
 	/*  compress A */
 	template<class Field, bool left_compress >
+	void
 	fgemm_compressed(const Field & F,
 			 int m, int n, int k,
 			 const typename Field::Element * A, int lda,
@@ -237,7 +243,7 @@ namespace FFLAS { /*  compression */
 			ldb_k = ldb ;
 			ldc_k = n ;
 			A_k =  FFLAS::fflas_new<double>(m_k*k) ;
-			B_k = B ;
+			B_k = const_cast<typename Field::Element *>(B) ;
 			C_k = FFLAS::fflas_new<double>(m_k*n) ;
 
 			pack_matrix<elem_t,elem_t,2,false>(A_k,m_k,k,lda_k,
@@ -253,7 +259,7 @@ namespace FFLAS { /*  compression */
 			ldb_k = n_k ;
 			ldc_k = n_k ;
 
-			A_k = A ;
+			A_k = const_cast<typename Field::Element *>(A) ;
 			B_k = FFLAS::fflas_new<double>(k*n_k)  ;
 			C_k = FFLAS::fflas_new<double>(m*n_k) ;
 
@@ -274,8 +280,8 @@ namespace FFLAS { /*  compression */
 			      C_k,m_k,n_k,ldc_k,
 			      packer);
 
-		FFLAS::delete(A_k);
-		FFLAS::delete(C_k);
+		FFLAS::fflas_delete(A_k);
+		FFLAS::fflas_delete(C_k);
 	}
 
 }
@@ -283,35 +289,18 @@ namespace FFLAS { /*  compression */
 namespace FFLAS { /*  tools */
 
 
-	void finit_fuzzy(Modular<double> F, size_t m, size_t n, double * C, size_t ldc)
+	template<class Field>
+	void finit_fuzzy(Field & F, size_t m, size_t n, double * C, size_t ldc)
 	{
-
-		double p, invp;
-		p=(double)F.cardinality();
-		invp=1./p;
-
-		if (n == ldc)
-			FFLAS::vectorised::modp<true,true>(C,C,m*n,p,invp,0,p-1);
-		else
-			for (size_t i = 0 ; i < m ; ++i)
-				FFLAS::vectorised::modp<true,true>(C+i*ldc,C+i*ldc,n,p,invp,0,p-1);
-	}
-
-	void finit_fuzzy(ModularBalanced<double> F, size_t m, size_t n, double * C, size_t ldc)
-	{
-
-		double p, invp;
-		p=(double)F.cardinality();
-		invp=1./p;
-		double pmax = (p-1)/2 ;
-		double pmin = pmax-p+1;
 
 
 		if (n == ldc)
-			FFLAS::vectorised::modp<false,true>(C,C,m*n,p,invp,pmin, pmax);
+			// FFLAS::vectorised::modp<true,true>(C,C,m*n,p,invp,0,p-1);
+			FFLAS::vectorised::modp<Field,true>(F,C,m*n,C);
 		else
 			for (size_t i = 0 ; i < m ; ++i)
-				FFLAS::vectorised::modp<false,true>(C+i*ldc,C+i*ldc,n,p,invp,pmin,pmax);
+				// FFLAS::vectorised::modp<true,true>(C+i*ldc,C+i*ldc,n,p,invp,0,p-1);
+				FFLAS::vectorised::modp<Field,true>(F,C+i*ldc,n,C+i*ldc);
 	}
 
 
@@ -1920,11 +1909,11 @@ gemm_compress(const Field &F
 		break;
 	case 6 :
 		 fgemm_compressed<Field,true>(F,m,n,k,A,lda,B,ldb,C,ldc);
-		 FFLAS::freduce(C,m,n,ldc);
+		 FFLAS::freduce(F,m,n,C,ldc);
 		 break;
 	case 7 :
 		 fgemm_compressed<Field,false>(F,m,n,k,A,lda,B,ldb,C,ldc);
-		 FFLAS::freduce(C,m,n,ldc);
+		 FFLAS::freduce(F,m,n,C,ldc);
 		 break;
 #if 0
 	case 8 : {
@@ -2195,8 +2184,8 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 	for (size_t b = 0 ; b < iters ; ++b) {
 		std::cout << b+1 << " of " << iters << std::endl;
 #if not defined(NOTRANDOM)
-		RandomMatrix(F,A,m,k,k);
-		RandomMatrix(F,B,k,n,n);
+		FFPACK::RandomMatrix(F,A,m,k,k);
+		FFPACK::RandomMatrix(F,B,k,n,n);
 #endif
 		FFLAS::finit(F_f,m,k,A,k,A_f,k);
 		FFLAS::finit(F_f,k,n,B,n,B_f,n);
