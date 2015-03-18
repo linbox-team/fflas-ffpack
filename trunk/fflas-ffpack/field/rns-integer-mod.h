@@ -35,7 +35,7 @@
 #define __FFPACK_rns_integer_mod_H
 
 #include <vector>
-#include <cmath> 
+#include <cmath>
 // extern "C" {
 // 	#include <quadmath.h>
 // }
@@ -51,7 +51,7 @@
 #include "fflas-ffpack/fflas/fflas_level2.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
 #include "fflas-ffpack/fflas/fflas_fscal_mp.inl"
- 
+
 #if defined(BENCH_PERF_FGEMM_MP) || defined(BENCH_PERF_TRSM_MP) || defined(BENCH_PERF_LQUP_MP)
 #define BENCH_PERF_SCAL_MP
 #define BENCH_MODP
@@ -70,7 +70,7 @@ namespace FFPACK {
 		typedef typename RNS::BasisElement BasisElement;
 		typedef Givaro::Modular<BasisElement> ModField;
 		typedef Givaro::Integer integer;
-		
+
 		integer                              _p;
 		std::vector<BasisElement>       _Mi_modp_rns;
 		std::vector<BasisElement>       _iM_modp_rns;
@@ -81,7 +81,7 @@ namespace FFPACK {
 		Element                one, mOne,zero;
 
 #ifdef BENCH_MODP
-		mutable double t_modp, t_igemm, t_scal,t_trsm; 
+		mutable double t_modp, t_igemm, t_scal,t_trsm;
 		mutable size_t n_modp;
 #endif
 
@@ -115,7 +115,7 @@ namespace FFPACK {
 
 		const rns_double& rns() const {return *_rns;}
 		const RNSInteger<RNS>& delayed() const {return _RNSdelayed;}
-		
+
 		size_t size() const {return _rns->_size;}
 
 		bool isOne(const Element& x) const {
@@ -135,7 +135,7 @@ namespace FFPACK {
 		bool isZero(const Element& x) const {
 			//write(std::cout,x)<<" == ";
 			//write(std::cout,zero)<<std::endl;
-			integer t1; 
+			integer t1;
 			t1=convert(t1,x)%_p;
 			//std::cout<<"t1="<<t1<<std::endl;
 			bool iszero=true;
@@ -184,7 +184,7 @@ namespace FFPACK {
 			return reduce (x, y);
 		}
 
-       
+
 		Givaro::Integer convert(Givaro::Integer& x, const Element& y)const {
 			_rns->convert(1,1,integer(0),&x,1,y._ptr,y._stride);
 			return x;
@@ -215,7 +215,7 @@ namespace FFPACK {
 		Element& neg(Element& x, const Element& y) const {
 			for(size_t i=0;i<_rns->_size;i++)
 				_rns->_field_rns[i].neg((x._ptr)[i*x._stride],
-							(y._ptr)[i*y._stride]);						
+							(y._ptr)[i*y._stride]);
 			return x;
 		}
 
@@ -269,7 +269,7 @@ namespace FFPACK {
 		void reduce_modp(size_t n, Element_ptr B) const{
 #ifdef BENCH_MODP
 			FFLAS::Timer chrono; chrono.start();
-#endif			
+#endif
 			size_t _size= _rns->_size;
 			BasisElement *Gamma, *alpha, *A;
 			A=B._ptr;
@@ -283,16 +283,16 @@ namespace FFPACK {
 			//	FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i*rda, 1, Gamma+i*n,1);
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,n), 1);
-			
+
 			// compute A = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
-			
+
 			//std::cout<<"fgemv (Y)...";
 			//std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
 			// compute alpha = _invbase.Gamma
 			FFLAS::fgemv(D,FFLAS::FflasTrans, _size, n, D.one, Gamma, n, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
 			//std::cout<<"done"<<std::endl;
-                        			
+
 			// compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
 			for(size_t i=0;i<_size;i++){
 				for(size_t j=0;j<n;j++){
@@ -328,7 +328,7 @@ namespace FFPACK {
 			c<<"***********************"<<std::endl;
 			return c << std::endl;
 		}
-		
+
 		void reduce_modp(size_t m, size_t n, Element_ptr B, size_t lda) const{
 #ifdef BENCH_MODP
 			FFLAS::Timer chrono; chrono.start();
@@ -348,18 +348,18 @@ namespace FFPACK {
 			//	FFLAS::fscal(_rns->_field_rns[i], m, n, _rns->_MMi[i], A+i*rda, lda, Gamma+i*mn,n);
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, m, n, mmi, B, lda, typename RNS::Element_ptr(Gamma,mn), n);
-			
+
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			Givaro::UnparametricRing<BasisElement> D;
-		
+
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
 
 			//write_matrix(std::cout,Gamma, mn, _size, mn);
-					
+
 			// compute alpha = _invbase.Gamma
 			//std::cout<<"fgemv (X)..."<<m<<"x"<<n<<" -> "<<_size<<"  "<<lda<<endl;;
 			FFLAS::fgemv(D, FFLAS::FflasTrans, _size, mn, D.one, Gamma, mn, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-			//std::cout<<"done"<<std::endl; 
+			//std::cout<<"done"<<std::endl;
 
 			// compute A=((Gamma--(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
  			for(size_t k=0;k<_size;k++){
@@ -369,7 +369,7 @@ namespace FFPACK {
 						A[j+i*lda+k*rda]= z[j+i*n+k*mn]-_iM_modp_rns[aa+k*_size];
 					}
 			}
-			
+
 			// reduce each row of A modulo m_i
 			for (size_t i=0;i<_size;i++)
 				FFLAS::freduce (_rns->_field_rns[i], m, n, A+i*rda, lda);
@@ -382,7 +382,7 @@ namespace FFPACK {
 #endif
 		}
 
-#ifdef __DLP_CHALLENGE		
+#ifdef __DLP_CHALLENGE
 		void reduce_modp_rnsmajor_scal(size_t n, Element_ptr B) const {
 			std::cout << "modp scalar" << std::endl;
 			size_t _size= _rns->_size;
@@ -392,7 +392,7 @@ namespace FFPACK {
 			A=B._ptr;
 			Givaro::UnparametricRing<BasisElement> D;
 			FFLAS::Timer T;
-			
+
             Gamma = FFLAS::fflas_new(D,n,1);
             for(size_t i = 0 ; i < n; ++i){
             	// Compute Gamma
@@ -400,12 +400,12 @@ namespace FFPACK {
                 	Gamma[k] = A[i*_size+k]*_rns->_MMi[k];
                     Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
 					if(Gamma[k] >= _rns->_basis[k]){
-						Gamma[k] -= _rns->_basis[k]; 
+						Gamma[k] -= _rns->_basis[k];
 					}else if(Gamma[k] < 0){
-						Gamma[k] += _rns->_basis[k]; 
+						Gamma[k] += _rns->_basis[k];
 					}
                 }
-                
+
                 // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
                 // Mul by Mi_modp
                 for(size_t k = 0 ; k < _size ; ++k){
@@ -438,7 +438,7 @@ namespace FFPACK {
 			size_t _size= _rns->_size;
 
 			// A=B._ptr;
-			Givaro::UnparametricRing<BasisElement> D;		
+			Givaro::UnparametricRing<BasisElement> D;
 #pragma omp parallel for schedule(static, 32)
             for(size_t i = 0 ; i < n; ++i){
             	__int128_t *A;
@@ -450,9 +450,9 @@ namespace FFPACK {
                 	Gamma[k] = B._ptr[i*_size+k]*_rns->_MMi[k];
                     Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
 					if(Gamma[k] >= _rns->_basis[k]){
-						Gamma[k] -= _rns->_basis[k]; 
+						Gamma[k] -= _rns->_basis[k];
 					}else if(Gamma[k] < 0){
-						Gamma[k] += _rns->_basis[k]; 
+						Gamma[k] += _rns->_basis[k];
 					}
                 }
                 // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
@@ -485,7 +485,7 @@ namespace FFPACK {
             }
             // _rns->reduce(n,A,1,true);
 		}
-#endif // __DLP_CHALLENGE		
+#endif // __DLP_CHALLENGE
 
 		void reduce_modp_rnsmajor(size_t n, Element_ptr B) const{
 			// std::cout << "modp BLAS" << std::endl;
@@ -504,7 +504,7 @@ namespace FFPACK {
                         // std::cout << "Alloc: " << T << std::endl;
                         // compute Gamma (NOT EFFICIENT)
                         //for(size_t i=0;i<_size;i++)
-                        // 
+                        //
 			       // FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
                         T.start();
 #ifdef __FFLASFFPACK_USE_SIMD
@@ -514,21 +514,21 @@ namespace FFPACK {
                        if(((int64_t)A%simd::alignment == 0) && (_size%simd::vect_size==0)){
                         	auto MMi = _rns->_MMi.data();
                         	for(size_t i = 0 ; i < n ; ++i){
-                        		vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+                        		vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv_, neg_;
                         		size_t k = 0;
                         		for( ; k < ROUND_DOWN(_size, simd::vect_size) ; k+=simd::vect_size){
                         			basis = simd::load(_rns->_basis.data()+k);
-						inv   = simd::load(_rns->_invbasis.data()+k);
+						inv_  = simd::load(_rns->_invbasis.data()+k);
 						max   = simd::load(_rns->_basisMax.data()+k);
-						neg   = simd::load(_rns->_negbasis.data()+k);
-						vA1  = simd::load(A+i*_size+k);
-                        			vMi1 = simd::load(MMi+k);
-                        			v = simd::mul(vA1, vMi1);
-                        			tmp1  = simd::floor(simd::mul(v, inv));				
+						neg_  = simd::load(_rns->_negbasis.data()+k);
+						vA1   = simd::load(A+i*_size+k);
+                        			vMi1  = simd::load(MMi+k);
+                        			v     = simd::mul(vA1, vMi1);
+                        			tmp1  = simd::floor(simd::mul(v, inv_));
 						tmp2  = simd::fnmadd(v, tmp1, basis);
 						tmp1  = simd::greater(tmp2, max);
 						tmp3  = simd::lesser(tmp2, simd::zero());
-						tmp1  = simd::vand(tmp1, neg);
+						tmp1  = simd::vand(tmp1, neg_);
 						tmp3  = simd::vand(tmp3, basis);
 						tmp1  = simd::vor(tmp1, tmp3);
 						tmp2  = simd::add(tmp2, tmp1);
@@ -536,23 +536,23 @@ namespace FFPACK {
                         		}
                         	}
                         }else{
-                        	vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+                        	vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv_, neg_;
                         	auto MMi = _rns->_MMi.data();
                         	for(size_t i = 0 ; i < n ; ++i){
                         		size_t k = 0;
                         		for( ; k < ROUND_DOWN(_size, simd::vect_size) ; k+=simd::vect_size){
                         			basis = simd::load(_rns->_basis.data()+k);
-									inv   = simd::load(_rns->_invbasis.data()+k);
+									inv_  = simd::load(_rns->_invbasis.data()+k);
 									max   = simd::load(_rns->_basisMax.data()+k);
-									neg   = simd::load(_rns->_negbasis.data()+k);                        			
+									neg_  = simd::load(_rns->_negbasis.data()+k);
                         			vA1 = simd::loadu(A+i*_size+k);
                         			vMi1 = simd::loadu(MMi+k);
                         			v = simd::mul(vA1, vMi1);
-                        			tmp1  = simd::floor(simd::mul(v, inv));				
+                        			tmp1  = simd::floor(simd::mul(v, inv_));
 						tmp2  = simd::fnmadd(v, tmp1, basis);
 						tmp1  = simd::greater(tmp2, max);
 						tmp3  = simd::lesser(tmp2, simd::zero());
-						tmp1  = simd::vand(tmp1, neg);
+						tmp1  = simd::vand(tmp1, neg_);
 						tmp3  = simd::vand(tmp3, basis);
 						tmp1  = simd::vor(tmp1, tmp3);
 						tmp2  = simd::add(tmp2, tmp1);
@@ -562,9 +562,9 @@ namespace FFPACK {
                         			Gamma[i*_size+k] = A[i*_size+k]*MMi[k];
                         			Gamma[i*_size+k] -= std::floor(Gamma[i*_size+k]*_rns->_invbasis[k])*_rns->_basis[k];
 						if(Gamma[i*_size+k] >= _rns->_basis[k]){
-							Gamma[i*_size+k] -= _rns->_basis[k]; 
+							Gamma[i*_size+k] -= _rns->_basis[k];
 						}else if(Gamma[i*_size+k] < 0){
-							Gamma[i*_size+k] += _rns->_basis[k]; 
+							Gamma[i*_size+k] += _rns->_basis[k];
 						}
                         		}
                         	}
@@ -573,11 +573,11 @@ namespace FFPACK {
 #else
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,1), 1);
-#endif	
+#endif
 					T.stop();
 					// std::cout << "Gamma: " << T << std::endl;
-			
-			
+
+
                         // compute A = Gamma._Mi_modp_rns^T (note must be reduced mod m_i, but this is postpone to the end)
 					T.start();
                         FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
@@ -612,7 +612,7 @@ namespace FFPACK {
                         T.stop();
 					// std::cout << "last: " << T << std::endl;
 					T.start();
-                        // reduce each column of A modulo m_i 
+                        // reduce each column of A modulo m_i
 					_rns->reduce(n,A,1,true);
 					T.stop();
 					// std::cout << "reduce: "<< T << std::endl;

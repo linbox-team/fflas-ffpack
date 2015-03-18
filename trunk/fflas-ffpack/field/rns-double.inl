@@ -54,7 +54,7 @@ namespace FFPACK {
 				size_t l=0;
 				//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
-				
+
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]=  m0_ptr[l];
@@ -80,7 +80,7 @@ namespace FFPACK {
 		}
 
 		reduce(mn,Arns,rda,RNS_MAJOR);
-		
+
 		FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
@@ -95,8 +95,8 @@ namespace FFPACK {
 							std::cout<<((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
 								 <<" != "
 								 <<(long) Arns[i*n+j+k*rda]
-								 <<std::endl;							      
-						}						
+								 <<std::endl;
+						}
 				}
 		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
@@ -146,7 +146,7 @@ namespace FFPACK {
 			//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 		}
 		reduce(mn,Arns,rda,RNS_MAJOR);
-		
+
 		FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
@@ -175,7 +175,7 @@ namespace FFPACK {
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
-		
+
 		if (RNS_MAJOR==false)
 			// compute A_beta = Ap^T x M_beta
 			cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm);
@@ -198,8 +198,8 @@ namespace FFPACK {
 		m1_d = m1[0]->_mp_d;
 		m2_d = m2[0]->_mp_d;
 		m3_d = m3[0]->_mp_d;
-		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
-		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) (k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) (k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
 		for(size_t i=0;i<m;i++)
 			for (size_t j=0;j<n;j++){
 				size_t idx=i*n+j;
@@ -244,7 +244,7 @@ namespace FFPACK {
 		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size = m3[0]->_mp_size  = 0;
 		FFLAS::fflas_delete( A_beta);
 
-#ifdef CHECK_RNS 
+#ifdef CHECK_RNS
 		bool ok=true;
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
@@ -288,8 +288,8 @@ namespace FFPACK {
 		m1_d = m1[0]->_mp_d;
 		m2_d = m2[0]->_mp_d;
 		m3_d = m3[0]->_mp_d;
-		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
-		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = k4*8/sizeof(mp_limb_t); // to ensure 32 bits portability
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int32_t)(k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int32_t)(k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
 		for (size_t j=0;j<n;j++)
 			for(size_t i=0;i<m;i++){
 
@@ -351,11 +351,11 @@ namespace FFPACK {
 	// reduce entries of Arns to be less than the rns basis elements
 	void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
-		if (RNS_MAJOR) {		
+		if (RNS_MAJOR) {
 #ifdef __FFLASFFPACK_USE_SIMD
 			using simd = Simd<double>;
 			using vect_t = typename simd::vect_t;
-		
+
 			if(_size % simd::vect_size == 0){
 				for(size_t i = 0 ; i < n ; i++){
 					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
@@ -365,7 +365,7 @@ namespace FFPACK {
 						max   = simd::load(_basisMax.data()+j);
 						neg   = simd::load(_negbasis.data()+j);
 						v     = simd::load(Arns+i*_size+j);
-						tmp1  = simd::floor(simd::mul(v, inv));				
+						tmp1  = simd::floor(simd::mul(v, inv));
 						tmp2  = simd::fnmadd(v, tmp1, basis);
 						tmp1  = simd::greater(tmp2, max);
 						tmp3  = simd::lesser(tmp2, simd::zero());
@@ -386,7 +386,7 @@ namespace FFPACK {
 						max   = simd::load(_basisMax.data()+j);
 						neg   = simd::load(_negbasis.data()+j);
 						v     = simd::loadu(Arns+i*_size+j);
-						tmp1  = simd::floor(simd::mul(v, inv));				
+						tmp1  = simd::floor(simd::mul(v, inv));
 						tmp2  = simd::fnmadd(v, tmp1, basis);
 						tmp1  = simd::greater(tmp2, max);
 						tmp3  = simd::lesser(tmp2, simd::zero());
@@ -402,9 +402,9 @@ namespace FFPACK {
 						Arns[i*_size+j] -= std::floor(Arns[i*_size+j]*_invbasis[j])*_basis[j];
 						// Arns[i*_size+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
 						if(Arns[i*_size+j] >= _basis[j]){
-							Arns[i*_size+j] -= _basis[j]; 
+							Arns[i*_size+j] -= _basis[j];
 						}else if(Arns[i*_size+j] < 0){
-							Arns[i*_size+j] += _basis[j]; 
+							Arns[i*_size+j] += _basis[j];
 						}
 					}
 				}
@@ -423,12 +423,12 @@ namespace FFPACK {
 				FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
 
 		}
-		
+
 	}
 
-		
-	
-	
+
+
+
 } // FFPACK
 
 #endif // __FFLASFFPACK_field_rns_double_INL
