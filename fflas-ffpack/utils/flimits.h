@@ -34,80 +34,109 @@
 #include <limits>
 #include <type_traits>
 
+/*  bb: why not use standart types (u)int(X)_t and std::numeric limits ? what if long long == long  ? */
+
 template <class T> struct limits
 {
     constexpr inline static T max() noexcept {return 0;}
     constexpr inline static T min() noexcept {return 0;}
+
 };
 
 template <> struct limits<unsigned char> {
+	typedef unsigned char T ;
   constexpr inline static unsigned char max() noexcept { return UCHAR_MAX; }
   constexpr inline static unsigned char min() noexcept {return 0;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<signed char> {
+	typedef signed char T ;
   constexpr inline static signed char max() noexcept { return SCHAR_MAX; }
   constexpr inline static signed char min() noexcept { return SCHAR_MIN;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<char> {
+	typedef char T ;
   constexpr inline static char max() noexcept { return CHAR_MAX; }
   constexpr inline static char min() noexcept {return CHAR_MIN;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<unsigned short int> {
+	typedef unsigned short int T ;
   constexpr inline static unsigned short int max() noexcept {
     return USHRT_MAX;
   }
   constexpr inline static unsigned short int min() noexcept {return 0;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<short int> {
+	typedef short int T ;
   constexpr inline static short int max() noexcept { return SHRT_MAX; }
   constexpr inline static short int min() noexcept {return SHRT_MIN;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<unsigned int> {
+	typedef unsigned int T ;
   constexpr inline static unsigned int max() noexcept { return UINT_MAX; }
   constexpr inline static unsigned int min() noexcept {return 0;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<int> {
+	typedef int T ;
   constexpr inline static int max() noexcept { return INT_MAX; }
   constexpr inline static int min() noexcept {return INT_MIN;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<unsigned long> {
+	typedef unsigned  long T ;
   constexpr inline static unsigned long max() noexcept { return ULONG_MAX; }
   constexpr inline static unsigned long min() noexcept {return 0;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<long> {
+	typedef  long T ;
   constexpr inline static long max() noexcept { return LONG_MAX; }
   constexpr inline static long min() noexcept {return LONG_MIN;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<unsigned long long> {
+	typedef unsigned long long T ;
   constexpr inline static unsigned long long max() noexcept {
     return ULLONG_MAX;
   }
   constexpr inline static unsigned long long min() noexcept {return 0;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<long long> {
+	typedef long long T ;
   constexpr inline static long long max() noexcept { return LLONG_MAX; }
   constexpr inline static long long min() noexcept {return LLONG_MIN;}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<float> {
+	typedef float T ;
   constexpr inline static int32_t max() noexcept { return (1 << FLT_MANT_DIG) - 1; }
   constexpr inline static int32_t min() noexcept {return -((1 << FLT_MANT_DIG) - 1); }
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 template <> struct limits<double> {
+	typedef double T ;
   constexpr inline static int64_t max() noexcept {return (uint64_t(1) << DBL_MANT_DIG) - 1;
   }
   constexpr inline static int64_t min() noexcept {return -((uint64_t(1) << DBL_MANT_DIG) - 1);}
+    constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
 /*
