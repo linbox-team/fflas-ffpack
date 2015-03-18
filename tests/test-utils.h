@@ -137,7 +137,7 @@ namespace FFPACK {
 		/*  Create L, lower invertible */
 		for (size_t i=0 ; i<m ; ++i){
 			for (size_t j= 0; j<i ;++j) R.random( L[i*m+j] );
-			nzR.random( L[i*m+i] );			
+			nzR.random( L[i*m+i] );
 			for (size_t j= i+1; j<m ;++j) F.init(L[i*m+j],F.zero);
 		}
 
@@ -146,11 +146,11 @@ namespace FFPACK {
 			for (size_t j= 0 ; j<i ;++j) F.init(U[i*n+j],0UL);
 			nzR.random( U[i*n+i] );
 			for (size_t j= i+1; j<n ;++j) R.random( U[i*n+j] );
-		}			
+		}
 		for (size_t i=r ; i<m ; ++i)
 			for (size_t j= 0 ; j<n ;++j)
 				F.init(U[i*n+j],F.zero);
-		
+
 		/*  Create a random P,Q */
 		for (size_t i = 0 ; i < n ; ++i)
 			P[i] = i + RandInt(0UL,n-i);
@@ -195,13 +195,13 @@ namespace FFPACK {
 	size_t curr = 0;
 	std::vector<bool> rows(M,false);
 	std::vector<bool> cols(N,false);
-	int pivot_r[R];
-	int pivot_c[R];
+	size_t pivot_r[R];
+	size_t pivot_c[R];
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
 	FFPACK::NonzeroRandIter<Field,Randiter> nzR(F,RI);
 	while (curr<R){
-		int i,j;
+		size_t i,j;
 		while (rows [i = rand() % M]);
 		while (cols [j = rand() % N]);
 		rows[i] = true;
@@ -234,8 +234,8 @@ namespace FFPACK {
 		for (size_t j=i+1; j < N; ++j)
 			RI.random (U [i*N+j]);
 	}
-	
-	
+
+
 	typename Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
@@ -244,7 +244,7 @@ namespace FFPACK {
 	}
 	FFLAS::fflas_delete(L);
 	FFLAS::fflas_delete(U);
-	
+
 }
 	/*! @brief  Random Matrix with prescribed det.
 	 * @bug duplicate with linbox
@@ -340,12 +340,12 @@ namespace FFPACK {
 		FFLAS::fflas_delete( Q);
 
 		return A;
- 
+
 	}
 
 
 	template<typename Field>
-	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();} 
+	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();}
 	template<>
 	Givaro::Integer maxFieldElt<Givaro::UnparametricRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
 
@@ -381,6 +381,6 @@ namespace FFPACK {
 		else p=q;
 
 		return new Field(p);
-	}	
+	}
 } // FFPACK
 #endif
