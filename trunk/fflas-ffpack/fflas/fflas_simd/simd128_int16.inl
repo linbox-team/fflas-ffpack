@@ -309,7 +309,7 @@ template <> struct Simd128_impl<true, true, true, 2> {
     static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
         Converter conv;
         conv.v = a;
-        return conv.t[0] + conv.t[1] + conv.t[2] + conv.t[3] + conv.t[4] + conv.t[5] + conv.t[6] + conv.t[7];
+        return scalar_t(conv.t[0] + conv.t[1] + conv.t[2] + conv.t[3] + conv.t[4] + conv.t[5] + conv.t[6] + conv.t[7]);
     }
 
     static INLINE CONST vect_t round(const vect_t a) { return a; }

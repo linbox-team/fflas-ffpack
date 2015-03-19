@@ -13,25 +13,32 @@
 //
 #define DIVIDE_INTO(x,y) (((x) + (y) - 1))
 
-const int algos = 8 ;
+const int algos = 6 ;
+const int algos_k = 2 ;
+
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 using Givaro::Timer;
+using FFLAS::FieldTraits;
+typedef std::vector<Timer> time_v ;
+typedef std::vector<int> int_v ;
 
-const size_t selec[] = {
+const int selec[] = {
 	0
 	,1
 	,2
 	,3
 	,4
 	,5
-	,6
-	,7
-	// ,8
+};
+
+const int selec_k[] = {
+	0
+	,1
 };
 
 const char * descr[] = {
-	  "322 low mem"
+	"322 low mem"
 	, "322 first 1"
 	, "322 4 tmp  "
 	, "223 low mem"
@@ -40,6 +47,11 @@ const char * descr[] = {
 	, "comp left  "
 	, "comp right "
 	// , "322 sqrt   "
+};
+
+const char * descr_k[] = {
+	"comp left  "
+	, "comp right "
 };
 
 namespace FFLAS { /*  compression */
@@ -74,14 +86,15 @@ namespace FFLAS { /*  compression */
 
 	template<class wide_T>
 	void pack_word/*<wide_T,double,2>*/( double * packed,
-				     const wide_T * words, int32_t stride,
-				     Packer<double,2> & packer)
+					     const wide_T * words, int32_t stride,
+					     Packer<double,2> & packer)
 	{
+		// std::cout << "pack " << *words << '+' << *(words+stride) << " * " << (uint64_t) packer.base << " = ";
+		// words += stride ;
 		*packed = (double) *words ;
 		words += stride ;
 		packer.accu(packed,words);
-		words += stride ;
-		packer.accu(packed,words);
+		// std::cout << (uint64_t) *packed << std::endl;
 	}
 
 	/*  pack nb words (a,b) -> [a|b|0]  filling with zeros */
@@ -92,13 +105,13 @@ namespace FFLAS { /*  compression */
 
 	template<class wide_T>
 	void pack_word_part/* <wide_T,double,2> */( double * packed, int32_t nb,
-					  const wide_T * words, int32_t stride,
-					  Packer<double,2> & packer)
+						    const wide_T * words, int32_t stride,
+						    Packer<double,2> & packer)
 	{
 		assert(nb == 1);
 		*packed = (double) *words ;
-		words += stride ;
-		packer.accu(packed,words);
+		// words += stride ;
+		// packer.accu(packed,words);
 		*packed *= packer.base ;
 	}
 
@@ -113,15 +126,15 @@ namespace FFLAS { /*  compression */
 
 	template<class wide_T>
 	void unpack_word/* <wide_T,double,2> */( wide_T * words, int32_t stride,
-			  const double * packed,
-			  Packer<double ,2> & packer)
+						 const double * packed,
+						 Packer<double ,2> & packer)
 	{
-		words += stride ;
 		uint64_t pck = (uint64_t) *packed ;
-		*words = pck & packer.mask ;
+		words += stride ;
+		*words = (double) (pck & packer.mask) ;
 		words -= stride ;
 		pck >>= packer.bits ;
-		*words =  pck /*  & packer.mask  */ ;
+		*words = (double) pck /*  & packer.mask  */ ;
 	}
 
 
@@ -132,8 +145,8 @@ namespace FFLAS { /*  compression */
 
 	template<class wide_T>
 	void unpack_word_part/* <wide_T,double,2> */( wide_T * words, int32_t stride,
-			       const double * packed, int32_t nb,
-			       Packer<double,2> & packer)
+						      const double * packed, int32_t nb,
+						      Packer<double,2> & packer)
 	{
 		assert(nb == 1);
 		words += stride ;
@@ -141,7 +154,7 @@ namespace FFLAS { /*  compression */
 		words -= stride ;
 		uint64_t pck = (uint64_t) *packed ;
 		pck >>= packer.bits ;
-		*words =  pck /*  & packer.mask  */ ;
+		*words =  (double)pck /*  & packer.mask  */ ;
 	}
 
 	/* ****** */
@@ -158,7 +171,7 @@ namespace FFLAS { /*  compression */
 				const wide_T * e_p = elemts + i * ldm_e ;
 				pack_T * p_p = packed + i * ldm_p ;
 				int32_t j = 0 ;
-				for ( ; j < col_e/Nb ;  j+=Nb, e_p+=Nb, p_p++) {
+				for ( ; j < col_e/Nb*Nb ;  j+=Nb, e_p+=Nb, p_p++) {
 					pack_word<wide_T>(p_p,e_p,1,packer);
 
 				}
@@ -169,7 +182,7 @@ namespace FFLAS { /*  compression */
 		else { /*  col_packed */
 			int32_t i = 0 ;
 			int32_t ii = 0 ;
-			for ( ; i < row_e/Nb ;  i += Nb , ii++) {
+			for ( ; i < row_e/Nb*Nb ;  i += Nb , ii++) {
 				const wide_T * e_p = elemts + i * ldm_e ;
 				pack_T * p_p = packed + ii * ldm_p ;
 				for (int32_t j = 0 ; j < col_e ;  j++, e_p++, p_p++) {
@@ -190,14 +203,14 @@ namespace FFLAS { /*  compression */
 	template<class wide_T, class pack_T, int Nb, bool row_packed>
 	void unpack_matrix( wide_T * elemts, int32_t row_e, int32_t col_e, int32_t ldm_e,
 			    const pack_T * packed, int32_t row_p, int32_t col_p, int32_t ldm_p,
-			  Packer<pack_T,Nb> & packer)
+			    Packer<pack_T,Nb> & packer)
 	{
 		if (row_packed == true) {
 			for (int32_t i = 0 ; i < row_e ;  i++ ) {
 				wide_T * e_p = elemts + i * ldm_e ;
 				const pack_T * p_p = packed + i * ldm_p ;
 				int32_t j = 0 ;
-				for ( ; j < col_e/Nb ;  j+=Nb, e_p+=Nb, p_p++) {
+				for ( ; j < col_e/Nb*Nb ;  j+=Nb, e_p+=Nb, p_p++) {
 					unpack_word<wide_T>(e_p,1,p_p,packer);
 
 				}
@@ -208,7 +221,7 @@ namespace FFLAS { /*  compression */
 		else { /*  col_packed */
 			int32_t i = 0 ;
 			int32_t ii = 0 ;
-			for ( ; i < row_e/Nb ;  i += Nb , ii++) {
+			for ( ; i < row_e/Nb*Nb ;  i += Nb , ii++) {
 				wide_T * e_p = elemts + i * ldm_e ;
 				const pack_T * p_p = packed + ii * ldm_p ;
 				for (int32_t j = 0 ; j < col_e ;  j++, e_p++, p_p++) {
@@ -237,22 +250,18 @@ namespace FFLAS { /*  compression */
 		typedef typename Field::Element elem_t ;
 		Packer<elem_t,2> packer ;
 
-		int m_k, n_k, lda_k, ldb_k, ldc_k ;
+		int m_k = m , n_k = n , lda_k = lda, ldb_k = ldb, ldc_k = ldc ;
 		if (left_compress) {
 			m_k = DIVIDE_INTO(m,2)*2 ;
-			ldb_k = ldb ;
+			lda_k = m_k ;
 			ldc_k = n ;
+
 			A_k =  FFLAS::fflas_new<double>(m_k*k) ;
 			B_k = const_cast<typename Field::Element *>(B) ;
-			C_k = FFLAS::fflas_new<double>(m_k*n) ;
 
 			pack_matrix<elem_t,elem_t,2,false>(A_k,m_k,k,lda_k,
-			    A,m,k,lda,
-			    packer);
-
-			pack_matrix<elem_t,elem_t,2,false>(C_k,m_k,n,ldc_k,
-			    C,m,n,ldc,
-			    packer);
+							   A,m,k,lda,
+							   packer);
 		}
 		else {
 			n_k = DIVIDE_INTO(n,2)*2 ;
@@ -261,26 +270,73 @@ namespace FFLAS { /*  compression */
 
 			A_k = const_cast<typename Field::Element *>(A) ;
 			B_k = FFLAS::fflas_new<double>(k*n_k)  ;
-			C_k = FFLAS::fflas_new<double>(m*n_k) ;
 
 			pack_matrix<elem_t,elem_t,2,true>(B_k,k,n_k,ldb_k,
-			    B,k,n,ldb,
-			    packer);
-
-			pack_matrix<elem_t,elem_t,2,true>(C_k,m,n_k,ldc_k,
-			    C,m,n,ldc,
-			    packer);
+							  B,k,n,ldb,
+							  packer);
 		}
 
+		C_k = FFLAS::fflas_new<double>(m_k*n_k) ;
 
-		fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
-		      m_k,n_k,k, 1, A_k,lda, B_k,ldb_k, 0, C_k, ldc_k);
+		pack_matrix<elem_t,elem_t,2,!left_compress>(C_k,m_k,n_k,ldc_k,
+							    C,m,n,ldc,
+							    packer);
+
+#if 0
+		double * C_e = FFLAS::fflas_new<double>(m*ldc);
+		unpack_matrix<elem_t,elem_t,2,!left_compress>(C_e,m,n,ldc,
+							      C_k,m_k,n_k,ldc_k,
+							      packer);
+
+		int	faux = 0 ;
+		for (int i = 0 ; i < m ; ++i) {
+			for (int j = 0 ; j < n ; ++j) {
+				if (! (C[i*ldc+j] == C_e[i*ldc+j]) ) {
+					++faux ;
+				}
+			}
+		}
+		if (faux) {
+			std::cout << "bad pack/unpack ; bad/all = " << faux << '/' << m*n << " ~~  " << (double)faux/(double)(m*n) << std::endl;
+		}
+
+		if (faux && (n<20)) {
+			std::cout << "IN " << std::endl;
+			for (int i = 0 ; i < m ; ++i) {
+				for (int j = 0 ; j < n ; ++j)
+					std::cout << C[i*ldc+j] << ' ';
+				std::cout << std::endl;
+			}
+			std::cout << "OUT" << std::endl;
+			for (int i = 0 ; i < m ; ++i) {
+				for (int j = 0 ; j < n ; ++j)
+					std::cout << C_e[i*ldc+j] << ' ';
+				std::cout << std::endl;
+			}
+
+
+		}
+
+		if (faux)
+			exit(-1);
+#endif
+
+
+
+
+		Givaro::DoubleDomain G ;
+
+		fgemm(G,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
+		      m_k,n_k,k, 1, A_k,lda_k, B_k,ldb_k, 0, C_k, ldc_k);
 
 		unpack_matrix<elem_t,elem_t,2,!left_compress>(C,m,n,ldc,
-			      C_k,m_k,n_k,ldc_k,
-			      packer);
+							      C_k,m_k,n_k,ldc_k,
+							      packer);
 
-		FFLAS::fflas_delete(A_k);
+		if (left_compress)
+			FFLAS::fflas_delete(A_k);
+		else
+			FFLAS::fflas_delete(B_k);
 		FFLAS::fflas_delete(C_k);
 	}
 
@@ -1856,217 +1912,197 @@ namespace FFLAS { namespace Protected { namespace Rec {
 
 namespace FFLAS { namespace Protected {
 
-template<class Field>
-typename Field::Element *
-gemm_compress(const Field &F
-		, const size_t m
-		, const size_t n
-		, const size_t k
-		, const typename Field::Element *A
-		, const size_t lda
-		, const typename Field::Element *B
-		, const size_t ldb
-		, typename Field::Element *C
-		, const size_t ldc
-		, int rec
-		, size_t algo
-	       )
-{
+	template<class Field>
+	typename Field::Element *
+	gemm_bini_p(const Field &F
+		    , const size_t m
+		    , const size_t n
+		    , const size_t k
+		    , const typename Field::Element *A
+		    , const size_t lda
+		    , const typename Field::Element *B
+		    , const size_t ldb
+		    , typename Field::Element *C
+		    , const size_t ldc
+		    , int rec
+		    , size_t algo
+		   )
+	{
 
-	assert(k/6*6==k); // k divisible par 6
-	assert(n/6*6==n); // n divisible par 6
-	assert(m/6*6==m); // m divisible par 6
+		assert(k/6*6==k); // k divisible par 6
+		assert(n/6*6==n); // n divisible par 6
+		assert(m/6*6==m); // m divisible par 6
 
-	// e-formule
-	double epsilon = (double) F.characteristic() ;
-	switch(algo) {
-	case 0 :
-		Rec::gemm_bini_322_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		FFLAS::finit_fuzzy(F,m,n,C,ldc);
-		// FFLAS::finit(F,m,n,C,ldc);
-		break;
-	case 1 :
-		Rec::gemm_bini_322_0(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		FFLAS::finit_fuzzy(F,m,n,C,ldc);
-		// FFLAS::finit(F,m,n,C,ldc);
-		break;
-	case 2 :
-		Rec::gemm_bini_322_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		FFLAS::finit_fuzzy(F,m,n,C,ldc);
-		break;
-	case 3 :
-		Rec::gemm_bini_223_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		FFLAS::finit_fuzzy(F,m,n,C,ldc);
-		// FFLAS::finit(F,m,n,C,ldc);
-		break;
-	case 4 :
-		Rec::gemm_bini_232_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		FFLAS::finit_fuzzy(F,m,n,C,ldc);
-		break;
-	case 5 :
-		Rec::gemm_bini_232_3(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		FFLAS::finit_fuzzy(F,m,n,C,ldc);
-		break;
-	case 6 :
-		 fgemm_compressed<Field,true>(F,m,n,k,A,lda,B,ldb,C,ldc);
-		 FFLAS::freduce(F,m,n,C,ldc);
-		 break;
-	case 7 :
-		 fgemm_compressed<Field,false>(F,m,n,k,A,lda,B,ldb,C,ldc);
-		 FFLAS::freduce(F,m,n,C,ldc);
-		 break;
+		// e-formule
+		double epsilon = (double) F.characteristic() ;
+		switch(algo) {
+		case 0 :
+			Rec::gemm_bini_322_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			FFLAS::finit_fuzzy(F,m,n,C,ldc);
+			// FFLAS::finit(F,m,n,C,ldc);
+			break;
+		case 1 :
+			Rec::gemm_bini_322_0(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			FFLAS::finit_fuzzy(F,m,n,C,ldc);
+			// FFLAS::finit(F,m,n,C,ldc);
+			break;
+		case 2 :
+			Rec::gemm_bini_322_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			FFLAS::finit_fuzzy(F,m,n,C,ldc);
+			break;
+		case 3 :
+			Rec::gemm_bini_223_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			FFLAS::finit_fuzzy(F,m,n,C,ldc);
+			// FFLAS::finit(F,m,n,C,ldc);
+			break;
+		case 4 :
+			Rec::gemm_bini_232_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			FFLAS::finit_fuzzy(F,m,n,C,ldc);
+			break;
+		case 5 :
+			Rec::gemm_bini_232_3(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			FFLAS::finit_fuzzy(F,m,n,C,ldc);
+			break;
 #if 0
-	case 8 : {
-			 double epsilon2 = sqrt((double)epsilon);
-			 std::cout << epsilon2 << std::endl;
-			 Rec::gemm_bini_322_sqrt(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon2);
-			 // FFLAS::finit_fuzzy(F,m,n,C,ldc);
-			 for(size_t i = 0  ; i < m ; ++i) {
-				 for(size_t j = 0  ; j < n ; ++j)
-					 C[i*ldc+j] = rint(fmod(C[i*ldc+j],epsilon2));
+		case 8 : {
+				 double epsilon2 = sqrt((double)epsilon);
+				 std::cout << epsilon2 << std::endl;
+				 Rec::gemm_bini_322_sqrt(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon2);
+				 // FFLAS::finit_fuzzy(F,m,n,C,ldc);
+				 for(size_t i = 0  ; i < m ; ++i) {
+					 for(size_t j = 0  ; j < n ; ++j)
+						 C[i*ldc+j] = rint(fmod(C[i*ldc+j],epsilon2));
+				 }
+				 break;
 			 }
-			 break;
-		 }
 #endif
-	default :
-		 std::cout << " not an algo :" << algo << std::endl;;
-		 exit(-1);
+		default :
+			 std::cout << " not an algo :" << algo << std::endl;;
+			 exit(-1);
+		}
+
+
+
+		return C;
+
 	}
 
+	template<class Field>
+	typename Field::Element *
+	gemm_bini_e(const Field &F
+		    , const size_t m
+		    , const size_t n
+		    , const size_t k
+		    , const typename Field::Element *A
+		    , const size_t lda
+		    , const typename Field::Element *B
+		    , const size_t ldb
+		    , typename Field::Element *C
+		    , const size_t ldc
+		    , int rec
+		    , size_t algo
+		   )
+	{
+
+		assert(k/2*2==k); // k divisible par 2
+		assert(n/2*2==n); // n divisible par 2
+		assert(m/3*3==m); // m divisible par 3
+
+		// e-formule
+		double epsilon = 1./(1<<27);
+		switch(algo) {
+		case 0 :
+			Rec::gemm_bini_322_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			break;
+		case 1 :
+			Rec::gemm_bini_322_0(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			break;
+		case 2 :
+			Rec::gemm_bini_322_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			break;
+		case 3 :
+			Rec::gemm_bini_223_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			break;
+		case 4 :
+			Rec::gemm_bini_232_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			break;
+		case 5 :
+			Rec::gemm_bini_232_3(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
+			break;
+		default :
+			std::cout << " not an algo :" << algo << std::endl;;
+			exit(-1);
+		}
 
 
-	return C;
+		// vire les e.
+		// FFLAS::finit_fuzzy(F,m,n,C,ldc);
+		FFLAS::finit_fuzzy(F,m,n,C,ldc);
 
-}
+		return C;
 
-template<class Field>
-typename Field::Element *
-gemm_bini_322_e(const Field &F
-		, const size_t m
-		, const size_t n
-		, const size_t k
-		, const typename Field::Element *A
-		, const size_t lda
-		, const typename Field::Element *B
-		, const size_t ldb
-		, typename Field::Element *C
-		, const size_t ldc
-		, int rec
-		, size_t algo
-	       )
-{
-
-	assert(k/2*2==k); // k divisible par 2
-	assert(n/2*2==n); // n divisible par 2
-	assert(m/3*3==m); // m divisible par 3
-
-	// e-formule
-	double epsilon = 1./(1<<27);
-	switch(algo) {
-	case 0 :
-		Rec::gemm_bini_322_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		break;
-	case 1 :
-		Rec::gemm_bini_322_0(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		break;
-	case 2 :
-		Rec::gemm_bini_322_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		break;
-	case 3 :
-		Rec::gemm_bini_223_mem(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		break;
-	case 4 :
-		Rec::gemm_bini_232_2(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		break;
-	case 5 :
-		Rec::gemm_bini_232_3(F,m,n,k,A,lda,B,ldb,C,ldc,rec,epsilon);
-		break;
-	default :
-		std::cout << " not an algo :" << algo << std::endl;;
-		exit(-1);
 	}
 
+	template<class Field>
+	typename Field::Element *
+	gemm_compress(const Field &F
+		      , const size_t m
+		      , const size_t n
+		      , const size_t k
+		      , const typename Field::Element *A
+		      , const size_t lda
+		      , const typename Field::Element *B
+		      , const size_t ldb
+		      , typename Field::Element *C
+		      , const size_t ldc
+		      , int rec
+		      , size_t algo
+		     )
+	{
 
-	// vire les e.
-	// FFLAS::finit_fuzzy(F,m,n,C,ldc);
-	FFLAS::finit_fuzzy(F,m,n,C,ldc);
+		assert(k/6*6==k); // k divisible par 6
+		assert(n/6*6==n); // n divisible par 6
+		assert(m/6*6==m); // m divisible par 6
 
-	return C;
+		switch(algo) {
+		case 0 :
+			fgemm_compressed<Field,true>(F,(int)m,(int)n,(int)k,A,(int)lda,B,(int)ldb,C,(int)ldc);
+			FFLAS::freduce(F,m,n,C,ldc);
+			break;
+		case 1 :
+			fgemm_compressed<Field,false>(F,(int)m,(int)n,(int)k,A,(int)lda,B,(int)ldb,C,(int)ldc);
+			FFLAS::freduce(F,m,n,C,ldc);
+			break;
+		default :
+			std::cout << " not an algo :" << algo << std::endl;;
+			exit(-1);
+		}
 
-}
+
+
+		return C;
+
+	}
+
 } // Protected
 } // FFLAS
 
 template<class Field>
-void test_algo(const Field &F, size_t m, size_t n, size_t k
-	       , const typename Field::Element * A, size_t lda
-	       , const typename Field::Element * B, size_t ldb
-	       , typename Field::Element * C, size_t ldc
-	       , typename Field::Element * D, size_t ldd
-	       , typename Field::Element * E, size_t lde
-	       , int r, size_t algo, FFLAS::Timer & tim_e
-	       , FFLAS::Timer & tim_p, FFLAS::Timer & tom
-	       , int & ok_e, int & ok_p,
-	       bool with_e)
+void check_equal(const Field & F,int m,int n,
+		 typename Field::Element * D,int ldd,
+		 typename Field::Element * E,int lde,
+		 const char * nomalgo, const char * madescr, int & ok_p)
 {
- FFLAS::Timer tmp ;
-
-	if (with_e) {
-	tmp.clear();tmp.start();
-	FFLAS::Protected::gemm_bini_322_e(F,m,n,k,A,k,B,n,C,n,r,algo);
-	tmp.stop(); tim_e += tmp ;
-	}
-
-
-	tmp.clear();tmp.start();
-	fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
-	      m,n,k, 1, A,k, B,n, 0, D, n);
-	tmp.stop(); tom += tmp ;
-
-	tmp.clear();tmp.start();
-	FFLAS::Protected::gemm_compress(F,m,n,k,A,k,B,n,E,n,r,algo);
-	tmp.stop(); tim_p += tmp ;
-
-	size_t faux = 0 ;
-
-	if (with_e) {
-		for (size_t i = 0 ; i < m ; ++i) {
-			for (size_t j = 0 ; j < n ; ++j) {
-				if (!F.areEqual(C[i*n+j],D[i*n+j])) {
-					++faux ;
-				}
-			}
-		}
-		if (faux) {
-			std::cout << "bini_e " << descr[algo] << " : bad/all = " << faux << '/' << m*n << " ~~  " << (double)faux/(double)(m*n) << std::endl;
-		}
-		else ok_e ++ ;
-
-
-#if 1
-		if (faux && (n<20)) {
-			std::cout << "Diff" << std::endl;
-			for (size_t i = 0 ; i < m ; ++i) {
-				for (size_t j = 0 ; j < n ; ++j)
-					std::cout << C[i*n+j]-D[i*n+j] << ' ';
-				std::cout << std::endl;
-			}
-		}
-
-#endif
-	}
-
-
-	faux = 0 ;
-	for (size_t i = 0 ; i < m ; ++i) {
-		for (size_t j = 0 ; j < n ; ++j) {
-			if (!F.areEqual(D[i*n+j],E[i*n+j])) {
+	int faux = 0 ;
+	for (int i = 0 ; i < m ; ++i) {
+		for (int j = 0 ; j < n ; ++j) {
+			if (!F.areEqual(D[i*ldd+j],E[i*lde+j])) {
 				++faux ;
 			}
 		}
 	}
 	if (faux) {
-		std::cout << "bini_p " << descr[algo] << " : bad/all = " << faux << '/' << m*n << " ~~  " << (double)faux/(double)(m*n) << std::endl;
+		std::cout << nomalgo << " " << madescr << " : bad/all = " << faux << '/' << m*n << " ~~  " << (double)faux/(double)(m*n) << std::endl;
 	}
 	else ok_p ++ ;
 
@@ -2074,27 +2110,94 @@ void test_algo(const Field &F, size_t m, size_t n, size_t k
 #if 1
 	if (faux && (n<20)) {
 		std::cout << "OK" << std::endl;
-		for (size_t i = 0 ; i < m ; ++i) {
-			for (size_t j = 0 ; j < n ; ++j)
-				std::cout << D[i*n+j] << ' ';
+		for (int i = 0 ; i < m ; ++i) {
+			for (int j = 0 ; j < n ; ++j)
+				std::cout << D[i*ldd+j] << ' ';
 			std::cout << std::endl;
 		}
 		std::cout << "KO" << std::endl;
-		for (size_t i = 0 ; i < m ; ++i) {
-			for (size_t j = 0 ; j < n ; ++j)
-				std::cout << E[i*n+j] << ' ';
+		for (int i = 0 ; i < m ; ++i) {
+			for (int j = 0 ; j < n ; ++j)
+				std::cout << E[i*lde+j] << ' ';
 			std::cout << std::endl;
 		}
 
 
 		std::cout << "Diff" << std::endl;
-		for (size_t i = 0 ; i < m ; ++i) {
-			for (size_t j = 0 ; j < n ; ++j)
-				std::cout << D[i*n+j]-E[i*n+j] << ' ';
+		for (int i = 0 ; i < m ; ++i) {
+			for (int j = 0 ; j < n ; ++j)
+				std::cout << D[i*ldd+j]-E[i*lde+j] << ' ';
 			std::cout << std::endl;
 		}
 	}
 #endif
+}
+
+
+template<class Field>
+void test_algos(const Field &F, int m, int n, int k
+	       , const typename Field::Element * A, int lda
+	       , const typename Field::Element * B, int ldb
+	       , int r
+	       , time_v & tim_k, time_v & tim_e , time_v & tim_p
+	       , FFLAS::Timer & tom
+	       , int_v & ok_k, int_v & ok_e, int_v & ok_p
+	       , bool with_e
+	       , bool with_k
+	      )
+{
+	FFLAS::Timer tmp ;
+	typedef typename Field::Element Element;
+
+	Element * D = FFLAS::fflas_new<Element>(m*n);
+	Element * C = FFLAS::fflas_new<Element>(m*n);
+
+	tmp.clear();tmp.start();
+	fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
+	      m,n,k, 1, A,k, B,n, 0, D, n);
+	tmp.stop(); tom += tmp ;
+
+	/*  bini_p */
+	if (with_e) {
+		for (int algo = 0 ; algo < algos ; ++algo) {
+			tmp.clear();tmp.start();
+			FFLAS::Protected::gemm_bini_e(F,m,n,k,A,k,B,n,C,n,r,selec[algo]);
+			tmp.stop(); tim_e[algo] += tmp ;
+
+			/*  checking  */
+			check_equal(F,m,n,D,n,C,n,"bini_e",descr[algo],ok_e[algo]) ;
+		}
+	}
+
+	/*  compress */
+	if (with_k && std::is_same<typename FieldTraits<Field>::category,FFLAS::FieldCategories::ModularTag>::value && (! FieldTraits<Field>::balanced)) {
+		std::cout << "xxx" << std::endl;
+		for (int algo = 0 ; algo < algos_k ; ++algo) {
+			tmp.clear();tmp.start();
+			FFLAS::Protected::gemm_compress(F,m,n,k,A,k,B,n,C,n,r,selec_k[algo]);
+			tmp.stop(); tim_k[algo] += tmp ;
+
+			/*  checking  */
+			check_equal(F,m,n,D,n,C,n,"compress",descr_k[algo],ok_k[algo]) ;
+
+
+		}
+	}
+
+	/*  bini_p */
+	for (int algo = 0 ; algo < algos ; ++algo) {
+		tmp.clear();tmp.start();
+		FFLAS::Protected::gemm_bini_p(F,m,n,k,A,k,B,n,C,n,r,selec[algo]);
+		tmp.stop(); tim_p[algo] += tmp ;
+
+		/*  checking  */
+		check_equal(F,m,n,D,n,C,n,"bini_p",descr[algo],ok_p[algo]) ;
+
+
+	}
+
+	FFLAS::fflas_delete(C);
+	FFLAS::fflas_delete(D);
 }
 
 template<class T>
@@ -2104,25 +2207,53 @@ struct changeField {
 
 template<>
 struct changeField<Modular<double> > {
-typedef Givaro::Modular<float> other;
+	typedef Givaro::Modular<float> other;
 };
 
 template<>
 struct changeField<ModularBalanced<double> > {
-typedef ModularBalanced<float> other;
+	typedef ModularBalanced<float> other;
 };
 
+double descrip(int algo, int_v & ok_e, time_v & tim_e, int iters, const char ** madescr, const char * nom)
+{
+	int min_e = -1 ;
+	double bini_e = -1 ;
+	for (int i = 0 ; i < algo ; ++i){
+		if (ok_e[i] == (int)iters) {
+			double bini1 = tim_e[i].usertime()/(double)ok_e[i] ;
+			if (bini_e <  0) {
+				bini_e = bini1;
+				min_e = (int) i ;
+			}
+			else if (bini1 < bini_e) {
+				min_e  = (int)i ;
+				bini_e = bini1 ;
+			}
+		}
+	}
+	for (int i = 0 ; i < algo ; ++i){
+		if (ok_e[i] == (int)iters) {
+			double bini1 = tim_e[i].usertime()/(double)ok_e[i] ;
+			std::cout << nom << " ( " << madescr[i] << " ) : " ;
+			if ((int)i == min_e) std::cout << " * " ;
+			else std::cout << "   ";
+			std::cout << bini1  << 's'<<  std::endl;
+		}
+	}
+
+	return bini_e ;
+}
+
+
 template<class Field>
-void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
+void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
 {
 
 	typedef typename Field::Element Element;
 
 	Element * A = FFLAS::fflas_new<Element>(m*k);
 	Element * B = FFLAS::fflas_new<Element>(n*k);
-	Element * C = FFLAS::fflas_new<Element>(m*n);
-	Element * D = FFLAS::fflas_new<Element>(m*n);
-	Element * E = FFLAS::fflas_new<Element>(m*n);
 
 
 	Field F(p);
@@ -2136,13 +2267,13 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 	Element_f * C_f = FFLAS::fflas_new<Element_f>(m*n);
 
 #if defined(NOTRANDOM)
-	size_t i0 ;
-	size_t j0 ;
-	Element p2 ; F.init(p2,(size_t)F.mOne/2);
+	int i0 ;
+	int j0 ;
+	Element p2 ; F.init(p2,(int)F.mOne/2);
 	std::cout << p2 << std::endl;
 #warning "not random"
-	for (size_t i = 0 ; i < m ; ++i)
-		for (size_t j = 0 ; j < k ; ++j) {
+	for (int i = 0 ; i < m ; ++i)
+		for (int j = 0 ; j < k ; ++j) {
 			i0 = i/(m/3);
 			j0 = j/(k/2);
 			if      (i0 == 0 and j0 == 0) A[i*k+j] = F.mOne ;
@@ -2153,8 +2284,8 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 			else if (i0 == 2 and j0 == 1) A[i*k+j] = F.mOne ;
 			else A[i*k+j] = F.mOne ;
 		}
-	for (size_t i = 0 ; i < k ; ++i)
-		for (size_t j = 0 ; j < n ; ++j) {
+	for (int i = 0 ; i < k ; ++i)
+		for (int j = 0 ; j < n ; ++j) {
 			i0 = i/(k/2);
 			j0 = j/(n/2);
 			if      (i0 == 0 and j0 == 0) B[i*n+j] = F.mOne ;
@@ -2166,22 +2297,23 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 		}
 #endif
 
-	std::vector<Timer> tim_e(algos);
-	std::vector<Timer> tim_p(algos);
- FFLAS::Timer tom; tom.clear();
- FFLAS::Timer tam; tam.clear();
- FFLAS::Timer tmp;
-	for (size_t i = 0 ; i < algos ; ++i) {
+	time_v tim_e(algos), tim_p(algos), tim_k(algos_k);
+	FFLAS::Timer tom; tom.clear();
+	FFLAS::Timer tam; tam.clear();
+	FFLAS::Timer tmp;
+	for (int i = 0 ; i < algos ; ++i) {
 		tim_e[i].clear();
 		tim_p[i].clear();
 	}
+	for (int i = 0 ; i < algos_k ; ++i) {
+		tim_k[i].clear();
+	}
 
-	size_t iters = 4 ;
+	int iters = 4 ;
 
-	std::vector<int> ok_p(algos,0);
-	std::vector<int> ok_e(algos,0);
+	int_v ok_p(algos,0),  ok_e(algos,0), ok_k(algos_k,0);
 
-	for (size_t b = 0 ; b < iters ; ++b) {
+	for (int b = 0 ; b < iters ; ++b) {
 		std::cout << b+1 << " of " << iters << std::endl;
 #if not defined(NOTRANDOM)
 		FFPACK::RandomMatrix(F,A,m,k,k);
@@ -2195,97 +2327,50 @@ void test(size_t m, size_t k, size_t n, size_t p, int r, bool with_e)
 		      m,n,k, 1, A_f,k, B_f,n, 0, C_f, n);
 		tmp.stop(); tam += tmp ;
 
-		for (size_t i = 0 ; i < algos ; ++i) {
-			// if (with_e && i < algos-1) {
-				// std::cout << "skiped e and algos " << algos - 1 << std::endl;
-				// continue;
-			// }
-			test_algo(F,m,n,k,A,k,B,n,C,n,D,n,E,n,r,selec[i],tim_e[i],tim_p[i],tom,ok_e[i],ok_p[i],with_e);
-		}
-
-
+		test_algos(F,m,n,k,A,k,B,n,r,
+			   tim_k,tim_e,tim_p,
+			   tom,
+			   ok_k,ok_e,ok_p,
+			   with_e,with_k);
 	}
 	std::cout  << std::endl << "results" << std::endl;
 
-	int min_e = -1 ;
-	double bini_e = -1 ;
-	for (size_t i = 0 ; i < algos ; ++i){
-		if (ok_e[i] == iters) {
-			double bini1 = tim_e[i].usertime()/(double)ok_e[i] ;
-			if (bini_e <  0) {
-				bini_e = bini1;
-				min_e = (int) i ;
-			}
-			else if (bini1 < bini_e) {
-				min_e  = (int)i ;
-				bini_e = bini1 ;
-			}
-		}
-	}
-	for (size_t i = 0 ; i < algos ; ++i){
-		if (ok_e[i] == iters) {
-		double bini1 = tim_e[i].usertime()/(double)ok_e[i] ;
-		std::cout << "Bini_e ( " << descr[i] << " ) : " ;
-		if ((int)i == min_e) std::cout << " * " ;
-		else std::cout << "   ";
-		std::cout << bini1  << 's'<<  std::endl;
-	}
-	}
-		int min_p = -1 ;
-		double bini_p = -1 ;
-		for (size_t i = 0 ; i < algos ; ++i){
-			if (ok_p[i] == iters) {
-				double bini1 = tim_p[i].usertime()/(double)ok_p[i];
-				if (bini_p <  0) {
-					bini_p = bini1;
-					min_p = (int)i ;
-				}
-				else if (bini1 < bini_p) {
-					min_p  = (int)i ;
-					bini_p = bini1 ;
-				}
-
-			}
-		}
-		for (size_t i = 0 ; i < algos ; ++i){
-			if (ok_p[i] == iters) {
-				double bini1 = tim_p[i].usertime()/(double)ok_p[i];
-				std::cout << "Bini_p ( " << descr[i] << " ) : " ;
-				if ((int)i == min_p) std::cout << " * " ;
-				else std::cout << "   ";
-				std::cout << bini1  << 's'<<  std::endl;
-			}
-		}
-
-		std::cout << "Wino d : " << tom.usertime()/(double)(iters*algos) << 's'<<  std::endl;
-		std::cout << "Wino f : " << tam.usertime()/(double)iters << 's'<<  std::endl;
-		double wino =  std::min(tom.usertime()/(double)algos,tam.usertime())/(double)iters ;
-		if (bini_e>=0)
-			std::cout << "Gain e: " << ((bini_e-wino)/wino)*100 << '%' << std::endl;
-		if (bini_p>=0)
-			std::cout << "Gain p: " << ((bini_p-wino)/wino)*100 << '%' << std::endl;
+	double bini_e = descrip(algos,ok_e,tim_e,iters,descr,"Bini_e");
+	double bini_p = descrip(algos,ok_p,tim_p,iters,descr,"Bini_p");
+	double bini_k = descrip(algos_k,ok_k,tim_k,iters,descr_k,"Bini_k");
 
 
 
-		FFLAS::fflas_delete( A );
-		FFLAS::fflas_delete( B);
-		FFLAS::fflas_delete( C);
-		FFLAS::fflas_delete( D);
-		FFLAS::fflas_delete( E);
+	std::cout << "Wino d : " << tom.usertime()/(double)(iters*algos) << 's'<<  std::endl;
+	std::cout << "Wino f : " << tam.usertime()/(double)iters << 's'<<  std::endl;
+	double wino =  std::min(tom.usertime()/(double)algos,tam.usertime())/(double)iters ;
+	if (bini_e>=0)
+		std::cout << "Gain e: " << ((bini_e-wino)/wino)*100 << '%' << std::endl;
+	if (bini_p>=0)
+		std::cout << "Gain p: " << ((bini_p-wino)/wino)*100 << '%' << std::endl;
+	if (bini_k>=0)
+		std::cout << "Gain k: " << ((bini_k-wino)/wino)*100 << '%' << std::endl;
 
-		FFLAS::fflas_delete( A_f );
-		FFLAS::fflas_delete( B_f);
-		FFLAS::fflas_delete( C_f);
-	}
+
+
+
+	FFLAS::fflas_delete( A );
+	FFLAS::fflas_delete( B);
+
+	FFLAS::fflas_delete( A_f );
+	FFLAS::fflas_delete( B_f);
+	FFLAS::fflas_delete( C_f);
+}
 
 
 
 int main(int ac, char **av) {
-	static size_t m = 36 ;
-	static size_t n = 12 ;
-	static size_t k = 18 ;
-	static size_t p = 101;
+	static int m = 36 ;
+	static int n = 12 ;
+	static int k = 18 ;
+	static int p = 101;
 	bool  eps = false ;
+	bool  kom = false ;
 	int r = 1 ;
 	int seed = (int) time(NULL);
 
@@ -2297,6 +2382,7 @@ int main(int ac, char **av) {
 		{ 'r', "-k N", "Set the recursive number Bini.", TYPE_INT , &r },
 		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
 		{ 'e', "-e " , "epsilon                 .", TYPE_NONE , &eps },
+		{ 'c', "-c " , "compress                .", TYPE_NONE , &kom},
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(ac,av,as);
@@ -2311,9 +2397,9 @@ int main(int ac, char **av) {
 	std::cout << "seed: " << seed << std::endl;
 	std::cout << "thre: " << TRE << std::endl;
 	std::cout << "=====================================================" << std::endl;
-	test<Modular<double> > (m,k,n,p,r,eps);
+	test<Modular<double> > (m,k,n,p,r,eps,kom);
 	std::cout << "=====================================================" << std::endl;
-	test<ModularBalanced<double> > (m,k,n,p,r,eps);
+	test<ModularBalanced<double> > (m,k,n,p,r,eps,kom);
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 
 	return 0;
