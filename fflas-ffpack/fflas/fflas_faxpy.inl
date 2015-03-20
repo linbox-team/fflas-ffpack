@@ -50,7 +50,7 @@ faxpy( const Field& F, const size_t N,
 	//return fassign(F,N,X,incX,Y,incY);
 	
 	if (F.isMOne(a))
-		return fnegin(F,N,X,incX,Y,incY);
+		return fsubin(F,N,X,incX,Y,incY);
 	//return fneg(F,N,X,incX,Y,incY);
 
 	typename Field::ConstElement_ptr Xi = X;
@@ -97,7 +97,7 @@ faxpy( const Field& F, const size_t m, const size_t n,
 	//return fassign(F,m,n,X,ldX,Y,ldY);
 
 	if (F.isMOne(a))
-		return fnegin(F,m,n,X,ldX,Y,ldY);
+		return fsubin(F,m,n,X,ldX,Y,ldY);
 		//return fneg(F,m,n,X,ldX,Y,ldY);
 
 	if (n == ldX && n == ldY)
