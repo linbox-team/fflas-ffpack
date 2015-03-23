@@ -1,8 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/*
- * Copyright (C) 2014 FFLAS-FFPACK
+/* Copyright (C) 2014 FFLAS-FFPACK
  * Written by :     Bastien Vialla <bastien.vialla@lirmm.fr>
  * This file is Free Software and part of FFLAS-FFPACK.
  *
@@ -23,7 +22,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  * ========LICENCE========
- *.
  */
 
 #include "fflas-ffpack/fflas/fflas.h"
@@ -55,91 +53,7 @@ template <typename T> T from_string(std::string const & s) {
     return result;
 }
 
-namespace details_spmv {
-template <class Field> struct Coo {
-  private:
-    using Self = Coo<Field>;
 
-  public:
-    typename Field::Element val = 0;
-    index_t col = 0;
-    index_t row = 0;
-
-    Coo() = default;
-    Coo(typename Field::Element v, index_t r, index_t c)
-        : val(v), col(c), row(r) {}
-    Coo(const Self &) = default;
-    Coo(Self &&) = default;
-
-    Self &operator=(const Self &) = default;
-    Self &operator=(Self &&) = default;
-};
-}
-
-// TODO : faster version using fscanf
-template <class Field>
-void readSmsFormat(const std::string &path, const Field &f, index_t *&row,
-                   index_t *&col, typename Field::Element_ptr &val,
-                   index_t &rowdim, index_t &coldim, uint64_t &nnz) {
-    using namespace details_spmv;
-    std::ifstream file(path, std::ios::in);
-    std::vector<std::string> tokens;
-    std::string line;
-    std::getline(file, line);
-    std::istringstream is(line);
-    std::copy(std::istream_iterator<std::string>(is),
-              std::istream_iterator<std::string>(),
-              std::back_inserter<std::vector<std::string>>(tokens));
-    rowdim = from_string<index_t>(tokens[0]);
-    //static_cast<index_t>(stoul(tokens[0].c_str(),0,10));
-    coldim = from_string<index_t>(tokens[0]);
-    // static_cast<index_t>(stoul(tokens[1].c_str(),0,10));
-    std::vector<Coo<Field>> data;
-    nnz = 0;
-    while (std::getline(file, line)) {
-        tokens.resize(0);
-        std::istringstream iss(line);
-
-        std::copy(std::istream_iterator<std::string>(iss),
-                  std::istream_iterator<std::string>(),
-                  std::back_inserter<std::vector<std::string>>(tokens));
-
-        if (!(tokens[0] == "0" && tokens[1] == "0" && tokens[2] == "0")) {
-            typename Field::Element v;
-            long int vtmp = from_string<int64_t>(tokens[2]);
-            f.init(v, vtmp);
-            index_t r = from_string<index_t>(tokens[0]) - 1;
-            // (index_t)(stoul(tokens[0].c_str(),0,10)) - 1;
-            index_t c = from_string<index_t>(tokens[0]) - 1;
-            // (index_t)(stoul(tokens[1].c_str(),0,10)) - 1;
-            data.emplace_back(v, r, c);
-        }
-    }
-    std::sort(data.begin(), data.end(),
-              [](const Coo<Field> &a, const Coo<Field> &b) {
-        return (a.row < b.row) || ((a.row == b.row) && (a.col < b.col));
-    });
-    auto rowmax =
-        (std::max_element(data.begin(), data.end(),
-                          [](const Coo<Field> &a, const Coo<Field> &b) {
-             return a.row < b.row;
-         }))->row;
-    if (rowdim != rowmax + 1) {
-        cout << "Matrix row dimension change : " << rowdim << " -> " << rowmax
-             << endl;
-        rowdim = rowmax;
-    }
-    row = fflas_new<index_t>(data.size());
-    col = fflas_new<index_t>(data.size());
-    val = fflas_new(f, data.size(), 1);
-    nnz = data.size();
-    // cout << "nnz : " << nnz << endl;
-    for (size_t i = 0, end = data.size(); i < end; ++i) {
-        val[i] = data[i].val;
-        col[i] = data[i].col;
-        row[i] = data[i].row;
-    }
-}
 
 template <class PtrT> void testEq(PtrT y1, PtrT y2, uint64_t n) {
     for (uint64_t i = 0; i < n; ++i) {
@@ -256,8 +170,14 @@ int main(int argc, char **argv) {
         path = argv[1];
 
     // path = "data/mat11.sms";
-
+    index_t * st = nullptr ;
     readSmsFormat(path, F, row, col, dat, rowdim, coldim, nnz);
+    row = fflas_new<index_t>(nnz);
+    for (index_t j = 0 ; j < rowdim ; ++j) {
+	    for (index_t k = st[j] ; k < st[j+1] ; ++k)
+		    row[k] = j ;
+    }
+
 
     auto x = fflas_new(F, coldim, 1, Alignment::CACHE_LINE);
     auto y = fflas_new(F, rowdim, 1, Alignment::CACHE_LINE);

@@ -33,9 +33,21 @@
 #ifndef __FFLASFFPACK_fflas_fflas_sparse_H
 #define __FFLASFFPACK_fflas_fflas_sparse_H
 
+#include "fflas-ffpack/config.h"
+#include "fflas-ffpack/config-blas.h"
+
 #ifndef index_t
 #define index_t uint32_t
 #endif
+
+#ifdef __FFLASFFPACK_HAVE_MKL
+#ifndef _MKL_H_ // temporary
+#error "MKL (mkl.h) not present, while you have MKL enabled"
+#endif
+#undef index_t
+#define index_t MKL_INT
+
+#endif // __FFLASFFPACK_HAVE_MKL
 
 // Bigger multiple of s lesser or equal than x, s must be a power of two
 #ifndef ROUND_DOWN
@@ -58,8 +70,6 @@
 
 #define DENSE_THRESHOLD 0.5
 
-#include "fflas-ffpack/config.h"
-#include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/field/field-traits.h"
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/utils/fflas_memory.h"
@@ -74,14 +84,6 @@
 #include <vector>
 #include <iostream>
 
-#ifdef __FFLASFFPACK_HAVE_MKL
-#ifndef _MKL_H_ // temporary
-#error "MKL (mkl.h) not present, while you have MKL enabled"
-#endif
-#undef index_t
-#define index_t MKL_INT
-
-#endif // __FFLASFFPACK_HAVE_MKL
 
 namespace MKL_CONFIG {
   static const double dalpha = 1;
@@ -355,6 +357,8 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 }
 
 #include "fflas-ffpack/fflas/fflas_sparse.inl"
+
+#include "fflas-ffpack/fflas/fflas_sparse/read_sparse.h"
 
 #undef ROUND_DOWN
 #undef assume_aligned
