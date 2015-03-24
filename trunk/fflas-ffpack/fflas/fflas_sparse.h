@@ -360,6 +360,59 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 
 #include "fflas-ffpack/fflas/fflas_sparse/read_sparse.h"
 
+
+namespace FFLAS {
+	struct HelperFlag {
+		static constexpr uint64_t none = 0 ;
+		static constexpr uint64_t coo  = 1UL;
+		static constexpr uint64_t csr  = 1UL<<1;
+		static constexpr uint64_t ell  = 1UL<<2;
+		static constexpr uint64_t aut  = 1UL<<32 ;
+		static constexpr uint64_t pm1  = 1UL<<33 ;
+	};
+
+	template<class Field>
+	struct CsrMat {
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR,int16_t> * _csr16 = nullptr;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR,int32_t> * _csr32 = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR,int64_t> * _csr64 = nullptr ;
+
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR_ZO,int16_t> * _csr16_zo = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR_ZO,int32_t> * _csr32_zo = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR_ZO,int64_t> * _csr64_zo = nullptr ;
+	};
+
+	template<class Field>
+	struct CooMat {
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::COO,int16_t> * _coo16 = nullptr;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::COO,int32_t> * _coo32 = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::COO,int64_t> * _coo64 = nullptr ;
+
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::COO_ZO,int16_t> * _coo16_zo = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::COO_ZO,int32_t> * _coo32_zo = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::COO_ZO,int64_t> * _coo64_zo = nullptr ;
+	};
+
+	template<class Field>
+	struct EllMat {
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::ELL,int16_t> * _ell16 = nullptr;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::ELL,int32_t> * _ell32 = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::ELL,int64_t> * _ell64 = nullptr ;
+
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::ELL_ZO,int16_t> * _ell16_zo = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::ELL_ZO,int32_t> * _ell32_zo = nullptr ;
+	     typename FFLAS::Sparse<Field,SparseMatrix_t::ELL_ZO,int64_t> * _ell64_zo = nullptr ;
+	};
+
+
+	template<class Field, int flag = HelperFlag::none >
+	struct SpMat {
+		typename FFLAS::CooMat<Field> * _coo = nullptr ;
+		typename FFLAS::CsrMat<Field> * _csr = nullptr ;
+		typename FFLAS::EllMat<Field> * _ell = nullptr ;
+	};
+}
+
 #undef ROUND_DOWN
 #undef assume_aligned
 
