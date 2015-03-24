@@ -190,23 +190,23 @@ namespace FFLAS {
 			}
 
 
-			for (size_t i = 0, end = data.size(); i < end; ++i) {
-				val[i] = data[i].val;
-				col[i] = data[i].col;
-				row[data[i].row+1]+=1;
+			for (size_t j = 0, end = data.size(); j < end; ++j) {
+				val[j] = data[j].val;
+				col[j] = data[j].col;
+				row[data[j].row+1]+=1;
 			}
 		}
 		else {
 			assert(nnz==dat.size());
-			for (size_t i = 0, end = nnz; i < end; ++i) {
-				val[i] = dat[i];
-				col[i] = colid[i];
+			for (size_t j = 0, end = nnz; j < end; ++j) {
+				val[j] = dat[j];
+				col[j] = colid[j];
 			}
 
 		}
 
-		for (size_t i = 0, end = rowdim ; i < end; ++i) {
-			row[i+1] += row[i] ;
+		for (size_t j = 0, end = rowdim ; j < end; ++j) {
+			row[j+1] += row[j] ;
 		}
 	}
 
