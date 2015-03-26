@@ -51,10 +51,10 @@ template<class Element>
 void Initialize(Element * C, int BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime)
-    std::cout << "Initialize PAR_REGION " << BS << ", " << m << 'x' << n << std::endl;
+    std::cout << "Initialize PAR_INSTR " << BS << ", " << m << 'x' << n << std::endl;
     
         BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
-        PAR_REGION{
+        PAR_INSTR{
         for(size_t q=0; q<m; q+=BS) ///row
                 for(size_t pp=0; pp<n; pp+=BS) //column
                 {

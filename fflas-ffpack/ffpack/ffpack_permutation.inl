@@ -486,19 +486,22 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
-		PARALLEL_GROUP;
 		
+		SYNCH_GROUP(numthreads,
 		for (size_t t = 0; t < NBlocks; ++t)
 			{
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
 				//#pragma omp task shared (A, P, F) firstprivate(BlockDim)
+
 				TASK(MODE(CONSTREFERENCE(F, A,P) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
-					  applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
+				     applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
+		
 			}
+			    );
 				     //#pragma omp taskwait
-				     WAIT;
+			    
 	}
 
 	template <class Field>
@@ -515,7 +518,6 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
-		PARALLEL_GROUP;
 		
 		for (size_t t = 0; t < NBlocks; ++t)
 		{
@@ -523,11 +525,15 @@ namespace FFPACK {
 			if (t == NBlocks-1)
 				BlockDim = LastBlockSize;
 			//#pragma omp task shared (F, A) firstprivate(BlockDim)
-			TASK(MODE(CONSTREFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])), 
-			     MatrixApplyT (F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4););
+			    //	SYCNH_GROUP(numthreads,
+			    TASK(MODE(CONSTREFERENCE(F, A) READWRITE(A[BLOCKSIZE*t*lda])),
+				 {MatrixApplyT(F,A+BLOCKSIZE*t*lda, lda, BlockDim, N2, R1, R2, R3, R4);}
+				 );
+//			    );
 		}
 		//#pragma omp taskwait
 		WAIT;
+		
 	}
 
 
@@ -545,8 +551,9 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
-		PARALLEL_GROUP;
 		
+		SYNCH_GROUP(numthreads,
+
 		for (size_t t = 0; t < NBlocks; ++t)
 			{
 				size_t BlockDim = BLOCKSIZE;
@@ -556,8 +563,9 @@ namespace FFPACK {
 				TASK(MODE(CONSTREFERENCE(F,A) READ(A[BLOCKSIZE*t])),
 				     MatrixApplyS (F, A+BLOCKSIZE*t, lda, BlockDim, M2, R1, R2, R3, R4););
 			}
+			    );
 		//#pragma omp taskwait
-		WAIT;
+		
 	}
 
 //#endif // __FFLASFFPACK_USE_OPENMP

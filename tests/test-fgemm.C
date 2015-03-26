@@ -215,7 +215,7 @@ bool launch_MM(const Field & F,
 		if (par){
 			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel>
 				WH (F, nbw, FFLAS::ParSeqHelper::Parallel());    
-			PAR_REGION{
+			PAR_INSTR{
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
 		}else{
