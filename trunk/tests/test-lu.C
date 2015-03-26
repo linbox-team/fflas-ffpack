@@ -261,8 +261,8 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
 	
-	PAR_REGION{
-		PARALLEL_GROUP;
+	PAR_INSTR{
+		SYNCH_GROUP(MAX_THREADS,
 		
 		//#pragma omp task shared(F, P, L)
 		TASK(MODE(CONSTREFERENCE(F,P,L)),
@@ -278,7 +278,7 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 		TASK(MODE(CONSTREFERENCE(F,U,L,X)),
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 			      F.one, L,R, U,n, F.zero, X,n, pWH););
-
+					);
 	}
 	bool fail = false;
 	//  PAR_FOR (size_t i=0; i<m; ++i)

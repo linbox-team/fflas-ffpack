@@ -86,8 +86,7 @@ namespace FFPACK {
 	      size_t* P, size_t* Q, int nt)
 	  {
 
-		  PARALLEL_GROUP;
-		  
+			  
     for (size_t i=0; i<M; ++i) P[i] = i;
     for (size_t i=0; i<N; ++i) Q[i] = i;
     if (std::min(M,N) == 0) return 0;
@@ -139,8 +138,11 @@ namespace FFPACK {
 
     size_t M2 = M >> 1;
     size_t N2 = N >> 1;
-    size_t * P1 = new size_t [M2];
-    size_t * Q1 = new size_t [N2];
+    size_t * P1 = FFLAS::fflas_new<size_t> (M2);
+    size_t * Q1 = FFLAS::fflas_new<size_t> (N2);
+    size_t* MathP = 0;
+    size_t* MathQ = 0;
+    size_t* P2,*P3,*Q2,*Q3,*P4,*Q4;
     size_t R1,R2,R3,R4;
 
     // A1 = P1 [ L1 ] [ U1 V1 ] Q1
@@ -160,7 +162,9 @@ namespace FFPACK {
     
     typename FFLAS::ParSeqHelper::Parallel pWH (nt, meth);
     typename FFLAS::ParSeqHelper::Parallel PH (std::max(nt,1), meth);
- 
+    
+    SYNCH_GROUP(pWH.numthreads,
+
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]
     TASK(MODE(READ(P1) CONSTREFERENCE(Fi, P1, A2) READWRITE(A2[0])),
@@ -191,8 +195,8 @@ namespace FFPACK {
 
     CHECK_DEPENDENCIES;
     
-    size_t * P2 = FFLAS::fflas_new<size_t>(M2-R1);
-    size_t * Q2 = FFLAS::fflas_new<size_t>(N-N2);
+    P2 = FFLAS::fflas_new<size_t>(M2-R1);
+    Q2 = FFLAS::fflas_new<size_t>(N-N2);
 	//typename Field::Element * A4R2 = 0;
     // F = P2 [ L2 ] [ U2 V2 ] Q2
     //        [ M2 ]
@@ -203,8 +207,8 @@ namespace FFPACK {
 
     //R2 = PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
     
-    size_t * P3 = FFLAS::fflas_new<size_t>(M-M2);
-    size_t * Q3 = FFLAS::fflas_new<size_t>(N2-R1);
+    P3 = FFLAS::fflas_new<size_t>(M-M2);
+    Q3 = FFLAS::fflas_new<size_t>(N2-R1);
     // G = P3 [ L3 ] [ U3 V3 ] Q3
     //        [ M3 ]
     TASK(MODE(CONSTREFERENCE(Fi, G, Q3, P3, R3) WRITE(R3, P3, Q3) READWRITE(G[0])),
@@ -299,9 +303,8 @@ namespace FFPACK {
     size_t * P4 = FFLAS::fflas_new<size_t>(M-M2-R3);
     size_t * Q4 = FFLAS::fflas_new<size_t>(N-N2-R2);
     */
-    size_t * P4 = 0;
-    size_t * Q4 = 0;
-    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
+ 
+   // H4 = P4 [ L4 ] [ U4 V4 ] Q4
     //         [ M4 ]
     //TASK(READ(Fi), NOWRITE(R4), READWRITE(R, P4, Q4), PPLUQ, R4, Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
     TASK(MODE(CONSTREFERENCE(Fi, R4, R, P4, Q4, R2, R3, M2, N2) READWRITE(R[0]) WRITE(R4, P4, Q4)),
@@ -325,12 +328,11 @@ namespace FFPACK {
 	 papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4));
     //applyP( Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
     
-    size_t* MathP = 0;
     // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
     //               [      P2 ]      [      P4 ]
     WAIT;
     //    TASK(MODE(CONSTREFERENCE(P1, P2, P3, P4, R1, R3, MathP, M2) READ(P1, P2, R1, R3, P3, P4, M2) READWRITE(MathP)),
-	 MathP = new size_t[M];
+    MathP = FFLAS::fflas_new<size_t>(M);
 	 composePermutationsP (MathP, P1, P2, R1, M2);
 	 composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
 	 for (size_t i=M2; i<M; ++i)
@@ -356,7 +358,7 @@ namespace FFPACK {
     
     // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
     //            [      Q3 ]      [      P4 ]
-    size_t * MathQ = FFLAS::fflas_new<size_t>(N);
+    MathQ = FFLAS::fflas_new<size_t>(N);
     TASK(MODE(CONSTREFERENCE(Q1, Q2, Q3, Q4, R1, R2) READ(Q1, Q2, Q3, Q4, R1, R2) READWRITE(MathQ)),
 	 composePermutationsQ (MathQ, Q1, Q3, R1, N2);
 	 composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
@@ -380,9 +382,7 @@ namespace FFPACK {
 	 MathPerm2LAPACKPerm (Q, MathQ, N);
 	 MathPerm2LAPACKPerm (P, MathP, M);
 	 );
-    WAIT;
-    
-    
+		);
     FFLAS::fflas_delete( MathQ);
     FFLAS::fflas_delete( MathP);
     FFLAS::fflas_delete( P1);
@@ -393,6 +393,11 @@ namespace FFPACK {
     FFLAS::fflas_delete( Q2);
     FFLAS::fflas_delete( Q3);
     FFLAS::fflas_delete( Q4);
+
+	//);
+    
+    
+    
     return R1+R2+R3+R4;
     //#endif
 	  }

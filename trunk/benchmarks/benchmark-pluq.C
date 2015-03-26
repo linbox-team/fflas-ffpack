@@ -97,7 +97,7 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	typename Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
-	PAR_REGION{
+	PAR_INSTR{
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel());
 	}
 	FFLAS::fflas_delete(L);
@@ -145,8 +145,8 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 			  F.assign( *(L + i*R+j), *(A+i*n+j));
 		  );
 	
-	PAR_REGION{
-		PARALLEL_GROUP;
+	PAR_INSTR{
+		SYNCH_GROUP(MAX_THREADS,
 		
 		//#pragma omp task shared(F, P, L)
 		TASK(MODE(CONSTREFERENCE(F,P,L)),
@@ -162,7 +162,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		TASK(MODE(CONSTREFERENCE(F,U,L,X)),
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
 			      F.one, L,R, U,n, F.zero, X,n, pWH););
-
+			    );
 	}
 	bool fail = false;
 	//  PAR_FOR (size_t i=0; i<m; ++i)
@@ -200,10 +200,9 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 
 	Field::RandIter G(F); 
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-	PARALLEL_GROUP;
-	
-	for(size_t p=0; p<m; p+=BS) ///row
-		for(size_t pp=0; pp<n; pp+=BS) //column
+	SYNCH_GROUP(MAX_THREADS, {
+			for(size_t p=0; p<m; p+=BS) ///row
+				for(size_t pp=0; pp<n; pp+=BS) //column
 			{
 				size_t M=BS, MM=BS;
 				if(!(p+BS<m))
@@ -219,7 +218,7 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 							G.random (*(C+(p+j)*n+pp+jj));
 				});
 			}
-	WAIT;
+		    });
 	
 	//		#pragma omp taskwait
 	//	}
@@ -336,7 +335,7 @@ int main(int argc, char** argv) {
 	       if (i) chrono.start();
 	       if (par){
 		       
-		       PAR_REGION{
+		       PAR_INSTR{
 			       R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
 		       }
 	       }

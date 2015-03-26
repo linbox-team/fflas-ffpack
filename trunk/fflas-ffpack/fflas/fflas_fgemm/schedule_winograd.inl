@@ -115,14 +115,13 @@ namespace FFLAS { namespace BLAS3 {
 
 			typename Field::Element_ptr C_11 = fflas_new (F,mr,nr);
 			typename Field::Element_ptr CC_11 = fflas_new (F,mr,nr);
-			PARALLEL_GROUP;
-		
-
+			SYNCH_GROUP(WH.parseq.numthreads,
 			    // P1 = alpha . A11 * B11 in X1
+						
 			MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
 			TASK(MODE(READ(A11, B11) WRITE(X15) CONSTREFERENCE(F,H1)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X15, x1rd, H1););
-		
+						
 			    // T3 = B22 - B12 in X21  and S3 = A11 - A21 in X11
 			TASK(MODE(READ(B22, B12) WRITE(X21) CONSTREFERENCE(DF)),
 			     fsub(DF,lb,cb,B22,ldb,B12,ldb,X21,ldX2););
@@ -277,7 +276,9 @@ namespace FFLAS { namespace BLAS3 {
 			WH.Outmin = std::min (U1Min, std::min (U5Min, std::min (U6Min, U7Min)));
 			WH.Outmax = std::max (U1Max, std::max (U5Max, std::max (U6Max, U7Max)));
 
-			WAIT;
+						);
+//			WAIT;
+			
 		
 			fflas_delete (CC_11);
 			fflas_delete (C_11);

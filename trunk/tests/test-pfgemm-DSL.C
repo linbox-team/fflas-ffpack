@@ -124,7 +124,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 		C = FFLAS::fflas_new<Field::Element>(m*n);
                 clock_gettime(CLOCK_REALTIME, &t0);
 
-		PAR_REGION{
+		PAR_INSTR{
 		       
 			FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 				      beta,C,n, pWH);   

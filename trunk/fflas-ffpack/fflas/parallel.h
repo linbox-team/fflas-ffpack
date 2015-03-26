@@ -92,13 +92,14 @@
 #define WAIT
 #define CHECK_DEPENDENCIES
 #define BARRIER
-#define PAR_REGION
+#define PAR_INSTR
 
 #define PARFOR1D(iter,debut,  m, Helper, I) \
     for(decltype(iter) iter=debut; iter<m+debut; ++iter) \
     { I; }
 
-#define PARALLEL_GROUP     
+#define SYNCH_GROUP(I) {I;}
+
     
 #define NUM_THREADS 1
 #define MAX_THREADS 1
@@ -141,35 +142,35 @@
 #define BARRIER PRAGMA_OMP_TASK_IMPL(omp barrier)
 
 // parallel for 1D, overloaded macro
-#define PF1D_5(iter,debut,  m, Helper, I)                                \
+#define PF1D_5(iter,debut,  m, Helper, Args...)                                \
    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);               \
        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks())) \
            for(iter=debut; iter<m+debut; ++iter)                      \
-           { I; } }
+           { Args; } }
 
-#define PF1D_6(iter, debut, m, ref, Helper, I)                           \
+#define PF1D_6(iter, debut, m, ref, Helper, Args...)                           \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);              \
         PRAGMA_OMP_TASK_IMPL(omp parallel for ref num_threads(OMPstrategyIterator.numblocks())) \
             for(iter=debut; iter<m+debut; ++iter)                     \
-            { I; } }
+            { Args; } }
 
 #define GET_PF1D(_1,_2,_3,_4,_5,_6,  NAME,...) NAME
 #define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_6,PF1D_5)(__VA_ARGS__)
 
 // for strategy 1D 
-#define FOR1D(iter, m, Helper, I)                                       \
+#define FOR1D(iter, m, Helper, Args...)                                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {I;} }
+        {Args;} }
 
 // for strategy 2D
-#define FOR2D(iter, m, n, Helper, I)                                    \
+#define FOR2D(iter, m, n, Helper, Args...)                                    \
     { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {I;} }
+        {Args;} }
 
 // parallel region
-#define PAR_REGION  PRAGMA_OMP_TASK_IMPL(omp parallel)        \
+#define PAR_INSTR  PRAGMA_OMP_TASK_IMPL(omp parallel)        \
     PRAGMA_OMP_TASK_IMPL(omp single)
 // get number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
@@ -181,11 +182,19 @@
 
 #define PRAGMA_OMP_TASK_IMPL(Args...) _Pragma(#Args)
 
-#define TASK(M, I)                              \
+#define TASK(M, I)                             \
     PRAGMA_OMP_TASK_IMPL(omp task M)           \
     {I;}
 
-#define PARALLEL_GROUP     
+
+#define SYNCH_GROUP(numthreads, Args...)     {{Args};} WAIT;
+
+/*
+\
+    { {I;}                                                \
+      WAIT;}
+*/
+    
 
 
 //////////////////////////////////////////////
@@ -235,7 +244,7 @@
     ka::Sync();					\
   }while(0)
 
-#define PAR_REGION
+#define PAR_INSTR
 #define PARFOR1D for
 
 // Number of threads
@@ -258,7 +267,8 @@
     catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
     return 0;}
 
-#define PARALLEL_GROUP     
+#define SYNCH_GROUP(I) {I;}
+
 
 
 #endif // KAAPI macros
@@ -296,7 +306,11 @@
 #define VALUE(...) GET_VAL(__VA_ARGS__, VAL5,VAL4,VAL3,VAL2,VAL1)(__VA_ARGS__)
 
 // need task_group to lunch a group of tasks in parallel
-#define PARALLEL_GROUP tbb::task_group g;
+#define SYNCH_GROUP(I) \
+  {tbb::task_group g;  \
+      {I;}             \
+      g.wait();}
+  
 
 // TBB task
 #define TASK(M, I)                              \
@@ -308,7 +322,7 @@
 #define WAIT g.wait()
 #define CHECK_DEPENDENCIES g.wait()
 #define BARRIER
-#define PAR_REGION //tbb::task_group g; ???
+#define PAR_INSTR 
 
 #define NUM_THREADS tbb::task_scheduler_init::default_num_threads()
 #define MAX_THREADS tbb::task_scheduler_init::default_num_threads()
@@ -321,36 +335,36 @@
 #define CAPTURE(Args...) [Args]
 
 // for strategy 1D
-#define FOR1D(iter, m, Helper, I)                                       \
+#define FOR1D(iter, m, Helper, Args...)                                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {I;} }
+        {Args;} }
     
 // for strategy 2D
-#define FOR2D(iter, m, n, Helper, I)                                    \
+#define FOR2D(iter, m, n, Helper, Args...)                                    \
     { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {I;} }
+        {Args;} }
 
 // tbb parallel for 1D // Overload macro
-#define PF1D_5(i, debut,  m, Helper, I)                                 \
+#define PF1D_5(i, debut,  m, Helper, Args...)                                 \
     { FFLAS::ForStrategy1D<decltype(i)> TBBstrategyIterator(m, Helper);              \
         tbb::parallel_for(                                              \
             tbb::blocked_range<decltype(i)>(debut, m+debut, TBBstrategyIterator.blocksize() ), \
             [=, &i](const tbb::blocked_range<decltype(i)> &TBBblockrangeIterator) { \
                 for(i = TBBblockrangeIterator.begin();                  \
                     i < TBBblockrangeIterator.end() ; ++i){             \
-                    {I;} }});                                           \
+                    {Args;} }});                                           \
     }
 
-#define PF1D_6(i, debut,  m, ref, Helper, I)                             \
+#define PF1D_6(i, debut,  m, ref, Helper, Args...)                             \
     { FFLAS::ForStrategy1D<decltype(i)> TBBstrategyIterator(m, Helper);              \
         tbb::parallel_for(                                              \
             tbb::blocked_range<decltype(i)>(debut, m+debut, TBBstrategyIterator.blocksize() ), \
             CAPTURE(ref)(const tbb::blocked_range<decltype(i)> &TBBblockrangeIterator) { \
                 for(i = TBBblockrangeIterator.begin();                  \
                 i < TBBblockrangeIterator.end() ; ++i){                 \
-                    {I;} }});                                           \
+                    {Args;} }});                                           \
     }
 
 #define GET_PF1D(_1,_2,_3,_4,_5,_6, NAME,...) NAME
