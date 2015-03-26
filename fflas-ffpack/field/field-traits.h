@@ -41,7 +41,7 @@
 
 namespace Givaro {
 
-	template<class T>
+	template<typename  T, typename COMP>
 	class Modular;
 
 	template<class T>
