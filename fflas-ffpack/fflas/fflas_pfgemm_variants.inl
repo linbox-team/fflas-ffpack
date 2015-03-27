@@ -55,7 +55,7 @@ namespace FFLAS
 		 return C;
 	 }
 
-	 if (H.parseq.numthreads<=1 || std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
+	 if (H.parseq.numthreads()<=1 || std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Sequential> SeqH(H);
 		 return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, SeqH);
 	 }
@@ -63,10 +63,10 @@ namespace FFLAS
 	  MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H1(H);
 	  MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
 	  if(__FFLASFFPACK_DIMKPENALTY*m > k && m >= n) {
-		  SYNCH_GROUP(H.parseq.numthreads,
+		  SYNCH_GROUP(H.parseq.numthreads(),
 		 size_t M2= m>>1;
-		 H1.parseq.numthreads /=2;
-		 H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
+         H1.parseq.set_numthreads(H1.parseq.numthreads() >> 1);
+		 H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
 		 
 		 typename Field::ConstElement_ptr A1= A;
 		 typename Field::ConstElement_ptr A2= A+M2*lda;
@@ -83,10 +83,10 @@ namespace FFLAS
 			      );
 
 	 } else if (__FFLASFFPACK_DIMKPENALTY*n > k) {
-		  SYNCH_GROUP(H.parseq.numthreads,
+		  SYNCH_GROUP(H.parseq.numthreads(),
 		 size_t N2 = n>>1;
-		 H1.parseq.numthreads /=2;
-		 H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
+         H1.parseq.set_numthreads( H1.parseq.numthreads() >> 1);
+		 H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
 		 typename Field::ConstElement_ptr B1= B;
 		 typename Field::ConstElement_ptr B2= B+N2;
 		 
@@ -107,9 +107,9 @@ namespace FFLAS
 		 typename Field::ConstElement_ptr A2= A+K2;
 		 typename Field::Element_ptr C2 = fflas_new (F, m, n,Alignment::CACHE_PAGESIZE);
 
-		 H1.parseq.numthreads /= 2;
-		 H2.parseq.numthreads = H.parseq.numthreads-H1.parseq.numthreads;
-		 SYNCH_GROUP(H.parseq.numthreads,
+		 H1.parseq.set_numthreads(H1.parseq.numthreads() >> 1);
+		 H2.parseq.set_numthreads(H.parseq.numthreads()-H1.parseq.numthreads());
+		 SYNCH_GROUP(H.parseq.numthreads(),
 		 TASK(MODE(CONSTREFERENCE(F,H1) READ(A1,B1) READWRITE(C)), pfgemm_3D_rec_adapt(F, ta, tb, m, n, K2, a, A1, lda, B1, ldb, b, C, ldc, H1));
 
 		 TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,B2) READWRITE(C2)), pfgemm_3D_rec_adapt(F, ta, tb, m, n, k-K2, a, A2, lda, B2, ldb, F.zero, C2, n, H2));
@@ -148,22 +148,22 @@ namespace FFLAS
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
-		if (H.parseq.numthreads<=1 || m*n<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
+		if (H.parseq.numthreads()<=1 || m*n<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
 			MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Sequential> SeqH(H);
 			return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, SeqH);
 			
 		}
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H1(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
-		H1.parseq.numthreads /=2;
-		H2.parseq.numthreads = H.parseq.numthreads - H1.parseq.numthreads;
+		H1.parseq.set_numthreads(H1.parseq.numthreads() >> 1);
+		H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
 		if(m >= n) {
 			size_t M2= m>>1;
 			typename Field::ConstElement_ptr A1= A;
 			typename Field::ConstElement_ptr A2= A+M2*lda;
 			typename Field::Element_ptr C1= C;
 			typename Field::Element_ptr C2= C+M2*ldc;
-			SYNCH_GROUP(H.parseq.numthreads,
+			SYNCH_GROUP(H.parseq.numthreads(),
 			
 			TASK(MODE(CONSTREFERENCE(F,H1, A1, B) READ(M2, A1[0],B[0]) READWRITE(C1[0])), pfgemm_2D_rec_adapt(F, ta, tb, M2, n, k, alpha, A1, lda, B, ldb, beta, C1, ldc, H1));
 
@@ -177,7 +177,7 @@ namespace FFLAS
 			typename Field::ConstElement_ptr B2= B+N2;
 			typename Field::Element_ptr C1= C;
 			typename Field::Element_ptr C2= C+N2;
-			SYNCH_GROUP(H.parseq.numthreads,
+			SYNCH_GROUP(H.parseq.numthreads(),
 			TASK(MODE(CONSTREFERENCE(F,H1, A, B1) READ(N2, A[0], B1[0]) READWRITE(C1[0])), pfgemm_2D_rec_adapt(F, ta, tb, m, N2, k, a, A, lda, B1, ldb, b, C1, ldc, H1));
 
 			TASK(MODE(CONSTREFERENCE(F,H2, A, B2) READ(N2, A[0], B2[0]) READWRITE(C2[0])), pfgemm_2D_rec_adapt(F, ta, tb, m, n-N2, k, a, A, lda, B2, ldb, b,C2, ldc, H2));
@@ -212,7 +212,7 @@ namespace FFLAS
 		 return C;
 	 }
                                                                
-	 if(H.parseq.numthreads<=1|| m*n<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
+	 if(H.parseq.numthreads()<=1|| m*n<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Sequential> SeqH(H);
 		 return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, SeqH);
 	 } else 
@@ -238,14 +238,14 @@ namespace FFLAS
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H6(H);
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H7(H);
 		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H8(H);
-		 size_t nt = H.parseq.numthreads;
+		 size_t nt = H.parseq.numthreads();
 		 size_t nt_rec = nt/4;
 		 size_t nt_mod = nt%4;
-		 H1.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 H2.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 H3.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 H4.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		 SYNCH_GROUP(H.parseq.numthreads,
+		 H1.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		 H2.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		 H3.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		 H4.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		 SYNCH_GROUP(H.parseq.numthreads(),
 		 TASK(MODE(CONSTREFERENCE(F,H1) READ(A1,B1) READWRITE(C11)), pfgemm_2D_rec(F, ta, tb, M2, N2, k, alpha, A1, lda, B1, ldb, beta, C11, ldc, H1));
 
 		 TASK(MODE(CONSTREFERENCE(F,H2) READ(A1,B2) READWRITE(C12)), pfgemm_2D_rec(F, ta, tb, M2, n-N2, k, alpha, A1, lda, B2, ldb, beta, C12, ldc, H2));
@@ -282,7 +282,7 @@ namespace FFLAS
 		fscalin(F, m, n, beta, C, ldc);
 		return C;
 	}
-	if(H.parseq.numthreads <= 1|| std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
+	if(H.parseq.numthreads() <= 1|| std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
 		FFLAS::MMHelper<Field, AlgoT, FieldTrait,FFLAS::ParSeqHelper::Sequential> WH (H);
 		return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, WH);
 	}
@@ -327,18 +327,18 @@ namespace FFLAS
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H6(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H7(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H8(H);
-		size_t nt = H.parseq.numthreads;
+		size_t nt = H.parseq.numthreads();
 		size_t nt_rec = nt/8;
 		size_t nt_mod = nt % 8 ;
-		H1.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0));
-		H2.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H3.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H4.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H5.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H6.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H7.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H8.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		SYNCH_GROUP(H.parseq.numthreads,
+		H1.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+		H2.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H3.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H4.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H5.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H6.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H7.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H8.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		SYNCH_GROUP(H.parseq.numthreads(),
 		TASK(MODE(CONSTREFERENCE(F,H1) READ(A11,B11) READWRITE(C11)), pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, H1));
 		    //omp_set_task_affinity(omp_get_locality_domain_num_for( C_11));
 		TASK(MODE(CONSTREFERENCE(F,H2) READ(A12,B21) WRITE(C_11)), pfgemm_3D_rec2_V2(F, ta, tb, M2, N2, k-K2, a, A12, lda, B21, ldb, b,C_11, N2, H2));
@@ -397,7 +397,7 @@ namespace FFLAS
 		return C;
 	}
 
-	if(H.parseq.numthreads <= 1|| std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){	// threshold
+	if(H.parseq.numthreads() <= 1|| std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){	// threshold
 		FFLAS::MMHelper<Field, AlgoT, FieldTrait,FFLAS::ParSeqHelper::Sequential> WH (H);
 		return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, WH);
 	}else{
@@ -423,14 +423,14 @@ namespace FFLAS
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H2(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H3(H);
 		MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel> H4(H);
-		size_t nt = H.parseq.numthreads;
+		size_t nt = H.parseq.numthreads();
 		size_t nt_rec = nt/4;
 		size_t nt_mod = nt%4;
-		H1.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H2.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H3.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		H4.parseq.numthreads = std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)); 
-		SYNCH_GROUP(H.parseq.numthreads,
+		H1.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H2.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H3.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		H4.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0))); 
+		SYNCH_GROUP(H.parseq.numthreads(),
                 // 1/ 4 multiply
 		TASK(MODE(CONSTREFERENCE(F,H1) READ(A11,B11) READWRITE(C11)), pfgemm_3D_rec_V2(F, ta, tb, M2, N2, K2, alpha, A11, lda, B11, ldb, beta, C11, ldc, H1));
 		TASK(MODE(CONSTREFERENCE(F,H2) READ(A12,B22) READWRITE(C12)), pfgemm_3D_rec_V2(F, ta, tb, M2, n-N2, k-K2, alpha, A12, lda, B22, ldb, beta, C12, ldc, H2));

@@ -53,17 +53,18 @@ namespace FFLAS {
 
 
 	enum CuttingStrategy {
-		ROW_FIXED	,
+        SINGLE			,
+		ROW_FIXED		,
 		COLUMN_FIXED	,
-		BLOCK_FIXED	,
-		ROW_THREADS	,
+		BLOCK_FIXED		,
+		ROW_THREADS		,
 		COLUMN_THREADS	,
 		BLOCK_THREADS	,
-        GRAIN_SIZE,
-		TWO_D,
-		THREE_D_INPLACE,
-		THREE_D_ADAPT,
-		TWO_D_ADAPT,
+        GRAIN_SIZE		,
+		TWO_D			,
+		THREE_D_INPLACE	,
+		THREE_D_ADAPT	,
+		TWO_D_ADAPT		,
 		THREE_D
 	};
 
@@ -71,14 +72,18 @@ namespace FFLAS {
 	*/
 	namespace ParSeqHelper {
 		struct Parallel{
-			size_t numthreads;
-			CuttingStrategy method;
-			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK_THREADS):numthreads(n),method(m){}
+			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK_THREADS):_numthreads(n),_method(m){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads << ',' << p.method;
+				return out << "Parallel: " << p.numthreads() << ',' << p.method();
 			}
-
+			size_t numthreads() const { return _numthreads; }
+            size_t& set_numthreads(size_t n) { return _numthreads=n; }
+			CuttingStrategy method() const { return _method; }            
+        private:
+			size_t _numthreads;
+			CuttingStrategy _method;
+            
 		};
 		struct Sequential{
 			Sequential() {}
@@ -87,6 +92,8 @@ namespace FFLAS {
 			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
 				return out << "Sequential";
 			}
+			size_t numthreads() const { return 1; }
+			CuttingStrategy method() const { return SINGLE; }            
 		};
 	}
 
