@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <27 Jan 15 16:18:01 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Mar 15 10:53:40 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -72,7 +72,7 @@ namespace FFLAS {
                 return C;
             }
 
-	    switch (H.parseq.method){
+	    switch (H.parseq.method()){
 		case THREE_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
 			return pfgemm_3D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 		case TWO_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
@@ -84,10 +84,10 @@ namespace FFLAS {
 		case THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
 			return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
-			H.parseq.numthreads = std::min(H.parseq.numthreads, std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD))));
+			H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
 						
 			MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
-			SYNCH_GROUP( H.parseq.numthreads,
+			SYNCH_GROUP( H.parseq.numthreads(),
 				     {FOR2D(iter,m,n,H.parseq,
 					   TASK( MODE(
 						READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 

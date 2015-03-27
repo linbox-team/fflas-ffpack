@@ -163,7 +163,7 @@ namespace FFPACK {
     typename FFLAS::ParSeqHelper::Parallel pWH (nt, meth);
     typename FFLAS::ParSeqHelper::Parallel PH (std::max(nt,1), meth);
     
-    SYNCH_GROUP(pWH.numthreads,
+    SYNCH_GROUP(pWH.numthreads(),
 
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]

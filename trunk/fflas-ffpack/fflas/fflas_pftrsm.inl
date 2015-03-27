@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <27 Jan 15 18:08:21 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Mar 15 10:47:29 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -59,7 +59,7 @@ namespace FFLAS {
 	// const size_t numThreads)
 	{
         typedef TRSMHelper<StructureHelper::Recursive,ParSeqHelper::Sequential> seqRecHelper;
-		SYNCH_GROUP(H.parseq.numthreads,
+		SYNCH_GROUP(H.parseq.numthreads(),
 	
 					if(Side == FflasRight){
 						FOR1D(iter, m, H.parseq,
@@ -99,7 +99,7 @@ namespace FFLAS {
 
 		if(Side == FflasRight){
 
-			size_t nt = H.parseq.numthreads;
+			size_t nt = H.parseq.numthreads();
 			size_t nt_it,nt_rec;
 			if (m/PTRSM_HYBRID_THRESHOLD < nt){
 				nt_it = (int)ceil(double(m)/PTRSM_HYBRID_THRESHOLD);
@@ -107,8 +107,8 @@ namespace FFLAS {
 			} else { nt_it = nt; nt_rec = 1;}
 //			ForStrategy1D<size_t> iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //			for (iter.begin(); ! iter.end(); ++iter) {
-				//			SYNCH_GROUP(H.parseq.numthreads,
-			SYNCH_GROUP(H.parseq.numthreads,
+				//			SYNCH_GROUP(H.parseq.numthreads(),
+			SYNCH_GROUP(H.parseq.numthreads(),
 
 						FOR1D(iter, m, H.parseq,
 //				      std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
@@ -121,7 +121,7 @@ namespace FFLAS {
 				
 		} else {
 
-			size_t nt = H.parseq.numthreads;
+			size_t nt = H.parseq.numthreads();
 			size_t nt_it=nt;
 			size_t nt_rec=1;
 			while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
@@ -138,7 +138,7 @@ namespace FFLAS {
 				//	ForStrategy1D<size_t> iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //				for (iter.begin(); ! iter.end(); ++iter) {
 
-			SYNCH_GROUP(H.parseq.numthreads,
+			SYNCH_GROUP(H.parseq.numthreads(),
 					    FOR1D(iter, n, H.parseq,
 								  //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
