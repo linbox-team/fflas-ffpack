@@ -98,7 +98,7 @@
     for(decltype(iter) iter=debut; iter<m+debut; ++iter) \
     { I; }
 
-#define SYNCH_GROUP(I) {I;}
+#define SYNCH_GROUP(numthreads, Args...) {{Args};}
 
     
 #define NUM_THREADS 1
@@ -114,10 +114,10 @@
 #define END_PARALLEL_MAIN(void)  return 0; }
 
 // for strategy 1D 
-#define FOR1D(iter, m, Helper, I)                                       \
+#define FOR1D(iter, m, Helper, Args...)                                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {I;} }
+        {{Args};} }
 
 // for strategy 2D
 #define FOR2D(iter, m, n, Helper, I)                                    \
@@ -267,7 +267,7 @@
     catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
     return 0;}
 
-#define SYNCH_GROUP(I) {I;}
+#define SYNCH_GROUP(numthreads, Args...) {{Args};}
 
 
 
@@ -306,9 +306,9 @@
 #define VALUE(...) GET_VAL(__VA_ARGS__, VAL5,VAL4,VAL3,VAL2,VAL1)(__VA_ARGS__)
 
 // need task_group to lunch a group of tasks in parallel
-#define SYNCH_GROUP(I) \
+#define SYNCH_GROUP(numthreads, Args...) \
   {tbb::task_group g;  \
-      {I;}             \
+      {{Args};}             \
       g.wait();}
   
 
