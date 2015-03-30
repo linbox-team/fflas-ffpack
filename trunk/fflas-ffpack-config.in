@@ -49,7 +49,8 @@ Known values for OPTION are:
   --prefix		 		show FFLAS-FFPACK installation prefix
   --libs		 		print library linking information
   --blas-libs			print BLAS library linking information
-  --cflags				print pre-processor and compiler flags
+  --cflags				print pre-processor flags
+  --cflags-full			print pre-processor and compiler flags
   --blas-cflags	 		print BLAS pre-processor and BLAS compiler flags
   --blas-home	 		print where BLAS were found
   --help		 		display this help and exit
