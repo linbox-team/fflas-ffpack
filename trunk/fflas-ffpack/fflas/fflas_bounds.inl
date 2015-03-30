@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_fflas_bounds_INL
 #define __FFLASFFPACK_fflas_bounds_INL
 
-#define FFLAS_INT_TYPE long unsigned int
+#define FFLAS_INT_TYPE uint64_t
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/flimits.h"
