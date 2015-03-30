@@ -36,9 +36,9 @@
 // #include <sstream>
 // #include <iostream>
 #include <fstream> /*  getline */
-// #include <string>
+#include <string>
 // #include <cstdio>
-// #include <cstdlib>
+#include <cstdlib>
 #include <iterator> /*  istream_iterator */
 
 
@@ -238,7 +238,7 @@ namespace FFLAS {
 				  std::back_inserter<std::vector<std::string>>(tokens));
 
 			// if (!(tokens[0] == "0" && tokens[1] == "0" && tokens[2] == "0")) {
-			uint64_t nElements = stoull(tokens[0]);
+			uint64_t nElements = std::stoull(tokens[0]);
 			for (uint64_t i = 0; i < nElements; ++i) {
 				index_t c = std::stoull(tokens[2 * i + 1]) - 1;
 				typename Field::Element v;

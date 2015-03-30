@@ -362,15 +362,15 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 
 
 namespace FFLAS {
-	struct HelperFlag {
-		static constexpr uint64_t none = 0 ;
-		static constexpr uint64_t coo  = 1UL;
-		static constexpr uint64_t csr  = 1UL<<1;
-		static constexpr uint64_t ell  = 1UL<<2;
-		static constexpr uint64_t aut  = 1UL<<32 ;
-		static constexpr uint64_t pm1  = 1UL<<33 ;
-	};
-
+    struct HelperFlag {
+        static constexpr uint64_t none = 0 ;
+        static constexpr uint64_t coo  = 1UL;
+        static constexpr uint64_t csr  = 1UL<<1;
+        static constexpr uint64_t ell  = 1UL<<2;
+        static constexpr uint64_t aut  = static_cast<uint64_t>(1UL)<<32;
+        static constexpr uint64_t pm1  = static_cast<uint64_t>(1UL)<<33;
+    };
+    
 	template<class Field>
 	struct CsrMat {
 	     typename FFLAS::Sparse<Field,SparseMatrix_t::CSR,int16_t> * _csr16 = nullptr;

@@ -51,13 +51,23 @@
 #endif
 
 #ifdef __CYGWIN__
+#  define _GLIBCXX_USE_C99
 #  ifndef _GLIBCXX_USE_C99_MATH_TR1
 #    include <math.h>
 #    undef fma
+#    include <stdlib.h>
+#    undef strtoull
+#    undef strtoll
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::fma;
+  using ::strtoll;
+  using ::strtoull;
+
+  unsigned long long stoull( const std::string& str) { return std::strtoull(str.c_str(), 0, 10); }
+  long long stoll( const std::string& str) { return std::strtoll(str.c_str(), 0, 10); }
+  
 }
 #  endif
 #endif
