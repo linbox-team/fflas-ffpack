@@ -32,7 +32,7 @@ AM_LDFLAGS=-static $(PARLIBS)
 PERFPUBLISHERFILE=benchmarks-report.xml
 
 FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-fgemm-mp benchmark-ftrsm-mp benchmark-lqup-mp
-BLAS_BENCH =    benchmark-sgemm benchmark-dgemm benchmark-dtrsm
+BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
 OMP_BENCH = benchmark-pftrsm
