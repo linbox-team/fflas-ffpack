@@ -433,7 +433,7 @@ namespace FFPACK {
 		}
 
 		void reduce_modp_rnsmajor_scal_quad(size_t n, Element_ptr B) const {
-			std::cout << "modp scalar quad" << std::endl;
+			// std::cout << "modp scalar quad" << std::endl;
 			FFLAS::Timer T;
 			size_t _size= _rns->_size;
 

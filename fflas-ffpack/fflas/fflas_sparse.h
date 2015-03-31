@@ -99,6 +99,8 @@ namespace FFLAS {
 enum class SparseMatrix_t {
     CSR,
     CSR_ZO,
+    CSC,
+    CSC_ZO,
     COO,
     COO_ZO,
     ELL,
@@ -117,12 +119,14 @@ template <class Field, SparseMatrix_t, class IdxT = index_t, class PtrT = index_
 #include "fflas-ffpack/fflas/fflas_sparse/sparse_matrix_traits.h"
 #include "fflas-ffpack/fflas/fflas_sparse/utils.h"
 #include "fflas-ffpack/fflas/fflas_sparse/csr.h"
+#include "fflas-ffpack/fflas/fflas_sparse/csc.h"
 #include "fflas-ffpack/fflas/fflas_sparse/coo.h"
 #include "fflas-ffpack/fflas/fflas_sparse/ell.h"
 #include "fflas-ffpack/fflas/fflas_sparse/sell.h"
 #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb.h"
 #include "fflas-ffpack/fflas/fflas_sparse/ell_simd.h"
 #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo.h"
+// #include "fflas-ffpack/fflas/fflas_sparse/sparse_matrix.h"
 
 namespace FFLAS {
 
@@ -414,6 +418,7 @@ namespace FFLAS {
 }
 
 #undef ROUND_DOWN
+#undef DENSE_THRESHOLD
 #undef assume_aligned
 
 #endif // __FFLASFFPACK_fflas_fflas_sparse_H

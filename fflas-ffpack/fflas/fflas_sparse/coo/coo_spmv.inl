@@ -75,11 +75,11 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, t
 inline void fspmv_mkl(const Givaro::DoubleDomain &F, const Sparse<Givaro::DoubleDomain, SparseMatrix_t::COO> &A,
 		Givaro::DoubleDomain::ConstElement_ptr x_,
 		Givaro::DoubleDomain::Element_ptr y_, FieldCategories::UnparametricTag) {
-	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
-	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
 	MKL_INT A_nnz = A.nnz ;
 	mkl_dcoomv(MKL_CONFIG::trans, &A.m , &A.n, &MKL_CONFIG::dalpha, MKL_CONFIG::metaChar,
@@ -92,11 +92,11 @@ inline void fspmv_mkl(const Givaro::DoubleDomain &F, const Sparse<Givaro::Double
 inline void fspmv_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDomain, SparseMatrix_t::COO> &A,
 		Givaro::FloatDomain::ConstElement_ptr x_,
 		Givaro::FloatDomain::Element_ptr y_, FieldCategories::UnparametricTag) {
-	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
-	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
 	MKL_INT A_nnz = A.nnz ;
 	mkl_scoomv(MKL_CONFIG::trans, &A.m , &A.n, &MKL_CONFIG::salpha, MKL_CONFIG::metaChar,

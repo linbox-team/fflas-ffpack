@@ -161,6 +161,30 @@ namespace FFPACK {
 	}
 
 
+#ifdef __DLP_CHALLENGE
+
+// TODO: less naive implementation
+void rns_double::init_dlp(size_t m, double* Arns, const integer* A, size_t lda) const{
+	for(size_t i = 0 ; i < m ; ++i){
+		for(size_t j = 0 ; j < _size ; ++j){
+			Arns[i*_size+j] = (double)(A[i*lda]%integer(_basis[j]))[0];
+		}
+	}
+}
+
+// TODO: less naive implementation
+void rns_double::convert_dlp(size_t m, integer *A, size_t lda, const double *Arns) const{
+	for(size_t i = 0 ; i < m ; ++i){
+		A[i*lda] = 0;
+		for(size_t j = 0 ; j < _size ; ++j){
+			A[i*lda] += integer(Arns[i*_size+j])*integer(_Mi[j])*integer(_MMi[j]);
+		}
+		A[i*lda] %= _M;
+	}
+}
+
+#endif
+
 	void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 				 const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{

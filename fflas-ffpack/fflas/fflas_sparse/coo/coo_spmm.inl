@@ -83,11 +83,11 @@ inline void fspmm_mkl(const Givaro::DoubleDomain &F, const Sparse<Givaro::Double
 		Givaro::DoubleDomain::ConstElement_ptr x_, index_t ldx,
 		Givaro::DoubleDomain::Element_ptr y_, index_t ldy,
 		FieldCategories::UnparametricTag) {
-	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
-	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
 	MKL_INT A_nnz = A.nnz ;
 	mkl_dcoomm(MKL_CONFIG::trans, &A.m , &blockSize, &A.n, &MKL_CONFIG::dalpha, MKL_CONFIG::metaChar,
@@ -102,11 +102,11 @@ inline void fspmm_mkl(const Givaro::FloatDomain &F, const Sparse<Givaro::FloatDo
 		Givaro::FloatDomain::ConstElement_ptr x_, index_t ldx,
 		Givaro::FloatDomain::Element_ptr y_, index_t ldy,
 		FieldCategories::UnparametricTag) {
-	assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
-	assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
-	assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(row, A.row, (size_t)Alignment::CACHE_LINE);
+	// assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+	// assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
 	MKL_INT A_nnz = A.nnz ;
 	mkl_scoomm(MKL_CONFIG::trans, &A.m , &blockSize, &A.n, &MKL_CONFIG::salpha, MKL_CONFIG::metaChar,
