@@ -1,4 +1,34 @@
-/*   
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+/*
+ * Copyright (C) 2015 the FFLAS-FFPACK group
+ * Written by
+ *
+ * This file is Free Software and part of FFLAS-FFPACK.
+ *
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ *
+ */
+
+
+/*
 *******************************************************
         Parallel PLUQ quad recurisve with OpenMP
 *******************************************************
@@ -43,7 +73,7 @@ typedef Givaro::UnparametricRing<double> Field;
 
 #ifndef DEBUG
 #define DEBUG 1
-#endif 
+#endif
 
 #ifndef SEQ
 #define SEQ 1
@@ -62,17 +92,17 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
   PARFOR1D (i,m*R, H,
     F.init(L[i], 0.0);
             );
-  
+
 
   PARFOR1D (i,m*R, H,
     F.init(U[i], 0.0);
             );
-  
+
 
   PARFOR1D (i,m*n, H,
     F.init(X[i], 0.0);
             );
-  
+
 
   Field::Element zero,one;
   F.init(zero,0.0);
@@ -83,7 +113,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
     for (size_t j=i; j<n; ++j)
       F.assign (*(U + i*n + j), *(A+ i*n+j));
     );
-  
+
   PARFOR1D (j,R, H,
     for (size_t i=0; i<=j; ++i )
       F.assign( *(L+i*R+j), zero);
@@ -91,7 +121,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
     for (size_t i=j+1; i<m; i++)
       F.assign( *(L + i*R+j), *(A+i*n+j));
   );
-  
+
 
   FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 
@@ -110,7 +140,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
           fail=true;
       }
             );
-  
+
   if (fail)
       std::cerr<<"FAIL"<<std::endl;
   else
@@ -132,14 +162,14 @@ int main(int argc, char** argv)
 		    <<std::endl;
 		exit(-1);
 	}
-   
+
 	p = (argc>1 ? atoi( argv[1] ) : 1009);
 
 	m = (argc>2 ? atoi( argv[2] ) : 1024);
 	n = (argc>3 ? atoi( argv[3] ) : 1024);
 	// r = atoi( argv[4] );
 	nbf = (argc>4 ? atoi( argv[4] ) : 1);
-	
+
 	//	size_t lda = n;
 
 		// random seed
@@ -149,16 +179,16 @@ int main(int argc, char** argv)
 	// f.read(reinterpret_cast<char*>(&seed2), sizeof(seed2));
 	// f.read(reinterpret_cast<char*>(&seed3), sizeof(seed3));
 	// f.read(reinterpret_cast<char*>(&seed4), sizeof(seed4));
-    
+
 //     seed1=10;seed2=12;
 //     seed3=13;seed4=14;
-    
+
         enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
         size_t R;
 
 	const Field F((double)p);
 	// Field::RandIter G(F, seed1);
-    
+
 	Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
@@ -176,9 +206,9 @@ int main(int argc, char** argv)
             for (size_t j=0; j<(size_t)n; ++j)
                 G.random (*(Acop+i*n+j));
         );
-        
+
     }
-    
+
 // FFLAS::fflas_new<Field::Element>(n*m);
 	Field::Element* A = FFLAS::fflas_new<Field::Element>(n*m);
 #if(DEBUG==1)
@@ -199,49 +229,49 @@ int main(int argc, char** argv)
     size_t maxP, maxQ;
     maxP = m;
     maxQ = n;
-    
+
     size_t *P = FFLAS::fflas_new<size_t>(maxP);
     size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
-    
+
 
     PARFOR1D(i, (size_t)m, H,
         for (size_t j=0; j<(size_t)n; ++j) {
             *(A+i*n+j) = *(Acop+i*n+j) ;
-#if(DEBUG==1) 
+#if(DEBUG==1)
             *(Adebug+i*n+j) = *(Acop+i*n+j) ;
 #endif
         }
     );
-    
-    
-    
+
+
+
     for ( int i=0;i<nbf+1;i++){
         for (size_t j=0;j<maxP;j++)
             P[j]=0;
         for (size_t j=0;j<maxQ;j++)
             Q[j]=0;
-        
+
         PARFOR1D(i, (size_t)m, H,
             for (size_t j=0; j<(size_t)n; ++j)
             *(A+i*n+j) = *(Acop+i*n+j) ;
         );
-        
-        
-	    
+
+
+
 	    clock_gettime(CLOCK_REALTIME, &t0);
 	    PAR_INSTR{
             R = pPLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, NUM_THREADS);// Parallel PLUQ
 	    }
 	    clock_gettime(CLOCK_REALTIME, &t1);
 	    delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;
-        
+
 	    if(i)
             t_total +=delay;
-	    
+
     }
     avrg = t_total/nbf;
     std::cerr << "MODULO: " << (MODULO?p:0) << std::endl;
-    
+
     PAR_INSTR{
         std::cerr<<"Parallel --- m: "<<m<<" , n: " << n << " , r: " <<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
@@ -251,7 +281,7 @@ int main(int argc, char** argv)
     }
         //<<endl;
         //#endi
-    
+
         //	std::cout<<typeid(A).name()<<endl;
 #if(DEBUG==1)
 	cout<<"check equality A == PLUQ ?"<<endl;
