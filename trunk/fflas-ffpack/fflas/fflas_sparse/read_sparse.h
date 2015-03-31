@@ -212,7 +212,8 @@ namespace FFLAS {
 
 	template <class Field>
 	void readSprFormat(const std::string &path, const Field &f, index_t *&row, index_t *&col,
-			   typename Field::Element_ptr &val, index_t &rowdim, index_t &coldim, uint64_t &nnz) {
+			   typename Field::Element_ptr &val, index_t &rowdim, index_t &coldim, uint64_t &nnz)
+	{
 		using namespace details_spmv;
 		std::ifstream file(path, std::ios::in);
 		std::vector<std::string> tokens;
@@ -273,6 +274,182 @@ namespace FFLAS {
 			col[i] = data[i].col;
 			row[i] = data[i].row;
 		}
+	}
+
+#define DNS_BIN_VER 0
+#define mask_t uint64_t
+
+	template<class Field, class T>
+	struct readMyMachineType {
+		typedef typename Field::Element     Element ;
+		typedef typename Field::Element_ptr Element_ptr ;
+		void operator() (const Field &F,
+				 Element & modulo,
+				 Element_ptr val,
+				 std::ifstream & file,
+				 const uint64_t dims,
+				 const mask_t data_type,
+				 const mask_t field_desc);
+	};
+
+	template<class Field>
+	struct readMyMachineType<Field,mpz_t> {
+		typedef typename Field::Element     Element ;
+		typedef typename Field::Element_ptr Element_ptr ;
+		void operator() (const Field &F,
+				 Element & modulo,
+				 Element_ptr val,
+				 std::ifstream & file,
+				 const uint64_t dims,
+				 const mask_t data_type,
+				 const mask_t field_desc);
+	};
+
+
+
+	template<class Field, typename T>
+	void readMyMachineType<Field,T>:: operator() (const Field &F,
+			 Element & modulo,
+			 Element_ptr val,
+			 std::ifstream & file,
+			 const uint64_t dims,
+			 const mask_t data_type,
+			 const mask_t field_desc)
+	{
+		if (field_desc ==1) { /*  modulo */
+			T modulo_read ;
+			file.read((char*) &modulo_read, sizeof(T));
+			F.init(modulo,modulo_read);
+		}
+		/*  do something with field_desc and multiprec... */
+		T * data_read = fflas_new<T>(dims);
+		file.read((char*)data_read,sizeof(T));
+		/* TODO freduce ? */
+		for (size_t i = 0 ; i< dims ; ++i) {
+			F.init(val[i],data_read[i]);
+		}
+	}
+
+	template<>
+	template<class Field>
+	void readMyMachineType<Field,mpz_t>:: operator() (const Field &F,
+						       typename Field::Element & modulo,
+						       typename Field::Element_ptr val,
+						       std::ifstream & file,
+						       const uint64_t dims,
+						       const mask_t data_type,
+						       const mask_t field_desc)
+	{
+		/* need to use FILE * instead of std::ifstream */
+		throw("not implemented, use mpz_in_raw, but FILE*...");
+	}
+
+
+	template<class T>
+	std::enable_if<std::is_integral<T>::value,int>
+	getDataType()
+	{
+		return (1<<(sizeof(T)-1))+ std::is_unsigned<T>::value ;
+	}
+
+	template<class T>
+	std::enable_if<std::is_floating_point<T>::value,int>
+	getDataType()
+	{
+		return (1<<8)+std::is_same<T,double>::value ;
+	}
+
+	template<class T>
+	std::enable_if<std::is_same<T,mpz_t>::value,int>
+	getDataType()
+	{
+		return (1<<16) ;
+	}
+
+	template<class T>
+	int getDataType()
+	{
+		return -1 ;
+	}
+
+
+	template<class Field>
+	void readMachineType(const Field &F,
+			     typename Field::Element & modulo,
+			     typename Field::Element_ptr val,
+			     std::ifstream & file,
+			     const uint64_t dims,
+			     const mask_t data_type,
+			     const mask_t field_desc)
+	{
+		switch(data_type) {
+		case (1<<0) + 0 :
+			readMyMachineType<Field,int8_t   >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<0) + 1 :
+			readMyMachineType<Field,uint8_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<1) + 0 :
+			readMyMachineType<Field,int16_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<1) + 1 :
+			readMyMachineType<Field,uint16_t >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<2) + 0 :
+			readMyMachineType<Field,int32_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<2) + 0 :
+			readMyMachineType<Field,uint32_t >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<3) + 0 :
+			readMyMachineType<Field,int64_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<3) + 0 :
+			readMyMachineType<Field,uint64_t >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<8) :
+			readMyMachineType<Field,float    >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<8)+1 :
+			readMyMachineType<Field,double   >() (F,val, modulo, file,dims,data_type,field_desc);
+		case (1<<16) :
+			readMyMachineType<Field,mpz_t    >() (F,val, modulo, file,dims,data_type,field_desc);
+		default :
+			throw("bad data type descriptor");
+		}
+
+	}
+
+	template<class Field>
+	void readDnsFormat(const std::string &path, const Field &F, index_t &rowdim, index_t &coldim,
+			   typename Field::Element_ptr &val)
+	{
+		std::ifstream file(path, std::ifstream::binary);
+		mask_t magic, field_desc, data_type ;
+		typename Field::Element modulo ;
+
+		file.read((char*) &magic     , sizeof(int64_t)) ;
+		if (magic != DNS_BIN_VER) {
+			throw("bad version");
+		}
+		file.read((char*) &field_desc, sizeof(int64_t)) ;
+		file.read((char*) &data_type , sizeof(int64_t)) ;
+		file.read((char*) &rowdim , sizeof(int64_t)) ;
+		file.read((char*) &coldim , sizeof(int64_t)) ;
+		val = fflas_new(F,rowdim*coldim,1);
+		readMachineType(F,val, modulo, file,rowdim*coldim,field_desc,data_type);
+
+	}
+
+	template<class Field>
+	void writeDnsFormat(const std::string &path, const Field &F, const index_t &rowdim, const index_t &coldim,
+			   typename Field::Element_ptr A, index_t ldA)
+	{
+		typedef typename Field::Element Element ;
+		std::ofstream file(path, std::ofstream::binary);
+		mask_t field_desc = getFieldDesc(F);
+		mask_t magic = DNS_BIN_VER ;
+		mask_t data_type = getDataType<Element>(F);
+		Element modulo ;
+
+		file.write((char*) &magic     , sizeof(int64_t)) ;
+		file.write((char*) &field_desc, sizeof(int64_t)) ;
+		file.write((char*) &data_type , sizeof(int64_t)) ;
+		file.write((char*) &rowdim , sizeof(int64_t)) ;
+		file.write((char*) &coldim , sizeof(int64_t)) ;
+		// writeMachineType(F,A, modulo, file,rowdim,coldim,lda,field_desc,data_type);
+
 	}
 
 }// FFLAS
