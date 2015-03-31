@@ -329,6 +329,10 @@ namespace FFLAS { /*  compression */
 		fgemm(G,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 		      m_k,n_k,k, 1, A_k,lda_k, B_k,ldb_k, 0, C_k, ldc_k);
 
+		// cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,
+		      // m_k,n_k,k, 1, A_k,lda_k, B_k,ldb_k, 0, C_k, ldc_k);
+
+
 		unpack_matrix<elem_t,elem_t,2,!left_compress>(C,m,n,ldc,
 							      C_k,m_k,n_k,ldc_k,
 							      packer);
@@ -529,6 +533,8 @@ namespace FFLAS { /*  tools */
 			     0,
 			     C, ldc);
 
+		// cblas_dgemm(CblasRowMajor, CblasNoTrans,CblasNoTrans,
+			    // m,n,k,1,A,lda,B,ldb,0,C,ldc);
 
 		return C;
 	}
