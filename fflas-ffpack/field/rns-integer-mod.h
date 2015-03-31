@@ -441,10 +441,10 @@ namespace FFPACK {
 			Givaro::UnparametricRing<BasisElement> D;
 #pragma omp parallel for schedule(static, 32)
             for(size_t i = 0 ; i < n; ++i){
-            	__int128_t *A;
+            	int128_t *A;
             	BasisElement *Gamma;
             	Gamma = FFLAS::fflas_new<BasisElement>(_size);
-            	A = FFLAS::fflas_new<__int128_t>(_size);
+            	A = FFLAS::fflas_new<int128_t>(_size);
             	// Compute Gamma
             	for(size_t k = 0; k < _size ; ++k){
                 	Gamma[k] = B._ptr[i*_size+k]*_rns->_MMi[k];
@@ -460,7 +460,7 @@ namespace FFPACK {
                 for(size_t k = 0 ; k < _size ; ++k){
                 	A[k] = 0;
                 	for(size_t j = 0 ; j < _size ; ++j){
-                		A[k] += (__int128_t)(Gamma[k])*(int64_t)_Mi_modp_rns[j*_size+k];
+                		A[k] += (int128_t)(Gamma[k])*(int64_t)_Mi_modp_rns[j*_size+k];
                 		// A[k], mul_q(QFloat(Gamma[k], 0), _Mi_modp_rns[j*_size+k]));
                 		// A[i*_size+k] += Gamma[k] * Mi_modp[j*_size+k];
                 	}
@@ -468,9 +468,9 @@ namespace FFPACK {
 
                 // compute alpha
                 // FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-                __int128_t alpha = 0;
+                int128_t alpha = 0;
                 for(size_t k = 0 ; k < _size ; ++k){
-                	alpha += (__int128_t)Gamma[k]*(int64_t)_rns->_invbasis[k];
+                	alpha += (int128_t)Gamma[k]*(int64_t)_rns->_invbasis[k];
                 }
 
                 // -= alpha
