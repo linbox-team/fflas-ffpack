@@ -63,6 +63,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, i
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             int k = 0;
@@ -90,6 +91,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             vect_t vx1, vx2, vy1, vy2, vdat;
@@ -124,6 +126,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             vect_t vx1, vx2, vy1, vy2, vdat;

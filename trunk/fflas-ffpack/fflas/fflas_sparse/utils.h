@@ -36,6 +36,8 @@
 #include <numeric>
 #include <vector>
 
+namespace FFLAS{
+
 struct StatsMatrix {
     uint64_t rowdim = 0;
     uint64_t coldim = 0;
@@ -64,10 +66,8 @@ struct StatsMatrix {
     uint64_t nEmptyRows = 0;
     uint64_t nEmptyCols = 0;
     uint64_t nEmptyColsEnd = 0;
-    std::vector<uint64_t> rows;
     std::vector<uint64_t> denseRows;
     std::vector<uint64_t> denseCols;
-    std::vector<uint64_t> cols;
 };
 
 template <class It> double computeDeviation(It begin, It end) {
@@ -88,13 +88,12 @@ StatsMatrix getStat(const Field &F, const index_t *row, const index_t *col, type
     stats.nnz = nnz;
     stats.rowdim = rowdim;
     stats.coldim = coldim;
-    stats.rows.resize(rowdim);
-    stats.cols.resize(coldim);
-    std::fill(stats.rows.begin(), stats.rows.end(), 0);
-    std::fill(stats.cols.begin(), stats.cols.end(), 0);
+    std::vector<int64_t> rows(rowdim+1);
+    std::vector<int64_t> cols(coldim);
+    std::fill(rows.begin(), rows.end(), 0);
+    std::fill(cols.begin(), cols.end(), 0);
     for (uint64_t i = 0; i < nnz; ++i) {
-        stats.rows[row[i]]++;
-        stats.cols[col[i]]++;
+        cols[col[i]]++;
         if (F.isOne(val[i])) {
             stats.nOnes++;
         } else if (F.isMOne(val[i])) {
@@ -103,39 +102,29 @@ StatsMatrix getStat(const Field &F, const index_t *row, const index_t *col, type
             stats.nOthers++;
         }
     }
-    stats.nEmptyRows = std::count(stats.rows.begin(), stats.rows.end(), 0);
-    stats.nEmptyCols = std::count(stats.cols.begin(), stats.cols.end(), 0);
-    auto rowMinMax = std::minmax_element(stats.rows.begin(), stats.rows.end());
-    auto colMinMax = std::minmax_element(stats.cols.begin(), stats.cols.end());
+    rows[0] = row[0];
+    for(size_t i = 1 ; i < rowdim+1 ; ++i){
+        rows[i] = row[i] - row[i-1];
+    }
+    stats.nEmptyRows = std::count(rows.begin(), rows.end(), 0);
+    stats.nEmptyCols = std::count(cols.begin(), cols.end(), 0);
+    auto rowMinMax = std::minmax_element(rows.begin(), rows.end());
+    auto colMinMax = std::minmax_element(cols.begin(), cols.end());
     stats.minRow = (*(rowMinMax.first));
     stats.maxRow = (*(rowMinMax.second));
     stats.minCol = (*(colMinMax.first));
     stats.maxCol = (*(colMinMax.second));
-    std::vector<uint64_t> rowDiff(nnz);
-    std::vector<uint64_t> colDiff(nnz);
-    // std::adjacent_difference(row, row+nnz, rowDiff.begin());
-    // std::adjacent_difference(col, col+nnz, colDiff.begin());
-    // auto rowDiffMinMax = std::minmax_element(rowDiff.begin(), rowDiff.end());
-    // auto colDiffMinMax = std::minmax_element(colDiff.begin(), colDiff.end());
-    // stats.minRowDifference = *(rowDiffMinMax.first);
-    // stats.maxRowDifference = *(rowDiffMinMax.second);
-    // stats.minColDifference = *(colDiffMinMax.first);
-    // stats.maxColDifference = *(colDiffMinMax.second);
-    stats.averageRow = std::accumulate(stats.rows.begin(), stats.rows.end(), 0) / rowdim;
-    stats.averageCol = std::accumulate(stats.cols.begin(), stats.cols.end(), 0) / coldim;
-    // stats.averageRowDifference = std::accumulate(rowDiff.begin(), rowDiff.end(), 0)/nnz;
-    // stats.averageColDifference = std::accumulate(colDiff.begin(), colDiff.end(), 0)/nnz;
-    stats.deviationRow = (uint64_t)computeDeviation(stats.rows.begin(), stats.rows.end());
-    stats.deviationCol = (uint64_t)computeDeviation(stats.cols.begin(), stats.cols.end());
-    // stats.deviationRowDifference = (uint64_t)computeDeviation(rowDiff.begin(), rowDiff.end(),
-    // stats.averageRowDifference);
-    // stats.deviationColDifference = (uint64_t)computeDeviation(colDiff.begin(), colDiff.end(),
-    // stats.averageColDifference);
-    stats.nDenseRows = std::count_if(stats.rows.begin(), stats.rows.begin(),
+    stats.averageRow = std::accumulate(rows.begin(), rows.end(), 0) / rowdim;
+    stats.averageCol = std::accumulate(cols.begin(), cols.end(), 0) / coldim;
+    stats.deviationRow = (uint64_t)computeDeviation(rows.begin(), rows.end());
+    stats.deviationCol = (uint64_t)computeDeviation(cols.begin(), cols.end());
+    stats.nDenseRows = std::count_if(rows.begin(), rows.begin(),
                                      [rowdim](uint64_t &x) { return x >= DENSE_THRESHOLD * rowdim; });
-    stats.nDenseCols = std::count_if(stats.cols.begin(), stats.cols.begin(),
+    stats.nDenseCols = std::count_if(cols.begin(), cols.begin(),
                                      [coldim](uint64_t &x) { return x >= DENSE_THRESHOLD * coldim; });
     return stats;
+}
+
 }
 
 #endif

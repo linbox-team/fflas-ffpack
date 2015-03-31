@@ -90,7 +90,7 @@ inline void sparse_init(const Givaro::Modular<Givaro::Integer> &F, Sparse<Givaro
 }
 
 template <class IndexT>
-inline void sparse_init(const Givaro::Modular<Givaro::Integer> &F, Sparse<Givaro::Modular<Givaro::Integer>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
+inline void sparse_init(const Givaro::UnparametricRing<Givaro::Integer> &F, Sparse<Givaro::UnparametricRing<Givaro::Integer>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
                         Givaro::Integer* dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     A.m = rowdim;
     A.n = coldim;
@@ -140,6 +140,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR> &A, c
 
     A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
     A.st = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
+    A.stend = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
     A.dat = fflas_new(F, nnz, 1, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < nnz; ++i) {
@@ -149,6 +150,9 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR> &A, c
     A.st[0] = 0;
     for (size_t i = 1; i <= rowdim; ++i) {
         A.st[i] = A.st[i - 1] + rows[i - 1];
+    }
+    for(size_t i = 0 ; i < rowdim ; ++i){
+        A.stend[i] = A.st[i+1];
     }
 }
 

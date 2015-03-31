@@ -45,9 +45,6 @@
 
 #if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 #define __FFLASFFPACK_USE_SIMD // see configure...
- // #undef __FFLASFFPACK_USE_AVX2
- // #undef __FFLASFFPACK_USE_AVX
- // #undef __FFLASFFPACK_USE_SSE
 #endif
 
 #ifdef __CYGWIN__
