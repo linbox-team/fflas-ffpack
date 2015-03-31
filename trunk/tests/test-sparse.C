@@ -27,8 +27,8 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/args-parser.h"
-#include "fflas-ffpack/field/modular-double.h"
-#include "fflas-ffpack/field/unparametric.h"
+#include "givaro/modular-double.h"
+#include "givaro/unparametric.h"
 
 #include <vector>
 #include <iostream>
@@ -45,6 +45,7 @@
 using namespace FFLAS;
 using namespace FFPACK;
 using namespace std;
+using namespace Givaro;
 
 template <typename T> T from_string(std::string const & s) {
     std::stringstream ss(s);
@@ -107,7 +108,7 @@ void test_spmm(const Field &F, IndexT *row, IndexT *col,
     fspmm(F, matrix, blockSize, x, ldx, beta, y, ldy);
     sparse_delete(matrix);
 }
-
+#if 0
 template <class MatT, class Field, class IndexT>
 void test_pspmm(const Field &F, IndexT *row, IndexT *col,
                 typename Field::Element_ptr dat, index_t rowdim, index_t coldim,
@@ -150,10 +151,11 @@ test_pspmv_sell(const Field &F, IndexT *row, IndexT *col,
     sparse_delete(matrix);
     fflas_delete(tmp);
 }
+#endif
 
 int main(int argc, char **argv) {
-    // using Field = UnparametricField<double>;
-    using Field = Modular<float>;
+	//using Field = UnparametricRing<double>;
+	using Field = Modular<float>;
     // using Element = typename Field::Element;
 
     Field F(101);
@@ -290,7 +292,7 @@ int main(int argc, char **argv) {
      * pSPMV
      *
      *************************************************************************************/
-
+#if 0
     cout << "=== pspmv ===" << endl;
 
     test_pspmv<Sparse<Field, SparseMatrix_t::CSR>>(F, row, col, dat, rowdim,
@@ -351,7 +353,7 @@ int main(int argc, char **argv) {
     for (size_t i = 0; i < rowdim; ++i) {
         y1[i] = 0;
     }
-
+#endif
     // // test_spmm<Sparse<Field, SparseMatrix_t::CSR>>(F, row, col, dat,
     // rowdim,
     // coldim, nnz, 1, x, 1, y, 1, 1);
