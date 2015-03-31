@@ -121,10 +121,11 @@ namespace FFPACK {
 			:  _basis(basis.begin(),basis.end()), _basisMax(basis.size()), _negbasis(basis.size()), _M(1), _size(basis.size()), _pbits(0)
 		{
 			for(size_t i=0;i<_size;i++){
+				//std::cout<<"basis["<<i<<"]="<<_basis[i]<<std::endl;
 				_M*=_basis[i];
 				_pbits=std::max(_pbits, integer(_basis[i]).bitsize());
 			}
-			std::cout<<"M="<<_M<<std::endl;
+			//std::cout<<"M="<<_M<<std::endl;
 			precompute_cst();
 		}
 
