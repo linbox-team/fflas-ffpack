@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
     using Field        = Modular<Integer>;
     using FieldMat     = UnparametricRing<double>;
     using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double>;
-    using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::CSR_HYB>;
+    using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::HYB_ZO>;
 
     size_t iter = 10;
     Integer q = -1;
@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
     // construct RNS
     FFPACK::rns_double RNS(Integer(maxSum)*p, primeBitsize,true);
     size_t rnsSize = RNS._size;
-    
+    cout << "RNS basis: " << rnsSize << endl;
     // construct RNS field
     FieldComp Frns(p,RNS);
 

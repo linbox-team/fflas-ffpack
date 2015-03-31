@@ -439,7 +439,7 @@ namespace FFPACK {
 
 			// A=B._ptr;
 			Givaro::UnparametricRing<BasisElement> D;
-#pragma omp parallel for schedule(static, 32)
+// #pragma omp parallel for schedule(static, 32)
             for(size_t i = 0 ; i < n; ++i){
             	int128_t *A;
             	BasisElement *Gamma;
