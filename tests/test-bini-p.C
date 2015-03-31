@@ -11,7 +11,7 @@
 #define NEWWINO
 // #define NOTRANDOM
 //
-#define DIVIDE_INTO(x,y) (((x) + (y) - 1))
+#define DIVIDE_INTO(x,y) (((x) + (y) - 1)/(y))
 
 const int algos = 6 ;
 const int algos_k = 2 ;
@@ -506,9 +506,9 @@ namespace FFLAS { /*  tools */
 
 #ifndef TRE
 	// #ifndef NDEBUG
-#define TRE 1
+// #define TRE 1
 	// #else
-	// #define TRE (size_t)(__FFLASFFPACK_WINOTHRESHOLD)
+	#define TRE (size_t)(__FFLASFFPACK_WINOTHRESHOLD)
 	// #define TRE (size_t)(__FFLASFFPACK_WINOTHRESHOLD*0.9)
 	// #endif
 #endif
@@ -2140,8 +2140,8 @@ void test_algos(const Field &F, int m, int n, int k
 	       , const typename Field::Element * B, int ldb
 	       , int r
 	       , time_v & tim_k, time_v & tim_e , time_v & tim_p
-	       , FFLAS::Timer & tom
 	       , int_v & ok_k, int_v & ok_e, int_v & ok_p
+	       , FFLAS::Timer & tim_wd, int & nb_wd
 	       , bool with_e
 	       , bool with_k
 	      )
@@ -2155,7 +2155,7 @@ void test_algos(const Field &F, int m, int n, int k
 	tmp.clear();tmp.start();
 	fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 	      m,n,k, 1, A,k, B,n, 0, D, n);
-	tmp.stop(); tom += tmp ;
+	tmp.stop(); tim_wd += tmp ; nb_wd ++;
 
 	/*  bini_p */
 	if (with_e) {
@@ -2171,7 +2171,6 @@ void test_algos(const Field &F, int m, int n, int k
 
 	/*  compress */
 	if (with_k && std::is_same<typename FieldTraits<Field>::category,FFLAS::FieldCategories::ModularTag>::value && (! FieldTraits<Field>::balanced)) {
-		std::cout << "xxx" << std::endl;
 		for (int algo = 0 ; algo < algos_k ; ++algo) {
 			tmp.clear();tmp.start();
 			FFLAS::Protected::gemm_compress(F,m,n,k,A,k,B,n,C,n,r,selec_k[algo]);
@@ -2298,8 +2297,8 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
 #endif
 
 	time_v tim_e(algos), tim_p(algos), tim_k(algos_k);
-	FFLAS::Timer tom; tom.clear();
-	FFLAS::Timer tam; tam.clear();
+	FFLAS::Timer tim_wd; tim_wd.clear();
+	FFLAS::Timer tim_wf; tim_wf.clear();
 	FFLAS::Timer tmp;
 	for (int i = 0 ; i < algos ; ++i) {
 		tim_e[i].clear();
@@ -2312,9 +2311,10 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
 	int iters = 4 ;
 
 	int_v ok_p(algos,0),  ok_e(algos,0), ok_k(algos_k,0);
+	int nb_wd = 0 , nb_wf = 0 ;
 
 	for (int b = 0 ; b < iters ; ++b) {
-		std::cout << b+1 << " of " << iters << std::endl;
+		std::cout << "iter " << b+1 << " of " << iters << std::endl;
 #if not defined(NOTRANDOM)
 		FFPACK::RandomMatrix(F,A,m,k,k);
 		FFPACK::RandomMatrix(F,B,k,n,n);
@@ -2325,12 +2325,12 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
 		tmp.clear();tmp.start();
 		fgemm(F_f,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,
 		      m,n,k, 1, A_f,k, B_f,n, 0, C_f, n);
-		tmp.stop(); tam += tmp ;
+		tmp.stop(); tim_wf += tmp ; nb_wf ++ ;
 
 		test_algos(F,m,n,k,A,k,B,n,r,
 			   tim_k,tim_e,tim_p,
-			   tom,
 			   ok_k,ok_e,ok_p,
+			   tim_wd,nb_wd,
 			   with_e,with_k);
 	}
 	std::cout  << std::endl << "results" << std::endl;
@@ -2340,10 +2340,12 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
 	double bini_k = descrip(algos_k,ok_k,tim_k,iters,descr_k,"Bini_k");
 
 
+	double t_wd = tim_wd.usertime()/(double)(nb_wd);
+	double t_wf = tim_wf.usertime()/(double)(nb_wf);
 
-	std::cout << "Wino d : " << tom.usertime()/(double)(iters*algos) << 's'<<  std::endl;
-	std::cout << "Wino f : " << tam.usertime()/(double)iters << 's'<<  std::endl;
-	double wino =  std::min(tom.usertime()/(double)algos,tam.usertime())/(double)iters ;
+	std::cout << "Wino d : " << t_wd << 's'<<  std::endl;
+	std::cout << "Wino f : " << t_wf << 's'<<  std::endl;
+	double wino =  std::min(t_wd,t_wf) ;
 	if (bini_e>=0)
 		std::cout << "Gain e: " << ((bini_e-wino)/wino)*100 << '%' << std::endl;
 	if (bini_p>=0)
