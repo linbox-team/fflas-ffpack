@@ -98,7 +98,7 @@ inline int32_t ctz(uint64_t val) {
 
 #ifdef __x86_64__
 // division 128bits by 64 bits
-// __int128(u1,u0) = u1*2^64+u0, div v, rem r
+// int128_t(u1,u0) = u1*2^64+u0, div v, rem r
 // return quo
 static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 {
@@ -136,9 +136,9 @@ static inline uint32_t mullhi_u32(uint32_t x, uint32_t y) {
 }
 
 static inline int64_t mulhi_64(int64_t x, int64_t y) {
-#ifdef __x86_64__ 
-        __int128 xl = x, yl = y;
-        __int128 rl = xl * yl;
+#ifdef __x86_64__
+        int128_t xl = x, yl = y;
+        int128_t rl = xl * yl;
         return (int64_t)(rl >> 64);
 #else
     const uint32_t mask = 0xFFFFFFFF;
@@ -153,8 +153,8 @@ static inline int64_t mulhi_64(int64_t x, int64_t y) {
 
 static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
 #if 0 // todo check this type
-        __int128 xl = x, yl = y;
-        __int128 rl = xl * yl;
+        int128_t xl = x, yl = y;
+        int128_t rl = xl * yl;
         return (int64_t)(rl >> 64);
 #else
     const uint32_t mask = 0xFFFFFFFF;

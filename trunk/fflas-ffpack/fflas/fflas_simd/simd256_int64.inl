@@ -243,8 +243,8 @@ template <> struct Simd256_impl<true, true, true, 8> {
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
-        return set((__int128(ca.t[0]) * cb.t[0]) >> 64, (__int128(ca.t[1]) * cb.t[1]) >> 64,
-                   (__int128(ca.t[2]) * cb.t[2]) >> 64, (__int128(ca.t[3]) * cb.t[3]) >> 64);
+        return set((int128_t(ca.t[0]) * cb.t[0]) >> 64, (int128_t(ca.t[1]) * cb.t[1]) >> 64,
+                   (int128_t(ca.t[2]) * cb.t[2]) >> 64, (int128_t(ca.t[3]) * cb.t[3]) >> 64);
     }
 
     /*
