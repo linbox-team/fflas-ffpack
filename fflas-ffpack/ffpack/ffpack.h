@@ -490,7 +490,7 @@ namespace FFPACK { /* ludivine */
 					typename Field::Element_ptr A, const size_t lda,
 					size_t* P, size_t* Q,
 					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
-	
+
 	namespace Protected {
 
 
@@ -1008,7 +1008,7 @@ namespace FFPACK { /* Solutions */
 	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
 						   typename Field::Element_ptr A, const size_t lda,
 						   size_t* &rkprofile);
-	
+
 	/**  Computes the column rank profile of A.
 	 *
 	 * @param F
@@ -1026,7 +1026,7 @@ namespace FFPACK { /* Solutions */
 	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
 							  typename Field::Element_ptr A, const size_t lda,
 							  size_t* &rkprofile);
-	
+
 	/** RowRankProfileSubmatrixIndices.
 	 * Computes the indices of the submatrix r*r X of A whose rows correspond to
 	 * the row rank profile of A.
@@ -1098,7 +1098,7 @@ namespace FFPACK { /* Solutions */
 									typename Field::Element_ptr A,
 									const size_t lda,
 									typename Field::Element_ptr& X, size_t& R);
-	
+
 	/** Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
 	 *
 	 *
@@ -1216,13 +1216,13 @@ namespace FFPACK { /* Solutions */
 					typename Field::Element_ptr A, const size_t lda,
 					const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
-	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U 
+	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U
 	 * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
 	 * If Uplo == FflasLower:
-	 *   T is N x N (already allocated) such that A T = C is a transformation of A in 
+	 *   T is N x N (already allocated) such that A T = C is a transformation of A in
 	 *   Column echelon form
 	 * Else
-	 *   T is M x M (already allocated) such that T A = E is a transformation of A in 
+	 *   T is M x M (already allocated) such that T A = E is a transformation of A in
 	 *   Row Echelon form
 	 * @param F: base field
 	 * @param UpLo: Lower means Transformation to Column Echelon Form, Upper, to Row Echelon Form
@@ -1273,7 +1273,7 @@ namespace FFPACK { /* Solutions */
 						   const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
     /** Cleans up a compact storage A=L\U of rank R obtained by ReducedRowEchelonForm or
-	 * ReducedColumnEchelonForm with transform = true. 
+	 * ReducedColumnEchelonForm with transform = true.
 	 * Either L or U is in Echelon form (depending on Uplo)
 	 * The echelon structure is defined by the first R values of the array P.
 	 * @param F: base field
@@ -1294,13 +1294,13 @@ namespace FFPACK { /* Solutions */
 						   typename Field::Element_ptr A, const size_t lda,
 						   const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
 
-	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U 
+	/** Extracts a transformation matrix to echelon form from a compact storage A=L\U
 	 * of rank R obtained by RowEchelonForm or ColumnEchelonForm.
 	 * If Uplo == FflasLower:
-	 *   T is N x N (already allocated) such that A T = C is a transformation of A in 
+	 *   T is N x N (already allocated) such that A T = C is a transformation of A in
 	 *   Column echelon form
 	 * Else
-	 *   T is M x M (already allocated) such that T A = E is a transformation of A in 
+	 *   T is M x M (already allocated) such that T A = E is a transformation of A in
 	 *   Row Echelon form
 	 * @param F: base field
 	 * @param UpLo: selects Col or Row Echelon Form
@@ -1322,10 +1322,10 @@ namespace FFPACK { /* Solutions */
 								typename Field::ConstElement_ptr A, const size_t lda,
 								typename Field::Element_ptr T, const size_t ldt,
 								const FFPACK_LU_TAG LuTag = FfpackSlabRecursive);
-		/** Auxiliary routine: determines the permutation that changes a PLUQ decomposition 
-		 * into a echelon form revealing PLUQ decomposition 
+		/** Auxiliary routine: determines the permutation that changes a PLUQ decomposition
+		 * into a echelon form revealing PLUQ decomposition
 		 */
-	void 
+	void
 	PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm);
 
 } // FFPACK
@@ -1361,7 +1361,9 @@ namespace FFPACK { /* not used */
 #include "ffpack_ftrtr.inl"
 #include "ffpack_pluq.inl"
 #include "ffpack_pluq_mp.inl"
+#ifdef __FFLASFFPACK_USE_OPENMP
 #include "ffpack_ppluq.inl"
+#endif
 #include "ffpack_ludivine.inl"
 #include "ffpack_ludivine_mp.inl"
 #include "ffpack_echelonforms.inl"
