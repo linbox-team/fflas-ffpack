@@ -36,12 +36,10 @@
 
 #include <vector>
 #include <cmath>
-// extern "C" {
-// 	#include <quadmath.h>
-// }
 //using namespace std; // NO WAY! A.B. - 2014-12-18
 
 #include <givaro/modular-integer.h>
+#include "recint/recint.h" 
 #include <givaro/givinteger.h>
 
 #include "fflas-ffpack/field/rns-double.h"
@@ -436,31 +434,37 @@ namespace FFPACK {
 			// std::cout << "modp scalar quad" << std::endl;
 			FFLAS::Timer T;
 			size_t _size= _rns->_size;
-
+			using namespace RecInt;
 			// A=B._ptr;
 			Givaro::UnparametricRing<BasisElement> D;
 // #pragma omp parallel for schedule(static, 32)
             for(size_t i = 0 ; i < n; ++i){
-            	int128_t *A;
+            	ruint128 *A;
             	BasisElement *Gamma;
             	Gamma = FFLAS::fflas_new<BasisElement>(_size);
-            	A = FFLAS::fflas_new<int128_t>(_size);
+            	A = FFLAS::fflas_new<ruint128>(_size);
             	// Compute Gamma
             	for(size_t k = 0; k < _size ; ++k){
-                	Gamma[k] = B._ptr[i*_size+k]*_rns->_MMi[k];
-                    Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
-					if(Gamma[k] >= _rns->_basis[k]){
-						Gamma[k] -= _rns->_basis[k];
-					}else if(Gamma[k] < 0){
-						Gamma[k] += _rns->_basis[k];
-					}
+                	// Gamma[k] = B._ptr[i*_size+k]*_rns->_MMi[k];
+                	ruint128 tmp = ruint128(B._ptr[i*_size+k])*ruint128(_rns->_MMi[k]);
+                	Gamma[k] = (double)(int64_t)(tmp % ruint128(_rns->_basis[k]));
+                	// if(Gamma[k] == 0)
+                	// 	std::cout << "Error : == 0 " << i << " " << k << " " << B._ptr[i*_size+k] << std::endl;
+                	// std::cout << Gamma[k] << " ";
+                    // Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
+					// if(Gamma[k] >= _rns->_basis[k]){
+					// 	Gamma[k] -= _rns->_basis[k];
+					// }else if(Gamma[k] < 0){
+					// 	Gamma[k] += _rns->_basis[k];
+					// }
                 }
+                // std::cout << std::endl;
                 // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
                 // Mul by Mi_modp
                 for(size_t k = 0 ; k < _size ; ++k){
                 	A[k] = 0;
                 	for(size_t j = 0 ; j < _size ; ++j){
-                		A[k] += (int128_t)(Gamma[k])*(int64_t)_Mi_modp_rns[j*_size+k];
+                		A[k] += ruint128(Gamma[k]*_Mi_modp_rns[j*_size+k]);
                 		// A[k], mul_q(QFloat(Gamma[k], 0), _Mi_modp_rns[j*_size+k]));
                 		// A[i*_size+k] += Gamma[k] * Mi_modp[j*_size+k];
                 	}
@@ -468,9 +472,9 @@ namespace FFPACK {
 
                 // compute alpha
                 // FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-                int128_t alpha = 0;
+                ruint128 alpha = 0;
                 for(size_t k = 0 ; k < _size ; ++k){
-                	alpha += (int128_t)Gamma[k]*(int64_t)_rns->_invbasis[k];
+                	alpha += ruint128(Gamma[k])/(int64_t)_rns->_basis[k];
                 }
 
                 // -= alpha
