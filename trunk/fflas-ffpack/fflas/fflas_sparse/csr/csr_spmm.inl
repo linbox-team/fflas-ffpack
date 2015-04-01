@@ -583,15 +583,15 @@ inline void fspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Sparse
             vect_t y1, x1, y2, x2;
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
-                y1 = simd::load(y+i*ldy+k);
-                y2 = simd::load(y+i*ldy+k+simd::vect_size);
+                y1 = simd::loadu(y+i*ldy+k);
+                y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
                 simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
                 simd::storeu(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
             }
             for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
-                y1 = simd::load(y+i*ldy+k);
+                y1 = simd::loadu(y+i*ldy+k);
                 x1 = simd::loadu(x + col[j] * ldx + k);
                 simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
             }
