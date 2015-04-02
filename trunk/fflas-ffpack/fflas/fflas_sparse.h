@@ -35,6 +35,7 @@
 
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
+#include "recint/recint.h" 
 
 #ifndef index_t
 #define index_t uint32_t

@@ -330,7 +330,6 @@ namespace FFLAS {
 		}
 	}
 
-	template<>
 	template<class Field>
 	void readMyMachineType<Field,mpz_t>:: operator() (const Field &F,
 						       typename Field::Element & modulo,
@@ -382,32 +381,32 @@ namespace FFLAS {
 			     const mask_t data_type,
 			     const mask_t field_desc)
 	{
-		switch(data_type) {
-		case (1<<0) + 0 :
-			readMyMachineType<Field,int8_t   >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<0) + 1 :
-			readMyMachineType<Field,uint8_t  >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<1) + 0 :
-			readMyMachineType<Field,int16_t  >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<1) + 1 :
-			readMyMachineType<Field,uint16_t >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<2) + 0 :
-			readMyMachineType<Field,int32_t  >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<2) + 0 :
-			readMyMachineType<Field,uint32_t >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<3) + 0 :
-			readMyMachineType<Field,int64_t  >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<3) + 0 :
-			readMyMachineType<Field,uint64_t >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<8) :
-			readMyMachineType<Field,float    >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<8)+1 :
-			readMyMachineType<Field,double   >() (F,val, modulo, file,dims,data_type,field_desc);
-		case (1<<16) :
-			readMyMachineType<Field,mpz_t    >() (F,val, modulo, file,dims,data_type,field_desc);
-		default :
-			throw("bad data type descriptor");
-		}
+		// switch(data_type) {
+		// case (1<<0) + 0 :
+		// 	readMyMachineType<Field,int8_t   >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<0) + 1 :
+		// 	readMyMachineType<Field,uint8_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<1) + 0 :
+		// 	readMyMachineType<Field,int16_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<1) + 1 :
+		// 	readMyMachineType<Field,uint16_t >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<2) + 0 :
+		// 	readMyMachineType<Field,int32_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<2) + 0 :
+		// 	readMyMachineType<Field,uint32_t >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<3) + 0 :
+		// 	readMyMachineType<Field,int64_t  >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<3) + 0 :
+		// 	readMyMachineType<Field,uint64_t >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<8) :
+		// 	readMyMachineType<Field,float    >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<8)+1 :
+		// 	readMyMachineType<Field,double   >() (F,val, modulo, file,dims,data_type,field_desc);
+		// case (1<<16) :
+		// 	readMyMachineType<Field,mpz_t    >() (F,val, modulo, file,dims,data_type,field_desc);
+		// default :
+		// 	throw("bad data type descriptor");
+		// }
 
 	}
 
