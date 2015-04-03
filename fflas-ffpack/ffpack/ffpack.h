@@ -402,9 +402,6 @@ namespace FFPACK { /* ftrtr */
 // #include "ffpack_ftrtr.inl"
 
 namespace FFPACK { /* PLUQ */
-	void RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-							   const size_t * P, const size_t * Q,
-							   const size_t M, const size_t N, const size_t R);
 
 	/** @brief Compute the PLUQ factorization of the given matrix.
 	 * Using a block algorithm and return its rank.
@@ -986,13 +983,12 @@ namespace FFPACK { /* Solutions */
 			       typename Field::Element_ptr A, const size_t lda,
 			       typename Field::Element_ptr& NS, size_t& ldn,
 			       size_t& NSdim);
-	/****************/
-	/* RANK PROFILE */
-	/****************/
 
+	/*****************/
+	/* RANK PROFILES */
+	/*****************/
 
-
-	/**  Computes the row rank profile of A.
+	/** @brief Computes the row rank profile of A.
 	 *
 	 * @param F
 	 * @param M
@@ -1000,16 +996,20 @@ namespace FFPACK { /* Solutions */
 	 * @param A input matrix of dimension M x N
 	 * @param lda
 	 * @param rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
+	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
+	 * A is modified
 	 * rkprofile is allocated during the computation.
 	 * @returns R
 	 */
 	template <class Field>
 	size_t RowRankProfile (const Field& F, const size_t M, const size_t N,
 						   typename Field::Element_ptr A, const size_t lda,
-						   size_t* &rkprofile);
+						   size_t* &rkprofile,
+						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/**  Computes the column rank profile of A.
+
+	/**  @brief Computes the column rank profile of A.
 	 *
 	 * @param F
 	 * @param M
@@ -1017,6 +1017,7 @@ namespace FFPACK { /* Solutions */
 	 * @param A input matrix of dimension
 	 * @param lda
 	 * @param rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
+	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
 	 * A is modified
 	 * rkprofile is allocated during the computation.
@@ -1025,8 +1026,50 @@ namespace FFPACK { /* Solutions */
 	template <class Field>
 	size_t ColumnRankProfile (const Field& F, const size_t M, const size_t N,
 							  typename Field::Element_ptr A, const size_t lda,
-							  size_t* &rkprofile);
+							  size_t* &rkprofile,
+							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+	/**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
+	 *
+	 * Works with both the CUP/PLE decompositions (obtained by LUdivine) or the PLUQ decomposition
+	 * Assumes that the output vector containing the rank profile is already allocated.
+	 * @param P the permutation carrying the rank profile information
+	 * @param N the row/col dimension for a row/column rank profile
+	 * @param R the rank of the matrix (
+	 * @param rkprofile return the rank profile as an array of indices
+	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+	 *
+	 * A is modified
+	 *
+	 */
+	void RankProfileFromLU (const size_t* P, const size_t N, const size_t R,
+							size_t* rkprofile, const FFPACK_LU_TAG LuTag);
+	
+	/**  @brief Recovers the row and column rank profiles of any leading submatrix from the PLUQ decomposition.
+	 *
+	 * Only works with the PLUQ decomposition
+	 * Assumes that the output vectors containing the rank profiles are already allocated.
+	 * 
+	 * @param P the permutation carrying the rank profile information
+	 * @param M the row dimension of the initial matrix
+	 * @param N the column dimension of the initial matrix
+	 * @param R the rank of the initial matrix 
+	 * @param LSm the row dimension of the leading submatrix considered
+	 * @param LSn the column dimension of the leading submatrix considered
+	 * @param P the row permutation of the PLUQ decomposition
+	 * @param Q the column permutation of the PLUQ decomposition
+	 * @param RRP return the row rank profile of the leading 
+	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+	 * @return the rank of the LSm x LSn leading submatrix
+	 *
+	 * A is modified
+	 * @bib
+	 * - Dumas J-G., Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13.
+	 */
+	size_t LeadingSubmatrixRankProfiles (const size_t M, const size_t N, const size_t R,
+										 const size_t LSm, const size_t LSn,
+										 const size_t* P, const size_t* Q,
+										 size_t* RRP, size_t* CRP);
 	/** RowRankProfileSubmatrixIndices.
 	 * Computes the indices of the submatrix r*r X of A whose rows correspond to
 	 * the row rank profile of A.
@@ -1377,6 +1420,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_minpoly.inl"
 #include "ffpack_krylovelim.inl"
 #include "ffpack_permutation.inl"
+#include "ffpack_rankprofiles.inl"
 #include "ffpack.inl"
 #endif // __FFLASFFPACK_ffpack_H
 

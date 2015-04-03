@@ -176,53 +176,32 @@ namespace FFPACK {
 
 	}
 
-	template<class Field>
+	void RandomRankProfile (size_t N, size_t R, size_t* rkp){
+		size_t curr = 0;
+		std::vector<bool> rows(N,false);
+		while (curr<R){
+			size_t i;
+			while (rows [i = rand() % N]);
+			rows[i] = true;
+			rkp [curr] = i;
+			curr++;
+		}
+	}
 
-	/*! @brief  Random Matrix with prescribed rank, with random  rank profile matrix
-	 * Creates an \c m x \c n matrix with random entries, rank \c r and with a rank profile matrix
-	 * chosen uniformly at random.
-	 * @param F field
-	 * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
-	 * @param r rank of the matrix to build
-	 * @param m number of rows in \p A
-	 * @param n number of cols in \p A
-	 * @param lda leading dimension of \p A
-	 * @return pointer to \c A.
-	 */
-	void RandomMatrixWithRankandRandomRPM (const Field& F, typename Field::Element_ptr A, size_t lda,
-					       size_t R, size_t M, size_t N){
-		    // generate the r pivots in the rank profile matrix E
-	size_t curr = 0;
-	std::vector<bool> rows(M,false);
-	std::vector<bool> cols(N,false);
-	size_t pivot_r[R];
-	size_t pivot_c[R];
+	
+	template<class Field>
+	void RandomMatrixWithRankandRPM (const Field& F, typename Field::Element_ptr A, size_t lda,
+					 size_t R, size_t M, size_t N,
+					 const size_t * RRP, const size_t * CRP){
+	
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
 	FFPACK::NonzeroRandIter<Field,Randiter> nzR(F,RI);
-	while (curr<R){
-		size_t i,j;
-		while (rows [i = rand() % M]);
-		while (cols [j = rand() % N]);
-		rows[i] = true;
-		cols[j] = true;
-		pivot_r[curr] = i;
-		pivot_c[curr] = j;
-		curr++;
-	}
-	// std::cerr<<"pivot_r = [ ";;
-	// for (size_t i = 0; i<R; i++)
-	// 	std::cerr<<pivot_r[i]<<" ";
-	// std::cerr<<"]"<<std::endl;
-	// std::cerr<<"pivot_c = [ ";;
-	// for (size_t i = 0; i<R; i++)
-	// 	std::cerr<<pivot_c[i]<<" ";
-	// std::cerr<<"]"<<std::endl;
 	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
 	FFLAS::fzero(F, M, N, L, N);
 	for (size_t k = 0; k < R; ++k){
-		size_t i = pivot_r[k];
-		size_t j = pivot_c[k];
+		size_t i = RRP[k];
+		size_t j = CRP[k];
 		nzR.random (L [i*N+j]);
 		for (size_t l=i+1; l < M; ++l)
 			RI.random (L [l*N+j]);
@@ -245,7 +224,31 @@ namespace FFPACK {
 	FFLAS::fflas_delete(L);
 	FFLAS::fflas_delete(U);
 
-}
+	}
+
+        /*! @brief  Random Matrix with prescribed rank, with random  rank profile matrix
+	 * Creates an \c m x \c n matrix with random entries, rank \c r and with a rank profile matrix
+	 * chosen uniformly at random.
+	 * @param F field
+	 * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+	 * @param r rank of the matrix to build
+	 * @param m number of rows in \p A
+	 * @param n number of cols in \p A
+	 * @param lda leading dimension of \p A
+	 * @return pointer to \c A.
+	 */
+	template<class Field>
+	void RandomMatrixWithRankandRandomRPM (const Field& F, typename Field::Element_ptr A, size_t lda,
+					       size_t R, size_t M, size_t N){
+		    // generate the r pivots in the rank profile matrix E
+		size_t pivot_r[R];
+		size_t pivot_c[R];
+			
+		RandomRankProfile (M, R, pivot_r);
+		RandomRankProfile (N, R, pivot_c);
+		RandomMatrixWithRankandRPM (F, A, lda, R, M, N, pivot_r, pivot_c);
+	}
+	
 	/*! @brief  Random Matrix with prescribed det.
 	 * @bug duplicate with linbox
 	 * Creates a \c m x \c n matrix with random entries and rank \c r.
@@ -347,7 +350,7 @@ namespace FFPACK {
 	template<typename Field>
 	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();}
 	template<>
-	Givaro::Integer maxFieldElt<Givaro::UnparametricRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
+	Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
 
 	/*** Field chooser for test according to characteristic q and bitsize b ***/
 	/* if q=-1 -> field is chosen randomly with a charateristic of b bits

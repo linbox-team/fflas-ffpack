@@ -39,6 +39,7 @@ BASIC_TESTS =              \
 		test-modulararith      \
 		test-det               \
 		test-echelon           \
+		test-rankprofiles           \
 		test-compressQ \
 		test-fadd \
 		test-finit \
@@ -89,6 +90,7 @@ test_lu_SOURCES              = test-lu.C
 test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
 test_echelon_SOURCES           = test-echelon.C
+test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
 test_fger_SOURCES             = test-fger.C
 #  test_fgemm_SOURCES             = test-fgemm.C
