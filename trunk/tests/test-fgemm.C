@@ -412,7 +412,7 @@ int main(int argc, char** argv)
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
-		ok &= run_with_field<UnparametricRing<Givaro::Integer> >(0,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
+		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 		
 		//ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p);
 		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);

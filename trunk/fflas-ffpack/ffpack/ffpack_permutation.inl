@@ -186,9 +186,10 @@ namespace FFPACK {
 			MathP[i] = i;
 		for (size_t i=0; i<N; i++){
 			if (LapackP[i] != i){
-				size_t tmp = MathP[i];
-				MathP[i] = MathP[LapackP[i]];
-				MathP[LapackP[i]] = tmp;
+				std::swap(MathP[i],MathP[LapackP[i]]);
+				// size_t tmp = MathP[i];
+				// MathP[i] = MathP[LapackP[i]];
+				// MathP[LapackP[i]] = tmp;
 			}
 		}
 	}

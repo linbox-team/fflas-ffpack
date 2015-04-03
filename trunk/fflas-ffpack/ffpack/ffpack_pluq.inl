@@ -819,50 +819,6 @@ namespace FFPACK {
 		return R1+R2+R3+R4;
 	}
 
-	inline void
-	RankProfilesFromPLUQ (size_t* RowRankProfile, size_t* ColumnRankProfile,
-			      const size_t * P, const size_t * Q,
-			      const size_t M, const size_t N, const size_t R)
-	{
-		size_t * RRP=FFLAS::fflas_new<size_t>(M);
-		size_t * CRP=FFLAS::fflas_new<size_t>(N);
-		for (size_t i=0;i < M; ++i)
-			RRP [i]=i;
-		for (size_t i=0;i < N; ++i)
-			CRP [i]=i;
-
-		// std::cerr<<"CRP = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<CRP[i]<<" ";
-		// std::cerr<<std::endl;
-		for (size_t i=0; i<M; ++i)
-			if (P[i] != i){
-				size_t tmp = RRP [i];
-				RRP [i] = RRP [P [i]];
-				RRP [P [i]] = tmp;
-			}
-		for (size_t i=0; i<R; ++i)
-			RowRankProfile[i] = RRP[i];
-		std::sort(RowRankProfile,RowRankProfile+R);
-		for (size_t i=0; i<N; ++i){
-			// std::cerr<<"Q["<<i<<"] ="<<Q[i]<<std::endl;
-			if (Q[i] != i){
-				size_t tmp = CRP [i];
-				CRP [i] = CRP [Q [i]];
-				CRP [Q [i]] = tmp;
-			}
-		}
-		for (size_t i=0; i<R; ++i)
-			ColumnRankProfile [i] = CRP [i];
-		std::sort(ColumnRankProfile,ColumnRankProfile+R);
-		// std::cerr<<"CRP = ";
-		// for (size_t i=0; i<N; ++i)
-		// 	std::cerr<<CRP[i]<<" ";
-		// std::cerr<<std::endl;
-		FFLAS::fflas_delete( RRP);
-		FFLAS::fflas_delete( CRP);
-	}
-
 
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL

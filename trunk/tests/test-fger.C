@@ -153,10 +153,10 @@ bool launch_fger(const Field & F,
 	FFLAS::fzero(F,m,n,C,ldc);
 	Element_ptr D = FFLAS::fflas_new (F, m, n);
 	for(size_t i = 0;i<iters;++i){
-		A = FFLAS::fflas_new (F, m*inca, 1);
-		RandomMatrix(F,A,m*inca,1,1);
-		B = FFLAS::fflas_new (F, n*incb, 1);
-		RandomMatrix(F,B,n*incb,1,1);
+		A = FFLAS::fflas_new (F, m, inca);
+		RandomMatrix(F,A,m,inca,inca);
+		B = FFLAS::fflas_new (F, n, incb);
+		RandomMatrix(F,B,n,incb,incb);
 		RandomMatrix(F,C,m,n,ldc);
 		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		FFLAS::fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
