@@ -66,11 +66,11 @@
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
 namespace FFLAS {
 
-	// /// Storage by row or col ?
-	// enum FFLAS_ORDER {
-	// 	FflasRowMajor=101, /**< row major */
-	// 	FflasColMajor=102  /**< col major */
-	// };
+	/// Storage by row or col ?
+	enum FFLAS_ORDER {
+		FflasRowMajor=101, /**< row major */
+		FflasColMajor=102  /**< col major */
+	};
 	// public:
 	/// Is matrix transposed ?
 	enum FFLAS_TRANSPOSE {
