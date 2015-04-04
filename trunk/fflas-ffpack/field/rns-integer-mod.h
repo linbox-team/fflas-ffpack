@@ -272,7 +272,7 @@ namespace FFPACK {
 			BasisElement *Gamma, *alpha, *A;
 			A=B._ptr;
 			size_t rda = B._stride;
-			Givaro::UnparametricRing<BasisElement> D;
+			Givaro::ZRing<BasisElement> D;
 			Gamma = FFLAS::fflas_new(D,_size,n);
 			alpha = FFLAS::fflas_new(D,n,1);
 
@@ -348,7 +348,7 @@ namespace FFPACK {
 			FFLAS::fscal(_RNSdelayed, m, n, mmi, B, lda, typename RNS::Element_ptr(Gamma,mn), n);
 
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
-			Givaro::UnparametricRing<BasisElement> D;
+			Givaro::ZRing<BasisElement> D;
 
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
 

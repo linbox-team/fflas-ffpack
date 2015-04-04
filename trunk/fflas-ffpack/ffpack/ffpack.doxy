@@ -22,7 +22,7 @@
 
 
 /** \ingroup fflas-ffpack
- *   \defgroup ffpack ffpack
+ *   \defgroup ffpack FFPACK
  *
  *	\brief Class FFPACK provides functions using fflas much as Lapack uses BLAS.
  *

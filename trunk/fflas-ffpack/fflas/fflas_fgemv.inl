@@ -222,21 +222,27 @@ namespace FFLAS{
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & H)
 	{
-		typename MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag>::DelayedField::Element alphadf=alpha, betadf=beta;
+		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
+		typedef typename HelperType::DelayedField::Element DFElt;
+		typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
+		typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
+		DFElt alphadf=alpha, betadf=beta;
+		size_t Ydim = (ta==FflasNoTrans)?M:N;
+		size_t Xdim = (ta==FflasNoTrans)?N:M;
 
-		 size_t Ydim = (ta==FflasNoTrans)?M:N;
-		 size_t Xdim = (ta==FflasNoTrans)?N:M;
-
-		if (F.isMOne (alpha)) alphadf = -1.0;
+		if (F.isMOne (alpha)) alphadf =  -F.one;
 		else {
-			alphadf = 1.0;
+			alphadf = F.one;
 			if (! F.isOne( alpha)) {
 				// Compute y = A*x + beta/alpha.y, then y *= alpha
 				FFLASFFPACK_check(!F.isZero(alpha));
-				F.div (betadf, beta, alpha);
+				typename Field::Element betadalpha;
+				F.init(betadalpha);
+				F.div (betadalpha, beta, alpha);
+				betadf=betadalpha;
 			}
 		}
-		if (F.isMOne(betadf)) betadf = -1.0;
+		 if (F.isMOne(betadf)) betadf = -F.one;
 
 		size_t kmax = H.MaxDelayedDim (betadf);
 
@@ -283,29 +289,30 @@ namespace FFLAS{
 		}
 		MMHelper<typename associatedDelayedField<const Field>::field, MMHelperAlgo::Classic> Hfp(H);
 
-		fgemv (H.delayedField, ta, M1, N1, alphadf, A+nblock*shiftA, lda,
-		       X+nblock*k2*incX, incX, betadf, Y, incY, Hfp);
+		fgemv (H.delayedField, ta, M1, N1, alphadf, (DFCElt_ptr)A+nblock*shiftA, lda,
+		       (DFCElt_ptr)X+nblock*k2*incX, incX, betadf, (DFElt_ptr)Y, incY, Hfp);
 
 		for (size_t i = 0; i < nblock; ++i) {
 			freduce (F, Ydim ,Y, incY);
 			Hfp.initC();
-			fgemv (H.delayedField, ta, Mi, Ni, alphadf, A+i*shiftA, lda,
-			       X+i*k2*incX, incX, F.one, Y, incY, Hfp);
+			fgemv (H.delayedField, ta, Mi, Ni, alphadf, (DFCElt_ptr)A+i*shiftA, lda,
+			       (DFCElt_ptr)X+i*k2*incX, incX, F.one, (DFElt_ptr)Y, incY, Hfp);
 		}
 
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			double al; F.convert(al, alpha);
-			if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+			DFElt al; F.convert(al, alpha);
+			if (al<0) al = -al;
+			if (al*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				freduce (F, Ydim, Y, incY);
 				Hfp.initOut();
 			}
-			fscalin (H.delayedField, Ydim, alpha, Y, incY);
+			fscalin (H.delayedField, Ydim, alpha, (DFElt_ptr)Y, incY);
 			if (alpha>0){
-				H.Outmin = alpha*Hfp.Outmin;
-				H.Outmax = alpha*Hfp.Outmax;
+				H.Outmin = al*Hfp.Outmin;
+				H.Outmax = al*Hfp.Outmax;
 			} else {
-				H.Outmin = alpha*Hfp.Outmax;
-				H.Outmax = alpha*Hfp.Outmin;
+				H.Outmin = -al*Hfp.Outmax;
+				H.Outmax = -al*Hfp.Outmin;
 			}
 		}else {
 			H.Outmin = Hfp.Outmin;

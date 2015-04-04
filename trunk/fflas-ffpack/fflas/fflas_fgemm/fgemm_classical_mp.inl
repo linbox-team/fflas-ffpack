@@ -132,7 +132,7 @@ namespace FFLAS {
 
 	// fgemm for UnparametricField<Integer> with Winograd Helper (bb: file is classical ??)
 	inline Givaro::Integer* 
-	fgemm (const Givaro::UnparametricRing<Givaro::Integer>& F,
+	fgemm (const Givaro::ZRing<Givaro::Integer>& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
 	       const size_t m, const size_t n,const size_t k,
@@ -141,7 +141,7 @@ namespace FFLAS {
 	       const Givaro::Integer* B, const size_t ldb,
 	       Givaro::Integer beta,
 	       Givaro::Integer* C, const size_t ldc,
-	       MMHelper<Givaro::UnparametricRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >  & H)
+	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >  & H)
 	{
 		if (alpha == 0){
 			fscalin(F,m,n,beta,C,ldc);
@@ -274,7 +274,7 @@ namespace FFLAS {
 
 	{
 		// compute the product over Z
-		typedef Givaro::UnparametricRing<Givaro::Integer> IntegerDomain;
+		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
@@ -303,7 +303,7 @@ namespace FFLAS {
 
 	{
 		// compute the product over Z
-		typedef Givaro::UnparametricRing<Givaro::Integer> IntegerDomain;
+		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
@@ -319,7 +319,7 @@ namespace FFLAS {
 	}
 
 	// PARALLEL VERSION (NOT PARALLEL YET)
-	inline Givaro::Integer* fgemm (const Givaro::UnparametricRing<Givaro::Integer>& F,
+	inline Givaro::Integer* fgemm (const Givaro::ZRing<Givaro::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
 				       const size_t m, const size_t n,const size_t k,
@@ -328,8 +328,8 @@ namespace FFLAS {
 				       const Givaro::Integer* B, const size_t ldb,
 				       Givaro::Integer beta,
 				       Givaro::Integer* C, const size_t ldc,
-				       MMHelper<Givaro::UnparametricRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::MultiPrecisionTag,ParSeqHelper::Parallel> & H){
-		MMHelper<Givaro::UnparametricRing<Givaro::Integer>,MMHelperAlgo::Winograd> H2(F,H.recLevel);
+				       MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::MultiPrecisionTag,ParSeqHelper::Parallel> & H){
+		MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd> H2(F,H.recLevel);
 		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,lda,beta,C,ldc,H2);
 	}
 

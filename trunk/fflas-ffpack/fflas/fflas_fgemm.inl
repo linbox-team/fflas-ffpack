@@ -101,10 +101,10 @@ namespace FFLAS { namespace Protected{
 }//FFLAS
 
 namespace FFLAS{ namespace Protected{
-	template <class Field, class AlgoT>
-	inline bool NeedPreAddReduction (double& Outmin, double& Outmax,
-					 double& Op1min, double& Op1max,
-					 double& Op2min, double& Op2max,
+	template <class Field, class Element, class AlgoT>
+	inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
+					 Element& Op1min, Element& Op1max,
+					 Element& Op2min, Element& Op2max,
 					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		Outmin = Op1min + Op2min;
@@ -119,10 +119,10 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class Field, class AlgoT, class ModeT>
-	inline bool NeedPreAddReduction (double& Outmin, double& Outmax,
-					 double& Op1min, double& Op1max,
-					 double& Op2min, double& Op2max,
+	template <class Field, class Element, class AlgoT, class ModeT>
+	inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
+					 Element& Op1min, Element& Op1max,
+					 Element& Op2min, Element& Op2max,
 					 MMHelper<Field, AlgoT, ModeT >& WH)
 	{
 		Outmin = WH.FieldMin;
@@ -130,10 +130,10 @@ namespace FFLAS{ namespace Protected{
 		return false;
 	}
 
-	template <class Field, class AlgoT>
-	inline bool NeedPreSubReduction (double& Outmin, double& Outmax,
-					 double& Op1min, double& Op1max,
-					 double& Op2min, double& Op2max,
+	template <class Field, class Element, class AlgoT>
+	inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
+					 Element& Op1min, Element& Op1max,
+					 Element& Op2min, Element& Op2max,
 					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		Outmin = Op1min - Op2max;
@@ -148,24 +148,24 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class Field, class AlgoT, class ModeT>
-	inline bool NeedPreSubReduction (double& Outmin, double& Outmax,
-					 double& Op1min, double& Op1max,
-					 double& Op2min, double& Op2max,
+	template <class Field, class Element, class AlgoT, class ModeT>
+	inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
+					 Element& Op1min, Element& Op1max,
+					 Element& Op2min, Element& Op2max,
 					 MMHelper<Field, AlgoT, ModeT >& WH)
 	{
-		    // Necessary?
+		    // Necessary? -> CP: Yes, for generic Mode of op
 		Outmin = WH.FieldMin;
 		Outmax = WH.FieldMax;
 		return false;
 	}
 
 
-	template<class Field, class AlgoT>
-	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max,
-					       double& Out2min, double& Out2max,
-					       double& Op1min, double& Op1max,
-					       double& Op2min, double& Op2max, double beta,
+	template<class Field, class Element, class AlgoT>
+	inline bool NeedDoublePreAddReduction (Element& Out1min, Element& Out1max,
+					       Element& Out2min, Element& Out2max,
+					       Element& Op1min, Element& Op1max,
+					       Element& Op2min, Element& Op2max, Element beta,
 					       MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		// Testing if P5 need to be reduced
@@ -182,11 +182,11 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template<class Field, class AlgoT, class ModeT>
-	inline bool NeedDoublePreAddReduction (double& Out1min, double& Out1max,
-					       double& Out2min, double& Out2max,
-					       double& Op1min, double& Op1max,
-					       double& Op2min, double& Op2max, double beta,
+	template<class Field, class Element, class AlgoT, class ModeT>
+	inline bool NeedDoublePreAddReduction (Element& Out1min, Element& Out1max,
+					       Element& Out2min, Element& Out2max,
+					       Element& Op1min, Element& Op1max,
+					       Element& Op2min, Element& Op2max, Element beta,
 					       MMHelper<Field, AlgoT, ModeT>& WH)
 	{
 		Out2min = WH.FieldMin;
@@ -203,8 +203,10 @@ namespace FFLAS{ namespace Protected{
 				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			double al; F.convert(al, alpha);
-			if (fabs(al)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
+			F.convert(al, alpha);
+			if (al < 0) al = -al;
+			if (al*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
 				freduce (F, N, X, incX);
 				fscalin (F, N, alpha, X, incX);
 			} else {
@@ -222,17 +224,18 @@ namespace FFLAS{ namespace Protected{
 				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			double al; F.convert(al, alpha);
-			if (fabs(al)*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
+			F.convert(al, alpha);
+			if (al<0) al = -al;
+			if (al*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
 				freduce (F, M, N, A, lda);
 				fscalin (F, M, N, alpha, A, lda);
 			} else {
-				fscalin (H.delayedField, M, N, alpha, A, lda);
+				fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt*)A, lda);
 				freduce (F, M, N, A, lda);
 			}
-		} else{
+		} else
 			freduce (F, M, N, A, lda);
-		}
 	}
 
 } // Protected
@@ -282,9 +285,6 @@ namespace FFLAS {
 		    // The entry point to fgemm.
 		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
 		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
-		    // For the sake of simplicity: only one specialization available with non const A and B.
-		    // However, we guarantee that A and B will never be modified
-
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
@@ -382,7 +382,9 @@ namespace FFLAS {
 			F.assign (alpha_,alpha);
 			F.assign (beta_,beta);
 		}
+
 		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
+
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);

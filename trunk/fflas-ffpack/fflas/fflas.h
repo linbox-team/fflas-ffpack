@@ -66,11 +66,11 @@
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
 namespace FFLAS {
 
-	/// Storage by row or col ?
-	enum FFLAS_ORDER {
-		FflasRowMajor=101, /**< row major */
-		FflasColMajor=102  /**< col major */
-	};
+	// /// Storage by row or col ?
+	// enum FFLAS_ORDER {
+	// 	FflasRowMajor=101, /**< row major */
+	// 	FflasColMajor=102  /**< col major */
+	// };
 	// public:
 	/// Is matrix transposed ?
 	enum FFLAS_TRANSPOSE {
@@ -85,7 +85,7 @@ namespace FFLAS {
 
 	/// Is the triangular matrix implicitly unit diagonal ?
 	enum FFLAS_DIAG {
-		FflasNonUnit = 131, /**< Triangular matrix has an explicit general diagonal */
+		FflasNonUnit = 131, /**< Triangular matrix has an explicit arbitrary diagonal */
 		FflasUnit    = 132 /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*/ /**< */
 	};
 

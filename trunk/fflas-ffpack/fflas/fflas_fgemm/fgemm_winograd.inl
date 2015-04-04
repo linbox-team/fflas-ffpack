@@ -98,7 +98,8 @@ namespace FFLAS { namespace Protected {
 			const typename Field::Element beta,
 			typename Field::Element_ptr C, const size_t ldc,
 			MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H,
-			const double Cmin, const double Cmax)
+			const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmin, 
+			const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmax)
 	{
 		typename Field::ConstElement_ptr a12, a21, b12, b21;
 		size_t inca12, inca21, incb12, incb21, ma, na, mb, nb;
@@ -170,18 +171,23 @@ namespace FFLAS { namespace Protected {
 		case 7: // m, k, n oddsized
 			if (tb == FflasTrans) mb--;
 			else nb--;
+			H.checkA(F, m,k,A,lda);
+			H.checkB(F, k,n,B,ldb);
+			std::cout<<H<<std::endl;
 			// Block NW
 			fger (F, m-1, n-1, alpha, a12, inca12, b21, incb21, C, ldc, Hacc);
 			// Block SW
 			fgemv (F, (tb==FflasTrans)?FflasNoTrans:FflasTrans, mb, nb,
 			       alpha, B, ldb, a21, inca21, beta, C+(m-1)*ldc, 1, HModd);
 			HModd.checkOut(F, m-1,n-1, C, ldc);
+			
                         // Block E
 			fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1, ldc, HNodd);
 			break;
 		}
 		H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
 		H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
+		std::cout<<"La, H = "<<H<<std::endl;
 		H.checkOut(F, m,n, C, ldc);
 	}
 
@@ -198,7 +204,8 @@ namespace FFLAS { namespace Protected {
 			 const typename Field::Element beta,
 			 typename Field::Element_ptr C, const size_t ldc,
 			 MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H,
-			 const double Cmin, const double Cmax)
+			 const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmin,
+			 const typename MMHelper<Field, MMHelperAlgo::Winograd, FieldMode>::DelayedField::Element Cmax)
 	{
 		size_t mkn =(size_t)( (bool)(nr > 0)+ ((bool)(kr > 0) << 1)+  ((bool)(mr > 0) << 2));
 		if (mkn == 0) return;
@@ -270,7 +277,10 @@ namespace FFLAS { namespace Protected {
 			break;
 		}
 		H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
+		    //std::cout<<"Outmax  = "<<HModd.Outmax << " "<<HNodd.Outmax<<" "<<Hacc.Outmax<<std::endl;
 		H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
+		// std::cout<<"ici H = "<<H<<std::endl;
+		// write_field(F, std::cout<<"C = "<<std::endl,C,m,n,ldc);
 		H.checkOut(F, m,n, C, ldc);
 	}
 
@@ -408,8 +418,9 @@ namespace FFLAS{
 		}
 
 		// Then w >0
-		double Cmin = H.Cmin;
-		double Cmax = H.Cmax;
+		typedef typename  MMHelper<Field, MMHelperAlgo::Winograd, ModeT>::DelayedField::Element DFElt;
+		DFElt Cmin = H.Cmin;
+		DFElt Cmax = H.Cmax;
 
 #ifdef OLD_DYNAMIC_PEELING
 
@@ -496,8 +507,9 @@ namespace FFLAS{
 ///
 
 		// Then w >0
-		double Cmin = H.Cmin;
-		double Cmax = H.Cmax;
+		typedef typename  MMHelper<Field, MMHelperAlgo::Winograd, ModeT>::DelayedField::Element DFElt;
+		DFElt Cmin = H.Cmin;
+		DFElt Cmax = H.Cmax;
 #ifdef OLD_DYNAMIC_PEELING
 
 		BLAS3::WinoPar (F, ta, tb, m/2, n/2, k/2, alpha, A, lda, B, ldb, beta, C, ldc, H);
