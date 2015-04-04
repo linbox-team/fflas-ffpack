@@ -227,10 +227,10 @@ namespace FFLAS {
 
 
 	/** fscalin
-	 * \f$x \gets a \cdot x\f$.
+	 * \f$x \gets \alpha \cdot x\f$.
 	 * @param F field
 	 * @param n size of the vectors
-	 * @param alpha homotÃ©ti scalar
+	 * @param alpha scalar
 	 * \param X vector in \p F
 	 * \param incX stride of \p X
 	 * @bug use cblas_(d)scal when possible
@@ -244,10 +244,10 @@ namespace FFLAS {
 
 
 	/** fscal
-	 * \f$y \gets a \cdot x\f$.
+	 * \f$y \gets \alpha \cdot x\f$.
 	 * @param F field
 	 * @param n size of the vectors
-	 * @param alpha homotÃ©ti scalar
+	 * @param alpha scalar
 	 * \param[in] X vector in \p F
 	 * \param incX stride of \p X
 	 * \param[out] Y vector in \p F

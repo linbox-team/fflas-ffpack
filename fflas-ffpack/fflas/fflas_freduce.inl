@@ -74,6 +74,12 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 		return fmod(A,B);
 	}
 
+	template<size_t K, size_t MG>
+	RecInt::rmint<K,MG>& monfmod(RecInt::rmint<K,MG>& A, RecInt::rmint<K,MG>& B)
+	{
+		std::cout<<"monfmod rmint"<<std::endl;
+		return RecInt::rmint<K>::mod_n(A, B);
+	}
 
 	template<class T>
 	typename std::enable_if< ! std::is_integral<T>::value, T>::type
@@ -271,6 +277,29 @@ namespace FFLAS { namespace vectorised {
 		}
 	} ;
 
+	template<class Field>
+	struct HelperMod<Field, FFLAS::ElementCategories::FixedPrecIntTag> {
+		typename Field::Element p;
+		// typename Field::Element invp;
+		// typename Field::Elmeent min ;
+		// typename Field::Elmeent max ;
+
+		HelperMod() {} ;
+
+		HelperMod( const Field & F)
+		{
+			p = (typename Field::Element) F.characteristic();
+			// invp = (typename Field::Element)1/p;
+			// min = F.minElement();
+			// max = F.maxElement();
+		}
+
+		int getAlgo() const
+		{
+			return 0;
+		}
+	} ;
+
 
 #ifdef __FFLASFFPACK_USE_SIMD
 	template<class Field, class SimdT, class ElementTraits = typename ElementTraits<typename Field::Element>::value>
@@ -379,7 +408,7 @@ namespace FFLAS { namespace vectorised {
 			// std::cout << 1 << std::endl;
 			return monfmod<false,true> (A,H.p,H.shift,H.magic);
 		case 0 :
-			// std::cout << "using " << 0 << std::endl;
+			std::cout << "using " << 0 << std::endl;
 			return monfmod<false,false>(A,H.p,H.shift,H.magic);
 		default :
 			FFLASFFPACK_abort("unknown algo");
@@ -560,7 +589,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
 	// not vectorised but allows better code than % or fmod via helper
 	template<class Field, bool round, int algo>
-	inline typename std::enable_if< ! FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
+	inline typename std::enable_if< !FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
 	     typename Field::Element_ptr T
 	     , HelperMod<Field> & H
@@ -598,7 +627,7 @@ namespace FFLAS { namespace vectorised {
 
 
 	template<class Field, bool round>
-	// inline typename std::enable_if<FFLAS::support_simd_mod<Element>::value, void>::type
+	//inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	void
 	modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,
 	     typename Field::Element_ptr T)
@@ -660,22 +689,25 @@ namespace FFLAS { namespace details {
 	freduce (const Field & F, const size_t m,
 		 typename Field::Element_ptr A, const size_t incX, FieldCategories::ModularTag)
 	{ /* ??? ( faster with copy, use incX=1, copy back ? */
-		if(incX == 1) {
-			vectorised::modp<Field,false>(F,A,m,A);
-		}
-		else {
+		    // CP: no SIMD supported here!
+                // if(incX == 1) {
+		// 	vectorised::modp<Field,false>(F,A,m,A);
+		// }
+		// else {
+		//std::cout<<"freduce ModularTag"<<std::endl;
 			typename Field::Element_ptr  Xi = A ;
 			for (; Xi < A+m*incX; Xi+=incX )
 				F.reduce(*Xi);
-		}
+		// }
 	}
 
-	template<class Field>
+		template<class Field>
 	void
 	freduce (const Field & F, const size_t m,
 		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::GenericTag)
 	{
+		    //std::cout<<"freduce Generic"<<std::endl;
 		typename Field::Element_ptr Xi = A ;
 		for (; Xi < A+m*incX; Xi+=incX )
 			F.reduce (*Xi);
@@ -686,7 +718,12 @@ namespace FFLAS { namespace details {
 	freduce (const Field & F, const size_t m,
 		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::UnparametricTag)
-	{return;}
+	{
+		typename Field::Element_ptr Xi = A ;
+		    //	std::cout<<"freduce Unparam"<<std::endl;
+		for (; Xi < A+m*incX; Xi+=incX )
+			F.reduce (*Xi);
+	}
 
 	template<class Field>
 	typename std::enable_if< FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
@@ -732,14 +769,19 @@ namespace FFLAS { namespace details {
 		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
 			F.reduce (*Xi , *Yi);
 	}
-
 	template<class Field>
 	void
 	freduce (const Field & F, const size_t m,
 		 typename Field::ConstElement_ptr  B, const size_t incY,
 		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::UnparametricTag)
-	{return;}
+	{
+		typename Field::Element_ptr Xi = A ;
+		typename Field::ConstElement_ptr Yi = B ;
+		std::cout<<"freduce UNparam Y<-X"<<std::endl;
+		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
+			F.reduce (*Xi , *Yi);
+	}
 
 } // details
 } // FFLAS

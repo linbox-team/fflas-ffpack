@@ -201,6 +201,9 @@ namespace FFLAS { namespace BLAS3 {
 				     )
 	{
 		typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
+		typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
+		typedef typename  MMH_t::DelayedField::ConstElement_ptr DFCEptr;
+		typedef typename  MMH_t::DelayedField::Element DFElt;
 
 		const typename MMH_t::DelayedField & DF = WH.delayedField;
 
@@ -214,7 +217,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		typename Field::Element mbeta;
 		F.neg(mbeta,beta);
-		typename MMH_t::DelayedField::Element betadf;
+		DFElt betadf;
 		if (F.isMOne(beta))
 			DF.assign(betadf,DF.mOne);
 		else
@@ -254,12 +257,12 @@ namespace FFLAS { namespace BLAS3 {
 		typename Field::Element_ptr X3 = fflas_new (F, x3rd, nr);
 
 		// T1 = B12 - B11 in X3
-		fsub(DF,lb,cb,B12,ldb,B11,ldb,X3,ldX3);
+		fsub(DF,lb,cb,(DFCEptr)B12,ldb,(DFCEptr)B11,ldb,(DFEptr)X3,ldX3);
 
 		typename Field::Element_ptr X2 = fflas_new(F,mr,kr);
 
 		// S1 = A21 + A22 in X2
-		fadd(DF,la,ca,A21,lda,A22,lda,X2,ca);
+		fadd(DF,la,ca,(DFCEptr)A21,lda,(DFCEptr)A22,lda,(DFEptr)X2,ca);
 
 		typename Field::Element_ptr X1 = fflas_new(F,mr,nr);
                 // P5 = alpha . S1*T1  in X1
@@ -270,8 +273,8 @@ namespace FFLAS { namespace BLAS3 {
 			 0, 0);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H5);
 
-		double C22Min, C22Max;
-		double C12Min, C12Max;
+		DFElt C22Min, C22Max;
+		DFElt C12Min, C12Max;
 		// This test will be optimized out
 		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, C22Min, C22Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
 			freduce(F,mr,nr,X1,nr);
@@ -279,10 +282,10 @@ namespace FFLAS { namespace BLAS3 {
 		}
 
                 // C22 = P5 + beta C22 in C22
-		fadd(DF,mr,nr,X1,nr,betadf,C22,ldc,C22,ldc);
+		fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C22,ldc,(DFEptr)C22,ldc);
 
 		// C12 = P5 + beta C12 in C12
-		fadd(DF,mr,nr,X1,nr,betadf,C12,ldc,C12,ldc);
+		fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
 
 		// P1 = alpha . A11 * B11 in X1
 		MMH_t H1(F, WH.recLevel-1,
@@ -299,18 +302,18 @@ namespace FFLAS { namespace BLAS3 {
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, H2);
 
 		//  U1 = P2 + P1 in C11
-		double U1Min, U1Max;
+		DFElt U1Min, U1Max;
 		if (Protected::NeedPreAddReduction (U1Min,U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
 			freduce(F,mr,nr,X1,nr);
 			freduce(F,mr,nr,C11,ldc);
 		}
-		faddin(DF,mr,nr,X1,nr,C11,ldc);
+		faddin(DF,mr,nr,(DFCEptr)X1,nr,(DFEptr)C11,ldc);
 
 		// T2 = B22 - T1 in X3
-		fsub(DF,lb,cb,B22,ldb,X3,ldX3,X3,ldX3);
+		fsub(DF,lb,cb,(DFCEptr)B22,ldb,(DFCEptr)X3,ldX3,(DFEptr)X3,ldX3);
 
 		// S2 = S1 - A11 in X2
-		fsubin(DF,la,ca,A11,lda,X2,ca);
+		fsubin(DF,la,ca,(DFCEptr)A11,lda,(DFEptr)X2,ca);
 
 		// U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
 		MMH_t H6(F, WH.recLevel-1,
@@ -320,18 +323,18 @@ namespace FFLAS { namespace BLAS3 {
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H6);
 
 		// U4 = U2 + C12 in C12
-		double U4Min, U4Max;
+		DFElt U4Min, U4Max;
 		if (Protected::NeedPreAddReduction (U4Min, U4Max, H6.Outmin, H6.Outmax, C12Min, C12Max, WH)){
 			freduce(F,mr,nr,C12,ldc);
 			freduce(F,mr,nr,X1,nr);
 		}
-		faddin(DF,mr,nr,X1,nr,C12,ldc);
+		faddin(DF,mr,nr,(DFCEptr)X1,nr,(DFEptr)C12,ldc);
 
 		 // T4 = T2 - B21 in X3
-		fsubin(DF,lb,cb,B21,ldb,X3,ldX3);
+		fsubin(DF,lb,cb,(DFCEptr)B21,ldb,(DFEptr)X3,ldX3);
 
 		// S4 = A12 -S2 in X2
-		fsub(DF,la,ca,A12,lda,X2,ca,X2,ca);
+		fsub(DF,la,ca,(DFCEptr)A12,lda,(DFCEptr)X2,ca,(DFEptr)X2,ca);
 
 		// P4 = alpha . A22 * T4 - beta . C21 in C21
 		MMH_t H4(F, WH.recLevel-1,
@@ -348,10 +351,10 @@ namespace FFLAS { namespace BLAS3 {
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, H3);
 
                 // T3 = B22 - B12 in X3
-		fsub(DF,lb,cb,B22,ldb,B12,ldb,X3,ldX3);
+		fsub(DF,lb,cb,(DFCEptr)B22,ldb,(DFCEptr)B12,ldb,(DFEptr)X3,ldX3);
 
 		// S3 = A11 - A21 in X2
-		fsub(DF,la,ca,A11,lda,A21,lda,X2,ca);
+		fsub(DF,la,ca,(DFCEptr)A11,lda,(DFCEptr)A21,lda,(DFEptr)X2,ca);
 
 		// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
 		MMH_t H7(F, WH.recLevel-1,
@@ -364,20 +367,20 @@ namespace FFLAS { namespace BLAS3 {
 		fflas_delete (X3);
 
 		// U7 =  U3 + C22 in C22
-		double U7Min, U7Max;
+		DFElt U7Min, U7Max;
 		if (Protected::NeedPreAddReduction (U7Min, U7Max, H7.Outmin, H7.Outmax, C22Min, C22Max, WH)){
 			freduce(F,mr,nr,X1,nr);
 			freduce(F,mr,nr,C22,ldc);
 		}
-		faddin(DF,mr,nr,X1,nr,C22,ldc);
+		faddin(DF,mr,nr,(DFCEptr)X1,nr,(DFEptr)C22,ldc);
 
 		// U6 = U3 - P4 in C21
-		double U6Min, U6Max;
+		DFElt U6Min, U6Max;
 		if (Protected::NeedPreSubReduction(U6Min, U6Max, H7.Outmin, H7.Outmax, H4.Outmin, H4.Outmax, WH)){
 			freduce(F,mr,nr,X1,nr);
 			freduce(F,mr,nr,C21,ldc);
 		}
-		fsub(DF,mr,nr,X1,nr,C21,ldc,C21,ldc);
+		fsub(DF,mr,nr,(DFCEptr)X1,nr,(DFCEptr)C21,ldc,(DFEptr)C21,ldc);
 
 		fflas_delete (X1);
 

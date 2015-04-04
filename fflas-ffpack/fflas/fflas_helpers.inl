@@ -114,12 +114,13 @@ namespace FFLAS {
 		 typename ParSeqTrait = ParSeqHelper::Sequential >
 	struct MMHelper {
 		typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
-		int recLevel ;
-		double FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
-		double MaxStorableValue;
 		typedef typename associatedDelayedField<const Field>::type DelayedField_t;
 		typedef typename associatedDelayedField<const Field>::field DelayedField;
-
+		typedef typename DelayedField::Element DFElt;
+		int recLevel ;
+		DFElt FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
+		DFElt MaxStorableValue;
+	
 		const DelayedField_t delayedField;
 		ParSeqTrait parseq;
 		void initC(){Cmin = FieldMin; Cmax = FieldMax;}
@@ -128,12 +129,15 @@ namespace FFLAS {
 		void initOut(){Outmin = FieldMin; Outmax = FieldMax;}
 
 
-		size_t MaxDelayedDim(double beta)
+		size_t MaxDelayedDim(DFElt beta)
 		{
-			return (size_t) std::max (0.0, floor ( (MaxStorableValue - fabs (beta)*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));
+			DFElt absbeta;
+			delayedField.init(absbeta,beta);
+			if (beta < 0) absbeta = -beta;
+			return (size_t) std::max (0.0,  floor( (MaxStorableValue - absbeta*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));
 		}
 
-		void setOutBounds(const size_t k, const double alpha, const double beta)
+		void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
 		{
 			if (beta<0){
 				Outmin = beta*Cmax;
@@ -143,11 +147,11 @@ namespace FFLAS {
 				Outmax = beta*Cmax;
 			}
 			if (alpha >0){
-				Outmin += double(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
-				Outmax += double(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
+				Outmin += DFElt(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
+				Outmax += DFElt(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
 			}else{
-				Outmin += double(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
-				Outmax += double(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
+				Outmin += DFElt(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
+				Outmax += DFElt(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
 			}
 		}
 
@@ -185,7 +189,7 @@ namespace FFLAS {
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
 					if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){
-						std::cerr<<"Error in A["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<std::endl;
+						std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
 						return false;
 					}
 #endif
@@ -197,12 +201,12 @@ namespace FFLAS {
 		// correct but semantically not satisfactory
 		MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) :
 			recLevel(-1),
-			FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
+			FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
 			Amin(FieldMin), Amax(FieldMax),
 			Bmin(FieldMin), Bmax(FieldMax),
 			Cmin(FieldMin), Cmax(FieldMax),
-			Outmin(0.0), Outmax(0.0),
-			MaxStorableValue ((double)(limits<typename DelayedField::Element>::max())),
+			Outmin(0), Outmax(0),
+			MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
 			delayedField(F),
 			// delayedField((typename Field::Element)F.characteristic()),
 			parseq(_PS)
@@ -210,13 +214,13 @@ namespace FFLAS {
 		}
 
 		MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
-			recLevel(w), //base(FflasDouble),
-			FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
+			recLevel(w), 
+			FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
 			Amin(FieldMin), Amax(FieldMax),
 			Bmin(FieldMin), Bmax(FieldMax),
 			Cmin(FieldMin), Cmax(FieldMax),
-			Outmin(0.0), Outmax(0.0),
-			MaxStorableValue ((double)(limits<typename DelayedField::Element>::max())),
+			Outmin(0), Outmax(0),
+			MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
 			delayedField(F),
 			parseq(_PS)
 		{
@@ -238,14 +242,15 @@ namespace FFLAS {
 		}
 
 		MMHelper(const Field& F, int w,
-			 double _Amin, double _Amax,
-			 double _Bmin, double _Bmax,
-			 double _Cmin, double _Cmax):
-			recLevel(w), FieldMin((double)F.minElement()), FieldMax((double)F.maxElement()),
+			 DFElt _Amin, DFElt _Amax,
+			 DFElt _Bmin, DFElt _Bmax,
+			 DFElt _Cmin, DFElt _Cmax):
+			recLevel(w), FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
 			Amin(_Amin), Amax(_Amax),
 			Bmin(_Bmin), Bmax(_Bmax),
 			Cmin(_Cmin), Cmax(_Cmax),
-			MaxStorableValue((double)(limits<typename DelayedField::Element>::max())),
+			Outmin(0),Outmax(0),
+			MaxStorableValue(limits<typename DelayedField::Element>::max()),
 			delayedField(F)
 		{
 		}
@@ -253,15 +258,17 @@ namespace FFLAS {
 		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
 		{
 			return out <<"Helper: "
-			<<typeid(AlgoTrait).name()<<' '
-			<<typeid(ModeTrait).name()<< ' '
-			<< M.parseq <<std::endl
-			<<"  recLevel = "<<M.recLevel<<std::endl
-			<<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
-			<<"  Amin = "<<M.Amin<<" Amax = "<<M.Amax<<std::endl
-			<<"  Bmin = "<<M.Bmin<<" Bmax = "<<M.Bmax<<std::endl
-			<<"  Cmin = "<<M.Cmin<<" Cmax = "<<M.Cmax<<std::endl
-			<<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
+				   <<typeid(AlgoTrait).name()<<' '
+				   <<typeid(ModeTrait).name()<< ' '
+				   << M.parseq <<std::endl
+				   <<" DelayedField = "<<typeid(DelayedField).name()<<std::endl
+				   <<"  recLevel = "<<M.recLevel<<std::endl
+				   <<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
+				   <<"  MaxStorableValue = "<< M.MaxStorableValue <<std::endl
+				   <<"  Amin = "<<M.Amin<<" Amax = "<<M.Amax<<std::endl
+				   <<"  Bmin = "<<M.Bmin<<" Bmax = "<<M.Bmax<<std::endl
+				   <<"  Cmin = "<<M.Cmin<<" Cmax = "<<M.Cmax<<std::endl
+				   <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
 		}
 	}; // MMHelper
 

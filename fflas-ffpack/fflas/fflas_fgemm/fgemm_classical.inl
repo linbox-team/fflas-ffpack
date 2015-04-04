@@ -40,7 +40,7 @@
 
 namespace FFLAS {
 
-	// F is Modular(Balanced)<float/double>
+	// F is a field supporting delayed reductions
 	template<class Field>
 	inline void fgemm (const Field & F,
                            const FFLAS_TRANSPOSE ta,
@@ -58,20 +58,23 @@ namespace FFLAS {
                 // - making possibly more blocks (smaller kmax)
 		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
 		typename HelperType::DelayedField::Element alphadf, betadf;
-		F.convert (betadf, beta);
+		betadf = beta;
 		if (F.isMOne (alpha)) {
-			alphadf = -1.0;
+			alphadf = -H.delayedField.one;
 		} else {
-			alphadf = 1.0;
+			alphadf = F.one;
 			if (! F.isOne( alpha)) {
 				    // Compute y = A*x + beta/alpha.y
 				    // and after y *= alpha
 				FFLASFFPACK_check(!F.isZero(alpha));
-				F.div (betadf, beta, alpha);
+				typename Field::Element betadalpha;
+				F.init(betadalpha);
+				F.div (betadalpha, beta, alpha);
+				betadf = betadalpha;
 			}
 		}
 
-		if (F.isMOne(betadf)) betadf = -1.0;
+		if (F.isMOne(betadf)) betadf = -F.one;
 
 		size_t kmax = H.MaxDelayedDim (betadf);
 
@@ -105,40 +108,49 @@ namespace FFLAS {
 			remblock = kmax;
 			--nblock;
 		}
-
 		size_t shiftA, shiftB;
 		if (ta == FflasTrans) shiftA = k2*lda;
 		else shiftA = k2;
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		MMHelper<typename HelperType::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hfp(H);
-
-		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, A+nblock*shiftA, lda,
-		       B+nblock*shiftB, ldb, betadf, C, ldc, Hfp);
+		typedef MMHelper<typename HelperType::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultTag> DelayedHelper_t;
+		DelayedHelper_t Hfp(H);
+//		write_field(H.delayedField,std::cout<<"classical fgemm"<<std::endl,(DFCElt_ptr)B, k,n,ldb);
+		typedef typename HelperType::DelayedField::Element DFElt;
+		typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
+		typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
+		
+		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, 
+		       (DFCElt_ptr)A +nblock*shiftA, lda,
+		       (DFCElt_ptr)B +nblock*shiftB, ldb, betadf, 
+		       (DFElt_ptr)C, ldc, Hfp);
 
 		for (size_t i = 0; i < nblock; ++i) {
 			freduce (F, m, n, C, ldc);
 			Hfp.initC();
-			fgemm (H.delayedField, ta, tb, m, n, k2, alphadf, A+i*shiftA, lda,
-			       B+i*shiftB, ldb, F.one, C, ldc, Hfp);
+			fgemm (H.delayedField, ta, tb, m, n, k2, alphadf, 
+			       (DFCElt_ptr)A +i*shiftA, lda,
+			       (DFCElt_ptr)B +i*shiftB, ldb, F.one, 
+			       (DFElt_ptr)C, ldc, Hfp);
 		}
 
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
-                    double al; F.convert(al, alpha);
-                        if (fabs(al)*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+			DFElt al; F.convert(al, alpha);
+			if (al<0) al = -al;
+			if (al*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
 				freduce (F, m, n, C, ldc);
 				Hfp.initOut();
 			}
 
-			fscalin(H.delayedField, m,n,alpha,C,ldc);
+			fscalin(H.delayedField, m,n,alpha,(typename DelayedHelper_t::DelayedField_t::Element_ptr)C,ldc);
 
 			if (alpha>0){
-				H.Outmin = alpha*Hfp.Outmin;
-				H.Outmax = alpha*Hfp.Outmax;
+				H.Outmin = (const DFElt)(alpha) * Hfp.Outmin;
+				H.Outmax = (const DFElt)alpha * Hfp.Outmax;
 			} else {
-				H.Outmin = alpha*Hfp.Outmax;
-				H.Outmax = alpha*Hfp.Outmin;
+				H.Outmin = (const DFElt)alpha * Hfp.Outmax;
+				H.Outmax = (const DFElt)alpha * Hfp.Outmin;
 			}
 		}else {
 			H.Outmin = Hfp.Outmin;
@@ -173,6 +185,7 @@ namespace FFLAS {
 			F.div (betadivalpha, beta, alpha);
 			fscalin(F,m,n,betadivalpha,C,ldc);
 		}
+
 		if (ta == FflasNoTrans)
 			if (tb == FflasNoTrans)
 				for (size_t i = 0; i < m; ++i)
@@ -196,6 +209,11 @@ namespace FFLAS {
 						for (size_t l = 0; l < k; ++l)
 							F.axpyin (*(C+i*ldc+j), *(A+l*lda+i), *(B+j*ldb+l));
 		fscalin(F,m,n,alpha,C,ldc);
+		H.setOutBounds(k,alpha,beta);
+		// write_field(F,std::cerr<<"classical \n A = "<<std::endl,A,m,k,lda);
+		// write_field(F,std::cerr<<"B = "<<std::endl,B,k,n,ldb);
+		// write_field(F,std::cerr<<"C = "<<std::endl,C,m,n,ldc);
+
         }
 
 	inline void fgemm (const Givaro::DoubleDomain& F,
