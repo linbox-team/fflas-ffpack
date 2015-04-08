@@ -37,6 +37,8 @@
 #include "parallel.h"
 #include "fflas-ffpack/utils/flimits.h"
 
+#include <algorithm> // std::max
+
 namespace FFLAS{ namespace Protected{
 	/** \brief Computes the number of recursive levels to perform.
 	 *
@@ -134,7 +136,9 @@ namespace FFLAS {
 			DFElt absbeta;
 			delayedField.init(absbeta,beta);
 			if (beta < 0) absbeta = -beta;
-			return (size_t) std::max (0.0,  floor( (MaxStorableValue - absbeta*std::max (-Cmin, Cmax) ) / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax))));
+			
+			DFElt diff = MaxStorableValue - absbeta * std::max(-Cmin, Cmax);
+			return static_cast<size_t>((diff < 0.0)? 0 : diff / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax)));
 		}
 
 		void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
