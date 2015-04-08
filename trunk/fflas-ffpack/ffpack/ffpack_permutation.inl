@@ -44,51 +44,27 @@ namespace FFPACK {
 		const size_t M, const size_t ibeg, const size_t iend,
 		typename Field::Element_ptr A, const size_t lda, const size_t * P )
 	{
-
 		if ( Side == FFLAS::FflasRight ) {
-			typename Field::Element tmp;
-			F.init(tmp);
-			if ( Trans == FFLAS::FflasTrans )
-				for (size_t j = 0 ; j < M ; ++j){
-					for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
-						if ( P[i]!= i ) {
-							F.assign(tmp,A[j*lda+P[i]]);
-							F.assign(A[j*lda+P[i]],A[j*lda+i]);
-							F.assign(A[j*lda+i],tmp);
-							// std::swap(A[j*lda+P[i]],A[j*lda+i]);
-						}
-					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
-				}
-			else // Trans == FFLAS::FflasNoTrans
-				for (size_t j = 0 ; j < M ; ++j){
-					for (size_t i=iend; i-->ibeg; )
-						if ( P[i]!=(size_t)i ) {
-							F.assign(tmp,A[j*lda+P[i]]);
-							F.assign(A[j*lda+P[i]],A[j*lda+(size_t)i]);
-							F.assign(A[j*lda+(size_t)i],tmp);
-							// std::swap(A[j*lda+P[i]],A[j*lda+(size_t)i]);
-						}
-					//FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda );
-				}
-		}
-		else { // Side == FFLAS::FflasLeft
-			if ( Trans == FFLAS::FflasNoTrans )
-				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i){
+			if ( Trans == FFLAS::FflasTrans ){
+				for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
+					if ( P[i]!= i )
+						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
+			} else { // Trans == FFLAS::FflasNoTrans
+				for (size_t i=iend; i-->ibeg; )
+					if ( P[i]!=(size_t)i )
+						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
+			}
+		} else { // Side == FFLAS::FflasLeft
+			if ( Trans == FFLAS::FflasNoTrans ) {
+				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i)
 					if ( P[i]!= (size_t) i )
-						FFLAS::fswap( F, M,
-							      A + P[i]*lda, 1,
-							      A + i*lda, 1 );
-				}
-			else // Trans == FFLAS::FflasTrans
-				for (size_t i=iend; i-->ibeg; ){
-					if ( P[i]!= (size_t) i ){
-						FFLAS::fswap( F, M,
-							      A + P[i]*lda, 1,
-							      A + (size_t)i*lda, 1 );
-					}
-				}
+						FFLAS::fswap( F, M, A + P[i]*lda, 1, A + i*lda, 1);
+			} else { // Trans == FFLAS::FflasTrans
+				for (size_t i=iend; i-->ibeg; )
+					if ( P[i]!= (size_t) i )
+						FFLAS::fswap( F, M, A + P[i]*lda, 1, A + i*lda, 1);
+			}
 		}
-
 	}
 
 
@@ -101,13 +77,13 @@ namespace FFPACK {
 	{
 		for (size_t i = 0, j = R1+R2; j < M2; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
-				F.assign(tmp [i*width + k], A [j*lda + k]);
+				F.assign(*(tmp +i*width + k), *(A +j*lda + k));
 		for (size_t i = M2, j = R1+R2; i < M2+R3+R4; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
-				F.assign(A [j*lda + k] , A [i*lda +k]);
+				F.assign(*(A +j*lda + k) , *(A + i*lda +k));
 		for (size_t i = 0, j = R1+R2+R3+R4; i < M2-R1-R2; ++i, ++j)
 			for (size_t k = 0; k<width; ++k)
-				F.assign(A [j*lda + k] , tmp [i*width + k]);
+				F.assign(*(A+ j*lda + k) , *(tmp +i*width + k));
 	}
 	template <class Field>
 	inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, 
@@ -141,16 +117,16 @@ namespace FFPACK {
 	{
 		for (size_t k = 0; k < width; ++k){
 			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
-				F.assign(tmp [i + k*(N2-R1)] , A [k*lda + j]);
+				F.assign(*(tmp +i + k*(N2-R1)) , *(A +k*lda + j));
 			}
 			for (size_t i = N2, j = R1; i < N2+R2; ++i, ++j)
-				F.assign(A [k*lda + j] , A [k*lda + i]);
+				F.assign(*(A +k*lda + j) , *(A +k*lda + i));
 			for (size_t i = 0, j = R1+R2; i < R3; ++i, ++j)
-				F.assign(A [k*lda + j] , tmp [k*(N2-R1) + i]);
+				F.assign(*(A +k*lda + j) , *(tmp +k*(N2-R1) + i));
 			for (size_t i = N2+R2, j = R1+R2+R3; i < N2+R2+R4; ++i,++j)
-				F.assign(A [k*lda + j] , A [k*lda + i]);
+				F.assign(*(A +k*lda + j) , *(A +k*lda + i));
 			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
-				F.assign(A [k*lda + j] , tmp [k*(N2-R1) + i]);
+				F.assign(*(A +k*lda + j) , *(tmp +k*(N2-R1) + i));
 		}
 	}
 
@@ -218,11 +194,11 @@ namespace FFPACK {
 		FFLAS::fflas_delete( T);
 		FFLAS::fflas_delete( Tinv);
 	}
-
-	/**
-	 * Computes P1 [ I_R     ] stored in MathPermutation format
-	 *             [     P_2 ]
-	 */
+	
+	    /**
+	     * Computes P1 [ I_R     ] stored in MathPermutation format
+	     *             [     P_2 ]
+	     */
 	inline void composePermutationsP (size_t * MathP,
 					  const size_t * P1,
 					  const size_t * P2,
@@ -231,7 +207,7 @@ namespace FFPACK {
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, P1, N);
-
+		
 		for (size_t i=R; i<N; i++){
 			if (P2[i-R] != i-R){
 				size_t tmp = MathP[i];
@@ -240,7 +216,7 @@ namespace FFPACK {
 			}
 		}
 	}
-
+	
 	inline void composePermutationsQ (size_t * MathP,
 					  const size_t * Q1,
 					  const size_t * Q2,
@@ -249,7 +225,7 @@ namespace FFPACK {
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, Q1, N);
-
+		
 		for (size_t i=R; i<N; i++){
 			if (Q2[i-R] != i-R){
 				size_t tmp = MathP[i];
@@ -258,129 +234,133 @@ namespace FFPACK {
 			}
 		}
 	}
-
+	
 	inline void
 	cyclic_shift_mathPerm (size_t * P,  const size_t s)
 	{
                 size_t tmp;
                 tmp = *(P+s-1);
-		//memmove(P+1, P, (s)*sizeof(size_t));
+		    //memmove(P+1, P, (s)*sizeof(size_t));
 		size_t * Pi = P;
 		std::copy(Pi, Pi+s-1, Pi+1);
-
+		
                 *(P)=tmp;
 	}
-	// @BUG highly not portable to other fields than modular<basis type>
-	// Need a rewrite in order to support RNSModP field
-	template<typename Base_t>
-	inline void cyclic_shift_row_col(Base_t * A, size_t m, size_t n, size_t lda)
+	    // @BUG highly not portable to other fields than modular<basis type>
+	    // Need a rewrite in order to support RNSModP field
+	template<class Field>
+	inline void cyclic_shift_row_col(const Field & F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda)
 	{
-
+		typedef typename Field::Element Element;
+		typedef typename Field::Element_ptr Element_ptr;
 #ifdef MEMCOPY
-		//		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
-
+		    //		std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
+		
 		if (m > 1) {
 			const size_t mun(m-1);
 			if (n > 1) {
-				//     std::cerr << "m: " << m << ", n: " << n << std::endl;
+				    //     std::cerr << "m: " << m << ", n: " << n << std::endl;
 				const size_t nun(n-1);
-				const size_t blo(sizeof(Base_t));
-				// const size_t bmu(blo*mun);
+				const size_t blo(sizeof(Element));
+				    // const size_t bmu(blo*mun);
 				const size_t bnu(blo*nun);
-				Base_t * b = FFLAS::fflas_new<Base_t>(mun);
-				for(size_t i=0; i<mun; ++i) b[i] = A[i*lda+nun];
-				Base_t * dc = FFLAS::fflas_new<Base_t>(n);
+				Element_ptr b = FFLAS::fflas_new(F,mun);
+				for(size_t i=0; i<mun; ++i) *(b+i) = *(A+i*lda+nun);
+				Element_ptr dc = FFLAS::fflas_new (F,n);
 				memcpy(dc+1,A+mun*lda,bnu);
-				*dc = A[mun*lda+nun]; // this is d
-				// dc = [ d c ]
-
+				*dc = *(A+mun*lda+nun); // this is d
+				    // dc = [ d c ]
+				
 				for(size_t i=mun; i>0; --i)
 					memcpy(A+1+i*lda, A+(i-1)*lda, bnu);
-
+				
 				memcpy(A, dc, bnu+blo);
-				for(size_t i=0; i<mun; ++i) A[i*lda+lda] = b[i];
+				for(size_t i=0; i<mun; ++i) *(A+(i+1)*lda) = *(b+i);
 				delete [] dc;
 				delete [] b;
-
+				
 			} else if (n != 0) {
-				Base_t d = A[mun*lda];
-				for(size_t i=mun; i>0; --i) A[i*lda]=A[(i-1)*lda];
+				Base_t d = *(A+mun*lda);
+				for(size_t i=mun; i>0; --i) *(A+i*lda)=*(A+(i-1)*lda);
 				*A=d;
 			}
 		} else {
 			if ((m!=0) && (n > 1)) {
 				const size_t nun(n-1);
-				const size_t blo(sizeof(Base_t));
+				const size_t blo(sizeof(Element));
 				const size_t bnu(blo*nun);
-				Base_t d = A[nun];
-				//  std::cerr << "d: " << d << std::endl;
-				Base_t * tmp = FFLAS::fflas_new<Base_t>(nun);
+				Element d = *(A+nun);
+				    //  std::cerr << "d: " << d << std::endl;
+				Element_ptr tmp = FFLAS::fflas_new(F,nun);
 				memcpy(tmp,A,bnu);
 				memcpy(A+1,tmp,bnu);
-				//				std::copy(A,A+nun,A+1);
+				    //				std::copy(A,A+nun,A+1);
 				*A=d;
 				delete [] tmp;
-
 			}
 		}
-		//		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
-
+		    //		std::cerr << "AFT m: " << m << ", n: " << n << std::endl;
+		
 #else
-
+		
 		//	std::cerr << "BEF m: " << m << ", n: " << n << std::endl;
 		if (m > 1) {
 			const size_t mun(m-1);
 			if (n > 1) {
 				const size_t nun(n-1);
-
-				Base_t * b = FFLAS::fflas_new<Base_t>(mun);
-				Base_t * Ainun = A+nun;
-				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
-
-				// dc = [ d c ]
-				Base_t * dc = FFLAS::fflas_new<Base_t>(n);
-				std::copy(Ainun-nun, Ainun, dc+1);
-
-				// this is d
+				
+				Element_ptr b = FFLAS::fflas_new (F,mun);
+				Element_ptr Ainun = A+nun;
+				for(size_t i=0; i<mun; ++i, Ainun+=lda) *(b+i) = *Ainun;
+				
+				    // dc = [ d c ]
+				Element_ptr dc = FFLAS::fflas_new (F,n);
+				FFLAS::fassign(F,nun,Ainun-nun,1, dc+1,1);
+				    //std::copy(Ainun-nun, Ainun, dc+1);
+				
+				    // this is d
 				*dc = *Ainun;
-
-				Base_t * Ai=A+(mun-1)*lda;
+				
+				Element_ptr Ai = A+(mun-1)*lda;
 				for(size_t i=mun; i>0; --i, Ai-=lda)
-					std::copy(Ai, Ai+nun, Ai+1+lda);
-
-				std::copy(dc, dc+n, A);
-
-				Base_t * Aipo = A+lda;
-				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = b[i];
-
-				delete [] dc;
-				delete [] b;
+					FFLAS::fassign(F, nun, Ai,1,Ai+1+lda,1);
+//				std::copy(Ai, Ai+nun, Ai+1+lda);
+				
+				FFLAS::fassign(F, n, dc, 1, A, 1);
+				    //std::copy(dc, dc+n, A);
+				
+				Element_ptr Aipo = A+lda;
+				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = *(b+i);
+				
+				FFLAS::fflas_delete(dc);
+				FFLAS::fflas_delete(b);
 			} else if (n != 0) {
-				Base_t * Ai=A+mun*lda;
-				Base_t d = *Ai;
+				Element_ptr Ai=A+mun*lda;
+				Element_ptr d = *Ai;
 				for(; Ai != A; Ai-=lda) *Ai= *(Ai-lda);
 				*A=d;
 			}
 		} else {
 			if ((m!=0) && (n > 1)) {
 				const size_t nun(n-1);
-				Base_t d = A[nun];
-				std::copy(A,A+nun,A+1);
+				Element d = A[nun];
+				FFLAS::fassign(F,nun,A,1,A+1,1);
+                                //std::copy(A,A+nun,A+1);
 				*A=d;
 			}
 		}
-
+		
 #endif
 	}
 
 	template<class Field>
 	inline void cyclic_shift_row(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda)
 	{
-
+	
 #ifdef MEMCOPY
 		if (m > 1) {
 			const size_t mun(m-1);
-
+			
 			typename Field::Element_ptr b = FFLAS::fflas_new (F,n,1);
 			typename Field::Element_ptr Ai = A+mun*lda;
 			//@BUG not safe with RNSModp field
@@ -399,13 +379,14 @@ namespace FFPACK {
 
 			typename Field::Element_ptr b = FFLAS::fflas_new (F, n, 1);
 			typename Field::Element_ptr Ai = A+mun*lda;
-			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
+			for(size_t i=0; i<n; ++i, Ai+=1) *(b+i) = *Ai;
 
 			for(typename Field::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
-				std::copy(Ac-lda,Ac-lda+n, Ac);
+				FFLAS::fassign(F,n, Ac-lda, 1, Ac, 1);
+			    //std::copy(Ac-lda,Ac-lda+n, Ac);
 
 			typename Field::Element_ptr Aii = A;
-			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = b[i];
+			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = *(b+i);
 
 			FFLAS::fflas_delete (b);
 		}
@@ -416,18 +397,18 @@ namespace FFPACK {
 	template<typename T>
 	inline void cyclic_shift_row(const RNSIntegerMod<T>& F, typename T::Element_ptr A, size_t m, size_t n, size_t lda)
 	{
-		if (m > 1) {
+	if (m > 1) {
 			const size_t mun(m-1);
 
 			typename T::Element_ptr b = FFLAS::fflas_new (F, n, 1);
 			typename T::Element_ptr Ai = A+mun*lda;
-			for(size_t i=0; i<n; ++i, Ai+=1) F.assign(b[i] , *Ai);
+			for(size_t i=0; i<n; ++i, Ai+=1) F.assign(*(b+i) , *Ai);
 
 			for(typename T::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
 				FFLAS::fassign(F, n, Ac-lda, 1, Ac, 1);
 
 			typename T::Element_ptr Aii = A;
-			for(size_t i=0; i<n; ++i, Aii+=1) F.assign(*Aii, b[i]);
+			for(size_t i=0; i<n; ++i, Aii+=1) F.assign(*Aii, *(b+i));
 
 			FFLAS::fflas_delete (b);
 		}
@@ -442,7 +423,7 @@ namespace FFPACK {
 				{
 					typename Field::Element tmp;
 					F.init(tmp);
-					F.assign(tmp, Ai[nun]);
+					F.assign(tmp, *(Ai+nun));
 					//@BUG: not safe with RNSModP field
 					std::copy_backward(Ai, Ai+nun, Ai+n);
 					*Ai=tmp;
@@ -458,11 +439,11 @@ namespace FFPACK {
 			for(typename T::Element_ptr Ai=A; Ai!= A+m*lda; Ai+=lda)
 				{
 					typename T::Element tmp; F.init(tmp);
-					F.assign(tmp, Ai[nun]);
+					F.assign(tmp, *(Ai+nun));
 					    //std::copy_backward(Ai, Ai+nun, Ai+n);
 					typename T::Element_ptr Xi = Ai+nun;
 					typename T::ConstElement_ptr Yi=Ai+nun-1;
-					for (; Ai < Yi; --Xi, --Yi)
+					for (size_t i =0;i<nun;++i, --Xi, --Yi)
 						F.assign(*Xi,*Yi);
 					F.assign(*Ai,tmp);
 				}

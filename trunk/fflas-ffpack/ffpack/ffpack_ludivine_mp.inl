@@ -65,15 +65,16 @@ namespace FFPACK {
 		size_t K = std::max(M,N);
 		
 		// compute bit size of feasible prime 
-		size_t _k=std::max(K,logp/20), lk=0;
+		size_t _k=std::max(K+1,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}    
 		size_t prime_bitsize= (53-lk)>>1;	
 	
 		// construct rns basis
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
-		size_t n_pr =maxC.bitsize()/prime_bitsize;				
+		size_t n_pr =ceil(double(maxC.bitsize())/prime_bitsize);				
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
 		
+
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);			
 #ifdef BENCH_PERF_LQUP_MP
@@ -82,9 +83,9 @@ namespace FFPACK {
 		chrono.clear();chrono.start();
 #endif	
 		// compute A in RNS
-		FFPACK::rns_double::Element_ptr Ap;		
-		Ap = FFLAS::fflas_new(Zp,M,N);		
-		FFLAS::finit_rns(Zp,M,N,(logp/16)+(logp%16?1:0),A,lda,Ap); 
+		FFPACK::rns_double::Element_ptr Ap;
+		Ap = FFLAS::fflas_new(Zp,M,N);
+		FFLAS::finit_rns(Zp,M,N,(logp/16)+(logp%16?1:0),A,lda,Ap);
 
 		
 #ifdef BENCH_PERF_LQUP_MP
@@ -101,7 +102,6 @@ namespace FFPACK {
 		t_lqup+=chrono.usertime();
 		chrono.clear();chrono.start();
 #endif			
-		//Zp.write(std::cout,*Ap);
 		// reconstruct the result	
 		FFLAS::fconvert_rns(Zp,M,N,F.zero,A,lda,Ap);
 #ifdef BENCH_PERF_LQUP_MP
@@ -111,7 +111,6 @@ namespace FFPACK {
 #endif			
 		// reduce it modulo p
 		FFLAS::freduce (F,M,N,A,lda);
-		//F.write(std::cout,*A);
 		
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();

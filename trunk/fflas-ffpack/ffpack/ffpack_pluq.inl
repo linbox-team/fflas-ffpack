@@ -337,202 +337,6 @@ namespace FFPACK {
 		return rank;
 	}
 
-	template<class Field>
-	inline size_t
-	PLUQ_basecase (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-		       const size_t M, const size_t N,
-		       typename Field::Element * A, const size_t lda, size_t*P, size_t *Q)
-	{
-		typedef typename Field::Element Element;
-		size_t row = 0;
-		size_t col = 0;
-		size_t rank = 0;
-		for (size_t i=0; i<M; ++i) P[i] = i;
-		for (size_t i=0; i<N; ++i) Q[i] = i;
-		while ((col < N)||(row < M)){
-			size_t piv2 = rank;
-			size_t piv3 = rank;
-			Element * A1 = A + rank*lda;
-			Element * A2 = A + col;
-			Element * A3 = A + row*lda;
-			    // search for pivot in A2
-			if (row==M){
-				piv3=col;
-			}else
-				while ((piv3 < col) && Fi.isZero (A3 [piv3])) piv3++;
-			if (piv3 == col){
-				if (col==N){
-					row++;
-					continue;
-				}
-#ifdef LEFTLOOKING
-				    // Left looking style update
-				ftrsv (Fi, FFLAS::FflasLower, FFLAS::FflasNoTrans,
-				       (Diag==FFLAS::FflasUnit)?FFLAS::FflasNonUnit:FFLAS::FflasUnit,
-				       rank, A, lda, A2, lda);
-				fgemv (Fi, FFLAS::FflasNoTrans, M-rank, rank, Fi.mOne,
-				       A1,lda, A2, lda,
-				       Fi.one, A2+rank*lda, lda);
-#endif
-				while ((piv2 < row) && Fi.isZero (A2 [piv2*lda])) piv2++;
-				if (col<N) col++;
-				if (piv2==M)
-					continue;
-			} else
-				piv2 = row;
-			if (row<M)  row++;
-			if (Fi.isZero (A [piv2*lda+piv3])){
-				    // no pivot found
-				    //cerr<<endl;
-				continue;
-			}
-			    // At this point the pivot is located at x=piv2 y = piv3
-			P [rank] = piv2;
-			Q [rank] = piv3;
-			A2 = A+piv3;
-			A3 = A+piv2*lda;
-			Element invpiv;
-			Fi.inv (invpiv, A3[piv3]);
-			if (Diag==FFLAS::FflasUnit){
-#ifdef LEFTLOOKING
-				    // Normalizing the pivot row
-				for (size_t i=piv3+1; i<N; ++i)
-					Fi.mulin (A3[i], invpiv);
-#endif
-			}
-			else
-				    // Normalizing the pivot column
-				for (size_t i=piv2+1; i<M; ++i)
-					Fi.mulin (A2 [i*lda], invpiv);
-			    // Update
-#ifndef LEFTLOOKING
-			for (size_t i=piv2+1; i<M; ++i)
-			 	for (size_t j=piv3+1; j<N; ++j)
-					Fi.maxpyin (A[i*lda+j], A2[i*lda], A3[j]);
-#endif
-			    //Swapping pivot column
-			if (piv3 > rank)
-				for (size_t i=0; i<M; ++i){
-					Element tmp;
-					Fi.assign (tmp, A[i*lda + rank]);
-					Fi.assign (A[i*lda + rank], A2[i*lda]);
-					Fi.assign (A2[i*lda], tmp);
-				}
-				    // Updating cols
-
-			    //Swapping pivot row
-			if (piv2 > rank)
-				for (size_t i=0; i<N; ++i){
-					Element tmp;
-					Fi.assign (tmp, A1[i]);
-					Fi.assign (A1[i], A3[i]);
-					Fi.assign (A3[i], tmp);
-				}
-#ifdef LEFTLOOKING
-			    // Need to update the cols already updated
-			for (size_t i=piv2+1; i<M; ++i)
-				for (size_t j=piv3+1; j<col; ++j)
-					Fi.maxpyin (A[i*lda+j],
-						    A[i*lda+rank], A[rank*lda+j]);
-#endif
-			rank++;
-		}
-		return rank;
-	}
-        // // Base Case based on a CUP decomp with rotations
-	// // Version using a temporary for storing the output and prevent permutations
-	// template<class Field>
-	// inline size_t
-	// PLUQ_basecaseCroutCopy (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-	// 			const size_t M, const size_t N,
-	// 			typename Field::Element_ptr A, const size_t lda, 
-	// 			size_t*P, size_t *Q)
-	// {
-	// 	    // Output PLUQ will be stored in D
-	// 	typename Field::Element_ptr D = FFLAS::fflas_new(F,M,N);
-	// 	size_t ldd = N;
-	// 	int row = 0;
-	// 	int rank = 0;
-	// 	typename Field::Element_ptr CurrRow=D;
-	// 	size_t * MathP = FFLAS::fflas_new<size_t>(M);
-	// 	size_t * MathQ = FFLAS::fflas_new<size_t>(N);
-	// 	for (size_t i=0; i<M; ++i) MathP[i] = i;
-	// 	for (size_t i=0; i<N; ++i) MathQ[i] = i;
-	// 	while (((size_t)row<M) && ((size_t)rank<N)){
-	// 		    //Copying  working row to D
-	// 		for (size_t j = rank; j<N; ++j)
-	// 			F.assign(D[j],A[MathP[j]]);
-	// 		    // Updating row where pivot will be searched for		
-	// 		fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, D+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
-	// 		int i = rank-1;
-	// 		while(Fi.isZero (CurrRow[++i]) && (i<(int)N-1));
-	// 		if (!Fi.isZero (CurrRow[i])){
-	// 			    // found pivot
-	// 			    // Updating column below pivot
-	// 			fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
-	// 			    // Normalization
-	// 			typename Field::Element invpiv;
-	// 			Fi.init(invpiv);
-	// 			Fi.inv (invpiv, CurrRow[i]);
-	// 			if (Diag == FFLAS::FflasUnit)
-	// 				FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
-	// 			else
-	// 				FFLAS::fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
-
-	// 			if (i > rank){
-	// 				    // Column rotation to move pivot on the diagonal
-	// 				    // on U
-	// 				cyclic_shift_col(Fi, A+rank, rank, i-rank+1, lda);
-	// 				cyclic_shift_mathPerm(MathQ+rank, (size_t)(i-rank+1));
-	// 				    // on A
-	// 				cyclic_shift_col(Fi, CurrRow+lda+rank, M-row-1, i-rank+1, lda);
-	// 				Fi.assign(A[rank*(lda+1)], CurrRow[i]);
-	// 				FFLAS::fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
-	// 			}
-	// 			if (row > rank){
-	// 				    // Row rotation for L
-	// 				    // Optimization: delay this to the end
-	// 				cyclic_shift_row(Fi, A+rank*lda, row-rank+1, rank, lda);
-	// 				cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
-	// 				    // Row rotation for U (not moving the 0 block)
-	// 				FFLAS::fassign (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
-	// 				Fi.assign(A[rank*(lda+1)], CurrRow[i]);
-	// 				FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
-	// 				Fi.assign(CurrRow[i],Fi.zero); // only needed once here
-	// 			}
-	// 			rank++;
-	// 		}
-	// 		CurrRow+=lda;
-	// 		row++;
-	// 	}
-
-	// 	// size_t nonpiv = rank;
-	// 	// for (size_t i = 0; i<M; ++i)
-	// 	// 	if (!pivotRows[i])
-	// 	// 		MathP[nonpiv++] = i;
-	// 	// nonpiv = rank;
-	// 	// for (size_t i = 0; i<N; ++i)
-	// 	// 	if (!pivotCols[i])
-	// 	// 		MathQ[nonpiv++] = i;
-
-	// 	// std::cerr<<"MathP = ";
-	// 	// for (int i=0; i<M; ++i)
-	// 	// 	std::cerr<<MathP[i]<<" ";
-	// 	// std::cerr<<std::endl;
-	// 	// std::cerr<<"MathQ = ";
-	// 	// for (int i=0; i<N; ++i)
-	// 	// 	std::cerr<<MathQ[i]<<" ";
-	// 	// std::cerr<<std::endl;
-
-	// 	MathPerm2LAPACKPerm (Q, MathQ, N);
-	// 	FFLAS::fflas_delete( MathQ);
-	// 	MathPerm2LAPACKPerm (P, MathP, M);
-	// 	FFLAS::fflas_delete( MathP);
-	// 	FFLAS::fzero (Fi, M-rank, N-rank, A+rank*(1+lda), lda);
-
-	// 	return (size_t) rank;
-	// }
-
         // Base Case based on a CUP decomp with rotations
 	template<class Field>
 	inline size_t
@@ -547,12 +351,14 @@ namespace FFPACK {
 		size_t * MathQ = FFLAS::fflas_new<size_t>(N);
 		for (size_t i=0; i<M; ++i) MathP[i] = i;
 		for (size_t i=0; i<N; ++i) MathQ[i] = i;
+	
 		while (((size_t)row<M) && ((size_t)rank<N)){
-			// Updating row where pivot will be searched for	
+			    // Updating row where pivot will be searched for	
 			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
 			int i = rank-1;
-			while(Fi.isZero (CurrRow[++i]) && (i<(int)N-1));
-			if (!Fi.isZero (CurrRow[i])){
+			while(Fi.isZero (*(CurrRow+ ++i)) && (i<(int)N-1));
+			
+			if (!Fi.isZero (*(CurrRow+i))){
 				    // found pivot
 				    // Updating column below pivot
 				// Q [rank] = i;
@@ -562,7 +368,7 @@ namespace FFPACK {
 				// Normalization
 				typename Field::Element invpiv;
 				Fi.init(invpiv);
-				Fi.inv (invpiv, CurrRow[i]);
+				Fi.inv (invpiv, *(CurrRow+i));
 				if (Diag == FFLAS::FflasUnit)
 					FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
 				else
@@ -575,7 +381,7 @@ namespace FFPACK {
 					cyclic_shift_mathPerm(MathQ+rank, (size_t)(i-rank+1));
 					    // on A
 					cyclic_shift_col(Fi, CurrRow+lda+rank, M-row-1, i-rank+1, lda);
-					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
+					Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
 					FFLAS::fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
 				}
 				if (row > rank){
@@ -585,9 +391,9 @@ namespace FFPACK {
 					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
 					    // Row rotation for U (not moving the 0 block)
 					FFLAS::fassign (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
-					Fi.assign(A[rank*(lda+1)], CurrRow[i]);
+					Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
 					FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
-					Fi.assign(CurrRow[i],Fi.zero); // only needed once here
+					Fi.assign(*(CurrRow+i),Fi.zero); // only needed once here
 				}
 				rank++;
 			}
@@ -629,6 +435,7 @@ namespace FFPACK {
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
+
 #ifdef BCONLY
   #ifdef CROUT
 		return PLUQ_basecaseCrout(Fi,Diag,M,N,A,lda,P,Q);
