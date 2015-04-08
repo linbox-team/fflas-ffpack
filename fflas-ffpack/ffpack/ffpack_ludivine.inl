@@ -36,9 +36,9 @@ namespace FFPACK {
 	template<class Field>
 	inline size_t
 	LUdivine_gauss( const Field& F, const FFLAS::FFLAS_DIAG Diag,
-			const size_t M, const size_t N,
-			typename Field::Element_ptr A, const size_t lda, size_t*P,
-			size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag)
+					const size_t M, const size_t N,
+					typename Field::Element_ptr A, const size_t lda, size_t*P,
+					size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag)
 	{
 		size_t MN = std::min(M,N);
 		typename Field::Element_ptr Acurr = A;
@@ -410,16 +410,15 @@ namespace FFPACK {
 	template <class Field>
 	inline size_t
 	LUdivine (const Field& F,
-		  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
-		  const size_t M, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  size_t*P, size_t *Q
-		  , const FFPACK::FFPACK_LU_TAG LuTag // =FFPACK::FfpackSlabRecursive
-		  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
+			  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
+			  const size_t M, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  size_t*P, size_t *Q
+			  , const FFPACK::FFPACK_LU_TAG LuTag // =FFPACK::FfpackSlabRecursive
+			  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
 		 )
 	{
 		//std::cout<<"LUDivine ("<<M<<","<<N<<")"<<std::endl;
-		
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
 		size_t MN = std::min(M,N);

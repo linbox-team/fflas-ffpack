@@ -95,8 +95,9 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 			  int n, int m, int id, bool mapleFormat = false, bool column_major=false)
 {
 
-	typename Field::Element tmp;
+	    //typename Field::Element tmp;
 	// double tmp;
+	Givaro::Integer tmp;
 	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",\n[" ;
 	for (int i = 0; i<n;++i){
 		if (mapleFormat) c << '[';

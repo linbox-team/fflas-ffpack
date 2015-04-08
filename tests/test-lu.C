@@ -89,7 +89,7 @@ bool test_LUdivine(const Field & F,
 	size_t R = FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q);
 
 	if (R != r) {
-		std::cout << "rank is wrong (expected " << R << " but got " << r << ")" << std::endl;
+		std::cout << "rank is wrong (expecting " << r << " but got " << R << ")" << std::endl;
 		FFLAS::fflas_delete( B );
 		FFLAS::fflas_delete( P );
 		FFLAS::fflas_delete( Q );
@@ -97,7 +97,7 @@ bool test_LUdivine(const Field & F,
 	}
 
 	Element_ptr X = FFLAS::fflas_new(F, m, n); // compute X=CUP and check X == A
-	/*  Build L,U */
+		/*  Build L,U */
 	Element_ptr L, U;
 	if (trans == FFLAS::FflasNoTrans){
 		L = FFLAS::fflas_new(F, m, m);
@@ -106,7 +106,7 @@ bool test_LUdivine(const Field & F,
 		Element zero,one;
 		F.init(zero,0.0);
 		F.init(one,1.0);
-		/*  build U */
+			/*  build U */
 		for (size_t i=0; i<R; ++i){
 			for (size_t j=0; j<i; ++j)
 				F.assign ( *(U + i*n + j), zero);
@@ -117,7 +117,7 @@ bool test_LUdivine(const Field & F,
 			for (size_t j=0; j<n; ++j)
 				F.assign(*(U+i*n+j), zero);
 		}
-		/*  build L */
+			/*  build L */
 		for ( size_t i=0; i<m; ++i ){
 			size_t j=0;
 			for (; j< ((i<R)?i:R) ; ++j )
@@ -126,7 +126,7 @@ bool test_LUdivine(const Field & F,
 				F.assign( *(L+i*m+j), zero);
 		}
 
-		/*  reconstruct the diagonal */
+			/*  reconstruct the diagonal */
 		if (diag == FFLAS::FflasNonUnit) {
 			for ( size_t i=0; i<R; ++i ){
 				F.assign (*(U+i*(n+1)), *(B+i*(lda+1)));
@@ -140,11 +140,11 @@ bool test_LUdivine(const Field & F,
 			}
 		}
 		
-		/*  Compute CUP */
+			/*  Compute CUP */
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-				m,0,(int) R, U, n, P);
+						m,0,(int) R, U, n, P);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-			      m,n,R, 1.0, L,m, U,n, 0.0, X,n);
+					  m,n,R, 1.0, L,m, U,n, 0.0, X,n);
 	}
 	else { /*  trans == FFLAS::FflasTrans */
 
@@ -155,7 +155,7 @@ bool test_LUdivine(const Field & F,
 		typename Field::Element zero,one;
 		F.init(zero,0.0);
 		F.init(one,1.0);
-		/*  build L */
+			/*  build L */
 		for (size_t i=0; i<R; ++i){
 			for (size_t j=0; j<i; ++j)
 				F.assign ( *(L + i + j*n), zero);
@@ -166,7 +166,7 @@ bool test_LUdivine(const Field & F,
 			for (size_t j=0; j<m; ++j)
 				F.assign(*(L+i+j*n), zero);
 		}
-		/*  build U */
+			/*  build U */
 		for ( size_t i=0; i<n; ++i ){
 			size_t j=0;
 			for (;  j< ((i<R)?i:R) ; ++j )
@@ -176,12 +176,12 @@ bool test_LUdivine(const Field & F,
 		}
 
 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-				n,0,(int)R, U, n, Q);
+						n,0,(int)R, U, n, Q);
 
 		for (size_t i=0; i<n; ++i)
 			F.assign (*(U+i*(n+1)),one);
 
-		/*  reconstruct the diagonal */
+			/*  reconstruct the diagonal */
 		if (diag == FFLAS::FflasNonUnit) {
 			for ( size_t i=0; i<R; ++i )
 				F.assign (*(L+i*(n+1)), *(B+i*(lda+1)));
@@ -193,15 +193,15 @@ bool test_LUdivine(const Field & F,
 			}
 		}
 
-		/*  Compute LQUP */
+			/*  Compute LQUP */
 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-				n,0,(int)R, L, n, P);
+						n,0,(int)R, L, n, P);
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-				m,0,(int)R, L, n, Q);
+						m,0,(int)R, L, n, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-			      m,n,n, 1.0, L,n, U,n, 0.0, X,n);
+					  m,n,n, 1.0, L,n, U,n, 0.0, X,n);
 	}
-	/*  check equality */
+		/*  check equality */
 	for (size_t i=0; i<m; ++i) {
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(X+i*n+j))){
@@ -210,12 +210,12 @@ bool test_LUdivine(const Field & F,
 				fail|=true;
 			}
 	}
-	// if (fail){
-	// 	write_field(F,cerr<<"A = "<<endl,A,m,n,lda);
-	// 	write_field(F,cerr<<"LU = "<<endl,B,m,n,lda);
-	// 	write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-	// 	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-	// }
+		// if (fail){
+		// 	write_field(F,cerr<<"A = "<<endl,A,m,n,lda);
+		// 	write_field(F,cerr<<"LU = "<<endl,B,m,n,lda);
+		// 	write_field(F,cerr<<"L = "<<endl,L,m,m,m);
+		// 	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+		// }
 
 	FFLAS::fflas_delete( P);
 	FFLAS::fflas_delete( L);
@@ -264,30 +264,30 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	PAR_INSTR{
 		SYNCH_GROUP(MAX_THREADS,
 		
-		//#pragma omp task shared(F, P, L)
-		TASK(MODE(CONSTREFERENCE(F,P,L)),
-		     FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
-		//#pragma omp task shared(F, Q, U)
-		TASK(MODE(CONSTREFERENCE(F,Q,U)),
-		     FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
-		WAIT;
-		//#pragma omp taskwait
-		const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
-		typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
-		//#pragma omp task shared(F, L, U, X)
-		TASK(MODE(CONSTREFERENCE(F,U,L,X)),
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
-			      F.one, L,R, U,n, F.zero, X,n, pWH););
+						//#pragma omp task shared(F, P, L)
+					TASK(MODE(CONSTREFERENCE(F,P,L)),
+						 FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
+						//#pragma omp task shared(F, Q, U)
+					TASK(MODE(CONSTREFERENCE(F,Q,U)),
+						 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
+					WAIT;
+						//#pragma omp taskwait
+					const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
+					typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
+						//#pragma omp task shared(F, L, U, X)
+					TASK(MODE(CONSTREFERENCE(F,U,L,X)),
+						 FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
+									   F.one, L,R, U,n, F.zero, X,n, pWH););
 					);
 	}
 	bool fail = false;
-	//  PAR_FOR (size_t i=0; i<m; ++i)
+		//  PAR_FOR (size_t i=0; i<m; ++i)
 	for(size_t i=0; i<m; ++i)
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(X+i*n+j))){
 				std::cerr << std::endl<<" A ["<<i<<","<<j<<"] = " << (*(A+i*lda+j))
 						  << " PLUQ ["<<i<<","<<j<<"] = " << (*(X+i*n+j))
-					  << std::endl;
+						  << std::endl;
 				fail=true;
 			}
 		//write_field(F, std::cerr<<"X = "<<std::endl,X, m,n,n);
@@ -809,10 +809,10 @@ bool test_pluq (const Field & F,
 
 template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
 bool launch_test(const Field & F,
-		 size_t r,
-		 size_t m, size_t n)
+				 size_t r,
+				 size_t m, size_t n)
 {
-	//typedef typename Field::Element Element ;
+		//typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
 	bool fail = false ;
 	{ /*  user given and lda bigger */
@@ -1001,7 +1001,7 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 	int nbit=(int)iters;
 	
 	while (ok &&  nbit){
-		// choose Field 
+			// choose Field 
 		Field* F= chooseField<Field>(q,b);
 		if (F==nullptr)
 			return true;
@@ -1056,8 +1056,8 @@ int main(int argc, char** argv)
 		{ 'r', "-r R", "Set the rank.", TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-                END_OF_ARGUMENTS
-        };
+		END_OF_ARGUMENTS
+	};
 
 	FFLAS::parseArguments(argc,argv,as);
 
@@ -1072,7 +1072,7 @@ int main(int argc, char** argv)
 		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
-//		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m,n,r,iters);		
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m,n,r,iters);		
 	} while (loop && ok);
 
 	return !ok;
