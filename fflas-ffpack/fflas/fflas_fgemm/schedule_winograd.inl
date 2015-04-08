@@ -377,7 +377,7 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // T1 = B12 - B11 in X2
 			fsub(DF,lb,cb,(DFCEptr)B12,ldb,(DFCEptr)B11,ldb,(DFEptr)X2,ldX2);
-			std::cerr<<"B12 = "<<*B12<<" B11 = "<<*B11<<std::endl;
+			//std::cerr<<"B12 = "<<*B12<<" B11 = "<<*B11<<std::endl;
 			    // S1 = A21 + A22 in X1
 
 			fadd(DF,la,ca,(DFCEptr)A21,lda,(DFCEptr)A22,lda,(DFEptr)X1,ldX1);
