@@ -93,7 +93,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const Givaro::UnparametricRing<float>& F, const size_t N,
+	fassign (const Givaro::ZRing<float>& F, const size_t N,
 	       const float * Y, const size_t incY,
 	       float * X, const size_t incX)
 	{
@@ -129,7 +129,7 @@ namespace FFLAS {
 
 	template<>
 	inline void
-	fassign (const Givaro::UnparametricRing<double>& F, const size_t N,
+	fassign (const Givaro::ZRing<double>& F, const size_t N,
 	       const double * Y, const size_t incY ,
 	       double * X, const size_t incX)
 	{

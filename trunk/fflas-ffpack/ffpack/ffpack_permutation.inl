@@ -75,15 +75,9 @@ namespace FFPACK {
 			      const size_t R1, const size_t R2,
 			      const size_t R3, const size_t R4)
 	{
-		for (size_t i = 0, j = R1+R2; j < M2; ++i, ++j)
-			for (size_t k = 0; k<width; ++k)
-				F.assign(*(tmp +i*width + k), *(A +j*lda + k));
-		for (size_t i = M2, j = R1+R2; i < M2+R3+R4; ++i, ++j)
-			for (size_t k = 0; k<width; ++k)
-				F.assign(*(A +j*lda + k) , *(A + i*lda +k));
-		for (size_t i = 0, j = R1+R2+R3+R4; i < M2-R1-R2; ++i, ++j)
-			for (size_t k = 0; k<width; ++k)
-				F.assign(*(A+ j*lda + k) , *(tmp +i*width + k));
+		FFLAS::fassign(F, M2-R1-R2, width,  A + (R1+R2)*lda, lda, tmp, width);
+		FFLAS::fassign(F, R3+R4, width,  A + M2*lda, lda, A + (R1+R2)*lda, lda);
+		FFLAS::fassign(F, M2-R1-R2, width, tmp, width, A + (R1+R2+R3+R4)*lda, lda);
 	}
 	template <class Field>
 	inline void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, 
@@ -116,17 +110,11 @@ namespace FFPACK {
 			      const size_t R3, const size_t R4)
 	{
 		for (size_t k = 0; k < width; ++k){
-			for (size_t i = 0, j = R1; j < N2; ++i, ++j){
-				F.assign(*(tmp +i + k*(N2-R1)) , *(A +k*lda + j));
-			}
-			for (size_t i = N2, j = R1; i < N2+R2; ++i, ++j)
-				F.assign(*(A +k*lda + j) , *(A +k*lda + i));
-			for (size_t i = 0, j = R1+R2; i < R3; ++i, ++j)
-				F.assign(*(A +k*lda + j) , *(tmp +k*(N2-R1) + i));
-			for (size_t i = N2+R2, j = R1+R2+R3; i < N2+R2+R4; ++i,++j)
-				F.assign(*(A +k*lda + j) , *(A +k*lda + i));
-			for (size_t i = R3, j = R1+R2+R3+R4; i < N2-R1; ++i,++j)
-				F.assign(*(A +k*lda + j) , *(tmp +k*(N2-R1) + i));
+			FFLAS::fassign(F, N2-R1, A+R1+k*lda, 1, tmp + k*(N2-R1), 1);
+			FFLAS::fassign(F, R2, A+N2+k*lda, 1, A + R1 + k*lda, 1);
+			FFLAS::fassign(F, R3, tmp + k*(N2-R1), 1, A+R1+R2+k*lda, 1);
+			FFLAS::fassign(F, R4, A + N2 + R2 + k*lda, 1, A + R1+R2+R3 + k*lda, 1);
+			FFLAS::fassign(F, N2-R1-R3, tmp + R3 + k*(N2-R1), 1, A+R1+R2+R3+R4+k*lda, 1);
 		}
 	}
 
@@ -239,7 +227,7 @@ namespace FFPACK {
 	cyclic_shift_mathPerm (size_t * P,  const size_t s)
 	{
                 size_t tmp;
-                tmp = *(P+s-1);
+                tmp = P[s-1];
 		    //memmove(P+1, P, (s)*sizeof(size_t));
 		size_t * Pi = P;
 		std::copy(Pi, Pi+s-1, Pi+1);
@@ -265,7 +253,7 @@ namespace FFPACK {
 				    // const size_t bmu(blo*mun);
 				const size_t bnu(blo*nun);
 				Element_ptr b = FFLAS::fflas_new(F,mun);
-				for(size_t i=0; i<mun; ++i) *(b+i) = *(A+i*lda+nun);
+				for(size_t i=0; i<mun; ++i) b[i] = A[i*lda+nun];
 				Element_ptr dc = FFLAS::fflas_new (F,n);
 				memcpy(dc+1,A+mun*lda,bnu);
 				*dc = *(A+mun*lda+nun); // this is d
@@ -275,13 +263,13 @@ namespace FFPACK {
 					memcpy(A+1+i*lda, A+(i-1)*lda, bnu);
 				
 				memcpy(A, dc, bnu+blo);
-				for(size_t i=0; i<mun; ++i) *(A+(i+1)*lda) = *(b+i);
+				for(size_t i=0; i<mun; ++i) A[(i+1)*lda] = b[i];
 				delete [] dc;
 				delete [] b;
 				
 			} else if (n != 0) {
-				Base_t d = *(A+mun*lda);
-				for(size_t i=mun; i>0; --i) *(A+i*lda)=*(A+(i-1)*lda);
+				Base_t d = A[mun*lda];
+				for(size_t i=mun; i>0; --i) A[i*lda]=A[(i-1)*lda];
 				*A=d;
 			}
 		} else {
@@ -289,7 +277,7 @@ namespace FFPACK {
 				const size_t nun(n-1);
 				const size_t blo(sizeof(Element));
 				const size_t bnu(blo*nun);
-				Element d = *(A+nun);
+				Element d = A[nun];
 				    //  std::cerr << "d: " << d << std::endl;
 				Element_ptr tmp = FFLAS::fflas_new(F,nun);
 				memcpy(tmp,A,bnu);
@@ -311,7 +299,7 @@ namespace FFPACK {
 				
 				Element_ptr b = FFLAS::fflas_new (F,mun);
 				Element_ptr Ainun = A+nun;
-				for(size_t i=0; i<mun; ++i, Ainun+=lda) *(b+i) = *Ainun;
+				for(size_t i=0; i<mun; ++i, Ainun+=lda) b[i] = *Ainun;
 				
 				    // dc = [ d c ]
 				Element_ptr dc = FFLAS::fflas_new (F,n);
@@ -330,7 +318,7 @@ namespace FFPACK {
 				    //std::copy(dc, dc+n, A);
 				
 				Element_ptr Aipo = A+lda;
-				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = *(b+i);
+				for(size_t i=0; i<mun; ++i, Aipo+=lda) *Aipo = b[i];
 				
 				FFLAS::fflas_delete(dc);
 				FFLAS::fflas_delete(b);
@@ -379,14 +367,14 @@ namespace FFPACK {
 
 			typename Field::Element_ptr b = FFLAS::fflas_new (F, n, 1);
 			typename Field::Element_ptr Ai = A+mun*lda;
-			for(size_t i=0; i<n; ++i, Ai+=1) *(b+i) = *Ai;
+			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
 
 			for(typename Field::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
 				FFLAS::fassign(F,n, Ac-lda, 1, Ac, 1);
 			    //std::copy(Ac-lda,Ac-lda+n, Ac);
 
 			typename Field::Element_ptr Aii = A;
-			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = *(b+i);
+			for(size_t i=0; i<n; ++i, Aii+=1) *Aii = b[i];
 
 			FFLAS::fflas_delete (b);
 		}
@@ -402,13 +390,13 @@ namespace FFPACK {
 
 			typename T::Element_ptr b = FFLAS::fflas_new (F, n, 1);
 			typename T::Element_ptr Ai = A+mun*lda;
-			for(size_t i=0; i<n; ++i, Ai+=1) F.assign(*(b+i) , *Ai);
+			for(size_t i=0; i<n; ++i, Ai+=1) F.assign(b[i] , *Ai);
 
 			for(typename T::Element_ptr Ac = A+mun*lda; Ac!=A;Ac-=lda)
 				FFLAS::fassign(F, n, Ac-lda, 1, Ac, 1);
 
 			typename T::Element_ptr Aii = A;
-			for(size_t i=0; i<n; ++i, Aii+=1) F.assign(*Aii, *(b+i));
+			for(size_t i=0; i<n; ++i, Aii+=1) F.assign(*Aii, b[i]);
 
 			FFLAS::fflas_delete (b);
 		}
@@ -423,7 +411,7 @@ namespace FFPACK {
 				{
 					typename Field::Element tmp;
 					F.init(tmp);
-					F.assign(tmp, *(Ai+nun));
+					F.assign(tmp, Ai[nun]);
 					//@BUG: not safe with RNSModP field
 					std::copy_backward(Ai, Ai+nun, Ai+n);
 					*Ai=tmp;
@@ -439,7 +427,7 @@ namespace FFPACK {
 			for(typename T::Element_ptr Ai=A; Ai!= A+m*lda; Ai+=lda)
 				{
 					typename T::Element tmp; F.init(tmp);
-					F.assign(tmp, *(Ai+nun));
+					F.assign(tmp, Ai[nun]);
 					    //std::copy_backward(Ai, Ai+nun, Ai+n);
 					typename T::Element_ptr Xi = Ai+nun;
 					typename T::ConstElement_ptr Yi=Ai+nun-1;
