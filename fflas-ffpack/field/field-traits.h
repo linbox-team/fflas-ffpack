@@ -37,12 +37,12 @@
 #include <type_traits> // CXX11
 #include "fflas-ffpack/field/rns-double-elt.h"
 #include "recint/rmint.h"
-#include "givaro/zring.h"// ----- Forward declarations
+#include "givaro/modular-general.h"
+#include "givaro/zring.h"
+
+// ----- Forward declarations
 
 namespace Givaro {
-
-	template<typename  T, typename COMP>
-	class Modular;
 
 	template<class T>
 	class ModularBalanced;
