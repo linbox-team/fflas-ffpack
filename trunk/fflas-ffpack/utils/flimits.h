@@ -34,6 +34,8 @@
 #include <limits>
 #include <type_traits>
 
+#include <givaro/givinteger.h>
+
 template <class T> struct limits;
 // {
 //     constexpr inline static T max() noexcept {return 0;}
@@ -133,9 +135,15 @@ template <> struct limits<double> {
     constexpr inline static int32_t digits() noexcept {return std:: numeric_limits<T>::digits ;}
 };
 
+template <> struct limits<Givaro::Integer> {
+	typedef Givaro::Integer T;
+	constexpr inline static int max() noexcept {return -1;}
+	constexpr inline static int min() noexcept {return 0;}
+};
+
 template <size_t K> struct limits<RecInt::ruint<K> > {
+	typedef RecInt::ruint<K> T;
 	constexpr inline static RecInt::ruint<K> max() noexcept {return RecInt::ruint<K>(-1);}
-	
 	constexpr inline static RecInt::ruint<K> min() noexcept {return 0;}
 };
 // template <size_t K> struct limits<RecInt::rint<K> > {
