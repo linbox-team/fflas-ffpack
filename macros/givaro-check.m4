@@ -52,8 +52,8 @@ dnl -------------- dnl
 dnl GIVARO VERSION dnl
 dnl -------------- dnl
 
-dnl those versions are really any if we only need Integer
-version_min=30900
+dnl As we need Integer and Modular, should be updated on each interface changes
+version_min=30901
 version_max=31000
 
 dnl Check for existence
@@ -67,7 +67,7 @@ for GIVARO_HOME in ${GIVARO_HOME_PATH}
  do
 if test -r "$GIVARO_HOME/include/givaro/givconfig.h"; then
 
-	# Givaro Libs + CFlags contains GMP info - AB 2014-12-12
+	# Givaro Libs + CFlags contain GMP info - AB 2014-12-12
 	GIVARO_LIBS=`$GIVARO_HOME/bin/givaro-config --libs`
 	GIVARO_CFLAGS=`$GIVARO_HOME/bin/givaro-config --cflags`
 
