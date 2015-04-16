@@ -177,7 +177,7 @@ namespace FFPACK {
 		void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 #ifdef __DLP_CHALLENGE
 		void init_dlp(size_t m, double* Arns, const integer* A, size_t lda) const;
-		void convert_dlp(size_t m, integer *A, size_t lda, const double *Arns) const;
+		void convert_dlp(size_t m, integer *A, const double *Arns) const;
 #endif
 		
 		// reduce entries of Arns to be less than the rns basis elements
