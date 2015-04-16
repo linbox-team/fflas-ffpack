@@ -55,76 +55,42 @@ using namespace std;
 using namespace FFLAS;
 using namespace Givaro;
 
+using Data = std::vector<details_spmv::Coo<UnparametricRing<double>>>;
+using Coo = typename Data::value_type;
+
 /*******************************************************************************************************************
  *
  *      Utility functions: sms reader and random field
  *  
  *******************************************************************************************************************/
 
-/*
- * Reader for sms format.
- * Return 3 arrays of size nnz:
- *  - val: values of non zeros elements
- *  - col: column index of non zeros element
- *  - row: row index of non zeros element
- */
-// template <class Field>
-// void readSmsFormat(const std::string &path, const Field &f, index_t *&row, index_t *&col,
-//                    typename Field::Element_ptr &val, index_t &rowdim, index_t &coldim, uint64_t &nnz, bool trans = false, bool unparam = false) {
-//     using namespace details_spmv;
-//     std::ifstream file(path, std::ios::in);
-//     std::vector<std::string> tokens;
-//     std::string line;
-//     std::getline(file, line);
-//     std::istringstream is(line);
-//     std::string t;
-//     is >> rowdim >> coldim >> t;
-//     // if(trans){
-//     //     coldim = static_cast<index_t>(std::stoull(tokens[0]));
-//     //     rowdim = static_cast<index_t>(std::stoull(tokens[1]));
-//     // }else{
-//     //     rowdim = static_cast<index_t>(std::stoull(tokens[0]));
-//     //     coldim = static_cast<index_t>(std::stoull(tokens[1]));
-//     // }
-    
-//     std::vector<Coo<Field>> data;
-//     nnz = 0;
-//     while (std::getline(file, line)) {
-//         tokens.resize(0);
-//         std::istringstream iss(line);
-
-//         // std::copy(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>(),
-//         //           std::back_inserter<std::vector<std::string>>(tokens));
-
-//         int64_t rr, cc, vv;
-//         iss >> rr >> cc >> vv;
-
-//         if (!(rr != 0 && cc != 0 && vv != 0)) {
-//             typename Field::Element v;
-//             index_t r = (index_t)(rr) - 1;
-//             index_t c = (index_t)(cc) - 1;
-//             if(trans){
-//                 data.emplace_back(v, c, r);
-//             }else{
-//                 data.emplace_back(v, r, c);
-//             }
-//         }
-//     }
-//     std::sort(data.begin(), data.end(), [](const Coo<Field> &a, const Coo<Field> &b) {
-//         return (a.row < b.row) || ((a.row == b.row) && (a.col < b.col));
-//     });
-
-//     row = FFLAS::fflas_new<index_t>(data.size());
-//     col = FFLAS::fflas_new<index_t>(data.size());
-//     val = FFLAS::fflas_new(f, data.size(), 1);
-//     nnz = data.size();
-
-//     for (size_t i = 0, end = data.size(); i < end; ++i) {
-//         val[i] = data[i].val;
-//         col[i] = data[i].col;
-//         row[i] = data[i].row;
-//     }
-// }
+void readMat(string path, index_t *& row, index_t *& col, double *&val, index_t &rowdim, index_t &coldim, uint64_t & nnz){
+  std::ifstream file(path, std::ios::out);
+  std::string line, nnz_c;
+  std::getline(file, line);
+  std::istringstream(line) >> rowdim >> coldim >> nnz_c;
+  Data mat;
+  int64_t r, c, v;
+  while(std::getline(file, line)){
+    std::istringstream(line) >> r >> c >> v;
+    if(r!=0)
+      mat.emplace_back(v, r-1,c-1);
+  }
+  std::sort(mat.begin(), mat.end(),
+            [](Coo &a, Coo &b){
+                return (a.row < b.row) || ((a.row == b.row) && (a.col < b.col));
+                ;});
+  mat.shrink_to_fit();
+  nnz = mat.size();
+  val = FFLAS::fflas_new<double>(nnz, Alignment::CACHE_LINE);
+  col = FFLAS::fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+  row = FFLAS::fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+  for(size_t i = 0 ; i < nnz ; ++i){
+    val[i] = mat[i].val;
+    col[i] = mat[i].col;
+    row[i] = mat[i].row;
+  }
+}
 
 template<class T>
 size_t bitSize(T n){
@@ -176,7 +142,7 @@ int main(int argc, char **argv) {
     using Field        = Modular<Integer>;
     using FieldMat     = UnparametricRing<double>;
     using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double>;
-    using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::COO>;
+    using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::CSR>;
 
     Integer q = -1;
     int b = 128;
@@ -188,7 +154,7 @@ int main(int argc, char **argv) {
         { 'q', "-q Q", "Set the field characteristic (-1 for random).",   TYPE_INTEGER , &q },
         { 'b', "-b B", "Set the bitsize of the random characteristic.",   TYPE_INT , &b },
         { 'k', "-k K", "Set the size of the block (1 by default).",       TYPE_INT, &blockSize },
-        { 'n', "-n N", "Set the size of the block (1 by default).",       TYPE_INT, &nIter },
+        { 'n', "-n N", "Number of iterations (1 by default).",       TYPE_INT, &nIter },
         { 'f', "-f FILE", "Set matrix file.",                             TYPE_STR, &matrixFile },
          END_OF_ARGUMENTS };
 
@@ -210,22 +176,21 @@ int main(int argc, char **argv) {
     FieldMat Fword;
   
     // Read the matrix
-    readSmsFormat(matrixFile, Fword, row, col, dat, rowdim, coldim, nnz);
-    vector<index_t> rowCoo(nnz, 0);
-    for(size_t i = 0 ; i < rowdim ; ++i){
-        for(size_t j = row[i] ; j < row[i+1] ; ++j){
-            rowCoo[j] = i;
-        }
-    }
+    readMat(matrixFile, row, col, dat, rowdim, coldim, nnz);
+
+    vector<int64_t> rows(rowdim, 0);
+    for(size_t i = 0 ; i < nnz ; ++i)
+      rows[row[i]]++;
+    for(size_t i = 0 ; i < 20 ; ++i)
+      cout << "#rows with "<<i<<" nnz: "  << std::count(rows.begin(), rows.end(), i) << endl;
 
     // Build the matrix
     SparseMatrix A;
-    FFLAS::sparse_init(Fword, A, rowCoo.data(), col, dat, rowdim, coldim, nnz);
+    FFLAS::sparse_init(Fword, A, row, col, dat, rowdim, coldim, nnz);
 
     FFLAS::fflas_delete(row);
     FFLAS::fflas_delete(col);
     FFLAS::fflas_delete(dat);
-    rowCoo.resize(0);
 
     vector<double> x(coldim, 1), y(rowdim, 0);
 
@@ -245,12 +210,24 @@ int main(int argc, char **argv) {
     size_t primeBitsize = 53 - Integer(maxSum).bitsize()-1;
     cout << "primeBitsize: " << primeBitsize << endl;
     // construct RNS
-    FFPACK::rns_double RNS(Integer(maxSum)*p, primeBitsize, true);
+    // primeBitsize = 23;
+    FFPACK::rns_double RNS(Integer(maxSum)*p, primeBitsize, true, 0);
     size_t rnsSize = RNS._size;
+    cout << "M: " << RNS._M << endl;
     cout << "RNS basis size: " << rnsSize << endl;
     cout << "Rns basis: ";
     for(auto&x:RNS._basis){
         cout << x << " ";
+    }
+    cout << endl;
+    cout << "RNS Mi: " << endl;
+    for(auto &x : RNS._Mi){
+      cout << x << " ";
+    }
+    cout << endl;
+    cout << "RNS MMi: " << endl;
+    for(auto &x : RNS._MMi){
+      cout << x << " ";
     }
     cout << endl;
     // construct RNS field
@@ -260,8 +237,8 @@ int main(int argc, char **argv) {
 
     // Fill X with random values
     for(auto &x: X){
-        Givaro::Integer::random_exact_2exp(x,b);
-        F->init(x, x);
+        // Givaro::Integer::random_exact_2exp(x,b);
+        F->init(x, 1);
     }
 
     size_t ld = 0;
@@ -295,13 +272,24 @@ int main(int argc, char **argv) {
             // reduce Yrns wrt the RNS basis
             Tspmm.stop();
             spmmTime += Tspmm.usertime();
+
+            cout << "after spmm:" << endl;
+            for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+                    cout << Yrns[i] << " ";
+               }
+               cout << endl;
             bb = !bb;
-            if(kk%ld == 0){
+            // if(kk%ld == 0){
                Tmodp.start();
                Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Yrns, 1));
                Tmodp.stop();
                modpTime += Tmodp.usertime();
-            }
+               cout << "after modp:" << endl;
+               for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+                    cout << Yrns[i] << " ";
+               }
+               cout << endl;
+            // }
         }else{
             fspmm(Fword, A, blockSize*rnsSize, Yrns, blockSize*rnsSize, 0, Xrns, blockSize*rnsSize);
             RNS.reduce(rowdim*blockSize, Xrns, 1, true);
@@ -309,31 +297,50 @@ int main(int argc, char **argv) {
             Tspmm.stop();
             spmmTime += Tspmm.usertime();
             bb = !bb;
-
-            if(kk%ld == 0){
+            for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+                    cout << Xrns[i] << " ";
+               }
+               cout << endl;
+            // if(kk%ld == 0){
                Tmodp.start();
                Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Xrns, 1));
                Tmodp.stop();
                modpTime += Tmodp.usertime();
-            }
+            // }
+               cout << "after modp:" << endl;
+               for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+                    cout << Xrns[i] << " ";
+               }
+               cout << endl;
         }
     }
-    if(bb && nIter%ld != 0){
-        Tmodp.start();
-        Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Yrns, 1));
-        Tmodp.stop();
-        modpTime += Tmodp.usertime();
-    }else if(!bb && nIter%ld != 0){
-        Tmodp.start();
-        Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Xrns, 1));
-        Tmodp.stop();
-        modpTime += Tmodp.usertime();
-    }
+    // if(bb && nIter%ld != 0){
+    //     Tmodp.start();
+    //     Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Yrns, 1));
+    //     Tmodp.stop();
+    //     modpTime += Tmodp.usertime();
+    // }else if(!bb && nIter%ld != 0){
+    //     Tmodp.start();
+    //     Frns.reduce_modp_rnsmajor_scal_quad(rowdim*blockSize,  FFPACK::rns_double_elt_ptr(Xrns, 1));
+    //     Tmodp.stop();
+    //     modpTime += Tmodp.usertime();
+    // }
 
     // Reconstruct Y from Yrns
-    RNS.convert_dlp(rowdim*blockSize, Y.data(), 1, Yrns);
+    RNS.convert_dlp(rowdim*blockSize, Y.data(), Yrns);
     Ttotal.stop();
-
+    for(size_t i = 0 ; i < rowdim*blockSize ; ++i){
+      if(Y[i] < 0){
+        Integer q = -Y[i] / p;
+        Y[i] = p - (-Y[i] - p*q); 
+      }
+      Y[i] %= p;
+    }
+    cout << "Y res:" << endl;
+    for(size_t i = 0, end = (Y.size()>20)?20:Y.size() ; i < end ; ++i){
+        cout << Y[i] << " ";
+    }
+    cout << endl;
     cout << nIter << " iterations in " << Ttotal << endl;
     cout << "spmm: " << spmmTime << endl;
     cout << "modp: " << modpTime << endl;

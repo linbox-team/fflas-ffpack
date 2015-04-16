@@ -162,27 +162,29 @@ namespace FFPACK {
 
 
 #ifdef __DLP_CHALLENGE
-
 // TODO: less naive implementation
 void rns_double::init_dlp(size_t m, double* Arns, const integer* A, size_t lda) const{
 	for(size_t i = 0 ; i < m ; ++i){
 		for(size_t j = 0 ; j < _size ; ++j){
-			Arns[i*_size+j] = (double)(A[i*lda]%integer(_basis[j]))[0];
+			Arns[i*_size+j] = (double)((A[i*lda]%integer(_basis[j]))[0]);
 		}
 	}
 }
 
 // TODO: less naive implementation
-void rns_double::convert_dlp(size_t m, integer *A, size_t lda, const double *Arns) const{
+void rns_double::convert_dlp(size_t m, integer *A, const double *Arns) const{
+	integer hM= (_M-1)>>1;
 	for(size_t i = 0 ; i < m ; ++i){
-		A[i*lda] = 0;
+		A[i] = 0;
+		integer tmp;
 		for(size_t j = 0 ; j < _size ; ++j){
-			A[i*lda] += integer(Arns[i*_size+j])*integer(_Mi[j])*integer(_MMi[j]);
+			A[i] += ((integer(Arns[i*_size+j])*integer(_MMi[j]))%integer(_basis[j]))*integer(_Mi[j]);
 		}
-		A[i*lda] %= _M;
+		A[i] %= _M;
+		if(A[i] > hM)
+			A[i] -= _M;
 	}
 }
-
 #endif
 
 	void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
