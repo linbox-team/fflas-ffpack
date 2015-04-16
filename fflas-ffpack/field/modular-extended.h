@@ -76,21 +76,21 @@ private:
 	// Dekker mult, a * b = s + t
 	inline void mult(const Element a, const Element b, Element &s, Element &t) const{
     	Element ah, al, bh, bl;
-    	split(a, ah, al);
-    	split(b, bh, bl);
     	s = a*b;
 #ifdef __FMA__
     	t = std::fma(-a, b, s);
 #else
+    	split(a, ah, al);
+    	split(b, bh, bl);
     	t = ((((-s+ah*bh)+(ah*bl))+(al*bh))+(al*bl));
 #endif
 	}
 
 public:
 	// ----- Constantes
-	const Element zero = 0;
-	const Element one = 1;
-	const Element mOne = -1;
+	const Element zero = 0.0;
+	const Element one = 1.0;
+	const Element mOne = -1.0;
 
 	// ----- Constructors
 	ModularExtended() = default;
@@ -102,8 +102,8 @@ public:
 	    assert(_p <= getMaxModulus());
 	}
 
-	ModularExtended(const Self_t& F) = default;
-	ModularExtended(Self_t&& F) = default;
+	//ModularExtended(const Self_t& F) = default;
+	//ModularExtended(Self_t&& F) = default;
 	// : zero(F.zero), one(F.one), mOne(F.mOne), _p(F._p), _lp(F._lp) {}
 
 	// ----- Accessors
@@ -149,20 +149,12 @@ public:
 
 	// ----- Initialisation
 	Element &init (Element &x) const{
-		return x = 0;
+		return x = zero;
 	}
 
 	template<class XXX> Element& init(Element & x, const XXX & y) const{
-		Element z = (Element)y;
-		Element q = floor(z*_invp);
-		Element pqh, pql;
-		mult(_p, q, pqh, pql);
-		x = (x-pqh)-pql;
-		if(x > _p)
-			x -= _p;
-		else if(x < 0)
-			x += _p;
-		return x;
+		x=Element(y);
+		return reduce(x);
 	}
 
 	Element &assign (Element &x, const Element &y) const{
@@ -199,9 +191,9 @@ public:
 		Element pqh, pql;
 		mult(_p, q, pqh, pql);
 		x = (x-pqh)-pql;
-		if(x > _p)
+		if(x >= _p)
 			x -= _p;
-		else if(x < 0)
+		else if(x < zero)
 			x += _p;
 		return x;	
 	}
@@ -209,16 +201,18 @@ public:
 	// ----- Classic arithmetic
 	Element& mul(Element& r, const Element& a, const Element& b) const {
 		Element abh, abl, pqh, pql;
-    	mult(a, b, abh, abl);
-    	Element q = floor(abh*_invp);
-    	mult(_p, q, pqh, pql);
-    	r = (abh-pqh)+(abl-pql);
-    	if(r > _p)
-        	r-= _p;
-    	else if(r < 0)
-	        r += _p;
-    	return r;
+		mult(a, b, abh, abl);
+		Element q = floor(abh*_invp);
+		mult(_p, q, pqh, pql);		
+		r = (abh-pqh)+(abl-pql);
+		if(r > _p)
+			r-= _p;
+		else if(r < 0)
+			r += _p;
+		return r;
 	}
+
+	
 	Element& div(Element& r, const Element& a, const Element& b) const{
 		return mulin(inv(r, a), b);
 	}
@@ -290,7 +284,8 @@ public:
 		return add(r, tmp, y);
 	}
 	Element& axpyin(Element& r, const Element& a, const Element& x) const {
-		return axpy(r, a, x, r);
+		Element tmp(r);
+		return axpy(r, a, x, tmp);
 	}
 
 	// -- axmy:   r <- a * x - y
