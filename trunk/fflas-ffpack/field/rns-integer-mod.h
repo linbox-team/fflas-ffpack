@@ -44,7 +44,7 @@
 
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-double-extended.h"
+#include "fflas-ffpack/field/modular-extended.h"
 
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
@@ -86,9 +86,9 @@ namespace FFPACK {
 
 
 		RNSIntegerMod(const integer& p, const RNS& myrns) : _p(p),
-								  _Mi_modp_rns(myrns._size*myrns._size),
-								  _iM_modp_rns(myrns._size*myrns._size),
-								  _rns(&myrns),
+								    _Mi_modp_rns(myrns._size*myrns._size),
+								    _iM_modp_rns(myrns._size*myrns._size),
+								    _rns(&myrns),
 								    _F(p),
 								    _RNSdelayed(myrns){
 			init(one,1);
@@ -107,8 +107,8 @@ namespace FFPACK {
 				sum+=myrns._basis[i];
 			}
 #ifdef BENCH_MODP
-		t_modp=t_igemm=t_scal=t_trsm=0.;
-		n_modp=0;
+			t_modp=t_igemm=t_scal=t_trsm=0.;
+			n_modp=0;
 #endif
 		}
 
@@ -315,8 +315,8 @@ namespace FFPACK {
 	 	}
 
 		std::ostream& write_matrix(std::ostream& c,
-					double* E,
-					int n, int m, int lda) const
+					   double* E,
+					   int n, int m, int lda) const
 		{
 			c<<std::endl<<"***********************"<<std::endl;
 			for (int i = 0; i<n;++i){
@@ -385,104 +385,104 @@ namespace FFPACK {
 		void reduce_modp_rnsmajor_scal(size_t n, Element_ptr B) const {
 			std::cout << "modp scalar" << std::endl;
 			size_t _size= _rns->_size;
-            BasisElement *Gamma, *A;
-            const BasisElement *Mi_modp = _Mi_modp_rns.data();
-            const BasisElement *inv_basis = _rns->_invbasis.data();
+			BasisElement *Gamma, *A;
+			const BasisElement *Mi_modp = _Mi_modp_rns.data();
+			const BasisElement *inv_basis = _rns->_invbasis.data();
 			A=B._ptr;
 			Givaro::UnparametricRing<BasisElement> D;
 			FFLAS::Timer T;
 
-            Gamma = FFLAS::fflas_new(D,n,1);
-            for(size_t i = 0 ; i < n; ++i){
-            	// Compute Gamma
-            	for(size_t k = 0; k < _size ; ++k){
-                	Gamma[k] = A[i*_size+k]*_rns->_MMi[k];
-                    Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
+			Gamma = FFLAS::fflas_new(D,n,1);
+			for(size_t i = 0 ; i < n; ++i){
+				// Compute Gamma
+				for(size_t k = 0; k < _size ; ++k){
+					Gamma[k] = A[i*_size+k]*_rns->_MMi[k];
+					Gamma[k] -= std::floor(Gamma[k]*_rns->_invbasis[k])*_rns->_basis[k];
 					if(Gamma[k] >= _rns->_basis[k]){
 						Gamma[k] -= _rns->_basis[k];
 					}else if(Gamma[k] < 0){
 						Gamma[k] += _rns->_basis[k];
 					}
-                }
+				}
 
-                // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
-                // Mul by Mi_modp
-                for(size_t k = 0 ; k < _size ; ++k){
-                	A[i*_size+k] = 0;
-                	for(size_t j = 0 ; j < _size ; ++j){
-                		A[i*_size+k] += Mi_modp[j*_size+k];
-                	}
-                }
+				// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
+				// Mul by Mi_modp
+				for(size_t k = 0 ; k < _size ; ++k){
+					A[i*_size+k] = 0;
+					for(size_t j = 0 ; j < _size ; ++j){
+						A[i*_size+k] += Mi_modp[j*_size+k];
+					}
+				}
 
-                // compute alpha
-                // FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-                BasisElement alpha = 0;
-                for(size_t k = 0 ; k < _size ; ++k){
-                	alpha += Gamma[k]*inv_basis[k];
-                }
+				// compute alpha
+				// FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+				BasisElement alpha = 0;
+				for(size_t k = 0 ; k < _size ; ++k){
+					alpha += Gamma[k]*inv_basis[k];
+				}
 
-                // -= alpha
-                long aa= (long)rint(alpha);
-                for(size_t k = 0; k < _size ; k++){
-                	A[i*_size+k] -= _iM_modp_rns[aa+k*_size];
-                }
-            }
-            _rns->reduce(n,A,1,true);
-            FFLAS::fflas_delete(Gamma);
+				// -= alpha
+				long aa= (long)rint(alpha);
+				for(size_t k = 0; k < _size ; k++){
+					A[i*_size+k] -= _iM_modp_rns[aa+k*_size];
+				}
+			}
+			_rns->reduce(n,A,1,true);
+			FFLAS::fflas_delete(Gamma);
 		}
 
 #define DELTA 27
-template<class SimdT>
-inline void splitSimd(const SimdT x, SimdT & x_h, SimdT & x_l){
-    using simd = Simd<double>;
-    using vect_t = typename simd::vect_t;
-    vect_t vc = simd::set1((double)((1UL << DELTA)+1));
-    vect_t tmp = simd::mul(vc, x);
-    x_h = simd::add(tmp, simd::sub(x, tmp));
-    x_l = simd::sub(x, x_h);
-}
+		template<class SimdT>
+		inline void splitSimd(const SimdT x, SimdT & x_h, SimdT & x_l){
+			using simd = Simd<double>;
+			using vect_t = typename simd::vect_t;
+			vect_t vc = simd::set1((double)((1UL << DELTA)+1));
+			vect_t tmp = simd::mul(vc, x);
+			x_h = simd::add(tmp, simd::sub(x, tmp));
+			x_l = simd::sub(x, x_h);
+		}
 
-template<class SimdT>
-inline void multSimd(const SimdT va, const SimdT vb, SimdT & vs, SimdT & vt){
-    using simd = Simd<double>;
-    using vect_t = typename simd::vect_t;
-    vect_t vah, val, vbh, vbl;
-    splitSimd(va, vah, val);
-    splitSimd(vb, vbh, vbl);
-    vs = simd::mul(va, vb);
-    vt = simd::add(simd::add(simd::sub(simd::mul(vah, vbh), vs), simd::mul(vah, vbl)), simd::add(simd::mul(val, vbh), simd::mul(val, vbl)));
-}
+		template<class SimdT>
+		inline void multSimd(const SimdT va, const SimdT vb, SimdT & vs, SimdT & vt){
+			using simd = Simd<double>;
+			using vect_t = typename simd::vect_t;
+			vect_t vah, val, vbh, vbl;
+			splitSimd(va, vah, val);
+			splitSimd(vb, vbh, vbl);
+			vs = simd::mul(va, vb);
+			vt = simd::add(simd::add(simd::sub(simd::mul(vah, vbh), vs), simd::mul(vah, vbl)), simd::add(simd::mul(val, vbh), simd::mul(val, vbl)));
+		}
 
-inline void split(const double x, const int delta, double &x_h, double &x_l) const {
-    double c = (double)((1UL << delta)+1);
-    x_h = (c*x)+(x-(c*x));
-    x_l = x - x_h;
-}
+		inline void split(const double x, const int delta, double &x_h, double &x_l) const {
+			double c = (double)((1UL << delta)+1);
+			x_h = (c*x)+(x-(c*x));
+			x_l = x - x_h;
+		}
 
-inline void mult(const double a, const double b, double &s, double &t) const{
-    double ah, al, bh, bl;
-    split(a, DELTA, ah, al);
-    split(b, DELTA, bh, bl);
-    s = a*b;
+		inline void mult(const double a, const double b, double &s, double &t) const{
+			double ah, al, bh, bl;
+			split(a, DELTA, ah, al);
+			split(b, DELTA, bh, bl);
+			s = a*b;
 #ifdef __FMA__
-	t = std::fma(-a, b, s);
+			t = std::fma(-a, b, s);
 #else
-    t = ((((-s+ah*bh)+(ah*bl))+(al*bh))+(al*bl));
+			t = ((((-s+ah*bh)+(ah*bl))+(al*bh))+(al*bl));
 #endif
-}
+		}
 
-inline double multmod(const double a, const double b, const double p, const double ip, const double np) const{
-    double abh, abl, pqh, pql;
-    mult(a, b, abh, abl);
-    double q = floor(abh*ip);
-    mult(p, q, pqh, pql);
-    double r = (abh-pqh)+(abl-pql);
-    if(r > p)
-        r -= p;
-    else if(r < 0)
-        r += p;
-    return r;
-}
+		inline double multmod(const double a, const double b, const double p, const double ip, const double np) const{
+			double abh, abl, pqh, pql;
+			mult(a, b, abh, abl);
+			double q = floor(abh*ip);
+			mult(p, q, pqh, pql);
+			double r = (abh-pqh)+(abl-pql);
+			if(r > p)
+				r -= p;
+			else if(r < 0)
+				r += p;
+			return r;
+		}
 	
 		void reduce_modp_rnsmajor_scal_quad1(size_t n, Element_ptr B) const{
 			FFLAS::Timer T;
@@ -497,7 +497,7 @@ inline double multmod(const double a, const double b, const double p, const doub
 				for(size_t k = 0 ; k < _size ; ++k){
 					Gamma[k] = (ruint128(B._ptr[i*_size+k])*_rns->_MMi[k])%ruint128(_rns->_basis[k]);
 				}
-// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
+				// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
 				for(size_t k = 0 ; k < _size ; ++k)
 					A[k] = 0;
 				for(size_t k = 0 ; k < _size ; ++k){
@@ -506,18 +506,18 @@ inline double multmod(const double a, const double b, const double p, const doub
 					}
 				}
 				ruint128 alpha = 0;
-                for(size_t k = 0 ; k < _size ; ++k){
-                	alpha += Gamma[k]/_rns->_basis[k];// *_rns->_invbasis[k];
-                }
-                long aa = (int64_t)alpha;
-                // std::cout << aa << " ";
-                for(size_t k = 0; k < _size ; k++){
-                	A[k] -= _iM_modp_rns[aa+k*_size];
-                	A[k] %=(int64_t)_rns->_basis[k];
-                	B._ptr[i*_size+k] = (double)A[k];
-                }
-                FFLAS::fflas_delete(Gamma);
-            	FFLAS::fflas_delete(A);
+				for(size_t k = 0 ; k < _size ; ++k){
+					alpha += Gamma[k]/_rns->_basis[k];// *_rns->_invbasis[k];
+				}
+				long aa = (int64_t)alpha;
+				// std::cout << aa << " ";
+				for(size_t k = 0; k < _size ; k++){
+					A[k] -= _iM_modp_rns[aa+k*_size];
+					A[k] %=(int64_t)_rns->_basis[k];
+					B._ptr[i*_size+k] = (double)A[k];
+				}
+				FFLAS::fflas_delete(Gamma);
+				FFLAS::fflas_delete(A);
 			}
 		}
 
@@ -525,8 +525,8 @@ inline double multmod(const double a, const double b, const double p, const doub
 			// std::cout << "modp scalar quad" << std::endl;
 			// using namespace modp_details;
 			using simd = Simd<BasisElement>;
-            using vect_t = typename simd::vect_t;
-
+			using vect_t = typename simd::vect_t;
+			
 			FFLAS::Timer T;
 			size_t _size= _rns->_size;
 			using namespace RecInt;
@@ -536,76 +536,93 @@ inline double multmod(const double a, const double b, const double p, const doub
 			for(size_t i = 0 ; i < _size ; ++i){
 				Fields.emplace_back(_rns->_basis[i]);
 			}
-// #pragma omp parallel for 
-            for(size_t i = 0 ; i < n; ++i){
-            	ruint128 *A;
-            	double* Ad;
-            	BasisElement *Gamma;
-            	Gamma = FFLAS::fflas_new<BasisElement>(_size);
-            	A = FFLAS::fflas_new<ruint128>(_size);
-            	Ad = FFLAS::fflas_new<double>(_size);
-            	// Compute Gamma
-            	for(size_t k = 0; k < _size ; ++k){
-                	Fields[k].mul(Gamma[k], B._ptr[i*_size+k], _rns->_MMi[k]);
-                }
-                // std::cout << "Gamma: " << std::endl;
-                // for(size_t j = 0 ; j < _size ; ++j){
-                // 	std::cout << Gamma[j] << " ";
-                // }
-                // std::cout << std::endl;
+			// #pragma omp parallel for 
+			for(size_t i = 0 ; i < n; ++i){
+				ruint128 *A;
+				double* Ad;
+				BasisElement *Gamma;
+				Gamma = FFLAS::fflas_new<BasisElement>(_size);
+				A = FFLAS::fflas_new<ruint128>(_size);
+				Ad = FFLAS::fflas_new<double>(_size);
+				// Compute Gamma
+				for(size_t k = 0; k < _size ; ++k){
+					Fields[k].mul(Gamma[k], B._ptr[i*_size+k], _rns->_MMi[k]);
+				}
+				// std::cout << "Gamma: " << std::endl;
+				// for(size_t j = 0 ; j < _size ; ++j){
+				// 	std::cout << Gamma[j] << " ";
+				// }
+				// std::cout << std::endl;
+				
+				std::cout << "MMi: " << std::endl;
+				for(size_t j = 0 ; j < _size ; ++j){
+					std::cout << _rns->_MMi[j] << " ";
+				}
+				std::cout << std::endl;
 
-                // FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
-                // Mul by Mi_modp
-                for(size_t k = 0 ; k < _size ; ++k)
-                {
-                	Ad[k] = 0;
-                	A[k] = 0;
-                }
-                for(size_t k = 0 ; k < _size ; ++k){
-                	Ad[k] = FFLAS::fdot(Fields[k], _size, Gamma, 1, _Mi_modp_rns.data()+k*_size, 1);
-                }
-                // std::cout << "_Mi_modp_rns: " << std::endl;
-                // std::cout << "[";
-                // for(size_t j = 0 ; j < _size ; ++j){
-                // 	std::cout << "[";
-                // 	for(size_t k = 0 ; k < _size-1 ; ++k){
-                // 		std::cout << _Mi_modp_rns[j*_size+k] << " ,";
-                // 	}
-                // 	std::cout << _Mi_modp_rns[j*_size+_size-1] << "],";
-                // }
-                // std::cout << "]" << std::endl;
-                // std::cout << "AA: " << std::endl;
-                // for(size_t j = 0 ; j < _size ; ++j){
-                // 	std::cout << A[j] << " ";
-                // }
-                // std::cout << std::endl;
-                // std::cout << "Ad: " << std::endl;
-                // for(size_t j = 0 ; j < _size ; ++j){
-                // 	std::cout << Ad[j] << " ";
-                // }
-                // std::cout << std::endl;
+				
+				// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
+				// Mul by Mi_modp
+				for(size_t k = 0 ; k < _size ; ++k)
+					{
+						Ad[k] = 0;
+						A[k] = 0;
+					}
+				for(size_t k = 0 ; k < _size ; ++k){
+					Ad[k] = FFLAS::fdot(Fields[k], _size, Gamma, 1, _Mi_modp_rns.data()+k*_size, 1);
+				}
+				// std::cout << "_Mi_modp_rns: " << std::endl;
+				// std::cout << "[";
+				// for(size_t j = 0 ; j < _size ; ++j){
+				// 	std::cout << "[";
+				// 	for(size_t k = 0 ; k < _size-1 ; ++k){
+				// 		std::cout << _Mi_modp_rns[j*_size+k] << " ,";
+				// 	}
+				// 	std::cout << _Mi_modp_rns[j*_size+_size-1] << "],";
+				// }
+				// std::cout << "]" << std::endl;
+				// std::cout << "AA: " << std::endl;
+				// for(size_t j = 0 ; j < _size ; ++j){
+				// 	std::cout << A[j] << " ";
+				// }
+				// std::cout << std::endl;
+				// std::cout << "Ad: " << std::endl;
+				// for(size_t j = 0 ; j < _size ; ++j){
+				// 	std::cout << Ad[j] << " ";
+				// }
+				//  std::cout << std::endl;
+				// std::cout << "_iM_modp_rns: " << std::endl;
+				// std::cout << "[";
+				// for(size_t j = 0 ; j < _size ; ++j){
+				// 	std::cout << "[";
+				// 	for(size_t k = 0 ; k < _size-1 ; ++k){
+				// 		std::cout << _iM_modp_rns[j*_size+k] << " ,";
+				// 	}
+				// 	std::cout << _iM_modp_rns[j*_size+_size-1] << "],";
+				// }
+				
+				// compute alpha
+				// FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
+				double alpha = 0;
+				for(size_t k = 0 ; k < _size ; ++k){
+					alpha += Gamma[k]*_rns->_invbasis[k];
+				}
 
-                // compute alpha
-                // FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-                double alpha = 0;
-                for(size_t k = 0 ; k < _size ; ++k){
-                	alpha += Gamma[k]*_rns->_invbasis[k];
-                }
-
-                // -= alpha
-                long aa= (int64_t)alpha;
-                // std::cout << "aa: " << aa << " ";
-                for(size_t k = 0; k < _size ; k++){
-                	Fields[k].sub(B._ptr[i*_size+k], Ad[k], _iM_modp_rns[aa+k*_size]);
-                }
-                FFLAS::fflas_delete(Gamma);
-            	FFLAS::fflas_delete(A);
-            	FFLAS::fflas_delete(Ad);
-            	// std::cout << std::endl;
-            	// std::cout << "====================================" << std::endl;
-            }
-            // std::cout << std::endl;
-            // _rns->reduce(n,B._ptr,1,true);
+				// -= alpha
+				long aa= (int64_t)alpha;
+				//std::cout << "aa: " << aa << std::endl;
+				for(size_t k = 0; k < _size ; k++){
+					Fields[k].sub(B._ptr[i*_size+k], Ad[k], _iM_modp_rns[aa+k*_size]);
+					//std::cout<<B._ptr[i*_size+k]<<std::endl;
+				}
+				FFLAS::fflas_delete(Gamma);
+				FFLAS::fflas_delete(A);
+				FFLAS::fflas_delete(Ad);
+				// std::cout << std::endl;
+				// std::cout << "====================================" << std::endl;
+			}
+			// std::cout << std::endl;
+			// _rns->reduce(n,B._ptr,1,true);
 		}
 
 #endif // __DLP_CHALLENGE
@@ -628,13 +645,13 @@ inline double multmod(const double a, const double b, const double p, const doub
                         // compute Gamma (NOT EFFICIENT)
                         //for(size_t i=0;i<_size;i++)
                         //
-			       // FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
+			// FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
                         T.start();
 #ifdef __FFLASFFPACK_USE_SIMD
                         using simd = Simd<BasisElement>;
                         using vect_t = typename simd::vect_t;
 
-                       if(((int64_t)A%simd::alignment == 0) && (_size%simd::vect_size==0)){
+			if(((int64_t)A%simd::alignment == 0) && (_size%simd::vect_size==0)){
                         	auto MMi = _rns->_MMi.data();
                         	for(size_t i = 0 ; i < n ; ++i){
                         		vect_t vA1, vA2, vMi1, vMi2, tmp1, tmp2, tmp3, v, max, basis, inv_, neg_;
@@ -665,9 +682,9 @@ inline double multmod(const double a, const double b, const double p, const doub
                         		size_t k = 0;
                         		for( ; k < ROUND_DOWN(_size, simd::vect_size) ; k+=simd::vect_size){
                         			basis = simd::load(_rns->_basis.data()+k);
-									inv_  = simd::load(_rns->_invbasis.data()+k);
-									max   = simd::load(_rns->_basisMax.data()+k);
-									neg_  = simd::load(_rns->_negbasis.data()+k);
+						inv_  = simd::load(_rns->_invbasis.data()+k);
+						max   = simd::load(_rns->_basisMax.data()+k);
+						neg_  = simd::load(_rns->_negbasis.data()+k);
                         			vA1 = simd::loadu(A+i*_size+k);
                         			vMi1 = simd::loadu(MMi+k);
                         			v = simd::mul(vA1, vMi1);
@@ -697,24 +714,24 @@ inline double multmod(const double a, const double b, const double p, const doub
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,1), 1);
 #endif
-					T.stop();
-					// std::cout << "Gamma: " << T << std::endl;
+			T.stop();
+			// std::cout << "Gamma: " << T << std::endl;
 
 
                         // compute A = Gamma._Mi_modp_rns^T (note must be reduced mod m_i, but this is postpone to the end)
-					T.start();
+			T.start();
                         FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
-					T.stop();
-					// std::cout << "fgemm: " << T << std::endl;
+			T.stop();
+			// std::cout << "fgemm: " << T << std::endl;
                         // std::cout<<"fgemv (Y)...";
                         //std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
                         // compute alpha = Gamma._invbasis
-					T.start();
+			T.start();
                         FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
                         T.stop();
-					// std::cout << "fgemv: " << T << std::endl;
+			// std::cout << "fgemv: " << T << std::endl;
                         //std::cout<<"done"<<std::endl;
-					T.start();
+			T.start();
                         // compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
                         for(size_t j=0;j<n;j++){
                         	long aa= (long)rint(alpha[j]);
@@ -733,14 +750,14 @@ inline double multmod(const double a, const double b, const double p, const doub
                         // 	}
                         // }
                         T.stop();
-					// std::cout << "last: " << T << std::endl;
-					T.start();
+			// std::cout << "last: " << T << std::endl;
+			T.start();
                         // reduce each column of A modulo m_i
-					_rns->reduce(n,A,1,true);
-					T.stop();
-					// std::cout << "reduce: "<< T << std::endl;
+			_rns->reduce(n,A,1,true);
+			T.stop();
+			// std::cout << "reduce: "<< T << std::endl;
 
-						// T.start();
+			// T.start();
                         FFLAS::fflas_delete(Gamma);
                         FFLAS::fflas_delete(alpha);
                         // T.stop();
@@ -770,9 +787,9 @@ namespace FFLAS {
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)
 	template<typename RNS>
 	void finit_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
-		   const Givaro::Integer *B, const size_t ldb, typename RNS::Element_ptr A)
+		       const Givaro::Integer *B, const size_t ldb, typename RNS::Element_ptr A)
 	{
-			F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
+		F.rns().init(m,n,A._ptr,A._stride, B,ldb,k);
 	}
 	template<typename RNS>
 	void finit_trans_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n, size_t k,
@@ -784,7 +801,7 @@ namespace FFLAS {
 	// function to convert from RNS to integer (note: this is not the fconvert function from FFLAS, extra alpha)
 	template<typename RNS>
 	void fconvert_rns(const FFPACK::RNSIntegerMod<RNS> &F, const size_t m, const size_t n,
-		      Givaro::Integer alpha, Givaro::Integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
+			  Givaro::Integer alpha, Givaro::Integer *B, const size_t ldb, typename RNS::ConstElement_ptr A)
 	{
 		F.rns().convert(m,n,alpha,B,ldb,A._ptr,A._stride);
 	}
