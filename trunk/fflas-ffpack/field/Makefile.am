@@ -30,7 +30,8 @@ RNS=rns.h			        \
 	rns-double-elt.h		\
 	rns-double.inl			\
 	rns-integer.h			\
-	rns-integer-mod.h
+	rns-integer-mod.inl     \
+	modular-extended.h
 
 pkgincludesub_HEADERS=          	\
 	  field-traits.h                \
