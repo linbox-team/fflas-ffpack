@@ -30,7 +30,7 @@ RNS=rns.h			        \
 	rns-double-elt.h		\
 	rns-double.inl			\
 	rns-integer.h			\
-	rns-integer-mod.inl     \
+	rns-integer-mod.h     \
 	modular-extended.h
 
 pkgincludesub_HEADERS=          	\
