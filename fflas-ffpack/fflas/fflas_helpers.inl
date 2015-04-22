@@ -138,7 +138,7 @@ namespace FFLAS {
 			if (beta < 0) absbeta = -beta;
 			
 			DFElt diff = MaxStorableValue - absbeta * std::max(-Cmin, Cmax);
-			return static_cast<size_t>((diff < 0.0)? 0 : diff / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax)));
+			return static_cast<size_t>((diff < 0.0)? DFElt(0u) : diff / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax)));
 		}
 
 		void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
