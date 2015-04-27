@@ -31,7 +31,7 @@
 
 namespace FFLAS {
 namespace sparse_details_impl {
-
+ 
 template <class Field>
 inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
                   typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
@@ -41,21 +41,33 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-#pragma omp parallel for schedule(static, 32)// num_threads(6)
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            int k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.axpyin(y[i * ldy + k], dat[j], x[col[j] * ldx + k]);
-                F.axpyin(y[i * ldy + k + 1], dat[j], x[col[j] * ldx + k + 1]);
-                F.axpyin(y[i * ldy + k + 2], dat[j], x[col[j] * ldx + k + 2]);
-                F.axpyin(y[i * ldy + k + 3], dat[j], x[col[j] * ldx + k + 3]);
-            }
-            for (; k < blockSize; ++k)
-                F.axpyin(y[i * ldy + k], dat[j], x[col[j] * ldx + k]);
-        }
-    }
+  FFLAS::CuttingStrategy meth;
+  meth = FFLAS::ROW_FIXED;
+  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+  size_t m = A.m;
+  PAR_INSTR{
+    SYNCH_GROUP(MAX_THREADS,
+		FOR1D(it, m, WH.parseq,
+		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			   {
+			    for (index_t i = it.begin(); i < it.end(); ++i) {
+			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				int k = 0;
+				for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+				  F.axpyin(y[i * ldy + k], dat[j], x[col[j] * ldx + k]);
+				  F.axpyin(y[i * ldy + k + 1], dat[j], x[col[j] * ldx + k + 1]);
+				  F.axpyin(y[i * ldy + k + 2], dat[j], x[col[j] * ldx + k + 2]);
+				  F.axpyin(y[i * ldy + k + 3], dat[j], x[col[j] * ldx + k + 3]);
+				}
+				for (; k < blockSize; ++k)
+				  F.axpyin(y[i * ldy + k], dat[j], x[col[j] * ldx + k]);
+			      }
+			    }
+			   }
+		      );
+		);
+    );
+  } 
 }
 
 template <class Field>
@@ -67,20 +79,46 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+    FFLAS::CuttingStrategy meth;
+  meth = FFLAS::ROW_FIXED;
+  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+  size_t m = A.m;
+  PAR_INSTR{
+    SYNCH_GROUP(MAX_THREADS,
+		FOR1D(it, m, WH.parseq,
+		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			   {
+			    for (index_t i = it.begin(); i < it.end(); ++i) {
+			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				int k = 0;
+				for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+				  y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+				  y[i * ldy + k + 1] += dat[j] * x[col[j] * ldx + k + 1];
+				  y[i * ldy + k + 2] += dat[j] * x[col[j] * ldx + k + 2];
+				  y[i * ldy + k + 3] += dat[j] * x[col[j] * ldx + k + 3];
+				}
+				for (; k < blockSize; ++k)
+				  y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+			      }
+			    }
+			   }
+		      );
+		);
+    );
+  } 
+  /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
             int k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
-                y[i * ldy + k + 1] += dat[j] * x[col[j] * ldx + k + 1];
-                y[i * ldy + k + 2] += dat[j] * x[col[j] * ldx + k + 2];
-                y[i * ldy + k + 3] += dat[j] * x[col[j] * ldx + k + 3];
+                
             }
             for (; k < blockSize; ++k)
                 y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
         }
     }
+    */
 }
 
 #ifdef __FFLASFFPACK_USE_SIMD
@@ -89,7 +127,6 @@ template <class Field>
 inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, int blockSize,
                                typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                FieldCategories::UnparametricTag) {
-    // std::cout << "pfspmm unparam simd aligned" << std::endl;
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
@@ -97,7 +134,49 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-#pragma omp parallel for schedule(static, 128)// num_threads(6)
+
+    FFLAS::CuttingStrategy meth;
+    meth = FFLAS::ROW_FIXED;
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+    size_t m = A.m;
+    vect_t y1, x1, y2, x2, vdat;
+    uint32_t k = 0;
+    PAR_INSTR{
+      SYNCH_GROUP(MAX_THREADS,
+		  FOR1D(it, m, WH.parseq,
+			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			    {
+			      for (index_t i = it.begin(); i < it.end(); ++i) {
+				for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				  k = 0;
+				  vdat = simd::set1(dat[j]);
+				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+				    y1 = simd::load(y+i*ldy+k);
+				    y2 = simd::load(y+i*ldy+k+simd::vect_size);
+				    x1 = simd::load(x + col[j] * ldx + k);
+				    x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+				    y1 = simd::fmadd(y1, x1, vdat);
+				    y2 = simd::fmadd(y2, x2, vdat);
+				    simd::store(y + i * ldy + k, y1);
+				    simd::store(y + i * ldy + k + simd::vect_size, y2);
+				  }
+				  for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+				    y1 = simd::load(y+i*ldy+k);
+				    x1 = simd::load(x + col[j] * ldx + k);
+				    y1 = simd::fmadd(y1, x1, vdat);
+				    simd::store(y + i * ldy + k, y1);
+				  }
+				  for (; k < blockSize; ++k) {
+				    y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+				  }
+				}
+			      }
+			    }
+			);
+		  );
+      );
+    } 
+    /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -125,6 +204,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
             }
         }
     }
+    //*/
 }
 
 template <class Field>
@@ -138,8 +218,49 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-    // std::cout << "pfspmm unparam simd unaligned" << std::endl;
-#pragma omp parallel for schedule(static, 128)
+
+    FFLAS::CuttingStrategy meth;
+    meth = FFLAS::ROW_FIXED;
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+    size_t m = A.m;
+    vect_t y1, x1, y2, x2, vdat;
+    uint32_t k = 0;
+    PAR_INSTR{
+      SYNCH_GROUP(MAX_THREADS,
+		  FOR1D(it, m, WH.parseq,
+			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			    {
+			      for (index_t i = it.begin(); i < it.end(); ++i) {
+				for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				  k = 0;
+				  vdat = simd::set1(dat[j]);
+				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+				    y1 = simd::loadu(y+i*ldy+k);
+				    y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
+				    x1 = simd::loadu(x + col[j] * ldx + k);
+				    x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+				    y1 = simd::fmadd(y1, x1, vdat);
+				    y2 = simd::fmadd(y2, x2, vdat);
+				    simd::storeu(y + i * ldy + k, y1);
+				    simd::storeu(y + i * ldy + k + simd::vect_size, y2);
+				  }
+				  for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+				    y1 = simd::loadu(y+i*ldy+k);
+				    x1 = simd::loadu(x + col[j] * ldx + k);
+				    y1 = simd::fmadd(y1, x1, vdat);
+				    simd::storeu(y + i * ldy + k, y1);
+				  }
+				  for (; k < blockSize; ++k) {
+				    y[i * ldy + k] += dat[j] * x[col[j] * ldx + k];
+				  }
+				}
+			      }
+			    }
+			);
+		  );
+      );
+    } 
+/*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -167,6 +288,7 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
             }
         }
     }
+    */
 }
 #endif
 
@@ -381,7 +503,7 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-#pragma omp parallel for schedule(static, 32)
+
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -423,6 +545,114 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     }
 }
 
+template <class Field>
+inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                      typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                      FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+        FFLAS::CuttingStrategy meth;
+  meth = FFLAS::ROW_FIXED;
+  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+  size_t m = A.m;
+  PAR_INSTR{
+    SYNCH_GROUP(MAX_THREADS,
+		FOR1D(it, m, WH.parseq,
+		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			   {
+			    for (index_t i = it.begin(); i < it.end(); ++i) {
+			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				int k = 0;
+				for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+				  y[i * ldy + k] +=  x[col[j] * ldx + k];
+				  y[i * ldy + k + 1] += x[col[j] * ldx + k + 1];
+				  y[i * ldy + k + 2] += x[col[j] * ldx + k + 2];
+				  y[i * ldy + k + 3] += x[col[j] * ldx + k + 3];
+				}
+				for (; k < blockSize; ++k)
+				  y[i * ldy + k] += x[col[j] * ldx + k];
+			      }
+			    }
+			   }
+		      );
+		);
+    );
+  } 
+    /*
+    for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        for (index_t j = start; j < stop; ++j) {
+            int k = 0;
+            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                y[i * ldy + k] += x[col[j] * ldx + k];
+                y[i * ldy + k + 1] += x[col[j] * ldx + k + 1];
+                y[i * ldy + k + 2] += x[col[j] * ldx + k + 2];
+                y[i * ldy + k + 3] += x[col[j] * ldx + k + 3];
+            }
+            for (; k < blockSize; ++k)
+                y[i * ldy + k] += x[col[j] * ldx + k];
+        }
+    }
+    */
+}
+
+template <class Field>
+inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, int blockSize,
+                       typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
+                       FieldCategories::UnparametricTag) {
+    assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
+    assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
+    assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
+
+          FFLAS::CuttingStrategy meth;
+  meth = FFLAS::ROW_FIXED;
+  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+  size_t m = A.m;
+  PAR_INSTR{
+    SYNCH_GROUP(MAX_THREADS,
+		FOR1D(it, m, WH.parseq,
+		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			   {
+			    for (index_t i = it.begin(); i < it.end(); ++i) {
+			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				int k = 0;
+				for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+				  y[i * ldy + k] -=  x[col[j] * ldx + k];
+				  y[i * ldy + k + 1] -= x[col[j] * ldx + k + 1];
+				  y[i * ldy + k + 2] -= x[col[j] * ldx + k + 2];
+				  y[i * ldy + k + 3] -= x[col[j] * ldx + k + 3];
+				}
+				for (; k < blockSize; ++k)
+				  y[i * ldy + k] -= x[col[j] * ldx + k];
+			      }
+			    }
+			   }
+		      );
+		);
+    );
+  } 
+    /*
+    for (index_t i = 0; i < A.m; ++i) {
+        auto start = st[i], stop = st[i + 1];
+        for (index_t j = start; j < stop; ++j) {
+            int k = 0;
+            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                y[i * ldy + k] -= x[col[j] * ldx + k];
+                y[i * ldy + k + 1] -= x[col[j] * ldx + k + 1];
+                y[i * ldy + k + 2] -= x[col[j] * ldx + k + 2];
+                y[i * ldy + k + 3] -= x[col[j] * ldx + k + 3];
+            }
+            for (; k < blockSize; ++k)
+                y[i * ldy + k] -= x[col[j] * ldx + k];
+        }
+    }
+    */
+}
+
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
@@ -435,7 +665,45 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-#pragma omp parallel for schedule(static, 32)
+
+    FFLAS::CuttingStrategy meth;
+    meth = FFLAS::ROW_FIXED;
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+    size_t m = A.m;
+    vect_t y1, x1, y2, x2, vdat;
+    uint32_t k = 0;
+    PAR_INSTR{
+      SYNCH_GROUP(MAX_THREADS,
+		  FOR1D(it, m, WH.parseq,
+			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			    {
+			      for (index_t i = it.begin(); i < it.end(); ++i) {
+				for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				  k = 0;
+				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+				    y1 = simd::load(y+i*ldy+k);
+				    y2 = simd::load(y+i*ldy+k+simd::vect_size);
+				    x1 = simd::load(x + col[j] * ldx + k);
+				    x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+				    simd::store(y + i * ldy + k, simd::add(y1, x1));
+				    simd::store(y + i * ldy + k + simd::vect_size, simd::add(y2, x2));
+				  }
+				  for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+				    y1 = simd::load(y+i*ldy+k);
+				    x1 = simd::load(x + col[j] * ldx + k);
+				    simd::store(y + i * ldy + k, simd::add(y1, x1));
+				  }
+				  for (; k < blockSize; ++k) {
+				    y[i * ldy + k] += x[col[j] * ldx + k];
+				  }
+				}
+			      }
+			    }
+			);
+		  );
+      );
+    } 
+    /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -459,6 +727,7 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
             }
         }
     }
+    */
 }
 
 template <class Field>
@@ -471,7 +740,45 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-#pragma omp parallel for schedule(static, 32)
+
+    FFLAS::CuttingStrategy meth;
+    meth = FFLAS::ROW_FIXED;
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+    size_t m = A.m;
+    vect_t y1, x1, y2, x2, vdat;
+    uint32_t k = 0;
+    PAR_INSTR{
+      SYNCH_GROUP(MAX_THREADS,
+		  FOR1D(it, m, WH.parseq,
+			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			    {
+			      for (index_t i = it.begin(); i < it.end(); ++i) {
+				for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				  k = 0;
+				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+				    y1 = simd::loadu(y+i*ldy+k);
+				    y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
+				    x1 = simd::loadu(x + col[j] * ldx + k);
+				    x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+				    simd::storeu(y + i * ldy + k, simd::add(y1, x1));
+				    simd::storeu(y + i * ldy + k + simd::vect_size, simd::add(y2, x2));
+				  }
+				  for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+				    y1 = simd::loadu(y+i*ldy+k);
+				    x1 = simd::loadu(x + col[j] * ldx + k);
+				    simd::storeu(y + i * ldy + k, simd::add(y1, x1));
+				  }
+				  for (; k < blockSize; ++k) {
+				    y[i * ldy + k] += x[col[j] * ldx + k];
+				  }
+				}
+			      }
+			    }
+			);
+		  );
+      );
+    } 
+    /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -495,6 +802,7 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
             }
         }
     }
+    */
 }
 
 template <class Field>
@@ -507,7 +815,44 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-#pragma omp parallel for schedule(static, 32)
+FFLAS::CuttingStrategy meth;
+    meth = FFLAS::ROW_FIXED;
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+    size_t m = A.m;
+    vect_t y1, x1, y2, x2, vdat;
+    uint32_t k = 0;
+    PAR_INSTR{
+      SYNCH_GROUP(MAX_THREADS,
+		  FOR1D(it, m, WH.parseq,
+			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			    {
+			      for (index_t i = it.begin(); i < it.end(); ++i) {
+				for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				  k = 0;
+				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+				    y1 = simd::load(y+i*ldy+k);
+				    y2 = simd::load(y+i*ldy+k+simd::vect_size);
+				    x1 = simd::load(x + col[j] * ldx + k);
+				    x2 = simd::load(x + col[j] * ldx + k + simd::vect_size);
+				    simd::store(y + i * ldy + k, simd::sub(y1, x1));
+				    simd::store(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
+				  }
+				  for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+				    y1 = simd::load(y+i*ldy+k);
+				    x1 = simd::load(x + col[j] * ldx + k);
+				    simd::store(y + i * ldy + k, simd::sub(y1, x1));
+				  }
+				  for (; k < blockSize; ++k) {
+				    y[i * ldy + k] += x[col[j] * ldx + k];
+				  }
+				}
+			      }
+			    }
+			);
+		  );
+      );
+    } 
+    /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -531,6 +876,7 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
             }
         }
     }
+    */
 }
 
 template <class Field>
@@ -543,7 +889,45 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-#pragma omp parallel for schedule(static, 32)
+
+    FFLAS::CuttingStrategy meth;
+    meth = FFLAS::ROW_FIXED;
+    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
+    size_t m = A.m;
+    vect_t y1, x1, y2, x2, vdat;
+    uint32_t k = 0;
+    PAR_INSTR{
+      SYNCH_GROUP(MAX_THREADS,
+		  FOR1D(it, m, WH.parseq,
+			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			    {
+			      for (index_t i = it.begin(); i < it.end(); ++i) {
+				for (index_t j = st[i]; j < st[i + 1]; ++j) {
+				  k = 0;
+				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
+				    y1 = simd::loadu(y+i*ldy+k);
+				    y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
+				    x1 = simd::loadu(x + col[j] * ldx + k);
+				    x2 = simd::loadu(x + col[j] * ldx + k + simd::vect_size);
+				    simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
+				    simd::storeu(y + i * ldy + k + simd::vect_size, simd::sub(y2, x2));
+				  }
+				  for (; k < ROUND_DOWN(blockSize, simd::vect_size); k += simd::vect_size) {
+				    y1 = simd::loadu(y+i*ldy+k);
+				    x1 = simd::loadu(x + col[j] * ldx + k);
+				    simd::storeu(y + i * ldy + k, simd::sub(y1, x1));
+				  }
+				  for (; k < blockSize; ++k) {
+				    y[i * ldy + k] += x[col[j] * ldx + k];
+				  }
+				}
+			      }
+			    }
+			);
+		  );
+      );
+    }
+    /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -567,6 +951,7 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
             }
         }
     }
+    */
 }
 
 #endif //__FFLASFFPACK_USE_SIMD

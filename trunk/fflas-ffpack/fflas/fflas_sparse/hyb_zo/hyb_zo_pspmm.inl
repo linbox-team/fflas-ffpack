@@ -32,104 +32,107 @@
 namespace FFLAS {
 namespace sparse_details_impl {
 
+  
 template <class Field>
 inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
-                   typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::GenericTag) {
-    using Element = typename Field::Element;
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  FieldCategories::GenericTag) {
     if (A.one != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.one), blockSize, x, y,
-                                       [F](Element &a, const Element &b) { F.addin(a, b); },
-                                       FieldCategories::GenericTag());
+        sparse_details_impl::pfspmm_mone(F, *(A.mone), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.mone), blockSize, x, y,
-                                       [F](Element &a, const Element &b) { F.subin(a, b); },
-                                       FieldCategories::GenericTag());
+        sparse_details_impl::pfspmm_one(F, *(A.one), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
     if (A.dat != nullptr)
-        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, y, FieldCategories::GenericTag());
+        sparse_details_impl::ppfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
 }
 
 template <class Field>
 inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
-                   typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                   FieldCategories::GenericTag) {
-    using Element = typename Field::Element;
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                  FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.one), blockSize, x, ldx, y, ldy,
-                                       [F](Element &a, const Element &b) { F.addin(a, b); },
-                                       FieldCategories::GenericTag());
+        sparse_details_impl::pfspmm_mone(F, *(A.mone), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.mone), blockSize, x, ldx, y, ldy,
-                                       [F](Element &a, const Element &b) { F.subin(a, b); },
-                                       FieldCategories::GenericTag());
+        sparse_details_impl::pfspmm_one(F, *(A.one), blockSize, x, ldx, y, FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
-        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+        sparse_details_impl::ppfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+}
+
+#ifdef __FFLASFFPACK_USE_SIMD
+
+template <class Field>
+inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+                               typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                               FieldCategories::UnparametricTag) {
+    if (A.one != nullptr)
+        sparse_details_impl::pfspmm_mone_simd_aligned(F, *(A.mone), blockSize, x, ldx, y, ldy,
+                                                     FieldCategories::UnparametricTag());
+    if (A.mone != nullptr)
+        sparse_details_impl::pfspmm_one_simd_aligned(F, *(A.one), blockSize, x, ldx, y, ldy,
+                                                    FieldCategories::UnparametricTag());
+    if (A.dat != nullptr)
+        sparse_details_impl::pfspmm_simd_aligned(F, *(A.dat), blockSize, x, ldx, y, ldy,
+                                                FieldCategories::UnparametricTag());
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
-                   typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-                   FieldCategories::UnparametricTag) {
-    using Element = typename Field::Element;
+inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+                                 typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                                 FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.one), blockSize, x, y,
-                                       [F](Element &a, const Element &b) { F.addin(a, b); },
-                                       FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm_one_simd_unaligned(F, *(A.one), blockSize, x, ldx, y, ldy,
+                                                       FieldCategories::UnparametricTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.mone), blockSize, x, y,
-                                       [F](Element &a, const Element &b) { F.subin(a, b); },
-                                       FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm_mone_simd_unaligned(F, *(A.mone), blockSize, x, ldx, y, ldy,
+                                                      FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
-        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, y, FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm_simd_unaligned(F, *(A.dat), blockSize, x, ldx, y, ldy,
+                                                  FieldCategories::UnparametricTag());
 }
+
+#endif
 
 template <class Field>
 inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
-                   typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
-                   FieldCategories::UnparametricTag) {
-    using Element = typename Field::Element;
+                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, uint64_t kmax) {
     if (A.one != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.one), blockSize, x, ldx, y, ldy,
-                                       [F](Element &a, const Element &b) { F.addin(a, b); },
-                                       FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm_mone(F, *(A.mone), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     if (A.mone != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.mone), blockSize, x, ldx, y,
-                                       ldy[F](Element & a, const Element & b) { F.subin(a, b); },
-                                       FieldCategories::UnparametricTag());
-    if (A.dat != nullptr)
-        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
-}
-
-template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
-                   typename Field::ConstElement_ptr x, typename Field::Element_ptr y, uint64_t kmax) {
-    using Element = typename Field::Element;
-    if (A.one != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.one), blockSize, x, y,
-                                       [F](Element &a, const Element &b) { F.addin(a, b); },
-                                       FieldCategories::UnparametricTag());
-    if (A.mone != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.mone), blockSize, x, y,
-                                       [F](Element &a, const Element &b) { F.subin(a, b); },
-                                       FieldCategories::UnparametricTag());
-    if (A.dat != nullptr)
-        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, y, kmax);
-}
-
-template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
-                   typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, uint64_t kmax) {
-    using Element = typename Field::Element;
-    if (A.one != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.one), blockSize, x, ldx, y, ldy,
-                                       [F](Element &a, const Element &b) { F.addin(a, b); },
-                                       FieldCategories::UnparametricTag());
-    if (A.mone != nullptr)
-        sparse_details_impl::pfspmm_zo(F, *(A.mone), blockSize, x, ldx, y, ldy,
-                                       [F](Element &a, const Element &b) { F.subin(a, b); },
-                                       FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm_one(F, *(A.one), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
         sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, kmax);
 }
+
+#ifdef __FFLASFFPACK_USE_SIMD
+
+template <class Field>
+inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+                               typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                               uint64_t kmax) {
+    if (A.one != nullptr)
+        sparse_details_impl::pfspmm_mone_simd_aligned(F, *(A.mone), blockSize, x, ldx, y, ldy,
+                                                     FieldCategories::UnparametricTag());
+    if (A.mone != nullptr)
+        sparse_details_impl::pfspmm_one_simd_aligned(F, *(A.one), blockSize, x, ldx, y, ldy,
+                                                    FieldCategories::UnparametricTag());
+    if (A.dat != nullptr)
+        sparse_details_impl::pfspmm_simd_aligned(F, *(A.dat), blockSize, x, ldx, y, ldy, kmax);
+}
+
+template <class Field>
+inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+                                 typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
+                                 uint64_t kmax) {
+    if (A.one != nullptr)
+        sparse_details_impl::pfspmm_mone_simd_unaligned(F, *(A.mone), blockSize, x, ldx, y, ldy,
+                                                       FieldCategories::UnparametricTag());
+    if (A.mone != nullptr)
+        sparse_details_impl::pfspmm_one_simd_unaligned(F, *(A.one), blockSize, x, ldx, y, ldy,
+                                                      FieldCategories::UnparametricTag());
+    if (A.dat != nullptr)
+        sparse_details_impl::pfspmm_simd_unaligned(F, *(A.dat), blockSize, x, ldx, y, ldy, kmax);
+}
+
+#endif
 
 } // HYB_ZO_details
 
