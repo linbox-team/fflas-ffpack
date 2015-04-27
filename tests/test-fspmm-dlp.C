@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
     // perform Yrns = A.Xrns + beta.Yrns over ZZ
         Tspmm.start();
         if(bb){
-            fspmm(Fword, A, blockSize*rnsSize, Xrns, blockSize*rnsSize, 0, Yrns, blockSize*rnsSize);
+            pfspmm(Fword, A, blockSize*rnsSize, Xrns, blockSize*rnsSize, 0, Yrns, blockSize*rnsSize);
             RNS.reduce(rowdim*blockSize, Yrns, 1, true);
             // reduce Yrns wrt the RNS basis
             Tspmm.stop();

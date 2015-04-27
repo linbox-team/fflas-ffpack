@@ -384,6 +384,164 @@ fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_p
     freduce(F, blockSize, A.m, y, ldy);
 }
 
+/*************************************************************************************
+ *
+ *      pfspmm dispatch
+ *
+ *************************************************************************************/
+
+template <class Field, class SM, class FCat, class MZO>
+inline typename std::enable_if<
+    !(std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
+      std::is_same<typename ElementTraits<typename Field::Element>::value,
+                   ElementCategories::MachineIntTag>::value)>::type
+pfspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+               typename Field::Element_ptr y, int ldy, FCat, MZO) {
+    sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::GenericTag(), MZO());
+}
+
+template <class Field, class SM, class FCat, class MZO>
+inline typename std::enable_if<
+    std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
+    std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value>::type
+pfspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+               typename Field::Element_ptr y, int ldy, FCat, MZO) {
+    sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FCat(), MZO());
+}
+
+template <class Field, class SM>
+inline void
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, NotZOSparseMatrix) {
+    sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+}
+
+template <class Field, class SM>
+inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+      typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix) {
+    using simd = Simd<typename Field::Element>;
+    if (simd::valid(y) && simd::valid(x) && simd::compliant(blockSize)) {
+        sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+    } else {
+        sparse_details_impl::pfspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+    }
+}
+
+template <class Field, class SM>
+inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+      typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix) {
+    sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+}
+
+template <class Field, class SM>
+inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+      typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix) {
+    if (A.delayed) {
+        sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag(),
+                              typename std::false_type());
+        freduce(F, A.m, blockSize, y, ldy);
+    } else {
+        using simd = Simd<typename Field::Element>;
+        if (simd::valid(y) && simd::valid(x) && simd::compliant(blockSize)) {
+            sparse_details_impl::pfspmm_simd_aligned(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+        } else {
+            sparse_details_impl::pfspmm_simd_unaligned(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+        }
+    }
+}
+
+template <class Field, class SM>
+inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+      typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix) {
+    if (A.delayed) {
+        sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag(), NotZOSparseMatrix());
+        freduce(F, A.m, blockSize, y, ldy);
+    } else {
+        sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, A.kmax);
+    }
+}
+
+// ZO matrix
+template <class Field, class SM>
+inline void
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, ZOSparseMatrix) {
+    if (F.isOne(A.cst)) {
+        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+    } else if (F.isMOne(A.cst)) {
+        sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+    } else {
+        auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
+        fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
+        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+        fflas_delete(x1);
+    }
+}
+
+template <class Field, class SM>
+inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+      typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix) {
+    using simd = Simd<typename Field::Element>;
+    if (F.isOne(A.cst)) {
+        if (simd::valid(x) && simd::valid(y) && simd::compliant(blockSize)) {
+            sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
+                                                        FieldCategories::UnparametricTag());
+        } else {
+            sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
+                                                          FieldCategories::UnparametricTag());
+        }
+    } else if (F.isMOne(A.cst)) {
+        if (simd::valid(x) && simd::valid(y) && simd::compliant(blockSize)) {
+            sparse_details_impl::pfspmm_mone_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
+                                                         FieldCategories::UnparametricTag());
+        } else {
+            sparse_details_impl::pfspmm_mone_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
+                                                           FieldCategories::UnparametricTag());
+        }
+    } else {
+        auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
+        fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
+        if (simd::valid(x) && simd::valid(y) && simd::compliant(blockSize)) {
+            sparse_details_impl::pfspmm_one_simd_aligned(F, A, blockSize, x, ldx, y, ldy,
+                                                        FieldCategories::UnparametricTag());
+        } else {
+            sparse_details_impl::pfspmm_one_simd_unaligned(F, A, blockSize, x, ldx, y, ldy,
+                                                          FieldCategories::UnparametricTag());
+        }
+        fflas_delete(x1);
+    }
+}
+
+template <class Field, class SM>
+inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+      typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix) {
+    if (F.isOne(A.cst)) {
+        sparse_details_impl::pfspmm_one(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+    } else if (F.isMOne(A.cst)) {
+        sparse_details_impl::pfspmm_mone(F, A, blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+    } else {
+        auto x1 = fflas_new(F, A.m, blockSize, Alignment::CACHE_LINE);
+        fscal(F, A.m, blockSize, A.cst, x, ldx, x1, 1);
+        sparse_details_impl::pfspmm_one(F, A, blockSize, x1, ldx, y, ldy, FieldCategories::UnparametricTag());
+        fflas_delete(x1);
+    }
+}
+
+template <class Field, class SM>
+inline void
+pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, ZOSparseMatrix) {
+    sparse_details::pfspmm(F, A, blockSize, x, ldx, y, ldy, typename FieldCategories::UnparametricTag(),
+                          ZOSparseMatrix());
+    freduce(F, blockSize, A.m, y, ldy);
+}
+
 // /***************************** pfspmv ******************************/
 
 // #if defined(__FFLASFFPACK_HAVE_OPENMP)
@@ -684,7 +842,6 @@ inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::Co
                                               typename isZOSparseMatrix<Field, SM>::type());
 }
 
-#if defined(__FFLASFFPACK_HAVE_OPENMP)
 template <class Field, class SM>
 inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
                    typename Field::Element_ptr y) {
@@ -693,7 +850,15 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
                                       typename FieldTraits<Field>::category(),
                                       typename isZOSparseMatrix<Field, SM>::type());
 }
-#endif
+
+template <class Field, class SM>
+inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+                  const typename Field::Element &beta, typename Field::Element_ptr y, int ldy) {
+    sparse_details::init_y(F, A.m, blockSize, beta, y, ldy);
+    sparse_details::pfspmm_dispatch<Field, SM>(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category(),
+                                              typename isZOSparseMatrix<Field, SM>::type());
+}
+
 // template <class Field, class SM>
 // inline void pfspmm(const Field &F, const SM &A, int blockSize,
 //                    typename Field::ConstElement_ptr x, int ldx,
