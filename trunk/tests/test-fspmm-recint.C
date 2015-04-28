@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
 
     vector<FieldElement> x(coldim*blockSize, 1), y(rowdim*blockSize, 0);
 
-    fspmm(Frec, A, blockSize, x.data(), blockSize, 0, y.data(), blockSize);
+    pfspmm(Frec, A, blockSize, x.data(), blockSize, 0, y.data(), blockSize);
 
     return 0;
 }

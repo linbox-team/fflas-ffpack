@@ -141,7 +141,7 @@ Field* chooseField(Givaro::Integer q, unsigned long b){
 int main(int argc, char **argv) {
     using Field        = Modular<Integer>;
     using FieldMat     = UnparametricRing<double>;
-    using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double>;
+    using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double_extended>;
     using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::CSR>;
 
     Integer q = -1;
@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
     cout << "primeBitsize: " << primeBitsize << endl;
     // construct RNS
     // primeBitsize = 23;
-    FFPACK::rns_double RNS(Integer(maxSum)*p, primeBitsize, true, 0);
+    FFPACK::rns_double_extended RNS(Integer(maxSum)*p, primeBitsize, true, 0);
     size_t rnsSize = RNS._size;
     cout << "M: " << RNS._M << endl;
     cout << "RNS basis size: " << rnsSize << endl;
@@ -237,8 +237,8 @@ int main(int argc, char **argv) {
 
     // Fill X with random values
     for(auto &x: X){
-        // Givaro::Integer::random_exact_2exp(x,b);
-        F->init(x, 1);
+         Givaro::Integer::random_exact_2exp(x,b);
+        F->init(x, x);
     }
 
     size_t ld = 0;
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
     double* Yrns = fflas_new<double>(rowdim*blockSize*rnsSize, Alignment::CACHE_LINE);
 
     // Transform X in RNS
-    RNS.init_dlp(coldim*blockSize, Xrns, X.data(), 1);
+    RNS.init(coldim*blockSize, Xrns, X.data(), 1);
 
     cout << endl;
     TTimer Tspmm;
@@ -327,7 +327,7 @@ int main(int argc, char **argv) {
     // }
 
     // Reconstruct Y from Yrns
-    RNS.convert_dlp(rowdim*blockSize, Y.data(), Yrns);
+    RNS.convert(rowdim*blockSize, Y.data(), Yrns);
     Ttotal.stop();
     for(size_t i = 0 ; i < rowdim*blockSize ; ++i){
       if(Y[i] < 0){

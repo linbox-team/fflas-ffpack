@@ -160,33 +160,6 @@ namespace FFPACK {
 #endif
 	}
 
-
-#ifdef __DLP_CHALLENGE
-// TODO: less naive implementation
-void rns_double::init_dlp(size_t m, double* Arns, const integer* A, size_t lda) const{
-	for(size_t i = 0 ; i < m ; ++i){
-		for(size_t j = 0 ; j < _size ; ++j){
-			Arns[i*_size+j] = (double)((A[i*lda]%integer(_basis[j]))[0]);
-		}
-	}
-}
-
-// TODO: less naive implementation
-void rns_double::convert_dlp(size_t m, integer *A, const double *Arns) const{
-	integer hM= (_M-1)>>1;
-	for(size_t i = 0 ; i < m ; ++i){
-		A[i] = 0;
-		integer tmp;
-		for(size_t j = 0 ; j < _size ; ++j){
-			A[i] += ((integer(Arns[i*_size+j])*integer(_MMi[j]))%integer(_basis[j]))*integer(_Mi[j]);
-		}
-		A[i] %= _M;
-		if(A[i] > hM)
-			A[i] -= _M;
-	}
-}
-#endif
-
 	void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 				 const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
@@ -453,7 +426,93 @@ void rns_double::convert_dlp(size_t m, integer *A, const double *Arns) const{
 	}
 
 
+// TODO: less naive implementation
+void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t lda) const{
+	for(size_t i = 0 ; i < m ; ++i){
+		for(size_t j = 0 ; j < _size ; ++j){
+			Arns[i*_size+j] = (double)((A[i*lda]%integer(_basis[j]))[0]);
+		}
+	}
+}
 
+// TODO: less naive implementation
+void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
+	integer hM= (_M-1)>>1;
+	for(size_t i = 0 ; i < m ; ++i){
+		A[i] = 0;
+		integer tmp;
+		for(size_t j = 0 ; j < _size ; ++j){
+			A[i] += ((integer(Arns[i*_size+j])*integer(_MMi[j]))%integer(_basis[j]))*integer(_Mi[j]);
+		}
+		A[i] %= _M;
+		if(A[i] > hM)
+			A[i] -= _M;
+	}
+}
+	
+	// reduce entries of Arns to be less than the rns basis elements
+	void rns_double_extended::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
+
+#ifdef __FFLASFFPACK_USE_SIMD
+			using simd = Simd<double>;
+			using vect_t = typename simd::vect_t;
+
+			if(_size % simd::vect_size == 0){
+				for(size_t i = 0 ; i < n ; i++){
+					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+					for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
+						basis = simd::load(_basis.data()+j);
+						inv   = simd::load(_invbasis.data()+j);
+						max   = simd::load(_basisMax.data()+j);
+						neg   = simd::load(_negbasis.data()+j);
+						v     = simd::load(Arns+i*_size+j);
+						tmp2 = modSimd(v, basis, inv, neg);
+						tmp1  = simd::greater(tmp2, max);
+						tmp3  = simd::lesser(tmp2, simd::zero());
+						tmp1  = simd::vand(tmp1, neg);
+						tmp3  = simd::vand(tmp3, basis);
+						tmp1  = simd::vor(tmp1, tmp3);
+						tmp2  = simd::add(tmp2, tmp1);
+						simd::store(Arns+i*_size+j, tmp2);
+					}
+				}
+			}else{
+				for(size_t i = 0 ; i < n ; i++){
+					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+					size_t j = 0;
+					for( ; j < ROUND_DOWN(_size, simd::vect_size) ; j+=simd::vect_size){
+						basis = simd::load(_basis.data()+j);
+						inv   = simd::load(_invbasis.data()+j);
+						max   = simd::load(_basisMax.data()+j);
+						neg   = simd::load(_negbasis.data()+j);
+						v     = simd::loadu(Arns+i*_size+j);
+						tmp2 = modSimd(v, basis, inv, neg);
+						tmp1  = simd::greater(tmp2, max);
+						tmp3  = simd::lesser(tmp2, simd::zero());
+						tmp1  = simd::vand(tmp1, neg);
+						tmp3  = simd::vand(tmp3, basis);
+						tmp1  = simd::vor(tmp1, tmp3);
+						tmp2  = simd::add(tmp2, tmp1);
+						simd::storeu(Arns+i*_size+j, tmp2);
+					}
+					for( ; j < _size ; ++j){
+					  _field_rns[j].reduce(Arns[i*_size+j]);
+					}
+				}
+			}
+#else
+
+// TODO : SIMD version
+			for(size_t i = 0 ; i < n ; i+= _size){
+				for(size_t j = 0 ; j < _size ; ++j){
+					//_field_rns.reduce(Arns+i*_size+j);
+					_field_rns[i].reduce(Arns[i*_size+j]);
+				}
+			}
+
+#endif
+
+	}
 
 } // FFPACK
 

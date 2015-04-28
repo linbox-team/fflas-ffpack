@@ -42,7 +42,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &
     if (A.mone != nullptr)
         sparse_details_impl::pfspmm_one(F, *(A.one), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
     if (A.dat != nullptr)
-        sparse_details_impl::ppfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
+        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
 }
 
 template <class Field>
@@ -54,7 +54,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &
     if (A.mone != nullptr)
         sparse_details_impl::pfspmm_one(F, *(A.one), blockSize, x, ldx, y, FieldCategories::UnparametricTag());
     if (A.dat != nullptr)
-        sparse_details_impl::ppfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
+        sparse_details_impl::pfspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
 }
 
 #ifdef __FFLASFFPACK_USE_SIMD

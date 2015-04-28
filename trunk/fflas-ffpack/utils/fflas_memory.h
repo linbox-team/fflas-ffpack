@@ -77,6 +77,12 @@ namespace FFLAS{
 	    else
 		    delete[] A;
     }
+    
+    template<class Ptr, class ...Args>
+    inline void fflas_delete(Ptr p, Args ... args){
+	fflas_delete(p);
+	fflas_delete(std::forward<Args>(args)...);
+    }
 
 #ifdef __FFLASFFPACK_USE_SIMD
     void prefetch(const int64_t* addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
