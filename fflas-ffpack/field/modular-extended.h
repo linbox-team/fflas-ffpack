@@ -180,7 +180,7 @@ public:
 		Element pqh, pql;
 		mult(_p, q, pqh, pql);
 		x = (x-pqh)-pql;
-		if(x > _p)
+		if(x >= _p)
 			x -= _p;
 		else if(x < 0)
 			x += _p;
@@ -274,7 +274,9 @@ public:
 	Element& negin(Element& r) const {
 		return neg(r, r);
 	}
-	Element& invin(Element& r) const ;
+	Element& invin(Element& r) const {
+	  return inv(r, r);
+	}
 	
 	// -- axpy:   r <- a * x + y
 	// -- axpyin: r <- a * x + r

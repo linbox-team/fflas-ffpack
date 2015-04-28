@@ -595,11 +595,11 @@ namespace FFPACK {
 				// }
 				// std::cout << std::endl;
 				
-				std::cout << "MMi: " << std::endl;
-				for(size_t j = 0 ; j < _size ; ++j){
-					std::cout << _rns->_MMi[j] << " ";
-				}
-				std::cout << std::endl;
+				// std::cout << "MMi: " << std::endl;
+				// for(size_t j = 0 ; j < _size ; ++j){
+				// 	std::cout << _rns->_MMi[j] << " ";
+				// }
+				// std::cout << std::endl;
 
 				
 				// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
