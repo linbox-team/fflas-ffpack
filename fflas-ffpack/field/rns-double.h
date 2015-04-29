@@ -329,10 +329,14 @@ namespace FFPACK {
 			using simd = Simd<double>;
 			using vect_t = typename simd::vect_t;
 			vect_t vah, val, vbh, vbl;
-			splitSimd(va, vah, val);
-			splitSimd(vb, vbh, vbl);
 			vs = simd::mul(va, vb);
+#ifdef __FMA__
+			vt = simd::fnmadd(va, vb, vs);
+#else
+			splitSimd(va, vah, val);
+			splitSimd(vb, vbh, vbl);		
 			vt = simd::add(simd::add(simd::sub(simd::mul(vah, vbh), vs), simd::mul(vah, vbl)), simd::add(simd::mul(val, vbh), simd::mul(val, vbl)));
+#endif
 		}
 		
 		template<class SimdT>
