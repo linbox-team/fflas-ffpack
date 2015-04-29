@@ -575,9 +575,9 @@ namespace FFPACK {
 			    FFLAS::fflas_delete(tabTmp);
 			  }
 			}
-			*/
+			//*/
 			//*
-			// #pragma omp parallel for 
+#pragma omp parallel for schedule(static, 256)
 			for(size_t i = 0 ; i < n; ++i){
 				ruint128 *A;
 				double* Ad;

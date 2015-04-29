@@ -52,6 +52,7 @@ namespace FFLAS { namespace details_spmv {
 		typename Field::Element val = 0;
 		index_t col = 0;
 		index_t row = 0;
+		bool deleted = false;
 
 		Coo() = default;
 		Coo(typename Field::Element v, index_t r, index_t c) : val(v), col(c), row(r) {}

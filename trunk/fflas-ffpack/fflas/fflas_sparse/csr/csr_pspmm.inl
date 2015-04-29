@@ -665,7 +665,7 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-
+  //*
     FFLAS::CuttingStrategy meth;
     meth = FFLAS::ROW_FIXED;
     FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
@@ -703,7 +703,9 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
 		  );
       );
     } 
+    //*/
     /*
+#pragma omp parallel for schedule(static, 256)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -727,7 +729,7 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
             }
         }
     }
-    */
+    //*/
 }
 
 template <class Field>
@@ -815,7 +817,8 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
-FFLAS::CuttingStrategy meth;
+    //*
+    FFLAS::CuttingStrategy meth;
     meth = FFLAS::ROW_FIXED;
     FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
     size_t m = A.m;
@@ -852,7 +855,9 @@ FFLAS::CuttingStrategy meth;
 		  );
       );
     } 
+    //*/
     /*
+#pragma omp parallel for schedule(static, 256)
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
         for (index_t j = start; j < stop; ++j) {
@@ -876,7 +881,7 @@ FFLAS::CuttingStrategy meth;
             }
         }
     }
-    */
+    //*/
 }
 
 template <class Field>
