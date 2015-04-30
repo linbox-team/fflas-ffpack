@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_ffpack_echelon_forms_INL
 
 template <class Field>
-size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 								  typename Field::Element_ptr A, const size_t lda,
 								  size_t* P, size_t* Qt, const bool transform,
 								  const FFPACK_LU_TAG LuTag)
@@ -54,7 +54,7 @@ size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N
 }
 
 template <class Field>
-size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
+inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 							   typename Field::Element_ptr A, const size_t lda,
 							   size_t* P, size_t* Qt, const bool transform,
 							   const FFPACK_LU_TAG LuTag)
@@ -74,7 +74,7 @@ size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 }
 
 template <class Field>
-size_t
+inline size_t
 FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 								  typename Field::Element_ptr A, const size_t lda,
 								  size_t* P, size_t* Qt, const bool transform, 
@@ -106,7 +106,7 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 }
 
 template <class Field>
-size_t
+inline size_t
 FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 							   typename Field::Element_ptr A, const size_t lda,
 							   size_t* P, size_t* Qt, const bool transform, 
@@ -142,7 +142,7 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
  * Need work.
  */
 template <class Field>
-size_t
+inline size_t
 FFPACK::REF (const Field& F, const size_t M, const size_t N,
 	     typename Field::Element_ptr A, const size_t lda,
 	     const size_t colbeg, const size_t rowbeg, const size_t colsize,
@@ -294,7 +294,7 @@ FFPACK::REF (const Field& F, const size_t M, const size_t N,
 
 namespace FFPACK {
 template <class Field>
-size_t
+inline size_t
 ReducedRowEchelonForm2 (const Field& F, const size_t M, const size_t N,
 						typename Field::Element_ptr A, const size_t lda,
 						size_t* P, size_t* Qt, const bool transform /*= true */)
@@ -312,7 +312,7 @@ namespace FFPACK{
 	/* Accessors to Triangular and Echelon forms */
 	/*********************************************/
 template <class Field>
-void
+inline void
 getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			   const FFLAS::FFLAS_DIAG diag,
 			   const size_t M, const size_t N, const size_t R,
@@ -357,7 +357,7 @@ getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	}
 }
 template <class Field>
-void
+inline void
 getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			   const FFLAS::FFLAS_DIAG diag,
 			   const size_t M, const size_t N, const size_t R,
@@ -382,7 +382,7 @@ getTriangular (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	}
 }
 
-void 
+inline void 
 PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size_t * outPerm)
 {
 	size_t * MP = new size_t[N];
@@ -399,7 +399,7 @@ PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size
 }
 
 template <class Field>
-void
+inline void
 getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 				const FFLAS::FFLAS_DIAG diag,
 				const size_t M, const size_t N, const size_t R, const size_t* P,
@@ -462,7 +462,7 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	}
 }
 template <class Field>
-void
+inline void
 getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 				const FFLAS::FFLAS_DIAG diag,
 				const size_t M, const size_t N, const size_t R, const size_t* P,
@@ -514,7 +514,7 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 }
 
 template <class Field>
-void
+inline void
 getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 					 const FFLAS::FFLAS_DIAG diag,
 					 const size_t M, const size_t N, const size_t R, const size_t* P, const size_t * Q,
@@ -560,7 +560,7 @@ getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	}
 }
 template <class Field>
-void
+inline void
 getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 					   const size_t M, const size_t N, const size_t R, const size_t* P,
 					   typename Field::ConstElement_ptr A, const size_t lda,
@@ -608,7 +608,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 	}
 }
 template <class Field>
-void
+inline void
 getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 					   const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 					   typename Field::Element_ptr A, const size_t lda,
@@ -647,7 +647,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 }
 
 template <class Field>
-void
+inline void
 getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 							const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 							typename Field::ConstElement_ptr A, const size_t lda,

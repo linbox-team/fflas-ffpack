@@ -76,25 +76,30 @@ T* malloc_align(size_t size, Alignment alignment = Alignment::DEFAULT) noexcept
   return static_cast<T*>(p);
 }
 
-namespace detail {
-  void* allocate(size_t align, size_t size) {
-  assert(align >= sizeof(void*));
+namespace detail
+{
+inline void* allocate(size_t align, size_t size)
+{
+    assert(align >= sizeof(void*));
 
-  if (size == 0) {
-    return nullptr;
-  }
+    if (size == 0) {
+        return nullptr;
+    }
 
-  void* ptr = nullptr;
-  int rc = posix_memalign(&ptr, align, size);
+    void* ptr = nullptr;
+    int rc = posix_memalign(&ptr, align, size);
 
-  if (rc != 0) {
-    return nullptr;
-  }
+    if (rc != 0) {
+        return nullptr;
+    }
 
-  return ptr;
+    return ptr;
 }
 
-void deallocate(void* ptr) noexcept { return free(ptr); }
+inline void deallocate(void* ptr) noexcept
+{
+    return free(ptr);
+}
 }
 
 

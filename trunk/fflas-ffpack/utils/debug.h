@@ -206,18 +206,20 @@ namespace FFPACK {
 
 #endif
 
+	// @bug with test-multifile - should be in a CPP file!
+	// extern
 	std::ostream *Failure::_errorStream;
 
 	template<class T>
-	bool isOdd (const T & a) {
+	inline bool isOdd (const T & a) {
 		return (a%2);
 	}
 
-	bool isOdd(const float &a) {
+	inline bool isOdd(const float &a) {
 		return (bool)(int)fmodf(a,2.f);
 	}
 
-	bool isOdd(const double &a) {
+	inline bool isOdd(const double &a) {
 		return (bool)(int)fmod(a,2.);
 	}
 

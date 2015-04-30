@@ -35,12 +35,12 @@
 namespace FFLAS {
 
     template<CuttingStrategy Method>
-    void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
+    inline void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
                    const size_t m, const size_t n,
                    const size_t numthreads);
 
     template<>
-    void BlockCuts<SINGLE>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<SINGLE>(size_t& RBLOCKSIZE,
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t numthreads) {
@@ -50,7 +50,7 @@ namespace FFLAS {
 
 
     template<>
-    void BlockCuts<ROW_FIXED>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<ROW_FIXED>(size_t& RBLOCKSIZE,
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t numthreads) {
@@ -60,7 +60,7 @@ namespace FFLAS {
 
 
     template<>
-    void BlockCuts<GRAIN_SIZE>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<GRAIN_SIZE>(size_t& RBLOCKSIZE,
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t grainsize) {
@@ -70,7 +70,7 @@ namespace FFLAS {
 
 
     template<>
-    void BlockCuts<COLUMN_FIXED>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<COLUMN_FIXED>(size_t& RBLOCKSIZE,
                                  size_t& CBLOCKSIZE,
                                  const size_t m, const size_t n,
                                  const size_t numthreads) {
@@ -80,7 +80,7 @@ namespace FFLAS {
 
 
     template<>
-    void BlockCuts<BLOCK_FIXED>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<BLOCK_FIXED>(size_t& RBLOCKSIZE,
                                 size_t& CBLOCKSIZE,
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
@@ -89,7 +89,7 @@ namespace FFLAS {
     }
 
     template<>
-    void BlockCuts<ROW_THREADS>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<ROW_THREADS>(size_t& RBLOCKSIZE,
                                 size_t& CBLOCKSIZE,
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
@@ -99,7 +99,7 @@ namespace FFLAS {
 
 
     template<>
-    void BlockCuts<COLUMN_THREADS>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<COLUMN_THREADS>(size_t& RBLOCKSIZE,
                                    size_t& CBLOCKSIZE,
                                    const size_t m, const size_t n,
                                    const size_t numthreads) {
@@ -108,7 +108,7 @@ namespace FFLAS {
     }
 
     template<>
-    void BlockCuts<BLOCK_THREADS>(size_t& RBLOCKSIZE,
+    inline void BlockCuts<BLOCK_THREADS>(size_t& RBLOCKSIZE,
                                   size_t& CBLOCKSIZE,
                                   const size_t m, const size_t n,
                                   const size_t numthreads) {
@@ -137,7 +137,7 @@ namespace FFLAS {
         }
     }
 
-    void BlockCuts(size_t& r, size_t& c,
+    inline void BlockCuts(size_t& r, size_t& c,
                    size_t m, size_t n,
                    const CuttingStrategy method,
                    const size_t t) {
@@ -154,7 +154,7 @@ namespace FFLAS {
     }
 
 
-    void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
+    inline void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
                    size_t& lastRBS, size_t& lastCBS,
                    size_t& changeRBS, size_t& changeCBS,
                    size_t& numRowBlock, size_t& numColBlock,

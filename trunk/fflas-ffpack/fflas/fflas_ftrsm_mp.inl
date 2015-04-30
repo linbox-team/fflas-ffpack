@@ -43,7 +43,7 @@
 namespace FFLAS {
 
 
-	void ftrsm (const Givaro::Modular<Givaro::Integer> & F,
+	inline void ftrsm (const Givaro::Modular<Givaro::Integer> & F,
 		    const FFLAS_SIDE Side,
 		    const FFLAS_UPLO Uplo,
 		    const FFLAS_TRANSPOSE TransA,

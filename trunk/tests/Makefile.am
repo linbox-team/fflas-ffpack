@@ -34,23 +34,24 @@ EXTRA_DIST= test-utils.h
 
 PERFPUBLISHERFILE=tests-report.xml
 
-BASIC_TESTS =              \
-		test-lu              \
-		test-modulararith      \
-		test-det               \
-		test-echelon           \
-		test-rankprofiles           \
-		test-compressQ \
-		test-fadd \
-		test-finit \
-		test-fscal \
-		test-fgemm\
-		test-fger             \
-		test-ftrsm\
+BASIC_TESTS =               \
+		test-lu             \
+		test-modulararith   \
+		test-det            \
+		test-echelon        \
+		test-rankprofiles   \
+		test-compressQ      \
+		test-fadd           \
+		test-finit          \
+		test-fscal          \
+		test-fgemm          \
+		test-fger           \
+		test-ftrsm          \
+		test-multifile      \
 		regression-check
 
 NOT_A_TEST =  \
-		test-lqup2              \
+		test-lqup2             \
 		test-charpoly          \
 		benchlqup              \
 		test-fsquare           \
@@ -93,6 +94,7 @@ test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
 test_fger_SOURCES             = test-fger.C
+test_multifile_SOURCES             = test-multifile1.C test-multifile2.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 #  test_charpoly_SOURCES          = test-charpoly.C
 #  benchfgemm_SOURCES             = benchfgemm.C

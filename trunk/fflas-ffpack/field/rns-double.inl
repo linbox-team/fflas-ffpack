@@ -36,7 +36,7 @@ namespace FFPACK {
 
 	// Arns must be an array of m*n*_size
 	// abs(||A||) < 2^(16k)
-	void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
+	inline void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm){
 			FFPACK::Failure(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
@@ -104,7 +104,7 @@ namespace FFPACK {
 
 	// Arns must be an array of m*n*_size
 	// abs(||A||) < 2^(16k)
-	void rns_double::init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
+	inline void rns_double::init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm)
 			FFPACK::Failure(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
@@ -160,7 +160,7 @@ namespace FFPACK {
 #endif
 	}
 
-	void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
+	inline void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 				 const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
 #ifdef CHECK_RNS
@@ -258,7 +258,7 @@ namespace FFPACK {
 
 	}
 
-	void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
+	inline void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 					   const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
 		integer hM= (_M-1)>>1;
@@ -348,7 +348,7 @@ namespace FFPACK {
 	}
 
 	// reduce entries of Arns to be less than the rns basis elements
-	void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
+	inline void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 		if (RNS_MAJOR) {
 #ifdef __FFLASFFPACK_USE_SIMD
@@ -427,7 +427,7 @@ namespace FFPACK {
 
 
 // TODO: less naive implementation
-void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t lda) const{
+inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t lda) const{
 	for(size_t i = 0 ; i < m ; ++i){
 		for(size_t j = 0 ; j < _size ; ++j){
 			Arns[i*_size+j] = (double)((A[i*lda]%integer(_basis[j]))[0]);
@@ -436,7 +436,7 @@ void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t 
 }
 
 // TODO: less naive implementation
-void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
+inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
 	integer hM= (_M-1)>>1;
 	for(size_t i = 0 ; i < m ; ++i){
 		A[i] = 0;
@@ -451,7 +451,7 @@ void rns_double_extended::convert(size_t m, integer *A, const double *Arns) cons
 }
 	
 	// reduce entries of Arns to be less than the rns basis elements
-	void rns_double_extended::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
+	inline void rns_double_extended::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 #ifdef __FFLASFFPACK_USE_SIMD
 			using simd = Simd<double>;

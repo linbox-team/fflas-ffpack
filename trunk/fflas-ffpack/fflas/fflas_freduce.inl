@@ -43,80 +43,80 @@
 namespace FFLAS { namespace vectorised { /*  for casts (?) */
 
 	template<class T>
-	typename std::enable_if< ! std::is_integral<T>::value, T>::type
+	inline typename std::enable_if< ! std::is_integral<T>::value, T>::type
 	monfmod(T A, T B)
 	{
 		return fmod(A,B);
 	}
 
 	template<class T>
-	typename std::enable_if< std::is_integral<T>::value, T>::type
+	inline typename std::enable_if< std::is_integral<T>::value, T>::type
 	monfmod(T  A, T B)
 	{
 		return A % B; // B > 0
 	}
 
 	template<>
-	Givaro::Integer monfmod(Givaro::Integer  A, Givaro::Integer B) // @bug B is not integer, but uint64_t usually
+	inline Givaro::Integer monfmod(Givaro::Integer  A, Givaro::Integer B) // @bug B is not integer, but uint64_t usually
 	{
 		return A % B; // B > 0
 	}
 
 	template<>
-	float monfmod(float A, float B)
+	inline float monfmod(float A, float B)
 	{
 		return fmodf(A,B);
 	}
 
 	template<>
-	double monfmod(double A, double B)
+	inline double monfmod(double A, double B)
 	{
 		return fmod(A,B);
 	}
 
 	template<size_t K, size_t MG>
-	RecInt::rmint<K,MG>& monfmod(RecInt::rmint<K,MG>& A, RecInt::rmint<K,MG>& B)
+	inline RecInt::rmint<K,MG>& monfmod(RecInt::rmint<K,MG>& A, RecInt::rmint<K,MG>& B)
 	{
 		std::cout<<"monfmod rmint"<<std::endl;
 		return RecInt::rmint<K>::mod_n(A, B);
 	}
 
 	template<class T>
-	typename std::enable_if< ! std::is_integral<T>::value, T>::type
+	inline typename std::enable_if< ! std::is_integral<T>::value, T>::type
 	monrint(T A)// @bug pass by reference ?
 	{
 		return rint(A);
 	}
 
 	template<class T>
-	typename std::enable_if< std::is_integral<T>::value, T>::type
+	inline typename std::enable_if< std::is_integral<T>::value, T>::type
 	monrint( T A)
 	{
 		return A ;
 	}
 
 	template<>
-	double monrint(double A)
+	inline double monrint(double A)
 	{
 		return rint(A);
 	}
 
 
 	template<>
-	float monrint(float A)
+	inline float monrint(float A)
 	{
 		return rintf(A);
 	}
 
 	template<>
-	Givaro::Integer monrint(Givaro::Integer A) // @bug B is not integer, but uint64_t usually
+	inline Givaro::Integer monrint(Givaro::Integer A) // @bug B is not integer, but uint64_t usually
 	{
 		return A ; // B > 0
 	}
 
 
 	template<bool overflow, bool poweroftwo>
-	int64_t monfmod(int64_t A, int64_t p, int8_t shifter, int64_t magic)
+	inline int64_t monfmod(int64_t A, int64_t p, int8_t shifter, int64_t magic)
 	{
 		if (poweroftwo) { //shift path
 			int64_t q = A + ((A >> 63) & ((1LL << shifter) - 1));
@@ -143,7 +143,7 @@ namespace FFLAS { namespace vectorised {
 
 
 	template<class T>
-	void fast_mod_generate(bool & overflow, bool & poweroftwo, int8_t & shift, T & magic, T denom)
+	inline void fast_mod_generate(bool & overflow, bool & poweroftwo, int8_t & shift, T & magic, T denom)
 	{
 		overflow = false ;
 		poweroftwo = false ;
@@ -153,7 +153,7 @@ namespace FFLAS { namespace vectorised {
 
 	//! @pre d > 0
 	template<>
-	void fast_mod_generate(bool & overflow, bool & poweroftwo, int8_t & shift, int64_t & magic, int64_t denom)
+	inline void fast_mod_generate(bool & overflow, bool & poweroftwo, int8_t & shift, int64_t & magic, int64_t denom)
 	{
 
 		// overflow = false ;
