@@ -212,7 +212,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
      * Return : [a0*b0 mod 2^64-1, a1*b1 mod 2^64-1, a2*b2 mod 2^64-1, a3*b3 mod 2^64-1] int64_t
      */
     static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
-#warning "The simd mullo function is emulate, it may impact the performances."
+//#warning "The simd mullo function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;

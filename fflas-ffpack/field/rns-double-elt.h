@@ -125,17 +125,17 @@ namespace FFPACK {
 			return *this;
 		}
 
-	rns_double_elt_ptr::rns_double_elt_ptr(const rns_double_elt_cstptr &x)
+	inline rns_double_elt_ptr::rns_double_elt_ptr(const rns_double_elt_cstptr &x)
 		: rns_double_elt(x._ptr,x._stride,false){}
-	//rns_double_elt_ptr::operator rns_double_elt_cstptr(){return rns_double_elt_cstptr(_ptr,_stride);}
-	rns_double_elt_ptr    rns_double_elt::operator&()       {return 	rns_double_elt_ptr(_ptr,_stride);}
-	rns_double_elt_cstptr rns_double_elt::operator&() const {return 	rns_double_elt_cstptr(_ptr,_stride);}
+	//inline rns_double_elt_ptr::operator rns_double_elt_cstptr(){return rns_double_elt_cstptr(_ptr,_stride);}
+	inline rns_double_elt_ptr    rns_double_elt::operator&()       {return 	rns_double_elt_ptr(_ptr,_stride);}
+	inline rns_double_elt_cstptr rns_double_elt::operator&() const {return 	rns_double_elt_cstptr(_ptr,_stride);}
 
 
 	template<>
-	rns_double_elt_ptr fflas_const_cast (rns_double_elt_cstptr x){return x;}
+	inline rns_double_elt_ptr fflas_const_cast (rns_double_elt_cstptr x){return x;}
 	template<>
-	rns_double_elt_cstptr fflas_const_cast (rns_double_elt_ptr x){return x;}
+	inline rns_double_elt_cstptr fflas_const_cast (rns_double_elt_ptr x){return x;}
 
 
 } // end namespace FFPACK:

@@ -59,7 +59,9 @@
 #endif
 
 #ifdef __FFLASFFPACK_USE_SIMD
-namespace std {
+namespace std { // Why? - A.B. 2015-04-30
+
+inline
 std::ostream &operator<<(std::ostream &o, const __m128 &v) {
     const float *vArray = (const float *)(&v);
     o << '<';
@@ -70,6 +72,7 @@ std::ostream &operator<<(std::ostream &o, const __m128 &v) {
     return o;
 }
 
+inline
 std::ostream &operator<<(std::ostream &o, const __m128i &v) {
     const int64_t *vArray = (const int64_t *)(&v);
     o << '<';
@@ -78,6 +81,7 @@ std::ostream &operator<<(std::ostream &o, const __m128i &v) {
     return o;
 }
 
+inline
 std::ostream &operator<<(std::ostream &o, const __m128d &v) {
     const double *vArray = (const double *)(&v);
     o << '<';
@@ -89,6 +93,8 @@ std::ostream &operator<<(std::ostream &o, const __m128d &v) {
 
 #ifdef __FFLASFFPACK_USE_AVX
 namespace std {
+
+inline
 std::ostream &operator<<(std::ostream &o, const __m256 &v) {
     const float *vArray = (const float *)(&v);
     o << '<';
@@ -99,6 +105,7 @@ std::ostream &operator<<(std::ostream &o, const __m256 &v) {
     return o;
 }
 
+inline
 std::ostream &operator<<(std::ostream &o, const __m256i &v) {
     const int64_t *vArray = (const int64_t *)(&v);
     o << '<';
@@ -107,6 +114,7 @@ std::ostream &operator<<(std::ostream &o, const __m256i &v) {
     return o;
 }
 
+inline
 std::ostream &operator<<(std::ostream &o, const __m256d &v) {
     const double *vArray = (const double *)(&v);
     o << '<';
@@ -299,7 +307,8 @@ template <class T> using Simd = typename SimdChooser<T>::value;
 namespace FFLAS { /*  print helper */
 
 // need friend ?
-template <class simdT> std::ostream &print(std::ostream &os, const typename simdT::vect_t &P) {
+template <class simdT>
+inline std::ostream &print(std::ostream &os, const typename simdT::vect_t &P) {
     typename simdT::scalar_t p[simdT::vect_size];
     os << '<';
     simdT::store(p, P);
@@ -317,7 +326,8 @@ template <class simdT> std::ostream &print(std::ostream &os, const typename simd
 
 namespace std {
 // cannot be instanciated, T is not déductible
-template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd128<T>::vect_t &v) {
+template <class T>
+inline std::ostream &operator<<(std::ostream &o, const typename Simd128<T>::vect_t &v) {
     FFLAS::print<Simd128<T>>(o, v);
     return o;
 }
@@ -326,7 +336,8 @@ template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd
 #ifdef __FFLASFFPACK_USE_AVX
 namespace std {
 // cannot be instanciated, T is not déductible
-template <class T> std::ostream &operator<<(std::ostream &o, const typename Simd256<T>::vect_t &v) {
+template <class T>
+inline std::ostream &operator<<(std::ostream &o, const typename Simd256<T>::vect_t &v) {
     FFLAS::print(o, v);
     return o;
 }

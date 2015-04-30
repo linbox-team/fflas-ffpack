@@ -39,7 +39,7 @@ namespace FFLAS {
 	
 	// level 1 : fscalin
 	template<>
-	void fscalin(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t n,
+	inline void fscalin(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t n,
 		     const FFPACK::rns_double::Element alpha,
 		     FFPACK::rns_double::Element_ptr A, const size_t inc) 
 	{
@@ -48,7 +48,7 @@ namespace FFLAS {
 	}
 	// level 1 : fscal
 	template<>
-	void fscal(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t n,
+	inline void fscal(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t n,
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t Ainc,
 		   FFPACK::rns_double::Element_ptr B, const size_t Binc) 
@@ -58,7 +58,7 @@ namespace FFLAS {
 	}
 	// level 2 : fscalin
 	template<>
-	void fscalin(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t m, const size_t n,
+	inline void fscalin(const FFPACK::RNSInteger<FFPACK::rns_double> &F,  const size_t m, const size_t n,
 		     const FFPACK::rns_double::Element alpha,
 		     FFPACK::rns_double::Element_ptr A, const size_t lda) {
 		for (size_t i=0;i<F.size();i++)
@@ -66,7 +66,7 @@ namespace FFLAS {
 	}
 	// level 2 : fscal
 	template<>
-	void fscal(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n,
+	inline void fscal(const FFPACK::RNSInteger<FFPACK::rns_double> &F, const size_t m, const size_t n,
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
 		   FFPACK::rns_double::Element_ptr B, const size_t ldb) {
@@ -84,7 +84,7 @@ namespace FFLAS {
 	
 	// level 1 : fscalin
 	template<>
-	void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
+	inline void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
 		     const FFPACK::rns_double::Element alpha,
 		     FFPACK::rns_double::Element_ptr A, const size_t inc) 
 	{
@@ -93,7 +93,7 @@ namespace FFLAS {
 	}
 	// level 1 : fscal
 	template<>
-	void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
+	inline void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t Ainc,
 		   FFPACK::rns_double::Element_ptr B, const size_t Binc) 
@@ -103,7 +103,7 @@ namespace FFLAS {
 	}
 	// level 2 : fscalin
 	template<>
-	void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m, const size_t n,
+	inline void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m, const size_t n,
 		     const FFPACK::rns_double::Element alpha,
 		     FFPACK::rns_double::Element_ptr A, const size_t lda)
 	{
@@ -112,7 +112,7 @@ namespace FFLAS {
 	}
 	// level 2 : fscal
 	template<>
-	void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n,
+	inline void fscal(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F, const size_t m, const size_t n,
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t lda,
 		   FFPACK::rns_double::Element_ptr B, const size_t ldb)
