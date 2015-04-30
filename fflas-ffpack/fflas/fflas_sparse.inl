@@ -416,6 +416,8 @@ pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_
     sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
 }
 
+#if defined(__FFLASFFPACK_USE_SIMD)
+
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
 pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
@@ -465,6 +467,8 @@ pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_
     }
 }
 
+#endif // __FFLASFFPACK_USE_SIMD
+
 // ZO matrix
 template <class Field, class SM>
 inline void
@@ -481,6 +485,8 @@ pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_
         fflas_delete(x1);
     }
 }
+
+#if defined(__FFLASFFPACK_USE_SIMD)
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
@@ -541,6 +547,8 @@ pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_
                           ZOSparseMatrix());
     freduce(F, blockSize, A.m, y, ldy);
 }
+
+#endif // __FFLASFFPACK_USE_SIMD
 
 // /***************************** pfspmv ******************************/
 
