@@ -383,6 +383,8 @@ fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_p
                           ZOSparseMatrix());
     freduce(F, blockSize, A.m, y, ldy);
 }
+ 
+#if defined(__FFLASFFPACK_HAVE_OPENMP)
 
 /*************************************************************************************
  *
@@ -831,6 +833,8 @@ pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_
 //         sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, A.kmax);
 //     }
 // }
+
+#endif // __FFLASFFPACK_HAVE_OPENMP
 
 } // sparse details
 
