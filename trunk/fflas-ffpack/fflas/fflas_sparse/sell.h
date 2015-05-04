@@ -65,7 +65,7 @@ struct Sparse<_Field, SparseMatrix_t::SELL_ZO>
 
 #include "fflas-ffpack/fflas/fflas_sparse/sell/sell_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/sell/sell_spmv.inl"
-#if defined(__FFLASFFPACK_HAVE_OPENMP)
+#if defined(__FFLASFFPACK_USE_OPENMP)
 #include "fflas-ffpack/fflas/fflas_sparse/sell/sell_pspmv.inl"
 #endif
 // #include "fflas-ffpack/fflas/fflas_sparse/sell/sell_spmm.inl"

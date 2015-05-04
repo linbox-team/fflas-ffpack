@@ -376,7 +376,7 @@ template <class Field, class SM>
 inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
                   const typename Field::Element &beta, typename Field::Element_ptr y, int ldy);
 
-#if defined(__FFLASFFPACK_HAVE_OPENMP)
+#if defined(__FFLASFFPACK_USE_OPENMP)
 template <class Field, class SM>
 inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
                    typename Field::Element_ptr y);

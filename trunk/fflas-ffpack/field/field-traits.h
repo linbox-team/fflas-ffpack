@@ -167,8 +167,8 @@ namespace FFLAS { /*  Traits */
 	template <> struct ModeTraits<Givaro::Modular<uint32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<uint64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
-	template <size_t K> struct ModeTraits<Givaro::UnparametricRing<RecInt::rmint<K> > > {typedef typename ModeCategories::DelayedTag value;};
-	template <size_t K, size_t MG> struct ModeTraits<Givaro::UnparametricRing<RecInt::rmint<K,MG> > > {typedef typename ModeCategories::DelayedTag value;};
+	//template <size_t K> struct ModeTraits<Givaro::UnparametricRing<RecInt::rmint<K> > > {typedef typename ModeCategories::DelayedTag value;};
+	//template <size_t K, size_t MG> struct ModeTraits<Givaro::UnparametricRing<RecInt::rmint<K,MG> > > {typedef typename ModeCategories::DelayedTag value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<float> >{typedef typename ModeCategories::DelayedTag value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<double> > {typedef typename ModeCategories::DelayedTag value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
