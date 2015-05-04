@@ -384,7 +384,7 @@ namespace FFLAS {
 			freduce(F, blockSize, A.m, y, ldy);
 		}
  
-#if defined(__FFLASFFPACK_HAVE_OPENMP)
+#if defined(__FFLASFFPACK_USE_OPENMP)
 
 		/*************************************************************************************
 		 *
@@ -553,7 +553,7 @@ namespace FFLAS {
 
 		// /***************************** pfspmv ******************************/
 
-		// #if defined(__FFLASFFPACK_HAVE_OPENMP)
+		// #if defined(__FFLASFFPACK_USE_OPENMP)
 
 		// template <class Field, class SM, class FC, class MZO>
 		// inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
@@ -833,7 +833,7 @@ namespace FFLAS {
 		//     }
 		// }
 
-#endif // __FFLASFFPACK_HAVE_OPENMP
+#endif // __FFLASFFPACK_USE_OPENMP
 
 	} // sparse details
 
@@ -852,6 +852,8 @@ namespace FFLAS {
 		sparse_details::fspmm_dispatch<Field, SM>(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category(),
 							  typename isZOSparseMatrix<Field, SM>::type());
 	}
+ 
+#if defined(__FFLASFFPACK_USE_OPENMP)
 
 	template <class Field, class SM>
 	inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
@@ -869,6 +871,8 @@ namespace FFLAS {
 		sparse_details::pfspmm_dispatch<Field, SM>(F, A, blockSize, x, ldx, y, ldy, typename FieldTraits<Field>::category(),
 							   typename isZOSparseMatrix<Field, SM>::type());
 	}
+
+#endif // __FFLASFFPACK_USE_OPENMP
 
 	// template <class Field, class SM>
 	// inline void pfspmm(const Field &F, const SM &A, int blockSize,

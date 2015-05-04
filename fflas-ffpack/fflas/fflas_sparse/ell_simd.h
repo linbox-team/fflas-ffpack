@@ -79,7 +79,7 @@ inline void sparse_delete(const Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A);
 
 #include "fflas-ffpack/fflas/fflas_sparse/ell_simd/ell_simd_utils.inl"
 #include "fflas-ffpack/fflas/fflas_sparse/ell_simd/ell_simd_spmv.inl"
-#if defined(__FFLASFFPACK_HAVE_OPENMP)
+#if defined(__FFLASFFPACK_USE_OPENMP)
 #include "fflas-ffpack/fflas/fflas_sparse/ell_simd/ell_simd_pspmv.inl"
 #endif
 // #include "fflas-ffpack/fflas/fflas_sparse/ell_simd_spmm.inl"
