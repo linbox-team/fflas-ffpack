@@ -297,9 +297,9 @@ namespace FFLAS { namespace details {
 	template <class Field, bool ADD>
 	void
 	fadd (const Field & F,  const size_t N,
-	      const double* A, const size_t inca,
-	      const double* B, const size_t incb,
-	      double* C, const size_t incc
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
 	      , FieldCategories::GenericTag
 	      )
 	{
