@@ -39,7 +39,7 @@ namespace FFPACK {
 	inline void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm){
-			FFPACK::Failure(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
+			FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
 			std::cerr<<"k="<<k<<" _ldm="<<_ldm<<std::endl;
 		}
 		size_t mn=m*n;
@@ -107,7 +107,7 @@ namespace FFPACK {
 	inline void rns_double::init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm)
-			FFPACK::Failure(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
+			FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
 
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
