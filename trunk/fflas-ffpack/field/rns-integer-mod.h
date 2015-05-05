@@ -97,6 +97,7 @@ namespace FFPACK {
 			integer iM=0;
 			size_t mysize=myrns._size;
 			integer sum=0;
+			std::cout << "M: " << myrns._M << std::endl;
 			for (size_t i=0;i<mysize;i++){
 				integer Mi = myrns._Mi[i] % _p;
 				for (size_t j=0;j<mysize;j++){
@@ -579,68 +580,62 @@ namespace FFPACK {
 			//*
 #pragma omp parallel for schedule(static, 256)
 			for(size_t i = 0 ; i < n; ++i){
-				ruint128 *A;
 				double* Ad;
 				BasisElement *Gamma;
 				Gamma = FFLAS::fflas_new<BasisElement>(_size);
-				A = FFLAS::fflas_new<ruint128>(_size);
 				Ad = FFLAS::fflas_new<double>(_size);
 				// Compute Gamma
+				std::cout << "B: " << std::endl;
+				 for(size_t j = 0 ; j < _size ; ++j){
+				 	std::cout << B._ptr[i*_size+j] << " ";
+				 }
+				 std::cout << std::endl;
 				for(size_t k = 0; k < _size ; ++k){
 					Fields[k].mul(Gamma[k], B._ptr[i*_size+k], _rns->_MMi[k]);
 				}
-				// std::cout << "Gamma: " << std::endl;
-				// for(size_t j = 0 ; j < _size ; ++j){
-				// 	std::cout << Gamma[j] << " ";
-				// }
-				// std::cout << std::endl;
+				 std::cout << "Gamma: " << std::endl;
+				 for(size_t j = 0 ; j < _size ; ++j){
+				 	std::cout << Gamma[j] << " ";
+				 }
+				 std::cout << std::endl;
 				
-				// std::cout << "MMi: " << std::endl;
-				// for(size_t j = 0 ; j < _size ; ++j){
-				// 	std::cout << _rns->_MMi[j] << " ";
-				// }
-				// std::cout << std::endl;
+				 std::cout << "MMi: " << std::endl;
+				 for(size_t j = 0 ; j < _size ; ++j){
+				 	std::cout << _rns->_MMi[j] << " ";
+				 }
+				 std::cout << std::endl;
 
 				
 				// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
 				// Mul by Mi_modp
-				for(size_t k = 0 ; k < _size ; ++k)
-					{
-						Ad[k] = 0;
-						A[k] = 0;
-					}
 				for(size_t k = 0 ; k < _size ; ++k){
-					Ad[k] = FFLAS::fdot(Fields[k], _size, Gamma, 1, _Mi_modp_rns.data()+k*_size, 1);
+					Ad[k] = FFLAS::fdot(Fields[k], _size, Gamma, 1, _Mi_modp_rns.data()+k, _size);
 				}
-				// std::cout << "_Mi_modp_rns: " << std::endl;
-				// std::cout << "[";
-				// for(size_t j = 0 ; j < _size ; ++j){
-				// 	std::cout << "[";
-				// 	for(size_t k = 0 ; k < _size-1 ; ++k){
-				// 		std::cout << _Mi_modp_rns[j*_size+k] << " ,";
-				// 	}
-				// 	std::cout << _Mi_modp_rns[j*_size+_size-1] << "],";
-				// }
-				// std::cout << "]" << std::endl;
-				// std::cout << "AA: " << std::endl;
-				// for(size_t j = 0 ; j < _size ; ++j){
-				// 	std::cout << A[j] << " ";
-				// }
-				// std::cout << std::endl;
-				// std::cout << "Ad: " << std::endl;
-				// for(size_t j = 0 ; j < _size ; ++j){
-				// 	std::cout << Ad[j] << " ";
-				// }
-				//  std::cout << std::endl;
-				// std::cout << "_iM_modp_rns: " << std::endl;
-				// std::cout << "[";
-				// for(size_t j = 0 ; j < _size ; ++j){
-				// 	std::cout << "[";
-				// 	for(size_t k = 0 ; k < _size-1 ; ++k){
-				// 		std::cout << _iM_modp_rns[j*_size+k] << " ,";
-				// 	}
-				// 	std::cout << _iM_modp_rns[j*_size+_size-1] << "],";
-				// }
+				 std::cout << "_Mi_modp_rns: " << std::endl;
+				 std::cout << "[";
+				 for(size_t j = 0 ; j < _size ; ++j){
+				 	std::cout << "[";
+				 	for(size_t k = 0 ; k < _size-1 ; ++k){
+				 		std::cout << _Mi_modp_rns[j*_size+k] << " ,";
+				 	}
+				 	std::cout << _Mi_modp_rns[j*_size+_size-1] << "],";
+				 }
+				 std::cout << "]" << std::endl;
+				 std::cout << std::endl;
+				 std::cout << "Ad: " << std::endl;
+				 for(size_t j = 0 ; j < _size ; ++j){
+				 	std::cout << Ad[j] << " ";
+				 }
+				  std::cout << std::endl;
+				 std::cout << "_iM_modp_rns: " << std::endl;
+				 std::cout << "[";
+				 for(size_t j = 0 ; j < _size ; ++j){
+				 	std::cout << "[";
+				 	for(size_t k = 0 ; k < _size-1 ; ++k){
+				 		std::cout << _iM_modp_rns[j*_size+k] << " ,";
+				 	}
+				 	std::cout << _iM_modp_rns[j*_size+_size-1] << "],";
+				 }
 				
 				// compute alpha
 				// FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
@@ -654,11 +649,12 @@ namespace FFPACK {
                                 long aa= (long)rint(alpha);
 				//std::cout << "aa: " << aa << std::endl;
 				for(size_t k = 0; k < _size ; k++){
+				  std::cout << Ad[k] << " - " << _iM_modp_rns[aa+k*_size] << " = ";
 					Fields[k].sub(B._ptr[i*_size+k], Ad[k], _iM_modp_rns[aa+k*_size]);
-					//std::cout<<B._ptr[i*_size+k]<<std::endl;
+					std::cout<<B._ptr[i*_size+k]<<std::endl;
 				}
 				FFLAS::fflas_delete(Gamma);
-				FFLAS::fflas_delete(A);
+				
 				FFLAS::fflas_delete(Ad);
 				// std::cout << std::endl;
 				// std::cout << "====================================" << std::endl;
