@@ -84,13 +84,16 @@
 #endif
 
 #ifndef NDEBUG
+#include <stdexcept>
 #define FFLASFFPACK_check(check) \
 if (!(check)) {\
-throw FFPACK::Failure (__func__, __FILE__, __LINE__, #check); /*BB : should work on non gnu compilers too */ \
+FFPACK::failure()(__func__, __FILE__, __LINE__, #check); \
+throw std::runtime_error(#check); \
 }
 #define FFLASFFPACK_abort(msg) \
 {\
-throw FFPACK::Failure (__func__, __FILE__, __LINE__, msg); /*BB : should work on non gnu compilers too */ \
+FFPACK::failure()(__func__, __FILE__, __LINE__, msg); \
+throw std::runtime_error(msg); \
 }
 #else
 #define FFLASFFPACK_check(check) ((void) 0)
@@ -106,7 +109,7 @@ namespace FFPACK {
 	 * The \c throw mechanism is usually used here as in
 	 \code
 	 if (!check)
-	 throw(Failure(__func__,__LINE__,"this check just failed");
+	 failure()(__func__,__LINE__,"this check just failed");
 	 \endcode
 	 * The parameters of the constructor help debugging.
 	 */
