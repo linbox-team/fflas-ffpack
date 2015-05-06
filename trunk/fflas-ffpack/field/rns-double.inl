@@ -438,7 +438,6 @@ inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, 
 // TODO: less naive implementation
 inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
 	integer hM= (_M-1)/2;
-	std::cout << "hm: " << hM << std::endl;
 	for(size_t i = 0 ; i < m ; ++i){
 		A[i] = 0;
 		integer tmp;
