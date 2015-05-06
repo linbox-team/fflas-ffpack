@@ -605,11 +605,10 @@ namespace FFPACK {
 				 }
 				 std::cout << std::endl;
 
-				
 				// FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasTrans, n, _size, _size, D.one, Gamma, _size, _Mi_modp_rns.data(), _size, D.zero, A, _size);
 				// Mul by Mi_modp
 				for(size_t k = 0 ; k < _size ; ++k){
-					Ad[k] = FFLAS::fdot(Fields[k], _size, Gamma, 1, _Mi_modp_rns.data()+k, _size);
+					Ad[k] = FFLAS::fdot(Fields[k], _size, Gamma, 1, _Mi_modp_rns.data()+k*_size, 1);
 				}
 				 std::cout << "_Mi_modp_rns: " << std::endl;
 				 std::cout << "[";
@@ -621,12 +620,11 @@ namespace FFPACK {
 				 	std::cout << _Mi_modp_rns[j*_size+_size-1] << "],";
 				 }
 				 std::cout << "]" << std::endl;
-				 std::cout << std::endl;
 				 std::cout << "Ad: " << std::endl;
 				 for(size_t j = 0 ; j < _size ; ++j){
 				 	std::cout << Ad[j] << " ";
 				 }
-				  std::cout << std::endl;
+				 std::cout << std::endl;
 				 std::cout << "_iM_modp_rns: " << std::endl;
 				 std::cout << "[";
 				 for(size_t j = 0 ; j < _size ; ++j){
@@ -636,6 +634,7 @@ namespace FFPACK {
 				 	}
 				 	std::cout << _iM_modp_rns[j*_size+_size-1] << "],";
 				 }
+				 std::cout << std::endl;
 				
 				// compute alpha
 				// FFLAS::fgemv(D,FFLAS::FflasNoTrans, n, _size, D.one, Gamma, _size, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
@@ -643,7 +642,7 @@ namespace FFPACK {
 				for(size_t k = 0 ; k < _size ; ++k){
 					alpha += Gamma[k]*_rns->_invbasis[k];
 				}
-
+				std::cout << "alpha: " << alpha << std::endl;
 				// -= alpha
 				// long aa= (int64_t)alpha;
                                 long aa= (long)rint(alpha);
@@ -656,8 +655,8 @@ namespace FFPACK {
 				FFLAS::fflas_delete(Gamma);
 				
 				FFLAS::fflas_delete(Ad);
-				// std::cout << std::endl;
-				// std::cout << "====================================" << std::endl;
+				 std::cout << std::endl;
+				 std::cout << "====================================" << std::endl;
 			}
 			//*/
 			// std::cout << std::endl;
