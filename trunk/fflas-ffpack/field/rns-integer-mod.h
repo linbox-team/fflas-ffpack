@@ -97,7 +97,7 @@ namespace FFPACK {
 			integer iM=0;
 			size_t mysize=myrns._size;
 			integer sum=0;
-			std::cout << "M: " << myrns._M << std::endl;
+			//std::cout << "M: " << myrns._M << std::endl;
 			for (size_t i=0;i<mysize;i++){
 				integer Mi = myrns._Mi[i] % _p;
 				for (size_t j=0;j<mysize;j++){
