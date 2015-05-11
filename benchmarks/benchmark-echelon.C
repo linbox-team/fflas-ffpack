@@ -122,7 +122,7 @@ typename Field::Element* M_randgen(const Field& F, typename Field::Element* L,ty
 
 	const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
 	typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
-	PAR_INSTR{
+	PAR_BLOCK{
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 				m,n,r, alpha, L,r, U,
 		      lda,beta,A,lda,pWH);
@@ -165,7 +165,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
               	F.assign( *(L + i*R+j), *(A+i*n+j));
               );
 	
-	PAR_INSTR{
+	PAR_BLOCK{
 #pragma omp task shared(F, P, L)
 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 #pragma omp task shared(F, Q, U)

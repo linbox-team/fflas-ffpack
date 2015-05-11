@@ -259,7 +259,7 @@ int main(int argc, char** argv)
 
 
 	    clock_gettime(CLOCK_REALTIME, &t0);
-	    PAR_INSTR{
+	    PAR_BLOCK{
             R = pPLUQ(F, diag, (size_t)m, (size_t)n, A, (size_t)n, P, Q, NUM_THREADS);// Parallel PLUQ
 	    }
 	    clock_gettime(CLOCK_REALTIME, &t1);
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
     avrg = t_total/nbf;
     std::cerr << "MODULO: " << (MODULO?p:0) << std::endl;
 
-    PAR_INSTR{
+    PAR_BLOCK{
         std::cerr<<"Parallel --- m: "<<m<<" , n: " << n << " , r: " <<R<<" "
                  <<avrg<<" "<<(2.0*n*n*n)/(double(3.0*(1000000000)*avrg))<<" "
                 //#ifdef  __FFLASFFPACK_USE_OPENMP

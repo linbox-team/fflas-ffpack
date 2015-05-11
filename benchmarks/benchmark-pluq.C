@@ -97,7 +97,7 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	typename Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
-	PAR_INSTR{
+	PAR_BLOCK{
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel());
 	}
 	FFLAS::fflas_delete(L);
@@ -105,8 +105,9 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	
 }
 
-typedef Givaro::ModularBalanced<double> Field;
-//typedef Givaro::UnparametricRing<double> Field;
+//typedef Givaro::ModularBalanced<double> Field;
+typedef Givaro::UnparametricRing<double> Field;
+//typedef Givaro::UnparametricZRing<double> Field;
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
@@ -145,7 +146,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 			  F.assign( *(L + i*R+j), *(A+i*n+j));
 		  );
 	
-	PAR_INSTR{
+	PAR_BLOCK{
 		SYNCH_GROUP(MAX_THREADS,
 		
 		//#pragma omp task shared(F, P, L)
@@ -335,7 +336,7 @@ int main(int argc, char** argv) {
 	       if (i) chrono.start();
 	       if (par){
 		       
-		       PAR_INSTR{
+		       PAR_BLOCK{
 			       R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
 		       }
 	       }

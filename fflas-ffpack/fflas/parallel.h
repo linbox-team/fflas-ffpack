@@ -92,7 +92,7 @@
 #define WAIT
 #define CHECK_DEPENDENCIES
 #define BARRIER
-#define PAR_INSTR
+#define PAR_BLOCK
 
 #define PARFOR1D(iter,debut,  m, Helper, I) \
     for(decltype(iter) iter=debut; iter<m+debut; ++iter) \
@@ -144,7 +144,7 @@
 // parallel for 1D, overloaded macro
 #define PF1D_5(iter,debut,  m, Helper, Args...)                                \
    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);               \
-       PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks())) \
+     PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks()) schedule(runtime)) \
            for(iter=debut; iter<m+debut; ++iter)                      \
            { Args; } }
 
@@ -170,7 +170,7 @@
         {Args;} }
 
 // parallel region
-#define PAR_INSTR  PRAGMA_OMP_TASK_IMPL(omp parallel)        \
+#define PAR_BLOCK  PRAGMA_OMP_TASK_IMPL(omp parallel)        \
     PRAGMA_OMP_TASK_IMPL(omp single)
 // get number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
@@ -244,7 +244,7 @@
     ka::Sync();					\
   }while(0)
 
-#define PAR_INSTR
+#define PAR_BLOCK
 #define PARFOR1D for
 
 // Number of threads
@@ -322,7 +322,7 @@
 #define WAIT g.wait()
 #define CHECK_DEPENDENCIES g.wait()
 #define BARRIER
-#define PAR_INSTR 
+#define PAR_BLOCK 
 
 #define NUM_THREADS tbb::task_scheduler_init::default_num_threads()
 #define MAX_THREADS tbb::task_scheduler_init::default_num_threads()

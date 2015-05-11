@@ -45,7 +45,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
   meth = FFLAS::ROW_FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
   size_t m = A.m;
-  PAR_INSTR{
+  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FOR1D(it, m, WH.parseq,
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -83,7 +83,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
   meth = FFLAS::ROW_FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
   size_t m = A.m;
-  PAR_INSTR{
+  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FOR1D(it, m, WH.parseq,
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -141,7 +141,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_INSTR{
+    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FOR1D(it, m, WH.parseq,
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -225,7 +225,7 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_INSTR{
+    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FOR1D(it, m, WH.parseq,
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -558,10 +558,10 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
   meth = FFLAS::ROW_FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
   size_t m = A.m;
-  PAR_INSTR{
+  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FOR1D(it, m, WH.parseq,
-		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
 			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -612,10 +612,10 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
   meth = FFLAS::ROW_FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth));
   size_t m = A.m;
-  PAR_INSTR{
+  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FOR1D(it, m, WH.parseq,
-		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
 			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -672,10 +672,10 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_INSTR{
+    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FOR1D(it, m, WH.parseq,
-			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -749,10 +749,10 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_INSTR{
+    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FOR1D(it, m, WH.parseq,
-			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -824,10 +824,10 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_INSTR{
+    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FOR1D(it, m, WH.parseq,
-			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -901,10 +901,10 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_INSTR{
+    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FOR1D(it, m, WH.parseq,
-			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
