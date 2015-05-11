@@ -26,6 +26,7 @@
  *.
  */
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
 
 #include <iomanip>

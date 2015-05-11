@@ -29,6 +29,7 @@
 
 // #define SIMD_INT
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <typeinfo>
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
