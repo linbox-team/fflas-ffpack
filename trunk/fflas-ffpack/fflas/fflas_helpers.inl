@@ -34,7 +34,7 @@
 #define __FFLASFFPACK_fflas_fflas_mmhelper_INL
 
 #include "fflas-ffpack/field/field-traits.h"
-#include "parallel.h"
+#include "fflas-ffpack/PALADIn/parallel.h"
 #include "fflas-ffpack/utils/flimits.h"
 
 #include <algorithm> // std::max
