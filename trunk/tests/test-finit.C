@@ -185,11 +185,11 @@ int main(int ac, char **av) {
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F((int32_t)p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
