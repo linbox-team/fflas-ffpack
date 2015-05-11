@@ -309,7 +309,7 @@ int main(int ac, char **av) {
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F( int32_t(p) ) ;
+			Givaro::Modular<int32_t> F( (int32_t)p ) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
