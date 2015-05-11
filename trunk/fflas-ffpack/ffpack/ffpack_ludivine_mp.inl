@@ -71,7 +71,7 @@ namespace FFPACK {
 	
 		// construct rns basis
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
-		size_t n_pr =ceil(double(maxC.bitsize())/prime_bitsize);				
+		size_t n_pr =size_t(ceil(double(maxC.bitsize())/double(prime_bitsize)));				
 		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
 		
 
