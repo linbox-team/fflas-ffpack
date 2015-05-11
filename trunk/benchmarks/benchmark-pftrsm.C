@@ -32,7 +32,7 @@
 
 #include "tests/test-utils.h"
 
-#define __FFLASFFPACK_USE_DATAFLOW
+//#define __FFLASFFPACK_USE_DATAFLOW
 
 using namespace std;
 
@@ -42,7 +42,7 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
 	BS=std::max(BS, (size_t) __FFLASFFPACK_WINOTHRESHOLD_BAL );
-	PAR_INSTR{
+	PAR_BLOCK{
 	for(size_t p=0; p<m; p+=BS) ///row
 		for(size_t pp=0; pp<n; pp+=BS) //column
 		{
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
 				FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 				m,n, F.one, A, m, B, n);
 	  else{
-	  PAR_INSTR{
+	  PAR_BLOCK{
 	      switch (p) {
 		  case 1: {
 			  FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,

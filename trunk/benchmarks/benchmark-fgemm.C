@@ -56,8 +56,8 @@ template<class Element>
 void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-	BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
-	PAR_INSTR{
+	BS=std::max(BS, (size_t)__FFLASFFPACK_WINOTHRESHOLD_BAL );
+	PAR_BLOCK{
 	for(size_t p=0; p<m; p+=BS) ///row
 		for(size_t pp=0; pp<n; pp+=BS) //column
 		{
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
 			      FFLAS::ParSeqHelper::Parallel> 
 		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth));	
 	      if (i) chrono.start();
-	      PAR_INSTR{
+	      PAR_BLOCK{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 	      }
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
 			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
 		      //		      cout<<"wino parallel"<<endl;
 		      if (i) chrono.start();
-		      PAR_INSTR
+		      PAR_BLOCK
 		      {
 			      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 		      }

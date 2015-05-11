@@ -261,7 +261,7 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
 	
-	PAR_INSTR{
+	PAR_BLOCK{
 		SYNCH_GROUP(MAX_THREADS,
 		
 						//#pragma omp task shared(F, P, L)
