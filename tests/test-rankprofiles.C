@@ -30,13 +30,13 @@
 //          Test for the computations of rank profiles
 //--------------------------------------------------------------------------
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/args-parser.h"
+
 #include <iostream>
 #include <iomanip>
 #include <givaro/modular.h>
-
-#include "test-utils.h"
-#include "fflas-ffpack/ffpack/ffpack.h"
-#include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
 #include "Matio.h"
