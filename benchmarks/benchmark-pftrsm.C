@@ -37,7 +37,7 @@
 
 using namespace std;
 
-#ifdef __FFLASFFPACK_USE_DATAFLOW
+//#ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
 void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
@@ -73,7 +73,7 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 	//  }
 
 }
-#endif // __FFLASFFPACK_USE_DATAFLOW
+//#endif // __FFLASFFPACK_USE_DATAFLOW
 
 int main(int argc, char** argv) {
 
