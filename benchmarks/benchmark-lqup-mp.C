@@ -27,7 +27,6 @@
  * ========LICENCE========
  *.
  */
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -77,8 +76,8 @@ int main(int argc, char** argv){
 		size_t * P = FFLAS::fflas_new<size_t>(n) ; 
 		size_t * Q = FFLAS::fflas_new<size_t>(m) ;
 	
-		for (size_t ii=0;ii<m*lda;++ii)
-			Rand.random(A[ii]);			
+		for (size_t i=0;i<m*lda;++i)
+			Rand.random(A[i]);			
 	
 		Givaro::Integer alpha;
 		alpha=1;	

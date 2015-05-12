@@ -337,7 +337,6 @@ fflas-ffpack/fflas/fflas_simd/Makefile
 fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
-fflas-ffpack/PALADIn/Makefile
 doc/Makefile
 tests/Makefile
 tests/data/Makefile

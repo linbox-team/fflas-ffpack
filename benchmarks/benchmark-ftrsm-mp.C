@@ -27,7 +27,6 @@
  * ========LICENCE========
  *.
  */
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -77,10 +76,10 @@ int main(int argc, char** argv){
 		A= FFLAS::fflas_new(F,m,lda);
 		B= FFLAS::fflas_new(F,m,ldb);
 	
-		for (size_t ii=0;ii<m*m;++ii)
-			Rand.random(A[ii]);			
-		for (size_t ii=0;ii<m*n;++ii)
-			Rand.random(B[ii]);				
+		for (size_t i=0;i<m*m;++i)
+			Rand.random(A[i]);			
+		for (size_t i=0;i<m*n;++i)
+			Rand.random(B[i]);				
 	
 		Givaro::Integer alpha;
 		alpha=1;

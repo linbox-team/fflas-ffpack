@@ -37,7 +37,6 @@
 //-------------------------------------------------------------------------
 //#define DEBUG 0
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <list>
 #include <vector>

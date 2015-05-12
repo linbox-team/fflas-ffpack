@@ -41,7 +41,7 @@ namespace FFLAS {
 	      typename Field::Element_ptr A, const size_t lda)
 	{
 		MMHelper<Field, MMHelperAlgo::Classic> H(F,0);
- 		fger (F, M, N, alpha, x, incx, y, incy, A, lda, H);
+		fger (F, M, N, alpha, x, incx, y, incy, A, lda, H);
 		freduce (F, M, N, A, lda);
 	}
 } //FFLAS
@@ -284,7 +284,7 @@ namespace FFLAS{
             if (F.isMOne( alpha)) alphadf = -F.one;
             else alphadf = F.one;
             
-            fger (H.delayedField, M, N, alphadf, (DFCElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
+            fger (H.delayedField, M, N, alphadf, (DFElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
             
         } else {
             Element_ptr sY  = FFLAS::fflas_new<Element> (N);

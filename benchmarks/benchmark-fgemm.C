@@ -33,7 +33,6 @@
 //#define CLASSIC_SEQ
 //#define WINO_SEQ
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular-balanced.h>
 

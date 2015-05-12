@@ -21,7 +21,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
