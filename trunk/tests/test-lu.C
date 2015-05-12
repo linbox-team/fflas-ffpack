@@ -34,7 +34,6 @@
 
 
 #define __LUDIVINE_CUTOFF 1
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
 #include <iostream>
 #include <iomanip>
@@ -1044,9 +1043,9 @@ int main(int argc, char** argv)
 	cerr<<setprecision(20);
 	static Givaro::Integer q=-1;
 	static size_t b=0;
-	static size_t m=10;
-	static size_t n=10;
-	static size_t r=8;
+	static size_t m=100;
+	static size_t n=100;
+	static size_t r=85;
 	static size_t iters=2;
 	static bool loop=false;
 	static Argument as[] = {

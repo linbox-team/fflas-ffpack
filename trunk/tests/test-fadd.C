@@ -29,13 +29,13 @@
 
 // #define SIMD_INT
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <typeinfo>
 #include <givaro/modular-balanced.h>
 #include <givaro/unparametric.h>
 
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "Matio.h"
@@ -309,11 +309,11 @@ int main(int ac, char **av) {
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F( (int32_t)p ) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
-			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_fadd(F,m,k,n,timing);
 		}
 		{
@@ -361,11 +361,11 @@ int main(int ac, char **av) {
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F((int32_t)p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
-			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_faddin(F,m,k,n,timing);
 		}
 		{
@@ -413,11 +413,11 @@ int main(int ac, char **av) {
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F((int32_t)p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
-			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_fsub(F,m,k,n,timing);
 		}
 		{
@@ -465,11 +465,11 @@ int main(int ac, char **av) {
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F((int32_t)p) ;
+			Givaro::Modular<int32_t> F(p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{
-			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
+			Givaro::ModularBalanced<int32_t> F((int)p) ;
 			pass &= test_fsubin(F,m,k,n,timing);
 		}
 		{

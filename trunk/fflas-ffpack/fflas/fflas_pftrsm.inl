@@ -33,7 +33,7 @@
 
 #define PTRSM_HYBRID_THRESHOLD 256
 
-#include "fflas-ffpack/PALADIn/parallel.h"
+#include "fflas-ffpack/fflas/parallel.h"
 
 namespace FFLAS {
 

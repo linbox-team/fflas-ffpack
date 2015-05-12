@@ -46,7 +46,6 @@
 
 #define TIME 1
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
 #include <givaro/modular.h>

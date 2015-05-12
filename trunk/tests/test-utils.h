@@ -35,7 +35,6 @@
 #ifndef __FFLASFFPACK_tests_test_utils_H
 #define __FFLASFFPACK_tests_test_utils_H
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
 #include "fflas-ffpack/ffpack/ffpack.h"

@@ -34,7 +34,6 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
 #include <givaro/modular-balanced.h>

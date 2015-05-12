@@ -31,7 +31,6 @@
 //--------------------------------------------------------------------------
 
 //#define __LUDIVINE_CUTOFF 1
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <iomanip>
 #include <givaro/modular-balanced.h>

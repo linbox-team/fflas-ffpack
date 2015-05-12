@@ -42,12 +42,12 @@
 #endif
 
 
-#include "fflas-ffpack/PALADIn/blockcuts.inl"
-#include "fflas-ffpack/PALADIn/parallel.h"
+#include "fflas_blockcuts.inl"
+#include "parallel.h"
 #include "fflas-ffpack/utils/timer.h"
 
 
-#include "fflas-ffpack/PALADIn/pfgemm_variants.inl"
+#include "fflas_pfgemm_variants.inl"
 
 namespace FFLAS {
 

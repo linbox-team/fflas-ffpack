@@ -33,8 +33,6 @@
 #ifndef __FFLASFFPACK_fflas_fflas_sparse_read_sparse_H
 #define __FFLASFFPACK_fflas_fflas_sparse_read_sparse_H
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
-
 // #include <sstream>
 // #include <iostream>
 #include <fstream> /*  getline */
