@@ -30,13 +30,13 @@
 //          Test for the computations of rank profiles
 //--------------------------------------------------------------------------
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/args-parser.h"
+
 #include <iostream>
 #include <iomanip>
 #include <givaro/modular.h>
-
-#include "test-utils.h"
-#include "fflas-ffpack/ffpack/ffpack.h"
-#include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
 #include "Matio.h"
@@ -109,8 +109,8 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 				size_t* CRP = FFLAS::fflas_new<size_t>(r);
 				
 				LeadingSubmatrixRankProfiles (m,n,r,mm,nn,P,Q,RRP,CRP);
-				for (size_t i=0; i<rr; i++)
-					ok &= (RP1[i] == CRP[i]) && (RP2[i] == RRP[i]);
+				for (size_t ii=0; ii<rr; ii++)
+					ok &= (RP1[ii] == CRP[ii]) && (RP2[ii] == RRP[ii]);
 				
 				FFLAS::fflas_delete(CRP);
 				FFLAS::fflas_delete(RRP);

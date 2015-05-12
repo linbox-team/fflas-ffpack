@@ -30,6 +30,7 @@
 
 
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <vector>
 #include <string>
