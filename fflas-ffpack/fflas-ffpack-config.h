@@ -47,14 +47,19 @@
 #define __FFLASFFPACK_USE_SIMD // see configure...
 #endif
 
+#ifndef GCC_VERSION
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#endif
+
 #ifdef __CYGWIN__
-#  define _GLIBCXX_USE_C99
-#  ifndef _GLIBCXX_USE_C99_MATH_TR1
-#    include <math.h>
-#    undef fma
-#    include <stdlib.h>
-#    undef strtoull
-#    undef strtoll
+#  if GCC_VERSION < 40902
+#    define _GLIBCXX_USE_C99 
+#    ifndef _GLIBCXX_USE_C99_MATH_TR1
+#      include <math.h>
+#      undef fma
+#      include <stdlib.h>
+#      undef strtoull
+#      undef strtoll
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -66,6 +71,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   long long stoll( const std::string& str) { return std::strtoll(str.c_str(), 0, 10); }
 
 }
+#    endif
+#  else 
+#    define _GLIBCXX_USE_C99 true
+#    include <cstdlib>
 #  endif
 #endif
 

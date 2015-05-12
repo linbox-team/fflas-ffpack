@@ -28,8 +28,8 @@
  *.
  */
  
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
- 
 #include "fflas-ffpack/fflas-ffpack.h"
 
 /*  #1  */

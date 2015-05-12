@@ -23,6 +23,7 @@
  * ========LICENCE========
  */
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <fstream>
 #include <givaro/modular.h>

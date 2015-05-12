@@ -29,6 +29,7 @@
 
 // #define SIMD_INT
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <typeinfo>
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
@@ -185,11 +186,11 @@ int main(int ac, char **av) {
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::Modular<int32_t> F(p) ;
+			Givaro::Modular<int32_t> F((int32_t)p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::ModularBalanced<int32_t> F((int)p) ;
+			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{

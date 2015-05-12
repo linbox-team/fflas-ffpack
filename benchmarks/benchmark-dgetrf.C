@@ -23,14 +23,16 @@
 * ========LICENCE========
 */
 
+#ifndef __FFLASFFPACK_HAVE_DGETRF
+#define __FFLASFFPACK_HAVE_DGETRF 1
+#endif
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 #include <iostream>
 #include <vector>
 #include <givaro/modular.h>
 
 
-#ifndef __FFLASFFPACK_HAVE_DGETRF
-#define __FFLASFFPACK_HAVE_DGETRF 1
-#endif
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
