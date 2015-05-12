@@ -35,12 +35,6 @@ FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrtri
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
-OMP_BENCH = benchmark-pftrsm
-
-if FFLASFFPACK_HAVE_OMP
-USE_OMP_BENCH = $(OMP_BENCH)
-benchmark_pftrsm_SOURCES = benchmark-pftrsm.C
-endif
 
 if FFLASFFPACK_HAVE_LAPACK
 USE_LAPACK_BENCH = $(LAPA_BENCH)
