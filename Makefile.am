@@ -62,6 +62,7 @@ uninstall-hook:
 	       	"$(includedir)/fflas-ffpack/ffpack"			\
 	       	"$(includedir)/fflas-ffpack/field"			\
 	       	"$(includedir)/fflas-ffpack/utils"			\
+	       	"$(includedir)/fflas-ffpack/paladin"			\
 	       	"$(includedir)/fflas-ffpack/" "$(datarootdir)/" ) ||	\
 	       	true
 
