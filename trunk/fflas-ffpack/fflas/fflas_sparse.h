@@ -35,7 +35,7 @@
 
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
-#include "fflas-ffpack/fflas/parallel.h"
+#include "fflas-ffpack/paladin/parallel.h"
 #include "recint/recint.h" 
 
 #ifndef index_t
@@ -76,7 +76,7 @@
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/fflas/parallel.h"
+#include "fflas-ffpack/paladin/parallel.h"
 
 #ifdef __FFLASFFPACK_USE_SIMD
 #include "fflas-ffpack/fflas/fflas_simd.h"

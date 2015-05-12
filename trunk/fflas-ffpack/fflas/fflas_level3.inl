@@ -336,7 +336,7 @@ namespace FFLAS {
 
 } // FFLAS
 
-#include "parallel.h"
+#include "fflas-ffpack/paladin/parallel.h"
 
 namespace FFLAS {
 

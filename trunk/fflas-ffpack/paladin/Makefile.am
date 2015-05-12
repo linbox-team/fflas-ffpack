@@ -1,7 +1,4 @@
 # Copyright (c) 2011 FFLAS-FFPACK
-# written by BB <bboyer@imag.fr>
-# adapted from LinBox configuration
-#
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
 #
@@ -19,15 +16,16 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # ========LICENCE========
-#/
 
 
-SUBDIRS=fflas ffpack field utils paladin
+pkgincludesubdir=$(pkgincludedir)/PALADIn
 
-EXTRA_DIST=fflas-ffpack.doxy
 
-pkginclude_HEADERS = config-blas.h   \
-		     fflas-ffpack.h  \
-		     config.h \
-		     fflas-ffpack-config.h \
-		     fflas-ffpack-optimise.h
+pkgincludesub_HEADERS= 	\
+	blockcuts.inl  \
+	pfgemm_variants.inl \
+	parallel.h  \
+	kaapi_routines.inl
+
+
+
