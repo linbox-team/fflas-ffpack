@@ -39,12 +39,9 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
 	size_t r;
 	if (LuTag == FFPACK::FfpackSlabRecursive)
 		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
-	else {
+	else
 		r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P);
-		// for (int i=M-1; i-->0;)
-		// 	if ( Qt[i]> (size_t) i )
-		// 		FFLAS::fswap( F, i, A + Qt[i]*lda, 1, A + i*lda, 1 );
-	}
+	
 	if (transform){
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda);
@@ -99,8 +96,8 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 		ftrtrm (F, FFLAS::FflasNonUnit, r, A, lda);
 	} else {
 		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda);
-		FFLAS::fidentity (F, r, r, A, lda);
-		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0,(int) r, A, lda, Qt);
+			//FFLAS::fidentity (F, r, r, A, lda);
+			//applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0,(int) r, A, lda, Qt);
 	}
 	return r;
 }
@@ -121,6 +118,7 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 			if ( Qt[i]> i )
 				FFLAS::fswap (F, i, A + Qt[i], lda, A + i, lda );
 	}
+
 	if (transform){
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
@@ -128,8 +126,8 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 		ftrtrm (F, FFLAS::FflasUnit, r, A, lda);
 	} else {
 		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
-		FFLAS::fidentity (F, r, r, A, lda);
-		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, (int)r, A, lda, Qt);
+			//FFLAS::fidentity (F, r, r, A, lda);
+            //applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, (int)r, A, lda, Qt);
 	}
 	return r;
 }
@@ -574,7 +572,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 	if (Uplo == FFLAS::FflasUpper){  // Extracting a reduced row echelon form
 		FFLAS::fassign(F, R, N-R, A+R, lda, T+R, ldt);
-	
+
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R, 0, MaxPidx, T, ldt, P);
 		
 		if (!OnlyNonZeroVectors)
@@ -610,7 +608,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 template <class Field>
 inline void
 getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
-					   const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
+					   const size_t M, const size_t N, const size_t R, const size_t* P,
 					   typename Field::Element_ptr A, const size_t lda,
 					   const FFPACK_LU_TAG LuTag)
 {
@@ -623,7 +621,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		if (LuTag==FfpackTileRecursive){
 			size_t * LPerm = new size_t[R];
-			PLUQtoEchelonPermutation (N, R, Q, LPerm);
+			PLUQtoEchelonPermutation (N, R, P, LPerm);
 			
 			applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N, 0, R, A, lda, LPerm);
 			
@@ -637,7 +635,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		if (LuTag==FfpackTileRecursive){
 			size_t * LPerm = new size_t[R];
-			PLUQtoEchelonPermutation (M, R, Q, LPerm);
+			PLUQtoEchelonPermutation (M, R, P, LPerm);
 			
 			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, A, lda, LPerm);
 			

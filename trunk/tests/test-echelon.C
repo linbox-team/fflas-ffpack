@@ -291,7 +291,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 		for (size_t j=0; j<R; ++j){
 			size_t i=0;
 			while ((i < n) && F.isZero (U[i+j*n])) i++;
-			if (i==n) // zero row in the first R columns
+			if (i==n) // zero row in the first R rows
 				pass = false;
 			if (i < nextpiv)  // not in echelon form
 				pass = false;
