@@ -530,19 +530,22 @@ namespace FFPACK { /* echelon */
 
 	/** Compute the Column Echelon form of the input matrix in-place.
 	 *
-	 * After the computation A = [ M \ V ] such that AU = C is a column echelon
-	 * decomposition of A, with U = P^T [   V    ] and C = M + Q [ Ir ]
-	 *                                  [ 0 In-r ]               [ 0  ]
+	 * If LuTag == FfpackTileRecursive, then after the computation A = [ M \ V ] 
+	 * such that AU = C is a column echelon decomposition of A, 
+	 * with U = P^T [   V    ] and C = M + Q [ Ir ]
+	 *              [ 0 In-r ]               [ 0  ]
+	 * If LuTag == FfpackTileRecursive then A = [ N \ V ] such that the same holds with M = Q N
+	 *
 	 * Qt = Q^T
-	 * If transform=false, the matrix U is not computed.
+	 * If transform=false, the matrix V is not computed.
 	 * See also test-colechelon for an example of use
 	 * @param F
 	 * @param M
 	 * @param N
 	 * @param A
 	 * @param lda
-	 * @param P
-	 * @param Qt
+	 * @param P the column permutation
+	 * @param Qt the row position of the pivots in the echelon form
 	 * @param transform
 	 */
 	template <class Field>
@@ -554,9 +557,11 @@ namespace FFPACK { /* echelon */
 
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
-	 * After the computation A = [ L \ M ] such that X A = R is a row echelon
-	 * decomposition of A, with X =  [ L  0   ] P  and R = M + [Ir 0] Q^T
-	 *                               [    In-r]
+	 * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ] 
+	 * such that X A = R is a row echelon decomposition of A, 
+	 * with X =  [ L  0   ] P  and R = M + [Ir 0] Q^T
+	 *           [    In-r]
+	 * If LuTag == FfpackTileRecursive then A = [ L \ N ] such that the same holds with M =  N Q^T
 	 * Qt = Q^T
 	 * If transform=false, the matrix L is not computed.
 	 * See also test-rowechelon for an example of use
@@ -565,8 +570,8 @@ namespace FFPACK { /* echelon */
 	 * @param N
 	 * @param A
 	 * @param lda
-	 * @param P
-	 * @param Qt
+	 * @param P the row permutation
+	 * @param Qt the column position of the pivots in the echelon form
 	 * @param transform
 	 */
 	template <class Field>
