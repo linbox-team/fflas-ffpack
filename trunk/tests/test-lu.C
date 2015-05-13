@@ -1044,9 +1044,9 @@ int main(int argc, char** argv)
 	cerr<<setprecision(20);
 	static Givaro::Integer q=-1;
 	static size_t b=0;
-	static size_t m=10;
-	static size_t n=10;
-	static size_t r=8;
+	static size_t m=160;
+	static size_t n=160;
+	static size_t r=100;
 	static size_t iters=2;
 	static bool loop=false;
 	static Argument as[] = {
@@ -1073,7 +1073,7 @@ int main(int argc, char** argv)
 		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m,n,r,iters);		
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/4,n/4,r/4,iters);		
 	} while (loop && ok);
 
 	return !ok;
