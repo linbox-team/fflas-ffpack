@@ -52,9 +52,11 @@ namespace FFLAS { namespace Protected{
 		       typename Field::Element_ptr C, const size_t ldc,
 		       MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H)
 	{
-		FFLASFFPACK_check(lda);
-		FFLASFFPACK_check(ldb);
-		FFLASFFPACK_check(ldc);
+		// CP: lda, ldb, ldc can be zero (if m,n or k is 0) and since  this may have not 
+		// been checked by the caller at this point.
+		// FFLASFFPACK_check(lda);
+		// FFLASFFPACK_check(ldb);
+		// FFLASFFPACK_check(ldc);
 
 		Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement tmp,alphaf, betaf;
@@ -303,11 +305,8 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       const ParSeqHelper::Parallel par)
 	{
-		    // The entry point to fgemm.
-		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
+
 		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
-		    // For the sake of simplicity: only one specialization available with non const A and B.
-		    // However, we guarantee that A and B will never be modified
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
@@ -325,6 +324,12 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc)
 	{
+		if (!m || !n) {return C;}
+		
+		if (!k || F.isZero (alpha)){
+			fscalin(F, m, n, beta, C, ldc);
+		 	return C;
+		}
 		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
 	}
 
