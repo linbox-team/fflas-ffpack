@@ -18,7 +18,7 @@
 # ========LICENCE========
 
 
-pkgincludesubdir=$(pkgincludedir)/PALADIn
+pkgincludesubdir=$(pkgincludedir)/paladin
 
 
 pkgincludesub_HEADERS= 	\
