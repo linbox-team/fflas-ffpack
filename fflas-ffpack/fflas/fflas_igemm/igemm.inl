@@ -98,7 +98,7 @@ namespace FFLAS { namespace Protected {
 			FFLASFFPACK_check(kc <= depth);
 
 			// pack horizontal panel of B into sequential memory (L2 cache)
-			if (tB == CblasNoTrans) {
+			if (tB == FflasNoTrans) {
 				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
 			}
 			else {
@@ -113,7 +113,7 @@ namespace FFLAS { namespace Protected {
 
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
-				if (tA == CblasNoTrans) {
+				if (tA == FflasNoTrans) {
 					FFLAS::details::pack_lhs<_mr,false>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
 				}
 				else {
@@ -155,20 +155,20 @@ namespace FFLAS { namespace Protected {
 			return ;
 		}
 
-		if (TransA == CblasNoTrans) {
-			if (TransB == CblasNoTrans) {
-				igemm_colmajor<CblasNoTrans,CblasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
+		if (TransA == FflasNoTrans) {
+			if (TransB == FflasNoTrans) {
+				igemm_colmajor<FflasNoTrans,FflasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 			else {
-				igemm_colmajor<CblasNoTrans,CblasTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
+				igemm_colmajor<FflasNoTrans,FflasTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 		}
 		else {
-			if (TransB == CblasNoTrans) {
-				igemm_colmajor<CblasTrans,CblasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
+			if (TransB == FflasNoTrans) {
+				igemm_colmajor<FflasTrans,FflasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 			else {
-				igemm_colmajor<CblasTrans,CblasTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
+				igemm_colmajor<FflasTrans,FflasTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
 			}
 		}
 	}
@@ -187,7 +187,7 @@ namespace FFLAS {
 	{
 
 
-		if (Order == CblasColMajor)
+		if (Order == FflasColMajor)
 			Protected::igemm(TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);
 		else
 			Protected::igemm(TransB,TransA,N,M,K,alpha,B,ldb,A,lda,beta,C,ldc);
