@@ -144,6 +144,52 @@ Solve( const Field& F, const size_t M,
 }
 
 template <class Field>
+bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
+                            const size_t M, const size_t N,
+                            typename Field::Element_ptr A, const size_t lda,
+                            typename Field::Element_ptr X, const size_t incX)
+{
+	// Right kernel vector: X s.t. AX == 0
+	if (Side == FFLAS::FflasRight) {
+		size_t* P = FFLAS::fflas_new<size_t>(N);
+		size_t* Qt = FFLAS::fflas_new<size_t>(M);
+
+		size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
+		FFLAS::fflas_delete(Qt);
+
+		if (N == R || R == 0) {
+			FFLAS::fflas_delete(P);
+			return false;
+		}
+
+		// We create t (into X) not null such that U * t == 0, i.e. U1 * t1 == -U2 * t2
+
+        // Random after rank is passed (t2)
+        for (int i = R; i < N; ++i)
+            F.random(*(X + i * incX));
+
+        // Compute -U2 * t2 (into t1 as temporary)
+        FFLAS::fgemv(F, FFLAS::FflasNoTrans, R, N - R,
+                     F.mOne, A + R, lda, X + R * incX, incX, 0u, X, incX);
+
+        // Now get t1 such that U1 * t1 == -U2 * t2
+		FFLAS::ftrsv(F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R,
+                     A, lda, X, incX);
+
+		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0u, (int) R, X, 1u, P);
+
+		FFLAS::fflas_delete(P);
+	}
+
+	// Left kernel vector
+	else {
+	    throw std::runtime_error("RandomNullSpaceVector for Left side not implemented yet.");
+	}
+
+	return true;
+}
+
+template <class Field>
 size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 					   const size_t M, const size_t N,
 					   typename Field::Element_ptr A, const size_t lda,
