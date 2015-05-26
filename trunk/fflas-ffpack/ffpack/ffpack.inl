@@ -144,7 +144,7 @@ Solve( const Field& F, const size_t M,
 }
 
 template <class Field>
-bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
+void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
                             const size_t M, const size_t N,
                             typename Field::Element_ptr A, const size_t lda,
                             typename Field::Element_ptr X, const size_t incX)
@@ -157,9 +157,11 @@ bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
 		FFLAS::fflas_delete(Qt);
 
-		if (N == R || R == 0) {
+        // Nullspace is {0}
+		if (N == R) {
+            FFLAS::fzero(F, N, X, incX);
 			FFLAS::fflas_delete(P);
-			return false;
+            return;
 		}
 
 		// We create t (into X) not null such that U * t == 0, i.e. U1 * t1 == -U2 * t2
@@ -167,6 +169,12 @@ bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
         // Random after rank is passed (t2)
         for (int i = R; i < N; ++i)
             F.random(*(X + i * incX));
+
+        // Nullspace is total, any random vector would do
+		if (R == 0) {
+			FFLAS::fflas_delete(P);
+			return;
+		}
 
         // Compute -U2 * t2 (into t1 as temporary)
         FFLAS::fgemv(F, FFLAS::FflasNoTrans, R, N - R,
@@ -185,8 +193,6 @@ bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 	else {
 	    throw std::runtime_error("RandomNullSpaceVector for Left side not implemented yet.");
 	}
-
-	return true;
 }
 
 template <class Field>
