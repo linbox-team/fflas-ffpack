@@ -530,8 +530,8 @@ namespace FFPACK { /* echelon */
 
 	/** Compute the Column Echelon form of the input matrix in-place.
 	 *
-	 * If LuTag == FfpackTileRecursive, then after the computation A = [ M \ V ] 
-	 * such that AU = C is a column echelon decomposition of A, 
+	 * If LuTag == FfpackTileRecursive, then after the computation A = [ M \ V ]
+	 * such that AU = C is a column echelon decomposition of A,
 	 * with U = P^T [   V    ] and C = M + Q [ Ir ]
 	 *              [ 0 In-r ]               [ 0  ]
 	 * If LuTag == FfpackTileRecursive then A = [ N \ V ] such that the same holds with M = Q N
@@ -557,8 +557,8 @@ namespace FFPACK { /* echelon */
 
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
-	 * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ] 
-	 * such that X A = R is a row echelon decomposition of A, 
+	 * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ]
+	 * such that X A = R is a row echelon decomposition of A,
 	 * with X =  [ L  0   ] P  and R = M + [Ir 0] Q^T
 	 *           [    In-r]
 	 * If LuTag == FfpackTileRecursive then A = [ L \ N ] such that the same holds with M =  N Q^T
@@ -966,7 +966,25 @@ namespace FFPACK { /* Solutions */
 	/* NULLSPACE */
 	/*************/
 
-
+	/**  Computes a vector of the Left/Right nullspace of the matrix A.
+	 *
+	 * @return true on success, false if matrix is inconsistent
+	 *
+	 * @param F The computation domain
+	 * @param Side
+	 * @param M
+	 * @param N
+	 * @param[in,out] A input matrix of dimension M x N, A is modified to its LU version
+	 * @param lda
+	 * @param[out] X output vector
+	 * @param incX
+	 *
+	 */
+	template <class Field>
+	bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
+                                const size_t M, const size_t N,
+                                typename Field::Element_ptr A, const size_t lda,
+                                typename Field::Element_ptr X, const size_t incX);
 
 	/**  Computes a basis of the Left/Right nullspace of the matrix A.
 	 * return the dimension of the nullspace.
@@ -1049,21 +1067,21 @@ namespace FFPACK { /* Solutions */
 	 */
 	void RankProfileFromLU (const size_t* P, const size_t N, const size_t R,
 							size_t* rkprofile, const FFPACK_LU_TAG LuTag);
-	
+
 	/**  @brief Recovers the row and column rank profiles of any leading submatrix from the PLUQ decomposition.
 	 *
 	 * Only works with the PLUQ decomposition
 	 * Assumes that the output vectors containing the rank profiles are already allocated.
-	 * 
+	 *
 	 * @param P the permutation carrying the rank profile information
 	 * @param M the row dimension of the initial matrix
 	 * @param N the column dimension of the initial matrix
-	 * @param R the rank of the initial matrix 
+	 * @param R the rank of the initial matrix
 	 * @param LSm the row dimension of the leading submatrix considered
 	 * @param LSn the column dimension of the leading submatrix considered
 	 * @param P the row permutation of the PLUQ decomposition
 	 * @param Q the column permutation of the PLUQ decomposition
-	 * @param RRP return the row rank profile of the leading 
+	 * @param RRP return the row rank profile of the leading
 	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 * @return the rank of the LSm x LSn leading submatrix
 	 *
