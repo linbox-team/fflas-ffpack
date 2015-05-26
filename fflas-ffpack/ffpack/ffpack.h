@@ -968,8 +968,6 @@ namespace FFPACK { /* Solutions */
 
 	/**  Computes a vector of the Left/Right nullspace of the matrix A.
 	 *
-	 * @return true on success, false if matrix is inconsistent
-	 *
 	 * @param F The computation domain
 	 * @param Side
 	 * @param M
@@ -981,7 +979,7 @@ namespace FFPACK { /* Solutions */
 	 *
 	 */
 	template <class Field>
-	bool RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
+	void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
                                 const size_t M, const size_t N,
                                 typename Field::Element_ptr A, const size_t lda,
                                 typename Field::Element_ptr X, const size_t incX);
