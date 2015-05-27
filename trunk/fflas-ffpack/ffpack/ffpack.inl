@@ -191,7 +191,42 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 
 	// Left kernel vector
 	else {
-	    throw std::runtime_error("RandomNullSpaceVector for Left side not implemented yet.");
+		size_t* P = FFLAS::fflas_new<size_t>(M);
+		size_t* Qt = FFLAS::fflas_new<size_t>(N);
+
+		size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
+		FFLAS::fflas_delete(Qt);
+
+        // Nullspace is {0}
+		if (M == R) {
+            FFLAS::fzero(F, M, X, incX);
+			FFLAS::fflas_delete(P);
+            return;
+		}
+
+		// We create t (into X) not null such that t * L == 0, i.e. t1 * L1 == -t2 * L2
+
+        // Random after rank is passed (t2)
+        for (int i = R; i < M; ++i)
+            F.random(*(X + i * incX));
+
+        // Nullspace is total, any random vector would do
+		if (R == 0) {
+			FFLAS::fflas_delete(P);
+			return;
+		}
+
+        // Compute -t2 * L2 (into t1 as temporary)
+        FFLAS::fgemv(F, FFLAS::FflasTrans, M - R, R,
+                     F.mOne, A + R * lda, lda, X + R * incX, incX, 0u, X, incX);
+
+        // Now get t1 such that t1 * L1 == -t2 * L2
+		FFLAS::ftrsv(F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R,
+                     A, lda, X, incX);
+
+		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0u, (int) R, X, 1u, P);
+
+		FFLAS::fflas_delete(P);
 	}
 }
 
