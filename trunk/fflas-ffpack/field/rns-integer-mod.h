@@ -36,7 +36,6 @@
 
 #include <vector>
 #include <cmath>
-//using namespace std; // NO WAY! A.B. - 2014-12-18
 
 #include <givaro/modular-integer.h>
 #include "recint/recint.h" 
@@ -462,7 +461,6 @@ namespace FFPACK {
 			
 			FFLAS::Timer T;
 			size_t _size= _rns->_size;
-			using namespace RecInt;
 			
 			Givaro::UnparametricRing<BasisElement> D;
 			std::vector<Givaro::ModularExtended<double>> Fields;
