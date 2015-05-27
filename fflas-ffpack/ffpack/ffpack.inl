@@ -184,7 +184,7 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		FFLAS::ftrsv(F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R,
                      A, lda, X, incX);
 
-		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, N, 0u, (int) R, X, 1u, P);
+		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1u, 0u, (int) R, X, 1u, P);
 
 		FFLAS::fflas_delete(P);
 	}
@@ -224,7 +224,7 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		FFLAS::ftrsv(F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R,
                      A, lda, X, incX);
 
-		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0u, (int) R, X, 1u, P);
+		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1u, 0u, (int) R, X, 1u, P);
 
 		FFLAS::fflas_delete(P);
 	}
