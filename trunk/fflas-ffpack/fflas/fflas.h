@@ -35,11 +35,11 @@
 #ifndef __FFLASFFPACK_fflas_H
 #define __FFLASFFPACK_fflas_H
 
-#include <cmath>
-#include <cstring>
-
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
+#include <cmath>
+#include <cstring>
 
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
