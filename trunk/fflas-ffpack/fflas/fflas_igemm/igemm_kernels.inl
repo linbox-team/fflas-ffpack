@@ -574,5 +574,4 @@ namespace FFLAS { namespace details { /*  main */
 } // details
 } // FFLAS
 
-
 #endif // __FFLASFFPACK_fflas_igemm_igemm_kernels_INL

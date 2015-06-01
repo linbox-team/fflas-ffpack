@@ -37,8 +37,9 @@
 #define __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 
 #include "fflas-ffpack/field/field-traits.h"
+#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
-
+#endif
 namespace FFLAS {
 
 	// F is a field supporting delayed reductions
@@ -272,7 +273,7 @@ namespace FFLAS {
 		FFLASFFPACK_check(ldc);
                 H.setOutBounds(k, alpha, beta);
 		
-#if 0// defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 		igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
 #else
 		for (size_t i=0; i<m; i++){
