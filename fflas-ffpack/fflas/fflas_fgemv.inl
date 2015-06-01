@@ -95,10 +95,26 @@ namespace FFLAS {
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
 	{
-		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
-		else
+		else if (F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus())
 			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
+		else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
+			    // Stay over int64_t
+			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
+			HG.recLevel = 0;
+			if (ta == FflasNoTrans)
+				fgemm(F,FflasNoTrans,FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY,HG);
+			else
+				fgemm(F,FflasTrans,FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY,HG);
+			H.Outmin = HG.Outmin;
+			H.Outmax = HG.Outmax;
+			return Y;
+				
+		} else {
+			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
+		}
+		return Y;
 	}
 }// FFLAS
 
@@ -200,11 +216,11 @@ namespace FFLAS{
 			fscalin (F, Ydim, betadivalpha, Y, incY);
 		}
 		if (ta == FflasNoTrans)
-			for (size_t i = 0; i < M; ++i)
-				Y[i*incY] = fdot(F, N, A+i*lda, 1, X, incX);
+			for (size_t i = 0; i < Ydim; ++i)
+				F.assign (Y[i*incY], fdot(F, N, A+i*lda, 1, X, incX));
 		else
-			for (size_t i = 0; i < M; ++i)
-				Y[i*incY] = fdot(F, M, A+i, lda, X, incX);
+			for (size_t i = 0; i < Ydim; ++i)
+				F.assign (Y[i*incY], fdot(F, M, A+i, lda, X, incX));
 		fscalin (F, Ydim, alpha, Y, incY);
 		return Y;
 	}
@@ -229,7 +245,6 @@ namespace FFLAS{
 		DFElt alphadf=alpha, betadf=beta;
 		size_t Ydim = (ta==FflasNoTrans)?M:N;
 		size_t Xdim = (ta==FflasNoTrans)?N:M;
-
 		if (F.isMOne (alpha)) alphadf =  -F.one;
 		else {
 			alphadf = F.one;
@@ -302,7 +317,7 @@ namespace FFLAS{
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
-			if (al*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+			if (std::max(-Hfp.Outmin, Hfp.Outmax) > Hfp.MaxStorableValue/al){
 				freduce (F, Ydim, Y, incY);
 				Hfp.initOut();
 			}
@@ -323,6 +338,26 @@ namespace FFLAS{
 }
 
 namespace FFLAS{
+	inline Givaro::ZRing<int64_t>::Element_ptr
+	fgemv (const Givaro::ZRing<int64_t>& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const int64_t alpha,
+	       const int64_t* A, const size_t lda,
+	       const int64_t* X, const size_t incX,
+	       const int64_t beta,
+	       int64_t* Y, const size_t incY,
+	       MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic> & H)
+	{
+		FFLASFFPACK_check(lda);
+	
+                H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
+		
+		if (ta == FflasNoTrans)
+			igemm_ (FflasRowMajor, ta, FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY);
+		else
+			igemm_ (FflasRowMajor, ta, FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY);
+		return Y;
+	}
 	inline Givaro::DoubleDomain::Element_ptr
 	fgemv (const Givaro::DoubleDomain& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,

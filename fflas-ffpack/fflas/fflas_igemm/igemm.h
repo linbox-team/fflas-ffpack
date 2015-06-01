@@ -65,13 +65,13 @@ namespace FFLAS { namespace Protected {
 
 
 
-	void igemm(const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB
-		   , size_t rows, size_t cols, size_t depth
-		   , const int64_t alpha
-		   , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
-		   , const int64_t beta
-		   , int64_t* C, size_t ldc
-		  ) ;
+	inline void igemm(const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB
+			  , size_t rows, size_t cols, size_t depth
+			  , const int64_t alpha
+			  , const int64_t* A, size_t lda, const int64_t* B, size_t ldb
+			  , const int64_t beta
+			  , int64_t* C, size_t ldc
+			  ) ;
 
 } // Protected
 } // FFLAS

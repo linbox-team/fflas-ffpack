@@ -76,7 +76,7 @@ namespace FFLAS { namespace details { /*  kernels */
 		int64_t *r1 = r0+ldc;
 		int64_t *r2 = r1+ldc;
 		int64_t *r3 = r2+ldc;
-		FFLAS::prefetch(r0+simd::vect_size);
+		prefetch(r0+simd::vect_size);
 		prefetch(r1+simd::vect_size);
 		prefetch(r2+simd::vect_size);
 		prefetch(r3+simd::vect_size);
@@ -478,7 +478,6 @@ namespace FFLAS { namespace details { /*  kernels */
 	{
 		// using simd = Simd<int64_t>;
 		// using vect_t =  typename simd::vect_t;
-
 		size_t k;
 		int64_t *r0 = C+j*ldc+i;
 		for(k=0;k<depth;k++){
@@ -510,10 +509,8 @@ namespace FFLAS { namespace details { /*  main */
 		    int64_t* C, size_t ldc,
 		    int64_t* blockW)
 	{
-
 		using simd = Simd<int64_t>;
 		// using vect_t =  typename simd::vect_t;
-
 		size_t i,j;
 		size_t prows,pcols,pdepth;
 		prows=(rows/_mr)*_mr;
@@ -547,7 +544,7 @@ namespace FFLAS { namespace details { /*  main */
 		}
 		// process the (columns%_nr) remaining columns one by one
 		for (;j<cols;j++){
-			duplicate_vect<simd::vect_size>(blockW, blockB+j*ldb,depth);
+                        duplicate_vect<simd::vect_size>(blockW, blockB+j*ldb,depth);
 			prefetch(blockW);
 			// process rows by pack of _mr
 			for (i=0;i<prows;i+=_mr){

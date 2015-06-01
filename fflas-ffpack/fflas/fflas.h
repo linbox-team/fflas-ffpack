@@ -62,47 +62,11 @@
 
 #include <float.h>
 
-//#define LB_TRTR
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
-namespace FFLAS {
 
-	/// Storage by row or col ?
-	enum FFLAS_ORDER {
-		FflasRowMajor=101, /**< row major */
-		FflasColMajor=102  /**< col major */
-	};
-	// public:
-	/// Is matrix transposed ?
-	enum FFLAS_TRANSPOSE {
-		FflasNoTrans = 111, /**< Matrix is not transposed */
-		FflasTrans   = 112  /**< Matrix is transposed */
-	};
-	/// Is triangular matrix's shape upper ?
-	enum FFLAS_UPLO {
-		FflasUpper = 121, /**< Triangular matrix is Upper triangular (if \f$i>j\f$ then \f$T_{i,j} = 0\f$)*/
-		FflasLower = 122  /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
-	};
+#include "fflas_enum.h"
 
-	/// Is the triangular matrix implicitly unit diagonal ?
-	enum FFLAS_DIAG {
-		FflasNonUnit = 131, /**< Triangular matrix has an explicit arbitrary diagonal */
-		FflasUnit    = 132 /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*/ /**< */
-	};
-
-	/// On what side ?
-	enum FFLAS_SIDE {
-		FflasLeft  = 141,/**< Operator applied on the left */
-		FflasRight = 142 /**< Operator applied on the rigth*/
-	};
-
-	/** \p FFLAS_BASE  determines the type of the element representation for Matrix Mult kernel.  */
-	enum FFLAS_BASE {
-		FflasDouble  = 151,  /**<  to use the double precision BLAS */
-		FflasFloat   = 152,  /**<  to use the single precison BLAS */
-		FflasGeneric = 153   /**< for any other domain, that can not be converted to floating point integers */
-	};
-
-	namespace Protected {
+namespace FFLAS{ namespace Protected {
 
 		template <class X, class Y> class AreEqual {
 		public:

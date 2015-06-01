@@ -34,7 +34,6 @@
 
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
-
 #include "fflas-ffpack/utils/debug.h"
 
 namespace FFLAS { namespace Protected{
@@ -111,7 +110,8 @@ namespace FFLAS{ namespace Protected{
 	{
 		Outmin = Op1min + Op2min;
 		Outmax = Op1max + Op2max;
-		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
+		if (WH.MaxStorableValue - Op1max < Op2max ||
+		    WH.MaxStorableValue + Op1min < -Op2min){
 			// Reducing both Op1 and Op2
 			Op1min = Op2min = WH.FieldMin;
 			Op1max = Op2max = WH.FieldMax;
@@ -140,7 +140,8 @@ namespace FFLAS{ namespace Protected{
 	{
 		Outmin = Op1min - Op2max;
 		Outmax = Op1max - Op2min;
-		if (std::max(-Outmin, Outmax) > WH.MaxStorableValue){
+		if (WH.MaxStorableValue - Op1max < -Op2min || 
+		    WH.MaxStorableValue - Op2max < -Op1min){
 			// Reducing both Op1 and Op2
 			Op1min = Op2min = WH.FieldMin;
 			Op1max = Op2max = WH.FieldMax;
@@ -162,39 +163,36 @@ namespace FFLAS{ namespace Protected{
 		return false;
 	}
 
-
+//Probable bug here due to overflow of int64_t
 	template<class Field, class Element, class AlgoT>
-	inline bool NeedDoublePreAddReduction (Element& Out1min, Element& Out1max,
-					       Element& Out2min, Element& Out2max,
+	inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
 					       Element& Op1min, Element& Op1max,
 					       Element& Op2min, Element& Op2max, Element beta,
 					       MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
 	{
 		// Testing if P5 need to be reduced
-		Out2min = Op1min + std::min(beta*Op2min,beta*Op2max);
-		Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
-		Out1min = Op1min + std::min(beta*Op2min,beta*Op2max);
-		Out1max = Op1max + std::max(beta*Op2min,beta*Op2max);
-		if (std::max(-Out2min, std::max(Out2max, std::max(-Out1min, Out1max))) > WH.MaxStorableValue){
-			Out2min = Op1min + std::min(beta*Op2min,beta*Op2max);
-			Out2max = Op1max + std::max(beta*Op2min,beta*Op2max);
-			Out1min = Op1min + std::min(beta*Op2min,beta*Op2max);
-			Out1max = Op1max + std::max(beta*Op2min,beta*Op2max);
+		Outmin =  std::min(beta*Op2min,beta*Op2max);
+		Outmax =  std::max(beta*Op2min,beta*Op2max);
+		if (Op1max > WH.MaxStorableValue-Outmax || 
+		    -Op1min > WH.MaxStorableValue+Outmin){
+			Outmin += WH.FieldMin;
+			Outmax += WH.FieldMax;
 			return true;
-		} else return false;
+		} else{
+			Outmin += Op1min;
+			Outmax += Op1max;
+			return false;
+		}
 	}
 
 	template<class Field, class Element, class AlgoT, class ModeT>
-	inline bool NeedDoublePreAddReduction (Element& Out1min, Element& Out1max,
-					       Element& Out2min, Element& Out2max,
+	inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
 					       Element& Op1min, Element& Op1max,
 					       Element& Op2min, Element& Op2max, Element beta,
 					       MMHelper<Field, AlgoT, ModeT>& WH)
 	{
-		Out2min = WH.FieldMin;
-		Out2max = WH.FieldMax;
-		Out1min = WH.FieldMin;
-		Out1max = WH.FieldMax;
+		Outmin = WH.FieldMin;
+		Outmax = WH.FieldMax;
 		return false;
 	}
 
@@ -208,7 +206,7 @@ namespace FFLAS{ namespace Protected{
 			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
 			F.convert(al, alpha);
 			if (al < 0) al = -al;
-			if (al*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+			if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
 				freduce (F, N, X, incX);
 				fscalin (F, N, alpha, X, incX);
 			} else {
@@ -229,7 +227,7 @@ namespace FFLAS{ namespace Protected{
 			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
 			F.convert(al, alpha);
 			if (al<0) al = -al;
-			if (al*std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue){
+			if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
 				freduce (F, M, N, A, lda);
 				fscalin (F, M, N, alpha, A, lda);
 			} else {
@@ -256,12 +254,24 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>, ParSeqHelper::Sequential> & H)
 	{
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-		else
+		else if (F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus())
 			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
+			    // Stays over int64_t
+			MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
+			H.Outmin=HG.Outmin;
+			H.Outmax=HG.Outmax;
+			return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
+			
+		} else {
+			    // Fall back case: used 
+			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
+		}
+		return C;
 	}
 }// FFLAS
 
@@ -387,7 +397,6 @@ namespace FFLAS {
 			F.assign (alpha_,alpha);
 			F.assign (beta_,beta);
 		}
-
 		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
 
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);

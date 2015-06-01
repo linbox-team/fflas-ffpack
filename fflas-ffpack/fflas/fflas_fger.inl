@@ -91,10 +91,23 @@ namespace FFLAS{
 	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
 	{
 		if (F.isZero(alpha)) { return ; }
-		if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER){
+			H.initOut();
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
-		else
+		} else if  (F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus()){
+			H.initOut();
 			return Protected::fger_convert<double,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
+		} else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
+			    // Stay over int64_t
+			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
+			HG.recLevel = 0;
+			fgemm(F,FflasTrans,FflasNoTrans,M,N,1,alpha,x,incx,y,incy,F.one,A,lda,HG);
+			H.Outmin = HG.Outmin;
+			H.Outmax = HG.Outmax;
+			return;
+		} else {
+			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
+		}
 	}
 
 

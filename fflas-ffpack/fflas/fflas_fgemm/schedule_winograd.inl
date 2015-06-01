@@ -99,7 +99,6 @@ namespace FFLAS { namespace BLAS3 {
 				ldX2 = cb = nr;
 			}
 
-			    //		std::cout<<"mr: "<<mr<<" nr: "<<nr<<" kr: "<<kr<<" x1rd: "<<x1rd<<std::endl;
 			    // 11 temporary submatrices are required
 			typename Field::Element_ptr X21 = fflas_new (F, kr, nr);
 			typename Field::Element_ptr X11 = fflas_new (F,mr,x1rd);
@@ -358,12 +357,9 @@ namespace FFLAS { namespace BLAS3 {
 				lb = kr;
 				ldX2 = cb = nr;
 			}
-			    //		std::cout<<"mr: "<<mr<<" nr: "<<nr<<" kr: "<<kr<<" x1rd: "<<x1rd<<" ldX1: "<<ldX1<<" ldX2: "<<ldX2<<std::endl;
 			    // Two temporary submatrices are required
 			typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
 
-			// write_field(F,std::cerr<<"A = "<<std::endl,A,2*mr,2*kr,lda);
-			// write_field(F,std::cerr<<"B = "<<std::endl,B,2*kr,2*nr,ldb);
 			    // T3 = B22 - B12 in X2
 			fsub(DF,lb,cb, (DFCEptr) B22,ldb, (DFCEptr) B12,ldb, (DFEptr)X2,ldX2);
 
@@ -377,19 +373,14 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // T1 = B12 - B11 in X2
 			fsub(DF,lb,cb,(DFCEptr)B12,ldb,(DFCEptr)B11,ldb,(DFEptr)X2,ldX2);
-			//std::cerr<<"B12 = "<<*B12<<" B11 = "<<*B11<<std::endl;
-			    // S1 = A21 + A22 in X1
 
+			    // S1 = A21 + A22 in X1
 			fadd(DF,la,ca,(DFCEptr)A21,lda,(DFCEptr)A22,lda,(DFEptr)X1,ldX1);
 
 			    // P5 = alpha . S1*T1 in C22
 			MMH_t H5(F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0, 0);
-			// write_field(F,std::cerr<<"S1 = "<<std::endl,X1,mr,kr,ldX1);
-			// write_field(DF,std::cerr<<"T1 = "<<std::endl,(DFEptr)X2,kr,nr,ldX2);
 			fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
-			// std::cerr<< "prod = "<<(*DFEptr(X2))*(*DFEptr(X1))<<std::endl;
-			// write_field(DF,std::cerr<<"P5 = "<<std::endl,(DFEptr)C22,mr,nr,ldc);
 			    // T2 = B22 - T1 in X2
 			fsub(DF,lb,cb,(DFCEptr)B22,ldb,(DFCEptr)X2,ldX2,(DFEptr)X2,ldX2);
 
@@ -439,7 +430,6 @@ namespace FFLAS { namespace BLAS3 {
 			}
 			faddin(DF,mr,nr,(DFCEptr)C22,ldc,(DFEptr)C12,ldc);
 
-
 			    // U7 = P5 + U3 in C22    and
 			DFElt U7Min, U7Max;
 			    // This test will be optimized out
@@ -448,7 +438,6 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C22, ldc);
 			}
 			faddin(DF,mr,nr,(DFCEptr)C21,ldc,(DFEptr)C22,ldc);
-
 
 			    // U5 = P3 + U4 in C12
 			DFElt U5Min, U5Max;
@@ -492,11 +481,8 @@ namespace FFLAS { namespace BLAS3 {
 
 			fflas_delete (X1);
 
-
-
 			WH.Outmin = std::min (U1Min, std::min (U5Min, std::min (U6Min, U7Min)));
 			WH.Outmax = std::max (U1Max, std::max (U5Max, std::max (U6Max, U7Max)));
-			    //#endif
 
 		} // Winograd
 

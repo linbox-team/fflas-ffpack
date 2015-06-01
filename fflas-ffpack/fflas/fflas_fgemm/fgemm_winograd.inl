@@ -134,7 +134,6 @@ namespace FFLAS { namespace Protected {
 		HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
 		HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
 		HNodd.Cmin = Cmin; HNodd.Cmax = Cmax;
-
 		switch (mkn) {
 		case 1: // n oddsized
 			fgemv (F, ta, ma, na, alpha, A, lda, b12, incb12, beta, C+n-1,ldc, HNodd);
@@ -171,9 +170,8 @@ namespace FFLAS { namespace Protected {
 		case 7: // m, k, n oddsized
 			if (tb == FflasTrans) mb--;
 			else nb--;
-			H.checkA(F, m,k,A,lda);
-			H.checkB(F, k,n,B,ldb);
-			std::cout<<H<<std::endl;
+			H.checkA(F,ta, m,k,A,lda);
+			H.checkB(F,tb, k,n,B,ldb);
 			// Block NW
 			fger (F, m-1, n-1, alpha, a12, inca12, b21, incb21, C, ldc, Hacc);
 			// Block SW
@@ -187,7 +185,6 @@ namespace FFLAS { namespace Protected {
 		}
 		H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
 		H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
-		std::cout<<"La, H = "<<H<<std::endl;
 		H.checkOut(F, m,n, C, ldc);
 	}
 
@@ -277,10 +274,7 @@ namespace FFLAS { namespace Protected {
 			break;
 		}
 		H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
-		    //std::cout<<"Outmax  = "<<HModd.Outmax << " "<<HNodd.Outmax<<" "<<Hacc.Outmax<<std::endl;
 		H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
-		// std::cout<<"ici H = "<<H<<std::endl;
-		// write_field(F, std::cout<<"C = "<<std::endl,C,m,n,ldc);
 		H.checkOut(F, m,n, C, ldc);
 	}
 
@@ -329,8 +323,6 @@ namespace FFLAS { namespace Protected {
 			// bool normal =  (ta == FflasNoTrans && tb == FflasNoTrans) ;
 			bool normal = true;
 
-			// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
-
 			if (kr == nr && kr == mr && normal) {
 				// BLAS3::Winograd_L_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,H);
 				// BLAS3::Winograd_R_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,H);
@@ -345,9 +337,7 @@ namespace FFLAS { namespace Protected {
 		}
 		else {
 #ifdef NEWACCIP /*  test only */
-			// std::cout << (ta==FflasNoTrans) << ',' << (tb==FflasNoTrans) << std::endl;
 			if (kr == nr && kr == mr ) {
-				// std::cout << 'h' << std::endl;
 				BLAS3::WinogradAcc_L_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,H);
 				// BLAS3::WinogradAcc_R_S(F,ta,tb,mr,nr,kr,alpha,Ac,lda,Bc,ldb,beta,C,ldc,H);
 			}
@@ -399,7 +389,6 @@ namespace FFLAS{
 	       MMHelper<Field, MMHelperAlgo::Winograd, ModeT> & H)
 	{
 		if (!m || !n ) return C;
-
 		if (!k){
 			    //TODO: update helper
 			fscalin(F,m,n,beta,C,ldc);

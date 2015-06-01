@@ -34,7 +34,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+#define DEBUG 
 #define TIME 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -310,8 +310,8 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters);
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,iters);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters);
-		//ok &= run_with_field<Modular<int64_t> >(q,b,n,iters);
-		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters);
+		    //ok &= run_with_field<Modular<int64_t> >(q,b,n,iters); // BUG, needs work
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters);
 	} while (loop && ok);
 
 	return !ok ;
