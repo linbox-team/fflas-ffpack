@@ -2282,7 +2282,7 @@ double descrip(int algo, int_v & ok_e, time_v & tim_e, int iters, const char ** 
 
 
 template<class Field>
-void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
+void test(int m, int k, int n, int p, int r, bool with_e, bool with_k, 	int iters = 4)
 {
 
 	typedef typename Field::Element Element;
@@ -2343,8 +2343,6 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k)
 	for (int i = 0 ; i < algos_k ; ++i) {
 		tim_k[i].clear();
 	}
-
-	int iters = 4 ;
 
 	int_v ok_p(algos,0),  ok_e(algos,0), ok_k(algos_k,0);
 	int nb_wd = 0 , nb_wf = 0 ;
@@ -2411,6 +2409,7 @@ int main(int ac, char **av) {
 	bool  kom = false ;
 	int r = 1 ;
 	int seed = (int) time(NULL);
+    int iters = 4;
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",  TYPE_INT , &p },
@@ -2418,6 +2417,7 @@ int main(int ac, char **av) {
 		{ 'm', "-m N", "Set the number of rows in C.",   TYPE_INT , &m },
 		{ 'k', "-k N", "Set the number of rows in B.",   TYPE_INT , &k },
 		{ 'r', "-k N", "Set the recursive number Bini.", TYPE_INT , &r },
+		{ 'i', "-i N", "Set the numebr of iterations.", TYPE_INT , &iters },
 		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
 		{ 'e', "-e " , "epsilon                 .", TYPE_NONE , &eps },
 		{ 'c', "-c " , "compress                .", TYPE_NONE , &kom},
@@ -2435,9 +2435,9 @@ int main(int ac, char **av) {
 	std::cout << "seed: " << seed << std::endl;
 	std::cout << "thre: " << TRE << std::endl;
 	std::cout << "=====================================================" << std::endl;
-	test<Modular<double> > (m,k,n,p,r,eps,kom);
+	test<Modular<double> > (m,k,n,p,r,eps,kom,iters);
 	std::cout << "=====================================================" << std::endl;
-	test<ModularBalanced<double> > (m,k,n,p,r,eps,kom);
+	test<ModularBalanced<double> > (m,k,n,p,r,eps,kom,iters);
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 
 	return 0;
