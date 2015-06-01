@@ -56,7 +56,7 @@ namespace FFLAS { namespace Protected {
 		      typename Field::ConstElement_ptr y, const size_t incy,
 		      typename Field::Element_ptr A, const size_t lda)
 	{
-		Givaro::Modular<FloatElement> G((FloatElement) F.characteristic());
+		Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
 		FloatElement alphaf;
 		F.convert (alphaf, alpha);
 

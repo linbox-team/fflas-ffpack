@@ -222,58 +222,39 @@ bool launch_fger_dispatch(const Field &F,
 	return ok ;
 }
 template <class Field>
-bool run_with_field (int q, unsigned long b, size_t n, size_t iters){
+bool run_with_field (long int q, unsigned long b, size_t n, size_t iters){
 	bool ok = true ;
-	unsigned long p=q;
 	int nbit=(int)iters;
 	while (ok &&  nbit){
 		typedef typename  Field::Element Element ;
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
-		if (q==-1){
-			b = 2 + (rand() % (int)floor(log(Field::getMaxModulus())/log(2.)+1));
-		}
-		Givaro::IntPrimeDom IPD;
-		Givaro::Integer tmp;
-		if (b > 1){
-			    // Choose characteristic as a random prime of b bits
-			do{
-				Givaro::Integer _p;
-				Givaro::Integer::random_exact_2exp(_p,b);//max % (2<<30);
-				IPD.prevprime( tmp, _p+1 );
-				p =  tmp;
-			}while( (p < 2) );
-		}
-		if (p > (unsigned long)Field::getMaxModulus()){
-			IPD.prevprime( tmp, Field::getMaxModulus()+1 );
-			p=tmp;
-		}
-		p = (int)std::max((unsigned long) Field::getMinModulus(),(unsigned long)p);
-		Field F((int)p);
+		
+		Field* F= chooseField<Field>(q,b);
 
 #ifdef DEBUG
-		F.write(std::cout) << std::endl;
+		F->write(std::cout) << std::endl;
 #endif
-
-		Randiter R1(F);
-		FFPACK::NonzeroRandIter<Field,Randiter> R(F,R1);
+		Randiter R1(*F);
+		FFPACK::NonzeroRandIter<Field,Randiter> R(*F,R1);
 
 		    //size_t k = 0 ;
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_fger_dispatch<Field>(F,n,F.one,iters);
+		ok &= launch_fger_dispatch<Field>(*F,n,F->one,iters);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_fger_dispatch<Field>(F,n,F.zero,iters);
+		ok &= launch_fger_dispatch<Field>(*F,n,F->zero,iters);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_fger_dispatch<Field>(F,n,F.mOne,iters);
+		ok &= launch_fger_dispatch<Field>(*F,n,F->mOne,iters);
 		    //std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha ;
 		R.random(alpha);
 
-		ok &= launch_fger_dispatch<Field>(F,n,alpha,iters);
+		ok &= launch_fger_dispatch<Field>(*F,n,alpha,iters);
 
 		    //std::cout<<std::endl;
 		nbit--;
+		delete F;
 	}
 	return ok;
 }
@@ -286,7 +267,7 @@ int main(int argc, char** argv)
 	srand48(time(NULL));
 
 	static size_t iters = 3 ;
-	static int q = -1 ;
+	static long int q = -1 ;
 	static unsigned long b = 0 ;
 	static size_t n = 50 ;
 	static bool loop = false;
