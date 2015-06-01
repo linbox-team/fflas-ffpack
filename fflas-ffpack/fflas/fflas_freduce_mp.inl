@@ -37,7 +37,7 @@ namespace FFLAS {
 	// specialization of the level1 freduce function for the field RNSInteger<rns_double>
 	template<>
 	inline void freduce (const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,
-		      const size_t n, FFPACK::rns_double::Element_ptr A, size_t inc)
+		      const size_t n, FFPACK::RNSIntegerMod<FFPACK::rns_double>::Element_ptr A, size_t inc)
 	{
 		if (n==0) return;
 		//cout<<"freduce: "<<n<<" with "<<inc<<endl;
