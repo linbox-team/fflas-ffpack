@@ -44,10 +44,16 @@
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/modular-extended.h"
-
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
+#include "fflas-ffpack/fflas/fflas_enum.h"
+
+namespace FFPACK {
+
+	template<typename RNS>
+	class RNSIntegerMod;
+};
 #include "fflas-ffpack/fflas/fflas_fscal_mp.inl"
 
 #if defined(BENCH_PERF_FGEMM_MP) || defined(BENCH_PERF_TRSM_MP) || defined(BENCH_PERF_LQUP_MP)

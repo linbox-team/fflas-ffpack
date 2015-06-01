@@ -31,6 +31,8 @@
 #define __FFLASFFPACK_fscal_mp_INL
 
 #include "fflas-ffpack/field/rns-integer.h"
+#include "fflas_fscal.h"
+#include "fflas_fgemm.inl"
 namespace FFLAS {
 
 	/*
@@ -77,6 +79,7 @@ namespace FFLAS {
 }
 
 #include "fflas-ffpack/fflas/fflas_freduce_mp.inl"
+
 namespace FFLAS {
 	/*
 	 *  specialization for the field RNSIntegerMod<rns_double> 
@@ -85,8 +88,8 @@ namespace FFLAS {
 	// level 1 : fscalin
 	template<>
 	inline void fscalin(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t n,
-		     const FFPACK::rns_double::Element alpha,
-		     FFPACK::rns_double::Element_ptr A, const size_t inc) 
+		     const typename FFPACK::RNSIntegerMod<FFPACK::rns_double>::Element alpha,
+		     typename FFPACK::RNSIntegerMod<FFPACK::rns_double>::Element_ptr A, const size_t inc) 
 	{
 		fscalin(F.delayed(),n,alpha,A,inc);
 		freduce (F, n, A, inc);
