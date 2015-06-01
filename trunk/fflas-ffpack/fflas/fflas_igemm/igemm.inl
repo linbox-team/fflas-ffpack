@@ -88,9 +88,6 @@ namespace FFLAS { namespace Protected {
 		blockB = fflas_new<int64_t>(sizeB, (Alignment)simd::alignment);
 		blockW = fflas_new<int64_t>(sizeW, (Alignment)simd::alignment);
 
-
-
-
 		// For each horizontal panel of B, and corresponding vertical panel of A
 		for(size_t k2=0; k2<depth; k2+=kc){
 
@@ -98,14 +95,12 @@ namespace FFLAS { namespace Protected {
 			FFLASFFPACK_check(kc <= depth);
 
 			// pack horizontal panel of B into sequential memory (L2 cache)
-			if (tB == FflasNoTrans) {
+			if (tB == FflasNoTrans)
 				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
-			}
-			else {
+			else
 				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2*ldb, ldb, cols, actual_kc);
-			}
-
-			// For each mc x kc block of the lhs's vertical panel...
+			
+                        // For each mc x kc block of the lhs's vertical panel...
 			for(size_t i2=0; i2<rows; i2+=mc){
 
 				const size_t actual_mc = std::min(i2+mc,rows)-i2;
@@ -113,27 +108,23 @@ namespace FFLAS { namespace Protected {
 
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
-				if (tA == FflasNoTrans) {
+				if (tA == FflasNoTrans)
 					FFLAS::details::pack_lhs<_mr,false>(blockA, A+i2+k2*lda, lda, actual_mc, actual_kc);
-				}
-				else {
+				else
 					FFLAS::details::pack_rhs<_mr,true>(blockA, A+i2*lda+k2, lda, actual_kc, actual_mc);
-				}
+				
 				// call block*panel kernel
 				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
 								  , alpha
-								  , blockA, actual_kc, blockB, actual_kc
+								  , blockA, actual_kc, blockB, kc
 								  , C+i2, ldc
 								  , blockW);
-
-
 			}
 		}
 
 		fflas_delete(blockA);
 		fflas_delete(blockB);
 		fflas_delete(blockW);
-
 	}
 
 	void igemm( const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB,
@@ -149,12 +140,12 @@ namespace FFLAS { namespace Protected {
 		}
 
 		//! @todo use primitive (no Field()) and  specialise for int64.
-		// fscalin(Givaro::UnparametricRing<int64_t>(),rows,cols,beta,C,ldc);
-
+		// CP: fscalin assumes C in row major mode and we are here in col major mode
+                // hence let's transpose the arguments.
+		fscalin(Givaro::ZRing<int64_t>(),cols,rows, beta,C,ldc);
 		if (!depth || alpha == 0) {
 			return ;
 		}
-
 		if (TransA == FflasNoTrans) {
 			if (TransB == FflasNoTrans) {
 				igemm_colmajor<FflasNoTrans,FflasNoTrans>(rows, cols, depth, alpha, A, lda, B, ldb, C, ldc);
@@ -197,3 +188,4 @@ namespace FFLAS {
 } // FFLAS
 
 #endif // __FFLASFFPACK_fflas_igemm_igemm_INL
+

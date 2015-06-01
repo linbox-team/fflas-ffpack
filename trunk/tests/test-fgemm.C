@@ -42,14 +42,13 @@
 
 // #define WINOTHRESHOLD 100
 // #define OLD_DYNAMIC_PEELING
-
-
-#define TIME 1
+//#define DEBUG
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
 #include <givaro/modular.h>
+#include <recint/rint.h>
 #include <givaro/unparametric.h>
 
 #include <givaro/modular-balanced.h>
@@ -127,14 +126,14 @@ bool check_MM(const Field                   & F,
 		}
 	if ( wrong ){
 		size_t ici = 20 ;
-		std::cout<<"FAIL"<<std::endl;
-		std::cout << "a   :" << alpha<<", b   : " << beta << std::endl;
-		std::cout << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
-		std::cout << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
+		std::cerr<<"FAIL"<<std::endl;
+		std::cerr << "a   :" << alpha<<", b   : " << beta << std::endl;
+		std::cerr << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
+		std::cerr << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
 		for (size_t i=0; i<m && ici; ++i){
 			for (size_t j =0; j<n && ici; ++j)
 				if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) ) {
-					std::cout<<"Error C["<<i<<","<<j<<"]="
+					std::cerr<<"Error C["<<i<<","<<j<<"]="
 						 <<(*(C+i*ldc+j))<<" D["<<i<<","<<j<<"]="
 						 <<(*(D+i*n+j))<<std::endl;
 					ici--;
@@ -265,7 +264,7 @@ bool launch_MM_dispatch(const Field &F,
 		m = 1+(size_t)random()%nn;
 		n = 1+(size_t)random()%nn;
 		k = 1+(size_t)random()%nn;
-
+		
 		int logdim = (int)floor(log(std::min(std::min(m,k),n))/log(2.));
 		int nw = std::min (logdim,nbw);
 
@@ -273,11 +272,11 @@ bool launch_MM_dispatch(const Field &F,
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
 #ifdef DEBUG
-		std::cout <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
+		std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
 			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
 			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
 		if (!F.isZero(beta))
-			cout<<" + "<<beta<<" C";
+			cerr<<" + "<<beta<<" C";
 #endif
 		ok &= launch_MM<Field>(F,m,n,k,
 				       alpha,beta,
@@ -286,7 +285,7 @@ bool launch_MM_dispatch(const Field &F,
 				       ldb, tb,
 				       iters,nw, par);
 #ifdef DEBUG
-		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
+		std::cerr<<(ok?" -> ok ":" -> KO")<<std::endl;
 #endif
 	}
 	return ok ;
@@ -316,7 +315,7 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 		if (nbw<0)
 			nbw = (int) random() % 7;			 
 #ifdef DEBUG
-		F->write(std::cout) << std::endl;
+		F->write(std::cerr) << std::endl;
 #endif
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
@@ -326,35 +325,35 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 		//size_t k = 0 ;
 		//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,F->zero,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,F->zero,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,F->zero,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,F->one,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,F->one,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,F->one,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,F->mOne,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,F->mOne,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+		 	//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,F->mOne,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+		 	//std::cout << k << "/24" << std::endl; ++k;
 
-		Element alpha,beta ;
-		R.random(alpha);
+		 Element alpha,beta ;
+		 R.random(alpha);
 		ok &= launch_MM_dispatch<Field>(*F,n,F->one ,alpha,iters,nbw, par);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->zero,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,F->mOne,alpha,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->one ,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->zero,iters,nbw, par);
+		 ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->zero,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
 		ok &= launch_MM_dispatch<Field>(*F,n,alpha,F->mOne,iters,nbw, par);
 		//std::cout << k << "/24" << std::endl; ++k;
@@ -365,7 +364,7 @@ bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size
 			ok &= launch_MM_dispatch<Field>(*F,n,alpha,beta,iters,nbw, par);
 			//std::cout << k << "/24" << std::endl; ++k;
 		}
-		//std::cout<<std::endl;
+			//std::cout<<std::endl;
 		nbit--;
 		if ( !ok )
 			    //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
@@ -412,11 +411,12 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,nbw,iters,p);
+			// ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p); // BUG: needs work
+			// ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,n,nbw,iters, p);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 		
-		//ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p);
-		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
 	} while (loop && ok);
 
 	return !ok ;

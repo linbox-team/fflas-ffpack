@@ -97,15 +97,20 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 
 	    //typename Field::Element tmp;
 	// double tmp;
-	Givaro::Integer tmp;
+//	Givaro::Integer tmp;
+	typename Field::Element tmp;
+	F.init(tmp);
 	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",\n[" ;
 	for (int i = 0; i<n;++i){
 		if (mapleFormat) c << '[';
 		for (int j=0; j<m;++j){
 			if (column_major)
-				F.convert(tmp,*(E+i+id*j));
+				    //F.convert(tmp,*(E+i+id*j));
+				    tmp = *(E+i+id*j);
+				
 			else
-				F.convert(tmp,*(E+j+id*i));
+//				F.convert(tmp,*(E+j+id*i));
+				tmp =*(E+j+id*i);
 			c << tmp;
 			if (mapleFormat && j<m-1) c << ',';
 			c << ' ';
@@ -118,7 +123,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 	return c ;
 }
 
-std::ostream& write_perm (std::ostream& c, const size_t* P, size_t N){
+inline std::ostream& write_perm (std::ostream& c, const size_t* P, size_t N){
 	c<<"[ ";
 	for (size_t i=0; i<N; ++i)
 		c<<P[i]<<" ";

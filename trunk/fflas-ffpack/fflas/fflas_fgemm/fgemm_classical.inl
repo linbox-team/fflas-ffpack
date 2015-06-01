@@ -37,6 +37,7 @@
 #define __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 
 #include "fflas-ffpack/field/field-traits.h"
+#include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 
 namespace FFLAS {
 
@@ -77,8 +78,9 @@ namespace FFLAS {
 		if (F.isMOne(betadf)) betadf = -F.one;
 
 		size_t kmax = H.MaxDelayedDim (betadf);
-
-		if (kmax <=  k/2 ){
+		H.checkA(F,ta, m,k,A,lda);
+		H.checkB(F,tb, k,n,B,ldb);
+		if (kmax <=  k/2 || H.Aunfit() || H.Bunfit() ){
                         // Might as well reduce inputs
                         if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
 				H.initA();
@@ -116,7 +118,6 @@ namespace FFLAS {
 
 		typedef MMHelper<typename HelperType::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultTag> DelayedHelper_t;
 		DelayedHelper_t Hfp(H);
-//		write_field(H.delayedField,std::cout<<"classical fgemm"<<std::endl,(DFCElt_ptr)B, k,n,ldb);
 		typedef typename HelperType::DelayedField::Element DFElt;
 		typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
 		typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
@@ -138,7 +139,7 @@ namespace FFLAS {
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
-			if (al*std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue){
+			if (std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue/al){
 				freduce (F, m, n, C, ldc);
 				Hfp.initOut();
 			}
@@ -156,6 +157,7 @@ namespace FFLAS {
 			H.Outmin = Hfp.Outmin;
 			H.Outmax = Hfp.Outmax;
 		}
+		H.checkOut(F,m,n,C,ldc);
 	}
 } // FFLAS
 
@@ -176,7 +178,7 @@ namespace FFLAS {
 			   MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
                 // Standard algorithm is performed over the Field, without conversion
-                if (F.isZero (beta))
+		if (F.isZero (beta))
                         fzero (F, m, n, C, ldc);
 		else {
 			typename Field::Element betadivalpha;
@@ -210,10 +212,6 @@ namespace FFLAS {
 							F.axpyin (*(C+i*ldc+j), *(A+l*lda+i), *(B+j*ldb+l));
 		fscalin(F,m,n,alpha,C,ldc);
 		H.setOutBounds(k,alpha,beta);
-		// write_field(F,std::cerr<<"classical \n A = "<<std::endl,A,m,k,lda);
-		// write_field(F,std::cerr<<"B = "<<std::endl,B,k,n,ldb);
-		// write_field(F,std::cerr<<"C = "<<std::endl,C,m,n,ldc);
-
         }
 
 	inline void fgemm (const Givaro::DoubleDomain& F,
@@ -256,6 +254,25 @@ namespace FFLAS {
 		cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 			     (int)m, (int)n, (int)k, (Givaro::FloatDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (Givaro::FloatDomain::Element) beta,Cd, (int)ldc);
+	}
+
+	inline void fgemm (const Givaro::ZRing<int64_t>& F,
+			   const FFLAS_TRANSPOSE ta,
+			   const FFLAS_TRANSPOSE tb,
+			   const size_t m, const size_t n,const size_t k,
+			   const int64_t alpha,
+			   const int64_t * Ad, const size_t lda,
+			   const int64_t * Bd, const size_t ldb,
+			   const int64_t beta,
+			   int64_t * Cd, const size_t ldc,
+			   MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic> & H)
+	{
+		FFLASFFPACK_check(lda);
+		FFLASFFPACK_check(ldb);
+		FFLASFFPACK_check(ldc);
+                H.setOutBounds(k, alpha, beta);
+		
+		igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
 	}
 } // FFLAS
 

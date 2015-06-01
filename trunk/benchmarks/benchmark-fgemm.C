@@ -32,7 +32,8 @@
 //#define PFGEMM_WINO_SEQ 32
 //#define CLASSIC_SEQ
 //#define WINO_SEQ
-
+#define DEBUG 1
+#undef NDEBUG
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular-balanced.h>
@@ -98,7 +99,7 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
-	int q = 131071 ;
+	long int q = 131071 ;
 	size_t m = 2000 ;
 	size_t k = 2000 ;
 	size_t n = 2000 ;
@@ -123,7 +124,8 @@ int main(int argc, char** argv) {
 	FFLAS::parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-  typedef Givaro::ModularBalanced<double> Field;
+//  typedef Givaro::ModularBalanced<double> Field;
+  typedef Givaro::ModularBalanced<int64_t> Field;
 //  typedef Givaro::ModularBalanced<float> Field;
   typedef Field::Element Element;
 

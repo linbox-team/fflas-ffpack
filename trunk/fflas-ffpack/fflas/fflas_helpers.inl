@@ -52,7 +52,12 @@ namespace FFLAS{ namespace Protected{
 
 namespace FFLAS {
 
-
+	namespace Protected{
+		template <class T>
+		inline bool unfit(T x){return false;}
+		template <>
+		inline bool unfit(int64_t x){return (x>limits<int32_t>::max());}
+	};
 
 	enum CuttingStrategy {
         SINGLE			,
@@ -136,11 +141,14 @@ namespace FFLAS {
 			DFElt absbeta;
 			delayedField.init(absbeta,beta);
 			if (beta < 0) absbeta = -beta;
-			
+			    //std::cout<<"In MaxDelayedDim: beta = "<<beta<<" absbeta = "<<absbeta<<std::endl;
 			DFElt diff = MaxStorableValue - absbeta * std::max(-Cmin, Cmax);
-			return static_cast<size_t>((diff < 0.0)? DFElt(0u) : diff / (std::max (-Amin, Amax) * std::max (-Bmin, Bmax)));
+			DFElt AB = std::max (-Amin, Amax) * std::max (-Bmin, Bmax);
+			    //std::cout<<"diff = "<<diff<<" AB = "<<AB<<" Helper = "<<std::endl<<*this<<std::endl;
+			return static_cast<size_t>(((diff < DFElt(0u))||(AB<DFElt(0u)))? DFElt(0u) : diff / AB);
 		}
-
+		bool Aunfit(){ return Protected::unfit(std::max(-Amin,Amax));}
+		bool Bunfit(){ return Protected::unfit(std::max(-Bmin,Bmax));}
 		void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
 		{
 			if (beta<0){
@@ -159,30 +167,34 @@ namespace FFLAS {
 			}
 		}
 
-		bool checkA(const Field& F, const size_t M, const size_t N,
+		bool checkA(const Field& F, const FFLAS::FFLAS_TRANSPOSE ta, const size_t M, const size_t N,
 			    typename Field::ConstElement_ptr A, const size_t lda )
 		{
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
-				for (size_t j=0; j<N;++j)
-					if ((A[i*lda+j]>Amax) || (A[i*lda+j]<Amin)){
-						std::cerr<<"Error in "<<i<<j<<std::endl;
+				for (size_t j=0; j<N;++j){
+					const typename Field::Element x = (ta == FFLAS::FflasNoTrans)? A[i*lda+j] : A[i+j*lda];
+					if (x > Amax || x < Amin){
+						std::cerr<<"Error in "<<Amin<<" < = A["<<i<<", "<<j<<"] ="<<x<<" <= "<<Amax<<std::endl;
 						return false;
 					}
+				}
 #endif
 			return true;
 		}
 
-		bool checkB(const Field& F, const size_t M, const size_t N,
-			    typename Field::ConstElement_ptr A, const size_t lda )
+		bool checkB(const Field& F, const FFLAS::FFLAS_TRANSPOSE tb, const size_t M, const size_t N,
+			    typename Field::ConstElement_ptr B, const size_t ldb)
 		{
 #ifdef DEBUG
 			for (size_t i=0; i<M;++i)
-				for (size_t j=0; j<N;++j)
-					if ((A[i*lda+j]>Bmax) || (A[i*lda+j]<Bmin)){
-						std::cerr<<"Error in "<<i<<j<<std::endl;
+				for (size_t j=0; j<N;++j){
+					const typename Field::Element x = (tb == FFLAS::FflasNoTrans)? B[i*ldb+j] : B[i+j*ldb];
+					if (x > Bmax || x < Bmin){
+						std::cerr<<"Error in "<<Bmin<<" < = B["<<i<<", "<<j<<"] ="<<B[i*ldb+j]<<" <= "<<Bmax<<std::endl;
 						return false;
 					}
+				}
 #endif
 			return true;
 		}
@@ -227,7 +239,7 @@ namespace FFLAS {
 			MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
 			delayedField(F),
 			parseq(_PS)
-		{
+	        {
 		}
 
 		// copy constructor from other Field and Algo Traits

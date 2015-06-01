@@ -131,7 +131,7 @@ namespace FFLAS { namespace details {
 
 	}
 
-	void BlockingFactor(size_t& m, size_t& n, size_t& k)
+	inline void BlockingFactor(size_t& m, size_t& n, size_t& k)
 	{
 		int l1, l2, l3, tlb;
 		getCacheSize(l1,l2,l3);

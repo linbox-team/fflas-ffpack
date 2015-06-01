@@ -464,6 +464,26 @@ namespace FFLAS { /* associatedDelayedField */
 		typedef Givaro::ZRing<double> type;
 	};
 	template <>
+	struct associatedDelayedField<const Givaro::Modular<int32_t> >{
+		typedef Givaro::ZRing<int32_t> field;
+		typedef Givaro::ZRing<int32_t> type;
+	};
+	template <>
+	struct associatedDelayedField<const Givaro::ModularBalanced<int32_t> >{
+		typedef Givaro::ZRing<int32_t> field;
+		typedef Givaro::ZRing<int32_t> type;
+	};
+	template <>
+	struct associatedDelayedField<const Givaro::Modular<int64_t> >{
+		typedef Givaro::ZRing<int64_t> field;
+		typedef Givaro::ZRing<int64_t> type;
+	};
+	template <>
+	struct associatedDelayedField<const Givaro::ModularBalanced<int64_t> >{
+		typedef Givaro::ZRing<int64_t> field;
+		typedef Givaro::ZRing<int64_t> type;
+	};
+	template <>
 	struct associatedDelayedField<const Givaro::Modular<Givaro::Integer> >{
 		typedef Givaro::ZRing<Givaro::Integer> field;
 		typedef Givaro::ZRing<Givaro::Integer> type;

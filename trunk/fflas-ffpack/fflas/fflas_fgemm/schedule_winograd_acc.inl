@@ -276,10 +276,11 @@ namespace FFLAS { namespace BLAS3 {
 		DFElt C22Min, C22Max;
 		DFElt C12Min, C12Max;
 		// This test will be optimized out
-		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, C22Min, C22Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
+		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
 			freduce(F,mr,nr,X1,nr);
 			H5.initOut();
 		}
+		C22Min = C12Min; C22Max = C12Max;
 
                 // C22 = P5 + beta C22 in C22
 		fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C22,ldc,(DFEptr)C22,ldc);

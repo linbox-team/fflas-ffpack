@@ -1,5 +1,5 @@
 
-#define SIMD_INT
+//#define SIMD_INT
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
@@ -13,21 +13,22 @@
 #define DISPLAY false
 #define TRUST_FGEMM false
 
+using namespace FFLAS;
 
-int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS_TRANSPOSE tB, int a_scal, int b_scal, bool timing)
+int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS_TRANSPOSE tB, int a_scal, int b_scal, bool timing)
 {
 
 
 	 FFLAS::Timer tim;
 
 	srand((unsigned int)time(NULL));
-	typedef Givaro::ModularBalanced<Givaro::Integer> IField ;
+	typedef Givaro::Modular<Givaro::Integer> IField ;
 	IField Z(1UL<<63);
 
-	size_t ra = (tA==CblasNoTrans) ? m : k ;
-	size_t ca = (tA==CblasNoTrans) ? k : m ;
-	size_t rb = (tB==CblasNoTrans) ? k : n;
-	size_t cb = (tB==CblasNoTrans) ? n : k;
+	size_t ra = (tA==FflasNoTrans) ? m : k ;
+	size_t ca = (tA==FflasNoTrans) ? k : m ;
+	size_t rb = (tB==FflasNoTrans) ? k : n;
+	size_t cb = (tB==FflasNoTrans) ? n : k;
 
 	size_t lda = ca ;
 	size_t ldb = cb ; // n
@@ -78,9 +79,9 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 #if DISPLAY
 	write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,false) <<';' <<std::endl;
-	// write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,(tA==CblasTrans))  <<';'<<std::endl;
+	// write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,(tA==FflasTrans))  <<';'<<std::endl;
 	write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,false) <<';' <<std::endl;
-	// write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,(tB==CblasTrans)) <<';' <<std::endl;
+	// write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,(tB==FflasTrans)) <<';' <<std::endl;
 #endif
 
 
@@ -101,11 +102,11 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 			Z.mulin(*(C+i*ldc+j),beta);
 			Z.assign (tmp, Z.zero);
 			for ( size_t l = 0; l < k ; ++l ){
-				if ( tA == CblasNoTrans )
+				if ( tA == FflasNoTrans )
 					ail = A+i*lda+l;
 				else
 					ail = A+l*lda+i;
-				if ( tB == CblasNoTrans )
+				if ( tB == FflasNoTrans )
 					blj = B+l*ldb+j;
 				else
 					blj = B+j*ldb+l;
@@ -121,14 +122,14 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 #if DISPLAY
 	write_field(Z,std::cout << "C:=", C, (int)m, (int)n, (int)ldc,true,false) <<';' <<std::endl;
-	std::cout << ((tA == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
-	std::cout << ((tB == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
+	std::cout << ((tA == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
+	std::cout << ((tB == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
 #endif
 
 	std::cout << "---------------------------------------------" << std::endl;
 
 
-	typedef Givaro::UnparametricRing<int64_t> FField ;
+	typedef Givaro::ZRing<int64_t> FField ;
 	FField F ;
 
 	FField::Element_ptr Ci,Ai,Bi;
@@ -165,19 +166,19 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 #if DISPLAY
 	write_field(F,std::cout << "A:=", Ai, (int)ra, (int)ca, (int)ldA,true,COL_MAJOR)  <<';'<<std::endl;
-	// write_field(F,std::cout << "A:=", Ai, (int)ra, (int)ca, (int)ldA,true,(tA==CblasTrans))  <<';'<<std::endl;
+	// write_field(F,std::cout << "A:=", Ai, (int)ra, (int)ca, (int)ldA,true,(tA==FflasTrans))  <<';'<<std::endl;
 	write_field(F,std::cout << "B:=", Bi, (int)rb, (int)cb, (int)ldB,true,COL_MAJOR) <<';' <<std::endl;
-	// write_field(F,std::cout << "B:=", Bi, (int)rb, (int)cb, (int)ldB,true,(tB==CblasTrans)) <<';' <<std::endl;
+	// write_field(F,std::cout << "B:=", Bi, (int)rb, (int)cb, (int)ldB,true,(tB==FflasTrans)) <<';' <<std::endl;
 #endif
 
 	FField::Element a,b ;
 	a= (FField::Element) a_scal;
 	b= (FField::Element) b_scal;
 #if 0
-	FFLAS::igemm_(CblasColMajor, tA, tB, m, n, k, a, Ai, ldA, Bi, ldB, b, Ci, ldC);
+	FFLAS::igemm_(FflasColMajor, tA, tB, m, n, k, a, Ai, ldA, Bi, ldB, b, Ci, ldC);
 #else
 	tim.clear(); tim.start();
-	FFLAS::igemm_(CblasRowMajor,tA,tB, (int)m, (int)n, (int)k, a, Ai, (int)ldA, Bi, (int)ldB, b, Ci, (int)ldC);
+	FFLAS::igemm_(FflasRowMajor,tA,tB, (int)m, (int)n, (int)k, a, Ai, (int)ldA, Bi, (int)ldB, b, Ci, (int)ldC);
 	tim.stop();
 	if (timing) std::cout << "igemm time: " << tim << std::endl;
 #endif
@@ -185,8 +186,8 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 
 #if DISPLAY
 	write_field(F,std::cout << "C:=", Ci, (int)m, (int)n, (int)ldC,true,COL_MAJOR) <<';' <<std::endl;
-	std::cout << ((tA == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
-	std::cout << ((tB == CblasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
+	std::cout << ((tA == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
+	std::cout << ((tB == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
 #endif
 
 	bool pass = true ;
@@ -226,7 +227,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum CBLAS_TRANSPOSE tA, enum CBLAS
 	if  (timing) {
 		FFLAS::Timer tom;
 		// Givaro::Modular<double> G(65537);
-		Givaro::UnparametricRing<double> G;
+		Givaro::ZRing<double> G;
 		double af, bf ;
 		G.init(af,alpha);
 		G.init(bf,beta);
@@ -294,13 +295,13 @@ int main(int argc, char** argv)
 		for (int j = -1 ; j < 2 ; ++j) {
 			std::cout << "===================================================" << std::endl;
 			std::cout << " C = " << i << " A B + " << j << "C" << std::endl;
-			test_igemm(m,n,k,CblasNoTrans, CblasNoTrans,i,j,timing);
+			test_igemm(m,n,k,FflasNoTrans, FflasNoTrans,i,j,timing);
 			std::cout << " C = " << i << " A tB + " << j << "C" << std::endl;
-			test_igemm(m,n,k,CblasTrans, CblasNoTrans,i,j,timing);
+			test_igemm(m,n,k,FflasTrans, FflasNoTrans,i,j,timing);
 			std::cout << " C = " << i << " tA B + " << j << "C" << std::endl;
-			test_igemm(m,n,k,CblasNoTrans, CblasTrans,i,j,timing);
+			test_igemm(m,n,k,FflasNoTrans, FflasTrans,i,j,timing);
 			std::cout << " C = " << i << " tA tB + " << j << "C" << std::endl;
-			test_igemm(m,n,k,CblasTrans, CblasTrans,i,j,timing);
+			test_igemm(m,n,k,FflasTrans, FflasTrans,i,j,timing);
 		}
 	}
 	for (size_t a = 0 ; a < 4 ; ++a) {
@@ -309,13 +310,13 @@ int main(int argc, char** argv)
 		if (rand()%2) i = -i ;
 		if (rand()%2) j = -j ;
 		std::cout << " C = " << i << " A B + " << j << "C" << std::endl;
-		test_igemm(m,n,k,CblasNoTrans, CblasNoTrans,i,j,timing);
+		test_igemm(m,n,k,FflasNoTrans, FflasNoTrans,i,j,timing);
 		std::cout << " C = " << i << " A tB + " << j << "C" << std::endl;
-		test_igemm(m,n,k,CblasTrans, CblasNoTrans,i,j,timing);
+		test_igemm(m,n,k,FflasTrans, FflasNoTrans,i,j,timing);
 		std::cout << " C = " << i << " tA B + " << j << "C" << std::endl;
-		test_igemm(m,n,k,CblasNoTrans, CblasTrans,i,j,timing);
+		test_igemm(m,n,k,FflasNoTrans, FflasTrans,i,j,timing);
 		std::cout << " C = " << i << " tA tB + " << j << "C" << std::endl;
-		test_igemm(m,n,k,CblasTrans, CblasTrans,i,j,timing);
+		test_igemm(m,n,k,FflasTrans, FflasTrans,i,j,timing);
 
 	}
 
