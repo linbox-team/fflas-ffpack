@@ -272,7 +272,19 @@ namespace FFLAS {
 		FFLASFFPACK_check(ldc);
                 H.setOutBounds(k, alpha, beta);
 		
+#if 0// defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 		igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
+#else
+		for (size_t i=0; i<m; i++){
+			for (size_t j=0; j<n; j++)
+				Cd[i*ldc+j] *= beta;
+			for (size_t l=0; l<k; l++){
+				int64_t a = alpha*(ta==FflasNoTrans)?Ad[i*lda+k] : Ad[i+k*lda];
+				for (size_t j=0; j<n; j++)
+					Cd[i*ldc+j] += a*(tb==FflasNoTrans)?Bd[k*ldb+j]:Bd[k+j*ldb];
+			}
+		}
+#endif
 	}
 } // FFLAS
 
