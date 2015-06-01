@@ -41,8 +41,10 @@ namespace FFLAS {
 
 } // FFLAS
 
+#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 #include "igemm_kernels.h"
 #include "igemm_tools.h"
+#endif 
 #include "fflas-ffpack/utils/fflas_memory.h"
 
 namespace FFLAS { namespace Protected {
@@ -87,8 +89,8 @@ namespace FFLAS { /*  igemm */
 
 
 } // FFLAS
-
+#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 #include "igemm.inl"
-
+#endif
 #endif // __FFLASFFPACK_fflas_igemm_igemm_H
 
