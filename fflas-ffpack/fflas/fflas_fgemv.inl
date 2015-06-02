@@ -33,6 +33,10 @@
 
 #include <givaro/unparametric.h> // DoubleDomain
 
+#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
+#endif
+
 namespace FFLAS{ namespace Protected {
 	template <typename FloatElement, class Field>
 	inline typename Field::Element_ptr
@@ -107,8 +111,8 @@ namespace FFLAS {
 				fgemm(F,FflasNoTrans,FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY,HG);
 			else
 				fgemm(F,FflasTrans,FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY,HG);
-			H.Outmin = HG.Outmin;
-			H.Outmax = HG.Outmax;
+			freduce(F,(ta==FflasNoTrans)?M:N, Y,incY);
+			H.initOut();
 			return Y;
 				
 		} else {
@@ -352,10 +356,30 @@ namespace FFLAS{
 	
                 H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 		
+#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 		if (ta == FflasNoTrans)
 			igemm_ (FflasRowMajor, ta, FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY);
 		else
 			igemm_ (FflasRowMajor, ta, FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY);
+#else
+		if (ta == FflasNoTrans){
+			int64_t* Yi=Y;
+			for (size_t i=0;i<M;i++, Yi+=incY){
+				*Yi *= beta * *Yi;
+				const int64_t* Xj=X;
+				for (size_t j=0; j < N; j++, Xj += incX)
+					*Yi += alpha*A[i*lda+j] * *Xj;
+			}
+		} else {
+			int64_t* Yi=Y;
+			for (size_t i=0;i<N;i++, Yi+=incY){
+				*Yi *= beta * *Yi;
+				const int64_t* Xj=X;
+				for (size_t j=0; j < M; j++, Xj += incX)
+					*Yi += alpha*A[i+j*lda] * *Xj;
+			}
+		}
+#endif
 		return Y;
 	}
 	inline Givaro::DoubleDomain::Element_ptr
