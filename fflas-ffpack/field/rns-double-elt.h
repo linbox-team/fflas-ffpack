@@ -68,9 +68,8 @@ namespace FFPACK {
 		//inline  operator rns_double_elt_cstptr();
 		inline rns_double_elt_ptr* operator&(){return this;}
 		inline rns_double_elt&     operator*()  {return static_cast<rns_double_elt&>(*this);}
-//		inline rns_double_elt&      operator[](size_t i) {return static_cast<rns_double_elt&>(*rns_double_elt_ptr(_ptr+i,_stride));}
+		inline rns_double_elt     operator[](size_t i) const {return rns_double_elt(_ptr+i,_stride);} // BUGGY
 		inline rns_double_elt&     operator[](size_t i) {other=rns_double_elt(_ptr+i,_stride);return other;} // BUGGY
-//		inline rns_double_elt&     operator[](size_t i) {return (**(new rns_double_elt_ptr(_ptr+i,_stride)));} 
 		inline rns_double_elt_ptr  operator++() {return rns_double_elt_ptr(_ptr++,_stride);}
 		inline rns_double_elt_ptr  operator--() {return rns_double_elt_ptr(_ptr--,_stride);}
 		inline rns_double_elt_ptr  operator+(size_t inc) {return rns_double_elt_ptr(_ptr+inc,_stride);}
