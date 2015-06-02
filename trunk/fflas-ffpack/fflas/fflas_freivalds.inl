@@ -59,13 +59,13 @@ namespace FFLAS{
     
         typename Field::Element_ptr v, y, x;
 
-        v = FFLAS::fflas_new<typename Field::Element>(n);
-        y = FFLAS::fflas_new<typename Field::Element>(k);
-        x = FFLAS::fflas_new<typename Field::Element>(m);
+        v = FFLAS::fflas_new(F,n,1);
+        y = FFLAS::fflas_new(F,k,1);
+        x = FFLAS::fflas_new(F,m,1);
 
         typename Field::RandIter G(F);
-        for(size_t j=0; j<(size_t)n; ++j)
-            G.random(*(v+j));
+        for(size_t j=0; j<n; ++j)
+            G.random(v[j]);
     
 //         F.write(std::cerr<< "alpha:", alpha) << std::endl;
 //         write_field(F,std::cerr<<"A:",A,m,k,lda,true) << std::endl;
@@ -73,22 +73,22 @@ namespace FFLAS{
 //         write_field(F,std::cerr<<"C:",C,m,n,ldc,true) << std::endl;
 
             // y <-- 1.\mathrm{op}(B).v
-        FFLAS::fgemv(F, tb, k,n, 
-                     F.one, B, n, v, 1, F.zero, y, 1);
+        FFLAS::fgemv(F, tb, k,n, F.one, B, ldb, v, 1, F.zero, y, 1);
             // x <-- alpha.\mathrm{op}(A).y
             // x <-- alpha.\mathrm{op}(A).\mathrm{op}(B).v
-        FFLAS::fgemv(F, ta, m,k, 
-                     alpha, A, k, y, 1, F.zero, x, 1);
+        FFLAS::fgemv(F, ta, m,k, alpha, A, lda, y, 1, F.zero, x, 1);
  
             // x <-- -C.v+x =?= 0
-        FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, 
-                     F.mOne, C, n, v, 1, F.one, x, 1);
+        FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.mOne, C, ldc, v, 1, F.one, x, 1);
 
     
         bool pass=true;
-        for(size_t j=0; j<(size_t)m; ++j) 
-            pass &= F.isZero( *(x+j) );
-
+        for(size_t j=0; j<m; ++j) 
+            pass &= F.isZero (x[j]);
+        
+        FFLAS::fflas_delete(y);
+        FFLAS::fflas_delete(v);
+        FFLAS::fflas_delete(x);
         return pass;
     }
  
