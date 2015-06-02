@@ -64,6 +64,7 @@ pkgincludesub_HEADERS=       \
 	   fflas_freduce.inl       \
 	   fflas_helpers.inl     \
 	   fflas_simd.h          \
+	   fflas_enum.h          \
 	   ${sparse}		 \
 	   ${multiprecision}
 
