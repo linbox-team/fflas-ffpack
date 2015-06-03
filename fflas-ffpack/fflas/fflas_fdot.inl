@@ -48,7 +48,7 @@ namespace FFLAS {
 		typename Field::Element d;
 		typename Field::ConstElement_ptr xi = x;
 		typename Field::ConstElement_ptr yi = y;
-		F.init( d, F.zero );
+		F.init( d );
 		for ( ; xi < x+N*incx; xi+=incx, yi+=incy )
 			F.axpyin( d, *xi, *yi );
 		return d;
