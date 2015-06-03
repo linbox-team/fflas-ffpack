@@ -69,7 +69,7 @@ NOT_A_TEST =  \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
-		test-nullspace	
+		test-nullspace
 
 INFINITE_TEST= \
 		testeur_fgemm          \
@@ -138,5 +138,6 @@ perfpublisher:
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
-%:%.C
-	    $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+
+%: %.C %.cpp
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)

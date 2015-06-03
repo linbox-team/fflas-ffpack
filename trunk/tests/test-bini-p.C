@@ -275,6 +275,7 @@ namespace FFLAS { /*  compression */
 			 typename Field::Element * C, int ldc
 			)
 	{
+		Givaro::UnparametricRing<double>   NoField;
 		double * A_k, * B_k, * C_k ;
 
 		typedef typename Field::Element elem_t ;
@@ -287,6 +288,9 @@ namespace FFLAS { /*  compression */
 			ldc_k = n ;
 
 			A_k =  FFLAS::fflas_new<double>(m_k*k) ;
+			//!@bug don't zero all, just the "border"
+			FFLAS::fzero(NoField,m_k,k,A_k,k);
+
 			B_k = const_cast<typename Field::Element *>(B) ;
 
 			pack_matrix<elem_t,elem_t,2,false>(A_k,m_k,k,lda_k,
@@ -300,6 +304,8 @@ namespace FFLAS { /*  compression */
 
 			A_k = const_cast<typename Field::Element *>(A) ;
 			B_k = FFLAS::fflas_new<double>(k*n_k)  ;
+			//!@bug don't zero all, just the "border"
+			FFLAS::fzero(NoField,k,n_k,B_k,n_k);
 
 			pack_matrix<elem_t,elem_t,2,true>(B_k,k,n_k,ldb_k,
 							  B,k,n,ldb,
@@ -307,6 +313,8 @@ namespace FFLAS { /*  compression */
 		}
 
 		C_k = FFLAS::fflas_new<double>(m_k*n_k) ;
+			//!@bug don't zero all, just the "border"
+		FFLAS::fzero(NoField,m_k,n_k,C_k,n_k);
 
 		pack_matrix<elem_t,elem_t,2,!left_compress>(C_k,m_k,n_k,ldc_k,
 							    C,m,n,ldc,
