@@ -208,8 +208,9 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		// We create t (into X) not null such that t * L == 0, i.e. t1 * L1 == -t2 * L2
 
         // Random after rank is passed (t2)
+        typename Field::RandIter g(F);
         for (int i = R; i < M; ++i)
-            F.random(*(X + i * incX));
+            g.random(*(X + i * incX));
 
         // Nullspace is total, any random vector would do
 		if (R == 0) {
