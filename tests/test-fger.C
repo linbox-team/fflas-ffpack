@@ -222,7 +222,7 @@ bool launch_fger_dispatch(const Field &F,
 	return ok ;
 }
 template <class Field>
-bool run_with_field (long int q, unsigned long b, size_t n, size_t iters){
+bool run_with_field (long long q, unsigned long b, size_t n, size_t iters){
 	bool ok = true ;
 	int nbit=(int)iters;
 	while (ok &&  nbit){
@@ -267,12 +267,12 @@ int main(int argc, char** argv)
 	srand48(time(NULL));
 
 	static size_t iters = 3 ;
-	static long int q = -1 ;
+	static long long q = -1 ;
 	static unsigned long b = 0 ;
 	static size_t n = 50 ;
 	static bool loop = false;
 	static Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_LONGLONG , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters);
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,iters);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters);
-		    //ok &= run_with_field<Modular<int64_t> >(q,b,n,iters); // BUG, needs work
+		ok &= run_with_field<Modular<int64_t> >(q,b,n,iters); // BUG, needs work
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters);
 	} while (loop && ok);
 
