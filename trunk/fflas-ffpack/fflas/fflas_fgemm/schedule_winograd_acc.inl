@@ -218,7 +218,10 @@ namespace FFLAS { namespace BLAS3 {
 		typename Field::Element mbeta;
 		F.neg(mbeta,beta);
 		DFElt betadf;
-		DF.assign(betadf, beta);
+		if (F.isMOne(beta))
+			DF.assign(betadf,DF.mOne);
+		else
+			DF.init(betadf, beta);
 
 		size_t ldX3;
 
