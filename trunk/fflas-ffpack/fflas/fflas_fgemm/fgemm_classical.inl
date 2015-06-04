@@ -40,6 +40,7 @@
 #if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
+#include "fflas-ffpack/utils/Matio.h"
 namespace FFLAS {
 
 	// F is a field supporting delayed reductions
@@ -280,9 +281,9 @@ namespace FFLAS {
 			for (size_t j=0; j<n; j++)
 				Cd[i*ldc+j] *= beta;
 			for (size_t l=0; l<k; l++){
-				int64_t a = alpha*(ta==FflasNoTrans)?Ad[i*lda+k] : Ad[i+k*lda];
+				int64_t a = alpha* ((ta==FflasNoTrans) ? Ad[i*lda+l] : Ad[i+l*lda]);
 				for (size_t j=0; j<n; j++)
-					Cd[i*ldc+j] += a*(tb==FflasNoTrans)?Bd[k*ldb+j]:Bd[k+j*ldb];
+					Cd[i*ldc+j] += a*((tb==FflasNoTrans) ? Bd[l*ldb+j] : Bd[l+j*ldb]);
 			}
 		}
 #endif

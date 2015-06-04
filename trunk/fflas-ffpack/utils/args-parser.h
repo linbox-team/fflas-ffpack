@@ -44,7 +44,7 @@
 #include "fflas-ffpack/utils/print-utils.h"
 
 enum ArgumentType {
-	TYPE_NONE, TYPE_INT, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
+	TYPE_NONE, TYPE_INT, TYPE_LONGLONG, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
 };
 #define TYPE_BOOL TYPE_NONE
 
@@ -112,6 +112,9 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 				break;
 			case TYPE_INT:
 				std::cout << *(int *) args[i].data;
+				break;
+			case TYPE_LONGLONG:
+				std::cout << *(long long *) args[i].data;
 				break;
 			case TYPE_INTEGER:
 				std::cout << *(type_integer *) args[i].data;
@@ -259,6 +262,13 @@ namespace FFLAS {
                         }
                         break;
 
+                        case TYPE_LONGLONG:
+                        {
+                            *(long long *) current->data = atoi (argv[i+1]);
+                            ++i;
+                        }
+                        break;
+
                         case TYPE_INTEGER:
 			{
 #ifdef _GIVARO_CONFIG_H
@@ -322,6 +332,9 @@ namespace FFLAS {
 				break;
 			case TYPE_INT:
 				os << ' ' << *(int *) args[i].data;
+				break;
+			case TYPE_LONGLONG:
+				os << ' ' << *(long long *) args[i].data;
 				break;
 			case TYPE_INTEGER:
 				os << ' ' << *(long int *) args[i].data;

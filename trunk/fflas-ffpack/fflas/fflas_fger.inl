@@ -101,7 +101,7 @@ namespace FFLAS{
 			    // Stay over int64_t
 			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
 			HG.recLevel = 0;
-			fgemm(F,FflasTrans,FflasNoTrans,M,N,1,alpha,x,incx,y,incy,F.one,A,lda,HG);
+			fgemm(F,FflasNoTrans,FflasTrans,M,N,1,alpha,x,incx,y,incy,F.one,A,lda,HG);
 			H.Outmin = HG.Outmin;
 			H.Outmax = HG.Outmax;
 			return;
