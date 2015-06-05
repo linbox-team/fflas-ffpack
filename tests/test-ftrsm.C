@@ -223,6 +223,8 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,s,iters);
 		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,s,iters);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,s,iters);
+		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,s,iters);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,s,iters);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m,n,s,iters); // BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 	} while (loop && ok);
 
