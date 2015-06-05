@@ -44,7 +44,7 @@ AC_DEFUN([FF_CHECK_AVX],
 	    dnl Intel compilers usually do not require option to enable avx
 	    dnl Thus, we test with no option on
 		for switch_avxflags in "" "-mavx"; do
-		    CXXFLAGS="${BACKUP_CXXFLAGS} ${switch_avxflags}"
+		    CXXFLAGS="${BACKUP_CXXFLAGS} -O0 ${switch_avxflags}"
 		    AC_TRY_RUN([ ${CODE_AVX} ],
 		    [
 		        avx_found="yes"
@@ -72,7 +72,7 @@ AC_DEFUN([FF_CHECK_AVX],
 			AC_MSG_CHECKING(for AVX2)
 			
 		    for switch_avx2flags in "" "-mfma -mavx2"; do
-			    CXXFLAGS="${BACKUP_CXXFLAGS} ${switch_avx2flags}"
+			    CXXFLAGS="${BACKUP_CXXFLAGS} -O0 ${switch_avx2flags}"
 			    AC_TRY_RUN(
 			    [
 			        #define __try_avx2
