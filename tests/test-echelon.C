@@ -43,7 +43,11 @@
 #include "test-utils.h"
 #include "Matio.h"
 
+using namespace std;
 using namespace FFPACK;
+using Givaro::UnparametricRing;
+using Givaro::Modular;
+using Givaro::ModularBalanced;
 
 template<class Field>
 bool
@@ -330,37 +334,96 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 	return pass;
 }
 
+template <class Field>
+bool run_with_field (Givaro::Integer q, unsigned long b, size_t m, size_t n, size_t r, size_t iters){
+	bool ok = true ;
+
+	int nbit=(int)iters;
+	
+	while (ok &&  nbit){
+		// choose Field 
+		Field* F= chooseField<Field>(q,b);
+		if (F==nullptr)
+			return true;
+
+		std::ostringstream oss;
+		F->write(oss);		
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(40);
+		std::cout<<oss.str();
+		std::cout<<" .";
+
+#ifdef DEBUG
+		F->write(std::cerr) << std::endl;
+#endif
+
+		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		std::cout<<".";
+		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		std::cout<<".";
+		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		std::cout<<".";
+		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		std::cout<<".";
+		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		std::cout<<".";
+		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		std::cout<<".";
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		std::cout<<".";
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		std::cout<<".";
+
+		nbit--;
+		if ( !ok )
+			std::cout << "FAILED "<<std::endl;
+		else
+			std::cout << "PASSED "<<std::endl;
+		delete F;
+	}
+	return ok;
+}
+
 int main(int argc, char** argv){
 	std::cerr<<std::setprecision(20);
 
-	int    p = 101;
-	size_t m = 150;
-	size_t n = 200;
+	Givaro::Integer q = -1;
+	size_t b = 0;
+	size_t m = 80;
+	size_t n = 90;
 	size_t r = 20;
-	size_t iters = 10 ;
+	size_t iters = 3 ;
+	bool loop = false;
 
 	static Argument as[] = {
-		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
+		{ 'q', "-q Q", "Set the field characteristic.",         TYPE_INTEGER , &q },
+		{ 'b', "-b B", "Set the bitsize of the random characteristic.", TYPE_INT , &b },
 		{ 'n', "-n N", "Set the number of cols in the matrix.", TYPE_INT , &n },
 		{ 'm', "-m N", "Set the number of rows in the matrix.", TYPE_INT , &m },
 		{ 'r', "-r r", "Set the rank of the matrix."          , TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
 		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
 	r = std::min(r, std::min(m,n));
 	FFLAS::parseArguments(argc,argv,as);
 
-	bool pass = true ;
-	typedef Givaro::Modular<double> Field;
-	Field F(p);
-	pass &= test_colechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-	pass &= test_colechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-	pass &= test_redcolechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-	pass &= test_redcolechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-	pass &= test_rowechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-	pass &= test_rowechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-	pass &= test_redrowechelon(F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-	pass &= test_redrowechelon(F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-	return !pass ;
+	bool ok = true;
+	do{
+		ok &= run_with_field<Modular<double> >(q,b,m,n,r,iters);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters);
+		ok &= run_with_field<Modular<float> >(q,b,m,n,r,iters);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters);
+		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters);
+//		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters); //BUG not working yet
+//		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters); // BUG: not available yet (missing division in the field
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128),m,n,r,iters);
+		
+	} while (loop && ok);
+
+	return !ok ;
 }
