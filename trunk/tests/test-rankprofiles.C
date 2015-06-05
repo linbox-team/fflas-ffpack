@@ -204,6 +204,8 @@ int main(int argc, char** argv){
 		ok&=run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters);
 	} while (loop && ok);
 
 	return !ok;

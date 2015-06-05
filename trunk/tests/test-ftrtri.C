@@ -33,12 +33,15 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+#define DEBUG 1
 #define TIME 1
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
+
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 #include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -48,7 +51,7 @@
 using namespace std;
 using namespace FFPACK;
 
-typedef Givaro::Modular<float> Field;
+typedef Givaro::ModularBalanced<double> Field;
 
 int main(int argc, char** argv)
 {
@@ -70,10 +73,10 @@ int main(int argc, char** argv)
 	Ab = FFLAS::fflas_new<Field::Element>(n*n);
 
 	for (int i=0; i<n;++i){
-		for(int j=0; j<i; ++j)
+		for(int j=i+1; j<n; ++j)
 			F.assign(*(Ab+i*n+j),*(A+i*n+j));
 		F.assign(*(Ab+i*(n+1)), 1.0);
-		for(int j=i+1; j<n; ++j)
+		for(int j=0; j<i; ++j)
 			F.assign(*(Ab+i*n+j),0.0);
 	}
 
@@ -85,8 +88,8 @@ int main(int argc, char** argv)
 	for(int i = 0;i<nbit;++i){
 		t.clear();
 		t.start();
-				FFPACK::trinv_left (F, n, A, n, X, n);
-		//FFPACK::ftrtri(F, FFLAS::FflasLower, FFLAS::FflasUnit, n, A, n);
+//				FFPACK::trinv_left (F, n, A, n, X, n);
+				FFPACK::ftrtri(F, FFLAS::FflasUpper, FFLAS::FflasUnit, n, A, n);
 		t.stop();
 		tim+=t;
 		if (i+1<nbit)
@@ -95,11 +98,9 @@ int main(int argc, char** argv)
 	}
 
 #if DEBUG
-	FFLAS::ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
+	FFLAS::ftrmm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
 		      n, n, 1.0,
-		      X,
-		      //A,
-		      n, Ab, n);
+		      A,n, Ab, n);
 	bool wrong = false;
 
 	for (int i=0;i<n;++i)
@@ -110,8 +111,8 @@ int main(int argc, char** argv)
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-		write_field (F,cerr<<"Ab="<<endl,A,n,n,n);
-		//write_field (F,cerr<<"X="<<endl,X,n,n,n);
+		write_field (F,cerr<<"Ab="<<endl,Ab,n,n,n);
+		    //write_field (F,cerr<<"X="<<endl,X,n,n,n);
 	}else{
 
 		cerr<<"PASS"<<endl;
@@ -119,12 +120,12 @@ int main(int argc, char** argv)
 #endif
 
 #if TIME
-	double mflops = 1.0/3.0*(n*n/1000000.0)*nbit*n/tim.usertime();
+	double gflops = 1.0/3.0*(n/1000.0*n/1000000.0)*nbit*n/tim.usertime();
 	cerr<<"n = "<<n<<" Inversion over Z/"<<atoi(argv[1])<<"Z : t= "
 	     << tim.usertime()/nbit
-	     << " s, Mffops = "<<mflops
+	     << " s, Gfops = "<<gflops
 	     << endl;
 
-	cout<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
+	cout<<n<<" "<<gflops<<" "<<tim.usertime()/nbit<<endl;
 #endif
 }
