@@ -68,6 +68,6 @@ AC_DEFUN([FF_CHECK_OMP],
 		],
 		[ AC_MSG_RESULT(no) ]
 	)
-	]
 	AM_CONDITIONAL(FFLASFFPACK_HAVE_OMP, test "x$HAVE_OMP" = "xyes")
+]	
 )
