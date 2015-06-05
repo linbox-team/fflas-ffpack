@@ -146,6 +146,12 @@ template <size_t K> struct limits<RecInt::ruint<K> > {
 	constexpr inline static RecInt::ruint<K> max() noexcept {return RecInt::ruint<K>(-1);}
 	constexpr inline static RecInt::ruint<K> min() noexcept {return 0;}
 };
+
+template <size_t K> struct limits<RecInt::rint<K> > {
+	typedef RecInt::ruint<K> T;
+	constexpr inline static RecInt::rint<K> max() noexcept {return RecInt::rint<K>(RecInt::ruint<K>(-1) >> 1u);}
+	constexpr inline static RecInt::rint<K> min() noexcept {return max() + 1;}
+};
 // template <size_t K> struct limits<RecInt::rint<K> > {
 // 	constexpr inline static RecInt::rint<K> max() noexcept {return RecInt::rint<K>(RecInt::ruint<K>(-1))/2;}
 	

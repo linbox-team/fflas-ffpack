@@ -179,13 +179,17 @@ namespace FFLAS {
 			   typename Field::Element_ptr C, const size_t ldc,
 			   MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
+		if (F.isZero (alpha)) {
+		    fscalin(F, m, n, beta, C, ldc);
+		    return;
+	    }
+	
                 // Standard algorithm is performed over the Field, without conversion
 		if (F.isZero (beta))
                         fzero (F, m, n, C, ldc);
 		else {
 			typename Field::Element betadivalpha;
 			F.init(betadivalpha);
-			FFLASFFPACK_check(!F.isZero(alpha));
 			F.div (betadivalpha, beta, alpha);
 			fscalin(F,m,n,betadivalpha,C,ldc);
 		}
