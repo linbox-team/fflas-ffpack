@@ -101,7 +101,7 @@ namespace FFLAS {
 	{
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
-		else if (F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus())
+		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus())
 			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
 		else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
 			    // Stay over int64_t
@@ -140,6 +140,13 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr Y, const size_t incY)
 	{
+		if (!M) {return Y;}
+		size_t Ydim = (ta == FflasNoTrans)?M:N;
+		size_t Xdim = (ta == FflasNoTrans)?N:M;
+		if (!Xdim || F.isZero (alpha)){
+			fscalin(F, Ydim, beta, Y, incY);
+			return Y;
+		}
 		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
 		return 	fgemv (F, ta, M, N, alpha,
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
@@ -161,7 +168,8 @@ namespace FFLAS {
 
 		if (!M) {return Y;}
 		size_t Ydim = (ta == FflasNoTrans)?M:N;
-		if (!N || F.isZero (alpha)){
+		size_t Xdim = (ta == FflasNoTrans)?N:M;
+		if (!Xdim || F.isZero (alpha)){
 			fscalin(F, Ydim, beta, Y, incY);
 			return Y;
 		}
