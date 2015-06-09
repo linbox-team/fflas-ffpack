@@ -36,7 +36,6 @@ PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =               \
 		test-lu             \
-		test-modulararith   \
 		test-det            \
 		test-echelon        \
 		test-rankprofiles   \
@@ -88,7 +87,6 @@ TESTS =     $(EXTRA_PROGRAMS)
 test_compressQ_SOURCES         = test-compressQ.C
 test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
-test_modulararith_SOURCES      = test-modulararith.C
 test_det_SOURCES               = test-det.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
