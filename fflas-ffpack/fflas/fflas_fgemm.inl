@@ -371,7 +371,7 @@ namespace FFLAS {
 		 *  XXX do it in return status of F.inv(Element&,Element&)
 		 */
 		typename Field::Element e ;
-		F.init(e,beta);
+		F.assign(e,beta);
 		F.divin(e,alpha);
 		F.mulin(e,alpha);
 		FFLASFFPACK_check(F.areEqual(e,beta));
