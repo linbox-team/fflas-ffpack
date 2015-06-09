@@ -73,11 +73,14 @@ namespace FFLAS{
 //         write_field(F,std::cerr<<"C:",C,m,n,ldc,true) << std::endl;
 
             // y <-- 1.\mathrm{op}(B).v
-        FFLAS::fgemv(F, tb, k,n, F.one, B, ldb, v, 1, F.zero, y, 1);
+        size_t Bnrows = (tb == FflasNoTrans)? k : n;
+        size_t Bncols = (tb == FflasNoTrans)? n : k;
+        size_t Anrows = (ta == FflasNoTrans)? m : k;
+        size_t Ancols = (ta == FflasNoTrans)? k : m;
+        FFLAS::fgemv(F, tb, Bnrows, Bncols, F.one, B, ldb, v, 1, F.zero, y, 1);
             // x <-- alpha.\mathrm{op}(A).y
             // x <-- alpha.\mathrm{op}(A).\mathrm{op}(B).v
-        FFLAS::fgemv(F, ta, m,k, alpha, A, lda, y, 1, F.zero, x, 1);
- 
+        FFLAS::fgemv(F, ta, Anrows, Ancols, alpha, A, lda, y, 1, F.zero, x, 1);
             // x <-- -C.v+x =?= 0
         FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.mOne, C, ldc, v, 1, F.one, x, 1);
 
