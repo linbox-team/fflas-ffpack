@@ -57,7 +57,9 @@ namespace FFLAS {
 		inline bool unfit(T x){return false;}
 		template <>
 		inline bool unfit(int64_t x){return (x>limits<int32_t>::max());}
-	};
+		template <size_t K>
+		inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}
+	}
 
 	enum CuttingStrategy {
         SINGLE			,
@@ -141,10 +143,8 @@ namespace FFLAS {
 			DFElt absbeta;
 			delayedField.init(absbeta,beta);
 			if (beta < 0) absbeta = -beta;
-			    //std::cout<<"In MaxDelayedDim: beta = "<<beta<<" absbeta = "<<absbeta<<std::endl;
 			DFElt diff = MaxStorableValue - absbeta * std::max(-Cmin, Cmax);
 			DFElt AB = std::max (-Amin, Amax) * std::max (-Bmin, Bmax);
-			    //std::cout<<"diff = "<<diff<<" AB = "<<AB<<" Helper = "<<std::endl<<*this<<std::endl;
 			return static_cast<size_t>(((diff < DFElt(0u))||(AB<DFElt(0u)))? DFElt(0u) : diff / AB);
 		}
 		bool Aunfit(){ return Protected::unfit(std::max(-Amin,Amax));}
