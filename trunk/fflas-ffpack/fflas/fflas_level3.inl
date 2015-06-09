@@ -35,7 +35,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_level3_INL
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
-#include <givaro/unparametric.h>
+//#include <givaro/unparametric.h>
 
 #include "fflas_bounds.inl"
 #include "fflas_helpers.inl"

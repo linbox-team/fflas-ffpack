@@ -62,6 +62,7 @@ namespace FFLAS {
 		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
 		typename HelperType::DelayedField::Element alphadf, betadf;
 		betadf = beta;
+		
 		if (F.isMOne (alpha)) {
 			alphadf = -H.delayedField.one;
 		} else {
@@ -182,8 +183,7 @@ namespace FFLAS {
 		if (F.isZero (alpha)) {
 		    fscalin(F, m, n, beta, C, ldc);
 		    return;
-	    }
-	
+		}
                 // Standard algorithm is performed over the Field, without conversion
 		if (F.isZero (beta))
                         fzero (F, m, n, C, ldc);
@@ -193,7 +193,6 @@ namespace FFLAS {
 			F.div (betadivalpha, beta, alpha);
 			fscalin(F,m,n,betadivalpha,C,ldc);
 		}
-
 		if (ta == FflasNoTrans)
 			if (tb == FflasNoTrans)
 				for (size_t i = 0; i < m; ++i)

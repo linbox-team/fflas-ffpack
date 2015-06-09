@@ -398,10 +398,12 @@ namespace FFLAS {
 			F.assign (beta_,beta);
 		}
 		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
-
+		// std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
+		// std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
-
+		// std::cerr<<"Sortie de fgemm Lazy C = "<<*C<<std::endl;
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
+		// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
 
 		H.initOut();
 

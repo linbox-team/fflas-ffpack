@@ -328,7 +328,7 @@ namespace FFLAS {
 				       const Givaro::Integer* B, const size_t ldb,
 				       Givaro::Integer beta,
 				       Givaro::Integer* C, const size_t ldc,
-				       MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::MultiPrecisionTag,ParSeqHelper::Parallel> & H){
+				       MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::UnparametricTag,ParSeqHelper::Parallel> & H){
 		MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd> H2(F,H.recLevel);
 		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,lda,beta,C,ldc,H2);
 	}

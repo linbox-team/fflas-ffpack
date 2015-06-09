@@ -79,10 +79,10 @@ namespace FFLAS{
 	      typename FFPACK::RNSIntegerMod<RNS>::Element_ptr x, const size_t incx,
 	      typename FFPACK::RNSIntegerMod<RNS>::Element_ptr y, const size_t incy,
 	      typename FFPACK::RNSIntegerMod<RNS>::Element_ptr A, const size_t lda,
-	      MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag> & H)
+	      MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Classic> & H)
 	{
 		typedef FFPACK::RNSInteger<RNS> RnsDomain;
-		MMHelper<RnsDomain, MMHelperAlgo::Classic, FieldCategories::MultiPrecisionTag> H2;
+		MMHelper<RnsDomain, MMHelperAlgo::Classic>  H2;
 		RnsDomain Zrns(F.rns());
 		FFLAS::fger(Zrns,M,N,alpha,x,incx,y,incy,A,lda,H2);
 		
