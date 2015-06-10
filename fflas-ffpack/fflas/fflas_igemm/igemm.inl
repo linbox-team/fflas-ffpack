@@ -172,9 +172,12 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS {
 	inline void igemm_(const enum FFLAS_ORDER Order, const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB,
-			   const int M, const int N, const int K,
-			   const int64_t alpha, const int64_t *A, const int lda, const int64_t *B, const int ldb,
-			   const int64_t beta, int64_t *C, const int ldc)
+			   const size_t M, const size_t N, const size_t K,
+			   const int64_t alpha, 
+                       const int64_t *A, const size_t lda, 
+                       const int64_t *B, const size_t ldb,
+			   const int64_t beta, 
+                       int64_t *C, const size_t ldc)
 	{
 
 
