@@ -89,8 +89,8 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 				BLAS_FOUND=true
 				AC_SUBST(BLAS_FOUND)
 				dnl  AC_DEFINE(BLAS_AVAILABLE,,[Define if BLAS routines are available])
-				echo ${CBLAS_FLAG}
-				echo ${CBLAS_LIBS}
+				#echo ${CBLAS_FLAG}
+				#echo ${CBLAS_LIBS}
 				HAVE_BLAS=yes
 				AS_IF([test "x$blas_cross" != "xyes"],
 					[ AC_MSG_RESULT(found (cblas)) ] ,
@@ -116,54 +116,52 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 
 dnl
 AC_DEFUN([FF_CHECK_USER_LAPACK],
-		[
+	[
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		BACKUP_LIBS=${LIBS}
 
 		CODE_CLAPACK=`cat macros/CodeChunk/clapack.C`
 		CODE_LAPACK=`cat macros/CodeChunk/lapack.C`
 
-
 		AC_MSG_CHECKING(for USER LAPACK)
-
 
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}  -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${GIVARO_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
-
 
 		AC_TRY_RUN(
 			[ ${CODE_CLAPACK} ],
 			[ dgetrf_found="yes" ],
 			[ dgetrf_problem="problem" ],
-			[ dgetrf_found="" ])
+			[ dgetrf_found="" ]
+		)
 
 		AS_IF([ test "${dgetrf_found}" = "yes"],
-				[
+			[
 				AC_MSG_RESULT( yes (clapack))
 				AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
 				AC_DEFINE(HAVE_CLAPACK,1,[Define if C interface to LAPACK is available])
 				HAVE_LAPACK=yes
-				],
-				[
+			],
+			[
 				AC_TRY_RUN(
 					[  ${CODE_LAPACK} ],
-					[ dgetrf_found="yes"
-					],
-					[ dgetrf_problem="$problem"
-					],
-					[  ])
+					[ dgetrf_found="yes"],
+					[ dgetrf_problem="$problem"],
+					[ dgetrf_found="" ]
+				)
 				AS_IF([ test "x${dgetrf_found}" = "xyes"],
-					[        AC_SUBST(LAPACK_LIBS)
-					AC_MSG_RESULT( yes (lapack))
-					AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
-					HAVE_LAPACK=yes
+					[
+						AC_SUBST(LAPACK_LIBS)
+						AC_MSG_RESULT( yes (lapack))
+						AC_DEFINE(HAVE_LAPACK,1,[Define if LAPACK is installed])
+						HAVE_LAPACK=yes
 					], dnl clapack not found. looking for lapack
 					[
 					AC_MSG_RESULT( no )
-					])
-				]
-			)
-
+					]
+				)
+			]
+		)
 
 		dnl
 		AM_CONDITIONAL(FFLASFFPACK_HAVE_LAPACK, test "x$HAVE_LAPACK" = "xyes")
@@ -171,7 +169,6 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 		LIBS=${BACKUP_LIBS}
 		dnl  unset LD_LIBRARY_PATH
 
-
-		]
-	)
+	]
+)
 
