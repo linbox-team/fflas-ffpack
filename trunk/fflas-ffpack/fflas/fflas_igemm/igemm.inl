@@ -116,7 +116,7 @@ namespace FFLAS { namespace Protected {
 				// call block*panel kernel
 				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
 								  , alpha
-								  , blockA, actual_kc, blockB, kc
+								  , blockA, actual_kc, blockB, actual_kc
 								  , C+i2, ldc
 								  , blockW);
 			}
