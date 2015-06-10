@@ -32,7 +32,8 @@
 
 #define SIMD_INT 1
 
-#include <immintrin.h>
+#include <x86intrin.h>
+//#include <immintrin.h> -> only define for AVX
 #include <iostream>
 #include <type_traits>
 #include <limits>
