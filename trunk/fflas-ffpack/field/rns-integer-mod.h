@@ -53,7 +53,7 @@ namespace FFPACK {
 
 	template<typename RNS>
 	class RNSIntegerMod;
-};
+}
 #include "fflas-ffpack/fflas/fflas_fscal_mp.inl"
 
 #if defined(BENCH_PERF_FGEMM_MP) || defined(BENCH_PERF_TRSM_MP) || defined(BENCH_PERF_LQUP_MP)
