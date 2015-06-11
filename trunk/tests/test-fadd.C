@@ -32,7 +32,6 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <typeinfo>
 #include <givaro/modular-balanced.h>
-#include <givaro/unparametric.h>
 
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"

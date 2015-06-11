@@ -34,7 +34,7 @@
 #define __FFPACK_fger_mp_INL
 
 #include <givaro/modular-integer.h>
-#include <givaro/unparametric.h>
+#include <givaro/zring.h>
 
 #include "fflas-ffpack/fflas/fflas_helpers.inl" 
 #include "fflas-ffpack/fflas/fflas_fgemm/fgemm_classical_mp.inl" 

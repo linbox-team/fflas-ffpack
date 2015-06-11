@@ -70,7 +70,7 @@ namespace FFPACK {
 	}
 
 	template<class T >
-	T * RandomMatrix(const Givaro::UnparametricRing< T > & F,
+	T * RandomMatrix(const Givaro::ZRing< T > & F,
 			 T * A,
 			 size_t m, size_t n, size_t lda)
 	{

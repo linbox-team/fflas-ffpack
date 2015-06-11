@@ -468,7 +468,7 @@ namespace FFPACK {
 			FFLAS::Timer T;
 			size_t _size= _rns->_size;
 			
-			Givaro::UnparametricRing<BasisElement> D;
+			Givaro::ZRing<BasisElement> D;
 			std::vector<Givaro::ModularExtended<double>> Fields;
 			for(size_t i = 0 ; i < _size ; ++i){
 				Fields.emplace_back(_rns->_basis[i]);
@@ -677,7 +677,7 @@ namespace FFPACK {
                         size_t _size= _rns->_size;
                         BasisElement *Gamma, *alpha, *A;
 			A=B._ptr;
-			Givaro::UnparametricRing<BasisElement> D;
+			Givaro::ZRing<BasisElement> D;
 			FFLAS::Timer T;
 			// T.start();
                         Gamma = FFLAS::fflas_new(D,n,_size);

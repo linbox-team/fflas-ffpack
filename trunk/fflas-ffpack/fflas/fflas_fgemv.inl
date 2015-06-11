@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fgemv_INL
 #define __FFLASFFPACK_fgemv_INL
 
-#include <givaro/unparametric.h> // DoubleDomain
+#include <givaro/zring.h> // DoubleDomain
 
 #if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"

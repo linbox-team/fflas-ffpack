@@ -45,7 +45,6 @@
 
 using namespace std;
 using namespace FFPACK;
-using Givaro::UnparametricRing;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 

@@ -34,7 +34,7 @@
 #define __FFPACK_fgemm_classical_INL
 
 #include <givaro/modular-integer.h>
-#include <givaro/unparametric.h>
+#include <givaro/zring.h>
 
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"

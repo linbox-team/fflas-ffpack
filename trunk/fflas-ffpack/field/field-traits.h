@@ -166,7 +166,7 @@ namespace FFLAS { /*  Traits */
 	template <> struct ModeTraits<Givaro::Modular<uint64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
 	template <size_t K> struct ModeTraits<Givaro::Modular<RecInt::rint<K> > > {typedef typename ModeCategories::DelayedTag value;};
-	//template <size_t K, size_t MG> struct ModeTraits<Givaro::UnparametricRing<RecInt::rmint<K,MG> > > {typedef typename ModeCategories::DelayedTag value;};
+	//template <size_t K, size_t MG> struct ModeTraits<Givaro::ZRing<RecInt::rmint<K,MG> > > {typedef typename ModeCategories::DelayedTag value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<float> >{typedef typename ModeCategories::DelayedTag value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<double> > {typedef typename ModeCategories::DelayedTag value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
@@ -195,14 +195,14 @@ namespace FFLAS { /*  Traits */
 	};
 	
 	// template<size_t K, int MG>
-	// struct FieldTraits<Givaro::UnparametricRing<RecInt::rmint<K, MG> > > {
+	// struct FieldTraits<Givaro::ZRing<RecInt::rmint<K, MG> > > {
 	// 	    //typedef FieldCategories::FloatingPointConvertibleTag value;
 	// 	typedef FieldCategories::ModularTag category;
 	// 	static  const bool balanced = false ;
 	// };
 
 	// template<size_t K>
-	// struct FieldTraits<Givaro::UnparametricRing<RecInt::rmint<K> > > {
+	// struct FieldTraits<Givaro::ZRing<RecInt::rmint<K> > > {
 	// 	    //typedef FieldCategories::FloatingPointConvertibleTag value;
 	// 	typedef FieldCategories::ModularTag category;
 	// 	static  const bool balanced = false ;
@@ -236,7 +236,7 @@ namespace FFLAS { /*  Traits */
 		static  const bool balanced = false ;
 	};
 
-	// UnparametricRing< intX >
+	// ZRing< intX >
 	template<>
 	struct FieldTraits<Givaro::ZRing<int16_t> > {
 //		typedef FieldCategories::FloatingPointConvertibleTag value;
@@ -274,7 +274,7 @@ namespace FFLAS { /*  Traits */
 		static  const bool balanced = false ;
 	};
 	
-	// UnparametricRing<Integer>
+	// ZRing<Integer>
 	template<>
 	struct FieldTraits<Givaro::ZRing<Givaro::Integer> >
 	{
@@ -371,12 +371,12 @@ namespace FFLAS { /* associatedDelayedField */
 		typedef FFPACK::RNSInteger<RNS> type;
 	};
 	// template <size_t K, int MG>
-	// struct associatedDelayedField<const Givaro::UnparametricRing<RecInt::rmint<K, MG> > >{
+	// struct associatedDelayedField<const Givaro::ZRing<RecInt::rmint<K, MG> > >{
 	// 	typedef Givaro::ZRing<RecInt::ruint<K> > field;
 	// 	typedef Givaro::ZRing<RecInt::ruint<K> > type;
 	// };
 	// template <size_t K>
-	// struct associatedDelayedField<const Givaro::UnparametricRing<RecInt::rmint<K> > >{
+	// struct associatedDelayedField<const Givaro::ZRing<RecInt::rmint<K> > >{
 	// 	typedef Givaro::ZRing<RecInt::ruint<K> > field;
 	// 	typedef Givaro::ZRing<RecInt::ruint<K> > type;
 	// };

@@ -203,19 +203,19 @@ int main(int ac, char **av) {
 		}
 #if 1
 		{
-			Givaro::UnparametricRing<float> F ;
+			Givaro::ZRing<float> F ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::UnparametricRing<double> F ;
+			Givaro::ZRing<double> F ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::UnparametricRing<int32_t> F;
+			Givaro::ZRing<int32_t> F;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 		{
-			Givaro::UnparametricRing<int64_t> F ;
+			Givaro::ZRing<int64_t> F ;
 			pass &= test_freduce (F,m,k,n,timing);
 		}
 #endif
