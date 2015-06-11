@@ -37,13 +37,11 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "test-utils.h"
 #include <givaro/modular.h>
-#include <givaro/unparametric.h>
 #include <givaro/modular-balanced.h>
 
 
 using namespace std;
 using namespace FFPACK;
-using Givaro::UnparametricRing;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 

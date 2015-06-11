@@ -90,7 +90,7 @@ inline void sparse_init(const Givaro::Modular<Givaro::Integer> &F, Sparse<Givaro
 }
 
 template <class IndexT>
-inline void sparse_init(const Givaro::UnparametricRing<Givaro::Integer> &F, Sparse<Givaro::UnparametricRing<Givaro::Integer>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
+inline void sparse_init(const Givaro::ZRing<Givaro::Integer> &F, Sparse<Givaro::ZRing<Givaro::Integer>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
                         Givaro::Integer* dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     A.m = rowdim;
     A.n = coldim;
@@ -122,8 +122,8 @@ inline void sparse_init(const Givaro::UnparametricRing<Givaro::Integer> &F, Spar
 }
 
 template <class IndexT, size_t RECINT_SIZE>
-inline void sparse_init(const Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE>> &F, Sparse<Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE>>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
-                        typename Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE>>::Element_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Givaro::ZRing<RecInt::rmint<RECINT_SIZE>> &F, Sparse<Givaro::ZRing<RecInt::rmint<RECINT_SIZE>>, SparseMatrix_t::CSR_ZO> &A, const IndexT *row, const IndexT *col,
+                        typename Givaro::ZRing<RecInt::rmint<RECINT_SIZE>>::Element_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     A.m = rowdim;
     A.n = coldim;
     A.nnz = nnz;
@@ -154,8 +154,8 @@ inline void sparse_init(const Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE
 }
 
 template <class IndexT, size_t RECINT_SIZE>
-inline void sparse_init(const Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE>> &F, Sparse<Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE>>, SparseMatrix_t::CSR> &A, const IndexT *row, const IndexT *col,
-                        typename Givaro::UnparametricRing<RecInt::rmint<RECINT_SIZE>>::Element_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
+inline void sparse_init(const Givaro::ZRing<RecInt::rmint<RECINT_SIZE>> &F, Sparse<Givaro::ZRing<RecInt::rmint<RECINT_SIZE>>, SparseMatrix_t::CSR> &A, const IndexT *row, const IndexT *col,
+                        typename Givaro::ZRing<RecInt::rmint<RECINT_SIZE>>::Element_ptr dat, uint64_t rowdim, uint64_t coldim, uint64_t nnz) {
     A.m = rowdim;
     A.n = coldim;
     A.nnz = nnz;

@@ -28,7 +28,7 @@
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "givaro/modular-double.h"
-#include "givaro/unparametric.h"
+#include "givaro/zring.h"
 
 #include <vector>
 #include <iostream>
@@ -154,9 +154,7 @@ test_pspmv_sell(const Field &F, IndexT *row, IndexT *col,
 #endif
 
 int main(int argc, char **argv) {
-	//using Field = UnparametricRing<double>;
-	using Field = Modular<float>;
-    // using Element = typename Field::Element;
+    using Field = Modular<float>;
 
     Field F(101);
     int nbTests = 25;

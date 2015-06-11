@@ -275,7 +275,7 @@ namespace FFLAS { /*  compression */
 			 typename Field::Element * C, int ldc
 			)
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		double * A_k, * B_k, * C_k ;
 
 		typedef typename Field::Element elem_t ;
@@ -594,7 +594,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			, const double & epsilon
 		       )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// std::cout << rec << ',' <<  M  << std::endl;
@@ -778,7 +778,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			  , const double & epsilon
 			 )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// std::cout << rec << ',' <<  M  << std::endl;
@@ -968,7 +968,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			  , const double & epsilon
 			 )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// std::cout << rec << ',' <<  M  << std::endl;
@@ -1157,7 +1157,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			, const double & epsilon
 		       )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// std::cout << rec << ',' <<  M  << std::endl;
@@ -1347,7 +1347,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			, const double & epsilon
 		       )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// Field G(p*p);
@@ -1566,7 +1566,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			, const double & epsilon
 		       )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// Field G(p*p);
@@ -1773,7 +1773,7 @@ namespace FFLAS { namespace Protected { namespace Rec {
 			   , const double & epsilon
 			  )
 	{
-		Givaro::UnparametricRing<double>   NoField;
+		Givaro::ZRing<double>   NoField;
 		// const double p = (double)F.characteristic();
 		size_t M = (n>m)?std::min(k,m):std::min(k,n);
 		// std::cout << rec << ',' <<  M  << std::endl;

@@ -31,11 +31,11 @@
 #include <cstdlib>
 
 #include "gmpxx.h"
-#include "givaro/unparametric.h"
-#include "givaro/modular.h"
-#include "givaro/modular-balanced.h"
-#include "givaro/givinteger.h"
-#include "recint/recint.h"
+#include <givaro/zring.h>
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+#include <givaro/givinteger.h>
+#include <recint/recint.h>
 #include <givaro/givintprime.h>
 
 using namespace RecInt;
@@ -71,7 +71,7 @@ size_t bitSize(T n){
 template<typename Field>
 Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();} 
 template<>
-Givaro::Integer maxFieldElt<Givaro::UnparametricRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
+Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
 
 /*** Field chooser for test according to characteristic q and bitsize b ***/
 /* if q=-1 -> field is chosen randomly with a charateristic of b bits
@@ -111,10 +111,10 @@ Field* chooseField(Givaro::Integer q, unsigned long b){
 
 int main(int argc, char **argv) {
     using Field        = Modular<Integer>;
-    using FieldMat     = UnparametricRing<double>;
+    using FieldMat     = ZRing<double>;
     using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double>;
     using FieldElement = RecInt::rmint<7>;
-    using FieldRec     = UnparametricRing<FieldElement>;
+    using FieldRec     = ZRing<FieldElement>;
     using SparseMatrix = FFLAS::Sparse<FieldRec, FFLAS::SparseMatrix_t::HYB_ZO>;
 
     Integer q = -1;

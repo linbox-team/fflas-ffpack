@@ -37,7 +37,7 @@
 
 #include <stdint.h>
 #include <givaro/modular.h>
-#include <givaro/unparametric.h>
+#include <givaro/zring.h>
 
 #include "fgemm_classical.inl"
 #include "schedule_winograd.inl"

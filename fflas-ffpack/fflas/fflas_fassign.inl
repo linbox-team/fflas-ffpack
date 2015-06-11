@@ -34,7 +34,7 @@
 #include <string.h>
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
-#include <givaro/unparametric.h>
+#include <givaro/zring.h>
 
 #include "fflas-ffpack/utils/debug.h"
 
