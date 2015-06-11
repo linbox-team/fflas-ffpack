@@ -99,7 +99,7 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
-	long int q = 131071 ;
+	int64_t q = 131071 ;
 	size_t m = 2000 ;
 	size_t k = 2000 ;
 	size_t n = 2000 ;
@@ -124,8 +124,8 @@ int main(int argc, char** argv) {
 	FFLAS::parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-//  typedef Givaro::ModularBalanced<double> Field;
-  typedef Givaro::ModularBalanced<int64_t> Field;
+  typedef Givaro::ModularBalanced<double> Field;
+//  typedef Givaro::ModularBalanced<int64_t> Field;
 //  typedef Givaro::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
 
 		      FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::WinogradPar>
 			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
-		      //		      cout<<"wino parallel"<<endl;
+			  //		      cout<<"wino parallel"<<endl;
 		      if (i) chrono.start();
 		      PAR_BLOCK
 		      {
@@ -216,16 +216,14 @@ int main(int argc, char** argv) {
 	      }
       }
 
-
-      
       freivalds.clear();
       freivalds.start();
+      
       bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
       freivalds.stop();
       timev+=freivalds.usertime();
       if (!pass) 
 	      std::cout<<"FAILED"<<std::endl;
-	  //std::cout << *A << ' ' << *B << ' ' << *C << ' '<< pass << std::endl;
   }
   FFLAS::fflas_delete( A);
   FFLAS::fflas_delete( B);
