@@ -1,6 +1,6 @@
   ******  FFLAS-FFPACK : Finite Field Linear Algebra Subroutines/Package ******  
 
-Version 1.3.3
+Version 2.1.0
 
 PURPOSE:
 
@@ -11,19 +11,19 @@ INSTALLATION:
 
 see INSTALL
 
-AVAILABILITY: from www-ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/
+AVAILABILITY: from http://linalg.org/projects/fflas-ffpack/
 
-REQUIREMENTS:  A BLAS library: for ex. ATLAS (http://math-atlas.sourceforge.net/)
+REQUIREMENTS:  A BLAS library: for ex. OpenBLAS or ATLAS
 
-This library requires the GNU C++ compiler (gcc-3.0 or newer) or any 
+This library requires the GNU C++ compiler (gcc-4.7 or newer) or any 
 compiler supporting advanced template features.
 
 
 ==========================================================
-The FFLAS-FFPACK website is  www-ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/
+The FFLAS-FFPACK website is http://linalg.org/projects/fflas-ffpack
 
 Please address your bug reports, suggestions and comments to 
 the discussion group http://groups.google.com/group/ffpack-devel
  
-Last update : June 2008
+Last update : June 2015
  

@@ -11,8 +11,6 @@ Conversion double -> float for small moduli:
 
 Compilation of some kernels (gemm<Modular<double> >, PLUQ, etc)
 
-Move fields to Givaro
-
 Simplification of helpers:
 * currently all mmhelpers have Amax,Amin,Bmax,Bmin, Cmax,Cmin,Outmax,
    Outmin, and all related features for delayed reductions.
