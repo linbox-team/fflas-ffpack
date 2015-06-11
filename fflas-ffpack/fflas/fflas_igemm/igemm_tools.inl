@@ -134,7 +134,7 @@ namespace FFLAS { namespace details {
 	inline void BlockingFactor(size_t& m, size_t& n, size_t& k)
 	{
 		int l1, l2, l3, tlb;
-		getCacheSize(l1,l2,l3);
+		queryCacheSizes(l1,l2,l3);
 		getTLBSize(tlb);
 		/*
 		   cout<<"Cache size: ";
@@ -145,7 +145,8 @@ namespace FFLAS { namespace details {
 		   cout<<endl;
 		   */
 		l2=std::max(l2,l3);
-		l2=std::min(l2,tlb);
+		if (tlb)
+			l2=std::min(l2,tlb);
 		size_t kc,mc;
 		// kc * 2*(_mr+_nr) must fit in L1 cache
 		// kc * (n+mc) must fit in L2 cache and in TLB
