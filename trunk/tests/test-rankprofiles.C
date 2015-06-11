@@ -89,7 +89,6 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 			FFLAS::fflas_delete(RP1);
 			FFLAS::fflas_delete(RP2);
 		}
-
 		{
 			// Testing if 1 PLUQ computes the rank profiles of all leading submatrices 
 			size_t* RP1, * RP2;
@@ -129,22 +128,23 @@ bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size
 			RandomRankProfile (m, r, RRP);
 			RandomRankProfile (n, r, CRP);
 			
-			// write_perm (std::cout<<"RRP = ", RRP, m);
-			// write_perm (std::cout<<"CRP = ", CRP, n);
 			RandomMatrixWithRankandRPM(*F,A,lda,r,m,n, RRP, CRP);
 			FFLAS::fassign (*F, m, n, A, lda, B, lda); 
-			FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+			size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
-			FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+			size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
-			FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+			size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
-			FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+			size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+			// write_perm (std::cout<<"RRP     = ", RRP, r);
+			// write_perm (std::cout<<"CRP     = ", CRP, r);
 			std::sort(CRP,CRP+r);
-			std::sort(RRP,RRP+r);
+			std::sort(RRP,RRP+r);	
+			ok &= (cs==ct)&(cs==rs)&(cs==rt)&(cs==r);
 			for (size_t i=0; i<r; i++)
 				ok &= (CRPLUD[i] == CRP[i]) && (CRPPLUQ[i] == CRP[i]) && 
-					  (RRPLUD[i] == RRP[i]) && (RRPPLUQ[i] == RRP[i]);
+					(RRPLUD[i] == RRP[i]) && (RRPPLUQ[i] == RRP[i]);
 			FFLAS::fflas_delete(CRP);
 			FFLAS::fflas_delete(RRP);
 			FFLAS::fflas_delete(CRPLUD);
@@ -180,7 +180,7 @@ int main(int argc, char** argv){
 	size_t iters = 6 ;
 	bool loop=false;
 	static Argument as[] = {
-		{ 'q', "-q Q", "Set the field cardinality.",         TYPE_INT , &q },
+		{ 'q', "-q Q", "Set the field cardinality.",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
 		{ 'n', "-n N", "Set the number of cols in the matrix.", TYPE_INT , &n },
 		{ 'm', "-m N", "Set the number of rows in the matrix.", TYPE_INT , &m },
