@@ -1,10 +1,11 @@
 2015-06-11 v2.1.0
-	test suite and benchmark improvement :
+
+	Test suite and benchmark improvement :
 	* much larger coverage
 	* run each most tests over a wide range	 of fields
 	* systematic interface and options
 
-	new features:
+	New features:
 	* parallel PLUQ
 	* computation of rank profiles and rank profile matrices
 	* echelon and reduced echelon forms form both LUdivine and PLUQ
@@ -16,10 +17,12 @@
 	on Givaro's RecInt multiprecision integers)
 	* support of RNS based gaussian elimination on multiprecision fields
 	* Paladin: DSL for parallel programming adressing OMP, TBB and Kaapi
-	improvements:
+
+	Improvements:
 	* a lot of new sparse mat-vec product improvements
 	* faster parallel and sequential fgemm
 	* many bugs found and removed (no known bugs at release time)
+	* improved helper system, with mode of operations
 
 2014-08-08 v2.0.0
 	code update :
