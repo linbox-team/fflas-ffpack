@@ -222,7 +222,7 @@ bool launch_fger_dispatch(const Field &F,
 	return ok ;
 }
 template <class Field>
-bool run_with_field (long long q, unsigned long b, size_t n, size_t iters){
+bool run_with_field (int64_t q, unsigned long b, size_t n, size_t iters){
 	bool ok = true ;
 	int nbit=(int)iters;
 	while (ok &&  nbit){
