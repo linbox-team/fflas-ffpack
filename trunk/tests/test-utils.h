@@ -144,7 +144,7 @@ namespace FFPACK {
 
 		/*  Create U, upper or rank r */
 		for (size_t i=0 ; i<r ; ++i){
-			for (size_t j= 0 ; j<i ;++j) F.init(U[i*n+j],0UL);
+			for (size_t j= 0 ; j<i ;++j) F.init(U[i*n+j],0U);
 			nzR.random( U[i*n+i] );
 			for (size_t j= i+1; j<n ;++j) R.random( U[i*n+j] );
 		}
@@ -154,9 +154,9 @@ namespace FFPACK {
 
 		/*  Create a random P,Q */
 		for (size_t i = 0 ; i < n ; ++i)
-			P[i] = i + RandInt(0UL,n-i);
+			P[i] = i + RandInt(0U,n-i);
 		for (size_t i = 0 ; i < m ; ++i)
-			Q[i] = i + RandInt(0UL,m-i);
+			Q[i] = i + RandInt(0U,m-i);
 
 		/*  compute product */
 
@@ -284,9 +284,9 @@ namespace FFPACK {
 		/*  Create a random P,Q */
 
 		for (size_t i = 0 ; i < n ; ++i)
-			P[i] = i + RandInt(0UL,n-i);
+			P[i] = i + RandInt(0U,n-i);
 		for (size_t i = 0 ; i < n ; ++i)
-			Q[i] = i + RandInt(0UL,n-i);
+			Q[i] = i + RandInt(0U,n-i);
 
 		/*  det of P,Q */
 		int d1 =1 ;
@@ -316,7 +316,7 @@ namespace FFPACK {
 
 		for (size_t i=0 ; i<n ; ++i)
 			for (size_t j= i+1; j<n ;++j)
-				F.init(L[i*n+j],0UL);
+				F.init(L[i*n+j],0U);
 
 
 		/*  Create U, upper or rank r */
