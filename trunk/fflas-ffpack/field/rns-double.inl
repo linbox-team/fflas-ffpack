@@ -171,7 +171,7 @@ namespace FFPACK {
 
 #endif
 
-		integer hM= (_M-1LL)>>1;
+		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
@@ -261,7 +261,7 @@ namespace FFPACK {
 	inline void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 					   const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
-		integer hM= (_M-1LL)>>1;
+		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
@@ -437,7 +437,7 @@ inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, 
 
 // TODO: less naive implementation
 inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
-	integer hM= (_M-1LL)/2;
+	integer hM= (_M-1)/2;
 	for(size_t i = 0 ; i < m ; ++i){
 		A[i] = 0;
 		integer tmp;
