@@ -64,9 +64,9 @@ private:
 	inline void split(const Element x, Element &x_h, Element &x_l) const {
     	Element c;
     	if(std::is_same<Element, double>::value){
-    		c = (Element)((1UL << 27)+1);	
+    		c = (Element)((1 << 27)+1);	
     	}else if(std::is_same<Element, float>::value){
-    		c = (Element)((1UL << 13)+1);	
+    		c = (Element)((1 << 13)+1);	
     	}
     	 
     	x_h = (c*x)+(x-(c*x));

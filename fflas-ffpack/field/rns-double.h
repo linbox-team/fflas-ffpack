@@ -155,7 +155,7 @@ namespace FFPACK {
 					_crt_out[j+i*_ldm]=double(tmp&MASK);
 					tmp>>=16;
 				}
-				double beta=double(1UL<<16);
+				double beta=double(1<<16);
 				double  acc=1;
 				for(size_t j=0;j<_ldm;j++){
 					_crt_in[j+i*_ldm]=acc;
@@ -288,7 +288,7 @@ namespace FFPACK {
 					_crt_out[j+i*_ldm]=double(tmp&MASK);
 					tmp>>=16;
 				}
-				double beta=double(1UL<<16);
+				double beta=double(1<<16);
 				double  acc=1;
 				for(size_t j=0;j<_ldm;j++){
 					_crt_in[j+i*_ldm]=acc;
@@ -320,7 +320,7 @@ namespace FFPACK {
 		inline void splitSimd(const SimdT x, SimdT & x_h, SimdT & x_l) const {
 			using simd = Simd<double>;
 			using vect_t = typename simd::vect_t;
-			vect_t vc = simd::set1((double)((1UL << 27)+1));
+			vect_t vc = simd::set1((double)((1 << 27)+1));
 			vect_t tmp = simd::mul(vc, x);
 			x_h = simd::add(tmp, simd::sub(x, tmp));
 			x_l = simd::sub(x, x_h);

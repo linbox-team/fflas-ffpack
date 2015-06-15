@@ -197,8 +197,8 @@ namespace FFPACK {
 		m1_d = m1[0]->_mp_d;
 		m2_d = m2[0]->_mp_d;
 		m3_d = m3[0]->_mp_d;
-		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) (k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
-		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) (k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
 		for(size_t i=0;i<m;i++)
 			for (size_t j=0;j<n;j++){
 				size_t idx=i*n+j;
@@ -287,8 +287,8 @@ namespace FFPACK {
 		m1_d = m1[0]->_mp_d;
 		m2_d = m2[0]->_mp_d;
 		m3_d = m3[0]->_mp_d;
-		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int32_t)(k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
-		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int32_t)(k4*8UL/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int32_t)(k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int32_t)(k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
 		for (size_t j=0;j<n;j++)
 			for(size_t i=0;i<m;i++){
 
