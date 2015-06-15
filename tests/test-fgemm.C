@@ -41,6 +41,7 @@
 #include <iomanip>
 #include <iostream>
 #include <givaro/modular.h>
+#include <givaro/udl.h>
 #include <recint/rint.h>
 
 #include <givaro/givintprime.h>
@@ -277,7 +278,7 @@ bool launch_MM_dispatch(const Field &F,
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, unsigned long b, size_t n, int nbw, size_t iters, bool par ){
+bool run_with_field (Givaro::Integer q, uint64_t b, size_t n, int nbw, size_t iters, bool par ){
 	bool ok = true ;
 
 	int nbit=(int)iters;
@@ -370,7 +371,7 @@ int main(int argc, char** argv)
 
 	static size_t iters = 3 ;
 	static Givaro::Integer q = -1 ;
-	static unsigned long b = 0 ;
+	static uint64_t b = 0 ;
 	static size_t n = 50 ;
 	static int nbw = -1 ;
 	static bool loop = false;
@@ -396,12 +397,12 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<Modular<int32_t> >(q,b,n,nbw,iters,p);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,nbw,iters,p);
-		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63,n,nbw,iters, p);
-		ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127,n,nbw,iters, p);
+		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,n,nbw,iters, p);
+		ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,n,nbw,iters, p);
 		ok &= run_with_field<Modular<int64_t> >(q,b,n,nbw,iters, p);
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
-		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
+		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 		
 	} while (loop && ok);
 
