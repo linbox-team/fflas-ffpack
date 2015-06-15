@@ -88,13 +88,13 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0)) == (long) Arns[i*n+j+k*rda]);
-					if (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
-					    != (long) Arns[i*n+j+k*rda])
+					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
+					if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+					    != (int64_t) Arns[i*n+j+k*rda])
 						{
-							std::cout<<((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
+							std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
 								 <<" != "
-								 <<(long) Arns[i*n+j+k*rda]
+								 <<(int64_t) Arns[i*n+j+k*rda]
 								 <<std::endl;
 						}
 				}
@@ -154,8 +154,8 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++)
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]<0?(long)_basis[k]:0))
-					      == (long) Arns[j*m+i+k*rda]);
+					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+					      == (int64_t) Arns[j*m+i+k*rda]);
 		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
@@ -171,7 +171,7 @@ namespace FFPACK {
 
 #endif
 
-		integer hM= (_M-1)>>1;
+		integer hM= (_M-1LL)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
@@ -248,10 +248,10 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
-					long _p =(long) _basis[k];
+					int64_t _p =(int64_t) _basis[k];
 					integer curr=A[i*lda+j] - gamma*Acopy[i*n+j];
-					ok&= ( curr% _p +(curr%_p<0?_p:0) == (long) Arns[i*n+j+k*rda]);
-					//std::cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<std::endl;
+					ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+					//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
@@ -261,7 +261,7 @@ namespace FFPACK {
 	inline void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 					   const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
-		integer hM= (_M-1)>>1;
+		integer hM= (_M-1LL)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
@@ -339,8 +339,8 @@ namespace FFPACK {
 		for (size_t i=0;i<m;i++)
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
-					ok&= (((A[i*lda+j] % (long) _basis[k])+(A[i*lda+j]% (long) _basis[k]<0?(long)_basis[k]:0)) == (long) Arns[i+j*m+k*rda]);
-					//std::cout<<A[i*lda+j]<<" mod "<<(long) _basis[k]<<"="<<(long) Arns[i*n+j+k*rda]<<";"<<std::endl;
+					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]% (int64_t) _basis[k]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i+j*m+k*rda]);
+					//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif // CHECK_RNS
@@ -437,7 +437,7 @@ inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, 
 
 // TODO: less naive implementation
 inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
-	integer hM= (_M-1)/2;
+	integer hM= (_M-1LL)/2;
 	for(size_t i = 0 ; i < m ; ++i){
 		A[i] = 0;
 		integer tmp;
