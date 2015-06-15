@@ -107,7 +107,7 @@ Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::I
    if b=0 -> bitsize is chosen randomly according to maxFieldElt
 */
 template<typename Field>
-Field* chooseField(Givaro::Integer q, unsigned long b){
+Field* chooseField(Givaro::Integer q, uint64_t b){
   Givaro::Integer maxV= maxFieldElt<Field>();
   auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   std::mt19937 mt_rand(seed);
@@ -115,7 +115,7 @@ Field* chooseField(Givaro::Integer q, unsigned long b){
     return nullptr;
   if (b<=1){
     //srand((double)std::chrono::high_resolution_clock::now());
-    auto bitrand = std::bind(std::uniform_int_distribution<unsigned long>(2,maxV.bitsize()-1),
+    auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
                  mt_rand);
     b = bitrand();
   }

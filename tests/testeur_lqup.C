@@ -57,7 +57,7 @@ typedef ModularBalanced<double> Field;
 int main(int argc, char** argv){
  FFLAS::Timer tim;
 	Givaro::IntPrimeDom IPD;
-	unsigned long p;
+	uint64_t p;
 	size_t M, N ;
 	bool keepon = true;
 	Givaro::Integer _p,tmp;

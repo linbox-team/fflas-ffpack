@@ -262,7 +262,7 @@ int main(int ac, char **av) {
 	static size_t m = 300 ;
 	static size_t n = 301 ;
 	static size_t k = 300 ;
-	static unsigned long  p = 7;
+	static uint64_t  p = 7;
 	int seed = (int) time(NULL);
 	static bool timing = false ;
 

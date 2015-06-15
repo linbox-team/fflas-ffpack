@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 {
 
 	static int iters =10 ;
-	static unsigned long p = 65521 ;
+	static uint64_t p = 65521 ;
 	static size_t n = 200 ;
 
 	static Argument as[] = {
