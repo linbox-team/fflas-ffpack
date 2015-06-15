@@ -36,6 +36,7 @@
 #define __has_builtin(x) 0  // Compatibility with non-clang compilers.
 #endif
 
+#include <givaro/udl.h>
 
 // count leading zeros
 inline int32_t clz(uint64_t val) {
@@ -44,7 +45,7 @@ inline int32_t clz(uint64_t val) {
 #else
 	if (! val) return 64 ;
 	int32_t result = 0;
-	while (! (val & (1ULL << 63))) {
+	while (! (val & (1_ui64 << 63))) {
 		val <<= 1;
 		result++;
 	}
@@ -58,7 +59,7 @@ inline int32_t clz(uint32_t val) {
 #else
 	if (! val) return 32 ;
 	int32_t result = 0;
-	while (! (val & (1UL << 31))) {
+	while (! (val & (1 << 31))) {
 		val <<= 1;
 		result++;
 	}
@@ -116,7 +117,7 @@ static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 
 static uint64_t getpoweroftwoden_128(uint32_t d, uint64_t q, uint64_t *r) {
 #ifdef __x86_64__
-    return divide_128(1ULL << (d - 1), 0, q, r);
+    return divide_128(1_ui64 << (d - 1), 0, q, r);
 #else
     lldiv_t ta;
     ta = lldiv(1ULL<<63,q);

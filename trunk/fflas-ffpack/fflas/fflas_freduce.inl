@@ -32,6 +32,7 @@
 #ifndef __FFLASFFPACK_fflas_freduce_INL
 #define __FFLASFFPACK_fflas_freduce_INL
 
+#include <givaro/udl.h>
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 #include "fflas-ffpack/utils/bit_manipulation.h"
@@ -119,7 +120,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 	inline int64_t monfmod(int64_t A, int64_t p, int8_t shifter, int64_t magic)
 	{
 		if (poweroftwo) { //shift path
-			int64_t q = A + ((A >> 63) & ((1LL << shifter) - 1));
+			int64_t q = A + ((A >> 63) & ((1_i64 << shifter) - 1));
 			q = A - ((q>>shifter)<< shifter) ;
 			return (q<0)?(q+p):q ;
 		}
@@ -170,14 +171,13 @@ namespace FFLAS { namespace vectorised {
 
 			/*the dividend here is 2**(floor_log_2_d + 63), so the low 64 bit word is 0 and the high word is floor_log_2_d - 1 */
 			uint64_t rem, proposed_m;
-                            // proposed_m = divide_128(1ULL << (floor_log_2_d - 1), 0, denom, &rem);
 
                         proposed_m = getpoweroftwoden_128(floor_log_2_d, denom, &rem);
 
 			const uint64_t e = denom- rem;
 
 			/* We are going to start with a power of floor_log_2_d - 1.  This works if works if e < 2**floor_log_2_d. */
-			if (e < (1ULL << floor_log_2_d)) {
+			if (e < (1_ui64 << floor_log_2_d)) {
 				/* This power works */
 				shift = (int8_t)(floor_log_2_d - 1);
 			}

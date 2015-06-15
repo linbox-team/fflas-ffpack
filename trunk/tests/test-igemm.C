@@ -7,6 +7,8 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/timer.h"
 
+#include <givaro/udl.h>
+
 // COL_MAJOR true not supported in test. To be updated.
 #define COL_MAJOR false
 #define LEAD_GEN true
@@ -23,7 +25,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 
 	srand((unsigned int)time(NULL));
 	typedef Givaro::Modular<Givaro::Integer> IField ;
-	IField Z(1UL<<63);
+	IField Z(1_ui64<<63);
 
 	size_t ra = (tA==FflasNoTrans) ? m : k ;
 	size_t ca = (tA==FflasNoTrans) ? k : m ;

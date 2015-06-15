@@ -37,9 +37,10 @@
 #include <vector>
 #include <cmath>
 
+#include <recint/recint.h> 
 #include <givaro/modular-integer.h>
-#include "recint/recint.h" 
 #include <givaro/givinteger.h>
+#include <givaro/udl.h>
 
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
@@ -394,7 +395,7 @@ namespace FFPACK {
 		inline void splitSimd(const SimdT x, SimdT & x_h, SimdT & x_l) const {
 			using simd = Simd<double>;
 			using vect_t = typename simd::vect_t;
-			vect_t vc = simd::set1((double)((1UL << DELTA)+1));
+			vect_t vc = simd::set1((double)((1_ui64 << DELTA) + 1_ui64));
 			vect_t tmp = simd::mul(vc, x);
 			x_h = simd::add(tmp, simd::sub(x, tmp));
 			x_l = simd::sub(x, x_h);
@@ -429,7 +430,7 @@ namespace FFPACK {
 		}
 		
 		inline void split(const double x, const int delta, double &x_h, double &x_l) const {
-			double c = (double)((1UL << delta)+1);
+			double c = (double)((1_ui64 << delta) + 1_ui64);
 			x_h = (c*x)+(x-(c*x));
 			x_l = x - x_h;
 		}

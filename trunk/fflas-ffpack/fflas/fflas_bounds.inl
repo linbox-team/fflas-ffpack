@@ -35,9 +35,9 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/flimits.h"
 
+#include <givaro/udl.h>
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
-
 
 namespace FFLAS { namespace Protected {
 
@@ -102,7 +102,7 @@ namespace FFLAS { namespace Protected {
 		}
 			
 		//kmax--; // we computed a strict upper bound
-		return  (size_t) std::min ((unsigned long long)kmax, 1ULL << 31);
+		return  (size_t) std::min ((uint64_t)kmax, 1_ui64 << 31);
 	}
 
 
@@ -142,9 +142,9 @@ namespace FFLAS { namespace Protected {
 	// 	FFLAS_INT_TYPE pi;
 	// 	F.characteristic(pi);
 	// 	unsigned long p = pi;
-	// 	unsigned long long p1(1UL), p2(1UL);
+	// 	unsigned long long p1(1), p2(1);
 	// 	size_t nmax = 0;
-	// 	unsigned long long max = ( (1ULL << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
+	// 	unsigned long long max = ( (1 << (DBL_MANT_DIG + 1) ) / ((unsigned long long)(p - 1)));
 	// 	while ( (p1 + p2) < max ){
 	// 		p1*=p;
 	// 		p2*=p-2;
@@ -215,9 +215,9 @@ namespace FFLAS { namespace Protected {
 	// 	FFLAS_INT_TYPE pi;
 	// 	F.characteristic (pi);
 	// 	unsigned long p = (pi + 1) / 2;
-	// 	unsigned long long p1(1UL);
+	// 	unsigned long long p1(1);
 	// 	size_t nmax = 0;
-	// 	unsigned long long max = (1ULL << (FLT_MANT_DIG + 1)) ;
+	// 	unsigned long long max = (1 << (FLT_MANT_DIG + 1)) ;
 	// 	while ((pi-1)*p1 < max){
 	// 		p1 *= p;
 	// 		nmax++;

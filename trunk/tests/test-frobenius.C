@@ -71,7 +71,7 @@ int main(int argc, char** argv){
 	}
 	Field F( atoi(argv[1]) );
 	Field::Element one;
-	F.init(one, 1UL);
+	F.init(one, 1U);
 	Field::Element * A = read_field<Field> (F,argv[2],&m,&n);
 	size_t c = atoi(argv[3]);
 

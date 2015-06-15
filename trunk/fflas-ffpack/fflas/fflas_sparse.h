@@ -36,7 +36,9 @@
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/paladin/parallel.h"
-#include "recint/recint.h" 
+
+#include <recint/recint.h>
+#include <givaro/udl.h>
 
 #ifndef index_t
 #define index_t uint32_t
@@ -394,12 +396,12 @@ inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::C
 
 namespace FFLAS {
     struct HelperFlag {
-        static constexpr uint64_t none = 0 ;
-        static constexpr uint64_t coo  = 1UL;
-        static constexpr uint64_t csr  = 1UL<<1;
-        static constexpr uint64_t ell  = 1UL<<2;
-        static constexpr uint64_t aut  = static_cast<uint64_t>(1UL)<<32;
-        static constexpr uint64_t pm1  = static_cast<uint64_t>(1UL)<<33;
+        static constexpr uint64_t none = 0_ui64;
+        static constexpr uint64_t coo  = 1_ui64;
+        static constexpr uint64_t csr  = 1_ui64 << 1;
+        static constexpr uint64_t ell  = 1_ui64 << 2;
+        static constexpr uint64_t aut  = 1_ui64 << 32;
+        static constexpr uint64_t pm1  = 1_ui64 << 33;
     };
     
 	template<class Field>

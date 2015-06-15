@@ -37,6 +37,8 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/flimits.h"
 
+#include <givaro/udl.h>
+
 // using namespace FFPACK;
 #define NEWWINO
 // #define NOTRANDOM
@@ -92,8 +94,8 @@ namespace FFLAS { /*  compression */
 	template<>
 	struct Packer<double,2> {
 		uint64_t bits = (limits<double>::digits()/2) ;
-		double   base = (double) (1UL << bits) ;
-		uint64_t mask = (1UL << bits) - 1UL ;
+		double   base = (double) (1_ui64 << bits) ;
+		uint64_t mask = (1_ui64 << bits) - 1_ui64 ;
 
 		template<class T>
 		void accu(double * p, T * w) {
