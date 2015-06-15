@@ -147,10 +147,10 @@ namespace FFPACK {
 				_basisMax[i] = _basis[i]-1;
 				_negbasis[i] = 0-_basis[i];
 				_field_rns[i] = ModField(_basis[i]);
-				_Mi[i]        = _M/(unsigned long)_basis[i];
+				_Mi[i]        = _M/(uint64_t)_basis[i];
 				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);
 				_field_rns[i].invin(_MMi[i]);
-				integer tmp= _Mi[i]*(unsigned long)_MMi[i];
+				integer tmp= _Mi[i]*(uint64_t)_MMi[i];
 				for(size_t j=0;j<_ldm;j++){
 					_crt_out[j+i*_ldm]=double(tmp&MASK);
 					tmp>>=16;
@@ -280,10 +280,10 @@ namespace FFPACK {
 				_basisMax[i] = _basis[i]-1;
 				_negbasis[i] = 0-_basis[i];
 				_field_rns[i] = ModField(_basis[i]);
-				_Mi[i]        = _M/(unsigned long)_basis[i];
+				_Mi[i]        = _M/(uint64_t)_basis[i];
 				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);
 				_field_rns[i].invin(_MMi[i]);
-				integer tmp= _Mi[i]*(unsigned long)_MMi[i];
+				integer tmp= _Mi[i]*(uint64_t)_MMi[i];
 				for(size_t j=0;j<_ldm;j++){
 					_crt_out[j+i*_ldm]=double(tmp&MASK);
 					tmp>>=16;
