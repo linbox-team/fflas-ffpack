@@ -67,7 +67,7 @@ int main(int argc, char** argv){
 		    <<endl;
 		exit(-1);
 	}
-	Field F((unsigned long)atoi(argv[1]));
+	Field F((uint64_t)atoi(argv[1]));
 	Field::Element * A;
 
 	A = read_field(F,argv[2],&m,&n);

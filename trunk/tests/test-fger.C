@@ -222,7 +222,7 @@ bool launch_fger_dispatch(const Field &F,
 	return ok ;
 }
 template <class Field>
-bool run_with_field (int64_t q, unsigned long b, size_t n, size_t iters){
+bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters){
 	bool ok = true ;
 	int nbit=(int)iters;
 	while (ok &&  nbit){
@@ -268,7 +268,7 @@ int main(int argc, char** argv)
 
 	static size_t iters = 3 ;
 	static long long q = -1 ;
-	static unsigned long b = 0 ;
+	static uint64_t b = 0 ;
 	static size_t n = 50 ;
 	static bool loop = false;
 	static Argument as[] = {

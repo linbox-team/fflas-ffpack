@@ -51,7 +51,7 @@ int main(int argc, char** argv){
 
  FFLAS::Timer tim;
 	Givaro::IntPrimeDom IPD;
-	unsigned long p;
+	uint64_t p;
 	size_t M, N, K ;
 	bool keepon = true;
 	Givaro::Integer _p,tmp;

@@ -997,7 +997,7 @@ bool launch_test(const Field & F,
 
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, unsigned long b, size_t m, size_t n, size_t r, size_t iters){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters){
 	bool ok = true ;
 	int nbit=(int)iters;
 	
