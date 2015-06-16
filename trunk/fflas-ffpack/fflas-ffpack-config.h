@@ -56,7 +56,7 @@
 #  ifndef _GLIBCXX_USE_C99_MATH_TR1
 #    include <cstdlib>
 #    include <string>
-#    include <math.h>
+#    include <cmath>
 #    undef fma
 #    include <stdlib.h>
 #    undef strtoull
