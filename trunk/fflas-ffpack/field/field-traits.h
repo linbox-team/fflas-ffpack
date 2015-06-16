@@ -310,76 +310,26 @@ namespace FFLAS { /* associatedDelayedField */
 		typedef Field field;
 		typedef Field& type; // reference to avoid copying heavy fields
 	};
-	template <>
-	struct associatedDelayedField<const Givaro::Modular<float> >{
-		typedef Givaro::ZRing<float> field;
-		typedef Givaro::ZRing<float> type;
+	template <typename T>
+	struct associatedDelayedField<const Givaro::Modular<T>> {
+		typedef Givaro::ZRing<T> field;
+		typedef Givaro::ZRing<T> type;
 	};
-	template <>
-	struct associatedDelayedField<const Givaro::ModularBalanced<float> >{
-		typedef Givaro::ZRing<float> field;
-		typedef Givaro::ZRing<float> type;
+	template <typename T>
+	struct associatedDelayedField<const Givaro::ModularBalanced<T>> {
+		typedef Givaro::ZRing<T> field;
+		typedef Givaro::ZRing<T> type;
 	};
-	template <>
-	struct associatedDelayedField<const Givaro::Modular<double> >{
-		typedef Givaro::ZRing<double> field;
-		typedef Givaro::ZRing<double> type;
-	};
-	template <>
-	struct associatedDelayedField<const Givaro::ModularBalanced<double> >{
-		typedef Givaro::ZRing<double> field;
-		typedef Givaro::ZRing<double> type;
-	};
-	template <>
-	struct associatedDelayedField<const Givaro::Modular<int32_t> >{
-		typedef Givaro::ZRing<int32_t> field;
-		typedef Givaro::ZRing<int32_t> type;
-	};
-	template <>
-	struct associatedDelayedField<const Givaro::ModularBalanced<int32_t> >{
-		typedef Givaro::ZRing<int32_t> field;
-		typedef Givaro::ZRing<int32_t> type;
-	};
-	template <>
-	struct associatedDelayedField<const Givaro::Modular<int64_t> >{
-		typedef Givaro::ZRing<int64_t> field;
-		typedef Givaro::ZRing<int64_t> type;
-	};
-	template <>
-	struct associatedDelayedField<const Givaro::ModularBalanced<int64_t> >{
-		typedef Givaro::ZRing<int64_t> field;
-		typedef Givaro::ZRing<int64_t> type;
-	};
-	template <size_t K>
-	struct associatedDelayedField<const Givaro::Modular<RecInt::rint<K> > >{
-		typedef Givaro::ZRing<RecInt::rint<K> > field;
-		typedef Givaro::ZRing<RecInt::rint<K> > type;
-	};
-	template <>
-	struct associatedDelayedField<const Givaro::Modular<Givaro::Integer> >{
-		typedef Givaro::ZRing<Givaro::Integer> field;
-		typedef Givaro::ZRing<Givaro::Integer> type;
-	};
-	template <class T>
-	struct associatedDelayedField<const Givaro::ZRing<T> >{
+	template <typename T>
+	struct associatedDelayedField<const Givaro::ZRing<T>> {
 		typedef Givaro::ZRing<T> field;
 		typedef Givaro::ZRing<T> type;
 	};
 	template <typename RNS>
-	struct associatedDelayedField<const FFPACK::RNSIntegerMod<RNS> >{
+	struct associatedDelayedField<const FFPACK::RNSIntegerMod<RNS>> {
 		typedef FFPACK::RNSInteger<RNS> field;
 		typedef FFPACK::RNSInteger<RNS> type;
 	};
-	// template <size_t K, int MG>
-	// struct associatedDelayedField<const Givaro::ZRing<RecInt::rmint<K, MG> > >{
-	// 	typedef Givaro::ZRing<RecInt::ruint<K> > field;
-	// 	typedef Givaro::ZRing<RecInt::ruint<K> > type;
-	// };
-	// template <size_t K>
-	// struct associatedDelayedField<const Givaro::ZRing<RecInt::rmint<K> > >{
-	// 	typedef Givaro::ZRing<RecInt::ruint<K> > field;
-	// 	typedef Givaro::ZRing<RecInt::ruint<K> > type;
-	// };
 	
 } // FFLAS
 
