@@ -1425,9 +1425,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_ftrtr.inl"
 #include "ffpack_pluq.inl"
 #include "ffpack_pluq_mp.inl"
-#ifdef __FFLASFFPACK_USE_OPENMP
 #include "ffpack_ppluq.inl"
-#endif
 #include "ffpack_ludivine.inl"
 #include "ffpack_ludivine_mp.inl"
 #include "ffpack_echelonforms.inl"
