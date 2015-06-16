@@ -143,12 +143,16 @@ namespace FFLAS {
 			DFElt absbeta;
 			delayedField.init(absbeta,beta);
 			if (beta < 0) absbeta = -beta;
-			DFElt diff = MaxStorableValue - absbeta * std::max(-Cmin, Cmax);
-			DFElt AB = std::max (-Amin, Amax) * std::max (-Bmin, Bmax);
+			// This cast is needed when Cmin base type is int8/16_t,
+			// getting -Cmin returns a int, not the same base type.
+			DFElt diff = MaxStorableValue - absbeta
+				* std::max(static_cast<const DFElt&>(-Cmin), Cmax);
+			DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
+				* std::max(static_cast<const DFElt&>(-Bmin), Bmax);
 			return static_cast<size_t>(((diff < DFElt(0u))||(AB<DFElt(0u)))? DFElt(0u) : diff / AB);
 		}
-		bool Aunfit(){ return Protected::unfit(std::max(-Amin,Amax));}
-		bool Bunfit(){ return Protected::unfit(std::max(-Bmin,Bmax));}
+		bool Aunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Amin),Amax));}
+		bool Bunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Bmin),Bmax));}
 		void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
 		{
 			if (beta<0){

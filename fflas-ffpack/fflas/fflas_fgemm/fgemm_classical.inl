@@ -36,6 +36,8 @@
 #ifndef __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 #define __FFLASFFPACK_fflas_fflas_fgemm_classical_INL
 
+#include <cmath>
+
 #include "fflas-ffpack/field/field-traits.h"
 #if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
@@ -142,7 +144,10 @@ namespace FFLAS {
                 if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
-			if (std::max(-Hfp.Outmin, Hfp.Outmax)>Hfp.MaxStorableValue/al){
+			// This cast is needed when Outmin base type is int8/16_t,
+			// getting -Outmin returns a int, not the same base type.
+			if (std::max(static_cast<const decltype(Hfp.Outmin)&>(-Hfp.Outmin), Hfp.Outmax)
+			    >Hfp.MaxStorableValue/al){
 				freduce (F, m, n, C, ldc);
 				Hfp.initOut();
 			}
