@@ -1,0 +1,135 @@
+#! /bin/bash
+# Coypright (c) 2011 FFLAS-FFPACK
+# written by BB <bboyer@imag.fr>
+# adapted from LinBox configuration
+#
+# ========LICENCE========
+# This file is part of the library FFLAS-FFPACK.
+#
+# FFLAS-FFPACK is free software: you can redistribute it and/or modify
+# it under the terms of the  GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+# ========LICENCE========
+#/
+
+
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+
+major=`echo @VERSION@ | cut -d'.' -f1`
+minor=`echo @VERSION@ | cut -d'.' -f2`
+micro=`echo @VERSION@ | cut -d'.' -f3`
+decvr=$((((($major*100)+$minor)*100)+$micro))
+
+
+cflags=false
+libs=false
+
+
+usage()
+{
+    cat <<EOF
+Usage: fflas-ffpack-config [OPTION]
+
+Known values for OPTION are:
+
+  --prefix		 		show FFLAS-FFPACK installation prefix
+  --libs		 		print library linking information
+  --blas-libs			print BLAS library linking information
+  --cflags				print pre-processor flags
+  --cflags-full			print pre-processor and compiler flags
+  --blas-cflags	 		print BLAS pre-processor and BLAS compiler flags
+  --blas-home	 		print where BLAS were found
+  --help		 		display this help and exit
+  --version		     	output version information string (eg @VERSION@)
+  --decimal-version	 	output version in decimal representation (base 100, that is $decvr)
+
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+	case "$1" in
+		-*=*)
+			optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` 
+			;;
+		*)
+			optarg=
+			;;
+	esac
+
+	case "$1" in
+		--prefix=*)
+			prefix=$optarg
+			;;
+
+		--prefix)
+			echo $prefix
+			;;
+
+		--version)
+			echo @VERSION@
+			exit 0
+			;;
+
+		--decimal-version)
+			echo $decvr
+			exit 0
+			;;
+
+		--help)
+			usage 0
+			;;
+
+		--cflags)
+			echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ @GIVARO_CFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
+			;;
+
+		--cflags-full)
+			 echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ @CXXFLAGS@  @GIVARO_CFLAGS@  # @PARFLAGS@ # @CUDA_CFLAGS@
+			 ;;
+
+		--blas-cflags)
+			echo -I${includedir} @CBLAS_FLAG@  @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
+			;;
+
+		--libs)
+			echo @CBLAS_LIBS@ @GIVARO_LIBS@ # @CUDA_LIBS@
+			;;
+
+		--blas-libs)
+			echo  @CBLAS_LIBS@
+			;;
+
+		--blas-home)
+			echo  @BLAS_PATH@
+			;;
+
+		*)
+			usage
+			exit 1
+			;;
+	esac
+	shift
+done
+echo
+
+exit 0

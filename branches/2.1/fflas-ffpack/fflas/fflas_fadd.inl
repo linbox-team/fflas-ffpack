@@ -1,0 +1,345 @@
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+/*
+ * Copyright (C) 2014 FFLAS-FFPACK group
+ *
+ * Written by BB <bbboyer@ncsu.edu>
+ *
+ *
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ *.
+ */
+
+#ifndef __FFLASFFPACK_fadd_INL
+#define __FFLASFFPACK_fadd_INL
+
+#include "fflas-ffpack/fflas/fflas_simd.h"
+
+namespace FFLAS { namespace vectorised {
+
+#ifdef __FFLASFFPACK_USE_SIMD
+
+	template<class SimdT, class Element, bool positive>
+	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
+	VEC_ADD(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
+	{
+		using simd = Simd<Element>;
+		C = simd::add(A, B);
+		Q = simd::vand(simd::greater(C, MAX),NEGP);
+		if (!positive) {
+			T = simd::vand(simd::lesser(C, MIN),P);
+			Q = simd::vor(Q, T);
+		}
+		C = simd::add(C, Q);
+	}
+
+	template<bool positive, class Element, class T1, class T2>
+	inline typename std::enable_if<FFLAS::support_simd_add<Element>::value, void>::type
+	addp(Element * T, const Element * TA, const Element * TB,  size_t n,  Element p,  T1 min_,  T2 max_)
+	{
+		Element min= (Element)min_, max= (Element)max_;
+		using simd = Simd<Element>;
+		using vect_t = typename simd::vect_t;
+
+		size_t i = 0;
+
+		if (n < simd::vect_size)
+		{
+			for (; i < n ; i++)
+			{
+				T[i] = TA[i] + TB[i];
+				T[i] -= (T[i] > max) ? p : 0;
+				if (!positive)
+				{
+					T[i] += (T[i] < min) ? p : 0;
+				}
+			}
+			return;
+
+		}
+
+		vect_t A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+		P   = simd::set1(p);
+		NEGP= simd::set1(-p);
+		MIN = simd::set1(min);
+		MAX = simd::set1(max);
+		long st = long(T)%simd::alignment;
+		if (st)
+		{ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j=static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
+			{
+				T[i] = TA[i] + TB[i];
+				T[i] -= (T[i] > max) ? p : 0;
+				if (!positive)
+					T[i] += (T[i] < min) ? p : 0;
+			}
+		}
+		FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
+		if ( (long(TA+i)%simd::alignment==0) && (long(TB+i)%simd::alignment==0))
+		{
+			// perform the loop using 256 bits SIMD
+			for (; i <= n - simd::vect_size ; i += simd::vect_size)
+			{
+				// C = simd::load(T+i);
+				A = simd::load(TA+i);
+				B = simd::load(TB+i);
+				VEC_ADD<vect_t,Element,positive>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
+				simd::store(T+i, C);
+			}
+		}
+		// perform the last elt from T without SIMD
+		for (; i < n ; i++)
+		{
+			T[i] = TA[i] + TB[i];
+			T[i] -= (T[i] > max) ? p : 0;
+			if (!positive)
+				T[i] += (T[i] < min) ? p : 0;
+		}
+	}
+
+	template<class SimdT, class Element,bool positive>
+	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
+	VEC_SUB(SimdT & C, SimdT & A, SimdT & B, SimdT & Q, SimdT & T, SimdT & P, SimdT & NEGP, SimdT & MIN, SimdT & MAX)
+	{
+		using simd = Simd<Element>;
+		C = simd::sub(A, B);
+		T = simd::vand(simd::lesser(C, MIN),P);
+		if (!positive) {
+			Q = simd::vand(simd::greater(C, MAX),NEGP);
+			T = simd::vor(Q, T);
+		}
+		C = simd::add(C, T);
+	}
+
+	template<bool positive, class Element, class T1, class T2>
+	inline typename std::enable_if<FFLAS::support_simd_add<Element>::value, void>::type
+	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
+	{
+		Element min = (Element)min_, max = (Element)max_;
+		using simd = Simd<Element>;
+		using vect_t = typename simd::vect_t;
+
+		size_t i = 0;
+
+		if (n < simd::vect_size)
+		{
+			for (; i < n ; i++)
+			{
+				T[i] = TA[i] - TB[i];
+				if (!positive)
+					T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+			return;
+
+		}
+		vect_t A,B,C,Q,P,NEGP,TMP,MIN,MAX;
+		P   = simd::set1(p);
+		NEGP= simd::set1(-p);
+		MIN = simd::set1(min);
+		MAX = simd::set1(max);
+		long st = long(T) % simd::alignment;
+		if (st)
+		{ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
+			{
+				T[i] = TA[i] - TB[i];
+				if (!positive)
+					T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+		}
+		FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
+		if ( (long(TA+i) % simd::alignment == 0) && (long(TB+i) % simd::alignment == 0))
+		{
+			// perform the loop using 256 bits SIMD
+			for (; i <= n - simd::vect_size ; i += simd::vect_size)
+			{
+				// C = simd::load(T+i);
+				A = simd::load(TA+i);
+				B = simd::load(TB+i);
+				VEC_SUB<vect_t,Element,positive>(C, A, B, Q, TMP, P, NEGP, MIN, MAX);
+				simd::store(T+i, C);
+			}
+		}
+
+		// perform the last elt from T without SIMD
+		for (; i < n ; i++)
+		{
+			T[i] = TA[i] - TB[i];
+			if (!positive)
+				T[i] -= (T[i] > max) ? p : 0;
+			T[i] += (T[i] < min) ? p : 0;
+		}
+	}
+
+#else // no simd, but faster than F.init()
+	template<bool positive, class Element, class T1, class T2>
+	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	void
+	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
+	{
+		Element min = (Element)min_, max = (Element)max_;
+
+		size_t i = 0;
+
+			for (; i < n ; i++)
+			{
+				T[i] = TA[i] - TB[i];
+				if (!positive)
+					T[i] -= (T[i] > max) ? p : 0;
+				T[i] += (T[i] < min) ? p : 0;
+			}
+			return;
+
+	}
+
+	template<bool positive, class Element, class T1, class T2>
+	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	void
+	addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
+	{
+		Element min= (Element)min_, max= (Element)max_;
+
+		size_t i = 0;
+
+		for (; i < n ; i++)
+		{
+			T[i] = TA[i] + TB[i];
+			T[i] -= (T[i] > max) ? p : 0;
+			if (!positive)
+			{
+				T[i] += (T[i] < min) ? p : 0;
+			}
+		}
+		return;
+	}
+
+
+#endif // __FFLASFFPACK_USE_SIMD
+
+} // vectorised
+} //  FFLAS
+
+namespace FFLAS { namespace details {
+
+	/**** Specialised ****/
+
+	template <class Field, bool ADD>
+	typename std::enable_if<FFLAS::support_simd_add<typename Field::Element>::value, void>::type
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::ModularTag
+	     )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			typename Field::Element p = (typename Field::Element) F.characteristic();
+			if (ADD)
+				FFLAS::vectorised::addp<!FieldTraits<Field>::balanced>(C,A,B,N,p,F.minElement(),F.maxElement());
+			else
+				FFLAS::vectorised::subp<!FieldTraits<Field>::balanced>(C,A,B,N,p,F.minElement(),F.maxElement());
+		}
+		else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+					F.add (C[i*incc], A[i*inca], B[i*incb]);
+				else
+					F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
+	}
+
+	template <class Field, bool ADD>
+	typename std::enable_if<!FFLAS::support_simd_add<typename Field::Element>::value, void>::type
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::ModularTag
+	     )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+				for (size_t i=0; i<N; i++)
+				if (ADD)
+					F.add (C[i], A[i], B[i]);
+				else
+					F.sub (C[i], A[i], B[i]);
+		}
+		else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+				F.add (C[i*incc], A[i*inca], B[i*incb]);
+				else
+				F.sub (C[i*incc], A[i*inca], B[i*incb]);
+		}
+	}
+
+
+
+	template <class Field, bool ADD>
+	void
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::GenericTag
+	      )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			for (size_t i=0; i<N; i++) {
+				if (ADD)
+				F.add (C[i], A[i], B[i]);
+				else
+				F.sub (C[i], A[i], B[i]);
+			}
+		}
+		else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+				F.add (C[i*incc], A[i*inca], B[i*incb]);
+				else
+				F.add (C[i*incc], A[i*inca], B[i*incb]);
+		}
+	}
+
+	template <class Field, bool ADD>
+	void
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::UnparametricTag
+	     )
+	{
+		for (size_t i=0; i<N; i++)
+			if (ADD)
+				C[i] = A[i] + B[i];
+			else
+				C[i] = A[i] - B[i];
+	}
+
+
+
+} // details
+} // FFLAS
+
+
+#endif // __FFLASFFPACK_fscal_INL
