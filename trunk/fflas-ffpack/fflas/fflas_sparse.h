@@ -74,10 +74,11 @@
 
 #define DENSE_THRESHOLD 0.5
 
+#include "fflas-ffpack/fflas/fflas.h"
+
 #include "fflas-ffpack/field/field-traits.h"
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 #include "fflas-ffpack/utils/fflas_memory.h"
-#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/paladin/parallel.h"
 
 #ifdef __FFLASFFPACK_USE_SIMD
@@ -220,57 +221,57 @@ inline typename std::enable_if<
     !(std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
       std::is_same<typename ElementTraits<typename Field::Element>::value,
                    ElementCategories::MachineIntTag>::value)>::type
-fspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm_dispatch(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                typename Field::Element_ptr y, int ldy, FCat, MZO);
 
 template <class Field, class SM, class FCat, class MZO>
 inline typename std::enable_if<
     std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
     std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value>::type
-fspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm_dispatch(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                typename Field::Element_ptr y, int ldy, FCat, MZO);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
-fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
-fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
-fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
-fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix);
 
 // ZO matrix
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, ZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
-fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
-fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, ZOSparseMatrix);
 
 /*************************************
@@ -282,57 +283,57 @@ inline typename std::enable_if<
     !(std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
       std::is_same<typename ElementTraits<typename Field::Element>::value,
                    ElementCategories::MachineIntTag>::value)>::type
-pfspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm_dispatch(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                typename Field::Element_ptr y, int ldy, FCat, MZO);
 
 template <class Field, class SM, class FCat, class MZO>
 inline typename std::enable_if<
     std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineFloatTag>::value ||
     std::is_same<typename ElementTraits<typename Field::Element>::value, ElementCategories::MachineIntTag>::value>::type
-pfspmm_dispatch(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm_dispatch(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                typename Field::Element_ptr y, int ldy, FCat, MZO);
 
 template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
-pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
-pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
-pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
-pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, NotZOSparseMatrix);
 
 // ZO matrix
 template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::GenericTag, ZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
-pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix);
 
 template <class Field, class SM>
 inline typename std::enable_if<!support_simd<typename Field::Element>::value>::type
-pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
       typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, ZOSparseMatrix);
 
 template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   typename Field::Element_ptr y, int ldy, FieldCategories::ModularTag, ZOSparseMatrix);
 
 /*************************************
@@ -375,7 +376,7 @@ inline void fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr 
                   typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void fspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void fspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                   const typename Field::Element &beta, typename Field::Element_ptr y, int ldy);
 
 #if defined(__FFLASFFPACK_USE_OPENMP)
@@ -384,7 +385,7 @@ inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr
                    typename Field::Element_ptr y);
 
 template <class Field, class SM>
-inline void pfspmm(const Field &F, const SM &A, int blockSize, typename Field::ConstElement_ptr x, int ldx,
+inline void pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
                    const typename Field::Element &beta, typename Field::Element_ptr y, int ldy);
 #endif
 }

@@ -76,14 +76,14 @@ private:
 	// Dekker mult, a * b = s + t
 	inline void mult(const Element a, const Element b, Element &s, Element &t) const{
     	s = a*b;
-#ifdef __FMA__
+//#ifdef __FMA__
     	t = std::fma(-a, b, s);
-#else
+//#else
     	Element ah, al, bh, bl;
     	split(a, ah, al);
     	split(b, bh, bl);
     	t = ((((-s+ah*bh)+(ah*bl))+(al*bh))+(al*bl));
-#endif
+//#endif
 	}
 
 public:

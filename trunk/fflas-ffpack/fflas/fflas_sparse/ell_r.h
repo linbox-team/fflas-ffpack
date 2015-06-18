@@ -67,13 +67,13 @@ void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
 
 template <class Field>
 void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R> &A,
-           const int blockSize, const typename Field::Element_ptr &x,
+           const size_t blockSize, const typename Field::Element_ptr &x,
            const int ldx, const typename Field::Element &beta,
            typename Field::Element_ptr &y, const int ldy);
 
 template <class Field>
 void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_R_ZO> &A,
-           const int blockSize, const typename Field::Element_ptr &x,
+           const size_t blockSize, const typename Field::Element_ptr &x,
            const int ldx, const typename Field::Element &beta,
            typename Field::Element_ptr &y, const int ldy);
 } // FFLAS

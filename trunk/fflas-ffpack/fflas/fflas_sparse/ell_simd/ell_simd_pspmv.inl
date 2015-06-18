@@ -145,7 +145,7 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd>
                       [&F, &A, x, y, dat, col](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                     y[i * A.chunk + k] +=
                         dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + J * A.chunk + k]];
@@ -166,7 +166,7 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd>
 #pragma omp parallel for
     for (index_t i = 0; i < A.nChunks; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                 y[i * A.chunk + k] +=
                     dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
@@ -280,21 +280,21 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd>
             for (size_t l = 0; l < block; ++l) {
                 j_loc += kmax;
                 for (; j < j_loc; ++j) {
-                    for (int k = 0; k < A.chunk; ++k) {
+                    for (size_t k = 0; k < A.chunk; ++k) {
                         y[i * A.chunk + k] +=
                             dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
                     }
                 }
-                for (int k = 0; k < A.chunk; ++k)
+                for (size_t k = 0; k < A.chunk; ++k)
                     F.reduce(y[i * A.chunk + k], y[i * A.chunk + k]);
             }
             for (; j < A.ld; ++j) {
-                for (int k = 0; k < A.chunk; ++k) {
+                for (size_t k = 0; k < A.chunk; ++k) {
                     y[i * A.chunk + k] +=
                         dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
                 }
             }
-            for (int k = 0; k < A.chunk; ++k)
+            for (size_t k = 0; k < A.chunk; ++k)
                 F.reduce(y[i * A.chunk + k], y[i * A.chunk + k]);
         }
     });
@@ -307,21 +307,21 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd>
             j_loc += kmax;
 
             for (; j < j_loc; ++j) {
-                for (int k = 0; k < A.chunk; ++k) {
+                for (size_t k = 0; k < A.chunk; ++k) {
                     y[i * A.chunk + k] +=
                         dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
                 }
             }
-            for (int k = 0; k < A.chunk; ++k)
+            for (size_t k = 0; k < A.chunk; ++k)
                 F.reduce(y[i * A.chunk + k], y[i * A.chunk + k]);
         }
         for (; j < A.ld; ++j) {
-            for (int k = 0; k < A.chunk; ++k) {
+            for (size_t k = 0; k < A.chunk; ++k) {
                 y[i * A.chunk + k] +=
                     dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
             }
         }
-        for (int k = 0; k < A.chunk; ++k)
+        for (size_t k = 0; k < A.chunk; ++k)
             F.reduce(y[i * A.chunk + k], y[i * A.chunk + k]);
     }
 #endif // TBB
