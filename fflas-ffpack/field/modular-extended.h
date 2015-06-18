@@ -99,7 +99,7 @@ public:
 	: zero(0.0), one(1.0), mOne((Element)p - 1.0), _p((Element)p), _invp(1/_p), _negp(-_p), _lp((Residu_t)p)
 	{
 	    assert(_p >= getMinModulus());
-	    assert(_p <= getMaxModulus());
+	    assert(_p <= maxCardinality());
 	}
 
 	//ModularExtended(const Self_t& F) = default;
@@ -117,7 +117,7 @@ public:
 	template<class T> inline T& characteristic(T& p) const { return p = _lp; }
 	inline Residu_t cardinality() const { return _lp; }
 	template<class T> inline T& cardinality(T& p) const { return p = _lp; }
-	static inline Residu_t getMaxModulus() { 
+	static inline Residu_t maxCardinality() { 
 		if(std::is_same<Element, double>::value)
 			return 4503599627370496;
 		else if(std::is_same<Element, float>::value)

@@ -349,7 +349,7 @@ namespace FFPACK {
 
 
 	template<typename Field>
-	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::getMaxModulus();}
+	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::maxCardinality();}
 	template<>
 	Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
 
