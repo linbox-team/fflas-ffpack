@@ -260,14 +260,15 @@ namespace FFLAS {
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-		else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
-			    // Stays over int64_t
-			MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
-			H.Outmin=HG.Outmin;
-			H.Outmax=HG.Outmax;
-			return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
+		// else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
+		// 	    // Stays over int64_t
+		// 	MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
+		// 	H.Outmin=HG.Outmin;
+		// 	H.Outmax=HG.Outmax;
+		// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
 			
-		} else {
+		    //	}
+		else {
 			    // Fall back case: used 
 			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
 		}
@@ -389,6 +390,11 @@ namespace FFLAS {
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		}
+		if (Protected::AreEqual<Field, Givaro::Modular<int64_t> >::value ||
+		    Protected::AreEqual<Field, Givaro::ModularBalanced<int64_t> >::value)
+			if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+				return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		
 		typename Field::Element alpha_,beta_;
 		if ( !F.isOne(alpha) && !F.isMOne(alpha)){
 			F.assign (alpha_, F.one);

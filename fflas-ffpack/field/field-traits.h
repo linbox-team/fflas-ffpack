@@ -85,6 +85,10 @@ namespace FFLAS { /*  Categories */
 	namespace ModeCategories {
 		    //! No specific mode of action: use standard field operations
 		struct DefaultTag{};
+
+		    //! Use standard field operations, but keeps track of bounds on input and output
+		struct DefaultBoundedTag{};
+
 		    //! Force conversion to appropriate element type of ElementCategory T.
 		    //! e.g. 
 		    //!    - ConvertTo<ElementCategories::MachineFloatTag> tries conversion 
@@ -96,8 +100,10 @@ namespace FFLAS { /*  Categories */
 		    //! .
 		template<class T>
 		struct ConvertTo{};
+
 		    //! Performs field operations with delayed mod reductions. Ensures result is reduced.
 		struct DelayedTag{};
+
 		    //! Performs field operations with delayed mod only when necessary. Result may not be reduced.
 		struct LazyTag{};
 	}
@@ -154,27 +160,30 @@ namespace FFLAS { /*  Traits */
 	*/
 	template <class Field> 
 	struct ModeTraits {typedef typename ModeCategories::DefaultTag value;};
-	template <> struct ModeTraits<Givaro::Modular<float> >{typedef typename ModeCategories::DelayedTag value;};
-	template <> struct ModeTraits<Givaro::Modular<double> > {typedef typename ModeCategories::DelayedTag value;};
+
+	template <typename Element> 
+	struct ModeTraits<Givaro::Modular<Element> >{typedef typename ModeCategories::DelayedTag value;};
+
 	template <> struct ModeTraits<Givaro::Modular<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<int16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<int32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<int64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<uint8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<uint16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<uint32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<uint64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::Modular<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
-	template <size_t K> struct ModeTraits<Givaro::Modular<RecInt::rint<K> > > {typedef typename ModeCategories::DelayedTag value;};
-	//template <size_t K, size_t MG> struct ModeTraits<Givaro::ZRing<RecInt::rmint<K,MG> > > {typedef typename ModeCategories::DelayedTag value;};
-	template <> struct ModeTraits<Givaro::ModularBalanced<float> >{typedef typename ModeCategories::DelayedTag value;};
-	template <> struct ModeTraits<Givaro::ModularBalanced<double> > {typedef typename ModeCategories::DelayedTag value;};
+
+	template <typename Element>
+	struct ModeTraits<Givaro::ModularBalanced<Element> >{typedef typename ModeCategories::DelayedTag value;};
+	
 	template <> struct ModeTraits<Givaro::ModularBalanced<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<int16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<int32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::ModularBalanced<int64_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
 	template <> struct ModeTraits<Givaro::ZRing<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	    // These ones are here temporarily, to ensure
+	    // In the long term ZRing should be in DefaultTag, and forced to be in DefaultBoundedTag be the caller. However this would prevent these rings to use Winograd's algorithm (extensive use of bounded helpers) in the current implementation. Needs work.
+	template <> struct ModeTraits<Givaro::ZRing<float> > {typedef typename ModeCategories::DefaultBoundedTag value;};
+	template <> struct ModeTraits<Givaro::ZRing<double> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 
 	/*! FieldTrait
 	*/
@@ -194,21 +203,7 @@ namespace FFLAS { /*  Traits */
 		static  const bool balanced = false ;
 	};
 	
-	// template<size_t K, int MG>
-	// struct FieldTraits<Givaro::ZRing<RecInt::rmint<K, MG> > > {
-	// 	    //typedef FieldCategories::FloatingPointConvertibleTag value;
-	// 	typedef FieldCategories::ModularTag category;
-	// 	static  const bool balanced = false ;
-	// };
-
-	// template<size_t K>
-	// struct FieldTraits<Givaro::ZRing<RecInt::rmint<K> > > {
-	// 	    //typedef FieldCategories::FloatingPointConvertibleTag value;
-	// 	typedef FieldCategories::ModularTag category;
-	// 	static  const bool balanced = false ;
-	// };
-
-	// Modular <double|float>
+        // Modular <double|float>
 	// ModularBalanced <double|float>
 	template<class Element>
 	struct FieldTraits<Givaro::Modular<Element> > {

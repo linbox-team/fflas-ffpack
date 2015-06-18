@@ -103,19 +103,7 @@ namespace FFLAS {
 			return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
 		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
-		else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
-			    // Stay over int64_t
-			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
-			HG.recLevel = 0;
-			if (ta == FflasNoTrans)
-				fgemm(F,FflasNoTrans,FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY,HG);
-			else
-				fgemm(F,FflasTrans,FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY,HG);
-			freduce(F,(ta==FflasNoTrans)?M:N, Y,incY);
-			H.initOut();
-			return Y;
-				
-		} else {
+		else {
 			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
 		}
 		return Y;
@@ -182,6 +170,24 @@ namespace FFLAS {
 			    //Givaro::Modular<double> need to switch to float if p too small
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X,incX,beta,Y,incY);
+		}
+
+		if (Protected::AreEqual<Field, Givaro::Modular<int64_t> >::value ||
+		    Protected::AreEqual<Field, Givaro::ModularBalanced<int64_t> >::value){
+			if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+				return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX,beta,Y,incY);
+			else{
+				    // Stay over int64_t
+				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
+				HG.recLevel = 0;
+				if (ta == FflasNoTrans)
+					fgemm(F,FflasNoTrans,FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY,HG);
+				else
+					fgemm(F,FflasTrans,FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY,HG);
+				freduce(F,(ta==FflasNoTrans)?M:N, Y,incY);
+				H.initOut();
+				return Y;
+			}
 		}
 		if ( !F.isOne(alpha) && !F.isMOne(alpha)){
 			F.assign (alpha_, F.one);
@@ -314,7 +320,7 @@ namespace FFLAS{
 			N1 = remblock;
 			Ni = k2;
 		}
-		MMHelper<typename associatedDelayedField<const Field>::field, MMHelperAlgo::Classic> Hfp(H);
+		MMHelper<typename associatedDelayedField<const Field>::field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> Hfp(H);
 
 		fgemv (H.delayedField, ta, M1, N1, alphadf, (DFCElt_ptr)A+nblock*shiftA, lda,
 		       (DFCElt_ptr)X+nblock*k2*incX, incX, betadf, (DFElt_ptr)Y, incY, Hfp);
@@ -358,12 +364,10 @@ namespace FFLAS{
 	       const int64_t* X, const size_t incX,
 	       const int64_t beta,
 	       int64_t* Y, const size_t incY,
-	       MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic> & H)
+	       MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		FFLASFFPACK_check(lda);
-	
-                H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
-		
+			
 #if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 		if (ta == FflasNoTrans)
 			igemm_ (FflasRowMajor, ta, FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY);
@@ -398,18 +402,30 @@ namespace FFLAS{
 	       const Givaro::DoubleDomain::ConstElement_ptr X, const size_t incX,
 	       const Givaro::DoubleDomain::Element beta,
 	       Givaro::DoubleDomain::Element_ptr Y, const size_t incY,
-	       MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic> & H)
+	       MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		FFLASFFPACK_check(lda);
-		// FFLASFFPACK_check(ldb);
-		// FFLASFFPACK_check(ldc);
-
-                H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
 		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
 			     (int)M, (int)N, (Givaro::DoubleDomain::Element) alpha,
 			     A, (int)lda, X, (int)incX, (Givaro::DoubleDomain::Element) beta, Y, (int)incY);
 		return Y;
+	}
+
+	template <class Field>
+	inline typename Field::Element_ptr
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       const typename Field::ConstElement_ptr A, const size_t lda,
+	       const typename Field::ConstElement_ptr X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr Y, const size_t incY,
+	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
+	{
+                H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hb(F,0);
+		return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);
 	}
 
 	inline Givaro::FloatDomain::Element_ptr
@@ -420,13 +436,9 @@ namespace FFLAS{
 	       const Givaro::FloatDomain::ConstElement_ptr X, const size_t incX,
 	       const Givaro::FloatDomain::Element beta,
 	       Givaro::FloatDomain::Element_ptr Y, const size_t incY,
-	       MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic> & H)
+	       MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		FFLASFFPACK_check(lda);
-		// FFLASFFPACK_check(ldb);
-		// FFLASFFPACK_check(ldc);
-
-		H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 
 		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
 			     (int)M, (int)N, (Givaro::FloatDomain::Element) alpha,

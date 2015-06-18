@@ -121,7 +121,7 @@ namespace FFLAS {
 		if (tb == FflasTrans) shiftB = k2;
 		else shiftB = k2*ldb;
 
-		typedef MMHelper<typename HelperType::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultTag> DelayedHelper_t;
+		typedef MMHelper<typename HelperType::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelper_t;
 		DelayedHelper_t Hfp(H);
 		typedef typename HelperType::DelayedField::Element DFElt;
 		typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
@@ -172,7 +172,6 @@ namespace FFLAS {
 namespace FFLAS {
 
 	// Classic multiplication over a generic finite field
-
 	template  < class Field>
 	inline void fgemm (const Field& F,
 			   const FFLAS_TRANSPOSE ta,
@@ -221,8 +220,23 @@ namespace FFLAS {
 						for (size_t l = 0; l < k; ++l)
 							F.axpyin (*(C+i*ldc+j), *(A+l*lda+i), *(B+j*ldb+l));
 		fscalin(F,m,n,alpha,C,ldc);
-		H.setOutBounds(k,alpha,beta);
-        }
+	}
+	template  < class Field>
+	inline void fgemm (const Field& F,
+			   const FFLAS_TRANSPOSE ta,
+			   const FFLAS_TRANSPOSE tb,
+			   const size_t m, const size_t n,const size_t k,
+			   const typename Field::Element alpha,
+			   typename Field::ConstElement_ptr A, const size_t lda,
+			   typename Field::ConstElement_ptr B, const size_t ldb,
+			   const typename Field::Element beta,
+			   typename Field::Element_ptr C, const size_t ldc,
+			   MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
+	{
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F,0);
+		fgemm (F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,Hd);
+		H.setOutBounds (k,alpha,beta);
+	}
 
 	inline void fgemm (const Givaro::DoubleDomain& F,
 			   const FFLAS_TRANSPOSE ta,
@@ -233,15 +247,13 @@ namespace FFLAS {
 			   Givaro::DoubleDomain::ConstElement_ptr Bd, const size_t ldb,
 			   const Givaro::DoubleDomain::Element beta,
 			   Givaro::DoubleDomain::Element_ptr Cd, const size_t ldc,
-			   MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic> &H)
+			   MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> &H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
 
-                H.setOutBounds(k, alpha, beta);
-
-		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
+      		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 			     (int)m, (int)n, (int)k, (Givaro::DoubleDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (Givaro::DoubleDomain::Element) beta, Cd, (int)ldc);
 	}
@@ -255,12 +267,12 @@ namespace FFLAS {
 			   Givaro::FloatDomain::ConstElement_ptr Bd, const size_t ldb,
 			   const Givaro::FloatDomain::Element beta,
 			   Givaro::FloatDomain::Element_ptr Cd, const size_t ldc,
-			   MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic> & H)
+			   MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic,ModeCategories::DefaultTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
-                H.setOutBounds(k, alpha, beta);
+
 		cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 			     (int)m, (int)n, (int)k, (Givaro::FloatDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (Givaro::FloatDomain::Element) beta,Cd, (int)ldc);
@@ -275,12 +287,11 @@ namespace FFLAS {
 			   const int64_t * Bd, const size_t ldb,
 			   const int64_t beta,
 			   int64_t * Cd, const size_t ldc,
-			   MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic> & H)
+			   MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
-                H.setOutBounds(k, alpha, beta);
 		
 #if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 		igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);

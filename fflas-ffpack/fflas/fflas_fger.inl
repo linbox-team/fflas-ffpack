@@ -92,19 +92,9 @@ namespace FFLAS{
 	{
 		if (F.isZero(alpha)) { return ; }
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER){
-			H.initOut();
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
 		} else if  (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()){
-			H.initOut();
 			return Protected::fger_convert<double,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
-		} else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
-			    // Stay over int64_t
-			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
-			HG.recLevel = 0;
-			fgemm(F,FflasNoTrans,FflasTrans,M,N,1,alpha,x,incx,y,incy,F.one,A,lda,HG);
-			H.Outmin = HG.Outmin;
-			H.Outmax = HG.Outmax;
-			return;
 		} else {
 			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
 		}
@@ -180,13 +170,25 @@ namespace FFLAS{
 	      const Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
 	      const Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy,
 	      Givaro::DoubleDomain::Element_ptr A, const size_t lda,
-	      MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic> & H)
+	      MMHelper<Givaro::DoubleDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
-
 		FFLASFFPACK_check(lda);
 		cblas_dger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
+	}
+
+	template<class Field>
+	inline void
+	fger(const Field& F, const size_t M, const size_t N,
+	     const typename Field::Element alpha,
+	     const typename Field::ConstElement_ptr x, const size_t incx,
+	     const typename Field::ConstElement_ptr y, const size_t incy,
+	     typename Field::Element_ptr A, const size_t lda,
+	     MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
+	{
 		H.setOutBounds (1, alpha, 1.0);
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hd(F,0);
+		fger (F, M, N, alpha, x, incx, y, incy, A, lda, Hd);
 	}
 
 	inline void
@@ -195,13 +197,12 @@ namespace FFLAS{
 	      const Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
 	      const Givaro::FloatDomain::ConstElement_ptr y, const size_t incy,
 	      Givaro::FloatDomain::Element_ptr A, const size_t lda,
-	      MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic> & H)
+	      MMHelper<Givaro::FloatDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
 		FFLASFFPACK_check(lda);
 		cblas_sger( CblasRowMajor, (int)M, (int)N, alpha, x, (int)incx, y, (int)incy, A, (int)lda );
-		H.setOutBounds (1, alpha, 1.0);
 	}
 
 
@@ -225,7 +226,7 @@ namespace FFLAS{
         typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
         typedef typename Field::Element Element;
         typedef typename Field::Element_ptr					Element_ptr;
-        typedef MMHelper<delayedField, MMHelperAlgo::Classic> DelayedHelperType;
+        typedef MMHelper<delayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelperType;
         
         DelayedHelperType Hfp(H);
 
@@ -280,15 +281,28 @@ namespace FFLAS{
 	{
 		if (F.isZero(alpha)) { return ; }
 
-
-        typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> ModularHelperType; 
+		if (Protected::AreEqual<Field, Givaro::Modular<int64_t> >::value ||
+		    Protected::AreEqual<Field, Givaro::ModularBalanced<int64_t> >::value){
+			if (F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+				return Protected::fger_convert<double,Field>(F,M,N,alpha,x,incx,y,incy, A,lda);
+			else{
+				    // Stay over int64_t
+				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
+				HG.recLevel = 0;
+				fgemm(F,FflasNoTrans,FflasNoTrans,M,N,1,alpha,x,incx,y,incy,F.one,A,lda,HG);
+				freduce(F,M,N,A,lda);
+				H.initOut();
+				return;
+			}
+		}
+	typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> ModularHelperType; 
         typedef typename ModularHelperType::DelayedField	delayedField;
         typedef typename delayedField::Element	DFElt;
         typedef typename delayedField::ConstElement_ptr	DFCElt_ptr;
         typedef typename delayedField::Element_ptr	DFElt_ptr;
         typedef typename Field::Element						Element;
         typedef typename Field::Element_ptr					Element_ptr;
-        typedef MMHelper<delayedField, MMHelperAlgo::Classic> DelayedHelperType;
+        typedef MMHelper<delayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelperType;
 
         DelayedHelperType Hfp(H);
 
@@ -303,7 +317,7 @@ namespace FFLAS{
             Element_ptr sY  = FFLAS::fflas_new<Element> (N);
             fscal(F, N, alpha, y, incy, sY, 1);
 
-            fger (H.delayedField, M, N, 1.0, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, 1, (DFElt_ptr)A, lda, Hfp);
+            fger (H.delayedField, M, N, H.delayedField.one, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, H.delayedField.one, (DFElt_ptr)A, lda, Hfp);
             
             FFLAS::fflas_delete(sY);
             
