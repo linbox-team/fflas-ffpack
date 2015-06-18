@@ -94,7 +94,7 @@ namespace FFLAS{
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER){
 			H.initOut();
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
-		} else if  (16*F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus()){
+		} else if  (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()){
 			H.initOut();
 			return Protected::fger_convert<double,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
 		} else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {

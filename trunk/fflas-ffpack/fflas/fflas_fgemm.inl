@@ -258,7 +258,7 @@ namespace FFLAS {
 	{
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::getMaxModulus())
+		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
 			    // Stays over int64_t
