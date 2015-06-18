@@ -33,7 +33,7 @@ namespace FFLAS {
 namespace sparse_details_impl {
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                   typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::GenericTag) {
     if (A.one != nullptr)
@@ -45,7 +45,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A
 }
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                   typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                   FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
@@ -59,7 +59,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
-inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                                typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
@@ -74,7 +74,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
 }
 
 template <class Field>
-inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                  FieldCategories::UnparametricTag) {
     if (A.one != nullptr)
@@ -91,7 +91,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
 #endif
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                   typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, uint64_t kmax) {
     if (A.one != nullptr)
         sparse_details_impl::fspmm_one(F, *(A.one), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
@@ -104,7 +104,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
-inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                                typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                uint64_t kmax) {
     if (A.one != nullptr)
@@ -118,7 +118,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
 }
 
 template <class Field>
-inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, int blockSize,
+inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
                                  typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                  uint64_t kmax) {
     if (A.one != nullptr)

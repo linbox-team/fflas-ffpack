@@ -33,7 +33,7 @@ namespace FFLAS {
 namespace sparse_details_impl {
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                   typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                   FieldCategories::GenericTag) {
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
@@ -44,7 +44,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = st[4 * i], stop = st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
                 F.subin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
@@ -56,7 +56,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
         }
         start = st[4 * i + 1], stop = st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
                 F.addin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
@@ -69,7 +69,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
         start = st[4 * i + 2], stop = st[4 * (i + 1)];
         index_t startDat = st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.axpyin(y[i * ldy + k], dat[startDat + k], x[col[j] * ldx + k]);
                 F.axpyin(y[i * ldy + k + 1], dat[startDat + k], x[col[j] * ldx + k + 1]);
@@ -83,7 +83,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
 }
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                   typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                   FieldCategories::UnparametricTag) {
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
@@ -94,7 +94,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = st[4 * i], stop = st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] -= x[col[j] * ldx + k];
                 y[i * ldy + k + 1] -= x[col[j] * ldx + k + 1];
@@ -106,7 +106,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
         }
         start = st[4 * i + 1], stop = st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += x[col[j] * ldx + k];
                 y[i * ldy + k + 1] += x[col[j] * ldx + k + 1];
@@ -119,7 +119,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
         start = st[4 * i + 2], stop = st[4 * (i + 1)];
         index_t startDat = st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += dat[startDat + j] * x[col[j] * ldx + k];
                 y[i * ldy + k + 1] += dat[startDat + j] * x[col[j] * ldx + k + 1];
@@ -135,7 +135,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
-inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                                typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -149,7 +149,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = st[4 * i], stop = st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = simd::load(y + i * ldy + k);
                 vy2 = simd::load(y + i * ldy + k + simd::vect_size);
@@ -168,7 +168,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
         }
         start = st[4 * i + 1], stop = st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = simd::load(y + i * ldy + k);
                 vy2 = simd::load(y + i * ldy + k + simd::vect_size);
@@ -188,7 +188,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
         start = st[4 * i + 2], stop = st[4 * (i + 1)];
         index_t startDat = st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 vdat = simd::set1(dat[startDat + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = simd::load(y + i * ldy + k);
@@ -210,7 +210,7 @@ inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_
 }
 
 template <class Field>
-inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                                  typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                                  FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -224,7 +224,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = st[4 * i], stop = st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = simd::loadu(y + i * ldy + k);
                 vy2 = simd::loadu(y + i * ldy + k + simd::vect_size);
@@ -243,7 +243,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
         }
         start = st[4 * i + 1], stop = st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = simd::loadu(y + i * ldy + k);
                 vy2 = simd::loadu(y + i * ldy + k + simd::vect_size);
@@ -263,7 +263,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
         start = st[4 * i + 2], stop = st[4 * (i + 1)];
         index_t startDat = st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 vdat = simd::set1(dat[startDat + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = simd::loadu(y + i * ldy + k);
@@ -286,7 +286,7 @@ inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatri
 #endif
 
 template <class Field>
-inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                   typename Field::ConstElement_ptr x_, int ldx, typename Field::Element_ptr y_, int ldy,
                   const int64_t kmax) {
     // TODO
@@ -295,14 +295,14 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field>
-inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                                typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                uint64_t kmax) {
     // TODO
 }
 
 template <class Field>
-inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void fspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                                typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                                uint64_t kmax) {
     // TODO

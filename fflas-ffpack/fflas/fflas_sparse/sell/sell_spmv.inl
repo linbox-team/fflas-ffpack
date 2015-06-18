@@ -107,7 +107,7 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL> &A, 
         index_t start = st[i];
         index_t size = chunkSize[i];
         for (index_t j = 0; j < size; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                 y[i * A.chunk + k] += dat[start + j * A.chunk + k] * x[col[start + j * A.chunk + k]];
                 y[i * A.chunk + k + 1] += dat[start + j * A.chunk + k + 1] * x[col[start + j * A.chunk + k + 1]];
@@ -189,7 +189,7 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL> &A, 
         for (size_t l = 0; l < block; ++l) {
             j_loc += kmax;
             for (; j < j_loc; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                     y[i * A.chunk + k] += dat[start + j * chunk + k] * x[col[start + j * chunk + k]];
                     y[i * A.chunk + k + 1] += dat[start + j * chunk + k + 1] * x[col[start + j * chunk + k + 1]];
@@ -200,12 +200,12 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL> &A, 
                     y[i * A.chunk + k] += dat[start + j * chunk + k] * x[col[start + j * chunk + k]];
                 }
             }
-            for (int k = 0; k < size; ++k) {
+            for (size_t k = 0; k < size; ++k) {
                 F.reduce(y[i * A.chunk + k]);
             }
         }
         for (; j < size; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                 y[i * A.chunk + k] += dat[start + j * chunk + k] * x[col[start + j * chunk + k]];
                 y[i * A.chunk + k + 1] += dat[start + j * chunk + k + 1] * x[col[start + j * chunk + k + 1]];
@@ -216,7 +216,7 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL> &A, 
                 y[i * A.chunk + k] += dat[start + j * chunk + k] * x[col[start + j * chunk + k]];
             }
         }
-        for (int k = 0; k < size; ++k) {
+        for (size_t k = 0; k < size; ++k) {
             F.reduce(y[i * A.chunk + k]);
         }
     }
@@ -347,7 +347,7 @@ inline void fspmv_one(const Field &F, const Sparse<Field, SparseMatrix_t::SELL_Z
         index_t start = st[i];
         index_t size = chunkSize[i];
         for (index_t j = 0; j < size; j++) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                 y[i * A.chunk + k] += x[col[start + j * chunk + k]];
                 y[i * A.chunk + k + 1] += x[col[start + j * chunk + k + 1]];
@@ -375,7 +375,7 @@ inline void fspmv_mone(const Field &F, const Sparse<Field, SparseMatrix_t::SELL_
         index_t start = st[i];
         index_t size = chunkSize[i];
         for (index_t j = 0; j < size; j++) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                 y[i * A.chunk + k] -= x[col[start + j * chunk + k]];
                 y[i * A.chunk + k + 1] -= x[col[start + j * chunk + k + 1]];

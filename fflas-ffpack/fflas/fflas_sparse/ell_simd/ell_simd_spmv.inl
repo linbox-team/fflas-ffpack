@@ -99,7 +99,7 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> 
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     for (index_t i = 0; i < A.nChunks; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(A.chunk, 4); k += 4) {
                 y[i * A.chunk + k] +=
                     dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
@@ -184,21 +184,21 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> 
             j_loc += kmax;
 
             for (; j < j_loc; ++j) {
-                for (int k = 0; k < A.chunk; ++k) {
+                for (size_t k = 0; k < A.chunk; ++k) {
                     y[i * A.chunk + k] +=
                         dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
                 }
             }
-            for (int k = 0; k < A.chunk; ++k)
+            for (size_t k = 0; k < A.chunk; ++k)
                 F.reduce(y[i * A.chunk + k], y[i * A.chunk + k]);
         }
         for (; j < A.ld; ++j) {
-            for (int k = 0; k < A.chunk; ++k) {
+            for (size_t k = 0; k < A.chunk; ++k) {
                 y[i * A.chunk + k] +=
                     dat[i * A.ld * A.chunk + j * A.chunk + k] * x[col[i * A.ld * A.chunk + j * A.chunk + k]];
             }
         }
-        for (int k = 0; k < A.chunk; ++k)
+        for (size_t k = 0; k < A.chunk; ++k)
             F.reduce(y[i * A.chunk + k], y[i * A.chunk + k]);
     }
 }

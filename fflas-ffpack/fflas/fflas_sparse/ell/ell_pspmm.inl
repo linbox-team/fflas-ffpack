@@ -38,14 +38,14 @@ namespace FFLAS {
 namespace sparse_details_impl {
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::GenericTag) {
 #ifdef __FFLASFFPACK_USE_TBB
     tbb::parallel_for(tbb::blocked_range<index_t>(0, A.m),
                       [&F, &A, &x, &y, blockSize](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.axpyin(y[i * blockSize + k], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * blockSize + k]);
                     F.axpyin(y[i * blockSize + k + 1], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * blockSize + k + 1]);
@@ -61,7 +61,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #pragma omp parallel for
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.axpyin(y[i * blockSize + k], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * blockSize + k]);
                 F.axpyin(y[i * blockSize + k + 1], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * blockSize + k + 1]);
@@ -76,7 +76,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                    FieldCategories::GenericTag) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -84,7 +84,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                       [&F, &A, &x, &y, blockSize, ldx, ldy](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.axpyin(y[i * ldy + k], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * ldx + k]);
                     F.axpyin(y[i * ldy + k + 1], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * ldx + k + 1]);
@@ -100,7 +100,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #pragma omp parallel for
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.axpyin(y[i * ldy + k], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * ldx + k]);
                 F.axpyin(y[i * ldy + k + 1], A.dat[i * A.ld + j], x[A.col[i * A.ld + j] * ldx + k + 1]);
@@ -115,7 +115,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
                    FieldCategories::UnparametricTag) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -123,7 +123,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                       [&F, &A, &x, &y, blockSize, ldx, ldy](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * blockSize + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k];
                     y[i * blockSize + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k + 1];
@@ -139,7 +139,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #pragma omp parallel for
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * blockSize + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k];
                 y[i * blockSize + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k + 1];
@@ -154,7 +154,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                    FieldCategories::UnparametricTag) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -162,7 +162,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                       [&F, &A, &x, &y, blockSize, ldx, ldy](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * ldy + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k];
                     y[i * ldy + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k + 1];
@@ -178,7 +178,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #pragma omp parallel for
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k];
                 y[i * ldy + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k + 1];
@@ -195,7 +195,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field, class LFunc, class SFunc>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, LFunc &&lfunc, SFunc &&sfunc,
                    FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -206,7 +206,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
                 vec_t vx1, vx2, vy1, vy2, vdat;
-                int k = 0;
+                size_t k = 0;
                 vdat = simd::set1(A.dat[i * A.ld + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
@@ -231,7 +231,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             vec_t vx1, vx2, vy1, vy2, vdat;
-            int k = 0;
+            size_t k = 0;
             vdat = simd::set1(A.dat[i * A.ld + j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
@@ -254,7 +254,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 }
 
 template <class Field, class LFunc, class SFunc>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, LFunc &&lfunc,
                    SFunc &&sfunc, FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -265,7 +265,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
                 vec_t vx1, vx2, vy1, vy2, vdat;
-                int k = 0;
+                size_t k = 0;
                 vdat = simd::set1(A.dat[i * A.ld + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * ldy + k);
@@ -290,7 +290,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             vec_t vx1, vx2, vy1, vy2, vdat;
-            int k = 0;
+            size_t k = 0;
             vdat = simd::set1(A.dat[i * A.ld + j]);
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
@@ -315,7 +315,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #endif
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, const int64_t kmax) {
     index_t block = (A.ld) / kmax;
 #ifdef __FFLASFFPACK_USE_TBB
@@ -326,7 +326,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
             for (index_t l = 0; l < (index_t)block; ++l) {
                 j_loc += kmax;
                 for (; j < j_loc; ++j) {
-                    int k = 0;
+                    size_t k = 0;
                     for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                         y[i * blockSize + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k];
                         y[i * blockSize + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k + 1];
@@ -338,12 +338,12 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                     }
                 }
                 // TODO : replace with freduce
-                for (int k = 0; k < blockSize; ++k) {
+                for (size_t k = 0; k < blockSize; ++k) {
                     F.reduce(y[i * blockSize + k]);
                 }
             }
             for (; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * blockSize + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k];
                     y[i * blockSize + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k + 1];
@@ -355,7 +355,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
+            for (size_t k = 0; k < blockSize; ++k) {
                 F.reduce(y[i * blockSize + k]);
             }
         }
@@ -367,7 +367,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
         for (index_t l = 0; l < (index_t)block; ++l) {
             j_loc += kmax;
             for (; j < j_loc; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * blockSize + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k];
                     y[i * blockSize + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k + 1];
@@ -379,12 +379,12 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
+            for (size_t k = 0; k < blockSize; ++k) {
                 F.reduce(y[i * blockSize + k]);
             }
         }
         for (; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * blockSize + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k];
                 y[i * blockSize + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * blockSize + k + 1];
@@ -396,7 +396,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
             }
         }
         // TODO : replace with freduce
-        for (int k = 0; k < blockSize; ++k) {
+        for (size_t k = 0; k < blockSize; ++k) {
             F.reduce(y[i * blockSize + k]);
         }
     }
@@ -404,7 +404,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                    const int64_t kmax) {
     index_t block = (A.ld) / kmax;
@@ -417,7 +417,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
             for (index_t l = 0; l < (index_t)block; ++l) {
                 j_loc += kmax;
                 for (; j < j_loc; ++j) {
-                    int k = 0;
+                    size_t k = 0;
                     for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                         y[i * ldy + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k];
                         y[i * ldy + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k + 1];
@@ -429,12 +429,12 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                     }
                 }
                 // TODO : replace with freduce
-                for (int k = 0; k < blockSize; ++k) {
+                for (size_t k = 0; k < blockSize; ++k) {
                     F.reduce(y[i * ldy + k]);
                 }
             }
             for (; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * ldy + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k];
                     y[i * ldy + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k + 1];
@@ -446,7 +446,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
+            for (size_t k = 0; k < blockSize; ++k) {
                 F.reduce(y[i * ldy + k]);
             }
         }
@@ -458,7 +458,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
         for (index_t l = 0; l < (index_t)block; ++l) {
             j_loc += kmax;
             for (; j < j_loc; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * ldy + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k];
                     y[i * ldy + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k + 1];
@@ -470,12 +470,12 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
                 }
             }
             // TODO : replace with freduce
-            for (int k = 0; k < blockSize; ++k) {
+            for (size_t k = 0; k < blockSize; ++k) {
                 F.reduce(y[i * ldy + k]);
             }
         }
         for (; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k];
                 y[i * ldy + k + 1] += A.dat[i * A.ld + j] * x[A.col[i * A.ld + j] * ldx + k + 1];
@@ -487,7 +487,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
             }
         }
         // TODO : replace with freduce
-        for (int k = 0; k < blockSize; ++k) {
+        for (size_t k = 0; k < blockSize; ++k) {
             F.reduce(y[i * ldy + k]);
         }
     }
@@ -495,14 +495,14 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 }
 
 template <class Field, class Func>
-inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, int blockSize,
+inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, size_t blockSize,
                       typename Field::ConstElement_ptr x, typename Field::Element_ptr y, Func &&func) {
 #ifdef __FFLASFFPACK_USE_TBB
     tbb::parallel_for(tbb::blocked_range<index_t>(0, A.m),
                       [&F, &A, &x, &y, blockSize, func](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     func(y[i * blockSize + k], x[A.col[i * A.ld + j] * blockSize + k]);
                     func(y[i * blockSize + k + 1], x[A.col[i * A.ld + j] * blockSize + k + 1]);
@@ -518,7 +518,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
 #pragma omp parallel for
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 func(y[i * blockSize + k], x[A.col[i * A.ld + j] * blockSize + k]);
                 func(y[i * blockSize + k + 1], x[A.col[i * A.ld + j] * blockSize + k + 1]);
@@ -533,7 +533,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
 }
 
 template <class Field, class Func>
-inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, int blockSize,
+inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, size_t blockSize,
                       typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                       Func &&func) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -541,7 +541,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
                       [&F, &A, &x, &y, blockSize, ldx, ldy, func](const tbb::blocked_range<index_t> &r) {
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     func(y[i * ldy + k], x[A.col[i * A.ld + j] * ldx + k]);
                     func(y[i * ldy + k + 1], x[A.col[i * A.ld + j] * ldx + k + 1]);
@@ -557,7 +557,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
 #pragma omp parallel for
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 func(y[i * ldy + k], x[A.col[i * A.ld + j] * ldx + k]);
                 func(y[i * ldy + k + 1], x[A.col[i * A.ld + j] * ldx + k + 1]);
@@ -574,7 +574,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
 #ifdef __FFLASFFPACK_USE_SIMD
 
 template <class Field, class LFunc, class SFunc, class VectFunc, class ScalFunc>
-inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, int blockSize,
+inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, size_t blockSize,
                       typename Field::ConstElement_ptr x, typename Field::Element_ptr y, VectFunc &&vfunc,
                       ScalFunc &&scalfunc, LFunc &&lfunc, SFunc &&sfunc) {
     using simd = Simd<typename Field::Element>;
@@ -585,7 +585,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             for (index_t j = 0; j < A.ld; ++j) {
                 vec_t vx1, vx2, vy1, vy2;
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
                     vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
@@ -609,7 +609,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             vec_t vx1, vx2, vy1, vy2;
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
@@ -631,7 +631,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
 }
 
 template <class Field, class LFunc, class SFunc>
-inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, int blockSize,
+inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, size_t blockSize,
                       typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                       LFunc &&lfunc, SFunc &&sfunc, FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -643,7 +643,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
             for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
                 for (index_t j = 0; j < A.ld; ++j) {
                     vec_t vx1, vx2, vy1, vy2;
-                    int k = 0;
+                    size_t k = 0;
                     for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                         vy1 = lfunc(y + i * ldy + k);
                         vy2 = lfunc(y + i * ldy + k + simd::vect_size);
@@ -667,7 +667,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
     for (index_t i = 0; i < A.m; ++i) {
         for (index_t j = 0; j < A.ld; ++j) {
             vec_t vx1, vx2, vy1, vy2;
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vy2 = lfunc(y + i * ldy + k + simd::vect_size);

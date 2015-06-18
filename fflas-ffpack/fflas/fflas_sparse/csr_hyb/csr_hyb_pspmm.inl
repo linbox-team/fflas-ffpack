@@ -32,7 +32,7 @@
 namespace FFLAS {
 namespace sparse_details_impl {
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, FieldCategories::GenericTag) {
 #ifdef __FFLASFFPACK_USE_TBB
     tbb::parallel_for(tbb::blocked_range<index_t>(0, A.m),
@@ -40,7 +40,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.subin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
                     F.subin(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
@@ -52,7 +52,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             }
             start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.addin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
                     F.addin(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
@@ -65,7 +65,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
             index_t startDat = A.st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.axpyin(y[i * blockSize + k], A.dat[startDat + k], x[A.col[j] * blockSize + k]);
                     F.axpyin(y[i * blockSize + k + 1], A.dat[startDat + k], x[A.col[j] * blockSize + k + 1]);
@@ -82,7 +82,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.subin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
                 F.subin(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
@@ -94,7 +94,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         }
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.addin(y[i * blockSize + k], x[A.col[j] * blockSize + k]);
                 F.addin(y[i * blockSize + k + 1], x[A.col[j] * blockSize + k + 1]);
@@ -107,7 +107,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
         index_t startDat = A.st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.axpyin(y[i * blockSize + k], A.dat[startDat + k], x[A.col[j] * blockSize + k]);
                 F.axpyin(y[i * blockSize + k + 1], A.dat[startDat + k], x[A.col[j] * blockSize + k + 1]);
@@ -122,7 +122,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                    FieldCategories::GenericTag) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -131,7 +131,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.subin(y[i * ldy + k], x[A.col[j] * ldx + k]);
                     F.subin(y[i * ldy + k + 1], x[A.col[j] * ldx + k + 1]);
@@ -143,7 +143,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             }
             start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.addin(y[i * ldy + k], x[A.col[j] * ldx + k]);
                     F.addin(y[i * ldy + k + 1], x[A.col[j] * ldx + k + 1]);
@@ -156,7 +156,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
             index_t startDat = A.st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     F.axpyin(y[i * ldy + k], A.dat[startDat + k], x[A.col[j] * ldx + k]);
                     F.axpyin(y[i * ldy + k + 1], A.dat[startDat + k], x[A.col[j] * ldx + k + 1]);
@@ -173,7 +173,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.subin(y[i * ldy + k], x[A.col[j] * ldx + k]);
                 F.subin(y[i * ldy + k + 1], x[A.col[j] * ldx + k + 1]);
@@ -185,7 +185,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         }
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.addin(y[i * ldy + k], x[A.col[j] * ldx + k]);
                 F.addin(y[i * ldy + k + 1], x[A.col[j] * ldx + k + 1]);
@@ -198,7 +198,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
         index_t startDat = A.st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 F.axpyin(y[i * ldy + k], A.dat[startDat + k], x[A.col[j] * ldx + k]);
                 F.axpyin(y[i * ldy + k + 1], A.dat[startDat + k], x[A.col[j] * ldx + k + 1]);
@@ -213,7 +213,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
                    FieldCategories::UnparametricTag) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -222,7 +222,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * blockSize + k] -= x[A.col[j] * blockSize + k];
                     y[i * blockSize + k + 1] -= x[A.col[j] * blockSize + k + 1];
@@ -234,7 +234,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             }
             start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * blockSize + k] += x[A.col[j] * blockSize + k];
                     y[i * blockSize + k + 1] += x[A.col[j] * blockSize + k + 1];
@@ -247,7 +247,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
             index_t startDat = A.st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * blockSize + k] += A.dat[startDat + j] * x[A.col[j] * blockSize + k];
                     y[i * blockSize + k + 1] += A.dat[startDat + j] * x[A.col[j] * blockSize + k + 1];
@@ -264,7 +264,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * blockSize + k] -= x[A.col[j] * blockSize + k];
                 y[i * blockSize + k + 1] -= x[A.col[j] * blockSize + k + 1];
@@ -276,7 +276,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         }
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * blockSize + k] += x[A.col[j] * blockSize + k];
                 y[i * blockSize + k + 1] += x[A.col[j] * blockSize + k + 1];
@@ -289,7 +289,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
         index_t startDat = A.st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * blockSize + k] += A.dat[startDat + j] * x[A.col[j] * blockSize + k];
                 y[i * blockSize + k + 1] += A.dat[startDat + j] * x[A.col[j] * blockSize + k + 1];
@@ -304,7 +304,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                    FieldCategories::UnparametricTag) {
 #ifdef __FFLASFFPACK_USE_TBB
@@ -313,7 +313,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
             index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * ldy + k] -= x[A.col[j] * ldx + k];
                     y[i * ldy + k + 1] -= x[A.col[j] * ldx + k + 1];
@@ -325,7 +325,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             }
             start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * ldy + k] += x[A.col[j] * ldx + k];
                     y[i * ldy + k + 1] += x[A.col[j] * ldx + k + 1];
@@ -338,7 +338,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
             index_t startDat = A.st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                     y[i * ldy + k] += A.dat[startDat + j] * x[A.col[j] * ldx + k];
                     y[i * ldy + k + 1] += A.dat[startDat + j] * x[A.col[j] * ldx + k + 1];
@@ -355,7 +355,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
     for (uint64_t i = 0; i < A.m; ++i) {
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] -= x[A.col[j] * ldx + k];
                 y[i * ldy + k + 1] -= x[A.col[j] * ldx + k + 1];
@@ -367,7 +367,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         }
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += x[A.col[j] * ldx + k];
                 y[i * ldy + k + 1] += x[A.col[j] * ldx + k + 1];
@@ -380,7 +380,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         start = A.st[4 * i + 2], stop = A.st[4 * (i + 1)];
         index_t startDat = A.st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
                 y[i * ldy + k] += A.dat[startDat + j] * x[A.col[j] * ldx + k];
                 y[i * ldy + k + 1] += A.dat[startDat + j] * x[A.col[j] * ldx + k + 1];
@@ -396,7 +396,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 
 #ifdef __FFLASFFPACK_USE_SIMD
 template <class Field, class LFunc, class SFunc>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, LFunc &&lfunc, SFunc &&sfunc,
                    FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -408,7 +408,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             vect_t vx1, vx2, vy1, vy2, vdat;
             index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
                     vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
@@ -427,7 +427,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             }
             start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
                     vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
@@ -448,7 +448,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             index_t startDat = A.st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
                 for (uint64_t j = start; j < stop; ++j) {
-                    int k = 0;
+                    size_t k = 0;
                     vdat = simd::set1(A.dat[startDat + j]);
                     for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                         vy1 = lfunc(y + i * blockSize + k);
@@ -475,7 +475,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         vect_t vx1, vx2, vy1, vy2, vdat;
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
@@ -494,7 +494,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         }
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * blockSize + k);
                 vy2 = lfunc(y + i * blockSize + k + simd::vect_size);
@@ -515,7 +515,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         index_t startDat = A.st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 vdat = simd::set1(A.dat[startDat + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * blockSize + k);
@@ -539,7 +539,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 }
 
 template <class Field, class LFunc, class SFunc>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy, LFunc &&lfunc,
                    SFunc &&sfunc, FieldCategories::UnparametricTag) {
     using simd = Simd<typename Field::Element>;
@@ -551,7 +551,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             vect_t vx1, vx2, vy1, vy2, vdat;
             index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * ldy + k);
                     vy2 = lfunc(y + i * ldy + k + simd::vect_size);
@@ -570,7 +570,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             }
             start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * ldy + k);
                     vy2 = lfunc(y + i * ldy + k + simd::vect_size);
@@ -591,7 +591,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
             index_t startDat = A.st[4 * i + 3];
             for (uint64_t j = start; j < stop; ++j) {
                 for (uint64_t j = start; j < stop; ++j) {
-                    int k = 0;
+                    size_t k = 0;
                     vdat = simd::set1(A.dat[startDat + j]);
                     for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                         vy1 = lfunc(y + i * ldy + k);
@@ -619,7 +619,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         vect_t vx1, vx2, vy1, vy2, vdat;
         index_t start = A.st[4 * i], stop = A.st[4 * i + 1];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vy2 = lfunc(y + i * ldy + k + simd::vect_size);
@@ -638,7 +638,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         }
         start = A.st[4 * i + 1], stop = A.st[4 * i + 2];
         for (uint64_t j = start; j < stop; ++j) {
-            int k = 0;
+            size_t k = 0;
             for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                 vy1 = lfunc(y + i * ldy + k);
                 vy2 = lfunc(y + i * ldy + k + simd::vect_size);
@@ -659,7 +659,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
         index_t startDat = A.st[4 * i + 3];
         for (uint64_t j = start; j < stop; ++j) {
             for (uint64_t j = start; j < stop; ++j) {
-                int k = 0;
+                size_t k = 0;
                 vdat = simd::set1(A.dat[startDat + j]);
                 for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
                     vy1 = lfunc(y + i * ldy + k);
@@ -684,13 +684,13 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 #endif
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, const int64_t kmax) {
     // TODO
 }
 
 template <class Field>
-inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, int blockSize,
+inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, int ldx, typename Field::Element_ptr y, int ldy,
                    const int64_t kmax) {
     // TODO
