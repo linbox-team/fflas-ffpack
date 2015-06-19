@@ -36,22 +36,22 @@
 
 #include <type_traits> // CXX11
 #include "fflas-ffpack/field/rns-double-elt.h"
-#include "recint/rmint.h"
-#include "givaro/modular-general.h"
-#include "givaro/zring.h"
 
 // ----- Forward declarations
 
+#include "givaro/modular-general.h"
+#include "givaro/zring.h"
+
 namespace Givaro {
+
+	template<size_t K>
+	class rmint;
 
 	template<class T>
 	class ModularBalanced;
 
 	template<class T>
-	class ZRing;
-
-	template<class T>
-	class ZRing;
+	class Montgomery;
 
 }
 
@@ -184,6 +184,7 @@ namespace FFLAS { /*  Traits */
 	    // In the long term ZRing should be in DefaultTag, and forced to be in DefaultBoundedTag be the caller. However this would prevent these rings to use Winograd's algorithm (extensive use of bounded helpers) in the current implementation. Needs work.
 	template <> struct ModeTraits<Givaro::ZRing<float> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 	template <> struct ModeTraits<Givaro::ZRing<double> > {typedef typename ModeCategories::DefaultBoundedTag value;};
+	template <> template <class T> struct ModeTraits<Givaro::Montgomery<T> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 
 	/*! FieldTrait
 	*/
