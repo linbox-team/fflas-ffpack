@@ -42,10 +42,20 @@
 #include "givaro/modular-general.h"
 #include "givaro/zring.h"
 
-namespace Givaro {
-
+namespace RecInt {
+	
+	template<size_t K>
+	class rint;
+	
+	template<size_t K>
+	class ruint;
+	
 	template<size_t K>
 	class rmint;
+
+}
+
+namespace Givaro {
 
 	template<class T>
 	class ModularBalanced;
