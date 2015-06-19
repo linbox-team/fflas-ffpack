@@ -39,6 +39,7 @@
 
 // ----- Forward declarations
 
+#include "recint/rmint.h"
 #include "givaro/modular-general.h"
 #include "givaro/zring.h"
 
@@ -49,9 +50,6 @@ namespace RecInt {
 	
 	template<size_t K>
 	class ruint;
-	
-	template<size_t K>
-	class rmint;
 
 }
 
@@ -157,11 +155,11 @@ namespace FFLAS { /*  Traits */
 	template<>
 	struct ElementTraits<Givaro::Integer> {typedef ElementCategories::ArbitraryPrecIntTag value;};
 	template<size_t K> 
+	struct ElementTraits<RecInt::rint<K> > {typedef ElementCategories::FixedPrecIntTag value;};
+	template<size_t K> 
 	struct ElementTraits<RecInt::ruint<K> > {typedef ElementCategories::FixedPrecIntTag value;};
 	template<size_t K, int MG> 
 	struct ElementTraits<RecInt::rmint<K, MG> >{typedef ElementCategories::FixedPrecIntTag value;};
-	template<size_t K> 
-	struct ElementTraits<RecInt::rmint<K> >{typedef ElementCategories::FixedPrecIntTag value;};
 	template<>
 	struct ElementTraits<FFPACK::rns_double_elt>{typedef ElementCategories::RNSElementTag value;};
 
