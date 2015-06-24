@@ -337,7 +337,7 @@ namespace FFLAS {
 				os << ' ' << *(long long *) args[i].data;
 				break;
 			case TYPE_INTEGER:
-				os << ' ' << *(long int *) args[i].data;
+				os << ' ' << *(Givaro::Integer *) args[i].data;
 				break;
 			case TYPE_DOUBLE:
 				os << ' ' << *(double *) args[i].data;
