@@ -34,6 +34,7 @@
 #ifndef __FFLASFFPACK_args_parser_H
 #define __FFLASFFPACK_args_parser_H
 
+#include <givaro/givinteger.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
