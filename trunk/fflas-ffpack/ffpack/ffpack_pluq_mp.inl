@@ -65,9 +65,9 @@ namespace FFPACK {
 		size_t prime_bitsize= (53-lk)>>1;	
 	
 		// construct rns basis
-		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*K; 
-		size_t n_pr =size_t(ceil(double(maxC.bitsize())/double(prime_bitsize)));				
-		maxC=(p-1)*(p-1)*K*(1<<prime_bitsize)*n_pr; 		
+		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*uint64_t(K); 
+		uint64_t n_pr =uint64_t(ceil(double(maxC.bitsize())/double(prime_bitsize)));				
+		maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*n_pr; 		
 
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true); 		
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);			
@@ -89,7 +89,6 @@ namespace FFPACK {
 #endif		
 		// call lqup in rns		
 		size_t R=FFPACK::PLUQ(Zp, Diag, M, N, Ap, N, P, Q);
-
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
 		t_lqup+=chrono.usertime();

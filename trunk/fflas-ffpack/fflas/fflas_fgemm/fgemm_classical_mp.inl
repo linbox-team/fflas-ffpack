@@ -162,7 +162,7 @@ namespace FFLAS {
 			logA=A[0].bitsize();
 			for (size_t i=1;i<m*k;i++)
 				logA = std::max(logA,A[i].bitsize());
-			H.normA=1; H.normA<<=(logA);
+			H.normA=1; H.normA<<=uint64_t(logA);
 		}
 		else {
 			logA=H.normA.bitsize();
@@ -171,12 +171,12 @@ namespace FFLAS {
 			logB=B[0].bitsize();
 			for (size_t i=1;i<k*n;i++)
 				logB=std::max(logB,B[i].bitsize());
-			H.normB=1; H.normB<<=(logB);
+			H.normB=1; H.normB<<=uint64_t(logB);
 		}
 		else {
 			logB=H.normA.bitsize();
 		}
-		mC = 2*k*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
+		mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
 
 		// construct an RNS structure and its associated Domain
 		FFPACK::rns_double RNS(mC, prime_bitsize);

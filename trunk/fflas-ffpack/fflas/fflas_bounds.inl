@@ -44,7 +44,8 @@ namespace FFLAS { namespace Protected {
 	template <class Field>
 	inline double computeFactorClassic (const Field& F)
 	{
-		FFLAS_INT_TYPE p=0;
+		//FFLAS_INT_TYPE p=0;
+		Givaro::Integer p=0;
 		F.characteristic(p);
 		return (double) (p-1);
 	}
@@ -55,7 +56,8 @@ namespace FFLAS { namespace Protected {
 	template <>
 	inline double computeFactorClassic (const Givaro::ModularBalanced<double>& F)
 	{
-		FFLAS_INT_TYPE p;
+		//FFLAS_INT_TYPE p;
+		Givaro::Integer p;
 		F.characteristic(p);
 		return double((p-1) >> 1);
 	}
@@ -64,7 +66,8 @@ namespace FFLAS { namespace Protected {
 	template <>
 	inline double computeFactorClassic (const Givaro::ModularBalanced<float>& F)
 	{
-		FFLAS_INT_TYPE p;
+		//FFLAS_INT_TYPE p;
+		Givaro::Integer p;
 		F.characteristic(p);
 		return double((p-1) >> 1);
 	}
@@ -75,7 +78,8 @@ namespace FFLAS { namespace Protected {
 					  )
 	{
 
-		FFLAS_INT_TYPE p=0;
+		//FFLAS_INT_TYPE p=0;
+		Givaro::Integer p=0;
 		F.characteristic(p);
 
 		    //unsigned long mantissa = Protected::Mantissa<typename Field::Element>();
