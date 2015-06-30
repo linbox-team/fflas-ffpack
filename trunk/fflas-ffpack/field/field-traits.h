@@ -192,7 +192,7 @@ namespace FFLAS { /*  Traits */
 	    // In the long term ZRing should be in DefaultTag, and forced to be in DefaultBoundedTag be the caller. However this would prevent these rings to use Winograd's algorithm (extensive use of bounded helpers) in the current implementation. Needs work.
 	template <> struct ModeTraits<Givaro::ZRing<float> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 	template <> struct ModeTraits<Givaro::ZRing<double> > {typedef typename ModeCategories::DefaultBoundedTag value;};
-	template <> template <class T> struct ModeTraits<Givaro::Montgomery<T> > {typedef typename ModeCategories::DefaultBoundedTag value;};
+	template <class T> struct ModeTraits<Givaro::Montgomery<T> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 
 	/*! FieldTrait
 	*/
