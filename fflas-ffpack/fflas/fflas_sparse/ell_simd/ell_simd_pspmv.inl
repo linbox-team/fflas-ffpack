@@ -265,7 +265,7 @@ template <class Field>
 inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> &A,
                    typename Field::ConstElement_ptr x_, typename Field::Element_ptr y_, const uint64_t kmax) {
     index_t block = (A.ld) / kmax; // use DIVIDE_INTO from pfspmvgpu
-    index_t chunk = A.chunk;
+    // index_t chunk = A.chunk;
     // size_t end = (A.m % chunk == 0) ? A.m : A.m + A.m % chunk;
     assume_aligned(dat, A.dat, (size_t)Alignment::CACHE_LINE);
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
