@@ -34,7 +34,9 @@
 //#define BCV2
 //#define BCV3
 //#define LEFTLOOKING
+#ifndef BASECASE_K
 #define BASECASE_K 256
+#endif
 
 
 namespace FFPACK {
