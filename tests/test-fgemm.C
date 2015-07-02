@@ -306,7 +306,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t n, int nbw, size_t it
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
 		Randiter R1(*F);
-		NonzeroRandIter<Field,Randiter> R(*F,R1);
+                Givaro::GeneralRingNonZeroRandIter<Field,Randiter> R(*F,R1);
 
 		//size_t k = 0 ;
 		//std::cout << k << "/24" << std::endl; ++k;

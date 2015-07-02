@@ -236,7 +236,7 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters){
 		F->write(std::cout) << std::endl;
 #endif
 		Randiter R1(*F);
-		FFPACK::NonzeroRandIter<Field,Randiter> R(*F,R1);
+                Givaro::GeneralRingNonZeroRandIter<Field,Randiter> R(*F,R1);
 
 		    //size_t k = 0 ;
 		    //std::cout << k << "/24" << std::endl; ++k;
