@@ -29,15 +29,15 @@
 //#define __FFLASFFPACK_USE_DATAFLOW
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-#include <iostream>
 #include <givaro/modular.h>
+#include <givaro/givranditer.h>
+#include <iostream>
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
-#include "fflas-ffpack/field/nonzero-randiter.h"
 
 #include "tests/test-utils.h"
 
@@ -64,7 +64,7 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	int pivot_c[R];
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
-	FFPACK::NonzeroRandIter<Field,Randiter> nzR(F,RI);
+	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
 	while (curr<R){
 		int i,j;
 		while (rows [i = rand() % M]);

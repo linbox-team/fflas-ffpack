@@ -36,11 +36,11 @@
 #define __FFLASFFPACK_tests_test_utils_H
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-#include "fflas-ffpack/field/nonzero-randiter.h"
 #include "fflas-ffpack/utils/debug.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-#include "givaro/givinteger.h"
+#include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
+#include <givaro/givranditer.h>
 #include <chrono>
 #include <random>
 
@@ -124,7 +124,7 @@ namespace FFPACK {
 		//typedef typename Field::Element  Element ;
 		typedef typename Field::Element_ptr  Element_ptr;
 		Randiter R(F);
-		NonzeroRandIter<Field,Randiter> nzR(F,R);
+                Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,R);
 
 		size_t * P = FFLAS::fflas_new<size_t>(n);
 		size_t * Q = FFLAS::fflas_new<size_t>(m);
@@ -197,7 +197,7 @@ namespace FFPACK {
 	
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
-	FFPACK::NonzeroRandIter<Field,Randiter> nzR(F,RI);
+        Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
 	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
 	FFLAS::fzero(F, M, N, L, N);
 	for (size_t k = 0; k < R; ++k){
@@ -271,7 +271,7 @@ namespace FFPACK {
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
 		Randiter R(F);
-		NonzeroRandIter<Field,Randiter> nzR(F,R);
+                Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,R);
 
 		size_t * P = FFLAS::fflas_new<size_t>(n);
 		size_t * Q = FFLAS::fflas_new<size_t>(n);
@@ -358,7 +358,7 @@ namespace FFPACK {
 	   if b=0 -> bitsize is chosen randomly according to maxFieldElt
 	 */
 	template<typename Field>
-	Field* chooseField(Givaro::Integer q, unsigned long b){
+	Field* chooseField(Givaro::Integer q, uint64_t b){
 		Givaro::Integer maxV= maxFieldElt<Field>();
 		auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 mt_rand(seed);
@@ -366,7 +366,7 @@ namespace FFPACK {
 			return nullptr;
 		if (b<=1){
 			//srand((double)std::chrono::high_resolution_clock::now());
-			auto bitrand = std::bind(std::uniform_int_distribution<unsigned long>(2,maxV.bitsize()-1),
+			auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
 						 mt_rand);
 			b = bitrand();
 		}

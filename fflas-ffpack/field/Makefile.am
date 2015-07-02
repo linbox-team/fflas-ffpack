@@ -35,7 +35,6 @@ RNS=rns.h			        \
 
 pkgincludesub_HEADERS=          	\
 	  field-traits.h                \
-	  nonzero-randiter.h        	\
 	  $(RNS)
 
 EXTRA_DIST=field.doxy
