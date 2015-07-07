@@ -4,7 +4,7 @@
  * Copyright (C) 2005,2013,2014 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * Written by BB <bbboyer@ncsu.edu>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

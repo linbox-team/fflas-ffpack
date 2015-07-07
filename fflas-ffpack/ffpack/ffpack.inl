@@ -4,7 +4,7 @@
  * Copyright (C) 2014 FFLAS-FFACK group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * BB <bbboyer@ncsu.edu>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

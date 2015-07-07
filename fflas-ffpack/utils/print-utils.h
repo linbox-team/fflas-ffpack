@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* tests/print-utils.h
- * Copyright (C) 2011, Brice Boyer <bboyer@imag.fr>
+ * Copyright (C) 2011, Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * 					   Bastien Vialla <bastien.vialla@lirmm.fr>
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.

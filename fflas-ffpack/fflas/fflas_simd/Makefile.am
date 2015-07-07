@@ -1,5 +1,5 @@
 # Copyright (c) 2014 FFLAS-FFPACK
-# written by BB <bboyer@imag.fr>
+# written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 #
 #
 # ========LICENCE========

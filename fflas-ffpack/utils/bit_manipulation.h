@@ -4,7 +4,7 @@
 /*
  * Copyright (C) 2014 FFLAS-FFPACK group
  *
- * Written by BB <bbboyer@ncsu.edu>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  * Part of this code is taken from http://libdivide.com/
  *

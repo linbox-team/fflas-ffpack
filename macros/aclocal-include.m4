@@ -1,6 +1,6 @@
 dnl aclocal-include.m4
 dnl Copyright (c) 2011 FFLAS-FFPACK
-dnl written by BB <bboyer@imag.fr>
+dnl written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 dnl adapted from LinBox configuration
 dnl
 dnl ========LICENCE========

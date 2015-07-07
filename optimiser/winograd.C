@@ -4,7 +4,7 @@
 /*
  * Copyright (C) 2012 FFLAS-FFPACK group.
  *
- * Extirpé form a m4 macro by BB <bboyer@imag.fr>.
+ * Extirpé form a m4 macro by Brice Boyer (briceboyer) <boyer.brice@gmail.com>.
  *
  *
  * ========LICENCE========

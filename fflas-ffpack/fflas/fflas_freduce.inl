@@ -5,7 +5,7 @@
  * Copyright (C) 2014 Pascal Giorgi
  *
  * Written by Pascal Giorgi <Pascal.Giorgi@lirmm.fr>
- * BB<bboyer@ncsu.edu>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  * Part of this code is taken from http://libdivide.com/
  *
@@ -729,7 +729,7 @@ namespace FFLAS { namespace details {
 	typename std::enable_if< FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	freduce (const Field & F, const size_t m,
 		 typename Field::ConstElement_ptr  B, const size_t incY,
-		 typename Field::Element_ptr A, const size_t incX, 
+		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::ModularTag)
 	{
 		if(incX == 1 && incY == 1) {
@@ -750,7 +750,7 @@ namespace FFLAS { namespace details {
 		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::ModularTag)
 	{
-		
+
 		typename Field::Element_ptr Xi = A ;
 		typename Field::ConstElement_ptr Yi = B ;
 		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )

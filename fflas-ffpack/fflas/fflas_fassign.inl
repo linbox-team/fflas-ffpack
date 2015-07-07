@@ -5,7 +5,7 @@
  * Copyright (C) 2007 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * BB <brice.boyer@lip6.fr>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

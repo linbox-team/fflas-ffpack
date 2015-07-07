@@ -3,7 +3,7 @@
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
- * Written by BB <brice.boyer@lip6.fr>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  * This file is Free Software and part of FFLAS-FFPACK.
  *

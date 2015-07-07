@@ -5,7 +5,7 @@
 /*
  * Copyright (C) the FFLAS-FFPACK group
  * Written by Clément Pernet
- *            Brice Boyer <bbboyer@ncsu.edu>
+ *            Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -200,7 +200,7 @@ bool launch_MM(const Field & F,
 		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		if (par){
 			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel>
-				WH (F, nbw, FFLAS::ParSeqHelper::Parallel());    
+				WH (F, nbw, FFLAS::ParSeqHelper::Parallel());
 			PAR_BLOCK{
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
@@ -250,7 +250,7 @@ bool launch_MM_dispatch(const Field &F,
 		m = 1+(size_t)random()%nn;
 		n = 1+(size_t)random()%nn;
 		k = 1+(size_t)random()%nn;
-		
+
 		int logdim = (int)floor(log(std::min(std::min(m,k),n))/log(2.));
 		int nw = std::min (logdim,nbw);
 
@@ -282,16 +282,16 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t n, int nbw, size_t it
 	bool ok = true ;
 
 	int nbit=(int)iters;
-	
+
 	while (ok &&  nbit){
 		typedef typename Field::Element Element ;
-		// choose Field 
+		// choose Field
 		Field* F= chooseField<Field>(q,b);
 		if (F==nullptr)
 			return true;
 
 		std::ostringstream oss;
-		F->write(oss);		
+		F->write(oss);
 		std::cout.fill('.');
 		std::cout<<"Checking ";
 		std::cout.width(40);
@@ -299,7 +299,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t n, int nbw, size_t it
 		std::cout<<" ... ";
 
 		if (nbw<0)
-			nbw = (int) random() % 7;			 
+			nbw = (int) random() % 7;
 #ifdef DEBUG
 		F->write(std::cerr) << std::endl;
 #endif
@@ -403,7 +403,7 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,nbw,iters, p);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
 		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),n,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
-		
+
 	} while (loop && ok);
 
 	return !ok ;

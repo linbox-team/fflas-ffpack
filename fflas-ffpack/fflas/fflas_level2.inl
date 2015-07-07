@@ -3,7 +3,7 @@
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
- * Written by BB <bbboyer@ncsu.edu>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

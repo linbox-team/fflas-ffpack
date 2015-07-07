@@ -4,7 +4,7 @@
 /* fflas/fflas_freduce.inl
  * Copyright (C) 2014 FFLAS FFPACK group
  *
- * Written by  BB<bboyer@ncsu.edu>
+ * Written by  Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
@@ -71,7 +71,7 @@ namespace FFLAS {
 	}
 
 	template<class Field>
-	void 
+	void
 	freduce (const Field & F, const size_t m,
 		 typename Field::Element_ptr A, const size_t incX)
 	{
@@ -79,8 +79,8 @@ namespace FFLAS {
 	}
 
 	template<class Field>
-	void 
-	freduce_constoverride(const Field & F, const size_t m, 
+	void
+	freduce_constoverride(const Field & F, const size_t m,
 			      typename Field::ConstElement_ptr A, const size_t incX)
 	{
 		return freduce(F, m, FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), incX);
@@ -112,7 +112,7 @@ namespace FFLAS {
 
 
 	template<class Field>
-	void 
+	void
 	freduce (const Field& F, const size_t m , const size_t n,
 		 typename Field::Element_ptr A, const size_t lda)
 	{
@@ -125,11 +125,11 @@ namespace FFLAS {
 	}
 
 	template<class Field>
-	void 
+	void
 	freduce_constoverride(const Field & F, const size_t m, const size_t n,
 			      typename Field::ConstElement_ptr A, const size_t lda)
 	{
-		return freduce(F, m, n, 
+		return freduce(F, m, n,
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda);
 	}
 

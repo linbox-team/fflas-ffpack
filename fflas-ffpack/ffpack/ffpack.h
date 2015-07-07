@@ -5,7 +5,7 @@
  *               2014 FFLAS-FFPACK group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * BB <bbboyer@ncsu.edu>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

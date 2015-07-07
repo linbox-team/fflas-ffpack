@@ -4,7 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * BB <brice.boyer@lip6.fr>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
