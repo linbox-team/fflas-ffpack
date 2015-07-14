@@ -22,7 +22,7 @@
 
 
 
-/** \ingroup fflas-ffpack
+/** \ingroup fflasffpack
  * \defgroup fflas FFLAS
  *
  *  \brief The C-style wrapper of BLAS for finite field linear algebra.

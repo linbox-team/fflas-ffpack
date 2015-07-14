@@ -343,6 +343,8 @@ tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
 optimiser/Makefile
+interfaces/Makefile
+interfaces/libs/Makefile
 ])
 AC_OUTPUT
 

@@ -20,14 +20,12 @@
 // ========LICENCE========
 //
 
-/**
- * \defgroup fflasffpack FFLAS-FFPACK
- * \brief the FFLAS FFPACK library
+/** \ingroup fflasffpack
+ * \defgroup interfaces Interfaces
  *
- * C++ header library for fast exact dense linear algebra
+ * \brief Intefaces for FFLAS-FFPACK
  *
- * @see fflas
- * @see ffpack
+ * C interface in folder @see libs
  */
 
 

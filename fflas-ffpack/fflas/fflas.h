@@ -157,13 +157,4 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 
 #include "fflas_sparse.h"
 
-#if 0
-//BB
-#ifdef LB_TRTR
-#include "fflas_ftrtr.inl"
-#endif
-#endif
-
-#undef LB_TRTR
-
 #endif // __FFLASFFPACK_fflas_H

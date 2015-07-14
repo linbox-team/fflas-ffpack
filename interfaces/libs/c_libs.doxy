@@ -20,14 +20,18 @@
 // ========LICENCE========
 //
 
-/**
- * \defgroup fflasffpack FFLAS-FFPACK
- * \brief the FFLAS FFPACK library
+/** \ingroup  interfaces
  *
- * C++ header library for fast exact dense linear algebra
+ * \brief C library intefaces for FFLAS-FFPACK
  *
- * @see fflas
- * @see ffpack
+ * Routines will look like their C++ counterpart :
+ * <code>
+ * freduce(Modular<double>,m,n, double *)
+ * </code>
+ * becomes
+ * <code>
+ * freduce_modular_double(p,m,n, double *,positive)
+ * </code>
  */
 
 

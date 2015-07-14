@@ -126,6 +126,18 @@ namespace FFLAS {
 
 	template<class Field>
 	void
+	freduce (const Field& F, const size_t m , const size_t n,
+		 typename Field::ConstElement_ptr B, const size_t ldb,
+		 typename Field::Element_ptr A, const size_t lda)
+	{
+		for (size_t i = 0 ; i < m ; ++i) {
+			freduce(F,n,B+i*ldb,1,A+i*lda,1);
+		}
+	}
+
+
+	template<class Field>
+	void
 	freduce_constoverride(const Field & F, const size_t m, const size_t n,
 			      typename Field::ConstElement_ptr A, const size_t lda)
 	{
