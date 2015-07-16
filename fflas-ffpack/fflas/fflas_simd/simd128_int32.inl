@@ -145,6 +145,22 @@ template <> struct Simd128_impl<true, true, true, 4> {
      */
     // static INLINE void stream(const scalar_t *p, const vect_t v) { _mm_stream_si128(const_cast<scalar_t *>(p), v); }
 
+     /*
+     * Shift packed 64-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3] int32_t
+     * Return : [a0 << s, a1 << s, a2 << s, a3 << s] int32_t
+     */
+    static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm_slli_epi32(a, s); }
+
+    /*
+     * Shift packed 64-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3] int32_t
+     * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int32_t
+     */
+    static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm_srli_epi32(a, s); }
+
+    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_sra_epi32(a, set1(s)); }
+
     /*
      * Add packed 32-bits integer in a and b, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3] int32_t

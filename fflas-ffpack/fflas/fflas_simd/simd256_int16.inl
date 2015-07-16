@@ -165,6 +165,25 @@ template <> struct Simd256_impl<true, true, true, 2> {
     }
 
     /*
+     * Shift packed 16-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15] int16_t
+     * Return : [a0 << s, a1 << s, a2 << s, a3 << s, a4 << s, a5 << s, a6 << s, a7 << s,
+     *           a8 << s, a9 << s, a10 << s, a11 << s, a12 << s, a13 << s, a14 << s, a15 << s] int16_t
+     */
+    static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm256_slli_epi16(a, s); }
+
+    /*
+     * Shift packed 16-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15] int16_t
+     * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s,
+     *           a8 >> s, a9 >> s, a10 >> s, a11 >> s, a12 >> s, a13 >> s, a14 >> s, a15 >> s] int16_t
+     */
+    static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm256_srli_epi16(a, s); }
+
+
+    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_sra_epi16(a, set1(s)); }
+
+    /*
      * Add packed 16-bits integer in a and b, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15] int16_t
      [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15] int16_t

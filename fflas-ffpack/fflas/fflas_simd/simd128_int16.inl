@@ -147,6 +147,23 @@ template <> struct Simd128_impl<true, true, true, 2> {
      */
     // static INLINE void stream(const scalar_t *p, const vect_t v) { _mm_stream_si128(const_cast<scalar_t *>(p), v); }
 
+     /*
+     * Shift packed 32-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int16_t
+     * Return : [a0 << s, a1 << s, a2 << s, a3 << s, a4 << s, a5 << s, a6 << s, a7 << s] int16_t
+     */
+    static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm_slli_epi16(a, s); }
+
+    /*
+     * Shift packed 32-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int16_t
+     * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s] int16_t
+     */
+    static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm_srli_epi16(a, s); }
+
+
+    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_sra_epi16(a, set1(s)); }
+
     /*
      * Add packed 16-bits integer in a and b, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int16_t

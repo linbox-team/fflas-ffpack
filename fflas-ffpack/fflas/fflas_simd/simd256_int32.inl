@@ -160,6 +160,23 @@ template <> struct Simd256_impl<true, true, true, 4> {
     }
 
     /*
+     * Shift packed 32-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
+     * Return : [a0 << s, a1 << s, a2 << s, a3 << s, a4 << s, a5 << s, a6 << s, a7 << s] int32_t
+     */
+    static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm256_slli_epi32(a, s); }
+
+    /*
+     * Shift packed 32-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int32_t
+     * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s] int32_t
+     */
+    static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm256_srli_epi32(a, s); }
+
+
+    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_sra_epi32(a, set1(s)); }
+
+    /*
      * Add packed 32-bits integer in a and b, and store the results in vect_t.
      * Args   : [a0, a1, a2, a3, a4, a5, a6, a7] 						   int32_t
      [b0, b1, b2, b3, b4, b5, b6, b7] 						   int32_t

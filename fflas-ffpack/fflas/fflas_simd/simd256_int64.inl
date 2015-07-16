@@ -194,7 +194,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
 
     static INLINE CONST vect_t sra(const vect_t a, const int s) {
 #ifdef __AVX512__
-        return _mm256_sra_epi64(a, s);
+        return _mm256_sra_epi64(a, set1(s));
 #else
         const int b = 63 - s;
         vect_t m = sll(set1(1), b);
