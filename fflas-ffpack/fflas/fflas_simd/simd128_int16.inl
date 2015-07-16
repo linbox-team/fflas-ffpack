@@ -331,6 +331,17 @@ template <> struct Simd128_impl<true, true, true, 2> {
 
     static INLINE CONST vect_t round(const vect_t a) { return a; }
 
+    static INLINE vect_t fmaddxin(vect_t &c, const vect_t a, const vect_t b) { return c = fmaddx(c, a, b); }
+
+    static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mulx(a, b)); }
+
+    static INLINE vect_t fnmaddxin(vect_t &c, const vect_t a, const vect_t b) { return c = fnmaddx(c, a, b); }
+
+    static INLINE CONST vect_t signbits(const vect_t x) {
+        vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
+        return signBits;
+    }
+
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const __m64 &INVP, const vect_t &NEGP, const vect_t &MIN,
                              const vect_t &MAX, vect_t &Q, vect_t &T)
 

@@ -409,9 +409,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
     static INLINE CONST vect_t mask_high() { return srl(_mm256_set1_epi8(-1), 32); }
 
     static INLINE CONST vect_t signbits(const vect_t x) {
-        // vect_t hiBitsDuped = _m256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1));
-        // vect_t signBits = _mm_srai_epi32(hiBitsDuped, 31);
-        vect_t signBits = sub(zero(), srl(x, 63));
+        vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
         return signBits;
     }
 
