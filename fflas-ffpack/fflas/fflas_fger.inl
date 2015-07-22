@@ -96,7 +96,7 @@ namespace FFLAS{
 		} else if  (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()){
 			return Protected::fger_convert<double,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
 		} else {
-			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
+			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
 		}
 	}
 
@@ -218,7 +218,7 @@ namespace FFLAS{
 	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
-		
+
 	typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
         typedef typename HelperType::DelayedField delayedField;
         typedef typename HelperType::DelayedField::Element DFElt;
@@ -227,7 +227,7 @@ namespace FFLAS{
         typedef typename Field::Element Element;
         typedef typename Field::Element_ptr					Element_ptr;
         typedef MMHelper<delayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelperType;
-        
+
         DelayedHelperType Hfp(H);
 
         if (Hfp.MaxDelayedDim(1.0) < 1){
@@ -251,9 +251,9 @@ namespace FFLAS{
             DFElt alphadf;
             if (F.isMOne( alpha)) alphadf = -F.one;
             else alphadf = F.one;
-            
+
             fger (H.delayedField, M, N, alphadf, (DFCElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
-            
+
             H.Outmin = Hfp.Outmin;
             H.Outmax = Hfp.Outmax;
         } else {
@@ -261,13 +261,13 @@ namespace FFLAS{
             fscal(F, N, alpha, y, incy, sY, 1);
 
             fger (H.delayedField, M, N, 1.0,  (DFCElt_ptr)x, incx, (DFCElt_ptr) sY, 1,  (DFElt_ptr)A, lda, Hfp);
-            
+
             FFLAS::fflas_delete(sY);
-            
+
             H.setOutBounds (1, alpha, 1.0);
-            
+
         }
-        
+
 	}
 
 	template<class Field>
@@ -295,7 +295,7 @@ namespace FFLAS{
 				return;
 			}
 		}
-	typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> ModularHelperType; 
+	typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> ModularHelperType;
         typedef typename ModularHelperType::DelayedField	delayedField;
         typedef typename delayedField::Element	DFElt;
         typedef typename delayedField::ConstElement_ptr	DFCElt_ptr;
@@ -310,19 +310,19 @@ namespace FFLAS{
             DFElt alphadf;
             if (F.isMOne( alpha)) alphadf = -F.one;
             else alphadf = F.one;
-            
+
             fger (H.delayedField, M, N, alphadf, (DFCElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
-            
+
         } else {
             Element_ptr sY  = FFLAS::fflas_new<Element> (N);
             fscal(F, N, alpha, y, incy, sY, 1);
 
-            fger (H.delayedField, M, N, H.delayedField.one, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, H.delayedField.one, (DFElt_ptr)A, lda, Hfp);
-            
+            fger (H.delayedField, M, N, H.delayedField.one, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, (size_t)1, (DFElt_ptr)A, lda, Hfp);
+
             FFLAS::fflas_delete(sY);
-            
+
         }
-        
+
 		H.initOut();
 	}
 

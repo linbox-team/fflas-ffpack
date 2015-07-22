@@ -1,5 +1,5 @@
 dnl  Check for BLAS
-dnl  Copyright 2014 Brice Boyer <bbboyer@ncsu.edu>
+dnl  Copyright 2014 Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 dnl This file is part of FFLAS-FFPACK
 dnl
 dnl ========LICENCE========

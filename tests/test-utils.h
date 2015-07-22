@@ -3,7 +3,7 @@
 
 /*
  * Copyright (C) FFLAS-FFPACK
- * Written by Brice Boyer <bboyer@imag.fr>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -189,12 +189,12 @@ namespace FFPACK {
 		}
 	}
 
-	
+
 	template<class Field>
 	void RandomMatrixWithRankandRPM (const Field& F, typename Field::Element_ptr A, size_t lda,
 					 size_t R, size_t M, size_t N,
 					 const size_t * RRP, const size_t * CRP){
-	
+
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
         Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
@@ -244,12 +244,12 @@ namespace FFPACK {
 		    // generate the r pivots in the rank profile matrix E
 		size_t pivot_r[R];
 		size_t pivot_c[R];
-			
+
 		RandomRankProfile (M, R, pivot_r);
 		RandomRankProfile (N, R, pivot_c);
 		RandomMatrixWithRankandRPM (F, A, lda, R, M, N, pivot_r, pivot_c);
 	}
-	
+
 	/*! @brief  Random Matrix with prescribed det.
 	 * @bug duplicate with linbox
 	 * Creates a \c m x \c n matrix with random entries and rank \c r.

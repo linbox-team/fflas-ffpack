@@ -4,7 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
- * BB <bbboyer@ncsu.edu>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
@@ -144,6 +144,22 @@ template <> struct Simd128_impl<true, true, true, 4> {
      * p must be aligned on a 16-byte boundary or a general-protection exception may be generated.
      */
     // static INLINE void stream(const scalar_t *p, const vect_t v) { _mm_stream_si128(const_cast<scalar_t *>(p), v); }
+
+     /*
+     * Shift packed 64-bit integers in a left by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3] int32_t
+     * Return : [a0 << s, a1 << s, a2 << s, a3 << s] int32_t
+     */
+    static INLINE CONST vect_t sll(const vect_t a, const int s) { return _mm_slli_epi32(a, s); }
+
+    /*
+     * Shift packed 64-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+     * Args   : [a0, a1, a2, a3] int32_t
+     * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int32_t
+     */
+    static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm_srli_epi32(a, s); }
+
+    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_sra_epi32(a, set1(s)); }
 
     /*
      * Add packed 32-bits integer in a and b, and store the results in vect_t.
@@ -361,6 +377,11 @@ template <> struct Simd128_impl<true, true, true, 4> {
     static INLINE vect_t fnmaddxin(vect_t &c, const vect_t a, const vect_t b) { return c = fnmaddx(c, a, b); }
 
     static INLINE CONST vect_t round(const vect_t a) { return a; }
+
+    static INLINE CONST vect_t signbits(const vect_t x) {
+        vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
+        return signBits;
+    }
 
     static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
                              const vect_t &MAX, vect_t &Q, vect_t &T) {

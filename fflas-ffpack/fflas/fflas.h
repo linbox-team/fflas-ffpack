@@ -4,7 +4,7 @@
  * Copyright (C) 2005,2013,2014 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * Written by BB <bbboyer@ncsu.edu>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
@@ -156,14 +156,5 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 //---------------------------------------------------------------------
 
 #include "fflas_sparse.h"
-
-#if 0
-//BB
-#ifdef LB_TRTR
-#include "fflas_ftrtr.inl"
-#endif
-#endif
-
-#undef LB_TRTR
 
 #endif // __FFLASFFPACK_fflas_H

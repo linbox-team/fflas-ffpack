@@ -5,7 +5,7 @@
  * Copyright (C) 2005 Clement Pernet
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- *            Brice Boyer <bbboyer@ncsu.edu>
+ *            Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
@@ -104,7 +104,7 @@ namespace FFLAS {
 		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
 		else {
-			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
+			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
 		}
 		return Y;
 	}
@@ -139,7 +139,7 @@ namespace FFLAS {
 		return 	fgemv (F, ta, M, N, alpha,
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
-			       beta, Y, incY, HW);	
+			       beta, Y, incY, HW);
 	}
 
 	template<class Field>
@@ -367,7 +367,7 @@ namespace FFLAS{
 	       MMHelper<Givaro::ZRing<int64_t>, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
 	{
 		FFLASFFPACK_check(lda);
-			
+
 #if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
 		if (ta == FflasNoTrans)
 			igemm_ (FflasRowMajor, ta, FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY);

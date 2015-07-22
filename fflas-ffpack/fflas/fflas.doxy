@@ -1,5 +1,5 @@
 // Copyright (c) 2011 FFLAS-FFPACK
-// written by BB <bboyer@imag.fr>
+// written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 //
 // ========LICENCE========
 // This file is part of the library FFLAS-FFPACK.
@@ -22,7 +22,7 @@
 
 
 
-/** \ingroup fflas-ffpack
+/** \ingroup fflasffpack
  * \defgroup fflas FFLAS
  *
  *  \brief The C-style wrapper of BLAS for finite field linear algebra.

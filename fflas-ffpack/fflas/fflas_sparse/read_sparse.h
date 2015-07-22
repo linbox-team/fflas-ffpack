@@ -4,7 +4,7 @@
  * Copyright (C) 2015 the FFLAS-FFPACK group
  *
  * Written by   Bastien Vialla <bastien.vialla@lirmm.fr>
- *              BB <brice.boyer@polsys.lip6.fr>
+ *              Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

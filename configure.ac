@@ -1,5 +1,5 @@
 # Copyright (c) 2011 FFLAS-FFPACK
-# written by BB <bboyer@imag.fr>
+# written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 # adapted from LinBox configuration
 #
 # ========LICENCE========
@@ -343,6 +343,8 @@ tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
 optimiser/Makefile
+interfaces/Makefile
+interfaces/libs/Makefile
 ])
 AC_OUTPUT
 

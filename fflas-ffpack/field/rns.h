@@ -4,7 +4,7 @@
 /*
  * Copyright (C) FFLAS group
  *
- * Written by BB <brice.boyer@lip6.fr>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.

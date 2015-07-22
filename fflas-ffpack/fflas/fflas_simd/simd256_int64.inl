@@ -4,7 +4,7 @@
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
  * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
- * BB <bbboyer@ncsu.edu>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
@@ -194,7 +194,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
 
     static INLINE CONST vect_t sra(const vect_t a, const int s) {
 #ifdef __AVX512__
-        return _mm256_sra_epi64(a, s);
+        return _mm256_sra_epi64(a, set1(s));
 #else
         const int b = 63 - s;
         vect_t m = sll(set1(1), b);
@@ -409,9 +409,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
     static INLINE CONST vect_t mask_high() { return srl(_mm256_set1_epi8(-1), 32); }
 
     static INLINE CONST vect_t signbits(const vect_t x) {
-        // vect_t hiBitsDuped = _m256_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1));
-        // vect_t signBits = _mm_srai_epi32(hiBitsDuped, 31);
-        vect_t signBits = sub(zero(), srl(x, 63));
+        vect_t signBits = sub(zero(), srl(x, 4*sizeof(scalar_t)-1));
         return signBits;
     }
 

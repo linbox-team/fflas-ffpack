@@ -4,7 +4,7 @@
  * Copyright (C) 2014 FFLAS-FFACK group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * BB <bbboyer@ncsu.edu>
+ * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
@@ -168,7 +168,7 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 
         // Random after rank is passed (t2)
         typename Field::RandIter g(F);
-        for (int i = R; i < N; ++i)
+        for (size_t i = R; i < N; ++i)
             g.random(*(X + i * incX));
 
         // Nullspace is total, any random vector would do
@@ -183,7 +183,7 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 
         // Now get t1 such that U1 * t1 == -U2 * t2
 		FFLAS::ftrsv(F, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R,
-                     A, lda, X, incX);
+                     A, lda, X, (int)incX);
 
 		applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1u, 0u, (int) R, X, 1u, P);
 
@@ -209,7 +209,7 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 
         // Random after rank is passed (t2)
         typename Field::RandIter g(F);
-        for (int i = R; i < M; ++i)
+        for (size_t i = R; i < M; ++i)
             g.random(*(X + i * incX));
 
         // Nullspace is total, any random vector would do
@@ -224,7 +224,7 @@ void RandomNullSpaceVector (const Field& F, const FFLAS::FFLAS_SIDE Side,
 
         // Now get t1 such that t1 * L1 == -t2 * L2
 		FFLAS::ftrsv(F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R,
-                     A, lda, X, incX);
+                     A, lda, X, (int)incX);
 
 		applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1u, 0u, (int) R, X, 1u, P);
 

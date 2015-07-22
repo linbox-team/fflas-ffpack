@@ -1,5 +1,5 @@
 # Copyright (c) 2011 FFLAS-FFPACK
-# written by BB <bboyer@imag.fr>
+# written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 #
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
@@ -42,6 +42,7 @@ BASIC_TESTS =               \
 		test-compressQ      \
 		test-fadd           \
 		test-finit          \
+		test-interfaces_c \
 		test-fscal          \
 		test-fgemm          \
 		test-fger           \
@@ -120,6 +121,8 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
+test_interfaces_c_SOURCES = test-interfaces_c.c
+test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/interfaces/libs/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C

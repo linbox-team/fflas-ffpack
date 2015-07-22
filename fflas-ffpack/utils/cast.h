@@ -1,6 +1,6 @@
-/* 
+/*
  * This file is part of FFLAS-FFPACK
- * Copyright (C) 2011 Brice Boyer <bboyer@imag.fr>
+ * Copyright (C) 2011 Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  * ------------------------------------
  *
@@ -35,7 +35,7 @@ namespace FFPACK {
 	{
 		return const_cast<T>(x);
 	}
-	
+
 }
 
 #endif

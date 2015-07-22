@@ -5,7 +5,7 @@
  *
  * Written by Pascal Giorgi <pascal.giorgi@lirmm.fr>
  * the code is inspired and adapted from the Eigen library
- * modified by BB <brice.boyer@lip6.fr>
+ * modified by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.

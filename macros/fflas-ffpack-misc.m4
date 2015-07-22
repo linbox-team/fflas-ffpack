@@ -3,7 +3,7 @@ dnl Copyright (c) fflas-ffpack
 dnl This file comes from LinBox' linbox-misc.m4
 dnl
 dnl Copyright(c)'2011 FFLAS-FFPACK
-dnl Written by BB <bboyer@imag.fr>
+dnl Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
 dnl
 dnl ========LICENCE========
 dnl This file is part of the library FFLAS-FFPACK.

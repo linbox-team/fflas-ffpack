@@ -4,7 +4,7 @@
 /* fflas/fflas_fassign.inl
  * Copyright (C) 2014 FFLAS FFPACK group
  *
- * Written by BB <brice.boyer@lip6.fr>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========

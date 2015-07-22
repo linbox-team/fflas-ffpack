@@ -105,7 +105,7 @@ namespace FFPACK {
 			integer sum=1;
 			_basis.resize(size);
 			_negbasis.resize(size);
-			_basisMax.resize(size);
+			_basisMax.resize(size);			
 			for(size_t i = 0 ; i < _size ; ++i){
 				integer::random_exact_2exp(prime, _pbits-1);
 				nextprime(prime, prime);
@@ -114,7 +114,7 @@ namespace FFPACK {
 				_negbasis[i] = 0-prime;
 				_M*=prime;
 			}
-			precompute_cst();
+			precompute_cst();			
 		}		
 
 		template<typename Vect>
@@ -134,32 +134,45 @@ namespace FFPACK {
 		void precompute_cst(){
 			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
 			_invbasis.resize(_size);
-			_basisMax.resize(_size);
-			_negbasis.resize(_size);
 			_field_rns.resize(_size);
 			_Mi.resize(_size);
 			_MMi.resize(_size);
+			_basisMax.resize(_size);
+			_negbasis.resize(_size);			
 			_crt_in.resize(_size*_ldm);
 			_crt_out.resize(_size*_ldm);
-			const unsigned int MASK=0xFFFF;
+			//const unsigned int MASK=0xFFFF;
 			for (size_t i=0;i<_size;i++){
 				_invbasis[i]  = 1./_basis[i];
 				_basisMax[i] = _basis[i]-1;
 				_negbasis[i] = 0-_basis[i];
 				_field_rns[i] = ModField(_basis[i]);
 				_Mi[i]        = _M/(uint64_t)_basis[i];
-				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);
+				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);				
 				_field_rns[i].invin(_MMi[i]);
 				integer tmp= _Mi[i]*(uint64_t)_MMi[i];
+				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(&tmp);
+				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
+				size_t maxs=std::min(_ldm,(tmp.size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+				/*
 				for(size_t j=0;j<_ldm;j++){
-					_crt_out[j+i*_ldm]=double(tmp&MASK);
-					tmp>>=16;
+					_crt_out[j+i*_ldm]=double(tmp[0]&MASK);
+					tmp>>=16; // Bad idea -> too slow (must get the lowest limb of the integer)
+					
 				}
+				*/
+				size_t l=0;
+				for(;l<maxs;l++)
+					_crt_out[l+i*_ldm]=m0_ptr[l];
+				for(;l<_ldm;l++)
+					_crt_out[l+i*_ldm]=0.;;
+				
+				
 				double beta=double(1<<16);
 				double  acc=1;
 				for(size_t j=0;j<_ldm;j++){
 					_crt_in[j+i*_ldm]=acc;
-					_field_rns[i].mulin(acc,beta);
+					_field_rns[i].mulin(acc,beta);					
 				}
 			}
 		}

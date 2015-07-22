@@ -4,7 +4,7 @@
 /* Copyright (C) 2014 the LinBox group
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
- * Written by BB <bbboyer@ncsu.edu>
+ * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  *
  *
  * ========LICENCE========
