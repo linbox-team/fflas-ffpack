@@ -67,6 +67,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::fma;
   using ::strtoll;
   using ::strtoull;
+
+  unsigned long      stoul( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+      return std::strtoul(str.c_str(), NULL, base);
+  } 
+
+  unsigned long long stoull( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+      return std::strtoull(str.c_str(), NULL, base);
+  }
+  
+  long      stol( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+      return std::strtol(str.c_str(), NULL, base);
+  } 
+
+  long long stoll( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
+      return std::strtoll(str.c_str(), NULL, base);
+  }
+  
 }
 #  else 
 #    define _GLIBCXX_USE_C99 true
