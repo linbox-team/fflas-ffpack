@@ -159,8 +159,9 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		     FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
 		WAIT;
 		//#pragma omp taskwait
-		const FFLAS::CuttingStrategy method = FFLAS::THREE_D;
-		typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, method);
+		const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
+		const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
+		typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
 		//#pragma omp task shared(F, L, U, X)
 		TASK(MODE(CONSTREFERENCE(F,U,L,X)),
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,

@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <27 Mar 15 10:47:29 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <23 Jul 15 17:10:25 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -112,7 +112,7 @@ namespace FFLAS {
 
 						FOR1D(iter, m, H.parseq,
 //				      std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel psh(nt_rec,CuttingStrategy::TWO_D_ADAPT);
+							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::RECURSIVE,StrategyParameter::TWO_D_ADAPT);
 							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
 								   ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
@@ -141,7 +141,7 @@ namespace FFLAS {
 			SYNCH_GROUP(H.parseq.numthreads(),
 					    FOR1D(iter, n, H.parseq,
 								  //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::TWO_D_ADAPT);
+							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::RECURSIVE, StrategyParameter::TWO_D_ADAPT);
 							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
 							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 							  );

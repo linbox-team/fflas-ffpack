@@ -170,20 +170,21 @@ int main(int argc, char** argv) {
 
       chrono.clear();
       if (p && p!=7){
-	      FFLAS::CuttingStrategy meth;
+          FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
+	      FFLAS::StrategyParameter strat = FFLAS::THREADS;
 	      switch (p){
-		  case 1: meth = FFLAS::BLOCK_THREADS;break;
-		  case 2: meth = FFLAS::TWO_D;break;
-		  case 3: meth = FFLAS::TWO_D_ADAPT;break;
-		  case 4: meth = FFLAS::THREE_D_INPLACE;break;
-		  case 5: meth = FFLAS::THREE_D;break;
-		  case 6: meth = FFLAS::THREE_D_ADAPT;break;
-		  default: meth = FFLAS::BLOCK_THREADS;break;
+		  case 1: meth = FFLAS::BLOCK;break;
+		  case 2: strat = FFLAS::TWO_D;break;
+		  case 3: strat = FFLAS::TWO_D_ADAPT;break;
+		  case 4: strat = FFLAS::THREE_D_INPLACE;break;
+		  case 5: strat = FFLAS::THREE_D;break;
+		  case 6: strat = FFLAS::THREE_D_ADAPT;break;
+		  default: meth = FFLAS::BLOCK;break;
 	      }
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 			      typename FFLAS::ModeTraits<Field>::value,
 			      FFLAS::ParSeqHelper::Parallel> 
-		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth));	
+		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth, strat));	
 	      if (i) chrono.start();
 	      PAR_BLOCK{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);

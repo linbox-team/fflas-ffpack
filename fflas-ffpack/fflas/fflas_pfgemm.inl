@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <27 Mar 15 10:53:40 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <23 Jul 15 16:51:32 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -67,38 +67,42 @@ namespace FFLAS {
 		MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel> & H) 
 	{
 
-            if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
-                std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
-                return C;
+        if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
+            std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
+            return C;
+        }
+        
+        if (H.parseq.method() == RECURSIVE) {
+            switch (H.parseq.strategy()){
+                case StrategyParameter::THREE_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
+                    return pfgemm_3D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+                case StrategyParameter::TWO_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
+                    return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+                case StrategyParameter::TWO_D: // Splitting the outer dimensions m and n recursively
+                    return pfgemm_2D_rec (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+                case StrategyParameter::THREE_D_INPLACE: // Splitting the three dimensions recursively, without temp and with synchro
+                    return pfgemm_3D_rec_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+                case StrategyParameter::THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
+                    return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+                default:
+                    return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
             }
-
-	    switch (H.parseq.method()){
-		case THREE_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
-			return pfgemm_3D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-		case TWO_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
-			return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-		case TWO_D: // Splitting the outer dimensions m and n recursively
-			return pfgemm_2D_rec (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-		case THREE_D_INPLACE: // Splitting the three dimensions recursively, without temp and with synchro
-			return pfgemm_3D_rec_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-		case THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
-			return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-		default: // 2D iterative: splitting the outer dimensions m and n iteratively 
-			H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
-						
-			MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
-			SYNCH_GROUP( H.parseq.numthreads(),
-				     {FOR2D(iter,m,n,H.parseq,
-					   TASK( MODE(
-						READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
-						CONSTREFERENCE(F, SeqH) 
-						READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
-					fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH););
-					  );
-				     });
-	    }
+        } else {
+            H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
+                
+            MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
+            SYNCH_GROUP( H.parseq.numthreads(),
+            {FOR2D(iter,m,n,H.parseq,
+                   TASK( MODE(
+                       READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
+                       CONSTREFERENCE(F, SeqH) 
+                       READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
+                         fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH););
+                   );
+            });
+        }
 		return C;
-}
+    }
 
 
 

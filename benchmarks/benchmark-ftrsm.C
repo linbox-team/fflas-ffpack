@@ -158,21 +158,21 @@ int main(int argc, char** argv) {
 					case 1: {
 						FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
 										  FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::BLOCK_THREADS));
+							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::BLOCK,FFLAS::THREADS));
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH);
 						break;}
 					case 2: {FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive, 
 											   FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW_THREADS));
+							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW, FFLAS::THREADS));
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH); 
 						break;}
 					case 3: 
 						FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW_THREADS));
+							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW, FFLAS::THREADS));
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH);

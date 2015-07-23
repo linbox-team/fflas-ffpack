@@ -478,12 +478,12 @@ namespace FFLAS{
                         MMHelper<Field,MMHelperAlgo::Winograd
 				 typename FFLAS::ModeTraits<Field>::value,
 				 FFLAS::ParSeqHelper::Parallel>
-                                HC (F, -1, ParSeqHelper::Parallel(PFGEMM_WINO_SEQ, TWO_D_ADAPT));
+                                HC (F, -1, ParSeqHelper::Parallel(PFGEMM_WINO_SEQ, RECURSIVE, TWO_D_ADAPT));
 #else
                         MMHelper<Field,MMHelperAlgo::Winograd,
 				 typename FFLAS::ModeTraits<Field>::value,
 				 FFLAS::ParSeqHelper::Parallel>
-                                HC (F, 0, ParSeqHelper::Parallel(32, TWO_D_ADAPT));
+                                HC (F, 0, ParSeqHelper::Parallel(32, RECURSIVE, TWO_D_ADAPT));
 #endif
                         //              MMHelper<Field, MMHelperAlgo::Classic, ModeTraits> HC(H);
 
