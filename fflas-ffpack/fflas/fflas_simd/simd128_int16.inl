@@ -162,7 +162,7 @@ template <> struct Simd128_impl<true, true, true, 2> {
     static INLINE CONST vect_t srl(const vect_t a, const int s) { return _mm_srli_epi16(a, s); }
 
 
-    static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_sra_epi16(a, set1(s)); }
+    static INLINE CONST vect_t sra(const vect_t a, const scalar_t s) { return _mm_sra_epi16(a, set1(s)); }
 
     /*
      * Add packed 16-bits integer in a and b, and store the results in vect_t.
