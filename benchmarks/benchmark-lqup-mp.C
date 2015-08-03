@@ -62,11 +62,12 @@ int main(int argc, char** argv){
 	FFLAS::Timer chrono;
 	double time=0.;
 	Givaro::Integer p;
+	Givaro::IntPrimeDom IPD;
 	
 	for (size_t i=0;i<iters;i++) {
 	
 		Givaro::Integer::random_exact_2exp(p, b);			
-		prevprime(p,p);	
+		IPD.prevprimein(p);	
 		Field F(p);
 		size_t lda;
 		lda=n;
