@@ -105,7 +105,8 @@ int main(int argc, char** argv){
 #endif
 	for (size_t loop=0;loop<iters;loop++){
 		Givaro::Integer::random_exact_2exp(p, b);			
-		nextprime(p,p);
+		Givaro::IntPrimeDom IPD;
+		IPD.nextprimein(p);
 	
 		Field F(p);
 		size_t lda,ldb,ldc;
