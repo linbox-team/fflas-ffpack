@@ -41,6 +41,7 @@
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
+#include "interfaces/libs/ffpack_c.h"
 #include "test-utils.h"
 #include "Matio.h"
 

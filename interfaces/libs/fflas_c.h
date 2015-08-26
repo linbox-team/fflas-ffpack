@@ -44,31 +44,7 @@
 extern "C" {
 #endif
 
-enum FFLAS_order {
-	FflasRowMajor=101,
-	FflasColMajor=102
-};
-enum FFLAS_transpose {
-	FflasNoTrans = 111,
-	FflasTrans   = 112
-};
-enum FFLAS_uplo {
-	FflasUpper = 121,
-	FflasLower = 122
-};
-enum FFLAS_diag {
-	FflasNonUnit = 131,
-	FflasUnit    = 132
-};
-enum FFLAS_side {
-	FflasLeft  = 141,
-	FflasRight = 142
-};
-enum FFLAS_base {
-	FflasDouble  = 151,
-	FflasFloat   = 152,
-	FflasGeneric = 153
-};
+#include "fflas_enum.h"
 
 /* ******** *
  * LEVEL1   *
@@ -349,7 +325,7 @@ faddin_2_modular_double (const double p, const size_t m, const size_t n,
 
 
 double *
-fgemv_2_modular_double (const double p, const enum FFLAS_transpose TransA,
+fgemv_2_modular_double (const double p, const enum FFLAS::FFLAS_TRANSPOSE TransA,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A, const size_t ldA,
@@ -369,8 +345,8 @@ fger_2_modular_double (const double p, const size_t m, const size_t n,
 
 
 void
-ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA, const enum FFLAS_diag Diag,
+ftrsv_2_modular_double (const double p, const enum FFLAS::FFLAS_UPLO Uplo,
+                        const enum FFLAS::FFLAS_TRANSPOSE TransA, const enum FFLAS::FFLAS_DIAG Diag,
 		      const size_t n,const double * A, const size_t ldA,
 		      double * X, int incX
 		      , bool positive  );
@@ -387,10 +363,10 @@ ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
 
 
 void
-ftrsm_3_modular_double (const double p, const enum FFLAS_side Side,
-		      const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA,
-		      const enum FFLAS_diag Diag,
+ftrsm_3_modular_double (const double p, const enum FFLAS::FFLAS_SIDE Side,
+		      const enum FFLAS::FFLAS_UPLO Uplo,
+		      const enum FFLAS::FFLAS_TRANSPOSE TransA,
+                        const enum FFLAS::FFLAS_DIAG Diag,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A,
@@ -400,10 +376,10 @@ ftrsm_3_modular_double (const double p, const enum FFLAS_side Side,
 
 
 void
-ftrmm_3_modular_double (const double p, const enum FFLAS_side Side,
-		      const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA,
-		      const enum FFLAS_diag Diag,
+ftrmm_3_modular_double (const double p, const enum FFLAS::FFLAS_SIDE Side,
+		      const enum FFLAS::FFLAS_UPLO Uplo,
+		      const enum FFLAS::FFLAS_TRANSPOSE TransA,
+                        const enum FFLAS::FFLAS_DIAG Diag,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      double * A, const size_t ldA,
@@ -413,8 +389,8 @@ ftrmm_3_modular_double (const double p, const enum FFLAS_side Side,
 
 double *
 fgemm_3_modular_double( const double p,
-		      const enum FFLAS_transpose tA,
-		      const enum FFLAS_transpose tB,
+		      const enum FFLAS::FFLAS_TRANSPOSE tA,
+		      const enum FFLAS::FFLAS_TRANSPOSE tB,
 		      const size_t m,
 		      const size_t n,
 		      const size_t k,
@@ -428,7 +404,7 @@ fgemm_3_modular_double( const double p,
 
 double *
 fsquare_3_modular_double (const double p,
-			const enum FFLAS_transpose tA,
+			const enum FFLAS::FFLAS_TRANSPOSE tA,
 			const size_t n,
 			const double alpha,
 			const double * A,

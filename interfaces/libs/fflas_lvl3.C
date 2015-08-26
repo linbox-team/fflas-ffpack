@@ -44,10 +44,10 @@ using namespace FFLAS ;
 
 
 void
-ftrsm_3_modular_double (const double p, const enum FFLAS_side Side,
-		      const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose tA,
-		      const enum FFLAS_diag Diag,
+ftrsm_3_modular_double (const double p, const enum FFLAS::FFLAS_SIDE Side,
+		      const enum FFLAS::FFLAS_UPLO Uplo,
+		      const enum FFLAS::FFLAS_TRANSPOSE tA,
+                        const enum FFLAS::FFLAS_DIAG Diag,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A,
@@ -66,10 +66,10 @@ ftrsm_3_modular_double (const double p, const enum FFLAS_side Side,
 
 
 void
-ftrmm_3_modular_double (const double p, const enum FFLAS_side Side,
-		      const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose tA,
-		      const enum FFLAS_diag Diag,
+ftrmm_3_modular_double (const double p, const enum FFLAS::FFLAS_SIDE Side,
+		      const enum FFLAS::FFLAS_UPLO Uplo,
+		      const enum FFLAS::FFLAS_TRANSPOSE tA,
+                        const enum FFLAS::FFLAS_DIAG Diag,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      double * A, const size_t ldA,
@@ -87,8 +87,8 @@ ftrmm_3_modular_double (const double p, const enum FFLAS_side Side,
 
 double *
 fgemm_3_modular_double( const double p,
-		      const enum FFLAS_transpose tA,
-		      const enum FFLAS_transpose tB,
+		      const enum FFLAS::FFLAS_TRANSPOSE tA,
+		      const enum FFLAS::FFLAS_TRANSPOSE tB,
 		      const size_t m,
 		      const size_t n,
 		      const size_t k,
@@ -96,8 +96,8 @@ fgemm_3_modular_double( const double p,
 		      const double * A, const size_t ldA,
 		      const double * B, const size_t ldB,
 		      const double betA,
-		      double * C, const size_t ldC
-		      , bool positive )
+                        double * C, const size_t ldC,
+                        bool positive )
 
 {
 	if (positive) {
@@ -113,7 +113,7 @@ fgemm_3_modular_double( const double p,
 
 double *
 fsquare_3_modular_double (const double p,
-			const enum FFLAS_transpose tA,
+			const enum FFLAS::FFLAS_TRANSPOSE tA,
 			const size_t n,
 			const double alpha,
 			const double * A,

@@ -67,6 +67,8 @@
  * level routines based on elimination.
  \ingroup ffpack
  */
+#ifndef __FFPACK_ENUM
+#define __FFPACK_ENUM
 namespace FFPACK  { /* tags */
 
 	enum FFPACK_LU_TAG
@@ -96,7 +98,7 @@ namespace FFPACK  { /* tags */
 	};
 
 }
-
+#endif
 namespace FFPACK { /* Permutations */
 
 	/*****************/
