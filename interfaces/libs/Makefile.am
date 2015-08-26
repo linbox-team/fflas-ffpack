@@ -29,7 +29,8 @@ AM_LDFLAGS=-static
 
 
 pkgincludesub_HEADERS=fflas_c.h  \
-		      ffpack_c.h
+		      ffpack_c.h \
+		      ffpack_compiled_spec.inl
 
 lib_LTLIBRARIES=libfflas_c.la \
 		libffpack_c.la
