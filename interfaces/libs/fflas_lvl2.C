@@ -321,7 +321,7 @@ faddin_2_modular_double (const double p, const size_t m, const size_t n,
 
 
 double *
-fgemv_2_modular_double (const double p, const enum FFLAS_transpose TransA,
+fgemv_2_modular_double (const double p, const enum FFLAS_TRANSPOSE TransA,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A, const size_t lda,
@@ -358,8 +358,8 @@ fger_2_modular_double (const double p, const size_t m, const size_t n,
 }
 
 void
-ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA, const enum FFLAS_diag Diag,
+ftrsv_2_modular_double (const double p, const enum FFLAS_UPLO Uplo,
+		      const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_DIAG Diag,
 		      const size_t n,const double * A, const size_t lda,
 		      double * X, int incX
 		      , bool positive  )
