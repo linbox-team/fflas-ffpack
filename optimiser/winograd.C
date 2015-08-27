@@ -62,6 +62,7 @@ typedef Givaro::Timer TTimer;
 #endif
 
 #define MFLOPS (2.0*iter/chrono.realtime()*(double)n/100.0*(double)n/100.0*(double)n/100.0)
+#define GFLOPS (2.0*iter/chrono.realtime()*(double)n/1000.0*(double)n/1000.0*(double)n/1000.0)
 
 #ifdef __FFLASFFPACK_HAVE_CXX11
 #include <ctime>
@@ -120,12 +121,12 @@ int main () {
 		std::cout << std::endl
 			<< "fgemm " << n << "x" << n << ": "
 			<< chrono.realtime()/iter << " s, "
-			<< MFLOPS << " Mffops"
+			<< GFLOPS << " Gffops"
 			<< std::endl;
 		outlog << std::endl
 			<< "fgemm " << n << "x" << n << ": "
 			<< chrono.realtime()/iter << " s, "
-			<< MFLOPS << " Mffops"
+			<< GFLOPS << " Gffops"
 			<< std::endl;
 		basetime= chrono.realtime();
 		    //warm up
@@ -139,11 +140,11 @@ int main () {
 		chrono.stop();
 		std::cout << "1Wino " << n << "x" << n << ": "
 			<< chrono.realtime()/iter << " s, "
-			<< MFLOPS  << " Mffops"
+			<< GFLOPS  << " Gffops"
 			<< std::endl;
 		outlog << "1Wino " << n << "x" << n << ": "
 			<< chrono.realtime()/iter << " s, "
-			<< MFLOPS  << " Mffops"
+			<< GFLOPS  << " Gffops"
 			<< std::endl;
 		time= chrono.realtime();
 
