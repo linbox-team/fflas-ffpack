@@ -1421,6 +1421,10 @@ namespace FFPACK { /* not used */
 				      typename Field::Element_ptr X, const size_t ldx);
 
 } // FFPACK
+// include precompiled instantiation headers (avoiding to recompile them)
+#ifdef FFLASFFPACK_COMPILED 
+#include "interfaces/libs/ffpack_inst.h"
+#endif
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"

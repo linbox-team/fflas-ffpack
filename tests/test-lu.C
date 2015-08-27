@@ -32,6 +32,7 @@
 //-------------------------------------------------------------------------
 
 
+#define FFLASFFPACK_COMPILED
 
 #define __LUDIVINE_CUTOFF 1
 #include "fflas-ffpack/fflas-ffpack-config.h"

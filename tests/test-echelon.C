@@ -31,6 +31,9 @@
 //--------------------------------------------------------------------------
 
 //#define __LUDIVINE_CUTOFF 1
+
+#define  FFLASFFPACK_COMPILED 
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <iomanip>
@@ -41,7 +44,6 @@
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "interfaces/libs/ffpack_c.h"
 #include "test-utils.h"
 #include "Matio.h"
 
