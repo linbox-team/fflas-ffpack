@@ -35,9 +35,11 @@
 
 #ifndef __FFLASFFPACK_interfaces_libs_ffpack_c_H
 #define __FFLASFFPACK_interfaces_libs_ffpack_c_H
+#include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C" {
