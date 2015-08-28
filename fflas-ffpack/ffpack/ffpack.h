@@ -1422,7 +1422,7 @@ namespace FFPACK { /* not used */
 
 } // FFPACK
 // include precompiled instantiation headers (avoiding to recompile them)
-#ifdef FFLASFFPACK_COMPILED 
+#ifdef FFPACK_COMPILED 
 #include "interfaces/libs/ffpack_inst.h"
 #endif
 

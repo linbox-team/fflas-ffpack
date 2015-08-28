@@ -24,9 +24,23 @@
  * ========LICENCE========
  *.
  */
+
+#ifndef __FFPACK_INST_C
+#define __FFPACK_INST_C
+
+// The ffpack lib should link to the compiled fflas lib
+#ifndef FFLAS_COMPILED
+#define FFLAS_COMPILED
+#endif
+
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
+#include "ffpack.h"
 
+// This is a C file: we do template instantiations
+#ifdef INST_OR_DECL
+#undef INST_OR_DECL
+#endif
 #define INST_OR_DECL 
 
 #define FFLAS_FIELD Givaro::ModularBalanced
@@ -52,3 +66,5 @@
 #include "ffpack_inst_implem.inl"
 #undef FFLAS_ELT
 #undef FFLAS_FIELD
+
+#endif // __FFPACK_INST_C

@@ -30,11 +30,14 @@ AM_LDFLAGS=-static
 
 pkgincludesub_HEADERS=fflas_c.h  \
 		      ffpack_c.h \
+		      fflas_L3_inst.h \
+		      fflas_L3_inst_implem.inl
 		      ffpack_inst.h \
 		      ffpack_inst_implem.inl
 
 lib_LTLIBRARIES=libfflas_c.la \
 		libffpack_c.la \
+		libfflas.la \
 		libffpack.la
 
 libfflas_c_la_SOURCES=fflas_lvl1.C \
@@ -46,16 +49,18 @@ libffpack_c_la_SOURCES=ffpack.C
 
 libffpack_la_SOURCES=ffpack_inst.C \
 		     ffpack_inst_implem.inl
+libfflas_la_SOURCES=fflas_L3_inst.C \
+		    fflas_L3_inst_implem.inl
 
 libffpack_c_la_LDFLAGS= -version-info 1:0:0
 libffpack_c_la_LDFLAGS+=  \
 		       -no-undefined
-libffpack_la_LDFLAGS= -version-info 1:0:0
-libffpack_la_LDFLAGS+=  \
-		       -no-undefined
+libffpack_la_LDFLAGS= -version-info 1:0:0 \
+		       -no-undefined -lfflas
+libfflas_la_LDFLAGS= -version-info 1:0:0 \
+	             -no-undefined
 
-libfflas_c_la_LDFLAGS= -version-info 1:0:0
-libfflas_c_la_LDFLAGS+= \
-                      -no-undefined
+libfflas_c_la_LDFLAGS= -version-info 1:0:0 \
+                       -no-undefined
 
 EXTRA_DIST=c_libs.doxy

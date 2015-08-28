@@ -28,8 +28,6 @@
  *.
  */
 
-#include "ffpack.h"
-
 namespace FFPACK {
 
 	template INST_OR_DECL
