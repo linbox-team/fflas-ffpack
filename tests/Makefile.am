@@ -42,7 +42,7 @@ BASIC_TESTS =               \
 		test-compressQ      \
 		test-fadd           \
 		test-finit          \
-		test-interfaces_c \
+		test-interfaces-c \
 		test-fscal          \
 		test-fgemm          \
 		test-fger           \
@@ -121,7 +121,7 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
-test_interfaces_c_SOURCES = test-interfaces_c.c
+test_interfaces_c_SOURCES = test-interfaces-c.c
 test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
