@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="fflas-ffpack : FFLAS-FFPACK - Finite Field Linear Algebra Subroutines / Package">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>fflas-ffpack</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/linbox-team/fflas-ffpack">View on GitHub</a>
+
+          <h1 id="project_title">fflas-ffpack</h1>
+          <h2 id="project_tagline">FFLAS-FFPACK - Finite Field Linear Algebra Subroutines / Package</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/linbox-team/fflas-ffpack/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/linbox-team/fflas-ffpack/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>FFLAS-FFPACK is a LGPL-2.1+ source code library for basic linear algebra operations over a finite field.
+It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the LAPACK library for numerical linear algebra, and shares part of their design. Yet it differs in many aspects due to the specifities of computing over a finite field:</p>
+
+<ul>
+<li>it is generic with respect to the finite field, so as to accomodate a large variety of field sizes and implementations;</li>
+<li>consequently, all routines use the C++ template genericity and the library is primarily meant to be used as a source code library, to be included and compiled in the user's software. </li>
+<li>However, we also provide a compiled version instantiating all routines over the most common finite fields.</li>
+</ul>
+
+<h2>
+<a id="fflas" class="anchor" href="#fflas" aria-hidden="true"><span class="octicon octicon-link"></span></a>FFLAS</h2>
+
+<p>FFLAS (Finite Field Linear Algebra Subprograms) provides the implementation of a subset of routines of the numerical BLAS, with the prefix letter `f standing for finite field.</p>
+
+<ul>
+<li>
+<code>fgemm</code> : for the matrix multiplication of the form ̀ C = alpha . A x B + beta . C`</li>
+<li>
+<code>ftrsm</code> : for the triangular system solving with matrix right/left hand side: solving ̀ U x X = B` for an unknown matrix X.</li>
+<li>
+<code>ftrmm</code> : for the multiplication of a triangular matrix with a rectangular matrix. <code>X = U x B</code>
+</li>
+<li>
+<code>fger</code> : for the outer product of two vectors: <code>A = u x v^T + A</code>
+</li>
+<li>...</li>
+</ul>
+
+<p>Recently FFLAS started to also provide support for sparse matrix operations, more specifically sparse matrix vector product, using various data storage schemes.</p>
+
+<h2>
+<a id="ffpack" class="anchor" href="#ffpack" aria-hidden="true"><span class="octicon octicon-link"></span></a>FFPACK</h2>
+
+<p>FFPACK (Finite Field Linear Algebra Package) is inspired by the LAPACK library to provide functionnalities of higher level, using the kernel of a BLAS.
+For the computations that are identical to the numerical linear algebra lirbary, the naming convention is kept:</p>
+
+<ul>
+<li>
+<code>fgetrs</code> : solving a linear system  using a LU decomposition;</li>
+<li>
+<code>ftrtri</code> :  inverting a triangular matrix;</li>
+<li>...</li>
+</ul>
+
+<p>However the library also provides many other routines, specific to exact linear algebra:</p>
+
+<ul>
+<li>
+<code>RowEchelonForm</code> : computing the row echelon form with or without the transformation matrix</li>
+<li>
+<code>CharPoly, MinPoly</code> : computing the characteristic and minimal polynomials</li>
+<li>
+<code>Det, Rank, NullSpaceBasis</code> : computing the determinant, the rank, a basis of the nullspace of a matrix.</li>
+<li>...</li>
+</ul>
+
+<h2>
+<a id="downloads" class="anchor" href="#downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Downloads</h2>
+
+<ul>
+<li>Released 15/6/2015 <a href="http://linalg.org/fflas-ffpack-2.1.0.tar.gz">fflas-ffpack-2.1.0.tar.gz</a>   <a href="http://linalg.org/fflas-ffpack-2.1.0.tar.gz.md5sum">md5sum</a> <a href="http://linalg.org/fflas-ffpack-ChangeLog-2.1.0">ChangeLog</a>
+</li>
+<li>Released 8/8/2014 <a href="http://linalg.org/fflas-ffpack-2.0.0.tar.gz">fflas-ffpackl-2.0.0.tar.gz</a> <a href="http://linalg.org/fflas-ffpack-2.0.0.tar.gz.md5sum">md5sum</a> <a href="http://linalg.org/fflas-ffpack-ChangeLog-2.0.0">ChangeLog</a> </li>
+</ul>
+
+<p>||Released 7/6/2012||[<a href="http://linalg.org/fflas-ffpack-1.6.0.tar.gz">http://linalg.org/fflas-ffpack-1.6.0.tar.gz</a> fflas-ffpack-1.6.0.tar.gz] || [<a href="http://linalg.org/fflas-ffpack-1.6.0.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.6.0.tar.gz.md5sum</a> md5sum]|| [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.6.0">http://linalg.org/fflas-ffpack-ChangeLog-1.6.0</a> ChangeLog] ||
+||Released 16/05/2012||[<a href="http://linalg.org/fflas-ffpack-1.5.0.tar.gz">http://linalg.org/fflas-ffpack-1.5.0.tar.gz</a> fflas-ffpack-1.5.0.tar.gz] ||[<a href="http://linalg.org/fflas-ffpack-1.5.0.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.5.0.tar.gz.md5sum</a> md5sum] || [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.5.0">http://linalg.org/fflas-ffpack-ChangeLog-1.5.0</a> ChangeLog] ||
+||Released 10/10/2011||[<a href="http://linalg.org/fflas-ffpack-1.4.3.tar.gz">http://linalg.org/fflas-ffpack-1.4.3.tar.gz</a> fflas-ffpack-1.4.3.tar.gz] || [<a href="http://linalg.org/fflas-ffpack-1.4.3.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.4.3.tar.gz.md5sum</a> md5sum]|| [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.4.3">http://linalg.org/fflas-ffpack-ChangeLog-1.4.3</a> ChangeLog] ||
+||Released 26/08/2011||[<a href="http://linalg.org/fflas-ffpack-1.4.2.tar.gz">http://linalg.org/fflas-ffpack-1.4.2.tar.gz</a> fflas-ffpack-1.4.2.tar.gz] ||[<a href="http://linalg.org/fflas-ffpack-1.4.2.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.4.2.tar.gz.md5sum</a> md5sum] || [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.4.2">http://linalg.org/fflas-ffpack-ChangeLog-1.4.2</a> ChangeLog] ||
+||Released 16/05/2011||[<a href="http://linalg.org/fflas-ffpack-1.4.1.tar.gz">http://linalg.org/fflas-ffpack-1.4.1.tar.gz</a> fflas-ffpack-1.4.1.tar.gz] || [<a href="http://linalg.org/fflas-ffpack-1.4.1.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.4.1.tar.gz.md5sum</a> md5sum]|| [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.4.1">http://linalg.org/fflas-ffpack-ChangeLog-1.4.1</a> ChangeLog] ||
+||Released 11/05/2011||[<a href="http://linalg.org/fflas-ffpack-1.4.0.tar.gz">http://linalg.org/fflas-ffpack-1.4.0.tar.gz</a> fflas-ffpack-1.4.0.tar.gz] ||[<a href="http://linalg.org/fflas-ffpack-1.4.0.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.4.0.tar.gz.md5sum</a> md5sum] || [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.4.0">http://linalg.org/fflas-ffpack-ChangeLog-1.4.0</a> ChangeLog] ||
+||Released 05/06/2008||[<a href="http://linalg.org/fflas-ffpack-1.3.3.tar.gz">http://linalg.org/fflas-ffpack-1.3.3.tar.gz</a> fflas-ffpack-1.3.3.tar.gz] ||[<a href="http://linalg.org/fflas-ffpack-1.3.3.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.3.3.tar.gz.md5sum</a> md5sum] || [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.3.3">http://linalg.org/fflas-ffpack-ChangeLog-1.3.3</a> ChangeLog] ||
+||Released 28/09/2007||[<a href="http://linalg.org/fflas-ffpack-1.3.2.tar.gz">http://linalg.org/fflas-ffpack-1.3.2.tar.gz</a> fflas-ffpack-1.3.2.tar.gz] ||[<a href="http://linalg.org/fflas-ffpack-1.3.2.tar.gz.md5sum">http://linalg.org/fflas-ffpack-1.3.2.tar.gz.md5sum</a> md5sum] || [<a href="http://linalg.org/fflas-ffpack-ChangeLog-1.3.2">http://linalg.org/fflas-ffpack-ChangeLog-1.3.2</a> ChangeLog] ||
+||Released 30/08/2007||[<a href="http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/fflas-ffpack-1.3.1.tar.gz">http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/fflas-ffpack-1.3.1.tar.gz</a> fflas-ffpack-1.3.1.tar.gz] || || [<a href="http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/ChangeLog-1.3.1">http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/ChangeLog-1.3.1</a> ChangeLog] ||
+||Released 28/08/2007||[<a href="http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/fflas-ffpack-1.3.0.tar.gz">http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/fflas-ffpack-1.3.0.tar.gz</a> fflas-ffpack-1.3.0.tar.gz] || || [<a href="http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/ChangeLog-1.3.0">http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/ChangeLog-1.3.0</a> ChangeLog] ||
+||Released 09/07/2007||[<a href="http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/fflas-ffpack-1.2.2.tar.gz">http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/fflas-ffpack-1.2.2.tar.gz</a> fflas-ffpack-1.2.2.tar.gz] || || [<a href="http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/ChangeLog-1.2.2">http://ljk.imag.fr/membres/Jean-Guillaume.Dumas/FFLAS/FFLAS_Download/ChangeLog-1.2.2</a> ChangeLog] ||</p>
+
+<p>You can also use clone the developer version on github: <a href="http://github.com/linbox-team/fflas-ffpack">http://github.com/linbox-team/fflas-ffpack</a></p>
+
+<h2>
+<a id="related-software" class="anchor" href="#related-software" aria-hidden="true"><span class="octicon octicon-link"></span></a>Related Software</h2>
+
+<p>FFLAS-FFPACK depends on:</p>
+
+<ul>
+<li>the Givaro library &lt;&gt; for the implementations of finite fields, and a wrapping of <a href="https://gmplib.org">GMP</a> multiprecision integers;</li>
+<li>any implementation of a numerical BLAS library. We suggest using <a href="http://www.openblas.net">OpenBLAS</a> on most of nowadays computers.</li>
+</ul>
+
+<p>FFLAS-FFPACK is used by:</p>
+
+<ul>
+<li>the <a href="http://github.com/linbox-team/linbox">LinBox</a> linear algebra library for its dense linear algebra kernel,</li>
+<li>the <a href="http://sagemath.org">SageMath</a> open source computer algebra software.</li>
+</ul>
+
+<p>(feel free to contact us if you are using FFLAS-FFPACK and want your project to be cited here).</p>
+
+<h2>
+<a id="authors-and-credits" class="anchor" href="#authors-and-credits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and credits</h2>
+
+<h3>
+<a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors</h3>
+
+<p>The FFLAS-FFPACK group is formed by the following authors:</p>
+
+<ul>
+<li>Brice Boyer</li>
+<li>Alexis Breust</li>
+<li>Jean-Guillaume Dumas</li>
+<li>Pascal Giorgi</li>
+<li>Clément Pernet</li>
+<li>Ziad Sultan</li>
+<li>Bastien Vialla</li>
+</ul>
+
+<h3>
+<a id="citing-fflas-ffpack" class="anchor" href="#citing-fflas-ffpack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Citing FFLAS-FFPACK</h3>
+
+<p>If your research depends on the FFLAS-FFPACK library, please consider citing the project as </p>
+
+<blockquote>
+<p><a href="https://github.com/manual" class="user-mention">@manual</a>{fflas-ffpack,<br>
+ title = {{FFLAS-FFPACK}: {F}inite {F}ield {L}inear {A}lgebra {S}ubroutines / {P}ackage},<br>
+ author = {The FFLAS-FFPACK group},<br>
+ edition = {v2.0.0},<br>
+ year = {2014},<br>
+ note = {\url{<a href="http://linalg.org/projects/fflas-ffpack">http://linalg.org/projects/fflas-ffpack</a>}}<br>
+}</p>
+</blockquote>
+
+<p>Or you may also consider citing the related research article:</p>
+
+<blockquote>
+<p><a href="https://github.com/article" class="user-mention">@article</a>{DGP:2008,<br>
+ author = {Jean-Guillaume Dumas and Pascal Giorgi and Cl{\'e}ment Pernet},<br>
+ title = {Dense Linear Algebra over Word-Size Prime Fields: the FFLAS and FFPACK Packages},<br>
+ journal = {ACM Trans. on Mathematical Software (TOMS)},<br>
+volume = {35},<br>
+number = {3},<br>
+year = {2008},<br>
+ issn = {0098-3500},<br>
+ pages = {1--42},<br>
+ doi = {10.1145/1391989.1391992},<br>
+ publisher = {ACM Press},<br>
+ address = {New York, NY, USA}<br>
+}  </p>
+</blockquote>
+
+<h3>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact</h3>
+
+<p>Use the <a href="http://groups.google.com/group/ffpack-devel">ffpack-devel</a> discussion group for communication (bug reports, installation questions, feature requests, reports of successful applications, ...).</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">fflas-ffpack maintained by <a href="https://github.com/linbox-team">linbox-team</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-66936456-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
