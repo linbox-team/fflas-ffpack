@@ -28,7 +28,7 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
 AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) 
-AM_LDFLAGS=-static  -L$(prefix)/lib  -lfflas -lffpack
+AM_LDFLAGS=-static  -L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
 EXTRA_DIST= test-utils.h
 
@@ -42,7 +42,7 @@ BASIC_TESTS =               \
 		test-compressQ      \
 		test-fadd           \
 		test-finit          \
-		test-interfaces_c \
+		test-interfaces-c \
 		test-fscal          \
 		test-fgemm          \
 		test-fger           \
@@ -121,9 +121,9 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
-test_interfaces_c_SOURCES = test-interfaces_c.c
-test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS)
-test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
+test_interfaces_c_SOURCES = test-interfaces-c.c
+#test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS) $(PARFLAGS)
+#test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
