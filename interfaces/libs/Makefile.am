@@ -55,10 +55,12 @@ libfflas_la_SOURCES=fflas_L3_inst.C \
 libfflas_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
 	             -no-undefined
 
-libffpack_la_SOURCES=ffpack_inst.C \
-		     ffpack_inst_implem.inl
+libffpack_la_SOURCES= ffpack_inst.C \
+		      ffpack_inst_implem.inl
 libffpack_la_LDFLAGS= $(LDADD) -version-info 1:0:0 \
 		       -no-undefined -lfflas 
+
+EXTRA_libffpack_la_DEPENDENCIES= libfflas.la
 
 libfflas_c_la_SOURCES=fflas_lvl1.C \
 		    fflas_lvl2.C \
@@ -68,10 +70,13 @@ libfflas_c_la_SOURCES=fflas_lvl1.C \
 libfflas_c_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
                        -no-undefined -lfflas
 
+EXTRA_libfflas_c_la_DEPENDENCIES=libfflas.la
+
 libffpack_c_la_SOURCES=ffpack.C
 #libffpack_c_la_CPPFLAGS=$(AM_CPPFLAGS) -DFFLAS_COMPILED -DFFPACK_COMPILED
 libffpack_c_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
 		        -no-undefined -lfflas -lffpack
+EXTRA_libffpack_c_la_DEPENDENCIES=libffpack.la
 
 
 EXTRA_DIST=c_libs.doxy
