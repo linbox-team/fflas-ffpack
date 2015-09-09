@@ -77,7 +77,7 @@ namespace FFLAS { namespace Protected {
 	{
 		int w = 0;
 		size_t th = WinogradThreshold<Field>(F);
-		size_t mt = m>>1;
+		size_t mt = m;
 		while ( mt >= th) {
 			++w;
 			mt >>= 1;
