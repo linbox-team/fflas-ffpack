@@ -32,8 +32,8 @@
 //#define PFGEMM_WINO_SEQ 32
 //#define CLASSIC_SEQ
 //#define WINO_SEQ
-#define DEBUG 1
-#undef NDEBUG
+//#define DEBUG 1
+//#undef NDEBUG
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular-balanced.h>
