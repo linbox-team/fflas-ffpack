@@ -139,7 +139,8 @@ int main(int argc, char** argv) {
   Field::RandIter G(F); 
   A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(A,m/size_t(NBK),m,k);
+  if (p)
+	  Initialize(A,m/size_t(NBK),m,k);
 
   FFLAS::ParSeqHelper::Parallel H;
   size_t i;
@@ -151,7 +152,8 @@ int main(int argc, char** argv) {
   
   B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(B,k/NBK,k,n);
+  if (p)
+	  Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
   PARFOR1D (i, 0, k,H,
             for (size_t j=0; j<(size_t)n; ++j)
@@ -160,7 +162,8 @@ int main(int argc, char** argv) {
   
   C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  Initialize(C,m/NBK,m,n);
+  if (p)
+	  Initialize(C,m/NBK,m,n);
   for (i=0;i<=iter;++i){
 
 	  // if (argc > 4){
