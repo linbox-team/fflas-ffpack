@@ -35,7 +35,9 @@
 
 #include <givaro/modular-integer.h>
 #include <givaro/zring.h>
-
+#ifdef PROFILE_FGEMM_MP
+#include "fflas-ffpack/utils/timer.h"
+#endif
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
 #include "fflas-ffpack/field/rns-integer-mod.h"
@@ -143,10 +145,15 @@ namespace FFLAS {
 	       Givaro::Integer* C, const size_t ldc,
 	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >  & H)
 	{
+#ifdef PROFILE_FGEMM_MP
+		Timer chrono;
+		chrono.start();
+#endif
 		if (alpha == 0){
 			fscalin(F,m,n,beta,C,ldc);
 			return C;
 		}
+
 		if (k==0) return C;
 		// compute bit size of feasible prime for FFLAS
 		size_t _k=k,lk=0;
@@ -180,6 +187,7 @@ namespace FFLAS {
 
 		// construct an RNS structure and its associated Domain
 		FFPACK::rns_double RNS(mC, prime_bitsize);
+
 		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
 		RnsDomain Zrns(RNS);
 		
@@ -195,9 +203,23 @@ namespace FFLAS {
 		Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
 		Cp = FFLAS::fflas_new(Zrns,m,n);
 
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"-------------------------------"<<std::endl;
+		std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
+		std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		chrono.start();
+#endif
+
 		// convert the input matrices to RNS representation
 		finit_rns(Zrns,Arowd,Acold,(logA/16)+((logA%16)?1:0),A,lda,Ap);
 		finit_rns(Zrns,Browd,Bcold,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
+
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"FGEMM_MP:   to RNS: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		chrono.start();
+#endif
 
 		// perform the fgemm in RNS
 		MMHelper<RnsDomain, MMHelperAlgo::Winograd, ModeCategories::DefaultTag>  H2(Zrns,H.recLevel,H.parseq);
@@ -209,6 +231,13 @@ namespace FFLAS {
 
 		// call  fgemm
 		fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
+
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		chrono.start();
+#endif
+
 		
 		// convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) )
 		fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);
@@ -216,6 +245,11 @@ namespace FFLAS {
 		FFLAS::fflas_delete(Ap);
 		FFLAS::fflas_delete(Bp);
 		FFLAS::fflas_delete(Cp);
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		std::cout<<"-------------------------------"<<std::endl;
+#endif
 
 		return C;
 	}
