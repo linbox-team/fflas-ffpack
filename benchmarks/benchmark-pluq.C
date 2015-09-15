@@ -106,10 +106,9 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	
 }
 
-//typedef Givaro::ModularBalanced<double> Field;
+typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::ModularBalanced<float> Field;
 //typedef Givaro::ZRing<double> Field;
-typedef Givaro::ZRing<double> Field;
-//typedef Givaro::UnparametricZRing<double> Field;
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
