@@ -60,8 +60,8 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	size_t curr = 0;
 	std::vector<bool> rows(M,false);
 	std::vector<bool> cols(N,false);
-	int pivot_r[R];
-	int pivot_c[R];
+	size_t pivot_r[R];
+	size_t pivot_c[R];
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
 	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
 	//	int p=0;
 	int t=MAX_THREADS;
 	int NBK = -1;
-	bool par=false;
+	bool par=true;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },

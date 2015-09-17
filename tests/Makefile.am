@@ -141,5 +141,10 @@ perfpublisher:
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
 
-%: %.C %.cpp
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+new_examp_comp = $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+
+%:%.C
+	$(new_examp_comp)
+
+%:%.cpp
+	$(new_examp_comp)
