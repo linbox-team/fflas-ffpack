@@ -1,5 +1,5 @@
-#include <fflas-ffpack/interfaces/libs/fflas_c.h>
-#include <fflas-ffpack/interfaces/libs/ffpack_c.h>
+#include <interfaces/libs/fflas_c.h>
+#include <interfaces/libs/ffpack_c.h>
 
 #include <stdlib.h>
 #include <stdio.h>
