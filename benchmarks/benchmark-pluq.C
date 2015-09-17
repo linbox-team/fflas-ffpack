@@ -66,11 +66,11 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	Randiter RI(F);
 	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
 	while (curr<R){
-		int i,j;
+		size_t i,j;
 		while (rows [i = rand() % M]);
-		while (cols [j = rand() % N]);
 		rows[i] = true;
-		cols[i] = true;
+		while (cols [j = rand() % N]);
+		cols[j] = true;
 		pivot_r[curr] = i;
 		pivot_c[curr] = j;
 		curr++;
@@ -175,12 +175,6 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 				std::cout << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 					  << " Result["<<i<<","<<j<<"] = " << (*(X+i*n+j))
 					  << std::endl;
-
-				std::stringstream errs;
-				errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
-				     << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
-				     << std::endl;
-				std::cout << errs;
 				fail=true;
 			}
 	
