@@ -51,6 +51,7 @@ int main(int argc, char** argv) {
 	};
 
   FFLAS::parseArguments(argc,argv,as);
+//  typedef Givaro::ZRing<Givaro::Integer> Field;
   typedef Givaro::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
@@ -59,7 +60,8 @@ int main(int argc, char** argv) {
   double time=0.0;
 
   Element *A;
-
+  size_t bs=1;
+  size_t size=60;
   for (size_t i=0;i<iter;++i){
 
     if (!file.empty()){
@@ -67,7 +69,7 @@ int main(int argc, char** argv) {
     }
     else{
       A = FFLAS::fflas_new<Element>(n*n);
-      Field::RandIter G(F);
+      Field::RandIter G(F,size);
       for (size_t j=0; j< (size_t)n*n; ++j)
 	G.random(*(A+j));
     }
@@ -79,13 +81,15 @@ int main(int argc, char** argv) {
     chrono.stop();
 
     time+=chrono.usertime();
-    FFLAS::fflas_delete( A);
+   
+//    bs = FFPACK::bitsize (n,n,A,n);
+   FFLAS::fflas_delete( A);
 
   }
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "Time: " << time / double(iter)
+  std::cerr << "n: "<<n<<" bitsize: "<<bs<<" Time: " << time / double(iter)
 		  << " Gflops: " << "irrelevant";
 	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 

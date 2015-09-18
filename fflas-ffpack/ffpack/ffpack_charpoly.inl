@@ -347,5 +347,5 @@ namespace FFPACK {
 	} // Protected
 
 } // FFPACK
-
+#include "ffpack_charpoly_mp.inl"
 #endif // __FFLASFFPACK_charpoly_INL
