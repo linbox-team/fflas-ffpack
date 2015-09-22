@@ -33,6 +33,8 @@
 #define FFLAS_COMPILED
 #endif
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
 #include "ffpack.h"
