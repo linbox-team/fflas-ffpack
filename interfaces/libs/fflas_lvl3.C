@@ -42,6 +42,9 @@ using Givaro::ModularBalanced ;
 using namespace FFLAS ;
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void
 ftrsm_3_modular_double (const double p, const enum FFLAS_C_SIDE Side,
@@ -134,3 +137,7 @@ fsquare_3_modular_double (const double p,
 }
 
 
+
+#ifdef __cplusplus
+}
+#endif

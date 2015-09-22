@@ -41,6 +41,9 @@ using Givaro::Modular ;
 using Givaro::ModularBalanced ;
 using namespace FFLAS ;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
  * level 1
  */
@@ -328,4 +331,8 @@ fsubin_1_modular_double (const double p,  const size_t n,
 		fsubin(F,n,B,incB,C,incC);
 	}
 }
+
+#ifdef __cplusplus
+}
+#endif
 

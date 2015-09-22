@@ -42,6 +42,10 @@ using Givaro::ModularBalanced ;
 using namespace FFLAS ;
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 fassign_2_modular_double (const double p, const size_t m, const size_t n,
 			const double * A, const size_t lda ,
@@ -372,3 +376,7 @@ ftrsv_2_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
 		ftrsv(F,(enum FFLAS::FFLAS_UPLO)Uplo,(enum FFLAS::FFLAS_TRANSPOSE)TransA,(enum FFLAS::FFLAS_DIAG)Diag,n,A,lda,X,incX);
 	}
 }
+
+#ifdef __cplusplus
+}
+#endif
