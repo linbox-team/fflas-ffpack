@@ -31,11 +31,11 @@ AM_LDFLAGS=-static
 pkgincludesub_HEADERS=fflas_c.h  \
 		      ffpack_c.h \
 		      fflas_L3_inst.h \
-		      fflas_L3_inst_implem.inl
+		      fflas_L3_inst_implem.inl \
 		      fflas_L2_inst.h \
-		      fflas_L2_inst_implem.inl
+		      fflas_L2_inst_implem.inl \
 		      fflas_L1_inst.h \
-		      fflas_L1_inst_implem.inl
+		      fflas_L1_inst_implem.inl \
 		      ffpack_inst.h \
 		      ffpack_inst_implem.inl
 
