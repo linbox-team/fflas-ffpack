@@ -25,6 +25,8 @@
  *.
  */
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 #ifndef __FFLAS_L1_INST_C
 #define __FFLAS_L1_INST_C
 #include "givaro/modular.h"

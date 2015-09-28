@@ -24,6 +24,7 @@
  * ========LICENCE========
  *.
  */
+#include "fflas-ffpack/fflas-ffpack-config.h"
 
 #ifndef __FFLAS_L3_INST_C
 #define __FFLAS_L3_INST_C
