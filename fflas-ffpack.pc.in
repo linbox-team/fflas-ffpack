@@ -1,0 +1,14 @@
+/------------------ fflas-ffpack.pc ------------------------
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: fflas-ffpack
+Description: Finite Field Linear Algebra Suroutines/Package>
+URL: http://linbox-team.github.io/fflas-ffpack/
+Version: @VERSION@
+Requires: givaro, BLAS
+Libs: 
+Cflags: @DEFAULT_CFLAGS@ @CXXFLAGS@ @AVXFLAGS@ @OMPFLAGS@
+\-------------------------------------------------------

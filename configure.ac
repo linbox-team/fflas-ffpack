@@ -23,7 +23,7 @@
 
 AC_PREREQ([2.61])
 
-AC_INIT([FFLAS-FFPACK], [2.1.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.2.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[http://www.linalg.org/projects/fflas-ffpack])
 
 AC_CONFIG_MACRO_DIR([macros])
@@ -88,7 +88,7 @@ if test "x$DBG" = "xyes" ; then
 	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
 else
 	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} "
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DNDEBUG -UFFLASFFPACK_DEBUG -UFFLASFFPACK_DEBUG"
+	DEBUG_CFLAGS="-DNDEBUG -UFFLASFFPACK_DEBUG -UFFLASFFPACK_DEBUG"
 fi
 
 if test "x$PROF" = "xyes" ; then
@@ -345,6 +345,7 @@ benchmarks/Makefile
 optimiser/Makefile
 interfaces/Makefile
 interfaces/libs/Makefile
+fflas-ffpack.pc
 ])
 AC_OUTPUT
 
