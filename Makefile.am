@@ -26,6 +26,9 @@ ACLOCAL_AMFLAGS = -I macros
 
 SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser interfaces
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = fflas-ffpack.pc
+
 
 #  include_HEADERS=fflas-ffpack-config.h
 #!@todo add examples dir XXX
