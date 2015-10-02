@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
 	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
 			      typename FFLAS::ModeTraits<Field>::value,
 			      FFLAS::ParSeqHelper::Parallel> 
-		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth, strat));	
+		      WH (F, nbw, SPLITTER(t, meth, strat));
 	      if (i) chrono.start();
 	      PAR_BLOCK{
 		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
