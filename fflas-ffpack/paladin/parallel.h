@@ -413,3 +413,13 @@
     9,8,7,6,5,4,3,2,1,0
 
 #endif //__FFLASFFPACK_fflas_parallel_H
+
+#define NOSPLIT() FFLAS::ParSeqHelper::Sequential()
+
+// overload of SPLITTER
+#define splitting_0() FFLAS::ParSeqHelper::Parallel()
+#define splitting_3(a,b,c) FFLAS::ParSeqHelper::Parallel(a,b,c)
+
+#define splitt(_1,_2,_3, NAME,...) NAME
+
+#define SPLITTER(...) splitt(__VA_ARGS__, splitting_3, a, b, splitting_0)(__VA_ARGS__)
