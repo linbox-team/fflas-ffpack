@@ -29,7 +29,6 @@ SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser interfaces
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = fflas-ffpack.pc
 
-
 #  include_HEADERS=fflas-ffpack-config.h
 #!@todo add examples dir XXX
 
@@ -78,7 +77,7 @@ bin_SCRIPTS=fflas-ffpack-config
 git:
 	git commit -a; git pull; git push
 
-VERSION=2.2.0
+VERSION=2.2.0rc0
 
 #  EXTRA_DIST=incremente-versions
 

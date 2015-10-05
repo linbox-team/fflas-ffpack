@@ -18,13 +18,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # ========LICENCE========
 
+if FFLASFFPACK_PRECOMPILED
 
 pkgincludesubdir=$(pkgincludedir)/interfaces/libs
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
 AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS)
-AM_LDFLAGS=-static 
+#AM_LDFLAGS=-static 
 
 
 
@@ -39,6 +40,7 @@ pkgincludesub_HEADERS=fflas_c.h  \
 		      ffpack_inst.h \
 		      ffpack_inst_implem.inl
 
+
 lib_LTLIBRARIES=libfflas.la \
 		libffpack.la \
 		libfflas_c.la \
@@ -46,12 +48,13 @@ lib_LTLIBRARIES=libfflas.la \
 
 
 
-libfflas_la_SOURCES=fflas_L3_inst.C \
-		    fflas_L3_inst_implem.inl \
+libfflas_la_SOURCES= fflas_L1_inst.C \
+		    fflas_L1_inst_implem.inl\
 		    fflas_L2_inst.C \
 		    fflas_L2_inst_implem.inl \
-		    fflas_L1_inst.C \
-		    fflas_L1_inst_implem.inl
+		    fflas_L3_inst.C \
+		    fflas_L3_inst_implem.inl
+
 libfflas_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
 	             -no-undefined
 
@@ -80,3 +83,5 @@ EXTRA_libffpack_c_la_DEPENDENCIES=libffpack.la
 
 
 EXTRA_DIST=c_libs.doxy
+
+endif

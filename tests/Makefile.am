@@ -26,9 +26,9 @@ check:
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
-AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS)
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) 
-AM_LDFLAGS=-static  -L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS) #-DFFLAS_COMPILED -DFFPACK_COMPILED
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
+AM_LDFLAGS=-static  #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
 EXTRA_DIST= test-utils.h
 
@@ -42,7 +42,6 @@ BASIC_TESTS =               \
 		test-compressQ      \
 		test-fadd           \
 		test-finit          \
-		test-interfaces-c \
 		test-fscal          \
 		test-fgemm          \
 		test-fger           \
@@ -50,6 +49,11 @@ BASIC_TESTS =               \
 		test-multifile      \
 		regression-check
 
+if FFLASFFPACK_PRECOMPILED
+
+INTERFACE_TESTS= test-interfaces-c 
+test_interfaces_c_LDFLAGS = $(LDADD) -lfflas_c -lffpack_c
+endif
 NOT_A_TEST =  \
 		test-lqup2             \
 		test-charpoly          \
@@ -78,7 +82,7 @@ INFINITE_TEST= \
 
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS)  $(USE_OMP_TESTS)
+		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)

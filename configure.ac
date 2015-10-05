@@ -84,11 +84,11 @@ WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...
 if test "x$DBG" = "xyes" ; then
-	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} " #those are CXXFLAGS
+	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS}" #those are CXXFLAGS
 	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
 else
-	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} "
-	DEBUG_CFLAGS="-DNDEBUG -UFFLASFFPACK_DEBUG -UFFLASFFPACK_DEBUG"
+	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS}"
+	DEBUG_CFLAGS="-DNDEBUG -UFFLASFFPACK_DEBUG"
 fi
 
 if test "x$PROF" = "xyes" ; then
@@ -310,7 +310,10 @@ FF_DOC
 # fi
 
 CXXFLAGS="${CXXFLAGS}"
+
 AC_SUBST(CXXFLAGS)
+
+FF_PRECOMPILE
 
 echo "-----------------------------------------------"
 echo "          END FFLAS-FFPACK CONFIG              "

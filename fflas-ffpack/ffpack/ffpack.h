@@ -1420,7 +1420,7 @@ namespace FFPACK { /* not used */
 } // FFPACK
 // include precompiled instantiation headers (avoiding to recompile them)
 #ifdef FFPACK_COMPILED 
-#include "interfaces/libs/ffpack_inst.h"
+#include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
 #endif
 
 #include "ffpack_fgesv.inl"

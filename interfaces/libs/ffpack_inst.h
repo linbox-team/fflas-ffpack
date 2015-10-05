@@ -35,7 +35,7 @@
 
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
-#include "ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 
 // This is a H file: we do template declarations
