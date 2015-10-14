@@ -153,13 +153,13 @@
 #define PF1D_5(iter,debut,  m, Helper, Args...)                                \
    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);               \
      PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks()) schedule(runtime)) \
-           for(iter=debut; iter<m+debut; ++iter)                      \
+         for(std::remove_const<decltype(m)>::type iter=debut; iter<m+debut; ++iter)            \
            { Args; } }
 
 #define PF1D_6(iter, debut, m, ref, Helper, Args...)                           \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);              \
         PRAGMA_OMP_TASK_IMPL(omp parallel for ref num_threads(OMPstrategyIterator.numblocks())) \
-            for(iter=debut; iter<m+debut; ++iter)                     \
+            for(std::remove_const<decltype(m)>::type iter=debut; iter<m+debut; ++iter)         \
             { Args; } }
 
 #define GET_PF1D(_1,_2,_3,_4,_5,_6,  NAME,...) NAME
@@ -412,14 +412,20 @@
     19,18,17,16,15,14,13,12,11,10, \
     9,8,7,6,5,4,3,2,1,0
 
-#endif //__FFLASFFPACK_fflas_parallel_H
-
 #define NOSPLIT() FFLAS::ParSeqHelper::Sequential()
 
 // overload of SPLITTER
 #define splitting_0() FFLAS::ParSeqHelper::Parallel()
+#define splitting_1(a) FFLAS::ParSeqHelper::Parallel(a)
+#define splitting_2(a,c) FFLAS::ParSeqHelper::Parallel(a,FFLAS::BLOCK,c)
 #define splitting_3(a,b,c) FFLAS::ParSeqHelper::Parallel(a,b,c)
 
 #define splitt(_1,_2,_3, NAME,...) NAME
 
-#define SPLITTER(...) splitt(__VA_ARGS__, splitting_3, a, b, splitting_0)(__VA_ARGS__)
+#define SPLITTER(...) splitt(__VA_ARGS__, splitting_3, splitting_2, splitting_1, splitting_0)(__VA_ARGS__)
+
+#include "fflas-ffpack/paladin/blockcuts.inl"
+
+
+#endif //__FFLASFFPACK_fflas_parallel_H
+

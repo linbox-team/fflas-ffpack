@@ -61,58 +61,6 @@ namespace FFLAS {
 		inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}
 	}
 
-	enum CuttingStrategy {
-        SINGLE			,
-		ROW		,
-		COLUMN	,
-		BLOCK	,
-		RECURSIVE
-	};
-
-	enum StrategyParameter {
-        FIXED		,
-		THREADS		,
-		GRAIN		,
-		TWO_D			,
-		THREE_D_INPLACE	,
-		THREE_D_ADAPT	,
-		TWO_D_ADAPT		,
-		THREE_D
-	};
-
-	/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-	namespace ParSeqHelper {
-		struct Parallel{
-			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK, StrategyParameter p=THREADS):_numthreads(n),_method(m),_param(p){}
-
-			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads() << ',' << p.method();
-			}
-			size_t numthreads() const { return _numthreads; }
-            size_t& set_numthreads(size_t n) { return _numthreads=n; }
-			CuttingStrategy method() const { return _method; }            
-			StrategyParameter strategy() const { return _param; }            
-        private:
-			size_t _numthreads;
-			CuttingStrategy _method;
-			StrategyParameter _param;
-            
-		};
-		struct Sequential{
-			Sequential() {}
-			//template<class T>
-			Sequential(Parallel& ) {}
-			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
-				return out << "Sequential";
-			}
-			size_t numthreads() const { return 1; }
-			CuttingStrategy method() const { return SINGLE; }       
-                // numthreads==1 ==> a single block
-			StrategyParameter strategy() const { return THREADS; }            
-		};
-	}
-
 	namespace MMHelperAlgo{
 		struct Auto{};
 		struct Classic{};

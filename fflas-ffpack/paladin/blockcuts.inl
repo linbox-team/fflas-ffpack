@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_bounds.inl
  * Copyright (C) 2013 Jean-Guillaume Dumas
  *
@@ -33,6 +33,59 @@
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 
 namespace FFLAS {
+	enum CuttingStrategy {
+        SINGLE			,
+		ROW		,
+		COLUMN	,
+		BLOCK	,
+		RECURSIVE
+	};
+
+	enum StrategyParameter {
+        FIXED		,
+		THREADS		,
+		GRAIN		,
+		TWO_D			,
+		THREE_D_INPLACE	,
+		THREE_D_ADAPT	,
+		TWO_D_ADAPT		,
+		THREE_D
+	};
+
+	/*! ParSeqHelper for both fgemm and ftrsm
+	*/
+	namespace ParSeqHelper {
+		struct Parallel{
+			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK, StrategyParameter p=THREADS):_numthreads(n),_method(m),_param(p){}
+
+			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
+				return out << "Parallel: " << p.numthreads() << ',' << p.method();
+			}
+			size_t numthreads() const { return _numthreads; }
+            size_t& set_numthreads(size_t n) { return _numthreads=n; }
+			CuttingStrategy method() const { return _method; }            
+			StrategyParameter strategy() const { return _param; }            
+        private:
+			size_t _numthreads;
+			CuttingStrategy _method;
+			StrategyParameter _param;
+            
+		};
+		struct Sequential{
+			Sequential() {}
+			//template<class T>
+			Sequential(Parallel& ) {}
+			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
+				return out << "Sequential";
+			}
+			size_t numthreads() const { return 1; }
+			CuttingStrategy method() const { return SINGLE; }       
+                // numthreads==1 ==> a single block
+			StrategyParameter strategy() const { return THREADS; }            
+		};
+	}
+
+
 
     template<CuttingStrategy Method, StrategyParameter Strategy=THREADS>
     inline void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
