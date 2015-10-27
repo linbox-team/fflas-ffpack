@@ -120,7 +120,6 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	Field::Element * L, *U;
 	L = FFLAS::fflas_new(F, m,R);
 	U = FFLAS::fflas_new(F, R,n);
-	size_t i;
 	
 	PARFOR1D (i,0, m*R,H, F.init(L[i], 0.0); );
 	
@@ -137,13 +136,12 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
               for (size_t j=i; j<n; ++j)
               	F.assign (*(U + i*n + j), *(A+ i*n+j));
               );
-	size_t j;
 	
 	PARFOR1D (j,0,R,H, 
-		  for (i=0; i<=j; ++i )
+		  for (size_t i=0; i<=j; ++i )
 			  F.assign( *(L+i*R+j), zero);
 		  F.assign(*(L+j*R+j), one);
-		  for (i=j+1; i<m; i++)
+		  for (size_t i=j+1; i<m; i++)
 			  F.assign( *(L + i*R+j), *(A+i*n+j));
 		  );
 	
@@ -169,8 +167,8 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	}
 	bool fail = false;
 	//  PAR_FOR (size_t i=0; i<m; ++i)
-	for(i=0; i<m; ++i)
-		for (j=0; j<n; ++j)
+	for(size_t i=0; i<m; ++i)
+		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
 				std::cout << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 					  << " Result["<<i<<","<<j<<"] = " << (*(X+i*n+j))
@@ -309,22 +307,19 @@ int main(int argc, char** argv) {
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
        FFLAS::ParSeqHelper::Parallel H;
-       size_t i;
        
        Acop = FFLAS::fflas_new(F,m,n);
        PARFOR1D(i,0,(size_t)m,H, 
                 for (size_t j=0; j<(size_t)n; ++j)
                 	Acop[i*n+j]= A[i*n+j];
                 );
-       size_t j;
-       size_t k;
               
-       for (i=0;i<=iter;++i){
+       for (size_t i=0;i<=iter;++i){
 	       	       
 	       PARFOR1D(j,0,maxP,H, P[j]=0; );
 	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
 	       PARFOR1D(k,0,(size_t)m,H,
-                    for (j=0; j<(size_t)n; ++j)
+                    for (size_t j=0; j<(size_t)n; ++j)
 			    F.assign( A[k*n+j] , Acop[k*n+j]) ;  
                     );
 	       chrono.clear();

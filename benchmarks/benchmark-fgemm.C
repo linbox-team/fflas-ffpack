@@ -143,7 +143,6 @@ int main(int argc, char** argv) {
 	  Initialize(A,m/size_t(NBK),m,k);
 
   FFLAS::ParSeqHelper::Parallel H;
-  size_t i;
 //#pragma omp for
   PARFOR1D (i,0, m,H,
 	    for (size_t j=0; j<(size_t)k; ++j)
@@ -164,7 +163,7 @@ int main(int argc, char** argv) {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   if (p)
 	  Initialize(C,m/NBK,m,n);
-  for (i=0;i<=iter;++i){
+  for (size_t i=0;i<=iter;++i){
 
 	  // if (argc > 4){
 	  // 	  A = read_field (F, argv[4], &n, &n);
