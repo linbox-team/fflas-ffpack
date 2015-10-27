@@ -309,22 +309,19 @@ int main(int argc, char** argv) {
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
        FFLAS::ParSeqHelper::Parallel H;
-       size_t i;
        
        Acop = FFLAS::fflas_new(F,m,n);
        PARFOR1D(i,0,(size_t)m,H, 
                 for (size_t j=0; j<(size_t)n; ++j)
                 	Acop[i*n+j]= A[i*n+j];
                 );
-       size_t j;
-       size_t k;
               
-       for (i=0;i<=iter;++i){
+       for (size_t i=0;i<=iter;++i){
 	       	       
 	       PARFOR1D(j,0,maxP,H, P[j]=0; );
 	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
 	       PARFOR1D(k,0,(size_t)m,H,
-                    for (j=0; j<(size_t)n; ++j)
+                    for (size_t j=0; j<(size_t)n; ++j)
 			    F.assign( A[k*n+j] , Acop[k*n+j]) ;  
                     );
 	       chrono.clear();
