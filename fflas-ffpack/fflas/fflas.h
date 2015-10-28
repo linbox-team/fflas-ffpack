@@ -115,9 +115,9 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 #include "fflas_level3.inl"
 
 #ifdef FFLAS_COMPILED 
-#include "fflas-ffpack/interfaces/libs/fflas_L1_inst.h"
-#include "fflas-ffpack/interfaces/libs/fflas_L2_inst.h"
-#include "fflas-ffpack/interfaces/libs/fflas_L3_inst.h"
+#include "interfaces/libs/fflas_L1_inst.h"
+#include "interfaces/libs/fflas_L2_inst.h"
+#include "interfaces/libs/fflas_L3_inst.h"
 #endif
 
 //---------------------------------------------------------------------
