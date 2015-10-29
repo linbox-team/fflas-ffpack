@@ -37,7 +37,9 @@
 #define __FFLASFFPACK_interfaces_libs_fflas_c_H
 //#include "fflas-ffpack/fflas-ffpack-config.h"
 
+#ifndef FFLAS_COMPILED
 #define FFLAS_COMPILED
+#endif
 
 #include <stdbool.h>
 #include <stdlib.h>
