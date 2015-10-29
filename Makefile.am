@@ -24,7 +24,7 @@
 
 ACLOCAL_AMFLAGS = -I macros
 
-SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser interfaces
+SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = fflas-ffpack.pc
@@ -65,8 +65,8 @@ uninstall-hook:
 	       	"$(includedir)/fflas-ffpack/field"			\
 	       	"$(includedir)/fflas-ffpack/utils"			\
 	       	"$(includedir)/fflas-ffpack/paladin"			\
-	       	"$(includedir)/interfaces"			        \
-	       	"$(includedir)/interfaces/libs"			        \
+	       	"$(includedir)/fflas-ffpack/interfaces"		        \
+	       	"$(includedir)/fflas-ffpack/interfaces/libs"	        \
 	       	"$(includedir)/fflas-ffpack/" "$(datarootdir)/" ) ||	\
 	       	true
 

@@ -32,7 +32,7 @@
  * @see ffpack/ffpack.h
  */
 
-#include "interfaces/libs/ffpack_c.h"
+#include "fflas-ffpack/interfaces/libs/ffpack_c.h"
 
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"

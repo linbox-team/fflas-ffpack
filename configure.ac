@@ -341,13 +341,13 @@ fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
 fflas-ffpack/paladin/Makefile
+fflas-ffpack/interfaces/Makefile
+fflas-ffpack/interfaces/libs/Makefile
 doc/Makefile
 tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
 optimiser/Makefile
-interfaces/Makefile
-interfaces/libs/Makefile
 fflas-ffpack.pc
 ])
 AC_OUTPUT

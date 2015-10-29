@@ -32,7 +32,7 @@
  * @see fflas/fflas_level3.inl
  */
 
-#include "interfaces/libs/fflas_c.h"
+#include "fflas-ffpack/interfaces/libs/fflas_c.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "givaro//modular-balanced.h"
 #include "givaro//modular.h"
