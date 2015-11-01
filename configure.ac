@@ -24,7 +24,7 @@
 AC_PREREQ([2.61])
 
 AC_INIT([FFLAS-FFPACK], [2.2.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
-		[http://www.linalg.org/projects/fflas-ffpack])
+		[https://github.com/linbox-team/fflas-ffpack])
 
 AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
