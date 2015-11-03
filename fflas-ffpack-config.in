@@ -112,7 +112,7 @@ while test $# -gt 0; do
 			;;
 
 		--libs)
-			echo @CBLAS_LIBS@ @GIVARO_LIBS@ @PRECOMPILE_LIBS@ # @CUDA_LIBS@
+			echo @PRECOMPILE_LIBS@ @CBLAS_LIBS@ @GIVARO_LIBS@ # @CUDA_LIBS@
 			;;
 
 		--blas-libs)
