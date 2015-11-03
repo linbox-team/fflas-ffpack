@@ -301,11 +301,11 @@ namespace FFLAS {
 //             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
 
             if ( H.strategy() == THREADS ) {
-                numBlock = std::max(H.numthreads(),(blocksize_t)1);
+                numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
             } else if ( H.strategy() == GRAIN ) { 
-                numBlock = std::max(n/ H.numthreads(), (blocksize_t)1);
+                numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);
             } else {
-                numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(blocksize_t)1);
+                numBlock = std::max(n/(blocksize_t)(__FFLASFFPACK_MINBLOCKCUTS),(blocksize_t)1);
             }
             firstBlockSize = n/numBlock;
             if (firstBlockSize<1) {
