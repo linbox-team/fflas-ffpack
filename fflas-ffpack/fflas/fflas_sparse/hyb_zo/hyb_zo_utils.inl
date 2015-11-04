@@ -127,7 +127,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::HYB_ZO> &A
 
 template<typename _Field>
 std::ostream& operator<<(std::ostream& os, const Sparse<_Field, SparseMatrix_t::HYB_ZO>& A) {
-	sparse_print(os << "non-ones: ", *(A.dat));
+	return sparse_print(os << "non-ones: ", *(A.dat));
 }
 
 
