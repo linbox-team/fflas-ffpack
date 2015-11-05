@@ -27,7 +27,7 @@
 //#define __FFLASFFPACK_USE_TBB
 
 //#define __FFLASFFPACK_USE_DATAFLOW
-
+#define  __FFLASFFPACK_FORCE_SEQ
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include <givaro/givranditer.h>

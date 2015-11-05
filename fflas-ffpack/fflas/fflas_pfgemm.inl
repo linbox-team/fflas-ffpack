@@ -92,12 +92,14 @@ namespace FFLAS {
                 
             MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
             SYNCH_GROUP( H.parseq.numthreads(),
-            {FOR2D(iter,m,n,H.parseq,
+            {FORBLOCK2D(iter,m,n,H.parseq,
                    TASK( MODE(
                        READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
                        CONSTREFERENCE(F, SeqH) 
                        READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
-                         fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH););
+                         fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH);
+			     //	 std::cout<<" "<<iter.iend()-iter.ibegin()<<std::endl;
+);
                    );
             });
         }

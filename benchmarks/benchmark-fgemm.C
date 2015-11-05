@@ -28,7 +28,7 @@
 //#define __FFLASFFPACK_USE_OPENMP 
 //#define __FFLASFFPACK_USE_DATAFLOW
 //#define WINO_PARALLEL_TMPS
-
+#define __FFLASFFPACK_FORCE_SEQ
 //#define PFGEMM_WINO_SEQ 32
 //#define CLASSIC_SEQ
 //#define WINO_SEQ
@@ -160,9 +160,13 @@ int main(int argc, char** argv) {
             );
   
   C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+  
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   if (p)
 	  Initialize(C,m/NBK,m,n);
+
+  FFLAS::pfsub(F, m, n, A, n, B, n, C, n, 32);
+
   for (size_t i=0;i<=iter;++i){
 
 	  // if (argc > 4){
