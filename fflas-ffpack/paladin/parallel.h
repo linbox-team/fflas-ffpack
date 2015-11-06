@@ -118,62 +118,52 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
-// PARFOR1D does normal execution of the loop
-#define PARFOR1D(iter,debut,  m, Helper, I) \
-    for(std::remove_const<decltype(m)>::type iter=debut; iter<m+debut; ++iter) \
-    { I; }
-
-
-// for strategy 1D 
-#define FOR1D(i, debut, m, Helper, Args...)                               \
-    {   FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-            for(std::remove_const<decltype(m)>::type i=iter.begin(); i!=iter.end(); ++i) \
-            { Args; } }
-
 // for with iterator control and range access through iter (strategy 1D) (overloaded)
-#define FB1D_4(iter, m, Helper, Args...)                                \
-   { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-       for(iter.initialize(); !iter.isTerminated(); ++iter)             \
-       {Args;} }
+#define FB1D_5(iter, debut, m, Helper, Args...) {                                \
+    FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(decltype(m)(debut), m, Helper); \
+    for(iter.initialize(); !iter.isTerminated(); ++iter)                \
+    {Args;} }
 
-#define FB1D_5(iter, debut, m, Helper, Args...)                         \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {Args;} }
+#define FB1D_4(iter, m, Helper, Args...)                                         \
+    FB1D_5(iter,decltype(m)(0),m, Helper, Args)
 
 #define GET_FB1D(_1,_2,_3,_4,_5, NAME,...) NAME
 #define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
 
+// PARFOR1D does normal execution of the loop
+#define PARFOR1D(iter,debut,  m, Helper, I) \
+    for(std::remove_const<decltype(m)>::type iter=debut; iter<m; ++iter)   \
+    { I; }
+
+
+// for strategy 1D 
+#define FOR1D(i, debut, m, Helper, Args...)                                      \
+    FORBLOCK1D(_internal_iterator, debut, m, Helper,                             \
+        for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
+        { Args; })
+
 ////////////////////   CUTTING LOOP MACROS 2D //////////////////////
 
 // for strategy 2D 
-#define FOR2D(i, j, m, n, Helper, Args...)                              \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > ITER(m,n,Helper); \
-        for(ITER.initialize(); !ITER.isTerminated(); ++ITER)            \
-            for(std::remove_const<decltype(m)>::type i=ITER.ibegin(); i!=ITER.iend(); ++i)                   \
-                for(std::remove_const<decltype(m)>::type j=ITER.jbegin(); j!=ITER.jend(); ++j)               \
-                { Args; } }
-
 // for strategy 2D with access to the range and control of iterator
 #define FORBLOCK2D(iter, m, n, Helper, Args...)                         \
     { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {Args;} }
+        { Args; } }
+
+#define FOR2D(i, j, m, n, Helper, Args...)                              \
+    FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
+        for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i)\
+        for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j)\
+        { Args; })
 
 // parallel for strategy 2D with access to the range and control of iterator
 #define PARFORBLOCK2D(iter, m, n, Helper, Args...)                      \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-            {Args;} }
+    FORBLOCK2D(iter, m, n, Helper, Args)
 
 // parallel for strategy 2D 
-#define PARFOR2D(i, j, m, n, Helper, Args...)                      \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-                for(std::remove_const<decltype(m)>::type i=iter.ibegin(); i!=iter.iend(); ++i)               \
-                    for(std::remove_const<decltype(m)>::type j=iter.jbegin(); j!=iter.jend(); ++j)           \
-                    { Args; } }
+#define PARFOR2D(i, j, m, n, Helper, Args...)                           \
+    FOR2D(i, j, m, n, Helper, Args)
 
 
 #endif // Macro for sequential
@@ -195,18 +185,61 @@
 
 ////////////////////   CUTTING LOOP MACROS 1D //////////////////////
 
+
+//parallel for with iterator control and range access (overloaded)
+#define PFB1D_4(iter, m, Helper, Args...)                               \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
+            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
+            {Args;} }
+
+#define PFB1D_5(iter, debut, m, Helper, Args...)                        \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(debut, m, Helper); \
+        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
+            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
+            {Args;} }
+
+#define PFB1D_6(iter, debut, m, ref, Helper, Args...)                    \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(debut, m, Helper); \
+        PRAGMA_OMP_TASK_IMPL(omp parallel for ref num_threads(iter.numblocks()) schedule(runtime)) \
+            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
+            {Args;} }
+
+#define GET_PFB1D(_1,_2,_3,_4,_5,_6, NAME,...) NAME
+#define PARFORBLOCK1D(...) GET_PFB1D(__VA_ARGS__, PFB1D_6, PFB1D_5, PFB1D_4)(__VA_ARGS__)  
+
+// for with iterator control and range access through iter (strategy 1D) (overloaded)
+#define FB1D_4(iter, m, Helper, Args...)                         \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {Args;} }
+
+#define FB1D_5(iter, debut, m, Helper, Args...)                         \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(debut, m, Helper); \
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {Args;} }
+
+#define GET_FB1D(_1,_2,_3,_4,_5, NAME,...) NAME
+#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
+
+// for strategy 1D 
+#define FOR1D(i, debut, m, Helper, Args...)                                     \
+    FORBLOCK1D(_internal_iterator, debut, m, Helper,                            \
+        for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i)\
+        { Args; } )
+
 // parallel for 1D, overloaded macro
 
 #define PF1D_5(iter,debut,  m, Helper, Args...)                                \
-   { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);               \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(debut, m, Helper); \
      PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks()) schedule(runtime)) \
-         for(std::remove_const<decltype(m)>::type iter=debut; iter<m+debut; ++iter)            \
+         for(std::remove_const<decltype(m)>::type iter=debut; iter<m; ++iter)            \
            { Args; } }
 
 #define PF1D_6(iter, debut, m, ref, Helper, Args...)                           \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(m, Helper);              \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > OMPstrategyIterator(debut, m, Helper); \
         PRAGMA_OMP_TASK_IMPL(omp parallel for ref num_threads(OMPstrategyIterator.numblocks())) \
-            for(std::remove_const<decltype(m)>::type iter=debut; iter<m+debut; ++iter)         \
+            for(std::remove_const<decltype(m)>::type iter=debut; iter<m; ++iter)         \
             { Args; } }
 
 #define GET_PF1D(_1,_2,_3,_4,_5,_6,  NAME,...) NAME
@@ -237,64 +270,22 @@
 #define GET_PF1D(_1,_2,_3,_4,_5,_6,  NAME,...) NAME
 #define PARFOR1D(...) GET_PF1D(__VA_ARGS__, PF1D_6,PF1D_5,PF1D_4)(__VA_ARGS__)
 */
-//parallel for with iterator control and range access (overloaded)
-#define PFB1D_4(iter, m, Helper, Args...)                               \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-            {Args;} }
 
-#define PFB1D_5(iter, debut, m, Helper, Args...)                        \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-            {Args;} }
-
-#define PFB1D_6(iter, debut, m, ref, Helper, Args...)                    \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for ref num_threads(iter.numblocks()) schedule(runtime)) \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-            {Args;} }
-
-#define GET_PFB1D(_1,_2,_3,_4,_5,_6, NAME,...) NAME
-#define PARFORBLOCK1D(...) GET_PFB1D(__VA_ARGS__, PFB1D_6, PFB1D_5, PFB1D_4)(__VA_ARGS__)  
-
-// for strategy 1D 
-#define FOR1D(i, debut, m, Helper, Args...)                               \
-    {   FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-            for(std::remove_const<decltype(m)>::type i=iter.begin(); i!=iter.end(); ++i) \
-            { Args; } }
-
-// for with iterator control and range access through iter (strategy 1D) (overloaded)
-#define FB1D_4(iter, m, Helper, Args...)                         \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {Args;} }
-
-#define FB1D_5(iter, debut, m, Helper, Args...)                         \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {Args;} }
-
-#define GET_FB1D(_1,_2,_3,_4,_5, NAME,...) NAME
-#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
 
 ////////////////////   CUTTING LOOP MACROS 2D //////////////////////
-
-// for strategy 2D 
-#define FOR2D(i, j, m, n, Helper, Args...)                              \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > ITER(m,n,Helper); \
-        for(ITER.initialize(); !ITER.isTerminated(); ++ITER)            \
-            for(std::remove_const<decltype(m)>::type i=ITER.ibegin(); i!=ITER.iend(); ++i)                   \
-                for(std::remove_const<decltype(m)>::type j=ITER.jbegin(); j!=ITER.jend(); ++j)               \
-                { Args; } }
 
 // for strategy 2D with access to the range and control of iterator
 #define FORBLOCK2D(iter, m, n, Helper, Args...)                         \
     { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {Args;} }
+
+// for strategy 2D 
+#define FOR2D(i, j, m, n, Helper, Args...)                              \
+    FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
+        for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i)\
+        for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j)\
+        { Args; })
 
 // parallel for strategy 2D with access to the range and control of iterator
 #define PARFORBLOCK2D(iter, m, n, Helper, Args...)                      \
@@ -304,13 +295,11 @@
             {Args;} }
 
 // parallel for strategy 2D 
-#define PARFOR2D(i, j, m, n, Helper, Args...)                      \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for schedule(runtime)) \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-                for(std::remove_const<decltype(m)>::type i=iter.ibegin(); i!=iter.iend(); ++i)               \
-                    for(std::remove_const<decltype(m)>::type j=iter.jbegin(); j!=iter.jend(); ++j)           \
-                    { Args; } }
+#define PARFOR2D(i, j, m, n, Helper, Args...)                           \
+    PARFORBLOCK2D(_internal_iterator, m, n, Helper,                     \
+        for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i)\
+        for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j)\
+        { Args; })
 
 
 // parallel region
