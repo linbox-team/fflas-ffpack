@@ -47,7 +47,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
   size_t m = A.m;
   PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -85,7 +85,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
   size_t m = A.m;
   PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -143,7 +143,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     uint32_t k = 0;
     PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -227,7 +227,7 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
     uint32_t k = 0;
     PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -560,7 +560,7 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
   size_t m = A.m;
   PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -615,7 +615,7 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
   size_t m = A.m;
   PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -675,7 +675,7 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     uint32_t k = 0;
     PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -752,7 +752,7 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     uint32_t k = 0;
     PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -827,7 +827,7 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     uint32_t k = 0;
     PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -904,7 +904,7 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     uint32_t k = 0;
     PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {

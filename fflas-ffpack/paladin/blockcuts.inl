@@ -296,6 +296,13 @@ namespace FFLAS {
 	template <typename blocksize_t=size_t>
     struct ForStrategy1D {
         ForStrategy1D(const blocksize_t n, const ParSeqHelper::Parallel H) {
+			build(n,H);
+		}
+        ForStrategy1D(const blocksize_t b, const blocksize_t e, const ParSeqHelper::Parallel H) {
+			build(e-b,H);
+		}
+		
+        void build(const blocksize_t n, const ParSeqHelper::Parallel H) {
 //             std::cout<<"FS1D n : "<<n<<std::endl;
 //             std::cout<<"FS1D method    : "<<method<<std::endl;
 //             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
@@ -315,7 +322,7 @@ namespace FFLAS {
             changeBS = n - numBlock*firstBlockSize;
             lastBlockSize = firstBlockSize;
             if (changeBS) ++firstBlockSize;
-
+			
 //             std::cout<<"FS1D 1BLOCKSIZE : "<<firstBlockSize<<std::endl;
 //             std::cout<<"FS1D 2BLOCKSIZE : "<<lastBlockSize<<std::endl;
 //             std::cout<<"FS1D changeBS : "<<changeBS<<std::endl;
