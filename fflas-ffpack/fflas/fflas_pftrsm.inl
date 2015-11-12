@@ -64,12 +64,12 @@ namespace FFLAS {
 					if(Side == FflasRight){
 						FORBLOCK1D(iter, 0, m, H.parseq,
 							  
-								   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 							  );
 					} else {
 						FORBLOCK1D(iter, 0, n, H.parseq,
 //							  seqRecHelper SeqH(H);
-								   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 							  );
 					}
 					);
