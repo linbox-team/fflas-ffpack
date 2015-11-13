@@ -128,7 +128,13 @@
     FB1D_5(iter,decltype(m)(0),m, Helper, Args)
 
 #define GET_FB1D(_1,_2,_3,_4,_5, NAME,...) NAME
-#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
+//#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
+
+#define FORBLOCK1D(iter, m, Helper, Args...)                            \
+    FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+    for(iter.initialize(); !iter.isTerminated(); ++iter)                \
+    {Args;} }
+
 
 // PARFOR1D does normal execution of the loop
 #define PARFOR1D(iter,debut,  m, Helper, I) \
@@ -220,7 +226,12 @@
         {Args;} }
 
 #define GET_FB1D(_1,_2,_3,_4,_5, NAME,...) NAME
-#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
+//#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
+
+#define FORBLOCK1D(iter, m, Helper, Args...)                            \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {Args;} }
 
 // for strategy 1D 
 #define FOR1D(i, debut, m, Helper, Args...)                                     \

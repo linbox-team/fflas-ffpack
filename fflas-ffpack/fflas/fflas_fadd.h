@@ -158,9 +158,10 @@ namespace FFLAS {
 		
 //                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
 		
-                FORBLOCK1D(iter, 0, M, SPLITTER(numths,ROW,THREADS),
-                      size_t rowsize= iter.end()-iter.begin();
-                      fadd(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
+                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
+			   size_t rowsize= iter.end()-iter.begin();
+			   fadd(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc);
+			   );
         }
 
         template <class Field>
@@ -171,9 +172,9 @@ namespace FFLAS {
                typename Field::Element_ptr C, const size_t ldc, const size_t numths){
 
 //                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
-                FORBLOCK1D(iter, 0, M, SPLITTER(numths,ROW,THREADS),
-                      size_t rowsize= iter.end()-iter.begin();
-                      fsub(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
+                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
+			   size_t rowsize= iter.end()-iter.begin();
+			   fsub(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
         }
 
 
@@ -185,7 +186,7 @@ namespace FFLAS {
 
 //                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
 
-                FORBLOCK1D(iter, 0, M, SPLITTER(numths,ROW,THREADS),
+                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
                       size_t rowsize= iter.end()-iter.begin();
                       TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
                       faddin(F, rowsize, N, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
@@ -201,7 +202,7 @@ namespace FFLAS {
 
 //                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
 
-                FORBLOCK1D(iter, 0, M, SPLITTER(numths,ROW,THREADS),
+                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
                       size_t rowsize= iter.end()-iter.begin();
                       TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
                            fsubin(F, rowsize, N, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
