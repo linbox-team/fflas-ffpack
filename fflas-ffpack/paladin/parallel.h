@@ -131,9 +131,9 @@
 //#define FORBLOCK1D(...) GET_FB1D(__VA_ARGS__, FB1D_5, FB1D_4)(__VA_ARGS__)  
 
 #define FORBLOCK1D(iter, m, Helper, Args...)                            \
-    FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-    for(iter.initialize(); !iter.isTerminated(); ++iter)                \
-    {Args;} }
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
+        {Args;} }
 
 
 // PARFOR1D does normal execution of the loop
