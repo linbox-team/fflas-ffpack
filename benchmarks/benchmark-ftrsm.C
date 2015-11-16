@@ -146,10 +146,12 @@ int main(int argc, char** argv) {
 		chrono.clear();
 		if (i) chrono.start();
 
-		if (!p)
+		if (!p){
+			FFLAS::ParSeqHelper::Sequential H;
 			FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 						  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-						  m,n, F.one, A, m, B, n);
+						  m,n, F.one, A, m, B, n, H);
+		}
 		else{
 			PAR_BLOCK{
 				switch (p) {
@@ -178,7 +180,6 @@ int main(int argc, char** argv) {
 				}
 				
 			}
-			BARRIER;
 		}
 		if (i) {chrono.stop(); time+=chrono.realtime();}
 	}
