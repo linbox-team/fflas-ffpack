@@ -121,23 +121,23 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	L = FFLAS::fflas_new(F, m,R);
 	U = FFLAS::fflas_new(F, R,n);
 	
-	PARFOR1D (i,0, m*R,H, F.init(L[i], 0.0); );
+	PARFOR1D (i, m*R,H, F.init(L[i], 0.0); );
 	
-	PARFOR1D (i,0,n*R,H, F.init(U[i], 0.0); );
+	PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
 	
-	PARFOR1D (i,0,m*n,H, F.init(X[i], 0.0); );	
+	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );	
 	
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	PARFOR1D (i,0,R,H,
+	PARFOR1D (i,R,H,
               for (size_t j=0; j<i; ++j)
               	F.assign ( *(U + i*n + j), zero);
               for (size_t j=i; j<n; ++j)
               	F.assign (*(U + i*n + j), *(A+ i*n+j));
               );
 	
-	PARFOR1D (j,0,R,H, 
+	PARFOR1D (j,R,H, 
 		  for (size_t i=0; i<=j; ++i )
 			  F.assign( *(L+i*R+j), zero);
 		  F.assign(*(L+j*R+j), one);
@@ -309,16 +309,16 @@ int main(int argc, char** argv) {
        FFLAS::ParSeqHelper::Parallel H;
        
        Acop = FFLAS::fflas_new(F,m,n);
-       PARFOR1D(i,0,(size_t)m,H, 
+       PARFOR1D(i,(size_t)m,H, 
                 for (size_t j=0; j<(size_t)n; ++j)
                 	Acop[i*n+j]= A[i*n+j];
                 );
               
        for (size_t i=0;i<=iter;++i){
 	       	       
-	       PARFOR1D(j,0,maxP,H, P[j]=0; );
-	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
-	       PARFOR1D(k,0,(size_t)m,H,
+	       PARFOR1D(j,maxP,H, P[j]=0; );
+	       PARFOR1D(j,maxQ,H, Q[j]=0; );
+	       PARFOR1D(k,(size_t)m,H,
                     for (size_t j=0; j<(size_t)n; ++j)
 			    F.assign( A[k*n+j] , Acop[k*n+j]) ;  
                     );

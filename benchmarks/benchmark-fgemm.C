@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 
   FFLAS::ParSeqHelper::Parallel H;
 //#pragma omp for
-  PARFOR1D (i,0, m,H,
+  PARFOR1D (i,m,H,
 	    for (size_t j=0; j<(size_t)k; ++j)
 		    G.random (*(A+i*k+j));
 	    );
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
   if (p)
 	  Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
-  PARFOR1D (i, 0, k,H,
+  PARFOR1D (i, k,H,
             for (size_t j=0; j<(size_t)n; ++j)
             	G.random(*(B+i*n+j));
             );
