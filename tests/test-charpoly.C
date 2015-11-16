@@ -48,15 +48,15 @@
 using namespace std;
 
 //typedef ModularBalanced<double> Field;
-//typedef ModularBalanced<float> Field;
+typedef Givaro::ModularBalanced<double> Field;
 //typedef Givaro::Modular<double> Field;
 //typedef Givaro::Modular<float> Field;
 //typedef Givaro::Modular<int> Field;
-typedef Givaro::Modular<double> Field;
+//typedef Givaro::Modular<double> Field;
 
 typedef vector<Field::Element> Polynomial;
 
-
+using namespace FFPACK;
 template <class Field, class Polynomial>
 void printPolynomial (const Field &F, const Polynomial &v)
 {
@@ -70,7 +70,7 @@ void printPolynomial (const Field &F, const Polynomial &v)
 
 template<class Field>
 bool launch_test(const Field & F, typename Field::Element * A, int n,
-		 size_t p, size_t nbit)
+		 size_t p, size_t nbit, FFPACK::FFPACK_CHARPOLY_TAG CT)
 {
  FFLAS::Timer tim,t; t.clear();tim.clear();
 	list<Polynomial> P_list;
@@ -79,7 +79,7 @@ bool launch_test(const Field & F, typename Field::Element * A, int n,
 		t.clear();
 		t.start();
 
-		FFPACK::CharPoly (F, P_list, n, A, n);
+		FFPACK::CharPoly (F, P_list, n, A, n, CT);
 		t.stop();
 		tim+=t;
 		/*  test */
@@ -108,28 +108,39 @@ int main(int argc, char** argv)
 
 	cerr<<setprecision(10);
 
-	static size_t       p = 13; // characteristique
+	static size_t       p = 13; // characteristic
 	static size_t       nbit = 2; // repetitions
 	static int          n = 100;
 	static std::string  file = "" ; // file where
-
+	static int variant =0;
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.", TYPE_INT , &p },
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &p },
 		{ 'r', "-r R", "Set number of repetitions.", TYPE_INT , &nbit },
 		{ 'f', "-f file", "Set input file", TYPE_STR, &file },
+		{ 'a', "-a algorithm", "Set the algorithm variant", TYPE_INT, &variant },
 		END_OF_ARGUMENTS
 	};
-
 	FFLAS::parseArguments(argc,argv,as);
 
+	FFPACK::FFPACK_CHARPOLY_TAG CT;
+	switch (variant){
+	    case 0: CT = FfpackLUK; break;
+	    case 1: CT = FfpackKG; break;
+	    case 2: CT = FfpackDanilevski; break;
+	    case 3: CT = FfpackKGFast; break;
+	    case 4: CT = FfpackKGFastG; break;
+	    case 5: CT = FfpackHybrid; break;
+	    case 6: CT = FfpackArithProg; break;
+	    default: CT = FfpackLUK; break;
+	}
 	Field F((long unsigned int)p);
 	Field::Element * A;
 	if (!file.empty()) {
 		const char * filestring = file.c_str();
 		A = read_field<Field>(F,const_cast<char*>(filestring),&n,&n);
-		bool passed = launch_test<Field>(F,A,n,p,nbit);
+		bool passed = launch_test<Field>(F,A,n,p,nbit,CT);
 		FFLAS::fflas_delete( A);
 		return !passed ;
 	}

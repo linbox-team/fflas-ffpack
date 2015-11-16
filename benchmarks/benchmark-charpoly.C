@@ -41,16 +41,30 @@ int main(int argc, char** argv) {
 	int    q    = 131071;
 	int    n    = 2000;
 	std::string file = "";
-  
+  	static int variant =0;
+
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		{ 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
+
 		END_OF_ARGUMENTS
 	};
 
   FFLAS::parseArguments(argc,argv,as);
+  FFPACK::FFPACK_CHARPOLY_TAG CT;
+  switch (variant){
+      case 0: CT = FFPACK::FfpackLUK; break;
+      case 1: CT = FFPACK::FfpackKG; break;
+      case 2: CT = FFPACK::FfpackDanilevski; break;
+      case 3: CT = FFPACK::FfpackKGFast; break;
+      case 4: CT = FFPACK::FfpackKGFastG; break;
+      case 5: CT = FFPACK::FfpackHybrid; break;
+      case 6: CT = FFPACK::FfpackArithProg; break;
+      default: CT = FFPACK::FfpackLUK; break;
+  }
   typedef Givaro::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
@@ -75,7 +89,7 @@ int main(int argc, char** argv) {
     std::vector<Field::Element> cpol(n);
     chrono.clear();
     chrono.start();
-    FFPACK::CharPoly (F, cpol, n, A, n);
+    FFPACK::CharPoly (F, cpol, n, A, n, CT);
     chrono.stop();
 
     time+=chrono.usertime();
