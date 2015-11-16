@@ -78,7 +78,6 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 	template<size_t K, size_t MG>
 	inline RecInt::rmint<K,MG>& monfmod(RecInt::rmint<K,MG>& A, RecInt::rmint<K,MG>& B)
 	{
-		std::cout<<"monfmod rmint"<<std::endl;
 		return RecInt::rmint<K>::mod_n(A, B);
 	}
 
@@ -408,7 +407,7 @@ namespace FFLAS { namespace vectorised {
 			// std::cout << 1 << std::endl;
 			return monfmod<false,true> (A,H.p,H.shift,H.magic);
 		case 0 :
-			std::cout << "using " << 0 << std::endl;
+			    //		std::cout << "using " << 0 << std::endl;
 			return monfmod<false,false>(A,H.p,H.shift,H.magic);
 		default :
 			FFLASFFPACK_abort("unknown algo");
@@ -694,7 +693,6 @@ namespace FFLAS { namespace details {
 		// 	vectorised::modp<Field,false>(F,A,m,A);
 		// }
 		// else {
-		//std::cout<<"freduce ModularTag"<<std::endl;
 			typename Field::Element_ptr  Xi = A ;
 			for (; Xi < A+m*incX; Xi+=incX )
 				F.reduce(*Xi);
@@ -707,7 +705,6 @@ namespace FFLAS { namespace details {
 		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::GenericTag)
 	{
-		    //std::cout<<"freduce Generic"<<std::endl;
 		typename Field::Element_ptr Xi = A ;
 		for (; Xi < A+m*incX; Xi+=incX )
 			F.reduce (*Xi);
@@ -720,7 +717,6 @@ namespace FFLAS { namespace details {
 		 FieldCategories::UnparametricTag)
 	{
 		typename Field::Element_ptr Xi = A ;
-		    //	std::cout<<"freduce Unparam"<<std::endl;
 		for (; Xi < A+m*incX; Xi+=incX )
 			F.reduce (*Xi);
 	}
@@ -732,6 +728,7 @@ namespace FFLAS { namespace details {
 		 typename Field::Element_ptr A, const size_t incX,
 		 FieldCategories::ModularTag)
 	{
+		
 		if(incX == 1 && incY == 1) {
 			vectorised::modp<Field,false>(F,B,m,A);
 		}
@@ -778,7 +775,6 @@ namespace FFLAS { namespace details {
 	{
 		typename Field::Element_ptr Xi = A ;
 		typename Field::ConstElement_ptr Yi = B ;
-		std::cout<<"freduce UNparam Y<-X"<<std::endl;
 		for (; Xi < A+m*incX; Xi+=incX, Yi += incY )
 			F.reduce (*Xi , *Yi);
 	}
