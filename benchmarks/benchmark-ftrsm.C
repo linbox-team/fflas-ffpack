@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 		Initialize(A,m/NBK,m,m);
 	
 		FFLAS::ParSeqHelper::Parallel H;
-		PARFOR1D (i,0,(size_t)m, H,
+		PARFOR1D (i,(size_t)m, H,
 				  for (size_t j = 0; j< (size_t)m; ++j)
 					  G.random(*(A+i*m+j));
 				  );
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 		FFLAS::ParSeqHelper::Parallel H;
 		B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 		Initialize(B,m/NBK,m,n);
-		PARFOR1D (i,0,(size_t)m,H,
+		PARFOR1D (i,(size_t)m,H,
 				  for (size_t j=0 ; j< (size_t)n; ++j)
 					  G.random(*(B+i*n+j));
 				  );
