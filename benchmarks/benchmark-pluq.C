@@ -76,18 +76,17 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 		curr++;
 	}
 	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
+	FFLAS::fzero(F, M, N, L, N);
 	for (size_t k = 0; k < R; ++k){
 		size_t i = pivot_r[k];
 		size_t j = pivot_c[k];
-		if (!cols [j])
-			FFLAS::fzero(F, M, L+j, N);
-		else{
-			nzR.random (L [i*N+j]);
-			for (size_t l=i+1; l < M; ++l)
-				RI.random (L [l*N+j]);
-		}
+		
+		nzR.random (L [i*N+j]);
+		for (size_t l=i+1; l < M; ++l)
+			RI.random (L [l*N+j]);
 	}
 	typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
+	FFLAS::fzero(F, N, N, U, N);
 	for (size_t i = 0; i < N; ++i){
 		nzR.random (U [i*N+i]);
 		for (size_t j=i+1; j < N; ++j)
