@@ -504,20 +504,34 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            size_t k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
-                F.addin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
-                F.addin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
-                F.addin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
-            }
-            for (; k < blockSize; ++k)
-                F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
-        }
-    }
+//     for (index_t i = 0; i < A.m; ++i) {
+    index_t am=A.m;
+    PAR_BLOCK{
+      SYNCH_GROUP(MAX_THREADS,
+	  FORBLOCK1D(it, am, 
+      FFLAS::ParSeqHelper::Parallel(MAX_THREADS, FFLAS::ROW, FFLAS::THREADS),
+      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
+           for (index_t i = it.begin(); i < it.end(); ++i) {
+               auto start = st[i];
+               auto stop = st[i + 1];
+               for (index_t j = start; j < stop; ++j) {
+                   size_t k = 0;
+                   for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                       F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
+                       F.addin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
+                       F.addin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
+                       F.addin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
+                   }
+                   for (; k < blockSize; ++k)
+                       F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
+               }
+           }
+           );
+                 );
+                );
+  }
+//     }
+    
 }
 
 template <class Field>
@@ -528,21 +542,34 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-#pragma omp parallel for schedule(static, 32)
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            size_t k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
-                F.subin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
-                F.subin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
-                F.subin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
-            }
-            for (; k < blockSize; ++k)
-                F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
-        }
-    }
+// #pragma omp parallel for schedule(static, 32)
+//     for (index_t i = 0; i < A.m; ++i) {
+    index_t am=A.m;
+    PAR_BLOCK{
+      SYNCH_GROUP(MAX_THREADS,
+	  FORBLOCK1D(it, am, 
+      FFLAS::ParSeqHelper::Parallel(MAX_THREADS, FFLAS::ROW, FFLAS::THREADS),
+      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
+           for (index_t i = it.begin(); i < it.end(); ++i) {
+               auto start = st[i];
+               auto stop = st[i + 1];
+               for (index_t j = start; j < stop; ++j) {
+                   size_t k = 0;
+                   for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                       F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
+                       F.subin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
+                       F.subin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
+                       F.subin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
+                   }
+                   for (; k < blockSize; ++k)
+                       F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
+               }
+           }
+           );
+                 );
+                );
+  }
+//     }
 }
 
 template <class Field>
