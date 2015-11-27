@@ -42,7 +42,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
   size_t m = A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(CONSTREFERENCE(F) MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
@@ -75,7 +75,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
   size_t m = A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
@@ -128,7 +128,7 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-      SYNCH_GROUP(NUM_THREADS,
+      SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			    {
@@ -207,7 +207,7 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-      SYNCH_GROUP(NUM_THREADS,
+      SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			    {
@@ -486,7 +486,7 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
 
 //     for (index_t i = 0; i < A.m; ++i) {
     index_t am=A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 	  FORBLOCK1D(it, am, 
       SPLITTER(NUM_THREADS),
       TASK(MODE(CONSTREFERENCE(F) READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -523,7 +523,7 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
 // #pragma omp parallel for schedule(static, 32)
 //     for (index_t i = 0; i < A.m; ++i) {
     index_t am=A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 	  FORBLOCK1D(it, am, 
       SPLITTER(NUM_THREADS),
       TASK(MODE(CONSTREFERENCE(F) READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -558,7 +558,7 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
   size_t m = A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
@@ -608,7 +608,7 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
 
 
   size_t m = A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
@@ -663,7 +663,7 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-      SYNCH_GROUP(NUM_THREADS,
+      SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
@@ -735,7 +735,7 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
     size_t m = A.m;
-      SYNCH_GROUP(NUM_THREADS,
+      SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
@@ -805,7 +805,7 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-      SYNCH_GROUP(NUM_THREADS,
+      SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
@@ -877,7 +877,7 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-      SYNCH_GROUP(NUM_THREADS,
+      SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {

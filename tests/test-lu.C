@@ -262,7 +262,7 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 						  m,n,R, PLUQ, ldpluq, L, R, true);
 	
 	PAR_BLOCK{
-		SYNCH_GROUP(MAX_THREADS,
+		SYNCH_GROUP(
 		
 						//#pragma omp task shared(F, P, L)
 					TASK(MODE(CONSTREFERENCE(F,P,L)),

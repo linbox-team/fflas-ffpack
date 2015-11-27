@@ -243,7 +243,7 @@ inline void pfspmv_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     size_t am = A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 	  FORBLOCK1D(it, am, SPLITTER(NUM_THREADS),
 	  TASK(MODE(CONSTREFERENCE(F) READ(col, st, x) READWRITE(y)),
 	  for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -287,7 +287,7 @@ inline void pfspmv_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
     size_t am = A.m;
-    SYNCH_GROUP(NUM_THREADS,
+    SYNCH_GROUP(
 	  FORBLOCK1D(it, am, SPLITTER(NUM_THREADS),
 	  TASK(MODE(CONSTREFERENCE(F) READ(col, st, x) READWRITE(y)),
 	  for (index_t i = it.begin(); i < it.end(); ++i) {

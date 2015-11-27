@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <23 Jul 15 16:51:32 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Nov 15 14:07:46 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -91,7 +91,7 @@ namespace FFLAS {
             H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
                 
             MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
-            SYNCH_GROUP( H.parseq.numthreads(),
+            SYNCH_GROUP( 
             {FORBLOCK2D(iter,m,n,H.parseq,
                    TASK( MODE(
                        READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 

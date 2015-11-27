@@ -103,7 +103,7 @@
 #define PAR_BLOCK
 
 
-#define SYNCH_GROUP(numthreads, Args...) {{Args};}
+#define SYNCH_GROUP(Args...) {{Args};}
 
     
 #define NUM_THREADS 1
@@ -277,7 +277,7 @@
     {I;}
 
 
-#define SYNCH_GROUP(numthreads, Args...)     {{Args};} WAIT;
+#define SYNCH_GROUP(Args...)     {{Args};} WAIT;
 
 //////////////////////////////////////////////
 /////////////// dataflow macros //////////////
@@ -338,7 +338,7 @@
 #define VALUE(...) GET_VAL(__VA_ARGS__, VAL5,VAL4,VAL3,VAL2,VAL1)(__VA_ARGS__)
 
 // need task_group to lunch a group of tasks in parallel
-#define SYNCH_GROUP(numthreads, Args...) \
+#define SYNCH_GROUP(Args...) \
   {tbb::task_group g;  \
       {{Args};}             \
       g.wait();}
@@ -480,7 +480,7 @@
     catch (...) { ka::logfile() << "Catch unknown exception: " << std::endl;} \
     return 0;}
 
-#define SYNCH_GROUP(numthreads, Args...) {{Args};}
+#define SYNCH_GROUP(Args...) {{Args};}
 
 
 

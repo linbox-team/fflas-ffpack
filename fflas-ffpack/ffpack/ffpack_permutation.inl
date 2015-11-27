@@ -457,7 +457,7 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		
-		SYNCH_GROUP(numthreads,
+		SYNCH_GROUP(
 		for (size_t t = 0; t < NBlocks; ++t)
 			{
 				size_t BlockDim = BLOCKSIZE;
@@ -488,7 +488,7 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
-		SYNCH_GROUP(numthreads,
+		SYNCH_GROUP(
 		for (size_t t = 0; t < NBlocks; ++t)
 		{
 			size_t BlockDim = BLOCKSIZE;
@@ -518,7 +518,7 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		
-		SYNCH_GROUP(numthreads,
+		SYNCH_GROUP(
 
 		for (size_t t = 0; t < NBlocks; ++t)
 			{

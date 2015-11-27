@@ -115,7 +115,7 @@ namespace FFLAS { namespace BLAS3 {
 
 			typename Field::Element_ptr C_11 = fflas_new (F,mr,nr);
 			typename Field::Element_ptr CC_11 = fflas_new (F,mr,nr);
-			SYNCH_GROUP(WH.parseq.numthreads(),
+			SYNCH_GROUP(
 			    // P1 = alpha . A11 * B11 in X1
 						
 			MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);

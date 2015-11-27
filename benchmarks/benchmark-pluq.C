@@ -145,7 +145,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		  );
 	
 	PAR_BLOCK{
-		SYNCH_GROUP(MAX_THREADS,
+		SYNCH_GROUP(
 		
 		//#pragma omp task shared(F, P, L)
 		TASK(MODE(CONSTREFERENCE(F,P,L)),

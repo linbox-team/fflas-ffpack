@@ -155,7 +155,7 @@ namespace FFLAS {
                typename Field::ConstElement_ptr A, const size_t lda,
                typename Field::ConstElement_ptr B, const size_t ldb,
                typename Field::Element_ptr C, const size_t ldc, const size_t numths){
-            SYNCH_GROUP(numths,
+            SYNCH_GROUP(
               FORBLOCK1D(iter, M, SPLITTER(numths),
 			    size_t rowsize= iter.end()-iter.begin();
                 TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(A[iter.begin()*lda], B[iter.begin()*ldb])),
@@ -171,7 +171,7 @@ namespace FFLAS {
                typename Field::ConstElement_ptr A, const size_t lda,
                typename Field::ConstElement_ptr B, const size_t ldb,
                typename Field::Element_ptr C, const size_t ldc, const size_t numths){
-            SYNCH_GROUP(numths,
+            SYNCH_GROUP(
               FORBLOCK1D(iter, M, SPLITTER(numths),
                 size_t rowsize= iter.end()-iter.begin();
                 TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(A[iter.begin()*lda], B[iter.begin()*ldb])),
@@ -188,7 +188,7 @@ namespace FFLAS {
                 typename Field::ConstElement_ptr B, const size_t ldb,
                  typename Field::Element_ptr C, const size_t ldc, size_t numths){
 
-            SYNCH_GROUP(numths,
+            SYNCH_GROUP(
               FORBLOCK1D(iter, M, SPLITTER(numths),
                 size_t rowsize= iter.end()-iter.begin();
                 TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
@@ -203,7 +203,7 @@ namespace FFLAS {
         pfsubin (const Field& F, const size_t M, const size_t N,
                 typename Field::ConstElement_ptr B, const size_t ldb,
                  typename Field::Element_ptr C, const size_t ldc, size_t numths){
-            SYNCH_GROUP(numths,
+            SYNCH_GROUP(
               FORBLOCK1D(iter, M, SPLITTER(numths),
               size_t rowsize= iter.end()-iter.begin();
               TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
