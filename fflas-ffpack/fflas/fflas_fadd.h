@@ -155,13 +155,14 @@ namespace FFLAS {
                typename Field::ConstElement_ptr A, const size_t lda,
                typename Field::ConstElement_ptr B, const size_t ldb,
                typename Field::Element_ptr C, const size_t ldc, const size_t numths){
-		
-//                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
-		
-                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
-			   size_t rowsize= iter.end()-iter.begin();
-			   fadd(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc);
-			   );
+            SYNCH_GROUP(numths,
+              FORBLOCK1D(iter, M, SPLITTER(numths),
+			    size_t rowsize= iter.end()-iter.begin();
+                TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(A[iter.begin()*lda], B[iter.begin()*ldb])),
+                fadd(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc);
+                     );
+                         );
+                        );
         }
 
         template <class Field>
@@ -170,11 +171,14 @@ namespace FFLAS {
                typename Field::ConstElement_ptr A, const size_t lda,
                typename Field::ConstElement_ptr B, const size_t ldb,
                typename Field::Element_ptr C, const size_t ldc, const size_t numths){
-
-//                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
-                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
-			   size_t rowsize= iter.end()-iter.begin();
-			   fsub(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
+            SYNCH_GROUP(numths,
+              FORBLOCK1D(iter, M, SPLITTER(numths),
+                size_t rowsize= iter.end()-iter.begin();
+                TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(A[iter.begin()*lda], B[iter.begin()*ldb])),
+                fsub(F, rowsize, N, A+iter.begin()*lda, lda, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc);
+                     );
+                         );
+                        );
         }
 
 
@@ -184,14 +188,14 @@ namespace FFLAS {
                 typename Field::ConstElement_ptr B, const size_t ldb,
                  typename Field::Element_ptr C, const size_t ldc, size_t numths){
 
-//                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
-
-                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
-                      size_t rowsize= iter.end()-iter.begin();
-                      TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
-                      faddin(F, rowsize, N, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
-                      );
-                WAIT;
+            SYNCH_GROUP(numths,
+              FORBLOCK1D(iter, M, SPLITTER(numths),
+                size_t rowsize= iter.end()-iter.begin();
+                TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
+                     faddin(F, rowsize, N, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc);
+                     );
+                         );
+                        );
         }
 
         template <class Field>
@@ -199,15 +203,14 @@ namespace FFLAS {
         pfsubin (const Field& F, const size_t M, const size_t N,
                 typename Field::ConstElement_ptr B, const size_t ldb,
                  typename Field::Element_ptr C, const size_t ldc, size_t numths){
-
-//                ParSeqHelper::Parallel H(numths, BLOCK_THREADS);
-
-                FORBLOCK1D(iter, M, SPLITTER(numths,FFLAS::BLOCK,FFLAS::THREADS),
-                      size_t rowsize= iter.end()-iter.begin();
-                      TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
-                           fsubin(F, rowsize, N, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc););
-                      );
-                WAIT;
+            SYNCH_GROUP(numths,
+              FORBLOCK1D(iter, M, SPLITTER(numths),
+              size_t rowsize= iter.end()-iter.begin();
+              TASK(MODE(CONSTREFERENCE(F) READWRITE(C[iter.begin()*ldc]) READ(B[iter.begin()*ldb])),
+              fsubin(F, rowsize, N, B+iter.begin()*ldb, ldb, C+iter.begin()*ldc, ldc);
+                   );
+                         );
+                        );
         }
 
 	template <class Field>

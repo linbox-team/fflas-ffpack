@@ -45,10 +45,9 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
   FFLAS::StrategyParameter strat = FFLAS::FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth, strat));
   size_t m = A.m;
-  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FORBLOCK1D(it, m, WH.parseq,
-		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+		      TASK(CONSTREFERENCE(F) MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
 			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -67,7 +66,6 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
 		      );
 		);
     );
-  } 
 }
 
 template <class Field>
@@ -83,7 +81,6 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
   FFLAS::StrategyParameter strat = FFLAS::FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth,strat));
   size_t m = A.m;
-  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -105,7 +102,6 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
 		      );
 		);
     );
-  } 
   /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -141,7 +137,6 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -175,7 +170,6 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
 			);
 		  );
       );
-    } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -225,7 +219,6 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -259,7 +252,6 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
 			);
 		  );
       );
-    } 
 /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -506,11 +498,10 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
 
 //     for (index_t i = 0; i < A.m; ++i) {
     index_t am=A.m;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
+    SYNCH_GROUP(NUM_THREADS,
 	  FORBLOCK1D(it, am, 
-      FFLAS::ParSeqHelper::Parallel(MAX_THREADS, FFLAS::ROW, FFLAS::THREADS),
-      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
+      SPLITTER(NUM_THREADS),
+      TASK(MODE(CONSTREFERENCE(F) READ(/*dat,*/ col, st, x) READWRITE(y)),
            for (index_t i = it.begin(); i < it.end(); ++i) {
                auto start = st[i];
                auto stop = st[i + 1];
@@ -529,7 +520,6 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
            );
                  );
                 );
-  }
 //     }
     
 }
@@ -545,11 +535,10 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
 // #pragma omp parallel for schedule(static, 32)
 //     for (index_t i = 0; i < A.m; ++i) {
     index_t am=A.m;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
+    SYNCH_GROUP(NUM_THREADS,
 	  FORBLOCK1D(it, am, 
-      FFLAS::ParSeqHelper::Parallel(MAX_THREADS, FFLAS::ROW, FFLAS::THREADS),
-      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
+      SPLITTER(NUM_THREADS),
+      TASK(MODE(CONSTREFERENCE(F) READ(/*dat,*/ col, st, x) READWRITE(y)),
            for (index_t i = it.begin(); i < it.end(); ++i) {
                auto start = st[i];
                auto stop = st[i + 1];
@@ -568,7 +557,6 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
            );
                  );
                 );
-  }
 //     }
 }
 
@@ -585,7 +573,6 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     FFLAS::StrategyParameter strat = FFLAS::FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth, strat));
   size_t m = A.m;
-  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -607,7 +594,6 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
 		      );
 		);
     );
-  } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -640,7 +626,6 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     FFLAS::StrategyParameter strat = FFLAS::FIXED;
   FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel> WH (F, -1, FFLAS::ParSeqHelper::Parallel(MAX_THREADS, meth, strat));
   size_t m = A.m;
-  PAR_BLOCK{
     SYNCH_GROUP(MAX_THREADS,
 		FORBLOCK1D(it, m, WH.parseq,
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -662,7 +647,6 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
 		      );
 		);
     );
-  } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -700,7 +684,6 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -730,7 +713,6 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
 			);
 		  );
       );
-    } 
     //*/
     /*
 #pragma omp parallel for schedule(static, 256)
@@ -777,7 +759,6 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -807,7 +788,6 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
 			);
 		  );
       );
-    } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -852,7 +832,6 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -882,7 +861,6 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
 			);
 		  );
       );
-    } 
     //*/
     /*
 #pragma omp parallel for schedule(static, 256)
@@ -929,7 +907,6 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
     uint32_t k = 0;
-    PAR_BLOCK{
       SYNCH_GROUP(MAX_THREADS,
 		  FORBLOCK1D(it, m, WH.parseq,
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -959,7 +936,6 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
 			);
 		  );
       );
-    }
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
