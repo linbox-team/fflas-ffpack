@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -567,11 +567,13 @@ namespace FFLAS {
 		//     sparse_details::pfspmv(F, A, x, y, FC(), MZO());
 		// }
 
-		// template <class Field, class SM>
-		// inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-		//                    FieldCategories::GenericTag, std::false_type) {
-		//     sparse_details_impl::pfspmv(F, A, x, y, FieldCategories::GenericTag());
-		// }
+        template <class Field, class SM>
+        inline void pfspmv(const Field &F, const SM &A,
+                   typename Field::ConstElement_ptr x, 
+                   typename Field::Element_ptr y,
+                   FieldCategories::GenericTag tag, std::false_type) {
+			sparse_details_impl::pfspmv(F, A, x, y, tag);
+		}
 
 		// template <class Field, class SM>
 		// inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
@@ -859,8 +861,8 @@ namespace FFLAS {
 	inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
 			   typename Field::Element_ptr y) {
 		sparse_details::init_y(F, A.m, beta, y);
-		sparse_details::pfspmv<Field, SM>(F, A, x, y, typename ElementTraits<typename Field::Element>::value(),
-						  typename FieldTraits<Field>::category(),
+		sparse_details::pfspmv<Field, SM>(F, A, x, y, 
+                          typename FieldTraits<Field>::category(),
 						  typename isZOSparseMatrix<Field, SM>::type());
 	}
 
