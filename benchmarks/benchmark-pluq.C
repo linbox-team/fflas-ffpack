@@ -194,25 +194,25 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 
 	Field::RandIter G(F); 
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-	SYNCH_GROUP(MAX_THREADS, {
-			for(size_t p=0; p<m; p+=BS) ///row
-				for(size_t pp=0; pp<n; pp+=BS) //column
-			{
-				size_t M=BS, MM=BS;
-				if(!(p+BS<m))
-					M=m-p;
-				if(!(pp+BS<n))
-					MM=n-pp;
-				//#pragma omp task
-				TASK(MODE(CONSTREFERENCE(G)),
-				{
-					for(size_t j=0; j<M; j++)
-						for(size_t jj=0; jj<MM; jj++)
-							//		C[(p+j)*n+pp+jj]=0;
-							G.random (*(C+(p+j)*n+pp+jj));
-				});
-			}
-		    });
+	SYNCH_GROUP(
+      for(size_t p=0; p<m; p+=BS) ///row
+        for(size_t pp=0; pp<n; pp+=BS) //column
+    	{
+            size_t M=BS, MM=BS;
+            if(!(p+BS<m))
+                M=m-p;
+            if(!(pp+BS<n))
+                MM=n-pp;
+                //#pragma omp task
+            TASK(MODE(CONSTREFERENCE(G)),
+            {
+                for(size_t j=0; j<M; j++)
+                    for(size_t jj=0; jj<MM; jj++)
+                            //		C[(p+j)*n+pp+jj]=0;
+                        G.random (*(C+(p+j)*n+pp+jj));
+            });
+        }
+        );
 	
 	//		#pragma omp taskwait
 	//	}
