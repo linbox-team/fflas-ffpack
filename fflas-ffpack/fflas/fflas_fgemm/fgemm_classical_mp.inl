@@ -131,8 +131,22 @@ namespace FFLAS {
 		return Cd;
 	} 
 
+	Givaro::Integer 
+	InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
+		Givaro::Integer max = 0;
+		size_t log=0;
+		for (size_t i=0; i<M; ++i)
+			for (size_t j=0; j<N; ++j){
+				Givaro::Integer x = A[i*lda+j];
+				if ((x.bitsize() >= log) && (abs(x) > max)){
+					max = x;
+					log = x.bitsize();
+				}
+			}
+		return max;
+	}
 
-	// fgemm for UnparametricField<Integer> with Winograd Helper (bb: file is classical ??)
+	// fgemm for UnparametricField<Integer>sd with Winograd Helper (bb: file is classical ??)
 	inline Givaro::Integer* 
 	fgemm (const Givaro::ZRing<Givaro::Integer>& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -165,24 +179,13 @@ namespace FFLAS {
 		size_t logA,logB;
 		mA=H.normA;
 		mB=H.normB;
-		if (H.normA==0){
-			logA=A[0].bitsize();
-			for (size_t i=1;i<m*k;i++)
-				logA = std::max(logA,A[i].bitsize());
-			H.normA=1; H.normA<<=uint64_t(logA);
-		}
-		else {
-			logA=H.normA.bitsize();
-		}
-		if (H.normB==0){
-			logB=B[0].bitsize();
-			for (size_t i=1;i<k*n;i++)
-				logB=std::max(logB,B[i].bitsize());
-			H.normB=1; H.normB<<=uint64_t(logB);
-		}
-		else {
-			logB=H.normA.bitsize();
-		}
+		if (H.normA==0)
+			H.normA = InfNorm ((ta==FflasNoTrans)?m:k,(ta==FflasNoTrans)?k:m,A,lda);
+		logA = H.normA.bitsize();
+		if (H.normB==0)
+			H.normB = InfNorm ((tb==FflasNoTrans)?k:n,(tb==FflasNoTrans)?n:k,B,ldb);
+		logB = H.normA.bitsize();
+
 		mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
 
 		// construct an RNS structure and its associated Domain

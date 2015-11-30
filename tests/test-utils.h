@@ -58,10 +58,13 @@ namespace FFPACK {
 	template<class Field>
 	typename Field::Element * RandomMatrix(const Field & F,
 					       typename Field::Element * A,
-					       size_t m, size_t n, size_t lda)
+					       size_t m, size_t n, size_t lda, size_t b)
 	{
 		typedef typename Field::RandIter Randiter ;
-		Randiter R(F);
+		typename Field::Element bs = 0;
+		if (F.characteristic() == 0)
+			bs = Givaro::Integer(1)<<b;
+		Randiter R(F,bs);
 		for (size_t i=0 ; i<m ; ++i)
 			for (size_t j= 0; j<n ;++j)
 				R.random( A[i*lda+j] );
@@ -69,16 +72,16 @@ namespace FFPACK {
 
 	}
 
-	template<class T >
-	T * RandomMatrix(const Givaro::ZRing< T > & F,
-			 T * A,
-			 size_t m, size_t n, size_t lda)
-	{
-		Givaro::Modular<T> G(101);
-		RandomMatrix(G,A,m,n,lda);
-		return A;
+	// template<class T >
+	// T * RandomMatrix(const Givaro::ZRing< T > & F,
+	// 		 T * A,
+	// 		 size_t m, size_t n, size_t lda)
+	// {
+	// 	Givaro::Modular<T> G(101);
+	// 	RandomMatrix(G,A,m,n,lda);
+	// 	return A;
 
-	}
+	// }
 	/*! Random integer in range.
 	 * @param a min bound
 	 * @param b max bound
