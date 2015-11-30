@@ -43,7 +43,7 @@
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/field-traits.h"
 #include "fflas-ffpack/fflas/fflas_helpers.inl" 
-
+#include "fflas-ffpack/fflas/fflas_bounds.inl"
 namespace FFLAS {
  
 	template<typename Field,
@@ -131,20 +131,6 @@ namespace FFLAS {
 		return Cd;
 	} 
 
-	Givaro::Integer 
-	InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
-		Givaro::Integer max = 0;
-		size_t log=0;
-		for (size_t i=0; i<M; ++i)
-			for (size_t j=0; j<N; ++j){
-				Givaro::Integer x = A[i*lda+j];
-				if ((x.bitsize() >= log) && (abs(x) > max)){
-					max = x;
-					log = x.bitsize();
-				}
-			}
-		return max;
-	}
 
 	// fgemm for UnparametricField<Integer>sd with Winograd Helper (bb: file is classical ??)
 	inline Givaro::Integer* 
