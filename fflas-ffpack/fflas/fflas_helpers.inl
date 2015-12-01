@@ -277,14 +277,16 @@ namespace FFLAS {
 		MMHelper(const Field& F, int w,
 			 DFElt _Amin, DFElt _Amax,
 			 DFElt _Bmin, DFElt _Bmax,
-			 DFElt _Cmin, DFElt _Cmax):
+			 DFElt _Cmin, DFElt _Cmax,
+             ParSeqTrait _PS=ParSeqTrait()):
 			recLevel(w), FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
 			Amin(_Amin), Amax(_Amax),
 			Bmin(_Bmin), Bmax(_Bmax),
 			Cmin(_Cmin), Cmax(_Cmax),
 			Outmin(0),Outmax(0),
 			MaxStorableValue(limits<typename DelayedField::Element>::max()),
-			delayedField(F)
+			delayedField(F),
+            parseq(_PS)
 		{
 		}
 

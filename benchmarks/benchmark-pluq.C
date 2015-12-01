@@ -64,7 +64,7 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	size_t pivot_c[R];
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
-	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
+	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(RI);
 	while (curr<R){
 		size_t i,j;
 		while (rows [i = rand() % M]);
