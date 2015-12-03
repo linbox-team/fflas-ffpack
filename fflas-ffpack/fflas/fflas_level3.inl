@@ -258,7 +258,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       const ParSeqHelper::Sequential seq);
 
-	template<typename Field>
+	template<typename Field, class Cut, class Param>
 	typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -271,7 +271,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       const ParSeqHelper::Parallel par);
+	       const ParSeqHelper::Parallel<Cut,Param> par);
 
 	template<class Field>
         typename Field::Element*

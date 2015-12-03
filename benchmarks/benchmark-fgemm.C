@@ -52,7 +52,7 @@
 
 
 using namespace std;
-
+using namespace FFLAS;
 template<class Element>
 void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
   typedef Givaro::ModularBalanced<double> Field;
@@ -126,41 +126,40 @@ int main(int argc, char** argv) {
 
   Field F(q);
 
-  FFLAS::Timer chrono, freivalds;
+  Timer chrono, TimFreivalds;
   double time=0.0, timev=0.0;
 
   Element * A, * B, * C;
 
   Field::RandIter G(F); 
-  A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
+  A = fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   if (p)
 	  Initialize(A,m/size_t(NBK),m,k);
 
-  FFLAS::ParSeqHelper::Parallel H;
 //#pragma omp for
-  PARFOR1D (i,m,H,
+  PARFORBLOCK1D (i,m,SPLITTER(MAX_THREADS),
 	    for (size_t j=0; j<(size_t)k; ++j)
 		    G.random (*(A+i*k+j));
 	    );
   
-  B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
+  B = fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   if (p)
 	  Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
-  PARFOR1D (i, k,H,
+  PARFORBLOCK1D (i, k,SPLITTER(MAX_THREADS),
             for (size_t j=0; j<(size_t)n; ++j)
             	G.random(*(B+i*n+j));
             );
   
-  C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
+  C = fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
   
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   if (p)
 	  Initialize(C,m/NBK,m,n);
 
-  FFLAS::pfsub(F, m, n, A, n, B, n, C, n, 32);
+  pfsub(F, m, n, A, n, B, n, C, n, 32);
 
   for (size_t i=0;i<=iter;++i){
 
@@ -171,71 +170,100 @@ int main(int argc, char** argv) {
 
       chrono.clear();
       if (p && p!=7){
-          FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-	      FFLAS::StrategyParameter strat = FFLAS::THREADS;
-	      switch (p){
-		  case 1: meth = FFLAS::BLOCK;break;
-		  case 2: strat = FFLAS::TWO_D;break;
-		  case 3: strat = FFLAS::TWO_D_ADAPT;break;
-		  case 4: strat = FFLAS::THREE_D_INPLACE;break;
-		  case 5: strat = FFLAS::THREE_D;break;
-		  case 6: strat = FFLAS::THREE_D_ADAPT;break;
-		  default: meth = FFLAS::BLOCK;break;
-	      }
-	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
-			      typename FFLAS::ModeTraits<Field>::value,
-			      FFLAS::ParSeqHelper::Parallel> 
-		      WH (F, nbw, SPLITTER(t, meth, strat));
-	      if (i) chrono.start();
+	      // CuttingStrategy meth = RECURSIVE;
+	      // StrategyParameter strat = THREADS;
+
+	      typedef CuttingStrategy::Block block;
+	      typedef CuttingStrategy::Recursive rec;
+	      typedef StrategyParameter::Threads threads;
+	      typedef StrategyParameter::TwoD  twod;
+	      typedef StrategyParameter::TwoDAdaptive  twoda;
+	      typedef StrategyParameter::ThreeD  threed;
+	      typedef StrategyParameter::ThreeDAdaptive  threeda;
+	      typedef StrategyParameter::ThreeDInPlace  threedip;
 	      PAR_BLOCK{
-		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+	      if (i) chrono.start();
+	      switch (p){
+		  case 1:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;}
+		  case 2:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twod> > WH(F,nbw, SPLITTER(t,rec,twod));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 3:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twoda> > WH(F,nbw, SPLITTER(t,rec,twoda));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 4:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threedip> > WH(F,nbw, SPLITTER(t,rec,threedip));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 5:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threed> > WH(F,nbw, SPLITTER(t,rec,threed));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 6:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threeda> > WH(F,nbw, SPLITTER(t,rec,threeda));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  default:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+	      }
 	      }
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
-
-	      
       }else{
 	      if(p==7){
 
-		      FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::WinogradPar>
-			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
+		      MMHelper<Field, MMHelperAlgo::WinogradPar>
+			      WH (F, nbw, ParSeqHelper::Sequential());
 			  //		      cout<<"wino parallel"<<endl;
 		      if (i) chrono.start();
 		      PAR_BLOCK
 		      {
-			      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+			      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 		      }
 		      if (i) {chrono.stop(); time+=chrono.realtime();}
 	      }
 	      else{
 
-		      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd>//,
-			      //typename FFLAS::FieldTraits<Field>::value,
-			      //FFLAS::ParSeqHelper::Parallel>
-			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
+		      MMHelper<Field,MMHelperAlgo::Winograd>//,
+			      //typename FieldTraits<Field>::value,
+			      //ParSeqHelper::Parallel>
+			      WH (F, nbw, ParSeqHelper::Sequential());
 		      if (i) chrono.start();
-		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 		      if (i) {chrono.stop(); time+=chrono.realtime();}
 	      }
       }
 
-      freivalds.clear();
-      freivalds.start();
+      TimFreivalds.clear();
+      TimFreivalds.start();
       
-      bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
-      freivalds.stop();
-      timev+=freivalds.usertime();
+      bool pass = freivalds(F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
+      TimFreivalds.stop();
+      timev+=TimFreivalds.usertime();
       if (!pass) 
 	      std::cout<<"FAILED"<<std::endl;
   }
-  FFLAS::fflas_delete( A);
-  FFLAS::fflas_delete( B);
-  FFLAS::fflas_delete( C);
+  fflas_delete( A);
+  fflas_delete( B);
+  fflas_delete( C);
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
 	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
-	FFLAS::writeCommandString(std::cout, as) << std::endl;
+	writeCommandString(std::cout, as) << std::endl;
   
 #if DEBUG
         std::cout<<"Freivalds vtime: "<<timev/(double)iter<<std::endl;

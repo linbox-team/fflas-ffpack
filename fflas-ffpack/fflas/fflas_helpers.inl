@@ -321,7 +321,8 @@ namespace FFLAS {
 	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
 	struct TRSMHelper {
 		ParSeqTrait parseq;
-		TRSMHelper(ParSeqHelper::Parallel _PS):parseq(_PS){}
+		template<class Cut,class Param>
+		TRSMHelper(ParSeqHelper::Parallel<Cut,Param> _PS):parseq(_PS){}
 		TRSMHelper(ParSeqHelper::Sequential _PS):parseq(_PS){}
 		template<typename RIT, typename PST>
 		TRSMHelper(TRSMHelper<RIT,PST>& _TH):parseq(_TH.parseq){}

@@ -301,7 +301,7 @@ namespace FFLAS {
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
-	template<typename Field>
+	template<typename Field,class Cut,class Param>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -314,10 +314,10 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       const ParSeqHelper::Parallel par)
+	       const ParSeqHelper::Parallel<Cut,Param> par)
 	{
 
-		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
+		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > HW (F, m, k, n, par);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 

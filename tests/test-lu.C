@@ -246,7 +246,6 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 				size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
-	FFLAS::ParSeqHelper::Parallel H;
 
 	typename Field::Element_ptr X = FFLAS::fflas_new (F, m, n);
 	typename Field::Element_ptr L = FFLAS::fflas_new (F, m, R);
@@ -272,9 +271,7 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 						 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
 					WAIT;
 						//#pragma omp taskwait
-					const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-					const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
-					typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
+					typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::ThreeDAdaptive> pWH (MAX_THREADS);
 						//#pragma omp task shared(F, L, U, X)
 					TASK(MODE(CONSTREFERENCE(F,U,L,X)),
 						 FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,

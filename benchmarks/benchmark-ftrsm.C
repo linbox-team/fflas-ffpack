@@ -119,8 +119,7 @@ int main(int argc, char** argv) {
 		A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
 		Initialize(A,m/NBK,m,m);
 	
-		FFLAS::ParSeqHelper::Parallel H;
-		PARFOR1D (i,(size_t)m, H,
+		PARFORBLOCK1D (i,(size_t)m, SPLITTER(MAX_THREADS),
 				  for (size_t j = 0; j< (size_t)m; ++j)
 					  G.random(*(A+i*m+j));
 				  );
@@ -132,10 +131,9 @@ int main(int argc, char** argv) {
 		B = read_field (F, file2.c_str(), &m, &n);
 	}
 	else{
-		FFLAS::ParSeqHelper::Parallel H;
 		B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 		Initialize(B,m/NBK,m,n);
-		PARFOR1D (i,(size_t)m,H,
+		PARFORBLOCK1D (i,(size_t)m,SPLITTER(),
 				  for (size_t j=0 ; j< (size_t)n; ++j)
 					  G.random(*(B+i*n+j));
 				  );
@@ -153,26 +151,27 @@ int main(int argc, char** argv) {
 						  m,n, F.one, A, m, B, n, H);
 		}
 		else{
+			FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH(t);
 			PAR_BLOCK{
 				switch (p) {
 					case 1: {
 						FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-							FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::BLOCK,FFLAS::THREADS));
+										  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> > 
+										  PH (PSH);
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH);
 						break;}
 					case 2: {FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive, 
-							FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW, FFLAS::THREADS));
+											   FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> > 
+							PH (PSH);
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH); 
 						break;}
 					case 3: 
-						FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW, FFLAS::THREADS));
+						FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> > 
+							PH (PSH);
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH);

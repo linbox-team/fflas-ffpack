@@ -482,8 +482,8 @@ namespace FFLAS{
 #else
                         MMHelper<Field,MMHelperAlgo::Winograd,
 				 typename FFLAS::ModeTraits<Field>::value,
-				 FFLAS::ParSeqHelper::Parallel>
-                                HC (F, 0, ParSeqHelper::Parallel(32, RECURSIVE, TWO_D_ADAPT));
+				 FFLAS::ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> >
+				 HC (F, 0, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive>(32));
 #endif
                         //              MMHelper<Field, MMHelperAlgo::Classic, ModeTraits> HC(H);
 

@@ -41,7 +41,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-  size_t m = A.m;
+    size_t m = A.m;
     SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(CONSTREFERENCE(F) MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -74,7 +74,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-  size_t m = A.m;
+    size_t m = A.m;
     SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
@@ -556,7 +556,7 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
-  size_t m = A.m;
+    size_t m = A.m;
     SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -605,8 +605,7 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
-
-  size_t m = A.m;
+    size_t m = A.m;
     SYNCH_GROUP(
 		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
@@ -732,7 +731,6 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     using vect_t = typename simd::vect_t;
 
     vect_t y1, x1, y2, x2, vdat;
-
     size_t m = A.m;
       SYNCH_GROUP(
 		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),

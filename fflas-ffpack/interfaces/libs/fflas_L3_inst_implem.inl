@@ -154,7 +154,22 @@ namespace FFLAS {
 	       const FFLAS_ELT* B, const size_t ldb,
 	       const FFLAS_ELT beta,
 	       FFLAS_ELT* C, const size_t ldc,
-	       const ParSeqHelper::Parallel par);
+	       const ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> par);
+
+	template INST_OR_DECL
+	 FFLAS_ELT*
+	fgemm( const FFLAS_FIELD <FFLAS_ELT>& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const FFLAS_ELT alpha,
+	       const FFLAS_ELT* A, const size_t lda,
+	       const FFLAS_ELT* B, const size_t ldb,
+	       const FFLAS_ELT beta,
+	       FFLAS_ELT* C, const size_t ldc,
+	       const ParSeqHelper::Parallel<CuttingStrategy::Block,StrategyParameter::Threads> par);
 
 
 	/** @brief fsquare: Squares a matrix.

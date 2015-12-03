@@ -98,7 +98,7 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
 	PAR_BLOCK{
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel());
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
 	}
 	FFLAS::fflas_delete(L);
 	FFLAS::fflas_delete(U);
@@ -113,7 +113,7 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
-	FFLAS::ParSeqHelper::Parallel H;
+	FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
 
 	Field::Element * X = FFLAS::fflas_new (F, m,n);
 	Field::Element * L, *U;
@@ -155,9 +155,9 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 		     FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
 		WAIT;
 		//#pragma omp taskwait
-		const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-		const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
-		typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
+		// const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
+		// const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
+		typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> pWH (MAX_THREADS);
 		//#pragma omp task shared(F, L, U, X)
 		TASK(MODE(CONSTREFERENCE(F,U,L,X)),
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
        size_t *P = FFLAS::fflas_new<size_t>(maxP);
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
-       FFLAS::ParSeqHelper::Parallel H;
+       FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
        
        Acop = FFLAS::fflas_new(F,m,n);
        PARFOR1D(i,(size_t)m,H, 

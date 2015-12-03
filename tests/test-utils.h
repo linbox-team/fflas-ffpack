@@ -221,7 +221,7 @@ namespace FFPACK {
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
 	PAR_BLOCK{
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel());
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
 	}
 	FFLAS::fflas_delete(L);
 	FFLAS::fflas_delete(U);

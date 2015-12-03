@@ -27,8 +27,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_parfgemm_INL
-#define __FFLASFFPACK_fflas_parfgemm_INL
+#ifndef __FFLASFFPACK_fflas_pfgemm_INL
+#define __FFLASFFPACK_fflas_pgemm_INL
 
 #define __FFLASFFPACK_SEQPARTHRESHOLD 220
 #define __FFLASFFPACK_DIMKPENALTY 1
@@ -51,7 +51,7 @@
 
 namespace FFLAS {
 
-	template<class Field, class AlgoT, class ModeTrait>
+	template<class Field, class AlgoT, class ModeTrait, class Strat, class Param>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 		const FFLAS::FFLAS_TRANSPOSE ta,
@@ -64,7 +64,7 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr B, const size_t ldb,
 		const typename Field::Element beta,
 		typename Field::Element_ptr C, const size_t ldc,
-		MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel> & H) 
+	       MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H) 
 	{
 
         if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
@@ -72,43 +72,41 @@ namespace FFLAS {
             return C;
         }
         
-        if (H.parseq.method() == RECURSIVE) {
-            switch (H.parseq.strategy()){
-                case StrategyParameter::THREE_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
-                    return pfgemm_3D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-                case StrategyParameter::TWO_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
-                    return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-                case StrategyParameter::TWO_D: // Splitting the outer dimensions m and n recursively
-                    return pfgemm_2D_rec (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-                case StrategyParameter::THREE_D_INPLACE: // Splitting the three dimensions recursively, without temp and with synchro
-                    return pfgemm_3D_rec_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-                case StrategyParameter::THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
-                    return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-                default:
-                    return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
-            }
-        } else {
-            H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
+	pfgemm (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+	
+        // if (H.parseq.method() == RECURSIVE) {
+        //     switch (H.parseq.strategy()){
+        //         case StrategyParameter::THREE_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
+        //             return pfgemm_3D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+        //         case StrategyParameter::TWO_D_ADAPT: // Splitting 1 dimension at a time recursively: the largest one
+        //             return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+        //         case StrategyParameter::TWO_D: // Splitting the outer dimensions m and n recursively
+        //             return pfgemm_2D_rec (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+        //         case StrategyParameter::THREE_D_INPLACE: // Splitting the three dimensions recursively, without temp and with synchro
+        //             return pfgemm_3D_rec_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+        //         case StrategyParameter::THREE_D: // Splitting the three dimensions recursively, with temp alloc and fewer synchro
+        //             return pfgemm_3D_rec2_V2(F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+        //         default:
+        //             return pfgemm_2D_rec_adapt (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
+        //     }
+        // } else {
+        //     H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
                 
-            MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
-            SYNCH_GROUP( 
-            {FORBLOCK2D(iter,m,n,H.parseq,
-                   TASK( MODE(
-                       READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
-                       CONSTREFERENCE(F, SeqH) 
-                       READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
-                         fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH);
-			     //	 std::cout<<" "<<iter.iend()-iter.ibegin()<<std::endl;
-);
-                   );
-            });
-        }
-		return C;
-    }
-
-
-
+//             MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
+//             SYNCH_GROUP( 
+//             {FORBLOCK2D(iter,m,n,H.parseq,
+//                    TASK( MODE(
+//                        READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
+//                        CONSTREFERENCE(F, SeqH) 
+//                        READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
+//                          fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH);
+// 			     //	 std::cout<<" "<<iter.iend()-iter.ibegin()<<std::endl;
+// );
+//                    );
+//             });
+	return C;
+	}
 }
 
-#endif // __FFLASFFPACK_fflas_parfgemm_INL
+#endif // __FFLASFFPACK_fflas_pfgemm_INL
 
