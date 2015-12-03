@@ -131,15 +131,14 @@
                { Args; })
 
 // PARFOR1D does normal execution of the loop
-#define PARFORBLOCK1D(iter,  m, Helper, I)                                  \
-    for(std::remove_const<decltype(m)>::type iter=0; iter<m; ++iter)   \
+#define PARFORBLOCK1D(iter,  m, Helper, I)			       \
+  for(std::remove_const<decltype(m)>::type iter=0; iter<m; ++iter)     \
     { I; }
 
 // PARFOR1D does normal execution of the loop
-#define PARFOR1D(iter,  m, Helper, I)                                   \
-   PARFORBLOCK1D(_internal_iterator, m, Helper,                         \
-                 for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
-                 { Args; })
+#define PARFOR1D(iter,  m, Helper, I)				       \
+  for(std::remove_const<decltype(m)>::type iter=0; iter<m; ++iter)     \
+    { I; }
 
 
 ////////////////////   CUTTING LOOP MACROS 2D //////////////////////
@@ -314,18 +313,33 @@
 // workaround to overload macro CONSTREFERENCE
 
 // CONSTREFERENCE macro
-#define REF1(a) =,&a
-#define REF2(a,b) =,&a, &b
-#define REF3(a,b,c) =,&a,&b,&c
-#define REF4(a,b,c,d) =,&a,&b,&c,&d
-#define REF5(a,b,c,d,e) =,&a,&b,&c,&d,&e
-#define REF6(a,b,c,d,e,f) =,&a,&b,&c,&d,&e,&f
-#define REF7(a,b,c,d,e,f,g) =,&a,&b,&c,&d,&e,&f,&g
-#define REF8(a,b,c,d,e,f,g,h) =,&a,&b,&c,&d,&e,&f,&g,&h
-#define REF9(a,b,c,d,e,f,g,h,i) =,&a,&b,&c,&d,&e,&f,&g,&h,&i
-#define REF10(a,b,c,d,e,f,g,h,i,enough) =,&a,&b,&c,&d,&e,&f,&g,&h,&i,&enough
+/* #define REF1(a) =,&a */
+/* #define REF2(a,b) =,&a, &b */
+/* #define REF3(a,b,c) =,&a,&b,&c */
+/* #define REF4(a,b,c,d) =,&a,&b,&c,&d */
+/* #define REF5(a,b,c,d,e) =,&a,&b,&c,&d,&e */
+/* #define REF6(a,b,c,d,e,f) =,&a,&b,&c,&d,&e,&f */
+/* #define REF7(a,b,c,d,e,f,g) =,&a,&b,&c,&d,&e,&f,&g */
+/* #define REF8(a,b,c,d,e,f,g,h) =,&a,&b,&c,&d,&e,&f,&g,&h */
+/* #define REF9(a,b,c,d,e,f,g,h,i) =,&a,&b,&c,&d,&e,&f,&g,&h,&i */
+/* #define REF10(a,b,c,d,e,f,g,h,i,enough) =,&a,&b,&c,&d,&e,&f,&g,&h,&i,&enough */
+/* #define GET_REF(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10, NAME,...) NAME */
+/* #define CONSTREFERENCE(...) GET_REF(__VA_ARGS__, REF10,REF9,REF8,REF7,REF6,REF5,REF4,REF3,REF2,REF1)(__VA_ARGS__) */
+
+
+#define REF1(a) ,&a
+#define REF2(a,b) ,&a, &b
+#define REF3(a,b,c) ,&a,&b,&c
+#define REF4(a,b,c,d) ,&a,&b,&c,&d
+#define REF5(a,b,c,d,e) ,&a,&b,&c,&d,&e
+#define REF6(a,b,c,d,e,f) ,&a,&b,&c,&d,&e,&f
+#define REF7(a,b,c,d,e,f,g) ,&a,&b,&c,&d,&e,&f,&g
+#define REF8(a,b,c,d,e,f,g,h) ,&a,&b,&c,&d,&e,&f,&g,&h
+#define REF9(a,b,c,d,e,f,g,h,i) ,&a,&b,&c,&d,&e,&f,&g,&h,&i
+#define REF10(a,b,c,d,e,f,g,h,i,enough) ,&a,&b,&c,&d,&e,&f,&g,&h,&i,&enough
 #define GET_REF(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10, NAME,...) NAME
 #define CONSTREFERENCE(...) GET_REF(__VA_ARGS__, REF10,REF9,REF8,REF7,REF6,REF5,REF4,REF3,REF2,REF1)(__VA_ARGS__)
+
 
 // workaround to overload macro VALUE
 #define VAL1(a) ,a
@@ -347,7 +361,7 @@
 // TBB task
 #define TASK(M, I)                              \
     {                                           \
-        g.run([M](){I;});                       \
+      g.run([=M](){I;});			\
     }
     
 //#define MODE(Args...) Args
@@ -380,53 +394,54 @@
 
 
 // tbb parallel for 1D 
-#define PARFORBLOCK1D(i,  m, Helper, Args...)                           \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > TBBstrategyIterator(m, Helper); \
-        tbb::parallel_for(                                              \
-            tbb::blocked_range<decltype(i)>(0, m, TBBstrategyIterator.blocksize() ), \
-            [=, &i](const tbb::blocked_range<decltype(i)> &TBBblockrangeIterator) { \
-                {Args;} });                                             \
-    }
+#define PARFORBLOCK1D(iter,  m, Helper, Args...)			\
+  { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+    tbb::parallel_for(							\
+		      tbb::blocked_range<std::remove_const<decltype(m)>::type >(0, m, iter.blocksize() ), \
+		      [=, &iter](const tbb::blocked_range<std::remove_const<decltype(m)>::type > &iter) { \
+			{Args;} });					\
+  }
 
 // tbb parallel for 1D 
+/*
 #define PARFOR1D(i,  m, Helper, Args...)                                \
     PARFORBLOCK1D(_internal_iterator, m, Helper,                        \
                   for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
                   { Args; } )
-/*
-#define PARFORBLOCK1D(i,  m, Helper, Args...)
-    { FFLAS::ForStrategy1D<decltype(i)> TBBstrategyIterator(m, Helper); \
-        tbb::parallel_for(                                              \
-            tbb::blocked_range<decltype(i)>(0, m, TBBstrategyIterator.blocksize() ), \
-            [=, &i](const tbb::blocked_range<decltype(i)> &TBBblockrangeIterator) { \
-                for(i = TBBblockrangeIterator.begin();                  \
-                    i < TBBblockrangeIterator.end() ; ++i){             \
-                    {Args;} }});                                        \
-    }
-
 */
+
+#define PARFOR1D(i,  m, Helper, Args...)				\
+  { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > TBBstrategyIterator(m, Helper);	\
+    tbb::parallel_for(							\
+		      tbb::blocked_range<std::remove_const<decltype(m)>::type >(0, m, TBBstrategyIterator.blocksize() ), \
+		      [=](const tbb::blocked_range<std::remove_const<decltype(m)>::type > &TBBblockrangeIterator) { \
+			for(auto i = TBBblockrangeIterator.begin();		\
+			    i < TBBblockrangeIterator.end() ; ++i){	\
+			  {Args;} }});					\
+  }
+
 
 // for strategy 2D with access to the iterator
 #define FORBLOCK2D(iter, m, n, Helper, Args...)                         \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {Args;} }
+  { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
+    for(iter.initialize(); !iter.isTerminated(); ++iter)		\
+      {Args;} }
 
 // for strategy 2D 
 #define FOR2D(i, j, m, n, Helper, Args...)                              \
-    FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
-                   for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
-                       for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-                       { Args; })
+  FORBLOCK2D(_internal_iterator, m, n, Helper,				\
+	     for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
+	       for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
+		 { Args; })
 
 // parallel for strategy 2D with access to the range and control of iterator
 #define PARFORBLOCK2D(iter, m, n, Helper, Args...)                      \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
-        tbb::parallel_for(                                              \
-            tbb::blocked_range2d<std::remove_const<decltype(m)>::type >(0, m, iter.rowblocksize(), 0, n, iter.colblocksize() ), \
-            [=, &i](const tbb::blocked_range2d<std::remove_const<decltype(m)>::type > &iter) { \
-                {Args;} });                                             \
-    }
+  { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type > iter(m,n,Helper); \
+    tbb::parallel_for(							\
+		      tbb::blocked_range2d<std::remove_const<decltype(m)>::type >(0, m, iter.rowblocksize(), 0, n, iter.colblocksize() ), \
+		      [=, &i](const tbb::blocked_range2d<std::remove_const<decltype(m)>::type > &iter) { \
+			{Args;} });					\
+  }
 
 // parallel for strategy 2D 
 #define PARFOR2D(i, j, m, n, Helper, Args...)                           \

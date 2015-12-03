@@ -53,31 +53,30 @@
 
 using namespace std;
 
-//#ifdef __FFLASFFPACK_USE_DATAFLOW
 template<class Element>
 void Initialize(Element * C, size_t BS, size_t m, size_t n)
 {
 //#pragma omp parallel for collapse(2) schedule(runtime) 
 	BS=std::max(BS, (size_t)__FFLASFFPACK_WINOTHRESHOLD_BAL );
 	PAR_BLOCK{
-	for(size_t p=0; p<m; p+=BS) ///row
-		for(size_t pp=0; pp<n; pp+=BS) //column
-		{
-			size_t M=BS, MM=BS;
-			if(!(p+BS<m))
-				M=m-p;
-			if(!(pp+BS<n))
-				MM=n-pp;
-//#pragma omp task 
-			TASK(MODE(),
-			{
-			for(size_t j=0; j<M; j++)
-				for(size_t jj=0; jj<MM; jj++)
-					C[(p+j)*n+pp+jj]=0;
-			});
-		}
-//	#pragma omp taskwait
-	CHECK_DEPENDENCIES
+		SYNCH_GROUP(
+			    for(size_t p=0; p<m; p+=BS) ///row
+				    for(size_t pp=0; pp<n; pp+=BS) //column
+					    {
+						    size_t M=BS, MM=BS;
+						    if(!(p+BS<m))
+							    M=m-p;
+						    if(!(pp+BS<n))
+							    MM=n-pp;
+						    //#pragma omp task 
+						    TASK(MODE(),
+							 {
+								 for(size_t j=0; j<M; j++)
+									 for(size_t jj=0; jj<MM; jj++)
+										 C[(p+j)*n+pp+jj]=0;
+							 });
+					    }
+			    );
 	}
 	// printf("A = \n");
 	// for (size_t i=0; i<m; i+=128)
@@ -91,11 +90,7 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 	//  }
 
 }
-// #else
-// template<class Element>
-// void Initialize(Element * C, size_t BS, size_t m, size_t n)
-// {}
-// #endif
+
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
