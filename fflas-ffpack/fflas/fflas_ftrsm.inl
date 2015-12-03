@@ -80,7 +80,7 @@ namespace FFLAS {
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
 	}
 
-	template<class Field>
+	template<class Field, class Cut, class Param>
 	inline void
 	ftrsm (const Field& F, const FFLAS_SIDE Side,
 	       const FFLAS_UPLO Uplo,
@@ -95,9 +95,9 @@ namespace FFLAS {
 #endif
 	       A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb,
-	       const ParSeqHelper::Parallel& PSH)
+	       const ParSeqHelper::Parallel<Cut,Param>& PSH)
 	{
-		TRSMHelper<StructureHelper::Iterative, ParSeqHelper::Parallel> H(PSH);
+		TRSMHelper<StructureHelper::Iterative, ParSeqHelper::Parallel<Cut,Param> > H(PSH);
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
 	}
 

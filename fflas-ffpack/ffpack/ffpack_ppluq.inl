@@ -155,11 +155,11 @@ namespace FFPACK {
     typename Field::Element * F = A2 + R1*lda;
     typename Field::Element * G = A3 + R1;
 
-    const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-    const FFLAS::StrategyParameter strat = FFLAS::TWO_D_ADAPT;    
+    // const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
+    // const FFLAS::StrategyParameter strat = FFLAS::TWO_D_ADAPT;    
     
-    typename FFLAS::ParSeqHelper::Parallel pWH (nt, meth, strat);
-    typename FFLAS::ParSeqHelper::Parallel PH (std::max(nt,1), meth);
+    typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> pWH (nt);
+    typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> PH (std::max(nt,1));
     
     SYNCH_GROUP(pWH.numthreads(),
 

@@ -37,7 +37,7 @@
 
 namespace FFLAS {
 
-	template<class Field>
+	template<class Field, class Cut, class Param>
 	inline typename Field::Element_ptr
 	ftrsm( const Field& F,
 		   const FFLAS::FFLAS_SIDE Side,
@@ -54,7 +54,7 @@ namespace FFLAS {
 #endif
 		   A, const size_t lda,
 		   typename Field::Element_ptr B, const size_t ldb,
-		   TRSMHelper <StructureHelper::Iterative, ParSeqHelper::Parallel> & H)
+		   TRSMHelper <StructureHelper::Iterative, ParSeqHelper::Parallel<Cut,Param> > & H)
 	// const FFLAS::CuttingStrategy method,
 	// const size_t numThreads)
 	{
@@ -75,7 +75,7 @@ namespace FFLAS {
 					);
 		return B;
 	}
-	template<class Field>
+	template<class Field, class Cut, class Param>
 	inline typename Field::Element_ptr
 	ftrsm( const Field& F,
 		   const FFLAS::FFLAS_SIDE Side,
@@ -92,7 +92,7 @@ namespace FFLAS {
 #endif
 		   A, const size_t lda,
 		   typename Field::Element_ptr B, const size_t ldb,
-		   TRSMHelper <StructureHelper::Hybrid, ParSeqHelper::Parallel> & H)
+		   TRSMHelper <StructureHelper::Hybrid, ParSeqHelper::Parallel<Cut, Param> > & H)
 	// const FFLAS::CuttingStrategy method,
 	// const size_t numThreads)
 	{
@@ -112,8 +112,8 @@ namespace FFLAS {
 
 						FOR1D(iter, m, H.parseq,
 //				      std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::RECURSIVE,StrategyParameter::TWO_D_ADAPT);
-							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
+							  ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::TwoDAdaptive> psh(nt_rec);
+							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
 							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
 								   ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 							  );
@@ -141,8 +141,8 @@ namespace FFLAS {
 			SYNCH_GROUP(H.parseq.numthreads(),
 					    FOR1D(iter, n, H.parseq,
 								  //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::RECURSIVE, StrategyParameter::TWO_D_ADAPT);
-							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
+							  ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> psh(nt_rec);
+							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
 							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 							  );
 						);

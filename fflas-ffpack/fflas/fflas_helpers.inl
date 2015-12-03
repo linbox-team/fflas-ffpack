@@ -61,55 +61,77 @@ namespace FFLAS {
 		inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}
 	}
 
-	enum CuttingStrategy {
-        SINGLE			,
-		ROW		,
-		COLUMN	,
-		BLOCK	,
-		RECURSIVE
-	};
+	namespace CuttingStrategy{
+		struct Single{};
+		struct Row{};
+		struct Column{};
+		struct Block{};
+		struct Recursive{};		
+	}
 
-	enum StrategyParameter {
-        FIXED		,
-		THREADS		,
-		GRAIN		,
-		TWO_D			,
-		THREE_D_INPLACE	,
-		THREE_D_ADAPT	,
-		TWO_D_ADAPT		,
-		THREE_D
-	};
+	namespace StrategyParameter{
+		struct Fixed{};
+		struct Threads{};
+		struct Grain{};
+		struct TwoD{};
+		struct TwoDAdaptive{};
+		struct ThreeD{};
+		struct ThreeDInPlace{};
+		struct ThreeDAdaptive{};
+	}
+	// enum CuttingStrategy {
+        // SINGLE			,
+	// 	ROW		,
+	// 	COLUMN	,
+	// 	BLOCK	,
+	// 	RECURSIVE
+	// };
+
+	// enum StrategyParameter {
+        // FIXED		,
+	// 	THREADS		,
+	// 	GRAIN		,
+	// 	TWO_D			,
+	// 	THREE_D_INPLACE	,
+	// 	THREE_D_ADAPT	,
+	// 	TWO_D_ADAPT		,
+	// 	THREE_D
+	// };
 
 	/*! ParSeqHelper for both fgemm and ftrsm
 	*/
 	namespace ParSeqHelper {
+		template <class C, class P>
 		struct Parallel{
-			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK, StrategyParameter p=THREADS):_numthreads(n),_method(m),_param(p){}
+			typedef C Cut;
+			typedef P Param;
+			
+			Parallel(size_t n=MAX_THREADS):_numthreads(n){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads() << ',' << p.method();
+				return out << "Parallel: " << p.numthreads();
 			}
 			size_t numthreads() const { return _numthreads; }
-            size_t& set_numthreads(size_t n) { return _numthreads=n; }
-			CuttingStrategy method() const { return _method; }            
-			StrategyParameter strategy() const { return _param; }            
+			size_t& set_numthreads(size_t n) { return _numthreads=n; }
+			// CuttingStrategy method() const { return _method; }
+			// StrategyParameter strategy() const { return _param; }
         private:
 			size_t _numthreads;
-			CuttingStrategy _method;
-			StrategyParameter _param;
+			// CuttingStrategy _method;
+			// StrategyParameter _param;
             
 		};
 		struct Sequential{
 			Sequential() {}
-			//template<class T>
-			Sequential(Parallel& ) {}
+			template<class Cut,class Param>
+			Sequential(Parallel<Cut,Param>& ) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
 				return out << "Sequential";
 			}
 			size_t numthreads() const { return 1; }
-			CuttingStrategy method() const { return SINGLE; }       
-                // numthreads==1 ==> a single block
-			StrategyParameter strategy() const { return THREADS; }            
+		// 	CuttingStrategy method() const { return SINGLE; }
+                // // numthreads==1 ==> a single block
+		// 	StrategyParameter strategy() const { return THREADS; }
 		};
 	}
 
@@ -371,7 +393,8 @@ namespace FFLAS {
 	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
 	struct TRSMHelper {
 		ParSeqTrait parseq;
-		TRSMHelper(ParSeqHelper::Parallel _PS):parseq(_PS){}
+		template<class Cut,class Param>
+		TRSMHelper(ParSeqHelper::Parallel<Cut,Param> _PS):parseq(_PS){}
 		TRSMHelper(ParSeqHelper::Sequential _PS):parseq(_PS){}
 		template<typename RIT, typename PST>
 		TRSMHelper(TRSMHelper<RIT,PST>& _TH):parseq(_TH.parseq){}

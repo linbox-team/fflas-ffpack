@@ -167,7 +167,7 @@
 
 // for strategy 1D 
 #define FOR1D(iter, m, Helper, Args...)                                       \
-    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
+    { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param > iter(m, Helper); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {Args;} }
 

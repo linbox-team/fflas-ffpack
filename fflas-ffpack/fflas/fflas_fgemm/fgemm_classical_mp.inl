@@ -290,6 +290,7 @@ namespace FFLAS {
 	}
 
 	// fgemm for IntegerDomain with Winograd Helper
+	template<class Cut, class Param>
 	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
@@ -299,7 +300,7 @@ namespace FFLAS {
 				       const Givaro::Integer *B, const size_t ldb,
 				       const Givaro::Integer beta,
 				       Givaro::Integer* C, const size_t ldc,
-				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>,ParSeqHelper::Parallel> & H)
+				       MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>,ParSeqHelper::Parallel<Cut, Param> > & H)
 
 	{
 		// compute the product over Z
@@ -319,6 +320,7 @@ namespace FFLAS {
 	}
 
 	// PARALLEL VERSION (NOT PARALLEL YET)
+	template<class Cut, class Param>
 	inline Givaro::Integer* fgemm (const Givaro::ZRing<Givaro::Integer>& F,
 				       const FFLAS_TRANSPOSE ta,
 				       const FFLAS_TRANSPOSE tb,
@@ -328,7 +330,7 @@ namespace FFLAS {
 				       const Givaro::Integer* B, const size_t ldb,
 				       Givaro::Integer beta,
 				       Givaro::Integer* C, const size_t ldc,
-				       MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::UnparametricTag,ParSeqHelper::Parallel> & H){
+				       MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd,FieldCategories::UnparametricTag,ParSeqHelper::Parallel<Cut,Param> > & H){
 		MMHelper<Givaro::ZRing<Givaro::Integer>,MMHelperAlgo::Winograd> H2(F,H.recLevel);
 		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,lda,beta,C,ldc,H2);
 	}
