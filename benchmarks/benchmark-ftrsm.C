@@ -2,25 +2,25 @@
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* Copyright (c) FFLAS-FFPACK
-* Written by Clément Pernet <clement.pernet@imag.fr>
-* ========LICENCE========
-* This file is part of the library FFLAS-FFPACK.
-*
-* FFLAS-FFPACK is free software: you can redistribute it and/or modify
-* it under the terms of the  GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This library is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this library; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-* ========LICENCE========
-*/
+ * Written by Clément Pernet <clement.pernet@imag.fr>
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ */
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -38,35 +38,35 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 //#pragma omp parallel for collapse(2) schedule(runtime) 
 	BS=std::max(BS, (size_t)__FFLASFFPACK_WINOTHRESHOLD_BAL );
 	PAR_BLOCK{
-	for(size_t p=0; p<m; p+=BS) ///row
-		for(size_t pp=0; pp<n; pp+=BS) //column
-		{
-			size_t M=BS, MM=BS;
-			if(!(p+BS<m))
-				M=m-p;
-			if(!(pp+BS<n))
-				MM=n-pp;
-//#pragma omp task 
-			TASK(MODE(),
+		for(size_t p=0; p<m; p+=BS) ///row
+			for(size_t pp=0; pp<n; pp+=BS) //column
 			{
-			for(size_t j=0; j<M; j++)
-				for(size_t jj=0; jj<MM; jj++)
-					C[(p+j)*n+pp+jj]=0;
-			});
-		}
+				size_t M=BS, MM=BS;
+				if(!(p+BS<m))
+					M=m-p;
+				if(!(pp+BS<n))
+					MM=n-pp;
+//#pragma omp task 
+				TASK(MODE(),
+					 {
+						 for(size_t j=0; j<M; j++)
+							 for(size_t jj=0; jj<MM; jj++)
+								 C[(p+j)*n+pp+jj]=0;
+					 });
+			}
 //	#pragma omp taskwait
-	CHECK_DEPENDENCIES
-	}
-	// printf("A = \n");
-	// for (size_t i=0; i<m; i+=128)
-	//  {
-	//  	for (size_t j=0; j<n; j+=128)
-	//  	{
-	//  		int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
-	//  		printf("%i ", ld);
-	//  	}
-	//  	printf("\n");
-	//  }
+		CHECK_DEPENDENCIES
+			}
+		// printf("A = \n");
+		// for (size_t i=0; i<m; i+=128)
+		//  {
+		//  	for (size_t j=0; j<n; j+=128)
+		//  	{
+		//  		int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
+		//  		printf("%i ", ld);
+		//  	}
+		//  	printf("\n");
+		//  }
 
 }
 
@@ -108,10 +108,10 @@ int main(int argc, char** argv) {
 	FFLAS::Timer chrono;
 	double time=0.0;
 	Field::RandIter G(F);
-      // if (argc > 5){
-      // 	  A = read_field (F, argv[5], &n, &n);
-      // }
-      // else{
+		// if (argc > 5){
+		// 	  A = read_field (F, argv[5], &n, &n);
+		// }
+		// else{
 	if (!file1.empty()){
 		A = read_field (F, file1.c_str(), &n, &n);
 	}
@@ -119,9 +119,7 @@ int main(int argc, char** argv) {
 		A = FFLAS::fflas_new (F,m,m,Alignment::CACHE_PAGESIZE);
 		Initialize(A,m/NBK,m,m);
 	
-		FFLAS::ParSeqHelper::Parallel H;
-		size_t i;
-		PARFOR1D (i,0,(size_t)m, H,
+		PARFORBLOCK1D (i,(size_t)m, SPLITTER(MAX_THREADS),
 				  for (size_t j = 0; j< (size_t)m; ++j)
 					  G.random(*(A+i*m+j));
 				  );
@@ -133,46 +131,47 @@ int main(int argc, char** argv) {
 		B = read_field (F, file2.c_str(), &m, &n);
 	}
 	else{
-		FFLAS::ParSeqHelper::Parallel H;
 		B = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 		Initialize(B,m/NBK,m,n);
-		size_t i;
-		PARFOR1D (i,0,(size_t)m,H,
+		PARFORBLOCK1D (i,(size_t)m,SPLITTER(),
 				  for (size_t j=0 ; j< (size_t)n; ++j)
 					  G.random(*(B+i*n+j));
 				  );
 	}
-			//}
+		//}
   
 	for (size_t i=0;i<=iter;++i){
 		chrono.clear();
 		if (i) chrono.start();
 
-		if (!p)
+		if (!p){
+			FFLAS::ParSeqHelper::Sequential H;
 			FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 						  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
-						  m,n, F.one, A, m, B, n);
+						  m,n, F.one, A, m, B, n, H);
+		}
 		else{
+			FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH(t);
 			PAR_BLOCK{
 				switch (p) {
 					case 1: {
 						FFLAS::TRSMHelper<FFLAS::StructureHelper::Iterative,
-										  FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::BLOCK,FFLAS::THREADS));
+										  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> > 
+										  PH (PSH);
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH);
 						break;}
 					case 2: {FFLAS::TRSMHelper<FFLAS::StructureHelper::Recursive, 
-											   FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW, FFLAS::THREADS));
+											   FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> > 
+							PH (PSH);
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH); 
 						break;}
 					case 3: 
-						FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel> 
-							PH (FFLAS::ParSeqHelper::Parallel(t,FFLAS::ROW, FFLAS::THREADS));
+						FFLAS::TRSMHelper<FFLAS::StructureHelper::Hybrid, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> > 
+							PH (PSH);
 						FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasLower, 
 									  FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 
 									  m,n, F.one, A, m, B, n, PH);
@@ -180,7 +179,6 @@ int main(int argc, char** argv) {
 				}
 				
 			}
-			BARRIER;
 		}
 		if (i) {chrono.stop(); time+=chrono.realtime();}
 	}
@@ -194,5 +192,5 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << (double(m)/1000.*double(m)/1000.*double(n)/1000.0) / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
-  return 0;
+	return 0;
 }

@@ -42,6 +42,7 @@
 #include <vector>
 #include <givaro/modular-double.h>
 #include <givaro/givinteger.h>
+#include <givaro/givintprime.h>
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
@@ -81,13 +82,14 @@ namespace FFPACK {
 		:  _M(1), _size(0), _pbits(pbits)
 		{
 			integer::seeding(seed);
+                        Givaro::IntPrimeDom IPD;
 			integer prime;
 			integer sum=1;
 			while (_M < bound*sum) {
 				_basis.resize(_size+1);
 				do {
 					integer::random_exact_2exp(prime, _pbits-1);
-					nextprime(prime, prime);
+					IPD.nextprimein(prime);
 				} while (_M%prime == 0);
 				_basis[_size]=prime;
 				_size++;
@@ -101,6 +103,7 @@ namespace FFPACK {
 		:  _M(1), _size(size), _pbits(pbits)
 		{
 			integer::seeding(seed);
+                        Givaro::IntPrimeDom IPD;
 			integer prime;
 			integer sum=1;
 			_basis.resize(size);
@@ -108,7 +111,7 @@ namespace FFPACK {
 			_basisMax.resize(size);			
 			for(size_t i = 0 ; i < _size ; ++i){
 				integer::random_exact_2exp(prime, _pbits-1);
-				nextprime(prime, prime);
+				IPD.nextprimein(prime);
 				_basis[i]=prime;
 				_basisMax[i] = prime-1;
 				_negbasis[i] = 0-prime;
@@ -142,7 +145,11 @@ namespace FFPACK {
 			_crt_in.resize(_size*_ldm);
 			_crt_out.resize(_size*_ldm);
 			//const unsigned int MASK=0xFFFF;
+			//Givaro::Timer chrono;
+			//double t1=0.,t2=0.,t3=0.;
+			
 			for (size_t i=0;i<_size;i++){
+				//chrono.start();
 				_invbasis[i]  = 1./_basis[i];
 				_basisMax[i] = _basis[i]-1;
 				_negbasis[i] = 0-_basis[i];
@@ -154,6 +161,9 @@ namespace FFPACK {
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(&tmp);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t maxs=std::min(_ldm,(tmp.size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+				//chrono.stop();
+				//t1+=chrono.usertime();
+				//chrono.start();
 				/*
 				for(size_t j=0;j<_ldm;j++){
 					_crt_out[j+i*_ldm]=double(tmp[0]&MASK);
@@ -166,16 +176,23 @@ namespace FFPACK {
 					_crt_out[l+i*_ldm]=m0_ptr[l];
 				for(;l<_ldm;l++)
 					_crt_out[l+i*_ldm]=0.;;
-				
-				
+				// chrono.stop();
+				// t2+=chrono.usertime();
+				// chrono.start();			       				
 				double beta=double(1<<16);
-				double  acc=1;
+				double  acc=1;	       
 				for(size_t j=0;j<_ldm;j++){
 					_crt_in[j+i*_ldm]=acc;
 					_field_rns[i].mulin(acc,beta);					
 				}
+				// chrono.stop();
+				// t3+=chrono.usertime();
+			
 			}
-		}
+			// std::cout<<"t1="<<t1<<std::endl;
+			// std::cout<<"t2="<<t2<<std::endl;
+			// std::cout<<"t3="<<t3<<std::endl;
+		 }
 
 		// Arns must be an array of m*n*_size
 		// abs(||A||) <= maxA
@@ -227,13 +244,13 @@ namespace FFPACK {
 		:  _M(1), _size(0), _pbits(pbits)
 		{
 			integer::seeding(seed);
-			integer prime;
+			integer prime; Givaro::IntPrimeDom IPD;
 			integer sum=1;
 			while (_M < bound*sum) {
 				_basis.resize(_size+1);
 				do {
 					integer::random_exact_2exp(prime, _pbits-1);
-					nextprime(prime, prime);
+					IPD.nextprimein(prime);
 				} while (_M%prime == 0);
 				_basis[_size]=prime;
 				_size++;
@@ -247,14 +264,14 @@ namespace FFPACK {
 		:  _M(1), _size(size), _pbits(pbits)
 		{
 			integer::seeding(seed);
-			integer prime;
+			integer prime; Givaro::IntPrimeDom IPD;
 			integer sum=1;
 			_basis.resize(size);
 			_negbasis.resize(size);
 			_basisMax.resize(size);
 			for(size_t i = 0 ; i < _size ; ++i){
 				integer::random_exact_2exp(prime, _pbits-1);
-				nextprime(prime, prime);
+				IPD.nextprimein(prime);
 				_basis[i]=prime;
 				_basisMax[i] = prime-1;
 				_negbasis[i] = 0-prime;

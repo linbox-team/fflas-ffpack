@@ -45,6 +45,7 @@
 #error "kernels not supported"
 #endif
 
+#include "fflas-ffpack/utils/fflas_memory.h"
 #include "igemm_tools.h"
 
 /********************************************************

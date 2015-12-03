@@ -53,8 +53,8 @@ dnl GIVARO VERSION dnl
 dnl -------------- dnl
 
 dnl As we need Integer and Modular, should be updated on each interface changes
-version_min=40000
-version_max=40001
+version_min=40001
+version_max=40002
 
 dnl Check for existence
 

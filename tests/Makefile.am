@@ -26,9 +26,9 @@ check:
 
 AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
-AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS)
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS)
-AM_LDFLAGS=-static
+AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS) #-DFFLAS_COMPILED -DFFPACK_COMPILED
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
+AM_LDFLAGS=-static  #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
 EXTRA_DIST= test-utils.h
 
@@ -42,7 +42,6 @@ BASIC_TESTS =               \
 		test-compressQ      \
 		test-fadd           \
 		test-finit          \
-		test-interfaces_c \
 		test-fscal          \
 		test-fgemm          \
 		test-fger           \
@@ -50,6 +49,11 @@ BASIC_TESTS =               \
 		test-multifile      \
 		regression-check
 
+if FFLASFFPACK_PRECOMPILED
+
+INTERFACE_TESTS= test-interfaces-c 
+test_interfaces_c_LDFLAGS = $(LDADD) -lfflas_c -lffpack_c
+endif
 NOT_A_TEST =  \
 		test-lqup2             \
 		test-charpoly          \
@@ -78,7 +82,7 @@ INFINITE_TEST= \
 
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS)  $(USE_OMP_TESTS)
+		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)
@@ -121,8 +125,9 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
-test_interfaces_c_SOURCES = test-interfaces_c.c
-test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/interfaces/libs/ -lfflas_c -lffpack_c -lstdc++
+test_interfaces_c_SOURCES = test-interfaces-c.c
+#test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS) $(PARFLAGS)
+#test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
@@ -140,5 +145,10 @@ perfpublisher:
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
 
-%: %.C %.cpp
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+new_examp_comp = $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+
+%:%.C
+	$(new_examp_comp)
+
+%:%.cpp
+	$(new_examp_comp)

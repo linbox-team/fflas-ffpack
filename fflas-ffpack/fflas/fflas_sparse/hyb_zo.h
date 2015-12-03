@@ -1,5 +1,5 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -36,7 +36,8 @@
 namespace FFLAS { /*  HYB_ZO */
 
 template <class _Field> struct Sparse<_Field, SparseMatrix_t::HYB_ZO> {
- using Field = _Field;
+    using Field = _Field;
+    typedef Sparse<_Field, SparseMatrix_t::HYB_ZO> Self_t;
     bool delayed = false;
     uint64_t kmax = 0;
     index_t m = 0;
@@ -45,8 +46,9 @@ template <class _Field> struct Sparse<_Field, SparseMatrix_t::HYB_ZO> {
     uint64_t maxrow = 0;
     uint64_t nElements = 0;
     Sparse<_Field, SparseMatrix_t::CSR> *dat = nullptr;
-    Sparse<_Field, SparseMatrix_t::CSR_ZO> *one = nullptr;
+    Sparse<_Field, SparseMatrix_t::CSR_ZO> *one = nullptr; 
     Sparse<_Field, SparseMatrix_t::CSR_ZO> *mone = nullptr;
+
 };
 
 } // FFLAS

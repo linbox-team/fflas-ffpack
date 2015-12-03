@@ -341,6 +341,33 @@ namespace FFLAS {
 	}
 
 	template <class Field>
+        void
+        pfadd (const Field & F,  const size_t M, const size_t N,
+               typename Field::ConstElement_ptr A, const size_t lda,
+               typename Field::ConstElement_ptr B, const size_t ldb,
+               typename Field::Element_ptr C, const size_t ldc, const size_t numths);
+
+	template <class Field>
+        void
+        pfsub (const Field & F,  const size_t M, const size_t N,
+               typename Field::ConstElement_ptr A, const size_t lda,
+               typename Field::ConstElement_ptr B, const size_t ldb,
+               typename Field::Element_ptr C, const size_t ldc, const size_t numths);
+	
+	template <class Field>
+        void
+        pfaddin (const Field& F, const size_t M, const size_t N,
+		 typename Field::ConstElement_ptr B, const size_t ldb,
+                 typename Field::Element_ptr C, const size_t ldc, size_t numths);
+	
+	template <class Field>
+        void
+        pfsubin (const Field& F, const size_t M, const size_t N,
+		 typename Field::ConstElement_ptr B, const size_t ldb,
+                 typename Field::Element_ptr C, const size_t ldc, size_t numths);
+	
+	
+	template <class Field>
 	void
 	fadd (const Field& F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,

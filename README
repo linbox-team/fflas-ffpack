@@ -11,7 +11,7 @@ INSTALLATION:
 
 see INSTALL
 
-AVAILABILITY: from http://linalg.org/projects/fflas-ffpack/
+AVAILABILITY: from https://github.com/linbox-team/fflas-ffpack
 
 REQUIREMENTS:  A BLAS library: for ex. OpenBLAS or ATLAS
 
@@ -20,7 +20,7 @@ compiler supporting advanced template features.
 
 
 ==========================================================
-The FFLAS-FFPACK website is http://linalg.org/projects/fflas-ffpack
+The FFLAS-FFPACK website is http://linbox-team.github.io/fflas-ffpack/
 
 Please address your bug reports, suggestions and comments to 
 the discussion group http://groups.google.com/group/ffpack-devel

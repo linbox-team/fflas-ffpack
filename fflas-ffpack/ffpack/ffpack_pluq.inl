@@ -346,8 +346,8 @@ namespace FFPACK {
 			    const size_t M, const size_t N,
 			    typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
-		int row = 0;
-		int rank = 0;
+		size_t row = 0;
+		size_t rank = 0;
 		typename Field::Element_ptr CurrRow=A;
 		size_t * MathP = FFLAS::fflas_new<size_t>(M);
 		size_t * MathQ = FFLAS::fflas_new<size_t>(N);
@@ -357,9 +357,9 @@ namespace FFPACK {
 		while (((size_t)row<M) && ((size_t)rank<N)){
 			    // Updating row where pivot will be searched for	
 			fgemv(Fi, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+rank, lda, CurrRow, 1, Fi.one, CurrRow+rank, 1);
-			int i = rank-1;
-			while(Fi.isZero (*(CurrRow+ ++i)) && (i<(int)N-1));
-			
+			size_t i = rank;
+			while(Fi.isZero (*(CurrRow+ i++)) && (i<N));
+			i--;
 			if (!Fi.isZero (*(CurrRow+i))){
 				    // found pivot
 				    // Updating column below pivot
@@ -437,7 +437,6 @@ namespace FFPACK {
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
-
 #ifdef BCONLY
   #ifdef CROUT
 		return PLUQ_basecaseCrout(Fi,Diag,M,N,A,lda,P,Q);

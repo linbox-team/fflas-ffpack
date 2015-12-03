@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <23 Jul 15 17:10:25 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Nov 15 14:08:11 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -59,17 +59,17 @@ namespace FFLAS {
 	// const size_t numThreads)
 	{
         typedef TRSMHelper<StructureHelper::Recursive,ParSeqHelper::Sequential> seqRecHelper;
-		SYNCH_GROUP(H.parseq.numthreads(),
-	
+		SYNCH_GROUP(
+					seqRecHelper SeqH(H);
 					if(Side == FflasRight){
-						FOR1D(iter, m, H.parseq,
-							  seqRecHelper SeqH (H);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+						FORBLOCK1D(iter, m, H.parseq,
+							  
+								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 							  );
 					} else {
-						FOR1D(iter, n, H.parseq,
-							  seqRecHelper SeqH (H);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+						FORBLOCK1D(iter, n, H.parseq,
+//							  seqRecHelper SeqH(H);
+								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 							  );
 					}
 					);
@@ -108,15 +108,14 @@ namespace FFLAS {
 //			ForStrategy1D<size_t> iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //			for (iter.begin(); ! iter.end(); ++iter) {
 				//			SYNCH_GROUP(H.parseq.numthreads(),
-			SYNCH_GROUP(H.parseq.numthreads(),
-
-						FOR1D(iter, m, H.parseq,
+			SYNCH_GROUP(
+				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
+				FORBLOCK1D(iter, m, H.parseq,
 //				      std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::TwoDAdaptive> psh(nt_rec);
-							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
-								   ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
-							  );
+						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
+								ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+						   );
 				   	    );
 				
 		} else {
@@ -138,15 +137,14 @@ namespace FFLAS {
 				//	ForStrategy1D<size_t> iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //				for (iter.begin(); ! iter.end(); ++iter) {
 
-			SYNCH_GROUP(H.parseq.numthreads(),
-					    FOR1D(iter, n, H.parseq,
-								  //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> psh(nt_rec);
-							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
-							  );
+			SYNCH_GROUP(
+				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
+				FORBLOCK1D(iter, n, H.parseq,
+							   //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
+						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+						   );
 						);
-				
 		}
 		return B;
 	}

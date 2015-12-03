@@ -33,6 +33,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_sparse_H
 #define __FFLASFFPACK_fflas_fflas_sparse_H
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/paladin/parallel.h"

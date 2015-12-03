@@ -161,7 +161,7 @@ namespace FFPACK {
     typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> pWH (nt);
     typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> PH (std::max(nt,1));
     
-    SYNCH_GROUP(pWH.numthreads(),
+    SYNCH_GROUP(
 
 		  // [ B1 ] <- P1^T A2
 		  // [ B2 ]
@@ -258,7 +258,7 @@ namespace FFPACK {
     CHECK_DEPENDENCIES;
     typename Field::Element_ptr temp = 0;
 
-    TASK(MODE(READ(A4, R3, P2) READWRITE(temp[0], R2) CONSTREFERENCE(Fi, A4, temp, R2, R3)),
+    TASK(MODE(READ(A4[0], R3, P2) READWRITE(temp[0], R2) CONSTREFERENCE(Fi, A4, temp, R2, R3)),
 	 temp = FFLAS::fflas_new (Fi, R3, R2);
 	 FFLAS::fassign (Fi, R3, R2, A4, lda, temp, R2);
 	 );
@@ -305,7 +305,7 @@ namespace FFPACK {
    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
     //         [ M4 ]
     //TASK(READ(Fi), NOWRITE(R4), READWRITE(R, P4, Q4), PPLUQ, R4, Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
-    TASK(MODE(CONSTREFERENCE(Fi, R4, R, P4, Q4, R2, R3, M2, N2) READWRITE(R[0]) WRITE(R4, P4, Q4)),
+    TASK(MODE(CONSTREFERENCE(Fi, R4, R, P4, Q4, R2, R3, M2, N2) READWRITE(R[0]) WRITE(R4, P4[0], Q4[0])),
 	 P4 = FFLAS::fflas_new<size_t>(M-M2-R3);
 	 Q4 = FFLAS::fflas_new<size_t>(N-N2-R2);
 	 R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4,nt);
@@ -314,7 +314,7 @@ namespace FFPACK {
 
     // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
     // [ E22 M32 0 K2 ]
-    TASK(MODE(READ(P4, R2, R3, M2) CONSTREFERENCE(Fi, P4, A3, R2, R3) READWRITE(A3[R3*lda])),
+    TASK(MODE(READ(P4[0], R2, R3, M2) CONSTREFERENCE(Fi, P4, A3, R2, R3) READWRITE(A3[R3*lda])),
 	 papplyP(Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4));
     //applyP( Fi, FflasLeft, FflasNoTrans, N2+R2, 0, M-M2-R3, A3+R3*lda, lda, P4);
     
@@ -322,7 +322,7 @@ namespace FFPACK {
     // [ V21 V22 ]  <- [ V2 ] Q4^T
     // [  0   0  ]     [  0 ]
     // [ O1   O2 ]     [  O ]
-    TASK(MODE(READ(Q4, R2, N2, M2, R3) CONSTREFERENCE(Fi, Q4, A2, R2, R3) READWRITE(A2[R2])),
+    TASK(MODE(READ(Q4[0], R2, N2, M2, R3) CONSTREFERENCE(Fi, Q4, A2, R2, R3) READWRITE(A2[R2])),
 	 papplyP( Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4));
     //applyP( Fi, FflasRight, FflasTrans, M2+R3, 0, N-N2-R2, A2+R2, lda, Q4);
     
@@ -344,7 +344,7 @@ namespace FFPACK {
 	 //    WAIT;
     if (R1+R2 < M2){	    
 	    // P <- P S
-	    TASK(MODE(CONSTREFERENCE(R1, R2, R3, R4, MathP, M2) READ(R1, R2, R3, R4, M2) READWRITE(MathP)),
+	    TASK(MODE(CONSTREFERENCE(R1, R2, R3, R4, MathP, M2) READ(R1, R2, R3, R4, M2) READWRITE(MathP[0])),
 		 PermApplyS( MathP, 1,1, M2, R1, R2, R3, R4);
 		 );
 	    
@@ -357,7 +357,7 @@ namespace FFPACK {
     // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
     //            [      Q3 ]      [      P4 ]
     MathQ = FFLAS::fflas_new<size_t>(N);
-    TASK(MODE(CONSTREFERENCE(Q1, Q2, Q3, Q4, R1, R2) READ(Q1, Q2, Q3, Q4, R1, R2) READWRITE(MathQ)),
+    TASK(MODE(CONSTREFERENCE(Q1, Q2, Q3, Q4, R1, R2) READ(Q1[0], Q2[0], Q3[0], Q4[0], R1, R2) READWRITE(MathQ[0])),
 	 composePermutationsQ (MathQ, Q1, Q3, R1, N2);
 	 composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
 	 for (size_t i=N2; i<N; ++i)
@@ -367,7 +367,7 @@ namespace FFPACK {
 
     if (R1 < N2){
 	    // Q <- T Q
-	    TASK(MODE(CONSTREFERENCE(R1, R2, R3, R4) READ(R1, R2, R3, R4) READWRITE(MathQ)),
+	    TASK(MODE(CONSTREFERENCE(R1, R2, R3, R4) READ(R1, R2, R3, R4) READWRITE(MathQ[0])),
 		 PermApplyT (MathQ, 1,1,N2, R1, R2, R3, R4););
 	    
 	    // A <-   A T^T
@@ -376,7 +376,7 @@ namespace FFPACK {
 	    //			  MatrixApplyT(Fi, A, lda, M, N2, R1, R2, R3, R4);
     }
     CHECK_DEPENDENCIES;
-    TASK(MODE(CONSTREFERENCE(MathP, MathQ) READ(MathP, MathQ) READWRITE(P, Q)),
+    TASK(MODE(CONSTREFERENCE(MathP, MathQ) READ(MathP[0], MathQ[0]) READWRITE(P[0], Q[0])),
 	 MathPerm2LAPACKPerm (Q, MathQ, N);
 	 MathPerm2LAPACKPerm (P, MathP, M);
 	 );

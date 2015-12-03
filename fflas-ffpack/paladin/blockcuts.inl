@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_bounds.inl
  * Copyright (C) 2013 Jean-Guillaume Dumas
  *
@@ -33,6 +33,82 @@
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 
 namespace FFLAS {
+	// enum CuttingStrategy {
+    //     SINGLE			,
+	// 	ROW		,
+	// 	COLUMN	,
+	// 	BLOCK	,
+	// 	RECURSIVE
+	// };
+
+	// enum StrategyParameter {
+    //     FIXED		,
+	// 	THREADS		,
+	// 	GRAIN		,
+	// 	TWO_D			,
+	// 	THREE_D_INPLACE	,
+	// 	THREE_D_ADAPT	,
+	// 	TWO_D_ADAPT		,
+	// 	THREE_D
+	// };
+	namespace CuttingStrategy{
+		struct Single{};
+		struct Row{};
+		struct Column{};
+		struct Block{};
+		struct Recursive{};		
+	}
+
+	namespace StrategyParameter{
+		struct Fixed{};
+		struct Threads{};
+		struct Grain{};
+		struct TwoD{};
+		struct TwoDAdaptive{};
+		struct ThreeD{};
+		struct ThreeDInPlace{};
+		struct ThreeDAdaptive{};
+	}
+
+	/*! ParSeqHelper for both fgemm and ftrsm
+	*/
+		/*! ParSeqHelper for both fgemm and ftrsm
+	*/
+	namespace ParSeqHelper {
+		template <typename C=CuttingStrategy::Block, typename P=StrategyParameter::Threads>
+		struct Parallel{
+			typedef C Cut;
+			typedef P Param;
+			
+			Parallel(size_t n=MAX_THREADS):_numthreads(n){}
+
+			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
+				return out << "Parallel: " << p.numthreads();
+			}
+			size_t numthreads() const { return _numthreads; }
+			size_t& set_numthreads(size_t n) { return _numthreads=n; }
+			// CuttingStrategy method() const { return _method; }
+			// StrategyParameter strategy() const { return _param; }
+        private:
+			size_t _numthreads;
+			// CuttingStrategy _method;
+			// StrategyParameter _param;
+            
+		};
+		struct Sequential{
+			Sequential() {}
+			template<class Cut,class Param>
+			Sequential(Parallel<Cut,Param>& ) {}
+			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
+				return out << "Sequential";
+			}
+			size_t numthreads() const { return 1; }
+		// 	CuttingStrategy method() const { return SINGLE; }
+                // // numthreads==1 ==> a single block
+		// 	StrategyParameter strategy() const { return THREADS; }
+		};
+	}
+
 
 	template<class Cut, class Strat>
     inline void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
@@ -242,18 +318,25 @@ namespace FFLAS {
 
 namespace FFLAS {
 	template <typename blocksize_t=size_t, typename Cut=CuttingStrategy::Block, typename Param=StrategyParameter::Threads>
-	struct ForStrategy1D {
-		ForStrategy1D(const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H) {
+    struct ForStrategy1D {
+        ForStrategy1D(const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H) {
+			build(n,H);
+		}
+        ForStrategy1D(const blocksize_t b, const blocksize_t e, const ParSeqHelper::Parallel<Cut,Param> H) {
+			build(e-b,H);
+		}
+		
+        void build(const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H) {
 //             std::cout<<"FS1D n : "<<n<<std::endl;
 //             std::cout<<"FS1D method    : "<<method<<std::endl;
 //             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
 
 			if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
-				numBlock = std::max(H.numthreads(),(blocksize_t)1);
+				numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
 			} else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) { 
-				numBlock = std::max(n/ H.numthreads(), (blocksize_t)1);
+				numBlock = std::max(n/ (blocksize_t)(H.numthreads()), (blocksize_t)1);
 			} else {
-				numBlock = std::max(n/__FFLASFFPACK_MINBLOCKCUTS,(blocksize_t)1);
+				numBlock = std::max(n/(blocksize_t)(__FFLASFFPACK_MINBLOCKCUTS),(blocksize_t)1);
             }
             firstBlockSize = n/numBlock;
             if (firstBlockSize<1) {
@@ -263,7 +346,7 @@ namespace FFLAS {
             changeBS = n - numBlock*firstBlockSize;
             lastBlockSize = firstBlockSize;
             if (changeBS) ++firstBlockSize;
-
+			
 //             std::cout<<"FS1D 1BLOCKSIZE : "<<firstBlockSize<<std::endl;
 //             std::cout<<"FS1D 2BLOCKSIZE : "<<lastBlockSize<<std::endl;
 //             std::cout<<"FS1D changeBS : "<<changeBS<<std::endl;

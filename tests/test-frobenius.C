@@ -41,10 +41,10 @@
 #include <iomanip>
 #include <list>
 #include <vector>
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
 using namespace std;
-#include "fflas-ffpack/field/modular-positive.h"
+#include "givaro/modular.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 

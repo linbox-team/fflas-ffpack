@@ -81,7 +81,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	C  = FFLAS::fflas_new(F,m,ldc);
 
 	typename Field::RandIter Rand(F);
-	typename Field::NonZeroRandIter NZRand(F,Rand);
+	typename Field::NonZeroRandIter NZRand(Rand);
 
 	for (size_t i=0;i<k;++i){
 		for (size_t j=0;j<i;++j)

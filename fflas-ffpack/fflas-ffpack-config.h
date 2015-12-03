@@ -34,19 +34,6 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_configuration_H
 #define __FFLASFFPACK_fflas_ffpack_configuration_H
 
-#include "fflas-ffpack/config.h"
-#ifdef __FFLASFFPACK_USE_OPENMP
-#  ifndef __GIVARO_USE_OPENMP
-#    define __GIVARO_USE_OPENMP 1
-#  endif
-#endif
-
-#include "fflas-ffpack/fflas-ffpack-optimise.h"
-
-#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
-#define __FFLASFFPACK_USE_SIMD // see configure...
-#endif
-
 #ifndef GCC_VERSION
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
@@ -68,6 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::strtoll;
   using ::strtoull;
 
+/*
   unsigned long      stoul( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
       return std::strtoul(str.c_str(), NULL, base);
   } 
@@ -83,6 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   long long stoll( const std::string& str, std::size_t* pos = 0, int base = 10 ) {
       return std::strtoll(str.c_str(), NULL, base);
   }
+*/
   
 }
 #  else
@@ -90,6 +79,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #    include <cstdlib>
 #  endif
 #endif
+
+#include "fflas-ffpack/config.h"
+#ifdef __FFLASFFPACK_USE_OPENMP
+#  ifndef __GIVARO_USE_OPENMP
+#    define __GIVARO_USE_OPENMP 1
+#  endif
+#endif
+
+#include "fflas-ffpack/fflas-ffpack-optimise.h"
+
+#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#define __FFLASFFPACK_USE_SIMD // see configure...
+#endif
+
+
 
 // winograd algorithm threshold (for double)
 #ifndef __FFLASFFPACK_WINOTHRESHOLD

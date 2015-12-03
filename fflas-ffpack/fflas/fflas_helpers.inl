@@ -61,80 +61,6 @@ namespace FFLAS {
 		inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}
 	}
 
-	namespace CuttingStrategy{
-		struct Single{};
-		struct Row{};
-		struct Column{};
-		struct Block{};
-		struct Recursive{};		
-	}
-
-	namespace StrategyParameter{
-		struct Fixed{};
-		struct Threads{};
-		struct Grain{};
-		struct TwoD{};
-		struct TwoDAdaptive{};
-		struct ThreeD{};
-		struct ThreeDInPlace{};
-		struct ThreeDAdaptive{};
-	}
-	// enum CuttingStrategy {
-        // SINGLE			,
-	// 	ROW		,
-	// 	COLUMN	,
-	// 	BLOCK	,
-	// 	RECURSIVE
-	// };
-
-	// enum StrategyParameter {
-        // FIXED		,
-	// 	THREADS		,
-	// 	GRAIN		,
-	// 	TWO_D			,
-	// 	THREE_D_INPLACE	,
-	// 	THREE_D_ADAPT	,
-	// 	TWO_D_ADAPT		,
-	// 	THREE_D
-	// };
-
-	/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-	namespace ParSeqHelper {
-		template <class C, class P>
-		struct Parallel{
-			typedef C Cut;
-			typedef P Param;
-			
-			Parallel(size_t n=MAX_THREADS):_numthreads(n){}
-
-			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads();
-			}
-			size_t numthreads() const { return _numthreads; }
-			size_t& set_numthreads(size_t n) { return _numthreads=n; }
-			// CuttingStrategy method() const { return _method; }
-			// StrategyParameter strategy() const { return _param; }
-        private:
-			size_t _numthreads;
-			// CuttingStrategy _method;
-			// StrategyParameter _param;
-            
-		};
-		struct Sequential{
-			Sequential() {}
-			template<class Cut,class Param>
-			Sequential(Parallel<Cut,Param>& ) {}
-			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
-				return out << "Sequential";
-			}
-			size_t numthreads() const { return 1; }
-		// 	CuttingStrategy method() const { return SINGLE; }
-                // // numthreads==1 ==> a single block
-		// 	StrategyParameter strategy() const { return THREADS; }
-		};
-	}
-
 	namespace MMHelperAlgo{
 		struct Auto{};
 		struct Classic{};
@@ -351,14 +277,16 @@ namespace FFLAS {
 		MMHelper(const Field& F, int w,
 			 DFElt _Amin, DFElt _Amax,
 			 DFElt _Bmin, DFElt _Bmax,
-			 DFElt _Cmin, DFElt _Cmax):
+			 DFElt _Cmin, DFElt _Cmax,
+             ParSeqTrait _PS=ParSeqTrait()):
 			recLevel(w), FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
 			Amin(_Amin), Amax(_Amax),
 			Bmin(_Bmin), Bmax(_Bmax),
 			Cmin(_Cmin), Cmax(_Cmax),
 			Outmin(0),Outmax(0),
 			MaxStorableValue(limits<typename DelayedField::Element>::max()),
-			delayedField(F)
+			delayedField(F),
+            parseq(_PS)
 		{
 		}
 

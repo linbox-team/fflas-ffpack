@@ -63,7 +63,7 @@ of `autoconf'.
      Running `configure' might take a while.  While running, it prints
      some messages telling which features it is checking for.
 
-  2. Type `make' to compile the package.
+  2. Type `make ; make install' to compile the package.
 
   3. Optionally, type `make check' to run any self-tests that come with
      the package, generally using the just-built uninstalled binaries.

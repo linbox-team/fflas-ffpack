@@ -1,5 +1,6 @@
 /* -*- mode: C++; tAb-width: 8; indent-tAbs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+ */
 /*
  * Copyright (C) 2015 FFLAS-FFPACK
  *
@@ -34,40 +35,56 @@
 
 #ifndef __FFLASFFPACK_interfaces_libs_fflas_c_H
 #define __FFLASFFPACK_interfaces_libs_fflas_c_H
+//#include "fflas-ffpack/fflas-ffpack-config.h"
+
+#ifndef FFLAS_COMPILED
+#define FFLAS_COMPILED
+#endif
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum FFLAS_order {
-	FflasRowMajor=101,
-	FflasColMajor=102
-};
-enum FFLAS_transpose {
-	FflasNoTrans = 111,
-	FflasTrans   = 112
-};
-enum FFLAS_uplo {
-	FflasUpper = 121,
-	FflasLower = 122
-};
-enum FFLAS_diag {
-	FflasNonUnit = 131,
-	FflasUnit    = 132
-};
-enum FFLAS_side {
-	FflasLeft  = 141,
-	FflasRight = 142
-};
-enum FFLAS_base {
-	FflasDouble  = 151,
-	FflasFloat   = 152,
-	FflasGeneric = 153
-};
+	/// Storage by row or col ?
+	enum FFLAS_C_ORDER{
+		FflasRowMajor=101, /**< row major */
+		FflasColMajor=102  /**< col major */
+	};
+	// public:
+	/// Is matrix transposed ?
+	enum FFLAS_C_TRANSPOSE {
+		FflasNoTrans = 111, /**< Matrix is not transposed */
+		FflasTrans   = 112  /**< Matrix is transposed */
+	};
+	/// Is triangular matrix's shape upper ?
+	enum FFLAS_C_UPLO {
+		FflasUpper = 121, /**< Triangular matrix is Upper triangular (if \f$i>j\f$ then \f$T_{i,j} = 0\f$)*/
+		FflasLower = 122  /**< Triangular matrix is Lower triangular (if \f$i<j\f$ then \f$T_{i,j} = 0\f$)*/
+	};
+
+	/// Is the triangular matrix implicitly unit diagonal ?
+	enum FFLAS_C_DIAG {
+		FflasNonUnit = 131, /**< Triangular matrix has an explicit arbitrary diagonal */
+		FflasUnit    = 132 /**< Triangular matrix has an implicit unit diagonal (\f$T_{i,i} = 1\f$)*/ /**< */
+	};
+
+	/// On what side ?
+	enum FFLAS_C_SIDE {
+		FflasLeft  = 141,/**< Operator applied on the left */
+		FflasRight = 142 /**< Operator applied on the rigth*/
+	};
+
+	/** \p FFLAS_C_BASE  determines the type of the element representation for Matrix Mult kernel. (deprecated, should not be used) */
+	enum FFLAS_C_BASE {
+		FflasDouble  = 151,  /**<  to use the double precision BLAS */
+		FflasFloat   = 152,  /**<  to use the single precison BLAS */
+		FflasGeneric = 153   /**< for any other domain, that can not be converted to floating point integers */
+	};
 
 /* ******** *
  * LEVEL1   *
@@ -348,7 +365,7 @@ faddin_2_modular_double (const double p, const size_t m, const size_t n,
 
 
 double *
-fgemv_2_modular_double (const double p, const enum FFLAS_transpose TransA,
+fgemv_2_modular_double (const double p, const enum FFLAS_C_TRANSPOSE TransA,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A, const size_t ldA,
@@ -368,8 +385,8 @@ fger_2_modular_double (const double p, const size_t m, const size_t n,
 
 
 void
-ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA, const enum FFLAS_diag Diag,
+ftrsv_2_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+                        const enum FFLAS_C_TRANSPOSE TransA, const enum FFLAS_C_DIAG Diag,
 		      const size_t n,const double * A, const size_t ldA,
 		      double * X, int incX
 		      , bool positive  );
@@ -386,10 +403,10 @@ ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
 
 
 void
-ftrsm_3_modular_double (const double p, const enum FFLAS_side Side,
-		      const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA,
-		      const enum FFLAS_diag Diag,
+ftrsm_3_modular_double (const double p, const enum FFLAS_C_SIDE Side,
+		      const enum FFLAS_C_UPLO Uplo,
+		      const enum FFLAS_C_TRANSPOSE TransA,
+                        const enum FFLAS_C_DIAG Diag,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A,
@@ -399,10 +416,10 @@ ftrsm_3_modular_double (const double p, const enum FFLAS_side Side,
 
 
 void
-ftrmm_3_modular_double (const double p, const enum FFLAS_side Side,
-		      const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA,
-		      const enum FFLAS_diag Diag,
+ftrmm_3_modular_double (const double p, const enum FFLAS_C_SIDE Side,
+		      const enum FFLAS_C_UPLO Uplo,
+		      const enum FFLAS_C_TRANSPOSE TransA,
+                        const enum FFLAS_C_DIAG Diag,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      double * A, const size_t ldA,
@@ -412,8 +429,8 @@ ftrmm_3_modular_double (const double p, const enum FFLAS_side Side,
 
 double *
 fgemm_3_modular_double( const double p,
-		      const enum FFLAS_transpose tA,
-		      const enum FFLAS_transpose tB,
+		      const enum FFLAS_C_TRANSPOSE tA,
+		      const enum FFLAS_C_TRANSPOSE tB,
 		      const size_t m,
 		      const size_t n,
 		      const size_t k,
@@ -427,7 +444,7 @@ fgemm_3_modular_double( const double p,
 
 double *
 fsquare_3_modular_double (const double p,
-			const enum FFLAS_transpose tA,
+			const enum FFLAS_C_TRANSPOSE tA,
 			const size_t n,
 			const double alpha,
 			const double * A,

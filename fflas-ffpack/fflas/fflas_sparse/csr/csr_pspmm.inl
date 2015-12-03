@@ -41,15 +41,10 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-  // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-  // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value,
-		  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
-  size_t m = A.m;
-  PAR_BLOCK{
-    SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
-		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
+    size_t m = A.m;
+    SYNCH_GROUP(
+		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
+		      TASK(CONSTREFERENCE(F) MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
 			      for (index_t j = st[i]; j < st[i + 1]; ++j) {
@@ -68,7 +63,6 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
 		      );
 		);
     );
-  } 
 }
 
 template <class Field>
@@ -80,14 +74,9 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-  // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-  // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value,
-		  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
-  size_t m = A.m;
-  PAR_BLOCK{
-    SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+    size_t m = A.m;
+    SYNCH_GROUP(
+		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -107,7 +96,6 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
 		      );
 		);
     );
-  } 
   /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -137,20 +125,15 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
 
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
-    uint32_t k = 0;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+      SYNCH_GROUP(
+		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
-				  k = 0;
+				  uint32_t k = 0;
 				  vdat = simd::set1(dat[j]);
 				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
 				    y1 = simd::load(y+i*ldy+k);
@@ -177,7 +160,6 @@ inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix
 			);
 		  );
       );
-    } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -221,20 +203,16 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
 
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
-    uint32_t k = 0;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+
+      SYNCH_GROUP(
+		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(dat, col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
-				  k = 0;
+				  uint32_t k = 0;
 				  vdat = simd::set1(dat[j]);
 				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
 				    y1 = simd::loadu(y+i*ldy+k);
@@ -261,7 +239,6 @@ inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatr
 			);
 		  );
       );
-    } 
 /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -506,20 +483,32 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            size_t k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
-                F.addin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
-                F.addin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
-                F.addin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
-            }
-            for (; k < blockSize; ++k)
-                F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
-        }
-    }
+//     for (index_t i = 0; i < A.m; ++i) {
+    index_t am=A.m;
+    SYNCH_GROUP(
+	  FORBLOCK1D(it, am, 
+		     SPLITTER(NUM_THREADS),
+		     TASK(MODE(CONSTREFERENCE(F) READ(/*dat,*/ col, st, x) READWRITE(y)),
+			  for (index_t i = it.begin(); i < it.end(); ++i) {
+			   auto start = st[i];
+			   auto stop = st[i + 1];
+			   for (index_t j = start; j < stop; ++j) {
+			    size_t k = 0;
+			    for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+			     F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
+			     F.addin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
+			     F.addin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
+			     F.addin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
+			    }
+			    for (; k < blockSize; ++k)
+				    F.addin(y[i * ldy + k], x[col[j] * ldx + k]);
+			   }
+			  }
+			  );
+		     );
+                );
+//     }
+    
 }
 
 template <class Field>
@@ -530,21 +519,32 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-#pragma omp parallel for schedule(static, 32)
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
-        for (index_t j = start; j < stop; ++j) {
-            size_t k = 0;
-            for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
-                F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
-                F.subin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
-                F.subin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
-                F.subin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
-            }
-            for (; k < blockSize; ++k)
-                F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
-        }
-    }
+// #pragma omp parallel for schedule(static, 32)
+//     for (index_t i = 0; i < A.m; ++i) {
+    index_t am=A.m;
+    SYNCH_GROUP(
+	  FORBLOCK1D(it, am, 
+      SPLITTER(NUM_THREADS),
+      TASK(MODE(CONSTREFERENCE(F) READ(/*dat,*/ col, st, x) READWRITE(y)),
+           for (index_t i = it.begin(); i < it.end(); ++i) {
+               auto start = st[i];
+               auto stop = st[i + 1];
+               for (index_t j = start; j < stop; ++j) {
+                   size_t k = 0;
+                   for (; k < ROUND_DOWN(blockSize, 4); k += 4) {
+                       F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
+                       F.subin(y[i * ldy + k + 1], x[col[j] * ldx + k + 1]);
+                       F.subin(y[i * ldy + k + 2], x[col[j] * ldx + k + 2]);
+                       F.subin(y[i * ldy + k + 3], x[col[j] * ldx + k + 3]);
+                   }
+                   for (; k < blockSize; ++k)
+                       F.subin(y[i * ldy + k], x[col[j] * ldx + k]);
+               }
+           }
+           );
+                 );
+                );
+//     }
 }
 
 template <class Field>
@@ -556,13 +556,9 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
-  size_t m = A.m;
-  PAR_BLOCK{
-    SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+    size_t m = A.m;
+    SYNCH_GROUP(
+		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -582,7 +578,6 @@ inline void pfspmm_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
 		      );
 		);
     );
-  } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -610,14 +605,9 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
 
-
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-  FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
-  size_t m = A.m;
-  PAR_BLOCK{
-    SYNCH_GROUP(MAX_THREADS,
-		FOR1D(it, m, WH.parseq,
+    size_t m = A.m;
+    SYNCH_GROUP(
+		FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 		      TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			   {
 			    for (index_t i = it.begin(); i < it.end(); ++i) {
@@ -637,7 +627,6 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
 		      );
 		);
     );
-  } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -669,20 +658,16 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
   //*
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
-    uint32_t k = 0;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+
+      SYNCH_GROUP(
+		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
-				  k = 0;
+				  uint32_t k = 0;
 				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
 				    y1 = simd::load(y+i*ldy+k);
 				    y2 = simd::load(y+i*ldy+k+simd::vect_size);
@@ -705,7 +690,6 @@ inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMa
 			);
 		  );
       );
-    } 
     //*/
     /*
 #pragma omp parallel for schedule(static, 256)
@@ -746,20 +730,15 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
 
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
-    size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
-    uint32_t k = 0;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+    size_t m = A.m;
+      SYNCH_GROUP(
+		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
-				  k = 0;
+				  uint32_t k = 0;
 				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
 				    y1 = simd::loadu(y+i*ldy+k);
 				    y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
@@ -782,7 +761,6 @@ inline void pfspmm_one_simd_unaligned(const Field &F, const Sparse<Field, Sparse
 			);
 		  );
       );
-    } 
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];
@@ -821,20 +799,16 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
     //*
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
-    uint32_t k = 0;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+
+      SYNCH_GROUP(
+		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
-				  k = 0;
+				  uint32_t k = 0;
 				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
 				    y1 = simd::load(y+i*ldy+k);
 				    y2 = simd::load(y+i*ldy+k+simd::vect_size);
@@ -857,7 +831,6 @@ inline void pfspmm_mone_simd_aligned(const Field &F, const Sparse<Field, SparseM
 			);
 		  );
       );
-    } 
     //*/
     /*
 #pragma omp parallel for schedule(static, 256)
@@ -898,20 +871,16 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     using simd = Simd<typename Field::Element>;
     using vect_t = typename simd::vect_t;
 
-    // FFLAS::CuttingStrategy meth = FFLAS::ROW;
-    // FFLAS::StrategyParameter strat = FFLAS::FIXED;
-    FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed> > WH (F, -1, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(MAX_THREADS));
     size_t m = A.m;
     vect_t y1, x1, y2, x2, vdat;
-    uint32_t k = 0;
-    PAR_BLOCK{
-      SYNCH_GROUP(MAX_THREADS,
-		  FOR1D(it, m, WH.parseq,
+
+      SYNCH_GROUP(
+		  FORBLOCK1D(it, m, SPLITTER(NUM_THREADS),
 			TASK(MODE(READ(/*dat,*/ col, st, x) READWRITE(y)),
 			    {
 			      for (index_t i = it.begin(); i < it.end(); ++i) {
 				for (index_t j = st[i]; j < st[i + 1]; ++j) {
-				  k = 0;
+				  uint32_t k = 0;
 				  for (; k < ROUND_DOWN(blockSize, 2 * simd::vect_size); k += 2 * simd::vect_size) {
 				    y1 = simd::loadu(y+i*ldy+k);
 				    y2 = simd::loadu(y+i*ldy+k+simd::vect_size);
@@ -934,7 +903,6 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
 			);
 		  );
       );
-    }
     /*
     for (index_t i = 0; i < A.m; ++i) {
         auto start = st[i], stop = st[i + 1];

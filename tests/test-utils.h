@@ -58,10 +58,11 @@ namespace FFPACK {
 	template<class Field>
 	typename Field::Element * RandomMatrix(const Field & F,
 					       typename Field::Element * A,
-					       size_t m, size_t n, size_t lda)
+					       size_t m, size_t n, size_t lda, size_t b=0)
 	{
 		typedef typename Field::RandIter Randiter ;
-		Randiter R(F);
+		Givaro::Integer bs = (F.characteristic() == 0 ? Givaro::Integer(0) : Givaro::Integer(1)<<b);
+		Randiter R(F,bs);
 		for (size_t i=0 ; i<m ; ++i)
 			for (size_t j= 0; j<n ;++j)
 				R.random( A[i*lda+j] );
@@ -69,16 +70,16 @@ namespace FFPACK {
 
 	}
 
-	template<class T >
-	T * RandomMatrix(const Givaro::ZRing< T > & F,
-			 T * A,
-			 size_t m, size_t n, size_t lda)
-	{
-		Givaro::Modular<T> G(101);
-		RandomMatrix(G,A,m,n,lda);
-		return A;
+	// template<class T >
+	// T * RandomMatrix(const Givaro::ZRing< T > & F,
+	// 		 T * A,
+	// 		 size_t m, size_t n, size_t lda)
+	// {
+	// 	Givaro::Modular<T> G(101);
+	// 	RandomMatrix(G,A,m,n,lda);
+	// 	return A;
 
-	}
+	// }
 	/*! Random integer in range.
 	 * @param a min bound
 	 * @param b max bound
@@ -124,7 +125,7 @@ namespace FFPACK {
 		//typedef typename Field::Element  Element ;
 		typedef typename Field::Element_ptr  Element_ptr;
 		Randiter R(F);
-                Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,R);
+        Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(R);
 
 		size_t * P = FFLAS::fflas_new<size_t>(n);
 		size_t * Q = FFLAS::fflas_new<size_t>(m);
@@ -197,7 +198,7 @@ namespace FFPACK {
 
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
-        Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
+    Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(RI);
 	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
 	FFLAS::fzero(F, M, N, L, N);
 	for (size_t k = 0; k < R; ++k){
@@ -271,7 +272,7 @@ namespace FFPACK {
 		typedef typename Field::RandIter Randiter ;
 		typedef typename Field::Element  Element ;
 		Randiter R(F);
-                Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,R);
+        Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(R);
 
 		size_t * P = FFLAS::fflas_new<size_t>(n);
 		size_t * Q = FFLAS::fflas_new<size_t>(n);

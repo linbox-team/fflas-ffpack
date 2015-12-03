@@ -1,5 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+ */
 /*
  * Copyright (C) 2015 FFLAS-FFPACK
  *
@@ -34,67 +35,71 @@
 
 #ifndef __FFLASFFPACK_interfaces_libs_ffpack_c_H
 #define __FFLASFFPACK_interfaces_libs_ffpack_c_H
+//#include "fflas-ffpack/fflas-ffpack-config.h"
+
+#ifndef FFPACK_COMPILED
+#define FFPACK_COMPILED
+#endif
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-
 #ifndef __FFLASFFPACK_interfaces_libs_fflas_c_H
 
-enum FFLAS_order {
+enum FFLAS_C_ORDER {
 	FflasRowMajor=101,
 	FflasColMajor=102
 };
-enum FFLAS_transpose {
+enum FFLAS_C_TRANSPOSE {
 	FflasNoTrans = 111,
 	FflasTrans   = 112
 };
-enum FFLAS_uplo {
+enum FFLAS_C_UPLO {
 	FflasUpper = 121,
 	FflasLower = 122
 };
-enum FFLAS_diag {
+enum FFLAS_C_DIAG {
 	FflasNonUnit = 131,
 	FflasUnit    = 132
 };
-enum FFLAS_side {
+enum FFLAS_C_SIDE {
 	FflasLeft  = 141,
 	FflasRight = 142
-};
-enum FFLAS_base {
-	FflasDouble  = 151,
-	FflasFloat   = 152,
-	FflasGeneric = 153
 };
 
 #endif // __FFLASFFPACK_interfaces_libs_fflas_c_H
 
-enum FFPACK_lu_tag
-{
-	FfpackSlabRecursive = 1,
-	FfpackTileRecursive = 2,
-	FfpackSingular = 3
-};
-enum FFPACK_charpoly_tag
-{
-	FfpackLUK=1,
-	FfpackKG=2,
-	FfpackHybrid=3,
-	FfpackKGFast=4,
-	FfpackDanilevski=5,
-	FfpackArithProg=6,
-	FfpackKGFastG=7
-};
-enum FFPACK_minpoly_tag
-{
-	FfpackDense=1,
-	FfpackKGF=2
-};
+	enum FFPACK_C_LU_TAG
+	{
+		FfpackSlabRecursive = 1,
+		FfpackTileRecursive = 2,
+		FfpackSingular = 3
+	};
+
+	enum FFPACK_C_CHARPOLY_TAG
+	{
+		FfpackLUK=1,
+		FfpackKG=2,
+		FfpackHybrid=3,
+		FfpackKGFast=4,
+		FfpackDanilevski=5,
+		FfpackArithProg=6,
+		FfpackKGFastG=7
+	};
+
+	enum FFPACK_C_MINPOLY_TAG
+	{
+		FfpackDense=1,
+		FfpackKGF=2
+	};
+
+
 
 /*****************/
 /* PERMUTATIONS  */
@@ -159,8 +164,8 @@ void cyclic_shift_col_modular_double(const double p, double * A, size_t m, size_
 
 void
 applyP_modular_double( const double p,
-		       const enum FFLAS_side Side,
-		       const enum FFLAS_transpose Trans,
+		       const enum FFLAS_C_SIDE Side,
+		       const enum FFLAS_C_TRANSPOSE Trans,
 		       const size_t M, const size_t ibeg, const size_t iend,
 		       double * A, const size_t lda, const size_t * P
 		       , bool positive  );
@@ -173,9 +178,9 @@ applyP_modular_double( const double p,
 
 void
 fgetrsin_modular_double (const double p,
-		       const enum FFLAS_side Side,
-		       const size_t M, const size_t N, const size_t R,
-		       double * A, const size_t lda,
+			 const enum FFLAS_C_SIDE Side,
+			 const size_t M, const size_t N, const size_t R,
+			 double * A, const size_t lda,
 		       const size_t *P, const size_t *Q,
 		       double * B, const size_t ldb,
 		       int * info
@@ -184,7 +189,7 @@ fgetrsin_modular_double (const double p,
 
 double *
 fgetrs_modular_double (const double p,
-		       const enum FFLAS_side Side,
+		       const enum FFLAS_C_SIDE Side,
 		       const size_t M, const size_t N, const size_t NRHS, const size_t R,
 		       double * A, const size_t lda,
 		       const size_t *P, const size_t *Q,
@@ -196,7 +201,7 @@ fgetrs_modular_double (const double p,
 
 size_t
 fgesvin_modular_double (const double p,
-		      const enum FFLAS_side Side,
+		      const enum FFLAS_C_SIDE Side,
 		      const size_t M, const size_t N,
 		      double * A, const size_t lda,
 		      double * B, const size_t ldb,
@@ -206,7 +211,7 @@ fgesvin_modular_double (const double p,
 
 size_t
 fgesv_modular_double (const double p,
-		      const enum FFLAS_side Side,
+		      const enum FFLAS_C_SIDE Side,
 		      const size_t M, const size_t N, const size_t NRHS,
 		      double * A, const size_t lda,
 		      double * X, const size_t ldx,
@@ -217,7 +222,7 @@ fgesv_modular_double (const double p,
 
 
 void
-ftrtri_modular_double (const double p, const enum FFLAS_uplo Uplo, const enum FFLAS_diag Diag,
+ftrtri_modular_double (const double p, const enum FFLAS_C_UPLO Uplo, const enum FFLAS_C_DIAG Diag,
 		       const size_t N, double * A, const size_t lda
 		       , bool positive );
 
@@ -228,7 +233,7 @@ void trinv_left_modular_double( const double p, const size_t N, const double * L
 
 
 void
-ftrtrm_modular_double (const double p, const enum FFLAS_diag diag, const size_t N,
+ftrtrm_modular_double (const double p, const enum FFLAS_C_DIAG diag, const size_t N,
 		       double * A, const size_t lda
 		       , bool positive );
 
@@ -238,7 +243,7 @@ ftrtrm_modular_double (const double p, const enum FFLAS_diag diag, const size_t 
 
 
 size_t
-PLUQ_modular_double (const double p, const enum FFLAS_diag Diag,
+PLUQ_modular_double (const double p, const enum FFLAS_C_DIAG Diag,
 		     const size_t M, const size_t N,
 		     double * A, const size_t lda,
 		     size_t*P, size_t *Q
@@ -247,30 +252,30 @@ PLUQ_modular_double (const double p, const enum FFLAS_diag Diag,
 
 
 size_t
-LUdivine_modular_double (const double p, const enum FFLAS_diag Diag,  const enum FFLAS_transpose trans,
+LUdivine_modular_double (const double p, const enum FFLAS_C_DIAG Diag,  const enum FFLAS_C_TRANSPOSE trans,
 			 const size_t M, const size_t N,
 			 double * A, const size_t lda,
 			 size_t* P, size_t* Qt,
-			 const enum FFPACK_lu_tag LuTag,
+			 const enum FFPACK_C_LU_TAG LuTag,
 			 const size_t cutoff
 			 , bool positive );
 
 
 size_t
-LUdivine_small_modular_double (const double p, const enum FFLAS_diag Diag,  const enum FFLAS_transpose trans,
+LUdivine_small_modular_double (const double p, const enum FFLAS_C_DIAG Diag,  const enum FFLAS_C_TRANSPOSE trans,
 			       const size_t M, const size_t N,
 			       double * A, const size_t lda,
 			       size_t* P, size_t* Q,
-			       const enum FFPACK_lu_tag LuTag
+			       const enum FFPACK_C_LU_TAG LuTag
 			       , bool positive );
 
 
 size_t
-LUdivine_gauss_modular_double (const double p, const enum FFLAS_diag Diag,
+LUdivine_gauss_modular_double (const double p, const enum FFLAS_C_DIAG Diag,
 			       const size_t M, const size_t N,
 			       double * A, const size_t lda,
 			       size_t* P, size_t* Q,
-			       const enum FFPACK_lu_tag LuTag
+			       const enum FFPACK_C_LU_TAG LuTag
 			       , bool positive );
 
 
@@ -279,12 +284,11 @@ LUdivine_gauss_modular_double (const double p, const enum FFLAS_diag Diag,
 /* ECHELON FORMS */
 /*****************/
 
-
 size_t
 ColumnEchelonForm_modular_double (const double p, const size_t M, const size_t N,
 				  double * A, const size_t lda,
 				  size_t* P, size_t* Qt, bool transform,
-				  const enum FFPACK_lu_tag LuTag
+				  const enum FFPACK_C_LU_TAG LuTag
 				  , bool positive );
 
 
@@ -292,7 +296,38 @@ size_t
 RowEchelonForm_modular_double (const double p, const size_t M, const size_t N,
 			       double * A, const size_t lda,
 			       size_t* P, size_t* Qt, const bool transform,
-			       const enum FFPACK_lu_tag LuTag
+			       const enum FFPACK_C_LU_TAG LuTag
+			       , bool positive );
+
+size_t
+ColumnEchelonForm_modular_float (const float p, const size_t M, const size_t N,
+				  float * A, const size_t lda,
+				  size_t* P, size_t* Qt, bool transform,
+				  const enum FFPACK_C_LU_TAG LuTag
+				  , bool positive );
+
+
+size_t
+RowEchelonForm_modular_float (const float p, const size_t M, const size_t N,
+			       float * A, const size_t lda,
+			       size_t* P, size_t* Qt, const bool transform,
+			       const enum FFPACK_C_LU_TAG LuTag
+			       , bool positive );
+
+
+size_t
+ColumnEchelonForm_modular_int32_t (const int32_t p, const size_t M, const size_t N,
+				  int32_t * A, const size_t lda,
+				  size_t* P, size_t* Qt, bool transform,
+				  const enum FFPACK_C_LU_TAG LuTag
+				  , bool positive );
+
+
+size_t
+RowEchelonForm_modular_int32_t (const int32_t p, const size_t M, const size_t N,
+			       int32_t * A, const size_t lda,
+			       size_t* P, size_t* Qt, const bool transform,
+			       const enum FFPACK_C_LU_TAG LuTag
 			       , bool positive );
 
 
@@ -300,7 +335,7 @@ size_t
 ReducedColumnEchelonForm_modular_double (const double p, const size_t M, const size_t N,
 					 double * A, const size_t lda,
 					 size_t* P, size_t* Qt, const bool transform,
-					 const enum FFPACK_lu_tag LuTag
+					 const enum FFPACK_C_LU_TAG LuTag
 					 , bool positive );
 
 
@@ -308,7 +343,36 @@ size_t
 ReducedRowEchelonForm_modular_double (const double p, const size_t M, const size_t N,
 				      double * A, const size_t lda,
 				      size_t* P, size_t* Qt, const bool transform,
-				      const enum FFPACK_lu_tag LuTag
+				      const enum FFPACK_C_LU_TAG LuTag
+				      , bool positive );
+size_t
+ReducedColumnEchelonForm_modular_float (const float p, const size_t M, const size_t N,
+					 float * A, const size_t lda,
+					 size_t* P, size_t* Qt, const bool transform,
+					 const enum FFPACK_C_LU_TAG LuTag
+					 , bool positive );
+
+
+size_t
+ReducedRowEchelonForm_modular_float (const float p, const size_t M, const size_t N,
+				      float * A, const size_t lda,
+				      size_t* P, size_t* Qt, const bool transform,
+				      const enum FFPACK_C_LU_TAG LuTag
+				      , bool positive );
+
+size_t
+ReducedColumnEchelonForm_modular_int32_t (const int32_t p, const size_t M, const size_t N,
+					 int32_t * A, const size_t lda,
+					 size_t* P, size_t* Qt, const bool transform,
+					 const enum FFPACK_C_LU_TAG LuTag
+					 , bool positive );
+
+
+size_t
+ReducedRowEchelonForm_modular_int32_t (const int32_t p, const size_t M, const size_t N,
+				      int32_t * A, const size_t lda,
+				      size_t* P, size_t* Qt, const bool transform,
+				      const enum FFPACK_C_LU_TAG LuTag
 				      , bool positive );
 
 
@@ -364,7 +428,7 @@ template <class Polynomial>
 std::list<Polynomial>&
 CharPoly( const double p, std::list<Polynomial>& charp, const size_t N,
 	  double * A, const size_t lda,
-	  const enum FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+	  const enum FFPACK_C_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 template<class Polynomial>
 Polynomial & mulpoly_modular_double(const double p, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
@@ -373,7 +437,7 @@ template <class Polynomial>
 Polynomial&
 CharPoly_modular_double( const double p, Polynomial& charp, const size_t N,
 			 double * A, const size_t lda,
-			 const enum FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+			 const enum FFPACK_C_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 
 
@@ -395,7 +459,7 @@ Polynomial&
 MinPoly_modular_double( const double p, Polynomial& minP, const size_t N,
 			const double * A, const size_t lda,
 			double * X, const size_t ldx, size_t* P,
-			const enum FFPACK::FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
+			const enum FFPACK_C_MINPOLY_TAG MinTag= FfpackDense,
 			const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0 );
 #endif
 
@@ -456,7 +520,7 @@ Solve_modular_double( const double p, const size_t M,
 
 
 void
-solveLB_modular_double( const double p, const enum FFLAS_side Side,
+solveLB_modular_double( const double p, const enum FFLAS_C_SIDE Side,
 			const size_t M, const size_t N, const size_t R,
 			double * L, const size_t ldl,
 			const size_t * Q,
@@ -464,7 +528,7 @@ solveLB_modular_double( const double p, const enum FFLAS_side Side,
 
 
 void
-solveLB2_modular_double( const double p, const enum FFLAS_side Side,
+solveLB2_modular_double( const double p, const enum FFLAS_C_SIDE Side,
 			 const size_t M, const size_t N, const size_t R,
 			 double * L, const size_t ldl,
 			 const size_t * Q,
@@ -477,14 +541,14 @@ solveLB2_modular_double( const double p, const enum FFLAS_side Side,
 /*************/
 
 
-void RandomNullSpaceVector_modular_double (const double p, const enum FFLAS_side Side,
+void RandomNullSpaceVector_modular_double (const double p, const enum FFLAS_C_SIDE Side,
 					   const size_t M, const size_t N,
 					   double * A, const size_t lda,
 					   double * X, const size_t incX
 					   , bool positive );
 
 
-size_t NullSpaceBasis_modular_double (const double p, const enum FFLAS_side Side,
+size_t NullSpaceBasis_modular_double (const double p, const enum FFLAS_C_SIDE Side,
 				      const size_t M, const size_t N,
 				      double * A, const size_t lda,
 				      double ** NS, size_t* ldn,
@@ -499,7 +563,7 @@ size_t NullSpaceBasis_modular_double (const double p, const enum FFLAS_side Side
 size_t RowRankProfile_modular_double (const double p, const size_t M, const size_t N,
 				      double * A, const size_t lda,
 				      size_t ** rkprofile,
-				      const enum FFPACK_lu_tag LuTag
+				      const enum FFPACK_C_LU_TAG LuTag
 				      , bool positive );
 
 
@@ -507,11 +571,11 @@ size_t RowRankProfile_modular_double (const double p, const size_t M, const size
 size_t ColumnRankProfile_modular_double (const double p, const size_t M, const size_t N,
 					 double * A, const size_t lda,
 					 size_t ** rkprofile,
-					 const enum FFPACK_lu_tag LuTag
+					 const enum FFPACK_C_LU_TAG LuTag
 					 , bool positive );
 
 void RankProfileFromLU (const size_t* P, const size_t N, const size_t R,
-			size_t* rkprofile, const enum FFPACK_lu_tag LuTag);
+			size_t* rkprofile, const enum FFPACK_C_LU_TAG LuTag);
 
 size_t LeadingSubmatrixRankProfiles (const size_t M, const size_t N, const size_t R,
 				     const size_t LSm, const size_t LSn,
@@ -558,8 +622,8 @@ size_t ColRankProfileSubmatrix_modular_double (const double p, const size_t M, c
 
 
 void
-getTriangular_modular_double (const double p, const enum FFLAS_uplo Uplo,
-			      const enum FFLAS_diag diag,
+getTriangular_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+			      const enum FFLAS_C_DIAG diag,
 			      const size_t M, const size_t N, const size_t R,
 			      const double * A, const size_t lda,
 			      double * T, const size_t ldt,
@@ -568,66 +632,66 @@ getTriangular_modular_double (const double p, const enum FFLAS_uplo Uplo,
 
 
 void
-getTriangularin_modular_double (const double p, const enum FFLAS_uplo Uplo,
-				const enum FFLAS_diag diag,
+getTriangularin_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+				const enum FFLAS_C_DIAG diag,
 				const size_t M, const size_t N, const size_t R,
 				double * A, const size_t lda
 				, bool positive );
 
 
 void
-getEchelonForm_modular_double (const double p, const enum FFLAS_uplo Uplo,
-			       const enum FFLAS_diag diag,
+getEchelonForm_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+			       const enum FFLAS_C_DIAG diag,
 			       const size_t M, const size_t N, const size_t R, const size_t* P,
 			       const double * A, const size_t lda,
 			       double * T, const size_t ldt,
 			       const bool OnlyNonZeroVectors,
-			       const enum FFPACK_lu_tag LuTag
+			       const enum FFPACK_C_LU_TAG LuTag
 			       , bool positive );
 
 
 void
-getEchelonFormin_modular_double (const double p, const enum FFLAS_uplo Uplo,
-				 const enum FFLAS_diag diag,
+getEchelonFormin_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+				 const enum FFLAS_C_DIAG diag,
 				 const size_t M, const size_t N, const size_t R, const size_t* P,
 				 double * A, const size_t lda,
-				 const enum FFPACK_lu_tag LuTag
+				 const enum FFPACK_C_LU_TAG LuTag
 				 , bool positive );
 
 void
-getEchelonTransform_modular_double (const double p, const enum FFLAS_uplo Uplo,
-				    const enum FFLAS_diag diag,
+getEchelonTransform_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+				    const enum FFLAS_C_DIAG diag,
 				    const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 				    const double * A, const size_t lda,
 				    double * T, const size_t ldt,
-				    const enum FFPACK_lu_tag LuTag
+				    const enum FFPACK_C_LU_TAG LuTag
 				    , bool positive );
 
 
 void
-getReducedEchelonForm_modular_double (const double p, const enum FFLAS_uplo Uplo,
+getReducedEchelonForm_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
 				      const size_t M, const size_t N, const size_t R, const size_t* P,
 				      const double * A, const size_t lda,
 				      double * T, const size_t ldt,
 				      const bool OnlyNonZeroVectors,
-				      const enum FFPACK_lu_tag LuTag
+				      const enum FFPACK_C_LU_TAG LuTag
 				      , bool positive );
 
 
 void
-getReducedEchelonFormin_modular_double (const double p, const enum FFLAS_uplo Uplo,
+getReducedEchelonFormin_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
 					const size_t M, const size_t N, const size_t R, const size_t* P,
 					double * A, const size_t lda,
-					const enum FFPACK_lu_tag LuTag
+					const enum FFPACK_C_LU_TAG LuTag
 					, bool positive );
 
 
 void
-getReducedEchelonTransform_modular_double (const double p, const enum FFLAS_uplo Uplo,
+getReducedEchelonTransform_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
 					   const size_t M, const size_t N, const size_t R, const size_t* P, const size_t* Q,
 					   const double * A, const size_t lda,
 					   double * T, const size_t ldt,
-					   const enum FFPACK_lu_tag LuTag
+					   const enum FFPACK_C_LU_TAG LuTag
 					   , bool positive );
 
 void
@@ -635,7 +699,9 @@ PLUQtoEchelonPermutation (const size_t N, const size_t R, const size_t * P, size
 
 #ifdef __cplusplus
 }
+
 #endif
 
+ 
 #endif // __FFLASFFPACK_interfaces_libs_ffpack_c_H
 

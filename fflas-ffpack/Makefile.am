@@ -22,7 +22,7 @@
 #/
 
 
-SUBDIRS=fflas ffpack field utils paladin
+SUBDIRS=fflas ffpack field utils paladin interfaces
 
 EXTRA_DIST=fflas-ffpack.doxy
 

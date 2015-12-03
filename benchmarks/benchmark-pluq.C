@@ -27,7 +27,7 @@
 //#define __FFLASFFPACK_USE_TBB
 
 //#define __FFLASFFPACK_USE_DATAFLOW
-
+//#define  __FFLASFFPACK_FORCE_SEQ
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include <givaro/givranditer.h>
@@ -60,34 +60,33 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	size_t curr = 0;
 	std::vector<bool> rows(M,false);
 	std::vector<bool> cols(N,false);
-	int pivot_r[R];
-	int pivot_c[R];
+	size_t pivot_r[R];
+	size_t pivot_c[R];
 	typedef typename Field::RandIter Randiter ;
 	Randiter RI(F);
-	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(F,RI);
+	Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(RI);
 	while (curr<R){
-		int i,j;
+		size_t i,j;
 		while (rows [i = rand() % M]);
-		while (cols [j = rand() % N]);
 		rows[i] = true;
-		cols[i] = true;
+		while (cols [j = rand() % N]);
+		cols[j] = true;
 		pivot_r[curr] = i;
 		pivot_c[curr] = j;
 		curr++;
 	}
 	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
+	FFLAS::fzero(F, M, N, L, N);
 	for (size_t k = 0; k < R; ++k){
 		size_t i = pivot_r[k];
 		size_t j = pivot_c[k];
-		if (!cols [j])
-			FFLAS::fzero(F, M, L+j, N);
-		else{
-			nzR.random (L [i*N+j]);
-			for (size_t l=i+1; l < M; ++l)
-				RI.random (L [l*N+j]);
-		}
+		
+		nzR.random (L [i*N+j]);
+		for (size_t l=i+1; l < M; ++l)
+			RI.random (L [l*N+j]);
 	}
 	typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
+	FFLAS::fzero(F, N, N, U, N);
 	for (size_t i = 0; i < N; ++i){
 		nzR.random (U [i*N+i]);
 		for (size_t j=i+1; j < N; ++j)
@@ -106,10 +105,9 @@ void matrixWithRandRPM (const Field& F, typename Field::Element_ptr A, size_t ld
 	
 }
 
-//typedef Givaro::ModularBalanced<double> Field;
+typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::ModularBalanced<float> Field;
 //typedef Givaro::ZRing<double> Field;
-typedef Givaro::ZRing<double> Field;
-//typedef Givaro::UnparametricZRing<double> Field;
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
 		       size_t * P, size_t * Q, size_t m, size_t n, size_t R)
@@ -121,35 +119,33 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	Field::Element * L, *U;
 	L = FFLAS::fflas_new(F, m,R);
 	U = FFLAS::fflas_new(F, R,n);
-	size_t i;
 	
-	PARFOR1D (i,0, m*R,H, F.init(L[i], 0.0); );
+	PARFOR1D (i, m*R,H, F.init(L[i], 0.0); );
 	
-	PARFOR1D (i,0,n*R,H, F.init(U[i], 0.0); );
+	PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
 	
-	PARFOR1D (i,0,m*n,H, F.init(X[i], 0.0); );	
+	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );	
 	
 	Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	PARFOR1D (i,0,R,H,
+	PARFOR1D (i,R,H,
               for (size_t j=0; j<i; ++j)
               	F.assign ( *(U + i*n + j), zero);
               for (size_t j=i; j<n; ++j)
               	F.assign (*(U + i*n + j), *(A+ i*n+j));
               );
-	size_t j;
 	
-	PARFOR1D (j,0,R,H, 
-		  for (i=0; i<=j; ++i )
+	PARFOR1D (j,R,H, 
+		  for (size_t i=0; i<=j; ++i )
 			  F.assign( *(L+i*R+j), zero);
 		  F.assign(*(L+j*R+j), one);
-		  for (i=j+1; i<m; i++)
+		  for (size_t i=j+1; i<m; i++)
 			  F.assign( *(L + i*R+j), *(A+i*n+j));
 		  );
 	
 	PAR_BLOCK{
-		SYNCH_GROUP(MAX_THREADS,
+		SYNCH_GROUP(
 		
 		//#pragma omp task shared(F, P, L)
 		TASK(MODE(CONSTREFERENCE(F,P,L)),
@@ -170,18 +166,12 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	}
 	bool fail = false;
 	//  PAR_FOR (size_t i=0; i<m; ++i)
-	for(i=0; i<m; ++i)
-		for (j=0; j<n; ++j)
+	for(size_t i=0; i<m; ++i)
+		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(B+i*n+j), *(X+i*n+j))){
 				std::cout << " Initial["<<i<<","<<j<<"] = " << (*(B+i*n+j))
 					  << " Result["<<i<<","<<j<<"] = " << (*(X+i*n+j))
 					  << std::endl;
-
-				std::stringstream errs;
-				errs << " B["<<i<<","<<j<<"] = " << (*(B+i*n+j))
-				     << " X["<<i<<","<<j<<"] = " << (*(X+i*n+j))
-				     << std::endl;
-				std::cout << errs;
 				fail=true;
 			}
 	
@@ -204,25 +194,25 @@ void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
 
 	Field::RandIter G(F); 
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-	SYNCH_GROUP(MAX_THREADS, {
-			for(size_t p=0; p<m; p+=BS) ///row
-				for(size_t pp=0; pp<n; pp+=BS) //column
-			{
-				size_t M=BS, MM=BS;
-				if(!(p+BS<m))
-					M=m-p;
-				if(!(pp+BS<n))
-					MM=n-pp;
-				//#pragma omp task
-				TASK(MODE(CONSTREFERENCE(G)),
-				{
-					for(size_t j=0; j<M; j++)
-						for(size_t jj=0; jj<MM; jj++)
-							//		C[(p+j)*n+pp+jj]=0;
-							G.random (*(C+(p+j)*n+pp+jj));
-				});
-			}
-		    });
+	SYNCH_GROUP(
+      for(size_t p=0; p<m; p+=BS) ///row
+        for(size_t pp=0; pp<n; pp+=BS) //column
+    	{
+            size_t M=BS, MM=BS;
+            if(!(p+BS<m))
+                M=m-p;
+            if(!(pp+BS<n))
+                MM=n-pp;
+                //#pragma omp task
+            TASK(MODE(CONSTREFERENCE(G)),
+            {
+                for(size_t j=0; j<M; j++)
+                    for(size_t jj=0; jj<MM; jj++)
+                            //		C[(p+j)*n+pp+jj]=0;
+                        G.random (*(C+(p+j)*n+pp+jj));
+            });
+        }
+        );
 	
 	//		#pragma omp taskwait
 	//	}
@@ -252,7 +242,7 @@ int main(int argc, char** argv) {
 	//	int p=0;
 	int t=MAX_THREADS;
 	int NBK = -1;
-	bool par=false;
+	bool par=true;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
@@ -316,22 +306,19 @@ int main(int argc, char** argv) {
        size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
        FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
-       size_t i;
        
        Acop = FFLAS::fflas_new(F,m,n);
-       PARFOR1D(i,0,(size_t)m,H, 
+       PARFOR1D(i,(size_t)m,H, 
                 for (size_t j=0; j<(size_t)n; ++j)
                 	Acop[i*n+j]= A[i*n+j];
                 );
-       size_t j;
-       size_t k;
               
-       for (i=0;i<=iter;++i){
+       for (size_t i=0;i<=iter;++i){
 	       	       
-	       PARFOR1D(j,0,maxP,H, P[j]=0; );
-	       PARFOR1D(j,0,maxQ,H, Q[j]=0; );
-	       PARFOR1D(k,0,(size_t)m,H,
-                    for (j=0; j<(size_t)n; ++j)
+	       PARFOR1D(j,maxP,H, P[j]=0; );
+	       PARFOR1D(j,maxQ,H, Q[j]=0; );
+	       PARFOR1D(k,(size_t)m,H,
+                    for (size_t j=0; j<(size_t)n; ++j)
 			    F.assign( A[k*n+j] , Acop[k*n+j]) ;  
                     );
 	       chrono.clear();

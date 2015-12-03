@@ -32,7 +32,7 @@
  * @see fflas/fflas_level2.inl
  */
 
-#include "interfaces/libs/fflas_c.h"
+#include "fflas-ffpack/interfaces/libs/fflas_c.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "givaro//modular-balanced.h"
 #include "givaro//modular.h"
@@ -41,6 +41,10 @@ using Givaro::Modular ;
 using Givaro::ModularBalanced ;
 using namespace FFLAS ;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void
 fassign_2_modular_double (const double p, const size_t m, const size_t n,
@@ -321,7 +325,7 @@ faddin_2_modular_double (const double p, const size_t m, const size_t n,
 
 
 double *
-fgemv_2_modular_double (const double p, const enum FFLAS_transpose TransA,
+fgemv_2_modular_double (const double p, const enum FFLAS_C_TRANSPOSE TransA,
 		      const size_t m, const size_t n,
 		      const double alpha,
 		      const double * A, const size_t lda,
@@ -358,8 +362,8 @@ fger_2_modular_double (const double p, const size_t m, const size_t n,
 }
 
 void
-ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
-		      const enum FFLAS_transpose TransA, const enum FFLAS_diag Diag,
+ftrsv_2_modular_double (const double p, const enum FFLAS_C_UPLO Uplo,
+		      const enum FFLAS_C_TRANSPOSE TransA, const enum FFLAS_C_DIAG Diag,
 		      const size_t n,const double * A, const size_t lda,
 		      double * X, int incX
 		      , bool positive  )
@@ -372,3 +376,7 @@ ftrsv_2_modular_double (const double p, const enum FFLAS_uplo Uplo,
 		ftrsv(F,(enum FFLAS::FFLAS_UPLO)Uplo,(enum FFLAS::FFLAS_TRANSPOSE)TransA,(enum FFLAS::FFLAS_DIAG)Diag,n,A,lda,X,incX);
 	}
 }
+
+#ifdef __cplusplus
+}
+#endif

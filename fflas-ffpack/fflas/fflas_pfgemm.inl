@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *
  * Written by Jean Guillaume Dumas Clement Pernet Ziad Sultan
- * Time-stamp: <23 Jul 15 16:51:32 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <27 Nov 15 14:07:46 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -27,8 +27,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_parfgemm_INL
-#define __FFLASFFPACK_fflas_parfgemm_INL
+#ifndef __FFLASFFPACK_fflas_pfgemm_INL
+#define __FFLASFFPACK_fflas_pgemm_INL
 
 #define __FFLASFFPACK_SEQPARTHRESHOLD 220
 #define __FFLASFFPACK_DIMKPENALTY 1
@@ -92,23 +92,21 @@ namespace FFLAS {
         // } else {
         //     H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
                 
-        //     MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
-        //     SYNCH_GROUP( H.parseq.numthreads(),
-        //     {FOR2D(iter,m,n,H.parseq,
-        //            TASK( MODE(
-        //                READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
-        //                CONSTREFERENCE(F, SeqH) 
-        //                READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
-        //                  fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH););
-        //            );
-        //     });
-        // }
-		return C;
-    }
-
-
-
+//             MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Sequential> SeqH (H);
+//             SYNCH_GROUP( 
+//             {FORBLOCK2D(iter,m,n,H.parseq,
+//                    TASK( MODE(
+//                        READ(A[iter.ibegin()*lda],B[iter.jbegin()]) 
+//                        CONSTREFERENCE(F, SeqH) 
+//                        READWRITE(C[iter.ibegin()*ldc+iter.jbegin()])), 
+//                          fgemm( F, ta, tb, iter.iend()-iter.ibegin(), iter.jend()-iter.jbegin(), k, alpha, A+iter.ibegin()*lda, lda, B+iter.jbegin(), ldb, beta, C+iter.ibegin()*ldc+iter.jbegin(), ldc, SeqH);
+// 			     //	 std::cout<<" "<<iter.iend()-iter.ibegin()<<std::endl;
+// );
+//                    );
+//             });
+	return C;
+	}
 }
 
-#endif // __FFLASFFPACK_fflas_parfgemm_INL
+#endif // __FFLASFFPACK_fflas_pfgemm_INL
 

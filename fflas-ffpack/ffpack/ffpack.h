@@ -96,7 +96,6 @@ namespace FFPACK  { /* tags */
 	};
 
 }
-
 namespace FFPACK { /* Permutations */
 
 	/*****************/
@@ -512,7 +511,7 @@ namespace FFPACK { /* ludivine */
 				    typename Field::ConstElement_ptr A, const size_t lda,
 				    typename Field::Element_ptr X, const size_t ldx,
 				    typename Field::Element_ptr u, size_t* P,
-				    bool computeX, const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense
+				    bool computeX, const FFPACK_MINPOLY_TAG MinTag= FfpackDense
 				    , const size_t kg_mc =0
 				    , const size_t kg_mb =0
 				    , const size_t kg_j  =0
@@ -842,7 +841,7 @@ namespace FFPACK { /* minpoly */
 	MinPoly( const Field& F, Polynomial& minP, const size_t N,
 		 typename Field::ConstElement_ptr A, const size_t lda,
 		 typename Field::Element_ptr X, const size_t ldx, size_t* P,
-		 const FFPACK::FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
+		 const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
 		 const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0 );
 
 } // FFPACK minpoly
@@ -1419,6 +1418,10 @@ namespace FFPACK { /* not used */
 				      typename Field::Element_ptr X, const size_t ldx);
 
 } // FFPACK
+// include precompiled instantiation headers (avoiding to recompile them)
+#ifdef FFPACK_COMPILED 
+#include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
+#endif
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
