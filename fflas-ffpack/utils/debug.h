@@ -32,6 +32,8 @@
 
 #ifndef __FFLASFFPACK_util_debug_H
 #define __FFLASFFPACK_util_debug_H
+#include <fflas-ffpack/fflas-ffpack-config.h>
+
 #include <iostream>
 #include <sstream>
 #include <cmath>

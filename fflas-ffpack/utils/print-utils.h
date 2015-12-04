@@ -25,6 +25,7 @@
 #ifndef __FFLASFFPACK_print_utils_H
 #define __FFLASFFPACK_print_utils_H
 
+#include <fflas-ffpack/fflas-ffpack-config.h>
 #include <vector>
 // #include <pair>
 #include <list>
