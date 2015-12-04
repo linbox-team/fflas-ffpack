@@ -282,10 +282,10 @@ int main(int argc, char** argv) {
         f.read(reinterpret_cast<char*>(&seed4), sizeof(seed4));
 	std::vector<size_t> Index_P(r);
 	Field::RandIter GG(F, seed1);
-
-       Initialize(F,A,m/NBK,m,n);
-       
-       matrixWithRandRPM(F, A, n, m, n, r, seed1);
+	PAR_BLOCK{
+		Initialize(F,A,m/NBK,m,n);
+		matrixWithRandRPM(F, A, n, m, n, r, seed1);
+	}
        // //       std::cout<<"Construct U"<<endl;
        // construct_U(F, U, GG, n, r, Index_P, seed4, seed3);
        // //       std::cout<<"Construct L"<<endl;
