@@ -67,10 +67,10 @@ namespace FFLAS {
 	       MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H) 
 	{
 
-        if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
-            std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
-            return C;
-        }
+        // if ((ta != FFLAS::FflasNoTrans) || (tb != FFLAS::FflasNoTrans)) {
+        //     std::cerr << "*** ERROR ***: pfgemm ^T NOT YET IMPLEMENTED" << std::endl;
+        //     return C;
+        // }
         
 	pfgemm (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 	

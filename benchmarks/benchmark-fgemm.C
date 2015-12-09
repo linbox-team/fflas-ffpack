@@ -94,7 +94,7 @@ void Initialize(Element * C, size_t BS, size_t m, size_t n)
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
-	int64_t q = 131071 ;
+	Givaro::Integer q = 131071 ;
 	size_t m = 2000 ;
 	size_t k = 2000 ;
 	size_t n = 2000 ;
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
 	int NBK = -1;
 
 	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
 		{ 'k', "-k K", "Set the col dimension of A.",      TYPE_INT , &k },
 		{ 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 	parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-  typedef Givaro::ModularBalanced<double> Field;
+	typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
 //  typedef Givaro::ModularBalanced<float> Field;
   typedef Field::Element Element;
@@ -160,7 +160,6 @@ int main(int argc, char** argv) {
   if (p)
 	  Initialize(C,m/NBK,m,n);
 
-  pfsub(F, m, n, A, n, B, n, C, n, 32);
 
   for (size_t i=0;i<=iter;++i){
 
@@ -225,15 +224,15 @@ int main(int argc, char** argv) {
       }else{
 	      if(p==7){
 
-		      MMHelper<Field, MMHelperAlgo::WinogradPar>
-			      WH (F, nbw, ParSeqHelper::Sequential());
-			  //		      cout<<"wino parallel"<<endl;
-		      if (i) chrono.start();
-		      PAR_BLOCK
-		      {
-			      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-		      }
-		      if (i) {chrono.stop(); time+=chrono.realtime();}
+		      // MMHelper<Field, MMHelperAlgo::WinogradPar>
+		      // 	      WH (F, nbw, ParSeqHelper::Sequential());
+		      // 	  //		      cout<<"wino parallel"<<endl;
+		      // if (i) chrono.start();
+		      // PAR_BLOCK
+		      // {
+		      // 	      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      // }
+		      // if (i) {chrono.stop(); time+=chrono.realtime();}
 	      }
 	      else{
 

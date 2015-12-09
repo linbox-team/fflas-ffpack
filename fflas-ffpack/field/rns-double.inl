@@ -66,7 +66,9 @@ namespace FFPACK {
 			}
 		if (RNS_MAJOR==false) {
 			// Arns = _crt_in x A_beta^T
-			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
+			FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
+				      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+//			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 			// reduce each row i of Arns modulo moduli[i]
 			//for(size_t i=0;i<_size;i++)
 			//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);

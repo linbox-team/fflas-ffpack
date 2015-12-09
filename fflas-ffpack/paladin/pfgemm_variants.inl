@@ -196,9 +196,9 @@ namespace FFLAS
 		if(m >= n) {
 			size_t M2= m>>1;
 			typename Field::ConstElement_ptr A1= A;
-			typename Field::ConstElement_ptr A2= A+M2*lda;
+			typename Field::ConstElement_ptr A2= A+M2*((ta==FFLAS::FflasTrans)?1:lda);
 			typename Field::Element_ptr C1= C;
-			typename Field::Element_ptr C2= C+M2*ldc;
+			typename Field::Element_ptr C2= C+M2;
 			SYNCH_GROUP(
 			TASK(MODE(CONSTREFERENCE(F,H1, A1, B) READ(M2, A1[0],B[0]) READWRITE(C1[0])), pfgemm(F, ta, tb, M2, n, k, alpha, A1, lda, B, ldb, beta, C1, ldc, H1));
 			TASK(MODE(CONSTREFERENCE(F,H2, A2, B) READ(M2, A2[0],B[0]) READWRITE(C2[0])), pfgemm(F, ta, tb, m-M2, n, k, alpha, A2, lda, B, ldb, beta, C2, ldc, H2));
@@ -208,7 +208,7 @@ namespace FFLAS
 		} else {
 			size_t N2 = n>>1;
 			typename Field::ConstElement_ptr B1= B;
-			typename Field::ConstElement_ptr B2= B+N2;
+			typename Field::ConstElement_ptr B2= B+N2*((tb==FFLAS::FflasTrans)?ldb:1);
 			typename Field::Element_ptr C1= C;
 			typename Field::Element_ptr C2= C+N2;
 			SYNCH_GROUP(
@@ -216,6 +216,7 @@ namespace FFLAS
 			TASK(MODE(CONSTREFERENCE(F,H2, A, B2) READ(N2, A[0], B2[0]) READWRITE(C2[0])), pfgemm(F, ta, tb, m, n-N2, k, a, A, lda, B2, ldb, b,C2, ldc, H2));
 						);
 		}
+		std::cerr<<"coucou "<<H.parseq.numthreads()<<std::endl;
 	return C;
 	}
 
