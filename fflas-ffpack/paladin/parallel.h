@@ -535,8 +535,8 @@
 #define NOSPLIT() FFLAS::ParSeqHelper::Sequential()
 
 // overload of SPLITTER
-#define splitting_0() FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>()
-#define splitting_1(a) FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>(a)
+#define splitting_0() FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads>()
+#define splitting_1(a) FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads>(a)
 #define splitting_2(a,c) FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,c>(a)
 #define splitting_3(a,b,c) FFLAS::ParSeqHelper::Parallel<b,c>(a)
 

@@ -158,8 +158,8 @@ namespace FFPACK {
     // const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
     // const FFLAS::StrategyParameter strat = FFLAS::TWO_D_ADAPT;    
     
-    typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> pWH (nt);
-    typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> PH (std::max(nt,1));
+    typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> pWH (std::max(nt,1));
+    typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PH (std::max(nt,1));
     
     SYNCH_GROUP(
 

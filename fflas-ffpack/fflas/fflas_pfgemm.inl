@@ -54,16 +54,16 @@ namespace FFLAS {
 	template<class Field, class AlgoT, class ModeTrait, class Strat, class Param>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
-		const FFLAS::FFLAS_TRANSPOSE ta,
-		const FFLAS::FFLAS_TRANSPOSE tb,
-		const size_t m,
-		const size_t n,
-		const size_t k,
-		const typename Field::Element alpha, 
-		typename Field::ConstElement_ptr A, const size_t lda,
-		typename Field::ConstElement_ptr B, const size_t ldb,
-		const typename Field::Element beta,
-		typename Field::Element_ptr C, const size_t ldc,
+	       const FFLAS::FFLAS_TRANSPOSE ta,
+	       const FFLAS::FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H) 
 	{
 

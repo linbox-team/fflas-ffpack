@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 
 	if (NBK==-1) NBK = t;
   typedef Givaro::ModularBalanced<double> Field;
-//  typedef Givaro::ModularBalanced<int64_t> Field;
+//  typedef Givaro::ModularBalanced<int32_t> Field;
 //  typedef Givaro::ModularBalanced<float> Field;
   typedef Field::Element Element;
 
@@ -138,7 +138,8 @@ int main(int argc, char** argv) {
 	  Initialize(A,m/size_t(NBK),m,k);
 
 //#pragma omp for
-  PARFORBLOCK1D (i,m,SPLITTER(MAX_THREADS),
+  auto sp =  SPLITTER(MAX_THREADS);
+  PARFOR1D (i,m,sp,
 	    for (size_t j=0; j<(size_t)k; ++j)
 		    G.random (*(A+i*k+j));
 	    );
@@ -148,7 +149,7 @@ int main(int argc, char** argv) {
   if (p)
 	  Initialize(B,k/NBK,k,n);
 //#pragma omp parallel for
-  PARFORBLOCK1D (i, k,SPLITTER(MAX_THREADS),
+  PARFOR1D (i, k,sp,
             for (size_t j=0; j<(size_t)n; ++j)
             	G.random(*(B+i*n+j));
             );

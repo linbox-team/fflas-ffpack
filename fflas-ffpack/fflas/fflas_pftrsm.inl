@@ -63,7 +63,6 @@ namespace FFLAS {
 					seqRecHelper SeqH(H);
 					if(Side == FflasRight){
 						FORBLOCK1D(iter, m, H.parseq,
-							  
 								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 							  );
 					} else {
@@ -111,6 +110,7 @@ namespace FFLAS {
 			SYNCH_GROUP(
 				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
+				H.parseq.set_numthreads(nt_it);
 				FORBLOCK1D(iter, m, H.parseq,
 //				      std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
@@ -140,6 +140,7 @@ namespace FFLAS {
 			SYNCH_GROUP(
 				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
+				H.parseq.set_numthreads(nt_it);
 				FORBLOCK1D(iter, n, H.parseq,
 							   //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));

@@ -358,7 +358,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag> & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> & H)
 	{		
 		if (!m || !n) {return C;}
 

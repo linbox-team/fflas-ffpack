@@ -44,8 +44,7 @@ namespace FFLAS
 		   const typename Field::ConstElement_ptr B, const size_t ldb,
 		   const typename Field::Element beta,
 		   typename Field::Element * C, const size_t ldc, 
-		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Block,
-	       StrategyParameter::Threads> > & H){
+		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Block, StrategyParameter::Threads> > & H){
 		{
 			H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
 			
