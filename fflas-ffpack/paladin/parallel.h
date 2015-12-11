@@ -219,7 +219,7 @@
 
 #define PARFORBLOCK1D(iter, m, Helper, Args...)                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param > OMPstrategyIterator(m, Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks()) schedule(runtime)) \
+        PRAGMA_OMP_IMPL(omp parallel for num_threads(OMPstrategyIterator.numblocks()) schedule(runtime)) \
             for(std::remove_const<decltype(m)>::type iter=0; iter<m; ++iter) \
             { Args; } }
 
@@ -247,20 +247,20 @@
 
 // parallel for strategy 2D with access to the range and control of iterator
 // WARNING: This is not doable : OMP requires an iteration over an interval of ints.
-// #define PARFORBLOCK2D(iter, m, n, Helper, Args...)                      \
-//      { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param  > iter(m,n,Helper); \
-//          PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.rownumblocks()*iter.colnumblocks()) schedule(runtime)) \
-//              for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-//              {Args;} }
-
+/* #define PARFORBLOCK2D(iter, m, n, Helper, Args...)                   \
+ *      { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param  > iter(m,n,Helper); \
+ *          PRAGMA_OMP_IMPL(omp parallel for num_threads(iter.rownumblocks()*iter.colnumblocks()) schedule(runtime)) \
+ *              for(iter.initialize(); !iter.isTerminated(); ++iter)    \
+ *              {Args;} }
+ */
 
 // parallel for strategy 2D 
-// #define PARFOR2D(i, j, m, n, Helper, Args...)                           \
-//     PARFORBLOCK2D(_internal_iterator, m, n, Helper,                     \
-//                   for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
-//                       for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-//                       { Args; })
-
+/* #define PARFOR2D(i, j, m, n, Helper, Args...)                        \
+ *     PARFORBLOCK2D(_internal_iterator, m, n, Helper,                  \
+ *                   for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
+ *                       for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
+ *                       { Args; })
+ */
 
 // parallel region
 #define PAR_BLOCK  PRAGMA_OMP_IMPL(omp parallel)   \
