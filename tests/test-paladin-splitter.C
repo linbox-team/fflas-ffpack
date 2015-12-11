@@ -30,6 +30,7 @@
 
 
 //#define DEBUG 1
+//#define __FFLASFFPACK_FORCE_SEQ
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
@@ -49,8 +50,12 @@
 
 typedef Givaro::ModularBalanced<double> Field;
 
-int main(int argc, char** argv)
+template<class CutStrat, class StratParam>
+bool tmain(int argc, char** argv, std::string printStrat)
 {
+
+    std::cerr << "tmain: " << printStrat << std::endl;
+    
 
     size_t n = 2000;
     bool p = true;
@@ -60,8 +65,6 @@ int main(int argc, char** argv)
     int proc = MAX_THREADS;
     
     int strat = 1;
-    FFLAS::CuttingStrategy CutStrat = FFLAS::BLOCK;
-    FFLAS::StrategyParameter StratParam = FFLAS::THREADS;
 
     Argument as[] = {
         { 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
@@ -85,22 +88,8 @@ int main(int argc, char** argv)
   typename Field::Element_ptr C = FFLAS::fflas_new (F, m, n);
   typename Field::Element_ptr Acop = FFLAS::fflas_new (F, m, n);
 
-  std::string printStrat = "FFLAS::BLOCK, FFLAS::THREADS"; // used for printing only
-  
-      switch (strat){
-          case 1: CutStrat = FFLAS::BLOCK; StratParam = FFLAS::THREADS; break;
-          case 2: CutStrat = FFLAS::BLOCK; StratParam = FFLAS::GRAIN; printStrat = "FFLAS::BLOCK, FFLAS::GRAIN"; break;
-          case 3: CutStrat = FFLAS::BLOCK; StratParam = FFLAS::FIXED; printStrat = "FFLAS::BLOCK, FFLAS::FIXED"; break;
-          case 4: CutStrat = FFLAS::ROW; StratParam = FFLAS::THREADS; printStrat = "FFLAS::COLUMN, FFLAS::THREADS"; break;
-          case 5: CutStrat = FFLAS::ROW; StratParam = FFLAS::GRAIN; printStrat = "FFLAS::ROW, FFLAS::GRAIN"; break;
-          case 6: CutStrat = FFLAS::ROW; StratParam = FFLAS::FIXED; printStrat = "FFLAS::ROW, FFLAS::FIXED"; break;
-          case 7: CutStrat = FFLAS::COLUMN; StratParam = FFLAS::THREADS; printStrat = "FFLAS::COLUMN, FFLAS::THREADS"; break;
-          case 8: CutStrat = FFLAS::COLUMN; StratParam = FFLAS::GRAIN; printStrat = "FFLAS::COLUMN, FFLAS::GRAIN"; break;
-          case 9: CutStrat = FFLAS::COLUMN; StratParam = FFLAS::FIXED; printStrat = "FFLAS::COLUMN, FFLAS::FIXED"; break;
-          case 10: CutStrat = FFLAS::SINGLE; printStrat = "FFLAS::SINGLE"; break;
-      }
 
-#define CUTTER SPLITTER(proc, CutStrat, StratParam)
+  auto CUTTER = SPLITTER(proc, CutStrat, StratParam);
   
 // initialize
   if(dataPar){
@@ -231,4 +220,49 @@ int main(int argc, char** argv)
     
     return fail;
     
+}
+
+
+
+int main(int argc, char** argv)
+{
+
+    size_t n = 2000;
+    bool p = true;
+    size_t iters = 3;
+    int64_t q = 131071 ;
+    bool dataPar = true;
+    int proc = MAX_THREADS;
+    
+    int strat = 1;
+
+    Argument as[] = {
+        { 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
+        { 'i', "-i N", "Set number of repetitions.",            TYPE_INT , &iters },
+        { 't', "-t N", "Set number of processors.",            TYPE_INT , &proc },
+        { 's', "-s N", "Set the strategy parameter using t: 1 for (t, BLOCK, THREADS), 2 for (t, BLOCK, GRAIN), 3 for (t, BLOCK, FIXED), 4 for (t, ROW, THREADS), 5 for (t, ROW, GRAIN), 6 for (t, ROW, FIXED), 7 for (t, COLUMN, THREADS), 8 for (t, COLUMN, GRAIN), 9 for (t, COLUMN, FIXED), 10 for SINGLE strategy.",            TYPE_INT , &strat },
+        { 'p', "-p Y/N", "run the parallel program using Parallel(Y)/Sequential(N).", TYPE_BOOL , &p },
+        { 'd', "-d Y/N", "run the parallel program using data parallelism(Y)/task parallelism(N).", TYPE_BOOL , &dataPar },
+        END_OF_ARGUMENTS
+    };
+    FFLAS::parseArguments(argc,argv,as);
+
+
+    
+    bool fail = false;
+    
+    switch (strat){
+        case 1: fail |= tmain<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::BLOCK, FFLAS::THREADS"));
+        case 2: fail |= tmain<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Grain>(argc,argv,std::string("FFLAS::BLOCK, FFLAS::GRAIN"));
+        case 3: fail |= tmain<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Fixed>(argc,argv,std::string("FFLAS::BLOCK, FFLAS::FIXED"));
+        case 4: fail |= tmain<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::ROW, FFLAS::THREADS"));
+        case 5: fail |= tmain<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>(argc,argv,std::string("FFLAS::ROW, FFLAS::GRAIN"));
+        case 6: fail |= tmain<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(argc,argv,std::string("FFLAS::ROW, FFLAS::FIXED"));
+        case 7: fail |= tmain<FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::COLUMN, FFLAS::THREADS"));
+        case 8: fail |= tmain<FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Grain>(argc,argv,std::string("FFLAS::COLUMN, FFLAS::GRAIN"));
+        case 9: fail |= tmain<FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Fixed>(argc,argv,std::string("FFLAS::COLUMN, FFLAS::FIXED"));
+        case 10: fail |= tmain<FFLAS::CuttingStrategy::Single,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::SINGLE, FFLAS::THREADS"));
+      }
+
+    return fail;
 }
