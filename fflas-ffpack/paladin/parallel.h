@@ -176,20 +176,24 @@
 
 
 // macro omp taskwait (waits for all childs of current task)
-#define WAIT PRAGMA_OMP_TASK_IMPL(omp taskwait)
+#define WAIT PRAGMA_OMP_IMPL(omp taskwait)
 #define GLOBALSHARED(a, Args...) shared(Args)
 #define CONSTREFERENCE(Args...) shared(Args)
 #define VALUE(Args...) firstprivate(Args)
-#define BARRIER PRAGMA_OMP_TASK_IMPL(omp barrier)
+#define BARRIER PRAGMA_OMP_IMPL(omp barrier)
 
 ////////////////////   CUTTING LOOP MACROS 1D //////////////////////
 
 
 // for with iterator control and range access through iter (strategy 1D)
+// Warning: by default we assume that there is no dependency between each iteration, hence we pass an empty MODE() to the tasks.
+// TODO: add an optional MODE argument to the parameter list of FORBLOCK1D
 #define FORBLOCK1D(iter, m, Helper, Args...)                                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param > iter(m, Helper); \
-        for(iter.initialize(); !iter.isTerminated(); ++iter)            \
-        {Args;} }
+      for(iter.initialize(); !iter.isTerminated(); ++iter){ TASK(MODE(), {Args;} ); } \
+      WAIT; \
+    }
+
 
 // for strategy 1D 
 #define FOR1D(i, m, Helper, Args...)                             \
@@ -201,7 +205,7 @@
 /*
 #define PARFORBLOCK1D(iter, m, Helper, Args...)                         \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type > iter(m, Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
+        PRAGMA_OMP_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
             for(iter.initialize(); !iter.isTerminated(); ++iter)        \
             {Args;} }
 */
@@ -242,23 +246,25 @@
                        { Args; })
 
 // parallel for strategy 2D with access to the range and control of iterator
-#define PARFORBLOCK2D(iter, m, n, Helper, Args...)                      \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param  > iter(m,n,Helper); \
-        PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.numblocks()) schedule(runtime)) \
-            for(iter.initialize(); !iter.isTerminated(); ++iter)        \
-            {Args;} }
+// WARNING: This is not doable : OMP requires an iteration over an interval of ints.
+// #define PARFORBLOCK2D(iter, m, n, Helper, Args...)                      \
+//      { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param  > iter(m,n,Helper); \
+//          PRAGMA_OMP_TASK_IMPL(omp parallel for num_threads(iter.rownumblocks()*iter.colnumblocks()) schedule(runtime)) \
+//              for(iter.initialize(); !iter.isTerminated(); ++iter)        \
+//              {Args;} }
+
 
 // parallel for strategy 2D 
-#define PARFOR2D(i, j, m, n, Helper, Args...)                           \
-    PARFORBLOCK2D(_internal_iterator, m, n, Helper,                     \
-                  for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
-                      for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-                      { Args; })
+// #define PARFOR2D(i, j, m, n, Helper, Args...)                           \
+//     PARFORBLOCK2D(_internal_iterator, m, n, Helper,                     \
+//                   for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
+//                       for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
+//                       { Args; })
 
 
 // parallel region
-#define PAR_BLOCK  PRAGMA_OMP_TASK_IMPL(omp parallel)   \
-    PRAGMA_OMP_TASK_IMPL(omp single)
+#define PAR_BLOCK  PRAGMA_OMP_IMPL(omp parallel)   \
+    PRAGMA_OMP_IMPL(omp single)
 // get the number of threads in the parallel region
 # define NUM_THREADS omp_get_num_threads()
 // get the number of threads specified with the global variable OMP_NUM_THREADS
@@ -268,10 +274,10 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
-#define PRAGMA_OMP_TASK_IMPL(Args...) _Pragma(#Args)
+#define PRAGMA_OMP_IMPL(Args...) _Pragma(#Args)
 
 #define TASK(M, I)                             \
-    PRAGMA_OMP_TASK_IMPL(omp task M)           \
+    PRAGMA_OMP_IMPL(omp task M)           \
     {I;}
 
 
@@ -289,7 +295,7 @@
 
 #else // OPENMP3.1 (explicit synch mode)
 
-  #define CHECK_DEPENDENCIES PRAGMA_OMP_TASK_IMPL(omp taskwait)
+  #define CHECK_DEPENDENCIES PRAGMA_OMP_IMPL(omp taskwait)
 
   #define READ(Args...)
   #define WRITE(Args...)
