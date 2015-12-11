@@ -191,7 +191,6 @@
 #define FORBLOCK1D(iter, m, Helper, Args...)                                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param > iter(m, Helper); \
       for(iter.initialize(); !iter.isTerminated(); ++iter){ {Args;}  } \
-      WAIT; \
     }
 
 
@@ -200,7 +199,9 @@
     FORBLOCK1D(_internal_iterator, m, Helper,                           \
         TASK(MODE(), \
           for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
-          { Args; } );)
+          { Args; } );) \
+          WAIT; \
+
 
 
 /*
