@@ -48,47 +48,6 @@ typedef FFLAS::OMPTimer TTimer;
 typedef FFLAS::Timer TTimer;
 #endif
 
-#ifdef __FFLASFFPACK_USE_DATAFLOW
-template<class Element>
-void Initialize(Element * C, int BS, size_t m, size_t n)
-{
-//#pragma omp parallel for collapse(2) schedule(runtime)
-    std::cout << "Initialize PAR_INSTR " << BS << ", " << m << 'x' << n << std::endl;
-    
-        BS=std::max(BS, __FFLASFFPACK_WINOTHRESHOLD_BAL );
-        PAR_INSTR{
-        for(size_t q=0; q<m; q+=BS) ///row
-                for(size_t pp=0; pp<n; pp+=BS) //column
-                {
-                        size_t M=BS, MM=BS;
-                        if(!(q+BS<m))
-                                M=m-q;
-                        if(!(pp+BS<n))
-                                MM=n-pp;
-#pragma omp task
-                        {
-                        for(size_t j=0; j<M; j++)
-                                for(size_t jj=0; jj<MM; jj++)
-                                        C[(q+j)*n+pp+jj]=0;
-                        }
-                }
-        #pragma omp taskwait
-        }
-        // printf("A = \n");
-        // for (size_t i=0; i<m; i+=128)
-        //  {
-        //      for (size_t j=0; j<n; j+=128)
-        //      {
-        //              int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
-        //              printf("%i ", ld);
-        //      }
-        //      printf("\n");
-        //  }
-
-}
-#endif
-
-
 
 
 int main(int argc, char** argv) {
@@ -98,9 +57,7 @@ int main(int argc, char** argv) {
 	int    n    = 2000;
 	std::string file = "";
 	
-#ifdef __FFLASFFPACK_USE_DATAFLOW
 	size_t NBK = MAX_THREADS;
-#endif
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
@@ -129,18 +86,11 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
-#ifdef __FFLASFFPACK_USE_DATAFLOW
-          Initialize(A,n/NBK,n,n);
-#endif
-#pragma omp parallel for
-		  for (int i=0; i<n; ++i)
-              for (int j=0; j<n; ++j)
-                  G.random(*(A+i*n+j));
-	  }
-	  clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
-	  FFLAS::fflas_delete( A);
+          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
+          clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
+          FFLAS::fflas_delete( A);
+      }
   }
-
   for (size_t it=0;it<iter;++it){
 	  if (!file.empty()){
 		  A = read_field(F, file.c_str(), &n, &n);
@@ -148,13 +98,7 @@ int main(int argc, char** argv) {
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
 		  Field::RandIter G(F);
-#ifdef __FFLASFFPACK_USE_DATAFLOW
-          Initialize(A,n/NBK,n,n);
-#endif
-#pragma omp parallel for
-	  for (int i=0; i<n; ++i)
-              for (int j=0; j<n; ++j)
-                  G.random(*(A+i*n+j));
+          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
 	  }
 
 	  chrono.clear();
