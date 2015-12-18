@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -34,7 +34,7 @@
 
 namespace FFPACK {
 
-	// Arns must be an array of m*n*_size
+    // Arns must be an array of m*n*_size
 	// abs(||A||) < 2^(16k)
 	inline void rns_double::init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
@@ -45,44 +45,69 @@ namespace FFPACK {
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
 		const integer* Aiter=A;
-		// split A into A_beta according to a Kronecker transform in base 2^16
-		for(size_t i=0;i<m;i++)
-			for(size_t j=0;j<n;j++){
-				size_t idx=j+i*n;
-				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
-				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
-				size_t l=0;
-				//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
-				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+			// split A into A_beta according to a Kronecker transform in base 2^16
+//		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
 
-				if (m0[0]->_mp_size >= 0)
-					for (;l<maxs;l++)
-						A_beta[l+idx*k]=  m0_ptr[l];
-				else
-					for (;l<maxs;l++)
-						A_beta[l+idx*k]= - double(m0_ptr[l]);
-				for (;l<k;l++)
-					A_beta[l+idx*k]=  0.;
-			}
-		if (RNS_MAJOR==false) {
-			// Arns = _crt_in x A_beta^T
-			FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
-				      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+		Givaro::Timer tkr; tkr.start();
+		auto sp=SPLITTER(MAX_THREADS);
+			// FOR2D(i,j,m,n,sp,
+			//       TASK(MODE(READ(Aiter[0]) READWRITE(A_beta[0])),
+		    //for(size_t i=0;i<m;i++)
+		    //PAR_BLOCK{
+//			FOR1D(i,m,sp,
+			PARFOR1D(i,m,sp,
+				  for(size_t j=0;j<n;j++){
+					  size_t idx=j+i*n;
+					  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
+					  const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
+					  size_t l=0;
+						  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+					  size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+
+					  if (m0[0]->_mp_size >= 0)
+						  for (;l<maxs;l++)
+							  A_beta[l+idx*k]=  m0_ptr[l];
+					  else
+						  for (;l<maxs;l++)
+							  A_beta[l+idx*k]= - double(m0_ptr[l]);
+					  for (;l<k;l++)
+						  A_beta[l+idx*k]=  0.;
+
+						  // 	   );
+				  }
+				  );
+
+			tkr.stop();
+			if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
+			if (RNS_MAJOR==false) {
+					// Arns = _crt_in x A_beta^T
+				Givaro::Timer tfgemm; tfgemm.start();
+				PAR_BLOCK{
+					FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
+								  //			      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+			
+				}
+				tfgemm.stop();
+			if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
 //			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
-			// reduce each row i of Arns modulo moduli[i]
-			//for(size_t i=0;i<_size;i++)
-			//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
-		}
-		else {
-			// Arns =  A_beta x _crt_in^T
-			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
-			// reduce each column j of Arns modulo moduli[i]
-			//for(size_t i=0;i<_size;i++)
-			//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
-		}
+					// reduce each row i of Arns modulo moduli[i]
+					//for(size_t i=0;i<_size;i++)
+					//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
+			}
+			else {
+					// Arns =  A_beta x _crt_in^T
+				cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
+					// reduce each column j of Arns modulo moduli[i]
+					//for(size_t i=0;i<_size;i++)
+					//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
+			}
+			Givaro::Timer tred; tred.start();
 
-		reduce(mn,Arns,rda,RNS_MAJOR);
-
+			reduce(mn,Arns,rda,RNS_MAJOR);
+			tred.stop();
+			if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
+	
 		FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
@@ -93,19 +118,19 @@ namespace FFPACK {
 					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
 					if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
 					    != (int64_t) Arns[i*n+j+k*rda])
-						{
-							std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+					{
+						std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
 								 <<" != "
 								 <<(int64_t) Arns[i*n+j+k*rda]
 								 <<std::endl;
-						}
+					}
 				}
 		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 
-	// Arns must be an array of m*n*_size
-	// abs(||A||) < 2^(16k)
+		// Arns must be an array of m*n*_size
+		// abs(||A||) < 2^(16k)
 	inline void rns_double::init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm)
@@ -114,14 +139,14 @@ namespace FFPACK {
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
 		const integer* Aiter=A;
-		// split A into A_beta according to a Kronecker transform in base 2^16
+			// split A into A_beta according to a Kronecker transform in base 2^16
 		for(size_t j=0;j<n;j++){
 			for(size_t i=0;i<m;i++){
 				size_t idx=i+j*m;
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t l=0;
-				//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+					//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2); // to ensure 32 bits portability
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
@@ -134,18 +159,18 @@ namespace FFPACK {
 			}
 		}
 		if (RNS_MAJOR==false) {
-			// Arns = _crt_in x A_beta^T
+				// Arns = _crt_in x A_beta^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
-			// reduce each row i of Arns modulo moduli[i]
-			//for(size_t i=0;i<_size;i++)
-			//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
+				// reduce each row i of Arns modulo moduli[i]
+				//for(size_t i=0;i<_size;i++)
+				//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
 		}
 		else {
-			// Arns =  A_beta x _crt_in^T
+				// Arns =  A_beta x _crt_in^T
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
-			// reduce each column j of Arns modulo moduli[i]
-			//for(size_t i=0;i<_size;i++)
-			//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
+				// reduce each column j of Arns modulo moduli[i]
+				//for(size_t i=0;i<_size;i++)
+				//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 		}
 		reduce(mn,Arns,rda,RNS_MAJOR);
 
@@ -163,7 +188,7 @@ namespace FFPACK {
 	}
 
 	inline void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
-				 const double* Arns, size_t rda, bool RNS_MAJOR) const
+									const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
 #ifdef CHECK_RNS
 		integer* Acopy=new integer[m*n];
@@ -176,14 +201,20 @@ namespace FFPACK {
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
-
+		Givaro::Timer tfgemmc;tfgemmc.start();
 		if (RNS_MAJOR==false)
-			// compute A_beta = Ap^T x M_beta
-			cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm);
+				// compute A_beta = Ap^T x M_beta
+			PAR_BLOCK{
+				FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm,
+							 FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+//				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads >());
+			}
 		else // compute A_beta = Ap x M_Beta
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
-		// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+		tfgemmc.stop();
+		if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
+			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
 		size_t k=_ldm;
 		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
@@ -201,6 +232,10 @@ namespace FFPACK {
 		m3_d = m3[0]->_mp_d;
 		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
 		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		Givaro::Timer tkroc;
+		tkroc.start();
+//		auto sp=SPLITTER();
+//		PARFOR1D(i,m,sp,
 		for(size_t i=0;i<m;i++)
 			for (size_t j=0;j<n;j++){
 				size_t idx=i*n+j;
@@ -212,7 +247,7 @@ namespace FFPACK {
 					A2[l+2]= tptr[2];
 					A3[l+3]= tptr[3];
 				}
-				// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
+					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
 				m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
 				m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
@@ -220,7 +255,7 @@ namespace FFPACK {
 				res = a0;res+= a1;res+= a2;res+= a3;
 				res%=_M;
 
-				// get the correct result according to the expected sign of A
+					// get the correct result according to the expected sign of A
 				if (res>hM)
 					res-=_M;
 				if (gamma==0)
@@ -237,6 +272,9 @@ namespace FFPACK {
 						}
 
 			}
+				 tkroc.stop();
+		if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
+
 		m0[0]->_mp_d = m0_d;
 		m1[0]->_mp_d = m1_d;
 		m2[0]->_mp_d = m2_d;
@@ -253,7 +291,7 @@ namespace FFPACK {
 					int64_t _p =(int64_t) _basis[k];
 					integer curr=A[i*lda+j] - gamma*Acopy[i*n+j];
 					ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
-					//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+						//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
@@ -261,19 +299,19 @@ namespace FFPACK {
 	}
 
 	inline void rns_double::convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda,
-					   const double* Arns, size_t rda, bool RNS_MAJOR) const
+											  const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
 		integer hM= (_M-1)>>1;
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
 		if (RNS_MAJOR==false)
-			// compute A_beta = Ap^T x M_beta
+				// compute A_beta = Ap^T x M_beta
 			cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm);
 		else // compute A_beta = Ap x M_Beta
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
-		// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
 		size_t k=_ldm;
 		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
@@ -304,7 +342,7 @@ namespace FFPACK {
 					A2[l+2]= tptr[2];
 					A3[l+3]= tptr[3];
 				}
-				// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
+					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
 				m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
 				m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
@@ -312,7 +350,7 @@ namespace FFPACK {
 				res = a0;res+= a1;res+= a2;res+= a3;
 				res%=_M;
 
-				// get the correct result according to the expected sign of A
+					// get the correct result according to the expected sign of A
 				if (res>hM)
 					res-=_M;
 				if (gamma==0)
@@ -342,14 +380,14 @@ namespace FFPACK {
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
 					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]% (int64_t) _basis[k]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i+j*m+k*rda]);
-					//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+						//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif // CHECK_RNS
 
 	}
 
-	// reduce entries of Arns to be less than the rns basis elements
+		// reduce entries of Arns to be less than the rns basis elements
 	inline void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 		if (RNS_MAJOR) {
@@ -398,10 +436,10 @@ namespace FFPACK {
 						simd::storeu(Arns+i*_size+j, tmp2);
 					}
 					for( ; j < _size ; ++j){
-						// std::cout << j << std::endl;
-						// auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
+							// std::cout << j << std::endl;
+							// auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
 						Arns[i*_size+j] -= std::floor(Arns[i*_size+j]*_invbasis[j])*_basis[j];
-						// Arns[i*_size+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
+							// Arns[i*_size+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
 						if(Arns[i*_size+j] >= _basis[j]){
 							Arns[i*_size+j] -= _basis[j];
 						}else if(Arns[i*_size+j] < 0){
@@ -413,106 +451,108 @@ namespace FFPACK {
 #else
 			for(size_t i = 0 ; i < n ; i+= _size){
 				for(size_t j = 0 ; j < _size ; ++j){
-					//_field_rns.reduce(Arns+i*_size+j);
+						//_field_rns.reduce(Arns+i*_size+j);
 					_field_rns[i].reduce(Arns[i*_size+j]);
 				}
 			}
 #endif
 		}
 		else { // NOT IN RNS MAJOR
-			for(size_t i=0;i<_size;i++)
-				FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
-
+			auto sp=SPLITTER();
+			PARFOR1D(i,_size,sp,
+						 //for(size_t i=0;i<_size;i++)
+					 FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
+					 );
 		}
 
 	}
 
 
 // TODO: less naive implementation
-inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t lda) const{
-	for(size_t i = 0 ; i < m ; ++i){
-		for(size_t j = 0 ; j < _size ; ++j){
-			Arns[i*_size+j] = (double)((A[i*lda]%integer(_basis[j]))[0]);
+	inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t lda) const{
+		for(size_t i = 0 ; i < m ; ++i){
+			for(size_t j = 0 ; j < _size ; ++j){
+				Arns[i*_size+j] = (double)((A[i*lda]%integer(_basis[j]))[0]);
+			}
 		}
 	}
-}
 
 // TODO: less naive implementation
-inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
-	integer hM= (_M-1)/2;
-	for(size_t i = 0 ; i < m ; ++i){
-		A[i] = 0;
-		integer tmp;
-		for(size_t j = 0 ; j < _size ; ++j){
-			A[i] += ((integer(Arns[i*_size+j])*integer(_MMi[j]))%integer(_basis[j]))*integer(_Mi[j]);
+	inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
+		integer hM= (_M-1)/2;
+		for(size_t i = 0 ; i < m ; ++i){
+			A[i] = 0;
+			integer tmp;
+			for(size_t j = 0 ; j < _size ; ++j){
+				A[i] += ((integer(Arns[i*_size+j])*integer(_MMi[j]))%integer(_basis[j]))*integer(_Mi[j]);
+			}
+			A[i] %= _M;
+			if(A[i] > hM)
+				A[i] -= _M;
 		}
-		A[i] %= _M;
-		if(A[i] > hM)
-			A[i] -= _M;
 	}
-}
 	
-	// reduce entries of Arns to be less than the rns basis elements
+		// reduce entries of Arns to be less than the rns basis elements
 	inline void rns_double_extended::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 #ifdef __FFLASFFPACK_USE_SIMD
-			using simd = Simd<double>;
-			using vect_t = typename simd::vect_t;
+		using simd = Simd<double>;
+		using vect_t = typename simd::vect_t;
 
-			if(_size % simd::vect_size == 0){
+		if(_size % simd::vect_size == 0){
 #pragma omp parallel for schedule(static, 256)			  
-				for(size_t i = 0 ; i < n ; i++){
-					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
-					for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
-						basis = simd::load(_basis.data()+j);
-						inv   = simd::load(_invbasis.data()+j);
-						max   = simd::load(_basisMax.data()+j);
-						neg   = simd::load(_negbasis.data()+j);
-						v     = simd::load(Arns+i*_size+j);
-						tmp2 = modSimd(v, basis, inv, neg);
-						tmp1  = simd::greater(tmp2, max);
-						tmp3  = simd::lesser(tmp2, simd::zero());
-						tmp1  = simd::vand(tmp1, neg);
-						tmp3  = simd::vand(tmp3, basis);
-						tmp1  = simd::vor(tmp1, tmp3);
-						tmp2  = simd::add(tmp2, tmp1);
-						simd::store(Arns+i*_size+j, tmp2);
-					}
-				}
-			}else{
-#pragma omp parallel for schedule(static, 256)			  
-				for(size_t i = 0 ; i < n ; i++){
-					vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
-					size_t j = 0;
-					for( ; j < ROUND_DOWN(_size, simd::vect_size) ; j+=simd::vect_size){
-						basis = simd::load(_basis.data()+j);
-						inv   = simd::load(_invbasis.data()+j);
-						max   = simd::load(_basisMax.data()+j);
-						neg   = simd::load(_negbasis.data()+j);
-						v     = simd::loadu(Arns+i*_size+j);
-						tmp2 = modSimd(v, basis, inv, neg);
-						tmp1  = simd::greater(tmp2, max);
-						tmp3  = simd::lesser(tmp2, simd::zero());
-						tmp1  = simd::vand(tmp1, neg);
-						tmp3  = simd::vand(tmp3, basis);
-						tmp1  = simd::vor(tmp1, tmp3);
-						tmp2  = simd::add(tmp2, tmp1);
-						simd::storeu(Arns+i*_size+j, tmp2);
-					}
-					for( ; j < _size ; ++j){
-					  _field_rns[j].reduce(Arns[i*_size+j]);
-					}
+			for(size_t i = 0 ; i < n ; i++){
+				vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+				for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
+					basis = simd::load(_basis.data()+j);
+					inv   = simd::load(_invbasis.data()+j);
+					max   = simd::load(_basisMax.data()+j);
+					neg   = simd::load(_negbasis.data()+j);
+					v     = simd::load(Arns+i*_size+j);
+					tmp2 = modSimd(v, basis, inv, neg);
+					tmp1  = simd::greater(tmp2, max);
+					tmp3  = simd::lesser(tmp2, simd::zero());
+					tmp1  = simd::vand(tmp1, neg);
+					tmp3  = simd::vand(tmp3, basis);
+					tmp1  = simd::vor(tmp1, tmp3);
+					tmp2  = simd::add(tmp2, tmp1);
+					simd::store(Arns+i*_size+j, tmp2);
 				}
 			}
+		}else{
+#pragma omp parallel for schedule(static, 256)			  
+			for(size_t i = 0 ; i < n ; i++){
+				vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
+				size_t j = 0;
+				for( ; j < ROUND_DOWN(_size, simd::vect_size) ; j+=simd::vect_size){
+					basis = simd::load(_basis.data()+j);
+					inv   = simd::load(_invbasis.data()+j);
+					max   = simd::load(_basisMax.data()+j);
+					neg   = simd::load(_negbasis.data()+j);
+					v     = simd::loadu(Arns+i*_size+j);
+					tmp2 = modSimd(v, basis, inv, neg);
+					tmp1  = simd::greater(tmp2, max);
+					tmp3  = simd::lesser(tmp2, simd::zero());
+					tmp1  = simd::vand(tmp1, neg);
+					tmp3  = simd::vand(tmp3, basis);
+					tmp1  = simd::vor(tmp1, tmp3);
+					tmp2  = simd::add(tmp2, tmp1);
+					simd::storeu(Arns+i*_size+j, tmp2);
+				}
+				for( ; j < _size ; ++j){
+					_field_rns[j].reduce(Arns[i*_size+j]);
+				}
+			}
+		}
 #else
 
 // TODO : SIMD version
-			for(size_t i = 0 ; i < n ; i+= _size){
-				for(size_t j = 0 ; j < _size ; ++j){
+		for(size_t i = 0 ; i < n ; i+= _size){
+			for(size_t j = 0 ; j < _size ; ++j){
 					//_field_rns.reduce(Arns+i*_size+j);
-					_field_rns[i].reduce(Arns[i*_size+j]);
-				}
+				_field_rns[i].reduce(Arns[i*_size+j]);
 			}
+		}
 
 #endif
 

@@ -376,7 +376,11 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS{
 	template<class Field, class ModeT>
-	inline  typename Field::Element_ptr
+	inline typename
+	std::enable_if<std::is_same<ModeT,ModeCategories::DelayedTag>::value ||
+	               std::is_same<ModeT,ModeCategories::LazyTag>::value ||
+	               std::is_same<ModeT,ModeCategories::DefaultBoundedTag>::value,
+		       typename Field::Element_ptr>::type
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,

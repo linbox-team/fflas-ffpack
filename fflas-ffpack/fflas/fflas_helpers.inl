@@ -308,6 +308,21 @@ namespace FFLAS {
 	}; // MMHelper
 
 
+	    // to be used in the future, when Winograd's algorithm will be made generic wrt the ModeTrait
+	// template <class Field, class AlgoT, class ParSeqH>
+	// void copyOutBounds(const MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> &Source,
+	// 		   MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> & Dest){
+	// 	Dest.Outmax = Source.Outmax;
+	// 	Dest.Outmin = Source.Outmin;
+	// }
+	// template <class Field, class AlgoT, class ParSeqH>
+	// void copyOutBounds(const MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> &Source,
+	// 		   MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> & Dest){
+	// 	Dest.Outmax = Source.Outmax;
+	// 	Dest.Outmin = Source.Outmin;
+	// }
+	// template <class MMH1, class MMH2>
+	// void copyOutBounds(const MMH1 &Source, MMH2 & Dest){}
 	/*! StructureHelper for ftrsm
 	*/
 	namespace StructureHelper {

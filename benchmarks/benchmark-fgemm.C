@@ -119,10 +119,10 @@ int main(int argc, char** argv) {
 	parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-// typedef Givaro::Modular<Givaro::Integer> Field;
+ typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
 //  typedef Givaro::ModularBalanced<float> Field;
-	typedef Givaro::Modular<double> Field;
+//	typedef Givaro::Modular<double> Field;
 	typedef Field::Element Element;
 
   Field F(q);
@@ -238,8 +238,8 @@ int main(int argc, char** argv) {
 	      else{
 
 		      MMHelper<Field,MMHelperAlgo::Winograd>//,
-			      //typename FieldTraits<Field>::value,
-			      //ParSeqHelper::Parallel>
+					  //typename FieldTraits<Field>::value,
+					  //ParSeqHelper::Sequential>
 			      WH (F, nbw, ParSeqHelper::Sequential());
 		      if (i) chrono.start();
 		      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
