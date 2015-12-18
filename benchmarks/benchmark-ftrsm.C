@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	std::string file2 = "";
 	int t=MAX_THREADS;
 	int NBK = -1;
-	int p = 1; // 0 for sequential 1 for pIter-sRec ; 2 for pRec; 3 for hybrid
+	int p = 3; // 0 for sequential 1 for pIter-sRec ; 2 for pRec; 3 for hybrid
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },

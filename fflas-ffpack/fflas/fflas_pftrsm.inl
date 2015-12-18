@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <27 Nov 15 14:08:11 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <18 Dec 15 16:09:24 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -123,12 +123,17 @@ namespace FFLAS {
 			size_t nt = H.parseq.numthreads();
 			size_t nt_it=nt;
 			size_t nt_rec=1;
-			while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
-				nt_it>>=1;
-				nt_rec<<=1;
-			}
-			nt_it<<=1;
-			nt_rec>>=1;
+            if (nt_it*PTRSM_HYBRID_THRESHOLD >= n){
+                nt_it>>=1;
+                nt_rec<<=1;
+                while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
+                    nt_it>>=1;
+                    nt_rec<<=1;
+                }
+                nt_it<<=1;
+                nt_rec>>=1;
+            }
+            
 				// if ((int)n/PTRSM_HYBRID_THRESHOLD < nt){
 				// 	nt_it = std::min(nt,(int)ceil(double(n)/PTRSM_HYBRID_THRESHOLD));
 				// 	nt_rec = ceil(double(nt)/nt_it);
@@ -137,12 +142,15 @@ namespace FFLAS {
 				//	ForStrategy1D<size_t> iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //				for (iter.begin(); ! iter.end(); ++iter) {
 
+
+// 				std::cerr<<"trsm_rec nt_it = "<<nt_it<<std::endl;
+// 				std::cerr<<"trsm_rec nt_rec = "<<nt_rec<<std::endl;
+
 			SYNCH_GROUP(
 				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
 				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
 				H.parseq.set_numthreads(nt_it);
 				FORBLOCK1D(iter, n, H.parseq,
-							   //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
 						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 						   );
 						);
