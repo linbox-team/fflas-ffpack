@@ -200,7 +200,7 @@
         TASK(MODE(), \
           for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
           { Args; } );) \
-          WAIT; \
+          WAIT;
 
 
 
