@@ -100,13 +100,13 @@ int main(int argc, char** argv) {
   A = fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   PAR_BLOCK {
-      pfrand(F, m,k,A,m/size_t(NBK)); 
+      pfrand(F,G, m,k,A,m/size_t(NBK)); 
   }	
   
   B = fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   PAR_BLOCK {
-      pfrand(F, k,n,B,k/NBK);
+      pfrand(F,G, k,n,B,k/NBK);
   }	
 
   C = fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);

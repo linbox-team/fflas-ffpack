@@ -30,6 +30,9 @@
 namespace FFLAS
 {
 
+    using namespace FFLAS::CuttingStrategy;
+    using namespace FFLAS::StrategyParameter;
+
 	template<class Field>
 	void pfzero(const Field& F, 		   
 				size_t m, size_t n, 
@@ -37,49 +40,42 @@ namespace FFLAS
 				size_t BS=0)
 	{
 		BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
+
 		SYNCH_GROUP(
-			for(size_t p=0; p<m; p+=BS) ///row
-			for(size_t pp=0; pp<n; pp+=BS) //column
-		{
-			size_t M=BS, MM=BS;
-			if(!(p+BS<m))
-				M=m-p;
-			if(!(pp+BS<n))
-				MM=n-pp;
-			TASK(MODE(CONSTREFERENCE(F)),
-			{
-				for(size_t j=0; j<M; j++)
-					for(size_t jj=0; jj<MM; jj++)
-						F.assign(C[(p+j)*n+pp+jj],F.zero);
-			});
-		}
-			);
+            FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
+                       TASK(MODE(CONSTREFERENCE(F)),
+                       {
+                           fzero(F, 
+                                 iter.iend()-iter.ibegin(),
+                                 iter.jend()-iter.jbegin(),
+                                 C+iter.ibegin()*n+iter.jbegin(),
+                                 n);
+                       }
+                            );
+                       );
+            );
 	}
 
-	template<class Field>
-	void pfrand(const Field &F,
+	template<class Field, class RandIter>
+	void pfrand(const Field& F, 
+                RandIter& G,
 				size_t m, size_t n, 
 				typename Field::Element_ptr C, 
 				size_t BS=0)
 	{
 		BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
-		typename Field::RandIter G(F); 
 		SYNCH_GROUP(
-			for(size_t p=0; p<m; p+=BS) ///row
-			for(size_t pp=0; pp<n; pp+=BS) //column
-		{
-			size_t M=BS, MM=BS;
-			if(!(p+BS<m))
-				M=m-p;
-			if(!(pp+BS<n))
-				MM=n-pp;
-			TASK(MODE(CONSTREFERENCE(G)),
-			{
-				for(size_t j=0; j<M; j++)
-					for(size_t jj=0; jj<MM; jj++)
-						G.random (*(C+(p+j)*n+pp+jj));
-			});
-		}
+            FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
+                       TASK(MODE(CONSTREFERENCE(F,G)),
+                       {
+                           frand(F, G, 
+                                 iter.iend()-iter.ibegin(),
+                                 iter.jend()-iter.jbegin(),
+                                 C+iter.ibegin()*n+iter.jbegin(),
+                                 n);
+                       }
+                            );
+                       );
 			);	
 	}
 

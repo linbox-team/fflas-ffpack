@@ -80,6 +80,30 @@ namespace FFLAS {
 				fzero(F,n,A+i*lda,1);
 		}
 	}
+	/** \brief frand : \f$A \gets random \f$.
+	 * @param F field
+	 * @param G randomiterator
+	 * @param m number of rows to randomize
+	 * @param n number of cols to randomize
+	 * \param A matrix in \p F
+	 * \param lda stride of \p A
+	 */
+	template<class Field, class RandIter>
+	void
+	frand (const Field& F, RandIter& G, const size_t m, const size_t n,
+	       typename Field::Element_ptr A, const size_t lda)
+	{
+		/*  use memset only with Elements that are ok */
+		if (n == lda) { // contigous data
+			// memset(A,(int) F.zero,m*n); // might be bogus ?
+			frand(F,G,m*n,A,1);
+		}
+		else { // not contiguous (strided)
+			for (size_t i = 0 ; i < m ; ++i)
+				// memset(A+i*lda,(int) F.zero,n) ; // might be bogus ?
+				frand(F,G,n,A+i*lda,1);
+		}
+	}
         /** \brief fequal : test \f$A = B \f$.
 	 * @param F field
 	 * @param m row dimension

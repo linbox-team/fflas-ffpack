@@ -171,6 +171,30 @@ namespace FFLAS {
 				F.assign(*(X+i*incX), F.zero);
 		}
 	}
+
+	/** \brief frand : \f$A \gets random \f$.
+	 * @param F field
+	 * @param G randomiterator
+	 * @param n number of elements to randomize
+	 * \param X vector in \p F
+	 * \param incX stride of \p X
+	 */
+	template<class Field, class RandIter>
+	void
+	frand (const Field& F, RandIter& G, const size_t n,
+	       typename Field::Element_ptr X, const size_t incX)
+	{
+		if (incX == 1) { // contigous data
+			// memset(X,(int)F.zero,n); // might be bogus ?
+			for (size_t i = 0 ; i < n ; ++i)
+				G.random(*(X+i));
+
+		}
+		else { // not contiguous (strided)
+			for (size_t i = 0 ; i < n ; ++i)
+				G.random(*(X+i*incX));
+		}
+	}
 	
        /** \brief fiszero : test \f$X = 0 \f$.
 	 * @param F field

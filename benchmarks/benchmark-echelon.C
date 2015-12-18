@@ -211,46 +211,6 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 
 
 
-
-template<class Element>
-void Initialize(Field &F, Element * C, int BS, size_t m, size_t n)
-{
-
-	Field::RandIter G(F); 
-#pragma omp parallel for collapse(2) schedule(runtime) 
-	
-	for(size_t p=0; p<m; p+=BS) ///row
-		for(size_t pp=0; pp<n; pp+=BS) //column
-			{
-				size_t M=BS, MM=BS;
-				if(!(p+BS<m))
-					M=m-p;
-				if(!(pp+BS<n))
-					MM=n-pp;
-				//#pragma omp task 
-				{
-					for(size_t j=0; j<M; j++)
-						for(size_t jj=0; jj<MM; jj++)
-							//		C[(p+j)*n+pp+jj]=0;
-							G.random (*(C+(p+j)*n+pp+jj));
-				}
-			}
-	//		#pragma omp taskwait
-	//	}
-	// printf("A = \n");
-	// for (size_t i=0; i<m; i+=128)
-	//  {
-	//  	for (size_t j=0; j<n; j+=128)
-	//  	{
-	//  		int ld = omp_get_locality_domain_num_for( &C[i*n+j] );
-	//  		printf("%i ", ld);
-	//  	}
-	//  	printf("\n");
-	//  }
-	
-}
-
-
 int main(int argc, char** argv) {
 	
 	size_t iter = 3 ;
@@ -298,7 +258,8 @@ int main(int argc, char** argv) {
 	std::vector<size_t> Index_P(r);
 	Field::RandIter GG(F, seed1);
 	
-       Initialize(F,A,m/NBK,m,n);
+    PAR_BLOCK{ pfrand(F,GG,m,n,A,m/NBK); }
+    
        
        //       std::cout<<"Construct U"<<endl;
        U = construct_U(F,GG, n, r, Index_P, seed4, seed3);
