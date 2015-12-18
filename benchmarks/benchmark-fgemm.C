@@ -40,6 +40,7 @@
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/paladin/fflas_initialize.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -53,43 +54,7 @@
 
 using namespace std;
 using namespace FFLAS;
-template<class Element>
-void Initialize(Element * C, size_t BS, size_t m, size_t n)
-{
-//#pragma omp parallel for collapse(2) schedule(runtime) 
-	BS=std::max(BS, (size_t)__FFLASFFPACK_WINOTHRESHOLD_BAL );
-	PAR_BLOCK{
-		SYNCH_GROUP(
-			    for(size_t p=0; p<m; p+=BS) ///row
-				    for(size_t pp=0; pp<n; pp+=BS) //column
-					    {
-						    size_t M=BS, MM=BS;
-						    if(!(p+BS<m))
-							    M=m-p;
-						    if(!(pp+BS<n))
-							    MM=n-pp;
-						    //#pragma omp task 
-						    TASK(MODE(),
-							 {
-								 for(size_t j=0; j<M; j++)
-									 for(size_t jj=0; jj<MM; jj++)
-										 C[(p+j)*n+pp+jj]=0;
-							 });
-					    }
-			    );
-	}
-	// printf("A = \n");
-	// for (size_t i=0; i<m; i+=128)
-	//  {
-	//  	for (size_t j=0; j<n; j+=128)
-	//  	{
-	//  		int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
-	//  		printf("%i ", ld);
-	//  	}
-	//  	printf("\n");
-	//  }
 
-}
 
 int main(int argc, char** argv) {
 
@@ -135,32 +100,23 @@ int main(int argc, char** argv) {
   Field::RandIter G(F); 
   A = fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  if (p)
-	  Initialize(A,m/size_t(NBK),m,k);
-
-//#pragma omp for
-  auto sp =  SPLITTER(MAX_THREADS);
-  PARFOR1D (i,m,sp,
-	    for (size_t j=0; j<(size_t)k; ++j)
-		    G.random (*(A+i*k+j));
-	    );
+  PAR_BLOCK {
+      pfrand(F, m,k,A,m/size_t(NBK)); 
+  }	
   
   B = fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  if (p)
-	  Initialize(B,k/NBK,k,n);
-//#pragma omp parallel for
-  PARFOR1D (i, k,sp,
-            for (size_t j=0; j<(size_t)n; ++j)
-            	G.random(*(B+i*n+j));
-            );
-  
+  PAR_BLOCK {
+      pfrand(F, k,n,B,k/NBK);
+  }	
+
   C = fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
   
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  if (p)
-	  Initialize(C,m/NBK,m,n);
-
+  PAR_BLOCK {
+      pfzero(F, m,n,C,m/NBK);
+  }
+  
 
   for (size_t i=0;i<=iter;++i){
 
