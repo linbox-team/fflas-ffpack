@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //#include "goto-def.h"
 
 /* Copyright (c) FFLAS-FFPACK
@@ -119,10 +119,11 @@ int main(int argc, char** argv) {
 	parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-	typedef Givaro::Modular<Givaro::Integer> Field;
+// typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
 //  typedef Givaro::ModularBalanced<float> Field;
-  typedef Field::Element Element;
+	typedef Givaro::Modular<double> Field;
+	typedef Field::Element Element;
 
   Field F(q);
 

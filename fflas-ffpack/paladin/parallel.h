@@ -131,14 +131,14 @@
                { Args; })
 
 // PARFOR1D does normal execution of the loop
-#define PARFORBLOCK1D(iter,  m, Helper, I)			       \
+#define PARFORBLOCK1D(iter,  m, Helper, Args...)			       \
   for(std::remove_const<decltype(m)>::type iter=0; iter<m; ++iter)     \
-    { I; }
+    { Args; }
 
 // PARFOR1D does normal execution of the loop
-#define PARFOR1D(iter,  m, Helper, I)				       \
+#define PARFOR1D(iter,  m, Helper, Args...)				       \
   for(std::remove_const<decltype(m)>::type iter=0; iter<m; ++iter)     \
-    { I; }
+    { Args; }
 
 
 ////////////////////   CUTTING LOOP MACROS 2D //////////////////////
