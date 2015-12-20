@@ -21,11 +21,8 @@
 pkgincludesubdir=$(pkgincludedir)/paladin
 
 
-pkgincludesub_HEADERS= 	\
+pkgincludesub_HEADERS= fflas_pfinit.h	\
 	blockcuts.inl  \
 	pfgemm_variants.inl \
 	parallel.h  \
 	kaapi_routines.inl
-
-
-

@@ -157,7 +157,7 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 #include "fflas_fgemv_mp.inl"
 #include "fflas-ffpack/field/rns.inl" // real implementation of the multiprecision field
 
-//#include "fflas-ffpack/paladin/fflas_pfinit.h"
+#include "fflas-ffpack/paladin/fflas_pfinit.h"
 
 //---------------------------------------------------------------------
 // Sparse routines
