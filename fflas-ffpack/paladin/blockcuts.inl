@@ -75,7 +75,7 @@ namespace FFLAS {
 		/*! ParSeqHelper for both fgemm and ftrsm
 	*/
 	namespace ParSeqHelper {
-		template <typename C, typename P>
+		template <typename C=CuttingStrategy::Block, typename P=StrategyParameter::Threads>
 		struct Parallel{
 			typedef C Cut;
 			typedef P Param;
@@ -110,7 +110,7 @@ namespace FFLAS {
 	}
 
 
-	template<class Cut, class Strat>
+	template<class Cut=CuttingStrategy::Block, class Strat=StrategyParameter::Threads>
     inline void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
                    const size_t m, const size_t n,
                    const size_t numthreads);
@@ -268,7 +268,7 @@ namespace FFLAS {
     // }
 
 
-	template<class Cut, class Param>
+	template<class Cut=CuttingStrategy::Block, class Param=StrategyParameter::Threads>
 	inline void BlockCuts(size_t& rowBlockSize, size_t& colBlockSize,
                    size_t& lastRBS, size_t& lastCBS,
                    size_t& changeRBS, size_t& changeCBS,

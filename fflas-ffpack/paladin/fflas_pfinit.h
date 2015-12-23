@@ -30,15 +30,15 @@
 namespace FFLAS
 {
 
-    using namespace FFLAS::CuttingStrategy;
-    using namespace FFLAS::StrategyParameter;
-
 	template<class Field>
 	void pfzero(const Field& F, 		   
 				size_t m, size_t n, 
 				typename Field::Element_ptr C, 
 				size_t BS=0)
 	{
+		using FFLAS::CuttingStrategy::Block;
+		using FFLAS::StrategyParameter::Grain;
+
 		BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
 
 		SYNCH_GROUP(
@@ -63,6 +63,9 @@ namespace FFLAS
 				typename Field::Element_ptr C, 
 				size_t BS=0)
 	{
+		using FFLAS::CuttingStrategy::Block;
+		using FFLAS::StrategyParameter::Grain;
+
 		BS=std::max(BS, (size_t)Protected::WinogradThreshold(F) );
 		SYNCH_GROUP(
             FORBLOCK2D(iter, m, n, SPLITTER(BS, Block, Grain),
