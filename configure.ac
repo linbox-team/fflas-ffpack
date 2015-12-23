@@ -347,6 +347,7 @@ doc/Makefile
 tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
+examples/Makefile
 optimiser/Makefile
 fflas-ffpack.pc
 ])

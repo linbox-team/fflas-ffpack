@@ -24,7 +24,7 @@
 
 ACLOCAL_AMFLAGS = -I macros
 
-SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser
+SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser examples
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = fflas-ffpack.pc
@@ -50,8 +50,8 @@ benchmarks/perfpublisher:
 tests/perfpublisher:
 	(cd tests; ${MAKE} perfpublisher)
 
-#  examples:
-#  (cd examples; ${MAKE} examples)
+examples:
+	(cd examples; ${MAKE} examples)
 
 benchmarks:
 	(cd benchmarks; ${MAKE} benchmarks)
