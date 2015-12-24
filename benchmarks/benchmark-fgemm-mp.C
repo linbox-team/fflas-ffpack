@@ -40,6 +40,7 @@ using namespace std;
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "givaro/modular-integer.h"
+#include "fflas-ffpack/paladin/parallel.h"
 
 
 #ifdef	BENCH_FLINT
@@ -98,8 +99,8 @@ int main(int argc, char** argv){
 	size_t seed= time(NULL);	 
 	typedef Givaro::Modular<Givaro::Integer> Field;	
 	Givaro::Integer p;
-	FFLAS::Timer chrono;
-	double time=0.;
+	FFLAS::Timer chrono, TimFreivalds;
+	double time=0.,timev=0.;
 #ifdef BENCH_FLINT
 	double timeFlint=0.;
 #endif
@@ -120,16 +121,20 @@ int main(int argc, char** argv){
 		B= FFLAS::fflas_new(F,k,ldb);
 		C= FFLAS::fflas_new(F,m,ldc);
 	
-		for (size_t i=0;i<m;++i)
-			for (size_t j=0;j<k;++j)
-				Rand.random(A[i*lda+j]);			
-		for (size_t i=0;i<k;++i)
-			for (size_t j=0;j<n;++j)
-				Rand.random(B[i*ldb+j]);				
-		for (size_t i=0;i<m;++i)
-			for (size_t j=0;j<n;++j)
-				Rand.random(C[i*ldc+j]);	 		
-	
+// 		for (size_t i=0;i<m;++i)
+// 			for (size_t j=0;j<k;++j)
+// 				Rand.random(A[i*lda+j]);			
+// 		for (size_t i=0;i<k;++i)
+// 			for (size_t j=0;j<n;++j)
+// 				Rand.random(B[i*ldb+j]);				
+// 		for (size_t i=0;i<m;++i)
+// 			for (size_t j=0;j<n;++j)
+// 				Rand.random(C[i*ldc+j]);	 		
+
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/size_t(MAX_THREADS)); }	
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, k,n,B,k/MAX_THREADS); }	
+		PAR_BLOCK { FFLAS::pfzero(F, m,n,C,m/MAX_THREADS); }
+		
 	
 		Givaro::Integer alpha,beta;
 		alpha=1;
@@ -178,20 +183,32 @@ int main(int argc, char** argv){
 		fmpz_mat_clear(BB);
 #endif
 		//END FLINT CODE //
+		using  FFLAS::CuttingStrategy::Recursive;
+		using  FFLAS::StrategyParameter::TwoDAdaptive;
 		// RNS MUL_LA
 		chrono.clear();chrono.start();	
-		FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+		PAR_BLOCK{ FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc, SPLITTER(MAX_THREADS,Recursive,TwoDAdaptive) ); 
+		}
+		
 		chrono.stop();
 		time+=chrono.usertime();
+
+// 		TimFreivalds.start();      
+// 		bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
+// 		TimFreivalds.stop();
+// 		timev+=TimFreivalds.usertime();
+// 		if (!pass) std::cout<<"FAILED"<<std::endl;
+
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);
 		FFLAS::fflas_delete(C);
 
 	}
 
-	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / chrono.usertime() * double(iters);
-	Gflops*=p.bitsize()/16.;
-	cout<<"Time: "<<time<<"  Gflops: "<<Gflops<<endl;
+	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / chrono.realtime() * double(iters);
+// 	Gflops*=p.bitsize()/16.;
+	cout<<"Time: "<<time<<"  Gflops: "<<Gflops<<", perword: "<< (Gflops*p.bitsize())/64. ;
+	FFLAS::writeCommandString(std::cout << '|' << p << " (" << p.bitsize()<<")|", as) << std::endl;
 
 #ifdef BENCH_FLINT	
 	cout<<"Time FLINT: "<<timeFlint<<endl;

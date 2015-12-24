@@ -78,7 +78,7 @@ namespace FFPACK {
 				  );
 
 			tkr.stop();
-			if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
+			//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
 			if (RNS_MAJOR==false) {
 					// Arns = _crt_in x A_beta^T
 				Givaro::Timer tfgemm; tfgemm.start();
@@ -89,7 +89,7 @@ namespace FFPACK {
 			
 				}
 				tfgemm.stop();
-			if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
+			//if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
 //			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 					// reduce each row i of Arns modulo moduli[i]
 					//for(size_t i=0;i<_size;i++)
@@ -106,7 +106,7 @@ namespace FFPACK {
 
 			reduce(mn,Arns,rda,RNS_MAJOR);
 			tred.stop();
-			if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
+			//if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
 	
 		FFLAS::fflas_delete( A_beta);
 
@@ -213,7 +213,7 @@ namespace FFPACK {
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
 		tfgemmc.stop();
-		if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
+		//if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
 		size_t k=_ldm;
@@ -273,7 +273,7 @@ namespace FFPACK {
 
 			}
 				 tkroc.stop();
-		if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
+		//if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
 
 		m0[0]->_mp_d = m0_d;
 		m1[0]->_mp_d = m1_d;
