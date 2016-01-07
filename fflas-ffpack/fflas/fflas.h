@@ -64,41 +64,13 @@
 
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
 
-#include "fflas_enum.h"
-
-namespace FFLAS{ namespace Protected {
-
-		template <class X, class Y> class AreEqual {
-		public:
-			static const bool value = false;
-		};
-
-		template <class X> class AreEqual<X, X> {
-		public:
-			static const bool value = true;
-		};
-	} // Protected
-} // class FFLAS
 #include <algorithm>
 
-namespace FFLAS {
-
-template <class T> const T &min3(const T &m, const T &n, const T &k) { return std::min(m, std::min(n, k)); }
-
-template <class T> const T &max3(const T &m, const T &n, const T &k) { return std::max(m, std::min(n, k)); }
-
-template <class T> const T &min4(const T &m, const T &n, const T &k, const T &l) {
-    return std::min(std::min(m, n), std::min(k, l));
-}
-
-template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l) {
-    return std::max(std::max(m, n), std::max(k, l));
-}
-
-} // FFLAS
-
+#include "fflas_enum.h"
 
 #include "fflas-ffpack/utils/fflas_memory.h"
+#include "fflas-ffpack/paladin/parallel.h"
+
 //---------------------------------------------------------------------
 // Level 1 routines
 //---------------------------------------------------------------------

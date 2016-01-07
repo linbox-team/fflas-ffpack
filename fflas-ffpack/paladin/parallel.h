@@ -555,6 +555,5 @@
 
 #include "fflas-ffpack/paladin/blockcuts.inl"
 
-
 #endif //__FFLASFFPACK_fflas_parallel_H
 
