@@ -207,7 +207,7 @@ int main(int argc, char** argv){
 
 	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / chrono.realtime() * double(iters);
 // 	Gflops*=p.bitsize()/16.;
-	cout<<"Time: "<<time<<"  Gflops: "<<Gflops<<", perword: "<< (Gflops*p.bitsize())/64. ;
+	cout<<"Time: "<<time<<"  Gflops: "<<Gflops<<"  | perword: "<< (Gflops*p.bitsize())/64. ;
 	FFLAS::writeCommandString(std::cout << '|' << p << " (" << p.bitsize()<<")|", as) << std::endl;
 
 #ifdef BENCH_FLINT	

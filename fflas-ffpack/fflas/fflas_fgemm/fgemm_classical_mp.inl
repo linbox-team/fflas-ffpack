@@ -389,7 +389,7 @@ namespace FFLAS {
 								   MMHelper<Givaro::Modular<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > & H)
 	{
 			// compute the product over Z
-		std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
+		// std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
 		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
 		Givaro::Integer p;
 		F.cardinality(p);
