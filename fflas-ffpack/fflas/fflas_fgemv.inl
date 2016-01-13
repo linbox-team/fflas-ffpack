@@ -126,30 +126,6 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       typename Field::ConstElement_ptr X, const size_t incX,
 	       const typename Field::Element beta,
-	       typename Field::Element_ptr Y, const size_t incY)
-	{
-		if (!M) {return Y;}
-		size_t Ydim = (ta == FflasNoTrans)?M:N;
-		size_t Xdim = (ta == FflasNoTrans)?N:M;
-		if (!Xdim || F.isZero (alpha)){
-			fscalin(F, Ydim, beta, Y, incY);
-			return Y;
-		}
-		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
-		return 	fgemv (F, ta, M, N, alpha,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
-			       beta, Y, incY, HW);
-	}
-
-	template<class Field>
-	inline typename Field::Element_ptr
-	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
-	       const size_t M, const size_t N,
-	       const typename Field::Element alpha,
-	       typename Field::ConstElement_ptr A, const size_t lda,
-	       typename Field::ConstElement_ptr X, const size_t incX,
-	       const typename Field::Element beta,
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> & H)
 	{
@@ -354,6 +330,33 @@ namespace FFLAS{
 		return Y;
 	}
 }
+
+namespace FFLAS{
+	template<class Field>
+	inline typename Field::Element_ptr
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr Y, const size_t incY)
+	{
+		if (!M) {return Y;}
+		size_t Ydim = (ta == FflasNoTrans)?M:N;
+		size_t Xdim = (ta == FflasNoTrans)?N:M;
+		if (!Xdim || F.isZero (alpha)){
+			fscalin(F, Ydim, beta, Y, incY);
+			return Y;
+		}
+		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
+		return 	fgemv (F, ta, M, N, alpha,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
+			       beta, Y, incY, HW);
+	}
+}
+
 
 namespace FFLAS{
 	inline Givaro::ZRing<int64_t>::Element_ptr
