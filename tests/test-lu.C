@@ -816,7 +816,7 @@ bool launch_test(const Field & F,
 	{ /*  user given and lda bigger */
 		size_t lda = n+10 ;
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
 		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed at big lda" << std::endl;
@@ -826,7 +826,7 @@ bool launch_test(const Field & F,
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
@@ -836,7 +836,7 @@ bool launch_test(const Field & F,
 		size_t lda = n+10 ;
 		size_t R = 0;
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
@@ -848,7 +848,7 @@ bool launch_test(const Field & F,
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at square" << std::endl;
@@ -860,7 +860,7 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/4 ;
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at wide" << std::endl;
@@ -872,7 +872,7 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at narrow" << std::endl;

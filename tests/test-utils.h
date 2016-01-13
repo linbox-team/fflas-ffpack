@@ -60,9 +60,11 @@ namespace FFPACK {
 					       typename Field::Element * A,
 					       size_t m, size_t n, size_t lda, size_t b=0)
 	{
-		typedef typename Field::RandIter Randiter ;
-		Givaro::Integer bs = (F.characteristic() == 0 ? Givaro::Integer(0) : Givaro::Integer(1)<<b);
-		Randiter R(F,bs);
+// 		typedef typename Field::RandIter Randiter ;
+        typedef Givaro::RandomIntegerIterator<true,false> Randiter;
+// 		Givaro::Integer bs = (F.characteristic() == 0 ? Givaro::Integer(0) : Givaro::Integer(1)<<b);
+// 		Randiter R(F,bs);
+		Randiter R(F, b);
 		for (size_t i=0 ; i<m ; ++i)
 			for (size_t j= 0; j<n ;++j)
 				R.random( A[i*lda+j] );
@@ -200,32 +202,45 @@ namespace FFPACK {
 	Randiter RI(F);
     Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(RI);
 	typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
-	FFLAS::fzero(F, M, N, L, N);
-	for (size_t k = 0; k < R; ++k){
-		size_t i = RRP[k];
-		size_t j = CRP[k];
-		nzR.random (L [i*N+j]);
-		for (size_t l=i+1; l < M; ++l)
-			RI.random (L [l*N+j]);
-	}
+//     std::cerr << "L pfzero" << std::endl;
+    
+    FFLAS::pfzero(F, M, N, L, N);
+    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
+//     std::cerr << "L random" << std::endl;
+            
+//     for (size_t k = 0; k < R; ++k)
+    SYNCH_GROUP ( FOR1D(k, R, H,
+    {
+        size_t i = RRP[k];
+        size_t j = CRP[k];
+        nzR.random (L [i*N+j]);
+        for (size_t l=i+1; l < M; ++l)
+            RI.random (L [l*N+j]);
+    }));
+    
+//     std::cerr << "U pfzero" << std::endl;
+
 	typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
-	FFLAS::fzero(F, N, N, U, N);
-	for (size_t i = 0; i < N; ++i){
+    FFLAS::pfzero(F, N, N, U, N);
+//     std::cerr << "U random" << std::endl;
+//	for (size_t i = 0; i < N; ++i)
+    SYNCH_GROUP ( FOR1D(i, N, H,
+    {
 		nzR.random (U [i*N+i]);
 		for (size_t j=i+1; j < N; ++j)
 			RI.random (U [i*N+j]);
-	}
+	}));
 
+//     std::cerr << "L*U" << std::endl;
 
 	typename Field::Element alpha, beta;
 	F.init(alpha,1.0);
 	F.init(beta,0.0);
-	PAR_BLOCK{
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
-	}
+	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, SPLITTER());
 	FFLAS::fflas_delete(L);
 	FFLAS::fflas_delete(U);
 
+//     std::cerr << "done." << std::endl;
 	}
 
         /*! @brief  Random Matrix with prescribed rank, with random  rank profile matrix
