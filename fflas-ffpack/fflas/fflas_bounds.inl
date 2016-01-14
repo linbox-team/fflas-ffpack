@@ -121,12 +121,9 @@ namespace FFLAS {
 		for (size_t i=0; i<M; ++i)
 			for (size_t j=0; j<N; ++j){
 				Givaro::Integer x = A[i*lda+j];
-// 				if ((x.bitsize() >= log) && (abs(x) > max)){
-// 					max = x;
-// 					log = x.bitsize();
-// 				}
-				if (x.bitsize() >= log){
+				if ((x.bitsize() >= log) && (abs(x) > max)){
 					max = abs(x);
+// 					max = x;
 					log = x.bitsize();
 				}
 			}

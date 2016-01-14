@@ -1071,7 +1071,7 @@ int main(int argc, char** argv)
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/4,n/4,r/4,iters);		
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);		
 	} while (loop && ok);
 
 	return !ok;
