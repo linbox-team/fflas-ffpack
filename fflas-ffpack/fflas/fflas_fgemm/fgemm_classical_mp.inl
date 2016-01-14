@@ -232,7 +232,7 @@ namespace FFLAS {
 		logB = H.normA.bitsize();
 
 		mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
-
+        
 			// construct an RNS structure and its associated Domain
 		FFPACK::rns_double RNS(mC, prime_bitsize);
 

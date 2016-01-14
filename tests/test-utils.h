@@ -60,8 +60,8 @@ namespace FFPACK {
 					       typename Field::Element * A,
 					       size_t m, size_t n, size_t lda, size_t b=0)
 	{
-// 		typedef typename Field::RandIter Randiter ;
-        typedef Givaro::RandomIntegerIterator<true,false> Randiter;
+		typedef typename Field::RandIter Randiter ;
+//         typedef Givaro::RandomIntegerIterator<true,false> Randiter;
 // 		Givaro::Integer bs = (F.characteristic() == 0 ? Givaro::Integer(0) : Givaro::Integer(1)<<b);
 // 		Randiter R(F,bs);
 		Randiter R(F, b);
@@ -124,7 +124,6 @@ namespace FFPACK {
 		FFLASFFPACK_check(r <= std::min(m,n));
 		FFLASFFPACK_check(n <= lda);
 		typedef typename Field::RandIter Randiter ;
-		//typedef typename Field::Element  Element ;
 		typedef typename Field::Element_ptr  Element_ptr;
 		Randiter R(F);
         Givaro::GeneralRingNonZeroRandIter<Field,Randiter> nzR(R);

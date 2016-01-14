@@ -122,8 +122,8 @@ namespace FFLAS {
                               const size_t m, const size_t n,
                               const size_t numthreads) {
 	assert(numthreads==1);
-        RBLOCKSIZE = m;
-        CBLOCKSIZE = n;
+        RBLOCKSIZE = std::max(m,(size_t)1);
+        CBLOCKSIZE = std::max(n,(size_t)1);
     }
 
 
@@ -132,8 +132,8 @@ namespace FFLAS {
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t numthreads) {
-        RBLOCKSIZE = std::min(m,__FFLASFFPACK_MINBLOCKCUTS);
-        CBLOCKSIZE = n;
+        RBLOCKSIZE = std::max(std::min(m,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
+        CBLOCKSIZE = std::max(n,(size_t)1);
     }
 
 
@@ -142,8 +142,8 @@ namespace FFLAS {
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t grainsize) {
-        RBLOCKSIZE = std::min(m,grainsize);
-        CBLOCKSIZE = n;
+        RBLOCKSIZE = std::max(std::min(m,grainsize),(size_t)1);
+        CBLOCKSIZE = std::max(n,(size_t)1);
     }
 
     template<>
@@ -151,8 +151,8 @@ namespace FFLAS {
                               size_t& CBLOCKSIZE,
                               const size_t m, const size_t n,
                               const size_t grainsize) {
-        RBLOCKSIZE = std::min(m,grainsize);
-        CBLOCKSIZE = std::min(n,grainsize);
+        RBLOCKSIZE = std::max(std::min(m,grainsize),(size_t)1);
+        CBLOCKSIZE = std::max(std::min(n,grainsize),(size_t)1);
     }
 
 
@@ -161,8 +161,8 @@ namespace FFLAS {
                                  size_t& CBLOCKSIZE,
                                  const size_t m, const size_t n,
                                  const size_t numthreads) {
-        RBLOCKSIZE = m;
-        CBLOCKSIZE = std::min(n,__FFLASFFPACK_MINBLOCKCUTS);
+        RBLOCKSIZE = std::max(m,(size_t)1);
+        CBLOCKSIZE = std::max(std::min(n,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
     }
 
 
@@ -171,8 +171,8 @@ namespace FFLAS {
                                  size_t& CBLOCKSIZE,
                                  const size_t m, const size_t n,
                                  const size_t grainsize) {
-        RBLOCKSIZE = m;
-        CBLOCKSIZE = std::min(n,grainsize);
+        RBLOCKSIZE = std::max(m,(size_t)1);
+        CBLOCKSIZE = std::max(std::min(n,grainsize),(size_t)1);
     }
 
 
@@ -181,8 +181,8 @@ namespace FFLAS {
                                 size_t& CBLOCKSIZE,
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
-        RBLOCKSIZE = std::min(m,__FFLASFFPACK_MINBLOCKCUTS);
-        CBLOCKSIZE = std::min(n,__FFLASFFPACK_MINBLOCKCUTS);
+        RBLOCKSIZE = std::max(std::min(m,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
+        CBLOCKSIZE = std::max(std::min(n,__FFLASFFPACK_MINBLOCKCUTS),(size_t)1);
     }
 
     template<>
@@ -191,7 +191,7 @@ namespace FFLAS {
                                 const size_t m, const size_t n,
                                 const size_t numthreads) {
         RBLOCKSIZE = std::max(m/numthreads,(size_t)1);
-        CBLOCKSIZE = n;
+        CBLOCKSIZE = std::max(n,(size_t)1);
     }
 
 
@@ -200,7 +200,7 @@ namespace FFLAS {
                                    size_t& CBLOCKSIZE,
                                    const size_t m, const size_t n,
                                    const size_t numthreads) {
-        RBLOCKSIZE = m;
+        RBLOCKSIZE = std::max(m,(size_t)1);
         CBLOCKSIZE = std::max(n/numthreads,(size_t)1);
     }
 

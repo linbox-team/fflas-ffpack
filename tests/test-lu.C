@@ -878,7 +878,6 @@ bool launch_test(const Field & F,
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		FFLAS::fflas_delete( A );
 	}
-
 	return !fail;
 }
 
