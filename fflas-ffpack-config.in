@@ -104,7 +104,7 @@ while test $# -gt 0; do
 			;;
 
 		--cflags-full)
-			 echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ @CXXFLAGS@  @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
+			 echo -I${includedir} @CBLAS_FLAG@ @AVXFLAGS@ @CXXFLAGS@  @OMPFLAGS@ @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
 			 ;;
 
 		--blas-cflags)
