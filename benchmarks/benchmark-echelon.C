@@ -29,7 +29,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
-#include "tests/test-utils.h"
+
 using namespace std;
 
 typedef Givaro::ModularBalanced<double> Field;
