@@ -27,6 +27,7 @@ pkgincludesub_HEADERS= 	\
 	args-parser.h  		\
 	debug.h  			\
 	fflas_memory.h 		\
+	fflas_randommatrix.h	\
 	flimits.h 			\
 	Matio.h  			\
 	bit_manipulation.h 	\
