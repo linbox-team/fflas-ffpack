@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_pfgemm.inl
+/* fflas/fflas_pfinit.inl
  * Copyright (C) 2015 Jean Guillaume Dumas Clement Pernet Ziad Sultan
  *<ziad.sultan@imag.fr>
  *

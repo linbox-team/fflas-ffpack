@@ -154,7 +154,9 @@ namespace FFLAS {
 		int iter_nt = nt / loop_nt;
 		int leftover_nt = nt % loop_nt;
 		
+#ifndef __FFLASFFPACK_SEQUENTIAL
 		auto sp = SPLITTER(nt);
+#endif
 #ifdef FFT_PROFILER
 		Givaro::Timer t;t.start();
 #endif

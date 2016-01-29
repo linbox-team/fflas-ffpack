@@ -405,16 +405,16 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		// ok &= run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p);
-		// ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p);
-		// ok &= run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p);
-		// ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p);
-		// ok &= run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p);
-		// ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p);
-		// ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p);
-		// ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p);
-		// ok &= run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p);
-		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p);
+		ok &= run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p);
+		ok &= run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p);
+		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p);
+		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p);
+		ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p);
+		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p);
 // BUG: random entry are not of the chosen bitsize (RandIter are wrong) See github.com/linbox-team/givaro/issues/2
 		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)

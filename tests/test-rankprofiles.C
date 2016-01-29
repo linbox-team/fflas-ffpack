@@ -29,7 +29,7 @@
 //--------------------------------------------------------------------------
 //          Test for the computations of rank profiles
 //--------------------------------------------------------------------------
-#define FFLASFFPACK_COMPILED
+#define  __FFLASFFPACK_SEQUENTIAL
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
