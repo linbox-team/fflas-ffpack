@@ -243,9 +243,10 @@
 // for strategy 2D 
 #define FOR2D(i, j, m, n, Helper, Args...)                              \
     FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
-                   for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
-                       for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-                       { Args; })
+        TASK(MODE(),                                                    \
+             for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
+                 for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
+                 { Args; });)
 
 // parallel for strategy 2D with access to the range and control of iterator
 // WARNING: This is not doable : OMP requires an iteration over an interval of ints.
