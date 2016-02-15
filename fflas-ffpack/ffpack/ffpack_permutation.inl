@@ -35,7 +35,23 @@
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
 namespace FFPACK {
-
+	template<class Field>
+	void
+	MonotonicApplyP( const Field& F,
+			 const FFLAS::FFLAS_SIDE Side,
+			 const FFLAS::FFLAS_TRANSPOSE Trans,
+			 const size_t M, const size_t ibeg, const size_t iend,
+			 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R )
+	{
+		if ( Side == FFLAS::FflasLeft ) {
+			if (2*R < iend-ibeg){
+				    // Pivot rows in temp
+			} else {
+				    // Non pivot rows in temp
+			}
+			    // 
+		}
+	}
 	template<class Field>
 	void
 	applyP( const Field& F,

@@ -27,11 +27,13 @@
 //#define __FFLASFFPACK_USE_TBB
 
 //#define __FFLASFFPACK_USE_DATAFLOW
-//#define  __FFLASFFPACK_FORCE_SEQ
+#define  __FFLASFFPACK_FORCE_SEQ
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include <givaro/givranditer.h>
 #include <iostream>
+
+Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -167,7 +169,7 @@ int main(int argc, char** argv) {
 	FFLAS::Timer chrono;
 	double *time=new double[iter];
     
-	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
+	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasUnit;
 	size_t maxP, maxQ;
 	maxP = m;
 	maxQ = n;
@@ -195,6 +197,11 @@ int main(int argc, char** argv) {
 				 );
 		chrono.clear();
 		
+		tgemm.clear();
+		tBC.clear();
+		tperm.clear();
+		ttrsm.clear();
+		trest.clear();
 		if (i) chrono.start();
 		if (par){
 			
@@ -202,9 +209,12 @@ int main(int argc, char** argv) {
 				R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
 			}
 		}
-		else
+		else{
+			timtot.start();
 			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
-		if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
+			timtot.stop();
+		}
+		if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
 		
 	}
 	std::sort(time, time+iter);
@@ -218,6 +228,12 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << gflop / meantime;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
+	double tot = timtot.usertime();
+	std::cerr<<" BaseCase : "<<tBC.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" ApplyP : "<<tperm.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" fgemm : "<<tgemm.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" ftrsm : "<<ttrsm.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" frest : "<<trest.usertime()/tot*100<<" %"<<std::endl;
 		//verification
 	if(v)
 		verification_PLUQ(F,Acop,A,P,Q,m,n,R);
