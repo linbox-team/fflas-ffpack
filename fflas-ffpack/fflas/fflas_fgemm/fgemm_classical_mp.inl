@@ -155,7 +155,7 @@ namespace FFLAS {
 	       typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
 	       const typename FFPACK::RNSInteger<RNS>::Element beta,
 	       typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
-	       MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<Cut,Param> > & H)
+		   MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<Cut,Param> > & H)
 	{
 			// compute each fgemm componentwise
 		int s=F.size();
@@ -163,7 +163,7 @@ namespace FFLAS {
 		int loop_nt = std::min(s,nt);
 		int iter_nt = nt / loop_nt;
 		int leftover_nt = nt % loop_nt;
-		std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
+			//std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
 #ifndef __FFLASFFPACK_SEQUENTIAL
 		ParSeqHelper::Parallel<Cut,Param>  sp(loop_nt);
 #endif
@@ -176,31 +176,33 @@ namespace FFLAS {
 						 ParSeqHelper::Parallel<Cut,Param> > MMH_par_t;
 		
 		typedef MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> MMH_seq_t;
-			// Extracting copies to avoid passing references as firstprivate
-		const FFPACK::RNSInteger<RNS> FF(F);
-		MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<Cut,Param> > HH(H);
-		FOR1D(i,s,sp,
+			FORBLOCK1D(iter,s,sp,
+				   TASK(MODE(CONSTREFERENCE(F,H)),
+						{for(auto i=iter.begin(); i!=iter.end(); ++i) 
 //				  for(int i=0; i<s;++i)
 				 {
 					 size_t gemm_nt = iter_nt;
 					 if (i < leftover_nt)
 						 gemm_nt++;
-					 if (gemm_nt){ // Running a parallel fgemm
-						 MMH_par_t H2(FF.rns()._field_rns[i], HH.recLevel,
+					 if (gemm_nt>1){ // Running a parallel fgemm
+						 MMH_par_t H2(F.rns()._field_rns[i], H.recLevel,
 										  ParSeqHelper::Parallel<Cut,Param>(gemm_nt));
 //									  SPLITTER(gemm_nt,Cut,Param));
-						 std::cerr<<"calling fgemm with "<<gemm_nt<<" threads"<<std::endl;
-						 FFLAS::fgemm(FF.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
+							 //std::cerr<<"calling fgemm with "<<gemm_nt<<" threads"<<std::endl;
+						 FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
 									  Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
 									  beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, H2);
 					 } else { // Running a sequential fgemm
-						 MMH_seq_t WH(FF.rns()._field_rns[i], HH.recLevel, ParSeqHelper::Sequential());
-						 FFLAS::fgemm(FF.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
+						 MMH_seq_t WH(F.rns()._field_rns[i], H.recLevel, ParSeqHelper::Sequential());
+						 FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
 									  Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
 									  beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, WH);
 					 }
 				 }
-			);
+						}); // TASK
+				   ); // FLORBLOCK1D
+		WAIT;
+		
 #ifdef FFT_PROFILER
 		t.stop();
 

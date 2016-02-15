@@ -254,10 +254,10 @@
 // WARNING: the inner code Args should not contain any coma outside parenthesis (e.g. declaration lists, and template param list)
 #define FOR2D(i, j, m, n, Helper, Args...)                              \
     FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
-               TASK(MODE(),                                             \
+               TASK(,                                             \
                     for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
                         for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-                        { Args; });)
+                        { Args; });) \
     WAIT;
 
 // parallel for strategy 2D with access to the range and control of iterator
