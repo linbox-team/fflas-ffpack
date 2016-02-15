@@ -257,7 +257,7 @@
                TASK(MODE(),                                             \
                     for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
                         for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-                        { Args; });)
+                        { Args; });) \
     WAIT;
 
 // parallel for strategy 2D with access to the range and control of iterator
