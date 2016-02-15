@@ -121,6 +121,9 @@ namespace FFLAS {
 	{		
 
 			// compute each fgemm componentwise
+#ifdef FFT_PROFILER
+		Givaro::Timer t;t.start();
+#endif
 		for(size_t i=0;i<F.size();i++){
 			MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> H2(F.rns()._field_rns[i], H.recLevel, H.parseq);
 			FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
@@ -130,6 +133,13 @@ namespace FFLAS {
 						 beta._ptr[i*beta._stride],
 						 Cd._ptr+i*Cd._stride, ldc, H2);
 		}
+#ifdef FFT_PROFILER
+		t.stop();
+
+		std::cerr<<"=========================================="<<std::endl
+				 <<"Pointwise fgemm : "<<t.realtime()<<" ("<<F.size()<<") moduli "<<std::endl
+				 <<"=========================================="<<std::endl;
+#endif
 		return Cd;
 	}
 
@@ -153,35 +163,44 @@ namespace FFLAS {
 		int loop_nt = std::min(s,nt);
 		int iter_nt = nt / loop_nt;
 		int leftover_nt = nt % loop_nt;
-		
+		std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
 #ifndef __FFLASFFPACK_SEQUENTIAL
-		auto sp = SPLITTER(nt);
+		ParSeqHelper::Parallel<Cut,Param>  sp(loop_nt);
 #endif
 #ifdef FFT_PROFILER
 		Givaro::Timer t;t.start();
 #endif
-		PARFOR1D(i,s,sp,
+		typedef MMHelper<typename RNS::ModField,
+						 MMHelperAlgo::Winograd,
+						 typename ModeTraits<typename RNS::ModField>::value,
+						 ParSeqHelper::Parallel<Cut,Param> > MMH_par_t;
+		
+		typedef MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> MMH_seq_t;
+			// Extracting copies to avoid passing references as firstprivate
+		const FFPACK::RNSInteger<RNS> FF(F);
+		MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<Cut,Param> > HH(H);
+		FOR1D(i,s,sp,
+//				  for(int i=0; i<s;++i)
 				 {
 					 size_t gemm_nt = iter_nt;
 					 if (i < leftover_nt)
 						 gemm_nt++;
 					 if (gemm_nt){ // Running a parallel fgemm
-						 MMHelper<typename RNS::ModField,
-								  MMHelperAlgo::Winograd,
-								  typename ModeTraits<typename RNS::ModField>::value,
-								  ParSeqHelper::Parallel<Cut,Param> > H2(F.rns()._field_rns[i], H.recLevel,
-																		 ParSeqHelper::Parallel<Cut,Param>(gemm_nt));
-						 FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
+						 MMH_par_t H2(FF.rns()._field_rns[i], HH.recLevel,
+										  ParSeqHelper::Parallel<Cut,Param>(gemm_nt));
+//									  SPLITTER(gemm_nt,Cut,Param));
+						 std::cerr<<"calling fgemm with "<<gemm_nt<<" threads"<<std::endl;
+						 FFLAS::fgemm(FF.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
 									  Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
 									  beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, H2);
 					 } else { // Running a sequential fgemm
-						 MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> WH(F.rns()._field_rns[i], H.recLevel, ParSeqHelper::Sequential());
-						 FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
+						 MMH_seq_t WH(FF.rns()._field_rns[i], HH.recLevel, ParSeqHelper::Sequential());
+						 FFLAS::fgemm(FF.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
 									  Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
 									  beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, WH);
 					 }
 				 }
-				 );
+			);
 #ifdef FFT_PROFILER
 		t.stop();
 
@@ -257,7 +276,7 @@ namespace FFLAS {
 		chrono.stop();
 		std::cout<<"-------------------------------"<<std::endl;
 		std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
-		std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
 		chrono.start();
 #endif
 
@@ -267,7 +286,7 @@ namespace FFLAS {
 
 #ifdef PROFILE_FGEMM_MP
 		chrono.stop();
-		std::cout<<"FGEMM_MP:   to RNS: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		std::cout<<"FGEMM_MP:   to RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
 		chrono.start();
 #endif
 
@@ -285,7 +304,7 @@ namespace FFLAS {
 
 #ifdef PROFILE_FGEMM_MP
 		chrono.stop();
-		std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
 		chrono.start();
 #endif
 
@@ -298,7 +317,7 @@ namespace FFLAS {
 		FFLAS::fflas_delete(Cp);
 #ifdef PROFILE_FGEMM_MP
 		chrono.stop();
-		std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.usertime()*1000)<<"ms"<<std::endl;
+		std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
 		std::cout<<"-------------------------------"<<std::endl;
 #endif
 
@@ -370,7 +389,7 @@ namespace FFLAS {
 		freduce (F, m, n, Cd, ldc);
 #ifdef BENCH_PERF_FGEMM_MP
 		chrono.stop();
-		F.t_igemm+=chrono.usertime();
+		F.t_igemm+=chrono.realtime();
 #endif
 
 		return Cd;

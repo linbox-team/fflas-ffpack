@@ -37,7 +37,7 @@
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 #include "fflas-ffpack/utils/bit_manipulation.h"
 
-#define FFLASFFPACK_COPY_REDUCE 100 /*  TO BENCMARK LATER */
+#define FFLASFFPACK_COPY_REDUCE 32 /*  TO BENCMARK LATER */
 
 
 
@@ -72,6 +72,7 @@ namespace FFLAS { namespace vectorised { /*  for casts (?) */
 	template<>
 	inline double monfmod(double A, double B)
 	{
+		    //std::cerr<<"fmod"<<std::endl;
 		return fmod(A,B);
 	}
 
@@ -488,6 +489,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 	     )
 	{
 
+//		std::cerr<<"modp vectorized"<<std::endl;
 		typedef typename Field::Element Element;
 		Element min = (Element)F.minElement(), max = (Element)F.maxElement();
 		using simd = Simd<Element>;
@@ -498,7 +500,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 		size_t i = 0;
 		if (n < simd::vect_size)
 		{
-
+//			std::cerr<< n<< " < "<<simd::vect_size<<std::endl;
 			for (; i < n ; i++)
 			{
 				if (round)
@@ -525,6 +527,8 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
 		if (st)
 		{
+//			std::cerr<< st << " not aligned on  "<<simd::alignment<<std::endl;
+
 			for (size_t j = static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
 			{
 				if (round)
@@ -566,8 +570,10 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 		}
 
 		// perform the last elt from T without SIMD
+//		std::cerr<< n-i<< " unaligned elements left "<<std::endl;
 		for (;i<n;i++)
 		{
+
 			if (round)
 			{
 				T[i] = monrint(U[i]);
@@ -594,6 +600,7 @@ namespace FFLAS  { namespace vectorised { namespace unswitch  {
 	     , HelperMod<Field> & H
 	     )
 	{
+//		std::cerr<<"modp not vectorized"<<std::endl;
 		typedef typename Field::Element Element;
 		Element min = (Element)F.minElement(), max = (Element)F.maxElement();
 		bool positive = ! FieldTraits<Field>::balanced ;
