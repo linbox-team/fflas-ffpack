@@ -35,6 +35,8 @@
 #include <givaro/givranditer.h>
 #include <iostream>
 
+Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
+
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -192,7 +194,7 @@ int main(int argc, char** argv) {
 	FFLAS::Timer chrono;
 	double *time=new double[iter];
     
-	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
+	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasUnit;
 	size_t maxP, maxQ;
 	maxP = m;
 	maxQ = n;
@@ -220,6 +222,11 @@ int main(int argc, char** argv) {
 				 );
 		chrono.clear();
 		
+		tgemm.clear();
+		tBC.clear();
+		tperm.clear();
+		ttrsm.clear();
+		trest.clear();
 		if (i) chrono.start();
 		if (par){
 			
@@ -229,9 +236,12 @@ int main(int argc, char** argv) {
 				BC = n/NUM_THREADS;
 			}
 		}
-		else
+		else{
+			timtot.start();
 			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
-		if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
+			timtot.stop();
+		}
+		if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
 		
 	}
 	std::sort(time, time+iter);
@@ -245,6 +255,12 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
+	double tot = timtot.usertime();
+	std::cerr<<" BaseCase : "<<tBC.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" ApplyP : "<<tperm.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" fgemm : "<<tgemm.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" ftrsm : "<<ttrsm.usertime()/tot*100<<" %"<<std::endl;
+	std::cerr<<" frest : "<<trest.usertime()/tot*100<<" %"<<std::endl;
 		//verification
 	if(v)
 		verification_PLUQ(F,Acop,A,P,Q,m,n,R);
