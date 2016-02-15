@@ -174,6 +174,15 @@
 
 #ifdef __FFLASFFPACK_USE_OPENMP //OpenMP macros
 
+#define PRAGMA_OMP_IMPL(Args...) _Pragma(#Args)
+
+#define TASK(M, I)                             \
+    PRAGMA_OMP_IMPL(omp task M)           \
+    {I;}
+
+
+#define SYNCH_GROUP(Args...)     {{Args};} WAIT;
+
 
 // macro omp taskwait (waits for all childs of current task)
 #define WAIT PRAGMA_OMP_IMPL(omp taskwait)
@@ -195,12 +204,13 @@
 
 
 // for strategy 1D 
+// WARNING: the inner code Args should not contain any coma outside parenthesis (e.g. declaration lists, and template param list)
 #define FOR1D(i, m, Helper, Args...)                             \
     FORBLOCK1D(_internal_iterator, m, Helper,                           \
-        TASK(MODE(), \
-          for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
-          { Args; } );) \
-          WAIT;
+        TASK( , \
+             {for(auto i=_internal_iterator.begin(); i!=_internal_iterator.end(); ++i) \
+                 { Args; } });)                                         \
+        WAIT;
 
 
 
@@ -241,12 +251,14 @@
         {Args;} }
 
 // for strategy 2D 
+// WARNING: the inner code Args should not contain any coma outside parenthesis (e.g. declaration lists, and template param list)
 #define FOR2D(i, j, m, n, Helper, Args...)                              \
     FORBLOCK2D(_internal_iterator, m, n, Helper,                        \
-        TASK(MODE(),                                                    \
-             for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
-                 for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
-                 { Args; });)
+               TASK(MODE(),                                             \
+                    for(auto i=_internal_iterator.ibegin(); i!=_internal_iterator.iend(); ++i) \
+                        for(auto j=_internal_iterator.jbegin(); j!=_internal_iterator.jend(); ++j) \
+                        { Args; });)
+    WAIT;
 
 // parallel for strategy 2D with access to the range and control of iterator
 // WARNING: This is not doable : OMP requires an iteration over an interval of ints.
@@ -277,14 +289,6 @@
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
-#define PRAGMA_OMP_IMPL(Args...) _Pragma(#Args)
-
-#define TASK(M, I)                             \
-    PRAGMA_OMP_IMPL(omp task M)           \
-    {I;}
-
-
-#define SYNCH_GROUP(Args...)     {{Args};} WAIT;
 
 //////////////////////////////////////////////
 /////////////// dataflow macros //////////////
