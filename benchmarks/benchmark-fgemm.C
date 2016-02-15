@@ -34,6 +34,8 @@
 //#define WINO_SEQ
 //#define DEBUG 1
 //#undef NDEBUG
+//#define FFT_PROFILER
+//#define PROFILE_FGEMM_MP
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular-balanced.h>
@@ -83,8 +85,9 @@ int main(int argc, char** argv) {
 	if (NBK==-1) NBK = t;
 //  typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
-//  typedef Givaro::ModularBalanced<float> Field;
-	typedef Givaro::Modular<double> Field;
+//	typedef Givaro::ModularBalanced<float> Field;
+	typedef Givaro::ModularBalanced<double> Field;
+//	typedef Givaro::Modular<Givaro::Integer> Field;
 	typedef Field::Element Element;
 
   Field F(q);
@@ -94,7 +97,7 @@ int main(int argc, char** argv) {
 
   Element * A, * B, * C;
 
-  Field::RandIter G(F); 
+  Field::RandIter G(F);
   A = fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   PAR_BLOCK { pfrand(F,G, m,k,A,m/size_t(NBK)); }	
