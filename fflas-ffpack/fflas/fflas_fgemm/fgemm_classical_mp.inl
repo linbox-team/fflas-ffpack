@@ -176,7 +176,7 @@ namespace FFLAS {
 						 ParSeqHelper::Parallel<Cut,Param> > MMH_par_t;
 		
 		typedef MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> MMH_seq_t;
-			FORBLOCK1D(iter,s,sp,
+		FORBLOCK1D(iter,s,SPLITTER(H.parseq.numthreads()),
 				   TASK(MODE(CONSTREFERENCE(F,H)),
 						{for(auto i=iter.begin(); i!=iter.end(); ++i) 
 //				  for(int i=0; i<s;++i)
