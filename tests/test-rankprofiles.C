@@ -66,7 +66,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		size_t lda = n;
 		typename Field::Element_ptr A=FFLAS::fflas_new (*F, m,lda);
 		typename Field::Element_ptr B=FFLAS::fflas_new (*F, m,lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(*F,A,lda,r,m,n); }
+		RandomMatrixWithRankandRandomRPM(*F,A,lda,r,m,n);
 		FFLAS::fassign (*F, m, n, A, lda, B, lda); 
 
 		{
@@ -128,7 +128,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			RandomRankProfile (m, r, RRP);
 			RandomRankProfile (n, r, CRP);
 			
-			PAR_BLOCK { RandomMatrixWithRankandRPM(*F,A,lda,r,m,n, RRP, CRP); }
+			RandomMatrixWithRankandRPM(*F,A,lda,r,m,n, RRP, CRP);
 			FFLAS::fassign (*F, m, n, A, lda, B, lda); 
 			size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 

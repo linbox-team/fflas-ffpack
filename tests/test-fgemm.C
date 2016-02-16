@@ -202,6 +202,7 @@ bool launch_MM(const Field & F,
 		if (par){
 			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeDAdaptive> >
 				WH (F, nbw);
+			std::cerr<<"ici"<<std::endl;
 			PAR_BLOCK{
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
@@ -416,12 +417,9 @@ int main(int argc, char** argv)
 		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p);
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p);
-// BUG: random entry are not of the chosen bitsize (RandIter are wrong) See github.com/linbox-team/givaro/issues/2
-		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p);// BUG: random entry are not of the chosen bitsize (RandIter are wrong)
+		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p);
 
 	} while (loop && ok);
 
 	return !ok ;
 }
-
-

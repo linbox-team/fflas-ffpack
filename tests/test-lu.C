@@ -259,27 +259,11 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	FFPACK::getTriangular(F, FFLAS::FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
-	
-	PAR_BLOCK{
-		SYNCH_GROUP(
-		
-						//#pragma omp task shared(F, P, L)
-					TASK(MODE(CONSTREFERENCE(F,P,L)),
-						 FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
-						//#pragma omp task shared(F, Q, U)
-					TASK(MODE(CONSTREFERENCE(F,Q,U)),
-						 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
-					WAIT;
-						//#pragma omp taskwait
-					typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::ThreeDAdaptive> pWH (MAX_THREADS);
-						//#pragma omp task shared(F, L, U, X)
-					TASK(MODE(CONSTREFERENCE(F,U,L,X)),
-						 FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
-									   F.one, L,R, U,n, F.zero, X,n, pWH););
-					);
-	}
+	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
+	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
+	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
+
 	bool fail = false;
-		//  PAR_FOR (size_t i=0; i<m; ++i)
 	for(size_t i=0; i<m; ++i)
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(X+i*n+j))){
@@ -816,7 +800,7 @@ bool launch_test(const Field & F,
 	{ /*  user given and lda bigger */
 		size_t lda = n+10 ;
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
 		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed at big lda" << std::endl;
@@ -826,7 +810,7 @@ bool launch_test(const Field & F,
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
@@ -836,7 +820,7 @@ bool launch_test(const Field & F,
 		size_t lda = n+10 ;
 		size_t R = 0;
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
@@ -848,7 +832,7 @@ bool launch_test(const Field & F,
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at square" << std::endl;
@@ -860,7 +844,7 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/4 ;
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at wide" << std::endl;
@@ -872,7 +856,7 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at narrow" << std::endl;
@@ -1040,9 +1024,9 @@ int main(int argc, char** argv)
 	cerr<<setprecision(20);
 	static Givaro::Integer q=-1;
 	static size_t b=0;
-	static size_t m=160;
-	static size_t n=160;
-	static size_t r=100;
+	static size_t m=120;
+	static size_t n=120;
+	static size_t r=80;
 	static size_t iters=2;
 	static bool loop=false;
 	static Argument as[] = {

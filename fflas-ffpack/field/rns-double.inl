@@ -57,7 +57,7 @@ namespace FFPACK {
 		    //for(size_t i=0;i<m;i++)
 		    //PAR_BLOCK{
 //			FOR1D(i,m,sp,
-			PARFOR1D(i,m,sp,
+			FOR1D(i,m,sp,
 				  for(size_t j=0;j<n;j++){
 					  size_t idx=j+i*n;
 					  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
@@ -84,12 +84,10 @@ namespace FFPACK {
 			if (RNS_MAJOR==false) {
 					// Arns = _crt_in x A_beta^T
 				Givaro::Timer tfgemm; tfgemm.start();
-				PAR_BLOCK{
-					FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
 								  //			      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
 			
-				}
 				tfgemm.stop();
 			//if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
 //			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
@@ -206,11 +204,10 @@ namespace FFPACK {
 		Givaro::Timer tfgemmc;tfgemmc.start();
 		if (RNS_MAJOR==false)
 				// compute A_beta = Ap^T x M_beta
-			PAR_BLOCK{
-				FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm,
+			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm,
 							 FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
 //				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads >());
-			}
+
 		else // compute A_beta = Ap x M_Beta
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
@@ -463,10 +460,10 @@ namespace FFPACK {
 #ifndef __FFLASFFPACK_SEQUENTIAL
 			auto sp=SPLITTER();
 #endif
-			PARFOR1D(i,_size,sp,
-						 //for(size_t i=0;i<_size;i++)
-					 FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
-					 );
+			FOR1D(i,_size,sp,
+					  //for(size_t i=0;i<_size;i++)
+				  FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
+				  );
 		}
 
 	}

@@ -25,6 +25,7 @@
  * ========LICENCE========
  *.
  */
+#define  __FFLASFFPACK_SEQUENTIAL
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
