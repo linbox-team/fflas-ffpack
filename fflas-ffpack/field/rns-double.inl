@@ -49,15 +49,8 @@ namespace FFPACK {
 //		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
 
 		Givaro::Timer tkr; tkr.start();
-#ifndef __FFLASFFPACK_SEQUENTIAL
-			auto sp=SPLITTER(MAX_THREADS);
-#endif
-			// FOR2D(i,j,m,n,sp,
-			//       TASK(MODE(READ(Aiter[0]) READWRITE(A_beta[0])),
-		    //for(size_t i=0;i<m;i++)
-		    //PAR_BLOCK{
-//			FOR1D(i,m,sp,
-			FOR1D(i,m,sp,
+		auto sp=SPLITTER(MAX_THREADS);
+		FOR1D(i,m,sp,
 				  for(size_t j=0;j<n;j++){
 					  size_t idx=j+i*n;
 					  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
@@ -457,9 +450,7 @@ namespace FFPACK {
 #endif
 		}
 		else { // NOT IN RNS MAJOR
-#ifndef __FFLASFFPACK_SEQUENTIAL
 			auto sp=SPLITTER();
-#endif
 			FOR1D(i,_size,sp,
 					  //for(size_t i=0;i<_size;i++)
 				  FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
