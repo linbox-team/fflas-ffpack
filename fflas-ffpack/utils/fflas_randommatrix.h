@@ -198,7 +198,8 @@ namespace FFPACK {
             typename Field::Element alpha, beta;
             F.init(alpha,1.0);
             F.init(beta,0.0);
-            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, SPLITTER());
+            auto sp=SPLITTER();
+            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, sp);
             FFLAS::fflas_delete(L);
             FFLAS::fflas_delete(U);
 
