@@ -33,7 +33,8 @@ pkgincludesub_HEADERS= 	\
 	bit_manipulation.h 	\
 	print-utils.h		\
 	timer.h				\
-	cast.h
+	cast.h \
+	fflas_intrinsic.h
 
 ### is this really extra dist ?
 ### this is wrong in a header only lib
