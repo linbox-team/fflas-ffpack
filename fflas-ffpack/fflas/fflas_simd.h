@@ -32,8 +32,10 @@
 
 #define SIMD_INT 1
 
-#include <x86intrin.h>
+
+//#include <x86intrin.h>
 //#include <immintrin.h> -> only define for AVX
+#include "fflas-ffpack/utils/fflas_intrinsic.h"
 #include <iostream>
 #include <type_traits>
 #include <limits>

@@ -42,7 +42,9 @@
 #include <assert.h>
 #include <cstddef>
 #include <iostream>
-#include <immintrin.h>
+
+#include "fflas-ffpack/utils/fflas_intrinsic.h"
+//#include <immintrin.h>
 // Alignment Type
 enum class Alignment : size_t {
   NONE = 0,
