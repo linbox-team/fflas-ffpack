@@ -1,3 +1,9 @@
+2016-02-23 v2.2.0
+	* new precompiled interface
+	* improvements and API change for the parallel code
+	* new random matrix generators
+	* fix many bugs
+	
 2015-06-11 v2.1.0
 
 	Test suite and benchmark improvement :
