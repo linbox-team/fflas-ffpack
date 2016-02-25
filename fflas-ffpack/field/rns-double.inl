@@ -492,7 +492,7 @@ namespace FFPACK {
 		using vect_t = typename simd::vect_t;
 
 		if(_size % simd::vect_size == 0){
-#pragma omp parallel for schedule(static, 256)			  
+//#pragma omp parallel for schedule(static, 256)			  
 			for(size_t i = 0 ; i < n ; i++){
 				vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
 				for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
@@ -512,7 +512,7 @@ namespace FFPACK {
 				}
 			}
 		}else{
-#pragma omp parallel for schedule(static, 256)			  
+//#pragma omp parallel for schedule(static, 256)			  
 			for(size_t i = 0 ; i < n ; i++){
 				vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
 				size_t j = 0;
