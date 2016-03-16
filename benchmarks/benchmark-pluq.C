@@ -28,6 +28,8 @@
 
 //#define __FFLASFFPACK_USE_DATAFLOW
 //#define  __FFLASFFPACK_FORCE_SEQ
+//#define WINOPAR_KERNEL
+//#define CLASSIC_SEQ
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include <givaro/givranditer.h>
@@ -47,9 +49,10 @@
 
 using namespace std;
 
-typedef Givaro::ModularBalanced<double> Field;
+//typedef Givaro::ModularBalanced<double> Field;
 //typedef Givaro::ModularBalanced<float> Field;
-//typedef Givaro::ZRing<double> Field;
+typedef Givaro::ZRing<double> Field;
+//typedef Givaro::UnparametricZRing<double> Field;
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
 					   size_t * P, size_t * Q, size_t m, size_t n, size_t R)
@@ -121,6 +124,27 @@ void verification_PLUQ(const Field & F, typename Field::Element * B, typename Fi
 	FFLAS::fflas_delete( X);
 }
 
+void Rec_Initialize(Field &F, Field::Element * C, size_t m, size_t n, size_t ldc)
+{
+	if(std::min(m,n) <= ldc/NUM_THREADS){
+			for(size_t i=0; i<m; i++)
+				FFLAS::fzero(F, 1, n, C+i*n, n);
+	}
+	else{
+    size_t M2 = m >> 1;
+	size_t N2 = n >> 1;
+	typename Field::Element * C2 = C + N2;
+	typename Field::Element * C3 = C + M2*ldc;
+	typename Field::Element * C4 = C3 + N2;
+	
+	SYNCH_GROUP(
+				TASK(MODE(CONSTREFERENCE(F)), Rec_Initialize(F,C,M2,N2, ldc););
+				TASK(MODE(CONSTREFERENCE(F)), Rec_Initialize(F,C2,M2,n-N2, ldc););
+				TASK(MODE(CONSTREFERENCE(F)), Rec_Initialize(F,C3,m-M2,N2, ldc););
+				TASK(MODE(CONSTREFERENCE(F)), Rec_Initialize(F,C4,m-M2,n-N2, ldc););
+		);
+	}
+}
 
 int main(int argc, char** argv) {
 	
@@ -159,10 +183,11 @@ int main(int argc, char** argv) {
 	A = FFLAS::fflas_new(F,m,n);
 
 	PAR_BLOCK{
-		FFLAS::pfzero(F,m,n,A,m/NBK);
+		Rec_Initialize(F, A, m, n, n);
+		//				FFLAS::pfzero(F,m,n,A,m/NBK);
 		FFPACK::RandomMatrixWithRankandRandomRPM (F, A, n, r, m,n);
 	}
-	
+
 	size_t R;
 	FFLAS::Timer chrono;
 	double *time=new double[iter];
@@ -175,7 +200,7 @@ int main(int argc, char** argv) {
 	size_t *P = FFLAS::fflas_new<size_t>(maxP);
 	size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
        
-	FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
+	FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> H;
 	   
 	Acop = FFLAS::fflas_new(F,m,n);
 	PARFOR1D(i,(size_t)m,H, 
@@ -183,7 +208,7 @@ int main(int argc, char** argv) {
 				 // for (size_t j=0; j<(size_t)n; ++j)
 				 // 	Acop[i*n+j]= A[i*n+j];
 			 );
-	
+	size_t BC;
 	for (size_t i=0;i<=iter;++i){
 		
 		PARFOR1D(j,maxP,H, P[j]=0; );
@@ -198,8 +223,10 @@ int main(int argc, char** argv) {
 		if (i) chrono.start();
 		if (par){
 			
+
 			PAR_BLOCK{
 				R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
+				BC = n/NUM_THREADS;
 			}
 		}
 		else
@@ -215,7 +242,7 @@ int main(int argc, char** argv) {
 #define CUBE(x) ((x)*(x)*(x))
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
 	std::cout << "Time: " << meantime
-			  << " Gflops: " << gflop / meantime;
+			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
 		//verification

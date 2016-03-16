@@ -131,8 +131,9 @@ namespace FFPACK {
     }
 
     #ifdef PBASECASE_K
-    if (std::min(M,N) < PBASECASE_K)
-      return PLUQ_basecaseCrout (Fi, Diag, M, N, A, lda, P, Q);
+    //    if (std::min(M,N) < PBASECASE_K)
+    if (std::min(M,N) <= lda/NUM_THREADS && lda/NUM_THREADS > PBASECASE_K)
+	    return PLUQ_basecaseCrout (Fi, Diag, M, N, A, lda, P, Q);
     #endif
     FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
 
