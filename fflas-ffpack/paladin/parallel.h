@@ -199,8 +199,7 @@
 // TODO: add an optional MODE argument to the parameter list of FORBLOCK1D
 #define FORBLOCK1D(iter, m, Helper, Args...)                                       \
     { FFLAS::ForStrategy1D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param > iter(m, Helper); \
-      for(iter.initialize(); !iter.isTerminated(); ++iter){ {Args;}  } \
-    }
+      for(iter.initialize(); !iter.isTerminated(); ++iter){ {Args;}  } }
 
 
 // for strategy 1D 

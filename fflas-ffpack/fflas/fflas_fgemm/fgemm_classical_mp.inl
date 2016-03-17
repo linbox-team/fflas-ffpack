@@ -201,7 +201,6 @@ namespace FFLAS {
 				 }
 						}); // TASK
 				   ); // FLORBLOCK1D
-		WAIT;
 		
 #ifdef FFT_PROFILER
 		t.stop();
