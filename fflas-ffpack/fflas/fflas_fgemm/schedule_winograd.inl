@@ -39,8 +39,9 @@
 
 namespace FFLAS { namespace BLAS3 {
 
-		template < class Field, class FieldTrait >
-		inline void WinoPar (const Field& F,
+		template < class Field, class FieldTrait, class Strat, class Param >
+		inline typename Field::Element_ptr
+		WinoPar (const Field& F,
 							 const FFLAS_TRANSPOSE ta,
 							 const FFLAS_TRANSPOSE tb,
 							 const size_t mr, const size_t nr, const size_t kr,
@@ -50,10 +51,9 @@ namespace FFLAS { namespace BLAS3 {
 							 const typename Field::Element  beta,
 							 typename Field::Element_ptr C, const size_t ldc,
 								 // const size_t kmax, const size_t w, const FFLAS_BASE base
-							 MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait> & WH
+				 MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait, ParSeqHelper::Parallel<Strat,Param> > & WH
 							 )
 		{
-
 			FFLASFFPACK_check(F.isZero(beta));
 
 			//			typedef MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait > MMH_t;
@@ -61,6 +61,7 @@ namespace FFLAS { namespace BLAS3 {
 			const typename MMH_t::DelayedField & DF = WH.delayedField;
 			typedef typename  MMH_t::DelayedField::Element DFElt;
 
+			size_t nt = WH.parseq.numthreads();
 			size_t lb, cb, la, ca, ldX2;
 			    // size_t x3rd = std::max(mr,kr);
 			typename Field::ConstElement_ptr A11=A, A12, A21, A22;
@@ -304,7 +305,7 @@ namespace FFLAS { namespace BLAS3 {
 			fflas_delete (X11);
 			fflas_delete (X21);
 		     
-
+			return C;
 		} //wino parallel
 
 

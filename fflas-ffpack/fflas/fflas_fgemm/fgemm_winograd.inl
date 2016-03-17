@@ -443,7 +443,7 @@ namespace FFLAS{
 	} // fgemm
 
 
-	template<class Field, class ModeT>
+	template<class Field, class ModeT, class Cut, class Param>
 	inline  typename Field::Element_ptr
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -454,7 +454,7 @@ namespace FFLAS{
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::WinogradPar, ModeT> & H)
+	       MMHelper<Field, MMHelperAlgo::WinogradPar, ModeT, ParSeqHelper::Parallel<Cut,Param> > & H)
 	{
 		if (!m || !n ) return C;
 
