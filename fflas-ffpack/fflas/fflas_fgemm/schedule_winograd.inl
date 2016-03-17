@@ -56,8 +56,8 @@ namespace FFLAS { namespace BLAS3 {
 
 			FFLASFFPACK_check(F.isZero(beta));
 
-			typedef MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait > MMH_t;
-
+			//			typedef MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait > MMH_t;
+			typedef MMHelper<Field, MMHelperAlgo::WinogradPar, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> > MMH_t;
 			const typename MMH_t::DelayedField & DF = WH.delayedField;
 			typedef typename  MMH_t::DelayedField::Element DFElt;
 
@@ -116,32 +116,27 @@ namespace FFLAS { namespace BLAS3 {
 			typename Field::Element_ptr C_11 = fflas_new (F,mr,nr);
 			typename Field::Element_ptr CC_11 = fflas_new (F,mr,nr);
 			SYNCH_GROUP(
-			    // P1 = alpha . A11 * B11 in X1
-						
-			MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
-			TASK(MODE(READ(A11, B11) WRITE(X15) CONSTREFERENCE(F,H1)),
-			     fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X15, x1rd, H1););
 						
 			    // T3 = B22 - B12 in X21  and S3 = A11 - A21 in X11
 			TASK(MODE(READ(B22, B12) WRITE(X21) CONSTREFERENCE(DF)),
-			     fsub(DF,lb,cb,B22,ldb,B12,ldb,X21,ldX2););
+			     pfsub(DF,lb,cb,B22,ldb,B12,ldb,X21,ldX2, NUM_THREADS););
 			TASK(MODE(READ(A11, A21) WRITE(X11) CONSTREFERENCE(DF)),
-			     fsub(DF,la,ca,A11,lda,A21,lda,X11,ldX1););
+			     pfsub(DF,la,ca,A11,lda,A21,lda,X11,ldX1, NUM_THREADS););
 
 			    // T1 = B12 - B11 in X22 and  S1 = A21 + A22 in X12
 			TASK(MODE(READ(B11, B12) WRITE(X22) CONSTREFERENCE(DF)),
-			     fsub(DF,lb,cb,B12,ldb,B11,ldb,X22,ldX2););
+			     pfsub(DF,lb,cb,B12,ldb,B11,ldb,X22,ldX2, NUM_THREADS););
 			TASK(MODE(READ(A12, A22) WRITE(X12) CONSTREFERENCE(DF)),
-			     fadd(DF,la,ca,A21,lda,A22,lda,X12,ldX1););
+			     pfadd(DF,la,ca,A21,lda,A22,lda,X12,ldX1, NUM_THREADS););
 
 			CHECK_DEPENDENCIES;
 
 			    // T2 = B22 - T1 in X23 and  S2 = S1 - A11 in X13
 			TASK(MODE(READ(B22, X22) READWRITE(X23) CONSTREFERENCE(DF)),
-			     fsub(DF,lb,cb,B22,ldb,X22,ldX2,X23,ldX2););
+			     pfsub(DF,lb,cb,B22,ldb,X22,ldX2,X23,ldX2, NUM_THREADS););
 			TASK(MODE(READ(A11, X12) READWRITE(X13) CONSTREFERENCE(DF)),
 					 //		     fsub(DF,la,ca,A11,lda,X12,ldX1,X13,ldX1););
-			     fsub(DF,la,ca,X12,ldX1,A11,lda,X13,ldX1););
+			     pfsub(DF,la,ca,X12,ldX1,A11,lda,X13,ldX1, NUM_THREADS););
 			    /*
 			      fsub(DF,lb,cb,B22,ldb,X2,ldX2,X2,ldX2);
 			      fsubin(DF,la,ca,A11,lda,X1,ldX1););
@@ -151,9 +146,9 @@ namespace FFLAS { namespace BLAS3 {
 			    // T4 = T2 - B21 in X2 and S4 = A12 -S2 in X1
 			TASK(MODE(READ(B21, X23) READWRITE(X24) CONSTREFERENCE(DF)),
 					 //		     fsub(DF,lb,cb,B21,ldb,X23,ldX2,X24,ldX2);
-			     fsub(DF,lb,cb,X23,ldX2,B21,ldb,X24,ldX2););
+			     pfsub(DF,lb,cb,X23,ldX2,B21,ldb,X24,ldX2, NUM_THREADS););
 			TASK(MODE(READ(A12, X13) READWRITE(X14) CONSTREFERENCE(DF)),
-			     fsub(DF,la,ca,A12,lda,X13,ldX1,X14,ldX1););
+			     pfsub(DF,la,ca,A12,lda,X13,ldX1,X14,ldX1, NUM_THREADS););
 
 			    /*
 			      fsubin(DF,lb,cb,B21,ldb,X2,ldX2);
@@ -161,34 +156,51 @@ namespace FFLAS { namespace BLAS3 {
 			    */
 			CHECK_DEPENDENCIES;
 		
-			    // P7 = alpha . S3 * T3  in C21
+			    // P1 = alpha . A11 * B11 in X1
+						
+			MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
 			MMH_t H7(F, WH.recLevel-1, -(WH.Amax-WH.Amin), WH.Amax-WH.Amin, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0,0);
+			MMH_t H5(F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0, 0);
+			MMH_t H6(F, WH.recLevel-1, 2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0, 0);
+			MMH_t H3(F, WH.recLevel-1, 2*WH.Amin-2*WH.Amax, 2*WH.Amax-2*WH.Amin, WH.Bmin, WH.Bmax, 0, 0);
+			MMH_t H4(F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin, 0, 0);
+			MMH_t H2(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+
+			size_t nt = WH.parseq.numthreads();
+			size_t nt_rec = nt/7;
+			size_t nt_mod = nt % 7 ;
+			H1.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+			H2.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+			H3.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+			H4.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+			H5.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+			H6.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+			H7.parseq.set_numthreads(std::max(size_t(1),nt_rec + ((nt_mod-- > 0)?1:0)));
+
+			TASK(MODE(READ(A11, B11) WRITE(X15) CONSTREFERENCE(F,H1)),
+			     fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X15, x1rd, H1););
+			    // P7 = alpha . S3 * T3  in C21
 			TASK(MODE(READ(X11, X21) WRITE(C21) CONSTREFERENCE(F,H7)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, X11, ldX1, X21, ldX2, F.zero, C21, ldc, H7););
 
 			    // P5 = alpha . S1*T1 in C22
-			MMH_t H5(F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0, 0);
 			TASK(MODE(READ(X12, X22) WRITE(C22) CONSTREFERENCE(F,H5)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, X12, ldX1, X22, ldX2, F.zero, C22, ldc, H5););
 
 			    // P6 = alpha . S2 * T2 in C12
-			MMH_t H6(F, WH.recLevel-1, 2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0, 0);
 			TASK(MODE(READ(X13, X23) WRITE(C12) CONSTREFERENCE(F,H6)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, X13, ldX1, X23, ldX2, F.zero, C12, ldc, H6););
 
 			    // P3 = alpha . S4*B22 in CC_11
-			MMH_t H3(F, WH.recLevel-1, 2*WH.Amin-2*WH.Amax, 2*WH.Amax-2*WH.Amin, WH.Bmin, WH.Bmax, 0, 0);
 			TASK(MODE(READ(X14, B22) WRITE(CC_11) CONSTREFERENCE(F,H3)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, X14, ldX1, B22, ldb, F.zero, CC_11, nr, H3););
 
 			    // P4 = alpha . A22 * T4 in C_11
-			MMH_t H4(F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin, 0, 0);
 			TASK(MODE(READ(A22) WRITE(C_11) READWRITE(X24, X22, X23, X21) CONSTREFERENCE(F,H4)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X24, ldX2, F.zero, C_11, nr, H4);
 			     );
 
 			    // P2 = alpha . A12 * B21  in C11
-			MMH_t H2(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
 			TASK(MODE(READ(A12, B21) WRITE(C11) CONSTREFERENCE(F,H2)),
 			     fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H2););
 			CHECK_DEPENDENCIES;
@@ -210,7 +222,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C12, ldc);
 			}
 			TASK(MODE(READWRITE(X15, C12) CONSTREFERENCE(DF, WH)),
-			     faddin(DF,mr,nr,X15,x1rd,C12,ldc);
+			     pfaddin(DF,mr,nr,X15,x1rd,C12,ldc, NUM_THREADS);
 			     );
 			CHECK_DEPENDENCIES;
 //		TASK(MODE(READWRITE(C12, C21) CONSTREFERENCE(F, DF, WH, U3Min, U3Max, U2Min, U2Max)),
@@ -219,7 +231,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C21, ldc);
 			}
 			TASK(MODE(READWRITE(C12, C21) CONSTREFERENCE(DF, WH)),
-			     faddin(DF,mr,nr,C12,ldc,C21,ldc);
+			     pfaddin(DF,mr,nr,C12,ldc,C21,ldc, NUM_THREADS);
 			     );
 			CHECK_DEPENDENCIES;
 //		TASK(MODE(READWRITE(C12, C22) CONSTREFERENCE(F, DF, WH) VALUE(U4Min, U4Max, U2Min, U2Max)),
@@ -228,7 +240,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C12, ldc);
 			}
 			TASK(MODE(READWRITE(C12, C22) CONSTREFERENCE(DF, WH)),
-			     faddin(DF,mr,nr,C22,ldc,C12,ldc);
+			     pfaddin(DF,mr,nr,C22,ldc,C12,ldc, NUM_THREADS);
 			     );
 			CHECK_DEPENDENCIES;
 //		TASK(MODE(READWRITE(C22, C21) CONSTREFERENCE(F, DF, WH) VALUE(U3Min, U3Max, U7Min, U7Max)),
@@ -237,7 +249,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C22, ldc);
 			}
 			TASK(MODE(READWRITE(C22, C21) CONSTREFERENCE(DF, WH)),
-			     faddin(DF,mr,nr,C21,ldc,C22,ldc);
+			     pfaddin(DF,mr,nr,C21,ldc,C22,ldc, NUM_THREADS);
 			     );
 //		TASK(MODE(READWRITE(C12, CC_11) CONSTREFERENCE(F, DF, WH) VALUE(U5Min, U5Max, U4Min, U4Max)),
 			if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.Outmin, H3.Outmax, WH) ){
@@ -245,7 +257,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, CC_11, nr);
 			}
 			TASK(MODE(READWRITE(C12, CC_11) CONSTREFERENCE(DF, WH)),
-			     faddin(DF,mr,nr,CC_11,nr,C12,ldc);
+			     pfaddin(DF,mr,nr,CC_11,nr,C12,ldc, NUM_THREADS);
 			     );
 			CHECK_DEPENDENCIES;
 
@@ -257,7 +269,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C21, ldc);
 			}
 			TASK(MODE(READWRITE(C_11, C21) CONSTREFERENCE(DF, WH) ),
-			     fsubin(DF,mr,nr,C_11,nr,C21,ldc);
+			     pfsubin(DF,mr,nr,C_11,nr,C21,ldc, NUM_THREADS);
 			     );
 		
 			    //CHECK_DEPENDENCIES;
@@ -270,7 +282,7 @@ namespace FFLAS { namespace BLAS3 {
 				freduce (F, mr, nr, C11, ldc);
 			}
 			TASK(MODE(READWRITE(C11, X15) CONSTREFERENCE(DF, WH)),
-			     faddin(DF,mr,nr,X15,x1rd,C11,ldc);
+			     pfaddin(DF,mr,nr,X15,x1rd,C11,ldc, NUM_THREADS);
 			     );
 
 			WH.Outmin = std::min (U1Min, std::min (U5Min, std::min (U6Min, U7Min)));
@@ -369,6 +381,7 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // P7 = alpha . S3 * T3  in C21
 			MMH_t H7(F, WH.recLevel-1, -(WH.Amax-WH.Amin), WH.Amax-WH.Amin, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0,0);
+
 			fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H7);
 
 			    // T1 = B12 - B11 in X2
@@ -379,6 +392,7 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // P5 = alpha . S1*T1 in C22
 			MMH_t H5(F, WH.recLevel-1, 2*WH.Amin, 2*WH.Amax, -(WH.Bmax-WH.Bmin), WH.Bmax-WH.Bmin, 0, 0);
+
 			fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
 			    // T2 = B22 - T1 in X2
@@ -389,17 +403,20 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // P6 = alpha . S2 * T2 in C12
 			MMH_t H6(F, WH.recLevel-1, 2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin, 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin, 0, 0);
-			fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
+
+						fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
 
 			    // S4 = A12 -S2 in X1
 			fsub(DF,la,ca,(DFCEptr)A12,lda,(DFCEptr)X1,ldX1,(DFEptr)X1,ldX1);
 
 			    // P3 = alpha . S4*B22 in C11
 			MMH_t H3(F, WH.recLevel-1, 2*WH.Amin-2*WH.Amax, 2*WH.Amax-2*WH.Amin, WH.Bmin, WH.Bmax, 0, 0);
+
 			fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, B22, ldb, F.zero, C11, ldc, H3);
 
 			    // P1 = alpha . A11 * B11 in X1
 			MMH_t H1(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+			
 			fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H1);
 
 			    // U2 = P1 + P6 in C12  and
@@ -453,6 +470,7 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // P4 = alpha . A22 * T4 in C11
 			MMH_t H4(F, WH.recLevel-1, WH.Amin, WH.Amax, 2*WH.Bmin-2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin, 0, 0);
+						
 			fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H4);
 
 			fflas_delete (X2);
@@ -468,6 +486,7 @@ namespace FFLAS { namespace BLAS3 {
 
 			    // P2 = alpha . A12 * B21  in C11
 			MMH_t H2(F, WH.recLevel-1, WH.Amin, WH.Amax, WH.Bmin, WH.Bmax, 0, 0);
+									
 			fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H2);
 
 			    //  U1 = P2 + P1 in C11

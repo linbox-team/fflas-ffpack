@@ -30,7 +30,7 @@
 //#define WINO_PARALLEL_TMPS
 //#define __FFLASFFPACK_FORCE_SEQ
 //#define PFGEMM_WINO_SEQ 32
-//#define CLASSIC_SEQ
+#define CLASSIC_SEQ
 //#define WINO_SEQ
 //#define DEBUG 1
 //#undef NDEBUG
@@ -175,6 +175,30 @@ int main(int argc, char** argv) {
       }else{
 	      if(p==7){
 
+			  int nrec = 0;
+			  int dim = m;
+			  //                      if(dim < 19000)
+			  nrec--;
+			  while(dim >= __FFLASFFPACK_WINOTHRESHOLD*2){
+				  dim=dim/2;
+				  nrec++;
+			  }
+			  nrec=std::max(1,nrec);
+			  //			  std::cout<<" WINO_THREShold"<<__FFLASFFPACK_WINOTHRESHOLD<<" nrec = "<<nrec<<" dim = "<<dim<<std::endl;
+			  if(nbw != -1)
+				  nrec=nbw;
+			  MMHelper<Field, MMHelperAlgo::WinogradPar>
+				  WH (F, nrec, ParSeqHelper::Sequential());
+
+			  nbw=nrec;
+			  if (i) chrono.start();
+			  PAR_BLOCK
+				  {
+					  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+				  }
+			  if (i) {chrono.stop(); time+=chrono.realtime();}
+			  
+			  
 		      // MMHelper<Field, MMHelperAlgo::WinogradPar>
 		      // 	      WH (F, nbw, ParSeqHelper::Sequential());
 		      // 	  //		      cout<<"wino parallel"<<endl;

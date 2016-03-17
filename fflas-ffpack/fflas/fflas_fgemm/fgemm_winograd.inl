@@ -376,11 +376,7 @@ namespace FFLAS { namespace Protected {
 
 namespace FFLAS{
 	template<class Field, class ModeT>
-	inline typename
-	std::enable_if<std::is_same<ModeT,ModeCategories::DelayedTag>::value ||
-	               std::is_same<ModeT,ModeCategories::LazyTag>::value ||
-	               std::is_same<ModeT,ModeCategories::DefaultBoundedTag>::value,
-		       typename Field::Element_ptr>::type
+	inline  typename Field::Element_ptr
 	fgemm (const Field& F,
 	       const FFLAS_TRANSPOSE ta,
 	       const FFLAS_TRANSPOSE tb,
@@ -405,6 +401,7 @@ namespace FFLAS{
 		if (H.recLevel == 0){
 			MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(H);
 			fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
+	
 			H.Outmax = HC.Outmax;
 			H.Outmin = HC.Outmin;
 			return C;
@@ -478,8 +475,18 @@ namespace FFLAS{
 #elif defined CLASSIC_SEQ
 			MMHelper<Field,MMHelperAlgo::Winograd>
                                 HC (F, 0,ParSeqHelper::Sequential());
+#elif defined CLASSIC_Hybrid
+			
+			typedef StrategyParameter::TwoDAdaptive  twoda;
+			typedef CuttingStrategy::Recursive rec;
+			
+			MMHelper<Field,MMHelperAlgo::Winograd,
+				 typename FFLAS::ModeTraits<Field>::value,
+				 FFLAS::ParSeqHelper::Parallel<rec, twoda> >
+				HC (F, -1, SPLITTER(H.parseq.numthreads(), rec, twoda));
+
 #elif defined PFGEMM_WINO_SEQ
-                        MMHelper<Field,MMHelperAlgo::Winograd
+                        MMHelper<Field,MMHelperAlgo::Winograd,
 				 typename FFLAS::ModeTraits<Field>::value,
 				 FFLAS::ParSeqHelper::Parallel>
                                 HC (F, -1, ParSeqHelper::Parallel(PFGEMM_WINO_SEQ, RECURSIVE, TWO_D_ADAPT));
@@ -487,7 +494,7 @@ namespace FFLAS{
                         MMHelper<Field,MMHelperAlgo::Winograd,
 				 typename FFLAS::ModeTraits<Field>::value,
 				 FFLAS::ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> >
-				 HC (F, 0, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive>(32));
+				 HC (F, 0, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive>(NUM_THREADS));
 #endif
                         //              MMHelper<Field, MMHelperAlgo::Classic, ModeTraits> HC(H);
 
