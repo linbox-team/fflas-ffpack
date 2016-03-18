@@ -61,7 +61,6 @@ namespace FFLAS { namespace BLAS3 {
 			const typename MMH_t::DelayedField & DF = WH.delayedField;
 			typedef typename  MMH_t::DelayedField::Element DFElt;
 
-			size_t nt = WH.parseq.numthreads();
 			size_t lb, cb, la, ca, ldX2;
 			    // size_t x3rd = std::max(mr,kr);
 			typename Field::ConstElement_ptr A11=A, A12, A21, A22;
@@ -220,7 +219,7 @@ namespace FFLAS { namespace BLAS3 {
 //		TASK(MODE(READWRITE(X15, C12) CONSTREFERENCE(F, DF, WH, U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax)),
 			if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax, WH)){
 			TASK(MODE(READWRITE(X15) CONSTREFERENCE(F)),
-				 pfreduce (F, mr, x1rd, X15, x1rd, NUMTHREADS);
+				 pfreduce (F, mr, x1rd, X15, x1rd, NUM_THREADS);
 				 );
 			TASK(MODE(READWRITE(C12) CONSTREFERENCE(F)),
 				 pfreduce (F, mr, nr, C12, ldc, NUM_THREADS);

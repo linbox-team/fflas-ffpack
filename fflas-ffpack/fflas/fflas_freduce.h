@@ -129,7 +129,7 @@ namespace FFLAS {
 		  typename Field::Element_ptr A, const size_t lda, const size_t numths)
 	{
 		SYNCH_GROUP(
-			FORBLOCK1D(iter, M, SPLITTER(numths),
+			FORBLOCK1D(iter, m, SPLITTER(numths),
 					   size_t rowsize= iter.end()-iter.begin();
 					   TASK(MODE(CONSTREFERENCE(F) READWRITE(A[iter.begin()*lda])),
 							freduce (F, rowsize, n, A+iter.begin()*lda, lda);
