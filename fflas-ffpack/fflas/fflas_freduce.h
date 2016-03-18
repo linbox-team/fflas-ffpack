@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_freduce.inl
  * Copyright (C) 2014 FFLAS FFPACK group
@@ -121,6 +121,21 @@ namespace FFLAS {
 		else
 			for (size_t i = 0 ; i < m ; ++i)
 				freduce (F, n, A+i*lda, 1);
+		return;
+	}
+	template<class Field>
+	void
+	pfreduce (const Field& F, const size_t m , const size_t n,
+		  typename Field::Element_ptr A, const size_t lda, const size_t numths)
+	{
+		SYNCH_GROUP(
+			FORBLOCK1D(iter, M, SPLITTER(numths),
+					   size_t rowsize= iter.end()-iter.begin();
+					   TASK(MODE(CONSTREFERENCE(F) READWRITE(A[iter.begin()*lda])),
+							freduce (F, rowsize, n, A+iter.begin()*lda, lda);
+							);
+					   );
+					);
 		return;
 	}
 

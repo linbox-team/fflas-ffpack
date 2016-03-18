@@ -219,26 +219,41 @@ namespace FFLAS { namespace BLAS3 {
 			    // BIG TASK with 5 Addin function calls
 //		TASK(MODE(READWRITE(X15, C12) CONSTREFERENCE(F, DF, WH, U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax)),
 			if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.Outmin, H1.Outmax, H6.Outmin, H6.Outmax, WH)){
-				freduce (F, mr, x1rd, X15, x1rd);
-				freduce (F, mr, nr, C12, ldc);
+			TASK(MODE(READWRITE(X15) CONSTREFERENCE(F)),
+				 pfreduce (F, mr, x1rd, X15, x1rd, NUMTHREADS);
+				 );
+			TASK(MODE(READWRITE(C12) CONSTREFERENCE(F)),
+				 pfreduce (F, mr, nr, C12, ldc, NUM_THREADS);
+				 );
+			CHECK_DEPENDENCIES;
 			}
-			TASK(MODE(READWRITE(X15, C12) CONSTREFERENCE(DF, WH)),
+			TASK(MODE(READWRITE(X15, C12) CONSTREFERENCE(DF)),
 			     pfaddin(DF,mr,nr,X15,x1rd,C12,ldc, NUM_THREADS);
 			     );
 			CHECK_DEPENDENCIES;
 //		TASK(MODE(READWRITE(C12, C21) CONSTREFERENCE(F, DF, WH, U3Min, U3Max, U2Min, U2Max)),
 			if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.Outmin, H7.Outmax, WH)){
-				freduce (F, mr, nr, C12, ldc);
-				freduce (F, mr, nr, C21, ldc);
+				TASK(MODE(READWRITE(C12) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C12, ldc, NUM_THREADS);
+					 );
+				TASK(MODE(READWRITE(C21) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C21, ldc, NUM_THREADS);
+					 );
+				CHECK_DEPENDENCIES;
 			}
-			TASK(MODE(READWRITE(C12, C21) CONSTREFERENCE(DF, WH)),
+			TASK(MODE(READWRITE(C12, C21) CONSTREFERENCE(DF)),
 			     pfaddin(DF,mr,nr,C12,ldc,C21,ldc, NUM_THREADS);
 			     );
 			CHECK_DEPENDENCIES;
 //		TASK(MODE(READWRITE(C12, C22) CONSTREFERENCE(F, DF, WH) VALUE(U4Min, U4Max, U2Min, U2Max)),
 			if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.Outmin, H5.Outmax, WH)){
-				freduce (F, mr, nr, C22, ldc);
-				freduce (F, mr, nr, C12, ldc);
+				TASK(MODE(READWRITE(C22) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C22, ldc, NUM_THREADS);
+					 );
+				TASK(MODE(READWRITE(C12) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C12, ldc, NUM_THREADS);
+					 );
+				CHECK_DEPENDENCIES;
 			}
 			TASK(MODE(READWRITE(C12, C22) CONSTREFERENCE(DF, WH)),
 			     pfaddin(DF,mr,nr,C22,ldc,C12,ldc, NUM_THREADS);
@@ -246,16 +261,26 @@ namespace FFLAS { namespace BLAS3 {
 			CHECK_DEPENDENCIES;
 //		TASK(MODE(READWRITE(C22, C21) CONSTREFERENCE(F, DF, WH) VALUE(U3Min, U3Max, U7Min, U7Max)),
 			if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.Outmin,H5.Outmax, WH) ){
-				freduce (F, mr, nr, C21, ldc);
-				freduce (F, mr, nr, C22, ldc);
+				TASK(MODE(READWRITE(C21) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C21, ldc, NUM_THREADS);
+					 );
+				TASK(MODE(READWRITE(C22) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C22, ldc, NUM_THREADS);
+					 );
+				CHECK_DEPENDENCIES;
 			}
 			TASK(MODE(READWRITE(C22, C21) CONSTREFERENCE(DF, WH)),
 			     pfaddin(DF,mr,nr,C21,ldc,C22,ldc, NUM_THREADS);
 			     );
 //		TASK(MODE(READWRITE(C12, CC_11) CONSTREFERENCE(F, DF, WH) VALUE(U5Min, U5Max, U4Min, U4Max)),
 			if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.Outmin, H3.Outmax, WH) ){
-				freduce (F, mr, nr, C12, ldc);
-				freduce (F, mr, nr, CC_11, nr);
+				TASK(MODE(READWRITE(C12) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C12, ldc, NUM_THREADS);
+					 );
+				TASK(MODE(READWRITE(CC_11) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, CC_11, nr, NUM_THREADS);
+					 );
+				CHECK_DEPENDENCIES;
 			}
 			TASK(MODE(READWRITE(C12, CC_11) CONSTREFERENCE(DF, WH)),
 			     pfaddin(DF,mr,nr,CC_11,nr,C12,ldc, NUM_THREADS);
@@ -266,8 +291,13 @@ namespace FFLAS { namespace BLAS3 {
 			DFElt U6Min, U6Max;
 //		TASK(MODE(READWRITE(C_11, C21) CONSTREFERENCE(F, DF, WH) VALUE(U6Min, U6Max, U3Min, U3Max)),
 			if (Protected::NeedPreSubReduction (U6Min,U6Max, U3Min, U3Max, H4.Outmin,H4.Outmax, WH) ){
-				freduce (F, mr, nr, C_11, nr);
-				freduce (F, mr, nr, C21, ldc);
+				TASK(MODE(READWRITE(CC_11) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C_11, nr, NUM_THREADS);
+					 );
+				TASK(MODE(READWRITE(C21) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C21, ldc, NUM_THREADS);
+					 );
+				CHECK_DEPENDENCIES
 			}
 			TASK(MODE(READWRITE(C_11, C21) CONSTREFERENCE(DF, WH) ),
 			     pfsubin(DF,mr,nr,C_11,nr,C21,ldc, NUM_THREADS);
@@ -279,8 +309,13 @@ namespace FFLAS { namespace BLAS3 {
 			DFElt U1Min, U1Max;
 //		TASK(MODE(READWRITE(C11, X15/*, X14, X13, X12, X11*/) CONSTREFERENCE(F, DF, WH) VALUE(U1Min, U1Max)),
 			if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
-				freduce (F, mr, nr, X15, x1rd);
-				freduce (F, mr, nr, C11, ldc);
+				TASK(MODE(READWRITE(X15) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, X15, x1rd, NUM_THREADS);
+					 );
+				TASK(MODE(READWRITE(C11) CONSTREFERENCE(F)),
+					 pfreduce (F, mr, nr, C11, ldc, NUM_THREADS);
+					 );
+				CHECK_DEPENDENCIES
 			}
 			TASK(MODE(READWRITE(C11, X15) CONSTREFERENCE(DF, WH)),
 			     pfaddin(DF,mr,nr,X15,x1rd,C11,ldc, NUM_THREADS);
