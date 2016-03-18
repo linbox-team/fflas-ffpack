@@ -158,11 +158,11 @@ namespace FFLAS {
 		   MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<Cut,Param> > & H)
 	{
 			// compute each fgemm componentwise
-		int s=F.size();
-		int nt=H.parseq.numthreads();
-		int loop_nt = std::min(s,nt);
-		int iter_nt = nt / loop_nt;
-		int leftover_nt = nt % loop_nt;
+		size_t s=F.size();
+		size_t nt=H.parseq.numthreads();
+		size_t loop_nt = std::min(s,nt);
+		size_t iter_nt = nt / loop_nt;
+		size_t leftover_nt = nt % loop_nt;
 			//std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
 #ifndef __FFLASFFPACK_SEQUENTIAL
 		ParSeqHelper::Parallel<Cut,Param>  sp(loop_nt);
