@@ -30,7 +30,8 @@
 //#define WINO_PARALLEL_TMPS
 //#define __FFLASFFPACK_FORCE_SEQ
 //#define PFGEMM_WINO_SEQ 32
-#define CLASSIC_SEQ
+//#define CLASSIC_SEQ
+#define CLASSIC_HYBRID
 //#define WINO_SEQ
 //#define DEBUG 1
 //#undef NDEBUG
@@ -170,7 +171,7 @@ int main(int argc, char** argv) {
 			  break;
 		  }
 	      }
-	      }
+		  }
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
       }else{
 	      if(p==7){
@@ -187,15 +188,13 @@ int main(int argc, char** argv) {
 			  //			  std::cout<<" WINO_THREShold"<<__FFLASFFPACK_WINOTHRESHOLD<<" nrec = "<<nrec<<" dim = "<<dim<<std::endl;
 			  if(nbw != -1)
 				  nrec=nbw;
-			  MMHelper<Field, MMHelperAlgo::WinogradPar>
-				  WH (F, nrec, ParSeqHelper::Sequential());
-
 			  nbw=nrec;
 			  if (i) chrono.start();
 			  PAR_BLOCK
-				  {
-					  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-				  }
+			  {
+				  MMHelper<Field, MMHelperAlgo::WinogradPar,ModeTraits<Field>::value,ParSeqHelper::Parallel<> >  WH (F, nrec, ParSeqHelper::Parallel<>(t));
+				  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+			  }
 			  if (i) {chrono.stop(); time+=chrono.realtime();}
 			  
 			  
@@ -219,7 +218,7 @@ int main(int argc, char** argv) {
 		      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 		      if (i) {chrono.stop(); time+=chrono.realtime();}
 	      }
-      }
+  }
 
       TimFreivalds.clear();
       TimFreivalds.start();
@@ -229,7 +228,7 @@ int main(int argc, char** argv) {
       timev+=TimFreivalds.usertime();
       if (!pass) 
 	      std::cout<<"FAILED"<<std::endl;
-  }
+}
   fflas_delete( A);
   fflas_delete( B);
   fflas_delete( C);

@@ -102,11 +102,11 @@ namespace FFLAS { namespace Protected{
 }//FFLAS
 
 namespace FFLAS{ namespace Protected{
-	template <class Field, class Element, class AlgoT>
+		template <class Field, class Element, class AlgoT, class ParSeqTrait>
 	inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
 					 Element& Op1min, Element& Op1max,
 					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
+					 MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
 	{
 		Outmin = Op1min + Op2min;
 		Outmax = Op1max + Op2max;
@@ -121,22 +121,22 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class Field, class Element, class AlgoT, class ModeT>
+		template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
 	inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
 					 Element& Op1min, Element& Op1max,
 					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeT >& WH)
+					 MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
 	{
 		Outmin = WH.FieldMin;
 		Outmax = WH.FieldMax;
 		return false;
 	}
 
-	template <class Field, class Element, class AlgoT>
+	template <class Field, class Element, class AlgoT, class ParSeqTrait>
 	inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
 					 Element& Op1min, Element& Op1max,
 					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
+					 MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
 	{
 		Outmin = Op1min - Op2max;
 		Outmax = Op1max - Op2min;
@@ -151,11 +151,11 @@ namespace FFLAS{ namespace Protected{
 		} else return false;
 	}
 
-	template <class Field, class Element, class AlgoT, class ModeT>
+	template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
 	inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
 					 Element& Op1min, Element& Op1max,
 					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeT >& WH)
+					 MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
 	{
 		    // Necessary? -> CP: Yes, for generic Mode of op
 		Outmin = WH.FieldMin;
@@ -164,11 +164,11 @@ namespace FFLAS{ namespace Protected{
 	}
 
 //Probable bug here due to overflow of int64_t
-	template<class Field, class Element, class AlgoT>
+	template<class Field, class Element, class AlgoT, class ParSeqTrait>
 	inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
 					       Element& Op1min, Element& Op1max,
 					       Element& Op2min, Element& Op2max, Element beta,
-					       MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
+					       MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
 	{
 		// Testing if P5 need to be reduced
 		Outmin =  std::min(beta*Op2min,beta*Op2max);
@@ -185,25 +185,25 @@ namespace FFLAS{ namespace Protected{
 		}
 	}
 
-	template<class Field, class Element, class AlgoT, class ModeT>
+	template<class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
 	inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
 					       Element& Op1min, Element& Op1max,
 					       Element& Op2min, Element& Op2max, Element beta,
-					       MMHelper<Field, AlgoT, ModeT>& WH)
+					       MMHelper<Field, AlgoT, ModeT, ParSeqTrait>& WH)
 	{
 		Outmin = WH.FieldMin;
 		Outmax = WH.FieldMax;
 		return false;
 	}
 
-	template <class Field, class AlgoT>
+	template <class Field, class AlgoT, class ParSeqTrait>
 	inline void ScalAndReduce (const Field& F, const size_t N,
 				   const typename Field::Element alpha,
 				   typename Field::Element_ptr X, const size_t incX,
-				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
+				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
+			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
 			F.convert(al, alpha);
 			if (al < 0) al = -al;
 			if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
@@ -217,21 +217,21 @@ namespace FFLAS{ namespace Protected{
 			freduce (F, N, X, incX);
 	}
 
-	template <class Field, class AlgoT>
+	template <class Field, class AlgoT, class ParSeqTrait>
 	inline void ScalAndReduce (const Field& F, const size_t M, const size_t N,
 				   const typename Field::Element alpha,
 				   typename Field::Element_ptr A, const size_t lda,
-				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
+				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
 	{
 		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
+			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
 			F.convert(al, alpha);
 			if (al<0) al = -al;
 			if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
 				freduce (F, M, N, A, lda);
 				fscalin (F, M, N, alpha, A, lda);
 			} else {
-				fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt*)A, lda);
+				fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
 				freduce (F, M, N, A, lda);
 			}
 		} else

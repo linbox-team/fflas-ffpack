@@ -81,7 +81,7 @@ namespace FFLAS {
 			typedef C Cut;
 			typedef P Param;
 			
-			Parallel(size_t n=MAX_THREADS):_numthreads(n){}
+			Parallel(size_t n=NUM_THREADS):_numthreads(n){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
 				return out << "Parallel: " << p.numthreads();
