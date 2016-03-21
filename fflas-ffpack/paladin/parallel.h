@@ -181,7 +181,8 @@
     {I;}
 
 
-#define SYNCH_GROUP(Args...)     {{Args};} WAIT;
+#define SYNCH_GROUP(Args...)     {{Args};}\
+        WAIT;
 
 
 // macro omp taskwait (waits for all childs of current task)
