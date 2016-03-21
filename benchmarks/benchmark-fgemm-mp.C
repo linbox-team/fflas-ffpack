@@ -100,7 +100,7 @@ int main(int argc, char** argv){
 	typedef Givaro::Modular<Givaro::Integer> Field;	
 	Givaro::Integer p;
 	FFLAS::Timer chrono, TimFreivalds;
-	double time=0.,timev=0.;
+	double time=0.;
 #ifdef BENCH_FLINT
 	double timeFlint=0.;
 #endif
