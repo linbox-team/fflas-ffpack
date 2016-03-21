@@ -98,6 +98,10 @@ namespace FFLAS {
 			{F.characteristic(normA);F.characteristic(normB);}
 		MMHelper(const FFPACK::RNSIntegerMod<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
 			{F.characteristic(normA);F.characteristic(normB);}
+		// copy constructor from other Field and Algo Traits
+		template<class F2, typename AlgoT2, typename FT2, typename PS2>
+		MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
+
 		void setNorm(Givaro::Integer p){normA=normB=p;}
 	};
 
@@ -344,23 +348,23 @@ namespace FFLAS {
 		return fgemm(F,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
 	}
 
-	template<class ParSeq>
-	inline Givaro::Integer* 
-	fgemm (const Givaro::ZRing<Givaro::Integer>& F,
-	       const FFLAS_TRANSPOSE ta,
-	       const FFLAS_TRANSPOSE tb,
-	       const size_t m, const size_t n,const size_t k,
-	       const Givaro::Integer alpha,
-	       const Givaro::Integer* A, const size_t lda,
-	       const Givaro::Integer* B, const size_t ldb,
-	       Givaro::Integer beta,
-	       Givaro::Integer* C, const size_t ldc,
-	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
-	{
-		MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2(F, H.recLevel,H.parseq);
-		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
+	// template<class ParSeq>
+	// inline Givaro::Integer* 
+	// fgemm (const Givaro::ZRing<Givaro::Integer>& F,
+	//        const FFLAS_TRANSPOSE ta,
+	//        const FFLAS_TRANSPOSE tb,
+	//        const size_t m, const size_t n,const size_t k,
+	//        const Givaro::Integer alpha,
+	//        const Givaro::Integer* A, const size_t lda,
+	//        const Givaro::Integer* B, const size_t ldb,
+	//        Givaro::Integer beta,
+	//        Givaro::Integer* C, const size_t ldc,
+	//        MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
+	// {
+	// 	MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq> H2(F, H.recLevel,H.parseq);
+	// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 
-	}
+	// }
 		/************************************
 		 *** MULTIPRECISION FGEMM OVER Fp ***
 		 ************************************/
@@ -398,7 +402,6 @@ namespace FFLAS {
 
 
 		// fgemm for IntegerDomain with Winograd Helper
-	template <class AlgoT, class ParSeq>
 	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
 								   const FFLAS_TRANSPOSE ta,
 								   const FFLAS_TRANSPOSE tb,
@@ -408,7 +411,35 @@ namespace FFLAS {
 								   const Givaro::Integer *B, const size_t ldb,
 								   const Givaro::Integer beta,
 								   Givaro::Integer* C, const size_t ldc,
-								   MMHelper<Givaro::Modular<Givaro::Integer>, AlgoT, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > & H)
+								   MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
+	{
+			// compute the product over Z
+		// std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
+		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
+		Givaro::Integer p;
+		F.cardinality(p);
+		IntegerDomain Z;
+		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > H2(Z,H.recLevel,H.parseq);
+		H2.setNorm(p);
+
+		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
+
+			// reduce the product mod p
+		freduce (F, m, n, C, ldc);
+
+		return C;
+	}
+	template<class ParSeq>
+	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
+								   const FFLAS_TRANSPOSE ta,
+								   const FFLAS_TRANSPOSE tb,
+								   const size_t m, const size_t n,const size_t k,
+								   const Givaro::Integer alpha,
+								   const Givaro::Integer *A, const size_t lda,
+								   const Givaro::Integer *B, const size_t ldb,
+								   const Givaro::Integer beta,
+								   Givaro::Integer* C, const size_t ldc,
+								   MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Auto, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > & H)
 	{
 			// compute the product over Z
 		// std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;

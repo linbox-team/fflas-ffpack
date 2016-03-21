@@ -51,7 +51,7 @@
 
 namespace FFLAS {
 
-	template<class Field, class AlgoT, class ModeTrait, class Strat, class Param>
+	template<class Field, class ModeTrait, class Strat, class Param>
 	inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
 	fgemm( const Field& F,
 	       const FFLAS::FFLAS_TRANSPOSE ta,
@@ -64,7 +64,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, AlgoT, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H) 
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeTrait, ParSeqHelper::Parallel<Strat,Param> > & H)
 	{
 		return pfgemm (F, ta, tb, m, n, k ,alpha, A, lda, B, ldb, beta, C, ldc, H);
 	}

@@ -200,14 +200,12 @@ bool launch_MM(const Field & F,
 		RandomMatrix(F,C,m,n,ldc,b);
 		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		if (par){
-			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeDAdaptive> >
-				WH (F, nbw);
-			std::cerr<<"ici"<<std::endl;
+			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeDAdaptive> > WH (F, nbw);
 			PAR_BLOCK{
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
 		}else{
-			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
 			FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 		}
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);

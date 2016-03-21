@@ -69,6 +69,11 @@ namespace FFLAS {
 		struct Bini{};
 	}
 
+	template<class ModeT, class ParSeq>
+	struct AlgoChooser{typedef MMHelperAlgo::Winograd value;};
+	template<class ParSeq>
+	struct AlgoChooser<ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq>{typedef MMHelperAlgo::Classic value;};
+
 	template<class Field,
 		 typename AlgoTrait = MMHelperAlgo::Auto,
 		 typename ModeTrait = typename ModeTraits<Field>::value,
