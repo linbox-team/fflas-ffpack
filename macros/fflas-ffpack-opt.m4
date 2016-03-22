@@ -57,7 +57,9 @@ CXXFLAGS_ALL="-I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${BACKUP_CXXFLAGS} ${AVXFLAG
 LIBS="${BACKUP_LIBS} ${CBLAS_LIBS} ${GIVARO_LIBS}"
 WINO=`cat optimiser/winograd.C`
 ADDFLAGS="-DOPTIMISATION_MODE"
-
+saved_LD_RUN_PATH="$LD_RUN_PATH"
+LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$givaro_lib_path"
+export LD_RUN_PATH
 dnl for Wino threshold for double
 echo "  == Wino/BLAS threshold for Givaro::Modular<double> == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Givaro::Modular<double> ${ADDFLAGS}"
@@ -159,8 +161,8 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		AC_MSG_RESULT(cross compilation)
 		break
 		])
-
-
+LD_RUN_PATH="$saved_LD_RUN_PATH"
+unset givaro_lib_path
 ],
 [AC_MSG_RESULT(no optimization)]
 )

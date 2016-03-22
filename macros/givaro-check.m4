@@ -70,10 +70,12 @@ if test -r "$GIVARO_HOME/include/givaro/givconfig.h"; then
 	# Givaro Libs + CFlags contain GMP info - AB 2014-12-12
 	GIVARO_LIBS=`$GIVARO_HOME/bin/givaro-config --libs`
 	GIVARO_CFLAGS=`$GIVARO_HOME/bin/givaro-config --cflags`
-
+	givaro_lib_path=`$GIVARO_HOME/bin/givaro-config --prefix`/lib
 	CXXFLAGS="${BACKUP_CXXFLAGS} ${GIVARO_CFLAGS}"
 	LIBS="${BACKUP_LIBS} ${GIVARO_LIBS}"
-
+	saved_LD_RUN_PATH="$LD_RUN_PATH"
+	LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$givaro_lib_path"
+	export LD_RUN_PATH
 	AC_TRY_LINK(
 	[#include <givaro/givinteger.h>],
 	[Givaro::Integer a;],
@@ -137,6 +139,8 @@ AM_CONDITIONAL(FFLASFFPACK_HAVE_GIVARO, test "x$HAVE_GIVARO" = "xyes")
 
 CXXFLAGS=${BACKUP_CXXFLAGS}
 LIBS=${BACKUP_LIBS}
+LD_RUN_PATH="$saved_LD_RUN_PATH"
+unset saved_LD_RUN_PATH
 #unset LD_LIBRARY_PATH
 
 ])
