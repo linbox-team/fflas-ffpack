@@ -52,6 +52,11 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 		[
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		BACKUP_LIBS=${LIBS}
+		saved_LD_RUN_PATH="$LD_RUN_PATH"
+		blas_lib_path=`echo $CBLAS_LIBS | grep '\-L' |sed 's/\(.*\)-L\([^ ]*\)\(.*\)/\2/'`
+		echo $blas_lib_path
+		LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$blas_lib_path"
+		export LD_RUN_PATH
 		CODE_CBLAS=`cat macros/CodeChunk/cblas.C`
 
 		AC_MSG_CHECKING(for USER BLAS)
@@ -108,6 +113,9 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 
 		CXXFLAGS=${BACKUP_CXXFLAGS}
 		LIBS=${BACKUP_LIBS}
+		LD_RUN_PATH="$saved_LD_RUN_PATH"
+		export LD_RUN_PATH
+		unset saved_LD_RUN_PATH
 		dnl  unset LD_LIBRARY_PATH
 
 
