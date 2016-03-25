@@ -34,12 +34,17 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+#define DEBUG 1
 #define TIME 1
 
+#if not defined(STD_RECINT_SIZE)
+#define STD_RECINT_SIZE 8
+#endif
+
+#include <givaro/modular.h>
+#include "recint/recint.h"
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -49,7 +54,10 @@
 using namespace std;
 using namespace FFPACK;
 
-typedef Givaro::Modular<double> Field;
+// typedef Givaro::Modular<double> Field;
+
+typedef RecInt::ruint<STD_RECINT_SIZE> Ints;	
+typedef Givaro::Modular<Ints> Field;	
 
 int main(int argc, char** argv){
 
@@ -60,9 +68,9 @@ int main(int argc, char** argv){
 
 
 	if (argc != 8)	{
-		cerr<<"Usage : test-fgemm <p> <A> <b> <i>"
+		cerr<<"Usage : test-fgemv <p> <A> <b> <i>"
 		    <<" <alpha> <beta> <c>"<<endl
-		    <<"         to do i computations of c <- alpha AB + beta C"
+		    <<"         to do i computations of c <- alpha Ab + beta c"
 		    <<endl;
 		exit(-1);
 	}
@@ -78,8 +86,6 @@ int main(int argc, char** argv){
 	A = read_field(F,argv[2],&m,&n);
 
 	Field::Element * c;
-	c = FFLAS::fflas_new<Field::Element>(n);
-
 
 
  FFLAS::Timer tim,t; t.clear();tim.clear();
@@ -94,23 +100,38 @@ int main(int argc, char** argv){
 	}
 
 #if DEBUG
-	Field::Element *d = FFLAS::fflas_new<Field::Element>(n);
+	Field::Element *d;
+    d = read_field(F,argv[7],&m,&k);
 	for (int i=0; i<m; ++i)
-		F.mul (d[i], beta, b[i]);
+		F.mulin (d[i], beta); 					// d <- beta c
 	for (int i=0; i<m; ++i)
-		F.mulin (b[i], alpha);
+		F.mulin (b[i], alpha);					// b <- alpha b
 	for (int i=0; i<m; ++i)
 		for (int j=0; j<n; ++j)
-			F.axpyin (d[i], *(A+i*m+j), b[j]);
+			F.axpyin (d[i], *(A+i*m+j), b[j]);	// d <- Ad+b = alpha Ab + beta c
 	bool fail = false;
 	for (int i=0; i<m; ++i)
 		if (!F.areEqual(d[i], c[i]))
 			fail = true;
 
-	if (fail)
+	if (fail) {
 		cerr<<"FAIL"<<endl;
-	else
+        write_field(F, std::cerr<<"i:=",b,n,k,k,true)<<std::endl;
+        write_field(F, std::cerr<<"r:=",c,m,k,k,true)<<std::endl;
+        write_field(F, std::cerr<<"d:=",d,m,k,k,true)<<std::endl;
+
+        F.write(std::cerr<<"alpha:=", alpha) << ';' << std::endl;
+        write_field(F, std::cerr<<"A:=",A,m,n,n,true)<<std::endl;
+        b = read_field(F,argv[3],&n,&k);
+        write_field(F, std::cerr<<"b:=",b,n,k,k,true)<<std::endl;
+        F.write(std::cerr<<"beta:=", beta) << ';' << std::endl;
+        c = read_field(F,argv[7],&m,&k);
+        write_field(F, std::cerr<<"c:=",c,m,k,k,true)<<std::endl;
+        std::cerr<<"p:=" << F.characteristic() << ';' << std::endl;
+
+    } else
 		cerr<<"PASS"<<endl;
+
 	FFLAS::fflas_delete( d);
 #endif
 	FFLAS::fflas_delete( A);
