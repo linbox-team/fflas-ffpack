@@ -29,6 +29,12 @@
  */
 
 
+#if not defined(MG_DEFAULT)
+#define MG_DEFAULT MG_ACTIVE
+#endif
+#if not defined(STD_RECINT_SIZE)
+#define STD_RECINT_SIZE 8
+#endif
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -85,10 +91,6 @@ std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_
 	}
 	return out<<"])";
 }
-
-#if not defined(STD_RECINT_SIZE)
-#define STD_RECINT_SIZE 8
-#endif
 
 	static size_t iters = 3 ;
 	static Givaro::Integer q = -1 ;

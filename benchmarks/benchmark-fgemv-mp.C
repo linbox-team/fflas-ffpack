@@ -28,6 +28,12 @@
  *.
  */
 
+#if not defined(MG_DEFAULT)
+#define MG_DEFAULT MG_ACTIVE
+#endif
+#if not defined(STD_RECINT_SIZE)
+#define STD_RECINT_SIZE 8
+#endif
 
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -75,9 +81,6 @@ std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_
     return out<<"])";
 }
 
-#if not defined(STD_RECINT_SIZE)
-#define STD_RECINT_SIZE 8
-#endif
 
 static size_t iters = 3 ;
 static Givaro::Integer q = -1 ;
@@ -162,10 +165,10 @@ int tmain(){
 
     }
 
-    double Gflops=((2.*double(m)-1)/1000.*double(k)/1000.0/1000.0) /time * double(iters);
-// 	Gflops*=p.bitsize()/16.;
+    double Mflops=((2.*double(m)-1)/1000.*double(k)/1000.0) /time * double(iters);
+// 	Mflops*=p.bitsize()/16.;
     cout<<typeid(Ints).name()
-        << " | Time: "<< (time/double(iters))  << " (total:" << time <<") | Gflops: "<<Gflops<<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;
+        << " | Time: "<< (time/double(iters))  << " (total:" << time <<") | Mflops: "<<Mflops<<"  | perword: "<< (Mflops*double(p.bitsize()))/64. ;
     FFLAS::writeCommandString(std::cout << " | " << p << " (" << p.bitsize()<<")|", as)  << std::endl;
 
     return 0;
