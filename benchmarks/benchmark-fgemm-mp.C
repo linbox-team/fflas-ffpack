@@ -128,6 +128,7 @@ int tmain(){
 		Givaro::IntPrimeDom IPD;
 		IPD.nextprimein(p);
         Ints ip; Givaro::Caster<Ints,Givaro::Integer>(ip,p);
+        Givaro::Caster<Givaro::Integer,Ints>(p,ip); // to check consistency
 
 		Field F(ip);
 		size_t lda,ldb,ldc;
@@ -247,13 +248,6 @@ int tmain(){
 		return 0;
 	}
  
-// namespace Givaro {
-// template <>
-// mpz_class& Caster (mpz_class& t, const Givaro::Integer& s) {
-//         return t = static_cast<mpz_class>(s.get_mpz());
-// }
-// }
-
 
 
 int main(int argc, char** argv){
@@ -261,9 +255,6 @@ int main(int argc, char** argv){
 
     int r1 = tmain<Givaro::Integer>();
  
-//     r1 += tmain<mpz_class>();
-
-
 #ifdef BENCH_RECINT
     r1 += tmain<RecInt::rint<STD_RECINT_SIZE>>();
 #endif
