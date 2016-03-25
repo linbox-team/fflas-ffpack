@@ -216,7 +216,7 @@ int tmain(){
 		}
 		
 		chrono.stop();
-		time+=chrono.usertime();
+		time+=chrono.realtime();
 
 		TimFreivalds.start();      
 		bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, alpha, A, k, B, n, C,n);
@@ -236,10 +236,10 @@ int tmain(){
 
 	}
 
-	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / chrono.realtime() * double(iters);
+	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iters);
 // 	Gflops*=p.bitsize()/16.;
 	cout<<typeid(Ints).name()
-        << " | Time: "<<time<<"  Gflops: "<<Gflops<<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;
+        << " | Time: "<< (time/double(iters)) << " (total:" << time <<")  Gflops: "<<Gflops<<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;
 	FFLAS::writeCommandString(std::cout << '|' << p << " (" << p.bitsize()<<")|", as) << "  | Freivalds: "<< timev/double(iters) << std::endl;
 
 #ifdef BENCH_FLINT	
