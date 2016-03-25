@@ -41,6 +41,7 @@ using namespace std;
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "givaro/modular-integer.h"
+#include "givaro/givcaster.h"
 #include "fflas-ffpack/paladin/parallel.h"
 #ifdef BENCH_RECINT
 #include "recint/recint.h"
@@ -62,7 +63,7 @@ template<typename T>
 std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
 	size_t www(size_t((double(p.bitsize())*log(2.))/log(10.)));
-    out<<"<<";
+    out<<"Matrix("<<m<<','<<n<<",[[";
     out.width(www+1);
     out<<std::right<<C[0];
     for (size_t j=1;j<n;++j){
@@ -70,9 +71,9 @@ std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_
         out.width(www);
         out<<std::right<<C[j];
     }
-    out<<'>';
+    out<<']';
 	for (size_t i=1;i<m;++i){ 
-		out<<endl<<"|<";
+		out<<endl<<",[";
 		out.width(www+1);
 		out<<std::right<<C[i*ldc];
 		for (size_t j=1;j<n;++j){
@@ -80,9 +81,9 @@ std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_
 			out.width(www);
 			out<<std::right<<C[i*ldc+j];
 		}
-		out<<'>';
+		out<<']';
 	}
-	return out<<'>';
+	return out<<"])";
 }
 
 #if not defined(STD_RECINT_SIZE)
@@ -111,6 +112,10 @@ std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_
 
 template<typename Ints>
 int tmain(){
+	srand( (int)seed);
+	srand48(seed);
+    Givaro::Integer::seeding(seed);
+
     typedef Givaro::Modular<Ints> Field;	
 	Givaro::Integer p;
 	FFLAS::Timer chrono, TimFreivalds;
@@ -122,7 +127,7 @@ int tmain(){
 		Givaro::Integer::random_exact_2exp(p, b);			
 		Givaro::IntPrimeDom IPD;
 		IPD.nextprimein(p);
-        Ints ip(p);
+        Ints ip; Givaro::Caster<Ints,Givaro::Integer>(ip,p);
 
 		Field F(ip);
 		size_t lda,ldb,ldc;
@@ -202,7 +207,8 @@ int tmain(){
 		using  FFLAS::StrategyParameter::TwoDAdaptive;
 		// RNS MUL_LA
 		chrono.clear();chrono.start();	
-// 		PAR_BLOCK{ FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc, SPLITTER(MAX_THREADS,Recursive,TwoDAdaptive) ); 
+// 		PAR_BLOCK{ 
+//             FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc, SPLITTER(NUM_THREADS,Recursive,TwoDAdaptive) ); 
 // 		}
 		{ 
             FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential()); 
@@ -241,15 +247,22 @@ int tmain(){
 		return 0;
 	}
  
+// namespace Givaro {
+// template <>
+// mpz_class& Caster (mpz_class& t, const Givaro::Integer& s) {
+//         return t = static_cast<mpz_class>(s.get_mpz());
+// }
+// }
+
 
 
 int main(int argc, char** argv){
 	FFLAS::parseArguments(argc,argv,as);
 
-	srand( (int)seed);
-	srand48(seed);
-
     int r1 = tmain<Givaro::Integer>();
+ 
+//     r1 += tmain<mpz_class>();
+
 
 #ifdef BENCH_RECINT
     r1 += tmain<RecInt::rint<STD_RECINT_SIZE>>();
