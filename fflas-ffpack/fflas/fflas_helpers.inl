@@ -59,6 +59,8 @@ namespace FFLAS {
 		inline bool unfit(int64_t x){return (x>limits<int32_t>::max());}
 		template <size_t K>
 		inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}
+		template <>
+		inline bool unfit(RecInt::rint<6> x){return (x > limits<int32_t>::max());}
 	}
 
 	namespace MMHelperAlgo{
