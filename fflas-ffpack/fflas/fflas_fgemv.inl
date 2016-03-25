@@ -211,11 +211,12 @@ namespace FFLAS{
 		}
 		if (ta == FflasNoTrans)
 			for (size_t i = 0; i < Ydim; ++i)
-				F.assign (Y[i*incY], fdot(F, N, A+i*lda, 1, X, incX));
+				F.addin (Y[i*incY], fdot(F, N, A+i*lda, 1, X, incX));
 		else
 			for (size_t i = 0; i < Ydim; ++i)
-				F.assign (Y[i*incY], fdot(F, M, A+i, lda, X, incX));
+				F.addin (Y[i*incY], fdot(F, M, A+i, lda, X, incX));
 		fscalin (F, Ydim, alpha, Y, incY);
+
 		return Y;
 	}
 }
@@ -251,8 +252,8 @@ namespace FFLAS{
 				betadf=betadalpha;
 			}
 		}
-		 if (F.isMOne(betadf)) betadf = -F.one;
-
+        if (F.isMOne(betadf)) betadf = -F.one;
+        
 		size_t kmax = H.MaxDelayedDim (betadf);
 
 		if (kmax <=  Xdim/2 ){
@@ -298,6 +299,7 @@ namespace FFLAS{
 		}
 		MMHelper<typename associatedDelayedField<const Field>::field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> Hfp(H);
 
+
 		fgemv (H.delayedField, ta, M1, N1, alphadf, (DFCElt_ptr)A+nblock*shiftA, lda,
 		       (DFCElt_ptr)X+nblock*k2*incX, incX, betadf, (DFElt_ptr)Y, incY, Hfp);
 
@@ -308,7 +310,7 @@ namespace FFLAS{
 			       (DFCElt_ptr)X+i*k2*incX, incX, F.one, (DFElt_ptr)Y, incY, Hfp);
 		}
 
-                if (!F.isOne(alpha) && !F.isMOne(alpha)){
+        if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
 			if (std::max(-Hfp.Outmin, Hfp.Outmax) > Hfp.MaxStorableValue/al){
@@ -428,6 +430,7 @@ namespace FFLAS{
 	{
                 H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hb(F,0);
+
 		return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);
 	}
 
