@@ -15,9 +15,13 @@ WSRC=${EXEC:%=-W %.C}
 mkruns = make "OPTFLAGS=-Ofast -DSTD_RECINT_SIZE=$(1) -DBENCH_RECINT" ${EXEC} ${WSRC}; ${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2 >> ${OUTP}; make "OPTFLAGS=-Ofast -DINTEGER_NO_RNS" ${EXEC} ${WSRC}; echo "NORNS"`${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2` >> ${OUTP}; 
 
 
-all:
+all: run split
+
+run:
 	- rm ${OUTP}
 	$(foreach siz, ${SIZES}, $(call mkruns,${siz}))
+
+split:
 	fgrep RecInt ${OUTP} | sed 's/4rintILm/ /;s/EEE/ /'> ${OUTP}.rint
 	fgrep Givaro ${OUTP} | fgrep NORNS > ${OUTP}.gmp
 	fgrep Givaro ${OUTP} | fgrep -v NORNS > ${OUTP}.rns
