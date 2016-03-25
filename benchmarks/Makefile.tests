@@ -12,7 +12,7 @@ MODEL=$(shell cat /proc/cpuinfo | grep "model name" | head -1|cut -d':' -f2| tr 
 EXEC=benchmark-fgemv-mp
 WSRC=${EXEC:%=-W %.C}
 
-mkruns = make "OPTFLAGS=-Ofast -DSTD_RECINT_SIZE=$(1) -DBENCH_RECINT" ${EXEC} ${WSRC}; ${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2 >> ${OUTP}; make "OPTFLAGS=-Ofast -DINTEGER_NO_RNS" ${EXEC} ${WSRC}; echo "NORNS"`${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2` >> ${OUTP}; 
+mkruns = make "OPTFLAGS=-Ofast -DSTD_RECINT_SIZE=$(1) -DBENCH_RECINT" ${EXEC} ${WSRC}; ${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2 |awk '{print "SIZE:",$(1),$$0}' >> ${OUTP}; make "OPTFLAGS=-Ofast -DINTEGER_NO_RNS" ${EXEC} ${WSRC}; echo "NORNS"`${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2`|awk '{print "SIZE:",$(1),$$0}' >> ${OUTP}; 
 
 
 all: run split
