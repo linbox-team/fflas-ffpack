@@ -43,7 +43,7 @@
 #include <givaro/modular-double.h>
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
-
+#include <recint/ruint.h>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/utils/align-allocator.h"
@@ -133,9 +133,12 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
-
-		void precompute_cst(){
-			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
+		// can force to reduce integer entries larger than M
+		void precompute_cst(size_t K=0){
+			if (K!=0)
+				_ldm=K;
+			else
+				_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
 			_invbasis.resize(_size);
 			_field_rns.resize(_size);
 			_Mi.resize(_size);
@@ -196,7 +199,8 @@ namespace FFPACK {
 
 		// Arns must be an array of m*n*_size
 		// abs(||A||) <= maxA
-		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda,
+		template<typename T>
+		void init(size_t m, size_t n, double* Arns, size_t rda, const T* A, size_t lda,
 			  const integer& maxA, bool RNS_MAJOR=false) const
 		{
 			init(m,n,Arns,rda,A,lda, maxA.bitsize()/16 + (maxA.bitsize()%16?1:0),RNS_MAJOR);
@@ -209,7 +213,11 @@ namespace FFPACK {
 		
 		// reduce entries of Arns to be less than the rns basis elements
 		void reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR=false) const;
-		
+
+		template<size_t K>
+		void init(size_t m, size_t n, double* Arns, size_t rda, const RecInt::ruint<K>* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
+		template<size_t K>
+		void convert(size_t m, size_t n, integer gamma, RecInt::ruint<K>* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 
 		
 	}; // end of struct rns_double
@@ -399,7 +407,7 @@ namespace FFPACK {
 } // end of namespace FFPACK
 
 #include "rns-double.inl"
-
+#include "rns-double-recint.inl"
 namespace FFLAS {
 
 	template<>
