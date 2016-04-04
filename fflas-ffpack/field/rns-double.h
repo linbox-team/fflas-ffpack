@@ -407,7 +407,7 @@ namespace FFPACK {
 } // end of namespace FFPACK
 
 #include "rns-double.inl"
-#include "rns-double-recint.inl"
+//#include "rns-double-recint.inl"
 namespace FFLAS {
 
 	template<>
