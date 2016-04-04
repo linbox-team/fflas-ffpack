@@ -459,7 +459,6 @@ namespace FFPACK {
 #endif
 		}
 		else { // NOT IN RNS MAJOR
-			auto sp=SPLITTER();
 #ifndef __FFLASFFPACK_SEQUENTIAL
 			auto sp=SPLITTER(MAX_THREADS);
 #else
