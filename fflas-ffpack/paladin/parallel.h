@@ -238,15 +238,17 @@
 
 // parallel for 1D
 #define PARFOR1D(iter, m, Helper, Args...)                \
-   PARFORBLOCK1D(iter, m, Helper,                         \
-   { Args; } )
+    { auto h = Helper; \
+      PARFORBLOCK1D(iter, m, h, { Args; } ) \
+    }
 
 
 ////////////////////   CUTTING LOOP MACROS 2D //////////////////////
 
 // for strategy 2D with access to the range and control of iterator
 #define FORBLOCK2D(iter, m, n, Helper, Args...)                         \
-    { FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type, typename decltype(Helper)::Cut, typename  decltype(Helper)::Param  > iter(m,n,Helper); \
+    { auto h=Helper; \
+      FFLAS::ForStrategy2D<std::remove_const<decltype(m)>::type, typename decltype(h)::Cut, typename  decltype(h)::Param  > iter(m,n,h); \
         for(iter.initialize(); !iter.isTerminated(); ++iter)            \
         {Args;} }
 

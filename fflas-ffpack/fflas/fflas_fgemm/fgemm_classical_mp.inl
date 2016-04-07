@@ -168,9 +168,8 @@ namespace FFLAS {
 		size_t iter_nt = nt / loop_nt;
 		size_t leftover_nt = nt % loop_nt;
 			//std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
-#ifndef __FFLASFFPACK_SEQUENTIAL
 		ParSeqHelper::Parallel<Cut,Param>  sp(loop_nt);
-#endif
+		//#endif
 #ifdef FFT_PROFILER
 		Givaro::Timer t;t.start();
 #endif
