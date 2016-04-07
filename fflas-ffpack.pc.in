@@ -9,6 +9,6 @@ Description: Finite Field Linear Algebra Suroutines/Package
 URL: http://linbox-team.github.io/fflas-ffpack/
 Version: @VERSION@
 Requires: givaro >= 4.0.1
-Libs: @PRECOMPILE_LIBS@
-Cflags: @DEFAULT_CFLAGS@ @CXXFLAGS@ @AVXFLAGS@ @OMPFLAGS@ @PRECOMPILE_FLAGS@
+Libs: @PRECOMPILE_LIBS@ @CBLAS_LIBS@
+Cflags: @DEFAULT_CFLAGS@ @CBLAS_FLAG@ @CXXFLAGS@ @AVXFLAGS@ @OMPFLAGS@ @PRECOMPILE_FLAGS@
 \-------------------------------------------------------
