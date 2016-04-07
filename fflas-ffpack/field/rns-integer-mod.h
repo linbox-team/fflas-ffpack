@@ -64,6 +64,7 @@ namespace FFPACK {
 
 namespace FFPACK {
 
+
 	template<typename RNS>
 	class RNSIntegerMod {
 	public:
