@@ -28,7 +28,7 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
 AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
 
-#AM_LDFLAGS=-static  #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+AM_LDFLAGS=-static  #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
 EXTRA_DIST= test-utils.h
 
