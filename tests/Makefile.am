@@ -46,6 +46,7 @@ BASIC_TESTS =               \
 		test-fgemm          \
 		test-fger           \
 		test-ftrsm          \
+		test-invert          \
 		test-multifile      \
 		regression-check
 
@@ -121,7 +122,7 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 #  testeur_lqup_SOURCES           = testeur_lqup.C
 #  test_fullranksubmatrix_SOURCES = test-fullranksubmatrix.C
 #  test_rowechelon_SOURCES        = test-rowechelon.C
-#  test_invert_SOURCES            = test-invert.C
+  test_invert_SOURCES            = test-invert.C
 #  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
 #  test_colechelon_SOURCES        = test-colechelon.C
