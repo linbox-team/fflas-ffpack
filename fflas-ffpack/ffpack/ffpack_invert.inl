@@ -47,7 +47,7 @@ template <class Field>
 
 		size_t * P = FFLAS::fflas_new<size_t>(M);
 		size_t * Q = FFLAS::fflas_new<size_t>(M);
-		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
+		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q, true);
 		nullity = (int)(M - R);
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 			M, 0, (int)R, A, lda, P);

@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 
 	FFLAS::parseArguments(argc,argv,as);
 
-  typedef Givaro::Modular<double> Field;
+  typedef Givaro::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
   Field F(q);
