@@ -44,7 +44,6 @@ template <class Field>
 			nullity = 0 ;
 			return NULL ;
 		}
-
 		size_t * P = FFLAS::fflas_new<size_t>(M);
 		size_t * Q = FFLAS::fflas_new<size_t>(M);
 		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q, true);
@@ -69,10 +68,8 @@ template <class Field>
 			nullity = 0 ;
 			return NULL ;
 		}
-
-
 		FFLAS::fassign(F,M,M,A,lda,X,ldx);
-		Invert (F,  M, X, lda, nullity);
+		Invert (F, M, X, ldx, nullity);
 		return X;
 	}
 
