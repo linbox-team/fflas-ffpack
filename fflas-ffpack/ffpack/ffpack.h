@@ -1446,5 +1446,6 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack.inl"
+#include "ffpack_pluq_check.inl"
 #endif // __FFLASFFPACK_ffpack_H
 
