@@ -37,6 +37,7 @@
 #include <givaro/modular-balanced.h>
 #include <iostream>
 #include <iomanip>
+Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
 
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"

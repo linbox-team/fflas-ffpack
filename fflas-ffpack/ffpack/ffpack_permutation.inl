@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 FFLAS-FFACK group
  *
@@ -30,28 +30,171 @@
 #ifndef __FFLASFFPACK_ffpack_permutation_INL
 #define __FFLASFFPACK_ffpack_permutation_INL
 
+#include <algorithm>
+
 #include <givaro/zring.h>
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
 namespace FFPACK {
+	    /** MonotonicApplyP
+	     * Apply a permutation defined by the first R entries of the vector P (the pivots).
+	     * The non pivot elements, are located in montonically increasing order. 
+	     */
 	template<class Field>
 	void
-	MonotonicApplyP( const Field& F,
-			 const FFLAS::FFLAS_SIDE Side,
-			 const FFLAS::FFLAS_TRANSPOSE Trans,
-			 const size_t M, const size_t ibeg, const size_t iend,
-			 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R )
+	MonotonicApplyP_ (const Field& F,
+					 const FFLAS::FFLAS_SIDE Side,
+					 const FFLAS::FFLAS_TRANSPOSE Trans,
+					 const size_t M, const size_t ibeg, const size_t iend,
+					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R)
 	{
-		if ( Side == FFLAS::FflasLeft ) {
-			if (2*R < iend-ibeg){
-				    // Pivot rows in temp
-			} else {
-				    // Non pivot rows in temp
-			}
-			    // 
-		}
 	}
+	template<class Field>
+	void
+	MonotonicApplyP (const Field& F,
+					 const FFLAS::FFLAS_SIDE Side,
+					 const FFLAS::FFLAS_TRANSPOSE Trans,
+					 const size_t M, const size_t ibeg, const size_t iend,
+					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R)
+	{
+		size_t lenP = iend-ibeg;
+		size_t * MathP = new size_t[lenP];
+		for (size_t i=0; i<lenP; ++i)
+			MathP[i] = i;
+		LAPACKPerm2MathPerm (MathP, P, lenP);
+
+		if (Side == FFLAS::FflasLeft) {
+			if (Trans == FFLAS::FflasNoTrans) {
+				std::vector<size_t> piv;
+				
+				for (size_t i=0; i<R; i++) if (MathP[i] != i) piv.push_back(MathP[i]);
+				size_t d = piv.size();
+				if (!d) // Permutation is the identity
+					return;
+				
+					// Storing pivot rows in temp
+					//std::cerr<<"Storing Pivot rows in temp"<<std::endl;
+				typename Field::Element_ptr temp= FFLAS::fflas_new (F, d, M);
+				for (size_t i=0; i<piv.size(); i++){
+						//std::cerr<<"A["<<piv[i]<<"] -> temp["<<i<<"]"<<std::endl;
+					FFLAS::fassign (F, M, A+piv[i]*lda, 1, temp+i*M, 1);
+					mvcnt += M;
+				}
+				std::sort(piv.begin(),piv.begin()+d);
+
+					// Moving non pivot rows to the R+1 .. iend positions
+				size_t i=piv.size()-1;
+				int dest = piv[i];
+				int src = dest - 1;
+				i--;
+				while (dest >= (int)R){
+					
+					if (((int) i >= 0 ) && ((int)piv[i] == src)){ // src points to a pivot row: skip it
+//							std::cerr<<"piv["<<i<<"] = "<<piv[i]<<" src = "<<src<<" dest = "<<dest<<std::endl;
+						src--; i--;
+						continue;
+					}
+						//std::cerr<<"A["<<src<<"] -> A["<<dest<<"]"<<std::endl;
+					FFLAS::fassign(F, M, A+src*lda, 1, A+dest*lda, 1);
+					mvcnt += M;
+
+					src--; dest--;
+				}
+					
+					// Moving the pivots to their position in the first R rows
+				for (size_t i=0, j=0; i<R; i++)
+					if (MathP[i] != i){
+						FFLAS::fassign (F, M, temp + j*M, 1, A + i*lda, 1);
+						mvcnt += M;
+						j++;
+					}
+				
+				FFLAS::fflas_delete(temp);
+				
+			// } else {
+			// 			//std::cerr<<"Storing Non-Pivot rows in temp"<<std::endl;
+			// 		    // Storing non pivot rows in temp
+			// 		size_t npdim = lenP-R;
+			// 		typename Field::Element_ptr temp= FFLAS::fflas_new (F, npdim, M);
+
+			// 		size_t tempRow=0;
+			// 		size_t firstpiv = i;
+			// 		std::vector<bool> isnotpiv(lenP,true);
+			// 		for (; i < R; ++i)
+			// 			isnotpiv[MathP[i]] = false;
+			// 		for (i=firstpiv; i < lenP; ++i){
+			// 			if (isnotpiv[i]){
+			// 				std::cerr<<"A["<<i<<"] -> temp["<<tempRow<<"]"<<std::endl;
+			// 				FFLAS::fassign (F, M, A+i*lda, 1, temp+tempRow*M, 1);
+			// 				tempRow++;
+			// 			}
+			// 		}
+			// 		    // Moving pivot rows to the 0 .. R-1  positions
+			// 		for (i = firstpiv; i<R; i++){
+			// 				//std::cerr<<"A["<<MathP[i]<<"] -> A["<<i<<"]"<<std::endl;
+			// 			FFLAS::fassign (F, M, A+MathP[i]*lda, 1, A+i*lda, 1);
+			// 		}
+			// 		    // Moving the non pivots to the R .. iend-1 positions
+			// 			//std::cerr<<"temp["<<i-firstpiv<<".."<<iend-ibeg-R<<"] -> A["<<i<<".."<<iend-1<<"]"<<std::endl;
+			// 		FFLAS::fassign (F, npdim, M, temp, M, A+i*lda, lda);
+			// 		FFLAS::fflas_delete(temp);
+			// 	}
+			} else { // Trans
+			}
+		} else { // Right
+			if (Trans == FFLAS::FflasTrans){
+				std::vector<size_t> piv;
+				for (size_t i=0; i<R; i++) if (MathP[i] != i) piv.push_back(MathP[i]);
+				size_t d = piv.size();
+				if (!d) // Permutation is the identity
+					return;
+				
+					// Storing pivot rows in temp
+					//std::cerr<<"Storing Pivot rows in temp"<<std::endl;
+				typename Field::Element_ptr temp= FFLAS::fflas_new (F, M, d);
+				for (size_t i=0; i<piv.size(); i++){
+						//std::cerr<<"A["<<piv[i]<<"] -> temp["<<i<<"]"<<std::endl;
+					FFLAS::fassign (F, M, A+piv[i], lda, temp+i, d);
+					mvcnt += M;
+				}
+				std::sort(piv.begin(),piv.begin()+d);
+
+					// Moving non pivot rows to the R+1 .. iend positions
+				size_t i=piv.size()-1;
+				int dest = piv[i];
+				int src = dest - 1;
+				i--;
+				while (dest >= (int)R){
+					
+					if (((int) i >= 0 ) && ((int)piv[i] == src)){ // src points to a pivot row: skip it
+//							std::cerr<<"piv["<<i<<"] = "<<piv[i]<<" src = "<<src<<" dest = "<<dest<<std::endl;
+						src--; i--;
+						continue;
+					}
+						//std::cerr<<"A["<<src<<"] -> A["<<dest<<"]"<<std::endl;
+					FFLAS::fassign(F, M, A+src, lda, A+dest, lda);
+					mvcnt += M;
+
+					src--; dest--;
+				}
+					
+					// Moving the pivots to their position in the first R rows
+				for (size_t i=0, j=0; i<R; i++)
+					if (MathP[i] != i){
+						FFLAS::fassign (F, M, temp + j, d, A + i, lda);
+						mvcnt += M;
+						j++;
+					}
+				
+				FFLAS::fflas_delete(temp);
+			
+			} else { // NoTrans
+			}
+		} 
+		delete[] MathP;
+	}
+	
 	template<class Field>
 	void
 	applyP( const Field& F,
@@ -63,18 +206,24 @@ namespace FFPACK {
 		if ( Side == FFLAS::FflasRight ) {
 			if ( Trans == FFLAS::FflasTrans ){
 				for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
-					if ( P[i]!= i )
+					if ( P[i]!= i ){
 						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
+						mvcnt += 3*M;
+					}
 			} else { // Trans == FFLAS::FflasNoTrans
 				for (size_t i=iend; i-->ibeg; )
-					if ( P[i]!=(size_t)i )
+					if ( P[i]!=(size_t)i ){
 						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
+					
+					}
 			}
 		} else { // Side == FFLAS::FflasLeft
 			if ( Trans == FFLAS::FflasNoTrans ) {
 				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i)
-					if ( P[i]!= (size_t) i )
+					if ( P[i]!= (size_t) i ){
 						FFLAS::fswap( F, M, A + P[i]*lda, 1, A + i*lda, 1);
+						mvcnt += 3*M;
+					}
 			} else { // Trans == FFLAS::FflasTrans
 				for (size_t i=iend; i-->ibeg; )
 					if ( P[i]!= (size_t) i )

@@ -27,6 +27,8 @@
 //#define __FFLASFFPACK_USE_TBB
 
 //#define __FFLASFFPACK_USE_DATAFLOW
+
+//#define MONOTONIC_APPLYP
 #define  __FFLASFFPACK_FORCE_SEQ
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
@@ -34,6 +36,7 @@
 #include <iostream>
 
 Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
+	size_t mvcnt;
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -185,7 +188,6 @@ int main(int argc, char** argv) {
 				 // for (size_t j=0; j<(size_t)n; ++j)
 				 // 	Acop[i*n+j]= A[i*n+j];
 			 );
-	
 	for (size_t i=0;i<=iter;++i){
 		
 		PARFOR1D(j,maxP,H, P[j]=0; );
@@ -210,6 +212,7 @@ int main(int argc, char** argv) {
 			}
 		}
 		else{
+			mvcnt=0;
 			timtot.start();
 			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
 			timtot.stop();
@@ -234,7 +237,8 @@ int main(int argc, char** argv) {
 	std::cerr<<" fgemm : "<<tgemm.usertime()/tot*100<<" %"<<std::endl;
 	std::cerr<<" ftrsm : "<<ttrsm.usertime()/tot*100<<" %"<<std::endl;
 	std::cerr<<" frest : "<<trest.usertime()/tot*100<<" %"<<std::endl;
-		//verification
+	std::cerr<<" mvcnt : "<<mvcnt<<std::endl;
+	//verification
 	if(v)
 		verification_PLUQ(F,Acop,A,P,Q,m,n,R);
 	
