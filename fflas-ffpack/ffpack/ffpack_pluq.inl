@@ -519,9 +519,14 @@ namespace FFPACK {
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
 		tim.start();
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M2, A2, lda, P1, R1);
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1, R1);	
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M2, A2, lda, P1);
 		    // [ C1 C2 ] <- A3 Q1^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1);	
+#endif
 		tim.stop();
 		tperm+=tim;
 		    // D <- L1^-1 B1
@@ -553,18 +558,35 @@ namespace FFPACK {
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
 		tim.clear();tim.start();
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N-N2, A4, lda, Q2, R2);
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M-M2, A4, lda, P3, R3);
+#else
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N-N2, A4, lda, Q2);
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M-M2, A4, lda, P3);
+#endif
 		    // [ E1 ] <- P3^T E
 		    // [ E2 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3, R3);
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3);
+#endif
 		    // [ M11 ] <- P2^T M1
 		    // [ M12 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2, R2);
+		    // [ D1 D2 ] <- D Q2^T
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N-N2, A2, lda, Q2, R2);
+		    // [ V1 V2 ] <- V1 Q3^T
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2-R1, A+R1, lda, Q3, R3);
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2);
 		    // [ D1 D2 ] <- D Q2^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N-N2, A2, lda, Q2);
 		    // [ V1 V2 ] <- V1 Q3^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2-R1, A+R1, lda, Q3);
+#endif
 		    // I <- H U2^-1
 		    // K <- H3 U2^-1
 		tim.stop();
@@ -602,12 +624,21 @@ namespace FFPACK {
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
 		tim.clear();tim.start();
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4, R4);
+		    // [ D21 D22 ]     [ D2 ]
+		    // [ V21 V22 ]  <- [ V2 ] Q4^T
+		    // [  0   0  ]     [  0 ]
+		    // [ O1   O2 ]     [  O ]
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N-N2-R2, A2+R2, lda, Q4, R4);
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
 		    // [ V21 V22 ]  <- [ V2 ] Q4^T
 		    // [  0   0  ]     [  0 ]
 		    // [ O1   O2 ]     [  O ]
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N-N2-R2, A2+R2, lda, Q4);
+#endif
 		tim.stop();
 		tperm+=tim;
 
