@@ -357,9 +357,9 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 		// {
 		// 	pass &= test_integer<uint16_t>(seed, vectorSize, max);
 		// }
-		// {
-		// 	pass &= test_integer<uint32_t>(seed, vectorSize, max);
-		// }
+		{
+			pass &= test_integer<uint32_t>(seed, vectorSize, max);
+		}
 		// {
 		// 	pass &= test_integer<uint64_t>(seed, vectorSize, max);
 		// }
