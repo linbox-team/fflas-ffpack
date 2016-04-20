@@ -181,7 +181,6 @@ FF_CHECK_AVX
 AVXFLAGS="${SSEFLAGS} ${AVXFLAGS}"
 
 echo "-----------------------------------------------"
-AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
 	case x${CCNAM} in
 		xgcc|xgcc44|xgcc48)
 	# With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
@@ -190,8 +189,11 @@ AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
 			;;
 		*)
 	esac
+PARFLAGS="${AVXFLAGS} ${OMPFLAGS}"
+PARLIBS="${OMPFLAGS}"
 
-AC_SUBST([PARLIBS],['${OMPFLAGS}'])
+AC_SUBST(PARFLAGS)
+AC_SUBST(PARLIBS)
 
 # Machine characteristics
 
