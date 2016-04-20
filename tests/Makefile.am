@@ -138,7 +138,7 @@ test_interfaces_c_SOURCES = test-interfaces-c.c
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
-
+test_pluq_check_SOURCES = test-check_pluq.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
