@@ -167,10 +167,11 @@ int tmain(){
 
     double Mflops=((2.*double(m)-1)/1000.*double(k)/1000.0) /time * double(iters);
 // 	Mflops*=p.bitsize()/16.;
-    cout<<typeid(Ints).name()
-        << " | Time: "<< (time/double(iters))  << " (total:" << time <<") | Mflops: "<<Mflops<<"  | perword: "<< (Mflops*double(p.bitsize()))/64. ;
+    cout << "Time: "<< (time/double(iters))  <<" Mflops: "<<Mflops
+	 << " (total:" << time <<") "
+	 <<typeid(Ints).name()
+	 <<" perword: "<< (Mflops*double(p.bitsize()))/64. ;
     FFLAS::writeCommandString(std::cout << " | " << p << " (" << p.bitsize()<<")|", as)  << std::endl;
-
     return 0;
 }
  

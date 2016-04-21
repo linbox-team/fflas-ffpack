@@ -240,8 +240,12 @@ int tmain(){
 
 	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iters);
 // 	Gflops*=p.bitsize()/16.;
-	cout<<typeid(Ints).name()
-        << " | Time: "<< (time/double(iters)) << " (total:" << time <<")  Gflops: "<<Gflops<<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;
+	cout  << "Time: "<< (time/double(iters))
+	      <<" Gflops: "<<Gflops
+	      << " (total:" << time <<") "
+	      <<typeid(Ints).name()
+	      <<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;
+
 	FFLAS::writeCommandString(std::cout << '|' << p << " (" << p.bitsize()<<")|", as) << "  | Freivalds: "<< timev/double(iters) << std::endl;
 
 #ifdef BENCH_FLINT	
