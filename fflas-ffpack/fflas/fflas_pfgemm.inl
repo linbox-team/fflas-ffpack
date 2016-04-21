@@ -28,7 +28,7 @@
  */
 
 #ifndef __FFLASFFPACK_fflas_pfgemm_INL
-#define __FFLASFFPACK_fflas_pgemm_INL
+#define __FFLASFFPACK_fflas_pfgemm_INL
 
 #define __FFLASFFPACK_SEQPARTHRESHOLD 220
 #define __FFLASFFPACK_DIMKPENALTY 1
