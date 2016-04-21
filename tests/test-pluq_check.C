@@ -38,18 +38,9 @@
 //-------------------------------------------------------------------------
 
 #include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include "fflas-ffpack/utils/Matio.h"
-#include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-
-
-using namespace std;
-using namespace FFLAS;
 
 int main(int argc, char** argv) {
 
@@ -69,7 +60,7 @@ int main(int argc, char** argv) {
 		END_OF_ARGUMENTS
 	};
 
-	parseArguments(argc,argv,as);
+	FFLAS::parseArguments(argc,argv,as);
 
 	typedef Givaro::Modular<double> Field;
 	Field F(q);
@@ -102,7 +93,7 @@ int main(int argc, char** argv) {
 		pass += FFPACK::check_pluq(F, m, n, r, P, A, Q, v, w) ? 1 : 0;
 	}
 
-	cout << pass << "/" << iter << " tests have been successful.\n";
+	std::cout << pass << "/" << iter << " tests have been successful.\n";
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(v);
