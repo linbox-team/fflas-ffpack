@@ -36,9 +36,9 @@ class FailurePLUQcheck {};
  	typename Field::Element_ptr v,w; 				\
 	v = FFLAS::fflas_new(Fi,N,1); 					\
 	w = FFLAS::fflas_new(Fi,N,1); 					\
-	FFLAS::init_check_pluq(Fi,A,M,N,v,w);
+	FFPACK::init_check_pluq(Fi,A,M,N,v,w);
 #define PLUQ_check(Fi,M,N,R,P,A,Q,v,w) 				\
-	bool p = FFLAS::check_pluq(Fi,M,N,R,P,A,Q,v,w); \
+	bool p = FFPACK::check_pluq(Fi,M,N,R,P,A,Q,v,w); \
 	FFLAS::fflas_delete(v); 						\
 	FFLAS::fflas_delete(w); 						\
 	if (!p) throw FailurePLUQcheck();
