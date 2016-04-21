@@ -28,7 +28,8 @@ AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @TESTS_CFLAGS@
 AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
 
-AM_LDFLAGS=-static $(PARLIBS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
+AM_LDFLAGS=-static  #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
 EXTRA_DIST= test-utils.h
 
@@ -44,22 +45,17 @@ BASIC_TESTS =               \
 		test-finit          \
 		test-fscal          \
 		test-fgemm          \
+		test-check_pluq	\
+		test-verify_charpoly\
 		test-fger           \
 		test-ftrsm          \
-		test-invert          \
 		test-multifile      \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+
 INTERFACE_TESTS= test-interfaces-c 
-test_interfaces_c_LDFLAGS = $(LDADD) \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la
-else
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
+test_interfaces_c_LDFLAGS = $(LDADD) -lfflas_c -lffpack_c
 endif
 NOT_A_TEST =  \
 		test-lqup2             \
@@ -100,6 +96,8 @@ test_compressQ_SOURCES         = test-compressQ.C
 test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
+test_pluq_check_SOURCES = test-pluq_check.C
+test_verify_charpoly_SOURCES = test-verify_charpoly.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
@@ -122,7 +120,7 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 #  testeur_lqup_SOURCES           = testeur_lqup.C
 #  test_fullranksubmatrix_SOURCES = test-fullranksubmatrix.C
 #  test_rowechelon_SOURCES        = test-rowechelon.C
-  test_invert_SOURCES            = test-invert.C
+#  test_invert_SOURCES            = test-invert.C
 #  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
 #  test_colechelon_SOURCES        = test-colechelon.C
@@ -138,7 +136,6 @@ test_interfaces_c_SOURCES = test-interfaces-c.c
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
-test_pluq_check_SOURCES = test-check_pluq.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
