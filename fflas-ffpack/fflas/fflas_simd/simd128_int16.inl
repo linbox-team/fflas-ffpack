@@ -420,6 +420,21 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
     static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }
 
     static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
+
+
+    /*
+     * Multiply the low 8-bit integers from each packed 16-bit element in a and b, and store the signed 16-bit results
+     in dst.
+     * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]    int16_t
+     [b0, b1, b2, b3, b4, b5, b6, b7]    int16_t
+     * Return : [a0*b0, a1*b1, a2*b2, a3*b3, a4*b4, a5*b5, a6*b6, a7*b7]    int16_t
+     */
+//    static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
+//        vect_t mask = set1(0x00FF); // ???
+//        a = vand(a, mask);
+//        b = vand(b, mask);
+//        return _mm_mullo_epi16(a, b);
+//    }
 };
 
 #endif
