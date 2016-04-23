@@ -201,6 +201,13 @@ namespace FFPACK { /* Permutations */
 					 const FFLAS::FFLAS_TRANSPOSE Trans,
 					 const size_t M, const size_t ibeg, const size_t iend,
 					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
+	template<class Field>
+	void
+	MonotonicApplyP_ (const Field& F,
+					  const FFLAS::FFLAS_SIDE Side,
+					  const FFLAS::FFLAS_TRANSPOSE Trans,
+					  const size_t M, const size_t lenP,
+					  typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
 
 //#ifdef __FFLASFFPACK_USE_OPENMP
 

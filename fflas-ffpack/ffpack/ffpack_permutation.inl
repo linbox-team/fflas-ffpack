@@ -36,20 +36,13 @@
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
+#define MAP_BKSIZE 32
+
 namespace FFPACK {
 	    /** MonotonicApplyP
 	     * Apply a permutation defined by the first R entries of the vector P (the pivots).
 	     * The non pivot elements, are located in montonically increasing order.
 	     */
-	template<class Field>
-	void
-	MonotonicApplyP_ (const Field& F,
-					 const FFLAS::FFLAS_SIDE Side,
-					 const FFLAS::FFLAS_TRANSPOSE Trans,
-					 const size_t M, const size_t ibeg, const size_t iend,
-					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R)
-	{
-	}
 	template<class Field>
 	void
 	MonotonicApplyP (const Field& F,
@@ -58,11 +51,35 @@ namespace FFPACK {
 					 const size_t M, const size_t ibeg, const size_t iend,
 					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R)
 	{
+		const size_t B = MAP_BKSIZE;
 		size_t lenP = iend-ibeg;
 		size_t * MathP = new size_t[lenP];
 		for (size_t i=0; i<lenP; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, P, lenP);
+
+		size_t NB = M/B;
+		size_t last = M%B;
+		size_t inc = B;
+		if (Side == FFLAS::FflasRight)
+			inc *= lda;
+
+		for (size_t i = 0; i<NB; i++)
+			MonotonicApplyP_(F, Side, Trans, B, lenP, A+i*inc, lda, MathP, R);
+
+		MonotonicApplyP_(F, Side, Trans, last, lenP, A+NB*inc, lda, MathP, R);	
+	
+		delete[] MathP;
+	}
+
+	template<class Field>
+	void
+	MonotonicApplyP_ (const Field& F,
+					  const FFLAS::FFLAS_SIDE Side,
+					  const FFLAS::FFLAS_TRANSPOSE Trans,
+					  const size_t M, const size_t lenP,
+					  typename Field::Element_ptr A, const size_t lda, const size_t * MathP, const size_t R)
+	{	
 
 		if (Side == FFLAS::FflasLeft) {
 			if (Trans == FFLAS::FflasNoTrans) {
@@ -192,7 +209,6 @@ namespace FFPACK {
 			} else { // NoTrans
 			}
 		} 
-		delete[] MathP;
 	}
 	
 	template<class Field>
