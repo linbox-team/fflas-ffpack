@@ -30,6 +30,7 @@
 //-------------------------------------------------------------------------
 //      Test suite for the Gaussian elimination routines: LUdivine and PLUQ
 //-------------------------------------------------------------------------
+#define MONOTONIC_APPLYP
 
 #define  __FFLASFFPACK_SEQUENTIAL
 #define __LUDIVINE_CUTOFF 1
@@ -38,6 +39,7 @@
 #include <iostream>
 #include <iomanip>
 Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
+size_t mvcnt = 0;
 
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -819,6 +821,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n); }
 		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed at big lda" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -829,6 +832,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -839,6 +843,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -851,6 +856,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at square" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -863,6 +869,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at wide" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -875,6 +882,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -1041,9 +1049,9 @@ int main(int argc, char** argv)
 	cerr<<setprecision(20);
 	static Givaro::Integer q=-1;
 	static size_t b=0;
-	static size_t m=160;
-	static size_t n=160;
-	static size_t r=100;
+	static size_t m=510;
+	static size_t n=510;
+	static size_t r=180;
 	static size_t iters=2;
 	static bool loop=false;
 	static Argument as[] = {
@@ -1072,7 +1080,7 @@ int main(int argc, char** argv)
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);		
+		// ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);		
 	} while (loop && ok);
 
 	return !ok;

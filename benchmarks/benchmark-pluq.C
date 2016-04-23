@@ -28,7 +28,7 @@
 
 //#define __FFLASFFPACK_USE_DATAFLOW
 
-//#define MONOTONIC_APPLYP
+#define MONOTONIC_APPLYP
 #define  __FFLASFFPACK_FORCE_SEQ
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
@@ -36,7 +36,7 @@
 #include <iostream>
 
 Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
-	size_t mvcnt;
+size_t mvcnt;
 
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -131,7 +131,6 @@ int main(int argc, char** argv) {
 	
 	size_t iter = 3 ;
 	int q = 131071 ;
-	Field F(q);
 	int m = 2000 ;
 	int n = 2000 ;
 	int r = 2000 ;
@@ -152,7 +151,7 @@ int main(int argc, char** argv) {
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
-
+	Field F(q);
 	if (r > std::min(m,n)){
 		std::cerr<<"Warning: rank can not be greater than min (m,n). It has been forced to min (m,n)"<<std::endl;
 		r=std::min(m,n);
