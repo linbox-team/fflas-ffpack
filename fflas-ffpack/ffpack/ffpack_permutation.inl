@@ -87,6 +87,9 @@ namespace FFPACK {
 			MonotonicCompress (F, Side, last, A+NB*inc, llda, incA, MathP, R, maxpiv, rowstomove, ispiv);	
 		} else {
 				// Expanding
+			for (size_t i = 0; i<NB; i++)
+				MonotonicExpand (F, Side, B, A+i*inc, llda, incA, MathP, R, maxpiv, rowstomove, ispiv);
+			MonotonicExpand (F, Side, last, A+NB*inc, llda, incA, MathP, R, maxpiv, rowstomove, ispiv);	
 		}
 		delete[] MathP;
 	}
@@ -122,11 +125,49 @@ namespace FFPACK {
 		}
 			// Moving the pivots to their position in the first R rows
 		for (size_t i=0, j=0; i<R; i++)
-					if (MathP[i] != i){
-						FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
-						mvcnt += M;
-						j++;
-					}
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
+				mvcnt += M;
+				j++;
+			}
+		FFLAS::fflas_delete(temp);
+	}
+	template<class Field>
+	void
+	MonotonicExpand (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+					 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+					 const size_t * MathP, const size_t R, const size_t maxpiv,
+					 const size_t rowstomove, const std::vector<bool> &ispiv)
+	{
+			// Storing pivot rows in temp
+		typename Field::Element_ptr temp= FFLAS::fflas_new (F, rowstomove, M);
+		size_t ldtemp=M;
+		for (size_t i=0,j=0; i<R; i++){
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, A+i*lda, incA, temp+j*ldtemp, 1);
+				mvcnt += M;
+				j++;
+			}
+		}
+			// Moving the non pivot rows
+		size_t dest = 0;
+		size_t src = R;
+		while (src <= maxpiv){
+			if (ispiv[dest]){ // src points to a pivot row: skip it
+				dest++;
+				continue;
+			}
+			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
+			mvcnt += M;
+			src++; dest++;
+		}
+			// Moving the pivots to their final position
+		for (size_t i=0, j=0; i<R; i++)
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + MathP[i]*lda, incA);
+				mvcnt += M;
+				j++;
+			}
 		FFLAS::fflas_delete(temp);
 	}
 
