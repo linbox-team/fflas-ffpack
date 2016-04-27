@@ -203,11 +203,12 @@ namespace FFPACK { /* Permutations */
 					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
 	template<class Field>
 	void
-	MonotonicApplyP_ (const Field& F,
-					  const FFLAS::FFLAS_SIDE Side,
-					  const FFLAS::FFLAS_TRANSPOSE Trans,
-					  const size_t M, const size_t lenP,
-					  typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
+	MonotonicCompress (const Field& F,
+					   const FFLAS::FFLAS_SIDE Side,
+					   const size_t M,
+					   typename Field::Element_ptr A, const size_t lda, const size_t incA, const size_t * P,
+					   const size_t R, const size_t maxpiv, const size_t rowstomove,
+					   const std::vector<bool> &ispiv);
 
 //#ifdef __FFLASFFPACK_USE_OPENMP
 
