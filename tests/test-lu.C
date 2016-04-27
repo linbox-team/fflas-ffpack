@@ -274,10 +274,12 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 		
 						//#pragma omp task shared(F, P, L)
 					TASK(MODE(CONSTREFERENCE(F,P,L)),
-						 FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
+						 FFPACK::MonotonicApplyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P, R););
+						//FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
 						//#pragma omp task shared(F, Q, U)
 					TASK(MODE(CONSTREFERENCE(F,Q,U)),
-						 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
+						 FFPACK::MonotonicApplyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q, R););
+						//FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
 					// write_field(F,std::cerr<<"PL = "<<std::endl,L,m,R,R);
 					// write_field(F,std::cerr<<"UQ = "<<std::endl,U,R,n,n);
 					WAIT;
@@ -332,9 +334,9 @@ bool test_pluq (const Field & F,
 	size_t * P = FFLAS::fflas_new<size_t> (m);
 	size_t * Q = FFLAS::fflas_new<size_t> (n);
 	
-		//write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
+	// write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
 	size_t R = FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
-		//write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
+	// write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
 
 	if (R != r) {
 		std::cout << "rank is wrong (expected " << r << " but got " << R << ")" << std::endl;
