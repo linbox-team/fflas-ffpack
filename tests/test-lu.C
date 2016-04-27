@@ -31,6 +31,8 @@
 //      Test suite for the Gaussian elimination routines: LUdivine and PLUQ
 //-------------------------------------------------------------------------
 #define MONOTONIC_APPLYP
+#define BASECASE_K 37 // Forcing a lower base case to be able to test a few recursive steps with smallish dimensions
+
 
 #define  __FFLASFFPACK_SEQUENTIAL
 #define __LUDIVINE_CUTOFF 1
@@ -50,7 +52,6 @@ size_t mvcnt = 0;
 
 using namespace std;
 using namespace FFPACK;
-
 
 /*! Tests the LUdivine routine.
  * @tparam Field Field
@@ -259,9 +260,14 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	typename Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
+	// write_field(F,std::cerr<<"PLUQ = "<<std::endl,PLUQ,m,n,ldpluq);
 	FFPACK::getTriangular(F, FFLAS::FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
+	// write_perm(std::cerr<<"P = ",P,m);
+	// write_perm(std::cerr<<"Q = ",Q,n);
+	// write_field(F,std::cerr<<"L = "<<std::endl,L,m,R,R);
+	// write_field(F,std::cerr<<"U = "<<std::endl,U,R,n,n);
 	
 	PAR_BLOCK{
 		SYNCH_GROUP(
@@ -272,6 +278,8 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 						//#pragma omp task shared(F, Q, U)
 					TASK(MODE(CONSTREFERENCE(F,Q,U)),
 						 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
+					// write_field(F,std::cerr<<"PL = "<<std::endl,L,m,R,R);
+					// write_field(F,std::cerr<<"UQ = "<<std::endl,U,R,n,n);
 					WAIT;
 						//#pragma omp taskwait
 					typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::ThreeDAdaptive> pWH (MAX_THREADS);
@@ -287,11 +295,13 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(X+i*n+j))){
 				std::cerr << std::endl<<" A ["<<i<<","<<j<<"] = " << (*(A+i*lda+j))
-						  << " PLUQ ["<<i<<","<<j<<"] = " << (*(X+i*n+j))
-						  << std::endl;
+						  << " PLUQ ["<<i<<","<<j<<"] = " << (*(X+i*n+j));
 				fail=true;
 			}
 		//write_field(F, std::cerr<<"X = "<<std::endl,X, m,n,n);
+	if (fail)
+		std::cerr << std::endl;
+
 	FFLAS::fflas_delete( U);
 	FFLAS::fflas_delete( L);
 	FFLAS::fflas_delete( X);
@@ -1024,7 +1034,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>    (*F,r,m,n);
 		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>      (*F,r,m,n);
 		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans> (*F,r,m,n);
-		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>   (*F,r,m,n);		
+		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>   (*F,r,m,n);
 
 #if 0 /*  may be bogus */
 		ok&= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>   (*F,r,m,n);
@@ -1049,10 +1059,10 @@ int main(int argc, char** argv)
 	cerr<<setprecision(20);
 	static Givaro::Integer q=-1;
 	static size_t b=0;
-	static size_t m=510;
-	static size_t n=510;
-	static size_t r=180;
-	static size_t iters=2;
+	static size_t m=120;
+	static size_t n=120;
+	static size_t r=70;
+	static size_t iters=3;
 	static bool loop=false;
 	static Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
@@ -1080,7 +1090,7 @@ int main(int argc, char** argv)
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters);
-		// ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);		
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);
 	} while (loop && ok);
 
 	return !ok;
