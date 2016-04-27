@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -237,6 +237,8 @@ template <> struct Simd256_impl<true, true, true, 8> {
      [b0, b1, b2, b3]  		 							 int64_t
      * Return :
      */
+// The SIMD mulhi function is disabled on 32 bit architectures"
+#ifdef __x86_64__
     static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
         // ugly solution, but it works.
         // tested with gcc, clang, icc
@@ -246,6 +248,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
         return set((int128_t(ca.t[0]) * cb.t[0]) >> 64, (int128_t(ca.t[1]) * cb.t[1]) >> 64,
                    (int128_t(ca.t[2]) * cb.t[2]) >> 64, (int128_t(ca.t[3]) * cb.t[3]) >> 64);
     }
+#endif
 
     /*
      * Multiply packed 64-bit integers in a and b, producing intermediate 128-bit integers, and add the low 64-bits of

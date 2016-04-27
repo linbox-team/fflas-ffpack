@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -218,17 +218,16 @@ template <> struct Simd128_impl<true, true, true, 8> {
      */
     static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return mullo(a, b); }
 
+//       The SIMD mulhi function is disabled on 32 bit architectures
+#ifdef __x86_64__ 
     static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 // #pragma warning "The simd mulhi function is emulate, it may impact the performances."
-#ifdef __X86_64__
         Converter c0, c1;
         c0.v = a;
         c1.v = b;
         return set((scalar_t)((int128_t(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)((int128_t(c0.t[1]) * c1.t[1]) >> 64));
-#else
-        return zero();
-#endif
     }
+#endif
 
     static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) { return add(c, mul(a, b)); }
 
@@ -248,7 +247,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 #ifdef __SSE4_2__
         return _mm_cmpgt_epi64(a, b);
 #else
-#warning "The simd greater function is emulate, it may impact the performances."
+//#warning "The simd greater function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -260,7 +259,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 #ifdef __SSE4_2__
         return _mm_cmpgt_epi64(b, a);
 #else
-#warning "The simd lesser function is emulate, it may impact the performances."
+//#warning "The simd lesser function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -461,7 +460,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
         b = sub(x, b);
         return _mm_cmpgt_epi64(a, b);
 #else
-#warning "The simd greater function is emulate, it may impact the performances."
+//#warning "The simd greater function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
@@ -477,7 +476,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
         b = sub(x, b);
         return _mm_cmpgt_epi64(a, b);
 #else
-#warning "The simd greater function is emulate, it may impact the performances."
+//#warning "The simd greater function is emulate, it may impact the performances."
         Converter ca, cb;
         ca.v = a;
         cb.v = b;
