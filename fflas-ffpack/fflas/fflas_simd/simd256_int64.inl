@@ -589,9 +589,9 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 [b0, b1, b2, b3]  		 							 uint64_t
 	 * Return :
 	 */
+#ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
 #pragma warning "The simd mulhi function is emulate, it may impact the performances."
-#ifdef __x86_64__
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
 		Converter c0, c1;
@@ -599,11 +599,8 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 		c1.v = b;
 		return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
 			   (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
-#else
-#error "Not implemented"
-		//	return zero();
-#endif
 	}
+#endif
 
 	/*
 	 * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit

@@ -618,7 +618,21 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b) { return add(c, mulx(a, b)); }
 
-	static INLINE vect_t fmaddxin(vect_t &c, const vect_t a, const vect_t b) { return c = fmaddx(c, a, b); }
+    static INLINE CONST vect_t greater(vect_t a, vect_t b) {
+#ifdef __SSE4_2__
+        vect_t x;
+        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
+        a = sub(x, a);
+        b = sub(x, b);
+        return _mm_cmpgt_epi64(a, b);
+#else
+#warning "The simd greater function is emulate, it may impact the performances."
+        Converter ca, cb;
+        ca.v = a;
+        cb.v = b;
+        return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
+#endif
+    }
 
 	static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mulx(a, b)); }
 
