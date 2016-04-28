@@ -582,7 +582,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	*/
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
 		// _mm_mullo_epi32 emul
-	#pragma warning "The simd mullo function is emulated, it may impact the performances."
+#pragma warning "The simd mullo function is emulated, it may impact the performances."
 		Converter c0, c1;
 		c0.v = x0;
 		c1.v = x1;
@@ -617,22 +617,6 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm_mul_epu32(a, b); }
 
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b) { return add(c, mulx(a, b)); }
-
-    static INLINE CONST vect_t greater(vect_t a, vect_t b) {
-#ifdef __SSE4_2__
-        vect_t x;
-        x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
-        a = sub(x, a);
-        b = sub(x, b);
-        return _mm_cmpgt_epi64(a, b);
-#else
-#warning "The simd greater function is emulate, it may impact the performances."
-        Converter ca, cb;
-        ca.v = a;
-        cb.v = b;
-        return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif
-    }
 
 	static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mulx(a, b)); }
 
@@ -689,7 +673,7 @@ INLINE CONST vect_t Simd128_impl<true,true,true,8>::mulhi_fast(vect_t x, vect_t 
 // warning : may be off by 1 multiple, but we save a mul...
 template <bool overflow, bool poweroftwo>
 INLINE CONST vect_t Simd128_impl<true,true,true,8>::mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
-											const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
+							const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 	// Works fine with ICC 15.0.1 - A.B.
 	// #warning "not tested"
