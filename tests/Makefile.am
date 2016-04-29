@@ -45,8 +45,7 @@ BASIC_TESTS =               \
 		test-finit          \
 		test-fscal          \
 		test-fgemm          \
-		test-check_pluq	\
-		test-verify_charpoly\
+		test-pluq-check     \
 		test-fger           \
 		test-ftrsm          \
 		test-multifile      \
@@ -96,8 +95,8 @@ test_compressQ_SOURCES         = test-compressQ.C
 test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
-test_pluq_check_SOURCES = test-pluq_check.C
-test_verify_charpoly_SOURCES = test-verify_charpoly.C
+test_pluq_check_SOURCES = test-pluq-check.C
+test_verify_charpoly_SOURCES = test-verify-charpoly.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C

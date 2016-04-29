@@ -47,15 +47,13 @@ int main(int argc, char** argv) {
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
 	size_t m = 2000 ;
-	size_t k = 2000 ;
 	size_t n = 2000 ;
 	size_t r;
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'm', "-m M", "Set the row dimension of A.", TYPE_INT , &m },
-		{ 'k', "-k K", "Set the col dimension of A.", TYPE_INT , &k },
-		{ 'n', "-n N", "Set the col dimension of B.", TYPE_INT , &n },
+		{ 'n', "-n N", "Set the col dimension of A.", TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
 		END_OF_ARGUMENTS
 	};
@@ -79,7 +77,7 @@ int main(int argc, char** argv) {
 	size_t *P = FFLAS::fflas_new<size_t>(m);
 	size_t *Q = FFLAS::fflas_new<size_t>(n);
 
-	for(size_t i=0; i<iter; i++) {
+	for(size_t it=0; it<iter; ++it) {
 		// generate a random matrix A
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );

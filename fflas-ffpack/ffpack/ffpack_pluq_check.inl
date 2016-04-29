@@ -32,16 +32,19 @@
 
 #if  defined(DEBUG) || defined(PLUQ_check)
 class FailurePLUQcheck {};
-#define PLUQ_check_init(Fi,A,M,N) 					\
- 	typename Field::Element_ptr v,w; 				\
-	v = FFLAS::fflas_new(Fi,N,1); 					\
-	w = FFLAS::fflas_new(Fi,N,1); 					\
+#define PLUQ_check_init(Fi,A,M,N) 								\
+ 	typename Field::Element_ptr 								\
+        _Freivalds_random_vector_(FFLAS::fflas_new(Fi,N,1)),	\
+        _Freivalds_solution_vector_(FFFLAS::fflas_new(i,N,1));	\
 	FFPACK::init_check_pluq(Fi,A,M,N,v,w);
-#define PLUQ_check(Fi,M,N,R,P,A,Q,v,w) 				\
-	bool p = FFPACK::check_pluq(Fi,M,N,R,P,A,Q,v,w); \
-	FFLAS::fflas_delete(v); 						\
-	FFLAS::fflas_delete(w); 						\
-	if (!p) throw FailurePLUQcheck();
+#define PLUQ_check(Fi,M,N,R,P,A,Q) 				    			\
+	bool _Freivalds_check_value_ 								\
+		= FFPACK::check_pluq(Fi,M,N,R,P,A,Q,					\
+                                _Freivalds_random_vector_,		\
+                                _Freivalds_solution_vector_);	\
+	FFLAS::fflas_delete(_Freivalds_random_vector_);				\
+	FFLAS::fflas_delete(_Freivalds_solution_vector_);			\
+	if (!_Freivalds_check_value_) throw FailurePLUQcheck();
 #endif
 
 
