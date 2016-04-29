@@ -640,7 +640,7 @@ namespace FFPACK {
 	size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q);
 
 #ifdef PLUQ_check
-	PLUQ_check(Fi,M,N,R,P,A,Q,v,w)
+	PLUQ_check(Fi,M,N,R,P,A,Q)
 #endif
 
 	return R;
