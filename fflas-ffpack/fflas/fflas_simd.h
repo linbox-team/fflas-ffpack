@@ -349,6 +349,9 @@ inline std::ostream &operator<<(std::ostream &o, const typename Simd256<T>::vect
 
 #endif // __FFLASFFPACK_USE_SIMD
 
+// Provide simd modular support
+#include <fflas-ffpack/fflas/fflas_simd/simd_modular.inl>
+
 #undef INLINE
 #undef PURE
 #undef CONST
