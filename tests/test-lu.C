@@ -30,7 +30,20 @@
 //-------------------------------------------------------------------------
 //      Test suite for the Gaussian elimination routines: LUdivine and PLUQ
 //-------------------------------------------------------------------------
-#define MONOTONIC_APPLYP
+
+ #define MONOTONIC_CYLCES
+// #define MONOTONIC_MOREPIVOTS
+// #define MONOTONIC_FEWPIVOTS
+#ifdef MONOTONIC_CYLCES
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_MOREPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_FEWPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+
 #define BASECASE_K 37 // Forcing a lower base case to be able to test a few recursive steps with smallish dimensions
 
 
@@ -892,8 +905,8 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
-		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		// PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		// fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at narrow" << std::endl;
