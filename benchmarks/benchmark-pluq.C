@@ -224,10 +224,7 @@ int main(int argc, char** argv) {
 				 // for (size_t j=0; j<(size_t)n; ++j)
 				 // 	Acop[i*n+j]= A[i*n+j];
 			 );
-<<<<<<< HEAD
 	size_t BC;
-=======
->>>>>>> Monotonic permutations in progress (pessimistic about the outcome)
 	for (size_t i=0;i<=iter;++i){
 		
 		PARFOR1D(j,maxP,H, P[j]=0; );
@@ -271,13 +268,9 @@ int main(int argc, char** argv) {
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
 	double tot = timtot.usertime();
 	std::cout << "Time: " << meantime
-<<<<<<< HEAD
-			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
-=======
-			  << " Gflops: " << gflop / meantime
+			  << " Gflops: " << gflop / meantime << " BC: "<<BC
 			  << " applyP: "<<tperm.usertime()/tot*100
 			  << " mvcnt: "<<mvcnt;
->>>>>>> add permutation variant "Cycles"
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
 	std::cerr<<" BaseCase : "<<tBC.usertime()/tot*100<<" %"<<std::endl;
