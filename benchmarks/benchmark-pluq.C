@@ -31,6 +31,18 @@
 //#define WINOPAR_KERNEL
 //#define CLASSIC_SEQ
 #define MONOTONIC_APPLYP
+// #define MONOTONIC_CYLCES
+// #define MONOTONIC_MOREPIVOTS
+// #define MONOTONIC_FEWPIVOTS
+#ifdef MONOTONIC_CYCLES
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_MOREPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_FEWPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
@@ -257,11 +269,17 @@ int main(int argc, char** argv) {
 		// Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
+	double tot = timtot.usertime();
 	std::cout << "Time: " << meantime
+<<<<<<< HEAD
 			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
+=======
+			  << " Gflops: " << gflop / meantime
+			  << " applyP: "<<tperm.usertime()/tot*100
+			  << " mvcnt: "<<mvcnt;
+>>>>>>> add permutation variant "Cycles"
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
-	double tot = timtot.usertime();
 	std::cerr<<" BaseCase : "<<tBC.usertime()/tot*100<<" %"<<std::endl;
 	std::cerr<<" ApplyP : "<<tperm.usertime()/tot*100<<" %"<<std::endl;
 	std::cerr<<" fgemm : "<<tgemm.usertime()/tot*100<<" %"<<std::endl;

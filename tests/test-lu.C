@@ -30,7 +30,20 @@
 //-------------------------------------------------------------------------
 //      Test suite for the Gaussian elimination routines: LUdivine and PLUQ
 //-------------------------------------------------------------------------
-#define MONOTONIC_APPLYP
+
+ #define MONOTONIC_CYLCES
+// #define MONOTONIC_MOREPIVOTS
+// #define MONOTONIC_FEWPIVOTS
+#ifdef MONOTONIC_CYLCES
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_MOREPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_FEWPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+
 #define BASECASE_K 37 // Forcing a lower base case to be able to test a few recursive steps with smallish dimensions
 
 
