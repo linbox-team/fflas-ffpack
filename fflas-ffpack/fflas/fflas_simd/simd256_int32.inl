@@ -226,7 +226,7 @@ template <> struct Simd256_impl<true, true, true, 4> {
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a7*b7/2^32)] int32_t
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 #if 0
 		typedef Simd256_impl<true, true, true, 8> Simd256_64;
 		Converter ca, cb;
@@ -265,7 +265,7 @@ template <> struct Simd256_impl<true, true, true, 4> {
 	*	where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
-#pragma warning "The simd mulx function is emulated, it may impact the performances."
+//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1, mask2;
 		mask1 = set1(0x0000FFFF);
 		mask2 = set1(0x00008000);
@@ -599,7 +599,7 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a7*b7/2^32)] uint32_t
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 		typedef Simd256_impl<true, true, false, 8> Simd256_64;
 		vect_t C,A1,B1;
 		C  = Simd256_64::mulx(a,b);
@@ -620,7 +620,7 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	* Return : [(a0 mod 2^16)*(b0 mod 2^16), ..., (a7 mod 2^16)*(b7 mod 2^16)]	uint32_t
 	*/
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
-#pragma warning "The simd mulx function is emulated, it may impact the performances."
+//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1;
 		mask1 = set1(0x0000FFFF);
 		a1 = vand(a,mask1);

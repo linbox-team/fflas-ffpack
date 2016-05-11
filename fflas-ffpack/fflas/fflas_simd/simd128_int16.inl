@@ -225,7 +225,7 @@ template <> struct Simd128_impl<true, true, true, 2> {
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulx function is emulated, it may impact the performances."
+//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1, mask2;
 		mask1 = set1(0x00FF);
 		mask2 = set1(0x0080);
@@ -563,7 +563,7 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
 	* Return : [(a0 mod 2^8)*(b0 mod 2^8), ..., (a7 mod 2^8)*(b7 mod 2^8)] uint16_t
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulx function is emulated, it may impact the performances."
+//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1;
 		mask1 = set1(0x00FF);
 		a1 = vand(a,mask1);

@@ -214,7 +214,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 		_mm_mullo_epi64(x0, x1);
 #else
 		// _mm_mullo_epi64 emul
-#pragma warning "The simd mullo function is emulate, it may impact the performances."
+//#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter c0, c1;
 		c0.v = x0;
 		c1.v = x1;
@@ -233,7 +233,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 	*/
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 		Converter c0, c1;
 		c0.v = a;
 		c1.v = b;
@@ -344,7 +344,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 #ifdef __SSE4_2__
 		return _mm_cmpgt_epi64(a, b);
 #else
-#warning "The simd greater function is emulate, it may impact the performances."
+//#warning "The simd greater function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -362,7 +362,7 @@ template <> struct Simd128_impl<true, true, true, 8> {
 #ifdef __SSE4_2__
 		return _mm_cmpgt_epi64(b, a);
 #else
-#warning "The simd lesser function is emulate, it may impact the performances."
+//#warning "The simd lesser function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -545,7 +545,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 		b = sub(x, b);
 		return _mm_cmpgt_epi64(b, a);
 #else
-#pragma warning "The simd greater function is emulated, it may impact the performances."
+//#pragma warning "The simd greater function is emulated, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -561,7 +561,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 		b = sub(x, b);
 		return _mm_cmpgt_epi64(a, b);
 #else
-#pragma warning "The simd greater function is emulated, it may impact the performances."
+//#pragma warning "The simd greater function is emulated, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -582,7 +582,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	*/
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
 		// _mm_mullo_epi32 emul
-#pragma warning "The simd mullo function is emulated, it may impact the performances."
+//#pragma warning "The simd mullo function is emulated, it may impact the performances."
 		Converter c0, c1;
 		c0.v = x0;
 		c1.v = x1;
@@ -598,7 +598,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	*/
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		Converter c0, c1;
 		c0.v = a;
 		c1.v = b;

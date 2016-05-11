@@ -225,7 +225,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
 #ifdef __AVX512__
 		return _mm256_mullo_epi64(a, b);
 #else
-#pragma warning "The simd mullo function is emulate, it may impact the performances."
+//#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -244,7 +244,7 @@ template <> struct Simd256_impl<true, true, true, 8> {
 	 */
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
-#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
 		Converter ca, cb;
@@ -575,7 +575,7 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 * Return : [a0*b0 mod 2^64, a1*b1 mod 2^64, a2*b2 mod 2^64, a3*b3 mod 2^64]		uint64_t
 	 */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
-#pragma warning "The simd mullo function is emulate, it may impact the performances."
+//#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -591,7 +591,7 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 */
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
-#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
 		Converter c0, c1;
