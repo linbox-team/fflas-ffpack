@@ -49,9 +49,9 @@
 
 using namespace std;
 
-//typedef Givaro::ModularBalanced<double> Field;
+typedef Givaro::ModularBalanced<double> Field;
 //typedef Givaro::ModularBalanced<float> Field;
-typedef Givaro::ZRing<double> Field;
+//typedef Givaro::ZRing<double> Field;
 //typedef Givaro::UnparametricZRing<double> Field;
 
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
