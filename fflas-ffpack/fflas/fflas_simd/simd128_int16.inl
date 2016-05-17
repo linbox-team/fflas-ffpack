@@ -344,7 +344,7 @@ template <> struct Simd128_impl<true, true, true, 2> {
 	(a4<b4) ? 0xFFFF : 0, (a5<b5) ? 0xFFFF : 0,
 	(a6<b6) ? 0xFFFF : 0, (a7<b7) ? 0xFFFF : 0]			int16_t
 	*/
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm_cmpgt_epi16(b, a); }
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm_cmplt_epi16(a, b); }
 
 	/*
 	* Compare packed 16-bits in a and b for greater or equal than, and store the results in vect_t.
@@ -539,7 +539,7 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
 		x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
 		a = sub(a,x);
 		b = sub(b,x);
-		return _mm_cmpgt_epi16(b, a);
+		return _mm_cmplt_epi16(a, b);
 	}
 
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }

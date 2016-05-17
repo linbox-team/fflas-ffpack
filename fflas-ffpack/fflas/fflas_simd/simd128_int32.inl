@@ -365,7 +365,7 @@ template <> struct Simd128_impl<true, true, true, 4> {
 	* Return : [(a0<b0) ? 0xFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFF : 0,
 	(a2<b2) ? 0xFFFFFFFF : 0, (a3<b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm_cmpgt_epi32(b, a); }
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm_cmplt_epi32(a, b); }
 
 	/*
 	* Compare packed 32-bits in a and b for greater or equal than, and store the results in vect_t.
@@ -555,7 +555,7 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 		x = set1((static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
 		a = sub(a,x);
 		b = sub(b,x);
-		return _mm_cmpgt_epi32(b, a);
+		return _mm_cmplt_epi32(a, b);
 	}
 
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }
