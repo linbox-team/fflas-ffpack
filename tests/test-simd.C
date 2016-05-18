@@ -1,6 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 FFLAS-FFPACK
  * Written by :
@@ -27,20 +26,20 @@
  *.
  */
 
- #include "givaro/givinteger.h"
- #include "fflas-ffpack/fflas/fflas_simd.h"
- #include "fflas-ffpack/utils/args-parser.h"
- #include "fflas-ffpack/utils/align-allocator.h"
- #include <vector>
- #include <algorithm>
- #include <random>
- #include <tuple>
- #include <type_traits>
- #include <string>
- #include <iterator>
- #include <limits>
- #include <cmath>
- #include <iomanip>
+#include "givaro/givinteger.h"
+#include "fflas-ffpack/fflas/fflas_simd.h"
+#include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/align-allocator.h"
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <tuple>
+#include <type_traits>
+#include <string>
+#include <iterator>
+#include <limits>
+#include <cmath>
+#include <iomanip>
 
 typedef Givaro::Integer integer;
 
@@ -77,14 +76,14 @@ template <class R, class... Args>
 struct function_traits<R (*)(Args...)> : public function_traits<R(Args...)> {};
 
 template <class R, class... Args> struct function_traits<R(Args...)> {
-  using return_type = R;
+	using return_type = R;
 
-  static constexpr std::size_t arity = sizeof...(Args);
+	static constexpr std::size_t arity = sizeof...(Args);
 
-  template <std::size_t N> struct argument {
-    static_assert(N < arity, "error: invalid parameter index.");
-    using type = typename std::tuple_element<N, std::tuple<Args...> >::type;
-  };
+	template <std::size_t N> struct argument {
+		static_assert(N < arity, "error: invalid parameter index.");
+		using type = typename std::tuple_element<N, std::tuple<Args...> >::type;
+	};
 };
 
 // member function pointer
@@ -109,9 +108,9 @@ void print_arity (SimdFunc f) {
 template<class simd, class Element, class SimdFunc, class ScalFunc>
 inline
 typename std::enable_if<
-						(function_traits<SimdFunc>::arity == 0) &&
-						!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-					   , bool>::type
+(function_traits<SimdFunc>::arity == 0) &&
+!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
+, bool>::type
 test_op(SimdFunc && fsimd, ScalFunc && fscal, size_t seed, size_t vectorSize, Element max, std::string name){
 
 	using vect_t = typename simd::vect_t;
@@ -122,79 +121,79 @@ test_op(SimdFunc && fsimd, ScalFunc && fscal, size_t seed, size_t vectorSize, El
 
 	vect_t vc2;
 	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
-		c2 = fsimd();
-		simd::store(c2.data()+i, c2);
-	}
+			c2 = fsimd();
+			simd::store(c2.data()+i, c2);
+		}
 
 	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
 	if(!res)
-	{
-		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-			  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-		
-		std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl;
-		std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl ;
-	}
+		{
+			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
+					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
+
+			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl ;
+		}
 	return res;
 }
 
 template<class simd, class Element, class SimdFunc, class ScalFunc>
 inline
 typename std::enable_if<
-						(function_traits<SimdFunc>::arity == 1) &&
-						!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-					   , bool>::type
+(function_traits<SimdFunc>::arity == 1) &&
+!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
+, bool>::type
 test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
 	
 	using vect_t = typename simd::vect_t;
 
 	std::mt19937 generator(seed);
- 	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), c1(vectorSize), a2(vectorSize), c2(vectorSize), c3(vectorSize);
+	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), c1(vectorSize), a2(vectorSize), c2(vectorSize), c3(vectorSize);
 	generate_random(a1, generator);
- 	a2 = a1;
+	a2 = a1;
 
- 	std::transform(a1.begin(), a1.end(), c1.begin(), fscal);
+	std::transform(a1.begin(), a1.end(), c1.begin(), fscal);
 
- 	vect_t va2, vc2, vc3;
- 	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
- 		va2 = simd::load(a2.data()+i);
- 		vc3 = simd::load(c1.data()+i);
- 		vc2 = fsimd(va2);
-		vc3 = simd::sub(vc3,vc2);
- 		simd::store(c2.data()+i, vc2);
- 		simd::store(c3.data()+i, vc3);
- 	}
+	vect_t va2, vc2, vc3;
+	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
+			va2 = simd::load(a2.data()+i);
+			vc3 = simd::load(c1.data()+i);
+			vc2 = fsimd(va2);
+			vc3 = simd::sub(vc3,vc2);
+			simd::store(c2.data()+i, vc2);
+			simd::store(c3.data()+i, vc3);
+		}
 
- 	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
- 	if(!res)
- 	{
-		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-			  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
-		
-		std::cout << "a2: ";
-		std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl;
-		std::cout << "c1: ";
-		std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl;
-		std::cout << "c2: ";
-		std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl << std::endl;
-		std::cout << "c1-c2: ";
-		std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl << std::endl;
- 	}
- 	return res;
+	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
+	if(!res)
+		{
+			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
+					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
+
+			std::cout << "a2: ";
+			std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "c1: ";
+			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "c2: ";
+			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl << std::endl;
+			std::cout << "c1-c2: ";
+			std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl << std::endl;
+		}
+	return res;
 }
 
 template<class simd, class Element, class SimdFunc, class ScalFunc>
 inline
 typename std::enable_if<
-						(function_traits<SimdFunc>::arity == 2) &&
-						!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-					   , bool>::type
+(function_traits<SimdFunc>::arity == 2) &&
+!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
+, bool>::type
 test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
 	
 	using vect_t = typename simd::vect_t;
@@ -206,89 +205,89 @@ test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element 
 	a2 = a1;
 	b2 = b1;
 
- 	std::transform(a1.begin(), a1.end(), b1.begin(), c1.begin(), fscal);
+	std::transform(a1.begin(), a1.end(), b1.begin(), c1.begin(), fscal);
 
- 	vect_t va2, vb2, vc2, vc3;
- 	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
- 		va2 = simd::load(a2.data()+i);
- 		vb2 = simd::load(b2.data()+i);
- 		vc3 = simd::load(c1.data()+i);
- 		vc2 = fsimd(va2, vb2);
-		vc3 = simd::sub(vc3,vc2);
- 		simd::store(c2.data()+i, vc2);
- 		simd::store(c3.data()+i, vc3);
- 	}
+	vect_t va2, vb2, vc2, vc3;
+	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
+			va2 = simd::load(a2.data()+i);
+			vb2 = simd::load(b2.data()+i);
+			vc3 = simd::load(c1.data()+i);
+			vc2 = fsimd(va2, vb2);
+			vc3 = simd::sub(vc3,vc2);
+			simd::store(c2.data()+i, vc2);
+			simd::store(c3.data()+i, vc3);
+		}
 
- 	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
- 	if(!res)
- 	{
-		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-			  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
+	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
+	if(!res)
+		{
+			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
+					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
 
-		std::cout << "a2: ";
-		std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl;
-		std::cout << "b2: ";
-		std::copy(b2.begin(), b2.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl;
-		std::cout << "c1: ";
-		std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl;
-		std::cout << "c2: ";
-		std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl << std::endl;
-		std::cout << "c1-c2: ";
-		std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
-		std::cout << std::endl << std::endl;
-	}
- 	return res;
+			std::cout << "a2: ";
+			std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "b2: ";
+			std::copy(b2.begin(), b2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "c1: ";
+			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "c2: ";
+			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl << std::endl;
+			std::cout << "c1-c2: ";
+			std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl << std::endl;
+		}
+	return res;
 }
 
 template<class simd, class Element, class SimdFunc, class ScalFunc>
 inline
 typename std::enable_if<
-						(function_traits<SimdFunc>::arity == 3) &&
-						!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-					   , bool>::type
+(function_traits<SimdFunc>::arity == 3) &&
+!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
+, bool>::type
 test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
 	
 	using vect_t = typename simd::vect_t;
 
 	std::mt19937 generator(seed);
- 	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), d1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), d2(vectorSize);
+	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), d1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), d2(vectorSize);
 	generate_random(a1, generator);
 	generate_random(b1, generator);
 	generate_random(c1, generator);
- 	a2 = a1;
- 	b2 = b1;
- 	c2 = c1;
+	a2 = a1;
+	b2 = b1;
+	c2 = c1;
 
 	for(size_t i = 0 ; i < vectorSize ; ++i){
- 		d1[i] = fscal(c1[i], a1[i], b1[i]);
- 	}
+			d1[i] = fscal(c1[i], a1[i], b1[i]);
+		}
 
- 	vect_t va2, vb2, vc2;
- 	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
- 		va2 = simd::load(a2.data()+i);
- 		vb2 = simd::load(b2.data()+i);
- 		vc2 = simd::load(c2.data()+i);
- 		simd::store(d2.data()+i, fsimd(vc2, va2, vb2));
- 	}
+	vect_t va2, vb2, vc2;
+	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
+			va2 = simd::load(a2.data()+i);
+			vb2 = simd::load(b2.data()+i);
+			vc2 = simd::load(c2.data()+i);
+			simd::store(d2.data()+i, fsimd(vc2, va2, vb2));
+		}
 
- 	bool res = std::equal(d1.begin(), d1.end(), d2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
- 	if(!res)
- 	{
-		std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
-			  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
+	bool res = std::equal(d1.begin(), d1.end(), d2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
+	if(!res)
+		{
+			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
+					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
 
-		std::transform(d1.begin(), d1.end(), d2.begin(), d2.begin(), [](Element x1, Element x2){return x1-x2;});		
+			std::transform(d1.begin(), d1.end(), d2.begin(), d2.begin(), [](Element x1, Element x2){return x1-x2;});
 
-  		//std::copy(d1.begin(), d1.end(), std::ostream_iterator<Element>(std::cout, " "));
-  		//std::cout << std::endl;
-  		std::copy(d2.begin(), d2.end(), std::ostream_iterator<Element>(std::cout, " "));
-  		std::cout << std::endl;
-	}
- 	return res;
+			//std::copy(d1.begin(), d1.end(), std::ostream_iterator<Element>(std::cout, " "));
+			//std::cout << std::endl;
+			std::copy(d2.begin(), d2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+		}
+	return res;
 }
 
 
@@ -333,15 +332,15 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 	btest &= test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest &= test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest &= test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	// print_arity(mysra<simd>); 
+	// print_arity(mysra<simd>);
 	btest &= test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
-			       [](Element x1){
-				       integer h = integer (1) << 2;
-				       integer r = integer(x1) / h;
-				       r -= ((integer(x1)-h*r) < 0)?1:0;
-				       return Element(r);
-				       // return Element(std::floor(double(x1)/double(h)));
-			       }, seed, vectorSize, max, "sra");
+						   [](Element x1){
+			integer h = integer (1) << 2;
+			integer r = integer(x1) / h;
+			r -= ((integer(x1)-h*r) < 0)?1:0;
+			return Element(r);
+			// return Element(std::floor(double(x1)/double(h)));
+}, seed, vectorSize, max, "sra");
 	btest &= test_op<simd>(simd::mulhi, [](Element x1, Element x2){
 			integer q,r;
 			integer a = (integer(x1)*integer(x2));
@@ -349,21 +348,21 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 			Givaro::IntegerDom Z;
 			Z.divmod(q, r, a, b);
 			return Element(q);
-		}, seed, vectorSize, max, "mulhi");
+}, seed, vectorSize, max, "mulhi");
 	btest &= test_op<simd>(simd::mulx, [](Element x1, Element x2){
-						Element h = Element(1) << (sizeof(Element)*4);
-						/* Representative r of x1 modulo h with -h/2 <= r < h/2*/
-						if (std::is_signed<Element>::value) {
-							x1 = (x1+h/2)%h;
-							x1 += (x1 < 0)?h/2:-h/2;
-							x2 = (x2+h/2)%h;
-							x2 += (x2 < 0)?h/2:-h/2; }
-						else {
-							x1 = x1 % h;
-							x2 = x2 % h;
-						}
-						return x1*x2;
-					}, seed, vectorSize, max, "mulx");
+			Element h = Element(1) << (sizeof(Element)*4);
+			/* Representative r of x1 modulo h with -h/2 <= r < h/2*/
+			if (std::is_signed<Element>::value) {
+			x1 = (x1+h/2)%h;
+			x1 += (x1 < 0)?h/2:-h/2;
+			x2 = (x2+h/2)%h;
+			x2 += (x2 < 0)?h/2:-h/2; }
+			else {
+			x1 = x1 % h;
+			x2 = x2 % h;
+}
+			return x1*x2;
+}, seed, vectorSize, max, "mulx");
 
 	return btest;
 }
@@ -384,9 +383,9 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	return sse && avx;
 }
 
- template<class Element>
- bool test_integer(size_t seed, size_t vectorSize, size_t max_){
- 	bool sse = true, avx = true;
+template<class Element>
+bool test_integer(size_t seed, size_t vectorSize, size_t max_){
+	bool sse = true, avx = true;
 	sse = test_integer_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
 	if(!sse)
 		std::cout << "bug sse" << std::endl;
@@ -400,10 +399,10 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 		std::cout << "AVX OK" << std::endl;
 #endif
 	return sse && avx;
- }
+}
 
 
- int main(int ac, char **av) {
+int main(int ac, char **av) {
 	int seed = (int) time(NULL);
 	int vectorSize = 32;
 	int max = 100;
@@ -421,33 +420,33 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	srand48(seed);
 
 	bool pass  = true ;
-	{ 
+	{
 		do{
-		{
-			pass &= test_float<float>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_float<double>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_integer<int16_t>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_integer<int32_t>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_integer<int64_t>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_integer<uint16_t>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_integer<uint32_t>(seed, vectorSize, max);
-		}
-		{
-			pass &= test_integer<uint64_t>(seed, vectorSize, max);
-		}
-	}while(loop);
+				{
+					pass &= test_float<float>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_float<double>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_integer<int16_t>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_integer<int32_t>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_integer<int64_t>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_integer<uint16_t>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_integer<uint32_t>(seed, vectorSize, max);
+				}
+				{
+					pass &= test_integer<uint64_t>(seed, vectorSize, max);
+				}
+			}while(loop);
 	}
 	std::cout << std::boolalpha << pass << std::endl;
 	return (pass?0:1) ;

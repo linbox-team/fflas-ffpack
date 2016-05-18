@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -211,7 +211,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
 
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		// _mm_mulhi_epi32 emul
-//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 #if 0
 		vect_t a1, a2, b1, b2;
 		a1 = set(_mm_extract_epi32(a, 0), 0, _mm_extract_epi32(a, 2), 0);
@@ -221,7 +221,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
 		a1 = _mm_mul_epi32(a1, b1);
 		a2 = _mm_mul_epi32(a2, b2);
 		return set(_mm_extract_epi32(a1, 1), _mm_extract_epi32(a2, 1), _mm_extract_epi32(a1, 3),
-			   _mm_extract_epi32(a2, 3));
+				   _mm_extract_epi32(a2, 3));
 #else
 		typedef Simd128_impl<true, true, true, 8> Simd128_64;
 		vect_t C,A1,B1;
@@ -246,7 +246,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1, mask2;
 		mask1 = set1(0x0000FFFF);
 		mask2 = set1(0x00008000);
@@ -398,7 +398,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
 	}
 
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
-				 const vect_t &MAX, vect_t &Q, vect_t &T) {
+							 const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 		C = _mm_rem_epi32(C, P);
 #else
@@ -533,7 +533,7 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		// _mm_mulhi_epi32 emul
-//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 		typedef Simd128_impl<true, true, false, 8> Simd128_64;
 		vect_t C,A1,B1;
 		C  = Simd128_64::mulx(a,b);
@@ -555,7 +555,7 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 	*	    (a2 mod 2^16)*(b2 mod 2^16), (a3 mod 2^16)*(b3 mod 2^16)]	uint32_t
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1;
 		mask1 = set1(0x0000FFFF);
 		a1 = vand(a,mask1);

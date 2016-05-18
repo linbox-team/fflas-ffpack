@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -93,12 +93,6 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256_base {
 	};
 
 	/*
-	*  Return vector of type vect_t with all elements set to zero
-	*  Return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] int16_t
-	*/
-	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
-
-	/*
 	*  Broadcast 16-bit integer a to all elements of dst. This intrinsic may generate the vpbroadcastw.
 	*  Return [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x] int16_t
 	*/
@@ -109,9 +103,9 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256_base {
 	*  Return [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15] int16_t
 	*/
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3,
-				       const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7,
-				       const scalar_t x8, const scalar_t x9, const scalar_t x10, const scalar_t x11,
-				       const scalar_t x12, const scalar_t x13, const scalar_t x14, const scalar_t x15) {
+								   const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7,
+								   const scalar_t x8, const scalar_t x9, const scalar_t x10, const scalar_t x11,
+								   const scalar_t x12, const scalar_t x13, const scalar_t x14, const scalar_t x15) {
 		return _mm256_set_epi16(x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
@@ -244,7 +238,7 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256_base {
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1, mask2;
 		mask1 = set1(0x00FF);
 		mask2 = set1(0x0080);
@@ -427,7 +421,7 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256_base {
 	}
 
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
-				 const vect_t &MAX, vect_t &Q, vect_t &T) {
+							 const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 		C = _mm256_rem_epi16(C, P);
 #else
@@ -476,9 +470,9 @@ template <> struct Simd256_impl<true, true, false, 2> : public Simd256_impl<true
 	*  Return [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15] uint16_t
 	*/
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3,
-				       const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7,
-				       const scalar_t x8, const scalar_t x9, const scalar_t x10, const scalar_t x11,
-				       const scalar_t x12, const scalar_t x13, const scalar_t x14, const scalar_t x15) {
+								   const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7,
+								   const scalar_t x8, const scalar_t x9, const scalar_t x10, const scalar_t x11,
+								   const scalar_t x12, const scalar_t x13, const scalar_t x14, const scalar_t x15) {
 		return _mm256_set_epi16(x15, x14, x13, x12, x11, x10, x9, x8, x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
@@ -564,8 +558,8 @@ template <> struct Simd256_impl<true, true, false, 2> : public Simd256_impl<true
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
 
 	/*
-	* Multiply the packed unsigned 16-bit integers in a and b, producing intermediate 32-bit integers, 
- 	* and store the high 16 bits of the intermediate integers in vect_t.
+	* Multiply the packed unsigned 16-bit integers in a and b, producing intermediate 32-bit integers,
+	* and store the high 16 bits of the intermediate integers in vect_t.
 	* Args   :	[a0, ..., a15]		uint16_t
 			[b0, ..., b15]		uint16_t
 	* Return : [Floor(a0*b0/2^16), ..., Floor(a15*b15/2^16)] uint16_t
@@ -580,7 +574,7 @@ template <> struct Simd256_impl<true, true, false, 2> : public Simd256_impl<true
 	* Return : [(a0 mod 2^8)*(b0 mod 2^8), ..., (a15 mod 2^8)*(b15 mod 2^8)] uint16_t
 	*/
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1;
 		mask1 = set1(0x00FF);
 		a1 = vand(a,mask1);

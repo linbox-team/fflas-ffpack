@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -93,7 +93,7 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128_base {
 	*  Return [x0,x1,x2,x3,x4,x5,x6,x7] int16_t
 	*/
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3,
-				       const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
+								   const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
 		return _mm_set_epi16(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
@@ -219,7 +219,7 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128_base {
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1, mask2;
 		mask1 = set1(0x00FF);
 		mask2 = set1(0x0080);
@@ -381,7 +381,7 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128_base {
 	}
 
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const __m64 &INVP, const vect_t &NEGP, const vect_t &MIN,
-				 const vect_t &MAX, vect_t &Q, vect_t &T) {
+							 const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 		C = _mm_rem_epi16(C, P);
 #else
@@ -425,7 +425,7 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
 	*  Return [x0,x1,x2,x3,x4,x5,x6,x7] uint16_t
 	*/
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3,
-				       const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
+								   const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
 		return _mm_set_epi16(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
@@ -524,7 +524,7 @@ template <> struct Simd128_impl<true, true, false, 2> : public Simd128_impl<true
 	* Return : [(a0 mod 2^8)*(b0 mod 2^8), ..., (a7 mod 2^8)*(b7 mod 2^8)] uint16_t
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1;
 		mask1 = set1(0x00FF);
 		a1 = vand(a,mask1);

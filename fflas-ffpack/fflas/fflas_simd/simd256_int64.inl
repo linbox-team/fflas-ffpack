@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -91,12 +91,6 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
 		vect_t v;
 		scalar_t t[vect_size];
 	};
-
-	/*
-	 *  Return vector of type vect_t with all elements set to zero
-	 *  Return [0,0,0,0] int64_t
-	 */
-	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
 
 	/*
 	 *  Broadcast 64-bit integer a to all elements of dst. This intrinsic may generate the vpbroadcastw.
@@ -225,7 +219,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
 #ifdef __AVX512__
 		return _mm256_mullo_epi64(a, b);
 #else
-//#pragma warning "The simd mullo function is emulate, it may impact the performances."
+		//#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -244,7 +238,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
 	 */
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
-//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+		//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
 		Converter ca, cb;
@@ -414,7 +408,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
 
 	template <bool overflow, bool poweroftwo>
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
-				 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
+							 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
 }; // Simd256_impl<true, true, true, 8>
 
 /*
@@ -543,7 +537,7 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 * Return : [a0*b0 mod 2^64, a1*b1 mod 2^64, a2*b2 mod 2^64, a3*b3 mod 2^64]		uint64_t
 	 */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
-//#pragma warning "The simd mullo function is emulate, it may impact the performances."
+		//#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
@@ -559,14 +553,14 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 */
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
-//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
+		//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		// ugly solution, but it works.
 		// tested with gcc, clang, icc
 		Converter c0, c1;
 		c0.v = a;
 		c1.v = b;
 		return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
-			   (scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
+				(scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
 	}
 #endif
 
@@ -637,32 +631,32 @@ INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
 
 template <bool overflow, bool poweroftwo>
 INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
-						     const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
+													 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 	// Works fine with ICC 15.0.1 - A.B.
 	C = _mm256_rem_epi64(C, P);
 #else
 	if (poweroftwo) {
-		Q = srl(C, 63);
-		vect_t un = set1(1);
-		T = sub(sll(un, shifter), un);
-		Q = add(C, vand(Q, T));
-		Q = sll(srl(Q, shifter), shifter);
-		C = sub(C, Q);
-		Q = vand(greater(zero(), Q), P);
-		C = add(C, Q);
-	} else {
-		Q = mulhi_fast(C, magic);
-		if (overflow) {
-			Q = add(Q, C);
+			Q = srl(C, 63);
+			vect_t un = set1(1);
+			T = sub(sll(un, shifter), un);
+			Q = add(C, vand(Q, T));
+			Q = sll(srl(Q, shifter), shifter);
+			C = sub(C, Q);
+			Q = vand(greater(zero(), Q), P);
+			C = add(C, Q);
+		} else {
+			Q = mulhi_fast(C, magic);
+			if (overflow) {
+					Q = add(Q, C);
+				}
+			Q = sra(Q, shifter);
+			vect_t q1 = Simd256_impl<true, true, false, 8>::mulx(Q, P);
+			vect_t q2 = sll(Simd256_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
+			C = sub(C, add(q1, q2));
+			T = greater_eq(C, P);
+			C = sub(C, vand(T, P));
 		}
-		Q = sra(Q, shifter);
-		vect_t q1 = Simd256_impl<true, true, false, 8>::mulx(Q, P);
-		vect_t q2 = sll(Simd256_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
-		C = sub(C, add(q1, q2));
-		T = greater_eq(C, P);
-		C = sub(C, vand(T, P));
-	}
 #endif
 	NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
 	return C;

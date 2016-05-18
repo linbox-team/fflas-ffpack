@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -95,12 +95,6 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	};
 
 	/*
-	*  Return vector of type vect_t with all elements set to zero
-	*  Return [0,0,0,0,0,0,0,0] int32_t
-	*/
-	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
-
-	/*
 	*  Broadcast 32-bit integer a to all elements of dst. This intrinsic may generate the vpbroadcastw.
 	*  Return [x,x,x,x,x,x,x,x] int32_t
 	*/
@@ -111,7 +105,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	*  Return [x0,x1,x2,x3,x4,x5,x6,x7] int32_t
 	*/
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3,
-				       const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
+								   const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
 		return _mm256_set_epi32(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
@@ -226,7 +220,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a7*b7/2^32)] int32_t
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 #if 0
 		typedef Simd256_impl<true, true, true, 8> Simd256_64;
 		Converter ca, cb;
@@ -265,7 +259,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	*	where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1, mask2;
 		mask1 = set1(0x0000FFFF);
 		mask2 = set1(0x00008000);
@@ -427,7 +421,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	}
 
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
-				 const vect_t &MAX, vect_t &Q, vect_t &T) {
+							 const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 		C = _mm256_rem_epi32(C, P);
 #else
@@ -477,7 +471,7 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	*  Return [x0,x1,x2,x3,x4,x5,x6,x7] uint32_t
 	*/
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3,
-				       const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
+								   const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
 		return _mm256_set_epi32(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
@@ -566,7 +560,7 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a7*b7/2^32)] uint32_t
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
-//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 		typedef Simd256_impl<true, true, false, 8> Simd256_64;
 		vect_t C,A1,B1;
 		C  = Simd256_64::mulx(a,b);
@@ -587,7 +581,7 @@ template <> struct Simd256_impl<true, true, false, 4> : public Simd256_impl<true
 	* Return : [(a0 mod 2^16)*(b0 mod 2^16), ..., (a7 mod 2^16)*(b7 mod 2^16)]	uint32_t
 	*/
 	static INLINE CONST vect_t mulx(vect_t a, vect_t b) {
-//#pragma warning "The simd mulx function is emulated, it may impact the performances."
+		//#pragma warning "The simd mulx function is emulated, it may impact the performances."
 		vect_t a1, b1, mask1;
 		mask1 = set1(0x0000FFFF);
 		a1 = vand(a,mask1);
