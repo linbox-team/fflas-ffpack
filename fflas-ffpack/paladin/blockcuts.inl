@@ -30,6 +30,7 @@
 #define __FFLASFFPACK_fflas_blockcuts_INL
 
 #include <fflas-ffpack/fflas/fflas_enum.h>
+#include <math.h>
 
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 
