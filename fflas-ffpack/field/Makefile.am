@@ -29,6 +29,7 @@ RNS=rns.h			        \
 	rns-double.h			\
 	rns-double-elt.h		\
 	rns-double.inl			\
+	rns-double-recint.inl		\
 	rns-integer.h			\
 	rns-integer-mod.h     \
 	modular-extended.h

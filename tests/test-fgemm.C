@@ -28,7 +28,6 @@
  *.
  */
 
-
 // #ifndef NEWINO
 // #define NEWWINO
 // #endif
@@ -38,9 +37,12 @@
 //#define DEBUG 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
+
 #include <iomanip>
 #include <iostream>
+
 #include <givaro/modular.h>
+ 
 #include <givaro/udl.h>
 #include <recint/rint.h>
 
@@ -57,6 +59,7 @@
 
 using namespace std;
 using namespace FFPACK;
+
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
@@ -163,6 +166,7 @@ bool launch_MM(const Field & F,
 			   bool par, 
 			   size_t b)
 {
+
 	bool ok = true;
 
 	typedef typename Field::Element_ptr Element_ptr;
@@ -181,7 +185,7 @@ bool launch_MM(const Field & F,
 		}
 		else {
 			FFLASFFPACK_check(lda >= m);
-			A = FFLAS::fflas_new (F, k, lda);
+			A = FFLAS::fflas_new (F, k, lda); 
 			FFLAS::fzero(F,k,lda,A,lda);
 			RandomMatrix(F,A,k,m,lda,b);
 		}
@@ -205,7 +209,7 @@ bool launch_MM(const Field & F,
 				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
 		}else{
-			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
 			FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 		}
 		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
@@ -291,7 +295,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 	bool ok = true ;
 
 	int nbit=(int)iters;
-
+	
 	while (ok &&  nbit){
 		typedef typename Field::Element Element ;
 		// choose Field
@@ -410,14 +414,17 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p);
 		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p);
-		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p);
-		ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p);
 		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p);
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p);
+		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p);
+		ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p);		
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p);
 		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p);
 
 	} while (loop && ok);
 
+
+	
+	
 	return !ok ;
 }

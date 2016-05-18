@@ -217,7 +217,7 @@ namespace FFPACK {
 		template<size_t K>
 		void init(size_t m, size_t n, double* Arns, size_t rda, const RecInt::ruint<K>* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
 		template<size_t K>
-		void convert(size_t m, size_t n, integer gamma, RecInt::ruint<K>* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
+		void convert(size_t m, size_t n, integer gamma, RecInt::ruint<K>* A, size_t lda, const double* Arns, size_t rda, integer p=0,bool RNS_MAJOR=false) const;
 
 		
 	}; // end of struct rns_double
@@ -407,7 +407,7 @@ namespace FFPACK {
 } // end of namespace FFPACK
 
 #include "rns-double.inl"
-//#include "rns-double-recint.inl"
+#include "rns-double-recint.inl"
 namespace FFLAS {
 
 	template<>
