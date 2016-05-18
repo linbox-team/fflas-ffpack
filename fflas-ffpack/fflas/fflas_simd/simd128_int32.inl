@@ -177,9 +177,25 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	static INLINE CONST vect_t shuffle(const vect_t a, const int s) { return _mm_shuffle_epi32(a, s); }
 
 	/*
+	* Unpack and interleave 32-bit integers from the low half of a and b, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int32_t
+			   [b0, b1, b2, b3] int32_t
+	* Return : [a0, b0, a1, b1] int32_t
+	*/
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_epi32(a, b); }
+
+	/*
+	* Unpack and interleave 32-bit integers from the high half of a and b, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int32_t
+			   [b0, b1, b2, b3] int32_t
+	* Return : [a2, b2, a3, b3] int32_t
+	*/
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi32(a, b); }
+
+	/*
 	* Add packed 32-bits integer in a and b, and store the results in vect_t.
 	* Args   : [a0, a1, a2, a3] int32_t
-	[b0, b1, b2, b3] int32_t
+			   [b0, b1, b2, b3] int32_t
 	* Return : [a0+b0, a1+b1, a2+b2, a3+b3]   int32_t
 	*/
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b) { return _mm_add_epi32(a, b); }
@@ -189,7 +205,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	/*
 	* Subtract packed 32-bit integers in b from packed 32-bit integers in a, and store the results in vect_t.
 	* Args   : [a0, a1, a2, a3] int32_t
-	[b0, b1, b2, b3] int32_t
+			   [b0, b1, b2, b3] int32_t
 	* Return : [a0-b0, a1-b1, a2-b2, a3-b3]  int32_t
 	*/
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) { return _mm_sub_epi32(a, b); }
@@ -199,8 +215,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	/*
 	* Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers, and store the low 32 bits
 	of the intermediate integers in vect_t.
-	* Args   : [a0, a1, a2, a3]		 int32_t
-	*	   [b0, b1, b2, b3]		 int32_t
+	* Args   : [a0, a1, a2, a3] int32_t
+			   [b0, b1, b2, b3] int32_t
 	* Return : [a0*b0 smod 2^32, ..., a3*b3 smod 2^32]	int32_t
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
@@ -211,8 +227,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	/*
 	* Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers, and store the high 32
 	bits of the intermediate integers in vect_t.
-	* Args   : [a0, a1, a2, a3]		 int32_t
-	*	   [b0, b1, b2, b3]		 int32_t
+	* Args   : [a0, a1, a2, a3] int32_t
+			   [b0, b1, b2, b3] int32_t
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a3*b3/2^32)] int32_t
 	*/
 
@@ -246,8 +262,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	/*
 	* Multiply the low 16-bit integers from each packed 32-bit element in a and b, and store the signed 32-bit results
 	in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
+	* Args   : [a0, a1, a2, a3] int32_t
+			   [b0, b1, b2, b3] int32_t
 	* Return : [(a0 smod 2^16)*(b0 smod 2^16), (a1 smod 2^16)*(b1 smod 2^16),
 	*	    (a2 smod 2^16)*(b2 smod 2^16), (a3 smod 2^16)*(b3 smod 2^16)]	int32_t
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
@@ -270,8 +286,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers,
 	* keep the low 32 bits of the intermediate and add the low 32-bits of c.
 	* Args   :	[a0, a1, a2, a3]		int32_t
-			[b0, b1, b2, b3]		int32_t
-			[c0, c1, c2, c3]		int32_t
+				[b0, b1, b2, b3]		int32_t
+				[c0, c1, c2, c3]		int32_t
 	* Return :	[(a0*b0+c0) smod 2^32, ..., (a3*b3+c3) smod 2^32]	int32_t
 	*/
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) { return add(c, mul(a, b)); }
@@ -282,8 +298,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Multiply the low 16-bit integers from each packed 32-bit element in a and b,
 	* keep the signed 32-bit results and add the low 32-bits of c.
 	* Args   :	[a0, a1, a2, a3]		int32_t
-			[b0, b1, b2, b3]		int32_t
-			[c0, c1, c2, c3]		int32_t
+				[b0, b1, b2, b3]		int32_t
+				[c0, c1, c2, c3]		int32_t
 	* Return :	[((a0 smod 2^16)*(b0 smod 2^16)+c0) smod 2^32, ...,
 	*		 ((a3 smod 2^16)*(b3 smod 2^16)+c3) smod 2^32]	int32_t
 	*/
@@ -295,8 +311,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers,
 	* and substract the low 32 bits of the intermediate from elements of c.
 	* Args   :	[a0, a1, a2, a3]		int32_t
-			[b0, b1, b2, b3]		int32_t
-			[c0, c1, c2, c3]		int32_t
+				[b0, b1, b2, b3]		int32_t
+				[c0, c1, c2, c3]		int32_t
 	* Return :	[(-a0*b0+c0) smod 2^32, ..., (-a3*b3+c3) smod 2^32]	int32_t
 	*/
 	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mul(a, b)); }
@@ -307,8 +323,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Multiply the low 16-bit integers from each packed 32-bit element in a and b,
 	* keep the signed 32-bit results and add the low 32-bits of c and substract them from elements of c.
 	* Args   :	[a0, a1, a2, a3]		int32_t
-			[b0, b1, b2, b3]		int32_t
-			[c0, c1, c2, c3]		int32_t
+				[b0, b1, b2, b3]		int32_t
+				[c0, c1, c2, c3]		int32_t
 	* Return :	[(-(a0 smod 2^16)*(b0 smod 2^16)+c0) smod 2^32, ...,
 	*		 (-(a3 smod 2^16)*(b3 smod 2^16)+c3) smod 2^32]	int32_t
 	*/
@@ -320,8 +336,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Multiply the packed 32-bit integers in a and b, producing intermediate 64-bit integers,
 	* and substract elements of c to the low 32-bits of the intermediate.
 	* Args   :	[a0, a1, a2, a3]		int32_t
-			[b0, b1, b2, b3]		int32_t
-			[c0, c1, c2, c3]		int32_t
+				[b0, b1, b2, b3]		int32_t
+				[c0, c1, c2, c3]		int32_t
 	* Return : [(a0*b0-c0) smod 2^32, ..., (a3*b3-c3) smod 2^32]	int32_t
 	*/
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) { return sub(mul(a, b), c); }
@@ -332,8 +348,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Multiply the low 16-bit integers from each packed 32-bit element in a and b,
 	* keep the signed 32-bit results and substract elements of c from them.
 	* Args   :	[a0, a1, a2, a3]		int32_t
-			[b0, b1, b2, b3]		int32_t
-			[c0, c1, c2, c3]		int32_t
+				[b0, b1, b2, b3]		int32_t
+				[c0, c1, c2, c3]		int32_t
 	* Return :	[((a0 smod 2^16)*(b0 smod 2^16)-c0) smod 2^32, ...,
 	*		 ((a3 smod 2^16)*(b3 smod 2^16)-c3) smod 2^32]	int32_t
 	*/
@@ -343,8 +359,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 
 	/*
 	* Compare packed 32-bits in a and b for equality, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
+	* Args   :	[a0, a1, a2, a3]		int32_t
+				[b0, b1, b2, b3]		int32_t
 	* Return : [(a0==b0) ? 0xFFFFFFFF : 0, (a1==b1) ? 0xFFFFFFFF : 0,
 	(a2==b2) ? 0xFFFFFFFF : 0, (a3==b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
@@ -352,8 +368,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 
 	/*
 	* Compare packed 32-bits in a and b for greater-than, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
+	* Args   :	[a0, a1, a2, a3]		int32_t
+				[b0, b1, b2, b3]		int32_t
 	* Return : [(a0>b0) ? 0xFFFFFFFF : 0, (a1>b1) ? 0xFFFFFFFF : 0,
 	(a2>b2) ? 0xFFFFFFFF : 0, (a3>b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
@@ -361,8 +377,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 
 	/*
 	* Compare packed 32-bits in a and b for lesser-than, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
+	* Args   :	[a0, a1, a2, a3]		int32_t
+				[b0, b1, b2, b3]		int32_t
 	* Return : [(a0<b0) ? 0xFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFF : 0,
 	(a2<b2) ? 0xFFFFFFFF : 0, (a3<b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
@@ -370,8 +386,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 
 	/*
 	* Compare packed 32-bits in a and b for greater or equal than, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
+	* Args   :	[a0, a1, a2, a3]		int32_t
+				[b0, b1, b2, b3]		int32_t
 	* Return : [(a0>=b0) ? 0xFFFFFFFF : 0, (a1>=b1) ? 0xFFFFFFFF : 0,
 	(a2>=b2) ? 0xFFFFFFFF : 0, (a3>=b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
@@ -379,8 +395,8 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 
 	/*
 	* Compare packed 32-bits in a and b for lesser or equal than, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
+	* Args   :	[a0, a1, a2, a3]		int32_t
+				[b0, b1, b2, b3]		int32_t
 	* Return : [(a0<=b0) ? 0xFFFFFFFF : 0, (a1<=b1) ? 0xFFFFFFFF : 0,
 	(a2<=b2) ? 0xFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
@@ -535,7 +551,7 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 	* Multiply the packed unsigned 32-bit integers in a and b, producing intermediate 64-bit integers,
 	* and store the high 32	bits of the intermediate integers in vect_t.
 	* Args   : [a0, a1, a2, a3]		 uint32_t
-	*	   [b0, b1, b2, b3]		 uint32_t
+	*		   [b0, b1, b2, b3]		 uint32_t
 	* Return : [Floor(a0*b0/2^32), ..., Floor(a3*b3/2^32)] uint32_t
 	*/
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
@@ -556,8 +572,8 @@ template <> struct Simd128_impl<true, true, false, 4> : public Simd128_impl<true
 	/*
 	* Multiply the low unsigned 16-bit integers from each packed 32-bit element in a and b,
 	* and store the signed 32-bit results in vect_t.
-	* Args   : [a0, a1, a2, a3]	uint32_t
-	*	   [b0, b1, b2, b3]	uint32_t
+	* Args   : [a0, a1, a2, a3]		 uint32_t
+	*		   [b0, b1, b2, b3]		 uint32_t
 	* Return : [(a0 mod 2^16)*(b0 mod 2^16), (a1 mod 2^16)*(b1 mod 2^16),
 	*	    (a2 mod 2^16)*(b2 mod 2^16), (a3 mod 2^16)*(b3 mod 2^16)]	uint32_t
 	*/

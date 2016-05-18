@@ -75,6 +75,30 @@ struct Simd256i_base {
 	*/
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
 
+	/*
+	* Shuffle 128-bit integers in a and b using the control in imm8, and store the results in dst.
+	* Args   :	[a0, a1] int128_t
+	*			[b0, b1] int128_t
+	* Return : [s[0..3]?a0:a1:b0:b1, s[4..7]?a0:a1:b0:b1] int128_t
+	*/
+	static INLINE CONST vect_t shuffle128(const vect_t a, const vect_t b, const int s) { return _mm256_permute2x128_si256(a, b, s);	}
+
+	/*
+	* Unpack and interleave 128-bit integers from the low half of a and b, and store the results in dst.
+	* Args   : [a0, a1] int128_t
+			   [b0, b1] int128_t
+	* Return : [a0, b0] int128_t
+	*/
+	static INLINE CONST vect_t unpacklo128(const vect_t a, const vect_t b) { return shuffle128(a, b, 32); }
+
+	/*
+	* Unpack and interleave 128-bit integers from the high half of a and b, and store the results in dst.
+	* Args   : [a0, a1] int128_t
+			   [b0, b1] int128_t
+	* Return : [a1, b1] int128_t
+	*/
+	static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return shuffle128(a, b, 49); }
+
 };
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd256_impl;

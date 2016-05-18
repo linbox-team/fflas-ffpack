@@ -207,6 +207,22 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	}
 
 	/*
+	* Unpack and interleave 32-bit integers from the low half of a and b, and store the results in dst.
+	* Args   :	[a0, ..., a7] int32_t
+				[b0, ..., b7] int32_t
+	* Return :	[a0, b0, ..., a3, b3] int32_t
+	*/
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi32(a, b); }
+
+	/*
+	* Unpack and interleave 32-bit integers from the high half of a and b, and store the results in dst.
+	* Args   :	[a0, ..., a7] int32_t
+				[b0, ..., b7] int32_t
+	* Return :	[a4, b4, ..., a7, b7] int32_t
+	*/
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi32(a, b); }
+
+	/*
 	* Add packed 32-bits integer in a and b, and store the results in vect_t.
 	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] 						int32_t
 	*	   [b0, b1, b2, b3, b4, b5, b6, b7] 						int32_t

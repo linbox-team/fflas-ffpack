@@ -188,6 +188,22 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	}
 
 	/*
+	* Unpack and interleave 64-bit integers from the low half of a and b, and store the results in dst.
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+	* Return : [a0, b0] int64_t
+	*/
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_epi64(a, b); }
+
+	/*
+	* Unpack and interleave 64-bit integers from the high half of a and b, and store the results in dst.
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+	* Return : [a1, b1] int64_t
+	*/
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi64(a, b); }
+
+	/*
 	* Add packed 64-bits integer in a and b, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
 	[b0, b1] int64_t
