@@ -344,7 +344,7 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 	btest &= test_op<simd>(simd::mulhi, [](Element x1, Element x2){
 			integer q,r;
 			integer a = (integer(x1)*integer(x2));
-			integer b = integer(1) << (sizeof(Element)*8);
+			integer b = integer(1) << uint64_t(sizeof(Element)*8);
 			Givaro::IntegerDom Z;
 			Z.divmod(q, r, a, b);
 			return Element(q);

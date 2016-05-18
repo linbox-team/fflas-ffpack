@@ -50,66 +50,96 @@ namespace FFLAS {
 			 typename AlgoTrait,
 			 typename ParSeqTrait>
 	struct MMHelper<Field, AlgoTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqTrait> {
+		typedef MMHelper<Field, AlgoTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqTrait>  Self_t;
 		Givaro::Integer normA,normB;
 		int recLevel;
 		ParSeqTrait parseq;
 		MMHelper() : normA(0), normB(0), recLevel(-1) {}
 		template <class F2, class A2, class M2, class PS2>
 		MMHelper(MMHelper<F2, A2, M2, PS2> H2) : 
-				normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
+			normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
 		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
 		MMHelper(const Field& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
-				: recLevel(-1), parseq(PS)
-			{F.characteristic(normA);F.characteristic(normB);}
+			: recLevel(-1), parseq(PS)
+		{F.characteristic(normA);F.characteristic(normB); }
 		MMHelper(const Field& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
-			{F.characteristic(normA);F.characteristic(normB);}
+		{F.characteristic(normA);F.characteristic(normB);}
 		void setNorm(Givaro::Integer p){normA=normB=p;}
+
+		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+		{
+			return out <<"Helper: "
+					   <<typeid(AlgoTrait).name()<<' '
+					   <<typeid(ModeCategories::ConvertTo<ElementCategories::RNSElementTag>).name()<< ' '
+					   << M.parseq <<std::endl
+					   <<"  recLevel = "<<M.recLevel<<std::endl;
+		}
 	};
 	template<typename E,
 			 typename AlgoTrait,
 			 typename ParSeqTrait>
 	struct MMHelper<FFPACK::RNSInteger<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> {
+		typedef  MMHelper<FFPACK::RNSInteger<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> Self_t;
 		Givaro::Integer normA,normB;
 		int recLevel;
 		ParSeqTrait parseq;
 		MMHelper() : normA(0), normB(0), recLevel(-1) {}
 		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
 		MMHelper(const FFPACK::RNSInteger<E>& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
-				: recLevel(-1), parseq(PS)
-			{F.characteristic(normA);F.characteristic(normB);}
+			: recLevel(-1), parseq(PS)
+		{F.characteristic(normA);F.characteristic(normB);}
 		MMHelper(const FFPACK::RNSInteger<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
-			{F.characteristic(normA);F.characteristic(normB);}
+		{F.characteristic(normA);F.characteristic(normB);}
 		template <class F2, class A2, class M2, class PS2>
 		MMHelper(MMHelper<F2, A2, M2, PS2> H2) : 
-				normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
+			normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
 		void setNorm(Givaro::Integer p){normA=normB=p;}
+
+		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+		{
+			return out <<"Helper: "
+					   <<typeid(AlgoTrait).name()<<' '
+					   <<typeid(ModeCategories::DefaultTag).name()<< ' '
+					   << M.parseq <<std::endl
+					   <<"  recLevel = "<<M.recLevel<<std::endl;
+		}
 	};
 	template<typename E,
 			 typename AlgoTrait,
 			 typename ParSeqTrait>
 	struct MMHelper<FFPACK::RNSIntegerMod<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> {
+		typedef MMHelper<FFPACK::RNSIntegerMod<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> Self_t;
 		Givaro::Integer normA,normB;
 		int recLevel;
 		ParSeqTrait parseq;
 		MMHelper() : normA(0), normB(0), recLevel(-1) {}
 		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
 		MMHelper(const FFPACK::RNSIntegerMod<E>& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
-				: recLevel(-1), parseq(PS)
-			{F.characteristic(normA);F.characteristic(normB);}
+			: recLevel(-1), parseq(PS)
+		{F.characteristic(normA);F.characteristic(normB);}
 		MMHelper(const FFPACK::RNSIntegerMod<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
-			{F.characteristic(normA);F.characteristic(normB);}
+		{F.characteristic(normA);F.characteristic(normB);}
 		// copy constructor from other Field and Algo Traits
 		template<class F2, typename AlgoT2, typename FT2, typename PS2>
 		MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
 
 		void setNorm(Givaro::Integer p){normA=normB=p;}
+
+		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+		{
+			return out <<"Helper: "
+					   <<typeid(AlgoTrait).name()<<' '
+					   <<typeid(ModeCategories::DefaultTag).name()<< ' '
+					   << M.parseq <<std::endl
+					   <<"  recLevel = "<<M.recLevel<<std::endl;
+		}
 	};
 
-		/***********************************
-		 *** MULTIPRECISION FGEMM OVER Z ***
-		 ***********************************/
+	/***********************************
+	 *** MULTIPRECISION FGEMM OVER Z ***
+	 ***********************************/
 
-		// fgemm for RnsInteger sequential version
+	// fgemm for RnsInteger sequential version
 	template<typename RNS>
 	inline  typename FFPACK::RNSInteger<RNS>::Element_ptr 
 	fgemm (const FFPACK::RNSInteger<RNS> &F,
@@ -124,8 +154,8 @@ namespace FFLAS {
 	       MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic,ModeCategories::DefaultTag, ParSeqHelper::Sequential> & H)
 	{		
 
-			// compute each fgemm componentwise
-#ifdef FFT_PROFILER
+		// compute each fgemm componentwise
+#ifdef PROFILE_FGEMM_MP
 		Givaro::Timer t;t.start();
 #endif
 		for(size_t i=0;i<F.size();i++){
@@ -137,7 +167,7 @@ namespace FFLAS {
 						 beta._ptr[i*beta._stride],
 						 Cd._ptr+i*Cd._stride, ldc, H2);
 		}
-#ifdef FFT_PROFILER
+#ifdef PROFILE_FGEMM_MP
 		t.stop();
 
 		std::cerr<<"=========================================="<<std::endl
@@ -147,7 +177,7 @@ namespace FFLAS {
 		return Cd;
 	}
 
-		// fgemm for RnsInteger parallel version
+	// fgemm for RnsInteger parallel version
 	template<typename RNS, typename Cut, typename Param>
 	inline  typename FFPACK::RNSInteger<RNS>::Element_ptr
 	fgemm (const FFPACK::RNSInteger<RNS> &F,
@@ -161,16 +191,16 @@ namespace FFLAS {
 	       typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
 		   MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Parallel<Cut,Param> > & H)
 	{
-			// compute each fgemm componentwise
+		// compute each fgemm componentwise
 		size_t s=F.size();
 		size_t nt=H.parseq.numthreads();
 		size_t loop_nt = std::min(s,nt);
 		size_t iter_nt = nt / loop_nt;
 		size_t leftover_nt = nt % loop_nt;
-			//std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
+		//std::cerr<<"iter_nt = "<<iter_nt<<" loop_nt = "<<loop_nt<<" leftover_nt = "<<leftover_nt<<std::endl;
 		ParSeqHelper::Parallel<Cut,Param>  sp(loop_nt);
 		//#endif
-#ifdef FFT_PROFILER
+#ifdef PROFILE_FGEMM_MP
 		Givaro::Timer t;t.start();
 #endif
 		typedef MMHelper<typename RNS::ModField,
@@ -182,30 +212,30 @@ namespace FFLAS {
 		FORBLOCK1D(iter,s,SPLITTER(H.parseq.numthreads()),
 				   TASK(MODE(CONSTREFERENCE(F,H)),
 						{for(auto i=iter.begin(); i!=iter.end(); ++i) 
-//				  for(int i=0; i<s;++i)
-				 {
-					 size_t gemm_nt = iter_nt;
-					 if (i < leftover_nt)
-						 gemm_nt++;
-					 if (gemm_nt>1){ // Running a parallel fgemm
-						 MMH_par_t H2(F.rns()._field_rns[i], H.recLevel,
-										  ParSeqHelper::Parallel<Cut,Param>(gemm_nt));
-//									  SPLITTER(gemm_nt,Cut,Param));
-							 //std::cerr<<"calling fgemm with "<<gemm_nt<<" threads"<<std::endl;
-						 FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
-									  Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
-									  beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, H2);
-					 } else { // Running a sequential fgemm
-						 MMH_seq_t WH(F.rns()._field_rns[i], H.recLevel, ParSeqHelper::Sequential());
-						 FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
-									  Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
-									  beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, WH);
-					 }
-				 }
+								//				  for(int i=0; i<s;++i)
+								{
+									size_t gemm_nt = iter_nt;
+									if (i < leftover_nt)
+										gemm_nt++;
+									if (gemm_nt>1){ // Running a parallel fgemm
+										MMH_par_t H2(F.rns()._field_rns[i], H.recLevel,
+													 ParSeqHelper::Parallel<Cut,Param>(gemm_nt));
+										//									  SPLITTER(gemm_nt,Cut,Param));
+										//std::cerr<<"calling fgemm with "<<gemm_nt<<" threads"<<std::endl;
+										FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
+													 Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
+													 beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, H2);
+									} else { // Running a sequential fgemm
+										MMH_seq_t WH(F.rns()._field_rns[i], H.recLevel, ParSeqHelper::Sequential());
+										FFLAS::fgemm(F.rns()._field_rns[i],ta,tb, m, n, k, alpha._ptr[i*alpha._stride],
+													 Ad._ptr+i*Ad._stride, lda, Bd._ptr+i*Bd._stride, ldb,
+													 beta._ptr[i*beta._stride], Cd._ptr+i*Cd._stride, ldc, WH);
+									}
+								}
 						}); // TASK
 				   ); // FLORBLOCK1D
 		
-#ifdef FFT_PROFILER
+#ifdef PROFILE_FGEMM_MP
 		t.stop();
 
 		std::cerr<<"=========================================="<<std::endl
@@ -229,6 +259,7 @@ namespace FFLAS {
 	       Givaro::Integer* C, const size_t ldc,
 	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
 	{
+		//std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
 #ifdef PROFILE_FGEMM_MP
 		Timer chrono;
 		chrono.start();
@@ -239,12 +270,12 @@ namespace FFLAS {
 		}
 
 		if (k==0) return C;
-			// compute bit size of feasible prime for FFLAS
+		// compute bit size of feasible prime for FFLAS
 		size_t _k=k,lk=0;
 		while ( _k ) {_k>>=1; ++lk;}
 		size_t prime_bitsize= (53-lk)>>1;
 
-			// compute bound on the output
+		// compute bound on the output
 		Givaro::Integer  mA,mB,mC;
 		size_t logA,logB;
 		mA=H.normA;
@@ -258,7 +289,7 @@ namespace FFLAS {
 
 		mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
         
-			// construct an RNS structure and its associated Domain
+		// construct an RNS structure and its associated Domain
 		FFPACK::rns_double RNS(mC, prime_bitsize);
 
 		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
@@ -270,7 +301,7 @@ namespace FFLAS {
 		if (tb == FFLAS::FflasNoTrans){Browd=k; Bcold = n; }
 		else { Browd=n; Bcold = k;}
 		
-			// allocate data for RNS representation
+		// allocate data for RNS representation
 		typename RnsDomain::Element_ptr Ap,Bp,Cp;
 		Ap = FFLAS::fflas_new(Zrns,Arowd,Acold);
 		Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
@@ -284,7 +315,7 @@ namespace FFLAS {
 		chrono.start();
 #endif
 
-			// convert the input matrices to RNS representation
+		// convert the input matrices to RNS representation
 		finit_rns(Zrns,Arowd,Acold,(logA/16)+((logA%16)?1:0),A,lda,Ap);
 		finit_rns(Zrns,Browd,Bcold,(logB/16)+((logB%16)?1:0),B,ldb,Bp);
 
@@ -294,16 +325,16 @@ namespace FFLAS {
 		chrono.start();
 #endif
 
-			// perform the fgemm in RNS
-			// Classic as no Winograd over ZZ available for the moment
+		// perform the fgemm in RNS
+		// Classic as no Winograd over ZZ available for the moment
 		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H.recLevel,H.parseq);
 
-			// compute alpha and beta in RNS
+		// compute alpha and beta in RNS
 		typename RnsDomain::Element alphap, betap;
 		Zrns.init(alphap, alpha);
 		Zrns.init(betap, F.zero);
 
-			// call  fgemm
+		// call  fgemm
 		fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
 
 #ifdef PROFILE_FGEMM_MP
@@ -313,7 +344,7 @@ namespace FFLAS {
 #endif
 
 		
-			// convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) )
+		// convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) )
 		fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);
 
 		FFLAS::fflas_delete(Ap);
@@ -330,7 +361,7 @@ namespace FFLAS {
 
 	
 
-// Simple switch Winograd -> Classic (waiting for Winograd's algorithm to be generic wrt ModeTrait)
+	// Simple switch Winograd -> Classic (waiting for Winograd's algorithm to be generic wrt ModeTrait)
 	template<typename RNS, class ModeT>
 	inline typename RNS::Element_ptr fgemm (const FFPACK::RNSInteger<RNS> &F,
 											const FFLAS_TRANSPOSE ta,
@@ -364,11 +395,11 @@ namespace FFLAS {
 	// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 
 	// }
-		/************************************
-		 *** MULTIPRECISION FGEMM OVER Fp ***
-		 ************************************/
+	/************************************
+	 *** MULTIPRECISION FGEMM OVER Fp ***
+	 ************************************/
 
-		// fgemm for RNSIntegerMod  with Winograd Helper
+	// fgemm for RNSIntegerMod  with Winograd Helper
 	template<typename RNS>
 	inline typename RNS::Element_ptr fgemm (const FFPACK::RNSIntegerMod<RNS> &F,
 											const FFLAS_TRANSPOSE ta,
@@ -381,7 +412,7 @@ namespace FFLAS {
 											typename RNS::Element_ptr Cd, const size_t ldc,
 											MMHelper<FFPACK::RNSIntegerMod<RNS>, MMHelperAlgo::Winograd> & H)
 	{
-			// compute the product over Z
+		// compute the product over Z
 		typedef FFPACK::RNSInteger<RNS> RnsDomain;
 		RnsDomain Zrns(F.rns());
 		MMHelper<RnsDomain, MMHelperAlgo::Classic> H2(Zrns, H.recLevel,H.parseq);
@@ -389,7 +420,7 @@ namespace FFLAS {
 		FFLAS::Timer chrono;chrono.start();
 #endif
 		fgemm(Zrns,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
-			// reduce the product mod p (note that entries are larger than p, due to RNS modulo reduction)
+		// reduce the product mod p (note that entries are larger than p, due to RNS modulo reduction)
 		freduce (F, m, n, Cd, ldc);
 #ifdef BENCH_PERF_FGEMM_MP
 		chrono.stop();
@@ -400,7 +431,8 @@ namespace FFLAS {
 	}
 
 
-		// fgemm for IntegerDomain with Winograd Helper
+	// fgemm for IntegerDomain with Winograd Helper
+	
 	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
 								   const FFLAS_TRANSPOSE ta,
 								   const FFLAS_TRANSPOSE tb,
@@ -412,8 +444,8 @@ namespace FFLAS {
 								   Givaro::Integer* C, const size_t ldc,
 								   MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
 	{
-			// compute the product over Z
-		// std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
+		// compute the product over Z
+		std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
 		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
 		Givaro::Integer p;
 		F.cardinality(p);
@@ -423,7 +455,7 @@ namespace FFLAS {
 
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 
-			// reduce the product mod p
+		// reduce the product mod p
 		freduce (F, m, n, C, ldc);
 
 		return C;
@@ -440,8 +472,8 @@ namespace FFLAS {
 								   Givaro::Integer* C, const size_t ldc,
 								   MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Auto, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > & H)
 	{
-			// compute the product over Z
-		// std::cerr<<"Entering fgemm<Modular<Integer>>"<<std::endl;
+		// compute the product over Z
+		//std::cerr<<"Entering fgemm<Modular<Integer>> PArSeq"<<std::endl;
 		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
 		Givaro::Integer p;
 		F.cardinality(p);
@@ -451,7 +483,7 @@ namespace FFLAS {
 		
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 		
-			// reduce the product mod p
+		// reduce the product mod p
 		freduce (F, m, n, C, ldc);
 
 		return C;

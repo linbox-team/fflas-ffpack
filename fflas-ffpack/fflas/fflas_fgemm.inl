@@ -51,16 +51,16 @@ namespace FFLAS { namespace Protected{
 					   typename Field::Element_ptr C, const size_t ldc,
 					   MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H)
 		{
-				// CP: lda, ldb, ldc can be zero (if m,n or k is 0) and since  this may have not 
-				// been checked by the caller at this point.
-				// FFLASFFPACK_check(lda);
-				// FFLASFFPACK_check(ldb);
-				// FFLASFFPACK_check(ldc);
+			// CP: lda, ldb, ldc can be zero (if m,n or k is 0) and since  this may have not 
+			// been checked by the caller at this point.
+			// FFLASFFPACK_check(lda);
+			// FFLASFFPACK_check(ldb);
+			// FFLASFFPACK_check(ldc);
 
 			Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
 			FloatElement tmp,alphaf, betaf;
-				// This conversion is quite tricky, but convert and init are required
-				// in sequence e.g. for when F is a ModularBalanced field and alpha == -1
+			// This conversion is quite tricky, but convert and init are required
+			// in sequence e.g. for when F is a ModularBalanced field and alpha == -1
 			F.convert (tmp, beta);
 			G.init(betaf, tmp);
 			F.convert (tmp, alpha);
@@ -112,7 +112,7 @@ namespace FFLAS{ namespace Protected{
 			Outmax = Op1max + Op2max;
 			if (WH.MaxStorableValue - Op1max < Op2max ||
 				WH.MaxStorableValue + Op1min < -Op2min){
-					// Reducing both Op1 and Op2
+				// Reducing both Op1 and Op2
 				Op1min = Op2min = WH.FieldMin;
 				Op1max = Op2max = WH.FieldMax;
 				Outmin = 2*WH.FieldMin;
@@ -142,7 +142,7 @@ namespace FFLAS{ namespace Protected{
 			Outmax = Op1max - Op2min;
 			if (WH.MaxStorableValue - Op1max < -Op2min || 
 				WH.MaxStorableValue - Op2max < -Op1min){
-					// Reducing both Op1 and Op2
+				// Reducing both Op1 and Op2
 				Op1min = Op2min = WH.FieldMin;
 				Op1max = Op2max = WH.FieldMax;
 				Outmin = WH.FieldMin-WH.FieldMax;
@@ -157,20 +157,20 @@ namespace FFLAS{ namespace Protected{
 										 Element& Op2min, Element& Op2max,
 										 MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
 		{
-				// Necessary? -> CP: Yes, for generic Mode of op
+			// Necessary? -> CP: Yes, for generic Mode of op
 			Outmin = WH.FieldMin;
 			Outmax = WH.FieldMax;
 			return false;
 		}
 
-//Probable bug here due to overflow of int64_t
+		//Probable bug here due to overflow of int64_t
 		template<class Field, class Element, class AlgoT, class ParSeqTrait>
 		inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
 											   Element& Op1min, Element& Op1max,
 											   Element& Op2min, Element& Op2max, Element beta,
 											   MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
 		{
-				// Testing if P5 need to be reduced
+			// Testing if P5 need to be reduced
 			Outmin =  std::min(beta*Op2min,beta*Op2max);
 			Outmax =  std::max(beta*Op2min,beta*Op2max);
 			if (Op1max > WH.MaxStorableValue-Outmax || 
@@ -260,16 +260,16 @@ namespace FFLAS {
 			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-			// else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
-			// 	    // Stays over int64_t
-			// 	MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
-			// 	H.Outmin=HG.Outmin;
-			// 	H.Outmax=HG.Outmax;
-			// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
+		// else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
+		// 	    // Stays over int64_t
+		// 	MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
+		// 	H.Outmin=HG.Outmin;
+		// 	H.Outmax=HG.Outmax;
+		// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
 			
-		    //	}
+		//	}
 		else {
-			    // Fall back case: used 
+			// Fall back case: used 
 			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
 		}
 		return C;
@@ -383,10 +383,10 @@ namespace FFLAS {
 			return C;
 		}
 #ifndef NDEBUG
-			/*  check if alpha is invertible.
-			 *  XXX do it in F.isInvertible(Element&) ?
-			 *  XXX do it in return status of F.inv(Element&,Element&)
-			 */
+		/*  check if alpha is invertible.
+		 *  XXX do it in F.isInvertible(Element&) ?
+		 *  XXX do it in return status of F.inv(Element&,Element&)
+		 */
 		typename Field::Element e ;
 		F.assign(e,beta);
 		F.divin(e,alpha);
@@ -395,14 +395,14 @@ namespace FFLAS {
 #endif
 
 #if 0
-			// detect fgemv
+		// detect fgemv
 		if (n == 1 and ...) {}
-			// detect fger
+		// detect fger
 		if (k==1 and ...) {}
 #endif
 		if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
 		    Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
-			    //Givaro::Modular<double> need to switch to float if p too small
+			//Givaro::Modular<double> need to switch to float if p too small
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		}
@@ -420,12 +420,12 @@ namespace FFLAS {
 			F.assign (beta_,beta);
 		}
 		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
-			// std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
-			// std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
+		// std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
+		// std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
-			// std::cerr<<"Sortie de fgemm Lazy C = "<<*C<<std::endl;
+		// std::cerr<<"Sortie de fgemm Lazy C = "<<*C<<std::endl;
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
-			// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
+		// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
 
 		H.initOut();
 
@@ -457,21 +457,21 @@ namespace FFLAS {
 		else
 			F.convert (betad, beta);
 
-			//! @bug why double ?
-			// Double  matrices initialisation
+		//! @bug why double ?
+		// Double  matrices initialisation
 		Givaro::DoubleDomain::Element_ptr Ad = fflas_new (Givaro::DoubleDomain(),n,n);
 		Givaro::DoubleDomain::Element_ptr Cd = fflas_new (Givaro::DoubleDomain(),n,n);
-			// Conversion finite Field = >  double
+		// Conversion finite Field = >  double
 		fconvert (F, n, n, Ad, n, A, lda);
 		if (!F.isZero(beta)) fconvert(F, n, n, Cd, n, C, ldc);
 
-			// Call to the blas Multiplication
+		// Call to the blas Multiplication
 		FFLASFFPACK_check(n);
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,
 					 (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
 					 (Givaro::DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
 					 (Givaro::DoubleDomain::Element) betad, Cd, (int)n);
-			// Conversion double = >  Finite Field
+		// Conversion double = >  Finite Field
 		fflas_delete (Ad);
 		finit (F,n,n, Cd, n, C, ldc);
 		fflas_delete (Cd);
@@ -480,7 +480,7 @@ namespace FFLAS {
 
 	namespace Protected {
 
-			// F is Modular(Balanced)<float/double>
+		// F is Modular(Balanced)<float/double>
 		template < class Field >
 		inline typename Field::Element_ptr
 		fsquareCommon (const Field& F,
