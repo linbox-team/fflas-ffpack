@@ -38,7 +38,7 @@
 /*
  * Simd256 specialized for int16_t
  */
-template <> struct Simd256_impl<true, true, true, 2> {
+template <> struct Simd256_impl<true, true, true, 2> : public Simd256_base {
 
 	/*
 	* alias to 256 bit simd register
@@ -406,44 +406,6 @@ template <> struct Simd256_impl<true, true, true, 2> {
 	(a14<=b14) ? 0xFFFF : 0, (a15<=b15) ? 0xFFFF : 0] 					   int16_t
 	*/
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
-
-	/*
-	* Compute the bitwise AND of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   :	[a0, ..., a15]		int16_t
-			[b0, ..., b15]		int16_t
-	* Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3, a4 AND b4, a5 AND b5, a6 AND b6, a7 AND b7,
-	a8 AND b8, a9 AND b9, a10 AND b10, a11 AND b11, a12 AND b12, a13 AND b13, a14 AND b14, a15 AND b15]
-	*/
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm256_and_si256(b, a); }
-
-	/*
-	* Compute the bitwise OR of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   :	[a0, ..., a15]		int16_t
-			[b0, ..., b15]		int16_t
-	* Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3, a4 OR b4, a5 OR b5, a6 OR b6, a7 OR b7,
-	a8 OR b8, a9 OR b9, a10 OR b10, a11 OR b11, a12 OR b12, a13 OR b13, a14 OR b14, a15 OR b15]
-	*/
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm256_or_si256(b, a); }
-
-	/*
-	* Compute the bitwise XOR of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   :	[a0, ..., a15]		int16_t
-			[b0, ..., b15]		int16_t
-	* Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3, a4 XOR b4, a5 XOR b5, a6 XOR b6, a7 XOR b7,
-	a8 XOR b8, a9 XOR b9, a10 XOR b10, a11 XOR b11, a12 XOR b12, a13 XOR b13, a14 XOR b14, a15 XOR b15]
-	*/
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm256_xor_si256(b, a); }
-
-	/*
-	* Compute the bitwise AND NOT of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   :	[a0, ..., a15]		int16_t
-			[b0, ..., b15]		int16_t
-	* Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3, a4 ANDNOT b4, a5 ANDNOT b5, a6 ANDNOT b6, a7
-	ANDNOT b7,
-	a8 ANDNOT b8, a9 ANDNOT b9, a10 ANDNOT b10, a11 ANDNOT b11, a12 ANDNOT b12, a13 ANDNOT b13, a14 ANDNOT b14, a15
-	ANDNOT b15]
-	*/
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
 
 	/*
 	* Horizontally add 16-bits elements of a.

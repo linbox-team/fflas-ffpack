@@ -38,7 +38,7 @@
 /*
  * Simd256 specialized for int64_t
  */
-template <> struct Simd256_impl<true, true, true, 8> {
+template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
 
 	/*
 	 * alias to 256 bit simd register
@@ -388,38 +388,6 @@ template <> struct Simd256_impl<true, true, true, 8> {
 	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
-
-	/*
-	 * Compute the bitwise AND of packed 64-bits integer in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3]	int64_t
-	 */
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm256_and_si256(b, a); }
-
-	/*
-	 * Compute the bitwise OR of packed 64-bits integer in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3]	int64_t
-	 */
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm256_or_si256(b, a); }
-
-	/*
-	 * Compute the bitwise XOR of packed 64-bits integer in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3]	int64_t
-	 */
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm256_xor_si256(b, a); }
-
-	/*
-	 * Compute the bitwise AND NOT of packed 64-bits integer in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3]	int64_t
-	 */
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
 
 	/*
 	 * Horizontally add 64-bits elements of a.

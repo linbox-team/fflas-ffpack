@@ -38,7 +38,7 @@
 /*
  * Simd128 specialized for int16_t
  */
-template <> struct Simd128_impl<true, true, true, 2> {
+template <> struct Simd128_impl<true, true, true, 2> : public Simd128_base {
 
 	/*
 	* alias to 128 bit simd register
@@ -81,12 +81,6 @@ template <> struct Simd128_impl<true, true, true, 2> {
 		vect_t v;
 		scalar_t t[vect_size];
 	};
-
-	/*
-	*  Return vector of type vect_t with all elements set to zero
-	*  Return [0,0,0,0,0,0,0,0] int16_t
-	*/
-	static INLINE CONST vect_t zero() { return _mm_setzero_si128(); }
 
 	/*
 	*  Broadcast 16-bit integer a to all elements of dst. This intrinsic may generate the vpbroadcastw.
@@ -367,39 +361,6 @@ template <> struct Simd128_impl<true, true, true, 2> {
 	(a6<=b6) ? 0xFFFF : 0, (a7<=b7) ? 0xFFFF : 0]			int16_t
 	*/
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
-
-	/*
-	* Compute the bitwise AND of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int16_t
-	*	   [b0, b1, b2, b3, b4, b5, b6, b7]	int16_t
-	* Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3, a4 AND b4, a5 AND b5, a6 AND b6, a7 AND b7]
-	*/
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm_and_si128(a, b); }
-
-	/*
-	* Compute the bitwise OR of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int16_t
-	*	   [b0, b1, b2, b3, b4, b5, b6, b7]	int16_t
-	* Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3, a4 OR b4, a5 OR b5, a6 OR b6, a7 OR b7]
-	*/
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm_or_si128(a, b); }
-
-	/*
-	* Compute the bitwise XOR of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int16_t
-	*	   [b0, b1, b2, b3, b4, b5, b6, b7]	int16_t
-	* Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3, a4 XOR b4, a5 XOR b5, a6 XOR b6, a7 XOR b7]
-	*/
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm_xor_si128(a, b); }
-
-	/*
-	* Compute the bitwise AND NOT of packed 16-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int16_t
-	*	   [b0, b1, b2, b3, b4, b5, b6, b7]	int16_t
-	* Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3, a4 ANDNOT b4, a5 ANDNOT b5, a6 ANDNOT b6, a7
-	ANDNOT b7]
-	*/
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(a, b); }
 
 	/*
 	* Horizontally add 16-bits elements of a.

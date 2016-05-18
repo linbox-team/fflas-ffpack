@@ -38,7 +38,7 @@
 /*
  * Simd128 specialized for int64_t
  */
-template <> struct Simd128_impl<true, true, true, 8> {
+template <> struct Simd128_impl<true, true, true, 8> : public Simd128_base {
 
 	/*
 	* alias to 128 bit simd register
@@ -81,12 +81,6 @@ template <> struct Simd128_impl<true, true, true, 8> {
 		vect_t v;
 		scalar_t t[vect_size];
 	};
-
-	/*
-	*  Return vector of type vect_t with all elements set to zero
-	*  Return [0,0] int64_t
-	*/
-	static INLINE CONST vect_t zero() { return _mm_setzero_si128(); }
 
 	/*
 	*  Broadcast 64-bit integer a to all elements of dst. This intrinsic may generate the vpbroadcastw.
@@ -385,38 +379,6 @@ template <> struct Simd128_impl<true, true, true, 8> {
 	* Return : [(a0<=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<=b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
-
-	/*
-	* Compute the bitwise AND of packed 64-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
-	* Return : [a0 AND b0, a1 AND b1]	int64_t
-	*/
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm_and_si128(a, b); }
-
-	/*
-	* Compute the bitwise OR of packed 64-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
-	* Return : [a0 OR b0, a1 OR b1]	int64_t
-	*/
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm_or_si128(a, b); }
-
-	/*
-	* Compute the bitwise XOR of packed 64-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
-	* Return : [a0 XOR b0, a1 XOR b1]	int64_t
-	*/
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm_xor_si128(a, b); }
-
-	/*
-	* Compute the bitwise AND NOT of packed 64-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
-	* Return : [a0 ANDNOT b0, a1 ANDNOT b1]	int64_t
-	*/
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(a, b); }
 
 	/*
 	* Horizontally add 64-bits elements of a.

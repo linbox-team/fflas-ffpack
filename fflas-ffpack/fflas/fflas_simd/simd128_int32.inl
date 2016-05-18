@@ -40,10 +40,10 @@
 /*
  * Simd128 specialized for int32_t
  */
-template <> struct Simd128_impl<true, true, true, 4> {
+template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
 
 	/*
-	* alias to 256 bit simd register
+	* alias to 128 bit simd register
 	*/
 	using vect_t = __m128i;
 
@@ -83,12 +83,6 @@ template <> struct Simd128_impl<true, true, true, 4> {
 		vect_t v;
 		scalar_t t[vect_size];
 	};
-
-	/*
-	*  Return vector of type vect_t with all elements set to zero
-	*  Return [0,0,0,0] int32_t
-	*/
-	static INLINE CONST vect_t zero() { return _mm_setzero_si128(); }
 
 	/*
 	*  Broadcast 32-bit integer a to all elements of dst. This intrinsic may generate vpbroadcastd.
@@ -384,38 +378,6 @@ template <> struct Simd128_impl<true, true, true, 4> {
 	(a2<=b2) ? 0xFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFF : 0]			int32_t
 	*/
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
-
-	/*
-	* Compute the bitwise AND of packed 32-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
-	* Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3]	int32_t
-	*/
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm_and_si128(b, a); }
-
-	/*
-	* Compute the bitwise OR of packed 32-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
-	* Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3]	int32_t
-	*/
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm_or_si128(b, a); }
-
-	/*
-	* Compute the bitwise XOR of packed 32-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
-	* Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3]	int32_t
-	*/
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm_xor_si128(b, a); }
-
-	/*
-	* Compute the bitwise AND NOT of packed 32-bits integer in a and b, and store the results in vect_t.
-	* Args   : [a0, a1, a2, a3]	int32_t
-	*	   [b0, b1, b2, b3]	int32_t
-	* Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3]	int32_t
-	*/
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_si128(b, a); }
 
 	/*
 	* Horizontally add 32-bits elements of a.
