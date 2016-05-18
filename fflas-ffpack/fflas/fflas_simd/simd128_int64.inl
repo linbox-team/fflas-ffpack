@@ -38,7 +38,7 @@
 /*
  * Simd128 specialized for int64_t
  */
-template <> struct Simd128_impl<true, true, true, 8> : public Simd128_base {
+template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 
 	/*
 	* alias to 128 bit simd register
@@ -173,6 +173,18 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128_base {
 		vect_t result = sub(vxor(x, m), m); // result = x^m - m
 		return result;
 #endif // 512
+	}
+
+	/*
+	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
+	* Args   : [a0, a1] int64_t
+	* Return : [a[s[0..1]], a[s[2..3]] int64_t
+	*/
+	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
+		//#pragma warning "The simd shuffle function is emulate, it may impact the performances."
+		// [s0 s1 s2 s3] -> [s0 s1 s0 s1 s2 s3 s2 s3]
+		uint8_t sh = (s && 0x3)*5 + (s && 0x0C)*20;
+		return _mm_shuffle_epi32(a, sh);
 	}
 
 	/*
@@ -498,6 +510,13 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	 * Return : [Floor(a0/2^s), Floor(a1/2^s)]	int64_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srli_epi64(a, s); }
+
+	/*
+	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int32_t
+	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
+	*/
+	static INLINE CONST vect_t shuffle(const vect_t a, const int s) { return _mm_shuffle_epi32(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 #ifdef __SSE4_2__

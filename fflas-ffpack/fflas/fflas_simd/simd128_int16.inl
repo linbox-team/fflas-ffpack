@@ -38,7 +38,7 @@
 /*
  * Simd128 specialized for int16_t
  */
-template <> struct Simd128_impl<true, true, true, 2> : public Simd128_base {
+template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 
 	/*
 	* alias to 128 bit simd register
@@ -168,6 +168,21 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128_base {
 	* Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s] int16_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srai_epi16(a, s); }
+
+	/*
+	* Shuffle 16-bit integers in a using the control in imm8, and store the results in dst.
+	* Args   : [a0, ..., a7] int16_t
+	* Return : [a[s[0..3]], ..., a[s[28..31]] int16_t
+	*/
+	static INLINE CONST vect_t shuffle(const vect_t a, const uint32_t s) {
+		//#pragma warning "The simd shuffle function is emulated, it may impact the performances.";
+		Converter conv;
+		conv.v = a;
+		return set (conv.t[( s      && 0x0000000F)], conv.t[( s      && 0x000000F0)],
+					conv.t[((s>> 8) && 0x0000000F)], conv.t[((s>> 8) && 0x000000F0)],
+					conv.t[((s>>16) && 0x0000000F)], conv.t[((s>>16) && 0x000000F0)],
+					conv.t[((s>>24) && 0x0000000F)], conv.t[((s>>24) && 0x000000F0)]);
+	}
 
 	/*
 	* Add packed 16-bits integer in a and b, and store the results in vect_t.

@@ -40,7 +40,7 @@
 /*
  * Simd256 specialized for int32_t
  */
-template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
+template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 
 	/*
 	* alias to 256 bit simd register
@@ -92,6 +92,11 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	union Converter {
 		vect_t v;
 		scalar_t t[vect_size];
+	};
+
+	union Converter_half {
+		vect_t v;
+		half_t t[2];
 	};
 
 	/*
@@ -179,6 +184,27 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256_base {
 	* Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s, a4 >> s, a5 >> s, a6 >> s, a7 >> s] int32_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srai_epi32(a, s); }
+
+	/*
+	* Shuffle 32-bit integers in a within 128-bit lanes using the control in imm8, and store the results in dst.
+	* Args   : [a0, ..., a7] int32_t
+	* Return : [a[s[0..1]], ..., a[s[6..7],a[4+s[0..1]], ..., a[4+s[6..7],] int32_t
+	*/
+	static INLINE CONST vect_t shuffle_twice(const vect_t a, const int s) { return _mm256_shuffle_epi32(a, s); }
+
+	/*
+	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
+	* Args   : [a0, ..., a7] int32_t
+	* Return : [a[s[0..1]], ..., a[14..15],] int32_t
+	*/
+	static INLINE CONST vect_t shuffle(const vect_t a, const uint16_t s) {
+		//#pragma warning "The simd shuffle function is emulated, it may impact the performances."
+		Converter_half conv;
+		conv.v = a;
+		conv.t[0] = _mm_shuffle_epi32(conv.t[0], (uint8_t)  s   );
+		conv.t[1] = _mm_shuffle_epi32(conv.t[1], (uint8_t) (s>>8));
+		return conv.v;
+	}
 
 	/*
 	* Add packed 32-bits integer in a and b, and store the results in vect_t.

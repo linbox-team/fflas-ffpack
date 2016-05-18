@@ -38,7 +38,7 @@
 /*
  * Simd256 specialized for int64_t
  */
-template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
+template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 
 	/*
 	 * alias to 256 bit simd register
@@ -185,6 +185,15 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256_base {
 		vect_t result = sub(vxor(x, m), m); // result = x^m - m
 		return result;
 #endif
+	}
+
+	/*
+	* Shuffle 64-bit integers in a using the control in imm8, and store the results in dst.
+	* Args   : [a0, ..., a3] int32_t
+	* Return : [a[s[0..1]], ..., a[6..7],] int32_t
+	*/
+	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
+		return _mm256_permute4x64_epi64(a, s);
 	}
 
 	/*

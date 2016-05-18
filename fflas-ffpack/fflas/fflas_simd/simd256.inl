@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
-struct Simd256_base {
+struct Simd256i_base {
 
 	/*
 	* alias to 256 bit simd register

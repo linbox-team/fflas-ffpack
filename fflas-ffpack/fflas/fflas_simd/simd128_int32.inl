@@ -40,7 +40,7 @@
 /*
  * Simd128 specialized for int32_t
  */
-template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
+template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 
 	/*
 	* alias to 128 bit simd register
@@ -168,6 +168,13 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128_base {
 	* Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int32_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srai_epi32(a, s); }
+
+	/*
+	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int32_t
+	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
+	*/
+	static INLINE CONST vect_t shuffle(const vect_t a, const int s) { return _mm_shuffle_epi32(a, s); }
 
 	/*
 	* Add packed 32-bits integer in a and b, and store the results in vect_t.
