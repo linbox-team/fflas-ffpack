@@ -76,14 +76,14 @@ public:
 
 	INLINE vect_t init(const vect_t a) const { return mod(a); }
 
-	INLINE vect_t add(vect_t &c, const vect_t a, const vect_t b) const {
+	INLINE vect_t add(vect_t &c, const vect_t a, const vect_t b) {
 		c = simd::add(a, b);
 		_mask = simd::greater(c, _max);
 		_mask = simd::vand(_mask, _modulus);
 		return c = simd::sub(c, _mask);
 	}
 
-	INLINE vect_t add(const vect_t a, const vect_t b) const {
+	INLINE vect_t add(const vect_t a, const vect_t b) {
 		vect_t c;
 		c = simd::add(a, b);
 		_mask = simd::greater(c, _max);
@@ -99,14 +99,14 @@ public:
 
 	INLINE vect_t addin_r(vect_t &a, const vect_t b) const { return a = add_r(a, b); }
 
-	INLINE vect_t sub(vect_t &c, const vect_t a, const vect_t b) const {
+	INLINE vect_t sub(vect_t &c, const vect_t a, const vect_t b) {
 		c = simd::sub(a, b);
 		_mask = simd::lesser(c, _min);
 		_mask = simd::vand(_mask, _modulus);
 		return c = simd::add(c, _mask);
 	}
 
-	INLINE vect_t sub(const vect_t a, const vect_t b) const {
+	INLINE vect_t sub(const vect_t a, const vect_t b) {
 		vect_t c;
 		c = simd::sub(a, b);
 		_mask = simd::greater(c, _max);
