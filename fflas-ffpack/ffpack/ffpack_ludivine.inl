@@ -40,9 +40,8 @@ namespace FFPACK {
 					typename Field::Element_ptr A, const size_t lda, size_t*P,
 					size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag)
 	{
-#ifdef PLUQ_check
-		PLUQ_check_init(F,A,M,N)
-#endif
+		PLUQ_Checker<Field> checker (F,A,M,N);
+
 		size_t MN = std::min(M,N);
 		typename Field::Element_ptr Acurr = A;
 		size_t r = 0;
@@ -72,9 +71,9 @@ namespace FFPACK {
 			else
 				break; // return r;
 		}
-#ifdef PLUQ_check
-		PLUQ_check(F,M,N,r,P,A,Q,v,w)
-#endif
+
+		checker.check_pluq(r,P,Q);
+
 		return r;
 	}
 
@@ -638,16 +637,9 @@ namespace FFPACK {
 			  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
 		 )
 	{
-#ifdef PLUQ_check
-		PLUQ_check_init(F,A,M,N)
-#endif
-
+		PLUQ_Checker<Field> checker (F,A,M,N);
 		size_t R = _LUdivine(F,Diag,trans,M,N,A,lda,P,Q,LuTag,cutoff);
-
-#ifdef PLUQ_check
-		PLUQ_check(F,M,N,R,P,A,Q,v,w)
-#endif
-
+		checker.check_pluq(R,P,Q);
 		return R;
 	}
 
