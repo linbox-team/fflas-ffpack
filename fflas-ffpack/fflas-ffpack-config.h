@@ -123,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __x86_64__
 #if defined(__GNUC__) || defined (__clang__) /* who supports __int128_t ? */
 #define int128_t __int128_t
-#define uint128_t unsigned __int128_t
+#define uint128_t __uint128_t
 #else /* hopefully this exists */
 #define int128_t __int128
 #define uint128_t unsigned __int128
