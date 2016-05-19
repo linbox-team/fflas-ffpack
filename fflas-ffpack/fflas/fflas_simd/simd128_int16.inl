@@ -177,10 +177,10 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 		//#pragma warning "The simd shuffle function is emulated, it may impact the performances.";
 		Converter conv;
 		conv.v = a;
-		return set (conv.t[( s      && 0x0000000F)], conv.t[( s      && 0x000000F0)],
-					conv.t[((s>> 8) && 0x0000000F)], conv.t[((s>> 8) && 0x000000F0)],
-					conv.t[((s>>16) && 0x0000000F)], conv.t[((s>>16) && 0x000000F0)],
-					conv.t[((s>>24) && 0x0000000F)], conv.t[((s>>24) && 0x000000F0)]);
+		return set (conv.t[( s      & 0x0000000F)], conv.t[( s      & 0x000000F0)],
+					conv.t[((s>> 8) & 0x0000000F)], conv.t[((s>> 8) & 0x000000F0)],
+					conv.t[((s>>16) & 0x0000000F)], conv.t[((s>>16) & 0x000000F0)],
+					conv.t[((s>>24) & 0x0000000F)], conv.t[((s>>24) & 0x000000F0)]);
 	}
 
 	/*
