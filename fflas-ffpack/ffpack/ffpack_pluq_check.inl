@@ -31,58 +31,41 @@
 
 
 #if  defined(DEBUG) || defined(PLUQ_check)
+
 class FailurePLUQcheck {};
-#define PLUQ_check_init(Fi,A,M,N) 								\
- 	typename Field::Element_ptr 								\
-        _Freivalds_random_vector_(FFLAS::fflas_new(Fi,N,1)),	\
-        _Freivalds_solution_vector_(FFFLAS::fflas_new(i,N,1));	\
-	FFPACK::init_check_pluq(Fi,A,M,N,v,w);
-#define PLUQ_check(Fi,M,N,R,P,A,Q) 				    			\
-	bool _Freivalds_check_value_ 								\
-		= FFPACK::check_pluq(Fi,M,N,R,P,A,Q,					\
-                                _Freivalds_random_vector_,		\
-                                _Freivalds_solution_vector_);	\
-	FFLAS::fflas_delete(_Freivalds_random_vector_);				\
-	FFLAS::fflas_delete(_Freivalds_solution_vector_);			\
-	if (!_Freivalds_check_value_) throw FailurePLUQcheck();
-#endif
 
+template <class Field> 
+class PLUQ_Checker {
 
-namespace FFPACK {
+	Field F;
+	typename Field::Element_ptr A,v,w;
+	size_t m,n;
 
+public:
+	PLUQ_Checker(Field F, typename Field::Element_ptr A, size_t m, size_t n): F(F), A(A), m(m), n(n) {
+		v = FFLAS::fflas_new(F,n,1);
+		w = FFLAS::fflas_new(F,n,1);
 
-	/** check if a matrix is a zero matrix
-	 * @param F
-     * @param A
-     * @param m
-     * @param n
-     */
-    template <class Field>
-    inline bool check_zero_matrix(const Field &F, typename Field::Element_ptr A, size_t m, size_t n) {
-    	bool p = true;
-    	for (size_t i=0; i < m*n; ++i)
-    		p &= F.isZero(A[i]);
+		// v is a random vector
+		typename Field::RandIter G(F);
+    	FFLAS::frand(F,G,n,v,1);
 
-    	return p;
-    }
+    	// w <-- A.v
+    	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
+	}
+
+	~PLUQ_Checker() {
+		FFLAS::fflas_delete(v);
+		FFLAS::fflas_delete(w);
+	}
 
 	/** check if the PLUQ factorization is correct.
 	 *  Returns true if w - P(L(U(Q.v))) == 0
-	 * @param F
-	 * @param m
-	 * @param n
 	 * @param r
-     * @param A
-     * @param P
-     * @param Q
-     * @param v
-     * @param w
-     */
-    template <class Field>
-	inline bool check_pluq(const Field &F,
-					size_t m, size_t n, size_t r,
-					size_t *P, typename Field::Element_ptr A, size_t *Q,
-					typename Field::Element_ptr v, typename Field::Element_ptr w) {
+	 * @param P
+	 * @param Q
+	 */
+	inline bool check_pluq(size_t r, size_t *P, size_t *Q) {
 
 		// v1 <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
@@ -98,34 +81,43 @@ namespace FFPACK {
 
 		// is v == w ?
 		FFLAS::fsub(F, n, 1, w, 1, v, 1, v, 1);
-		bool pass = check_zero_matrix(F, v, n, 1);
-		
-		return pass;
-	} // check_pluq
+		bool pass = check_zero_matrix(v, n, 1);
+	
+		if (!pass) throw FailurePLUQcheck();
 
-	/** initialize v with random values and compute w <- A.v
-	 * @param F
+		return pass;
+	}
+
+
+private:
+	/** check if a matrix is a zero matrix
 	 * @param A
 	 * @param m
-     * @param n
-     * @param v unitialized vector of size n
-     * @param w unitialized vector of size n
-     */
-	template <class Field>
-	inline void init_check_pluq(const Field &F,
-						 typename Field::Element_ptr A,
-						 size_t m, size_t n,
-						 typename Field::Element_ptr v, typename Field::Element_ptr w) {
-		// v is a random vector
-		typename Field::RandIter G(F);
-        FFLAS::frand(F,G,n,v,1);
+	 * @param n
+	 */
+	inline bool check_zero_matrix(typename Field::Element_ptr A, size_t m, size_t n) {
+		bool p = true;
+		for (size_t i=0; i < m*n; ++i)
+			p &= F.isZero(A[i]);
 
-        // w <-- A.v
-        FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);	
-    } // init_check_pluq
+		return p;
+	}
 
+};
 
-} // FFPACK
+#else
+
+template <class Field> 
+class PLUQ_Checker {
+
+public:
+	PLUQ_Checker(Field F, typename Field::Element_ptr A, size_t m, size_t n) {}
+	~PLUQ_Checker() {}
+	inline bool check_pluq(size_t r, size_t *P, size_t *Q) { return true; }
+
+};
+
+#endif // DEBUG || PLUQ_check
 
 
  #endif // __FFLASFFPACK_ffpack_pluq_check_INL

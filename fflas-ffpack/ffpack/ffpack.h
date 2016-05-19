@@ -1428,6 +1428,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
 #include "ffpack_ftrtr.inl"
+#include "ffpack_pluq_check.inl"
 #include "ffpack_pluq.inl"
 #include "ffpack_pluq_mp.inl"
 #include "ffpack_ppluq.inl"
@@ -1446,6 +1447,5 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack.inl"
-#include "ffpack_pluq_check.inl"
 #endif // __FFLASFFPACK_ffpack_H
 

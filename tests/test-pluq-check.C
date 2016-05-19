@@ -37,6 +37,8 @@
 //               	  1: enable PLUQ check in PLUQ and LUdivine
 //-------------------------------------------------------------------------
 
+#define DEBUG 1
+
 #include <iostream>
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -70,10 +72,6 @@ int main(int argc, char** argv) {
 	Field::Element_ptr A;
 	A = FFLAS::fflas_new(F,m,n);
 
-	Field::Element_ptr v,w;
-	v = FFLAS::fflas_new(F,n,1);
-	w = FFLAS::fflas_new(F,n,1);
-
 	size_t *P = FFLAS::fflas_new<size_t>(m);
 	size_t *Q = FFLAS::fflas_new<size_t>(n);
 
@@ -82,20 +80,18 @@ int main(int argc, char** argv) {
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
 		
-		FFPACK::init_check_pluq(F,A,m,n,v,w);
+		PLUQ_Checker<Field> checker (F,A,m,n);
 
 		//r = FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
 		//r = FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
 		r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 
-		pass += FFPACK::check_pluq(F, m, n, r, P, A, Q, v, w) ? 1 : 0;
+		pass += checker.check_pluq(r,P,Q) ? 1:0;
 	}
 
 	std::cout << pass << "/" << iter << " tests have been successful.\n";
 
 	FFLAS::fflas_delete(A);
-	FFLAS::fflas_delete(v);
-	FFLAS::fflas_delete(w);
 
 	return 0;
 }
