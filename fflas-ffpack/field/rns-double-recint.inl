@@ -64,7 +64,7 @@ namespace FFPACK {
 					  size_t idx=j+i*n;
 					  const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(Aiter+j+i*lda);
 					  size_t l=0;
-					  size_t maxs=std::min(k,(1UL<<(K-4)));
+					  size_t maxs=std::min(k,size_t(1UL<<(K-4)));
 					  
 					  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
 
