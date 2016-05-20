@@ -182,8 +182,9 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	*/
 	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
 		//#pragma warning "The simd shuffle function is emulate, it may impact the performances."
-		// [s0 s1 s2 s3] -> [s0 s1 s0 s1 s2 s3 s2 s3]
-		uint8_t sh = (s & 0x3)*5 + (s & 0x0C)*20;
+		constexpr uint8_t s2 = __builtin_constant_p(s)?s:0;
+		// [s0 s1 s2 s3] -> sh=[s0 s1 s0 s1 s2 s3 s2 s3] bitwise
+		constexpr uint8_t sh = (s2 & 0x3)*5 + (s2 & 0x0C)*20;
 		return _mm_shuffle_epi32(a, sh);
 	}
 
@@ -532,7 +533,9 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	* Args   : [a0, a1, a2, a3] int32_t
 	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
 	*/
-	static INLINE CONST vect_t shuffle(const vect_t a, const int s) { return _mm_shuffle_epi32(a, s); }
+	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
+		 return _mm_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
+	}
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 #ifdef __SSE4_2__

@@ -81,7 +81,9 @@ struct Simd256i_base {
 	*			[b0, b1] int128_t
 	* Return : [s[0..3]?a0:a1:b0:b1, s[4..7]?a0:a1:b0:b1] int128_t
 	*/
-	static INLINE CONST vect_t shuffle128(const vect_t a, const vect_t b, const int s) { return _mm256_permute2x128_si256(a, b, s);	}
+	static INLINE CONST vect_t shuffle128(const vect_t a, const vect_t b, const int s) {
+		return _mm256_permute2x128_si256(a, b, __builtin_constant_p(s)?s:0);
+	}
 
 	/*
 	* Unpack and interleave 128-bit integers from the low half of a and b, and store the results in dst.
@@ -89,7 +91,7 @@ struct Simd256i_base {
 			   [b0, b1] int128_t
 	* Return : [a0, b0] int128_t
 	*/
-	static INLINE CONST vect_t unpacklo128(const vect_t a, const vect_t b) { return shuffle128(a, b, 32); }
+	static INLINE CONST vect_t unpacklo128(const vect_t a, const vect_t b) { return shuffle128(a, b, 0x20); }
 
 	/*
 	* Unpack and interleave 128-bit integers from the high half of a and b, and store the results in dst.
@@ -97,7 +99,7 @@ struct Simd256i_base {
 			   [b0, b1] int128_t
 	* Return : [a1, b1] int128_t
 	*/
-	static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return shuffle128(a, b, 49); }
+	static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return shuffle128(a, b, 0x31); }
 
 };
 

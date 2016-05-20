@@ -174,7 +174,9 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Args   : [a0, a1, a2, a3] int32_t
 	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
 	*/
-	static INLINE CONST vect_t shuffle(const vect_t a, const int s) { return _mm_shuffle_epi32(a, s); }
+	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
+		return _mm_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
+	}
 
 	/*
 	* Unpack and interleave 32-bit integers from the low half of a and b, and store the results in dst.
