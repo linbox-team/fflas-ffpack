@@ -30,6 +30,8 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
+#include <cassert>
+
 struct Simd256i_base {
 
 	/*
@@ -82,7 +84,7 @@ struct Simd256i_base {
 	* Return : [s[0..3]?a0:a1:b0:b1, s[4..7]?a0:a1:b0:b1] int128_t
 	*/
 	static INLINE CONST vect_t shuffle128(const vect_t a, const vect_t b, const int s) {
-		static_assert(__builtin_constant_p(s),"Index s has to be a constant expression");
+		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
 		return _mm256_permute2x128_si256(a, b, __builtin_constant_p(s)?s:0);
 	}
 

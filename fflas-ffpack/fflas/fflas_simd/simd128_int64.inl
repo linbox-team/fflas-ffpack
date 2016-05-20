@@ -35,6 +35,8 @@
 #error "You need SSE instructions to perform 128 bits operations on int64"
 #endif
 
+#include <cassert>
+
 /*
  * Simd128 specialized for int64_t
  */
@@ -182,7 +184,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	*/
 	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
 		//#pragma warning "The simd shuffle function is emulate, it may impact the performances."
-		static_assert(__builtin_constant_p(s),"Index s has to be a constant expression");
+		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
 		// [s0 s1 s2 s3] -> [s0 s1 s0 s1 s2 s3 s2 s3] bitwise
 		return _mm_shuffle_epi32(a, ((__builtin_constant_p(s)?s:0) & 0x3)*5 + ((__builtin_constant_p(s)?s:0) & 0x0C)*20);
 	}
@@ -533,7 +535,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
 	*/
 	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
-		static_assert(__builtin_constant_p(s),"Index s has to be a constant expression");
+		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
 		return _mm_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
 	}
 
