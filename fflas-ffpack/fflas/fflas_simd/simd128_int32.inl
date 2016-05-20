@@ -175,6 +175,7 @@ template <> struct Simd128_impl<true, true, true, 4> : public Simd128i_base {
 	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
 	*/
 	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
+		static_assert(__builtin_constant_p(s),"Index s has to be a constant expression");
 		return _mm_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
 	}
 

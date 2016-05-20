@@ -191,6 +191,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Return : [a[s[0..1]], ..., a[s[6..7],a[4+s[0..1]], ..., a[4+s[6..7],] int32_t
 	*/
 	static INLINE CONST vect_t shuffle_twice(const vect_t a, const int s) {
+		static_assert(__builtin_constant_p(s),"Index s has to be a constant expression");
 		return _mm256_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
 	}
 
@@ -201,6 +202,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	*/
 	static INLINE CONST vect_t shuffle(const vect_t a, const uint16_t s) {
 		//#pragma warning "The simd shuffle function is emulated, it may impact the performances."
+		static_assert(__builtin_constant_p(s),"Index s has to be a constant expression");
 		Converter_half conv;
 		conv.v = a;
 		conv.t[0] = _mm_shuffle_epi32(conv.t[0], (uint8_t) __builtin_constant_p(s)?s:0);
