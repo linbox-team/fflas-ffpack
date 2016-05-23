@@ -40,7 +40,7 @@
 #define DEBUG 1
 
 #include <iostream>
-#include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -80,13 +80,13 @@ int main(int argc, char** argv) {
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
 		
-		PLUQ_Checker<Field> checker (F,A,m,n);
+		Checker_PLUQ<Field> checker (F,A,m,n);
 
 		//r = FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
 		//r = FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
 		r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 
-		pass += checker.check_pluq(r,P,Q) ? 1:0;
+		pass += checker.check(r,P,Q) ? 1:0;
 	}
 
 	std::cout << pass << "/" << iter << " tests have been successful.\n";

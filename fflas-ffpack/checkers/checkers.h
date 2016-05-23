@@ -1,7 +1,10 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* Copyright (C) 2011 FFLAS-FFPACK
- * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+/* checkers/checkers.h
+ * Copyright (C) 2016 Ashley Lesdalons
+ *
+ * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>
+ *
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -20,22 +23,41 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * ========LICENCE========
- *
+ *.
  */
 
-/*! @file fflas-ffpack/fflas-ffpack.h
- * @ingroup fflas-ffpack
- * @brief Includes FFLAS and FFPACK
- */
+#ifndef __FFLASFFPACK_checkers_H
+#define __FFLASFFPACK_checkers_H
+
+#include "fflas-ffpack/fflas-ffpack.h"
+#include <list>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+#ifdef DEBUG
+	#define ENABLE_CHECKING 1
+#endif
 
 
-#ifndef __FFLASFFPACK_fflas_ffpack_H
-#define __FFLASFFPACK_fflas_ffpack_H
+// interface for all the checkers
+template <class Field>
+class Checker_Itf {
+	Field F;
+public:
+	Checker_Itf(Field F): F(F) {}
+	~Checker_Itf() = 0;
+	virtual void init()  = 0;
+	virtual bool check() = 0;
+};
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
-#include "checkers/checkers.h"
-#include "fflas/fflas.h"
-#include "ffpack/ffpack.h"
-#include "checkers/checkers.inl"
 
-#endif // __FFLASFFPACK_fflas_ffpack_H
+template <class Field>
+class Checker_Empty : public Checker_Itf<Field> {
+public:
+	bool check() { return true; }
+};
+
+template <class Field> class Checker_PLUQ;
+
+#endif

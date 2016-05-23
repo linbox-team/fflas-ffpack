@@ -1,6 +1,6 @@
 /* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-/* ffpack/ffpack_pluq_check.inl
+/* checkers/checker_pluq.inl
  * Copyright (C) 2016 Ashley Lesdalons
  *
  * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>
@@ -30,19 +30,19 @@
 #define __FFLASFFPACK_ffpack_pluq_check_INL
 
 
-#if  defined(DEBUG) || defined(PLUQ_check)
+#ifdef ENABLE_CHECKING
 
 class FailurePLUQcheck {};
 
 template <class Field> 
-class PLUQ_Checker {
+class Checker_PLUQ {
 
 	Field F;
 	typename Field::Element_ptr A,v,w;
 	size_t m,n;
 
 public:
-	PLUQ_Checker(Field F, typename Field::Element_ptr A, size_t m, size_t n): F(F), A(A), m(m), n(n) {
+	Checker_PLUQ(Field F, typename Field::Element_ptr A, size_t m, size_t n): F(F), A(A), m(m), n(n) {
 		v = FFLAS::fflas_new(F,n,1);
 		w = FFLAS::fflas_new(F,n,1);
 
@@ -54,7 +54,7 @@ public:
     	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
 	}
 
-	~PLUQ_Checker() {
+	~Checker_PLUQ() {
 		FFLAS::fflas_delete(v);
 		FFLAS::fflas_delete(w);
 	}
@@ -65,7 +65,7 @@ public:
 	 * @param P
 	 * @param Q
 	 */
-	inline bool check_pluq(size_t r, size_t *P, size_t *Q) {
+	inline bool check(size_t r, size_t *P, size_t *Q) {
 
 		// v1 <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
@@ -81,43 +81,25 @@ public:
 
 		// is v == w ?
 		FFLAS::fsub(F, n, 1, w, 1, v, 1, v, 1);
-		bool pass = check_zero_matrix(v, n, 1);
+		bool pass = FFLAS::fiszero(F,n,1,v,1);
 	
 		if (!pass) throw FailurePLUQcheck();
 
 		return pass;
 	}
-
-
-private:
-	/** check if a matrix is a zero matrix
-	 * @param A
-	 * @param m
-	 * @param n
-	 */
-	inline bool check_zero_matrix(typename Field::Element_ptr A, size_t m, size_t n) {
-		bool p = true;
-		for (size_t i=0; i < m*n; ++i)
-			p &= F.isZero(A[i]);
-
-		return p;
-	}
-
 };
 
 #else
 
 template <class Field> 
-class PLUQ_Checker {
-
+class Checker_PLUQ {
 public:
-	PLUQ_Checker(Field F, typename Field::Element_ptr A, size_t m, size_t n) {}
-	~PLUQ_Checker() {}
-	inline bool check_pluq(size_t r, size_t *P, size_t *Q) { return true; }
-
+	Checker_PLUQ(Field F, typename Field::Element_ptr A, size_t m, size_t n) {}
+	~Checker_PLUQ() {}
+	inline bool check(size_t r, size_t *P, size_t *Q) { return true; }
 };
 
-#endif // DEBUG || PLUQ_check
+#endif // ENABLE_CHECKING
 
 
  #endif // __FFLASFFPACK_ffpack_pluq_check_INL
