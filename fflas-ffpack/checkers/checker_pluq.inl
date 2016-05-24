@@ -29,29 +29,30 @@
 #ifndef __FFLASFFPACK_ffpack_pluq_check_INL
 #define __FFLASFFPACK_ffpack_pluq_check_INL
 
-
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_CHECKER_PLUQ
 
 class FailurePLUQcheck {};
 
 template <class Field> 
 class Checker_PLUQ {
 
-	Field F;
+	Field &F;
 	typename Field::Element_ptr A,v,w;
 	size_t m,n;
 
 public:
-	Checker_PLUQ(Field F, typename Field::Element_ptr A, size_t m, size_t n): F(F), A(A), m(m), n(n) {
-		v = FFLAS::fflas_new(F,n,1);
-		w = FFLAS::fflas_new(F,n,1);
-
+	Checker_PLUQ(Field F, typename Field::Element_ptr A, size_t m, size_t n) 
+				: F(F), A(A), v(FFLAS::fflas_new(F,n,1)), w(FFLAS::fflas_new(F,n,1)), m(m), n(n)
+	{
 		// v is a random vector
 		typename Field::RandIter G(F);
-    	FFLAS::frand(F,G,n,v,1);
+		init(G);
+	}
 
-    	// w <-- A.v
-    	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
+	Checker_PLUQ(typename Field::RandIter &G, typename Field::Element_ptr A, size_t m, size_t n)
+				: F(G.field()), A(A), v(FFLAS::fflas_new(F,n,1)), w(FFLAS::fflas_new(F,n,1)), m(m), n(n)
+	{
+		init(G);
 	}
 
 	~Checker_PLUQ() {
@@ -66,7 +67,6 @@ public:
 	 * @param Q
 	 */
 	inline bool check(size_t r, size_t *P, size_t *Q) {
-
 		// v1 <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
 
@@ -87,19 +87,15 @@ public:
 
 		return pass;
 	}
+
+private:
+	inline void init(typename Field::RandIter &G) {
+		FFLAS::frand(F,G,n,v,1);
+    	// w <-- A.v
+    	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
+	}
 };
 
-#else
-
-template <class Field> 
-class Checker_PLUQ {
-public:
-	Checker_PLUQ(Field F, typename Field::Element_ptr A, size_t m, size_t n) {}
-	~Checker_PLUQ() {}
-	inline bool check(size_t r, size_t *P, size_t *Q) { return true; }
-};
-
-#endif // ENABLE_CHECKING
-
+#endif // ENABLE_CHECKER_PLUQ
 
  #endif // __FFLASFFPACK_ffpack_pluq_check_INL
