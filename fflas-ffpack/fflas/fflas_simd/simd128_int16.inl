@@ -173,7 +173,8 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 	* Args   :	[a0, ..., a7] int16_t
 	* Return :	[a[s[0..3]], ..., a[s[28..31]] int16_t
 	*/
-	static INLINE CONST vect_t shuffle(const vect_t a, const uint32_t s) {
+	template<uint32_t s>
+	static INLINE CONST vect_t shuffle(const vect_t a) {
 		//#pragma warning "The simd shuffle function is emulated, it may impact the performances.";
 		Converter conv;
 		conv.v = a;

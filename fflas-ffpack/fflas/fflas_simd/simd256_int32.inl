@@ -35,8 +35,6 @@
 #error "You need AVX2 instructions to perform 256bits operations on int32_t"
 #endif
 
-#include <cassert>
-
 #include "fflas-ffpack/fflas/fflas_simd/simd256_int64.inl"
 
 /*
@@ -94,11 +92,6 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	union Converter {
 		vect_t v;
 		scalar_t t[vect_size];
-	};
-
-	union Converter_half {
-		vect_t v;
-		half_t t[2];
 	};
 
 	/*
@@ -192,24 +185,25 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Args   : [a0, ..., a7] int32_t
 	* Return : [a[s[0..1]], ..., a[s[6..7],a[4+s[0..1]], ..., a[4+s[6..7],] int32_t
 	*/
-	static INLINE CONST vect_t shuffle_twice(const vect_t a, const int s) {
-		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
-		return _mm256_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
+	template<uint8_t s>
+	static INLINE CONST vect_t shuffle_twice(const vect_t a) {
+		return _mm256_shuffle_epi32(a, s);
 	}
 
 	/*
 	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   : [a0, ..., a7] int32_t
-	* Return : [a[s[0..1]], ..., a[14..15],] int32_t
+	* Return : [a[s[0..3]], ..., a[28..31]] int32_t
 	*/
-	static INLINE CONST vect_t shuffle(const vect_t a, const uint16_t s) {
+	template<uint32_t s>
+	static INLINE CONST vect_t shuffle(const vect_t a) {
 		//#pragma warning "The simd shuffle function is emulated, it may impact the performances."
-		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
-		Converter_half conv;
-		conv.v = a;
-		conv.t[0] = _mm_shuffle_epi32(conv.t[0], (uint8_t) __builtin_constant_p(s)?s:0);
-		conv.t[1] = _mm_shuffle_epi32(conv.t[1], (uint8_t) __builtin_constant_p(s)?(s>>8):0);
-		return conv.v;
+		Converter conv;
+		conv.v = a;		
+		return set (conv.t[( s      & 0x0000000F)], conv.t[( s      & 0x000000F0)],
+					conv.t[((s>> 8) & 0x0000000F)], conv.t[((s>> 8) & 0x000000F0)],
+					conv.t[((s>>16) & 0x0000000F)], conv.t[((s>>16) & 0x000000F0)],
+					conv.t[((s>>24) & 0x0000000F)], conv.t[((s>>24) & 0x000000F0)]);
 	}
 
 	/*

@@ -35,8 +35,6 @@
 #error "You need SSE instructions to perform 128 bits operations on int64"
 #endif
 
-#include <cassert>
-
 /*
  * Simd128 specialized for int64_t
  */
@@ -182,11 +180,9 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	* Args   : [a0, a1] int64_t
 	* Return : [a[s[0..1]], a[s[2..3]] int64_t
 	*/
-	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
-		//#pragma warning "The simd shuffle function is emulate, it may impact the performances."
-		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
-		// [s0 s1 s2 s3] -> [s0 s1 s0 s1 s2 s3 s2 s3] bitwise
-		return _mm_shuffle_epi32(a, ((__builtin_constant_p(s)?s:0) & 0x3)*5 + ((__builtin_constant_p(s)?s:0) & 0x0C)*20);
+	template<uint8_t s>
+	static INLINE CONST vect_t shuffle(const vect_t a) {
+		return _mm_shuffle_epi32(a, (s & 1)?(3*4+2):(1*4+0)+4*((s & 2)?(3*4+2):(1*4+0)));
 	}
 
 	/*
@@ -524,20 +520,10 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 
 	/*
 	* Shift packed 64-bit unsigned integers in a right by s while shifting in sign bits, and store the results in vect_t.
-	 * Args   : [a0, a1]				int64_t
-	 * Return : [Floor(a0/2^s), Floor(a1/2^s)]	int64_t
+	 * Args   : [a0, a1]				uint64_t
+	 * Return : [Floor(a0/2^s), Floor(a1/2^s)]	uint64_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srli_epi64(a, s); }
-
-	/*
-	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
-	* Args   : [a0, a1, a2, a3] int32_t
-	* Return : [a[s[0..1]], ..., a[s[6..7]] int32_t
-	*/
-	static INLINE CONST vect_t shuffle(const vect_t a, const int s) {
-		assert(__builtin_constant_p(s)); // Index s has to be a constant expression
-		return _mm_shuffle_epi32(a, __builtin_constant_p(s)?s:0);
-	}
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 #ifdef __SSE4_2__
