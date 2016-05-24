@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
 	size_t m = 2000 ;
-	size_t n = 2000 ;
+	size_t n = 3000 ;
 	size_t r;
 
 	Argument as[] = {

@@ -35,29 +35,39 @@
 #include <iostream>
 #include <algorithm>
 
+
 #ifdef DEBUG
-	#define ENABLE_CHECKING 1
+ 	#define CHECKING_MODE 1
+ 	#define ENABLE_ALL_CHECKINGS 1
+#endif
+
+#ifdef ENABLE_ALL_CHECKINGS
+	#define ENABLE_CHECKER_PLUQ 1
+	#define ENABLE_CHECKER_fgemm 1
 #endif
 
 
-// interface for all the checkers
+
 template <class Field>
-class Checker_Itf {
-	Field F;
-public:
-	Checker_Itf(Field F): F(F) {}
-	~Checker_Itf() = 0;
-	virtual void init()  = 0;
-	virtual bool check() = 0;
+struct Checker_Empty {
+	template<typename... Params> Checker_Empty(Params... parameters) {}
+	template<typename... Params> bool check(Params... parameters) { return true; }
 };
 
 
-template <class Field>
-class Checker_Empty : public Checker_Itf<Field> {
-public:
-	bool check() { return true; }
-};
+#ifdef ENABLE_CHECKER_PLUQ
+	template <class Field> class Checker_PLUQ;
+#else
+	template <class Field> using Checker_PLUQ = Checker_Empty<Field>;
+#endif
 
-template <class Field> class Checker_PLUQ;
+#ifdef ENABLE_CHECKER_fgemm
+	template <class Field> class Checker_fgemm;
+#else
+	template <class Field> using Checker_fgemm = Checker_Empty<Field>;
+#endif
+
+
+
 
 #endif
