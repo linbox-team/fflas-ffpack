@@ -233,19 +233,35 @@ template <> struct is_simd<__m256i> {
  * Simd functors
  */
 
+template<typename T>
 struct NoSimd {
+	/*
+	* alias to 128 bit simd register
+	*/
+	using vect_t = T*;
+
+	/*
+	* define the scalar type corresponding to the specialization
+	*/
+	using scalar_t = T;
+
+	/*
+	*  number of scalar_t in a simd register
+	*/
+	static const constexpr size_t vect_size = 1;
+
 	// Test if the pointer p is multiple of alignment
-	template <class T> static constexpr bool valid(T p) { return false; }
+	template <class TT> static constexpr bool valid(TT p) { return false; }
 
 	// Test if n is multiple of vect_size
-	template <class T> static constexpr bool compliant(T n) { return false; }
+	template <class TT> static constexpr bool compliant(TT n) { return false; }
 };
 
 // #if defined(__FFLASFFPACK_USE_AVX)
 
 template <class T, bool = std::is_arithmetic<T>::value, bool = std::is_integral<T>::value> struct SimdChooser {};
 
-template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSimd; };
+template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSimd<T>; };
 
 template <class T>
 struct SimdChooser<T, true, false> // floating number
@@ -255,7 +271,7 @@ struct SimdChooser<T, true, false> // floating number
 #elif defined(__FFLASFFPACK_USE_SSE)
 	using value = Simd128<T>;
 #else
-	using value = NoSimd;
+	using value = NoSimd<T>;
 #endif
 };
 
@@ -267,7 +283,7 @@ struct SimdChooser<T, true, true> // integral number
 #elif __FFLASFFPACK_USE_SSE
 	using value = Simd128<T>;
 #else
-	using value = NoSimd;
+	using value = NoSimd<T>;
 #endif
 };
 
@@ -316,10 +332,10 @@ namespace FFLAS { /*  print helper */
 		os << '<';
 		simdT::store(p, P);
 		for (size_t i = 0; i < simdT::vect_size; ++i) {
-				os << p[i];
-				if (i < simdT::vect_size - 1)
-					os << '|';
-			}
+			os << p[i];
+			if (i < simdT::vect_size - 1)
+				os << '|';
+		}
 		os << '>';
 
 		return os;
