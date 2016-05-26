@@ -72,7 +72,7 @@ namespace FFPACK {
 				break; // return r;
 		}
 
-		checker.check(r,P,Q);
+		checker.check(A,r,P,Q);
 
 		return r;
 	}
@@ -639,7 +639,7 @@ namespace FFPACK {
 	{
 		Checker_PLUQ<Field> checker (F,A,M,N);
 		size_t R = _LUdivine(F,Diag,trans,M,N,A,lda,P,Q,LuTag,cutoff);
-		checker.check(R,P,Q);
+		checker.check(A,R,P,Q);
 		return R;
 	}
 

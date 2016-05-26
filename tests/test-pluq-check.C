@@ -40,6 +40,8 @@
 #define DEBUG 1
 
 #include <iostream>
+#include <stdlib.h>
+#include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
@@ -47,9 +49,9 @@
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
-	Givaro::Integer q = 131071;
-	size_t m = 2000 ;
-	size_t n = 3000 ;
+	Givaro::Integer q = 11;//131071;
+	size_t m = 0;
+	size_t n = 0;
 	size_t r;
 
 	Argument as[] = {
@@ -61,6 +63,11 @@ int main(int argc, char** argv) {
 	};
 
 	FFLAS::parseArguments(argc,argv,as);
+
+	srand (time(NULL));
+	if (m == 0) m = rand() % 10000 + 1;
+	if (n == 0) n = rand() % 10000 + 1;
+	std::cout << "m= " << m << "    n= " << n << "\n";
 
 	typedef Givaro::Modular<double> Field;
 	Field F(q);
@@ -79,17 +86,26 @@ int main(int argc, char** argv) {
 		// generate a random matrix A
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
-		
+
 		Checker_PLUQ<Field> checker (F,A,m,n);
 
 		//r = FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
 		//r = FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
+		
 		r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
+		//write_field(F,std::cout<<"A = "<<std::endl,A,m,n,n);
+		//std::cout << "Q = "; for (size_t i=0; i < n; i++) std::cout << Q[i] << " "; std::cout << "\n";
+		//std::cout << "P = "; for (size_t i=0; i < m; i++) std::cout << P[i] << " "; std::cout << "\n";
 
-		pass += checker.check(r,P,Q) ? 1:0;
+		pass += checker.check(A,r,P,Q) ? 1:0;
+
+		//write_field(F,std::cout<<"v = "<<std::endl,checker.v,n,1,1);
+		//write_field(F,std::cout<<"v1 = "<<std::endl,checker.v1,r,1,1);
+		//write_field(F,std::cout<<"v2 = "<<std::endl,checker.v2,m,1,1);
+		//write_field(F,std::cout<<"w = "<<std::endl,checker.w,m,1,1);
 	}
 
-	std::cout << pass << "/" << iter << " tests have been successful.\n";
+	std::cout << pass << "/" << iter << " tests were successful.\n";
 
 	FFLAS::fflas_delete(A);
 
