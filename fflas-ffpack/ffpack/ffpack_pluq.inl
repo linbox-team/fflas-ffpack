@@ -636,7 +636,7 @@ namespace FFPACK {
 
 		Checker_PLUQ<Field> checker (Fi,A,M,N);
 		size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q);
-		checker.check(R,P,Q);
+		checker.check(A,R,P,Q);
 		return R;
 	}
 
