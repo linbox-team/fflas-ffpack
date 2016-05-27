@@ -1,4 +1,5 @@
   ******  FFLAS-FFPACK : Finite Field Linear Algebra Subroutines/Package ******  
+[![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/job/FFLAS-FFPACK/)
 
 Version 2.2.1
 
