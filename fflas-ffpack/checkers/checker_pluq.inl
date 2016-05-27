@@ -107,10 +107,10 @@ public:
 		// is v2 == w ?
 		FFLAS::fsub(F, m, 1, w, 1, v2, 1, v2, 1);
 		bool pass = FFLAS::fiszero(F,n,1,v2,1);
-	
-		//if (!pass) throw FailurePLUQcheck();
 
 		FFLAS::fflas_delete(L,U,v1,v2);
+
+		//if (!pass) throw FailurePLUQcheck();
 
 		return pass;
 	}

@@ -46,7 +46,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 
-int main(int argc, char** argv) {
+/*int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
 	Givaro::Integer q = 11;//131071;
@@ -110,4 +110,84 @@ int main(int argc, char** argv) {
 	FFLAS::fflas_delete(A);
 
 	return 0;
+}*/
+
+
+
+int main(int argc, char** argv) {
+	Givaro::Integer q = 11;
+	size_t r,m,n;
+
+	srand (time(NULL));
+	m = 2;
+	n = 3;
+	//if (m == 0) m = rand() % 10000 + 1;
+	//if (n == 0) n = rand() % 10000 + 1;
+	std::cout << "m= " << m << "    n= " << n << "\n";
+
+	typedef Givaro::Modular<double> Field;
+	Field F(q);
+
+	Field::RandIter RValue(F);
+
+	Field::Element_ptr A;
+	A = FFLAS::fflas_new(F,m,n);
+	//for( size_t i = 0; i < m*n; ++i )
+	//		RValue.random( *(A+i) );
+	A[0] = 3; A[1] = 6; A[2] = 1; A[3] = 0; A[4] = 2; A[5] = 6;
+
+	write_field(F,std::cout<<"A = "<<std::endl,A,m,n,n);
+
+
+	size_t *P = FFLAS::fflas_new<size_t>(m);
+	size_t *Q = FFLAS::fflas_new<size_t>(n);
+
+	r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
+	std::cout << "r = " << r << std::endl;
+	write_field(F,std::cout<<"LU = "<<std::endl,A,m,n,n);
+
+	Field::Element_ptr v,w;
+	v = FFLAS::fflas_new(F,n,1);
+	w = FFLAS::fflas_new(F,m,1);
+	//typename Field::RandIter G(F);
+	//FFLAS::frand(F,G,n,v,1);
+	v[0] = 0; v[1] = 8; v[2] = 10;
+	write_field(F,std::cout<<"v = "<<std::endl,v,n,1,1);
+
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
+	write_field(F,std::cout<<"w = "<<std::endl,w,m,1,1);
+
+	// v <-- Q.v
+	FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
+
+ 	typename Field::Element_ptr R = FFLAS::fflas_new(F,r,1);
+
+ 	// R <- V1
+ 	for (size_t i=0; i<r; i++)
+ 		R[i] = v[i];
+
+ 	// R <- U1.R
+ 	FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, r, R, 1);
+
+ 	typename Field::Element_ptr U2 = FFLAS::fflas_new(F,r,n-r);
+ 	for (size_t i=0; i < r; ++i)
+ 		for (size_t j=r; j < n; ++j)
+ 			U2[i*(n-r)+j-r] = A[i*n+j];
+ 	//write_field(F,std::cout<<"U2 = "<<std::endl,U2,r,n-r,1);
+ 	typename Field::Element_ptr v2 = FFLAS::fflas_new(F,n-r,1);
+ 	for (size_t i=r; i < n; ++i)
+ 		v2[i-r] = v[i];
+ 	//write_field(F,std::cout<<"v2 = "<<std::endl,v2,n-r,1,1);
+
+ 	// R <- U2.V2 + R
+ 	FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, n-r, 1, F.one, U2, n, v2, 1, F.one, R, 1);
+
+ 	// R <- L1.R
+ 	FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, R, 1);
+
+ 	// w2 <- L2.R
+ 	typename Field::Element_ptr w2 = FFLAS::fflas_new(F,m,1);
+
+
+ 	write_field(F,std::cout<<"R = "<<std::endl,R,r,1,1);
 }
