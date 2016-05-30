@@ -37,7 +37,7 @@ template <class Field>
 class Checker_PLUQ {
 public:
 	const Field F;	// add & (BUG)
-	typename Field::Element_ptr v,w,v1,v2;
+	typename Field::Element_ptr v,w;
 	const size_t m,n;
 
 //public:
@@ -66,51 +66,43 @@ public:
 	 * @param Q
 	 */
 	inline bool check(typename Field::Element_ptr A, size_t r, size_t *P, size_t *Q) {
-		typename Field::Element_ptr  L, U, v1, v2;
-		L = FFLAS::fflas_new(F,m,r);
-		U = FFLAS::fflas_new(F,r,n);
-
-		// decompose A into L and U
-		for (size_t  i=0; i<r; ++i) {
-			for (size_t j=0; j<i; ++j)
-				F.assign (*(U + i*n + j), F.zero);
-			for (size_t j=i; j<n; ++j)
-				F.assign (*(U + i*n + j), *(A+ i*n + j));
-		}
-		for ( size_t j=0; j<r; ++j) {
-			for (size_t i=0; i<=j; ++i)
-				F.assign(*(L + i*r + j), F.zero);
-			F.assign(*(L + j*r + j), F.one);
-			for (size_t i=j+1; i<m; ++i)
-				F.assign( *(L + i*r + j), *(A + i*n + j));
-		}
-
-		//FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, r,0,m, L, r, P);
-		//FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, r,0,n, U, n, Q);
+		typename Field::Element_ptr R = FFLAS::fflas_new(F,r,1),
+									_w = FFLAS::fflas_new(F,m,1);
+		for (size_t i=0; i<m; ++i)
+			F.assign(*(_w+i),F.zero);
 
 		// v <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
 
-		// v1 <-- U.v
-		v1 = FFLAS::fflas_new(F,r,1);
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, r, n, F.one, U, n, v, 1, F.zero, v1, 1);
-		//FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, 1, n, F.one, A, r, v, n);
+		// R <- V1
+ 		FFLAS::fassign(F, r, 1, v, 1, R, 1);
 
-		// v2 <-- L.v1
-		v2 = FFLAS::fflas_new(F,m,1);
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, r, F.one, L, r, v1, 1, F.zero, v2, 1);
-		//FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, m, v, r);
+ 		// R <- U1.R
+ 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, R, 1);
 
-		// v2 <-- P.v2
-		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, v2, 1, P);
+ 		// R <- U2.V2 + R
+ 		if (r < n)
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, n, v+r, 1, F.one, R, 1);
 
-		// is v2 == w ?
-		FFLAS::fsub(F, m, 1, w, 1, v2, 1, v2, 1);
-		bool pass = FFLAS::fiszero(F,n,1,v2,1);
+ 		// w2 <- L2.R
+ 		if (r < m)
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, R, 1, F.zero, _w+r, 1);
 
-		FFLAS::fflas_delete(L,U,v1,v2);
+ 		// R <- L1.R
+ 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, n, R, 1);
 
-		//if (!pass) throw FailurePLUQcheck();
+ 		// w1 <- R
+ 		FFLAS::fassign(F, r, 1, R, 1, _w, 1);
+
+ 		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, _w, 1, P);
+
+ 		// is _w == w ?
+		FFLAS::fsub(F, m, 1, w, 1, _w, 1, _w, 1);
+		bool pass = FFLAS::fiszero(F,m,1,_w,1);
+
+		FFLAS::fflas_delete(R,_w);
+
+		if (!pass) throw FailurePLUQcheck();
 
 		return pass;
 	}
@@ -125,4 +117,4 @@ private:
 
 #endif // ENABLE_CHECKER_PLUQ
 
- #endif // __FFLASFFPACK_ffpack_pluq_check_INL
+#endif // __FFLASFFPACK_ffpack_pluq_check_INL
