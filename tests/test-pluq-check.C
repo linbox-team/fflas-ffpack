@@ -48,9 +48,6 @@
 int exec();
 
 int main(int argc, char** argv) {
-	//std::cout << exec() << "\n";
-	//exit(0);
-
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
 	size_t m = 0;
@@ -109,100 +106,4 @@ int main(int argc, char** argv) {
 	std::cout << pass << "/" << iter << " tests were successful.\n";
 
 	return 0;
-}
-
-
-
-
-int exec() {
-	Givaro::Integer q = 131071;
-	size_t r,m=0,n=0;
-
-	
-	//m = 300;
-	//n = 200;
-	if (m == 0) m = rand() % 10000 + 1;
-	if (n == 0) n = rand() % 10000 + 1;
-	//std::cout << "m= " << m << "    n= " << n << "\n";
-
-	typedef Givaro::Modular<double> Field;
-	Field F(q);
-
-	Field::RandIter RValue(F);
-
-	Field::Element_ptr A;
-	A = FFLAS::fflas_new(F,m,n);
-	for( size_t i = 0; i < m*n; ++i )
-			RValue.random( *(A+i) );
-	//A[0] = 0; A[1] = 3; A[2] = 2; A[3] = 6; A[4] = 6; A[5] = 1;
-
-	//write_field(F,std::cout<<"A = "<<std::endl,A,m,n,n);
-
-	Field::Element_ptr v,av;
-	v = FFLAS::fflas_new(F,n,1);
-	av = FFLAS::fflas_new(F,m,1);
-	typename Field::RandIter G(F);
-	FFLAS::frand(F,G,n,v,1);
-	//v[0] = 0; v[1] = 8;
-	//write_field(F,std::cout<<"v = "<<std::endl,v,n,1,1);
-	
-	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, av, 1);
-	//write_field(F,std::cout<<"av = "<<std::endl,av,m,1,1);
-
-	size_t *P = FFLAS::fflas_new<size_t>(m);
-	size_t *Q = FFLAS::fflas_new<size_t>(n);
-
-	r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
-	//std::cout << "r = " << r << std::endl;
-	//write_field(F,std::cout<<"LU = "<<std::endl,A,m,n,n);
-
-	// v <-- Q.v
-	FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
-	//std::cout << "B1\n";
-
- 	typename Field::Element_ptr R = FFLAS::fflas_new(F,r,1);
-
- 	// R <- V1
- 	FFLAS::fassign(F, r, 1, v, 1, R, 1);
- 	//std::cout << "B2\n";
-
- 	// R <- U1.R
- 	FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, R, 1);
- 	//std::cout << "B3\n";
-
- 	// R <- U2.V2 + R
- 	if (r < n)
- 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, n, v+r, 1, F.one, R, 1);
- 	//std::cout << "B4\n";
-
-	typename Field::Element_ptr w = FFLAS::fflas_new(F,m,1);
-	for (size_t i=0; i<m; ++i)
-		F.assign(*(w+i),F.zero);
-	//std::cout << "B5\n";
-
-	// w2 <- L2.R
- 	if (r < m)
- 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, R, 1, F.zero, w+r, 1);
- 	//std::cout << "B6\n";
-
- 	// R <- L1.R
- 	FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, n, R, 1);
- 	//std::cout << "B7\n";
-
- 	// w1 <- R
- 	FFLAS::fassign(F, r, 1, R, 1, w, 1);
- 	
- 	FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, w, 1, P);
-
- 	//write_field(F,std::cout<<"R = "<<std::endl,R,r,1,1);
- 	//write_field(F,std::cout<<"w = "<<std::endl,w,m,1,1);
- 	
- 	// is av == w ?
-	FFLAS::fsub(F, m, 1, w, 1, av, 1, av, 1);
-	bool pass = FFLAS::fiszero(F,m,1,av,1);
-
-	FFLAS::fflas_delete(A,av,v,R,P,Q);
-	
-	//std::cout << pass << std::endl;
-	return pass;
 }
