@@ -52,10 +52,9 @@ int main(int argc, char** argv) {
 	//exit(0);
 
 	size_t iter = 3 ;
-	Givaro::Integer q = 11;//131071;
+	Givaro::Integer q = 131071;
 	size_t m = 0;
 	size_t n = 0;
-	size_t r;
 	bool random_dim = false;
 
 	Argument as[] = {
@@ -76,8 +75,6 @@ int main(int argc, char** argv) {
 
 	Field::RandIter RValue(F);
 
-	Field::Element_ptr A;
-	size_t *P, *Q;
 	size_t pass = 0;	// number of tests that have successfully passed
 
 	for(size_t it=0; it<iter; ++it) {
@@ -87,27 +84,29 @@ int main(int argc, char** argv) {
 			std::cout << "m= " << m << "    n= " << n << "\n";
 		}
 
-		A = FFLAS::fflas_new(F,m,n);
-
-		P = FFLAS::fflas_new<size_t>(m);
-		Q = FFLAS::fflas_new<size_t>(n);
+		Field::Element_ptr A = FFLAS::fflas_new(F,m,n);
+		size_t *P = FFLAS::fflas_new<size_t>(m);
+		size_t *Q = FFLAS::fflas_new<size_t>(n);
 
 		// generate a random matrix A
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
 
-		Checker_PLUQ<Field> checker (F,A,m,n);
+		try {
+			//FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
+			//FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
+			std::cout << "Computing PLUQ...\n";
+			FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
+			std::cout << "Verification successful\n";
+			pass++;
+		} catch(FailurePLUQcheck &e) {
+			std::cout << "Verification failed!\n";
+		}
 
-		//r = FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
-		//r = FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
-		r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
-
-		pass += checker.check(A,r,P,Q) ? 1:0;
+		FFLAS::fflas_delete(A,P,Q);
 	}
 
 	std::cout << pass << "/" << iter << " tests were successful.\n";
-
-	FFLAS::fflas_delete(A,P,Q);
 
 	return 0;
 }
