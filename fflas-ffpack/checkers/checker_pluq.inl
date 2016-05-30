@@ -35,12 +35,12 @@ class FailurePLUQcheck {};
 
 template <class Field> 
 class Checker_PLUQ {
-public:
+
 	const Field F;	// add & (BUG)
 	typename Field::Element_ptr v,w;
 	const size_t m,n;
 
-//public:
+public:
 	Checker_PLUQ(Field F, typename Field::Element_ptr A, size_t m, size_t n) 
 				: F(F), v(FFLAS::fflas_new(F,n,1)), w(FFLAS::fflas_new(F,m,1)), m(m), n(n)
 	{
@@ -66,41 +66,38 @@ public:
 	 * @param Q
 	 */
 	inline bool check(typename Field::Element_ptr A, size_t r, size_t *P, size_t *Q) {
-		typename Field::Element_ptr R = FFLAS::fflas_new(F,r,1),
-									_w = FFLAS::fflas_new(F,m,1);
-		for (size_t i=0; i<m; ++i)
-			F.assign(*(_w+i),F.zero);
+		typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); // _w = [w1|w2]
 
 		// v <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
 
-		// R <- V1
- 		FFLAS::fassign(F, r, 1, v, 1, R, 1);
+		// w1 <- V1 && w2 <- 0
+ 		FFLAS::fassign(F, r, 1, v, 1, _w, 1);
+ 		for (size_t i=r; i<m; ++i)
+			F.assign(*(_w+i),F.zero);
 
- 		// R <- U1.R
- 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, R, 1);
+ 		// w1 <- U1.w1
+ 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, _w, 1);
 
- 		// R <- U2.V2 + R
+ 		// w1 <- U2.V2 + w1
  		if (r < n)
- 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, n, v+r, 1, F.one, R, 1);
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, n, v+r, 1, F.one, _w, 1);
 
- 		// w2 <- L2.R
+ 		// w2 <- L2.w1
  		if (r < m)
- 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, R, 1, F.zero, _w+r, 1);
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, _w, 1, F.zero, _w+r, 1);
 
- 		// R <- L1.R
- 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, n, R, 1);
+ 		// w1 <- L1.w1
+ 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, n, _w, 1);
 
- 		// w1 <- R
- 		FFLAS::fassign(F, r, 1, R, 1, _w, 1);
-
+ 		// _w <- P._w
  		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, _w, 1, P);
 
  		// is _w == w ?
 		FFLAS::fsub(F, m, 1, w, 1, _w, 1, _w, 1);
 		bool pass = FFLAS::fiszero(F,m,1,_w,1);
 
-		FFLAS::fflas_delete(R,_w);
+		FFLAS::fflas_delete(_w);
 
 		if (!pass) throw FailurePLUQcheck();
 
@@ -110,6 +107,7 @@ public:
 private:	
 	inline void init(typename Field::RandIter &G, typename Field::Element_ptr A) {
 		FFLAS::frand(F,G,n,v,1);
+    	
     	// w <-- A.v
     	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
 	}
