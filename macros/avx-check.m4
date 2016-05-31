@@ -26,16 +26,9 @@ dnl turn on AVX or AVX2 extensions if available
 
 AC_DEFUN([FF_CHECK_AVX],
 [
-	AC_ARG_ENABLE(avx,
-	[ AC_HELP_STRING([--enable-avx], [ Use Intel(r) AVX ]) ],
-	[ avec_avx=$enable_avx ],
-	[ avec_avx=yes ]
-	)
-	
+	AC_ARG_ENABLE(avx,[AC_HELP_STRING([--disable-avx], [ Disable Intel(r) AVX])])
 	AC_MSG_CHECKING(for AVX)
-
-	dnl Is check enabled?
-	AS_IF([ test  "x$avec_avx" != "xno" ],
+	AS_IF([ test  "x$enable_avx" != "xno" ],
 	[
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		CODE_AVX=`cat macros/CodeChunk/avx.C`
@@ -116,7 +109,7 @@ AC_DEFUN([FF_CHECK_AVX],
 		CXXFLAGS=${BACKUP_CXXFLAGS}
 	],
 	[
-	    dnl --enable-avx=no
+	    dnl --disable-avx
 	    AC_MSG_RESULT(no [disabled])
     ]
 	)
