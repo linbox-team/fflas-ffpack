@@ -172,15 +172,15 @@ namespace FFLAS { /*  Traits */
 	template <typename Element, typename Compute> 
 	struct ModeTraits<Givaro::Modular<Element,Compute> >{typedef typename ModeCategories::DelayedTag value;};
 
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<int8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<int16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<int32_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<uint8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<uint16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<uint32_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<int8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<int16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<int32_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<uint8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<uint16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<uint32_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 
 #ifndef INTEGER_NO_RNS
-	template <> template<typename Compute> struct ModeTraits<Givaro::Modular<Givaro::Integer,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<Givaro::Integer,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
 #endif
 
 	template <typename Element>
