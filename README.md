@@ -26,8 +26,8 @@ In brief:
 ```./configure <options> && make && make install```
 
 The most commonly used option include:
- --with-blas-libs=<libs> : to specify the arguments for the linker to find the BLAS
- --enable-optimization : to run configure-time optimizations
+- --with-blas-libs=<libs> : to specify the arguments for the linker to find the BLAS
+- --enable-optimization : to run configure-time optimizations
 
 For example on a x86_64 architecture:
 - Using OpenBLAS in Fedora: 
