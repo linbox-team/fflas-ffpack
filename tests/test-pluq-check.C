@@ -45,8 +45,6 @@
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-int exec();
-
 int main(int argc, char** argv) {
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
@@ -78,8 +76,9 @@ int main(int argc, char** argv) {
 		if (random_dim) {
 			m = rand() % 10000 + 1;
 			n = rand() % 10000 + 1;
-			std::cout << "m= " << m << "    n= " << n << "\n";
 		}
+			
+		std::cout << "m= " << m << "    n= " << n << "\n";
 
 		Field::Element_ptr A = FFLAS::fflas_new(F,m,n);
 		size_t *P = FFLAS::fflas_new<size_t>(m);
@@ -88,7 +87,8 @@ int main(int argc, char** argv) {
 		// generate a random matrix A
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
-
+		//write_field(F,std::cerr<<"A:=",A,m,n,n,true) <<std::endl;
+  
 		try {
 			//FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
 			//FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
