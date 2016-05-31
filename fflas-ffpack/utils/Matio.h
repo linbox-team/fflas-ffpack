@@ -111,7 +111,7 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 			else
 //				F.convert(tmp,*(E+j+id*i));
 				tmp =*(E+j+id*i);
-			c << tmp;
+			F.write(c,tmp);
 			if (mapleFormat && j<m-1) c << ',';
 			c << ' ';
 		}
