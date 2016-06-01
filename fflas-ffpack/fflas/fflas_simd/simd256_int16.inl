@@ -207,12 +207,33 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 	}
 
 	/*
+	* Unpack and interleave 16-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
+	* Args   :	[a0, ..., a15] int16_t
+				[b0, ..., b15] int16_t
+	* Return :	[a0, b0, a1, b1, ..., a8, b8, a9, b9, ...] int16_t
+	*/
+	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi16(a, b); }
+
+	/*
+	* Unpack and interleave 16-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
+	* Args   :	[a0, ..., a15] int16_t
+				[b0, ..., b15] int16_t
+	* Return :	[a4, b4, a5, b5, ..., a12, b12, a13, b13, ...] int16_t
+	*/
+	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi16(a, b); }
+
+	/*
 	* Unpack and interleave 16-bit integers from the low half of a and b, and store the results in dst.
 	* Args   :	[a0, ..., a15] int16_t
 				[b0, ..., b15] int16_t
 	* Return :	[a0, b0, ..., a7, b7] int16_t
 	*/
-	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi16(a, b); }
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+		using Simd256_64 = Simd256<uint64_t>;
+		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3] uint64
+		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		return unpacklo_twice(a1, b1);
+	}
 
 	/*
 	* Unpack and interleave 16-bit integers from the high half of a and b, and store the results in dst.
@@ -220,7 +241,27 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 				[b0, ..., b15] int16_t
 	* Return :	[a8, b8, ..., a15, b15] int16_t
 	*/
-	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi16(a, b); }
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+		using Simd256_64 = Simd256<uint64_t>;
+		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
+		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		return unpackhi_twice(a1, b1);
+	}
+
+	/*
+	* Unpack and interleave 16-bit integers from the low then high half of a and b, and store the results in dst.
+	* Args   :	[a0, ..., a15] int16_t
+				[b0, ..., b15] int16_t
+	* Return :	[a0, b0, ..., a7, b7] int16_t
+	*			[a8, b8, ..., a15, b15] int16_t
+	*/
+	static INLINE CONST void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
+		using Simd256_64 = Simd256<uint64_t>;
+		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
+		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		s1 = unpacklo_twice(a1, b1);
+		s2 = unpackhi_twice(a1, b1);
+	}
 
 	/*
 	* Add packed 16-bits integer in a and b, and store the results in vect_t.

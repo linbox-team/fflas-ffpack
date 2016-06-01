@@ -198,12 +198,32 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	}
 
 	/*
+	* Unpack and interleave 64-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int64_t
+			   [b0, b1, b2, b3] int64_t
+	* Return : [a0, b0, a2, b2] int64_t
+	*/
+	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi64(a, b); }
+
+	/*
+	* Unpack and interleave 64-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int64_t
+			   [b0, b1, b2, b3] int64_t
+	* Return : [a1, b1, a3, b3] int64_t
+	*/
+	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi64(a, b); }
+
+	/*
 	* Unpack and interleave 64-bit integers from the low half of a and b, and store the results in dst.
 	* Args   : [a0, a1, a2, a3] int64_t
 			   [b0, b1, b2, b3] int64_t
 	* Return : [a0, b0, a1, b1] int64_t
 	*/
-	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm256_unpacklo_epi64(a, b); }
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
+		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		return unpacklo_twice(a1, b1);
+	}
 
 	/*
 	* Unpack and interleave 64-bit integers from the high half of a and b, and store the results in dst.
@@ -211,7 +231,25 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 			   [b0, b1, b2, b3] int64_t
 	* Return : [a2, b2, a3, b3] int64_t
 	*/
-	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm256_unpackhi_epi64(a, b); }
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4
+		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		return unpackhi_twice(a1, b1);
+	}
+
+	/*
+	* Unpack and interleave 64-bit integers from the low then high half of a and b, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] int64_t
+			   [b0, b1, b2, b3] int64_t
+	* Return : [a0, b0, a1, b1] int64_t
+	*		   [a2, b2, a3, b3] int64_t
+	*/
+	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
+		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
+		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
+		l = unpacklo_twice(a1, b1);
+		h = unpackhi_twice(a1, b1);
+	}
 
 	/*
 	 * Add packed 64-bits integer in a and b, and store the results in vect_t.

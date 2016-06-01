@@ -169,6 +169,17 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srai_epi16(a, s); }
 
 	/*
+	* Shuffle 16-bit integers in a within 64-bit lanes using the control in imm8, and store the results in dst.
+	* Args   : [a0, ..., a7] int16_t
+	* Return : [a[s[0..1]], ..., a[s[6..7],a[4+s[0..1]], ..., a[4+s[6..7],] int16_t
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t shuffle_twice(const vect_t a) {
+		a = _mm_shufflelo_epi16(a, s);
+		return _mm_shufflehi_epi16(a, s);
+	}
+
+	/*
 	* Shuffle 16-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   :	[a0, ..., a7] int16_t
 	* Return :	[a[s[0..3]], ..., a[s[28..31]] int16_t
