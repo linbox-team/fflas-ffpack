@@ -116,7 +116,7 @@ void test() {
 	typedef Givaro::Modular<double> Field;
 	Field F(q);
 
-	for (size_t i=0; i<100; ++i) {
+	for (size_t j=0; j<100; ++j) {
 		size_t m = rand() % 10000 + 1;
 		size_t n = rand() % 10000 + 1;
 
