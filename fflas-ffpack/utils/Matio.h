@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* Copyright (C) LinBox,FFLAS-FFPACK
  *
  * ========LICENCE========
@@ -94,10 +94,9 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 			  typename Field::ConstElement_ptr E,
 			  int n, int m, int id, bool mapleFormat = false, bool column_major=false)
 {
-
-	    //typename Field::Element tmp;
-	// double tmp;
-//	Givaro::Integer tmp;
+//     typename Field::Element tmp;
+//     double tmp;
+//     Givaro::Integer tmp;
 	typename Field::Element tmp;
 	F.init(tmp);
 	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",\n[" ;
@@ -105,13 +104,12 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 		if (mapleFormat) c << '[';
 		for (int j=0; j<m;++j){
 			if (column_major)
-				    //F.convert(tmp,*(E+i+id*j));
-				    tmp = *(E+i+id*j);
-				
+				    F.assign(tmp, *(E+i+id*j));
+// 				    F.convert(tmp,*(E+i+id*j));				
 			else
+				F.assign(tmp, *(E+j+id*i));
 //				F.convert(tmp,*(E+j+id*i));
-				tmp =*(E+j+id*i);
-			c << tmp;
+			F.write(c, tmp);
 			if (mapleFormat && j<m-1) c << ',';
 			c << ' ';
 		}

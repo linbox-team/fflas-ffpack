@@ -54,7 +54,7 @@ dnl -------------- dnl
 
 dnl As we need Integer and Modular, should be updated on each interface changes
 version_min=40001
-version_max=40002
+version_max=40003
 
 dnl Check for existence
 

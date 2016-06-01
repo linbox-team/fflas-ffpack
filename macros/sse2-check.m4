@@ -26,15 +26,9 @@ dnl turn on  SSE4.1 extensions if available
 
 AC_DEFUN([FF_CHECK_SSE],
 		[
-		AC_ARG_ENABLE(sse,
-			[AC_HELP_STRING([--enable-sse],
-				[ Use Intel(r) SSE 4.1])
-			],
-			[ avec_sse=$enable_sse ],
-			[ avec_sse=yes ]
-			)
+		AC_ARG_ENABLE(sse,[AC_HELP_STRING([--disable-sse], [ Disable Intel(r) SSE 4.1])])
 		AC_MSG_CHECKING(for SSE 4.1)
-		AS_IF([ test  "x$avec_sse" != "xno" ],
+		AS_IF([ test  "x$enable_sse" != "xno" ],
 			[
 			BACKUP_CXXFLAGS=${CXXFLAGS}
 			dnl  SSEFLAGS="-msse2"
@@ -53,15 +47,22 @@ AC_DEFUN([FF_CHECK_SSE],
 			AS_IF([ test "x$sse_found" = "xyes" ],[
 				AC_DEFINE(USE_SSE,1,[Define if SSE is available])
 				AC_SUBST(SSEFLAGS)
-				AC_MSG_RESULT(yes (SSE))
+				AC_MSG_RESULT(yes)
 				],
 				[
 				SSEFLAGS=""
+				dnl Forcing to disable AVX
+				enable_avx="no"
 				AC_MSG_RESULT(no)
 				]
 				)
 			CXXFLAGS=${BACKUP_CXXFLAGS}
 			],
-			[ AC_MSG_RESULT(no) ]
+			[
+			dnl --disable-sse
+			AC_MSG_RESULT(no [disabled])
+			dnl Forcing to disable AVX
+			enable_avx="no"
+			]
 	)
 	])
