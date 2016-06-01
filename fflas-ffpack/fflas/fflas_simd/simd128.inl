@@ -79,6 +79,10 @@ struct Simd128i_base {
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd128_impl;
 
+template <class T>
+using Simd128 =
+Simd128_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
+
 #include "simd128_float.inl"
 #include "simd128_double.inl"
 
@@ -90,9 +94,5 @@ template <bool ArithType, bool Int, bool Signed, int Size> struct Simd128_impl;
 #include "simd128_int64.inl"
 
 #endif //#ifdef SIMD_INT
-
-template <class T>
-using Simd128 =
-Simd128_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_INL

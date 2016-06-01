@@ -82,7 +82,7 @@ struct Simd256i_base {
 	* Return : [s[0..3]?a0:a1:b0:b1, s[4..7]?a0:a1:b0:b1] int128_t
 	*/
 	template<int s>
-	static INLINE CONST vect_t shuffle128(const vect_t a, const vect_t b) {
+	static INLINE CONST vect_t permute128(const vect_t a, const vect_t b) {
 		return _mm256_permute2x128_si256(a, b, s);
 	}
 
@@ -92,7 +92,7 @@ struct Simd256i_base {
 			   [b0, b1] int128_t
 	* Return : [a0, b0] int128_t
 	*/
-	static INLINE CONST vect_t unpacklo128(const vect_t a, const vect_t b) { return shuffle128<0x20>(a, b); }
+	static INLINE CONST vect_t unpacklo128(const vect_t a, const vect_t b) { return permute128<0x20>(a, b); }
 
 	/*
 	* Unpack and interleave 128-bit integers from the high half of a and b, and store the results in dst.
@@ -100,11 +100,15 @@ struct Simd256i_base {
 			   [b0, b1] int128_t
 	* Return : [a1, b1] int128_t
 	*/
-	static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return shuffle128<0x31>(a, b); }
+	static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return permute128<0x31>(a, b); }
 
 };
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd256_impl;
+
+template <class T>
+using Simd256 =
+	Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 #include "simd256_float.inl"
 #include "simd256_double.inl"
@@ -113,15 +117,12 @@ template <bool ArithType, bool Int, bool Signed, int Size> struct Simd256_impl;
 // Trop d'instructions SSE manquantes pour les int8_t
 
 #if defined(__FFLASFFPACK_USE_AVX2)
-#include "simd256_int16.inl"
-#include "simd256_int32.inl"
 #include "simd256_int64.inl"
+#include "simd256_int32.inl"
+#include "simd256_int16.inl"
 #endif
 
 #endif //#ifdef SIMD_INT
 
-template <class T>
-using Simd256 =
-    Simd256_impl<std::is_arithmetic<T>::value, std::is_integral<T>::value, std::is_signed<T>::value, sizeof(T)>;
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
