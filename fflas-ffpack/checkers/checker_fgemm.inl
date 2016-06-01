@@ -36,26 +36,26 @@ class FailureFgemmCheck {};
 template <class Field> 
 class Checker_fgemm {
 
-	const Field F;	// add & (BUG)
+	const Field& F;	// add & (BUG)
 	const size_t m,n,k,ldc;
 	typename Field::Element_ptr v,w1;
 
 public:
-	Checker_fgemm(const Field &F,
-	       const size_t m, const size_t n, const size_t k,
+	Checker_fgemm(const Field &F_,
+	       const size_t m_, const size_t n_, const size_t k_,
 	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc)
-		: F(F), m(m), n(n), k(k), ldc(ldc), v(FFLAS::fflas_new(F,n,1)),w1(FFLAS::fflas_new(F,m,1))
+	       typename Field::Element_ptr C, const size_t ldc_)
+		: F(F_), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F_,n,1)),w1(FFLAS::fflas_new(F_,m,1))
 	{			
 			typename Field::RandIter G(F);
 			init(G,beta,C);
 	}
 
 	Checker_fgemm(typename Field::RandIter &G,
-	       const size_t m, const size_t n, const size_t k,
+	       const size_t m_, const size_t n_, const size_t k_,
 	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc)
-		: F(G.field()), m(m), n(n), k(k), ldc(ldc), v(FFLAS::fflas_new(F,n,1)),w1(FFLAS::fflas_new(F,m,1))
+	       typename Field::Element_ptr C, const size_t ldc_)
+		: F(G.field()), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F,n,1)),w1(FFLAS::fflas_new(F,m,1))
 	{
 		init(G,beta,C);
 	}
