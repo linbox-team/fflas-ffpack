@@ -339,7 +339,10 @@ namespace FFLAS {
 			fscalin(F, m, n, beta, C, ldc);
 		 	return C;
 		}
-		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+		Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
+		fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+		checker.check(ta,tb,alpha,A,lda,B,ldb,C);
+		return C;
 	}
 
 	template<typename Field, class ModeT, class ParSeq>

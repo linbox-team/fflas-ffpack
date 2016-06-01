@@ -31,5 +31,6 @@
 
 #include "checkers.h"
 #include "checker_pluq.inl"
+#include "checker_fgemm.inl"
 
 #endif
