@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
 	size_t k = 2000 ;
 	size_t n = 2000 ;
 	int nbw = -1 ;
-	int p=3;
+	int p=0;
 	int t=MAX_THREADS;
 	int NBK = -1;
 

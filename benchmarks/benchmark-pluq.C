@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
 	int v = 0;
 	int t=MAX_THREADS;
 	int NBK = -1;
-	bool par=true;
+	bool par=false;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
