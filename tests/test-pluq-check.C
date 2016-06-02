@@ -45,8 +45,6 @@
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-void test();
-
 int main(int argc, char** argv) {
 	//test();
 	size_t iter = 3 ;
@@ -109,28 +107,4 @@ int main(int argc, char** argv) {
 	std::cout << pass << "/" << iter << " tests were successful.\n";
 
 	return 0;
-}
-
-void test() {
-	Givaro::Integer q = 131071;
-	typedef Givaro::Modular<double> Field;
-	Field F(q);
-
-	for (size_t j=0; j<100; ++j) {
-		size_t m = rand() % 10000 + 1;
-		size_t n = rand() % 10000 + 1;
-
-		Field::Element_ptr A1 = FFLAS::fflas_new(F,m,n),
-			               C1 = FFLAS::fflas_new(F,m,n);
-
-		for(size_t i=0; i<m*n; ++i) {
-			*(A1+i) = F.one;
-		}
-
-		FFLAS::fassign(F, m, n, C1, n, A1, n);
-
-		FFLAS::fflas_delete(A1,C1);
-	}
-	
-	exit(0);
 }
