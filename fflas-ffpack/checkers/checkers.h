@@ -29,7 +29,6 @@
 #ifndef __FFLASFFPACK_checkers_H
 #define __FFLASFFPACK_checkers_H
 
-#include "fflas-ffpack/fflas-ffpack.h"
 #include <list>
 #include <vector>
 #include <iostream>
@@ -44,6 +43,7 @@
 #ifdef ENABLE_ALL_CHECKINGS
 	#define ENABLE_CHECKER_PLUQ 1
 	#define ENABLE_CHECKER_fgemm 1
+ 	#define ENABLE_CHECKER_ftrsm 1
 #endif
 
 
@@ -67,6 +67,11 @@ struct Checker_Empty {
 	template <class Field> using Checker_fgemm = Checker_Empty<Field>;
 #endif
 
+#ifdef ENABLE_CHECKER_ftrsm
+	template <class Field> class Checker_ftrsm;
+#else
+	template <class Field> using Checker_ftrsm = Checker_Empty<Field>;
+#endif
 
 
 

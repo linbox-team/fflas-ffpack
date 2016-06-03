@@ -27,6 +27,8 @@
  */
 #define  __FFLASFFPACK_SEQUENTIAL
 
+#define ENABLE_CHECKER_ftrsm 1
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
 

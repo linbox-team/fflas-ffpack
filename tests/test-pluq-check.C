@@ -46,7 +46,6 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 int main(int argc, char** argv) {
-	//test();
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
 	size_t m = 0;

@@ -35,6 +35,7 @@
 #ifndef __FFLASFFPACK_fflas_H
 #define __FFLASFFPACK_fflas_H
 
+#include "fflas-ffpack/checkers/checkers.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
