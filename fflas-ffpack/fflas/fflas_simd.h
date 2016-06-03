@@ -344,7 +344,7 @@ namespace FFLAS { /*  print helper */
 } // FFLAS
 
 namespace std {
-	// cannot be instanciated, T is not déductible
+	// cannot be instanciated, T is not deductible
 	template <class T>
 	inline std::ostream &operator<<(std::ostream &o, const typename Simd128<T>::vect_t &v) {
 		FFLAS::print<Simd128<T>>(o, v);
@@ -354,7 +354,7 @@ namespace std {
 
 #ifdef __FFLASFFPACK_USE_AVX
 namespace std {
-	// cannot be instanciated, T is not déductible
+	// cannot be instanciated, T is not deductible
 	template <class T>
 	inline std::ostream &operator<<(std::ostream &o, const typename Simd256<T>::vect_t &v) {
 		FFLAS::print(o, v);
