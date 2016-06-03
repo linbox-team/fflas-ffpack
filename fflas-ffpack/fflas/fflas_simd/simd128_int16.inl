@@ -169,17 +169,6 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srai_epi16(a, s); }
 
 	/*
-	* Shuffle 16-bit integers in a within 64-bit lanes using the control in imm8, and store the results in dst.
-	* Args   : [a0, ..., a7] int16_t
-	* Return : [a[s[0..1]], ..., a[s[6..7],a[4+s[0..1]], ..., a[4+s[6..7],] int16_t
-	*/
-	template<uint8_t s>
-	static INLINE CONST vect_t shuffle_twice(const vect_t a) {
-		a = _mm_shufflelo_epi16(a, s);
-		return _mm_shufflehi_epi16(a, s);
-	}
-
-	/*
 	* Shuffle 16-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   :	[a0, ..., a7] int16_t
 	* Return :	[a[s[0..3]], ..., a[s[28..31]] int16_t
@@ -210,6 +199,17 @@ template <> struct Simd128_impl<true, true, true, 2> : public Simd128i_base {
 	* Return :	[a4, b4, ..., a7, b7] int16_t
 	*/
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi16(a, b); }
+
+	/*
+	* Blend packed 16-bit integers from a and b using control mask imm8, and store the results in dst.
+	* Args   :	[a0, ..., a7] int16_t
+				[b0, ..., b7] int16_t
+	* Return :	[s[0]?a0:b0,   , s[7]?a7:b7] int16_t
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
+		return _mm_blend_epi16(a, b, s);
+	}
 
 	/*
 	* Add packed 16-bits integer in a and b, and store the results in vect_t.

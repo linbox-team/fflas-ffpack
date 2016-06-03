@@ -176,13 +176,15 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	}
 
 	/*
-	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
+	* Shuffle 64-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   : [a0, a1] int64_t
-	* Return : [a[s[0..1]], a[s[2..3]] int64_t
+	* Return : [a[s[0]], a[s[1]] int64_t
 	*/
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
-		return _mm_shuffle_epi32(a, (s & 1)?(3*4+2):(1*4+0)+4*((s & 2)?(3*4+2):(1*4+0)));
+		// Transform s = [d1 d0]_base2 to s1 = [2*d1+1 2*d1 2*d0+1 2*d0]_base4
+		constexpr uint8_t s1 = ((s & 1)?(3*4+2):(1*4+0))+16*((s & 2)?(3*4+2):(1*4+0));
+		return _mm_shuffle_epi32(a, s1);
 	}
 
 	/*
@@ -202,9 +204,23 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_epi64(a, b); }
 
 	/*
+	* Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+	* Return : [s[0]?a0:b0, s[1]?a3:b3] int64_t
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
+		// _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
+		// We have to transform s = [d1 d0]_base2 to s1 = [d1 d1 d1 d1 d0 d0 d0 d0]_base2
+		constexpr uint8_t s1 = (s & 0x1) * 15 + ((s & 0x2) << 3) * 15;
+		return _mm_blend_epi16(a, b, s1);
+	}
+
+	/*
 	* Add packed 64-bits integer in a and b, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	[b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [a0+b0, a1+b1]   int64_t
 	*/
 	static INLINE CONST vect_t add(const vect_t a, const vect_t b) { return _mm_add_epi64(a, b); }
@@ -214,7 +230,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Subtract packed 64-bit integers in b from packed 64-bit integers in a, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	[b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [a0-b0, a1-b1]  int64_t
 	*/
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) { return _mm_sub_epi64(a, b); }
@@ -224,8 +240,8 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the low 64
 	bits of the intermediate integers in vect_t.
-	* Args   : [a0, a1]	   int64_t
-	[b0, b1]	   int64_t
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
 	* Return : [a0*b0 smod 2^64, a1*b1 smod 2^64] int64_t
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
@@ -248,7 +264,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	* Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers, and store the high 64
 	bits of the intermediate integers in vect_t.
 	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [Floor(a0*b0/2^64), Floor(a1*b1/2^64)] int64_t
 	*/
 #ifdef __x86_64__
@@ -264,8 +280,8 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the low 32-bit integers from each packed 64-bit element in a and b, and store the signed 64-bit results
 	in vect_t.
-	* Args   : [a0, a1]	int64_t
-	*	   [b0, b1]	int64_t
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
 	* Return : [(a0 smod 2^32)*(b0 smod 2^32), (a1 smod 2^32)*(b1 smod 2^32)]	int64_t
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
@@ -274,10 +290,10 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers,
 	* keep the low 64 bits of the intermediate and add the low 64-bits of c.
-	* Args   :	[a0, a1]		int64_t
-			[b0, b1]		int64_t
-			[c0, c1]		int64_t
-	* Return :	[(a0*b0+c0) smod 2^64, (a1*b1+c1) smod 2^64]	int64_t
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+			   [c0, c1] int64_t
+	* Return : [(a0*b0+c0) smod 2^64, (a1*b1+c1) smod 2^64]	int64_t
 	*/
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) { return add(c, mul(a, b)); }
 
@@ -286,10 +302,10 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the low 32-bit integers from each packed 64-bit element in a and b,
 	* keep the signed 64-bit results and add the low 64-bits of c.
-	* Args   :	[a0, a1]		int64_t
-			[b0, b1]		int64_t
-			[c0, c1]		int64_t
-	* Return :	[((a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64,
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+			   [c0, c1] int64_t
+	* Return : [((a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64,
 	*		 ((a1 smod 2^32)*(b1 smod 2^32)+c1) smod 2^64]	int64_t
 	*/
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b) { return add(c, mulx(a, b)); }
@@ -299,10 +315,10 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers,
 	* and substract the low 64 bits of the intermediate from elements of c.
-	* Args   :	[a0, a1]		int64_t
-			[b0, b1]		int64_t
-			[c0, c1]		int64_t
-	* Return :	[(-a0*b0+c0) smod 2^64, (-a1*b1+c1) smod 2^64]	int64_t
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+			   [c0, c1] int64_t
+	* Return : [(-a0*b0+c0) smod 2^64, (-a1*b1+c1) smod 2^64]	int64_t
 	*/
 	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mul(a, b)); }
 
@@ -311,10 +327,10 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the low 32-bit integers from each packed 64-bit element in a and b,
 	* keep the signed 64-bit results and substract them from elements of c.
-	* Args   :	[a0, a1]		int64_t
-			[b0, b1]		int64_t
-			[c0, c1]		int64_t
-	* Return :	[(-(a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64,
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+			   [c0, c1] int64_t
+	* Return : [(-(a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64,
 	*		 (-(a1 smod 2^32)*(b1 smod 2^32)+c1) smod 2^64]	int64_t
 	*/
 	static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mulx(a, b)); }
@@ -324,10 +340,10 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers,
 	* and substract elements of c to the low 64-bits of the intermediate.
-	* Args   :	[a0, a1]		int64_t
-			[b0, b1]		int64_t
-			[c0, c1]		int64_t
-	* Return :	[(a0*b0-c0) smod 2^64, (a1*b1-c1) smod 2^64]	int64_t
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+			   [c0, c1] int64_t
+	* Return : [(a0*b0-c0) smod 2^64, (a1*b1-c1) smod 2^64]	int64_t
 	*/
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) { return sub(mul(a, b), c); }
 
@@ -336,10 +352,10 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Multiply the low 32-bit integers from each packed 64-bit element in a and b,
 	* keep the signed 64-bit results and substract elements of c from them.
-	* Args   :	[a0, a1]		int64_t
-			[b0, b1]		int64_t
-			[c0, c1]		int64_t
-	* Return :	[(-(a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64,
+	* Args   : [a0, a1] int64_t
+			   [b0, b1] int64_t
+			   [c0, c1] int64_t
+	* Return : [(-(a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64,
 	*		 (-(a1 smod 2^32)*(b1 smod 2^32)+c1) smod 2^64]	int64_t
 	*/
 	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { return sub(mulx(a, b), c); }
@@ -349,7 +365,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Compare packed 64-bits in a and b for equality, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [(a0==b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1==b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm_cmpeq_epi64(a, b); }
@@ -357,7 +373,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Compare packed 64-bits in a and b for greater-than, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [(a0>b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1>b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
@@ -375,7 +391,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Compare packed 64-bits in a and b for lesser-than, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [(a0<b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
@@ -393,7 +409,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Compare packed 64-bits in a and b for greater or equal than, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [(a0>=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1>=b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }
@@ -401,7 +417,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Compare packed 64-bits in a and b for lesser or equal than, and store the results in vect_t.
 	* Args   : [a0, a1] int64_t
-	*	   [b0, b1] int64_t
+			   [b0, b1] int64_t
 	* Return : [(a0<=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<=b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
@@ -564,8 +580,8 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	/*
 	* Multiply the packed 64-bit unsigned integers in a and b, producing intermediate 128-bit integers, and store the low 64
 	bits of the intermediate integers in vect_t.
-	* Args   : [a0, a1]	   uint64_t
-	[b0, b1]	   uint64_t
+	* Args   : [a0, a1] uint64_t
+			   [b0, b1] uint64_t
 	* Return : [a0*b0 mod 2^64, a1*b1 mod 2^64] uint64_t
 	*/
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
@@ -580,9 +596,9 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	/*
 	* Multiply the packed unsigned 64-bit integers in a and b, producing intermediate 128-bit integers,
 	* and store the high 64 bits of the intermediate integers in vect_t.
-	* Args   : [a0, a1] uint16_t
-	*	   [b0, b1 uint16_t
-	* Return : [Floor(a0*b0/2^16), Floor(a1*b1/2^16)] uint16_t
+	* Args   : [a0, a1] uint64_t
+			   [b0, b1] uint64_t
+	* Return : [Floor(a0*b0/2^16), Floor(a1*b1/2^16)] uint64_t
 	*/
 #ifdef __x86_64__
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
@@ -597,10 +613,9 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	/*
 	* Multiply the low unsigned 32-bit integers from each packed 64-bit element in a and b, and store the signed 64-bit results
 	in vect_t.
-	* Args   : [a0, a1, a2, a3]	uint64_t
-	*	   [b0, b1, b2, b3]	uint64_t
-	* Return : [(a0 mod 2^32)*(b0 mod 2^32), (a1 mod 2^32)*(b1 mod 2^32),
-	*	    (a2 mod 2^32)*(b2 mod 2^32), (a3 mod 2^32)*(b3 mod 2^32)]	uint64_t
+	* Args   : [a0, a1] uint64_t
+			   [b0, b1] uint64_t
+	* Return : [(a0 mod 2^32)*(b0 mod 2^32), (a1 mod 2^32)*(b1 mod 2^32)]	uint64_t
 	*/
 	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm_mul_epu32(a, b); }
 
@@ -668,26 +683,26 @@ INLINE CONST vect_t Simd128_impl<true,true,true,8>::mod(vect_t &C, const vect_t 
 	C = _mm_rem_epi64(C, P);
 #else
 	if (poweroftwo) {
-			Q = srl(C, 63);
-			vect_t un = set1(1);
-			T = sub(sll(un, shifter), un);
-			Q = add(C, vand(Q, T));
-			Q = sll(srl(Q, shifter), shifter);
-			C = sub(C, Q);
-			Q = vand(greater(zero(), Q), P);
-			C = add(C, Q);
-		} else {
-			Q = mulhi_fast(C, magic);
-			if (overflow) {
-					Q = add(Q, C);
-				}
-			Q = sra(Q, shifter);
-			vect_t q1 = Simd128_impl<true, true, false, 8>::mulx(Q, P);
-			vect_t q2 = sll(Simd128_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
-			C = sub(C, add(q1, q2));
-			T = greater_eq(C, P);
-			C = sub(C, vand(T, P));
+		Q = srl(C, 63);
+		vect_t un = set1(1);
+		T = sub(sll(un, shifter), un);
+		Q = add(C, vand(Q, T));
+		Q = sll(srl(Q, shifter), shifter);
+		C = sub(C, Q);
+		Q = vand(greater(zero(), Q), P);
+		C = add(C, Q);
+	} else {
+		Q = mulhi_fast(C, magic);
+		if (overflow) {
+			Q = add(Q, C);
 		}
+		Q = sra(Q, shifter);
+		vect_t q1 = Simd128_impl<true, true, false, 8>::mulx(Q, P);
+		vect_t q2 = sll(Simd128_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
+		C = sub(C, add(q1, q2));
+		T = greater_eq(C, P);
+		C = sub(C, vand(T, P));
+	}
 #endif
 	NORML_MOD(C, P, NEGP, MIN, MAX, Q, T);
 	return C;
