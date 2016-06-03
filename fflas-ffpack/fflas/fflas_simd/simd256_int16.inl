@@ -264,6 +264,17 @@ template <> struct Simd256_impl<true, true, true, 2> : public Simd256i_base {
 	}
 
 	/*
+	* Blend packed 16-bit integers from a and b in each 128 lane using control mask imm8, and store the results in dst.
+	* Args   :	[a0, ..., a15] int16_t
+				[b0, ..., b15] int16_t
+	* Return :	[s[0]?a0:b0,   , s[15]?a15:b15] int16_t
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t blend_twice(const vect_t a, const vect_t b) {
+		return _mm256_blend_epi16(a, b, s);
+	}
+
+	/*
 	* Add packed 16-bits integer in a and b, and store the results in vect_t.
 	* Args   :	[a0, ..., a15]		int16_t
 			[b0, ..., b15]		int16_t
