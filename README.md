@@ -42,7 +42,7 @@ For example on a x86_64 architecture:
  - run `./configure --enable-optimization --with-blas-libs="-latlas -lcblas"`
 - Using ATLAS in Fedora:
  - install the package `atlas-devel.x86_64`,
- - run `./configure --enable-optimization --with-blas-libs="-lsatlas"`.
+ - run `./configure --enable-optimization --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
 
 see INSTALL for further details.
 
