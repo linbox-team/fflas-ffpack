@@ -42,9 +42,9 @@ class Checker_fgemm {
 
 public:
 	Checker_fgemm(const Field &F_,
-	       const size_t m_, const size_t n_, const size_t k_,
-	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc_)
+	       		  const size_t m_, const size_t n_, const size_t k_,
+	       		  const typename Field::Element beta,
+	       		  typename Field::Element_ptr C, const size_t ldc_)
 		: F(F_), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F_,n,1)),w1(FFLAS::fflas_new(F_,m,1))
 	{			
 			typename Field::RandIter G(F);
@@ -52,9 +52,9 @@ public:
 	}
 
 	Checker_fgemm(typename Field::RandIter &G,
-	       const size_t m_, const size_t n_, const size_t k_,
-	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc_)
+	       		  const size_t m_, const size_t n_, const size_t k_,
+	       		  const typename Field::Element beta,
+	      		  typename Field::Element_ptr C, const size_t ldc_)
 		: F(G.field()), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F,n,1)),w1(FFLAS::fflas_new(F,m,1))
 	{
 		init(G,beta,C);
@@ -65,11 +65,11 @@ public:
 	}
 
 	inline bool check(const FFLAS::FFLAS_TRANSPOSE ta,
-	    	const FFLAS::FFLAS_TRANSPOSE tb,
-	    	const typename Field::Element alpha,
-	    	typename Field::ConstElement_ptr A, const size_t lda,
-	    	typename Field::ConstElement_ptr B, const size_t ldb,
-	    	typename Field::ConstElement_ptr C)
+	    			  const FFLAS::FFLAS_TRANSPOSE tb,
+	    			  const typename Field::Element alpha,
+	    			  typename Field::ConstElement_ptr A, const size_t lda,
+	    			  typename Field::ConstElement_ptr B, const size_t ldb,
+	    			  typename Field::ConstElement_ptr C)
 	{	
 		// w1 <- C.v - w1
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, C, ldc, v, 1, F.mOne, w1, 1);
