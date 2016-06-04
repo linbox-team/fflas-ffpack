@@ -1,5 +1,3 @@
-#define DEBUG 1
-
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -9,32 +7,31 @@
 int main(int argc, char** argv) {
 	srand (time(NULL));
 	typedef Givaro::Modular<double> Field;
-	Givaro::Integer q = 3;//131071;
+	Givaro::Integer q = 131071;
 	Field F(q);
-	typedef typename Field::Element Element;
 
+	typename Field::Element alpha,tmp;
 	Field::RandIter Rand(F);
 	Field::NonZeroRandIter NZRand(Rand);
-	Element tmp;
 
-	for (size_t i=0; i<100; ++i) {
+	for (size_t i=0; i<1000; ++i) {
 
-		size_t m = 5;//rand() % 1000 + 1;
-		size_t n = 3;//rand() % 1000 + 1;
-		Element alpha = rand() % 10 + 1;
+		size_t m = rand() % 10000 + 1;
+		size_t n = rand() % 10000 + 1;
+		F.init(alpha,rand() % 10000 + 1);
 		FFLAS::FFLAS_SIDE side = rand()%2?FFLAS::FflasLeft:FFLAS::FflasRight;
 		FFLAS::FFLAS_UPLO uplo = rand()%2?FFLAS::FflasLower:FFLAS::FflasUpper;
 		FFLAS::FFLAS_TRANSPOSE trans = rand()%2?FFLAS::FflasNoTrans:FFLAS::FflasTrans;
 		FFLAS::FFLAS_DIAG diag = rand()%2?FFLAS::FflasNonUnit:FFLAS::FflasUnit;
 		size_t k = (side==FFLAS::FflasLeft?m:n);
-		std::cout << alpha << "  " << side << "  " << uplo << "  " << trans << "  " << diag << "  \n";
+		//std::cout << alpha << "  " << side << "  " << uplo << "  " << trans << "  " << diag << "  \n";
 
 		Field::Element_ptr X = FFLAS::fflas_new(F,m,n);
 		Field::Element_ptr A = FFLAS::fflas_new(F,k,k);
 
 		for( size_t i = 0; i < m*n; ++i )
-				Rand.random( *(X+i) );
-		write_field(F,std::cerr<<"X:=",X,m,n,n,true) <<std::endl;
+			Rand.random( *(X+i) );
+		//write_field(F,std::cerr<<"X:=",X,m,n,n,true) <<std::endl;
 
 		for (size_t i=0;i<k;++i){
 			for (size_t j=0;j<i;++j)
@@ -43,13 +40,13 @@ int main(int argc, char** argv) {
 			for (size_t j=i+1;j<k;++j)
 				A[i*k+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
 		}
-		write_field(F,std::cerr<<"A:=",A,k,k,k,true) <<std::endl;
+		//write_field(F,std::cerr<<"A:=",A,k,k,k,true) <<std::endl;
 
-		Checker_ftrsm<Field> checker(F, m, n, X, n);
+		Checker_ftrsm<Field> checker(F, m, n, alpha, X, n);
 		FFLAS::ftrsm(F, side, uplo, trans, diag, m, n, alpha, A, k, X, n);
-		checker.check(side, uplo, trans, diag, alpha, A, k, X);
+		checker.check(side, uplo, trans, diag, A, k, X);
 
-		//FFLAS::fflas_delete(X,A);
+		FFLAS::fflas_delete(X,A);
 	}
 
 

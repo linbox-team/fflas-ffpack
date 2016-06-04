@@ -37,6 +37,8 @@
 // #define OLD_DYNAMIC_PEELING
 //#define DEBUG 1
 
+#define ENABLE_CHECKER_fgemm 1
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
