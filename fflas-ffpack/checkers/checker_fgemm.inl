@@ -47,6 +47,7 @@ public:
 	       		  typename Field::Element_ptr C, const size_t ldc_)
 		: F(F_), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F_,n,1)),w1(FFLAS::fflas_new(F_,m,1))
 	{			
+			//std::cout << "Verifing...";
 			typename Field::RandIter G(F);
 			init(G,beta,C);
 	}
@@ -81,7 +82,7 @@ public:
 		// w1 <- alpha.A.w2 - w1
 		FFLAS::fgemv(F, ta, m, k, alpha, A, lda, w2, 1, F.mOne, w1, 1);
 
-		FFLAS::fflas_delete(w2);
+		//FFLAS::fflas_delete(w2);
 
 		// is w1 == O ?
 		bool pass = FFLAS::fiszero(F, m, w1, 1);
@@ -94,8 +95,7 @@ private:
 		FFLAS::frand(F,G,n,v,1);
 
 		// w1 <- beta.C.v
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, C, ldc, v, 1, F.zero, w1, 1);
-		FFLAS::fscalin(F, m, 1, beta, w1, 1);
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, beta, C, ldc, v, 1, F.zero, w1, 1);
 	}
 
 };

@@ -41,18 +41,22 @@ class Checker_ftrsm {
 	size_t m,n,k,ldb;
 
 public:
-	Checker_ftrsm(const Field& F_, const size_t m_, const size_t n_, typename Field::ConstElement_ptr B, const size_t ldb_) 
-				: F(F_), v(FFLAS::fflas_new(F_,n_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), n(n_), ldb(ldb_)
+	Checker_ftrsm(const Field& F_, const size_t m_, const size_t n_,
+				  const typename Field::Element alpha,
+				  typename Field::ConstElement_ptr B, const size_t ldb_) 
+			: F(F_), v(FFLAS::fflas_new(F_,n_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), n(n_), ldb(ldb_)
 	{
-		std::cout << "Verifing...\n";
+		//std::cout << "Verifing...";
 		typename Field::RandIter G(F);
-		init(G,B);
+		init(G,B,alpha);
 	}
 
-	Checker_ftrsm(typename Field::RandIter &G, const size_t m_, const size_t n_, typename Field::ConstElement_ptr B, const size_t ldb_)
-				: F(G.field()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_), ldb(ldb_)
+	Checker_ftrsm(typename Field::RandIter &G, const size_t m_, const size_t n_,
+				  const typename Field::Element alpha,
+				  typename Field::ConstElement_ptr B, const size_t ldb_)
+			: F(G.field()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_), ldb(ldb_)
 	{
-		init(G,B);
+		init(G,B,alpha);
 	}
 
 	~Checker_ftrsm() {
@@ -63,26 +67,25 @@ public:
 					  const FFLAS::FFLAS_UPLO uplo,
 					  const FFLAS::FFLAS_TRANSPOSE trans,
 					  const FFLAS::FFLAS_DIAG diag,
-					  const typename Field::Element alpha,
 					  typename Field::ConstElement_ptr A, size_t lda,
 					  typename Field::ConstElement_ptr X) {
 		k = (side==FFLAS::FflasLeft?m:n);
 		typename Field::Element_ptr v1 = FFLAS::fflas_new(F,k,1);
-		write_field(F,std::cerr<<"X:=",X,m,n,ldb,true) <<std::endl;
+		//write_field(F,std::cerr<<"X:=",X,m,n,ldb,true) <<std::endl;
 
-		// (Left) v1 <- X.v OR (Right) v1 <- alpha.A.v
+		// (Left) v1 <- X.v OR (Right) v1 <- A.v
 		if (side==FFLAS::FflasLeft)
 			FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldb, v, 1, F.zero, v1, 1);
 		else
-			FFLAS::fgemv(F, trans, k, k, alpha, A, lda, v, 1, F.zero, v1, 1);
-		write_field(F,std::cerr<<"v1:=",v1,k,1,1,true) <<std::endl;
+			FFLAS::fgemv(F, trans, k, k, F.one, A, lda, v, 1, F.zero, v1, 1);
+		//write_field(F,std::cerr<<"v1:=",v1,k,1,1,true) <<std::endl;
 
-		// (Left) w <- alpha.A.v1 - w OR (Right) w <- X.v1 - w
+		// (Left) w <- A.v1 - w OR (Right) w <- X.v1 - w
 		if (side==FFLAS::FflasLeft)
-			FFLAS::fgemv(F, trans, k, k, alpha, A, lda, v1, 1, F.mOne, w, 1);
+			FFLAS::fgemv(F, trans, k, k, F.one, A, lda, v1, 1, F.mOne, w, 1);
 		else 
 			FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldb, v1, 1, F.mOne, w, 1);
-		write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
+		//write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
 
 		//FFLAS::fflas_delete(v1);
 
@@ -92,13 +95,13 @@ public:
 	}
 
 private:	
-	inline void init(typename Field::RandIter &G, typename Field::ConstElement_ptr B) {
+	inline void init(typename Field::RandIter &G, typename Field::ConstElement_ptr B, const typename Field::Element alpha) {
 		FFLAS::frand(F,G,n,v,1);
-		write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
+		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
 
-		// w <- B.v
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, B, ldb, v, 1, F.zero, w, 1);
-		write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
+		// w <- alpha.B.v
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, alpha, B, ldb, v, 1, F.zero, w, 1);
+		//write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
 	}
 };
 
