@@ -43,6 +43,7 @@ struct Simd256i_base {
 	*/
 	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
 
+#if defined(__FFLASFFPACK_USE_AVX2)
 	/*
 	* Compute the bitwise AND and store the results in vect_t.
 	* Args   : [a0, ..., a255]
@@ -101,7 +102,7 @@ struct Simd256i_base {
 	* Return : [a1, b1] int128_t
 	*/
 	static INLINE CONST vect_t unpackhi128(const vect_t a, const vect_t b) { return permute128<0x31>(a, b); }
-
+#endif
 };
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd256_impl;
