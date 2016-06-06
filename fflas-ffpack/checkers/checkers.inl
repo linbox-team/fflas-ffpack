@@ -33,5 +33,6 @@
 #include "checker_pluq.inl"
 #include "checker_fgemm.inl"
 #include "checker_ftrsm.inl"
+#include "checker_invert.inl"
 
 #endif

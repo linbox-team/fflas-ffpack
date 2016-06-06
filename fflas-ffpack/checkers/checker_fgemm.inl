@@ -36,7 +36,7 @@ class FailureFgemmCheck {};
 template <class Field> 
 class Checker_fgemm {
 
-	const Field& F;	// add & (BUG)
+	const Field& F;
 	const size_t m,n,k,ldc;
 	typename Field::Element_ptr v,w1;
 
@@ -82,7 +82,7 @@ public:
 		// w1 <- alpha.A.w2 - w1
 		FFLAS::fgemv(F, ta, m, k, alpha, A, lda, w2, 1, F.mOne, w1, 1);
 
-		//FFLAS::fflas_delete(w2);
+		FFLAS::fflas_delete(w2);
 
 		// is w1 == O ?
 		bool pass = FFLAS::fiszero(F, m, w1, 1);

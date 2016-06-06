@@ -87,7 +87,7 @@ public:
 			FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldb, v1, 1, F.mOne, w, 1);
 		//write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
 
-		//FFLAS::fflas_delete(v1);
+		FFLAS::fflas_delete(v1);
 
 		bool pass = FFLAS::fiszero(F,m,1,w,1);
 		if (!pass) throw FailureTrsmCheck();

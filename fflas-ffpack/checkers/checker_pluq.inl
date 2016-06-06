@@ -36,7 +36,7 @@ class FailurePLUQcheck {};
 template <class Field> 
 class Checker_PLUQ {
 
-	const Field& F;	// add & (BUG)
+	const Field& F;
 	typename Field::Element_ptr v,w;
 	const size_t m,n;
 
@@ -44,7 +44,6 @@ public:
 	Checker_PLUQ(const Field& F_, typename Field::Element_ptr A, size_t m_, size_t n_) 
 				: F(F_), v(FFLAS::fflas_new(F_,n_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), n(n_)
 	{
-		// v is a random vector
 		typename Field::RandIter G(F);
 		init(G,A);
 	}
