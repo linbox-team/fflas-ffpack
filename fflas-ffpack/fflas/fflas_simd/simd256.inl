@@ -44,6 +44,23 @@ struct Simd256i_base {
 	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
 
 #if defined(__FFLASFFPACK_USE_AVX2)
+
+	/*
+	* Shift packed 128-bit integers in a left by s bits while shifting in zeros, and store the results in vect_t.
+	* Args   : [a0, a1] int128_t
+	* Return : [a0 << (s*8), a1 << (s*8)] int128_t
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t sll128(const vect_t a) { return _mm256_bslli_epi128(a, s); }
+
+	/*
+	* Shift packed 128-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
+	* Args   : [a0, a1] int128_t
+	* Return : [a0 << (s*8), a1 << (s*8)] int128_t
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t srl128(const vect_t a) { return _mm256_bsrli_epi128(a, s); }
+
 	/*
 	* Compute the bitwise AND and store the results in vect_t.
 	* Args   : [a0, ..., a255]
@@ -75,7 +92,6 @@ struct Simd256i_base {
 	* Return : [a0 AND (NOT b0), ..., a255 AND (NOT b255)]
 	*/
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
-
 	/*
 	* Shuffle 128-bit integers in a and b using the control in imm8, and store the results in dst.
 	* Args   :	[a0, a1] int128_t
