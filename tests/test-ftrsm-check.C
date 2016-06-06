@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 	Field::RandIter Rand(F);
 	Field::NonZeroRandIter NZRand(Rand);
 
-	for (size_t i=0; i<1000; ++i) {
+	for (size_t i=0; i<100; ++i) {
 
 		size_t m = rand() % 10000 + 1;
 		size_t n = rand() % 10000 + 1;

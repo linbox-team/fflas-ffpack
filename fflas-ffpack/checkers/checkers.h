@@ -44,6 +44,7 @@
 	#define ENABLE_CHECKER_PLUQ 1
 	#define ENABLE_CHECKER_fgemm 1
  	#define ENABLE_CHECKER_ftrsm 1
+ 	#define ENABLE_CHECKER_invert 1
 #endif
 
 
@@ -73,6 +74,10 @@ struct Checker_Empty {
 	template <class Field> using Checker_ftrsm = Checker_Empty<Field>;
 #endif
 
-
+#ifdef ENABLE_CHECKER_invert
+	template <class Field> class Checker_invert;
+#else
+	template <class Field> using Checker_invert = Checker_Empty<Field>;
+#endif
 
 #endif
