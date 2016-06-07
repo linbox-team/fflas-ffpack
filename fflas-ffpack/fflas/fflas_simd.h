@@ -330,7 +330,7 @@ namespace FFLAS { /*  print helper */
 	inline std::ostream &print(std::ostream &os, const typename simdT::vect_t &P) {
 		typename simdT::scalar_t p[simdT::vect_size];
 		os << '<';
-		simdT::store(p, P);
+		simdT::storeu(p, P);
 		for (size_t i = 0; i < simdT::vect_size; ++i) {
 			os << p[i];
 			if (i < simdT::vect_size - 1)
