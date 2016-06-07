@@ -28,9 +28,9 @@ int main(int argc, char** argv) {
 
 	Field::RandIter Rand(F);
 
-	for (size_t i=0; i<10; ++i) {
+	for (size_t i=0; i<1; ++i) {
 
-		size_t n = rand() % 10000 + 1;
+		size_t n = 3;//rand() % 10000 + 1;
 
 		Field::Element_ptr A = FFLAS::fflas_new(F,n,n);
 		Polynomial g(n);
@@ -38,11 +38,11 @@ int main(int argc, char** argv) {
 		for( size_t i = 0; i < n*n; ++i )
 			Rand.random( *(A+i) );
 
-		//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
+		write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
 		Checker_charpoly<Field,Polynomial> checker(F,n,A);
 		FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
-		//printPolynomial(F, g);
-		//checker.check(A,);
+		printPolynomial(F,g);
+		checker.check(g);
 
 		FFLAS::fflas_delete(A);
 	}
