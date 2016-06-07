@@ -37,70 +37,122 @@ template <class Field, class Polynomial>
 class Checker_charpoly {
 
 	const Field& F;
-	typename Field::Element lambda;
-	typename Field::Element_ptr Ac;
+	typename Field::Element lambda,det;
 	size_t n;
 
 public:
-	Checker_charpoly(const Field& F_, const size_t n_, typename Field::ConstElement_ptr A) 
-			: F(F_), Ac(FFLAS::fflas_new(F_,n_,n_)), n(n_)
+	Checker_charpoly(const Field& F_, const size_t n_, typename Field::Element_ptr A) 
+			: F(F_), n(n_)
 	{
-		//std::cout << "Verifing...";
 		typename Field::RandIter G(F);
-		//Checker_charpoly(G,n_,A);
+		Checker_charpoly(G,n_,A);
+	}
 
+	Checker_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::Element_ptr A)
+			: F(G.ring()), n(n_)
+	{
 		// random lambda
 		G.random(lambda);
-		//std::cout << "lambda= " << lambda << std::endl;
+		std::cout << "lambda= " << lambda << std::endl;
 
-		// Ac <- A - lambda.I
-		for (size_t i=0; i<n; ++i)
-			for (size_t j=0; j<n; ++j) {
-				if (i==j) F.sub(*(Ac+i*n+j),*(A+i*n+j),lambda);
-				else F.assign(*(Ac+i*n+j),*(A+i*n+j));
-			}
-		//write_field(F,std::cerr<<"Ac=",Ac,n,n,n,true) <<std::endl;
-
-		typename Field::Element_ptr w,	Av = FFLAS::fflas_new(F,n,1),
-										v = FFLAS::fflas_new(F,n,1);
+		typename Field::Element_ptr v = FFLAS::fflas_new(F,n,1),
+									w = FFLAS::fflas_new(F,n,1);
 		FFLAS::frand(F,G,n,v,1);
 		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
 
-		// Av <- -A.v
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, n, v, 1, F.zero, Av, 1);
+		// w <- -A.v
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, n, v, 1, F.zero, w, 1);
 
-		// Av <- lambda.v + w
-		FFLAS::faxpy(F, n, lambda, v, 1, Av, 1);
+		if (!F.isZero(lambda)) {
+			// w <- lambda.v + w
+			FFLAS::faxpy(F, n, lambda, v, 1, w, 1);
 
-		// w <- PLUQ.v
-		Checker_PLUQ<Field> checker (F,Ac,n,n);
+			// A <- A - lambda.I
+			for (size_t i=0; i<n; ++i)
+				F.sub(*(A+i*n+i),*(A+i*n+i),lambda);
+		}
+
+		// P,A,Q <- PLUQ(A)
 		size_t *P = FFLAS::fflas_new<size_t>(n);
 		size_t *Q = FFLAS::fflas_new<size_t>(n);
-		size_t r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
-		//write_field(F,std::cerr<<"L,U:=",Ac,n,n,n,true) <<std::endl;
-		w = checker.computePLUQ(Ac,r,P,Q,v);
-		//write_field(F,std::cerr<<"w:=",w,n,1,1,true) <<std::endl;
+		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, A, n, P, Q);
 
-		// w <- Av + w
-		FFLAS::faxpy(F, n, F.one, Av, 1, w, 1);
-		//write_field(F,std::cerr<<"w:=",w,n,1,1,true) <<std::endl;
+		// compute the determinant of A
+		F.init(det,1.0);
+		for (size_t i=0; i<n; ++i)
+			F.mul(det,det,*(A+i*n+i));
+		if (n%2 == 1) F.neg(det,det);
+		std::cout << "det= "; F.write(std::cout,det); std::cout << std::endl;
+
+		// A <- P.L.U.Q (get the initial A-lambda.I)
+		pluq(A,P,Q,R);
+
+		// w <- A.v + w
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, n, v, 1, F.one, w, 1);
+
+		// A <- A + lambda.I (restore A to initial matrix)
+		if (!F.isZero(lambda))
+			for (size_t i=0; i<n; ++i)
+					F.add(*(A+i*n+i),*(A+i*n+i),lambda);
 
 		// is w == 0 ?
 		bool pass = FFLAS::fiszero(F,n,1,w,1);
+
+		FFLAS::fflas_delete(v,w);
+
 		if (!pass) throw FailureCharpolyCheck();
-	}
-
-	Checker_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::ConstElement_ptr A)
-			: F(G.ring()), Ac(FFLAS::fflas_new(F,n,n)), n(n_)
-	{
-
 	}
 
 	~Checker_charpoly() {
 	}
 
-	inline bool check(typename Field::ConstElement_ptr A) {
+	inline bool check(Polynomial &g) {
+		typename Field::Element h,t;
+		F.init(h,g[0]);
 
+		for (size_t i=1; i<g.size(); ++i) {
+			F.init(t,g[i]);
+			for (size_t j=0; j<i; ++j)
+				F.mul(t,t,lambda);
+			F.add(h,h,t);
+		}
+		std::cout << "h= "; F.write(std::cout,h); std::cout << std::endl;
+
+		// is h == det ?
+		bool pass = F.areEqual(h,det);
+		if (!pass) throw FailureCharpolyCheck();
+
+		return pass;
+	}
+
+	// TODO: optimize this function
+	inline void pluq(typename Field::Element_ptr A, size_t *P, size_t *Q, size_t R) {
+		typename Field::Element_ptr L,U;
+		L = FFLAS::fflas_new(F,n,R);
+		U = FFLAS::fflas_new(F,R,n);
+
+		typename Field::Element zero,one;
+		F.init(zero,0.0);
+		F.init(one,1.0);
+		for (size_t  i=0; i<R; ++i){
+			for (size_t j=0; j<i; ++j)
+				F.assign ( *(U + i*n + j), zero);
+			for (size_t j=i; j<n; ++j)
+				F.assign (*(U + i*n + j), *(A+ i*n+j));
+		}
+		for ( size_t j=0; j<R; ++j ){
+			for (size_t i=0; i<=j; ++i )
+				F.assign( *(L+i*R+j), zero);
+			F.assign(*(L+j*R+j), one);
+			for (size_t i=j+1; i<n; i++)
+				F.assign( *(L + i*R+j), *(A+i*n+j));
+		}
+
+		FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,n, L, R, P);
+		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
+		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,R,1.0, L,R, U,n, 0.0, A,n);
+
+		FFLAS::fflas_delete(L,U);
 	}
 };
 
