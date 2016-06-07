@@ -34,5 +34,6 @@
 #include "checker_fgemm.inl"
 #include "checker_ftrsm.inl"
 #include "checker_invert.inl"
+#include "checker_charpoly.inl"
 
 #endif
