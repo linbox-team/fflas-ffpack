@@ -33,42 +33,74 @@
 
 class FailureCharpolyCheck {};
 
-template <class Field> 
+template <class Field, class Polynomial> 
 class Checker_charpoly {
 
 	const Field& F;
-	typename Field::Element_ptr v,w;
-	size_t m;
+	typename Field::Element lambda;
+	typename Field::Element_ptr Ac;
+	size_t n;
 
 public:
-	Checker_charpoly(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-			: F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
+	Checker_charpoly(const Field& F_, const size_t n_, typename Field::ConstElement_ptr A) 
+			: F(F_), Ac(FFLAS::fflas_new(F_,n_,n_)), n(n_)
 	{
 		//std::cout << "Verifing...";
 		typename Field::RandIter G(F);
-		Checker_charpoly(G,m_,A,lda_);
+		//Checker_charpoly(G,n_,A);
+
+		// random lambda
+		G.random(lambda);
+		//std::cout << "lambda= " << lambda << std::endl;
+
+		// Ac <- A - lambda.I
+		for (size_t i=0; i<n; ++i)
+			for (size_t j=0; j<n; ++j) {
+				if (i==j) F.sub(*(Ac+i*n+j),*(A+i*n+j),lambda);
+				else F.assign(*(Ac+i*n+j),*(A+i*n+j));
+			}
+		//write_field(F,std::cerr<<"Ac=",Ac,n,n,n,true) <<std::endl;
+
+		typename Field::Element_ptr w,	Av = FFLAS::fflas_new(F,n,1),
+										v = FFLAS::fflas_new(F,n,1);
+		FFLAS::frand(F,G,n,v,1);
+		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
+
+		// Av <- -A.v
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, n, v, 1, F.zero, Av, 1);
+
+		// Av <- lambda.v + w
+		FFLAS::faxpy(F, n, lambda, v, 1, Av, 1);
+
+		// w <- PLUQ.v
+		Checker_PLUQ<Field> checker (F,Ac,n,n);
+		size_t *P = FFLAS::fflas_new<size_t>(n);
+		size_t *Q = FFLAS::fflas_new<size_t>(n);
+		size_t r = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
+		//write_field(F,std::cerr<<"L,U:=",Ac,n,n,n,true) <<std::endl;
+		w = checker.computePLUQ(Ac,r,P,Q,v);
+		//write_field(F,std::cerr<<"w:=",w,n,1,1,true) <<std::endl;
+
+		// w <- Av + w
+		FFLAS::faxpy(F, n, F.one, Av, 1, w, 1);
+		//write_field(F,std::cerr<<"w:=",w,n,1,1,true) <<std::endl;
+
+		// is w == 0 ?
+		bool pass = FFLAS::fiszero(F,n,1,w,1);
+		if (!pass) throw FailureCharpolyCheck();
 	}
 
-	Checker_charpoly(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-			: F(G.ring()), v(FFLAS::fflas_new(F,m_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), lda(lda_)
+	Checker_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::ConstElement_ptr A)
+			: F(G.ring()), Ac(FFLAS::fflas_new(F,n,n)), n(n_)
 	{
-		FFLAS::frand(F,G,m,v,1);
 
-		// w <- A.v
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.zero, w, 1);
 	}
 
 	~Checker_charpoly() {
-		FFLAS::fflas_delete(v,w);
 	}
 
-	inline bool check(typename Field::ConstElement_ptr A, int nullity) {
-		// w <- A.v - w
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.mOne, w, 1);
+	inline bool check(typename Field::ConstElement_ptr A) {
 
-		bool pass = FFLAS::fiszero(F,m,1,w,1) || nullity != 0;
-		if (!pass) throw FailurecharpolyCheck();
-		return pass;
 	}
 };
 

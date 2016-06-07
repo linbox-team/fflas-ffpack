@@ -45,6 +45,7 @@
 	#define ENABLE_CHECKER_fgemm 1
  	#define ENABLE_CHECKER_ftrsm 1
  	#define ENABLE_CHECKER_invert 1
+ 	#define ENABLE_CHECKER_charpoly 1
 #endif
 
 
@@ -78,6 +79,12 @@ struct Checker_Empty {
 	template <class Field> class Checker_invert;
 #else
 	template <class Field> using Checker_invert = Checker_Empty<Field>;
+#endif
+
+#ifdef ENABLE_CHECKER_charpoly
+	template <class Field, class Polynomial> class Checker_charpoly;
+#else
+	template <class Field, class Polynomial> using Checker_charpoly = Checker_Empty<Field>;
 #endif
 
 #endif
