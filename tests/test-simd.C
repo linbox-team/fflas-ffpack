@@ -370,28 +370,35 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 template<class Element>
 bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
+#ifdef __FFLASFFPACK_USE_SIMD
 	sse = test_float_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
 	if(!sse)
 		std::cout << "bug sse" << std::endl;
 	else
 		std::cout << "SSE OK" << std::endl;
+#endif
+
+#ifdef __FFLASFFPACK_USE_AVX
 	avx = test_float_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
 	if(!avx)
 		std::cout << "bug avx" << std::endl;
 	else
 		std::cout << "AVX OK" << std::endl;
+#endif
 	return sse && avx;
 }
 
 template<class Element>
 bool test_integer(size_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
+#ifdef __FFLASFFPACK_USE_SIMD
 	sse = test_integer_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
 	if(!sse)
 		std::cout << "bug sse" << std::endl;
 	else
 		std::cout << "SSE OK" << std::endl;
-#ifdef __AVX2__	
+#endif
+#ifdef __FFLASFFPACK_USE_AVX2
 	avx = test_integer_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
 	if(!avx)
 		std::cout << "bug avx" << std::endl;
