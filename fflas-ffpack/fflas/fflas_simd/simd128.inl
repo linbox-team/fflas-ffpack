@@ -49,7 +49,7 @@ struct Simd128i_base {
 	* Return : [a0 << (s*8)] int128_t
 	*/
 	template<uint8_t s>
-	static INLINE CONST vect_t sll128(const vect_t a) { return _mm_bslli_si128(a, s); }
+	static INLINE CONST vect_t sll128(const vect_t a) { return _mm_slli_si128(a, s); }
 
 	/*
 	* Shift packed 128-bit integers in a right by s while shifting in zeros, and store the results in vect_t.
@@ -57,7 +57,7 @@ struct Simd128i_base {
 	* Return : [a0 >> (s*8)] int128_t
 	*/
 	template<uint8_t s>
-	static INLINE CONST vect_t srl128(const vect_t a) { return _mm_bsrli_si128(a, s); }
+	static INLINE CONST vect_t srl128(const vect_t a) { return _mm_srli_si128(a, s); }
 
 	/*
 	* Compute the bitwise AND and store the results in vect_t.
