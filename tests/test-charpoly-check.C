@@ -22,29 +22,29 @@ void printPolynomial (const Field &F, Polynomial &v)
 int main(int argc, char** argv) {
 	srand (time(NULL));
 	typedef Givaro::Modular<double> Field;
-	Givaro::Integer q = 5;//rand()%10000;//131071;
+	Givaro::Integer q = 131071;
 	Field F(q);
 	typedef std::vector<Field::Element> Polynomial;
 
 	Field::RandIter Rand(F);
+	Field::Element_ptr A = FFLAS::fflas_new(F,1000,1000);
 
-	for (size_t i=0; i<1; ++i) {
+	for (size_t i=0; i<1000; ++i) {
 
-		size_t n = 3;//rand() % 10000 + 1;
+		size_t n = rand() % 1000 + 1;
 
-		Field::Element_ptr A = FFLAS::fflas_new(F,n,n);
 		Polynomial g(n);
 
 		for( size_t i = 0; i < n*n; ++i )
 			Rand.random( *(A+i) );
 
-		write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
+		//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
 		Checker_charpoly<Field,Polynomial> checker(F,n,A);
 		FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
-		printPolynomial(F,g);
+		//printPolynomial(F,g);
 		checker.check(g);
 
-		FFLAS::fflas_delete(A);
+		std::cout << "Test " << i << "/100 successful\n";
 	}
 
 
