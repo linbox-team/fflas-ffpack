@@ -56,7 +56,7 @@ public:
 	       		  const size_t m_, const size_t n_, const size_t k_,
 	       		  const typename Field::Element beta,
 	      		  typename Field::Element_ptr C, const size_t ldc_)
-		: F(G.field()), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F,n,1)),w1(FFLAS::fflas_new(F,m,1))
+		: F(G.ring()), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F,n,1)),w1(FFLAS::fflas_new(F,m,1))
 	{
 		init(G,beta,C);
 	}
@@ -86,7 +86,7 @@ public:
 
 		// is w1 == O ?
 		bool pass = FFLAS::fiszero(F, m, w1, 1);
-		if (!pass) throw FailureFgemmCheck();
+		//if (!pass) throw FailureFgemmCheck();
 		return pass;
 	}
 

@@ -63,11 +63,11 @@ public:
 	}
 
 	inline bool check(typename Field::ConstElement_ptr A, int nullity) {
-		// w <- A.v - w
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.mOne, w, 1);
+		// v <- A.w - v
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, w, 1, F.mOne, v, 1);
 
-		bool pass = FFLAS::fiszero(F,m,1,w,1) || nullity != 0;
-		if (!pass) throw FailureInvertCheck();
+		bool pass = FFLAS::fiszero(F,m,1,v,1) || nullity != 0;
+		//if (!pass) throw FailureInvertCheck();
 		return pass;
 	}
 };

@@ -49,7 +49,7 @@ public:
 	}
 
 	Checker_PLUQ(typename Field::RandIter &G, typename Field::Element_ptr A, size_t m_, size_t n_)
-				: F(G.field()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_)
+				: F(G.ring()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_)
 	{
 		init(G,A);
 	}
@@ -118,7 +118,7 @@ public:
 
 		FFLAS::fflas_delete(_w);
 
-		if (!pass) throw FailurePLUQcheck();
+		//if (!pass) throw FailurePLUQcheck();
 
 		return pass;
 	}

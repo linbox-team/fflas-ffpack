@@ -54,7 +54,7 @@ public:
 	Checker_ftrsm(typename Field::RandIter &G, const size_t m_, const size_t n_,
 				  const typename Field::Element alpha,
 				  typename Field::ConstElement_ptr B, const size_t ldb_)
-			: F(G.field()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_), ldb(ldb_)
+			: F(G.ring()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_), ldb(ldb_)
 	{
 		init(G,B,alpha);
 	}
@@ -90,7 +90,7 @@ public:
 		FFLAS::fflas_delete(v1);
 
 		bool pass = FFLAS::fiszero(F,m,1,w,1);
-		if (!pass) throw FailureTrsmCheck();
+		//if (!pass) throw FailureTrsmCheck();
 		return pass;
 	}
 

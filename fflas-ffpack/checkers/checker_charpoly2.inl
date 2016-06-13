@@ -39,7 +39,6 @@ class Checker_charpoly {
 	const Field& F;
 	const size_t n;
 	typename Field::Element lambda, det;
-	bool pass;
 
 public:
 	Checker_charpoly(const Field& F_, const size_t n_, typename Field::Element_ptr A) 
@@ -72,10 +71,41 @@ public:
 		//std::cout << "h= "; F.write(std::cout,h); std::cout << std::endl;
 
 		// is h == det ?
-		pass = pass && F.areEqual(h,det);
-		//if (!pass) throw FailureCharpolyCheck();
+		bool pass = F.areEqual(h,det);
+		if (!pass) throw FailureCharpolyCheck();
 
 		return pass;
+	}
+
+	//inline typename Field:Element eval_poly(Polynomial &g, typename Field::Element lambda) {
+
+	//}
+
+	// TODO: optimize this function
+	inline void pluq(typename Field::Element_ptr A, size_t *P, size_t *Q, size_t R) {
+		typename Field::Element_ptr L,U;
+		L = FFLAS::fflas_new(F,n,R);
+		U = FFLAS::fflas_new(F,R,n);
+
+		for (size_t  i=0; i<R; ++i){
+			for (size_t j=0; j<i; ++j)
+				F.assign ( *(U + i*n + j), F.zero);
+			for (size_t j=i; j<n; ++j)
+				F.assign (*(U + i*n + j), *(A+ i*n+j));
+		}
+		for ( size_t j=0; j<R; ++j ){
+			for (size_t i=0; i<=j; ++i )
+				F.assign( *(L+i*R+j), F.zero);
+			F.assign(*(L+j*R+j), F.one);
+			for (size_t i=j+1; i<n; i++)
+				F.assign( *(L + i*R+j), *(A+i*n+j));
+		}
+
+		FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,n, L, R, P);
+		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
+		FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n,n,R,1.0, L,R, U,n, 0.0, A,n);
+
+		FFLAS::fflas_delete(L,U);
 	}
 
 private:
@@ -85,8 +115,7 @@ private:
 		//std::cout << "lambda= " << lambda << std::endl;
 
 		typename Field::Element_ptr v = FFLAS::fflas_new(F,n,1),
-									w = FFLAS::fflas_new(F,n,1),
-									Ac = FFLAS::fflas_new(F,n,n);
+									w = FFLAS::fflas_new(F,n,1);
 		FFLAS::frand(F,G,n,v,1);
 		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
 
@@ -96,35 +125,24 @@ private:
 		if (!F.isZero(lambda)) {
 			// w <- lambda.v + w
 			FFLAS::faxpy(F, n, lambda, v, 1, w, 1);
+
+			// A <- A - lambda.I
+			for (size_t i=0; i<n; ++i)
+				F.sub(*(A+i*n+i),*(A+i*n+i),lambda);
 		}
 
-		// Ac <- A - lambda.I
-		for (size_t i=0; i<n; ++i)
-			for (size_t j=0; j<n; ++j) {
-				if (i==j) F.sub(*(Ac+i*n+i),*(A+i*n+i),lambda);
-				else F.assign(*(Ac+i*n+j),*(A+i*n+j));
-			}
-
-		// w <- Ac.v + w
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, Ac, n, v, 1, F.one, w, 1);
-
-		// is w == 0 ?
-		pass = FFLAS::fiszero(F,n,1,w,1);
-		FFLAS::fflas_delete(v,w);
-		//if (!pass) throw FailureCharpolyCheck();
-
-		// P,Ac,Q <- PLUQ(Ac)
+		// P,A,Q <- PLUQ(A)
 		size_t *P = FFLAS::fflas_new<size_t>(n);
 		size_t *Q = FFLAS::fflas_new<size_t>(n);
-		FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
+		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, A, n, P, Q);
 		//std::cout << "rang= " << R << std::endl;
 		//write_perm(std::cout<<"P= ",P,n);
 		//write_perm(std::cout<<"Q= ",Q,n);
 
 		// compute the determinant of A
-		F.init(det,*Ac);
+		F.init(det,*A);
 		for (size_t i=1; i<n; ++i)
-			F.mul(det,det,*(Ac+i*n+i));
+			F.mul(det,det,*(A+i*n+i));
 		if (n%2 == 1) F.neg(det,det);
 
 		// count the number of permutations
@@ -136,7 +154,23 @@ private:
 		if (t%2 == 1) F.neg(det,det);
 		//std::cout << "det= "; F.write(std::cout,det); std::cout << std::endl;
 
-		FFLAS::fflas_delete(Ac);
+		// A <- P.L.U.Q (get the initial A-lambda.I)
+		pluq(A,P,Q,R);
+
+		// w <- A.v + w
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, n, v, 1, F.one, w, 1);
+
+		// A <- A + lambda.I (restore A to initial matrix)
+		if (!F.isZero(lambda))
+			for (size_t i=0; i<n; ++i)
+					F.add(*(A+i*n+i),*(A+i*n+i),lambda);
+
+		// is w == 0 ?
+		bool pass = FFLAS::fiszero(F,n,1,w,1);
+
+		FFLAS::fflas_delete(v,w);
+
+		if (!pass) throw FailureCharpolyCheck();
 	}
 };
 

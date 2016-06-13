@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
 	Field::RandIter Rand(F);
 	Field::Element_ptr A = FFLAS::fflas_new(F,1000,1000);
 
+	size_t p = 0;
 	for (size_t i=0; i<1000; ++i) {
 
 		size_t n = rand() % 1000 + 1;
@@ -42,12 +43,10 @@ int main(int argc, char** argv) {
 		Checker_charpoly<Field,Polynomial> checker(F,n,A);
 		FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
 		//printPolynomial(F,g);
-		checker.check(g);
-
-		std::cout << "Test " << i << "/100 successful\n";
+		p += checker.check(g);
 	}
 
-
+	std::cout << p << "/1000 successful tests\n";
 
 	return 0;
 }
