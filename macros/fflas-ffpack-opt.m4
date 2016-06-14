@@ -61,6 +61,8 @@ ADDFLAGS="-DOPTIMISATION_MODE"
 dnl for Wino threshold for double
 echo "  == Wino/BLAS threshold for Givaro::Modular<double> == "
 CXXFLAGS="${CXXFLAGS_ALL} -DFLTTYPE=Givaro::Modular<double> ${ADDFLAGS}"
+
+
 AC_RUN_IFELSE([AC_LANG_SOURCE([${WINO}])],[
 		dnl remove last line
 		dnl  sed -i '$d' fflas-ffpack/fflas-ffpack-optimise.h ;
