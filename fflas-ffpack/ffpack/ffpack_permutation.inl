@@ -304,22 +304,18 @@ namespace FFPACK {
 		if ( Side == FFLAS::FflasRight ) {
 			if ( Trans == FFLAS::FflasTrans ){
 				for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
-					if ( P[i]!= i ){
+					if ( P[i]!= i )
 						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
-					}
 			} else { // Trans == FFLAS::FflasNoTrans
 				for (size_t i=iend; i-->ibeg; )
-					if ( P[i]!=(size_t)i ){
+					if ( P[i]!=(size_t)i )
 						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
-					
-					}
 			}
 		} else { // Side == FFLAS::FflasLeft
 			if ( Trans == FFLAS::FflasNoTrans ) {
 				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i)
-					if ( P[i]!= (size_t) i ){
+					if ( P[i]!= (size_t) i )
 						FFLAS::fswap( F, M, A + P[i]*lda, 1, A + i*lda, 1);
-					}
 			} else { // Trans == FFLAS::FflasTrans
 				for (size_t i=iend; i-->ibeg; )
 					if ( P[i]!= (size_t) i )
