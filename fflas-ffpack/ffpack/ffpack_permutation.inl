@@ -30,7 +30,6 @@
 #ifndef __FFLASFFPACK_ffpack_permutation_INL
 #define __FFLASFFPACK_ffpack_permutation_INL
 
-#include <algorithm>
 
 #include <givaro/zring.h>
 

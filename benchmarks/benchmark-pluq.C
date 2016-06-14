@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
 	FFLAS::Timer chrono;
 	double *time=new double[iter];
     
-	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasUnit;
+	enum FFLAS::FFLAS_DIAG diag = FFLAS::FflasNonUnit;
 	size_t maxP, maxQ;
 	maxP = m;
 	maxQ = n;
@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
 		else{
 			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
 		}
-		if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
+		if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 		
 	}
 	std::sort(time, time+iter);
