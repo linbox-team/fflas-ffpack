@@ -72,18 +72,15 @@ namespace FFPACK {
 		if (!pivrowstomove) // Permutation is the identity
 			return;
 
-//		if (2*R>lenP)
 		for (size_t i=R; i<lenP; i++)
 			if (MathP[i] != i)
 				nonpivrowstomove++;
 		size_t NB = M/B;
 		size_t last = M%B;
 		size_t incA, llda;
-		if (Side == FFLAS::FflasRight) incA = lda;
-		else incA = 1;
-		size_t inc = B*incA;
 		if (Side == FFLAS::FflasLeft)  {incA = 1; llda = lda;}
 		else {incA = lda; llda = 1;}
+		size_t inc = B*incA;
 
 		if (((Side == FFLAS::FflasLeft) && (Trans == FFLAS::FflasNoTrans)) ||
 			((Side == FFLAS::FflasRight) && (Trans == FFLAS::FflasTrans))){
@@ -316,11 +313,11 @@ namespace FFPACK {
 
 	template<class Field>
 	void
-	applyP( const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const FFLAS::FFLAS_TRANSPOSE Trans,
-		const size_t M, const size_t ibeg, const size_t iend,
-		typename Field::Element_ptr A, const size_t lda, const size_t * P )
+	applyP (const Field& F,
+				  const FFLAS::FFLAS_SIDE Side,
+				  const FFLAS::FFLAS_TRANSPOSE Trans,
+				  const size_t M, const size_t ibeg, const size_t iend,
+				  typename Field::Element_ptr A, const size_t lda, const size_t * P)
 	{
 		if ( Side == FFLAS::FflasRight ) {
 			if ( Trans == FFLAS::FflasTrans ){
@@ -351,6 +348,25 @@ namespace FFPACK {
 		}
 	}
 
+	template<class Field>
+	void
+	applyP2( const Field& F,
+		const FFLAS::FFLAS_SIDE Side,
+		const FFLAS::FFLAS_TRANSPOSE Trans,
+		const size_t M, const size_t ibeg, const size_t iend,
+		typename Field::Element_ptr A, const size_t lda, const size_t * P )
+	{
+	
+		const size_t bk = MAP_BKSIZE;
+		const size_t NB = M/bk;
+		const size_t last = M%bk;
+		const size_t incA = (Side == FFLAS::FflasLeft)? 1:lda;
+		const size_t inc = bk*incA;
+
+		for (size_t i = 0; i<NB; i++)
+			applyP_block (F, Side, Trans, bk, ibeg, iend, A+i*inc, lda, P);
+		applyP_block (F, Side, Trans, last, ibeg, iend, A+NB*inc, lda, P);
+	}
 
 	template<class Field>
 	inline void doApplyS (const Field& F,
