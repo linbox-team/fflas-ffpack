@@ -313,7 +313,7 @@ namespace FFPACK {
 
 	template<class Field>
 	void
-	applyP (const Field& F,
+	applyP_block (const Field& F,
 				  const FFLAS::FFLAS_SIDE Side,
 				  const FFLAS::FFLAS_TRANSPOSE Trans,
 				  const size_t M, const size_t ibeg, const size_t iend,
@@ -350,7 +350,7 @@ namespace FFPACK {
 
 	template<class Field>
 	void
-	applyP2( const Field& F,
+	applyP( const Field& F,
 		const FFLAS::FFLAS_SIDE Side,
 		const FFLAS::FFLAS_TRANSPOSE Trans,
 		const size_t M, const size_t ibeg, const size_t iend,
