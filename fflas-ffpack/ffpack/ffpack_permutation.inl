@@ -120,9 +120,6 @@ namespace FFPACK {
 		for (size_t i=0,j=0; i<R; i++){
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, A+MathP[i]*lda, incA, temp+j*ldtemp, 1);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				j++;
 			}
 		}
@@ -135,18 +132,12 @@ namespace FFPACK {
 				continue;
 			}
 			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
-#ifdef PROFILE_PLUQ
-			mvcnt += M;
-#endif
 			src--; dest--;
 		}
 			// Moving the pivots to their position in the first R rows
 		for (size_t i=0, j=0; i<R; i++)
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				j++;
 			}
 		FFLAS::fflas_delete(temp);
@@ -173,9 +164,6 @@ namespace FFPACK {
 #endif
 				FFLAS::fassign (F, M, A+MathP[i]*lda, incA, temp+j*ldtemp, 1);
 				done[MathP[i]]=true;
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				j++;
 			}
 		}
@@ -188,9 +176,6 @@ namespace FFPACK {
 				std::cerr<<"Moving pivots 1 A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
 #endif
 				FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				done[MathP[j]] = true;
 				j = MathP[j];
 			}
@@ -205,9 +190,6 @@ namespace FFPACK {
 				std::cerr<<"Moving pivots 2 A["<<j<<"] -> tmprow"<<std::endl;
 #endif
 				FFLAS::fassign (F, M, A+j*lda, incA, tmprow, 1);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				done[j] = true;
 				do{
 						// A[P[j]] -> A[j]
@@ -215,16 +197,10 @@ namespace FFPACK {
 					std::cerr<<"Moving pivots 2 A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
 #endif
 					FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
-#ifdef PROFILE_PLUQ
-					mvcnt += M;
-#endif
 					done[MathP[j]] = true;
 					j = MathP[j];
 				} while (!done[MathP[j]]);
 				FFLAS::fassign (F, M, tmprow, 1, A+j*lda, incA);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 #ifdef VERBOSE
 				std::cerr<<"Moving pivots 2 tmprow -> A["<<j<<"]"<<std::endl;
 #endif
@@ -237,9 +213,6 @@ namespace FFPACK {
 				std::cerr<<"temp["<<j<<"] -> A["<<i<<"] "<<std::endl;
 #endif
 				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				j++;
 			}
 
@@ -267,9 +240,6 @@ namespace FFPACK {
 				std::cerr<<"Moving pivots A["<<j<<"] -> tmprow"<<std::endl;
 #endif
 				FFLAS::fassign (F, M, A+j*lda, incA, tmprow, 1);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				done[j] = true;
 				do{
 						// A[P[j]] -> A[j]
@@ -277,16 +247,10 @@ namespace FFPACK {
 					std::cerr<<"Moving pivots A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
 #endif
 					FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
-#ifdef PROFILE_PLUQ
-					mvcnt += M;
-#endif
 					done[MathP[j]] = true;
 					j = MathP[j];
 				} while (!done[MathP[j]]);
 				FFLAS::fassign (F, M, tmprow, 1, A+j*lda, incA);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 #ifdef VERBOSE
 				std::cerr<<"Moving pivots tmprow -> A["<<j<<"]"<<std::endl;
 #endif
@@ -307,9 +271,6 @@ namespace FFPACK {
 		for (size_t i=0,j=0; i<R; i++){
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, A+i*lda, incA, temp+j*ldtemp, 1);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				j++;
 			}
 		}
@@ -322,18 +283,12 @@ namespace FFPACK {
 				continue;
 			}
 			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
-#ifdef PROFILE_PLUQ
-			mvcnt += M;
-#endif			
 			src++; dest++;
 		}
 			// Moving the pivots to their final position
 		for (size_t i=0, j=0; i<R; i++)
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + MathP[i]*lda, incA);
-#ifdef PROFILE_PLUQ
-				mvcnt += M;
-#endif
 				j++;
 			}
 		FFLAS::fflas_delete(temp);
@@ -352,9 +307,6 @@ namespace FFPACK {
 				for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
 					if ( P[i]!= i ){
 						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
-#ifdef PROFILE_PLUQ
-						mvcnt += 3*M;
-#endif
 					}
 			} else { // Trans == FFLAS::FflasNoTrans
 				for (size_t i=iend; i-->ibeg; )
@@ -368,9 +320,6 @@ namespace FFPACK {
 				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i)
 					if ( P[i]!= (size_t) i ){
 						FFLAS::fswap( F, M, A + P[i]*lda, 1, A + i*lda, 1);
-#ifdef PROFILE_PLUQ
-						mvcnt += 3*M;
-#endif
 					}
 			} else { // Trans == FFLAS::FflasTrans
 				for (size_t i=iend; i-->ibeg; )

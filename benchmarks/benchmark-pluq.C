@@ -50,12 +50,6 @@
 #include <givaro/givranditer.h>
 #include <iostream>
 
-#ifdef PROFILE_PLUQ
-Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
-size_t mvcnt;
-#endif
-
-
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -240,13 +234,6 @@ int main(int argc, char** argv) {
 				 );
 		chrono.clear();
 		
-#ifdef PROFILE_PLUQ
-		tgemm.clear();
-		tBC.clear();
-		tperm.clear();
-		ttrsm.clear();
-		trest.clear();
-#endif
 		if (i) chrono.start();
 		if (par){
 			
@@ -257,14 +244,7 @@ int main(int argc, char** argv) {
 			}
 		}
 		else{
-#ifdef PROFILE_PLUQ
-			mvcnt=0;
-			timtot.start();
-#endif
 			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
-#ifdef PROFILE_PLUQ
-			timtot.stop();
-#endif
 		}
 		if (i) {chrono.stop(); time[i-1]=chrono.usertime();}
 		
@@ -276,26 +256,10 @@ int main(int argc, char** argv) {
 		// Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
-#ifdef PROFILE_PLUQ
-	double tot = timtot.usertime();
-#endif
 	std::cout << "Time: " << meantime
-			  << " Gflops: " << gflop / meantime << " BC: "<<BC
-#ifdef PROFILE_PLUQ
-			  << " applyP: "<<tperm.usertime()/tot*100
-			  << " mvcnt: "<<mvcnt
-#endif
-		;
+			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
-#ifdef PROFILE_PLUQ
-	std::cerr<<" BaseCase : "<<tBC.usertime()/tot*100<<" %"<<std::endl;
-	std::cerr<<" ApplyP : "<<tperm.usertime()/tot*100<<" %"<<std::endl;
-	std::cerr<<" fgemm : "<<tgemm.usertime()/tot*100<<" %"<<std::endl;
-	std::cerr<<" ftrsm : "<<ttrsm.usertime()/tot*100<<" %"<<std::endl;
-	std::cerr<<" frest : "<<trest.usertime()/tot*100<<" %"<<std::endl;
-	std::cerr<<" mvcnt : "<<mvcnt<<std::endl;
-#endif
 	//verification
 	if(v)
 		verification_PLUQ(F,Acop,A,P,Q,m,n,R);
