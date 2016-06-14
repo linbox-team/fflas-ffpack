@@ -278,11 +278,14 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
 <<<<<<< HEAD
+<<<<<<< HEAD
 	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
 
 =======
+=======
+>>>>>>> fca9af69ed01a360e565a9b131408a3255d06a98
 	// write_perm(std::cerr<<"P = ",P,m);
 	// write_perm(std::cerr<<"Q = ",Q,n);
 	// write_field(F,std::cerr<<"L = "<<std::endl,L,m,R,R);
