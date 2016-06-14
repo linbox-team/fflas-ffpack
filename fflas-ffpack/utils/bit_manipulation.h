@@ -138,7 +138,7 @@ static inline uint32_t mullhi_u32(uint32_t x, uint32_t y) {
 }
 
 static inline int64_t mulhi_64(int64_t x, int64_t y) {
-#ifdef __x86_64__
+#ifdef __FFLASFFPACK_HAVE_INT128
         int128_t xl = x, yl = y;
         int128_t rl = xl * yl;
         return (int64_t)(rl >> 64);
@@ -154,7 +154,7 @@ static inline int64_t mulhi_64(int64_t x, int64_t y) {
 }
 
 static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
-#if 0 // todo check this type
+#if __FFLASFFPACK_HAVE_INT128
         int128_t xl = x, yl = y;
         int128_t rl = xl * yl;
         return (int64_t)(rl >> 64);
