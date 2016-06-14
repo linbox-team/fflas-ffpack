@@ -314,7 +314,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	 *	    [b0, b1, b2, b3]	int64_t
 	 * Return : [Floor(a0*b0/2^64), ..., Floor(a3*b3/2^64)] int64_t
 	 */
-#ifdef __x86_64__
+#ifdef __FFLASFFPACK_HAVE_INT128
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
 		//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		// ugly solution, but it works.
@@ -629,7 +629,7 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	 [b0, b1, b2, b3]  		 							 uint64_t
 	 * Return :
 	 */
-#ifdef __x86_64__
+#ifdef __FFLASFFPACK_HAVE_INT128
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
 		//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		// ugly solution, but it works.

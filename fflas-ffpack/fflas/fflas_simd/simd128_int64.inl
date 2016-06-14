@@ -267,7 +267,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 			   [b0, b1] int64_t
 	* Return : [Floor(a0*b0/2^64), Floor(a1*b1/2^64)] int64_t
 	*/
-#ifdef __x86_64__
+#ifdef __FFLASFFPACK_HAVE_INT128
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		//#pragma warning "The simd mulhi function is emulated, it may impact the performances."
 		Converter c0, c1;
@@ -600,7 +600,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 			   [b0, b1] uint64_t
 	* Return : [Floor(a0*b0/2^16), Floor(a1*b1/2^16)] uint64_t
 	*/
-#ifdef __x86_64__
+#ifdef __FFLASFFPACK_HAVE_INT128
 	static INLINE CONST vect_t mulhi(const vect_t a, const vect_t b) {
 		//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
 		Converter c0, c1;

@@ -43,11 +43,11 @@
 #include <givaro/modular-double.h>
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
+#include "givaro/modular-extended.h"
 #include <recint/ruint.h>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/utils/align-allocator.h"
-#include "fflas-ffpack/field/modular-extended.h"
 #include "fflas-ffpack/field/rns-double-elt.h"
 
 namespace FFPACK {
