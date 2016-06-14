@@ -31,7 +31,7 @@
 //      Test suite for the Gaussian elimination routines: LUdivine and PLUQ
 //-------------------------------------------------------------------------
 
- #define MONOTONIC_CYLCES
+// #define MONOTONIC_CYLCES
 // #define MONOTONIC_MOREPIVOTS
 // #define MONOTONIC_FEWPIVOTS
 #ifdef MONOTONIC_CYLCES
@@ -828,7 +828,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed at big lda" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -839,7 +839,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -850,7 +850,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -863,7 +863,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at square" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -876,7 +876,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at wide" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -889,7 +889,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		PAR_BLOCK { RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N); }
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		FFLAS::fflas_delete( A );
