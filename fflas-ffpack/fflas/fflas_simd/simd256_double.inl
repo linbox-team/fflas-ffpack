@@ -30,12 +30,14 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_double_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_double_INL
 
+#if not (defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2))
+#error "You need AVX instructions to perform 256bits operations on double"
+#endif
+
 /*
  * Simd256 specialized for double
  */
 template <> struct Simd256_impl<true, false, true, 8> {
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
-
 	/*
 	 * alias to 256 bit simd register
 	 */
@@ -376,9 +378,6 @@ template <> struct Simd256_impl<true, false, true, 8> {
 		return C;
 	}
 
-#else // __AVX__
-#error "You need AVX instructions to perform 256bits operations on double"
-#endif
 };
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_double_INL
