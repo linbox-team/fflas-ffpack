@@ -277,43 +277,16 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	FFPACK::getTriangular(F, FFLAS::FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
-<<<<<<< HEAD
-<<<<<<< HEAD
 	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
 
-=======
-=======
->>>>>>> fca9af69ed01a360e565a9b131408a3255d06a98
 	// write_perm(std::cerr<<"P = ",P,m);
 	// write_perm(std::cerr<<"Q = ",Q,n);
 	// write_field(F,std::cerr<<"L = "<<std::endl,L,m,R,R);
 	// write_field(F,std::cerr<<"U = "<<std::endl,U,R,n,n);
 	
-	PAR_BLOCK{
-		SYNCH_GROUP(
-		
-						//#pragma omp task shared(F, P, L)
-					TASK(MODE(CONSTREFERENCE(F,P,L)),
-						 FFPACK::MonotonicApplyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P, R););
-						//FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
-						//#pragma omp task shared(F, Q, U)
-					TASK(MODE(CONSTREFERENCE(F,Q,U)),
-						 FFPACK::MonotonicApplyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q, R););
-						//FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
-					// write_field(F,std::cerr<<"PL = "<<std::endl,L,m,R,R);
-					// write_field(F,std::cerr<<"UQ = "<<std::endl,U,R,n,n);
-					WAIT;
-						//#pragma omp taskwait
-					typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::ThreeDAdaptive> pWH (MAX_THREADS);
-						//#pragma omp task shared(F, L, U, X)
-					TASK(MODE(CONSTREFERENCE(F,U,L,X)),
-						 FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
-									   F.one, L,R, U,n, F.zero, X,n, pWH););
-					);
-	}
->>>>>>> Faster test-lu covering more cases (reducing the base case)
+
 	bool fail = false;
 	for(size_t i=0; i<m; ++i)
 		for (size_t j=0; j<n; ++j)
