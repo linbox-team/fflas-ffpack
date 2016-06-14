@@ -346,7 +346,9 @@ namespace FFPACK {
 			    const size_t M, const size_t N,
 			    typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
+#ifdef PROFILE_PLUQ
 		Givaro::Timer tim;tim.start();
+#endif
 		size_t row = 0;
 		size_t rank = 0;
 		typename Field::Element_ptr CurrRow=A;
@@ -428,8 +430,10 @@ namespace FFPACK {
 		MathPerm2LAPACKPerm (P, MathP, M);
 		FFLAS::fflas_delete( MathP);
 		FFLAS::fzero (Fi, M-rank, N-rank, A+rank*(1+lda), lda);
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		tBC+=tim;
+#endif
 		return (size_t) rank;
 	}
 
@@ -518,7 +522,9 @@ namespace FFPACK {
 		typename Field::Element_ptr G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
+#ifdef PROFILE_PLUQ
 		tim.start();
+#endif
 #ifdef MONOTONIC_APPLYP
 		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M2, A2, lda, P1, R1);
 		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1, R1);	
@@ -527,24 +533,30 @@ namespace FFPACK {
 		    // [ C1 C2 ] <- A3 Q1^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1);	
 #endif
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		tperm+=tim;
 		    // D <- L1^-1 B1
 		tim.clear();tim.start();
+#endif
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda);
 		    // E <- C1 U1^-1
 		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R1, Fi.one, A, lda, A3, lda);
 		    // F <- B2 - M1 D
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		ttrsm+=tim;
 		tim.clear();tim.start();
+#endif
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M2-R1, N-N2, R1, Fi.mOne, A + R1*lda, lda, A2, lda, Fi.one, A2+R1*lda, lda);
 		    // G <- C2 - E V1
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N2-R1, R1, Fi.mOne, A3, lda, A+R1, lda, Fi.one, A3+R1, lda);
 		    // H <- A4 - ED
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2, N-N2, R1, Fi.mOne, A3, lda, A2, lda, Fi.one, A4, lda);
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		tgemm+=tim;
+#endif
                     // F = P2 [ L2 ] [ U2 V2 ] Q2
 		    //        [ M2 ]
 		size_t * P2 = FFLAS::fflas_new<size_t >(M2-R1);
@@ -557,7 +569,9 @@ namespace FFPACK {
 		R3 = PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
+#ifdef PROFILE_PLUQ
 		tim.clear();tim.start();
+#endif
 #ifdef MONOTONIC_APPLYP
 		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N-N2, A4, lda, Q2, R2);
 		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M-M2, A4, lda, P3, R3);
@@ -589,33 +603,43 @@ namespace FFPACK {
 #endif
 		    // I <- H U2^-1
 		    // K <- H3 U2^-1
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		tperm+=tim;
 		tim.clear();tim.start();
+#endif
 		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		ttrsm+=tim;
+#endif
 		typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
 		// for (size_t i=0; i<R3; ++i)
 			// FFLAS::fassign (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
 		FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
+#ifdef PROFILE_PLUQ
 		tim.clear();tim.start();
+#endif
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 		    // N <- L3^-1 H2
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N-N2-R2, Fi.one, G, lda, A4+R2, lda);
 		    // O <- N - J V2
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		ttrsm+=tim;
 		tim.clear();tim.start();
+#endif
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
 		FFLAS::fflas_delete (temp);
 		    // R <- H4 - K V2 - M3 O
 		typename Field::Element_ptr R = A4 + R2 + R3*lda;
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
 		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N-N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		tgemm+=tim;
+#endif
 		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
 		    //         [ M4 ]
 		size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
@@ -623,7 +647,9 @@ namespace FFPACK {
 		R4 = PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
+#ifdef PROFILE_PLUQ
 		tim.clear();tim.start();
+#endif
 #ifdef MONOTONIC_APPLYP
 		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4, R4);
 		    // [ D21 D22 ]     [ D2 ]
@@ -639,12 +665,15 @@ namespace FFPACK {
 		    // [ O1   O2 ]     [  O ]
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N-N2-R2, A2+R2, lda, Q4);
 #endif
+#ifdef PROFILE_PLUQ
 		tim.stop();
 		tperm+=tim;
-
+#endif
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
+#ifdef PROFILE_PLUQ
 		tim.clear();tim.start();
+#endif
 		size_t* MathP = FFLAS::fflas_new<size_t>(M);
 		
 		composePermutationsP (MathP, P1, P2, R1, M2);
@@ -683,8 +712,10 @@ namespace FFPACK {
 			MatrixApplyT (Fi, A, lda, M, N2, R1, R2, R3, R4);
 		}
 		MathPerm2LAPACKPerm (Q, MathQ, N);
+#ifdef PROFILE_PLUQ
 		tim.stop(); 
 		trest+=tim;
+#endif
 		FFLAS::fflas_delete( MathQ);
 
 		return R1+R2+R3+R4;

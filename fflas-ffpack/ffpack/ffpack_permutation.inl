@@ -36,7 +36,7 @@
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
-#define MAP_BKSIZE 32
+#define FFLASFFPACK_PERM_BKSIZE 32
 
 namespace FFPACK {
 	    /** MonotonicApplyP
@@ -51,7 +51,7 @@ namespace FFPACK {
 					 const size_t M, const size_t ibeg, const size_t iend,
 					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R)
 	{
-		const size_t B = MAP_BKSIZE;
+		const size_t B = FFLASFFPACK_PERM_BKSIZE;
 		size_t lenP = iend-ibeg;
 		size_t * MathP = new size_t[lenP];
 		for (size_t i=0; i<lenP; ++i)
@@ -120,7 +120,9 @@ namespace FFPACK {
 		for (size_t i=0,j=0; i<R; i++){
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, A+MathP[i]*lda, incA, temp+j*ldtemp, 1);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				j++;
 			}
 		}
@@ -133,14 +135,18 @@ namespace FFPACK {
 				continue;
 			}
 			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
+#ifdef PROFILE_PLUQ
 			mvcnt += M;
+#endif
 			src--; dest--;
 		}
 			// Moving the pivots to their position in the first R rows
 		for (size_t i=0, j=0; i<R; i++)
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				j++;
 			}
 		FFLAS::fflas_delete(temp);
@@ -167,7 +173,9 @@ namespace FFPACK {
 #endif
 				FFLAS::fassign (F, M, A+MathP[i]*lda, incA, temp+j*ldtemp, 1);
 				done[MathP[i]]=true;
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				j++;
 			}
 		}
@@ -180,7 +188,9 @@ namespace FFPACK {
 				std::cerr<<"Moving pivots 1 A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
 #endif
 				FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				done[MathP[j]] = true;
 				j = MathP[j];
 			}
@@ -195,7 +205,9 @@ namespace FFPACK {
 				std::cerr<<"Moving pivots 2 A["<<j<<"] -> tmprow"<<std::endl;
 #endif
 				FFLAS::fassign (F, M, A+j*lda, incA, tmprow, 1);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				done[j] = true;
 				do{
 						// A[P[j]] -> A[j]
@@ -203,34 +215,38 @@ namespace FFPACK {
 					std::cerr<<"Moving pivots 2 A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
 #endif
 					FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
+#ifdef PROFILE_PLUQ
 					mvcnt += M;
+#endif
 					done[MathP[j]] = true;
 					j = MathP[j];
 				} while (!done[MathP[j]]);
 				FFLAS::fassign (F, M, tmprow, 1, A+j*lda, incA);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 #ifdef VERBOSE
 				std::cerr<<"Moving pivots 2 tmprow -> A["<<j<<"]"<<std::endl;
 #endif
 			}
 		}
 			// Move the non pivot rows to the last lenP-R positions
-		// if (incA==1) { //moving rows
-		// 	FFLAS::fassign (F, lenP-R, M, temp, ldtemp, A+R*lda, lda);
-		// } else { //moving cols
 		for (size_t i=R, j=0; i<lenP; i++)
 			if (MathP[i] != i){
 #ifdef VERBOSE
 				std::cerr<<"temp["<<j<<"] -> A["<<i<<"] "<<std::endl;
 #endif
 				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				j++;
 			}
 
 		FFLAS::fflas_delete(tmprow);
 		FFLAS::fflas_delete(temp);
 	}
+
 	template<class Field>
 	void
 	MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
@@ -243,7 +259,7 @@ namespace FFPACK {
 		write_perm(std::cerr<<"MathP = ",MathP,lenP);
 #endif
 			// Moving the remaining cycles using one vector temp
-		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,1,MAP_BKSIZE);
+		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,1,FFLASFFPACK_PERM_BKSIZE);
 		for (size_t i=0; i<lenP; i++){
 			if ((MathP[i]!=i)&&(!done[MathP[i]])){ // entering a cycle
 				size_t j=i;
@@ -251,7 +267,9 @@ namespace FFPACK {
 				std::cerr<<"Moving pivots A["<<j<<"] -> tmprow"<<std::endl;
 #endif
 				FFLAS::fassign (F, M, A+j*lda, incA, tmprow, 1);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				done[j] = true;
 				do{
 						// A[P[j]] -> A[j]
@@ -259,12 +277,16 @@ namespace FFPACK {
 					std::cerr<<"Moving pivots A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
 #endif
 					FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
+#ifdef PROFILE_PLUQ
 					mvcnt += M;
+#endif
 					done[MathP[j]] = true;
 					j = MathP[j];
 				} while (!done[MathP[j]]);
 				FFLAS::fassign (F, M, tmprow, 1, A+j*lda, incA);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 #ifdef VERBOSE
 				std::cerr<<"Moving pivots tmprow -> A["<<j<<"]"<<std::endl;
 #endif
@@ -285,7 +307,9 @@ namespace FFPACK {
 		for (size_t i=0,j=0; i<R; i++){
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, A+i*lda, incA, temp+j*ldtemp, 1);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				j++;
 			}
 		}
@@ -298,14 +322,18 @@ namespace FFPACK {
 				continue;
 			}
 			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
+#ifdef PROFILE_PLUQ
 			mvcnt += M;
+#endif			
 			src++; dest++;
 		}
 			// Moving the pivots to their final position
 		for (size_t i=0, j=0; i<R; i++)
 			if (MathP[i] != i){
 				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + MathP[i]*lda, incA);
+#ifdef PROFILE_PLUQ
 				mvcnt += M;
+#endif
 				j++;
 			}
 		FFLAS::fflas_delete(temp);
@@ -324,7 +352,9 @@ namespace FFPACK {
 				for ( size_t i=(size_t)ibeg; i<(size_t) iend; ++i)
 					if ( P[i]!= i ){
 						FFLAS::fswap( F, M, A + P[i]*1, lda, A + i*1, lda);
+#ifdef PROFILE_PLUQ
 						mvcnt += 3*M;
+#endif
 					}
 			} else { // Trans == FFLAS::FflasNoTrans
 				for (size_t i=iend; i-->ibeg; )
@@ -338,7 +368,9 @@ namespace FFPACK {
 				for (size_t i=(size_t)ibeg; i<(size_t)iend; ++i)
 					if ( P[i]!= (size_t) i ){
 						FFLAS::fswap( F, M, A + P[i]*lda, 1, A + i*lda, 1);
+#ifdef PROFILE_PLUQ
 						mvcnt += 3*M;
+#endif
 					}
 			} else { // Trans == FFLAS::FflasTrans
 				for (size_t i=iend; i-->ibeg; )
@@ -357,7 +389,7 @@ namespace FFPACK {
 		typename Field::Element_ptr A, const size_t lda, const size_t * P )
 	{
 	
-		const size_t bk = MAP_BKSIZE;
+		const size_t bk = FFLASFFPACK_PERM_BKSIZE;
 		const size_t NB = M/bk;
 		const size_t last = M%bk;
 		const size_t incA = (Side == FFLAS::FflasLeft)? 1:lda;
@@ -451,9 +483,6 @@ namespace FFPACK {
 		for (size_t i=0; i<N; i++){
 			if (LapackP[i] != i){
 				std::swap(MathP[i],MathP[LapackP[i]]);
-				// size_t tmp = MathP[i];
-				// MathP[i] = MathP[LapackP[i]];
-				// MathP[LapackP[i]] = tmp;
 			}
 		}
 	}
