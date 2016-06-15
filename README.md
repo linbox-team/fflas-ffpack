@@ -6,7 +6,7 @@
 
 The FFLAS-FFPACK library provides a set of basic routines for linear algebra over a finite field or the ring of integers with dense and sparse matrices.
 
-It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the LAPACK library for numerical linear algebra, and shares part of their design. Yet it differs in many aspects due to the specifities of computing over exact domains such as a finite fields and the rationals:
+It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the LAPACK library for numerical linear algebra, and shares part of their design. Yet it differs in many aspects due to the specifities of computing over exact domains such as a finite fields and the field of rationals:
 - it is generic with respect to the finite field, so as to accomodate a large variety of field sizes and implementations;
 - consequently, all routines use the C++ template genericity and the library is primarily meant to be used as a source code library, to be included and compiled in the user's software.
 - However, we also provide a compiled version instantiating most common routines over the most common finite fields.
