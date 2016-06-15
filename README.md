@@ -54,6 +54,8 @@ see INSTALL for further details.
 
 The FFLAS-FFPACK group (see AUTHORS for a list of contributors).
 
+## Citing FFLAS-FFPACK
+...
 ## Contact and discussion
 
 For any bug report, please file an issue on github's [issue tracker](https://github.com/linbox-team/fflas-ffpack/issues).
