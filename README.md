@@ -55,10 +55,38 @@ see INSTALL for further details.
 The FFLAS-FFPACK group (see AUTHORS for a list of contributors).
 
 ## Citing FFLAS-FFPACK
-...
+
+If your research depends on the FFLAS-FFPACK library, please consider citing the project as
+
+```
+@manual{fflas-ffpack,
+title = {{FFLAS-FFPACK}: {F}inite {F}ield {L}inear {A}lgebra {S}ubroutines / {P}ackage},
+author = {The FFLAS-FFPACK group},
+edition = {v2.2.1},
+year = {2016},
+note = {\url{http://github.com/linbox-team/fflas-ffpack}}
+}
+```
+
+Or you may also consider citing the related research article:
+```
+@article{DGP:2008,
+author = {Jean-Guillaume Dumas and Pascal Giorgi and Cl{\'e}ment Pernet},
+title = {Dense Linear Algebra over Word-Size Prime Fields: the FFLAS and FFPACK Packages},
+journal = {ACM Trans. on Mathematical Software (TOMS)},
+volume = {35},
+number = {3},
+year = {2008},
+issn = {0098-3500},
+pages = {1--42},
+doi = {10.1145/1391989.1391992},
+publisher = {ACM Press},
+address = {New York, NY, USA}
+}
+```
+
 ## Contact and discussion
 
-For any bug report, please file an issue on github's [issue tracker](https://github.com/linbox-team/fflas-ffpack/issues).
+For any bug report, feature or help request, please file an issue on github's [issue tracker](https://github.com/linbox-team/fflas-ffpack/issues).
 
-Please any other request, suggestion and comment to 
-the discussion group [ffpack-devel](http://groups.google.com/group/ffpack-devel)
+Please address any other request, suggestion and comment to the discussion group [ffpack-devel](http://groups.google.com/group/ffpack-devel).
