@@ -132,6 +132,60 @@ template <> struct Simd256_impl<true, false, true, 8> {
 	static INLINE void stream(const scalar_t *p, const vect_t v) { _mm256_stream_pd(const_cast<scalar_t *>(p), v); }
 
 	/*
+	* Shuffle double-precision (64-bit) floating-point elements within 128-bit lanes using the control in imm8,
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] double
+			   [b0, b1, b2, b3] double
+	* Return : [s[0]?a0:a1, s[1]?b[0]:b[1], s[2]?a3:a4, s[4]?b[3]:b[4]] double
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t shuffle(const vect_t a, const vect_t b) {
+		// CAREFUL : It is different from integer shuffles
+		return _mm256_shuffle_pd(a, b, s);
+	}
+
+	/*
+	* Unpack and interleave double-precision (64-bit) floating-point elements from the low half of each 128-bit lane in a and b,
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] double
+			   [b0, b1, b2, b3] double
+	* Return : [a0, b0, a2, b2] double
+	*/
+	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_pd(a, b); }
+
+	/*
+	* Unpack and interleave double-precision (64-bit) floating-point elements from the high half of each 128-bit lane in a and b,
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] double
+			   [b0, b1, b2, b3] double
+	* Return : [a1, b1, a3, b3] double
+	*/
+	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_pd(a, b); }
+
+	/*
+	* Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] double
+			   [b0, b1, b2, b3] double
+	* Return : [s[0]?a0:b0, ..., s[3]?a3:b3] double
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
+		return _mm256_blend_pd(a, b, s);
+	}
+
+	/*
+	* Blend packed double-precision (64-bit) floating-point elements from a and b using mask,
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] double
+			   [b0, b1, b2, b3] double
+	* Return : [mask[31]?a0:b0, ..., mask[255]?a3:b3] double
+	*/
+	static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
+		return _mm256_blendv_pd(a, b, mask);
+	}
+
+	/*
 	 * Add packed double-precision (64-bit) floating-point elements in a and b, and store the results in vect_t.
 	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
 	 * Return : [a0+b0, a1+b1, a2+b2, a3+b3]
@@ -158,6 +212,14 @@ template <> struct Simd256_impl<true, false, true, 8> {
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return _mm256_mul_pd(a, b); }
 
 	static INLINE CONST vect_t mulin(vect_t &a, const vect_t b) { return a = mul(a, b); }
+
+	/*
+	 * Divide packed double-precision (64-bit) floating-point elements in a by packed elements in b,
+	 * and store the results in dst.
+	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+	 * Return : [a0/b0, a1/b1, a2/b2, a3/b3]
+	 */
+	static INLINE CONST vect_t div(const vect_t a, const vect_t b) { return _mm256_div_pd(a, b); }
 
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to
