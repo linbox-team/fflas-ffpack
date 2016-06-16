@@ -154,7 +154,7 @@ static inline int64_t mulhi_64(int64_t x, int64_t y) {
 }
 
 static inline int64_t mulhi_fast_64(int64_t x, int64_t y) {
-#if __FFLASFFPACK_HAVE_INT128
+#ifdef __FFLASFFPACK_HAVE_INT128
         int128_t xl = x, yl = y;
         int128_t rl = xl * yl;
         return (int64_t)(rl >> 64);

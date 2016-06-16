@@ -120,6 +120,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
+#include "givaro/givconfig.h"
+
 #ifdef __GIVARO_HAVE_INT128
 #define __FFLASFFPACK_HAVE_INT128
 #endif
