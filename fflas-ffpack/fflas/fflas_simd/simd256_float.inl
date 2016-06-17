@@ -33,7 +33,7 @@
 /*
  * Simd256 specialized for float
  */
-template <> struct Simd256_impl<true, false, true, 4> {
+template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
 #if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
 	/*
 	 * alias to 256 bit simd register
@@ -134,13 +134,11 @@ template <> struct Simd256_impl<true, false, true, 4> {
 	* and store the results in dst.
 	* Args   :	[a0, ..., a7] float
 				[b0, ..., b7] float
-	* Return :	[a[s[0..1]],a[s[2..3]],b[s[4..5]],b[s[6..7]],
-	*			 a[4+s[0..1]],a[4+s[2..3]],b[4+s[4..5]],b[4+s[6..7]]] float
+	* Return :	[a[s[0..3]], ..., a[s[28..31]]] float
 	*/
 	template<uint8_t s>
-	static INLINE CONST vect_t shuffle_twice(const vect_t a, const vect_t b) {
-		// CAREFUL : It is different from integer shuffles
-		return _mm256_shuffle_ps(a, b, s);
+	static INLINE CONST vect_t shuffle_twice(const vect_t a) {
+		return _mm256_permute_ps(a, s);
 	}
 
 	/*

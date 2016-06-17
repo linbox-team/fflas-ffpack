@@ -178,7 +178,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Shuffle 64-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   : [a0, a1] int64_t
-	* Return : [a[s[0]], a[s[1]] int64_t
+	* Return : [a[s[0]], a[s[1]]] int64_t
 	*/
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {

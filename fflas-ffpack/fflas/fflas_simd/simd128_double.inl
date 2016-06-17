@@ -130,12 +130,11 @@ template <> struct Simd128_impl<true, false, true, 8> {
 	* Shuffle double-precision (64-bit) floating-point elements using the control in s,
 	* and store the results in dst.
 	* Args   : [a0, a1] double
-			   [b0, b1] double
-	* Return : [s[0]?a0:a1, s[1]?b[0]:b[1]] double
+	* Return : [a[s[0]], a[s[1]]] double
 	*/
 	template<uint8_t s>
-	static INLINE CONST vect_t shuffle(const vect_t a, const vect_t b) {
-	return _mm_shuffle_pd(a, b, s);
+	static INLINE CONST vect_t shuffle(const vect_t a) {
+		return _mm_permute_pd(a, s);
 	}
 
 	/*

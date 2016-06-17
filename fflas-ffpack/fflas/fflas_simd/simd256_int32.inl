@@ -193,7 +193,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	/*
 	* Shuffle 32-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   : [a0, ..., a7] int32_t
-	* Return : [a[s[0..3]], ..., a[28..31]] int32_t
+	* Return : [a[s[0..3]], ..., a[s[28..31]]] int32_t
 	*/
 	template<uint32_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {

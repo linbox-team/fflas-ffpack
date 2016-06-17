@@ -37,7 +37,7 @@
 /*
  * Simd256 specialized for double
  */
-template <> struct Simd256_impl<true, false, true, 8> {
+template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
 	/*
 	 * alias to 256 bit simd register
 	 */
@@ -136,12 +136,11 @@ template <> struct Simd256_impl<true, false, true, 8> {
 	* and store the results in dst.
 	* Args   : [a0, a1, a2, a3] double
 			   [b0, b1, b2, b3] double
-	* Return : [s[0]?a0:a1, s[1]?b[0]:b[1], s[2]?a3:a4, s[4]?b[3]:b[4]] double
+	* Return : [a[s[0..1]], ..., a[s[6..7]]] double
 	*/
 	template<uint8_t s>
-	static INLINE CONST vect_t shuffle(const vect_t a, const vect_t b) {
-		// CAREFUL : It is different from integer shuffles
-		return _mm256_shuffle_pd(a, b, s);
+	static INLINE CONST vect_t shuffle(const vect_t a) {
+		return _mm256_permute4x64_pd(a, s);
 	}
 
 	/*
