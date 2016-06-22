@@ -30,6 +30,7 @@
 //--------------------------------------------------------------------------
 //          Test for Checker_ftrsm
 //--------------------------------------------------------------------------
+#define ENABLE_ALL_CHECKINGS
 
 #include <iostream>
 #include <stdlib.h>
@@ -42,10 +43,12 @@ int main(int argc, char** argv) {
 	typedef Givaro::Modular<double> Field;
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
-	
+	size_t MAXN = 100;
+    
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &MAXN },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);	
@@ -59,10 +62,10 @@ int main(int argc, char** argv) {
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
 
-		size_t m = rand() % 10000 + 1;
-		size_t n = rand() % 10000 + 1;
+		size_t m = rand() % MAXN + 1;
+		size_t n = rand() % MAXN + 1;
 		std::cout << "m= " << m << "    n= " << n << "\n";
-		F.init(alpha,rand() % 10000 + 1);
+		Rand.random(alpha);
 		FFLAS::FFLAS_SIDE side = rand()%2?FFLAS::FflasLeft:FFLAS::FflasRight;
 		FFLAS::FFLAS_UPLO uplo = rand()%2?FFLAS::FflasLower:FFLAS::FflasUpper;
 		FFLAS::FFLAS_TRANSPOSE trans = rand()%2?FFLAS::FflasNoTrans:FFLAS::FflasTrans;
@@ -89,7 +92,7 @@ int main(int argc, char** argv) {
 		Checker_ftrsm<Field> checker(F, m, n, alpha, X, n);
 		FFLAS::ftrsm(F, side, uplo, trans, diag, m, n, alpha, A, k, X, n);
 		try {
-			checker.check(side, uplo, trans, diag, A, k, X);
+			checker.check(side, uplo, trans, diag, m, n, A, k, X, n);
 			std::cout << "Verification successful\n";
 			pass++;
 		} catch(FailureTrsmCheck &e) {

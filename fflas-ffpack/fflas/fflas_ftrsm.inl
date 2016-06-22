@@ -58,7 +58,7 @@ namespace FFLAS {
 		TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Sequential> H(PSH);
 		Checker_ftrsm<Field> checker(F, M, N, alpha, B, ldb);
 		ftrsm(F, Side, Uplo, TransA, Diag, M, N, alpha, A, lda, B, ldb, H);
-		checker.check(Side, Uplo, TransA, Diag, A, lda, B);
+		checker.check(Side, Uplo, TransA, Diag, M, N, A, lda, B, ldb);
 	}
 
 	template<class Field>
