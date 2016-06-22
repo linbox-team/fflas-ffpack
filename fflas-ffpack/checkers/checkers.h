@@ -49,6 +49,13 @@
 #endif
 
 
+// definition of the exceptions
+class FailurePLUQcheck {};
+class FailureFgemmCheck {};
+class FailureTrsmCheck {};
+class FailureInvertCheck {};
+class FailureCharpolyCheck {};
+
 
 template <class Field>
 struct Checker_Empty {

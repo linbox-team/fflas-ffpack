@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_charpoly
 
-class FailureCharpolyCheck {};
 
 template <class Field, class Polynomial> 
 class Checker_charpoly {
@@ -59,8 +58,6 @@ public:
 	}
 
 	inline bool check(Polynomial &g) {
-		//std::cout << "det= "; F.write(std::cout,det); std::cout << std::endl;
-
 		typename Field::Element h = F.zero,
 								t = F.one,
 								u;
@@ -69,11 +66,10 @@ public:
 			F.add(h,h,u);
 			F.mul(t,t,lambda);
 		}
-		//std::cout << "h= "; F.write(std::cout,h); std::cout << std::endl;
 
 		// is h == det ?
 		pass = pass && F.areEqual(h,det);
-		//if (!pass) throw FailureCharpolyCheck();
+		if (!pass) throw FailureCharpolyCheck();
 
 		return pass;
 	}
@@ -82,13 +78,11 @@ private:
 	inline void init(typename Field::RandIter &G, typename Field::Element_ptr A) {
 		// random lambda
 		G.random(lambda);
-		//std::cout << "lambda= " << lambda << std::endl;
 
 		typename Field::Element_ptr v = FFLAS::fflas_new(F,n,1),
 									w = FFLAS::fflas_new(F,n,1),
 									Ac = FFLAS::fflas_new(F,n,n);
 		FFLAS::frand(F,G,n,v,1);
-		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
 
 		// w <- -A.v
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, n, v, 1, F.zero, w, 1);
@@ -111,15 +105,12 @@ private:
 		// is w == 0 ?
 		pass = FFLAS::fiszero(F,n,1,w,1);
 		FFLAS::fflas_delete(v,w);
-		//if (!pass) throw FailureCharpolyCheck();
+		if (!pass) throw FailureCharpolyCheck();
 
 		// P,Ac,Q <- PLUQ(Ac)
 		size_t *P = FFLAS::fflas_new<size_t>(n);
 		size_t *Q = FFLAS::fflas_new<size_t>(n);
 		FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
-		//std::cout << "rang= " << R << std::endl;
-		//write_perm(std::cout<<"P= ",P,n);
-		//write_perm(std::cout<<"Q= ",Q,n);
 
 		// compute the determinant of A
 		F.init(det,*Ac);
@@ -134,7 +125,6 @@ private:
 			if (Q[i] != i) t++;
 		}
 		if (t%2 == 1) F.neg(det,det);
-		//std::cout << "det= "; F.write(std::cout,det); std::cout << std::endl;
 
 		FFLAS::fflas_delete(Ac);
 	}

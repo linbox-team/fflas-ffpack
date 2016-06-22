@@ -46,6 +46,10 @@ BASIC_TESTS =               \
 		test-fscal          \
 		test-fgemm          \
 		test-pluq-check     \
+		test-fgemm-check    \
+		test-ftrsm-check    \
+		test-invert-check   \
+		test-charpoly-check \
 		test-fger           \
 		test-ftrsm          \
 		test-multifile      \
@@ -96,6 +100,10 @@ test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
 test_pluq_check_SOURCES = test-pluq-check.C
+test_fgemm_check_SOURCES = test-fgemm-check.C
+test_ftrsm_check_SOURCES = test-ftrsm-check.C
+test_invert_check_SOURCES = test-invert-check.C
+test_charpoly_check_SOURCES = test-charpoly-check.C
 test_verify_charpoly_SOURCES = test-verify-charpoly.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C

@@ -28,16 +28,9 @@
  */
 
 //--------------------------------------------------------------------------
-//          Test for PLUQ check
+//          Test for Checker_PLUQ
 //--------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------
-//#define DEBUG   OR   #define PLUQ_check
-// PLUQ_check option  0: no verification
-//               	  1: enable PLUQ check in PLUQ and LUdivine
-//-------------------------------------------------------------------------
-
-#define DEBUG 1
 
 #include <iostream>
 #include <stdlib.h>
@@ -87,13 +80,11 @@ int main(int argc, char** argv) {
 		// generate a random matrix A
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
-		//write_field(F,std::cerr<<"A:=",A,m,n,n,true) <<std::endl;
   
+  		Checker_PLUQ<Field> checker (F,A,m,n);
+  		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 		try {
-			//FFPACK::LUdivine_small(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
-			//FFPACK::LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, m, n, A, n, P, Q, FFPACK::FfpackSingular,60);
-			std::cout << "Computing PLUQ...\n";
-			FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
+			checker.check(A,R,P,Q);
 			std::cout << "Verification successful\n";
 			pass++;
 		} catch(FailurePLUQcheck &e) {

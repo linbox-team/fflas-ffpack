@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_fgemm
 
-class FailureFgemmCheck {};
 
 template <class Field> 
 class Checker_fgemm {
@@ -47,7 +46,6 @@ public:
 	       		  typename Field::Element_ptr C, const size_t ldc_)
 		: F(F_), m(m_), n(n_), k(k_), ldc(ldc_), v(FFLAS::fflas_new(F_,n,1)),w1(FFLAS::fflas_new(F_,m,1))
 	{			
-			//std::cout << "Verifing...";
 			typename Field::RandIter G(F);
 			init(G,beta,C);
 	}
@@ -86,7 +84,7 @@ public:
 
 		// is w1 == O ?
 		bool pass = FFLAS::fiszero(F, m, w1, 1);
-		//if (!pass) throw FailureFgemmCheck();
+		if (!pass) throw FailureFgemmCheck();
 		return pass;
 	}
 
