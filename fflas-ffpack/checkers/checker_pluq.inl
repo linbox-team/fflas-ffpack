@@ -30,7 +30,7 @@
 #define __FFLASFFPACK_checker_pluq_INL
 
 #ifdef ENABLE_CHECKER_PLUQ
- 
+#include "ffpack/ffpack.h"
 
 template <class Field> 
 class Checker_PLUQ {

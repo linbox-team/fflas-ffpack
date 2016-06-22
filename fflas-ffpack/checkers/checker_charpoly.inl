@@ -30,7 +30,7 @@
 #define __FFLASFFPACK_checker_charpoly_INL
 
 #ifdef ENABLE_CHECKER_charpoly
-
+#include "ffpack/ffpack.h"
 
 template <class Field, class Polynomial> 
 class Checker_charpoly {

@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_ftrsm
 
-
 template <class Field> 
 class Checker_ftrsm {
 

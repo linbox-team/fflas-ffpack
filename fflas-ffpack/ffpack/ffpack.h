@@ -44,7 +44,6 @@
 #endif
 
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/checkers/checkers.h"
 //#include "parallel.h"
 #include <list>
 #include <vector>
@@ -1425,6 +1424,8 @@ namespace FFPACK { /* not used */
 #ifdef FFPACK_COMPILED 
 #include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
 #endif
+
+#include "fflas-ffpack/checkers/checkers.h"
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"

@@ -55,10 +55,12 @@ int main(int argc, char** argv) {
 	typedef Givaro::Modular<double> Field;
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
+    size_t MAXN = 100;
 	
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &MAXN },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
@@ -67,13 +69,13 @@ int main(int argc, char** argv) {
 	typedef std::vector<Field::Element> Polynomial;
 
 	Field::RandIter Rand(F);
-	Field::Element_ptr A = FFLAS::fflas_new(F,10000,10000);
+	Field::Element_ptr A = FFLAS::fflas_new(F,MAXN,MAXN);
 
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
 
-		size_t n = rand() % 10000 + 1;
-		std::cout << "n= " << n << "\n";
+		size_t n = rand() % MAXN + 1;
+// 		std::cout << "n= " << n << "\n";
 
 		Polynomial g(n);
 

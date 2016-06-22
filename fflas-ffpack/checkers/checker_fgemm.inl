@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_fgemm
 
-
 template <class Field> 
 class Checker_fgemm {
 

@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_invert
 
-
 template <class Field> 
 class Checker_invert {
 

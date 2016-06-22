@@ -29,7 +29,6 @@
 #ifndef FFLASFFPACK_checkers_inl_H
 #define FFLASFFPACK_checkers_inl_H
 
-#include "checkers.h"
 #include "checker_pluq.inl"
 #include "checker_fgemm.inl"
 #include "checker_ftrsm.inl"
