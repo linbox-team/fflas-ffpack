@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
 		std::cerr<<"Warning: rank can not be greater than min (m,n). It has been forced to min (m,n)"<<std::endl;
 		r=std::min(m,n);
 	}
-	if (!par) t=1;NBK=1;
+	if (!par) { t=1;NBK=1;}
 	if (NBK==-1) NBK = t;
 
 	Field::Element_ptr A,  Acop;

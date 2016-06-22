@@ -108,7 +108,6 @@ int main(int argc, char** argv) {
   PAR_BLOCK { pfrand(F,G, k,n,B,k/NBK); }	
 
   C = fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
-  
 //#pragma omp parallel for collapse(2) schedule(runtime) 
   PAR_BLOCK { pfzero(F, m,n,C,m/NBK); }
   
@@ -134,7 +133,8 @@ int main(int argc, char** argv) {
 	      typedef StrategyParameter::ThreeDAdaptive  threeda;
 	      typedef StrategyParameter::ThreeDInPlace  threedip;
 	      PAR_BLOCK{
-	      if (i) chrono.start();
+              if (i) { chrono.start(); }
+              
 	      switch (p){
 		  case 1:{
 			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
