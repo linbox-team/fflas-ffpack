@@ -31,6 +31,8 @@
 //          Test for Checker_charpoly
 //--------------------------------------------------------------------------
 
+#define ENABLE_ALL_CHECKINGS 1
+
 
 #include <iostream>
 #include <stdlib.h>

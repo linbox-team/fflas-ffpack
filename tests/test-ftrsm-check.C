@@ -30,7 +30,7 @@
 //--------------------------------------------------------------------------
 //          Test for Checker_ftrsm
 //--------------------------------------------------------------------------
-#define ENABLE_ALL_CHECKINGS
+#define ENABLE_ALL_CHECKINGS 1
 
 #include <iostream>
 #include <stdlib.h>
