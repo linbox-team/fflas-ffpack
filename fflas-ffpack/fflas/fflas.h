@@ -93,6 +93,9 @@
 #include "fflas-ffpack/interfaces/libs/fflas_L3_inst.h"
 #endif
 
+// Checkers
+#include "fflas-ffpack/checkers/checkers.h"
+
 //---------------------------------------------------------------------
 // specialisations and implementation
 //---------------------------------------------------------------------
@@ -137,5 +140,8 @@
 //---------------------------------------------------------------------
 
 #include "fflas_sparse.h"
+
+// Checkers
+#include "fflas-ffpack/checkers/checkers.inl"
 
 #endif // __FFLASFFPACK_fflas_H

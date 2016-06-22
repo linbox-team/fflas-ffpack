@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_invert
 
-class FailureInvertCheck {};
 
 template <class Field> 
 class Checker_invert {
@@ -44,7 +43,6 @@ public:
 	Checker_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
 			: F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
 	{
-		//std::cout << "Verifing...";
 		typename Field::RandIter G(F);
 		Checker_invert(G,m_,A,lda_);
 	}
@@ -67,7 +65,7 @@ public:
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, w, 1, F.mOne, v, 1);
 
 		bool pass = FFLAS::fiszero(F,m,1,v,1) || nullity != 0;
-		//if (!pass) throw FailureInvertCheck();
+		if (!pass) throw FailureInvertCheck();
 		return pass;
 	}
 };

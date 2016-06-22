@@ -30,8 +30,7 @@
 #define __FFLASFFPACK_checker_pluq_INL
 
 #ifdef ENABLE_CHECKER_PLUQ
-
-class FailurePLUQcheck {};
+ 
 
 template <class Field> 
 class Checker_PLUQ {
@@ -60,65 +59,46 @@ public:
 
 	/** check if the PLUQ factorization is correct.
 	 *  Returns true if w - P(L(U(Q.v))) == 0
+	 * @param A
 	 * @param r
 	 * @param P
 	 * @param Q
 	 */
 	inline bool check(typename Field::Element_ptr A, size_t r, size_t *P, size_t *Q) {
-		//std::cerr << "check, r: " << r << std::endl;
-		//write_perm(std::cerr<<"P:=",P,m)<<std::endl;
-		//write_field(F,std::cerr<<"L,U:=",A,m,n,n,true) <<std::endl;
-		//write_perm(std::cerr<<"Q:=",Q,n)<<std::endl;
-
 		typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); // _w = [w1|w2]
-
-		//write_field(F,std::cerr<<"v0:=",v,n,1,1,true) <<std::endl;
 
 		// v <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
-		//write_field(F,std::cerr<<"v1:=",v,n,1,1,true) <<std::endl;
 
 		// w1 <- V1 && w2 <- 0
  		FFLAS::fassign(F, r, 1, v, 1, _w, 1);
  		for (size_t i=r; i<m; ++i)
 			F.assign(*(_w+i),F.zero);
 
-		//write_field(F,std::cerr<<"w0:=",_w,m,1,1,true) <<std::endl;
-
  		// w1 <- U1.w1
  		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, _w, 1);
 		
-		//write_field(F,std::cerr<<"w1:=",_w,m,1,1,true) <<std::endl;
-
  		// w1 <- U2.V2 + w1
  		if (r < n)
  			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, n, v+r, 1, F.one, _w, 1);
-		//write_field(F,std::cerr<<"w2:=",_w,m,1,1,true) <<std::endl;
 
  		// w2 <- L2.w1
  		if (r < m)
- 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, _w, 1, F.zero, _w+r, 1);
-		//write_field(F,std::cerr<<"w3:=",_w,m,1,1,true) <<std::endl;
- 		
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, _w, 1, F.zero, _w+r, 1); 		
 
  		// w1 <- L1.w1
  		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, n, _w, 1);
-		//write_field(F,std::cerr<<"w4:=",_w,m,1,1,true) <<std::endl;
 
  		// _w <- P._w
  		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, _w, 1, P);
-		//write_field(F,std::cerr<<"w5:=",_w,m,1,1,true) <<std::endl;
 
  		// is _w == w ?
 		FFLAS::fsub(F, m, 1, w, 1, _w, 1, _w, 1);
-
-		//write_field(F,std::cerr<<"_w:=",_w,m,1,1,true) <<std::endl;
-
 		bool pass = FFLAS::fiszero(F,m,1,_w,1);
 
 		FFLAS::fflas_delete(_w);
 
-		//if (!pass) throw FailurePLUQcheck();
+		if (!pass) throw FailurePLUQcheck();
 
 		return pass;
 	}
@@ -126,12 +106,9 @@ public:
 private:	
 	inline void init(typename Field::RandIter &G, typename Field::Element_ptr A) {
 		FFLAS::frand(F,G,n,v,1);
-		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
     	
     	// w <-- A.v
     	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
-		//write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
-
 	}
 };
 

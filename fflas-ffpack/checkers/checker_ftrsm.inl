@@ -31,7 +31,6 @@
 
 #ifdef ENABLE_CHECKER_ftrsm
 
-class FailureTrsmCheck {};
 
 template <class Field> 
 class Checker_ftrsm {
@@ -46,7 +45,6 @@ public:
 				  typename Field::ConstElement_ptr B, const size_t ldb_) 
 			: F(F_), v(FFLAS::fflas_new(F_,n_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), n(n_), ldb(ldb_)
 	{
-		//std::cout << "Verifing...";
 		typename Field::RandIter G(F);
 		init(G,B,alpha);
 	}
@@ -71,37 +69,32 @@ public:
 					  typename Field::ConstElement_ptr X) {
 		k = (side==FFLAS::FflasLeft?m:n);
 		typename Field::Element_ptr v1 = FFLAS::fflas_new(F,k,1);
-		//write_field(F,std::cerr<<"X:=",X,m,n,ldb,true) <<std::endl;
 
 		// (Left) v1 <- X.v OR (Right) v1 <- A.v
 		if (side==FFLAS::FflasLeft)
 			FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldb, v, 1, F.zero, v1, 1);
 		else
 			FFLAS::fgemv(F, trans, k, k, F.one, A, lda, v, 1, F.zero, v1, 1);
-		//write_field(F,std::cerr<<"v1:=",v1,k,1,1,true) <<std::endl;
 
 		// (Left) w <- A.v1 - w OR (Right) w <- X.v1 - w
 		if (side==FFLAS::FflasLeft)
 			FFLAS::fgemv(F, trans, k, k, F.one, A, lda, v1, 1, F.mOne, w, 1);
 		else 
 			FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, X, ldb, v1, 1, F.mOne, w, 1);
-		//write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
 
 		FFLAS::fflas_delete(v1);
 
 		bool pass = FFLAS::fiszero(F,m,1,w,1);
-		//if (!pass) throw FailureTrsmCheck();
+		if (!pass) throw FailureTrsmCheck();
 		return pass;
 	}
 
 private:	
 	inline void init(typename Field::RandIter &G, typename Field::ConstElement_ptr B, const typename Field::Element alpha) {
 		FFLAS::frand(F,G,n,v,1);
-		//write_field(F,std::cerr<<"v:=",v,n,1,1,true) <<std::endl;
 
 		// w <- alpha.B.v
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, alpha, B, ldb, v, 1, F.zero, w, 1);
-		//write_field(F,std::cerr<<"w:=",w,m,1,1,true) <<std::endl;
 	}
 };
 

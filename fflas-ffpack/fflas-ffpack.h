@@ -33,9 +33,7 @@
 #define __FFLASFFPACK_fflas_ffpack_H
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-#include "checkers/checkers.h"
 #include "fflas/fflas.h"
 #include "ffpack/ffpack.h"
-#include "checkers/checkers.inl"
 
 #endif // __FFLASFFPACK_fflas_ffpack_H

@@ -1,5 +1,36 @@
-#define ENABLE_CHECKER_charpoly 1
-#define ENABLE_CHECKER_PLUQ 1
+/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+/*
+ * Copyright (C) 2015 the FFLAS-FFPACK group
+ * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>
+ *
+ * This file is Free Software and part of FFLAS-FFPACK.
+ *
+ * ========LICENCE========
+ * This file is part of the library FFLAS-FFPACK.
+ *
+ * FFLAS-FFPACK is free software: you can redistribute it and/or modify
+ * it under the terms of the  GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * ========LICENCE========
+ *
+ */
+
+//--------------------------------------------------------------------------
+//          Test for Checker_charpoly
+//--------------------------------------------------------------------------
+
 
 #include <iostream>
 #include <stdlib.h>
@@ -23,30 +54,46 @@ int main(int argc, char** argv) {
 	srand (time(NULL));
 	typedef Givaro::Modular<double> Field;
 	Givaro::Integer q = 131071;
+	size_t iter = 3;
+	
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
+		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+		END_OF_ARGUMENTS
+	};
+	FFLAS::parseArguments(argc,argv,as);
+
 	Field F(q);
 	typedef std::vector<Field::Element> Polynomial;
 
 	Field::RandIter Rand(F);
-	Field::Element_ptr A = FFLAS::fflas_new(F,1000,1000);
+	Field::Element_ptr A = FFLAS::fflas_new(F,10000,10000);
 
-	size_t p = 0;
-	for (size_t i=0; i<1000; ++i) {
+	size_t pass = 0;
+	for (size_t i=0; i<iter; ++i) {
 
-		size_t n = rand() % 1000 + 1;
+		size_t n = rand() % 10000 + 1;
+		std::cout << "n= " << n << "\n";
 
 		Polynomial g(n);
 
 		for( size_t i = 0; i < n*n; ++i )
 			Rand.random( *(A+i) );
 
-		//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
-		Checker_charpoly<Field,Polynomial> checker(F,n,A);
-		FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
-		//printPolynomial(F,g);
-		p += checker.check(g);
+		try {
+			//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
+			Checker_charpoly<Field,Polynomial> checker(F,n,A);
+			FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
+			//printPolynomial(F,g);
+			checker.check(g);
+			std::cout << "Verification successful\n";
+			pass++;
+		} catch(FailureCharpolyCheck &e) {
+			std::cout << "Verification failed!\n";
+		}
 	}
 
-	std::cout << p << "/1000 successful tests\n";
+	std::cout << pass << "/" << iter << " tests were successful.\n";	
 
 	return 0;
 }

@@ -40,6 +40,8 @@ template <class Field>
 	{
 		FFLASFFPACK_check(lda >= M);
 
+		Checker_invert<Field> checker(F,M,A,lda);
+
 		if (M == 0) {
 			nullity = 0 ;
 			return NULL ;
@@ -52,6 +54,8 @@ template <class Field>
 			M, 0, (int)R, A, lda, P);
 		delete [] P;
 		delete [] Q;
+
+		checker.check(A,nullity);
 		return A;
 	}
 
