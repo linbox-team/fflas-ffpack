@@ -32,10 +32,10 @@ fi
 JENKINS_DIR=${SOURCE_DIRECTORY%%/workspace/*}
 LOCAL_DIR="$JENKINS_DIR"/local
 # Add path to compilers (if needed)
-export PATH=$PATH:"$LOCAL_DIR/$CXX/bin"
+export PATH=$PATH:/usr/local/bin:"$LOCAL_DIR/$CXX/bin"
 echo $PATH
 # Add specific locations (if needed)
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$LOCAL_DIR/$CXX/lib"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib"
 
 # Where are blas installed (<blas_home>/lib/<blas_name>.so)
 # And their name (libtotoblas)
