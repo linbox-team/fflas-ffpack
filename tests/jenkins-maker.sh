@@ -67,6 +67,7 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PREFIX_INSTALL"/lib:"$GIVARO_PATH"/l
 
 if [ "$CXX" == "icpc" ]; then
      distribution=`uname -m`
+     CC=icc
      if [ "$distribution" == "i686" ]; then 	
 	source /usr/local/bin/compilervars.sh ia32
      else
@@ -78,14 +79,21 @@ fi
 vm_name=`uname -n | cut -d"-" -f1`
 if [[ "$vm_name" == "fedora"  &&  "$CXX" == "g++-5.3" ]]; then
    CXX="g++"
+   CC=gcc
 fi
-
+if [ -z "$CC" ]; then
+    if [[ $CXX == g++* ]]; then
+        CC=`echo $CXX | sed -re 'y/++/cc/'`
+    else
+        CC="clang"
+    fi
+fi 
 #==================================#
 # Automated installation and tests #
 #==================================#
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CXXFLAGS=$CXXFLAGS --prefix=$PREFIX_INSTALL --with-givaro=$GIVARO_PATH --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
-./autogen.sh CXX=$CXX CXXFLAGS=$CXXFLAGS --prefix="$PREFIX_INSTALL" --with-givaro="$GIVARO_PATH" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CXXFLAGS=$CXXFLAGS CC=$CC --prefix=$PREFIX_INSTALL --with-givaro=$GIVARO_PATH --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
+./autogen.sh CXX=$CXX CXXFLAGS=$CXXFLAGS CC=$CC --prefix="$PREFIX_INSTALL" --with-givaro="$GIVARO_PATH" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make prefix=$PREFIX_INSTALL install"
