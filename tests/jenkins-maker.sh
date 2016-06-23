@@ -92,8 +92,8 @@ fi
 # Automated installation and tests #
 #==================================#
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CXXFLAGS=$CXXFLAGS CC=$CC --prefix=$PREFIX_INSTALL --with-givaro=$GIVARO_PATH --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
-./autogen.sh CXX=$CXX CXXFLAGS=$CXXFLAGS CC=$CC --prefix="$PREFIX_INSTALL" --with-givaro="$GIVARO_PATH" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-givaro=$GIVARO_PATH --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-givaro="$GIVARO_PATH" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make prefix=$PREFIX_INSTALL install"
