@@ -721,7 +721,7 @@ namespace FFPACK {
 		 const size_t m, const size_t ibeg, const size_t iend,
 		 typename Field::Element_ptr A, const size_t lda, const size_t * P )
 	{
-		int numthreads = MAX_THREADS;//omp_get_max_threads();
+		int numthreads = MAX_THREADS;
 		size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
 		size_t NBlocks = m/BLOCKSIZE;
 		size_t LastBlockSize = m % BLOCKSIZE;
@@ -736,7 +736,6 @@ namespace FFPACK {
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
-				//#pragma omp task shared (A, P, F) firstprivate(BlockDim)
 
 				TASK(MODE(CONSTREFERENCE(F, A,P) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
 				     applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
