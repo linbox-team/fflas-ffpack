@@ -226,8 +226,6 @@ namespace FFPACK { /* Permutations */
 					 typename Field::Element_ptr A, const size_t lda, const size_t incA,
 					 const size_t * MathP, const size_t R, const size_t maxpiv,
 					 const size_t rowstomove, const std::vector<bool> &ispiv);
-//#ifdef __FFLASFFPACK_USE_OPENMP
-
 
 	//! Parallel applyP with OPENMP tasks
 	template<class Field>
