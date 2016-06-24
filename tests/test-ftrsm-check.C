@@ -44,16 +44,19 @@ int main(int argc, char** argv) {
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
 	size_t MAXN = 100;
-    
+    size_t seed(0);
+
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &MAXN },
+        { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);	
 
-	Field F(q);
+	Field F(q); Field::RandIter G(F,0,seed);
+    srandom(seed);
 
 	typename Field::Element alpha,tmp;
 	Field::RandIter Rand(F);
@@ -62,8 +65,8 @@ int main(int argc, char** argv) {
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
 
-		size_t m = rand() % MAXN + 1;
-		size_t n = rand() % MAXN + 1;
+		size_t m = random() % MAXN + 1;
+		size_t n = random() % MAXN + 1;
 		std::cout << "m= " << m << "    n= " << n << "\n";
 		Rand.random(alpha);
 		FFLAS::FFLAS_SIDE side = rand()%2?FFLAS::FflasLeft:FFLAS::FflasRight;
@@ -89,7 +92,7 @@ int main(int argc, char** argv) {
 		}
 		//write_field(F,std::cerr<<"A:=",A,k,k,k,true) <<std::endl;
 
-		Checker_ftrsm<Field> checker(F, m, n, alpha, X, n);
+		Checker_ftrsm<Field> checker(G, m, n, alpha, X, n);
 		FFLAS::ftrsm(F, side, uplo, trans, diag, m, n, alpha, A, k, X, n);
 		try {
 			checker.check(side, uplo, trans, diag, m, n, A, k, X, n);

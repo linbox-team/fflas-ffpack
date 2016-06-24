@@ -39,14 +39,14 @@ class Checker_invert {
 	size_t m,lda;
 
 public:
-	Checker_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
+	Checker_invert(const Field& F_, const size_t m_, typename Field::Element_ptr A, const size_t lda_) 
 			: F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
 	{
 		typename Field::RandIter G(F);
 		Checker_invert(G,m_,A,lda_);
 	}
 
-	Checker_invert(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
+	Checker_invert(typename Field::RandIter &G, const size_t m_, typename Field::Element_ptr A, const size_t lda_) 
 			: F(G.ring()), v(FFLAS::fflas_new(F,m_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), lda(lda_)
 	{
 		FFLAS::frand(F,G,m,v,1);
@@ -59,11 +59,11 @@ public:
 		FFLAS::fflas_delete(v,w);
 	}
 
-	inline bool check(typename Field::ConstElement_ptr A, int nullity) {
+	inline bool check(typename Field::Element_ptr A, int nullity) {
 		// v <- A.w - v
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, w, 1, F.mOne, v, 1);
 
-		bool pass = FFLAS::fiszero(F,m,1,v,1) || nullity != 0;
+		bool pass = FFLAS::fiszero(F,m,1,v,1) || (nullity != 0);
 		if (!pass) throw FailureInvertCheck();
 		return pass;
 	}

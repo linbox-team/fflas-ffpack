@@ -43,9 +43,10 @@
 int main(int argc, char** argv) {
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
-	size_t m = 0;
-	size_t n = 0;
-	bool random_dim = false;
+	size_t MAXM = 1000;
+	size_t MAXN = 1000;
+    size_t m=0,n=0;
+ bool random_dim = false;
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
@@ -69,8 +70,8 @@ int main(int argc, char** argv) {
 
 	for(size_t it=0; it<iter; ++it) {
 		if (random_dim) {
-			m = rand() % 10000 + 1;
-			n = rand() % 10000 + 1;
+			m = rand() % MAXM + 1;
+			n = rand() % MAXN + 1;
 		}
 			
 		std::cout << "m= " << m << "    n= " << n << "\n";
