@@ -59,17 +59,17 @@ int main(int argc, char** argv) {
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
 
-		size_t m = rand() % 10000 + 1;
-		size_t n = rand() % 10000 + 1;
-		size_t k = rand() % 10000 + 1;
+		size_t m = rand() % 1000 + 1;
+		size_t n = rand() % 1000 + 1;
+		size_t k = rand() % 1000 + 1;
 		std::cout << "m= " << m << "    n= " << n << "    k= " << k << "\n";
 
 		typename Field::Element alpha,beta;
-		F.init(alpha, rand()%10000+1);
-		F.init(beta,  rand()%10000+1);
+		F.init(alpha); Rand.random(alpha);
+		F.init(beta);  Rand.random(beta);
 		
-		ta = rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans,
-		tb = rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
+		ta = /*rand()%2 ? */FFLAS::FflasNoTrans /*: FFLAS::FflasTrans*/,
+		tb = /*rand()%2 ? */FFLAS::FflasNoTrans /*: FFLAS::FflasTrans*/;
 
 		size_t lda = ta == FFLAS::FflasNoTrans ? k : m,
 			   ldb = tb == FFLAS::FflasNoTrans ? n : k,

@@ -33,6 +33,8 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
+#define ENABLE_ALL_CHECKINGS 1
+
 #include <iomanip>
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"

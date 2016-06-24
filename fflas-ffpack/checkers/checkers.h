@@ -95,7 +95,7 @@ struct Checker_Empty {
 	template <class Field, class Polynomial> using Checker_charpoly = Checker_Empty<Field>;
 #endif
 
-#include "fflas/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas/fflas_enum.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
 

@@ -31,6 +31,8 @@
 //          Test for Checker_invert
 //--------------------------------------------------------------------------
 
+#define ENABLE_ALL_CHECKINGS 1
+
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>

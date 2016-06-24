@@ -26,6 +26,8 @@
  *.
  */
 
+#define ENABLE_ALL_CHECKINGS 1
+
 #define  __FFLASFFPACK_SEQUENTIAL
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
