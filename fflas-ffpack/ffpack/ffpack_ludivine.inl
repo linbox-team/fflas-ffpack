@@ -40,7 +40,7 @@ namespace FFPACK {
 					typename Field::Element_ptr A, const size_t lda, size_t*P,
 					size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag)
 	{
-		Checker_PLUQ<Field> checker (F,A,M,N);
+		Checker_PLUQ<Field> checker (F,M,N,A,lda);
 
 		size_t MN = std::min(M,N);
 		typename Field::Element_ptr Acurr = A;
@@ -637,7 +637,7 @@ namespace FFPACK {
 			  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
 		 )
 	{
-		Checker_PLUQ<Field> checker (F,A,M,N);
+		Checker_PLUQ<Field> checker (F,M,N,A,lda);
 		size_t R = _LUdivine(F,Diag,trans,M,N,A,lda,P,Q,LuTag,cutoff);
 		checker.check(A,R,P,Q);
 		return R;

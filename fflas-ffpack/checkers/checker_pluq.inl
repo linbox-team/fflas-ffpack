@@ -40,17 +40,17 @@ class Checker_PLUQ {
 	const size_t m,n;
 
 public:
-	Checker_PLUQ(const Field& F_, typename Field::Element_ptr A, size_t m_, size_t n_) 
+	Checker_PLUQ(const Field& F_, size_t m_, size_t n_, typename Field::ConstElement_ptr A, size_t lda) 
 				: F(F_), v(FFLAS::fflas_new(F_,n_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), n(n_)
 	{
 		typename Field::RandIter G(F);
-		init(G,A);
+		init(G,A,lda);
 	}
 
-	Checker_PLUQ(typename Field::RandIter &G, typename Field::Element_ptr A, size_t m_, size_t n_)
+	Checker_PLUQ(typename Field::RandIter &G, size_t m_, size_t n_, typename Field::Element_ptr A, size_t lda)
 				: F(G.ring()), v(FFLAS::fflas_new(F,n_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), n(n_)
 	{
-		init(G,A);
+		init(G,A,lda);
 	}
 
 	~Checker_PLUQ() {
@@ -104,11 +104,16 @@ public:
 	}
 
 private:	
-	inline void init(typename Field::RandIter &G, typename Field::Element_ptr A) {
+	inline void init(typename Field::RandIter &G, typename Field::ConstElement_ptr A, size_t lda) {
 		FFLAS::frand(F,G,n,v,1);
+
+write_field(F,std::cerr<<"init A : ",A,m,n,lda,true)<<std::endl;
+write_field(F,std::cerr<<"init v : ",v,n,1,1,true)<<std::endl;
+        
     	
     	// w <-- A.v
-    	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, n, v, 1, F.zero, w, 1);
+    	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, lda, v, 1, F.zero, w, 1);
+write_field(F,std::cerr<<"init w : ",w,m,1,1,true)<<std::endl;
 	}
 };
 
