@@ -44,9 +44,11 @@ int main(int argc, char** argv) {
 	typedef Givaro::Modular<double> Field;
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
-	
+	size_t MAXM = 1000;
+    
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
+		{ 'n', "-n N", "Set the maximal size of the matrix.", TYPE_INT , &MAXM },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
 		END_OF_ARGUMENTS
 	};
@@ -57,9 +59,9 @@ int main(int argc, char** argv) {
 	Field::RandIter Rand(F);
 
 	int nullity;
-	size_t m, pass = 0;
+	size_t m = MAXM, pass = 0;
 	for (size_t i=0; i<iter; ++i) {
-		m = rand() % 10000 + 1;
+		m = rand() % MAXM + 1;
 		std::cout << "m= " << m << "\n";
 
 		Field::Element_ptr A = FFLAS::fflas_new(F,m,m);
