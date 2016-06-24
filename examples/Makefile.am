@@ -29,8 +29,9 @@ AM_CPPFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) -I$(top_srcdir)/fflas
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-FFLA_EXAMP =    2x2-fgemm 
+FFLA_EXAMP =    2x2-fgemm pluq
 2x2_fgemm_SOURCES = 2x2-fgemm.C
+pluq_SOURCES = pluq.C
 
 if FFLASFFPACK_HAVE_LAPACK
 USE_LAPACK_EXAMP = $(LAPA_EXAMP)

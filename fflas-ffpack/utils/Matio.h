@@ -34,7 +34,7 @@
 
 // Reading a matrice from a (eventually zipped) file
 template<class Field>
-typename Field::Element_ptr read_field(const Field& F, const char * mat_file,int* tni,int* tnj)
+typename Field::Element_ptr read_field(const Field& F, const char * mat_file,size_t * tni,size_t* tnj)
 {
 	char *UT = NULL;
 	const char* File_Name;
@@ -62,7 +62,7 @@ typename Field::Element_ptr read_field(const Field& F, const char * mat_file,int
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
 		char  tmp [200];// unsigned long tni, tnj;
-		if (fscanf(FileDes,"%d %d %199s\n",tni, tnj, tmp)<0)
+		if (fscanf(FileDes,"%lu %lu %199s\n",tni, tnj, tmp)<0)
 			printf("Error Reading first line of file \n");
 		int n=*tni;
 		int p=*tnj;
