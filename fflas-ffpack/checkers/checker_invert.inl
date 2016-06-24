@@ -43,16 +43,13 @@ public:
 			: F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
 	{
 		typename Field::RandIter G(F);
-		Checker_invert(G,m_,A,lda_);
+        init(G,m,A,lda);
 	}
 
 	Checker_invert(typename Field::RandIter &G, const size_t m_, typename Field::Element_ptr A, const size_t lda_) 
 			: F(G.ring()), v(FFLAS::fflas_new(F,m_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), lda(lda_)
 	{
-		FFLAS::frand(F,G,m,v,1);
-
-		// w <- A.v
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.zero, w, 1);
+        init(G,m,A,lda);
 	}
 
 	~Checker_invert() {
@@ -67,6 +64,20 @@ public:
 		if (!pass) throw FailureInvertCheck();
 		return pass;
 	}
+
+private:
+  	void init(typename Field::RandIter &G, const size_t m_, typename Field::Element_ptr A, const size_t lda_) {
+		FFLAS::frand(F,G,m,v,1);
+		// w <- A.v
+
+// write_field(F,std::cerr<<"init A : ",A,m,m,lda,true)<<std::endl;
+// write_field(F,std::cerr<<"init v : ",v,m,1,1,true)<<std::endl;
+        
+    	
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.zero, w, 1);
+// write_field(F,std::cerr<<"init w : ",w,m,1,1,true)<<std::endl;
+    }
+  
 };
 
 #endif // ENABLE_CHECKER_invert

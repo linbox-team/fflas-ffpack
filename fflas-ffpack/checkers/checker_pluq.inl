@@ -1,10 +1,10 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/checker_pluq.inl
- * Copyright (C) 2016 Ashley Lesdalons
+ * Copyright (C) 2016 Jean-Guillaume Dumas
  *
  * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>
- *
+ *            Jean-Guillaume Dumas <Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -43,7 +43,7 @@ public:
 	Checker_PLUQ(const Field& F_, size_t m_, size_t n_, typename Field::ConstElement_ptr A, size_t lda) 
 				: F(F_), v(FFLAS::fflas_new(F_,n_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), n(n_)
 	{
-		typename Field::RandIter G(F);
+		typename Field::RandIter G(F,0,1234);
 		init(G,A,lda);
 	}
 
@@ -64,8 +64,10 @@ public:
 	 * @param P
 	 * @param Q
 	 */
-	inline bool check(typename Field::Element_ptr A, size_t r, size_t *P, size_t *Q) {
+	inline bool check(typename Field::Element_ptr A, size_t lda, size_t r, size_t *P, size_t *Q) {
 		typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); // _w = [w1|w2]
+write_field(F,std::cerr<<"chec A : ",A,m,n,lda,true)<<std::endl;
+write_field(F,std::cerr<<"chec v : ",v,m,1,1,true)<<std::endl;
 
 		// v <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
@@ -76,18 +78,18 @@ public:
 			F.assign(*(_w+i),F.zero);
 
  		// w1 <- U1.w1
- 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, n, _w, 1);
+ 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, lda, _w, 1);
 		
  		// w1 <- U2.V2 + w1
  		if (r < n)
- 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, n, v+r, 1, F.one, _w, 1);
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, lda, v+r, 1, F.one, _w, 1);
 
  		// w2 <- L2.w1
  		if (r < m)
- 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, n, _w, 1, F.zero, _w+r, 1); 		
+ 			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, lda, _w, 1, F.zero, _w+r, 1); 		
 
  		// w1 <- L1.w1
- 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, n, _w, 1);
+ 		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, lda, _w, 1);
 
  		// _w <- P._w
  		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, _w, 1, P);

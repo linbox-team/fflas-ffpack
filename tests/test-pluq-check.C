@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   		Checker_PLUQ<Field> checker (RValue,m,n,A,n);
   		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 		try {
-			checker.check(A,R,P,Q);
+			checker.check(A,n,R,P,Q);
 			std::cout << "Verification successful\n";
 			pass++;
 		} catch(FailurePLUQcheck &e) {
