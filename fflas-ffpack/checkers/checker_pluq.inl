@@ -32,6 +32,34 @@
 #ifdef ENABLE_CHECKER_PLUQ
 #include "ffpack/ffpack.h"
 
+namespace FFLAS {
+	template<>
+	bool
+	fiszero (const Givaro::Modular<double>& F, const size_t n,
+		  Givaro::Modular<double>::ConstElement_ptr X, const size_t incX)
+	{
+		bool res=true;
+		for (size_t i = 0 ; i < n ; ++i) {
+            F.write(std::cerr) << std::endl;
+            
+            F.write(std::cerr << "[" << i*incX << "]: ", X [i*incX]) << " is " << X [i*incX] << " == " << F.isZero (X [i*incX]);
+			res &= F.isZero (X [i*incX]);
+            std::cerr << " ---> " << res << std::endl;
+        }
+		return res;
+	}
+
+    
+}
+template<class FieldEleme>void show(FieldEleme, size_t);
+
+template<>
+void show<double*>(double* w, size_t m) {
+    for(size_t i=0; i<m; ++i) 
+        std::cerr << w[i] << ' ';
+    std::cerr << std::endl;
+}
+
 template <class Field> 
 class Checker_PLUQ {
 
@@ -66,24 +94,38 @@ public:
 	 */
 	inline bool check(typename Field::Element_ptr A, size_t lda, size_t r, size_t *P, size_t *Q) {
 		typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); // _w = [w1|w2]
+        std::cerr << m << 'x' << n << ' ' << lda << ' ' << r << std::endl;
+        
+
 write_field(F,std::cerr<<"chec A : ",A,m,n,lda,true)<<std::endl;
+ show(A,m*n);
 write_field(F,std::cerr<<"chec v : ",v,m,1,1,true)<<std::endl;
+ show(v,m);
+write_perm(std::cerr<<"pluq Q : ",Q,n)<<std::endl;
 
 		// v <-- Q.v
 		FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
 
+write_field(F,std::cerr<<"chec Q : ",v,m,1,1,true)<<std::endl;
+ show(v,m);
 		// w1 <- V1 && w2 <- 0
  		FFLAS::fassign(F, r, 1, v, 1, _w, 1);
- 		for (size_t i=r; i<m; ++i)
-			F.assign(*(_w+i),F.zero);
+write_field(F,std::cerr<<"chec _w : ",_w,r,1,1,true)<<std::endl;
+ 		FFLAS::fzero(F, m-r, _w+r, 1);
+write_field(F,std::cerr<<"chec _w : ",_w,m,1,1,true)<<std::endl;
+ show(_w,m);
 
  		// w1 <- U1.w1
  		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, lda, _w, 1);
+write_field(F,std::cerr<<"chec w1 : ",_w,r,1,1,true)<<std::endl;
+ show(_w,r);
 		
  		// w1 <- U2.V2 + w1
  		if (r < n)
  			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, lda, v+r, 1, F.one, _w, 1);
 
+write_field(F,std::cerr<<"chec w12 : ",_w,m,1,1,true)<<std::endl;
+ show(_w,m);
  		// w2 <- L2.w1
  		if (r < m)
  			FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, lda, _w, 1, F.zero, _w+r, 1); 		
@@ -91,13 +133,26 @@ write_field(F,std::cerr<<"chec v : ",v,m,1,1,true)<<std::endl;
  		// w1 <- L1.w1
  		FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, lda, _w, 1);
 
+write_field(F,std::cerr<<"chec w : ",_w,m,1,1,true)<<std::endl;
+ show(_w,m);
  		// _w <- P._w
  		FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, m, _w, 1, P);
 
- 		// is _w == w ?
-		FFLAS::fsub(F, m, 1, w, 1, _w, 1, _w, 1);
-		bool pass = FFLAS::fiszero(F,m,1,_w,1);
+write_perm(std::cerr<<"pluq P : ",P,n)<<std::endl;
+write_field(F,std::cerr<<"chec P _w : ",_w,m,1,1,true)<<std::endl;
+ show(_w,m);
+write_field(F,std::cerr<<"chec P  w : ", w,m,1,1,true)<<std::endl;
+ show(w,m);
 
+
+ 		// is _w == w ?
+		FFLAS::fsubin(F, m, w, 1, _w, 1);
+// 		FFLAS::freduce(F, m, w, 1);
+
+write_field(F,std::cerr<<"chec e : ",_w,m,1,1,true)<< " ---> ";
+		bool pass = FFLAS::fiszero(F,m,_w,1);
+std::cerr<< pass << std::endl;
+        
 		FFLAS::fflas_delete(_w);
 
 		if (!pass) throw FailurePLUQcheck();
