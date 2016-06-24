@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
 	size_t MAXM = 1000;
 	size_t MAXN = 1000;
     size_t m=0,n=0;
+    size_t seed(0);
  bool random_dim = false;
 
 	Argument as[] = {
@@ -53,6 +54,7 @@ int main(int argc, char** argv) {
 		{ 'm', "-m M", "Set the row dimension of A.", TYPE_INT , &m },
 		{ 'n', "-n N", "Set the col dimension of A.", TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+        { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
 		END_OF_ARGUMENTS
 	};
 
@@ -64,14 +66,15 @@ int main(int argc, char** argv) {
 	typedef Givaro::Modular<double> Field;
 	Field F(q);
 
-	Field::RandIter RValue(F);
-
+	Field::RandIter RValue(F,0,seed);
+    srandom(seed);
+    
 	size_t pass = 0;	// number of tests that have successfully passed
 
 	for(size_t it=0; it<iter; ++it) {
 		if (random_dim) {
-			m = rand() % MAXM + 1;
-			n = rand() % MAXN + 1;
+			m = random() % MAXM + 1;
+			n = random() % MAXN + 1;
 		}
 			
 		std::cout << "m= " << m << "    n= " << n << "\n";
@@ -84,7 +87,7 @@ int main(int argc, char** argv) {
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
   
-  		Checker_PLUQ<Field> checker (F,m,n,A,n);
+  		Checker_PLUQ<Field> checker (RValue,m,n,A,n);
   		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 		try {
 			checker.check(A,R,P,Q);
