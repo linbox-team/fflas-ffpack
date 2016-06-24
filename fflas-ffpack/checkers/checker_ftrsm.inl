@@ -43,7 +43,7 @@ public:
 				  const typename Field::ConstElement_ptr B, const size_t ldb) 
 			: F(F_), v(FFLAS::fflas_new(F_,n,1)), w(FFLAS::fflas_new(F_,m,1))
 	{
-		typename Field::RandIter G(F,0,1234);
+		typename Field::RandIter G(F);
 		init(G,m,n,B,ldb,alpha);
 	}
 
