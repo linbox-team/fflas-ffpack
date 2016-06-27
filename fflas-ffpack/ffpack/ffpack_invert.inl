@@ -38,7 +38,7 @@ template <class Field>
 		typename Field::Element_ptr A, const size_t lda,
 		int& nullity)
 	{
-		FFLASFFPACK_check(lda >= M);
+        FFLASFFPACK_check(lda >= M);
 
 		Checker_invert<Field> checker(F,M,A,lda);
 

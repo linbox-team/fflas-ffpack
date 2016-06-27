@@ -422,7 +422,6 @@ namespace FFPACK {
 			  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
 		 )
 	{
-		//std::cout<<"LUDivine ("<<M<<","<<N<<")"<<std::endl;
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
 		size_t MN = std::min(M,N);

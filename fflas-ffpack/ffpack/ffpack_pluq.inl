@@ -633,7 +633,6 @@ namespace FFPACK {
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
 	{
-
 		Checker_PLUQ<Field> checker (Fi,M,N,A,lda);
 		size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q);
 		checker.check(A,lda,R,P,Q);

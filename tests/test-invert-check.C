@@ -73,11 +73,10 @@ int main(int argc, char** argv) {
 	for (size_t i=0;i<m;++i){
 		for (size_t j=0;j<i;++j)
 			Rand.random(A[i*m+j]);
-    }
-	for (size_t i=0;i<m;++i)
+        for(size_t j=i+1;j<m;++j)
+            F.assign(A[i*m+j],F.zero);
         NZRand.random(A[i*m+i]);
-// 		for( size_t i = 0; i < m*m; ++i )
-// 			Rand.random( *(A+i) );
+    }
 
 		Checker_invert<Field> checker(Rand,m,A,m);
 		FFPACK::Invert(F,m,A,m,nullity);
