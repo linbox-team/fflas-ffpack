@@ -107,7 +107,6 @@ test_fgemm_check_SOURCES = test-fgemm-check.C
 test_ftrsm_check_SOURCES = test-ftrsm-check.C
 test_invert_check_SOURCES = test-invert-check.C
 test_charpoly_check_SOURCES = test-charpoly-check.C
-test_verify_charpoly_SOURCES = test-verify-charpoly.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C

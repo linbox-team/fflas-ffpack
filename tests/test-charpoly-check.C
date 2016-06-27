@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
@@ -54,7 +54,7 @@ void printPolynomial (const Field &F, Polynomial &v)
 
 int main(int argc, char** argv) {
 	srand (time(NULL));
-	typedef Givaro::Modular<double> Field;
+	typedef Givaro::ModularBalanced<double> Field;
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
     size_t MAXN = 100;
@@ -98,6 +98,8 @@ int main(int argc, char** argv) {
 		} catch(FailureCharpolyCheck &e) {
 			std::cout << n << 'x' << n << " charpoly verification failed!\n";
 		}
+		FFLAS::fflas_delete( A);
+		
 	}
 
 	std::cout << pass << "/" << iter << " tests were successful.\n";	
