@@ -48,6 +48,17 @@
  	#define ENABLE_CHECKER_charpoly 1
 #endif
 
+#ifdef TIME_CHECKERS
+#include <givaro/givtimer.h>
+#define TIME_CHECKER_FGEMM
+#define TIME_CHECKER_FTRSM
+#define TIME_CHECKER_PLUQ
+#define TIME_CHECKER_INVERT
+#define TIME_CHECKER_CHARPOLY
+#endif
+
+
+
 
 // definition of the exceptions
 class FailureFgemmCheck {};

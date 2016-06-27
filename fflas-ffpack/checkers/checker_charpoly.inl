@@ -32,6 +32,10 @@
 #ifdef ENABLE_CHECKER_charpoly
 #include "ffpack/ffpack.h"
 
+#ifdef TIME_CHECKER_CHARPOLY
+#include <givaro/givtimer.h>
+#endif
+
 namespace FFPACK {
     template <class Field, class Polynomial> 
     class Checker_charpoly {
@@ -40,6 +44,9 @@ namespace FFPACK {
         const size_t n;
         typename Field::Element lambda, det;
         bool pass;
+#ifdef TIME_CHECKER_CHARPOLY
+        Givaro::Timer _time;
+#endif
 
     public:
         Checker_charpoly(const Field& F_, const size_t n_, typename Field::Element_ptr A) 
@@ -59,6 +66,9 @@ namespace FFPACK {
         }
 
         inline bool check(Polynomial &g) {
+#ifdef TIME_CHECKER_CHARPOLY
+            Givaro::Timer checktime; checktime.start();
+#endif
             typename Field::Element h = F.zero,
                 t = F.one,
                 u;
@@ -72,11 +82,18 @@ namespace FFPACK {
             pass = pass && F.areEqual(h,det);
             if (!pass) throw FailureCharpolyCheck();
 
+#ifdef TIME_CHECKER_CHARPOLY
+            checktime.stop(); _time += checktime;
+            std::cerr << "CHARPol CHECK: " << _time << std::endl;
+#endif
             return pass;
         }
 
     private:
         inline void init(typename Field::RandIter &G, typename Field::Element_ptr A) {
+#ifdef TIME_CHECKER_CHARPOLY
+            Givaro::Timer inittime; inittime.start();
+#endif
                 // random lambda
             G.random(lambda);
 
@@ -111,7 +128,19 @@ namespace FFPACK {
                 // P,Ac,Q <- PLUQ(Ac)
             size_t *P = FFLAS::fflas_new<size_t>(n);
             size_t *Q = FFLAS::fflas_new<size_t>(n);
+
+#ifdef TIME_CHECKER_CHARPOLY
+            Givaro::Timer pluqtime; pluqtime.start();
+#endif
+
             FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
+
+#ifdef TIME_CHECKER_CHARPOLY
+            pluqtime.stop(); _time -= pluqtime;
+            inittime.stop(); _time += inittime;
+            std::cerr << "CHARPol server PLUQ:" << pluqtime << std::endl;
+            inittime.start();
+#endif
 
                 // compute the determinant of A
             F.init(det,*Ac);
@@ -128,6 +157,9 @@ namespace FFPACK {
             if (t%2 == 1) F.neg(det,det);
 
             FFLAS::fflas_delete(Ac);
+#ifdef TIME_CHECKER_CHARPOLY
+            inittime.stop(); _time += inittime;
+#endif
         }
     };
     

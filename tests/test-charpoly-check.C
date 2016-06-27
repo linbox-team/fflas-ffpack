@@ -58,26 +58,26 @@ int main(int argc, char** argv) {
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
     size_t MAXN = 100;
+    size_t n = 0;
 	
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
-		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &MAXN },
+		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
 
 	Field F(q);
-	typedef std::vector<Field::Element> Polynomial;
-
 	Field::RandIter Rand(F);
-	Field::Element_ptr A = FFLAS::fflas_new(F,MAXN,MAXN);
+    typedef std::vector<Field::Element> Polynomial;
 
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
-
-		size_t n = rand() % MAXN + 1;
+        
+		n = n?n: rand() % MAXN + 1;
 // 		std::cout << "n= " << n << "\n";
+        Field::Element_ptr A = FFLAS::fflas_new(F,n,n);
 
 		Polynomial g(n);
 
@@ -86,14 +86,17 @@ int main(int argc, char** argv) {
 
 		try {
 			//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
-			FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
+// 			FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
+            Givaro::Timer charpolytime; charpolytime.start();
 			FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
+            charpolytime.stop();
+            std::cerr << "CHARPol time:" << charpolytime << std::endl;
 			//printPolynomial(F,g);
-			checker.check(g);
-			std::cout << "Verification successful\n";
+// 			checker.check(g);
+			std::cout << n << 'x' << n << " charpoly verification successful\n";
 			pass++;
 		} catch(FailureCharpolyCheck &e) {
-			std::cout << "Verification failed!\n";
+			std::cout << n << 'x' << n << " charpoly verification failed!\n";
 		}
 	}
 

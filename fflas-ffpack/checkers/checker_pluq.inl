@@ -32,6 +32,10 @@
 #ifdef ENABLE_CHECKER_PLUQ
 #include "ffpack/ffpack.h"
 
+#ifdef TIME_CHECKER_PLUQ
+#include <givaro/givtimer.h>
+#endif
+
 namespace FFPACK {
     template <class Field> 
     class Checker_PLUQ {
@@ -39,6 +43,9 @@ namespace FFPACK {
         const Field& F;
         typename Field::Element_ptr v,w;
         const size_t m,n;
+#ifdef TIME_CHECKER_PLUQ
+        Givaro::Timer _time;
+#endif
 
     public:
         Checker_PLUQ(const Field& F_, size_t m_, size_t n_, 
@@ -75,6 +82,9 @@ namespace FFPACK {
              */
         inline bool check(typename Field::Element_ptr A, size_t lda, 
                           size_t r, size_t *P, size_t *Q) {
+#ifdef TIME_CHECKER_PLUQ
+            Givaro::Timer checktime; checktime.start();
+#endif
 				// _w = [w1|w2]
             typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); 
 
@@ -112,16 +122,26 @@ namespace FFPACK {
 
             if (!pass) throw FailurePLUQcheck();
 
+#ifdef TIME_CHECKER_PLUQ
+            checktime.stop(); _time += checktime;
+            std::cerr << "PLUQ CHECK: " << _time << std::endl;
+#endif
             return pass;
         }
 
     private:	
         inline void init(typename Field::RandIter &G, 
                          typename Field::ConstElement_ptr A, size_t lda) {
+#ifdef TIME_CHECKER_PLUQ
+            Givaro::Timer inittime; inittime.start();
+#endif
             FFLAS::frand(F,G,n,v,1);
     	
                 // w <-- A.v
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, A, lda, v, 1, F.zero, w, 1);
+#ifdef TIME_CHECKER_PLUQ
+            inittime.stop(); _time += inittime;
+#endif
         }
     };
 }
