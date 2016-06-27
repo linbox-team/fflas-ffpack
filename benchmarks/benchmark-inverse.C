@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
   
 	size_t iter = 1;
 	int    q    = 1009;
-	int    n    = 2000;
+	size_t    n    = 2000;
 	std::string file = "";
   
 	Argument as[] = {

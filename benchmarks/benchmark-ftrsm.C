@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
   
 	size_t iter = 3;
 	int    q    = 1009;
-	int    m    = 2000 ;
-	int    n    = 2000;
+	size_t    m    = 2000 ;
+	size_t    n    = 2000;
 	std::string file1 = "";
 	std::string file2 = "";
 	int t=MAX_THREADS;
