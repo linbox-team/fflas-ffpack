@@ -70,15 +70,21 @@ int main(int argc, char** argv) {
 
 		Field::Element_ptr A = FFLAS::fflas_new(F,m,m);
 
-	for (size_t i=0;i<m;++i){
-		for (size_t j=0;j<i;++j)
-			Rand.random(A[i*m+j]);
-        for(size_t j=i+1;j<m;++j)
-            F.assign(A[i*m+j],F.zero);
-        NZRand.random(A[i*m+i]);
-    }
+// 	for (size_t i=0;i<m;++i){
+// 		for (size_t j=0;j<i;++j)
+// 			Rand.random(A[i*m+j]);
+//         for(size_t j=i+1;j<m;++j)
+//             F.assign(A[i*m+j],F.zero);
+//         NZRand.random(A[i*m+i]);
+//     }
+        
+            // Might not be invertible, but this is caught by nullity
+        for (size_t i=0;i<m;++i){
+            for (size_t j=0;j<m;++j)
+                Rand.random(A[i*m+j]);
+        }
 
-		Checker_invert<Field> checker(Rand,m,A,m);
+		FFPACK::Checker_invert<Field> checker(Rand,m,A,m);
 		FFPACK::Invert(F,m,A,m,nullity);
 		try {
 			checker.check(A,nullity);

@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 		}
 		//write_field(F,std::cerr<<"A:=",A,k,k,k,true) <<std::endl;
 
-		Checker_ftrsm<Field> checker(G, m, n, alpha, X, n);
+		FFLAS::Checker_ftrsm<Field> checker(G, m, n, alpha, X, n);
 		FFLAS::ftrsm(F, side, uplo, trans, diag, m, n, alpha, A, k, X, n);
 		try {
 			checker.check(side, uplo, trans, diag, m, n, A, k, X, n);

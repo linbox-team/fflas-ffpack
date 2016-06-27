@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 
 		try {
 			//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
-			Checker_charpoly<Field,Polynomial> checker(F,n,A);
+			FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
 			FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
 			//printPolynomial(F,g);
 			checker.check(g);

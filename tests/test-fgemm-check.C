@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 		for( size_t i = 0; i < m*n; ++i )
 			Rand.random( *(C+i) );
 
-		Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
+		FFLAS::Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
 		FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 		try {
 			checker.check(ta,tb,alpha,A,lda,B,ldb,C);

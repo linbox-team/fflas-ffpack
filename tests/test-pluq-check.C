@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 		for( size_t i = 0; i < m*n; ++i )
 			RValue.random( *(A+i) );
   
-  		Checker_PLUQ<Field> checker (RValue,m,n,A,n);
+  		FFPACK::Checker_PLUQ<Field> checker (RValue,m,n,A,n);
   		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 		try {
 			checker.check(A,n,R,P,Q);
