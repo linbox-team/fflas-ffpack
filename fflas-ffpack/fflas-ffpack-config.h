@@ -120,14 +120,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#ifdef __x86_64__
-#if defined(__GNUC__) || defined (__clang__) /* who supports __int128_t ? */
-#define int128_t __int128_t
-#define uint128_t __uint128_t
-#else /* hopefully this exists */
-#define int128_t __int128
-#define uint128_t unsigned __int128
-#endif /* __int128_t */
-#endif /* __x86_64__ */
+#include "givaro/givconfig.h"
+
+#ifdef __GIVARO_HAVE_INT128
+#define __FFLASFFPACK_HAVE_INT128
+#endif
 
 #endif // __FFLASFFPACK_fflas_ffpack_configuration_H

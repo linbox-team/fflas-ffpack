@@ -1,12 +1,12 @@
 # FFLAS-FFPACK: Finite Field Linear Algebra Subroutines/Package
 
-[![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/job/FFLAS-FFPACK/)
+[![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/view/LinBox%20ecosystem/job/FFLAS-FFPACK/)
 
 ## PURPOSE
 
 The FFLAS-FFPACK library provides a set of basic routines for linear algebra over a finite field or the ring of integers with dense and sparse matrices.
 
-It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the LAPACK library for numerical linear algebra, and shares part of their design. Yet it differs in many aspects due to the specifities of computing over exact domains such as a finite fields and the rationals:
+It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the LAPACK library for numerical linear algebra, and shares part of their design. Yet it differs in many aspects due to the specifities of computing over exact domains such as a finite fields and the field of rationals:
 - it is generic with respect to the finite field, so as to accomodate a large variety of field sizes and implementations;
 - consequently, all routines use the C++ template genericity and the library is primarily meant to be used as a source code library, to be included and compiled in the user's software.
 - However, we also provide a compiled version instantiating most common routines over the most common finite fields.
@@ -54,9 +54,39 @@ see INSTALL for further details.
 
 The FFLAS-FFPACK group (see AUTHORS for a list of contributors).
 
+## Citing FFLAS-FFPACK
+
+If your research depends on the FFLAS-FFPACK library, please consider citing the project as
+
+```
+@manual{fflas-ffpack,
+title = {{FFLAS-FFPACK}: {F}inite {F}ield {L}inear {A}lgebra {S}ubroutines / {P}ackage},
+author = {The FFLAS-FFPACK group},
+edition = {v2.2.1},
+year = {2016},
+note = {\url{http://github.com/linbox-team/fflas-ffpack}}
+}
+```
+
+Or you may also consider citing the related research article:
+```
+@article{DGP:2008,
+author = {Jean-Guillaume Dumas and Pascal Giorgi and Cl{\'e}ment Pernet},
+title = {Dense Linear Algebra over Word-Size Prime Fields: the FFLAS and FFPACK Packages},
+journal = {ACM Trans. on Mathematical Software (TOMS)},
+volume = {35},
+number = {3},
+year = {2008},
+issn = {0098-3500},
+pages = {1--42},
+doi = {10.1145/1391989.1391992},
+publisher = {ACM Press},
+address = {New York, NY, USA}
+}
+```
+
 ## Contact and discussion
 
-For any bug report, please file an issue on github's [issue tracker](https://github.com/linbox-team/fflas-ffpack/issues).
+For any bug report, feature or help request, please file an issue on github's [issue tracker](https://github.com/linbox-team/fflas-ffpack/issues).
 
-Please any other request, suggestion and comment to 
-the discussion group [ffpack-devel](http://groups.google.com/group/ffpack-devel)
+Please address any other request, suggestion and comment to the discussion group [ffpack-devel](http://groups.google.com/group/ffpack-devel).

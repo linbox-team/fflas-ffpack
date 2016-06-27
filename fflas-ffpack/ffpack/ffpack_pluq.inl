@@ -373,8 +373,9 @@ namespace FFPACK {
 				Fi.inv (invpiv, *(CurrRow+i));
 				if (Diag == FFLAS::FflasUnit)
 					FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
-				else
+				else{
 					FFLAS::fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
+				}
 
 				if (i > rank){
 					    // Column rotation to move pivot on the diagonal
@@ -426,7 +427,6 @@ namespace FFPACK {
 		MathPerm2LAPACKPerm (P, MathP, M);
 		FFLAS::fflas_delete( MathP);
 		FFLAS::fzero (Fi, M-rank, N-rank, A+rank*(1+lda), lda);
-
 		return (size_t) rank;
 	}
 
@@ -514,9 +514,14 @@ namespace FFPACK {
 		typename Field::Element_ptr G = A3 + R1;
 		    // [ B1 ] <- P1^T A2
 		    // [ B2 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M2, A2, lda, P1, R1);
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1, R1);	
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M2, A2, lda, P1);
 		    // [ C1 C2 ] <- A3 Q1^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A3, lda, Q1);
+#endif
 		    // D <- L1^-1 B1
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R1, N-N2, Fi.one, A, lda, A2, lda);
 		    // E <- C1 U1^-1
@@ -539,25 +544,40 @@ namespace FFPACK {
 		R3 = _PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N-N2, A4, lda, Q2, R2);
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M-M2, A4, lda, P3, R3);
+#else
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N-N2, A4, lda, Q2);
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N-N2, size_t(0), M-M2, A4, lda, P3);
+#endif
 		    // [ E1 ] <- P3^T E
 		    // [ E2 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3, R3);
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3);
+#endif
 		    // [ M11 ] <- P2^T M1
 		    // [ M12 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2, R2);
+		    // [ D1 D2 ] <- D Q2^T
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N-N2, A2, lda, Q2, R2);
+		    // [ V1 V2 ] <- V1 Q3^T
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2-R1, A+R1, lda, Q3, R3);
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2);
 		    // [ D1 D2 ] <- D Q2^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N-N2, A2, lda, Q2);
 		    // [ V1 V2 ] <- V1 Q3^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2-R1, A+R1, lda, Q3);
+#endif
 		    // I <- H U2^-1
 		    // K <- H3 U2^-1
 		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 		    // J <- L3^-1 I (in a temp)
 		typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
-		// for (size_t i=0; i<R3; ++i)
-			// FFLAS::fassign (Fi, R2, A4 + i*lda, 1, temp + i*R2, 1);
 		FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
 		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
 		    // N <- L3^-1 H2
@@ -576,13 +596,21 @@ namespace FFPACK {
 		R4 = _PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4, R4);
+		    // [ D21 D22 ]     [ D2 ]
+		    // [ V21 V22 ]  <- [ V2 ] Q4^T
+		    // [  0   0  ]     [  0 ]
+		    // [ O1   O2 ]     [  O ]
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N-N2-R2, A2+R2, lda, Q4, R4);
+#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
 		    // [ V21 V22 ]  <- [ V2 ] Q4^T
 		    // [  0   0  ]     [  0 ]
 		    // [ O1   O2 ]     [  O ]
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N-N2-R2, A2+R2, lda, Q4);
-
+#endif
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
 		size_t* MathP = FFLAS::fflas_new<size_t>(M);

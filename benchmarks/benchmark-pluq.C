@@ -30,6 +30,21 @@
 //#define  __FFLASFFPACK_FORCE_SEQ
 //#define WINOPAR_KERNEL
 //#define CLASSIC_SEQ
+// #define PROFILE_PLUQ
+// #define MONOTONIC_CYCLES
+// #define MONOTONIC_MOREPIVOTS
+// #define MONOTONIC_FEWPIVOTS
+
+#ifdef MONOTONIC_CYCLES
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_MOREPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_FEWPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include <givaro/givranditer.h>
@@ -150,7 +165,6 @@ int main(int argc, char** argv) {
 	
 	size_t iter = 3 ;
 	int q = 131071 ;
-	Field F(q);
 	int m = 2000 ;
 	int n = 2000 ;
 	int r = 2000 ;
@@ -171,12 +185,12 @@ int main(int argc, char** argv) {
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
-
+	Field F(q);
 	if (r > std::min(m,n)){
 		std::cerr<<"Warning: rank can not be greater than min (m,n). It has been forced to min (m,n)"<<std::endl;
 		r=std::min(m,n);
 	}
-	if (!par) t=1;NBK=1;
+	if (!par) { t=1;NBK=1;}
 	if (NBK==-1) NBK = t;
 
 	Field::Element_ptr A,  Acop;
@@ -229,8 +243,9 @@ int main(int argc, char** argv) {
 				BC = n/NUM_THREADS;
 			}
 		}
-		else
+		else{
 			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
+		}
 		if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 		
 	}
@@ -245,7 +260,7 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
-		//verification
+	//verification
 	if(v)
 		verification_PLUQ(F,Acop,A,P,Q,m,n,R);
 	

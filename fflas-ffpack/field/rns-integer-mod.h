@@ -41,10 +41,10 @@
 #include <givaro/modular-integer.h>
 #include <givaro/givinteger.h>
 #include <givaro/udl.h>
+#include "givaro/modular-extended.h"
 
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-extended.h"
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
