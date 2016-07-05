@@ -23,8 +23,8 @@
 */
 
 #include <iostream>
-#include <givaro/modular.h>
 #include "fflas-ffpack/fflas-ffpack-config.h"
+#include <givaro/modular.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/Matio.h"
 
