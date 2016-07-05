@@ -32,26 +32,28 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
-//#include "fflas-ffpack/field/modular-int.h"
+#include "givaro/modular-balanced.h"
+#include "givaro/modular.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "givaro/givintprime.h"
+#include "test-utils.h"
 
 using namespace std;
 using namespace FFPACK;
 
 //typedef Givaro::Modular<int> Field;
 //typedef Givaro::Modular<float> Field;
-typedef ModularBalanced<double> Field;
+typedef Givaro::Modular<Givaro::Integer> Field;
+//typedef ModularBalanced<double> Field;
 
 int main(int argc, char** argv){
 
-
- FFLAS::Timer tim;
+	
+	FFLAS::Timer tim;
 	Givaro::IntPrimeDom IPD;
-	uint64_t p;
+	Givaro::Integer p;
 	size_t M, N, K ;
 	bool keepon = true;
 	Givaro::Integer _p,tmp;
@@ -75,18 +77,20 @@ int main(int argc, char** argv){
 	Field::Element alpha;
 
 	while (keepon){
-		srandom(_p);
-		do{
-			//		max = Integer::random(2);
-			_p = random();//max % (2<<30);
-			IPD.prevprime( tmp, (_p% (1<<PRIMESIZE)) );
-			p =  tmp;
-		}while( (p <= 2) );
-
-		Field F (p);
-		F.init (zero,0.0);
-		F.init (one,1.0);
-		Field::RandIter RValue (F);
+		// srandom(_p);
+		// do{
+		// 	//		max = Integer::random(2);
+		// 	_p = random();//max % (2<<30);
+		// 	IPD.prevprime( tmp, (_p% (1<<PRIMESIZE)) );
+		// 	p =  tmp;
+		// }while( (p <= 2) );
+		Field* F= chooseField<Field>(Givaro::Integer(-1),PRIMESIZE);
+		std::cout<<"Field is : ";
+		F->write(std::cout)<<std::endl;
+		//Field F (p);
+		F->init (zero,0.0);
+		F->init (one,1.0);
+		Field::RandIter RValue (*F);
 
 		do{
 			M = (size_t)  random() % TMAX;
@@ -121,7 +125,7 @@ int main(int argc, char** argv){
 		else
 			uplo = FFLAS::FflasLower;
 
-		while (F.isZero(RValue.random (alpha)));
+		while (F->isZero(RValue.random (alpha)));
 
 		A = FFLAS::fflas_new<Field::Element>(K*K);
 		B = FFLAS::fflas_new<Field::Element>(M*N);
@@ -136,11 +140,11 @@ int main(int argc, char** argv){
 			for (size_t j = 0; j < K; ++j)
 				*(Abis + i*K + j) = RValue.random (*(A + i*K + j));
 		for (size_t i = 0; i < K; ++i){
-			while (F.isZero(RValue.random (*(A + i*(K+1)))));
+			while (F->isZero(RValue.random (*(A + i*(K+1)))));
 			*(Abis + i*(K +1)) = *(A + i*(K+1));
 		}
-
-		cout <<"p = "<<(size_t)p
+		F->cardinality(p);
+		cout <<"p = "<<p
 		     <<" M = "<<M
 		     <<" N = "<<N
 		     <<((side==FFLAS::FflasLeft)?" Left ":" Right ")
@@ -152,27 +156,29 @@ int main(int argc, char** argv){
 
 		tim.clear();
 		tim.start();
-		FFLAS::ftrsm (F, side, uplo, trans, diag, M, N, alpha,
+		FFLAS::ftrsm (*F, side, uplo, trans, diag, M, N, alpha,
 			      A, lda, B, ldb);
 		tim.stop();
 
+		write_field (*F, cerr<<"X = "<<endl, B, (int) M,(int) N,(int) N);
+		
 		// Verification
 		Field::Element invalpha;
-		F.inv(invalpha, alpha);
-		FFLAS::ftrmm (F, side, uplo, trans, diag, M, N, invalpha,
+		F->inv(invalpha, alpha);
+		FFLAS::ftrmm (*F, side, uplo, trans, diag, M, N, invalpha,
 			      A, K, B, N);
 		for (size_t i = 0;i < M;++i)
 			for (size_t j = 0;j < N; ++j)
-				if ( !F.areEqual (*(Bbis + i*N+ j ), *(B + i*N + j))){
+				if ( !F->areEqual (*(Bbis + i*N+ j ), *(B + i*N + j))){
 					cerr<<endl
 					    <<"Bbis ["<<i<<", "<<j<<"] = "<<(*(Bbis + i*N + j))
 					    <<" ; B ["<<i<<", "<<j<<"] = "<<(*(B + i*N + j));
-
+					
 					keepon = false;
 				}
 		for (size_t i = 0;i < K; ++i)
 			for (size_t j = 0;j < K; ++j)
-				if ( !F.areEqual (*(A + i*K + j), *(Abis + i*K + j))){
+				if ( !F->areEqual (*(A + i*K + j), *(Abis + i*K + j))){
 					cerr<<endl
 					    <<"A ["<<i<<", "<<j<<"] = "<<(*(A + i*K + j))
 					    <<" ; Abis ["<<i<<", "<<j<<"] = "<<(*(Abis + i*K + j));
@@ -189,13 +195,13 @@ int main(int argc, char** argv){
 		} else {
 
 			cerr<<endl;
-			write_field (F, cerr<<"A = "<<endl, Abis, (int) K,(int) K,(int) K);
-			write_field (F, cerr<<"B = "<<endl, Bbis, (int) M,(int) N,(int) N);
+			write_field (*F, cerr<<"A = "<<endl, Abis, (int) K,(int) K,(int) K);
+			write_field (*F, cerr<<"B = "<<endl, Bbis, (int) M,(int) N,(int) N);
 		}
 	}
 
 	cout<<endl;
-	cerr<<"FAILED with p = "<<(size_t)p
+	cerr<<"FAILED with p = "<<p
 	    <<" M = "<<M
 	    <<" N = "<<N
 	    <<" alpha = "<<alpha

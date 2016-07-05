@@ -237,8 +237,8 @@ namespace FFPACK {
 		integer                  _M; // the product of the mi's
 		std::vector<integer>         _Mi; // _M/mi
 		std::vector<double>         _MMi; // (_Mi)^(-1) mod mi
-		std::vector<double>      _crt_in; //  2^(16*j) mod mi
-		std::vector<double>     _crt_out; //  (_Mi._MMi) written in base 2^16
+		std::vector<double>      _crt_in[6]; //  2^(16*j) mod mi 
+		std::vector<double>     _crt_out[6]; //  (_Mi._MMi) written in base 2^16
 		size_t                _size; // the size of the rns basis (number of mi's)
 		size_t               _pbits; // the size in bit of the mi's
 		size_t                 _ldm; // log[2^16](_M)
@@ -303,15 +303,17 @@ namespace FFPACK {
 
 
 		void precompute_cst(){
-			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
+			_ldm = (_M.bitsize()/48) + ((_M.bitsize()%48)?1:0) ;
 			_invbasis.resize(_size);
 			_basisMax.resize(_size);
 			_negbasis.resize(_size);
 			_field_rns.resize(_size);
 			_Mi.resize(_size);
 			_MMi.resize(_size);
-			_crt_in.resize(_size*_ldm);
-			_crt_out.resize(_size*_ldm);
+			for (size_t i=0;i<6;i++){
+				_crt_in[i] .resize(_size*_ldm);
+				_crt_out[i].resize(_size*_ldm);
+			}
 			const unsigned int MASK=0xFFFF;
 			for (size_t i=0;i<_size;i++){
 				_invbasis[i]  = 1./_basis[i];
@@ -322,14 +324,33 @@ namespace FFPACK {
 				_field_rns[i].init(_MMi[i], _Mi[i] % (double)_basis[i]);
 				_field_rns[i].invin(_MMi[i]);
 				integer tmp= _Mi[i]*(uint64_t)_MMi[i];
+				double a0,a1,a2;
 				for(size_t j=0;j<_ldm;j++){
-					_crt_out[j+i*_ldm]=double(tmp&MASK);
-					tmp>>=16;
+					uint64_t limb= tmp[0];
+					a0= double(limb&MASK);
+					a1= double((limb>>16)&MASK);
+					a2= double((limb>>32)&MASK);					
+					_crt_out[0][j+i*_ldm]=a0;
+					_crt_out[1][j+i*_ldm]=a1;
+					_crt_out[2][j+i*_ldm]=a2;
+					_crt_out[3][j+i*_ldm]=a0-a2;
+					_crt_out[4][j+i*_ldm]=a0+a1+a2;
+					_crt_out[5][j+i*_ldm]=a0+a1-a2;					
+					tmp>>=48;
 				}
-				double beta=double(1<<16);
+				double beta=double(1<<48);
 				double  acc=1;
 				for(size_t j=0;j<_ldm;j++){
-					_crt_in[j+i*_ldm]=acc;
+					uint64_t limb= acc;
+					a0= double(limb&MASK);
+					a1= double((limb>>16)&MASK);
+					a2= double((limb>>32)&MASK);					
+					_crt_in[0][j+i*_ldm]=a0;
+					_crt_in[1][j+i*_ldm]=a1;
+					_crt_in[2][j+i*_ldm]=a2;
+					_crt_in[3][j+i*_ldm]=a0+a1;
+					_crt_in[4][j+i*_ldm]=a1+a2;
+					_crt_in[5][j+i*_ldm]=a0+a1+a2;					
 					_field_rns[i].mulin(acc,beta);
 				}
 			}
@@ -340,12 +361,167 @@ namespace FFPACK {
 		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda,
 			  const integer& maxA, bool RNS_MAJOR=false) const
 		{
-			init(m*n,Arns,A,lda);
+			init(m,n,Arns,rda,A,lda, maxA.bitsize()/48 + (maxA.bitsize()%48?1:0),RNS_MAJOR);
+		}
+		
+
+		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false)
+		{
+		    //init(m*n,Arns,A,lda);
+			if (k>_ldm){
+				FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
+				std::cerr<<"k="<<k<<" _ldm="<<_ldm<<std::endl;
+		}
+		size_t mn=m*n;
+		size_t mnk=mn*k;
+		double *A_beta = FFLAS::fflas_new<double >(mnk*6);
+		double *A_beta0=Abeta;
+		double *A_beta1=Abeta+1*mnk;
+		double *A_beta2=Abeta+2*mnk;
+		double *A_beta3=Abeta+3*mnk;
+		double *A_beta4=Abeta+4*mnk;
+		double *A_beta5=Abeta+5*mnk;
+		size_t mnsize=mn*size;
+		double *A_rns_tmp = FFLAS::fflas_new<double >(mnsize*6);
+		double *A_rns0=Arns_tmp;
+		double *A_rns1=Arns_tmp+1*mnsize;
+		double *A_rns2=Arns_tmp+2*mnsize;
+		double *A_rns3=Arns_tmp+3*mnsize;
+		double *A_rns4=Arns_tmp+4*mnsize;
+		double *A_rns5=Arns_tmp+5*mnsize;
+
+		
+		const integer* Aiter=A;
+			// split A into A_beta according to a Kronecker transform in base 2^16
+//		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
+
+		Givaro::Timer tkr; tkr.start();
+		PARFOR1D(i,m,SPLITTER(NUM_THREADS),
+				 for(size_t j=0;j<n;j++){
+					 size_t idx=j+i*n;
+					  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
+					  const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
+					  size_t l=0,h=0;
+						  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+					  size_t maxs=std::min(k,3*(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+					  double a0,a1,a2;
+					  if (m0[0]->_mp_size >= 0)
+						  for (;l<maxs;l++){
+							  a0= m0_ptr[h++];
+							  a1= m0_ptr[h++];
+							  a2= m0_ptr[h++];
+							  A_beta0[l+idx*k]= a0;
+							  A_beta1[l+idx*k]= a1;
+							  A_beta2[l+idx*k]= a2;
+							  A_beta3[l+idx*k]= a0-a2;
+							  A_beta4[l+idx*k]= a0+a1+a2;
+							  A_beta5[l+idx*k]= a0+a1-a2;							  							  
+						  }
+					  else
+						  for (;l<maxs;l++){
+							  a0= -double(m0_ptr[h++]);
+							  a1= -double(m0_ptr[h++]);
+							  a1= -double(m0_ptr[h++]);
+							  A_beta0[l+idx*k]= a0;
+							  A_beta1[l+idx*k]= a1;
+							  A_beta2[l+idx*k]= a2;
+							  A_beta3[l+idx*k]= a0+a1;
+							  A_beta4[l+idx*k]= a1+a2;
+							  A_beta5[l+idx*k]= a0+a1+a2;							  							  
+						  }
+					  for (;l<k;l++){
+						  A_beta0[l+idx*k]=  0.;
+						  A_beta1[l+idx*k]=  0.;
+						  A_beta2[l+idx*k]=  0.;
+						  A_beta3[l+idx*k]=  0.;
+						  A_beta4[l+idx*k]=  0.;
+						  A_beta5[l+idx*k]=  0.;							  							  
+					  }					
+				 }
+				 );
+
+			tkr.stop();
+			//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
+			if (RNS_MAJOR==false) {
+				// Arns = _crt_in x A_beta^T
+				Givaro::Timer tfgemm; tfgemm.start();
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[0].data(),_ldm,A_beta0,k,0.,Arns0,
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[1].data(),_ldm,A_beta1,k,0.,Arns1,
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[2].data(),_ldm,A_beta2,k,0.,Arns2,
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[3].data(),_ldm,A_beta3,k,0.,Arns3,
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[4].data(),_ldm,A_beta4,k,0.,Arns4,
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[5].data(),_ldm,A_beta5,k,0.,Arns5,
+							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());			
+				tfgemm.stop();
+			}
+			else {
+				// Arns =  A_beta x _crt_in^T
+				std::cerr<<"NOT YET IMPLEMENTED .... aborting\n"; std::terminate();
+			}
+			Givaro::Timer tred; tred.start();
+
+			
+			double c,c0,c1,c2,c3,c4;
+			PARFOR1D(i,_size,SPLITTER(NUM_THREADS),
+					 double twosixty_mod_mi;
+					 _field_rns[i].init(twosixty_mod_mi,(1<<16));
+					 for(size_t j=0;j<mn;j++)
+						 {
+							 size_t h=j+i*mn;
+							 c0= A_rns0[h]; // 1
+							 c1= A_rns3[h] - A_rns1[h] - A_rns0[h] ; // X
+							 c2= A_rns5[h] - A_rns3[h] - A_rns4[h]; // X^2
+							 c3= A_rns4[h] - A_rns1[h] - A_rns2[h]; // X^3
+							 c4= A_rns2[h]; // X^4
+
+							 // compute c=c0+c1.2^16+c2.2^32+c3.2^48+c4.2^64 mod mi
+							 _field_rns[i].axpyin(c,c4,twosixty_mod_mi,c3);
+							 _field_rns[i].axpyin(c,c ,twosixty_mod_mi,c2);
+							 _field_rns[i].axpyin(c,c ,twosixty_mod_mi,c1);
+							 _field_rns[i].axpyin(c,c ,twosixty_mod_mi,c0);
+							 Arns[h]=c;
+						 }
+					 );
+			//reduce(mn,Arns,rda,RNS_MAJOR);
+			
+			tred.stop();
+			//if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
+	
+		FFLAS::fflas_delete(A_beta);
+		FFLAS::fflas_delete(A_rns_tmp);
+
+#ifdef CHECK_RNS
+		bool ok=true;
+		for (size_t i=0;i<m;i++)
+			for(size_t j=0;j<n;j++)
+				for(size_t k=0;k<_size;k++){
+					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
+					if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+					    != (int64_t) Arns[i*n+j+k*rda])
+					{
+						std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+								 <<" != "
+								 <<(int64_t) Arns[i*n+j+k*rda]
+								 <<std::endl;
+					}
+				}
+		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+#endif
+
+			
 		}
 
-		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false){
-		    init(m*n,Arns,A,lda);
-		}
+
+
+
+
+
+		
 		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false){
 		  convert(m*n, A, Arns);
 		}

@@ -76,9 +76,10 @@ namespace FFLAS {
 		size_t prime_bitsize= (53-lk)>>1;
 
 		// construct rns basis
-		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*uint64_t(K);
-		size_t n_pr =maxC.bitsize()/prime_bitsize;
-		maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*uint64_t(n_pr);
+		//Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*uint64_t(K);
+		//size_t n_pr =maxC.bitsize()/prime_bitsize;
+		//maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*uint64_t(n_pr);
+		Givaro::Integer maxC= (p-1);
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true);
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);
 #ifdef BENCH_PERF_TRSM_MP
