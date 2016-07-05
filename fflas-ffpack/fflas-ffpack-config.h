@@ -39,6 +39,7 @@
 #endif
 
 #ifdef __CYGWIN__
+# ifndef _GLIBCXX_USE_C99
 #  define _GLIBCXX_USE_C99 true
 #  ifndef _GLIBCXX_USE_C99_MATH_TR1
 #    include <cstdlib>
@@ -78,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #    define _GLIBCXX_USE_C99 true
 #    include <cstdlib>
 #  endif
+# endif
 #endif
 
 #include "fflas-ffpack/config.h"
