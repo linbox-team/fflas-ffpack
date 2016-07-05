@@ -27,6 +27,7 @@
  */
 
 #include "givaro/givinteger.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/align-allocator.h"

@@ -91,7 +91,7 @@ namespace FFLAS {
 	       const FFLAS_DIAG Diag,
 	       const size_t M, const size_t N,
 	       const FFLAS_ELT alpha,
-	       FFLAS_ELT* A, const size_t lda,
+	       const FFLAS_ELT* A, const size_t lda,
 	       FFLAS_ELT* B, const size_t ldb);
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
