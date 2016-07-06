@@ -139,13 +139,14 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	* Shuffle single-precision (32-bit) floating-point elements in a using the control in s,
 	* and store the results in dst.
 	* Args   :	[a0, a1, a2, a3] float
-				[b0, b1, b2, b3] float
 	* Return :	[a[s[0..1]], ..., a[s[6..7]] float
 	*/
+#if defined(__FFLASFFPACK_USE_AVX)
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
 		return _mm_permute_ps(a, s);
 	}
+#endif
 
 	/*
 	* Unpack and interleave single-precision (32-bit) floating-point elements from the low half of a and b, and store the results in dst.
