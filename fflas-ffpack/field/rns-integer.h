@@ -156,6 +156,13 @@ namespace FFLAS {
 		double *ptr=FFLAS::fflas_new<double>(m*n*F.size(), align);
 		return FFPACK::rns_double_elt_ptr(ptr,m*n);
 	}
+	// specialization for the fflas alloc function
+	template<>
+	inline FFPACK::rns_double_elt_ptr
+	fflas_new(const FFPACK::RNSInteger<FFPACK::rns_double_extended> &F, const size_t m, const size_t n, const Alignment align){
+		double *ptr=FFLAS::fflas_new<double>(m*n*F.size(), align);
+		return FFPACK::rns_double_elt_ptr(ptr,m*n);
+	}
 
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)
 	template<typename RNS>

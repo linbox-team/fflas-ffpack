@@ -338,7 +338,7 @@ namespace FFPACK {
 					_crt_out[5][j+i*_ldm]=a0+a1-a2;					
 					tmp>>=48;
 				}
-				double beta=double(1<<48);
+				double beta=double(1UL<<48);
 				double  acc=1;
 				for(size_t j=0;j<_ldm;j++){
 					uint64_t limb= acc;
@@ -354,6 +354,24 @@ namespace FFPACK {
 					_field_rns[i].mulin(acc,beta);
 				}
 			}
+
+#ifdef RNS_DEBUG
+			std::cout<<"basis:= [";
+			for(size_t i=0;i<_size;i++)
+				std::cout<<(int64_t)_basis[i]<<(i!=_size-1?",":"];\n");
+		
+			for(size_t l=0;l<6;l++){
+				std::cout<<"crtin"<<l<<":=Matrix("<<_size<<","<<_ldm<<",[";
+				for(size_t i=0;i<_size;i++){
+					std::cout<<"[";
+					for(size_t j=0;j<_ldm;j++)
+						std::cout<<(int64_t)_crt_in[l][j+i*_ldm]<<(j!=_ldm-1?",":(i!=_ldm-1?"],":"]"));
+				}
+				std::cout<<"]);\n";
+			}
+#endif
+			
+
 		}
 
 		// Arns must be an array of m*n*_size
@@ -361,11 +379,11 @@ namespace FFPACK {
 		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda,
 			  const integer& maxA, bool RNS_MAJOR=false) const
 		{
-			init(m,n,Arns,rda,A,lda, maxA.bitsize()/48 + (maxA.bitsize()%48?1:0),RNS_MAJOR);
+			init(m,n,Arns,rda,A,lda, uint64_t(maxA.bitsize()/48 + (maxA.bitsize()%48?1:0)),RNS_MAJOR);
 		}
 		
 
-		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false)
+		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const
 		{
 		    //init(m*n,Arns,A,lda);
 			if (k>_ldm){
@@ -375,26 +393,24 @@ namespace FFPACK {
 		size_t mn=m*n;
 		size_t mnk=mn*k;
 		double *A_beta = FFLAS::fflas_new<double >(mnk*6);
-		double *A_beta0=Abeta;
-		double *A_beta1=Abeta+1*mnk;
-		double *A_beta2=Abeta+2*mnk;
-		double *A_beta3=Abeta+3*mnk;
-		double *A_beta4=Abeta+4*mnk;
-		double *A_beta5=Abeta+5*mnk;
-		size_t mnsize=mn*size;
+		double *A_beta0=A_beta;
+		double *A_beta1=A_beta+1*mnk;
+		double *A_beta2=A_beta+2*mnk;
+		double *A_beta3=A_beta+3*mnk;
+		double *A_beta4=A_beta+4*mnk;
+		double *A_beta5=A_beta+5*mnk;
+		size_t mnsize=mn*_size;
 		double *A_rns_tmp = FFLAS::fflas_new<double >(mnsize*6);
-		double *A_rns0=Arns_tmp;
-		double *A_rns1=Arns_tmp+1*mnsize;
-		double *A_rns2=Arns_tmp+2*mnsize;
-		double *A_rns3=Arns_tmp+3*mnsize;
-		double *A_rns4=Arns_tmp+4*mnsize;
-		double *A_rns5=Arns_tmp+5*mnsize;
+		double *A_rns0=A_rns_tmp;
+		double *A_rns1=A_rns_tmp+1*mnsize;
+		double *A_rns2=A_rns_tmp+2*mnsize;
+		double *A_rns3=A_rns_tmp+3*mnsize;
+		double *A_rns4=A_rns_tmp+4*mnsize;
+		double *A_rns5=A_rns_tmp+5*mnsize;
 
 		
 		const integer* Aiter=A;
-			// split A into A_beta according to a Kronecker transform in base 2^16
-//		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
-
+		// split A into A_beta according to a Kronecker transform in base 2^48
 		Givaro::Timer tkr; tkr.start();
 		PARFOR1D(i,m,SPLITTER(NUM_THREADS),
 				 for(size_t j=0;j<n;j++){
@@ -402,26 +418,27 @@ namespace FFPACK {
 					  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 					  const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 					  size_t l=0,h=0;
-						  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
-					  size_t maxs=std::min(k,3*(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+					  // size in base 2^16
+					  size_t k16=((Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);
+					  size_t maxs=std::min(k,((Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2)/3);// to ensure 32 bits portability
 					  double a0,a1,a2;
 					  if (m0[0]->_mp_size >= 0)
 						  for (;l<maxs;l++){
-							  a0= m0_ptr[h++];
-							  a1= m0_ptr[h++];
-							  a2= m0_ptr[h++];
+							  a0= m0_ptr[h++];//std::cout<<"a0="<<(uint64_t)a0<<std::endl;
+							  a1= m0_ptr[h++];//std::cout<<"a1="<<(uint64_t)a1<<std::endl;
+							  a2= m0_ptr[h++];//std::cout<<"a2="<<(uint64_t)a2<<std::endl;
 							  A_beta0[l+idx*k]= a0;
 							  A_beta1[l+idx*k]= a1;
 							  A_beta2[l+idx*k]= a2;
-							  A_beta3[l+idx*k]= a0-a2;
-							  A_beta4[l+idx*k]= a0+a1+a2;
-							  A_beta5[l+idx*k]= a0+a1-a2;							  							  
+							  A_beta3[l+idx*k]= a0+a1;
+							  A_beta4[l+idx*k]= a1+a2;
+							  A_beta5[l+idx*k]= a0+a1+a2;							  							  
 						  }
 					  else
 						  for (;l<maxs;l++){
 							  a0= -double(m0_ptr[h++]);
 							  a1= -double(m0_ptr[h++]);
-							  a1= -double(m0_ptr[h++]);
+							  a2= -double(m0_ptr[h++]);
 							  A_beta0[l+idx*k]= a0;
 							  A_beta1[l+idx*k]= a1;
 							  A_beta2[l+idx*k]= a2;
@@ -430,34 +447,74 @@ namespace FFPACK {
 							  A_beta5[l+idx*k]= a0+a1+a2;							  							  
 						  }
 					  for (;l<k;l++){
-						  A_beta0[l+idx*k]=  0.;
-						  A_beta1[l+idx*k]=  0.;
-						  A_beta2[l+idx*k]=  0.;
-						  A_beta3[l+idx*k]=  0.;
-						  A_beta4[l+idx*k]=  0.;
-						  A_beta5[l+idx*k]=  0.;							  							  
+						  a0= (h<k16)?m0_ptr[h++]:0.;
+						  a1= (h<k16)?m0_ptr[h++]:0.;
+						  a2= (h<k16)?m0_ptr[h++]:0.;
+						  A_beta0[l+idx*k]= a0;
+						  A_beta1[l+idx*k]= a1;
+						  A_beta2[l+idx*k]= a2;
+						  A_beta3[l+idx*k]= a0+a1;
+						  A_beta4[l+idx*k]= a1+a2;
+						  A_beta5[l+idx*k]= a0+a1+a2;							  							  							  
 					  }					
 				 }
 				 );
 
+#ifdef CHECK_RNS
+		for (size_t i=0;i<m;i++)
+			for (size_t j=0;j<n;j++){
+				//std::cout<<"A="<<A[i*lda+j]<<std::endl;
+				
+				
+				integer tmp=0;
+				int idx=j+i*n;
+				for(int l=k-1;l>=0;l--){
+					int64_t limb,c0,c1,c2,c3,c4;
+					c0= A_beta0[l+idx*k]; // 1
+					c1= A_beta3[l+idx*k] - A_beta1[l+idx*k] - A_beta0[l+idx*k] ; // X
+					c2= A_beta5[l+idx*k] - A_beta3[l+idx*k] - A_beta4[l+idx*k] + 2*A_beta1[l+idx*k]; // X^2
+					c3= A_beta4[l+idx*k] - A_beta1[l+idx*k] - A_beta2[l+idx*k]; // X^3
+					c4= A_beta2[l+idx*k]; // X^4
+					if (c1!=0. || c3!=0.) std::cout<<"RNS EXTENDED: error in splitting entries (linear form)\n";
+					limb= c0+(c2<<16)+(c4<<32);
+					tmp=(tmp<<48)+limb;
+				}
+				if (tmp!=A[i*lda+j]){
+					std::cout<<"RNS EXTENDED: error in splitting entries (16-adic) --> "<<tmp<<" != "<<A[i*lda+j]<<std::endl;;
+					std::cout<<"MAX="<<std::min(k,((Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2)/3)<<std::endl;
+					std::cout<<"MAX1="<<k<<std::endl;
+					std::cout<<"MAX2="<<((Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2)/3<<std::endl;
+					std::cout<<"bisize: "<<Aiter[j+i*lda].bitsize()<<std::endl;
+
+					tmp=A[i*lda+j];
+					for(int l=0;l<k;l++){
+						std::cout<<"l="<<l<<"  -->  "<<((tmp[0] & 0xFFFF))             << " != "<<int64_t(A_beta0[l+idx*k])<<std::endl;
+						std::cout<<"l="<<l<<"  -->  "<<((tmp[0] & 0xFFFFFFFF)>>16)     << " != "<<int64_t(A_beta1[l+idx*k])<<std::endl;
+						std::cout<<"l="<<l<<"  -->  "<<((tmp[0] & 0xFFFFFFFFFFFF)>>32) << " != "<<int64_t(A_beta2[l+idx*k])<<std::endl;
+						tmp>>=48;
+					}
+				}
+			}													
+#endif
 			tkr.stop();
-			//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
+			std::cerr<<"RNS double ext - Kronecker : "<<tkr<<std::endl;
 			if (RNS_MAJOR==false) {
-				// Arns = _crt_in x A_beta^T
+				// A_rns = _crt_in x A_beta^T
 				Givaro::Timer tfgemm; tfgemm.start();
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[0].data(),_ldm,A_beta0,k,0.,Arns0,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[0].data(),_ldm,A_beta0,k,0.,A_rns0, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[1].data(),_ldm,A_beta1,k,0.,Arns1,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[1].data(),_ldm,A_beta1,k,0.,A_rns1, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[2].data(),_ldm,A_beta2,k,0.,Arns2,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[2].data(),_ldm,A_beta2,k,0.,A_rns2, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[3].data(),_ldm,A_beta3,k,0.,Arns3,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[3].data(),_ldm,A_beta3,k,0.,A_rns3, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[4].data(),_ldm,A_beta4,k,0.,Arns4,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[4].data(),_ldm,A_beta4,k,0.,A_rns4, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[5].data(),_ldm,A_beta5,k,0.,Arns5,
+				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[5].data(),_ldm,A_beta5,k,0.,A_rns5, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());			
 				tfgemm.stop();
+				std::cerr<<"RNS double ext - fgemm : "<<tfgemm<<std::endl;
 			}
 			else {
 				// Arns =  A_beta x _crt_in^T
@@ -465,6 +522,28 @@ namespace FFPACK {
 			}
 			Givaro::Timer tred; tred.start();
 
+#ifdef RNS_DEBUG			
+			for(size_t l=0;l<6;l++){
+				std::cout<<"Abeta"<<l<<":=Matrix("<<_size<<","<<mn<<",[";
+				for(size_t i=0;i<k;i++){
+					std::cout<<"[";
+					for(size_t j=0;j<mn;j++)
+						std::cout<<(int64_t)A_beta[l*mnk+j+i*mn]<<(j!=mn-1?",":(i!=k-1?"],":"]"));
+				}
+				std::cout<<"]);\n";
+			}
+
+			for(size_t l=0;l<6;l++){
+				std::cout<<"Arns"<<l<<":=Matrix("<<_size<<","<<mn<<",[";
+				for(size_t i=0;i<_size;i++){
+					std::cout<<"[";
+					for(size_t j=0;j<mn;j++)
+						std::cout<<(int64_t)A_rns_tmp[l*mnsize+j+i*mn]<<(j!=mn-1?",":(i!=_size-1?"],":"]"));
+				}
+				std::cout<<"]);\n";
+			}
+#endif
+			
 			
 			double c,c0,c1,c2,c3,c4;
 			PARFOR1D(i,_size,SPLITTER(NUM_THREADS),
@@ -475,22 +554,29 @@ namespace FFPACK {
 							 size_t h=j+i*mn;
 							 c0= A_rns0[h]; // 1
 							 c1= A_rns3[h] - A_rns1[h] - A_rns0[h] ; // X
-							 c2= A_rns5[h] - A_rns3[h] - A_rns4[h]; // X^2
+							 c2= A_rns5[h] - A_rns3[h] - A_rns4[h] + 2*A_rns1[h]; // X^2
 							 c3= A_rns4[h] - A_rns1[h] - A_rns2[h]; // X^3
 							 c4= A_rns2[h]; // X^4
-
+#ifdef RNS_DEBUG
+							 std::cout<<(int64_t)c0
+									  <<"+2^16*"<<(int64_t)c1
+									  <<"+2^32*"<<(int64_t)c2
+									  <<"+2^48*"<<(int64_t)c3
+									  <<"+2^64*"<<(int64_t)c4<<";\n";
+#endif				 
 							 // compute c=c0+c1.2^16+c2.2^32+c3.2^48+c4.2^64 mod mi
-							 _field_rns[i].axpyin(c,c4,twosixty_mod_mi,c3);
-							 _field_rns[i].axpyin(c,c ,twosixty_mod_mi,c2);
-							 _field_rns[i].axpyin(c,c ,twosixty_mod_mi,c1);
-							 _field_rns[i].axpyin(c,c ,twosixty_mod_mi,c0);
-							 Arns[h]=c;
+							 _field_rns[i].axpy(c,c4,twosixty_mod_mi,c3);
+							 _field_rns[i].axpy(c,c ,twosixty_mod_mi,c2);
+							 _field_rns[i].axpy(c,c ,twosixty_mod_mi,c1);
+							 _field_rns[i].axpy(c,c ,twosixty_mod_mi,c0);
+							 Arns[j+i*rda]= c+(c>=0?0:_basis[i]);
 						 }
 					 );
 			//reduce(mn,Arns,rda,RNS_MAJOR);
 			
 			tred.stop();
-			//if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
+
+			std::cerr<<"RNS double ext - Reduce : "<<tred<<std::endl;
 	
 		FFLAS::fflas_delete(A_beta);
 		FFLAS::fflas_delete(A_rns_tmp);
@@ -507,11 +593,21 @@ namespace FFPACK {
 						std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
 								 <<" != "
 								 <<(int64_t) Arns[i*n+j+k*rda]
-								 <<std::endl;
+								 <<" --> "<<A[i*lda+j]<<"  mod ("<<(uint64_t)_basis[k]<<")"<<std::endl;
+					}
+					else{
+						// std::cout<<"OK -> "<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+						// 		 <<" == "
+						// 		 <<(int64_t) Arns[i*n+j+k*rda]
+						// 		 <<" --> "<<A[i*lda+j]<<"  mod ("<<(uint64_t)_basis[k]<<")"<<std::endl;
+						
 					}
 				}
-		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+		std::cout<<"RNS EXTENDED freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+		if (!ok) std::terminate();
 #endif
+
+
 
 			
 		}
@@ -522,7 +618,7 @@ namespace FFPACK {
 
 
 		
-		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false){
+		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const {
 		  convert(m*n, A, Arns);
 		}
 		void init(size_t m, double* Arns, const integer* A, size_t lda) const;
