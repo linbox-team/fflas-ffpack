@@ -30,7 +30,7 @@ The most commonly used option include:
 - `--enable-optimization` : to run configure-time optimizations
 
 Type `./configure --help` to list all options available.
-Note that `givaro` is automatically detected by pkg-config, so you no longer need to pass a `--with-givaro=..` option.
+Note that `givaro` is automatically detected by pkg-config, so you no longer need to pass a `--with-givaro=...` option.
 You may need to set the `PKG_CONFIG_PATH` environment variable to `<givaro-prefix>/lib/pkgconfig` if you have installed it in a non standard directory.
 
 For example on a x86_64 architecture:
