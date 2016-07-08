@@ -175,8 +175,9 @@ echo "-----------------------------------------------"
 FF_CHECK_OMP
 
 # TODO do FF_CHECK_SIMD and take best, define USE_SSE2/AVX/AVX2/... and have also __FFLASFFPACK_USE_SIMD
-FF_CHECK_SSE
-FF_CHECK_AVX
+#FF_CHECK_SSE
+#FF_CHECK_AVX
+AX_CHECK_X86_FEATURES[][]
 
 AVXFLAGS="${SSEFLAGS} ${AVXFLAGS}"
 

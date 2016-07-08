@@ -94,7 +94,7 @@ echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make prefix=$PREFIX_INSTALL install"
-make PREFIX="$PREFIX_INSTALL" install
+make install
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make perfpublisher"

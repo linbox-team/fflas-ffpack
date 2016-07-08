@@ -94,7 +94,7 @@ namespace std { // Why? - A.B. 2015-04-30
 	}
 } // std
 
-#ifdef __FFLASFFPACK_USE_AVX
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 namespace std {
 
 	inline
@@ -126,7 +126,7 @@ namespace std {
 		return o;
 	}
 } // std
-#endif // __FFLASFFPACK_USE_AVX
+#endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
 #endif // __FFLASFFPACK_USE_SIMD
 
@@ -204,7 +204,7 @@ template <> struct is_simd<__m128i> {
 #endif // SSE
 
 // AVX
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #include "fflas-ffpack/fflas/fflas_simd/simd256.inl"
 
 template <> struct simdToType<__m256d> { using type = double; };
@@ -257,7 +257,7 @@ struct NoSimd {
 	template <class TT> static constexpr bool compliant(TT n) { return false; }
 };
 
-// #if defined(__FFLASFFPACK_USE_AVX)
+// #if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
 template <class T, bool = std::is_arithmetic<T>::value, bool = std::is_integral<T>::value> struct SimdChooser {};
 
@@ -266,9 +266,9 @@ template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSim
 template <class T>
 struct SimdChooser<T, true, false> // floating number
 {
-#ifdef __FFLASFFPACK_USE_AVX
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 	using value = Simd256<T>;
-#elif defined(__FFLASFFPACK_USE_SSE)
+#elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 	using value = Simd128<T>;
 #else
 	using value = NoSimd<T>;
@@ -278,9 +278,9 @@ struct SimdChooser<T, true, false> // floating number
 template <class T>
 struct SimdChooser<T, true, true> // integral number
 {
-#ifdef __FFLASFFPACK_USE_AVX2
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 	using value = Simd256<T>;
-#elif __FFLASFFPACK_USE_SSE
+#elif __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	using value = Simd128<T>;
 #else
 	using value = NoSimd<T>;
@@ -290,18 +290,18 @@ struct SimdChooser<T, true, true> // integral number
 template <class T> using Simd = typename SimdChooser<T>::value;
 
 // template <class T> struct SimdChooser<T, true> {
-// #if defined(__FFLASFFPACK_USE_AVX2)
+// #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 //     typedef Simd256<T> value;
 // #else
 //     typedef Simd128<T> value;
-// #endif // __FFLASFFPACK_USE_AVX2
+// #endif // __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 // };
 
-// #elif defined(__FFLASFFPACK_USE_SSE) // not AVX
+// #elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) // not AVX
 
 // template <class T> using Simd = Simd128<T>;
 
-// #endif // __FFLASFFPACK_USE_AVX
+// #endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
 #if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
 
@@ -312,7 +312,7 @@ template <class T> using Simd = typename SimdChooser<T>::value;
 // template <> struct floating_simd<double> { typedef Simd<double> value; };
 
 // template <> struct floating_simd<int64_t> {
-// #if defined(__FFLASFFPACK_USE_AVX2)
+// #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 // // typedef Simd256<double> value;
 // #else
 //     typedef Simd128<double> value;
@@ -352,7 +352,7 @@ namespace std {
 	}
 } // std
 
-#ifdef __FFLASFFPACK_USE_AVX
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 namespace std {
 	// cannot be instanciated, T is not deductible
 	template <class T>
@@ -361,7 +361,7 @@ namespace std {
 		return o;
 	}
 }
-#endif // __FFLASFFPACK_USE_AVX
+#endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
 #endif // __FFLASFFPACK_USE_SIMD
 
