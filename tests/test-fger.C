@@ -34,7 +34,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 
+// #define DEBUG 
 #define TIME 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
