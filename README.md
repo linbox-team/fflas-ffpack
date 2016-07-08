@@ -56,7 +56,7 @@ see INSTALL for further details.
 
 ## AUTHORS
 
-The FFLAS-FFPACK group (see AUTHORS for a list of contributors).
+The FFLAS-FFPACK group (see AUTHORS file for a list of contributors).
 
 ## Citing FFLAS-FFPACK
 
