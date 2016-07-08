@@ -36,6 +36,7 @@ export PATH=$PATH:/usr/local/bin:"$LOCAL_DIR/$CXX/bin"
 echo $PATH
 # Add specific locations (if needed)
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib"
+PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/lib/pkgconfig"
 
 # Where are blas installed (<blas_home>/lib/<blas_name>.so)
 # And their name (libtotoblas)
@@ -46,10 +47,6 @@ BLAS_NAME=openblas
 
 BLAS_LIBS="-L$BLAS_HOME/lib/ -l$BLAS_NAME"
 BLAS_CFLAGS=-I"$BLAS_HOME"/include
-
-# Where is Givaro installed (using compiler CXX)
-# Keep default if you did not modified PREFIX_INSTALL
-GIVARO_PATH="$LOCAL_DIR/$CXX"
 
 # Where to install fflas-ffpack binaries
 # Keep default for local installation.
@@ -92,8 +89,8 @@ fi
 # Automated installation and tests #
 #==================================#
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-givaro=$GIVARO_PATH --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
-./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-givaro="$GIVARO_PATH" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make prefix=$PREFIX_INSTALL install"
