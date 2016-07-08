@@ -34,9 +34,6 @@ LOCAL_DIR="$JENKINS_DIR"/local
 # Add path to compilers (if needed)
 export PATH=$PATH:/usr/local/bin:"$LOCAL_DIR/$CXX/bin"
 echo $PATH
-# Add specific locations (if needed)
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib"
-PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/lib/pkgconfig"
 
 # Where are blas installed (<blas_home>/lib/<blas_name>.so)
 # And their name (libtotoblas)
@@ -52,11 +49,14 @@ BLAS_CFLAGS=-I"$BLAS_HOME"/include
 # Keep default for local installation.
 PREFIX_INSTALL="$LOCAL_DIR/$CXX/$SSE"
 
+# Add specific locations (if needed)
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib":"$PREFIX_INSTALL"/lib
+echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/lib/pkgconfig"
+echo "PKG_CONFIG_PATH = ${PKG_CONFIG_PATH}"
 # /!\ Warning /!\ This could be an issue if you changed
 # the local installation directory
 rm -rf "$PREFIX_INSTALL"/bin/fflas-ffpack* "$PREFIX_INSTALL"/include/fflas-ffpack*
-
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":"$PREFIX_INSTALL"/lib:"$GIVARO_PATH"/lib
 
 #================#
 # Setup Variables#
