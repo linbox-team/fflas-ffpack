@@ -132,7 +132,7 @@ template <> struct Simd128_impl<true, false, true, 8> {
 	* Args   : [a0, a1] double
 	* Return : [a[s[0]], a[s[1]]] double
 	*/
-#if defined(__FFLASFFPACK_USE_AVX)
+#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
 		return _mm_permute_pd(a, s);

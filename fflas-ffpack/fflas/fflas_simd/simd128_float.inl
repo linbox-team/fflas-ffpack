@@ -141,7 +141,7 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	* Args   :	[a0, a1, a2, a3] float
 	* Return :	[a[s[0..1]], ..., a[s[6..7]] float
 	*/
-#if defined(__FFLASFFPACK_USE_AVX)
+#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
 		return _mm_permute_ps(a, s);
