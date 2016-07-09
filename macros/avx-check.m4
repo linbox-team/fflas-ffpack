@@ -58,7 +58,7 @@ AC_DEFUN([FF_CHECK_AVX],
 		AS_IF([ test "x$avx_found" = "xyes" ],
 		[
 			AC_MSG_RESULT(yes)
-			AC_DEFINE(USE_AVX,1,[Define if AVX is available])
+			AC_DEFINE(HAVE_AVX_INSTRUCTIONS,1,[Define if AVX is available])
 			AC_SUBST(AVXFLAGS)
 			
 	        dnl Check for AVX2
@@ -90,7 +90,7 @@ AC_DEFUN([FF_CHECK_AVX],
 			AS_IF([ test "x$avx2_found" = "xyes" ],
 			[
 				AC_MSG_RESULT(yes)
-				AC_DEFINE(USE_AVX2,1,[Define if AVX2 is available])
+				AC_DEFINE(HAVE_AVX2_INSTRUCTIONS,1,[Define if AVX2 is available])
 				AVXFLAGS=${AVX2FLAGS}
 				AC_SUBST(AVXFLAGS)
 			],
