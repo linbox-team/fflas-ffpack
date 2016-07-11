@@ -33,7 +33,11 @@ AC_DEFUN([FF_CHECK_SIMD],
 		AS_ECHO("SIMD enabled")
 		arch=`echo $target | cut -d"-" -f1`
 		# if we are on a x86 (32 or 64 bits) with gcc>=4.8 then run the AX_CHECK_X86_FEATURES macro
-		AS_IF([ test  "x$CCNAM" != "xgcc48" -o "x$arch" != "xx86_64" ] , 
+		AS_IF([test "x$arch" = "xx86_64" -o "x$arch" = "xi686"],
+			    [archx86="yes"],
+			    [archx86="no"]
+		     )
+		AS_IF([ test  "x$CCNAM" != "xgcc48" -o "x$archx86" = "xno" ],
 		[
 		   CUSTOM_SIMD="yes"
 		   echo "Compiling with $CCNAM for a $arch target: running custom checks for SSE4.1 and AVX1,2"
@@ -133,8 +137,3 @@ AC_DEFUN([FF_CHECK_SIMD],
 	],[ AS_ECHO("SIMD disabled")
 	    CUSTOM_SIMD="yes" ])
 ])
-
-
-dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
-dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc48"],[AVXFLAGS="${AVXFLAGS} -fabi-version=6"],[])
