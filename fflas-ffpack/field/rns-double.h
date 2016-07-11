@@ -382,9 +382,7 @@ namespace FFPACK {
 				std::cout<<"]);\n";
 			}
 
-#endif
-			std::cout<<"RNS EXTENDED: nbr moduli ("<<_size<<") kronecker size ("<<_ldm<<")\n";
-
+#endif			
 		}
 
 		// Arns must be an array of m*n*_size
@@ -398,6 +396,13 @@ namespace FFPACK {
 
 		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const
 		{
+			if (_size>= (1<<16)){
+				std::cerr<<"RNS EXTENDED DOUBLE: init Error -> the nbr of moduli in RNS basis is > 2^16, not implemented. aborting\n";std::terminate();
+			}
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
+				std::cerr<<RALIGN<<"RNS double ext (To) --> rns size ("<<_size<<") kronecker size ("<<k<<") data dim ("<<m*n<<")"<<std::endl;
+#endif
 		    //init(m*n,Arns,A,lda);
 			if (k>_ldm){
 				FFPACK::failure()(__func__,__FILE__,__LINE__,"rns_struct: init (too large entry)");
@@ -510,7 +515,10 @@ namespace FFPACK {
 				}													
 #endif
 			tkr.stop();
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
 			std::cerr<<RALIGN<<"RNS double ext (To) - Kronecker : "<<tkr.usertime()<<std::endl;
+#endif
 			if (RNS_MAJOR==false) {
 				// A_rns = _crt_in x A_beta^T
 				Givaro::Timer tfgemm; tfgemm.start();
@@ -527,7 +535,10 @@ namespace FFPACK {
 				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in[5].data(),_ldm,A_beta5,k,0.,A_rns5, mn,
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());			
 				tfgemm.stop();
+#ifdef BENCH_RNS
+				if (m!=1 && n!=1)				
 				std::cerr<<RALIGN<<"RNS double ext (To)  - fgemm : "<<tfgemm.usertime()<<std::endl;
+#endif
 			}
 			else {
 				// Arns =  A_beta x _crt_in^T
@@ -567,9 +578,32 @@ namespace FFPACK {
 			
 			
 			double c,c0,c1,c2,c3,c4;
+			//double C,C1,C3;
+			//int64_t c0,c1,c2,c3,c4;
+
+			const double two16=1UL<<16,
+				two32=1UL<<32,
+				two48=1UL<<48,
+				two64=double(1UL<<32)*double(1UL<<32); 
+			
 			PARFOR1D(i,_size,SPLITTER(NUM_THREADS),
-					 double twosixteen_mod_mi;
-					 _field_rns[i].init(twosixteen_mod_mi,(1<<16));
+					 double two16_mod_mi,two48_mod_mi;
+					 _field_rns[i].init(two16_mod_mi,(1<<16));
+					 _field_rns[i].mul(two48_mod_mi,two16_mod_mi,two16_mod_mi);
+					 _field_rns[i].mulin(two48_mod_mi,two16_mod_mi);
+					 
+					 double two_16_invmi = two16 * _invbasis[i];
+					 double two_32_invmi = two32 * _invbasis[i];
+					 double two_48_invmi = two48 * _invbasis[i]; 
+					 double two_64_invmi = two64 * _invbasis[i];
+					 double q1,q2,q3,q4;
+
+					 // std::cout<<"M1:="<<two_16_invmi<<";\n";
+					 // std::cout<<"M2:="<<two_32_invmi<<";\n";
+					 // std::cout<<"M3:="<<two_48_invmi<<";\n";
+					 // std::cout<<"M4:="<<two_64_invmi<<";\n";
+					 
+					 
 					 for(size_t j=0;j<mn;j++)
 						 {
 							 size_t h=j+i*mn;
@@ -586,19 +620,51 @@ namespace FFPACK {
 									  <<"+2^64*"<<(int64_t)c4<<";\n";
 #endif				 
 							 // compute c=c0+c1.2^16+c2.2^32+c3.2^48+c4.2^64 mod mi							 
+							 // _field_rns[i].axpy(c,c4,two16_mod_mi,c3);
+							 // _field_rns[i].axpy(c,c ,two16_mod_mi,c2);
+							 // _field_rns[i].axpy(c,c ,two16_mod_mi,c1);
+							 // _field_rns[i].axpy(c,c ,two16_mod_mi,c0);
+							 // Arns[j+i*rda]= c+(c>=0?0:_basis[i]);
+
+							 q1= std::floor(c1*two_16_invmi);//std::cout<<"Q1:="<<(int64_t)q1<<";\n";
+							 q2= std::floor(c2*two_32_invmi);//std::cout<<"Q2:="<<(int64_t)q2<<";\n";
+							 q3= std::floor(c3*two_48_invmi);//std::cout<<"Q3:="<<(int64_t)q3<<";\n";
+							 q4= std::floor(c4*two_64_invmi);//std::cout<<"Q4:="<<(int64_t)q4<<";\n";
+
+							 c1*=two16;
+							 c2*=two32;
+							 c3*=two48;
+							 c4*=two64;
 							 
-							 _field_rns[i].axpy(c,c4,twosixteen_mod_mi,c3);
-							 _field_rns[i].axpy(c,c ,twosixteen_mod_mi,c2);
-							 _field_rns[i].axpy(c,c ,twosixteen_mod_mi,c1);
-							 _field_rns[i].axpy(c,c ,twosixteen_mod_mi,c0);
-							 Arns[j+i*rda]= c+(c>=0?0:_basis[i]);
+							 c1=fma(q1,_negbasis[i],c1); //std::cout<<"D1:="<<(int64_t)c1<<";\n";
+							 c2=fma(q2,_negbasis[i],c2); //std::cout<<"D2:="<<(int64_t)c2<<";\n";
+							 c3=fma(q3,_negbasis[i],c3); //std::cout<<"D3:="<<(int64_t)c3<<";\n";
+							 c4=fma(q4,_negbasis[i],c4); //std::cout<<"D4:="<<(int64_t)c4<<";\n";
+
+							 c0+=c1;
+							 c2+=c3;
+							 c0+=c4+c2;
+							 while(c0<0.)        c0+=_basis[i];
+							 while(c0>_basis[i]) c0-=_basis[i];
+							 Arns[j+i*rda]= c0;
+							 
+							 // c1+=c2<<16;
+							 // c3+=c4<<16;
+							 // _field_rns[i].reduce(C1,c1);
+							 // _field_rns[i].reduce(C3,c3);
+							 // _field_rns[i].axpy(C1,C1,two16_mod_mi,c0);
+							 // _field_rns[i].mul(C3,C3,two48_mod_mi);
+							 // _field_rns[i].add(C,C1,C3);
+							 // Arns[j+i*rda]= C+(C>=0?0:_basis[i]);
 						 }
 					 );
 			//reduce(mn,Arns,rda,RNS_MAJOR);
 			
 			tred.stop();
-
-			std::cerr<<RALIGN<<"RNS double ext (To)  - Reduce : "<<tred.usertime()<<std::endl;
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
+				std::cerr<<RALIGN<<"RNS double ext (To)  - Reduce : "<<tred.usertime()<<std::endl;
+#endif
 	
 			FFLAS::fflas_delete(A_beta);
 			FFLAS::fflas_delete(A_rns_tmp);
@@ -625,7 +691,7 @@ namespace FFPACK {
 						
 						}
 					}
-			std::cout<<"RNS EXTENDED (To)  ... "<<(ok?"OK":"ERROR")<<std::endl;
+			std::cout<<"RNS EXTENDED Double (To)  ... "<<(ok?"OK":"ERROR")<<std::endl;
 			if (!ok) std::terminate();
 #endif
 
@@ -650,7 +716,11 @@ namespace FFPACK {
 			if (_size>= (1<<16)){
 				std::cerr<<"RNS EXTENDED DOUBLE: convert Error -> the nbr of moduli in RNS basis is > 2^16, not implemented. aborting\n";std::terminate();
 			}
-				
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
+				std::cerr<<RALIGN<<"RNS double ext (From) --> rns size ("<<_size<<") kronecker size ("<<_ldm<<") data dim ("<<m*n<<")"<<std::endl;
+#endif
+			
 #ifdef CHECK_RNS
 			integer* Acopy=new integer[m*n];
 			for(size_t i=0;i<m;i++)
@@ -696,8 +766,10 @@ namespace FFPACK {
 					A_rns5[idx]=aa0+aa1+aa2;
 				}
 			tsplit.stop();
-			std::cerr<<RALIGN<<"RNS double ext (From) -  split : "<<tsplit.usertime()<<std::endl;
-			
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)				
+				std::cerr<<RALIGN<<"RNS double ext (From) -  split : "<<tsplit.usertime()<<std::endl;
+#endif
 			Givaro::Timer tfgemmc;tfgemmc.start();
 			if (RNS_MAJOR==false){
 				// compute A_beta = Ap^T x M_beta
@@ -712,8 +784,11 @@ namespace FFPACK {
 				// compute A_beta = Ap x M_Beta 
 				std::cerr<<"NOT YET IMPLEMENTED .... aborting\n"; std::terminate();
 			}
-			tfgemmc.stop(); 
+			tfgemmc.stop();
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
 			std::cerr<<RALIGN<<"RNS double ext (From) -  fgemm : "<<tfgemmc.usertime()<<std::endl;
+#endif
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^48
 
 			FFLAS::fflas_delete( A_rns_tmp);
@@ -860,8 +935,10 @@ namespace FFPACK {
 					
 				}
 			tkroc.stop();
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
 			std::cerr<<RALIGN<<"RNS double ext (From) - Kronecker : "<<tkroc.usertime()<<std::endl;
-			
+#endif
 			
 			m0[0]->_mp_d = m0_d;
 			m1[0]->_mp_d = m1_d;
@@ -883,7 +960,7 @@ namespace FFPACK {
 						if (( curr% _p +(curr%_p<0?_p:0)) != (int64_t) Arns[i*n+j+k*rda])
 							std::cout<<"A("<<i<<","<<j<<") -> "<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"!="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 					}
-			std::cout<<"RNS EXTENDED (From)  ... "<<(ok?"OK":"ERROR")<<std::endl;
+			std::cout<<"RNS EXTENDED Double (From)  ... "<<(ok?"OK":"ERROR")<<std::endl;
 			if (!ok) std::terminate();
 #endif
 		}

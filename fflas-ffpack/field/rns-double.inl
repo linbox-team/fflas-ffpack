@@ -48,6 +48,12 @@ namespace FFPACK {
 			// split A into A_beta according to a Kronecker transform in base 2^16
 //		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
 
+#ifdef BENCH_RNS
+		if (m!=1 && n!=1)
+			std::cerr<<"RNS double (To) --> rns size ("<<_size<<") kronecker size ("<<k<<") data dim ("<<m*n<<")"<<std::endl;
+#endif
+
+		
 		Givaro::Timer tkr; tkr.start();
 // #ifndef __FFLASFFPACK_SEQUENTIAL
 // 			auto sp=SPLITTER(MAX_THREADS);
@@ -82,7 +88,10 @@ namespace FFPACK {
 				  );
 
 			tkr.stop();
-			//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
+#ifdef BENCH_RNS
+			if (m!=1 && n!=1)
+				std::cerr<<"RNS double (To) - Kronecker : "<<tkr.usertime()<<std::endl;
+#endif
 			if (RNS_MAJOR==false) {
 					// Arns = _crt_in x A_beta^T
 				Givaro::Timer tfgemm; tfgemm.start();
@@ -91,7 +100,9 @@ namespace FFPACK {
 							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
 			
 				tfgemm.stop();
-			//if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
+#ifdef BENCH_RNS			
+				if(m>1 && n>1) 	std::cerr<<"RNS double (To) - fgemm : "<<tfgemm.usertime()<<std::endl;
+#endif
 //			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 					// reduce each row i of Arns modulo moduli[i]
 					//for(size_t i=0;i<_size;i++)
@@ -104,12 +115,14 @@ namespace FFPACK {
 					//for(size_t i=0;i<_size;i++)
 					//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
 			}
-			Givaro::Timer tred; tred.start();
 
+			
+			Givaro::Timer tred; tred.start();
 			reduce(mn,Arns,rda,RNS_MAJOR);
 			tred.stop();
-			//if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
-	
+#ifdef BENCH_RNS			
+			if(m>1 && n>1) 			std::cerr<<"RNS double (To) - Reduce : "<<tred.usertime()<<std::endl;
+#endif
 		FFLAS::fflas_delete( A_beta);
 
 #ifdef CHECK_RNS
@@ -127,7 +140,7 @@ namespace FFPACK {
 								 <<std::endl;
 					}
 				}
-		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
+		std::cout<<"RNS double (To) ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 
@@ -192,6 +205,11 @@ namespace FFPACK {
 	inline void rns_double::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
 									const double* Arns, size_t rda, bool RNS_MAJOR) const
 	{
+#ifdef BENCH_RNS
+		if (m!=1 && n!=1)
+			std::cerr<<"RNS double (From) --> rns size ("<<_size<<") kronecker size ("<<_ldm<<") data dim ("<<m*n<<")"<<std::endl;
+#endif
+
 #ifdef CHECK_RNS
 		integer* Acopy=new integer[m*n];
 		for(size_t i=0;i<m;i++)
@@ -214,7 +232,9 @@ namespace FFPACK {
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
 
 		tfgemmc.stop();
-		//if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
+#ifdef BENCH_RNS			
+		if(m>1 && n>1) std::cerr<<"RNS double (From) - fgemm : "<<tfgemmc.usertime()<<std::endl;
+#endif
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
 		size_t k=_ldm;
@@ -274,8 +294,9 @@ namespace FFPACK {
 
 			}
 				 tkroc.stop();
-		//if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
-
+#ifdef BENCH_RNS			
+				 if(m>1 && n>1) std::cerr<<"RNS double (From) -  Convert : "<<tkroc.usertime()<<std::endl;
+#endif
 		m0[0]->_mp_d = m0_d;
 		m1[0]->_mp_d = m1_d;
 		m2[0]->_mp_d = m2_d;
@@ -294,7 +315,7 @@ namespace FFPACK {
 					ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
 						//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
-		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
+		std::cout<<"RNS Double (From) ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 
 	}
