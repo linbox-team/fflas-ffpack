@@ -23,13 +23,16 @@
 
 AC_PREREQ([2.61])
 
+
 AC_INIT([FFLAS-FFPACK], [2.2.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
+
 AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability foreign])
 AC_CONFIG_HEADERS([config.h])
+AC_CANONICAL_TARGET
+AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability foreign])
 AX_PREFIX_CONFIG_H(fflas-ffpack/config.h, __FFLASFFPACK)
 AC_PATH_PROG(RM, rm, $FALSE)
 RM="$RM -f"
@@ -170,14 +173,13 @@ echo "-----------------------------------------------"
 echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
-
-echo "-----------------------------------------------"
 FF_CHECK_OMP
 
-# TODO do FF_CHECK_SIMD and take best, define USE_SSE2/AVX/AVX2/... and have also __FFLASFFPACK_USE_SIMD
+# checkes which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
 #FF_CHECK_SSE
 #FF_CHECK_AVX
-if test "x$CCNAM" = "xgcc48" ; then
+arch=`echo $target | cut -d"-" -f1`
+if test "x$CCNAM" = "xgcc48" -a "x$arch" = "xx86_64"; then
    AX_CHECK_X86_FEATURES[][]
 else
 	FF_CHECK_SSE
