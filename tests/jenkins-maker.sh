@@ -26,7 +26,7 @@ SSE=`pwd | awk -F/ '{print $NF}'`
 # Job fflas-ffpack with SSE option flag 
 # by default sse is enabled
 if [ "$SSE" == "withoutSSE" ]; then
-  FFLAS_SSEFLAG="--disable-sse"
+  FFLAS_SSEFLAG="--disable-simd"
 fi
 
 JENKINS_DIR=${SOURCE_DIRECTORY%%/workspace/*}
