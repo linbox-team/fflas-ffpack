@@ -41,7 +41,7 @@ namespace FFLAS {
 
 } // FFLAS
 
-#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#ifdef __FFLASFFPACK_USE_SIMD
 #include "igemm_kernels.h"
 #include "igemm_tools.h"
 #endif 
@@ -89,7 +89,7 @@ namespace FFLAS { /*  igemm */
 
 
 } // FFLAS
-#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#ifdef __FFLASFFPACK_USE_SIMD
 #include "igemm.inl"
 #endif
 #endif // __FFLASFFPACK_fflas_igemm_igemm_H
