@@ -127,6 +127,58 @@ template <> struct Simd128_impl<true, false, true, 8> {
 	static INLINE void stream(const scalar_t *p, const vect_t v) { _mm_stream_pd(const_cast<scalar_t *>(p), v); }
 
 	/*
+	* Shuffle double-precision (64-bit) floating-point elements using the control in s,
+	* and store the results in dst.
+	* Args   : [a0, a1] double
+	* Return : [a[s[0]], a[s[1]]] double
+	*/
+#if defined(__FFLASFFPACK_USE_AVX)
+	template<uint8_t s>
+	static INLINE CONST vect_t shuffle(const vect_t a) {
+		return _mm_permute_pd(a, s);
+	}
+#endif
+
+	/*
+	* Unpack and interleave double-precision (64-bit) floating-point elements from the low half of a and b, and store the results in dst.
+	* Args   : [a0, a1] double
+			   [b0, b1] double
+	* Return : [a0, b0] double
+	*/
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_pd(a, b); }
+
+	/*
+	* Unpack and interleave double-precision (64-bit) floating-point elements from the high half of a and b, and store the results in dst.
+	* Args   : [a0, a1] double
+			   [b0, b1] double
+	* Return : [a1, b1] double
+	*/
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_pd(a, b); }
+
+	/*
+	* Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
+	* and store the results in dst.
+	* Args   : [a0, a1] double
+			   [b0, b1] double
+	* Return : [s[0]?a0:b0, s[1]?a1:b1] double
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
+		return _mm_blend_pd(a, b, s);
+	}
+
+	/*
+	* Blend packed double-precision (64-bit) floating-point elements from a and b using mask,
+	* and store the results in dst.
+	* Args   : [a0, a1] double
+			   [b0, b1] double
+	* Return : [mask[63]?a0:b0, mask[127]?a1:b1] double
+	*/
+	static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
+		return _mm_blendv_pd(a, b, mask);
+	}
+
+	/*
 	 * Add packed double-precision (64-bit) floating-point elements in a and b, and store the results in vect_t.
 	 * Args   : [a0, a1], [b0, b1]
 	 * Return : [a0+b0, a1+b1]
@@ -153,6 +205,14 @@ template <> struct Simd128_impl<true, false, true, 8> {
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return _mm_mul_pd(a, b); }
 
 	static INLINE CONST vect_t mulin(vect_t &a, const vect_t b) { return a = mul(a, b); }
+
+	/*
+	 * Divide packed double-precision (64-bit) floating-point elements in a by packed elements in b,
+	 * and store the results in dst.
+	 * Args   : [a0, a1], [b0, b1]
+	 * Return : [a0/b0, a1/b1]
+	 */
+	static INLINE CONST vect_t div(const vect_t a, const vect_t b) { return _mm_div_pd(a, b); }
 
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to

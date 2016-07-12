@@ -136,6 +136,58 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	static INLINE void stream(const scalar_t *p, const vect_t v) { _mm_stream_ps(const_cast<scalar_t *>(p), v); }
 
 	/*
+	* Shuffle single-precision (32-bit) floating-point elements in a using the control in s,
+	* and store the results in dst.
+	* Args   :	[a0, a1, a2, a3] float
+	* Return :	[a[s[0..1]], ..., a[s[6..7]] float
+	*/
+#if defined(__FFLASFFPACK_USE_AVX)
+	template<uint8_t s>
+	static INLINE CONST vect_t shuffle(const vect_t a) {
+		return _mm_permute_ps(a, s);
+	}
+#endif
+
+	/*
+	* Unpack and interleave single-precision (32-bit) floating-point elements from the low half of a and b, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] float
+			   [b0, b1, b2, b3] float
+	* Return : [a0, b0, a1, b1] float
+	*/
+	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) { return _mm_unpacklo_ps(a, b); }
+
+	/*
+	* Unpack and interleave single-precision (32-bit) floating-point elements from the high half a and b, and store the results in dst.
+	* Args   : [a0, a1, a2, a3] float
+			   [b0, b1, b2, b3] float
+	* Return : [a2, b2, a3, b3] float
+	*/
+	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) { return _mm_unpackhi_ps(a, b); }
+
+	/*
+	* Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] float
+			   [b0, b1, b2, b3] float
+	* Return : [s[0]?a0:b0,   , s[3]?a3:b3] float
+	*/
+	template<uint8_t s>
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
+		return _mm_blend_ps(a, b, s);
+	}
+
+	/*
+	* Blend packed single-precision (32-bit) floating-point elements from a and b using mask, and store the results in dst.
+	* and store the results in dst.
+	* Args   : [a0, a1, a2, a3] float
+			   [b0, b1, b2, b3] float
+	* Return : [mask[31]?a0:b0,   , mask[127]?a3:b3] float
+	*/
+	static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
+		return _mm_blendv_ps(a, b, mask);
+	}
+
+	/*
 	 * Add packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
 	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
 	 * Return : [a0+b0, a1+b1, a2+b2, a3+b3]
@@ -162,6 +214,14 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return _mm_mul_ps(a, b); }
 
 	static INLINE CONST vect_t mulin(vect_t &a, const vect_t b) { return a = mul(a, b); }
+
+	/*
+	 * Divide packed single-precision (32-bit) floating-point elements in a by packed elements in b,
+	 * and store the results in dst.
+	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3] float
+	 * Return : [a0/b0, a1/b1, a2/b2, a3/b3] float
+	 */
+	static INLINE CONST vect_t div(const vect_t a, const vect_t b) { return _mm_div_ps(a, b); }
 
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to

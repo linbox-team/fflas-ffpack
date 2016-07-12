@@ -77,7 +77,7 @@ AC_SUBST([DEFAULT_CFLAGS])
 AC_SUBST([DEBUG_CFLAGS])
 AC_SUBST([TESTS_CFLAGS])
 
-TESTS_CFLAGS="-O0"
+TESTS_CFLAGS="-O2"
 DEBUG_CFLAGS="-g"
 DEFAULT_CFLAGS=""
 WARN_CFLAGS="-Wall"
@@ -154,7 +154,7 @@ fi
 
 
 DEFAULT_CFLAGS="${DEFAULT_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
-TESTS_CFLAGS="${TESTS_CFLAGS} ${WARN_CFLAGS} #${DEBUG_CFLAGS}"
+TESTS_CFLAGS="${TESTS_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
 
 
 AC_HEADER_STDC
@@ -235,17 +235,19 @@ echo "-----------------------------------------------"
 # Getting GMP from Givaro - AB 2014-12-12
 #FF_CHECK_GMP
 
-FF_CHECK_GIVARO(,,[
-echo '*******************************************************************************'
-echo ' WARNING: GIVARO not found!'
-echo
-echo ' GIVARO library is required for some tests in this library.'
-echo ' Please make sure GIVARO is installed and specify its location with the'
-echo ' option --with-givaro=<prefix> when running configure.'
-echo ' Do not forget to set/export LD_LIBRARY_PATH if necessary.'
-echo '*******************************************************************************'
-exit 1
-])
+PKG_CHECK_MODULES([GIVARO],[givaro])
+
+dnl FF_CHECK_GIVARO(,,[
+dnl echo '*******************************************************************************'
+dnl echo ' WARNING: GIVARO not found!'
+dnl echo
+dnl echo ' GIVARO library is required for some tests in this library.'
+dnl echo ' Please make sure GIVARO is installed and specify its location with the'
+dnl echo ' option --with-givaro=<prefix> when running configure.'
+dnl echo ' Do not forget to set/export LD_LIBRARY_PATH if necessary.'
+dnl echo '*******************************************************************************'
+dnl exit 1
+dnl ])
 
 BLAS_FOUND=false
 
