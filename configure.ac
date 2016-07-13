@@ -184,17 +184,18 @@ FF_CHECK_SIMD
 arch=`echo $target | cut -d"-" -f1`
 if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
    AX_CHECK_X86_FEATURES([][])
+else
+   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
 fi
 
 dnl echo "CCNAM = $CCNAM $CUSTOM_SIMD"
-AVXFLAGS="${SSEFLAGS} ${AVXFLAGS} $X86_FEATURE_CFLAGS"
 
 dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
 dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc48"],[AVXFLAGS="${AVXFLAGS} -fabi-version=6"],[])
+AS_IF([test "x$CCNAM" = "xgcc48"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
 
 
-PARFLAGS="${AVXFLAGS} ${OMPFLAGS}"
+PARFLAGS="${OMPFLAGS}"
 PARLIBS="${OMPFLAGS}"
 
 AC_SUBST(PARFLAGS)
