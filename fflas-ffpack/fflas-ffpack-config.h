@@ -91,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #include "fflas-ffpack/fflas-ffpack-optimise.h"
 
-#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #define __FFLASFFPACK_USE_SIMD // see configure...
 #endif
 

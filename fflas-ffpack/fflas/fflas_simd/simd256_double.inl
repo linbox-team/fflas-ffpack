@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_double_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_double_INL
 
-#if not (defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2))
+#if not (defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS))
 #error "You need AVX instructions to perform 256bits operations on double"
 #endif
 
@@ -138,7 +138,7 @@ template <> struct Simd256_impl<true, false, true, 8> : public Simd256fp_base {
 			   [b0, b1, b2, b3] double
 	* Return : [a[s[0..1]], ..., a[s[6..7]]] double
 	*/
-#if defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
 		return _mm256_permute4x64_pd(a, s);
