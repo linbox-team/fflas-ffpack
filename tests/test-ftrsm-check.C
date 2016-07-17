@@ -79,8 +79,7 @@ int main(int argc, char** argv) {
 		Field::Element_ptr X = FFLAS::fflas_new(F,m,n);
 		Field::Element_ptr A = FFLAS::fflas_new(F,k,k);
 
-		for( size_t i = 0; i < m*n; ++i )
-			Rand.random( *(X+i) );
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,X,m/MAX_THREADS); }
 		//write_field(F,std::cerr<<"X:=",X,m,n,n,true) <<std::endl;
 
 		for (size_t i=0;i<k;++i){

@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 	typedef Givaro::Modular<double> Field;
 	Field F(q);
 
-	Field::RandIter RValue(F,0,seed);
+	Field::RandIter Rand(F,0,seed);
     srandom(seed);
     
 	size_t pass = 0;	// number of tests that have successfully passed
@@ -82,8 +82,7 @@ int main(int argc, char** argv) {
 		size_t *Q = FFLAS::fflas_new<size_t>(n);
 
 		// generate a random matrix A
-		for( size_t i = 0; i < m*n; ++i )
-			RValue.random( *(A+i) );
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
   
 //   		FFPACK::Checker_PLUQ<Field> checker (RValue,m,n,A,n);
 //   		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
