@@ -81,9 +81,7 @@ int main(int argc, char** argv) {
 
 		Polynomial g(n);
 
-		for( size_t i = 0; i < n*n; ++i )
-			Rand.random( *(A+i) );
-
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
 		try {
 			//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
 // 			FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);

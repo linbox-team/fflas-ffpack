@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_int64_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_int64_INL
 
-#ifndef __FFLASFFPACK_USE_AVX2
+#ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 #error "You need AVX2 instructions to perform 256bits operations on int64_t"
 #endif
 

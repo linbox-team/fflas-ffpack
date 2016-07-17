@@ -30,7 +30,7 @@
 #define __FFLASFFPACK_checker_pluq_INL
 
 #ifdef ENABLE_CHECKER_PLUQ
-#include "ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 #ifdef TIME_CHECKER_PLUQ
 #include <givaro/givtimer.h>

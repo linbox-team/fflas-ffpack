@@ -34,7 +34,7 @@
  * Simd256 specialized for float
  */
 template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
-#if defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 	/*
 	 * alias to 256 bit simd register
 	 */

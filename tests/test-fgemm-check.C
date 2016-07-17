@@ -79,12 +79,9 @@ int main(int argc, char** argv) {
 		Field::Element_ptr B = FFLAS::fflas_new(F,k,n);
 		Field::Element_ptr C = FFLAS::fflas_new(F,m,n);
 
-		for( size_t i = 0; i < m*k; ++i )
-			Rand.random( *(A+i) );
-		for( size_t i = 0; i < k*n; ++i )
-			Rand.random( *(B+i) );
-		for( size_t i = 0; i < m*n; ++i )
-			Rand.random( *(C+i) );
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/MAX_THREADS); }
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, k,n,B,k/MAX_THREADS); }
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,C,n/MAX_THREADS); }
 
 		FFLAS::Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
 		FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);

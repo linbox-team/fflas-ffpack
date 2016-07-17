@@ -379,7 +379,7 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 		std::cout << "SSE OK" << std::endl;
 #endif
 
-#ifdef __FFLASFFPACK_USE_AVX
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 	avx = test_float_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
 	if(!avx)
 		std::cout << "bug avx" << std::endl;
@@ -399,7 +399,7 @@ bool test_integer(size_t seed, size_t vectorSize, size_t max_){
 	else
 		std::cout << "SSE OK" << std::endl;
 #endif
-#ifdef __FFLASFFPACK_USE_AVX2
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 	avx = test_integer_impl<Simd256<Element>>(seed, vectorSize, (Element)max_);
 	if(!avx)
 		std::cout << "bug avx" << std::endl;

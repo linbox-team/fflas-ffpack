@@ -1,6 +1,6 @@
 /------------------ fflas-ffpack.pc ------------------------
 prefix=@prefix@
-exec_prefix=@prefix@/bin
+exec_prefix=@prefix@
 libdir=@prefix@/lib
 includedir=@prefix@/include
 
@@ -10,5 +10,5 @@ URL: http://github.com/linbox-team/fflas-ffpack
 Version: @VERSION@
 Requires: givaro >= 4.0.1
 Libs: @PARLIBS@ @PRECOMPILE_LIBS@ @CBLAS_LIBS@
-Cflags: @DEFAULT_CFLAGS@ @CBLAS_FLAG@ @CXXFLAGS@ @PARFLAGS@ @PRECOMPILE_FLAGS@
+Cflags: -I@includedir@ @DEFAULT_CFLAGS@ @CBLAS_FLAG@ @CXXFLAGS@ @PARFLAGS@ @PRECOMPILE_FLAGS@
 \-------------------------------------------------------

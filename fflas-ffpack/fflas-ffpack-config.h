@@ -39,6 +39,7 @@
 #endif
 
 #ifdef __CYGWIN__
+# ifndef _GLIBCXX_USE_C99
 #  define _GLIBCXX_USE_C99 true
 #  ifndef _GLIBCXX_USE_C99_MATH_TR1
 #    include <cstdlib>
@@ -78,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #    define _GLIBCXX_USE_C99 true
 #    include <cstdlib>
 #  endif
+# endif
 #endif
 
 #include "fflas-ffpack/config.h"
@@ -89,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #include "fflas-ffpack/fflas-ffpack-optimise.h"
 
-#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #define __FFLASFFPACK_USE_SIMD // see configure...
 #endif
 

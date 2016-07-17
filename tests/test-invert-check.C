@@ -79,10 +79,7 @@ int main(int argc, char** argv) {
 //     }
         
             // Might not be invertible, but this is caught by nullity
-        for (size_t i=0;i<m;++i){
-            for (size_t j=0;j<m;++j)
-                Rand.random(A[i*m+j]);
-        }
+		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,m,A,m/MAX_THREADS); }
 
 		FFPACK::Checker_invert<Field> checker(Rand,m,A,m);
 		FFPACK::Invert(F,m,A,m,nullity);
