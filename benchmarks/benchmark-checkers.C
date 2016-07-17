@@ -1,6 +1,6 @@
 #define ENABLE_ALL_CHECKINGS 1 // DO NOT CHANGE
 #define NR_TESTS 10
-#define MAX_SIZE_MATRICES 4000
+#define MAX_SIZE_MATRICES 3000
 #define NR_THREADS 4
 
 #include "fflas-ffpack/config-blas.h"
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
 		for (size_t j=0; j<NR_TESTS; ++j) {
 			m = rand() % 500 + i;
 
-			for( size_t i = 0; i < m*m; ++i ) Rand.random( *(A+i) );
+                        PAR_BLOCK { FFLAS::pfrand(F,Rand, m,m,A,m/MAX_THREADS); }
 
 			chrono.clear(); chrono.start();
                         FFPACK::Checker_invert<Field> checker3(Rand,m,A,m);
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 			m = rand() % 500 + i;
 			n = rand() % 500 + i;
 
-			for( size_t i = 0; i < m*n; ++i ) Rand.random( *(A+i) );
+                        PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
 
 			size_t *P = FFLAS::fflas_new<size_t>(m);
 			size_t *Q = FFLAS::fflas_new<size_t>(n);
@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
 		for (size_t j=0; j<NR_TESTS; ++j) {
 			n = rand() % 500 + i;
 
-			for( size_t i = 0; i < n*n; ++i ) Rand.random( *(A+i) );
+                        PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
 
 			Polynomial g(n);
 
