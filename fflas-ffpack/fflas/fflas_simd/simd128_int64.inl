@@ -178,7 +178,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	/*
 	* Shuffle 64-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   : [a0, a1] int64_t
-	* Return : [a[s[0]], a[s[1]] int64_t
+	* Return : [a[s[0]], a[s[1]]] int64_t
 	*/
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
@@ -207,7 +207,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	* Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
 	* Args   : [a0, a1] int64_t
 			   [b0, b1] int64_t
-	* Return : [s[0]?a0:b0, s[1]?a3:b3] int64_t
+	* Return : [s[0]?a0:b0, s[1]?a1:b1] int64_t
 	*/
 	template<uint8_t s>
 	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {

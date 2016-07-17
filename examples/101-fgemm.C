@@ -33,26 +33,44 @@ using namespace FFLAS;
 
 int main(int argc, char** argv) {
 
-	typedef Givaro::Modular<float> Ring;
-	Ring F(11);
+	typedef Givaro::ModularBalanced<float> Ring;
+	Ring F(101);
 
-	Ring::Element A[4]{1,2,3,4}, B[4]{5,6,7,8}, * C;
+	Ring::Element * A, * B, * C;
 
-    size_t m(2),k(2),n(2);
+	A = fflas_new(F,2,3);
+	B = fflas_new(F,3,2);
+	C = fflas_new(F,2,2);  
 
-	C = fflas_new(F,m,n);
+	F.assign(*(A+0),F.one);
+	F.init(*(A+1),2);
+	F.init(*(A+2),3);
+	F.init(*(A+3),5);
+	F.init(*(A+4),7);
+	F.init(*(A+5),11);
+
+        Ring::Element t,u,v; 
+        F.init(t, 2); F.init(u, 4); F.init(v);
+
+	F.assign(*(B+0),F.zero);		// B[0] <- 0
+	F.assign(*(B+1),t);			// B[1] <- 2
+	F.assign(*(B+2),u);			// B[2] <- 4 
+        F.add(v,t,u); F.assign(*(B+3),v);	// B[3] <- 2+4
+	F.mul(*(B+4),t,u);			// B[4] <- 2*4
+	F.add(*(B+5),u,v);			// B[5] <- 4+6
 	
-        // A is mxk with leading dimension k
-	write_field(F, std::cout << "A:=", A, m, k, k, true) << std::endl;
-        // B is kxn with leading dimension n
-	write_field(F, std::cout << "B:=", B, k, n, n, true) << std::endl;
+	write_field(F, std::cout << "A:=", A, 2, 3, 3,true) << std::endl;
+	write_field(F, std::cout << "B:=", B, 3, 2, 2,true) << std::endl;
 
-	fgemm (F, FflasNoTrans, FflasNoTrans, m, n, k, F.one, A, m, B, n, F.zero, C, n);
+	fgemm (F, FflasNoTrans, FflasNoTrans, 2,2,3, F.one, A, 3, B, 2, F.zero, C, 2 );
 
-        // C is mxn with leading dimension n
-	write_field(F, std::cout << "C:=", C, m, n, n, true) << " modulo 11" << std::endl;
+	write_field(F, std::cout << "C:=", C, 2, 2, 2,true) << std::endl;
 	
+	fflas_delete( A);
+	fflas_delete( B);
 	fflas_delete( C);
+	
+	
 
   return 0;
 }
