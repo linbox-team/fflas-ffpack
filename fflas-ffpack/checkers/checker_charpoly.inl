@@ -30,7 +30,7 @@
 #define __FFLASFFPACK_checker_charpoly_INL
 
 #ifdef ENABLE_CHECKER_charpoly
-#include "ffpack/ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 #ifdef TIME_CHECKER_CHARPOLY
 #include <givaro/givtimer.h>

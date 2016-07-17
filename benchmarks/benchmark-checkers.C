@@ -1,19 +1,20 @@
 #define ENABLE_ALL_CHECKINGS 1 // DO NOT CHANGE
-#define NR_TESTS 100
-#define MAX_SIZE_MATRICES 10000
+#define NR_TESTS 10
+#define MAX_SIZE_MATRICES 4000
 #define NR_THREADS 4
 
+#include "fflas-ffpack/config-blas.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/checkers/checkers.h"
 #include <fstream>
 
 using namespace std;
-
-ofstream stats_f;
 
 int main(int argc, char** argv) {
 
@@ -22,7 +23,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	stats_f.open(argv[1]);
+        std::ofstream stats_f(argv[1]);
 
 	srand (time(NULL));
 	typedef Givaro::Modular<double> Field;
@@ -62,12 +63,15 @@ int main(int argc, char** argv) {
 			ldb = tb == FFLAS::FflasNoTrans ? n : k,
 			ldc = n;
 
-			for( size_t i = 0; i < m*k; ++i ) Rand.random( *(A+i) );
-			for( size_t i = 0; i < k*n; ++i ) Rand.random( *(B+i) );
-			for( size_t i = 0; i < m*n; ++i ) Rand.random( *(C+i) );
+                        PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/MAX_THREADS); }
+                        PAR_BLOCK { FFLAS::pfrand(F,Rand, k,n,B,k/MAX_THREADS); }
+                        PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,C,n/MAX_THREADS); }
+//                         for( size_t i = 0; i < m*k; ++i ) Rand.random( *(A+i) );
+// 			for( size_t i = 0; i < k*n; ++i ) Rand.random( *(B+i) );
+// 			for( size_t i = 0; i < m*n; ++i ) Rand.random( *(C+i) );
 
 			chrono.clear(); chrono.start();
-			Checker_fgemm<Field> checker1(Rand,m,n,k,beta,C,ldc);
+                        FFLAS::Checker_fgemm<Field> checker1(Rand,m,n,k,beta,C,ldc);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -110,7 +114,7 @@ int main(int argc, char** argv) {
 			}
 
 			chrono.clear(); chrono.start();
-			Checker_ftrsm<Field> checker2(Rand, m, n, alpha, B, n);
+                        FFLAS::Checker_ftrsm<Field> checker2(Rand, m, n, alpha, B, n);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -118,7 +122,7 @@ int main(int argc, char** argv) {
 			chrono.stop(); time2 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
-			pass += checker2.check(side, uplo, trans, diag, A, k, B);
+			pass += checker2.check(side, uplo, trans, diag, m, n, A, k, B, n);
 			chrono.stop(); time1 += chrono.usertime();
 		}
 		time1 /= (NR_THREADS*NR_TESTS);
@@ -141,7 +145,7 @@ int main(int argc, char** argv) {
 			for( size_t i = 0; i < m*m; ++i ) Rand.random( *(A+i) );
 
 			chrono.clear(); chrono.start();
-			Checker_invert<Field> checker3(Rand,m,A,m);
+                        FFPACK::Checker_invert<Field> checker3(Rand,m,A,m);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -176,7 +180,7 @@ int main(int argc, char** argv) {
 			size_t *Q = FFLAS::fflas_new<size_t>(n);
 
 			chrono.clear(); chrono.start();
-			Checker_PLUQ<Field> checker4 (Rand,A,m,n);
+                        FFPACK::Checker_PLUQ<Field> checker4 (Rand,m,n,A,n);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -184,7 +188,7 @@ int main(int argc, char** argv) {
 			chrono.stop(); time2 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
-			pass += checker4.check(A,k,P,Q);
+			pass += checker4.check(A,n,k,P,Q);
 			chrono.stop(); time1 += chrono.usertime();
 
 			FFLAS::fflas_delete(P,Q);
@@ -211,7 +215,7 @@ int main(int argc, char** argv) {
 			Polynomial g(n);
 
 			chrono.clear(); chrono.start();
-			Checker_charpoly<Field,Polynomial> checker5(Rand,n,A);
+                        FFPACK::Checker_charpoly<Field,Polynomial> checker5(Rand,n,A);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -228,6 +232,8 @@ int main(int argc, char** argv) {
 				<< "\t\t" << time1 << endl;
 	}
 
+
+        stats_f.close();
 
 	return 0;
 }
