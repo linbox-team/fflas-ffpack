@@ -111,11 +111,10 @@ namespace FFPACK {
             }
 
                 // Ac <- A - lambda.I
+		// WARNING: should be lda
+	    FFLAS::fassign(F,n,n,A,n,Ac,n);
             for (size_t i=0; i<n; ++i)
-                for (size_t j=0; j<n; ++j) {
-                    if (i==j) F.sub(*(Ac+i*n+i),*(A+i*n+i),lambda);
-                    else F.assign(*(Ac+i*n+j),*(A+i*n+j));
-                }
+		    F.sub(*(Ac+i*n+i),*(A+i*n+i),lambda);
 
                 // w <- Ac.v + w
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, Ac, n, v, 1, F.one, w, 1);
