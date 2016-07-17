@@ -151,7 +151,7 @@ namespace FFPACK {
 		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
 	{
-		Checker_charpoly<Field,Polynomial> checker(F,N,A);
+		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
 		
 		std::list<Polynomial> factor_list;
 		CharPoly (F, factor_list, N, A, lda, CharpTag);

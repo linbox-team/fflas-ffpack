@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/Checker_charpoly.inl
  * Copyright (C) 2016 Ashley Lesdalons
  *
@@ -41,7 +41,7 @@ namespace FFPACK {
     class Checker_charpoly {
 
         const Field& F;
-        const size_t n;
+        const size_t n, lda;
         typename Field::Element lambda, det;
         bool pass;
 #ifdef TIME_CHECKER_CHARPOLY
@@ -49,15 +49,15 @@ namespace FFPACK {
 #endif
 
     public:
-        Checker_charpoly(const Field& F_, const size_t n_, typename Field::Element_ptr A) 
-                : F(F_), n(n_)
+	    Checker_charpoly(const Field& F_, const size_t n_, typename Field::Element_ptr A, size_t lda_) 
+		: F(F_), n(n_), lda(lda_)
             {
                 typename Field::RandIter G(F);
                 init(G,A);
             }
 
-        Checker_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::Element_ptr A)
-                : F(G.ring()), n(n_)
+        Checker_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::Element_ptr A, size_t lda_)
+                : F(G.ring()), n(n_), lda(lda_)
             {
                 init(G,A);
             }
@@ -103,7 +103,7 @@ namespace FFPACK {
             FFLAS::frand(F,G,n,v,1);
 
                 // w <- -A.v
-            FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, n, v, 1, F.zero, w, 1);
+            FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, lda, v, 1, F.zero, w, 1);
 
             if (!F.isZero(lambda)) {
                     // w <- lambda.v + w
@@ -111,8 +111,7 @@ namespace FFPACK {
             }
 
                 // Ac <- A - lambda.I
-		// WARNING: should be lda
-	    FFLAS::fassign(F,n,n,A,n,Ac,n);
+	    FFLAS::fassign(F,n,n,A,lda,Ac,n);
             for (size_t i=0; i<n; ++i)
 		    F.subin(*(Ac+i*n+i),lambda);
 
