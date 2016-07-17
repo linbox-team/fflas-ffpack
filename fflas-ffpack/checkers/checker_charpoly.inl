@@ -114,7 +114,7 @@ namespace FFPACK {
 		// WARNING: should be lda
 	    FFLAS::fassign(F,n,n,A,n,Ac,n);
             for (size_t i=0; i<n; ++i)
-		    F.sub(*(Ac+i*n+i),*(A+i*n+i),lambda);
+		    F.subin(*(Ac+i*n+i),lambda);
 
                 // w <- Ac.v + w
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, Ac, n, v, 1, F.one, w, 1);
