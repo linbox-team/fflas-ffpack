@@ -66,7 +66,7 @@ INTERFACE_TESTS= test-interfaces-c
 test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
-	-lstdc++
+	-lm -lstdc++
 	
 else
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
