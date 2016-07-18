@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
@@ -37,6 +37,7 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
 
 int main(int argc, char** argv) {
 	srand (time(NULL));
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
 	size_t MAXM = 1000;
-    size_t seed(0);
+	size_t seed( (int) time(NULL) );
     
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
@@ -68,21 +69,12 @@ int main(int argc, char** argv) {
 		m = random() % MAXM + 1;
 		std::cout << "m= " << m << "\n";
 
-		Field::Element_ptr A = FFLAS::fflas_new(F,m,m);
+		Field::Element_ptr A = FFLAS::fflas_new(F,m<<1,m<<1);
 
-// 	for (size_t i=0;i<m;++i){
-// 		for (size_t j=0;j<i;++j)
-// 			Rand.random(A[i*m+j]);
-//         for(size_t j=i+1;j<m;++j)
-//             F.assign(A[i*m+j],F.zero);
-//         NZRand.random(A[i*m+i]);
-//     }
-        
-            // Might not be invertible, but this is caught by nullity
-		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,m,A,m/MAX_THREADS); }
+		FFPACK::RandomMatrixWithRankandRandomRPM(F,A,m<<1,m,m,m);
 
-		FFPACK::Checker_invert<Field> checker(Rand,m,A,m);
-		FFPACK::Invert(F,m,A,m,nullity);
+		FFPACK::Checker_invert<Field> checker(Rand,m,A,m<<1);
+		FFPACK::Invert(F,m,A,m<<1,nullity);
 		try {
 			checker.check(A,nullity);
 			std::cout << "Verification successful\n";

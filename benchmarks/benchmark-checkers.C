@@ -37,6 +37,7 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/checkers/checkers.h"
@@ -48,31 +49,36 @@ int main(int argc, char** argv) {
 	size_t NR_TESTS = _NR_TESTS;
 	int    q    = 131071;
 	size_t    MAX_SIZE_MATRICES    = _MAX_SIZE_MATRICES;
+	size_t Range = 500;
+	size_t seed( (int) time(NULL) );
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &MAX_SIZE_MATRICES },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &NR_TESTS },
+		{ 'r', "-r R", "Set the range of matrix sizes.",                     TYPE_INT , &Range },
+        { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
 		END_OF_ARGUMENTS
 	};
 
-        FFLAS::parseArguments(argc,argv,as);
+	FFLAS::parseArguments(argc,argv,as);
 
-	srand (time(NULL));
+	srand (seed);
+
 	typedef Givaro::Modular<double> Field;
 	typedef std::vector<Field::Element> Polynomial;
 
 	Field F(q);
-	Field::RandIter Rand(F);
+	Field::RandIter Rand(F,0,seed);
 	Field::NonZeroRandIter NZRand(Rand);
 
 	size_t pass;
 	FFLAS::Timer chrono;
 	double time1, time2;
 
-	Field::Element_ptr A = FFLAS::fflas_new(F,MAX_SIZE_MATRICES,MAX_SIZE_MATRICES);
-	Field::Element_ptr B = FFLAS::fflas_new(F,MAX_SIZE_MATRICES,MAX_SIZE_MATRICES);
-	Field::Element_ptr C = FFLAS::fflas_new(F,MAX_SIZE_MATRICES,MAX_SIZE_MATRICES);
+	Field::Element_ptr A = FFLAS::fflas_new(F,MAX_SIZE_MATRICES+Range,MAX_SIZE_MATRICES+Range);
+	Field::Element_ptr B = FFLAS::fflas_new(F,MAX_SIZE_MATRICES+Range,MAX_SIZE_MATRICES+Range);
+	Field::Element_ptr C = FFLAS::fflas_new(F,MAX_SIZE_MATRICES+Range,MAX_SIZE_MATRICES+Range);
 	typename Field::Element alpha,beta,tmp;
 	F.init(alpha, rand()%1000+1);
 	F.init(beta,  rand()%1000+1);
@@ -83,12 +89,12 @@ int main(int argc, char** argv) {
 
 	// #####   FGEMM   #####
 	std::cout << "FGEMM:\n";
-	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=500) {
+	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
-			m = rand() % 500 + i;
-			n = rand() % 500 + i;
-			k = rand() % 500 + i;
+			m = rand() % Range + i;
+			n = rand() % Range + i;
+			k = rand() % Range + i;
 			ta = FFLAS::FflasNoTrans;//rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans,
 			tb = FFLAS::FflasNoTrans;//rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
 			lda = ta == FFLAS::FflasNoTrans ? k : m,
@@ -113,7 +119,7 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+500 << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
 	cout << endl;
@@ -122,11 +128,11 @@ int main(int argc, char** argv) {
 
 	// #####   FTRSM   #####
 	std::cout << "FTRSM:\n";
-	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=500) {
+	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
-			m = rand() % 500 + i;
-			n = rand() % 500 + i;
+			m = rand() % Range + i;
+			n = rand() % Range + i;
 			FFLAS::FFLAS_SIDE side = rand()%2?FFLAS::FflasLeft:FFLAS::FflasRight;
 			FFLAS::FFLAS_UPLO uplo = rand()%2?FFLAS::FflasLower:FFLAS::FflasUpper;
 			FFLAS::FFLAS_TRANSPOSE trans = rand()%2?FFLAS::FflasNoTrans:FFLAS::FflasTrans;
@@ -156,7 +162,7 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+500 << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
 	cout << endl;
@@ -166,12 +172,12 @@ int main(int argc, char** argv) {
 	// #####   INVERT   #####
 	std::cout << "INVERT:\n";
 	int nullity;
-	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=500) {
+	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
-			m = rand() % 500 + i;
+			m = rand() % Range + i;
 
-			PAR_BLOCK { FFLAS::pfrand(F,Rand, m,m,A,m/MAX_THREADS); }
+			FFPACK::RandomMatrixWithRankandRandomRPM(F,A,m,m,m,m);
 
 			try {
 				chrono.clear(); chrono.start();
@@ -193,7 +199,7 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+500 << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
 	cout << endl;
@@ -203,11 +209,11 @@ int main(int argc, char** argv) {
 
 	// #####   PLUQ   #####
 	std::cout << "PLUQ:\n";
-	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=500) {
+	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
-			m = rand() % 500 + i;
-			n = rand() % 500 + i;
+			m = rand() % Range + i;
+			n = rand() % Range + i;
 
 			PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
 
@@ -230,7 +236,7 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+500 << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
 	cout << endl;
@@ -240,10 +246,10 @@ int main(int argc, char** argv) {
 
 	// #####   CharPoly   #####
 	std::cout << "CharPoly:\n";
-	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=500) {
+	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
-			n = rand() % 500 + i;
+			n = rand() % Range + i;
 
 			PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
 
@@ -269,9 +275,14 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+500 << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
+
+
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(B);
+	FFLAS::fflas_delete(C);
 
 	return 0;
 }

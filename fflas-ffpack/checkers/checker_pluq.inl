@@ -87,7 +87,7 @@ namespace FFPACK {
 #endif
 				// _w = [w1|w2]
             typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); 
-
+			
                 // v <-- Q.v
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, r, v, 1, Q);
 
@@ -120,12 +120,7 @@ namespace FFPACK {
         
             FFLAS::fflas_delete(_w);
 
-            if (!pass) {
-				write_perm(std::cout<<"Q = "<<std::endl,Q,n);
-				write_perm(std::cout<<"P = "<<std::endl,P,m);
-				std::cout << "rank: " << r << '/'<< m << 'x' << n << std::endl;
-				throw FailurePLUQCheck();
-			}
+            if (!pass) throw FailurePLUQCheck();
 
 #ifdef TIME_CHECKER_PLUQ
             checktime.stop(); _time += checktime;

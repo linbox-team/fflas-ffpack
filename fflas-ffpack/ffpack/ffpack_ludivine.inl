@@ -40,8 +40,6 @@ namespace FFPACK {
 					typename Field::Element_ptr A, const size_t lda, size_t*P,
 					size_t *Q, const FFPACK::FFPACK_LU_TAG LuTag)
 	{
-		Checker_PLUQ<Field> checker (F,M,N,A,lda);
-
 		size_t MN = std::min(M,N);
 		typename Field::Element_ptr Acurr = A;
 		size_t r = 0;
@@ -71,9 +69,6 @@ namespace FFPACK {
 			else
 				break; // return r;
 		}
-
-		checker.check(A,lda,r,P,Q);
-
 		return r;
 	}
 
@@ -413,7 +408,7 @@ namespace FFPACK {
 
 	template <class Field>
 	inline size_t
-	_LUdivine (const Field& F,
+	LUdivine (const Field& F,
 			  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
 			  const size_t M, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
@@ -515,7 +510,7 @@ namespace FFPACK {
 				// Recursive call on NW
 				size_t R, R2;
 				if (trans == FFLAS::FflasTrans){
-					R = _LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q,
+					R = LUdivine (F, Diag, trans, colDim, Nup, A, lda, P, Q,
 						      LuTag, cutoff);
 
 					typename Field::Element_ptr Ar = A + Nup*incRow;   // SW
@@ -539,7 +534,7 @@ namespace FFPACK {
 							       F.mOne, Ac, lda, Ar, lda, F.one, An, lda);
 					}
 					// Recursive call on SE
-					R2 = _LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
+					R2 = LUdivine (F, Diag, trans, colDim-R, Ndown, An, lda, P + R, Q + Nup, LuTag, cutoff);
 					for (size_t i = R; i < R + R2; ++i)
 						P[i] += R;
 					if (R2) {
@@ -554,7 +549,7 @@ namespace FFPACK {
 
 				}
 				else { // trans == FFLAS::FflasNoTrans
-					R = _LUdivine (F, Diag, trans, Nup, colDim, A, lda, P, Q, LuTag, cutoff);
+					R = LUdivine (F, Diag, trans, Nup, colDim, A, lda, P, Q, LuTag, cutoff);
 					typename Field::Element_ptr Ar = A + Nup*incRow;   // SW
 					typename Field::Element_ptr Ac = A + R*incCol;     // NE
 					typename Field::Element_ptr An = Ar+ R*incCol;     // SE
@@ -578,7 +573,7 @@ namespace FFPACK {
 
 					}
 					// Recursive call on SE
-					R2=_LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup, LuTag, cutoff);
+					R2=LUdivine (F, Diag, trans, Ndown, N-R, An, lda,P+R, Q+Nup, LuTag, cutoff);
 					for (size_t i = R; i < R + R2; ++i)
 						P[i] += R;
 					if (R2)
@@ -623,23 +618,6 @@ namespace FFPACK {
 				return R + R2;
 			}
 		}
-	}
-
-	template <class Field>
-	inline size_t
-	LUdivine (const Field& F,
-			  const FFLAS::FFLAS_DIAG Diag, const FFLAS::FFLAS_TRANSPOSE trans,
-			  const size_t M, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  size_t*P, size_t *Q
-			  , const FFPACK::FFPACK_LU_TAG LuTag // =FFPACK::FfpackSlabRecursive
-			  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
-		 )
-	{
-		Checker_PLUQ<Field> checker (F,M,N,A,lda);
-		size_t R = _LUdivine(F,Diag,trans,M,N,A,lda,P,Q,LuTag,cutoff);
-		checker.check(A,lda,R,P,Q);
-		return R;
 	}
 
 	namespace Protected {
