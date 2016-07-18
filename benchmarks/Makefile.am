@@ -69,7 +69,7 @@ benchmark_charpoly_SOURCES = benchmark-charpoly.C
 benchmark_lqup_SOURCES = benchmark-lqup.C
 benchmark_lqup_mp_SOURCES = benchmark-lqup-mp.C
 benchmark_pluq_SOURCES = benchmark-pluq.C
-benchmark_checkers_SOURCESOURCES = benchmark-checkers.C
+benchmark_checkers_SOURCES = benchmark-checkers.C
 
 benchmark_sgemm_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
