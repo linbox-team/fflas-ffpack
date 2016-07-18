@@ -120,7 +120,7 @@ namespace FFPACK {
         
             FFLAS::fflas_delete(_w);
 
-            if (!pass) throw FailurePLUQcheck();
+            if (!pass) throw FailurePLUQCheck();
 
 #ifdef TIME_CHECKER_PLUQ
             checktime.stop(); _time += checktime;

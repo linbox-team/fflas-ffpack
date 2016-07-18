@@ -63,7 +63,7 @@
 // definition of the exceptions
 class FailureFgemmCheck {};
 class FailureTrsmCheck {};
-class FailurePLUQcheck {};
+class FailurePLUQCheck {};
 class FailureInvertCheck {};
 class FailureCharpolyCheck {};
 

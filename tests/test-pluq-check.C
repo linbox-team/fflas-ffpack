@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
 // 			checker.check(A,n,R,P,Q);
 			std::cout << m << 'x' << n << " pluq verification successful\n";
 			pass++;
-		} catch(FailurePLUQcheck &e) {
+		} catch(FailurePLUQCheck &e) {
 			std::cout << m << 'x' << n << " pluq verification failed!\n";
 		}
 
