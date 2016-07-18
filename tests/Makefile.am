@@ -28,8 +28,9 @@ AM_CPPFLAGS=-I$(top_srcdir) -g
 AM_CXXFLAGS = @TESTS_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
 AM_CPPFLAGS +=  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field 
 
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
-AM_LDFLAGS=-static  #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+#LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
+AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+
 
 EXTRA_DIST= test-utils.h
 
@@ -57,9 +58,16 @@ BASIC_TESTS =               \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
 INTERFACE_TESTS= test-interfaces-c 
-test_interfaces_c_LDFLAGS = $(LDADD) -lfflas_c -lffpack_c
+test_interfaces_c_LDFLAGS = $(LDADD) -lm -lstdc++\
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la
+else
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 NOT_A_TEST =  \
 		test-lqup2             \
