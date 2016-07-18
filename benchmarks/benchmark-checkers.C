@@ -28,8 +28,8 @@
  */
 
 #define ENABLE_ALL_CHECKINGS 1 // DO NOT CHANGE
-#define _NR_TESTS 10
-#define _MAX_SIZE_MATRICES 2000
+#define _NR_TESTS 5
+#define _MAX_SIZE_MATRICES 1000
 
 #include "fflas-ffpack/config-blas.h"
 #include <iostream>
@@ -51,6 +51,7 @@ int main(int argc, char** argv) {
 	size_t    MAX_SIZE_MATRICES    = _MAX_SIZE_MATRICES;
 	size_t Range = 500;
 	size_t seed( (int) time(NULL) );
+	std::string file("checkers_report.txt");
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
@@ -58,8 +59,11 @@ int main(int argc, char** argv) {
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &NR_TESTS },
 		{ 'r', "-r R", "Set the range of matrix sizes.",                     TYPE_INT , &Range },
         { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
-		END_OF_ARGUMENTS
+		{ 'f', "-f FILE", "Set the output file.",  TYPE_STR , &file },
+ 		END_OF_ARGUMENTS
 	};
+
+	std::ofstream stats_f(file.c_str());
 
 	FFLAS::parseArguments(argc,argv,as);
 
@@ -73,7 +77,9 @@ int main(int argc, char** argv) {
 	Field::NonZeroRandIter NZRand(Rand);
 
 	size_t pass;
-	FFLAS::Timer chrono;
+	FFLAS::Timer chrono,global;
+	double gffop(0.);
+	global.start();
 	double time1, time2;
 
 	Field::Element_ptr A = FFLAS::fflas_new(F,MAX_SIZE_MATRICES+Range,MAX_SIZE_MATRICES+Range);
@@ -85,16 +91,18 @@ int main(int argc, char** argv) {
 	size_t m,n,k,lda,ldb,ldc;
 	FFLAS::FFLAS_TRANSPOSE ta,tb;
 
-        std::cout << "     Matrix size\tSuccess rate\t\tTime comput.\t\tTime checker\n\n";
+        stats_f << "     Matrix size\tSuccess rate\t\tTime comput.\t\tTime checker\n\n";
 
 	// #####   FGEMM   #####
-	std::cout << "FGEMM:\n";
+	stats_f << "FGEMM:\n";
 	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
 			m = rand() % Range + i;
 			n = rand() % Range + i;
 			k = rand() % Range + i;
+			gffop += (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0);
+			
 			ta = FFLAS::FflasNoTrans;//rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans,
 			tb = FFLAS::FflasNoTrans;//rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
 			lda = ta == FFLAS::FflasNoTrans ? k : m,
@@ -119,20 +127,22 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		stats_f << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
-	cout << endl;
+	stats_f << endl;
 
 
 
 	// #####   FTRSM   #####
-	std::cout << "FTRSM:\n";
+	stats_f << "FTRSM:\n";
 	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
 			m = rand() % Range + i;
 			n = rand() % Range + i;
+			gffop += (double(m)/1000.*double(m)/1000.*double(n)/1000.0);
+			
 			FFLAS::FFLAS_SIDE side = rand()%2?FFLAS::FflasLeft:FFLAS::FflasRight;
 			FFLAS::FFLAS_UPLO uplo = rand()%2?FFLAS::FflasLower:FFLAS::FflasUpper;
 			FFLAS::FFLAS_TRANSPOSE trans = rand()%2?FFLAS::FflasNoTrans:FFLAS::FflasTrans;
@@ -162,21 +172,22 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		stats_f << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
-	cout << endl;
+	stats_f << endl;
 
 
 
 	// #####   INVERT   #####
-	std::cout << "INVERT:\n";
+	stats_f << "INVERT:\n";
 	int nullity;
 	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
 			m = rand() % Range + i;
-
+			gffop += 2*(double(m)/1000.*double(m)/1000.*double(m)/1000.0);
+			
 			FFPACK::RandomMatrixWithRankandRandomRPM(F,A,m,m,m,m);
 
 			try {
@@ -192,23 +203,23 @@ int main(int argc, char** argv) {
 				pass += checker3.check(A,nullity);
 				chrono.stop(); time1 += chrono.usertime();
 			} catch(FailureInvertCheck &e) {
-				std::cout << " invert verification failed! " << nullity << std::endl;
+				stats_f << " invert verification failed! " << nullity << std::endl;
 			} catch(FailurePLUQCheck &e) {
-				std::cout << " internal PLUQ verification failed! " << std::endl;
+				stats_f << " internal PLUQ verification failed! " << std::endl;
 			}
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		stats_f << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
-	cout << endl;
+	stats_f << endl;
 	
 
 
 
 	// #####   PLUQ   #####
-	std::cout << "PLUQ:\n";
+	stats_f << "PLUQ:\n";
 	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
@@ -228,6 +239,9 @@ int main(int argc, char** argv) {
 			k = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 			chrono.stop(); time2 += chrono.usertime();
 
+#define CUBE(x) ((x)*(x)*(x))
+			gffop += 2.0/3.0*CUBE(double(k)/1000.0) +2*m/1000.0*n/1000.0*double(k)/1000.0  - double(k)/1000.0*double(k)/1000.0*(m+n)/1000;
+
 			chrono.clear(); chrono.start();
 			pass += checker4.check(A,n,k,P,Q);
 			chrono.stop(); time1 += chrono.usertime();
@@ -236,16 +250,16 @@ int main(int argc, char** argv) {
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		stats_f << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
-	cout << endl;
-
+	stats_f << endl;
+	global.stop();
 
 
 
 	// #####   CharPoly   #####
-	std::cout << "CharPoly:\n";
+	stats_f << "CharPoly:\n";
 	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
@@ -268,14 +282,14 @@ int main(int argc, char** argv) {
 			pass += checker5.check(g);
 			chrono.stop(); time1 += chrono.usertime();
 			} catch(FailureCharpolyCheck &e) {
-				std::cout << " charpoly verification failed! " << std::endl;
+				stats_f << " charpoly verification failed! " << std::endl;
 			} catch(FailurePLUQCheck &e) {
-				std::cout << " internal PLUQ verification failed! " << std::endl;
+				stats_f << " internal PLUQ verification failed! " << std::endl;
 			}
 		}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
-		std::cout << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
+		stats_f << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
 				<< "\t\t" << time1 << endl;
 	}
 
@@ -283,6 +297,9 @@ int main(int argc, char** argv) {
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(C);
+
+	std::cout << "Time: " << global.realtime()
+			  << " Gflops: " << gffop/global.realtime() << std::endl;
 
 	return 0;
 }
