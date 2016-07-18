@@ -63,9 +63,10 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
 INTERFACE_TESTS= test-interfaces-c 
-test_interfaces_c_LDFLAGS = $(LDADD) -lm -lstdc++\
+test_interfaces_c_LDFLAGS = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
+	-lm -lstdc++
 else
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
