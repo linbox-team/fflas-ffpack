@@ -33,7 +33,7 @@
 
 #include <givaro/zring.h> // DoubleDomain
 
-#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#ifdef __FFLASFFPACK_USE_SIMD
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 
@@ -373,7 +373,7 @@ namespace FFLAS{
 	{
 		FFLASFFPACK_check(lda);
 
-#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#if defined(__FFLASFFPACK_USE_SIMD)
 		if (ta == FflasNoTrans)
 			igemm_ (FflasRowMajor, ta, FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY);
 		else

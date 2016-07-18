@@ -23,13 +23,18 @@
 
 AC_PREREQ([2.61])
 
+
 AC_INIT([FFLAS-FFPACK], [2.2.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
+
 AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability foreign])
 AC_CONFIG_HEADERS([config.h])
+
+AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability foreign])
 AX_PREFIX_CONFIG_H(fflas-ffpack/config.h, __FFLASFFPACK)
 AC_PATH_PROG(RM, rm, $FALSE)
 RM="$RM -f"
@@ -170,30 +175,33 @@ echo "-----------------------------------------------"
 echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
-
-echo "-----------------------------------------------"
 FF_CHECK_OMP
+# checkes which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
+CUSTOM_SIMD="no"
+FF_CHECK_SIMD
+#FF_CHECK_SSE
+#FF_CHECK_AVX
+arch=`echo $target | cut -d"-" -f1`
+if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
+   AX_CHECK_X86_FEATURES([][])
+else
+   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
+fi
 
-# TODO do FF_CHECK_SIMD and take best, define USE_SSE2/AVX/AVX2/... and have also __FFLASFFPACK_USE_SIMD
-FF_CHECK_SSE
-FF_CHECK_AVX
+dnl echo "CCNAM = $CCNAM $CUSTOM_SIMD"
 
-AVXFLAGS="${SSEFLAGS} ${AVXFLAGS}"
+dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
+dnl have overloads for both types without linking error.
+AS_IF([test "x$CCNAM" = "xgcc48"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
 
-echo "-----------------------------------------------"
-	case x${CCNAM} in
-		xgcc|xgcc44|xgcc48)
-	# With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
-			# have overloads for both types without linking error.
-			AVXFLAGS="${AVXFLAGS} -fabi-version=6"
-			;;
-		*)
-	esac
-PARFLAGS="${AVXFLAGS} ${OMPFLAGS}"
+
+PARFLAGS="${OMPFLAGS}"
 PARLIBS="${OMPFLAGS}"
 
 AC_SUBST(PARFLAGS)
 AC_SUBST(PARLIBS)
+
+echo "-----------------------------------------------"
 
 # Machine characteristics
 
