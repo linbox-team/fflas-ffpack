@@ -78,6 +78,7 @@ namespace FFPACK {
 	}
 
 
+	    // TODO: replace pPLUQ and "int nt", by PLUQ and a Parallel Helper ...
 	template<class Field>
 	inline size_t
 	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
