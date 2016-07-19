@@ -47,7 +47,8 @@ For example on a x86_64 architecture:
 - Using ATLAS in Fedora:
  - install the package `atlas-devel.x86_64`,
  - run `./configure --enable-optimization --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
-
+- Using Accelerate Framework on OS-X:
+ - run `./configure --enable-optimization --with-blas-libs="-framework Accelerate"`.
 see INSTALL for further details.
 
 ## AVAILABILITY
