@@ -67,9 +67,8 @@ namespace FFPACK {
 				fgemv (F, FFLAS::FflasTrans, r, N-r, F.mOne, A+r, lda, A+(k+1)*lda, 1, F.one, A+(k+1)*lda+r, 1);
 			}
 			else
-				return r;
+				break; // return r;
 		}
-
 		return r;
 	}
 
@@ -418,7 +417,6 @@ namespace FFPACK {
 			  , const size_t cutoff // =__FFPACK_LUDIVINE_CUTOFF
 		 )
 	{
-		//std::cout<<"LUDivine ("<<M<<","<<N<<")"<<std::endl;
 		if ( !(M && N) ) return 0;
 		typedef typename Field::Element elt;
 		size_t MN = std::min(M,N);

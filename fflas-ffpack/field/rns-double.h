@@ -133,6 +133,10 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
+		rns_double(const RNSIntegerMod<rns_double>& basis, bool rnsmod=false, long seed=time(NULL)) {
+
+		}
+
 		// can force to reduce integer entries larger than M
 		void precompute_cst(size_t K=0){
 			if (K!=0)
@@ -404,6 +408,49 @@ namespace FFPACK {
 		
 	}; // end of struct rns_double_extended
 
+
+	template<typename RNS>
+    class rnsRandIter {
+        std::vector<typename RNS::ModField::RandIter> _RNS_rand;
+        const RNS& _domain;
+        
+    public:
+        rnsRandIter(const RNS& R, size_t size=0, uint64_t seed=0)
+                : _domain(R) {
+            for(auto iter : R._field_rns)
+                _RNS_rand.push_back( typename RNS::ModField::RandIter(iter,size,seed) );
+        }
+
+        /** RNS ring Element random assignement.
+         * Element is supposed to be initialized
+         * @return random ring Element
+         */
+        typename RNS::Element& random(typename RNS::Element& elt) const {
+            auto coefficient(elt._ptr);
+            for(auto iter : _RNS_rand) {
+                iter.random( *coefficient );
+                coefficient += elt._stride;
+            }
+            return elt;
+        }
+       
+        typename RNS::Element& operator()(typename RNS::Element& elt) const {
+            return this->random(elt);
+        }
+
+        typename RNS::Element operator()() const {
+            typename RNS::Element tmp; _domain.init(tmp);
+            return this->operator()(tmp);
+        }
+        typename RNS::Element random() const {
+            return this->operator()();
+        }
+
+        const RNS& ring() const { return _domain; }
+
+    };
+
+
 } // end of namespace FFPACK
 
 #include "rns-double.inl"
@@ -418,4 +465,3 @@ namespace FFLAS {
 }
 
 #endif // __FFPACK_rns_double_H
-

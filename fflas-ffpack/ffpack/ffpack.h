@@ -1469,6 +1469,8 @@ namespace FFPACK { /* not used */
 #include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
 #endif
 
+#include "fflas-ffpack/checkers/checkers.h"
+
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
 #include "ffpack_ftrtr.inl"
