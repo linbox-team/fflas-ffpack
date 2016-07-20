@@ -148,11 +148,14 @@ namespace FFPACK {
 			_crt_in.resize(_size*_ldm);
 			_crt_out.resize(_size*_ldm);
 			//const unsigned int MASK=0xFFFF;
-			//Givaro::Timer chrono;
-			//double t1=0.,t2=0.,t3=0.;
-			
+#ifdef BENCH_RNS_PRECOMP
+			Givaro::Timer chrono;
+			double t1=0.,t2=0.,t3=0.;
+#endif
 			for (size_t i=0;i<_size;i++){
-				//chrono.start();
+#ifdef BENCH_RNS_PRECOMP
+				chrono.start();
+#endif
 				_invbasis[i]  = 1./_basis[i];
 				_basisMax[i] = _basis[i]-1;
 				_negbasis[i] = 0-_basis[i];
@@ -164,9 +167,11 @@ namespace FFPACK {
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(&tmp);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t maxs=std::min(_ldm,(tmp.size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
-				//chrono.stop();
-				//t1+=chrono.usertime();
-				//chrono.start();
+#ifdef BENCH_RNS_PRECOMP
+				chrono.stop();
+				t1+=chrono.usertime();
+				chrono.start();
+#endif 
 				/*
 				  for(size_t j=0;j<_ldm;j++){
 				  _crt_out[j+i*_ldm]=double(tmp[0]&MASK);
@@ -179,22 +184,27 @@ namespace FFPACK {
 					_crt_out[l+i*_ldm]=m0_ptr[l];
 				for(;l<_ldm;l++)
 					_crt_out[l+i*_ldm]=0.;;
-				// chrono.stop();
-				// t2+=chrono.usertime();
-				// chrono.start();			       				
+#ifdef BENCH_RNS_PRECOMP
+				chrono.stop();
+				 t2+=chrono.usertime();
+				 chrono.start();
+#endif
 				double beta=double(1<<16);
 				double  acc=1;	       
 				for(size_t j=0;j<_ldm;j++){
 					_crt_in[j+i*_ldm]=acc;
 					_field_rns[i].mulin(acc,beta);					
 				}
-				// chrono.stop();
-				// t3+=chrono.usertime();
-			
+#ifdef BENCH_RNS_PRECOMP
+				chrono.stop();
+				t3+=chrono.usertime();
+#endif
 			}
-			// std::cout<<"t1="<<t1<<std::endl;
-			// std::cout<<"t2="<<t2<<std::endl;
-			// std::cout<<"t3="<<t3<<std::endl;
+#ifdef BENCH_RNS_PRECOMP
+			std::cout<<"RNS precomp t1="<<t1<<std::endl;
+			std::cout<<"RNS precomp t2="<<t2<<std::endl;
+			std::cout<<"RNS precomp t3="<<t3<<std::endl;
+#endif
 		}
 
 		// Arns must be an array of m*n*_size
@@ -400,8 +410,10 @@ namespace FFPACK {
 				std::cerr<<"RNS EXTENDED DOUBLE: init Error -> the nbr of moduli in RNS basis is > 2^16, not implemented. aborting\n";std::terminate();
 			}
 #ifdef BENCH_RNS
-			if (m!=1 && n!=1)
+			if (m!=1 && n!=1){
 				std::cerr<<RALIGN<<"RNS double ext (To) --> rns size ("<<_size<<") kronecker size ("<<k<<") data dim ("<<m*n<<")"<<std::endl;
+				std::cerr<<"RNS double ext -> Numbit(M)="<<_M.bitsize()<<std::endl;
+			}
 #endif
 		    //init(m*n,Arns,A,lda);
 			if (k>_ldm){

@@ -49,8 +49,10 @@ namespace FFPACK {
 //		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
 
 #ifdef BENCH_RNS
-		if (m!=1 && n!=1)
+		if (m!=1 && n!=1){
 			std::cerr<<"RNS double (To) --> rns size ("<<_size<<") kronecker size ("<<k<<") data dim ("<<m*n<<")"<<std::endl;
+			std::cerr<<"RNS double  -> Numbit(M)="<<_M.bitsize()<<std::endl;
+	}
 #endif
 
 		
