@@ -23,6 +23,7 @@
 */
 
 #include <iostream>
+#include <vector>
 #include <givaro/modular.h>
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas-ffpack.h"
@@ -37,8 +38,8 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	int p = (argc>1?atoi(argv[1]):5);
-		// Creating the finite field Z/qZ
+	int64_t p = (argc>1?atoi(argv[1]):5);
+		// Creating the finite field Z/pZ
 	Givaro::Modular<double> F(p);
 
 	size_t m(2),n(2);
@@ -51,7 +52,7 @@ int main(int argc, char** argv) {
     FFPACK::PLUQ (F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 
 	write_perm(std::cout<<"P = "<<std::endl,P,m);
-	write_field(F,std::cout<<"LU = "<<std::endl,A,m,n,n);
+	write_field(F,std::cout<<"LU = "<<std::endl,A,m,n,n)<< " modulo " << p << std::endl;
 	write_perm(std::cout<<"Q = "<<std::endl,Q,n);
 
     FFLAS::fflas_delete( P);

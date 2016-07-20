@@ -8,7 +8,7 @@ The FFLAS-FFPACK library provides a set of basic routines for linear algebra ove
 
 It is inspired by the BLAS interface (Basic Linear Algebra Subprograms) and the LAPACK library for numerical linear algebra, and shares part of their design. Yet it differs in many aspects due to the specifities of computing over exact domains such as a finite fields and the field of rationals:
 - it is generic with respect to the finite field, so as to accomodate a large variety of field sizes and implementations;
-- consequently, all routines use the C++ template genericity and the library is primarily meant to be used as a source code library, to be included and compiled in the user's software.
+- consequently all routines use the C++ template genericity and the library is primarily meant to be used as a source code library, to be included and compiled in the user's software.
 - However, we also provide a compiled version instantiating most common routines over the most common finite fields.
 
 ## LICENSE
@@ -28,6 +28,10 @@ In brief:
 The most commonly used option include:
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
 - `--enable-optimization` : to run configure-time optimizations
+
+Type `./configure --help` to list all options available.
+Note that `givaro` is automatically detected by pkg-config, so you no longer need to pass a `--with-givaro=...` option.
+You may need to set the `PKG_CONFIG_PATH` environment variable to `<givaro-prefix>/lib/pkgconfig` if you have installed it in a non standard directory.
 
 For example on a x86_64 architecture:
 - Using OpenBLAS in Fedora: 
@@ -52,7 +56,7 @@ see INSTALL for further details.
 
 ## AUTHORS
 
-The FFLAS-FFPACK group (see AUTHORS for a list of contributors).
+The FFLAS-FFPACK group (see AUTHORS file for a list of contributors).
 
 ## Citing FFLAS-FFPACK
 

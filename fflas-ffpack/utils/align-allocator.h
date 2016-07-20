@@ -55,7 +55,7 @@ enum class Alignment : size_t {
   CACHE_LINE = 64,
   CACHE_PAGESIZE = 4096,
   DEFAULT =
-#ifdef __FFLASFFPACK_USE_AVX
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
   32
 #else
   16

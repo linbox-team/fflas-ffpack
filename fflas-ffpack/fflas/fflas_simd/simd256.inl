@@ -30,6 +30,46 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
+struct Simd256fp_base {
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+
+	/*
+	* Shuffle 128-bits selected by imm8 from a and b, and store the results in dst.
+	* Args   :	[a0, a1]
+	*			[b0, b1]
+	* Return : [s[0..3]?a0:a1:b0:b1, s[4..7]?a0:a1:b0:b1]
+	*/
+	template<int s>
+	static INLINE CONST __m256d permute128(const __m256d a, const __m256d b) {
+		return _mm256_permute2f128_pd(a, b, s);
+	}
+
+	template<int s>
+	static INLINE CONST __m256 permute128(const __m256 a, const __m256 b) {
+		return _mm256_permute2f128_ps(a, b, s);
+	}
+
+	/*
+	* Unpack and interleave 128-bit integers from the low half of a and b, and store the results in dst.
+	* Args   : [a0, a1] int128_t
+			   [b0, b1] int128_t
+	* Return : [a0, b0] int128_t
+	*/
+	static INLINE CONST __m256d unpacklo128(const __m256d a, const __m256d b) { return permute128<0x20>(a, b); }
+	static INLINE CONST __m256 unpacklo128(const __m256 a, const __m256 b) { return permute128<0x20>(a, b); }
+
+	/*
+	* Unpack and interleave 128-bit integers from the high half of a and b, and store the results in dst.
+	* Args   : [a0, a1] int128_t
+			   [b0, b1] int128_t
+	* Return : [a1, b1] int128_t
+	*/
+	static INLINE CONST __m256d unpackhi128(const __m256d a, const __m256d b) { return permute128<0x31>(a, b); }
+	static INLINE CONST __m256 unpackhi128(const __m256 a, const __m256 b) { return permute128<0x31>(a, b); }
+
+#endif
+};
+
 struct Simd256i_base {
 
 	/*
@@ -43,7 +83,7 @@ struct Simd256i_base {
 	*/
 	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
 
-#if defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 
 	/*
 	* Shift packed 128-bit integers in a left by s bits while shifting in zeros, and store the results in vect_t.
@@ -92,6 +132,7 @@ struct Simd256i_base {
 	* Return : [a0 AND (NOT b0), ..., a255 AND (NOT b255)]
 	*/
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_si256(b, a); }
+
 	/*
 	* Shuffle 128-bit integers in a and b using the control in imm8, and store the results in dst.
 	* Args   :	[a0, a1] int128_t
@@ -133,7 +174,7 @@ using Simd256 =
 #ifdef SIMD_INT
 // Trop d'instructions SSE manquantes pour les int8_t
 
-#if defined(__FFLASFFPACK_USE_AVX2)
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #include "simd256_int64.inl"
 #include "simd256_int32.inl"
 #include "simd256_int16.inl"

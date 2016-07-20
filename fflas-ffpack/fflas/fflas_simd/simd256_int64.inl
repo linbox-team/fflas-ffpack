@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd256_int64_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_int64_INL
 
-#ifndef __FFLASFFPACK_USE_AVX2
+#ifndef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 #error "You need AVX2 instructions to perform 256bits operations on int64_t"
 #endif
 
@@ -190,7 +190,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	/*
 	* Shuffle 64-bit integers in a using the control in imm8, and store the results in dst.
 	* Args   : [a0, ..., a3] int32_t
-	* Return : [a[s[0..1]], ..., a[6..7],] int32_t
+	* Return : [a[s[0..1]], ..., a[s[6..7]]] int32_t
 	*/
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
