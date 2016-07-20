@@ -26,6 +26,7 @@ pkgincludesubdir=$(pkgincludedir)/checkers
 
 pkgincludesub_HEADERS=        \
 		checkers.h \
+		checkers.inl \
 		checker_pluq.inl \
 		checker_ftrsm.inl \
 		checker_fgemm.inl \
