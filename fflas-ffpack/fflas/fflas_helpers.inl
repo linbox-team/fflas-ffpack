@@ -169,7 +169,9 @@ namespace FFLAS {
 				* std::max(static_cast<const DFElt&>(-Cmin), Cmax);
 			DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
 				* std::max(static_cast<const DFElt&>(-Bmin), Bmax);
-			return static_cast<size_t>(((diff < DFElt(0u))||(AB<DFElt(0u)))? DFElt(0u) : diff / AB);
+			return ((diff < DFElt(0u))||(AB<DFElt(0u)))? 0 :
+				static_cast<size_t>( std::min(static_cast<uint64_t>(std::numeric_limits<size_t>::max()),
+							      static_cast<uint64_t>(diff / AB)));
 		}
 		bool Aunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Amin),Amax));}
 		bool Bunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Bmin),Bmax));}
