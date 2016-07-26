@@ -414,6 +414,7 @@ namespace FFLAS {
 	template <class Field>
 	void
 	fsubin (const Field& F,  const size_t N,
+		typename Field::ConstElement_ptr B, const size_t incb,
 		typename Field::Element_ptr C, const size_t incc);
 
 

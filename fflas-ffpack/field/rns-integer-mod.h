@@ -71,6 +71,7 @@ namespace FFPACK {
 		typedef typename RNS::Element                   Element;
 		typedef typename RNS::Element_ptr           Element_ptr;
 		typedef typename RNS::ConstElement_ptr ConstElement_ptr;
+		typedef rnsRandIter<RNS> RandIter;
 
 	protected:
 		typedef typename RNS::BasisElement BasisElement;

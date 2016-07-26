@@ -1,5 +1,5 @@
-# Copyright (c) 2011 FFLAS-FFPACK
-# written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+# Copyright (c) 2016 FFLAS-FFPACK
+# written by Ashley Lesdalons (ash09) <ashley.lesdalons@e.ujf-grenoble.fr>
 # adapted from LinBox configuration
 #
 # ========LICENCE========
@@ -22,12 +22,16 @@
 #/
 
 
-SUBDIRS=fflas ffpack field utils paladin interfaces checkers
+pkgincludesubdir=$(pkgincludedir)/checkers
 
-EXTRA_DIST=fflas-ffpack.doxy
+pkgincludesub_HEADERS=        \
+		checkers.h \
+		checkers.inl \
+		checker_pluq.inl \
+		checker_ftrsm.inl \
+		checker_fgemm.inl \
+		checker_charpoly.inl \
+		checker_invert.inl
 
-pkginclude_HEADERS = config-blas.h   \
-		     fflas-ffpack.h  \
-		     config.h \
-		     fflas-ffpack-config.h \
-		     fflas-ffpack-optimise.h
+
+EXTRA_DIST=checkers.doxy

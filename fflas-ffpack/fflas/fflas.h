@@ -93,6 +93,11 @@
 #endif
 
 //---------------------------------------------------------------------
+// Checkers
+#include "fflas-ffpack/checkers/checkers.h"
+//---------------------------------------------------------------------
+
+//---------------------------------------------------------------------
 // specialisations and implementation
 //---------------------------------------------------------------------
 
@@ -129,6 +134,8 @@
 #include "fflas_fgemv_mp.inl"
 #include "fflas-ffpack/field/rns.inl" // real implementation of the multiprecision field
 
+
+
 #include "fflas-ffpack/paladin/fflas_pfinit.h"
 
 //---------------------------------------------------------------------
@@ -136,5 +143,10 @@
 //---------------------------------------------------------------------
 
 #include "fflas_sparse.h"
+
+//---------------------------------------------------------------------
+// Checkers
+//---------------------------------------------------------------------
+#include "fflas-ffpack/checkers/checkers.inl"
 
 #endif // __FFLASFFPACK_fflas_H

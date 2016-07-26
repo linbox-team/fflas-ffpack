@@ -33,6 +33,8 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
+#define ENABLE_ALL_CHECKINGS 1
+
 #include <iomanip>
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"
@@ -116,8 +118,8 @@ int main(int argc, char** argv)
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.", TYPE_INT , &p },
-		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &p },
-		{ 'r', "-r R", "Set number of repetitions.", TYPE_INT , &nbit },
+		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
+		{ 'i', "-i I", "Set number of repetitions.", TYPE_INT , &nbit },
 		{ 'f', "-f file", "Set input file", TYPE_STR, &file },
 		{ 'a', "-a algorithm", "Set the algorithm variant", TYPE_INT, &variant },
 		END_OF_ARGUMENTS
