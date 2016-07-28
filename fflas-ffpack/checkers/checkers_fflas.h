@@ -27,14 +27,11 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_checkers_H
-#define __FFLASFFPACK_checkers_H
+#ifndef __FFLASFFPACK_checkers_fflas_H
+#define __FFLASFFPACK_checkers_fflas_H
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-#include <list>
-#include <vector>
-#include <iostream>
-#include <algorithm>
+#include "checker_empty.h"
 
 #ifdef DEBUG
  	#define CHECKING_MODE 1
@@ -42,71 +39,36 @@
 #endif
 
 #ifdef ENABLE_ALL_CHECKINGS
-	#define ENABLE_CHECKER_PLUQ 1
 	#define ENABLE_CHECKER_fgemm 1
  	#define ENABLE_CHECKER_ftrsm 1
- 	#define ENABLE_CHECKER_invert 1
- 	#define ENABLE_CHECKER_charpoly 1
 #endif
 
 #ifdef TIME_CHECKERS
 #include <givaro/givtimer.h>
 #define TIME_CHECKER_FGEMM
 #define TIME_CHECKER_FTRSM
-#define TIME_CHECKER_PLUQ
-#define TIME_CHECKER_INVERT
-#define TIME_CHECKER_CHARPOLY
 #endif
-
-
-
 
 // definition of the exceptions
 class FailureFgemmCheck {};
 class FailureTrsmCheck {};
-class FailurePLUQCheck {};
-class FailureInvertCheck {};
-class FailureCharpolyCheck {};
 
 namespace FFLAS {
-    template <class Field>
-    struct Checker_Empty {
-        template<typename... Params> Checker_Empty(Params... parameters) {}
-        template<typename... Params> bool check(Params... parameters) { return true; }
-    };
+	template <class Field> class CheckerImplem_fgemm;
+	template <class Field> class CheckerImplem_ftrsm;
 }
 
 namespace FFLAS {
 #ifdef ENABLE_CHECKER_fgemm
-	template <class Field> class Checker_fgemm;
+	template <class Field> using Checker_fgemm = CheckerImplem_fgemm<Field>;
 #else
 	template <class Field> using Checker_fgemm = FFLAS::Checker_Empty<Field>;
 #endif
 
 #ifdef ENABLE_CHECKER_ftrsm
-	template <class Field> class Checker_ftrsm;
+	template <class Field> using Checker_ftrsm = CheckerImplem_ftrsm<Field>;
 #else
 	template <class Field> using Checker_ftrsm = FFLAS::Checker_Empty<Field>;
-#endif
-}
-
-namespace FFPACK {
-#ifdef ENABLE_CHECKER_PLUQ
-	template <class Field> class Checker_PLUQ;
-#else
-	template <class Field> using Checker_PLUQ = FFLAS::Checker_Empty<Field>;
-#endif
-
-#ifdef ENABLE_CHECKER_invert
-	template <class Field> class Checker_invert;
-#else
-	template <class Field> using Checker_invert = FFLAS::Checker_Empty<Field>;
-#endif
-
-#ifdef ENABLE_CHECKER_charpoly
-	template <class Field, class Polynomial> class Checker_charpoly;
-#else
-	template <class Field, class Polynomial> using Checker_charpoly = FFLAS::Checker_Empty<Field>;
 #endif
 }
 

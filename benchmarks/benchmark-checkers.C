@@ -40,7 +40,8 @@
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
-#include "fflas-ffpack/checkers/checkers.h"
+#include "fflas-ffpack/checkers/checkers_fflas.h"
+#include "fflas-ffpack/checkers/checkers_ffpack.h"
 #include <fstream>
 
 using namespace std;
@@ -114,7 +115,7 @@ int main(int argc, char** argv) {
 			PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,C,n/MAX_THREADS); }
 
 			chrono.clear(); chrono.start();
-			FFLAS::Checker_fgemm<Field> checker1(Rand,m,n,k,beta,C,ldc);
+			FFLAS::ForceCheck_fgemm<Field> checker1(Rand,m,n,k,beta,C,ldc);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
 			}
 
 			chrono.clear(); chrono.start();
-                        FFLAS::Checker_ftrsm<Field> checker2(Rand, m, n, alpha, B, n);
+                        FFLAS::ForceCheck_ftrsm<Field> checker2(Rand, m, n, alpha, B, n);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -192,7 +193,7 @@ int main(int argc, char** argv) {
 
 			try {
 				chrono.clear(); chrono.start();
-				FFPACK::Checker_invert<Field> checker3(Rand,m,A,m);
+				FFPACK::ForceCheck_invert<Field> checker3(Rand,m,A,m);
 				chrono.stop(); time1 += chrono.usertime();
 				
 				chrono.clear(); chrono.start();
@@ -232,7 +233,7 @@ int main(int argc, char** argv) {
 			size_t *Q = FFLAS::fflas_new<size_t>(n);
 
 			chrono.clear(); chrono.start();
-                        FFPACK::Checker_PLUQ<Field> checker4 (Rand,m,n,A,n);
+                        FFPACK::ForceCheck_PLUQ<Field> checker4 (Rand,m,n,A,n);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
@@ -271,7 +272,7 @@ int main(int argc, char** argv) {
 			Polynomial g(n);
 
 			chrono.clear(); chrono.start();
-                        FFPACK::Checker_charpoly<Field,Polynomial> checker5(Rand,n,A,n);
+            FFPACK::ForceCheck_charpoly<Field,Polynomial> checker5(Rand,n,A,n);
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();

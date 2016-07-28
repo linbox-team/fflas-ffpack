@@ -1469,11 +1469,18 @@ namespace FFPACK { /* not used */
 #include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
 #endif
 
-#include "fflas-ffpack/checkers/checkers.h"
+//---------------------------------------------------------------------
+// Checkers
+#include "fflas-ffpack/checkers/checkers_ffpack.h"
+//---------------------------------------------------------------------
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
 #include "ffpack_ftrtr.inl"
+//---------------------------------------------------------------------
+// Checkers
+#include "fflas-ffpack/checkers/checkers_ffpack.inl"
+//---------------------------------------------------------------------
 #include "ffpack_pluq.inl"
 #include "ffpack_pluq_mp.inl"
 #include "ffpack_ppluq.inl"
@@ -1492,5 +1499,6 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack.inl"
+
 #endif // __FFLASFFPACK_ffpack_H
 
