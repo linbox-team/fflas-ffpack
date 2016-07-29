@@ -94,7 +94,7 @@
 
 //---------------------------------------------------------------------
 // Checkers
-#include "fflas-ffpack/checkers/checkers.h"
+#include "fflas-ffpack/checkers/checkers_fflas.h"
 //---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
@@ -147,6 +147,6 @@
 //---------------------------------------------------------------------
 // Checkers
 //---------------------------------------------------------------------
-#include "fflas-ffpack/checkers/checkers.inl"
+#include "fflas-ffpack/checkers/checkers_fflas.inl"
 
 #endif // __FFLASFFPACK_fflas_H

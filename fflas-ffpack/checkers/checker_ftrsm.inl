@@ -29,18 +29,16 @@
 #ifndef __FFLASFFPACK_checker_ftrsm_INL
 #define __FFLASFFPACK_checker_ftrsm_INL
 
-#ifdef ENABLE_CHECKER_ftrsm
-
 namespace FFLAS {
     
     template <class Field> 
-    class Checker_ftrsm {
+    class CheckerImplem_ftrsm {
 
         const Field& F;	
         typename Field::Element_ptr v,w;
 
     public:
-        Checker_ftrsm(const Field& F_, 
+        CheckerImplem_ftrsm(const Field& F_, 
                       const size_t m, const size_t n,
                       const typename Field::Element alpha,
                       const typename Field::ConstElement_ptr B, 
@@ -53,7 +51,7 @@ namespace FFLAS {
                 init(G,m,n,B,ldb,alpha);
             }
 
-        Checker_ftrsm(typename Field::RandIter &G, 
+        CheckerImplem_ftrsm(typename Field::RandIter &G, 
                       const size_t m, const size_t n,
                       const typename Field::Element alpha,
                       const typename Field::ConstElement_ptr B, 
@@ -65,7 +63,7 @@ namespace FFLAS {
                 init(G,m,n,B,ldb,alpha);
             }
 
-        ~Checker_ftrsm() {
+        ~CheckerImplem_ftrsm() {
             FFLAS::fflas_delete(v,w);
         }
 
@@ -117,7 +115,5 @@ namespace FFLAS {
     };
     
 }
-
-#endif // ENABLE_CHECKER_ftrsm
 
 #endif // __FFLASFFPACK_checker_ftrsm_INL

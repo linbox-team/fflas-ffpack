@@ -29,36 +29,34 @@
 #ifndef __FFLASFFPACK_checker_invert_INL
 #define __FFLASFFPACK_checker_invert_INL
 
-#ifdef ENABLE_CHECKER_invert
-
 namespace FFPACK {
 
     template <class Field> 
-    class Checker_invert {
+    class CheckerImplem_invert {
 
         const Field& F;
         typename Field::Element_ptr v,w;
         const size_t m,lda;
 
     public:
-        Checker_invert(const Field& F_, const size_t m_, typename Field::Element_ptr A, const size_t lda_) 
+        CheckerImplem_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
                 : F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
             {
                 typename Field::RandIter G(F);
                 init(G,m,A,lda);
             }
 
-        Checker_invert(typename Field::RandIter &G, const size_t m_, typename Field::Element_ptr A, const size_t lda_) 
+        CheckerImplem_invert(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
                 : F(G.ring()), v(FFLAS::fflas_new(F,m_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), lda(lda_)
             {
                 init(G,m,A,lda);
             }
 
-        ~Checker_invert() {
+        ~CheckerImplem_invert() {
             FFLAS::fflas_delete(v,w);
         }
 
-        inline bool check(typename Field::Element_ptr A, int nullity) {
+        inline bool check(typename Field::ConstElement_ptr A, int nullity) {
                 // v <- A.w - v
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, w, 1, F.mOne, v, 1);
 
@@ -68,7 +66,7 @@ namespace FFPACK {
         }
 
     private:
-        void init(typename Field::RandIter &G, const size_t m_, typename Field::Element_ptr A, const size_t lda_) {
+        void init(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) {
             FFLAS::frand(F,G,m,v,1);
 
 // write_field(F,std::cerr<<"init A : ",A,m,m,lda,true)<<std::endl;
@@ -81,6 +79,5 @@ namespace FFPACK {
   
     };
 }
-#endif // ENABLE_CHECKER_invert
 
 #endif // __FFLASFFPACK_checker_invert_INL

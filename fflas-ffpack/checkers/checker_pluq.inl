@@ -29,7 +29,6 @@
 #ifndef __FFLASFFPACK_checker_pluq_INL
 #define __FFLASFFPACK_checker_pluq_INL
 
-#ifdef ENABLE_CHECKER_PLUQ
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 #ifdef TIME_CHECKER_PLUQ
@@ -38,7 +37,7 @@
 
 namespace FFPACK {
     template <class Field> 
-    class Checker_PLUQ {
+    class CheckerImplem_PLUQ {
 
         const Field& F;
         typename Field::Element_ptr v,w;
@@ -48,7 +47,7 @@ namespace FFPACK {
 #endif
 
     public:
-        Checker_PLUQ(const Field& F_, size_t m_, size_t n_, 
+        CheckerImplem_PLUQ(const Field& F_, size_t m_, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda) 
 				: F(F_), 
                   v(FFLAS::fflas_new(F_,n_,1)), 
@@ -59,8 +58,8 @@ namespace FFPACK {
                 init(G,A,lda);
             }
 
-        Checker_PLUQ(typename Field::RandIter &G, size_t m_, size_t n_, 
-                     typename Field::Element_ptr A, size_t lda)
+        CheckerImplem_PLUQ(typename Field::RandIter &G, size_t m_, size_t n_, 
+                     typename Field::ConstElement_ptr A, size_t lda)
 				: F(G.ring()), 
                   v(FFLAS::fflas_new(F,n_,1)), 
                   w(FFLAS::fflas_new(F,m_,1)), 
@@ -69,7 +68,7 @@ namespace FFPACK {
                 init(G,A,lda);
             }
 
-        ~Checker_PLUQ() {
+        ~CheckerImplem_PLUQ() {
             FFLAS::fflas_delete(v,w);
         }
 
@@ -80,7 +79,7 @@ namespace FFPACK {
              * @param P
              * @param Q
              */
-        inline bool check(typename Field::Element_ptr A, size_t lda, 
+        inline bool check(typename Field::ConstElement_ptr A, size_t lda, 
                           size_t r, size_t *P, size_t *Q) {
 #ifdef TIME_CHECKER_PLUQ
             Givaro::Timer checktime; checktime.start();
@@ -145,6 +144,4 @@ namespace FFPACK {
         }
     };
 }
-#endif // ENABLE_CHECKER_PLUQ
-
 #endif // __FFLASFFPACK_checker_pluq_INL

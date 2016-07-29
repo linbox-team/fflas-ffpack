@@ -55,9 +55,9 @@
 #include <iomanip>
 Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
 size_t mvcnt = 0;
-
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "test-utils.h"
 
@@ -330,8 +330,16 @@ bool test_pluq (const Field & F,
 	size_t * Q = FFLAS::fflas_new<size_t> (n);
 	
 	// write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
+    typename Field::RandIter G(F);
+    FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,A,n);
+
 	size_t R = FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
 	// write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
+    try {
+        checker.check(A,n,R,P,Q);
+    } catch(FailurePLUQCheck &e) {
+        std::cout << m << 'x' << n << " pluq verification failed!\n";
+    }
 
 	if (R != r) {
 		std::cout << "rank is wrong (expected " << r << " but got " << R << ")" << std::endl;

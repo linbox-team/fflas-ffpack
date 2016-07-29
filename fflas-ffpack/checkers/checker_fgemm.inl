@@ -29,19 +29,17 @@
 #ifndef __FFLASFFPACK_checker_fgemm_INL
 #define __FFLASFFPACK_checker_fgemm_INL
 
-#ifdef ENABLE_CHECKER_fgemm
-
 namespace FFLAS {
     
     template <class Field> 
-    class Checker_fgemm {
+    class CheckerImplem_fgemm {
 
         const Field& F;
         const size_t m,n,k,ldc;
         typename Field::Element_ptr v,w1;
 
     public:
-        Checker_fgemm(const Field &F_,
+        CheckerImplem_fgemm(const Field &F_,
                       const size_t m_, const size_t n_, const size_t k_,
                       const typename Field::Element beta,
                       typename Field::Element_ptr C, const size_t ldc_)
@@ -51,7 +49,7 @@ namespace FFLAS {
                 init(G,beta,C);
             }
 
-        Checker_fgemm(typename Field::RandIter &G,
+        CheckerImplem_fgemm(typename Field::RandIter &G,
                       const size_t m_, const size_t n_, const size_t k_,
                       const typename Field::Element beta,
                       typename Field::Element_ptr C, const size_t ldc_)
@@ -60,7 +58,7 @@ namespace FFLAS {
                 init(G,beta,C);
             }
 
-        ~Checker_fgemm() {
+        ~CheckerImplem_fgemm() {
             FFLAS::fflas_delete(v,w1);
         }
 
@@ -99,5 +97,4 @@ namespace FFLAS {
 
     };
 }
-#endif // ENABLE_CHECKER_fgemm
 #endif // __FFLASFFPACK_checker_fgemm_INL

@@ -26,13 +26,17 @@
  *.
  */
 
-#ifndef FFLASFFPACK_checkers_inl_H
-#define FFLASFFPACK_checkers_inl_H
+#ifndef FFLASFFPACK_checkers_ffpack_inl_H
+#define FFLASFFPACK_checkers_ffpack_inl_H
 
 #include "checker_pluq.inl"
-#include "checker_fgemm.inl"
-#include "checker_ftrsm.inl"
 #include "checker_invert.inl"
 #include "checker_charpoly.inl"
+
+namespace FFPACK {
+	template <class Field> using ForceCheck_PLUQ = CheckerImplem_PLUQ<Field>;
+	template <class Field> using ForceCheck_invert = CheckerImplem_invert<Field>;
+	template <class Field, class Polynomial> using ForceCheck_charpoly = CheckerImplem_charpoly<Field,Polynomial>;
+}
 
 #endif

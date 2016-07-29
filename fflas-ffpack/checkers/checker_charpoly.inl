@@ -29,7 +29,6 @@
 #ifndef __FFLASFFPACK_checker_charpoly_INL
 #define __FFLASFFPACK_checker_charpoly_INL
 
-#ifdef ENABLE_CHECKER_charpoly
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 #ifdef TIME_CHECKER_CHARPOLY
@@ -38,7 +37,7 @@
 
 namespace FFPACK {
     template <class Field, class Polynomial> 
-    class Checker_charpoly {
+    class CheckerImplem_charpoly {
 
         const Field& F;
         const size_t n, lda;
@@ -49,20 +48,20 @@ namespace FFPACK {
 #endif
 
     public:
-	    Checker_charpoly(const Field& F_, const size_t n_, typename Field::Element_ptr A, size_t lda_) 
+	    CheckerImplem_charpoly(const Field& F_, const size_t n_, typename Field::ConstElement_ptr A, size_t lda_) 
 		: F(F_), n(n_), lda(lda_)
             {
                 typename Field::RandIter G(F);
                 init(G,A);
             }
 
-        Checker_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::Element_ptr A, size_t lda_)
+        CheckerImplem_charpoly(typename Field::RandIter &G, const size_t n_, typename Field::ConstElement_ptr A, size_t lda_)
                 : F(G.ring()), n(n_), lda(lda_)
             {
                 init(G,A);
             }
 
-        ~Checker_charpoly() {
+        ~CheckerImplem_charpoly() {
         }
 
         inline bool check(Polynomial &g) {
@@ -90,7 +89,7 @@ namespace FFPACK {
         }
 
     private:
-        inline void init(typename Field::RandIter &G, typename Field::Element_ptr A) {
+        inline void init(typename Field::RandIter &G, typename Field::ConstElement_ptr A) {
 #ifdef TIME_CHECKER_CHARPOLY
             Givaro::Timer inittime; inittime.start();
 #endif
@@ -111,7 +110,7 @@ namespace FFPACK {
             }
 
                 // Ac <- A - lambda.I
-	    FFLAS::fassign(F,n,n,A,lda,Ac,n);
+            FFLAS::fassign(F,n,n,A,lda,Ac,n);
             for (size_t i=0; i<n; ++i)
 		    F.subin(*(Ac+i*n+i),lambda);
 
@@ -162,7 +161,5 @@ namespace FFPACK {
     };
     
 }
-
-#endif // ENABLE_CHECKER_charpoly
 
 #endif // __FFLASFFPACK_checker_charpoly_INL
