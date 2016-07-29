@@ -459,7 +459,7 @@ template <> struct Simd256_impl<true, false, true, 4> : public Simd256fp_base {
 		return C;
 	}
 
-#else // __AVX__
+#else // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 #error "You need AVX instructions to perform 256bits operations on float"
 #endif
 };

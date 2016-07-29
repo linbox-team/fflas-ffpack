@@ -77,7 +77,7 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	 *  Return [x,x,x,x]
 	 */
 	static INLINE CONST vect_t set1(const scalar_t x) {
-#ifdef __AVX__
+#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 		// return _mm_broadcast_ss(&x);
 		return _mm_set1_ps(x);
 #else
@@ -425,7 +425,7 @@ template <> struct Simd128_impl<true, false, true, 4> {
 
 		return C;
 	}
-#else // __AVX__
+#else // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 #error "You need SSE instructions to perform 128bits operations on double"
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 };

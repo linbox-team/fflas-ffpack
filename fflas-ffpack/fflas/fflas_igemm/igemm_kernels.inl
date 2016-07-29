@@ -36,7 +36,7 @@
 #define _mr 8
 #define StepA 4
 #define StepB 4
-#elif defined(__SSE4_1__) or defined(__AVX__)
+#elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 #define _nr 4
 #define _mr 4
 #define StepA 2

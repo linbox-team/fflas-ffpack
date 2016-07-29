@@ -406,7 +406,7 @@ template <> struct Simd128_impl<true, false, true, 8> {
 		return C;
 	}
 
-#else // __AVX__
+#else // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 #error "You need SSE instructions to perform 128bits operations on double"
 #endif
 };
