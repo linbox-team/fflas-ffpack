@@ -51,19 +51,20 @@ namespace FFLAS{ namespace Protected{
 }//FFLAS
 
 namespace FFLAS {
-	template <class DFE> size_t min_types(DFE& k) {return static_cast<size_t>(k);}
-#if __FFLASFFPACK_SIZEOF_LONG == 4
-	template <> size_t min_types(double& k) {return static_cast<size_t>(std::min(k,double(std::numeric_limits<size_t>::max())));}
-	template <> size_t min_types(int64_t& k) {return static_cast<size_t>(std::min(k,int64_t(std::numeric_limits<size_t>::max())));}
-#endif
-	template <> size_t min_types(RecInt::rint<6>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<6>(std::numeric_limits<size_t>::max())));}
-	template <> size_t min_types(RecInt::rint<7>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<7>(std::numeric_limits<size_t>::max())));}
-	template <> size_t min_types(RecInt::rint<8>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<8>(std::numeric_limits<size_t>::max())));}
-	template <> size_t min_types(RecInt::rint<9>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<9>(std::numeric_limits<size_t>::max())));}
-	template <> size_t min_types(RecInt::rint<10>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<10>(std::numeric_limits<size_t>::max())));}
-	template <> size_t min_types(Givaro::Integer& k) {return static_cast<size_t>(std::min(k,Givaro::Integer(std::numeric_limits<size_t>::max())));}
 	
 	namespace Protected{
+		template <class DFE> inline size_t min_types(DFE& k) {return static_cast<size_t>(k);}
+#if __FFLASFFPACK_SIZEOF_LONG == 4
+		template <> inline size_t min_types(double& k) {return static_cast<size_t>(std::min(k,double(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(int64_t& k) {return static_cast<size_t>(std::min(k,int64_t(std::numeric_limits<size_t>::max())));}
+#endif
+		template <> inline size_t min_types(RecInt::rint<6>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<6>(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(RecInt::rint<7>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<7>(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(RecInt::rint<8>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<8>(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(RecInt::rint<9>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<9>(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(RecInt::rint<10>& k) {return static_cast<size_t>(std::min(k,RecInt::rint<10>(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(Givaro::Integer& k) {return static_cast<size_t>(std::min(k,Givaro::Integer(std::numeric_limits<size_t>::max())));}
+
 		template <class T>
 		inline bool unfit(T x){return false;}
 		template <>
@@ -188,7 +189,7 @@ namespace FFLAS {
 
 
 			DFElt kmax = diff/AB;
-			return FFLAS::min_types<DFElt>(kmax);
+			return FFLAS::Protected::min_types<DFElt>(kmax);
 			// if (kmax > std::numeric_limits<size_t>::max())
 			// 	return std::numeric_limits<size_t>::max();
 			// else
