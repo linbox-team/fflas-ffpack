@@ -111,7 +111,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     */
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void pfspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, size_t blockSize,
@@ -310,7 +310,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, 
     }
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void pfspmm_simd_unaligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR> &A, size_t blockSize,
@@ -645,7 +645,7 @@ inline void pfspmm_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     */
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void pfspmm_one_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_ZO> &A, size_t blockSize,
@@ -930,7 +930,7 @@ inline void pfspmm_mone_simd_unaligned(const Field &F, const Sparse<Field, Spars
     */
 }
 
-#endif //__FFLASFFPACK_USE_SIMD
+#endif //__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 } // CSR_details
 

@@ -34,7 +34,7 @@
  * Simd128 specialized for double
  */
 template <> struct Simd128_impl<true, false, true, 8> {
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
 	/*
 	 * alias to 128 bit simd register

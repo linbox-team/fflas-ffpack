@@ -34,7 +34,7 @@
  * Simd128 specialized for float
  */
 template <> struct Simd128_impl<true, false, true, 4> {
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
 	/*
 	 * alias to 128 bit simd register
@@ -427,7 +427,7 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	}
 #else // __AVX__
 #error "You need SSE instructions to perform 128bits operations on double"
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 };
 
 #endif // __FFLASFFPACK_fflas_ffpack_utils_simd128_float_INL

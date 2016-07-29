@@ -39,7 +39,7 @@
 #include <cmath>
 
 #include "fflas-ffpack/field/field-traits.h"
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 #include "fflas-ffpack/utils/Matio.h"
@@ -293,7 +293,7 @@ namespace FFLAS {
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
 		
-#if defined (__FFLASFFPACK_USE_SIMD)
+#if defined (__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 		igemm_ (FflasRowMajor, ta, tb, (int)m, (int)n, (int)k, alpha, Ad, (int)lda, Bd, (int)ldb, beta, Cd, (int)ldc);
 #else
 		for (size_t i=0; i<m; i++){

@@ -34,7 +34,7 @@
 
 namespace FFLAS { namespace vectorised {
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 	template<class SimdT, class Element, bool positive>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
@@ -233,7 +233,7 @@ namespace FFLAS { namespace vectorised {
 	}
 
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 } // vectorised
 } //  FFLAS

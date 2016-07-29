@@ -192,7 +192,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, 
 #endif
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field, class LFunc, class SFunc>
 inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::ELL> &A, size_t blockSize,
@@ -571,7 +571,7 @@ inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO
 #endif
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field, class LFunc, class SFunc, class VectFunc, class ScalFunc>
 inline void pfspmm_zo(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_ZO> &A, size_t blockSize,

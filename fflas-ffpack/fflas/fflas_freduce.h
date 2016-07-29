@@ -39,7 +39,7 @@ namespace FFLAS {
 	template<class T>
 	struct support_simd_mod  : public std::false_type {} ;
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	template<>
 	struct support_simd_mod<float> : public std::true_type {} ;
 	template<>
@@ -49,7 +49,7 @@ namespace FFLAS {
 	struct support_simd_mod<int64_t> : public std::true_type {} ;
 #endif  // SIMD_INT
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 } // FFLAS
 

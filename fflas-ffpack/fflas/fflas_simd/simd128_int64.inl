@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_int64_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_int64_INL
 
-#ifndef __FFLASFFPACK_USE_SIMD
+#ifndef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #error "You need SSE instructions to perform 128 bits operations on int64"
 #endif
 
@@ -164,7 +164,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	* Return : [a0 >> s, a1 >> s] int64_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) {
-#ifdef __AVX512__
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 		return _mm_srai_epi64(a, s);
 #else
 		const int b = 63 - s;
@@ -172,7 +172,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 		vect_t x = srl(a, s);
 		vect_t result = sub(vxor(x, m), m); // result = x^m - m
 		return result;
-#endif // 512
+#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 	}
 
 	/*
@@ -246,7 +246,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	*/
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
-#ifdef __AVX512__
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 		_mm_mullo_epi64(x0, x1);
 #else
 		// _mm_mullo_epi64 emul
@@ -255,7 +255,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 		c0.v = x0;
 		c1.v = x1;
 		return set((scalar_t)(c0.t[0] * c1.t[0]), (scalar_t)(c0.t[1] * c1.t[1]));
-#endif // 512
+#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 	}
 
 	static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return mullo(a, b); }
@@ -377,7 +377,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	* Return : [(a0>b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1>b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
-#ifdef __SSE4_2__
+#ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 		return _mm_cmpgt_epi64(a, b);
 #else
 		//#warning "The simd greater function is emulate, it may impact the performances."
@@ -385,7 +385,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 		ca.v = a;
 		cb.v = b;
 		return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif // __SSE4_2__
+#endif // __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 	}
 
 	/*
@@ -395,7 +395,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	* Return : [(a0<b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	*/
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
-#ifdef __SSE4_2__
+#ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 		return _mm_cmpgt_epi64(b, a);
 #else
 		//#warning "The simd lesser function is emulate, it may impact the performances."
@@ -403,7 +403,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 		ca.v = a;
 		cb.v = b;
 		return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif // __SSE4_2__
+#endif // __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 	}
 
 	/*
@@ -542,7 +542,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm_srli_epi64(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
-#ifdef __SSE4_2__
+#ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 		vect_t x;
 		x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
 		a = sub(x, a);
@@ -554,11 +554,11 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 		ca.v = a;
 		cb.v = b;
 		return set((ca.t[0] > cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] > cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif
+#endif // __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 	}
 
 	static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
-#ifdef __SSE4_2__
+#ifdef __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 		vect_t x;
 		x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
 		a = sub(x, a);
@@ -570,7 +570,7 @@ template <> struct Simd128_impl<true, true, false, 8> : public Simd128_impl<true
 		ca.v = a;
 		cb.v = b;
 		return set((ca.t[0] < cb.t[0]) ? 0xFFFFFFFFFFFFFFFF : 0, (ca.t[1] < cb.t[1]) ? 0xFFFFFFFFFFFFFFFF : 0);
-#endif
+#endif // __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS
 	}
 
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }

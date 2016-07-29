@@ -87,13 +87,13 @@ using NotZOSparseMatrix = std::false_type;
 
 template<class F, class M> struct isSparseMatrixSimdFormat : public std::false_type {};
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template<class Field> struct isSparseMatrixSimdFormat<Field, Sparse<Field, SparseMatrix_t::SELL>> : public support_simd<typename Field::Element>::type {};
 
 template<class Field> struct isSparseMatrixSimdFormat<Field, Sparse<Field, SparseMatrix_t::ELL_simd>> : public support_simd<typename Field::Element>::type {};
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 using SimdSparseMatrix = std::true_type;
 using NoSimdSparseMatrix = std::false_type;

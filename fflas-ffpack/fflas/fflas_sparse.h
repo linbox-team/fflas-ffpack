@@ -82,7 +82,7 @@
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/paladin/parallel.h"
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #endif
 

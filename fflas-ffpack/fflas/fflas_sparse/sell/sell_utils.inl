@@ -110,7 +110,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A, 
     A.m = rowdim;
     A.n = coldim;
     A.nnz = nnz;
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
     using simd = Simd<typename Field::Element>;
     A.chunk = simd::vect_size;
 #else
