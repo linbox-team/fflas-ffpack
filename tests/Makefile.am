@@ -55,6 +55,7 @@ BASIC_TESTS =               \
 		test-fger           \
 		test-ftrsm          \
 		test-multifile      \
+		test-maxdelayeddim \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -67,7 +68,7 @@ test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
 	-lm -lstdc++
-	
+
 else
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
@@ -150,6 +151,7 @@ test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
+test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 #test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS) $(PARFLAGS)
 #test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
