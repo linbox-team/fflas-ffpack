@@ -160,6 +160,10 @@ namespace FFLAS {
 
 		size_t MaxDelayedDim(DFElt beta)
 		{
+			if (MaxStorableValue < DFElt(0))
+				//Infinte precision delayed field
+				return std::numeric_limits<size_t>::max();
+
 			DFElt absbeta;
 			delayedField.init(absbeta,beta);
 			if (beta < 0) absbeta = -beta;
@@ -169,9 +173,13 @@ namespace FFLAS {
 				* std::max(static_cast<const DFElt&>(-Cmin), Cmax);
 			DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
 				* std::max(static_cast<const DFElt&>(-Bmin), Bmax);
-			return ((diff < DFElt(0u))||(AB<DFElt(0u)))? 0 :
-				static_cast<size_t>( std::min(static_cast<uint64_t>(std::numeric_limits<size_t>::max()),
-							      static_cast<uint64_t>(diff / AB)));
+			if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
+
+			DFElt kmax = diff/AB;
+			if (kmax > std::numeric_limits<size_t>::max())
+				return std::numeric_limits<size_t>::max();
+			else
+				return kmax;
 		}
 		bool Aunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Amin),Amax));}
 		bool Bunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Bmin),Bmax));}
