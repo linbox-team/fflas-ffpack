@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
 struct Simd256fp_base {
-#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
 	/*
 	* Shuffle 128-bits selected by imm8 from a and b, and store the results in dst.
@@ -83,7 +83,7 @@ struct Simd256i_base {
 	*/
 	static INLINE CONST vect_t zero() { return _mm256_setzero_si256(); }
 
-#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
 	/*
 	* Shift packed 128-bit integers in a left by s bits while shifting in zeros, and store the results in vect_t.
@@ -172,7 +172,6 @@ using Simd256 =
 #include "simd256_double.inl"
 
 #ifdef SIMD_INT
-// Trop d'instructions SSE manquantes pour les int8_t
 
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #include "simd256_int64.inl"
