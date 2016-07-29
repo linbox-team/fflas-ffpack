@@ -371,7 +371,7 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 template<class Element>
 bool test_float(size_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	sse = test_float_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
 	if(!sse)
 		std::cout << "bug sse" << std::endl;
@@ -392,7 +392,7 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 template<class Element>
 bool test_integer(size_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	sse = test_integer_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
 	if(!sse)
 		std::cout << "bug sse" << std::endl;

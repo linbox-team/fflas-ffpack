@@ -61,7 +61,7 @@
 #define PURE
 #endif
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 namespace std { // Why? - A.B. 2015-04-30
 
 	inline
@@ -128,12 +128,12 @@ namespace std {
 } // std
 #endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 namespace FFLAS {
 	template <class T> struct support_simd : public std::false_type {};
 
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONSUSE_SIMD)
 	template <> struct support_simd<float> : public std::true_type {};
 	template <> struct support_simd<double> : public std::true_type {};
 #ifdef SIMD_INT
@@ -177,7 +177,7 @@ template <class T> struct is_simd {
 };
 
 // SSE
-#if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) // SSE or better
 #include "fflas-ffpack/fflas/fflas_simd/simd128.inl"
 
 template <> struct simdToType<__m128d> { using type = double; };
@@ -303,7 +303,7 @@ template <class T> using Simd = typename SimdChooser<T>::value;
 
 // #endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
-#if defined(__FFLASFFPACK_USE_SIMD) // SSE or better
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) // SSE or better
 
 // template <class T> struct floating_simd;
 
@@ -321,7 +321,7 @@ template <class T> using Simd = typename SimdChooser<T>::value;
 
 #endif
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 namespace FFLAS { /*  print helper */
 
@@ -363,7 +363,7 @@ namespace std {
 }
 #endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 // Provide simd modular support
 #include <fflas-ffpack/fflas/fflas_simd/simd_modular.inl>

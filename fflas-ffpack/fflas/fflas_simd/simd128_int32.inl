@@ -31,7 +31,7 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd128_int32_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd128_int32_INL
 
-#ifndef __FFLASFFPACK_USE_SIMD
+#ifndef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #error "You need SSE instructions to perform 128 bits operations on int32"
 #endif
 

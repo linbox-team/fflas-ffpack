@@ -51,7 +51,7 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> 
     }
 }
 
-// #ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void fspmv_simd(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> &A,
@@ -117,7 +117,7 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> 
     }
 }
 
-// #ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 template <class Field>
 inline void fspmv_simd(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> &A,
                        typename Field::ConstElement_ptr x_, typename Field::Element_ptr y_, const uint64_t kmax) {
@@ -299,7 +299,7 @@ inline void fspmv_mone(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_s
     }
 }
 
-// #ifdef __FFLASFFPACK_USE_SIMD
+// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 template <class Field>
 inline void fspmv_one_simd(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A,
                            typename Field::ConstElement_ptr x_, typename Field::Element_ptr y_,

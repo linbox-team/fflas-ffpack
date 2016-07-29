@@ -356,7 +356,7 @@ namespace FFPACK {
 		void init(size_t m, double* Arns, const integer* A, size_t lda) const;
 		void convert(size_t m, integer *A, const double *Arns) const;
 		
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 		
 		template<class SimdT>
 		inline void splitSimd(const SimdT x, SimdT & x_h, SimdT & x_l) const {
@@ -399,7 +399,7 @@ namespace FFPACK {
 		  return r = simd::add(r, abh);
 		}
 		
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		
 		// reduce entries of Arns to be less than the rns basis elements
 		void reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR=false) const;

@@ -301,7 +301,7 @@ namespace FFLAS { namespace vectorised {
 	} ;
 
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	template<class Field, class SimdT, class ElementTraits = typename ElementTraits<typename Field::Element>::value>
 	struct HelperModSimd  ;
 
@@ -389,7 +389,7 @@ namespace FFLAS { namespace vectorised {
 
 		}
 	} ;
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 
 #ifdef __x86_64__
@@ -442,7 +442,7 @@ namespace FFLAS { namespace vectorised {
 
 
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 	template<class Field, class SimdT, int ALGO>
 	inline void
@@ -473,14 +473,14 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 } // vectorised
 } // FFLAS
 
 namespace FFLAS  { namespace vectorised { namespace unswitch  {
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	template<class Field, bool round, int algo>
 	inline typename std::enable_if<FFLAS::support_simd_mod<typename Field::Element>::value, void>::type
 	modp(const Field &F, typename Field::ConstElement_ptr U, const size_t & n,

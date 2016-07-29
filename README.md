@@ -39,7 +39,7 @@ For example on a x86_64 architecture:
  - run `./configure --enable-optimization --with-blas-libs="-lopenblas"`
 - Using OpenBLAS in Debian, Ubuntu, Mint, and all debian based distribution:
  - avoid using the distribution's package, as it is threaded by default. You need to
- - compile openblas yourself on these systems,
+   compile openblas yourself on these systems,
  - run `./configure --enable-optimization --with-blas-libs="-lopenblas"`
 - Using ATLAS in Debian, Ubuntu, Mint: 
  - install the package `libatlas-dev`,

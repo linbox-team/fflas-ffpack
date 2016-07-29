@@ -285,11 +285,11 @@ namespace FFLAS {
 		logA = H.normA.bitsize();
 		if (H.normB==0)
 			H.normB = InfNorm ((tb==FflasNoTrans)?k:n,(tb==FflasNoTrans)?n:k,B,ldb);
-		logB = H.normA.bitsize();
+		logB = H.normB.bitsize();
 
 		mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
         
-		// construct an RNS structure and its associated Domain
+ 		// construct an RNS structure and its associated Domain
 		FFPACK::rns_double RNS(mC, prime_bitsize);
 
 		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;

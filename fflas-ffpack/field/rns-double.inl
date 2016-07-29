@@ -392,7 +392,7 @@ namespace FFPACK {
 	inline void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 		if (RNS_MAJOR) {
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 			using simd = Simd<double>;
 			using vect_t = typename simd::vect_t;
 
@@ -500,7 +500,7 @@ namespace FFPACK {
 		// reduce entries of Arns to be less than the rns basis elements
 	inline void rns_double_extended::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		using simd = Simd<double>;
 		using vect_t = typename simd::vect_t;
 

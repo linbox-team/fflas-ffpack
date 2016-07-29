@@ -692,7 +692,7 @@ namespace FFPACK {
                         //
 			// FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
                         T.start();
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
                         using simd = Simd<BasisElement>;
                         using vect_t = typename simd::vect_t;
 
