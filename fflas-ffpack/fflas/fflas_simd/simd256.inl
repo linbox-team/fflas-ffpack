@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
 struct Simd256fp_base {
-#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
 	/*
 	* Shuffle 128-bits selected by imm8 from a and b, and store the results in dst.
@@ -172,7 +172,7 @@ using Simd256 =
 #include "simd256_double.inl"
 
 #ifdef SIMD_INT
-// Trop d'instructions SSE manquantes pour les int8_t
+// To many missing insctructions on int8_t
 
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #include "simd256_int64.inl"
