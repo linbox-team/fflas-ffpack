@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_fflas_ffpack_utils_simd256_INL
 
 struct Simd256fp_base {
-#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)  or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 
 	/*
 	* Shuffle 128-bits selected by imm8 from a and b, and store the results in dst.
