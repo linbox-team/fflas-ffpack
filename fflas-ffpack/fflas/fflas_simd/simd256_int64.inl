@@ -176,7 +176,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	 * Return : [a0 >> s, a1 >> s, a2 >> s, a3 >> s] int64_t
 	*/
 	static INLINE CONST vect_t sra(const vect_t a, const int s) {
-#ifdef __AVX512__
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 		return _mm256_srai_epi64(a, s);
 #else
 		const int b = 63 - s;
@@ -294,7 +294,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	*	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	 */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
-#ifdef __AVX512__
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 		return _mm256_mullo_epi64(a, b);
 #else
 		//#pragma warning "The simd mullo function is emulate, it may impact the performances."
