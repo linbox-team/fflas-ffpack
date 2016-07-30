@@ -1,3 +1,11 @@
+2016-07-30 v2.2.2
+	* many bug fixes ensuring a consistent support of clang, gcc-4.8 5.3 6.1
+	icpc on i386 x86_64, ubuntu and fedora, ppcle and osx
+	* new SIMD detection
+	* use pkgconfig
+	* new feature: checkers for Freivalds based verification
+	* improved performance of permutation application
+	* 
 2016-04-08 v2.2.1
 	* many fixes to the build system
 	* more consistent use of flags and dependency to precompiled code
