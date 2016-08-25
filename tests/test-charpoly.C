@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -33,15 +33,12 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define ENABLE_ALL_CHECKINGS 1
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-positive.h"
-// #include "fflas-ffpack/field/modular-int.h"
-#include "fflas-ffpack/utils/timer.h"
+#include "givaro/modular.h"
 #include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 #include "fflas-ffpack/utils/args-parser.h"
@@ -49,58 +46,37 @@
 
 using namespace std;
 
-//typedef ModularBalanced<double> Field;
 typedef Givaro::ModularBalanced<double> Field;
-//typedef Givaro::Modular<double> Field;
-//typedef Givaro::Modular<float> Field;
-//typedef Givaro::Modular<int> Field;
-//typedef Givaro::Modular<double> Field;
 
 typedef vector<Field::Element> Polynomial;
 
 using namespace FFPACK;
-template <class Field, class Polynomial>
-void printPolynomial (const Field &F, const Polynomial &v)
-{
-	for (int i = v.size () - 1; i >= 0; i--) {
-		F.write (cout, v[i]);
-		if (i > 0)
-			cout << " x^" << i << " + ";
-	}
-	cout << endl;
-}
 
 template<class Field>
-bool launch_test(const Field & F, typename Field::Element * A, int n,
-		 size_t p, size_t nbit, FFPACK::FFPACK_CHARPOLY_TAG CT)
+bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t lda,
+				 size_t nbit, FFPACK::FFPACK_CHARPOLY_TAG CT)
 {
- FFLAS::Timer tim,t; t.clear();tim.clear();
-	list<Polynomial> P_list;
-	for(size_t i = 0;i<nbit;++i){
-		P_list.clear();
-		t.clear();
-		t.start();
+	Polynomial charp;
+	typename Field::Element trace;
+	F.init(trace, F.zero);
+	for (size_t i = 0; i < n; i++)
+		F.subin (trace, A [i*(lda+1)]);
 
-		FFPACK::CharPoly (F, P_list, n, A, n, CT);
-		t.stop();
-		tim+=t;
-		/*  test */
-		// apply P_list.A.V and check 0 for random V
+	FFPACK::CharPoly (F, charp, n, A, lda, CT);
+
+		// Checking det(A) == charp[0]
+	typename Field::Element det = FFPACK::Det(F, n, n, A, lda);
+	if (!F.areEqual(det,charp[0])){
+		std::cerr<<"det = "<<det<<" P["<<0<<"] = "<<charp[n]<<std::endl;
+		return false;
 	}
 
-#ifdef _FF_TIMING
-	double mflops = (2+(2.0/3.0))*(n*n/1000000.0)*nbit*n/tim.usertime();
-	list<Polynomial>::iterator P_it = P_list.begin();
-	for (;P_it!=P_list.end();++P_it)
-		printPolynomial ( F, *P_it);
+		// Checking trace(A) == charp[n-1]
+	if (!F.areEqual(trace, charp[n-1])){
+		std::cerr<<"trace = "<<trace<<" P["<<n-1<<"] = "<<charp[n-1]<<std::endl;
+		return false;
+	}
 
-	F.write(cerr<<"n = "<<n<<" #inv. fact = "<<P_list.size()<<" Charpoly (A) over ") << " : t= "
-	<< tim.usertime()/nbit
-	<< " s, Mffops = "<<mflops
-	<< endl;
-
-	cout<<n<<" "<<P_list.size()<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
-#endif
 	return true ;
 
 }
@@ -108,15 +84,13 @@ bool launch_test(const Field & F, typename Field::Element * A, int n,
 int main(int argc, char** argv)
 {
 
-	cerr<<setprecision(10);
+	size_t       p = 131071; // characteristic
+	size_t       nbit = 10; // repetitions
+	size_t        n = 500;
+	std::string  file = "" ; // file where
+	int variant = 6;
 
-	static size_t       p = 13; // characteristic
-	static size_t       nbit = 2; // repetitions
-	static int          n = 100;
-	static std::string  file = "" ; // file where
-	static int variant =0;
-
-	static Argument as[] = {
+	Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.", TYPE_INT , &p },
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
 		{ 'i', "-i I", "Set number of repetitions.", TYPE_INT , &nbit },
@@ -125,6 +99,7 @@ int main(int argc, char** argv)
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
+	size_t      lda = n;
 
 	FFPACK::FFPACK_CHARPOLY_TAG CT;
 	switch (variant){
@@ -137,25 +112,24 @@ int main(int argc, char** argv)
 	    case 6: CT = FfpackArithProg; break;
 	    default: CT = FfpackLUK; break;
 	}
-	Field F((long unsigned int)p);
-	Field::Element * A;
+	Field F(p);
+	Field::Element * A=NULL;
+	bool passed = true;
 	if (!file.empty()) {
 		const char * filestring = file.c_str();
 		A = read_field<Field>(F,const_cast<char*>(filestring),&n,&n);
-		bool passed = launch_test<Field>(F,A,n,p,nbit,CT);
+		passed &= launch_test<Field>(F, n, A, lda, nbit, CT);
 		FFLAS::fflas_delete( A);
-		return !passed ;
-	}
-	else {
-		std::cerr << std::endl << "##################################"<< std::endl;
-		std::cerr << std::endl << "  **** not implemented yet ! ***" << std::endl;
-		std::cerr << std::endl << "##################################"<< std::endl;
-		// create A random
-		// create A diagonal
-		// create A nilpotent
-		// create A non invertible
-		return false ;
 	}
 
+		/* Random matrix test */
+	A = FFLAS::fflas_new(F,n,n);
+	for(size_t i = 0;i<nbit;++i){
+		A = FFPACK::RandomMatrix(F,A,n,n,n);
+		passed &= launch_test<Field>(F, n, A, lda, nbit, CT);
+	}
+	FFLAS::fflas_delete( A);
+
+
+	return !passed;
 }
-
