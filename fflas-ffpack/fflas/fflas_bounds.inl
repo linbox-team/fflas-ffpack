@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* fflas/fflas_bounds.inl
  * Copyright (C) 2008 Clement Pernet
  *
@@ -108,12 +108,29 @@ namespace FFLAS { namespace Protected {
 		//kmax--; // we computed a strict upper bound
 		return  (size_t) std::min ((uint64_t)kmax, 1_ui64 << 31);
 	}
-
-
+		
 } // FFLAS
 } // Protected
 
-namespace FFLAS { namespace Protected {
+namespace FFLAS {
+
+	inline Givaro::Integer
+	InfNorm (const size_t M, const size_t N, const Givaro::Integer* A, const size_t lda){
+		Givaro::Integer max = 0;
+		size_t log=0;
+		for (size_t i=0; i<M; ++i)
+			for (size_t j=0; j<N; ++j){
+				Givaro::Integer x = A[i*lda+j];
+				if ((x.bitsize() >= log) && (abs(x) > max)){
+					max = abs(x);
+// 					max = x;
+					log = x.bitsize();
+				}
+			}
+		return max;
+	}
+
+	namespace Protected {
 
 
 	/**

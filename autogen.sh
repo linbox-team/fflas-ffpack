@@ -68,8 +68,10 @@ LIBTOOLIZE=libtoolize
 (uname -a|grep -v Darwin) < /dev/null > /dev/null 2>&1 ||
 {
 echo "....Adding fix for OSX"
-LIBTOOL=glibtool
-LIBTOOLIZE=glibtoolize
+if command -v "glibtoolize" >/dev/null; then
+    LIBTOOL=glibtool
+    LIBTOOLIZE=glibtoolize
+fi
 }
 
 

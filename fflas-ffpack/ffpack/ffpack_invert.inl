@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 FFLAS-FFACK group
  *
@@ -38,21 +38,24 @@ template <class Field>
 		typename Field::Element_ptr A, const size_t lda,
 		int& nullity)
 	{
-		FFLASFFPACK_check(lda >= M);
+        FFLASFFPACK_check(lda >= M);
+
+		Checker_invert<Field> checker(F,M,A,lda);
 
 		if (M == 0) {
 			nullity = 0 ;
 			return NULL ;
 		}
-
 		size_t * P = FFLAS::fflas_new<size_t>(M);
 		size_t * Q = FFLAS::fflas_new<size_t>(M);
-		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q);
+		size_t R =  ReducedColumnEchelonForm (F, M, M, A, lda, P, Q, true);
 		nullity = (int)(M - R);
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 			M, 0, (int)R, A, lda, P);
 		delete [] P;
 		delete [] Q;
+
+		checker.check(A,nullity);
 		return A;
 	}
 
@@ -69,10 +72,8 @@ template <class Field>
 			nullity = 0 ;
 			return NULL ;
 		}
-
-
 		FFLAS::fassign(F,M,M,A,lda,X,ldx);
-		Invert (F,  M, X, lda, nullity);
+		Invert (F, M, X, ldx, nullity);
 		return X;
 	}
 

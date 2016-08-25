@@ -242,41 +242,19 @@ inline void pfspmv_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-#if defined(__FFLASFFPACK_USE_TBB)
-    int step = __FFLASFFPACK_CACHE_LINE_SIZE / sizeof(typename Field::Element);
-    tbb::parallel_for(tbb::blocked_range<index_t>(0, A.m, step),
-                      [&F, &A, x, y, col, st](const tbb::blocked_range<index_t> &r) {
-        for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
-            auto start = st[i], stop = st[i + 1];
-            index_t j = 0;
-            index_t diff = stop - start;
-            typename Field::Element y1, y2, y3, y4;
-            F.assign(y1, F.zero);
-            F.assign(y2, F.zero);
-            F.assign(y3, F.zero);
-            F.assign(y4, F.zero);
-            for (; j < ROUND_DOWN(diff, 4); j += 4) {
-                F.addin(y1, x[col[start + j]]);
-                F.addin(y2, x[col[start + j + 1]]);
-                F.addin(y3, x[col[start + j + 2]]);
-                F.addin(y4, x[col[start + j + 3]]);
-            }
-            for (; j < diff; ++j) {
-                F.addin(y1, x[col[start + j]]);
-            }
-            F.addin(y[i], y1);
-            F.addin(y[i], y2);
-            F.addin(y[i], y3);
-            F.addin(y[i], y4);
-        }
-    });
-#else
-#pragma omp parallel for
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
+    size_t am = A.m;
+    SYNCH_GROUP(
+	  FORBLOCK1D(it, am, SPLITTER(NUM_THREADS),
+	  TASK(MODE(CONSTREFERENCE(F) READ(col, st, x) READWRITE(y)),
+	  for (index_t i = it.begin(); i < it.end(); ++i) {
+        auto start = st[i];
+        auto stop = st[i + 1];
         index_t j = 0;
         index_t diff = stop - start;
-        typename Field::Element y1, y2, y3, y4;
+        typename Field::Element y1;
+        typename Field::Element y2;
+        typename Field::Element y3;
+        typename Field::Element y4;
         F.assign(y1, F.zero);
         F.assign(y2, F.zero);
         F.assign(y3, F.zero);
@@ -294,9 +272,10 @@ inline void pfspmv_one(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_Z
         F.addin(y[i], y2);
         F.addin(y[i], y3);
         F.addin(y[i], y4);
-    }
-
-#endif
+      }
+           );
+                 );
+                );
 }
 
 template <class Field>
@@ -307,41 +286,19 @@ inline void pfspmv_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
     assume_aligned(st, A.st, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-#if defined(__FFLASFFPACK_USE_TBB)
-    int step = __FFLASFFPACK_CACHE_LINE_SIZE / sizeof(typename Field::Element);
-    tbb::parallel_for(tbb::blocked_range<index_t>(0, A.m, step),
-                      [&F, &A, x, y, col, st](const tbb::blocked_range<index_t> &r) {
-        for (index_t i = r.begin(), end = r.end(); i < end; ++i) {
-            auto start = st[i], stop = st[i + 1];
-            index_t j = 0;
-            index_t diff = stop - start;
-            typename Field::Element y1, y2, y3, y4;
-            F.assign(y1, F.zero);
-            F.assign(y2, F.zero);
-            F.assign(y3, F.zero);
-            F.assign(y4, F.zero);
-            for (; j < ROUND_DOWN(diff, 4); j += 4) {
-                F.addin(y1, x[col[start + j]]);
-                F.addin(y2, x[col[start + j + 1]]);
-                F.addin(y3, x[col[start + j + 2]]);
-                F.addin(y4, x[col[start + j + 3]]);
-            }
-            for (; j < diff; ++j) {
-                F.addin(y1, x[col[start + j]]);
-            }
-            F.subin(y[i], y1);
-            F.subin(y[i], y2);
-            F.subin(y[i], y3);
-            F.subin(y[i], y4);
-        }
-    });
-#else
-#pragma omp parallel for
-    for (index_t i = 0; i < A.m; ++i) {
-        auto start = st[i], stop = st[i + 1];
+    size_t am = A.m;
+    SYNCH_GROUP(
+	  FORBLOCK1D(it, am, SPLITTER(NUM_THREADS),
+	  TASK(MODE(CONSTREFERENCE(F) READ(col, st, x) READWRITE(y)),
+	  for (index_t i = it.begin(); i < it.end(); ++i) {
+        auto start = st[i];
+        auto stop = st[i + 1];
         index_t j = 0;
         index_t diff = stop - start;
-        typename Field::Element y1, y2, y3, y4;
+        typename Field::Element y1;
+        typename Field::Element y2;
+        typename Field::Element y3;
+        typename Field::Element y4;
         F.assign(y1, F.zero);
         F.assign(y2, F.zero);
         F.assign(y3, F.zero);
@@ -359,9 +316,10 @@ inline void pfspmv_mone(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_
         F.subin(y[i], y2);
         F.subin(y[i], y3);
         F.subin(y[i], y4);
-    }
-
-#endif
+      }
+           );
+                 );
+                );
 }
 
 template <class Field>

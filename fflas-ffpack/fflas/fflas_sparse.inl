@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -112,7 +112,7 @@ namespace FFLAS {
 		>::type
 		fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
 		      FieldCategories::UnparametricTag, NotZOSparseMatrix) {
-			// #ifdef __FFLASFFPACK_USE_SIMD
+			// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 			sparse_details_impl::fspmv_simd(F, A, x, y, FieldCategories::UnparametricTag());
 			// #else
 			//     sparse_details_impl::fspmv(F, A, x, y, FieldCategories::UnparametricTag());
@@ -137,7 +137,7 @@ namespace FFLAS {
 		>::type
 		fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
 		      FieldCategories::ModularTag, NotZOSparseMatrix) {
-			// #ifdef __FFLASFFPACK_USE_SIMD
+			// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 			if (A.delayed) {
 				sparse_details::fspmv(F, A, x, y, FieldCategories::UnparametricTag(), std::false_type());
 				freduce(F, A.m, y, 1);
@@ -193,7 +193,7 @@ namespace FFLAS {
 		>::type
 		fspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
 		      FieldCategories::UnparametricTag, ZOSparseMatrix) {
-			// #ifdef __FFLASFFPACK_USE_SIMD
+			// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 			if (A.cst == 1) {
 				sparse_details_impl::fspmv_one_simd(F, A, x, y, FieldCategories::UnparametricTag());
 			} else if (A.cst == -1) {
@@ -417,7 +417,7 @@ namespace FFLAS {
 			sparse_details_impl::pfspmm(F, A, blockSize, x, ldx, y, ldy, FieldCategories::GenericTag());
 		}
 
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
 		template <class Field, class SM>
 		inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
@@ -468,7 +468,7 @@ namespace FFLAS {
 			}
 		}
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 		// ZO matrix
 		template <class Field, class SM>
@@ -487,7 +487,7 @@ namespace FFLAS {
 			}
 		}
 
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 
 		template <class Field, class SM>
 		inline typename std::enable_if<support_simd<typename Field::Element>::value>::type
@@ -549,7 +549,7 @@ namespace FFLAS {
 			freduce(F, blockSize, A.m, y, ldy);
 		}
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 		// /***************************** pfspmv ******************************/
 
@@ -567,11 +567,13 @@ namespace FFLAS {
 		//     sparse_details::pfspmv(F, A, x, y, FC(), MZO());
 		// }
 
-		// template <class Field, class SM>
-		// inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
-		//                    FieldCategories::GenericTag, std::false_type) {
-		//     sparse_details_impl::pfspmv(F, A, x, y, FieldCategories::GenericTag());
-		// }
+        template <class Field, class SM>
+        inline void pfspmv(const Field &F, const SM &A,
+                   typename Field::ConstElement_ptr x, 
+                   typename Field::Element_ptr y,
+                   FieldCategories::GenericTag tag, std::false_type) {
+			sparse_details_impl::pfspmv(F, A, x, y, tag);
+		}
 
 		// template <class Field, class SM>
 		// inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, typename Field::Element_ptr y,
@@ -609,7 +611,7 @@ namespace FFLAS {
 		// template <class Field>
 		// inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL> &A, typename Field::ConstElement_ptr x,
 		//                    typename Field::Element_ptr y, FieldCategories::UnparametricTag, std::true_type) {
-		// #ifdef __FFLASFFPACK_USE_SIMD
+		// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		//     if (A.cst == 1) {
 		//         sparse_details_impl::pfspmv_one_simd(F, A, x, y, FieldCategories::UnparametricTag());
 		//     } else if (A.cst == -1) {
@@ -638,7 +640,7 @@ namespace FFLAS {
 		// inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::ELL_simd> &A, typename Field::ConstElement_ptr
 		// x,
 		//                    typename Field::Element_ptr y, FieldCategories::UnparametricTag, std::true_type) {
-		// #ifdef __FFLASFFPACK_USE_SIMD
+		// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		//     if (A.cst == 1) {
 		//         sparse_details_impl::pfspmv_one_simd(F, A, x, y, FieldCategories::UnparametricTag());
 		//     } else if (A.cst == -1) {
@@ -711,7 +713,7 @@ namespace FFLAS {
 		// inline void pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
 		//                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::false_type) {
 		// // std::cout << "no ZO Unparametric" << std::endl;
-		// #ifdef __FFLASFFPACK_USE_SIMD
+		// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		//     using simd = Simd<typename Field::Element>;
 		//     if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
 		//         (blockSize % simd::vect_size == 0)) {
@@ -736,7 +738,7 @@ namespace FFLAS {
 		//                               typename std::false_type());
 		//         freduce(F, A.m, blockSize, y, ldy);
 		//     } else {
-		// #ifdef __FFLASFFPACK_USE_SIMD
+		// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		//         using simd = Simd<typename Field::Element>;
 		//         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
 		//             (blockSize % simd::vect_size == 0)) {
@@ -771,7 +773,7 @@ namespace FFLAS {
 		// inline void pfspmm(const Field &F, const SM &A, size_t blockSize, typename Field::ConstElement_ptr x, int ldx,
 		//                   typename Field::Element_ptr y, int ldy, FieldCategories::UnparametricTag, std::true_type) {
 		// // std::cout << "ZO Unparametric" << std::endl;
-		// #ifdef __FFLASFFPACK_USE_SIMD
+		// #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		//     using simd = Simd<typename Field::Element>;
 		//     if (F.isOne(A.cst)) {
 		//         if (((uint64_t)y % simd::alignment == 0) && ((uint64_t)x % simd::alignment == 0) &&
@@ -859,8 +861,8 @@ namespace FFLAS {
 	inline void pfspmv(const Field &F, const SM &A, typename Field::ConstElement_ptr x, const typename Field::Element &beta,
 			   typename Field::Element_ptr y) {
 		sparse_details::init_y(F, A.m, beta, y);
-		sparse_details::pfspmv<Field, SM>(F, A, x, y, typename ElementTraits<typename Field::Element>::value(),
-						  typename FieldTraits<Field>::category(),
+		sparse_details::pfspmv<Field, SM>(F, A, x, y, 
+                          typename FieldTraits<Field>::category(),
 						  typename isZOSparseMatrix<Field, SM>::type());
 	}
 

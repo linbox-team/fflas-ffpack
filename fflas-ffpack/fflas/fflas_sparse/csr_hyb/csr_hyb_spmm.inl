@@ -132,7 +132,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
     }
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
@@ -292,7 +292,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &
     // TODO
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,

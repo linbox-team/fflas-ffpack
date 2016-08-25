@@ -394,7 +394,7 @@ inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> 
 #endif
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 template <class Field, class LFunc, class SFunc>
 inline void pfspmm(const Field &F, const Sparse<Field, SparseMatrix_t::CSR_HYB> &A, size_t blockSize,
                    typename Field::ConstElement_ptr x, typename Field::Element_ptr y, LFunc &&lfunc, SFunc &&sfunc,

@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   
 	size_t iter = 1;
 	int    q    = 1009;
-	int n    = 2000;
+	size_t n    = 2000;
 	std::string file1 = "";
 	std::string file2 = "";
   
@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       A = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (int i=0; i<n; ++i)
-          for (int j=0; j<n; ++j)
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
               G.random(*(A+i*n+j));
     }
 
@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       B = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (int i=0; i<n; ++i)
-          for (int j=0; j<n; ++j)
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
               G.random(*(B+i*n+j));
     }
 
@@ -124,8 +124,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       A = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (int i=0; i<n; ++i)
-          for (int j=0; j<n; ++j)
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
               G.random(*(A+i*n+j));
     }
 
@@ -136,8 +136,8 @@ int main(int argc, char** argv) {
       Field::RandIter G(F);
       B = FFLAS::fflas_new<Element>(n*n);
 #pragma omp parallel for
-      for (int i=0; i<n; ++i)
-          for (int j=0; j<n; ++j)
+      for (size_t i=0; i<n; ++i)
+          for (size_t j=0; j<n; ++j)
               G.random(*(B+i*n+j));
     }
 

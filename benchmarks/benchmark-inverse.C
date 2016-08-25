@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
   
 	size_t iter = 1;
 	int    q    = 1009;
-	int    n    = 2000;
+	size_t    n    = 2000;
 	std::string file = "";
   
 	Argument as[] = {
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 
 	FFLAS::parseArguments(argc,argv,as);
 
-  typedef Givaro::Modular<double> Field;
+  typedef Givaro::ModularBalanced<double> Field;
   typedef Field::Element Element;
 
   Field F(q);

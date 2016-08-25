@@ -81,15 +81,15 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 
 int main(int argc, char **argv) {
 
-    using Field = Givaro::Modular<double>;
+    using Field = Givaro::Modular<int64_t,int64_t>;
     using Element = typename Field::Element;
 
     size_t iter = 10;
-    int q = 1009;
+    Givaro::Integer q = 1009;
     int s = 0;
     std::string matrixFile = "";
 
-    Argument as[] = { { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INT, &q },
+    Argument as[] = { { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER, &q },
                       { 'i', "-i R", "Set number of repetitions.", TYPE_INT, &iter },
                       { 's', "-s S", "Compute and print matrix statistics.", TYPE_INT, &s },
                       { 'f', "-f FILE", "Set matrix file.", TYPE_STR, &matrixFile },

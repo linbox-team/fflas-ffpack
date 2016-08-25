@@ -31,6 +31,7 @@ EXTRA_DIST=            \
 	fflas-ffpack-doc.m4    \
 	fflas-ffpack-misc.m4   \
 	fflas-ffpack-opt.m4    \
+	fflas-ffpack-precompile.m4\
 	givaro-check.m4    \
 	mkl-check.m4 \
 	avx-check.m4 \

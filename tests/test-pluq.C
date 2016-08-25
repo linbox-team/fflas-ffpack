@@ -41,6 +41,7 @@
 //               1: check A = LQUP
 //-------------------------------------------------------------------------
 
+#define ENABLE_ALL_CHECKINGS 1
 
 #define __FFPACK_LUDIVINE_CUTOFF 60
 #include <iostream>

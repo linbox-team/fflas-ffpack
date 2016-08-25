@@ -41,10 +41,10 @@
 #include <givaro/modular-integer.h>
 #include <givaro/givinteger.h>
 #include <givaro/udl.h>
+#include "givaro/modular-extended.h"
 
 #include "fflas-ffpack/field/rns-double.h"
 #include "fflas-ffpack/field/rns-integer.h"
-#include "fflas-ffpack/field/modular-extended.h"
 #include "fflas-ffpack/fflas/fflas_level1.inl"
 #include "fflas-ffpack/fflas/fflas_level2.inl"
 #include "fflas-ffpack/fflas/fflas_level3.inl"
@@ -64,12 +64,14 @@ namespace FFPACK {
 
 namespace FFPACK {
 
+
 	template<typename RNS>
 	class RNSIntegerMod {
 	public:
 		typedef typename RNS::Element                   Element;
 		typedef typename RNS::Element_ptr           Element_ptr;
 		typedef typename RNS::ConstElement_ptr ConstElement_ptr;
+		typedef rnsRandIter<RNS> RandIter;
 
 	protected:
 		typedef typename RNS::BasisElement BasisElement;
@@ -690,7 +692,7 @@ namespace FFPACK {
                         //
 			// FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i, _size, Gamma+i,_size);
                         T.start();
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
                         using simd = Simd<BasisElement>;
                         using vect_t = typename simd::vect_t;
 

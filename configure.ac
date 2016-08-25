@@ -23,13 +23,18 @@
 
 AC_PREREQ([2.61])
 
-AC_INIT([FFLAS-FFPACK], [2.1.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
-		[http://www.linalg.org/projects/fflas-ffpack])
+
+AC_INIT([FFLAS-FFPACK], [2.2.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+		[https://github.com/linbox-team/fflas-ffpack])
+
 
 AC_CONFIG_MACRO_DIR([macros])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability])
 AC_CONFIG_HEADERS([config.h])
+
+AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability foreign])
 AX_PREFIX_CONFIG_H(fflas-ffpack/config.h, __FFLASFFPACK)
 AC_PATH_PROG(RM, rm, $FALSE)
 RM="$RM -f"
@@ -77,18 +82,18 @@ AC_SUBST([DEFAULT_CFLAGS])
 AC_SUBST([DEBUG_CFLAGS])
 AC_SUBST([TESTS_CFLAGS])
 
-TESTS_CFLAGS="-O0"
+TESTS_CFLAGS="-O2"
 DEBUG_CFLAGS="-g"
 DEFAULT_CFLAGS=""
 WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...
 if test "x$DBG" = "xyes" ; then
-	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} " #those are CXXFLAGS
+	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS}" #those are CXXFLAGS
 	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
 else
-	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS} "
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DNDEBUG -UFFLASFFPACK_DEBUG -UFFLASFFPACK_DEBUG"
+	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS}"
+	DEBUG_CFLAGS="-DNDEBUG -UFFLASFFPACK_DEBUG"
 fi
 
 if test "x$PROF" = "xyes" ; then
@@ -154,12 +159,13 @@ fi
 
 
 DEFAULT_CFLAGS="${DEFAULT_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
-TESTS_CFLAGS="${TESTS_CFLAGS} ${WARN_CFLAGS} #${DEBUG_CFLAGS}"
+TESTS_CFLAGS="${TESTS_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
 
 
 AC_HEADER_STDC
 AC_PROG_LIBTOOL
-
+AC_PROG_EGREP
+AC_PROG_SED
 # newer libtool...
 LT_PREREQ([2.2])
 LT_INIT
@@ -169,28 +175,33 @@ echo "-----------------------------------------------"
 echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
-
-echo "-----------------------------------------------"
 FF_CHECK_OMP
+# checkes which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
+CUSTOM_SIMD="no"
+FF_CHECK_SIMD
+#FF_CHECK_SSE
+#FF_CHECK_AVX
+arch=`echo $target | cut -d"-" -f1`
+if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
+   AX_CHECK_X86_FEATURES([][])
+else
+   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
+fi
 
-# TODO do FF_CHECK_SIMD and take best, define USE_SSE2/AVX/AVX2/... and have also __FFLASFFPACK_USE_SIMD
-FF_CHECK_SSE
-FF_CHECK_AVX
+dnl echo "CCNAM = $CCNAM $CUSTOM_SIMD"
 
-AVXFLAGS="${SSEFLAGS} ${AVXFLAGS}"
+dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
+dnl have overloads for both types without linking error.
+AS_IF([test "x$CCNAM" = "xgcc48"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
+
+
+PARFLAGS="${OMPFLAGS}"
+PARLIBS="${OMPFLAGS}"
+
+AC_SUBST(PARFLAGS)
+AC_SUBST(PARLIBS)
 
 echo "-----------------------------------------------"
-AC_SUBST([PARFLAGS],['${AVXFLAGS} ${OMPFLAGS}'])
-	case x${CCNAM} in
-		xgcc|xgcc44|xgcc48)
-	# With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
-			# have overloads for both types without linking error.
-			AVXFLAGS="${AVXFLAGS} -fabi-version=6"
-			;;
-		*)
-	esac
-
-AC_SUBST([PARLIBS],['${OMPFLAGS}'])
 
 # Machine characteristics
 
@@ -232,17 +243,19 @@ echo "-----------------------------------------------"
 # Getting GMP from Givaro - AB 2014-12-12
 #FF_CHECK_GMP
 
-FF_CHECK_GIVARO(,,[
-echo '*******************************************************************************'
-echo ' WARNING: GIVARO not found!'
-echo
-echo ' GIVARO library is required for some tests in this library.'
-echo ' Please make sure GIVARO is installed and specify its location with the'
-echo ' option --with-givaro=<prefix> when running configure.'
-echo ' Do not forget to set/export LD_LIBRARY_PATH if necessary.'
-echo '*******************************************************************************'
-exit 1
-])
+PKG_CHECK_MODULES([GIVARO],[givaro])
+
+dnl FF_CHECK_GIVARO(,,[
+dnl echo '*******************************************************************************'
+dnl echo ' WARNING: GIVARO not found!'
+dnl echo
+dnl echo ' GIVARO library is required for some tests in this library.'
+dnl echo ' Please make sure GIVARO is installed and specify its location with the'
+dnl echo ' option --with-givaro=<prefix> when running configure.'
+dnl echo ' Do not forget to set/export LD_LIBRARY_PATH if necessary.'
+dnl echo '*******************************************************************************'
+dnl exit 1
+dnl ])
 
 BLAS_FOUND=false
 
@@ -310,7 +323,10 @@ FF_DOC
 # fi
 
 CXXFLAGS="${CXXFLAGS}"
+
 AC_SUBST(CXXFLAGS)
+
+FF_PRECOMPILE
 
 echo "-----------------------------------------------"
 echo "          END FFLAS-FFPACK CONFIG              "
@@ -338,13 +354,16 @@ fflas-ffpack/ffpack/Makefile
 fflas-ffpack/field/Makefile
 fflas-ffpack/utils/Makefile
 fflas-ffpack/paladin/Makefile
+fflas-ffpack/interfaces/Makefile
+fflas-ffpack/interfaces/libs/Makefile
+fflas-ffpack/checkers/Makefile
 doc/Makefile
 tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
+examples/Makefile
 optimiser/Makefile
-interfaces/Makefile
-interfaces/libs/Makefile
+fflas-ffpack.pc
 ])
 AC_OUTPUT
 

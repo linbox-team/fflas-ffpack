@@ -56,7 +56,7 @@ template <class Field, class IndexT>
 inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL_simd> &A, const IndexT *row,
                         const IndexT *col, typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim,
                         uint64_t nnz) {
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
     using simd = Simd<typename Field::Element>;
     A.chunk = simd::vect_size;
 #else
@@ -110,7 +110,7 @@ template <class Field, class IndexT>
 inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL_simd_ZO> &A, const IndexT *row,
                         const IndexT *col, typename Field::ConstElement_ptr dat, uint64_t rowdim, uint64_t coldim,
                         uint64_t nnz) {
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
     using simd = Simd<typename Field::Element>;
     A.chunk = simd::vect_size;
 #else

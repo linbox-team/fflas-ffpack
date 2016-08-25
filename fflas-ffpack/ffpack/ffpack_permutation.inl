@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 FFLAS-FFACK group
  *
@@ -30,19 +30,276 @@
 #ifndef __FFLASFFPACK_ffpack_permutation_INL
 #define __FFLASFFPACK_ffpack_permutation_INL
 
+
 #include <givaro/zring.h>
 
 #include "fflas-ffpack/fflas/fflas_fassign.h"
 
+#define FFLASFFPACK_PERM_BKSIZE 32
+
 namespace FFPACK {
+	    /** MonotonicApplyP
+	     * Apply a permutation defined by the first R entries of the vector P (the pivots).
+	     * The non pivot elements, are located in montonically increasing order.
+	     */
+	template<class Field>
+	void
+	MonotonicApplyP (const Field& F,
+					 const FFLAS::FFLAS_SIDE Side,
+					 const FFLAS::FFLAS_TRANSPOSE Trans,
+					 const size_t M, const size_t ibeg, const size_t iend,
+					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R)
+	{
+		const size_t B = FFLASFFPACK_PERM_BKSIZE;
+		size_t lenP = iend-ibeg;
+		size_t * MathP = new size_t[lenP];
+		for (size_t i=0; i<lenP; ++i)
+			MathP[i] = i;
+		LAPACKPerm2MathPerm (MathP, P, lenP);
+
+		std::vector<bool> ispiv(lenP,false);
+		size_t pivrowstomove = 0;
+		size_t nonpivrowstomove = 0;
+		size_t maxpiv = R-1;
+		for (size_t i=0; i<R; i++) {
+			ispiv[MathP[i]] = true;
+			if (MathP[i] != i){
+				pivrowstomove++;
+				if(maxpiv < MathP[i]) maxpiv = MathP[i];
+			}
+		}
+		if (!pivrowstomove) // Permutation is the identity
+			return;
+
+		for (size_t i=R; i<lenP; i++)
+			if (MathP[i] != i)
+				nonpivrowstomove++;
+		size_t NB = M/B;
+		size_t last = M%B;
+		size_t incA, llda;
+		if (Side == FFLAS::FflasLeft)  {incA = 1; llda = lda;}
+		else {incA = lda; llda = 1;}
+		size_t inc = B*incA;
+
+		if (((Side == FFLAS::FflasLeft) && (Trans == FFLAS::FflasNoTrans)) ||
+			((Side == FFLAS::FflasRight) && (Trans == FFLAS::FflasTrans))){
+				// Compressing
+#ifdef MONOTONIC_CYCLES
+			for (size_t i = 0; i<NB; i++)
+				MonotonicCompressCycles (F, Side, B, A+i*inc, llda, incA, MathP, lenP);
+			MonotonicCompressCycles (F, Side, last, A+NB*inc, llda, incA, MathP, lenP);
+#elif defined MONOTONIC_MOREPIVOTS
+			for (size_t i = 0; i<NB; i++)
+				MonotonicCompressMorePivots (F, Side, B, A+i*inc, llda, incA, MathP, R, nonpivrowstomove, lenP);
+			MonotonicCompressMorePivots (F, Side, last, A+NB*inc, llda, incA, MathP, R, nonpivrowstomove, lenP);
+#else
+			for (size_t i = 0; i<NB; i++)
+				MonotonicCompress (F, Side, B, A+i*inc, llda, incA, MathP, R, maxpiv, pivrowstomove, ispiv);
+			MonotonicCompress (F, Side, last, A+NB*inc, llda, incA, MathP, R, maxpiv, pivrowstomove, ispiv);	
+#endif
+		} else {
+				// Expanding
+			for (size_t i = 0; i<NB; i++)
+				MonotonicExpand (F, Side, B, A+i*inc, llda, incA, MathP, R, maxpiv, pivrowstomove, ispiv);
+			MonotonicExpand (F, Side, last, A+NB*inc, llda, incA, MathP, R, maxpiv, pivrowstomove, ispiv);	
+		}
+		delete[] MathP;
+	}
 
 	template<class Field>
 	void
-	applyP( const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const FFLAS::FFLAS_TRANSPOSE Trans,
-		const size_t M, const size_t ibeg, const size_t iend,
-		typename Field::Element_ptr A, const size_t lda, const size_t * P )
+	MonotonicCompress (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+					   typename Field::Element_ptr A, const size_t lda, const size_t incA,
+					   const size_t * MathP, const size_t R, const size_t maxpiv,
+					   const size_t rowstomove, const std::vector<bool> &ispiv)
+	{	
+			// Storing pivot rows in temp
+		typename Field::Element_ptr temp= FFLAS::fflas_new (F, rowstomove, M);
+		size_t ldtemp=M;
+		for (size_t i=0,j=0; i<R; i++){
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, A+MathP[i]*lda, incA, temp+j*ldtemp, 1);
+				j++;
+			}
+		}
+			// Moving non pivot rows to the R+1 .. iend positions
+		int dest = maxpiv;
+		int src = dest - 1;
+		while (dest >= (int)R){
+			if ((src >= 0) && ispiv[src]){ // src points to a pivot row: skip it
+				src--;
+				continue;
+			}
+			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
+			src--; dest--;
+		}
+			// Moving the pivots to their position in the first R rows
+		for (size_t i=0, j=0; i<R; i++)
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
+				j++;
+			}
+		FFLAS::fflas_delete(temp);
+	}
+
+	template<class Field>
+	void
+	MonotonicCompressMorePivots (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+								 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+								 const size_t * MathP, const size_t R, const size_t rowstomove, const size_t lenP)
+	{
+		std::vector<bool> done(lenP,false);
+		typename Field::Element_ptr temp= FFLAS::fflas_new (F, rowstomove, M);
+		size_t ldtemp=M;
+			// Move every non pivot row to temp
+#ifdef VERBOSE
+		std::cerr<<"R = "<<R<<std::endl;
+		write_perm(std::cerr<<"MathP = ",MathP,lenP);
+#endif
+		for (size_t i=R,j=0; i<lenP; i++){
+			if (MathP[i] != i){
+#ifdef VERBOSE
+				std::cerr<<"A["<<MathP[i]<<"] -> temp["<<j<<"]"<<std::endl;
+#endif
+				FFLAS::fassign (F, M, A+MathP[i]*lda, incA, temp+j*ldtemp, 1);
+				done[MathP[i]]=true;
+				j++;
+			}
+		}
+			// Move the pivot rows of every cycle containing a non pivot row (avoiding to use a temp)
+		for (size_t i=R; i<lenP; i++){
+			size_t j=MathP[i];
+			while ((MathP[j] != j) && (!done[MathP[j]])){
+					// A[P[j]] -> A[j]
+#ifdef VERBOSE
+				std::cerr<<"Moving pivots 1 A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
+#endif
+				FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
+				done[MathP[j]] = true;
+				j = MathP[j];
+			}
+		}
+		
+			// Moving the remaining cycles using one vector temp
+		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,1,M);
+		for (size_t i=0; i<R; i++){
+			if ((MathP[i]!=i)&&(!done[MathP[i]])){ // entering a cycle
+				size_t j=i;
+#ifdef VERBOSE
+				std::cerr<<"Moving pivots 2 A["<<j<<"] -> tmprow"<<std::endl;
+#endif
+				FFLAS::fassign (F, M, A+j*lda, incA, tmprow, 1);
+				done[j] = true;
+				do{
+						// A[P[j]] -> A[j]
+#ifdef VERBOSE
+					std::cerr<<"Moving pivots 2 A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
+#endif
+					FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
+					done[MathP[j]] = true;
+					j = MathP[j];
+				} while (!done[MathP[j]]);
+				FFLAS::fassign (F, M, tmprow, 1, A+j*lda, incA);
+#ifdef VERBOSE
+				std::cerr<<"Moving pivots 2 tmprow -> A["<<j<<"]"<<std::endl;
+#endif
+			}
+		}
+			// Move the non pivot rows to the last lenP-R positions
+		for (size_t i=R, j=0; i<lenP; i++)
+			if (MathP[i] != i){
+#ifdef VERBOSE
+				std::cerr<<"temp["<<j<<"] -> A["<<i<<"] "<<std::endl;
+#endif
+				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + i*lda, incA);
+				j++;
+			}
+
+		FFLAS::fflas_delete(tmprow);
+		FFLAS::fflas_delete(temp);
+	}
+
+	template<class Field>
+	void
+	MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+							 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+							 const size_t * MathP, const size_t lenP)
+	{
+		std::vector<bool> done(lenP,false);
+			// Move every non pivot row to temp
+#ifdef VERBOSE
+		write_perm(std::cerr<<"MathP = ",MathP,lenP);
+#endif
+			// Moving the remaining cycles using one vector temp
+		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,1,FFLASFFPACK_PERM_BKSIZE);
+		for (size_t i=0; i<lenP; i++){
+			if ((MathP[i]!=i)&&(!done[MathP[i]])){ // entering a cycle
+				size_t j=i;
+#ifdef VERBOSE
+				std::cerr<<"Moving pivots A["<<j<<"] -> tmprow"<<std::endl;
+#endif
+				FFLAS::fassign (F, M, A+j*lda, incA, tmprow, 1);
+				done[j] = true;
+				do{
+						// A[P[j]] -> A[j]
+#ifdef VERBOSE
+					std::cerr<<"Moving pivots A["<<MathP[j]<<"] -> A["<<j<<"]"<<std::endl;
+#endif
+					FFLAS::fassign (F, M, A+MathP[j]*lda, incA, A+j*lda, incA);
+					done[MathP[j]] = true;
+					j = MathP[j];
+				} while (!done[MathP[j]]);
+				FFLAS::fassign (F, M, tmprow, 1, A+j*lda, incA);
+#ifdef VERBOSE
+				std::cerr<<"Moving pivots tmprow -> A["<<j<<"]"<<std::endl;
+#endif
+			}
+		}
+		FFLAS::fflas_delete(tmprow);
+	}
+	template<class Field>
+	void
+	MonotonicExpand (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+					 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+					 const size_t * MathP, const size_t R, const size_t maxpiv,
+					 const size_t rowstomove, const std::vector<bool> &ispiv)
+	{
+			// Storing pivot rows in temp
+		typename Field::Element_ptr temp= FFLAS::fflas_new (F, rowstomove, M);
+		size_t ldtemp=M;
+		for (size_t i=0,j=0; i<R; i++){
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, A+i*lda, incA, temp+j*ldtemp, 1);
+				j++;
+			}
+		}
+			// Moving the non pivot rows
+		size_t dest = 0;
+		size_t src = R;
+		while (src <= maxpiv){
+			if (ispiv[dest]){ // src points to a pivot row: skip it
+				dest++;
+				continue;
+			}
+			FFLAS::fassign(F, M, A+src*lda, incA, A+dest*lda, incA);
+			src++; dest++;
+		}
+			// Moving the pivots to their final position
+		for (size_t i=0, j=0; i<R; i++)
+			if (MathP[i] != i){
+				FFLAS::fassign (F, M, temp + j*ldtemp, 1, A + MathP[i]*lda, incA);
+				j++;
+			}
+		FFLAS::fflas_delete(temp);
+	}
+
+	template<class Field>
+	void
+	applyP_block (const Field& F,
+				  const FFLAS::FFLAS_SIDE Side,
+				  const FFLAS::FFLAS_TRANSPOSE Trans,
+				  const size_t M, const size_t ibeg, const size_t iend,
+				  typename Field::Element_ptr A, const size_t lda, const size_t * P)
 	{
 		if ( Side == FFLAS::FflasRight ) {
 			if ( Trans == FFLAS::FflasTrans ){
@@ -67,6 +324,25 @@ namespace FFPACK {
 		}
 	}
 
+	template<class Field>
+	void
+	applyP( const Field& F,
+		const FFLAS::FFLAS_SIDE Side,
+		const FFLAS::FFLAS_TRANSPOSE Trans,
+		const size_t M, const size_t ibeg, const size_t iend,
+		typename Field::Element_ptr A, const size_t lda, const size_t * P )
+	{
+	
+		const size_t bk = FFLASFFPACK_PERM_BKSIZE;
+		const size_t NB = M/bk;
+		const size_t last = M%bk;
+		const size_t incA = (Side == FFLAS::FflasLeft)? 1:lda;
+		const size_t inc = bk*incA;
+
+		for (size_t i = 0; i<NB; i++)
+			applyP_block (F, Side, Trans, bk, ibeg, iend, A+i*inc, lda, P);
+		applyP_block (F, Side, Trans, last, ibeg, iend, A+NB*inc, lda, P);
+	}
 
 	template<class Field>
 	inline void doApplyS (const Field& F,
@@ -151,9 +427,6 @@ namespace FFPACK {
 		for (size_t i=0; i<N; i++){
 			if (LapackP[i] != i){
 				std::swap(MathP[i],MathP[LapackP[i]]);
-				// size_t tmp = MathP[i];
-				// MathP[i] = MathP[LapackP[i]];
-				// MathP[LapackP[i]] = tmp;
 			}
 		}
 	}
@@ -448,7 +721,7 @@ namespace FFPACK {
 		 const size_t m, const size_t ibeg, const size_t iend,
 		 typename Field::Element_ptr A, const size_t lda, const size_t * P )
 	{
-		int numthreads = MAX_THREADS;//omp_get_max_threads();
+		int numthreads = MAX_THREADS;
 		size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
 		size_t NBlocks = m/BLOCKSIZE;
 		size_t LastBlockSize = m % BLOCKSIZE;
@@ -457,13 +730,12 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		
-		SYNCH_GROUP(numthreads,
+		SYNCH_GROUP(
 		for (size_t t = 0; t < NBlocks; ++t)
 			{
 				size_t BlockDim = BLOCKSIZE;
 				if (t == NBlocks-1)
 					BlockDim = LastBlockSize;
-				//#pragma omp task shared (A, P, F) firstprivate(BlockDim)
 
 				TASK(MODE(CONSTREFERENCE(F, A,P) READ(A[BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1)])),
 				     applyP(F, Side, Trans, BlockDim, ibeg, iend, A+BLOCKSIZE*t*((Side == FFLAS::FflasRight)?lda:1), lda, P););
@@ -488,7 +760,7 @@ namespace FFPACK {
 			NBlocks++;
 		else
 			LastBlockSize=BLOCKSIZE;
-		SYNCH_GROUP(numthreads,
+		SYNCH_GROUP(
 		for (size_t t = 0; t < NBlocks; ++t)
 		{
 			size_t BlockDim = BLOCKSIZE;
@@ -518,7 +790,7 @@ namespace FFPACK {
 		else
 			LastBlockSize=BLOCKSIZE;
 		
-		SYNCH_GROUP(numthreads,
+		SYNCH_GROUP(
 
 		for (size_t t = 0; t < NBlocks; ++t)
 			{

@@ -56,7 +56,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A
         sparse_details_impl::fspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, FieldCategories::UnparametricTag());
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,
@@ -101,7 +101,7 @@ inline void fspmm(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A
         sparse_details_impl::fspmm(F, *(A.dat), blockSize, x, ldx, y, ldy, kmax);
 }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 template <class Field>
 inline void fspmm_simd_aligned(const Field &F, const Sparse<Field, SparseMatrix_t::HYB_ZO> &A, size_t blockSize,

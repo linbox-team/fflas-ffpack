@@ -27,12 +27,14 @@ pkgincludesub_HEADERS= 	\
 	args-parser.h  		\
 	debug.h  			\
 	fflas_memory.h 		\
+	fflas_randommatrix.h	\
 	flimits.h 			\
 	Matio.h  			\
 	bit_manipulation.h 	\
 	print-utils.h		\
 	timer.h				\
-	cast.h
+	cast.h \
+	fflas_intrinsic.h
 
 ### is this really extra dist ?
 ### this is wrong in a header only lib

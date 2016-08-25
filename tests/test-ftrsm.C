@@ -25,6 +25,9 @@
  * ========LICENCE========
  *.
  */
+#define  __FFLASFFPACK_SEQUENTIAL
+
+#define ENABLE_ALL_CHECKINGS 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
@@ -81,7 +84,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	C  = FFLAS::fflas_new(F,m,ldc);
 
 	typename Field::RandIter Rand(F);
-	typename Field::NonZeroRandIter NZRand(F,Rand);
+	typename Field::NonZeroRandIter NZRand(Rand);
 
 	for (size_t i=0;i<k;++i){
 		for (size_t j=0;j<i;++j)
@@ -223,7 +226,8 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,s,iters);
 		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,s,iters);
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,s,iters);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m,n,s,iters); // BUG: random entry are not of the chosen bitsize (RandIter are wrong)
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,m/4+1,n/4+1,s,iters); 
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m/4+1,n/4+1,s,iters); 
 	} while (loop && ok);
 
 	return !ok ;

@@ -29,7 +29,7 @@
 //--------------------------------------------------------------------------
 //          Test for the computations of rank profiles
 //--------------------------------------------------------------------------
-#define FFLASFFPACK_COMPILED
+#define  __FFLASFFPACK_SEQUENTIAL
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -206,6 +206,7 @@ int main(int argc, char** argv){
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters); 
 	} while (loop && ok);
 
 	return !ok;

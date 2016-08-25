@@ -37,6 +37,8 @@
 #ifndef __FFLASFFPACK_ffpack_H
 #define __FFLASFFPACK_ffpack_H
 
+#include <fflas-ffpack/fflas-ffpack-config.h>
+
 #ifdef __FFLASFFPACK_USE_OPENMP
 #include <omp.h>
 #endif
@@ -151,11 +153,9 @@ namespace FFPACK { /* Permutations */
 	void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
 
 
-	/** Apply a permutation submatrix of P (between ibeg and iend) to a matrix
-	 * to (iend-ibeg) vectors of size M stored in A (as column for NoTrans
-	 * and rows for Trans).
-	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column
-	 * permutation
+	/** Apply a permutation P, stored in the LAPACK format (a sequence of transpositions) 
+	 * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
+	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
 	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
 	 * @param F
 	 * @param Side
@@ -175,11 +175,57 @@ namespace FFPACK { /* Permutations */
 		const FFLAS::FFLAS_TRANSPOSE Trans,
 		const size_t M, const size_t ibeg, const size_t iend,
 		typename Field::Element_ptr A, const size_t lda, const size_t * P );
+	
+	
+	/** Apply a R-monotonically increasing permutation P, to the matrix A.
+	 * The permutation represented by P is defined as follows:
+	 *  - the first R values of P is a LAPACK reprensentation (a sequence of transpositions)
+	 *  - the remaining iend-ibeg-R values of the permutation are in a monotonically increasing progression
+	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
+	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
+	 * @param F
+	 * @param Side
+	 * @param Trans
+	 * @param M
+	 * @param ibeg
+	 * @param iend
+	 * @param A
+	 * @param lda
+	 * @param P
+	 * @param R
+	 */
+	template<class Field>
+	void
+	MonotonicApplyP (const Field& F,
+					 const FFLAS::FFLAS_SIDE Side,
+					 const FFLAS::FFLAS_TRANSPOSE Trans,
+					 const size_t M, const size_t ibeg, const size_t iend,
+					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
+	template<class Field>
+	void
+	MonotonicCompress (const Field& F,
+					   const FFLAS::FFLAS_SIDE Side,
+					   const size_t M,
+					   typename Field::Element_ptr A, const size_t lda, const size_t incA, const size_t * P,
+					   const size_t R, const size_t maxpiv, const size_t rowstomove,
+					   const std::vector<bool> &ispiv);
+	template<class Field>
+	void
+	MonotonicCompressMorePivots (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+								 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+								 const size_t * MathP, const size_t R, const size_t rowstomove, const size_t lenP);
+	template<class Field>
+	void
+	MonotonicCompressCycles (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+							 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+							 const size_t * MathP, const size_t lenP);
 
-
-
-//#ifdef __FFLASFFPACK_USE_OPENMP
-
+	template<class Field>
+	void
+	MonotonicExpand (const Field& F, const FFLAS::FFLAS_SIDE Side, const size_t M,
+					 typename Field::Element_ptr A, const size_t lda, const size_t incA,
+					 const size_t * MathP, const size_t R, const size_t maxpiv,
+					 const size_t rowstomove, const std::vector<bool> &ispiv);
 
 	//! Parallel applyP with OPENMP tasks
 	template<class Field>
@@ -1420,12 +1466,21 @@ namespace FFPACK { /* not used */
 } // FFPACK
 // include precompiled instantiation headers (avoiding to recompile them)
 #ifdef FFPACK_COMPILED 
-#include "interfaces/libs/ffpack_inst.h"
+#include "fflas-ffpack/interfaces/libs/ffpack_inst.h"
 #endif
+
+//---------------------------------------------------------------------
+// Checkers
+#include "fflas-ffpack/checkers/checkers_ffpack.h"
+//---------------------------------------------------------------------
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
 #include "ffpack_ftrtr.inl"
+//---------------------------------------------------------------------
+// Checkers
+#include "fflas-ffpack/checkers/checkers_ffpack.inl"
+//---------------------------------------------------------------------
 #include "ffpack_pluq.inl"
 #include "ffpack_pluq_mp.inl"
 #include "ffpack_ppluq.inl"
@@ -1444,5 +1499,6 @@ namespace FFPACK { /* not used */
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
 #include "ffpack.inl"
+
 #endif // __FFLASFFPACK_ffpack_H
 

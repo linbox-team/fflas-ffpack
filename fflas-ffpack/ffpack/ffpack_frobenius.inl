@@ -100,7 +100,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 
 	// Picking a random noc x N block vector U^T
 	typename Field::RandIter g (F);
-        Givaro::GeneralRingNonZeroRandIter<Field> nzg (F,g);
+    Givaro::GeneralRingNonZeroRandIter<Field> nzg (g);
 	for (size_t i = 0; i < noc; ++i)
  		for (size_t j = 0; j < N; ++j)
  			g.random( *(K + i*ldk +j) );

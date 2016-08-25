@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /* Copyright (c) FFLAS-FFPACK
@@ -39,20 +39,34 @@ int main(int argc, char** argv) {
   
 	size_t iter = 1;
 	int    q    = 131071;
-	int    n    = 2000;
+	size_t    n    = 2000;
 	std::string file = "";
-  
+  	static int variant =0;
+
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		{ 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
+
 		END_OF_ARGUMENTS
 	};
 
   FFLAS::parseArguments(argc,argv,as);
 //  typedef Givaro::ZRing<Givaro::Integer> Field;
-  typedef Givaro::ModularBalanced<double> Field;
+  FFPACK::FFPACK_CHARPOLY_TAG CT;
+  switch (variant){
+      case 0: CT = FFPACK::FfpackLUK; break;
+      case 1: CT = FFPACK::FfpackKG; break;
+      case 2: CT = FFPACK::FfpackDanilevski; break;
+      case 3: CT = FFPACK::FfpackKGFast; break;
+      case 4: CT = FFPACK::FfpackKGFastG; break;
+      case 5: CT = FFPACK::FfpackHybrid; break;
+      case 6: CT = FFPACK::FfpackArithProg; break;
+      default: CT = FFPACK::FfpackLUK; break;
+  }
+  typedef Givaro::Modular<Givaro::Integer> Field;
   typedef Field::Element Element;
 
   Field F(q);
@@ -77,21 +91,21 @@ int main(int argc, char** argv) {
     std::vector<Field::Element> cpol(n);
     chrono.clear();
     chrono.start();
-    FFPACK::CharPoly (F, cpol, n, A, n);
+    FFPACK::CharPoly (F, cpol, n, A, n, CT);
     chrono.stop();
 
     time+=chrono.usertime();
    
-//    bs = FFPACK::bitsize (n,n,A,n);
-   FFLAS::fflas_delete( A);
+    bs = FFPACK::bitsize (n,n,A,n);
+    FFLAS::fflas_delete( A);
 
   }
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
   std::cerr << "n: "<<n<<" bitsize: "<<bs<<" Time: " << time / double(iter)
-		  << " Gflops: " << "irrelevant";
-	FFLAS::writeCommandString(std::cerr, as) << std::endl;
+	    << " Gflops: " << "Irrelevant";
+  FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   return 0;
 }

@@ -31,18 +31,33 @@
 //      Test suite for the Gaussian elimination routines: LUdivine and PLUQ
 //-------------------------------------------------------------------------
 
+// #define MONOTONIC_CYLCES
+// #define MONOTONIC_MOREPIVOTS
+// #define MONOTONIC_FEWPIVOTS
+#ifdef MONOTONIC_CYLCES
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_MOREPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
+#ifdef MONOTONIC_FEWPIVOTS
+  #define MONOTONIC_APPLYP
+#endif
 
-// #define FFLAS_COMPILED
-// #define FFPACK_COMPILED
+#define BASECASE_K 37 // Forcing a lower base case to be able to test a few recursive steps with smallish dimensions
 
+
+#define  __FFLASFFPACK_SEQUENTIAL
 #define __LUDIVINE_CUTOFF 1
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-balanced.h>
 #include <iostream>
 #include <iomanip>
-
+Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
+size_t mvcnt = 0;
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "test-utils.h"
 
@@ -50,7 +65,6 @@
 
 using namespace std;
 using namespace FFPACK;
-
 
 /*! Tests the LUdivine routine.
  * @tparam Field Field
@@ -249,7 +263,6 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 				size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
-	FFLAS::ParSeqHelper::Parallel H;
 
 	typename Field::Element_ptr X = FFLAS::fflas_new (F, m, n);
 	typename Field::Element_ptr L = FFLAS::fflas_new (F, m, R);
@@ -260,41 +273,32 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	typename Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
+	// write_field(F,std::cerr<<"PLUQ = "<<std::endl,PLUQ,m,n,ldpluq);
 	FFPACK::getTriangular(F, FFLAS::FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
 	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
+	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
+	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
+	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
+
+	// write_perm(std::cerr<<"P = ",P,m);
+	// write_perm(std::cerr<<"Q = ",Q,n);
+	// write_field(F,std::cerr<<"L = "<<std::endl,L,m,R,R);
+	// write_field(F,std::cerr<<"U = "<<std::endl,U,R,n,n);
 	
-	PAR_BLOCK{
-		SYNCH_GROUP(MAX_THREADS,
-		
-						//#pragma omp task shared(F, P, L)
-					TASK(MODE(CONSTREFERENCE(F,P,L)),
-						 FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
-						//#pragma omp task shared(F, Q, U)
-					TASK(MODE(CONSTREFERENCE(F,Q,U)),
-						 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
-					WAIT;
-						//#pragma omp taskwait
-					const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-					const FFLAS::StrategyParameter strat = FFLAS::THREE_D;
-					typename FFLAS::ParSeqHelper::Parallel pWH (MAX_THREADS, meth, strat);
-						//#pragma omp task shared(F, L, U, X)
-					TASK(MODE(CONSTREFERENCE(F,U,L,X)),
-						 FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
-									   F.one, L,R, U,n, F.zero, X,n, pWH););
-					);
-	}
+
 	bool fail = false;
-		//  PAR_FOR (size_t i=0; i<m; ++i)
 	for(size_t i=0; i<m; ++i)
 		for (size_t j=0; j<n; ++j)
 			if (!F.areEqual (*(A+i*lda+j), *(X+i*n+j))){
 				std::cerr << std::endl<<" A ["<<i<<","<<j<<"] = " << (*(A+i*lda+j))
-						  << " PLUQ ["<<i<<","<<j<<"] = " << (*(X+i*n+j))
-						  << std::endl;
+						  << " PLUQ ["<<i<<","<<j<<"] = " << (*(X+i*n+j));
 				fail=true;
 			}
 		//write_field(F, std::cerr<<"X = "<<std::endl,X, m,n,n);
+	if (fail)
+		std::cerr << std::endl;
+
 	FFLAS::fflas_delete( U);
 	FFLAS::fflas_delete( L);
 	FFLAS::fflas_delete( X);
@@ -325,9 +329,17 @@ bool test_pluq (const Field & F,
 	size_t * P = FFLAS::fflas_new<size_t> (m);
 	size_t * Q = FFLAS::fflas_new<size_t> (n);
 	
-		//write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
+	// write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
+    typename Field::RandIter G(F);
+    FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,A,n);
+
 	size_t R = FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
-		//write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
+	// write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
+    try {
+        checker.check(A,n,R,P,Q);
+    } catch(FailurePLUQCheck &e) {
+        std::cout << m << 'x' << n << " pluq verification failed!\n";
+    }
 
 	if (R != r) {
 		std::cout << "rank is wrong (expected " << r << " but got " << R << ")" << std::endl;
@@ -824,6 +836,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
 		if (fail) std::cout << "failed at big lda" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -834,6 +847,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -844,6 +858,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -856,6 +871,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at square" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -868,6 +884,7 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at wide" << std::endl;
 		FFLAS::fflas_delete( A );
@@ -880,11 +897,11 @@ bool launch_test(const Field & F,
 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		FFLAS::fflas_delete( A );
 	}
-
 	return !fail;
 }
 
@@ -1022,7 +1039,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>    (*F,r,m,n);
 		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>      (*F,r,m,n);
 		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans> (*F,r,m,n);
-		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>   (*F,r,m,n);		
+		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>   (*F,r,m,n);
 
 #if 0 /*  may be bogus */
 		ok&= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>   (*F,r,m,n);
@@ -1047,10 +1064,10 @@ int main(int argc, char** argv)
 	cerr<<setprecision(20);
 	static Givaro::Integer q=-1;
 	static size_t b=0;
-	static size_t m=160;
-	static size_t n=160;
-	static size_t r=100;
-	static size_t iters=2;
+	static size_t m=120;
+	static size_t n=120;
+	static size_t r=70;
+	static size_t iters=3;
 	static bool loop=false;
 	static Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
@@ -1078,7 +1095,8 @@ int main(int argc, char** argv)
 		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters);
 		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/4,n/4,r/4,iters);		
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);
 	} while (loop && ok);
 
 	return !ok;

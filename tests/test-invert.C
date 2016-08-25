@@ -1,9 +1,9 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
- * Copyright (C) FFLAS-FFPACK
- * Written by Clément Pernet
+ * Copyright (C) the FFLAS-FFPACK group
+ * Written by Clément Pernet <clement.pernet@imag.fr>
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -26,95 +26,110 @@
  *.
  */
 
+#define ENABLE_ALL_CHECKINGS 1
 
-//--------------------------------------------------------------------------
-//                        Test for invert : 1 computation
-//
-//--------------------------------------------------------------------------
-// Clement Pernet
-//-------------------------------------------------------------------------
+#define  __FFLASFFPACK_SEQUENTIAL
 
-//#define DEBUG 1
-#define TIME 1
-using namespace std;
+#include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
+
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/args-parser.h"
+#include "test-utils.h"
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
 
 
+using namespace std;
+using namespace FFLAS;
 using namespace FFPACK;
-typedef ModularBalanced<float> Field;
+using Givaro::Modular;
+using Givaro::ModularBalanced;
 
-int main(int argc, char** argv){
+template <class Field>
+bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters){
+	bool ok = true ;
+	int nbit=(int)iters;
+	while (ok && nbit){
+		Field* F= chooseField<Field>(q,b);
+		if (F==nullptr)
+			return true;
 
-	int n;
-	int nbit=atoi(argv[3]); // number of times the product is performed
-	cerr<<setprecision(10);
+		cout<<"Checking with ";F->write(cout)<<endl;
 
-	if (argc != 4)	{
-		cerr<<"Usage : test-invert <p> <A> <<i>"
-		    <<endl
-		    <<"         to invert A mod p (i computations)"
-		    <<endl;
-		exit(-1);
-	}
-	Field F(atof(argv[1]));
-	Field::Element * A;
-	A = read_field(F,argv[2],&n,&n);
+		size_t lda = n + (rand() % 4);
+		size_t ldx = n + (rand() % 4);
 
- FFLAS::Timer tim,t; t.clear();tim.clear();
-	int nullity=0;
+		typename Field::Element_ptr A = fflas_new(*F, n, lda);
+		typename Field::Element_ptr X = fflas_new(*F, n, ldx);
 
-	for(int i = 0;i<nbit;++i){
-		t.clear();
-		t.start();
-		FFPACK::Invert (F, n, A, n, nullity);
-		t.stop();
-		tim+=t;
-	}
+		RandomMatrixWithRank (*F, A, lda, n, n, n);
 
-#if DEBUG
-	Field::Element *Ab = read_field(F,argv[2],&n,&n);
-	Field::Element *I = FFLAS::fflas_new<Field::Element>(n*n);
-	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, n, n, n,
-		      1.0, Ab, n, A, n, 0.0, I, n);
-	bool wrong = false;
+		int nullity;
+		FFPACK::Invert(*F, n, A, lda, X, ldx, nullity);
 
-	for (int i=0;i<n;++i)
-		for (int j=0;j<n;++j)
-			if ( ((i!=j) && !F.isZero(*(I+i*n+j)))
-			     ||((i==j) &&!F.isOne(*(I+i*n+j))))
-				wrong = true;
-
-	if ( wrong ){
-		if (nullity > 0)
-			cerr<<"Matrix is singular over Z/"<<argv[1]<<"Z"<<endl;
-		else{
-			cerr<<"FAIL"<<endl;
-			write_field (F,cerr<<"A="<<endl,Ab,n,n,n);
-			write_field (F,cerr<<"A^-1="<<endl,A,n,n,n);
-			write_field (F,cerr<<"I="<<endl,I,n,n,n);
+		if (nullity != 0){
+			std::cerr<<"Error: Singular matrix detected"<<std::endl;
+			fflas_delete(A);
+			fflas_delete(X);
+			return ok = false;
 		}
-	} else {
-		cerr<<"PASS"<<endl;
+
+		typename Field::Element_ptr Y = fflas_new(*F, n, n);
+		fidentity(*F, n, n, Y, n);
+
+		fgemm(*F, FflasNoTrans, FflasNoTrans, n,n,n, F->one, A, lda, X, ldx, F->mOne, Y, n);
+
+		if (! fiszero(*F,n,n,Y,n)){
+			write_field(*F, std::cerr<<"Y = "<<std::endl,Y,n,n,n);
+			std::cerr<<"Error: A * A^{-1} != Id"<<std::endl;
+			fflas_delete(A);
+			fflas_delete(X);
+			fflas_delete(Y);
+			return ok = false;
+		}
+
+		nbit--;
+		fflas_delete(A);
+		fflas_delete(X);
+		fflas_delete(Y);
 	}
-	FFLAS::fflas_delete( I);
-	FFLAS::fflas_delete( Ab);
+	return ok;
+}
 
-#endif
-	FFLAS::fflas_delete( A);
+int main(int argc, char** argv)
+{
+	cerr<<setprecision(10);
+	static Givaro::Integer q=-1;
+	static size_t b=0;
+	static size_t n=300;
+	static size_t iters=3;
+	static bool loop=false;
+	static Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
+		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
+		{ 'n', "-n N", "Set the dimension of the square matrix.", TYPE_INT , &n },
+		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+		END_OF_ARGUMENTS
+        };
 
-#if TIME
-	double mflops = 2*(n*n/1000000.0)*nbit*n/tim.usertime();
-	cerr<<"n = "<<n<<" Inversion over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tim.usertime()/nbit
-	     << " s, Mffops = "<<mflops
-	     << endl;
+	FFLAS::parseArguments(argc,argv,as);
 
-	cout<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
-#endif
+	bool ok = true;
+	do{
+		ok &= run_with_field<Modular<double> >(q,b,n,iters);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,n,iters);
+		ok &= run_with_field<Modular<float> >(q,b,n,iters);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters);
+		ok &= run_with_field<Modular<int32_t> >(q,b,n,iters);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters);
+		ok &= run_with_field<Modular<int64_t> >(q,b,n,iters);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters); 
+	} while (loop && ok);
+
+	return !ok ;
 }

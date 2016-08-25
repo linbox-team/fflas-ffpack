@@ -1,0 +1,28 @@
+SIZES=6 6 7 8 9 10 11 12 13
+BITS=30 60 120 240 480 960 1920 3840 7680
+MATR=1000
+
+SHELL := /bin/bash 
+index = $(words $(shell a="$(2)";echo $${a/$(1)*/$(1)} ))
+swap  = $(word $(call index,$(1),${SIZES}),${BITS})
+
+OUTP=output.fgemv
+MODEL=$(shell cat /proc/cpuinfo | grep "model name" | head -1|cut -d':' -f2| tr -s ' '|sed 's/^ //')
+
+EXEC=benchmark-fgemv-mp
+WSRC=${EXEC:%=-W %.C}
+
+mkruns = make "OPTFLAGS=-Ofast -DSTD_RECINT_SIZE=$(1) -DBENCH_RECINT" ${EXEC} ${WSRC}; ${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2 |awk '{print "SIZE:",$(1),$$0}' >> ${OUTP}; make "OPTFLAGS=-Ofast -DINTEGER_NO_RNS" ${EXEC} ${WSRC}; echo "NORNS"`${EXEC} -b $(call swap,$(1)) -m ${MATR} -k ${MATR} -i 2`|awk '{print "SIZE:",$(1),$$0}' >> ${OUTP}; 
+
+
+all: run split
+
+run:
+	- rm ${OUTP}
+	$(foreach siz, ${SIZES}, $(call mkruns,${siz}))
+
+split:
+	fgrep RecInt ${OUTP} | sed 's/4rintILm/ /;s/EEE/ /'> ${OUTP}.rint
+	fgrep Givaro ${OUTP} | fgrep NORNS > ${OUTP}.gmp
+	fgrep Givaro ${OUTP} | fgrep -v NORNS > ${OUTP}.rns
+	

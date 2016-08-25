@@ -34,24 +34,12 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_configuration_H
 #define __FFLASFFPACK_fflas_ffpack_configuration_H
 
-#include "fflas-ffpack/config.h"
-#ifdef __FFLASFFPACK_USE_OPENMP
-#  ifndef __GIVARO_USE_OPENMP
-#    define __GIVARO_USE_OPENMP 1
-#  endif
-#endif
-
-#include "fflas-ffpack/fflas-ffpack-optimise.h"
-
-#if defined(__FFLASFFPACK_USE_SSE) or defined(__FFLASFFPACK_USE_AVX) or defined(__FFLASFFPACK_USE_AVX2)
-#define __FFLASFFPACK_USE_SIMD // see configure...
-#endif
-
 #ifndef GCC_VERSION
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
 #ifdef __CYGWIN__
+# ifndef _GLIBCXX_USE_C99
 #  define _GLIBCXX_USE_C99 true
 #  ifndef _GLIBCXX_USE_C99_MATH_TR1
 #    include <cstdlib>
@@ -91,7 +79,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #    define _GLIBCXX_USE_C99 true
 #    include <cstdlib>
 #  endif
+# endif
 #endif
+
+#include "fflas-ffpack/config.h"
+#ifdef __FFLASFFPACK_USE_OPENMP
+#  ifndef __GIVARO_USE_OPENMP
+#    define __GIVARO_USE_OPENMP 1
+#  endif
+#endif
+
+#include "fflas-ffpack/fflas-ffpack-optimise.h"
 
 // winograd algorithm threshold (for double)
 #ifndef __FFLASFFPACK_WINOTHRESHOLD
@@ -118,14 +116,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#ifdef __x86_64__
-#if defined(__GNUC__) || defined (__clang__) /* who supports __int128_t ? */
-#define int128_t __int128_t
-#define uint128_t unsigned __int128_t
-#else /* hopefully this exists */
-#define int128_t __int128
-#define uint128_t unsigned __int128
-#endif /* __int128_t */
-#endif /* __x86_64__ */
+#include "givaro/givconfig.h"
+
+#ifdef __GIVARO_HAVE_INT128
+#define __FFLASFFPACK_HAVE_INT128
+#endif
 
 #endif // __FFLASFFPACK_fflas_ffpack_configuration_H

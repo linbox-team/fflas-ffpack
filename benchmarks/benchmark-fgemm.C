@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 //#include "goto-def.h"
 
 /* Copyright (c) FFLAS-FFPACK
@@ -28,12 +28,15 @@
 //#define __FFLASFFPACK_USE_OPENMP 
 //#define __FFLASFFPACK_USE_DATAFLOW
 //#define WINO_PARALLEL_TMPS
-
+//#define __FFLASFFPACK_FORCE_SEQ
 //#define PFGEMM_WINO_SEQ 32
 //#define CLASSIC_SEQ
+#define CLASSIC_HYBRID
 //#define WINO_SEQ
 //#define DEBUG 1
 //#undef NDEBUG
+//#define FFT_PROFILER
+//#define PROFILE_FGEMM_MP
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular-balanced.h>
@@ -44,72 +47,29 @@
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "tests/test-utils.h"
-
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include "libkomp.h"
 #endif
 
 
 using namespace std;
+using namespace FFLAS;
 
-//#ifdef __FFLASFFPACK_USE_DATAFLOW
-template<class Element>
-void Initialize(Element * C, size_t BS, size_t m, size_t n)
-{
-//#pragma omp parallel for collapse(2) schedule(runtime) 
-	BS=std::max(BS, (size_t)__FFLASFFPACK_WINOTHRESHOLD_BAL );
-	PAR_BLOCK{
-	for(size_t p=0; p<m; p+=BS) ///row
-		for(size_t pp=0; pp<n; pp+=BS) //column
-		{
-			size_t M=BS, MM=BS;
-			if(!(p+BS<m))
-				M=m-p;
-			if(!(pp+BS<n))
-				MM=n-pp;
-//#pragma omp task 
-			TASK(MODE(),
-			{
-			for(size_t j=0; j<M; j++)
-				for(size_t jj=0; jj<MM; jj++)
-					C[(p+j)*n+pp+jj]=0;
-			});
-		}
-//	#pragma omp taskwait
-	CHECK_DEPENDENCIES
-	}
-	// printf("A = \n");
-	// for (size_t i=0; i<m; i+=128)
-	//  {
-	//  	for (size_t j=0; j<n; j+=128)
-	//  	{
-	//  		int ld = komp_get_locality_domain_num_for( &C[i*n+j] );
-	//  		printf("%i ", ld);
-	//  	}
-	//  	printf("\n");
-	//  }
 
-}
-// #else
-// template<class Element>
-// void Initialize(Element * C, size_t BS, size_t m, size_t n)
-// {}
-// #endif
 int main(int argc, char** argv) {
 
 	size_t iter = 3 ;
-	int64_t q = 131071 ;
+	Givaro::Integer q = 131071 ;
 	size_t m = 2000 ;
 	size_t k = 2000 ;
 	size_t n = 2000 ;
 	int nbw = -1 ;
-	int p=3;
+	int p=0;
 	int t=MAX_THREADS;
 	int NBK = -1;
 
 	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
 		{ 'k', "-k K", "Set the col dimension of A.",      TYPE_INT , &k },
 		{ 'n', "-n N", "Set the col dimension of B.",      TYPE_INT , &n },
@@ -121,50 +81,38 @@ int main(int argc, char** argv) {
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	if (NBK==-1) NBK = t;
-  typedef Givaro::ModularBalanced<double> Field;
-//  typedef Givaro::ModularBalanced<int64_t> Field;
-//  typedef Givaro::ModularBalanced<float> Field;
-  typedef Field::Element Element;
+//  typedef Givaro::Modular<Givaro::Integer> Field;
+//  typedef Givaro::ModularBalanced<int32_t> Field;
+//	typedef Givaro::ModularBalanced<float> Field;
+	typedef Givaro::ModularBalanced<double> Field;
+//	typedef Givaro::Modular<Givaro::Integer> Field;
+	typedef Field::Element Element;
 
   Field F(q);
 
-  FFLAS::Timer chrono, freivalds;
+  Timer chrono, TimFreivalds;
   double time=0.0, timev=0.0;
 
   Element * A, * B, * C;
 
-  Field::RandIter G(F); 
-  A = FFLAS::fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
+  Field::RandIter G(F);
+  A = fflas_new(F,m,k,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  if (p)
-	  Initialize(A,m/size_t(NBK),m,k);
+  PAR_BLOCK { pfrand(F,G, m,k,A,m/size_t(NBK)); }	
+  
+  B = fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
+//#pragma omp parallel for collapse(2) schedule(runtime) 
+  PAR_BLOCK { pfrand(F,G, k,n,B,k/NBK); }	
 
-  FFLAS::ParSeqHelper::Parallel H;
-  size_t i;
-//#pragma omp for
-  PARFOR1D (i,0, m,H,
-	    for (size_t j=0; j<(size_t)k; ++j)
-		    G.random (*(A+i*k+j));
-	    );
-  
-  B = FFLAS::fflas_new(F,k,n,Alignment::CACHE_PAGESIZE);
+  C = fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
 //#pragma omp parallel for collapse(2) schedule(runtime) 
-  if (p)
-	  Initialize(B,k/NBK,k,n);
-//#pragma omp parallel for
-  PARFOR1D (i, 0, k,H,
-            for (size_t j=0; j<(size_t)n; ++j)
-            	G.random(*(B+i*n+j));
-            );
+  PAR_BLOCK { pfzero(F, m,n,C,m/NBK); }
   
-  C = FFLAS::fflas_new(F,m,n,Alignment::CACHE_PAGESIZE);
-//#pragma omp parallel for collapse(2) schedule(runtime) 
-  if (p)
-	  Initialize(C,m/NBK,m,n);
-  for (i=0;i<=iter;++i){
+
+  for (size_t i=0;i<=iter;++i){
 
 	  // if (argc > 4){
 	  // 	  A = read_field (F, argv[4], &n, &n);
@@ -173,71 +121,123 @@ int main(int argc, char** argv) {
 
       chrono.clear();
       if (p && p!=7){
-          FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
-	      FFLAS::StrategyParameter strat = FFLAS::THREADS;
-	      switch (p){
-		  case 1: meth = FFLAS::BLOCK;break;
-		  case 2: strat = FFLAS::TWO_D;break;
-		  case 3: strat = FFLAS::TWO_D_ADAPT;break;
-		  case 4: strat = FFLAS::THREE_D_INPLACE;break;
-		  case 5: strat = FFLAS::THREE_D;break;
-		  case 6: strat = FFLAS::THREE_D_ADAPT;break;
-		  default: meth = FFLAS::BLOCK;break;
-	      }
-	      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd,
-			      typename FFLAS::ModeTraits<Field>::value,
-			      FFLAS::ParSeqHelper::Parallel> 
-		      WH (F, nbw, FFLAS::ParSeqHelper::Parallel(t, meth, strat));	
-	      if (i) chrono.start();
-	      PAR_BLOCK{
-		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-	      }
-	      if (i) {chrono.stop(); time+=chrono.realtime();}
+	      // CuttingStrategy meth = RECURSIVE;
+	      // StrategyParameter strat = THREADS;
 
-	      
+	      typedef CuttingStrategy::Block block;
+	      typedef CuttingStrategy::Recursive rec;
+	      typedef StrategyParameter::Threads threads;
+	      typedef StrategyParameter::TwoD  twod;
+	      typedef StrategyParameter::TwoDAdaptive  twoda;
+	      typedef StrategyParameter::ThreeD  threed;
+	      typedef StrategyParameter::ThreeDAdaptive  threeda;
+	      typedef StrategyParameter::ThreeDInPlace  threedip;
+	      PAR_BLOCK{
+              if (i) { chrono.start(); }
+              
+	      switch (p){
+		  case 1:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;}
+		  case 2:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twod> > WH(F,nbw, SPLITTER(t,rec,twod));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 3:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,twoda> > WH(F,nbw, SPLITTER(t,rec,twoda));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 4:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threedip> > WH(F,nbw, SPLITTER(t,rec,threedip));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 5:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threed> > WH(F,nbw, SPLITTER(t,rec,threed));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  case 6:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<rec,threeda> > WH(F,nbw, SPLITTER(t,rec,threeda));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+		  default:{
+			  MMHelper<Field, MMHelperAlgo::Winograd, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<block,threads> > WH(F,nbw, SPLITTER(t,block,threads));
+			  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n, WH);
+			  break;
+		  }
+	      }
+		  }
+	      if (i) {chrono.stop(); time+=chrono.realtime();}
       }else{
 	      if(p==7){
 
-		      FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::WinogradPar>
-			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
-			  //		      cout<<"wino parallel"<<endl;
-		      if (i) chrono.start();
-		      PAR_BLOCK
-		      {
-			      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-		      }
-		      if (i) {chrono.stop(); time+=chrono.realtime();}
+			  int nrec = 0;
+			  int dim = m;
+			  //                      if(dim < 19000)
+			  nrec--;
+			  while(dim >= __FFLASFFPACK_WINOTHRESHOLD*2){
+				  dim=dim/2;
+				  nrec++;
+			  }
+			  nrec=std::max(1,nrec);
+			  //			  std::cout<<" WINO_THREShold"<<__FFLASFFPACK_WINOTHRESHOLD<<" nrec = "<<nrec<<" dim = "<<dim<<std::endl;
+			  if(nbw != -1)
+				  nrec=nbw;
+			  nbw=nrec;
+			  if (i) chrono.start();
+			  PAR_BLOCK
+			  {
+				  MMHelper<Field, MMHelperAlgo::WinogradPar,ModeTraits<Field>::value,ParSeqHelper::Parallel<> >  WH (F, nrec, ParSeqHelper::Parallel<>(t));
+				  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+			  }
+			  if (i) {chrono.stop(); time+=chrono.realtime();}
+			  
+			  
+		      // MMHelper<Field, MMHelperAlgo::WinogradPar>
+		      // 	      WH (F, nbw, ParSeqHelper::Sequential());
+		      // 	  //		      cout<<"wino parallel"<<endl;
+		      // if (i) chrono.start();
+		      // PAR_BLOCK
+		      // {
+		      // 	      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      // }
+		      // if (i) {chrono.stop(); time+=chrono.realtime();}
 	      }
 	      else{
 
-		      FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Winograd>//,
-			      //typename FFLAS::FieldTraits<Field>::value,
-			      //FFLAS::ParSeqHelper::Parallel>
-			      WH (F, nbw, FFLAS::ParSeqHelper::Sequential());
+		      MMHelper<Field,MMHelperAlgo::Winograd>//,
+					  //typename FieldTraits<Field>::value,
+					  //ParSeqHelper::Sequential>
+			      WH (F, nbw, ParSeqHelper::Sequential());
 		      if (i) chrono.start();
-		      FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
+		      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 		      if (i) {chrono.stop(); time+=chrono.realtime();}
 	      }
-      }
+  }
 
-      freivalds.clear();
-      freivalds.start();
+      TimFreivalds.clear();
+      TimFreivalds.start();
       
-      bool pass = FFLAS::freivalds(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
-      freivalds.stop();
-      timev+=freivalds.usertime();
+      bool pass = freivalds(F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, C,n);
+      TimFreivalds.stop();
+      timev+=TimFreivalds.usertime();
       if (!pass) 
 	      std::cout<<"FAILED"<<std::endl;
-  }
-  FFLAS::fflas_delete( A);
-  FFLAS::fflas_delete( B);
-  FFLAS::fflas_delete( C);
+}
+  fflas_delete( A);
+  fflas_delete( B);
+  fflas_delete( C);
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
 	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
-	FFLAS::writeCommandString(std::cout, as) << std::endl;
+	writeCommandString(std::cout, as) << std::endl;
   
 #if DEBUG
         std::cout<<"Freivalds vtime: "<<timev/(double)iter<<std::endl;

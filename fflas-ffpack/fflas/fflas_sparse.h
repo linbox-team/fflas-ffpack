@@ -33,6 +33,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_sparse_H
 #define __FFLASFFPACK_fflas_fflas_sparse_H
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/config.h"
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/paladin/parallel.h"
@@ -81,7 +82,7 @@
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/paladin/parallel.h"
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #endif
 

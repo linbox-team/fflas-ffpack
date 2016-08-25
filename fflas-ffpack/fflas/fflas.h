@@ -64,41 +64,13 @@
 
 /// @brief FFLAS: <b>F</b>inite <b>F</b>ield <b>L</b>inear <b>A</b>lgebra <b>S</b>ubroutines.
 
-#include "fflas_enum.h"
-
-namespace FFLAS{ namespace Protected {
-
-		template <class X, class Y> class AreEqual {
-		public:
-			static const bool value = false;
-		};
-
-		template <class X> class AreEqual<X, X> {
-		public:
-			static const bool value = true;
-		};
-	} // Protected
-} // class FFLAS
 #include <algorithm>
 
-namespace FFLAS {
-
-template <class T> const T &min3(const T &m, const T &n, const T &k) { return std::min(m, std::min(n, k)); }
-
-template <class T> const T &max3(const T &m, const T &n, const T &k) { return std::max(m, std::min(n, k)); }
-
-template <class T> const T &min4(const T &m, const T &n, const T &k, const T &l) {
-    return std::min(std::min(m, n), std::min(k, l));
-}
-
-template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l) {
-    return std::max(std::max(m, n), std::max(k, l));
-}
-
-} // FFLAS
-
+#include "fflas_enum.h"
 
 #include "fflas-ffpack/utils/fflas_memory.h"
+#include "fflas-ffpack/paladin/parallel.h"
+
 //---------------------------------------------------------------------
 // Level 1 routines
 //---------------------------------------------------------------------
@@ -115,10 +87,15 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 #include "fflas_level3.inl"
 
 #ifdef FFLAS_COMPILED 
-#include "interfaces/libs/fflas_L1_inst.h"
-#include "interfaces/libs/fflas_L2_inst.h"
-#include "interfaces/libs/fflas_L3_inst.h"
+#include "fflas-ffpack/interfaces/libs/fflas_L1_inst.h"
+#include "fflas-ffpack/interfaces/libs/fflas_L2_inst.h"
+#include "fflas-ffpack/interfaces/libs/fflas_L3_inst.h"
 #endif
+
+//---------------------------------------------------------------------
+// Checkers
+#include "fflas-ffpack/checkers/checkers_fflas.h"
+//---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
 // specialisations and implementation
@@ -157,10 +134,19 @@ template <class T> const T &max4(const T &m, const T &n, const T &k, const T &l)
 #include "fflas_fgemv_mp.inl"
 #include "fflas-ffpack/field/rns.inl" // real implementation of the multiprecision field
 
+
+
+#include "fflas-ffpack/paladin/fflas_pfinit.h"
+
 //---------------------------------------------------------------------
 // Sparse routines
 //---------------------------------------------------------------------
 
 #include "fflas_sparse.h"
+
+//---------------------------------------------------------------------
+// Checkers
+//---------------------------------------------------------------------
+#include "fflas-ffpack/checkers/checkers_fflas.inl"
 
 #endif // __FFLASFFPACK_fflas_H

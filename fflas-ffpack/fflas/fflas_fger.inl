@@ -65,8 +65,11 @@ namespace FFLAS { namespace Protected {
 		FloatElement* Yf = fflas_new (G,N,1);
 
 		fconvert(F, M, N, Af, N, A, lda);
+		freduce(G, M, N, Af, N);
 		fconvert(F, M, Xf, 1, x, incx);
+		freduce(G, M, Xf, 1);
 		fconvert(F, N, Yf, 1, y, incy);
+		freduce(G, N, Yf, 1);
 
 		fger (G, M, N, alphaf, Xf, 1, Yf, 1, Af, N);
 
@@ -91,6 +94,7 @@ namespace FFLAS{
 	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
 	{
 		if (F.isZero(alpha)) { return ; }
+
 		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER){
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
 		} else if  (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()){

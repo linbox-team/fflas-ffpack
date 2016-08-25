@@ -166,7 +166,7 @@ public:
 
 template <class Field>
 void delayed (const Field& F, const size_t M, const size_t N,
-	      typename Field::Element_ptr A, const size_t lda,
+	      typename Field::ConstElement_ptr A, const size_t lda,
 	      typename Field::Element_ptr B, const size_t ldb)
 {
 	Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trmm))
@@ -181,7 +181,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 
 template <class Field>
 void operator () (const Field& F, const size_t M, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
+		  typename Field::ConstElement_ptr A, const size_t lda,
 		  typename Field::Element_ptr B, const size_t ldb)
 {
 
@@ -225,7 +225,7 @@ public:
 
 template<class Field>
 void operator()	(const Field& F, const size_t M, const size_t N,
-		 typename Field::Element_ptr A, const size_t lda,
+		 typename Field::ConstElement_ptr A, const size_t lda,
 		 typename Field::Element_ptr B, const size_t ldb)
 {
 

@@ -111,5 +111,4 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 }
 
 }
-
 #endif // __FFLASFFPACK_ftrsv_INL

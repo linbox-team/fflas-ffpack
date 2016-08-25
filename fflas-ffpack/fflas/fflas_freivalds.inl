@@ -67,31 +67,48 @@ namespace FFLAS{
         for(size_t j=0; j<n; ++j)
             G.random(v[j]);
     
-//         F.write(std::cerr<< "alpha:", alpha) << std::endl;
-//         write_field(F,std::cerr<<"A:",A,m,k,lda,true) << std::endl;
-//         write_field(F,std::cerr<<"B:",B,k,n,ldb,true) << std::endl;
-//         write_field(F,std::cerr<<"C:",C,m,n,ldc,true) << std::endl;
+// F.write(std::cerr<< "alpha:=", alpha) << ';' << std::endl;
+// F.write(std::cerr<< "moinsun:=", F.mOne) << ';' << std::endl;
+// std::cerr<< "p:=" << F.characteristic() << ';' << std::endl;
+// write_field(F,std::cerr<<"v:=",v,n,1,1,true) << ';' << std::endl;
+// write_field(F,std::cerr<<"A:=",A,m,k,lda,true) << ';' << std::endl;
+// write_field(F,std::cerr<<"B:=",B,k,n,ldb,true) << ';' << std::endl;
+// write_field(F,std::cerr<<"C:=",C,m,n,ldc,true) << ';' << std::endl;
+
+        bool pass=true;
 
             // y <-- 1.\mathrm{op}(B).v
         size_t Bnrows = (tb == FflasNoTrans)? k : n;
         size_t Bncols = (tb == FflasNoTrans)? n : k;
         size_t Anrows = (ta == FflasNoTrans)? m : k;
         size_t Ancols = (ta == FflasNoTrans)? k : m;
+
         FFLAS::fgemv(F, tb, Bnrows, Bncols, F.one, B, ldb, v, 1, F.zero, y, 1);
+// write_field(F,std::cerr<<"y:=",y,k,1,1,true) << ';' << std::endl;
             // x <-- alpha.\mathrm{op}(A).y
             // x <-- alpha.\mathrm{op}(A).\mathrm{op}(B).v
         FFLAS::fgemv(F, ta, Anrows, Ancols, alpha, A, lda, y, 1, F.zero, x, 1);
-            // x <-- -C.v+x =?= 0
-        FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.mOne, C, ldc, v, 1, F.one, x, 1);
+// write_field(F,std::cerr<<"x:=",x,m,1,1,true) << ';' << std::endl;
 
-    
-        bool pass=true;
+//             // x <-- -C.v+x =?= 0
+        FFLAS::fgemv(F, FFLAS::FflasNoTrans,m,n, F.mOne, C, ldc, v, 1, F.one, x, 1);
+// write_field(F,std::cerr<<"t:=",x,m,1,1,true) << ';' << std::endl;
+
         for(size_t j=0; j<m; ++j) 
             pass &= F.isZero (x[j]);
+  
+//             // z <-- C.v
+//         typename Field::Element_ptr z = FFLAS::fflas_new(F,m,1);
+//         FFLAS::fgemv(F, FFLAS::FflasNoTrans, m,n , F.one, C, ldc, v, 1, F.zero, z, 1);
+// //         write_field(F,std::cerr<<"z:=",z,m,1,1,true) << ';' << std::endl;
+    
+//         for(size_t j=0; j<m; ++j) 
+//             pass &= F.areEqual(z[j],x[j]);
         
         FFLAS::fflas_delete(y);
         FFLAS::fflas_delete(v);
         FFLAS::fflas_delete(x);
+//         FFLAS::fflas_delete(z);
         return pass;
     }
  

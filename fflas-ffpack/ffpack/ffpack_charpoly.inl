@@ -32,12 +32,34 @@
 namespace FFPACK {
 
 
+// 	template <class FloatElement, class Field, class Polynomial>
+// 	std::list<typename Polynomial<Element> >&
+// 	CharPoly_convert (const Field& F, std::list<typename Polynomial<Element> >& charp, const size_t N,
+// 		  typename Field::Element_ptr A, const size_t lda,
+// 		  const FFPACK_CHARPOLY_TAG CharpTag)
+// 	{
+// 		Givaro::ModularBalanced<FloatElement> G((FloatElement) F.cardinality());
+// 		FloatElement* Af = FFLAS::fflas_new<FloatElement>(N*N);
+// 		typename std::list< Polynomial<FloatElement> > charp_float;
+// 		fconvert(F, M, N, Af, N, A, lda);
+// //convertir aussi le poly
+// 		CharPoly (G, charp_float, N, Af, N, CharpTag);
+
+// 		finit(F, ma, Yf, 1, Y, incY);
+// 		fflas_delete (Af);
+// 		return charp;
+// 	}	
 	template <class Field, class Polynomial>
 	std::list<Polynomial>&
 	CharPoly (const Field& F, std::list<Polynomial>& charp, const size_t N,
 		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag)
 	{
+		// if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
+		//     Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
+		// 	if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+		// 		return CharPoly_convert <float,Field> (F, charp, N, A, lda, CharpTag);
+		// }
 		switch (CharpTag) {
 		case FfpackLUK:
 			{
@@ -80,10 +102,11 @@ namespace FFPACK {
 			{
 				size_t attempts=0;
 				bool cont = false;
-				FFLAS_INT_TYPE p = F.characteristic();
+				const uint64_t p = static_cast<uint64_t>(F.characteristic());
 				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
-				if ((unsigned long) (p) < N)
+				if (p < static_cast<uint64_t>(N)){
 					return CharPoly (F, charp, N, A, lda, FfpackLUK);
+				}					
 
 				do{
 					try {
@@ -128,7 +151,8 @@ namespace FFPACK {
 		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
 	{
-
+		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
+		
 		std::list<Polynomial> factor_list;
 		CharPoly (F, factor_list, N, A, lda, CharpTag);
 		typename std::list<Polynomial >::const_iterator it;
@@ -143,6 +167,8 @@ namespace FFPACK {
 			P = charp;
 			++it;
 		}
+
+		checker.check(charp);
 
 		return charp;
 	}

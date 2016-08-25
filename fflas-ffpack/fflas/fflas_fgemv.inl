@@ -33,7 +33,7 @@
 
 #include <givaro/zring.h> // DoubleDomain
 
-#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 
@@ -117,30 +117,6 @@ namespace FFLAS {
 	// Computes  Y <- alpha.op(A).X + beta.Y
 	// A is M*N,
 	//---------------------------------------------------------------------
-
-	template<class Field>
-	inline typename Field::Element_ptr
-	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
-	       const size_t M, const size_t N,
-	       const typename Field::Element alpha,
-	       typename Field::ConstElement_ptr A, const size_t lda,
-	       typename Field::ConstElement_ptr X, const size_t incX,
-	       const typename Field::Element beta,
-	       typename Field::Element_ptr Y, const size_t incY)
-	{
-		if (!M) {return Y;}
-		size_t Ydim = (ta == FflasNoTrans)?M:N;
-		size_t Xdim = (ta == FflasNoTrans)?N:M;
-		if (!Xdim || F.isZero (alpha)){
-			fscalin(F, Ydim, beta, Y, incY);
-			return Y;
-		}
-		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
-		return 	fgemv (F, ta, M, N, alpha,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
-			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
-			       beta, Y, incY, HW);
-	}
 
 	template<class Field>
 	inline typename Field::Element_ptr
@@ -235,11 +211,12 @@ namespace FFLAS{
 		}
 		if (ta == FflasNoTrans)
 			for (size_t i = 0; i < Ydim; ++i)
-				F.assign (Y[i*incY], fdot(F, N, A+i*lda, 1, X, incX));
+				F.addin (Y[i*incY], fdot(F, N, A+i*lda, 1, X, incX));
 		else
 			for (size_t i = 0; i < Ydim; ++i)
-				F.assign (Y[i*incY], fdot(F, M, A+i, lda, X, incX));
+				F.addin (Y[i*incY], fdot(F, M, A+i, lda, X, incX));
 		fscalin (F, Ydim, alpha, Y, incY);
+
 		return Y;
 	}
 }
@@ -275,8 +252,8 @@ namespace FFLAS{
 				betadf=betadalpha;
 			}
 		}
-		 if (F.isMOne(betadf)) betadf = -F.one;
-
+        if (F.isMOne(betadf)) betadf = -F.one;
+        
 		size_t kmax = H.MaxDelayedDim (betadf);
 
 		if (kmax <=  Xdim/2 ){
@@ -322,6 +299,7 @@ namespace FFLAS{
 		}
 		MMHelper<typename associatedDelayedField<const Field>::field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> Hfp(H);
 
+
 		fgemv (H.delayedField, ta, M1, N1, alphadf, (DFCElt_ptr)A+nblock*shiftA, lda,
 		       (DFCElt_ptr)X+nblock*k2*incX, incX, betadf, (DFElt_ptr)Y, incY, Hfp);
 
@@ -332,7 +310,7 @@ namespace FFLAS{
 			       (DFCElt_ptr)X+i*k2*incX, incX, F.one, (DFElt_ptr)Y, incY, Hfp);
 		}
 
-                if (!F.isOne(alpha) && !F.isMOne(alpha)){
+        if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
 			if (std::max(-Hfp.Outmin, Hfp.Outmax) > Hfp.MaxStorableValue/al){
@@ -356,6 +334,33 @@ namespace FFLAS{
 }
 
 namespace FFLAS{
+	template<class Field>
+	inline typename Field::Element_ptr
+	fgemv (const Field& F, const FFLAS_TRANSPOSE ta,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr X, const size_t incX,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr Y, const size_t incY)
+	{
+		if (!M) {return Y;}
+		size_t Ydim = (ta == FflasNoTrans)?M:N;
+		size_t Xdim = (ta == FflasNoTrans)?N:M;
+		if (!Xdim || F.isZero (alpha)){
+			fscalin(F, Ydim, beta, Y, incY);
+			return Y;
+		}
+		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
+		return 	fgemv (F, ta, M, N, alpha,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
+			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,
+			       beta, Y, incY, HW);
+	}
+}
+
+
+namespace FFLAS{
 	inline Givaro::ZRing<int64_t>::Element_ptr
 	fgemv (const Givaro::ZRing<int64_t>& F, const FFLAS_TRANSPOSE ta,
 	       const size_t M, const size_t N,
@@ -368,7 +373,7 @@ namespace FFLAS{
 	{
 		FFLASFFPACK_check(lda);
 
-#if defined(__AVX2__) or defined(__AVX__) or defined(__SSE4_1__)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 		if (ta == FflasNoTrans)
 			igemm_ (FflasRowMajor, ta, FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY);
 		else
@@ -425,6 +430,7 @@ namespace FFLAS{
 	{
                 H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hb(F,0);
+
 		return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);
 	}
 

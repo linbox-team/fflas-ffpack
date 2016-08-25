@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_freduce.inl
  * Copyright (C) 2014 FFLAS FFPACK group
@@ -39,7 +39,7 @@ namespace FFLAS {
 	template<class T>
 	struct support_simd_mod  : public std::false_type {} ;
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	template<>
 	struct support_simd_mod<float> : public std::true_type {} ;
 	template<>
@@ -49,7 +49,7 @@ namespace FFLAS {
 	struct support_simd_mod<int64_t> : public std::true_type {} ;
 #endif  // SIMD_INT
 
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 } // FFLAS
 
@@ -121,6 +121,21 @@ namespace FFLAS {
 		else
 			for (size_t i = 0 ; i < m ; ++i)
 				freduce (F, n, A+i*lda, 1);
+		return;
+	}
+	template<class Field>
+	void
+	pfreduce (const Field& F, const size_t m , const size_t n,
+		  typename Field::Element_ptr A, const size_t lda, const size_t numths)
+	{
+		SYNCH_GROUP(
+			FORBLOCK1D(iter, m, SPLITTER(numths),
+					   size_t rowsize= iter.end()-iter.begin();
+					   TASK(MODE(CONSTREFERENCE(F) READWRITE(A[iter.begin()*lda])),
+							freduce (F, rowsize, n, A+iter.begin()*lda, lda);
+							);
+					   );
+					);
 		return;
 	}
 

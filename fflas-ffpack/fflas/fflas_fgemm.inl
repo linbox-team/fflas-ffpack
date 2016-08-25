@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_fgemm.inl
  * Copyright (C) 2005 Clement Pernet
@@ -38,207 +38,207 @@
 
 namespace FFLAS { namespace Protected{
 
-	template <typename FloatElement, class Field, class FieldMode>
-	inline typename Field::Element_ptr
-	fgemm_convert (const Field& F,
-		       const FFLAS_TRANSPOSE ta,
-		       const FFLAS_TRANSPOSE tb,
-		       const size_t m, const size_t n, const size_t k,
-		       const typename Field::Element alpha,
-		       typename Field::ConstElement_ptr A,const size_t lda,
-		       typename Field::ConstElement_ptr B,const size_t ldb,
-		       const typename Field::Element beta,
-		       typename Field::Element_ptr C, const size_t ldc,
-		       MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H)
-	{
-		// CP: lda, ldb, ldc can be zero (if m,n or k is 0) and since  this may have not 
-		// been checked by the caller at this point.
-		// FFLASFFPACK_check(lda);
-		// FFLASFFPACK_check(ldb);
-		// FFLASFFPACK_check(ldc);
+		template <typename FloatElement, class Field, class FieldMode>
+		inline typename Field::Element_ptr
+		fgemm_convert (const Field& F,
+					   const FFLAS_TRANSPOSE ta,
+					   const FFLAS_TRANSPOSE tb,
+					   const size_t m, const size_t n, const size_t k,
+					   const typename Field::Element alpha,
+					   typename Field::ConstElement_ptr A,const size_t lda,
+					   typename Field::ConstElement_ptr B,const size_t ldb,
+					   const typename Field::Element beta,
+					   typename Field::Element_ptr C, const size_t ldc,
+					   MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> & H)
+		{
+			// CP: lda, ldb, ldc can be zero (if m,n or k is 0) and since  this may have not 
+			// been checked by the caller at this point.
+			// FFLASFFPACK_check(lda);
+			// FFLASFFPACK_check(ldb);
+			// FFLASFFPACK_check(ldc);
 
-		Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
-		FloatElement tmp,alphaf, betaf;
-		    // This conversion is quite tricky, but convert and init are required
-		    // in sequence e.g. for when F is a ModularBalanced field and alpha == -1
-		F.convert (tmp, beta);
-		G.init(betaf, tmp);
-		F.convert (tmp, alpha);
-		G.init(alphaf, tmp);
+			Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
+			FloatElement tmp,alphaf, betaf;
+			// This conversion is quite tricky, but convert and init are required
+			// in sequence e.g. for when F is a ModularBalanced field and alpha == -1
+			F.convert (tmp, beta);
+			G.init(betaf, tmp);
+			F.convert (tmp, alpha);
+			G.init(alphaf, tmp);
 
-		FloatElement* Af = FFLAS::fflas_new(G, m, k);
-		FloatElement* Bf = FFLAS::fflas_new(G, k, n);
-		FloatElement* Cf = FFLAS::fflas_new(G, m, n);
+			FloatElement* Af = FFLAS::fflas_new(G, m, k);
+			FloatElement* Bf = FFLAS::fflas_new(G, k, n);
+			FloatElement* Cf = FFLAS::fflas_new(G, m, n);
 
-		size_t ma, ka, kb, nb; //mb, na
-		if (ta == FflasTrans) { ma = k; ka = m; }
-		else { ma = m; ka = k; }
-		if (tb == FflasTrans) { kb = n; nb = k; }
-		else {  kb = k; nb = n; }
-		size_t ldaf = ka, ldbf = nb, ldcf= n;
+			size_t ma, ka, kb, nb; //mb, na
+			if (ta == FflasTrans) { ma = k; ka = m; }
+			else { ma = m; ka = k; }
+			if (tb == FflasTrans) { kb = n; nb = k; }
+			else {  kb = k; nb = n; }
+			size_t ldaf = ka, ldbf = nb, ldcf= n;
 
-		fconvert(F, ma, ka, Af, ka, A, lda);
-		freduce(G, ma, ka, Af, ka);
-		fconvert(F, kb, nb, Bf, nb, B, ldb);
-		freduce(G, kb, nb, Bf, nb);
+			fconvert(F, ma, ka, Af, ka, A, lda);
+			freduce(G, ma, ka, Af, ka);
+			fconvert(F, kb, nb, Bf, nb, B, ldb);
+			freduce(G, kb, nb, Bf, nb);
 
-		if (!F.isZero(beta)){
-			fconvert(F, m, n, Cf, n, C, ldc);
-			freduce (G, m, n, Cf, n);
+			if (!F.isZero(beta)){
+				fconvert(F, m, n, Cf, n, C, ldc);
+				freduce (G, m, n, Cf, n);
+			}
+			MMHelper<Givaro::ModularBalanced<FloatElement>, 
+					 MMHelperAlgo::Winograd> 
+				HG(G,H.recLevel, ParSeqHelper::Sequential());
+			fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
+
+			finit (F, m, n, Cf, n, C, ldc);
+
+			fflas_delete (Af);
+			fflas_delete (Bf);
+			fflas_delete (Cf);
+			return C;
 		}
-		MMHelper<Givaro::ModularBalanced<FloatElement>, 
-			 MMHelperAlgo::Winograd> 
-			HG(G,H.recLevel, ParSeqHelper::Sequential());
-		fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
-
-		finit (F, m, n, Cf, n, C, ldc);
-
-		fflas_delete (Af);
-		fflas_delete (Bf);
-		fflas_delete (Cf);
-		return C;
-	}
 	}//Protected
 }//FFLAS
 
 namespace FFLAS{ namespace Protected{
-	template <class Field, class Element, class AlgoT>
-	inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
-					 Element& Op1min, Element& Op1max,
-					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
-	{
-		Outmin = Op1min + Op2min;
-		Outmax = Op1max + Op2max;
-		if (WH.MaxStorableValue - Op1max < Op2max ||
-		    WH.MaxStorableValue + Op1min < -Op2min){
-			// Reducing both Op1 and Op2
-			Op1min = Op2min = WH.FieldMin;
-			Op1max = Op2max = WH.FieldMax;
-			Outmin = 2*WH.FieldMin;
-			Outmax = 2*WH.FieldMax;
-			return true;
-		} else return false;
-	}
+		template <class Field, class Element, class AlgoT, class ParSeqTrait>
+		inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
+										 Element& Op1min, Element& Op1max,
+										 Element& Op2min, Element& Op2max,
+										 MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
+		{
+			Outmin = Op1min + Op2min;
+			Outmax = Op1max + Op2max;
+			if (WH.MaxStorableValue - Op1max < Op2max ||
+				WH.MaxStorableValue + Op1min < -Op2min){
+				// Reducing both Op1 and Op2
+				Op1min = Op2min = WH.FieldMin;
+				Op1max = Op2max = WH.FieldMax;
+				Outmin = 2*WH.FieldMin;
+				Outmax = 2*WH.FieldMax;
+				return true;
+			} else return false;
+		}
 
-	template <class Field, class Element, class AlgoT, class ModeT>
-	inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
-					 Element& Op1min, Element& Op1max,
-					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeT >& WH)
-	{
-		Outmin = WH.FieldMin;
-		Outmax = WH.FieldMax;
-		return false;
-	}
-
-	template <class Field, class Element, class AlgoT>
-	inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
-					 Element& Op1min, Element& Op1max,
-					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
-	{
-		Outmin = Op1min - Op2max;
-		Outmax = Op1max - Op2min;
-		if (WH.MaxStorableValue - Op1max < -Op2min || 
-		    WH.MaxStorableValue - Op2max < -Op1min){
-			// Reducing both Op1 and Op2
-			Op1min = Op2min = WH.FieldMin;
-			Op1max = Op2max = WH.FieldMax;
-			Outmin = WH.FieldMin-WH.FieldMax;
-			Outmax = -Outmin;
-			return true;
-		} else return false;
-	}
-
-	template <class Field, class Element, class AlgoT, class ModeT>
-	inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
-					 Element& Op1min, Element& Op1max,
-					 Element& Op2min, Element& Op2max,
-					 MMHelper<Field, AlgoT, ModeT >& WH)
-	{
-		    // Necessary? -> CP: Yes, for generic Mode of op
-		Outmin = WH.FieldMin;
-		Outmax = WH.FieldMax;
-		return false;
-	}
-
-//Probable bug here due to overflow of int64_t
-	template<class Field, class Element, class AlgoT>
-	inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
-					       Element& Op1min, Element& Op1max,
-					       Element& Op2min, Element& Op2max, Element beta,
-					       MMHelper<Field, AlgoT, ModeCategories::LazyTag >& WH)
-	{
-		// Testing if P5 need to be reduced
-		Outmin =  std::min(beta*Op2min,beta*Op2max);
-		Outmax =  std::max(beta*Op2min,beta*Op2max);
-		if (Op1max > WH.MaxStorableValue-Outmax || 
-		    -Op1min > WH.MaxStorableValue+Outmin){
-			Outmin += WH.FieldMin;
-			Outmax += WH.FieldMax;
-			return true;
-		} else{
-			Outmin += Op1min;
-			Outmax += Op1max;
+		template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
+		inline bool NeedPreAddReduction (Element& Outmin, Element& Outmax,
+										 Element& Op1min, Element& Op1max,
+										 Element& Op2min, Element& Op2max,
+										 MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
+		{
+			Outmin = WH.FieldMin;
+			Outmax = WH.FieldMax;
 			return false;
 		}
-	}
 
-	template<class Field, class Element, class AlgoT, class ModeT>
-	inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
-					       Element& Op1min, Element& Op1max,
-					       Element& Op2min, Element& Op2max, Element beta,
-					       MMHelper<Field, AlgoT, ModeT>& WH)
-	{
-		Outmin = WH.FieldMin;
-		Outmax = WH.FieldMax;
-		return false;
-	}
+		template <class Field, class Element, class AlgoT, class ParSeqTrait>
+		inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
+										 Element& Op1min, Element& Op1max,
+										 Element& Op2min, Element& Op2max,
+										 MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
+		{
+			Outmin = Op1min - Op2max;
+			Outmax = Op1max - Op2min;
+			if (WH.MaxStorableValue - Op1max < -Op2min || 
+				WH.MaxStorableValue - Op2max < -Op1min){
+				// Reducing both Op1 and Op2
+				Op1min = Op2min = WH.FieldMin;
+				Op1max = Op2max = WH.FieldMax;
+				Outmin = WH.FieldMin-WH.FieldMax;
+				Outmax = -Outmin;
+				return true;
+			} else return false;
+		}
 
-	template <class Field, class AlgoT>
-	inline void ScalAndReduce (const Field& F, const size_t N,
-				   const typename Field::Element alpha,
-				   typename Field::Element_ptr X, const size_t incX,
-				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
-	{
-		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
-			F.convert(al, alpha);
-			if (al < 0) al = -al;
-			if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
-				freduce (F, N, X, incX);
-				fscalin (F, N, alpha, X, incX);
-			} else {
-				fscalin (H.delayedField, N, alpha, X, incX);
-				freduce (F, N, X, incX);
+		template <class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
+		inline bool NeedPreSubReduction (Element& Outmin, Element& Outmax,
+										 Element& Op1min, Element& Op1max,
+										 Element& Op2min, Element& Op2max,
+										 MMHelper<Field, AlgoT, ModeT, ParSeqTrait >& WH)
+		{
+			// Necessary? -> CP: Yes, for generic Mode of op
+			Outmin = WH.FieldMin;
+			Outmax = WH.FieldMax;
+			return false;
+		}
+
+		//Probable bug here due to overflow of int64_t
+		template<class Field, class Element, class AlgoT, class ParSeqTrait>
+		inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
+											   Element& Op1min, Element& Op1max,
+											   Element& Op2min, Element& Op2max, Element beta,
+											   MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& WH)
+		{
+			// Testing if P5 need to be reduced
+			Outmin =  std::min(beta*Op2min,beta*Op2max);
+			Outmax =  std::max(beta*Op2min,beta*Op2max);
+			if (Op1max > WH.MaxStorableValue-Outmax || 
+				-Op1min > WH.MaxStorableValue+Outmin){
+				Outmin += WH.FieldMin;
+				Outmax += WH.FieldMax;
+				return true;
+			} else{
+				Outmin += Op1min;
+				Outmax += Op1max;
+				return false;
 			}
-		} else
-			freduce (F, N, X, incX);
-	}
+		}
 
-	template <class Field, class AlgoT>
-	inline void ScalAndReduce (const Field& F, const size_t M, const size_t N,
-				   const typename Field::Element alpha,
-				   typename Field::Element_ptr A, const size_t lda,
-				   const MMHelper<Field, AlgoT, ModeCategories::LazyTag >& H)
-	{
-		if (!F.isOne(alpha) && !F.isMOne(alpha)){
-			typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt al; 
-			F.convert(al, alpha);
-			if (al<0) al = -al;
-			if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
-				freduce (F, M, N, A, lda);
-				fscalin (F, M, N, alpha, A, lda);
-			} else {
-				fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag >::DFElt*)A, lda);
-				freduce (F, M, N, A, lda);
-			}
-		} else
-			freduce (F, M, N, A, lda);
-	}
+		template<class Field, class Element, class AlgoT, class ModeT, class ParSeqTrait>
+		inline bool NeedDoublePreAddReduction (Element& Outmin, Element& Outmax,
+											   Element& Op1min, Element& Op1max,
+											   Element& Op2min, Element& Op2max, Element beta,
+											   MMHelper<Field, AlgoT, ModeT, ParSeqTrait>& WH)
+		{
+			Outmin = WH.FieldMin;
+			Outmax = WH.FieldMax;
+			return false;
+		}
 
-} // Protected
+		template <class Field, class AlgoT, class ParSeqTrait>
+		inline void ScalAndReduce (const Field& F, const size_t N,
+								   const typename Field::Element alpha,
+								   typename Field::Element_ptr X, const size_t incX,
+								   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
+		{
+			if (!F.isOne(alpha) && !F.isMOne(alpha)){
+				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
+				F.convert(al, alpha);
+				if (al < 0) al = -al;
+				if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
+					freduce (F, N, X, incX);
+					fscalin (F, N, alpha, X, incX);
+				} else {
+					fscalin (H.delayedField, N, alpha, X, incX);
+					freduce (F, N, X, incX);
+				}
+			} else
+				freduce (F, N, X, incX);
+		}
+
+		template <class Field, class AlgoT, class ParSeqTrait>
+		inline void ScalAndReduce (const Field& F, const size_t M, const size_t N,
+								   const typename Field::Element alpha,
+								   typename Field::Element_ptr A, const size_t lda,
+								   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
+		{
+			if (!F.isOne(alpha) && !F.isMOne(alpha)){
+				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
+				F.convert(al, alpha);
+				if (al<0) al = -al;
+				if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
+					freduce (F, M, N, A, lda);
+					fscalin (F, M, N, alpha, A, lda);
+				} else {
+					fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
+					freduce (F, M, N, A, lda);
+				}
+			} else
+				freduce (F, M, N, A, lda);
+		}
+
+	} // Protected
 } // FFLAS
 
 namespace FFLAS {
@@ -267,9 +267,9 @@ namespace FFLAS {
 		// 	H.Outmax=HG.Outmax;
 		// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
 			
-		    //	}
+		//	}
 		else {
-			    // Fall back case: used 
+			// Fall back case: used 
 			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");	
 		}
 		return C;
@@ -295,13 +295,11 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       const ParSeqHelper::Sequential seq)
 	{
-		    // The entry point to fgemm.
-		    // Place where the algorithm is chosen. Winograd's alg. is now the default.
-		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
+		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
-	template<typename Field>
+	template<typename Field,class Cut,class Param>
 	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -314,10 +312,10 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       const ParSeqHelper::Parallel par)
+	       const ParSeqHelper::Parallel<Cut,Param> par)
 	{
 
-		MMHelper<Field, MMHelperAlgo::Winograd, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel > HW (F, m, k, n, par);
+		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > HW (F, m, k, n, par);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
@@ -341,9 +339,30 @@ namespace FFLAS {
 			fscalin(F, m, n, beta, C, ldc);
 		 	return C;
 		}
-		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+		Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
+		fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
+		checker.check(ta,tb,alpha,A,lda,B,ldb,C);
+		return C;
 	}
 
+	template<typename Field, class ModeT, class ParSeq>
+	inline typename Field::Element_ptr
+	fgemm( const Field& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc,
+	       MMHelper<Field, MMHelperAlgo::Auto, ModeT, ParSeq> & H)
+	{
+		MMHelper<Field, typename AlgoChooser<ModeT, ParSeq>::value, ModeT, ParSeq> HW (H);
+		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HW);
+	}
 
 	template<class Field>
 	inline typename Field::Element_ptr
@@ -358,7 +377,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc,
-	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag> & H)
+	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> & H)
 	{		
 		if (!m || !n) {return C;}
 
@@ -386,7 +405,7 @@ namespace FFLAS {
 #endif
 		if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
 		    Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
-			    //Givaro::Modular<double> need to switch to float if p too small
+			//Givaro::Modular<double> need to switch to float if p too small
 			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 		}
@@ -427,11 +446,11 @@ namespace FFLAS {
 	template < class Field >
 	inline typename Field::Element_ptr
 	fsquare (const Field& F,
-		 const FFLAS_TRANSPOSE ta,
-		 const size_t n, const typename Field::Element alpha,
-		  typename Field::ConstElement_ptr A, const size_t lda,
-		 const typename Field::Element beta,
-		 typename Field::Element_ptr C, const size_t ldc)
+			 const FFLAS_TRANSPOSE ta,
+			 const size_t n, const typename Field::Element alpha,
+			 typename Field::ConstElement_ptr A, const size_t lda,
+			 const typename Field::Element beta,
+			 typename Field::Element_ptr C, const size_t ldc)
 	{
 
 		double alphad, betad;
@@ -452,9 +471,9 @@ namespace FFLAS {
 		// Call to the blas Multiplication
 		FFLASFFPACK_check(n);
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,
-			     (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
-			     (Givaro::DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
-			     (Givaro::DoubleDomain::Element) betad, Cd, (int)n);
+					 (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
+					 (Givaro::DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,
+					 (Givaro::DoubleDomain::Element) betad, Cd, (int)n);
 		// Conversion double = >  Finite Field
 		fflas_delete (Ad);
 		finit (F,n,n, Cd, n, C, ldc);
@@ -468,11 +487,11 @@ namespace FFLAS {
 		template < class Field >
 		inline typename Field::Element_ptr
 		fsquareCommon (const Field& F,
-			       const FFLAS_TRANSPOSE ta,
-			       const size_t n, const typename Field::Element alpha,
-			       typename Field::ConstElement_ptr A, const size_t lda,
-			       const typename Field::Element beta,
-			       typename Field::Element_ptr C, const size_t ldc)
+					   const FFLAS_TRANSPOSE ta,
+					   const size_t n, const typename Field::Element alpha,
+					   typename Field::ConstElement_ptr A, const size_t lda,
+					   const typename Field::Element beta,
+					   typename Field::Element_ptr C, const size_t ldc)
 		{
 			if (C==A) {
 				typename Field::Element_ptr Ad = fflas_new (F, n, n);
@@ -490,44 +509,44 @@ namespace FFLAS {
 
 	template <>
 	inline double* fsquare (const  Givaro::ModularBalanced<double> & F,
-				const FFLAS_TRANSPOSE ta,
-				const size_t n, const double alpha,
-				const double* A, const size_t lda,
-				const double beta,
-				double* C, const size_t ldc)
+							const FFLAS_TRANSPOSE ta,
+							const size_t n, const double alpha,
+							const double* A, const size_t lda,
+							const double beta,
+							double* C, const size_t ldc)
 	{
 		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 	template <>
 	inline float * fsquare (const  Givaro::ModularBalanced<float> & F,
-				const FFLAS_TRANSPOSE ta,
-				const size_t n, const float alpha,
-				const float* A, const size_t lda,
-				const float beta,
-				float* C, const size_t ldc)
+							const FFLAS_TRANSPOSE ta,
+							const size_t n, const float alpha,
+							const float* A, const size_t lda,
+							const float beta,
+							float* C, const size_t ldc)
 	{
 		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 	template <>
 	inline double* fsquare (const  Givaro::Modular<double> & F,
-				const FFLAS_TRANSPOSE ta,
-				const size_t n, const double alpha,
-				const double* A, const size_t lda,
-				const double beta,
-				double* C, const size_t ldc)
+							const FFLAS_TRANSPOSE ta,
+							const size_t n, const double alpha,
+							const double* A, const size_t lda,
+							const double beta,
+							double* C, const size_t ldc)
 	{
 		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}
 
 	template <>
 	inline float * fsquare (const  Givaro::Modular<float> & F,
-				const FFLAS_TRANSPOSE ta,
-				const size_t n, const float alpha,
-				const float* A, const size_t lda,
-				const float beta,
-				float* C, const size_t ldc)
+							const FFLAS_TRANSPOSE ta,
+							const size_t n, const float alpha,
+							const float* A, const size_t lda,
+							const float beta,
+							float* C, const size_t ldc)
 	{
 		return Protected::fsquareCommon(F,ta,n,alpha,A,lda,beta,C,ldc);
 	}

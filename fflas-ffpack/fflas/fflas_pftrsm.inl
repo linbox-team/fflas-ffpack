@@ -5,7 +5,7 @@
  * Copyright (C) 2013 Ziad Sultan
  *
  * Written by Ziad Sultan  < Ziad.Sultan@imag.fr >
- * Time-stamp: <23 Jul 15 17:10:25 Jean-Guillaume.Dumas@imag.fr>
+ * Time-stamp: <18 Dec 15 16:09:24 Jean-Guillaume.Dumas@imag.fr>
  *
  * ========LICENCE========
  * This file is part of the library FFLAS-FFPACK.
@@ -37,7 +37,7 @@
 
 namespace FFLAS {
 
-	template<class Field>
+	template<class Field, class Cut, class Param>
 	inline typename Field::Element_ptr
 	ftrsm( const Field& F,
 		   const FFLAS::FFLAS_SIDE Side,
@@ -54,28 +54,27 @@ namespace FFLAS {
 #endif
 		   A, const size_t lda,
 		   typename Field::Element_ptr B, const size_t ldb,
-		   TRSMHelper <StructureHelper::Iterative, ParSeqHelper::Parallel> & H)
+		   TRSMHelper <StructureHelper::Iterative, ParSeqHelper::Parallel<Cut,Param> > & H)
 	// const FFLAS::CuttingStrategy method,
 	// const size_t numThreads)
 	{
         typedef TRSMHelper<StructureHelper::Recursive,ParSeqHelper::Sequential> seqRecHelper;
-		SYNCH_GROUP(H.parseq.numthreads(),
-	
+		SYNCH_GROUP(
+					seqRecHelper SeqH(H);
 					if(Side == FflasRight){
-						FOR1D(iter, m, H.parseq,
-							  seqRecHelper SeqH (H);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+						FORBLOCK1D(iter, m, H.parseq,
+								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()*ldb])), ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
 							  );
 					} else {
-						FOR1D(iter, n, H.parseq,
-							  seqRecHelper SeqH (H);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+						FORBLOCK1D(iter, n, H.parseq,
+//							  seqRecHelper SeqH(H);
+								   TASK(MODE(READ(A[0]) CONSTREFERENCE(F, A, B, SeqH,H) READWRITE(B[iter.begin()])), ftrsm(F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
 							  );
 					}
 					);
 		return B;
 	}
-	template<class Field>
+	template<class Field, class Cut, class Param>
 	inline typename Field::Element_ptr
 	ftrsm( const Field& F,
 		   const FFLAS::FFLAS_SIDE Side,
@@ -92,7 +91,7 @@ namespace FFLAS {
 #endif
 		   A, const size_t lda,
 		   typename Field::Element_ptr B, const size_t ldb,
-		   TRSMHelper <StructureHelper::Hybrid, ParSeqHelper::Parallel> & H)
+		   TRSMHelper <StructureHelper::Hybrid, ParSeqHelper::Parallel<Cut, Param> > & H)
 	// const FFLAS::CuttingStrategy method,
 	// const size_t numThreads)
 	{
@@ -108,15 +107,15 @@ namespace FFLAS {
 //			ForStrategy1D<size_t> iter(m, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //			for (iter.begin(); ! iter.end(); ++iter) {
 				//			SYNCH_GROUP(H.parseq.numthreads(),
-			SYNCH_GROUP(H.parseq.numthreads(),
-
-						FOR1D(iter, m, H.parseq,
+			SYNCH_GROUP(
+				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
+				H.parseq.set_numthreads(nt_it);
+				FORBLOCK1D(iter, m, H.parseq,
 //				      std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::RECURSIVE,StrategyParameter::TWO_D_ADAPT);
-							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
-								   ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
-							  );
+						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()*ldb])), 
+								ftrsm( F, Side, UpLo, TA, Diag, iter.end()-iter.begin(), n, alpha, A, lda, B + iter.begin()*ldb, ldb, SeqH));
+						   );
 				   	    );
 				
 		} else {
@@ -124,12 +123,17 @@ namespace FFLAS {
 			size_t nt = H.parseq.numthreads();
 			size_t nt_it=nt;
 			size_t nt_rec=1;
-			while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
-				nt_it>>=1;
-				nt_rec<<=1;
-			}
-			nt_it<<=1;
-			nt_rec>>=1;
+            if (nt_it*PTRSM_HYBRID_THRESHOLD >= n){
+                nt_it>>=1;
+                nt_rec<<=1;
+                while(nt_it*PTRSM_HYBRID_THRESHOLD >= n){
+                    nt_it>>=1;
+                    nt_rec<<=1;
+                }
+                nt_it<<=1;
+                nt_rec>>=1;
+            }
+            
 				// if ((int)n/PTRSM_HYBRID_THRESHOLD < nt){
 				// 	nt_it = std::min(nt,(int)ceil(double(n)/PTRSM_HYBRID_THRESHOLD));
 				// 	nt_rec = ceil(double(nt)/nt_it);
@@ -138,15 +142,18 @@ namespace FFLAS {
 				//	ForStrategy1D<size_t> iter(n, ParSeqHelper::Parallel((size_t)nt_it,H.parseq.method));
 //				for (iter.begin(); ! iter.end(); ++iter) {
 
-			SYNCH_GROUP(H.parseq.numthreads(),
-					    FOR1D(iter, n, H.parseq,
-								  //std::cerr<<"trsm_rec nt = "<<nt_rec<<std::endl;
-							  ParSeqHelper::Parallel psh(nt_rec, CuttingStrategy::RECURSIVE, StrategyParameter::TWO_D_ADAPT);
-							  TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel> SeqH (psh);
-							  TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
-							  );
+
+// 				std::cerr<<"trsm_rec nt_it = "<<nt_it<<std::endl;
+// 				std::cerr<<"trsm_rec nt_rec = "<<nt_rec<<std::endl;
+
+			SYNCH_GROUP(
+				ParSeqHelper::Parallel<Cut,Param> psh(nt_rec);
+				TRSMHelper<StructureHelper::Recursive, ParSeqHelper::Parallel<Cut,Param> > SeqH (psh);
+				H.parseq.set_numthreads(nt_it);
+				FORBLOCK1D(iter, n, H.parseq,
+						   TASK(MODE(READ(A) CONSTREFERENCE(F, A, B, SeqH) READWRITE(B[iter.begin()])), ftrsm( F, Side, UpLo, TA, Diag, m, iter.end()-iter.begin(), alpha, A , lda, B + iter.begin(), ldb, SeqH));
+						   );
 						);
-				
 		}
 		return B;
 	}

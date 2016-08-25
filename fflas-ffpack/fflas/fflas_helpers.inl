@@ -51,66 +51,28 @@ namespace FFLAS{ namespace Protected{
 }//FFLAS
 
 namespace FFLAS {
-
+	
 	namespace Protected{
+		template <class DFE> inline size_t min_types(DFE& k) {return static_cast<size_t>(k);}
+#if __FFLASFFPACK_SIZEOF_LONG == 4
+		template <> inline size_t min_types(double& k) {return static_cast<size_t>(std::min(k,double(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(int64_t& k) {return static_cast<size_t>(std::min(k,int64_t(std::numeric_limits<size_t>::max())));}
+#endif
+		template <> inline size_t min_types(RecInt::rint<6>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<6>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(RecInt::rint<7>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<7>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(RecInt::rint<8>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<8>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(RecInt::rint<9>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<9>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(RecInt::rint<10>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<10>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(Givaro::Integer& k) {return static_cast<size_t>(uint64_t(std::min(k,Givaro::Integer(uint64_t(std::numeric_limits<size_t>::max())))));}
+
 		template <class T>
 		inline bool unfit(T x){return false;}
 		template <>
 		inline bool unfit(int64_t x){return (x>limits<int32_t>::max());}
 		template <size_t K>
 		inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}
-	}
-
-	enum CuttingStrategy {
-        SINGLE			,
-		ROW		,
-		COLUMN	,
-		BLOCK	,
-		RECURSIVE
-	};
-
-	enum StrategyParameter {
-        FIXED		,
-		THREADS		,
-		GRAIN		,
-		TWO_D			,
-		THREE_D_INPLACE	,
-		THREE_D_ADAPT	,
-		TWO_D_ADAPT		,
-		THREE_D
-	};
-
-	/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-	namespace ParSeqHelper {
-		struct Parallel{
-			Parallel(size_t n=MAX_THREADS, CuttingStrategy m=BLOCK, StrategyParameter p=THREADS):_numthreads(n),_method(m),_param(p){}
-
-			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads() << ',' << p.method();
-			}
-			size_t numthreads() const { return _numthreads; }
-            size_t& set_numthreads(size_t n) { return _numthreads=n; }
-			CuttingStrategy method() const { return _method; }            
-			StrategyParameter strategy() const { return _param; }            
-        private:
-			size_t _numthreads;
-			CuttingStrategy _method;
-			StrategyParameter _param;
-            
-		};
-		struct Sequential{
-			Sequential() {}
-			//template<class T>
-			Sequential(Parallel& ) {}
-			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
-				return out << "Sequential";
-			}
-			size_t numthreads() const { return 1; }
-			CuttingStrategy method() const { return SINGLE; }       
-                // numthreads==1 ==> a single block
-			StrategyParameter strategy() const { return THREADS; }            
-		};
+		template <>
+		inline bool unfit(RecInt::rint<6> x){return (x > limits<int32_t>::max());}
 	}
 
 	namespace MMHelperAlgo{
@@ -120,6 +82,11 @@ namespace FFLAS {
 		struct WinogradPar{};
 		struct Bini{};
 	}
+
+	template<class ModeT, class ParSeq>
+	struct AlgoChooser{typedef MMHelperAlgo::Winograd value;};
+	template<class ParSeq>
+	struct AlgoChooser<ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq>{typedef MMHelperAlgo::Classic value;};
 
 	template<class Field,
 		 typename AlgoTrait = MMHelperAlgo::Auto,
@@ -205,6 +172,10 @@ namespace FFLAS {
 
 		size_t MaxDelayedDim(DFElt beta)
 		{
+			if (MaxStorableValue < DFElt(0))
+				//Infinte precision delayed field
+				return std::numeric_limits<size_t>::max();
+
 			DFElt absbeta;
 			delayedField.init(absbeta,beta);
 			if (beta < 0) absbeta = -beta;
@@ -214,7 +185,15 @@ namespace FFLAS {
 				* std::max(static_cast<const DFElt&>(-Cmin), Cmax);
 			DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
 				* std::max(static_cast<const DFElt&>(-Bmin), Bmax);
-			return static_cast<size_t>(((diff < DFElt(0u))||(AB<DFElt(0u)))? DFElt(0u) : diff / AB);
+			if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
+
+
+			DFElt kmax = diff/AB;
+			return FFLAS::Protected::min_types<DFElt>(kmax);
+			// if (kmax > std::numeric_limits<size_t>::max())
+			// 	return std::numeric_limits<size_t>::max();
+			// else
+			// 	return kmax;
 		}
 		bool Aunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Amin),Amax));}
 		bool Bunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Bmin),Bmax));}
@@ -329,14 +308,16 @@ namespace FFLAS {
 		MMHelper(const Field& F, int w,
 			 DFElt _Amin, DFElt _Amax,
 			 DFElt _Bmin, DFElt _Bmax,
-			 DFElt _Cmin, DFElt _Cmax):
+			 DFElt _Cmin, DFElt _Cmax,
+             ParSeqTrait _PS=ParSeqTrait()):
 			recLevel(w), FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
 			Amin(_Amin), Amax(_Amax),
 			Bmin(_Bmin), Bmax(_Bmax),
 			Cmin(_Cmin), Cmax(_Cmax),
 			Outmin(0),Outmax(0),
 			MaxStorableValue(limits<typename DelayedField::Element>::max()),
-			delayedField(F)
+			delayedField(F),
+            parseq(_PS)
 		{
 		}
 
@@ -358,6 +339,21 @@ namespace FFLAS {
 	}; // MMHelper
 
 
+	    // to be used in the future, when Winograd's algorithm will be made generic wrt the ModeTrait
+	// template <class Field, class AlgoT, class ParSeqH>
+	// void copyOutBounds(const MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> &Source,
+	// 		   MMHelper<Field,AlgoT,ModeCategories::DelayedTag, ParSeqH> & Dest){
+	// 	Dest.Outmax = Source.Outmax;
+	// 	Dest.Outmin = Source.Outmin;
+	// }
+	// template <class Field, class AlgoT, class ParSeqH>
+	// void copyOutBounds(const MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> &Source,
+	// 		   MMHelper<Field,AlgoT,ModeCategories::LazyTag, ParSeqH> & Dest){
+	// 	Dest.Outmax = Source.Outmax;
+	// 	Dest.Outmin = Source.Outmin;
+	// }
+	// template <class MMH1, class MMH2>
+	// void copyOutBounds(const MMH1 &Source, MMH2 & Dest){}
 	/*! StructureHelper for ftrsm
 	*/
 	namespace StructureHelper {
@@ -371,7 +367,8 @@ namespace FFLAS {
 	template<typename RecIterTrait = StructureHelper::Recursive, typename ParSeqTrait = ParSeqHelper::Sequential>
 	struct TRSMHelper {
 		ParSeqTrait parseq;
-		TRSMHelper(ParSeqHelper::Parallel _PS):parseq(_PS){}
+		template<class Cut,class Param>
+		TRSMHelper(ParSeqHelper::Parallel<Cut,Param> _PS):parseq(_PS){}
 		TRSMHelper(ParSeqHelper::Sequential _PS):parseq(_PS){}
 		template<typename RIT, typename PST>
 		TRSMHelper(TRSMHelper<RIT,PST>& _TH):parseq(_TH.parseq){}

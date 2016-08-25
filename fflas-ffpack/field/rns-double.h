@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -43,11 +43,11 @@
 #include <givaro/modular-double.h>
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
-
+#include "givaro/modular-extended.h"
+#include <recint/ruint.h>
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/utils/fflas_memory.h"
 #include "fflas-ffpack/utils/align-allocator.h"
-#include "fflas-ffpack/field/modular-extended.h"
 #include "fflas-ffpack/field/rns-double-elt.h"
 
 namespace FFPACK {
@@ -133,9 +133,16 @@ namespace FFPACK {
 			precompute_cst();
 		}
 
+		rns_double(const RNSIntegerMod<rns_double>& basis, bool rnsmod=false, long seed=time(NULL)) {
 
-		void precompute_cst(){
-			_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
+		}
+
+		// can force to reduce integer entries larger than M
+		void precompute_cst(size_t K=0){
+			if (K!=0)
+				_ldm=K;
+			else
+				_ldm = (_M.bitsize()/16) + ((_M.bitsize()%16)?1:0) ;
 			_invbasis.resize(_size);
 			_field_rns.resize(_size);
 			_Mi.resize(_size);
@@ -196,7 +203,8 @@ namespace FFPACK {
 
 		// Arns must be an array of m*n*_size
 		// abs(||A||) <= maxA
-		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda,
+		template<typename T>
+		void init(size_t m, size_t n, double* Arns, size_t rda, const T* A, size_t lda,
 			  const integer& maxA, bool RNS_MAJOR=false) const
 		{
 			init(m,n,Arns,rda,A,lda, maxA.bitsize()/16 + (maxA.bitsize()%16?1:0),RNS_MAJOR);
@@ -209,7 +217,11 @@ namespace FFPACK {
 		
 		// reduce entries of Arns to be less than the rns basis elements
 		void reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR=false) const;
-		
+
+		template<size_t K>
+		void init(size_t m, size_t n, double* Arns, size_t rda, const RecInt::ruint<K>* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
+		template<size_t K>
+		void convert(size_t m, size_t n, integer gamma, RecInt::ruint<K>* A, size_t lda, const double* Arns, size_t rda, integer p=0,bool RNS_MAJOR=false) const;
 
 		
 	}; // end of struct rns_double
@@ -344,7 +356,7 @@ namespace FFPACK {
 		void init(size_t m, double* Arns, const integer* A, size_t lda) const;
 		void convert(size_t m, integer *A, const double *Arns) const;
 		
-#if defined(__FFLASFFPACK_USE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 		
 		template<class SimdT>
 		inline void splitSimd(const SimdT x, SimdT & x_h, SimdT & x_l) const {
@@ -387,7 +399,7 @@ namespace FFPACK {
 		  return r = simd::add(r, abh);
 		}
 		
-#endif // __FFLASFFPACK_USE_SIMD
+#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 		
 		// reduce entries of Arns to be less than the rns basis elements
 		void reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR=false) const;
@@ -396,10 +408,53 @@ namespace FFPACK {
 		
 	}; // end of struct rns_double_extended
 
+
+	template<typename RNS>
+    class rnsRandIter {
+        std::vector<typename RNS::ModField::RandIter> _RNS_rand;
+        const RNS& _domain;
+        
+    public:
+        rnsRandIter(const RNS& R, size_t size=0, uint64_t seed=0)
+                : _domain(R) {
+            for(auto iter : R._field_rns)
+                _RNS_rand.push_back( typename RNS::ModField::RandIter(iter,size,seed) );
+        }
+
+        /** RNS ring Element random assignement.
+         * Element is supposed to be initialized
+         * @return random ring Element
+         */
+        typename RNS::Element& random(typename RNS::Element& elt) const {
+            auto coefficient(elt._ptr);
+            for(auto iter : _RNS_rand) {
+                iter.random( *coefficient );
+                coefficient += elt._stride;
+            }
+            return elt;
+        }
+       
+        typename RNS::Element& operator()(typename RNS::Element& elt) const {
+            return this->random(elt);
+        }
+
+        typename RNS::Element operator()() const {
+            typename RNS::Element tmp; _domain.init(tmp);
+            return this->operator()(tmp);
+        }
+        typename RNS::Element random() const {
+            return this->operator()();
+        }
+
+        const RNS& ring() const { return _domain; }
+
+    };
+
+
 } // end of namespace FFPACK
 
 #include "rns-double.inl"
-
+#include "rns-double-recint.inl"
 namespace FFLAS {
 
 	template<>
@@ -410,4 +465,3 @@ namespace FFLAS {
 }
 
 #endif // __FFPACK_rns_double_H
-

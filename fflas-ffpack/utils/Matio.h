@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* Copyright (C) LinBox,FFLAS-FFPACK
  *
  * ========LICENCE========
@@ -34,7 +34,7 @@
 
 // Reading a matrice from a (eventually zipped) file
 template<class Field>
-typename Field::Element_ptr read_field(const Field& F, const char * mat_file,int* tni,int* tnj)
+typename Field::Element_ptr read_field(const Field& F, const char * mat_file,size_t * tni,size_t* tnj)
 {
 	char *UT = NULL;
 	const char* File_Name;
@@ -62,7 +62,7 @@ typename Field::Element_ptr read_field(const Field& F, const char * mat_file,int
 	FILE* FileDes = fopen(File_Name, "r");
 	if (FileDes != NULL) {
 		char  tmp [200];// unsigned long tni, tnj;
-		if (fscanf(FileDes,"%d %d %199s\n",tni, tnj, tmp)<0)
+		if (fscanf(FileDes,"%lu %lu %199s\n",tni, tnj, tmp)<0)
 			printf("Error Reading first line of file \n");
 		int n=*tni;
 		int p=*tnj;
@@ -94,10 +94,9 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 			  typename Field::ConstElement_ptr E,
 			  int n, int m, int id, bool mapleFormat = false, bool column_major=false)
 {
-
-	    //typename Field::Element tmp;
-	// double tmp;
-//	Givaro::Integer tmp;
+//     typename Field::Element tmp;
+//     double tmp;
+//     Givaro::Integer tmp;
 	typename Field::Element tmp;
 	F.init(tmp);
 	if (mapleFormat) c << "Matrix(" << n <<',' << m << ",\n[" ;
@@ -105,13 +104,12 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 		if (mapleFormat) c << '[';
 		for (int j=0; j<m;++j){
 			if (column_major)
-				    //F.convert(tmp,*(E+i+id*j));
-				    tmp = *(E+i+id*j);
-				
+				    F.assign(tmp, *(E+i+id*j));
+// 				    F.convert(tmp,*(E+i+id*j));				
 			else
+				F.assign(tmp, *(E+j+id*i));
 //				F.convert(tmp,*(E+j+id*i));
-				tmp =*(E+j+id*i);
-			c << tmp;
+			F.write(c, tmp);
 			if (mapleFormat && j<m-1) c << ',';
 			c << ' ';
 		}
@@ -125,8 +123,11 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 
 inline std::ostream& write_perm (std::ostream& c, const size_t* P, size_t N){
 	c<<"[ ";
-	for (size_t i=0; i<N; ++i)
-		c<<P[i]<<" ";
+	for (size_t i=0; i<N; ++i){
+		if (i)
+			c<<", ";
+		c<<P[i];
+	}
 	c<<"]"<<std::endl;
 	return c;
 }

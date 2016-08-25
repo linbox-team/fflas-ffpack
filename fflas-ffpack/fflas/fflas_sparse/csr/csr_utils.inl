@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -39,7 +39,7 @@ template <class Field> inline void sparse_delete(const Sparse<Field, SparseMatri
     fflas_delete(A.st);
 }
 
-template <class Field> inline void sparse_print(const Sparse<Field, SparseMatrix_t::CSR> &A) {
+template <class Field> inline std::ostream& sparse_print(std::ostream& os, const Sparse<Field, SparseMatrix_t::CSR> &A) {
     // for (size_t i = 0; i <= A.m; ++i)
     //     std::cout << A.st[i] << " ";
     // std::cout << std::endl;
@@ -47,12 +47,13 @@ template <class Field> inline void sparse_print(const Sparse<Field, SparseMatrix
         auto start = A.st[i], stop = A.st[i + 1];
         index_t j = 0;
         index_t diff = stop - start;
-        std::cout << i << " : ";
+        os << i << " : ";
         for (; j < diff; ++j) {
-            std::cout << A.col[start + j] << " ";
+		os << '(' << A.col[start + j] << ',' << A.dat[start+j] << ") ";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
+    return os;
 }
 
 template <class IndexT>

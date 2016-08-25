@@ -24,11 +24,12 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CPPFLAGS=-I$(top_srcdir)
-AM_CXXFLAGS = @TESTS_CFLAGS@
-AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) -DFFLAS_COMPILE
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) 
-AM_LDFLAGS=-static  -L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+AM_CPPFLAGS=-I$(top_srcdir) -g
+AM_CXXFLAGS = @TESTS_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
+AM_CPPFLAGS +=  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field 
+
+#LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
+AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
 EXTRA_DIST= test-utils.h
 
@@ -40,16 +41,36 @@ BASIC_TESTS =               \
 		test-echelon        \
 		test-rankprofiles   \
 		test-compressQ      \
+		test-permutations   \
 		test-fadd           \
 		test-finit          \
-		test-interfaces-c \
 		test-fscal          \
 		test-fgemm          \
+		test-pluq-check     \
+		test-fgemm-check    \
+		test-ftrsm-check    \
+		test-invert-check   \
+		test-charpoly-check \
 		test-fger           \
 		test-ftrsm          \
 		test-multifile      \
+		test-maxdelayeddim \
 		regression-check
 
+if FFLASFFPACK_PRECOMPILED
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+
+INTERFACE_TESTS= test-interfaces-c 
+test_interfaces_c_LDADD = \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
+	-lm -lstdc++
+
+else
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+endif
 NOT_A_TEST =  \
 		test-lqup2             \
 		test-charpoly          \
@@ -78,7 +99,7 @@ INFINITE_TEST= \
 
 
 EXTRA_PROGRAMS =       \
-		$(BASIC_TESTS)  $(USE_OMP_TESTS)
+		$(BASIC_TESTS)  $(USE_OMP_TESTS) $(INTERFACE_TESTS)
 
 CLEANFILES =           \
 		$(NOT_A_TEST) $(EXTRA_PROGRAMS) $(PERFPUBLISHERFILE)
@@ -86,9 +107,16 @@ CLEANFILES =           \
 TESTS =     $(EXTRA_PROGRAMS)
 
 test_compressQ_SOURCES         = test-compressQ.C
+test_permutations_SOURCES         = test-permutations.C
+
 test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
+test_pluq_check_SOURCES = test-pluq-check.C
+test_fgemm_check_SOURCES = test-fgemm-check.C
+test_ftrsm_check_SOURCES = test-ftrsm-check.C
+test_invert_check_SOURCES = test-invert-check.C
+test_charpoly_check_SOURCES = test-charpoly-check.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
@@ -122,12 +150,12 @@ test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
+test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 #test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS) $(PARFLAGS)
 #test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
-
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
@@ -141,5 +169,10 @@ perfpublisher:
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
 
-%: %.C %.cpp
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+new_examp_comp = $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+
+%:%.C
+	$(new_examp_comp)
+
+%:%.cpp
+	$(new_examp_comp)

@@ -1,7 +1,7 @@
 Installation Instructions
 *************************
 
-Copyright (C) 1994-1996, 1999-2002, 2004-2013 Free Software Foundation,
+Copyright (C) 1994-1996, 1999-2002, 2004-2016 Free Software Foundation,
 Inc.
 
    Copying and distribution of this file, with or without modification,
@@ -13,7 +13,7 @@ Requirements
 ============
 
  * The FFLAS-FFPACK library requires a version of GNU C++ compiler great or equal to 4.7. Other recent compilers such as clang++ or pathcc are also supported.
- * the Givaro library v3.9.1 or later: http://givaro.forge.imag.fr/ (itself depending on GNU GMP)
+ * the Givaro library v4.0.1 or later: https://github.com/linbox-team/givaro (itself depending on GNU GMP)
  * a BLAS library: OpenBLAS or ATLAS (recommended) or any other implementation of the Fortran or C blas interface.
  
 Basic Installation

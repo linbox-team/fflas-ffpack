@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* Copyright (c) FFLAS-FFPACK
 * Written by Bastien Vialla <bastien.vialla@lirmm.fr>
@@ -79,7 +79,7 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 
 int main(int argc, char **argv) {
 
-    using Field = Givaro::Modular<double>;
+	using Field = Givaro::Modular<double>;
     using Element = typename Field::Element;
 
     size_t iter = 10;

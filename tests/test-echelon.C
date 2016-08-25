@@ -32,8 +32,7 @@
 
 //#define __LUDIVINE_CUTOFF 1
 
-// #define  FFLAS_COMPILED 
-// #define  FFPACK_COMPILED 
+#define  __FFLASFFPACK_SEQUENTIAL
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -287,6 +286,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 		for (size_t j=0;j<n;j++) Q[j]=0;
 
 		R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
+        
 
 		if (R != r) {pass = false; break;}
 
@@ -422,10 +422,10 @@ int main(int argc, char** argv){
 		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters);
 		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters);
 		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters); //BUG not working yet
+		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters); 
 //		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters); // BUG: not available yet (missing division in the field
 		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m,n,r,iters);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters);
 		
 	} while (loop && ok);
 

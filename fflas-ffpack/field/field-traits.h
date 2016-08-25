@@ -169,16 +169,19 @@ namespace FFLAS { /*  Traits */
 	template <class Field> 
 	struct ModeTraits {typedef typename ModeCategories::DefaultTag value;};
 
-	template <typename Element> 
-	struct ModeTraits<Givaro::Modular<Element> >{typedef typename ModeCategories::DelayedTag value;};
+	template <typename Element, typename Compute> 
+	struct ModeTraits<Givaro::Modular<Element,Compute> >{typedef typename ModeCategories::DelayedTag value;};
 
-	template <> struct ModeTraits<Givaro::Modular<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<int16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<int32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<uint8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<uint16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<uint32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
-	template <> struct ModeTraits<Givaro::Modular<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<int8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<int16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<int32_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<uint8_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<uint16_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+	template<typename Compute> struct ModeTraits<Givaro::Modular<uint32_t,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+
+#ifndef INTEGER_NO_RNS
+	template<typename Compute> struct ModeTraits<Givaro::Modular<Givaro::Integer,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+#endif
 
 	template <typename Element>
 	struct ModeTraits<Givaro::ModularBalanced<Element> >{typedef typename ModeCategories::DelayedTag value;};
@@ -186,8 +189,12 @@ namespace FFLAS { /*  Traits */
 	template <> struct ModeTraits<Givaro::ModularBalanced<int8_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<int16_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
 	template <> struct ModeTraits<Givaro::ModularBalanced<int32_t> > {typedef typename ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> value;};
+
+#ifndef INTEGER_NO_RNS
 	template <> struct ModeTraits<Givaro::ModularBalanced<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
 	template <> struct ModeTraits<Givaro::ZRing<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+#endif
+
 	    // These ones are here temporarily, to ensure
 	    // In the long term ZRing should be in DefaultTag, and forced to be in DefaultBoundedTag be the caller. However this would prevent these rings to use Winograd's algorithm (extensive use of bounded helpers) in the current implementation. Needs work.
 	template <> struct ModeTraits<Givaro::ZRing<float> > {typedef typename ModeCategories::DefaultBoundedTag value;};
@@ -314,8 +321,8 @@ namespace FFLAS { /* associatedDelayedField */
 		typedef Field field;
 		typedef Field& type; // reference to avoid copying heavy fields
 	};
-	template <typename T>
-	struct associatedDelayedField<const Givaro::Modular<T>> {
+	template <typename T,typename X>
+	struct associatedDelayedField<const Givaro::Modular<T,X>> {
 		typedef Givaro::ZRing<T> field;
 		typedef Givaro::ZRing<T> type;
 	};

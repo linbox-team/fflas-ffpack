@@ -95,8 +95,10 @@ namespace FFLAS{
 	fflas_delete(std::forward<Args>(args)...);
     }
 
-#ifdef __FFLASFFPACK_USE_SIMD
+#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
     inline void prefetch(const int64_t* addr) { _mm_prefetch((const char*)(addr), _MM_HINT_T0); }
+#else
+    inline void prefetch(const int64_t*) {} 
 #endif
 
 
