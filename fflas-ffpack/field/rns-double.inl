@@ -85,14 +85,14 @@ namespace FFPACK {
 			//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
 			if (RNS_MAJOR==false) {
 					// Arns = _crt_in x A_beta^T
-				Givaro::Timer tfgemm; tfgemm.start();
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
-								  //			      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
-							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+//				Givaro::Timer tfgemm; tfgemm.start();
+				// FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
+				// 				  //			      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
+				// 			  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
 			
-				tfgemm.stop();
+//				tfgemm.stop();
 			//if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
-//			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
+			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
 					// reduce each row i of Arns modulo moduli[i]
 					//for(size_t i=0;i<_size;i++)
 					//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
