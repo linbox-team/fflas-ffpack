@@ -61,6 +61,9 @@ namespace FFLAS {
 	      Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy )
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		return cblas_ddot( (int)N, x, (int)incx, y, (int)incy );
 	}
 
@@ -71,6 +74,9 @@ namespace FFLAS {
 	      Givaro::FloatDomain::ConstElement_ptr y, const size_t incy )
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );
 	}
 

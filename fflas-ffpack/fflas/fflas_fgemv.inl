@@ -411,6 +411,9 @@ namespace FFLAS{
 	{
 		FFLASFFPACK_check(lda);
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_dgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
 			     (int)M, (int)N, (Givaro::DoubleDomain::Element) alpha,
 			     A, (int)lda, X, (int)incX, (Givaro::DoubleDomain::Element) beta, Y, (int)incY);
@@ -446,6 +449,9 @@ namespace FFLAS{
 	{
 		FFLASFFPACK_check(lda);
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_sgemv (CblasRowMajor, (CBLAS_TRANSPOSE) ta,
 			     (int)M, (int)N, (Givaro::FloatDomain::Element) alpha,
 			     A, (int)lda, X, (int)incX, (Givaro::FloatDomain::Element) beta, Y, (int)incY);

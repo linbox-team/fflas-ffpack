@@ -296,8 +296,9 @@ extern "C" {
 #else // CBLAS PRESENT
 extern "C" {
 
-
-
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+	void openblas_set_num_threads(int num_threads);
+#endif
 
 	int cblas_errprn(int ierr, int info, char *form, ...);
 

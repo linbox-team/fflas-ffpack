@@ -470,6 +470,9 @@ namespace FFLAS {
 
 		// Call to the blas Multiplication
 		FFLASFFPACK_check(n);
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE)ta,
 					 (CBLAS_TRANSPOSE)ta, (int)n, (int)n, (int)n,
 					 (Givaro::DoubleDomain::Element) alphad, Ad, (int)n, Ad, (int)n,

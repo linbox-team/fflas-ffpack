@@ -179,3 +179,17 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 	]
 )
 
+AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
+		[ AC_ARG_WITH(openblas-num-threads,
+			[AC_HELP_STRING([--with-openblas-num-threads=<num-threads>],
+				[ Sets the number of threads given to OpenBLAS])
+			])
+		 AC_MSG_CHECKING(for OPENBLAS numthreads)
+		 AS_IF([test "x$with_openblas_num_threads" = "x"],
+		       [AC_MSG_RESULT(none specified)],
+		       [AC_MSG_RESULT($with_openblas_num_threads)
+			AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$with_openblas_num_threads,[Sets the number of threads given to OpenBLAS])
+			])
+		]
+	)
+
