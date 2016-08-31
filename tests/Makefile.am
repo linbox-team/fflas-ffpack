@@ -40,6 +40,7 @@ BASIC_TESTS =               \
 		test-lu             \
 		test-det            \
 		test-echelon        \
+		test-charpoly       \
 		test-rankprofiles   \
 		test-compressQ      \
 		test-permutations   \
@@ -74,7 +75,6 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 NOT_A_TEST =  \
 		test-lqup2             \
-		test-charpoly          \
 		benchlqup              \
 		test-fsquare           \
 		test-redcolechelon     \
@@ -124,7 +124,7 @@ test_fgemm_SOURCES             = test-fgemm.C
 test_fger_SOURCES             = test-fger.C
 test_multifile_SOURCES             = test-multifile1.C test-multifile2.C
 #  test_fgemm_SOURCES             = test-fgemm.C
-#  test_charpoly_SOURCES          = test-charpoly.C
+test_charpoly_SOURCES          = test-charpoly.C
 #  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
 #  test_rank_SOURCES              = test-rank.C
