@@ -791,18 +791,18 @@ namespace FFPACK { /* charpoly */
 	 * Compute the characteristic polynomial of A using Krylov
 	 * Method, and LUP factorization of the Krylov matrix
 	 */
-	template <class Field, class Polynomial>
-	std::list<Polynomial>&
-	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
+	template <class Field, class PolRing>
+	std::list<typename PolRing::Element>&
+	CharPoly( const Field& F, std::list<typename PolRing::Element>& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 	template<class Polynomial, class Field>
 	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
 
-	template <class Field, class Polynomial>
-	Polynomial&
-	CharPoly( const Field& F, Polynomial& charp, const size_t N,
+	template <class Field, class PolRing>
+	typename PolRing::Element&
+	CharPoly( const Field& F, typename PolRing::Element& charp, const size_t N,
 		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
