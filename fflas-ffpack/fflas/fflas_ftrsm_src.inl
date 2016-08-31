@@ -276,6 +276,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		}
 #endif // __FFLAS__UNIT
 #ifndef __FFLAS_MULTIPRECISION
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trsm))
 			(CblasRowMajor,
 			 Mjoin (Cblas, __FFLAS__SIDE),

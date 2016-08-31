@@ -252,7 +252,9 @@ namespace FFLAS {
 		FFLASFFPACK_check(lda);
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
-
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
       		cblas_dgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 			     (int)m, (int)n, (int)k, (Givaro::DoubleDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (Givaro::DoubleDomain::Element) beta, Cd, (int)ldc);
@@ -273,6 +275,9 @@ namespace FFLAS {
 		FFLASFFPACK_check(ldb);
 		FFLASFFPACK_check(ldc);
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_sgemm (CblasRowMajor, (CBLAS_TRANSPOSE) ta, (CBLAS_TRANSPOSE) tb,
 			     (int)m, (int)n, (int)k, (Givaro::FloatDomain::Element) alpha,
 			     Ad, (int)lda, Bd, (int)ldb, (Givaro::FloatDomain::Element) beta,Cd, (int)ldc);

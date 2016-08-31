@@ -74,6 +74,9 @@ namespace FFLAS {
 	       float * X, const size_t incX)
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
 
 		return;
@@ -86,6 +89,9 @@ namespace FFLAS {
 	       float * X, const size_t incX)
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
 
 		return;
@@ -98,6 +104,9 @@ namespace FFLAS {
 	       float * X, const size_t incX)
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_scopy((int)N,Y,(int)incY,X,(int)incX);
 
 		return;
@@ -110,6 +119,9 @@ namespace FFLAS {
 	       double * X, const size_t incX)
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
 
 		return;
@@ -122,6 +134,9 @@ namespace FFLAS {
 	       double * X, const size_t incX)
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
 
 		return;
@@ -134,6 +149,9 @@ namespace FFLAS {
 	       double * X, const size_t incX)
 	{
 
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 		cblas_dcopy((int)N,Y,(int)incY,X,(int)incX);
 
 		return;

@@ -169,6 +169,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t lda,
 	      typename Field::Element_ptr B, const size_t ldb)
 {
+#ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
+	openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
+#endif
 	Mjoin(cblas_,Mjoin(__FFLAS__BLAS_PREFIX,trmm))
 		(CblasRowMajor,
 		 Mjoin (Cblas, __FFLAS__SIDE),
