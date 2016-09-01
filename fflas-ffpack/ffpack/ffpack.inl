@@ -69,6 +69,13 @@ IsSingular (const Field& F, const size_t M, const size_t N,
 	}
 
 template <class Field>
+inline typename Field::Element&
+Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+	 typename Field::Element_ptr A, const size_t lda){
+	return det = Det (F, M, N, A, lda);
+}
+
+template <class Field>
 typename Field::Element
 Det( const Field& F, const size_t M, const size_t N,
 	 typename Field::Element_ptr A, const size_t lda)

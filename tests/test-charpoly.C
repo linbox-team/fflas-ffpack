@@ -36,8 +36,8 @@
 //#define ENABLE_ALL_CHECKINGS
 
 
-#include <iomanip>
 #include <iostream>
+#include <iomanip>
 #include "givaro/modular.h"
 #include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
@@ -55,15 +55,12 @@ template<class Field>
 bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t lda,
 				 size_t nbit, FFPACK::FFPACK_CHARPOLY_TAG CT)
 {
+	typename Field::Element_ptr B = FFLAS::fflas_new(F, n, n);
+	FFLAS::fassign(F, n, n, A, lda, B, n);
+
 	typedef typename Givaro::Poly1Dom<Field>::Element Polynomial;
 	Polynomial charp(n+1);
-
 	Checker_charpoly<Field,Polynomial> checker(F,n,A,lda);
-
-	typename Field::Element trace;
-	F.init(trace, F.zero);
-	for (size_t i = 0; i < n; i++)
-		F.subin (trace, A [i*(lda+1)]);
 
 	FFPACK::CharPoly<Field,typename Givaro::Poly1Dom<Field> > (F, charp, n, A, lda, CT);
 
@@ -74,6 +71,10 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 		return false;
 	}
 		// Checking trace(A) == charp[n-1]
+	typename Field::Element trace;
+	F.init(trace, F.zero);
+	for (size_t i = 0; i < n; i++)
+		F.subin (trace, B [i*(n+1)]);
 	if (!F.areEqual(trace, charp[n-1])){
 		std::cerr<<"trace = "<<trace<<" P["<<n-1<<"] = "<<charp[n-1]<<std::endl;
 		return false;
@@ -81,17 +82,18 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 
 		// Checking det(A) == charp[0]
 		// Det over ZZ not yet ready in fflas
-//  typename Field::Element det;
-//	F.init(det, FFPACK::Det(F, n, n, A, lda));
-//	if (!F.areEqual(det,charp[0])){
-//		std::cerr<<"det = "<<det<<" P["<<0<<"] = "<<charp[0]<<std::endl;
-//		return false;
-//	}
+	typename Field::Element det;
+	F.init(det);
+	FFPACK::Det(F, det, n, n, B, n);
+	if (!F.areEqual(det,charp[0])){
+		std::cerr<<"det = "<<det<<" P["<<0<<"] = "<<charp[0]<<std::endl;
+		return false;
+	}
 	return true ;
 
 }
 template<class Field>
-bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, size_t iter, 
+bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, 
 					std::string file, FFPACK::FFPACK_CHARPOLY_TAG CT){
 	Field* F= chooseField<Field>(p,bits);
 	if (F==nullptr){
@@ -101,15 +103,13 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, size_t ite
 		return true;
 	}
 	std::ostringstream oss;
+	oss<<setprecision(17);
 	F->write(oss);
 	std::cout.fill('.');
 	std::cout<<"Checking ";
 	std::cout.width(40);
 	std::cout<<oss.str();
 	std::cout<<" ... ";
-#ifdef DEBUG
-		F->write(std::cerr) << std::endl;
-#endif
 
 	size_t lda = n;
 	typename Field::Element * A=NULL;
@@ -124,10 +124,8 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, size_t ite
 	} else {
 			/* Random matrix test */
 		A = FFLAS::fflas_new(*F,n,n);
-		for(size_t i = 0;i<iter;++i){
-			A = FFPACK::RandomMatrix(*F,A,n,n,n,bits);
-			passed &= launch_test<Field>(*F, n, A, lda, bits, CT);
-		}
+		A = FFPACK::RandomMatrix(*F,A,n,n,n,bits);
+		passed &= launch_test<Field>(*F, n, A, lda, bits, CT);
 		FFLAS::fflas_delete( A);
 	}
 	if ( !passed )
@@ -148,10 +146,10 @@ int main(int argc, char** argv)
 	size_t       iter = 10; // repetitions
 	size_t       n = 200;
 	std::string  file = "" ; // file where
+	bool loop = false; // loop infintely
 	int variant = 6;
 
 	std::cout<<setprecision(17);
-	std::cerr<<setprecision(17);
 	srand((int)time(NULL));
 
 	Argument as[] = {
@@ -161,6 +159,7 @@ int main(int argc, char** argv)
 		{ 'i', "-i I", "Set number of repetitions.", TYPE_INT , &iter },
 		{ 'f', "-f file", "Set input file", TYPE_STR, &file },
 		{ 'a', "-a algorithm", "Set the algorithm variant", TYPE_INT, &variant },
+		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
@@ -177,8 +176,10 @@ int main(int argc, char** argv)
 	    default: CT = FfpackLUK; break;
 	}
 	bool passed = true;
-	passed &= run_with_field<Givaro::ModularBalanced<double> >(p, bits, n, iter, file, CT);
-	passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(p, (bits?bits:5_ui64), n, iter, file, CT);
-
+	int i= iter;
+	while (passed && (loop || i--)){
+		passed &= run_with_field<Givaro::ModularBalanced<double> >(p, bits, n, file, CT);
+		passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(p, (bits?bits:80_ui64), n, file, CT);
+	}
 	return !passed;
 }

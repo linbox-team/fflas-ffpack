@@ -969,6 +969,11 @@ namespace FFPACK { /* Solutions */
 	Det( const Field& F, const size_t M, const size_t N,
 	     typename Field::Element_ptr A, const size_t lda);
 
+	template <class Field>
+	typename Field::Element&
+	Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+	     typename Field::Element_ptr A, const size_t lda);
+
 	/*********/
 	/* SOLVE */
 	/*********/
@@ -1498,6 +1503,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_krylovelim.inl"
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
+#include "ffpack_det_mp.inl"
 #include "ffpack.inl"
 
 #endif // __FFLASFFPACK_ffpack_H
