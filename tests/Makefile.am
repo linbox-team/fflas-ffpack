@@ -26,7 +26,7 @@ check:
 
 AM_CPPFLAGS=-I$(top_srcdir) -g
 AM_CXXFLAGS = @TESTS_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
-AM_CPPFLAGS +=  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field 
+AM_CPPFLAGS +=  -I$(top_srcdir)/fflas-ffpack/
 
 #LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
 AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
