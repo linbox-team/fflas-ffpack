@@ -365,11 +365,8 @@ tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
 examples/Makefile
-optimiser/Makefile
 fflas-ffpack.pc
 ])
 AC_OUTPUT
 
-echo "-----------------------------------------------"
-
-FF_OPT
+echo "" > fflas-ffpack/fflas-ffpack-thresholds.h
