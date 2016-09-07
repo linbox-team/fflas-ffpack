@@ -359,6 +359,7 @@ fflas-ffpack/paladin/Makefile
 fflas-ffpack/interfaces/Makefile
 fflas-ffpack/interfaces/libs/Makefile
 fflas-ffpack/checkers/Makefile
+autotune/Makefile
 doc/Makefile
 tests/Makefile
 tests/data/Makefile
