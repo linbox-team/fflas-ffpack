@@ -187,12 +187,13 @@ if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
 else
    CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
 fi
-
-dnl echo "CCNAM = $CCNAM $CUSTOM_SIMD"
+dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
+AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
+echo "CCNAM = $CCNAM $CUSTOM_SIMD"
 
 dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
 dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc48"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
+AS_IF([test "x$CCNAM" = "xgcc"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
 
 
 PARFLAGS="${OMPFLAGS}"

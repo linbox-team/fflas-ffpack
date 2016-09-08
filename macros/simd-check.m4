@@ -37,7 +37,7 @@ AC_DEFUN([FF_CHECK_SIMD],
 			    [archx86="yes"],
 			    [archx86="no"]
 		     )
-		AS_IF([ test  "x$CCNAM" != "xgcc48" -o "x$archx86" = "xno" ],
+		AS_IF([ test  "x${CCNAM:0:3}" != "xgcc" -o "x$archx86" = "xno" ],
 		[
 		   CUSTOM_SIMD="yes"
 		   echo "Compiling with $CCNAM for a $arch target: running custom checks for SSE4.1 and AVX1,2"
@@ -132,6 +132,7 @@ AC_DEFUN([FF_CHECK_SIMD],
 		    CXXFLAGS=${BACKUP_CXXFLAGS}
 		],
 		[ ])
+		])
 	],[ AS_ECHO("SIMD disabled")
 	    CUSTOM_SIMD="yes" ])
 ])

@@ -186,10 +186,15 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 			])
 		 AC_MSG_CHECKING(for OPENBLAS numthreads)
 		 AS_IF([test "x$with_openblas_num_threads" = "x"],
-		       [AC_MSG_RESULT(none specified)],
+		       [
+			AC_MSG_RESULT(none specified (using default value 1))
+			numthreads="1"
+			],
 		       [AC_MSG_RESULT($with_openblas_num_threads)
-			AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$with_openblas_num_threads,[Sets the number of threads given to OpenBLAS])
+		        numthreads=$with_openblas_num_threads
 			])
+		 AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$numthreads,[Sets the number of threads given to OpenBLAS (default is 1)])
+
 		]
 	)
 
