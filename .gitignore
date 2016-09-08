@@ -81,6 +81,7 @@ autotune/winograd-modular-double
 autotune/winograd-modular-float
 autotune/winograd-modularbalanced-double
 autotune/winograd-modularbalanced-float
+autotune/pluq
 stamp-h1
 tests/Makefile
 tests/Makefile.in

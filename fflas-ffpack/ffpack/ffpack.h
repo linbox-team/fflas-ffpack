@@ -472,7 +472,7 @@ namespace FFPACK { /* PLUQ */
 	PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
-	      size_t*P, size_t *Q);
+	      size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
 
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"

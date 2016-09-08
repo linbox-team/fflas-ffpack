@@ -108,6 +108,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT 2000
 #endif
 
+#ifndef __FFLASFFPACK_PLUQ_THRESHOLD
+#define __FFLASFFPACK_PLUQ_THRESHOLD 256
+#endif
+
 
 #if defined(_OPENMP) || defined(OMP_H) || defined(__OMP_H) || defined(__pmp_omp_h)
 #ifndef __FFLASFFPACK_USE_OPENMP
