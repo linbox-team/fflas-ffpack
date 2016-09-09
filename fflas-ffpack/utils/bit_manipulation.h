@@ -98,7 +98,7 @@ inline int32_t ctz(uint64_t val) {
 
 
 
-#ifdef __FFLASFFPACK_HAVE_INT128
+#if defined (__FFLASFFPACK_HAVE_INT128) && defined(__x86_64__)
 // division 128bits by 64 bits
 // int128_t(u1,u0) = u1*2^64+u0, div v, rem r
 // return quo
@@ -117,7 +117,7 @@ static uint64_t divide_128(uint64_t u1, uint64_t u0, uint64_t v, uint64_t *r)
 #endif
 
 static uint64_t getpoweroftwoden_128(uint32_t d, uint64_t q, uint64_t *r) {
-#ifdef __FFLASFFPACK_HAVE_INT128
+#if defined (__FFLASFFPACK_HAVE_INT128) && defined(__x86_64__)
     return divide_128(1_ui64 << (d - 1), 0, q, r);
 #else
     lldiv_t ta;
