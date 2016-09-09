@@ -140,4 +140,13 @@ namespace FFPACK {
 
 } // end namespace FFPACK:
 
+namespace FFLAS {
+	template<>
+	inline void fflas_delete (FFPACK::rns_double_elt_ptr A) {FFLAS::fflas_delete( A._ptr);}
+	template<>
+	inline void fflas_delete (FFPACK::rns_double_elt_cstptr A) {delete[] A._ptr;}
+	
+}
+
+
 #endif // __FFLASFFPACK_field_rns_double_elt_INL
