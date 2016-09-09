@@ -22,6 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
+#define  __FFLASFFPACK_FORCE_SEQ
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -30,66 +31,20 @@
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/Matio.h"
-#include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
 using namespace std;
 
-template<class Field>
-void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file, int variant){
-	Field F(q);
-	typedef typename Field::Element Element;
-	FFPACK::FFPACK_CHARPOLY_TAG CT;
-	switch (variant){
-		case 0: CT = FFPACK::FfpackLUK; break;
-		case 1: CT = FFPACK::FfpackKG; break;
-		case 2: CT = FFPACK::FfpackDanilevski; break;
-		case 3: CT = FFPACK::FfpackKGFast; break;
-		case 4: CT = FFPACK::FfpackKGFastG; break;
-		case 5: CT = FFPACK::FfpackHybrid; break;
-		case 6: CT = FFPACK::FfpackArithProg; break;
-		default: CT = FFPACK::FfpackLUK; break;
-	}
-	FFLAS::Timer chrono;
-	Element *A;
-	double time_charp=0;
-	for (size_t i=0;i<iter;++i){
-		if (!file.empty()){
-			A = read_field (F, file.c_str(), &n, &n);
-		}
-		else{
-			A = FFLAS::fflas_new (F, n, n);
-			FFPACK::RandomMatrix (F, A, n, n, n, bits);
-		}
-		typename Givaro::Poly1Dom<Field>::Element cpol(n);
-		chrono.clear();
-		chrono.start();
-		FFPACK::CharPoly<Field, Givaro::Poly1Dom<Field> > (F, cpol, n, A, n, CT);
-		chrono.stop();
-
-		time_charp+=chrono.usertime();
-
-		FFLAS::fflas_delete( A);
-	}
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cerr << "n: "<<n<<" bitsize: "<<bits<<" Time: " << time_charp / double(iter)
-			  << " Gflops: " << "Irrelevant";
-}
-
 int main(int argc, char** argv) {
   
 	size_t iter = 1;
-	int    q    = 131071;
-	size_t bits = 10;
-	size_t    n    = 1000;
+	size_t    n    = 500;
 	std::string file = "";
-	int variant =6;
-
+  	static int variant =0;
+	size_t b = 150;
 	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
-		{ 'b', "-b B", "Set the bitsize of the random elements.",         TYPE_INT , &bits},
+		{ 'b', "-b B", "Set the bitsize of the random characteristic.",  TYPE_INT , &b },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
@@ -99,14 +54,58 @@ int main(int argc, char** argv) {
 	};
 
   FFLAS::parseArguments(argc,argv,as);
+  typedef Givaro::ZRing<Givaro::Integer> Field;
+  FFPACK::FFPACK_CHARPOLY_TAG CT;
+  switch (variant){
+      case 0: CT = FFPACK::FfpackLUK; break;
+      case 1: CT = FFPACK::FfpackKG; break;
+      case 2: CT = FFPACK::FfpackDanilevski; break;
+      case 3: CT = FFPACK::FfpackKGFast; break;
+      case 4: CT = FFPACK::FfpackKGFastG; break;
+      case 5: CT = FFPACK::FfpackHybrid; break;
+      case 6: CT = FFPACK::FfpackArithProg; break;
+      default: CT = FFPACK::FfpackLUK; break;
+  }
+  typedef Field::Element Element;
 
-  if (q > 0){
-	  bits = Givaro::Integer(q).bitsize();
-	  run_with_field<Givaro::ModularBalanced<double> >(q, bits, n , iter, file, variant);
-  } else
-	  run_with_field<Givaro::ZRing<Givaro::Integer> > (q, bits, n , iter, file, variant);
+  Field F;
+  FFLAS::Timer chrono;
+  double time=0.0;
 
+  Element *A;
+  size_t bs=1;
+  size_t size=b;
+  for (size_t i=0;i<iter;++i){
+
+	  if (!file.empty()){
+		A = read_field (F, file.c_str(), &n, &n);
+    }
+    else{
+      A = FFLAS::fflas_new<Element>(n*n);
+      Field::RandIter G(F,size);
+      for (size_t j=0; j< (size_t)n*n; ++j)
+	G.random(*(A+j));
+    }
+
+    std::vector<Field::Element> cpol(n);
+    chrono.clear();
+    chrono.start();
+    FFPACK::CharPoly (F, cpol, n, A, n, CT);
+    chrono.stop();
+
+    time+=chrono.usertime();
+   
+    bs = FFPACK::bitsize (n,n,A,n);
+    FFLAS::fflas_delete( A);
+
+  }
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+  std::cerr << "n: "<<n<<" bitsize: "<<bs<<" Time: " << time / double(iter)
+	    << " Gflops: " << "Irrelevant";
   FFLAS::writeCommandString(std::cerr, as) << std::endl;
+
   return 0;
 }
 

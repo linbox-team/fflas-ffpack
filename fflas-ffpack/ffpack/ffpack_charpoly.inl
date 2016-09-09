@@ -49,9 +49,9 @@ namespace FFPACK {
 // 		fflas_delete (Af);
 // 		return charp;
 // 	}	
-	template <class Field, class Polynomial>
-	std::list<Polynomial>&
-	CharPoly (const Field& F, std::list<Polynomial>& charp, const size_t N,
+	template <class Field, class PolRing>
+	std::list<typename PolRing::Element>&
+	CharPoly (const Field& F, std::list<typename PolRing::Element>& charp, const size_t N,
 		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag)
 	{
@@ -105,9 +105,8 @@ namespace FFPACK {
 				const uint64_t p = static_cast<uint64_t>(F.characteristic());
 				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
 				if (p < static_cast<uint64_t>(N)){
-					return CharPoly (F, charp, N, A, lda, FfpackLUK);
+					return CharPoly<Field,PolRing> (F, charp, N, A, lda, FfpackLUK);
 				}					
-
 				do{
 					try {
 						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD);
@@ -116,7 +115,7 @@ namespace FFPACK {
 						if (attempts++ < 2)
 							cont = true;
 						else
-							return CharPoly(F, charp, N, A, lda, FfpackLUK);
+							return CharPoly<Field,PolRing>(F, charp, N, A, lda, FfpackLUK);
 
 					}
 				} while (cont);
@@ -132,40 +131,26 @@ namespace FFPACK {
 		}
 	}
 
-	template<class Polynomial, class Field>
-	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2)
-	{
-		size_t i,j;
-		// Warning: assumes that res is allocated to the size of the product
-		res.resize(P1.size()+P2.size()-1);
-		FFLAS::fzero(F,res.size(),&res[0],1);
-		for ( i=0;i<P1.size();i++)
-			for ( j=0;j<P2.size();j++)
-				F.axpyin(res[i+j],P1[i],P2[j]);
-		return res;
-	}
-
-	template <class Field, class Polynomial>
-	Polynomial&
-	CharPoly( const Field& F, Polynomial& charp, const size_t N,
+	template <class Field, class PolRing>
+	typename PolRing::Element&
+	CharPoly( const Field& F, typename PolRing::Element& charp, const size_t N,
 		  typename Field::Element_ptr A, const size_t lda,
 		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
 	{
+		typedef typename PolRing::Element Polynomial;
 		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
 		
 		std::list<Polynomial> factor_list;
-		CharPoly (F, factor_list, N, A, lda, CharpTag);
+		CharPoly<Field,PolRing> (F, factor_list, N, A, lda, CharpTag);
 		typename std::list<Polynomial >::const_iterator it;
 		it = factor_list.begin();
 
-		charp.resize(N+1);
-
-		Polynomial P = charp = *(it++);
-
+		PolRing PR(F);
+		PR.init(charp, N+1);
+		PR.assign (charp, *(it++));
 		while( it!=factor_list.end() ){
-			mulpoly (F,charp, P, *it);
-			P = charp;
-			++it;
+			PR.mulin(charp, *it);
+			it++;
 		}
 
 		checker.check(charp);
@@ -373,5 +358,5 @@ namespace FFPACK {
 	} // Protected
 
 } // FFPACK
-
+#include "ffpack_charpoly_mp.inl"
 #endif // __FFLASFFPACK_charpoly_INL

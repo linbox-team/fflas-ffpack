@@ -105,14 +105,15 @@ namespace FFLAS{
 	}
 
 
-	template<class Field>
+	template<class Field,class AnyTag>
 	inline void
 	fger (const Field& F, const size_t M, const size_t N,
 	      const typename Field::Element alpha,
 	      typename Field::ConstElement_ptr x, const size_t incx,
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda,
-	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
+//	      MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> & H)
+	      MMHelper<Field, MMHelperAlgo::Classic, AnyTag> & H)
 	{
 		if (F.isZero(alpha)) { return ; }
 
