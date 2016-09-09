@@ -132,7 +132,6 @@ AC_DEFUN([FF_CHECK_SIMD],
 		    CXXFLAGS=${BACKUP_CXXFLAGS}
 		],
 		[ ])
-		])
 	],[ AS_ECHO("SIMD disabled")
 	    CUSTOM_SIMD="yes" ])
 ])
