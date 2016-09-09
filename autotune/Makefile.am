@@ -26,13 +26,14 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 
 AUTOTUNE_FGEMM = winograd-modular-float winograd-modular-double winograd-modularbalanced-float winograd-modularbalanced-double
 AUTOTUNE_PLUQ = pluq
+AUTOTUNE_CHARPOLY = charpoly-LUK-ArithProg charpoly-Danilevskii-LUK
 
-AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ)
+AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY)
 
 EXTRA_PROGRAMS=$(AUTOTUNE)
 
-autotune: autotune_fgemm autotune_pluq
-	cat fgemm-thresholds.h pluq-threshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
+autotune: autotune_fgemm autotune_pluq autotune_charpoly
+	cat fgemm-thresholds.h pluq-threshold.h charpoly-treshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
 
 autotune_fgemm: $(AUTOTUNE_FGEMM)
 	./tune_fgemm.sh
@@ -40,7 +41,14 @@ autotune_fgemm: $(AUTOTUNE_FGEMM)
 autotune_pluq: $(AUTOTUNE_PLUQ)
 	./tune_pluq.sh
 
+autotune_charpoly: $(AUTOTUNE_CHARPOLY)
+	./tune_charpoly.sh
+
 pluq_SOURCES=pluq.C
+charpoly_Danilevskii_LUK_SOURCES=charpoly.C
+charpoly_Danilevskii_LUK_CXXFLAGS=$(AM_CXXFLAGS) -DVARIANT1="FfpackDanilevski" -DVARIANT2="FfpackLUK" -DNSTART=32 -DNFIRSTSTEP=32 -DNMAX=1000 -DNPREC=1 -DITER=500 -g
+charpoly_LUK_ArithProg_SOURCES=charpoly.C
+charpoly_LUK_ArithProg_CXXFLAGS=$(AM_CXXFLAGS) -DVARIANT1="FfpackLUK" -DVARIANT2="FfpackArithProg" -DNSTART=1024 -DNFIRSTSTEP=128 -DNMAX=3000 -DNPREC=8 -DITER=1
 winograd_modular_float_SOURCES=winograd.C
 winograd_modular_float_CXXFLAGS=$(AM_CXXFLAGS) -DFIELD="Givaro::Modular<float>"
 winograd_modular_double_SOURCES=winograd.C

@@ -62,8 +62,7 @@ namespace FFLAS{
     {
 	    if (alignable<typename Field::Element_ptr>() ) {
 	    	    return malloc_align<typename Field::Element>(m*n, align);
-	    }
-	    else {
+	    } else {
 	    	    return new typename Field::Element[m*n];
 	    }
     }

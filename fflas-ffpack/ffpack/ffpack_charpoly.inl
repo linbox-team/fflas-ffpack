@@ -102,9 +102,9 @@ namespace FFPACK {
 			{
 				size_t attempts=0;
 				bool cont = false;
-				const uint64_t p = static_cast<uint64_t>(F.characteristic());
+				Givaro::Integer p = F.characteristic();
 				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
-				if (p < static_cast<uint64_t>(N)){
+				if (p < N || N < __FFPACK_CHARPOLY_THRESHOLD){
 					return CharPoly<Field,PolRing> (F, charp, N, A, lda, FfpackLUK);
 				}					
 				do{
