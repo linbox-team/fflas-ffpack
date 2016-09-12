@@ -27,7 +27,7 @@ In brief:
 
 The most commonly used option include:
 - `--with-blas-libs=<libs>` : to specify the arguments for the linker to find the BLAS
-- `--enable-optimization` : to run configure-time optimizations
+- `--enable-precompilation` : to precompile the standard templates specializations (and gain some compilation time later on)
 
 Type `./configure --help` to list all options available.
 Note that `givaro` is automatically detected by pkg-config, so you no longer need to pass a `--with-givaro=...` option.
@@ -36,20 +36,29 @@ You may need to set the `PKG_CONFIG_PATH` environment variable to `<givaro-prefi
 For example on a x86_64 architecture:
 - Using OpenBLAS in Fedora: 
  - install the package `openblas-devel.x86_64`,
- - run `./configure --enable-optimization --with-blas-libs="-lopenblas"`
+ - run `./configure --with-blas-libs="-lopenblas"`
 - Using OpenBLAS in Debian, Ubuntu, Mint, and all debian based distribution:
  - avoid using the distribution's package, as it is threaded by default. You need to
    compile openblas yourself on these systems,
- - run `./configure --enable-optimization --with-blas-libs="-lopenblas"`
+ - run `./configure --with-blas-libs="-lopenblas"`
 - Using ATLAS in Debian, Ubuntu, Mint: 
  - install the package `libatlas-dev`,
- - run `./configure --enable-optimization --with-blas-libs="-latlas -lcblas"`
+ - run `./configure --with-blas-libs="-latlas -lcblas"`
 - Using ATLAS in Fedora:
  - install the package `atlas-devel.x86_64`,
- - run `./configure --enable-optimization --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
+ - run `./configure --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
 - Using Accelerate Framework on OS-X:
- - run `./configure --enable-optimization --with-blas-libs="-framework Accelerate"`.
+ - run `./configure --with-blas-libs="-framework Accelerate"`.
+
+Then, simply run `make; make autotune; make install; make check`
+Note that running the `autotune` target is optional but recommended as it will tune up the thresholds of various algorithms to your specific target host.
+`make check` is also optional but recommended as a sanity check.
+
 see INSTALL for further details.
+
+## KNOWN BUGS
+
+ - `test-ftrsm` fails due to a problem with multiprecision arithmetic used with small fields (not used in practice). See https://github.com/linbox-team/fflas-ffpack/issues/29
 
 ## AVAILABILITY
 
