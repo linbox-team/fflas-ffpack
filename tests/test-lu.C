@@ -331,12 +331,12 @@ bool test_pluq (const Field & F,
 	
 	// write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
     typename Field::RandIter G(F);
-    FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,A,n);
+    FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,B,lda);
 
 	size_t R = FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
 	// write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
     try {
-        checker.check(A,n,R,P,Q);
+        checker.check(B,lda,R,P,Q);
     } catch(FailurePLUQCheck &e) {
         std::cout << m << 'x' << n << " pluq verification failed!\n";
     }

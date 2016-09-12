@@ -88,7 +88,7 @@ namespace FFPACK {
             typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); 
 			
                 // v <-- Q.v
-            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, r, v, 1, Q);
+            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
 
                 // w1 <- V1 && w2 <- 0
             FFLAS::fassign(F, r, 1, v, 1, _w, 1);
@@ -104,19 +104,18 @@ namespace FFPACK {
 
                 // w2 <- L2.w1
             if (r < m)
-                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*n, lda, _w, 1, F.zero, _w+r, 1); 		
+                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*lda, lda, _w, 1, F.zero, _w+r, 1);
 
                 // w1 <- L1.w1
                 // WARNING: should be ftrmv
             FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, lda, _w, 1);
 
                 // _w <- P._w
-            FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, r, _w, 1, P);
+            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1, 0, m, _w, 1, P);
 
 				// is _w == w ?
-            FFLAS::fsubin(F, m, w, 1, _w, 1);
+			FFLAS::fsubin(F, m, w, 1, _w, 1);
             bool pass = FFLAS::fiszero(F,m,_w,1);
-        
             FFLAS::fflas_delete(_w);
 
             if (!pass) throw FailurePLUQCheck();
