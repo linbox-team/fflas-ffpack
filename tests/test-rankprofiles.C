@@ -39,7 +39,7 @@
 #include <givaro/modular.h>
 
 #include "test-utils.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 
 using namespace FFPACK;
 
