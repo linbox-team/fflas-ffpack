@@ -93,7 +93,11 @@ echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$
 ./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| make prefix=$PREFIX_INSTALL install"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| make autotune"
+make autotune
+V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
+
+echo "|=== JENKINS AUTOMATED SCRIPT ===| make install"
 make install
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
