@@ -24,7 +24,7 @@
 
 ACLOCAL_AMFLAGS = -I macros
 
-SUBDIRS=fflas-ffpack tests doc benchmarks macros optimiser examples
+SUBDIRS= autotune fflas-ffpack tests doc benchmarks macros examples
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = fflas-ffpack.pc
@@ -41,6 +41,9 @@ docs_dev:doc/fflas-ffpack-dev-html/index.html
 
 doc/fflas-ffpack-dev-html/index.html:
 	(cd doc; ${MAKE} docs_dev)
+
+autotune:
+	(cd autotune; ${MAKE} autotune)
 
 perfpublisher: benchmarks/perfpublisher tests/perfpublisher
 
@@ -70,7 +73,7 @@ uninstall-hook:
 	       	"$(includedir)/fflas-ffpack/" "$(datarootdir)/" ) ||	\
 	       	true
 
-.PHONY:examples benchmarks
+.PHONY:examples benchmarks autotune
 
 bin_SCRIPTS=fflas-ffpack-config
 

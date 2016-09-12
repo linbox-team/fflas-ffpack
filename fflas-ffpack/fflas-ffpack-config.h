@@ -89,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #  endif
 #endif
 
-#include "fflas-ffpack/fflas-ffpack-optimise.h"
+#include "fflas-ffpack/fflas-ffpack-threshold.h"
 
 // winograd algorithm threshold (for double)
 #ifndef __FFLASFFPACK_WINOTHRESHOLD

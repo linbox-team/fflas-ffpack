@@ -360,16 +360,14 @@ fflas-ffpack/paladin/Makefile
 fflas-ffpack/interfaces/Makefile
 fflas-ffpack/interfaces/libs/Makefile
 fflas-ffpack/checkers/Makefile
+autotune/Makefile
 doc/Makefile
 tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
 examples/Makefile
-optimiser/Makefile
 fflas-ffpack.pc
 ])
 AC_OUTPUT
 
-echo "-----------------------------------------------"
-
-FF_OPT
+echo "" > fflas-ffpack/fflas-ffpack-thresholds.h
