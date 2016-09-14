@@ -80,42 +80,44 @@ namespace FFPACK {
              * @param Q
              */
         inline bool check(typename Field::ConstElement_ptr A, size_t lda, 
-                          size_t r, size_t *P, size_t *Q) {
+                          const FFLAS::FFLAS_DIAG Diag,
+                          size_t r, size_t *P, size_t *Q) const {
 #ifdef TIME_CHECKER_PLUQ
             Givaro::Timer checktime; checktime.start();
 #endif
 				// _w = [w1|w2]
-            typename Field::Element_ptr _w = FFLAS::fflas_new(F,m,1); 
+            typename Field::Element_ptr _w = FFLAS::fflas_new(F,std::max(m,n),1); 
 			
-                // v <-- Q.v
-            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
+                // _w <- v
+                // WARNING check fassign on vectors
+            FFLAS::fassign(F, n, 1, v, 1, _w, 1);
 
-                // w1 <- V1 && w2 <- 0
-            FFLAS::fassign(F, r, 1, v, 1, _w, 1);
-            FFLAS::fzero(F, m-r, _w+r, 1);
+                // _w <-- Q._w
+            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, _w, 1, Q);
+
 
                 // w1 <- U1.w1
-                // WARNING: should be ftrmv
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, 1, F.one, A, lda, _w, 1);
+                // WARNING: could be ftrmv
+            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, r, 1, F.one, A, lda, _w, 1);
 		
-                // w1 <- U2.V2 + w1
+                // w1 <- U2.w2 + w1
             if (r < n)
-                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, lda, v+r, 1, F.one, _w, 1);
+                FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r, 1, n-r, F.one, A+r, lda, _w+r, 1, F.one, _w, 1);
 
                 // w2 <- L2.w1
             if (r < m)
                 FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m-r, 1, r, F.one, A+r*lda, lda, _w, 1, F.zero, _w+r, 1);
 
+            const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
                 // w1 <- L1.w1
                 // WARNING: should be ftrmv
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, 1, F.one, A, lda, _w, 1);
+            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, oppDiag, r, 1, F.one, A, lda, _w, 1);
 
                 // _w <- P._w
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasTrans, 1, 0, m, _w, 1, P);
 
 				// is _w == w ?
-			FFLAS::fsubin(F, m, w, 1, _w, 1);
-            bool pass = FFLAS::fiszero(F,m,_w,1);
+            bool pass = FFLAS::fequal(F,m,w,1,_w,1);
             FFLAS::fflas_delete(_w);
 
             if (!pass) throw FailurePLUQCheck();
