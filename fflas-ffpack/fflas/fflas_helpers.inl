@@ -218,7 +218,7 @@ namespace FFLAS {
 		bool checkA(const Field& F, const FFLAS::FFLAS_TRANSPOSE ta, const size_t M, const size_t N,
 			    typename Field::ConstElement_ptr A, const size_t lda )
 		{
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j){
 					const typename Field::Element x = (ta == FFLAS::FflasNoTrans)? A[i*lda+j] : A[i+j*lda];
@@ -234,7 +234,7 @@ namespace FFLAS {
 		bool checkB(const Field& F, const FFLAS::FFLAS_TRANSPOSE tb, const size_t M, const size_t N,
 			    typename Field::ConstElement_ptr B, const size_t ldb)
 		{
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j){
 					const typename Field::Element x = (tb == FFLAS::FflasNoTrans)? B[i*ldb+j] : B[i+j*ldb];
@@ -249,7 +249,7 @@ namespace FFLAS {
 
 		bool checkOut(const Field& F, const size_t M, const size_t N,
 			      typename Field::ConstElement_ptr A, const size_t lda ){
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
 					if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){

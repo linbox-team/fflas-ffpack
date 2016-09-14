@@ -88,12 +88,10 @@ DEFAULT_CFLAGS=""
 WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...
-if test "x$DBG" = "xyes" ; then
+if test "x$USE_DEBUG" = "xyes" ; then
 	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS}" #those are CXXFLAGS
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DFFLASFFPACK_DEBUG"
 else
 	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS}"
-	DEBUG_CFLAGS="-UFFLASFFPACK_DEBUG"
 fi
 
 if test "x$PROF" = "xyes" ; then

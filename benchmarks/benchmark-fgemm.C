@@ -33,8 +33,6 @@
 //#define CLASSIC_SEQ
 #define CLASSIC_HYBRID
 //#define WINO_SEQ
-//#define DEBUG 1
-//#undef NDEBUG
 //#define FFT_PROFILER
 //#define PROFILE_FGEMM_MP
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -239,7 +237,7 @@ int main(int argc, char** argv) {
 			  << " Gflops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
 	writeCommandString(std::cout, as) << std::endl;
   
-#if DEBUG
+#if __FFLASFFPACK_DEBUG
         std::cout<<"Freivalds vtime: "<<timev/(double)iter<<std::endl;
 #endif
 

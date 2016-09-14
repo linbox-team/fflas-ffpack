@@ -34,7 +34,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 0
+//#define __FFLASFFPACK_DEBUG 0
 #define TIME 1
 
 #include <iomanip>
