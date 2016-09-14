@@ -183,9 +183,30 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 		[ AC_ARG_WITH(openblas-num-threads,
 			[AC_HELP_STRING([--with-openblas-num-threads=<num-threads>],
 				[ Set the number of threads given to OpenBLAS])
-			])
-		 AC_MSG_CHECKING(for OPENBLAS numthreads)
-		 AS_IF([test "x$with_openblas_num_threads" = "x"],
+				])
+		dnl testing if we are using openblas
+		BACKUP_CXXFLAGS=${CXXFLAGS}
+		BACKUP_LIBS=${LIBS}
+
+		CODE_OPENBLAS='extern "C"{void openblas_set_num_threads(int num_threads);} int main(){openblas_set_num_threads(1);return 0;}'
+
+		AC_MSG_CHECKING(if this OpenBLAS)
+
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
+		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+
+		AC_TRY_RUN(
+			[ ${CODE_OPENBLAS} ],
+			[ openblas_found="yes" ],
+			[ openblas_problem="problem" ],
+			[ openblas_found="" ]
+		)
+
+		AS_IF([test "x$openblas_found" = "xyes"],
+		      [
+		       AC_MSG_RESULT(yes)
+		       AC_MSG_CHECKING(for OPENBLAS numthreads)
+		       AS_IF([test "x$with_openblas_num_threads" = "x"],
 		       [
 			AC_MSG_RESULT(none specified (using default value 1))
 			numthreads="1"
@@ -193,8 +214,9 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 		       [AC_MSG_RESULT($with_openblas_num_threads)
 		        numthreads=$with_openblas_num_threads
 			])
-		 AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$numthreads,[Sets the number of threads given to OpenBLAS (default is 1)])
-
-		]
-	)
+		       AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$numthreads,[Sets the number of threads given to OpenBLAS (default is 1)])
+		       ],
+		       [AC_MSG_RESULT(no)]
+		       )
+	])
 
