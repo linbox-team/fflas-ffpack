@@ -1,8 +1,19 @@
 
 #ifndef __FFLASFFPACK_field_rns_double_extended_INL
 #define __FFLASFFPACK_field_rns_double_extended_INL
-
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas_freduce.h"
+
+namespace FFLAS {
+  template<>
+  void fscalin(const Givaro::ModularExtended<double> & F, const size_t n, double a,		
+	       double* X, const size_t incX)
+  {
+    for(size_t i=0;i<n;i+=incX){
+      F.mulin(X[i],a);
+    }
+  }
+}
 
 namespace FFPACK {
 
@@ -284,7 +295,7 @@ namespace FFPACK {
 #endif
 			
 			
-    double c,c0,c1,c2,c3,c4;
+    double c0,c1,c2,c3,c4;
     //double C,C1,C3;
     //int64_t c0,c1,c2,c3,c4;
 
@@ -740,11 +751,23 @@ namespace FFPACK {
 
 			
     Givaro::Timer tred; tred.start();
+
+    // for (size_t i=0;i<m;i++)
+    //   for(size_t j=0;j<n;j++)
+    // 	for(size_t k=0;k<_size;k++){
+    // 	  std::cout<<"Arns1["<<k<<"] ("<<i<<","<<j<<")= "<<(int64_t) Arns_tmp[i*n+j+k*mn]<<std::endl;
+    // 	  std::cout<<"Arns2["<<k<<"] ("<<i<<","<<j<<")= "<<int64_t( Arns_tmp[i*n+j+(k+_size)*mn])<<std::endl;
+    // 	}
     
     for(size_t i=0;i<_size;i++){
-      FFLAS::freduce (_field_rns[i],mn,Arns_tmp+(_size+i)*mn,1);
+      //FFLAS::freduce (_field_rns[i],mn,Arns_tmp+(i)*mn,1);
+      //FFLAS::freduce (_field_rns[i],mn,Arns_tmp+(_size+i)*mn,1);
+      //FFLAS::fadd(_field_rns[i],mn,Arns_tmp+(i)*mn,1,Arns_tmp+(_size+i)*mn,1, Arns+i*rda,1);
+      //FFLAS::freduce (_field_rns[i],mn, Arns+i*rda,1);
+
+      FFLAS::fscalin (_field_rns[i],mn, double(1<<27), Arns_tmp+(i+_size)*mn,1);
       FFLAS::fadd(_field_rns[i],mn,Arns_tmp+(i)*mn,1,Arns_tmp+(_size+i)*mn,1, Arns+i*rda,1);
-      FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
+      FFLAS::freduce (_field_rns[i],mn, Arns+i*rda,1);
     }    
     tred.stop();
 #ifdef BENCH_RNS			
@@ -752,10 +775,6 @@ namespace FFPACK {
 #endif
     FFLAS::fflas_delete( A_beta);
     FFLAS::fflas_delete( Arns_tmp);
-
-
-
-
 
 
     
@@ -771,6 +790,7 @@ namespace FFPACK {
 	      std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
 		       <<" != "
 		       <<(int64_t) Arns[i*n+j+k*rda]
+		       << "    -> "<<A[i*lda+j]
 		       <<std::endl;
 	    }
 	}
@@ -778,8 +798,179 @@ namespace FFPACK {
 #endif
   }
 
+
+
+
+  inline void rns_double_extended_V2::convert(size_t m, size_t n, integer gamma, integer* A, size_t lda,
+					      const double* Arns, size_t rda, bool RNS_MAJOR) const
+	{
+#ifdef BENCH_RNS
+	  if (m!=1 && n!=1)
+	    std::cerr<<"RNS double ext (From) --> rns size ("<<_size<<") kronecker size ("<<_ldm<<") data dim ("<<m*n<<")"<<std::endl;
+#endif
+
+#ifdef CHECK_RNS
+		integer* Acopy=new integer[m*n];
+		for(size_t i=0;i<m;i++)
+			for(size_t j=0;j<n;j++)
+				Acopy[i*n+j]=A[i*lda+j];
+
+#endif
+		size_t mn=m*n;
+		double *Arns_tmp = FFLAS::fflas_new<double >(mn*_size*2),accTmp;
+		double* Arns_tmp2= Arns_tmp+mn;
+		const int shift=27;
+		double mask=double((1<<shift)+1), scaling=1./double(1<<shift);;
+		for (size_t i=0;i<_size;i++)
+		  for (size_t j=0;j<mn;j++){
+		    uint64_t acci= (uint64_t)Arns[i*rda+j];;
+		     Arns_tmp [i*2*mn+j] = acci  & ((1<<shift)-1);
+		     Arns_tmp2[i*2*mn+j] = (acci >> shift);
+		  }
+
+		
+#ifdef RNS_DEBUG
+		Givaro::ModularExtended<double> ZZ(2UL<<48);;
+		std::cout<<"Arns:=";write_field(ZZ,std::cout,Arns, _size, mn,mn,true);
+		std::cout<<"Arns1:=";write_field(ZZ,std::cout,Arns_tmp, _size, mn,2*mn,true);
+		std::cout<<"Arns2:=";write_field(ZZ,std::cout,Arns_tmp2, _size, mn,2*mn,true);		
+#endif
+		
+		integer hM= (_M-1)>>1;
+		double *A_beta= FFLAS::fflas_new<double>(2*mn*_ldm);
+		double *A_beta2 = A_beta+mn*_ldm;
+
+		Givaro::Timer tfgemmc;tfgemmc.start();
+		if (RNS_MAJOR==false)
+				// compute A_beta = Ap^T x M_beta
+			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans,(int) mn*2,(int) _ldm,(int) _size, 1.0 , Arns_tmp,(int) mn*2, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm,
+							 FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+//				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads >());
+		
+		else // compute A_beta = Ap x M_Beta
+			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn*2, (int)_ldm, (int)_size, 1.0 , Arns_tmp, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
+
+		FFLAS::fflas_delete( Arns_tmp);
+		tfgemmc.stop();
+#ifdef RNS_DEBUG
+		std::cout<<"Abeta1:=";write_field(ZZ,std::cout,A_beta, _ldm, mn,mn,true);
+		std::cout<<"Abeta2:=";write_field(ZZ,std::cout,A_beta2, _ldm, mn,mn,true);		
+#endif
+
+
+#ifdef BENCH_RNS			
+		if(m>1 && n>1) std::cerr<<"RNS double ext (From) - fgemm : "<<tfgemmc.usertime()<<std::endl;
+#endif
+			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+		integer* Aiter= A;
+		size_t k=_ldm;
+		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
+		std::vector<uint16_t> A0(k4<<2,0),A1(k4<<2,0),A2(k4<<2,0),A3(k4<<2,0);
+		integer a0,a1,a2,a3,res,res2;
+		mpz_t *m0,*m1,*m2,*m3;
+		m0= reinterpret_cast<mpz_t*>(&a0);
+		m1= reinterpret_cast<mpz_t*>(&a1);
+		m2= reinterpret_cast<mpz_t*>(&a2);
+		m3= reinterpret_cast<mpz_t*>(&a3);
+		mp_limb_t *m0_d,*m1_d,*m2_d,*m3_d;
+		m0_d = m0[0]->_mp_d;
+		m1_d = m1[0]->_mp_d;
+		m2_d = m2[0]->_mp_d;
+		m3_d = m3[0]->_mp_d;
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc = m3[0]->_mp_alloc = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
+		Givaro::Timer tkroc;
+		tkroc.start();
+//		auto sp=SPLITTER();
+//		PARFOR1D(i,m,sp,
+		for(size_t i=0;i<m;i++)
+			for (size_t j=0;j<n;j++){
+				size_t idx=i*n+j;
+				for (size_t l=0;l<k;l++){
+					uint64_t tmp=(uint64_t)A_beta[l+idx*k];
+					uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
+					A0[l  ]= tptr[0];
+					A1[l+1]= tptr[1];
+					A2[l+2]= tptr[2];
+					A3[l+3]= tptr[3];
+				}
+					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
+				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
+				m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
+				m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
+				m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
+				res = a0;res+= a1;res+= a2;res+= a3;
+
+		
+				for (size_t l=0;l<k;l++){
+				  uint64_t tmp=(uint64_t)A_beta2[l+idx*k];
+					uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
+					A0[l  ]= tptr[0];
+					A1[l+1]= tptr[1];
+					A2[l+2]= tptr[2];
+					A3[l+3]= tptr[3];
+				}
+					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
+				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
+				m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
+				m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
+				m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
+				res2 = a0;res2+= a1;res2+= a2;res2+= a3;
+#ifdef RNS_DEBUG
+				std::cout<<"res1:="<<res<<";\n";
+				std::cout<<"res2:="<<res2<<";\n"
+#endif
+				res+=(res2<<shift);				
+				res%=_M;
+				
+				// get the correct result according to the expected sign of A
+				if (res>hM)
+					res-=_M;
+				if (gamma==0)
+					Aiter[j+i*lda]=res;
+				else
+					if (gamma==integer(1))
+						Aiter[j+i*lda]+=res;
+					else
+						if (gamma==integer(-1))
+							Aiter[j+i*lda]=res-Aiter[j+i*lda];
+						else{
+							Aiter[j+i*lda]*=gamma;
+							Aiter[j+i*lda]+=res;
+						}
+
+			}
+				 tkroc.stop();
+#ifdef BENCH_RNS			
+				 if(m>1 && n>1) std::cerr<<"RNS double ext (From) -  Convert : "<<tkroc.usertime()<<std::endl;
+#endif
+		m0[0]->_mp_d = m0_d;
+		m1[0]->_mp_d = m1_d;
+		m2[0]->_mp_d = m2_d;
+		m3[0]->_mp_d = m3_d;
+		m0[0]->_mp_alloc = m1[0]->_mp_alloc = m2[0]->_mp_alloc= m3[0]->_mp_alloc = 1;
+		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size = m3[0]->_mp_size  = 0;
+		FFLAS::fflas_delete( A_beta);
+
+
+#ifdef CHECK_RNS
+		bool ok=true;
+		for (size_t i=0;i<m;i++)
+		  for(size_t j=0;j<n;j++)
+		    for(size_t k=0;k<_size;k++){
+		      int64_t _p =(int64_t) _basis[k];
+		      integer curr=A[i*lda+j] - gamma*Acopy[i*n+j];
+		      ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+		      if (!ok) std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+				}
+		std::cout<<"RNS double ext (From) ... "<<(ok?"OK":"ERROR")<<std::endl;
+#endif
+
+	}
+
   
 
 }// end of namespace FFPACK
+
 
 #endif // __FFLASFFPACK_field_rns_double_extended_INL

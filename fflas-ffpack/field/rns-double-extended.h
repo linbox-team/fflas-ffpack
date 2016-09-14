@@ -379,14 +379,24 @@ namespace FFPACK {
 				 t2+=chrono.usertime();
 				 chrono.start();
 #endif
-				 double beta=double(1<<16), mask=double((1<<21)+1);
-				 double  acc=1,accLow,accHigh,accTmp;	       
+				 const int shift=27;
+				 double beta=double(1<<16), mask=double(shift+1);
+				 double  acc=1,accTmp1,accTmp2;
+
 				 for(size_t j=0;j<_ldm;j++){
 					 // split acc using Verkampt split
-					 accTmp=acc*mask;
-					 _crt_in[j+i*_ldm]=accTmp - (accTmp-acc);
-					 _crt_in[j+(i+_size)*_ldm]= acc - _crt_in[j+i*_ldm];
+					 // accTmp1=acc*mask;
+					 // accTmp1=accTmp1 -(accTmp1-acc);
+					 // accTmp2=acc-accTmp1;
+					 // _crt_in[j+i*_ldm]=(accTmp1<mask?accTmp1:accTmp2);
+					 // _crt_in[j+(i+_size)*_ldm]=(accTmp1<mask?accTmp2:accTmp1);
+					 uint64_t acci= (uint64_t)acc;
+					 _crt_in[j+i*_ldm]=acci  & ((1<<shift)-1);
+					 _crt_in[j+(i+_size)*_ldm]=(acci >> shift);
+					 
 					 _field_rns[i].mulin(acc,beta);					
+					 //std::cout<<"RNS precomp ("<<i<<") -> "<< (int64_t)_crt_in[j+i*_ldm]<<"  "<< (int64_t)_crt_in[j+(i+_size)*_ldm]<<std::endl;
+
 				 }
 #ifdef BENCH_RNS_PRECOMP
 				chrono.stop();
@@ -398,6 +408,17 @@ namespace FFPACK {
 			std::cout<<"RNS precomp t2="<<t2<<std::endl;
 			std::cout<<"RNS precomp t3="<<t3<<std::endl;
 #endif
+
+
+#ifdef RNS_DEBUG
+			std::cout<<"RNS double ext - basis:= [";
+			for(size_t i=0;i<_size;i++)
+				std::cout<<(int64_t)_basis[i]<<(i!=_size-1?",":"];\n");
+			Givaro::ModularExtended<double> ZZ(2UL<<48);;
+			std::cout<<"CRTmat:=";write_field(ZZ,std::cout,_crt_out.data(), _size, _ldm,_ldm,true);
+#endif			
+
+
 		}
 
 		// Arns must be an array of m*n*_size
@@ -411,7 +432,7 @@ namespace FFPACK {
 
 		void init(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
 		// void init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR=false) const;
-		// void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
+		void convert(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 		// void convert_transpose(size_t m, size_t n, integer gamma, integer* A, size_t lda, const double* Arns, size_t rda, bool RNS_MAJOR=false) const;
 	};
 
