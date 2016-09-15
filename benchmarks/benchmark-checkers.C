@@ -31,7 +31,7 @@
 #define _NR_TESTS 5
 #define _MAX_SIZE_MATRICES 1000
 
-#include "fflas-ffpack/config-blas.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
