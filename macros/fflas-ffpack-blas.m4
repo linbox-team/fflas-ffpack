@@ -190,7 +190,7 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 
 		CODE_OPENBLAS='extern "C"{void openblas_set_num_threads(int num_threads);} int main(){openblas_set_num_threads(1);return 0;}'
 
-		AC_MSG_CHECKING(if this OpenBLAS)
+		AC_MSG_CHECKING(if this is OpenBLAS)
 
 		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
 		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
