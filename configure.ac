@@ -181,12 +181,12 @@ CUSTOM_SIMD="no"
 FF_CHECK_SIMD
 #FF_CHECK_SSE
 #FF_CHECK_AVX
-arch=`echo $target | cut -d"-" -f1`
-if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
-   AX_CHECK_X86_FEATURES([][])
-else
-   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
-fi
+dnl arch=`echo $target | cut -d"-" -f1`
+dnl if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
+dnl    AX_CHECK_X86_FEATURES([][])
+dnl else
+dnl    CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
+dnl fi
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
 AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
 echo "CCNAM = $CCNAM $CUSTOM_SIMD"
