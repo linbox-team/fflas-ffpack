@@ -34,7 +34,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+//#define __FFLASFFPACK_DEBUG 1
 #define TIME 1
 
 #include <iomanip>
@@ -117,7 +117,7 @@ int main(int argc, char** argv){
 		}
 	}
 
-#if DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 	Field::Element  *B2=NULL;
 	FFLAS::fflas_delete( A);
 

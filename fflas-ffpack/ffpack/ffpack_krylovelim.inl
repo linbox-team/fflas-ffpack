@@ -183,7 +183,7 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 				if (iterates[it_idx++]){
 					rankProfile [rp_idx++] = curr_row;
 					if (dependent){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 						std::cerr<<"FAIL itere dependant intercale"<<std::endl;
 #endif
 						FFLAS::fflas_delete( P);
@@ -192,13 +192,13 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 						FFLAS::fflas_delete( inviterates);
 						throw CharpolyFailed();
 					}
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"X";
 #endif
 				}
 				else{
 					dependent = true;
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"O";
 #endif
 				}
@@ -208,12 +208,12 @@ FFPACK::SpecRankProfile (const Field& F, const size_t M, const size_t N,
 		dependent = false;
 		if ((Q [bk_idx] == i)&&(i<R)){
 			rankProfile [rp_idx++] = curr_row;
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
  			std::cerr<<"V"<<std::endl;
 #endif
  			bk_idx++;
  		}
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
  		else
  			std::cerr<<"W"<<std::endl;
 #endif

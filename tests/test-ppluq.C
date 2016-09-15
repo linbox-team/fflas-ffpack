@@ -71,8 +71,8 @@ typedef Givaro::Modular<double> Field;
 typedef Givaro::ZRing<double> Field;
 #endif
 
-#ifndef DEBUG
-#define DEBUG 1
+#ifndef __FFLASFFPACK_DEBUG
+#define __FFLASFFPACK_DEBUG 1
 #endif
 
 #ifndef SEQ
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 
 // FFLAS::fflas_new<Field::Element>(n*m);
 	Field::Element* A = FFLAS::fflas_new<Field::Element>(n*m);
-#if(DEBUG==1)
+#if __FFLASFFPACK_DEBUG
 	Field::Element* Adebug = FFLAS::fflas_new<Field::Element>(n*m);
 #endif
 	// std::vector<size_t> Index_P(r);
@@ -237,7 +237,7 @@ int main(int argc, char** argv)
     PARFOR1D(i, (size_t)m, H,
         for (size_t j=0; j<(size_t)n; ++j) {
             *(A+i*n+j) = *(Acop+i*n+j) ;
-#if(DEBUG==1)
+#if __FFLASFFPACK_DEBUG
             *(Adebug+i*n+j) = *(Acop+i*n+j) ;
 #endif
         }
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
         //#endi
 
         //	std::cout<<typeid(A).name()<<endl;
-#if(DEBUG==1)
+#if __FFLASFFPACK_DEBUG
 	cout<<"check equality A == PLUQ ?"<<endl;
     verification_PLUQ(F,Adebug,A,P,Q,m,n,R);
     FFLAS::fflas_delete( Adebug);

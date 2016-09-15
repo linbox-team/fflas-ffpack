@@ -34,7 +34,6 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
 #define TIME 1
 using namespace std;
 
@@ -83,7 +82,7 @@ int main(int argc, char** argv){
 		tim+=t;
 	}
 
-#if DEBUG
+#if __FFLASFFPACK_DEBUG
 	Field::Element *Ab = read_field(F,argv[2],&m,&n);
 	Field::Element *C = FFLAS::fflas_new<Field::Element>(NSdim*n);
  	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n,

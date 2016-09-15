@@ -26,13 +26,13 @@ dnl enable basic debug mode.
 AC_DEFUN([AC_DEBUG],
 [AC_MSG_CHECKING([whether to enable debugging options in the library])
   AC_ARG_ENABLE(debug,
-[AC_HELP_STRING([--enable-debug=yes|no], [enable debugging options in library])],
+  [AC_HELP_STRING([--enable-debug=yes|no], [enable debugging options in library])],
       USE_DEBUG=$enableval,
       USE_DEBUG=no)
   AC_MSG_RESULT([$USE_DEBUG])
   AM_CONDITIONAL(DEBUG, [test x$USE_DEBUG = xyes])
-  DBG=$USE_DEBUG
-  AC_SUBST(DBG)dnl
+  AM_COND_IF(DEBUG,[AC_DEFINE(DEBUG,1,[Define whether to compile in DEBUG mode])],[])
+  AC_SUBST(USE_DEBUG)dnl
 ]
 )
 

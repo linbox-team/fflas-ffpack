@@ -31,7 +31,6 @@
 
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 
-//#define LB_DEBUG
 namespace FFPACK {
 	template<class Field>
 	inline size_t
@@ -743,6 +742,5 @@ namespace FFPACK {
 
 } // FFPACK
 
-#undef LB_DEBUG
 #endif //__FFLASFFPACK_ffpack_ludivine_INL
 
