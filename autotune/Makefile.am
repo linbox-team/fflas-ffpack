@@ -27,7 +27,7 @@ AUTOTUNE_FGEMM = winograd-modular-float winograd-modular-double winograd-modular
 AUTOTUNE = $(AUTOTUNE_FGEMM)
 
 EXTRA_PROGRAMS=$(AUTOTUNE)
-
+EXTRA_DIST=tune_fgemm.sh
 autotune: autotune_fgemm
 	cat fgemm-thresholds.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
 
