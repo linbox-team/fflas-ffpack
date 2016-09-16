@@ -23,6 +23,8 @@
 * ========LICENCE========
 */
 
+#define ENABLE_ALL_CHECKINGS 1 // DO NOT CHANGE
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
