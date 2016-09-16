@@ -358,7 +358,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		std::cout<<oss.str();
 		std::cout<<" .";
 
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		F->write(std::cerr) << std::endl;
 #endif
 

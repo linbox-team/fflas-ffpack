@@ -333,13 +333,13 @@ bool test_pluq (const Field & F,
     typename Field::RandIter G(F);
 
 		// Temporarily disabling ForceCheck, waiting for #50 to be fixed
-		//FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,B,lda);
-    FFPACK::Checker_PLUQ<Field> checker (G,m,n,B,lda);
+    FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,B,lda);
+//     FFPACK::Checker_PLUQ<Field> checker (G,m,n,B,lda);
 
 	size_t R = FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
 	// write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
     try {
-        checker.check(B,lda,R,P,Q);
+        checker.check(B,lda,diag,R,P,Q);
     } catch(FailurePLUQCheck &e) {
         std::cout << m << 'x' << n << " pluq verification failed!\n";
     }

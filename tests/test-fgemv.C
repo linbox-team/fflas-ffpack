@@ -34,7 +34,6 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 1
 #define TIME 1
 
 #if not defined(STD_RECINT_SIZE)
@@ -99,7 +98,7 @@ int main(int argc, char** argv){
 		tim+=t;
 	}
 
-#if DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 	Field::Element *d;
     d = read_field(F,argv[7],&m,&k);
 	for (int i=0; i<m; ++i)
