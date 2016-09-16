@@ -39,7 +39,7 @@ using namespace std;
 int main(int argc, char** argv) {
   
 	size_t iter = 3;
-    int p=0;
+    bool p=false;
 	int    q    = 1009;
 	size_t    n    = 2000;
 	std::string file = "";
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
 		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
-		{ 'p', "-p P", "0 for sequential, else  3D rec adaptive.", TYPE_INT , &p },
+		{ 'p', "-p P", "multi-threaded.", TYPE_BOOL , &p },
 		{ 'c', "-c C", "force checkers.", TYPE_BOOL , &forcecheck },
 		END_OF_ARGUMENTS
 	};
