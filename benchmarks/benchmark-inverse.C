@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /* Copyright (c) FFLAS-FFPACK
@@ -23,8 +23,7 @@
 * ========LICENCE========
 */
 
-#define ENABLE_ALL_CHECKINGS 1 // DO NOT CHANGE
-
+// #define ENABLE_ALL_CHECKINGS 1 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -46,7 +45,7 @@ int main(int argc, char** argv) {
 	std::string file = "";
 	int t=MAX_THREADS;
 	int NBK = -1;
-
+	bool forcecheck = false;
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
@@ -55,7 +54,8 @@ int main(int argc, char** argv) {
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
 		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
-        { 'p', "-p P", "0 for sequential, else  3D rec adaptive.", TYPE_INT , &p },
+		{ 'p', "-p P", "0 for sequential, else  3D rec adaptive.", TYPE_INT , &p },
+		{ 'c', "-c C", "force checkers.", TYPE_BOOL , &forcecheck },
 		END_OF_ARGUMENTS
 	};
 
@@ -80,6 +80,8 @@ int main(int argc, char** argv) {
             A = FFLAS::fflas_new<Element>(n*n);
             PAR_BLOCK { FFLAS::pfrand(F,G,n,n,A,n/size_t(NBK)); }	
         }
+
+		FFPACK::ForceCheck_invert<Field> checker(G,n,A,n);
         
         int nullity=0;
         if (p) {
@@ -92,7 +94,9 @@ int main(int argc, char** argv) {
             FFPACK::Invert (F, n, A, n, nullity);
             chrono.stop();
         }
-        
+
+        if (forcecheck) checker.check(A,nullity);
+
         time+=chrono.realtime();
         FFLAS::fflas_delete( A);
     }

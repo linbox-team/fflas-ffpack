@@ -70,52 +70,39 @@ template<class Field, class ParSeq>
 		const size_t N, typename Field::Element_ptr A, const size_t lda, ParSeq& H)
 	{
         if ( (N == 1) || (H.numthreads()<=1)) return ftrtri (F,Uplo,Diag,N,A,lda);
-        SYNCH_GROUP(			
-            size_t N1 = N/2;
-            size_t N2 = N - N1;
-            
-                // [ A1 | A3 ]
-                // [  0 | A2 ]
-            typename Field::Element * A1 = A;
-            typename Field::Element * A2 = A + N1*(lda+1);
-            ParSeq Hleft(std::max(H.numthreads()/2,size_t(1)));
-            ParSeq Hright(std::max(H.numthreads()-Hleft.numthreads(),size_t(1)));
 
+		size_t N1 = N/2;
+		size_t N2 = N - N1;
+		
+			// [ A1 | A3 ]
+			// [  0 | A2 ]
+		typename Field::Element * A1 = A;
+		typename Field::Element * A2 = A + N1*(lda+1);
+
+		ParSeq Hleft(std::max(H.numthreads()/2,size_t(1)));
+		ParSeq Hright(std::max(H.numthreads()-Hleft.numthreads(),size_t(1)));
+
+		SYNCH_GROUP(			
             TASK(MODE(CONSTREFERENCE(F, A1) READWRITE(A1[0])),
-                 ftrtri (F, Uplo, Diag, N1, A1, lda, Hleft); );
-
+				 ftrtri (F, Uplo, Diag, N1, A1, lda, Hleft); );
             TASK(MODE(CONSTREFERENCE(F, A2) READWRITE(A2[0])),
-                 ftrtri (F, Uplo, Diag, N2, A2, lda, Hright); );
-
-            CHECK_DEPENDENCIES;
-
-            if (Uplo == FFLAS::FflasUpper){
-                typename Field::Element * A3 = A + N1;
-
-                TASK(MODE(READ(A1[0]) READWRITE(A3[0]) CONSTREFERENCE(F, A1, A3)),
-                ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, 
-                       N1, N2, F.one, A1, lda, A3, lda, H); );
-
-                TASK(MODE(READ(A2[0]) READWRITE(A3[0]) CONSTREFERENCE(F, A2, A3)),
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, 
-                       N1, N2, F.mOne, A2, lda, A3, lda, H); );
-                
-                CHECK_DEPENDENCIES;
-            }
-            else {
-                typename Field::Element * A3 = A + N1*lda;
-
-                TASK(MODE(READ(A2[0]) READWRITE(A3[0]) CONSTREFERENCE(F, A2, A3)),
-                ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, 
-                       N2, N1, F.one, A2, lda, A3, lda, H); );
-
-                TASK(MODE(READ(A1[0]) READWRITE(A3[0]) CONSTREFERENCE(F, A1, A3)),
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, 
-                       N2, N1, F.mOne, A1, lda, A3, lda, H); );
-
-                CHECK_DEPENDENCIES;
-            }
-        );   
+				 ftrtri (F, Uplo, Diag, N2, A2, lda, Hright); );
+			CHECK_DEPENDENCIES;
+		);
+		if (Uplo == FFLAS::FflasUpper){
+			typename Field::Element * A3 = A + N1;
+			ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, 
+				   N1, N2, F.one, A1, lda, A3, lda, H);
+			ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, 
+				   N1, N2, F.mOne, A2, lda, A3, lda, H);
+		}
+		else {
+			typename Field::Element * A3 = A + N1*lda;
+			ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, 
+				   N2, N1, F.one, A2, lda, A3, lda, H);
+			ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, Diag, 
+				   N2, N1, F.mOne, A1, lda, A3, lda, H);
+		}
 	}
 
 
@@ -158,19 +145,36 @@ template<class Field, class ParSeq>
 		size_t N1 = N/2;
 		size_t N2 = N-N1;
 
-		ftrtrm (F, diag, N1, A, lda, H);
+			// [ A1 | A2 ]
+			// [ A3 | A4 ]
+		typename Field::Element * A1 = A;
+		typename Field::Element * A2 = A+N1;
+		typename Field::Element * A3 = A+N1*lda;
+		typename Field::Element * A4 = A+N1*(lda+1);
+
+
+		ftrtrm (F, diag, N1, A1, lda, H);
 
 		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N1, N1, N2, F.one,
-		       A+N1, lda, A+N1*lda, lda, F.one, A, lda, H);
+		       A2, lda, A3, lda, F.one, A1, lda, H);
 
+		ParSeq Hleft(std::max(H.numthreads()/2,size_t(1)));
+		ParSeq Hright(std::max(H.numthreads()-Hleft.numthreads(),size_t(1)));
+
+		SYNCH_GROUP(			
+            TASK(MODE(CONSTREFERENCE(F, A2, A4) READWRITE(A2[0])),
 		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans,
 		       (diag == FFLAS::FflasUnit) ? FFLAS::FflasNonUnit : FFLAS::FflasUnit,
-		       N1, N2, F.one, A + N1*(lda+1), lda, A + N1, lda, H);
+		       N1, N2, F.one, A4, lda, A2, lda, Hleft); );
 
+            TASK(MODE(CONSTREFERENCE(F, A3, A4) READWRITE(A3[0])),
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, diag, N2, N1,
-		       F.one, A + N1*(lda+1), lda, A + N1*lda, lda, H);
+		       F.one, A4, lda, A3, lda, Hright); );
 
-		ftrtrm (F, diag, N2, A + N1*(lda+1), lda, H);
+			CHECK_DEPENDENCIES;
+			)
+
+		ftrtrm (F, diag, N2, A4, lda, H);
 
 	}
 
