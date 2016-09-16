@@ -37,58 +37,71 @@ using namespace std;
 
 int main(int argc, char** argv) {
   
-	size_t iter = 1;
+	size_t iter = 3;
+    int p=0;
 	int    q    = 1009;
 	size_t    n    = 2000;
 	std::string file = "";
+	int t=MAX_THREADS;
+	int NBK = -1;
+
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
+        { 'p', "-p P", "0 for sequential, else  3D rec adaptive.", TYPE_INT , &p },
 		END_OF_ARGUMENTS
 	};
 
+	if (NBK==-1) NBK = t;
 	FFLAS::parseArguments(argc,argv,as);
 
-  typedef Givaro::ModularBalanced<double> Field;
-  typedef Field::Element Element;
-
-  Field F(q);
-  Field::Element * A;
-
-  FFLAS::Timer chrono;
-  double time=0.0;
-
-  for (size_t i=0;i<iter;++i){
-	  if (!file.empty()){
-		  A = read_field(F, file.c_str(),  &n, &n);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random(*(A+j));
-	  }
-
-	  int nullity=0;
-	  chrono.clear();
-	  chrono.start();
-	  FFPACK::Invert (F, n, A, n, nullity);
-	  chrono.stop();
-
-	  time+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
-  }
-  
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
-	#define CUBE(x) ((x)*(x)*(x))
+    typedef Givaro::ModularBalanced<double> Field;
+    typedef Field::Element Element;
+    
+    Field F(q);
+    Field::RandIter G(F);
+    Field::Element * A;
+    
+    FFLAS::Timer chrono;
+    double time=0.0;
+    
+    for (size_t i=0;i<iter;++i){
+        if (!file.empty()){
+            A = read_field(F, file.c_str(),  &n, &n);
+        }
+        else {
+            A = FFLAS::fflas_new<Element>(n*n);
+            PAR_BLOCK { FFLAS::pfrand(F,G,n,n,A,n/size_t(NBK)); }	
+        }
+        
+        int nullity=0;
+        if (p) {
+            chrono.clear(); chrono.start();
+            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH(t);
+            PAR_BLOCK { FFPACK::Invert (F, n, A, n, nullity, PSH); }
+            chrono.stop();
+        } else {
+            chrono.clear(); chrono.start();
+            FFPACK::Invert (F, n, A, n, nullity);
+            chrono.stop();
+        }
+        
+        time+=chrono.realtime();
+        FFLAS::fflas_delete( A);
+    }
+    
+        // -----------
+        // Standard output for benchmark - Alexis Breust 2014/11/14
+#define CUBE(x) ((x)*(x)*(x))
 	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << 2. * CUBE(double(n)/1000.) / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
-
+    
 
   return 0;
 }

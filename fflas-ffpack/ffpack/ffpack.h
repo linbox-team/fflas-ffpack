@@ -600,6 +600,14 @@ namespace FFPACK { /* echelon */
 					   size_t* P, size_t* Qt, bool transform = false,
 					   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+	template <class Field, class Cut, class Param>
+	size_t
+	pColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+					   typename Field::Element_ptr A, const size_t lda,
+					   size_t* P, size_t* Qt, bool transform,
+					   const FFPACK_LU_TAG LuTag,
+                       const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSH);
+
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
 	 * If LuTag == FfpackTileRecursive, then after the computation A = [ L \ M ]
@@ -650,6 +658,15 @@ namespace FFPACK { /* echelon */
 							  typename Field::Element_ptr A, const size_t lda,
 							  size_t* P, size_t* Qt, const bool transform = false,
 							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+
+
+	template <class Field, class Cut, class Param>
+	size_t
+	pReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+							  typename Field::Element_ptr A, const size_t lda,
+							  size_t* P, size_t* Qt, const bool transform,
+							  const FFPACK_LU_TAG LuTag,
+                      const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSH);
 
 	/** Compute the Reduced Row Echelon form of the input matrix in-place.
 	 *

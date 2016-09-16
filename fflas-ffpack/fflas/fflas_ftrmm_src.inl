@@ -164,10 +164,11 @@ template <>
 class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG))))<__FFLAS__ELEMENT>{
 public:
 
-template <class Field>
+template <class Field, class ParSeq>
 void delayed (const Field& F, const size_t M, const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t lda,
-	      typename Field::Element_ptr B, const size_t ldb)
+          typename Field::Element_ptr B, const size_t ldb,
+          ParSeq& H)
 {
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
 	openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
@@ -179,13 +180,17 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		 Mjoin (Cblas, __FFLAS__TRANS),
 		 Mjoin (Cblas, __FFLAS__DIAG),
 		 (int)M, (int)N, 1.0, A, (int)lda, B, (int)ldb );
+    if (H.numthreads()>1)
+        pfreduce(F, M, N, B, ldb, H.numthreads());
+    else
         freduce(F, M, N, B, ldb);
 }
 
-template <class Field>
+template <class Field, class ParSeq>
 void operator () (const Field& F, const size_t M, const size_t N,
 		  typename Field::ConstElement_ptr A, const size_t lda,
-		  typename Field::Element_ptr B, const size_t ldb)
+          typename Field::Element_ptr B, const size_t ldb,
+          ParSeq& H)
 {
 
 	if (!M || !N ) return;
@@ -197,22 +202,22 @@ void operator () (const Field& F, const size_t M, const size_t N,
 
 	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
-			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb);
+			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb, H);
 
 	for ( size_t  i = 0; i < nbblocsplit; ++i) {
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans, Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.one,
-		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, F.one, __FFLAS__Bupdate, ldb);
+		       __FFLAS__Brec, ldb, __FFLAS__Aupdate, lda, F.one, __FFLAS__Bupdate, ldb, H);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS),  FflasNoTrans,
 		       __FFLAS__Mupdate, __FFLAS__Nupdate, nsplit, F.one,
-		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, F.one, __FFLAS__Bupdate, ldb);
+		       __FFLAS__Aupdate, lda, __FFLAS__Brec, ldb, F.one, __FFLAS__Bupdate, ldb, H);
 #endif
 
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
-			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb);
+			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb, H);
 
 
 	}
@@ -226,10 +231,11 @@ template <class Element>
 class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRANS, __FFLAS__DIAG)))) {
 public:
 
-template<class Field>
+template<class Field, class ParSeq>
 void operator()	(const Field& F, const size_t M, const size_t N,
 		 typename Field::ConstElement_ptr A, const size_t lda,
-		 typename Field::Element_ptr B, const size_t ldb)
+		 typename Field::Element_ptr B, const size_t ldb, 
+         ParSeq& H)
 {
 
 	if (__FFLAS__Na == 1)
@@ -241,18 +247,18 @@ void operator()	(const Field& F, const size_t M, const size_t N,
 
 	 else { // __FFLAS__Na > 1
 		size_t nsplit = __FFLAS__Na >> 1;
-		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A1, lda, __FFLAS__B1, ldb);
+		this->operator() (F, __FFLAS__Mb2, __FFLAS__Nb2, __FFLAS__A1, lda, __FFLAS__B1, ldb, H);
 
 #ifdef __FFLAS__RIGHT
 		fgemm (F, FflasNoTrans , Mjoin (Fflas, __FFLAS__TRANS),
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.one,
-		       __FFLAS__B2, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B1, ldb);
+		       __FFLAS__B2, ldb, __FFLAS__A2, lda, F.one, __FFLAS__B1, ldb, H);
 #else
 		fgemm (F, Mjoin (Fflas, __FFLAS__TRANS), FflasNoTrans,
 		       __FFLAS__Mb2, __FFLAS__Nb2, nsplit, F.one,
-		       __FFLAS__A2, lda, __FFLAS__B2, ldb, F.one, __FFLAS__B1, ldb);
+		       __FFLAS__A2, lda, __FFLAS__B2, ldb, F.one, __FFLAS__B1, ldb, H);
 #endif
-		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A3, lda, __FFLAS__B2, ldb);
+		this->operator() (F, __FFLAS__Mb, __FFLAS__Nb, __FFLAS__A3, lda, __FFLAS__B2, ldb, H);
 	}
 }
 };

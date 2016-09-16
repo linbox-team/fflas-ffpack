@@ -32,7 +32,7 @@
 
 
 namespace FFPACK {
-template <class Field>
+    template <class Field>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
 		typename Field::Element_ptr A, const size_t lda,
@@ -76,6 +76,35 @@ template <class Field>
 		Invert (F, M, X, ldx, nullity);
 		return X;
 	}
+
+
+    template <class Field, class Cut, class Param>
+	typename Field::Element_ptr
+	Invert (const Field& F, const size_t M,
+		typename Field::Element_ptr A, const size_t lda,
+		int& nullity, const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSH)
+	{
+        FFLASFFPACK_check(lda >= M);
+
+		Checker_invert<Field> checker(F,M,A,lda);
+
+		if (M == 0) {
+			nullity = 0 ;
+			return NULL ;
+		}
+		size_t * P = FFLAS::fflas_new<size_t>(M);
+		size_t * Q = FFLAS::fflas_new<size_t>(M);
+		size_t R =  pReducedColumnEchelonForm<Field,Cut,Param> (F, M, M, A, lda, P, Q, true, FFPACK::FfpackSlabRecursive, PSH);
+		nullity = (int)(M - R);
+		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+			M, 0, (int)R, A, lda, P);
+		delete [] P;
+		delete [] Q;
+
+		checker.check(A,nullity);
+		return A;
+	}
+
 
 	template <class Field>
 	typename Field::Element_ptr

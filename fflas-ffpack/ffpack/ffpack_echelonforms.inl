@@ -70,6 +70,48 @@ inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size
 	return r;
 }
 
+template <class Field, class Cut, class Param>
+inline size_t FFPACK::pColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+								  typename Field::Element_ptr A, const size_t lda,
+								  size_t* P, size_t* Qt, const bool transform,
+                                  const FFPACK_LU_TAG LuTag,
+                                  const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSH)
+ {
+	size_t r;
+	r = pPLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, PSH.numthreads());
+
+	if (transform){
+		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda, PSH);
+		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda, PSH);
+	}
+
+	return r;
+}
+
+template <class Field, class Cut, class Param>
+inline size_t
+FFPACK::pReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
+								  typename Field::Element_ptr A, const size_t lda,
+								  size_t* P, size_t* Qt, const bool transform,
+								  const FFPACK_LU_TAG LuTag,
+                                  const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSH)
+{
+	size_t r;
+	r = pColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, PSH);
+
+	if (transform){
+		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, r, A, lda, PSH);
+		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda, PSH);
+		ftrtrm (F, FFLAS::FflasNonUnit, r, A, lda, PSH);
+	} else {
+		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda, PSH);
+			//FFLAS::fidentity (F, r, r, A, lda);
+			//applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0,(int) r, A, lda, Qt);
+	}
+	return r;
+}
+
+
 template <class Field>
 inline size_t
 FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
@@ -101,6 +143,8 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	}
 	return r;
 }
+
+
 
 template <class Field>
 inline size_t
