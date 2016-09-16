@@ -162,7 +162,8 @@ namespace FFPACK {
     
     typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive> pWH (std::max(nt,1));
     typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PH (std::max(nt,1));
-    
+ 
+   
     SYNCH_GROUP(
 
 		  // [ B1 ] <- P1^T A2
