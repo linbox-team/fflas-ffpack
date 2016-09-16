@@ -152,8 +152,9 @@ template<class Field, class ParSeq>
 		typename Field::Element_ptr A, const size_t lda, ParSeq& H)
 	{
 
-		if (N == 1)
-			return;
+		if (N == 1) return;
+        if (H.numthreads()<=1) return ftrtrm(F,diag,N,A,lda);
+
 		size_t N1 = N/2;
 		size_t N2 = N-N1;
 
