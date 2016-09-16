@@ -86,7 +86,14 @@ int main(int argc, char** argv) {
         int nullity=0;
         if (p) {
             chrono.clear(); chrono.start();
-            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> PSH(t);
+            FFLAS::ParSeqHelper::Parallel<
+                FFLAS::CuttingStrategy::Block,
+                FFLAS::StrategyParameter::Threads> PSH(t);
+
+//             FFLAS::ParSeqHelper::Parallel<
+//                 FFLAS::CuttingStrategy::Recursive,
+//                 FFLAS::StrategyParameter::TwoDAdaptive> PSH(t);
+
             PAR_BLOCK { FFPACK::Invert (F, n, A, n, nullity, PSH); }
             chrono.stop();
         } else {
