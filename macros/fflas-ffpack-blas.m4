@@ -29,7 +29,7 @@ AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 			[AC_HELP_STRING([--with-blas-cflags=<cflags>],
 				[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
 			])
-		CBLAS_FLAG="$with_blas_cflags -D__FFLASFFPACK_HAVE_CBLAS"
+		CBLAS_FLAG="$with_blas_cflags"
 		AC_SUBST(CBLAS_FLAG)
 		dnl  echo $CBLAS_FLAG;
 		]
