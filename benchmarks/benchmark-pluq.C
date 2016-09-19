@@ -222,7 +222,6 @@ int main(int argc, char** argv) {
 				 // for (size_t j=0; j<(size_t)n; ++j)
 				 // 	Acop[i*n+j]= A[i*n+j];
 			 );
-	size_t BC;
 	for (size_t i=0;i<=iter;++i){
 		
 		PARFOR1D(j,maxP,H, P[j]=0; );
@@ -240,7 +239,6 @@ int main(int argc, char** argv) {
 
 			PAR_BLOCK{
 				R = FFPACK::pPLUQ(F, diag, m, n, A, n, P, Q, t);
-				BC = n/NUM_THREADS;
 			}
 		}
 		else{
@@ -257,7 +255,7 @@ int main(int argc, char** argv) {
 #define CUBE(x) ((x)*(x)*(x))
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
 	std::cout << "Time: " << meantime
-			  << " Gflops: " << gflop / meantime << " BC: "<<BC;
+			  << " Gflops: " << gflop / meantime;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
 	//verification
