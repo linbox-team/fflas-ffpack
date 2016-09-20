@@ -765,7 +765,7 @@ namespace FFPACK {
       //FFLAS::fadd(_field_rns[i],mn,Arns_tmp+(i)*mn,1,Arns_tmp+(_size+i)*mn,1, Arns+i*rda,1);
       //FFLAS::freduce (_field_rns[i],mn, Arns+i*rda,1);
 
-      FFLAS::fscalin (_field_rns[i],mn, double(1<<27), Arns_tmp+(i+_size)*mn,1);
+      FFLAS::fscalin (_field_rns[i],mn, double(1<<_shift), Arns_tmp+(i+_size)*mn,1);
       FFLAS::fadd(_field_rns[i],mn,Arns_tmp+(i)*mn,1,Arns_tmp+(_size+i)*mn,1, Arns+i*rda,1);
       FFLAS::freduce (_field_rns[i],mn, Arns+i*rda,1);
     }    
@@ -816,18 +816,18 @@ namespace FFPACK {
 				Acopy[i*n+j]=A[i*lda+j];
 
 #endif
+		Givaro::Timer tsplit;tsplit.start();
 		size_t mn=m*n;
 		double *Arns_tmp = FFLAS::fflas_new<double >(mn*_size*2),accTmp;
 		double* Arns_tmp2= Arns_tmp+mn;
-		const int shift=27;
-		double mask=double((1<<shift)+1), scaling=1./double(1<<shift);;
+		double mask=double((1<<_shift)+1), scaling=1./double(1<<_shift);;
 		for (size_t i=0;i<_size;i++)
 		  for (size_t j=0;j<mn;j++){
 		    uint64_t acci= (uint64_t)Arns[i*rda+j];;
-		     Arns_tmp [i*2*mn+j] = acci  & ((1<<shift)-1);
-		     Arns_tmp2[i*2*mn+j] = (acci >> shift);
+		     Arns_tmp [i*2*mn+j] = acci  & ((1<<_shift)-1);
+		     Arns_tmp2[i*2*mn+j] = (acci >> _shift);
 		  }
-
+		
 		
 #ifdef RNS_DEBUG
 		Givaro::ModularExtended<double> ZZ(2UL<<48);;
@@ -839,7 +839,12 @@ namespace FFPACK {
 		integer hM= (_M-1)>>1;
 		double *A_beta= FFLAS::fflas_new<double>(2*mn*_ldm);
 		double *A_beta2 = A_beta+mn*_ldm;
+		tsplit.stop();
+#ifdef BENCH_RNS			
+		if(m>1 && n>1) std::cerr<<"RNS EXTENDED double (From) - split : "<<tsplit.usertime()<<std::endl;
+#endif
 
+		
 		Givaro::Timer tfgemmc;tfgemmc.start();
 		if (RNS_MAJOR==false)
 				// compute A_beta = Ap^T x M_beta
@@ -859,7 +864,7 @@ namespace FFPACK {
 
 
 #ifdef BENCH_RNS			
-		if(m>1 && n>1) std::cerr<<"RNS double ext (From) - fgemm : "<<tfgemmc.usertime()<<std::endl;
+		if(m>1 && n>1) std::cerr<<"RNS EXTENDED double (From) - fgemm : "<<tfgemmc.usertime()<<std::endl;
 #endif
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
@@ -920,7 +925,7 @@ namespace FFPACK {
 				std::cout<<"res1:="<<res<<";\n";
 				std::cout<<"res2:="<<res2<<";\n"
 #endif
-				res+=(res2<<shift);				
+				res+=(res2<<_shift);				
 				res%=_M;
 				
 				// get the correct result according to the expected sign of A
@@ -942,7 +947,7 @@ namespace FFPACK {
 			}
 				 tkroc.stop();
 #ifdef BENCH_RNS			
-				 if(m>1 && n>1) std::cerr<<"RNS double ext (From) -  Convert : "<<tkroc.usertime()<<std::endl;
+				 if(m>1 && n>1) std::cerr<<"RNS EXTENDED double (From) -  Convert : "<<tkroc.usertime()<<std::endl;
 #endif
 		m0[0]->_mp_d = m0_d;
 		m1[0]->_mp_d = m1_d;
@@ -963,7 +968,7 @@ namespace FFPACK {
 		      ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
 		      if (!ok) std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
-		std::cout<<"RNS double ext (From) ... "<<(ok?"OK":"ERROR")<<std::endl;
+		std::cout<<"RNS EXTENDED double (From) ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 
 	}

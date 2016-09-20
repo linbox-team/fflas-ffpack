@@ -304,6 +304,7 @@ namespace FFPACK {
 		size_t                _size; // the size of the rns basis (number of mi's)
 		size_t               _pbits; // the size in bit of the mi's
 		size_t                 _ldm; // log[2^16](_M)
+		uint64_t    _shift;
 
 		typedef double                        BasisElement;
 		typedef rns_double_elt                     Element;
@@ -313,6 +314,18 @@ namespace FFPACK {
 		rns_double_extended_V2 (const integer& bound, size_t pbits, bool rnsmod=false, long seed=time(NULL))
 			:  _M(1), _size(0), _pbits(pbits)
 		{
+			if (pbits > 52){
+				std::cerr<<"FFLAS- RNS EXTENDED ERROR: prime bitsize above 52 bits ... log(p)="<<pbits<<std::endl;
+				std::terminate();
+			}
+			_shift=pbits/2;
+
+			if( (bound.bitsize()/uint64_t(pbits)) * (integer(1)<<_shift) >= (integer(1)<<37) ){
+				std::cerr<<"FFLAS- RNS EXTENDED ERROR: prime bitsize ("<<pbits<<") too large to handle RNS basise with "<<bound.bitsize()<<" bits"<<std::endl;
+				std::terminate();				
+				}
+
+
 			integer::seeding(seed);
 			Givaro::IntPrimeDom IPD;
 			integer prime;
@@ -379,8 +392,7 @@ namespace FFPACK {
 				 t2+=chrono.usertime();
 				 chrono.start();
 #endif
-				 const int shift=27;
-				 double beta=double(1<<16), mask=double(shift+1);
+				 double beta=double(1<<16), mask=double(_shift+1);
 				 double  acc=1,accTmp1,accTmp2;
 
 				 for(size_t j=0;j<_ldm;j++){
@@ -391,8 +403,8 @@ namespace FFPACK {
 					 // _crt_in[j+i*_ldm]=(accTmp1<mask?accTmp1:accTmp2);
 					 // _crt_in[j+(i+_size)*_ldm]=(accTmp1<mask?accTmp2:accTmp1);
 					 uint64_t acci= (uint64_t)acc;
-					 _crt_in[j+i*_ldm]=acci  & ((1<<shift)-1);
-					 _crt_in[j+(i+_size)*_ldm]=(acci >> shift);
+					 _crt_in[j+i*_ldm]=acci  & ((1<<_shift)-1);
+					 _crt_in[j+(i+_size)*_ldm]=(acci >> _shift);
 					 
 					 _field_rns[i].mulin(acc,beta);					
 					 //std::cout<<"RNS precomp ("<<i<<") -> "<< (int64_t)_crt_in[j+i*_ldm]<<"  "<< (int64_t)_crt_in[j+(i+_size)*_ldm]<<std::endl;
