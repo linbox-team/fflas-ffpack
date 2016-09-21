@@ -72,7 +72,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
@@ -142,7 +142,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
-			//std::cerr<<"=========================="<<std::endl;
 		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
 		if (R != r) {pass = false; break;}
@@ -175,7 +174,6 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 			// write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
 			// std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
 			// std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
-
 			// write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
 			// write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
 			break;
@@ -317,13 +315,16 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
 		if (!pass) {
 			std::cerr<<"FAIL"<<std::endl;
-			// write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
-			// write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
-			// std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
-			// std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
+			write_field(F,std::cerr<<"B = "<<std::endl,B,m,n,lda);
+			write_field(F,std::cerr<<"RedRowEchelon = "<<std::endl,U,m,n,n);
+			write_field(F,std::cerr<<"X x B  = "<<std::endl,X,m,n,n);
+			write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
+			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			std::cerr<<"R = "<<R<<std::endl;
+			std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
+			std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
 
 			// write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
-			//  write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
 			break;
 		}
 	}
@@ -358,10 +359,6 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		std::cout<<oss.str();
 		std::cout<<" .";
 
-#ifdef __FFLASFFPACK_DEBUG
-		F->write(std::cerr) << std::endl;
-#endif
-
 		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
 		std::cout<<".";
 		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
@@ -377,6 +374,8 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
 		std::cout<<".";
 		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		std::cout<<".";
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordan);
 		std::cout<<".";
 
 		nbit--;
@@ -394,9 +393,9 @@ int main(int argc, char** argv){
 
 	Givaro::Integer q = -1;
 	size_t b = 0;
-	size_t m = 80;
-	size_t n = 90;
-	size_t r = 20;
+	size_t m = 190;
+	size_t n = 250;
+	size_t r = 47;
 	size_t iters = 3 ;
 	bool loop = false;
 
@@ -411,8 +410,8 @@ int main(int argc, char** argv){
 		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
-	r = std::min(r, std::min(m,n));
 	FFLAS::parseArguments(argc,argv,as);
+	r = std::min(r, std::min(m,n));
 
 	bool ok = true;
 	do{
