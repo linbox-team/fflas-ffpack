@@ -32,7 +32,7 @@ namespace FFLAS
 
 
 	template<class Field, class AlgoT, class FieldTrait>
-	typename Field::Element*
+	typename Field::Element_ptr
 	pfgemm(const Field& F,
 		   const FFLAS_TRANSPOSE ta,
 		   const FFLAS_TRANSPOSE tb,
@@ -43,7 +43,7 @@ namespace FFLAS
 		   const typename Field::ConstElement_ptr A, const size_t lda,
 		   const typename Field::ConstElement_ptr B, const size_t ldb,
 		   const typename Field::Element beta,
-		   typename Field::Element * C, const size_t ldc, 
+		   typename Field::Element_ptr C, const size_t ldc,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Block, StrategyParameter::Threads> > & H){
 		{
 			H.parseq.set_numthreads( std::min(H.parseq.numthreads(), std::max((size_t)1,(size_t)(m*n/(__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD)))) );
@@ -66,7 +66,7 @@ namespace FFLAS
 	}
 	
 	template<class Field, class AlgoT, class FieldTrait>
-	typename Field::Element*
+	typename Field::Element_ptr
 	pfgemm(const Field& F,
 		   const FFLAS_TRANSPOSE ta,
 		   const FFLAS_TRANSPOSE tb,
@@ -77,7 +77,7 @@ namespace FFLAS
 		   const typename Field::ConstElement_ptr AA, const size_t lda,
 		   const typename Field::ConstElement_ptr BB, const size_t ldb,
 		   const typename Field::Element beta,
-		   typename Field::Element * C, const size_t ldc, 
+		   typename Field::Element_ptr C, const size_t ldc,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::ThreeDAdaptive> > & H){
 		
 	 typename Field::Element a = alpha;
@@ -162,7 +162,7 @@ namespace FFLAS
  }
 	
 	template<class Field, class AlgoT, class FieldTrait>
-	typename Field::Element*
+	typename Field::Element_ptr
 	pfgemm (const Field& F,
 			const FFLAS_TRANSPOSE ta,
 			const FFLAS_TRANSPOSE tb,
@@ -173,7 +173,7 @@ namespace FFLAS
 			const typename Field::ConstElement_ptr AA, const size_t lda,
 			const typename Field::ConstElement_ptr BB, const size_t ldb,
 			const typename Field::Element beta,
-			typename Field::Element * C, const size_t ldc, 
+			typename Field::Element_ptr C, const size_t ldc,
 			MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::TwoDAdaptive> > & H){
 
 		typename Field::Element a = alpha;

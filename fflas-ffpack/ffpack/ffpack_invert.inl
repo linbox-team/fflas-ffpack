@@ -32,11 +32,11 @@
 
 
 namespace FFPACK {
-    template <class Field>
+    template <class Field, class ParSeqHelper>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::Element_ptr A, const size_t lda,
-		int& nullity)
+			typename Field::Element_ptr A, const size_t lda,
+			int& nullity, const ParSeqHelper& PSH)
 	{
         FFLASFFPACK_check(lda >= M);
 
@@ -48,7 +48,7 @@ namespace FFPACK {
 		}
 		size_t * P = FFLAS::fflas_new<size_t>(M);
 		size_t * Q = FFLAS::fflas_new<size_t>(M);
-		size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordan);
+		size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordan, PSH);
 		nullity = (int)(M - R);
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, (int)R, A, lda, P);
 		delete [] P;
@@ -58,12 +58,12 @@ namespace FFPACK {
 		return A;
 	}
 
-	template <class Field>
+	template <class Field, class ParSeqHelper>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::ConstElement_ptr A, const size_t lda,
-		typename Field::Element_ptr X, const size_t ldx,
-		int& nullity)
+			typename Field::ConstElement_ptr A, const size_t lda,
+			typename Field::Element_ptr X, const size_t ldx,
+			int& nullity, const ParSeqHelper& PSH)
 	{
 		FFLASFFPACK_check(lda >= M);
 		FFLASFFPACK_check(ldx >= M);
@@ -72,38 +72,9 @@ namespace FFPACK {
 			return NULL ;
 		}
 		FFLAS::fassign(F,M,M,A,lda,X,ldx);
-		Invert (F, M, X, ldx, nullity);
+		Invert (F, M, X, ldx, nullity, PSH);
 		return X;
 	}
-
-
-    template <class Field, class Cut, class Param>
-	typename Field::Element_ptr
-	Invert (const Field& F, const size_t M,
-		typename Field::Element_ptr A, const size_t lda,
-		int& nullity, const FFLAS::ParSeqHelper::Parallel<Cut,Param>& PSH)
-	{
-        FFLASFFPACK_check(lda >= M);
-
-		Checker_invert<Field> checker(F,M,A,lda);
-
-		if (M == 0) {
-			nullity = 0 ;
-			return NULL ;
-		}
-		size_t * P = FFLAS::fflas_new<size_t>(M);
-		size_t * Q = FFLAS::fflas_new<size_t>(M);
-		size_t R =  pReducedColumnEchelonForm<Field,Cut,Param> (F, M, M, A, lda, P, Q, true, FFPACK::FfpackSlabRecursive, PSH);
-		nullity = (int)(M - R);
-		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-			M, 0, (int)R, A, lda, P);
-		delete [] P;
-		delete [] Q;
-
-		checker.check(A,nullity);
-		return A;
-	}
-
 
 	template <class Field>
 	typename Field::Element_ptr

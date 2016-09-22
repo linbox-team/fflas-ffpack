@@ -149,11 +149,11 @@ namespace FFPACK {
 			//        [ M1 ]
 		R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1,nt);
 
-		typename Field::Element * A2 = A + N2;
-		typename Field::Element * A3 = A + M2*lda;
-		typename Field::Element * A4 = A3 + N2;
-		typename Field::Element * F = A2 + R1*lda;
-		typename Field::Element * G = A3 + R1;
+		typename Field::Element_ptr A2 = A + N2;
+		typename Field::Element_ptr A3 = A + M2*lda;
+		typename Field::Element_ptr A4 = A3 + N2;
+		typename Field::Element_ptr F = A2 + R1*lda;
+		typename Field::Element_ptr G = A3 + R1;
 
 			// const FFLAS::CuttingStrategy meth = FFLAS::RECURSIVE;
 			// const FFLAS::StrategyParameter strat = FFLAS::TWO_D_ADAPT;
@@ -196,7 +196,7 @@ namespace FFPACK {
     
 			P2 = FFLAS::fflas_new<size_t>(M2-R1);
 			Q2 = FFLAS::fflas_new<size_t>(N-N2);
-				//typename Field::Element * A4R2 = 0;
+				//typename Field::Element_ptr A4R2 = 0;
 				// F = P2 [ L2 ] [ U2 V2 ] Q2
 				//        [ M2 ]
 			TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
@@ -257,7 +257,7 @@ namespace FFPACK {
 				//pftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda,  method, NUM);
 				//ftrsm( Fi, FflasRight, FflasUpper, FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
 			CHECK_DEPENDENCIES;
-			typename Field::Element_ptr temp = 0;
+			typename Field::Element_ptr temp;
 
 			TASK(MODE(READ(A4[0], R3, P2) READWRITE(temp[0], R2) CONSTREFERENCE(Fi, A4, temp, R2, R3)),
 				 temp = FFLAS::fflas_new (Fi, R3, R2);
@@ -280,10 +280,9 @@ namespace FFPACK {
 				 fgemm( Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N-N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda, pWH);
 				 FFLAS::fflas_delete (temp);
 					 //		       delete[] temp;
-				 temp=0;
 				 );
     
-			typename Field::Element_ptr R = 0;
+			typename Field::Element_ptr R;
 				// R <- H4 - K V2
 			TASK(MODE(READ(R2, R3, M2, N2, A4[R3*lda], F[R2]) CONSTREFERENCE(Fi, R, F, R2, R3, pWH) READWRITE(R[0])),
 				 R = A4 + R2 + R3*lda;

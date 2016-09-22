@@ -38,6 +38,9 @@ using namespace std;
 
 int main(int argc, char** argv) {
   
+	typedef Givaro::ModularBalanced<double> Field;
+	typedef Field::Element Element;
+
 	size_t iter = 3;
     bool p=false;
 	int    q    = 131071;
