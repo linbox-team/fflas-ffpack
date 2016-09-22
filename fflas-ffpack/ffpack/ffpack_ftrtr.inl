@@ -39,6 +39,7 @@ namespace FFPACK {
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 		const size_t N, typename Field::Element_ptr A, const size_t lda)
 	{
+		if (!N) return;
 		if (N == 1){
 			if (Diag == FFLAS::FflasNonUnit)
 				F.invin (*A);
@@ -112,7 +113,7 @@ template<class Field, class ParSeq>
 		typename Field::Element_ptr A, const size_t lda)
 	{
 
-		if (N == 1)
+		if (N <= 1)
 			return;
 		size_t N1 = N/2;
 		size_t N2 = N-N1;

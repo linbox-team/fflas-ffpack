@@ -75,7 +75,8 @@ namespace FFPACK  { /* tags */
 	{
 		FfpackSlabRecursive = 1,
 		FfpackTileRecursive = 2,
-		FfpackSingular = 3
+		FfpackSingular = 3,
+		FfpackGaussJordan = 4
 	};
 
 	enum FFPACK_CHARPOLY_TAG
@@ -688,36 +689,23 @@ namespace FFPACK { /* echelon */
 	template <class Field>
 	size_t
 	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
-			       typename Field::Element_ptr A, const size_t lda,
+						   typename Field::Element_ptr A, const size_t lda,
 						   size_t* P, size_t* Qt, const bool transform = false,
 						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
-	/**  Variant by the block recursive algorithm.
-	 * (See A. Storjohann Thesis 2000)
-	 * !!!!!! Warning !!!!!!
-	 * This code is NOT WORKING properly for some echelon structures.
-	 * This is due to a limitation of the way we represent permutation matrices
-	 * (LAPACK's standard):
-	 *  - a composition of transpositions Tij of the form
-	 *    P = T_{1,j1} o T_{2,j2] o...oT_{r,jr}, with jk>k for all 0 < k <= r <= n
-	 *  - The permutation on the columns, performed by this block recursive algorithm
-	 *  cannot be represented with such a composition.
-	 * Consequently this function should only be used for benchmarks
-	 */
-	template <class Field>
-	size_t
-	ReducedRowEchelonForm2 (const Field& F, const size_t M, const size_t N,
-				typename Field::Element_ptr A, const size_t lda,
-				size_t* P, size_t* Qt, const bool transform = true);
-
-	//! REF
-	template <class Field>
-	size_t
-	REF (const Field& F, const size_t M, const size_t N,
-	     typename Field::Element_ptr A, const size_t lda,
-	     const size_t colbeg, const size_t rowbeg, const size_t colsize,
-	     size_t* Qt, size_t* P);
-
+	namespace Protected {
+			/**  Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
+			 * @bib
+			 *  - Algorithm 2.8 of A. Storjohann Thesis 2000,
+			 *  - Algorithm 11 of Jeannerod C-P., Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
+			 */
+		template <class Field>
+		size_t
+		GaussJordan (const Field& F, const size_t M, const size_t N,
+					 typename Field::Element_ptr A, const size_t lda,
+					 const size_t colbeg, const size_t rowbeg, const size_t colsize,
+					 size_t* Qt, size_t* P);
+	} // Protected
 } // FFPACK
 // #include "ffpack_echelonforms.inl"
 

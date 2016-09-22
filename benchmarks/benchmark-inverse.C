@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
   
 	size_t iter = 3;
     bool p=false;
-	int    q    = 1009;
+	int    q    = 131071;
 	size_t    n    = 2000;
 	std::string file = "";
 	int t=MAX_THREADS;
@@ -62,9 +62,6 @@ int main(int argc, char** argv) {
 	if (NBK==-1) NBK = t;
 	FFLAS::parseArguments(argc,argv,as);
 
-    typedef Givaro::ModularBalanced<double> Field;
-    typedef Field::Element Element;
-    
     Field F(q);
     Field::RandIter G(F);
     Field::Element * A;
@@ -72,7 +69,7 @@ int main(int argc, char** argv) {
     FFLAS::Timer chrono;
     double time=0.0;
     
-    for (size_t i=0;i<iter;++i){
+    for (size_t i=0;i<=iter;++i){
         if (!file.empty()){
             A = read_field(F, file.c_str(),  &n, &n);
         }
@@ -97,9 +94,10 @@ int main(int argc, char** argv) {
             PAR_BLOCK { FFPACK::Invert (F, n, A, n, nullity, PSH); }
             chrono.stop();
         } else {
-            chrono.clear(); chrono.start();
+            chrono.clear();
+			if (i) chrono.start();
             FFPACK::Invert (F, n, A, n, nullity);
-            chrono.stop();
+            if (i) chrono.stop();
         }
 
         if (forcecheck) checker.check(A,nullity);
