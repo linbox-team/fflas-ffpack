@@ -30,6 +30,8 @@
 #ifndef __FFLASFFPACK_ffpack_echelon_forms_INL
 #define __FFLASFFPACK_ffpack_echelon_forms_INL
 
+#define __FFLASFFPACK_GAUSSJORDAN_BASECASE 12
+
 template <class Field>
 inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 								  typename Field::Element_ptr A, const size_t lda,
@@ -166,6 +168,54 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 		P[rowbeg]=colbeg;
 		return 0;
 	}
+
+	if (colsize <= __FFLASFFPACK_GAUSSJORDAN_BASECASE){
+
+		// write_field(F,std::cerr<<"BaseCase A = "<<std::endl, A+rowbeg*lda+colbeg, M-rowbeg, colsize, lda);
+		// write_field(F,std::cerr<<"BaseCase A (tot) = "<<std::endl, A, M, N, lda);
+		typename Field::Element_ptr A12 = A+colbeg;
+		typename Field::Element_ptr A22 = A12+rowbeg*lda;
+			/* [ I | Y1 |   ] [ X1     ]       [ I |  T1| S1 ]
+			 * [   | Y2 |   ] [ X2 I   ] P A = [   |I T2| S2 ] Q^T
+			 * [   | Y3 | I ] [ X3   I ]       [   |    | S3 ]
+			 */
+
+			/* Computes [ Y2 T2 ] in [ A22 A23 ]
+			 *          [ Y3    ]    [ A32 A33 ]
+			 */
+		size_t R = ReducedRowEchelonForm (F, M-rowbeg, colsize, A22, lda, P+rowbeg, Q+colbeg, true, FfpackSlabRecursive);
+		// write_field(F,std::cerr<<"Sortie RedRowEch A (tot) = "<<std::endl, A, M, N, lda);
+
+		typename Field::Element_ptr A13 = A12+R;
+		typename Field::Element_ptr A23 = A22+R;
+
+			// Apply row permutation on [ A12 A13 ]
+		for (size_t i=0; i<R; i++)
+			Q[colbeg+i] += colbeg;
+		for (size_t i=R; i<colsize; i++)
+			Q[colbeg+i] = colbeg+i;
+		for (size_t i=rowbeg; i<M; i++)
+			P[i] += rowbeg;
+
+		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, rowbeg, colbeg, colbeg+R, A, lda, Q);
+		// write_perm(std::cerr<<"Q = ",Q,N);
+		// write_field(F,std::cerr<<"Apres applyP A (tot) = "<<std::endl, A, M, N, lda);
+
+			// T1 <- A13 + A12 T2 in A13
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg, colsize-R, R,
+			   F.mOne, A12, lda, A23, lda, F.one, A13, lda);
+
+			// Y1 <- - A12 Y2 in A12
+		typename Field::Element_ptr tmp = FFLAS::fflas_new (F, rowbeg, R);
+		FFLAS::fassign (F, rowbeg, R, A12, lda, tmp, R);
+		fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg, R, R,
+			   F.mOne, tmp, R, A22, lda, F.zero, A12, lda);
+		FFLAS::fflas_delete (tmp);
+		// write_field(F,std::cerr<<"Sortie BaseCase A = "<<std::endl, A+rowbeg*lda+colbeg, M-rowbeg, colsize, lda);
+		// write_field(F,std::cerr<<"Sortie BaseCase A (tot) = "<<std::endl, A, M, N, lda);
+
+		return R;
+	}
 	size_t recsize = colsize / 2;
 
 	// Recurive call on slice A*1
@@ -265,8 +315,9 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 			MathQ[i] = MathQ[j];
 		for (size_t i=colbeg + r1+r2, j=0; i < colbeg+recsize+r2; i++,j++)
 			MathQ[i] = temp[j];
-
+		delete[] temp;
 		MathPerm2LAPACKPerm(Q, MathQ, N);
+
 		delete[] MathQ;
 	}
 	return r1+r2;

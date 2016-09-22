@@ -88,6 +88,7 @@ typename Field::Element_ptr read_field(const Field& F, const char * mat_file,siz
 	return X;
 }
 
+
 // Displays a matrix
 template<class Field>
 std::ostream& write_field(const Field& F,std::ostream& c,
