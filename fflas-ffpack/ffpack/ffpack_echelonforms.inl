@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_ffpack_echelon_forms_INL
 #define __FFLASFFPACK_ffpack_echelon_forms_INL
 
-#define __FFLASFFPACK_GAUSSJORDAN_BASECASE 12
+#define __FFLASFFPACK_GAUSSJORDAN_BASECASE 128
 
 template <class Field, class ParSeqHelper>
 inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
