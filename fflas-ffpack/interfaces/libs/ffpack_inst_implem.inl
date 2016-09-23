@@ -65,7 +65,8 @@ namespace FFPACK {
 				 const FFLAS::FFLAS_SIDE Side,
 				 const FFLAS::FFLAS_TRANSPOSE Trans,
 				 const size_t M, const size_t ibeg, const size_t iend,
-				 FFLAS_ELT* A, const size_t lda, const size_t * P );
+				 FFLAS_ELT* A, const size_t lda, const size_t * P,
+				 const FFLAS::ParSeqHelper::Sequential& PSH);
 
 
 	template INST_OR_DECL
@@ -73,7 +74,7 @@ namespace FFPACK {
 				  const FFLAS::FFLAS_SIDE Side,
 				  const FFLAS::FFLAS_TRANSPOSE Trans,
 				  const size_t m, const size_t ibeg, const size_t iend,
-				  FFLAS_ELT* A, const size_t lda, const size_t * P );
+				  FFLAS_ELT* A, const size_t lda, const size_t * P, size_t numthreads);
 
 	template INST_OR_DECL
 	void pMatrixApplyT (const FFLAS_FIELD<FFLAS_ELT>& F, FFLAS_ELT* A, const size_t lda,
@@ -146,7 +147,7 @@ namespace FFPACK {
 	size_t PLUQ (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,
 				 const size_t M, const size_t N,
 				 FFLAS_ELT* A, const size_t lda,
-				 size_t*P, size_t *Q);
+				 size_t*P, size_t *Q, const FFLAS::ParSeqHelper::Sequential& PSH);
 
 	template INST_OR_DECL
 	size_t LUdivine (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
@@ -174,35 +175,42 @@ namespace FFPACK {
 	size_t RowEchelonForm (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
 						   FFLAS_ELT* A, const size_t lda,
 						   size_t* P, size_t* Qt, const bool transform,
-						   const FFPACK_LU_TAG LuTag);
+						   const FFPACK_LU_TAG LuTag,
+						   const FFLAS::ParSeqHelper::Sequential& PSH);
 
 	template INST_OR_DECL
 	size_t ReducedRowEchelonForm (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
 								  FFLAS_ELT* A, const size_t lda,
 								  size_t* P, size_t* Qt, const bool transform,
-								  const FFPACK_LU_TAG LuTag);
+								  const FFPACK_LU_TAG LuTag,
+								  const FFLAS::ParSeqHelper::Sequential& PSH);
 
 	template INST_OR_DECL
 	size_t ColumnEchelonForm (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
-													   FFLAS_ELT* A, const size_t lda,
-													   size_t* P, size_t* Qt, const bool transform,
-													   const FFPACK_LU_TAG LuTag);
+							  FFLAS_ELT* A, const size_t lda,
+							  size_t* P, size_t* Qt, const bool transform,
+							  const FFPACK_LU_TAG LuTag,
+							  const FFLAS::ParSeqHelper::Sequential& PSH);
+
 	template INST_OR_DECL
 	size_t ReducedColumnEchelonForm (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
 									 FFLAS_ELT* A, const size_t lda,
 									 size_t* P, size_t* Qt, const bool transform,
-									 const FFPACK_LU_TAG LuTag);
+									 const FFPACK_LU_TAG LuTag,
+									 const FFLAS::ParSeqHelper::Sequential& PSH);
 	
 	template INST_OR_DECL
 	FFLAS_ELT* Invert (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M,
 					   FFLAS_ELT* A, const size_t lda,
-					   int& nullity);
+					   int& nullity,
+					   const FFLAS::ParSeqHelper::Sequential& PSH);
 
 	template INST_OR_DECL
 	FFLAS_ELT* Invert (const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M,
 					   const FFLAS_ELT* A, const size_t lda,
 					   FFLAS_ELT* X, const size_t ldx,
-					   int& nullity);
+					   int& nullity,
+					   const FFLAS::ParSeqHelper::Sequential& PSH);
 
 	template INST_OR_DECL
 	FFLAS_ELT* Invert2( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M,
