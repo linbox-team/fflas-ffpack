@@ -30,6 +30,7 @@ AUTOTUNE_PLUQ = pluq
 AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ)
 
 EXTRA_PROGRAMS=$(AUTOTUNE)
+EXTRA_DIST=tune_fgemm.sh tune_pluq.sh
 
 autotune: autotune_fgemm autotune_pluq
 	cat fgemm-thresholds.h pluq-threshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h

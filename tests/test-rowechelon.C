@@ -35,7 +35,7 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-//#define DEBUG 1
+//#define __FFLASFFPACK_DEBUG 1
 // Debug option  0: no debug
 //               1: check A = LQUP
 //-------------------------------------------------------------------------
@@ -45,7 +45,7 @@ using namespace std;
 //#define __LUDIVINE_CUTOFF 1
 #include <iostream>
 #include <iomanip>
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
 //#include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/field/modular-positive.h"
@@ -107,7 +107,7 @@ int main(int argc, char** argv){
 // 	for (size_t i=0; i<m; ++i)
 // 		cerr<<Q[i]<<" ";
 // 	cerr<<"]"<<endl;
-#if DEBUG
+#if __FFLASFFPACK_DEBUG
 	Field::Element * L = FFLAS::fflas_new<Field::Element>(m*m);
 	Field::Element * U = FFLAS::fflas_new<Field::Element>(m*n);
 	Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);

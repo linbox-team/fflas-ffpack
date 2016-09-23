@@ -34,7 +34,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-// #define DEBUG 
+// #define __FFLASFFPACK_DEBUG 
 #define TIME 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
@@ -49,7 +49,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 
 using namespace std;
 using namespace FFPACK;
@@ -205,7 +205,7 @@ bool launch_fger_dispatch(const Field &F,
 // 		ldc = n+(size_t)random()%ld;
 		ldc = n;
 
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		std::cout <<"q = "<<F.characteristic()<<" m,n = "<<m<<", "<<n<<" C := "
 			  <<alpha<<".x * y^T + C";
 #endif
@@ -215,7 +215,7 @@ bool launch_fger_dispatch(const Field &F,
 				       inca,
 				       incb,
 				       iters);
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
 #endif
 	}
@@ -232,7 +232,7 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters){
 		
 		Field* F= chooseField<Field>(q,b);
 
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		F->write(std::cout) << std::endl;
 #endif
 		Randiter R1(*F);

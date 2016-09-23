@@ -34,7 +34,7 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
+//#define __FFLASFFPACK_DEBUG 1
 #define TIME 1
 
 #include <iomanip>
@@ -43,7 +43,7 @@ using namespace std;
 
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -117,7 +117,7 @@ int main(int argc, char** argv){
 		}
 	}
 
-#if DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 	Field::Element  *B2=NULL;
 	FFLAS::fflas_delete( A);
 

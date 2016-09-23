@@ -68,14 +68,14 @@ int main(int argc, char** argv) {
 	for (size_t i=0; i<iter; ++i) {
 		m = random() % MAXM + 1;
 		std::cout << "m= " << m << "\n";
+		size_t lda = m<<1;
+		Field::Element_ptr A = FFLAS::fflas_new(F,lda,lda);
 
-		Field::Element_ptr A = FFLAS::fflas_new(F,m<<1,m<<1);
+		FFPACK::RandomMatrixWithRankandRandomRPM(F,A,lda,m,m,m);
 
-		FFPACK::RandomMatrixWithRankandRandomRPM(F,A,m<<1,m,m,m);
-
-		FFPACK::Checker_invert<Field> checker(Rand,m,A,m<<1);
-		FFPACK::Invert(F,m,A,m<<1,nullity);
+		FFPACK::Checker_invert<Field> checker(Rand,m,A,lda);
 		try {
+			FFPACK::Invert(F,m,A,lda,nullity);
 			checker.check(A,nullity);
 			std::cout << "Verification successful\n";
 			pass++;

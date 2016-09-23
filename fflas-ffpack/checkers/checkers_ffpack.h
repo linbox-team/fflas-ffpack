@@ -33,7 +33,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "checker_empty.h"
 
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
  	#define CHECKING_MODE 1
  	#define ENABLE_ALL_CHECKINGS 1
 #endif

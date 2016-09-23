@@ -44,7 +44,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 
 
 // using namespace std;

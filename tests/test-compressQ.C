@@ -35,7 +35,6 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-//#define DEBUG 0
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -47,7 +46,7 @@
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 
 using namespace std;
 typedef Givaro::Modular<double> Field;

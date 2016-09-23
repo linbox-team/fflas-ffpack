@@ -24,9 +24,7 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CPPFLAGS=-I$(top_srcdir) -g
-AM_CXXFLAGS = @TESTS_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
-AM_CPPFLAGS +=  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field 
+AM_CXXFLAGS = @DEFAULT_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
 
 #LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
 AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
@@ -152,16 +150,12 @@ test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
 test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
-#test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS) $(PARFLAGS)
-#test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
-
-#  dense_generator_SOURCES        = dense_generator.C
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher:

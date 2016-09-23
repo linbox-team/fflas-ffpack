@@ -35,7 +35,6 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-//#define DEBUG 0
 #define __FFLAS__TRSM_READONLY
 // Debug option  0: no debug
 //               1: check A = LQUP
@@ -162,7 +161,7 @@ int main(int argc, char** argv){
 	// for (size_t i=0; i<maxQ; ++i)
 	// 	cerr<<Q[i]<<" ";
 	// cerr<<"]"<<endl;
-#if DEBUG
+#if __FFLASFFPACK_DEBUG
 	Field::Element * X = FFLAS::fflas_new<Field::Element>(m*n);
 	Field::Element * L, *U;
 	L = FFLAS::fflas_new<Field::Element>(m*R);

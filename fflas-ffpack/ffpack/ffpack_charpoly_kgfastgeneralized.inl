@@ -35,13 +35,23 @@
 // Keller-Gehrig's fast algorithm.
 //---------------------------------------------------------------------
 
-//#define LB_DEBUG
 
 #include <iostream> // std::cout
 
-#ifdef LB_DEBUG
-#include "tests/Matio.h"
+#ifdef __FFLASFFPACK_DEBUG
+#include "fflas-ffpack/utils/Matio.h"
 namespace FFPACK {
+	template <class Field>
+	typename Field::Element_ptr buildMatrix (const Field& F,
+					       typename Field::ConstElement_ptr E,
+					       typename Field::ConstElement_ptr C,
+					       const size_t lda,
+					       const size_t*B,
+					       const size_t*T,
+					       const size_t me,
+					       const size_t mc,
+					       const size_t lambda,
+						 const size_t mu);
 	template <class Field>
 	void printA(const Field& F,
 		    std::ostream& os,
@@ -122,13 +132,13 @@ namespace FFPACK {
 			size_t lambda=0;
 
 			typename Field::Element_ptr C, E = A;
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			std::cerr<<"Debut KGFG"<<std::endl
 			<<" ----------------------------"<<std::endl;
 #endif
 			int exit_value = 0 ;
 			while (mc > 0) {
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 				std::cerr<<"Boucle1: mc,me,lambda="<<mc<<" "<<me<<" "<<lambda<<std::endl;
 				// 		write_field (F, std::cerr, A, N, N, lda);
 #endif
@@ -136,13 +146,13 @@ namespace FFPACK {
 				C = A + (N-mc);
 				for (size_t i = 0; i<me;++i)
 					B[lambda+i] = N+i;
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 				for (size_t i=0;i<lambda+me;++i)
 					std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
 				//std::cerr<<std::endl<<"mc="<<mc<<":";
 #endif
 				while (mu < N-mc && !exit_value) {
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"Boucle2: mu,me,lambda="<<mu<<" "<<me<<" "<<lambda<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 
@@ -157,7 +167,7 @@ namespace FFPACK {
 						else
 							for (size_t j = 0; j < ncols; ++j)
 								F.assign (*(LUP+i*ncols+j), F.zero);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					write_field (F,std::cerr<<"LUP="<<std::endl,LUP,lambda+me,ncols,ncols);
 					std::cerr<<"LQUP(C1)";
@@ -170,7 +180,7 @@ namespace FFPACK {
 						Q[i]=0;
 
 					size_t r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, lambda + me, ncols, LUP, ncols, P, Q);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 #endif
 
@@ -206,7 +216,7 @@ namespace FFPACK {
 						//exit(-1);
 					}
 
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"Forming genreric rank profil C1";
 					// form the generic rank profil block C1 Q^TPAP^TQ
 					for (size_t i=0;i<r;++i)
@@ -214,20 +224,20 @@ namespace FFPACK {
 #endif
 					applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 						N, 0, (int)r, C, lda, P);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 #endif
 					//printA(F,cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 					// (E, C) <- P(E, C)
 					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
 						me, 0, (int)r, E+(N-mc)*lda, lda, P);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
 					applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans,
 						mc, 0, (int)r, C+(N-mc)*lda, lda, P);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 #endif
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -237,7 +247,7 @@ namespace FFPACK {
 					for (size_t k = 0; k<r; ++k)
 						if (P[k] > (size_t) k){
 							if ((mu>=mc-k)){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 								std::cerr<<"// on permute LN-mc+k et L_N-mc+P[k]"<<std::endl;
 #endif
 								size_t tmp = T[mu-mc+k];
@@ -260,7 +270,7 @@ namespace FFPACK {
 						}
 					if (exit_value)
 						break;
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
@@ -268,13 +278,13 @@ namespace FFPACK {
 					// (E, C) <- Q^T(E, C)
 					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 						me, 0,(int) r, E, lda, Q);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 					//printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
 					applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 						mc, 0, (int)r, C, lda, Q);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 #endif
 					// F <- Q^T F
@@ -284,7 +294,7 @@ namespace FFPACK {
 
 					for (int i = int(r) ; i--; )
 						if (Q[i] > (size_t) i){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 							std::cerr<<"Permutation de tempP["<<i
 							<<"] et tempP["<<Q[i]<<"]"<<std::endl;
 #endif
@@ -294,18 +304,18 @@ namespace FFPACK {
 							tempP[Q[i]] = tmp;
 						}
 
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 #endif
 					for (size_t i=0; i < lambda+me; ++i)
 						if (B[i] < N)
 							B[i] = tempP[B[i]];
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<".";
 #endif
 					FFLAS::fflas_delete( tempP);
 
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<std::endl<<"Avant B<-BQ"<<std::endl;
 					for (size_t i=0; i<lambda+me;++i)
 						std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
@@ -318,7 +328,7 @@ namespace FFPACK {
 							B[k] = B[Q[k]];
 							B[Q[k]] = tmp;
 						}
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"Apres"<<std::endl;
 					for (size_t i=0; i<lambda+me;++i)
 						std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
@@ -330,7 +340,7 @@ namespace FFPACK {
 					for (size_t i=0; i<r; ++i)
 						if (Q[i]>i)
 							FFLAS::fassign(F, i, LUP+Q[i]*mc,1, LUP+i*mc, 1);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -348,7 +358,7 @@ namespace FFPACK {
 					      r, me, F.one, LUP, mc , E, lda);
 					ftrsm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit,
 					      r, me, F.one, LUP, mc , E, lda);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 
@@ -362,7 +372,7 @@ namespace FFPACK {
 					FFLAS::fflas_delete (LUP);
 					FFLAS::fflas_delete( P);
 					FFLAS::fflas_delete( Q);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
@@ -372,13 +382,13 @@ namespace FFPACK {
 					write_field (F, std::cerr, A, N, N, lda);
 #endif
 					// E'2 <- E2 - C21.E'1
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"// E'2 <- E2 - C21.E'1";
 #endif
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-r, me, r,
 					      F.mOne, C+r*lda, lda, E, lda,
 					      F.one, E+r*lda, lda);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 					// C'22 <- C22 - C21.C'12
@@ -387,7 +397,7 @@ namespace FFPACK {
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-r, mc-r, r,
 					      F.mOne, C+r*lda, lda, C+r, lda,
 					      F.one, C+r*(lda+1), lda);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 
@@ -405,7 +415,7 @@ namespace FFPACK {
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fassign (F, me, tmp+i*me, 1, E+(i+N-r)*lda, 1);
 					FFLAS::fflas_delete (tmp);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// Shifting C_{*,2}: C_{1,2};C_{2,2} -> C_{2,2};C_{1,2}
@@ -419,7 +429,7 @@ namespace FFPACK {
 					for (size_t i=0; i<r; ++i)
 						FFLAS::fassign (F, mc-r, tmp+i*(mc-r), 1, C+r+(i+N-r)*lda, 1);
 					FFLAS::fflas_delete (tmp);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -438,7 +448,7 @@ namespace FFPACK {
 					for (size_t i=0; i<mu; ++i)
 						FFLAS::fassign (F, r, tmp+i*r, 1, C2+i*lda, 1);
 					FFLAS::fflas_delete (tmp);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// [C'2;C'3] += [E2;E3].C
@@ -454,7 +464,7 @@ namespace FFPACK {
 					       F.one, C+(N-mu-mc)*lda, lda);
 
 					FFLAS::fflas_delete (tmp);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// shifting [C'2;C'3]
@@ -467,7 +477,7 @@ namespace FFPACK {
 					}
 					for (int i = int(N-1); i >= (int) (N -mu-r); --i)
 						FFLAS::fassign (F, r, C+((size_t)i-mc+r)*lda, 1, C+i*(int)lda, 1);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -479,12 +489,12 @@ namespace FFPACK {
 					typename Field::Element_ptr tmp2 = FFLAS::fflas_new (F, me, r);
 					for (size_t i = 0; i < lambda+me; ++i)
 						if (B[i] >= N){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 							std::cerr<<"saving in row "<<B[i]-N<<std::endl;
 #endif
 							FFLAS::fassign (F, r, C+i*lda, 1, tmp2+(B[i]-N)*r, 1);
 						}
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					// C'_F[i] <- C_i
@@ -495,32 +505,32 @@ namespace FFPACK {
 
 					for (size_t i = 0; i < lambda+me; ++i)
 						if (B[i] < N){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 							std::cerr<<"copie de la ligne "<<i<<std::endl;
 #endif
 							FFLAS::fassign (F, r, C + i*lda, 1, tmp3 + i*r, 1);
 						}
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"1"<<std::endl;
 #endif
 					for (size_t i = 0; i < N-mu-r; ++i)
 						for (size_t j = 0; j < r; ++j)
 							F.assign (*(C+i*lda+j), F.zero);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"2"<<std::endl;
 #endif
 					for (size_t i = 0; i < lambda+me; ++i){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 						std::cerr<<"B["<<i<<"] = "<<B[i]<<std::endl;
 #endif
 						if (B[i] < N)
 							FFLAS::fassign (F, r, tmp3+i*r, 1, C+(B[i]-r)*lda, 1);
 					}
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"3"<<std::endl;
 #endif
 					FFLAS::fflas_delete (tmp3);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -531,7 +541,7 @@ namespace FFPACK {
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N-mu-r, r, me,
 					      F.one, E, lda, tmp2, r, F.one, C, lda);
 					FFLAS::fflas_delete (tmp2);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -542,7 +552,7 @@ namespace FFPACK {
 					fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N, r, mc-r,
 					      F.one, C+r, lda, tmp, r, F.one, C, lda);
 					FFLAS::fflas_delete (tmp);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
@@ -558,7 +568,7 @@ namespace FFPACK {
 					for (size_t j = 0; j<r; ++j)
 						FFLAS::fassign (F, N, tmp+j, r, C+mc-r+j, lda);
 					FFLAS::fflas_delete (tmp);
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 
 
@@ -575,14 +585,14 @@ namespace FFPACK {
 						allowedRows[i]=true;
 					for (size_t j=r; j < lambda + me; ++j){
 						if (B[j] >= N){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 							std::cerr<<"B["<<j-r<<"] = "<<N+nme<<std::endl;
 #endif
 							FFLAS::fassign (F, N, E+(B[j]-N), lda, tmp2+nme, me);
 							B[j-r] = N + nme;
 							nme++;
 						} else {
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 							std::cerr<<"B["<<j-r<<"] = "<<B[j]<<std::endl;
 #endif
 							B[j-r] = B[j]-r;
@@ -594,14 +604,14 @@ namespace FFPACK {
 						FFLAS::fassign (F, N, tmp2+j, me, E+j, lda);
 					lambda = nlambda;
 					me = nme;
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 #endif
 					FFLAS::fflas_delete (tmp2);
 				}
 				// update the datastructure: F <- T
 				for (size_t i=0; i<mu; ++i){
-#ifdef LB_DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"B[T["<<i<<"]] = "<<"B["<<T[i]<<"] = "<<mc+i<<std::endl;
 #endif
 
@@ -639,8 +649,6 @@ namespace FFPACK {
 		}
 	} // Protected
 } // FFPACK
-
-#undef LB_DEBUG
 
 #endif // __FFLASFFPACK_ffpack_charpoly_kgfastgeneralized_INL
 

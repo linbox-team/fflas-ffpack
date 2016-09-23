@@ -24,7 +24,7 @@
 AC_PREREQ([2.61])
 
 
-AC_INIT([FFLAS-FFPACK], [2.2.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.3.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
 
@@ -82,18 +82,15 @@ AC_SUBST([DEFAULT_CFLAGS])
 AC_SUBST([DEBUG_CFLAGS])
 AC_SUBST([TESTS_CFLAGS])
 
-TESTS_CFLAGS="-O2"
 DEBUG_CFLAGS="-g"
 DEFAULT_CFLAGS=""
 WARN_CFLAGS="-Wall"
 
 #TODO use -fast for icc, -ipa for eko...
-if test "x$DBG" = "xyes" ; then
-	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS}" #those are CXXFLAGS
-	DEBUG_CFLAGS="${DEBUG_CFLAGS} -DDEBUG -DFFLASFFPACK_DEBUG"
+if test "x$USE_DEBUG" = "xyes" ; then
+	DEFAULT_CFLAGS="-O0 ${DEFAULT_CFLAGS} ${DEBUG_CFLAGS}" #those are CXXFLAGS
 else
 	DEFAULT_CFLAGS="-O2 ${DEFAULT_CFLAGS}"
-	DEBUG_CFLAGS="-DNDEBUG -UFFLASFFPACK_DEBUG"
 fi
 
 if test "x$PROF" = "xyes" ; then
@@ -176,23 +173,23 @@ echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
 FF_CHECK_OMP
-# checkes which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
-CUSTOM_SIMD="no"
-FF_CHECK_SIMD
-#FF_CHECK_SSE
-#FF_CHECK_AVX
-arch=`echo $target | cut -d"-" -f1`
-if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
-   AX_CHECK_X86_FEATURES([][])
-else
-   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
-fi
-
-dnl echo "CCNAM = $CCNAM $CUSTOM_SIMD"
+dnl check which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
+dnl CUSTOM_SIMD="no"
+dnl FF_CHECK_SIMD
+dnl FF_CHECK_SSE
+dnl FF_CHECK_AVX
+dnl arch=`echo $target | cut -d"-" -f1`
+dnl if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
+dnl    AX_CHECK_X86_FEATURES([][])
+dnl else
+dnl    CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
+dnl fi
+dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
+AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
 
 dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
 dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc48"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
+AS_IF([test "x$CCNAM" = "xgcc"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
 
 
 PARFLAGS="${OMPFLAGS}"

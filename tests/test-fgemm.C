@@ -34,7 +34,6 @@
 
 // #define WINOTHRESHOLD 100
 // #define OLD_DYNAMIC_PEELING
-//#define DEBUG 1
 
 #define ENABLE_CHECKER_fgemm 1
 
@@ -272,7 +271,7 @@ bool launch_MM_dispatch(const Field &F,
 		lda = std::max(k,m)+(size_t)random()%ld;
 		ldb = std::max(n,k)+(size_t)random()%ld;
 		ldc = n+(size_t)random()%ld;
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
 			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
 			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
@@ -285,7 +284,7 @@ bool launch_MM_dispatch(const Field &F,
 							   lda, ta,
 							   ldb, tb,
 							   iters,nw, par, b);
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		std::cerr<<(ok?" -> ok ":" -> KO")<<std::endl;
 #endif
 	}
@@ -315,7 +314,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 
 		if (nbw<0)
 			nbw = (int) random() % 7;
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 		F->write(std::cerr) << std::endl;
 #endif
 		typedef typename Field::RandIter Randiter ;

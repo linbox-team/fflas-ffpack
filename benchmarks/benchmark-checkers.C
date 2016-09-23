@@ -31,7 +31,7 @@
 #define _NR_TESTS 5
 #define _MAX_SIZE_MATRICES 1000
 
-#include "fflas-ffpack/config-blas.h"
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
 			gffop += 2.0/3.0*CUBE(double(k)/1000.0) +2*m/1000.0*n/1000.0*double(k)/1000.0  - double(k)/1000.0*double(k)/1000.0*(m+n)/1000;
 
 			chrono.clear(); chrono.start();
-			pass += checker4.check(A,n,k,P,Q);
+			pass += checker4.check(A,n,FFLAS::FflasNonUnit, k,P,Q);
 			chrono.stop(); time1 += chrono.usertime();
 
 			FFLAS::fflas_delete(P,Q);

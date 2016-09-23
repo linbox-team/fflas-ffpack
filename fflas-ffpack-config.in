@@ -49,8 +49,7 @@ Known values for OPTION are:
   --prefix		 		show FFLAS-FFPACK installation prefix
   --libs		 		print library linking information
   --blas-libs			print BLAS library linking information
-  --cflags				print pre-processor flags
-  --cflags-full			print pre-processor and compiler flags
+  --cflags			print pre-processor and compiler flags
   --blas-cflags	 		print BLAS pre-processor and BLAS compiler flags
   --blas-home	 		print where BLAS were found
   --help		 		display this help and exit
@@ -102,10 +101,6 @@ while test $# -gt 0; do
 		--cflags)
 			echo -I${includedir} @CBLAS_FLAG@ @CXXFLAGS@ @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@  @PARFLAGS@ # @CUDA_CFLAGS@
 			;;
-
-		--cflags-full)
-			 echo -I${includedir} @CBLAS_FLAG@ @CXXFLAGS@ @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@  @PARFLAGS@ # @CUDA_CFLAGS@
-			 ;;
 
 		--blas-cflags)
 			echo -I${includedir} @CBLAS_FLAG@  @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@

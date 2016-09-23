@@ -34,7 +34,6 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-//#define DEBUG 1
 #define TIME 1
 using namespace std;
 
@@ -42,7 +41,7 @@ using namespace std;
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -83,7 +82,7 @@ int main(int argc, char** argv){
 		tim+=t;
 	}
 
-#if DEBUG
+#if __FFLASFFPACK_DEBUG
 	Field::Element *Ab = read_field(F,argv[2],&m,&n);
 	Field::Element *C = FFLAS::fflas_new<Field::Element>(NSdim*n);
  	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n,

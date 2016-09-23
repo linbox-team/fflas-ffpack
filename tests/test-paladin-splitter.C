@@ -29,7 +29,6 @@
  */
 
 
-//#define DEBUG 1
 //#define __FFLASFFPACK_FORCE_SEQ
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
