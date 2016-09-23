@@ -486,7 +486,7 @@ namespace FFPACK { /* ludivine */
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param F field
-	 * @param Diag  whether U should have a unit diagonal or not
+	 * @param Diag  whether the triangular fractor (U if trans=FflasNoTrans, L if trans=FflasTrans) should have a unit diagonal or not
 	 * @param trans  \c LU of \f$A^t\f$
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
