@@ -586,38 +586,6 @@ ReducedRowEchelonForm_modular_int32_t (const int32_t p, const size_t M, const si
 }
 
 
-size_t
-ReducedRowEchelonForm2_modular_double (const double p, const size_t M, const size_t N,
-				       double * A, const size_t lda,
-				       size_t* P, size_t* Qt, const bool transform
-				       , bool positive)
-{
-	if (positive) {
-		Modular<double> F(p);
-		return ReducedRowEchelonForm2(F,M,N,A,lda,P,Qt,transform);
-	} else {
-		ModularBalanced<double> F(p);
-		return ReducedRowEchelonForm2(F,M,N,A,lda,P,Qt,transform);
-	}
-}
-
-
-size_t
-REF_modular_double (const double p, const size_t M, const size_t N,
-		    double * A, const size_t lda,
-		    const size_t colbeg, const size_t rowbeg, const size_t colsize,
-		    size_t* Qt, size_t* P
-		    , bool positive)
-{
-	if (positive) {
-		Modular<double> F(p);
-		return REF(F,M,N,A,lda,colbeg,rowbeg,colsize,Qt,P);
-	} else {
-		ModularBalanced<double> F(p);
-		return REF(F,M,N,A,lda,colbeg,rowbeg,colsize,Qt,P);
-	}
-}
-
 
 
 /*****************/
