@@ -449,13 +449,12 @@ namespace FFPACK { /* ftrtr */
 
 namespace FFPACK { /* PLUQ */
 
-	/** @brief Compute the PLUQ factorization of the given matrix.
-	 * Using a block algorithm and return its rank.
+	/** @brief Compute a PLUQ factorization of the given matrix.
+	 * Return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param F field
 	 * @param Diag   whether U should have a unit diagonal or not
-	 * @param trans, \c LU of \f$A^t\f$
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
 	 * @param A input matrix
@@ -480,23 +479,23 @@ namespace FFPACK { /* PLUQ */
 
 namespace FFPACK { /* ludivine */
 
-	/** @brief Compute the CUP factorization of the given matrix.
+	/** @brief Compute the CUP or PLE factorization of the given matrix.
 	 * Using
 	 * a block algorithm and return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param F field
-	 * @param Diag  whether the triangular fractor (U if trans=FflasNoTrans, L if trans=FflasTrans) should have a unit diagonal or not
-	 * @param trans  \c LU of \f$A^t\f$
+	 * @param Diag  whether the transformation matrix (U of the CUP, L of the PLE) should have a unit diagonal or not
+	 * @param trans whether to compute the CUP decomposition (FflasNoTrans) or the PLE decomposition (FflasTrans)
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
 	 * @param A input matrix
 	 * @param lda leading dimension of \p A
-	 * @param P the column permutation
-	 * @param Qt the transpose of the row permutation \p Q
+	 * @param P the factor of CUP or PLE
+	 * @param Q a permutation indicating the pivot position in the echelon form C or E in its first r positions
 	 * @param LuTag flag for setting the earling termination if the matrix
 	 * is singular
-	 * @param cutoff UNKOWN TAG, probably a switch to a faster algo below \c cutoff
+	 * @param cutoff threshold to basecase
 	 *
 	 * @return the rank of \p A
 	 * @bib
