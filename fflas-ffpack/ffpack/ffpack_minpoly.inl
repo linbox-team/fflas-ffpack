@@ -29,18 +29,18 @@
 #ifndef __FFLASFFPACK_ffpack_minpoly_INL
 #define __FFLASFFPACK_ffpack_minpoly_INL
 namespace FFPACK {
-
+	namespace Protected {
 	template <class Field, class Polynomial>
 	Polynomial&
-	MinPoly( const Field& F, Polynomial& minP, const size_t N
-		 ,typename Field::ConstElement_ptr A, const size_t lda
-		 ,typename Field::Element_ptr X, const size_t ldx
-		 ,size_t* P
-		 ,const FFPACK_MINPOLY_TAG MinTag// = FfpackDense
-		 ,const size_t kg_mc// =0
-		 ,const size_t kg_mb//=0
-		 ,const size_t kg_j //=0
-		 )
+	Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N
+			       ,typename Field::ConstElement_ptr A, const size_t lda
+			       ,typename Field::Element_ptr X, const size_t ldx
+			       ,size_t* P
+			       ,const FFPACK_MINPOLY_TAG MinTag// = FfpackDense
+			       ,const size_t kg_mc// =0
+			       ,const size_t kg_mb//=0
+			       ,const size_t kg_j //=0
+			       )
 	{
 		// nRow is the number of row in the krylov base already computed
 		size_t j, k ;
@@ -84,6 +84,7 @@ namespace FFPACK {
 		FFLAS::fflas_delete (U);
 		return minP;
 	}
+	} // Protected
 
 } // FFPACK
 #endif // __FFLASFFPACK_ffpack_minpoly_INL

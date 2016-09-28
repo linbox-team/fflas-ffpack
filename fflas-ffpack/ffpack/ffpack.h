@@ -775,8 +775,13 @@ namespace FFPACK { /* charpoly */
 
 
 	/**
-	 * Compute the characteristic polynomial of A using Krylov
-	 * Method, and LUP factorization of the Krylov matrix
+	 * @brief Compute the characteristic polynomial of the matrix A.
+	 * @param F the base field
+	 * @param [out] charp the characteristic polynomial of \p as a list of factors
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+	 * @param lda leading dimension of \p A
+	 * @param CharpTag the algorithmic variant
 	 */
 	template <class Field, class Polynomial>
 	std::list<Polynomial>&
@@ -787,6 +792,15 @@ namespace FFPACK { /* charpoly */
 	template<class Polynomial, class Field>
 	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
 
+	/**
+	 * @brief Compute the characteristic polynomial of the matrix A.
+	 * @param F the base field
+	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+	 * @param lda leading dimension of \p A
+	 * @param CharpTag the algorithmic variant
+	 */
 	template <class Field, class Polynomial>
 	Polynomial&
 	CharPoly( const Field& F, Polynomial& charp, const size_t N,
@@ -863,20 +877,107 @@ namespace FFPACK { /* minpoly */
 	/* MINIMAL POLYNOMIAL */
 	/**********************/
 
-	/** Compute the minimal polynomial.
-	 * Minpoly of (A,v) using an LUP
-	 * factorization of the Krylov Base (v, Av, .., A^kv)
-	 * U,X must be (n+1)*n
-	 * U contains the Krylov matrix and X, its LSP factorization
+	/**
+	 * @brief Compute the minimal polynomial of the matrix A.
+	 * The algorithm is randomized probabilistic, and computes the minimal polynomial of 
+	 * the Krylov iterates of a random vector: (v, Av, .., A^kv)
+	 * @param F the base field
+	 * @param [out] minP the minimal polynomial of \p A
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$)
+	 * @param lda leading dimension of \p A
 	 */
 	template <class Field, class Polynomial>
 	Polynomial&
-	MinPoly( const Field& F, Polynomial& minP, const size_t N,
-		 typename Field::ConstElement_ptr A, const size_t lda,
-		 typename Field::Element_ptr X, const size_t ldx, size_t* P,
-		 const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
-		 const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0 );
+	MinPoly (const Field& F, Polynomial& minP, const size_t N,
+			 typename Field::ConstElement_ptr A, const size_t lda){
+		typename Field::RandIter G (F);
+		return MinPoly(F, minP, N, A, lda, G);
+	}
 
+	/**
+	 * @brief Compute the minimal polynomial of the matrix A.
+	 * The algorithm is randomized probabilistic, and computes the minimal polynomial of 
+	 * the Krylov iterates of a random vector: (v, Av, .., A^kv)
+	 * @param F the base field
+	 * @param [out] minP the minimal polynomial of \p A
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$)
+	 * @param lda leading dimension of \p A
+	 * @param G a random iterator
+	 */
+	template <class Field, class Polynomial>
+	Polynomial&
+	MinPoly (const Field& F, Polynomial& minP, const size_t N,
+			 typename Field::ConstElement_ptr A, const size_t lda,
+			 typename Field::RandIter& G){
+
+			// Allocating a Krylov basis
+		typename Field::Element_ptr K = FFLAS::fflas_new(F, N+1, N);
+			// Picking a non-zero random vector
+		FFLAS::frand (F, G, 1, N, K, N);
+			// Forcing v[0] != 0. TODO: use a nonzero frand function instead
+		F.nonzerorandom(G, *K);
+
+		MatVecMinPoly (F, minP, N, A, lda, K, N);
+
+		FFLAS::fflas_delete(K);
+		return minP;
+	}
+
+	/**
+	 * @brief Compute the minimal polynomial of the matrix A and a vector v, namely the first linear dependency relation in the Krylov basis \f$(v,Av, ..., A^Nv)\f$.
+	 * @param F the base field
+	 * @param [out] minP the minimal polynomial of \p A and v
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$)
+	 * @param lda leading dimension of \p A
+	 * @param K an \f$ N \times (N+1)\f$ matrix containing the vector v on its first row
+	 * @param ldk leading dimension of \p K
+	 * @param P [out] (optional) the permutation used in the elimination of the Krylov matrix \p K
+	 */
+	template <class Field, class Polynomial>
+	Polynomial&
+	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
+				   typename Field::ConstElement_ptr A, const size_t lda,
+				   typename Field::Element_ptr K, const size_t ldk,
+				   size_t * P=NULL){
+
+			// Construct the Krylov matrix K and eliminate it online
+		typename Field::Element_ptr U = FFLAS::fflas_new(F, 1, N);
+		bool allocP = false;
+		if (P==NULL){
+			allocP = true;
+			P = FFLAS::fflas_new<size_t>(N);
+		}
+		FFLAS::fassign(F,N, K,1, U,1);
+		size_t k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, K, ldk, U, P, true, FfpackDense);
+		FFLAS::fflas_delete( U);
+		if (allocP)
+			FFLAS::fflas_delete(P);
+		minP.resize(k+1);
+		minP[k] = F.one;
+		if (k==1 && F.isZero (*(K+ldk))){ // minpoly is X
+			for (size_t i=0; i<k; ++i)
+				minP[i] = F.zero;
+			return minP;
+		}
+		typename Field::Element_ptr Kk = K+k*ldk;
+		ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, k, K, ldk, Kk, 1);
+		for (size_t j=0; j<k; ++j)
+			F.neg (minP[j],Kk[j]);
+		return minP;
+	}
+
+	namespace Protected{
+		template <class Field, class Polynomial>
+		Polynomial&
+		Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N,
+								typename Field::ConstElement_ptr A, const size_t lda,
+								typename Field::Element_ptr X, const size_t ldx, size_t* P,
+								const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
+								const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0);
+	} // Protected
 } // FFPACK minpoly
 // #include "ffpack_minpoly.inl"
 

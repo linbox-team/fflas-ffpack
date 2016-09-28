@@ -39,7 +39,6 @@ pkgincludesub_HEADERS=        \
 		ffpack_pluq.inl                       \
 		ffpack_ppluq.inl \
 		ffpack_frobenius.inl                  \
-		ffpack_minpoly_construct.inl          \
 		ffpack_minpoly.inl \
 		ffpack.inl\
 		ffpack_invert.inl\
