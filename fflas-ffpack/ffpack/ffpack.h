@@ -958,8 +958,7 @@ namespace FFPACK { /* minpoly */
 		minP.resize(k+1);
 		minP[k] = F.one;
 		if (k==1 && F.isZero (*(K+ldk))){ // minpoly is X
-			for (size_t i=0; i<k; ++i)
-				minP[i] = F.zero;
+			minP[0] = F.zero;
 			return minP;
 		}
 		typename Field::Element_ptr Kk = K+k*ldk;
