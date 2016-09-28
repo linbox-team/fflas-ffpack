@@ -940,7 +940,7 @@ namespace FFPACK { /* Solutions */
 
 	/** @brief Returns the determinant of the given matrix.
 	 * @details The method is a block elimination with early termination
-	 * using LQUP factorization  with early termination.
+	 * using LQUP factorization  with early termination. The input matrix A is overwritten.
 	 * If <code>M != N</code>,
 	 * then the matrix is virtually padded with zeros to make it square and
 	 * it's determinant is zero.
