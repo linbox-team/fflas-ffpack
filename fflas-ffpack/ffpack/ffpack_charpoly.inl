@@ -193,10 +193,8 @@ namespace FFPACK {
 				FFPACK::MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
 				int k = int(minP.size()-1); // degre of minpoly
 				if ((k==1) && F.isZero ((minP)[0])){ // minpoly is X
-					Ai = A;
-					int j = Ncurr*Ncurr;
-					while (j-- && F.isZero(*(Ai++))) ;
-					if (!j){ // A is 0, CharPoly=X^n
+					if (FFLAS::fiszero(F,Ncurr, Ncurr, A, lda)){
+						    // A is 0, CharPoly=X^n
 						minP.resize((size_t)Ncurr+1);
 						(minP)[1] = F.zero;
 						(minP)[(size_t)Ncurr] = F.one;
