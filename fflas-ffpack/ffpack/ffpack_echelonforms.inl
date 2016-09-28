@@ -183,8 +183,8 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 			/* Computes [ Y2 T2 ] in [ A22 A23 ]
 			 *          [ Y3    ]    [ A32 A33 ]
 			 */
-		size_t R = ReducedRowEchelonForm (F, M-rowbeg, colsize, A22, lda, P+rowbeg, Q+colbeg, true, FfpackSlabRecursive);
-		// write_field(F,std::cerr<<"Sortie RedRowEch A (tot) = "<<std::endl, A, M, N, lda);
+		size_t R = ReducedRowEchelonForm (F, M-rowbeg, colsize, A22, lda, P+rowbeg, Q+colbeg, true, FfpackTileRecursive);
+		write_field(F,std::cerr<<"Sortie RedRowEch A (tot) = "<<std::endl, A, M, N, lda);
 
 		typename Field::Element_ptr A13 = A12+R;
 		typename Field::Element_ptr A23 = A22+R;
@@ -198,7 +198,7 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 			P[i] += rowbeg;
 
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, rowbeg, colbeg, colbeg+R, A, lda, Q);
-		// write_perm(std::cerr<<"Q = ",Q,N);
+		write_perm(std::cerr<<"Q = ",Q,N);
 		// write_field(F,std::cerr<<"Apres applyP A (tot) = "<<std::endl, A, M, N, lda);
 
 			// T1 <- A13 + A12 T2 in A13
@@ -425,7 +425,7 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 				const bool OnlyNonZeroVectors,
 				const FFPACK_LU_TAG LuTag)
 {
-	if (LuTag == FfpackSlabRecursive){
+	if (LuTag != FfpackTileRecursive){
 		typename Field::ConstElement_ptr Ai = A;
 		typename Field::Element_ptr Ti = T;
 		if (Uplo == FFLAS::FflasUpper){ // Extracting a row echelon form
@@ -486,7 +486,7 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 				typename Field::Element_ptr A, const size_t lda,
 				const FFPACK_LU_TAG LuTag)
 {
-	if (LuTag == FfpackSlabRecursive){
+	if (LuTag != FfpackTileRecursive){
 		typename Field::Element_ptr Ai = A;
 		if (Uplo == FFLAS::FflasUpper){ // row echelon form
 			for (size_t i=0; i<R; i++, Ai += lda){
@@ -553,7 +553,7 @@ getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, Q, LPerm);
 
@@ -566,7 +566,7 @@ getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, MaxPidx, T, ldt, P);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (N, R, Q, LPerm);
 
@@ -597,7 +597,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 		if (!OnlyNonZeroVectors)
 			FFLAS::fzero (F, M-R, N, T + R*ldt, ldt);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (N, R, P, LPerm);
 
@@ -614,7 +614,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 		if (!OnlyNonZeroVectors)
 			FFLAS::fzero (F, M, N-R, T + R, ldt);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, P, LPerm);
 
@@ -638,7 +638,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		FFLAS::fzero (F, M-R, N, A + R*lda, lda);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (N, R, P, LPerm);
 
@@ -652,7 +652,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		FFLAS::fzero (F, M, N-R, A + R, lda);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, P, LPerm);
 
@@ -684,7 +684,7 @@ getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, Tdim, 0, MaxPidx, T, ldt, P);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, Q, LPerm);
 
@@ -699,7 +699,7 @@ getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, MaxPidx, T, ldt, P);
 
-		if (LuTag==FfpackTileRecursive){
+		if (LuTag!=FfpackSlabRecursive){
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (N, R, Q, LPerm);
 

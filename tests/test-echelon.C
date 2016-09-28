@@ -361,22 +361,22 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		std::cout<<oss.str();
 		std::cout<<" .";
 
-		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-		std::cout<<".";
-		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-		std::cout<<".";
-		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-		std::cout<<".";
-		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-		std::cout<<".";
-		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-		std::cout<<".";
-		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
-		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
-		std::cout<<".";
+		// ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		// std::cout<<".";
+		// ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		// std::cout<<".";
+		// ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		// std::cout<<".";
+		// ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		// std::cout<<".";
+		// ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		// std::cout<<".";
+		// ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		// std::cout<<".";
+		// ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		// std::cout<<".";
+		// ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		// std::cout<<".";
 		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordan);
 		std::cout<<".";
 
@@ -418,15 +418,15 @@ int main(int argc, char** argv){
 	bool ok = true;
 	do{
 		ok &= run_with_field<Modular<double> >(q,b,m,n,r,iters);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<float> >(q,b,m,n,r,iters);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters); 
+		// ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters);
+		// ok &= run_with_field<Modular<float> >(q,b,m,n,r,iters);
+		// ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters);
+		// ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters);
+		// ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters);
+		// ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters); 
 			//ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters); // BUG: not available yet (missing division in the field
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters);
+		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters);
+		// ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters);
 		
 	} while (loop && ok);
 
