@@ -890,10 +890,7 @@ namespace FFPACK { /* minpoly */
 	template <class Field, class Polynomial>
 	Polynomial&
 	MinPoly (const Field& F, Polynomial& minP, const size_t N,
-			 typename Field::ConstElement_ptr A, const size_t lda){
-		typename Field::RandIter G (F);
-		return MinPoly(F, minP, N, A, lda, G);
-	}
+			 typename Field::ConstElement_ptr A, const size_t lda);
 
 	/**
 	 * @brief Compute the minimal polynomial of the matrix A.
@@ -906,24 +903,10 @@ namespace FFPACK { /* minpoly */
 	 * @param lda leading dimension of \p A
 	 * @param G a random iterator
 	 */
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	Polynomial&
 	MinPoly (const Field& F, Polynomial& minP, const size_t N,
-			 typename Field::ConstElement_ptr A, const size_t lda,
-			 typename Field::RandIter& G){
-
-			// Allocating a Krylov basis
-		typename Field::Element_ptr K = FFLAS::fflas_new(F, N+1, N);
-			// Picking a non-zero random vector
-		FFLAS::frand (F, G, 1, N, K, N);
-			// Forcing v[0] != 0. TODO: use a nonzero frand function instead
-		F.nonzerorandom(G, *K);
-
-		MatVecMinPoly (F, minP, N, A, lda, K, N);
-
-		FFLAS::fflas_delete(K);
-		return minP;
-	}
+			 typename Field::ConstElement_ptr A, const size_t lda, RandIter& G);
 
 	/**
 	 * @brief Compute the minimal polynomial of the matrix A and a vector v, namely the first linear dependency relation in the Krylov basis \f$(v,Av, ..., A^Nv)\f$.
@@ -941,32 +924,7 @@ namespace FFPACK { /* minpoly */
 	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
 				   typename Field::ConstElement_ptr A, const size_t lda,
 				   typename Field::Element_ptr K, const size_t ldk,
-				   size_t * P=NULL){
-
-			// Construct the Krylov matrix K and eliminate it online
-		typename Field::Element_ptr U = FFLAS::fflas_new(F, 1, N);
-		bool allocP = false;
-		if (P==NULL){
-			allocP = true;
-			P = FFLAS::fflas_new<size_t>(N);
-		}
-		FFLAS::fassign(F,N, K,1, U,1);
-		size_t k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, K, ldk, U, P, true, FfpackDense);
-		FFLAS::fflas_delete( U);
-		if (allocP)
-			FFLAS::fflas_delete(P);
-		minP.resize(k+1);
-		minP[k] = F.one;
-		if (k==1 && F.isZero (*(K+ldk))){ // minpoly is X
-			minP[0] = F.zero;
-			return minP;
-		}
-		typename Field::Element_ptr Kk = K+k*ldk;
-		ftrsv( F, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, k, K, ldk, Kk, 1);
-		for (size_t j=0; j<k; ++j)
-			F.neg (minP[j],Kk[j]);
-		return minP;
-	}
+				   size_t * P=NULL);
 
 	namespace Protected{
 		template <class Field, class Polynomial>

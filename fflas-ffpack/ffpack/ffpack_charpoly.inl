@@ -216,9 +216,8 @@ namespace FFPACK {
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
 					Ncurr, 0, k, A, lda, P);
 				// Copy X2_ = (A'_2)^t
-				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-Ncurr)
-					for (size_t jj=0; jj<Ncurr*lda; jj+=lda)
-						*(Xi++) = *(Ai+jj);
+				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx)
+					FFLAS::fassign(F, Ncurr, Ai, lda, Xi, 1);
 				// A = A . P : Undo the permutation on A
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					Ncurr, 0, k, A, lda, P);
