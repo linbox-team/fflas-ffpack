@@ -75,9 +75,9 @@ int main () {
 	Element * A = FFLAS::fflas_new (F,nmax,nmax);
 	Element * B = FFLAS::fflas_new (F,nmax,nmax);
 	Element * C = FFLAS::fflas_new (F,nmax,nmax);
-	FFPACK::RandomMatrix (F, A, nmax,nmax,nmax);
-	FFPACK::RandomMatrix (F, B, nmax,nmax,nmax);
-	FFPACK::RandomMatrix (F, C, nmax,nmax,nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, A, nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, B, nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, C, nmax);
 
 	time_t result = std::time(NULL);
 	cout << std::endl 

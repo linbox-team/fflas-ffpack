@@ -782,11 +782,13 @@ namespace FFPACK { /* charpoly */
 	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
 	 * @param lda leading dimension of \p A
 	 * @param CharpTag the algorithmic variant
+	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	std::list<Polynomial>&
 	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G,
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 	template<class Polynomial, class Field>
@@ -800,12 +802,33 @@ namespace FFPACK { /* charpoly */
 	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
 	 * @param lda leading dimension of \p A
 	 * @param CharpTag the algorithmic variant
+	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
+	 */
+	template <class Field, class Polynomial, class RandIter>
+	Polynomial&
+	CharPoly( const Field& F, Polynomial& charp, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+
+	/**
+	 * @brief Compute the characteristic polynomial of the matrix A.
+	 * @param F the base field
+	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+	 * @param lda leading dimension of \p A
+	 * @param CharpTag the algorithmic variant
+	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
 	template <class Field, class Polynomial>
 	Polynomial&
 	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+			  typename Field::Element_ptr A, const size_t lda,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg){
+		typename Field::RandIter G(F);
+		return CharPoly (F, charp, N, A, lda, G, CharpTag);
+	}
 
 
 	namespace Protected {
@@ -835,11 +858,11 @@ namespace FFPACK { /* charpoly */
 			   typename Field::Element_ptr Y, const size_t incY,
 			   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
 
-		template <class Field, class Polynomial>
+		template <class Field, class Polynomial, class RandIter>
 		std::list<Polynomial>&
 		LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::Element_ptr U, const size_t ldu);
+				  typename Field::Element_ptr U, const size_t ldu, RandIter& G);
 
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
@@ -861,10 +884,10 @@ namespace FFPACK { /* charpoly */
 
 namespace FFPACK { /* frobenius, charpoly */
 
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	std::list<Polynomial>&
-	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
-			   const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t c);
+	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm, const size_t N,
+					   typename Field::Element_ptr A, const size_t lda, const size_t c, RandIter& G);
 
 
 } // FFPACK frobenius

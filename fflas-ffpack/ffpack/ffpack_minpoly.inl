@@ -48,9 +48,7 @@ namespace FFPACK {
 			// Allocating a Krylov basis
 		typename Field::Element_ptr K = FFLAS::fflas_new(F, N+1, N);
 			// Picking a non-zero random vector
-		FFLAS::frand (F, G, 1, N, K, N);
-			// Forcing v[0] != 0. TODO: use a nonzero frand function instead
-		F.nonzerorandom(G, *K);
+		NonZeroRandomMatrix (F, 1, N, K, N, G);
 
 		MatVecMinPoly (F, minP, N, A, lda, K, N);
 

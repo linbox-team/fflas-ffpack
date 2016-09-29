@@ -650,7 +650,7 @@ Invert2_modular_double( const double p, const size_t M,
 
 
 #if 0 /*  pas pour le moment */
-template <class Polynomial>
+template <class Polynomial, class>
 std::list<Polynomial>&
 CharPoly( const double p, std::list<Polynomial>& charp, const size_t N,
 	  double * A, const size_t lda,
