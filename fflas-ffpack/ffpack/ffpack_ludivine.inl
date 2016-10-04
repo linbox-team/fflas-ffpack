@@ -658,11 +658,8 @@ namespace FFPACK {
 				*P=ip;
 				if (ip!=0){
 					// swap the pivot
-					typename Field::Element tmp;
-					F.init(tmp);
-					F.assign(tmp,*X);
-					*X = *(X+ip);
-					*(X+ip) = tmp;
+					F.assign(X[0],X[ip]);
+					F.assign(X[ip],F.zero);
 				}
 				if ( Diag == FFLAS::FflasUnit ){
 					typename Field::Element invpiv;
