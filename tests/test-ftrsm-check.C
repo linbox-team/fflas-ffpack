@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
@@ -44,22 +44,22 @@ int main(int argc, char** argv) {
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
 	size_t MAXN = 100;
-    size_t seed(0);
+	uint64_t seed = time(NULL);
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &MAXN },
-        { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed.", TYPE_INT , &seed },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);	
 
-	Field F(q); Field::RandIter G(F,0,seed);
-    srandom(seed);
+	Field F(q);
+	srandom(seed);
 
 	typename Field::Element alpha,tmp;
-	Field::RandIter Rand(F);
+	Field::RandIter Rand(F,0,seed);
 	Field::NonZeroRandIter NZRand(Rand);
 
 	size_t pass = 0;
@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
 		}
 		//write_field(F,std::cerr<<"A:=",A,k,k,k,true) <<std::endl;
 
-		FFLAS::Checker_ftrsm<Field> checker(G, m, n, alpha, X, n);
+		FFLAS::Checker_ftrsm<Field> checker(Rand, m, n, alpha, X, n);
 		FFLAS::ftrsm(F, side, uplo, trans, diag, m, n, alpha, A, k, X, n);
 		try {
 			checker.check(side, uplo, trans, diag, m, n, A, k, X, n);

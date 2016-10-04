@@ -20,20 +20,51 @@
 # ========LICENCE========
 #/
 
-SUBDIRS =
+AM_CXXFLAGS = @DEFAULT_CFLAGS@
+AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS)  $(PARFLAGS)
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 
 AUTOTUNE_FGEMM = winograd-modular-float winograd-modular-double winograd-modularbalanced-float winograd-modularbalanced-double
+AUTOTUNE_PLUQ = pluq
 
-AUTOTUNE = $(AUTOTUNE_FGEMM)
+AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ)
 
 EXTRA_PROGRAMS=$(AUTOTUNE)
-EXTRA_DIST=tune_fgemm.sh
-autotune: autotune_fgemm
-	cat fgemm-thresholds.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
+EXTRA_DIST=tune_fgemm.sh tune_pluq.sh
+
+define run_tune_fgemm
+	./tune_fgemm.sh
+endef	
+define run_tune_pluq
+	./tune_pluq.sh
+endef	
+define merge_thresholds
+	cat fgemm-thresholds.h pluq-threshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
+endef	
+
+# This forces the autotune runs to be sequential
+autotune: autotune_fgemm autotune_pluq
+	${run_tune_fgemm}
+	${run_tune_pluq}
+	${merge_thresholds}
+
+# Tune fgemm only
+tune_fgemm: autotune_fgemm
+	${run_tune_fgemm}
+	${merge_thresholds}
+
+# Tune pluq only
+tune_pluq: autotune_pluq
+	${run_tune_pluq}
+	${merge_thresholds}
 
 autotune_fgemm: $(AUTOTUNE_FGEMM)
-	./tune_fgemm.sh
 
+autotune_pluq: $(AUTOTUNE_PLUQ)
+
+
+
+pluq_SOURCES=pluq.C
 winograd_modular_float_SOURCES=winograd.C
 winograd_modular_float_CXXFLAGS=$(AM_CXXFLAGS) -DFIELD="Givaro::Modular<float>"
 winograd_modular_double_SOURCES=winograd.C
@@ -45,6 +76,3 @@ winograd_modularbalanced_double_CXXFLAGS=$(AM_CXXFLAGS) -DFIELD="Givaro::Modular
 
 CLEANFILES = $(AUTOTUNE)
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS)  $(PARFLAGS)
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)

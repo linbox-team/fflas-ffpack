@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* tests/regression-check.C
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -51,7 +51,7 @@ bool check2()
 	double f = (double) ok / (double) tot ;
 	if (f < 0.3 or f > 0.7) return false ;
 
-	return true ;
+	return true;
 
 }
 

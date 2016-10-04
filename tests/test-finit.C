@@ -44,7 +44,7 @@
 #include "assert.h"
 
 template<class Field>
-bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
+bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
 	typedef typename Field::Element T ;
 	size_t repet = 3 ;
@@ -53,6 +53,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 	T * B = FFLAS::fflas_new<T>(m*n);
 
 	Givaro::ModularBalanced<T> E(101);
+	typename Givaro::ModularBalanced<T>::RandIter G(E,0,seed);
 
 	if (timing)	std::cout << ">>>" << std::endl ;
 	if (timing)	std::cout << "=== inc == 1 ===" << std::endl ;
@@ -61,8 +62,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear(); tom.clear();
 	if (timing)		F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < repet ; ++b) {
-		FFPACK::RandomMatrix(E,A,m,k,n);
-		// RandomMatrix(E,B,m,k,n);
+		FFPACK::RandomMatrix(E, m, k, A, n, G);
 		FFLAS::fassign(E,m,k,A,n,B,n);
 
 		chrono.clear();chrono.start();
@@ -97,7 +97,7 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear();
 	if (timing)	F.write(std::cout << "Modular ") << std::endl;
 	for (size_t b = 0 ; b < repet ; ++b) {
-		FFPACK::RandomMatrix(E,A,m,n,n);
+		FFPACK::RandomMatrix(E, m, n, A, n, G);
 		FFLAS::fassign(E,m,n,A,n,B,n);
 		size_t incX = 2 ;
 
@@ -139,11 +139,11 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing)
 }
 
 int main(int ac, char **av) {
-	static size_t m = 297 ;
-	static size_t n = 301 ;
-	static size_t k = 299 ;
-	static uint64_t p = 7;
-	int seed = (int) time(NULL);
+	size_t m = 297 ;
+	size_t n = 301 ;
+	size_t k = 299 ;
+	uint64_t p = 7;
+	uint64_t seed = time(NULL);
 	static bool timing = false ;
 
 	static Argument as[] = {
@@ -164,59 +164,57 @@ int main(int ac, char **av) {
 		return -1 ;
 	}
 
-	srand(seed);
-	srand48(seed);
 
 	bool pass  = true ;
 	{ /*  freduce */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_freduce (F,m,k,n,timing);
+			pass &= test_freduce (F,m,k,n,timing, seed);
 		}
 #endif
 	}

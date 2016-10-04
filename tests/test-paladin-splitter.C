@@ -1,7 +1,6 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-
 /*
  * Copyright (C) the FFLAS-FFPACK group
  * Written by Ziad Sultan <ziad.sultan@imag.fr>
@@ -62,16 +61,17 @@ bool tmain(int argc, char** argv, std::string printStrat)
     int64_t q = 131071 ;
     bool dataPar = true;
     int proc = MAX_THREADS;
-    
+    uint64_t seed=time(NULL);
     int strat = 1;
 
     Argument as[] = {
         { 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
         { 'i', "-i N", "Set number of repetitions.",            TYPE_INT , &iters },
         { 't', "-t N", "Set number of processors.",            TYPE_INT , &proc },
-        { 's', "-s N", "Set the strategy parameter using t: 1 for (t, BLOCK, THREADS), 2 for (t, BLOCK, GRAIN), 3 for (t, BLOCK, FIXED), 4 for (t, ROW, THREADS), 5 for (t, ROW, GRAIN), 6 for (t, ROW, FIXED), 7 for (t, COLUMN, THREADS), 8 for (t, COLUMN, GRAIN), 9 for (t, COLUMN, FIXED), 10 for SINGLE strategy.",            TYPE_INT , &strat },
+        { 'u', "-u N", "Set the strategy parameter using t: 1 for (t, BLOCK, THREADS), 2 for (t, BLOCK, GRAIN), 3 for (t, BLOCK, FIXED), 4 for (t, ROW, THREADS), 5 for (t, ROW, GRAIN), 6 for (t, ROW, FIXED), 7 for (t, COLUMN, THREADS), 8 for (t, COLUMN, GRAIN), 9 for (t, COLUMN, FIXED), 10 for SINGLE strategy.",            TYPE_INT , &strat },
         { 'p', "-p Y/N", "run the parallel program using Parallel(Y)/Sequential(N).", TYPE_BOOL , &p },
         { 'd', "-d Y/N", "run the parallel program using data parallelism(Y)/task parallelism(N).", TYPE_BOOL , &dataPar },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
         END_OF_ARGUMENTS
     };
     FFLAS::parseArguments(argc,argv,as);
@@ -79,7 +79,7 @@ bool tmain(int argc, char** argv, std::string printStrat)
     size_t m = n; // matrices are square in this test
     
     Field F(q);
-    Field::RandIter G(F); 
+    Field::RandIter G(F,0,seed);
 
 // Allocate matrices
   typename Field::Element_ptr A = FFLAS::fflas_new (F, m, n);
@@ -229,7 +229,6 @@ int main(int argc, char** argv)
     size_t n = 2000;
     bool p = true;
     size_t iters = 3;
-    int64_t q = 131071 ;
     bool dataPar = true;
     int proc = MAX_THREADS;
     

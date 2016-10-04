@@ -81,6 +81,7 @@ autotune/winograd-modular-double
 autotune/winograd-modular-float
 autotune/winograd-modularbalanced-double
 autotune/winograd-modularbalanced-float
+autotune/pluq
 stamp-h1
 tests/Makefile
 tests/Makefile.in
@@ -109,4 +110,6 @@ tests/test-invert-check
 tests/test-permutations
 tests/test-pluq-check
 tests/test-simd
+tests/test-charpoly
+tests/test-maxdelayeddim
 benchmarks/benchmark-ftrsm

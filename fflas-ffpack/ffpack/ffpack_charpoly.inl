@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* ffpack/ffpack_charpoly.inl
  * Copyright (C) 2005 Clement Pernet
@@ -29,6 +29,8 @@
 #ifndef __FFLASFFPACK_charpoly_INL
 #define __FFLASFFPACK_charpoly_INL
 
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
+
 namespace FFPACK {
 
 
@@ -49,11 +51,11 @@ namespace FFPACK {
 // 		fflas_delete (Af);
 // 		return charp;
 // 	}	
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	std::list<Polynomial>&
 	CharPoly (const Field& F, std::list<Polynomial>& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag)
+			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		// if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
 		//     Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
@@ -61,71 +63,69 @@ namespace FFPACK {
 		// 		return CharPoly_convert <float,Field> (F, charp, N, A, lda, CharpTag);
 		// }
 		switch (CharpTag) {
-		case FfpackLUK:
+			case FfpackLUK:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
-				Protected::LUKrylov (F, charp, N, A, lda, X, N);
+				Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-		case FfpackKG:
+			case FfpackKG:
 			{
 				return Protected::KellerGehrig (F, charp, N, A, lda);
-				// break;
+					// break;
 			}
-		case FfpackDanilevski:
+			case FfpackDanilevski:
 			{
 				return Danilevski (F, charp, N, A, lda);
-				// break;
+					// break;
 			}
-		case FfpackKGFast:
+			case FfpackKGFast:
 			{
 				size_t mc, mb, j;
 				if (Protected::KGFast (F, charp, N, A, lda, &mc, &mb, &j)){
 					std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
 				}
 				return charp;
-				// break;
+					// break;
 			}
-		case FfpackKGFastG:
+			case FfpackKGFastG:
 			{
 				return Protected::KGFast_generalized (F, charp, N, A, lda);
 			}
-		case FfpackHybrid:
+			case FfpackHybrid:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
 				Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-		case FfpackArithProg:
+			case FfpackArithProg:
 			{
 				size_t attempts=0;
 				bool cont = false;
 				const uint64_t p = static_cast<uint64_t>(F.characteristic());
-				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
+					// Heuristic condition (the pessimistic theoretical one being p<2n^2.
 				if (p < static_cast<uint64_t>(N)){
-					return CharPoly (F, charp, N, A, lda, FfpackLUK);
+					return CharPoly (F, charp, N, A, lda, G, FfpackLUK);
 				}					
-
 				do{
 					try {
-						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD);
+						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD, G);
 					}
 					catch (CharpolyFailed){
 						if (attempts++ < 2)
 							cont = true;
 						else
-							return CharPoly(F, charp, N, A, lda, FfpackLUK);
-
+							return CharPoly(F, charp, N, A, lda, G, FfpackLUK);
 					}
 				} while (cont);
 				return charp;
 			}
-		default:
+			default:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
-				Protected::LUKrylov (F, charp, N, A, lda, X, N);
+				Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
@@ -145,21 +145,20 @@ namespace FFPACK {
 		return res;
 	}
 
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	Polynomial&
-	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
+	CharPoly (const Field& F, Polynomial& charp, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
 		
 		std::list<Polynomial> factor_list;
-		CharPoly (F, factor_list, N, A, lda, CharpTag);
+		CharPoly (F, factor_list, N, A, lda, G, CharpTag);
 		typename std::list<Polynomial >::const_iterator it;
 		it = factor_list.begin();
 
 		charp.resize(N+1);
-
 		Polynomial P = charp = *(it++);
 
 		while( it!=factor_list.end() ){
@@ -175,30 +174,31 @@ namespace FFPACK {
 
 
 	namespace Protected {
-		template <class Field, class Polynomial>
+		template <class Field, class Polynomial, class RandIter>
 		std::list<Polynomial>&
 		LUKrylov (const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::Element_ptr X, const size_t ldx)
+				  typename Field::Element_ptr A, const size_t lda,
+				  typename Field::Element_ptr X, const size_t ldx, RandIter& G)
 		{
-
 			typedef typename Field::Element elt;
 			elt* Ai, *Xi, *X2=X;
-			int Ncurr=int(N);
+			size_t Ncurr=N;
 			charp.clear();
-			int nbfac = 0;
+			size_t nbfac = 0;
 			while (Ncurr > 0){
-				size_t *P = FFLAS::fflas_new<size_t>((size_t)Ncurr);
+				size_t *P = FFLAS::fflas_new<size_t>(Ncurr);
 				Polynomial minP;//=new Polynomial();
-				FFPACK::MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
-				int k = int(minP.size()-1); // degre of minpoly
-				if ((k==1) && F.isZero ((minP)[0])){ // minpoly is X
+				    //Hybrid_KGF_LUK_MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
+				FFPACK::RandomMatrix (F, 1, Ncurr, X2, ldx, G);
+				MatVecMinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
+				size_t k = minP.size()-1; // degre of minpoly
+				if ((k==1) && F.isZero (minP[0])){ // minpoly is X
 					if (FFLAS::fiszero(F,Ncurr, Ncurr, A, lda)){
 						    // A is 0, CharPoly=X^n
-						minP.resize((size_t)Ncurr+1);
-						(minP)[1] = F.zero;
-						(minP)[(size_t)Ncurr] = F.one;
-						k=Ncurr;
+						minP.resize(Ncurr+1);
+						minP[1] = F.zero;
+						minP[Ncurr] = F.one;
+						k = Ncurr;
 					}
 				}
 				nbfac++;
@@ -207,27 +207,26 @@ namespace FFPACK {
 					FFLAS::fflas_delete( P);
 					return charp;
 				}
-				size_t Nrest = (size_t)(Ncurr-k);
-				elt * X21 = X2 + k*(int)ldx;
+				size_t Nrest = Ncurr-k;
+				elt * X21 = X2 + k*ldx;
 				elt * X22 = X21 + k;
 				// Compute the n-k last rows of A' = PA^tP^t in X2_
 				// A = A . P^t
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-					(size_t)Ncurr, 0, (int)k, A, lda, P);
+					Ncurr, 0, k, A, lda, P);
 				// Copy X2_ = (A'_2)^t
-				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx-(size_t)Ncurr)
-					for (size_t jj=0; jj<(size_t)Ncurr*lda; jj+=lda)
-						*(Xi++) = *(Ai+jj);
+				for (Xi = X21, Ai = A+k; Xi != X21 + Nrest*ldx; Ai++, Xi+=ldx)
+					FFLAS::fassign(F, Ncurr, Ai, lda, Xi, 1);
 				// A = A . P : Undo the permutation on A
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-					(size_t)Ncurr, 0, (int)k, A, lda, P);
+					Ncurr, 0, k, A, lda, P);
 				// X2_ = X2_ . P^t (=  (P A^t P^t)2_)
 				applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans,
-					Nrest, 0, (int)k, X21, ldx, P);
+					Nrest, 0, k, X21, ldx, P);
 				FFLAS::fflas_delete( P );
 				// X21 = X21 . S1^-1
 				ftrsm(F, FFLAS::FflasRight, FFLAS::FflasUpper,
-				      FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, (size_t)k,
+				      FFLAS::FflasNoTrans, FFLAS::FflasUnit, Nrest, k,
 				      F.one, X2, ldx, X21, ldx);
 				// Creation of the matrix A2 for recurise call
 				for (Xi = X22, Ai = A;
@@ -235,10 +234,10 @@ namespace FFPACK {
 				     Xi += (ldx-Nrest), Ai += (lda-Nrest))
 					for (size_t jj=0; jj<Nrest; ++jj)
 						*(Ai++) = *(Xi++);
-				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, (size_t)k, F.mOne,
+				fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, Nrest, Nrest, k, F.mOne,
 				       X21, ldx, X2+k, ldx, F.one, A, lda);
 				X2 = X22;
-				Ncurr = int(Nrest);
+				Ncurr = Nrest;
 			}
 			return charp;
 		}
@@ -247,8 +246,8 @@ namespace FFPACK {
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda,
-				 typename Field::Element_ptr X, const size_t ldx)
+						 typename Field::Element_ptr A, const size_t lda,
+						 typename Field::Element_ptr X, const size_t ldx)
 		{
 
 			size_t kg_mc, kg_mb, kg_j;
@@ -261,7 +260,7 @@ namespace FFPACK {
 				typename Field::Element_ptr A2i, Xi;
 				size_t *P = FFLAS::fflas_new<size_t>(N);
 
-				FFPACK::MinPoly (F, *minP, N, A, lda, X, ldx, P, FfpackKGF, kg_mc, kg_mb, kg_j);
+				FFPACK::Protected::Hybrid_KGF_LUK_MinPoly (F, *minP, N, A, lda, X, ldx, P, FfpackKGF, kg_mc, kg_mb, kg_j);
 				size_t k = minP->size()-1; // degre of minpoly
 				if ((k==1) && F.isZero ((*minP)[0])){ // minpoly is X
 					Ai = A;

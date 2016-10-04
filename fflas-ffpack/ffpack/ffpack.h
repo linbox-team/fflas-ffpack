@@ -472,7 +472,7 @@ namespace FFPACK { /* PLUQ */
 	PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
-	      size_t*P, size_t *Q);
+	      size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
 
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"
@@ -775,23 +775,60 @@ namespace FFPACK { /* charpoly */
 
 
 	/**
-	 * Compute the characteristic polynomial of A using Krylov
-	 * Method, and LUP factorization of the Krylov matrix
+	 * @brief Compute the characteristic polynomial of the matrix A.
+	 * @param F the base field
+	 * @param [out] charp the characteristic polynomial of \p as a list of factors
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+	 * @param lda leading dimension of \p A
+	 * @param CharpTag the algorithmic variant
+	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	std::list<Polynomial>&
 	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G,
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 	template<class Polynomial, class Field>
 	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
 
+	/**
+	 * @brief Compute the characteristic polynomial of the matrix A.
+	 * @param F the base field
+	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+	 * @param lda leading dimension of \p A
+	 * @param CharpTag the algorithmic variant
+	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
+	 */
+	template <class Field, class Polynomial, class RandIter>
+	Polynomial&
+	CharPoly( const Field& F, Polynomial& charp, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+
+	/**
+	 * @brief Compute the characteristic polynomial of the matrix A.
+	 * @param F the base field
+	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
+	 * @param lda leading dimension of \p A
+	 * @param CharpTag the algorithmic variant
+	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
+	 */
 	template <class Field, class Polynomial>
 	Polynomial&
 	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+			  typename Field::Element_ptr A, const size_t lda,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg){
+		typename Field::RandIter G(F);
+		return CharPoly (F, charp, N, A, lda, G, CharpTag);
+	}
 
 
 	namespace Protected {
@@ -821,11 +858,11 @@ namespace FFPACK { /* charpoly */
 			   typename Field::Element_ptr Y, const size_t incY,
 			   const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
 
-		template <class Field, class Polynomial>
+		template <class Field, class Polynomial, class RandIter>
 		std::list<Polynomial>&
 		LUKrylov( const Field& F, std::list<Polynomial>& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::Element_ptr U, const size_t ldu);
+				  typename Field::Element_ptr U, const size_t ldu, RandIter& G);
 
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
@@ -847,10 +884,10 @@ namespace FFPACK { /* charpoly */
 
 namespace FFPACK { /* frobenius, charpoly */
 
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	std::list<Polynomial>&
-	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
-			   const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t c);
+	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm, const size_t N,
+					   typename Field::Element_ptr A, const size_t lda, const size_t c, RandIter& G);
 
 
 } // FFPACK frobenius
@@ -863,20 +900,64 @@ namespace FFPACK { /* minpoly */
 	/* MINIMAL POLYNOMIAL */
 	/**********************/
 
-	/** Compute the minimal polynomial.
-	 * Minpoly of (A,v) using an LUP
-	 * factorization of the Krylov Base (v, Av, .., A^kv)
-	 * U,X must be (n+1)*n
-	 * U contains the Krylov matrix and X, its LSP factorization
+	/**
+	 * @brief Compute the minimal polynomial of the matrix A.
+	 * The algorithm is randomized probabilistic, and computes the minimal polynomial of 
+	 * the Krylov iterates of a random vector: (v, Av, .., A^kv)
+	 * @param F the base field
+	 * @param [out] minP the minimal polynomial of \p A
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$)
+	 * @param lda leading dimension of \p A
 	 */
 	template <class Field, class Polynomial>
 	Polynomial&
-	MinPoly( const Field& F, Polynomial& minP, const size_t N,
-		 typename Field::ConstElement_ptr A, const size_t lda,
-		 typename Field::Element_ptr X, const size_t ldx, size_t* P,
-		 const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
-		 const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0 );
+	MinPoly (const Field& F, Polynomial& minP, const size_t N,
+			 typename Field::ConstElement_ptr A, const size_t lda);
 
+	/**
+	 * @brief Compute the minimal polynomial of the matrix A.
+	 * The algorithm is randomized probabilistic, and computes the minimal polynomial of 
+	 * the Krylov iterates of a random vector: (v, Av, .., A^kv)
+	 * @param F the base field
+	 * @param [out] minP the minimal polynomial of \p A
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$)
+	 * @param lda leading dimension of \p A
+	 * @param G a random iterator
+	 */
+	template <class Field, class Polynomial, class RandIter>
+	Polynomial&
+	MinPoly (const Field& F, Polynomial& minP, const size_t N,
+			 typename Field::ConstElement_ptr A, const size_t lda, RandIter& G);
+
+	/**
+	 * @brief Compute the minimal polynomial of the matrix A and a vector v, namely the first linear dependency relation in the Krylov basis \f$(v,Av, ..., A^Nv)\f$.
+	 * @param F the base field
+	 * @param [out] minP the minimal polynomial of \p A and v
+	 * @param N order of the matrix \p A
+	 * @param [in] A the input matrix (\f$ N \times N\f$)
+	 * @param lda leading dimension of \p A
+	 * @param K an \f$ N \times (N+1)\f$ matrix containing the vector v on its first row
+	 * @param ldk leading dimension of \p K
+	 * @param P [out] (optional) the permutation used in the elimination of the Krylov matrix \p K
+	 */
+	template <class Field, class Polynomial>
+	Polynomial&
+	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
+				   typename Field::ConstElement_ptr A, const size_t lda,
+				   typename Field::Element_ptr K, const size_t ldk,
+				   size_t * P=NULL);
+
+	namespace Protected{
+		template <class Field, class Polynomial>
+		Polynomial&
+		Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N,
+								typename Field::ConstElement_ptr A, const size_t lda,
+								typename Field::Element_ptr X, const size_t ldx, size_t* P,
+								const FFPACK_MINPOLY_TAG MinTag= FFPACK::FfpackDense,
+								const size_t kg_mc=0, const size_t kg_mb=0, const size_t kg_j=0);
+	} // Protected
 } // FFPACK minpoly
 // #include "ffpack_minpoly.inl"
 

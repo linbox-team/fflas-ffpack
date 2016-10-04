@@ -1,3 +1,5 @@
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Brice Boyer (briceboyer) <boyer.brice@gmail.com>
@@ -34,7 +36,6 @@
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/debug.h"
-#include "fflas-ffpack/ffpack/ffpack.h"
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
 #include <givaro/givranditer.h>
@@ -43,41 +44,96 @@
 
 namespace FFPACK {
 
-    /*! @brief  Random Matrix.
-     * Creates a \c m x \c n matrix with random entries.
+    /**! @brief  Random non-zero Matrix.
+     * Creates a \c m x \c n matrix with random entries, and at least one of them is non zero.
      * @param F field
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
      * @param m number of rows in \p A
      * @param n number of cols in \p A
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
-     * @return pointer to \c A.
+	 * @param G a random iterator
+     * @return \c A.
      */
+    template<class Field, class RandIter>
+    typename Field::Element_ptr
+	NonZeroRandomMatrix(const Field & F, size_t m, size_t n, typename Field::Element_ptr A, size_t lda, RandIter& G) {
+		bool ok=false;
+		while (!ok)
+			for (size_t i=0 ; i<m ; ++i)
+				for (size_t j= 0; j<n ;++j)
+					if (!F.isZero(G.random (A[i*lda+j])))
+						ok = true;
+		return A;
+	}
+
+	/**! @brief  Random non-zero Matrix.
+     * Creates a \c m x \c n matrix with random entries, and at least one of them is non zero.
+     * @param F field
+     * @param m number of rows in \p A
+     * @param n number of cols in \p A
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param lda leading dimension of \p A
+     * @return \c A.
+     */
+    template<class Field, class RandIter>
+    typename Field::Element_ptr
+	NonZeroRandomMatrix(const Field & F, size_t m, size_t n,
+						typename Field::Element_ptr A, size_t lda) {
+		typename Field::RandIter G(F);
+		return NonZeroRandomMatrix(F, m, n, A, lda, G);
+	}
+
+	/**! @brief  Random Matrix.
+     * Creates a \c m x \c n matrix with random entries.
+     * @param F field
+     * @param m number of rows in \p A
+     * @param n number of cols in \p A
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param lda leading dimension of \p A
+	 * @param G a random iterator
+     * @return \c A.
+     */
+    template<class Field, class RandIter>
+    typename Field::Element_ptr
+	RandomMatrix(const Field & F, size_t m, size_t n, typename Field::Element_ptr A, size_t lda, RandIter& G) {
+		for (size_t i=0 ; i<m ; ++i)
+			for (size_t j= 0; j<n ;++j)
+				G.random (A[i*lda+j]);
+		return A;
+	}
+
+	/**! @brief  Random Matrix.
+	 * Creates a \c m x \c n matrix with random entries.
+	 * @param F field
+	 * @param m number of rows in \p A
+	 * @param n number of cols in \p A
+	 * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
+	 * @param lda leading dimension of \p A
+	 * @return \c A.
+	 */
     template<class Field>
-        typename Field::Element * RandomMatrix(const Field & F,
-                typename Field::Element * A,
-                size_t m, size_t n, size_t lda, size_t b=0)
-        {
-            typedef typename Field::RandIter Randiter ;
-            Randiter R(F, b);
-            for (size_t i=0 ; i<m ; ++i)
-                for (size_t j= 0; j<n ;++j)
-                    R.random( A[i*lda+j] );
-            return A;
+    typename Field::Element_ptr
+	RandomMatrix(const Field & F, size_t m, size_t n, typename Field::Element_ptr A, size_t lda) {
+		typename Field::RandIter G(F);
+		return RandomMatrix (F, m, n, A, lda, G);
+	}
 
-        }
-
-    /*! Random integer in range.
+	/*! Random integer in range.
      * @param a min bound
      * @param b max bound
      * @return a random integer in [a,b[  */
-    size_t RandInt(size_t a, size_t b)
+    inline size_t RandInt(size_t a, size_t b)
     {
         size_t x = a ;
         x += (size_t)rand()%(b-a);
         FFLASFFPACK_check(x<b && x>=a);
         return x ;
     }
+} // FFPACK
 
+#include "fflas-ffpack/ffpack/ffpack.h"
+
+namespace FFPACK{
     /*! @brief  Random Matrix with prescribed rank.
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
@@ -151,7 +207,7 @@ namespace FFPACK {
 
         }
 
-    void RandomRankProfile (size_t N, size_t R, size_t* rkp){
+    inline void RandomRankProfile (size_t N, size_t R, size_t* rkp){
         size_t curr = 0;
         std::vector<bool> rows(N,false);
         while (curr<R){

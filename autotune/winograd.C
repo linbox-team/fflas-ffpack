@@ -68,16 +68,16 @@ int main () {
 	typedef FIELD Field;
 	Field F(17);
 	typedef Field::Element Element ;
-	size_t n=768, nmax=4000, prec=512, nbest=0, count=0;
+	size_t n=512, nmax=4000, prec=512, nbest=0, count=0;
 	TTimer chrono;
 	bool bound=false;
 
 	Element * A = FFLAS::fflas_new (F,nmax,nmax);
 	Element * B = FFLAS::fflas_new (F,nmax,nmax);
 	Element * C = FFLAS::fflas_new (F,nmax,nmax);
-	FFPACK::RandomMatrix (F, A, nmax,nmax,nmax);
-	FFPACK::RandomMatrix (F, B, nmax,nmax,nmax);
-	FFPACK::RandomMatrix (F, C, nmax,nmax,nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, A, nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, B, nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, C, nmax);
 
 	time_t result = std::time(NULL);
 	cout << std::endl 
@@ -141,7 +141,7 @@ int main () {
 				prec=prec>>1;
 			n+=prec;
 		}
-	} while ((prec > 64 ) && (n < nmax));
+	} while ((prec > 32 ) && (n < nmax));
 
 	cout<<endl;
 	if (nbest != 0 ) {
