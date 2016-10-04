@@ -68,8 +68,8 @@ void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 }
 
 
-template<typename Field>
-bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Element &alpha, FFLAS::FFLAS_SIDE side, FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, FFLAS::FFLAS_DIAG diag){
+template<typename Field, class RandIter>
+bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Element &alpha, FFLAS::FFLAS_SIDE side, FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, FFLAS::FFLAS_DIAG diag, RandIter& Rand){
 
 	typedef typename Field::Element Element;
 	Element * A, *B, *B2, *C, tmp;
@@ -83,7 +83,6 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	B2 = FFLAS::fflas_new(F,m,ldb);
 	C  = FFLAS::fflas_new(F,m,ldc);
 
-	typename Field::RandIter Rand(F);
 	typename Field::NonZeroRandIter NZRand(Rand);
 
 	for (size_t i=0;i<k;++i){
@@ -156,7 +155,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	return !wrong;
 }
 template <class Field>
-bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, int s, size_t iters){
+bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, size_t a, size_t iters, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 
@@ -164,29 +163,30 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, int s, siz
 		//typedef typename Field::Element Element ;
 		// choose Field
 		Field* F= chooseField<Field>(q,b);
+		typename Field::RandIter G(*F,0,seed);
 		if (F==nullptr)
 			return true;
 
 		typename Field::Element alpha;
-		F->init (alpha, (typename Field::Element)s);
+		F->init (alpha, (typename Field::Element)a);
 		cout<<"Checking with ";F->write(cout)<<endl;
 
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
-		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
 		nbit--;
 		delete F;
 	}
@@ -196,21 +196,23 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, int s, siz
 int main(int argc, char** argv)
 {
 	cerr<<setprecision(10);
-	static Givaro::Integer q=-1;
-	static size_t b=0;
-	static size_t m=128;
-	static size_t n=128;
-	static size_t s=1;
-	static size_t iters=1;
-	static bool loop=false;
-	static Argument as[] = {
+	Givaro::Integer q=-1;
+	size_t b=0;
+	size_t m=128;
+	size_t n=128;
+	size_t a=1;
+	size_t iters=1;
+	bool loop=false;
+	uint64_t seed = time(NULL);
+	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-                { 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
-                { 'm', "-m M", "Set the row dimension of unknown matrix.",      TYPE_INT , &m },
-                { 'n', "-n N", "Set the column dimension of the unknown matrix.", TYPE_INT , &n },
-                { 's', "-s S", "Set the scaling of trsm",                         TYPE_INT , &s },
+		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
+		{ 'm', "-m M", "Set the row dimension of unknown matrix.",      TYPE_INT , &m },
+		{ 'n', "-n N", "Set the column dimension of the unknown matrix.", TYPE_INT , &n },
+		{ 'a', "-a A", "Set the scaling of trsm",                         TYPE_INT , &a },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
                 END_OF_ARGUMENTS
         };
 
@@ -218,16 +220,16 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-	 	ok &= run_with_field<Modular<double> >(q,b,m,n,s,iters);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,s,iters);
-		ok &= run_with_field<Modular<float> >(q,b,m,n,s,iters);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,s,iters);
-		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,s,iters);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,s,iters);
-		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,s,iters);
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,s,iters);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,m/4+1,n/4+1,s,iters); 
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m/4+1,n/4+1,s,iters); 
+		ok &= run_with_field<Modular<double> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<float> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,m/4+1,n/4+1,a,iters,seed);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m/4+1,n/4+1,a,iters,seed);
 	} while (loop && ok);
 
 	return !ok ;

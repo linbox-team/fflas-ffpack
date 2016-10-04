@@ -52,9 +52,9 @@ typedef vector<Field::Element> Polynomial;
 
 using namespace FFPACK;
 
-template<class Field>
+template<class Field, class RandIter>
 bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t lda,
-				 size_t nbit, FFPACK::FFPACK_CHARPOLY_TAG CT)
+				 size_t nbit, RandIter& G, FFPACK::FFPACK_CHARPOLY_TAG CT)
 {
 	std::ostringstream oss;
 	switch (CT){
@@ -78,7 +78,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	typename Field::Element_ptr B = FFLAS::fflas_new(F, n,n);
 	FFLAS::fassign(F, n, n, A, lda, B, n);
 
-	FFPACK::CharPoly (F, charp, n, A, lda, CT);
+	FFPACK::CharPoly (F, charp, n, A, lda, G, CT);
 
 	FFLAS::fassign(F, n, n, B, n, A, lda);
 
@@ -150,22 +150,22 @@ int main(int argc, char** argv)
 		if (!file.empty()) {
 			const char * filestring = file.c_str();
 			A = read_field<Field>(F,const_cast<char*>(filestring),&n,&n);
-			passed &= launch_test<Field>(F, n, A, lda, nbit, CT);
+			passed &= launch_test<Field>(F, n, A, lda, nbit, G, CT);
 			FFLAS::fflas_delete( A);
 		} else {
 				/* Random matrix test */
 			A = FFLAS::fflas_new(F,n,n);
-			FFLAS::frand (F,G,n,n,A,n);
+			FFPACK::RandomMatrix (F,n,n,A,n,G);
 			if (variant)
-				passed &= launch_test<Field>(F, n, A, lda, nbit, CT);
+				passed &= launch_test<Field>(F, n, A, lda, nbit, G, CT);
 			else{
-				passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackLUK);
+				passed &= launch_test<Field>(F, n, A, lda, nbit, G, FfpackLUK);
 				//passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackKG); // fails (variant only implemented for benchmarking comparison
-				passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackDanilevski);
+				passed &= launch_test<Field>(F, n, A, lda, nbit, G, FfpackDanilevski);
 				//passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackKGFast); // generic: does not work with any matrix
 				//passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackKGFastG); // generic: does not work with any matrix
 				//passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackHybrid); // fails with small characteristic
-				passed &= launch_test<Field>(F, n, A, lda, nbit, FfpackArithProg);
+				passed &= launch_test<Field>(F, n, A, lda, nbit, G, FfpackArithProg);
 			}
 			FFLAS::fflas_delete( A);
 		}

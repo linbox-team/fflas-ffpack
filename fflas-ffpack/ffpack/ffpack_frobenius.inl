@@ -73,11 +73,11 @@ namespace FFPACK { namespace Protected {
 } // FFPACK
 
 
-template <class Field, class Polynomial>
+template <class Field, class Polynomial, class RandIter>
 std::list<Polynomial>&
 FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 			   const size_t N, typename Field::Element_ptr A, const size_t lda,
-			   const size_t c)
+			   const size_t c, RandIter& g)
 {
 
 	FFLASFFPACK_check(c);
@@ -99,11 +99,9 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		dK[i]=0;
 
 	// Picking a random noc x N block vector U^T
-	typename Field::RandIter g (F);
-    Givaro::GeneralRingNonZeroRandIter<Field> nzg (g);
-	for (size_t i = 0; i < noc; ++i)
- 		for (size_t j = 0; j < N; ++j)
- 			g.random( *(K + i*ldk +j) );
+	Givaro::GeneralRingNonZeroRandIter<Field> nzg (g);
+	NonZeroRandomMatrix (F, noc, N, K, ldk, g);
+
 	for (size_t i = 0; i < noc; ++i)
 		nzg.random (*(K + i*ldk +i));
 

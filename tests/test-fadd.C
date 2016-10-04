@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2014 FFLAS-FFPACK
@@ -42,7 +42,7 @@
 #include "assert.h"
 
 template<class Field>
-bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
+bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
 	typedef typename Field::Element T ;
 
@@ -51,6 +51,7 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	T * C = FFLAS::fflas_new<T>(m*n);
 	T * D = FFLAS::fflas_new<T>(m*n);
 
+	typename Field::RandIter G(F, 0, seed);
 	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
@@ -58,9 +59,9 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
-		FFPACK::RandomMatrix(F,A,m,k,n);
-		FFPACK::RandomMatrix(F,B,m,k,n);
-		FFPACK::RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,m,k,A,n,G);
+		FFPACK::RandomMatrix(F,m,k,B,n,G);
+		FFPACK::RandomMatrix(F,m,k,C,n,G);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -97,9 +98,11 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing)
 }
 
 template<class Field>
-bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
+bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
 	typedef typename Field::Element T ;
+
+	typename Field::RandIter G(F, 0, seed);
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * C = FFLAS::fflas_new<T>(m*n);
@@ -112,8 +115,8 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
-		FFPACK::RandomMatrix(F,A,m,k,n);
-		FFPACK::RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,m,k,A,n,G);
+		FFPACK::RandomMatrix(F,m,k,C,n,G);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -150,9 +153,11 @@ bool test_faddin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 }
 
 template<class Field>
-bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
+bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
 	typedef typename Field::Element T ;
+
+	typename Field::RandIter G(F, 0, seed);
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * B = FFLAS::fflas_new<T>(m*n);
@@ -166,9 +171,9 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 		if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
-		FFPACK::RandomMatrix(F,A,m,k,n);
-		FFPACK::RandomMatrix(F,B,m,k,n);
-		FFPACK::RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,m,k,A,n,G);
+		FFPACK::RandomMatrix(F,m,k,B,n,G);
+		FFPACK::RandomMatrix(F,m,k,C,n,G);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -205,9 +210,11 @@ bool test_fsub(const Field & F, size_t m, size_t k, size_t n, bool timing)
 }
 
 template<class Field>
-bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing)
+bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
 	typedef typename Field::Element T ;
+
+	typename Field::RandIter G(F, 0, seed);
 
 	T * A = FFLAS::fflas_new<T>(m*n);
 	T * C = FFLAS::fflas_new<T>(m*n);
@@ -220,8 +227,8 @@ bool test_fsubin(const Field & F, size_t m, size_t k, size_t n, bool timing)
 	tim.clear() ; tom.clear() ;
 
 	for (size_t b = 0 ; b < iter ; ++b) {
-		FFPACK::RandomMatrix(F,A,m,k,n);
-		FFPACK::RandomMatrix(F,C,m,k,n);
+		FFPACK::RandomMatrix(F,m,k,A,n,G);
+		FFPACK::RandomMatrix(F,m,k,C,n,G);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -293,208 +300,208 @@ int main(int ac, char **av) {
 	{ /*  fadd  */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F( (int32_t)p ) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fadd(F,m,k,n,timing);
+			pass &= test_fadd(F,m,k,n,timing,seed);
 		}
 #endif
 	}
 	{ /*  faddin  */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_faddin(F,m,k,n,timing);
+			pass &= test_faddin(F,m,k,n,timing,seed);
 		}
 #endif
 	}
 	{ /*  fsub */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fsub(F,m,k,n,timing);
+			pass &= test_fsub(F,m,k,n,timing,seed);
 		}
 #endif
 	}
 	{ /*  fsubin */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fsubin(F,m,k,n,timing);
+			pass &= test_fsubin(F,m,k,n,timing,seed);
 		}
 #endif
 	}

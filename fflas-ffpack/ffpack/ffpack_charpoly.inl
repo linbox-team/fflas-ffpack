@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* ffpack/ffpack_charpoly.inl
  * Copyright (C) 2005 Clement Pernet
@@ -29,6 +29,8 @@
 #ifndef __FFLASFFPACK_charpoly_INL
 #define __FFLASFFPACK_charpoly_INL
 
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
+
 namespace FFPACK {
 
 
@@ -49,11 +51,11 @@ namespace FFPACK {
 // 		fflas_delete (Af);
 // 		return charp;
 // 	}	
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	std::list<Polynomial>&
 	CharPoly (const Field& F, std::list<Polynomial>& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag)
+			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		// if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
 		//     Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
@@ -61,71 +63,69 @@ namespace FFPACK {
 		// 		return CharPoly_convert <float,Field> (F, charp, N, A, lda, CharpTag);
 		// }
 		switch (CharpTag) {
-		case FfpackLUK:
+			case FfpackLUK:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
-				Protected::LUKrylov (F, charp, N, A, lda, X, N);
+				Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-		case FfpackKG:
+			case FfpackKG:
 			{
 				return Protected::KellerGehrig (F, charp, N, A, lda);
-				// break;
+					// break;
 			}
-		case FfpackDanilevski:
+			case FfpackDanilevski:
 			{
 				return Danilevski (F, charp, N, A, lda);
-				// break;
+					// break;
 			}
-		case FfpackKGFast:
+			case FfpackKGFast:
 			{
 				size_t mc, mb, j;
 				if (Protected::KGFast (F, charp, N, A, lda, &mc, &mb, &j)){
 					std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
 				}
 				return charp;
-				// break;
+					// break;
 			}
-		case FfpackKGFastG:
+			case FfpackKGFastG:
 			{
 				return Protected::KGFast_generalized (F, charp, N, A, lda);
 			}
-		case FfpackHybrid:
+			case FfpackHybrid:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
 				Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-		case FfpackArithProg:
+			case FfpackArithProg:
 			{
 				size_t attempts=0;
 				bool cont = false;
 				const uint64_t p = static_cast<uint64_t>(F.characteristic());
-				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
+					// Heuristic condition (the pessimistic theoretical one being p<2n^2.
 				if (p < static_cast<uint64_t>(N)){
-					return CharPoly (F, charp, N, A, lda, FfpackLUK);
+					return CharPoly (F, charp, N, A, lda, G, FfpackLUK);
 				}					
-
 				do{
 					try {
-						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD);
+						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD, G);
 					}
 					catch (CharpolyFailed){
 						if (attempts++ < 2)
 							cont = true;
 						else
-							return CharPoly(F, charp, N, A, lda, FfpackLUK);
-
+							return CharPoly(F, charp, N, A, lda, G, FfpackLUK);
 					}
 				} while (cont);
 				return charp;
 			}
-		default:
+			default:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
-				Protected::LUKrylov (F, charp, N, A, lda, X, N);
+				Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
@@ -145,16 +145,16 @@ namespace FFPACK {
 		return res;
 	}
 
-	template <class Field, class Polynomial>
+	template <class Field, class Polynomial, class RandIter>
 	Polynomial&
-	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/)
+	CharPoly (const Field& F, Polynomial& charp, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
 		
 		std::list<Polynomial> factor_list;
-		CharPoly (F, factor_list, N, A, lda, CharpTag);
+		CharPoly (F, factor_list, N, A, lda, G, CharpTag);
 		typename std::list<Polynomial >::const_iterator it;
 		it = factor_list.begin();
 
@@ -174,23 +174,22 @@ namespace FFPACK {
 
 
 	namespace Protected {
-		template <class Field, class Polynomial>
+		template <class Field, class Polynomial, class RandIter>
 		std::list<Polynomial>&
 		LUKrylov (const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::Element_ptr X, const size_t ldx)
+				  typename Field::Element_ptr A, const size_t lda,
+				  typename Field::Element_ptr X, const size_t ldx, RandIter& G)
 		{
 			typedef typename Field::Element elt;
 			elt* Ai, *Xi, *X2=X;
 			size_t Ncurr=N;
 			charp.clear();
 			size_t nbfac = 0;
-			typename Field::RandIter G(F);
 			while (Ncurr > 0){
 				size_t *P = FFLAS::fflas_new<size_t>(Ncurr);
 				Polynomial minP;//=new Polynomial();
 				    //Hybrid_KGF_LUK_MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
-				FFLAS::frand(F, G, 1, N, X2, ldx);
+				FFPACK::RandomMatrix (F, 1, Ncurr, X2, ldx, G);
 				MatVecMinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
 				size_t k = minP.size()-1; // degre of minpoly
 				if ((k==1) && F.isZero (minP[0])){ // minpoly is X
@@ -247,8 +246,8 @@ namespace FFPACK {
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		LUKrylov_KGFast (const Field& F, std::list<Polynomial>& charp, const size_t N,
-				 typename Field::Element_ptr A, const size_t lda,
-				 typename Field::Element_ptr X, const size_t ldx)
+						 typename Field::Element_ptr A, const size_t lda,
+						 typename Field::Element_ptr X, const size_t ldx)
 		{
 
 			size_t kg_mc, kg_mb, kg_j;

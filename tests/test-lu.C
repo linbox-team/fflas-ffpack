@@ -214,10 +214,10 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
  * @param lda leading dim of A
  * @return 0 iff correct, 1 otherwise
  */
-template<class Field, FFLAS_DIAG diag>
+template<class Field, FFLAS_DIAG diag, class RandIter>
 bool test_pluq (const Field & F,
 				typename Field::ConstElement_ptr A,
-				size_t r, size_t m, size_t n, size_t lda)
+				size_t r, size_t m, size_t n, size_t lda, RandIter& G)
 {
 	bool fail = false;
 	typedef typename Field::Element_ptr Element_ptr ;
@@ -227,8 +227,6 @@ bool test_pluq (const Field & F,
 	size_t * P = fflas_new<size_t> (m);
 	size_t * Q = fflas_new<size_t> (n);
 	
-    typename Field::RandIter G(F);
-
     ForceCheck_PLUQ<Field> checker (G,m,n,B,lda);
 
 	size_t R = PLUQ (F, diag, m, n, B, lda, P, Q);
@@ -719,10 +717,10 @@ bool test_pluq (const Field & F,
 
 // }
 
-template<class Field, FFLAS_DIAG diag, FFLAS_TRANSPOSE trans>
+template<class Field, FFLAS_DIAG diag, FFLAS_TRANSPOSE trans, class RandIter>
 bool launch_test(const Field & F,
 				 size_t r,
-				 size_t m, size_t n)
+				 size_t m, size_t n, RandIter& G)
 {
 		//typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
@@ -733,7 +731,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
-		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
+		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda" << std::endl;
 		fflas_delete( A );
 	}
@@ -744,7 +742,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
-		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
+		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
 		fflas_delete( A );
 	}
@@ -755,7 +753,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
-		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
+		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
 		fflas_delete( A );
 	}
@@ -768,7 +766,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
-		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
+		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at square" << std::endl;
 		fflas_delete( A );
 	}
@@ -781,7 +779,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
-		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
+		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at wide" << std::endl;
 		fflas_delete( A );
 	}
@@ -794,7 +792,7 @@ bool launch_test(const Field & F,
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
 		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
-		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
+		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		fflas_delete( A );
 	}
@@ -913,7 +911,7 @@ bool launch_test(const Field & F,
 
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 	
@@ -922,6 +920,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		Field* F= chooseField<Field>(q,b);
 		if (F==nullptr)
 			return true;
+		typename Field::RandIter G(*F,0,seed);
 		std::ostringstream oss;
 		F->write(oss);
 		
@@ -932,16 +931,16 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		std::cout<<" ... ";
 
 
-		ok&= launch_test<Field,FflasUnit,FflasNoTrans>    (*F,r,m,n);
-		ok&= launch_test<Field,FflasUnit,FflasTrans>      (*F,r,m,n);
-		ok&= launch_test<Field,FflasNonUnit,FflasNoTrans> (*F,r,m,n);
-		ok&= launch_test<Field,FflasNonUnit,FflasTrans>   (*F,r,m,n);
+		ok&= launch_test<Field,FflasUnit,FflasNoTrans>    (*F,r,m,n,G);
+		ok&= launch_test<Field,FflasUnit,FflasTrans>      (*F,r,m,n,G);
+		ok&= launch_test<Field,FflasNonUnit,FflasNoTrans> (*F,r,m,n,G);
+		ok&= launch_test<Field,FflasNonUnit,FflasTrans>   (*F,r,m,n,G);
 
 #if 0 /*  may be bogus */
-		ok&= launch_test_append<Field,FflasUnit,FflasNoTrans>   (*F,r,m,n);
-		ok&= launch_test_append<Field,FflasNonUnit,FflasNoTrans>(*F,r,m,n);
-		ok&= launch_test_append<Field,FflasUnit,FflasTrans>     (*F,r,m,n);
-		ok&= launch_test_append<Field,FflasNonUnit,FflasTrans>  (*F,r,m,n);
+		ok&= launch_test_append<Field,FflasUnit,FflasNoTrans>   (*F,r,m,n,G);
+		ok&= launch_test_append<Field,FflasNonUnit,FflasNoTrans>(*F,r,m,n,G);
+		ok&= launch_test_append<Field,FflasUnit,FflasTrans>     (*F,r,m,n,G);
+		ok&= launch_test_append<Field,FflasNonUnit,FflasTrans>  (*F,r,m,n,G);
 #endif
 		nbit--;
 		if ( !ok )
@@ -958,14 +957,15 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 int main(int argc, char** argv)
 {
 	cerr<<setprecision(20);
-	static Givaro::Integer q=-1;
-	static size_t b=0;
-	static size_t m=120;
-	static size_t n=120;
-	static size_t r=70;
-	static size_t iters=3;
-	static bool loop=false;
-	static Argument as[] = {
+	Givaro::Integer q=-1;
+	size_t b=0;
+	size_t m=120;
+	size_t n=120;
+	size_t r=70;
+	size_t iters=3;
+	bool loop=false;
+	size_t seed=time(NULL);
+	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
 		{ 'm', "-m M", "Set the row dimension of the matrix.",      TYPE_INT , &m },
@@ -973,6 +973,7 @@ int main(int argc, char** argv)
 		{ 'r', "-r R", "Set the rank.", TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
 		END_OF_ARGUMENTS
 	};
 
@@ -983,16 +984,16 @@ int main(int argc, char** argv)
 
 	bool ok=true;
 	do{
-		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);
+		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters,seed);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters,seed);
 	} while (loop && ok);
 
 	return !ok;
