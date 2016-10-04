@@ -184,21 +184,22 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 			 *          [ Y3    ]    [ A32 A33 ]
 			 */
 		size_t R = ReducedRowEchelonForm (F, M-rowbeg, colsize, A22, lda, P+rowbeg, Q+colbeg, true, FfpackTileRecursive);
-		write_field(F,std::cerr<<"Sortie RedRowEch A (tot) = "<<std::endl, A, M, N, lda);
+			//write_field(F,std::cerr<<"Sortie RedRowEch A (tot) = "<<std::endl, A, M, N, lda);
 
 		typename Field::Element_ptr A13 = A12+R;
 		typename Field::Element_ptr A23 = A22+R;
 
 			// Apply row permutation on [ A12 A13 ]
-		for (size_t i=0; i<R; i++)
+//		for (size_t i=0; i<R; i++)
+		for (size_t i=0; i<N; i++)
 			Q[colbeg+i] += colbeg;
-		for (size_t i=R; i<colsize; i++)
-			Q[colbeg+i] = colbeg+i;
+		// for (size_t i=R; i<colsize; i++)
+		// 	Q[colbeg+i] = colbeg+i;
 		for (size_t i=rowbeg; i<M; i++)
 			P[i] += rowbeg;
 
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, rowbeg, colbeg, colbeg+R, A, lda, Q);
-		write_perm(std::cerr<<"Q = ",Q,N);
+			//write_perm(std::cerr<<"Q = ",Q,N);
 		// write_field(F,std::cerr<<"Apres applyP A (tot) = "<<std::endl, A, M, N, lda);
 
 			// T1 <- A13 + A12 T2 in A13
