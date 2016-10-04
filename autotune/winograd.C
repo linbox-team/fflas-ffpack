@@ -68,7 +68,7 @@ int main () {
 	typedef FIELD Field;
 	Field F(17);
 	typedef Field::Element Element ;
-	size_t n=768, nmax=4000, prec=512, nbest=0, count=0;
+	size_t n=512, nmax=4000, prec=512, nbest=0, count=0;
 	TTimer chrono;
 	bool bound=false;
 
@@ -141,7 +141,7 @@ int main () {
 				prec=prec>>1;
 			n+=prec;
 		}
-	} while ((prec > 64 ) && (n < nmax));
+	} while ((prec > 32 ) && (n < nmax));
 
 	cout<<endl;
 	if (nbest != 0 ) {

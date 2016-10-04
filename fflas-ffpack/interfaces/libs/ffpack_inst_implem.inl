@@ -146,7 +146,7 @@ namespace FFPACK {
 	size_t PLUQ (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,
 				 const size_t M, const size_t N,
 				 FFLAS_ELT* A, const size_t lda,
-				 size_t*P, size_t *Q);
+				 size_t*P, size_t *Q, size_t BCThreshold);
 
 	template INST_OR_DECL
 	size_t LUdivine (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,

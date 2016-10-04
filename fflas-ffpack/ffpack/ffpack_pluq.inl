@@ -30,13 +30,10 @@
 #define __FFLASFFPACK_ffpack_pluq_INL
 
 //#define BCONLY
-//#define CROUT
+#define CROUT
 //#define BCV2
 //#define BCV3
 //#define LEFTLOOKING
-#ifndef BASECASE_K
-#define BASECASE_K 256
-#endif
 
 
 namespace FFPACK {
@@ -434,25 +431,15 @@ namespace FFPACK {
 	template<class Field>
 	inline size_t
 	_PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-	      const size_t M, const size_t N,
-	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
+	       const size_t M, const size_t N,
+	       typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q, 
+	       size_t BCThreshold)
 	{
-#ifdef BCONLY
-  #ifdef CROUT
-		return PLUQ_basecaseCrout(Fi,Diag,M,N,A,lda,P,Q);
-  #elif defined BCV2
-		return PLUQ_basecaseV2(Fi,Diag,M,N,A,lda,P,Q);
-  #elif defined BCV3
-		return PLUQ_basecaseV3(Fi,Diag,M,N,A,lda,P,Q);
-  #else
-		return PLUQ_basecase(Fi,Diag,M,N,A,lda,P,Q);
-  #endif		
-#endif		
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
 		if (std::min (M,N) == 0) return 0;
 		if (std::max (M,N) == 1) return (Fi.isZero(*A))? 0 : 1;
-#ifndef BASECASE_K
+#ifdef NOBASECASE
 		if (M == 1){
 			size_t piv = 0;
 			while ((piv < N) && Fi.isZero (A[piv])) piv++;
@@ -491,10 +478,18 @@ namespace FFPACK {
 			}
 			return 1;
 		}
-#endif
-#ifdef BASECASE_K
-		if (std::min(M,N) < BASECASE_K)
-			return PLUQ_basecaseCrout (Fi, Diag, M, N, A, lda, P, Q);
+#else
+		if (std::min(M,N) < BCThreshold){
+#  ifdef CROUT
+			return PLUQ_basecaseCrout(Fi,Diag,M,N,A,lda,P,Q);
+#  elif defined BCV2
+			return PLUQ_basecaseV2(Fi,Diag,M,N,A,lda,P,Q);
+#  elif defined BCV3
+			return PLUQ_basecaseV3(Fi,Diag,M,N,A,lda,P,Q);
+#  else
+			return PLUQ_basecase(Fi,Diag,M,N,A,lda,P,Q);
+#  endif
+		}
 #endif
 
 		FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
@@ -506,7 +501,7 @@ namespace FFPACK {
 
 		    // A1 = P1 [ L1 ] [ U1 V1 ] Q1
 		    //         [ M1 ]
-		R1 = _PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1);
+		R1 = _PLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1, BCThreshold);
 		typename Field::Element_ptr A2 = A + N2;
 		typename Field::Element_ptr A3 = A + M2*lda;
 		typename Field::Element_ptr A4 = A3 + N2;
@@ -536,12 +531,12 @@ namespace FFPACK {
 		    //        [ M2 ]
 		size_t * P2 = FFLAS::fflas_new<size_t >(M2-R1);
 		size_t * Q2 = FFLAS::fflas_new<size_t >(N-N2);
-		R2 = _PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2);
+		R2 = _PLUQ (Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2, BCThreshold);
 		    // G = P3 [ L3 ] [ U3 V3 ] Q3
 		    //        [ M3 ]
 		size_t * P3 = FFLAS::fflas_new<size_t >(M-M2);
 		size_t * Q3 = FFLAS::fflas_new<size_t >(N2-R1);
-		R3 = _PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3);
+		R3 = _PLUQ (Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3, BCThreshold);
 		    // [ H1 H2 ] <- P3^T H Q2^T
 		    // [ H3 H4 ]
 #ifdef MONOTONIC_APPLYP
@@ -593,7 +588,7 @@ namespace FFPACK {
 		    //         [ M4 ]
 		size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
 		size_t * Q4 = FFLAS::fflas_new<size_t >(N-N2-R2);
-		R4 = _PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4);
+		R4 = _PLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4, BCThreshold);
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
 #ifdef MONOTONIC_APPLYP
@@ -658,11 +653,12 @@ namespace FFPACK {
 	template<class Field>
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
-	      const size_t M, const size_t N,
-	      typename Field::Element_ptr A, const size_t lda, size_t*P, size_t *Q)
+	      size_t M, size_t N,
+	      typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q,
+	      size_t BCThreshold)
 	{
 		Checker_PLUQ<Field> checker (Fi,M,N,A,lda);
-		size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q);
+		size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q, BCThreshold);
 		checker.check(A,lda,Diag,R,P,Q);
 		return R;
 	}
