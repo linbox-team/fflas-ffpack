@@ -32,14 +32,37 @@ AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ)
 EXTRA_PROGRAMS=$(AUTOTUNE)
 EXTRA_DIST=tune_fgemm.sh tune_pluq.sh
 
-autotune: autotune_fgemm autotune_pluq
+define run_tune_fgemm
+	./tune_fgemm.sh
+endef	
+define run_tune_pluq
+	./tune_pluq.sh
+endef	
+define merge_thresholds
 	cat fgemm-thresholds.h pluq-threshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
+endef	
+
+# This forces the autotune runs to be sequential
+autotune: autotune_fgemm autotune_pluq
+	${run_tune_fgemm}
+	${run_tune_pluq}
+	${merge_thresholds}
+
+# Tune fgemm only
+tune_fgemm: autotune_fgemm
+	${run_tune_fgemm}
+	${merge_thresholds}
+
+# Tune pluq only
+tune_pluq: autotune_pluq
+	${run_tune_pluq}
+	${merge_thresholds}
 
 autotune_fgemm: $(AUTOTUNE_FGEMM)
-	./tune_fgemm.sh
 
 autotune_pluq: $(AUTOTUNE_PLUQ)
-	./tune_pluq.sh
+
+
 
 pluq_SOURCES=pluq.C
 winograd_modular_float_SOURCES=winograd.C
