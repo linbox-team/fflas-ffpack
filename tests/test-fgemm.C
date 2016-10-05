@@ -400,6 +400,7 @@ int main(int argc, char** argv)
 	FFLAS::parseArguments(argc,argv,as);
 
 	bool ok = true;
+	srand(seed);
 	do{
 		ok &= run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);

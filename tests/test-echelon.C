@@ -52,9 +52,9 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
-template<class Field>
+template<class Field, class RandIter>
 bool
-test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
+test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new (F,m,n);
@@ -72,7 +72,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
@@ -118,9 +118,9 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 	return pass;
 }
 
-template<class Field>
+template<class Field, class RandIter>
 bool
-test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
+test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new (F,m,n);
@@ -138,7 +138,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
@@ -190,9 +190,9 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 	return pass;
 }
 
-template<class Field>
+template<class Field, class RandIter>
 bool
-test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
+test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new (F,m,n);
@@ -210,7 +210,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
-		RandomMatrixWithRank(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<n;j++) P[j]=0;
 		for (size_t j=0;j<m;j++) Q[j]=0;
@@ -258,9 +258,9 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 	FFLAS::fflas_delete( Q);
 	return pass;
 }
-template<class Field>
+template<class Field, class RandIter>
 bool
-test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag)
+test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FFPACK_LU_TAG LuTag, RandIter& G)
 {
 	typedef typename Field::Element Element ;
 	Element * A = FFLAS::fflas_new (F,m,n);
@@ -279,7 +279,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 	for (size_t  l=0;l<iters;l++){
 		R = (size_t)-1;
 
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
@@ -342,7 +342,7 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters){
+bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters, uint64_t seed){
 	bool ok = true ;
 
 	int nbit=(int)iters;
@@ -352,7 +352,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		Field* F= chooseField<Field>(q,b);
 		if (F==nullptr)
 			return true;
-
+		typename Field::RandIter G(*F,b,seed);
 		std::ostringstream oss;
 		F->write(oss);		
 		std::cout.fill('.');
@@ -361,23 +361,23 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		std::cout<<oss.str();
 		std::cout<<" .";
 
-		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive);
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive);
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordan);
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordan, G);
 		std::cout<<".";
 
 		nbit--;
@@ -400,7 +400,7 @@ int main(int argc, char** argv){
 	size_t r = 47;
 	size_t iters = 3 ;
 	bool loop = false;
-
+	uint64_t seed=time(NULL);
 	static Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic.",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.", TYPE_INT , &b },
@@ -409,24 +409,27 @@ int main(int argc, char** argv){
 		{ 'r', "-r r", "Set the rank of the matrix."          , TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
 		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
 	r = std::min(r, std::min(m,n));
 
+	srand(seed);
+
 	bool ok = true;
 	do{
-		ok &= run_with_field<Modular<double> >(q,b,m,n,r,iters);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<float> >(q,b,m,n,r,iters);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters); 
-			//ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters); // BUG: not available yet (missing division in the field
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters);
+		ok &= run_with_field<Modular<double> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<Modular<float> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters,seed); 
+			//ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters,seed); // BUG: not available yet (missing division in the field
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters,seed);
+		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed);
 		
 	} while (loop && ok);
 
