@@ -25,7 +25,7 @@
  *.
  */
 
-/*! @file utils/fflas_randommatrix.h
+/* @file utils/fflas_randommatrix.h
  * @ingroup tests
  * @brief Utilities to create matrices with prescribed shapes, properties,...
  * To be used in benchmarks/tests
@@ -44,7 +44,7 @@
 
 namespace FFPACK {
 
-    /**! @brief  Random non-zero Matrix.
+    /** @brief  Random non-zero Matrix.
      * Creates a \c m x \c n matrix with random entries, and at least one of them is non zero.
      * @param F field
      * @param m number of rows in \p A
@@ -66,7 +66,7 @@ namespace FFPACK {
 		return A;
 	}
 
-	/**! @brief  Random non-zero Matrix.
+	/** @brief  Random non-zero Matrix.
      * Creates a \c m x \c n matrix with random entries, and at least one of them is non zero.
      * @param F field
      * @param m number of rows in \p A
@@ -83,7 +83,7 @@ namespace FFPACK {
 		return NonZeroRandomMatrix(F, m, n, A, lda, G);
 	}
 
-	/**! @brief  Random Matrix.
+	/** @brief  Random Matrix.
      * Creates a \c m x \c n matrix with random entries.
      * @param F field
      * @param m number of rows in \p A
@@ -102,7 +102,7 @@ namespace FFPACK {
 		return A;
 	}
 
-	/**! @brief  Random Matrix.
+	/** @brief  Random Matrix.
 	 * Creates a \c m x \c n matrix with random entries.
 	 * @param F field
 	 * @param m number of rows in \p A
@@ -118,7 +118,7 @@ namespace FFPACK {
 		return RandomMatrix (F, m, n, A, lda, G);
 	}
 
-	/*! Random integer in range.
+	/* Random integer in range.
      * @param a min bound
      * @param b max bound
      * @return a random integer in [a,b[  */
@@ -134,15 +134,15 @@ namespace FFPACK {
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 namespace FFPACK{
-    /*! @brief  Random Matrix with prescribed rank.
+	/** @brief  Random Matrix with prescribed rank.
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
      * @param m number of rows in \p A
      * @param n number of cols in \p A
      * @param r rank of the matrix to build
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
-     * @return pointer to \c A.
+     * @return \c A.
      */
     template<class Field>
 	inline typename Field::Element_ptr
@@ -152,16 +152,16 @@ namespace FFPACK{
 		return RandomMatrixWithRank(F, m, n, r, A, lda);
 	}
 
-	/*! @brief  Random Matrix with prescribed rank.
+	/** @brief  Random Matrix with prescribed rank.
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
      * @param m number of rows in \p A
      * @param n number of cols in \p A
      * @param r rank of the matrix to build
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
 	 * @param G a random iterator
-     * @return pointer to \c A.
+     * @return \c A.
      */
     template<class Field, class RandIter>
 	inline typename Field::Element_ptr
@@ -212,7 +212,7 @@ namespace FFPACK{
 						m,0,(int)m, L, m, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 					  m, n, m, F.one, L, m, U, n, F.zero, A, lda);
-            //! @todo compute LU with ftrtr
+            // @todo compute LU with ftrtr
 
 		FFLAS::fflas_delete(P);
 		FFLAS::fflas_delete(L);
@@ -234,18 +234,18 @@ namespace FFPACK{
         }
     }
 
-/*! @brief  Random Matrix with prescribed rank and rank profile matrix
+   /** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
      * @param m number of rows in \p A
      * @param n number of cols in \p A
      * @param r rank of the matrix to build
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
 	 * @param RRP the R dimensional array with row positions of the rank profile matrix' pivots
 	 * @param CRP the R dimensional array with column positions of the rank profile matrix' pivots
 	 * @param G a random iterator
-     * @return pointer to \c A.
+     * @return \c A.
      */
 	template<class Field,class RandIter>
 	inline typename Field::Element_ptr
@@ -291,17 +291,17 @@ namespace FFPACK{
 			return A;
         }
 
-/*! @brief  Random Matrix with prescribed rank and rank profile matrix
+   /** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
      * @param m number of rows in \p A
      * @param n number of cols in \p A
      * @param r rank of the matrix to build
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
 	 * @param RRP the R dimensional array with row positions of the rank profile matrix' pivots
 	 * @param CRP the R dimensional array with column positions of the rank profile matrix' pivots
-     * @return pointer to \c A.
+     * @return \c A.
      */
     template<class Field>
 	inline typename Field::Element_ptr
@@ -312,16 +312,16 @@ namespace FFPACK{
 		return RandomMatrixWithRankandRPM (F, M, N, R, A, lda, RRP, CRP, G);
 	}
 
-	/*! @brief  Random Matrix with prescribed rank, with random  rank profile matrix
+	/** @brief  Random Matrix with prescribed rank, with random  rank profile matrix
      * Creates an \c m x \c n matrix with random entries, rank \c r and with a 
 	 * rank profile matrix chosen uniformly at random.
      * @param F field
      * @param m number of rows in \p A
      * @param n number of cols in \p A
      * @param r rank of the matrix to build
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
-     * @return pointer to \c A.
+     * @return \c A.
      */
     template<class Field, class RandIter>
 	inline typename Field::Element_ptr
@@ -336,16 +336,16 @@ namespace FFPACK{
             return RandomMatrixWithRankandRPM (F, M, N, R, A, lda, pivot_r, pivot_c, G);
         }
 
-    /*! @brief  Random Matrix with prescribed rank, with random  rank profile matrix
+    /** @brief  Random Matrix with prescribed rank, with random  rank profile matrix
      * Creates an \c m x \c n matrix with random entries, rank \c r and with a 
 	 * rank profile matrix chosen uniformly at random.
      * @param F field
      * @param m number of rows in \p A
      * @param n number of cols in \p A
      * @param r rank of the matrix to build
-     * @param A pointer to the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
-     * @return pointer to \c A.
+     * @return \c A.
      */
     template<class Field>
 	inline typename Field::Element_ptr
@@ -355,14 +355,14 @@ namespace FFPACK{
 		return RandomMatrixWithRankandRandomRPM (F, M, N, R, A, lda, G);
 	}
 
-	/*! @brief  Random Matrix with prescribed det.
+	/** @brief  Random Matrix with prescribed det.
      * Creates a \c m x \c n matrix with random entries and rank \c r.
      * @param F field
 	 * @param d the prescribed value for the determinant of A
      * @param n number of cols in \p A
-     * @param A pointer to the matrix to be generated (preallocated to at least \c n x \c lda field elements)
+     * @param A the matrix to be generated (preallocated to at least \c n x \c lda field elements)
      * @param lda leading dimension of \p A
-     * @return pointer to \c A.
+     * @return \c A.
      */
     template<class Field>
 	inline typename Field::Element_ptr
@@ -371,14 +371,14 @@ namespace FFPACK{
 		typename Field::RandIter G(F);
 		return RandomMatrixWithDet (F, n, d, A, lda, G);
 	}
-	/*! @brief  Random Matrix with prescribed det.
+	/** @brief  Random Matrix with prescribed det.
      * Creates a \c m x \c n matrix with random entries and rank \c r.
      * @param F field
 	 * @param d the prescribed value for the determinant of A
      * @param n number of cols in \p A
-     * @param A pointer to the matrix to be generated (preallocated to at least \c n x \c lda field elements)
+     * @param A the matrix to be generated (preallocated to at least \c n x \c lda field elements)
      * @param lda leading dimension of \p A
-     * @return pointer to \c A.
+     * @return \c A.
      */
 	template<class Field, class RandIter>
 	inline typename Field::Element_ptr
@@ -448,7 +448,7 @@ namespace FFPACK{
 						n,0,(int)n, L, n, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
 					  n,n,n, 1.0, L,n, U,lda, 0.0, A,lda);
-            //! @todo compute LU with ftrtr
+            // @todo compute LU with ftrtr
 
 		FFLAS::fflas_delete( P);
 		FFLAS::fflas_delete( L);
