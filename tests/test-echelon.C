@@ -97,6 +97,7 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 			nextpiv = i+1;
 		}
 		pass &= FFLAS::fiszero (F, m, n-R, L+R, n);
+
 		// Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
@@ -142,6 +143,7 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 		FFLAS::fassign(F,m,n,A,lda,B,lda);
 		for (size_t j=0;j<m;j++) P[j]=0;
 		for (size_t j=0;j<n;j++) Q[j]=0;
+
 		R = FFPACK::RowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
 
 		if (R != r) {pass = false; break;}

@@ -982,6 +982,8 @@ int main(int argc, char** argv)
 	if (r > std::min (m,n)) 
 		r = std::min (m, n);
 
+	srand(seed);
+
 	bool ok=true;
 	do{
 		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);

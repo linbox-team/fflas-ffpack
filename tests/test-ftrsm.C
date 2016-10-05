@@ -83,21 +83,9 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	B2 = FFLAS::fflas_new(F,m,ldb);
 	C  = FFLAS::fflas_new(F,m,ldc);
 
-	typename Field::NonZeroRandIter NZRand(Rand);
-
-	for (size_t i=0;i<k;++i){
-		for (size_t j=0;j<i;++j)
-			A[i*lda+j]= (uplo == FFLAS::FflasLower)? Rand.random(tmp) : F.zero;
-		A[i*lda+i]= (diag == FFLAS::FflasNonUnit)? NZRand.random(tmp) : F.one;
-		for (size_t j=i+1;j<k;++j)
-			A[i*lda+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
-	}
-	for (size_t i=0;i<m;++i){
-		for(size_t j=0; j<n; ++j){
-			B[i*ldb+j]= Rand.random(tmp);
-			B2[i*ldb+j]=B[i*ldb+j];
-		}
-	}
+	RandomTriangularMatrix (F, k, k, uplo, diag, true, A, lda, Rand);
+	RandomMatrix (F, m, n, B, ldb, Rand);
+	FFLAS::fassign (F, m, n, B, ldb, B2, ldb);
 
 	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((side == FFLAS::FflasLeft)?"Left_":"Right_")+string((trans == FFLAS::FflasTrans)?"Trans_":"NoTrans_")+string((diag == FFLAS::FflasUnit)?"Unit":"NonUnit");
 
@@ -126,22 +114,17 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	else
 		FFLAS::fgemm(F, FFLAS::FflasNoTrans, trans, m, n, n, invalpha, B, ldb, A, lda, F.zero, C, ldc);
 
-
-	bool wrong = false;
-	for (size_t i=0;i<m;++i)
-		for (size_t j=0;j<n;++j)
-			if ( !F.areEqual(*(B2+i*ldb+j), *(C+i*ldc+j))){
-				wrong = true;
-			}
-	if ( wrong ){
-		    //cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
-		cout << "FAILED ("<<time<<")"<<endl;
-		//cerr<<"FAILED ("<<time<<")"<<endl;
-
-	} else
-		    //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
+	bool ok = true;
+	if (FFLAS::fequal (F, m, n, B2, ldb, C, ldc)){
+	    //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
 		cout << "PASSED ("<<time<<")"<<endl;
-	    //cerr<<"PASSED ("<<time<<")"<<endl;
+		//cerr<<"PASSED ("<<time<<")"<<endl;
+	} else{
+	    //cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
+		cout << "FAILED ("<<time<<")"<<endl;
+		ok=false;
+		//cerr<<"FAILED ("<<time<<")"<<endl;
+	}
 
 	F.mulin(invalpha,alpha);
 	if (!F.isOne(invalpha)){
@@ -152,7 +135,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(B2);
 	FFLAS::fflas_delete(C);
-	return !wrong;
+	return ok;
 }
 template <class Field>
 bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, size_t a, size_t iters, uint64_t seed){
