@@ -36,6 +36,7 @@
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/debug.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
 #include <givaro/givranditer.h>
@@ -118,6 +119,67 @@ namespace FFPACK {
 		return RandomMatrix (F, m, n, A, lda, G);
 	}
 
+	/** @brief  Random Triangular Matrix.
+     * Creates a \c m x \c n triangular matrix with random entries. The \c UpLo parameter defines wether it is upper or lower triangular.
+     * @param F field
+     * @param m number of rows in \p A
+     * @param n number of cols in \p A
+	 * @param UpLo whether \c A is upper or lower triangular
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param lda leading dimension of \p A
+	 * @param G a random iterator
+     * @return \c A.
+     */
+    template<class Field, class RandIter>
+    inline typename Field::Element_ptr
+	RandomTriangularMatrix (const Field & F, size_t m, size_t n,
+							const FFLAS::FFLAS_UPLO UpLo, const FFLAS::FFLAS_DIAG Diag, bool nonsingular,
+							typename Field::Element_ptr A, size_t lda, RandIter& G) {
+
+		if (UpLo == FFLAS::FflasUpper){
+			for (size_t i=0 ; i<m ; ++i){
+				FFLAS::fzero(F, std::min(i,n), A + i*lda, 1);
+				for (size_t j= i; j<n ;++j)
+					G.random (A[i*lda+j]);
+			}
+		} else { // FflasLower
+			for (size_t i=0 ; i<m ; ++i){
+				for (size_t j=0; j<=i ;++j)
+					G.random (A[i*lda+j]);
+				FFLAS::fzero (F, n-1-std::min(i,n-1), A + i*lda + i+1, 1);
+			}
+		}
+		if (Diag == FFLAS::FflasUnit){
+			for (size_t i=0; i< std::min(m,n); ++i)
+				F.assign(A[i*(lda+1)], F.one);
+		} else { // NonUnit
+			if (nonsingular){
+				Givaro::GeneralRingNonZeroRandIter<Field,RandIter> nzG (G);
+				for (size_t i=0; i< std::min(m,n); ++i)
+					nzG.random (A[i*(lda+1)]);
+			}
+		}
+		return A;
+	}
+	/** @brief  Random Triangular Matrix.
+     * Creates a \c m x \c n triangular matrix with random entries. The \c UpLo parameter defines wether it is upper or lower triangular.
+     * @param F field
+     * @param m number of rows in \p A
+     * @param n number of cols in \p A
+	 * @param UpLo whether \c A is upper or lower triangular
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param lda leading dimension of \p A
+     * @return \c A.
+     */
+    template<class Field, class RandIter>
+    inline typename Field::Element_ptr
+	RandomTriangularMatrix (const Field & F, size_t m, size_t n,
+							const FFLAS::FFLAS_UPLO UpLo, const FFLAS::FFLAS_DIAG Diag, bool nonsingular,
+							typename Field::Element_ptr A, size_t lda) {
+		typename Field::RandIter G(F);
+		return RandomTriangularMatrix (F, m, n, UpLo, Diag, nonsingular, A, lda);
+	}
+
 	/* Random integer in range.
      * @param a min bound
      * @param b max bound
@@ -180,23 +242,10 @@ namespace FFPACK{
 
 		Element_ptr U = FFLAS::fflas_new(F,m,n);
 		Element_ptr L = FFLAS::fflas_new(F,m,m);
-
             /*  Create L, lower invertible */
-		for (size_t i=0 ; i<m ; ++i){
-			for (size_t j= 0; j<i ;++j) G.random( L[i*m+j] );
-			nzG.random( L[i*m+i] );
-			for (size_t j= i+1; j<m ;++j) F.init(L[i*m+j],F.zero);
-		}
-
+		RandomTriangularMatrix (F, m, m, FFLAS::FflasLower, FFLAS::FflasNonUnit, true, L, m, G);
             /*  Create U, upper or rank r */
-		for (size_t i=0 ; i<r ; ++i){
-			for (size_t j= 0 ; j<i ;++j) F.init(U[i*n+j],0U);
-			nzG.random( U[i*n+i] );
-			for (size_t j= i+1; j<n ;++j) G.random( U[i*n+j] );
-		}
-		for (size_t i=r ; i<m ; ++i)
-			for (size_t j= 0 ; j<n ;++j)
-				F.init(U[i*n+j],F.zero);
+		RandomTriangularMatrix (F, m, n, FFLAS::FflasUpper, FFLAS::FflasNonUnit, true, U, n, G);
 
             /*  Create a random P,Q */
 		for (size_t i = 0 ; i < n ; ++i)
@@ -271,25 +320,19 @@ namespace FFPACK{
 			//));
 
 		typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
-		FFLAS::pfzero(F, N, N, U, N);
-			//SYNCH_GROUP ( FOR1D(i, N, H,
-		for (size_t i=0; i<N; ++i){
-			nzG.random (U [i*N+i]);
-			for (size_t j=i+1; j < N; ++j)
-				G.random (U [i*N+j]);
-		}
-			//));
+		RandomTriangularMatrix (F, N, N, FFLAS::FflasUpper, FFLAS::FflasNonUnit, true, U, N, G);
 
 		typename Field::Element alpha, beta;
 		F.init(alpha,1.0);
 		F.init(beta,0.0);
                 // auto sp=SPLITTER(); //CP: broken with Modular<Integer>. Need to reorganize  the helper behaviour with ParSeq and ModeTraits
-            auto sp=NOSPLIT();
-            FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, sp);
-            FFLAS::fflas_delete(L);
-            FFLAS::fflas_delete(U);
-			return A;
-        }
+		auto sp=NOSPLIT();
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M,N,N, alpha, L, N, U, N, beta, A, lda, sp);
+
+		FFLAS::fflas_delete(L);
+		FFLAS::fflas_delete(U);
+		return A;
+	}
 
    /** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
@@ -393,7 +436,7 @@ namespace FFPACK{
 		for (size_t i = 0 ; i < n ; ++i ) Q[i] = 0;
 		for (size_t i = 0 ; i < n ; ++i ) P[i] = 0;
 
-		Element * U = FFLAS::fflas_new<Element>(n*lda);
+		Element * U = FFLAS::fflas_new<Element>(n*n);
 		Element * L = FFLAS::fflas_new<Element>(n*n);
 
             /*  Create a random P,Q */
@@ -413,41 +456,26 @@ namespace FFPACK{
 				d1 = -d1;
 
 			/*  Create L, lower det d */
-		for (size_t i=0 ; i<n ; ++i)
-			for (size_t j= 0; j<i ;++j)
-				G.random( L[i*n+j] );
+		RandomTriangularMatrix (F, n, n, FFLAS::FflasLower, FFLAS::FflasNonUnit, true, L, n, G);
 
 		Element dd = F.one;
-		for (size_t i=0 ; i<n-1 ; ++i) {
-			nzG.random( L[i*n+i] );
+		for (size_t i=0 ; i<n-1 ; ++i)
 			F.mulin(dd,L[i*n+i]);
-		}
 
 		F.div(dd,d,dd);
 		if (d1<0) F.negin(dd);
-		L[n*n-1] = dd ;
+		F.assign (L[n*n-1],dd);
 
-		for (size_t i=0 ; i<n ; ++i)
-			for (size_t j= i+1; j<n ;++j)
-				F.init(L[i*n+j],0U);
-
-
-            /*  Create U, upper or rank r */
-		for (size_t i=0 ; i<n ; ++i) {
-			for (size_t j= 0; j<i ;++j)
-				U[i*lda+j] = F.zero;
-			U[i*lda+i] = F.one;
-			for (size_t j= i+1; j<n ;++j)
-				G.random( U[i*lda+j] );
-		}
+            /*  Create U, upper unit*/
+		RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasUnit, true, U, n, G);
 
             /*  compute product */
 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-						n,0,(int)n, U, lda, P);
+						n,0,(int)n, U, n, P);
 		FFPACK::applyP (F, FFLAS::FflasLeft,  FFLAS::FflasNoTrans,
 						n,0,(int)n, L, n, Q);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-					  n,n,n, 1.0, L,n, U,lda, 0.0, A,lda);
+					  n,n,n, 1.0, L, n, U, n, 0.0, A, lda);
             // @todo compute LU with ftrtr
 
 		FFLAS::fflas_delete( P);
