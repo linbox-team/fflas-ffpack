@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 	PAR_BLOCK{
 		Rec_Initialize(F, A, m, n, n);
 		//				FFLAS::pfzero(F,m,n,A,m/NBK);
-		FFPACK::RandomMatrixWithRankandRandomRPM (F, A, n, r, m,n);
+		FFPACK::RandomMatrixWithRankandRandomRPM (F, m, n ,r, A, n);
 	}
 
 	size_t R;

@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 		size_t lda = m<<1;
 		Field::Element_ptr A = FFLAS::fflas_new(F,lda,lda);
 
-		FFPACK::RandomMatrixWithRankandRandomRPM(F,A,lda,m,m,m);
+		FFPACK::RandomMatrixWithRankandRandomRPM(F,m,m,m,A,lda,Rand);
 
 		FFPACK::Checker_invert<Field> checker(Rand,m,A,lda);
 		try {
