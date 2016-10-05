@@ -271,16 +271,43 @@ namespace FFPACK{
 		return A;
 	}
 
-    inline void RandomRankProfile (size_t N, size_t R, size_t* rkp){
-        size_t curr = 0;
-        std::vector<bool> rows(N,false);
-        while (curr<R){
-            size_t i;
-            while (rows [i = RandInt(0U, N)]);
-            rows[i] = true;
-            rkp [curr] = i;
-            curr++;
-        }
+   /** @brief Pick uniformly at random a sequence of \c R distinct elements from the set \f$ \{0,\dots, N-1\}\f$  using Knuth's shuffle.
+     * @param N the cardinality of the sampling set
+     * @param R the number of elements to sample
+	 * @param [out] P the output sequence (pre-allocated to at least R indices)
+	 */
+    inline size_t * RandomIndexSubset (size_t N, size_t R, size_t* P){
+		size_t * Q = FFLAS::fflas_new<size_t>(N);
+		for (size_t i=0; i<N; ++i)
+			Q[i] = i;
+		for (size_t i=0; i<R; ++i){
+			size_t j = RandInt(i,N);
+			P[i] = Q[j];
+			Q[j] = Q[i];
+		}
+		FFLAS::fflas_delete(Q);
+		return P;
+	}
+
+	/** @brief Pick uniformly at random a permutation of size \c N stored in LAPACK format using Knuth's shuffle.
+     * @param N the length  of the permutation
+	 * @param [out] P the output permutation (pre-allocated to at least N indices)
+	 */
+    inline size_t * RandomPermutation (size_t N, size_t* P){
+		for (size_t i = 0 ; i < N ; ++i)
+			P[i] = i + RandInt(0U,N-i);
+		return P;
+	}
+
+	/** @brief Pick uniformly at random an R-subpermutation of dimension \c M x \c N : a matrix with only R non-zeros equal to one, in a random rook placement.
+     * @param M row dimension
+     * @param N column dimension
+	 * @param [out] rows the row position of each non zero element (pre-allocated)
+	 * @param [out] cols the column position of each non zero element (pre-allocated)
+	 */
+	inline void RandomRankProfileMatrix (size_t M, size_t N, size_t R, size_t* rows, size_t* cols){
+		RandomIndexSubset (M, R, rows);
+		RandomIndexSubset (N, R, cols);
     }
 
    /** @brief  Random Matrix with prescribed rank and rank profile matrix
@@ -371,13 +398,14 @@ namespace FFPACK{
 	RandomMatrixWithRankandRandomRPM (const Field& F, size_t M, size_t N, size_t R,
 									  typename Field::Element_ptr A, size_t lda, RandIter& G){
             // generate the r pivots in the rank profile matrix E
-            size_t pivot_r[R];
-            size_t pivot_c[R];
-
-            RandomRankProfile (M, R, pivot_r);
-            RandomRankProfile (N, R, pivot_c);
-            return RandomMatrixWithRankandRPM (F, M, N, R, A, lda, pivot_r, pivot_c, G);
-        }
+		size_t * pivot_r = FFLAS::fflas_new<size_t> (R);
+		size_t * pivot_c = FFLAS::fflas_new<size_t> (R);
+		RandomRankProfileMatrix (M, N, R, pivot_r, pivot_c);
+		RandomMatrixWithRankandRPM (F, M, N, R, A, lda, pivot_r, pivot_c, G);
+		FFLAS::fflas_delete(pivot_r);
+		FFLAS::fflas_delete(pivot_c);
+		return A;
+	}
 
     /** @brief  Random Matrix with prescribed rank, with random  rank profile matrix
      * Creates an \c m x \c n matrix with random entries, rank \c r and with a 
@@ -440,11 +468,8 @@ namespace FFPACK{
 		Element * L = FFLAS::fflas_new<Element>(n*n);
 
             /*  Create a random P,Q */
-
-		for (size_t i = 0 ; i < n ; ++i)
-			P[i] = i + RandInt(0U,n-i);
-		for (size_t i = 0 ; i < n ; ++i)
-			Q[i] = i + RandInt(0U,n-i);
+		RandomPermutation (n, P);
+		RandomPermutation (n, Q);
 
             /*  det of P,Q */
 		int d1 =1 ;

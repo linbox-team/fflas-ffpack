@@ -99,7 +99,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
 			PLUQ(*F, FFLAS::FflasNonUnit, m, n, A, lda, P, Q);
 			
-			for (size_t i=0; i<1;i++){
+			for (size_t i=0; i<3;i++){
 				size_t mm = 1 + (rand() % m);
 				size_t nn = 1 + (rand() % n);
 				FFLAS::fassign (*F, m, n, B, lda, A, lda); 
@@ -127,10 +127,10 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			size_t* RRP = FFLAS::fflas_new<size_t>(r);
 			size_t* CRP = FFLAS::fflas_new<size_t>(r);
 			size_t* RRPLUD, * RRPPLUQ, *CRPLUD, *CRPPLUQ;
-			RandomRankProfile (m, r, RRP);
-			RandomRankProfile (n, r, CRP);
-			
+
+			RandomRankProfileMatrix (m, n, r, RRP, CRP);
 			RandomMatrixWithRankandRPM(*F,m,n,r,A,lda, RRP, CRP, G);
+
 			FFLAS::fassign (*F, m, n, A, lda, B, lda); 
 			size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
