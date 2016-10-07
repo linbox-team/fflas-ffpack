@@ -471,7 +471,7 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, P, LPerm);
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, T, ldt, LPerm);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, R, T, ldt, LPerm);
 
 			delete[] LPerm;
 		} else{
@@ -522,7 +522,7 @@ getEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, P, LPerm);
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, A, lda, LPerm);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, R, A, lda, LPerm);
 
 			delete[] LPerm;
 		} else {
@@ -565,7 +565,7 @@ getEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, Q, LPerm);
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, N, 0, R, T, ldt, LPerm);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, N, 0, R, T, ldt, LPerm);
 
 			delete[] LPerm;
 		}
@@ -626,7 +626,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, P, LPerm);
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, T, ldt, LPerm);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, R, T, ldt, LPerm);
 
 			delete[] LPerm;
 		}
@@ -664,7 +664,7 @@ getReducedEchelonForm (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, P, LPerm);
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, R, A, lda, LPerm);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, M, 0, R, A, lda, LPerm);
 
 			delete[] LPerm;
 		}
@@ -696,7 +696,7 @@ getReducedEchelonTransform (const Field& F, const FFLAS::FFLAS_UPLO Uplo,
 			size_t * LPerm = new size_t[R];
 			PLUQtoEchelonPermutation (M, R, Q, LPerm);
 
-			applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, Tdim, 0, R, T, ldt, LPerm);
+			applyP (F, FFLAS::FflasRight, FFLAS::FflasTrans, Tdim, 0, R, T, ldt, LPerm);
 
 			delete[] LPerm;
 		}

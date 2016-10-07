@@ -34,6 +34,7 @@
 
 #define  __FFLASFFPACK_SEQUENTIAL
 #define __FFLASFFPACK_GAUSSJORDAN_BASECASE 25
+#define __FFLASFFPACK_PLUQ_THRESHOLD 25
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -106,6 +107,13 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 		if (!pass) {
 			std::cerr<<"FAIL (column echelon LuTag="<<LuTag<<")"<<std::endl;
+			write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
+			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			std::cerr<<"P = [";	for (size_t i=0; i<n; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
+			std::cerr<<"Q = [";	for (size_t i=0; i<m; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
+			write_field(F,std::cerr<<"ColEchelon = "<<std::endl,L,m,n,n);
+			write_field(F,std::cerr<<"Transform = "<<std::endl,U,n,n,n);
+			write_field(F,std::cerr<<"B x X  = "<<std::endl,X,m,n,n);
 			break;
 		}
 	}
@@ -363,11 +371,11 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 
 		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-			//ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
 		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-			//ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
 		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
@@ -396,9 +404,9 @@ int main(int argc, char** argv){
 
 	Givaro::Integer q = -1;
 	size_t b = 0;
-	size_t m = 384;
-	size_t n = 254;
-	size_t r = 74;
+	size_t m = 284;
+	size_t n = 154;
+	size_t r = 54;
 	size_t iters = 3 ;
 	bool loop = false;
 	uint64_t seed=time(NULL);
