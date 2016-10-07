@@ -456,42 +456,53 @@ namespace FFPACK {
 		FFLAS::fflas_delete( Tinv);
 	}
 	
-	    /**
-	     * Computes P1 [ I_R     ] stored in MathPermutation format
-	     *             [     P_2 ]
-	     */
-	inline void composePermutationsP (size_t * MathP,
-					  const size_t * P1,
-					  const size_t * P2,
-					  const size_t R, const size_t N)
+		/**
+		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
+		 * and store the result in P1 as a LAPACK permutation
+		 * @param [inout] P1 a LAPACK permutation of size N
+		 * @param P2 a LAPACK permutation of size N-R
+		 */
+	inline void composePermutationsLLL (size_t * P1,
+										const size_t * P2,
+										const size_t R, const size_t N){
+		size_t * MathP = FFLAS::fflas_new<size_t >(N);
+		composePermutationsLLM(MathP, P1, P2, R, N);
+		MathPerm2LAPACKPerm (P1, MathP, N);
+		FFLAS::fflas_delete (MathP);
+	}
+		/**
+		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
+		 * and store the result in MathP as a MathPermutation format.
+		 * @param [out]MathP a MathPermutation of size N
+		 * @param P1 a LAPACK permutation of size N
+		 * @param P2 a LAPACK permutation of size N-R
+		 */
+	inline void composePermutationsLLM (size_t * MathP,
+										const size_t * P1,
+										const size_t * P2,
+										const size_t R, const size_t N)
 	{
 		for (size_t i=0; i<N; ++i)
 			MathP[i] = i;
 		LAPACKPerm2MathPerm (MathP, P1, N);
-		
-		for (size_t i=R; i<N; i++){
-			if (P2[i-R] != i-R){
-				size_t tmp = MathP[i];
-				MathP[i] = MathP[P2[i-R]+R];
-				MathP[P2[i-R]+R] = tmp;
-			}
-		}
+		composePermutationsMLM (MathP, P2, R, N);
 	}
 	
-	inline void composePermutationsQ (size_t * MathP,
-					  const size_t * Q1,
-					  const size_t * Q2,
-					  const size_t R, const size_t N)
+		/**
+		 * @brief Computes MathP1 x Diag (I_R, P2) where MathP1 is a MathPermutation and P2 a LAPACK permutation
+		 * and store the result in MathP1 as a MathPermutation format.
+		 * @param [inout] MathP1 a MathPermutation of size N
+		 * @param P2 a LAPACK permutation of size N-R
+		 */
+	inline void composePermutationsMLM (size_t * MathP1,
+										const size_t * P2,
+										const size_t R, const size_t N)
 	{
-		for (size_t i=0; i<N; ++i)
-			MathP[i] = i;
-		LAPACKPerm2MathPerm (MathP, Q1, N);
-		
 		for (size_t i=R; i<N; i++){
-			if (Q2[i-R] != i-R){
-				size_t tmp = MathP[i];
-				MathP[i] = MathP[Q2[i-R]+R];
-				MathP[Q2[i-R]+R] = tmp;
+			if (P2[i-R] != i-R){
+				size_t tmp = MathP1[i];
+				MathP1[i] = MathP1[P2[i-R]+R];
+				MathP1[P2[i-R]+R] = tmp;
 			}
 		}
 	}

@@ -135,15 +135,19 @@ void PermApplyT_double (double * A, const size_t lda, const size_t width,
 			const size_t R1, const size_t R2,
 			const size_t R3, const size_t R4);
 
-void composePermutationsP (size_t * MathP,
-			   const size_t * P1,
-			   const size_t * P2,
-			   const size_t R, const size_t N);
 
-void composePermutationsQ (size_t * MathP,
-			   const size_t * Q1,
-			   const size_t * Q2,
-			   const size_t R, const size_t N);
+void composePermutationsLLM (size_t * MathP,
+			     const size_t * P1,
+			     const size_t * P2,
+			     const size_t R, const size_t N);
+
+void composePermutationsLLL (size_t * P1,
+			     const size_t * P2,
+			     const size_t R, const size_t N);
+
+void composePermutationsMLM (size_t * MathP1,
+			     const size_t * P2,
+			     const size_t R, const size_t N);
 
 void cyclic_shift_mathPerm (size_t * P,  const size_t s);
 

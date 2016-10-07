@@ -48,7 +48,7 @@ template <class Field>
 		}
 		size_t * P = FFLAS::fflas_new<size_t>(M);
 		size_t * Q = FFLAS::fflas_new<size_t>(M);
-		size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackSlabRecursive);
+		size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordanTile);
 		nullity = (int)(M - R);
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, (int)R, A, lda, P);
 		delete [] P;
