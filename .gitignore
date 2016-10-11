@@ -1,7 +1,6 @@
 Makefile
 Makefile.in
 aclocal.m4
-autogen.status
 autom4te.cache
 benchmarks/Makefile
 benchmarks/Makefile.in
