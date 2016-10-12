@@ -99,8 +99,7 @@ namespace FFLAS {
 		};
 		struct Sequential{
 			Sequential() {}
-			template<class Cut,class Param>
-			Sequential(Parallel<Cut,Param>& ) {}
+			template<typename... Params> Sequential(Params... parameters) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
 				return out << "Sequential";
 			}

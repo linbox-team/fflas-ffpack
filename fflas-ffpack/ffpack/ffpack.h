@@ -193,13 +193,14 @@ namespace FFPACK { /* Permutations */
 	 * @param P
 	 * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
 	 */
-	template<class Field>
+	template<class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	void
-	applyP( const Field& F,
+	applyP (const Field& F,
 			const FFLAS::FFLAS_SIDE Side,
 			const FFLAS::FFLAS_TRANSPOSE Trans,
 			const size_t M, const size_t ibeg, const size_t iend,
-			typename Field::Element_ptr A, const size_t lda, const size_t * P );
+			typename Field::Element_ptr A, const size_t lda, const size_t * P,
+			const ParSeqHelper& PSH = FFLAS::ParSeqHelper::Sequential());
 	
 	
 	/** Apply a R-monotonically increasing permutation P, to the matrix A.
@@ -255,11 +256,12 @@ namespace FFPACK { /* Permutations */
 	//! Parallel applyP with OPENMP tasks
 	template<class Field>
 	void
-	papplyP( const Field& F,
+	papplyP (const Field& F,
 			 const FFLAS::FFLAS_SIDE Side,
 			 const FFLAS::FFLAS_TRANSPOSE Trans,
 			 const size_t m, const size_t ibeg, const size_t iend,
-			 typename Field::Element_ptr A, const size_t lda, const size_t * P );
+			 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+			 size_t numthreads=MAX_THREADS);
 
 	//! Parallel applyT with OPENMP tasks
 	template <class Field>
@@ -490,12 +492,13 @@ namespace FFPACK { /* PLUQ */
 	 * - Dumas J-G.,  Pernet C., and Sultan Z. <i>\c Simultaneous computation of the row and column rank profiles </i>, ISSAC'13, 2013
 	 * .
 	 */
-	template<class Field>
+	template<class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	size_t
 	PLUQ (const Field& F, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
-	      size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD);
+	      size_t*P, size_t *Q, size_t BCThreshold = __FFLASFFPACK_PLUQ_THRESHOLD,
+		  const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
 
 } // FFPACK PLUQ
 // #include "ffpack_pluq.inl"
@@ -615,12 +618,14 @@ namespace FFPACK { /* echelon */
 	 * @param Qt the row position of the pivots in the echelon form
 	 * @param transform
 	 */
-	template <class Field>
+	template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	size_t
 	ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 					   typename Field::Element_ptr A, const size_t lda,
 					   size_t* P, size_t* Qt, bool transform = false,
-					   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+					   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+					   const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
+
 
 	/**  Compute the Row Echelon form of the input matrix in-place.
 	 *
@@ -641,12 +646,13 @@ namespace FFPACK { /* echelon */
 	 * @param Qt the column position of the pivots in the echelon form
 	 * @param transform
 	 */
-	template <class Field>
+	template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	size_t
 	RowEchelonForm (const Field& F, const size_t M, const size_t N,
 					typename Field::Element_ptr A, const size_t lda,
 					size_t* P, size_t* Qt, const bool transform = false,
-					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+					const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
 
 	/** Compute the Reduced Column Echelon form of the input matrix in-place.
 	 *
@@ -666,12 +672,13 @@ namespace FFPACK { /* echelon */
 	 * @param Qt
 	 * @param transform
 	 */
-	template <class Field>
+	template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	size_t
 	ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 							  typename Field::Element_ptr A, const size_t lda,
 							  size_t* P, size_t* Qt, const bool transform = false,
-							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+							  const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+							  const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
 
 	/** Compute the Reduced Row Echelon form of the input matrix in-place.
 	 *
@@ -690,14 +697,16 @@ namespace FFPACK { /* echelon */
 	 * @param Qt
 	 * @param transform
 	 */
-	template <class Field>
+	template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	size_t
 	ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 						   typename Field::Element_ptr A, const size_t lda,
 						   size_t* P, size_t* Qt, const bool transform = false,
-						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
+						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive,
+						   const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
 
 	namespace Protected {
+
 		/**  @brief Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
 		 * @bib
 		 *  - Algorithm 2.8 of A. Storjohann Thesis 2000,
@@ -710,12 +719,14 @@ namespace FFPACK { /* echelon */
 		 * @param Q column permutation
 		 * @param LuTag set the base case to a Tile (FfpackGaussJordanTile)  or Slab (FfpackGaussJordanSlab) recursive RedEchelon
 		 */
-		template <class Field>
+		template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 		size_t
 		GaussJordan (const Field& F, const size_t M, const size_t N,
 					 typename Field::Element_ptr A, const size_t lda,
 					 const size_t colbeg, const size_t rowbeg, const size_t colsize,
-					 size_t* P, size_t* Q, const FFPACK::FFPACK_LU_TAG LuTag);
+					 size_t* P, size_t* Q, const FFPACK::FFPACK_LU_TAG LuTag,
+					 const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
+
 	} // Protected
 } // FFPACK
 // #include "ffpack_echelonforms.inl"
@@ -735,11 +746,12 @@ namespace FFPACK { /* invert */
 	 * @param nullity dimension of the kernel of A
 	 * @return pointer to \f$A\f$ and \f$A \gets A^{-1}\f$
 	 */
-	template <class Field>
+	template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
 			typename Field::Element_ptr A, const size_t lda,
-			int& nullity);
+			int& nullity,
+			const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
 
 	/** @brief Invert the given matrix in place
 	 * or computes its nullity if it is singular.
@@ -758,12 +770,13 @@ namespace FFPACK { /* invert */
 	 * @param nullity dimension of the kernel of \p A
 	 * @return pointer to \f$X = A^{-1}\f$
 	 */
-	template <class Field>
+	template <class Field, class ParSeqHelper=FFLAS::ParSeqHelper::Sequential>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
 			typename Field::ConstElement_ptr A, const size_t lda,
 			typename Field::Element_ptr X, const size_t ldx,
-			int& nullity);
+			int& nullity,
+			const ParSeqHelper& PSH=FFLAS::ParSeqHelper::Sequential());
 
 	/** @brief Invert the given matrix or computes its nullity if it is singular.
 	 *

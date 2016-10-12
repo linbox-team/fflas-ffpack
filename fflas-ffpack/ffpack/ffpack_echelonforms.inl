@@ -31,58 +31,58 @@
 #define __FFLASFFPACK_ffpack_echelon_forms_INL
 
 #ifndef __FFLASFFPACK_GAUSSJORDAN_BASECASE
-#define __FFLASFFPACK_GAUSSJORDAN_BASECASE 256
+#define __FFLASFFPACK_GAUSSJORDAN_BASECASE 128
 #endif
 
-template <class Field>
+template <class Field, class ParSeqHelper>
 inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const size_t N,
-								  typename Field::Element_ptr A, const size_t lda,
-								  size_t* P, size_t* Qt, const bool transform,
-								  const FFPACK_LU_TAG LuTag)
+										 typename Field::Element_ptr A, const size_t lda,
+										 size_t* P, size_t* Qt, const bool transform,
+										 const FFPACK_LU_TAG LuTag, const ParSeqHelper& PSH)
 {
 	size_t r;
 	if (LuTag == FFPACK::FfpackSlabRecursive)
 		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
 	else
-		r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P);
+		r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, PSH);
 
 	if (transform){
-		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda);
-		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda);
+		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda, PSH);
+		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, r, N-r, F.mOne, A, lda, A+r, lda, PSH);
 	}
 
 	return r;
 }
 
-template <class Field>
+template <class Field, class ParSeqHelper>
 inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size_t N,
 							   typename Field::Element_ptr A, const size_t lda,
 							   size_t* P, size_t* Qt, const bool transform,
-							   const FFPACK_LU_TAG LuTag)
+									  const FFPACK_LU_TAG LuTag, const ParSeqHelper& PSH)
 {
 	size_t r;
 	if (LuTag == FFPACK::FfpackSlabRecursive)
 		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
 	else
-		r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt);
+		r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt, PSH);
 
 	if (transform){
-		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda);
-		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-r, r, F.mOne, A, lda, A+r*lda, lda);
+		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda, PSH);
+		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M-r, r, F.mOne, A, lda, A+r*lda, lda, PSH);
 	}
 
 	return r;
 }
 
-template <class Field>
+template <class Field, class ParSeqHelper>
 inline size_t
 FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N,
 								  typename Field::Element_ptr A, const size_t lda,
 								  size_t* P, size_t* Qt, const bool transform,
-								  const FFPACK_LU_TAG LuTag)
+								  const FFPACK_LU_TAG LuTag, const ParSeqHelper& PSH)
 {
 	size_t r;
-	r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
+	r = ColumnEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, PSH);
 
 	if (LuTag == FfpackSlabRecursive){
 			// Putting Echelon in compressed triangular form : M = Q^T M
@@ -95,30 +95,32 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 		}
 	}
 	if (transform){
-		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, r, A, lda);
-		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda);
-		ftrtrm (F, FFLAS::FflasNonUnit, r, A, lda);
+		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, r, A, lda, PSH);
+		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda, PSH);
+		ftrtrm (F, FFLAS::FflasNonUnit, r, A, lda, PSH);
 	} else {
-		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda);
+		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda, PSH);
 			//FFLAS::fidentity (F, r, r, A, lda);
 			//applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans, r, 0,(int) r, A, lda, Qt);
 	}
 	return r;
 }
 
-template <class Field>
+
+
+template <class Field, class ParSeqHelper>
 inline size_t
 FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 							   typename Field::Element_ptr A, const size_t lda,
 							   size_t* P, size_t* Qt, const bool transform,
-							   const FFPACK_LU_TAG LuTag)
+							   const FFPACK_LU_TAG LuTag, const ParSeqHelper& PSH)
 {
 	for (size_t i=0; i<N; i++) Qt[i] = i;
 	for (size_t i=0; i<M; i++) P[i] = i;
 	if ((LuTag == FfpackGaussJordanSlab || LuTag == FfpackGaussJordanTile) && transform)
-		return Protected::GaussJordan(F, M, N, A, lda, 0, 0, N, P, Qt, LuTag);
+		return Protected::GaussJordan(F, M, N, A, lda, 0, 0, N, P, Qt, LuTag, PSH);
 	size_t r;
-	r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag);
+	r = RowEchelonForm (F, M, N, A, lda, P, Qt, transform, LuTag, PSH);
 	if (LuTag == FfpackSlabRecursive){
 			// Putting Echelon in compressed triangular form : M = M Q
 		for (size_t i=0; i<r; ++i)
@@ -127,24 +129,25 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 	}
 
 	if (transform){
-		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasUnit, r, A, lda);
-		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
+		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasUnit, r, A, lda, PSH);
+		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda, PSH);
 
-		ftrtrm (F, FFLAS::FflasUnit, r, A, lda);
+		ftrtrm (F, FFLAS::FflasUnit, r, A, lda, PSH);
 	} else {
-		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
+		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda, PSH);
 			//FFLAS::fidentity (F, r, r, A, lda);
             //applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, r, 0, (int)r, A, lda, Qt);
 	}
 	return r;
 }
 
-template <class Field>
+template <class Field, class ParSeqHelper>
 inline size_t
 FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 								typename Field::Element_ptr A, const size_t lda,
 								const size_t colbeg, const size_t rowbeg, const size_t colsize,
-								size_t* P, size_t* Q, const FFPACK::FFPACK_LU_TAG LuTag)
+								size_t* P, size_t* Q,
+								const FFPACK::FFPACK_LU_TAG LuTag, const ParSeqHelper& PSH)
 {
 	if (rowbeg == M) return 0;
 	// if (colsize == 1){
@@ -211,10 +214,10 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 		return R;
 	}
 
-	// Recurive call on slice A*1
+		// Recurive call on slice A*1
 	size_t recsize = colsize / 2;
-
-	size_t r1 = GaussJordan (F, M, N, A, lda, colbeg, rowbeg, recsize, P, Q, LuTag);
+	
+	size_t r1 = GaussJordan (F, M, N, A, lda, colbeg, rowbeg, recsize, P, Q, LuTag, PSH);
 
 	size_t MaxP = (LuTag==FfpackGaussJordanSlab || LuTag==FfpackSlabRecursive)? r1 : (M-rowbeg);
 	typename Field::Element_ptr A11 = A+colbeg;
@@ -237,30 +240,30 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 	 * where the transformation matrix is stored at the pivot column position
 	 */
 	// Apply row permutation on A*2
-	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, colsize - recsize, 0, MaxP, A22, lda, P);
+	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, colsize - recsize, 0, MaxP, A22, lda, P, PSH);
 
 	// A12 <- A12 + A11 * A22
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg, colsize - recsize, r1,
-	       F.one, A11, lda, A22, lda, F.one, A12, lda);
+	       F.one, A11, lda, A22, lda, F.one, A12, lda, PSH);
 
 	// A32 <- A32 + A31 * A22
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-rowbeg-r1, colsize - recsize, r1,
-	       F.one, A31, lda, A22, lda, F.one, A32, lda);
+	       F.one, A31, lda, A22, lda, F.one, A32, lda, PSH);
 
 	// A22 <- A21*A22
 	typename Field::Element_ptr tmp = FFLAS::fflas_new (F, r1, colsize-recsize);
 	FFLAS::fassign (F, r1, colsize-recsize, A22, lda, tmp, colsize-recsize);
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r1, colsize-recsize, r1,
-	       F.one, A21, lda, tmp, colsize-recsize, F.zero, A22, lda);
+	       F.one, A21, lda, tmp, colsize-recsize, F.zero, A22, lda, PSH);
 	FFLAS::fflas_delete (tmp);
 
 	// Recurive call on slice A*2
 	size_t * P2 = FFLAS::fflas_new<size_t>(M-rowbeg-r1);
-	size_t r2 = GaussJordan (F, M, N, A, lda, colbeg + recsize, rowbeg + r1, colsize - recsize, P2, Q, LuTag);
+	size_t r2 = GaussJordan (F, M, N, A, lda, colbeg + recsize, rowbeg + r1, colsize - recsize, P2, Q, LuTag, PSH);
 
 	// Apply permutation on A31
 	size_t MaxP2 = (LuTag==FfpackGaussJordanSlab || LuTag==FfpackSlabRecursive)? r2 : (M-rowbeg-r1);
-	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, r1, 0, MaxP2, A31, lda, P2);
+	applyP (F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, r1, 0, MaxP2, A31, lda, P2, PSH);
 
 	if (LuTag==FfpackGaussJordanSlab || LuTag==FfpackSlabRecursive){
 		for (size_t i =0; i < r2; i++) P[i+r1] = P2[i]+r1;
@@ -278,18 +281,18 @@ FFPACK::Protected::GaussJordan (const Field& F, const size_t M, const size_t N,
 
 	// U11 <- U11 + U12 * U21
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, rowbeg+r1, r1, r2,
-	       F.one, U12, lda, U21, lda, F.one, U11, lda);
+	       F.one, U12, lda, U21, lda, F.one, U11, lda, PSH);
 
 	// U31 <- U31 + U32 * U21
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-rowbeg-r1-r2, r1, r2,
-	       F.one, U32, lda, U21, lda, F.one, U31, lda);
+	       F.one, U32, lda, U21, lda, F.one, U31, lda, PSH);
 
 	// U21 <- U22*U21
 	tmp = FFLAS::fflas_new (F, r2, r1);
 	FFLAS::fassign (F, r2, r1, U21, lda, tmp, r1);
 
 	fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, r2, r1, r2,
-	       F.one, U22, lda, tmp, r1, F.zero, U21, lda);
+	       F.one, U22, lda, tmp, r1, F.zero, U21, lda, PSH);
 	FFLAS::fflas_delete(tmp);
 
 	//Permute the non pivot columns to the end

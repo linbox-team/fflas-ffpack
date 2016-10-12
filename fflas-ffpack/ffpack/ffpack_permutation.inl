@@ -324,24 +324,28 @@ namespace FFPACK {
 		}
 	}
 
-	template<class Field>
+	template<class Field, class ParSeqHelper>
 	void
-	applyP( const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const FFLAS::FFLAS_TRANSPOSE Trans,
-		const size_t M, const size_t ibeg, const size_t iend,
-		typename Field::Element_ptr A, const size_t lda, const size_t * P )
+	applyP (const Field& F,
+			const FFLAS::FFLAS_SIDE Side,
+			const FFLAS::FFLAS_TRANSPOSE Trans,
+			const size_t M, const size_t ibeg, const size_t iend,
+			typename Field::Element_ptr A, const size_t lda, const size_t * P,
+			const ParSeqHelper& PSH)
 	{
-	
-		const size_t bk = FFLASFFPACK_PERM_BKSIZE;
-		const size_t NB = M/bk;
-		const size_t last = M%bk;
-		const size_t incA = (Side == FFLAS::FflasLeft)? 1:lda;
-		const size_t inc = bk*incA;
+		if (std::is_same<ParSeqHelper,FFLAS::ParSeqHelper::Sequential>::value){
+			const size_t bk = FFLASFFPACK_PERM_BKSIZE;
+			const size_t NB = M/bk;
+			const size_t last = M%bk;
+			const size_t incA = (Side == FFLAS::FflasLeft)? 1:lda;
+			const size_t inc = bk*incA;
 
-		for (size_t i = 0; i<NB; i++)
-			applyP_block (F, Side, Trans, bk, ibeg, iend, A+i*inc, lda, P);
-		applyP_block (F, Side, Trans, last, ibeg, iend, A+NB*inc, lda, P);
+			for (size_t i = 0; i<NB; i++)
+				applyP_block (F, Side, Trans, bk, ibeg, iend, A+i*inc, lda, P);
+			applyP_block (F, Side, Trans, last, ibeg, iend, A+NB*inc, lda, P);
+		}
+		else
+			papplyP (F, Side, Trans, M, ibeg, iend, A, lda, P, PSH.numthreads());
 	}
 
 	template<class Field>
@@ -726,13 +730,13 @@ namespace FFPACK {
 //#if defined(__FFLASFFPACK_USE_OPENMP) and defined(_OPENMP)
 	template<class Field>
 	void
-	papplyP( const Field& F,
-		 const FFLAS::FFLAS_SIDE Side,
-		 const FFLAS::FFLAS_TRANSPOSE Trans,
-		 const size_t m, const size_t ibeg, const size_t iend,
-		 typename Field::Element_ptr A, const size_t lda, const size_t * P )
+	papplyP (const Field& F,
+			 const FFLAS::FFLAS_SIDE Side,
+			 const FFLAS::FFLAS_TRANSPOSE Trans,
+			 const size_t m, const size_t ibeg, const size_t iend,
+			 typename Field::Element_ptr A, const size_t lda, const size_t * P,
+			 const size_t numthreads)
 	{
-		int numthreads = MAX_THREADS;
 		size_t BLOCKSIZE=std::max(2*m/numthreads,(size_t)1); // Assume that there is at least 2 ApplyP taking place in parallel
 		size_t NBlocks = m/BLOCKSIZE;
 		size_t LastBlockSize = m % BLOCKSIZE;

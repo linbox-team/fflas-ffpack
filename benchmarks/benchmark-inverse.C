@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /* Copyright (c) FFLAS-FFPACK
@@ -23,6 +23,7 @@
 * ========LICENCE========
 */
 
+// #define ENABLE_ALL_CHECKINGS 1 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -37,58 +38,84 @@ using namespace std;
 
 int main(int argc, char** argv) {
   
+	typedef Givaro::ModularBalanced<double> Field;
+	typedef Field::Element Element;
+
 	size_t iter = 3;
+    bool p=false;
 	int    q    = 131071;
 	size_t    n    = 2000;
 	std::string file = "";
+	int t=MAX_THREADS;
+	int NBK = -1;
+	bool forcecheck = false;
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+		{ 'b', "-b B", "number of numa blocks per dimension for the numa placement", TYPE_INT , &NBK },
+		{ 'p', "-p P", "multi-threaded.", TYPE_BOOL , &p },
+		{ 'c', "-c C", "force checkers.", TYPE_BOOL , &forcecheck },
 		END_OF_ARGUMENTS
 	};
 
+	if (NBK==-1) NBK = t;
 	FFLAS::parseArguments(argc,argv,as);
 
-  typedef Givaro::ModularBalanced<double> Field;
-  typedef Field::Element Element;
+    Field F(q);
+    Field::RandIter G(F);
+    Field::Element * A;
+    
+    FFLAS::Timer chrono;
+    double time=0.0;
+    
+    for (size_t i=0;i<=iter;++i){
+        if (!file.empty()){
+            A = read_field(F, file.c_str(),  &n, &n);
+        }
+        else {
+            A = FFLAS::fflas_new<Element>(n*n);
+            PAR_BLOCK { FFLAS::pfrand(F,G,n,n,A,n/size_t(NBK)); }	
+        }
 
-  Field F(q);
-  Field::Element * A;
+		FFPACK::ForceCheck_invert<Field> checker(G,n,A,n);
+        
+        int nullity=0;
+        if (p) {
+            chrono.clear(); if (i) chrono.start();
+            FFLAS::ParSeqHelper::Parallel<
+                FFLAS::CuttingStrategy::Block,
+                FFLAS::StrategyParameter::Threads> PSH(t);
 
-  FFLAS::Timer chrono;
-  double time=0.0;
+//             FFLAS::ParSeqHelper::Parallel<
+//                 FFLAS::CuttingStrategy::Recursive,
+//                 FFLAS::StrategyParameter::TwoDAdaptive> PSH(t);
 
-  for (size_t i=0;i<=iter;++i){
-	  if (!file.empty()){
-		  A = read_field(F, file.c_str(),  &n, &n);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-		  for (size_t j=0; j<(size_t)n*n; ++j)
-			  G.random(*(A+j));
-	  }
+            PAR_BLOCK { FFPACK::Invert (F, n, A, n, nullity, PSH); }
+            if (i) chrono.stop();
+        } else {
+            chrono.clear();
+			if (i) chrono.start();
+            FFPACK::Invert (F, n, A, n, nullity);
+            if (i) chrono.stop();
+        }
 
-	  int nullity=0;
-	  chrono.clear();
-	  if (i) chrono.start();
-	  FFPACK::Invert (F, n, A, n, nullity);
-	  if (i) chrono.stop();
+        if (forcecheck) checker.check(A,nullity);
 
-	  time+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
-  }
-  
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
-	#define CUBE(x) ((x)*(x)*(x))
+        time+=chrono.realtime();
+        FFLAS::fflas_delete( A);
+    }
+    
+        // -----------
+        // Standard output for benchmark - Alexis Breust 2014/11/14
+#define CUBE(x) ((x)*(x)*(x))
 	std::cout << "Time: " << time / double(iter)
 			  << " Gflops: " << 2. * CUBE(double(n)/1000.) / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
-
+    
 
   return 0;
 }

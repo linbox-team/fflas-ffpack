@@ -650,19 +650,22 @@ namespace FFPACK {
 		return R1+R2+R3+R4;
 	}
 
-	template<class Field>
+	template<class Field, class ParSeqHelper>
 	inline size_t
 	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      size_t M, size_t N,
 	      typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q,
-	      size_t BCThreshold)
+	      const ParSeqHelper & PSH)
 	{
 		Checker_PLUQ<Field> checker (Fi,M,N,A,lda);
-		size_t R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q, BCThreshold);
+		size_t R;
+		if (std::is_same<ParSeqHelper,FFLAS::ParSeqHelper::Sequential>::value)
+			R = FFPACK::_PLUQ(Fi,Diag,M,N,A,lda,P,Q, BCThreshold);
+		else
+			R = FFPACK::pPLUQ(Fi,Diag,M,N,A,lda,P,Q, BCThreshold, PSH.numthreads());
 		checker.check(A,lda,Diag,R,P,Q);
 		return R;
 	}
-
 
 } // namespace FFPACK
 #endif // __FFLASFFPACK_ffpack_pluq_INL

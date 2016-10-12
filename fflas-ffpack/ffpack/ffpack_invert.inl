@@ -32,11 +32,11 @@
 
 
 namespace FFPACK {
-template <class Field>
+    template <class Field, class ParSeqHelper>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::Element_ptr A, const size_t lda,
-		int& nullity)
+			typename Field::Element_ptr A, const size_t lda,
+			int& nullity, const ParSeqHelper& PSH)
 	{
         FFLASFFPACK_check(lda >= M);
 
@@ -48,7 +48,7 @@ template <class Field>
 		}
 		size_t * P = FFLAS::fflas_new<size_t>(M);
 		size_t * Q = FFLAS::fflas_new<size_t>(M);
-		size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordanTile);
+		size_t R =  ReducedRowEchelonForm (F, M, M, A, lda, P, Q, true, FfpackGaussJordanTile, PSH);
 		nullity = (int)(M - R);
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, M, 0, (int)R, A, lda, P);
 		delete [] P;
@@ -58,12 +58,12 @@ template <class Field>
 		return A;
 	}
 
-	template <class Field>
+	template <class Field, class ParSeqHelper>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::ConstElement_ptr A, const size_t lda,
-		typename Field::Element_ptr X, const size_t ldx,
-		int& nullity)
+			typename Field::ConstElement_ptr A, const size_t lda,
+			typename Field::Element_ptr X, const size_t ldx,
+			int& nullity, const ParSeqHelper& PSH)
 	{
 		FFLASFFPACK_check(lda >= M);
 		FFLASFFPACK_check(ldx >= M);
@@ -72,7 +72,7 @@ template <class Field>
 			return NULL ;
 		}
 		FFLAS::fassign(F,M,M,A,lda,X,ldx);
-		Invert (F, M, X, ldx, nullity);
+		Invert (F, M, X, ldx, nullity, PSH);
 		return X;
 	}
 
