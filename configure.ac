@@ -21,7 +21,7 @@
 # ========LICENCE========
 #/
 
-AC_PREREQ([2.61])
+AC_PREREQ([2.67])
 
 
 AC_INIT([FFLAS-FFPACK], [2.3.0],[ffpack-devel@googlegroups.com],[fflas-ffpack],
@@ -34,20 +34,10 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE([1.8 gnu no-dependencies -Wall -Wno-portability foreign])
+AM_INIT_AUTOMAKE([1.10 -Wall -Wno-portability foreign])
 AX_PREFIX_CONFIG_H(fflas-ffpack/config.h, __FFLASFFPACK)
-AC_PATH_PROG(RM, rm, $FALSE)
-RM="$RM -f"
-
-
-AM_MAINTAINER_MODE
-AM_DEP_TRACK
-AM_OUTPUT_DEPENDENCY_COMMANDS
 
 AM_ACLOCAL_INCLUDE(macros)
-
-# work around to fix the backward compatibility issue of automake 1.10 with 1.9 (pb with MKDIR_P)
-AC_SUBST([MKDIR_P])
 
 AC_LANG([C++])
 
@@ -164,7 +154,7 @@ AC_PROG_LIBTOOL
 AC_PROG_EGREP
 AC_PROG_SED
 # newer libtool...
-LT_PREREQ([2.2])
+LT_PREREQ([2.4.2])
 LT_INIT
 
 
@@ -232,7 +222,7 @@ echo "-----------------------------------------------"
 # Feature checks
 FF_MISC
 
-AC_LANG_CPLUSPLUS
+AC_LANG([C++])
 
 
 echo "-----------------------------------------------"
@@ -363,7 +353,7 @@ tests/data/Makefile
 benchmarks/Makefile
 examples/Makefile
 fflas-ffpack.pc
-])
+],[chmod +x fflas-ffpack-config])
 AC_OUTPUT
 
 echo "" > fflas-ffpack/fflas-ffpack-thresholds.h
