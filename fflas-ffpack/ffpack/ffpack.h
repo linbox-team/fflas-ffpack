@@ -76,7 +76,8 @@ namespace FFPACK  { /* tags */
 		FfpackSlabRecursive = 1,
 		FfpackTileRecursive = 2,
 		FfpackSingular = 3,
-		FfpackGaussJordan = 4
+		FfpackGaussJordanSlab = 4,
+		FfpackGaussJordanTile = 5
 	};
 
 	enum FFPACK_CHARPOLY_TAG
@@ -107,43 +108,66 @@ namespace FFPACK { /* Permutations */
 
 
 	void LAPACKPerm2MathPerm (size_t * MathP, const size_t * LapackP,
-				  const size_t N);
+							  const size_t N);
 
 	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
-				  const size_t N);
+							  const size_t N);
 
 	template <class Field>
 	void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
-		     const size_t M2,
-		     const size_t R1, const size_t R2,
-		     const size_t R3, const size_t R4);
+					   const size_t M2,
+					   const size_t R1, const size_t R2,
+					   const size_t R3, const size_t R4);
 
 	template <class Element>
 	void PermApplyS (Element* A, const size_t lda, const size_t width,
-			 const size_t M2,
-			 const size_t R1, const size_t R2,
-			 const size_t R3, const size_t R4);
+					 const size_t M2,
+					 const size_t R1, const size_t R2,
+					 const size_t R3, const size_t R4);
 
 	template <class Field>
 	void MatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
-			   const size_t N2,
-			   const size_t R1, const size_t R2,
-			   const size_t R3, const size_t R4);
+					   const size_t N2,
+					   const size_t R1, const size_t R2,
+					   const size_t R3, const size_t R4);
 
 	template <class Element>
 	void PermApplyT (Element* A, const size_t lda, const size_t width,
-		     const size_t N2,
-		     const size_t R1, const size_t R2,
-		     const size_t R3, const size_t R4);
+					 const size_t N2,
+					 const size_t R1, const size_t R2,
+					 const size_t R3, const size_t R4);
 
-	void composePermutationsP (size_t * MathP,
-				   const size_t * P1,
-				   const size_t * P2,
-				   const size_t R, const size_t N);
-	void composePermutationsQ (size_t * MathP,
-				   const size_t * Q1,
-				   const size_t * Q2,
-				   const size_t R, const size_t N);
+		/**
+		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
+		 * and store the result in P1 as a LAPACK permutation
+		 * @param [inout] P1 a LAPACK permutation of size N
+		 * @param P2 a LAPACK permutation of size N-R
+		 */
+	inline void composePermutationsLLL (size_t * P1,
+										const size_t * P2,
+										const size_t R, const size_t N);
+
+		/**
+		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
+		 * and store the result in MathP as a MathPermutation format.
+		 * @param [out] MathP a MathPermutation of size N
+		 * @param P1 a LAPACK permutation of size N
+		 * @param P2 a LAPACK permutation of size N-R
+		 */
+	inline void composePermutationsLLM (size_t * MathP,
+										const size_t * P1,
+										const size_t * P2,
+										const size_t R, const size_t N);
+
+		/**
+		 * @brief Computes MathP1 x Diag (I_R, P2) where MathP1 is a MathPermutation and P2 a LAPACK permutation
+		 * and store the result in MathP1 as a MathPermutation format.
+		 * @param [inout] MathP1 a MathPermutation of size N
+		 * @param P2 a LAPACK permutation of size N-R
+		 */
+	inline void composePermutationsMLM (size_t * MathP1,
+										const size_t * P2,
+										const size_t R, const size_t N);
 
 	void cyclic_shift_mathPerm (size_t * P,  const size_t s);
 	template<typename Base_t>
@@ -172,10 +196,10 @@ namespace FFPACK { /* Permutations */
 	template<class Field>
 	void
 	applyP( const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const FFLAS::FFLAS_TRANSPOSE Trans,
-		const size_t M, const size_t ibeg, const size_t iend,
-		typename Field::Element_ptr A, const size_t lda, const size_t * P );
+			const FFLAS::FFLAS_SIDE Side,
+			const FFLAS::FFLAS_TRANSPOSE Trans,
+			const size_t M, const size_t ibeg, const size_t iend,
+			typename Field::Element_ptr A, const size_t lda, const size_t * P );
 	
 	
 	/** Apply a R-monotonically increasing permutation P, to the matrix A.
@@ -232,25 +256,25 @@ namespace FFPACK { /* Permutations */
 	template<class Field>
 	void
 	papplyP( const Field& F,
-		 const FFLAS::FFLAS_SIDE Side,
-		 const FFLAS::FFLAS_TRANSPOSE Trans,
-		 const size_t m, const size_t ibeg, const size_t iend,
-		 typename Field::Element_ptr A, const size_t lda, const size_t * P );
+			 const FFLAS::FFLAS_SIDE Side,
+			 const FFLAS::FFLAS_TRANSPOSE Trans,
+			 const size_t m, const size_t ibeg, const size_t iend,
+			 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
 	//! Parallel applyT with OPENMP tasks
 	template <class Field>
 	void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
-		      const size_t width, const size_t N2,
-		      const size_t R1, const size_t R2,
-		      const size_t R3, const size_t R4) ;
+						const size_t width, const size_t N2,
+						const size_t R1, const size_t R2,
+						const size_t R3, const size_t R4) ;
 
 
 	//! Parallel applyS tasks with OPENMP tasks
 	template <class Field>
 	void pMatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda,
-			    const size_t width, const size_t M2,
-			    const size_t R1, const size_t R2,
-			    const size_t R3, const size_t R4) ;
+						const size_t width, const size_t M2,
+						const size_t R1, const size_t R2,
+						const size_t R3, const size_t R4) ;
 
 	template<class Field>
 	size_t
@@ -258,7 +282,6 @@ namespace FFPACK { /* Permutations */
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
 	      size_t* P, size_t* Q, int nt);
-
 
 //#endif
 
@@ -290,12 +313,12 @@ namespace FFPACK { /* fgetrs, fgesv */
 	template <class Field>
 	void
 	fgetrs (const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const size_t M, const size_t N, const size_t R,
-		typename Field::Element_ptr A, const size_t lda,
-		const size_t *P, const size_t *Q,
-		typename Field::Element_ptr B, const size_t ldb,
-		int * info);
+			const FFLAS::FFLAS_SIDE Side,
+			const size_t M, const size_t N, const size_t R,
+			typename Field::Element_ptr A, const size_t lda,
+			const size_t *P, const size_t *Q,
+			typename Field::Element_ptr B, const size_t ldb,
+			int * info);
 
 	/** Solve the system A X = B or X A = B.
 	 * Solving using the LQUP decomposition of A
@@ -323,13 +346,13 @@ namespace FFPACK { /* fgetrs, fgesv */
 	template <class Field>
 	typename Field::Element_ptr
 	fgetrs (const Field& F,
-		const FFLAS::FFLAS_SIDE Side,
-		const size_t M, const size_t N, const size_t NRHS, const size_t R,
-		typename Field::Element_ptr A, const size_t lda,
-		const size_t *P, const size_t *Q,
-		typename Field::Element_ptr X, const size_t ldx,
-		typename Field::ConstElement_ptr B, const size_t ldb,
-		int * info);
+			const FFLAS::FFLAS_SIDE Side,
+			const size_t M, const size_t N, const size_t NRHS, const size_t R,
+			typename Field::Element_ptr A, const size_t lda,
+			const size_t *P, const size_t *Q,
+			typename Field::Element_ptr X, const size_t ldx,
+			typename Field::ConstElement_ptr B, const size_t ldb,
+			int * info);
 
 	/** @brief Square system solver
 	 * @param F The computation domain
@@ -426,7 +449,7 @@ namespace FFPACK { /* ftrtr */
 
 	template<class Field>
 	void trinv_left( const Field& F, const size_t N, typename Field::ConstElement_ptr L, const size_t ldl,
-			 typename Field::Element_ptr X, const size_t ldx );
+					 typename Field::Element_ptr X, const size_t ldx );
 
 	/**  Compute the product UL.
 	 * Product UL of the upper, resp lower triangular matrices U and L
@@ -554,14 +577,13 @@ namespace FFPACK { /* ludivine */
 		size_t
 		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
 				    const size_t M, const size_t N,
-				    typename Field::ConstElement_ptr A, const size_t lda,
-				    typename Field::Element_ptr X, const size_t ldx,
-				    typename Field::Element_ptr u, size_t* P,
-				    bool computeX, const FFPACK_MINPOLY_TAG MinTag= FfpackDense
-				    , const size_t kg_mc =0
-				    , const size_t kg_mb =0
-				    , const size_t kg_j  =0
-				  );
+							typename Field::ConstElement_ptr A, const size_t lda,
+							typename Field::Element_ptr X, const size_t ldx,
+							typename Field::Element_ptr u, size_t* P,
+							bool computeX, const FFPACK_MINPOLY_TAG MinTag= FfpackDense
+							, const size_t kg_mc =0
+							, const size_t kg_mb =0
+							, const size_t kg_j  =0);
 
 	} // Protected
 
@@ -676,17 +698,24 @@ namespace FFPACK { /* echelon */
 						   const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
 	namespace Protected {
-			/**  Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
-			 * @bib
-			 *  - Algorithm 2.8 of A. Storjohann Thesis 2000,
-			 *  - Algorithm 11 of Jeannerod C-P., Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
-			 */
+		/**  @brief Gauss-Jordan algorithm computing the Reduced Row echelon form and its transform matrix.
+		 * @bib
+		 *  - Algorithm 2.8 of A. Storjohann Thesis 2000,
+		 *  - Algorithm 11 of Jeannerod C-P., Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
+		 * @param M row dimension of A
+		 * @param N column dimension of A
+		 * @param [inout] A and m x n matrix
+		 * @param lda leading dimension of A
+		 * @param P row permutation
+		 * @param Q column permutation
+		 * @param LuTag set the base case to a Tile (FfpackGaussJordanTile)  or Slab (FfpackGaussJordanSlab) recursive RedEchelon
+		 */
 		template <class Field>
 		size_t
 		GaussJordan (const Field& F, const size_t M, const size_t N,
 					 typename Field::Element_ptr A, const size_t lda,
 					 const size_t colbeg, const size_t rowbeg, const size_t colsize,
-					 size_t* Qt, size_t* P);
+					 size_t* P, size_t* Q, const FFPACK::FFPACK_LU_TAG LuTag);
 	} // Protected
 } // FFPACK
 // #include "ffpack_echelonforms.inl"
@@ -709,8 +738,8 @@ namespace FFPACK { /* invert */
 	template <class Field>
 	typename Field::Element_ptr
 	Invert (const Field& F, const size_t M,
-		typename Field::Element_ptr A, const size_t lda,
-		int& nullity);
+			typename Field::Element_ptr A, const size_t lda,
+			int& nullity);
 
 	/** @brief Invert the given matrix in place
 	 * or computes its nullity if it is singular.

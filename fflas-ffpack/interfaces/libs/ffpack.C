@@ -109,21 +109,27 @@ void PermApplyT_double (double * A, const size_t lda, const size_t width,
 	PermApplyT<double>(A,lda,width,N2,R1,R2,R3,R4);
 }
 
-void composePermutationsP (size_t * MathP,
-			   const size_t * P1,
-			   const size_t * P2,
-			   const size_t R, const size_t N)
+void composePermutationsLLM (size_t * MathP,
+			     const size_t * P1,
+			     const size_t * P2,
+			     const size_t R, const size_t N)
 {
-	FFPACK::composePermutationsP(MathP,P1,P2,R,N);
+	FFPACK::composePermutationsLLM(MathP,P1,P2,R,N);
 }
 
 
-void composePermutationsQ (size_t * MathP,
-			   const size_t * Q1,
-			   const size_t * Q2,
-			   const size_t R, const size_t N)
+void composePermutationsLLL (size_t * P1,
+			     const size_t * P2,
+			     const size_t R, const size_t N)
 {
-	FFPACK::composePermutationsQ(MathP,Q1,Q2,R,N);
+	FFPACK::composePermutationsLLL(P1,P2,R,N);
+}
+
+void composePermutationsMLM (size_t * MathP1,
+			     const size_t * P2,
+			     const size_t R, const size_t N)
+{
+	FFPACK::composePermutationsMLM(MathP1,P2,R,N);
 }
 
 void cyclic_shift_mathPerm (size_t * P,  const size_t s)

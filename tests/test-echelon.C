@@ -33,6 +33,8 @@
 //#define __LUDIVINE_CUTOFF 1
 
 #define  __FFLASFFPACK_SEQUENTIAL
+#define __FFLASFFPACK_GAUSSJORDAN_BASECASE 25
+#define __FFLASFFPACK_PLUQ_THRESHOLD 25
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -104,7 +106,14 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 		pass &= FFLAS::fequal(F, m, n, L, n, X, n);
 
 		if (!pass) {
-			std::cerr<<"FAIL"<<std::endl;
+			std::cerr<<"FAIL (column echelon LuTag="<<LuTag<<")"<<std::endl;
+			write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
+			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			std::cerr<<"P = [";	for (size_t i=0; i<n; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
+			std::cerr<<"Q = [";	for (size_t i=0; i<m; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
+			write_field(F,std::cerr<<"ColEchelon = "<<std::endl,L,m,n,n);
+			write_field(F,std::cerr<<"Transform = "<<std::endl,U,n,n,n);
+			write_field(F,std::cerr<<"B x X  = "<<std::endl,X,m,n,n);
 			break;
 		}
 	}
@@ -171,13 +180,13 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 		pass &= FFLAS::fequal(F, m, n, U, n, X, n);
 
 		if (!pass) {
-			std::cerr<<"FAIL"<<std::endl;
-			// write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
-			// write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
-			// std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
-			// std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
-			// write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
-			// write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
+			std::cerr<<"FAIL (row echelon LuTag="<<LuTag<<")"<<std::endl;
+			write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
+			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
+			std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
+			write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
+			write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
 			break;
 		}
 	}
@@ -246,7 +255,7 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 		pass &= FFLAS::fequal(F, m, n, L, n, X, n);
 
 		if (!pass) {
-			std::cerr<<"FAIL"<<std::endl;
+			std::cerr<<"FAIL (reduced column echelon LuTag="<<LuTag<<")"<<std::endl;
 			break;
 		}
 	}
@@ -288,7 +297,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 		for (size_t j=0;j<n;j++) Q[j]=0;
 
 		R = FFPACK::ReducedRowEchelonForm (F, m, n, A, n, P, Q, true, LuTag);
-        
 
 		if (R != r) {pass = false; break;}
 
@@ -314,11 +322,11 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
 		// Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0, L, m, B, n, 0.0, X,n);
-		
+
 		pass &= FFLAS::fequal(F, m, n, U, n, X, n);
 
 		if (!pass) {
-			std::cerr<<"FAIL"<<std::endl;
+			std::cerr<<"FAIL (reduced row echelon LuTag="<<LuTag<<")"<<std::endl;
 			write_field(F,std::cerr<<"B = "<<std::endl,B,m,n,lda);
 			write_field(F,std::cerr<<"RedRowEchelon = "<<std::endl,U,m,n,n);
 			write_field(F,std::cerr<<"X x B  = "<<std::endl,X,m,n,n);
@@ -327,8 +335,6 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 			std::cerr<<"R = "<<R<<std::endl;
 			std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
 			std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
-
-			// write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
 			break;
 		}
 	}
@@ -379,12 +385,13 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		std::cout<<".";
 		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordan, G);
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanSlab, G);
 		std::cout<<".";
-
+		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G);
+		std::cout<<".";
 		nbit--;
 		if ( !ok )
-			std::cout << "FAILED "<<std::endl;
+			std::cout << "FAILED with seed = "<<seed<<std::endl;
 		else
 			std::cout << "PASSED "<<std::endl;
 		delete F;
@@ -397,9 +404,9 @@ int main(int argc, char** argv){
 
 	Givaro::Integer q = -1;
 	size_t b = 0;
-	size_t m = 190;
-	size_t n = 250;
-	size_t r = 47;
+	size_t m = 284;
+	size_t n = 154;
+	size_t r = 54;
 	size_t iters = 3 ;
 	bool loop = false;
 	uint64_t seed=time(NULL);

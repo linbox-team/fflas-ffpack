@@ -333,8 +333,8 @@ namespace FFPACK {
 			WAIT;
 				//    TASK(MODE(CONSTREFERENCE(P1, P2, P3, P4, R1, R3, MathP, M2) READ(P1, P2, R1, R3, P3, P4, M2) READWRITE(MathP)),
 			MathP = FFLAS::fflas_new<size_t>(M);
-			composePermutationsP (MathP, P1, P2, R1, M2);
-			composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
+			composePermutationsLLM (MathP, P1, P2, R1, M2);
+			composePermutationsLLM (MathP+M2, P3, P4, R3, M-M2);
 			for (size_t i=M2; i<M; ++i)
 			MathP[i] += M2;
 				/*	 if (R1+R2 < M2)
@@ -360,8 +360,8 @@ namespace FFPACK {
 				//            [      Q3 ]      [      P4 ]
 			MathQ = FFLAS::fflas_new<size_t>(N);
 			TASK(MODE(CONSTREFERENCE(Q1, Q2, Q3, Q4, R1, R2) READ(Q1[0], Q2[0], Q3[0], Q4[0], R1, R2) READWRITE(MathQ[0])),
-				 composePermutationsQ (MathQ, Q1, Q3, R1, N2);
-				 composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
+				 composePermutationsLLM (MathQ, Q1, Q3, R1, N2);
+				 composePermutationsLLM (MathQ+N2, Q2, Q4, R2, N-N2);
 				 for (size_t i=N2; i<N; ++i)
 				 MathQ[i] += N2;
 				 );

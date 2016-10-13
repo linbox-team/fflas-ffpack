@@ -609,8 +609,8 @@ namespace FFPACK {
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
 		size_t* MathP = FFLAS::fflas_new<size_t>(M);
-		composePermutationsP (MathP, P1, P2, R1, M2);
-		composePermutationsP (MathP+M2, P3, P4, R3, M-M2);
+		composePermutationsLLM (MathP, P1, P2, R1, M2);
+		composePermutationsLLM (MathP+M2, P3, P4, R3, M-M2);
 		FFLAS::fflas_delete( P1);
 		FFLAS::fflas_delete( P2);
 		FFLAS::fflas_delete( P3);
@@ -629,8 +629,8 @@ namespace FFPACK {
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
 		    //            [      Q3 ]      [      P4 ]
 		size_t * MathQ = FFLAS::fflas_new<size_t >(N);
-		composePermutationsQ (MathQ, Q1, Q3, R1, N2);
-		composePermutationsQ (MathQ+N2, Q2, Q4, R2, N-N2);
+		composePermutationsLLM (MathQ, Q1, Q3, R1, N2);
+		composePermutationsLLM (MathQ+N2, Q2, Q4, R2, N-N2);
 		FFLAS::fflas_delete( Q1);
 		FFLAS::fflas_delete( Q2);
 		FFLAS::fflas_delete( Q3);
