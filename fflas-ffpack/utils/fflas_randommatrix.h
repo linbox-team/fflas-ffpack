@@ -177,7 +177,7 @@ namespace FFPACK {
 							const FFLAS::FFLAS_UPLO UpLo, const FFLAS::FFLAS_DIAG Diag, bool nonsingular,
 							typename Field::Element_ptr A, size_t lda) {
 		typename Field::RandIter G(F);
-		return RandomTriangularMatrix (F, m, n, UpLo, Diag, nonsingular, A, lda);
+		return RandomTriangularMatrix (F, m, n, UpLo, Diag, nonsingular, A, lda, G);
 	}
 
 	/* Random integer in range.
@@ -196,24 +196,6 @@ namespace FFPACK {
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 namespace FFPACK{
-	/** @brief  Random Matrix with prescribed rank.
-     * Creates an \c m x \c n matrix with random entries and rank \c r.
-     * @param F field
-     * @param m number of rows in \p A
-     * @param n number of cols in \p A
-     * @param r rank of the matrix to build
-     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
-     * @param lda leading dimension of \p A
-     * @return \c A.
-     */
-    template<class Field>
-	inline typename Field::Element_ptr
-	RandomMatrixWithRank (const Field & F, size_t m, size_t n, size_t r,
-						  typename Field::Element_ptr A, size_t lda){
-		typename Field::RandIter G(F);
-		return RandomMatrixWithRank(F, m, n, r, A, lda);
-	}
-
 	/** @brief  Random Matrix with prescribed rank.
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
@@ -269,6 +251,24 @@ namespace FFPACK{
 		FFLAS::fflas_delete(Q);
 
 		return A;
+	}
+
+	/** @brief  Random Matrix with prescribed rank.
+     * Creates an \c m x \c n matrix with random entries and rank \c r.
+     * @param F field
+     * @param m number of rows in \p A
+     * @param n number of cols in \p A
+     * @param r rank of the matrix to build
+     * @param [out] A the matrix (preallocated to at least \c m x \c lda field elements)
+     * @param lda leading dimension of \p A
+     * @return \c A.
+     */
+    template<class Field>
+	inline typename Field::Element_ptr
+	RandomMatrixWithRank (const Field & F, size_t m, size_t n, size_t r,
+						  typename Field::Element_ptr A, size_t lda){
+		typename Field::RandIter G(F);
+		return RandomMatrixWithRank(F, m, n, r, A, lda, G);
 	}
 
    /** @brief Pick uniformly at random a sequence of \c R distinct elements from the set \f$ \{0,\dots, N-1\}\f$  using Knuth's shuffle.
