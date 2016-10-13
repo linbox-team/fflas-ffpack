@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
 			m = rand() % Range + i;
 			gffop += 2*(double(m)/1000.*double(m)/1000.*double(m)/1000.0);
 			
-			FFPACK::RandomMatrixWithRankandRandomRPM(F,A,m,m,m,m);
+			FFPACK::RandomMatrixWithRankandRandomRPM(F,m,m,m,A,m);
 
 			try {
 				chrono.clear(); chrono.start();

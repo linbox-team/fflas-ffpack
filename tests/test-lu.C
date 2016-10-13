@@ -728,9 +728,9 @@ bool launch_test(const Field & F,
 	{ /*  user given and lda bigger */
 		size_t lda = n+10 ;
 		Element_ptr A = fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda" << std::endl;
 		fflas_delete( A );
@@ -739,9 +739,9 @@ bool launch_test(const Field & F,
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
 		Element_ptr A = fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
 		fflas_delete( A );
@@ -750,9 +750,9 @@ bool launch_test(const Field & F,
 		size_t lda = n+10 ;
 		size_t R = 0;
 		Element_ptr A = fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
 		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
 		fflas_delete( A );
@@ -763,9 +763,9 @@ bool launch_test(const Field & F,
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
 		Element_ptr A = fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at square" << std::endl;
 		fflas_delete( A );
@@ -776,9 +776,9 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/4 ;
 		size_t lda = N+5 ;
 		Element_ptr A = fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at wide" << std::endl;
 		fflas_delete( A );
@@ -789,9 +789,9 @@ bool launch_test(const Field & F,
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
 		Element_ptr A = fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at narrow" << std::endl;
 		fflas_delete( A );
@@ -811,8 +811,8 @@ bool launch_test(const Field & F,
 // 		size_t k = m/2+1 ;
 // 		Element_ptr A = fflas_new (F, m, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,r,m,n);
-// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n);
+// 		RandomMatrixWithRank(F,A,lda,r,m,n,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -824,8 +824,8 @@ bool launch_test(const Field & F,
 // 		size_t k = m/2+1 ;
 // 		Element_ptr A = fflas_new (F, m, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,m,n);
-// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n);
+// 		RandomMatrixWithRank(F,m,n,R,A,lda,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -837,8 +837,8 @@ bool launch_test(const Field & F,
 // 		size_t k = m/2+1 ;
 // 		Element_ptr A = fflas_new (F, m, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,m,n);
-// 		RandomMatrixWithRank(F,B,lda,0,k,n);
+// 		RandomMatrixWithRank(F,m,n,R,A,lda,G);
+// 		RandomMatrixWithRank(F,B,lda,0,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -850,8 +850,8 @@ bool launch_test(const Field & F,
 // 		size_t k = m/2+1 ;
 // 		Element_ptr A = fflas_new (F, m, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,m,n);
-// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n);
+// 		RandomMatrixWithRank(F,m,n,R,A,lda,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -865,8 +865,8 @@ bool launch_test(const Field & F,
 // 		size_t k = R ;
 // 		Element_ptr A = fflas_new (F, M, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,M,N);
-// 		RandomMatrixWithRank(F,B,lda,R/2,k,N);
+// 		RandomMatrixWithRank(F,A,lda,R,M,N,G);
+// 		RandomMatrixWithRank(F,B,lda,R/2,k,N,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -880,8 +880,8 @@ bool launch_test(const Field & F,
 // 		size_t lda = N+10 ;
 // 		Element_ptr A = fflas_new (F, M, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,M,N);
-// 		RandomMatrixWithRank(F,B,lda,k/2,k,N);
+// 		RandomMatrixWithRank(F,A,lda,R,M,N,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2,k,N,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -897,8 +897,8 @@ bool launch_test(const Field & F,
 // 		size_t lda = N+10 ;
 // 		Element_ptr A = fflas_new (F, M, lda);
 // 		Element_ptr B = fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,M,N);
-// 		RandomMatrixWithRank(F,A,lda,std::min(k/2,M/2),k,N);
+// 		RandomMatrixWithRank(F,A,lda,R,M,N,G);
+// 		RandomMatrixWithRank(F,A,lda,std::min(k/2,M/2),k,N,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
 // 		fflas_delete( A );
@@ -981,6 +981,8 @@ int main(int argc, char** argv)
 
 	if (r > std::min (m,n)) 
 		r = std::min (m, n);
+
+	srand(seed);
 
 	bool ok=true;
 	do{
