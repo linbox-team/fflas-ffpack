@@ -655,7 +655,7 @@ namespace FFPACK {
 	PLUQ (const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      size_t M, size_t N,
 	      typename Field::Element_ptr A, size_t lda, size_t*P, size_t *Q,
-	      const ParSeqHelper & PSH)
+	      size_t BCThreshold,const ParSeqHelper & PSH)
 	{
 		Checker_PLUQ<Field> checker (Fi,M,N,A,lda);
 		size_t R;

@@ -283,7 +283,7 @@ namespace FFPACK { /* Permutations */
 	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
-	      size_t* P, size_t* Q, int nt);
+	      size_t* P, size_t* Q, size_t BCThreshold, int nt);
 
 //#endif
 

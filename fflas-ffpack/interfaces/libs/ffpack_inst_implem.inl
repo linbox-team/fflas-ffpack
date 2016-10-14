@@ -97,7 +97,7 @@ namespace FFPACK {
 	size_t pPLUQ(const FFLAS_FIELD<FFLAS_ELT>& Fi, const FFLAS::FFLAS_DIAG Diag,
 				 const size_t M, const size_t N,
 				 FFLAS_ELT* A, const size_t lda,
-				 size_t* P, size_t* Q, int nt);
+				 size_t* P, size_t* Q, size_t BCThreshold, int nt);
 
 	template INST_OR_DECL
 	void fgetrs (const FFLAS_FIELD<FFLAS_ELT>& F,

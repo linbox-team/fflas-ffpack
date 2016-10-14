@@ -84,13 +84,14 @@ namespace FFPACK {
 	pPLUQ(const Field& Fi, const FFLAS::FFLAS_DIAG Diag,
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
-	      size_t* P, size_t* Q, int nt)
+	      size_t* P, size_t* Q, size_t BCThreshold, int nt)
 	{
 			  
 		for (size_t i=0; i<M; ++i) P[i] = i;
 		for (size_t i=0; i<N; ++i) Q[i] = i;
 		if (std::min(M,N) == 0) return 0;
 		if (std::max (M,N) == 1) return (Fi.isZero(*A))? 0 : 1;
+#ifdef NOBASECASE
 		if (M == 1){
 			size_t piv = 0;
 			while ((piv < N) && Fi.isZero (A[piv])) piv++;
@@ -130,8 +131,8 @@ namespace FFPACK {
 			return 1;
 		}
 
-#ifdef PBASECASE_K
-		if (std::min(M,N) < PBASECASE_K)
+#else
+		if (std::min(M,N) < BCThreshold)
 			return PLUQ_basecaseCrout (Fi, Diag, M, N, A, lda, P, Q);
 #endif
 		FFLAS::FFLAS_DIAG OppDiag = (Diag == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
@@ -147,7 +148,7 @@ namespace FFPACK {
 
 			// A1 = P1 [ L1 ] [ U1 V1 ] Q1
 			//        [ M1 ]
-		R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1,nt);
+		R1 = pPLUQ (Fi, Diag, M2, N2, A, lda, P1, Q1, BCThreshold, nt);
 
 		typename Field::Element_ptr A2 = A + N2;
 		typename Field::Element_ptr A3 = A + M2*lda;
@@ -200,7 +201,7 @@ namespace FFPACK {
 				// F = P2 [ L2 ] [ U2 V2 ] Q2
 				//        [ M2 ]
 			TASK(MODE(CONSTREFERENCE(Fi, P2, Q2, F,/* A4R2,*/ R2) WRITE(R2/*, A4R2[0]*/) READWRITE(F[0], P2, Q2) ),
-				 R2 = pPLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2,std::max(nt/2,1))
+				 R2 = pPLUQ( Fi, Diag, M2-R1, N-N2, F, lda, P2, Q2, BCThreshold, std::max(nt/2,1))
 					 //A4R2 = A4+R2;
 				 );
 
@@ -211,7 +212,7 @@ namespace FFPACK {
 				// G = P3 [ L3 ] [ U3 V3 ] Q3
 				//        [ M3 ]
 			TASK(MODE(CONSTREFERENCE(Fi, G, Q3, P3, R3) WRITE(R3, P3, Q3) READWRITE(G[0])),
-				 R3 = pPLUQ( Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3,std::max(nt/2,1)));
+				 R3 = pPLUQ( Fi, Diag, M-M2, N2-R1, G, lda, P3, Q3, BCThreshold,std::max(nt/2,1)));
     
 				// H <- A4 - ED
 			TASK(MODE(CONSTREFERENCE(Fi, A3, A2, A4, pWH) READ(M2, N2, R1, A3[0], A2[0]) READWRITE(A4[0])),
@@ -308,7 +309,7 @@ namespace FFPACK {
 			TASK(MODE(CONSTREFERENCE(Fi, R4, R, P4, Q4, R2, R3, M2, N2) READWRITE(R[0]) WRITE(R4, P4[0], Q4[0])),
 				 P4 = FFLAS::fflas_new<size_t>(M-M2-R3);
 				 Q4 = FFLAS::fflas_new<size_t>(N-N2-R2);
-				 R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4,std::max(nt,1));
+				 R4 = pPLUQ (Fi, Diag, M-M2-R3, N-N2-R2, R, lda, P4, Q4, BCThreshold,std::max(nt,1));
 				 );
 			CHECK_DEPENDENCIES;
 

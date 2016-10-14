@@ -44,7 +44,7 @@ inline size_t FFPACK::ColumnEchelonForm (const Field& F, const size_t M, const s
 	if (LuTag == FFPACK::FfpackSlabRecursive)
 		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
 	else
-		r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, PSH);
+		r = PLUQ (F, FFLAS::FflasNonUnit, M, N, A, lda, Qt, P, __FFLASFFPACK_PLUQ_THRESHOLD, PSH);
 
 	if (transform){
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, r, A, lda, PSH);
@@ -64,7 +64,7 @@ inline size_t FFPACK::RowEchelonForm (const Field& F, const size_t M, const size
 	if (LuTag == FFPACK::FfpackSlabRecursive)
 		r = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans,  M, N, A, lda, P, Qt);
 	else
-		r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt, PSH);
+		r = PLUQ (F, FFLAS::FflasUnit, M, N, A, lda, P, Qt, __FFLASFFPACK_PLUQ_THRESHOLD,  PSH);
 
 	if (transform){
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasNonUnit, r, A, lda, PSH);
