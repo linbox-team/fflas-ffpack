@@ -480,18 +480,17 @@ namespace FFPACK {
 	 * @param N order of the matrix A
 	 * @param A input matrix
 	 * @param lda leading dimension of A
-	 * @param info Success of the computation: 0 if successfull, >0 if the matrix is singular
+	 * @return false if the \p A does not have generic rank profile, making the computation fail.
 	 *
 	 * Compute the Cholesky factorization of the matrix A: \f$ A = L \times D\times  L^T\f$ if UpLo = FflasLower or
 	 * \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
 	 * diagonal and overwrite the input matrix \p A. The matrix \p D is stored on the diagonal of \p A, as the
 	 * diagonal of \p L or \p U is known to be all ones.
-	 * If A is rank deficient, info is set to a positive value, otherwise, info=0 to indicate success.
+	 * If A does not have generic rank profile, the cholesky factorization is not defined, and the algorithm returns false.
 	 */
 	template <class Field>
-	size_t
-	fpotrf (const Field& F,	const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-			typename Field::Element_ptr A, const size_t lda, int * info);
+	bool fpotrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+				 typename Field::Element_ptr A, const size_t lda);
 
 /* PLUQ */
 

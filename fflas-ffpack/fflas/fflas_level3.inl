@@ -231,6 +231,7 @@ namespace FFLAS {
 	       const FFLAS_UPLO UpLo,
 	       const FFLAS_TRANSPOSE trans,
 	       const size_t n,
+	       const size_t k,
 	       const typename Field::Element alpha,
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       const typename Field::Element beta,

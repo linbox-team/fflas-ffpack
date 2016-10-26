@@ -52,14 +52,17 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 
 	typedef typename Field::Element Element;
 	Element * A, *C, *C2;
-	size_t lda = k+13;
 	size_t ldc = n+15;
-	A  = FFLAS::fflas_new(F,n,lda);
+	size_t Arows = (trans==FFLAS::FflasNoTrans)?n:k;
+	size_t Acols = (trans==FFLAS::FflasNoTrans)?k:n;
+	size_t lda = Acols+13;
+
+	A  = FFLAS::fflas_new(F,Arows,lda);
 	C  = FFLAS::fflas_new(F,n,ldc);
 	C2  = FFLAS::fflas_new(F,n,ldc);
 
 	FFPACK::RandomTriangularMatrix (F, n, n, uplo, FflasNonUnit, true, C, ldc, Rand);
-	FFPACK::RandomMatrix (F, n, k, A, lda, Rand);
+	FFPACK::RandomMatrix (F, Arows, Acols, A, lda, Rand);
 	FFLAS::fassign (F, n, n, C, ldc, C2, ldc);
 
 	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((trans == FFLAS::FflasTrans)?"Trans":"NoTrans");
@@ -69,8 +72,6 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 	cout.width(35);
 	cout<<ss;
 
-	write_field(F, std::cerr<<"A = "<<std::endl,A, n,k,lda);
-	write_field(F, std::cerr<<"C = "<<std::endl,C, n,n,ldc);
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear(); t.start();
@@ -80,11 +81,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 	t.stop();
 	time+=t.usertime();
 
-	write_field(F, std::cerr<<"Apres fsyrk C = "<<std::endl,C, n,n,ldc);
-
 	fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, A, lda, beta, C2, ldc);
-
-	write_field(F, std::cerr<<"Apres fgemm C2 = "<<std::endl,C2, n,n,ldc);
 
 	bool ok = true;
 	if (uplo == FflasUpper){
@@ -113,7 +110,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, size_t a, size_t c, size_t iters, uint64_t seed){
+bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t a, size_t c, size_t iters, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 
@@ -130,10 +127,10 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, size_t a, 
 		F->init (beta, (typename Field::Element)c);
 		cout<<"Checking with ";F->write(cout)<<endl;
 
-		ok = ok && check_fsyrk(*F,m,n,alpha,beta,FflasUpper,FflasNoTrans,G);
-		// ok = ok && check_fsyrk(*F,m,n,alpha,FflasLower,FflasNoTrans,G);
-		// ok = ok && check_fsyrk(*F,m,n,alpha,FflasLower,FflasTrans,G);
-		// ok = ok && check_fsyrk(*F,m,n,alpha,FflasUpper,FflasTrans,G);
+		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
 		nbit--;
 		delete F;
 	}
@@ -145,8 +142,8 @@ int main(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	size_t m=128;
-	size_t n=128;
+	int k=75;
+	int n=129;
 	size_t a=1;
 	size_t c=1;
 	size_t iters=1;
@@ -155,7 +152,7 @@ int main(int argc, char** argv)
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
-		{ 'm', "-m M", "Set the row dimension",      TYPE_INT , &m },
+		{ 'k', "-k K", "Set the  dimension",      TYPE_INT , &k },
 		{ 'n', "-n N", "Set the column dimension.", TYPE_INT , &n },
 		{ 'a', "-a A", "Set the scaling alpha",                         TYPE_INT , &a },
 		{ 'c', "-c C", "Set the scaling beta",                         TYPE_INT , &c },
@@ -169,16 +166,16 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		ok &= run_with_field<Modular<double> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<Modular<float> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<Modular<int32_t> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<Modular<int64_t> >(q,b,m,n,a,c,iters,seed);
-		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,a,c,iters,seed);
-//		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,m/4+1,n/4+1,a,c,iters,seed);
-//		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m/4+1,n/4+1,a,c,iters,seed);
+		ok &= run_with_field<Modular<double> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<Modular<float> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<Modular<int32_t> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
+//		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
+//		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
 	} while (loop && ok);
 
 	return !ok ;
