@@ -53,6 +53,7 @@ BASIC_TESTS =               \
 		test-charpoly-check \
 		test-fger           \
 		test-ftrsm          \
+		test-fsyrk          \
 		test-multifile      \
 		test-maxdelayeddim \
 		regression-check
@@ -131,6 +132,7 @@ test_charpoly_SOURCES          = test-charpoly.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
+test_fsyrk_SOURCES             = test-fsyrk.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C
 #  test_ftrtri_SOURCES            = test-ftrtri.C

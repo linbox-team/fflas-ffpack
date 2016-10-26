@@ -208,6 +208,34 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb);
 
+	/** @brief  fsyrk
+	 *
+	 * Computes the Lower or Upper triangular part of \f$C = \alpha A \times A^T + \beta C\f$ or \f$C = \alpha A^T \times A + \beta C\f$
+	 * \param F field.
+	 * \param UpLo whether to compute the upper or the lower triangular part of the symmetric matrix \p C
+	 * \param trans if \c ta==FflasTrans then comput \f$C = \alpha A \times A^T + \beta C\f$, else  \f$C = \alpha A^T \times A + \beta C\f$
+	 * \param n see \p B
+	 * \param k see \p A
+	 * \param alpha scalar
+	 * \param A \f$A\f$ is \f$n \times k\f$ or \f$A\f$ is \f$k \times n\f$
+	 * \param lda leading dimension of \p A
+	 * \param beta scalar
+	 * \param C \f$C\f$ is \f$n \times n\f$
+	 * \param ldc leading dimension of \p C
+	 * \param w recursive levels of Winograd's algorithm are used. No argument (or -1) does auto computation of \p w.
+	 * @warning \f$\alpha\f$ \e must be invertible
+	 */
+	template<class Field>
+	typename Field::Element_ptr
+	fsyrk (const Field& F,
+	       const FFLAS_UPLO UpLo,
+	       const FFLAS_TRANSPOSE trans,
+	       const size_t n,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc);
+
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *
 	 * Computes \f$C = \alpha \mathrm{op}(A) \times \mathrm{op}(B) + \beta C\f$
