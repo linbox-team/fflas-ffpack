@@ -208,7 +208,7 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb);
 
-	/** @brief  fsyrk
+	/** @brief  fsyrk: Symmetric Rank K update
 	 *
 	 * Computes the Lower or Upper triangular part of \f$C = \alpha A \times A^T + \beta C\f$ or \f$C = \alpha A^T \times A + \beta C\f$
 	 * \param F field.

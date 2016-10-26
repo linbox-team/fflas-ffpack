@@ -62,7 +62,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 	FFPACK::RandomMatrix (F, n, k, A, lda, Rand);
 	FFLAS::fassign (F, n, n, C, ldc, C2, ldc);
 
-	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((trans == FFLAS::FflasTrans)?"Trans_":"NoTrans_");
+	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((trans == FFLAS::FflasTrans)?"Trans":"NoTrans");
 
 	cout<<std::left<<"Checking FSYRK_";
 	cout.fill('.');

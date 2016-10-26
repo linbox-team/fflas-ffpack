@@ -59,7 +59,7 @@ namespace FFLAS {
             typename Field::ConstElement_ptr A22 = A21 + K1;
             typename Field::ConstElement_ptr A12 = A + K1;
             typename Field::Element_ptr C12 = C + N1;
-            typename Field::Element_ptr C22 = C12 + N1*lda;
+            typename Field::Element_ptr C22 = C12 + N1*ldc;
                 // C11 <- alpha A11 x A11^T + beta C11
             fsyrk (F, UpLo, trans, N1, K1, alpha, A, lda, beta, C, ldc);
                 // C11 <- alpha A12 x A12^T + C11
