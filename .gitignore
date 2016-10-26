@@ -48,6 +48,7 @@ tests/test-fger
 tests/test-finit
 tests/test-fscal
 tests/test-ftrsm
+tests/test-fsyrk
 tests/test-lu
 tests/test-multifile
 tests/test-rankprofiles
