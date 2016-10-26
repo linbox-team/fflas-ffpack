@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	srand (time(NULL));
 	typedef Givaro::Modular<double> Field;
 	Givaro::Integer q = 131071;
-	size_t iter = 3;
+	size_t iter = 10;
 	
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
@@ -62,15 +62,24 @@ int main(int argc, char** argv) {
 		size_t m = rand() % 1000 + 1;
 		size_t n = rand() % 1000 + 1;
 		size_t k = rand() % 1000 + 1;
-		std::cout << "m= " << m << "    n= " << n << "    k= " << k << "\n";
+		std::cout << "m= " << m << "    n= " << n << "    k= " << k << "   ";
 
 		typename Field::Element alpha,beta;
 		F.init(alpha); Rand.random(alpha);
 		F.init(beta);  Rand.random(beta);
 		
-		ta = /*rand()%2 ? */FFLAS::FflasNoTrans /*: FFLAS::FflasTrans*/,
-		tb = /*rand()%2 ? */FFLAS::FflasNoTrans /*: FFLAS::FflasTrans*/;
+		ta = rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
+		tb = rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
 
+		std::cout << "m= " << m << "    n= " << n << "    k= " << k
+			  <<" ta = ";
+		if (ta==FFLAS::FflasNoTrans) std::cout<<"NoTrans";
+		else std::cout<<"Trans";
+		std::cout<< " tb =  ";
+		if (tb==FFLAS::FflasNoTrans) std::cout<<"NoTrans";
+		else std::cout<<"Trans";
+		std::cout<<" : ";
+		
 		size_t lda = ta == FFLAS::FflasNoTrans ? k : m,
 			   ldb = tb == FFLAS::FflasNoTrans ? n : k,
 			   ldc = n;
@@ -87,10 +96,12 @@ int main(int argc, char** argv) {
 		FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 		try {
 			checker.check(ta,tb,alpha,A,lda,B,ldb,C);
-			std::cout << "Verification successful\n";
+			std::cout << "PASSED\n";
 			pass++;
 		} catch (FailureFgemmCheck &e) {
-			std::cout << "Verification failed!\n";
+			std::cout << "FAILED\n";
+			FFLAS::fflas_delete(A,B,C);
+			return -1;
 		}
 
 		FFLAS::fflas_delete(A,B,C);

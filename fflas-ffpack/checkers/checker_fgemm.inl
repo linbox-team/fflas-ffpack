@@ -72,12 +72,16 @@ namespace FFLAS {
                     // w1 <- C.v - w1
                 FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, n, F.one, C, ldc, v, 1, F.mOne, w1, 1);
 
+		size_t Arows, Acols, Brows, Bcols;
+		if (tb == FFLAS::FflasNoTrans){ Brows = k; Bcols = n;} else { Brows = n; Bcols = k;}
+		if (ta == FFLAS::FflasNoTrans){ Arows = m; Acols = k;} else { Arows = k; Acols = m;}
+
                     // w2 <- B.v
                 typename Field::Element_ptr w2 = FFLAS::fflas_new(F,k,1);
-                FFLAS::fgemv(F, tb, k, n, F.one, B, ldb, v, 1, F.zero, w2, 1);
+                FFLAS::fgemv(F, tb, Brows, Bcols, F.one, B, ldb, v, 1, F.zero, w2, 1);
 
                     // w1 <- alpha.A.w2 - w1
-                FFLAS::fgemv(F, ta, m, k, alpha, A, lda, w2, 1, F.mOne, w1, 1);
+                FFLAS::fgemv(F, ta, Arows, Acols, alpha, A, lda, w2, 1, F.mOne, w1, 1);
 
                 FFLAS::fflas_delete(w2);
 
