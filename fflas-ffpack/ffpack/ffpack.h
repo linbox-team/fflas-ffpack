@@ -452,8 +452,9 @@ namespace FFPACK { /* ftrtr */
 					 typename Field::Element_ptr X, const size_t ldx );
 
 	/**  Compute the product UL.
-	 * Product UL of the upper, resp lower triangular matrices U and L
+	 * Product UL or LU of the upper, resp lower triangular matrices U and L
 	 * stored one above the other in the square matrix A.
+	 * If side == FflasLeft, the product UL is computed, otherwise the product LU.
 	 * Diag == Unit if the matrix U is unit diagonal
 	 * @param F
 	 * @param diag
@@ -464,8 +465,8 @@ namespace FFPACK { /* ftrtr */
 	 */
 	template<class Field>
 	void
-	ftrtrm (const Field& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
-			typename Field::Element_ptr A, const size_t lda);
+	ftrtrm (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag,
+			const size_t N,	typename Field::Element_ptr A, const size_t lda);
 
 } // FFPACK ftrtr
 // #include "ffpack_ftrtr.inl"
@@ -478,12 +479,12 @@ namespace FFPACK {
 	 * @param F The computation domain
 	 * @param UpLo Determine wheter to store the upper or lower triangular factor
 	 * @param N order of the matrix A
-	 * @param A input matrix
+	 * @param [inout]] A input matrix
 	 * @param lda leading dimension of A
 	 * @return false if the \p A does not have generic rank profile, making the computation fail.
 	 *
-	 * Compute the Cholesky factorization of the matrix A: \f$ A = L \times D\times  L^T\f$ if UpLo = FflasLower or
-	 * \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
+	 * Compute the Cholesky factorization of the matrix A: \f$ A = L \times D^{-1}\times  L^T\f$ if UpLo = FflasLower or
+	 * \f$ A = U^T \times D^{-1} \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
 	 * diagonal and overwrite the input matrix \p A. The matrix \p D is stored on the diagonal of \p A, as the
 	 * diagonal of \p L or \p U is known to be all ones.
 	 * If A does not have generic rank profile, the cholesky factorization is not defined, and the algorithm returns false.
@@ -1595,7 +1596,7 @@ namespace FFPACK { /* not used */
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
-#include "ffpack_ftrtr.inl"
+#include "ffpack_fpotrf.inl"
 //---------------------------------------------------------------------
 // Checkers
 #include "fflas-ffpack/checkers/checkers_ffpack.inl"
@@ -1607,6 +1608,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_ludivine_mp.inl"
 #include "ffpack_echelonforms.inl"
 #include "ffpack_invert.inl"
+#include "ffpack_ftrtr.inl"
 #include "ffpack_charpoly_kglu.inl"
 #include "ffpack_charpoly_kgfast.inl"
 #include "ffpack_charpoly_kgfastgeneralized.inl"

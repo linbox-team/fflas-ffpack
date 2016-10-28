@@ -97,7 +97,7 @@ FFPACK::ReducedColumnEchelonForm (const Field& F, const size_t M, const size_t N
 	if (transform){
 		ftrtri (F, FFLAS::FflasLower, FFLAS::FflasUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda);
-		ftrtrm (F, FFLAS::FflasNonUnit, r, A, lda);
+		ftrtrm (F, FFLAS::FflasLeft, FFLAS::FflasNonUnit, r, A, lda);
 	} else {
 		ftrsm (F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M-r, r, F.one, A, lda, A+r*lda, lda);
 			//FFLAS::fidentity (F, r, r, A, lda);
@@ -130,7 +130,7 @@ FFPACK::ReducedRowEchelonForm (const Field& F, const size_t M, const size_t N,
 		ftrtri (F, FFLAS::FflasUpper, FFLAS::FflasUnit, r, A, lda);
 		ftrmm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
 
-		ftrtrm (F, FFLAS::FflasUnit, r, A, lda);
+		ftrtrm (F, FFLAS::FflasLeft, FFLAS::FflasUnit, r, A, lda);
 	} else {
 		ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit, r, N-r, F.one, A, lda, A+r, lda);
 			//FFLAS::fidentity (F, r, r, A, lda);

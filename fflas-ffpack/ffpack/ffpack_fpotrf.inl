@@ -35,6 +35,12 @@ namespace FFPACK {
 						typename Field::Element_ptr A, const size_t lda){
 
 		if (N==1){
+			if (F.isZero(*A))
+				return false;
+			else{
+				F.invin(*A);
+				return true;
+			}
 		} else {
 			size_t N1 = N>>1;
 			size_t N2 = N-N1;
@@ -44,27 +50,23 @@ namespace FFPACK {
 			typename Field::Element_ptr A12 = A + N1;
 			typename Field::Element_ptr A22 = A21 + N1;
 
-				// A1 = U1^T x D1 x U1
+				// A1 = U1^T x D1^-1 x U1
 			if (!fpotrf (F, UpLo, N1, A, lda)) return false;
 
 				// A12 <- U1^-T x A12
 			FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasUnit,
 				   N1, N2, F.one, A, lda, A+N1, lda);
 
-				// A12 <- D1^-1 x A12
+				// A12 <- D1 x A12
 			typename Field::Element_ptr Ai = A, A12i = A12;
 			for (size_t i=0; i<N1; i++, Ai+=(lda+1), A12i+=lda){
-				typename Field::Element inv;
-				F.init (inv);
-				F.inv (inv, Ai);
-				fscal (F, N2, inv, A12i, 1);
+				FFLAS::fscalin (F, N2, *Ai, A12i, 1);
 			}
 				// A22 <- A22 - A12^T x A12
-			FFLAS::fsyrk (F, UpLo, FFLAS::FflasNoTrans, N2, N1, F.mOne, A12, lda, F.one, A22, lda);
+			FFLAS::fsyrk (F, UpLo, FFLAS::FflasTrans, N2, N1, F.mOne, A12, lda, F.one, A22, lda);
 
-				// A22 = U2^T x D2 x U2
-			if (!fpotrf (F, Uplo, N2, A22, lda)) return false;
-
+				// A22 = U2^T x D2^-1 x U2
+			if (!fpotrf (F, UpLo, N2, A22, lda)) return false;
 			return true;
 		}
 	}

@@ -171,7 +171,7 @@ namespace FFPACK {
      * @param lda leading dimension of \p A
      * @return \c A.
      */
-    template<class Field, class RandIter>
+    template<class Field>
     inline typename Field::Element_ptr
 	RandomTriangularMatrix (const Field & F, size_t m, size_t n,
 							const FFLAS::FFLAS_UPLO UpLo, const FFLAS::FFLAS_DIAG Diag, bool nonsingular,
@@ -191,6 +191,28 @@ namespace FFPACK {
         FFLASFFPACK_check(x<b && x>=a);
         return x ;
     }
+	/** @brief  Random Symmetric Matrix.
+     * Creates a \c m x \c n triangular matrix with random entries. The \c UpLo parameter defines wether it is upper or lower triangular.
+     * @param F field
+     * @param n order of \p A
+     * @param [out] A the matrix (preallocated to at least \c n x \c lda field elements)
+     * @param lda leading dimension of \p A
+	 * @param G a random iterator
+     * @return \c A.
+     */
+    template<class Field, class RandIter>
+    inline typename Field::Element_ptr
+	RandomSymmetricMatrix (const Field & F,size_t n, bool nonsingular,
+						   typename Field::Element_ptr A, size_t lda, RandIter& G) {
+		RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasUnit, nonsingular, A, lda, G);
+		for (size_t i=0; i<n-1; i++){
+			F.init(A[i*(lda+1)],F.one);
+			FFLAS::fassign(F, n-i-1, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
+
+		}
+		ftrtrm (F, FFLAS::FflasRight, FFLAS::FflasUnit, n, A, lda);
+		return A;
+	}
 } // FFPACK
 
 #include "fflas-ffpack/ffpack/ffpack.h"

@@ -1,3 +1,10 @@
+2016-11-XX v2.3.0
+	* new fpotrf routine (Cholesky factorization) and symmetric rand generator
+	* change the signature of ftrtrm
+	* clean-up and update all random matrix generator so they can be seeded.
+	* clean-up the test-suite and enable seeding parameter
+	* many bug fixes
+	* Gauss-Jordan inverse made to work
 2016-07-30 v2.2.2
 	* many bug fixes ensuring a consistent support of clang, gcc-4.8 5.3 6.1
 	icpc on i386 x86_64, ubuntu and fedora, ppcle and osx
