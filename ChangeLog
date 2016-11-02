@@ -12,7 +12,6 @@
 	* use pkgconfig
 	* new feature: checkers for Freivalds based verification
 	* improved performance of permutation application
-	* 
 2016-04-08 v2.2.1
 	* many fixes to the build system
 	* more consistent use of flags and dependency to precompiled code
