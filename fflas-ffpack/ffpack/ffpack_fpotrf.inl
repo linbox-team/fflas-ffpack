@@ -57,11 +57,11 @@ namespace FFPACK {
 			FFLAS::ftrsm (F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasUnit,
 				   N1, N2, F.one, A, lda, A+N1, lda);
 
-				// A12 <- D1 x A12
-			typename Field::Element_ptr Ai = A, A12i = A12;
-			for (size_t i=0; i<N1; i++, Ai+=(lda+1), A12i+=lda){
-				FFLAS::fscalin (F, N2, *Ai, A12i, 1);
-			}
+				// A12 <- D1^-1 x A12
+			// typename Field::Element_ptr Ai = A, A12i = A12;
+			// for (size_t i=0; i<N1; i++, Ai+=(lda+1), A12i+=lda){
+			// 	FFLAS::fscalin (F, N2, *Ai, A12i, 1);
+			// }
 				// A22 <- A22 - A12^T x A12
 			FFLAS::fsyrk (F, UpLo, FFLAS::FflasTrans, N2, N1, F.mOne, A12, lda, F.one, A22, lda);
 

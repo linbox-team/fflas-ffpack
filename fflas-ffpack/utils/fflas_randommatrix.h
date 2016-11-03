@@ -204,13 +204,14 @@ namespace FFPACK {
     inline typename Field::Element_ptr
 	RandomSymmetricMatrix (const Field & F,size_t n, bool nonsingular,
 						   typename Field::Element_ptr A, size_t lda, RandIter& G) {
-		RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasUnit, nonsingular, A, lda, G);
+		RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasNonUnit, nonsingular, A, lda, G);
 		for (size_t i=0; i<n-1; i++){
-			F.init(A[i*(lda+1)],F.one);
-			FFLAS::fassign(F, n-i-1, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
-
+			typename Field::Element inv;
+			F.init(inv);
+			F.inv(inv, A[i*(lda+1)]);
+			FFLAS::fscal(F, n-i-1, inv, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
 		}
-		ftrtrm (F, FFLAS::FflasRight, FFLAS::FflasUnit, n, A, lda);
+		ftrtrm (F, FFLAS::FflasRight, FFLAS::FflasNonUnit, n, A, lda);
 		return A;
 	}
 } // FFPACK
