@@ -1596,7 +1596,7 @@ namespace FFPACK { /* not used */
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
-#include "ffpack_fpotrf.inl"
+#include "ffpack_fsytrf.inl"
 //---------------------------------------------------------------------
 // Checkers
 #include "fflas-ffpack/checkers/checkers_ffpack.inl"

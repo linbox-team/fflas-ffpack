@@ -101,11 +101,108 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 	    //cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
 		cout << "FAILED ("<<time<<")"<<endl;
 		//cerr<<"FAILED ("<<time<<")"<<endl;
-	
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(C2);
 	FFLAS::fflas_delete(C);
+	return ok;
+}
+template<typename Field, class RandIter>
+bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
+					   const typename Field::Element &alpha, const typename Field::Element &beta,
+					   FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, RandIter& Rand){
+
+	typedef typename Field::Element Element;
+	Element * A, *B, *C, *C2, *D;
+	size_t ldc = n+(rand()%50);
+	size_t Arows = (trans==FFLAS::FflasNoTrans)?n:k;
+	size_t Acols = (trans==FFLAS::FflasNoTrans)?k:n;
+	size_t lda = Acols+(rand()%50);
+	size_t incD = 1+(rand()%100);
+	A  = FFLAS::fflas_new(F,Arows,lda);
+	B  = FFLAS::fflas_new(F,Arows,lda);
+	C  = FFLAS::fflas_new(F,n,ldc);
+	C2  = FFLAS::fflas_new(F,n,ldc);
+	D  = FFLAS::fflas_new(F,k,incD);
+	Givaro::GeneralRingNonZeroRandIter<Field,RandIter> nzRand (Rand);
+	for (size_t i=0; i<k; i++)
+		nzRand.random(D[i*incD]);
+	FFPACK::RandomTriangularMatrix (F, n, n, uplo, FflasNonUnit, true, C, ldc, Rand);
+	FFPACK::RandomMatrix (F, Arows, Acols, A, lda, Rand);
+	FFLAS::fassign (F, n, n, C, ldc, C2, ldc);
+	FFLAS::fassign (F, Arows, Acols, A, lda, B, lda);
+
+	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((trans == FFLAS::FflasTrans)?"Trans":"NoTrans");
+
+	cout<<std::left<<"Checking FSYRK_DIAG_";
+	cout.fill('.');
+	cout.width(30);
+	cout<<ss;
+
+
+	// write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
+	// write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
+	// write_field (F, std::cerr<<"D = "<<std::endl,D,k,1,incD);
+	FFLAS::Timer t; t.clear();
+	double time=0.0;
+	t.clear(); t.start();
+
+	fsyrk (F, uplo, trans, n, k, alpha, A, lda, D, incD, beta, C, ldc);
+
+	t.stop();
+	time+=t.usertime();
+
+	// std::cerr<<"After fsyrk_diag"<<std::endl;
+	// write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
+	// write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
+
+	bool ok = true;
+	typename Field::Element tmp;
+	F.init(tmp);
+	if (trans==FflasNoTrans){
+			// Checking whether  A = B x D
+		for (size_t i=0; i < Arows; i++)
+			for (size_t j=0; j < Acols; j++)
+				ok &= F.isZero(F.axmy (tmp, B[i*lda+j], D[j*incD], A[i*lda+j]));
+	} else {
+			// Checking whether  A = D x B
+		for (size_t i=0; i < Arows; i++)
+			for (size_t j=0; j < Acols; j++){
+				ok &= F.isZero(F.axmy (tmp, B[i*lda+j], D[i*incD], A[i*lda+j]));
+				if (!ok){
+					std::cerr<<"B["<<i<<","<<j<<"] = "<<B[i*lda+j]<<" != "<<D[i*incD]<<" * "<<A[i*lda+j]<<std::endl;
+				}
+			}
+	}
+	if (!ok){
+		std::cerr<<"Scaling failed"<<std::endl;
+		return ok;
+	}
+
+	fgemm (F, trans, (trans==FflasNoTrans)?FflasTrans:FflasNoTrans, n, n, k, alpha, A, lda, B, lda, beta, C2, ldc);
+
+	if (uplo == FflasUpper){
+		for (size_t i=0; i<n; i++)
+			for (size_t j=i; j<n; j++)
+				ok &= F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
+	} else {
+		for (size_t i=0; i<n; i++)
+			for (size_t j=0; j<=i; j++)
+				ok &= F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
+	}
+	if (ok)
+	    //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
+		cout << "PASSED ("<<time<<")"<<endl;
+		//cerr<<"PASSED ("<<time<<")"<<endl;
+	else
+	    //cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
+		cout << "FAILED ("<<time<<")"<<endl;
+		//cerr<<"FAILED ("<<time<<")"<<endl;
+	
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(C2);
+	FFLAS::fflas_delete(C);
+	FFLAS::fflas_delete(D);
 	return ok;
 }
 
@@ -131,6 +228,10 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t a, 
 		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
 		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
 		ok &= check_fsyrk(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
 		nbit--;
 		delete F;
 	}

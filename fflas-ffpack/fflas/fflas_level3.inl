@@ -237,7 +237,7 @@ namespace FFLAS {
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc);
 
-	/** @brief  fsyrk: Symmetric Rank K update
+	/** @brief  fsyrk: Symmetric Rank K update with diagonal scaling
 	 *
 	 * Computes the Lower or Upper triangular part of \f$C = \alpha A \times D \times A^T + \beta C\f$ or
 	 * \f$C = \alpha A^T \times D \times A + \beta C\f$ where \p D is a diagonal matrix. Matrix \p A is updated into
@@ -266,7 +266,7 @@ namespace FFLAS {
 	       const size_t n,
 	       const size_t k,
 	       const typename Field::Element alpha,
-	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::Element_ptr A, const size_t lda,
 	       typename Field::ConstElement_ptr D, const size_t incD,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc);

@@ -116,13 +116,15 @@ namespace FFLAS {
         if (N==1){ // Base case
             F.mulin (*C, beta);
 			size_t incA = (trans==FFLAS::FflasNoTrans)?1:lda;
-			typename Field::Element acc;
-			F.init(acc,F.zero);
-			for (typename Field::ConstElement_ptr Ai=A, Di=D; Ai != A+k*incA; k++, Ai+=incA,Di+=incD){
+			typename Field::Element acc, tmp;
+			F.init(acc,F.zero); F.init(tmp);
+			typename Field::ConstElement_ptr Di = D;
+			typename Field::Element_ptr Ai = A;
+			for (; Ai != A+K*incA; Ai+=incA,Di+=incD){
 				F.assign (tmp, *Ai);
 				F.mulin (*Ai, *Di);
 				F.axpyin (acc, tmp, *Ai);}
-			F.axpyin (*C, alpha, acc));
+			F.axpyin (*C, alpha, acc);
             return C;
         } else if (K==1){
             if (!F.isOne(beta))
@@ -143,15 +145,15 @@ namespace FFLAS {
 			size_t incRow,incCol;
 			FFLAS_TRANSPOSE oppTrans;
 			if (trans==FflasNoTrans) {incRow=lda;incCol=1;oppTrans=FflasTrans;}
-			else {incRowA = 1; incColA = lda;oppTrans=FflasNoTrans;}
+			else {incRow = 1; incCol = lda;oppTrans=FflasNoTrans;}
 
-            typename Field::ConstElement_ptr A21 = A + N1*incRow;
-            typename Field::ConstElement_ptr A22 = A21 + K1*incCol;
-            typename Field::ConstElement_ptr A12 = A + K1*incCol;
+            typename Field::Element_ptr A21 = A + N1*incRow;
+            typename Field::Element_ptr A22 = A21 + K1*incCol;
+            typename Field::Element_ptr A12 = A + K1*incCol;
             typename Field::Element_ptr C12 = C + N1;
             typename Field::Element_ptr C21 = C + N1*ldc;
             typename Field::Element_ptr C22 = C12 + N1*ldc;
-            typename Field::Element_ptr D2 = D + K1*incD;
+            typename Field::ConstElement_ptr D2 = D + K1*incD;
                 // C11 <- alpha A11 x D1 x A11^T + beta C11
             fsyrk (F, UpLo, trans, N1, K1, alpha, A, lda, D, incD, beta, C, ldc);
                 // C11 <- alpha A12 x D2 x A12^T + C11
@@ -161,40 +163,42 @@ namespace FFLAS {
                 // C22 <- alpha A22 x D2 x A22^T + C22
             fsyrk (F, UpLo, trans, N2, K2, alpha, A22, lda, D2, incD, F.one, C22, ldc);
 
-            if (UpLo == FflasUpper) {
-					// A21 <- A21 x D1
-				typename Field::Element_ptr temp = fflas_new (F, N2*K1);
-				if (trans==FflasNoTrans) {ldt=K1; incRowT=ldt; incColT=1;} else {ldt = N2; incRowT=1; incColT=ldt;}
-				for (typename Field::Element_ptr Ai = A21, Ti = temp, Di = D;
-					 Ai != A21 + K1*incCol;
-					 Ai += incCol, Ti += incColT, Di+=incD){
-					typename Field::Element inv; F.init(inv);
-					F.inv(inv, *Di);
-					fscal (F, N2, inv, Ai, incRow, Ti, incRowT);
-				}
+				// A21 <- A21 x D1
+			typename Field::Element_ptr temp = fflas_new (F, N2, K1);
+			size_t ldt, incRowT,incColT;
+			if (trans==FflasNoTrans) {ldt=K1; incRowT=ldt; incColT=1;} else {ldt = N2; incRowT=1; incColT=ldt;}
+			typename Field::Element_ptr Ai = A21, Ti = temp;
+			typename Field::ConstElement_ptr Di = D;
+			for (; Ai != A21 + K1*incCol; Ai += incCol, Ti += incColT, Di+=incD){
+				typename Field::Element inv; F.init(inv);
+				F.inv(inv, *Di);
+				fscal (F, N2, inv, Ai, incRow, Ti, incRowT);
+			}
+			if (UpLo == FflasUpper) {
 					// C12 <- alpha A11 x A21^T + beta C12
 				fgemm (F, trans, oppTrans, N1, N2, K1, alpha, A, lda, temp, ldt, beta, C12, ldc);
-				fflas_delete (temp);
-					// A12 <- A12 x D2
-				temp = fflas_new (F, K2*N1);
-				if (trans==FflasNoTrans) {ldt=K2; incRowT=ldt; incColT=1;} else {ldt = N1; incRowT=1; incColT=ldt;}
-				for (typename Field::Element_ptr Ai = A12, Ti = temp, Di = D2;
-					 Ai != A12 + K2*incCol;
-					 Ai += incCol, Ti += incColT, Di+=incD){
-					typename Field::Element inv; F.init(inv);
-					F.inv(inv, *Di);
-					fscal (F, N1, inv, Ai, incRow, temp, ldt);
-				}
+			} else {
+					// C21 <- alpha A21 x A11^T + beta C21
+				fgemm (F, trans, oppTrans, N2, N1, K1, alpha, temp, ldt, A, lda, beta, C21, ldc);
+			}
+			fflas_delete (temp);
+
+				// A12 <- A12 x D2
+			temp = fflas_new (F, K2, N1);
+			if (trans==FflasNoTrans) {ldt=K2; incRowT=ldt; incColT=1;} else {ldt = N1; incRowT=1; incColT=ldt;}
+			for (Ai = A12, Ti = temp, Di = D2; Ai != A12 + K2*incCol; Ai += incCol, Ti += incColT, Di+=incD){
+				typename Field::Element inv; F.init(inv);
+				F.inv(inv, *Di);
+				fscal (F, N1, inv, Ai, incRow, Ti, incRowT);
+			}
+			if (UpLo == FflasUpper){
 					// C12 <- alpha A12 x A22^T + C12
 				fgemm (F, trans, oppTrans, N1, N2, K2, alpha, temp, ldt, A22, lda, F.one, C12, ldc);
-				fflas_delete (temp);
 			} else {
-					// C21 <- alpha A21 x D1 x A11^T + beta C21
-				fgemm (F, trans, oppTrans, N2, N1, K1, alpha, A21, lda, A, lda, beta, C21, ldc);
-					// C21 <- alpha A12 x D2 x A22^T + C21
-				fgemm (F, trans, oppTrans, N2, N1, K2, alpha, A22, lda, A12, lda, F.one, (UpLo==FflasUpper)?C12:C21, ldc);
-
+					// C21 <- alpha A22 x D2 x A12^T + C21
+				fgemm (F, trans, oppTrans, N2, N1, K2, alpha, A22, lda, temp, ldt, F.one, C21, ldc);
 			}
+			fflas_delete (temp);
 			return C;
         }
     }

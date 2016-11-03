@@ -44,6 +44,7 @@ pkgincludesub_HEADERS=        \
 		ffpack_invert.inl\
 		ffpack_fgesv.inl\
 		ffpack_fgetrs.inl\
+		ffpack_fsytrf.inl\
 		ffpack_permutation.inl\
 		ffpack_ftrtr.inl\
 		ffpack_rankprofiles.inl\
