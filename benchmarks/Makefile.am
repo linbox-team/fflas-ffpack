@@ -31,7 +31,7 @@ AM_LDFLAGS=-static $(PARLIBS)
 
 PERFPUBLISHERFILE=benchmarks-report.xml
 
-FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers
+FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse benchmark-fsytrf  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
@@ -65,6 +65,7 @@ benchmark_ftrsm_SOURCES = benchmark-ftrsm.C
 benchmark_ftrsm_mp_SOURCES = benchmark-ftrsm-mp.C
 benchmark_ftrtri_SOURCES = benchmark-ftrtri.C
 benchmark_inverse_SOURCES = benchmark-inverse.C
+benchmark_fsytrf_SOURCES = benchmark-fsytrf.C
 benchmark_charpoly_SOURCES = benchmark-charpoly.C
 benchmark_lqup_SOURCES = benchmark-lqup.C
 benchmark_lqup_mp_SOURCES = benchmark-lqup-mp.C
