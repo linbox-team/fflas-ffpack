@@ -60,9 +60,6 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, uint6
 		
 		std::cout.fill('.');
 		std::cout<<"Checking ";
-		std::cout.width(40);
-		std::cout<<oss.str();
-		std::cout<<" ... ";
 
 		size_t lda = n+13;
 		typename Field::Element_ptr A=FFLAS::fflas_new (*F, n,lda);
@@ -72,6 +69,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, uint6
 		FFLAS::fassign (*F, n, n, A, lda, B, lda); 
 
 		{ // Testing is B ==  L D^-1 L^T
+			std::cout<<"Lower...";
 			FFPACK::fsytrf (*F, FflasLower, n, A, lda);
 
 				// copying L on L^T
@@ -90,9 +88,13 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, uint6
 		}
 
 		{ // Testing is B ==  U^T D^-1 U
+		std::cout<<"Upper";
 			fassign (*F, n, n, B, lda, A, lda);
-			FFPACK::fsytrf (*F, FflasUpper, n, A, lda);
 
+				//write_field(*F,std::cerr<<"A="<<std::endl,A,n,n,lda);
+			bool success = FFPACK::fsytrf (*F, FflasUpper, n, A, lda);
+				//write_field(*F,std::cerr<<"after fsytrf A = "<<std::endl,A,n,n,lda);
+			if (!success) std::cerr<<"Non definite matrix"<<std::endl;
 				// copying U on U^T
 			for (size_t i=0; i<n; i++)
 				fassign(*F, n-i-1, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
@@ -107,6 +109,10 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, uint6
 
 			ok &= fequal(*F, n, n, A, lda, B, lda);
 		}
+
+		std::cout.width(45);
+		std::cout<<oss.str();
+		std::cout<<"... ";
 		
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);

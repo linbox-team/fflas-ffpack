@@ -205,7 +205,7 @@ namespace FFPACK {
 	RandomSymmetricMatrix (const Field & F,size_t n, bool nonsingular,
 						   typename Field::Element_ptr A, size_t lda, RandIter& G) {
 		RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasNonUnit, nonsingular, A, lda, G);
-		for (size_t i=0; i<n-1; i++){
+		for (size_t i=0; i<n; i++){
 			typename Field::Element inv;
 			F.init(inv);
 			F.inv(inv, A[i*(lda+1)]);

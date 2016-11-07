@@ -39,7 +39,8 @@ int main(int argc, char** argv) {
   
 	size_t iter = 3;
 	int    q    = 131071;
-	size_t    n    = 2000;
+	size_t    n    = 1000;
+	size_t threshold = 64;
 	bool up =true;
 	std::string file = "";
   
@@ -48,6 +49,7 @@ int main(int argc, char** argv) {
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'u', "-u yes/no", "Computes a UTDU (true) or LDLT decomposition (false).",  TYPE_BOOL , &up },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 't', "-t T", "Set the threshold to the base case.",                     TYPE_INT , &threshold },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
 		END_OF_ARGUMENTS
 	};
@@ -76,7 +78,7 @@ int main(int argc, char** argv) {
 		
 		chrono.clear();
 		if (i) chrono.start();
-		FFPACK::fsytrf (F, uplo, n, A, n);
+		FFPACK::fsytrf (F, uplo, n, A, n, threshold);
 		if (i) chrono.stop();
 		
 		time+=chrono.usertime();
