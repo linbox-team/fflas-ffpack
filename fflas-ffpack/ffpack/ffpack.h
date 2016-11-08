@@ -487,17 +487,41 @@ namespace FFPACK {
 	 * @param lda leading dimension of A
 	 * @return false if the \p A does not have generic rank profile, making the computation fail.
 	 *
-	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times D^{-1}\times  L^T\f$ if UpLo = FflasLower or
-	 * \f$ A = U^T \times D^{-1} \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
-	 * diagonal and overwrite the input matrix \p A. The matrix \p D is stored on the diagonal of \p A, as the
-	 * diagonal of \p L or \p U is known to be all ones.
-	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm returns false.
+	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times D \times  L^T\f$ if UpLo = FflasLower or
+	 * \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
+	 * diagonal lower (resp. upper) triangular and overwrite the input matrix \p A. 
+	 * The matrix \p D is stored on the diagonal of \p A, as the diagonal of \p L or \p U is known to be all ones.
+	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm 
+	 * returns false.
 	 */
 	template <class Field>
 	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 				 typename Field::Element_ptr A, const size_t lda,
 				 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
 
+		/* LDLT or UTDU factorizations */
+
+    /** @brief Triangular factorization of symmetric matrices
+	 * @param F The computation domain
+	 * @param UpLo Determine wheter to store the upper or lower triangular factor
+	 * @param N order of the matrix A
+	 * @param [inout]] A input matrix
+	 * @param [inout]] D
+	 * @param lda leading dimension of A
+	 * @return false if the \p A does not have generic rank profile, making the computation fail.
+	 *
+	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times Dinv \times  L^T\f$ if UpLo = FflasLower 
+	 * or \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are
+	 * lower (resp. upper) triangular and overwrite the input matrix \p A. 
+	 * The matrix \p D need to be stored separately, as the diagonal of \p L or \p U are not unit.
+	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm 
+	 * returns false.
+	 */
+	template <class Field>
+	bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+						 typename Field::Element_ptr A, const size_t lda,
+						 typename Field::Element_ptr D, const size_t incD,
+						 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
 /* PLUQ */
 
 	/** @brief Compute a PLUQ factorization of the given matrix.

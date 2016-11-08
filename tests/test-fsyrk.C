@@ -75,7 +75,7 @@ bool check_fsyrk (const Field &F, size_t n, size_t k,
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear(); t.start();
-   
+
 	fsyrk (F, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);
 
 	t.stop();
@@ -140,9 +140,9 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 	cout<<ss;
 
 
-	// write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
-	// write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
-	// write_field (F, std::cerr<<"D = "<<std::endl,D,k,1,incD);
+	 // write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
+	 // write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
+	 // write_field (F, std::cerr<<"D = "<<std::endl,D,k,1,incD);
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear(); t.start();
@@ -153,24 +153,25 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 	time+=t.usertime();
 
 	// std::cerr<<"After fsyrk_diag"<<std::endl;
-	// write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
-	// write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
+	//  write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
+	//  write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
 
 	bool ok = true;
+	
 	typename Field::Element tmp;
 	F.init(tmp);
 	if (trans==FflasNoTrans){
 			// Checking whether  A = B x D
 		for (size_t i=0; i < Arows; i++)
 			for (size_t j=0; j < Acols; j++)
-				ok &= F.isZero(F.axmy (tmp, B[i*lda+j], D[j*incD], A[i*lda+j]));
+				ok &= F.areEqual(A[i*lda+j], F.mul (tmp, B[i*lda+j], D[j*incD]));
 	} else {
 			// Checking whether  A = D x B
 		for (size_t i=0; i < Arows; i++)
 			for (size_t j=0; j < Acols; j++){
-				ok &= F.isZero(F.axmy (tmp, B[i*lda+j], D[i*incD], A[i*lda+j]));
-				if (!ok){
+				if(!F.areEqual(A[i*lda+j], F.mul (tmp, B[i*lda+j], D[i*incD]))){
 					std::cerr<<"B["<<i<<","<<j<<"] = "<<B[i*lda+j]<<" != "<<D[i*incD]<<" * "<<A[i*lda+j]<<std::endl;
+					ok=false;
 				}
 			}
 	}
@@ -183,8 +184,12 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 
 	if (uplo == FflasUpper){
 		for (size_t i=0; i<n; i++)
-			for (size_t j=i; j<n; j++)
-				ok &= F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
+			for (size_t j=i; j<n; j++){
+				if(!F.areEqual(C2[i*ldc+j], C[i*ldc+j])){
+					std::cerr<<"C2["<<i<<","<<j<<"] = "<<C2[i*ldc+j]<<" != C["<<i<<","<<j<<"] = "<< C[i*ldc+j]<<std::endl;
+					ok=false;
+				}
+			}
 	} else {
 		for (size_t i=0; i<n; i++)
 			for (size_t j=0; j<=i; j++)
@@ -207,7 +212,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t a, size_t c, size_t iters, uint64_t seed){
+bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, int a, int c, size_t iters, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 
@@ -232,6 +237,16 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t k, size_t a, 
 		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasTrans,G);
 		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasNoTrans,G);
 		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasLower,FflasTrans,G);
+
+		// checking with k > n (=k+n)
+		ok &= check_fsyrk(*F,n,k+n,alpha,beta,FflasUpper,FflasNoTrans,G);
+		ok &= check_fsyrk(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+		ok &= check_fsyrk(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+		ok &= check_fsyrk(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k,alpha,beta,FflasUpper,FflasNoTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasUpper,FflasTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasNoTrans,G);
+		ok &= check_fsyrk_diag(*F,n,k+n,alpha,beta,FflasLower,FflasTrans,G);
 		nbit--;
 		delete F;
 	}
@@ -243,11 +258,11 @@ int main(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	int k=75;
-	int n=129;
-	size_t a=1;
-	size_t c=1;
-	size_t iters=1;
+	int k=55;
+	int n=79;
+	int a=-1;
+	int c=1;
+	size_t iters=3;
 	bool loop=false;
 	uint64_t seed = time(NULL);
 	Argument as[] = {
@@ -278,6 +293,8 @@ int main(int argc, char** argv)
 //		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
 //		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
 	} while (loop && ok);
+
+	if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;
 
 	return !ok ;
 }
