@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 			nzG.random(D[i]);
 		chrono.clear();
 		if (i) chrono.start();
-		fsyrk (F, uplo, FflasNoTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
+		fsyrk (F, uplo, FflasTrans, n, k, F.mOne, A, lda, D, 1, F.one, C, ldc, threshold);
 		if (i) chrono.stop();
 		
 		time+=chrono.usertime();

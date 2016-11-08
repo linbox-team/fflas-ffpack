@@ -36,7 +36,7 @@
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
 #ifndef __FFLAS_FSYRK_THRESHOLD
-#define __FFLAS_FSYRK_THRESHOLD 1000
+#define __FFLAS_FSYRK_THRESHOLD 3000
 #endif
 
 //#include <givaro/zring.h>
