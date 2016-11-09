@@ -227,10 +227,16 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t see
 		typedef typename Field::Element  Element ;
 		
 		Field* F= chooseField<Field>(q,b);
+		if (F==NULL) return true;
+		std::ostringstream oss;
+		F->write(oss);
 
-#ifdef __FFLASFFPACK_DEBUG
-		F->write(std::cout) << std::endl;
-#endif
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(45);
+		std::cout<<oss.str();
+		std::cout<<"... ";
+
 		typename Field::RandIter R(*F,0,seed);
 		typename Field::NonZeroRandIter NZR(R);
 
@@ -247,7 +253,12 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t see
 		R.random(alpha);
 
 		ok &= launch_fger_dispatch<Field>(*F,n,alpha,iters, R);
-
+		if (!ok)
+				//std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
+			std::cout << "FAILED "<<std::endl;
+		else
+				//std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+			std::cout << "PASSED "<<std::endl;
 		    //std::cout<<std::endl;
 		nbit--;
 		delete F;
