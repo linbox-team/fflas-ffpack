@@ -167,6 +167,13 @@ namespace FFPACK {
 		tfgemmc.stop();
 		//if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+
+#ifdef CHECK_RNS
+		//std::cout<<"CHECKING RNS CONVERT : ruint<"<<K<<"> with log[2](M)="<<_M.bitsize()<<std::endl;
+		//std::cout<<"RNS : _ldm*16="<<(_ldm+2)*16<<std::endl;
+		bool ok=true;
+#endif
+		Givaro::Modular<RecInt::ruint<K>,RecInt::ruint<K+1> > Fp(p);
 		RecInt::ruint<K>* Aiter= A;
 		size_t k=_ldm;
 		if ((_ldm+3)*16 > (1<<K) || p!=0){
@@ -209,24 +216,50 @@ namespace FFPACK {
 					m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
 					res = a0;res+= a1;res+= a2;res+= a3;
 					res%=_M;
-					if (p!=0) res%=p;
 
-					// get the correct result according to the expected sign of A
-					if (res>hM)
-						res-=_M;
-					if (gamma==0)
-						Aiter[j+i*lda]=RecInt::ruint<K>(res);
-					else
-						if (gamma==integer(1))
-							Aiter[j+i*lda]+=RecInt::ruint<K>(res);
+#ifdef CHECK_RNS
+					for(size_t k=0;k<_size;k++){
+						int64_t _p =(int64_t) _basis[k];
+						integer curr=res;
+						if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
+							std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+						ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+					}
+#endif
+
+					if (p!=0){						
+						res%=p;
+						if (gamma==0)
+							Aiter[j+i*lda]=RecInt::ruint<K>(res);
 						else
-							if (gamma==integer(-1))
-								Aiter[j+i*lda]=RecInt::ruint<K>(res)-Aiter[j+i*lda];
-							else{
-								Aiter[j+i*lda]*=RecInt::ruint<K>(gamma);
+							if (gamma==integer(1))
+								Fp.addin(Aiter[j+i*lda],RecInt::ruint<K>(res));	
+							else
+								if (gamma==p-1)
+									Fp.sub(Aiter[j+i*lda],RecInt::ruint<K>(res),Aiter[j+i*lda]);	
+								else{
+									Fp.mulin(Aiter[j+i*lda],gamma);
+									Fp.addin(Aiter[j+i*lda],res);									
+								}
+					}else {
+						
+						// get the correct result according to the expected sign of A
+						if (res>hM)
+							res-=_M;
+						
+						if (gamma==0)
+							Aiter[j+i*lda]=RecInt::ruint<K>(res);
+						else
+							if (gamma==integer(1))
 								Aiter[j+i*lda]+=RecInt::ruint<K>(res);
-							}
-
+							else
+								if (gamma==integer(-1))
+									Aiter[j+i*lda]=RecInt::ruint<K>(res)-Aiter[j+i*lda];
+								else{
+									Aiter[j+i*lda]*=RecInt::ruint<K>(gamma);
+									Aiter[j+i*lda]+=RecInt::ruint<K>(res);
+								}
+					}
 				}
 			tkroc.stop();
 			//if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
@@ -269,6 +302,17 @@ namespace FFPACK {
 					res = *a0;res+= *a1;res+= *a2;res+= *a3;
 					res%= RecInt::ruint<K>(_M);
 				
+#ifdef CHECK_RNS
+					for(size_t k=0;k<_size;k++){
+						int64_t _p =(int64_t) _basis[k];
+						integer curr=res;
+						if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
+							std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+						ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+					}
+#endif
+						
+
 					// get the correct result according to the expected sign of A
 					//if (res>hM)
 					//	res-=_M;
@@ -294,18 +338,19 @@ namespace FFPACK {
 		
 #ifdef CHECK_RNS
 		std::cout<<"CHECKING RNS CONVERT : ruint<"<<K<<"> with log[2](M)="<<_M.bitsize()<<std::endl;
-		std::cout<<"RNS : _ldm*16="<<(_ldm+2)*16<<std::endl;
-		bool ok=true;
-		for (size_t i=0;i<m;i++)
-			for(size_t j=0;j<n;j++)
-				for(size_t k=0;k<_size;k++){
-					int64_t _p =(int64_t) _basis[k];
-					integer curr=integer(A[i*lda+j]) - gamma*Acopy[i*n+j];
-					if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
-						std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
-					ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+		// std::cout<<"RNS : _ldm*16="<<(_ldm+2)*16<<std::endl;
+		// bool ok=true;
+		// for (size_t i=0;i<m;i++)
+		// 	for(size_t j=0;j<n;j++)
+		// 		for(size_t k=0;k<_size;k++){
+		// 			int64_t _p =(int64_t) _basis[k];
+		// 			integer curr=integer(A[i*lda+j]) - gamma*Acopy[i*n+j]; if (p!=0) curr%=p;
+		// 			if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
+		// 				std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+		// 			ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
 
-				}
+		// 		}
+
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}

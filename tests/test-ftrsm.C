@@ -138,7 +138,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	return ok;
 }
 template <class Field>
-bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, size_t a, size_t iters, uint64_t seed){
+bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, uint64_t a, size_t iters, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 

@@ -506,6 +506,127 @@ namespace FFLAS {
 	// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,lda,beta,C,ldc,H2);
 	// }
 
+
+
+
+
+	// fgemm with Modular<ruint<K1,K2> >
+	template<size_t K1, size_t K2, class ParSeq>
+	inline  RecInt::ruint<K1>*
+	fgemm (const Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m, const size_t n,const size_t k,
+	       const RecInt::ruint<K1> alpha,
+	       const RecInt::ruint<K1>* A, const size_t lda,
+	       const RecInt::ruint<K1>* B, const size_t ldb,
+	       RecInt::ruint<K1> beta,
+	       RecInt::ruint<K1>* C, const size_t ldc,
+	       MMHelper<Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
+	{
+		//std::cerr<<"Entering fgemm<Modular<ruint<K1,K2> > ParSeq with alpha="<<alpha<<" and beta="<<beta<<std::endl;
+		//std::cerr << alpha << "*"<< *A <<" * "<< *B <<" + "<<beta<<" * "<<*C<<std::endl;
+#ifdef PROFILE_FGEMM_MP
+		Timer chrono;
+		chrono.start();
+#endif
+		if (alpha == 0){
+			fscalin(F,m,n,beta,C,ldc);
+			return C;
+		}
+
+		if (k==0) return C;
+		// compute bit size of feasible prime for FFLAS
+		size_t _k=k,lk=0;
+		while ( _k ) {_k>>=1; ++lk;}
+		size_t prime_bitsize= (53-lk)>>1;
+
+		// compute bound on the output
+		Givaro::Integer  mA,mB,mC;
+		F.cardinality(mA);
+		mB=mA;
+		size_t logA,logB;
+		logA=logB=1<<K1;
+		
+		mC = 2*uint64_t(k)*mA*mB*abs(Givaro::Integer(alpha)); // need to use 2x bound to reach both positive and negative
+		// std::cout<<"mA= "<<mA<< "  ("<<mA.bitsize()<<")\n";
+		// std::cout<<"mB= "<<mB<< "  ("<<mB.bitsize()<<")\n";
+		// std::cout<<"mC= "<<mC<< "  ("<<mC.bitsize()<<")\n";
+ 		// construct an RNS structure and its associated Domain
+		FFPACK::rns_double RNS(mC, prime_bitsize);
+
+		typedef FFPACK::RNSInteger<FFPACK::rns_double> RnsDomain;
+		RnsDomain Zrns(RNS);
+		
+		size_t Acold,Arowd,Bcold,Browd;
+		if (ta == FFLAS::FflasNoTrans){Arowd=m; Acold = k; }
+		else { Arowd=k; Acold = m;}
+		if (tb == FFLAS::FflasNoTrans){Browd=k; Bcold = n; }
+		else { Browd=n; Bcold = k;}
+		
+		// allocate data for RNS representation
+		typename RnsDomain::Element_ptr Ap,Bp,Cp;
+		Ap = FFLAS::fflas_new(Zrns,Arowd,Acold);
+		Bp = FFLAS::fflas_new(Zrns,Browd,Bcold);
+		Cp = FFLAS::fflas_new(Zrns,m,n);
+
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"-------------------------------"<<std::endl;
+		std::cout<<"FGEMM_MP: nb prime: "<<RNS._size<<std::endl;
+		std::cout<<"FGEMM_MP:     init: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+		chrono.start();
+#endif
+
+		// convert the input matrices to RNS representation
+		RNS.init(Arowd,Acold,Ap._ptr,Ap._stride, A,lda,(logA/16)+((logA%16)?1:0));
+		RNS.init(Browd,Bcold,Bp._ptr,Bp._stride, B,ldb,(logB/16)+((logB%16)?1:0));
+		
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"FGEMM_MP:   to RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+		chrono.start();
+#endif
+
+		// perform the fgemm in RNS
+		// Classic as no Winograd over ZZ available for the moment
+		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H.recLevel,H.parseq);
+
+		// compute alpha and beta in RNS
+		typename RnsDomain::Element alphap, betap;
+		Zrns.init(alphap, alpha);
+		Zrns.init(betap, F.zero);
+
+		// call  fgemm
+		fgemm(Zrns,ta,tb,m,n,k,alphap,Ap,Acold,Bp,Bcold,betap,Cp,n,H2);
+
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"FGEMM_MP:  RNS Mul: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+		chrono.start();
+#endif
+
+		
+		// convert the RNS output to integer representation (C=beta.C+ RNS^(-1)(Cp) ) modulo mA
+		//fconvert_rns(Zrns,m,n,beta,C,ldc,Cp);
+		RNS.convert(m,n,beta,C,ldc,Cp._ptr,Cp._stride,mA);
+		
+					
+		FFLAS::fflas_delete(Ap);
+		FFLAS::fflas_delete(Bp);
+		FFLAS::fflas_delete(Cp);
+#ifdef PROFILE_FGEMM_MP
+		chrono.stop();
+		std::cout<<"FGEMM_MP: from RNS: "<<uint64_t(chrono.realtime()*1000)<<"ms"<<std::endl;
+		std::cout<<"-------------------------------"<<std::endl;
+#endif
+
+		return C;
+	}
+
+
+
+	
 }// END of namespace FFLAS
 
 #endif
