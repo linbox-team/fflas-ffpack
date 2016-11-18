@@ -56,11 +56,11 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 		blas_lib_path=`echo $CBLAS_LIBS | $EGREP '\-L' | $SED -e 's/-L//;s/ .*//'`
 		LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$blas_lib_path"
 		export LD_RUN_PATH
-		CODE_CBLAS=`cat macros/CodeChunk/cblas.C`
+		CODE_CBLAS=`cat ${srcdir}/macros/CodeChunk/cblas.C`
 
 		AC_MSG_CHECKING(for USER BLAS)
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${GIVARO_CFLAGS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} -I. -I.. -I${srcdir} -I${srcdir}/fflas-ffpack ${GIVARO_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
 
 		AC_TRY_LINK( [
@@ -127,12 +127,12 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		BACKUP_LIBS=${LIBS}
 
-		CODE_CLAPACK=`cat macros/CodeChunk/clapack.C`
-		CODE_LAPACK=`cat macros/CodeChunk/lapack.C`
+		CODE_CLAPACK=`cat ${srcdir}/macros/CodeChunk/clapack.C`
+		CODE_LAPACK=`cat ${srcdir}/macros/CodeChunk/lapack.C`
 
 		AC_MSG_CHECKING(for USER LAPACK)
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}  -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${GIVARO_CFLAGS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}  -I. -I.. -I${srcdir} -I${srcdir}/flas-ffpack ${GIVARO_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
 
 		AC_TRY_RUN(
