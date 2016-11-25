@@ -58,9 +58,9 @@ tune_pluq: autotune_pluq
 	${run_tune_pluq}
 	${merge_thresholds}
 
-autotune_fgemm: $(AUTOTUNE_FGEMM)
+autotune_fgemm: $(AUTOTUNE_FGEMM:%=%$(EXEEXT))
 
-autotune_pluq: $(AUTOTUNE_PLUQ)
+autotune_pluq: $(AUTOTUNE_PLUQ:%=%$(EXEEXT))
 
 
 
