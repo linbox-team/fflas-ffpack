@@ -82,6 +82,36 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 			blas_found="no"
 			])
 
+		AS_IF([ test "x$blas_found" = "xno" ],
+			[
+			AC_MSG_RESULT(problem)
+			AC_MSG_CHECKING(for OpenBLAS)
+			CBLAS_LIBS="${CBLAS_LIBS} -lopenblas"
+			LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+			AC_TRY_LINK( [
+#define __FFLASFFPACK_CONFIGURATION
+#include "fflas-ffpack/config-blas.h"],
+				[double a;],
+				[
+				AC_TRY_RUN(
+					[ ${CODE_CBLAS} ],[
+					blas_found="yes"
+					AC_SUBST(CBLAS_LIBS)
+					],[
+					blas_problem="$problem"
+					],[
+					blas_found="yes"
+					blas_cross="yes"
+					AC_SUBST(CBLAS_LIBS)
+					])
+				],
+				[
+				blas_found="no"
+				])
+			],
+			[])
+
+
 		AS_IF([ test "x$blas_found" = "xyes" ],
 				[
 				BLAS_VENDOR="USER"
@@ -98,7 +128,7 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 				HAVE_BLAS=yes
 				AS_IF([test "x$blas_cross" != "xyes"],
 					[ AC_MSG_RESULT(found (cblas)) ] ,
-					[AC_MSG_RESULT(unknown)
+					[ AC_MSG_RESULT(unknown)
 					echo "WARNING: You appear to be cross compiling, so there is no way to determine"
 					echo "whether your BLAS are good. I am assuming it is."])
 				],
