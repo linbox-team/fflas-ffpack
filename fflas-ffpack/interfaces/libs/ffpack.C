@@ -303,16 +303,15 @@ void trinv_left_modular_double( const double p, const size_t N, const double * L
 }
 
 void
-ftrtrm_modular_double (const double p, const enum FFLAS::FFLAS_DIAG Diag, const size_t N,
-		       double * A, const size_t lda
-		       , bool positive)
+ftrtrm_modular_double (const double p, const FFLAS::FFLAS_SIDE side, const enum FFLAS::FFLAS_DIAG Diag,
+		       const size_t N, double * A, const size_t lda, bool positive)
 {
 	if (positive) {
 		Modular<double> F(p);
-		ftrtrm(F,(enum FFLAS::FFLAS_DIAG)Diag,N,A,lda);
+		ftrtrm(F,side,Diag,N,A,lda);
 	} else {
 		ModularBalanced<double> F(p);
-		ftrtrm(F,(enum FFLAS::FFLAS_DIAG)Diag,N,A,lda);
+		ftrtrm(F,side,Diag,N,A,lda);
 	}
 }
 
