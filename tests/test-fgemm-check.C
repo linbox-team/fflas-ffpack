@@ -79,10 +79,10 @@ int main(int argc, char** argv) {
 		if (tb==FFLAS::FflasNoTrans) std::cout<<"NoTrans";
 		else std::cout<<"Trans";
 		std::cout<<" : ";
-		
+
 		size_t lda = ta == FFLAS::FflasNoTrans ? k : m,
-			   ldb = tb == FFLAS::FflasNoTrans ? n : k,
-			   ldc = n;
+			ldb = tb == FFLAS::FflasNoTrans ? n : k,
+			ldc = n;
 
 		Field::Element_ptr A = FFLAS::fflas_new(F,m,k);
 		Field::Element_ptr B = FFLAS::fflas_new(F,k,n);

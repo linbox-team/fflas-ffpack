@@ -143,7 +143,7 @@ namespace FFPACK {
 					 FFLAS_ELT* X, const size_t ldx );
 
 	template INST_OR_DECL
-	void ftrtrm (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
+	void ftrtrm (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag, const size_t N,
 				 FFLAS_ELT* A, const size_t lda);
 
 	template INST_OR_DECL

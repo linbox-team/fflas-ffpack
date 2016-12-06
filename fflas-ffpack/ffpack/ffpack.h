@@ -62,6 +62,10 @@
 #define __FFPACK_CHARPOLY_THRESHOLD 30
 #endif
 
+#ifndef __FFPACK_FSYTRF_THRESHOLD
+#define __FFPACK_FSYTRF_THRESHOLD 64
+#endif
+
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -452,8 +456,9 @@ namespace FFPACK { /* ftrtr */
 					 typename Field::Element_ptr X, const size_t ldx );
 
 	/**  Compute the product UL.
-	 * Product UL of the upper, resp lower triangular matrices U and L
+	 * Product UL or LU of the upper, resp lower triangular matrices U and L
 	 * stored one above the other in the square matrix A.
+	 * If side == FflasLeft, the product UL is computed, otherwise the product LU.
 	 * Diag == Unit if the matrix U is unit diagonal
 	 * @param F
 	 * @param diag
@@ -464,13 +469,60 @@ namespace FFPACK { /* ftrtr */
 	 */
 	template<class Field>
 	void
-	ftrtrm (const Field& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
-			typename Field::Element_ptr A, const size_t lda);
+	ftrtrm (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag,
+			const size_t N,	typename Field::Element_ptr A, const size_t lda);
 
 } // FFPACK ftrtr
 // #include "ffpack_ftrtr.inl"
 
-namespace FFPACK { /* PLUQ */
+namespace FFPACK {
+
+		/* LDLT or UTDU factorizations */
+
+    /** @brief Triangular factorization of symmetric matrices
+	 * @param F The computation domain
+	 * @param UpLo Determine wheter to store the upper or lower triangular factor
+	 * @param N order of the matrix A
+	 * @param [inout]] A input matrix
+	 * @param lda leading dimension of A
+	 * @return false if the \p A does not have generic rank profile, making the computation fail.
+	 *
+	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times D \times  L^T\f$ if UpLo = FflasLower or
+	 * \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are unit
+	 * diagonal lower (resp. upper) triangular and overwrite the input matrix \p A. 
+	 * The matrix \p D is stored on the diagonal of \p A, as the diagonal of \p L or \p U is known to be all ones.
+	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm 
+	 * returns false.
+	 */
+	template <class Field>
+	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+				 typename Field::Element_ptr A, const size_t lda,
+				 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
+
+		/* LDLT or UTDU factorizations */
+
+    /** @brief Triangular factorization of symmetric matrices
+	 * @param F The computation domain
+	 * @param UpLo Determine wheter to store the upper or lower triangular factor
+	 * @param N order of the matrix A
+	 * @param [inout]] A input matrix
+	 * @param [inout]] D
+	 * @param lda leading dimension of A
+	 * @return false if the \p A does not have generic rank profile, making the computation fail.
+	 *
+	 * Compute the a triangular factorization of the matrix A: \f$ A = L \times Dinv \times  L^T\f$ if UpLo = FflasLower 
+	 * or \f$ A = U^T \times D \times  U\f$ otherwise. \p D is a diagonal matrix. The matrices \p L and \p U are
+	 * lower (resp. upper) triangular and overwrite the input matrix \p A. 
+	 * The matrix \p D need to be stored separately, as the diagonal of \p L or \p U are not unit.
+	 * If A does not have generic rank profile, the LDLT or UTDU factorizations is not defined, and the algorithm 
+	 * returns false.
+	 */
+	template <class Field>
+	bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+						 typename Field::Element_ptr A, const size_t lda,
+						 typename Field::Element_ptr D, const size_t incD,
+						 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
+/* PLUQ */
 
 	/** @brief Compute a PLUQ factorization of the given matrix.
 	 * Return its rank.
@@ -1573,7 +1625,7 @@ namespace FFPACK { /* not used */
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
-#include "ffpack_ftrtr.inl"
+#include "ffpack_fsytrf.inl"
 //---------------------------------------------------------------------
 // Checkers
 #include "fflas-ffpack/checkers/checkers_ffpack.inl"
@@ -1585,6 +1637,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_ludivine_mp.inl"
 #include "ffpack_echelonforms.inl"
 #include "ffpack_invert.inl"
+#include "ffpack_ftrtr.inl"
 #include "ffpack_charpoly_kglu.inl"
 #include "ffpack_charpoly_kgfast.inl"
 #include "ffpack_charpoly_kgfastgeneralized.inl"
