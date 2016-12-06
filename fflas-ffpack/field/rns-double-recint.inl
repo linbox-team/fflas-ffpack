@@ -238,8 +238,8 @@ namespace FFPACK {
 								if (gamma==p-1)
 									Fp.sub(Aiter[j+i*lda],RecInt::ruint<K>(res),Aiter[j+i*lda]);	
 								else{
-									Fp.mulin(Aiter[j+i*lda],gamma);
-									Fp.addin(Aiter[j+i*lda],res);									
+									Fp.mulin(Aiter[j+i*lda],RecInt::ruint<K>(gamma));
+									Fp.addin(Aiter[j+i*lda],RecInt::ruint<K>(res));									
 								}
 					}else {
 						
