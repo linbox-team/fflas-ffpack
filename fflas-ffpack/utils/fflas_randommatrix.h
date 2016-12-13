@@ -356,7 +356,7 @@ namespace FFPACK{
 
 		typename Field::Element_ptr L= FFLAS::fflas_new(F,M,N);
 
-		FFLAS::pfzero(F, M, N, L, N);
+		FFLAS::fzero(F, M, N, L, N);
 			// Disabling the  parallel loop, as there is no way to declare G as SHARED in paladin
 			//FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
 			//SYNCH_GROUP (FOR1D(k, R, H,
