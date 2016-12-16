@@ -23,12 +23,6 @@ SOURCE_DIRECTORY=$( cd "$( dirname "$0" )" && pwd )
 CXX=`pwd | awk -F/ '{print $(NF-2)}'`
 SSE=`pwd | awk -F/ '{print $NF}'`
 
-# Job fflas-ffpack with SSE option flag
-# by default sse is enabled
-if [ "$SSE" == "withoutSSE" ]; then
-  FFLAS_SSEFLAG="--disable-simd"
-fi
-
 JENKINS_DIR=${SOURCE_DIRECTORY%%/workspace/*}
 LOCAL_DIR="$JENKINS_DIR"/local
 # Add path to compilers (if needed)
@@ -89,8 +83,8 @@ fi
 # Automated installation and tests #
 #==================================#
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
-./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation"
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make autotune"
