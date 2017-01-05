@@ -68,12 +68,26 @@ namespace FFPACK {
 						  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 					  size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
 
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 					  if (m0[0]->_mp_size >= 0)
 						  for (;l<maxs;l++)
 							  A_beta[l+idx*k]=  m0_ptr[l];
 					  else
 						  for (;l<maxs;l++)
 							  A_beta[l+idx*k]= - double(m0_ptr[l]);
+#else
+					  size_t mask = (sizeof(mp_limb_t)/2) - 1;
+					  if (m0[0]->_mp_size >= 0)
+						  for (;l<maxs;l++) {
+							  size_t l2 = (l & ~mask) | (l ^ mask);
+							  A_beta[l+idx*k]=  m0_ptr[l2];
+						  }
+					  else
+						  for (;l<maxs;l++) {
+							  size_t l2 = (l & ~mask) | (l ^ mask);
+							  A_beta[l+idx*k]= - double(m0_ptr[l2]);
+						  }
+#endif
 					  for (;l<k;l++)
 						  A_beta[l+idx*k]=  0.;
 
@@ -150,12 +164,26 @@ namespace FFPACK {
 				size_t l=0;
 					//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2); // to ensure 32 bits portability
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]=  m0_ptr[l];
 				else
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]= - double(m0_ptr[l]);
+#else
+				size_t mask = (sizeof(mp_limb_t)/2) - 1;
+				if (m0[0]->_mp_size >= 0)
+					for (;l<maxs;l++) {
+						size_t l2 = (l & ~mask) | (l ^ mask);
+						A_beta[l+idx*k]=  m0_ptr[l2];
+					}
+				else
+					for (;l<maxs;l++) {
+						size_t l2 = (l & ~mask) | (l ^ mask);
+						A_beta[l+idx*k]= - double(m0_ptr[l2]);
+					}
+#endif
 				for (;l<k;l++)
 					A_beta[l+idx*k]=  0.;
 			}
@@ -243,10 +271,18 @@ namespace FFPACK {
 				for (size_t l=0;l<k;l++){
 					uint64_t tmp=(uint64_t)A_beta[l+idx*k];
 					uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 					A0[l  ]= tptr[0];
 					A1[l+1]= tptr[1];
 					A2[l+2]= tptr[2];
 					A3[l+3]= tptr[3];
+#else
+					size_t mask = (sizeof(mp_limb_t)/2) - 1;
+					A0[(l     & ~mask) | (l     ^ mask)] = tptr[3];
+					A1[((l+1) & ~mask) | ((l+1) ^ mask)] = tptr[2];
+					A2[((l+2) & ~mask) | ((l+2) ^ mask)] = tptr[1];
+					A3[((l+3) & ~mask) | ((l+3) ^ mask)] = tptr[0];
+#endif
 				}
 					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
@@ -338,10 +374,18 @@ namespace FFPACK {
 				for (size_t l=0;l<k;l++){
 					uint64_t tmp=(uint64_t)A_beta[l+idx*k];
 					uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 					A0[l  ]= tptr[0];
 					A1[l+1]= tptr[1];
 					A2[l+2]= tptr[2];
 					A3[l+3]= tptr[3];
+#else
+					size_t mask = (sizeof(mp_limb_t)/2) - 1;
+					A0[(l     & ~mask) | (l     ^ mask)] = tptr[3];
+					A1[((l+1) & ~mask) | ((l+1) ^ mask)] = tptr[2];
+					A2[((l+2) & ~mask) | ((l+2) ^ mask)] = tptr[1];
+					A3[((l+3) & ~mask) | ((l+3) ^ mask)] = tptr[0];
+#endif
 				}
 					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
