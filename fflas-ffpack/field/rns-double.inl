@@ -76,15 +76,14 @@ namespace FFPACK {
 						  for (;l<maxs;l++)
 							  A_beta[l+idx*k]= - double(m0_ptr[l]);
 #else
-					  size_t mask = (sizeof(mp_limb_t)/2) - 1;
 					  if (m0[0]->_mp_size >= 0)
 						  for (;l<maxs;l++) {
-							  size_t l2 = (l & ~mask) | (l ^ mask);
+							  size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
 							  A_beta[l+idx*k]=  m0_ptr[l2];
 						  }
 					  else
 						  for (;l<maxs;l++) {
-							  size_t l2 = (l & ~mask) | (l ^ mask);
+							  size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
 							  A_beta[l+idx*k]= - double(m0_ptr[l2]);
 						  }
 #endif
@@ -172,15 +171,14 @@ namespace FFPACK {
 					for (;l<maxs;l++)
 						A_beta[l+idx*k]= - double(m0_ptr[l]);
 #else
-				size_t mask = (sizeof(mp_limb_t)/2) - 1;
 				if (m0[0]->_mp_size >= 0)
 					for (;l<maxs;l++) {
-						size_t l2 = (l & ~mask) | (l ^ mask);
+						size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
 						A_beta[l+idx*k]=  m0_ptr[l2];
 					}
 				else
 					for (;l<maxs;l++) {
-						size_t l2 = (l & ~mask) | (l ^ mask);
+						size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
 						A_beta[l+idx*k]= - double(m0_ptr[l2]);
 					}
 #endif
@@ -277,11 +275,10 @@ namespace FFPACK {
 					A2[l+2]= tptr[2];
 					A3[l+3]= tptr[3];
 #else
-					size_t mask = (sizeof(mp_limb_t)/2) - 1;
-					A0[(l     & ~mask) | (l     ^ mask)] = tptr[3];
-					A1[((l+1) & ~mask) | ((l+1) ^ mask)] = tptr[2];
-					A2[((l+2) & ~mask) | ((l+2) ^ mask)] = tptr[1];
-					A3[((l+3) & ~mask) | ((l+3) ^ mask)] = tptr[0];
+					A0[l     ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[3];
+					A1[(l+1) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[2];
+					A2[(l+2) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[1];
+					A3[(l+3) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[0];
 #endif
 				}
 					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
@@ -380,11 +377,10 @@ namespace FFPACK {
 					A2[l+2]= tptr[2];
 					A3[l+3]= tptr[3];
 #else
-					size_t mask = (sizeof(mp_limb_t)/2) - 1;
-					A0[(l     & ~mask) | (l     ^ mask)] = tptr[3];
-					A1[((l+1) & ~mask) | ((l+1) ^ mask)] = tptr[2];
-					A2[((l+2) & ~mask) | ((l+2) ^ mask)] = tptr[1];
-					A3[((l+3) & ~mask) | ((l+3) ^ mask)] = tptr[0];
+					A0[l     ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[3];
+					A1[(l+1) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[2];
+					A2[(l+2) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[1];
+					A3[(l+3) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[0];
 #endif
 				}
 					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3

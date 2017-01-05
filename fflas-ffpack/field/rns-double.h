@@ -183,11 +183,8 @@ namespace FFPACK {
 				for(;l<maxs;l++)
 					_crt_out[l+i*_ldm]=m0_ptr[l];
 #else
-				size_t mask = (sizeof(mp_limb_t)/2) - 1;
-				for(;l<maxs;l++) {
-					size_t l2 = (l & ~mask) | (l ^ mask);
-					_crt_out[l+i*_ldm]=m0_ptr[l2];
-				}
+				for(;l<maxs;l++)
+					_crt_out[l+i*_ldm]=m0_ptr[l ^ ((sizeof(mp_limb_t)/2U) - 1U)];
 #endif
 				for(;l<_ldm;l++)
 					_crt_out[l+i*_ldm]=0.;;
