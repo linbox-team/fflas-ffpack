@@ -42,7 +42,6 @@ namespace FFPACK {
         const Field& F;
         const size_t n, lda;
         typename Field::Element lambda, det;
-        bool pass;
 #ifdef TIME_CHECKER_CHARPOLY
         Givaro::Timer _time;
 #endif
@@ -68,22 +67,22 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_CHARPOLY
             Givaro::Timer checktime; checktime.start();
 #endif
-            typename Field::Element h = F.zero,
-                t = F.one,
-                u;
-            for (size_t i=0; i < g.size(); ++i) {
-                F.mul(u,g[i],t);
-                F.add(h,h,u);
-                F.mul(t,t,lambda);
-            }
-
-                // is h == det ?
-            pass = pass && F.areEqual(h,det);
+				// Horner evaluation
+            typename Field::Element h; 
+			F.init(h); F.assign(h,F.zero); // t<-0
+			if (g.size()>0) {
+				for(long i=g.size()-1; i >= 0; --i) {
+					F.mulin(h,lambda);
+					F.addin(h,g[i]);
+				}
+			}
+				// is h == det ?
+            bool pass = F.areEqual(h,det);
             if (!pass) throw FailureCharpolyCheck();
 
 #ifdef TIME_CHECKER_CHARPOLY
             checktime.stop(); _time += checktime;
-            std::cerr << "CHARPol CHECK: " << _time << std::endl;
+            std::cerr << "CHARPol client CHECK: " << _time << std::endl;
 #endif
             return pass;
         }
@@ -93,57 +92,51 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_CHARPOLY
             Givaro::Timer inittime; inittime.start();
 #endif
-                // random lambda
+				// random lambda
             G.random(lambda);
 
-            typename Field::Element_ptr v = FFLAS::fflas_new(F,n,1),
-                w = FFLAS::fflas_new(F,n,1),
-                Ac = FFLAS::fflas_new(F,n,n);
-            FFLAS::frand(F,G,n,v,1);
-
-                // w <- -A.v
-            FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.mOne, A, lda, v, 1, F.zero, w, 1);
-
-            if (!F.isZero(lambda)) {
-                    // w <- lambda.v + w
-                FFLAS::faxpy(F, n, lambda, v, 1, w, 1);
-            }
+            typename Field::Element_ptr Ac = FFLAS::fflas_new(F,n,n);
 
                 // Ac <- A - lambda.I
             FFLAS::fassign(F,n,n,A,lda,Ac,n);
             for (size_t i=0; i<n; ++i)
 		    F.subin(*(Ac+i*n+i),lambda);
 
-                // w <- Ac.v + w
-            FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, Ac, n, v, 1, F.one, w, 1);
-
-                // is w == 0 ?
-            pass = FFLAS::fiszero(F,n,1,w,1);
-            FFLAS::fflas_delete(v,w);
-            if (!pass) throw FailureCharpolyCheck();
 
                 // P,Ac,Q <- PLUQ(Ac)
             size_t *P = FFLAS::fflas_new<size_t>(n);
             size_t *Q = FFLAS::fflas_new<size_t>(n);
 
-#ifdef TIME_CHECKER_CHARPOLY
-            Givaro::Timer pluqtime; pluqtime.start();
+            try {
+#ifndef ENABLE_CHECKER_PLUQ
+                    // Force PLUQ check
+                CheckerImplem_PLUQ<Field> checker (F,n,n,Ac,n);
 #endif
-
-            FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
-
 #ifdef TIME_CHECKER_CHARPOLY
-            pluqtime.stop(); _time -= pluqtime;
-            inittime.stop(); _time += inittime;
-            std::cerr << "CHARPol server PLUQ:" << pluqtime << std::endl;
+            inittime.stop(); _time = inittime;
+			Givaro::Timer pluqtime; pluqtime.start();
+			size_t R = 
+#endif
+			FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
+#ifdef TIME_CHECKER_CHARPOLY
+            pluqtime.stop(); 
+            std::cerr << "CHARPol server PLUQ : " << pluqtime << std::endl;
             inittime.start();
 #endif
+#ifndef ENABLE_CHECKER_PLUQ
+                checker.check(Ac,n,FFLAS::FflasNonUnit,R,P,Q);
+#endif
+            } catch(FailurePLUQCheck& e) {
+				std::cerr << "CHARPol PLUQ check failure" << std::endl;
+                throw FailureCharpolyCheck();
+            }
+
 
                 // compute the determinant of A
             F.init(det,*Ac);
             for (size_t i=1; i<n; ++i)
-                F.mul(det,det,*(Ac+i*n+i));
-            if (n%2 == 1) F.neg(det,det);
+                F.mulin(det,*(Ac+i*n+i));
+            if (n%2 == 1) F.negin(det); // Ac is A -lambda I
 
                 // count the number of permutations
             int t = 0;
@@ -151,9 +144,9 @@ namespace FFPACK {
                 if (P[i] != i) t++;
                 if (Q[i] != i) t++;
             }
-            if (t%2 == 1) F.neg(det,det);
+            if (t%2 == 1) F.negin(det);
 
-            FFLAS::fflas_delete(Ac);
+            FFLAS::fflas_delete(Ac,P,Q);
 #ifdef TIME_CHECKER_CHARPOLY
             inittime.stop(); _time += inittime;
 #endif
