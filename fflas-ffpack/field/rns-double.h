@@ -179,8 +179,13 @@ namespace FFPACK {
 				}
 				*/
 				size_t l=0;
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 				for(;l<maxs;l++)
 					_crt_out[l+i*_ldm]=m0_ptr[l];
+#else
+				for(;l<maxs;l++)
+					_crt_out[l+i*_ldm]=m0_ptr[l ^ ((sizeof(mp_limb_t)/2U) - 1U)];
+#endif
 				for(;l<_ldm;l++)
 					_crt_out[l+i*_ldm]=0.;;
 				// chrono.stop();
