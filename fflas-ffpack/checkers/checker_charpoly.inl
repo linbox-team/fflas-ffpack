@@ -113,15 +113,17 @@ namespace FFPACK {
                 CheckerImplem_PLUQ<Field> checker (F,n,n,Ac,n);
 #endif
 #ifdef TIME_CHECKER_CHARPOLY
-            inittime.stop(); _time = inittime;
-			Givaro::Timer pluqtime; pluqtime.start();
-			size_t R = 
+                inittime.stop(); _time = inittime;
+                Givaro::Timer pluqtime; pluqtime.start();
 #endif
-			FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
+#ifndef ENABLE_CHECKER_PLUQ
+                size_t R = 
+#endif
+                    FFPACK::PLUQ(F, FFLAS::FflasNonUnit, n, n, Ac, n, P, Q);
 #ifdef TIME_CHECKER_CHARPOLY
-            pluqtime.stop(); 
-            std::cerr << "CHARPol server PLUQ : " << pluqtime << std::endl;
-            inittime.start();
+                pluqtime.stop(); 
+                std::cerr << "CHARPol server PLUQ : " << pluqtime << std::endl;
+                inittime.start();
 #endif
 #ifndef ENABLE_CHECKER_PLUQ
                 checker.check(Ac,n,FFLAS::FflasNonUnit,R,P,Q);
