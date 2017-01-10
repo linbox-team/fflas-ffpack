@@ -1,9 +1,7 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
  * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>
+ * Jean-Guillaume Dumas <Jean-Guillaume.Dumas@univ-grenoble-alpes.fr>
  *
  * This file is Free Software and part of FFLAS-FFPACK.
  *
@@ -32,6 +30,7 @@
 //--------------------------------------------------------------------------
 
 #define ENABLE_ALL_CHECKINGS 1
+#define TIME_CHECKER_CHARPOLY 1
 
 
 #include <iostream>
