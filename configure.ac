@@ -37,8 +37,6 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([1.10 -Wall -Wno-portability foreign])
 AX_PREFIX_CONFIG_H(fflas-ffpack/config.h, __FFLASFFPACK)
 
-AM_ACLOCAL_INCLUDE(macros)
-
 AC_LANG([C++])
 
 echo "-----------------------------------------------"
