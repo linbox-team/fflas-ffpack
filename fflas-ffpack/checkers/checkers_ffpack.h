@@ -40,6 +40,7 @@
 
 #ifdef ENABLE_ALL_CHECKINGS
 	#define ENABLE_CHECKER_PLUQ 1
+	#define ENABLE_CHECKER_Det 1
  	#define ENABLE_CHECKER_invert 1
  	#define ENABLE_CHECKER_charpoly 1
 #endif
@@ -47,6 +48,7 @@
 #ifdef TIME_CHECKERS
 #include <givaro/givtimer.h>
 #define TIME_CHECKER_PLUQ
+#define TIME_CHECKER_Det
 #define TIME_CHECKER_INVERT
 #define TIME_CHECKER_CHARPOLY
 #endif
@@ -54,11 +56,13 @@
 
 // definition of the exceptions
 class FailurePLUQCheck {};
+class FailureDetCheck {};
 class FailureInvertCheck {};
 class FailureCharpolyCheck {};
 
 namespace FFPACK {
 	template <class Field> class CheckerImplem_PLUQ;
+	template <class Field> class CheckerImplem_Det;
 	template <class Field> class CheckerImplem_invert;
 	template <class Field, class Polynomial> class CheckerImplem_charpoly;
 }
@@ -69,6 +73,12 @@ namespace FFPACK {
 	template <class Field> using Checker_PLUQ = CheckerImplem_PLUQ<Field>;
 #else
 	template <class Field> using Checker_PLUQ = FFLAS::Checker_Empty<Field>;
+#endif
+
+#ifdef ENABLE_CHECKER_Det
+	template <class Field> using Checker_Det = CheckerImplem_Det<Field>;
+#else
+	template <class Field> using Checker_Det = FFLAS::Checker_Empty<Field>;
 #endif
 
 #ifdef ENABLE_CHECKER_invert
