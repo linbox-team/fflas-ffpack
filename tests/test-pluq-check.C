@@ -85,8 +85,8 @@ int main(int argc, char** argv) {
 		// generate a random matrix A
 		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
   
-  		FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
 		try {
+			FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
 			std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification PASSED\n";
 			pass++;
 		} catch(FailurePLUQCheck &e) {
