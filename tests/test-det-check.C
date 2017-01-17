@@ -38,7 +38,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
-#include "checkers_ffpack.inl"
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/checkers/checkers_ffpack.h"
