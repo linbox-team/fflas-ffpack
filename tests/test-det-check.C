@@ -75,6 +75,9 @@ int main(int argc, char** argv) {
 	
 	FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
 	for(size_t it=0; it<iter; ++it) {
+#ifdef TIME_CHECKER_Det
+		FFLAS::Timer init;init.start();
+#endif
 		if (random_dim) {
 			n = random() % MAXN + 1;
 		}
@@ -91,6 +94,8 @@ int main(int argc, char** argv) {
 			else
 				FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS);
 		}
+		init.stop();
+		std::cerr << "init: " << init << std::endl;
 
 		size_t R(0);
  		try {
@@ -99,7 +104,10 @@ int main(int argc, char** argv) {
 			R = FFPACK::PLUQ(F,Diag,n,n,A,n,P,Q);
 			chrono.stop();
 			checker.check(A,n,Diag,P,Q);
-			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n" << "Det COMPT: " << chrono << std::endl;
+			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n" ;
+#ifdef TIME_CHECKER_Det
+			std::cerr << "Det COMPT: " << chrono << std::endl;
+#endif
 			pass++;
 		} catch(FailureDetCheck &e) {
 			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification FAILED!\n";
