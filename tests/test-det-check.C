@@ -31,9 +31,9 @@
 //          Test for Checker_PLUQ
 //--------------------------------------------------------------------------
 
-#define ENABLE_ALL_CHECKINGS 1
+//#define ENABLE_ALL_CHECKINGS 1
 #define ENABLE_CHECKER_Det 1
-#define TIME_CHECKER_PLUQ 1
+#define TIME_CHECKER_Det 1
 
 
 #include <iostream>
@@ -91,9 +91,11 @@ int main(int argc, char** argv) {
 		size_t R(0);
  		try {
 			FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
+			Givaro::Timer chrono; chrono.start(); 
 			R = FFPACK::PLUQ(F,Diag,n,n,A,n,P,Q);
+			chrono.stop();
 			checker.check(A,n,Diag,P,Q);
-			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n";
+			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n" << chrono << std::endl;
 			pass++;
 		} catch(FailureDetCheck &e) {
 			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification FAILED!\n";
