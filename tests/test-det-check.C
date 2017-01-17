@@ -33,6 +33,7 @@
 
 #define ENABLE_ALL_CHECKINGS 1
 #define ENABLE_CHECKER_Det 1
+#define TIME_CHECKER_PLUQ 1
 
 
 #include <iostream>
@@ -82,17 +83,20 @@ int main(int argc, char** argv) {
 		size_t *Q = FFLAS::fflas_new<size_t>(n);
 
 		// generate a random matrix A
-		PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
- 
+// 		PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
+		PAR_BLOCK {
+			FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
+		}
 
+		size_t R(0);
  		try {
 			FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
-			FFPACK::PLUQ(F,Diag,n,n,A,n,P,Q);
+			R = FFPACK::PLUQ(F,Diag,n,n,A,n,P,Q);
 			checker.check(A,n,Diag,P,Q);
-			std::cerr << n << 'x' << n << ' ' << Diag << " Det verification PASSED\n";
+			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n";
 			pass++;
 		} catch(FailureDetCheck &e) {
-			std::cerr << n << 'x' << n << ' ' << Diag << " Det verification FAILED!\n";
+			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification FAILED!\n";
 		}
 
 		FFLAS::fflas_delete(A,P,Q);

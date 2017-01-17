@@ -43,7 +43,7 @@ namespace FFPACK {
         typename Field::Element_ptr v,w;
         const size_t m,n;
 #ifdef TIME_CHECKER_PLUQ
-        Givaro::Timer _time;
+        mutable Givaro::Timer _time;
 #endif
 
     public:

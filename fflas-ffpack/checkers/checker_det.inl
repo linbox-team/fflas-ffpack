@@ -87,14 +87,16 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer checktime; checktime.start();
 #endif
+// write_perm(std::cerr<<"P = ",P,n);
 // write_field(F,std::cout<<"B:=",A,n,n,lda,true)<<std::endl;
+// write_perm(std::cerr<<"Q = ",Q,n);
 
                 // u <-- Q.u, v <-- Q.v
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, u, 1, Q);
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
 
-				// w <-- w.P
-            FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, w, 1, P);
+				// w <-- (P^T).w
+            FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasTrans, 1, 0, n, w, 1, P);
 
 // write_field(F,std::cout<<"u1:=",u,n,1,1,true)<<std::endl;
 // write_field(F,std::cout<<"v1:=",v,n,1,1,true)<<std::endl;  
