@@ -87,6 +87,8 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer checktime; checktime.start();
 #endif
+// write_field(F,std::cout<<"B:=",A,n,n,lda,true)<<std::endl;
+
                 // u <-- Q.u, v <-- Q.v
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, u, 1, Q);
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
@@ -94,14 +96,28 @@ namespace FFPACK {
 				// w <-- w.P
             FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasNoTrans, 1, 0, n, w, 1, P);
 
+// write_field(F,std::cout<<"u1:=",u,n,1,1,true)<<std::endl;
+// write_field(F,std::cout<<"v1:=",v,n,1,1,true)<<std::endl;  
+// write_field(F,std::cout<<"w1:=",w,n,1,1,true)<<std::endl;
 
 				// u <-- U.u, v <-- U.v
             FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 1, F.one, A, lda, u, 1);
             FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 1, F.one, A, lda, v, 1);
 
+            const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
+				// w <-- (L^T)w
+				// Warning: should be ftrmv
+            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, oppDiag, n, 1, F.one, A, lda, w, 1);
+
+// write_field(F,std::cout<<"u2:=",u,n,1,1,true)<<std::endl;
+// write_field(F,std::cout<<"v2:=",v,n,1,1,true)<<std::endl;  
+// write_field(F,std::cout<<"w2:=",w,n,1,1,true)<<std::endl;
 			typename Field::Element zu, zv;
 			zu = FFLAS::fdot(F, n, w, 1, u, 1);
 			zv = FFLAS::fdot(F, n, w, 1, v, 1);
+
+// 			F.write(std::cout<<"zu:=",zu)<<';'<<std::endl;
+// 			F.write(std::cout<<"zv:=",zv)<<';'<<std::endl;
 			
 
 			bool pass = F.areEqual(zu,du) && F.areEqual(zv,dv);
@@ -109,7 +125,7 @@ namespace FFPACK {
 
 #ifdef TIME_CHECKER_Det
             checktime.stop(); _time += checktime;
-            std::cerr << "Det CHECK: " << _time << std::endl;
+            std::cout << "Det CHECK: " << _time << std::endl;
 #endif
             return pass;
         }
@@ -124,6 +140,10 @@ namespace FFPACK {
             FFLAS::frand(F,G,n,v,1);
             FFLAS::frand(F,G,n,w,1);
 
+// write_field(F,std::cout<<"A:=",A,n,n,lda,true)<<std::endl;
+// write_field(F,std::cout<<"u:=",u,n,1,1,true)<<std::endl;
+// write_field(F,std::cout<<"v:=",v,n,1,1,true)<<std::endl;  
+// write_field(F,std::cout<<"w:=",w,n,1,1,true)<<std::endl;
 			typename Field::Element_ptr t(FFLAS::fflas_new(F,n,1));
 
                 // t <-- A.u
@@ -131,8 +151,11 @@ namespace FFPACK {
 			du = FFLAS::fdot(F, n, w, 1, t, 1);
 			
                 // t <-- A.v
-			FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, v, 1, F.zero, w, 1);
+			FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, v, 1, F.zero, t, 1);
 			dv = FFLAS::fdot(F, n, w, 1, t, 1);
+			
+// 			F.write(std::cout<<"du:=",du)<<';'<<std::endl;
+// 			F.write(std::cout<<"dv:=",dv)<<';'<<std::endl;
 			
             FFLAS::fflas_delete(t);
 #ifdef TIME_CHECKER_Det
