@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 	size_t MAXN = 1000;
     size_t n=0;
     size_t seed( time(NULL) );
-	bool random_dim = false;
+	bool random_dim = false, random_rpm=false;
 	
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
 		{ 'n', "-n N", "Set the dimension of A.", TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
         { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
+		{ 'r', "-r Y/N", "Set random RPM or not.", TYPE_BOOL, &random_rpm },
 		END_OF_ARGUMENTS
 	};
 
@@ -85,7 +86,10 @@ int main(int argc, char** argv) {
 		// generate a random matrix A
 // 		PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
 		PAR_BLOCK {
-			FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
+			if (random_rpm)
+				FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
+			else
+				FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS);
 		}
 
 		size_t R(0);
@@ -95,7 +99,7 @@ int main(int argc, char** argv) {
 			R = FFPACK::PLUQ(F,Diag,n,n,A,n,P,Q);
 			chrono.stop();
 			checker.check(A,n,Diag,P,Q);
-			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n" << chrono << std::endl;
+			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n" << "Det COMPT: " << chrono << std::endl;
 			pass++;
 		} catch(FailureDetCheck &e) {
 			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification FAILED!\n";
