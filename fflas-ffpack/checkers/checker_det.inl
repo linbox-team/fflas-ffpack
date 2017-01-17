@@ -50,8 +50,8 @@ namespace FFPACK {
         CheckerImplem_Det(const Field& F_, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda) 
 				: F(F_), 
-                  u(FFLAS::fflas_new(F_,n_,1)), 
-                  v(FFLAS::fflas_new(F_,n_,1)), 
+                  u(FFLAS::fflas_new(F_,n_<<1,1)), 
+                  v(u+n_), 
                   w(FFLAS::fflas_new(F_,n_,1)), 
                   n(n_)
             {
@@ -62,8 +62,8 @@ namespace FFPACK {
         CheckerImplem_Det(typename Field::RandIter &G, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda)
 				: F(G.ring()), 
-                  u(FFLAS::fflas_new(F,n_,1)), 
-                  v(FFLAS::fflas_new(F,n_,1)), 
+                  u(FFLAS::fflas_new(F,n_<<1,1)), 
+                  v(u+n_), 
                   w(FFLAS::fflas_new(F,n_,1)), 
                   n(n_)
             {
@@ -71,7 +71,7 @@ namespace FFPACK {
             }
 
         ~CheckerImplem_Det() {
-            FFLAS::fflas_delete(u,v,w);
+            FFLAS::fflas_delete(u,w);
         }
 
             /** check if the Det factorization is correct.
@@ -85,7 +85,7 @@ namespace FFPACK {
                           const FFLAS::FFLAS_DIAG Diag,
                           size_t *P, size_t *Q) const {
 #ifdef TIME_CHECKER_Det
-            Givaro::Timer checktime; checktime.start();
+            Givaro::Timer checktime, overhead; checktime.start();
 #endif
 // write_perm(std::cerr<<"P = ",P,n);
 // write_field(F,std::cout<<"B:=",A,n,n,lda,true)<<std::endl;
@@ -102,6 +102,10 @@ namespace FFPACK {
 // write_field(F,std::cout<<"v1:=",v,n,1,1,true)<<std::endl;  
 // write_field(F,std::cout<<"w1:=",w,n,1,1,true)<<std::endl;
 
+#ifdef TIME_CHECKER_Det
+            checktime.stop(); _time += checktime;
+			overhead.start();
+#endif
 				// u <-- U.u, v <-- U.v
             FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 1, F.one, A, lda, u, 1);
             FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 1, F.one, A, lda, v, 1);
@@ -114,6 +118,10 @@ namespace FFPACK {
 // write_field(F,std::cout<<"u2:=",u,n,1,1,true)<<std::endl;
 // write_field(F,std::cout<<"v2:=",v,n,1,1,true)<<std::endl;  
 // write_field(F,std::cout<<"w2:=",w,n,1,1,true)<<std::endl;
+#ifdef TIME_CHECKER_Det
+			overhead.stop();
+			checktime.start();
+#endif
 			typename Field::Element zu, zv;
 			zu = FFLAS::fdot(F, n, w, 1, u, 1);
 			zv = FFLAS::fdot(F, n, w, 1, v, 1);
@@ -127,6 +135,7 @@ namespace FFPACK {
 
 #ifdef TIME_CHECKER_Det
             checktime.stop(); _time += checktime;
+            std::cout << "Det OVERH: " << overhead << std::endl;
             std::cout << "Det CHECK: " << _time << std::endl;
 #endif
             return pass;
