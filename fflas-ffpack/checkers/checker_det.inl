@@ -50,8 +50,8 @@ namespace FFPACK {
         CheckerImplem_Det(const Field& F_, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda) 
 				: F(F_), 
-                  u(FFLAS::fflas_new(F_,n_<<1,1)), 
-                  v(u+n_), 
+                  u(FFLAS::fflas_new(F_,n_,2)), 
+                  v(u+1), 
                   w(FFLAS::fflas_new(F_,n_,1)), 
                   n(n_)
             {
@@ -62,8 +62,8 @@ namespace FFPACK {
         CheckerImplem_Det(typename Field::RandIter &G, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda)
 				: F(G.ring()), 
-                  u(FFLAS::fflas_new(F,n_<<1,1)), 
-                  v(u+n_), 
+                  u(FFLAS::fflas_new(F,n_,2)), 
+                  v(u+1), 
                   w(FFLAS::fflas_new(F,n_,1)), 
                   n(n_)
             {
@@ -92,14 +92,13 @@ namespace FFPACK {
 // write_perm(std::cerr<<"Q = ",Q,n);
 
                 // u <-- Q.u, v <-- Q.v
-            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, u, 1, Q);
-            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 1, 0, n, v, 1, Q);
+            FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 2, 0, n, u, 2, Q);
 
 				// w <-- (P^T).w
             FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasTrans, 1, 0, n, w, 1, P);
 
-// write_field(F,std::cout<<"u1:=",u,n,1,1,true)<<std::endl;
-// write_field(F,std::cout<<"v1:=",v,n,1,1,true)<<std::endl;  
+// write_field(F,std::cout<<"u1:=",u,n,1,2,true)<<std::endl;
+// write_field(F,std::cout<<"v1:=",v,n,1,2,true)<<std::endl;  
 // write_field(F,std::cout<<"w1:=",w,n,1,1,true)<<std::endl;
 
 #ifdef TIME_CHECKER_Det
@@ -107,24 +106,23 @@ namespace FFPACK {
 			overhead.start();
 #endif
 				// u <-- U.u, v <-- U.v
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 1, F.one, A, lda, u, 1);
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 1, F.one, A, lda, v, 1);
+			FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, A, lda, u, 2);
 
             const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
 				// w <-- (L^T)w
 				// Warning: should be ftrmv
             FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, oppDiag, n, 1, F.one, A, lda, w, 1);
 
-// write_field(F,std::cout<<"u2:=",u,n,1,1,true)<<std::endl;
-// write_field(F,std::cout<<"v2:=",v,n,1,1,true)<<std::endl;  
+// write_field(F,std::cout<<"u2:=",u,n,1,2,true)<<std::endl;
+// write_field(F,std::cout<<"v2:=",v,n,1,2,true)<<std::endl;  
 // write_field(F,std::cout<<"w2:=",w,n,1,1,true)<<std::endl;
 #ifdef TIME_CHECKER_Det
 			overhead.stop();
 			checktime.start();
 #endif
 			typename Field::Element zu, zv;
-			zu = FFLAS::fdot(F, n, w, 1, u, 1);
-			zv = FFLAS::fdot(F, n, w, 1, v, 1);
+			zu = FFLAS::fdot(F, n, w, 1, u, 2);
+			zv = FFLAS::fdot(F, n, w, 1, v, 2);
 
 // 			F.write(std::cout<<"zu:=",zu)<<';'<<std::endl;
 // 			F.write(std::cout<<"zv:=",zv)<<';'<<std::endl;
@@ -147,20 +145,19 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer inittime; inittime.start();
 #endif
-            FFLAS::frand(F,G,n,u,1);
-            FFLAS::frand(F,G,n,v,1);
+            FFLAS::frand(F,G,n<<1,u,1);
             FFLAS::frand(F,G,n,w,1);
 
 // write_field(F,std::cout<<"A:=",A,n,n,lda,true)<<std::endl;
-// write_field(F,std::cout<<"u:=",u,n,1,1,true)<<std::endl;
-// write_field(F,std::cout<<"v:=",v,n,1,1,true)<<std::endl;  
+// write_field(F,std::cout<<"u:=",u,n,1,2,true)<<std::endl;
+// write_field(F,std::cout<<"v:=",v,n,1,2,true)<<std::endl;  
 // write_field(F,std::cout<<"w:=",w,n,1,1,true)<<std::endl;
 			typename Field::Element_ptr t(FFLAS::fflas_new(F,n,1));
 
 				// t <-- (A^T).w
 			FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);
-			du = FFLAS::fdot(F, n, u, 1, t, 1);
-			dv = FFLAS::fdot(F, n, v, 1, t, 1);
+			du = FFLAS::fdot(F, n, u, 2, t, 1);
+			dv = FFLAS::fdot(F, n, v, 2, t, 1);
 			
 // 			F.write(std::cout<<"du:=",du)<<';'<<std::endl;
 // 			F.write(std::cout<<"dv:=",dv)<<';'<<std::endl;
