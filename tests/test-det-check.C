@@ -39,7 +39,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
-#include "checkers_ffpack.inl"
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/checkers/checkers_ffpack.h"
@@ -105,9 +104,6 @@ int main(int argc, char** argv) {
 			FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
 			chrono.stop();
 			checker.check(det,A,n,Diag,P,Q);
-// 			FFPACK::Det(det,F,n,n,A,n,P,Q);
-// 			chrono.stop();
-// 			checker.check(det,A,n,FFLAS::FflasNonUnit,P,Q);
 			F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
 			std::cerr << "Det COMPT: " << chrono << std::endl;
