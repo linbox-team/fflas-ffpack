@@ -102,12 +102,12 @@ int main(int argc, char** argv) {
  		try {
 			FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
 			Givaro::Timer chrono; chrono.start(); 
-// 			FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
-// 			chrono.stop();
-// 			checker.check(det,A,n,Diag,P,Q);
-			FFPACK::Det(det,F,n,n,A,n,P,Q);
+			FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
 			chrono.stop();
-			checker.check(det,A,n,FFLAS::FflasNonUnit,P,Q);
+			checker.check(det,A,n,Diag,P,Q);
+// 			FFPACK::Det(det,F,n,n,A,n,P,Q);
+// 			chrono.stop();
+// 			checker.check(det,A,n,FFLAS::FflasNonUnit,P,Q);
 			F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
 			std::cerr << "Det COMPT: " << chrono << std::endl;

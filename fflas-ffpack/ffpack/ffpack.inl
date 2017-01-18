@@ -73,7 +73,8 @@ typename Field::Element&
 Det( typename Field::Element& det,
 	 const Field& F, const size_t M, const size_t N,
 	 typename Field::Element_ptr A, const size_t lda,
-	 size_t* P, size_t* Q)
+	 size_t* P, size_t* Q,
+	 const FFLAS::FFLAS_DIAG Diag)
 {
 	if ( (M==0) and (N==0) )
 		return  F.assign(det,F.one) ;
@@ -82,19 +83,20 @@ Det( typename Field::Element& det,
 	if ( M != N )
 		return  F.assign(det,F.zero) ;
 	
-	bool singular;
-	singular  = !LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans,  M, N,
-						   A, lda, P, Q, FfpackSingular);
-	if (singular)
-		return F.assign(det,F.zero);
+
+	size_t R(0);
+	R = PLUQ(F,Diag,M,N,A,lda,P,Q);
+	if (R<M) return F.assign(det,F.zero);
 
 	F.assign(det,F.one);
 	typename Field::Element_ptr Ai=A;
 	for (; Ai < A+ M*lda+N; Ai+=lda+1 )
 		F.mulin( det, *Ai );
 	int count=0;
-	for (size_t i=0;i<N;++i)
+	for (size_t i=0;i<M;++i)
 		if (P[i] != i) ++count;
+	for (size_t i=0;i<N;++i)
+		if (Q[i] != i) ++count;
 	
 	if ((count&1) == 1)
 		return F.negin(det);

@@ -1120,7 +1120,8 @@ namespace FFPACK { /* Solutions */
 	Det( typename Field::Element& det,
 		 const Field& F, const size_t M, const size_t N,
 	     typename Field::Element_ptr A, const size_t lda,
-		 size_t* P, size_t* q);
+		 size_t* P, size_t* Q,
+		 const FFLAS::FFLAS_DIAG Diag=FFLAS::FflasNonUnit);
 
 	/** @brief Returns the determinant of the given matrix.
 	 * @details The method is a block elimination with early termination
