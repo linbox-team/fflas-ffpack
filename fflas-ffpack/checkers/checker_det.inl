@@ -157,13 +157,10 @@ namespace FFPACK {
 // write_field(F,std::cout<<"w:=",w,n,1,1,true)<<std::endl;
 			typename Field::Element_ptr t(FFLAS::fflas_new(F,n,1));
 
-                // t <-- A.u
-			FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, u, 1, F.zero, t, 1);
-			du = FFLAS::fdot(F, n, w, 1, t, 1);
-			
-                // t <-- A.v
-			FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, v, 1, F.zero, t, 1);
-			dv = FFLAS::fdot(F, n, w, 1, t, 1);
+				// t <-- (A^T).w
+			FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);
+			du = FFLAS::fdot(F, n, u, 1, t, 1);
+			dv = FFLAS::fdot(F, n, v, 1, t, 1);
 			
 // 			F.write(std::cout<<"du:=",du)<<';'<<std::endl;
 // 			F.write(std::cout<<"dv:=",dv)<<';'<<std::endl;
