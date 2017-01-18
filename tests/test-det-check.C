@@ -39,6 +39,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include "checkers_ffpack.inl"
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/checkers/checkers_ffpack.h"
@@ -97,20 +98,23 @@ int main(int argc, char** argv) {
 		init.stop();
 		std::cerr << "init: " << init << std::endl;
 
-		size_t R(0);
+		Field::Element det; F.init(det);
  		try {
 			FFPACK::ForceCheck_Det<Field> checker (Rand,n,A,n);
 			Givaro::Timer chrono; chrono.start(); 
-			R = FFPACK::PLUQ(F,Diag,n,n,A,n,P,Q);
+// 			FFPACK::Det(det,F,n,n,A,n,P,Q,Diag);
+// 			chrono.stop();
+// 			checker.check(det,A,n,Diag,P,Q);
+			FFPACK::Det(det,F,n,n,A,n,P,Q);
 			chrono.stop();
-			checker.check(A,n,Diag,P,Q);
-			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification PASSED\n" ;
+			checker.check(det,A,n,FFLAS::FflasNonUnit,P,Q);
+			F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification PASSED\n" ;
 #ifdef TIME_CHECKER_Det
 			std::cerr << "Det COMPT: " << chrono << std::endl;
 #endif
 			pass++;
 		} catch(FailureDetCheck &e) {
-			std::cerr << n << 'x' << n << ' ' << Diag << '(' << R << ')' << " Det verification FAILED!\n";
+			F.write(std::cerr << n << 'x' << n << ' ' << Diag << '(', det) << ')' << " Det verification FAILED!\n";
 		}
 
 		FFLAS::fflas_delete(A,P,Q);

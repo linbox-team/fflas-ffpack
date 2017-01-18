@@ -1112,11 +1112,34 @@ namespace FFPACK { /* Solutions */
 	 * @param N column dimension of the matrix.
 	 * @param [in,out] A input matrix
 	 * @param lda leading dimension of A
+	 * @param P the row permutation
+     * @param Q the column permutation
+	 */
+	template <class Field>
+	typename Field::Element&
+	Det( typename Field::Element& det,
+		 const Field& F, const size_t M, const size_t N,
+	     typename Field::Element_ptr A, const size_t lda,
+		 size_t* P, size_t* q);
+
+	/** @brief Returns the determinant of the given matrix.
+	 * @details The method is a block elimination with early termination
+	 * using LQUP factorization  with early termination. The input matrix A is overwritten.
+	 * If <code>M != N</code>,
+	 * then the matrix is virtually padded with zeros to make it square and
+	 * it's determinant is zero.
+	 * @warning The input matrix is modified.
+	 * @param F field
+	 * @param M row dimension of the matrix
+	 * @param N column dimension of the matrix.
+	 * @param [in,out] A input matrix
+	 * @param lda leading dimension of A
 	 */
 	template <class Field>
 	typename Field::Element
 	Det( const Field& F, const size_t M, const size_t N,
 	     typename Field::Element_ptr A, const size_t lda);
+
 
 	/*********/
 	/* SOLVE */

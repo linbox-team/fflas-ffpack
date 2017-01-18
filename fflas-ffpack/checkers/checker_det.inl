@@ -81,7 +81,8 @@ namespace FFPACK {
              * @param P
              * @param Q
              */
-        inline bool check(typename Field::ConstElement_ptr A, size_t lda, 
+        inline bool check(const typename Field::Element& det, 
+						  typename Field::ConstElement_ptr A, size_t lda, 
                           const FFLAS::FFLAS_DIAG Diag,
                           size_t *P, size_t *Q) const {
 #ifdef TIME_CHECKER_Det
@@ -130,6 +131,24 @@ namespace FFPACK {
 
 			bool pass = F.areEqual(zu,du) && F.areEqual(zv,dv);
             if (!pass) throw FailureDetCheck();
+
+				// Check det
+			typename Field::Element dd(F.one);
+			
+			for (typename Field::ConstElement_ptr Ai(A); Ai < A+ n*lda+n; Ai+=lda+1 )
+				F.mulin( dd, *Ai );
+
+			int count=0;
+			for (size_t i=0;i<n;++i)
+				if (P[i] != i) ++count;
+			for (size_t i=0;i<n;++i)
+				if (Q[i] != i) ++count;
+			if ((count&1) == 1)
+				F.negin(dd);
+			
+			pass &= F.areEqual(dd,det);
+            if (!pass) throw FailureDetCheck();
+
 
 #ifdef TIME_CHECKER_Det
             checktime.stop(); _time += checktime;
