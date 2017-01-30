@@ -75,14 +75,14 @@ namespace FFPACK {
         }
 
             /** check if the Det factorization is correct.
-             *  Returns true if w - P(L(U(Q.v))) == 0
-             * @param A
-             * @param r
+             *  Needs matrix in LU form
+             * @param LU, storage for L and U
+             * @param det
              * @param P
              * @param Q
              */
         inline bool check(const typename Field::Element& det, 
-						  typename Field::ConstElement_ptr A, size_t lda, 
+						  typename Field::ConstElement_ptr LU, size_t lda, 
                           const FFLAS::FFLAS_DIAG Diag,
                           size_t *P, size_t *Q) const {
 #ifdef TIME_CHECKER_Det
@@ -107,12 +107,12 @@ namespace FFPACK {
 			overhead.start();
 #endif
 				// u <-- U.u, v <-- U.v
-			FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, A, lda, u, 2);
+			FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, LU, lda, u, 2);
 
             const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
 				// w <-- (L^T)w
 				// Warning: should be ftrmv
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, oppDiag, n, 1, F.one, A, lda, w, 1);
+            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, oppDiag, n, 1, F.one, LU, lda, w, 1);
 
 // write_field(F,std::cout<<"u2:=",u,n,1,2,true)<<std::endl;
 // write_field(F,std::cout<<"v2:=",v,n,1,2,true)<<std::endl;  
@@ -135,7 +135,7 @@ namespace FFPACK {
 				// Check det
 			typename Field::Element dd(F.one);
 			
-			for (typename Field::ConstElement_ptr Ai(A); Ai < A+ n*lda+n; Ai+=lda+1 )
+			for (typename Field::ConstElement_ptr Ai(LU); Ai < LU+ n*lda+n; Ai+=lda+1 )
 				F.mulin( dd, *Ai );
 
 			int count=0;
