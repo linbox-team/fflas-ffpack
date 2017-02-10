@@ -44,6 +44,7 @@
 #include <givaro/givranditer.h>
 #include <chrono>
 #include <random>
+#include <functional>
 
 namespace FFPACK {
 
