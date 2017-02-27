@@ -91,6 +91,7 @@ NOT_A_TEST =  \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
+		test-sparse            \
 		test-nullspace
 
 INFINITE_TEST= \
@@ -152,6 +153,7 @@ test_fsytrf_SOURCES            = test-fsytrf.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
+test_sparse_SOURCES = test-sparse.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
 test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 #  test_fspmv_SOURCES = test-fspmv.C
