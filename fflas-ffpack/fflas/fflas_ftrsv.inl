@@ -94,6 +94,7 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 
 		} // FflasTrans
 		else{
+			std::cerr<<"coucou"<<std::endl;
 			Ai = A+(lda+1)*(N-1);
 			Ximax = Xi = X+incX*(int)(N-1);
 			for( ; Xi>=X; Ai-=lda+1,Xi-=incX ){

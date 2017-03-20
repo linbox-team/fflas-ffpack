@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 	bool u = true;  // Upper triangular
 	bool d = false; // NonUnit diagonal
 	bool t = false; // NoTrans
+	bool v = true; // verification
 	
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
@@ -50,6 +51,7 @@ int main(int argc, char** argv) {
 		{ 'd', "-d D", "Unit/NonUnit diagonal.", TYPE_BOOL , &t },
 		{ 't', "-t T", "Trans/NoTrans.", TYPE_BOOL , &t },
 		{ 'i', "-i R", "Set number of repetitions.",               TYPE_INT , &iter },
+		{ 'v', "-v V", "Whether to check for correctness (probabilistic).", TYPE_BOOL , &v },
 		END_OF_ARGUMENTS
 	};
 
@@ -64,11 +66,13 @@ int main(int argc, char** argv) {
 
 	Field F(q);
 	Element * A;
-	Element * b;
+	Element * b, *c=NULL;
 
 	FFLAS::Timer chrono;
 	double time=0.0;
 	Field::RandIter G(F);
+	Field::Element proj;
+	F.init(proj);
 
 	A = fflas_new (F,n,n,Alignment::CACHE_PAGESIZE);
 
@@ -76,16 +80,48 @@ int main(int argc, char** argv) {
 
 	b = fflas_new(F,n,1,Alignment::CACHE_PAGESIZE);
 	frand (F,G,n,1,b,1);
-	
+
+	// write_field(F, cerr<<"A = "<<endl, A,n,n,n);
+	// write_field(F, cerr<<"b = "<<endl, b,n,1,1);
+	if (v){
+		c = fflas_new(F,n,1,Alignment::CACHE_PAGESIZE);
+		frand (F,G,n,1,c,1);
+			// proj <- c^T . b
+		// write_field(F, cerr<<"c = ", c,1,n,n);
+		proj = fdot (F, n, c, 1, b, 1);
+		// cerr<<"proj = "<<proj<<endl;
+	}
+	chrono.clear();
 	for (size_t i=0;i<=iter;++i){
-		chrono.clear();
+		if (v){
+				// c <- c U 
+			ftrmm (F, FflasRight, UpLo, Trans, Diag,
+				   1,n, F.one, A, n, c, n);
+			// write_field(F, cerr<<"c <- c x U  = ", c,1,n,n);
+
+		}
 		if (i) chrono.start();
 
+			// b <- U^-1 b
 		ftrsv (F, UpLo, Trans, Diag, n, A, n, b, 1);
+		// write_field(F, cerr<<"b <- U^-1 x b = "<<endl, b,n,1,1);
 
 		if (i) {chrono.stop(); time+=chrono.usertime();}
+
+		if (v){
+				// check b.c == proj
+			Element verif = fdot (F, n, c, 1, b, 1);
+			if (!F.areEqual (proj,verif)){
+				cerr<<"FAIL: proj = "<<proj<<" verif = "<<verif<<endl;
+				fflas_delete (A);
+				fflas_delete (b);
+				fflas_delete (c);
+				return -1;
+			}
+			F.assign (proj,verif);
+		}
 	}
-	
+	if (v) fflas_delete(c);
 	fflas_delete (A);
 	fflas_delete (b);
 	
