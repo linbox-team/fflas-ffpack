@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the col dimension of the RHS matrix.", TYPE_INT , &n },
 		{ 'u', "-u U", "Upper/Lower triangular.", TYPE_BOOL , &u },
-		{ 'd', "-d D", "Unit/NonUnit diagonal.", TYPE_BOOL , &t },
+		{ 'd', "-d D", "Unit/NonUnit diagonal.", TYPE_BOOL , &d },
 		{ 't', "-t T", "Trans/NoTrans.", TYPE_BOOL , &t },
 		{ 'i', "-i R", "Set number of repetitions.",               TYPE_INT , &iter },
 		{ 'v', "-v V", "Whether to check for correctness (probabilistic).", TYPE_BOOL , &v },
@@ -79,34 +79,32 @@ int main(int argc, char** argv) {
 	FFPACK::RandomTriangularMatrix (F, n, n, UpLo, Diag, true, A, n, G);
 
 	b = fflas_new(F,n,1,Alignment::CACHE_PAGESIZE);
-	frand (F,G,n,1,b,1);
-
-	// write_field(F, cerr<<"A = "<<endl, A,n,n,n);
-	// write_field(F, cerr<<"b = "<<endl, b,n,1,1);
-	if (v){
-		c = fflas_new(F,n,1,Alignment::CACHE_PAGESIZE);
-		frand (F,G,n,1,c,1);
-			// proj <- c^T . b
-		// write_field(F, cerr<<"c = ", c,1,n,n);
-		proj = fdot (F, n, c, 1, b, 1);
-		// cerr<<"proj = "<<proj<<endl;
-	}
-	chrono.clear();
 	for (size_t i=0;i<=iter;++i){
+		chrono.clear();
+		frand (F,G,n,1,b,1);
+			// write_field(F, cerr<<"A = "<<endl, A,n,n,n);
+			// write_field(F, cerr<<"b = "<<endl, b,n,1,1);
+		if (v){
+			c = fflas_new(F,n,1,Alignment::CACHE_PAGESIZE);
+			frand (F,G,n,1,c,1);
+				// proj <- c^T . b
+				// write_field(F, cerr<<"c = ", c,1,n,n);
+			proj = fdot (F, n, c, 1, b, 1);
+				// cerr<<"proj = "<<proj<<endl;
+		}
 		if (v){
 				// c <- c U 
 			ftrmm (F, FflasRight, UpLo, Trans, Diag,
 				   1,n, F.one, A, n, c, n);
-			// write_field(F, cerr<<"c <- c x U  = ", c,1,n,n);
+				// write_field(F, cerr<<"c <- c x U  = ", c,1,n,n);
 
 		}
-		if (i) chrono.start();
-
+		chrono.start();
 			// b <- U^-1 b
 		ftrsv (F, UpLo, Trans, Diag, n, A, n, b, 1);
 		// write_field(F, cerr<<"b <- U^-1 x b = "<<endl, b,n,1,1);
-
-		if (i) {chrono.stop(); time+=chrono.usertime();}
+		chrono.stop();
+		if (i) { time+=chrono.usertime();}
 
 		if (v){
 				// check b.c == proj
@@ -118,7 +116,6 @@ int main(int argc, char** argv) {
 				fflas_delete (c);
 				return -1;
 			}
-			F.assign (proj,verif);
 		}
 	}
 	if (v) fflas_delete(c);
@@ -126,7 +123,7 @@ int main(int argc, char** argv) {
 	fflas_delete (b);
 	
 	std::cout << "Time: " << time / double(iter)
-			  << " Gflops: " << (double(n)/1000.*double(n)/1000.0) / time * double(iter);
+			  << " Gflops: " << (double(n)/1000.*double(n)/1000000.0) / time * double(iter);
 	writeCommandString(std::cout, as) << std::endl;
 
 	return 0;
