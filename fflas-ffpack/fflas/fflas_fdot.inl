@@ -77,10 +77,13 @@ namespace FFLAS {
 		ModeCategories::DefaultTag DM;
 		typename Field::ConstElement_ptr xi = x, yi = y;
 		size_t i=delayedDim;
+		typename Field::Element dp;
 		for (; i<N; i+= delayedDim, xi += incx*delayedDim, yi += incy*delayedDim){
-			F.addin(d, fdot (delayedF, delayedDim, xi, incx, yi, incy, DM));
+			F.init(dp, fdot (delayedF, delayedDim, xi, incx, yi, incy, DM));
+			F.addin(d, dp);
 		}
-		F.addin (d, fdot (delayedF, N+delayedDim-i, xi, incx, yi, incy, DM));
+		F.init (dp,fdot (delayedF, N+delayedDim-i, xi, incx, yi, incy, DM));
+		F.addin (d, dp);
 		return d;
 	}
 
