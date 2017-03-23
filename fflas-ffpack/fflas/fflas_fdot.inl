@@ -42,7 +42,8 @@ namespace FFLAS {
 	inline typename Field::Element
 	fdot( const Field& F, const size_t N,
 	      typename Field::ConstElement_ptr x, const size_t incx,
-	      typename Field::ConstElement_ptr y, const size_t incy )
+	      typename Field::ConstElement_ptr y, const size_t incy ,
+	      ModeCategories::DefaultTag& MT)
 	{
 
 		typename Field::Element d;
@@ -54,11 +55,41 @@ namespace FFLAS {
 		return d;
 	}
 
+	template<class Field>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy ,
+	      ModeCategories::DelayedTag& MT)
+	{
+		typedef typename associatedDelayedField<const Field>::field DelayedField;
+		typedef typename associatedDelayedField<const Field>::type DelayedField_t;
+		typedef typename DelayedField::Element DFElt;
+		DelayedField_t delayedF;
+
+		const DFElt MaxStorableValue = limits<typename DelayedField::Element>::max();
+		const DFElt AbsMax = std::max(-F.minElement(), F.maxElement());
+		size_t delayedDim = MaxStorableValue / (AbsMax*AbsMax);
+
+
+		typename Field::Element d;
+		F.init (d,F.zero);
+		ModeCategories::DefaultTag DM;
+		typename Field::ConstElement_ptr xi = x, yi = y;
+		size_t i=delayedDim;
+		for (; i<N; i+= delayedDim, xi += incx*delayedDim, yi += incy*delayedDim){
+			F.addin(d, fdot (delayedF, delayedDim, xi, incx, yi, incy, DM));
+		}
+		F.addin (d, fdot (delayedF, N+delayedDim-i, xi, incx, yi, incy, DM));
+		return d;
+	}
+
 	template<>
 	inline Givaro::DoubleDomain::Element
 	fdot( const Givaro::DoubleDomain& , const size_t N,
 	      Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
-	      Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy )
+	      Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::DefaultTag& MT)
 	{
 
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
@@ -71,13 +102,24 @@ namespace FFLAS {
 	inline Givaro::FloatDomain::Element
 	fdot( const Givaro::FloatDomain& , const size_t N,
 	      Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
-	      Givaro::FloatDomain::ConstElement_ptr y, const size_t incy )
+	      Givaro::FloatDomain::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::DefaultTag& MT)
 	{
 
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
 		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 		return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );
+	}
+
+	template<class Field>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy )
+	{
+		typename ModeTraits<Field>::value mt;
+		return fdot (F, N, x, incx, y, incy, mt);
 	}
 
 } // FFLAS
