@@ -42,6 +42,7 @@ BASIC_TESTS =               \
 		test-rankprofiles   \
 		test-compressQ      \
 		test-permutations   \
+		test-fdot           \
 		test-fadd           \
 		test-finit          \
 		test-fscal          \
@@ -150,6 +151,7 @@ test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
+test_fdot_SOURCES = test-fdot.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C

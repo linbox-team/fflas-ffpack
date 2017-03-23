@@ -49,7 +49,7 @@ namespace FFLAS {
 		typename Field::Element d;
 		typename Field::ConstElement_ptr xi = x;
 		typename Field::ConstElement_ptr yi = y;
-		F.init( d );
+		F.init (d, F.zero);
 		for ( ; xi < x+N*incx; xi+=incx, yi+=incy )
 			F.axpyin( d, *xi, *yi );
 		return d;
@@ -110,6 +110,17 @@ namespace FFLAS {
 		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 		return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );
+	}
+
+	template<class Field, class T>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::ConvertTo<T>& MT)
+	{
+		typename ModeCategories::DefaultTag mt;
+		return fdot (F, N, x, incx, y, incy, mt);
 	}
 
 	template<class Field>
