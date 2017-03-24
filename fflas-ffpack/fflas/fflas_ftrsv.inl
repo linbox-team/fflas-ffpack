@@ -38,9 +38,9 @@ namespace FFLAS {
 template<class Field>
 inline void
 ftrsv (const Field& F, const FFLAS_UPLO Uplo,
-	      const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
-	      const size_t N,typename Field::ConstElement_ptr A, size_t lda,
-	      typename Field::Element_ptr X, int incX)
+       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
+       const size_t N,typename Field::ConstElement_ptr A, size_t lda,
+       typename Field::Element_ptr X, int incX)
 {
 
 	typename Field::Element_ptr Xi, Xj,  Ximax;

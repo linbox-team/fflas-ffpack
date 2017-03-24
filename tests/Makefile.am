@@ -54,6 +54,7 @@ BASIC_TESTS =               \
 		test-charpoly-check \
 		test-fger           \
 		test-ftrsm          \
+		test-ftrsv          \
 		test-fsyrk          \
 		test-fsytrf          \
 		test-multifile      \
@@ -135,6 +136,7 @@ test_charpoly_SOURCES          = test-charpoly.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
+test_ftrsv_SOURCES             = test-ftrsv.C
 test_fsyrk_SOURCES             = test-fsyrk.C
 test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
