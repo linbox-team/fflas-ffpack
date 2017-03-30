@@ -22,7 +22,7 @@
 #/
 
 
-ACLOCAL_AMFLAGS = -I macros -I /usr/share/aclocal
+ACLOCAL_AMFLAGS = -I macros
 
 SUBDIRS= autotune fflas-ffpack tests doc benchmarks macros examples
 

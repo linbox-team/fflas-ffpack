@@ -127,6 +127,7 @@ template <class Field, SparseMatrix_t, class IdxT = index_t, class PtrT = index_
 #include "fflas-ffpack/fflas/fflas_sparse/csr.h"
 #include "fflas-ffpack/fflas/fflas_sparse/coo.h"
 #include "fflas-ffpack/fflas/fflas_sparse/ell.h"
+#include "fflas-ffpack/fflas/fflas_sparse/sell.h"
 #include "fflas-ffpack/fflas/fflas_sparse/csr_hyb.h"
 #include "fflas-ffpack/fflas/fflas_sparse/ell_simd.h"
 #include "fflas-ffpack/fflas/fflas_sparse/hyb_zo.h"

@@ -38,7 +38,6 @@
 #include <recint/recint.h>
 #include <givaro/givintprime.h>
 
-using namespace RecInt;
 
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -53,6 +52,7 @@ typedef FFLAS::OMPTimer TTimer;
 typedef FFLAS::Timer TTimer;
 #endif
 
+using namespace RecInt;
 using namespace std;
 using namespace FFLAS;
 using namespace Givaro;
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
     Integer q = -1;
     int b = 128;
     int blockSize = 1;
-    std::string matrixFile = "";
+    std::string matrixFile = "data/mat11.sms";
     int nIter = 100;
     
     static Argument as[] = {
