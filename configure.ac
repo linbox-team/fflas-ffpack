@@ -350,6 +350,7 @@ tests/Makefile
 tests/data/Makefile
 benchmarks/Makefile
 examples/Makefile
+tutorial/Makefile
 fflas-ffpack.pc
 ],[chmod +x fflas-ffpack-config])
 AC_OUTPUT

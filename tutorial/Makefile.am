@@ -1,4 +1,4 @@
-# Copyright (c) 2014 FFLAS-FFPACK
+# Copyright (c) 2017 FFLAS-FFPACK
 # written by JGD <Jean-Guillaume.Dumas@imag.fr>
 #
 # ========LICENCE========
@@ -28,8 +28,10 @@ AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARF
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-EXAMPLES = pluq
-pluq_SOURCES = pluq.C
+EXAMPLES = 2x2-fgemm 101-fgemm 2x2-pluq
+2x2_fgemm_SOURCES = 2x2-fgemm.C
+101_fgemm_SOURCES = 101-fgemm.C
+2x2_pluq_SOURCES = 2x2-pluq.C
 
 CLEANFILES = $(EXAMPLES) 
 
