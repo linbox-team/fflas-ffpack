@@ -60,22 +60,20 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 				}
 				F.negin( *Xi );
 			}
-		} // FflasTrans
+		} // End FflasTrans
 		else{
 			Ai = A;
 		        Xi = X;
-			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi-incX, Aj=Ai-1; Xj>=X;
-				      Xj-=incX, Aj--){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
+			Ai = A+(lda+1)*(N-1);
+			Ximax = Xi = X+incX*(int)(N-1);
+			size_t i=0;
+			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX, i++ ){
+				F.subin (*Xi, fdot (F, i, Ai, 1, Xi, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
-				F.negin( *Xi );
 			}
 		}
-	} // FflasLower
+	} // End EFflasLower
 	else{
 		if ( TransA == FflasTrans){
 			Ai = A;
@@ -92,7 +90,7 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 				F.negin( *Xi );
 			}
 
-		} // FflasTrans
+		} // End FflasTrans
 		else{
 			Ai = A+(lda+1)*(N-1);
 			Ximax = Xi = X+incX*(int)(N-1);
