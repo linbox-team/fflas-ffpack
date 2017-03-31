@@ -35,7 +35,11 @@
 #endif
 
 namespace FFPACK {
-    template <class Field> 
+
+		// Checker for the determinant following [Dumas Lucas Pernet'17].
+		// First implementation, meant to evolve into an RPM checker and/or
+		// and interractive Det checker.
+	template <class Field>
     class CheckerImplem_Det {
 
         const Field& F;
