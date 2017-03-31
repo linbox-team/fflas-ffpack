@@ -137,11 +137,8 @@ test_charpoly_SOURCES          = test-charpoly.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
-<<<<<<< HEAD
 test_ftrmm_SOURCES             = test-ftrmm.C
-=======
 test_ftrsv_SOURCES             = test-ftrsv.C
->>>>>>> master
 test_fsyrk_SOURCES             = test-fsyrk.C
 test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
