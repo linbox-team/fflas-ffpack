@@ -38,53 +38,53 @@ int main(int argc, char** argv) {
     Ring F(11);
     
     Ring::Element L[4]{1,0,2,3};
-    std::array<Ring::Element,2> B{4,5};
+    Ring::Element B[2]{4,5};
     
     size_t m(2);
     
     write_field(F, std::cout << "L:=", L, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "B:=", B, m, 1, 1, true) << std::endl;
     
         // In place system solve
-    ftrsv (F, FflasLower,FflasNoTrans,FflasNonUnit, m, L, m, B.begin(), 1);
+    ftrsv (F, FflasLower,FflasNoTrans,FflasNonUnit, m, L, m, B, 1);
     
-    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "X:=", B, m, 1, 1, true) << std::endl;
     std::cerr << "0 = L.X - B mod " << F.characteristic() << ';' << std::endl;
     
-    Ring::Element U[4]{3,2,0,5}; B={4,7};
+    Ring::Element U[4]{3,2,0,5}, C[2]{4,7};
     
     
     write_field(F, std::cout << "U:=", U, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "C:=", C, m, 1, 1, true) << std::endl;
     
         // In place system solve
-    ftrsv (F, FflasUpper, FflasNoTrans ,FflasNonUnit, m, U, m, B.begin(), 1);
+    ftrsv (F, FflasUpper, FflasNoTrans ,FflasNonUnit, m, U, m, B, 1);
     
-    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
-    std::cerr << "0 = U.X - B mod " << F.characteristic() << ';' << std::endl;
+    write_field(F, std::cout << "X:=", C, m, 1, 1, true) << std::endl;
+    std::cerr << "0 = U.X - C mod " << F.characteristic() << ';' << std::endl;
     
-    B={4,5};
+    Ring::Element D[2]{4,5};
     
     write_field(F, std::cout << "L:=", L, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "D:=", D, m, 1, 1, true) << std::endl;
     
         // In place system solve
-    ftrsv (F, FflasLower,FflasTrans,FflasNonUnit, m, L, m, B.begin(), 1);
+    ftrsv (F, FflasLower,FflasTrans,FflasNonUnit, m, L, m, D, 1);
     
-    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
-    std::cerr << "0 = Transpose(X).L - Transpose(B) mod " << F.characteristic() << ';' << std::endl;
+    write_field(F, std::cout << "X:=", D, m, 1, 1, true) << std::endl;
+    std::cerr << "0 = Transpose(X).L - Transpose(D) mod " << F.characteristic() << ';' << std::endl;
 
-    B={4,7};
+    Ring::Element E[2]{4,7};
     
     
     write_field(F, std::cout << "U:=", U, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "E:=", E, m, 1, 1, true) << std::endl;
     
         // In place system solve
-    ftrsv (F, FflasUpper, FflasTrans ,FflasNonUnit, m, U, m, B.begin(), 1);
+    ftrsv (F, FflasUpper, FflasTrans ,FflasNonUnit, m, U, m, E, 1);
     
-    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
-    std::cerr << "0 = Transpose(X).U - Transpose(B) mod " << F.characteristic() << ';' << std::endl;
+    write_field(F, std::cout << "X:=", E, m, 1, 1, true) << std::endl;
+    std::cerr << "0 = Transpose(X).U - Transpose(E) mod " << F.characteristic() << ';' << std::endl;
     
     return 0;
 }
