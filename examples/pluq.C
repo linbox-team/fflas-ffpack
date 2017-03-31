@@ -52,7 +52,9 @@ int main(int argc, char** argv) {
 
     FFPACK::PLUQ (F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 
-	write_field(F,std::cout<<"PLUQ = "<<std::endl,A,m,n,n);
+	write_perm(std::cout<<"P = "<<std::endl,P,m);
+	write_field(F,std::cout<<"LU = "<<std::endl,A,m,n,n)<< " modulo " << p << std::endl;
+	write_perm(std::cout<<"Q = "<<std::endl,Q,n);
 
     FFLAS::fflas_delete( P);
     FFLAS::fflas_delete( Q);

@@ -38,9 +38,9 @@ namespace FFLAS {
 template<class Field>
 inline void
 ftrsv (const Field& F, const FFLAS_UPLO Uplo,
-	      const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
-	      const size_t N,typename Field::ConstElement_ptr A, size_t lda,
-	      typename Field::Element_ptr X, int incX)
+       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
+       const size_t N,typename Field::ConstElement_ptr A, size_t lda,
+       typename Field::Element_ptr X, int incX)
 {
 
 	typename Field::Element_ptr Xi, Xj,  Ximax;
@@ -60,22 +60,18 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 				}
 				F.negin( *Xi );
 			}
-		} // FflasTrans
+		} // End FflasTrans
 		else{
 			Ai = A;
 		        Xi = X;
-			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi-incX, Aj=Ai-1; Xj>=X;
-				      Xj-=incX, Aj--){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
+			size_t i=0;
+			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX, i++ ){
+				F.subin (*Xi, fdot (F, i, Ai, 1, Xi, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
-				F.negin( *Xi );
 			}
 		}
-	} // FflasLower
+	} // End EFflasLower
 	else{
 		if ( TransA == FflasTrans){
 			Ai = A;
@@ -92,19 +88,15 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 				F.negin( *Xi );
 			}
 
-		} // FflasTrans
+		} // End FflasTrans
 		else{
 			Ai = A+(lda+1)*(N-1);
 			Ximax = Xi = X+incX*(int)(N-1);
-			for( ; Xi>=X; Ai-=lda+1,Xi-=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi+incX, Aj=Ai+1; Xj<=Ximax;
-				      Xj+=incX, Aj++){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
+			size_t i=0;
+			for( ; Xi>=X; Ai-=lda+1,Xi-=incX, i++ ){
+				F.subin (*Xi, fdot (F, i, Ai+1, 1, Xi+incX, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
-				F.negin( *Xi );
 			}
 		}
 	}
