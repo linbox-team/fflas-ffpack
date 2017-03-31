@@ -39,7 +39,7 @@
 #include "fflas-ffpack/fflas/fflas_level3.inl"
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/field/rns-integer.h"
-
+#include "fflas-ffpack/utils/print-utils.h"
 namespace FFLAS {
 
 
@@ -69,18 +69,36 @@ namespace FFLAS {
 			K=N;
 
 		if (K==0) return;
-
+		std::cout<<std::endl;
+		std::cout<<"A:=";
+		write_matrix(std::cout,F, K,K,A,lda);
+		std::cout<<"B:=";
+		write_matrix(std::cout,F, M,N,B,ldb);
+		
 		// compute bit size of feasible prime
 		size_t _k=std::max(K,logp/20), lk=0;
 		while ( _k ) {_k>>=1; ++lk;}
 		size_t prime_bitsize= (53-lk)>>1;
 
 		// construct rns basis
+#if 0
 		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*uint64_t(K);
 		size_t n_pr =maxC.bitsize()/prime_bitsize;
 		maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*uint64_t(n_pr);
+#else
+		Givaro::Integer maxC= 4*p*p*uint64_t(K);
+		//size_t n_pr =maxC.bitsize()/prime_bitsize;
+		//maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*uint64_t(n_pr);
+#endif
+
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true);
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);
+		std::cout<<"\nFTRSM MP: maxC="<<maxC<<"\n";
+		std::cout<<"\nFTRSM MP: p="<<p<<"\n";
+		std::cout<<"\nFTRSM MP: M="<<M<<"\n";
+		std::cout<<"\nFTRSM MP: N="<<N<<"\n";
+		std::cout<<"\nFTRSM MP: K="<<K<<"\n";
+		std::cout<<"\nFTRSM MP: RNS prod="<<RNS._M<<"\n";
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_init+=chrono.usertime();
@@ -133,6 +151,10 @@ namespace FFLAS {
 		if (!F.isOne(alpha))
 			fscalin(F,M,N,alpha,B,ldb);
 
+		std::cout<<"X:=";
+		write_matrix(std::cout,F, M,N,B,ldb);
+
+		
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_rec+=chrono.usertime();
@@ -147,7 +169,7 @@ namespace FFLAS {
 		FFLAS::fflas_delete(Bp);
 	}
 
-	/*  bb: do not use CBLAS_ORDER, or make it compatible with MLK */
+	/*  bb: do not use CBLAS_ORDER, or make it compatible with MKL */
 
 	inline void cblas_imptrsm(const enum FFLAS_ORDER Order,
 				  const enum FFLAS_SIDE Side,
@@ -177,6 +199,7 @@ namespace FFLAS {
 			F.convert(b,beta);
 			M=F.rns()._M;
 			uint64_t kmax= (M-b*p)/(p*p);
+			std::cout<<"DotProdBound: "<<kmax<<"\n";
 			return  (size_t)std::max(uint64_t(1),kmax);
 			//return kmax;
 		}

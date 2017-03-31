@@ -150,7 +150,7 @@ namespace FFPACK {
 			for (size_t i=0;i<_rns->_size;i++)
 				iszero&= (zero._ptr[i]==x._ptr[i]);
 			//std::cout<<(iszero || (t1==integer(0))?"zero":"nonzero")<<std::endl;
-			return iszero || (t1==integer(0));
+			return iszero || (t1==integer(0));			
 		}
 
 		integer characteristic(integer &p) const { return p=_p;}
@@ -259,10 +259,14 @@ namespace FFPACK {
 			return true;
 		}
 		std::ostream& write(std::ostream& os, const Element& y) const {
-			os<<"[ "<< (long) (y._ptr)[0];
-			for(size_t i=1;i<_rns->_size;i++)
-				os<<" , "<< (long) ((y._ptr)[i*y._stride]);
-			return os<<" ]";
+
+			// os<<"[ "<< (long) (y._ptr)[0];
+			// for(size_t i=1;i<_rns->_size;i++)
+			// 	os<<" , "<< (long) ((y._ptr)[i*y._stride]);
+			// return os<<" ]";
+			integer x;
+			convert(x,y);
+			return os<<x;
 		}
 
 

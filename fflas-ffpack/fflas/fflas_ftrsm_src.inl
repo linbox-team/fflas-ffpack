@@ -212,6 +212,9 @@ void delayed (const Field& F, const size_t M, const size_t N,
 	      TRSMHelper<StructureHelper::Recursive, ParSeqTrait> & H)
 
 {
+
+	std::cout<<"AA:=";write_matrix(std::cout,F, __FFLAS__Na,__FFLAS__Na,A,lda);
+	std::cout<<"BB:=";write_matrix(std::cout,F, M,N,B,ldb);
 	
 	//static __FFLAS__DOMAIN D(F); // is this safe ??
 	__FFLAS__DOMAIN D(F); // is this safe ??
@@ -339,6 +342,7 @@ void delayed (const Field& F, const size_t M, const size_t N,
 		this->delayed (F, __FFLAS__Mb2, __FFLAS__Nb2,
 			       __FFLAS__A3, lda, __FFLAS__B2, ldb, nblas, nbblocsblas - nbblocsup, H);
 	}
+	std::cout<<"XX:=";write_matrix(std::cout,F, M,N,B,ldb);
 }
 template <class Field, class ParSeqTrait>
 void operator () (const Field& F, const size_t M, const size_t N,

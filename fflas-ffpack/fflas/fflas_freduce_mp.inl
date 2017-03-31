@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_fflas_freduce_mp_INL
 
 #include "fflas-ffpack/field/rns-integer-mod.h"
-
+#include "fflas-ffpack/utils/print-utils.h"
 namespace FFLAS {
 
 	// specialization of the level1 freduce function for the field RNSInteger<rns_double>
@@ -39,24 +39,37 @@ namespace FFLAS {
 	inline void freduce (const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,
 		      const size_t n, FFPACK::RNSIntegerMod<FFPACK::rns_double>::Element_ptr A, size_t inc)
 	{
+		
+		std::cout<<"reducing \n";
+		write_matrix(std::cout,F, 1,n,A,inc);
+
 		if (n==0) return;
 		//cout<<"freduce: "<<n<<" with "<<inc<<endl;
 		if (inc==1)
 			F.reduce_modp(n,A);
 		else
 			F.reduce_modp(n,1,A,inc);
+		std::cout<<"to \n";
+		write_matrix(std::cout,F, 1,n,A,inc);
+		
 	}
 	// specialization of the level2 freduce function for the field RNSInteger<rns_double>
 	template<>
 	inline void freduce (const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,
 		      const size_t m, const size_t n, FFPACK::rns_double::Element_ptr A, size_t lda)
 	{
+		std::cout<<"reducing \n";
+		write_matrix(std::cout,F, m,n,A,lda);
+
 		if (n==0||m==0) return;
 		//cout<<"freduce: "<<m<<" x "<<n<<" "<<lda<<endl;
 		if (lda == n)
 			F.reduce_modp(m*n,A);
 		else
 			F.reduce_modp(m,n,A,lda); 
+		std::cout<<"to \n";
+		write_matrix(std::cout,F, m,n,A,lda);
+
 	}
 
 
