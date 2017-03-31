@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 		if (random_rpm)
 			FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
 		else
-			FFLAS::frand(F,Rand, n,n,A,n/MAX_THREADS);
+			FFLAS::frand(F,Rand, n,n,A,n);
 		init.stop();
 		std::cerr << "init: " << init << std::endl;
 
