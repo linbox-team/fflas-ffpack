@@ -95,7 +95,7 @@ namespace FFPACK {
                 // u <-- Q.u, v <-- Q.v
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 2, 0, n, u, 2, Q);
 
-				// w <-- (P^T).w
+				// w <-- w P
             FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasTrans, 1, 0, n, w, 1, P);
 
 // write_field(F,std::cout<<"u1:=",u,n,1,2,true)<<std::endl;
@@ -110,9 +110,9 @@ namespace FFPACK {
 			FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, n, 2, F.one, LU, lda, u, 2);
 
             const FFLAS::FFLAS_DIAG oppDiag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
-				// w <-- (L^T)w
+				// w <-- w.L
 				// Warning: should be ftrmv
-            FFLAS::ftrmm(F, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, oppDiag, n, 1, F.one, LU, lda, w, 1);
+            FFLAS::ftrmm(F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, oppDiag, 1, n, F.one, LU, lda, w, n);
 
 // write_field(F,std::cout<<"u2:=",u,n,1,2,true)<<std::endl;
 // write_field(F,std::cout<<"v2:=",v,n,1,2,true)<<std::endl;  
@@ -133,7 +133,9 @@ namespace FFPACK {
             if (!pass) throw FailureDetCheck();
 
 				// Check det
-			typename Field::Element dd(F.one);
+			typename Field::Element dd;
+			F.init (dd);
+			F.assign (dd,F.one);
 			
 			for (typename Field::ConstElement_ptr Ai(LU); Ai < LU+ n*lda+n; Ai+=lda+1 )
 				F.mulin( dd, *Ai );
@@ -164,7 +166,7 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer inittime; inittime.start();
 #endif
-            FFLAS::frand(F,G,n<<1,u,1);
+            FFLAS::frand(F,G,n,2,u,2);
             FFLAS::frand(F,G,n,w,1);
 
 // write_field(F,std::cout<<"A:=",A,n,n,lda,true)<<std::endl;
@@ -173,7 +175,7 @@ namespace FFPACK {
 // write_field(F,std::cout<<"w:=",w,n,1,1,true)<<std::endl;
 			typename Field::Element_ptr t(FFLAS::fflas_new(F,n,1));
 
-				// t <-- (A^T).w
+				// t <-- w . A
 			FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);
 			du = FFLAS::fdot(F, n, u, 2, t, 1);
 			dv = FFLAS::fdot(F, n, v, 2, t, 1);

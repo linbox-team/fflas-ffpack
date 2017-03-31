@@ -87,13 +87,10 @@ int main(int argc, char** argv) {
 		size_t *Q = FFLAS::fflas_new<size_t>(n);
 
 		// generate a random matrix A
-// 		PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
-		PAR_BLOCK {
-			if (random_rpm)
-				FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
-			else
-				FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS);
-		}
+		if (random_rpm)
+			FFPACK::RandomMatrixWithRankandRandomRPM(F,n,n,n,A,n,Rand);
+		else
+			FFLAS::frand(F,Rand, n,n,A,n/MAX_THREADS);
 		init.stop();
 		std::cerr << "init: " << init << std::endl;
 
