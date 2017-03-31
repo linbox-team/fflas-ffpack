@@ -64,11 +64,17 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 		else{
 			Ai = A;
 		        Xi = X;
-			size_t i=0;
-			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX, i++ ){
-				F.subin (*Xi, fdot (F, i, Ai, 1, Xi, incX));
+			
+			for(size_t i=0 ; i<N; Ai+=lda,Xi+=incX, ++i ){
+// 				F.write(std::cerr << "xi: " << *Xi) << std::endl;
+// 				F.write(std::cerr << "- d: " << fdot (F, i, Ai, 1, X, incX)) << std::endl;
+			
+				F.subin (*Xi, fdot (F, i, Ai, 1, X, incX));
+// 				F.write(std::cerr << "= xi: " << *Xi) << std::endl;
 				if ( Diag==FflasNonUnit )
-					F.divin(*Xi,*Ai);
+					F.divin(*Xi,*(Ai+i));
+// 				F.write(std::cerr << "/Ai: " << *(Ai+i)) << std::endl;
+// 				F.write(std::cerr << "= xi: " << *Xi) << std::endl;
 			}
 		}
 	} // End EFflasLower
