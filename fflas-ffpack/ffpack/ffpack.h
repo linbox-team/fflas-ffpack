@@ -189,14 +189,15 @@ namespace FFPACK { /* Permutations */
 	void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
 	/* \endcond */
 
-	/** @brief Applies a permutation P to the matrix A.
+	/** 
+	 * @brief Applies a permutation P to the matrix A.
 	 * Apply a permutation P, stored in the LAPACK format (a sequence of transpositions) 
 	 * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
 	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
 	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
 	 * @param F base field
 	 * @param Side  decides if rows or columns are permuted
-	 * @param Trans decides if it applies the inverse permutation of P
+	 * @param Trans decides if the matrix is seen as columns or rows
 	 * @param M size of the elements to permute
 	 * @param ibeg first index to consider in P
 	 * @param iend last index to consider in P
@@ -675,11 +676,12 @@ namespace FFPACK { /* echelon */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix
+	 * @param[in] A input matrix
 	 * @param lda leading dimension of A
 	 * @param P the column permutation 
 	 * @param Qt the row position of the pivots in the echelon form
 	 * @param transform decides whether V is computed
+	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 */
 	template <class Field>
 	size_t
@@ -701,11 +703,12 @@ namespace FFPACK { /* echelon */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A the input matrix
+	 * @param[in] A the input matrix
 	 * @param lda leading dimension of A
 	 * @param P the row permutation
 	 * @param Qt the column position of the pivots in the echelon form
 	 * @param transform decides whether L is computed
+	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 */
 	template <class Field>
 	size_t
@@ -726,11 +729,12 @@ namespace FFPACK { /* echelon */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns 
-	 * @param A input matrix
+	 * @param[in] A input matrix
 	 * @param lda leading dimension of A
 	 * @param P the column permutation
 	 * @param Qt the row position of the pivots in the echelon form
 	 * @param transform decides whether X is computed
+	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 */
 	template <class Field>
 	size_t
@@ -750,11 +754,12 @@ namespace FFPACK { /* echelon */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix
+	 * @param[in] A input matrix
 	 * @param lda leading dimension of A
 	 * @param P the row permutation
 	 * @param Qt the column position of the pivots in the echelon form
 	 * @param transform decides whether X is computed
+	 * @param LuTag chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 */
 	template <class Field>
 	size_t
@@ -770,7 +775,7 @@ namespace FFPACK { /* echelon */
 		 *  - Algorithm 11 of Jeannerod C-P., Pernet, C. and Storjohann, A. <i>\c Rank-profile revealing Gaussian elimination and the CUP matrix decomposition  </i>, J. of Symbolic Comp., 2013
 		 * @param M row dimension of A
 		 * @param N column dimension of A
-		 * @param [inout] A and m x n matrix
+		 * @param [inout] A an m x n matrix
 		 * @param lda leading dimension of A
 		 * @param P row permutation
 		 * @param Q column permutation
@@ -916,7 +921,6 @@ namespace FFPACK { /* charpoly */
 	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
 	 * @param lda leading dimension of \p A
 	 * @param CharpTag the algorithmic variant
-	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
 	template <class Field, class Polynomial>
 	Polynomial&
@@ -1086,7 +1090,7 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix
-	 * @param A input matrix
+	 * @param [in] A input matrix
 	 * @param lda leading dimension of A
 	 */
 	template <class Field>
@@ -1145,9 +1149,9 @@ namespace FFPACK { /* Solutions */
 	 * @brief Solves a linear system AX = b using LQUP factorization.
 	 * @oaram F base field
 	 * @oaram M matrix order
-	 * @param A input matrix
+	 * @param [in] A input matrix
 	 * @param lda leading dimension of A
-	 * @param x output solution vector
+	 * @param [out] x output solution vector
 	 * @param incx increment of x
 	 * @param b input right hand side of the system
 	 * @param incb increment of b
@@ -1237,9 +1241,9 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix of dimension M x N
+	 * @param [in] A input matrix of dimension M x N
 	 * @param lda leading dimension of A
-	 * @param rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
+	 * @param [out] rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
 	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
 	 * A is modified
@@ -1258,9 +1262,9 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix of dimension
+	 * @param [in] A input matrix of dimension
 	 * @param lda leading dimension of A
-	 * @param rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
+	 * @param [out] rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
 	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
 	 * A is modified
@@ -1275,15 +1279,14 @@ namespace FFPACK { /* Solutions */
 
 	/**  @brief Recovers the column/row rank profile from the permutation of an LU decomposition.
 	 *
-	 * Works with both the CUP/PLE decompositions (obtained by LUdivine) or the PLUQ decomposition
+	 * Works with both the CUP/PLE decompositions (obtained by LUdivine) or the PLUQ decomposition.
 	 * Assumes that the output vector containing the rank profile is already allocated.
 	 * @param P the permutation carrying the rank profile information
 	 * @param N the row/col dimension for a row/column rank profile
-	 * @param R the rank of the matrix (
-	 * @param rkprofile return the rank profile as an array of indices
+	 * @param R the rank of the matrix
+	 * @param [out] rkprofile return the rank profile as an array of indices
 	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
-	 * A is modified
 	 *
 	 */
 	void RankProfileFromLU (const size_t* P, const size_t N, const size_t R,
@@ -1302,8 +1305,7 @@ namespace FFPACK { /* Solutions */
 	 * @param LSn the column dimension of the leading submatrix considered
 	 * @param P the row permutation of the PLUQ decomposition
 	 * @param Q the column permutation of the PLUQ decomposition
-	 * @param RRP return the row rank profile of the leading
-	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
+	 * @param RRP return the row rank profile of the leading submatrix
 	 * @return the rank of the LSm x LSn leading submatrix
 	 *
 	 * A is modified
@@ -1321,7 +1323,7 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field  
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix of dimension
+	 * @param [in] A input matrix of dimension
 	 * @param rowindices array of the row indices of X in A
 	 * @param colindices array of the col indices of X in A
 	 * @param lda leading dimension of A
@@ -1346,7 +1348,7 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix of dimension
+	 * @param [in] A input matrix of dimension
 	 * @param rowindices array of the row indices of X in A
 	 * @param colindices array of the col indices of X in A
 	 * @param lda leading dimension of A
@@ -1370,9 +1372,9 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix of dimension M x N
+	 * @param [in] A input matrix of dimension M x N
 	 * @param lda leading dimension of A
-	 * @param X the output matrix
+	 * @param [out] X the output matrix
 	 * @param[out] R list of indices
 	 *
 	 * A is not modified
@@ -1392,9 +1394,9 @@ namespace FFPACK { /* Solutions */
 	 * @param F base field
 	 * @param M number of rows
 	 * @param N number of columns
-	 * @param A input matrix of dimension M x N
+	 * @param[in] A input matrix of dimension M x N
 	 * @param lda leading dimension of A
-	 * @param X the output matrix
+	 * @param[out] X the output matrix
 	 * @param[out] R list of indices
 	 *
 	 * A is not modified
@@ -1419,9 +1421,9 @@ namespace FFPACK { /* Solutions */
 	 * @param M: row dimension of T
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
-	 * @param A: input matrix
+	 * @param[in] A: input matrix
 	 * @param lda: leading dimension of A
-	 * @param T: output matrix
+	 * @param[out] T: output matrix
 	 * @param ldt: leading dimension of T
 	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
 	 */
@@ -1441,7 +1443,7 @@ namespace FFPACK { /* Solutions */
 	 * @param M: row dimension of A
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix
-	 * @param A: input/output matrix
+	 * @param[inout] A: input/output matrix
 	 * @param lda: leading dimension of A
 	 */
 	template <class Field>
@@ -1463,9 +1465,9 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
 	 * @param P: positions of the R pivots
-	 * @param A: input matrix
+	 * @param[in] A: input matrix
 	 * @param lda: leading dimension of A
-	 * @param T: output matrix
+	 * @param[out] T: output matrix
 	 * @param ldt: leading dimension of T
 	 * @param OnlyNonZeroVectors: decides whether the last zero rows/columns should be ignored
 	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
@@ -1491,7 +1493,7 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
 	 * @param P: positions of the R pivots
-	 * @param A: input/output matrix
+	 * @param[inout] A: input/output matrix
 	 * @param lda: leading dimension of A
 	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
 	 */
@@ -1518,9 +1520,9 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix
 	 * @param P: permutation matrix
-	 * @param A: input matrix
+	 * @param[in] A: input matrix
 	 * @param lda: leading dimension of A
-	 * @param T: output matrix
+	 * @param[out] T: output matrix
 	 * @param ldt: leading dimension of T
 	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
 	 */
@@ -1544,7 +1546,7 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
 	 * @param P: positions of the R pivots
-	 * @param A: input matrix
+	 * @param[in] A: input matrix
 	 * @param lda: leading dimension of A
 	 * @param ldt: leading dimension of T
 	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
@@ -1570,7 +1572,7 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
 	 * @param P: positions of the R pivots
-	 * @param A: input/output matrix
+	 * @param[inout] A: input/output matrix
 	 * @param lda: leading dimension of A
 	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
 	 */
@@ -1596,9 +1598,9 @@ namespace FFPACK { /* Solutions */
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix
 	 * @param P: permutation matrix
-	 * @param A: input matrix
+	 * @param[in] A: input matrix
 	 * @param lda: leading dimension of A
-	 * @param T: output matrix
+	 * @param[out] T: output matrix
 	 * @param ldt: leading dimension of T
 	 * @param LuTag: which factorized form (CUP/PLE if FfpackSlabRecursive, PLUQ if FfpackTileRecursive)
 	 */
