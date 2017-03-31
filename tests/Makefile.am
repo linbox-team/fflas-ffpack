@@ -57,6 +57,7 @@ BASIC_TESTS =               \
 		test-ftrsm          \
 		test-ftrmm          \
 		test-ftrsv          \
+		test-ftrmv          \
 		test-fsyrk          \
 		test-fsytrf          \
 		test-multifile      \
@@ -141,6 +142,7 @@ test_charpoly_SOURCES          = test-charpoly.C
 test_ftrsm_SOURCES             = test-ftrsm.C
 test_ftrmm_SOURCES             = test-ftrmm.C
 test_ftrsv_SOURCES             = test-ftrsv.C
+test_ftrmv_SOURCES             = test-ftrmv.C
 test_fsyrk_SOURCES             = test-fsyrk.C
 test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
