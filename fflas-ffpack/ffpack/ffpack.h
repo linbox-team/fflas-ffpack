@@ -75,6 +75,7 @@
  */
 namespace FFPACK  { /* tags */
 
+/* \cond */
 	enum FFPACK_LU_TAG
 	{
 		FfpackSlabRecursive = 1,
@@ -94,14 +95,16 @@ namespace FFPACK  { /* tags */
 		FfpackArithProg=6,
 		FfpackKGFastG=7
 	};
-
+/* \endcond */
 	class CharpolyFailed{};
 
+/* \cond */
 	enum FFPACK_MINPOLY_TAG
 	{
 		FfpackDense=1,
 		FfpackKGF=2
 	};
+/* \endcond */
 
 }
 namespace FFPACK { /* Permutations */
@@ -117,6 +120,7 @@ namespace FFPACK { /* Permutations */
 	void MathPerm2LAPACKPerm (size_t * LapackP, const size_t * MathP,
 							  const size_t N);
 
+	/* \cond */
 	template <class Field>
 	void MatrixApplyS (const Field& F, typename Field::Element_ptr A, const size_t lda, const size_t width,
 					   const size_t M2,
@@ -140,6 +144,7 @@ namespace FFPACK { /* Permutations */
 					 const size_t N2,
 					 const size_t R1, const size_t R2,
 					 const size_t R3, const size_t R4);
+	/* \endcond */
 
 		/**
 		 * @brief Computes P1 x Diag (I_R, P2) where P1 is a LAPACK and P2 a LAPACK permutation
@@ -147,6 +152,8 @@ namespace FFPACK { /* Permutations */
 		 * @param [inout] P1 a LAPACK permutation of size N
 		 * @param P2 a LAPACK permutation of size N-R
 		 */
+
+	/* \cond */
 	inline void composePermutationsLLL (size_t * P1,
 										const size_t * P2,
 										const size_t R, const size_t N);
@@ -180,7 +187,7 @@ namespace FFPACK { /* Permutations */
 	void cyclic_shift_row(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
 	template<class Field>
 	void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
-
+	/* \endcond */
 
 	/** Apply a permutation P, stored in the LAPACK format (a sequence of transpositions) 
 	 * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
@@ -230,6 +237,7 @@ namespace FFPACK { /* Permutations */
 					 const FFLAS::FFLAS_TRANSPOSE Trans,
 					 const size_t M, const size_t ibeg, const size_t iend,
 					 typename Field::Element_ptr A, const size_t lda, const size_t * P, const size_t R);
+	/* \cond */
 	template<class Field>
 	void
 	MonotonicCompress (const Field& F,
@@ -255,6 +263,7 @@ namespace FFPACK { /* Permutations */
 					 typename Field::Element_ptr A, const size_t lda, const size_t incA,
 					 const size_t * MathP, const size_t R, const size_t maxpiv,
 					 const size_t rowstomove, const std::vector<bool> &ispiv);
+	/* \endcond */
 
 	//! Parallel applyP with OPENMP tasks
 	template<class Field>
@@ -266,6 +275,7 @@ namespace FFPACK { /* Permutations */
 			 typename Field::Element_ptr A, const size_t lda, const size_t * P );
 
 	//! Parallel applyT with OPENMP tasks
+	/* \cond */
 	template <class Field>
 	void pMatrixApplyT (const Field& F, typename Field::Element_ptr A, const size_t lda,
 						const size_t width, const size_t N2,
@@ -286,6 +296,7 @@ namespace FFPACK { /* Permutations */
 	      const size_t M, const size_t N,
 	      typename Field::Element_ptr A, const size_t lda,
 	      size_t* P, size_t* Q, int nt);
+	/* \endcond */
 
 //#endif
 
@@ -587,6 +598,7 @@ namespace FFPACK { /* ludivine */
 			  const FFPACK_LU_TAG LuTag = FfpackSlabRecursive,
 			  const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF);
 
+	/* \cond */
 	template<class Element>
 	class callLUdivine_small;
 
@@ -608,6 +620,7 @@ namespace FFPACK { /* ludivine */
 					size_t* P, size_t* Q,
 					const FFPACK_LU_TAG LuTag=FfpackSlabRecursive);
 
+	/* \endcond */
 	namespace Protected {
 
 
@@ -872,8 +885,10 @@ namespace FFPACK { /* charpoly */
 			  RandIter& G,
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
+	/* \cond */
 	template<class Polynomial, class Field>
 	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
+	/* \endcond */
 
 	/**
 	 * @brief Compute the characteristic polynomial of the matrix A.
@@ -1044,6 +1059,7 @@ namespace FFPACK { /* minpoly */
 
 namespace FFPACK { /* Krylov Elim */
 
+	/* \cond */
 	template <class Field>
 	size_t KrylovElim( const Field& F, const size_t M, const size_t N,
 			   typename Field::Element_ptr A, const size_t lda, size_t*P,
@@ -1052,6 +1068,7 @@ namespace FFPACK { /* Krylov Elim */
 	template <class Field>
 	size_t  SpecRankProfile (const Field& F, const size_t M, const size_t N,
 				 typename Field::Element_ptr A, const size_t lda, const size_t deg, size_t *rankProfile);
+	/* \endcond */
 
 } // FFPACK KrylovElim
 // #include "ffpack_krylovelim.inl"
@@ -1136,6 +1153,7 @@ namespace FFPACK { /* Solutions */
 	//! L is M*M if Side == FFLAS::FflasLeft and N*N if Side == FFLAS::FflasRight, B is M*N.
 	//! Only the R non trivial column of L are stored in the M*R matrix L
 	//! Requirement :  so that L could  be expanded in-place
+	/* \cond */
 	template<class Field>
 	void
 	solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
@@ -1154,7 +1172,7 @@ namespace FFPACK { /* Solutions */
 		  typename Field::Element_ptr L, const size_t ldl,
 		  const size_t * Q,
 		  typename Field::Element_ptr B, const size_t ldb );
-
+	/* \endcond */
 
 	/*************/
 	/* NULLSPACE */
