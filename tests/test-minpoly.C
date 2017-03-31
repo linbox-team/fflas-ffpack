@@ -33,14 +33,35 @@
 // David Lucas
 //-------------------------------------------------------------------------
 
+#include <iomanip>
+#include <iostream>
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/utils/args-parser.h"
+#include "test-utils.h"
+#include <givaro/modular-integer.h>
+#include <givaro/modular.h>
+#include <givaro/modular-balanced.h>
+
+using namespace std;
+using namespace FFPACK;
+using Givaro::Modular;
+using Givaro::ModularBalanced;
+
+typedef Givaro::ModularBalanced<double> Field;
+typedef vector<Field::Element> Polynomial;
 
 template<typename Field, class RandIter>
-bool check_minpoly(const Field &F, size_t n, RandIter& Rand)
+bool check_minpoly(const Field &F, size_t n, RandIter& G)
 {
+	cout<<"Entering check_minpoly";
+	cout<<endl;
+	typedef typename Field::Element Element;
 	size_t lda, ldv;
+	Element *A, *V;
 
 	//Default
 	lda = n;
@@ -51,14 +72,29 @@ bool check_minpoly(const Field &F, size_t n, RandIter& Rand)
     A = FFLAS::fflas_new(F, n, n);
     V = FFLAS::fflas_new(F, 1, n);
     Polynomial minP;
+
+
     FFPACK::RandomMatrix (F, n, n, A, lda, G);
+
+	cout<<"Random matrix";
+	cout<<endl;
+
 	FFPACK::NonZeroRandomMatrix(F, 1, n, V, n , G); 
+
+	cout<<"After NZ Random Matrix";
+	cout<<endl;
+
 	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv); //3rd input argument is the matrix order
+
+	cout<<"After MV MinPoly";
+	cout<<endl;
 
 	/*Check that minP is monic*/
 
 	cout<<minP[0];
 	cout<<endl;
+    FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(V);
 	return true;
 	//if(!F.fequal(minP[0], F.one))
 	//	return true;
@@ -121,7 +157,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 int main(int argc, char** argv)
 {
     /* Test parameters */
-	Givaro::Integer q = 1;
+	Givaro::Integer q = -1;
 	size_t b = 0;
     size_t n = 128;
 	size_t iters = 1;
@@ -144,7 +180,7 @@ int main(int argc, char** argv)
 	{
 		ok &= run_with_field<Modular<double>>(q,b,n,iters,seed);
 		//more tests?
-	} while(loop && ok);
+	} while(ok);
 
 	return !ok ;
 }
