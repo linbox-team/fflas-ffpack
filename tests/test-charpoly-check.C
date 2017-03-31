@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     
 	Field F(q);
 	srand (seed);
-	Field::RandIter Rand(F,q,seed);
+	Field::RandIter Rand(F,0,seed);
     typedef std::vector<Field::Element> Polynomial;
 
 	size_t pass = 0;
