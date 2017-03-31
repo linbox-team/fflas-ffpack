@@ -28,26 +28,40 @@
 #include <fflas-ffpack/utils/args-parser.h>
 
 #include <iostream>
+#include <array>
 
 using namespace FFLAS;
 
 int main(int argc, char** argv) {
 
     typedef Givaro::Modular<float> Ring;
-    Ring F(13);
+    Ring F(11);
     
-    Ring::Element L[4]{1,0,2,3}, B[2]{4,5};
+    Ring::Element L[4]{1,0,2,3};
+    std::array<Ring::Element,2> B{4,5};
     
     size_t m(2);
     
     write_field(F, std::cout << "L:=", L, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "B:=", B, m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
     
         // In place system solve
-    ftrsv (F, FflasLower,FflasNoTrans,FflasNonUnit, m, L, m, B, 1);
+    ftrsv (F, FflasLower,FflasNoTrans,FflasNonUnit, m, L, m, B.begin(), 1);
     
-    write_field(F, std::cout << "X:=", B, m, 1, 1, true) << std::endl;
+    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
     std::cerr << "0 = L.X - B mod " << F.characteristic() << ';' << std::endl;
+    
+    Ring::Element U[4]{3,2,0,5}; B={4,7};
+    
+    
+    write_field(F, std::cout << "U:=", U, m, m, m, true) << std::endl;
+    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    
+        // In place system solve
+    ftrsv (F, FflasUpper,FflasTrans,FflasNonUnit, m, U, m, B.begin(), 1);
+    
+    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
+    std::cerr << "0 = Transpose(X).U - Transpose(B) mod " << F.characteristic() << ';' << std::endl;
     
     return 0;
 }

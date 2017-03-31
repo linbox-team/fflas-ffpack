@@ -30,7 +30,8 @@ pkgincludesub_HEADERS=        \
 		checkers_ffpack.h \
 		checkers_ffpack.inl \
 		checker_empty.h \
-		checker_pluq.inl \
+	 	checker_pluq.inl \
+	 	checker_det.inl \
 		checker_ftrsm.inl \
 		checker_fgemm.inl \
 		checker_charpoly.inl \
