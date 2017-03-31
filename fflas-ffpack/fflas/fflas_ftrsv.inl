@@ -99,14 +99,8 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 			size_t i=0;
 			for( ; Xi>=X; Ai-=lda+1,Xi-=incX, i++ ){
 				F.subin (*Xi, fdot (F, i, Ai+1, 1, Xi+incX, incX));
-				// F.negin( *Xi );
-				// for ( Xj = Xi+incX, Aj=Ai+1; Xj<=Ximax;
-				//       Xj+=incX, Aj++){
-				// 	F.axpyin( *Xi, *Xj, *Aj );
-				// }
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
-				// F.negin( *Xi );
 			}
 		}
 	}
