@@ -88,19 +88,11 @@ namespace FFPACK {
 #ifdef TIME_CHECKER_Det
             Givaro::Timer checktime, overhead; checktime.start();
 #endif
-// write_perm(std::cerr<<"P = ",P,n);
-// write_field(F,std::cout<<"B:=",A,n,n,lda,true)<<std::endl;
-// write_perm(std::cerr<<"Q = ",Q,n);
-
                 // u <-- Q.u, v <-- Q.v
             FFPACK::applyP(F, FFLAS::FflasLeft, FFLAS::FflasNoTrans, 2, 0, n, u, 2, Q);
 
 				// w <-- w P
             FFPACK::applyP(F, FFLAS::FflasRight, FFLAS::FflasTrans, 1, 0, n, w, 1, P);
-
-// write_field(F,std::cout<<"u1:=",u,n,1,2,true)<<std::endl;
-// write_field(F,std::cout<<"v1:=",v,n,1,2,true)<<std::endl;  
-// write_field(F,std::cout<<"w1:=",w,n,1,1,true)<<std::endl;
 
 #ifdef TIME_CHECKER_Det
             checktime.stop(); _time += checktime;
@@ -114,9 +106,6 @@ namespace FFPACK {
 				// Warning: should be ftrmv
             FFLAS::ftrmm(F, FFLAS::FflasRight, FFLAS::FflasLower, FFLAS::FflasNoTrans, oppDiag, 1, n, F.one, LU, lda, w, n);
 
-// write_field(F,std::cout<<"u2:=",u,n,1,2,true)<<std::endl;
-// write_field(F,std::cout<<"v2:=",v,n,1,2,true)<<std::endl;  
-// write_field(F,std::cout<<"w2:=",w,n,1,1,true)<<std::endl;
 #ifdef TIME_CHECKER_Det
 			overhead.stop();
 			checktime.start();
@@ -124,10 +113,6 @@ namespace FFPACK {
 			typename Field::Element zu, zv;
 			zu = FFLAS::fdot(F, n, w, 1, u, 2);
 			zv = FFLAS::fdot(F, n, w, 1, v, 2);
-
-// 			F.write(std::cout<<"zu:=",zu)<<';'<<std::endl;
-// 			F.write(std::cout<<"zv:=",zv)<<';'<<std::endl;
-			
 
 			bool pass = F.areEqual(zu,du) && F.areEqual(zv,dv);
             if (!pass) throw FailureDetCheck();
@@ -169,19 +154,12 @@ namespace FFPACK {
             FFLAS::frand(F,G,n,2,u,2);
             FFLAS::frand(F,G,n,w,1);
 
-// write_field(F,std::cout<<"A:=",A,n,n,lda,true)<<std::endl;
-// write_field(F,std::cout<<"u:=",u,n,1,2,true)<<std::endl;
-// write_field(F,std::cout<<"v:=",v,n,1,2,true)<<std::endl;  
-// write_field(F,std::cout<<"w:=",w,n,1,1,true)<<std::endl;
 			typename Field::Element_ptr t(FFLAS::fflas_new(F,n,1));
 
 				// t <-- w . A
 			FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);
 			du = FFLAS::fdot(F, n, u, 2, t, 1);
 			dv = FFLAS::fdot(F, n, v, 2, t, 1);
-			
-// 			F.write(std::cout<<"du:=",du)<<';'<<std::endl;
-// 			F.write(std::cout<<"dv:=",dv)<<';'<<std::endl;
 			
             FFLAS::fflas_delete(t);
 #ifdef TIME_CHECKER_Det
