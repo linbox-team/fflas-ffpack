@@ -189,19 +189,20 @@ namespace FFPACK { /* Permutations */
 	void cyclic_shift_col(const Field& F, typename Field::Element_ptr A, size_t m, size_t n, size_t lda);
 	/* \endcond */
 
-	/** Apply a permutation P, stored in the LAPACK format (a sequence of transpositions) 
+	/** @brief Applies a permutation P to the matrix A.
+	 * Apply a permutation P, stored in the LAPACK format (a sequence of transpositions) 
 	 * between indices ibeg and iend of P to (iend-ibeg) vectors of size M stored in A (as column for NoTrans and rows for Trans).
 	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
 	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
-	 * @param F
-	 * @param Side
-	 * @param Trans
-	 * @param M
-	 * @param ibeg
-	 * @param iend
-	 * @param A
-	 * @param lda
-	 * @param P
+	 * @param F base field
+	 * @param Side  decides if rows or columns are permuted
+	 * @param Trans decides if it applies the inverse permutation of P
+	 * @param M size of the elements to permute
+	 * @param ibeg first index to consider in P
+	 * @param iend last index to consider in P
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P permutation in LAPACK format
 	 * @warning not sure the submatrix is still a permutation and the one we expect in all cases... examples for iend=2, ibeg=1 and P=[2,2,2]
 	 */
 	template<class Field>
@@ -219,16 +220,16 @@ namespace FFPACK { /* Permutations */
 	 *  - the remaining iend-ibeg-R values of the permutation are in a monotonically increasing progression
 	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
 	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
-	 * @param F
-	 * @param Side
-	 * @param Trans
-	 * @param M
+	 * @param F	base field
+	 * @param Side selects if it is a row or column permutation 
+	 * @param Trans inverse permutation
+	 * @param M 
 	 * @param ibeg
 	 * @param iend
-	 * @param A
-	 * @param lda
-	 * @param P
-	 * @param R
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P LAPACK permuation
+	 * @param R first values of P
 	 */
 	template<class Field>
 	void
@@ -312,7 +313,7 @@ namespace FFPACK { /* fgetrs, fgesv */
 	 * If A is rank deficient, a solution is returned if the system is consistent,
 	 * Otherwise an info is 1
 	 *
-	 * @param F field
+	 * @param F base field
 	 * @param Side Determine wheter the resolution is left or right looking.
 	 * @param M row dimension of \p B
 	 * @param N col dimension of \p B
@@ -342,7 +343,7 @@ namespace FFPACK { /* fgetrs, fgesv */
 	 * If A is rank deficient, a solution is returned if the system is consistent,
 	 * Otherwise an info is 1
 	 *
-	 * @param F field
+	 * @param F base field
 	 * @param Side Determine wheter the resolution is left or right looking.
 	 * @param M row dimension of A
 	 * @param N col dimension of A
@@ -448,12 +449,12 @@ namespace FFPACK { /* ftrtr */
 
 
 	/** Compute the inverse of a triangular matrix.
-	 * @param F
+	 * @param F base field
 	 * @param Uplo whether the matrix is upper of lower triangular
-	 * @param Diag whether the matrix if unit diagonal
-	 * @param N
-	 * @param A
-	 * @param lda
+	 * @param Diag whether the matrix is unit diagonal
+	 * @param N input matrix order
+	 * @param A the input matrix
+	 * @param lda leading dimension of A
 	 *
 	 */
 	template<class Field>
@@ -471,11 +472,11 @@ namespace FFPACK { /* ftrtr */
 	 * stored one above the other in the square matrix A.
 	 * If side == FflasLeft, the product UL is computed, otherwise the product LU.
 	 * Diag == Unit if the matrix U is unit diagonal
-	 * @param F
-	 * @param diag
-	 * @param N
-	 * @param A
-	 * @param lda
+	 * @param F base field
+	 * @param diag whether the matrix is unit diagonal
+	 * @param N input matrix order
+	 * @param A the input matrix
+	 * @param lda leading dimension of A
 	 *
 	 */
 	template<class Field>
@@ -539,7 +540,7 @@ namespace FFPACK {
 	 * Return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
-	 * @param F field
+	 * @param F base field
 	 * @param Diag   whether U should have a unit diagonal or not
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
@@ -570,7 +571,7 @@ namespace FFPACK { /* ludivine */
 	 * a block algorithm and return its rank.
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
-	 * @param F field
+	 * @param F base field
 	 * @param Diag  whether the transformation matrix (U of the CUP, L of the PLE) should have a unit diagonal or not
 	 * @param trans whether to compute the CUP decomposition (FflasNoTrans) or the PLE decomposition (FflasTrans)
 	 * @param M matrix row dimension
@@ -671,14 +672,14 @@ namespace FFPACK { /* echelon */
 	 * Qt = Q^T
 	 * If transform=false, the matrix V is not computed.
 	 * See also test-colechelon for an example of use
-	 * @param F
-	 * @param M
-	 * @param N
-	 * @param A
-	 * @param lda
-	 * @param P the column permutation
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P the column permutation 
 	 * @param Qt the row position of the pivots in the echelon form
-	 * @param transform
+	 * @param transform decides whether V is computed
 	 */
 	template <class Field>
 	size_t
@@ -697,14 +698,14 @@ namespace FFPACK { /* echelon */
 	 * Qt = Q^T
 	 * If transform=false, the matrix L is not computed.
 	 * See also test-rowechelon for an example of use
-	 * @param F
-	 * @param M
-	 * @param N
-	 * @param A
-	 * @param lda
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
+	 * @param A the input matrix
+	 * @param lda leading dimension of A
 	 * @param P the row permutation
 	 * @param Qt the column position of the pivots in the echelon form
-	 * @param transform
+	 * @param transform decides whether L is computed
 	 */
 	template <class Field>
 	size_t
@@ -722,14 +723,14 @@ namespace FFPACK { /* echelon */
 	 * Qt = Q^T
 	 * If transform=false, the matrix X is not computed and the matrix A = R
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
-	 * @param A
-	 * @param lda
-	 * @param P
-	 * @param Qt
-	 * @param transform
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns 
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P the column permutation
+	 * @param Qt the row position of the pivots in the echelon form
+	 * @param transform decides whether X is computed
 	 */
 	template <class Field>
 	size_t
@@ -746,14 +747,14 @@ namespace FFPACK { /* echelon */
 	 *                                [ V2 In-r ]            [ 0     ]
 	 * Qt = Q^T
 	 * If transform=false, the matrix X is not computed and the matrix A = R
-	 * @param F
-	 * @param M
-	 * @param N
-	 * @param A
-	 * @param lda
-	 * @param P
-	 * @param Qt
-	 * @param transform
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param P the row permutation
+	 * @param Qt the column position of the pivots in the echelon form
+	 * @param transform decides whether X is computed
 	 */
 	template <class Field>
 	size_t
@@ -840,7 +841,7 @@ namespace FFPACK { /* invert */
 	 *
 	 * @warning A is overwritten here !
 	 * @bug not tested.
-	 * @param F
+	 * @param F the computation domain
 	 * @param M order of the matrix
 	 * @param [in,out] A input matrix (\f$M \times M\f$). On output, \p A
 	 * is modified and represents a "psycological" factorisation \c LU.
@@ -1082,7 +1083,7 @@ namespace FFPACK { /* Solutions */
 
 	/** Computes the rank of the given matrix using a LQUP factorization.
 	 * The input matrix is modified.
-	 * @param F field
+	 * @param F base field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix
 	 * @param A input matrix
@@ -1106,7 +1107,7 @@ namespace FFPACK { /* Solutions */
 	 * then the matrix is virtually padded with zeros to make it square and
 	 * it's determinant is zero.
 	 * @warning The input matrix is modified.
-	 * @param F field
+	 * @param F base field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix.
 	 * @param [in,out] A input matrix
@@ -1124,7 +1125,7 @@ namespace FFPACK { /* Solutions */
 	 * then the matrix is virtually padded with zeros to make it square and
 	 * it's determinant is zero.
 	 * @warning The input matrix is modified.
-	 * @param F field
+	 * @param F base field
 	 * @param M row dimension of the matrix
 	 * @param N column dimension of the matrix.
 	 * @param [in,out] A input matrix
@@ -1140,7 +1141,17 @@ namespace FFPACK { /* Solutions */
 	/*********/
 
 
-	/// Solve linear system using LQUP factorization.
+	/** 
+	 * @brief Solves a linear system AX = b using LQUP factorization.
+	 * @oaram F base field
+	 * @oaram M matrix order
+	 * @param A input matrix
+	 * @param lda leading dimension of A
+	 * @param x output solution vector
+	 * @param incx increment of x
+	 * @param b input right hand side of the system
+	 * @param incb increment of b
+	 */
 	template <class Field>
 	typename Field::Element_ptr
 	Solve( const Field& F, const size_t M,
@@ -1181,13 +1192,13 @@ namespace FFPACK { /* Solutions */
 	/**  Computes a vector of the Left/Right nullspace of the matrix A.
 	 *
 	 * @param F The computation domain
-	 * @param Side
-	 * @param M
-	 * @param N
+	 * @param Side decides whether it computes the left or right nullspace
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param[in,out] A input matrix of dimension M x N, A is modified to its LU version
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param[out] X output vector
-	 * @param incX
+	 * @param incX increment of X
 	 *
 	 */
 	template <class Field>
@@ -1200,13 +1211,13 @@ namespace FFPACK { /* Solutions */
 	 * return the dimension of the nullspace.
 	 *
 	 * @param F The computation domain
-	 * @param Side
-	 * @param M
-	 * @param N
+	 * @param Side decides whether it computes the left or right nullspace
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param[in,out] A input matrix of dimension M x N, A is modified
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param[out] NS output matrix of dimension N x NSdim (allocated here)
-	 * @param[out] ldn
+	 * @param[out] ldn leading dimension of NS
 	 * @param[out] NSdim the dimension of the Nullspace (N-rank(A))
 	 *
 	 */
@@ -1223,11 +1234,11 @@ namespace FFPACK { /* Solutions */
 
 	/** @brief Computes the row rank profile of A.
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param A input matrix of dimension M x N
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
 	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
@@ -1244,11 +1255,11 @@ namespace FFPACK { /* Solutions */
 
 	/**  @brief Computes the column rank profile of A.
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param A input matrix of dimension
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param rkprofile return the rank profile as an array of row indexes, of dimension r=rank(A)
 	 * @param LuTag: chooses the elimination algorithm. SlabRecursive for LUdivine, TileRecursive for PLUQ
 	 *
@@ -1307,14 +1318,14 @@ namespace FFPACK { /* Solutions */
 	 * Computes the indices of the submatrix r*r X of A whose rows correspond to
 	 * the row rank profile of A.
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
+	 * @param F base field  
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param A input matrix of dimension
 	 * @param rowindices array of the row indices of X in A
 	 * @param colindices array of the col indices of X in A
-	 * @param lda
-	 * @param[out] R
+	 * @param lda leading dimension of A
+	 * @param[out] R list of indices
 	 *
 	 * rowindices and colindices are allocated during the computation.
 	 * A is modified
@@ -1332,14 +1343,14 @@ namespace FFPACK { /* Solutions */
 	/** Computes the indices of the submatrix r*r X of A whose columns correspond to
 	 * the column rank profile of A.
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param A input matrix of dimension
 	 * @param rowindices array of the row indices of X in A
 	 * @param colindices array of the col indices of X in A
-	 * @param lda
-	 * @param[out] R
+	 * @param lda leading dimension of A
+	 * @param[out] R list of indices
 	 *
 	 * rowindices and colindices are allocated during the computation.
 	 * @warning A is modified
@@ -1356,13 +1367,13 @@ namespace FFPACK { /* Solutions */
 
 	/** Computes the r*r submatrix X of A, by picking the row rank profile rows of A.
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param A input matrix of dimension M x N
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param X the output matrix
-	 * @param[out] R
+	 * @param[out] R list of indices
 	 *
 	 * A is not modified
 	 * X is allocated during the computation.
@@ -1378,13 +1389,13 @@ namespace FFPACK { /* Solutions */
 	/** Compute the \f$ r\times r\f$ submatrix X of A, by picking the row rank profile rows of A.
 	 *
 	 *
-	 * @param F
-	 * @param M
-	 * @param N
+	 * @param F base field
+	 * @param M number of rows
+	 * @param N number of columns
 	 * @param A input matrix of dimension M x N
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param X the output matrix
-	 * @param[out] R
+	 * @param[out] R list of indices
 	 *
 	 * A is not modified
 	 * X is allocated during the computation.
@@ -1615,13 +1626,13 @@ namespace FFPACK { /* not used */
 	 * This procedure efficiently computes the inverse of this minor and puts it into X.
 	 * @note It changes the lower entries of A_factors in the process (NB: unless A was nonsingular and square)
 	 *
-	 * @param F
+	 * @param F base field
 	 * @param rank       rank of the matrix.
 	 * @param A_factors  matrix containing the L and U entries of the factorization
-	 * @param lda
+	 * @param lda leading dimension of A
 	 * @param QtPointer  theLQUP->getQ()->getPointer() (note: getQ returns Qt!)
 	 * @param X          desired location for output
-	 * @param ldx
+	 * @param ldx leading dimension of X
 	 */
 	template <class Field>
 	typename Field::Element_ptr
