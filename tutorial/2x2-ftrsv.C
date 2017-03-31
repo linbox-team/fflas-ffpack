@@ -58,7 +58,30 @@ int main(int argc, char** argv) {
     write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
     
         // In place system solve
-    ftrsv (F, FflasUpper,FflasTrans,FflasNonUnit, m, U, m, B.begin(), 1);
+    ftrsv (F, FflasUpper, FflasNoTrans ,FflasNonUnit, m, U, m, B.begin(), 1);
+    
+    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
+    std::cerr << "0 = U.X - B mod " << F.characteristic() << ';' << std::endl;
+    
+    B={4,5};
+    
+    write_field(F, std::cout << "L:=", L, m, m, m, true) << std::endl;
+    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    
+        // In place system solve
+    ftrsv (F, FflasLower,FflasTrans,FflasNonUnit, m, L, m, B.begin(), 1);
+    
+    write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
+    std::cerr << "0 = Transpose(X).L - Transpose(B) mod " << F.characteristic() << ';' << std::endl;
+
+    B={4,7};
+    
+    
+    write_field(F, std::cout << "U:=", U, m, m, m, true) << std::endl;
+    write_field(F, std::cout << "B:=", B.begin(), m, 1, 1, true) << std::endl;
+    
+        // In place system solve
+    ftrsv (F, FflasUpper, FflasTrans ,FflasNonUnit, m, U, m, B.begin(), 1);
     
     write_field(F, std::cout << "X:=", B.begin(), m, 1, 1, true) << std::endl;
     std::cerr << "0 = Transpose(X).U - Transpose(B) mod " << F.characteristic() << ';' << std::endl;
