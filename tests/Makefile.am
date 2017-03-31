@@ -24,7 +24,7 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
+AM_CXXFLAGS = ${DEFAULT_CFLAGS} $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
 
 #LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
 AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
@@ -48,6 +48,7 @@ BASIC_TESTS =               \
 		test-fscal          \
 		test-fgemm          \
 		test-pluq-check     \
+		test-det-check     \
 		test-fgemm-check    \
 		test-ftrsm-check    \
 		test-invert-check   \
@@ -117,6 +118,7 @@ test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
 test_pluq_check_SOURCES = test-pluq-check.C
+test_det_check_SOURCES = test-det-check.C
 test_fgemm_check_SOURCES = test-fgemm-check.C
 test_ftrsm_check_SOURCES = test-ftrsm-check.C
 test_invert_check_SOURCES = test-invert-check.C
