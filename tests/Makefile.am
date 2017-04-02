@@ -60,6 +60,7 @@ BASIC_TESTS =               \
 		test-fsyrk          \
 		test-fsytrf          \
 		test-multifile      \
+		test-io      \
 		test-maxdelayeddim \
 		regression-check
 
@@ -129,6 +130,7 @@ test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
 test_fger_SOURCES             = test-fger.C
 test_multifile_SOURCES             = test-multifile1.C test-multifile2.C
+test_io_SOURCES             = test-io.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 test_charpoly_SOURCES          = test-charpoly.C
 #  benchfgemm_SOURCES             = benchfgemm.C
