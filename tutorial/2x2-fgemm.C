@@ -33,20 +33,17 @@ using namespace FFLAS;
 
 int main(int argc, char** argv) {
 
-	typedef Givaro::Modular<float> Ring;
-	Ring F(11);
+	Givaro::Modular<float> F(11);
 
-	Ring::Element A[4]{1,2,3,4}, B[4]{5,6,7,8}, * C;
+    size_t m(2),k(3),n(1);
+	float A[2*3]{1,2,3,4,5,6}, B[3*1]{7,8,9}, C[2*1];
 
-    size_t m(2),k(2),n(2);
-
-	C = fflas_new(F,m,n);
-	
         // A is mxk with leading dimension k
 	write_field(F, std::cout << "A:=", A, m, k, k, true) << std::endl;
         // B is kxn with leading dimension n
 	write_field(F, std::cout << "B:=", B, k, n, n, true) << std::endl;
 
+        // C <-- 1. A.B + 0. C
 	fgemm (F, FflasNoTrans, FflasNoTrans, m, n, k, F.one, A, m, B, n, F.zero, C, n);
 
         // C is mxn with leading dimension n
