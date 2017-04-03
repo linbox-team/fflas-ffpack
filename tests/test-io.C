@@ -30,31 +30,109 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
-
+#include "test-utils.h"
 #include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/utils/args-parser.h"
 
 #include "fflas-ffpack/utils/Matio.h"
 using namespace std;
 using namespace FFLAS;
 using Givaro::Modular;
+template <class Field>
+bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t iters, uint64_t seed){
 
-int main(){
+	bool ok=true;
+	int nbit =(int) iters;
+	while (ok && nbit){
+		Field* F = FFPACK::chooseField<Field>(q,b);
+		if (F==nullptr)
+			return true;
+		typename Field::RandIter G(*F, 0, seed);
+		std::ostringstream oss;
+		F->write(oss);
 
-	typedef Modular<double> Field;
-	Field F(101);
-	string file_dense = "data/mat.dense";
-	string file_sms = "data/mat.sms";
-	string outfile_dense = "data/out.dense";
+		std::cout.fill('.');
+		std::cout<<"Checking ";
 
-	Field::Element_ptr A=NULL;
-	size_t m,n;
-	ReadMatrix (file_dense, F, m, n, A);
+		
+		string file_dense = "data/mat.dense";
+		string file_sms = "data/mat.sms";
+		string file_binary = "data/mat.bin";
+		
+		typename Field::Element_ptr A = fflas_new (*F, m, n);
+		FFPACK::RandomMatrix (*F, m, n, A, n, G);
+		typename Field::Element_ptr B;
 
-	WriteMatrix (std::cout<<"A = "<<std::endl,F,m,n,A,n,FflasSMS);
+			// Testing Dense format
+		WriteMatrix (file_dense,*F,m,n,A,n, FflasDense);
+		ReadMatrix (file_dense,*F,m,n,B, FflasDense);
+		ok &= fequal (*F, m, n, A, n, B, n);
+		if (ok) oss<<" Dense (ok)";
+		else oss<<" Dense (KO)"<<std::endl;
+		fflas_delete(B);
 
-	WriteMatrix (outfile_dense,F,m,n,A,n);
+			// Testing SMS format
+		WriteMatrix (file_sms,*F,m,n,A,n, FflasSMS);
+		ReadMatrix (file_sms,*F,m,n,B, FflasSMS);
+		ok &= fequal (*F, m, n, A, n, B, n);
+		if (ok) oss<<" SMS (ok)";
+		else oss<<" SMS (KO)";
+		fflas_delete(B);
 
-	fflas_delete(A);	
+			// Testing Binary format
+		WriteMatrix (file_binary,*F,m,n,A,n, FflasBinary);
+		ReadMatrix (file_binary,*F,m,n,B, FflasBinary);
+		ok &= fequal (*F, m, n, A, n, B, n);
+		if (ok) oss<<" Bin (ok)";
+		else oss<<" Bin (KO)";
+		fflas_delete(B);
 
+			// Testing Autodetection of Binary format
+		ReadMatrix (file_binary,*F,m,n,B, FflasAuto);
+		ok &= fequal (*F, m, n, A, n, B, n);
+		if (ok) oss<<" Auto Bin (ok)";
+		else oss<<" Auto Bin (KO)";
+		fflas_delete(B);
+
+		std::cout.width(75);
+		std::cout<<oss.str();
+		std::cout<<" ... ";
+
+		if (ok) std::cout << "PASSED"<<std::endl;
+		else std::cout << "FAILED"<<std::endl;
+		fflas_delete(A);
+		nbit--;
+	}
 	return 0;
+}
+
+
+int main(int argc, char** argv){
+	cerr<<setprecision(20);
+	Givaro::Integer q=-1;
+	size_t b=0;
+	size_t m=53;
+	size_t n=97;
+	size_t iters=3;
+	bool loop=false;
+	size_t seed=time(NULL);
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
+		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
+		{ 'm', "-m M", "Set the row dimension of the matrix.",      TYPE_INT , &m },
+		{ 'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT , &n },
+		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		END_OF_ARGUMENTS
+	};
+
+	parseArguments(argc,argv,as);
+	srand(seed);
+	bool ok=true;
+	do{
+		run_with_field<Modular<double> >(q,b,m,n,iters,seed);
+
+	} while(loop && ok);
+	return !ok;
 }
