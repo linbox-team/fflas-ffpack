@@ -45,6 +45,7 @@
 #include <givaro/modular-integer.h>
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
+#include <givaro/givpoly1.h>
 
 using namespace std;
 using namespace FFPACK;
@@ -70,65 +71,56 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	/*Create variables used for testing (matrices, vectors and polynomials) */
 
     A = FFLAS::fflas_new(F, n, n);
-    V = FFLAS::fflas_new(F, 1, n);
+    V = FFLAS::fflas_new(F, n+1, n);
     Polynomial minP;
 
 
     FFPACK::RandomMatrix (F, n, n, A, lda, G);
 
-	cout<<"Random matrix";
-	cout<<endl;
-
-	FFPACK::NonZeroRandomMatrix(F, 1, n, V, n , G); 
-
-	cout<<"After NZ Random Matrix";
-	cout<<endl;
+	FFPACK::NonZeroRandomMatrix(F, 1, n, V, n, G); 
 
 	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv); //3rd input argument is the matrix order
 
-	cout<<"After MV MinPoly";
-	cout<<endl;
-
 	/*Check that minP is monic*/
 
-	cout<<minP[0];
-	cout<<endl;
-    FFLAS::fflas_delete(A);
+	size_t deg = minP.size() - 1;
+	if(!(minP[deg]==F.one))
+		return false;
+
+	/*Check that minP(A).V is zero*/
+
+
+	Element *E, *E_tmp;
+    E = FFLAS::fflas_new(F, n+1, n);
+	E_tmp = FFLAS::fflas_new(F, n+1, n);
+    
+    /* Horner's method for polynomial evaluation */
+    
+	FFLAS::finit(F, n, V, n, E, n); //E <- V
+
+    for(long i = deg; i > 0; --i)
+    {
+		FFLAS::faxpy(F, F.one, n, minP[i-1], V, n, E, n); //E <- minP[i-1] * V + E
+		FFLAS::fassign(F, 1, n, E_tmp, n, E, n); //E_tmp <- E
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, n, E_tmp, n, F.zero, E, n);//E <- E_tmp * A
+    }
+	
+	FFLAS::fflas_delete(E_tmp);
+	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(V);
+
+    if (!FFLAS::fiszero(F, n, E, n))
+	{
+		cout<<"NONZERO"<<endl;
+		for(long i = 0; i<n; ++i)
+			cout<<E[i]<<" ";
+		cout<<endl;
+		FFLAS::fflas_delete(E);
+		return false;
+	}
+
+	FFLAS::fflas_delete(E);
 	return true;
-	//if(!F.fequal(minP[0], F.one))
-	//	return true;
-
-	///*Check that minP(A).V is zero*/
-
-
-    //E = FFLAS::fflas_new(F, 1, n);
-	//E_tmp = FFLAS::fflas_new(F, 1, n);
-    //
-    ////Horner's method for polynomial evaluation
-    //
-	//FFLAS::finit(F, n, V, n, E, n); //E <- V
-
-    //for(long i = minP.degree(); i > 0; --i)
-    //{
-	//	FFLAS::axpy(F, F.one, n, minP(i-1), V, n, E, n); //E <- minP[i-1] * V + E
-	//	FFLAS::fassign(F, 1, n, E_tmp, n, E, n); //E_tmp <- E
-	//	FFLAS::fgemv(F, FFLAS:FflasNoTrans, n, n, F.one, A, n, E_tmp, n, F.zero, E, n);//E <- E_tmp * A
-    //}
-
-    //if (!FFLAS::fiszero(F, n, n, E, lde))
-	//{
-	//	FFLAS::fflas_delete(A);
-	//	FFLAS::fflas_delete(E);
-	//	FFLAS::fflas_delete(V);
-	//	return false;
-	//}
-
-    //FFLAS::fflas_delete(A);
-	//FFLAS::fflas_delete(E);
-	//FFLAS::fflas_delete(V);
-	//return true;
-
 }
 
 template <class Field>
@@ -148,8 +140,17 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 		cout<<"Checking with "; F->write(cout)<<endl;
 
 		ok = ok && check_minpoly(*F, n, G);
+
+		if(!ok)
+			cout<<"FAILED"<<endl;
+		else
+			cout<<"PASS"<<endl;
+
 		delete F;
+		nbiter--;
 	}
+
+
 	return ok;
 }
 
@@ -161,6 +162,7 @@ int main(int argc, char** argv)
 	size_t b = 0;
     size_t n = 128;
 	size_t iters = 1;
+	bool loop = false;
     uint64_t seed = time(NULL);
 
 	Argument as[] = {
@@ -168,6 +170,7 @@ int main(int argc, char** argv)
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.", TYPE_INT, &b },
 		{ 'n', "-n N", "Set the order of the matrix.", TYPE_INT, &b },
 		{ 'i', "-i, R", "set the number of repetitions.", TYPE_INT, &iters },
+		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
 		{ 's', "-s seed", "set seed for the random generator.", TYPE_INT, &seed },
 			END_OF_ARGUMENTS
 		};
@@ -180,7 +183,7 @@ int main(int argc, char** argv)
 	{
 		ok &= run_with_field<Modular<double>>(q,b,n,iters,seed);
 		//more tests?
-	} while(ok);
+	} while(ok && loop);
 
 	return !ok ;
 }
