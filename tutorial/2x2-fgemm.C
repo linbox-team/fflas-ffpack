@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
 	Ring::Element A[4]{1,2,3,4}, B[4]{5,6,7,8}, * C;
 
-    size_t m(2),k(2),n(2);
+        size_t m(2),k(2),n(2);
 
 	C = fflas_new(F,m,n);
 	

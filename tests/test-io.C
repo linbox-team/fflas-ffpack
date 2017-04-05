@@ -30,6 +30,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
+#include <givaro/zring.h>
 #include "test-utils.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -38,6 +39,14 @@
 using namespace std;
 using namespace FFLAS;
 using Givaro::Modular;
+
+template<class Element> struct CompactElement{typedef Element type;};
+template<> struct CompactElement<double> {typedef int32_t type;};
+template<> struct CompactElement<float>  {typedef int16_t type;};
+template<> struct CompactElement<int64_t>{typedef int32_t type;};
+template<> struct CompactElement<int32_t>{typedef int16_t type;};
+template<> struct CompactElement<int16_t>{typedef int8_t type;};
+
 template <class Field>
 bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t iters, uint64_t seed){
 
@@ -58,6 +67,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 		string file_dense = "data/mat.dense";
 		string file_sms = "data/mat.sms";
 		string file_binary = "data/mat.bin";
+		string file_compact_binary = "data/mat.cbin";
 		
 		typename Field::Element_ptr A = fflas_new (*F, m, n);
 		FFPACK::RandomMatrix (*F, m, n, A, n, G);
@@ -86,6 +96,23 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 		if (ok) oss<<" Bin (ok)";
 		else oss<<" Bin (KO)";
 		fflas_delete(B);
+
+			// Testing compact Binary format
+		typedef Givaro::ZRing<typename CompactElement<typename Field::Element>::type> CompactField;
+		CompactField Z;
+		typename CompactField::Element_ptr Az = fflas_new(Z,m,n);
+		B = fflas_new(*F,m,n);
+		typename CompactField::Element_ptr  Bz;
+		fconvert(*F,m,n,Az,n,A,n);
+		WriteMatrix (file_compact_binary,Z,m,n,Az,n, FflasBinary);
+		ReadMatrix (file_compact_binary,Z,m,n,Bz, FflasBinary);
+		finit (*F,m,n,Bz,n,B,n);
+		ok &= fequal (*F, m, n, A, n, B, n);
+		if (ok) oss<<" Compact Bin (ok)";
+		else oss<<" Compact Bin (KO)";
+		fflas_delete(Az);
+		fflas_delete(B);
+		fflas_delete(Bz);
 
 			// Testing Autodetection of Binary format
 		ReadMatrix (file_binary,*F,m,n,B, FflasAuto);
