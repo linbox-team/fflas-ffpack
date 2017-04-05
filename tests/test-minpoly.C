@@ -37,15 +37,15 @@
 #include <iostream>
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-#include "fflas-ffpack/utils/fflas_randommatrix.h"
-#include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "test-utils.h"
-#include <givaro/modular-integer.h>
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
-#include <givaro/givpoly1.h>
+#include <givaro/modular-integer.h>
+#include <givaro/givpoly1factor.h>
 
 using namespace std;
 using namespace FFPACK;
@@ -58,11 +58,10 @@ typedef vector<Field::Element> Polynomial;
 template<typename Field, class RandIter>
 bool check_minpoly(const Field &F, size_t n, RandIter& G)
 {
-	cout<<"Entering check_minpoly";
-	cout<<endl;
+	cout<<"Entering check_minpoly"<<endl;
 	typedef typename Field::Element Element;
 	size_t lda, ldv;
-	Element *A, *V;
+	Element *A, *V, *Vcst;
 
 	//Default
 	lda = n;
@@ -72,14 +71,17 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
     A = FFLAS::fflas_new(F, n, n);
     V = FFLAS::fflas_new(F, n+1, n);
+	Vcst = FFLAS::fflas_new(F, 1, n);
     Polynomial minP;
 
 
     FFPACK::RandomMatrix (F, n, n, A, lda, G);
 
 	FFPACK::NonZeroRandomMatrix(F, 1, n, V, n, G); 
+	FFLAS::fassign(F, n, V, 1, Vcst, 1); //MatVecMinPoly modifies V, we store it in Vcst beforehand
 
-	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv); //3rd input argument is the matrix order
+	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv);
+	FFLAS::fflas_delete(V);
 
 	/*Check that minP is monic*/
 
@@ -91,30 +93,61 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 
 	Element *E, *E_tmp;
-    E = FFLAS::fflas_new(F, n+1, n);
-	E_tmp = FFLAS::fflas_new(F, n+1, n);
+    E = FFLAS::fflas_new(F, 1, n);
+	E_tmp = FFLAS::fflas_new(F, 1, n);
     
     /* Horner's method for polynomial evaluation */
     
-	FFLAS::finit(F, n, V, n, E, n); //E <- V
+	FFLAS::fassign(F, n, Vcst, 1, E, 1); //E <- V
 
     for(long i = deg; i > 0; --i)
     {
-		FFLAS::faxpy(F, F.one, n, minP[i-1], V, n, E, n); //E <- minP[i-1] * V + E
-		FFLAS::fassign(F, 1, n, E_tmp, n, E, n); //E_tmp <- E
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, n, E_tmp, n, F.zero, E, n);//E <- E_tmp * A
-    }
-	
+		FFLAS::fassign(F, n, E, 1, E_tmp, 1); //E_tmp <- E
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, E_tmp, 1, F.zero, E, 1);//E <- A * E_tmp
+		FFLAS::faxpy(F, 1, n, minP[i-1], Vcst, 1, E, 1); //E <- minP[i-1] * V + E
+    }	
 	FFLAS::fflas_delete(E_tmp);
-	FFLAS::fflas_delete(A);
-	FFLAS::fflas_delete(V);
 
-    if (!FFLAS::fiszero(F, n, E, n))
+	/* Check minimality of minP */
+
+	//cout<<V[0]<<" "<<V[1]<<" "<<V[2]<<" "<<V[n-1]<<endl;
+	// Krylov matrix computation
+	//Element *K, *u;
+	//size_t ldk = n;
+	//K = FFLAS::fflas_new(F, deg+1, ldk);
+	//u = FFLAS::fflas_new(F, n, 1);
+	//Element *Kptr = K;
+	//FFLAS::fassign(F, n, K, 1, V, n);
+	//cout<<V[0]<<" "<<K[0]<<" "<<endl;
+	//cout<<V[1]<<" "<<K[1]<<" "<<endl;
+	//cout<<V[2]<<" "<<K[2]<<" "<<endl;
+	//cout<<V[n]<<" "<<K[n]<<" "<<endl;
+	//cout<<V[n+1]<<" "<<K[n+1]<<" "<<endl;
+
+
+
+	//for(size_t i = 0; i <= deg; ++i, Kptr += ldk)
+	//{
+	//	FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, u, 1, F.zero, Kptr, 1);
+	//	FFLAS::fassign(F, n, Kptr, 1, u, 1);
+	//}
+
+	//minP factorization
+	
+	
+	//factorized minP checks
+	
+	
+
+
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(Vcst);
+	//FFLAS::fflas_delete(K);
+	//FFLAS::fflas_delete(u);
+
+    if (!FFLAS::fiszero(F, n, E, 1))
 	{
-		cout<<"NONZERO"<<endl;
-		for(long i = 0; i<n; ++i)
-			cout<<E[i]<<" ";
-		cout<<endl;
+		cout<<"NONZEROERROR"<<endl;
 		FFLAS::fflas_delete(E);
 		return false;
 	}
