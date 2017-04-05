@@ -69,11 +69,11 @@ namespace FFLAS {
 			K=N;
 
 		if (K==0) return;
-		std::cout<<std::endl;
-		std::cout<<"A:=";
-		write_matrix(std::cout,F, K,K,A,lda);
-		std::cout<<"B:=";
-		write_matrix(std::cout,F, M,N,B,ldb);
+		// std::cout<<std::endl;
+		// std::cout<<"A:=";
+		// write_matrix(std::cout,F, K,K,A,lda);
+		// std::cout<<"B:=";
+		// write_matrix(std::cout,F, M,N,B,ldb);
 		
 		// compute bit size of feasible prime
 		size_t _k=std::max(K,logp/20), lk=0;
@@ -93,12 +93,12 @@ namespace FFLAS {
 
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true);
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);
-		std::cout<<"\nFTRSM MP: maxC="<<maxC<<"\n";
-		std::cout<<"\nFTRSM MP: p="<<p<<"\n";
-		std::cout<<"\nFTRSM MP: M="<<M<<"\n";
-		std::cout<<"\nFTRSM MP: N="<<N<<"\n";
-		std::cout<<"\nFTRSM MP: K="<<K<<"\n";
-		std::cout<<"\nFTRSM MP: RNS prod="<<RNS._M<<"\n";
+		// std::cout<<"\nFTRSM MP: maxC="<<maxC<<"\n";
+		// std::cout<<"\nFTRSM MP: p="<<p<<"\n";
+		// std::cout<<"\nFTRSM MP: M="<<M<<"\n";
+		// std::cout<<"\nFTRSM MP: N="<<N<<"\n";
+		// std::cout<<"\nFTRSM MP: K="<<K<<"\n";
+		// std::cout<<"\nFTRSM MP: RNS prod="<<RNS._M<<"\n";
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_init+=chrono.usertime();
@@ -151,8 +151,8 @@ namespace FFLAS {
 		if (!F.isOne(alpha))
 			fscalin(F,M,N,alpha,B,ldb);
 
-		std::cout<<"X:=";
-		write_matrix(std::cout,F, M,N,B,ldb);
+		// std::cout<<"X:=";
+		// write_matrix(std::cout,F, M,N,B,ldb);
 
 		
 #ifdef BENCH_PERF_TRSM_MP
@@ -199,7 +199,7 @@ namespace FFLAS {
 			F.convert(b,beta);
 			M=F.rns()._M;
 			uint64_t kmax= (M-b*p)/(p*p);
-			std::cout<<"DotProdBound: "<<kmax<<"\n";
+			//std::cout<<"DotProdBound: "<<kmax<<"\n";
 			return  (size_t)std::max(uint64_t(1),kmax);
 			//return kmax;
 		}

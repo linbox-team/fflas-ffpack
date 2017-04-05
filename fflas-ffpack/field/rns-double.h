@@ -67,7 +67,6 @@ namespace FFPACK {
 		std::vector<double, AlignedAllocator<double, Alignment::CACHE_LINE>>       _invbasis; // the inverse of rns moduli (1/mi)
 		std::vector<ModField> _field_rns; // the associated prime field for each mi
 		integer                  _M; // the product of the mi's
-		integer                  _mi_sum; // the product of the mi's
 		std::vector<integer>         _Mi; // _M/mi
 		std::vector<double>         _MMi; // (_Mi)^(-1) mod mi
 		std::vector<double>      _crt_in; //  2^(16*j) mod mi
@@ -75,6 +74,7 @@ namespace FFPACK {
 		size_t                _size; // the size of the rns basis (number of mi's)
 		size_t               _pbits; // the size in bit of the mi's
 		size_t                 _ldm; // log[2^16](_M)
+		integer                  _mi_sum; // the product of the mi's
 
 		typedef double                        BasisElement;
 		typedef rns_double_elt                     Element;
@@ -98,13 +98,11 @@ namespace FFPACK {
 				_M*=prime;
 				if (rnsmod) _mi_sum+=prime;
 			}
-
-
-			std::ostream_iterator<uint64_t> out_it (std::cout,", ");
-			std::cout<<"RNS basis =";
-			std::copy ( _basis.begin(), _basis.end(), out_it );
-			std::cout<<std::endl;
-			std::cout<<"RNS sum Mi ="<<_mi_sum<<"\n";
+			// std::ostream_iterator<uint64_t> out_it (std::cout,", ");
+			// std::cout<<"RNS basis =";
+			// std::copy ( _basis.begin(), _basis.end(), out_it );
+			// std::cout<<std::endl;
+			// std::cout<<"RNS sum Mi ="<<_mi_sum<<"\n";
 			precompute_cst();
 		}
 

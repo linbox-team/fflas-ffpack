@@ -90,9 +90,8 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	string ss=string((uplo == FFLAS::FflasLower)?"Lower_":"Upper_")+string((side == FFLAS::FflasLeft)?"Left_":"Right_")+string((trans == FFLAS::FflasTrans)?"Trans_":"NoTrans_")+string((diag == FFLAS::FflasUnit)?"Unit":"NonUnit");
 
 	cout<<std::left<<"Checking FTRSM_";
-	cout<<endl;
-	//cout.fill('.');
-	//cout.width(35);
+	cout.fill('.');
+	cout.width(35);
 	cout<<ss;
 
 
@@ -156,23 +155,23 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, uint64_t a
 		cout<<"Checking with ";F->write(cout)<<endl;
 
 		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasUnit,G);
 
 		
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
-		// ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
+		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasRight,FFLAS::FflasUpper,FFLAS::FflasTrans,FFLAS::FflasNonUnit,G);
 		nbit--;
 		delete F;
 	}
@@ -206,14 +205,14 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		// ok &= run_with_field<Modular<double> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<Modular<float> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<Modular<int32_t> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<Modular<int64_t> >(q,b,m,n,a,iters,seed);
-		// ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<double> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<float> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,a,iters,seed);
+		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,a,iters,seed);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,m/4+1,n/4+1,a,iters,seed);
 		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),m/4+1,n/4+1,a,iters,seed);
 	} while (loop && ok);
