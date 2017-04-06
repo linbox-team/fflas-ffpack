@@ -45,83 +45,83 @@ namespace FFPACK {
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
 		const integer* Aiter=A;
-			// split A into A_beta according to a Kronecker transform in base 2^16
-//		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
+		// split A into A_beta according to a Kronecker transform in base 2^16
+		//		auto sp=SPLITTER(MAX_THREADS,FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads);
 
 		Givaro::Timer tkr; tkr.start();
-// #ifndef __FFLASFFPACK_SEQUENTIAL
-// 			auto sp=SPLITTER(MAX_THREADS);
-// #else
-// 			auto sp=SPLITTER(1);
-// #endif
-			// FOR2D(i,j,m,n,sp,
-			//       TASK(MODE(READ(Aiter[0]) READWRITE(A_beta[0])),
-		    //for(size_t i=0;i<m;i++)
-		    //PAR_BLOCK{
-//			FOR1D(i,m,sp,
+		// #ifndef __FFLASFFPACK_SEQUENTIAL
+		// 			auto sp=SPLITTER(MAX_THREADS);
+		// #else
+		// 			auto sp=SPLITTER(1);
+		// #endif
+		// FOR2D(i,j,m,n,sp,
+		//       TASK(MODE(READ(Aiter[0]) READWRITE(A_beta[0])),
+		//for(size_t i=0;i<m;i++)
+		//PAR_BLOCK{
+		//			FOR1D(i,m,sp,
 		PARFOR1D(i,m,SPLITTER(NUM_THREADS),
-				  for(size_t j=0;j<n;j++){
-					  size_t idx=j+i*n;
-					  const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
-					  const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
-					  size_t l=0;
-						  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
-					  size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
+				 for(size_t j=0;j<n;j++){
+					 size_t idx=j+i*n;
+					 const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
+					 const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
+					 size_t l=0;
+					 //size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+					 size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
 
 #ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
-					  if (m0[0]->_mp_size >= 0)
-						  for (;l<maxs;l++)
-							  A_beta[l+idx*k]=  m0_ptr[l];
-					  else
-						  for (;l<maxs;l++)
-							  A_beta[l+idx*k]= - double(m0_ptr[l]);
+					 if (m0[0]->_mp_size >= 0)
+						 for (;l<maxs;l++)
+							 A_beta[l+idx*k]=  m0_ptr[l];
+					 else
+						 for (;l<maxs;l++)
+							 A_beta[l+idx*k]= - double(m0_ptr[l]);
 #else
-					  if (m0[0]->_mp_size >= 0)
-						  for (;l<maxs;l++) {
-							  size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
-							  A_beta[l+idx*k]=  m0_ptr[l2];
-						  }
-					  else
-						  for (;l<maxs;l++) {
-							  size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
-							  A_beta[l+idx*k]= - double(m0_ptr[l2]);
-						  }
+					 if (m0[0]->_mp_size >= 0)
+						 for (;l<maxs;l++) {
+							 size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
+							 A_beta[l+idx*k]=  m0_ptr[l2];
+						 }
+					 else
+						 for (;l<maxs;l++) {
+							 size_t l2 = l ^ ((sizeof(mp_limb_t)/2U) - 1U);
+							 A_beta[l+idx*k]= - double(m0_ptr[l2]);
+						 }
 #endif
-					  for (;l<k;l++)
-						  A_beta[l+idx*k]=  0.;
+					 for (;l<k;l++)
+						 A_beta[l+idx*k]=  0.;
 
-						  // 	   );
-				  }
-				  );
+					 // 	   );
+				 }
+				 );
 
-			tkr.stop();
-			//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
-			if (RNS_MAJOR==false) {
-					// Arns = _crt_in x A_beta^T
-				Givaro::Timer tfgemm; tfgemm.start();
-				FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
-								  //			      FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>());
-							  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
-			
-				tfgemm.stop();
+		tkr.stop();
+		//if(m>1 && n>1) std::cerr<<"Kronecker : "<<tkr.realtime()<<std::endl;
+		if (RNS_MAJOR==false) {
+			// Arns = _crt_in x A_beta^T
+			Givaro::Timer tfgemm; tfgemm.start();
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm,A_beta,k,0.,Arns,rda,
+						  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+#else
+			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
+#endif		
+			tfgemm.stop();
 			//if(m>1 && n>1) 	std::cerr<<"fgemm : "<<tfgemm.realtime()<<std::endl;
-//			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
-					// reduce each row i of Arns modulo moduli[i]
-					//for(size_t i=0;i<_size;i++)
-					//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
-			}
-			else {
-					// Arns =  A_beta x _crt_in^T
-				cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
-					// reduce each column j of Arns modulo moduli[i]
-					//for(size_t i=0;i<_size;i++)
-					//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
-			}
-			Givaro::Timer tred; tred.start();
+		}
+		else {
+			// Arns =  A_beta x _crt_in^T
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,mn,_size,k,1.0,A_beta, k, _crt_in.data(),_ldm,0.,Arns,_size,
+						  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+#else
+			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
+#endif
+		}
+		Givaro::Timer tred; tred.start();
 
-			reduce(mn,Arns,rda,RNS_MAJOR);
-			tred.stop();
-			//if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
+		reduce(mn,Arns,rda,RNS_MAJOR);
+		tred.stop();
+		//if(m>1 && n>1) 			std::cerr<<"Reduce : "<<tred.realtime()<<std::endl;
 	
 		FFLAS::fflas_delete( A_beta);
 
@@ -133,19 +133,19 @@ namespace FFPACK {
 					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i*n+j+k*rda]);
 					if (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
 					    != (int64_t) Arns[i*n+j+k*rda])
-					{
-						std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
-								 <<" != "
-								 <<(int64_t) Arns[i*n+j+k*rda]
-								 <<std::endl;
-					}
+						{
+							std::cout<<((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]<0?(int64_t)_basis[k]:0))
+									 <<" != "
+									 <<(int64_t) Arns[i*n+j+k*rda]
+									 <<std::endl;
+						}
 				}
 		std::cout<<"RNS freduce ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}
 
-		// Arns must be an array of m*n*_size
-		// abs(||A||) < 2^(16k)
+	// Arns must be an array of m*n*_size
+	// abs(||A||) < 2^(16k)
 	inline void rns_double::init_transpose(size_t m, size_t n, double* Arns, size_t rda, const integer* A, size_t lda, size_t k, bool RNS_MAJOR) const
 	{
 		if (k>_ldm)
@@ -154,14 +154,14 @@ namespace FFPACK {
 		size_t mn=m*n;
 		double *A_beta = FFLAS::fflas_new<double >(mn*k);
 		const integer* Aiter=A;
-			// split A into A_beta according to a Kronecker transform in base 2^16
+		// split A into A_beta according to a Kronecker transform in base 2^16
 		for(size_t j=0;j<n;j++){
 			for(size_t i=0;i<m;i++){
 				size_t idx=i+j*m;
 				const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);
 				const uint16_t* m0_ptr = reinterpret_cast<const uint16_t*>(m0[0]->_mp_d);
 				size_t l=0;
-					//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
+				//size_t maxs=std::min(k,(Aiter[j+i*lda].size())<<2);
 				size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2); // to ensure 32 bits portability
 #ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 				if (m0[0]->_mp_size >= 0)
@@ -187,18 +187,22 @@ namespace FFPACK {
 			}
 		}
 		if (RNS_MAJOR==false) {
-				// Arns = _crt_in x A_beta^T
+			// Arns = _crt_in x A_beta^T
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,_size,mn,k,1.0,_crt_in.data(),_ldm, A_beta, k, 0.,Arns,rda,
+						  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+#else
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)_size,(int)mn,(int)k,1.0,_crt_in.data(),(int)_ldm,A_beta,(int)k,0.,Arns,(int)rda);
-				// reduce each row i of Arns modulo moduli[i]
-				//for(size_t i=0;i<_size;i++)
-				//	FFLAS::freduce (_field_rns[i],mn,Arns+i*rda,1);
+#endif
 		}
 		else {
-				// Arns =  A_beta x _crt_in^T
+			// Arns =  A_beta x _crt_in^T
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm (Givaro::ZRing<double>(), FFLAS::FflasNoTrans,FFLAS::FflasTrans,mn,_size,k,1.0,A_beta, k, _crt_in.data(),_ldm,0.,Arns,_size,
+						  FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive>());
+#else
 			cblas_dgemm(CblasRowMajor,CblasNoTrans,CblasTrans,(int)mn,(int)_size,(int)k,1.0,A_beta,(int)k,_crt_in.data(),(int)_ldm,0.,Arns,(int)_size);
-				// reduce each column j of Arns modulo moduli[i]
-				//for(size_t i=0;i<_size;i++)
-				//	FFLAS::freduce (_field_rns[i],mn,Arns+i,_size);
+#endif
 		}
 		reduce(mn,Arns,rda,RNS_MAJOR);
 
@@ -230,18 +234,23 @@ namespace FFPACK {
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 		Givaro::Timer tfgemmc;tfgemmc.start();
-		if (RNS_MAJOR==false)
-				// compute A_beta = Ap^T x M_beta
-			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm,
-							 FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
-//				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads >());
-
-		else // compute A_beta = Ap x M_Beta
+		if (RNS_MAJOR==false) {// compute A_beta = Ap^T x M_beta
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans, mn, _ldm, _size, 1.0 , Arns, rda, _crt_out.data(), _ldm, 0., A_beta,_ldm, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+#else
+			cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)rda, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm); 
+#endif
+		}
+		else  {// compute A_beta = Ap x M_Beta
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mn, _ldm, _size, 1.0 , Arns, _size, _crt_out.data(), _ldm, 0., A_beta, _ldm, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+#else
 			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
-
+#endif
+		}
 		tfgemmc.stop();
 		//if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
-			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+		// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
 		size_t k=_ldm;
 		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
@@ -261,8 +270,8 @@ namespace FFPACK {
 		m0[0]->_mp_size  = m1[0]->_mp_size  = m2[0]->_mp_size  = m3[0]->_mp_size  = (int) (k4*8/sizeof(mp_limb_t)); // to ensure 32 bits portability
 		Givaro::Timer tkroc;
 		tkroc.start();
-//		auto sp=SPLITTER();
-//		PARFOR1D(i,m,sp,
+		//		auto sp=SPLITTER();
+		//		PARFOR1D(i,m,sp,
 		for(size_t i=0;i<m;i++)
 			for (size_t j=0;j<n;j++){
 				size_t idx=i*n+j;
@@ -281,7 +290,7 @@ namespace FFPACK {
 					A3[(l+3) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[0];
 #endif
 				}
-					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
+				// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
 				m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
 				m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
@@ -289,7 +298,7 @@ namespace FFPACK {
 				res = a0;res+= a1;res+= a2;res+= a3;
 				res%=_M;
 
-					// get the correct result according to the expected sign of A
+				// get the correct result according to the expected sign of A
 				if (res>hM)
 					res-=_M;
 				if (gamma==0)
@@ -306,7 +315,7 @@ namespace FFPACK {
 						}
 
 			}
-				 tkroc.stop();
+		tkroc.stop();
 		//if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
 
 		m0[0]->_mp_d = m0_d;
@@ -325,7 +334,7 @@ namespace FFPACK {
 					int64_t _p =(int64_t) _basis[k];
 					integer curr=A[i*lda+j] - gamma*Acopy[i*n+j];
 					ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
-						//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+					//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
@@ -339,13 +348,22 @@ namespace FFPACK {
 		size_t  mn= m*n;
 		double *A_beta= FFLAS::fflas_new<double>(mn*_ldm);
 
-		if (RNS_MAJOR==false)
-				// compute A_beta = Ap^T x M_beta
+		if (RNS_MAJOR==false){			
+			// compute A_beta = Ap^T x M_beta
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasTrans, FFLAS::FflasNoTrans, mn, _ldm, _size, 1.0 , Arns, rda, _crt_out.data(), _ldm, 0., A_beta, _ldm, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+#else
 			cblas_dgemm(CblasRowMajor,CblasTrans, CblasNoTrans,(int) mn,(int) _ldm,(int) _size, 1.0 , Arns,(int) rda, _crt_out.data(),(int) _ldm, 0., A_beta,(int)_ldm);
-		else // compute A_beta = Ap x M_Beta
-			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)_size, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
-
-			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+#endif
+		}
+		else { // compute A_beta = Ap x M_Beta
+#ifndef ENABLE_CHECKER_fgemm
+			FFLAS::fgemm(Givaro::ZRing<double>(),FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mn, _ldm, _size, 1.0 , Arns, rda, _crt_out.data(), _ldm, 0., A_beta, _ldm, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::TwoDAdaptive >());
+#else
+			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)mn, (int)_ldm, (int)_size, 1.0 , Arns, (int)rda, _crt_out.data(), (int)_ldm, 0., A_beta,(int)_ldm);
+#endif
+		}
+		// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
 		integer* Aiter= A;
 		size_t k=_ldm;
 		size_t k4=((k+3)>>2)+ (((k+3)%4==0)?0:1);
@@ -383,7 +401,7 @@ namespace FFPACK {
 					A3[(l+3) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[0];
 #endif
 				}
-					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
+				// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 				m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
 				m1[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A1[0]);
 				m2[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A2[0]);
@@ -391,7 +409,7 @@ namespace FFPACK {
 				res = a0;res+= a1;res+= a2;res+= a3;
 				res%=_M;
 
-					// get the correct result according to the expected sign of A
+				// get the correct result according to the expected sign of A
 				if (res>hM)
 					res-=_M;
 				if (gamma==0)
@@ -421,14 +439,14 @@ namespace FFPACK {
 			for(size_t j=0;j<n;j++)
 				for(size_t k=0;k<_size;k++){
 					ok&= (((A[i*lda+j] % (int64_t) _basis[k])+(A[i*lda+j]% (int64_t) _basis[k]<0?(int64_t)_basis[k]:0)) == (int64_t) Arns[i+j*m+k*rda]);
-						//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+					//std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
 				}
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif // CHECK_RNS
 
 	}
 
-		// reduce entries of Arns to be less than the rns basis elements
+	// reduce entries of Arns to be less than the rns basis elements
 	inline void rns_double::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 		if (RNS_MAJOR) {
@@ -477,10 +495,10 @@ namespace FFPACK {
 						simd::storeu(Arns+i*_size+j, tmp2);
 					}
 					for( ; j < _size ; ++j){
-							// std::cout << j << std::endl;
-							// auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
+						// std::cout << j << std::endl;
+						// auto x = std::floor(Arns[i*_size+j] * _invbasis[j]);
 						Arns[i*_size+j] -= std::floor(Arns[i*_size+j]*_invbasis[j])*_basis[j];
-							// Arns[i*_size+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
+						// Arns[i*_size+j] = std::fma(Arns[i*_size+j], -x, _basis[j]);
 						if(Arns[i*_size+j] >= _basis[j]){
 							Arns[i*_size+j] -= _basis[j];
 						}else if(Arns[i*_size+j] < 0){
@@ -492,20 +510,20 @@ namespace FFPACK {
 #else
 			for(size_t i = 0 ; i < n ; i+= _size){
 				for(size_t j = 0 ; j < _size ; ++j){
-						//_field_rns.reduce(Arns+i*_size+j);
+					//_field_rns.reduce(Arns+i*_size+j);
 					_field_rns[i].reduce(Arns[i*_size+j]);
 				}
 			}
 #endif
 		}
 		else { // NOT IN RNS MAJOR
-// #ifndef __FFLASFFPACK_SEQUENTIAL
-// 			auto sp=SPLITTER(MAX_THREADS);
-// #else
-// 			auto sp=SPLITTER(1);
-// #endif
+			// #ifndef __FFLASFFPACK_SEQUENTIAL
+			// 			auto sp=SPLITTER(MAX_THREADS);
+			// #else
+			// 			auto sp=SPLITTER(1);
+			// #endif
 			PARFOR1D(i,_size,SPLITTER(NUM_THREADS),
-						 //for(size_t i=0;i<_size;i++)
+					 //for(size_t i=0;i<_size;i++)
 					 FFLAS::freduce (_field_rns[i],n,Arns+i*rda,1);
 					 );
 		}
@@ -513,7 +531,7 @@ namespace FFPACK {
 	}
 
 
-// TODO: less naive implementation
+	// TODO: less naive implementation
 	inline void rns_double_extended::init(size_t m, double* Arns, const integer* A, size_t lda) const{
 		for(size_t i = 0 ; i < m ; ++i){
 			for(size_t j = 0 ; j < _size ; ++j){
@@ -522,7 +540,7 @@ namespace FFPACK {
 		}
 	}
 
-// TODO: less naive implementation
+	// TODO: less naive implementation
 	inline void rns_double_extended::convert(size_t m, integer *A, const double *Arns) const{
 		integer hM= (_M-1)/2;
 		for(size_t i = 0 ; i < m ; ++i){
@@ -537,7 +555,7 @@ namespace FFPACK {
 		}
 	}
 	
-		// reduce entries of Arns to be less than the rns basis elements
+	// reduce entries of Arns to be less than the rns basis elements
 	inline void rns_double_extended::reduce(size_t n, double* Arns, size_t rda, bool RNS_MAJOR) const{
 
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -545,7 +563,7 @@ namespace FFPACK {
 		using vect_t = typename simd::vect_t;
 
 		if(_size % simd::vect_size == 0){
-//#pragma omp parallel for schedule(static, 256)			  
+			//#pragma omp parallel for schedule(static, 256)			  
 			for(size_t i = 0 ; i < n ; i++){
 				vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
 				for(size_t j = 0 ; j < _size ; j+=simd::vect_size){
@@ -565,7 +583,7 @@ namespace FFPACK {
 				}
 			}
 		}else{
-//#pragma omp parallel for schedule(static, 256)			  
+			//#pragma omp parallel for schedule(static, 256)			  
 			for(size_t i = 0 ; i < n ; i++){
 				vect_t tmp1, tmp2, tmp3, v, max, basis, inv, neg;
 				size_t j = 0;
@@ -591,10 +609,10 @@ namespace FFPACK {
 		}
 #else
 
-// TODO : SIMD version
+		// TODO : SIMD version
 		for(size_t i = 0 ; i < n ; i+= _size){
 			for(size_t j = 0 ; j < _size ; ++j){
-					//_field_rns.reduce(Arns+i*_size+j);
+				//_field_rns.reduce(Arns+i*_size+j);
 				_field_rns[i].reduce(Arns[i*_size+j]);
 			}
 		}

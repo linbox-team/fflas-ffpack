@@ -144,6 +144,56 @@ namespace std
 
 #endif
 
+	
+	template<typename T>
+	std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
+		
+		size_t www(size_t((double(p.bitsize())*log(2.))/log(10.)));
+		out<<"Matrix("<<m<<','<<n<<",[[";
+		out.width(www+1);
+		out<<std::right<<C[0];
+		for (size_t j=1;j<n;++j){
+			out<<',';
+			out.width(www);
+			out<<std::right<<C[j];
+		}
+		out<<']';
+		for (size_t i=1;i<m;++i){ 
+			out<<",[";
+			out.width(www+1);
+			out<<std::right<<C[i*ldc];
+			for (size_t j=1;j<n;++j){
+				out<<',';
+				out.width(www);
+				out<<std::right<<C[i*ldc+j];
+			}
+			out<<']';
+		}
+		return out<<"]);"<<std::endl;
+	}
+	
+	template<typename Field>
+	std::ostream& write_matrix(std::ostream& out, const Field& F, size_t m, size_t n, typename Field::ConstElement_ptr C, size_t ldc){
+		
+		out<<"Matrix("<<m<<','<<n<<",[[";
+		F.write(out,C[0]);
+		for (size_t j=1;j<n;++j){
+			out<<',';
+			F.write(out,C[j]);
+		}
+		out<<']';
+		for (size_t i=1;i<m;++i){ 
+			out<<",[";
+			F.write(out,C[i*ldc]);
+			for (size_t j=1;j<n;++j){
+				out<<',';
+				F.write(out,C[i*ldc+j]);
+			}
+			out<<']';
+		}
+		return out<<"]);"<<std::endl;
+	}
+	
 }
 
 #endif // __FFLASFFPACK_print_utils_H
