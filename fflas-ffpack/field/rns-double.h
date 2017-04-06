@@ -431,7 +431,7 @@ namespace FFPACK {
             for(auto iter : R._field_rns)
                 _RNS_rand.push_back( typename RNS::ModField::RandIter(iter,size,seed) );
         }
-
+		
         /** RNS ring Element random assignement.
          * Element is supposed to be initialized
          * @return random ring Element

@@ -27,7 +27,7 @@
  */
 #define  __FFLASFFPACK_SEQUENTIAL
 
-//#define ENABLE_ALL_CHECKINGS 1
+#define ENABLE_ALL_CHECKINGS 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
@@ -102,7 +102,7 @@ bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Elem
 	FFLAS::ftrsm (F, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);
 	t.stop();
 	time+=t.usertime();
-
+	
 	Element invalpha;
 	F.init(invalpha);
 	F.inv(invalpha, alpha);
@@ -153,7 +153,6 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, uint64_t a
 		typename Field::Element alpha;
 		F->init (alpha, (typename Field::Element)a);
 		cout<<"Checking with ";F->write(cout)<<endl;
-
 		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
 		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasUpper,FFLAS::FflasNoTrans,FFLAS::FflasUnit,G);
 		ok = ok && check_ftrsm(*F,m,n,alpha,FFLAS::FflasLeft,FFLAS::FflasLower,FFLAS::FflasTrans,FFLAS::FflasUnit,G);

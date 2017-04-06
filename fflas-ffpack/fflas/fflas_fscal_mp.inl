@@ -100,7 +100,7 @@ namespace FFLAS {
 		   const FFPACK::rns_double::Element alpha,
 		   FFPACK::rns_double::ConstElement_ptr A, const size_t Ainc,
 		   FFPACK::rns_double::Element_ptr B, const size_t Binc) 
-	{		
+	{
 		fscal(F.delayed(),n,alpha,A,Ainc,B,Binc);
 		freduce (F, n, B, Binc);		
 	}
@@ -110,7 +110,6 @@ namespace FFLAS {
 		     const FFPACK::rns_double::Element alpha,
 		     FFPACK::rns_double::Element_ptr A, const size_t lda)
 	{
-
 		fscalin(F.delayed(),m,n,alpha,A,lda);
 		freduce (F, m, n, A, lda);
 	}

@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -44,14 +44,14 @@ namespace FFLAS {
 
 
 	inline void ftrsm (const Givaro::Modular<Givaro::Integer> & F,
-		    const FFLAS_SIDE Side,
-		    const FFLAS_UPLO Uplo,
-		    const FFLAS_TRANSPOSE TransA,
-		    const FFLAS_DIAG Diag,
-		    const size_t M, const size_t N,
-		    const Givaro::Integer alpha,
-		    const Givaro::Integer * A, const size_t lda,
-		    Givaro::Integer * B, const size_t ldb){
+					   const FFLAS_SIDE Side,
+					   const FFLAS_UPLO Uplo,
+					   const FFLAS_TRANSPOSE TransA,
+					   const FFLAS_DIAG Diag,
+					   const size_t M, const size_t N,
+					   const Givaro::Integer alpha,
+					   const Givaro::Integer * A, const size_t lda,
+					   Givaro::Integer * B, const size_t ldb){
 
 
 #ifdef BENCH_PERF_TRSM_MP
@@ -69,11 +69,6 @@ namespace FFLAS {
 			K=N;
 
 		if (K==0) return;
-		// std::cout<<std::endl;
-		// std::cout<<"A:=";
-		// write_matrix(std::cout,F, K,K,A,lda);
-		// std::cout<<"B:=";
-		// write_matrix(std::cout,F, M,N,B,ldb);
 		
 		// compute bit size of feasible prime
 		size_t _k=std::max(K,logp/20), lk=0;
@@ -81,24 +76,9 @@ namespace FFLAS {
 		size_t prime_bitsize= (53-lk)>>1;
 
 		// construct rns basis
-#if 0
-		Givaro::Integer maxC= (p-1)*(p-1)*(p-1)*uint64_t(K);
-		size_t n_pr =maxC.bitsize()/prime_bitsize;
-		maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*uint64_t(n_pr);
-#else
 		Givaro::Integer maxC= 4*p*p*uint64_t(K);
-		//size_t n_pr =maxC.bitsize()/prime_bitsize;
-		//maxC=(p-1)*(p-1)*uint64_t(K)*(1<<prime_bitsize)*uint64_t(n_pr);
-#endif
-
 		FFPACK::rns_double RNS(maxC, prime_bitsize, true);
 		FFPACK::RNSIntegerMod<FFPACK::rns_double> Zp(p, RNS);
-		// std::cout<<"\nFTRSM MP: maxC="<<maxC<<"\n";
-		// std::cout<<"\nFTRSM MP: p="<<p<<"\n";
-		// std::cout<<"\nFTRSM MP: M="<<M<<"\n";
-		// std::cout<<"\nFTRSM MP: N="<<N<<"\n";
-		// std::cout<<"\nFTRSM MP: K="<<K<<"\n";
-		// std::cout<<"\nFTRSM MP: RNS prod="<<RNS._M<<"\n";
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_init+=chrono.usertime();
@@ -124,7 +104,6 @@ namespace FFLAS {
 #endif
 
 		// call ftrsm in rns
-		//ftrsm(Zp, Side, Uplo, TransA, Diag, M, N, Zp.one, Ap, K, Bp, N);
 		if (Side == FFLAS::FflasLeft)
 			ftrsm(Zp, Side, Uplo, TransA, Diag, M, N, Zp.one, Ap, K, Bp, N);
 		else {
@@ -132,7 +111,7 @@ namespace FFLAS {
 				ftrsm(Zp, FFLAS::FflasLeft, FFLAS::FflasLower, TransA, Diag, N, M, Zp.one, Ap, K, Bp, M);
 			else
 				ftrsm(Zp, FFLAS::FflasLeft, FFLAS::FflasUpper, TransA, Diag, N, M, Zp.one, Ap, K, Bp, M);
-		}
+		} 
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_trsm+=chrono.usertime();
@@ -151,10 +130,6 @@ namespace FFLAS {
 		if (!F.isOne(alpha))
 			fscalin(F,M,N,alpha,B,ldb);
 
-		// std::cout<<"X:=";
-		// write_matrix(std::cout,F, M,N,B,ldb);
-
-		
 #ifdef BENCH_PERF_TRSM_MP
 		chrono.stop();
 		t_rec+=chrono.usertime();
@@ -172,13 +147,13 @@ namespace FFLAS {
 	/*  bb: do not use CBLAS_ORDER, or make it compatible with MKL */
 
 	inline void cblas_imptrsm(const enum FFLAS_ORDER Order,
-				  const enum FFLAS_SIDE Side,
-				  const enum FFLAS_UPLO Uplo,
-				  const enum FFLAS_TRANSPOSE TransA,
-				  const enum FFLAS_DIAG Diag,
-				  const int M, const int N, const FFPACK::rns_double_elt alpha,
-				  FFPACK::rns_double_elt_cstptr A, const int lda,
-				  FFPACK::rns_double_elt_ptr B, const int ldb) {}
+							  const enum FFLAS_SIDE Side,
+							  const enum FFLAS_UPLO Uplo,
+							  const enum FFLAS_TRANSPOSE TransA,
+							  const enum FFLAS_DIAG Diag,
+							  const int M, const int N, const FFPACK::rns_double_elt alpha,
+							  FFPACK::rns_double_elt_cstptr A, const int lda,
+							  FFPACK::rns_double_elt_ptr B, const int ldb) {}
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 	namespace Protected {
@@ -191,17 +166,15 @@ namespace FFLAS {
 
 		template <>
 		inline size_t DotProdBoundClassic (const FFPACK::RNSIntegerMod<FFPACK::rns_double>& F,
-						   const FFPACK::rns_double_elt& beta)
+										   const FFPACK::rns_double_elt& beta)
 		{
 			Givaro::Integer p,b,M;
 			F.cardinality(p);
 			p--;
 			F.convert(b,beta);
 			M=F.rns()._M;
-			uint64_t kmax= (M-b*p)/(p*p);
-			//std::cout<<"DotProdBound: "<<kmax<<"\n";
+			uint64_t kmax= (M-b*p)/(p*p);			
 			return  (size_t)std::max(uint64_t(1),kmax);
-			//return kmax;
 		}
 
 #ifndef __FTRSM_MP_FAST

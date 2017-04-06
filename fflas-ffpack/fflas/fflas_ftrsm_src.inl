@@ -365,7 +365,6 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	size_t nsplit = ndel;
 	size_t nbblocsplit = (__FFLAS__Na-1) / nsplit;
 	size_t nrestsplit = ((__FFLAS__Na-1) % nsplit) +1;
-
 	for ( size_t  i = 0; i < nbblocsplit; ++i) {
 		this->delayed (F, __FFLAS__Mb, __FFLAS__Nb,
 			       __FFLAS__Atriang, lda, __FFLAS__Brec, ldb, nblas, nsplit / nblas, H);
@@ -385,7 +384,7 @@ void operator () (const Field& F, const size_t M, const size_t N,
 	if (nrestsplit)
 		this->delayed (F, __FFLAS__Mbrest, __FFLAS__Nbrest,
 			       __FFLAS__Arest, lda, __FFLAS__Brest, ldb, nblas, nrestsplit / nblas, H);
-
+	
 #if defined(__FFLAS_MULTIPRECISION) && defined(BENCH_PERF_FTRSM_MP)
 	chrono.stop();
 	F.t_trsm+=chrono.usertime();
