@@ -65,33 +65,6 @@ extern "C" {
 #endif
  
 
-template<typename T>
-std::ostream& write_matrix(std::ostream& out, Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
-
-	size_t www(size_t((double(p.bitsize())*log(2.))/log(10.)));
-    out<<"Matrix("<<m<<','<<n<<",[[";
-    out.width(www+1);
-    out<<std::right<<C[0];
-    for (size_t j=1;j<n;++j){
-        out<<',';
-        out.width(www);
-        out<<std::right<<C[j];
-    }
-    out<<']';
-	for (size_t i=1;i<m;++i){ 
-		out<<endl<<",[";
-		out.width(www+1);
-		out<<std::right<<C[i*ldc];
-		for (size_t j=1;j<n;++j){
-			out<<',';
-			out.width(www);
-			out<<std::right<<C[i*ldc+j];
-		}
-		out<<']';
-	}
-	return out<<"])";
-}
-
 	static size_t iters = 3 ;
 	static Givaro::Integer q = -1 ;
 	static unsigned long b = 512 ;
