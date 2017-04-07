@@ -110,27 +110,20 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	/* Check minimality of minP */
 
-	//cout<<V[0]<<" "<<V[1]<<" "<<V[2]<<" "<<V[n-1]<<endl;
 	// Krylov matrix computation
-	//Element *K, *u;
-	//size_t ldk = n;
-	//K = FFLAS::fflas_new(F, deg+1, ldk);
-	//u = FFLAS::fflas_new(F, n, 1);
-	//Element *Kptr = K;
-	//FFLAS::fassign(F, n, K, 1, V, n);
-	//cout<<V[0]<<" "<<K[0]<<" "<<endl;
-	//cout<<V[1]<<" "<<K[1]<<" "<<endl;
-	//cout<<V[2]<<" "<<K[2]<<" "<<endl;
-	//cout<<V[n]<<" "<<K[n]<<" "<<endl;
-	//cout<<V[n+1]<<" "<<K[n+1]<<" "<<endl;
+	Element *K, *tmp;
+	size_t ldk = n;
+	K = FFLAS::fflas_new(F, deg+1, ldk);
+	tmp = FFLAS::fflas_new(F, 1, n);
+	FFLAS::fassign(F, n, K, 1, Vcst, 1);
+	Element *Kptr = K;
 
-
-
-	//for(size_t i = 0; i <= deg; ++i, Kptr += ldk)
-	//{
-	//	FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, u, 1, F.zero, Kptr, 1);
-	//	FFLAS::fassign(F, n, Kptr, 1, u, 1);
-	//}
+	for(size_t i = 0; i < deg; ++i, Kptr += ldk)
+	{
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, Kptr, 1, F.zero, tmp, 1);
+		FFLAS::fassign(F, n, tmp, 1, Kptr+ldk, 1);
+	}
+	FFLAS::fflas_delete(tmp);
 
 	//minP factorization
 	
@@ -142,8 +135,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(Vcst);
-	//FFLAS::fflas_delete(K);
-	//FFLAS::fflas_delete(u);
+	FFLAS::fflas_delete(K);
 
     if (!FFLAS::fiszero(F, n, E, 1))
 	{
