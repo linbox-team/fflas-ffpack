@@ -31,6 +31,7 @@
 #include <list>
 #include <set>
 #include <iterator>
+#include "gmp++/gmp++.h"
 
 namespace std
 {
