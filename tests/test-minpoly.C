@@ -46,6 +46,7 @@
 #include <givaro/modular-balanced.h>
 #include <givaro/modular-integer.h>
 #include <givaro/givpoly1factor.h>
+#include <givaro/givpoly1.h>
 
 using namespace std;
 using namespace FFPACK;
@@ -54,6 +55,31 @@ using Givaro::ModularBalanced;
 
 typedef Givaro::ModularBalanced<double> Field;
 typedef vector<Field::Element> Polynomial;
+
+/* Computes P(A)*V and stores it in E using Horner's scheme for
+ * polynomial evaluation. */
+template<typename Field, typename Element>
+void horner_matrix_vector(const Field &F, size_t n, Element *A, size_t lda, Element *V, 
+						  Element *E, Polynomial P)
+{
+
+	//TODO: Quite a few copies. Could be improved.
+	size_t deg = P.size() - 1;
+	Element *E_tmp;
+	E_tmp = FFLAS::fflas_new(F, 1, n);
+
+	FFLAS::fassign(F, n, V, 1, E, 1);
+	FFLAS::fscalin(F, n, P[deg], E, 1); // E <- P[deg+1] * V
+
+    for(long i = deg; i > 0; --i)
+    {
+		FFLAS::fassign(F, n, E, 1, E_tmp, 1); //E_tmp <- E
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, E_tmp, 1, F.zero, E, 1);//E <- A * E_tmp
+		FFLAS::faxpy(F, 1, n, P[i-1], V, 1, E, 1); //E <- minP[i-1] * V + E
+    }	
+	FFLAS::fflas_delete(E_tmp);
+}
+
 
 template<typename Field, class RandIter>
 bool check_minpoly(const Field &F, size_t n, RandIter& G)
@@ -92,21 +118,20 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	/*Check that minP(A).V is zero*/
 
 
-	Element *E, *E_tmp;
+	Element *E;
     E = FFLAS::fflas_new(F, 1, n);
-	E_tmp = FFLAS::fflas_new(F, 1, n);
     
-    /* Horner's method for polynomial evaluation */
+	horner_matrix_vector(F, n, A, lda, Vcst, E, minP);
     
-	FFLAS::fassign(F, n, Vcst, 1, E, 1); //E <- V
+    if (!FFLAS::fiszero(F, n, E, 1))
+	{
+		cout<<"NONZEROERROR"<<endl;
+		FFLAS::fflas_delete(E);
+		return false;
+	}
 
-    for(long i = deg; i > 0; --i)
-    {
-		FFLAS::fassign(F, n, E, 1, E_tmp, 1); //E_tmp <- E
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, E_tmp, 1, F.zero, E, 1);//E <- A * E_tmp
-		FFLAS::faxpy(F, 1, n, minP[i-1], Vcst, 1, E, 1); //E <- minP[i-1] * V + E
-    }	
-	FFLAS::fflas_delete(E_tmp);
+	FFLAS::fflas_delete(E);
+
 
 	/* Check minimality of minP */
 
@@ -126,25 +151,21 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	FFLAS::fflas_delete(tmp);
 
 	//minP factorization
-	
+	//typedef typename Givaro::Poly1FactorDom<Field, Givaro::Dense>::Element FieldPoly;
+	//vector<FieldPoly> factors;
+	//vector<size_t> powers;
+
+	//Givaro::CZfactor(factors, powers, minP);
 	
 	//factorized minP checks
-	
+	//divide minP by each factor, and evaluate it. None shall pass eval==0.
+	//call horner_matrix_vector to evaluate.
 	
 
 
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(Vcst);
 	FFLAS::fflas_delete(K);
-
-    if (!FFLAS::fiszero(F, n, E, 1))
-	{
-		cout<<"NONZEROERROR"<<endl;
-		FFLAS::fflas_delete(E);
-		return false;
-	}
-
-	FFLAS::fflas_delete(E);
 	return true;
 }
 
