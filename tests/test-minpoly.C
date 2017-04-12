@@ -150,14 +150,17 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	}
 	FFLAS::fflas_delete(tmp);
 
-	//minP factorization
-	//typedef typename Givaro::Poly1FactorDom<Field, Givaro::Dense>::Element FieldPoly;
-	//vector<FieldPoly> factors;
-	//vector<size_t> powers;
+	// minP factorization
+	typedef Givaro::Poly1FactorDom<Field, Givaro::Dense> PolyDom; //defines a polynomial domain for Givaro
+	typedef typename PolyDom::Element FieldPoly; //defines an element over this polynomial domain (casting purposes)
+	vector<FieldPoly> factors;
+	vector<size_t> powers;
 
-	//Givaro::CZfactor(factors, powers, minP);
-	
-	//factorized minP checks
+	PolyDom PD(F);
+	FieldPoly FP = FieldPoly(minP.begin(), minP.end());
+	PD.factor(factors, powers, FP);	
+
+	// Factorized minP checks
 	//divide minP by each factor, and evaluate it. None shall pass eval==0.
 	//call horner_matrix_vector to evaluate.
 	
