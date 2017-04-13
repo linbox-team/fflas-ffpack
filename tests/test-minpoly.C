@@ -85,7 +85,6 @@ void horner_matrix_vector(const Field &F, size_t n, Element *A, size_t lda, Elem
 template<typename Field, class RandIter>
 bool check_minpoly(const Field &F, size_t n, RandIter& G)
 {
-	cout<<"Entering check_minpoly"<<endl;
 	typedef typename Field::Element Element;
 	typedef typename Field::Element_ptr Element_ptr;
 	size_t lda, ldv;
@@ -110,7 +109,6 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv);
 	FFLAS::fflas_delete(V);
-	write_field(F,std::cerr<<"V="<<std::endl,Vcst,n,1,1);
 
 	/*Check that minP is monic*/
 
@@ -118,12 +116,23 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	if(!(minP[deg]==F.one))
 		return false;
 
+	// Krylov matrix computation
+	Element_ptr K;
+	size_t ldk = n;
+	K = FFLAS::fflas_new(F, deg+1, ldk);
+	FFLAS::fassign(F, n, Vcst, 1, K, 1);
+	Element *Kptr = K;
+	for(size_t i = 0; i < deg; ++i, Kptr += ldk)
+		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, Kptr, 1, F.zero, Kptr+ldk, 1);
+
+
 	/*Check that minP(A).V is zero*/
 
-
 	Element_ptr E = FFLAS::fflas_new(F, 1, n);
+	FFLAS::fzero(F, n, E, 1);
     
-	horner_matrix_vector(F, n, A, lda, Vcst, E, minP);
+	for(size_t i = 0; i < deg+1; ++i)
+		FFLAS::faxpy(F, n, minP[i], K+i*ldk, 1, E, 1);
     
     if (!FFLAS::fiszero(F, n, E, 1))
 	{
@@ -137,15 +146,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	/* Check minimality of minP */
 
-	// Krylov matrix computation
-	Element_ptr K;
-	size_t ldk = n;
-	K = FFLAS::fflas_new(F, deg+1, ldk);
-	FFLAS::fassign(F, n, Vcst, 1, K, 1);
-	Element *Kptr = K;
 
-	for(size_t i = 0; i < deg; ++i, Kptr += ldk)
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, Kptr, 1, F.zero, Kptr+ldk, 1);
 
 	// minP factorization
 	typedef Givaro::Poly1FactorDom<Field, Givaro::Dense> PolyDom; //defines a polynomial domain for Givaro
@@ -157,14 +158,6 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	FieldPoly FP_minP = FieldPoly(minP.begin(), minP.end());
 	PD.factor(factors, powers, FP_minP);	
 	
-	cout<<minP<<endl;
-	cout<<factors<<endl;
-	cout<<powers<<endl;
-
-
-
-	//cout<<res<<endl;
-
 	// Factorized minP checks
 	
 	FieldPoly res;
@@ -173,16 +166,12 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	{
 		Element_ptr E_min = FFLAS::fflas_new(F, 1, n);
 		PD.div(res, FP_minP, factors[i]);
-		//use Krylov matrix fgemv instead!
-		horner_matrix_vector(F, n, A, lda, Vcst, E_min, res);
+
+		for(size_t j = 0; j < deg+1; ++j)
+			FFLAS::faxpy(F, n, minP[j], K+j*ldk, 1, E, 1);
 		write_field(F,std::cerr<<"V="<<std::endl,Vcst,n,1,1);
 		if(FFLAS::fiszero(F, n, E_min, 1))
 		{
-			cout<<"Iter "<<i<<endl;
-			cout<<"factors[i] "<<factors[i]<<endl;
-			cout<<"res "<<res<<endl;
-			write_field(F,std::cerr<<"A="<<std::endl,A,n,n,lda);
-			write_field(F,std::cerr<<"V="<<std::endl,Vcst,n,1,1);
 			cout<<"NONMINIMALERROR"<<endl;
 			return false;
 		}
