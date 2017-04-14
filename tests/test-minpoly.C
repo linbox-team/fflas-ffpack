@@ -82,7 +82,6 @@ void horner_matrix_vector(const Field &F, size_t n, typename Field::Element *A, 
 template<typename Field, class RandIter>
 bool check_minpoly(const Field &F, size_t n, RandIter& G)
 {
-	typedef typename Field::Element Element;
 	typedef typename Field::Element_ptr Element_ptr;
 	typedef vector<typename Field::Element> Polynomial;
 	size_t lda, ldv;
@@ -115,12 +114,11 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 		return false;
 
 	// Krylov matrix computation
-	Element_ptr K;
 	size_t ldk = n;
-	K = FFLAS::fflas_new(F, deg+1, ldk);
+	Element_ptr K = FFLAS::fflas_new(F, deg+1, ldk);
 	FFLAS::fassign(F, n, Vcst, 1, K, 1);
 	FFLAS::fflas_delete(Vcst);
-	Element *Kptr = K;
+	Element_ptr Kptr = K;
 	for(size_t i = 0; i < deg; ++i, Kptr += ldk)
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, Kptr, 1, F.zero, Kptr+ldk, 1);
 
@@ -164,11 +162,12 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	for(size_t i = 0; i < nb_factors; ++i)
 	{
 		Element_ptr E_min = FFLAS::fflas_new(F, 1, n);
+		FFLAS::fzero(F, n, E_min, 1);
 		PD.div(res, FP_minP, factors[i]);
 
 		for(size_t j = 0; j < res.size(); ++j)
-			FFLAS::faxpy(F, n, res[j], K+j*ldk, 1, E, 1);
-		if(FFLAS::fiszero(F, n, E, 1))
+			FFLAS::faxpy(F, n, res[j], K+j*ldk, 1, E_min, 1);
+		if(FFLAS::fiszero(F, n, E_min, 1))
 		{
 			cout<<"NONMINIMALERROR"<<endl;
 			return false;
