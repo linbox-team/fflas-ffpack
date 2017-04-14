@@ -88,7 +88,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	typedef typename Field::Element Element;
 	typedef typename Field::Element_ptr Element_ptr;
 	size_t lda, ldv;
-	Element *A, *V, *Vcst;
+	Element_ptr A, V, Vcst;
 
 	//Default
 	lda = n;
@@ -121,6 +121,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	size_t ldk = n;
 	K = FFLAS::fflas_new(F, deg+1, ldk);
 	FFLAS::fassign(F, n, Vcst, 1, K, 1);
+	FFLAS::fflas_delete(Vcst);
 	Element *Kptr = K;
 	for(size_t i = 0; i < deg; ++i, Kptr += ldk)
 		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, Kptr, 1, F.zero, Kptr+ldk, 1);
@@ -169,7 +170,6 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 		for(size_t j = 0; j < deg+1; ++j)
 			FFLAS::faxpy(F, n, minP[j], K+j*ldk, 1, E, 1);
-		write_field(F,std::cerr<<"V="<<std::endl,Vcst,n,1,1);
 		if(FFLAS::fiszero(F, n, E_min, 1))
 		{
 			cout<<"NONMINIMALERROR"<<endl;
@@ -180,7 +180,6 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 
 	FFLAS::fflas_delete(A);
-	FFLAS::fflas_delete(Vcst);
 	FFLAS::fflas_delete(K);
 	return true;
 }
@@ -244,7 +243,13 @@ int main(int argc, char** argv)
 	do
 	{
 		ok &= run_with_field<Modular<double>>(q,b,n,iters,seed);
-		//more tests?
+		//ok &= run_with_field<Modular<float>>(q,b,n,iters,seed);
+		//ok &= run_with_field<ModularBalanced<double>>(q,b,n,iters,seed);
+		//ok &= run_with_field<ModularBalanced<float>>(q,b,n,iters,seed);
+		//ok &= run_with_field<Modular<int32_t>>(q,b,n,iters,seed);
+		//ok &= run_with_field<ModularBalanced<int32_t>>(q,b,n,iters,seed);
+		//ok &= run_with_field<Modular<int64_t>>(q,b,n,iters,seed);
+		//ok &= run_with_field<ModularBalanced<int64_t>>(q,b,n,iters,seed);
 	} while(ok && loop);
 
 	return !ok ;
