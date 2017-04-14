@@ -53,20 +53,17 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
-typedef Givaro::ModularBalanced<double> Field;
-typedef vector<Field::Element> Polynomial;
-
 /* Computes P(A)*V and stores it in E using Horner's scheme for
  * polynomial evaluation. */
-template<typename Field, typename Element>
-void horner_matrix_vector(const Field &F, size_t n, Element *A, size_t lda, Element *V, 
-						  Element *E, Polynomial P)
+template<typename Field, typename Polynomial>
+void horner_matrix_vector(const Field &F, size_t n, typename Field::Element *A, size_t lda, typename Field::Element *V, 
+						  typename Field::Element *E, Polynomial& P)
 {
 
 	//TODO: Quite a few copies. Could be improved.
 	//TODO: Add incV and incE
 	size_t deg = P.size() - 1;
-	Element *E_tmp;
+	typename Field::Element *E_tmp;
 	E_tmp = FFLAS::fflas_new(F, 1, n);
 
 	FFLAS::fassign(F, n, V, 1, E, 1);
@@ -87,6 +84,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 {
 	typedef typename Field::Element Element;
 	typedef typename Field::Element_ptr Element_ptr;
+	typedef vector<typename Field::Element> Polynomial;
 	size_t lda, ldv;
 	Element_ptr A, V, Vcst;
 
@@ -168,9 +166,9 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 		Element_ptr E_min = FFLAS::fflas_new(F, 1, n);
 		PD.div(res, FP_minP, factors[i]);
 
-		for(size_t j = 0; j < deg+1; ++j)
-			FFLAS::faxpy(F, n, minP[j], K+j*ldk, 1, E, 1);
-		if(FFLAS::fiszero(F, n, E_min, 1))
+		for(size_t j = 0; j < res.size(); ++j)
+			FFLAS::faxpy(F, n, res[j], K+j*ldk, 1, E, 1);
+		if(FFLAS::fiszero(F, n, E, 1))
 		{
 			cout<<"NONMINIMALERROR"<<endl;
 			return false;
@@ -243,7 +241,7 @@ int main(int argc, char** argv)
 	do
 	{
 		ok &= run_with_field<Modular<double>>(q,b,n,iters,seed);
-		//ok &= run_with_field<Modular<float>>(q,b,n,iters,seed);
+		ok &= run_with_field<Modular<float>>(q,b,n,iters,seed);
 		//ok &= run_with_field<ModularBalanced<double>>(q,b,n,iters,seed);
 		//ok &= run_with_field<ModularBalanced<float>>(q,b,n,iters,seed);
 		//ok &= run_with_field<Modular<int32_t>>(q,b,n,iters,seed);
