@@ -196,8 +196,8 @@ namespace FFPACK { /* Permutations */
 	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
 	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
 	 * @param F base field
-	 * @param Side  decides if rows or columns are permuted
-	 * @param Trans decides if the matrix is seen as columns or rows
+	 * @param Side  decides if rows (FflasLeft) or columns (FflasRight) are permuted
+	 * @param Trans decides if the matrix is seen as columns (FflasTrans) or rows (FflasNoTrans)
 	 * @param M size of the elements to permute
 	 * @param ibeg first index to consider in P
 	 * @param iend last index to consider in P
@@ -222,8 +222,8 @@ namespace FFPACK { /* Permutations */
 	 * Side==FFLAS::FflasLeft for row permutation Side==FFLAS::FflasRight for a column permutation
 	 * Trans==FFLAS::FflasTrans for the inverse permutation of P
 	 * @param F	base field
-	 * @param Side selects if it is a row or column permutation 
-	 * @param Trans inverse permutation
+	 * @param Side selects if it is a row (FflasLeft) or column (FflasRight) permutation 
+	 * @param Trans inverse permutation (FflasTrans/NoTrans)
 	 * @param M 
 	 * @param ibeg
 	 * @param iend
@@ -315,7 +315,7 @@ namespace FFPACK { /* fgetrs, fgesv */
 	 * Otherwise an info is 1
 	 *
 	 * @param F base field
-	 * @param Side Determine wheter the resolution is left or right looking.
+	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking.
 	 * @param M row dimension of \p B
 	 * @param N col dimension of \p B
 	 * @param R rank of \p A
@@ -345,7 +345,7 @@ namespace FFPACK { /* fgetrs, fgesv */
 	 * Otherwise an info is 1
 	 *
 	 * @param F base field
-	 * @param Side Determine wheter the resolution is left or right looking.
+	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking.
 	 * @param M row dimension of A
 	 * @param N col dimension of A
 	 * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
@@ -373,7 +373,7 @@ namespace FFPACK { /* fgetrs, fgesv */
 
 	/** @brief Square system solver
 	 * @param F The computation domain
-	 * @param Side Determine wheter the resolution is left or right looking
+	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking
 	 * @param M row dimension of B
 	 * @param N col dimension of B
 	 * @param A input matrix
@@ -399,7 +399,7 @@ namespace FFPACK { /* fgetrs, fgesv */
 
 	/**  @brief Rectangular system solver
 	 * @param F The computation domain
-	 * @param Side Determine wheter the resolution is left or right looking
+	 * @param Side Determine wheter the resolution is left (FflasLeft) or right (FflasRight) looking
 	 * @param M row dimension of A
 	 * @param N col dimension of A
 	 * @param NRHS number of columns (if Side = FFLAS::FflasLeft) or row (if Side = FFLAS::FflasRight) of the matrices X and B
@@ -451,8 +451,8 @@ namespace FFPACK { /* ftrtr */
 
 	/** Compute the inverse of a triangular matrix.
 	 * @param F base field
-	 * @param Uplo whether the matrix is upper of lower triangular
-	 * @param Diag whether the matrix is unit diagonal
+	 * @param Uplo whether the matrix is upper (FflasUpper) of lower (FflasLower) triangular
+	 * @param Diag whether the matrix is unit diagonal (FflasUnit/NoUnit)
 	 * @param N input matrix order
 	 * @param A the input matrix
 	 * @param lda leading dimension of A
@@ -471,10 +471,9 @@ namespace FFPACK { /* ftrtr */
 	/**  Compute the product UL.
 	 * Product UL or LU of the upper, resp lower triangular matrices U and L
 	 * stored one above the other in the square matrix A.
-	 * If side == FflasLeft, the product UL is computed, otherwise the product LU.
-	 * Diag == Unit if the matrix U is unit diagonal
 	 * @param F base field
-	 * @param diag whether the matrix is unit diagonal
+	 * @param Side set to FflasLeft to compute the product UL, FflasRight to compute LU
+	 * @param diag whether the matrix U is unit diagonal (FflasUnit/NoUnit)
 	 * @param N input matrix order
 	 * @param A the input matrix
 	 * @param lda leading dimension of A
@@ -494,7 +493,7 @@ namespace FFPACK {
 
     /** @brief Triangular factorization of symmetric matrices
 	 * @param F The computation domain
-	 * @param UpLo Determine wheter to store the upper or lower triangular factor
+	 * @param UpLo Determine wheter to store the upper (FflasUpper) or lower (FflasLower) triangular factor
 	 * @param N order of the matrix A
 	 * @param [inout]] A input matrix
 	 * @param lda leading dimension of A
@@ -516,7 +515,7 @@ namespace FFPACK {
 
     /** @brief Triangular factorization of symmetric matrices
 	 * @param F The computation domain
-	 * @param UpLo Determine wheter to store the upper or lower triangular factor
+	 * @param UpLo Determine wheter to store the upper (FflasUpper) or lower (FflasLower) triangular factor
 	 * @param N order of the matrix A
 	 * @param [inout]] A input matrix
 	 * @param [inout]] D
@@ -542,7 +541,7 @@ namespace FFPACK {
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param F base field
-	 * @param Diag   whether U should have a unit diagonal or not
+	 * @param Diag   whether U should have a unit diagonal (FflasUnit) or not (FflasNoUnit)
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
 	 * @param A input matrix
@@ -573,7 +572,8 @@ namespace FFPACK { /* ludivine */
 	 * The permutations P and Q are represented
 	 * using LAPACK's convention.
 	 * @param F base field
-	 * @param Diag  whether the transformation matrix (U of the CUP, L of the PLE) should have a unit diagonal or not
+	 * @param Diag  whether the transformation matrix (U of the CUP, L of the PLE) should have a unit diagonal (FflasUnit)
+	 * or not (FflasNoUnit)
 	 * @param trans whether to compute the CUP decomposition (FflasNoTrans) or the PLE decomposition (FflasTrans)
 	 * @param M matrix row dimension
 	 * @param N matrix column dimension
@@ -1196,7 +1196,7 @@ namespace FFPACK { /* Solutions */
 	/**  Computes a vector of the Left/Right nullspace of the matrix A.
 	 *
 	 * @param F The computation domain
-	 * @param Side decides whether it computes the left or right nullspace
+	 * @param Side decides whether it computes the left (FflasLeft) or right (FflasRight) nullspace
 	 * @param M number of rows
 	 * @param N number of columns
 	 * @param[in,out] A input matrix of dimension M x N, A is modified to its LU version
@@ -1215,7 +1215,7 @@ namespace FFPACK { /* Solutions */
 	 * return the dimension of the nullspace.
 	 *
 	 * @param F The computation domain
-	 * @param Side decides whether it computes the left or right nullspace
+	 * @param Side decides whether it computes the left (FflasLeft) or right (FflasRight) nullspace
 	 * @param M number of rows
 	 * @param N number of columns
 	 * @param[in,out] A input matrix of dimension M x N, A is modified
@@ -1416,8 +1416,8 @@ namespace FFPACK { /* Solutions */
 	 * if OnlyNonZeroVectors is false, then T and A have the same dimensions
 	 * Otherwise, T is R x N if UpLo = FflasUpper, else T is  M x R
 	 * @param F: base field
-	 * @param UpLo: selects if the upper or lower triangular matrix is returned
-	 * @param diag: selects if the triangular matrix unit-diagonal
+	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+	 * @param diag: selects if the triangular matrix unit-diagonal (FflasUnit/NoUnit)
 	 * @param M: row dimension of T
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
@@ -1438,8 +1438,8 @@ namespace FFPACK { /* Solutions */
 
 	/** Cleans up a compact storage A=L\U to reveal a triangular matrix of rank R.
 	 * @param F: base field
-	 * @param UpLo: selects if the upper or lower triangular matrix is revealed
-	 * @param diag: selects if the triangular matrix unit-diagonal
+	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is revealed
+	 * @param diag: selects if the triangular matrix unit-diagonal (FflasUnit/NoUnit)
 	 * @param M: row dimension of A
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix
@@ -1459,8 +1459,8 @@ namespace FFPACK { /* Solutions */
 	 * The echelon structure is defined by the first R values of the array P.
 	 * row and column dimension of T are greater or equal to that of A
 	 * @param F: base field
-	 * @param UpLo: selects if the upper or lower triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
 	 * @param M: row dimension of T
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
@@ -1487,8 +1487,8 @@ namespace FFPACK { /* Solutions */
 	 * Either L or U is in Echelon form (depending on Uplo)
 	 * The echelon structure is defined by the first R values of the array P.
 	 * @param F: base field
-	 * @param UpLo: selects if the upper or lower triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
 	 * @param M: row dimension of A
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
@@ -1514,8 +1514,8 @@ namespace FFPACK { /* Solutions */
 	 *   T is M x M (already allocated) such that T A = E is a transformation of A in
 	 *   Row Echelon form
 	 * @param F: base field
-	 * @param UpLo: Lower means Transformation to Column Echelon Form, Upper, to Row Echelon Form
-	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param UpLo: Lower (FflasLower) means Transformation to Column Echelon Form, Upper (FflasUpper), to Row Echelon Form
+	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
 	 * @param M: row dimension of A
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix
@@ -1540,8 +1540,8 @@ namespace FFPACK { /* Solutions */
 	 * The echelon structure is defined by the first R values of the array P.
 	 * row and column dimension of T are greater or equal to that of A
 	 * @param F: base field
-	 * @param UpLo: selects if the upper or lower triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
 	 * @param M: row dimension of T
 	 * @param N: column dimension of T
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
@@ -1566,8 +1566,8 @@ namespace FFPACK { /* Solutions */
 	 * Either L or U is in Echelon form (depending on Uplo)
 	 * The echelon structure is defined by the first R values of the array P.
 	 * @param F: base field
-	 * @param UpLo: selects if the upper or lower triangular matrix is returned
-	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param UpLo: selects if the upper (FflasUpper) or lower (FflasLower) triangular matrix is returned
+	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
 	 * @param M: row dimension of A
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix (how many rows/columns need to be copied)
@@ -1592,8 +1592,8 @@ namespace FFPACK { /* Solutions */
 	 *   T is M x M (already allocated) such that T A = E is a transformation of A in
 	 *   Row Echelon form
 	 * @param F: base field
-	 * @param UpLo: selects Col or Row Echelon Form
-	 * @param diag: selects if the echelon matrix has unit pivots
+	 * @param UpLo: selects Col (FflasLower) or Row (FflasUpper) Echelon Form
+	 * @param diag: selects if the echelon matrix has unit pivots (FflasUnit/NoUnit)
 	 * @param M: row dimension of A
 	 * @param N: column dimension of A
 	 * @param R: rank of the triangular matrix
