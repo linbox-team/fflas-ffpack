@@ -48,18 +48,6 @@
 
 namespace FFPACK {
 
-	/*! Random integer in range.
-	 * @param a min bound
-	 * @param b max bound
-	 * @return a random integer in [a,b[  */
-	int RandInt(int a, int b)
-	{
-		int x = a ;
-		x += rand()%(b-a+1);
-		FFLASFFPACK_check(x<b && x>=a);
-		return x ;
-	}
-
 	template<typename Field>
 	Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::maxCardinality();}
 	template<>
