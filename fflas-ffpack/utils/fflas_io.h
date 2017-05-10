@@ -33,9 +33,6 @@
 
 // Reading and writing matrices over field
 
-// Reading a matrice from a (eventually zipped) file
-#define __FFLAS_FIRST_LINE_LIMIT 160
-
 namespace FFLAS{
 
     enum FFLAS_FORMAT {
@@ -56,12 +53,22 @@ namespace FFLAS{
 			format = FflasBinary;
 
 		}else{
-
+				// No detection of non-binary formats for the moment
 		}
 		ifs.seekg(0);
 		return;
 			// Detect Dense and SMS formats
     }
+
+		/**
+		 * @brief ReadMatrix: read a matrix from an input stream
+		 * @param ifs: input stream
+		 * @param F: base field
+		 * @param [out] m: row dimension
+		 * @param [out] n: column dimension
+		 * @param [out] A: output matrix
+		 * @param format: input format (FflasAuto, FflasDense, FflasSMS, FflasBinary)
+		 */
     template<class Field>
     typename Field::Element_ptr
     ReadMatrix (std::ifstream& ifs, Field& F, size_t& m, size_t& n,
@@ -69,8 +76,11 @@ namespace FFLAS{
 
 		FFLAS_FORMAT form = format;
 
-            // Preamble analysis. Update form to the discovered format.
-        preamble(ifs, form);
+		if (form == FflasAuto){
+				// Preamble analysis. Update form to the discovered format.
+			preamble(ifs, form);
+		}
+
         switch (form){
             case FflasDense:
                 ifs >> m;
@@ -115,6 +125,15 @@ namespace FFLAS{
         return A;
     }
 
+		/**
+		 * @brief ReadMatrix: read a matrix from a file
+		 * @param matrix_file: filename
+		 * @param F: base field
+		 * @param [out] m: row dimension
+		 * @param [out] n: column dimension
+		 * @param [out] A: output matrix
+		 * @param format: input format (FflasAuto, FflasDense, FflasSMS, FflasBinary)
+		 */
     template<class Field>
     inline typename Field::Element_ptr
     ReadMatrix (const std::string& matrix_file, Field & F, size_t & m, size_t& n,
@@ -134,6 +153,16 @@ namespace FFLAS{
         return A;
     }
 
+		/**
+		 * @brief WriteMatrix: write a matrix to an output stream
+		 * @param c: output stream
+		 * @param F: base field
+		 * @param m: row dimension
+		 * @param n: column dimension
+		 * @param A: output matrix
+		 * @param format: input format (FflasAuto, FflasDense, FflasSMS, FflasBinary)
+		 * @param column_major: whether the matrix is stored in column or row major (row by default)
+		 */
     template<class Field>
     std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
                                typename Field::ConstElement_ptr A, size_t lda,
@@ -222,6 +251,16 @@ namespace FFLAS{
 		return c ;
     }
     
+	/**
+		 * @brief WriteMatrix: write a matrix to a file
+		 * @param matrix_file: file name
+		 * @param F: base field
+		 * @param m: row dimension
+		 * @param n: column dimension
+		 * @param A: output matrix
+		 * @param format: input format (FflasAuto, FflasDense, FflasSMS, FflasBinary)
+		 * @param column_major: whether the matrix is stored in column or row major (row by default)
+		 */
     template<class Field>
     void WriteMatrix (std::string& matrix_file, const Field& F, int m, int n,
                       typename Field::ConstElement_ptr A, size_t lda,
