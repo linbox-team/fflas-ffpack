@@ -53,31 +53,6 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
-/* Computes P(A)*V and stores it in E using Horner's scheme for
- * polynomial evaluation. */
-template<typename Field, typename Polynomial>
-void horner_matrix_vector(const Field &F, size_t n, typename Field::Element *A, size_t lda, typename Field::Element *V, 
-						  typename Field::Element *E, Polynomial& P)
-{
-
-	//TODO: Quite a few copies. Could be improved.
-	//TODO: Add incV and incE
-	size_t deg = P.size() - 1;
-	typename Field::Element *E_tmp;
-	E_tmp = FFLAS::fflas_new(F, 1, n);
-
-	FFLAS::fassign(F, n, V, 1, E, 1);
-	FFLAS::fscalin(F, n, P[deg], E, 1); // E <- P[deg+1] * V
-
-    for(long i = deg; i > 0; --i)
-    {
-		FFLAS::fassign(F, n, E, 1, E_tmp, 1); //E_tmp <- E
-		FFLAS::fgemv(F, FFLAS::FflasNoTrans, n, n, F.one, A, lda, E_tmp, 1, F.zero, E, 1);//E <- A * E_tmp
-		FFLAS::faxpy(F, 1, n, P[i-1], V, 1, E, 1); //E <- minP[i-1] * V + E
-    }	
-	FFLAS::fflas_delete(E_tmp);
-}
-
 
 template<typename Field, class RandIter>
 bool check_minpoly(const Field &F, size_t n, RandIter& G)
@@ -153,7 +128,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	PolyDom PD(F);
 	FieldPoly FP_minP = FieldPoly(minP.begin(), minP.end());
-	PD.factor(factors, powers, FP_minP);	
+	PD.factor(factors, powers, FP_minP);
 	
 	// Factorized minP checks
 	
@@ -195,7 +170,13 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 		if(F == nullptr)
 			return true; //if F is null, nothing to test, just pass
 
-		cout<<"Checking with "; F->write(cout)<<endl;
+		ostringstream oss;
+		F->write(oss);
+		cout.fill('.');
+		cout<<"Checking ";
+		cout.width(40);
+		cout<<oss.str();
+		cout<<" ... ";
 
 		ok = ok && check_minpoly(*F, n, G);
 
@@ -241,12 +222,12 @@ int main(int argc, char** argv)
 	{
 		ok &= run_with_field<Modular<double>>(q,b,n,iters,seed);
 		ok &= run_with_field<Modular<float>>(q,b,n,iters,seed);
-		//ok &= run_with_field<ModularBalanced<double>>(q,b,n,iters,seed);
-		//ok &= run_with_field<ModularBalanced<float>>(q,b,n,iters,seed);
-		//ok &= run_with_field<Modular<int32_t>>(q,b,n,iters,seed);
-		//ok &= run_with_field<ModularBalanced<int32_t>>(q,b,n,iters,seed);
-		//ok &= run_with_field<Modular<int64_t>>(q,b,n,iters,seed);
-		//ok &= run_with_field<ModularBalanced<int64_t>>(q,b,n,iters,seed);
+		ok &= run_with_field<ModularBalanced<double>>(q,b,n,iters,seed);
+		ok &= run_with_field<ModularBalanced<float>>(q,b,n,iters,seed);
+		ok &= run_with_field<Modular<int32_t>>(q,b,n,iters,seed);
+		ok &= run_with_field<ModularBalanced<int32_t>>(q,b,n,iters,seed);
+		ok &= run_with_field<Modular<int64_t>>(q,b,n,iters,seed);
+		ok &= run_with_field<ModularBalanced<int64_t>>(q,b,n,iters,seed);
 	} while(ok && loop);
 
 	return !ok ;
