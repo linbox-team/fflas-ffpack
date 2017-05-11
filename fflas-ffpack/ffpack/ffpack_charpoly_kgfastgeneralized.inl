@@ -37,9 +37,8 @@
 
 
 #include <iostream> // std::cout
-
+#include "fflas-ffpack/utils/fflas_io.h"
 #ifdef __FFLASFFPACK_DEBUG
-#include "fflas-ffpack/utils/Matio.h"
 namespace FFPACK {
 	template <class Field>
 	typename Field::Element_ptr buildMatrix (const Field& F,
@@ -65,7 +64,7 @@ namespace FFPACK {
 
 		typename Field::Element_ptr A = buildMatrix(F,E,C,lda,B,T,me,mc,lambda,mu);
 		size_t N = mc+me+lambda+mu;
-		write_field(F,os,A,N,N,N);
+		FFLAS::WriteMatrix(os,F,N,N,A,N);
 		FFLAS::fflas_delete (A);
 	}
 } // FFPACK

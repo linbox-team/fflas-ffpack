@@ -42,7 +42,7 @@
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
-#include "fflas-ffpack/utils/Matio.h"
+
 namespace FFLAS {
 
 	// F is a field supporting delayed reductions

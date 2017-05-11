@@ -55,7 +55,7 @@
 #include <iomanip>
 Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
 size_t mvcnt = 0;
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -130,10 +130,10 @@ bool test_LUdivine(const Field & F,
 	fail |= !fequal(F, m, n, A, lda, B, lda);
 	
 	if (fail){
-		write_field(F,cerr<<"A = "<<endl,A,m,n,lda);
-		write_field(F,cerr<<"LU = "<<endl,B,m,n,lda);
-		write_field(F,cerr<<"L = "<<endl,L,m,R,R);
-		write_field(F,cerr<<"U = "<<endl,U,R,n,n);
+		FFLAS::WriteMatrix(cerr<<"A = "<<endl,F,m,n,A,lda);
+		FFLAS::WriteMatrix(cerr<<"LU = "<<endl,F,m,n,B,lda);
+		FFLAS::WriteMatrix(cerr<<"L = "<<endl,F,m,R,L,R);
+		FFLAS::WriteMatrix(cerr<<"U = "<<endl,F,R,n,U,n);
 	}
 
 	fflas_delete( P);
@@ -171,7 +171,7 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	typename Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
-	// write_field(F,std::cerr<<"PLUQ = "<<std::endl,PLUQ,m,n,ldpluq);
+	// FFLAS::WriteMatrix(std::cerr<<"PLUQ = "<<std::endl,F,m,n,PLUQ,ldpluq);
 	getTriangular(F, FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
 	getTriangular(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
@@ -179,10 +179,10 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	applyP (F, FflasRight, FflasNoTrans, R,0,n, U, n, Q);
 	fgemm (F, FflasNoTrans, FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
 
-	// write_perm(std::cerr<<"P = ",P,m);
-	// write_perm(std::cerr<<"Q = ",Q,n);
-	// write_field(F,std::cerr<<"L = "<<std::endl,L,m,R,R);
-	// write_field(F,std::cerr<<"U = "<<std::endl,U,R,n,n);
+	// FFLAS::WritePermutation(std::cerr<<"P = ",P,m);
+	// FFLAS::WritePermutation(std::cerr<<"Q = ",Q,n);
+	// FFLAS::WriteMatrix(std::cerr<<"L = "<<std::endl,F,m,R,L,R);
+	// FFLAS::WriteMatrix(std::cerr<<"U = "<<std::endl,F,R,n,U,n);
 	
 
 	bool fail = false;
@@ -193,7 +193,7 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 						  << " PLUQ ["<<i<<","<<j<<"] = " << (*(X+i*n+j));
 				fail=true;
 			}
-		//write_field(F, std::cerr<<"X = "<<std::endl,X, m,n,n);
+		//FFLAS::WriteMatrix(std::cerr<<"X = "<<std::endl,F, m,n,X,n);
 	if (fail)
 		std::cerr << std::endl;
 

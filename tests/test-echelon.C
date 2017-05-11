@@ -47,7 +47,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 using namespace std;
 using namespace FFPACK;
@@ -107,13 +107,13 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 		if (!pass) {
 			std::cerr<<"FAIL (column echelon LuTag="<<LuTag<<")"<<std::endl;
-			write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
-			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
-			std::cerr<<"P = [";	for (size_t i=0; i<n; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
-			std::cerr<<"Q = [";	for (size_t i=0; i<m; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
-			write_field(F,std::cerr<<"ColEchelon = "<<std::endl,L,m,n,n);
-			write_field(F,std::cerr<<"Transform = "<<std::endl,U,n,n,n);
-			write_field(F,std::cerr<<"B x X  = "<<std::endl,X,m,n,n);
+			FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,m,n,B,lda);
+			FFLAS::WriteMatrix (std::cerr<<"InplaceEchelon = "<<std::endl,F,m,n,A,lda);
+			FFLAS::WritePermutation(std::cerr<<"P = [",P,n)<<std::endl;
+			FFLAS::WritePermutation(std::cerr<<"Q = [",Q,m)<<std::endl;
+			FFLAS::WriteMatrix(std::cerr<<"ColEchelon = "<<std::endl,F,m,n,L,n);
+			FFLAS::WriteMatrix(std::cerr<<"Transform = "<<std::endl,F,n,n,U,n);
+			FFLAS::WriteMatrix(std::cerr<<"B x X  = "<<std::endl,F,m,n,X,n);
 			break;
 		}
 	}
