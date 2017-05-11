@@ -21,25 +21,50 @@
 */
 
 
-/*    ===============================================
-      |    Finit Field Linar Algebra Subprograms    |
-      ===============================================
-The puspose of this file is to be able to handle the basics for
-using fflas.
- */
+/*        ===========================================
+          |    Linar Algebra Crash Course Level 0   |
+          ===========================================
+The puspose of this file is to be able to handle the element level
+of the linear algebra over finite fields used in fflas.
+In this example the finite field will be the Z over 101 Z modular ring.
+This set is created using the givaro library although modular rings are 
+not the only possibilities. 
+There had to be a choice between having a clean file and a clean display.
+The clean display has been adopted therefore the reader is invited
+to pay attention to what lines are used for display and what lines
+actually do the work.
+*/
+
+// =========Information=======
+// This first tutorial has a lot of commentaries to enable
+// the user to understand how operations on basic elements
+// are performed.
+
+// Although the elements are usually manipulated in the machine
+// as floats and doubles,the display is done with integers.
+
+// The different functions are split along four levels :
+//    - Level 0 : Element operations
+//    - Level 1 : Vector-Vector operations
+//    - Level 2 : Matrix-Vector operations
+//    - Level 3 : Matrix-Matrix operations
+
+// This first file has many comments. As the levels increase
+// The amount of comments will deminish as it will be assumed
+// That the reader knows about how the programs form lower
+// levels work.
 
 // ==========Includes=========
 
 // fflas-ffpack modules
-//#include <fflas-ffpack/fflas-ffpack-config.h>
+// #include <fflas-ffpack/fflas-ffpack-config.h>
 #include <fflas-ffpack/fflas/fflas.h>
 
 // Givaro provides some finite fields such as modular rings.
 // Here we include two types of modular rings.
 //    1. Normal   modular rings with elements numbered from 0 to p
-//    2. Balanced modular rings with elemetns numbered form -(p+1)/2 to (p+1)/2
-// Typically p is a prime number but Givaro works with any
-// interger n as well.
+//    2. Balanced modular rings with elements numbered form -(p-1)/2 to (p-1)/2
+// Typically p is a prime number but Givaro works with any interger n as well.
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 
@@ -56,16 +81,20 @@ int main(int argc, char** argv) {
 
   // Defining rings using Givaro.
   typedef Givaro::Modular<float> Float_Ring;
-  Float_Ring F1(11); 
-  // F1 is a ring of floats defined modulo 11.
+  Float_Ring F1(101); 
+  // F1 is a ring of floats defined modulo 101.
   
   typedef Givaro::Modular<double> Double_Balanced_Ring;
-  Double_Balanced_Ring F2(15);
-  // F2 is a ring of doubles defined modulo 15;
-  
+  Double_Balanced_Ring F2(105);
+  // F2 is a ring of doubles defined modulo 105;
+
   // For other ways of defining fields using Givaro please refer to Givaro's documentation.
 
+
+  
   // ===== Elements in finite fields ======
+
+
   
   // Let a, b and c be three elements of F1
   // and d, e and f be three elements of F2.
@@ -76,10 +105,10 @@ int main(int argc, char** argv) {
   // The elements need to be assigned.
   
   F1.init(a,2);
-  F1.init(b,25);
+  F1.init(b,205);
   // a and b are initialised with the elements of F1 that
-  // correspond to 2 and 25.
-  // Since F1 is made of floats modulo 11, these are 2.0 and 3.0.
+  // correspond to 2 and 205.
+  // Since F1 is made of floats modulo 101, these are 2.0 and 3.0.
   
   // This means the second parameter will be converted into an
   // actual element of the field.
