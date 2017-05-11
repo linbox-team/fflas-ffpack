@@ -181,12 +181,12 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 
 		if (!pass) {
 			std::cerr<<"FAIL (row echelon LuTag="<<LuTag<<")"<<std::endl;
-			write_field(F,std::cerr<<"A = "<<std::endl,B,m,n,lda);
-			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
-			std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
-			std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
-			write_field(F,std::cerr<<"RowEchelon = "<<std::endl,U,m,n,n);
-			write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
+			FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,m,n,B,lda);
+			FFLAS::WriteMatrix (std::cerr<<"InplaceEchelon = "<<std::endl,F,m,n,A,lda);
+			FFLAS::WritePermutation(std::cerr<<"P = [",P,m)<<std::endl;
+			FFLAS::WritePermutation(std::cerr<<"Q = [",Q,n)<<std::endl;
+			FFLAS::WriteMatrix (std::cerr<<"RowEchelon = "<<std::endl,F,m,n,U,n);
+			FFLAS::WriteMatrix (std::cerr<<"Transform = "<<std::endl,F,m,m,L,m);
 			break;
 		}
 	}
@@ -327,11 +327,11 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 
 		if (!pass) {
 			std::cerr<<"FAIL (reduced row echelon LuTag="<<LuTag<<")"<<std::endl;
-			write_field(F,std::cerr<<"B = "<<std::endl,B,m,n,lda);
-			write_field(F,std::cerr<<"RedRowEchelon = "<<std::endl,U,m,n,n);
-			write_field(F,std::cerr<<"X x B  = "<<std::endl,X,m,n,n);
-			write_field(F,std::cerr<<"Transform = "<<std::endl,L,m,m,m);
-			write_field(F,std::cerr<<"InplaceEchelon = "<<std::endl,A,m,n,lda);
+			FFLAS::WriteMatrix (std::cerr<<"B = "<<std::endl,F,m,n,B,lda);
+			FFLAS::WriteMatrix (std::cerr<<"RedRowEchelon = "<<std::endl,F,m,n,U,n);
+			FFLAS::WriteMatrix (std::cerr<<"X x B  = "<<std::endl,F,m,n,X,n);
+			FFLAS::WriteMatrix (std::cerr<<"Transform = "<<std::endl,F,m,m,L,m);
+			FFLAS::WriteMatrix (std::cerr<<"InplaceEchelon = "<<std::endl,F,m,n,A,lda);
 			std::cerr<<"R = "<<R<<std::endl;
 			std::cerr<<"P = [";	for (size_t i=0; i<m; ++i) std::cerr<<P[i]<<", ";std::cerr<<"]\n";
 			std::cerr<<"Q = [";	for (size_t i=0; i<n; ++i) std::cerr<<Q[i]<<", ";std::cerr<<"]\n";
