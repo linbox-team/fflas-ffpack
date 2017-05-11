@@ -50,7 +50,7 @@ actually do the work.
 //    - Level 3 : Matrix-Matrix operations
 
 // This first file has many comments. As the levels increase
-// The amount of comments will deminish as it will be assumed
+// the amount of comments will deminish as it will be assumed
 // That the reader knows about how the programs form lower
 // levels work.
 
@@ -65,6 +65,8 @@ actually do the work.
 //    1. Normal   modular rings with elements numbered from 0 to p
 //    2. Balanced modular rings with elements numbered form -(p-1)/2 to (p-1)/2
 // Typically p is a prime number but Givaro works with any interger n as well.
+// For other ways of defining fields using Givaro please refer to
+// Givaro's documentation.
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 
@@ -72,7 +74,7 @@ actually do the work.
 
 #include <iostream>
 
-// All of the functions used come from the FFLAS namespace.
+// All of the methods used come from the FFLAS namespace.
 using namespace FFLAS;
 
 int main(int argc, char** argv) {
@@ -84,25 +86,25 @@ int main(int argc, char** argv) {
   Float_Ring F1(101); 
   // F1 is a ring of floats defined modulo 101.
   
-  typedef Givaro::Modular<double> Double_Balanced_Ring;
+  typedef Givaro::ModularBalanced<double> Double_Balanced_Ring;
   Double_Balanced_Ring F2(105);
-  // F2 is a ring of doubles defined modulo 105;
-
-  // For other ways of defining fields using Givaro please refer to Givaro's documentation.
+  // F2 is a balanced ring of doubles defined modulo 105;
 
 
-  
   // ===== Elements in finite fields ======
-
 
   
   // Let a, b and c be three elements of F1
   // and d, e and f be three elements of F2.
 
-  Float_Ring::Element a,b;
-  Double_Balanced_Ring::Element d,e,f;
+  Float_Ring::Element a,b,c,h;
+  Double_Balanced_Ring::Element d,e,f,g;
   
-  // The elements need to be assigned.
+  // The elements are defined but not yet assigned.
+  // There are two ways of assigning values to elements
+  // that depend on wether these values are integers or
+  // already exixting elements.
+  // The first way is using init().
   
   F1.init(a,2);
   F1.init(b,205);
@@ -113,19 +115,54 @@ int main(int argc, char** argv) {
   // This means the second parameter will be converted into an
   // actual element of the field.
 
+  // The second way is using assign().
   // A field has two elements that are neutral with respect to
   // the addition and multiplication laws, ie : zero and one.
-  // An element of the field can be assigned to an element variable.
   
   F2.assign(d, F2.zero);
   F2.assign(e, F2.one);
   F2.assign(f, e);
   
   // Operations on elements
-  Float_Ring::Element c;
-  Double_Balanced_Ring::Element g;
+  // Since the modular reduction is very expensive it's important
+  // to call it as rarely as possible. Therefore the following
+  // operations way yield a result outside of the fields.
 
-  F1.add(c,a,b);       // c = a + b
-  F2.mul(g,e,5);       // g = e * 5
-  
+  F1.add(c,a,b);        // c = a + b
+  F2.mul(g,e,-5);       // g = e * (-5)
+  F1.mul(h,c,-3);       // h = c * (-3)
+
+  // The opposite operations sub and div are used just the same.
+
+  // ===== Display =====
+  // The fields form Givaro provide a display method called
+  // write().
+  // It's important to use write() because of the fact that the
+  // opertations may get out of the field. Here's why :
+
+  std::cout << "\n===== Linear Algebra level 0 =====" << std::endl;
+  std::cout << "a := " << a << " = 2      % 101" << std::endl;
+  std::cout << "b := " << b << " = 205    % 101" << std::endl;
+  std::cout << "c := " << c << " = a + b  % 101" << std::endl;
+  std::cout << "d := " << d << " = 1      % 105" << std::endl;
+  std::cout << "e := " << e << " = 0      % 105" << std::endl;
+  std::cout << "f := " << f << " = e      % 105" << std::endl;
+  std::cout << "g := " << g <<"  = e*(-5) % 105" << std::endl;
+  std::cout << "h := " << h << " = c*(-3) % 101" << std::endl;
+
+  std::cout << "\nThis last result is strange,"<< std::endl;
+  std::cout << "h is supposed to be defined %101."<< std::endl;
+  std::cout << "With the Field display :"<< std::endl;
+  std::cout << "h := " << std::flush;
+  F1.write(std::cout,h) << std::endl;
+   
+  std::cout << "\nThis is strange as well."<< std::endl;
+  std::cout << "That's because -3 is not"<< std::endl;
+  std::cout << "an element of the field."<< std::endl;
+  std::cout << "Thus -3 ought to be converted first."<< std::endl;
+  F1.init(h,-3);
+  std::cout << "F1.init(h,-3);\nF1.mulin(h,c);"<< std::endl;
+  std::cout << "With the Field display :"<< std::endl;
+  std::cout << "h := " << std::flush;
+  F1.write(std::cout,h) << "\n" <<std::endl;
 } //end main
