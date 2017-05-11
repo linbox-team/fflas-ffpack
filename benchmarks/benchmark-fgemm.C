@@ -112,11 +112,6 @@ int main(int argc, char** argv) {
 
   for (size_t i=0;i<=iter;++i){
 
-	  // if (argc > 4){
-	  // 	  A = read_field (F, argv[4], &n, &n);
-	  // }
-	  // else{
-
       chrono.clear();
       if (p && p!=7){
 	      // CuttingStrategy meth = RECURSIVE;

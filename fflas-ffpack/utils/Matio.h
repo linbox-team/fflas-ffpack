@@ -122,14 +122,4 @@ std::ostream& write_field(const Field& F,std::ostream& c,
 	return c ;
 }
 
-inline std::ostream& write_perm (std::ostream& c, const size_t* P, size_t N){
-	c<<"[ ";
-	for (size_t i=0; i<N; ++i){
-		if (i)
-			c<<", ";
-		c<<P[i];
-	}
-	c<<"]"<<std::endl;
-	return c;
-}
 #endif //__FFLASFFPACK_matio_H

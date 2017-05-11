@@ -43,7 +43,7 @@ using namespace std;
 
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -67,8 +67,8 @@ int main(int argc, char** argv){
 	F.init(zero,0.0);
 	F.init(one,1.0);
 	Field::Element * A, *B, *X=NULL;
-	A = read_field(F,argv[2],&m,&n);
-	B = read_field(F,argv[3],&mb,&nb);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+	FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
 
 	FFLAS::FFLAS_SIDE side = (atoi(argv[5])) ? FFLAS::FflasRight :  FFLAS::FflasLeft;
 
@@ -111,9 +111,9 @@ int main(int argc, char** argv){
 		time+=t.usertime();
 		if (i+1<nbit){
 			FFLAS::fflas_delete(A);
-			A = read_field(F,argv[2],&m,&n);
+			FFLAS::ReadMatrix (argv[2],F,m,n,A);
 			FFLAS::fflas_delete( B);
-			B = read_field(F,argv[3],&mb,&nb);
+			FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
 		}
 	}
 
@@ -126,7 +126,7 @@ int main(int argc, char** argv){
 		exit (-1);
 	}
 
-	A = read_field(F,argv[2],&m,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
 	B2 = FFLAS::fflas_new<Field::Element>(mb*nb);
 
@@ -148,7 +148,7 @@ int main(int argc, char** argv){
 	FFLAS::fflas_delete( B);
 	FFLAS::fflas_delete( X);
 
-	B = read_field(F,argv[3],&mb,&nb);
+	FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
 
 	bool wrong = false;
 	for (int i=0;i<mb;++i)

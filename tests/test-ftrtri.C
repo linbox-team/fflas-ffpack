@@ -42,7 +42,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 	}
 	Field F(atoi(argv[1]));
 	Field::Element * A,*Ab;
-	A = read_field(F,argv[2],&n,&n);
+	FFLAS::ReadMatrix (argv[2],F,n,n,A);
 	Ab = FFLAS::fflas_new<Field::Element>(n*n);
 
 	for (int i=0; i<n;++i){

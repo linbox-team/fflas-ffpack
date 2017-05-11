@@ -36,7 +36,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -79,21 +79,9 @@ int main(int argc, char** argv) {
   double time=0.0;
 
   std::vector<int> Piv(n,0);
-  if (iter>1) {
+  for (size_t it=0;it <= iter;++it){
 	  if (!file.empty()){
-		  A = read_field(F, file.c_str(), &n, &n);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
-          clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
-          FFLAS::fflas_delete( A);
-      }
-  }
-  for (size_t it=0;it<iter;++it){
-	  if (!file.empty()){
-		  A = read_field(F, file.c_str(), &n, &n);
+		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
 	  }
 	  else {
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -102,11 +90,11 @@ int main(int argc, char** argv) {
 	  }
 
 	  chrono.clear();
-	  chrono.start();
+	  if (it) chrono.start();
 	  clapack_dgetrf(CblasRowMajor,n,n,A,n,&Piv[0]);
-	  chrono.stop();
+	  if (it) chrono.stop();
 
-	  time+=chrono.usertime();
+	  if (it) time+=chrono.usertime();
 	  FFLAS::fflas_delete( A);
   }
   

@@ -30,7 +30,7 @@
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
   if (iter>1) {
     if (!file1.empty()){
-      A = read_field (F, file1.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file1.c_str(),F,n,n,A);
     }
     else{
       Field::RandIter G(F);
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     }
 
     if (!file2.empty()){
-      B = read_field (F, file2.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file2.c_str(),F,n,n,B);
     }
     else{
       Field::RandIter G(F);
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
   for (size_t it=0;it<iter;++it){
 
     if (!file1.empty()){
-      A = read_field (F, file1.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file1.c_str(),F,n,n,A);
     }
     else{
       Field::RandIter G(F);
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     }
 
     if (!file2.empty()){
-      B = read_field (F, file2.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file2.c_str(),F,n,n,B);
     }
     else{
       Field::RandIter G(F);

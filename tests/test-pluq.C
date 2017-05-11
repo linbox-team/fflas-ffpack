@@ -46,7 +46,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -73,7 +73,7 @@ int main(int argc, char** argv){
 	Field F(atof(argv[1]));
 	Field::Element * A;
 
-	A = read_field(F,argv[2],&m,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
 	size_t maxP, maxQ;
 
@@ -103,7 +103,7 @@ int main(int argc, char** argv){
 			FFLAS::fflas_delete( A);
 			FFLAS::fflas_delete( RRP);
 			FFLAS::fflas_delete( CRP);
-			A = read_field(F,argv[2],&m,&n);
+			FFLAS::ReadMatrix (argv[2],F,m,n,A);
 		}
 
 		for (size_t j=0;j<maxP;j++)
@@ -117,7 +117,7 @@ int main(int argc, char** argv){
 		tim.stop();
 		timc+=tim;
 		FFLAS::fflas_delete( A);
-		A = read_field(F,argv[2],&m,&n);
+		FFLAS::ReadMatrix (argv[2],F,m,n,A);
 		timlud.clear();
 		timlud.start();
 		R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
@@ -212,7 +212,8 @@ int main(int argc, char** argv){
 	 // 	cerr<<Q[i]<<" ";
 	 // cerr<<endl;
 
-	Field::Element * B =  read_field(F,argv[2],&m,&n);
+	Field::Element* B;
+	FFLAS::ReadMatrix (argv[2],F,m,n,B);
 
 	bool fail = false;
 	for (size_t i=0; i<(size_t)m; ++i)

@@ -483,7 +483,7 @@ namespace FFPACK {
 	 * @param F The computation domain
 	 * @param UpLo Determine wheter to store the upper or lower triangular factor
 	 * @param N order of the matrix A
-	 * @param [inout]] A input matrix
+	 * @param [inout] A input matrix
 	 * @param lda leading dimension of A
 	 * @return false if the \p A does not have generic rank profile, making the computation fail.
 	 *
@@ -505,8 +505,8 @@ namespace FFPACK {
 	 * @param F The computation domain
 	 * @param UpLo Determine wheter to store the upper or lower triangular factor
 	 * @param N order of the matrix A
-	 * @param [inout]] A input matrix
-	 * @param [inout]] D
+	 * @param [inout] A input matrix
+	 * @param [inout] D
 	 * @param lda leading dimension of A
 	 * @return false if the \p A does not have generic rank profile, making the computation fail.
 	 *

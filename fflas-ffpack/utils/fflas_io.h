@@ -54,6 +54,7 @@ namespace FFLAS{
 
 		}else{
 				// No detection of non-binary formats for the moment
+			format = FflasSMS;
 		}
 		ifs.seekg(0);
 		return;
@@ -82,7 +83,7 @@ namespace FFLAS{
 		}
 
         switch (form){
-            case FflasDense:
+            case FflasDense:{
                 ifs >> m;
                 ifs >> n;
                 A = fflas_new(F, m,n);
@@ -90,20 +91,23 @@ namespace FFLAS{
                     F.read (ifs, A[i]);
                 }
                 break;
-
-            case FflasSMS:
+			}
+            case FflasSMS:{
                 ifs >> m;
                 ifs >> n;
-                size_t i,j,tmp;
-                ifs >> tmp;
+                size_t i,j;
+				std::string tmp;
+				typename Field::Element val;
+				ifs >> tmp;
                 A = fflas_new(F, m,n);
                 do{
                     ifs >> i >> j;
-                    F.read (ifs, A[(i-1)*n+j-1]);
-                } while (i!=0 && j!=0 && !F.isZero(A[(i-1)*n+j-1]));
+                    F.read (ifs, val);
+					if (i>0 && i>0) F.assign (A [(i-1)*n+j-1], val);
+                } while (!(i==0 && j==0 && F.isZero(val)));
                 break;
-
-            case FflasBinary:
+			}
+            case FflasBinary:{
 				char st[8];
 				ifs.read(st, 8);
 				if (strcmp(st,"FFBinFmt")){
@@ -118,7 +122,7 @@ namespace FFLAS{
 				ifs.read (reinterpret_cast<char *>(A), sizeof(typename Field::Element)*m*n);
 				ifs.close();
                 break;
-
+			}
             default:
                 std::cerr<<"Unable to detect the file format"<<std::endl;
         }
@@ -159,7 +163,7 @@ namespace FFLAS{
 		 * @param F: base field
 		 * @param m: row dimension
 		 * @param n: column dimension
-		 * @param A: output matrix
+		 * @param A: matrix
 		 * @param format: input format (FflasAuto, FflasDense, FflasSMS, FflasBinary)
 		 * @param column_major: whether the matrix is stored in column or row major (row by default)
 		 */
@@ -257,7 +261,7 @@ namespace FFLAS{
 		 * @param F: base field
 		 * @param m: row dimension
 		 * @param n: column dimension
-		 * @param A: output matrix
+		 * @param A: matrix
 		 * @param format: input format (FflasAuto, FflasDense, FflasSMS, FflasBinary)
 		 * @param column_major: whether the matrix is stored in column or row major (row by default)
 		 */
@@ -278,6 +282,23 @@ namespace FFLAS{
 		} else
 			std::cerr<<"Error: unable to open file "<<matrix_file<<std::endl;
     }
+
+	/**
+		 * @brief WritePermutation: write a permutation matrix to an output stream
+		 * @param c: output stream
+		 * @param P: permutation
+		 * @param N: size of the permutation
+		 */
+    inline std::ostream& WritePermutation (std::ostream& c, const size_t* P, size_t N){
+		c<<"[ ";
+		for (size_t i=0; i<N; ++i){
+			if (i)
+				c<<", ";
+			c<<P[i];
+		}
+		c<<"]"<<std::endl;
+	return c;
+}
     
 } //namespace FFLAS
 
