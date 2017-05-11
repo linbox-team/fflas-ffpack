@@ -29,7 +29,6 @@
 
 
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "test-utils.h"

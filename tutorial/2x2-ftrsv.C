@@ -24,7 +24,7 @@
 #include <givaro/modular-balanced.h>
 #include <fflas-ffpack/fflas/fflas.h>
 #include <fflas-ffpack/utils/timer.h>
-#include <fflas-ffpack/utils/Matio.h>
+#include <fflas-ffpack/utils/fflas_io.h>
 #include <fflas-ffpack/utils/args-parser.h>
 
 #include <iostream>
@@ -42,48 +42,48 @@ int main(int argc, char** argv) {
     
     size_t m(2);
     
-    write_field(F, std::cout << "L:=", L, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "B:=", B, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "L:=", F, m, m, L, m) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "B:=", F, m, 1, B, 1) << std::endl;
     
         // In place system solve
     ftrsv (F, FflasLower,FflasNoTrans,FflasNonUnit, m, L, m, B, 1);
     
-    write_field(F, std::cout << "X:=", B, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "X:=", F, m, 1, B, 1) << std::endl;
     std::cerr << "0 = L.X - B mod " << F.characteristic() << ';' << std::endl;
     
     Ring::Element U[4]{3,2,0,5}, C[2]{4,7};
     
     
-    write_field(F, std::cout << "U:=", U, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "C:=", C, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "U:=", F, m, m, U, m) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "C:=", F, m, 1, C, 1) << std::endl;
     
         // In place system solve
     ftrsv (F, FflasUpper, FflasNoTrans ,FflasNonUnit, m, U, m, B, 1);
     
-    write_field(F, std::cout << "X:=", C, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "X:=", F, m, 1, C, 1) << std::endl;
     std::cerr << "0 = U.X - C mod " << F.characteristic() << ';' << std::endl;
     
     Ring::Element D[2]{4,5};
     
-    write_field(F, std::cout << "L:=", L, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "D:=", D, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "L:=", F, m, m, L, m) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "D:=", F, m, 1, D, 1) << std::endl;
     
         // In place system solve
     ftrsv (F, FflasLower,FflasTrans,FflasNonUnit, m, L, m, D, 1);
     
-    write_field(F, std::cout << "X:=", D, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "X:=", F, m, 1, D, 1) << std::endl;
     std::cerr << "0 = Transpose(X).L - Transpose(D) mod " << F.characteristic() << ';' << std::endl;
 
     Ring::Element E[2]{4,7};
     
     
-    write_field(F, std::cout << "U:=", U, m, m, m, true) << std::endl;
-    write_field(F, std::cout << "E:=", E, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "U:=", F, m, m, U, m) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "E:=", F, m, 1, E, 1) << std::endl;
     
         // In place system solve
     ftrsv (F, FflasUpper, FflasTrans ,FflasNonUnit, m, U, m, E, 1);
     
-    write_field(F, std::cout << "X:=", E, m, 1, 1, true) << std::endl;
+    FFLAS::WriteMatrix (std::cout << "X:=", F, m, 1, E, 1) << std::endl;
     std::cerr << "0 = Transpose(X).U - Transpose(E) mod " << F.characteristic() << ';' << std::endl;
     
     return 0;

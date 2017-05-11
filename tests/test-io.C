@@ -35,7 +35,6 @@
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "fflas-ffpack/utils/Matio.h"
 using namespace std;
 using namespace FFLAS;
 using Givaro::Modular;
