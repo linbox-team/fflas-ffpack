@@ -34,12 +34,6 @@ using fflas.
 //#include <fflas-ffpack/fflas-ffpack-config.h>
 #include <fflas-ffpack/fflas/fflas.h>
 
-// fflas-ffpack utilities
-
-#include <fflas-ffpack/utils/timer.h>
-#include <fflas-ffpack/utils/Matio.h>
-#include <fflas-ffpack/utils/args-parser.h>
-
 // Givaro provides some finite fields such as modular rings.
 // Here we include two types of modular rings.
 //    1. Normal   modular rings with elements numbered from 0 to p
