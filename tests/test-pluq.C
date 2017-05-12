@@ -96,7 +96,7 @@ int main(int argc, char** argv){
 	size_t *P = FFLAS::fflas_new<size_t>(maxP);
 	size_t *Q = FFLAS::fflas_new<size_t>(maxQ);
 
-	//write_field (F,cerr<<"A = "<<endl, A, m,n,n);
+	//FFLAS::WriteMatrix (cerr<<"A = "<<endl, F, m,n,A,n);
 	size_t * RRP, *CRP;
 	for ( size_t i=0;i<nbf;i++){
 		if (i) {
@@ -151,7 +151,7 @@ int main(int argc, char** argv){
 		FFLAS::fflas_delete( RRP);
 		FFLAS::fflas_delete( CRP);
 	}
-//	write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
+//	FFLAS::WriteMatrix (cerr<<"Result = "<<endl, F, m,n,A,n);
 
 // 	cerr<<"P = [";
 // 	for (size_t i=0; i<maxP; ++i)
@@ -184,15 +184,15 @@ int main(int argc, char** argv){
 			F.assign( *(L + i*R+j), *(A+i*n+j));
 	}
 
-	    //write_field(F,cerr<<"L = "<<endl,L,m,R,R);
-	    //write_field(F,cerr<<"U = "<<endl,U,R,n,n);
+	    //FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,m,R,L,R);
+	    //FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,R,n,U,n);
 	// cerr<<endl;
 	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
 
-	    //write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-	    //write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-// 		write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-// 		write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+	    //FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,m,m,L,m);
+	    //FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,m,n,U,n);
+// 		FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,m,m,L,m);
+// 		FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,m,n,U,n);
 
 	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
@@ -200,8 +200,8 @@ int main(int argc, char** argv){
 	    //FFLAS::fflas_delete( A);
 
 //////
-	    //write_field(F,cerr<<"L = "<<endl,L,m ,n,n);
-	    //write_field(F,cerr<<"U = "<<endl,U,n,n,n);
+	    //FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,m ,n,L,n);
+	    //FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,n,n,U,n);
 
 	 // cerr<<"P = ";
 	 // for (int i=0; i<m; ++i)
@@ -224,8 +224,8 @@ int main(int argc, char** argv){
 					  << endl;
 				fail=true;
 			}
-	// write_field(F,cerr<<"X = "<<endl,X,m,n,n);
-	// write_field(F,cerr<<"B = "<<endl,B,m,n,n);
+	// FFLAS::WriteMatrix (cerr<<"X = "<<endl,F,m,n,X,n);
+	// FFLAS::WriteMatrix (cerr<<"B = "<<endl,F,m,n,B,n);
 	FFLAS::fflas_delete( B);
 	if (fail)
 		cerr<<"FAIL"<<endl;

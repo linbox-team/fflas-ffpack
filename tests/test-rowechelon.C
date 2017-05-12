@@ -97,7 +97,7 @@ int main(int argc, char** argv){
 		tim.stop();
 		timc+=tim;
 	}
-	//write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
+	//FFLAS::WriteMatrix (cerr<<"Result = "<<endl, F, m,n,A,n);
 
 // 	cerr<<"P = [";
 // 	for (size_t i=0; i<n; ++i)
@@ -145,9 +145,9 @@ int main(int argc, char** argv){
 // 		cerr<<" "<<Q[i];
 // 	cerr<<endl;
 
-// 	write_field(F,cerr<<"A = "<<endl,A,m,n,n);
-//  	write_field(F,cerr<<"L = "<<endl,L,m,n,n);
-//  	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+// 	FFLAS::WriteMatrix (cerr<<"A = "<<endl,F,m,n,A,n);
+//  	FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,m,n,L,n);
+//  	FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,m,n,U,n);
 
 	Field::Element * B;
 	FFLAS::ReadMatrix (argv[2],F,m,n,B);
@@ -162,8 +162,8 @@ int main(int argc, char** argv){
 			if (!F.areEqual (*(U+i*n+j), *(X+i*n+j)))
 				fail=true;
 
-	// write_field(F,cerr<<"X = "<<endl,X,m,n,n);
-	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+	// FFLAS::WriteMatrix (cerr<<"X = "<<endl,F,m,n,X,n);
+	//FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,m,n,U,n);
 
 	FFLAS::fflas_delete( B);
 	if (fail)

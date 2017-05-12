@@ -87,7 +87,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	if (n&1) // p0 == (-1)^n det
 		F.negin(det);
 	if (!F.areEqual(det,charp[0])){
-			//write_field(F, std::cerr<<"B = "<<std::endl,B, n,n,lda);
+			//FFLAS::WriteMatrix (std::cerr<<"B = "<<std::endl,F, n,n,B,lda);
 		std::cerr<<"FAILED: det = "<<det<<" P["<<0<<"] = "<<charp[0]<<std::endl;
 		FFLAS::fflas_delete (B);
 		return false;

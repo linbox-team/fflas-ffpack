@@ -85,7 +85,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 		fgemm(*F, FflasNoTrans, FflasNoTrans, n,n,n, F->one, A, lda, X, ldx, F->mOne, Y, n);
 
 		if (! fiszero(*F,n,n,Y,n)){
-			write_field(*F, std::cerr<<"Y = "<<std::endl,Y,n,n,n);
+				//FFLAS::WriteMatrix (std::cerr<<"Y = "<<std::endl,*F,n,n,Y,n);
 			std::cerr<<"Error: A * A^{-1} != Id"<<std::endl;
 			fflas_delete(A);
 			fflas_delete(X);
