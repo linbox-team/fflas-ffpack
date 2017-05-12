@@ -39,6 +39,7 @@ BASIC_TESTS =               \
 		test-det            \
 		test-echelon        \
 		test-charpoly       \
+		test-minpoly		\
 		test-rankprofiles   \
 		test-compressQ      \
 		test-permutations   \
@@ -125,6 +126,7 @@ test_fgemm_check_SOURCES = test-fgemm-check.C
 test_ftrsm_check_SOURCES = test-ftrsm-check.C
 test_invert_check_SOURCES = test-invert-check.C
 test_charpoly_check_SOURCES = test-charpoly-check.C
+test_minpoly_SOURCES = test-minpoly.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
