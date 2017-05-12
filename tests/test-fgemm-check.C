@@ -41,7 +41,7 @@
 
 int main(int argc, char** argv) {
 	srand (time(NULL));
-	typedef Givaro::Modular<double> Field;
+	typedef Givaro::Modular<double> Field;      
 	Givaro::Integer q = 131071;
 	size_t iter = 10;
 	

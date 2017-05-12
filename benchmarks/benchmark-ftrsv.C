@@ -35,9 +35,9 @@ using namespace FFLAS;
 
 int main(int argc, char** argv) {
   
-	size_t iter = 3;
-	int    q    = 1009;
-	size_t    n    = 2000;
+	size_t iter = 10;
+	int    q    = 131071;
+	size_t    n    = 4000;
 	bool u = true;  // Upper triangular
 	bool d = false; // NonUnit diagonal
 	bool t = false; // NoTrans

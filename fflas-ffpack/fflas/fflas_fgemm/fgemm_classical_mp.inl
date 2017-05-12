@@ -153,7 +153,6 @@ namespace FFLAS {
 	       typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
 	       MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic,ModeCategories::DefaultTag, ParSeqHelper::Sequential> & H)
 	{		
-
 		// compute each fgemm componentwise
 #ifdef PROFILE_FGEMM_MP
 		Givaro::Timer t;t.start();
@@ -426,7 +425,6 @@ namespace FFLAS {
 		chrono.stop();
 		F.t_igemm+=chrono.realtime();
 #endif
-
 		return Cd;
 	}
 

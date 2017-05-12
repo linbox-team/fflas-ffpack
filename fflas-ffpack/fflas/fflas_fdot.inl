@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_fdot_INL
 #define __FFLASFFPACK_fdot_INL
 
-
+#include "fflas-ffpack/fflas/fflas_helpers.inl"
 // Default implementation
 // Specializations should be written
 // to increase efficiency
@@ -69,8 +69,8 @@ namespace FFLAS {
 
 		const DFElt MaxStorableValue = limits<typename DelayedField::Element>::max();
 		const DFElt AbsMax = std::max(-F.minElement(), F.maxElement());
-		size_t delayedDim = MaxStorableValue / (AbsMax*AbsMax);
-
+		const DFElt r = MaxStorableValue / (AbsMax*AbsMax);
+		size_t delayedDim = FFLAS::Protected::min_types<DFElt>(r);
 
 		typename Field::Element d;
 		F.init (d,F.zero);
