@@ -337,21 +337,15 @@ solveLB( const Field& F, const FFLAS::FFLAS_SIDE Side,
 	int i = (int)R ;
 	for (; i--; ){ // much faster for
 		if (  Q[i] > (size_t) i){
-				//for (size_t j=0; j<=Q[i]; ++j)
-				//F.init( *(L+Q[i]+j*ldl), 0 );
-				//std::cerr<<"1 deplacement "<<i<<"<-->"<<Q[i]<<endl;
 			FFLAS::fassign( F, LM-Q[i]-1, L+(Q[i]+1)*ldl+i, ldl , L+Q[i]*(ldl+1)+ldl,ldl);
 			for ( size_t j=Q[i]*ldl; j<LM*ldl; j+=ldl)
 				F.assign( *(L+i+j), F.zero );
 		}
 	}
 	ftrsm( F, Side, FFLAS::FflasLower, FFLAS::FflasNoTrans, FFLAS::FflasUnit, M, N, F.one, L, ldl , B, ldb);
-		//write_field(F,std::cerr<<"dans solveLB "<<endl,L,N,N,ldl);
 		// Undo the permutation of L
 	for (size_t ii=0; ii<R; ++ii){
 		if ( Q[ii] > (size_t) ii){
-				//for (size_t j=0; j<=Q[ii]; ++j)
-				//F.init( *(L+Q[ii]+j*ldl), 0 );
 			FFLAS::fassign( F, LM-Q[ii]-1, L+Q[ii]*(ldl+1)+ldl,ldl, L+(Q[ii]+1)*ldl+ii, ldl );
 			for ( size_t j=Q[ii]*ldl; j<LM*ldl; j+=ldl)
 				F.assign( *(L+Q[ii]+j), F.zero );

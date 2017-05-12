@@ -46,9 +46,9 @@ namespace FFLAS{
     };
     
 
-    void preamble(std::ifstream&ifs, FFLAS_FORMAT& format){
+    inline void preamble(std::ifstream&ifs, FFLAS_FORMAT& format){
 		char st[8];
-		ifs.read(st, 8);
+		ifs.getline(st, 9);
 		if (!strcmp(st,"FFBinFmt")){
 			format = FflasBinary;
 
@@ -102,16 +102,20 @@ namespace FFLAS{
                 A = fflas_new(F, m,n);
                 do{
                     ifs >> i >> j;
+					if (i>m || j>n){
+						std::cerr<<"Matrix file does not respect the SMS format"<<std::endl;
+						return NULL;
+					}
                     F.read (ifs, val);
 					if (i>0 && i>0) F.assign (A [(i-1)*n+j-1], val);
                 } while (!(i==0 && j==0 && F.isZero(val)));
                 break;
 			}
             case FflasBinary:{
-				char st[8];
-				ifs.read(st, 8);
-				if (strcmp(st,"FFBinFmt")){
-					std::cerr<<"Not a FFLAS-FFPACK binary matrix format: "<<std::endl;
+				char st[9];
+				ifs.getline(st, 9);
+				if (strcmp (st,"FFBinFmt")){
+					std::cerr<<"Not a FFLAS-FFPACK binary matrix format: preamble = "<<st<<std::endl;
 					return NULL;
 				}
 				size_t mm, nn;
@@ -237,12 +241,14 @@ namespace FFLAS{
 			case FflasBinary:{
 				char st[9]="FFBinFmt";
 				c.write (st, 8);
+				c<<std::endl;
 				c.write ( reinterpret_cast<char*> (&m), sizeof (size_t));
 				c.write ( reinterpret_cast<char*> (&n), sizeof (size_t));
 				c.write ( reinterpret_cast<const char*> (A), sizeof(typename Field::Element)*m*n);
 				break;
 			}
 			default: // format == FflasMath
+				std::cerr<<"Ecriture Math"<<std::endl;
 				for (size_t i = 0; i<m; ++i){
 					for (size_t j=0; j<n;++j){
 						if (column_major) F.write (c, A[j*lda+i]);

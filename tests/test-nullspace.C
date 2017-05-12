@@ -102,11 +102,9 @@ int main(int argc, char** argv){
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-		write_field (F,cerr<<"A="<<endl,Ab,m,n,n);
-		write_field (F,cerr<<"NS="<<endl,NS, n,NSdim, NSdim);
-		write_field (F,cerr<<"C="<<endl,C,m,NSdim, NSdim);
-// 		write_field (F,cerr<<"NS="<<endl,NS, NSdim, m,m);
-// 		write_field (F,cerr<<"C="<<endl,C,NSdim,n, n);
+		FFLAS::WriteMatrix (cerr<<"A="<<endl,F,m,n,Ab,n);
+		FFLAS::WriteMatrix (cerr<<"NS="<<endl,F, n,NSdim, NS, NSdim);
+		FFLAS::WriteMatrix (cerr<<"C="<<endl,F,m,NSdim, C, NSdim);
 	} else {
 		cerr<<"PASS"<<endl;
 	}

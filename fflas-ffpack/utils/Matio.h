@@ -33,6 +33,8 @@
 // Reading and writing matrices over field
 
 // Reading a matrice from a (eventually zipped) file
+// WARNING: this routine is deprecated.
+// Use instead ReadMatrix from fflas-ffpack/utils/fflas-io.h
 template<class Field>
 typename Field::Element_ptr read_field(const Field& F, const char * mat_file,size_t * tni,size_t* tnj)
 {
@@ -90,6 +92,9 @@ typename Field::Element_ptr read_field(const Field& F, const char * mat_file,siz
 
 
 // Displays a matrix
+// WARNING: this routine is deprecated.
+// Use instead WriteMatrix from fflas-ffpack/utils/fflas-io.h
+
 template<class Field>
 std::ostream& write_field(const Field& F,std::ostream& c,
 			  typename Field::ConstElement_ptr E,

@@ -139,7 +139,7 @@ namespace FFPACK {
 			while (mc > 0) {
 #ifdef __FFLASFFPACK_DEBUG
 				std::cerr<<"Boucle1: mc,me,lambda="<<mc<<" "<<me<<" "<<lambda<<std::endl;
-				// 		write_field (F, std::cerr, A, N, N, lda);
+				    //FFLAS::WriteMatrix (std::cerr, F, N, N, A, lda);
 #endif
 				size_t mu=0;
 				C = A + (N-mc);
@@ -168,7 +168,7 @@ namespace FFPACK {
 								F.assign (*(LUP+i*ncols+j), F.zero);
 #ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
-					write_field (F,std::cerr<<"LUP="<<std::endl,LUP,lambda+me,ncols,ncols);
+					WriteMatrix (std::cerr<<"LUP="<<std::endl,F,lambda+me,ncols,LUP,ncols);
 					std::cerr<<"LQUP(C1)";
 #endif
 					size_t * P = FFLAS::fflas_new<size_t>(ncols);
@@ -346,7 +346,7 @@ namespace FFPACK {
 
 #if 0
 					std::cerr<<"LUP="<<std::endl;
-					write_field (F, std::cerr, LUP, mc, mc, mc);
+					WriteMatrix (std::cerr, F, mc, mc, LUP, mc);
 					std::cerr<<" "<<r;
 #endif
 					// E'1 <- C11^-1 E1
@@ -376,10 +376,6 @@ namespace FFPACK {
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
 #endif
 
-#if 0
-					std::cerr<<"Apres B1<-C1^-1"<<std::endl;
-					write_field (F, std::cerr, A, N, N, lda);
-#endif
 					// E'2 <- E2 - C21.E'1
 #ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"// E'2 <- E2 - C21.E'1";
@@ -399,9 +395,6 @@ namespace FFPACK {
 #ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
-
-					// 			std::cerr<<"Apres B2<-B2-C2.B1"<<std::endl;
-					//             write_field (F, std::cerr, A, N, N, lda);
 
 					// Shifting E: E1;E2 -> E2;E1
 					std::cerr<<"// Shifting E: E1;E2 -> E2;E1";
@@ -432,10 +425,7 @@ namespace FFPACK {
 					std::cerr<<"..done"<<std::endl;
 
 					printA(F,std::cerr<<"A="<<std::endl,E,C,lda,B,T,me,mc,lambda,mu);
-#if 0
-					std::cerr<<"Apres shift de B"<<std::endl;
-					write_field (F, std::cerr, A, N, N, lda);
-#endif
+
 					// C'2 <- T C2
 					std::cerr<<"// C'2 <- T C2";
 #endif

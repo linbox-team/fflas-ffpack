@@ -93,7 +93,7 @@ int main(int argc, char** argv){
 	int info=0;
  FFLAS::Timer t; t.clear();
 	double time=0.0;
-	//write_field(F, cerr<<"A="<<endl, A, k,k,k);
+	//FFLAS::WriteMatrix (cerr<<"A="<<endl, F, k,k,A,k);
 	size_t R=0;
 	for (int i = 0;i<nbit;++i){
 		t.clear();
@@ -162,8 +162,8 @@ int main(int argc, char** argv){
 
 	if (wrong) {
 		cerr<<"FAIL"<<endl;
-		//write_field (F,cerr<<"B2="<<endl,B2,m,n,n);
-		//write_field (F,cerr<<"B="<<endl,B,m,n,n);
+		    //FFLAS::WriteMatrix (cerr<<"B2="<<endl,F,m,n,B2,n);
+		    //FFLAS::WriteMatrix (cerr<<"B="<<endl,F,m,n,B,n);
 	}else{
 
 		cerr<<"PASS"<<endl;

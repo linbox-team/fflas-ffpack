@@ -101,7 +101,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 		CompactField Z;
 		typename CompactField::Element_ptr Az = fflas_new(Z,m,n);
 		B = fflas_new(*F,m,n);
-		typename CompactField::Element_ptr  Bz;
+		typename CompactField::Element_ptr  Bz = NULL;
 		fconvert(*F,m,n,Az,n,A,n);
 		WriteMatrix (file_compact_binary,Z,m,n,Az,n, FflasBinary);
 		ReadMatrix (file_compact_binary,Z,m,n,Bz, FflasBinary);

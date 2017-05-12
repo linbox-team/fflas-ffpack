@@ -92,8 +92,8 @@ int main(int argc, char** argv){
 		bk_idx++;
 		curr_row++;
 	}
-	write_field (F, cout<<"A = "<<endl, A,(int) m,(int) n,(int) n);
-	write_field (F, cout<<"B = "<<endl, B, (int) (m+n),(int) n,(int) n);
+	FFLAS::WriteMatrix (cout<<"A = "<<endl, F, m, n, A, n);
+	FFLAS::WriteMatrix (cout<<"B = "<<endl, F, (m+n), n,B, n);
 
 	size_t *rp = FFLAS::fflas_new<size_t>(n);
 
