@@ -68,15 +68,15 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	/*Create variables used for testing (matrices, vectors and polynomials) */
 
-    A = FFLAS::fflas_new(F, n, n);
-    V = FFLAS::fflas_new(F, n+1, n);
+    A = FFLAS::fflas_new(F, n, lda);
+    V = FFLAS::fflas_new(F, n+1, ldv);
 	Vcst = FFLAS::fflas_new(F, 1, n);
     Polynomial minP;
 
 
     FFPACK::RandomMatrix (F, n, n, A, lda, G);
 
-	FFPACK::NonZeroRandomMatrix(F, 1, n, V, n, G); 
+	FFPACK::NonZeroRandomMatrix(F, 1, n, V, ldv, G); 
 	FFLAS::fassign(F, n, V, 1, Vcst, 1); //MatVecMinPoly modifies V, we store it in Vcst beforehand
 
 	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv);
@@ -85,7 +85,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	/*Check that minP is monic*/
 
 	size_t deg = minP.size() - 1;
-	if(!(minP[deg]==F.one))
+	if(!(F.areEqual(minP[deg], F.one)))
 		return false;
 
 	// Krylov matrix computation
@@ -199,7 +199,7 @@ int main(int argc, char** argv)
     /* Test parameters */
 	Givaro::Integer q = -1;
 	size_t b = 0;
-    size_t n = 128;
+    size_t n = 342;
 	size_t iters = 1;
 	bool loop = false;
     uint64_t seed = time(NULL);
