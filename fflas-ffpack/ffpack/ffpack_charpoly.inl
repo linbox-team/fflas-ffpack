@@ -185,12 +185,20 @@ namespace FFPACK {
 			size_t Ncurr=N;
 			charp.clear();
 			size_t nbfac = 0;
+
 			while (Ncurr > 0){
+
 				size_t *P = FFLAS::fflas_new<size_t>(Ncurr);
+				typename Field::Element_ptr v = FFLAS::fflas_new (F,Ncurr,1);
 				Polynomial minP;//=new Polynomial();
 				    //Hybrid_KGF_LUK_MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
-				FFPACK::RandomMatrix (F, 1, Ncurr, X2, ldx, G);
-				MatVecMinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
+
+				FFPACK::RandomMatrix (F, 1, Ncurr, v, Ncurr, G);
+
+				MatVecMinPoly (F, minP, Ncurr, A, lda, v, 1, X2, ldx, P);
+
+				FFLAS::fflas_delete (v);
+
 				size_t k = minP.size()-1; // degre of minpoly
 				if ((k==1) && F.isZero (minP[0])){ // minpoly is X
 					if (FFLAS::fiszero(F,Ncurr, Ncurr, A, lda)){

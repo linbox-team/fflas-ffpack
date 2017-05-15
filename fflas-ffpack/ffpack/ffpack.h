@@ -643,10 +643,10 @@ namespace FFPACK { /* ludivine */
 		template <class Field>
 		size_t
 		LUdivine_construct( const Field& F, const FFLAS::FFLAS_DIAG Diag,
-				    const size_t M, const size_t N,
+							const size_t M, const size_t N,
 							typename Field::ConstElement_ptr A, const size_t lda,
 							typename Field::Element_ptr X, const size_t ldx,
-							typename Field::Element_ptr u, size_t* P,
+							typename Field::Element_ptr u, const size_t incu, size_t* P,
 							bool computeX, const FFPACK_MINPOLY_TAG MinTag= FfpackDense
 							, const size_t kg_mc =0
 							, const size_t kg_mb =0
@@ -1047,10 +1047,17 @@ namespace FFPACK { /* minpoly */
 	Polynomial&
 	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
 				   typename Field::ConstElement_ptr A, const size_t lda,
-				   typename Field::Element_ptr K, const size_t ldk,
-				   size_t * P=NULL);
+				   typename Field::ConstElement_ptr v, const size_t incv);
 
 	namespace Protected{
+		template <class Field, class Polynomial>
+		Polynomial&
+		MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
+					   typename Field::ConstElement_ptr A, const size_t lda,
+					   typename Field::Element_ptr v, const size_t incv,
+					   typename Field::Element_ptr K, const size_t ldk,
+					   size_t * P);
+
 		template <class Field, class Polynomial>
 		Polynomial&
 		Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N,
