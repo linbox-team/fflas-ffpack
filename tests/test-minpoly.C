@@ -199,7 +199,7 @@ int main(int argc, char** argv)
     /* Test parameters */
 	Givaro::Integer q = -1;
 	size_t b = 0;
-    size_t n = 342;
+    size_t n = 108;
 	size_t iters = 1;
 	bool loop = false;
     uint64_t seed = time(NULL);
@@ -228,6 +228,8 @@ int main(int argc, char** argv)
 		ok &= run_with_field<ModularBalanced<int32_t>>(q,b,n,iters,seed);
 		ok &= run_with_field<Modular<int64_t>>(q,b,n,iters,seed);
 		ok &= run_with_field<ModularBalanced<int64_t>>(q,b,n,iters,seed);
+		ok &= run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,n/6,iters,seed);
+		ok &= run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),n/6,iters,seed);
 	} while(ok && loop);
 
 	return !ok ;
