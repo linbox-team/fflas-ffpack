@@ -38,18 +38,18 @@ using namespace FFLAS;
 using namespace FFPACK;
 int main(int argc, char** argv) {
   
-  size_t iter   = 3;
-  int    q      = 131071;
-  size_t row    = 1000;
-  size_t col    = 1000;
-  double a      = 1.0;
+  size_t iter      = 3;
+  int    q         = 131071;
+  size_t rows      = 1000;
+  size_t cols      = 1000;
+  double a         = 1.0;
   size_t threshold = 64;
   std::string file = "";
   
   Argument as[] = {
     { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
-	{ 'm', "-m M", "Set the row dimension of the matrix C.",                TYPE_INT , &row },
-	{ 'n', "-n N", "Set the column dimension of the matrix C.",             TYPE_INT , &col },,
+	{ 'm', "-m M", "Set the row dimension of the matrix C.",                TYPE_INT , &rows },
+	{ 'n', "-n N", "Set the column dimension of the matrix C.",             TYPE_INT , &cols },
     { 'a', "-a A", "Set the value of the coefficient alpha for alpha * B.", TYPE_DOUBLE , &a},
     { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
     { 't', "-t T", "Set the threshold to the base case.",                   TYPE_INT , &threshold },
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
   typedef Field::Element Element;
 	
   Field F(q);
-  Field::ConstElement_ptr A, B;
+  Field::Element_ptr A, B;
   Field::Element_ptr C;
   Element alpha;
   F.init(alpha, a);
@@ -72,18 +72,18 @@ int main(int argc, char** argv) {
   double time=0.0;
 	
   for (size_t i=0;i<=iter;++i){
-	A = fflas_new(F,row,col);
-    size_t lda=row;
-    B = fflas_new(F,row,col);
-    size_t ldb=row;
-    C = fflas_new(F,row,col);
-    size_t ldc=row;
+	A = fflas_new(F, rows, cols);
+    size_t lda=rows;
+    B = fflas_new(F, rows, cols);
+    size_t ldb=rows;
+    C = fflas_new(F, rows, cols);
+    size_t ldc=rows;
     Field::RandIter G(F);
-    RandomMatrix (F, row, col, A, lda, G);
-    RandomMatrix (F, row, col, B, ldb, G);
+    RandomMatrix (F, rows, cols, A, lda, G);
+    RandomMatrix (F, rows, cols, B, ldb, G);
     chrono.clear();
     if (i) chrono.start();
-    fadd(F,n,m,A,lda,B,ldb,C,ldc);
+    fadd(F, rows, cols, A, lda, alpha, B, ldb, C, ldc);
     if (i) chrono.stop();
 		
     time+=chrono.usertime();
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
   // Standard output for benchmark - Alexis Breust 2014/11/14
 #define SQUARE(x) ((x)*(x))
   std::cout << "Time: " << time / double(iter)
-	      << " Gfops: " << SQUARE(double(n)/1000.)/ time * double(iter);
+			<< " Gfops: " << SQUARE(double(rows)/1000.)/(1000*time)* double(iter); //(n^2/1000^3)/time * iter
   FFLAS::writeCommandString(std::cout, as) << std::endl;
   return 0;
 }
