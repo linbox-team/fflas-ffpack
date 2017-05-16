@@ -38,21 +38,21 @@ using namespace FFLAS;
 using namespace FFPACK;
 int main(int argc, char** argv) {
   
-  size_t iter = 3;
-  int    q    = 131071;
-  size_t    n    = 1000;
-  size_t    m    = 1000;
-  double    a    = 1.0;
+  size_t iter   = 3;
+  int    q      = 131071;
+  size_t row    = 1000;
+  size_t col    = 1000;
+  double a      = 1.0;
   size_t threshold = 64;
   std::string file = "";
   
   Argument as[] = {
-    { 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
-    { 'n', "-n N", "Set the dimension of the matrix C.",             TYPE_INT , &n },
-    { 'm', "-m M", "Set the other dimension of the matrix C.",       TYPE_INT , &m },
-    { 'a', "-a A", "Set the value of alpha.",                        TYPE_DOUBLE , &a},
-    { 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
-    { 't', "-t T", "Set the threshold to the base case.",            TYPE_INT , &threshold },
+    { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+	{ 'm', "-m M", "Set the row dimension of the matrix C.",                TYPE_INT , &row },
+	{ 'n', "-n N", "Set the column dimension of the matrix C.",             TYPE_INT , &col },,
+    { 'a', "-a A", "Set the value of the coefficient alpha for alpha * B.", TYPE_DOUBLE , &a},
+    { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
+    { 't', "-t T", "Set the threshold to the base case.",                   TYPE_INT , &threshold },
     END_OF_ARGUMENTS
   };
 
@@ -72,15 +72,15 @@ int main(int argc, char** argv) {
   double time=0.0;
 	
   for (size_t i=0;i<=iter;++i){
-    A = fflas_new(F,n,m);
-    size_t lda=m;
-    B = fflas_new(F,n,m);
-    size_t ldb=m;
-    C = fflas_new(F,n,m);
-    size_t ldc=m;
+	A = fflas_new(F,row,col);
+    size_t lda=row;
+    B = fflas_new(F,row,col);
+    size_t ldb=row;
+    C = fflas_new(F,row,col);
+    size_t ldc=row;
     Field::RandIter G(F);
-    RandomMatrix (F, n, m, A, lda, G);
-    RandomMatrix (F, n, m, B, ldb, G);
+    RandomMatrix (F, row, col, A, lda, G);
+    RandomMatrix (F, row, col, B, ldb, G);
     chrono.clear();
     if (i) chrono.start();
     fadd(F,n,m,A,lda,B,ldb,C,ldc);
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
   // Standard output for benchmark - Alexis Breust 2014/11/14
 #define SQUARE(x) ((x)*(x))
   std::cout << "Time: " << time / double(iter)
-	    << " Gflops: " << SQUARE(double(n)/1000.)/ time * double(iter);
+	      << " Gfops: " << SQUARE(double(n)/1000.)/ time * double(iter);
   FFLAS::writeCommandString(std::cout, as) << std::endl;
   return 0;
 }
