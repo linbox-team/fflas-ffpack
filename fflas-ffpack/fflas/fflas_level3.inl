@@ -35,6 +35,10 @@
 #ifndef __FFLASFFPACK_fflas_fflas_level3_INL
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
+#ifndef __FFLAS_FSYRK_THRESHOLD
+#define __FFLAS_FSYRK_THRESHOLD 3000
+#endif
+
 //#include <givaro/zring.h>
 
 #include "fflas_bounds.inl"
@@ -207,6 +211,71 @@ namespace FFLAS {
 	       const typename Field::Element alpha,
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb);
+
+	/** @brief  fsyrk: Symmetric Rank K update
+	 *
+	 * Computes the Lower or Upper triangular part of \f$C = \alpha A \times A^T + \beta C\f$ or \f$C = \alpha A^T \times A + \beta C\f$
+	 * \param F field.
+	 * \param UpLo whether to compute the upper or the lower triangular part of the symmetric matrix \p C
+	 * \param trans if \c ta==FflasTrans then comput \f$C = \alpha A \times A^T + \beta C\f$, else  \f$C = \alpha A^T \times A + \beta C\f$
+	 * \param n see \p B
+	 * \param k see \p A
+	 * \param alpha scalar
+	 * \param A \f$A\f$ is \f$n \times k\f$ or \f$A\f$ is \f$k \times n\f$
+	 * \param lda leading dimension of \p A
+	 * \param beta scalar
+	 * \param C \f$C\f$ is \f$n \times n\f$
+	 * \param ldc leading dimension of \p C
+	 * @warning \f$\alpha\f$ \e must be invertible
+	 */
+	template<class Field>
+	typename Field::Element_ptr
+	fsyrk (const Field& F,
+	       const FFLAS_UPLO UpLo,
+	       const FFLAS_TRANSPOSE trans,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc);
+
+	/** @brief  fsyrk: Symmetric Rank K update with diagonal scaling
+	 *
+	 * Computes the Lower or Upper triangular part of
+	 * \f$C = \alpha A \times D \times A^T + \beta C\f$ or
+	 * \f$C = \alpha A^T \times D \times A + \beta C\f$ where \p D is a diagonal matrix.
+	 * Matrix \p A is updated into \f$ D\times A\f$ (if trans = FflasTrans) or
+	 * \f$ A\times D\f$ (if trans = FflasNoTrans).
+	 * \param F field.
+	 * \param UpLo whether to compute the upper or the lower triangular part of the symmetric
+	 *        matrix \p C
+	 * \param trans if \c ta==FflasTrans then compute \f$C = \alpha A \times A^T + \beta C\f$,
+	 *              else  \f$C = \alpha A^T \times A + \beta C\f$
+	 * \param n see \p B
+	 * \param k see \p A
+	 * \param alpha scalar
+	 * \param A \f$A\f$ is \f$n \times k\f$ or \f$A\f$ is \f$k \times n\f$
+	 * \param lda leading dimension of \p A
+	 * \param D \f$D\f$ is \f$k \times k\f$ diagonal matrix, stored as a vector of k coefficients
+	 * \param lda leading dimension of \p A
+	 * \param beta scalar
+	 * \param C \f$C\f$ is \f$n \times n\f$
+	 * \param ldc leading dimension of \p C
+	 * @warning \f$\alpha\f$ \e must be invertible
+	 */
+	template<class Field>
+	typename Field::Element_ptr
+	fsyrk (const Field& F,
+	       const FFLAS_UPLO UpLo,
+	       const FFLAS_TRANSPOSE trans,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::Element_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr D, const size_t incD,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc, const size_t threshold=__FFLAS_FSYRK_THRESHOLD);
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *

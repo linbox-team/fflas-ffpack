@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
     
 	size_t pass = 0;	// number of tests that have successfully passed
 
+    FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
 	for(size_t it=0; it<iter; ++it) {
 		if (random_dim) {
 			m = random() % MAXM + 1;
@@ -84,21 +85,19 @@ int main(int argc, char** argv) {
 		// generate a random matrix A
 		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
   
-//   		FFPACK::Checker_PLUQ<Field> checker (RValue,m,n,A,n);
-//   		size_t R = FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
-  		FFPACK::PLUQ(F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 		try {
-// 			checker.check(A,n,R,P,Q);
-			std::cout << m << 'x' << n << " pluq verification successful\n";
+			FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
+			std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification PASSED\n";
 			pass++;
 		} catch(FailurePLUQCheck &e) {
-			std::cout << m << 'x' << n << " pluq verification failed!\n";
+			std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification FAILED!\n";
 		}
 
 		FFLAS::fflas_delete(A,P,Q);
+        Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
 	}
 
-	std::cout << pass << "/" << iter << " tests were successful.\n";
+    std::cerr << pass << "/" << iter << " tests SUCCESSFUL.\n";
 
-	return 0;
+	return (iter-pass);
 }

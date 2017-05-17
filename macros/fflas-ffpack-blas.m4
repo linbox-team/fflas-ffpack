@@ -29,7 +29,7 @@ AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 			[AC_HELP_STRING([--with-blas-cflags=<cflags>],
 				[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
 			])
-		CBLAS_FLAG="$with_blas_cflags -D__FFLASFFPACK_HAVE_CBLAS"
+		CBLAS_FLAG="$with_blas_cflags"
 		AC_SUBST(CBLAS_FLAG)
 		dnl  echo $CBLAS_FLAG;
 		]
@@ -56,11 +56,11 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 		blas_lib_path=`echo $CBLAS_LIBS | $EGREP '\-L' | $SED -e 's/-L//;s/ .*//'`
 		LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$blas_lib_path"
 		export LD_RUN_PATH
-		CODE_CBLAS=`cat macros/CodeChunk/cblas.C`
+		CODE_CBLAS=`cat ${srcdir}/macros/CodeChunk/cblas.C`
 
 		AC_MSG_CHECKING(for USER BLAS)
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${GIVARO_CFLAGS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} -I. -I.. -I${srcdir} -I${srcdir}/fflas-ffpack ${GIVARO_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
 
 		AC_TRY_LINK( [
@@ -82,6 +82,36 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 			blas_found="no"
 			])
 
+		AS_IF([ test "x$blas_found" = "xno" ],
+			[
+			AC_MSG_RESULT(problem)
+			AC_MSG_CHECKING(for OpenBLAS)
+			CBLAS_LIBS="${CBLAS_LIBS} -lopenblas"
+			LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+			AC_TRY_LINK( [
+#define __FFLASFFPACK_CONFIGURATION
+#include "fflas-ffpack/config-blas.h"],
+				[double a;],
+				[
+				AC_TRY_RUN(
+					[ ${CODE_CBLAS} ],[
+					blas_found="yes"
+					AC_SUBST(CBLAS_LIBS)
+					],[
+					blas_problem="$problem"
+					],[
+					blas_found="yes"
+					blas_cross="yes"
+					AC_SUBST(CBLAS_LIBS)
+					])
+				],
+				[
+				blas_found="no"
+				])
+			],
+			[])
+
+
 		AS_IF([ test "x$blas_found" = "xyes" ],
 				[
 				BLAS_VENDOR="USER"
@@ -98,7 +128,7 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 				HAVE_BLAS=yes
 				AS_IF([test "x$blas_cross" != "xyes"],
 					[ AC_MSG_RESULT(found (cblas)) ] ,
-					[AC_MSG_RESULT(unknown)
+					[ AC_MSG_RESULT(unknown)
 					echo "WARNING: You appear to be cross compiling, so there is no way to determine"
 					echo "whether your BLAS are good. I am assuming it is."])
 				],
@@ -127,12 +157,12 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 		BACKUP_CXXFLAGS=${CXXFLAGS}
 		BACKUP_LIBS=${LIBS}
 
-		CODE_CLAPACK=`cat macros/CodeChunk/clapack.C`
-		CODE_LAPACK=`cat macros/CodeChunk/lapack.C`
+		CODE_CLAPACK=`cat ${srcdir}/macros/CodeChunk/clapack.C`
+		CODE_LAPACK=`cat ${srcdir}/macros/CodeChunk/lapack.C`
 
 		AC_MSG_CHECKING(for USER LAPACK)
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}  -I. -I.. -I`pwd` -I`pwd`/fflas-ffpack ${GIVARO_CFLAGS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}  -I. -I.. -I${srcdir} -I${srcdir}/flas-ffpack ${GIVARO_CFLAGS}"
 		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
 
 		AC_TRY_RUN(
@@ -182,14 +212,41 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 		[ AC_ARG_WITH(openblas-num-threads,
 			[AC_HELP_STRING([--with-openblas-num-threads=<num-threads>],
-				[ Sets the number of threads given to OpenBLAS])
-			])
-		 AC_MSG_CHECKING(for OPENBLAS numthreads)
-		 AS_IF([test "x$with_openblas_num_threads" = "x"],
-		       [AC_MSG_RESULT(none specified)],
+				[ Set the number of threads given to OpenBLAS])
+				])
+		dnl testing if we are using openblas
+		BACKUP_CXXFLAGS=${CXXFLAGS}
+		BACKUP_LIBS=${LIBS}
+
+		CODE_OPENBLAS='extern "C"{void openblas_set_num_threads(int num_threads);} int main(){openblas_set_num_threads(1);return 0;}'
+
+		AC_MSG_CHECKING(if this is OpenBLAS)
+
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
+		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+
+		AC_TRY_RUN(
+			[ ${CODE_OPENBLAS} ],
+			[ openblas_found="yes" ],
+			[ openblas_problem="problem" ],
+			[ openblas_found="" ]
+		)
+
+		AS_IF([test "x$openblas_found" = "xyes"],
+		      [
+		       AC_MSG_RESULT(yes)
+		       AC_MSG_CHECKING(for OPENBLAS numthreads)
+		       AS_IF([test "x$with_openblas_num_threads" = "x"],
+		       [
+			AC_MSG_RESULT(none specified (using default value 1))
+			numthreads="1"
+			],
 		       [AC_MSG_RESULT($with_openblas_num_threads)
-			AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$with_openblas_num_threads,[Sets the number of threads given to OpenBLAS])
+		        numthreads=$with_openblas_num_threads
 			])
-		]
-	)
+		       AC_DEFINE_UNQUOTED(OPENBLAS_NUM_THREADS,$numthreads,[Sets the number of threads given to OpenBLAS (default is 1)])
+		       ],
+		       [AC_MSG_RESULT(no)]
+		       )
+	])
 

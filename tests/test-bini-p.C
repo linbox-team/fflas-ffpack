@@ -29,7 +29,7 @@
 
 
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "test-utils.h"
@@ -2292,7 +2292,7 @@ double descrip(int algo, int_v & ok_e, time_v & tim_e, int iters, const char ** 
 
 
 template<class Field>
-void test(int m, int k, int n, int p, int r, bool with_e, bool with_k, 	int iters = 4)
+void test(int m, int k, int n, int p, int r, bool with_e, bool with_k, 	int iters = 4, uint64_t seed=0)
 {
 
 	typedef typename Field::Element Element;
@@ -2302,6 +2302,7 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k, 	int iter
 
 
 	Field F(p);
+	typename Field::RandIter G(F,0,seed);
 	F.write(std::cout<< " * Field " ) << std::endl;
 
 	typedef typename changeField<Field>::other Field_f  ;
@@ -2360,8 +2361,8 @@ void test(int m, int k, int n, int p, int r, bool with_e, bool with_k, 	int iter
 	for (int b = 0 ; b < iters ; ++b) {
 		std::cout << "iter " << b+1 << " of " << iters << std::endl;
 #if not defined(NOTRANDOM)
-		FFPACK::RandomMatrix(F,A,m,k,k);
-		FFPACK::RandomMatrix(F,B,k,n,n);
+		FFPACK::RandomMatrix(F, m, k, A, k, G);
+		FFPACK::RandomMatrix(F, k, n, B, n, G);
 #endif
 		FFLAS::finit(F_f,m,k,A,k,A_f,k);
 		FFLAS::finit(F_f,k,n,B,n,B_f,n);
@@ -2418,8 +2419,8 @@ int main(int ac, char **av) {
 	bool  eps = false ;
 	bool  kom = false ;
 	int r = 1 ;
-	int seed = (int) time(NULL);
-    int iters = 4;
+	uint64_t seed = time(NULL);
+	int iters = 4;
 
 	static Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",  TYPE_INT , &p },
@@ -2445,9 +2446,9 @@ int main(int ac, char **av) {
 	std::cout << "seed: " << seed << std::endl;
 	std::cout << "thre: " << TRE << std::endl;
 	std::cout << "=====================================================" << std::endl;
-	test<Modular<double> > (m,k,n,p,r,eps,kom,iters);
+	test<Modular<double> > (m,k,n,p,r,eps,kom,iters,seed);
 	std::cout << "=====================================================" << std::endl;
-	test<ModularBalanced<double> > (m,k,n,p,r,eps,kom,iters);
+	test<ModularBalanced<double> > (m,k,n,p,r,eps,kom,iters,seed);
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 
 	return 0;

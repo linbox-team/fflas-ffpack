@@ -300,7 +300,10 @@ namespace FFLAS{
 				    // Stay over int64_t
 				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
 				HG.recLevel = 0;
-				fgemm(F,FflasNoTrans,FflasNoTrans,M,N,1,alpha,x,incx,y,incy,F.one,A,lda,HG);
+				typename Field::Element_ptr sY  = FFLAS::fflas_new<typename Field::Element> (N);
+				fscal(F, N, alpha, y, incy, sY, 1);
+				fgemm(F,FflasNoTrans,FflasNoTrans,M,N,1,F.one,x,incx,sY,1,F.one,A,lda,HG);
+				FFLAS::fflas_delete(sY);
 				freduce(F,M,N,A,lda);
 				H.initOut();
 				return;

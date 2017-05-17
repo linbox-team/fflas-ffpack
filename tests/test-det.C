@@ -44,58 +44,30 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 
 
 // using namespace std;
-template<class Field>
-bool test_det(Field &F, size_t n, int iter)
+template<class Field, class RandIter>
+bool test_det(Field &F, size_t n, int iter, RandIter& G)
 {
 	typedef typename Field::Element Element;
 	//! @todo test with stride
-	Element * A = FFLAS::fflas_new<Element>(n*n);
-	// A = read_field(F,argv[2],&n,&n);
+	Element * A = FFLAS::fflas_new (F, n, n);
 
 	bool pass = true;
-#ifdef TIME_IT
- FFLAS::Timer tim,t; t.clear();tim.clear();
-#endif
-	Element d=0;
-	Element dt=-4;
+	Element d,dt;
+	F.init(d); F.init(dt);
 	for(int i = 0;i<iter;++i){
-		F.init(dt,dt);
-		// std::cout << dt << std::endl;
-		FFPACK::RandomMatrixWithDet(F,A,dt,n,n);
-#ifdef TIME_IT
-		t.clear();
-		t.start();
-#endif
-		d = FFPACK::Det (F, n, n, A, n);
-		// std::cout << d << std::endl;
-#ifdef TIME_IT
-		t.stop();
-		tim+=t;
-#endif
-		// if (i+1<iter){
-		// FFLAS::fflas_delete( A);
-		// A = read_field(F,argv[2],&n,&n);
-		if (dt != d) {
+		G.random(dt);
+		FFPACK::RandomMatrixWithDet(F, n, dt, A, n, G);
+		F.assign(d, FFPACK::Det (F, n, n, A, n));
+		if (!F.areEqual(dt,d)) {
 			pass = false;
 			break;
 		}
 		++dt;
 	}
-
-#ifdef TIME_IT
-	double mflops = 2.0/3.0*(n*n/1000000.0)*iter*n/tim.usertime();
-	F.write (std::cerr<<"n = "<<n<<" Det (A) = ",d)
-	<< " mod "<<atoi(argv[1])<<" : t= "
-	<< tim.usertime()/(double)iter
-	<< " s, Mffops = "<<mflops
-	<< std::endl;
-
-	std::cout<<n<<" "<<mflops<<" "<<tim.usertime()/(double)iter<<std::endl;
-#endif
 	FFLAS::fflas_delete( A);
 	return pass;
 	}
@@ -103,35 +75,25 @@ bool test_det(Field &F, size_t n, int iter)
 int main(int argc, char** argv)
 {
 
-	static int iters =10 ;
-	static uint64_t p = 65521 ;
-	static size_t n = 200 ;
-
-	static Argument as[] = {
-		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INT , &p },
+	int iters =10 ;
+	Givaro::Integer p = 65521 ;
+	size_t n = 200 ;
+	uint64_t seed = time(NULL);
+	Argument as[] = {
+		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INTEGER , &p },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
 		END_OF_ARGUMENTS
 	};
 
 	FFLAS::parseArguments(argc,argv,as);
 
-	// int n;
-	// int iter=atoi(argv[3]); // number of times the product is performed
-	std::cerr<<std::setprecision(10);
-#if 0 /*  don't know how to do this in parseArguments ; grosse flemme */
-	if (argc != 4)	{
-		std::cerr<<"Usage : test-det <p> <A> <<i>"
-		    <<std::endl
-		    <<"         to compute the determinant of A mod p (i computations)"
-		    <<std::endl;
-		exit(-1);
-	}
-#endif
 	bool pass = true ;
 	typedef Givaro::ModularBalanced<double> Field;
 	Field F(p);
-	pass &= test_det(F,n,iters);
+	Field::RandIter G(F,0,seed);
+	pass &= test_det(F,n,iters,G);
 	// pass &= test_det(F,0,iters);
 
 	return ((pass==true)?0:1);

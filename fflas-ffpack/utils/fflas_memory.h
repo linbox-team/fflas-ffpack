@@ -100,7 +100,7 @@ namespace FFLAS{
     inline void prefetch(const int64_t*) {} 
 #endif
 
-
+#if ( defined(__i386__) || defined(__x86_64__) )
 #define __CPUID(abcd,func,id) \
     __asm__ __volatile__ ("cpuid": "=a" (abcd[0]), "=b" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "a" (func), "c" (id) );
 
@@ -164,7 +164,9 @@ namespace FFLAS{
 	    //cout<<"large TLB: "<<lTLB<<endl;
 	    tlb=sTLB*4096;
     }
-
+#else
+	inline void getTLBSize(int& tlb){tlb = 0;} // not implemented in non x86 archs
+#endif
 //---------- Cache sizes ----------
 
 #if !defined(EIGEN_NO_CPUID)

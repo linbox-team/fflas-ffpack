@@ -25,13 +25,14 @@ benchmarks:  $(BENCHMARKS)
 
 AM_CPPFLAGS=-I$(top_srcdir) -g
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CPPFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(CUDA_CFLAGS) $(PARFLAGS)
+AM_CPPFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
 PERFPUBLISHERFILE=benchmarks-report.xml
 
-FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrtri  benchmark-inverse  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers
+
+FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
 
@@ -63,8 +64,11 @@ benchmark_fgemv_mp_SOURCES = benchmark-fgemv-mp.C
 benchmark_wino_SOURCES = benchmark-wino.C
 benchmark_ftrsm_SOURCES = benchmark-ftrsm.C
 benchmark_ftrsm_mp_SOURCES = benchmark-ftrsm-mp.C
+benchmark_ftrsv_SOURCES = benchmark-ftrsv.C
 benchmark_ftrtri_SOURCES = benchmark-ftrtri.C
 benchmark_inverse_SOURCES = benchmark-inverse.C
+benchmark_fsytrf_SOURCES = benchmark-fsytrf.C
+benchmark_fsyrk_SOURCES = benchmark-fsyrk.C
 benchmark_charpoly_SOURCES = benchmark-charpoly.C
 benchmark_charpoly_mp_SOURCES = benchmark-charpoly-mp.C
 benchmark_lqup_SOURCES = benchmark-lqup.C

@@ -52,6 +52,12 @@ namespace FFPACK {
 		typedef typename RNS::Element_ptr           Element_ptr;
 		typedef typename RNS::ConstElement_ptr ConstElement_ptr;
 
+		class RandIter : public rnsRandIter<RNS> {
+		public:
+			RandIter(const RNSInteger<RNS> &F, size_t size=0, uint64_t seed=0) : rnsRandIter<RNS>(*F._rns,size,seed) {}
+		};
+
+		
 		Element                one, mOne,zero;
 
 		RNSInteger(const RNS& myrns) : _rns(&myrns)
@@ -134,7 +140,7 @@ namespace FFPACK {
 
 
 		std::ostream& write(std::ostream& os) const {
-			os<<"M:=[ "<< (long) _rns->_basis[0];
+			os<<"RNSInteger with M:=[ "<< (long) _rns->_basis[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) _rns->_basis[i];
 			return os<<" ]"<<std::endl;

@@ -38,6 +38,10 @@
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
+#if defined __GNUC__ && __GNUC__>=6
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+#endif
+
 #ifdef __CYGWIN__
 # ifndef _GLIBCXX_USE_C99
 #  define _GLIBCXX_USE_C99 true
@@ -121,6 +125,81 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #include "givaro/givconfig.h"
+
+/* Define if mmx instructions are supported */
+#ifdef __GIVARO_HAVE_MMX_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_MMX_INSTRUCTIONS  1
+#endif
+
+/* Define if popcnt instructions are supported */
+#ifdef __GIVARO_HAVE_POPCNT_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_POPCNT_INSTRUCTIONS  1
+#endif
+
+/* Define if sse instructions are supported */
+#ifdef __GIVARO_HAVE_SSE_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_SSE_INSTRUCTIONS  1
+#endif
+
+/* Define if sse2 instructions are supported */
+#ifdef __GIVARO_HAVE_SSE2_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_SSE2_INSTRUCTIONS  1
+#endif
+
+/* Define if sse3 instructions are supported */
+#ifdef __GIVARO_HAVE_SSE3_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_SSE3_INSTRUCTIONS  1
+#endif
+
+/* Define if sse4a instructions are supported */
+#ifdef __GIVARO_HAVE_SSE4A_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_SSE4A_INSTRUCTIONS  1
+#endif
+
+/* Define if sse4.1 instructions are supported */
+#ifdef __GIVARO_HAVE_SSE4_1_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS  1
+#endif
+
+/* Define if sse4.2 instructions are supported */
+#ifdef __GIVARO_HAVE_SSE4_2_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS  1
+#endif
+
+/* Define if avx instructions are supported */
+#ifdef __GIVARO_HAVE_AVX_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS  1
+#endif
+
+/* Define if avx2 instructions are supported */
+#ifdef __GIVARO_HAVE_AVX2_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS  1
+#endif
+
+/* Define if avx512f instructions are supported */
+#ifdef __GIVARO_HAVE_AVX512F_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS  1
+#endif
+
+/* Define if bmi2 instructions are supported */
+#ifdef __GIVARO_HAVE_BMI2_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_BMI2_INSTRUCTIONS  1
+#endif
+
+/* Define if bmi instructions are supported */
+#ifdef __GIVARO_HAVE_BMI_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_BMI_INSTRUCTIONS  1
+#endif
+
+/* Define if fma4 instructions are supported */
+#ifdef __GIVARO_HAVE_FMA4_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_FMA4_INSTRUCTIONS  1
+#endif
+
+/* Define if fma instructions are supported */
+#ifdef __GIVARO_HAVE_FMA_INSTRUCTIONS
+#define __FFLASFFPACK_HAVE_FMA_INSTRUCTIONS  1
+#endif
 
 #ifdef __GIVARO_HAVE_INT128
 #define __FFLASFFPACK_HAVE_INT128

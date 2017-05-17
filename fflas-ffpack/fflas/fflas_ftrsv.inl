@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas/fflas_ftrsv.inl
  * Copyright (C) 2005 Clement Pernet
@@ -38,73 +38,51 @@ namespace FFLAS {
 template<class Field>
 inline void
 ftrsv (const Field& F, const FFLAS_UPLO Uplo,
-	      const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
-	      const size_t N,typename Field::ConstElement_ptr A, size_t lda,
-	      typename Field::Element_ptr X, int incX)
+       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
+       const size_t N,typename Field::ConstElement_ptr A, size_t lda,
+       typename Field::Element_ptr X, int incX)
 {
 
-	typename Field::Element_ptr Xi, Xj,  Ximax;
-	typename Field::ConstElement_ptr Ai,  Aj;
+	typename Field::Element_ptr Xi;
+	typename Field::ConstElement_ptr Ai;
 	if ( Uplo == FflasLower ){
 		if ( TransA == FflasTrans){
 			Ai = A+(N-1)*(lda+1); // bottom right entry of A
-			Ximax = Xi = X+(int)(N-1)*incX;
-			for( ; Xi>=X; Ai-=lda+1,Xi-=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi+incX, Aj=Ai+lda; Xj<=Ximax;
-				      Xj+=incX, Aj+=lda){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
-				if ( Diag==FflasNonUnit ){
-					F.divin(*Xi,*Ai);
-				}
-				F.negin( *Xi );
-			}
-		} // FflasTrans
-		else{
-			Ai = A;
-		        Xi = X;
-			for( ; Xi<X+incX*(int)N; Ai+=lda+1,Xi+=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi-incX, Aj=Ai-1; Xj>=X;
-				      Xj-=incX, Aj--){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
+			Xi = X+(int)(N-1)*incX;
+			for(size_t i=0; i<N; Ai-=(lda+1), Xi-=incX, ++i) {
+				F.subin(*Xi, fdot(F, i, Ai+lda, lda, Xi+incX, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
-				F.negin( *Xi );
+			}	
+		} // End FflasTrans
+		else{
+			Ai = A;
+			Xi = X;
+			for(size_t i=0 ; i<N; Ai+=lda,Xi+=incX, ++i ){			
+				F.subin (*Xi, fdot (F, i, Ai, 1, X, incX));
+				if ( Diag==FflasNonUnit )
+					F.divin(*Xi,*(Ai+i));
 			}
 		}
-	} // FflasLower
+	} // End EFflasLower
 	else{
 		if ( TransA == FflasTrans){
 			Ai = A;
 			Xi = X;
-			for( ; Xi<X+(int)N*incX; Ai+=lda+1,Xi+=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi-incX, Aj=Ai-lda; Xj>=X;
-				      Xj-=incX, Aj-=lda){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
-
-				if ( Diag==FflasNonUnit )
-					F.divin(*Xi,*Ai);
-				F.negin( *Xi );
+			for(size_t i=0; i<N; ++Ai,Xi+=incX, ++i) {
+				F.subin(*Xi, fdot(F, i, Ai, lda, X, incX));
+				if ( Diag == FflasNonUnit )
+					F.divin(*Xi, *(Ai+i*lda));
 			}
 
-		} // FflasTrans
+		} // End FflasTrans
 		else{
 			Ai = A+(lda+1)*(N-1);
-			Ximax = Xi = X+incX*(int)(N-1);
-			for( ; Xi>=X; Ai-=lda+1,Xi-=incX ){
-				F.negin( *Xi );
-				for ( Xj = Xi+incX, Aj=Ai+1; Xj<=Ximax;
-				      Xj+=incX, Aj++){
-					F.axpyin( *Xi, *Xj, *Aj );
-				}
+			Xi = X+incX*(int)(N-1);
+			for(size_t i=0; Xi>=X; Ai-=lda+1,Xi-=incX, ++i ){
+				F.subin (*Xi, fdot (F, i, Ai+1, 1, Xi+incX, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
-				F.negin( *Xi );
 			}
 		}
 	}

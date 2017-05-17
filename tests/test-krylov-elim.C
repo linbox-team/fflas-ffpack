@@ -35,10 +35,9 @@
 //-------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------
-//#define DEBUG 0
 
 #include <iostream>
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/timer.h"
 using namespace std;
 #include "fflas-ffpack/field/modular-balanced.h"

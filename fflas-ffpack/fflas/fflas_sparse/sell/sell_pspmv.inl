@@ -284,7 +284,6 @@ inline void pfspmv(const Field &F, const Sparse<Field, SparseMatrix_t::SELL> &A,
     assume_aligned(col, A.col, (size_t)Alignment::CACHE_LINE);
     assume_aligned(x, x_, (size_t)Alignment::DEFAULT);
     assume_aligned(y, y_, (size_t)Alignment::DEFAULT);
-    index_t chunk = A.chunk;
 #ifdef __FFLASFFPACK_USE_TBB
     tbb::parallel_for(tbb::blocked_range<index_t>(0, A.nbChunks, 2),
                       [&F, &A, &x, &y, st, col, dat, chunkSize](const tbb::blocked_range<index_t> &r) {

@@ -63,7 +63,7 @@ int main () {
 	size_t r;
 	size_t * P = new size_t[nmax];
 	size_t * Q = new size_t[nmax];
-	FFPACK::RandomMatrix (F, A, nmax, nmax, nmax);
+	FFPACK::RandomMatrix (F, nmax, nmax, A,nmax);
 	FFLAS::fassign (F, nmax,nmax, A, nmax, B, nmax);
 	time_t result = std::time(NULL);
 	cout << std::endl 
@@ -78,15 +78,8 @@ int main () {
 		do {
 		double BCTime, RecTime;
 		int iter=10;
-			//Element * A = FFLAS::fflas_new (F, n, n);
-			//Element * B = FFLAS::fflas_new (F, n, n);
-			// size_t r;
-			//size_t * P = new size_t[n];
-			//size_t * Q = new size_t[n];
-			//FFPACK::RandomMatrix (F, A, n, n, n);
-			//FFLAS::fassign (F, n, n, A, n, B, n);
-			//size_t lda=n;
-	    //warm up computation
+
+			//warm up computation
 		r=FFPACK::PLUQ_basecaseCrout (F, FFLAS::FflasNonUnit, n, n, A, lda, P, Q);
 		FFLAS::fassign (F, n, n, B, lda, A, lda);
 		chrono.clear();tim.clear();

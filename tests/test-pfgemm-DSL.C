@@ -35,16 +35,13 @@
 // Ziad Sultan
 //-------------------------------------------------------------------------
 /*
-#ifndef DEBUG
-#define DEBUG 0
-#endif
 */
 #define NEWWINO
 #ifndef TIME
 #define TIME 1
 #endif
 
-#define DEBUG 1
+#define __FFLASFFPACK_DEBUG 1
 #include <iomanip>
 #include <iostream>
 using namespace std;
@@ -149,7 +146,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 #endif
 
 
-#if DEBUG
+#if __FFLASFFPACK_DEBUG
         bool wrong = false;
 	Field::Element zero;
         F.init(zero, 0.0);

@@ -23,17 +23,11 @@ SOURCE_DIRECTORY=$( cd "$( dirname "$0" )" && pwd )
 CXX=`pwd | awk -F/ '{print $(NF-2)}'`
 SSE=`pwd | awk -F/ '{print $NF}'`
 
-# Job fflas-ffpack with SSE option flag 
-# by default sse is enabled
-if [ "$SSE" == "withoutSSE" ]; then
-  FFLAS_SSEFLAG="--disable-simd"
-fi
-
 JENKINS_DIR=${SOURCE_DIRECTORY%%/workspace/*}
 LOCAL_DIR="$JENKINS_DIR"/local
 # Add path to compilers (if needed)
 export PATH=$PATH:/usr/local/bin:"$LOCAL_DIR/$CXX/bin"
-echo $PATH
+echo "PATH = ${PATH}"
 
 # Where are blas installed (<blas_home>/lib/<blas_name>.so)
 # And their name (libtotoblas)
@@ -52,7 +46,7 @@ PREFIX_INSTALL="$LOCAL_DIR/$CXX/$SSE"
 # Add specific locations (if needed)
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib":"$PREFIX_INSTALL"/lib
 echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
-export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/lib/pkgconfig"
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/$SSE/lib/pkgconfig"
 echo "PKG_CONFIG_PATH = ${PKG_CONFIG_PATH}"
 # /!\ Warning /!\ This could be an issue if you changed
 # the local installation directory
@@ -75,8 +69,8 @@ fi
 # Particular case for Fedora23: g++=g++-5.3
 vm_name=`uname -n | cut -d"-" -f1`
 if [[ "$vm_name" == "fedora"  &&  "$CXX" == "g++-5.3" ]]; then
-   CXX="g++"
-   CC=gcc
+    CXX="g++"
+    CC=gcc
 fi
 if [ -z "$CC" ]; then
     if [[ $CXX == g++* ]]; then
@@ -89,11 +83,15 @@ fi
 # Automated installation and tests #
 #==================================#
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation $FFLAS_SSEFLAG"
-./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation "$FFLAS_SSEFLAG"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation"
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| make prefix=$PREFIX_INSTALL install"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| make autotune"
+make autotune
+V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
+
+echo "|=== JENKINS AUTOMATED SCRIPT ===| make install"
 make install
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 

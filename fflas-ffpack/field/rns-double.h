@@ -39,6 +39,8 @@
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
 #endif
 
+#include <iterator>     // std::ostream_iterator
+
 #include <vector>
 #include <givaro/modular-double.h>
 #include <givaro/givinteger.h>
@@ -72,6 +74,7 @@ namespace FFPACK {
 		size_t                _size; // the size of the rns basis (number of mi's)
 		size_t               _pbits; // the size in bit of the mi's
 		size_t                 _ldm; // log[2^16](_M)
+		integer                  _mi_sum; // the product of the mi's
 
 		typedef double                        BasisElement;
 		typedef rns_double_elt                     Element;
@@ -79,13 +82,12 @@ namespace FFPACK {
 		typedef rns_double_elt_cstptr     ConstElement_ptr;
 
 		rns_double(const integer& bound, size_t pbits, bool rnsmod=false, long seed=time(NULL))
-		:  _M(1), _size(0), _pbits(pbits)
+			:  _M(1), _size(0), _pbits(pbits), _mi_sum(1)
 		{
 			integer::seeding(seed);
                         Givaro::IntPrimeDom IPD;
 			integer prime;
-			integer sum=1;
-			while (_M < bound*sum) {
+			while (_M < bound*_mi_sum) {
 				_basis.resize(_size+1);
 				do {
 					integer::random_exact_2exp(prime, _pbits-1);
@@ -94,18 +96,22 @@ namespace FFPACK {
 				_basis[_size]=prime;
 				_size++;
 				_M*=prime;
-				if (rnsmod) sum+=prime;
+				if (rnsmod) _mi_sum+=prime;
 			}
+			// std::ostream_iterator<uint64_t> out_it (std::cout,", ");
+			// std::cout<<"RNS basis =";
+			// std::copy ( _basis.begin(), _basis.end(), out_it );
+			// std::cout<<std::endl;
+			// std::cout<<"RNS sum Mi ="<<_mi_sum<<"\n";
 			precompute_cst();
 		}
 
 		rns_double(size_t pbits, size_t size, long seed=time(NULL))
-		:  _M(1), _size(size), _pbits(pbits)
+		:  _M(1), _size(size), _pbits(pbits), _mi_sum(1)
 		{
 			integer::seeding(seed);
                         Givaro::IntPrimeDom IPD;
 			integer prime;
-			integer sum=1;
 			_basis.resize(size);
 			_negbasis.resize(size);
 			_basisMax.resize(size);			
@@ -122,7 +128,7 @@ namespace FFPACK {
 
 		template<typename Vect>
 		rns_double(const Vect& basis, bool rnsmod=false, long seed=time(NULL))
-			:  _basis(basis.begin(),basis.end()), _basisMax(basis.size()), _negbasis(basis.size()), _M(1), _size(basis.size()), _pbits(0)
+			:  _basis(basis.begin(),basis.end()), _basisMax(basis.size()), _negbasis(basis.size()), _M(1), _size(basis.size()), _pbits(0), _mi_sum(1)
 		{
 			for(size_t i=0;i<_size;i++){
 				//std::cout<<"basis["<<i<<"]="<<_basis[i]<<std::endl;
@@ -179,8 +185,13 @@ namespace FFPACK {
 				}
 				*/
 				size_t l=0;
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 				for(;l<maxs;l++)
 					_crt_out[l+i*_ldm]=m0_ptr[l];
+#else
+				for(;l<maxs;l++)
+					_crt_out[l+i*_ldm]=m0_ptr[l ^ ((sizeof(mp_limb_t)/2U) - 1U)];
+#endif
 				for(;l<_ldm;l++)
 					_crt_out[l+i*_ldm]=0.;;
 				// chrono.stop();
@@ -420,7 +431,7 @@ namespace FFPACK {
             for(auto iter : R._field_rns)
                 _RNS_rand.push_back( typename RNS::ModField::RandIter(iter,size,seed) );
         }
-
+		
         /** RNS ring Element random assignement.
          * Element is supposed to be initialized
          * @return random ring Element

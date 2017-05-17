@@ -65,6 +65,7 @@ size_t mvcnt = 0;
 
 using namespace std;
 using namespace FFPACK;
+using namespace FFLAS;
 
 /*! Tests the LUdivine routine.
  * @tparam Field Field
@@ -78,173 +79,70 @@ using namespace FFPACK;
  * @param lda leading dim of A
  * @return 0 iff correct, 1 otherwise
  */
-template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
+template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS_TRANSPOSE trans>
 bool test_LUdivine(const Field & F,
 				   typename Field::ConstElement_ptr A, size_t lda,
 				   size_t r, size_t m, size_t n)
 {
 	bool fail = false;
-	typedef typename Field::Element_ptr Element_ptr ;
-	typedef typename Field::Element Element ;
-	Element_ptr B = FFLAS::fflas_new(F,m,lda) ;
-	FFLAS::fassign(F,m,n,A,lda,B,lda);
+	typename Field::Element_ptr B = fflas_new(F,m,lda) ;
+	fassign(F,m,n,A,lda,B,lda);
 
 	size_t maxP, maxQ ;
 
-	if (trans == FFLAS::FflasTrans){
+	if (trans == FflasTrans){
 		maxP = m;
 		maxQ = n;
 	}
-	else{ // trans == FFLAS::FflasNoTrans
+	else{ // trans == FflasNoTrans
 		maxP = n;
 		maxQ = m;
 	}
 
-	size_t * P = FFLAS::fflas_new<size_t>(maxP) ;
-	size_t * Q = FFLAS::fflas_new<size_t>(maxQ) ;
+	size_t * P = fflas_new<size_t>(maxP) ;
+	size_t * Q = fflas_new<size_t>(maxQ) ;
 	
-	size_t R = FFPACK::LUdivine (F, diag, trans, m, n, B, lda, P, Q);
+	size_t R = LUdivine (F, diag, trans, m, n, B, lda, P, Q);
 
 	if (R != r) {
 		std::cout << "rank is wrong (expecting " << r << " but got " << R << ")" << std::endl;
-		FFLAS::fflas_delete( B );
-		FFLAS::fflas_delete( P );
-		FFLAS::fflas_delete( Q );
+		fflas_delete( B );
+		fflas_delete( P );
+		fflas_delete( Q );
 		return fail = true;
 	}
 
-	Element_ptr X = FFLAS::fflas_new(F, m, n); // compute X=CUP and check X == A
 		/*  Build L,U */
-	Element_ptr L, U;
-	if (trans == FFLAS::FflasNoTrans){
-		L = FFLAS::fflas_new(F, m, m);
-		U = FFLAS::fflas_new(F, m, n);
+	typename Field::Element_ptr L = fflas_new(F, m, R);
+	typename Field::Element_ptr U = fflas_new(F, R, n);
 
-		Element zero,one;
-		F.init(zero,0.0);
-		F.init(one,1.0);
-			/*  build U */
-		for (size_t i=0; i<R; ++i){
-			for (size_t j=0; j<i; ++j)
-				F.assign ( *(U + i*n + j), zero);
-			for (size_t j=i+1; j<n; ++j)
-				F.assign (*(U + i*n + j), *(B+ i*lda+j));
-		}
-		for (size_t i=R;i<m; ++i) {
-			for (size_t j=0; j<n; ++j)
-				F.assign(*(U+i*n+j), zero);
-		}
-			/*  build L */
-		for ( size_t i=0; i<m; ++i ){
-			size_t j=0;
-			for (; j< ((i<R)?i:R) ; ++j )
-				F.assign( *(L + i*m+j), *(B+i*lda+j));
-			for (; j<m; ++j )
-				F.assign( *(L+i*m+j), zero);
-		}
-
-			/*  reconstruct the diagonal */
-		if (diag == FFLAS::FflasNonUnit) {
-			for ( size_t i=0; i<R; ++i ){
-				F.assign (*(U+i*(n+1)), *(B+i*(lda+1)));
-				F.assign (*(L+Q[i]*m+i), F.one);
-			}
-		}
-		else{ // diag == FFLAS::FflasUnit
-			for ( size_t i=0; i<R; ++i ){
-				F.assign (*(L+Q[i]*m+i), *(B+Q[i]*lda+i));
-				F.assign (*(U+i*(n+1)),one);
-			}
-		}
-		
-			/*  Compute CUP */
-		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-						m,0,(int) R, U, n, P);
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-					  m,n,R, 1.0, L,m, U,n, 0.0, X,n);
+	if (trans == FflasNoTrans){
+		getTriangular (F, FflasUpper, diag, m, n, R, B, lda, U, n, true);
+		getEchelonForm (F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, m, n, R, Q, B, lda, L, R, true);
+		applyP (F, FflasRight, FflasNoTrans, R, 0, R, U, n, P);
+	} else {
+		getTriangular (F, FflasLower, diag, m, n, R, B, lda, L, R, true);
+		getEchelonForm (F, FflasUpper, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, m, n, R, Q, B, lda, U, n, true);
+		applyP (F, FflasLeft, FflasTrans, R, 0, R, L, R, P);
 	}
-	else { /*  trans == FFLAS::FflasTrans */
+	fgemm (F, FflasNoTrans, FflasNoTrans, m, n, R, 1.0, L, R, U, n, 0.0, B, lda);
 
-		L = FFLAS::fflas_new(F, m, n);
-		U = FFLAS::fflas_new(F, n, n);
-
-
-		typename Field::Element zero,one;
-		F.init(zero,0.0);
-		F.init(one,1.0);
-			/*  build L */
-		for (size_t i=0; i<R; ++i){
-			for (size_t j=0; j<i; ++j)
-				F.assign ( *(L + i + j*n), zero);
-			for (size_t j=i+1; j<m; ++j)
-				F.assign (*(L + i + j*n), *(B+ i+j*lda));
-		}
-		for (size_t i=R;i<n; ++i) {
-			for (size_t j=0; j<m; ++j)
-				F.assign(*(L+i+j*n), zero);
-		}
-			/*  build U */
-		for ( size_t i=0; i<n; ++i ){
-			size_t j=0;
-			for (;  j< ((i<R)?i:R) ; ++j )
-				F.assign( *(U + i+j*n), *(B+i+j*lda));
-			for (; j<n; ++j )
-				F.assign( *(U+i+j*n), zero);
-		}
-
-		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-						n,0,(int)R, U, n, Q);
-
-		for (size_t i=0; i<n; ++i)
-			F.assign (*(U+i*(n+1)),one);
-
-			/*  reconstruct the diagonal */
-		if (diag == FFLAS::FflasNonUnit) {
-			for ( size_t i=0; i<R; ++i )
-				F.assign (*(L+i*(n+1)), *(B+i*(lda+1)));
-		}
-		else{ // diag == FFLAS::FflasUnit
-			for ( size_t i=0; i<R; ++i ){
-				*(U+Q[i]*(n+1)) = *(B+Q[i]+i*lda);
-				F.assign (*(L+i*(n+1)),one);
-			}
-		}
-
-			/*  Compute LQUP */
-		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
-						n,0,(int)R, L, n, P);
-		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
-						m,0,(int)R, L, n, Q);
-		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
-					  m,n,n, 1.0, L,n, U,n, 0.0, X,n);
+	fail |= !fequal(F, m, n, A, lda, B, lda);
+	
+	if (fail){
+		write_field(F,cerr<<"A = "<<endl,A,m,n,lda);
+		write_field(F,cerr<<"LU = "<<endl,B,m,n,lda);
+		write_field(F,cerr<<"L = "<<endl,L,m,R,R);
+		write_field(F,cerr<<"U = "<<endl,U,R,n,n);
 	}
-		/*  check equality */
-	for (size_t i=0; i<m; ++i) {
-		for (size_t j=0; j<n; ++j)
-			if (!F.areEqual (*(A+i*lda+j), *(X+i*n+j))){
-				std::cerr << std::endl<<" A["<<i<<","<<j<<"] = " << (*(A+i*lda+j))
-						  << " LQUP["<<i<<","<<j<<"] = " << (*(X+i*n+j));
-				fail|=true;
-			}
-	}
-		// if (fail){
-		// 	write_field(F,cerr<<"A = "<<endl,A,m,n,lda);
-		// 	write_field(F,cerr<<"LU = "<<endl,B,m,n,lda);
-		// 	write_field(F,cerr<<"L = "<<endl,L,m,m,m);
-		// 	write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-		// }
 
-	FFLAS::fflas_delete( P);
-	FFLAS::fflas_delete( L);
-	FFLAS::fflas_delete( U);
-	FFLAS::fflas_delete( Q);
-	FFLAS::fflas_delete( B);
-	FFLAS::fflas_delete( X);
+	fflas_delete( P);
+	fflas_delete( L);
+	fflas_delete( U);
+	fflas_delete( Q);
+	fflas_delete( B);
 	return fail;
-
-
 }
-
 
 /*! Verifies that B = PLUQ where A stores [L\U]
  * @tparam Field Field
@@ -257,29 +155,29 @@ bool test_LUdivine(const Field & F,
  * @param lda leading dim of A
  * @return 0 iff correct, 1 otherwise
  */
-template<class Field, FFLAS::FFLAS_DIAG diag>
+template<class Field, FFLAS_DIAG diag>
 bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda, 
 				typename Field::Element_ptr PLUQ, size_t ldpluq,
 				size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
 
 
-	typename Field::Element_ptr X = FFLAS::fflas_new (F, m, n);
-	typename Field::Element_ptr L = FFLAS::fflas_new (F, m, R);
-	typename Field::Element_ptr	U = FFLAS::fflas_new (F, R, n);
-	FFLAS::fzero(F, m, R, L, R);
-	FFLAS::fzero(F, R, n, U, n);
+	typename Field::Element_ptr X = fflas_new (F, m, n);
+	typename Field::Element_ptr L = fflas_new (F, m, R);
+	typename Field::Element_ptr	U = fflas_new (F, R, n);
+	fzero(F, m, R, L, R);
+	fzero(F, R, n, U, n);
 	
 	typename Field::Element zero,one;
 	F.init(zero,0.0);
 	F.init(one,1.0);
 	// write_field(F,std::cerr<<"PLUQ = "<<std::endl,PLUQ,m,n,ldpluq);
-	FFPACK::getTriangular(F, FFLAS::FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
-	FFPACK::getTriangular(F, FFLAS::FflasLower, (diag==FFLAS::FflasNonUnit)?FFLAS::FflasUnit:FFLAS::FflasNonUnit, 
+	getTriangular(F, FflasUpper, diag, m,n,R, PLUQ, ldpluq, U, n, true);
+	getTriangular(F, FflasLower, (diag==FflasNonUnit)?FflasUnit:FflasNonUnit, 
 						  m,n,R, PLUQ, ldpluq, L, R, true);
-	FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P);
-	FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q);
-	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
+	applyP( F, FflasLeft, FflasTrans, R,0,m, L, R, P);
+	applyP (F, FflasRight, FflasNoTrans, R,0,n, U, n, Q);
+	fgemm (F, FflasNoTrans, FflasNoTrans, m,n,R, F.one, L,R, U,n, F.zero, X,n);
 
 	// write_perm(std::cerr<<"P = ",P,m);
 	// write_perm(std::cerr<<"Q = ",Q,n);
@@ -299,9 +197,9 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
 	if (fail)
 		std::cerr << std::endl;
 
-	FFLAS::fflas_delete( U);
-	FFLAS::fflas_delete( L);
-	FFLAS::fflas_delete( X);
+	fflas_delete( U);
+	fflas_delete( L);
+	fflas_delete( X);
 	return fail;
 }
 /*! Tests the LUdivine routine.
@@ -316,42 +214,40 @@ bool verifPLUQ (const Field & F, typename Field::ConstElement_ptr A, size_t lda,
  * @param lda leading dim of A
  * @return 0 iff correct, 1 otherwise
  */
-template<class Field, FFLAS::FFLAS_DIAG diag>
+template<class Field, FFLAS_DIAG diag, class RandIter>
 bool test_pluq (const Field & F,
 				typename Field::ConstElement_ptr A,
-				size_t r, size_t m, size_t n, size_t lda)
+				size_t r, size_t m, size_t n, size_t lda, RandIter& G)
 {
 	bool fail = false;
 	typedef typename Field::Element_ptr Element_ptr ;
-	Element_ptr B = FFLAS::fflas_new(F,m,lda) ;
-	FFLAS::fassign(F,m,n,A,lda,B,lda);
+	Element_ptr B = fflas_new(F,m,lda) ;
+	fassign(F,m,n,A,lda,B,lda);
 
-	size_t * P = FFLAS::fflas_new<size_t> (m);
-	size_t * Q = FFLAS::fflas_new<size_t> (n);
+	size_t * P = fflas_new<size_t> (m);
+	size_t * Q = fflas_new<size_t> (n);
 	
-	// write_field(F,std::cerr<<"\n B = \n",B,m,n,lda);
-    typename Field::RandIter G(F);
-    FFPACK::ForceCheck_PLUQ<Field> checker (G,m,n,A,n);
+    ForceCheck_PLUQ<Field> checker (G,m,n,B,lda);
 
-	size_t R = FFPACK::PLUQ (F, diag, m, n, B, lda, P, Q);
-	// write_field(F,std::cerr<<"\n PLUQ = \n",B,m,n,lda);
+	size_t R = PLUQ (F, diag, m, n, B, lda, P, Q);
+
     try {
-        checker.check(A,n,R,P,Q);
+        checker.check(B,lda,diag,R,P,Q);
     } catch(FailurePLUQCheck &e) {
         std::cout << m << 'x' << n << " pluq verification failed!\n";
     }
 
 	if (R != r) {
 		std::cout << "rank is wrong (expected " << r << " but got " << R << ")" << std::endl;
-		FFLAS::fflas_delete (B);
-		FFLAS::fflas_delete (P);
-		FFLAS::fflas_delete (Q);
+		fflas_delete (B);
+		fflas_delete (P);
+		fflas_delete (Q);
 		return fail = true;
 	}
 	fail |=  verifPLUQ<Field,diag> (F,A, lda, B, lda, P, Q, m, n, r);
-	FFLAS::fflas_delete (B);
-	FFLAS::fflas_delete(P);
-	FFLAS::fflas_delete(Q);
+	fflas_delete (B);
+	fflas_delete(P);
+	fflas_delete(Q);
 	return fail;
 }
 /*! Tests the LUpdate routine.
@@ -368,7 +264,7 @@ bool test_pluq (const Field & F,
  * @param lda leading dim of A (and B)
  * @return 0 iff correct, 1 otherwise
  */
-// template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
+// template<class Field, FFLAS_DIAG diag, FFLAS_TRANSPOSE trans>
 // bool test_lu_append(const Field & F,
 // 		    const typename Field::Element_ptr A,
 // 		    const typename Field::Element_ptr B,
@@ -379,15 +275,15 @@ bool test_pluq (const Field & F,
 // 	bool fail = false;
 // 	size_t M = m + k ;
 // 	typedef typename Field::Element Element ;
-// 	Element_ptr Acop = FFLAS::fflas_new(F, m, lda) ;
-// 	FFLAS::fassign(F,m,n,A,lda,Acop,lda) ;
+// 	Element_ptr Acop = fflas_new(F, m, lda) ;
+// 	fassign(F,m,n,A,lda,Acop,lda) ;
 
-// 	Element_ptr Bcop = FFLAS::fflas_new(F, k, lda) ;
-// 	FFLAS::fassign(F,k,n,B,lda,Bcop,lda) ;
+// 	Element_ptr Bcop = fflas_new(F, k, lda) ;
+// 	fassign(F,k,n,B,lda,Bcop,lda) ;
 
-// 	Element_ptr Append = FFLAS::fflas_new (F, M, lda);
-// 	FFLAS::fassign(F,m,n,A,lda,Append,lda) ;
-// 	FFLAS::fassign(F,k,n,B,lda,Append+m*lda,lda) ;
+// 	Element_ptr Append = fflas_new (F, M, lda);
+// 	fassign(F,m,n,A,lda,Append,lda) ;
+// 	fassign(F,k,n,B,lda,Append+m*lda,lda) ;
 
 // #if 0 /*  paranoid check */
 // 	for (size_t i = 0 ; i < m ; ++i) {
@@ -402,10 +298,10 @@ bool test_pluq (const Field & F,
 // 	}
 // #endif
 
-// 	Element_ptr Afull = FFLAS::fflas_new(F, M, lda);
-// 	FFLAS::fassign(F,M,n,Append,lda,Afull,lda) ;
-// 	// FFLAS::fassign(F,m,n,A,lda,Afull,lda) ;
-// 	// FFLAS::fassign(F,k,n,B,lda,Afull+m*lda,lda) ;
+// 	Element_ptr Afull = fflas_new(F, M, lda);
+// 	fassign(F,M,n,Append,lda,Afull,lda) ;
+// 	// fassign(F,m,n,A,lda,Afull,lda) ;
+// 	// fassign(F,k,n,B,lda,Afull+m*lda,lda) ;
 
 // #if 0
 // std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
@@ -446,28 +342,28 @@ bool test_pluq (const Field & F,
 
 // 	size_t maxP, maxQ ;
 
-// 	if (trans == FFLAS::FflasTrans){
+// 	if (trans == FflasTrans){
 // 		maxP = M;
 // 		maxQ = n;
 // 	}
-// 	else{ // trans == FFLAS::FflasNoTrans
+// 	else{ // trans == FflasNoTrans
 // 		maxP = n;
 // 		maxQ = M;
 // 	}
 
-// 	size_t * P = FFLAS::fflas_new<size_t>(maxP) ;
-// 	size_t * Q = FFLAS::fflas_new<size_t>(maxQ) ;
+// 	size_t * P = fflas_new<size_t>(maxP) ;
+// 	size_t * Q = fflas_new<size_t>(maxQ) ;
 
-// 	size_t * PP = FFLAS::fflas_new<size_t>(maxP) ;
-// 	size_t * QQ = FFLAS::fflas_new<size_t>(maxQ) ;
+// 	size_t * PP = fflas_new<size_t>(maxP) ;
+// 	size_t * QQ = fflas_new<size_t>(maxQ) ;
 
 // 	/* valgrind says the following leaks. Just incroyable. */
-// 	size_t R  = FFPACK::LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ);
+// 	size_t R  = LUdivine (F, diag, trans, M, n, Append, lda, PP, QQ);
 
-// 	size_t R1 = FFPACK::LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q);
+// 	size_t R1 = LUdivine (F, diag, trans, m, n, Acop,   lda, P, Q);
 
-// 	size_t R2 = FFPACK::LUpdate  (F,diag,trans,m,n,Acop,lda,R1,k,Bcop,lda,P,Q,
-// 				      FFPACK::FfpackLQUP);
+// 	size_t R2 = LUpdate  (F,diag,trans,m,n,Acop,lda,R1,k,Bcop,lda,P,Q,
+// 				      FfpackLQUP);
 // #if 0
 // 	std::cout << "P := [ " ;
 // 	for (size_t i = 0 ; i < maxP ; ++i)
@@ -489,24 +385,24 @@ bool test_pluq (const Field & F,
 
 // 	if (R2 != R) {
 // 		std::cout << "error, bad rank " << R2 << " <> " << R << " (expected) " << std::endl;
-// 		FFLAS::fflas_delete( Bcop );
-// 		FFLAS::fflas_delete( Acop );
-// 		FFLAS::fflas_delete( Append );
-// 		FFLAS::fflas_delete( PP);
-// 		FFLAS::fflas_delete( QQ);
-// 		FFLAS::fflas_delete( P );
-// 		FFLAS::fflas_delete( Q );
+// 		fflas_delete( Bcop );
+// 		fflas_delete( Acop );
+// 		fflas_delete( Append );
+// 		fflas_delete( PP);
+// 		fflas_delete( QQ);
+// 		fflas_delete( P );
+// 		fflas_delete( Q );
 // 		return fail=true;
 
 // 	}
 
 // 	// compute C=LQUP and check C == A
-// 	Element_ptr C = FFLAS::fflas_new (F, M, lda);
+// 	Element_ptr C = fflas_new (F, M, lda);
 // 	/*  Build L,U */
 // 	Element_ptr L, U;
-// 	if (trans == FFLAS::FflasNoTrans){
-// 		L = FFLAS::fflas_new(F, M, M);
-// 		U = FFLAS::fflas_new(F, M, n);
+// 	if (trans == FflasNoTrans){
+// 		L = fflas_new(F, M, M);
+// 		U = fflas_new(F, M, n);
 
 // 		typename Field::Element zero,one;
 // 		F.init(zero,0.0);
@@ -541,7 +437,7 @@ bool test_pluq (const Field & F,
 
 // 		// write_field(F,cerr<<"L = "<<endl,L,m,m,m);
 // 		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-// 		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+// 		applyP( F, FflasRight, FflasNoTrans,
 // 				M,0,(int)R, L, M, Q);
 // 		for ( size_t i=0; i<M; ++i )
 // 			F.assign(*(L+i*(M+1)), one);
@@ -549,7 +445,7 @@ bool test_pluq (const Field & F,
 // 		/*  reconstruct the diagonal */
 // 		//write_field(F,cerr<<"L = "<<endl,L,m,m,m);
 // 		//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
-// 		if (diag == FFLAS::FflasNonUnit) {
+// 		if (diag == FflasNonUnit) {
 // 			for ( size_t i=0; i<R; ++i ) {
 // 				if (i<m)
 // 					F.assign (*(U+i*(n+1)), *(Acop+i*(lda+1)));
@@ -557,7 +453,7 @@ bool test_pluq (const Field & F,
 // 					F.assign (*(U+i*(n+1)), *(Bcop+(i-m)*(lda+1)));
 // 			}
 // 		}
-// 		else{ // diag == FFLAS::FflasUnit
+// 		else{ // diag == FflasUnit
 // 			for ( size_t i=0; i<R; ++i ){
 // 				if (Q[i] < m)
 // 					*(L+Q[i]*(M+1)) = *(Acop+Q[i]*lda+i);
@@ -570,19 +466,19 @@ bool test_pluq (const Field & F,
 // 		// write_field(F,cerr<<"U = "<<endl,U,(int)M,(int)n,(int)n);
 
 // 		/*  Compute LQUP */
-// 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+// 		applyP (F, FflasRight, FflasNoTrans,
 // 				M,0,(int) R, U, n, P);
-// 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+// 		applyP (F, FflasLeft, FflasTrans,
 // 				n,0,(int)R, U, n, Q);
-// 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+// 		fgemm (F, FflasNoTrans, FflasNoTrans,
 // 			      M,n,M, 1.0, L,M, U,n, 0.0, C,lda);
-// 		//FFLAS::fflas_delete( A);
+// 		//fflas_delete( A);
 // 	}
 // #if 0 /*  not working */
-// 	else { /*  trans == FFLAS::FflasTrans */
+// 	else { /*  trans == FflasTrans */
 
-// 		L = FFLAS::fflas_new(F, M, n);
-// 		U = FFLAS::fflas_new(F, n, n);
+// 		L = fflas_new(F, M, n);
+// 		U = fflas_new(F, n, n);
 
 
 // 		typename Field::Element zero,one;
@@ -618,14 +514,14 @@ bool test_pluq (const Field & F,
 // 		//write_field(F,cerr<<"L = "<<endl,L,m,n,n);
 // 		//write_field(F,cerr<<"U = "<<endl,U,n,n,n);
 
-// 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+// 		applyP( F, FflasLeft, FflasTrans,
 // 				n,0,(int)R, U, n, Q);
 
 // 		for (size_t i=0; i<n; ++i)
 // 			F.assign (*(U+i*(n+1)),one);
 
 // 		/*  reconstruct the diagonal */
-// 		if (diag == FFLAS::FflasNonUnit) {
+// 		if (diag == FflasNonUnit) {
 // 			for ( size_t i=0; i<R; ++i ) {
 // 				if (i < m)
 // 					F.assign (*(L+i*(n+1)), *(Acop+i*(lda+1)));
@@ -633,7 +529,7 @@ bool test_pluq (const Field & F,
 // 					F.assign (*(L+i*(n+1)), *(Bcop+(i-m)*(lda+1)));
 // 			}
 // 		}
-// 		else{ // diag == FFLAS::FflasUnit
+// 		else{ // diag == FflasUnit
 // 			for ( size_t i=0; i<R; ++i ){
 // 				if (i<m)
 // 					*(U+Q[i]*(n+1)) = *(Acop+Q[i]+i*lda);
@@ -646,20 +542,20 @@ bool test_pluq (const Field & F,
 // 		// write_field(F,cerr<<"U = "<<endl,U,(int)n,(int)n,(int)n);
 
 // 		/*  Compute LQUP */
-// 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+// 		applyP (F, FflasLeft, FflasTrans,
 // 				n,0,(int)R, L, n, P);
-// 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+// 		applyP (F, FflasRight, FflasNoTrans,
 // 				M,0,(int)R, L, n, Q);
-// 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+// 		fgemm (F, FflasNoTrans, FflasNoTrans,
 // 			      M,n,n, 1.0, L,n, U,n, 0.0, C,lda);
 // 	}
 // #endif
 // #if 0 /*  check CC == LL UU */
 // 	Element_ptr LL, UU;
-// 	Element_ptr CC = FFLAS::fflas_new (F, M, lda);
-// 	if (trans == FFLAS::FflasNoTrans){
-// 		LL = FFLAS::fflas_new (F, M, M);
-// 		UU = FFLAS::fflas_new (F, M, n);
+// 	Element_ptr CC = fflas_new (F, M, lda);
+// 	if (trans == FflasNoTrans){
+// 		LL = fflas_new (F, M, M);
+// 		UU = fflas_new (F, M, n);
 
 // 		Element zero,one;
 // 		F.init(zero,0.0);
@@ -688,7 +584,7 @@ bool test_pluq (const Field & F,
 
 // 		// write_field(F,cerr<<"LL = "<<endl,LL,m,m,m);
 // 		//write_field(F,cerr<<"UU = "<<endl,UU,m,n,n);
-// 		FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+// 		applyP( F, FflasRight, FflasNoTrans,
 // 				M,0,(int)R, LL, M, Q);
 // 		for ( size_t i=0; i<M; ++i )
 // 			F.assign(*(LL+i*(M+1)), one);
@@ -696,12 +592,12 @@ bool test_pluq (const Field & F,
 // 		/*  reconstruct the diagonal */
 // 		//write_field(F,cerr<<"LL = "<<endl,LL,m,m,m);
 // 		//write_field(F,cerr<<"UU = "<<endl,UU,m,n,n);
-// 		if (diag == FFLAS::FflasNonUnit) {
+// 		if (diag == FflasNonUnit) {
 // 			for ( size_t i=0; i<R; ++i ) {
 // 				F.assign (*(UU+i*(n+1)), *(Append+i*(lda+1)));
 // 			}
 // 		}
-// 		else{ // diag == FFLAS::FflasUnit
+// 		else{ // diag == FflasUnit
 // 			for ( size_t i=0; i<R; ++i ){
 // 				*(LL+Q[i]*(M+1)) = *(Append+Q[i]*lda+i);
 // 				F.assign (*(UU+i*(n+1)),one);
@@ -711,18 +607,18 @@ bool test_pluq (const Field & F,
 // 		write_field(F,cerr<<"U = "<<endl,UU,(int)M,(int)n,(int)n);
 
 // 		/*  Compute LQUP */
-// 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+// 		applyP (F, FflasRight, FflasNoTrans,
 // 				M,0,(int) R, UU, n, P);
-// 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+// 		applyP (F, FflasLeft, FflasTrans,
 // 				n,0,(int)R, UU, n, Q);
-// 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+// 		fgemm (F, FflasNoTrans, FflasNoTrans,
 // 			      M,n,M, 1.0, LL,M, UU,n, 0.0, CC,lda);
-// 		//FFLAS::fflas_delete( A);
+// 		//fflas_delete( A);
 // 	}
-// 	else { /*  trans == FFLAS::FflasTrans */
+// 	else { /*  trans == FflasTrans */
 
-// 		LL = FFLAS::fflas_new(F, M, n);
-// 		UU = FFLAS::fflas_new(F, n, n);
+// 		LL = fflas_new(F, M, n);
+// 		UU = fflas_new(F, n, n);
 
 
 // 		typename Field::Element zero,one;
@@ -752,19 +648,19 @@ bool test_pluq (const Field & F,
 // 		// 		write_field(F,cerr<<"LL = "<<endl,LL,m,n,n);
 // 		// 		write_field(F,cerr<<"UU = "<<endl,UU,n,n,n);
 
-// 		FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+// 		applyP( F, FflasLeft, FflasTrans,
 // 				n,0,(int)R, UU, n, Q);
 
 // 		for (size_t i=0; i<n; ++i)
 // 			F.assign (*(UU+i*(n+1)),one);
 
 // 		/*  reconstruct the diagonal */
-// 		if (diag == FFLAS::FflasNonUnit) {
+// 		if (diag == FflasNonUnit) {
 // 			for ( size_t i=0; i<R; ++i ) {
 // 				F.assign (*(LL+i*(n+1)), *(Append+i*(lda+1)));
 // 			}
 // 		}
-// 		else{ // diag == FFLAS::FflasUnit
+// 		else{ // diag == FflasUnit
 // 			for ( size_t i=0; i<R; ++i ){
 // 				*(UU+Q[i]*(n+1)) = *(Append+Q[i]+i*lda);
 // 				F.assign (*(LL+i*(n+1)),one);
@@ -774,11 +670,11 @@ bool test_pluq (const Field & F,
 // 		write_field(F,cerr<<"UU = "<<endl,UU,(int)n,(int)n,(int)n);
 
 // 		/*  Compute LQUP */
-// 		FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+// 		applyP (F, FflasLeft, FflasTrans,
 // 				n,0,(int)R, LL, n, P);
-// 		FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
+// 		applyP (F, FflasRight, FflasNoTrans,
 // 				M,0,(int)R, LL, n, Q);
-// 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans,
+// 		fgemm (F, FflasNoTrans, FflasNoTrans,
 // 			      M,n,n, 1.0, LL,n, UU,n, 0.0, CC,lda);
 // 	}
 // 	for (size_t i=0; i<M; ++i) {
@@ -804,108 +700,106 @@ bool test_pluq (const Field & F,
 // 			}
 // 	}
 
-// 	FFLAS::fflas_delete( PP);
-// 	FFLAS::fflas_delete( P);
-// 	FFLAS::fflas_delete( L);
-// 	FFLAS::fflas_delete( U);
-// 	FFLAS::fflas_delete( Q);
-// 	FFLAS::fflas_delete( QQ);
-// 	FFLAS::fflas_delete( Acop);
-// 	FFLAS::fflas_delete( Bcop);
-// 	FFLAS::fflas_delete( Append);
-// 	FFLAS::fflas_delete( Afull);
-// 	FFLAS::fflas_delete( C);
+// 	fflas_delete( PP);
+// 	fflas_delete( P);
+// 	fflas_delete( L);
+// 	fflas_delete( U);
+// 	fflas_delete( Q);
+// 	fflas_delete( QQ);
+// 	fflas_delete( Acop);
+// 	fflas_delete( Bcop);
+// 	fflas_delete( Append);
+// 	fflas_delete( Afull);
+// 	fflas_delete( C);
 
 // 	return fail;
 
 
 // }
 
-
-
-template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
+template<class Field, FFLAS_DIAG diag, FFLAS_TRANSPOSE trans, class RandIter>
 bool launch_test(const Field & F,
 				 size_t r,
-				 size_t m, size_t n)
+				 size_t m, size_t n, RandIter& G)
 {
 		//typedef typename Field::Element Element ;
 	typedef typename Field::Element_ptr Element_ptr ;
 	bool fail = false ;
 	{ /*  user given and lda bigger */
 		size_t lda = n+10 ;
-		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
+		Element_ptr A = fflas_new (F, m, lda);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,r,m,n);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,r,m,n);
-		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda);
+		RandomMatrixWithRankandRandomRPM(F,m,n,r,A,lda,G);
+		fail |= test_pluq<Field,diag>(F,A,r,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda" << std::endl;
-		FFLAS::fflas_delete( A );
+		fflas_delete( A );
 	}
 	{ /*  user given and lda bigger. Rank is max */
 		size_t lda = n+10 ;
 		size_t R = std::min(m,n);
-		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		Element_ptr A = fflas_new (F, m, lda);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
-		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
+		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda max rank" << std::endl;
-		FFLAS::fflas_delete( A );
+		fflas_delete( A );
 	}
 	{ /*  user given and lda bigger. Rank is min */
 		size_t lda = n+10 ;
 		size_t R = 0;
-		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
+		Element_ptr A = fflas_new (F, m, lda);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,m,n);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,m,n);
-		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda);
+		RandomMatrixWithRankandRandomRPM(F,m,n,R,A,lda,G);
+		fail |= test_pluq<Field,diag>(F,A,R,m,n,lda,G);
 		if (fail) std::cout << "failed at big lda, rank 0" << std::endl;
-		FFLAS::fflas_delete( A );
+		fflas_delete( A );
 	}
 	{ /*  square  */
 		size_t M = std::max(m,n);
 		size_t N = M ;
 		size_t R = M/2 ;
 		size_t lda = N+10 ;
-		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		Element_ptr A = fflas_new (F, M, lda);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
-		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
+		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at square" << std::endl;
-		FFLAS::fflas_delete( A );
+		fflas_delete( A );
 	}
 	{ /*  wide  */
 		size_t M = std::max(m,n);
 		size_t N = 2*M ;
 		size_t R = 3*M/4 ;
 		size_t lda = N+5 ;
-		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		Element_ptr A = fflas_new (F, M, lda);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
-		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
+		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at wide" << std::endl;
-		FFLAS::fflas_delete( A );
+		fflas_delete( A );
 	}
 	{ /*  narrow  */
 		size_t M = std::max(m,n);
 		size_t N = M/2 ;
 		size_t R = 3*M/8 ;
 		size_t lda = N+5 ;
-		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
+		Element_ptr A = fflas_new (F, M, lda);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
 		fail |= test_LUdivine<Field,diag,trans>(F,A,lda,R,M,N);
-		RandomMatrixWithRankandRandomRPM(F,A,lda,R,M,N);
-		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda);
+		RandomMatrixWithRankandRandomRPM(F,M,N,R,A,lda,G);
+		fail |= test_pluq<Field,diag>(F,A,R,M,N,lda,G);
 		if (fail) std::cout << "failed at narrow" << std::endl;
-		FFLAS::fflas_delete( A );
+		fflas_delete( A );
 	}
-	return !fail;
-}
+ 	return !fail;
+ }
 
-// template<class Field, FFLAS::FFLAS_DIAG diag, FFLAS::FFLAS_TRANSPOSE trans>
+// template<class Field, FFLAS_DIAG diag, FFLAS_TRANSPOSE trans>
 // bool launch_test_append(const Field & F,
 // 			size_t r,
 // 			size_t m, size_t n)
@@ -915,53 +809,53 @@ bool launch_test(const Field & F,
 // 	{ /*  user given and lda bigger */
 // 		size_t lda = n+10 ;
 // 		size_t k = m/2+1 ;
-// 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,r,m,n);
-// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n);
+// 		Element_ptr A = fflas_new (F, m, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,A,lda,r,m,n,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // 	{ /*  user given and lda bigger. Rank is max */
 // 		size_t lda = n+10 ;
 // 		size_t R = std::min(m,n);
 // 		size_t k = m/2+1 ;
-// 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,m,n);
-// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n);
+// 		Element_ptr A = fflas_new (F, m, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,m,n,R,A,lda,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // 	{ /*  user given and lda bigger. Appended Rank is min */
 // 		size_t lda = n+10 ;
 // 		size_t R = std::min(m,n);
 // 		size_t k = m/2+1 ;
-// 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,m,n);
-// 		RandomMatrixWithRank(F,B,lda,0,k,n);
+// 		Element_ptr A = fflas_new (F, m, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,m,n,R,A,lda,G);
+// 		RandomMatrixWithRank(F,B,lda,0,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // 	{ /*  user given and lda bigger. Rank is min */
 // 		size_t lda = n+10 ;
 // 		size_t R = 0;
 // 		size_t k = m/2+1 ;
-// 		Element_ptr A = FFLAS::fflas_new (F, m, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,m,n);
-// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n);
+// 		Element_ptr A = fflas_new (F, m, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,m,n,R,A,lda,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2+1,k,n,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,m,n,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // 	{ /*  square  */
 // 		size_t M = std::max(m,n);
@@ -969,14 +863,14 @@ bool launch_test(const Field & F,
 // 		size_t R = M/2 ;
 // 		size_t lda = N+10 ;
 // 		size_t k = R ;
-// 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,M,N);
-// 		RandomMatrixWithRank(F,B,lda,R/2,k,N);
+// 		Element_ptr A = fflas_new (F, M, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,A,lda,R,M,N,G);
+// 		RandomMatrixWithRank(F,B,lda,R/2,k,N,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // 	{ /*  wide  */
 // 		size_t M = std::max(m,n);
@@ -984,14 +878,14 @@ bool launch_test(const Field & F,
 // 		size_t R = M/2 ;
 // 		size_t k = R ;
 // 		size_t lda = N+10 ;
-// 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,M,N);
-// 		RandomMatrixWithRank(F,B,lda,k/2,k,N);
+// 		Element_ptr A = fflas_new (F, M, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,A,lda,R,M,N,G);
+// 		RandomMatrixWithRank(F,B,lda,k/2,k,N,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // 	//! @bug leaks :
 // #if 0 /*  leak here */
@@ -1001,14 +895,14 @@ bool launch_test(const Field & F,
 // 		size_t R = M/3 ;
 // 		size_t k = N ;
 // 		size_t lda = N+10 ;
-// 		Element_ptr A = FFLAS::fflas_new (F, M, lda);
-// 		Element_ptr B = FFLAS::fflas_new (F, k, lda);
-// 		RandomMatrixWithRank(F,A,lda,R,M,N);
-// 		RandomMatrixWithRank(F,A,lda,std::min(k/2,M/2),k,N);
+// 		Element_ptr A = fflas_new (F, M, lda);
+// 		Element_ptr B = fflas_new (F, k, lda);
+// 		RandomMatrixWithRank(F,A,lda,R,M,N,G);
+// 		RandomMatrixWithRank(F,A,lda,std::min(k/2,M/2),k,N,G);
 // 		fail |= test_lu_append<Field,diag,trans>(F,A,B,M,N,k,lda);
 // 		if (fail) std::cout << "failed" << std::endl;
-// 		FFLAS::fflas_delete( A );
-// 		FFLAS::fflas_delete( B );
+// 		fflas_delete( A );
+// 		fflas_delete( B );
 // 	}
 // #endif
 
@@ -1017,7 +911,7 @@ bool launch_test(const Field & F,
 
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 	
@@ -1026,6 +920,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		Field* F= chooseField<Field>(q,b);
 		if (F==nullptr)
 			return true;
+		typename Field::RandIter G(*F,0,seed);
 		std::ostringstream oss;
 		F->write(oss);
 		
@@ -1036,16 +931,16 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		std::cout<<" ... ";
 
 
-		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>    (*F,r,m,n);
-		ok&= launch_test<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>      (*F,r,m,n);
-		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans> (*F,r,m,n);
-		ok&= launch_test<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>   (*F,r,m,n);
+		ok&= launch_test<Field,FflasUnit,FflasNoTrans>    (*F,r,m,n,G);
+		ok&= launch_test<Field,FflasUnit,FflasTrans>      (*F,r,m,n,G);
+		ok&= launch_test<Field,FflasNonUnit,FflasNoTrans> (*F,r,m,n,G);
+		ok&= launch_test<Field,FflasNonUnit,FflasTrans>   (*F,r,m,n,G);
 
 #if 0 /*  may be bogus */
-		ok&= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasNoTrans>   (*F,r,m,n);
-		ok&= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasNoTrans>(*F,r,m,n);
-		ok&= launch_test_append<Field,FFLAS::FflasUnit,FFLAS::FflasTrans>     (*F,r,m,n);
-		ok&= launch_test_append<Field,FFLAS::FflasNonUnit,FFLAS::FflasTrans>  (*F,r,m,n);
+		ok&= launch_test_append<Field,FflasUnit,FflasNoTrans>   (*F,r,m,n,G);
+		ok&= launch_test_append<Field,FflasNonUnit,FflasNoTrans>(*F,r,m,n,G);
+		ok&= launch_test_append<Field,FflasUnit,FflasTrans>     (*F,r,m,n,G);
+		ok&= launch_test_append<Field,FflasNonUnit,FflasTrans>  (*F,r,m,n,G);
 #endif
 		nbit--;
 		if ( !ok )
@@ -1062,14 +957,15 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 int main(int argc, char** argv)
 {
 	cerr<<setprecision(20);
-	static Givaro::Integer q=-1;
-	static size_t b=0;
-	static size_t m=120;
-	static size_t n=120;
-	static size_t r=70;
-	static size_t iters=3;
-	static bool loop=false;
-	static Argument as[] = {
+	Givaro::Integer q=-1;
+	size_t b=0;
+	size_t m=120;
+	size_t n=120;
+	size_t r=70;
+	size_t iters=3;
+	bool loop=false;
+	size_t seed=time(NULL);
+	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
 		{ 'm', "-m M", "Set the row dimension of the matrix.",      TYPE_INT , &m },
@@ -1077,26 +973,29 @@ int main(int argc, char** argv)
 		{ 'r', "-r R", "Set the rank.", TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	if (r > std::min (m,n)) 
 		r = std::min (m, n);
 
+	srand(seed);
+
 	bool ok=true;
 	do{
-		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters);
+		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters,seed);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters,seed);
+		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters,seed);
 	} while (loop && ok);
 
 	return !ok;

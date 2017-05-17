@@ -69,7 +69,11 @@ namespace FFPACK {
 					  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
 
 					  for (;l<maxs;l++){
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 						  A_beta[l+idx*k]= m0_ptr[l];						  
+#else
+						  A_beta[l+idx*k]= m0_ptr[l^((sizeof(mp_limb_t)/2U)-1U)];
+#endif
 					  }
 					  for (;l<k;l++)
 						  A_beta[l+idx*k]=  0.;
@@ -167,6 +171,13 @@ namespace FFPACK {
 		tfgemmc.stop();
 		//if(m>1 && n>1) std::cerr<<"fgemm Convert : "<<tfgemmc.realtime()<<std::endl;
 			// compute A using inverse Kronecker transform of A_beta expressed in base 2^log_beta
+
+#ifdef CHECK_RNS
+		//std::cout<<"CHECKING RNS CONVERT : ruint<"<<K<<"> with log[2](M)="<<_M.bitsize()<<std::endl;
+		//std::cout<<"RNS : _ldm*16="<<(_ldm+2)*16<<std::endl;
+		bool ok=true;
+#endif
+		Givaro::Modular<RecInt::ruint<K>,RecInt::ruint<K+1> > Fp(p);
 		RecInt::ruint<K>* Aiter= A;
 		size_t k=_ldm;
 		if ((_ldm+3)*16 > (1<<K) || p!=0){
@@ -197,10 +208,17 @@ namespace FFPACK {
 					for (size_t l=0;l<k;l++){
 						uint64_t tmp=(uint64_t)A_beta[l+idx*k];
 						uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 						A0[l  ]= tptr[0];
 						A1[l+1]= tptr[1];
 						A2[l+2]= tptr[2];
 						A3[l+3]= tptr[3];
+#else
+						A0[l     ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[3];
+						A1[(l+1) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[2];
+						A2[(l+2) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[1];
+						A3[(l+3) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[0];
+#endif
 					}
 					// see A0,A1,A2,A3 as a the gmp integers a0,a1,a2,a3
 					m0[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A0[0]);
@@ -209,24 +227,50 @@ namespace FFPACK {
 					m3[0]->_mp_d= reinterpret_cast<mp_limb_t*>(&A3[0]);
 					res = a0;res+= a1;res+= a2;res+= a3;
 					res%=_M;
-					if (p!=0) res%=p;
 
-					// get the correct result according to the expected sign of A
-					if (res>hM)
-						res-=_M;
-					if (gamma==0)
-						Aiter[j+i*lda]=RecInt::ruint<K>(res);
-					else
-						if (gamma==integer(1))
-							Aiter[j+i*lda]+=RecInt::ruint<K>(res);
+#ifdef CHECK_RNS
+					for(size_t k=0;k<_size;k++){
+						int64_t _p =(int64_t) _basis[k];
+						integer curr=res;
+						if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
+							std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+						ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+					}
+#endif
+
+					if (p!=0){						
+						res%=p;
+						if (gamma==0)
+							Aiter[j+i*lda]=RecInt::ruint<K>(res);
 						else
-							if (gamma==integer(-1))
-								Aiter[j+i*lda]=RecInt::ruint<K>(res)-Aiter[j+i*lda];
-							else{
-								Aiter[j+i*lda]*=RecInt::ruint<K>(gamma);
+							if (gamma==integer(1))
+								Fp.addin(Aiter[j+i*lda],RecInt::ruint<K>(res));	
+							else
+								if (gamma==p-1)
+									Fp.sub(Aiter[j+i*lda],RecInt::ruint<K>(res),Aiter[j+i*lda]);	
+								else{
+									Fp.mulin(Aiter[j+i*lda],RecInt::ruint<K>(gamma));
+									Fp.addin(Aiter[j+i*lda],RecInt::ruint<K>(res));									
+								}
+					}else {
+						
+						// get the correct result according to the expected sign of A
+						if (res>hM)
+							res-=_M;
+						
+						if (gamma==0)
+							Aiter[j+i*lda]=RecInt::ruint<K>(res);
+						else
+							if (gamma==integer(1))
 								Aiter[j+i*lda]+=RecInt::ruint<K>(res);
-							}
-
+							else
+								if (gamma==integer(-1))
+									Aiter[j+i*lda]=RecInt::ruint<K>(res)-Aiter[j+i*lda];
+								else{
+									Aiter[j+i*lda]*=RecInt::ruint<K>(gamma);
+									Aiter[j+i*lda]+=RecInt::ruint<K>(res);
+								}
+					}
 				}
 			tkroc.stop();
 			//if(m>1 && n>1) std::cerr<<"Kronecker Convert : "<<tkroc.realtime()<<std::endl;
@@ -255,10 +299,17 @@ namespace FFPACK {
 					for (size_t l=0;l<k;l++){
 						uint64_t tmp=(uint64_t)A_beta[l+idx*k];					
 						uint16_t* tptr= reinterpret_cast<uint16_t*>(&tmp);
+#ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 						A0[l  ]= tptr[0];
 						A1[l+1]= tptr[1];
 						A2[l+2]= tptr[2];
 						A3[l+3]= tptr[3];
+#else
+						A0[l     ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[3];
+						A1[(l+1) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[2];
+						A2[(l+2) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[1];
+						A3[(l+3) ^ ((sizeof(mp_limb_t)/2U) - 1U)] = tptr[0];
+#endif
 					
 					}
 					a0= reinterpret_cast<RecInt::ruint<K>*>(&A0[0]);
@@ -269,6 +320,17 @@ namespace FFPACK {
 					res = *a0;res+= *a1;res+= *a2;res+= *a3;
 					res%= RecInt::ruint<K>(_M);
 				
+#ifdef CHECK_RNS
+					for(size_t k=0;k<_size;k++){
+						int64_t _p =(int64_t) _basis[k];
+						integer curr=res;
+						if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
+							std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+						ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+					}
+#endif
+						
+
 					// get the correct result according to the expected sign of A
 					//if (res>hM)
 					//	res-=_M;
@@ -294,18 +356,19 @@ namespace FFPACK {
 		
 #ifdef CHECK_RNS
 		std::cout<<"CHECKING RNS CONVERT : ruint<"<<K<<"> with log[2](M)="<<_M.bitsize()<<std::endl;
-		std::cout<<"RNS : _ldm*16="<<(_ldm+2)*16<<std::endl;
-		bool ok=true;
-		for (size_t i=0;i<m;i++)
-			for(size_t j=0;j<n;j++)
-				for(size_t k=0;k<_size;k++){
-					int64_t _p =(int64_t) _basis[k];
-					integer curr=integer(A[i*lda+j]) - gamma*Acopy[i*n+j];
-					if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
-						std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
-					ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
+		// std::cout<<"RNS : _ldm*16="<<(_ldm+2)*16<<std::endl;
+		// bool ok=true;
+		// for (size_t i=0;i<m;i++)
+		// 	for(size_t j=0;j<n;j++)
+		// 		for(size_t k=0;k<_size;k++){
+		// 			int64_t _p =(int64_t) _basis[k];
+		// 			integer curr=integer(A[i*lda+j]) - gamma*Acopy[i*n+j]; if (p!=0) curr%=p;
+		// 			if ( curr% _p +(curr%_p<0?_p:0) != (int64_t) Arns[i*n+j+k*rda])
+		// 				std::cout<<A[i*lda+j]<<" mod "<<(int64_t) _basis[k]<<"="<<(int64_t) Arns[i*n+j+k*rda]<<";"<<std::endl;
+		// 			ok&= ( curr% _p +(curr%_p<0?_p:0) == (int64_t) Arns[i*n+j+k*rda]);
 
-				}
+		// 		}
+
 		std::cout<<"RNS convert ... "<<(ok?"OK":"ERROR")<<std::endl;
 #endif
 	}

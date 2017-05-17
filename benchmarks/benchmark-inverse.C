@@ -37,8 +37,8 @@ using namespace std;
 
 int main(int argc, char** argv) {
   
-	size_t iter = 1;
-	int    q    = 1009;
+	size_t iter = 3;
+	int    q    = 131071;
 	size_t    n    = 2000;
 	std::string file = "";
   
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   FFLAS::Timer chrono;
   double time=0.0;
 
-  for (size_t i=0;i<iter;++i){
+  for (size_t i=0;i<=iter;++i){
 	  if (!file.empty()){
 		  A = read_field(F, file.c_str(),  &n, &n);
 	  }
@@ -74,9 +74,9 @@ int main(int argc, char** argv) {
 
 	  int nullity=0;
 	  chrono.clear();
-	  chrono.start();
+	  if (i) chrono.start();
 	  FFPACK::Invert (F, n, A, n, nullity);
-	  chrono.stop();
+	  if (i) chrono.stop();
 
 	  time+=chrono.usertime();
 	  FFLAS::fflas_delete( A);

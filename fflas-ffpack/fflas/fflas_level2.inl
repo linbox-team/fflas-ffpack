@@ -537,6 +537,27 @@ namespace FFLAS {
 				bs = std::max(bs, A[i*lda+j].bitsize());
 		return bs;
 	}
+	/** @brief ftrsm: TRiangular Matrix Vector prodcut
+	 * Computes  \f$ X \gets \mathrm{op}(A) X\f$
+	 * @param F field
+	 * @param X vector of size \p N on a field \p F
+	 * @param incX stride of \p  X
+	 * @param A a matrix of leading dimension \p lda and size \p N
+	 * @param lda leading dimension of \p A
+	 * @param N number of rows and columns of \p A
+	 * \param TransA if \c TransA==FflasTrans then \f$\mathrm{op}(A)=A^T\f$.
+	 * \param Diag if \c Diag==FflasUnit then \p A is unit diagonal.
+	 * \param Uplo if \c Uplo==FflasUpper then \p A is upper triangular
+	 */
+	template<class Field>
+	void
+	ftrmv (const Field& F, const FFLAS_UPLO Uplo,
+	       const FFLAS_TRANSPOSE TransA, const FFLAS_DIAG Diag,
+	       const size_t N,typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::Element_ptr X, int incX){
+		    // Defaulting to ftrmm for the moment, waiting for specialized implem.
+		ftrmm (F, FFLAS::FflasLeft, Uplo, TransA, Diag, N, 1, F.one, A, lda, X, incX);
+	}
 
 } // FFLAS
 

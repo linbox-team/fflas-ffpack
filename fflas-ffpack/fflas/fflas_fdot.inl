@@ -30,7 +30,7 @@
 #ifndef __FFLASFFPACK_fdot_INL
 #define __FFLASFFPACK_fdot_INL
 
-
+#include "fflas-ffpack/fflas/fflas_helpers.inl"
 // Default implementation
 // Specializations should be written
 // to increase efficiency
@@ -42,15 +42,48 @@ namespace FFLAS {
 	inline typename Field::Element
 	fdot( const Field& F, const size_t N,
 	      typename Field::ConstElement_ptr x, const size_t incx,
-	      typename Field::ConstElement_ptr y, const size_t incy )
+	      typename Field::ConstElement_ptr y, const size_t incy ,
+	      ModeCategories::DefaultTag& MT)
 	{
 
 		typename Field::Element d;
 		typename Field::ConstElement_ptr xi = x;
 		typename Field::ConstElement_ptr yi = y;
-		F.init( d );
+		F.init (d, F.zero);
 		for ( ; xi < x+N*incx; xi+=incx, yi+=incy )
 			F.axpyin( d, *xi, *yi );
+		return d;
+	}
+
+	template<class Field>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy ,
+	      ModeCategories::DelayedTag& MT)
+	{
+		typedef typename associatedDelayedField<const Field>::field DelayedField;
+		typedef typename associatedDelayedField<const Field>::type DelayedField_t;
+		typedef typename DelayedField::Element DFElt;
+		DelayedField_t delayedF;
+
+		const DFElt MaxStorableValue = limits<typename DelayedField::Element>::max();
+		const DFElt AbsMax = std::max(-F.minElement(), F.maxElement());
+		const DFElt r = MaxStorableValue / (AbsMax*AbsMax);
+		size_t delayedDim = FFLAS::Protected::min_types<DFElt>(r);
+
+		typename Field::Element d;
+		F.init (d,F.zero);
+		ModeCategories::DefaultTag DM;
+		typename Field::ConstElement_ptr xi = x, yi = y;
+		size_t i=delayedDim;
+		typename Field::Element dp;
+		for (; i<N; i+= delayedDim, xi += incx*delayedDim, yi += incy*delayedDim){
+			F.init(dp, fdot (delayedF, delayedDim, xi, incx, yi, incy, DM));
+			F.addin(d, dp);
+		}
+		F.init (dp,fdot (delayedF, N+delayedDim-i, xi, incx, yi, incy, DM));
+		F.addin (d, dp);
 		return d;
 	}
 
@@ -58,7 +91,8 @@ namespace FFLAS {
 	inline Givaro::DoubleDomain::Element
 	fdot( const Givaro::DoubleDomain& , const size_t N,
 	      Givaro::DoubleDomain::ConstElement_ptr x, const size_t incx,
-	      Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy )
+	      Givaro::DoubleDomain::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::DefaultTag& MT)
 	{
 
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
@@ -71,13 +105,35 @@ namespace FFLAS {
 	inline Givaro::FloatDomain::Element
 	fdot( const Givaro::FloatDomain& , const size_t N,
 	      Givaro::FloatDomain::ConstElement_ptr x, const size_t incx,
-	      Givaro::FloatDomain::ConstElement_ptr y, const size_t incy )
+	      Givaro::FloatDomain::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::DefaultTag& MT)
 	{
 
 #ifdef __FFLASFFPACK_OPENBLAS_NUM_THREADS
 		openblas_set_num_threads(__FFLASFFPACK_OPENBLAS_NUM_THREADS);
 #endif
 		return cblas_sdot( (int)N, x, (int)incx, y, (int)incy );
+	}
+
+	template<class Field, class T>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::ConvertTo<T>& MT)
+	{
+		typename ModeCategories::DefaultTag mt;
+		return fdot (F, N, x, incx, y, incy, mt);
+	}
+
+	template<class Field>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy )
+	{
+		typename ModeTraits<Field>::value mt;
+		return fdot (F, N, x, incx, y, incy, mt);
 	}
 
 } // FFLAS

@@ -85,6 +85,14 @@ struct Simd256i_base {
 
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 
+// CLANG < 3.8 does not implement m256_bslli_epi128 nor _mmm256_bsrli_epi128
+#if defined(__clang__)
+#if  __clang_major < 3 || (__clang_major__  == 3 && __clang_minor__ < 8)
+#define _mm256_bslli_epi128(a, count) _mm256_slli_si256((a), (count))
+#define _mm256_bsrli_epi128(a, count) _mm256_srli_si256((a), (count))
+#endif
+#endif
+
 	/*
 	* Shift packed 128-bit integers in a left by s bits while shifting in zeros, and store the results in vect_t.
 	* Args   : [a0, a1] int128_t

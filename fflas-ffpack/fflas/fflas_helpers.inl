@@ -53,17 +53,17 @@ namespace FFLAS{ namespace Protected{
 namespace FFLAS {
 	
 	namespace Protected{
-		template <class DFE> inline size_t min_types(DFE& k) {return static_cast<size_t>(k);}
+		template <class DFE> inline size_t min_types(const DFE& k) {return static_cast<size_t>(k);}
 #if __FFLASFFPACK_SIZEOF_LONG == 4
-		template <> inline size_t min_types(double& k) {return static_cast<size_t>(std::min(k,double(std::numeric_limits<size_t>::max())));}
-		template <> inline size_t min_types(int64_t& k) {return static_cast<size_t>(std::min(k,int64_t(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(const double& k) {return static_cast<size_t>(std::min(k,double(std::numeric_limits<size_t>::max())));}
+		template <> inline size_t min_types(const int64_t& k) {return static_cast<size_t>(std::min(k,int64_t(std::numeric_limits<size_t>::max())));}
 #endif
-		template <> inline size_t min_types(RecInt::rint<6>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<6>(uint64_t(std::numeric_limits<size_t>::max())))));}
-		template <> inline size_t min_types(RecInt::rint<7>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<7>(uint64_t(std::numeric_limits<size_t>::max())))));}
-		template <> inline size_t min_types(RecInt::rint<8>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<8>(uint64_t(std::numeric_limits<size_t>::max())))));}
-		template <> inline size_t min_types(RecInt::rint<9>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<9>(uint64_t(std::numeric_limits<size_t>::max())))));}
-		template <> inline size_t min_types(RecInt::rint<10>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<10>(uint64_t(std::numeric_limits<size_t>::max())))));}
-		template <> inline size_t min_types(Givaro::Integer& k) {return static_cast<size_t>(uint64_t(std::min(k,Givaro::Integer(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(const RecInt::rint<6>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<6>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(const RecInt::rint<7>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<7>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(const RecInt::rint<8>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<8>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(const RecInt::rint<9>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<9>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(const RecInt::rint<10>& k) {return static_cast<size_t>(uint64_t(std::min(k,RecInt::rint<10>(uint64_t(std::numeric_limits<size_t>::max())))));}
+		template <> inline size_t min_types(const Givaro::Integer& k) {return static_cast<size_t>(uint64_t(std::min(k,Givaro::Integer(uint64_t(std::numeric_limits<size_t>::max())))));}
 
 		template <class T>
 		inline bool unfit(T x){return false;}
@@ -218,7 +218,7 @@ namespace FFLAS {
 		bool checkA(const Field& F, const FFLAS::FFLAS_TRANSPOSE ta, const size_t M, const size_t N,
 			    typename Field::ConstElement_ptr A, const size_t lda )
 		{
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j){
 					const typename Field::Element x = (ta == FFLAS::FflasNoTrans)? A[i*lda+j] : A[i+j*lda];
@@ -234,7 +234,7 @@ namespace FFLAS {
 		bool checkB(const Field& F, const FFLAS::FFLAS_TRANSPOSE tb, const size_t M, const size_t N,
 			    typename Field::ConstElement_ptr B, const size_t ldb)
 		{
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j){
 					const typename Field::Element x = (tb == FFLAS::FflasNoTrans)? B[i*ldb+j] : B[i+j*ldb];
@@ -249,7 +249,7 @@ namespace FFLAS {
 
 		bool checkOut(const Field& F, const size_t M, const size_t N,
 			      typename Field::ConstElement_ptr A, const size_t lda ){
-#ifdef DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 			for (size_t i=0; i<M;++i)
 				for (size_t j=0; j<N;++j)
 					if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){

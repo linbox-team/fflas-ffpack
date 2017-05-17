@@ -33,7 +33,6 @@
 // Clement Pernet
 //-------------------------------------------------------------------------
 
-#define DEBUG 1
 #define TIME 1
 
 #include <iomanip>
@@ -43,7 +42,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include "fflas-ffpack/utils/timer.h"
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -97,7 +96,7 @@ int main(int argc, char** argv)
 				F.assign(*(A+i),*(Ab+i));
 	}
 
-#if DEBUG
+#ifdef __FFLASFFPACK_DEBUG
 	FFLAS::ftrmm (F, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasUnit,
 		      n, n, 1.0,
 		      A,n, Ab, n);

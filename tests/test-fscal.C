@@ -35,7 +35,7 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "Matio.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "test-utils.h"
 #include "assert.h"
 
@@ -43,8 +43,8 @@
 using FFPACK::RandomMatrix ;
 using Givaro::ModularBalanced ;
 
-template<class Field>
-bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m, size_t k, size_t n, bool timing)
+template<class Field, class RandIter>
+bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m, size_t k, size_t n, bool timing, RandIter& G)
 {
 	typedef typename Field::Element T ;
 
@@ -59,8 +59,8 @@ if (timing)	std::cout << ">>>" << std::endl ;
 	tim.clear() ; tom.clear() ;
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
-		RandomMatrix(F,A,m,k,n);
-		RandomMatrix(F,C,m,k,n);
+		RandomMatrix(F, m, k, A, n, G);
+		RandomMatrix(F, m, k, C, n, G);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -96,28 +96,27 @@ if (timing)	std::cout << ">>>" << std::endl ;
 }
 
 template<class Field>
-bool test_fscal(const Field & F,  size_t m, size_t k, size_t n, bool timing)
+bool test_fscal(const Field & F,  size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
-	ModularBalanced<typename Field::Element> G(1234); // for alpha
+	typename Field::RandIter G(F,0,seed);
 	bool pass = true ;
 	typename Field::Element  alpha;
 	F.init(alpha,F.one);
-	pass &= test_fscal(F,alpha,m,k,n,timing);
-	F.init(alpha,F.mOne);
-	pass &= test_fscal(F,alpha,m,k,n,timing);
-	F.init(alpha,F.zero);
-	pass &= test_fscal(F,alpha,m,k,n,timing);
-	typename ModularBalanced<typename Field::Element>::RandIter RValue( G );
-	F.init(alpha,RValue.random(alpha));
-	pass &= test_fscal(F,alpha,m,k,n,timing);
-	F.init(alpha,RValue.random(alpha));
-	pass &= test_fscal(F,alpha,m,k,n,timing);
+	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	F.assign (alpha,F.mOne);
+	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	F.assign (alpha,F.zero);
+	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	G.random(alpha);
+	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	G.random(alpha);
+	pass &= test_fscal(F,alpha,m,k,n,timing, G);
 
 	return pass ;
 }
 
-template<class Field>
-bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t m, size_t k, size_t n, bool timing)
+template<class Field, class RandIter>
+bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t m, size_t k, size_t n, bool timing, RandIter& G)
 {
 	typedef typename Field::Element T ;
 
@@ -131,7 +130,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 	tim.clear() ; tom.clear() ;
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
-		RandomMatrix(F,C,m,k,n);
+		RandomMatrix(F, m, k, C, n, G);
 		FFLAS::fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
@@ -167,35 +166,34 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 
 
 template<class Field>
-bool test_fscalin(const Field & F,  size_t m, size_t k, size_t n, bool timing)
+bool test_fscalin(const Field & F,  size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
-	ModularBalanced<typename Field::Element> G(1234); // for alpha
+	typename Field::RandIter G(F,0,seed);
 	bool pass = true ;
 	typename Field::Element  alpha;
-	F.init(alpha,F.one);
-	pass &= test_fscalin(F,alpha,m,k,n,timing);
-	F.init(alpha,F.mOne);
-	pass &= test_fscalin(F,alpha,m,k,n,timing);
-	F.init(alpha,F.zero);
-	pass &= test_fscalin(F,alpha,m,k,n,timing);
-	typename ModularBalanced<typename Field::Element>::RandIter RValue( G );
-	F.init(alpha,RValue.random(alpha));
-	pass &= test_fscalin(F,alpha,m,k,n,timing);
-	F.init(alpha,RValue.random(alpha));
-	pass &= test_fscalin(F,alpha,m,k,n,timing);
+	F.init (alpha,F.one);
+	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	F.assign (alpha,F.mOne);
+	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	F.assign (alpha,F.zero);
+	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	G.random(alpha);
+	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	G.random(alpha);
+	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
 
 	return pass ;
 }
 
 int main(int ac, char **av) {
-	static size_t m = 300 ;
-	static size_t n = 301 ;
-	static size_t k = 300 ;
-	static uint64_t p = 7;
-	int seed = (int) time(NULL);
-	static bool timing = false ;
+	size_t m = 300 ;
+	size_t n = 301 ;
+	size_t k = 300 ;
+	uint64_t p = 7;
+	uint64_t seed = time(NULL);
+	bool timing = false ;
 
-	static Argument as[] = {
+	Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.", TYPE_INT , &p },
 		{ 'n', "-n N", "Set the number of cols in C." , TYPE_INT , &n },
 		{ 'm', "-m N", "Set the number of rows in C." , TYPE_INT , &m },
@@ -222,104 +220,104 @@ int main(int ac, char **av) {
 	{ /*  fscal  */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fscal(F,m,k,n,timing);
+			pass &= test_fscal(F,m,k,n,timing,seed);
 		}
 #endif
 	}
 	{ /*  fscalin  */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fscalin(F,m,k,n,timing);
+			pass &= test_fscalin(F,m,k,n,timing,seed);
 		}
 #endif
 	}

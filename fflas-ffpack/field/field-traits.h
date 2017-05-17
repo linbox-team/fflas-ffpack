@@ -181,6 +181,7 @@ namespace FFLAS { /*  Traits */
 
 #ifndef INTEGER_NO_RNS
 	template<typename Compute> struct ModeTraits<Givaro::Modular<Givaro::Integer,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	template<typename Compute, size_t K> struct ModeTraits<Givaro::Modular<RecInt::ruint<K>,Compute> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
 #endif
 
 	template <typename Element>

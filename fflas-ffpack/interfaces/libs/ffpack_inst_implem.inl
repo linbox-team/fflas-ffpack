@@ -42,14 +42,18 @@ namespace FFPACK {
 			   const size_t R1, const size_t R2,
 			   const size_t R3, const size_t R4);
 
-	void composePermutationsP (size_t * MathP,
-				   const size_t * P1,
-				   const size_t * P2,
-				   const size_t R, const size_t N);
-	void composePermutationsQ (size_t * MathP,
-				   const size_t * Q1,
-				   const size_t * Q2,
-				   const size_t R, const size_t N);
+	void composePermutationsLLM (size_t * MathP,
+								 const size_t * P1,
+								 const size_t * P2,
+								 const size_t R, const size_t N);
+
+	void composePermutationsLLL (size_t * P1,
+								 const size_t * P2,
+								 const size_t R, const size_t N);
+
+	void composePermutationsMLM (size_t * MathP1,
+								 const size_t * P2,
+								 const size_t R, const size_t N);
 
 	void cyclic_shift_mathPerm (size_t * P,  const size_t s);
 	template<typename Base_t>
@@ -139,14 +143,14 @@ namespace FFPACK {
 					 FFLAS_ELT* X, const size_t ldx );
 
 	template INST_OR_DECL
-	void ftrtrm (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG diag, const size_t N,
+	void ftrtrm (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag, const size_t N,
 				 FFLAS_ELT* A, const size_t lda);
 
 	template INST_OR_DECL
 	size_t PLUQ (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,
 				 const size_t M, const size_t N,
 				 FFLAS_ELT* A, const size_t lda,
-				 size_t*P, size_t *Q);
+				 size_t*P, size_t *Q, size_t BCThreshold);
 
 	template INST_OR_DECL
 	size_t LUdivine (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_DIAG Diag,  const FFLAS::FFLAS_TRANSPOSE trans,
@@ -215,6 +219,13 @@ namespace FFPACK {
 												  std::list<std::vector<FFLAS_ELT> >& charp, 
 												  const size_t N,
 												  FFLAS_ELT* A, const size_t lda,
+												  FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
+												  const FFPACK_CHARPOLY_TAG CharpTag);
+	template INST_OR_DECL
+	std::list<std::vector<FFLAS_ELT> >&	CharPoly (const FFLAS_FIELD<FFLAS_ELT>& F, 
+												  std::list<std::vector<FFLAS_ELT> >& charp, 
+												  const size_t N,
+												  FFLAS_ELT* A, const size_t lda,
 												  const FFPACK_CHARPOLY_TAG CharpTag);
 	
 	template INST_OR_DECL
@@ -226,19 +237,25 @@ namespace FFPACK {
 	template INST_OR_DECL
 	std::vector<FFLAS_ELT>& CharPoly( const FFLAS_FIELD<FFLAS_ELT>& F, 	std::vector<FFLAS_ELT>& charp, const size_t N,
 									  FFLAS_ELT* A, const size_t lda,
+									  FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
 									  const FFPACK_CHARPOLY_TAG CharpTag);
 	template INST_OR_DECL
-	std::list<std::vector<FFLAS_ELT>>& CharpolyArithProg (const FFLAS_FIELD<FFLAS_ELT>& F, 
-														  std::list<std::vector<FFLAS_ELT>>& frobeniusForm,
-														  const size_t N, 
-														  FFLAS_ELT* A, const size_t lda, const size_t c);
+	std::vector<FFLAS_ELT>& CharPoly( const FFLAS_FIELD<FFLAS_ELT>& F, 	std::vector<FFLAS_ELT>& charp, const size_t N,
+									  FFLAS_ELT* A, const size_t lda,
+									  const FFPACK_CHARPOLY_TAG CharpTag);
 	template INST_OR_DECL
 	std::vector<FFLAS_ELT>& MinPoly( const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP, const size_t N,
 									 const FFLAS_ELT* A, const size_t lda,
-									 FFLAS_ELT* X, const size_t ldx, size_t* P,
-									 const FFPACK::FFPACK_MINPOLY_TAG MinTag,
-									 const size_t kg_mc, const size_t kg_mb, const size_t kg_j );
+									 FFLAS_FIELD<FFLAS_ELT>::RandIter& G);
+	template INST_OR_DECL
+	std::vector<FFLAS_ELT>& MinPoly( const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP, const size_t N,
+									 const FFLAS_ELT* A, const size_t lda);
 
+	template INST_OR_DECL
+	std::vector<FFLAS_ELT>& MatVecMinPoly (const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP,
+										   const size_t N, const FFLAS_ELT* A, const size_t lda,
+										   FFLAS_ELT* K, const size_t ldk, size_t * P);
+	
 	template INST_OR_DECL
 	size_t KrylovElim( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
 					   FFLAS_ELT* A, const size_t lda, size_t*P,

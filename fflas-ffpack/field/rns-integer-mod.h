@@ -1,4 +1,4 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
@@ -71,7 +71,24 @@ namespace FFPACK {
 		typedef typename RNS::Element                   Element;
 		typedef typename RNS::Element_ptr           Element_ptr;
 		typedef typename RNS::ConstElement_ptr ConstElement_ptr;
-		typedef rnsRandIter<RNS> RandIter;
+		//typedef rnsRandIter<RNS> RandIter;
+		class RandIter : public rnsRandIter<RNS> {
+		private:
+			const RNSIntegerMod<RNS> & _F;
+			uint64_t _seed;
+		public:
+			RandIter(const RNSIntegerMod<RNS> &F, size_t size=0, uint64_t seed=0) :rnsRandIter<RNS>(*F._rns,size,seed), _F(F), _seed(seed) {}
+
+			typename RNS::Element& random(typename RNS::Element& elt) const {
+				integer::seeding(_seed);
+				integer tmp;
+				integer::random_exact<true>(tmp,_F._p);
+				_F.init(elt,tmp);
+				return elt;
+			}
+		};
+
+			
 
 	protected:
 		typedef typename RNS::BasisElement BasisElement;
@@ -95,7 +112,7 @@ namespace FFPACK {
 
 		RNSIntegerMod(const integer& p, const RNS& myrns) : _p(p),
 								    _Mi_modp_rns(myrns._size*myrns._size),
-								    _iM_modp_rns(myrns._size*myrns._size),
+								    _iM_modp_rns((myrns._size+1)*myrns._size),
 								    _rns(&myrns),
 								    _F(p),
 								    _RNSdelayed(myrns){
@@ -104,17 +121,21 @@ namespace FFPACK {
 			init(mOne,-1);
 			integer iM=0;
 			size_t mysize=myrns._size;
+			size_t mysizep1=myrns._size+1;
 			integer sum=0;
 			//std::cout << "M: " << myrns._M << std::endl;
 			for (size_t i=0;i<mysize;i++){
 				integer Mi = myrns._Mi[i] % _p;
 				for (size_t j=0;j<mysize;j++){
-					_iM_modp_rns[i+j*mysize]=  iM % myrns._basis[j];
+					_iM_modp_rns[i+j*mysizep1]=  iM % myrns._basis[j];
 					_Mi_modp_rns[i+j*mysize]=  Mi % myrns._basis[j];
 				}
 				iM+=myrns._M;iM%=_p;
 				sum+=myrns._basis[i];
 			}
+			// last line of _iM_modp_rns corresponds to a quotient of _size 
+			for (size_t j=0;j<mysize;j++)
+				_iM_modp_rns[mysize+j*mysizep1]=  iM % myrns._basis[j];
 #ifdef BENCH_MODP
 			t_modp=t_igemm=t_scal=t_trsm=0.;
 			n_modp=0;
@@ -150,7 +171,7 @@ namespace FFPACK {
 			for (size_t i=0;i<_rns->_size;i++)
 				iszero&= (zero._ptr[i]==x._ptr[i]);
 			//std::cout<<(iszero || (t1==integer(0))?"zero":"nonzero")<<std::endl;
-			return iszero || (t1==integer(0));
+			return iszero || (t1==integer(0));			
 		}
 
 		integer characteristic(integer &p) const { return p=_p;}
@@ -258,8 +279,10 @@ namespace FFPACK {
 					return false;
 			return true;
 		}
-		std::ostream& write(std::ostream& os, const Element& y) const {
-			os<<"[ "<< (long) (y._ptr)[0];
+		std::ostream& write(std::ostream& os, const Element& y) const {			
+			// integer x;
+			// convert(x,y);
+			os<<"["<<(long) (y._ptr)[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) ((y._ptr)[i*y._stride]);
 			return os<<" ]";
@@ -267,7 +290,7 @@ namespace FFPACK {
 
 
 		std::ostream& write(std::ostream& os) const {
-			os<<"M:=[ "<< (long) _rns->_basis[0];
+			os<<" RNSIntegerMod("<<_p<<") with M:=[ "<< (long) _rns->_basis[0];
 			for(size_t i=1;i<_rns->_size;i++)
 				os<<" , "<< (long) _rns->_basis[i];
 			return os<<" ]"<<std::endl;
@@ -278,38 +301,38 @@ namespace FFPACK {
 #ifdef BENCH_MODP
 			FFLAS::Timer chrono; chrono.start();
 #endif
+
 			size_t _size= _rns->_size;
 			BasisElement *Gamma, *alpha, *A;
 			A=B._ptr;
 			size_t rda = B._stride;
 			Givaro::ZRing<BasisElement> D;
 			Gamma = FFLAS::fflas_new(D,_size,n);
-			alpha = FFLAS::fflas_new(D,n,1);
-
+			alpha = FFLAS::fflas_new(D,n,1);			
 			// compute Gamma
-			//for(size_t i=0;i<_size;i++)
-			//	FFLAS::fscal(_rns->_field_rns[i], n, _rns->_MMi[i], A+i*rda, 1, Gamma+i*n,1);
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,n), 1);
-
+			
 			// compute A = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
+#ifndef ENABLE_CHECKER_fgemm
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans, _size, n, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, n, D.zero, A, rda);
-
-			//std::cout<<"fgemv (Y)...";
-			//std::cout<<"fgemv (Y)..."<<n<<" -> "<<_size<<endl;;
+#else
+			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)_size, (int)n, (int)_size, 1.0 , _Mi_modp_rns.data(), (int)_size, Gamma, (int)n, 0, A, (int)rda);
+#endif			
 			// compute alpha = _invbase.Gamma
 			FFLAS::fgemv(D,FFLAS::FflasTrans, _size, n, D.one, Gamma, n, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-			//std::cout<<"done"<<std::endl;
 
 			// compute ((z-(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
 			for(size_t i=0;i<_size;i++){
 				for(size_t j=0;j<n;j++){
-					//long aa=floor(alpha[j]+0.5);
-					long aa= (long)rint(alpha[j]);
-					A[j+i*rda]-=_iM_modp_rns[aa+i*_size];
+					size_t aa= (size_t)rint(alpha[j]);
+#ifdef __FFLASFFPACK_DEBUG
+					if (aa>_size) {std::cout<<"RNS modp ERROR"<<std::endl;exit(1);}
+#endif
+					A[j+i*rda]-=_iM_modp_rns[aa+i*(_size+1)];
+					
 				}
-			}
-
+			}			
 			// reduce each row of A modulo m_i
 			for (size_t i=0;i<_size;i++)
 				FFLAS::freduce (_rns->_field_rns[i], n, A+i*rda, 1);
@@ -324,7 +347,20 @@ namespace FFPACK {
 	 	}
 
 		std::ostream& write_matrix(std::ostream& c,
-					   double* E,
+					   const double* E,
+					   int n, int m, int lda) const
+		{
+			c<<std::endl<<"***********************"<<std::endl;
+			for (int i = 0; i<n;++i){
+				for (int j=0; j<m;++j)
+					c << *(E+j+lda*i) << " ";
+				c << std::endl;
+			}
+			c<<"***********************"<<std::endl;
+			return c << std::endl;
+		}
+		std::ostream& write_matrix_long(std::ostream& c,
+					   const double * E,
 					   int n, int m, int lda) const
 		{
 			c<<std::endl<<"***********************"<<std::endl;
@@ -352,29 +388,28 @@ namespace FFPACK {
 			z     = FFLAS::fflas_new<BasisElement>(mn*_size);
 
 			// compute Gamma
-			//for(size_t i=0;i<_size;i++)
-			//	FFLAS::fscal(_rns->_field_rns[i], m, n, _rns->_MMi[i], A+i*rda, lda, Gamma+i*mn,n);
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, m, n, mmi, B, lda, typename RNS::Element_ptr(Gamma,mn), n);
 
 			// compute Gamma = _Mi_modp_rns.Gamma (note must be reduced mod m_i, but this is postpone to the end)
 			Givaro::ZRing<BasisElement> D;
-
+#ifndef ENABLE_CHECKER_fgemm
 			FFLAS::fgemm(D,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,_size, mn, _size, D.one, _Mi_modp_rns.data(), _size, Gamma, mn, D.zero, z, mn);
-
-			//write_matrix(std::cout,Gamma, mn, _size, mn);
-
+#else
+			cblas_dgemm(CblasRowMajor,CblasNoTrans, CblasNoTrans, (int)_size, (int)mn, (int)_size, 1.0 , _Mi_modp_rns.data(), (int)_size, Gamma, (int)mn, 0, z, (int)mn);
+#endif
 			// compute alpha = _invbase.Gamma
-			//std::cout<<"fgemv (X)..."<<m<<"x"<<n<<" -> "<<_size<<"  "<<lda<<endl;;
 			FFLAS::fgemv(D, FFLAS::FflasTrans, _size, mn, D.one, Gamma, mn, _rns->_invbasis.data(), 1 , D.zero, alpha, 1);
-			//std::cout<<"done"<<std::endl;
-
-			// compute A=((Gamma--(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
+			
+  			// compute A=((Gamma--(alpha.M mod p)) mod m_i (perform the subtraction over Z and reduce at the end)
  			for(size_t k=0;k<_size;k++){
 				for(size_t i=0;i<m;i++)
 					for(size_t j=0;j<n;j++){
-						long aa=(long)floor(alpha[j+i*n]+0.5);
-						A[j+i*lda+k*rda]= z[j+i*n+k*mn]-_iM_modp_rns[aa+k*_size];
+						size_t aa=(size_t)floor(alpha[j+i*n]+0.5);
+#ifdef __FFLASFFPACK_DEBUG
+						if (aa>_size) {std::cout<<"RNS modp ERROR"<<std::endl;exit(1);}
+#endif
+						A[j+i*lda+k*rda]= z[j+i*n+k*mn]-_iM_modp_rns[aa+k*(_size+1)];
 					}
 			}
 

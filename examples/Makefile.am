@@ -23,32 +23,17 @@
 SUBDIRS =
 examples:  $(EXAMPLES)
 
-AM_CPPFLAGS=-I$(top_srcdir) -g
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CPPFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(CUDA_CFLAGS) $(PARFLAGS)
+AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-FFLA_EXAMP =    2x2-fgemm pluq 101-fgemm 2x2-pluq
-2x2_fgemm_SOURCES = 2x2-fgemm.C
+EXAMPLES = pluq
 pluq_SOURCES = pluq.C
-101_fgemm_SOURCES = 101-fgemm.C
-2x2_pluq_SOURCES = 2x2-pluq.C
-
-if FFLASFFPACK_HAVE_LAPACK
-USE_LAPACK_EXAMP = $(LAPA_EXAMP)
-endif
-
-EXAMPLES =			\
-        $(FFLA_EXAMP)   \
-        $(BLAS_EXAMP)   \
-        $(USE_LAPACK_EXAMP) \
-        $(USE_OMP_EXAMP)
 
 CLEANFILES = $(EXAMPLES) 
 
 EXTRA_PROGRAMS = $(EXAMPLES)
-
 
 define other_compilation
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)

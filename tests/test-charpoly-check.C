@@ -1,9 +1,7 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
  * Written by Ashley Lesdalons <Ashley.Lesdalons@e.ujf-grenoble.fr>
+ * Jean-Guillaume Dumas <Jean-Guillaume.Dumas@univ-grenoble-alpes.fr>
  *
  * This file is Free Software and part of FFLAS-FFPACK.
  *
@@ -31,7 +29,8 @@
 //          Test for Checker_charpoly
 //--------------------------------------------------------------------------
 
-#define ENABLE_ALL_CHECKINGS 1
+#define ENABLE_CHECKER_charpoly 1
+#define TIME_CHECKER_CHARPOLY 1
 
 
 #include <iostream>
@@ -53,54 +52,71 @@ void printPolynomial (const Field &F, Polynomial &v)
 }
 
 int main(int argc, char** argv) {
-	srand (time(NULL));
 	typedef Givaro::ModularBalanced<double> Field;
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
     size_t MAXN = 100;
-    size_t n = 0;
+    size_t n = 0, N = 0;
+    static int variant = 6;
+    int seed = (int) time(NULL);
 	
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
+        { 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+        { 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
 
+    FFPACK::FFPACK_CHARPOLY_TAG CPalg;
+    switch (variant){
+        case 0: CPalg = FFPACK::FfpackLUK; break;
+        case 1: CPalg = FFPACK::FfpackKG; break;
+        case 2: CPalg = FFPACK::FfpackDanilevski; break;
+        case 3: CPalg = FFPACK::FfpackKGFast; break;
+        case 4: CPalg = FFPACK::FfpackKGFastG; break;
+        case 5: CPalg = FFPACK::FfpackHybrid; break;
+        case 6: CPalg = FFPACK::FfpackArithProg; break;
+        default: CPalg = FFPACK::FfpackLUK; break;
+    }
+    
 	Field F(q);
-	Field::RandIter Rand(F);
+	srand (seed);
+	Field::RandIter Rand(F,0,seed);
     typedef std::vector<Field::Element> Polynomial;
 
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
         
-		n = n?n: rand() % MAXN + 1;
+		N = n?n: rand() % MAXN + 1;
 // 		std::cout << "n= " << n << "\n";
-        Field::Element_ptr A = FFLAS::fflas_new(F,n,n);
+        Field::Element_ptr A = FFLAS::fflas_new(F,N,N);
 
 		Polynomial g(n);
 
-		PAR_BLOCK { FFLAS::pfrand(F,Rand, n,n,A,n/MAX_THREADS); }
+		PAR_BLOCK { FFLAS::pfrand(F,Rand,N,N,A,N/MAX_THREADS); }
 		try {
-			//write_field(F,std::cerr<<"A=",A,n,n,n,true) <<std::endl;
-// 			FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
+//             write_field(F,std::cerr<<"A=",A,N,N,N,true) <<std::endl;
+//             FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
             Givaro::Timer charpolytime; charpolytime.start();
-			FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
+			FFPACK::CharPoly(F,g,N,A,N,CPalg);
             charpolytime.stop();
-            std::cerr << "CHARPol time:" << charpolytime << std::endl;
-			//printPolynomial(F,g);
-// 			checker.check(g);
-			std::cout << n << 'x' << n << " charpoly verification successful\n";
+            std::cerr << "CHARPol checked full: " << charpolytime << std::endl;
+//             printPolynomial(F,g);
+//             checker.check(g);
+			std::cout << N << 'x' << N << " charpoly verification successful\n";
 			pass++;
 		} catch(FailureCharpolyCheck &e) {
-			std::cout << n << 'x' << n << " charpoly verification failed!\n";
+			std::cout << N << 'x' << N << " charpoly verification failed!\n";
 		}
 		FFLAS::fflas_delete( A);
 		
 	}
 
-	std::cout << pass << "/" << iter << " tests were successful.\n";	
+	std::cout << pass << "/" << iter << " tests were successful: ";	
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
 
 	return 0;
 }

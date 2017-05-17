@@ -24,9 +24,7 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CPPFLAGS=-I$(top_srcdir) -g
-AM_CXXFLAGS = @TESTS_CFLAGS@ $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
-AM_CPPFLAGS +=  -I$(top_srcdir)/fflas-ffpack/ -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field 
+AM_CXXFLAGS = ${DEFAULT_CFLAGS} $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
 
 #LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
 AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
@@ -40,20 +38,28 @@ BASIC_TESTS =               \
 		test-det            \
 		test-echelon        \
 		test-charpoly       \
+		test-minpoly		\
 		test-rankprofiles   \
 		test-compressQ      \
 		test-permutations   \
+		test-fdot           \
 		test-fadd           \
 		test-finit          \
 		test-fscal          \
 		test-fgemm          \
 		test-pluq-check     \
+		test-det-check     \
 		test-fgemm-check    \
 		test-ftrsm-check    \
 		test-invert-check   \
 		test-charpoly-check \
 		test-fger           \
 		test-ftrsm          \
+		test-ftrmm          \
+		test-ftrsv          \
+		test-ftrmv          \
+		test-fsyrk          \
+		test-fsytrf          \
 		test-multifile      \
 		test-maxdelayeddim \
 		regression-check
@@ -90,6 +96,7 @@ NOT_A_TEST =  \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
+		test-sparse            \
 		test-nullspace
 
 INFINITE_TEST= \
@@ -113,10 +120,12 @@ test_lu_SOURCES              = test-lu.C
 #test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
 test_pluq_check_SOURCES = test-pluq-check.C
+test_det_check_SOURCES = test-det-check.C
 test_fgemm_check_SOURCES = test-fgemm-check.C
 test_ftrsm_check_SOURCES = test-ftrsm-check.C
 test_invert_check_SOURCES = test-invert-check.C
 test_charpoly_check_SOURCES = test-charpoly-check.C
+test_minpoly_SOURCES = test-minpoly.C
 test_echelon_SOURCES           = test-echelon.C
 test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
@@ -132,6 +141,11 @@ test_charpoly_SOURCES          = test-charpoly.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
+test_ftrmm_SOURCES             = test-ftrmm.C
+test_ftrsv_SOURCES             = test-ftrsv.C
+test_ftrmv_SOURCES             = test-ftrmv.C
+test_fsyrk_SOURCES             = test-fsyrk.C
+test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C
 #  test_ftrtri_SOURCES            = test-ftrtri.C
@@ -146,21 +160,19 @@ test_ftrsm_SOURCES             = test-ftrsm.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
+test_fdot_SOURCES = test-fdot.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
+test_sparse_SOURCES = test-sparse.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
 test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
-#test_interfaces_c_CFLAGS= -std=c11 -I/$(prefix)/include $(AM_CPPFLAGS) $(AM_CXXFLAGS) $(PARFLAGS)
-#test_interfaces_c_LDFLAGS= $(LDFLAGS) $(LDADD) $(AM_LDFLAGS) -L/$(prefix)/lib/ -lfflas_c -lffpack_c -lstdc++
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
-
-#  dense_generator_SOURCES        = dense_generator.C
 
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher:

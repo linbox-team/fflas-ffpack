@@ -157,7 +157,6 @@ int main(int argc, char **argv) {
     using Field = Modular<float>;
 
     Field F(101);
-    int nbTests = 25;
     std::string path;
 
     index_t *row = nullptr, *col = nullptr;
@@ -174,7 +173,7 @@ int main(int argc, char **argv) {
     readSmsFormat(path, F, row, col, dat, rowdim, coldim, nnz);
     row = fflas_new<index_t>(nnz);
     for (index_t j = 0 ; j < rowdim ; ++j) {
-	    for (index_t k = st[j] ; k < st[j+1] ; ++k)
+	    for (index_t k = row[j] ; k < row[j+1] ; ++k)
 		    row[k] = j ;
     }
 
