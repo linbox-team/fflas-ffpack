@@ -45,22 +45,6 @@ actually do the work.
 
 using namespace FFLAS;
 
-
-void disp_101_string(const char * text)
-{
-  std::cout << text  << std::endl;
-}
-void disp_101_vector(const Givaro::Modular<float> F,
-	      const char * name,
-	      const Givaro::Modular<float>::Element_ptr M,
-	      const size_t size,
-	      const bool   bracket_display
-	      )
-{
-  write_field(F, std::cout << name <<":=", M, size, 1, 1,bracket_display) << std::endl;
-}
-
-
 int main(int argc, char** argv) {
   std::cout << "" << std::endl;
   
@@ -79,43 +63,42 @@ int main(int argc, char** argv) {
   F.init(*(X+0),  52);               // X[0] = 52
   F.init(  X[1], 183);               // X[1] = 63
 
-  disp_101_string("\nInitialisation");
-  disp_101_vector(F,"X",X,xsize,true);
-  disp_101_vector(F,"Y",Y,ysize,true);
-  
+  std::cout <<"\nInitialisation" << std::endl;
+  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
 
   // ===== initialisation from a vector ===== ???
   /*  finit(F,2,Y,1,X,1);
 
-  write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+      write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
+      write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
   */
 
   // ===== modular reduction =====
-  disp_101_string("\n=== Modular reductions ===");
+  std::cout << "\n=== Modular reductions ===" << std::endl;
   
   typedef Givaro::Modular<float> Ring;
   Ring F2(2);
   freduce(F2,2,Y,1);      // reduce Y modulo F2 inplace
 
-  disp_101_string("\nY mod 2 inplace");
-  disp_101_vector(F,"Y", Y, ysize, true);
+  std::cout << "\nY mod 2 inplace" << std::endl;
+  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
 
   freduce(F2,2,X,1,Y,1);  // reduce X modulo F2 and store in Y
   
-  disp_101_string("\nY := X mod 2");
-  disp_101_vector(F,"Y", Y, ysize, true);
+  std::cout << "\nY := X mod 2" << std::endl;
+  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
 
 
   // ===== negation =====
   fnegin(F,2,X,1);        // X := -X
   fneg(F,2,X,1,Y,1);      // Y := -X
 
-  disp_101_string("\n=== Negations ===");
-  disp_101_string("\nX := -X");
-  disp_101_vector(F, "X", X, xsize, true);
-  disp_101_string("\nY := -X");
-  disp_101_vector(F, "Y", Y, ysize, true);
+  std::cout << "\n=== Negations ===" << std::endl;
+  std::cout << "\nX := -X" << std::endl;
+  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  std::cout << "\nY := -X" << std::endl;
+  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
   
 
   // ===== addition / substraction =====
