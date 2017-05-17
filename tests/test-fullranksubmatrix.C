@@ -38,7 +38,7 @@
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -61,15 +61,15 @@ int main(int argc, char** argv){
 	Field::Element * A;
 	Field::Element * X;
 
-	A = read_field(F,argv[2],&m ,&n);
-	write_field (F, cerr<<"A = "<<endl, A, m, n, n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+	FFMAS::WriteMatrix (cerr<<"A = "<<endl, F, m, n, A, n);
 
  FFLAS::Timer tim,t; t.clear();tim.clear();
 	size_t R;
 
 	FFPACK::ColRankProfileSubmatrix (F, m, n, A, n, X, R);
 
-	write_field (F, cerr<<"X = "<<endl, X, (int) R, (int) R, (int) R);
+	FFLAS::WriteMatrix (cerr<<"X = "<<endl, F, R, R, X, R);
 
 	size_t r2 = FFPACK::Rank(F, R,R, X, R);
 	if (r2 != R)

@@ -27,7 +27,7 @@
 #include <givaro/modular.h>
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas-ffpack.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 using namespace std;
 
@@ -44,16 +44,16 @@ int main(int argc, char** argv) {
 
 	size_t m(2),n(2);
 	double A[4] {1,2,3,4};
-	write_field(F,std::cout<<"A = "<<std::endl,A,m,n,n);
+	FFLAS::WriteMatrix (std::cout<<"A = "<<std::endl,F,m,n,A,n);
 
     size_t * P = FFLAS::fflas_new<size_t>(m);
     size_t * Q = FFLAS::fflas_new<size_t>(n);
 
     FFPACK::PLUQ (F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 
-	write_perm(std::cout<<"P = "<<std::endl,P,m);
-	write_field(F,std::cout<<"LU = "<<std::endl,A,m,n,n)<< " modulo " << p << std::endl;
-	write_perm(std::cout<<"Q = "<<std::endl,Q,n);
+	FFLAS::WritePermutation(std::cout<<"P = "<<std::endl,P,m);
+	FFLAS::WriteMatrix (std::cout<<"LU = "<<std::endl,F,m,n,A,n)<< " modulo " << p << std::endl;
+	FFLAS::WritePermutation(std::cout<<"Q = "<<std::endl,Q,n);
 
     FFLAS::fflas_delete( P);
     FFLAS::fflas_delete( Q);

@@ -38,6 +38,7 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 
 template <class Field, class Polynomial>
@@ -98,7 +99,7 @@ int main(int argc, char** argv) {
 
 		PAR_BLOCK { FFLAS::pfrand(F,Rand,N,N,A,N/MAX_THREADS); }
 		try {
-//             write_field(F,std::cerr<<"A=",A,N,N,N,true) <<std::endl;
+//             FFLAS::WriteMatrix (std::cerr<<"A=",F,N,N,A,N,FflasMaple) <<std::endl;
 //             FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
             Givaro::Timer charpolytime; charpolytime.start();
 			FFPACK::CharPoly(F,g,N,A,N,CPalg);
@@ -116,7 +117,7 @@ int main(int argc, char** argv) {
 	}
 
 	std::cout << pass << "/" << iter << " tests were successful: ";	
-    FFLAS::writeCommandString(std::cout, as) << std::endl;
+        FFLAS::writeCommandString(std::cout, as) << std::endl;
 
 	return 0;
 }

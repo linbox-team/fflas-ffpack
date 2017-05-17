@@ -29,7 +29,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   for (size_t i=0;i<iter;++i){
 
     if (!file.empty()){
-      A = read_field (F, file.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
     }
     else{
       A = FFLAS::fflas_new<Element>(n*n);

@@ -37,7 +37,7 @@
 #include <iomanip>
 #include <iostream>
 #include "givaro/modular.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
@@ -87,7 +87,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	if (n&1) // p0 == (-1)^n det
 		F.negin(det);
 	if (!F.areEqual(det,charp[0])){
-			//write_field(F, std::cerr<<"B = "<<std::endl,B, n,n,lda);
+			//FFLAS::WriteMatrix (std::cerr<<"B = "<<std::endl,F, n,n,B,lda);
 		std::cerr<<"FAILED: det = "<<det<<" P["<<0<<"] = "<<charp[0]<<std::endl;
 		FFLAS::fflas_delete (B);
 		return false;
@@ -149,7 +149,7 @@ int main(int argc, char** argv)
 	for(size_t i = 0;i<nbit;++i){
 		if (!file.empty()) {
 			const char * filestring = file.c_str();
-			A = read_field<Field>(F,const_cast<char*>(filestring),&n,&n);
+			FFLAS::ReadMatrix (file,F,n,n,A);
 			passed &= launch_test<Field>(F, n, A, lda, nbit, G, CT);
 			FFLAS::fflas_delete( A);
 		} else {
