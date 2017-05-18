@@ -83,14 +83,14 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 
 	FFPACK::CharPoly<Field,typename Givaro::Poly1Dom<Field> > (F, charp, n, A, lda, G, CT);
 
-	try{
-		checker.check(charp);
-	}
-	catch (FailureCharpolyCheck){
-		std::cerr<<"CharPoly Checker FAILED"<<std::endl;
-		FFLAS::fflas_delete (B);
-		return false;
-	}
+	 try{
+	 	checker.check(charp);
+	 }
+	 catch (FailureCharpolyCheck){
+	 	std::cerr<<"CharPoly Checker FAILED"<<std::endl;
+	 	FFLAS::fflas_delete (B);
+	 	return false;
+	 }
 
 	FFLAS::fassign(F, n, n, B, n, A, lda);
 
@@ -106,11 +106,11 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	}
 
 		// Checking det(A) == charp[0]
-		// Det over ZZ not yet ready in fflas
 	typename Field::Element det;
 	F.init(det);
 	F.assign(det, FFPACK::Det(F, n, n, B, n));
 	FFLAS::fflas_delete (B);
+
 	if (n&1) F.negin(det); // p0 == (-1)^n det
 	
 	if (!F.areEqual(det,charp[0])){
@@ -135,56 +135,43 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 	    case 7: CT = FfpackArithProg; break;
 	    default: CT = FfpackLUK; break;
 	}
-	Field* F= chooseField<Field>(p,bits);
-	if (F==nullptr){
-		std::cerr<<"Skipping ";
-		Field G;
-		G.write(std::cerr)<<std::endl;
-		return true;
-	}
-	typename Field::RandIter R(*F,bits,seed);
 
-	std::ostringstream oss;
-	oss<<setprecision(17);
-	F->write(oss);
-	std::cout.fill('.');
-	std::cout<<"Checking ";
-	std::cout.width(40);
-	std::cout<<oss.str();
-	std::cout<<" ... ";
-
-	size_t lda = n;
-	typename Field::Element * A=NULL;
 	bool passed = true;
+	size_t lda = n;
 
-	if (!file.empty()) {
+	for (size_t i=0;i<iter;i++){
+		Field* F= chooseField<Field>(p,bits);
+		if (F==nullptr){
+			return true;
+		}
+		typename Field::RandIter R(*F,bits,seed);
+
+		typename Field::Element * A=NULL;
+
+		if (!file.empty()) {
 			/* user provided test matrix */
-		const char * filestring = file.c_str();
-		A = read_field<Field>(*F,const_cast<char*>(filestring),&n,&n);
-	} else {
-			/* Random matrix test */
-		A = FFLAS::fflas_new(*F,n,lda);
-		A = FFPACK::RandomMatrix(*F,n,n,A,lda,R);
-	}
+			const char * filestring = file.c_str();
+			A = read_field<Field>(*F,const_cast<char*>(filestring),&n,&n);
+		} else {
+				/* Random matrix test */
+			A = FFLAS::fflas_new(*F,n,lda);
+			A = FFPACK::RandomMatrix(*F,n,n,A,lda,R);
+		}
 
-	if (variant) // User provided variant
-		passed &= launch_test<Field>(*F, n, A, lda, iter, R, CT);
-	else{ // No variant specified, testing them all
-		passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
-			//passed &= launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
-		passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackDanilevski);
-			//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFast); // generic: does not work with any matrix
-			//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFastG); // generic: does not work with any matrix
-			//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackHybrid); // fails with small characteristic
-		passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
+		if (variant) // User provided variant
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, CT);
+		else{ // No variant specified, testing them all
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
+				//passed &= launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackDanilevski);
+				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFast); // generic: does not work with any matrix
+				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFastG); // generic: does not work with any matrix
+				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackHybrid); // fails with small characteristic
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
+		}
+		FFLAS::fflas_delete (A);
+		delete F;
 	}
-	if ( !passed )
-			//std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
-		std::cout << "FAILED "<<std::endl;
-	else
-			//std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
-		std::cout << "PASSED "<<std::endl;
-	FFLAS::fflas_delete (A);
 	return passed;
 }
 
@@ -192,8 +179,8 @@ int main(int argc, char** argv)
 {
 	Givaro::Integer q = -1; // characteristic
 	uint64_t     bits = 0;       // bit size
-	size_t       iter = 10; // repetitions
-	size_t       n = 200;
+	size_t       iter = 5; // repetitions
+	size_t       n = 400;
 	std::string  file = "" ; // file where
 	bool loop = false; // loop infintely
 	std::string  mat_file = "" ; // input matrix file 
@@ -204,7 +191,7 @@ int main(int argc, char** argv)
 	srand((int)time(NULL));
 
 	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic.", TYPE_INT , &q },
+		{ 'q', "-q Q", "Set the field characteristic.", TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the random elements.",         TYPE_INT , &bits},
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
 		{ 'i', "-i I", "Set number of repetitions.", TYPE_INT , &iter },
@@ -218,8 +205,17 @@ int main(int argc, char** argv)
 
 	bool passed = true;
 	do {
+		passed &= run_with_field<Givaro::ModularBalanced<float> >(q, bits, n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::Modular<float> >(q, bits, n, mat_file, variant, iter, seed);
 		passed &= run_with_field<Givaro::ModularBalanced<double> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(q, (bits?bits:80_ui64), n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::Modular<double> >(q, bits, n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::ModularBalanced<int32_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::Modular<int32_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::ModularBalanced<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::Modular<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::Modular<Givaro::Integer> >(q, 6, n/2, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::Modular<Givaro::Integer> >(q, (bits?bits:512), n/4, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(q, (bits?bits:80_ui64), n/6, mat_file, variant, iter, seed);
 
 		// if ((i+1)*100 % nbit == 0)
 		// 	std::cerr<<double(i+1)/nbit*100<<" % "<<std::endl;
