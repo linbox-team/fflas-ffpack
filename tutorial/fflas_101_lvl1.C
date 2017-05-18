@@ -33,7 +33,10 @@ This set is created using the givaro library.
 There had to be a choice between having a clean file and a clean display.
 The clean display has been adopted therefore the reader is invited
 to pay attention to what lines are used for display and what lines
-actually do the work.
+actually do the work. Extra lines have been added to display the
+code used to modify the matrices. For each example, there are three
+elements : the display of matrices before the changes, the commands
+and finally the matrices after the changes.
 
  */
 
@@ -58,20 +61,32 @@ int main(int argc, char** argv) {
   Y = fflas_new(F,ysize,one);
   Z = fflas_new(F,zsize,one);
 
+
+  std::cout <<"typedef Givaro::Modular<float> Float_Ring;" << std::endl;
+  std::cout <<"Float_Ring F(120);\n" << std::endl;
+  std::cout <<"Float_Ring::Element alpha,beta;  // scalars" << std::endl;
+  std::cout <<"Float_Ring::Element_ptr X, Y, Z; // vectors" << std::endl;
+  std::cout <<"const size_t xsize = 2, ysize = 2 , zsize = 2, one = 1, ld = 1;\n" << std::endl;
+
+  std::cout <<"X = fflas_new(F,xsize,one);" << std::endl;
+  std::cout <<"Y = fflas_new(F,ysize,one);" << std::endl;
+  std::cout <<"Z = fflas_new(F,zsize,one);" << std::endl;
+  
   // ===== manual initialisation =====
   
   F.init(*(X+0),  52);               // X[0] = 52
   F.init(  X[1], 183);               // X[1] = 63
 
   std::cout <<"\nInitialisation" << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  std::cout <<"F.init(*(X+0),  52);\nF.init(  X[1], 183); //(mod 120)"<< std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld,false) << std::endl;
 
   // ===== initialisation from a vector ===== ???
   /*  finit(F,2,Y,1,X,1);
 
-      write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-      write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+      write_field(F, std::cout << "X=\n", X, 2, 1, 1,true) << std::endl;
+      write_field(F, std::cout << "Y=\n", Y, ysize, one, one,true) << std::endl;
   */
 
   // ===== modular reduction =====
@@ -79,26 +94,30 @@ int main(int argc, char** argv) {
   
   typedef Givaro::Modular<float> Ring;
   Ring F2(2);
-  freduce(F2,2,Y,1);      // reduce Y modulo F2 inplace
-
-  std::cout << "\nY mod 2 inplace" << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
-
+  std::cout << "Ring F2(2);" << std::endl;
+  
   freduce(F2,2,X,1,Y,1);  // reduce X modulo F2 and store in Y
   
   std::cout << "\nY := X mod 2" << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  std::cout << "freduce(F2,2,X,1,Y,1);"<< std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld,false) << std::endl;
 
+  freduce(F2,2,X,1);      // reduce X modulo F2 inplace
+
+  std::cout << "\nY=X mod 2 inplace" << std::endl;
+  std::cout << "freduce(F2,2,Y,1);"<< std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld,false) << std::endl;
 
   // ===== negation =====
   fnegin(F,2,X,1);        // X := -X
   fneg(F,2,X,1,Y,1);      // Y := -X
 
   std::cout << "\n=== Negations ===" << std::endl;
-  std::cout << "\nX := -X" << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
+  std::cout << "\nX  = -X" << std::endl;
+  write_field(F, std::cout << "X=", X, xsize, one, ld,false) << std::endl;
   std::cout << "\nY := -X" << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld,false) << std::endl;
   
 
   // ===== addition / substraction =====
@@ -107,25 +126,32 @@ int main(int argc, char** argv) {
   F.init(Y[0],2); F.assign(Y[1],F.one); // Y := (2;1)
 
   std::cout << "\n=== Additions / Substractions ===" << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld,false) << std::endl;
+  write_field(F, std::cout << "Z=\n", Z, zsize, one, ld,false) << std::endl;
 
   fadd(F,2,X,1,Y,1,Z,1);  // Z := X + Y
   fsub(F,2,Z,1,Y,1,X,1);  // X := Z - Y
 
   std::cout << "\nZ := X + Y"  << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
+  std::cout << "fadd(F,2,X,1,Y,1,Z,1);" << std::endl;
+  write_field(F, std::cout << "Z=\n", Z, zsize, one, ld,false) << std::endl;
   std::cout << "\nX := Z - Y"  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  std::cout << "fsub(F,2,Z,1,Y,1,X,1);" << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
 
   // ===== scalar times vector =====
   F.init(alpha,42); // the scalar is scalar with respect to F
-  fscal(F,2,alpha,X,1,Y,1); // Y = alpha * X
+  fscal(F,2,alpha,X,1,Y,1); // Y=\n alpha * X
 
   std::cout << "\n=== Scalar times vector ===" << std::endl;
-  write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  std::cout << "F.init(alpha,42);"  << std::endl;
+  write_field(F, std::cout << "X=\n", X, 2, 1, 1,false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, one,false) << std::endl;
+  std::cout << "Y=\n alpha * X" << std::endl;
+  std::cout << "\nfscal(F,2,alpha,X,1,Y,1);" << std::endl;
+  write_field(F, std::cout << "X=\n", X, 2, 1, 1,false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, one,false) << std::endl;
 
   
   
@@ -134,58 +160,64 @@ int main(int argc, char** argv) {
   // to use faxpy due to processor optimisation
 
   std::cout << "\n=== Linear Combinations ==="  << std::endl;
-  write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  write_field(F, std::cout << "X=\n", X, 2, 1, 1,false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, one, false) << std::endl;
 
   faxpy(F,2,alpha,X,1,Y,1); // Y := alpha * X + Y
 
   std::cout << "\nY := alpha * X + Y"  << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  std::cout << "faxpy(F,2,alpha,X,1,Y,1);" << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, one,false) << std::endl;
 
   // faxpby is a more general form of faxpy
 
   //F.init(beta,14);
-  //faxpby(F,2,alpha,X,1,beta,Y,1); // Y = alpha * X + beta * Y
+  //faxpby(F,2,alpha,X,1,beta,Y,1); // Y=\n alpha * X + beta * Y
 
   // ===== dot product (scalar product) =====
   
   std::cout << "\n=== Dot Product ==="  << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  write_field(F, std::cout << "Z=\n", Z, zsize, one, ld,false) << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
   
   fdot(F,2,Z,1,X,1); // X := Z^T dot X
 
   std::cout << "\nX := Z^T dot X"  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  std::cout << "fdot(F,2,Z,1,X,1);" << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
+  write_field(F, std::cout << "Z=\n", Z, zsize, one, ld,false) << std::endl;
 
   // ===== tests =====
   bool b;
   F.init(Z[0], 0); F.init(Z[1], 120);
   
   std::cout << "\n=== Tests ==="  << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  std::cout << "F.init(Z[0], 0); F.init(Z[1], 120);"  << std::endl;
+  write_field(F, std::cout << "Z=\n", Z, zsize, one, ld,false) << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld,false) << std::endl;
 
   
   b = fiszero(F,2,Z,1); // TRUE if X is zero vector in F
-
-  std::cout << "Z == zero_vector : " << b << std::endl;
+  std::cout << "b = fiszero(F,2,Z,1);" << b << std::endl;
+  std::cout << "Z=\n= zero_vector : " << b << std::endl;
   
   b = fequal(F,2,Z,1,X,1); // TRUE if X and Y are equivalent in F
-
-  std::cout << "Z == X : " << b << std::endl;
+  
+  std::cout << "b = fequal(F,2,Z,1,X,1);" << b << std::endl;
+  std::cout << "Z = X : " << b << std::endl;
   
   // ===== swap  =====
 
   std::cout << "\n=== Swap ==="  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld, false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld, false) << std::endl;
 
   fswap(F,2,X,1,Y,1);   // exchanges X and Y;
 
   std::cout << "\nX <-> Y"  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  std::cout << "fswap(F,2,X,1,Y,1);" << std::endl;
+  write_field(F, std::cout << "X=\n", X, xsize, one, ld, false) << std::endl;
+  write_field(F, std::cout << "Y=\n", Y, ysize, one, ld, false) << std::endl;
   
   
 } // End main
