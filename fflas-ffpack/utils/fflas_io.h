@@ -194,7 +194,7 @@ namespace FFLAS{
 					c << ']';
 					if (i < m-1) c << ", ";
 				}
-				c << "]);\n";
+				c << "])\n";
 				break;
 			case FflasMaple:
 				c << "Matrix (";
