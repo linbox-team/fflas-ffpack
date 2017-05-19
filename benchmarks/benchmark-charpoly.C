@@ -60,9 +60,10 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 		}
 		else{
 			A = FFLAS::fflas_new (F, n, n);
-			FFPACK::RandomMatrix (F, A, n, n, n, bits);
+			typename Field::RandIter G (F, bits);
+			FFPACK::RandomMatrix (F, n, n, A, n, G);
 		}
-		typename Givaro::Poly1Dom<Field>::Element cpol(n);
+		typename Givaro::Poly1Dom<Field>::Element cpol(n+1);
 		chrono.clear();
 		chrono.start();
 		FFPACK::CharPoly<Field, Givaro::Poly1Dom<Field> > (F, cpol, n, A, n, CT);
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
 	int variant =6;
 
 	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",  TYPE_INT , &q },
 		{ 'b', "-b B", "Set the bitsize of the random elements.",         TYPE_INT , &bits},
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },

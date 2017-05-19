@@ -134,11 +134,11 @@ namespace FFPACK {
 	}
 
 
-	template <class Field, class PolRing, class RandIter>
+	template <class Field, class PolRing>
 	typename PolRing::Element&
-	CharPoly( const Field& F, typename PolRing::Element& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/){
+	CharPoly (const Field& F, typename PolRing::Element& charp, const size_t N,
+			  typename Field::Element_ptr A, const size_t lda,
+			  typename Field::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/){
 		typedef typename PolRing::Element Polynomial;
 		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
 		

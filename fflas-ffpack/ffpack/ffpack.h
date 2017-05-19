@@ -906,11 +906,11 @@ namespace FFPACK { /* charpoly */
 	 * @param CharpTag the algorithmic variant
 	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
-	template <class Field, class PolRing, class RandIter>
+	template <class Field, class PolRing>
 	typename PolRing::Element&
 	CharPoly( const Field& F, typename PolRing::Element& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
-			  RandIter& G,
+			  typename Field::RandIter& G,
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
 
 	/**
@@ -928,7 +928,7 @@ namespace FFPACK { /* charpoly */
 			  typename Field::Element_ptr A, const size_t lda,
 			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg){
 		typename Field::RandIter G(F);
-		return CharPoly (F, charp, N, A, lda, G, CharpTag);
+		return CharPoly<Field,PolRing> (F, charp, N, A, lda, G, CharpTag);
 	}
 
 
