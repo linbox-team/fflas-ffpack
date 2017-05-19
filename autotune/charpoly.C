@@ -67,7 +67,7 @@ int main () {
 	Element * A = FFLAS::fflas_new (F, nmax, nmax);
 	Element * B = FFLAS::fflas_new (F, nmax, nmax);
 	size_t lda = nmax;
-	RandomMatrix (F, A, nmax, nmax, nmax);
+	RandomMatrix (F, nmax, nmax, A, nmax);
 	FFLAS::fassign (F, nmax,nmax, A, nmax, B, nmax);
 	typedef typename Givaro::Poly1Dom<Field>::Element Polynomial;
 	time_t result = std::time(NULL);

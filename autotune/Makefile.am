@@ -33,7 +33,6 @@ AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY)
 EXTRA_PROGRAMS=$(AUTOTUNE)
 EXTRA_DIST=tune_fgemm.sh tune_pluq.sh
 
-	cat fgemm-thresholds.h pluq-threshold.h charpoly-treshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
 define run_tune_fgemm
 	./tune_fgemm.sh
 endef	
@@ -44,7 +43,7 @@ define run_tune_charpoly
 	./tune_charpoly.sh
 endef
 define merge_thresholds
-	cat fgemm-thresholds.h pluq-threshold.h charpoly-treshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
+	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
 endef	
 
 # This forces the autotune runs to be sequential
@@ -72,7 +71,7 @@ autotune_fgemm: $(AUTOTUNE_FGEMM:%=%$(EXEEXT))
 
 autotune_pluq: $(AUTOTUNE_PLUQ:%=%$(EXEEXT))
 
-autotune_pluq: $(AUTOTUNE_CHARPOLY:%=%$(EXEEXT))
+autotune_charpoly: $(AUTOTUNE_CHARPOLY:%=%$(EXEEXT))
 
 pluq_SOURCES=pluq.C
 charpoly_Danilevskii_LUK_SOURCES=charpoly.C
