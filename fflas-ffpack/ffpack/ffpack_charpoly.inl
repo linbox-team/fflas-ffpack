@@ -91,7 +91,7 @@ namespace FFPACK {
 				do{
 					cont=false;
 					try {
-						CharpolyArithProg (F, charp, N, A, lda, __FFLASFFPACK_ARITHPROG_THRESHOLD, G);
+						Protected::CharpolyArithProg<Field,PolRing> (F, charp, N, A, lda, G);
 					}
 					catch (CharpolyFailed){
 						if (++attempts < 2)

@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas-ffpack/ffpack/ffpack_frobenius.inl
  * Copyright (C) 2007 Clement Pernet
@@ -36,63 +36,63 @@
 //
 //
 namespace FFPACK { namespace Protected {
-	template <class Field>
-	void CompressRows (Field& F, const size_t M,
-			   typename Field::Element_ptr A, const size_t lda,
-			   typename Field::Element_ptr tmp, const size_t ldtmp,
-			   const size_t * d, const size_t nb_blocs);
+template <class Field>
+void CompressRows (Field& F, const size_t M,
+				   typename Field::Element_ptr A, const size_t lda,
+				   typename Field::Element_ptr tmp, const size_t ldtmp,
+				   const size_t * d, const size_t nb_blocs);
 
-	template <class Field>
-	void CompressRowsQK (Field& F, const size_t M,
-			     typename Field::Element_ptr A, const size_t lda,
-			     typename Field::Element_ptr tmp, const size_t ldtmp,
-			     const size_t * d,const size_t deg, const size_t nb_blocs);
+template <class Field>
+void CompressRowsQK (Field& F, const size_t M,
+					 typename Field::Element_ptr A, const size_t lda,
+					 typename Field::Element_ptr tmp, const size_t ldtmp,
+					 const size_t * d,const size_t deg, const size_t nb_blocs);
 
-	template <class Field>
-	void DeCompressRows (Field& F, const size_t M, const size_t N,
-			     typename Field::Element_ptr A, const size_t lda,
-			     typename Field::Element_ptr tmp, const size_t ldtmp,
-			     const size_t * d, const size_t nb_blocs);
-	template <class Field>
-	void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
-			       typename Field::Element_ptr A, const size_t lda,
-			       typename Field::Element_ptr tmp, const size_t ldtmp,
-			       const size_t * d, const size_t deg, const size_t nb_blocs);
+template <class Field>
+void DeCompressRows (Field& F, const size_t M, const size_t N,
+					 typename Field::Element_ptr A, const size_t lda,
+					 typename Field::Element_ptr tmp, const size_t ldtmp,
+					 const size_t * d, const size_t nb_blocs);
 
-	template <class Field>
-	void CompressRowsQA (Field& F, const size_t M,
-			     typename Field::Element_ptr A, const size_t lda,
-			     typename Field::Element_ptr tmp, const size_t ldtmp,
-			     const size_t * d, const size_t nb_blocs);
-	template <class Field>
-	void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
-			       typename Field::Element_ptr A, const size_t lda,
-			       typename Field::Element_ptr tmp, const size_t ldtmp,
-			       const size_t * d, const size_t nb_blocs);
-	} // Protected
-} // FFPACK
+template <class Field>
+void DeCompressRowsQK (Field& F, const size_t M, const size_t N,
+					   typename Field::Element_ptr A, const size_t lda,
+					   typename Field::Element_ptr tmp, const size_t ldtmp,
+					   const size_t * d, const size_t deg, const size_t nb_blocs);
 
+template <class Field>
+void CompressRowsQA (Field& F, const size_t M,
+					 typename Field::Element_ptr A, const size_t lda,
+					 typename Field::Element_ptr tmp, const size_t ldtmp,
+					 const size_t * d, const size_t nb_blocs);
 
-template <class Field, class Polynomial, class RandIter>
-std::list<Polynomial>&
-FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
-			   const size_t N, typename Field::Element_ptr A, const size_t lda,
-			   const size_t c, RandIter& g)
+template <class Field>
+void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
+					   typename Field::Element_ptr A, const size_t lda,
+					   typename Field::Element_ptr tmp, const size_t ldtmp,
+					   const size_t * d, const size_t nb_blocs);
+
+template <class Field, class PolRing>
+std::list<typename PolRing::Element>&
+CharpolyArithProg (const Field& F, std::list<typename PolRing::Element>& frobeniusForm,
+				   const size_t N, typename Field::Element_ptr A, const size_t lda,
+				   typename Field::RandIter& g,
+				   const size_t block_size)
 {
-
-	FFLASFFPACK_check(c);
-
+	typedef typename PolRing::Element Polynomial;
+	FFLASFFPACK_check(block_size);
+	size_t c = block_size;
 	size_t * rp = FFLAS::fflas_new<size_t>(2*N);
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
 	size_t Nnoc = N*noc;
-
-	// Building the workplace matrix
+			
+		// Building the workplace matrix
 	typename Field::Element_ptr K  = FFLAS::fflas_new (F, Nnoc, c);
 	typename Field::Element_ptr K2 = FFLAS::fflas_new (F, Nnoc, c);
-	// for (size_t i = 0 ; i < Nnoc*c ; ++i)
-		// K[i] = F.zero;
+		// for (size_t i = 0 ; i < Nnoc*c ; ++i)
+				// K[i] = F.zero;
 	size_t ldk = N;
-
+	
 	size_t *dA = FFLAS::fflas_new<size_t>(N); //PA
 	size_t *dK = FFLAS::fflas_new<size_t>(noc*c);
 	for (size_t i=0; i<noc; ++i)
@@ -285,7 +285,7 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 		polyList.clear();
 
 		// Recursive call on the complementary subspace
-		CharpolyArithProg(F, polyList, Nrest, Arec, ldarec,c,g);
+		CharpolyArithProg<Field,PolRing>(F, polyList, Nrest, Arec, ldarec,g,c);
 		FFLAS::fflas_delete (Arec);
 		frobeniusForm.merge(polyList);
 	}
@@ -523,7 +523,6 @@ FFPACK::CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm,
 	return frobeniusForm;
 }
 
-namespace FFPACK { namespace Protected {
 template <class Field>
 void CompressRowsQK (Field& F, const size_t M,
 			   typename Field::Element_ptr A, const size_t lda,

@@ -974,6 +974,14 @@ namespace FFPACK { /* charpoly */
 		Danilevski (const Field& F, std::list<Polynomial>& charp,
 			    const size_t N, typename Field::Element_ptr A, const size_t lda);
 
+		template <class Field, class PolRing>
+		std::list<typename PolRing::Element>&
+		CharpolyArithProg (const Field& F, std::list<typename PolRing::Element>& frobeniusForm, const size_t N,
+						   typename Field::Element_ptr A, const size_t lda,
+						   typename Field::RandIter& G,
+						   const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+
+
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
@@ -988,11 +996,6 @@ namespace FFPACK { /* charpoly */
 // #include "ffpack_charpoly.inl"
 
 namespace FFPACK { /* frobenius, charpoly */
-
-	template <class Field, class Polynomial, class RandIter>
-	std::list<Polynomial>&
-	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm, const size_t N,
-					   typename Field::Element_ptr A, const size_t lda, const size_t c, RandIter& G);
 
 
 } // FFPACK frobenius
