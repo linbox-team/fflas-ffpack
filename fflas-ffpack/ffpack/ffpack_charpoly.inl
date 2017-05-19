@@ -44,25 +44,35 @@ namespace FFPACK {
 // 		FloatElement* Af = FFLAS::fflas_new<FloatElement>(N*N);
 // 		typename std::list< Polynomial<FloatElement> > charp_float;
 // 		fconvert(F, M, N, Af, N, A, lda);
-// //convertir aussi le poly
+// // also convert the polynomial
 // 		CharPoly (G, charp_float, N, Af, N, CharpTag);
 
 // 		finit(F, ma, Yf, 1, Y, incY);
 // 		fflas_delete (Af);
 // 		return charp;
 // 	}	
-	template <class Field, class PolRing, class RandIter>
+	template <class Field, class PolRing>
 	std::list<typename PolRing::Element>&
 	CharPoly (const Field& F, std::list<typename PolRing::Element>& charp, const size_t N,
-		  typename Field::Element_ptr A, const size_t lda,
-		  RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
+			  typename Field::Element_ptr A, const size_t lda,
+			  typename Field::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
 	{
 		// if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
 		//     Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
 		// 	if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 		// 		return CharPoly_convert <float,Field> (F, charp, N, A, lda, CharpTag);
 		// }
-		switch (CharpTag) {
+		FFPACK_CHARPOLY_TAG tag = CharpTag;
+		if (tag == FfpackAuto){
+				if (N < __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD)
+					tag = FfpackDanilevski;
+				else if (N< __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD)
+					tag = FfpackLUK;
+				else
+					tag = FfpackArithProg;
+		}
+		switch (tag){
+			case FfpackDanilevski: return Danilevski (F, charp, N, A, lda);
 			case FfpackLUK:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
@@ -70,16 +80,29 @@ namespace FFPACK {
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-			case FfpackKG:
+			case FfpackArithProg:
 			{
-				return Protected::KellerGehrig (F, charp, N, A, lda);
-					// break;
+				size_t attempts=0;
+				bool cont;
+
+				Givaro::Integer p = F.characteristic();
+				if (p < N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
+					return CharPoly<Field,PolRing> (F, charp, N, A, lda, G, FfpackLUK);
+				do{
+					cont=false;
+					try {
+						CharpolyArithProg (F, charp, N, A, lda, __FFLASFFPACK_ARITHPROG_THRESHOLD, G);
+					}
+					catch (CharpolyFailed){
+						if (++attempts < 2)
+							cont = true;
+						else
+							return CharPoly<Field,PolRing>(F, charp, N, A, lda, G, FfpackLUK);
+					}
+				} while (cont);
+				return charp;
 			}
-			case FfpackDanilevski:
-			{
-				return Danilevski (F, charp, N, A, lda);
-					// break;
-			}
+			case FfpackKG: return Protected::KellerGehrig (F, charp, N, A, lda);
 			case FfpackKGFast:
 			{
 				size_t mc, mb, j;
@@ -87,11 +110,6 @@ namespace FFPACK {
 					std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
 				}
 				return charp;
-					// break;
-			}
-			case FfpackKGFastG:
-			{
-				return Protected::KGFast_generalized (F, charp, N, A, lda);
 			}
 			case FfpackHybrid:
 			{
@@ -100,29 +118,7 @@ namespace FFPACK {
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-			case FfpackArithProg:
-			{
-				size_t attempts=0;
-				bool cont = false;
-
-				Givaro::Integer p = F.characteristic();
-				// Heuristic condition (the pessimistic theoretical one being p<2n^2.
-				if (p < N || N < __FFPACK_CHARPOLY_THRESHOLD){
-					return CharPoly<Field,PolRing> (F, charp, N, A, lda, G, FfpackLUK);
-				}					
-				do{
-					try {
-						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD, G);
-					}
-					catch (CharpolyFailed){
-						if (attempts++ < 2)
-							cont = true;
-						else
-							return CharPoly<Field,PolRing>(F, charp, N, A, lda, G, FfpackLUK);
-					}
-				} while (cont);
-				return charp;
-			}
+			case FfpackKGFastG:	return Protected::KGFast_generalized (F, charp, N, A, lda);
 			default:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
@@ -138,7 +134,7 @@ namespace FFPACK {
 	typename PolRing::Element&
 	CharPoly (const Field& F, typename PolRing::Element& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag/*= FfpackArithProg*/){
+			  typename Field::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
 		typedef typename PolRing::Element Polynomial;
 		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
 		

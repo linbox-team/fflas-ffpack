@@ -58,8 +58,16 @@
 #define __FFPACK_LUDIVINE_CUTOFF 0
 #endif
 
-#ifndef __FFPACK_CHARPOLY_THRESHOLD
-#define __FFPACK_CHARPOLY_THRESHOLD 30
+#ifndef __FFLASFFPACK_ARITHPROG_THRESHOLD
+#define __FFLASFFPACK_ARITHPROG_THRESHOLD 30
+#endif
+
+#ifndef __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD
+#define __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD 1000
+#endif
+
+#ifndef __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD
+#define __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD 16
 #endif
 
 #ifndef __FFPACK_FSYTRF_THRESHOLD
@@ -87,13 +95,14 @@ namespace FFPACK  { /* tags */
 
 	enum FFPACK_CHARPOLY_TAG
 	{
-		FfpackLUK=1,
-		FfpackKG=2,
-		FfpackHybrid=3,
-		FfpackKGFast=4,
-		FfpackDanilevski=5,
-		FfpackArithProg=6,
-		FfpackKGFastG=7
+		FfpackAuto = 0,
+		FfpackDanilevski = 1,
+		FfpackLUK = 2,
+		FfpackArithProg = 3,
+		FfpackKG = 4,
+		FfpackKGFast = 5,
+		FfpackHybrid = 6,
+		FfpackKGFastG = 7
 	};
 /* \endcond */
 	class CharpolyFailed{};
@@ -884,17 +893,12 @@ namespace FFPACK { /* charpoly */
 	 * @param CharpTag the algorithmic variant
 	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
-    template <class Field, class PolRing, class RandIter>
+    template <class Field, class PolRing>
 	std::list<typename PolRing::Element>&
 	CharPoly( const Field& F, std::list<typename PolRing::Element>& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
-			  RandIter& G,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
-
-	/* \cond */
-	template<class Polynomial, class Field>
-	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
-	/* \endcond */
+			  typename Field::RandIter& G,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
 
 	/**
 	 * @brief Compute the characteristic polynomial of the matrix A.
@@ -911,7 +915,7 @@ namespace FFPACK { /* charpoly */
 	CharPoly( const Field& F, typename PolRing::Element& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
 			  typename Field::RandIter& G,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
 
 	/**
 	 * @brief Compute the characteristic polynomial of the matrix A.
@@ -926,7 +930,7 @@ namespace FFPACK { /* charpoly */
 	typename PolRing::Element&
 	CharPoly( const Field& F, typename PolRing::Element& charp, const size_t N,
 			  typename Field::Element_ptr A, const size_t lda,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg){
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto){
 		typename Field::RandIter G(F);
 		return CharPoly<Field,PolRing> (F, charp, N, A, lda, G, CharpTag);
 	}

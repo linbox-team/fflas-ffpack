@@ -57,6 +57,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 {
 	std::ostringstream oss;
 	switch (CT){
+	    case FfpackAuto: oss<<"Automated variant choice"; break;
 	    case FfpackLUK: oss<<"LUKrylov variant"; break;
 	    case FfpackKG: oss<<"Keller-Gehrig variant"; break;
 	    case FfpackDanilevski: oss<<"Danilevskii variant"; break;
@@ -69,7 +70,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	F.write(oss<<" over ");
 	std::cout.fill('.');
 	std::cout<<"Checking ";
-	std::cout.width(65);
+	std::cout.width(70);
 	std::cout<<oss.str();
 	std::cout<<"...";
 
@@ -126,14 +127,15 @@ template<class Field>
 bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::string file, int variant, size_t iter, size_t seed){
 	FFPACK::FFPACK_CHARPOLY_TAG CT;
 	switch (variant){
-	    case 1: CT = FfpackLUK; break;
-	    case 2: CT = FfpackKG; break;
-	    case 3: CT = FfpackDanilevski; break;
-	    case 4: CT = FfpackKGFast; break;
-	    case 5: CT = FfpackKGFastG; break;
+	    case 0: CT = FfpackAuto; break;
+	    case 1: CT = FfpackDanilevski; break;
+	    case 2: CT = FfpackLUK; break;
+	    case 3: CT = FfpackArithProg; break;
+	    case 4: CT = FfpackKG; break;
+	    case 5: CT = FfpackKGFast; break;
 	    case 6: CT = FfpackHybrid; break;
-	    case 7: CT = FfpackArithProg; break;
-	    default: CT = FfpackLUK; break;
+	    case 7: CT = FfpackKGFastG; break;
+	    default: CT = FfpackAuto; break;
 	}
 
 	bool passed = true;
@@ -161,13 +163,14 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 		if (variant) // User provided variant
 			passed &= launch_test<Field>(*F, n, A, lda, iter, R, CT);
 		else{ // No variant specified, testing them all
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
-				//passed &= launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
 			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackDanilevski);
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
+			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackAuto);
+				//passed &= launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
 				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFast); // generic: does not work with any matrix
 				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFastG); // generic: does not work with any matrix
 				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackHybrid); // fails with small characteristic
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
 		}
 		FFLAS::fflas_delete (A);
 		delete F;
@@ -179,8 +182,8 @@ int main(int argc, char** argv)
 {
 	Givaro::Integer q = -1; // characteristic
 	uint64_t     bits = 0;       // bit size
-	size_t       iter = 5; // repetitions
-	size_t       n = 400;
+	size_t       iter = 3; // repetitions
+	size_t       n = 300;
 	std::string  file = "" ; // file where
 	bool loop = false; // loop infintely
 	std::string  mat_file = "" ; // input matrix file 
@@ -215,7 +218,7 @@ int main(int argc, char** argv)
 		passed &= run_with_field<Givaro::Modular<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
 		passed &= run_with_field<Givaro::Modular<Givaro::Integer> >(q, 6, n/2, mat_file, variant, iter, seed);
 		passed &= run_with_field<Givaro::Modular<Givaro::Integer> >(q, (bits?bits:512), n/4, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(q, (bits?bits:80_ui64), n/6, mat_file, variant, iter, seed);
+		passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(q, (bits?bits:80_ui64), n/4, mat_file, variant, iter, seed);
 
 		// if ((i+1)*100 % nbit == 0)
 		// 	std::cerr<<double(i+1)/nbit*100<<" % "<<std::endl;
