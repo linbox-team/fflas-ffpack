@@ -42,7 +42,7 @@ define run_tune_pluq
 endef	
 define run_tune_charpoly
 	./tune_charpoly.sh
-
+endef
 define merge_thresholds
 	cat fgemm-thresholds.h pluq-threshold.h charpoly-treshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
 endef	
