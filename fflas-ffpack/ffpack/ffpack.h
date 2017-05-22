@@ -37,6 +37,7 @@
 #ifndef __FFLASFFPACK_ffpack_H
 #define __FFLASFFPACK_ffpack_H
 
+#include "givaro/givpoly1.h"
 #include <fflas-ffpack/fflas-ffpack-config.h>
 
 #ifdef __FFLASFFPACK_USE_OPENMP

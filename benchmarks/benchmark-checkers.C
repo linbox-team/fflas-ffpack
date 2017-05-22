@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
 	srand (seed);
 
 	typedef Givaro::Modular<double> Field;
-	typedef std::vector<Field::Element> Polynomial;
+	typedef Givaro::Poly1Dom<Field> PolRing;
+	typedef PolRing::Element Polynomial;
 
 	Field F(q);
 	Field::RandIter Rand(F,0,seed);
@@ -276,7 +277,7 @@ int main(int argc, char** argv) {
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
-			FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
+			FFPACK::CharPoly<Field,PolRing>(F,g,n,A,n,FFPACK::FfpackLUK);
 			chrono.stop(); time2 += chrono.usertime();
 
 			chrono.clear(); chrono.start();

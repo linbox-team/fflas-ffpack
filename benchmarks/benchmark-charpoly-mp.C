@@ -57,14 +57,15 @@ int main(int argc, char** argv) {
   typedef Givaro::ZRing<Givaro::Integer> Field;
   FFPACK::FFPACK_CHARPOLY_TAG CT;
   switch (variant){
-      case 0: CT = FFPACK::FfpackLUK; break;
-      case 1: CT = FFPACK::FfpackKG; break;
+      case 0: CT = FFPACK::FfpackAuto; break;
+      case 1: CT = FFPACK::FfpackLUK; break;
       case 2: CT = FFPACK::FfpackDanilevski; break;
-      case 3: CT = FFPACK::FfpackKGFast; break;
-      case 4: CT = FFPACK::FfpackKGFastG; break;
-      case 5: CT = FFPACK::FfpackHybrid; break;
-      case 6: CT = FFPACK::FfpackArithProg; break;
-      default: CT = FFPACK::FfpackLUK; break;
+      case 3: CT = FFPACK::FfpackArithProg; break;
+      case 4: CT = FFPACK::FfpackKG; break;
+      case 5: CT = FFPACK::FfpackKGFast; break;
+      case 6: CT = FFPACK::FfpackHybrid; break;
+      case 7: CT = FFPACK::FfpackKGFastG; break;
+      default: CT = FFPACK::FfpackAuto; break;
   }
   typedef Field::Element Element;
 
@@ -87,15 +88,16 @@ int main(int argc, char** argv) {
 	G.random(*(A+j));
     }
 
-    std::vector<Field::Element> cpol(n);
+	  typedef Givaro::Poly1Dom<Field> PolRing;
+	  PolRing::Element cpol;
     chrono.clear();
     chrono.start();
-    FFPACK::CharPoly (F, cpol, n, A, n, CT);
+    FFPACK::CharPoly<Field,PolRing> (F, cpol, n, A, n, CT);
     chrono.stop();
 
     time+=chrono.usertime();
    
-    bs = FFPACK::bitsize (n,n,A,n);
+    bs = FFLAS::bitsize (F,n,n,A,n);
     FFLAS::fflas_delete( A);
 
   }
