@@ -72,14 +72,17 @@ void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 					   typename Field::Element_ptr tmp, const size_t ldtmp,
 					   const size_t * d, const size_t nb_blocs);
 
-template <class Field, class PolRing>
+template <class PolRing>
 std::list<typename PolRing::Element>&
-CharpolyArithProg (const Field& F, std::list<typename PolRing::Element>& frobeniusForm,
-				   const size_t N, typename Field::Element_ptr A, const size_t lda,
-				   typename Field::RandIter& g,
+CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+				   const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+				   typename PolRing::Domain_t::RandIter& g,
 				   const size_t block_size)
 {
+	typedef typename PolRing::Domain_t Field;
 	typedef typename PolRing::Element Polynomial;
+	const Field& F = PR.getdomain();
+
 	FFLASFFPACK_check(block_size);
 	size_t c = block_size;
 	size_t * rp = FFLAS::fflas_new<size_t>(2*N);
@@ -285,7 +288,7 @@ CharpolyArithProg (const Field& F, std::list<typename PolRing::Element>& frobeni
 		polyList.clear();
 
 		// Recursive call on the complementary subspace
-		CharpolyArithProg<Field,PolRing>(F, polyList, Nrest, Arec, ldarec,g,c);
+		CharpolyArithProg (PR, polyList, Nrest, Arec, ldarec,g,c);
 		FFLAS::fflas_delete (Arec);
 		frobeniusForm.merge(polyList);
 	}

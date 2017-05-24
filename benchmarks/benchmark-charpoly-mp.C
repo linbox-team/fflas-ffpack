@@ -79,27 +79,27 @@ int main(int argc, char** argv) {
   for (size_t i=0;i<iter;++i){
 
 	  if (!file.empty()){
-		A = read_field (F, file.c_str(), &n, &n);
-    }
-    else{
-      A = FFLAS::fflas_new<Element>(n*n);
-      Field::RandIter G(F,size);
-      for (size_t j=0; j< (size_t)n*n; ++j)
-	G.random(*(A+j));
-    }
+		  A = read_field (F, file.c_str(), &n, &n);
+	  }
+	  else{
+		  A = FFLAS::fflas_new<Element>(n*n);
+		  Field::RandIter G(F,size);
+		  for (size_t j=0; j< (size_t)n*n; ++j)
+			  G.random(*(A+j));
+	  }
 
 	  typedef Givaro::Poly1Dom<Field> PolRing;
+	  PolRing R(F);
 	  PolRing::Element cpol;
-    chrono.clear();
-    chrono.start();
-    FFPACK::CharPoly<Field,PolRing> (F, cpol, n, A, n, CT);
-    chrono.stop();
+	  chrono.clear();
+	  chrono.start();
+	  FFPACK::CharPoly (R, cpol, n, A, n, CT);
+	  chrono.stop();
 
-    time+=chrono.usertime();
-   
-    bs = FFLAS::bitsize (F,n,n,A,n);
-    FFLAS::fflas_delete( A);
+	  time+=chrono.usertime();
 
+	  bs = FFLAS::bitsize (F,n,n,A,n);
+	  FFLAS::fflas_delete( A);
   }
   
 	// -----------

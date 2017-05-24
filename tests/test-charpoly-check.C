@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 	Field::RandIter Rand(F,0,seed);
         typedef Givaro::Poly1Dom<Field> PolRing;
         typedef PolRing::Element Polynomial;
-
+        PolRing R(F);
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
         
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 //             write_field(F,std::cerr<<"A=",A,N,N,N,true) <<std::endl;
 //             FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
             Givaro::Timer charpolytime; charpolytime.start();
-            FFPACK::CharPoly<Field,PolRing>(F,g,N,A,N,CPalg);
+            FFPACK::CharPoly (R,g,N,A,N,CPalg);
             charpolytime.stop();
             std::cerr << "CHARPol checked full: " << charpolytime << std::endl;
 //             printPolynomial(F,g);

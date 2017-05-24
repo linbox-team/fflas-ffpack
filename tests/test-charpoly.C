@@ -74,7 +74,8 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	std::cout<<oss.str();
 	std::cout<<"...";
 
-	typedef typename Givaro::Poly1Dom<Field>::Element Polynomial;
+	typedef typename Givaro::Poly1Dom<Field> PolRing;
+	typedef typename PolRing::Element Polynomial;
 	Polynomial charp(n+1);
 
 	typename Field::Element_ptr B = FFLAS::fflas_new(F, n,n);
@@ -82,7 +83,9 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 
 	Checker_charpoly<Field,Polynomial> checker(F,n,A,lda);
 
-	FFPACK::CharPoly<Field,typename Givaro::Poly1Dom<Field> > (F, charp, n, A, lda, G, CT);
+	PolRing R(F);
+
+	FFPACK::CharPoly (R, charp, n, A, lda, G, CT);
 
 	 try{
 	 	checker.check(charp);

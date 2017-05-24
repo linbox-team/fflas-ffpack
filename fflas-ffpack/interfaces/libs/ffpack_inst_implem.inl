@@ -216,8 +216,7 @@ namespace FFPACK {
 
 	template INST_OR_DECL
 	std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element>&
-	CharPoly<FFLAS_FIELD<FFLAS_ELT>,Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> > >
-	         (const FFLAS_FIELD<FFLAS_ELT>& F,
+	CharPoly (const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
 			  std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> & charp,
 			  const size_t N,
 			  FFLAS_ELT* A, const size_t lda,
@@ -234,16 +233,14 @@ namespace FFPACK {
 	
 	template INST_OR_DECL
 	Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element&
-	CharPoly<FFLAS_FIELD<FFLAS_ELT>,Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> > >
-	        (const FFLAS_FIELD<FFLAS_ELT>& F,
+	CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
 			 Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
 			 const size_t N, FFLAS_ELT* A, const size_t lda,
 			 FFLAS_FIELD<FFLAS_ELT>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag);
 
 	template INST_OR_DECL
 	Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element&
-	CharPoly<FFLAS_FIELD<FFLAS_ELT>,Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> > >
-	        (const FFLAS_FIELD<FFLAS_ELT>& F,
+	CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
 			 Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
 			 const size_t N, FFLAS_ELT* A, const size_t lda,
 			 const FFPACK_CHARPOLY_TAG CharpTag);

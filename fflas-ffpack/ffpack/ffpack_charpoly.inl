@@ -51,17 +51,20 @@ namespace FFPACK {
 // 		fflas_delete (Af);
 // 		return charp;
 // 	}	
-	template <class Field, class PolRing>
+	template <class PolRing>
 	std::list<typename PolRing::Element>&
-	CharPoly (const Field& F, std::list<typename PolRing::Element>& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
+	CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  typename PolRing::Domain_t::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
 	{
-		// if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
-		//     Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
+		// if (Protected::AreEqual<PolRing::Domain_t, Givaro::Modular<double> >::value ||
+		//     Protected::AreEqual<PolRing::Domain_t, Givaro::ModularBalanced<double> >::value){
 		// 	if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
-		// 		return CharPoly_convert <float,Field> (F, charp, N, A, lda, CharpTag);
+		// 		return CharPoly_convert <float,PolRing::Domain_t> (F, charp, N, A, lda, CharpTag);
 		// }
+		typedef typename PolRing::Domain_t Field;
+		const Field& F = R.getdomain();
+
 		FFPACK_CHARPOLY_TAG tag = CharpTag;
 		if (tag == FfpackAuto){
 				if (N < __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD)
@@ -87,17 +90,17 @@ namespace FFPACK {
 
 				Givaro::Integer p = F.characteristic();
 				if (p < N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
-					return CharPoly<Field,PolRing> (F, charp, N, A, lda, G, FfpackLUK);
+					return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
 				do{
 					cont=false;
 					try {
-						Protected::CharpolyArithProg<Field,PolRing> (F, charp, N, A, lda, G);
+						Protected::CharpolyArithProg (R, charp, N, A, lda, G);
 					}
 					catch (CharpolyFailed){
 						if (++attempts < 2)
 							cont = true;
 						else
-							return CharPoly<Field,PolRing>(F, charp, N, A, lda, G, FfpackLUK);
+							return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
 					}
 				} while (cont);
 				return charp;
@@ -130,24 +133,25 @@ namespace FFPACK {
 	}
 
 
-	template <class Field, class PolRing>
+	template <class PolRing>
 	typename PolRing::Element&
-	CharPoly (const Field& F, typename PolRing::Element& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  typename Field::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+	CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  typename PolRing::Domain_t::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+
+		typedef typename PolRing::Domain_t Field;
 		typedef typename PolRing::Element Polynomial;
-		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
+		Checker_charpoly<Field,Polynomial> checker(R.getdomain(),N,A,lda);
 		
 		std::list<Polynomial> factor_list;
-		CharPoly<Field,PolRing> (F, factor_list, N, A, lda, G, CharpTag);
-		typename std::list<Polynomial >::const_iterator it;
+		CharPoly (R, factor_list, N, A, lda, G, CharpTag);
+		typename std::list<Polynomial>::const_iterator it;
 		it = factor_list.begin();
 
-		PolRing PR(F);
-		PR.init(charp, N+1);
-		PR.assign (charp, *(it++));
+		R.init(charp, N+1);
+		R.assign (charp, *(it++));
 		while( it!=factor_list.end() ){
-			PR.mulin(charp, *it);
+			R.mulin(charp, *it);
 			it++;
 		}
 

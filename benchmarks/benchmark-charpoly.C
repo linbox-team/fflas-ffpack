@@ -64,9 +64,10 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 			FFPACK::RandomMatrix (F, n, n, A, n, G);
 		}
 		typename Givaro::Poly1Dom<Field>::Element cpol(n+1);
+		typename Givaro::Poly1Dom<Field> R(F);
 		chrono.clear();
 		chrono.start();
-		FFPACK::CharPoly<Field, Givaro::Poly1Dom<Field> > (F, cpol, n, A, n, CT);
+		FFPACK::CharPoly (R, cpol, n, A, n, CT);
 		chrono.stop();
 
 		time_charp+=chrono.usertime();
