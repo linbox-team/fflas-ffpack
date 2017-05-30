@@ -55,7 +55,7 @@ typedef Givaro::ModularBalanced<double> Field;
 int main(int argc, char** argv)
 {
 
-	int n;
+	size_t  n;
 	int nbit=atoi(argv[3]); // number of times the product is performed
 	cerr<<setprecision(10);
 

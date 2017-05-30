@@ -39,9 +39,9 @@ namespace FFPACK {
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 			const size_t N, typename Field::Element_ptr A, const size_t lda)
 	{
-		std::cout << "rec call" << std::endl;
+			//	std::cout << "rec call" << std::endl;
 		if (!N) return;
-		if (N <= 5){ // base case
+		if (N <= 6){ // base case
 			if (Uplo == FFLAS::FflasUpper){
 				for(size_t li = N-1; li < N; li--){ // since li is size_t when it goes below 0 it will overflow above size
 					if(Diag == FFLAS::FflasNonUnit)
@@ -49,7 +49,7 @@ namespace FFPACK {
 					for(size_t co = N-1; co > li; co--){
 						fgemv(F,FFLAS::FflasNoTrans,1,co-li,
 							  A[li*(lda+1)],               // diagonal element of the current line
-							  (A+li*(lda+1)+1),1,          // horizontal vector starting after the diagonal left of the current element
+							  (A+li*(lda+1)+1),lda,          // horizontal vector starting after the diagonal left of the current element
 							  (A+co+lda*(li+1)),lda,       // vertical vector starting below the current element
 							  F.zero,(A+co+lda*li),lda);   // The currrent element
 						F.negin(A[co+lda*li]);
