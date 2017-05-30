@@ -46,8 +46,6 @@
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "fflas-ffpack/utils/Matio.h"
-
 using namespace std;
 typedef Givaro::Modular<double> Field;
 
@@ -99,15 +97,9 @@ int main(int argc, char** argv)
 	double * B = FFLAS::fflas_new<double>(N*N) ;
 	FFLAS::fassign(F,N*N,A,1,B,1);
 
-	// write_field(F, cerr, A, N, N, N);
-
 	FFPACK::Protected::CompressRowsQK (F, N, A+9*N, N, tmp, N, deg+3, 4, 3 );
 
-	// write_field(F, cerr, A, N, N, N);
-
 	FFPACK::Protected::DeCompressRowsQK (F, N, N-9, A+9*N, N, tmp, N, deg+3, 4, 3 );
-
-	// write_field(F, cerr, A, N, N, N);
 
 	int ok = 0 ;
 	for (size_t i = 0 ; i < (size_t)N * (size_t)N ; ++i)

@@ -140,9 +140,9 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 	cout<<ss;
 
 
-	 // write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
-	 // write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
-	 // write_field (F, std::cerr<<"D = "<<std::endl,D,k,1,incD);
+	 // FFLAS::WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+	 // FFLAS::WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
+	 // FFLAS::WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear(); t.start();
@@ -153,8 +153,8 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 	time+=t.usertime();
 
 	// std::cerr<<"After fsyrk_diag"<<std::endl;
-	//  write_field (F, std::cerr<<"A = "<<std::endl,A,Arows, Acols, lda);
-	//  write_field (F, std::cerr<<"C = "<<std::endl,C,n,n,ldc);
+	//  FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+	//  FFLAS::WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
 
 	bool ok = true;
 	

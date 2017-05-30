@@ -37,9 +37,9 @@
 using namespace std;
 //#include "fflas-ffpack/field/modular-int.h"
 //#include "fflas-ffpack/field/modular-positive.h"
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "givaro/givintprime.h"
 
@@ -147,8 +147,8 @@ int main(int argc, char** argv){
 				for (size_t i=0; i<M; ++i)
 					F.assign(*(H+i*N+j), zero);
 
-// 		write_field(F,cerr<<"G = "<<endl,G,M,M,M);
-// 		write_field(F,cerr<<"H = "<<endl,H,M,N,N);
+// 		FFLAS::WriteMatrix (cerr<<"G = "<<endl,F,M,M,G,M);
+// 		FFLAS::WriteMatrix (cerr<<"H = "<<endl,F,M,N,H,N);
 		A = FFLAS::fflas_new<Field::Element>(M*N);
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M, N, M, one, G, M, H, N, zero, A, N);
 		FFLAS::fflas_delete( G);
@@ -174,7 +174,7 @@ int main(int argc, char** argv){
 		tim.stop();
 
 
-		//write_field(F,cerr<<"Result = "<<endl,Abis,M,N,lda);
+		//FFLAS::WriteMatrix (cerr<<"Result = "<<endl,F,M,N,Abis,lda);
 
 		if (ta == FFLAS::FflasNoTrans){
 
@@ -195,8 +195,8 @@ int main(int argc, char** argv){
 					F.assign( *(L+i*M+j), zero);
 			}
 
-			//write_field(F,cerr<<"L = "<<endl,L,M,M,M);
-			//write_field(F,cerr<<"U = "<<endl,U,M,N,N);
+			//FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,M,M,U,M);
+			//FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,M,N,U,N);
 			FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans,
 					M,0,(int) R, L, M, Q);
 			for ( size_t  i=0; i<M; ++i )
@@ -252,8 +252,8 @@ int main(int argc, char** argv){
 					F.assign (*(L+i*(N+1)),one);
 				}
 			}
-			// write_field(F,cerr<<"L = "<<endl,L,M,N,N);
-// 			write_field(F,cerr<<"U = "<<endl,U,N,N,N);
+			// FFLAS::WriteMatrix (cerr<<"L = "<<endl,F,M,N,L,N);
+// 			FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,N,N,U,N);
 
 			FFPACK::applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 					N,0,(int) R, L, N, P);
@@ -268,8 +268,8 @@ int main(int argc, char** argv){
 					keepon = false;
 				}
 
-		//write_field(F,cerr<<"X = "<<endl,X,m,n,n);
-		//write_field(F,cerr<<"B = "<<endl,B,m,n,n);
+		//FFLAS::WriteMatrix (cerr<<"X = "<<endl,F,m,n,X,n);
+		//FFLAS::WriteMatrix (cerr<<"B = "<<endl,F,m,n,B,n);
 
 		if (keepon){
 			cout<<"R = "<<R
@@ -285,9 +285,9 @@ int main(int argc, char** argv){
 		}
 		else{
 			cerr<<"Abis = "<<endl;
-			write_field( F, cerr, Abis, (int) M, (int) N, (int) N );
+			FFLAS::WriteMatrix (cerr, F, M, N, Abis, N);
 			cerr<<"X = "<<endl;
-			write_field( F, cerr, X, (int) M, (int) N, (int) N );
+			FFLAS::WriteMatrix (cerr, F, M, N, X, N);
 		}
 	}
 	cout<<endl;

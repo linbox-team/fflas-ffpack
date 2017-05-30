@@ -39,7 +39,7 @@
 #include <givaro/modular.h>
 
 #include "test-utils.h"
-#include "fflas-ffpack/utils/Matio.h"
+
 using namespace FFPACK;
 using namespace FFLAS;
 
@@ -70,10 +70,8 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 		typename Field::Element inv; F->init(inv);
 		{ // Testing is B ==  L D L^T
 			std::cout<<"Lower...";
-				//write_field(*F,std::cerr<<"A="<<std::endl,A,n,n,lda);
 			bool success=FFPACK::fsytrf (*F, FflasLower, n, A, lda, threshold);
 			if (!success) std::cerr<<"Non definite matrix"<<std::endl;
-				//write_field(*F,std::cerr<<"after fsytrf A = "<<std::endl,A,n,n,lda);
 
 				// copying L on L^T
 			for (size_t i=0; i<n; i++)
@@ -93,9 +91,8 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 		std::cout<<"Upper";
 			fassign (*F, n, n, B, lda, A, lda);
 
-				//write_field(*F,std::cerr<<"A="<<std::endl,A,n,n,lda);
 			bool success = FFPACK::fsytrf (*F, FflasUpper, n, A, lda, threshold);
-				//write_field(*F,std::cerr<<"after fsytrf A = "<<std::endl,A,n,n,lda);
+
 			if (!success) std::cerr<<"Non definite matrix"<<std::endl;
 				// copying U on U^T
 			for (size_t i=0; i<n; i++)

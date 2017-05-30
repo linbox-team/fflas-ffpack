@@ -42,7 +42,6 @@
 #include "fflas-ffpack/config-blas.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 #ifdef __FFLASFFPACK_USE_KAAPI
@@ -111,11 +110,6 @@ int main(int argc, char** argv) {
   
 
   for (size_t i=0;i<=iter;++i){
-
-	  // if (argc > 4){
-	  // 	  A = read_field (F, argv[4], &n, &n);
-	  // }
-	  // else{
 
       chrono.clear();
       if (p && p!=7){
