@@ -64,7 +64,7 @@ namespace FFPACK {
 		       size_t * P){
 
 		    // Construct the Krylov matrix K and eliminate it online
-		typename Field::Element_ptr U = FFLAS::fflas_new(F, 1, N);
+		typename Field::Element_ptr U = FFLAS::fflas_new(F, N);
 		bool allocP = false;
 		if (P==NULL){
 			allocP = true;
@@ -112,7 +112,7 @@ namespace FFPACK {
 		typename Field::Element_ptr Xi, Ui;
 		typename Field::RandIter g (F);
 		bool KeepOn=true;
-		typename Field::Element_ptr U = FFLAS::fflas_new (F, N, 1);
+		typename Field::Element_ptr U = FFLAS::fflas_new (F, N);
 		// Picking a non zero vector
 		do{
 			for (Ui=U, Xi = X; Ui<U+N; ++Ui, ++Xi){
