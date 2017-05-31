@@ -42,7 +42,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 	}
 	Field F(atoi(argv[1]));
 	Field::Element * A,*Ab;
-	A = read_field(F,argv[2],&n,&n);
+	FFLAS::ReadMatrix (argv[2],F,n,n,A);
 	Ab = FFLAS::fflas_new<Field::Element>(n*n);
 
 	for (int i=0; i<n;++i){
@@ -110,8 +110,8 @@ int main(int argc, char** argv)
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-		write_field (F,cerr<<"Ab="<<endl,Ab,n,n,n);
-		    //write_field (F,cerr<<"X="<<endl,X,n,n,n);
+		FFLAS::WriteMatrix (cerr<<"Ab="<<endl,F,n,n,Ab,n);
+		    //FFLAS::WriteMatrix (cerr<<"X="<<endl,F,n,n,X,n);
 	}else{
 
 		cerr<<"PASS"<<endl;

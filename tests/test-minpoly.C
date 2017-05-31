@@ -79,7 +79,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	FFPACK::NonZeroRandomMatrix(F, 1, n, V, ldv, G); 
 	FFLAS::fassign(F, n, V, 1, Vcst, 1); //MatVecMinPoly modifies V, we store it in Vcst beforehand
 
-	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, ldv);
+	FFPACK::MatVecMinPoly(F, minP, n, A, lda, V, 1);
 	FFLAS::fflas_delete(V);
 
 	/*Check that minP is monic*/

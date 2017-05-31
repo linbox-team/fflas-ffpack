@@ -39,9 +39,9 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 
@@ -52,7 +52,7 @@ typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 
-	int n;
+	size_t n;
 
 	cerr<<setprecision(10);
 	if (argc != 6)	{
@@ -69,7 +69,7 @@ int main(int argc, char** argv){
 	// size_t lda;
 	// size_t ldb;
 
-	A = read_field(F,argv[2],&n,&n);
+	FFLAS::ReadMatrix (argv[2],F,n,n,A);
 	int nbit=atoi(argv[3]); // number of times the product is performed
 
 	Field::Element alpha,beta;

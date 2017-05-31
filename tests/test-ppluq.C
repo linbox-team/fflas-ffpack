@@ -46,7 +46,7 @@ g++ -D__FFLASFFPACK_HAVE_CBLAS -Wall -g -fopenmp -O3 -march=native -mavx -I/home
 
 #define __FFLAS__TRSM_READONLY
 #define __PFTRSM_FOR_PLUQ
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include <givaro/modular-balanced.h>
 //#include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -198,7 +198,7 @@ int main(int argc, char** argv)
 
 	typename Field::Element* Acop;
     if (argc > 5) {
-        Acop = read_field(F,argv[5],&m,&n);
+		FFLAS::ReadMatrix (argv[5],F,m,n,Acop);
     } else {
         Field::RandIter G(F);
         Acop = FFLAS::fflas_new<Field::Element>(m*n);

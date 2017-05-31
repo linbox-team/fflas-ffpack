@@ -37,10 +37,10 @@
 //-------------------------------------------------------------------------
 
 #include <iostream>
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 using namespace std;
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -69,7 +69,8 @@ int main(int argc, char** argv){
 	Field F(atoi(argv[1]));
 	Field::Element one;
 	F.init(one, 1U);
-	Field::Element * A = read_field<Field> (F,argv[2],(int*)&m,(int*)&n);
+	Field::Element* A;
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
 	Field::Element * B = FFLAS::fflas_new<Field::Element>((m+n)*n);
 	for (size_t i=0; i<(n+m)*n;++i) *(B+i)=0;
@@ -91,8 +92,8 @@ int main(int argc, char** argv){
 		bk_idx++;
 		curr_row++;
 	}
-	write_field (F, cout<<"A = "<<endl, A,(int) m,(int) n,(int) n);
-	write_field (F, cout<<"B = "<<endl, B, (int) (m+n),(int) n,(int) n);
+	FFLAS::WriteMatrix (cout<<"A = "<<endl, F, m, n, A, n);
+	FFLAS::WriteMatrix (cout<<"B = "<<endl, F, (m+n), n,B, n);
 
 	size_t *rp = FFLAS::fflas_new<size_t>(n);
 

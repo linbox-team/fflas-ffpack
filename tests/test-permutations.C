@@ -35,10 +35,6 @@ Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
 
 #include "fflas-ffpack/ffpack/ffpack.h"
 
-#include "fflas-ffpack/utils/Matio.h"
-
-
-
 using namespace std;
 using namespace FFLAS;
 using namespace FFPACK;
@@ -65,11 +61,7 @@ bool checkMonotonicApplyP(FFLAS_SIDE Side, FFLAS_TRANSPOSE trans, size_t * P, si
 
 	fassign(F, N,M, A, lda, B, ldb);
 
-    write_field(F, std::cerr<<"Before MonotonicApplyP, A = "<<std::endl, A, N,M, lda);
-
 	MonotonicApplyP (F, FflasLeft, FflasNoTrans, M, 0, N, A, lda, P, R);
-
-    write_field(F, std::cerr<<"After MonotonicApplyP, A = "<<std::endl, A, N,M, lda);
 
 		// checking that cols have not been permuted
 	typename Field::Element x;
