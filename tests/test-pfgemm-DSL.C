@@ -52,9 +52,9 @@ using namespace std;
 //#define __FFLASFFPACK_FORCE_SEQ
 
 
-#include "fflas-ffpack/field/modular-positive.h"
+#include "givaro/modular.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "time.h"
 
@@ -86,12 +86,14 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
                 exit(-1);
         }
         srand48( FFLAS::BaseTimer::seed());
-        int m,n, k;
+        size_t m,n, k;
 
         Field F(atoi(argv[1]));
 
-        typename Field::Element *A = read_field(F, argv[2], &m, &k);
-        typename Field::Element *B = read_field(F, argv[3], &k, &n);
+        typename Field::Element *A;
+	FFLAS::ReadMatrix (argv[2],F,m,k,A);
+        typename Field::Element *B;
+	FFLAS::ReadMatrix (argv[3],F,k,n,B);
 
 
         int nbw=atoi(argv[4]); // number of winograd levels                                                                                                                     

@@ -3,7 +3,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/timer.h"
 
@@ -80,10 +80,10 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 			D[i*n+j]=C[i*ldc+j] = 0 ; //rand() % 10;
 
 #if DISPLAY
-	write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,false) <<';' <<std::endl;
-	// write_field(Z,std::cout << "A:=", A, (int)ra, (int)ca, (int)lda,true,(tA==FflasTrans))  <<';'<<std::endl;
-	write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,false) <<';' <<std::endl;
-	// write_field(Z,std::cout << "B:=", B, (int)rb, (int)cb, (int)ldb,true,(tB==FflasTrans)) <<';' <<std::endl;
+	FFLAS::WriteMatrix(std::cout << "A:=", Z, ra, ca, A, lda, FflasMaple) <<';' <<std::endl;
+	// FFLAS::WriteMatrix(std::cout << "A:=", Z, ra, ca, A, lda, FflasMaple,(tA==FflasTrans))  <<';'<<std::endl;
+	FFLAS::WriteMatrix(std::cout << "B:=", Z, rb, cb, B, ldb,FflasMaple,false) <<';' <<std::endl;
+	// FFLAS::WriteMatrix(std::cout << "B:=", Z, rb, cb, B, ldb,FflasMaple,(tB==FflasTrans)) <<';' <<std::endl;
 #endif
 
 
@@ -123,7 +123,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 
 
 #if DISPLAY
-	write_field(Z,std::cout << "C:=", C, (int)m, (int)n, (int)ldc,true,false) <<';' <<std::endl;
+	FFLAS::WriteMatrix(std::cout << "C:=", Z, m, n, C, ldc,FflasMaple,false) <<';' <<std::endl;
 	std::cout << ((tA == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
 	std::cout << ((tB == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
 #endif
@@ -167,10 +167,10 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 #endif
 
 #if DISPLAY
-	write_field(F,std::cout << "A:=", Ai, (int)ra, (int)ca, (int)ldA,true,COL_MAJOR)  <<';'<<std::endl;
-	// write_field(F,std::cout << "A:=", Ai, (int)ra, (int)ca, (int)ldA,true,(tA==FflasTrans))  <<';'<<std::endl;
-	write_field(F,std::cout << "B:=", Bi, (int)rb, (int)cb, (int)ldB,true,COL_MAJOR) <<';' <<std::endl;
-	// write_field(F,std::cout << "B:=", Bi, (int)rb, (int)cb, (int)ldB,true,(tB==FflasTrans)) <<';' <<std::endl;
+	FFLAS::WriteMatrix(std::cout << "A:=", F, ra, ca, Ai, ldA,FflasMaple,COL_MAJOR)  <<';'<<std::endl;
+	// FFLAS::WriteMatrix(std::cout << "A:=", F, (int)ra, (int)ca, Ai,(int)ldA,FflasMaple,(tA==FflasTrans))  <<';'<<std::endl;
+	FFLAS::WriteMatrix(std::cout << "B:=", F, rb, cb, Bi, ldB,FflasMaple,COL_MAJOR) <<';' <<std::endl;
+	// FFLAS::WriteMatrix(std::cout << "B:=", F, rb, cb, Bi, ldB,FflasMaple,(tB==FflasTrans)) <<';' <<std::endl;
 #endif
 
 	FField::Element a,b ;
@@ -187,7 +187,7 @@ int test_igemm(size_t m, size_t n, size_t k, enum FFLAS_TRANSPOSE tA, enum FFLAS
 
 
 #if DISPLAY
-	write_field(F,std::cout << "C:=", Ci, (int)m, (int)n, (int)ldC,true,COL_MAJOR) <<';' <<std::endl;
+	FFLAS::WriteMatrix(std::cout << "C:=", F, m, n, Ci, ldC,FflasMaple,COL_MAJOR) <<';' <<std::endl;
 	std::cout << ((tA == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(A).";
 	std::cout << ((tB == FflasTrans) ? "LinearAlgebra:-Transpose":"") << "(B);" << std::endl;;
 #endif

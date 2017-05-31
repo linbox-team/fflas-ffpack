@@ -39,7 +39,7 @@
 #include <iostream>
 #include <iomanip>
 #include "givaro/modular.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
@@ -84,7 +84,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 	Checker_charpoly<Field,Polynomial> checker(F,n,A,lda);
 
 	PolRing R(F);
-
+  
 	FFPACK::CharPoly (R, charp, n, A, lda, G, CT);
 
 	 try{

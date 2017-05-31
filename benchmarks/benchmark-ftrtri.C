@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /* Copyright (c) FFLAS-FFPACK
@@ -29,7 +29,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
   Field::RandIter G(F);
   for (size_t i=0;i<iter;++i){
     if (argc > 4){
-      A = read_field (F, argv[4], &n, &n);
+	    FFLAS::ReadMatrix (argv[4],F,n,n,A);
     } else {
       A = FFLAS::fflas_new<Element>(n*n);
       for (size_t j=0; j<(size_t) n*n; ++j)

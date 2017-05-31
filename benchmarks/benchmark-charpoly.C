@@ -29,8 +29,8 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -102,6 +102,54 @@ int main(int argc, char** argv) {
 	};
 
   FFLAS::parseArguments(argc,argv,as);
+  FFPACK::FFPACK_CHARPOLY_TAG CT;
+  switch (variant){
+      case 0: CT = FFPACK::FfpackLUK; break;
+      case 1: CT = FFPACK::FfpackKG; break;
+      case 2: CT = FFPACK::FfpackDanilevski; break;
+      case 3: CT = FFPACK::FfpackKGFast; break;
+      case 4: CT = FFPACK::FfpackKGFastG; break;
+      case 5: CT = FFPACK::FfpackHybrid; break;
+      case 6: CT = FFPACK::FfpackArithProg; break;
+      default: CT = FFPACK::FfpackLUK; break;
+  }
+  typedef Givaro::ModularBalanced<double> Field;
+  typedef Field::Element Element;
+
+  Field F(q);
+  FFLAS::Timer chrono;
+  double time=0.0;
+
+  Element *A;
+
+  for (size_t i=0;i<iter;++i){
+
+    if (!file.empty()){
+	    FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+    }
+    else{
+      A = FFLAS::fflas_new<Element>(n*n);
+      Field::RandIter G(F);
+      for (size_t j=0; j< (size_t)n*n; ++j)
+	G.random(*(A+j));
+    }
+
+    std::vector<Field::Element> cpol(n);
+    chrono.clear();
+    chrono.start();
+    FFPACK::CharPoly (F, cpol, n, A, n, CT);
+    chrono.stop();
+
+    time+=chrono.usertime();
+    FFLAS::fflas_delete( A);
+
+  }
+  
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+	std::cerr << "Time: " << time / double(iter)
+		  << " Gflops: " << "Irrelevant";
+	FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   if (q > 0){
 	  bits = Givaro::Integer(q).bitsize();

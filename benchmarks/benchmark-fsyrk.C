@@ -29,7 +29,6 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -87,6 +86,8 @@ int main(int argc, char** argv) {
 		
 		time+=chrono.usertime();
 		FFLAS::fflas_delete( A);
+		FFLAS::fflas_delete( C);
+		FFLAS::fflas_delete( D);
 	}
   
 		// -----------

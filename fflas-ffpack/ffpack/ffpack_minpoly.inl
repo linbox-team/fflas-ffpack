@@ -60,22 +60,41 @@ namespace FFPACK {
 	inline Polynomial&
 	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
 		       typename Field::ConstElement_ptr A, const size_t lda,
+		       typename Field::ConstElement_ptr v, const size_t incv){
+
+		    // Construct the Krylov matrix K and eliminate it online
+		typename Field::Element_ptr K = FFLAS::fflas_new(F, N+1, N);
+		const size_t ldk = N;
+		size_t * P = FFLAS::fflas_new<size_t>(N);
+
+		typename Field::Element_ptr u = FFLAS::fflas_new(F, 1, N);
+		FFLAS::fassign (F, N, v, incv, u, 1);
+
+		Protected::MatVecMinPoly(F, minP, N, A, lda, u, 1, K, ldk, P);
+
+		FFLAS::fflas_delete (u);
+		FFLAS::fflas_delete (P);
+		FFLAS::fflas_delete (K);
+
+		return minP;
+	}
+
+
+	namespace Protected {
+
+	template <class Field, class Polynomial>
+	inline Polynomial&
+	MatVecMinPoly (const Field& F, Polynomial& minP, const size_t N,
+		       typename Field::ConstElement_ptr A, const size_t lda,
+		       typename Field::Element_ptr v, const size_t incv,
 		       typename Field::Element_ptr K, const size_t ldk,
 		       size_t * P){
 
+		FFLAS::fassign (F, N, v, incv, K, 1);
+
 		    // Construct the Krylov matrix K and eliminate it online
-		typename Field::Element_ptr U = FFLAS::fflas_new(F, 1, N);
-		bool allocP = false;
-		if (P==NULL){
-			allocP = true;
-			P = FFLAS::fflas_new<size_t>(N);
-		}
-		FFLAS::fassign(F,N, K,1,U,1);
 		    // LUP factorization on K, construct K on the fly
-		size_t k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, K, ldk, U, P, true, FfpackDense);
-		FFLAS::fflas_delete( U);
-		if (allocP)
-			FFLAS::fflas_delete(P);
+		size_t k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, K, ldk, v, incv, P, true, FfpackDense);
 
 		minP.resize(k+1);
 		minP[k] = F.one;
@@ -92,7 +111,6 @@ namespace FFPACK {
 		return minP;
 	}
 
-	namespace Protected {
 	template <class Field, class Polynomial>
 	Polynomial&
 	Hybrid_KGF_LUK_MinPoly (const Field& F, Polynomial& minP, const size_t N
@@ -125,7 +143,7 @@ namespace FFPACK {
 
 		// nRow = 1;
 		// LUP factorization of the Krylov Base Matrix
-		k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, X, ldx, U, P, true,
+		k = Protected::LUdivine_construct (F, FFLAS::FflasUnit, N+1, N, A, lda, X, ldx, U, 1, P, true,
 					MinTag, kg_mc, kg_mb, kg_j);
 		//FFLAS::fflas_delete( U);
 		minP.resize(k+1);
