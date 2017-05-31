@@ -429,7 +429,7 @@ namespace FFLAS {
 		file.read((char*) &data_type , sizeof(int64_t)) ;
 		file.read((char*) &rowdim , sizeof(int64_t)) ;
 		file.read((char*) &coldim , sizeof(int64_t)) ;
-		val = fflas_new(F,rowdim*coldim);
+		val = fflas_new(F,rowdim,coldim);
 		readMachineType(F,val, modulo, file,rowdim*coldim,field_desc,data_type);
 
 	}
