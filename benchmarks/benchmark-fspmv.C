@@ -22,13 +22,13 @@
 * ========LICENCE========
 */
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <vector>
 #include <sstream>
 #include <cstdio>
 #include <cstdlib>
 
-#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
 
