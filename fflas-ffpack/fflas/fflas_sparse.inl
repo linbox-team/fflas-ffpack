@@ -164,7 +164,7 @@ namespace FFLAS {
 			} else if (A.cst == -1) {
 				sparse_details_impl::fspmv_mone(F, A, x, y, FieldCategories::GenericTag());
 			} else {
-				auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+				auto x1 = fflas_new(F, A.n, Alignment::CACHE_LINE);
 				fscal(F, A.n, A.cst, x, 1, x1, 1);
 				sparse_details_impl::fspmv_one(F, A, x, y, FieldCategories::GenericTag());
 				fflas_delete(x1);
@@ -180,7 +180,7 @@ namespace FFLAS {
 			} else if (A.cst == -1) {
 				sparse_details_impl::fspmv_mone(F, A, x, y, FieldCategories::UnparametricTag());
 			} else {
-				auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+				auto x1 = fflas_new(F, A.n, Alignment::CACHE_LINE);
 				fscal(F, A.n, A.cst, x, 1, x1, 1);
 				sparse_details_impl::fspmv_one(F, A, x, y, FieldCategories::UnparametricTag());
 				fflas_delete(x1);
@@ -199,7 +199,7 @@ namespace FFLAS {
 			} else if (A.cst == -1) {
 				sparse_details_impl::fspmv_mone_simd(F, A, x, y, FieldCategories::UnparametricTag());
 			} else {
-				auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+				auto x1 = fflas_new(F, A.n, Alignment::CACHE_LINE);
 				fscal(F, A.n, A.cst, x, 1, x1, 1);
 				sparse_details_impl::fspmv_one_simd(F, A, x, y, FieldCategories::UnparametricTag());
 				fflas_delete(x1);

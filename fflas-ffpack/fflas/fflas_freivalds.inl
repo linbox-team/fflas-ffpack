@@ -57,9 +57,9 @@ namespace FFLAS{
     
         typename Field::Element_ptr v, y, x;
 
-        v = FFLAS::fflas_new(F,n,1);
-        y = FFLAS::fflas_new(F,k,1);
-        x = FFLAS::fflas_new(F,m,1);
+        v = FFLAS::fflas_new(F,n);
+        y = FFLAS::fflas_new(F,k);
+        x = FFLAS::fflas_new(F,m);
 
         typename Field::RandIter G(F);
         for(size_t j=0; j<n; ++j)

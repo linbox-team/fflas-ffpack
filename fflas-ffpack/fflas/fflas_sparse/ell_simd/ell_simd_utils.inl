@@ -83,7 +83,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL_simd> 
     A.nChunks = m / A.chunk;
 
     A.col = fflas_new<index_t>(A.nChunks * A.chunk * A.ld, Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, A.nChunks * A.chunk * A.ld, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, A.nChunks * A.chunk * A.ld, Alignment::CACHE_LINE);
 
     A.nElements = A.nChunks * A.chunk * A.ld;
 
