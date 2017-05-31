@@ -83,12 +83,12 @@ Danilevski (const Field& F, std::list<Polynomial>& charp,
 		size_t d;
 			d = k+1-dtot;
 			typename Field::Element_ptr Ai = A+k+dtot*lda;
-			Polynomial * P = new Polynomial(d+1);
+			Polynomial  P(d+1);
 			for (i = 0; i < d; ++i){
-				F.neg (P->operator[](i), *(Ai+i*lda));
+				F.neg (P[i], *(Ai+i*lda));
 			}
-			F.assign( (*P)[d],  F.one);
-			charp.push_front(*P);
+			F.assign( P[d],  F.one);
+			charp.push_front(P);
 			dtot+=d;
 		}
 	}

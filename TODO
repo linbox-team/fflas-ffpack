@@ -25,4 +25,26 @@ Simplification of helpers:
 - decide when a mod is required in this case
 - empty otherwise.
 - Two bool params: add/sub switch, and inplace switch.
- 
+
+CharPoly: How to handle polynomial arithmetic
+ * Option 1: generic representation, fixed Poly1Dom domain type, built when needed
+   - store polynomials as template type Polynomial which is assumed to
+      provide basic std::vector<Element> methods;
+   - build a Poly1Dom when arithmetic needs to be done
+   - convert Polynomials back and forth to a givvector
+   -> no genericity wrt Polynomial representation and domain
+ * Option 2: generic domain type, generic representation, built when
+      needed
+      - pass the type PolRing as template argument (unused in the signature)
+      - requires to explicitly specify the template arg list
+   -> incompatible with the solution trait system (generates
+      partial template specializations)
+ * Option 3: generic domain type, generic representation, built only  once
+      - pass the PolRing object along all functions that ultimately need it
+      -> heavy impact on sage & LinBox functions API (ex
+   LinBox::charpoly(PolDom, P, A), FFPACK::CharPoly(PolDom, N, P, A, lda))
+ * Option 4: let polynomials know their domain
+      - add a reference to the PolDom in the Polynomial object (class Poly inherit from givvector and adds a )
+ * Option 5: Option 3 for FFPACK and 4 for LinBox
+   - FFPACK: use the usual polynomail/PolRing interface defined in Givaro (Polynomials do not know their domains)
+   - LinBox: wrap Givaro Polynomials and PolRing such that a Polynomial knows its Domain -> allow charpoly (P,A)

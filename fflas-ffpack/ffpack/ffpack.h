@@ -37,6 +37,7 @@
 #ifndef __FFLASFFPACK_ffpack_H
 #define __FFLASFFPACK_ffpack_H
 
+#include "givaro/givpoly1.h"
 #include <fflas-ffpack/fflas-ffpack-config.h>
 
 #ifdef __FFLASFFPACK_USE_OPENMP
@@ -58,8 +59,16 @@
 #define __FFPACK_LUDIVINE_CUTOFF 0
 #endif
 
-#ifndef __FFPACK_CHARPOLY_THRESHOLD
-#define __FFPACK_CHARPOLY_THRESHOLD 30
+#ifndef __FFLASFFPACK_ARITHPROG_THRESHOLD
+#define __FFLASFFPACK_ARITHPROG_THRESHOLD 30
+#endif
+
+#ifndef __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD
+#define __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD 1000
+#endif
+
+#ifndef __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD
+#define __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD 16
 #endif
 
 #ifndef __FFPACK_FSYTRF_THRESHOLD
@@ -87,13 +96,14 @@ namespace FFPACK  { /* tags */
 
 	enum FFPACK_CHARPOLY_TAG
 	{
-		FfpackLUK=1,
-		FfpackKG=2,
-		FfpackHybrid=3,
-		FfpackKGFast=4,
-		FfpackDanilevski=5,
-		FfpackArithProg=6,
-		FfpackKGFastG=7
+		FfpackAuto = 0,
+		FfpackDanilevski = 1,
+		FfpackLUK = 2,
+		FfpackArithProg = 3,
+		FfpackKG = 4,
+		FfpackKGFast = 5,
+		FfpackHybrid = 6,
+		FfpackKGFastG = 7
 	};
 /* \endcond */
 	class CharpolyFailed{};
@@ -876,7 +886,7 @@ namespace FFPACK { /* charpoly */
 
 	/**
 	 * @brief Compute the characteristic polynomial of the matrix A.
-	 * @param F the base field
+	 * @param R the polynomial ring of charp (contains the base field)
 	 * @param [out] charp the characteristic polynomial of \p as a list of factors
 	 * @param N order of the matrix \p A
 	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
@@ -884,21 +894,16 @@ namespace FFPACK { /* charpoly */
 	 * @param CharpTag the algorithmic variant
 	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
-	template <class Field, class Polynomial, class RandIter>
-	std::list<Polynomial>&
-	CharPoly( const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  RandIter& G,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
-
-	/* \cond */
-	template<class Polynomial, class Field>
-	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2);
-	/* \endcond */
+    template <class PolRing>
+	std::list<typename PolRing::Element>&
+	CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  typename PolRing::Domain_t::RandIter& G,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
 
 	/**
 	 * @brief Compute the characteristic polynomial of the matrix A.
-	 * @param F the base field
+	 * @param R the polynomial ring of charp (contains the base field)
 	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
 	 * @param N order of the matrix \p A
 	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
@@ -906,29 +911,29 @@ namespace FFPACK { /* charpoly */
 	 * @param CharpTag the algorithmic variant
 	 * @param G a random iterator (required for the randomized variants LUKrylov and ArithProg)
 	 */
-	template <class Field, class Polynomial, class RandIter>
-	Polynomial&
-	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  RandIter& G,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg);
+	template <class PolRing>
+	typename PolRing::Element&
+	CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  typename PolRing::Domain_t::RandIter& G,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto);
 
 	/**
 	 * @brief Compute the characteristic polynomial of the matrix A.
-	 * @param F the base field
+	 * @param R the polynomial ring of charp (contains the base field)
 	 * @param [out] charp the characteristic polynomial of \p as a single polynomial
 	 * @param N order of the matrix \p A
 	 * @param [in] A the input matrix (\f$ N \times N\f$) (could be overwritten in some algorithmic variants)
 	 * @param lda leading dimension of \p A
 	 * @param CharpTag the algorithmic variant
 	 */
-	template <class Field, class Polynomial>
-	Polynomial&
-	CharPoly( const Field& F, Polynomial& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackArithProg){
-		typename Field::RandIter G(F);
-		return CharPoly (F, charp, N, A, lda, G, CharpTag);
+	template <class PolRing>
+	typename PolRing::Element&
+	CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  const FFPACK_CHARPOLY_TAG CharpTag= FfpackAuto){
+		typename PolRing::Domain_t::RandIter G(R.getdomain());
+		return CharPoly (R, charp, N, A, lda, G, CharpTag);
 	}
 
 
@@ -970,6 +975,16 @@ namespace FFPACK { /* charpoly */
 		Danilevski (const Field& F, std::list<Polynomial>& charp,
 			    const size_t N, typename Field::Element_ptr A, const size_t lda);
 
+		template <class PolRing>
+		std::list<typename PolRing::Element>&
+		CharpolyArithProg (const PolRing& R,
+						   std::list<typename PolRing::Element>& frobeniusForm,
+						   const size_t N,
+						   typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+						   typename PolRing::Domain_t::RandIter& G,
+						   const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+
+
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&
 		LUKrylov_KGFast( const Field& F, std::list<Polynomial>& charp, const size_t N,
@@ -984,11 +999,6 @@ namespace FFPACK { /* charpoly */
 // #include "ffpack_charpoly.inl"
 
 namespace FFPACK { /* frobenius, charpoly */
-
-	template <class Field, class Polynomial, class RandIter>
-	std::list<Polynomial>&
-	CharpolyArithProg (const Field& F, std::list<Polynomial>& frobeniusForm, const size_t N,
-					   typename Field::Element_ptr A, const size_t lda, const size_t c, RandIter& G);
 
 
 } // FFPACK frobenius
@@ -1170,6 +1180,10 @@ namespace FFPACK { /* Solutions */
 	Det( const Field& F, const size_t M, const size_t N,
 	     typename Field::Element_ptr A, const size_t lda);
 
+	template <class Field>
+	typename Field::Element&
+	Det( const Field& F, typename Field::Element& det, const size_t M, const size_t N,
+	     typename Field::Element_ptr A, const size_t lda);
 
 	/*********/
 	/* SOLVE */
@@ -1710,6 +1724,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_krylovelim.inl"
 #include "ffpack_permutation.inl"
 #include "ffpack_rankprofiles.inl"
+#include "ffpack_det_mp.inl"
 #include "ffpack.inl"
 
 #endif // __FFLASFFPACK_ffpack_H
