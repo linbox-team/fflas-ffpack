@@ -89,7 +89,8 @@ namespace FFPACK {
 			//std::cerr<<"...done"<<std::endl;
 
 			//std::cerr<<"fconvert...";
-        FFLAS::fconvert_rns (Zrns,1,N+1, Givaro::Integer(1),&(charp[0]), N+1, CPrns);
+		charp.resize(N+1);
+		FFLAS::fconvert_rns (Zrns,1,N+1, Givaro::Integer(1),&(charp[0]), N+1, CPrns);
 			//std::cerr<<"...done"<<std::endl;
 
         FFLAS::fflas_delete(Arns);
