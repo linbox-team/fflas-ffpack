@@ -30,6 +30,7 @@ pkgincludesub_HEADERS= 	\
 	fflas_randommatrix.h	\
 	flimits.h 			\
 	Matio.h  			\
+	fflas_io.h  			\
 	bit_manipulation.h 	\
 	print-utils.h		\
 	timer.h				\

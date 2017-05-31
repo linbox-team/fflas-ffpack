@@ -49,7 +49,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include "test-utils.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 using namespace std;
 using namespace FFPACK;
@@ -78,9 +78,9 @@ bool check_fger(const Field                   & F,
 	typedef typename Field::Element_ptr Element_ptr;
 
 // 	std::cerr << "with(LinearAlgebra):" << std::endl;
-//         write_field(F,std::cerr <<"X:=",x, m, 1, incx, true) << ';' << std::endl;
-//         write_field(F,std::cerr <<"Y:=Transpose(",y, n, 1, incy, true) << ");" << std::endl;
-//         write_field(F,std::cerr <<"A:=",Cd, m, n, ldc, true) << ';' << std::endl;
+//         FFLAS::WriteMatrix(std::cerr <<"X:=",F, m, 1, x,incx, FflasMaple) << ';' << std::endl;
+//         FFLAS::WriteMatrix(std::cerr <<"Y:=Transpose(", F, n, 1, y, incy, FflasMaple) << ");" << std::endl;
+//         FFLAS::WriteMatrix(std::cerr <<"A:=",F, m, n, Cd, ldc, FflasMaple) << ';' << std::endl;
 // 	F.write(std::cerr << "a:=", alpha) << ';' << std::endl;
 // 	std::cerr << "q:=" << F.characteristic() << ';' << std::endl;
 
@@ -96,7 +96,7 @@ bool check_fger(const Field                   & F,
 			}
 		}
 	}
-//     write_field(F,std::cerr <<"d:=",D, m, n, ldc, true) << ';' << std::endl;
+//     FFLAS::WriteMatrix(std::cerr <<"d:=",F, m, n, D, n, FflasMaple) << ';' << std::endl;
 // 	F.write(std::cerr, alpha) << "*X.Y+A,d;";
 // 	F.write(std::cerr, alpha) << "*X.Y+A-d mod q;" << std::endl;
 	if ( wrong ){

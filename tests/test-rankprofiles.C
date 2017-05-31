@@ -39,7 +39,6 @@
 #include <givaro/modular.h>
 
 #include "test-utils.h"
-#include "fflas-ffpack/utils/Matio.h"
 
 using namespace FFPACK;
 
@@ -139,8 +138,6 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
 			size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
-			// write_perm (std::cout<<"RRP     = ", RRP, r);
-			// write_perm (std::cout<<"CRP     = ", CRP, r);
 			std::sort(CRP,CRP+r);
 			std::sort(RRP,RRP+r);	
 			ok &= (cs==ct)&(cs==rs)&(cs==rt)&(cs==r);

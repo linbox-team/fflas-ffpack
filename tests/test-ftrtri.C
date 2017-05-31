@@ -40,6 +40,9 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "test-utils.h"
 #include <givaro/modular.h>
+#include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
+
 
 using namespace std;
 using namespace FFPACK;

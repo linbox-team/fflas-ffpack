@@ -63,6 +63,7 @@ BASIC_TESTS =               \
 		test-fsyrk          \
 		test-fsytrf          \
 		test-multifile      \
+		test-io      \
 		test-maxdelayeddim \
 		regression-check
 
@@ -82,10 +83,8 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 NOT_A_TEST =  \
 		test-lqup2             \
-		benchlqup              \
 		test-fsquare           \
 		test-redcolechelon     \
-		benchfgemm             \
 		test-rank              \
 		test-krylov-elim       \
 		test-rowechelon        \
@@ -132,12 +131,11 @@ test_rankprofiles_SOURCES           = test-rankprofiles.C
 test_fgemm_SOURCES             = test-fgemm.C
 test_fger_SOURCES             = test-fger.C
 test_multifile_SOURCES             = test-multifile1.C test-multifile2.C
+test_io_SOURCES             = test-io.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 test_charpoly_SOURCES          = test-charpoly.C
-#  benchfgemm_SOURCES             = benchfgemm.C
 #  test_fsquare_SOURCES           = test-fsquare.C
 #  test_rank_SOURCES              = test-rank.C
-#  benchlqup_SOURCES              = benchlqup.C
 #  test_ftrmm_SOURCES             = test-ftrmm.C
 #  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C

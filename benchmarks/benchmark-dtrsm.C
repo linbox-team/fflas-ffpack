@@ -28,7 +28,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   for (size_t i=0;i<iter;++i){
     Field::RandIter G(F);
     if (!file1.empty()){
-        A = read_field (F, file1.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file1.c_str(),F,n,n,A);
     }
     else{
       A = FFLAS::fflas_new<Element>(n*n);
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     }
 
     if (!file2.empty()){
-      B = read_field (F, file2.c_str(), &n, &n);
+	    FFLAS::ReadMatrix (file2.c_str(),F,n,n,B);
     }
     else{
       B = FFLAS::fflas_new<Element>(n*n);

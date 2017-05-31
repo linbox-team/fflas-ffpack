@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /* Copyright (c) FFLAS-FFPACK
@@ -29,7 +29,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -62,20 +62,24 @@ int main(int argc, char** argv) {
   double time=0.0;
 
   Field::RandIter G(F);
-  for (size_t i=0;i<=iter;++i){
-	  A = FFLAS::fflas_new<Element>(n*n);
-	  for (size_t j=0; j<(size_t) n*n; ++j)
-		  G.random(*(A+j));
+  for (size_t i=0;i<iter;++i){
+    if (argc > 4){
+	    FFLAS::ReadMatrix (argv[4],F,n,n,A);
+    } else {
+      A = FFLAS::fflas_new<Element>(n*n);
+      for (size_t j=0; j<(size_t) n*n; ++j)
+	G.random(*(A+j));
+    }
+    for (size_t k=0;k<(size_t)n;++k)
+      while (F.isZero( G.random(*(A+k*(n+1)))));
 
-	  for (size_t k=0;k<(size_t)n;++k)
-		  while (F.isZero( G.random(*(A+k*(n+1)))));
-	  chrono.clear();
-	  chrono.start();
-	  FFPACK::ftrtri (F,FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, A, n);
-	  chrono.stop();
+    chrono.clear();
+    chrono.start();
+    FFPACK::ftrtri (F,FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, A, n);
+    chrono.stop();
 
-	  if (i) time+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
+    time+=chrono.usertime();
+    FFLAS::fflas_delete( A);
   }
   
 	// -----------
