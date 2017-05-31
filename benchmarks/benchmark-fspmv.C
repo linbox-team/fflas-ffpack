@@ -32,7 +32,6 @@
 #include "givaro/modular-balanced.h"
 
 #include "fflas-ffpack/config-blas.h"
-// #include "fflas-ffpac/field/modular-double.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/timer.h"
