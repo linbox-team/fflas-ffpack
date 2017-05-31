@@ -128,8 +128,8 @@ int main(int argc, char **argv) {
         //std::cout << std::endl;
     }
 
-    auto x = FFLAS::fflas_new(F, coldim, 1, Alignment::CACHE_LINE);
-    auto y = FFLAS::fflas_new(F, rowdim, 1, Alignment::CACHE_LINE);
+    auto x = FFLAS::fflas_new(F, coldim, Alignment::CACHE_LINE);
+    auto y = FFLAS::fflas_new(F, rowdim, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < coldim; ++i) {
         x[i] = 1;
