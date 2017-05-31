@@ -68,6 +68,17 @@ namespace FFLAS{
 	    }
     }
 
+    template<class Field>
+    inline typename Field::Element_ptr fflas_new (const Field& F, const size_t m, const Alignment align = Alignment::DEFAULT)
+    {
+	    if (alignable<typename Field::Element_ptr>() ) {
+	    	    return malloc_align<typename Field::Element>(m, align);
+	    }
+	    else {
+	    	    return new typename Field::Element[m];
+	    }
+    }
+
     template<class Element >
     inline Element* fflas_new (const size_t m, const Alignment align = Alignment::DEFAULT)
     {
