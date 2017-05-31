@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 	G.random(*(A+j));
     }
 
-    std::vector<Field::Element> cpol(n);
+    Givaro::Poly1Dom<Field>::Element cpol(n);
     chrono.clear();
     chrono.start();
 	Givaro::Poly1Dom<Field> PolDom(F);
