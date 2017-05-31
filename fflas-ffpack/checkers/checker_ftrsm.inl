@@ -44,8 +44,8 @@ namespace FFLAS {
                       const typename Field::ConstElement_ptr B, 
                       const size_t ldb) 
                 : F(F_), 
-                  v(FFLAS::fflas_new(F_,n,1)), 
-                  w(FFLAS::fflas_new(F_,m,1))
+                  v(FFLAS::fflas_new(F_,n)), 
+                  w(FFLAS::fflas_new(F_,m))
             {
                 typename Field::RandIter G(F);
                 init(G,m,n,B,ldb,alpha);
@@ -57,8 +57,8 @@ namespace FFLAS {
                       const typename Field::ConstElement_ptr B, 
                       const size_t ldb)
                 : F(G.ring()), 
-                  v(FFLAS::fflas_new(F,n,1)), 
-                  w(FFLAS::fflas_new(F,m,1))
+                  v(FFLAS::fflas_new(F,n)), 
+                  w(FFLAS::fflas_new(F,m))
             {
                 init(G,m,n,B,ldb,alpha);
             }
@@ -81,7 +81,7 @@ namespace FFLAS {
                           const typename Field::ConstElement_ptr X, size_t ldx) {
             size_t k = (side==FFLAS::FflasLeft?m:n);
 
-            typename Field::Element_ptr v1 = FFLAS::fflas_new(F,k,1);
+            typename Field::Element_ptr v1 = FFLAS::fflas_new(F,k);
         
             if (side==FFLAS::FflasLeft) {
                     // (Left) v1 <- X.v 

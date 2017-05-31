@@ -50,8 +50,8 @@ namespace FFPACK {
         CheckerImplem_PLUQ(const Field& F_, size_t m_, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda) 
 				: F(F_), 
-                  v(FFLAS::fflas_new(F_,n_,1)), 
-                  w(FFLAS::fflas_new(F_,m_,1)), 
+                  v(FFLAS::fflas_new(F_,n_)), 
+                  w(FFLAS::fflas_new(F_,m_)), 
                   m(m_), n(n_)
             {
                 typename Field::RandIter G(F);
@@ -61,8 +61,8 @@ namespace FFPACK {
         CheckerImplem_PLUQ(typename Field::RandIter &G, size_t m_, size_t n_, 
                      typename Field::ConstElement_ptr A, size_t lda)
 				: F(G.ring()), 
-                  v(FFLAS::fflas_new(F,n_,1)), 
-                  w(FFLAS::fflas_new(F,m_,1)), 
+                  v(FFLAS::fflas_new(F,n_)), 
+                  w(FFLAS::fflas_new(F,m_)), 
                   m(m_), n(n_)
             {
                 init(G,A,lda);
@@ -86,7 +86,7 @@ namespace FFPACK {
             Givaro::Timer checktime; checktime.start();
 #endif
 				// _w = [w1|w2]
-            typename Field::Element_ptr _w = FFLAS::fflas_new(F,std::max(m,n),1); 
+            typename Field::Element_ptr _w = FFLAS::fflas_new(F,std::max(m,n)); 
 			
                 // _w <- v
                 // WARNING check fassign on vectors
