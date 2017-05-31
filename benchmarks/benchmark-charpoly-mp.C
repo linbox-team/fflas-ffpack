@@ -39,7 +39,7 @@ using namespace std;
 int main(int argc, char** argv) {
   
 	size_t iter = 1;
-	size_t    n    = 500;
+	size_t    n    = 100;
 	std::string file = "";
   	static int variant =0;
 	size_t b = 150;
