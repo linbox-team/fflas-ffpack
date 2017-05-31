@@ -637,7 +637,7 @@ namespace FFPACK {
 				    const size_t M, const size_t N,
 				    typename Field::ConstElement_ptr A, const size_t lda,
 				    typename Field::Element_ptr X, const size_t ldx,
-				    typename Field::Element_ptr u, size_t* P,
+					typename Field::Element_ptr u, const size_t incu, size_t* P,
 				    bool computeX
 				    , const FFPACK::FFPACK_MINPOLY_TAG MinTag //= FFPACK::FfpackDense
 				    , const size_t kg_mc// =0
@@ -680,7 +680,7 @@ namespace FFPACK {
 				size_t Ndown =  M - Nup;
 
 				// Recursive call on NW
-				size_t R = LUdivine_construct(F, Diag, Nup, N, A, lda, X, ldx, u,
+				size_t R = LUdivine_construct(F, Diag, Nup, N, A, lda, X, ldx, u, incu,
 							      P, computeX, MinTag, kg_mc, kg_mb, kg_j );
 				if (R==Nup){
 					typename Field::Element_ptr Xr = X + Nup*ldx; //  SW
@@ -691,14 +691,14 @@ namespace FFPACK {
 						if (MinTag == FFPACK::FfpackDense)
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
 								fgemv(F, FFLAS::FflasNoTrans, N, N, F.one,
-								      A, lda, u, 1, F.zero, Xi,1);
-								FFLAS::fassign(F, N,Xi, 1, u,1);
+								      A, lda, u, incu, F.zero, Xi,1);
+								FFLAS::fassign(F, N,Xi, 1, u,incu);
 							}
 						else // Keller-Gehrig Fast algorithm's matrix
 							for (size_t i=0; i< Ndown; ++i, Xi+=ldx){
-								FFPACK::Protected::fgemv_kgf( F, N, A, lda, u, 1, Xi, 1,
+								FFPACK::Protected::fgemv_kgf( F, N, A, lda, u, incu, Xi, 1,
 											      kg_mc, kg_mb, kg_j );
-								FFLAS::fassign(F, N,Xi, 1, u,1);
+								FFLAS::fassign(F, N,Xi, 1, u, incu);
 							}
 					}
 					// Apply the permutation on SW
@@ -717,7 +717,7 @@ namespace FFPACK {
 					// Recursive call on SE
 
 					size_t R2 = LUdivine_construct(F, Diag, Ndown, N-Nup, A, lda,
-								       Xn, ldx, u, P + Nup,
+												   Xn, ldx, u, incu, P + Nup,
 								       false, MinTag, kg_mc, kg_mb, kg_j);
 					for ( size_t i=R;i<R+R2;++i) P[i] += R;
 
