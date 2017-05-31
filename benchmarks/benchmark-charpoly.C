@@ -77,7 +77,8 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
 	std::cerr << "n: "<<n<<" bitsize: "<<bits<<" Time: " << time_charp / double(iter)
-			  << " Gflops: " << "Irrelevant";
+			  << " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time_charp * double(iter);
+
 }
 
 int main(int argc, char** argv) {
