@@ -121,7 +121,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR_HYB> &
 
     A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
     A.st = fflas_new<index_t>(4 * (rowdim + 1), Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, A.nOthers, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, A.nOthers, Alignment::CACHE_LINE);
 
     for (uint64_t i = 0; i < 4 * (rowdim + 1); ++i)
         A.st[i] = 0;

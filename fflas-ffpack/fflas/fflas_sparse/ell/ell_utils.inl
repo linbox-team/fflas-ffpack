@@ -60,7 +60,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::ELL> &A, c
     // cout << A.ld << " " << rowdim << " " << nnz << " " << A.ld*rowdim << endl;
     A.nElements = A.m * A.ld;
     A.col = fflas_new<index_t>(rowdim * A.ld, Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, rowdim * A.ld, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, rowdim * A.ld, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < rowdim * A.ld; ++i) {
         A.col[i] = 0;

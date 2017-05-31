@@ -73,7 +73,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::HYB_ZO> &A
         rowMOne = fflas_new<index_t>(nMOnes, Alignment::CACHE_LINE);
     }
     if (nOthers) {
-        dat2 = fflas_new(F, nOthers, 1, Alignment::CACHE_LINE);
+        dat2 = fflas_new(F, nOthers, Alignment::CACHE_LINE);
         colOther = fflas_new<index_t>(nOthers, Alignment::CACHE_LINE);
         rowOther = fflas_new<index_t>(nOthers, Alignment::CACHE_LINE);
     }

@@ -71,7 +71,7 @@ inline void sparse_init(const Givaro::Modular<Givaro::Integer> &F, Sparse<Givaro
 
     A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
     A.st = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, nnz, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, nnz, Alignment::CACHE_LINE);
 
     for(size_t i = 0 ; i < nnz ; ++i){
         if(col[i] >= coldim){
@@ -206,7 +206,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::CSR> &A, c
     A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
     A.st = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
     A.stend = fflas_new<index_t>(rowdim + 1, Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, nnz, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, nnz, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < nnz; ++i) {
         A.col[i] = static_cast<index_t>(col[i]);

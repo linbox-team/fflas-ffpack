@@ -61,8 +61,8 @@ namespace FFLAS { namespace Protected {
 		F.convert (alphaf, alpha);
 
 		FloatElement* Af = fflas_new (G,M,N);
-		FloatElement* Xf = fflas_new (G,M,1);
-		FloatElement* Yf = fflas_new (G,N,1);
+		FloatElement* Xf = fflas_new (G,M);
+		FloatElement* Yf = fflas_new (G,N);
 
 		fconvert(F, M, N, Af, N, A, lda);
 		freduce(G, M, N, Af, N);
@@ -235,7 +235,6 @@ namespace FFLAS{
         typedef typename HelperType::DelayedField::Element DFElt;
         typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
         typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
-        typedef typename Field::Element Element;
         typedef typename Field::Element_ptr					Element_ptr;
         typedef MMHelper<delayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelperType;
 
@@ -268,7 +267,7 @@ namespace FFLAS{
             H.Outmin = Hfp.Outmin;
             H.Outmax = Hfp.Outmax;
         } else {
-            Element_ptr sY  = FFLAS::fflas_new<Element> (N);
+            Element_ptr sY  = FFLAS::fflas_new (F, N);
             fscal(F, N, alpha, y, incy, sY, 1);
 
             fger (H.delayedField, M, N, 1.0,  (DFCElt_ptr)x, incx, (DFCElt_ptr) sY, 1,  (DFElt_ptr)A, lda, Hfp);
@@ -300,7 +299,7 @@ namespace FFLAS{
 				    // Stay over int64_t
 				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
 				HG.recLevel = 0;
-				typename Field::Element_ptr sY  = FFLAS::fflas_new<typename Field::Element> (N);
+				typename Field::Element_ptr sY  = FFLAS::fflas_new (F, N);
 				fscal(F, N, alpha, y, incy, sY, 1);
 				fgemm(F,FflasNoTrans,FflasNoTrans,M,N,1,F.one,x,incx,sY,1,F.one,A,lda,HG);
 				FFLAS::fflas_delete(sY);
@@ -314,7 +313,6 @@ namespace FFLAS{
         typedef typename delayedField::Element	DFElt;
         typedef typename delayedField::ConstElement_ptr	DFCElt_ptr;
         typedef typename delayedField::Element_ptr	DFElt_ptr;
-        typedef typename Field::Element						Element;
         typedef typename Field::Element_ptr					Element_ptr;
         typedef MMHelper<delayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelperType;
 
@@ -328,7 +326,7 @@ namespace FFLAS{
             fger (H.delayedField, M, N, alphadf, (DFCElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
 
         } else {
-            Element_ptr sY  = FFLAS::fflas_new<Element> (N);
+            Element_ptr sY  = FFLAS::fflas_new (F, N);
             fscal(F, N, alpha, y, incy, sY, 1);
 
             fger (H.delayedField, M, N, H.delayedField.one, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, (size_t)1, (DFElt_ptr)A, lda, Hfp);

@@ -86,7 +86,7 @@ test_spmv_sell(const Field &F, IndexT *row, IndexT *col,
                typename Field::Element beta) {
     sparse_init(F, matrix, row, col, dat, rowdim, coldim, nnz);
     fspmv(F, matrix, x, 1, y);
-    auto tmp = fflas_new(F, rowdim, 1);
+    auto tmp = fflas_new(F, rowdim);
     for (size_t i = 0; i < rowdim; ++i) {
         tmp[i] = y[matrix.perm[i]];
     }
@@ -178,9 +178,9 @@ int main(int argc, char **argv) {
     }
 
 
-    auto x = fflas_new(F, coldim, 1, Alignment::CACHE_LINE);
-    auto y = fflas_new(F, rowdim, 1, Alignment::CACHE_LINE);
-    auto y1 = fflas_new(F, rowdim, 1, Alignment::CACHE_LINE);
+    auto x = fflas_new(F, coldim, Alignment::CACHE_LINE);
+    auto y = fflas_new(F, rowdim, Alignment::CACHE_LINE);
+    auto y1 = fflas_new(F, rowdim, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < coldim; ++i) {
         x[i] = 1;

@@ -70,7 +70,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
     A = FFLAS::fflas_new(F, n, lda);
     V = FFLAS::fflas_new(F, n+1, ldv);
-	Vcst = FFLAS::fflas_new(F, 1, n);
+	Vcst = FFLAS::fflas_new(F, n);
     Polynomial minP;
 
 
@@ -100,7 +100,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 	/*Check that minP(A).V is zero*/
 
-	Element_ptr E = FFLAS::fflas_new(F, 1, n);
+	Element_ptr E = FFLAS::fflas_new(F, n);
 	FFLAS::fzero(F, n, E, 1);
     
 	for(size_t i = 0; i < deg+1; ++i)
@@ -136,7 +136,7 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 	size_t nb_factors = factors.size();
 	for(size_t i = 0; i < nb_factors; ++i)
 	{
-		Element_ptr E_min = FFLAS::fflas_new(F, 1, n);
+		Element_ptr E_min = FFLAS::fflas_new(F, n);
 		FFLAS::fzero(F, n, E_min, 1);
 		PD.div(res, FP_minP, factors[i]);
 

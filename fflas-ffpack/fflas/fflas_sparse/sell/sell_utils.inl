@@ -227,7 +227,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::SELL> &A, 
     cout << "sum :  " << sum << " chunk : " << A.chunk << endl;
 #endif
     A.col = fflas_new<index_t>(sum * A.chunk, Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, sum * A.chunk, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, sum * A.chunk, Alignment::CACHE_LINE);
     A.nElements = sum * A.chunk;
 
     for (uint64_t i = 0; i < sum * A.chunk; ++i) {
