@@ -37,6 +37,7 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 
 int main(int argc, char** argv) {
 	srand (time(NULL));
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
 		Field::Element_ptr A = FFLAS::fflas_new(F,k,k);
 
 		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,X,m/MAX_THREADS); }
-		//write_field(F,std::cerr<<"X:=",X,m,n,n,true) <<std::endl;
+		//FFLAS::WriteMatrix (std::cerr<<"X:=",F,m,n,X,n,FflasMaple) <<std::endl;
 
 		for (size_t i=0;i<k;++i){
 			for (size_t j=0;j<i;++j)
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
 			for (size_t j=i+1;j<k;++j)
 				A[i*k+j]= (uplo == FFLAS::FflasUpper)? Rand.random(tmp) : F.zero;
 		}
-		//write_field(F,std::cerr<<"A:=",A,k,k,k,true) <<std::endl;
+		//FFLAS::WriteMatrix (std::cerr<<"A:=",F,k,k,A,k,FflasMaple) <<std::endl;
 
 		FFLAS::Checker_ftrsm<Field> checker(Rand, m, n, alpha, X, n);
 		FFLAS::ftrsm(F, side, uplo, trans, diag, m, n, alpha, A, k, X, n);

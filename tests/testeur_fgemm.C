@@ -11,11 +11,10 @@
 #include <iostream>
 #include <iomanip>
 using namespace std;
-//#include "fflas-ffpack/modular-int.h"
-//#include "fflas-ffpack/modular-positive.h"
-#include "fflas-ffpack/field/modular-positive.h"
+
+#include "givaro/modular.h"
 //#include "timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 
@@ -136,7 +135,7 @@ int main(int argc, char** argv){
 
 		tim.clear();
 		tim.start();
-		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, FFLAS::FieldTraits<Field>::value> WH (F,Wino,FFLAS::ParSeqHelper::Sequential());
+		FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WH (F,Wino,FFLAS::ParSeqHelper::Sequential());
 		FFLAS::fgemm (F, ta, tb, M, N, K, alpha, A, lda, B, ldb, beta, C, N, WH);
 		tim.stop();
 		
@@ -184,9 +183,9 @@ int main(int argc, char** argv){
 		}
 		else{
 			// cerr<<"C="<<endl;
-// 			write_field( F, cerr, C, M, N, N );
+// 			FFLAS::WriteMatrix (cerr, F, M, N, C, N );
 // 			cerr<<"Cbis="<<endl;
-// 			write_field( F, cerr, Cbis, M, N, N );
+// 			FFLAS::WriteMatrix (cerr, F, M, N, Cbis, N );
 		}
 	}
 	cout<<endl;

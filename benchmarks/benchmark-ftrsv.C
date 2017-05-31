@@ -28,7 +28,6 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 using namespace std;
@@ -82,13 +81,10 @@ int main(int argc, char** argv) {
 	for (size_t i=0;i<=iter;++i){
 		chrono.clear();
 		frand (F,G,n,1,b,1);
-			// write_field(F, cerr<<"A = "<<endl, A,n,n,n);
-			// write_field(F, cerr<<"b = "<<endl, b,n,1,1);
 		if (v){
 			c = fflas_new(F,n,1,Alignment::CACHE_PAGESIZE);
 			frand (F,G,n,1,c,1);
 				// proj <- c^T . b
-				// write_field(F, cerr<<"c = ", c,1,n,n);
 			proj = fdot (F, n, c, 1, b, 1);
 				// cerr<<"proj = "<<proj<<endl;
 		}
@@ -96,13 +92,11 @@ int main(int argc, char** argv) {
 				// c <- c U 
 			ftrmm (F, FflasRight, UpLo, Trans, Diag,
 				   1,n, F.one, A, n, c, n);
-				// write_field(F, cerr<<"c <- c x U  = ", c,1,n,n);
 
 		}
 		chrono.start();
 			// b <- U^-1 b
 		ftrsv (F, UpLo, Trans, Diag, n, A, n, b, 1);
-		// write_field(F, cerr<<"b <- U^-1 x b = "<<endl, b,n,1,1);
 		chrono.stop();
 		if (i) { time+=chrono.usertime();}
 

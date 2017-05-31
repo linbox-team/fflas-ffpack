@@ -45,7 +45,7 @@
 #include <iomanip>
 #include <iostream>
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
 
@@ -60,14 +60,14 @@ typedef Givaro::Modular<Ints> Field;
 
 int main(int argc, char** argv){
 
-	int m,n,k;
+	size_t m,n,k;
 	int nbit=atoi(argv[4]); // number of times the product is performed
 	cerr<<setprecision(10);
 	Field::Element alpha,beta;
 
 
 	if (argc != 8)	{
-		cerr<<"Usage : test-fgemv <p> <A> <b> <i>"
+		cerr<<"Usage : test-fgemv <p> <A> <b> <i> <alpha> <beta> <c>"
 		    <<" <alpha> <beta> <c>"<<endl
 		    <<"         to do i computations of c <- alpha Ab + beta c"
 		    <<endl;
@@ -81,15 +81,15 @@ int main(int argc, char** argv){
 	Field::Element * A;
 	Field::Element * b;
 
-	b = read_field(F,argv[3],&n,&k);
-	A = read_field(F,argv[2],&m,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+	FFLAS::ReadMatrix (argv[3],F,n,k,b);
 
 	Field::Element * c;
 
 
  FFLAS::Timer tim,t; t.clear();tim.clear();
 	for(int i = 0;i<nbit;++i){
-		c = read_field(F,argv[7],&m,&k);
+		FFLAS::ReadMatrix (argv[7],F,m,k,c);
 		t.clear();
 		t.start();
 		FFLAS::fgemv (F, FFLAS::FflasNoTrans,m,n,alpha, A,n, b,1,
@@ -100,7 +100,7 @@ int main(int argc, char** argv){
 
 #ifdef __FFLASFFPACK_DEBUG
 	Field::Element *d;
-    d = read_field(F,argv[7],&m,&k);
+	FFLAS::ReadMatrix (argv[7],F,m,k,d);
 	for (int i=0; i<m; ++i)
 		F.mulin (d[i], beta); 					// d <- beta c
 	for (int i=0; i<m; ++i)
@@ -115,19 +115,19 @@ int main(int argc, char** argv){
 
 	if (fail) {
 		cerr<<"FAIL"<<endl;
-        write_field(F, std::cerr<<"i:=",b,n,k,k,true)<<std::endl;
-        write_field(F, std::cerr<<"r:=",c,m,k,k,true)<<std::endl;
-        write_field(F, std::cerr<<"d:=",d,m,k,k,true)<<std::endl;
-
-        F.write(std::cerr<<"alpha:=", alpha) << ';' << std::endl;
-        write_field(F, std::cerr<<"A:=",A,m,n,n,true)<<std::endl;
-        b = read_field(F,argv[3],&n,&k);
-        write_field(F, std::cerr<<"b:=",b,n,k,k,true)<<std::endl;
-        F.write(std::cerr<<"beta:=", beta) << ';' << std::endl;
-        c = read_field(F,argv[7],&m,&k);
-        write_field(F, std::cerr<<"c:=",c,m,k,k,true)<<std::endl;
-        std::cerr<<"p:=" << F.characteristic() << ';' << std::endl;
-
+		WriteMatrix(std::cerr<<"i:=",F,n,k,b,k,true)<<std::endl;
+		WriteMatrix(std::cerr<<"r:=",F,m,k,c,k,true)<<std::endl;
+		WriteMatrix(std::cerr<<"d:=",F,m,k,d,k,true)<<std::endl;
+		
+		F.write(std::cerr<<"alpha:=", alpha) << ';' << std::endl;
+		WriteMatrix(std::cerr<<"A:=",F,m,n,A,n,true)<<std::endl;
+		FFLAS::ReadMatrix (argv[3],F,n,k,b);
+		WriteMatrix(std::cerr<<"b:=",F,n,k,b,k,true)<<std::endl;
+		F.write(std::cerr<<"beta:=", beta) << ';' << std::endl;
+		FFLAS::ReadMatrix (argv[7],F,m,k,c);
+		WriteMatrix(std::cerr<<"c:=",F,m,k,c,k,true)<<std::endl;
+		std::cerr<<"p:=" << F.characteristic() << ';' << std::endl;
+	
     } else
 		cerr<<"PASS"<<endl;
 
