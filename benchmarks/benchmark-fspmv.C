@@ -22,6 +22,7 @@
 * ========LICENCE========
 */
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -80,7 +81,6 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 int main(int argc, char **argv) {
 
     using Field = Givaro::Modular<int64_t,int64_t>;
-    using Element = typename Field::Element;
 
     size_t iter = 10;
     Givaro::Integer q = 1009;

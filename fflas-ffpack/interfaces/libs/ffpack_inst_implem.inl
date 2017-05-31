@@ -256,7 +256,7 @@ namespace FFPACK {
 	template INST_OR_DECL
 	std::vector<FFLAS_ELT>& MatVecMinPoly (const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP,
 										   const size_t N, const FFLAS_ELT* A, const size_t lda,
-										   FFLAS_ELT* K, const size_t ldk, size_t * P);
+										   const FFLAS_ELT* V, const size_t incv);
 	
 	template INST_OR_DECL
 	size_t KrylovElim( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,
