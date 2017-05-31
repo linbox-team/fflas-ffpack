@@ -58,6 +58,7 @@ int main (int argc, char** argv) {
 	using namespace FFPACK;
 	typedef Givaro::ModularBalanced<double> Field;
 	Field F(2097169);
+	Givaro::Poly1Dom<Field> PolDom(F);
 	typedef Field::Element Element ;
 	size_t n=atoi(argv[1]); // starting value for the block size
 	size_t nmax=atoi(argv[2]); // max value for the block size
@@ -92,7 +93,7 @@ int main (int argc, char** argv) {
 	    //warm up computation
 		std::list<Polynomial> charp_list;
 		try{
-			Protected::CharpolyArithProg<Field,typename Givaro::Poly1Dom<Field> > (F, charp_list, dim, A, lda, g, n);
+			Protected::CharpolyArithProg (PolDom, charp_list, dim, A, lda, g, n);
 		}
 		catch (CharpolyFailed){}
 		FFLAS::fassign (F, dim, dim, B, lda, A, lda);
@@ -100,7 +101,7 @@ int main (int argc, char** argv) {
 		for (size_t i=0;i<iter;i++){
 			chrono.start();
 			try{
-				Protected::CharpolyArithProg<Field,typename Givaro::Poly1Dom<Field> > (F, charp_list, dim, A, lda, g, n);
+				Protected::CharpolyArithProg (PolDom, charp_list, dim, A, lda, g, n);
 			}
 			catch (CharpolyFailed){	i--;}
 			chrono.stop();

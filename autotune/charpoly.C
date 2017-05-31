@@ -87,12 +87,13 @@ int main () {
 		int iter=ITER;
 	    //warm up computation
 		Polynomial charp(n+1);
-		CharPoly<Field,typename Givaro::Poly1Dom<Field> > (F, charp, n, A, lda, VARIANT1);
+		Givaro::Poly1Dom<Field> PolDom(F);
+		CharPoly (PolDom, charp, n, A, lda, VARIANT1);
 		FFLAS::fassign (F, n, n, B, lda, A, lda);
 		chrono.clear();tim.clear();
 		for (int i=0;i<iter;i++){
 			chrono.start();
-			CharPoly<Field,typename Givaro::Poly1Dom<Field> > (F, charp, n, A, lda, VARIANT1);
+			CharPoly (PolDom, charp, n, A, lda, VARIANT1);
 			chrono.stop();
 			tim+=chrono;
 			FFLAS::fassign (F, n, n, B, lda, A, lda);
@@ -102,7 +103,7 @@ int main () {
 		tim.clear();chrono.clear();
 		for (int i=0;i<iter;i++){
 			chrono.start();
-			CharPoly<Field,typename Givaro::Poly1Dom<Field> > (F, charp, n, A, lda, VARIANT2);
+			CharPoly (PolDom, charp, n, A, lda, VARIANT2);
 			chrono.stop();
 			tim+=chrono;
 			FFLAS::fassign (F, n, n, B, lda, A, lda);

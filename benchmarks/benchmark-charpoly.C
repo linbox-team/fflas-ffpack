@@ -26,6 +26,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
+#include <givaro/givpoly1.h>
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -56,7 +57,7 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 	double time_charp=0;
 	for (size_t i=0;i<iter;++i){
 		if (!file.empty()){
-			A = read_field (F, file.c_str(), &n, &n);
+			FFLAS::ReadMatrix (file, F, n, n, A);
 		}
 		else{
 			A = FFLAS::fflas_new (F, n, n);
@@ -137,7 +138,8 @@ int main(int argc, char** argv) {
     std::vector<Field::Element> cpol(n);
     chrono.clear();
     chrono.start();
-    FFPACK::CharPoly (F, cpol, n, A, n, CT);
+	Givaro::Poly1Dom<Field> PolDom(F);
+    FFPACK::CharPoly (PolDom, cpol, n, A, n, CT);
     chrono.stop();
 
     time+=chrono.usertime();
