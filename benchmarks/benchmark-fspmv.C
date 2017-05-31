@@ -28,11 +28,11 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
 
 #include "fflas-ffpack/config-blas.h"
-// #include "fflas-ffpac/field/modular-double.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -81,7 +81,6 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 int main(int argc, char **argv) {
 
     using Field = Givaro::Modular<int64_t,int64_t>;
-    using Element = typename Field::Element;
 
     size_t iter = 10;
     Givaro::Integer q = 1009;
