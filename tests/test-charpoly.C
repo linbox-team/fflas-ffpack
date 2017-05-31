@@ -155,8 +155,8 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 
 		if (!file.empty()) {
 			/* user provided test matrix */
-			const char * filestring = file.c_str();
-			A = read_field<Field>(*F,const_cast<char*>(filestring),&n,&n);
+			//const char * filestring = file.c_str();
+			FFLAS::ReadMatrix(file,*F,n,n,A);
 		} else {
 				/* Random matrix test */
 			A = FFLAS::fflas_new(*F,n,lda);
