@@ -234,7 +234,8 @@ namespace FFLAS {
 		std::vector<Coo<Field>> data;
 		nnz = 0;
 		uint64_t itLine = 0;
-		while (std::getline(file, line)) {
+		while (!file.eof()) {
+			std::getline(file, line);
 			tokens.resize(0);
 			std::istringstream iss(line);
 
