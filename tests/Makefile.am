@@ -34,32 +34,32 @@ EXTRA_DIST= test-utils.h
 PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =               \
-		test-lu             \
-		test-det            \
-		test-echelon        \
-		test-charpoly       \
-		test-minpoly		\
-		test-rankprofiles   \
-		test-compressQ      \
-		test-permutations   \
 		test-fdot           \
-		test-fadd           \
 		test-finit          \
 		test-fscal          \
-		test-fgemm          \
-		test-pluq-check     \
-		test-det-check     \
-		test-fgemm-check    \
-		test-ftrsm-check    \
-		test-invert-check   \
-		test-charpoly-check \
+		test-fadd           \
 		test-fger           \
-		test-ftrsm          \
-		test-ftrmm          \
 		test-ftrsv          \
 		test-ftrmv          \
+		test-ftrsm          \
+		test-ftrsm-check    \
+		test-ftrmm          \
+		test-fgemm          \
+		test-fgemm-check    \
+		test-permutations   \
+		test-compressQ      \
+		test-lu             \
+		test-pluq-check     \
 		test-fsyrk          \
 		test-fsytrf          \
+		test-invert-check   \
+		test-rankprofiles   \
+		test-det            \
+		test-det-check     \
+		test-echelon        \
+		test-charpoly       \
+		test-charpoly-check \
+		test-minpoly		\
 		test-multifile      \
 		test-io      \
 		test-maxdelayeddim \
