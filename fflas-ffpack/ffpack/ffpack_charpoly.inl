@@ -89,7 +89,7 @@ namespace FFPACK {
 				bool cont;
 
 				Givaro::Integer p = F.characteristic();
-				if (p < N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
+				if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
 					return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
 				do{
 					cont=false;

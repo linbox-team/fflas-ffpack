@@ -27,7 +27,7 @@
  */
 
 #ifndef __FFPACK_charpoly_mp_INL
-#define __FFPACK_charpoy_mp_INL
+#define __FFPACK_charpoly_mp_INL
 #include <givaro/zring.h>
 #include "givaro/givinteger.h"
 #include "givaro/givpoly1.h"
@@ -101,4 +101,4 @@ namespace FFPACK {
     
 }
 
-#endif
+#endif // __FFPACK_charpoly_mp_INL
