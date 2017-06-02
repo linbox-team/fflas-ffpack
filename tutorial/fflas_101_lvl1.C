@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   std::cout << "" << std::endl;
   
   typedef Givaro::Modular<float> Float_Ring;
-  Float_Ring F(120);
+  Float_Ring F(101);
   Float_Ring::Element alpha,beta;    // scalars
   Float_Ring::Element * X, * Y, * Z; // vectors
   const size_t xsize = 2, ysize = 2 , zsize = 2, one = 1, ld = 1;
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   // ===== manual initialisation =====
   
   F.init(*(X+0),  52);               // X[0] = 52
-  F.init(  X[1], 183);               // X[1] = 63
+  F.init(  X[1], 183);               // X[1] = 82
 
   std::cout << "\nInitialisation" << std::endl;
   write_field(F, std::cout << "X:=", X, xsize, one,one,true) << std::endl;
