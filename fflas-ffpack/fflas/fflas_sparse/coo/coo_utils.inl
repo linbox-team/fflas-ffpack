@@ -58,7 +58,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::COO> &A, c
         A.delayed = true;
     A.col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
     A.row = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
-    A.dat = fflas_new(F, nnz, 1, Alignment::CACHE_LINE);
+    A.dat = fflas_new(F, nnz, Alignment::CACHE_LINE);
 
     for (uint64_t i = 0; i < nnz; ++i) {
         A.col[i] = (index_t)col[i];

@@ -308,7 +308,7 @@ namespace FFPACK {
 			size_t rda = B._stride;
 			Givaro::ZRing<BasisElement> D;
 			Gamma = FFLAS::fflas_new(D,_size,n);
-			alpha = FFLAS::fflas_new(D,n,1);			
+			alpha = FFLAS::fflas_new(D,n);			
 			// compute Gamma
 			typename RNS::Element mmi(const_cast<typename RNS::BasisElement*>(_rns->_MMi.data()),1);
 			FFLAS::fscal(_RNSdelayed, n, mmi, B, 1, typename RNS::Element_ptr(Gamma,n), 1);
@@ -860,8 +860,14 @@ namespace FFLAS {
 	// specialization for the fflas alloc function
 	template<>
 	inline FFPACK::rns_double_elt_ptr
+	fflas_new(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m, const Alignment align){
+		return FFPACK::rns_double_elt_ptr(FFLAS::fflas_new<double>(m*F.size(),align),m);
+	}
+
+	template<>
+	inline FFPACK::rns_double_elt_ptr
 	fflas_new(const FFPACK::RNSIntegerMod<FFPACK::rns_double> &F,  const size_t m,  const size_t n, const Alignment align){
-		return FFPACK::rns_double_elt_ptr(FFLAS::fflas_new<double>(m*n*F.size(),align),m*n);
+		return fflas_new(F, m*n, align);
 	}
 
 	// function to convert from integer to RNS (note: this is not the finit function from FFLAS, extra k)

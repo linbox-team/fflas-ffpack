@@ -44,25 +44,38 @@ namespace FFPACK {
 // 		FloatElement* Af = FFLAS::fflas_new<FloatElement>(N*N);
 // 		typename std::list< Polynomial<FloatElement> > charp_float;
 // 		fconvert(F, M, N, Af, N, A, lda);
-// //convertir aussi le poly
+// // also convert the polynomial
 // 		CharPoly (G, charp_float, N, Af, N, CharpTag);
 
 // 		finit(F, ma, Yf, 1, Y, incY);
 // 		fflas_delete (Af);
 // 		return charp;
 // 	}	
-	template <class Field, class Polynomial, class RandIter>
-	std::list<Polynomial>&
-	CharPoly (const Field& F, std::list<Polynomial>& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag)
+	template <class PolRing>
+	std::list<typename PolRing::Element>&
+	CharPoly (const PolRing& R, std::list<typename PolRing::Element>& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  typename PolRing::Domain_t::RandIter& G,const FFPACK_CHARPOLY_TAG CharpTag)
 	{
-		// if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
-		//     Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
+		// if (Protected::AreEqual<PolRing::Domain_t, Givaro::Modular<double> >::value ||
+		//     Protected::AreEqual<PolRing::Domain_t, Givaro::ModularBalanced<double> >::value){
 		// 	if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
-		// 		return CharPoly_convert <float,Field> (F, charp, N, A, lda, CharpTag);
+		// 		return CharPoly_convert <float,PolRing::Domain_t> (F, charp, N, A, lda, CharpTag);
 		// }
-		switch (CharpTag) {
+		typedef typename PolRing::Domain_t Field;
+		const Field& F = R.getdomain();
+
+		FFPACK_CHARPOLY_TAG tag = CharpTag;
+		if (tag == FfpackAuto){
+				if (N < __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD)
+					tag = FfpackDanilevski;
+				else if (N< __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD)
+					tag = FfpackLUK;
+				else
+					tag = FfpackArithProg;
+		}
+		switch (tag){
+			case FfpackDanilevski: return Danilevski (F, charp, N, A, lda);
 			case FfpackLUK:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
@@ -70,16 +83,29 @@ namespace FFPACK {
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-			case FfpackKG:
+			case FfpackArithProg:
 			{
-				return Protected::KellerGehrig (F, charp, N, A, lda);
-					// break;
+				size_t attempts=0;
+				bool cont;
+
+				Givaro::Integer p = F.characteristic();
+				if (p < (uint64_t)N)	// Heuristic condition (the pessimistic theoretical one being p<2n^2).
+					return CharPoly(R, charp, N, A, lda, G, FfpackLUK);
+				do{
+					cont=false;
+					try {
+						Protected::CharpolyArithProg (R, charp, N, A, lda, G);
+					}
+					catch (CharpolyFailed){
+						if (++attempts < 2)
+							cont = true;
+						else
+							return CharPoly (R, charp, N, A, lda, G, FfpackLUK);
+					}
+				} while (cont);
+				return charp;
 			}
-			case FfpackDanilevski:
-			{
-				return Danilevski (F, charp, N, A, lda);
-					// break;
-			}
+			case FfpackKG: return Protected::KellerGehrig (F, charp, N, A, lda);
 			case FfpackKGFast:
 			{
 				size_t mc, mb, j;
@@ -87,11 +113,6 @@ namespace FFPACK {
 					std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
 				}
 				return charp;
-					// break;
-			}
-			case FfpackKGFastG:
-			{
-				return Protected::KGFast_generalized (F, charp, N, A, lda);
 			}
 			case FfpackHybrid:
 			{
@@ -100,28 +121,7 @@ namespace FFPACK {
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-			case FfpackArithProg:
-			{
-				size_t attempts=0;
-				bool cont = false;
-				const uint64_t p = static_cast<uint64_t>(F.characteristic());
-					// Heuristic condition (the pessimistic theoretical one being p<2n^2.
-				if (p < static_cast<uint64_t>(N)){
-					return CharPoly (F, charp, N, A, lda, G, FfpackLUK);
-				}					
-				do{
-					try {
-						CharpolyArithProg (F, charp, N, A, lda, __FFPACK_CHARPOLY_THRESHOLD, G);
-					}
-					catch (CharpolyFailed){
-						if (attempts++ < 2)
-							cont = true;
-						else
-							return CharPoly(F, charp, N, A, lda, G, FfpackLUK);
-					}
-				} while (cont);
-				return charp;
-			}
+			case FfpackKGFastG:	return Protected::KGFast_generalized (F, charp, N, A, lda);
 			default:
 			{
 				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
@@ -132,39 +132,27 @@ namespace FFPACK {
 		}
 	}
 
-	template<class Polynomial, class Field>
-	Polynomial & mulpoly(const Field& F, Polynomial &res, const Polynomial & P1, const Polynomial & P2)
-	{
-		size_t i,j;
-		// Warning: assumes that res is allocated to the size of the product
-		res.resize(P1.size()+P2.size()-1);
-		FFLAS::fzero(F,res.size(),&res[0],1);
-		for ( i=0;i<P1.size();i++)
-			for ( j=0;j<P2.size();j++)
-				F.axpyin(res[i+j],P1[i],P2[j]);
-		return res;
-	}
 
-	template <class Field, class Polynomial, class RandIter>
-	Polynomial&
-	CharPoly (const Field& F, Polynomial& charp, const size_t N,
-			  typename Field::Element_ptr A, const size_t lda,
-			  RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag)
-	{
-		Checker_charpoly<Field,Polynomial> checker(F,N,A,lda);
+	template <class PolRing>
+	typename PolRing::Element&
+	CharPoly (const PolRing& R, typename PolRing::Element& charp, const size_t N,
+			  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+			  typename PolRing::Domain_t::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag){
+
+		typedef typename PolRing::Domain_t Field;
+		typedef typename PolRing::Element Polynomial;
+		Checker_charpoly<Field,Polynomial> checker(R.getdomain(),N,A,lda);
 		
 		std::list<Polynomial> factor_list;
-		CharPoly (F, factor_list, N, A, lda, G, CharpTag);
-		typename std::list<Polynomial >::const_iterator it;
+		CharPoly (R, factor_list, N, A, lda, G, CharpTag);
+		typename std::list<Polynomial>::const_iterator it;
 		it = factor_list.begin();
 
-		charp.resize(N+1);
-		Polynomial P = charp = *(it++);
-
+		R.init(charp, N+1);
+		R.assign (charp, *(it++));
 		while( it!=factor_list.end() ){
-			mulpoly (F,charp, P, *it);
-			P = charp;
-			++it;
+			R.mulin(charp, *it);
+			it++;
 		}
 
 		checker.check(charp);
@@ -185,12 +173,20 @@ namespace FFPACK {
 			size_t Ncurr=N;
 			charp.clear();
 			size_t nbfac = 0;
+
 			while (Ncurr > 0){
+
 				size_t *P = FFLAS::fflas_new<size_t>(Ncurr);
+				typename Field::Element_ptr v = FFLAS::fflas_new (F,Ncurr,1);
 				Polynomial minP;//=new Polynomial();
 				    //Hybrid_KGF_LUK_MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
-				FFPACK::RandomMatrix (F, 1, Ncurr, X2, ldx, G);
-				MatVecMinPoly (F, minP, Ncurr, A, lda, X2, ldx, P);
+
+				FFPACK::RandomMatrix (F, 1, Ncurr, v, Ncurr, G);
+
+				MatVecMinPoly (F, minP, Ncurr, A, lda, v, 1, X2, ldx, P);
+
+				FFLAS::fflas_delete (v);
+
 				size_t k = minP.size()-1; // degre of minpoly
 				if ((k==1) && F.isZero (minP[0])){ // minpoly is X
 					if (FFLAS::fiszero(F,Ncurr, Ncurr, A, lda)){
@@ -370,5 +366,5 @@ namespace FFPACK {
 	} // Protected
 
 } // FFPACK
-
+#include "ffpack_charpoly_mp.inl"
 #endif // __FFLASFFPACK_charpoly_INL

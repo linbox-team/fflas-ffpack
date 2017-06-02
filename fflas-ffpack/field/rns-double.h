@@ -85,7 +85,7 @@ namespace FFPACK {
 			:  _M(1), _size(0), _pbits(pbits), _mi_sum(1)
 		{
 			integer::seeding(seed);
-                        Givaro::IntPrimeDom IPD;
+			Givaro::IntPrimeDom IPD;
 			integer prime;
 			while (_M < bound*_mi_sum) {
 				_basis.resize(_size+1);

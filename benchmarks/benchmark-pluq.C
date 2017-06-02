@@ -54,7 +54,6 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/fflas_randommatrix.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 

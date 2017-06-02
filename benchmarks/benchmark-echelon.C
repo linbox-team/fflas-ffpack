@@ -27,7 +27,6 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include <givaro/modular-balanced.h>
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 using namespace std;

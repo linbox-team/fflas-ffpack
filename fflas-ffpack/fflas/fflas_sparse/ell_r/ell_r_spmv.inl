@@ -194,7 +194,7 @@ namespace FFLAS{
 		}else if(A.cst == -1){
 			ell_r_details::fspmv(F, A, x, y, [&F](Element & a, const Element & b){F.subin(a, b);}, FieldCategories::GenericTag());
 		}else{
-			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+			auto x1 = fflas_new(F, A.n, Alignment::CACHE_LINE);
 			fscal(F, A.n, A.cst, x, 1, x1, 1);
 			ell_r_details::fspmv(F, A, x, y, [&F](Element & a, const Element & b){F.addin(a, b);}, FieldCategories::GenericTag());
 			fflas_delete(x1);
@@ -210,7 +210,7 @@ namespace FFLAS{
 		}else if(A.cst == -1){
 			ell_r_details::fspmv(F, A, x, y, [](Element & a, const Element & b){a -= b;}, FieldCategories::UnparametricTag());
 		}else{
-			auto x1 = fflas_new(F, A.n, 1, Alignment::CACHE_LINE);
+			auto x1 = fflas_new(F, A.n, Alignment::CACHE_LINE);
 			fscal(F, A.n, A.cst, x, 1, x1, 1);
 			ell_r_details::fspmv(F, A, x, y, [](Element & a, const Element & b){a += b;}, FieldCategories::UnparametricTag());
 			fflas_delete(x1);

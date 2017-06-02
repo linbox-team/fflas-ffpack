@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
 	srand (seed);
 
 	typedef Givaro::Modular<double> Field;
-	typedef std::vector<Field::Element> Polynomial;
+	typedef Givaro::Poly1Dom<Field> PolRing;
+	typedef PolRing::Element Polynomial;
 
 	Field F(q);
 	Field::RandIter Rand(F,0,seed);
@@ -125,7 +126,7 @@ int main(int argc, char** argv) {
 			chrono.clear(); chrono.start();
 			pass += checker1.check(ta,tb,alpha,A,lda,B,ldb,C) ? 1 : 0;
 			chrono.stop(); time1 += chrono.usertime();
-		}
+	}
 		time1 /= NR_TESTS;
 		time2 /= NR_TESTS;
 		stats_f << "     " << i << "-" << i+Range << "\t\t" << pass << "/" << NR_TESTS << "\t\t\t" << time2 
@@ -261,6 +262,8 @@ int main(int argc, char** argv) {
 
 	// #####   CharPoly   #####
 	stats_f << "CharPoly:\n";
+	PolRing R(F);
+
 	for (size_t i=0; i<MAX_SIZE_MATRICES; i+=Range) {
 		pass = 0; time1 = 0.0; time2 = 0.0;
 		for (size_t j=0; j<NR_TESTS; ++j) {
@@ -276,7 +279,7 @@ int main(int argc, char** argv) {
 			chrono.stop(); time1 += chrono.usertime();
 
 			chrono.clear(); chrono.start();
-			FFPACK::CharPoly(F,g,n,A,n,FFPACK::FfpackLUK);
+			FFPACK::CharPoly(R,g,n,A,n,FFPACK::FfpackLUK);
 			chrono.stop(); time2 += chrono.usertime();
 
 			chrono.clear(); chrono.start();

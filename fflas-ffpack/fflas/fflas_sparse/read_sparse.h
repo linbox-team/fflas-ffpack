@@ -177,7 +177,7 @@ namespace FFLAS {
 		assert(i == nnz);
 
 		col = fflas_new<index_t>(nnz);
-		val = fflas_new(f, nnz, 1);
+		val = fflas_new(f, nnz);
 
 		if (!sorted) {
 			assert(nnz == data.size());
@@ -234,7 +234,8 @@ namespace FFLAS {
 		std::vector<Coo<Field>> data;
 		nnz = 0;
 		uint64_t itLine = 0;
-		while (std::getline(file, line)) {
+		while (!file.eof()) {
+			std::getline(file, line);
 			tokens.resize(0);
 			std::istringstream iss(line);
 
@@ -269,7 +270,7 @@ namespace FFLAS {
 		}
 		row = fflas_new<index_t>(data.size());
 		col = fflas_new<index_t>(data.size());
-		val = fflas_new(f, data.size(), 1);
+		val = fflas_new(f, data.size());
 		nnz = data.size();
 		std::cout << "nnz : " << nnz << std::endl;
 		for (size_t i = 0, end = data.size(); i < end; ++i) {
@@ -429,7 +430,7 @@ namespace FFLAS {
 		file.read((char*) &data_type , sizeof(int64_t)) ;
 		file.read((char*) &rowdim , sizeof(int64_t)) ;
 		file.read((char*) &coldim , sizeof(int64_t)) ;
-		val = fflas_new(F,rowdim*coldim,1);
+		val = fflas_new(F,rowdim,coldim);
 		readMachineType(F,val, modulo, file,rowdim*coldim,field_desc,data_type);
 
 	}

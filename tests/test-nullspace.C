@@ -41,7 +41,7 @@ using namespace std;
 #include <iostream>
 #include "fflas-ffpack/field/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -66,9 +66,9 @@ int main(int argc, char** argv){
 	F.init(zero,0.0);
 	F.init(one,1.0);
 	Field::Element * A, *NS;
-	A = read_field(F,argv[2],&m,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
- FFLAS::Timer tim,t; t.clear();tim.clear();
+	FFLAS::Timer tim,t; t.clear();tim.clear();
 	size_t  ldn, NSdim;
 
 	for(int i = 0;i<nbit;++i){
@@ -83,7 +83,7 @@ int main(int argc, char** argv){
 	}
 
 #if __FFLASFFPACK_DEBUG
-	Field::Element *Ab = read_field(F,argv[2],&m,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,Ab);
 	Field::Element *C = FFLAS::fflas_new<Field::Element>(NSdim*n);
  	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n,
  		      1.0, Ab, n, NS, ldn, 0.0, C, NSdim);
@@ -102,11 +102,9 @@ int main(int argc, char** argv){
 
 	if ( wrong ){
 		cerr<<"FAIL"<<endl;
-		write_field (F,cerr<<"A="<<endl,Ab,m,n,n);
-		write_field (F,cerr<<"NS="<<endl,NS, n,NSdim, NSdim);
-		write_field (F,cerr<<"C="<<endl,C,m,NSdim, NSdim);
-// 		write_field (F,cerr<<"NS="<<endl,NS, NSdim, m,m);
-// 		write_field (F,cerr<<"C="<<endl,C,NSdim,n, n);
+		FFLAS::WriteMatrix (cerr<<"A="<<endl,F,m,n,Ab,n);
+		FFLAS::WriteMatrix (cerr<<"NS="<<endl,F, n,NSdim, NS, NSdim);
+		FFLAS::WriteMatrix (cerr<<"C="<<endl,F,m,NSdim, C, NSdim);
 	} else {
 		cerr<<"PASS"<<endl;
 	}

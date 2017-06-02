@@ -38,7 +38,7 @@ namespace FFPACK {
 		typename Field::Element_ptr Ai = A, An = A;
 		if (UpLo==FFLAS::FflasUpper){
 			for (size_t i = 0; i<N; i++, Ai+=lda+1, An++){
-				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, 1, i);
+				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
 				typename Field::Element_ptr Dinvj = Dinv;
 				typename Field::Element_ptr Anj = An;
 				for (size_t j=0; j<i; ++j, Anj+=lda,Dinvj+=incDinv)
@@ -51,7 +51,7 @@ namespace FFPACK {
 			}
 		} else {
 			for (size_t i = 0; i<N; i++, Ai+=lda+1, An+=lda){
-				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, 1, i);
+				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
 				typename Field::Element_ptr Dinvj = Dinv;
 				typename Field::Element_ptr Anj = An;
 				for (size_t j=0; j<i; ++j,Anj++,Dinvj+=incDinv)
@@ -111,7 +111,7 @@ namespace FFPACK {
 	inline bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 						typename Field::Element_ptr A, const size_t lda,
 						size_t threshold){
-		typename Field::Element_ptr Dinv = FFLAS::fflas_new(F,1,N);
+		typename Field::Element_ptr Dinv = FFLAS::fflas_new(F,N);
 		bool success = fsytrf_nonunit (F, UpLo, N, A, lda, Dinv, 1, threshold);
 		if (!success) return false;
 		size_t incA = (UpLo==FFLAS::FflasUpper) ? 1 : lda;

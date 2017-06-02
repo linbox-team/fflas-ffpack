@@ -32,7 +32,6 @@
 // #include "fflas-ffpac/field/modular-double.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
@@ -116,8 +115,8 @@ int main(int argc, char **argv) {
         std::cout << std::endl;
     }
 
-    auto x = FFLAS::fflas_new(F, coldim, 1, Alignment::CACHE_LINE);
-    auto y = FFLAS::fflas_new(F, rowdim, 1, Alignment::CACHE_LINE);
+    auto x = FFLAS::fflas_new(F, coldim, Alignment::CACHE_LINE);
+    auto y = FFLAS::fflas_new(F, rowdim, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < coldim; ++i) {
         x[i] = 1;
