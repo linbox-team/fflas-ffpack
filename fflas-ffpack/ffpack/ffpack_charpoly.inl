@@ -148,7 +148,7 @@ namespace FFPACK {
 		typename std::list<Polynomial>::const_iterator it;
 		it = factor_list.begin();
 
-		R.init(charp, N+1);
+		R.init(charp, Givaro::Degree(N));
 		R.assign (charp, *(it++));
 		while( it!=factor_list.end() ){
 			R.mulin(charp, *it);
