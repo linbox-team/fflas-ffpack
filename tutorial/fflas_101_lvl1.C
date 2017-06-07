@@ -1,5 +1,6 @@
 /* Copyright (c) FFLAS-FFPACK
-* Written by  
+* Written by Philippe LEDENT
+* philippe.ledent@etu.univ-grenoble-alpes.fr
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
 *
@@ -39,6 +40,7 @@ actually do the work.
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 #include <iostream>
+#include "fflas-ffpack/utils/fflas_io.h"
 
 using namespace FFLAS;
 
@@ -61,14 +63,14 @@ int main(int argc, char** argv) {
   F.init(  X[1], 183);               // X[1] = 82
 
   std::cout << "\nInitialisation" << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one,one,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, one) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, one) << std::endl;
   
 
   // ===== initialisation from a vector ===== ???
   /*  finit(F,2,Y,1,X,1);
-  write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  WriteMatrix(F, std::cout << "X:=", X, 2, 1, 1) << std::endl;
+  WriteMatrix(F, std::cout << "Y:=", Y, ysize, one, one) << std::endl;
   */
 
   
@@ -84,9 +86,9 @@ int main(int argc, char** argv) {
 
   
   std::cout << "\nY mod 2 inplace" << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, ld) << std::endl;
   std::cout << "\nY := X mod 2" << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, ld) << std::endl;
 
 
   // ===== negation =====
@@ -95,9 +97,9 @@ int main(int argc, char** argv) {
 
   std::cout << "\n=== Negations ===" << std::endl;
   std::cout << "\nX := -X" << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
   std::cout << "\nY := -X" << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, ld) << std::endl;
   
 
   // ===== addition / substraction =====
@@ -106,25 +108,25 @@ int main(int argc, char** argv) {
   F.init(Y[0],2); F.assign(Y[1],F.one); // Y := (2;1)
 
   std::cout << "\n=== Additions / Substractions ===" << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, ld) << std::endl;
+  WriteMatrix(std::cout << "Z:=", F, zsize, one, Z, ld) << std::endl;
 
   fadd(F,2,X,1,Y,1,Z,1);  // Z := X + Y
   fsub(F,2,Z,1,Y,1,X,1);  // X := Z - Y
 
   std::cout << "\nZ := X + Y"  << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "Z:=", F, zsize, one, Z,ld) << std::endl;
   std::cout << "\nX := Z - Y"  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
 
   // ===== scalar times vector =====
   F.init(alpha,42); // the scalar is scalar with respect to F
   fscal(F,2,alpha,X,1,Y,1); // Y = alpha * X
 
   std::cout << "\n=== Scalar times vector ===" << std::endl;
-  write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, 2, 1, X, 1) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, one) << std::endl;
 
   
   
@@ -133,13 +135,13 @@ int main(int argc, char** argv) {
   // to use faxpy due to processor optimisation
 
   std::cout << "\n=== Linear Combinations ==="  << std::endl;
-  write_field(F, std::cout << "X:=", X, 2, 1, 1,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, 2, 1, X, 1) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, one) << std::endl;
 
   faxpy(F,2,alpha,X,1,Y,1); // Y := alpha * X + Y
 
   std::cout << "\nY := alpha * X + Y"  << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, one,true) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, one) << std::endl;
 
   // faxpby is a more general form of faxpy
 
@@ -149,21 +151,21 @@ int main(int argc, char** argv) {
   // ===== dot product (scalar product) =====
   
   std::cout << "\n=== Dot Product ==="  << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "Z:=", F, zsize, one, Z,ld) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
   
   fdot(F,2,Z,1,X,1); // X := Z^T dot X
 
   std::cout << "\nX := Z^T dot X"  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
 
   // ===== tests =====
   bool b;
   F.init(Z[0], 0); F.init(Z[1], 120);
   
   std::cout << "\n=== Tests ==="  << std::endl;
-  write_field(F, std::cout << "Z:=", Z, zsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "Z:=", F, zsize, one, Z,ld) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
 
   
   b = fiszero(F,2,Z,1); // TRUE if X is zero vector in F
@@ -177,14 +179,14 @@ int main(int argc, char** argv) {
   // ===== swap  =====
 
   std::cout << "\n=== Swap ==="  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, ld) << std::endl;
 
   fswap(F,2,X,1,Y,1);   // exchanges X and Y;
 
   std::cout << "\nX <-> Y"  << std::endl;
-  write_field(F, std::cout << "X:=", X, xsize, one, ld,true) << std::endl;
-  write_field(F, std::cout << "Y:=", Y, ysize, one, ld,true) << std::endl;
+  WriteMatrix(std::cout << "X:=", F, xsize, one, X, ld) << std::endl;
+  WriteMatrix(std::cout << "Y:=", F, ysize, one, Y, ld) << std::endl;
   
   
 } // End main
