@@ -54,20 +54,25 @@ using Givaro::ModularBalanced;
 template<typename Field, class RandIter>
 bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_TRANSPOSE trans, FFLAS_DIAG diag, RandIter& Rand){
     typedef typename Field::Element Element;
-    Element * A, * B;
+    Element * A, * B, * C;
     size_t lda = n + (rand() % n );
     A  = fflas_new(F,n,lda);
     B  = fflas_new(F,n,lda);
-    
+	C  = fflas_new(F,n,lda);
+	
     RandomTriangularMatrix (F, n, n, uplo, diag, true, A, lda, Rand);
-    fassign (F, n, n, A, lda, B, lda);
+    fassign (F, n, n, A, lda, B, lda); // copy of A
+	fassign (F, n, n, A, lda, C, lda); // copy of A
+	
+	
     
     string ss=string((uplo == FflasLower)?"Lower_":"Upper_")+string((trans == FflasTrans)?"Trans_":"NoTrans_")+string((diag == FflasUnit)?"Unit":"NonUnit");
 
     cout<<std::left<<"Checking FTRTRI_";
     cout.fill('.');
     cout.width(30);
-    cout<<ss;
+    cout<<ss
+		<< endl;
 
 
     Timer t; t.clear();
@@ -77,21 +82,26 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_TRANSPOSE tr
     ftrtri (F, uplo, diag, n, A, lda);
     t.stop();
     time+=t.usertime();
-
+	
     // B <- A times B
     ftrmm(F, FFLAS::FflasLeft, uplo, trans, diag, n, n, F.one, A, lda, B, lda);
-
+	
     // Is B the identity matrix ?
     bool ok = true;
-    for(size_t li = 0; li < n && ok; li++){
-	    for(size_t co = 0; co < n && ok; co++){
-		    ok = ((li == co) && (F.areEqual(A[li*(lda+1)],F.one))) || (F.areEqual(A[li*lda+co],F.zero));
+    for(size_t li = 0; (li < n) && ok; li++){
+	    for(size_t co = 0; (co < n) && ok; co++){
+		    ok = ((li == co) && (F.areEqual(B[li*lda+co],F.one))) || (F.areEqual(B[li*lda+co],F.zero));
 	    }
     }
+
 	
     if (ok){
 	    cout << "PASSED ("<<time<<")"<<endl;
     } else{
+		//string file = "./mat.sage";
+		//WriteMatrix(file,F,n,n,C,lda,FFLAS::FflasSageMath);
+		WriteMatrix(std::cout << "\nA" << std::endl, F,n,n,C,lda);
+		WriteMatrix(std::cout << "\nA^-1" << std::endl, F,n,n,A,lda);
 	    cout << "FAILED ("<<time<<")"<<endl;
     }
 
@@ -114,14 +124,14 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	    
 	    cout<<"Checking with ";F->write(cout)<<endl;
 	    
-	    ok = ok && check_ftrtri(*F,n,FflasLower,FflasNoTrans,FflasUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNoTrans,FflasUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasLower,FflasTrans,FflasUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasUpper,FflasTrans,FflasUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasLower,FflasNoTrans,FflasNonUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNoTrans,FflasNonUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasLower,FflasTrans,FflasNonUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasUpper,FflasTrans,FflasNonUnit,G);
+		//ok = ok && check_ftrtri(*F,n,FflasLower,FflasNoTrans,FflasUnit,G);
+	    //ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNoTrans,FflasUnit,G);
+	    //ok = ok && check_ftrtri(*F,n,FflasLower,FflasTrans,FflasUnit,G);
+	    //ok = ok && check_ftrtri(*F,n,FflasUpper,FflasTrans,FflasUnit,G);
+	    //ok = ok && check_ftrtri(*F,n,FflasLower,FflasNoTrans,FflasNonUnit,G);
+		ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNoTrans,FflasNonUnit,G);
+	    //ok = ok && check_ftrtri(*F,n,FflasLower,FflasTrans,FflasNonUnit,G);
+	    //ok = ok && check_ftrtri(*F,n,FflasUpper,FflasTrans,FflasNonUnit,G);
 	    nbit--;
 	    delete F;
     }
@@ -162,6 +172,6 @@ int main(int argc, char** argv)
 	    ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,iters,seed);
 	    ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters,seed);
     } while (loop && ok);
-    
+	std::cout << seed << std::endl;
     return !ok ;
 }
