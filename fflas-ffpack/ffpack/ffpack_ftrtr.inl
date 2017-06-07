@@ -26,7 +26,7 @@
  * ========LICENCE========
  *.
  */
-
+#define ENABLE_ALL_CHECKINGS 1
 #ifndef __FFLASFFPACK_ffpack_ftrtr_INL
 #define __FFLASFFPACK_ffpack_ftrtr_INL
 
@@ -39,36 +39,26 @@ namespace FFPACK {
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 			const size_t N, typename Field::Element_ptr A, const size_t lda)
 	{
-			//	std::cout << "rec call" << std::endl;
+		typename Field::Element negDiag;
 		if (!N) return;
 		if (N <= 6){ // base case
+			
 			if (Uplo == FFLAS::FflasUpper){
-				for(size_t li = N-1; li < N; li--){ // since li is size_t when it goes below 0 it will overflow above size
+				F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix
+				for(size_t li = N-1; li-->0;){      // start at the second to last line
 					if(Diag == FFLAS::FflasNonUnit)
-						F.invin(A[(lda+1)*li]);            //invert element on diagonal
-					for(size_t co = N-1; co > li; co--){
-						fgemv(F,FFLAS::FflasNoTrans,1,co-li,
-							  A[li*(lda+1)],               // diagonal element of the current line
-							  (A+li*(lda+1)+1),lda,          // horizontal vector starting after the diagonal left of the current element
-							  (A+co+lda*(li+1)),lda,       // vertical vector starting below the current element
-							  F.zero,(A+co+lda*li),lda);   // The currrent element
-						F.negin(A[co+lda*li]);
-					}
+						F.invin(A[li*(lda+1)]);             // Diagonal element on current line
+					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
+					ftrmm(F,FFLAS::FflasLeft,       // b <- b dot nDiag * M
+						  Uplo,FFLAS::FflasTrans,Diag,
+						  N-li-1,1,                 // Size of vector (1 row and N-li-1 columns)
+						  negDiag,                  // Scalar
+						  (A+(li+1)*(lda+1)),lda,   // Triangular matrix below the vector
+						  A+li*(lda+1)+1,1);        // Vector starting after diagonal element of current line
 				}
 			}
 			else{ // Uplo == FflasLower
-				for(size_t li = 0; li < N; li++){
-					F.invin(A[(lda+1)*li]);         //invert element on diagonal
-					for(size_t co = 0; co < li; co++){
-						fgemv(F,FFLAS::FflasNoTrans,1,li-co,
-							  *(A+li*(lda+1)),        // diagonal element of the current line
-							  (A+co+li*lda),1,        // horizontal vector starting at the current element
-							  (A+co*(lda+1)),lda,     // vertical vector starting at the diagonal element above the current element
-							  F.zero,
-							  (A+co+lda*li),lda);     // The currrent element
-						F.negin(A[co+lda*li]);
-					}
-				}
+				
 			}
 		}
 		else { // recursive case
