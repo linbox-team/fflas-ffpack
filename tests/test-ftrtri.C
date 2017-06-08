@@ -71,8 +71,8 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, R
     cout<<std::left<<"Checking FTRTRI_";
     cout.fill('.');
     cout.width(30);
-    cout<<ss
-		<< endl;
+    cout<<ss;
+		//	<< endl;
 
 
     Timer t; t.clear();
@@ -84,7 +84,7 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, R
     time+=t.usertime();
 	
     // B <- A times B
-    ftrmm(F, FFLAS::FflasLeft, uplo, FFLAS::FflasNoTrans, diag, n, n, F.one, A, lda, B, lda);
+    ftrmm(F, FFLAS::FflasRight, uplo, FFLAS::FflasNoTrans, diag, n, n, F.one, A, lda, B, lda);
 	
     // Is B the identity matrix ?
     bool ok = true;
@@ -100,9 +100,9 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, R
     } else{
 		//string file = "./mat.sage";
 		//WriteMatrix(file,F,n,n,C,lda,FFLAS::FflasSageMath);
+		cout << "FAILED ("<<time<<")"<<endl;
 		WriteMatrix(std::cout << "\nA" << std::endl, F,n,n,C,lda);
 		WriteMatrix(std::cout << "\nA^-1" << std::endl, F,n,n,A,lda);
-	    cout << "FAILED ("<<time<<")"<<endl;
     }
 
     fflas_delete(A);
