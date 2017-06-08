@@ -47,18 +47,29 @@ namespace FFPACK {
 				F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix
 				for(size_t li = N-1; li-->0;){      // start at the second to last line
 					if(Diag == FFLAS::FflasNonUnit)
-						F.invin(A[li*(lda+1)]);             // Diagonal element on current line
+						F.invin(A[li*(lda+1)]);     // Diagonal element on current line
 					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
 					ftrmm(F,FFLAS::FflasLeft,       // b <- b dot nDiag * M
 						  Uplo,FFLAS::FflasTrans,Diag,
 						  N-li-1,1,                 // Size of vector (1 row and N-li-1 columns)
 						  negDiag,                  // Scalar
 						  (A+(li+1)*(lda+1)),lda,   // Triangular matrix below the vector
-						  A+li*(lda+1)+1,1);        // Vector starting after diagonal element of current line
+						  A+li*(lda+1)+1,1);        // Horizontal vector starting after diagonal element of current line
 				}
 			}
 			else{ // Uplo == FflasLower
-				
+				F.invin(A[0]);                      // first element of the matrix
+				for(size_t li = 1; li < N; li++){   // start at the second line
+					if(Diag == FFLAS::FflasNonUnit)
+						F.invin(A[li*(lda+1)]);     // Diagonal element on current line
+					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
+					ftrmm(F,FFLAS::FflasLeft,       // b <- b dot nDiag * M
+						  Uplo,FFLAS::FflasTrans,Diag,
+						  li,1,                     // Size of vector (1 row and N-li-1 columns)
+						  negDiag,                  // Scalar
+						  A,lda,                    // Triangular matrix above the vector
+						  A+li*lda, 1);             // Horizontal vector ending before diagonal element of current line
+				}
 			}
 		}
 		else { // recursive case
