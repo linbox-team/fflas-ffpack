@@ -40,7 +40,7 @@
 #include <iomanip>
 #include <list>
 #include <vector>
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 using namespace std;
 #include "givaro/modular.h"
@@ -59,7 +59,7 @@ std::ostream& printvect(std::ostream& o, vector<T>& vect){
 
 int main(int argc, char** argv){
 
-	int m,n;
+	size_t m,n;
 	cout<<setprecision(20);
 
 	if (argc!=4){
@@ -71,11 +71,12 @@ int main(int argc, char** argv){
 	Field F( atoi(argv[1]) );
 	Field::Element one;
 	F.init(one, 1U);
-	Field::Element * A = read_field<Field> (F,argv[2],&m,&n);
+	Field::Element* A;
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 	size_t c = atoi(argv[3]);
 
 	std::list<vector<Field::Element> > frobForm;
- FFLAS::Timer tim;
+	FFLAS::Timer tim;
 	tim.clear();
 	tim.start();
 	FFPACK::CharpolyArithProg (F, frobForm, n, A, n, c);

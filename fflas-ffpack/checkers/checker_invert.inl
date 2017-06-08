@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /* checkers/Checker_invert.inl
  * Copyright (C) 2016 Ashley Lesdalons
  *
@@ -40,14 +40,14 @@ namespace FFPACK {
 
     public:
         CheckerImplem_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-                : F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
+                : F(F_), v(FFLAS::fflas_new(F_,m_)), w(FFLAS::fflas_new(F_,m_)), m(m_), lda(lda_)
             {
                 typename Field::RandIter G(F);
                 init(G,m,A,lda);
             }
 
         CheckerImplem_invert(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-                : F(G.ring()), v(FFLAS::fflas_new(F,m_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), lda(lda_)
+                : F(G.ring()), v(FFLAS::fflas_new(F,m_)), w(FFLAS::fflas_new(F,m_)), m(m_), lda(lda_)
             {
                 init(G,m,A,lda);
             }
@@ -69,12 +69,12 @@ namespace FFPACK {
         void init(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) {
             FFLAS::frand(F,G,m,v,1);
 
-// write_field(F,std::cerr<<"init A : ",A,m,m,lda,true)<<std::endl;
-// write_field(F,std::cerr<<"init v : ",v,m,1,1,true)<<std::endl;  
+// FFLAS::WriteMatrix (std::cerr<<"init A : ",F,m,m,A,lda,FflasMaple)<<std::endl;
+// FFLAS::WriteMatrix (std::cerr<<"init v : ",F,m,1,v,1,FflasMaple)<<std::endl;
     	
                 // w <- A.v
             FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, v, 1, F.zero, w, 1);
-// write_field(F,std::cerr<<"init w : ",w,m,1,1,true)<<std::endl;
+// FFLAS::WriteMatrix (std::cerr<<"init w : ",F,m,1,w,1,FflasMaple)<<std::endl;
         }
   
     };

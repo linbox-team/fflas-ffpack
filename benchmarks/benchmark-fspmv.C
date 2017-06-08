@@ -22,6 +22,7 @@
 * ========LICENCE========
 */
 
+#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -32,11 +33,9 @@
 #include "givaro/modular-balanced.h"
 
 #include "fflas-ffpack/config-blas.h"
-// #include "fflas-ffpac/field/modular-double.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/fflas/fflas_sparse.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
@@ -82,7 +81,6 @@ template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t it
 int main(int argc, char **argv) {
 
     using Field = Givaro::Modular<int64_t,int64_t>;
-    using Element = typename Field::Element;
 
     size_t iter = 10;
     Givaro::Integer q = 1009;
@@ -129,8 +127,8 @@ int main(int argc, char **argv) {
         //std::cout << std::endl;
     }
 
-    auto x = FFLAS::fflas_new(F, coldim, 1, Alignment::CACHE_LINE);
-    auto y = FFLAS::fflas_new(F, rowdim, 1, Alignment::CACHE_LINE);
+    auto x = FFLAS::fflas_new(F, coldim, Alignment::CACHE_LINE);
+    auto y = FFLAS::fflas_new(F, rowdim, Alignment::CACHE_LINE);
 
     for (size_t i = 0; i < coldim; ++i) {
         x[i] = 1;

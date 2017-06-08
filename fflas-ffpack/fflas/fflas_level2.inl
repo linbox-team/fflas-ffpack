@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
@@ -34,6 +34,7 @@
 #ifndef __FFLASFFPACK_fflas_fflas_level2_INL
 #define __FFLASFFPACK_fflas_fflas_level2_INL
 
+#include "givaro/zring.h"
 namespace FFLAS {
 
 	//---------------------------------------------------------------------
@@ -511,6 +512,31 @@ namespace FFLAS {
 	       const size_t N,typename Field::ConstElement_ptr A, const size_t lda,
 	       typename Field::Element_ptr X, int incX);
 
+	/** @brief bitsize:
+	 *  Computes  the largest bitsize of the matrix' coefficients.
+	 *  If the matrix is over a finite field, it returns the bitsize of the field's cardinality
+	 * @param F field
+	 * @param M rows
+	 * @param N cols
+	 * @param incX stride of \p  X
+	 * @param A a matrix of leading dimension \p lda and size \p MxN
+	 * @param lda leading dimension of \p A
+	 */
+	template<class Field>
+	inline size_t bitsize(const Field& F, size_t M, size_t N, const typename Field::Element* A, size_t lda){
+		Givaro::Integer p;
+		F.characteristic(p);
+		return p.bitsize();
+	}
+
+	template<>
+	inline size_t bitsize<Givaro::ZRing<Givaro::Integer> >(const Givaro::ZRing<Givaro::Integer>& F, size_t M, size_t N, const Givaro::Integer* A, size_t lda){
+		size_t bs = 1;
+		for (size_t i=0; i<M; ++i)
+			for (size_t j=0; j<N; ++j)
+				bs = std::max(bs, A[i*lda+j].bitsize());
+		return bs;
+	}
 	/** @brief ftrsm: TRiangular Matrix Vector prodcut
 	 * Computes  \f$ X \gets \mathrm{op}(A) X\f$
 	 * @param F field

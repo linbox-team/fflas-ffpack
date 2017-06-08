@@ -32,10 +32,10 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
 //#include "fflas-ffpack/field/modular-int.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "givaro/givintprime.h"
 
@@ -189,8 +189,8 @@ int main(int argc, char** argv){
 		} else {
 
 			cerr<<endl;
-			write_field (F, cerr<<"A = "<<endl, Abis, (int) K,(int) K,(int) K);
-			write_field (F, cerr<<"B = "<<endl, Bbis, (int) M,(int) N,(int) N);
+			FFLAS::WriteMatrix (cerr<<"A = "<<endl, F,  K, K, Abis, K);
+			FFLAS::WriteMatrix (cerr<<"B = "<<endl, F,  M, N, Bbis, N);
 		}
 	}
 

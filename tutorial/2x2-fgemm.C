@@ -24,7 +24,7 @@
 #include <givaro/modular-balanced.h>
 #include <fflas-ffpack/fflas/fflas.h>
 #include <fflas-ffpack/utils/timer.h>
-#include <fflas-ffpack/utils/Matio.h>
+#include <fflas-ffpack/utils/fflas_io.h>
 #include <fflas-ffpack/utils/args-parser.h>
 
 #include <iostream>
@@ -35,19 +35,21 @@ int main(int argc, char** argv) {
 
 	Givaro::Modular<float> F(11);
 
-    size_t m(2),k(3),n(1);
-	float A[2*3]{1,2,3,4,5,6}, B[3*1]{7,8,9}, C[2*1];
+        size_t m(2),k(3),n(1);
+	float A[2*3]{1,2,3,4,5,6}, B[3*1]{7,8,9}, * C;
 
+	C = fflas_new(F,m,n);
+	
         // A is mxk with leading dimension k
-	write_field(F, std::cout << "A:=", A, m, k, k, true) << std::endl;
+	FFLAS::WriteMatrix (std::cout << "A:=", F, m, k, A, k) << std::endl;
         // B is kxn with leading dimension n
-	write_field(F, std::cout << "B:=", B, k, n, n, true) << std::endl;
+	FFLAS::WriteMatrix (std::cout << "B:=", F, k, n, B, n) << std::endl;
 
         // C <-- 1. A.B + 0. C
 	fgemm (F, FflasNoTrans, FflasNoTrans, m, n, k, F.one, A, m, B, n, F.zero, C, n);
 
         // C is mxn with leading dimension n
-	write_field(F, std::cout << "C:=", C, m, n, n, true) << " modulo 11" << std::endl;
+	FFLAS::WriteMatrix (std::cout << "C:=", F, m, n, C, n) << " modulo 11" << std::endl;
 	
 	fflas_delete( C);
 
