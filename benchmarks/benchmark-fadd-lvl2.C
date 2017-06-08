@@ -72,11 +72,11 @@ int main(int argc, char** argv) {
 	
   for (size_t i=0;i<=iter;++i){
 	A = fflas_new(F, rows, cols);
-    size_t lda=rows;
+    size_t lda = cols;
     B = fflas_new(F, rows, cols);
-    size_t ldb=rows;
+    size_t ldb = cols;
     C = fflas_new(F, rows, cols);
-    size_t ldc=rows;
+    size_t ldc = cols;
     Field::RandIter G(F);
     RandomMatrix (F, rows, cols, A, lda, G);
     RandomMatrix (F, rows, cols, B, ldb, G);
