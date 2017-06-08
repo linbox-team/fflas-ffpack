@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
 	{ 'n', "-n N", "Set the column dimension of the matrix C.",             TYPE_INT , &cols },
     { 'a', "-a A", "Set the value of the coefficient alpha for alpha * B.", TYPE_DOUBLE , &a},
     { 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
-    { 't', "-t T", "Set the threshold to the base case.",                   TYPE_INT , &threshold },
     END_OF_ARGUMENTS
   };
 
@@ -94,9 +93,8 @@ int main(int argc, char** argv) {
   
   // -----------
   // Standard output for benchmark - Alexis Breust 2014/11/14
-#define SQUARE(x) ((x)*(x))
   std::cout << "Time: " << time / double(iter)
-			<< " Gfops: " << SQUARE(double(rows)/1000.)/(1000*time)* double(iter); //(n^2/1000^3)/time * iter
+			<< " Gfops: " << ((double(rows)/1000)*(double(cols)/1000))/(1000*time)* double(iter); //(n^2/1000^3)/time * iter
   FFLAS::writeCommandString(std::cout, as) << std::endl;
   return 0;
 }
