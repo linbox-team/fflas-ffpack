@@ -52,7 +52,7 @@ using Givaro::ModularBalanced;
 
 
 template<typename Field, class RandIter>
-bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_TRANSPOSE trans, FFLAS_DIAG diag, RandIter& Rand){
+bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, RandIter& Rand){
     typedef typename Field::Element Element;
     Element * A, * B, * C;
     size_t lda = n + (rand() % n );
@@ -66,7 +66,7 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_TRANSPOSE tr
 	
 	
     
-    string ss=string((uplo == FflasLower)?"Lower_":"Upper_")+string((trans == FflasTrans)?"Trans_":"NoTrans_")+string((diag == FflasUnit)?"Unit":"NonUnit");
+    string ss=string((uplo == FflasLower)?"Lower_":"Upper_")+string((diag == FflasUnit)?"Unit":"NonUnit");
 
     cout<<std::left<<"Checking FTRTRI_";
     cout.fill('.');
@@ -84,7 +84,7 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_TRANSPOSE tr
     time+=t.usertime();
 	
     // B <- A times B
-    ftrmm(F, FFLAS::FflasLeft, uplo, trans, diag, n, n, F.one, A, lda, B, lda);
+    ftrmm(F, FFLAS::FflasLeft, uplo, FFLAS::FflasNoTrans, diag, n, n, F.one, A, lda, B, lda);
 	
     // Is B the identity matrix ?
     bool ok = true;
@@ -124,14 +124,10 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	    
 	    cout<<"Checking with ";F->write(cout)<<endl;
 	    
-		//ok = ok && check_ftrtri(*F,n,FflasLower,FflasNoTrans,FflasUnit,G);
-	    //ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNoTrans,FflasUnit,G);
-	    //ok = ok && check_ftrtri(*F,n,FflasLower,FflasTrans,FflasUnit,G);
-	    //ok = ok && check_ftrtri(*F,n,FflasUpper,FflasTrans,FflasUnit,G);
-	    //ok = ok && check_ftrtri(*F,n,FflasLower,FflasNoTrans,FflasNonUnit,G);
-		ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNoTrans,FflasNonUnit,G);
-	    //ok = ok && check_ftrtri(*F,n,FflasLower,FflasTrans,FflasNonUnit,G);
-	    //ok = ok && check_ftrtri(*F,n,FflasUpper,FflasTrans,FflasNonUnit,G);
+		ok = ok && check_ftrtri(*F,n,FflasLower,FflasUnit,G);
+	    ok = ok && check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
+	    ok = ok && check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
+		ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
 	    nbit--;
 	    delete F;
     }
