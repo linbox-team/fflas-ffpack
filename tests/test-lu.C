@@ -59,7 +59,7 @@ size_t mvcnt = 0;
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 
 #include "fflas-ffpack/utils/args-parser.h"
 
