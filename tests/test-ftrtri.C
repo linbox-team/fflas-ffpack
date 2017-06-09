@@ -131,6 +131,9 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	    nbit--;
 	    delete F;
     }
+	if (!ok)
+		std::cout << "with seed = "<< seed << std::endl;
+
     return ok;
 }
 
@@ -139,8 +142,8 @@ int main(int argc, char** argv)
     cerr<<setprecision(10);
     Givaro::Integer q=-1;
     size_t b=0;
-    size_t n=483;
-    size_t iters=1;
+    size_t n=207;
+    size_t iters=3;
     bool loop=false;
     uint64_t seed = time(NULL);
     Argument as[] = {
@@ -168,6 +171,5 @@ int main(int argc, char** argv)
 	    ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,iters,seed);
 	    ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters,seed);
     } while (loop && ok);
-	std::cout << seed << std::endl;
     return !ok ;
 }
