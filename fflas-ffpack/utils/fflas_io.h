@@ -248,7 +248,6 @@ namespace FFLAS{
 				break;
 			}
 			default: // format == FflasMath
-				std::cerr<<"Ecriture Math"<<std::endl;
 				for (size_t i = 0; i<m; ++i){
 					for (size_t j=0; j<n;++j){
 						if (column_major) F.write (c, A[j*lda+i]);
