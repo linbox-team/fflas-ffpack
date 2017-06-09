@@ -355,7 +355,7 @@ namespace FFLAS {
 	 * @param n number of cols to copy
 	 * \param A matrix in \p F
 	 * \param lda stride of \p A
-	 * \param B vector in \p F
+	 * \param B matrix in \p F
 	 * \param ldb stride of \p B
 	 */
 	template<class Field>
