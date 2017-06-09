@@ -5,6 +5,7 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Philippe LEDENT (ledentp) <philippe.ledent@etu.univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
