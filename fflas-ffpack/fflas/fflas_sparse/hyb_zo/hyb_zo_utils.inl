@@ -61,7 +61,7 @@ inline void sparse_init(const Field &F, Sparse<Field, SparseMatrix_t::HYB_ZO> &A
             nOthers++;
     }
 
-    typename Field::Element_ptr dat2;
+    typename Field::Element_ptr dat2(0);
     index_t *colOne = nullptr, *colMOne = nullptr, *colOther = nullptr, *rowOne = nullptr, *rowMOne = nullptr,
             *rowOther = nullptr;
     if (nOnes) {
