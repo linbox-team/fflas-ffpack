@@ -35,7 +35,6 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include "fflas-ffpack/utils/Matio.h"
 #include "test-utils.h"
 #include "assert.h"
 

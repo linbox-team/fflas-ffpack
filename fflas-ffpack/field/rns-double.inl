@@ -60,6 +60,7 @@ namespace FFPACK {
 		//PAR_BLOCK{
 		//			FOR1D(i,m,sp,
 		PARFOR1D(i,m,SPLITTER(NUM_THREADS),
+				 
 				 for(size_t j=0;j<n;j++){
 					 size_t idx=j+i*n;
 					 const mpz_t*    m0     = reinterpret_cast<const mpz_t*>(Aiter+j+i*lda);

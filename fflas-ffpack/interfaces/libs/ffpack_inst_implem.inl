@@ -215,34 +215,36 @@ namespace FFPACK {
 						int& nullity);
 
 	template INST_OR_DECL
-	std::list<std::vector<FFLAS_ELT> >&	CharPoly (const FFLAS_FIELD<FFLAS_ELT>& F, 
-												  std::list<std::vector<FFLAS_ELT> >& charp, 
-												  const size_t N,
-												  FFLAS_ELT* A, const size_t lda,
-												  FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
-												  const FFPACK_CHARPOLY_TAG CharpTag);
-	template INST_OR_DECL
-	std::list<std::vector<FFLAS_ELT> >&	CharPoly (const FFLAS_FIELD<FFLAS_ELT>& F, 
-												  std::list<std::vector<FFLAS_ELT> >& charp, 
-												  const size_t N,
-												  FFLAS_ELT* A, const size_t lda,
-												  const FFPACK_CHARPOLY_TAG CharpTag);
+	std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element>&
+	CharPoly (const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
+			  std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> & charp,
+			  const size_t N,
+			  FFLAS_ELT* A, const size_t lda,
+			  FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
+			  const FFPACK_CHARPOLY_TAG CharpTag);
+
+	// template INST_OR_DECL
+	// std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> &
+	// CharPoly<FFLAS_FIELD,Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> > >
+	//         (const FFLAS_FIELD<FFLAS_ELT>& F, 
+	// 		 std::list<Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element> & charp, 
+	// 		 const size_t N, FFLAS_ELT* A, const size_t lda,
+	// 		 const FFPACK_CHARPOLY_TAG CharpTag);
 	
 	template INST_OR_DECL
-	std::vector<FFLAS_ELT> & mulpoly(const FFLAS_FIELD<FFLAS_ELT>& F,
-									 std::vector<FFLAS_ELT> &res,
-									 const 	std::vector<FFLAS_ELT> & P1, 
-									 const 	std::vector<FFLAS_ELT> & P2);
-	
+	Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element&
+	CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
+			 Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
+			 const size_t N, FFLAS_ELT* A, const size_t lda,
+			 FFLAS_FIELD<FFLAS_ELT>::RandIter& G, const FFPACK_CHARPOLY_TAG CharpTag);
+
 	template INST_OR_DECL
-	std::vector<FFLAS_ELT>& CharPoly( const FFLAS_FIELD<FFLAS_ELT>& F, 	std::vector<FFLAS_ELT>& charp, const size_t N,
-									  FFLAS_ELT* A, const size_t lda,
-									  FFLAS_FIELD<FFLAS_ELT>::RandIter& G,
-									  const FFPACK_CHARPOLY_TAG CharpTag);
-	template INST_OR_DECL
-	std::vector<FFLAS_ELT>& CharPoly( const FFLAS_FIELD<FFLAS_ELT>& F, 	std::vector<FFLAS_ELT>& charp, const size_t N,
-									  FFLAS_ELT* A, const size_t lda,
-									  const FFPACK_CHARPOLY_TAG CharpTag);
+	Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element&
+	CharPoly(const Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >& R,
+			 Givaro::Poly1Dom<FFLAS_FIELD<FFLAS_ELT> >::Element& charp,
+			 const size_t N, FFLAS_ELT* A, const size_t lda,
+			 const FFPACK_CHARPOLY_TAG CharpTag);
+
 	template INST_OR_DECL
 	std::vector<FFLAS_ELT>& MinPoly( const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP, const size_t N,
 									 const FFLAS_ELT* A, const size_t lda,
@@ -254,7 +256,7 @@ namespace FFPACK {
 	template INST_OR_DECL
 	std::vector<FFLAS_ELT>& MatVecMinPoly (const FFLAS_FIELD<FFLAS_ELT>& F, std::vector<FFLAS_ELT>& minP,
 										   const size_t N, const FFLAS_ELT* A, const size_t lda,
-										   FFLAS_ELT* K, const size_t ldk, size_t * P);
+										   const FFLAS_ELT* V, const size_t incv);
 	
 	template INST_OR_DECL
 	size_t KrylovElim( const FFLAS_FIELD<FFLAS_ELT>& F, const size_t M, const size_t N,

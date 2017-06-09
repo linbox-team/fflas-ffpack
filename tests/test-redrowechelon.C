@@ -45,10 +45,10 @@ using namespace std;
 //#define __LUDIVINE_CUTOFF 1
 #include <iostream>
 #include <iomanip>
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 //#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/field/modular-positive.h"
+#include "givaro/modular.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 using namespace FFPACK;
@@ -56,7 +56,7 @@ typedef Givaro::Modular<double> Field;
 
 int main(int argc, char** argv){
 	//cerr<<setprecision(20);
-	int i,j,nbf,m,n;
+	size_t i,j,nbf,m,n;
 	int R=0;
 
 	if (argc!=4){
@@ -68,7 +68,8 @@ int main(int argc, char** argv){
 	Field F((uint64_t)atoi(argv[1]));
 	Field::Element * A;
 
-	A = read_field(F,argv[2],&m,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+
 
 	size_t *P = FFLAS::fflas_new<size_t>(n);
 	size_t *Q = FFLAS::fflas_new<size_t>(m);
@@ -83,7 +84,7 @@ int main(int argc, char** argv){
 	for ( i=0;i<nbf;i++){
 		if (i) {
 			FFLAS::fflas_delete( A);
-			A = read_field(F,argv[2],&m,&n);
+			FFLAS::ReadMatrix (argv[2],F,m,n,A);
 		}
 		for (j=0;j<n;j++)
 			P[j]=0;
@@ -95,7 +96,7 @@ int main(int argc, char** argv){
 		tim.stop();
 		timc+=tim;
 	}
-	//write_field (F,cerr<<"Result = "<<endl, A, m,n,n);
+	//FFLAS::WriteMatrix (cerr<<"Result = "<<endl, F, m,n,A,n);
 
 // 	cerr<<"P = [";
 // 	for (size_t i=0; i<n; ++i)
@@ -136,9 +137,9 @@ int main(int argc, char** argv){
 		for (int j=R; j<m; ++j)
 			F.assign (*(U+i+j*n), zero);
 	}
-  	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+  	//FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,m,n,U,n);
 	FFPACK::applyP( F, FFLAS::FflasRight, FFLAS::FflasNoTrans, m, 0, R, U, n, Q);
-  	//write_field(F,cerr<<"U = "<<endl,U,m,n,n);
+  	//FFLAS::WriteMatrix (cerr<<"U = "<<endl,F,m,n,U,n);
 // 	cerr<<"P = ";
 // 	for (size_t i=0; i<n;++i)
 // 		cerr<<" "<<P[i];
@@ -149,11 +150,12 @@ int main(int argc, char** argv){
 // 	cerr<<endl;
 
 
-	//  	write_field(F,cerr<<"R = "<<endl,L,m,n,n);
+	//  	FFLAS::WriteMatrix (cerr<<"R = "<<endl,F,m,n,L,n);
 
 
-	Field::Element * B =  read_field(F,argv[2],&m,&n);
-	//write_field(F,cerr<<"A = "<<endl,B,m,n,n);
+	Field::Element* B;
+	FFLAS::ReadMatrix (argv[2],F,m,n,B);
+	//FFLAS::WriteMatrix (cerr<<"A = "<<endl,F,m,n,B,n);
 
 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0,
 		      L, m, B, n, 0.0, X,n);
@@ -165,8 +167,8 @@ int main(int argc, char** argv){
 			if (!F.areEqual (*(U+i*n+j), *(X+i*n+j)))
 				fail=true;
 
-//  	write_field(F,cerr<<"X = "<<endl,X,m,n,n);
-//    	write_field(F,cerr<<"R = "<<endl,U,m,n,n);
+//  	FFLAS::WriteMatrix (cerr<<"X = "<<endl,F,m,n,X,n);
+//    	FFLAS::WriteMatrix (cerr<<"R = "<<endl,F,m,n,U,n);
 
 	FFLAS::fflas_delete( B);
 	if (fail)

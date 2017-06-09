@@ -24,7 +24,7 @@
 #include <givaro/modular-balanced.h>
 #include <fflas-ffpack/fflas/fflas.h>
 #include <fflas-ffpack/utils/timer.h>
-#include <fflas-ffpack/utils/Matio.h>
+#include <fflas-ffpack/utils/fflas_io.h>
 #include <fflas-ffpack/utils/args-parser.h>
 
 #include <iostream>
@@ -59,12 +59,12 @@ int main(int argc, char** argv) {
 	F.mul(*(B+4),t,u);			// B[4] <- 2*4
 	F.add(*(B+5),u,v);			// B[5] <- 4+6
 	
-	write_field(F, std::cout << "A:=", A, 2, 3, 3,true) << std::endl;
-	write_field(F, std::cout << "B:=", B, 3, 2, 2,true) << std::endl;
+	FFLAS::WriteMatrix (std::cout << "A:=", F, 2, 3, A, 3) << std::endl;
+	FFLAS::WriteMatrix (std::cout << "B:=", F, 3, 2, B, 2) << std::endl;
 
 	fgemm (F, FflasNoTrans, FflasNoTrans, 2,2,3, F.one, A, 3, B, 2, F.zero, C, 2 );
 
-	write_field(F, std::cout << "C:=", C, 2, 2, 2,true) << std::endl;
+	FFLAS::WriteMatrix (std::cout << "C:=", F, 2, 2, C,2) << std::endl;
 	
 	fflas_delete( A);
 	fflas_delete( B);

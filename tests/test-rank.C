@@ -36,9 +36,9 @@
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
+#include "givaro/modular-balanced.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 
 
@@ -62,7 +62,7 @@ int main(int argc, char** argv){
 	}
 	Field F(atof(argv[1]));
 	Field::Element * A;
-	A = read_field(F,argv[2],&m ,&n);
+	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 
  FFLAS::Timer tim,t;
 	t.clear();
@@ -76,7 +76,7 @@ int main(int argc, char** argv){
 		tim+=t;
 		if (i+1<nbit){
 			FFLAS::fflas_delete( A);
-			A = read_field(F,argv[2],&m,&n);
+			FFLAS::ReadMatrix (argv[2],F,m,n,A);
 		}
 	}
 

@@ -181,7 +181,7 @@ namespace FFPACK {
 		}
 		
 			// Moving the remaining cycles using one vector temp
-		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,1,M);
+		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,M);
 		for (size_t i=0; i<R; i++){
 			if ((MathP[i]!=i)&&(!done[MathP[i]])){ // entering a cycle
 				size_t j=i;
@@ -231,7 +231,7 @@ namespace FFPACK {
 		write_perm(std::cerr<<"MathP = ",MathP,lenP);
 #endif
 			// Moving the remaining cycles using one vector temp
-		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,1,FFLASFFPACK_PERM_BKSIZE);
+		typename Field::Element_ptr tmprow = FFLAS::fflas_new(F,FFLASFFPACK_PERM_BKSIZE);
 		for (size_t i=0; i<lenP; i++){
 			if ((MathP[i]!=i)&&(!done[MathP[i]])){ // entering a cycle
 				size_t j=i;
@@ -633,7 +633,7 @@ namespace FFPACK {
 		if (m > 1) {
 			const size_t mun(m-1);
 			
-			typename Field::Element_ptr b = FFLAS::fflas_new (F,n,1);
+			typename Field::Element_ptr b = FFLAS::fflas_new (F,n);
 			typename Field::Element_ptr Ai = A+mun*lda;
 			//@BUG not safe with RNSModp field
 			memcpy (b,Ai,n*sizeof(typename Field::Element));
@@ -649,7 +649,7 @@ namespace FFPACK {
 		if (m > 1) {
 			const size_t mun(m-1);
 
-			typename Field::Element_ptr b = FFLAS::fflas_new (F, n, 1);
+			typename Field::Element_ptr b = FFLAS::fflas_new (F, n);
 			typename Field::Element_ptr Ai = A+mun*lda;
 			for(size_t i=0; i<n; ++i, Ai+=1) b[i] = *Ai;
 
