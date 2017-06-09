@@ -29,7 +29,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/Matio.h"
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
