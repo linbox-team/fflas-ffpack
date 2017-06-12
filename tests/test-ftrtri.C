@@ -4,7 +4,7 @@
 /*
  * Copyright (C) FFLAS-FFPACK
  * Written by Clément Pernet <clement.pernet@imag.fr>
- * Philippe LEDENT <philippe.ledent@etu.univ.grenoble-alpes
+ * Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
