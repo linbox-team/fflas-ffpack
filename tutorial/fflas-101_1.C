@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
   const size_t ldb = lda;
   Float_Field::Element_ptr B;
   B = fflas_new(F,m,n);
-  fassign(F,m,n,A,lda,B,ldb);
+  fassign(F,m,n,A+1+2*lda,lda,B,ldb);
 
   // Let C be a m times n random matrix
   const size_t ldc = m;
@@ -73,10 +73,10 @@ int main(int argc, char** argv) {
 
 
   //Output
-  write_matrix(std::cout<<"A:=",F,p,q,A,lda)<<';'<<std::endl;
-  write_matrix(std::cout<<"B:=",F,m,n,B,ldb)<<';'<<std::endl;
-  write_matrix(std::cout<<"C:=",F,m,n,C,ldc)<<';'<<std::endl;
-  write_matrix(std::cout<<"D:=",F,m,n,D,ldd)<<';'<<std::endl;
+  WriteMatrix(std::cout<<"A:=",F,p,q,A,lda)<<std::endl;
+  WriteMatrix(std::cout<<"B:=",F,m,n,B,ldb)<<std::endl;
+  WriteMatrix(std::cout<<"C:=",F,m,n,C,ldc)<<std::endl;
+  WriteMatrix(std::cout<<"D:=",F,m,n,D,ldd)<<std::endl;
   std::cout<<"Is D the zero matrix ?"<< std::endl;
   if(res)
     std::cout<<"TRUE"<< std::endl;
@@ -84,10 +84,10 @@ int main(int argc, char** argv) {
     std::cout<<"FALSE"<< std::endl;
 
   // Clearing up the memory
-  //fflas_delete(A);
-  //fflas_delete(B);
-  //fflas_delete(C);
-  //fflas_delete(D);
+  fflas_delete(A);
+  fflas_delete(B);
+  fflas_delete(C);
+  fflas_delete(D);
 
 }
 
