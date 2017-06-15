@@ -125,12 +125,12 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	    
 	    cout<<"Checking with ";F->write(cout)<<endl;
 	    
-		ok = ok && check_ftrtri(*F,n,FflasLower,FflasUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
-	    ok = ok && check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
-		ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
-	    nbit--;
-	    delete F;
+        ok &= check_ftrtri(*F,n,FflasLower,FflasUnit,G);
+        ok &= check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
+        ok &= check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
+        ok &= check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
+		nbit--;
+		delete F;
     }
 	if (!ok)
 		std::cout << "with seed = "<< seed << std::endl;
