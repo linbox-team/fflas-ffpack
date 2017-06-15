@@ -38,6 +38,7 @@ BASIC_TESTS =               \
 		test-fadd           \
 		test-fger           \
 		test-ftrsv          \
+		test-ftrtri         \
 		test-ftrmv          \
 		test-ftrsm          \
 		test-ftrsm-check    \
@@ -88,7 +89,6 @@ NOT_A_TEST =  \
 		test-colechelon        \
 		test-fullranksubmatrix \
 		test-redrowechelon     \
-		test-ftrtri            \
 		test-redechelon        \
 		test-frobenius         \
 		test-fgesv             \
@@ -144,7 +144,7 @@ test_fsyrk_SOURCES             = test-fsyrk.C
 test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C
-#  test_ftrtri_SOURCES            = test-ftrtri.C
+test_ftrtri_SOURCES            = test-ftrtri.C
 #  test_redrowechelon_SOURCES     = test-redrowechelon.C
 #  testeur_lqup_SOURCES           = testeur_lqup.C
 #  test_fullranksubmatrix_SOURCES = test-fullranksubmatrix.C
