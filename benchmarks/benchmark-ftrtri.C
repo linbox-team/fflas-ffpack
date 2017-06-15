@@ -63,30 +63,31 @@ int main(int argc, char** argv) {
 
   Field::RandIter G(F);
   for (size_t i=0;i<iter;++i){
-    if (argc > 4){
-	    FFLAS::ReadMatrix (argv[4],F,n,n,A);
-    } else {
-      A = FFLAS::fflas_new<Element>(n*n);
-      for (size_t j=0; j<(size_t) n*n; ++j)
-	G.random(*(A+j));
-    }
-    for (size_t k=0;k<(size_t)n;++k)
-      while (F.isZero( G.random(*(A+k*(n+1)))));
+	  if (!file.empty()){
+	    FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+	  }
+	  else{
+		  A = FFLAS::fflas_new<Element>(n*n);
+		  for (size_t j=0; j<(size_t) n*n; ++j)
+			  G.random(*(A+j));
+	  }
+	  for (size_t k=0;k<(size_t)n;++k)
+		  while (F.isZero( G.random(*(A+k*(n+1)))));
 
-    chrono.clear();
-    chrono.start();
-    FFPACK::ftrtri (F,FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, A, n);
-    chrono.stop();
+	  chrono.clear();
+	  chrono.start();
+	  FFPACK::ftrtri (F,FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, A, n);
+	  chrono.stop();
 
-    time+=chrono.usertime();
-    FFLAS::fflas_delete( A);
+	  time+=chrono.usertime();
+	  FFLAS::fflas_delete( A);
   }
   
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
+	  // -----------
+	  // Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
   std::cout << "Time: " << time / double(iter)
-	    << " Gflops: " << CUBE(double(n)/1000.) / time * double(iter) / 3.;
+			<< " Gflops: " << CUBE(double(n)/1000.) / time * double(iter) / 3.;
   FFLAS::writeCommandString(std::cout, as) << std::endl;
   return 0;
 }
