@@ -66,6 +66,10 @@
 #define __FFPACK_FSYTRF_THRESHOLD 64
 #endif
 
+#ifndef __FFPACK_FTRTRI_THRESHOLD
+#define __FFPACK_FTRTRI_THRESHOLD 32
+#endif
+
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -461,7 +465,8 @@ namespace FFPACK { /* ftrtr */
 	template<class Field>
 	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-		const size_t N, typename Field::Element_ptr A, const size_t lda);
+			const size_t N, typename Field::Element_ptr A, const size_t lda,
+			const size_t threshold = __FFPACK_FTRTRI_THRESHOLD);
 
 
 	template<class Field>
