@@ -27,11 +27,12 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AUTOTUNE_FGEMM = winograd-modular-float winograd-modular-double winograd-modularbalanced-float winograd-modularbalanced-double
 AUTOTUNE_PLUQ = pluq
 AUTOTUNE_CHARPOLY = charpoly-LUK-ArithProg charpoly-Danilevskii-LUK arithprog
+AUTOTUNE_FTRTRI = ftrtri
 
-AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY)
+AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY) $(AUTOTUNE_FTRTRI)
 
 EXTRA_PROGRAMS=$(AUTOTUNE)
-EXTRA_DIST=tune_fgemm.sh tune_pluq.sh tune_charpoly.sh
+EXTRA_DIST=tune_fgemm.sh tune_pluq.sh tune_charpoly.sh tune_ftrtri.sh
 
 define run_tune_fgemm
 	./tune_fgemm.sh
@@ -42,12 +43,15 @@ endef
 define run_tune_charpoly
 	./tune_charpoly.sh
 endef
+define run_tune_ftrtri
+	./tune_ftrtri.sh
+endef
 define merge_thresholds
-	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
+	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h ftrtri-threshold.h > ../fflas-ffpack/fflas-ffpack-thresholds.h
 endef	
 
 # This forces the autotune runs to be sequential
-autotune: autotune_fgemm autotune_pluq autotune_charpoly
+autotune: autotune_fgemm autotune_pluq autotune_charpoly autotune_ftrtri
 	${run_tune_fgemm}
 	${run_tune_pluq}
 	${run_tune_charpoly}
@@ -63,6 +67,11 @@ tune_pluq: autotune_pluq
 	${run_tune_pluq}
 	${merge_thresholds}
 
+# Tune ftrtri only
+tune_ftrtri: autotune_ftrtri
+	${run_tune_ftrtri}
+	${merge_thresholds}
+
 tune_charpoly: autotune_charpoly
 	${run_tune_charpoly}
 	${merge_thresholds}
@@ -71,9 +80,12 @@ autotune_fgemm: $(AUTOTUNE_FGEMM:%=%$(EXEEXT))
 
 autotune_pluq: $(AUTOTUNE_PLUQ:%=%$(EXEEXT))
 
+autotune_ftrtri: $(AUTOTUNE_FTRTRI:%=%$(EXEEXT))
+
 autotune_charpoly: $(AUTOTUNE_CHARPOLY:%=%$(EXEEXT))
 
 pluq_SOURCES=pluq.C
+ftrtri_SOURCES=ftrtri.C
 charpoly_Danilevskii_LUK_SOURCES=charpoly.C
 charpoly_Danilevskii_LUK_CXXFLAGS=$(AM_CXXFLAGS) -DVARIANT1="FfpackDanilevski" -DVARIANT2="FfpackLUK" -DNSTART=32 -DNFIRSTSTEP=32 -DNMAX=1000 -DNPREC=1 -DITER=500
 charpoly_LUK_ArithProg_SOURCES=charpoly.C

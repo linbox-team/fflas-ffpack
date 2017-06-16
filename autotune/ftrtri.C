@@ -45,73 +45,63 @@ typedef Givaro::Timer TTimer;
 
 #include <ctime>
 #define CUBE(x) ((x)*(x)*(x))
-#define GFOPS(m,n,r,t) (2.0/3.0*CUBE(double(n)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000)/t
+#define GFOPS(n,t) (CUBE(double(n)/1000.0)/(3.0*t))
 
 int main () {
 	using namespace std;
 
 	typedef Givaro::ModularBalanced<double> Field;
 	Field F(131071);
-	typedef Field::Element Element ;
-	size_t n=128, nmax=1000, prec=64, nbest=0, count=0;
+	size_t n=64, nmax=500, prec=64, nbest=0, count=0;
 	TTimer chrono,tim;
 	bool bound=false;
 	
-	Element_ptr T = FFLAS::fflas_new (F, nmax, nmax);
+	Field::Element_ptr T = FFLAS::fflas_new (F, nmax, nmax);
 	size_t ldt = nmax;
 	FFPACK::RandomTriangularMatrix (F, n, n,
-					FFLAS::Fflas_Upper,FFLAS::FflasNonDiag,true
-					T,ldt);
+									FFLAS::FflasUpper,FFLAS::FflasNonUnit,true,
+									T,ldt);
 	time_t result = std::time(NULL);
-	Element_ptr U = FFLAS::fflas_new (F, nmax, nmax);
+	Field::Element_ptr U = FFLAS::fflas_new (F, nmax, nmax);
 	FFLAS::fassign (F, n, n, U, ldt, T, ldt);
 	cout << std::endl 
-		  << "---------------------------------------------------------------------"
-		  << std::endl << std::asctime(std::localtime(&result))
-		  << std::endl
-		  << "Threshold for PLUQ base case" ;
+		 << "---------------------------------------------------------------------"
+		 << std::endl << std::asctime(std::localtime(&result))
+		 << std::endl
+		 << "Threshold for ftrtri base case" ;
 	F.write(cout << " (using ") << ')' << endl << endl;
 
 	cout << "ftrtri:  n                   Base case                        Recursive 1 level" << std::endl;
 	cout << "                    seconds            Gfops          seconds            Gfops" << std::endl;
-		double BCTime, RecTime;
-		int iter;
-		do{
-		  iter=10;
+	double BCTime, RecTime;
+	int iter;
+	do{
+		iter=300;
 
-		//warm up computation
-		  FFPACK::ftrtri(F, n, n,
-				 FFLAS::Fflas_Upper, FFLAS::FflasNonUnit,
-				 FFLAS::FflasNonDiag, true,
-				 U, ldt);
+			//warm up computation
+		FFPACK::ftrtri(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, U, ldt, n);
 		FFLAS::fassign (F, n, n, T, ldt, U, ldt);
 		
-		// base case
+			// base case
 		chrono.clear();tim.clear();
 		for (int i=0;i<iter;i++){
 			chrono.start();
-			FFPACK::ftrtri(F, n, n,
-				 FFLAS::Fflas_Upper, FFLAS::FflasNonUnit,
-				 FFLAS::FflasNonDiag, true,
-				 U, ldt);
+			FFPACK::ftrtri(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, U, ldt, n);
 			chrono.stop();
 			tim+=chrono;
 			FFLAS::fassign (F, n, n, T, ldt, U, ldt);
 		}
-		BCTime = tim.realtime()/iter;
+		BCTime = tim.usertime()/iter;
 		
 		tim.clear();chrono.clear();
 		for (int i=0;i<iter;i++){
 			chrono.start();
-		        FFPACK::ftrtri(F, n, n,
-				 FFLAS::Fflas_Upper, FFLAS::FflasNonUnit,
-				 FFLAS::FflasNonDiag, true,
-				 U, ldt);
+			FFPACK::ftrtri(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, U, ldt, n-1);
 			chrono.stop();
 			tim+=chrono;
 			FFLAS::fassign (F, n, n, T, ldt, U, ldt);
 		}
-		RecTime = tim.realtime()/iter;
+		RecTime = tim.usertime()/iter;
 
 		cout << "      ";
 		cout.width(4);
@@ -121,16 +111,16 @@ int main () {
 		cout << BCTime;
 		cout << "  ";
 		cout.width(15);
-		cout << GFOPS(n,n,r, BCTime) << "  ";
+		cout << GFOPS(n, BCTime) << "  ";
 		cout.width(15);
 		cout << RecTime;
 		cout << "  ";
 		cout.width(15);
-		cout << GFOPS(n,n,r, RecTime) << endl;
+		cout << GFOPS(n, RecTime) << endl;
 
 		if (BCTime > RecTime){
 			count++;
-			if (count > 1){
+			if (count > 2){
 				nbest = n;
 				bound = true;
 				prec = prec >> 1;
@@ -143,13 +133,13 @@ int main () {
 				prec=prec>>1;
 			n+=prec;
 		}
-	} while ((prec > 4 ) && (n < nmax));
+	} while ((prec > 1 ) && (n < nmax));
 
 	cout<<endl;
 	if (nbest != 0 ) {
-		cerr << "#ifndef __FFLASFFPACK_PLUQ_THRESHOLD"  << endl;
-		cerr << "#define __FFLASFFPACK_PLUQ_THRESHOLD" << ' ' <<  nbest << endl;
-		cout << "defined __FFLASFFPACK_PLUQ_THRESHOLD to " << nbest << "" << std::endl;
+		cerr << "#ifndef __FFLASFFPACK_FTRTRI_THRESHOLD"  << endl;
+		cerr << "#define __FFLASFFPACK_FTRTRI_THRESHOLD" << ' ' <<  nbest << endl;
+		cout << "defined __FFLASFFPACK_FTRTRI_THRESHOLD to " << nbest << "" << std::endl;
 		std::cerr << "#endif" << endl  << endl;
 	}
 	FFLAS::fflas_delete(T);
