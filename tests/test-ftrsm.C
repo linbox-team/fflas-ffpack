@@ -38,7 +38,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 
@@ -72,7 +72,7 @@ template<typename Field, class RandIter>
 bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Element &alpha, FFLAS::FFLAS_SIDE side, FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, FFLAS::FFLAS_DIAG diag, RandIter& Rand){
 
 	typedef typename Field::Element Element;
-	Element * A, *B, *B2, *C, tmp;
+	Element * A, *B, *B2, *C;
 	size_t k = (side==FFLAS::FflasLeft?m:n);
 	size_t lda,ldb,ldc;
 	lda=k+13;

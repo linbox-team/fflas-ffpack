@@ -40,14 +40,14 @@ namespace FFPACK {
 
     public:
         CheckerImplem_invert(const Field& F_, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-                : F(F_), v(FFLAS::fflas_new(F_,m_,1)), w(FFLAS::fflas_new(F_,m_,1)), m(m_), lda(lda_)
+                : F(F_), v(FFLAS::fflas_new(F_,m_)), w(FFLAS::fflas_new(F_,m_)), m(m_), lda(lda_)
             {
                 typename Field::RandIter G(F);
                 init(G,m,A,lda);
             }
 
         CheckerImplem_invert(typename Field::RandIter &G, const size_t m_, typename Field::ConstElement_ptr A, const size_t lda_) 
-                : F(G.ring()), v(FFLAS::fflas_new(F,m_,1)), w(FFLAS::fflas_new(F,m_,1)), m(m_), lda(lda_)
+                : F(G.ring()), v(FFLAS::fflas_new(F,m_)), w(FFLAS::fflas_new(F,m_)), m(m_), lda(lda_)
             {
                 init(G,m,A,lda);
             }

@@ -86,8 +86,9 @@ int main(int argc, char** argv) {
 	Field F(q);
 	srand (seed);
 	Field::RandIter Rand(F,0,seed);
-    typedef std::vector<Field::Element> Polynomial;
-
+        typedef Givaro::Poly1Dom<Field> PolRing;
+        typedef PolRing::Element Polynomial;
+        PolRing R(F);
 	size_t pass = 0;
 	for (size_t i=0; i<iter; ++i) {
         
@@ -95,14 +96,14 @@ int main(int argc, char** argv) {
 // 		std::cout << "n= " << n << "\n";
         Field::Element_ptr A = FFLAS::fflas_new(F,N,N);
 
-		Polynomial g(n);
+        Polynomial g(n);
 
 		PAR_BLOCK { FFLAS::pfrand(F,Rand,N,N,A,N/MAX_THREADS); }
 		try {
 //             FFLAS::WriteMatrix (std::cerr<<"A=",F,N,N,A,N,FflasMaple) <<std::endl;
 //             FFPACK::Checker_charpoly<Field,Polynomial> checker(F,n,A);
             Givaro::Timer charpolytime; charpolytime.start();
-			FFPACK::CharPoly(F,g,N,A,N,CPalg);
+            FFPACK::CharPoly (R,g,N,A,N,CPalg);
             charpolytime.stop();
             std::cerr << "CHARPol checked full: " << charpolytime << std::endl;
 //             printPolynomial(F,g);

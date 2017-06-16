@@ -24,7 +24,11 @@
 
 pkgincludesubdir=$(pkgincludedir)/ffpack
 
-multiprecision= ffpack_ludivine_mp.inl ffpack_pluq_mp.inl
+multiprecision= ffpack_ludivine_mp.inl \
+		ffpack_pluq_mp.inl     \
+		ffpack_charpoly_mp.inl \
+		ffpack_det_mp.inl
+
 
 pkgincludesub_HEADERS=        \
 		ffpack_charpoly_danilevski.inl        \

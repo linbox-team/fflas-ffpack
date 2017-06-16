@@ -3,7 +3,7 @@
 
 
 /* Copyright (c) FFLAS-FFPACK
-* Written by Clément Pernet <clement.pernet@imag.fr>
+* Written by Clement Pernet <clement.pernet@imag.fr>
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
 *
@@ -22,6 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
+#define  __FFLASFFPACK_FORCE_SEQ
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -29,7 +30,7 @@
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/utils/Matio.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
@@ -38,56 +39,75 @@ using namespace std;
 int main(int argc, char** argv) {
   
 	size_t iter = 1;
-	int    q    = 1009;
-	size_t    n    = 2000;
+	size_t    n    = 100;
 	std::string file = "";
-  
+  	static int variant =0;
+	size_t b = 150;
 	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+		{ 'b', "-b B", "Set the bitsize of the random characteristic.",  TYPE_INT , &b },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		{ 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
+
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
-
-  typedef Givaro::Modular<double> Field;
+  FFLAS::parseArguments(argc,argv,as);
+  typedef Givaro::ZRing<Givaro::Integer> Field;
+  FFPACK::FFPACK_CHARPOLY_TAG CT;
+  switch (variant){
+      case 0: CT = FFPACK::FfpackAuto; break;
+      case 1: CT = FFPACK::FfpackLUK; break;
+      case 2: CT = FFPACK::FfpackDanilevski; break;
+      case 3: CT = FFPACK::FfpackArithProg; break;
+      case 4: CT = FFPACK::FfpackKG; break;
+      case 5: CT = FFPACK::FfpackKGFast; break;
+      case 6: CT = FFPACK::FfpackHybrid; break;
+      case 7: CT = FFPACK::FfpackKGFastG; break;
+      default: CT = FFPACK::FfpackAuto; break;
+  }
   typedef Field::Element Element;
 
-  Field F(q);
-  Element * A;
-
+  Field F;
   FFLAS::Timer chrono;
   double time=0.0;
 
-  Field::RandIter G(F);
+  Element *A;
+  size_t bs=1;
+  size_t size=b;
   for (size_t i=0;i<iter;++i){
+
 	  if (!file.empty()){
-	    FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+		  FFLAS::ReadMatrix (file, F, n, n, A);
 	  }
 	  else{
 		  A = FFLAS::fflas_new<Element>(n*n);
-		  for (size_t j=0; j<(size_t) n*n; ++j)
+		  Field::RandIter G(F,size);
+		  for (size_t j=0; j< (size_t)n*n; ++j)
 			  G.random(*(A+j));
 	  }
-	  for (size_t k=0;k<(size_t)n;++k)
-		  while (F.isZero( G.random(*(A+k*(n+1)))));
 
+	  typedef Givaro::Poly1Dom<Field> PolRing;
+	  PolRing R(F);
+	  PolRing::Element cpol;
 	  chrono.clear();
 	  chrono.start();
-	  FFPACK::ftrtri (F,FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, A, n);
+	  FFPACK::CharPoly (R, cpol, n, A, n, CT);
 	  chrono.stop();
 
 	  time+=chrono.usertime();
+
+	  bs = FFLAS::bitsize (F,n,n,A,n);
 	  FFLAS::fflas_delete( A);
   }
   
-	  // -----------
-	  // Standard output for benchmark - Alexis Breust 2014/11/14
-#define CUBE(x) ((x)*(x)*(x))
-  std::cout << "Time: " << time / double(iter)
-			<< " Gflops: " << CUBE(double(n)/1000.) / time * double(iter) / 3.;
-  FFLAS::writeCommandString(std::cout, as) << std::endl;
+	// -----------
+	// Standard output for benchmark - Alexis Breust 2014/11/14
+  std::cerr <<"Time: " << time / double(iter)
+			<< " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter);
+  FFLAS::writeCommandString(std::cerr, as) << std::endl;
+
   return 0;
 }
+

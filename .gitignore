@@ -35,6 +35,14 @@ autotune/winograd-modular-float
 autotune/winograd-modularbalanced-double
 autotune/winograd-modularbalanced-float
 autotune/pluq
+autotune/charpoly-Danilevskii-LUK
+autotune/charpoly-Danilevskii-LUK-threshold.h
+autotune/charpoly-LUK-ArithProg
+autotune/charpoly-LUK-ArithProg-threshold.h
+autotune/charpoly-threshold.h
+autotune/fgemm-threshold.h
+autotune/fgemm-thresholds.h
+autotune/pluq-threshold.h
 stamp-h1
 benchmarks/benchmark-fgemm
 benchmarks/benchmark-fgemv-mp

@@ -31,7 +31,7 @@
 #include <iostream>
 #include <givaro/modular.h>
 #include <givaro/zring.h>
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/args-parser.h"
 

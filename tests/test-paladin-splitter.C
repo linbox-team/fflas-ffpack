@@ -43,7 +43,7 @@
 #include "fflas-ffpack/fflas/fflas.h"
 
 #include "fflas-ffpack/utils/args-parser.h"
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 
 typedef Givaro::ModularBalanced<double> Field;
 

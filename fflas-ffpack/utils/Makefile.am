@@ -33,6 +33,7 @@ pkgincludesub_HEADERS= 	\
 	fflas_io.h  			\
 	bit_manipulation.h 	\
 	print-utils.h		\
+	test-utils.h		\
 	timer.h				\
 	cast.h \
 	fflas_intrinsic.h

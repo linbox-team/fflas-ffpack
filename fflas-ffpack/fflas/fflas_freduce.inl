@@ -681,7 +681,7 @@ namespace FFLAS { namespace details {
 					F.reduce(*Xi);
 			}
 			else {
-				typename Field::Element_ptr Ac = fflas_new (F,m,1) ;
+				typename Field::Element_ptr Ac = fflas_new (F,m) ;
 				fassign (F,m,A,incX,Ac,1);
 				freduce (F,m,Ac,1,FieldCategories::ModularTag());
 				fassign (F,m,Ac,1,A,incX);

@@ -56,7 +56,7 @@ namespace FFPACK {
 				: F(F_), 
                   u(FFLAS::fflas_new(F_,n_,2)), 
                   v(u+1), 
-                  w(FFLAS::fflas_new(F_,n_,1)), 
+                  w(FFLAS::fflas_new(F_,n_)), 
                   n(n_)
             {
                 typename Field::RandIter G(F);
@@ -68,7 +68,7 @@ namespace FFPACK {
 				: F(G.ring()), 
                   u(FFLAS::fflas_new(F,n_,2)), 
                   v(u+1), 
-                  w(FFLAS::fflas_new(F,n_,1)), 
+                  w(FFLAS::fflas_new(F,n_)), 
                   n(n_)
             {
                 init(G,A,lda);
@@ -158,7 +158,7 @@ namespace FFPACK {
             FFLAS::frand(F,G,n,2,u,2);
             FFLAS::frand(F,G,n,w,1);
 
-			typename Field::Element_ptr t(FFLAS::fflas_new(F,n,1));
+			typename Field::Element_ptr t(FFLAS::fflas_new(F,n));
 
 				// t <-- w . A
 			FFLAS::fgemv(F, FFLAS::FflasTrans, n, n, F.one, A, lda, w, 1, F.zero, t, 1);

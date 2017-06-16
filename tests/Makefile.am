@@ -29,39 +29,36 @@ AM_CXXFLAGS = ${DEFAULT_CFLAGS} $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUD
 #LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
 AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
 
-
-EXTRA_DIST= test-utils.h
-
 PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =               \
-		test-lu             \
-		test-det            \
-		test-echelon        \
-		test-charpoly       \
-		test-minpoly		\
-		test-rankprofiles   \
-		test-compressQ      \
-		test-permutations   \
 		test-fdot           \
-		test-fadd           \
 		test-finit          \
 		test-fscal          \
-		test-fgemm          \
-		test-pluq-check     \
-		test-det-check     \
-		test-fgemm-check    \
-		test-ftrsm-check    \
-		test-invert-check   \
-		test-charpoly-check \
+		test-fadd           \
 		test-fger           \
-		test-ftrsm          \
-		test-ftrmm          \
 		test-ftrsv          \
 		test-ftrtri         \
 		test-ftrmv          \
+		test-ftrsm          \
+		test-ftrsm-check    \
+		test-ftrmm          \
+		test-fgemm          \
+		test-fgemm-check    \
+		test-permutations   \
+		test-compressQ      \
+		test-lu             \
+		test-pluq-check     \
 		test-fsyrk          \
 		test-fsytrf          \
+		test-invert-check   \
+		test-rankprofiles   \
+		test-det            \
+		test-det-check     \
+		test-echelon        \
+		test-charpoly       \
+		test-charpoly-check \
+		test-minpoly		\
 		test-multifile      \
 		test-io      \
 		test-maxdelayeddim \
@@ -163,7 +160,7 @@ test_fdot_SOURCES = test-fdot.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C
-test_sparse_SOURCES = test-sparse.C
+#test_sparse_SOURCES = test-sparse.C
 test_interfaces_c_SOURCES = test-interfaces-c.c
 test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 #  test_fspmv_SOURCES = test-fspmv.C
