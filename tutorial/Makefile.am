@@ -28,12 +28,13 @@ AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARF
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-EXAMPLES = fflas_101 fflas_101_lvl1 fflas_101_lvl2 fflas-101_1 fflas-101_2
+EXAMPLES = fflas_101 fflas_101_lvl1 fflas_101_lvl2 fflas-101_1 fflas-101_3
 fflas_101_SOURCES = fflas_101.C
 fflas_101_lvl1_SOURCES = fflas_101_lvl1.C
 fflas_101_lvl2_SOURCES = fflas_101_lvl2.C
 fflas_101_1_SOURCES = fflas-101_1.C
 fflas_101_2_SOURCES = fflas-101_2.C
+fflas_101_3_SOURCES = fflas-101_3.C
 
 
 CLEANFILES = $(EXAMPLES) 
