@@ -50,7 +50,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "givaro/modular-integer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 
 using namespace std;
 using namespace FFPACK;

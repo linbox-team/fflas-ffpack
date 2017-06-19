@@ -5,6 +5,7 @@
  *
  * Written by Clement Pernet <Clement.Pernet@imag.fr>
  * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Philippe LEDENT (ledentp) <philippe.ledent@etu.univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -26,7 +27,7 @@
  * ========LICENCE========
  *.
  */
-
+#define ENABLE_ALL_CHECKINGS 1
 #ifndef __FFLASFFPACK_ffpack_ftrtr_INL
 #define __FFLASFFPACK_ffpack_ftrtr_INL
 
@@ -39,12 +40,40 @@ namespace FFPACK {
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 			const size_t N, typename Field::Element_ptr A, const size_t lda)
 	{
+		typename Field::Element negDiag;
 		if (!N) return;
-		if (N == 1){
-			if (Diag == FFLAS::FflasNonUnit)
-			F.invin (*A);
+		if (N <= 6){ // base case
+			
+			if (Uplo == FFLAS::FflasUpper){
+				F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix
+				for(size_t li = N-1; li-->0;){      // start at the second to last line
+					if(Diag == FFLAS::FflasNonUnit)
+						F.invin(A[li*(lda+1)]);     // Diagonal element on current line
+					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
+					ftrmm(F,FFLAS::FflasRight,       // b <- b dot nDiag * M
+						  Uplo,FFLAS::FflasNoTrans,Diag,
+						  1,N-li-1,                 // Size of vector (1 row and N-li-1 columns)
+						  negDiag,                  // Scalar
+						  (A+(li+1)*(lda+1)),lda,   // Triangular matrix below the vector
+						  A+li*(lda+1)+1,lda);        // Horizontal vector starting after diagonal element of current line
+				}
+			}
+			else{ // Uplo == FflasLower
+				F.invin(A[0]);                      // first element of the matrix
+				for(size_t li = 1; li < N; li++){   // start at the second line
+					if(Diag == FFLAS::FflasNonUnit)
+						F.invin(A[li*(lda+1)]);     // Diagonal element on current line
+					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
+					ftrmm(F,FFLAS::FflasRight,       // b <- b dot nDiag * M
+						  Uplo,FFLAS::FflasNoTrans,Diag,
+						  1,li,                     // Size of vector (1 row and N-li-1 columns)
+						  negDiag,                  // Scalar
+						  A,lda,                    // Triangular matrix above the vector
+						  A+li*lda, lda);             // Horizontal vector ending before diagonal element of current line
+				}
+			}
 		}
-		else {
+		else { // recursive case
 			size_t N1 = N/2;
 			size_t N2 = N - N1;
 			ftrtri (F, Uplo, Diag, N1, A, lda);

@@ -38,7 +38,7 @@
 #include <iomanip>
 #include <givaro/modular.h>
 
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 
 using namespace FFPACK;
 using namespace FFLAS;

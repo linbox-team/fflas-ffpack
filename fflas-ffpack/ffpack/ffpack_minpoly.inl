@@ -46,13 +46,13 @@ MinPoly (const Field& F, Polynomial& minP, const size_t N,
 		RandIter& G){
 
 		// Allocating a Krylov basis
-	typename Field::Element_ptr K = FFLAS::fflas_new(F, N+1, N);
+	typename Field::Element_ptr v = FFLAS::fflas_new(F, 1, N);
 		// Picking a non-zero random vector
-	NonZeroRandomMatrix (F, 1, N, K, N, G);
+	NonZeroRandomMatrix (F, 1, N, v, N, G);
 
-	MatVecMinPoly (F, minP, N, A, lda, K, N);
+	MatVecMinPoly (F, minP, N, A, lda, v, 1);
 
-	FFLAS::fflas_delete(K);
+	FFLAS::fflas_delete(v);
 	return minP;
 }
 

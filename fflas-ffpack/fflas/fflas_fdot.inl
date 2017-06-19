@@ -130,6 +130,18 @@ namespace FFLAS {
 	inline typename Field::Element
 	fdot( const Field& F, const size_t N,
 	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy,
+	      ModeCategories::DefaultBoundedTag& dbt)
+	{
+            // Nothing special in fdot for Bounded
+		typename ModeCategories::DefaultTag dt;        
+		return fdot (F, N, x, incx, y, incy, dt);
+	}
+
+	template<class Field>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
 	      typename Field::ConstElement_ptr y, const size_t incy )
 	{
 		typename ModeTraits<Field>::value mt;

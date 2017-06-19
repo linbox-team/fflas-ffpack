@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   for (size_t i=0;i<iter;++i){
 
 	  if (!file.empty()){
-		  A = read_field (F, file.c_str(), &n, &n);
+		  FFLAS::ReadMatrix (file, F, n, n, A);
 	  }
 	  else{
 		  A = FFLAS::fflas_new<Element>(n*n);
@@ -104,8 +104,8 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-  std::cerr << "n: "<<n<<" bitsize: "<<bs<<" Time: " << time / double(iter)
-        << " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter);
+  std::cerr <<"Time: " << time / double(iter)
+			<< " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter);
   FFLAS::writeCommandString(std::cerr, as) << std::endl;
 
   return 0;

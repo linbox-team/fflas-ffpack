@@ -50,7 +50,8 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 			Ai = A+(N-1)*(lda+1); // bottom right entry of A
 			Xi = X+(int)(N-1)*incX;
 			for(size_t i=0; i<N; Ai-=(lda+1), Xi-=incX, ++i) {
-				F.subin(*Xi, fdot(F, i, Ai+lda, lda, Xi+incX, incX));
+				if (i)
+					F.subin(*Xi, fdot(F, i, Ai+lda, lda, Xi+incX, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
 			}	
@@ -80,7 +81,8 @@ ftrsv (const Field& F, const FFLAS_UPLO Uplo,
 			Ai = A+(lda+1)*(N-1);
 			Xi = X+incX*(int)(N-1);
 			for(size_t i=0; Xi>=X; Ai-=lda+1,Xi-=incX, ++i ){
-				F.subin (*Xi, fdot (F, i, Ai+1, 1, Xi+incX, incX));
+				if (i)
+					F.subin (*Xi, fdot (F, i, Ai+1, 1, Xi+incX, incX));
 				if ( Diag==FflasNonUnit )
 					F.divin(*Xi,*Ai);
 			}
