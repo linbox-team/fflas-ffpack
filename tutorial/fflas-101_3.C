@@ -1,4 +1,4 @@
-/* Copyright (c) FFLAS-FFPACK
+-/* Copyright (c) FFLAS-FFPACK
 * Written by Philippe LEDENT
 * philippe.ledent@etu.univ-grenoble-alpes.fr
 * ========LICENCE========
@@ -106,9 +106,11 @@ int main(int argc, char** argv) {
   // They can be found in fflas-ffpack/utils/fflas_randommatrix.
 
   // Clearing up the memory
-  fflas_delete(U);
+  fflas_delete(a);
   fflas_delete(b);
-  fflas_delete(C);
-  fflas_delete(D);
-
+  fflas_delete(A);
+  fflas_delete(c);
+  fflas_delete(d);
+  fflas_delete(e);
+  
 }
