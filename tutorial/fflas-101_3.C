@@ -1,4 +1,4 @@
--/* Copyright (c) FFLAS-FFPACK
+/* Copyright (c) FFLAS-FFPACK
 * Written by Philippe LEDENT
 * philippe.ledent@etu.univ-grenoble-alpes.fr
 * ========LICENCE========
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
   std::cout << "" << std::endl;
   typedef Givaro::Modular<float> Float_Field;
   Float_Field F(101);
-
+  
   // Let m be a natural
   const size_t m = 11, inca = 1;
   // Let a be a m by 1 random vector
@@ -48,9 +48,8 @@ int main(int argc, char** argv) {
   const size_t n = 13, incb = 1;
   Float_Field::Element_ptr b;
   b = fflas_new(F,1,n);
-  seed = time(NULL);
-  G(F,0,seed);
-  frand(F,G,m,b,incb);
+
+  frand(F,G,n,b,incb);
 
   // Let A be an m by n matrix obtained by the outer product between a and b
   const size_t lda = n;
@@ -64,8 +63,7 @@ int main(int argc, char** argv) {
   const size_t incc = 1;
   Float_Field::Element_ptr c;
   c = fflas_new(F,m,1);
-  seed = time(NULL);
-  G(F,0,seed);
+
   frand(F,G,m,c,incc);
 
   // Let d be a scalar where d = b dot c
@@ -75,27 +73,26 @@ int main(int argc, char** argv) {
   // Let e be a copy of a
   Float_Field::Element_ptr e;
   e = fflas_new(F,m,1);
-  fassign(F,a,inca,e,inca);
+  fassign(F,m,1,a,inca,e,inca);
   
-  // a := (d scalar a) - (A times c) = -(A times c) + (d scalar a)
+  // Compute   e :=  (d scalar e) - (A times c)
+  // Therefore e := -(A times c)  + (d scalar e)
   fgemv(F,FFLAS::FflasNoTrans,m,n,F.mOne,A,lda,c,incc,d,e,inca);
   
-
-  
-  // Similar routines :
+  // If e is the zero vector then
 
   // Is a the  zero vector ?
-  bool res = fiszero(F,m,a,inca);
+  bool res = fiszero(F,m,e,inca);
 
 
   //Output
-  WriteMatrix(std::cout<<"a:=",F,m,1,U,inca)<<std::endl;
-  WriteMatrix(std::cout<<"b:=",F,1,n,b,incb)<<std::endl;
-  WriteMatrix(std::cout<<"A:=",F,m,n,A,lda)<<std::endl;
-  WriteMatrix(std::cout<<"c:=",F,m,1,c,incc)<<std::endl;
-  WriteMatrix(std::cout<<"d:=",F,1,1,d,1)<<std::endl;
-  WriteMatrix(std::cout<<"e:=",F,m,1,e,inca)<<std::endl;
-  std::cout<<"Is D the zero vector ?"<< std::endl;
+  WriteMatrix(std::cout<<"a:=\n",F,m,1,a,inca)<<std::endl;
+  WriteMatrix(std::cout<<"b:= ",F,1,n,b,incb)<<std::endl;
+  WriteMatrix(std::cout<<"A:=\n",F,m,n,A,lda)<<std::endl;
+  WriteMatrix(std::cout<<"c:=\n",F,m,1,c,incc)<<std::endl;
+  //WriteMatrix(std::cout<<"d:=",F,1,1,d,1)<<std::endl;
+  WriteMatrix(std::cout<<"e:=\n",F,m,1,e,inca)<<std::endl;
+  std::cout<<"Is e the zero vector ?"<< std::endl;
   if(res)
     std::cout<<"TRUE"<< std::endl;
   else
@@ -105,12 +102,15 @@ int main(int argc, char** argv) {
   // There are many routines that create random matrices.
   // They can be found in fflas-ffpack/utils/fflas_randommatrix.
 
+
+  
+
+  
   // Clearing up the memory
   fflas_delete(a);
   fflas_delete(b);
   fflas_delete(A);
   fflas_delete(c);
-  fflas_delete(d);
   fflas_delete(e);
   
-}
+  }

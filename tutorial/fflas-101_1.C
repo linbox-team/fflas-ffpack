@@ -1,6 +1,6 @@
 /* Copyright (c) FFLAS-FFPACK
-* Written by Philippe LEDENT
-* philippe.ledent@etu.univ-grenoble-alpes.fr
+* Written by Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes.fr>
+*
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
 *

@@ -1,5 +1,6 @@
 # Copyright (c) 2017 FFLAS-FFPACK
 # written by JGD <Jean-Guillaume.Dumas@imag.fr>
+# Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes.fr>
 #
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
