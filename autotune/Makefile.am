@@ -55,6 +55,7 @@ autotune: autotune_fgemm autotune_pluq autotune_charpoly autotune_ftrtri
 	${run_tune_fgemm}
 	${run_tune_pluq}
 	${run_tune_charpoly}
+	${run_tune_ftrtri}
 	${merge_thresholds}
 
 # Tune fgemm only
