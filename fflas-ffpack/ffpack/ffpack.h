@@ -51,34 +51,6 @@
 #include <iostream> // std::cout
 #include <algorithm>
 
-// The use of the small size LQUP is currently disabled:
-// need for a better handling of element base (double, float, generic) combined
-// with different thresholds.
-// TransPosed version has to be implemented too.
-#ifndef __FFPACK_LUDIVINE_CUTOFF
-#define __FFPACK_LUDIVINE_CUTOFF 0
-#endif
-
-#ifndef __FFLASFFPACK_ARITHPROG_THRESHOLD
-#define __FFLASFFPACK_ARITHPROG_THRESHOLD 30
-#endif
-
-#ifndef __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD
-#define __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD 1000
-#endif
-
-#ifndef __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD
-#define __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD 16
-#endif
-
-#ifndef __FFPACK_FSYTRF_THRESHOLD
-#define __FFPACK_FSYTRF_THRESHOLD 64
-#endif
-
-#ifndef __FFPACK_FTRTRI_THRESHOLD
-#define __FFPACK_FTRTRI_THRESHOLD 32
-#endif
-
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *

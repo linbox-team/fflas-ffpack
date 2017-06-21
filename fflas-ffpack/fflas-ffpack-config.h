@@ -93,29 +93,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #  endif
 #endif
 
+/* include definitions of thresholds set by the autotuning first */
 #include "fflas-ffpack/fflas-ffpack-thresholds.h"
 
-// winograd algorithm threshold (for double)
-#ifndef __FFLASFFPACK_WINOTHRESHOLD
-#define __FFLASFFPACK_WINOTHRESHOLD 1000
-#endif
-
-#ifndef __FFLASFFPACK_WINOTHRESHOLD_FLT
-#define __FFLASFFPACK_WINOTHRESHOLD_FLT 2000
-#endif
-
-#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL
-#define __FFLASFFPACK_WINOTHRESHOLD_BAL 1000
-#endif
-
-#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT
-#define __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT 2000
-#endif
-
-#ifndef __FFLASFFPACK_PLUQ_THRESHOLD
-#define __FFLASFFPACK_PLUQ_THRESHOLD 256
-#endif
-
+/* then include the default definitions */
+#include "fflas-ffpack/fflas-ffpack-default-thresholds.h"
 
 #if defined(_OPENMP) || defined(OMP_H) || defined(__OMP_H) || defined(__pmp_omp_h)
 #ifndef __FFLASFFPACK_USE_OPENMP
