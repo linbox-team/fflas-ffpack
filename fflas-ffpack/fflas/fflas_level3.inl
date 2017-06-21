@@ -35,10 +35,6 @@
 #ifndef __FFLASFFPACK_fflas_fflas_level3_INL
 #define __FFLASFFPACK_fflas_fflas_level3_INL
 
-#ifndef __FFLAS_FSYRK_THRESHOLD
-#define __FFLAS_FSYRK_THRESHOLD 3000
-#endif
-
 //#include <givaro/zring.h>
 
 #include "fflas_bounds.inl"
@@ -275,7 +271,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr A, const size_t lda,
 	       typename Field::ConstElement_ptr D, const size_t incD,
 	       const typename Field::Element beta,
-	       typename Field::Element_ptr C, const size_t ldc, const size_t threshold=__FFLAS_FSYRK_THRESHOLD);
+	       typename Field::Element_ptr C, const size_t ldc, const size_t threshold=__FFLASFFPACK_FSYRK_THRESHOLD);
 
 	/** @brief  fgemm: <b>F</b>ield <b>GE</b>neral <b>M</b>atrix <b>M</b>ultiply.
 	 *

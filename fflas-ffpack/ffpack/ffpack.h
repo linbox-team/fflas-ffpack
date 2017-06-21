@@ -51,30 +51,6 @@
 #include <iostream> // std::cout
 #include <algorithm>
 
-// The use of the small size LQUP is currently disabled:
-// need for a better handling of element base (double, float, generic) combined
-// with different thresholds.
-// TransPosed version has to be implemented too.
-#ifndef __FFPACK_LUDIVINE_CUTOFF
-#define __FFPACK_LUDIVINE_CUTOFF 0
-#endif
-
-#ifndef __FFLASFFPACK_ARITHPROG_THRESHOLD
-#define __FFLASFFPACK_ARITHPROG_THRESHOLD 30
-#endif
-
-#ifndef __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD
-#define __FFLASFFPACK_CHARPOLY_LUKrylov_ArithProg_THRESHOLD 1000
-#endif
-
-#ifndef __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD
-#define __FFLASFFPACK_CHARPOLY_Danilevskii_LUKrylov_THRESHOLD 16
-#endif
-
-#ifndef __FFPACK_FSYTRF_THRESHOLD
-#define __FFPACK_FSYTRF_THRESHOLD 64
-#endif
-
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -471,7 +447,8 @@ namespace FFPACK { /* ftrtr */
 	template<class Field>
 	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-		const size_t N, typename Field::Element_ptr A, const size_t lda);
+			const size_t N, typename Field::Element_ptr A, const size_t lda,
+			const size_t threshold = __FFLASFFPACK_FTRTRI_THRESHOLD);
 
 
 	template<class Field>
@@ -519,7 +496,7 @@ namespace FFPACK {
 	template <class Field>
 	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 				 typename Field::Element_ptr A, const size_t lda,
-				 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
+				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 
 		/* LDLT or UTDU factorizations */
 
@@ -543,7 +520,7 @@ namespace FFPACK {
 	bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 						 typename Field::Element_ptr A, const size_t lda,
 						 typename Field::Element_ptr D, const size_t incD,
-						 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
+						 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 /* PLUQ */
 
 	/** @brief Compute a PLUQ factorization of the given matrix.
@@ -608,7 +585,7 @@ namespace FFPACK { /* ludivine */
 			  typename Field::Element_ptr A, const size_t lda,
 			  size_t* P, size_t* Qt,
 			  const FFPACK_LU_TAG LuTag = FfpackSlabRecursive,
-			  const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF);
+			  const size_t cutoff=__FFLASFFPACK_LUDIVINE_THRESHOLD);
 
 	/* \cond */
 	template<class Element>

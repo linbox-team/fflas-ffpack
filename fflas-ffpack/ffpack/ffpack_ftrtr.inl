@@ -38,11 +38,11 @@ namespace FFPACK {
 	template<class Field>
 	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-			const size_t N, typename Field::Element_ptr A, const size_t lda)
+			const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t threshold)
 	{
 		typename Field::Element negDiag;
 		if (!N) return;
-		if (N <= 6){ // base case
+		if (N <= threshold){ // base case
 			
 			if (Uplo == FFLAS::FflasUpper){
 				F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix

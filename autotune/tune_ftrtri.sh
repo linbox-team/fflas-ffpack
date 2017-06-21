@@ -1,6 +1,6 @@
 #!/bin/sh
 echo =================================================
-echo ========= FFLAS-FFPACK PLUQ Autotuning ==========
+echo ========= FFLAS-FFPACK ftrtri Autotuning ========
 echo =================================================
 echo 
-./pluq 2> pluq-threshold.h  | tee pluq-autotune.log
+./ftrtri 2> ftrtri-threshold.h  | tee ftrtri-autotune.log
