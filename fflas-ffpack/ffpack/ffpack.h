@@ -448,7 +448,7 @@ namespace FFPACK { /* ftrtr */
 	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
 			const size_t N, typename Field::Element_ptr A, const size_t lda,
-			const size_t threshold = __FFPACK_FTRTRI_THRESHOLD);
+			const size_t threshold = __FFLASFFPACK_FTRTRI_THRESHOLD);
 
 
 	template<class Field>
@@ -496,7 +496,7 @@ namespace FFPACK {
 	template <class Field>
 	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 				 typename Field::Element_ptr A, const size_t lda,
-				 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
+				 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 
 		/* LDLT or UTDU factorizations */
 
@@ -520,7 +520,7 @@ namespace FFPACK {
 	bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 						 typename Field::Element_ptr A, const size_t lda,
 						 typename Field::Element_ptr D, const size_t incD,
-						 const size_t threshold = __FFPACK_FSYTRF_THRESHOLD);
+						 const size_t threshold = __FFLASFFPACK_FSYTRF_THRESHOLD);
 /* PLUQ */
 
 	/** @brief Compute a PLUQ factorization of the given matrix.
@@ -585,7 +585,7 @@ namespace FFPACK { /* ludivine */
 			  typename Field::Element_ptr A, const size_t lda,
 			  size_t* P, size_t* Qt,
 			  const FFPACK_LU_TAG LuTag = FfpackSlabRecursive,
-			  const size_t cutoff=__FFPACK_LUDIVINE_CUTOFF);
+			  const size_t cutoff=__FFLASFFPACK_LUDIVINE_THRESHOLD);
 
 	/* \cond */
 	template<class Element>
