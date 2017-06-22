@@ -200,7 +200,6 @@ int main(int argc, char** argv) {
 		//				FFLAS::pfzero(F,m,n,A,m/NBK);
 		FFPACK::RandomMatrixWithRankandRandomRPM (F, m, n ,r, A, n);
 	}
-
 	size_t R;
 	FFLAS::Timer chrono;
 	double *time=new double[iter];
