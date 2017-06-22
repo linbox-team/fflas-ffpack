@@ -36,6 +36,7 @@
 
 #include <fflas-ffpack/fflas-ffpack-config.h>
 #include <givaro/givinteger.h>
+#include <givaro/givprint.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -43,7 +44,6 @@
 #include <cstring>
 #include <list>
 #include <stdlib.h>
-#include "fflas-ffpack/utils/print-utils.h"
 
 enum ArgumentType {
 	TYPE_NONE, TYPE_INT, TYPE_LONGLONG, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
