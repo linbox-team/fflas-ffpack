@@ -55,7 +55,6 @@
 #include <iomanip>
 Givaro::Timer tperm, tgemm, tBC, ttrsm,trest,timtot;
 size_t mvcnt = 0;
-#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
