@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-//#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas_memory.h"
 
 // Reading and writing matrices over field
