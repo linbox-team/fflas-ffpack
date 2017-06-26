@@ -15,7 +15,7 @@ matrix:
           packages:
           - g++-4.9
           - libgmp-dev
-	  - libgmpxx4ldbl
+          - libgmpxx4ldbl
           - libopenblas-dev
       before install:
       - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install
