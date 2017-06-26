@@ -73,7 +73,7 @@ matrix:
       - brew update
       - brew uninstall automake && brew install automake
       - brew install autoconf libtool
-      - brew install libopenblas-dev
+      - brew install homebrew/science/openblas
 
 install:
   - export CXX="$COMPILER"
