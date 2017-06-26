@@ -80,6 +80,7 @@ install:
 
 before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
+  - sudo ldconfig
   - ./autogen.sh
 
 script:
