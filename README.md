@@ -1,6 +1,8 @@
 # FFLAS-FFPACK: Finite Field Linear Algebra Subroutines/Package
 
-[![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/view/LinBox%20ecosystem/job/FFLAS-FFPACK/)
+CI Inria: [![Build Status](https://ci.inria.fr/linbox/buildStatus/icon?job=FFLAS-FFPACK)](https://ci.inria.fr/linbox/view/LinBox%20ecosystem/job/FFLAS-FFPACK/)
+
+Travis: [![Build Status](https://travis-ci.org/linbox-team/fflas-ffpack.svg?branch=master)](https://travis-ci.org/linbox-team/fflas-ffpack/)
 
 ## PURPOSE
 
