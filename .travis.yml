@@ -17,8 +17,6 @@ matrix:
           - libgmp-dev
           - libgmpxx4ldbl
           - libopenblas-dev
-      before install:
-      - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install
 
     - os: linux
       sudo: required
@@ -34,8 +32,6 @@ matrix:
           - libgmp-dev
           - libgmpxx4ldbl
           - libopenblas-dev
-      before install:
-      - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install
 
     - os: linux
       sudo: required
@@ -51,8 +47,6 @@ matrix:
           - libgmp-dev
           - libgmpxx4ldbl
           - libopenblas-dev
-      before install:
-      - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install
 
     # - os: linux
     #   sudo: required
@@ -80,12 +74,12 @@ matrix:
       - brew uninstall automake && brew install automake
       - brew install autoconf libtool
       - brew install libopenblas-dev
-      - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install
 
 install:
   - export CXX="$COMPILER"
 
 before_script:
+  - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
   - ./autogen.sh
 
 script:
