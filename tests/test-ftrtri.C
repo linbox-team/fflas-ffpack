@@ -55,17 +55,17 @@ using Givaro::ModularBalanced;
 template<typename Field, class RandIter>
 bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, RandIter& Rand){
     typedef typename Field::Element Element;
-    Element * A, * B, * C;
+    Element * A, * B;
     size_t lda = n + (rand() % n );
     A  = fflas_new(F,n,lda);
     B  = fflas_new(F,n,lda);
-	C  = fflas_new(F,n,lda);
 	
-    RandomTriangularMatrix (F, n, n, uplo, diag, true, A, lda, Rand);
+    RandomTriangularMatrix (F, n, n, uplo, FFLAS::FflasNonUnit, true, A, lda, Rand);
     fassign (F, n, n, A, lda, B, lda); // copy of A
-	fassign (F, n, n, A, lda, C, lda); // copy of A
 	
-	
+	if (diag == FFLAS::FflasUnit) // Making the implicit unit diagonal explicit on B
+		for (size_t i=0; i<n; i++)
+			F.assign (B[i*(lda+1)],F.one);
     
     string ss=string((uplo == FflasLower)?"Lower_":"Upper_")+string((diag == FflasUnit)?"Unit":"NonUnit");
 
@@ -99,10 +99,7 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, R
     if (ok){
 	    cout << "PASSED ("<<time<<")"<<endl;
     } else{
-		//string file = "./mat.sage";
-		//WriteMatrix(file,F,n,n,C,lda,FFLAS::FflasSageMath);
 		cout << "FAILED ("<<time<<")"<<endl;
-		WriteMatrix(std::cout << "\nA" << std::endl, F,n,n,C,lda);
 		WriteMatrix(std::cout << "\nA^-1" << std::endl, F,n,n,A,lda);
     }
 
