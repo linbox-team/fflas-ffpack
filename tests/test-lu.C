@@ -353,16 +353,16 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		std::cout<<" ... ";
 
 
-		ok&= launch_test<Field,FflasUnit,FflasNoTrans>    (*F,r,m,n,G);
-		ok&= launch_test<Field,FflasUnit,FflasTrans>      (*F,r,m,n,G);
-		ok&= launch_test<Field,FflasNonUnit,FflasNoTrans> (*F,r,m,n,G);
-		ok&= launch_test<Field,FflasNonUnit,FflasTrans>   (*F,r,m,n,G);
+		ok = ok && launch_test<Field,FflasUnit,FflasNoTrans>    (*F,r,m,n,G);
+		ok = ok && launch_test<Field,FflasUnit,FflasTrans>      (*F,r,m,n,G);
+		ok = ok && launch_test<Field,FflasNonUnit,FflasNoTrans> (*F,r,m,n,G);
+		ok = ok && launch_test<Field,FflasNonUnit,FflasTrans>   (*F,r,m,n,G);
 
 #if 0 /*  may be bogus */
-		ok&= launch_test_append<Field,FflasUnit,FflasNoTrans>   (*F,r,m,n,G);
-		ok&= launch_test_append<Field,FflasNonUnit,FflasNoTrans>(*F,r,m,n,G);
-		ok&= launch_test_append<Field,FflasUnit,FflasTrans>     (*F,r,m,n,G);
-		ok&= launch_test_append<Field,FflasNonUnit,FflasTrans>  (*F,r,m,n,G);
+		ok = ok && launch_test_append<Field,FflasUnit,FflasNoTrans>   (*F,r,m,n,G);
+		ok = ok && launch_test_append<Field,FflasNonUnit,FflasNoTrans>(*F,r,m,n,G);
+		ok = ok && launch_test_append<Field,FflasUnit,FflasTrans>     (*F,r,m,n,G);
+		ok = ok && launch_test_append<Field,FflasNonUnit,FflasTrans>  (*F,r,m,n,G);
 #endif
 		nbit--;
 		if ( !ok )
@@ -408,16 +408,16 @@ int main(int argc, char** argv)
 
 	bool ok=true;
 	do{
-		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters,seed);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<double> >  (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<int32_t> >         (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> > (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<int64_t> >         (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> > (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,n/6,r/6,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,n/6,r/6,iters,seed);
 	} while (loop && ok);
 
 	return !ok;

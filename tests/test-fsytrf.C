@@ -84,7 +84,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 				// A <- L x L^T 
 			ftrtrm(*F, FflasRight, FflasNonUnit, n, A, lda);
 
-			ok &= fequal(*F, n, n, A, lda, B, lda);
+			ok = ok && fequal(*F, n, n, A, lda, B, lda);
 		}
 
 		{ // Testing is B ==  U^T D U
@@ -106,7 +106,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 				// A <- U^T x U
 			ftrtrm(*F, FflasRight, FflasNonUnit, n, A, lda);
 
-			ok &= fequal(*F, n, n, A, lda, B, lda);
+			ok = ok && fequal(*F, n, n, A, lda, B, lda);
 		}
 
 		std::cout.width(45);
@@ -156,15 +156,15 @@ int main(int argc, char** argv){
 
 	bool ok=true;
 	do{
-		ok&=run_with_field<Givaro::Modular<float> >           (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::Modular<double> >          (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<double> >   (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::Modular<int32_t> >   (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::Modular<int64_t> >   (q,b,n,iters,threshold,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n,iters,threshold,seed);
-			//ok&=run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n,iters,threshold,seed);
+			//ok = ok && run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,iters,threshold,seed);
 	} while (loop && ok);
 
 	if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;

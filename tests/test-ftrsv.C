@@ -152,16 +152,16 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		ok &= run_with_field<Modular<double> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<float> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,iters,seed);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters,seed);
+		ok = ok && run_with_field<Modular<double> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters,seed);
 	} while (loop && ok);
 
 	return !ok ;

@@ -80,9 +80,9 @@ bool check4()
 
 int main() {
 	bool pass = true ;
-	pass &= check2();
-	pass &= check3();
-	pass &= check4();
+	pass = pass && check2();
+	pass = pass && check3();
+	pass = pass && check4();
 	return !pass;
 }
 

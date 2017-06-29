@@ -100,11 +100,11 @@ int main(){
 	bool ok = true;
     
     size_t  P1[10] = {0,5,6,6,7,9,6,7,8,9};
-	ok &= checkMonotonicApplyP(FflasLeft, FflasNoTrans, P1, 10, 6);
+	ok = ok && checkMonotonicApplyP(FflasLeft, FflasNoTrans, P1, 10, 6);
     size_t  P2[10] = {0,3,3,6,6,5,6,7,8,9};
-	ok &= checkMonotonicApplyP(FflasLeft, FflasNoTrans, P2, 10, 5);
+	ok = ok && checkMonotonicApplyP(FflasLeft, FflasNoTrans, P2, 10, 5);
     size_t  P3[10] = {0,4,2,4,5,5,6,7,8,9};
-	ok &= checkMonotonicApplyP(FflasLeft, FflasNoTrans, P3, 10, 6);
+	ok = ok && checkMonotonicApplyP(FflasLeft, FflasNoTrans, P3, 10, 6);
 	
 	return !ok;
 }

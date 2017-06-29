@@ -122,10 +122,10 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	    
 	    cout<<"Checking with ";F->write(cout)<<endl;
 	    
-        ok &= check_ftrtri(*F,n,FflasLower,FflasUnit,G);
-        ok &= check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
-        ok &= check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
-        ok &= check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasLower,FflasUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
 		nbit--;
 		delete F;
     }
@@ -158,16 +158,16 @@ int main(int argc, char** argv)
     
     bool ok = true;
     do{
-	    ok &= run_with_field<Modular<double> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<float> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/6+1,iters,seed);
-	    ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/6+1,iters,seed);
+	    ok = ok && run_with_field<Modular<double> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<float> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/6+1,iters,seed);
+	    ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/6+1,iters,seed);
     } while (loop && ok);
     return !ok ;
 }
