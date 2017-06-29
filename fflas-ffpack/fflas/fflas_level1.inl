@@ -208,8 +208,9 @@ namespace FFLAS {
 		 typename Field::ConstElement_ptr X, const size_t incX)
 	{
 		bool res=true;
-		for (size_t i = 0 ; i < n ; ++i)
-			res &= F.isZero (X [i*incX]);
+		typename Field::ConstElement_ptr Xi = X;
+		for (size_t i = 0 ; i < n ; ++i, Xi += incX)
+			res = res && F.isZero (*Xi);
 		return res;
 	}
 
@@ -229,7 +230,7 @@ namespace FFLAS {
 	{
 		bool res=true;
 		for (size_t i = 0 ; i < n ; ++i)
-			res &= F.areEqual (X [i*incX], Y [i*incY]);
+			res = res &&  F.areEqual (X [i*incX], Y [i*incY]);
 		return res;
 	}
 
