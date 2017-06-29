@@ -43,43 +43,43 @@ int main() {
 
     bool ok=true;
     
-        // kmax = floor(2^53 / (p-1)^2)
-    // ok &= test<Givaro::Modular<double>  >(17,35184372088831);
-    // ok &= test<Givaro::Modular<double>  >(65521,2098176);
-    // ok &= test<Givaro::Modular<double>  >(67108859,2);
-    //     // kmax = floor(2^53 / ((p-1)/2)^2)
-    // ok &= test<Givaro::ModularBalanced<double>  >(17,140737488355327);
-    // ok &= test<Givaro::ModularBalanced<double>  >(65521,8392705);
-    // ok &= test<Givaro::ModularBalanced<double>  >(67108859,8);
-    //     // kmax = floor(2^24 / (p-1)^2)
-    // ok &= test<Givaro::Modular<float> > (17,65535);
-    // ok &= test<Givaro::Modular<float> > (2039,4);
-    //     // kmax = floor(2^24 / ((p-1)/2)^2)
-    // ok &= test<Givaro::ModularBalanced<float> >(17,262143);
-    // ok &= test<Givaro::ModularBalanced<float> > (2039,16);
+		// kmax = floor(2^53 / (p-1)^2)
+    ok = ok && test<Givaro::Modular<double>  >(17,35184372088831);
+    ok = ok && test<Givaro::Modular<double>  >(65521,2098176);
+    ok = ok && test<Givaro::Modular<double>  >(67108859,2);
+        // kmax = floor(2^53 / ((p-1)/2)^2)
+    ok = ok && test<Givaro::ModularBalanced<double>  >(17,140737488355327);
+    ok = ok && test<Givaro::ModularBalanced<double>  >(65521,8392705);
+    ok = ok && test<Givaro::ModularBalanced<double>  >(67108859,8);
+        // kmax = floor(2^24 / (p-1)^2)
+    ok = ok && test<Givaro::Modular<float> > (17,65535);
+    ok = ok && test<Givaro::Modular<float> > (2039,4);
+        // kmax = floor(2^24 / ((p-1)/2)^2)
+    ok = ok && test<Givaro::ModularBalanced<float> >(17,262143);
+    ok = ok && test<Givaro::ModularBalanced<float> > (2039,16);
 
-    //    // kmax = floor(2^53 / (p-1)^2)
-    // ok &= test<Givaro::Modular<int64_t>  >(17,36028797018963967);
-    // ok &= test<Givaro::Modular<int64_t>  >(65521,2148532608);
-    // ok &= test<Givaro::Modular<int64_t>  >(1147482977,7);
-    //     // kmax = floor(2^53 / ((p-1)/2)^2)
-    // ok &= test<Givaro::ModularBalanced<int64_t>  >(17,144115188075855871);
-    // ok &= test<Givaro::ModularBalanced<int64_t>  >(65521,8594130432);
-    // ok &= test<Givaro::ModularBalanced<int64_t>  >(1147482977,28);
+       // kmax = floor(2^53 / (p-1)^2)
+    ok = ok && test<Givaro::Modular<int64_t>  >(17,36028797018963967);
+    ok = ok && test<Givaro::Modular<int64_t>  >(65521,2148532608);
+    ok = ok && test<Givaro::Modular<int64_t>  >(1147482977,7);
+        // kmax = floor(2^53 / ((p-1)/2)^2)
+    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(17,144115188075855871);
+    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(65521,8594130432);
+    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(1147482977,28);
  
-    //    // kmax = floor(2^31 / (p-1)^2)
-    // ok &= test<Givaro::Modular<int32_t>  >(17,8388607);
-    // ok &= test<Givaro::Modular<int32_t>  >(24571,3);
-    //     // kmax = floor(2^31 / ((p-1)/2)^2)
-    // ok &= test<Givaro::ModularBalanced<int32_t>  >(17,33554431);
-    // ok &= test<Givaro::ModularBalanced<int32_t>  >(24571,14);
+       // kmax = floor(2^31 / (p-1)^2)
+    ok = ok && test<Givaro::Modular<int32_t>  >(17,8388607);
+    ok = ok && test<Givaro::Modular<int32_t>  >(24571,3);
+        // kmax = floor(2^31 / ((p-1)/2)^2)
+    ok = ok && test<Givaro::ModularBalanced<int32_t>  >(17,33554431);
+    ok = ok && test<Givaro::ModularBalanced<int32_t>  >(24571,14);
 
-    //    // kmax = maxsize_t
-    // ok &= test<Givaro::Modular<Givaro::Integer>  >(17, std::numeric_limits<size_t>::max());
-    // ok &= test<Givaro::Modular<Givaro::Integer>  >(Givaro::Integer("46768052394588893382517914646921056628989841375373"),std::numeric_limits<size_t>::max());
-    //     // kmax = maxsize_t
-    ok &= test<Givaro::Modular<RecInt::rint<8> > >(17, std::numeric_limits<size_t>::max());
-    ok &= test<Givaro::Modular<RecInt::rint<8> > >(Givaro::Integer("166153499473114484112975882535042793"),2097152);
+       // kmax = maxsize_t
+    ok = ok && test<Givaro::Modular<Givaro::Integer>  >(17, std::numeric_limits<size_t>::max());
+    ok = ok && test<Givaro::Modular<Givaro::Integer>  >(Givaro::Integer("46768052394588893382517914646921056628989841375373"),std::numeric_limits<size_t>::max());
+        // kmax = maxsize_t
+    ok = ok && test<Givaro::Modular<RecInt::rint<8> > >(17, std::numeric_limits<size_t>::max());
+    ok = ok && test<Givaro::Modular<RecInt::rint<8> > >(Givaro::Integer("166153499473114484112975882535042793"),2097152);
     return !ok;
 }
         
