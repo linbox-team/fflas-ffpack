@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 			FFPACK::ftrtri(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, n, A, n);
 		if (i) chrono.stop();
 		
-		time+=chrono.usertime();
+		time+=chrono.realtime();
 	}
 		FFLAS::fflas_delete (A);
 		FFLAS::fflas_delete (B);
