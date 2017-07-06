@@ -101,7 +101,7 @@ int main () {
 			tim+=chrono;
 			FFLAS::fassign (F, n, n, T, ldt, U, ldt);
 		}
-		RecTime = tim.usertime()/iter;
+		RecTime = tim.realtime()/iter;
 
 		cout << "      ";
 		cout.width(4);
