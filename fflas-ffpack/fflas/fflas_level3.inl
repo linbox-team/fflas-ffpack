@@ -214,7 +214,7 @@ namespace FFLAS {
 	 * \param F field.
 	 * \param UpLo whether to compute the upper or the lower triangular part of the symmetric matrix \p C
 	 * \param trans if \c ta==FflasTrans then comput \f$C = \alpha A \times A^T + \beta C\f$, else  \f$C = \alpha A^T \times A + \beta C\f$
-	 * \param n see \p B
+	 * \param n see \p A
 	 * \param k see \p A
 	 * \param alpha scalar
 	 * \param A \f$A\f$ is \f$n \times k\f$ or \f$A\f$ is \f$k \times n\f$
