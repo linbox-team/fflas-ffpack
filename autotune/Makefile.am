@@ -29,7 +29,7 @@ AUTOTUNE_PLUQ = pluq
 AUTOTUNE_CHARPOLY = charpoly-LUK-ArithProg charpoly-Danilevskii-LUK arithprog
 AUTOTUNE_FTRTRI = ftrtri
 AUTOTUNE_FSYTRF = fsytrf
-AUTOTUNE_FSYTRF = fsyrk
+AUTOTUNE_FSYRK = fsyrk
 
 AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY) $(AUTOTUNE_FTRTRI) $(AUTOTUNE_FSYTRF) $(AUTOTUNE_FSYRK)
 
@@ -55,7 +55,7 @@ define run_tune_fsyrk
 	./tune_fsyrk.sh
 endef
 define merge_thresholds
-	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h ftrtri-threshold.h fsytrf-threshold.h> ../fflas-ffpack/fflas-ffpack-thresholds.h
+	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h ftrtri-threshold.h fsytrf-threshold.h fsyrk-threshold.h> ../fflas-ffpack/fflas-ffpack-thresholds.h
 endef	
 
 # This forces the autotune runs to be sequential

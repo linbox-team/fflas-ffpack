@@ -52,7 +52,7 @@ int main () {
 
   typedef Givaro::ModularBalanced<double> Field;
   Field F(131071);
-  size_t n=1000, nmax=1500, k=1000, kmax=1500, prec=1000, nbest=0, count=0;
+  size_t n=1000, nmax=5000, k=1000, kmax=5000, prec=1000, nbest=0, count=0;
   TTimer chrono,tim;
   bool bound=false;
   time_t result = std::time(NULL);
@@ -73,6 +73,10 @@ int main () {
   Field::Element_ptr A = FFLAS::fflas_new (F, nmax, kmax);
   size_t lda = kmax;
   FFPACK::RandomMatrix(F,n,k,A,lda);
+
+	  // Let D be a random n dimensional diagonal
+  Field::Element_ptr D = FFLAS::fflas_new (F, nmax);
+  FFPACK::RandomMatrix(F,1,n,D,n);
   
   // let alpha and beta be scalars in F
   Field::Element alpha = F.mOne, beta = F.one;
@@ -89,17 +93,17 @@ int main () {
   double BCTime, RecTime;
   int iter;
   do{
-    iter=300;
+    iter=3;
 
     //warm up computation
-    FFLAS::fsyrk(F,FFLAS::FflasUpper,FFLAS::FflasNoTrans,n,k,alpha,A,lda,beta,C,ldc,n);
+    FFLAS::fsyrk(F,FFLAS::FflasUpper,FFLAS::FflasNoTrans,n,k,alpha,A,lda,D,1,beta,C,ldc,n);
     FFLAS::fassign (F, n, n, B, ldb, C, ldc);
 		
     // base case
     chrono.clear();tim.clear();
     for (int i=0;i<iter;i++){
       chrono.start();
-      FFLAS::fsyrk(F,FFLAS::FflasUpper,FFLAS::FflasNoTrans,n,k,alpha,A,lda,beta,C,ldc,n);
+      FFLAS::fsyrk(F,FFLAS::FflasUpper,FFLAS::FflasNoTrans,n,k,alpha,A,lda,D,1,beta,C,ldc,n);
       chrono.stop();
       tim+=chrono;
       FFLAS::fassign (F, n, n, B, ldb, C, ldc);
@@ -109,7 +113,7 @@ int main () {
     tim.clear();chrono.clear();
     for (int i=0;i<iter;i++){
       chrono.start();
-      FFLAS::fsyrk(F,FFLAS::FflasUpper,FFLAS::FflasNoTrans,n,k,alpha,A,lda,beta,C,ldc,n-1);
+      FFLAS::fsyrk(F,FFLAS::FflasUpper,FFLAS::FflasNoTrans,n,k,alpha,A,lda,D,1,beta,C,ldc,n-1);
       chrono.stop();
       tim+=chrono;
       FFLAS::fassign (F, n, n, B, ldb, C, ldc);
@@ -158,6 +162,7 @@ int main () {
   FFLAS::fflas_delete(A);
   FFLAS::fflas_delete(B);
   FFLAS::fflas_delete(C);
+  FFLAS::fflas_delete(D);
 	
   return 0;
 }
