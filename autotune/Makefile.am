@@ -1,6 +1,6 @@
 # Copyright (c) 2016 FFLAS-FFPACK
 # written by Clément Pernet <Clement.Pernet@imag.fr>
-#
+# Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes.fr>
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
 #
@@ -29,11 +29,12 @@ AUTOTUNE_PLUQ = pluq
 AUTOTUNE_CHARPOLY = charpoly-LUK-ArithProg charpoly-Danilevskii-LUK arithprog
 AUTOTUNE_FTRTRI = ftrtri
 AUTOTUNE_FSYTRF = fsytrf
+AUTOTUNE_FSYTRF = fsyrk
 
-AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY) $(AUTOTUNE_FTRTRI) $(AUTOTUNE_FSYTRF)
+AUTOTUNE = $(AUTOTUNE_FGEMM) $(AUTOTUNE_PLUQ) $(AUTOTUNE_CHARPOLY) $(AUTOTUNE_FTRTRI) $(AUTOTUNE_FSYTRF) $(AUTOTUNE_FSYRK)
 
 EXTRA_PROGRAMS=$(AUTOTUNE)
-EXTRA_DIST=tune_fgemm.sh tune_pluq.sh tune_charpoly.sh tune_ftrtri.sh tune_fsytrf.sh
+EXTRA_DIST=tune_fgemm.sh tune_pluq.sh tune_charpoly.sh tune_ftrtri.sh tune_fsytrf.sh tune_fsyrk.sh
 
 define run_tune_fgemm
 	./tune_fgemm.sh
@@ -50,6 +51,9 @@ endef
 define run_tune_fsytrf
 	./tune_fsytrf.sh
 endef
+define run_tune_fsyrk
+	./tune_fsyrk.sh
+endef
 define merge_thresholds
 	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h ftrtri-threshold.h fsytrf-threshold.h> ../fflas-ffpack/fflas-ffpack-thresholds.h
 endef	
@@ -61,6 +65,7 @@ autotune: autotune_fgemm autotune_pluq autotune_charpoly autotune_ftrtri autotun
 	${run_tune_charpoly}
 	${run_tune_ftrtri}
 	${run_tune_fsytrf}
+	${run_tune_fsyrk}
 	${merge_thresholds}
 
 # Tune fgemm only
@@ -83,6 +88,12 @@ tune_fsytrf: autotune_fsytrf
 	${run_tune_fsytrf}
 	${merge_thresholds}
 
+# Tune fsyrk only
+tune_fsyrk: autotune_fsyrk
+	${run_tune_fsyrk}
+	${merge_thresholds}
+
+# Tune charpoly only
 tune_charpoly: autotune_charpoly
 	${run_tune_charpoly}
 	${merge_thresholds}
@@ -95,11 +106,14 @@ autotune_ftrtri: $(AUTOTUNE_FTRTRI:%=%$(EXEEXT))
 
 autotune_fsytrf: $(AUTOTUNE_FSYTRF:%=%$(EXEEXT))
 
+autotune_fsyrk: $(AUTOTUNE_FSYRK:%=%$(EXEEXT))
+
 autotune_charpoly: $(AUTOTUNE_CHARPOLY:%=%$(EXEEXT))
 
 pluq_SOURCES=pluq.C
 ftrtri_SOURCES=ftrtri.C
 fsytrf_SOURCES=fsytrf.C
+fsyrk_SOURCES=fsyrk.C
 charpoly_Danilevskii_LUK_SOURCES=charpoly.C
 charpoly_Danilevskii_LUK_CXXFLAGS=$(AM_CXXFLAGS) -DVARIANT1="FfpackDanilevski" -DVARIANT2="FfpackLUK" -DNSTART=32 -DNFIRSTSTEP=32 -DNMAX=1000 -DNPREC=1 -DITER=500
 charpoly_LUK_ArithProg_SOURCES=charpoly.C
