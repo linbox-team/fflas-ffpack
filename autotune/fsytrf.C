@@ -30,11 +30,11 @@
 
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
-#include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include <iostream>
 #include <givaro/modular-balanced.h>
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
 
 
 #ifdef __GIVARO_USE_OPENMP
