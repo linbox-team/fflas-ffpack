@@ -59,7 +59,7 @@ define merge_thresholds
 endef	
 
 # This forces the autotune runs to be sequential
-autotune: autotune_fgemm autotune_pluq autotune_charpoly autotune_ftrtri autotune_fsytrf
+autotune: autotune_fgemm autotune_pluq autotune_charpoly autotune_ftrtri autotune_fsytrf autotune_fsyrk
 	${run_tune_fgemm}
 	${run_tune_pluq}
 	${run_tune_charpoly}
