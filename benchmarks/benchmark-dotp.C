@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
   
 	Givaro::OMPTimer chrono, time; time.clear();
   
-	for (size_t i=0;i<=iter;++i){
+	for (size_t i=0;i<iter;++i){
 		A = fflas_new(F, N);
 		size_t lda = N;
 		B = fflas_new(F, N);
@@ -89,9 +89,13 @@ int main(int argc, char** argv) {
 
 
 		chrono.clear();
-		if (i) chrono.start();
+		chrono.start();
 		d = pfdot(F, N, A, 1U, B, 1U);
-		if (i) chrono.stop();
+		chrono.stop();
+
+        std::cout << chrono 
+                  << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*chrono.realtime())
+                  << std::endl;
 	
 		F.subin(d, fdot(F, N, A, 1U, B, 1U));
 		time+=chrono;
