@@ -25,6 +25,9 @@
  *.
  */
 
+#ifndef __FFLASFFPACK_pfinit_H
+#define __FFLASFFPACK_pfinit_H
+
 #include "fflas-ffpack/paladin/parallel.h"
 
 namespace FFLAS
@@ -82,6 +85,6 @@ namespace FFLAS
 			);	
 	}
 
-
-
 } // FFLAS
+
+#endif
