@@ -16,7 +16,7 @@ matrix:
           - g++-4.9
           - libgmp-dev
           - libgmpxx4ldbl
-          - libopenblas-dev
+          - libatlas-dev
 
     - os: linux
       sudo: required
@@ -31,13 +31,13 @@ matrix:
           - g++-5
           - libgmp-dev
           - libgmpxx4ldbl
-          - libopenblas-dev
+          - libatlas-dev
 
     - os: linux
       sudo: required
       dist: trusty
       compiler: gcc
-      env: COMPILER=g++-6
+      env: COMPILER=g++-6 BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
       addons:
         apt:
           sources:
@@ -46,7 +46,7 @@ matrix:
           - g++-6
           - libgmp-dev
           - libgmpxx4ldbl
-          - libopenblas-dev
+          - libatlas-dev
 
     # - os: linux
     #   sudo: required
@@ -81,7 +81,7 @@ install:
 before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
   - export LD_LIBRARY_PATH=/usr/local/lib
-  - ./autogen.sh
+  - ./autogen.sh $BLAS_LIBS
 
 script:
   - make

@@ -36,6 +36,7 @@
 
 
 using namespace std;
+using namespace FFPACK;
 
 template<class Field>
 void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file, int variant){
@@ -43,14 +44,15 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 	typedef typename Field::Element Element;
 	FFPACK::FFPACK_CHARPOLY_TAG CT;
 	switch (variant){
-		case 0: CT = FFPACK::FfpackLUK; break;
-		case 1: CT = FFPACK::FfpackKG; break;
-		case 2: CT = FFPACK::FfpackDanilevski; break;
-		case 3: CT = FFPACK::FfpackKGFast; break;
-		case 4: CT = FFPACK::FfpackKGFastG; break;
-		case 5: CT = FFPACK::FfpackHybrid; break;
-		case 6: CT = FFPACK::FfpackArithProg; break;
-		default: CT = FFPACK::FfpackLUK; break;
+		case 0: CT = FfpackAuto; break;
+	    case 1: CT = FfpackDanilevski; break;
+	    case 2: CT = FfpackLUK; break;
+	    case 3: CT = FfpackArithProg; break;
+	    case 4: CT = FfpackKG; break;
+	    case 5: CT = FfpackKGFast; break;
+	    case 6: CT = FfpackHybrid; break;
+	    case 7: CT = FfpackKGFastG; break;
+	    default: CT = FfpackAuto; break;
 	}
 	FFLAS::Timer chrono;
 	Element *A;
@@ -89,7 +91,7 @@ int main(int argc, char** argv) {
 	size_t bits = 10;
 	size_t    n    = 1000;
 	std::string file = "";
-	int variant =6;
+	int variant = 0;
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for the ring ZZ).",  TYPE_INT , &q },
