@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 	Field::Element_ptr A, B;
 	Field::Element d;
   
-	Givaro::OMPTimer chrono, time;
+	Givaro::OMPTimer chrono, time; time.clear();
   
 	for (size_t i=0;i<=iter;++i){
 		A = fflas_new(F, N);
