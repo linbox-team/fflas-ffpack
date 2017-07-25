@@ -93,35 +93,24 @@ namespace FFLAS
 		typename Field::Element d; F.init(d); F.assign(d,F.zero);
 		
 		PAR_BLOCK {
-			
-			SYNCH_GROUP(
-				FORBLOCK1D(iter, N, SPLITTER(),
-						   TASK(MODE(CONSTREFERENCE(F) READ(x,y) READWRITE(d)),
-						   {
-							   std::cerr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):" << iter.end()-iter.begin() << std::endl;
-//                       for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
-//                           F.write(F.write(std::cerr, *(x+itee)) << '.', *(y+itee)) << std::endl;
-							   
-							   typename Field::Element z; F.init(z); F.assign(z,F.zero); 
-							   F.assign(z, fdot(F, 
-												iter.end()-iter.begin(),
-												x+iter.begin(), incx,
-												y+iter.begin(), incy));	
+			SYNCH_GROUP({
+				FORBLOCK1D(iter, N, SPLITTER(), {
+					typename Field::Element z; F.init(z); F.assign(z,F.zero); 
+					TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z)), {
+// 						std::cerr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):" << iter.end()-iter.begin() << std::endl;
+// 						for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
+// 							F.write(F.write(std::cerr, *(x+itee)) << '.', *(y+itee)) << std::endl;
+						F.assign(z, fdot(F, 
+										 iter.end()-iter.begin(),
+										 x+iter.begin(), incx,
+										 y+iter.begin(), incy));
+// 						F.write(std::cerr << "pd:", z) << std::endl;
 #pragma omp critical
-							   F.addin(d,z);
-							   
-						   }
-								);
-						   );
-				WAIT;
-				);
-//         typename Field::Element d; F.init(d); F.assign(d,F.zero);
-//         for(size_t i=0; i<rs; ++i) {
-//             F.write(std::cerr << "z[" << i << "]:", z[i]) << std::endl;
-//             F.addin(d,z[i]);
-//         }
-//         return d;
-			
+						F.addin(d,z);   
+// 						F.write(std::cerr << "dp:", d) << std::endl;
+					});
+				});
+			});
 		}
         return d;
 	}
