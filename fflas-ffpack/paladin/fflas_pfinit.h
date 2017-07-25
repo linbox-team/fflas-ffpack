@@ -90,15 +90,12 @@ namespace FFLAS
                                   typename Field::ConstElement_ptr x, const size_t incx,
                                   typename Field::ConstElement_ptr y, const size_t incy)
 	{
-        size_t rs;
-        PAR_BLOCK {
-            rs = NUM_THREADS;
-        }
+        size_t rs(NUM_THREADS);
+        
         
 //         typename Field::Element * z = FFLAS::fflas_new<typename Field::Element>(rs+1);
         typename Field::Element z; F.init(z); F.assign(z,F.zero);
     
-        PAR_BLOCK {
         SYNCH_GROUP(
             FORBLOCK1D(iter, N, SPLITTER(),
                   TASK(MODE(CONSTREFERENCE(F) READ(x,y) READWRITE(z)),
@@ -116,7 +113,6 @@ namespace FFLAS
                   );
             WAIT;
 			);
-        }
 //         typename Field::Element d; F.init(d); F.assign(d,F.zero);
 //         for(size_t i=0; i<rs; ++i) {
 //             F.write(std::cerr << "z[" << i << "]:", z[i]) << std::endl;

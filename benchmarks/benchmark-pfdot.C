@@ -71,9 +71,7 @@ int main(int argc, char** argv) {
   
 	for (size_t i=0;i<iter;++i){
 		A = fflas_new(F, N);
-		size_t lda = N;
 		B = fflas_new(F, N);
-		size_t ldb = N;
 #pragma omp parallel for 
         for (size_t j=0; j<N; ++j) {
             IPD.random(generator,A[j],BS);
@@ -90,7 +88,9 @@ int main(int argc, char** argv) {
 
 		chrono.clear();
 		chrono.start();
-		d = pfdot(F, N, A, 1U, B, 1U);
+        PAR_BLOCK {
+            d = pfdot(F, N, A, 1U, B, 1U);
+        }
 		chrono.stop();
 
         std::cout << chrono 
