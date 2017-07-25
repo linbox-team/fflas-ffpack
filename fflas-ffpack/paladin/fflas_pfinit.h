@@ -91,27 +91,29 @@ namespace FFLAS
 								   typename Field::ConstElement_ptr y, const size_t incy)
 	{
 		typename Field::Element d; F.init(d); F.assign(d,F.zero);
-		
+		size_t rs; PAR_BLOCK { rs = NUM_THREADS; }
+		typename Field::Element * z = fflas_new<typename Field::Element>(rs);
+		for(size_t i=0;i<rs;++i) F.init(z[i]);
+
 		PAR_BLOCK {
 			SYNCH_GROUP({
 				FORBLOCK1D(iter, N, SPLITTER(), {
-					typename Field::Element z; F.init(z); F.assign(z,F.zero); 
-					TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z)), {
+					const size_t i( iter.begin()/(iter.end()-iter.begin()) );					
+					TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z[i])), {
 // 						std::cerr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):" << iter.end()-iter.begin() << std::endl;
 // 						for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
 // 							F.write(F.write(std::cerr, *(x+itee)) << '.', *(y+itee)) << std::endl;
-						F.assign(z, fdot(F, 
+						F.assign(z[i], fdot(F, 
 										 iter.end()-iter.begin(),
 										 x+iter.begin(), incx,
 										 y+iter.begin(), incy));
 // 						F.write(std::cerr << "pd:", z) << std::endl;
-#pragma omp critical
-						F.addin(d,z);   
-// 						F.write(std::cerr << "dp:", d) << std::endl;
 					});
 				});
 			});
 		}
+
+		for(size_t i=0;i<rs;++i) F.addin(d,z[i]);
         return d;
 	}
 
