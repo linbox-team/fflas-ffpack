@@ -87,39 +87,43 @@ namespace FFLAS
 
 	template<class Field>
 	typename Field::Element pfdot(const Field& F, const size_t N, 
-                                  typename Field::ConstElement_ptr x, const size_t incx,
-                                  typename Field::ConstElement_ptr y, const size_t incy)
+								   typename Field::ConstElement_ptr x, const size_t incx,
+								   typename Field::ConstElement_ptr y, const size_t incy)
 	{
-        size_t rs(NUM_THREADS);
-        
-        
-//         typename Field::Element * z = FFLAS::fflas_new<typename Field::Element>(rs+1);
-        typename Field::Element z; F.init(z); F.assign(z,F.zero);
-    
-        SYNCH_GROUP(
-            FORBLOCK1D(iter, N, SPLITTER(),
-                  TASK(MODE(CONSTREFERENCE(F) READ(x,y) READWRITE(z)),
-                  {
-                      std::cerr << rs << ", T(" << omp_get_thread_num()<< "):" << iter.end()-iter.begin() << std::endl;
+		typename Field::Element d; F.init(d); F.assign(d,F.zero);
+		
+		PAR_BLOCK {
+			
+			SYNCH_GROUP(
+				FORBLOCK1D(iter, N, SPLITTER(),
+						   TASK(MODE(CONSTREFERENCE(F) READ(x,y) READWRITE(d)),
+						   {
+							   std::cerr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):" << iter.end()-iter.begin() << std::endl;
 //                       for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
 //                           F.write(F.write(std::cerr, *(x+itee)) << '.', *(y+itee)) << std::endl;
-                      
-                      F.addin(z, fdot(F, 
-                           iter.end()-iter.begin(),
-                           x+iter.begin(), incx,
-                           y+iter.begin(), incy));
-                  }
-                       );
-                  );
-            WAIT;
-			);
+							   
+							   typename Field::Element z; F.init(z); F.assign(z,F.zero); 
+							   F.assign(z, fdot(F, 
+												iter.end()-iter.begin(),
+												x+iter.begin(), incx,
+												y+iter.begin(), incy));	
+#pragma omp critical
+							   F.addin(d,z);
+							   
+						   }
+								);
+						   );
+				WAIT;
+				);
 //         typename Field::Element d; F.init(d); F.assign(d,F.zero);
 //         for(size_t i=0; i<rs; ++i) {
 //             F.write(std::cerr << "z[" << i << "]:", z[i]) << std::endl;
 //             F.addin(d,z[i]);
 //         }
 //         return d;
-        return z;
+			
+		}
+        return d;
 	}
 
 

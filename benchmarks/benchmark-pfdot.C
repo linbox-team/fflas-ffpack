@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 // 	Field F(q);
 	
 	Field::Element_ptr A, B;
-	Field::Element d;
+	Field::Element d; F.init(d);
   
 	Givaro::OMPTimer chrono, time; time.clear();
   
@@ -84,13 +84,13 @@ int main(int argc, char** argv) {
 //         std::cerr << '['; for(size_t i=0; i<N; ++i) F.write(std::cerr,A[i]) << ' '; std::cerr << ']' << std::endl;
 //         std::cerr << '['; for(size_t i=0; i<N; ++i) F.write(std::cerr,B[i]) << ' '; std::cerr << ']' << std::endl;
         
-
+        F.assign(d, F.zero);
 
 		chrono.clear();
 		chrono.start();
-        PAR_BLOCK {
-            d = pfdot(F, N, A, 1U, B, 1U);
-        }
+//         PAR_BLOCK {
+            F.assign(d, pfdot(F, N, A, 1U, B, 1U) );
+//         }
 		chrono.stop();
 
         std::cout << chrono 
