@@ -76,7 +76,7 @@ benchmark_lqup_mp_SOURCES = benchmark-lqup-mp.C
 benchmark_pluq_SOURCES = benchmark-pluq.C
 benchmark_checkers_SOURCES = benchmark-checkers.C
 benchmark_fadd_lvl2_SOURCES = benchmark-fadd-lvl2.C
-benchmark_pfdot = benchmark-pfdot.C
+benchmark_pfdot_SOURCES = benchmark-pfdot.C
 
 benchmark_sgemm_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 
