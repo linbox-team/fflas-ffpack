@@ -36,6 +36,9 @@
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
+#include "fflas-ffpack/paladin/parallel.h"
+#include "fflas-ffpack/paladin/fflas_pfinit.h"
+#include <givaro/zring.h>
 #include <givaro/modular.h>
 
 
@@ -60,20 +63,21 @@ bool check_fdot (const Field &F, size_t n,
 	double time=0.0;
 	t.clear(); t.start();
 
-	typename Field::Element d = fdot (F, n, a, inca, b, incb);
-
+	typename Field::Element d; F.init(d); F.assign(d,F.zero);
+	PAR_BLOCK {
+			// d <- d + <A,B>
+		pfdot(F, n, a, inca, b, incb, d, NUM_THREADS);
+	}
 	t.stop();
 	time+=t.usertime();
 
-	typename Field::Element dcheck;
-	F.init(dcheck,F.zero);
-	for (size_t i = 0; i<n; i++)
-		F.axpyin (dcheck, a[i*inca], b[i*incb]);
-	if (F.areEqual(d,dcheck)){
+	F.subin(d, fdot(F, n, a, inca, b, incb));
+
+	if (F.areEqual(d,F.zero)){
 		cout << "PASSED ("<<time<<")"<<endl;
 		return true;
 	}else{
-		cout << "FAILED ("<<time<<") d = "<<d<<" dcheck = "<<dcheck<<endl;
+		F.write(cout << "FAILED ("<<time<<") diff = ",d)<<endl;
 		return false;
 	}
 }
@@ -112,6 +116,38 @@ bool run_with_field (Givaro::Integer q, size_t BS, size_t n, size_t iters, uint6
 	return ok;
 }
 
+bool run_with_Integer (size_t BS, size_t n, size_t iters, uint64_t seed){
+	bool ok = true ;
+	int nbit=(int)iters;
+    Givaro::GivRandom generator;
+    Givaro::IntegerDom IPD;
+    typedef Givaro::ZRing<Givaro::Integer> Field;
+	Field F;
+
+	while (ok &&  nbit){
+
+		F.write(cout<<"Checking with ") << " and bitsize " << BS <<endl;
+
+		size_t inca = 1 + rand() % n;
+		size_t incb = 1 + rand() % n;
+		typename Field::Element_ptr a = fflas_new (F, n, inca);
+		typename Field::Element_ptr b = fflas_new (F, n, incb);
+
+        PARFOR1D(j,n*inca,SPLITTER(), IPD.random(generator,a[j],BS); );
+        PARFOR1D(j,n*incb,SPLITTER(), IPD.random(generator,b[j],BS); );
+		
+		ok = ok && check_fdot(F,n,a,1,b,1);
+		ok = ok && check_fdot(F,n,a,inca,b,incb);
+		ok = ok && check_fdot(F,n,a,1,b,incb);
+		ok = ok && check_fdot(F,n,a,inca,b,1);
+
+		fflas_delete(a);
+		fflas_delete(b);
+		nbit--;
+	}
+	return ok;
+}
+
 int main(int argc, char** argv)
 {
 	cerr<<setprecision(10);
@@ -144,8 +180,9 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
 		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
-		// ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,iters,seed);
-		// ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,iters,seed);
+		ok = ok && run_with_Integer((b?b:512),n/4+1,iters,seed);
 	} while (loop && ok);
 
 	if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;

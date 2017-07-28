@@ -33,6 +33,7 @@ PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =               \
 		test-fdot           \
+		test-pfdot           \
 		test-finit          \
 		test-fscal          \
 		test-fadd           \
@@ -157,6 +158,7 @@ test_ftrtri_SOURCES            = test-ftrtri.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
 test_fdot_SOURCES = test-fdot.C
+test_pfdot_SOURCES = test-pfdot.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
 test_finit_SOURCES = test-finit.C

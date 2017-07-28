@@ -43,12 +43,12 @@ int main(int argc, char** argv) {
 	size_t iter      = 3;
 	size_t N      = 5000;
  	size_t BS      = 5000;
-    size_t q = 101;
+//     size_t q = 101;
 	std::string file = "";
   
 	Argument as[] = {
 		{ 'n', "-n N", "Set the dimension of the matrix C.",             TYPE_INT , &N },
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
+// 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
 		{ 's', "-i S", "Size of the integers.",                            TYPE_INT , &BS },
 		END_OF_ARGUMENTS
@@ -72,11 +72,11 @@ int main(int argc, char** argv) {
 	for (size_t i=0;i<iter;++i){
 		A = fflas_new(F, N);
 		B = fflas_new(F, N);
-#pragma omp parallel for 
-        for (size_t j=0; j<N; ++j) {
-            IPD.random(generator,A[j],BS);
-            IPD.random(generator,B[j],BS);
-        }
+        PARFOR1D(j,N,SPLITTER(), {
+			IPD.random(generator,A[j],BS);
+			IPD.random(generator,B[j],BS);
+		});
+		
 // 		Field::RandIter G(F);
 // 		RandomMatrix (F, 1, N, A, lda, G);
 // 		RandomMatrix (F, 1, N, B, ldb, G);
@@ -88,25 +88,27 @@ int main(int argc, char** argv) {
 
 		chrono.clear();
 		chrono.start();
-//         PAR_BLOCK {
-            F.assign(d, pfdot(F, N, A, 1U, B, 1U) );
-//         }
+		PAR_BLOCK {
+				// d <- d + <A,B>
+            pfdot(F, N, A, 1U, B, 1U, d, NUM_THREADS);
+		}
 		chrono.stop();
 
-        std::cout << chrono 
+        std::cerr << chrono 
                   << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*chrono.realtime())
                   << std::endl;
-	
-		F.subin(d, fdot(F, N, A, 1U, B, 1U));
+
 		time+=chrono;
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);
 	}
-	F.write(std::cerr, d) << std::endl;
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
+// 	F.write(std::cerr, d) << std::endl;
+
+		// -----------
+		// Standard output for benchmark - Alexis Breust 2014/11/14
 	std::cout << "Time * " << iter << ": " << time 
-			  << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*time.realtime())* double(iter); 
+			  << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*time.realtime())* double(iter)
+			  << ", size: " << logtwo(d);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 	return 0;
 }

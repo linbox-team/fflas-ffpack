@@ -85,36 +85,51 @@ namespace FFLAS
 			);	
 	}
 
+
+		// d <- d + <x,y>
 	template<class Field>
-	typename Field::Element pfdot(const Field& F, const size_t N, 
+	typename Field::Element& pfdot(const Field& F, const size_t N, 
 								   typename Field::ConstElement_ptr x, const size_t incx,
-								   typename Field::ConstElement_ptr y, const size_t incy)
+								   typename Field::ConstElement_ptr y, const size_t incy,
+								   typename Field::Element& d, size_t rs = NUM_THREADS)
 	{
-		typename Field::Element d; F.init(d); F.assign(d,F.zero);
-		size_t rs; PAR_BLOCK { rs = NUM_THREADS; }
 		typename Field::Element * z = fflas_new<typename Field::Element>(rs);
 		for(size_t i=0;i<rs;++i) F.init(z[i]);
 
-		PAR_BLOCK {
-			SYNCH_GROUP({
-				FORBLOCK1D(iter, N, SPLITTER(), {
-					const size_t i( iter.begin()/(iter.end()-iter.begin()) );					
-					TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z[i])), {
+		SYNCH_GROUP({
+			FORBLOCK1D(iter, N, SPLITTER(rs), {
+				const size_t i( iter.begin()/(iter.end()-iter.begin()) );					
+				TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z[i])), {
 // 						std::cerr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):" << iter.end()-iter.begin() << std::endl;
 // 						for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
 // 							F.write(F.write(std::cerr, *(x+itee)) << '.', *(y+itee)) << std::endl;
-						F.assign(z[i], fdot(F, 
-										 iter.end()-iter.begin(),
-										 x+iter.begin(), incx,
-										 y+iter.begin(), incy));
+					F.assign(z[i], fdot(F, 
+										iter.end()-iter.begin(),
+										x+iter.begin()*incx, incx,
+										y+iter.begin()*incy, incy));
 // 						F.write(std::cerr << "pd:", z) << std::endl;
-					});
 				});
 			});
-		}
+		});
 
 		for(size_t i=0;i<rs;++i) F.addin(d,z[i]);
-        return d;
+		return d;
+	}
+
+ 
+	template<class Field>
+	typename Field::Element pfdot(const Field& F, const size_t N, 
+								  typename Field::ConstElement_ptr x, const size_t incx,
+								  typename Field::ConstElement_ptr y, const size_t incy,
+								  size_t rs = NUM_THREADS)
+	{
+		typename Field::Element d; F.init(d); F.assign(d,F.zero);
+		
+		PAR_BLOCK {
+			pfdot(F, N, x, incx, y, incy, d, rs);
+		}
+		
+		return d;
 	}
 
 
