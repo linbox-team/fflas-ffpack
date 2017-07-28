@@ -37,7 +37,7 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/paladin/parallel.h"
-#include "fflas-ffpack/paladin/fflas_pfinit.h"
+#include "fflas-ffpack/paladin/fflas_plevel1.h"
 #include <givaro/zring.h>
 #include <givaro/modular.h>
 

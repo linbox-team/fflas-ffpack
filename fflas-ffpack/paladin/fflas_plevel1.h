@@ -1,8 +1,10 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_pfinit.inl
- * Copyright (C) 2015 Jean Guillaume Dumas Clement Pernet Ziad Sultan
+/* fflas/fflas_plevel1.inl
+ * Copyright (C) 2015-2017 Jean Guillaume Dumas Clement Pernet Ziad Sultan
+ *<Jean-Guillaume.Dumas@univ-grenoble-alpes.fr>
+ *<Clement.Pernet@univ-grenoble-alpes.fr>
  *<ziad.sultan@imag.fr>
  *
  * ========LICENCE========
@@ -25,8 +27,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_pfinit_H
-#define __FFLASFFPACK_pfinit_H
+#ifndef __FFLASFFPACK_parallel_level1_H
+#define __FFLASFFPACK_parallel_level1_H
 
 #include "fflas-ffpack/paladin/parallel.h"
 

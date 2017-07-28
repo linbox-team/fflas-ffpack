@@ -31,7 +31,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/paladin/parallel.h"
-#include "fflas-ffpack/paladin/fflas_pfinit.h"
+#include "fflas-ffpack/paladin/fflas_plevel1.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
 
