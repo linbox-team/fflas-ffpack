@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-//#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/fflas/fflas.h"
 #include "fflas_memory.h"
 
 // Reading and writing matrices over field
@@ -247,9 +247,15 @@ namespace FFLAS{
 				c.write ( reinterpret_cast<const char*> (A), sizeof(typename Field::Element)*m*n);
 				break;
 			}
-			default: // format == FflasMath
+			default:{ // format == FflasMath
+				size_t char_width = ceil(FFLAS::bitsize (F,m,n,A,lda)*0.301029995663982);
+				Givaro::Integer p;
+				F.characteristic(p);
+				if (p==0 || F.minElement()<0) char_width++; // minus sign
+				c.fill(' ');
 				for (size_t i = 0; i<m; ++i){
 					for (size_t j=0; j<n;++j){
+						c.width(char_width);
 						if (column_major) F.write (c, A[j*lda+i]);
 						else F.write (c, A[i*lda+j]);
 						if (j < n-1) c << ' ';
@@ -257,6 +263,7 @@ namespace FFLAS{
 					c<<std::endl;
 				}
 			}
+		}
 		return c ;
     }
     

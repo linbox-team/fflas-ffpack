@@ -101,15 +101,15 @@ bool test_fscal(const Field & F,  size_t m, size_t k, size_t n, bool timing, uin
 	bool pass = true ;
 	typename Field::Element  alpha;
 	F.init(alpha,F.one);
-	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
 	F.assign (alpha,F.mOne);
-	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
 	F.assign (alpha,F.zero);
-	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
 	G.random(alpha);
-	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
 	G.random(alpha);
-	pass &= test_fscal(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscal(F,alpha,m,k,n,timing, G);
 
 	return pass ;
 }
@@ -171,15 +171,15 @@ bool test_fscalin(const Field & F,  size_t m, size_t k, size_t n, bool timing, u
 	bool pass = true ;
 	typename Field::Element  alpha;
 	F.init (alpha,F.one);
-	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);
 	F.assign (alpha,F.mOne);
-	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);
 	F.assign (alpha,F.zero);
-	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);
 	G.random(alpha);
-	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);
 	G.random(alpha);
-	pass &= test_fscalin(F,alpha,m,k,n,timing, G);
+	pass = pass && test_fscalin(F,alpha,m,k,n,timing, G);
 
 	return pass ;
 }
@@ -219,104 +219,104 @@ int main(int ac, char **av) {
 	{ /*  fscal  */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fscal(F,m,k,n,timing,seed);
+			pass = pass && test_fscal(F,m,k,n,timing,seed);
 		}
 #endif
 	}
 	{ /*  fscalin  */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_fscalin(F,m,k,n,timing,seed);
+			pass = pass && test_fscalin(F,m,k,n,timing,seed);
 		}
 #endif
 	}

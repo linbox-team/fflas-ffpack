@@ -162,7 +162,7 @@ bool launch_fger(const Field & F,
 		RandomMatrix(F, m, n, C, ldc, G);
 		FFLAS::fassign(F,m,n,C,ldc,D,n);
 		FFLAS::fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
-		ok &= check_fger(F, D, m,n,alpha, A, inca, B, incb, C,ldc);
+		ok = ok && check_fger(F, D, m,n,alpha, A, inca, B, incb, C,ldc);
 
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);
@@ -211,7 +211,7 @@ bool launch_fger_dispatch(const Field &F,
 		std::cout <<"q = "<<F.characteristic()<<" m,n = "<<m<<", "<<n<<" C := "
 			  <<alpha<<".x * y^T + C";
 #endif
-		ok &= launch_fger<Field>(F,m,n, alpha, ldc, inca, incb, iters, G);
+		ok = ok && launch_fger<Field>(F,m,n, alpha, ldc, inca, incb, iters, G);
 #ifdef __FFLASFFPACK_DEBUG
 		std::cout<<(ok?" -> ok ":" -> KO")<<std::endl;
 #endif
@@ -242,17 +242,17 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t see
 
 		    //size_t k = 0 ;
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_fger_dispatch<Field>(*F,n,F->one,iters, R);
+		ok = ok && launch_fger_dispatch<Field>(*F,n,F->one,iters, R);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_fger_dispatch<Field>(*F,n,F->zero,iters, R);
+		ok = ok && launch_fger_dispatch<Field>(*F,n,F->zero,iters, R);
 		    //std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_fger_dispatch<Field>(*F,n,F->mOne,iters, R);
+		ok = ok && launch_fger_dispatch<Field>(*F,n,F->mOne,iters, R);
 		    //std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha ;
 		R.random(alpha);
 
-		ok &= launch_fger_dispatch<Field>(*F,n,alpha,iters, R);
+		ok = ok && launch_fger_dispatch<Field>(*F,n,alpha,iters, R);
 		if (!ok)
 				//std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
 			std::cout << "FAILED "<<std::endl;
@@ -294,14 +294,14 @@ int main(int argc, char** argv)
 
 	bool ok = true;
 	do{
-		ok &= run_with_field<Modular<double> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<float> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<double> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
 	} while (loop && ok);
 
 	return !ok ;

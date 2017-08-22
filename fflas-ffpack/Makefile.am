@@ -30,4 +30,5 @@ pkginclude_HEADERS = config-blas.h   \
 		     fflas-ffpack.h  \
 		     config.h \
 		     fflas-ffpack-config.h \
-		     fflas-ffpack-thresholds.h
+		     fflas-ffpack-thresholds.h \
+		     fflas-ffpack-default-thresholds.h

@@ -32,7 +32,6 @@ pkgincludesub_HEADERS= 	\
 	Matio.h  			\
 	fflas_io.h  			\
 	bit_manipulation.h 	\
-	print-utils.h		\
 	test-utils.h		\
 	timer.h				\
 	cast.h \

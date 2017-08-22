@@ -206,7 +206,7 @@ bool launch_MM(const Field & F,
 			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
 			FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 		}
-		ok &= check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
+		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
 
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);
@@ -272,7 +272,7 @@ bool launch_MM_dispatch(const Field &F,
 			cerr<<" + "<<beta<<" C";
 #endif
 
-		ok &= launch_MM (F, m, n, k, alpha,beta, ldc, lda, ta,ldb, tb, iters,nw, par, G);
+		ok = ok && launch_MM (F, m, n, k, alpha,beta, ldc, lda, ta,ldb, tb, iters,nw, par, G);
 
 #ifdef __FFLASFFPACK_DEBUG
 		std::cerr<<(ok?" -> ok ":" -> KO")<<std::endl;
@@ -313,44 +313,44 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 
 			//size_t k = 0 ;
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->mOne,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters,nbw, par, R);
 		 	//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha,beta ;
 		NZR.random(alpha);
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->one ,alpha,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,alpha,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->zero,alpha,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,alpha,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->zero,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok &= launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->mOne,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
 
 		for (size_t j = 0 ; j < 3 ; ++j) {
 			R.random(alpha);
 			R.random(beta);
-			ok &= launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
+			ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
 		}
 			//std::cout<<std::endl;
@@ -399,19 +399,19 @@ int main(int argc, char** argv)
 	bool ok = true;
 	srand(seed);
 	do{
-		ok &= run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
-		ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
-		ok &= run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
-		ok &= run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
-		ok &= run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
 	} while (loop && ok);
 
 

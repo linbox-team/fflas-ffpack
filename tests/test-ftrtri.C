@@ -39,7 +39,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
-#include "test-utils.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include <givaro/modular.h>
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
@@ -55,17 +55,17 @@ using Givaro::ModularBalanced;
 template<typename Field, class RandIter>
 bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, RandIter& Rand){
     typedef typename Field::Element Element;
-    Element * A, * B, * C;
+    Element * A, * B;
     size_t lda = n + (rand() % n );
     A  = fflas_new(F,n,lda);
     B  = fflas_new(F,n,lda);
-	C  = fflas_new(F,n,lda);
 	
-    RandomTriangularMatrix (F, n, n, uplo, diag, true, A, lda, Rand);
+    RandomTriangularMatrix (F, n, n, uplo, FFLAS::FflasNonUnit, true, A, lda, Rand);
     fassign (F, n, n, A, lda, B, lda); // copy of A
-	fassign (F, n, n, A, lda, C, lda); // copy of A
 	
-	
+	if (diag == FFLAS::FflasUnit) // Making the implicit unit diagonal explicit on B
+		for (size_t i=0; i<n; i++)
+			F.assign (B[i*(lda+1)],F.one);
     
     string ss=string((uplo == FflasLower)?"Lower_":"Upper_")+string((diag == FflasUnit)?"Unit":"NonUnit");
 
@@ -99,10 +99,7 @@ bool check_ftrtri (const Field &F, size_t n, FFLAS_UPLO uplo, FFLAS_DIAG diag, R
     if (ok){
 	    cout << "PASSED ("<<time<<")"<<endl;
     } else{
-		//string file = "./mat.sage";
-		//WriteMatrix(file,F,n,n,C,lda,FFLAS::FflasSageMath);
 		cout << "FAILED ("<<time<<")"<<endl;
-		WriteMatrix(std::cout << "\nA" << std::endl, F,n,n,C,lda);
 		WriteMatrix(std::cout << "\nA^-1" << std::endl, F,n,n,A,lda);
     }
 
@@ -125,10 +122,10 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	    
 	    cout<<"Checking with ";F->write(cout)<<endl;
 	    
-        ok &= check_ftrtri(*F,n,FflasLower,FflasUnit,G);
-        ok &= check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
-        ok &= check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
-        ok &= check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasLower,FflasUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasUpper,FflasUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasLower,FflasNonUnit,G);
+        ok = ok && check_ftrtri(*F,n,FflasUpper,FflasNonUnit,G);
 		nbit--;
 		delete F;
     }
@@ -161,16 +158,16 @@ int main(int argc, char** argv)
     
     bool ok = true;
     do{
-	    ok &= run_with_field<Modular<double> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<float> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
-	    ok &= run_with_field<Modular<Givaro::Integer> >(q,5,n/6+1,iters,seed);
-	    ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/6+1,iters,seed);
+	    ok = ok && run_with_field<Modular<double> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<double> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<float> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<float> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<int32_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<int64_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,iters,seed);
+	    ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/6+1,iters,seed);
+	    ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/6+1,iters,seed);
     } while (loop && ok);
     return !ok ;
 }

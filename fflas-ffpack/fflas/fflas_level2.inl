@@ -514,7 +514,8 @@ namespace FFLAS {
 
 	/** @brief bitsize:
 	 *  Computes  the largest bitsize of the matrix' coefficients.
-	 *  If the matrix is over a finite field, it returns the bitsize of the field's cardinality
+	 *  If the matrix is over a modular prime field, it returns the bitsize of the largest
+	 *  element (in a bsolute value)
 	 * @param F field
 	 * @param M rows
 	 * @param N cols
@@ -524,9 +525,8 @@ namespace FFLAS {
 	 */
 	template<class Field>
 	inline size_t bitsize(const Field& F, size_t M, size_t N, const typename Field::Element* A, size_t lda){
-		Givaro::Integer p;
-		F.characteristic(p);
-		return p.bitsize();
+		Givaro::Integer min = F.minElement() ,max = F.maxElement();
+		return std::max(max,-min).bitsize();
 	}
 
 	template<>

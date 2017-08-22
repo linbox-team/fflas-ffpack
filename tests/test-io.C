@@ -75,7 +75,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 			// Testing Dense format
 		WriteMatrix (file_dense,*F,m,n,A,n, FflasDense);
 		ReadMatrix (file_dense,*F,m,n,B, FflasDense);
-		ok &= fequal (*F, m, n, A, n, B, n);
+		ok = ok && fequal (*F, m, n, A, n, B, n);
 		if (ok) oss<<" Dense (ok)";
 		else oss<<" Dense (KO)"<<std::endl;
 		fflas_delete(B);
@@ -83,7 +83,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 			// Testing SMS format
 		WriteMatrix (file_sms,*F,m,n,A,n, FflasSMS);
 		ReadMatrix (file_sms,*F,m,n,B, FflasSMS);
-		ok &= fequal (*F, m, n, A, n, B, n);
+		ok = ok && fequal (*F, m, n, A, n, B, n);
 		if (ok) oss<<" SMS (ok)";
 		else oss<<" SMS (KO)";
 		fflas_delete(B);
@@ -91,7 +91,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 			// Testing Binary format
 		WriteMatrix (file_binary,*F,m,n,A,n, FflasBinary);
 		ReadMatrix (file_binary,*F,m,n,B, FflasBinary);
-		ok &= fequal (*F, m, n, A, n, B, n);
+		ok = ok && fequal (*F, m, n, A, n, B, n);
 		if (ok) oss<<" Bin (ok)";
 		else oss<<" Bin (KO)";
 		fflas_delete(B);
@@ -106,7 +106,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 		WriteMatrix (file_compact_binary,Z,m,n,Az,n, FflasBinary);
 		ReadMatrix (file_compact_binary,Z,m,n,Bz, FflasBinary);
 		finit (*F,m,n,Bz,n,B,n);
-		ok &= fequal (*F, m, n, A, n, B, n);
+		ok = ok && fequal (*F, m, n, A, n, B, n);
 		if (ok) oss<<" Compact Bin (ok)";
 		else oss<<" Compact Bin (KO)";
 		fflas_delete(Az);
@@ -115,7 +115,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 
 			// Testing Autodetection of Binary format
 		ReadMatrix (file_binary,*F,m,n,B, FflasAuto);
-		ok &= fequal (*F, m, n, A, n, B, n);
+		ok = ok && fequal (*F, m, n, A, n, B, n);
 		if (ok) oss<<" Auto Bin (ok)";
 		else oss<<" Auto Bin (KO)";
 		fflas_delete(B);

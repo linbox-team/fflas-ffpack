@@ -1,0 +1,96 @@
+language: cpp
+sudo: required
+
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: COMPILER=g++-4.9
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-4.9
+          - libgmp-dev
+          - libgmpxx4ldbl
+          - libatlas-dev
+
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: COMPILER=g++-5
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-5
+          - libgmp-dev
+          - libgmpxx4ldbl
+          - libatlas-dev
+
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: COMPILER=g++-6 BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - g++-6
+          - libgmp-dev
+          - libgmpxx4ldbl
+          - libatlas-dev
+
+    # - os: linux
+    #   sudo: required
+    #   dist: trusty
+    #   compiler: clang
+    #   env: COMPILER=clang++
+    #   addons:
+    #     apt:
+    #       sources:
+    #       - ubuntu-toolchain-r-test
+    #       packages:
+    #       - libgmp-dev
+    #       - libgmpxx4ldbl
+    #   before_install:
+    #   - sudo add-apt-repository 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
+    #   - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+    #   - sudo apt-get update -qq 
+    #   - sudo apt-get install -qq -y clang-format-3.9
+
+    - os: osx
+      compiler: clang
+      env: COMPILER=clang++
+      before_install:
+      - brew update
+      - brew uninstall automake && brew install automake
+      - brew install autoconf libtool
+      - brew install homebrew/science/openblas
+
+install:
+  - export CXX="$COMPILER"
+
+before_script:
+  - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
+  - export LD_LIBRARY_PATH=/usr/local/lib
+  - ./autogen.sh $BLAS_LIBS
+
+script:
+  - make
+  - make check
+  - make benchmarks
+  - make examples
+  - make tutorials
+  - make dist
+
+notifications:
+  on_success: change
+  on_failure: always

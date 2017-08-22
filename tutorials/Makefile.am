@@ -21,15 +21,18 @@
 # ========LICENCE========
 #/
 
-SUBDIRS =
-examples:  $(EXAMPLES)
+tutorials:  $(TUTORIALS)
 
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
 AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARFLAGS)
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-EXAMPLES = fflas_101 fflas_101_lvl1 fflas_101_lvl2 fflas-101_1 fflas-101_3
+TUTORIALS = fflas_101 fflas_101_lvl1 fflas_101_lvl2 fflas-101_1 fflas-101_3 2x2-fgemm 101-fgemm 2x2-pluq 2x2-ftrsv
+2x2_fgemm_SOURCES = 2x2-fgemm.C
+2x2_ftrsv_SOURCES = 2x2-ftrsv.C
+101_fgemm_SOURCES = 101-fgemm.C
+2x2_pluq_SOURCES = 2x2-pluq.C
 fflas_101_SOURCES = fflas_101.C
 fflas_101_lvl1_SOURCES = fflas_101_lvl1.C
 fflas_101_lvl2_SOURCES = fflas_101_lvl2.C
@@ -38,9 +41,9 @@ fflas_101_2_SOURCES = fflas-101_2.C
 fflas_101_3_SOURCES = fflas-101_3.C
 
 
-CLEANFILES = $(EXAMPLES) 
+CLEANFILES = $(TUTORIALS) 
 
-EXTRA_PROGRAMS = $(EXAMPLES)
+EXTRA_PROGRAMS = $(TUTORIALS)
 
 define other_compilation
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)

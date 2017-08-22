@@ -168,52 +168,52 @@ int main(int ac, char **av) {
 	{ /*  freduce */
 		{
 			Givaro::Modular<float> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<float> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::Modular<double> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<double> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::Modular<int64_t> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 #if 1
 		{
 			Givaro::ZRing<float> F ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ZRing<double> F ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ZRing<int32_t> F;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 		{
 			Givaro::ZRing<int64_t> F ;
-			pass &= test_freduce (F,m,k,n,timing, seed);
+			pass = pass && test_freduce (F,m,k,n,timing, seed);
 		}
 #endif
 	}

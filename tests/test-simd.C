@@ -296,20 +296,20 @@ template<class simd, class Element>
 bool test_float_impl(size_t seed, size_t vectorSize, Element max){
 	bool btest = true;
 
-	btest &= test_op<simd>(simd::ceil, [](Element x){return std::ceil(x);}, seed, vectorSize, max, "ceil");
-	btest &= test_op<simd>(simd::floor, [](Element x){return std::floor(x);}, seed, vectorSize, max,"floor");
-	btest &= test_op<simd>(simd::round, [](Element x){return std::round(x);}, seed, vectorSize, max, "round");
-	btest &= test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
-	btest &= test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
-	btest &= test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mul");
-	btest &= test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,x1);}, seed, vectorSize, max, "fmadd");
-	btest &= test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,-x1);}, seed, vectorSize, max, "fmsub");
-	btest &= test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return std::fma(-x3,x2,x1);}, seed, vectorSize, max, "fnmadd");
-	btest &= test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?NAN:0;}, seed, vectorSize, max, "lesser");
-	btest &= test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
-	btest &= test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
-	btest &= test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
-	btest &= test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
+	btest = btest && test_op<simd>(simd::ceil, [](Element x){return std::ceil(x);}, seed, vectorSize, max, "ceil");
+	btest = btest && test_op<simd>(simd::floor, [](Element x){return std::floor(x);}, seed, vectorSize, max,"floor");
+	btest = btest && test_op<simd>(simd::round, [](Element x){return std::round(x);}, seed, vectorSize, max, "round");
+	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
+	btest = btest && test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
+	btest = btest && test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mul");
+	btest = btest && test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,x1);}, seed, vectorSize, max, "fmadd");
+	btest = btest && test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return std::fma(x3,x2,-x1);}, seed, vectorSize, max, "fmsub");
+	btest = btest && test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return std::fma(-x3,x2,x1);}, seed, vectorSize, max, "fnmadd");
+	btest = btest && test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?NAN:0;}, seed, vectorSize, max, "lesser");
+	btest = btest && test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
+	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
+	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
+	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
 
 	return btest;
 }
@@ -321,20 +321,20 @@ template<class simd, class Element>
 bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 	bool btest = true;
 
-	btest &= test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
-	btest &= test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
-	btest &= test_op<simd>(simd::mullo, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
-	btest &= test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
-	btest &= test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return x1+x3*x2;}, seed, vectorSize, max, "fmadd");
-	btest &= test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return -x1+x3*x2;}, seed, vectorSize, max, "fmsub");
-	btest &= test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return x1-x3*x2;}, seed, vectorSize, max, "fnmadd");
-	btest &= test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?-1:0;}, seed, vectorSize, max, "lesser");
-	btest &= test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?-1:0;}, seed, vectorSize, max, "lesser_eq");
-	btest &= test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
-	btest &= test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
-	btest &= test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
+	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
+	btest = btest && test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
+	btest = btest && test_op<simd>(simd::mullo, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
+	btest = btest && test_op<simd>(simd::mul, [](Element x1, Element x2){return x1*x2;}, seed, vectorSize, max, "mullo");
+	btest = btest && test_op<simd>(simd::fmadd, [](Element x1, Element x2, Element x3){return x1+x3*x2;}, seed, vectorSize, max, "fmadd");
+	btest = btest && test_op<simd>(simd::fmsub, [](Element x1, Element x2, Element x3){return -x1+x3*x2;}, seed, vectorSize, max, "fmsub");
+	btest = btest && test_op<simd>(simd::fnmadd, [](Element x1, Element x2, Element x3){return x1-x3*x2;}, seed, vectorSize, max, "fnmadd");
+	btest = btest && test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?-1:0;}, seed, vectorSize, max, "lesser");
+	btest = btest && test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?-1:0;}, seed, vectorSize, max, "lesser_eq");
+	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
+	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
+	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
 	// print_arity(mysra<simd>);
-	btest &= test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
+	btest = btest && test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
 						   [](Element x1){
 			integer h = integer (1) << 2;
 			integer r = integer(x1) / h;
@@ -342,7 +342,7 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 			return Element(r);
 			// return Element(std::floor(double(x1)/double(h)));
 }, seed, vectorSize, max, "sra");
-	btest &= test_op<simd>(simd::mulhi, [](Element x1, Element x2){
+	btest = btest && test_op<simd>(simd::mulhi, [](Element x1, Element x2){
 			integer q,r;
 			integer a = (integer(x1)*integer(x2));
 			integer b = integer(1) << uint64_t(sizeof(Element)*8);
@@ -350,7 +350,7 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 			Z.divmod(q, r, a, b);
 			return Element(q);
 }, seed, vectorSize, max, "mulhi");
-	btest &= test_op<simd>(simd::mulx, [](Element x1, Element x2){
+	btest = btest && test_op<simd>(simd::mulx, [](Element x1, Element x2){
 			Element h = Element(1) << (sizeof(Element)*4);
 			/* Representative r of x1 modulo h with -h/2 <= r < h/2*/
 			if (std::is_signed<Element>::value) {
@@ -431,28 +431,28 @@ int main(int ac, char **av) {
 	{
 		do{
 				{
-					pass &= test_float<float>(seed, vectorSize, max);
+					pass = pass && test_float<float>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_float<double>(seed, vectorSize, max);
+					pass = pass && test_float<double>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_integer<int16_t>(seed, vectorSize, max);
+					pass = pass && test_integer<int16_t>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_integer<int32_t>(seed, vectorSize, max);
+					pass = pass && test_integer<int32_t>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_integer<int64_t>(seed, vectorSize, max);
+					pass = pass && test_integer<int64_t>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_integer<uint16_t>(seed, vectorSize, max);
+					pass = pass && test_integer<uint16_t>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_integer<uint32_t>(seed, vectorSize, max);
+					pass = pass && test_integer<uint32_t>(seed, vectorSize, max);
 				}
 				{
-					pass &= test_integer<uint64_t>(seed, vectorSize, max);
+					pass = pass && test_integer<uint64_t>(seed, vectorSize, max);
 				}
 			}while(loop);
 	}

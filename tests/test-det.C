@@ -91,8 +91,7 @@ int main(int argc, char** argv)
 	typedef Givaro::ModularBalanced<double> Field;
 	Field F(p);
 	Field::RandIter G(F,0,seed);
-	pass &= test_det(F,n,iters,G);
-	// pass &= test_det(F,0,iters);
+	pass = pass && test_det(F,n,iters,G);
 
 	return ((pass==true)?0:1);
 }

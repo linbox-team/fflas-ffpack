@@ -77,7 +77,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
 			FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
 			for (size_t i=0; i<r; i++)
-				ok &= (RP1[i] == RP2[i]);
+				ok = ok && (RP1[i] == RP2[i]);
 			FFLAS::fflas_delete(RP1);
 			FFLAS::fflas_delete(RP2);
 
@@ -86,7 +86,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
 			FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
 			for (size_t i=0; i<r; i++)
-				ok &= (RP1[i] == RP2[i]);
+				ok = ok && (RP1[i] == RP2[i]);
 			FFLAS::fflas_delete(RP1);
 			FFLAS::fflas_delete(RP2);
 		}
@@ -110,7 +110,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 				
 				LeadingSubmatrixRankProfiles (m,n,r,mm,nn,P,Q,RRP,CRP);
 				for (size_t ii=0; ii<rr; ii++)
-					ok &= (RP1[ii] == CRP[ii]) && (RP2[ii] == RRP[ii]);
+					ok = ok && (RP1[ii] == CRP[ii]) && (RP2[ii] == RRP[ii]);
 				
 				FFLAS::fflas_delete(CRP);
 				FFLAS::fflas_delete(RRP);
@@ -140,9 +140,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
 			std::sort(CRP,CRP+r);
 			std::sort(RRP,RRP+r);	
-			ok &= (cs==ct)&(cs==rs)&(cs==rt)&(cs==r);
+			ok = ok && (cs==ct)&(cs==rs)&(cs==rt)&(cs==r);
 			for (size_t i=0; i<r; i++)
-				ok &= (CRPLUD[i] == CRP[i]) && (CRPPLUQ[i] == CRP[i]) && 
+				ok = ok && (CRPLUD[i] == CRP[i]) && (CRPPLUQ[i] == CRP[i]) && 
 					(RRPLUD[i] == RRP[i]) && (RRPPLUQ[i] == RRP[i]);
 			FFLAS::fflas_delete(CRP);
 			FFLAS::fflas_delete(RRP);
@@ -201,15 +201,15 @@ int main(int argc, char** argv){
 
 	bool ok=true;
 	do{
-		ok&=run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed);
-		ok&=run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed);
 	} while (loop && ok);
 
 	return !ok;

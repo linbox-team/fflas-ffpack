@@ -164,16 +164,16 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 		}
 
 		if (variant) // User provided variant
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, CT);
+			passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, CT);
 		else{ // No variant specified, testing them all
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackDanilevski);
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
-			passed &= launch_test<Field>(*F, n, A, lda, iter, R, FfpackAuto);
-				//passed &= launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
-				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFast); // generic: does not work with any matrix
-				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackKGFastG); // generic: does not work with any matrix
-				//passed &= launch_test<Field>(*F, n, A, lda, iter, FfpackHybrid); // fails with small characteristic
+			passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackDanilevski);
+			passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackLUK);
+			passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackArithProg);
+			passed = passed && launch_test<Field>(*F, n, A, lda, iter, R, FfpackAuto);
+				//passed = passed && launch_test<Field>(F, n, A, lda, iter, FfpackKG); // fails (variant only implemented for benchmarking
+				//passed = passed && launch_test<Field>(*F, n, A, lda, iter, FfpackKGFast); // generic: does not work with any matrix
+				//passed = passed && launch_test<Field>(*F, n, A, lda, iter, FfpackKGFastG); // generic: does not work with any matrix
+				//passed = passed && launch_test<Field>(*F, n, A, lda, iter, FfpackHybrid); // fails with small characteristic
 		}
 		FFLAS::fflas_delete (A);
 		delete F;
@@ -211,17 +211,17 @@ int main(int argc, char** argv)
 
 	bool passed = true;
 	do {
-		passed &= run_with_field<Givaro::ModularBalanced<float> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::Modular<float> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::ModularBalanced<double> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::Modular<double> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::ModularBalanced<int32_t> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::Modular<int32_t> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::ModularBalanced<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::Modular<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::Modular<Givaro::Integer> >(q, 6, n/2, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::Modular<Givaro::Integer> >(q, (bits?bits:512), n/4, mat_file, variant, iter, seed);
-		passed &= run_with_field<Givaro::ZRing<Givaro::Integer> >(q, (bits?bits:80_ui64), n/4, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::ModularBalanced<float> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::Modular<float> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::ModularBalanced<double> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::Modular<double> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::ModularBalanced<int32_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::Modular<int32_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::ModularBalanced<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::Modular<int64_t> >(q, bits, n, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::Modular<Givaro::Integer> >(q, 6, n/2, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::Modular<Givaro::Integer> >(q, (bits?bits:512), n/4, mat_file, variant, iter, seed);
+		passed = passed && run_with_field<Givaro::ZRing<Givaro::Integer> >(q, (bits?bits:80_ui64), n/4, mat_file, variant, iter, seed);
 
 		// if ((i+1)*100 % nbit == 0)
 		// 	std::cerr<<double(i+1)/nbit*100<<" % "<<std::endl;

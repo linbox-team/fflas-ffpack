@@ -35,7 +35,6 @@
 #define  __FFLASFFPACK_SEQUENTIAL
 #define __FFLASFFPACK_GAUSSJORDAN_BASECASE 25
 #define __FFLASFFPACK_PLUQ_THRESHOLD 25
-
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <iomanip>
@@ -98,12 +97,12 @@ test_colechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 				pass = false;
 			nextpiv = i+1;
 		}
-		pass &= FFLAS::fiszero (F, m, n-R, L+R, n);
+		pass = pass && FFLAS::fiszero (F, m, n-R, L+R, n);
 
 		// Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
-		pass &= FFLAS::fequal(F, m, n, L, n, X, n);
+		pass = pass && FFLAS::fequal(F, m, n, L, n, X, n);
 
 		if (!pass) {
 			std::cerr<<"FAIL (column echelon LuTag="<<LuTag<<")"<<std::endl;
@@ -172,12 +171,12 @@ test_rowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK::FF
 				pass = false;
 			nextpiv = i+1;
 		}
-		pass &= FFLAS::fiszero (F, m-R, n, U+R*n, n);
+		pass = pass && FFLAS::fiszero (F, m-R, n, U+R*n, n);
 
 		// Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0, L, m, B, n, 0.0, X,n);
 		
-		pass &= FFLAS::fequal(F, m, n, U, n, X, n);
+		pass = pass && FFLAS::fequal(F, m, n, U, n, X, n);
 
 		if (!pass) {
 			std::cerr<<"FAIL (row echelon LuTag="<<LuTag<<")"<<std::endl;
@@ -244,15 +243,15 @@ test_redcolechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 			if (i < nextpiv)  // not in echelon form
 				pass = false;
 			if (j) // is pivot row reduced
-				pass &= FFLAS::fiszero(F, j-1, L + i*n, 1);
-			pass &= F.isOne(L[j+i*n]);
+				pass = pass && FFLAS::fiszero(F, j-1, L + i*n, 1);
+			pass = pass && F.isOne(L[j+i*n]);
 			nextpiv = i+1;
 		}
-		pass &= FFLAS::fiszero (F, m, n-R, L+R, n);
+		pass = pass && FFLAS::fiszero (F, m, n-R, L+R, n);
         // Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,n, 1.0, B, n, U, n, 0.0, X,n);
 
-		pass &= FFLAS::fequal(F, m, n, L, n, X, n);
+		pass = pass && FFLAS::fequal(F, m, n, L, n, X, n);
 
 		if (!pass) {
 			std::cerr<<"FAIL (reduced column echelon LuTag="<<LuTag<<")"<<std::endl;
@@ -314,16 +313,16 @@ test_redrowechelon(Field &F, size_t m, size_t n, size_t r, size_t iters, FFPACK:
 			if (i < nextpiv)  // not in echelon form
 				pass = false;
 			if (j) // is pivot row reduced
-				pass &= FFLAS::fiszero(F, j-1, U + i, n);
-			pass &= F.isOne(U[j*n+i]);
+				pass = pass && FFLAS::fiszero(F, j-1, U + i, n);
+			pass = pass && F.isOne(U[j*n+i]);
 			nextpiv = i+1;
 		}
-		pass &= FFLAS::fiszero (F, m-R, n, U+R*n, n);
+		pass = pass && FFLAS::fiszero (F, m-R, n, U+R*n, n);
 
 		// Testing A U = L
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,m, 1.0, L, m, B, n, 0.0, X,n);
 
-		pass &= FFLAS::fequal(F, m, n, U, n, X, n);
+		pass = pass && FFLAS::fequal(F, m, n, U, n, X, n);
 
 		if (!pass) {
 			std::cerr<<"FAIL (reduced row echelon LuTag="<<LuTag<<")"<<std::endl;
@@ -369,25 +368,25 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r
 		std::cout<<oss.str();
 		std::cout<<" .";
 
-		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+		ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		ok = ok && test_colechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+		ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		ok = ok && test_redcolechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+		ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		ok = ok && test_rowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		 std::cout<<".";
+		 ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackSlabRecursive, G);
+		ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackTileRecursive, G);
+		ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanSlab, G);
 		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanSlab, G);
-		std::cout<<".";
-		ok &= test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G);
+		ok = ok && test_redrowechelon(*F,m,n,r,iters, FFPACK::FfpackGaussJordanTile, G);
 		std::cout<<".";
 		nbit--;
 		if ( !ok )
@@ -429,16 +428,16 @@ int main(int argc, char** argv){
 
 	bool ok = true;
 	do{
-		ok &= run_with_field<Modular<double> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<Modular<float> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<Modular<int32_t> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<Modular<int64_t> >(q,b,m,n,r,iters,seed); 
-			//ok &= run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters,seed); // BUG: not available yet (missing division in the field
-		ok &= run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters,seed);
-		ok &= run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed);
+		ok = ok && run_with_field<Modular<double> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,r,iters,seed); 
+			//ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b,m,n,r,iters,seed); // BUG: not available yet (missing division in the field
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,r,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:128_ui64),m/8+1,n/8+1,r/8+1,iters,seed);
 		
 	} while (loop && ok);
 

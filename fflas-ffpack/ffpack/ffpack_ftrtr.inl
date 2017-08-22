@@ -38,18 +38,22 @@ namespace FFPACK {
 	template<class Field>
 	void
 	ftrtri (const Field& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-			const size_t N, typename Field::Element_ptr A, const size_t lda)
+			const size_t N, typename Field::Element_ptr A, const size_t lda, const size_t threshold)
 	{
 		typename Field::Element negDiag;
 		if (!N) return;
-		if (N <= 6){ // base case
+		if (N <= threshold){ // base case
 			
 			if (Uplo == FFLAS::FflasUpper){
-				F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix
+				if(Diag == FFLAS::FflasNonUnit)
+					F.invin(A[(N-1)*(lda+1)]);          // last element of the matrix
 				for(size_t li = N-1; li-->0;){      // start at the second to last line
-					if(Diag == FFLAS::FflasNonUnit)
+					if(Diag == FFLAS::FflasNonUnit){
 						F.invin(A[li*(lda+1)]);     // Diagonal element on current line
-					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
+						F.neg (negDiag,A[li*(lda+1)]);   // neg of diagonal element
+					}
+					else
+						F.assign (negDiag, F.mOne);
 					ftrmm(F,FFLAS::FflasRight,       // b <- b dot nDiag * M
 						  Uplo,FFLAS::FflasNoTrans,Diag,
 						  1,N-li-1,                 // Size of vector (1 row and N-li-1 columns)
@@ -59,11 +63,14 @@ namespace FFPACK {
 				}
 			}
 			else{ // Uplo == FflasLower
-				F.invin(A[0]);                      // first element of the matrix
+				if(Diag == FFLAS::FflasNonUnit)
+					F.invin(A[0]);                      // first element of the matrix
 				for(size_t li = 1; li < N; li++){   // start at the second line
-					if(Diag == FFLAS::FflasNonUnit)
+					if(Diag == FFLAS::FflasNonUnit){
 						F.invin(A[li*(lda+1)]);     // Diagonal element on current line
-					F.assign(negDiag,A[li*(lda+1)]); F.negin(negDiag);   // neg of diagonal element
+						F.neg (negDiag,A[li*(lda+1)]);  // neg of diagonal element
+					} else
+						F.assign (negDiag, F.mOne);
 					ftrmm(F,FFLAS::FflasRight,       // b <- b dot nDiag * M
 						  Uplo,FFLAS::FflasNoTrans,Diag,
 						  1,li,                     // Size of vector (1 row and N-li-1 columns)

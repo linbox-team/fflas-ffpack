@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
 /*
@@ -43,8 +43,9 @@
 #include <string>
 using namespace std; 
 
-#include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/args-parser.h"
 #include "givaro/modular-integer.h"
 #include "givaro/givcaster.h"
@@ -187,7 +188,7 @@ int tmain(){
 //             FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc, SPLITTER(NUM_THREADS,Recursive,TwoDAdaptive) ); 
 // 		}
 		{ 
-            FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential()); 
+			FFLAS::fgemm(F,FFLAS::FflasNoTrans,FFLAS::FflasNoTrans,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,FFLAS::ParSeqHelper::Sequential());
 		}
 		
 		chrono.stop();
@@ -198,13 +199,13 @@ int tmain(){
 		TimFreivalds.stop();
 		timev+=TimFreivalds.usertime();
 		if (!pass) {
-            std::cout<<"FAILED"<<std::endl;
-            std::cout << "p:=" << p << ';'<<std::endl;
-            write_matrix(std::cout<<"A:=",p,m,k,A,lda)<<';'<<std::endl;
-            write_matrix(std::cout<<"B:=",p,k,n,B,ldb)<<';'<<std::endl;
-            write_matrix(std::cout<<"C:=",p,m,n,C,ldc)<<';'<<std::endl;
-        }
-        
+			std::cout<<"FAILED"<<std::endl;
+			std::cout << "p:=" << p << ';'<<std::endl;
+			FFLAS::WriteMatrix (std::cout<<"A:=",F,m,k,A,lda)<<';'<<std::endl;
+			FFLAS::WriteMatrix(std::cout<<"B:=",F,k,n,B,ldb)<<';'<<std::endl;
+			FFLAS::WriteMatrix(std::cout<<"C:=",F,m,n,C,ldc)<<';'<<std::endl;
+		}
+
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);
 		FFLAS::fflas_delete(C);
@@ -226,8 +227,6 @@ int tmain(){
 #endif
 		return 0;
 	}
- 
-
 
 int main(int argc, char** argv){
 	FFLAS::parseArguments(argc,argv,as);
