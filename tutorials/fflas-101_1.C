@@ -46,9 +46,7 @@ int main(int argc, char** argv) {
   const size_t m = 5, n = 10;
   // Let B be a m times n sub matrix of A where B[0][0] = A[1][2]
   const size_t ldb = lda;
-  Float_Field::Element_ptr B;
-  B = fflas_new(F,m,n);
-  fassign(F,m,n,A+1+2*lda,lda,B,ldb);
+  Float_Field::Element_ptr B = A + 1*lda + 2;
 
   // Let C be a m times n random matrix
   const size_t ldc = m;
@@ -73,10 +71,10 @@ int main(int argc, char** argv) {
 
 
   //Output
-  WriteMatrix(std::cout<<"A:=",F,p,q,A,lda)<<std::endl;
-  WriteMatrix(std::cout<<"B:=",F,m,n,B,ldb)<<std::endl;
-  WriteMatrix(std::cout<<"C:=",F,m,n,C,ldc)<<std::endl;
-  WriteMatrix(std::cout<<"D:=",F,m,n,D,ldd)<<std::endl;
+  WriteMatrix(std::cout<<"A:="<<std::endl,F,p,q,A,lda)<<std::endl;
+  WriteMatrix(std::cout<<"B:="<<std::endl,F,m,n,B,ldb)<<std::endl;
+  WriteMatrix(std::cout<<"C:="<<std::endl,F,m,n,C,ldc)<<std::endl;
+  WriteMatrix(std::cout<<"D:="<<std::endl,F,m,n,D,ldd)<<std::endl;
   std::cout<<"Is D the zero matrix ?"<< std::endl;
   if(res)
     std::cout<<"TRUE"<< std::endl;
@@ -85,7 +83,6 @@ int main(int argc, char** argv) {
 
   // Clearing up the memory
   fflas_delete(A);
-  fflas_delete(B);
   fflas_delete(C);
   fflas_delete(D);
 
