@@ -65,8 +65,12 @@ bool check_fdot (const Field &F, size_t n,
 
 	typename Field::Element d; F.init(d); F.assign(d,F.zero);
 	PAR_BLOCK {
+        FFLAS::ParSeqHelper::Parallel<
+            FFLAS::CuttingStrategy::Block,
+            FFLAS::StrategyParameter::Threads> Par(NUM_THREADS);
+
 			// d <- d + <A,B>
-		pfdot(F, n, a, inca, b, incb, d, NUM_THREADS);
+		fdot(F, n, a, inca, b, incb, d, Par);
 	}
 	t.stop();
 	time+=t.usertime();

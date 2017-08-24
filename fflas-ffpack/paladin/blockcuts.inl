@@ -368,8 +368,8 @@ namespace FFLAS {
         blocksize_t begin() const { return ibeg; }
         blocksize_t end() const { return iend; }
         
-        blocksize_t blocksize() const { return firstBlockSize; }
         blocksize_t numblocks() const { return numBlock; }
+        blocksize_t blockindex() const { return current; }
                 
 
         blocksize_t operator++() {
@@ -456,10 +456,11 @@ namespace FFLAS {
             return out;
         }
                 
-        blocksize_t rowblocksize() const { return rowBlockSize; }
         blocksize_t rownumblocks() const { return numRowBlock; }
-        blocksize_t colblocksize() const { return colBlockSize; }
         blocksize_t colnumblocks() const { return numColBlock; }
+        blocksize_t blockindex() const { return current; }
+        blocksize_t rowblockindex() const { return blockindex()/colnumblocks(); }
+        blocksize_t colblockindex() const { return blockindex()%colnumblocks(); }
 
 
     protected:

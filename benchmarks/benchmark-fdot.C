@@ -44,13 +44,15 @@ int main(int argc, char** argv) {
 	size_t N      = 5000;
  	size_t BS      = 5000;
 //     size_t q = 101;
+	size_t p=0;
 	std::string file = "";
   
 	Argument as[] = {
-		{ 'n', "-n N", "Set the dimension of the matrix C.",             TYPE_INT , &N },
+		{ 'n', "-n N", "Set the dimension of the matrix C.",TYPE_INT , &N },
 // 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
-		{ 'i', "-i R", "Set number of repetitions.",                            TYPE_INT , &iter },
-		{ 's', "-i S", "Size of the integers.",                            TYPE_INT , &BS },
+		{ 'i', "-i R", "Set number of repetitions.",		TYPE_INT , &iter },
+		{ 's', "-i S", "Size of the integers.",				TYPE_INT , &BS },
+		{ 'p', "-p P", "0 for sequential, 1 for parallel.",	TYPE_INT , &p },
 		END_OF_ARGUMENTS
 	};
   
@@ -86,13 +88,24 @@ int main(int argc, char** argv) {
         
         F.assign(d, F.zero);
 
+        size_t maxallowed_threads; // from env
+        PAR_BLOCK { maxallowed_threads=NUM_THREADS; }
+
+        FFLAS::ParSeqHelper::Parallel<
+            FFLAS::CuttingStrategy::Block,
+            FFLAS::StrategyParameter::Threads> ParHelper(maxallowed_threads);
+
 		chrono.clear();
-		chrono.start();
-		PAR_BLOCK {
-				// d <- d + <A,B>
-            pfdot(F, N, A, 1U, B, 1U, d, NUM_THREADS);
-		}
-		chrono.stop();
+        if (p){
+            chrono.start();
+            d = fdot(F, N, A, 1U, B, 1U, ParHelper);
+            chrono.stop();
+        } else {
+            chrono.start();
+            d = fdot(F, N, A, 1U, B, 1U, FFLAS::ParSeqHelper::Sequential());
+            chrono.stop();
+        }
+
 
         std::cerr << chrono 
                   << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*chrono.realtime())
