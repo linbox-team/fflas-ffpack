@@ -181,7 +181,7 @@ namespace FFPACK {
 				Polynomial minP;//=new Polynomial();
 				    //Hybrid_KGF_LUK_MinPoly (F, minP, (size_t)Ncurr, A, lda, X2, ldx, P);
 
-				FFPACK::RandomMatrix (F, 1, Ncurr, v, Ncurr, G);
+				FFPACK::NonZeroRandomMatrix (F, 1, Ncurr, v, Ncurr, G);
 
 				MatVecMinPoly (F, minP, Ncurr, A, lda, v, 1, X2, ldx, P);
 
