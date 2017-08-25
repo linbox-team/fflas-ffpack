@@ -16,7 +16,7 @@ matrix:
           - g++-4.9
           - libgmp-dev
           - libgmpxx4ldbl
-          - libatlas-dev
+          - libopenblas-dev
 
     - os: linux
       sudo: required
@@ -31,7 +31,7 @@ matrix:
           - g++-5
           - libgmp-dev
           - libgmpxx4ldbl
-          - libatlas-dev
+          - libopenblas-dev
 
     - os: linux
       sudo: required
@@ -46,7 +46,7 @@ matrix:
           - g++-6
           - libgmp-dev
           - libgmpxx4ldbl
-          - libatlas-dev
+          - libopenblas-dev
 
     # - os: linux
     #   sudo: required
