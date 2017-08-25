@@ -29,7 +29,7 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
-	  - gfortran-5
+          - gfortran-5
           - libgmp-dev
           - libgmpxx4ldbl
 
@@ -45,7 +45,7 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-6
-	  - gfortran-6
+          - gfortran-6
           - libgmp-dev
           - libgmpxx4ldbl
 
