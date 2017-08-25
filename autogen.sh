@@ -24,5 +24,6 @@ autoreconf -vif $srcdir
 
 # run configure script
 if test x$NOCONFIGURE = x; then
-	$srcdir/configure "$@"
+    $srcdir/configure "$@"
+    cat $srcdir/config.log
 fi
