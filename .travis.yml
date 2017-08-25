@@ -93,6 +93,9 @@ script:
   - make tutorials
   - make dist
 
+after_failure:
+  - cat config.log
+
 notifications:
   on_success: change
   on_failure: always
