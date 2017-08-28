@@ -28,7 +28,11 @@
  */
 #define  __FFLASFFPACK_SEQUENTIAL
 
-#define ENABLE_ALL_CHECKINGS 1
+// CP: disabling ALL_CHECKINGS as they create
+// - conditional jumps on unitialized values (valgrind)
+// - segfaults on travis virtual machines
+// TODO: fix this (unsuccessful so far) https://github.com/linbox-team/fflas-ffpack/issues/123
+//#define ENABLE_ALL_CHECKINGS 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
