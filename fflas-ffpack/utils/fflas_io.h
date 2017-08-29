@@ -100,6 +100,7 @@ namespace FFLAS{
 				typename Field::Element val;
 				ifs >> tmp;
                 A = fflas_new(F, m,n);
+				fzero(F,m,n,A,n);
                 do{
                     ifs >> i >> j;
 					if (i>m || j>n){
