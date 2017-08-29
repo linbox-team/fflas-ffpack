@@ -39,8 +39,8 @@ fflas_101_lvl1_SOURCES = fflas_101_lvl1.C
 fflas_101_1_SOURCES = fflas-101_1.C
 fflas_101_2_SOURCES = fflas-101_2.C
 fflas_101_3_SOURCES = fflas-101_3.C
-ffpack-solve_SOURCES = ffpack-solve.C
-ffpack-fgesv_SOURCES = ffpack-fgesv.C
+ffpack_solve_SOURCES = ffpack-solve.C
+ffpack_fgesv_SOURCES = ffpack-fgesv.C
 
 CLEANFILES = $(TUTORIALS) 
 
