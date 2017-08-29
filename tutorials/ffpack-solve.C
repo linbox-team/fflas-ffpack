@@ -34,8 +34,8 @@ using namespace FFPACK;
 
 int main(int argc, char** argv) {
 
-  typedef Givaro::Modular<int> Int_Field;
-  Int_Field F(17);
+  typedef Givaro::Modular<float> Field;
+  Field F(17);
 
 
   
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
   
   // Let A be a M times M random square matrix
-  Int_Field::Element_ptr A;
+  Field::Element_ptr A;
   A = fflas_new(F,M,M);
 
   
@@ -72,17 +72,13 @@ int main(int argc, char** argv) {
 
   // Let x be a M dimensional vector
   const size_t incx = 1;
-  Int_Field::Element_ptr x;
+  Field::Element_ptr x;
   x = fflas_new(F,M,1);
-  for(size_t i =0; i<M; i++)
-    {
-      F.assign (x[i],F.zero);
-    }
-
+  fzero(F,M,x,incx);//initialize all elements to zero
   
   // Let b be a M dimensional vector
   const size_t incb = 1;
-  Int_Field::Element_ptr b;
+  Field::Element_ptr b;
   b = fflas_new(F,M,1);
 
   // Fulfill the vector b with desired values
@@ -105,30 +101,16 @@ int main(int argc, char** argv) {
 
   
   // Let res be a M times 1 vector
-  const size_t ldres = 1;  
-  Int_Field::Element_ptr res;
+  const size_t incres = 1;  
+  Field::Element_ptr res;
   res = fflas_new(F,M,1);
-  for(size_t i=0; i<M; i++)
-    {
-      F.assign(res[i],F.zero);
-    }
-    
+  fzero(F,M,res,incres);//initialize all elements to zero
   
   // Verify if A*x == b to confirm the found the solution
-  bool isEqual=true;
   std::cout<<"Verification:"<<std::endl;
-  fgemv(F, FflasNoTrans, M, M, F.one, A, lda, x, incx, F.zero, res, ldres);
-  WriteMatrix(std::cout<<"A*x:="<<std::endl,F,M,1,res,ldres)<<std::endl;
- 
-  for(size_t i=0; i<M; i++)
-    {
-      if(!F.areEqual(res[i],b[i]))
-	{
-	  isEqual=false;
-	  break;
-	}
-    }
-  if(!isEqual)
+  fgemv(F, FflasNoTrans, M, M, F.one, A, lda, x, incx, F.zero, res, incres);
+  WriteMatrix(std::cout<<"A*x:="<<std::endl,F,M,1,res,incres)<<std::endl;
+  if( !fequal (F, M, res, incres, b, incb)  )
     {
       std::cout<<"Results are incorrect!"<<std::endl;
     }
@@ -136,8 +118,6 @@ int main(int argc, char** argv) {
     {
       std::cout<<"Results are correct!"<<std::endl;
     }
-
-  
   // Clearing up the memory
   fflas_delete(A);
   fflas_delete(x);

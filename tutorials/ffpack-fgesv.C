@@ -32,16 +32,15 @@ using namespace FFPACK;
 
 int main(int argc, char** argv) {
 
-  typedef Givaro::Modular<int> Int_Field;
-  Int_Field F(17);
-
+  typedef Givaro::Modular<float> Field;
+  Field F(17);
 
   
   // Let A be a M times M square matrix of coefficients
   const size_t M = 4, lda = M;
 
 
-  Int_Field::Element_ptr A;
+  Field::Element_ptr A;
   A = fflas_new(F,M,M);
   
   
@@ -69,17 +68,15 @@ int main(int argc, char** argv) {
 
   // Let X be a M times 2 matrix of variables
   const size_t ldx = 2;
-  Int_Field::Element_ptr x;
+  Field::Element_ptr x;
   x = fflas_new(F,M,2);
-  for(size_t i =0; i<M*2; i++)
-    {
-      F.assign (x[i],F.zero);
-    }
+  fiszero (F, M, 2, x, ldx); //initialize all elements to zero
+
   WriteMatrix(std::cout<<"x:="<<std::endl,F,M, 2, x, ldx)<<std::endl;
   
   // Let b be a M times 2 matrix of solutions
   const size_t ldb = 2;  
-  Int_Field::Element_ptr b;  
+  Field::Element_ptr b;  
   b = fflas_new(F,M,2);
   
 
@@ -96,52 +93,32 @@ int main(int argc, char** argv) {
   WriteMatrix(std::cout<<"b:="<<std::endl,F,M, 2, b, ldb)<<std::endl;
   
   // make a copy of b into x
-  /*
-    for(size_t i=0; i<M*2; i++)
-    {
-    F.assign(x[i],b[i]);
-    }
-  */
-  fassign(F,M,x,2,b,ldb);
+  fassign(F,M,2,b,ldb,x,2);
   WriteMatrix(std::cout<<"copied b:="<<std::endl,F,M, 2, x, ldx)<<std::endl;
   
   //Solve the system
   int state;
   size_t rank = fgesv(F, FflasLeft, M, 2, A, lda, x, ldx, &state);
   if(rank!=M)std::cout<<"Results are incorrect after the fgesv()!"<<std::endl;
-  //std::cout<<"state:="<<state<<std::endl;
   WriteMatrix(std::cout<<"x:="<<std::endl,F,M, 2, x, ldx)<<std::endl;
   
   
   
   // Let res be a M times 2 matrix
   const size_t ldres = 2;  
-  Int_Field::Element_ptr res;
+  Field::Element_ptr res;
   res = fflas_new(F,M,2);
-  for(size_t i=0; i<M*2; i++)
-    {
-      F.assign(res[i],F.zero);
-    }
-  
+  fiszero (F, M, 2, res, ldres); //initialize all elements to zero
   
  // Verify if A*x == b to confirm the found the solution
   bool isEqual=true;
   std::cout<<"Verification:"<<std::endl;
   fgemm(F, FflasNoTrans, FflasNoTrans, M, 2, M, F.one, A, lda, x, ldx, F.zero, res, ldres);
   WriteMatrix(std::cout<<"A*x:="<<std::endl,F,M,2,res,ldres)<<std::endl;
-  
-  for(size_t i=0; i<M*2; i++)
-    {
-      if(!F.areEqual(res[i],b[i]))
-	{
-	  isEqual=false;
-	  break;
-	}
-    }
-  if(!isEqual)
-    {
-      std::cout<<"Results are incorrect!"<<std::endl;
-    }
+
+  if( !fequal (F, M, 2, res, ldres, b, ldb) ) {
+    std::cout<<"Results are incorrect!"<<std::endl;
+  }
   else
     {
       std::cout<<"Results are correct!"<<std::endl;
