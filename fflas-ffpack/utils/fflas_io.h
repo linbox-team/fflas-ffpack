@@ -47,7 +47,7 @@ namespace FFLAS{
     
 
     inline void preamble(std::ifstream&ifs, FFLAS_FORMAT& format){
-		char st[8];
+		char st[9];
 		ifs.getline(st, 9);
 		if (!strcmp(st,"FFBinFmt")){
 			format = FflasBinary;
