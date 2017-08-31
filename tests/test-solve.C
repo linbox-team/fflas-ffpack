@@ -118,6 +118,7 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 	}
 	
 	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(A2);
 	FFLAS::fflas_delete(B);
 	FFLAS::fflas_delete(B2);
 	FFLAS::fflas_delete(x);
