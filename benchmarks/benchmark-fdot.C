@@ -26,6 +26,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
+#include <givaro/givrational.h>
 
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/timer.h"
@@ -38,90 +39,93 @@
 using namespace std;
 using namespace FFLAS;
 using namespace FFPACK;
-int main(int argc, char** argv) {
 
-	size_t iter      = 3;
-	size_t N      = 5000;
- 	size_t BS      = 5000;
-//     size_t q = 101;
-	size_t p=0;
-	std::string file = "";
-  
-	Argument as[] = {
-		{ 'n', "-n N", "Set the dimension of the matrix C.",TYPE_INT , &N },
-// 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
-		{ 'i', "-i R", "Set number of repetitions.",		TYPE_INT , &iter },
-		{ 's', "-i S", "Size of the integers.",				TYPE_INT , &BS },
-		{ 'p', "-p P", "0 for sequential, 1 for parallel.",	TYPE_INT , &p },
-		END_OF_ARGUMENTS
-	};
-  
-	FFLAS::parseArguments(argc,argv,as);
-  
-    typedef Givaro::ZRing<Givaro::Integer> Field;
-    Field F;
-    Givaro::GivRandom generator;
-    Givaro::IntegerDom IPD;
+template<class Field>
+typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_t BS, const size_t p, const size_t threads){
+    Field F(q);
+    typename Field::RandIter G(F, BS);
 
-// 	typedef Givaro::ModularBalanced<double> Field;
-// 	Field F(q);
-	
-	Field::Element_ptr A, B;
-	Field::Element d; F.init(d);
-  
-	Givaro::OMPTimer chrono, time; time.clear();
+	typename Field::Element_ptr A, B;
+	typename Field::Element d; F.init(d);
+
+    Givaro::OMPTimer chrono, time; time.clear();
   
 	for (size_t i=0;i<iter;++i){
 		A = fflas_new(F, N);
 		B = fflas_new(F, N);
-        PARFOR1D(j,N,SPLITTER(), {
-			IPD.random(generator,A[j],BS);
-			IPD.random(generator,B[j],BS);
-		});
-		
-// 		Field::RandIter G(F);
-// 		RandomMatrix (F, 1, N, A, lda, G);
-// 		RandomMatrix (F, 1, N, B, ldb, G);
 
-//         std::cerr << '['; for(size_t i=0; i<N; ++i) F.write(std::cerr,A[i]) << ' '; std::cerr << ']' << std::endl;
-//         std::cerr << '['; for(size_t i=0; i<N; ++i) F.write(std::cerr,B[i]) << ' '; std::cerr << ']' << std::endl;
+        PAR_BLOCK { pfrand(F, G, N, 1, A); pfrand(F, G, N, 1, B); }
+
+//         FFLAS::WriteMatrix(std::cerr, F, 1, N, A, 1);
+//         FFLAS::WriteMatrix(std::cerr, F, 1, N, B, 1);
         
         F.assign(d, F.zero);
 
-        size_t maxallowed_threads; // from env
-        PAR_BLOCK { maxallowed_threads=NUM_THREADS; }
 
         FFLAS::ParSeqHelper::Parallel<
             FFLAS::CuttingStrategy::Block,
-            FFLAS::StrategyParameter::Threads> ParHelper(maxallowed_threads);
+            FFLAS::StrategyParameter::Threads> ParHelper(threads);
 
 		chrono.clear();
         if (p){
             chrono.start();
-            d = fdot(F, N, A, 1U, B, 1U, ParHelper);
+            F.assign(d, fdot(F, N, A, 1U, B, 1U, ParHelper));
             chrono.stop();
         } else {
             chrono.start();
-            d = fdot(F, N, A, 1U, B, 1U, FFLAS::ParSeqHelper::Sequential());
+            F.assign(d, fdot(F, N, A, 1U, B, 1U, FFLAS::ParSeqHelper::Sequential()));
             chrono.stop();
         }
 
 
         std::cerr << chrono 
-                  << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*chrono.realtime())
+                  << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*chrono.realtime())
                   << std::endl;
 
 		time+=chrono;
 		FFLAS::fflas_delete(A);
 		FFLAS::fflas_delete(B);
 	}
-// 	F.write(std::cerr, d) << std::endl;
-
 		// -----------
-		// Standard output for benchmark - Alexis Breust 2014/11/14
+		// Standard output for benchmark
 	std::cout << "Time * " << iter << ": " << time 
-			  << " Gfops: " << ((double(N)/1000.)/1000.)/(1000.*time.realtime())* double(iter)
-			  << ", size: " << logtwo(d);
-    FFLAS::writeCommandString(std::cout, as) << std::endl;
-	return 0;
+			  << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*time.realtime())* double(iter);
+
+// 	F.write(std::cerr, d) << std::endl;
+    return d;
+}
+
+int main(int argc, char** argv) {
+
+	size_t iter = 3;
+	size_t N    = 5000;
+    size_t BS   = 5000;
+    int q		= 131071101;
+	size_t p	=0;
+    size_t maxallowed_threads; PAR_BLOCK { maxallowed_threads=NUM_THREADS; } 
+    size_t threads=maxallowed_threads;
+
+	Argument as[] = {
+		{ 'n', "-n N", "Set the dimension of the matrix C.",TYPE_INT , &N },
+        { 'q', "-q Q", "Set the field characteristic (0 for the integers).",         TYPE_INT , &q },
+		{ 'i', "-i R", "Set number of repetitions.",		TYPE_INT , &iter },
+		{ 'b', "-b B", "Set the bitsize of the random elements.",         TYPE_INT , &BS},
+		{ 'p', "-p P", "0 for sequential, 1 for parallel.",	TYPE_INT , &p },
+		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &threads },
+		END_OF_ARGUMENTS
+	};
+
+    FFLAS::parseArguments(argc,argv,as);
+
+    if (q > 0){
+        BS = Givaro::Integer(q).bitsize();
+        double d = run_with_field<Givaro::ModularBalanced<double> >(q, iter, N, BS, p, threads);
+        std::cout << ", d: " << d;
+    } else {
+        auto d = run_with_field<Givaro::ZRing<Givaro::Integer> > (q, iter, N, BS, p, threads);
+        std::cout << ", size: " << logtwo(d>0?d:-d);
+    }
+
+    FFLAS::writeCommandString(std::cerr, as) << std::endl;
+    return 0;
 }

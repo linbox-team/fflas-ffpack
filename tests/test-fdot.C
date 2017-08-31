@@ -65,7 +65,7 @@ bool check_fdot (const Field &F, size_t n,
 
 	typename Field::Element d; F.init(d); F.assign(d, F.zero);
 
-	d = fdot (F, n, a, inca, b, incb);
+	F.assign(d, fdot (F, n, a, inca, b, incb));
 
 	t.stop();
 	time+=t.usertime();
@@ -147,7 +147,8 @@ bool run_with_Integer (size_t BS, size_t n, size_t iters, uint64_t seed){
     Givaro::GivRandom generator;
     Givaro::IntegerDom IPD;
     typedef Givaro::ZRing<Givaro::Integer> Field;
-	Field F;
+	Field F; 
+    Field::RandIter G(F,BS);
 
 	while (ok &&  nbit){
 
@@ -158,8 +159,7 @@ bool run_with_Integer (size_t BS, size_t n, size_t iters, uint64_t seed){
 		typename Field::Element_ptr a = fflas_new (F, n, inca);
 		typename Field::Element_ptr b = fflas_new (F, n, incb);
 
-        PARFOR1D(j,n*inca,SPLITTER(MAX_THREADS), IPD.random(generator,a[j],BS); );
-        PARFOR1D(j,n*incb,SPLITTER(MAX_THREADS), IPD.random(generator,b[j],BS); );
+        PAR_BLOCK { pfrand(F, G, n*inca,1, a); pfrand(F, G, n*incb, 1, b); }
     
 		ok = ok && check_fdot(F,n,a,1,b,1);
 		ok = ok && check_fdot(F,n,a,inca,b,incb);
