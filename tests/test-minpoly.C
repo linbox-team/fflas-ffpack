@@ -99,7 +99,6 @@ bool check_minpoly(const Field &F, size_t n, RandIter& G)
 
 
 	/*Check that minP(A).V is zero*/
-
 	Element_ptr E = FFLAS::fflas_new(F, n);
 	FFLAS::fzero(F, n, E, 1);
     

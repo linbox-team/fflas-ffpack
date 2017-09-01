@@ -1,5 +1,6 @@
 # Copyright (c) 2017 FFLAS-FFPACK
 # written by JGD <Jean-Guillaume.Dumas@imag.fr>
+# Philippe LEDENT <philippe.ledent@etu.univ-grenoble-alpes.fr>
 #
 # ========LICENCE========
 # This file is part of the library FFLAS-FFPACK.
@@ -27,11 +28,18 @@ AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARF
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-TUTORIALS = 2x2-fgemm 101-fgemm 2x2-pluq 2x2-ftrsv
+TUTORIALS = fflas_101 fflas_101_lvl1 fflas-101_1 fflas-101_3 2x2-fgemm 101-fgemm 2x2-pluq 2x2-ftrsv
 2x2_fgemm_SOURCES = 2x2-fgemm.C
 2x2_ftrsv_SOURCES = 2x2-ftrsv.C
 101_fgemm_SOURCES = 101-fgemm.C
 2x2_pluq_SOURCES = 2x2-pluq.C
+fflas_101_SOURCES = fflas_101.C
+fflas_101_lvl1_SOURCES = fflas_101_lvl1.C
+#fflas_101_lvl2_SOURCES = fflas_101_lvl2.C
+fflas_101_1_SOURCES = fflas-101_1.C
+fflas_101_2_SOURCES = fflas-101_2.C
+fflas_101_3_SOURCES = fflas-101_3.C
+
 
 CLEANFILES = $(TUTORIALS) 
 

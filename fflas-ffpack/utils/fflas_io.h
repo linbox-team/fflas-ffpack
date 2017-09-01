@@ -47,7 +47,7 @@ namespace FFLAS{
     
 
     inline void preamble(std::ifstream&ifs, FFLAS_FORMAT& format){
-		char st[8];
+		char st[9];
 		ifs.getline(st, 9);
 		if (!strcmp(st,"FFBinFmt")){
 			format = FflasBinary;
@@ -100,6 +100,7 @@ namespace FFLAS{
 				typename Field::Element val;
 				ifs >> tmp;
                 A = fflas_new(F, m,n);
+				fzero(F,m,n,A,n);
                 do{
                     ifs >> i >> j;
 					if (i>m || j>n){

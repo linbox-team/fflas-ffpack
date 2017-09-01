@@ -95,7 +95,6 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 		if (ok) oss<<" Bin (ok)";
 		else oss<<" Bin (KO)";
 		fflas_delete(B);
-
 			// Testing compact Binary format
 		typedef Givaro::ZRing<typename CompactElement<typename Field::Element>::type> CompactField;
 		CompactField Z;
@@ -127,6 +126,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 		if (ok) std::cout << "PASSED"<<std::endl;
 		else std::cout << "FAILED"<<std::endl;
 		fflas_delete(A);
+		delete F;
 		nbit--;
 	}
 	return 0;

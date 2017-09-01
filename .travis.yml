@@ -14,9 +14,9 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-4.9
+          - gfortran-4.9
           - libgmp-dev
           - libgmpxx4ldbl
-          - libatlas-dev
 
     - os: linux
       sudo: required
@@ -29,24 +29,25 @@ matrix:
           - ubuntu-toolchain-r-test
           packages:
           - g++-5
+          - gfortran-5
           - libgmp-dev
           - libgmpxx4ldbl
-          - libatlas-dev
 
     - os: linux
       sudo: required
       dist: trusty
       compiler: gcc
-      env: COMPILER=g++-6 BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
+      env: COMPILER=g++-6
+      # BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
       addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
           packages:
           - g++-6
+          - gfortran-6
           - libgmp-dev
           - libgmpxx4ldbl
-          - libatlas-dev
 
     # - os: linux
     #   sudo: required
@@ -73,15 +74,16 @@ matrix:
       - brew update
       - brew uninstall automake && brew install automake
       - brew install autoconf libtool
-      - brew install homebrew/science/openblas
+#      - brew install homebrew/science/openblas
 
 install:
   - export CXX="$COMPILER"
 
 before_script:
   - git clone --depth 1 https://github.com/linbox-team/givaro.git && cd givaro && ./autogen.sh && make && sudo make install && cd ..
+  - git clone --depth=1 https://github.com/xianyi/OpenBLAS.git  && cd OpenBLAS && make && sudo make PREFIX="/usr/local" install && cd ..
   - export LD_LIBRARY_PATH=/usr/local/lib
-  - ./autogen.sh $BLAS_LIBS
+  - ./autogen.sh #$BLAS_LIBS
 
 script:
   - make
@@ -90,6 +92,9 @@ script:
   - make examples
   - make tutorials
   - make dist
+
+after_failure:
+  - cat config.log
 
 notifications:
   on_success: change

@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	size_t rows      = 5000;
 	size_t cols      = 5000;
 	double a         = 1.0;
-	size_t threshold = 64;
+	// size_t threshold = 64;
 	std::string file = "";
   
 	Argument as[] = {
