@@ -53,12 +53,12 @@ bool check_fdot (const Field &F, size_t n,
 				 typename Field::ConstElement_ptr b, size_t incb){
 
 	
-	string ss = " inca = " + to_string (inca) + string(" incb = ") + to_string (incb);  
+	std::string st = " inca = " +to_string(inca) + " incb = " + to_string(incb);
 	
 	cout<<std::left<<"Checking FDOT";
 	cout.fill('.');
-	cout.width(35);
-	cout<<ss;
+	cout.width(30);
+	cout<<st;
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear(); t.start();
@@ -76,7 +76,10 @@ bool check_fdot (const Field &F, size_t n,
 
     F.subin(d, dcheck);
 
-    cout << "Seq("<<time<<")";
+	cout.fill('.');
+	cout.width(17);
+	st = "Seq("+to_string(time)+")";
+	cout<<st;
 	if (! F.areEqual(d,F.zero)){
         F.write(std::cout << " FAILED: diff = ",d)<<endl;
 		return false;
@@ -97,13 +100,16 @@ bool check_fdot (const Field &F, size_t n,
 	time=t.usertime();
 
 	F.subin(d, dcheck);
+	st = "Par(" +to_string(time)+")";
 
-    cout << "\tPar("<<time<<")";
+	cout.fill('.');
+	cout.width(17);
+    cout << st;
 	if (! F.areEqual(d,F.zero)){
 		F.write(std::cout << " FAILED diff = ",d)<<endl;
 		return false;
 	}
-    cout << "\tPASSED"<<endl;
+    cout << "PASSED"<<endl;
     return true;
 }
 
@@ -148,7 +154,7 @@ bool run_with_Integer (size_t BS, size_t n, size_t iters, uint64_t seed){
     Givaro::IntegerDom IPD;
     typedef Givaro::ZRing<Givaro::Integer> Field;
 	Field F; 
-    Field::RandIter G(F,BS);
+    Field::RandIter G(F,BS,seed);
 
 	while (ok &&  nbit){
 
