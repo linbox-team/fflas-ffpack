@@ -85,10 +85,13 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 	x  = FFLAS::fflas_new(F,m,1);
 
 	RandomMatrix (F, m, m, A, lda, Rand);
+	RandomMatrix (F, m, m, A2, lda, Rand);
+
 	while( m!=FFPACK::Rank( F, m, m, A, lda) ){
 		RandomMatrix (F, m, m, A, lda, Rand);
 	}	
 	RandomMatrix (F, m, 1, B, incb, Rand);
+	RandomMatrix (F, m, 1, B2, incb, Rand);
 
 	FFLAS::fassign (F, m, 1, B, incb, B2, incb);
 	FFLAS::fassign (F, m, m, A, lda, A2, lda);
@@ -152,10 +155,10 @@ int main(int argc, char** argv)
 {
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
-	size_t b=10;
-	size_t m=121;
+	size_t b=0;
+	size_t m=6;
 
-	size_t iters=10;
+	size_t iters=100;
 	bool loop=false;
 	uint64_t seed = time(NULL);
 	Argument as[] = {
