@@ -142,10 +142,20 @@ namespace FFLAS {
 	inline typename Field::Element
 	fdot( const Field& F, const size_t N,
 	      typename Field::ConstElement_ptr x, const size_t incx,
-	      typename Field::ConstElement_ptr y, const size_t incy )
+	      typename Field::ConstElement_ptr y, const size_t incy,
+          const ParSeqHelper::Sequential seq)
 	{
 		typename ModeTraits<Field>::value mt;
 		return fdot (F, N, x, incx, y, incy, mt);
+	}
+
+	template<class Field>
+	inline typename Field::Element
+	fdot( const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr x, const size_t incx,
+	      typename Field::ConstElement_ptr y, const size_t incy)
+	{
+		return fdot (F, N, x, incx, y, incy, FFLAS::ParSeqHelper::Sequential());
 	}
 
 } // FFLAS
