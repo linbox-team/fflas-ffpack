@@ -28,7 +28,7 @@ AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARF
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
 AM_LDFLAGS=-static $(PARLIBS)
 
-TUTORIALS = fflas_101 fflas_101_lvl1 fflas-101_1 fflas-101_3 2x2-fgemm 101-fgemm 2x2-pluq 2x2-ftrsv
+TUTORIALS = fflas_101 fflas_101_lvl1 fflas-101_1 fflas-101_3 2x2-fgemm 101-fgemm 2x2-pluq 2x2-ftrsv ffpack-solve ffpack-fgesv
 2x2_fgemm_SOURCES = 2x2-fgemm.C
 2x2_ftrsv_SOURCES = 2x2-ftrsv.C
 101_fgemm_SOURCES = 101-fgemm.C
@@ -39,14 +39,15 @@ fflas_101_lvl1_SOURCES = fflas_101_lvl1.C
 fflas_101_1_SOURCES = fflas-101_1.C
 fflas_101_2_SOURCES = fflas-101_2.C
 fflas_101_3_SOURCES = fflas-101_3.C
-
+ffpack_solve_SOURCES = ffpack-solve.C
+ffpack_fgesv_SOURCES = ffpack-fgesv.C
 
 CLEANFILES = $(TUTORIALS) 
 
 EXTRA_PROGRAMS = $(TUTORIALS)
 
 define other_compilation
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) ${DEFAULT_INCLUDES} $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
 endef
 
 %:%.C
