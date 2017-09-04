@@ -89,3 +89,13 @@ tests/test-pluq-check
 tests/test-simd
 tests/test-charpoly
 tests/test-maxdelayeddim
+tutorials/101-fgemm
+tutorials/2x2-fgemm
+tutorials/2x2-ftrsv
+tutorials/2x2-pluq
+tutorials/fflas-101_1
+tutorials/fflas-101_3
+tutorials/fflas_101
+tutorials/fflas_101_lvl1
+tutorials/ffpack-fgesv
+tutorials/ffpack-solve
