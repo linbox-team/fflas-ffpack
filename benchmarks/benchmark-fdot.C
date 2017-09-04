@@ -48,7 +48,12 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
 	typename Field::Element_ptr A, B;
 	typename Field::Element d; F.init(d);
 
-    Givaro::OMPTimer chrono, time; time.clear();
+#ifdef__GIVARO_USE_OPENMP
+	Givaro::OMPTimer chrono, time;
+#else
+	Givaro::Timer chrono, time;
+#endif
+	time.clear();
   
 	for (size_t i=0;i<iter;++i){
 		A = fflas_new(F, N);
