@@ -28,7 +28,7 @@
  */
 
 #include <givaro/givranditer.h>
-#include "fflas-ffpack/utils/fflas_io.h"
+
 //---------------------------------------------------------------------
 // CharpolyArithProg: Las Vegas algorithm to compute the Charpoly
 // over a large field (Z/pZ, s.t.  p > 2n^2)
