@@ -178,6 +178,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 		FFLAS::fflas_delete (A);
 		delete F;
 	}
+	if (!passed) std::cerr<<std::endl<<"Failed with seed = "<<seed<<std::endl;
 	return passed;
 }
 

@@ -133,7 +133,6 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 		Pk[i] = 0;
 
 	size_t R = LUdivine(F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, N, N, K, ldk, Pk, Qk);
-
 	size_t row_idx = 0;
 	size_t ii=0;
 	size_t dold = c;
@@ -153,6 +152,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			FFLAS::fflas_delete( Qk);
 			FFLAS::fflas_delete(dA);
 			FFLAS::fflas_delete( dK);
+			frobeniusForm.clear();
 			throw CharpolyFailed();
 		}
 		dK[k] = dold = d;
@@ -212,6 +212,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 					FFLAS::fflas_delete( rp);
 					FFLAS::fflas_delete( dA);
 					FFLAS::fflas_delete( dK);
+					frobeniusForm.clear();
 					throw CharpolyFailed();
 				}
 			Polynomial P (dK [i]+1);
@@ -238,6 +239,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 					FFLAS::fflas_delete( rp);
 					FFLAS::fflas_delete( dA);
 					FFLAS::fflas_delete( dK);
+					frobeniusForm.clear();
 					throw CharpolyFailed();
 				}
 			}
@@ -337,6 +339,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			FFLAS::fflas_delete( rp);
 			FFLAS::fflas_delete( dA);
 			FFLAS::fflas_delete( dK);
+			frobeniusForm.clear();
 			throw CharpolyFailed();
 		}
 		if (RR < Ncurr){
@@ -348,6 +351,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			FFLAS::fflas_delete( rp);
 			FFLAS::fflas_delete( dA);
 			FFLAS::fflas_delete( dK);
+			frobeniusForm.clear();
 			throw CharpolyFailed();
 		}
 
@@ -369,8 +373,9 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 				FFLAS::fflas_delete( rp);
 				FFLAS::fflas_delete( dA);
 				FFLAS::fflas_delete(dK);
+				frobeniusForm.clear();
 				throw CharpolyFailed();
-				//std::cerr<<"FAIL d non decroissant"<<std::endl;
+				//std::cerr<<"FAIL d non decreasing"<<std::endl;
 				//exit(-1);
 			}
 			dK[block_idx++] = it_idx;
@@ -492,6 +497,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 					FFLAS::fflas_delete (K3);
 					FFLAS::fflas_delete( dA);
 					FFLAS::fflas_delete( dK);
+					frobeniusForm.clear();
 					throw CharpolyFailed();
 				}
 			}
