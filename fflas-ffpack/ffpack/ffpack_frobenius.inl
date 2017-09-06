@@ -107,8 +107,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 
 	for (size_t i = 0; i < noc; ++i)
 		nzg.random (*(K + i*ldk +i));
-//	FFLAS::WriteMatrix(std::cerr<<"K = "<<std::endl,F,noc,N,K,ldk);
-	
+
 	// Computing the bloc Krylov matrix [U AU .. A^(c-1) U]^T
 	for (size_t i = 1; i<c; ++i){
 // #warning "leaks here"
