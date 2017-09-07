@@ -97,6 +97,7 @@ namespace FFPACK {
 						Protected::CharpolyArithProg (R, charp, N, A, lda, G);
 					}
 					catch (CharpolyFailed){
+						charp.clear();
 						if (++attempts < 2)
 							cont = true;
 						else
