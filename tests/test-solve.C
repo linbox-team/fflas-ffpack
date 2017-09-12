@@ -27,7 +27,7 @@
  */
 #define  __FFLASFFPACK_SEQUENTIAL
 
-#define ENABLE_ALL_CHECKINGS 1
+//#define ENABLE_ALL_CHECKINGS 1
 
 //#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
@@ -84,16 +84,11 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 	B2 = FFLAS::fflas_new(F,m,1);
 	x  = FFLAS::fflas_new(F,m,1);
 
-	RandomMatrix (F, m, m, A, lda, Rand);
-	RandomMatrix (F, m, m, A2, lda, Rand);
+	FFPACK::RandomMatrixWithRank (F, m, m, m,  A, lda, Rand);
 
-	while( m!=FFPACK::Rank( F, m, m, A, lda) ){
-		RandomMatrix (F, m, m, A, lda, Rand);
-	}	
 	RandomMatrix (F, m, 1, B, incb, Rand);
-	RandomMatrix (F, m, 1, B2, incb, Rand);
 
-	FFLAS::fassign (F, m, 1, B, incb, B2, incb);
+	FFLAS::fassign (F, m, B, incb, B2, incb);
 	FFLAS::fassign (F, m, m, A, lda, A2, lda);
 	FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
 
