@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 /* Copyright (c) FFLAS-FFPACK 
-=======
-/* Copyright (c) FFLAS-FFPACK
->>>>>>> master
 * Written by ZHU Hongguang <zhuhongguang2014@gmail.com>
 * ========LICENCE========
 * This file is part of the library FFLAS-FFPACK.
