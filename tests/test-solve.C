@@ -55,8 +55,8 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 	typename Field::Element_ptr A, A2, B, B2, x;
 
 	size_t lda,incb,incx;
-	lda=m;  
-	incb=1;  
+	lda=m;
+	incb=1;
 	incx=1;
 	A  = FFLAS::fflas_new(F,m,lda);
 	A2 = FFLAS::fflas_new(F,m,lda);
@@ -119,7 +119,14 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 		if (F==nullptr)
 			return true;
 
-		cout<<"Checking with ";F->write(cout)<<endl;
+		std::ostringstream oss;
+		F->write(oss);
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(50);
+		std::cout<<oss.str();
+		std::cout<<" ... ";
+	
 		ok = ok && check_solve(*F,m,G);
 		
 		nbit--;

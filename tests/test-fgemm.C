@@ -298,7 +298,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 		F->write(oss);
 		std::cout.fill('.');
 		std::cout<<"Checking ";
-		std::cout.width(40);
+		std::cout.width(50);
 		std::cout<<oss.str();
 		std::cout<<" ... ";
 
