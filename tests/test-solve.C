@@ -52,7 +52,7 @@ using Givaro::ModularBalanced;
 template<typename Field, class RandIter>
 bool check_solve(const Field &F, size_t m, RandIter& Rand){
 
-typedef typename Field::Element_ptr A, A2, B, B2, x;
+	typename Field::Element_ptr A, A2, B, B2, x;
 
 	size_t lda,incb,incx;
 	lda=m;  
