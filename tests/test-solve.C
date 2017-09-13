@@ -27,7 +27,7 @@
  */
 #define  __FFLASFFPACK_SEQUENTIAL
 
-#define ENABLE_ALL_CHECKINGS 1
+//#define ENABLE_ALL_CHECKINGS 1
 
 //#include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular-integer.h>
@@ -47,26 +47,7 @@ using namespace std;
 using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
-/*
-template<typename T>
-void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
-	size_t www=(p.bitsize()*log(2.))/log(10.);
-	for (size_t i=0;i<m;++i){
-		cout<<"[ ";
-		cout.width(www+1);
-		cout<<std::right<<C[i*ldc];
-		for (size_t j=1;j<n;++j){
-			cout<<" ";
-			cout.width(www);
-			cout<<std::right<<C[i*ldc+j];
-		}
-		cout<<"]"<<endl;
-	}
-	cout<<endl;
-
-}
-*/
 
 template<typename Field, class RandIter>
 bool check_solve(const Field &F, size_t m, RandIter& Rand){
@@ -84,13 +65,11 @@ Element A, A2, B, B2, x;
 	B2 = FFLAS::fflas_new(F,m,incb);
 	x  = FFLAS::fflas_new(F,m,incx);
 
-	RandomMatrix (F, m, m, A, lda, Rand);
-
 	RandomMatrixWithRank (F,  m,  m, m, A, lda, Rand);
 
 	RandomMatrix (F, m, 1, B, incb, Rand);
 
-	FFLAS::fassign (F, m, 1, B, incb, B2, incb);
+	FFLAS::fassign (F, m, B, incb, B2, incb);
 	FFLAS::fassign (F, m, m, A, lda, A2, lda);
 	#ifdef DEBUG
 	FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
@@ -136,7 +115,6 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 	while (ok &&  nbit){
 		//typedef typename Field::Element Element ;
 		// choose Field
-		//Field* F= chooseField<Field>(3,b);
 		Field* F= chooseField<Field>(q,b);
 		typename Field::RandIter G(*F,0,seed);
 		if (F==nullptr)

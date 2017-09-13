@@ -338,7 +338,22 @@ namespace FFLAS {
 	typename Field::Element
 	fdot (const Field& F, const size_t N,
 	      typename Field::ConstElement_ptr X, const size_t incX,
-	      typename Field::ConstElement_ptr Y, const size_t incY );
+	      typename Field::ConstElement_ptr Y, const size_t incY);
+
+
+	template<typename Field>
+	typename Field::Element
+	fdot (const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr X, const size_t incX,
+	      typename Field::ConstElement_ptr Y, const size_t incY,
+          const ParSeqHelper::Sequential seq);
+
+	template<typename Field, class Cut, class Param>
+	typename Field::Element
+	fdot (const Field& F, const size_t N,
+	      typename Field::ConstElement_ptr X, const size_t incX,
+	      typename Field::ConstElement_ptr Y, const size_t incY,
+          const ParSeqHelper::Parallel<Cut,Param> par);
 
 	/** \brief fswap: \f$ X \leftrightarrow Y\f$.
 	 * @bug use cblas_dswap when double

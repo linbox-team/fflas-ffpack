@@ -1,8 +1,10 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
-/* fflas/fflas_pfinit.inl
- * Copyright (C) 2015 Jean Guillaume Dumas Clement Pernet Ziad Sultan
+/* fflas/fflas_plevel1.inl
+ * Copyright (C) 2015-2017 Jean Guillaume Dumas Clement Pernet Ziad Sultan
+ *<Jean-Guillaume.Dumas@univ-grenoble-alpes.fr>
+ *<Clement.Pernet@univ-grenoble-alpes.fr>
  *<ziad.sultan@imag.fr>
  *
  * ========LICENCE========
@@ -25,8 +27,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_pfinit_H
-#define __FFLASFFPACK_pfinit_H
+#ifndef __FFLASFFPACK_parallel_level1_H
+#define __FFLASFFPACK_parallel_level1_H
 
 #include "fflas-ffpack/paladin/parallel.h"
 
@@ -82,7 +84,69 @@ namespace FFLAS
                        }
                             );
                        );
-			);	
+			);
+	}
+
+
+// #include <sstream>
+
+		// d <- d + <x,y>
+	template<class Field, class Cut,class Param>
+	inline typename Field::Element& 
+    fdot(const Field& F, const size_t N, 
+         typename Field::ConstElement_ptr x, const size_t incx,
+         typename Field::ConstElement_ptr y, const size_t incy,
+         typename Field::Element& d, 
+         const ParSeqHelper::Parallel<Cut,Param> par)
+	{
+        const size_t rs(par.numthreads());
+		typename Field::Element_ptr z(fflas_new(F,rs));
+		for(size_t i=0;i<rs;++i) F.init(z[i]);
+
+		SYNCH_GROUP({
+            FORBLOCK1D(iter, N, SPLITTER(rs, Cut, Param), {
+                const size_t i( iter.blockindex() );
+
+				TASK(MODE(CONSTREFERENCE(F) READ(x,y) WRITE(z[i])), {
+//                     std::stringstream berr;
+//                     berr << NUM_THREADS << ", T(" << omp_get_thread_num()<< "):"
+//                          << iter.end()-iter.begin() << ", i: " << i 
+//                          << std::endl;
+//                     for(auto itee=iter.begin(); itee!=iter.end(); ++itee)
+//                         F.write(F.write(berr, *(x+itee)) << '.', *(y+itee))
+//                                                          << std::endl;
+//                     std::cerr << berr.str();
+
+					F.assign(z[i], fdot(F, 
+										iter.end()-iter.begin(),
+										x+iter.begin()*incx, incx,
+										y+iter.begin()*incy, incy));
+
+//                     F.write(std::cerr << "pd:", z[i]) << std::endl;
+				});
+			});
+		});
+
+		for(size_t i=0;i<rs;++i) F.addin(d,z[i]);
+        fflas_delete(z);
+		return d;
+	}
+
+ 
+	template<class Field, class Cut,class Param>
+	inline typename Field::Element 
+    fdot(const Field& F, const size_t N, 
+         typename Field::ConstElement_ptr x, const size_t incx,
+         typename Field::ConstElement_ptr y, const size_t incy,
+         const ParSeqHelper::Parallel<Cut,Param> par)
+	{
+		typename Field::Element d; F.init(d); F.assign(d,F.zero);
+		
+		PAR_BLOCK {
+			fdot(F, N, x, incx, y, incy, d, par);
+		}
+		
+		return d;
 	}
 
 } // FFLAS

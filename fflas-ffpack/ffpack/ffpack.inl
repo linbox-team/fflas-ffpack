@@ -145,8 +145,8 @@ Solve( const Field& F, const size_t M,
 			  A, lda , x, incx);
 		ftrsv(F,  FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, M,
 			  A, lda , x, incx);
-		applyP( F, FFLAS::FflasRight, FFLAS::FflasTrans,
-				M, 0,(int) M, x, incx, P );
+		applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans,
+				1, 0,(int) M, x, incx, P );
 		FFLAS::fflas_delete( rowP);
 		FFLAS::fflas_delete( P);
 
