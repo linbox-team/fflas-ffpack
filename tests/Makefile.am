@@ -62,6 +62,7 @@ BASIC_TESTS =               \
 		test-multifile      \
 		test-io      \
 		test-maxdelayeddim \
+		test-solve \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -166,6 +167,9 @@ test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 #  test_fspmv_SOURCES = test-fspmv.C
 
 regression_check_SOURCES = regression-check.C
+
+test_solve_SOURCES = test-solve.C
+
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
