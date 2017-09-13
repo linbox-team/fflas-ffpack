@@ -47,7 +47,7 @@ using namespace std;
 using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
-
+/*
 template<typename T>
 void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 
@@ -66,46 +66,45 @@ void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
 	cout<<endl;
 
 }
-
+*/
 
 template<typename Field, class RandIter>
 bool check_solve(const Field &F, size_t m, RandIter& Rand){
 
-	typedef typename Field::Element Element;
-	Element * A, *A2,  *B, *B2, *x;
+typedef typename Field::Element_ptr Element;
+Element A, A2, B, B2, x;
 
 	size_t lda,incb,incx;
 	lda=m;  
 	incb=1;  
 	incx=1;
-	A  = FFLAS::fflas_new(F,m,m);
-	A2 = FFLAS::fflas_new(F,m,m);
-	B  = FFLAS::fflas_new(F,m,1);
-	B2 = FFLAS::fflas_new(F,m,1);
-	x  = FFLAS::fflas_new(F,m,1);
+	A  = FFLAS::fflas_new(F,m,lda);
+	A2 = FFLAS::fflas_new(F,m,lda);
+	B  = FFLAS::fflas_new(F,m,incb);
+	B2 = FFLAS::fflas_new(F,m,incb);
+	x  = FFLAS::fflas_new(F,m,incx);
 
 	RandomMatrix (F, m, m, A, lda, Rand);
-	RandomMatrix (F, m, m, A2, lda, Rand);
 
-	while( m!=FFPACK::Rank( F, m, m, A, lda) ){
-		RandomMatrix (F, m, m, A, lda, Rand);
-	}	
+	RandomMatrixWithRank (F,  m,  m, m, A, lda, Rand);
+
 	RandomMatrix (F, m, 1, B, incb, Rand);
-	RandomMatrix (F, m, 1, B2, incb, Rand);
 
 	FFLAS::fassign (F, m, 1, B, incb, B2, incb);
 	FFLAS::fassign (F, m, m, A, lda, A2, lda);
+	#ifdef DEBUG
 	FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
-
+	#endif
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear();
 	t.start();
-	FFPACK::Solve(F, m, A2, lda, x, incx, B2, incb);
+
+	FFPACK::Solve(F, m, A, lda, x, incx, B, incb);   
 	t.stop();
 	time+=t.usertime();
 
-	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, x, incx, F.zero, B2, incb);
+	FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A2, lda, x, incx, F.zero, B, incb);
 
 	bool ok = true;
 	if (FFLAS::fequal (F, m, 1, B2, incb, B, incb)){
@@ -113,13 +112,15 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
 		cout << "PASSED ("<<time<<")"<<endl;
 
 	} else{
+		#ifdef DEBUG
 		FFLAS::WriteMatrix(std::cout<<"A*x:="<<std::endl,F,m,1,B2,incb)<<std::endl;
 		FFLAS::WriteMatrix(std::cout<<"b:="<<std::endl,F,m,1,B,incb)<<std::endl;
+		#endif
 		cout << "FAILED ("<<time<<")"<<endl;
 		ok=false;
 		
 	}
-	
+
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(A2);
 	FFLAS::fflas_delete(B);
@@ -135,19 +136,20 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 	while (ok &&  nbit){
 		//typedef typename Field::Element Element ;
 		// choose Field
+		//Field* F= chooseField<Field>(3,b);
 		Field* F= chooseField<Field>(q,b);
 		typename Field::RandIter G(*F,0,seed);
 		if (F==nullptr)
 			return true;
 
 		cout<<"Checking with ";F->write(cout)<<endl;
-
 		ok = ok && check_solve(*F,m,G);
-
+		
 		nbit--;
 		delete F;
+
 	}
-	
+
 	return ok;
 }
 
@@ -156,9 +158,9 @@ int main(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	size_t m=6;
+	size_t m=300;
 
-	size_t iters=100;
+	size_t iters=30;
 	bool loop=false;
 	uint64_t seed = time(NULL);
 	Argument as[] = {
@@ -178,16 +180,15 @@ int main(int argc, char** argv)
 
 	do{
 		ok = ok && run_with_field<Modular<double> >(q,b,m,iters,seed);
-
 		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,iters,seed);
-
-		ok = ok && run_with_field<Modular<float> >(q,b,m,iters,seed);
-
-		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,iters,seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,m,iters,seed); 
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,iters,seed); 
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,iters,seed); 
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,iters,seed); 
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,iters,seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,iters,seed); 
+		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,iters,seed); 
 
 	} while (loop && ok);
 
