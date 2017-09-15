@@ -135,7 +135,7 @@ namespace FFPACK {
 
 	template INST_OR_DECL
 	void ftrtri (const FFLAS_FIELD<FFLAS_ELT>& F, const FFLAS::FFLAS_UPLO Uplo, const FFLAS::FFLAS_DIAG Diag,
-				 const size_t N, FFLAS_ELT* A, const size_t lda);
+				 const size_t N, FFLAS_ELT* A, const size_t lda, const size_t threshold);
 
 
 	template INST_OR_DECL
