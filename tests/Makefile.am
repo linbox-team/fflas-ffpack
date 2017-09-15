@@ -177,6 +177,9 @@ dense_generator: dense_generator.C
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher:
 	+./perfpublisher.sh "$(PERFPUBLISHERFILE)" "$(EXTRA_PROGRAMS)" "$(CXX)"
+	mv $(PERFPUBLISHERFILE) ..
+	make clean
+	mv ../$(PERFPUBLISHERFILE) .
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
