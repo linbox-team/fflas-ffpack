@@ -116,19 +116,26 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
         double delay, avrg;
         double t_total=0;
 
-	const FFLAS::CuttingStrategy meth = FFLAS::BLOCK;
-	const FFLAS::StrategyParameter strat = FFLAS::THREADS;
-	FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd, FFLAS::FieldTraits<Field>::value,
-			FFLAS::ParSeqHelper::Parallel> pWH (F, nbw,FFLAS::ParSeqHelper::Parallel(MAX_THREADS,meth,strat));
+	//const FFLAS::CuttingStrategy meth; //= FFLAS::BLOCK
+	//const FFLAS::StrategyParameter strat;// = FFLAS::THREADS;
+	FFLAS::MMHelper<Field, 
+FFLAS::MMHelperAlgo::Winograd, 
+FFLAS::FieldTraits<Field>::category,			
+FFLAS::ParSeqHelper::Parallel> pWH (F, 
+nbw, 
+FFLAS::ParSeqHelper::Parallel(
+MAX_THREADS, 
+FFLAS::CuttingStrategy::Block, 
+FFLAS::StrategyParameter::Threads));
         for(int i = 0;i<nbit;++i){
 		C = FFLAS::fflas_new<Field::Element>(m*n);
                 clock_gettime(CLOCK_REALTIME, &t0);
 
-		PAR_INSTR{
+		//PAR_INSTR{
 		       
-			FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
+		FFLAS::fgemm(F, ta, tb,m,n,k,alpha, A,lda, B,ldb,
 				      beta,C,n, pWH);   
-		}
+		//}
 		BARRIER;
                 clock_gettime(CLOCK_REALTIME, &t1);
                 delay = (double)(t1.tv_sec-t0.tv_sec)+(double)(t1.tv_nsec-t0.tv_nsec)/1000000000;

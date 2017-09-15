@@ -168,7 +168,7 @@ namespace FFPACK {
 								F.assign (*(LUP+i*ncols+j), F.zero);
 #ifdef __FFLASFFPACK_DEBUG
 					std::cerr<<"..done"<<std::endl;
-					WriteMatrix (std::cerr<<"LUP="<<std::endl,F,lambda+me,ncols,LUP,ncols);
+					FFLAS::WriteMatrix (std::cerr<<"LUP="<<std::endl,F,lambda+me,ncols,LUP,ncols);
 					std::cerr<<"LQUP(C1)";
 #endif
 					size_t * P = FFLAS::fflas_new<size_t>(ncols);
