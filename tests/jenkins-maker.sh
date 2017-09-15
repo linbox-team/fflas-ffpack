@@ -20,6 +20,7 @@ SOURCE_DIRECTORY=$( cd "$( dirname "$0" )" && pwd )
 #=============================#
 # Change only these variables #
 #=============================#
+ARCH=`pwd | awk -F/ '{print $(NF-4)}'`
 CXX=`pwd | awk -F/ '{print $(NF-2)}'`
 SSE=`pwd | awk -F/ '{print $NF}'`
 
@@ -36,8 +37,11 @@ BLAS_NAME=openblas
 
 # Change these if necessary
 
-BLAS_LIBS="-L$BLAS_HOME/lib/ -l$BLAS_NAME"
-BLAS_CFLAGS=-I"$BLAS_HOME"/include
+if [ "$ARCH" == "linbox-osx" ]; then
+    BLAS_LIBS="-framework Accelerate"
+else
+    BLAS_LIBS="-L$BLAS_HOME/lib/ -l$BLAS_NAME"
+fi
 
 # Where to install fflas-ffpack binaries
 # Keep default for local installation.
@@ -66,9 +70,9 @@ if [ "$CXX" == "icpc" ]; then
      fi
 fi
 
-# Particular case for Fedora23: g++=g++-5.3
+# Particular case for Fedora: g++-6 <- g++
 vm_name=`uname -n | cut -d"-" -f1`
-if [[ "$vm_name" == "fedora"  &&  "$CXX" == "g++-5.3" ]]; then
+if [[ "$ARCH" == "linbox-fedora-amd64" &&  "$CXX" == "g++-6" ]]; then
     CXX="g++"
     CC=gcc
 fi
@@ -84,7 +88,7 @@ fi
 #==================================#
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation"
-./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS"
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make autotune"
