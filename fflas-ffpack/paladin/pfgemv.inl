@@ -52,7 +52,7 @@ namespace FFLAS
 							);
 			}
 */
-		FFLAS::fdot (F, m, A, lda, X, incX);
+			FFLAS::fdot (F, lda, A, incX, X, incX); //Here A represents a line of the original matrix with lda elements 
 		}else{			
 			typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > MMH_t;
 			MMH_t H1(H);
