@@ -43,15 +43,15 @@ namespace FFLAS
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > & H){
 		
 		if (m<2){
-/*
-			PAR_BLOCK{
-				SYNCH_GROUP(
+			/*
+			  PAR_BLOCK{
+			  SYNCH_GROUP(
 							TASK(CONSTREFERENCE(F) MODE( READ(A,X) READWRITE(Y)),
-								 {fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);} 
-								 );
+							{fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);} 
 							);
-			}
-*/
+							);
+							}
+			*/
 			FFLAS::fdot (F, lda, A, incX, X, incX); //Here A represents a line of the original matrix with lda elements 
 		}else{			
 			typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > MMH_t;
@@ -108,34 +108,34 @@ namespace FFLAS
 				HH.parseq.set_numthreads(H.parseq.numthreads());
 				using FFLAS::CuttingStrategy::Row;
 				using FFLAS::StrategyParameter::Threads;				
-
+				
 				FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Threads),  
 						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(YY)),
-								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);} 
-								);
-						   }
-		            );
+								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);} )
+						   );
+			}
+			
 		}else{
 			PAR_BLOCK{
 				
 				HH.parseq.set_numthreads(H.parseq.numthreads());
 				using FFLAS::CuttingStrategy::Row;
 				using FFLAS::StrategyParameter::Threads;				
-
+				
 				FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Threads), 		
 						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(YY)),
 								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*(H.parseq.numthreads()-iter.blockindex())*lda, lda, X, incX, beta, Y, incY);}
-								);
-						   }
-		            );
-
+								)
+						   
+						   );
+			}
 		}
-
+		
 		return Y;		
-			
+		
 	}
 	
-
+	
 	template<class Field, class AlgoT, class FieldTrait>
 	typename Field::Element_ptr
 	pfgemv(const Field& F,
@@ -149,45 +149,74 @@ namespace FFLAS
 		   typename Field::Element_ptr Y, const size_t incY,
 		   size_t BS,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > & H){
-
+		
 		typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > MMH_t;
 		MMH_t HH(H);
-		if(BS<H.parseq.numthreads()||BS==0) BS = m/(H.parseq.numthreads());
-		size_t Niter = std::max(m, H.parseq.numthreads());
-		if(m<Niter){
-			PAR_BLOCK{
-				
-				HH.parseq.set_numthreads(H.parseq.numthreads());
-				using FFLAS::CuttingStrategy::Row;
-				using FFLAS::StrategyParameter::Grain;				
 
-				FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Grain),			
-						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(YY)),
-								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
-								);
-						   }
-		            );
+		//if m/BS>0 then split each line of the matrix into m/BS blocks
+		size_t NbBlocs;
+		if(BS>0) NbBlocs = n/BS; 
+		//else split the matrix into m/(H.parseq.numthreads()) line-wise blocks
+		else  NbBlocs = n/(H.parseq.numthreads());
+		//Put each block for one thread
+		if(NbBlocs>0){
+
+			PAR_BLOCK{
+				for(size_t j=0;j<m;j++) 
+					{
+
+						HH.parseq.set_numthreads(H.parseq.numthreads());
+						using FFLAS::CuttingStrategy::Row;
+						using FFLAS::StrategyParameter::Grain;		
+						
+						//for(size_t iter=0;iter<NbBlocs;iter++)
+						FORBLOCK1D(iter, NbBlocs,	SPLITTER(BS,Row,Grain), 			
+								   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+										{
+											fgemv( F, ta, 1, BS, alpha, (A+j) + iter.blockindex()*BS, BS, X+ iter.blockindex()*BS, incX, beta, Y+j, incY);
+											fadd (F, 1, BS, Y+j, incY, Y+j, incY, Y+j, incY);
+										}
+										)
+								   );
+					}
+			}
+
 		}else{
-			PAR_BLOCK{
+			size_t Niter = std::max(m, H.parseq.numthreads());
+			if(m<Niter){
+				PAR_BLOCK{
 				
-				HH.parseq.set_numthreads(H.parseq.numthreads());
-				using FFLAS::CuttingStrategy::Row;
-				using FFLAS::StrategyParameter::Grain;				
+					HH.parseq.set_numthreads(H.parseq.numthreads());
+					using FFLAS::CuttingStrategy::Row;
+					using FFLAS::StrategyParameter::Grain;				
+					
+					FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Grain),			
+							   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+									{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
+									)
+							   );
+				}
+						
+			}else{
+				PAR_BLOCK{
 				
-				FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Grain), 			
-						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(YY)),
-								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*BS*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
-								);
-						   }
-		            );
-
+					HH.parseq.set_numthreads(H.parseq.numthreads());
+					using FFLAS::CuttingStrategy::Row;
+					using FFLAS::StrategyParameter::Grain;				
+					
+					FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Grain), 			
+							   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+									{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*BS*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
+									)
+							   );
+				}
+			}
 		}
-
+		
+		
 		return Y;		
-			
+		
 	}
-
-
-
+	
 	
 } // FFLAS
