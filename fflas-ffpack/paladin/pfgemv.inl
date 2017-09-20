@@ -178,6 +178,15 @@ namespace FFLAS
 										}
 										)
 								   );
+						if(n - NbBlocs*n>0){
+								   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+										{
+											fgemv( F, ta, 1, BS, alpha, (A+j) + (n - NbBlocs), (n - NbBlocs), X+ (n - NbBlocs), incX, beta, Y+j, incY);
+											fadd (F, 1, BS, Y+j, incY, Y+j, incY, Y+j, incY);
+										}
+										)
+								   );
+						}
 					}
 			}
 
