@@ -57,57 +57,6 @@ using namespace std;
 using namespace FFLAS;
 using namespace Givaro;
 
-/*******************************************************************************************************************
- *
- *      Utility functions: sms reader and random field
- *  
- *******************************************************************************************************************/
-
-template<class T>
-size_t bitSize(T n){
-  return sizeof(T)*4-__builtin_clz(n);
-}
-
-template<typename Field>
-Givaro::Integer maxFieldElt() {return (Givaro::Integer)Field::maxCardinality();} 
-template<>
-Givaro::Integer maxFieldElt<Givaro::ZRing<Givaro::Integer>>() {return (Givaro::Integer)-1;}
-
-/*** Field chooser for test according to characteristic q and bitsize b ***/
-/* if q=-1 -> field is chosen randomly with a charateristic of b bits
-   if b=0 -> bitsize is chosen randomly according to maxFieldElt
-*/
-template<typename Field>
-Field* chooseField(Givaro::Integer q, uint64_t b){
-  Givaro::Integer maxV= maxFieldElt<Field>();
-  auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-  std::mt19937 mt_rand(seed);
-  if (maxV>0 && (q> maxV || b> maxV.bitsize()))
-    return nullptr;
-  if (b<=1){
-    //srand((double)std::chrono::high_resolution_clock::now());
-    auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
-                 mt_rand);
-    b = bitrand();
-  }
-  Givaro::IntPrimeDom IPD;
-  Givaro::Integer tmp,p;
-  if (q==-1){
-    // Choose characteristic as a random prime of b bits
-    do{
-      Givaro::Integer _p;
-      Givaro::Integer::seeding(Givaro::Integer(mt_rand()));
-      Givaro::Integer::random_exact_2exp(_p,b);
-      IPD.prevprime( tmp, _p+1 );
-      p =  tmp;
-    }while( (p < 2) );
-  }
-  else p=q;
-
-  return new Field(p);
-}
-
-/*************************************************************************************************************/
 
 int main(int argc, char **argv) {
     using Field        = Modular<Integer>;

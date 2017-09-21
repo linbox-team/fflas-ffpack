@@ -41,6 +41,8 @@
 #include <givaro/zring.h>
 #include <givaro/modular.h>
 
+#include <random>
+#include <chrono>
 
 using namespace std;
 using namespace FFLAS;
@@ -119,8 +121,8 @@ bool run_with_field (Givaro::Integer q, size_t BS, size_t n, size_t iters, uint6
 	int nbit=(int)iters;
 
 	while (ok &&  nbit){
-		Field* F= FFPACK::chooseField<Field>(q,BS);
-		typename Field::RandIter G(*F,0,seed);
+		Field* F= FFPACK::chooseField<Field>(q,BS,seed);
+		typename Field::RandIter G(*F,0,seed++);
 		if (F==nullptr)
 			return true;
 
@@ -188,7 +190,7 @@ int main(int argc, char** argv)
 	int n=2578;
 	size_t iters=5;
 	bool loop=false;
-	uint64_t seed = time(NULL);
+	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },

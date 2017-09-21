@@ -42,6 +42,8 @@
 #include <givaro/modular.h>
 #include <givaro/modular-balanced.h>
 
+#include <chrono>
+#include <random>
 
 using namespace std;
 using namespace FFPACK;
@@ -145,8 +147,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t n, uint64_t a
 	while (ok &&  nbit){
 		//typedef typename Field::Element Element ;
 		// choose Field
-		Field* F= chooseField<Field>(q,b);
-		typename Field::RandIter G(*F,0,seed);
+		Field* F= chooseField<Field>(q,b,seed);
+		typename Field::RandIter G(*F,0,seed++);
 		if (F==nullptr)
 			return true;
 
@@ -187,7 +189,7 @@ int main(int argc, char** argv)
 	size_t a=1;
 	size_t iters=1;
 	bool loop=false;
-	uint64_t seed = time(NULL);
+	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },

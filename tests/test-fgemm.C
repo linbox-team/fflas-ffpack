@@ -55,6 +55,9 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
 
+#include <random>
+#include <chrono>
+
 using namespace std;
 using namespace FFPACK;
 
@@ -290,7 +293,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 	while (ok &&  nbit){
 		typedef typename Field::Element Element ;
 		// choose Field
-		Field* F= chooseField<Field>(q,b);
+		Field* F= chooseField<Field>(q,b,seed);
 		if (F==nullptr)
 			return true;
 
@@ -308,7 +311,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 		F->write(std::cerr) << std::endl;
 #endif
 		typedef typename Field::Element  Element ;
-		typename Field::RandIter R(*F,b,seed);
+		typename Field::RandIter R(*F,b,seed++);
 		typename Field::NonZeroRandIter NZR(R);
 
 			//size_t k = 0 ;
@@ -370,7 +373,7 @@ int main(int argc, char** argv)
 	std::cout<<setprecision(17);
 	std::cerr<<setprecision(17);
 
-	size_t seed=time(NULL);
+	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	size_t iters = 3 ;
 	Givaro::Integer q = -1 ;
 	uint64_t b = 0 ;
