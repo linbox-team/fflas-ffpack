@@ -83,9 +83,9 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
         }
 
 
-        std::cerr << chrono 
-                  << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*chrono.realtime())
-                  << std::endl;
+        // std::cerr << chrono
+        //           << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*chrono.realtime())
+        //           << std::endl;
 
 		time+=chrono;
 		FFLAS::fflas_delete(A);
