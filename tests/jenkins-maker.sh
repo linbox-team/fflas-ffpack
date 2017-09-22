@@ -71,7 +71,6 @@ if [ "$CXX" == "icpc" ]; then
 fi
 
 # Particular case for Fedora: g++-6 <- g++
-vm_name=`uname -n | cut -d"-" -f1`
 if [[ "$ARCH" == "linbox-fedora-amd64" &&  "$CXX" == "g++-6" ]]; then
     BLAS_LIBS="-L/usr/lib64/atlas -lsatlas"
     CXX="g++"
