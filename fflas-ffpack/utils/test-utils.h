@@ -44,6 +44,7 @@
 #include <givaro/givranditer.h>
 
 #include <random>
+#include <functional>
 
 namespace FFPACK {
 
