@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
     using FieldRec     = ZRing<FieldElement>;
     using SparseMatrix = FFLAS::Sparse<FieldRec, FFLAS::SparseMatrix_t::HYB_ZO>;
 
+    uint64_t seed = time(NULL);
     Integer q = -1;
     int b = 128;
     int blockSize = 1;
@@ -78,12 +79,13 @@ int main(int argc, char **argv) {
         { 'k', "-k K", "Set the size of the block (1 by default).",       TYPE_INT, &blockSize },
         { 'n', "-n N", "Set the size of the block (1 by default).",       TYPE_INT, &nIter },
         { 'f', "-f FILE", "Set matrix file.",                             TYPE_STR, &matrixFile },
-         END_OF_ARGUMENTS };
+	{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+     END_OF_ARGUMENTS };
 
     FFLAS::parseArguments(argc, argv, as);
 
     // Construct Givaro::Integer field
-    Field *F= chooseField<Field>(q,b);
+    Field *F= chooseField<Field>(q,b,seed);
     if (F==nullptr) exit(0);
     Integer p;
     F->cardinality(p);

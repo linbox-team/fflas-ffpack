@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
     using FieldMat     = ZRing<double>;
     using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double_extended>;
     using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::CSR>;
+    uint64_t seed = time(NULL);
 
     Integer q = -1;
     int b = 128;
@@ -112,12 +113,13 @@ int main(int argc, char **argv) {
         { 'k', "-k K", "Set the size of the block (1 by default).",       TYPE_INT, &blockSize },
         { 'n', "-n N", "Number of iterations (1 by default).",       TYPE_INT, &nIter },
         { 'f', "-f FILE", "Set matrix file.",                             TYPE_STR, &matrixFile },
-         END_OF_ARGUMENTS };
+	{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+     END_OF_ARGUMENTS };
 
     FFLAS::parseArguments(argc, argv, as);
 
     // Construct Givaro::Integer field
-    Field *F= chooseField<Field>(q,b);
+    Field *F= chooseField<Field>(q,b,seed);
     if (F==nullptr) exit(0);
     Integer p;
     F->cardinality(p);
