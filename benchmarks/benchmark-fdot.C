@@ -93,7 +93,7 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
 	}
 		// -----------
 		// Standard output for benchmark
-	std::cout << "Time: " << time 
+	std::cout << "Time: " << time.realtime()
 			  << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*time.realtime())* double(iter);
 
 // 	F.write(std::cerr, d) << std::endl;
