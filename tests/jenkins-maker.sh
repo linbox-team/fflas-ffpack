@@ -72,9 +72,11 @@ fi
 
 # Particular case for Fedora: g++-6 <- g++
 if [[ "$ARCH" == "linbox-fedora-amd64" &&  "$CXX" == "g++-6" ]]; then
-    BLAS_LIBS="-L/usr/lib64/atlas -lsatlas"
     CXX="g++"
     CC=gcc
+fi
+if [[ "$ARCH" == "linbox-fedora-amd64" ]]; then
+    BLAS_LIBS="-L/usr/lib64/atlas -lsatlas"
 fi
 if [ -z "$CC" ]; then
     if [[ $CXX == g++* ]]; then
