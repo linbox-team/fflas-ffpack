@@ -135,7 +135,7 @@ namespace FFLAS
 		
 	}
 	
-	
+/*
 	template<class Field, class AlgoT, class FieldTrait>
 	typename Field::Element_ptr
 	pfgemv(const Field& F,
@@ -147,18 +147,18 @@ namespace FFLAS
 		   const typename Field::ConstElement_ptr X, const size_t incX,
 		   const typename Field::Element beta,
 		   typename Field::Element_ptr Y, const size_t incY,
-		   size_t BS,
+		   size_t GS_Cache,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > & H){
 		
 		typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > MMH_t;
 		MMH_t HH(H);
 
-		//if m/BS>0 then split each line of the matrix into m/BS blocks
+		//if m/GS_Cache>0 then split each line of the matrix into m/GS_Cache blocks
 		size_t NbBlocs;
-		if(BS>0) NbBlocs = n/BS; 
+		if(GS_Cache>0) NbBlocs = n/GS_Cache; 
 		//else split the matrix into m/(H.parseq.numthreads()) line-wise blocks
 		else  NbBlocs = n/(H.parseq.numthreads());
-		//Put each block for one thread
+		//distribute each block into one thread
 		if(NbBlocs>0){
 
 			PAR_BLOCK{
@@ -170,21 +170,21 @@ namespace FFLAS
 						using FFLAS::StrategyParameter::Grain;		
 						
 						//for(size_t iter=0;iter<NbBlocs;iter++)
-						FORBLOCK1D(iter, NbBlocs,	SPLITTER(BS,Row,Grain), 			
+						FORBLOCK1D(iter, NbBlocs,	SPLITTER(GS_Cache,Row,Grain), 			
 								   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
 										{
-											fgemv( F, ta, 1, BS, alpha, (A+j) + iter.blockindex()*BS, BS, X+ iter.blockindex()*BS, incX, beta, Y+j, incY);
-											fadd (F, 1, BS, Y+j, incY, Y+j, incY, Y+j, incY);
+											fgemv( F, ta, 1, GS_Cache, alpha, (A+j) + iter.blockindex()*GS_Cache, GS_Cache, X+ iter.blockindex()*GS_Cache, incX, beta, Y+j, incY);
+											fadd (F, 1, GS_Cache, Y+j, incY, Y+j, incY, Y+j, incY);
 										}
 										)
 								   );
 						if(n - NbBlocs*n>0){
 								   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
 										{
-											fgemv( F, ta, 1, BS, alpha, (A+j) + (n - NbBlocs), (n - NbBlocs), X+ (n - NbBlocs), incX, beta, Y+j, incY);
-											fadd (F, 1, BS, Y+j, incY, Y+j, incY, Y+j, incY);
+											fgemv( F, ta, 1, GS_Cache, alpha, (A+j) + (n - NbBlocs), (n - NbBlocs), X+ (n - NbBlocs), incX, beta, Y+j, incY);
+											fadd (F, 1, GS_Cache, Y+j, incY, Y+j, incY, Y+j, incY);
 										}
-										)
+
 								   );
 						}
 					}
@@ -199,7 +199,7 @@ namespace FFLAS
 					using FFLAS::CuttingStrategy::Row;
 					using FFLAS::StrategyParameter::Grain;				
 					
-					FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Grain),			
+					FORBLOCK1D(iter, Niter,	SPLITTER(GS_Cache,Row,Grain),			
 							   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
 									{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
 									)
@@ -213,9 +213,9 @@ namespace FFLAS
 					using FFLAS::CuttingStrategy::Row;
 					using FFLAS::StrategyParameter::Grain;				
 					
-					FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Grain), 			
+					FORBLOCK1D(iter, Niter,	SPLITTER(GS_Cache,Row,Grain), 			
 							   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
-									{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*BS*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
+									{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*GS_Cache*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);}
 									)
 							   );
 				}
@@ -226,6 +226,58 @@ namespace FFLAS
 		return Y;		
 		
 	}
-	
+*/
+	template<class Field, class AlgoT, class FieldTrait>
+	typename Field::Element_ptr
+	pfgemv(const Field& F,
+		   const FFLAS_TRANSPOSE ta,
+		   const size_t m,
+		   const size_t n,
+		   const typename Field::Element alpha,
+		   const typename Field::ConstElement_ptr A, const size_t lda,
+		   const typename Field::ConstElement_ptr X, const size_t incX,
+		   const typename Field::Element beta,
+		   typename Field::Element_ptr Y, const size_t incY,
+		   size_t GS_Cache,
+		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > & H){
+		
+		typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > MMH_t;
+		MMH_t HH(H);
+
+		size_t N = min(m,n);
+		const int TILE = min(min(m,GS_Cache), min(n,GS_Cache) ); 
+		//Compute tiles in each dimension
+		const int nEven = N - N%TILE;
+		//const int wTiles = nEven/TILE;
+
+		PAR_BLOCK{
+
+			//Main body of the matrix
+			/*
+			Potential loop coalescing to improve data locality
+			Then possible to put into FORBLOCK1D(divide the taks as even as possible)
+			*/
+			for(int ii=TILE; ii<nEven; ii+=TILE){
+				for(int jj=TILE; jj<nEven; jj+=TILE){
+					fgemv( F, ta, TILE, TILE, alpha, A+ii*TILE+jj, TILE, X+ii*TILE, incX, beta, Y+ii*TILE, incY);
+				}
+			}
+
+			if(N-nEven>0){
+					//The bottom rows of the matrix
+					fgemv( F, ta, N-nEven, n, alpha, A+(N-nEven), N-nEven, X, incX, beta, Y+(N-nEven), incY);
+
+					//The right columns of the matrix
+					fgemv( F, ta, m, N-nEven, alpha, A, m, X, incX, beta, Y, incY);
+
+					}
+		
+					//The bottom right corner of the matrix
+					fgemv( F, ta, N-nEven, N-nEven, alpha, A+nEven*lda+(N-nEven), N-nEven, X+N-nEven, incX, beta, Y+N-nEven, incY);
+		}
+		return Y;		
+		
+	}	
 	
 } // FFLAS
+
