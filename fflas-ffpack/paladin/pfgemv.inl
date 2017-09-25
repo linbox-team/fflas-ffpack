@@ -41,8 +41,16 @@ namespace FFLAS
 		   const typename Field::Element beta,
 		   typename Field::Element_ptr Y, const size_t incY, 
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > & H){
-		
+
+
 		if (m<2){
+/*
+SYNCH_GROUP(
+FFLAS::WriteMatrix (std::cout << "A:in ="<< std::endl, F, m, n, A, lda) << std::endl;
+FFLAS::WriteMatrix (std::cout << "X:in ="<< std::endl, F, n, incX, X, incX) << std::endl;
+WAIT;
+);
+*/
 			/*
 			  PAR_BLOCK{
 			  SYNCH_GROUP(
@@ -52,38 +60,49 @@ namespace FFLAS
 							);
 							}
 			*/
-			FFLAS::fdot (F, lda, A, incX, X, incX); //Here A represents a line of the original matrix with lda elements 
-		}else{			
+			fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);
+	 
+	//FFLAS::WriteMatrix (std::cout << "Y:out ="<< std::endl, F, incY, incY, Y, incX) << std::endl;
+		}else{
 			typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > MMH_t;
 			MMH_t H1(H);
 			MMH_t H2(H);
-			size_t M2= m>>1;
+			size_t M2 = m>>1;
 			PAR_BLOCK{
+SYNCH_GROUP(
+				if(H1.parseq.numthreads()>1){
+					H1.parseq.set_numthreads(H.parseq.numthreads() >> 1);
+					H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
+				}else{
+					H1.parseq.set_numthreads(H.parseq.numthreads());
+					H2.parseq.set_numthreads(H.parseq.numthreads());	
+				}
 				
-				H1.parseq.set_numthreads(H1.parseq.numthreads() >> 1);
-				H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
-				
-				typename Field::ConstElement_ptr A1= A;
-				typename Field::ConstElement_ptr A2= A+(M2+1)*lda;
-				typename Field::Element_ptr C1= Y;
-				typename Field::Element_ptr C2= Y+(M2+1)*incY;
-				
-				// 2 multiply (1 split on dimension m)						
-				TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(C1)),
+				typename Field::ConstElement_ptr A1 = A;
+				typename Field::ConstElement_ptr A2 = A + M2*lda;
+				typename Field::Element_ptr C1 = Y;
+				typename Field::Element_ptr C2 = Y + M2;
+//FFLAS::WriteMatrix (std::cout << "A1:in ="<< std::endl, F, M2, n, A1, incX) << std::endl;	
+				// 2 multiply (1 split on dimension m)	
+	//std::cout<<"m1: "<<M2<<std::endl;
+				TASK(CONSTREFERENCE(F,H1) MODE( READ(A1,X) READWRITE(C1)),
 					 {pfgemv( F, ta,  M2, n, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
 					 );
-				
-				TASK(MODE(CONSTREFERENCE(F) READ(A2,X) READWRITE(C2)),
+//WAIT;
+	//std::cout<<"m2: "<<m-M2<<std::endl;
+//FFLAS::WriteMatrix (std::cout << "A2:in ="<< std::endl, F, m-M2, n, A2, incX) << std::endl;	
+				TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,X) READWRITE(C2)),
 					 {pfgemv(F, ta, m-M2, n, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
 					 );
 			}
-			
+//WAIT;
+);
 		}
 		return Y;		
 		
 	}
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	template<class Field, class AlgoT, class FieldTrait>
 	typename Field::Element_ptr
 	pfgemv(const Field& F,
@@ -102,35 +121,69 @@ namespace FFLAS
 		size_t BS;
 		if(BS<H.parseq.numthreads()||BS==0) BS = m/(H.parseq.numthreads());
 		size_t Niter = std::max(m, H.parseq.numthreads());
+//std::cout<<" H.parseq.numthreads(): "<< H.parseq.numthreads()<<std::endl;
 		if(m<Niter){
+
+SYNCH_GROUP(
+
 			PAR_BLOCK{
 				
 				HH.parseq.set_numthreads(H.parseq.numthreads());
 				using FFLAS::CuttingStrategy::Row;
 				using FFLAS::StrategyParameter::Threads;				
 				
-				FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Threads),  
+				FORBLOCK1D(iter, m,	SPLITTER(BS,Row,Threads),  
 						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(YY)),
-								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);} )
-						   );
+								{
+fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y+ iter.blockindex(), incY);
+								} 
+							)
+				);
 			}
+);
 			
 		}else{
+
+
+				if(H.parseq.numthreads()>1){
 			PAR_BLOCK{
-				
+
 				HH.parseq.set_numthreads(H.parseq.numthreads());
 				using FFLAS::CuttingStrategy::Row;
 				using FFLAS::StrategyParameter::Threads;				
 				
-				FORBLOCK1D(iter, Niter,	SPLITTER(BS,Row,Threads), 		
-						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(YY)),
-								{fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*(H.parseq.numthreads()-iter.blockindex())*lda, lda, X, incX, beta, Y, incY);}
+				FORBLOCK1D(iter, m,	SPLITTER(BS,Row,Threads), 		
+						   TASK(CONSTREFERENCE(F,H) MODE( READ(A1,X) READWRITE(YY)),
+								{
+//FFLAS::WriteMatrix (std::cout << "A1:in ="<< std::endl, F, 1, n, A + iter.blockindex()*(H.parseq.numthreads()-iter.blockindex())*lda, lda) << std::endl;	
+fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*(H.parseq.numthreads()-iter.blockindex())*lda, lda, X, incX, beta, Y+ iter.blockindex()*(H.parseq.numthreads()-iter.blockindex())*incY, incY);
+}
 								)
 						   
 						   );
 			}
+				}else{
+			PAR_BLOCK{
+
+				HH.parseq.set_numthreads(H.parseq.numthreads());
+				using FFLAS::CuttingStrategy::Row;
+				using FFLAS::StrategyParameter::Threads;				
+				
+				FORBLOCK1D(iter, m,	SPLITTER(BS,Row,Threads), 		
+						   TASK(CONSTREFERENCE(F,H) MODE( READ(A1,X) READWRITE(YY)),
+								{
+//FFLAS::WriteMatrix (std::cout << "A1:in ="<< std::endl, F, 1, n, A + iter.blockindex()*lda, lda) << std::endl;WAIT;
+fgemv( F, ta, 1, n, alpha, A + iter.blockindex()*lda, lda, X, incX, beta, Y + + iter.blockindex()*incY, incY);
+}
+								)
+						   
+						   );
+			}
+				}
+
 		}
-		
+
+
 		return Y;		
 		
 	}
