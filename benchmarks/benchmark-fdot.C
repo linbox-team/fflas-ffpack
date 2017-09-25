@@ -125,10 +125,10 @@ int main(int argc, char** argv) {
     if (q > 0){
         BS = Givaro::Integer(q).bitsize();
         double d = run_with_field<Givaro::ModularBalanced<double> >(q, iter, N, BS, p, threads);
-        std::cout << ", d: " << d;
+        std::cout << " d: " << d;
     } else {
         auto d = run_with_field<Givaro::ZRing<Givaro::Integer> > (q, iter, N, BS, p, threads);
-        std::cout << ", size: " << logtwo(d>0?d:-d);
+        std::cout << " size: " << logtwo(d>0?d:-d);
     }
 
     FFLAS::writeCommandString(std::cerr, as) << std::endl;
