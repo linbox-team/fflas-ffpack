@@ -47,6 +47,12 @@ fi
 # Keep default for local installation.
 PREFIX_INSTALL="$LOCAL_DIR/$CXX/$SSE"
 
+# Add specific locations (if needed)
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib":"$PREFIX_INSTALL"/lib
+echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/$SSE/lib/pkgconfig"
+echo "PKG_CONFIG_PATH = ${PKG_CONFIG_PATH}"
+
 #================#
 # Setup Variables#
 #================#
@@ -77,11 +83,6 @@ if [ -z "$CC" ]; then
     fi
 fi 
 
-# Add specific locations (if needed)
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib":"$PREFIX_INSTALL"/lib
-echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
-export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/$SSE/lib/pkgconfig"
-echo "PKG_CONFIG_PATH = ${PKG_CONFIG_PATH}"
 # /!\ Warning /!\ This could be an issue if you changed
 # the local installation directory
 rm -rf "$PREFIX_INSTALL"/bin/fflas-ffpack* "$PREFIX_INSTALL"/include/fflas-ffpack*
