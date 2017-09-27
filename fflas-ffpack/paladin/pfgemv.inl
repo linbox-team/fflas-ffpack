@@ -123,27 +123,34 @@ namespace FFLAS
 	
 	
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class Field>
+	template<class Field>
 	void partfgemv(const Field& F,
-		   const FFLAS_TRANSPOSE ta,
-		   const size_t m,
-		   const size_t n,
-		   const typename Field::Element alpha,
-		   const typename Field::ConstElement_ptr A, const size_t lda,
-		   const typename Field::ConstElement_ptr X, const size_t incX,
-		   const typename Field::Element beta,
-		   typename Field::Element_ptr Y, const size_t incY){
-
-		typename Field::Element_ptr tmp  = FFLAS::fflas_new(F, n, incY);
-		fassign (F, n, incY, Y, incY, tmp, incY);
+				   const FFLAS_TRANSPOSE ta,
+				   const size_t m,
+				   const size_t n,
+				   const typename Field::Element alpha,
+				   const typename Field::ConstElement_ptr A, const size_t lda,
+				   const typename Field::ConstElement_ptr X, const size_t incX,
+				   const typename Field::Element beta,
+				   typename Field::Element_ptr Y, const size_t incY){
+		FFLAS::WriteMatrix (std::cout << "A::in ="<< std::endl, F, m, n, A, lda) << std::endl;	
+		FFLAS::WriteMatrix (std::cout << "X::in ="<< std::endl, F, n, incX, X, incX) << std::endl;	
+		FFLAS::WriteMatrix (std::cout << "Y::in ="<< std::endl, F, m, incY, Y, incY) << std::endl;	
+		typename Field::Element_ptr tmp  = FFLAS::fflas_new(F, m, incY);
+		fassign (F, m, incY, Y, incY, tmp, incY);
+		FFLAS::WriteMatrix (std::cout << "tmp ="<< std::endl, F, m, incY, tmp, incY) << std::endl;
 		fgemv( F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY);
-		fadd (F, n, incY, tmp, incY, alpha, Y, incY, Y, incY);
-
+		//fadd (F, n, incY, tmp, incY, alpha, Y, incY, Y, incY);---Pb
+		FFLAS::WriteMatrix (std::cout << "Y::before out ="<< std::endl, F, m, incY, Y, incY) << std::endl;
+		for(size_t iter=0; iter<m; iter++){
+			fadd (F, 1, Y+iter, incY, tmp+iter, incY, Y+iter, incY);
+		}
+		FFLAS::WriteMatrix (std::cout << "Y::out ="<< std::endl, F, m, incY, Y, incY) << std::endl;	
 		return;
-}
-
-
-
+	}
+	
+	
+	
 	template<class Field, class AlgoT, class FieldTrait>
 	typename Field::Element_ptr
 	pfgemv(const Field& F,
@@ -160,12 +167,12 @@ template<class Field>
 		
 		
 		/*
-		FFLAS::WriteMatrix (std::cout << "A:in ="<< std::endl, F, m, n, A, lda) << std::endl;
-		FFLAS::WriteMatrix (std::cout << "X:in ="<< std::endl, F, m, 1, X, incX) << std::endl;
-		FFLAS::WriteMatrix (std::cout << "Y:in ="<< std::endl, F, m, 1, Y, incY) << std::endl;
+		  FFLAS::WriteMatrix (std::cout << "A:in ="<< std::endl, F, m, n, A, lda) << std::endl;
+		  FFLAS::WriteMatrix (std::cout << "X:in ="<< std::endl, F, m, 1, X, incX) << std::endl;
+		  FFLAS::WriteMatrix (std::cout << "Y:in ="<< std::endl, F, m, 1, Y, incY) << std::endl;
 		*/
-
-
+		
+		
 		typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > MMH_t;
 		MMH_t HH(H);
 
@@ -173,36 +180,61 @@ template<class Field>
 		const int TILE = min(min(m,GS_Cache), min(n,GS_Cache) ); 
 		//Compute tiles in each dimension
 		const int nEven = N - N%TILE;
-		const int wTiles = nEven/TILE;
+		//const int wTiles = nEven/TILE;
 		
-		
-		
-		
-		
+				
 		SYNCH_GROUP(		
 					PAR_BLOCK{
 						std::cout<<" H.parseq.numthreads(): "<< H.parseq.numthreads()<<std::endl;
-						//Main body of the matrix
 						
+						//Main body of the matrix
+						std::cout<<"nEven= "<<nEven<<std::endl;
 						for(int ii=0; ii<nEven; ii+=TILE){
-							for(int jj=0; jj<ii; jj+=TILE){
-								for(int j=jj; j<jj+TILE; j++){
-									for(int i=ii; i<ii+TILE; i++){
-										/*
-										FFLAS::WriteMatrix (std::cout << "A1:in ="<< std::endl, F, TILE, TILE, A+i*lda+j, lda) << std::endl;	
-										FFLAS::WriteMatrix (std::cout << "X1:in ="<< std::endl, F, TILE, 1, X+j, incX) << std::endl;
-										FFLAS::WriteMatrix (std::cout << "Y1:in ="<< std::endl, F, TILE, 1, Y+j, incY) << std::endl;
-										//fgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+ii*TILE, incX, beta, Y+jj, incY);
- //partfgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+ii*TILE, incX, beta, Y+jj, incY);
-										FFLAS::WriteMatrix (std::cout << "Y1:out ="<< std::endl, F, TILE, 1, Y+j, incY) << std::endl;
-										FFLAS::WriteMatrix (std::cout << "Y2:out ="<< std::endl, F, TILE, 1, Y+j, incY) << std::endl;
-										*/
-									}
-								}  
+						
+							for(int jj=0; jj<nEven; jj+=TILE){
+								
+								//	FFLAS::WriteMatrix (std::cout << "A1:in ="<< std::endl, F, TILE, TILE, A+ii*lda+jj, lda) << std::endl;	WAIT;
+								//FFLAS::WriteMatrix (std::cout << "X1:in ="<< std::endl, F, TILE, 1, X+jj, incX) << std::endl; WAIT;
+								//FFLAS::WriteMatrix (std::cout << "Y1:in ="<< std::endl, F, TILE, 1, Y+jj, incY) << std::endl; WAIT;
+								//fgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+ii*TILE, incX, beta, Y+jj, incY);
+								//std::cout<<"ii= "<<ii<<" "<<"jj ="<<jj<<std::endl;
+								//std::cout<<"TILE= "<<TILE<<std::endl;
+								if(jj==0) fgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+jj, incX, beta, Y+ii, incY);
+								else
+									partfgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+jj, incX, beta, Y+ii, incY);
+								
+								//FFLAS::WriteMatrix (std::cout << "Y1:out ="<< std::endl, F, TILE, 1, Y+j, incY) << std::endl;
+								//FFLAS::WriteMatrix (std::cout << "Y2:out ="<< std::endl, F, TILE, 1, Y+j, incY) << std::endl;
+								
 							}
 						}  
+						/*					
+						//Bottom right corner of the matrix
+						FFLAS::WriteMatrix (std::cout << "bottom right corner A1:in ="<< std::endl, F, m-nEven, n-nEven, A+nEven*lda+nEven, lda) << std::endl;	WAIT;
+						*/
 						
-					}   ); //SYNCH_GROUP
+						//Right columns in the peel zone around the perimeter of the matrix
+						if( n-nEven>0){
+		  FFLAS::WriteMatrix (std::cout << "A:in ="<< std::endl, F, m, n, A, lda) << std::endl;
+		  FFLAS::WriteMatrix (std::cout << "X:in ="<< std::endl, F, m, 1, X, incX) << std::endl;
+		  FFLAS::WriteMatrix (std::cout << "Y:in ="<< std::endl, F, m, 1, Y, incY) << std::endl;
+						FFLAS::WriteMatrix (std::cout << "Right columns in the peel zone around the perimeter of the matrix A1:in ="<< std::endl, F, nEven, n-nEven, A+nEven, lda) << std::endl;	WAIT;
+						for(int jj=0; jj<nEven; jj+=TILE){
+							partfgemv( F, ta, TILE, n-nEven, alpha, A+nEven+jj*lda, lda, X+nEven, incX, beta, Y+jj, incY);
+						}
+						//partfgemv(F, ta, nEven, n-nEven, alpha, A+nEven, lda, X, incX, beta, Y+nEven, incY);
+						}
+
+
+						
+						//Bottom rows in the peel zone around the perimeter of the matrix
+						if( m-nEven>0){
+						FFLAS::WriteMatrix (std::cout << "Bottom rows in the peel zone around the perimeter of the matrix A1:in ="<< std::endl, F, m-nEven, nEven, A+nEven*lda, lda) << std::endl;	WAIT;
+						fgemv( F, ta, m-nEven, n, alpha, A+nEven*lda, lda, X, incX, beta, Y+nEven, incY);
+						}
+						
+					}   
+							); //SYNCH_GROUP
 		
 		return Y;		
 		
