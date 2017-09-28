@@ -42,7 +42,7 @@ namespace FFLAS
 		   typename Field::Element_ptr Y, const size_t incY, 
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > & H){
 		
-		if (H.parseq.numthreads()<2){
+		if (H.parseq.numthreads()>=m){
 			fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);
 			
 		}else{
