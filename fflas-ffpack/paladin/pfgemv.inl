@@ -41,7 +41,7 @@ namespace FFLAS
 		   const typename Field::Element beta,
 		   typename Field::Element_ptr Y, const size_t incY, 
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > & H){
-				
+		
 		if (H.parseq.numthreads()<2){
 			fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);
 			
@@ -139,9 +139,8 @@ namespace FFLAS
 
 		fgemv( F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY);
 
-		for(size_t iter=0; iter<m; iter++){
-			fadd (F, 1, Y+iter, incY, tmp+iter, incY, Y+iter, incY);
-		}
+		fadd (F, m, Y, incY, tmp, incY, Y, incY);
+
 
 		return;
 	}
@@ -178,55 +177,51 @@ namespace FFLAS
 						
 						//Main body of the matrix
 						for(int ii=0; ii<nEven; ii+=TILE){
+							
+							fgemv( F, ta, TILE, TILE, alpha, A+ii*lda, lda, X, incX, beta, Y+ii, incY);
+							
+						}  
 						
-							for(int jj=0; jj<nEven; jj+=TILE){
-
-								if(jj==0){
-									fgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+jj, incX, beta, Y+ii, incY);
-								}else{
-									partfgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+jj, incX, beta, Y+ii, incY);
-								}
+						for(int ii=0; ii<nEven; ii+=TILE){
+							
+							for(int jj=TILE; jj<nEven; jj+=TILE){
+								
+								partfgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+jj, incX, beta, Y+ii, incY);
+								
 								
 							}
 						}  
-											
-
+						
+						
 						//Right columns in the peel zone around the perimeter of the matrix
-						if( n-nEven>0){
-							for(int jj=0; jj<nEven; jj+=TILE){
-								partfgemv( F, ta, TILE, n-nEven, alpha, A+nEven+jj*lda, lda, X+nEven, incX, beta, Y+jj, incY);
-							}
-
+						for(int jj=0; jj<nEven; jj+=TILE){
+							partfgemv( F, ta, TILE, n-nEven, alpha, A+nEven+jj*lda, lda, X+nEven, incX, beta, Y+jj, incY);
 						}
 						
 						
-
+						
 						//Bottom rows in the peel zone around the perimeter of the matrix
 						if( m-nEven>0){
-
-							for(int jj=0; jj<nEven; jj+=TILE){
-
-if(jj==0){
-fgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda+jj, lda, X+jj, incX, beta, Y+nEven, incY);
-}else{
+							fgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda, lda, X, incX, beta, Y+nEven, incY);
+							for(int jj=TILE; jj<nEven; jj+=TILE){
+								
 								partfgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda+jj, lda, X+jj, incX, beta, Y+nEven, incY);
-}
-
-WAIT;
+								
 							}
-
-
-						//Bottom right corner of the matrix
-if( n-nEven>0&&m-nEven>0){
-
-partfgemv( F, ta, m-nEven, n-nEven, alpha, A+nEven*lda+nEven, lda, X+nEven, incX, beta, Y+nEven, incY);
-
-				}
-
+							
 						}
 						
+						//Bottom right corner of the matrix
+						if( n-nEven>0&&m-nEven>0){
+							
+							partfgemv( F, ta, m-nEven, n-nEven, alpha, A+nEven*lda+nEven, lda, X+nEven, incX, beta, Y+nEven, incY);
+							
+						}
+						
+						
+						
 					}   //PAR_BLOCK
-							); //SYNCH_GROUP
+						); //SYNCH_GROUP
 		
 		return Y;		
 		
