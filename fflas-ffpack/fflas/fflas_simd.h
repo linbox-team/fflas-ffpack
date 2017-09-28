@@ -133,7 +133,7 @@ namespace std {
 namespace FFLAS {
 	template <class T> struct support_simd : public std::false_type {};
 
-#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONSUSE_SIMD)
+#if defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 	template <> struct support_simd<float> : public std::true_type {};
 	template <> struct support_simd<double> : public std::true_type {};
 #ifdef SIMD_INT
