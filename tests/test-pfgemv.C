@@ -85,11 +85,15 @@ bool check_solve(const Field &F, size_t m, RandIter& Rand){
   RandomMatrix (F, m, incY, Y2, incY);
 
   FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
+  
+
+
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
+	bool ok = true;
+
 	t.clear();
 	t.start();
-bool ok = true;
  {
     MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::Threads> >  H;
     FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
@@ -119,15 +123,14 @@ bool ok = true;
 	ok=false;
   }
 
-
-
-  for(size_t GS=2; GS<21; GS++){
+if(m>2){
+  for(size_t GS=2; GS<m; GS++){
  	time=0.0;
 	t.clear();
 	t.start();
   {
     MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, 						 					ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain> >  H;
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, GS, H);
+    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, GS, H); 
   }
  //FFLAS::WriteMatrix (std::cout << "A:"<< std::endl, F, m, m, A, lda) << std::endl;
    // FFLAS::WriteMatrix (std::cout << "X:"<< std::endl, F, m, incX, X, incX) << std::endl;
@@ -137,9 +140,32 @@ bool ok = true;
     cout << "PASSED ("<<time<<")"<<endl;   
   } else{
 	ok=false;
-	break;
+	//cout << "failed	with GS = "<<GS<<endl;
+	//break;
   }
+ }
+}else{
+	size_t GS=2;
+ 	time=0.0;
+	t.clear();
+	t.start();
+  {
+    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, 						 					ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain> >  H;
+    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, GS, H); 
   }
+	t.stop();
+	time+=t.usertime();
+  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){    
+    cout << "PASSED ("<<time<<")"<<endl;   
+  } else{
+	ok=false;
+	//cout << "failed	with GS = "<<GS<<endl;
+  }
+}
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(X);
+	FFLAS::fflas_delete(Y);
+	FFLAS::fflas_delete(Y2);
 
 
 	return ok;
@@ -181,9 +207,9 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	size_t m=300;
+	size_t m=256;
 
-	size_t iters=30;
+	size_t iters=20;
 	bool loop=false;
 	uint64_t seed = time(NULL);
 	Argument as[] = {
