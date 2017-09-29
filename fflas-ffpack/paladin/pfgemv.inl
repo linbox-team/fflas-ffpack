@@ -122,7 +122,7 @@ namespace FFLAS
 	}
 	
 	
-//////////////////////////////////////Cache-friendly  with blocking///////////////////////////////////////////
+//////////////////////////////////////Possible Cache-friendly with blocking///////////////////////////////////////////
 	template<class Field>
 	void partfgemv(const Field& F,
 				   const FFLAS_TRANSPOSE ta,
@@ -133,19 +133,25 @@ namespace FFLAS
 				   const typename Field::ConstElement_ptr X, const size_t incX,
 				   const typename Field::Element beta,
 				   typename Field::Element_ptr Y, const size_t incY){
+		/*FFLAS::WriteMatrix (std::cout << "A::in ="<< std::endl, F, m, n, A, lda) << std::endl;	
+		FFLAS::WriteMatrix (std::cout << "X::in ="<< std::endl, F, n, incX, X, incX) << std::endl;	
+		FFLAS::WriteMatrix (std::cout << "Y::in ="<< std::endl, F, m, incY, Y, incY) << std::endl;*/
+
 
 		typename Field::Element_ptr tmp  = FFLAS::fflas_new(F, m, incY);
 		fassign (F, m, incY, Y, incY, tmp, incY);
 
-		fgemv( F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY);
+		fgemv( F, ta, m, n, alpha, A, lda, X, incX, beta, Y, incY); WAIT;
 
 		fadd (F, m, Y, incY, tmp, incY, Y, incY);
-
-
+		FFLAS::fflas_delete(tmp);
+		//FFLAS::WriteMatrix (std::cout << "Y::out ="<< std::endl, F, m, incY, Y, incY) << std::endl;
 		return;
 	}
 	
-	
+
+
+
 	
 	template<class Field, class AlgoT, class FieldTrait>
 	typename Field::Element_ptr
@@ -160,7 +166,7 @@ namespace FFLAS
 		   typename Field::Element_ptr Y, const size_t incY,
 		   size_t GS_Cache,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > & H){
-		
+
 		
 		typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > MMH_t;
 		MMH_t HH(H);
@@ -170,52 +176,106 @@ namespace FFLAS
 		//Compute tiles in each dimension
 		const int nEven = N - N%TILE;
 
-		
+		/*FFLAS::WriteMatrix (std::cout << "A:in ="<< std::endl, F, m, n, A, lda) << std::endl;	
+		FFLAS::WriteMatrix (std::cout << "X:in ="<< std::endl, F, n, incX, X, incX) << std::endl;	
+		FFLAS::WriteMatrix (std::cout << "Y:in ="<< std::endl, F, m, incY, Y, incY) << std::endl;	*/		
 				
 		SYNCH_GROUP(	
 					PAR_BLOCK{ 	//omp_set_num_threads(4);
-						
+				using FFLAS::CuttingStrategy::Row;
+				using FFLAS::StrategyParameter::Grain;				
+				typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> > MMH_t;
+				MMH_t HH(H);
+				HH.parseq.set_numthreads(H.parseq.numthreads());
+				ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Grain> pH;
 						//Main body of the matrix
-						for(int ii=0; ii<nEven; ii+=TILE){
+
+						/*for(int ii=0; ii<nEven; ii+=TILE){
 							
-							fgemv( F, ta, TILE, TILE, alpha, A+ii*lda, lda, X, incX, beta, Y+ii, incY);
+							fgemv( F, ta, TILE, TILE, alpha, A+ii*lda, lda, X, incX, beta, Y+ii, incY);WAIT;
 							
-						}  
-						
-						for(int ii=0; ii<nEven; ii+=TILE){
+						}*/
+
+				FOR1D(ii, nEven/TILE, pH,  
+
+								{
+									fgemv( F, ta, TILE, TILE, alpha, A+TILE*ii*lda, lda, X, incX, beta, Y+ii*TILE, incY);
+								} 
+
+						   );
+
+/********************************************************************************
+Maybe use FOR2D so that:
+(1)taking ii from 0 to N/TILE then replace all ii index by ii*TILE -->DONE
+(2)taking jj from 1 to N/TILE then replace all jj index by jj*TILE  ??????
+*********************************************************************************/
+FOR1D(ii, nEven/TILE, pH, 
+						//for(int ii=0; ii<nEven; ii+=TILE)
+						{
 							
 							for(int jj=TILE; jj<nEven; jj+=TILE){
 								
-								partfgemv( F, ta, TILE, TILE, alpha, A+ii*lda+jj, lda, X+jj, incX, beta, Y+ii, incY);
-								
+								//partfgemv( F, ta, TILE, TILE, alpha, A+lda*ii+jj, lda, X+jj, incX, beta, Y+ii, incY);	WAIT;
+partfgemv( F, ta, TILE, TILE, alpha, A+lda*(ii*TILE)+jj, lda, X+jj, incX, beta, Y+(ii*TILE), incY);						
 								
 							}
 						}  
-						
+);		
 						
 						//Right columns in the peel zone around the perimeter of the matrix
-						for(int jj=0; jj<nEven; jj+=TILE){
-							partfgemv( F, ta, TILE, n-nEven, alpha, A+nEven+jj*lda, lda, X+nEven, incX, beta, Y+jj, incY);
-						}
-						
-						
+
+						/*for(int jj=0; jj<nEven; jj+=TILE){
+							partfgemv( F, ta, TILE, n-nEven, alpha, A+nEven+jj*lda, lda, X+nEven, incX, beta, Y+jj, incY); WAIT;
+						}*/
+
+
+
+				FOR1D(jj, nEven/TILE, pH,  
+
+								{
+									partfgemv( F, ta, TILE, n-nEven, alpha, A+nEven+jj*TILE*lda, lda, X+nEven, incX, beta, Y+jj*TILE, incY);
+								} 
+
+						   );
+
+				
 						
 						//Bottom rows in the peel zone around the perimeter of the matrix
 						if( m-nEven>0){
-							fgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda, lda, X, incX, beta, Y+nEven, incY);
+							fgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda, lda, X, incX, beta, Y+nEven, incY);WAIT;
+/*****************************************************************************************
+Possible to use FOR1D taking jj from 0 to N/TILE then replace all jj index by jj*TILE ???
+******************************************************************************************/
 							for(int jj=TILE; jj<nEven; jj+=TILE){
-								
-								partfgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda+jj, lda, X+jj, incX, beta, Y+nEven, incY);
+				
+								partfgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda+jj, lda, X+jj, incX, beta, Y+nEven, incY); WAIT;
 								
 							}
+	
+				/*FOR1D(jj,  nEven/TILE-1, pH,  
+
+								{
+
+									//std::cout<<"jj="<<jj<<std::endl;WAIT;
+                                    //std::cout<<"jj*TILE="<<jj*TILE<<std::endl;WAIT;
+//std::cout<<"=====================1==================="<<std::endl;WAIT;
+									//if(0!=jj)partfgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda+(jj)*TILE, lda, X+(jj)*TILE, incX, beta, Y+nEven, incY);WAIT;
+partfgemv( F, ta, m-nEven, TILE, alpha, A+nEven*lda+(jj+1)*TILE, lda, X+(jj+1)*TILE, incX, beta, Y+nEven, incY);WAIT;
+//std::cout<<"====================2===================="<<std::endl;WAIT;
+
+								} 
+
+						   );*/
+
+
 							
 						}
 						
 						//Bottom right corner of the matrix
 						if( n-nEven>0&&m-nEven>0){
 							
-							partfgemv( F, ta, m-nEven, n-nEven, alpha, A+nEven*lda+nEven, lda, X+nEven, incX, beta, Y+nEven, incY);
-							
+							partfgemv( F, ta, m-nEven, n-nEven, alpha, A+nEven*lda+nEven, lda, X+nEven, incX, beta, Y+nEven, incY);WAIT;
+
 						}
 						
 						
