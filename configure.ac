@@ -71,9 +71,6 @@ else
    AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])
 fi
 
-AC_SUBST([DEFAULT_CFLAGS])
-AC_SUBST([DEBUG_CFLAGS])
-AC_SUBST([TESTS_CFLAGS])
 
 DEBUG_CFLAGS="-g"
 DEFAULT_CFLAGS=""
@@ -149,8 +146,7 @@ fi
 
 
 DEFAULT_CFLAGS="${DEFAULT_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
-TESTS_CFLAGS="${TESTS_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
-
+AC_SUBST([DEFAULT_CFLAGS])
 
 AC_HEADER_STDC
 AC_PROG_LIBTOOL
@@ -161,22 +157,25 @@ LT_PREREQ([2.4.2])
 LT_INIT
 
 
+echo "DEFAULT_CFLAGS=${DEFAULT_CFLAGS}"
+echo "DEBUG_CFLAGS=${DEBIG_CFLAGS}"
+echo "TESTS_CFLAGS=${TESTS_CFLAGS}"
 echo "-----------------------------------------------"
 echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
 FF_CHECK_OMP
 dnl check which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
-dnl CUSTOM_SIMD="no"
-dnl FF_CHECK_SIMD
+CUSTOM_SIMD="no"
+FF_CHECK_SIMD
 dnl FF_CHECK_SSE
 dnl FF_CHECK_AVX
 dnl arch=`echo $target | cut -d"-" -f1`
-dnl if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
-dnl    AX_CHECK_X86_FEATURES([][])
-dnl else
-dnl    CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
-dnl fi
+if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
+   AX_CHECK_X86_FEATURES([][])
+else
+   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
+fi
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
 AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
 

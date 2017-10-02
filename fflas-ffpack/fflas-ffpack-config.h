@@ -108,78 +108,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #include "givaro/givconfig.h"
 
-/* Define if mmx instructions are supported */
-#ifdef __GIVARO_HAVE_MMX_INSTRUCTIONS
-#define __FFLASFFPACK_HAVE_MMX_INSTRUCTIONS  1
-#endif
-
-/* Define if popcnt instructions are supported */
-#ifdef __GIVARO_HAVE_POPCNT_INSTRUCTIONS
-#define __FFLASFFPACK_HAVE_POPCNT_INSTRUCTIONS  1
-#endif
-
 /* Define if sse instructions are supported */
-#ifdef __GIVARO_HAVE_SSE_INSTRUCTIONS
+#ifdef __SSE__
 #define __FFLASFFPACK_HAVE_SSE_INSTRUCTIONS  1
 #endif
 
 /* Define if sse2 instructions are supported */
-#ifdef __GIVARO_HAVE_SSE2_INSTRUCTIONS
+#ifdef __SSE2__
 #define __FFLASFFPACK_HAVE_SSE2_INSTRUCTIONS  1
 #endif
 
 /* Define if sse3 instructions are supported */
-#ifdef __GIVARO_HAVE_SSE3_INSTRUCTIONS
+#ifdef __SSE3__
 #define __FFLASFFPACK_HAVE_SSE3_INSTRUCTIONS  1
 #endif
 
-/* Define if sse4a instructions are supported */
-#ifdef __GIVARO_HAVE_SSE4A_INSTRUCTIONS
-#define __FFLASFFPACK_HAVE_SSE4A_INSTRUCTIONS  1
-#endif
-
 /* Define if sse4.1 instructions are supported */
-#ifdef __GIVARO_HAVE_SSE4_1_INSTRUCTIONS
+#ifdef __SSE4_1__
 #define __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS  1
 #endif
 
 /* Define if sse4.2 instructions are supported */
-#ifdef __GIVARO_HAVE_SSE4_2_INSTRUCTIONS
+#ifdef __SSE4_2__
 #define __FFLASFFPACK_HAVE_SSE4_2_INSTRUCTIONS  1
 #endif
 
 /* Define if avx instructions are supported */
-#ifdef __GIVARO_HAVE_AVX_INSTRUCTIONS
+#ifdef __AVX__
 #define __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS  1
 #endif
 
 /* Define if avx2 instructions are supported */
-#ifdef __GIVARO_HAVE_AVX2_INSTRUCTIONS
+#ifdef __AVX2__
 #define __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS  1
 #endif
 
 /* Define if avx512f instructions are supported */
-#ifdef __GIVARO_HAVE_AVX512F_INSTRUCTIONS
+#ifdef __AVX512F__
 #define __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS  1
 #endif
 
-/* Define if bmi2 instructions are supported */
-#ifdef __GIVARO_HAVE_BMI2_INSTRUCTIONS
-#define __FFLASFFPACK_HAVE_BMI2_INSTRUCTIONS  1
-#endif
-
-/* Define if bmi instructions are supported */
-#ifdef __GIVARO_HAVE_BMI_INSTRUCTIONS
-#define __FFLASFFPACK_HAVE_BMI_INSTRUCTIONS  1
-#endif
-
-/* Define if fma4 instructions are supported */
-#ifdef __GIVARO_HAVE_FMA4_INSTRUCTIONS
-#define __FFLASFFPACK_HAVE_FMA4_INSTRUCTIONS  1
-#endif
-
 /* Define if fma instructions are supported */
-#ifdef __GIVARO_HAVE_FMA_INSTRUCTIONS
+#ifdef __FMA__
 #define __FFLASFFPACK_HAVE_FMA_INSTRUCTIONS  1
 #endif
 
