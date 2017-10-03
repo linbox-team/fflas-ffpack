@@ -1,11 +1,8 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
-
-
 /*
  * Copyright (C) the FFLAS-FFPACK group
- * Written by ZHU Hongguang
- *          
+ *
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -129,19 +126,23 @@ if(m>2){
 	t.clear();
 	t.start();
   {
-    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, 						 					ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain> >  H;
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, GS, H); 
+	ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  H(GS);
+    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H); 
+
   }
- //FFLAS::WriteMatrix (std::cout << "A:"<< std::endl, F, m, m, A, lda) << std::endl;
-   // FFLAS::WriteMatrix (std::cout << "X:"<< std::endl, F, m, incX, X, incX) << std::endl;
+
 	t.stop();
 	time+=t.usertime();
+
   if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){    
     cout << "PASSED ("<<time<<")"<<endl;   
   } else{
 	ok=false;
-	//cout << "failed	with GS = "<<GS<<endl;
-	//break;
+	#ifdef DEBUG
+		cout << "m>2 : failed	with GS = "<<GS<<endl;
+	#endif
+
+	break;
   }
  }
 }else{
@@ -150,8 +151,8 @@ if(m>2){
 	t.clear();
 	t.start();
   {
-    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, 						 					ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain> >  H;
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, GS, H); 
+    ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>   H(GS);
+    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H); 
   }
 	t.stop();
 	time+=t.usertime();
@@ -159,7 +160,10 @@ if(m>2){
     cout << "PASSED ("<<time<<")"<<endl;   
   } else{
 	ok=false;
-	//cout << "failed	with GS = "<<GS<<endl;
+	#ifdef DEBUG
+		cout << "m<=2 : failed	with GS = "<<GS<<endl;
+	#endif
+
   }
 }
 	FFLAS::fflas_delete(A);
@@ -207,9 +211,9 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	size_t m=256;
+	size_t m=128;
 
-	size_t iters=20;
+	size_t iters=11;
 	bool loop=false;
 	uint64_t seed = time(NULL);
 	Argument as[] = {
