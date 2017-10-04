@@ -64,7 +64,7 @@ BASIC_TESTS =               \
 		test-maxdelayeddim \
 		test-solve \
 		test-pfgemv \
-		test-pfgemm-DSL\
+		#test-pfgemm-DSL\
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -172,7 +172,7 @@ regression_check_SOURCES = regression-check.C
 
 test_solve_SOURCES = test-solve.C
 test_pfgemv_SOURCES = test-pfgemv.C
-test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
+#test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
 
 
 dense_generator: dense_generator.C
