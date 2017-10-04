@@ -64,10 +64,10 @@ int main(int argc, char** argv) {
 
 
 	int p=0;
-	size_t iters = 10 ;
+	size_t iters = 10;
 	Givaro::Integer q = 131071; 
 	size_t m = 8000;
-	size_t k = 8000 ;
+	size_t k = 8000;
 	//static size_t n = 512 ;
     size_t seed= time(NULL);
 	int t=MAX_THREADS;
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 //  typedef Givaro::ModularBalanced<int32_t> Field;
 //	typedef Givaro::ModularBalanced<float> Field;
 	typedef Givaro::ModularBalanced<double> Field;
-//	typedef Givaro::Modular<Givaro::Integer> Field;
+
 //	typedef Field::Element Element;
 
   Field F(q);
@@ -132,31 +132,36 @@ int main(int argc, char** argv) {
 
 	      PAR_BLOCK{
               if (i) { chrono.start(); }
-              
-	      switch (p){
-		  case 1:{
-			ParSeqHelper::Parallel<rec, threads>  H(t);
-			FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-			  break;}
-		  case 2:{
-			ParSeqHelper::Parallel<row, threads>  H(t);
-			FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-			  break;
-		  }
-		  case 3:{
-			size_t BS = 128;
-			ParSeqHelper::Parallel<row, grain>  H(BS);
-			FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-			  break;
-		  }
-		  default:{
-			  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
-			  break;
-		  }
-	      }
+		          
+			  switch (p){
+				  case 1:{
+					ParSeqHelper::Parallel<rec, threads>  H(t);
+					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
+					  break;}
+				  case 2:{
+					ParSeqHelper::Parallel<row, threads>  H(t);
+					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
+					  break;
+				  }
+				  case 3:{
+					size_t BS = 128;
+					ParSeqHelper::Parallel<row, grain>  H(BS);
+					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
+					  break;
+				  }
+				  case 4:{
+					FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
+					  break;
+				  }
+				  default:{
+					  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
+					  break;
+				  }
+			  }
 		  }//PAR_BLOCK
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
       }
+
 }
   FFLAS::fflas_delete(A);
   FFLAS::fflas_delete(X);
@@ -164,6 +169,7 @@ int main(int argc, char** argv) {
   
 
 	std::cout << "Time: " << time / double(iters);
+/*				<< " Gflops: " << (2.*double(m)/1000.*double(1)/1000.*double(k)/1000.0) / time * double(iters);*/
 	writeCommandString(std::cout, as) << std::endl;
 
   return 0;
