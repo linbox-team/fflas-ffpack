@@ -381,6 +381,7 @@ namespace FFLAS{
 #else
 		if (ta == FflasNoTrans){
 			int64_t* Yi=Y;
+
 			for (size_t i=0;i<M;i++, Yi+=incY){
 				*Yi *= beta * *Yi;
 				const int64_t* Xj=X;
@@ -389,6 +390,7 @@ namespace FFLAS{
 			}
 		} else {
 			int64_t* Yi=Y;
+
 			for (size_t i=0;i<N;i++, Yi+=incY){
 				*Yi *= beta * *Yi;
 				const int64_t* Xj=X;

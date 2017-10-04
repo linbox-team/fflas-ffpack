@@ -64,7 +64,12 @@ AC_PROG_CXX
 AC_COMPILER_NAME
 
 # We need a C++11 compiler now - AB 2014-12-12
-AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+# clang-3.8 does not support __float128 without explicitly passing it -std=c++11
+if test "x${CCNAM}" = "xclang38" ; then
+   AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
+else
+   AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])
+fi
 
 AC_SUBST([DEFAULT_CFLAGS])
 AC_SUBST([DEBUG_CFLAGS])
@@ -123,7 +128,7 @@ if test "x$WARN" = "xyes" -o "x$WARN" = "xfull" ; then
 				WARN_CFLAGS="${WARN_CFLAGS} -D__STRICT_ANSI__"
 			fi
 			;;
-		xclang31)
+		xclang38)
 			WARN_CFLAGS="${WARN_CFLAGS} -Wextra -Wno-unused-parameter"
 			if test "x${WARN}" = "xfull" ; then
 				WARN_CFLAGS="${WARN_CFLAGS} -Wuninitialized -Wconversion -Wcast-qual -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wno-long-long  -g -Wno-vla-extension -Wno-variadic-macros"

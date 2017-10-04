@@ -30,6 +30,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// This is required to compute min (max<size_t>, x) and return a size_t
+#define MAX_WITH_SIZE_T(x) ( (static_cast<uint64_t>(std::numeric_limits<size_t>::max()) <  x)? std::numeric_limits<size_t>::max() : x )
+
+
 template <class Field>
 bool test (Givaro::Integer p, size_t kmax){
     Field F(p);
@@ -44,11 +48,11 @@ int main() {
     bool ok=true;
     
 		// kmax = floor(2^53 / (p-1)^2)
-    ok = ok && test<Givaro::Modular<double>  >(17,35184372088831);
-    ok = ok && test<Givaro::Modular<double>  >(65521,2098176);
+    ok = ok && test<Givaro::Modular<double>  >(17, MAX_WITH_SIZE_T(35184372088831ULL));
+    ok = ok && test<Givaro::Modular<double>  >(65521, 2098176);
     ok = ok && test<Givaro::Modular<double>  >(67108859,2);
         // kmax = floor(2^53 / ((p-1)/2)^2)
-    ok = ok && test<Givaro::ModularBalanced<double>  >(17,140737488355327);
+    ok = ok && test<Givaro::ModularBalanced<double>  >(17,MAX_WITH_SIZE_T(140737488355327ULL));
     ok = ok && test<Givaro::ModularBalanced<double>  >(65521,8392705);
     ok = ok && test<Givaro::ModularBalanced<double>  >(67108859,8);
         // kmax = floor(2^24 / (p-1)^2)
@@ -59,12 +63,12 @@ int main() {
     ok = ok && test<Givaro::ModularBalanced<float> > (2039,16);
 
        // kmax = floor(2^53 / (p-1)^2)
-    ok = ok && test<Givaro::Modular<int64_t>  >(17,36028797018963967);
-    ok = ok && test<Givaro::Modular<int64_t>  >(65521,2148532608);
+    ok = ok && test<Givaro::Modular<int64_t>  >(17, MAX_WITH_SIZE_T(36028797018963967));
+    ok = ok && test<Givaro::Modular<int64_t>  >(65521, MAX_WITH_SIZE_T(2148532608));
     ok = ok && test<Givaro::Modular<int64_t>  >(1147482977,7);
         // kmax = floor(2^53 / ((p-1)/2)^2)
-    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(17,144115188075855871);
-    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(65521,8594130432);
+    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(17, MAX_WITH_SIZE_T(144115188075855871));
+    ok = ok && test<Givaro::ModularBalanced<int64_t>  >(65521, MAX_WITH_SIZE_T(8594130432));
     ok = ok && test<Givaro::ModularBalanced<int64_t>  >(1147482977,28);
  
        // kmax = floor(2^31 / (p-1)^2)

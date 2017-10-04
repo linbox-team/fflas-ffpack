@@ -20,6 +20,7 @@ SOURCE_DIRECTORY=$( cd "$( dirname "$0" )" && pwd )
 #=============================#
 # Change only these variables #
 #=============================#
+ARCH=`pwd | awk -F/ '{print $(NF-4)}'`
 CXX=`pwd | awk -F/ '{print $(NF-2)}'`
 SSE=`pwd | awk -F/ '{print $NF}'`
 
@@ -36,8 +37,11 @@ BLAS_NAME=openblas
 
 # Change these if necessary
 
-BLAS_LIBS="-L$BLAS_HOME/lib/ -l$BLAS_NAME"
-BLAS_CFLAGS=-I"$BLAS_HOME"/include
+if [ "$ARCH" == "linbox-osx" ]; then
+    BLAS_LIBS="-framework Accelerate"
+else
+    BLAS_LIBS="-L$BLAS_HOME/lib/ -l$BLAS_NAME"
+fi
 
 # Where to install fflas-ffpack binaries
 # Keep default for local installation.
@@ -48,9 +52,6 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib":"
 echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
 export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/$SSE/lib/pkgconfig"
 echo "PKG_CONFIG_PATH = ${PKG_CONFIG_PATH}"
-# /!\ Warning /!\ This could be an issue if you changed
-# the local installation directory
-rm -rf "$PREFIX_INSTALL"/bin/fflas-ffpack* "$PREFIX_INSTALL"/include/fflas-ffpack*
 
 #================#
 # Setup Variables#
@@ -66,11 +67,13 @@ if [ "$CXX" == "icpc" ]; then
      fi
 fi
 
-# Particular case for Fedora23: g++=g++-5.3
-vm_name=`uname -n | cut -d"-" -f1`
-if [[ "$vm_name" == "fedora"  &&  "$CXX" == "g++-5.3" ]]; then
+# Particular case for Fedora: g++-6 <- g++
+if [[ "$ARCH" == "linbox-fedora-amd64" &&  "$CXX" == "g++-6" ]]; then
     CXX="g++"
     CC=gcc
+fi
+if [[ "$ARCH" == "linbox-fedora-amd64" ]]; then
+    BLAS_LIBS="-L/usr/lib64/atlas -lsatlas"
 fi
 if [ -z "$CC" ]; then
     if [[ $CXX == g++* ]]; then
@@ -79,12 +82,17 @@ if [ -z "$CC" ]; then
         CC="clang"
     fi
 fi 
+
+# /!\ Warning /!\ This could be an issue if you changed
+# the local installation directory
+rm -rf "$PREFIX_INSTALL"/bin/fflas-ffpack* "$PREFIX_INSTALL"/include/fflas-ffpack*
+
 #==================================#
 # Automated installation and tests #
 #==================================#
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation"
-./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-optimization --enable-precompilation
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS"
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make autotune"
