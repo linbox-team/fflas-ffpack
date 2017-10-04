@@ -46,9 +46,10 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
 
+#include <random>
+#include <chrono>
 
 using namespace std;
-
 using namespace FFPACK;
 
 template<class Field, class RandIter>
@@ -145,7 +146,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 	size_t lda = n;
 
 	for (size_t i=0;i<iter;i++){
-		Field* F= chooseField<Field>(p,bits);
+		Field* F= chooseField<Field>(p,bits,seed);
 		if (F==nullptr){
 			return true;
 		}
@@ -178,6 +179,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 		FFLAS::fflas_delete (A);
 		delete F;
 	}
+	if (!passed) std::cerr<<std::endl<<"Failed with seed = "<<seed<<std::endl;
 	return passed;
 }
 
@@ -191,7 +193,7 @@ int main(int argc, char** argv)
 	bool loop = false; // loop infintely
 	std::string  mat_file = "" ; // input matrix file 
 	int variant = 0; // default value 0: test all variants
-	size_t seed =  time(NULL);
+	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
 	std::cout<<setprecision(17);
 	srand((int)time(NULL));

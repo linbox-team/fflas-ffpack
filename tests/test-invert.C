@@ -34,6 +34,8 @@
 
 #include <iomanip>
 #include <iostream>
+#include <random>
+#include <chrono>
 
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -53,7 +55,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 	bool ok = true ;
 	int nbit=(int)iters;
 	while (ok && nbit){
-		Field* F= chooseField<Field>(q,b);
+		Field* F= chooseField<Field>(q,b,seed);
 		if (F==nullptr)
 			return true;
 
@@ -65,7 +67,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 		typename Field::Element_ptr A = fflas_new(*F, n, lda);
 		typename Field::Element_ptr X = fflas_new(*F, n, ldx);
 
-		typename Field::RandIter R(*F,b,seed);
+		typename Field::RandIter R(*F,b,seed++);
 
 		RandomMatrixWithRankandRandomRPM (*F, A, lda, n, n, n, G);
 
@@ -109,7 +111,7 @@ int main(int argc, char** argv)
 	size_t n=300;
 	size_t iters=3;
 	bool loop=false;
-	uint64_t seed=time(NULL);
+	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },

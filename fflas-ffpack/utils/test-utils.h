@@ -42,7 +42,7 @@
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
 #include <givaro/givranditer.h>
-#include <chrono>
+
 #include <random>
 #include <functional>
 
@@ -58,14 +58,13 @@ namespace FFPACK {
 	   if b=0 -> bitsize is chosen randomly according to maxFieldElt
 	 */
 	template<typename Field>
-	Field* chooseField(Givaro::Integer q, uint64_t b){
+	Field* chooseField(Givaro::Integer q, uint64_t b, uint64_t seed){
 		Givaro::Integer maxV= maxFieldElt<Field>();
-		auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		    //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 mt_rand(seed);
 		if (maxV>0 && (q> maxV || b> maxV.bitsize()))
 			return nullptr;
 		if (b<=1){
-			//srand((double)std::chrono::high_resolution_clock::now());
 			auto bitrand = std::bind(std::uniform_int_distribution<uint64_t>(2,maxV.bitsize()-1),
 						 mt_rand);
 			b = bitrand();
@@ -87,7 +86,10 @@ namespace FFPACK {
 		return new Field(p);
 	}
 
-
+	template<> Givaro::ZRing<int32_t>* chooseField<Givaro::ZRing<int32_t> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<int32_t>();}
+	template<> Givaro::ZRing<int64_t>* chooseField<Givaro::ZRing<int64_t> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<int64_t>();}
+	template<> Givaro::ZRing<float>* chooseField<Givaro::ZRing<float> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<float>();}
+	template<> Givaro::ZRing<double>* chooseField<Givaro::ZRing<double> >(Givaro::Integer q, uint64_t b, uint64_t seed){return new Givaro::ZRing<double>();}
 
 } // FFPACK
 #endif

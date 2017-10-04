@@ -35,6 +35,8 @@
 
 #include <iomanip>
 #include <iostream>
+#include <random>
+#include <chrono>
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -163,8 +165,8 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t n, size_t iters, uint64
 
 	while (ok && nbiter)
 	{
-		Field* F = chooseField<Field>(q, b); // F, characteristic q of b bits
-		typename Field::RandIter G(*F, 0, seed); //random generator over F
+		Field* F = chooseField<Field>(q, b, seed); // F, characteristic q of b bits
+		typename Field::RandIter G(*F, 0, seed++); //random generator over F
 		
 		if(F == nullptr)
 			return true; //if F is null, nothing to test, just pass
@@ -201,7 +203,7 @@ int main(int argc, char** argv)
     size_t n = 108;
 	size_t iters = 1;
 	bool loop = false;
-    uint64_t seed = time(NULL);
+    uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",	TYPE_INTEGER, &q },

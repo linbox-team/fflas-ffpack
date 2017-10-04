@@ -40,6 +40,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
+#include <chrono>
 #include <givaro/modular-int32.h>
 #include <givaro/modular-balanced.h>
 #include <givaro/givintprime.h>
@@ -226,7 +227,7 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t see
 		typedef typename  Field::Element Element ;
 		typedef typename Field::Element  Element ;
 		
-		Field* F= chooseField<Field>(q,b);
+		Field* F= chooseField<Field>(q,b,seed);
 		if (F==NULL) return true;
 		std::ostringstream oss;
 		F->write(oss);
@@ -237,7 +238,7 @@ bool run_with_field (int64_t q, uint64_t b, size_t n, size_t iters, uint64_t see
 		std::cout<<oss.str();
 		std::cout<<"... ";
 
-		typename Field::RandIter R(*F,0,seed);
+		typename Field::RandIter R(*F,0,seed++);
 		typename Field::NonZeroRandIter NZR(R);
 
 		    //size_t k = 0 ;
@@ -270,15 +271,13 @@ int main(int argc, char** argv)
 {
 	std::cout<<setprecision(17);
 	std::cerr<<setprecision(17);
-	srand((int)time(NULL));
-	srand48(time(NULL));
 
 	size_t iters = 3 ;
 	long long q = -1 ;
 	uint64_t b = 0 ;
 	size_t n = 50 ;
 	bool loop = false;
-	uint64_t seed = time(NULL);
+	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_LONGLONG , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
@@ -290,7 +289,6 @@ int main(int argc, char** argv)
 	};
 
 	FFLAS::parseArguments(argc,argv,as);
-
 
 	bool ok = true;
 	do{
