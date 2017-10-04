@@ -64,8 +64,8 @@ int main(int argc, char** argv) {
 
 
 	int p=0;
-	size_t iters = 10;
-	Givaro::Integer q = 131071; 
+	size_t iters = 100;
+	Givaro::Integer q = 101; 
 	size_t m = 8000;
 	size_t k = 8000;
 	//static size_t n = 512 ;
@@ -91,8 +91,8 @@ int main(int argc, char** argv) {
 //  typedef Givaro::Modular<double> Field;
 //  typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
-//	typedef Givaro::ModularBalanced<float> Field;
-	typedef Givaro::ModularBalanced<double> Field;
+	typedef Givaro::ModularBalanced<float> Field;
+//	typedef Givaro::ModularBalanced<double> Field;
 
 //	typedef Field::Element Element;
 
@@ -105,18 +105,18 @@ int main(int argc, char** argv) {
 		lda=k;
 		incX=1;
 		incY=1;
-  Field::Element_ptr A,X,Y, Y2;
+  Field::Element_ptr A,X,Y; //, Y2;
 
   Field::RandIter G(F);
 		A = FFLAS::fflas_new(F,m,lda);
 		X = FFLAS::fflas_new(F,k,incX);
 		Y = FFLAS::fflas_new(F,m,incY);
-		Y2= FFLAS::fflas_new(F,m,incY);
+		//Y2= FFLAS::fflas_new(F,m,incY);
 	Field::RandIter Rand(F,seed);
 		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/NBK); }	
 		FFLAS::frand(F,Rand, k,1,X,incX);
 		FFLAS::fzero(F, m,1,Y,incY);
-		FFLAS::fzero(F, m,1,Y2,incY);
+		//FFLAS::fzero(F, m,1,Y2,incY);
   
 
   for (size_t i=0;i<=iters;++i){
@@ -136,21 +136,17 @@ int main(int argc, char** argv) {
 			  switch (p){
 				  case 1:{
 					ParSeqHelper::Parallel<rec, threads>  H(t);
-					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
+					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 					  break;}
 				  case 2:{
 					ParSeqHelper::Parallel<row, threads>  H(t);
-					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
+					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 					  break;
 				  }
 				  case 3:{
-					size_t BS = 128;
+					size_t BS = 4;
 					ParSeqHelper::Parallel<row, grain>  H(BS);
-					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-					  break;
-				  }
-				  case 4:{
-					FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
+					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 					  break;
 				  }
 				  default:{
@@ -160,7 +156,11 @@ int main(int argc, char** argv) {
 			  }
 		  }//PAR_BLOCK
 	      if (i) {chrono.stop(); time+=chrono.realtime();}
-      }
+      }else{
+		      if (i) chrono.start();
+		      FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
+		      if (i) {chrono.stop(); time+=chrono.realtime();}
+	  }
 
 }
   FFLAS::fflas_delete(A);
