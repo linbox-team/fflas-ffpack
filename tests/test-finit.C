@@ -42,6 +42,9 @@
 #include "fflas-ffpack/utils/test-utils.h"
 #include "assert.h"
 
+#include <random>
+#include <chrono>
+
 template<class Field>
 bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
@@ -137,20 +140,55 @@ bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, u
 	return true;
 }
 
+template<class Field>
+bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t k, size_t n, size_t iters, bool timing, uint64_t seed){
+	size_t nbit = iters;
+	bool ok = true;
+	while (ok && nbit){
+		Field* F= FFPACK::chooseField<Field>(q,b,seed);
+		if (F==NULL) return true;
+		std::ostringstream oss;
+		F->write(oss);
+
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(45);
+		std::cout<<oss.str();
+		std::cout<<"... ";
+
+		ok = ok && test_freduce (*F,m,k,n,timing, seed);
+		if (!ok)
+			std::cout << "FAILED "<<std::endl;
+		else
+			std::cout << "PASSED "<<std::endl;
+		delete F;
+		nbit--;
+	}
+	if (!ok)
+		std::cout << "with seed = "<< seed << std::endl;
+    return ok;
+}
+
 int main(int ac, char **av) {
+	Givaro::Integer q = -1;
+	size_t b = 0;
 	size_t m = 297 ;
 	size_t n = 301 ;
 	size_t k = 299 ;
-	uint64_t p = 7;
-	uint64_t seed = time(NULL);
-	static bool timing = false ;
+	size_t iters=3;
+	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	bool loop=false;
+	bool timing = false ;
 
-	static Argument as[] = {
-		{ 'p', "-p P", "Set the field characteristic.",  TYPE_INT , &p },
+	Argument as[] = {
+		{ 'q', "-q Q", "Set the field characteristic.",  TYPE_INTEGER , &q },
+		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
 		{ 'n', "-n N", "Set the number of cols in C.",   TYPE_INT , &n },
 		{ 'm', "-m N", "Set the number of rows in C.",   TYPE_INT , &m },
 		{ 'k', "-k N", "Set the number of rows in B.",   TYPE_INT , &k },
+		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
 		{ 't', "-timing", "Output timings"            , TYPE_NONE, &timing},
 		END_OF_ARGUMENTS
 	};
@@ -165,62 +203,23 @@ int main(int ac, char **av) {
 
 
 	bool pass  = true ;
-	{ /*  freduce */
-		{
-			Givaro::Modular<float> F(p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ModularBalanced<float> F(p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::Modular<double> F(p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ModularBalanced<double> F(p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::Modular<int32_t> F((int32_t)p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ModularBalanced<int32_t> F((int32_t)p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::Modular<int64_t> F(p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ModularBalanced<int64_t> F(p) ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-#if 1
-		{
-			Givaro::ZRing<float> F ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ZRing<double> F ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ZRing<int32_t> F;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-		{
-			Givaro::ZRing<int64_t> F ;
-			pass = pass && test_freduce (F,m,k,n,timing, seed);
-		}
-#endif
-	}
-
-	return (pass?0:1) ;
+	do{
+		pass = pass && run_with_field<Givaro::Modular<float> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::Modular<double> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ModularBalanced<float> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ModularBalanced<double> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::Modular<int32_t> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ModularBalanced<int32_t> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::Modular<int64_t> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ModularBalanced<int64_t> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ZRing<float> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ZRing<double> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ZRing<int32_t> >(q,b,m,k,n,iters,timing,seed);
+		pass = pass && run_with_field<Givaro::ZRing<int64_t> >(q,b,m,k,n,iters,timing,seed);
+	} while (loop && pass);
+	return !pass ;
 }
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 

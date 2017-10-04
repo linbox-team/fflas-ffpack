@@ -170,10 +170,10 @@ test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 
 regression_check_SOURCES = regression-check.C
 
-
 test_solve_SOURCES = test-solve.C
 test_pfgemv_SOURCES = test-pfgemv.C
 test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
+
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
@@ -181,6 +181,9 @@ dense_generator: dense_generator.C
 # Perfpublisher script interaction - AB 2014/11/17
 perfpublisher:
 	+./perfpublisher.sh "$(PERFPUBLISHERFILE)" "$(EXTRA_PROGRAMS)" "$(CXX)"
+	mv $(PERFPUBLISHERFILE) ..
+	make clean
+	mv ../$(PERFPUBLISHERFILE) .
 
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@

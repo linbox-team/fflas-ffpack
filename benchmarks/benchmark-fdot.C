@@ -48,7 +48,12 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
 	typename Field::Element_ptr A, B;
 	typename Field::Element d; F.init(d);
 
-    Givaro::OMPTimer chrono, time; time.clear();
+#ifdef __GIVARO_USE_OPENMP
+	Givaro::OMPTimer chrono, time;
+#else
+	Givaro::Timer chrono, time;
+#endif
+	time.clear();
   
 	for (size_t i=0;i<iter;++i){
 		A = fflas_new(F, N);
@@ -78,9 +83,9 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
         }
 
 
-        std::cerr << chrono 
-                  << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*chrono.realtime())
-                  << std::endl;
+        // std::cerr << chrono
+        //           << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*chrono.realtime())
+        //           << std::endl;
 
 		time+=chrono;
 		FFLAS::fflas_delete(A);
@@ -88,7 +93,7 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
 	}
 		// -----------
 		// Standard output for benchmark
-	std::cout << "Time * " << iter << ": " << time 
+	std::cout << "Time: " << time.realtime()
 			  << " Gfops: " << ((double(2*N)/1000.)/1000.)/(1000.*time.realtime())* double(iter);
 
 // 	F.write(std::cerr, d) << std::endl;
@@ -120,10 +125,10 @@ int main(int argc, char** argv) {
     if (q > 0){
         BS = Givaro::Integer(q).bitsize();
         double d = run_with_field<Givaro::ModularBalanced<double> >(q, iter, N, BS, p, threads);
-        std::cout << ", d: " << d;
+        std::cout << " d: " << d;
     } else {
         auto d = run_with_field<Givaro::ZRing<Givaro::Integer> > (q, iter, N, BS, p, threads);
-        std::cout << ", size: " << logtwo(d>0?d:-d);
+        std::cout << " size: " << logtwo(d>0?d:-d);
     }
 
     FFLAS::writeCommandString(std::cerr, as) << std::endl;

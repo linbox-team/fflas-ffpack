@@ -29,6 +29,9 @@
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
+#include <random>
+#include <chrono>
+
 #include <givaro/modular.h>
 #include <givaro/zring.h>
 #include "fflas-ffpack/utils/test-utils.h"
@@ -52,10 +55,10 @@ bool run_with_field (Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t i
 	bool ok=true;
 	int nbit =(int) iters;
 	while (ok && nbit){
-		Field* F = FFPACK::chooseField<Field>(q,b);
+		Field* F = FFPACK::chooseField<Field>(q,b,seed);
 		if (F==nullptr)
 			return true;
-		typename Field::RandIter G(*F, 0, seed);
+		typename Field::RandIter G(*F, 0, seed++);
 		std::ostringstream oss;
 		F->write(oss);
 
@@ -141,7 +144,7 @@ int main(int argc, char** argv){
 	size_t n=97;
 	size_t iters=3;
 	bool loop=false;
-	size_t seed=time(NULL);
+	size_t seed=std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },

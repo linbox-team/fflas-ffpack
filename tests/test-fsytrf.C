@@ -36,6 +36,9 @@
 
 #include <iostream>
 #include <iomanip>
+#include <random>
+#include <chrono>
+
 #include <givaro/modular.h>
 
 #include "fflas-ffpack/utils/test-utils.h"
@@ -50,11 +53,11 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 	
 	while (ok &&  nbit){
 		// choose Field 
-		Field* F= chooseField<Field>(q,b);
+		Field* F= chooseField<Field>(q,b,seed);
 		if (F==nullptr)
 			return true;
 
-		typename Field::RandIter G (*F,b,seed);
+		typename Field::RandIter G (*F,b,seed++);
 		std::ostringstream oss;
 		F->write(oss);
 		
@@ -136,7 +139,7 @@ int main(int argc, char** argv){
 	size_t n = 280;
 	size_t iters = 6 ;
 	bool loop=false;
-	uint64_t seed=time(NULL);
+	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	size_t threshold =64;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field cardinality.",         TYPE_INTEGER , &q },
