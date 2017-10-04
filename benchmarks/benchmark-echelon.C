@@ -311,7 +311,7 @@ int main(int argc, char** argv) {
        double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
        if (transform)
 	       gflop += CUBE(double(r)/1000.0)/3.0 + double(r)/1000.0*double(r)/1000.0*double(n-r)/1000.0;
-       std::cout << "Time: " << time / double(iter)  << " Gflops: " << gflop / time * double(iter-1);
+       std::cout << "Time: " << time / double(iter)  << " Gfops: " << gflop / time * double(iter-1);
        FFLAS::writeCommandString(std::cout, as) << std::endl;
        
        //verification

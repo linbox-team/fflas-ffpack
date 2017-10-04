@@ -102,7 +102,7 @@ typename Field::Element run_with_field(int q, size_t iter, size_t N, const size_
 
 int main(int argc, char** argv) {
 
-	size_t iter = 3;
+	size_t iter = 20; // to get nonzero time
 	size_t N    = 5000;
     size_t BS   = 5000;
     int q		= 131071101;
@@ -131,6 +131,6 @@ int main(int argc, char** argv) {
         std::cout << " size: " << logtwo(d>0?d:-d);
     }
 
-    FFLAS::writeCommandString(std::cerr, as) << std::endl;
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
     return 0;
 }

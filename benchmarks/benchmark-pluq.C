@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
 #define CUBE(x) ((x)*(x)*(x))
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
 	std::cout << "Time: " << meantime
-			  << " Gflops: " << gflop / meantime;
+			  << " Gfops: " << gflop / meantime;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
 	//verification

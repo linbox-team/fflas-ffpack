@@ -96,7 +96,7 @@ int main(int argc, char** argv){
 	}
 	double Gflops=(1.*double(m)/1000.*double(m)/1000.*double(n)/1000.0) / chrono.usertime() * double(iters);
 	Gflops*=p.bitsize()/16.;
-	cout<<"Time: "<<time/iters<<"  Gflops: "<<Gflops<<endl;
+	cout<<"Time: "<<time/iters<<"  Gfops: "<<Gflops<<endl;
 
 
 	

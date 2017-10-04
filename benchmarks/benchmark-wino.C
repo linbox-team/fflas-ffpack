@@ -71,7 +71,7 @@ void launch_wino(const Field  &F,
 		}
 				  
 		std::cout << "Time: " << basetime / double(NB)
-				  << " Gflops: " << 2. * CUBE(double(n)/1000.0) / basetime * double(NB)
+				  << " Gfops: " << 2. * CUBE(double(n)/1000.0) / basetime * double(NB)
 				  << " [fgemm result]" << std::endl;
 	}
 
@@ -91,7 +91,7 @@ void launch_wino(const Field  &F,
 		// -----------
 		// Standard output for benchmark - Alexis Breust 2014/11/14
 		std::cout << "Time: " << time / double(NB)
-				  << " Gflops: " << 2. * CUBE(double(n)/1000.0) / time * double(NB);
+				  << " Gfops: " << 2. * CUBE(double(n)/1000.0) / time * double(NB);
 				  
 		if (compare || asmax)
 			std::cout << " [wino" << w << " result]" << std::endl;
