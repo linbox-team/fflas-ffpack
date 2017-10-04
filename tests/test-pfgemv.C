@@ -31,12 +31,14 @@ using namespace std;
 
 #define  __FFLASFFPACK_USE_OPENMP
 
-#include "fflas-ffpack/utils/fflas_randommatrix.h"
+//#include "fflas-ffpack/utils/fflas_randommatrix.h"
 #include "givaro/modular.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
 
+
+#include "fflas-ffpack/utils/test-utils.h"
 /*
 #ifdef __FFLASFFPACK_USE_KAAPI
 #include <kaapi++>
@@ -183,7 +185,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 		//typedef typename Field::Element Element ;
 		// choose Field
 		//Field* F= chooseField<Field>(3,b);
-		Field* F= chooseField<Field>(q,b);
+		Field* F= FFPACK::chooseField<Field>(q,b,seed);
 		typename Field::RandIter G(*F,0,seed);
 		if (F==nullptr)
 			return true;
