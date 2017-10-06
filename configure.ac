@@ -165,17 +165,12 @@ echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
 FF_CHECK_OMP
-dnl check which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
-CUSTOM_SIMD="no"
-FF_CHECK_SIMD
-dnl FF_CHECK_SSE
-dnl FF_CHECK_AVX
-dnl arch=`echo $target | cut -d"-" -f1`
-if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
-   AX_CHECK_X86_FEATURES([][])
-else
-   CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
-fi
+
+
+# Checks which SIMD optimization flags to use and set SIMD_CFLAGS accordingly
+INSTR_SET
+AC_SUBST(SIMD_FLAGS)
+
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
 AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
 
@@ -313,7 +308,7 @@ FF_DOC
 	# mkdir ./benchmarks/data  ;
 # fi
 
-CXXFLAGS="${CXXFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${SIMD_CFLAGS}"
 
 AC_SUBST(CXXFLAGS)
 
