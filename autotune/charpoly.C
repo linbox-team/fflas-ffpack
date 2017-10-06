@@ -73,15 +73,15 @@ int main () {
 	time_t result = std::time(NULL);
 	string var1 = (VARIANT1 == FfpackLUK)?"LUKrylov":"Danilevskii";
 	string var2 = (VARIANT2 == FfpackLUK)?"LUKrylov":"ArithProg";
-	cout << std::endl 
+	cerr << std::endl 
 		 << "---------------------------------------------------------------------"
 		 << std::endl << std::asctime(std::localtime(&result))
 		 << std::endl
 		 << "Threshold between CharPoly algorithms "<<var1<<" <-> "<<var2 ;
-	F.write(cout << " (using ") << ')' << endl << endl;
+	F.write(cerr << " (using ") << ')' << endl << endl;
 
-	cout << "Charpoly:  n                   "<<var1<<"                        "<<var2 << std::endl;
-	cout << "                    seconds            Gfops          seconds            Gfops" << std::endl;
+	cerr << "Charpoly:  n                   "<<var1<<"                        "<<var2 << std::endl;
+	cerr << "                    seconds            Gfops          seconds            Gfops" << std::endl;
 		do {
 		double Var1Time, Var2Time;
 		int iter=ITER;
@@ -112,20 +112,20 @@ int main () {
 			//FFLAS::fflas_delete(B);
 		Var2Time = tim.realtime()/iter;
 
-		cout << "      ";
-		cout.width(4);
-		cout << n;
-		cout << "  ";
-		cout.width(15);
-		cout << Var1Time;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n,n,r, Var1Time) << "  ";
-		cout.width(15);
-		cout << Var2Time;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n,n,r, Var2Time) << endl;
+		cerr << "      ";
+		cerr.width(4);
+		cerr << n;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << Var1Time;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n,n,r, Var1Time) << "  ";
+		cerr.width(15);
+		cerr << Var2Time;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n,n,r, Var2Time) << endl;
 
 		if (Var1Time > Var2Time){
 			count++;
@@ -144,12 +144,12 @@ int main () {
 		}
 	} while ((prec > NPREC ) && (n < nmax));
 
-	cout<<endl;
+	cerr<<endl;
 	if (nbest != 0 ) {
-		cerr << "#ifndef __FFLASFFPACK_CHARPOLY_"<<var1<<"_"<<var2<<"_THRESHOLD"  << endl;
-		cerr << "#define __FFLASFFPACK_CHARPOLY_"<<var1<<"_"<<var2<<"_THRESHOLD" << ' ' <<  nbest << endl;
-		cout << "defined __FFLASFFPACK_CHARPOLY_"<<var1<<"_"<<var2<<"_THRESHOLD to " << nbest << "" << std::endl;
-		std::cerr << "#endif" << endl  << endl;
+		cout << "#ifndef __FFLASFFPACK_CHARPOLY_"<<var1<<"_"<<var2<<"_THRESHOLD"  << endl;
+		cout << "#define __FFLASFFPACK_CHARPOLY_"<<var1<<"_"<<var2<<"_THRESHOLD" << ' ' <<  nbest << endl;
+		cerr << "defined __FFLASFFPACK_CHARPOLY_"<<var1<<"_"<<var2<<"_THRESHOLD to " << nbest << "" << std::endl;
+		std::cout << "#endif" << endl  << endl;
 	}
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);

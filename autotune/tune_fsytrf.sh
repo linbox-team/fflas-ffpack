@@ -3,4 +3,4 @@ echo =================================================
 echo ========= FFLAS-FFPACK fsytrf Autotuning ========
 echo =================================================
 echo 
-./fsytrf 2> fsytrf-threshold.h  | tee fsytrf-autotune.log
+(./fsytrf > fsytrf-threshold.h) 2>&1 | tee fsytrf-autotune.log

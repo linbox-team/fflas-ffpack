@@ -3,4 +3,4 @@ echo =================================================
 echo ========= FFLAS-FFPACK ftrtri Autotuning ========
 echo =================================================
 echo 
-./ftrtri 2> ftrtri-threshold.h  | tee ftrtri-autotune.log
+(./ftrtri > ftrtri-threshold.h) 2>&1 | tee ftrtri-autotune.log
