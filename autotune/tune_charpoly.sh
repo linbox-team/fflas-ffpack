@@ -3,6 +3,8 @@ echo =================================================
 echo ========= FFLAS-FFPACK CharPoly Autotuning =========
 echo =================================================
 echo 
-./charpoly-LUK-ArithProg 2> charpoly-LUK-ArithProg-threshold.h  | tee charpoly-LUK-ArithProg-autotune.log
-./charpoly-Danilevskii-LUK 2> charpoly-Danilevskii-LUK-threshold.h  | tee charpoly-Danilevskii-LUK-autotune.log
-./arithprog 8 160 4 4 1000 3 2> arithprog-blocksize.h  | tee arithprog-blocksize-autotune.log
+(./charpoly-LUK-ArithProg > charpoly-LUK-ArithProg-threshold.h) 2>&1 | tee charpoly-LUK-ArithProg-autotune.log
+
+(./charpoly-Danilevskii-LUK > charpoly-Danilevskii-LUK-threshold.h) 2>&1 | tee charpoly-Danilevskii-LUK-autotune.log
+
+(./arithprog 8 160 4 4 1000 3 > arithprog-blocksize.h) 2>&1 | tee arithprog-blocksize-autotune.log

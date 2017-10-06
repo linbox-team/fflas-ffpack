@@ -3,4 +3,4 @@ echo =================================================
 echo ========= FFLAS-FFPACK PLUQ Autotuning ==========
 echo =================================================
 echo 
-./pluq 2> pluq-threshold.h  | tee pluq-autotune.log
+(./pluq > pluq-threshold.h) 2>&1 | tee pluq-autotune.log
