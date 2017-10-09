@@ -74,7 +74,7 @@ namespace FFLAS
 	}
 	
 	
-	
+
 	template<class Field, class AlgoT, class FieldTrait>
 	typename Field::Element_ptr
 	pfgemv(const Field& F,
@@ -87,20 +87,53 @@ namespace FFLAS
 		   const typename Field::Element beta,
 		   typename Field::Element_ptr Y, const size_t incY,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Threads> > & H){
-		
-		if(H.parseq.numthreads()<2){
+		size_t nt = H.parseq.numthreads(); 	
+		if(H.parseq.numthreads()<2|| m <= 1){
 			fgemv( F, ta, m, n, alpha, A , lda, X, incX, beta, Y, incY);
 		}else{			
 			
-			SYNCH_GROUP(
-				FORBLOCK1D(iter, m,	 H.parseq,  
-						   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
-								{
-									fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y + iter.begin()*incY, incY);
-								} 
-								)
-						   );
-						);
+			if(nt<m){
+				size_t N1 = m/nt, N2 = m-N1*nt;
+				if(N1>0){
+					
+					for(size_t i=0; i<N1; i++){
+						SYNCH_GROUP(
+									FORBLOCK1D(iter, nt,	 H.parseq,  
+											   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+													{
+														fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y + iter.begin()*incY, incY);
+													} 
+													)
+											   );
+									);
+					}
+				}//else{}
+				if(N2>0){
+					SYNCH_GROUP(
+								FORBLOCK1D(iter, N2,	 H.parseq,  
+										   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+												{
+													fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + N1*nt + iter.begin()*lda, lda, X, incX, beta, Y + N1*nt + iter.begin()*incY, incY);
+												} 
+												)
+										   );
+								);
+				}//else{}
+				
+			}else{
+				
+				SYNCH_GROUP(
+							FORBLOCK1D(iter, m,	 H.parseq,  
+									   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+											{
+												fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y + iter.begin()*incY, incY);
+											} 
+											)
+									   );
+							);
+				
+			}
+			
 		}
 		
 		return Y;		
