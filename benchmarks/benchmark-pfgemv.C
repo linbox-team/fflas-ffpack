@@ -92,12 +92,11 @@ int main(int argc, char** argv) {
 //  typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
 //	typedef Givaro::ModularBalanced<float> Field;
-	typedef Givaro::ModularBalanced<double> Field;
+ 	typedef Givaro::ModularBalanced<double> Field;
 
 //	typedef Field::Element Element;
 
   Field F(q);
-
   Timer chrono, TimFreivalds;
   double time=0.0;
 
@@ -122,7 +121,7 @@ int main(int argc, char** argv) {
   for (size_t i=0;i<=iters;++i){
 
       chrono.clear();
-      if (p && p!=7){
+      if (p){
 
 	      typedef CuttingStrategy::Row row;
 	      typedef CuttingStrategy::Recursive rec;
@@ -174,4 +173,3 @@ int main(int argc, char** argv) {
 
   return 0;
 }
-
