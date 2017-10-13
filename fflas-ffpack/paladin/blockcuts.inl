@@ -333,6 +333,7 @@ namespace FFLAS {
 //             std::cout<<"FS1D method    : "<<method<<std::endl;
 //             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
 
+
 			if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
 				numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
 			} else if ( Protected::AreEqual<Param,StrategyParameter::Grain>::value ) { 

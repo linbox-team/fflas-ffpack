@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
 	int p=0;
 	size_t iters = 100;
-	Givaro::Integer q = 101; 
+	Givaro::Integer q = 131071; 
 	size_t m = 8000;
 	size_t k = 8000;
 	//static size_t n = 512 ;
@@ -91,13 +91,12 @@ int main(int argc, char** argv) {
 //  typedef Givaro::Modular<double> Field;
 //  typedef Givaro::Modular<Givaro::Integer> Field;
 //  typedef Givaro::ModularBalanced<int32_t> Field;
-	typedef Givaro::ModularBalanced<float> Field;
-//	typedef Givaro::ModularBalanced<double> Field;
+//	typedef Givaro::ModularBalanced<float> Field;
+ 	typedef Givaro::ModularBalanced<double> Field;
 
 //	typedef Field::Element Element;
 
   Field F(q);
-
   Timer chrono, TimFreivalds;
   double time=0.0;
 
@@ -122,7 +121,7 @@ int main(int argc, char** argv) {
   for (size_t i=0;i<=iters;++i){
 
       chrono.clear();
-      if (p && p!=7){
+      if (p){
 
 	      typedef CuttingStrategy::Row row;
 	      typedef CuttingStrategy::Recursive rec;
@@ -168,10 +167,9 @@ int main(int argc, char** argv) {
   FFLAS::fflas_delete(Y);
   
 
-	std::cout << "Time: " << time / double(iters);
-/*				<< " Gflops: " << (2.*double(m)/1000.*double(1)/1000.*double(k)/1000.0) / time * double(iters);*/
+	std::cout << "Time: " << time / double(iters)
+			  << " Gflops: " << (2.*double(m)/1000.*double(k)/1000000.0) / time * double(iters);
 	writeCommandString(std::cout, as) << std::endl;
 
   return 0;
 }
-
