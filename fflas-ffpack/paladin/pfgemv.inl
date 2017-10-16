@@ -45,7 +45,6 @@ namespace FFLAS
 			fgemv(F, ta,  m, n,  alpha, A, lda, X, incX, beta, Y, incY);
 			
 		}else{
-			std::cerr<<"Calling with NT = "<<H.parseq.numthreads()<<std::endl;
 			typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > MMH_t;
 			MMH_t H1(H);
 			MMH_t H2(H);
@@ -90,9 +89,11 @@ namespace FFLAS
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, Cut> > & H){
 		SYNCH_GROUP(
 			FORBLOCK1D(iter, m,	 H.parseq,  
-					   TASK(CONSTREFERENCE(F) MODE( READ(A1,X) READWRITE(Y)),
+					   TASK(MODE( READ (A[iter.begin()*lda],X)
+								  CONSTREFERENCE(F)
+								  READWRITE (Y[iter.begin()*incY]) ),
 							{
-								fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y + iter.begin()*incY, incY);
+								fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y+iter.begin()*incY, incY);
 							} 
 							)
 					   );

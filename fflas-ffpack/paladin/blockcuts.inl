@@ -329,10 +329,6 @@ namespace FFLAS {
 		}
 		
         void build(const blocksize_t n, const ParSeqHelper::Parallel<Cut,Param> H) {
-//             std::cout<<"FS1D n : "<<n<<std::endl;
-//             std::cout<<"FS1D method    : "<<method<<std::endl;
-//             std::cout<<"FS1D numthreads : "<<numthreads<<std::endl;
-
 
 			if ( Protected::AreEqual<Param, StrategyParameter::Threads>::value ) {
 				numBlock = std::max((blocksize_t)(H.numthreads()),(blocksize_t)1);
@@ -349,12 +345,7 @@ namespace FFLAS {
             changeBS = n - numBlock*firstBlockSize;
             lastBlockSize = firstBlockSize;
             if (changeBS) ++firstBlockSize;
-			
-//             std::cout<<"FS1D 1BLOCKSIZE : "<<firstBlockSize<<std::endl;
-//             std::cout<<"FS1D 2BLOCKSIZE : "<<lastBlockSize<<std::endl;
-//             std::cout<<"FS1D changeBS : "<<changeBS<<std::endl;
-//             std::cout<<"FS1D NBlocks : "<<numBlock<<std::endl;
-        }
+		}
 
         blocksize_t initialize() {
             ibeg = 0; iend = firstBlockSize;
@@ -386,7 +377,7 @@ namespace FFLAS {
         }
 
     protected:
-        blocksize_t ibeg, iend;
+       blocksize_t ibeg, iend;
 
         blocksize_t current;
         blocksize_t firstBlockSize,lastBlockSize;
