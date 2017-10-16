@@ -377,7 +377,7 @@ namespace FFLAS {
         }
 
     protected:
-        blocksize_t ibeg, iend;
+       blocksize_t ibeg, iend;
 
         blocksize_t current;
         blocksize_t firstBlockSize,lastBlockSize;

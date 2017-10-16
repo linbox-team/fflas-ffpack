@@ -117,13 +117,13 @@ int main(int argc, char** argv) {
 		// TODO: replace by a 1D pfrand
 	PAR_BLOCK {
 			SYNCH_GROUP(
-            FORBLOCK1D(iter, m, SPLITTER(NBK, Row, Threads),
+				FORBLOCK1D(iter, m, SPLITTER(NBK, CuttingStrategy::Row, StrategyParameter::Threads),
                        TASK(MODE(CONSTREFERENCE(F,Rand)),
                        {
                            frand(F, Rand,
-                                 iter.iend()-iter.ibegin(),
+                                 iter.end()-iter.begin(),
                                  k,
-                                 A+iter.ibegin()*lda,
+                                 A+iter.begin()*lda,
                                  lda);
                        }
                             );
@@ -131,8 +131,8 @@ int main(int argc, char** argv) {
 			);
 //	FFLAS::pfrand(F,Rand, m,k,A,m/NBK);
 	}
-		FFLAS::frand(F,Rand, k,1,X,incX);
-		FFLAS::fzero(F, m,1,Y,incY);
+	FFLAS::frand(F,Rand, k,1,X,incX);
+	FFLAS::fzero(F, m,1,Y,incY);
 		//FFLAS::fzero(F, m,1,Y2,incY);
   
 
