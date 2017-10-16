@@ -112,7 +112,25 @@ int main(int argc, char** argv) {
 		Y = FFLAS::fflas_new(F,m,incY);
 		//Y2= FFLAS::fflas_new(F,m,incY);
 	Field::RandIter Rand(F,seed);
-		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,k,A,m/NBK); }	
+
+
+		// TODO: replace by a 1D pfrand
+	PAR_BLOCK {
+			SYNCH_GROUP(
+            FORBLOCK1D(iter, m, SPLITTER(NBK, Row, Threads),
+                       TASK(MODE(CONSTREFERENCE(F,Rand)),
+                       {
+                           frand(F, Rand,
+                                 iter.iend()-iter.ibegin(),
+                                 k,
+                                 A+iter.ibegin()*lda,
+                                 lda);
+                       }
+                            );
+                       );
+			);
+//	FFLAS::pfrand(F,Rand, m,k,A,m/NBK);
+	}
 		FFLAS::frand(F,Rand, k,1,X,incX);
 		FFLAS::fzero(F, m,1,Y,incY);
 		//FFLAS::fzero(F, m,1,Y2,incY);
@@ -143,7 +161,7 @@ int main(int argc, char** argv) {
 					  break;
 				  }
 				  case 3:{
-					size_t BS = 4;
+					size_t BS = 64;
 					ParSeqHelper::Parallel<row, grain>  H(BS);
 					FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY, H);
 					  break;
