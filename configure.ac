@@ -317,10 +317,8 @@ CXXFLAGS="${CXXFLAGS} ${GIVARO_CFLAGS}"
 CXXFLAGS="${CXXFLAGS} ${CBLAS_FLAG}"
 CXXFLAGS="${CXXFLAGS} ${CUDA_CFLAGS}"
 CXXFLAGS="${CXXFLAGS} ${PARFLAGS}"
-echo "$CXXFLAGS"
 #removing possible duplicates of -std=gnu++11 and -fabi-version=6
 CXXFLAGS=`echo "${CXXFLAGS}" |xargs -n1 | sort -u|xargs`
-echo "CXXFLAGS = ${CXXFLAGS}"
 
 AC_SUBST(CXXFLAGS)
 
