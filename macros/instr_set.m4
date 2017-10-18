@@ -12,16 +12,16 @@ AC_DEFUN([INSTR_SET],
         SIMD_CFLAGS=""
         AS_ECHO("Detecting SIMD instruction set")
 
-        AC_ARG_ENABLE(sse,[AC_HELP_STRING([--disable-sse], [ "Disable SSE instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(sse2,[AC_HELP_STRING([--disable-sse2], [ "Disable SSE2 instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(sse3,[AC_HELP_STRING([--disable-sse3], [ "Disable SSE3 instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(ssse3,[AC_HELP_STRING([--disable-ssse3], [ "Disable SSSE3 instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(sse4.1,[AC_HELP_STRING([--disable-sse4.1], [ "Disable SSE4.1 instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(sse4.2,[AC_HELP_STRING([--disable-sse4.2avx], [ "Disable SSE4.2 instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(avx,[AC_HELP_STRING([--disable-avx], [ "Disable AVX instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(avx2,[AC_HELP_STRING([--disable-avx2], [ "Disable AVX2 instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(fma,[AC_HELP_STRING([--disable-fma], [ "Disable FMA instruction set (when available")])],[],[])
-        AC_ARG_ENABLE(fma4,[AC_HELP_STRING([--disable-fma4], [ "Disable FMA4 instruction set (when available")])],[],[])
+        AC_ARG_ENABLE(sse,[AC_HELP_STRING([--disable-sse], [ disable SSE instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(sse2,[AC_HELP_STRING([--disable-sse2], [ disable SSE2 instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(sse3,[AC_HELP_STRING([--disable-sse3], [ disable SSE3 instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(ssse3,[AC_HELP_STRING([--disable-ssse3], [ disable SSSE3 instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(sse4.1,[AC_HELP_STRING([--disable-sse4.1], [ disable SSE4.1 instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(sse4.2,[AC_HELP_STRING([--disable-sse4.2avx], [ disable SSE4.2 instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(avx,[AC_HELP_STRING([--disable-avx], [ disable AVX instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(avx2,[AC_HELP_STRING([--disable-avx2], [ disable AVX2 instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(fma,[AC_HELP_STRING([--disable-fma], [ disable FMA instruction set (enabled by default when available)])],[],[])
+        AC_ARG_ENABLE(fma4,[AC_HELP_STRING([--disable-fma4], [ disable FMA4 instruction set (enabled by default when available)])],[],[])
 
         AC_TRY_RUN([
                         #include "macros/CodeChunk/instrset_detect.cpp"
@@ -32,7 +32,7 @@ AC_DEFUN([INSTR_SET],
                         AS_ECHO("SSE enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse"
                         HAVE_SSE="yes"
-                ],[AS_ECHO("SSE2 disabled")])
+                ],[AS_ECHO("SSE disabled")])
                 AS_IF([ test "$iset" -ge "2" -a "x$enable_sse2" != "xno" ], [
                         AS_ECHO("SSE2 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse2"

@@ -70,6 +70,7 @@ if test "x${CCNAM}" = "xclang38" ; then
 else
    AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])
 fi
+REQUIRED_FLAGS="$CXX11FLAGS"
 
 
 DEBUG_CFLAGS="-g"
@@ -176,8 +177,9 @@ AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
 
 dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
 dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
+AS_IF([test "x$CCNAM" = "xgcc"],[REQUIRED_FLAGS="${REQUIRED_FLAGS} -fabi-version=6"],[])
 
+AC_SUBST(REQUIRED_FLAGS)
 
 PARFLAGS="${OMPFLAGS}"
 PARLIBS="${OMPFLAGS}"
@@ -228,6 +230,7 @@ echo "-----------------------------------------------"
 #FF_CHECK_GMP
 
 PKG_CHECK_MODULES([GIVARO],[givaro])
+
 
 dnl FF_CHECK_GIVARO(,,[
 dnl echo '*******************************************************************************'
@@ -308,7 +311,16 @@ FF_DOC
 	# mkdir ./benchmarks/data  ;
 # fi
 
+CXXFLAGS="${CXXFLAGS} ${REQUIRED_FLAGS}"
 CXXFLAGS="${CXXFLAGS} ${SIMD_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${GIVARO_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${CBLAS_FLAG}"
+CXXFLAGS="${CXXFLAGS} ${CUDA_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${PARFLAGS}"
+echo "$CXXFLAGS"
+#removing possible duplicates of -std=gnu++11 and -fabi-version=6
+CXXFLAGS=`echo "${CXXFLAGS}" |xargs -n1 | sort -u|xargs`
+echo "CXXFLAGS = ${CXXFLAGS}"
 
 AC_SUBST(CXXFLAGS)
 
