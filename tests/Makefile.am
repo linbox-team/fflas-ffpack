@@ -24,7 +24,7 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CXXFLAGS = ${DEFAULT_CFLAGS} $(PRECOMPILE_FLAGS)
+AM_CXXFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
 
 #LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
 AM_LDFLAGS=$(PARLIBS)
@@ -71,6 +71,7 @@ AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
 INTERFACE_TESTS= test-interfaces-c 
+test_interfaces_c_CFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
 test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \

@@ -23,9 +23,14 @@
 SUBDIRS =
 examples:  $(EXAMPLES)
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@ $(PRECOMPILE_FLAGS)
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
-AM_LDFLAGS=$(PARLIBS)
+AM_CXXFLAGS = @DEFAULT_CFLAGS@  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
+if FFLASFFPACK_PRECOMPILED
+AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+else
+AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+endif
 
 EXAMPLES = pluq
 pluq_SOURCES = pluq.C
