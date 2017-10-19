@@ -66,7 +66,7 @@ BASIC_TESTS =               \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
@@ -77,7 +77,7 @@ test_interfaces_c_LDADD = \
 	-lm -lstdc++
 
 else
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 NOT_A_TEST =  \
 		test-lqup2             \
