@@ -23,7 +23,7 @@ if FFLASFFPACK_PRECOMPILED
 pkgincludesubdir=$(pkgincludedir)/interfaces/libs
 
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CPPFLAGS = -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field
+AM_CPPFLAGS = -I$(top_srcdir) #/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS)
 #AM_LDFLAGS=-static 
 
