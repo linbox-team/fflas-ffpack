@@ -42,25 +42,25 @@ EXTRA_PROGRAMS=$(AUTOTUNE)
 EXTRA_DIST=tune_fgemm.sh tune_pluq.sh tune_charpoly.sh tune_ftrtri.sh tune_fsytrf.sh tune_fsyrk.sh
 
 define run_tune_fgemm
-	./tune_fgemm.sh
+	${top_srcdir}/autotune/tune_fgemm.sh
 endef	
 define run_tune_pluq
-	./tune_pluq.sh
+	${top_srcdir}/autotune/tune_pluq.sh
 endef	
 define run_tune_charpoly
-	./tune_charpoly.sh
+	${top_srcdir}/autotune/tune_charpoly.sh
 endef
 define run_tune_ftrtri
-	./tune_ftrtri.sh
+	${top_srcdir}/autotune/tune_ftrtri.sh
 endef
 define run_tune_fsytrf
-	./tune_fsytrf.sh
+	${top_srcdir}/autotune/tune_fsytrf.sh
 endef
 define run_tune_fsyrk
-	./tune_fsyrk.sh
+	${top_srcdir}/autotune/tune_fsyrk.sh
 endef
 define merge_thresholds
-	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h ftrtri-threshold.h fsytrf-threshold.h fsyrk-threshold.h> ../fflas-ffpack/fflas-ffpack-thresholds.h
+	cat fgemm-thresholds.h pluq-threshold.h charpoly-LUK-ArithProg-threshold.h charpoly-Danilevskii-LUK-threshold.h arithprog-blocksize.h ftrtri-threshold.h fsytrf-threshold.h fsyrk-threshold.h> ${top_srcdir}/fflas-ffpack/fflas-ffpack-thresholds.h
 endef	
 
 # This forces the autotune runs to be sequential
