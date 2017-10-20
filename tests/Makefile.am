@@ -26,9 +26,6 @@ check:
 
 AM_CXXFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
 
-#LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
-#AM_LDFLAGS= $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS) $(PARLIBS)
-
 PERFPUBLISHERFILE=tests-report.xml
 
 BASIC_TESTS =               \
@@ -66,7 +63,7 @@ BASIC_TESTS =               \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
-AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
@@ -76,10 +73,10 @@ test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
 	-lm -lstdc++
-
 else
-AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
+
 NOT_A_TEST =  \
 		test-lqup2             \
 		test-fsquare           \
