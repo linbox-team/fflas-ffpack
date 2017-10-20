@@ -61,7 +61,7 @@ libfflas_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
 libffpack_la_SOURCES= ffpack_inst.C \
 		      ffpack_inst_implem.inl
 libffpack_la_LDFLAGS= $(LDADD) -version-info 1:0:0 \
-		       -no-undefined -lfflas 
+		       -no-undefined $(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
 
 EXTRA_libffpack_la_DEPENDENCIES= libfflas.la
 
@@ -71,7 +71,7 @@ libfflas_c_la_SOURCES=fflas_lvl1.C \
 		    fflas_sparse.C
 #libfflas_c_la_CPPFLAGS=$(AM_CPPFLAGS) -DFFLAS_COMPILED -DFFPACK_COMPILED
 libfflas_c_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
-                       -no-undefined -lfflas
+                       -no-undefined 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
 
 EXTRA_libfflas_c_la_DEPENDENCIES=libfflas.la
 
