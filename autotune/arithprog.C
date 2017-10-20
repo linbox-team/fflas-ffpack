@@ -76,14 +76,14 @@ int main (int argc, char** argv) {
 	FFLAS::fassign (F, dim, dim, A, dim, B, dim);
 	typedef typename Givaro::Poly1Dom<Field>::Element Polynomial;
 	time_t result = std::time(NULL);
-	cout << std::endl 
+	cerr << std::endl 
 		 << "---------------------------------------------------------------------"
 		 << std::endl << std::asctime(std::localtime(&result))
 		 << std::endl
 		 << "Threshold for ArithProg CharPoly algorithm";
-	F.write(cout << " (using ") << ')' << endl << endl;
+	F.write(cerr << " (using ") << ')' << endl << endl;
 
-	cout << "Charpoly:  n = "<<dim<<"  block_size   seconds            Gfops"<< std::endl;
+	cerr << "Charpoly:  n = "<<dim<<"  block_size   seconds            Gfops"<< std::endl;
 	double CurrTime;
 	double PrevTime = 1000000;
 	double BestTime = 1000000;
@@ -110,15 +110,15 @@ int main (int argc, char** argv) {
 		}
 		CurrTime = tim.realtime()/iter;
 
-		cout << "                           ";
-		cout.width(4);
-		cout << n;
-		cout << "  ";
-		cout.width(15);
-		cout << CurrTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(dim,dim,r, CurrTime) << "  "<<std::endl;
+		cerr << "                           ";
+		cerr.width(4);
+		cerr << n;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << CurrTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(dim,dim,r, CurrTime) << "  "<<std::endl;
 
 		if (BestTime > CurrTime){ // time decreasing -> keep increasing the block size
 			nbest = n;
@@ -132,12 +132,12 @@ int main (int argc, char** argv) {
 		n += step;
 	} while ( (increasing < confirm ) && (n < nmax));
 
-	cout<<endl;
+	cerr<<endl;
 	if (nbest != 0 ) {
-		cerr << "#ifndef __FFLASFFPACK_ARITHPROG_THRESHOLD"<< endl;
-		cerr << "#define __FFLASFFPACK_ARITHPROG_THRESHOLD" << ' ' << nbest << endl;
-		cout << "defined __FFLASFFPACK_ARITHPROG_THRESHOLD to " << nbest << std::endl;
-		std::cerr << "#endif" << endl  << endl;
+		cout << "#ifndef __FFLASFFPACK_ARITHPROG_THRESHOLD"<< endl;
+		cout << "#define __FFLASFFPACK_ARITHPROG_THRESHOLD" << ' ' << nbest << endl;
+		cerr << "defined __FFLASFFPACK_ARITHPROG_THRESHOLD to " << nbest << std::endl;
+		std::cout << "#endif" << endl  << endl;
 	}
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);

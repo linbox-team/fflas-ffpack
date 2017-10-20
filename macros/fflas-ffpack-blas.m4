@@ -86,7 +86,7 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 			[
 			AC_MSG_RESULT(problem)
 			AC_MSG_CHECKING(for OpenBLAS)
-			CBLAS_LIBS="${CBLAS_LIBS} -lopenblas -lpthread"
+			CBLAS_LIBS="${CBLAS_LIBS} -lopenblas -lpthread -lgfortran"
 			LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
 			AC_TRY_LINK( [
 #define __FFLASFFPACK_CONFIGURATION

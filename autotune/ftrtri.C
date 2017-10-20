@@ -64,15 +64,15 @@ int main () {
 	time_t result = std::time(NULL);
 	Field::Element_ptr U = FFLAS::fflas_new (F, nmax, nmax);
 	FFLAS::fassign (F, n, n, U, ldt, T, ldt);
-	cout << std::endl 
+	cerr << std::endl 
 		 << "---------------------------------------------------------------------"
 		 << std::endl << std::asctime(std::localtime(&result))
 		 << std::endl
 		 << "Threshold for ftrtri base case" ;
-	F.write(cout << " (using ") << ')' << endl << endl;
+	F.write(cerr << " (using ") << ')' << endl << endl;
 
-	cout << "ftrtri:  n                   Base case                        Recursive 1 level" << std::endl;
-	cout << "                    seconds            Gfops          seconds            Gfops" << std::endl;
+	cerr << "ftrtri:  n                   Base case                        Recursive 1 level" << std::endl;
+	cerr << "                    seconds            Gfops          seconds            Gfops" << std::endl;
 	double BCTime, RecTime;
 	int iter;
 	do{
@@ -103,20 +103,20 @@ int main () {
 		}
 		RecTime = tim.realtime()/iter;
 
-		cout << "      ";
-		cout.width(4);
-		cout << n;
-		cout << "  ";
-		cout.width(15);
-		cout << BCTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n, BCTime) << "  ";
-		cout.width(15);
-		cout << RecTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n, RecTime) << endl;
+		cerr << "      ";
+		cerr.width(4);
+		cerr << n;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << BCTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n, BCTime) << "  ";
+		cerr.width(15);
+		cerr << RecTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n, RecTime) << endl;
 
 		if (BCTime > RecTime){
 			count++;
@@ -135,12 +135,12 @@ int main () {
 		}
 	} while ((prec > 1 ) && (n < nmax));
 
-	cout<<endl;
+	cerr<<endl;
 	if (nbest != 0 ) {
-		cerr << "#ifndef __FFLASFFPACK_FTRTRI_THRESHOLD"  << endl;
-		cerr << "#define __FFLASFFPACK_FTRTRI_THRESHOLD" << ' ' <<  nbest << endl;
-		cout << "defined __FFLASFFPACK_FTRTRI_THRESHOLD to " << nbest << "" << std::endl;
-		std::cerr << "#endif" << endl  << endl;
+		cout << "#ifndef __FFLASFFPACK_FTRTRI_THRESHOLD"  << endl;
+		cout << "#define __FFLASFFPACK_FTRTRI_THRESHOLD" << ' ' <<  nbest << endl;
+		cerr << "defined __FFLASFFPACK_FTRTRI_THRESHOLD to " << nbest << "" << std::endl;
+		std::cout << "#endif" << endl  << endl;
 	}
 	FFLAS::fflas_delete(T);
 	FFLAS::fflas_delete(U);

@@ -215,7 +215,7 @@ int tmain(){
 	double Gflops=(2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iters);
 // 	Gflops*=p.bitsize()/16.;
 	cout  << "Time: "<< (time/double(iters))
-	      <<" Gflops: "<<Gflops
+	      <<" Gfops: "<<Gflops
 	      << " (total:" << time <<") "
 	      <<typeid(Ints).name()
 	      <<"  | perword: "<< (Gflops*double(p.bitsize()))/64. ;

@@ -104,10 +104,10 @@ int main(int argc, char** argv) {
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-  std::cerr <<"Time: " << time / double(iter)
-			<< " Gflops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter)
+  std::cout <<"Time: " << time / double(iter)
+			<< " Gfops: " << (2.*double(n)/1000.*double(n)/1000.*double(n)/1000.0) / time * double(iter)
             << " bitsize: " << bs;
-  FFLAS::writeCommandString(std::cerr, as) << std::endl;
+  FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;
 }
