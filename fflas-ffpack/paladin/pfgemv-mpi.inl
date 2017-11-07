@@ -214,12 +214,12 @@ MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);
 std::cout << ">>>>>>>>>>Worker thread: ";printMPItype(chooseMPItype<typename Field::Element>::val);
 					if(rank<m%nprocs+1){
 						typename Field::Element_ptr AA = fflas_new(F,m/nprocs+1,n);
-						MPI_Recv(AA, (m/nprocs+1)*n,  mpi_type_wrapper<typename Field::Element>().mpi_type/*chooseMPItype<typename Field::Element>::val*/, 0, 123, MPI_COMM_WORLD,&status[0]);
+						MPI_Recv(AA, (m/nprocs+1)*n,  chooseMPItype<typename Field::Element>::val, 0, 123, MPI_COMM_WORLD,&status[0]);
 						
 						
 						XX = fflas_new(F,n,incX);
 						
-						MPI_Recv(XX, n,  mpi_type_wrapper<typename Field::Element>().mpi_type/*chooseMPItype<typename Field::Element>::val*/, 0, 123, MPI_COMM_WORLD,&status[0]);
+						MPI_Recv(XX, n,  chooseMPItype<typename Field::Element>::val, 0, 123, MPI_COMM_WORLD,&status[0]);
 						
 						
 						YY = fflas_new(F,m/nprocs+1, incY);
@@ -234,18 +234,18 @@ std::cout << ">>>>>>>>>>Worker thread: ";printMPItype(chooseMPItype<typename Fie
 						FFLAS::fflas_delete(AA);
 						FFLAS::fflas_delete(XX);				
 						
-						MPI_Isend(YY, (m/nprocs+1),  mpi_type_wrapper<typename Field::Element>().mpi_type/*chooseMPItype<typename Field::Element>::val*/, 0, 124, MPI_COMM_WORLD, &recv_request[rank]);
+						MPI_Isend(YY, (m/nprocs+1),  chooseMPItype<typename Field::Element>::val, 0, 124, MPI_COMM_WORLD, &recv_request[rank]);
 						FFLAS::fflas_delete(YY);
 						
 					}else{ 
 						
 						AA = fflas_new(F,m/nprocs,n);
-						MPI_Recv(AA, (m/nprocs)*n,  mpi_type_wrapper<typename Field::Element>().mpi_type/*chooseMPItype<typename Field::Element>::val*/, 0, 123, MPI_COMM_WORLD,&status[0]);
+						MPI_Recv(AA, (m/nprocs)*n,  chooseMPItype<typename Field::Element>::val, 0, 123, MPI_COMM_WORLD,&status[0]);
 						
 						
 						XX = fflas_new(F,n,incX);
 						
-						MPI_Recv(XX, n,  mpi_type_wrapper<typename Field::Element>().mpi_type/*chooseMPItype<typename Field::Element>::val*/, 0, 123, MPI_COMM_WORLD,&status[0]);
+						MPI_Recv(XX, n,  chooseMPItype<typename Field::Element>::val, 0, 123, MPI_COMM_WORLD,&status[0]);
 						
 						
 						YY = fflas_new(F,m/nprocs,incY);
@@ -261,7 +261,7 @@ std::cout << ">>>>>>>>>>Worker thread: ";printMPItype(chooseMPItype<typename Fie
 						FFLAS::fflas_delete(AA);
 						FFLAS::fflas_delete(XX);		
 
-						MPI_Isend(YY, (m/nprocs),  mpi_type_wrapper<typename Field::Element>().mpi_type/*chooseMPItype<typename Field::Element>::val*/, 0, 124, MPI_COMM_WORLD, &recv_request[rank]);
+						MPI_Isend(YY, (m/nprocs),  chooseMPItype<typename Field::Element>::val, 0, 124, MPI_COMM_WORLD, &recv_request[rank]);
 						
 						FFLAS::fflas_delete(YY);						
 
