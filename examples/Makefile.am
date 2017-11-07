@@ -23,10 +23,14 @@
 SUBDIRS =
 examples:  $(EXAMPLES)
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARFLAGS)
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
-AM_LDFLAGS=-static $(PARLIBS)
+AM_CXXFLAGS = @DEFAULT_CFLAGS@  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
+if FFLASFFPACK_PRECOMPILED
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+else
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+endif
 
 EXAMPLES = pluq
 pluq_SOURCES = pluq.C
@@ -36,7 +40,7 @@ CLEANFILES = $(EXAMPLES)
 EXTRA_PROGRAMS = $(EXAMPLES)
 
 define other_compilation
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) $(OPTFLAGS) $(PARFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
 endef
 
 %:%.C

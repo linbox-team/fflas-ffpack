@@ -55,7 +55,6 @@ AC_DEFUN([FF_CHECK_SIMD],
 			       ])
 	           AS_IF([ test "x$sse_found" = "xyes" ],
 		   [
-			AC_DEFINE(HAVE_SSE4_1_INSTRUCTIONS,1,[Define if SSE is available])
 			AC_SUBST(SSEFLAGS)
 			AC_MSG_RESULT(yes)
                    ],
@@ -90,8 +89,6 @@ AC_DEFUN([FF_CHECK_SIMD],
 		   AS_IF([ test "x$avx_found" = "xyes" ],
 		   [
 			AC_MSG_RESULT(yes)
-			AC_DEFINE(HAVE_AVX_INSTRUCTIONS,1,[Define if AVX is available])
-			
 	                dnl Check for AVX2
 			AC_MSG_CHECKING(for AVX2)
 			for switch_avx2flags in "" "-mfma -mavx2"; do
@@ -118,7 +115,6 @@ AC_DEFUN([FF_CHECK_SIMD],
 			AS_IF([ test "x$avx2_found" = "xyes" ],
 			[
 				AC_MSG_RESULT(yes)
-				AC_DEFINE(HAVE_AVX2_INSTRUCTIONS,1,[Define if AVX2 is available])
 				AVXFLAGS=${AVX2FLAGS}
 			],
 			[ AC_MSG_RESULT(no) ]

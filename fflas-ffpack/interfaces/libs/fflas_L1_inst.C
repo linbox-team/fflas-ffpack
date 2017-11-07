@@ -31,8 +31,8 @@
 #define __FFLAS_L1_INST_C
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
-#include "fflas.h"
-#include "fflas_helpers.inl"
+#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas-ffpack/fflas/fflas_helpers.inl"
 
 #ifdef INST_OR_DECL
 #undef INST_OR_DECL

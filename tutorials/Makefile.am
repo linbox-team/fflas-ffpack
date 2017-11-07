@@ -23,10 +23,15 @@
 
 tutorials:  $(TUTORIALS)
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CXXFLAGS +=  $(CBLAS_FLAG) $(GIVARO_CFLAGS) $(OPTFLAGS) $(CUDA_CFLAGS) $(PARFLAGS)
-LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS)
-AM_LDFLAGS=-static $(PARLIBS)
+AM_CXXFLAGS = @DEFAULT_CFLAGS@ -I$(top_srcdir) $(PRECOMPILE_FLAGS)
+
+if FFLASFFPACK_PRECOMPILED
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
+	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+else
+LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
+endif
 
 TUTORIALS = fflas_101 fflas_101_lvl1 fflas-101_1 fflas-101_3 2x2-fgemm 101-fgemm 2x2-pluq 2x2-ftrsv ffpack-solve ffpack-fgesv
 2x2_fgemm_SOURCES = 2x2-fgemm.C

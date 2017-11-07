@@ -70,10 +70,8 @@ if test "x${CCNAM}" = "xclang38" ; then
 else
    AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])
 fi
+REQUIRED_FLAGS="$CXX11FLAGS"
 
-AC_SUBST([DEFAULT_CFLAGS])
-AC_SUBST([DEBUG_CFLAGS])
-AC_SUBST([TESTS_CFLAGS])
 
 DEBUG_CFLAGS="-g"
 DEFAULT_CFLAGS=""
@@ -149,8 +147,7 @@ fi
 
 
 DEFAULT_CFLAGS="${DEFAULT_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
-TESTS_CFLAGS="${TESTS_CFLAGS} ${WARN_CFLAGS} ${DEBUG_CFLAGS}"
-
+AC_SUBST([DEFAULT_CFLAGS])
 
 AC_HEADER_STDC
 AC_PROG_LIBTOOL
@@ -161,29 +158,28 @@ LT_PREREQ([2.4.2])
 LT_INIT
 
 
+echo "DEFAULT_CFLAGS=${DEFAULT_CFLAGS}"
+echo "DEBUG_CFLAGS=${DEBIG_CFLAGS}"
+echo "TESTS_CFLAGS=${TESTS_CFLAGS}"
 echo "-----------------------------------------------"
 echo "     START  FFLAS-FFPACK CONFIG                "
 echo "-----------------------------------------------"
 
 FF_CHECK_OMP
-dnl check which SIMD instructions are available and defines HAVE_{SSE_4_1,AVX,AVX2}_INSTRUCTIONS and compiler flags
-dnl CUSTOM_SIMD="no"
-dnl FF_CHECK_SIMD
-dnl FF_CHECK_SSE
-dnl FF_CHECK_AVX
-dnl arch=`echo $target | cut -d"-" -f1`
-dnl if [[ "x$CUSTOM_SIMD" = "xno" ]] ; then
-dnl    AX_CHECK_X86_FEATURES([][])
-dnl else
-dnl    CXXFLAGS="${CXXFLAGS} ${SSEFLAGS} ${AVXFLAGS}"
-dnl fi
+
+
+# Checks which SIMD optimization flags to use and set SIMD_CFLAGS accordingly
+INSTR_SET
+AC_SUBST(SIMD_FLAGS)
+
 dnl gcc-4.9.2 bug See https://trac.sagemath.org/ticket/17635#comment:178
 AS_IF([ test  "x$CCNAM" = "xgcc492" ],[CXXFLAGS="${CXXFLAGS} -fpermissive"],[])
 
 dnl With GCC's default ABI version, a __m128 or __m256 are the same types and therefore we cannot
 dnl have overloads for both types without linking error.
-AS_IF([test "x$CCNAM" = "xgcc"],[CXXFLAGS="${CXXFLAGS} -fabi-version=6"],[])
+AS_IF([test "x$CCNAM" = "xgcc"],[REQUIRED_FLAGS="${REQUIRED_FLAGS} -fabi-version=6"],[])
 
+AC_SUBST(REQUIRED_FLAGS)
 
 PARFLAGS="${OMPFLAGS}"
 PARLIBS="${OMPFLAGS}"
@@ -234,6 +230,7 @@ echo "-----------------------------------------------"
 #FF_CHECK_GMP
 
 PKG_CHECK_MODULES([GIVARO],[givaro])
+
 
 dnl FF_CHECK_GIVARO(,,[
 dnl echo '*******************************************************************************'
@@ -314,7 +311,14 @@ FF_DOC
 	# mkdir ./benchmarks/data  ;
 # fi
 
-CXXFLAGS="${CXXFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${REQUIRED_FLAGS}"
+CXXFLAGS="${CXXFLAGS} ${SIMD_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${GIVARO_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${CBLAS_FLAG}"
+CXXFLAGS="${CXXFLAGS} ${CUDA_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${PARFLAGS}"
+#removing possible duplicates of -std=gnu++11 and -fabi-version=6
+CXXFLAGS=`echo "${CXXFLAGS}" |xargs -n1 | sort -u|xargs`
 
 AC_SUBST(CXXFLAGS)
 

@@ -37,7 +37,7 @@
 
 #include "givaro/modular.h"
 #include "givaro/modular-balanced.h"
-#include "ffpack.h"
+#include "fflas-ffpack/ffpack/ffpack.h"
 
 // This is a C file: we do template instantiations
 #ifdef INST_OR_DECL
