@@ -63,7 +63,6 @@ size_t mvcnt = 0;
 #include "fflas-ffpack/utils/args-parser.h"
 
 #include <random>
-#include <chrono>
 
 using namespace std;
 using namespace FFPACK;
@@ -389,7 +388,7 @@ int main(int argc, char** argv)
 	size_t r=70;
 	size_t iters=3;
 	bool loop=false;
-	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
@@ -399,7 +398,7 @@ int main(int argc, char** argv)
 		{ 'r', "-r R", "Set the rank.", TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		END_OF_ARGUMENTS
 	};
 

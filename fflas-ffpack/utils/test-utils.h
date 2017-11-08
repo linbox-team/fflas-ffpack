@@ -47,10 +47,10 @@
 #include <functional>
 
 namespace FFLAS {
-	size_t getSeed(){
+	uint64_t getSeed(){
 		struct timeval tp;
 		gettimeofday(&tp, 0) ;
-        return static_cast<size_t>(tp.tv_usec + tp.tv_sec*1000000);
+        return static_cast<uint64_t> (tp.tv_usec + tp.tv_sec*1000000);
 	}
 }
 namespace FFPACK {

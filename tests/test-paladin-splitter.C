@@ -47,6 +47,7 @@
 
 typedef Givaro::ModularBalanced<double> Field;
 
+using namespace FFLAS;
 template<class CutStrat, class StratParam>
 bool tmain(int argc, char** argv, std::string printStrat)
 {
@@ -60,7 +61,7 @@ bool tmain(int argc, char** argv, std::string printStrat)
     int64_t q = 131071 ;
     bool dataPar = true;
     int proc = MAX_THREADS;
-    uint64_t seed=time(NULL);
+    uint64_t seed=getSeed();
     int strat = 1;
 
     Argument as[] = {
@@ -73,7 +74,7 @@ bool tmain(int argc, char** argv, std::string printStrat)
 		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
         END_OF_ARGUMENTS
     };
-    FFLAS::parseArguments(argc,argv,as);
+    parseArguments(argc,argv,as);
 
     size_t m = n; // matrices are square in this test
     
@@ -81,10 +82,10 @@ bool tmain(int argc, char** argv, std::string printStrat)
     Field::RandIter G(F,0,seed);
 
 // Allocate matrices
-  typename Field::Element_ptr A = FFLAS::fflas_new (F, m, n);
-  typename Field::Element_ptr B = FFLAS::fflas_new (F, m, n);
-  typename Field::Element_ptr C = FFLAS::fflas_new (F, m, n);
-  typename Field::Element_ptr Acop = FFLAS::fflas_new (F, m, n);
+  typename Field::Element_ptr A = fflas_new (F, m, n);
+  typename Field::Element_ptr B = fflas_new (F, m, n);
+  typename Field::Element_ptr C = fflas_new (F, m, n);
+  typename Field::Element_ptr Acop = fflas_new (F, m, n);
 
 
   auto CUTTER = SPLITTER(proc, CutStrat, StratParam);
@@ -127,10 +128,10 @@ bool tmain(int argc, char** argv, std::string printStrat)
   }
   
 // copy A for verification
-    FFLAS::fassign(F,m,n,A,n,Acop,n);
+    fassign(F,m,n,A,n,Acop,n);
 
 // time  
-    FFLAS::Timer chrono;
+    Timer chrono;
     double *time=new double[iters];
 
 // parallel add using PARFOR1D
@@ -211,10 +212,10 @@ bool tmain(int argc, char** argv, std::string printStrat)
     else       
         std::cout<<" TASK parallelism is used"<<dataflow<<std::endl;
     
-    FFLAS::fflas_delete(A);
-    FFLAS::fflas_delete(Acop);
-    FFLAS::fflas_delete(B);
-    FFLAS::fflas_delete(C);
+    fflas_delete(A);
+    fflas_delete(Acop);
+    fflas_delete(B);
+    fflas_delete(C);
     
     return fail;
     
@@ -242,23 +243,23 @@ int main(int argc, char** argv)
         { 'd', "-d Y/N", "run the parallel program using data parallelism(Y)/task parallelism(N).", TYPE_BOOL , &dataPar },
         END_OF_ARGUMENTS
     };
-    FFLAS::parseArguments(argc,argv,as);
+    parseArguments(argc,argv,as);
 
 
     
     bool fail = false;
     
     switch (strat){
-        case 1: fail |= tmain<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::BLOCK, FFLAS::THREADS"));
-        case 2: fail |= tmain<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Grain>(argc,argv,std::string("FFLAS::BLOCK, FFLAS::GRAIN"));
-        case 3: fail |= tmain<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Fixed>(argc,argv,std::string("FFLAS::BLOCK, FFLAS::FIXED"));
-        case 4: fail |= tmain<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::ROW, FFLAS::THREADS"));
-        case 5: fail |= tmain<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>(argc,argv,std::string("FFLAS::ROW, FFLAS::GRAIN"));
-        case 6: fail |= tmain<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Fixed>(argc,argv,std::string("FFLAS::ROW, FFLAS::FIXED"));
-        case 7: fail |= tmain<FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::COLUMN, FFLAS::THREADS"));
-        case 8: fail |= tmain<FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Grain>(argc,argv,std::string("FFLAS::COLUMN, FFLAS::GRAIN"));
-        case 9: fail |= tmain<FFLAS::CuttingStrategy::Column,FFLAS::StrategyParameter::Fixed>(argc,argv,std::string("FFLAS::COLUMN, FFLAS::FIXED"));
-        case 10: fail |= tmain<FFLAS::CuttingStrategy::Single,FFLAS::StrategyParameter::Threads>(argc,argv,std::string("FFLAS::SINGLE, FFLAS::THREADS"));
+        case 1: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Threads>(argc,argv,std::string("BLOCK, THREADS"));
+        case 2: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Grain>(argc,argv,std::string("BLOCK, GRAIN"));
+        case 3: fail |= tmain<CuttingStrategy::Block,StrategyParameter::Fixed>(argc,argv,std::string("BLOCK, FIXED"));
+        case 4: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Threads>(argc,argv,std::string("ROW, THREADS"));
+        case 5: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Grain>(argc,argv,std::string("ROW, GRAIN"));
+        case 6: fail |= tmain<CuttingStrategy::Row,StrategyParameter::Fixed>(argc,argv,std::string("ROW, FIXED"));
+        case 7: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Threads>(argc,argv,std::string("COLUMN, THREADS"));
+        case 8: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Grain>(argc,argv,std::string("COLUMN, GRAIN"));
+        case 9: fail |= tmain<CuttingStrategy::Column,StrategyParameter::Fixed>(argc,argv,std::string("COLUMN, FIXED"));
+        case 10: fail |= tmain<CuttingStrategy::Single,StrategyParameter::Threads>(argc,argv,std::string("SINGLE, THREADS"));
       }
 
     return fail;

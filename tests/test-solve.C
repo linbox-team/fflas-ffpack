@@ -44,6 +44,7 @@
 
 
 using namespace std;
+using namespace FFLAS;
 using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
@@ -115,7 +116,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 		//typedef typename Field::Element Element ;
 		// choose Field
 		Field* F= chooseField<Field>(q,b,seed);
-		typename Field::RandIter G(*F,0,seed);
+		typename Field::RandIter G(*F,0,seed++);
 		if (F==nullptr)
 			return true;
 
@@ -146,7 +147,7 @@ int main(int argc, char** argv)
 
 	size_t iters=30;
 	bool loop=false;
-	uint64_t seed = time(NULL);
+	uint64_t seed = getSeed();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
@@ -154,7 +155,7 @@ int main(int argc, char** argv)
 
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
                 END_OF_ARGUMENTS
         };
 

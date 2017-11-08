@@ -139,7 +139,7 @@ int main(int argc, char** argv){
 	size_t n = 280;
 	size_t iters = 6 ;
 	bool loop=false;
-	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 	size_t threshold =64;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field cardinality.",         TYPE_INTEGER , &q },
@@ -148,7 +148,7 @@ int main(int argc, char** argv){
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
 		{ 't', "-t T", "Set the threshold to the base case.",    TYPE_INT , &threshold },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};

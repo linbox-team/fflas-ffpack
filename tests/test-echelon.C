@@ -53,6 +53,7 @@
 
 using namespace std;
 using namespace FFPACK;
+using namespace FFLAS;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
@@ -411,7 +412,7 @@ int main(int argc, char** argv){
 	size_t r = 54;
 	size_t iters = 3 ;
 	bool loop = false;
-	uint64_t seed =  std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed =  getSeed();
 	static Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic.",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.", TYPE_INT , &b },
@@ -420,7 +421,7 @@ int main(int argc, char** argv){
 		{ 'r', "-r r", "Set the rank of the matrix."          , TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};

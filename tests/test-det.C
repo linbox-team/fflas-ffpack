@@ -45,13 +45,14 @@
 
 #include "fflas-ffpack/utils/test-utils.h"
 
-// using namespace std;
+using namespace FFLAS;
+
 template<class Field, class RandIter>
 bool test_det(Field &F, size_t n, int iter, RandIter& G)
 {
 	typedef typename Field::Element Element;
 	//! @todo test with stride
-	Element * A = FFLAS::fflas_new (F, n, n);
+	Element * A = fflas_new (F, n, n);
 
 	bool pass = true;
 	Element d,dt;
@@ -66,7 +67,7 @@ bool test_det(Field &F, size_t n, int iter, RandIter& G)
 		}
 		++dt;
 	}
-	FFLAS::fflas_delete( A);
+	fflas_delete( A);
 	return pass;
 	}
 
@@ -76,16 +77,16 @@ int main(int argc, char** argv)
 	int iters =10 ;
 	Givaro::Integer p = 65521 ;
 	size_t n = 200 ;
-	uint64_t seed = time(NULL);
+	uint64_t seed = getSeed();
 	Argument as[] = {
 		{ 'p', "-p P", "Set the field characteristic.",         TYPE_INTEGER , &p },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	bool pass = true ;
 	typedef Givaro::ModularBalanced<double> Field;

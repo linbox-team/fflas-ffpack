@@ -38,7 +38,7 @@
 #include "fflas-ffpack/utils/test-utils.h"
 #include "assert.h"
 
-// using namespace FFPACK;
+using namespace FFLAS;
 using FFPACK::RandomMatrix ;
 using Givaro::ModularBalanced ;
 
@@ -47,20 +47,20 @@ bool test_fscal(const Field & F, const typename Field::Element & alpha, size_t m
 {
 	typedef typename Field::Element T ;
 
-	T * A = FFLAS::fflas_new<T>(m*n);
-	T * C = FFLAS::fflas_new<T>(m*n);
-	T * D = FFLAS::fflas_new<T>(m*n);
+	T * A = fflas_new<T>(m*n);
+	T * C = fflas_new<T>(m*n);
+	T * D = fflas_new<T>(m*n);
 
 if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
- FFLAS::Timer tim, tom, tam ;
+ Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F, m, k, A, n, G);
 		RandomMatrix(F, m, k, C, n, G);
-		FFLAS::fassign(F,m,k,C,n,D,n);
+		fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -70,7 +70,7 @@ if (timing)	std::cout << ">>>" << std::endl ;
 		tim += tam ;
 
 		tam.clear();tam.start();
-		FFLAS::fscal(F,m,k,alpha,A,n,C,n);
+		fscal(F,m,k,alpha,A,n,C,n);
 		tam.stop();
 		tom += tam ;
 
@@ -87,9 +87,9 @@ if (timing)	std::cout << ">>>" << std::endl ;
 	if (timing)	std::cout << "fscal (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 	if (timing)	std::cout << "<<<" << std::endl;
-	FFLAS::fflas_delete( A );
-	FFLAS::fflas_delete( C );
-	FFLAS::fflas_delete( D );
+	fflas_delete( A );
+	fflas_delete( C );
+	fflas_delete( D );
 
 	return true;
 }
@@ -119,18 +119,18 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 {
 	typedef typename Field::Element T ;
 
-	T * C = FFLAS::fflas_new<T>(m*n);
-	T * D = FFLAS::fflas_new<T>(m*n);
+	T * C = fflas_new<T>(m*n);
+	T * D = fflas_new<T>(m*n);
 
 	if (timing)	std::cout << ">>>" << std::endl ;
 
 	size_t iter = 3 ;
- FFLAS::Timer tim, tom, tam ;
+ Timer tim, tom, tam ;
 	tim.clear() ; tom.clear() ;
 	if (timing)	F.write(std::cout << "Field ") << std::endl;
 	for (size_t b = 0 ; b < iter ; ++b) {
 		RandomMatrix(F, m, k, C, n, G);
-		FFLAS::fassign(F,m,k,C,n,D,n);
+		fassign(F,m,k,C,n,D,n);
 
 		tam.clear();tam.start();
 		for (size_t i = 0 ; i < m ; ++i)
@@ -140,7 +140,7 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 		tim += tam ;
 
 		tam.clear();tam.start();
-		FFLAS::fscalin(F,m,k,alpha,C,n);
+		fscalin(F,m,k,alpha,C,n);
 		tam.stop();
 		tom += tam ;
 
@@ -157,8 +157,8 @@ bool test_fscalin(const Field & F, const typename Field::Element & alpha, size_t
 	if (timing)	std::cout << "fscalin (AVX): " << tom.usertime()/(double)iter << 's'<<  std::endl;
 
 	if (timing)	std::cout << "<<<" << std::endl;
-	FFLAS::fflas_delete( C );
-	FFLAS::fflas_delete( D );
+	fflas_delete( C );
+	fflas_delete( D );
 
 	return true;
 }
@@ -189,7 +189,7 @@ int main(int ac, char **av) {
 	size_t n = 301 ;
 	size_t k = 300 ;
 	uint64_t p = 7;
-	uint64_t seed = time(NULL);
+	uint64_t seed = getSeed();
 	bool timing = false ;
 
 	Argument as[] = {
@@ -203,7 +203,7 @@ int main(int ac, char **av) {
 	};
 
 
-	FFLAS::parseArguments(ac,av,as);
+	parseArguments(ac,av,as);
 
 	if (n < k) {
 		std::cout << "Usage : m k n ; matrix of size m x k, lda is n" << std::endl;

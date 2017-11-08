@@ -40,6 +40,7 @@
 #include "fflas-ffpack/utils/test-utils.h"
 #include "assert.h"
 
+using namespace FFLAS;
 template<class Field>
 bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
@@ -269,7 +270,7 @@ int main(int ac, char **av) {
 	static size_t n = 301 ;
 	static size_t k = 300 ;
 	static uint64_t  p = 7;
-	int seed = (int) time(NULL);
+	uint64_t seed = getSeed();
 	static bool timing = false ;
 
 	static Argument as[] = {
@@ -277,7 +278,7 @@ int main(int ac, char **av) {
 		{ 'n', "-n N", "Set the number of cols in C.",   TYPE_INT , &n },
 		{ 'm', "-m N", "Set the number of rows in C.",   TYPE_INT , &m },
 		{ 'k', "-k N", "Set the number of rows in B.",   TYPE_INT , &k },
-		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed                 .", TYPE_UINT64, &seed },
 		{ 't', "-timing", "Output timings"            , TYPE_NONE, &timing},
 		END_OF_ARGUMENTS
 	};

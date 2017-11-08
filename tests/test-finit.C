@@ -44,7 +44,7 @@
 
 #include <random>
 #include <chrono>
-
+using namespace FFLAS;
 template<class Field>
 bool test_freduce (const Field & F, size_t m, size_t k, size_t n, bool timing, uint64_t seed)
 {
@@ -156,7 +156,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t k, size_t n, 
 		std::cout<<oss.str();
 		std::cout<<"... ";
 
-		ok = ok && test_freduce (*F,m,k,n,timing, seed);
+		ok = ok && test_freduce (*F,m,k,n,timing, seed++);
 		if (!ok)
 			std::cout << "FAILED "<<std::endl;
 		else
@@ -176,7 +176,7 @@ int main(int ac, char **av) {
 	size_t n = 301 ;
 	size_t k = 299 ;
 	size_t iters=3;
-	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 	bool loop=false;
 	bool timing = false ;
 
@@ -187,7 +187,7 @@ int main(int ac, char **av) {
 		{ 'm', "-m N", "Set the number of rows in C.",   TYPE_INT , &m },
 		{ 'k', "-k N", "Set the number of rows in B.",   TYPE_INT , &k },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed                 .", TYPE_UINT64 , &seed },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
 		{ 't', "-timing", "Output timings"            , TYPE_NONE, &timing},
 		END_OF_ARGUMENTS
