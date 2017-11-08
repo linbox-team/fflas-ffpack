@@ -123,12 +123,12 @@ bool launch_MM_dispatch(const Field &F, const int mm, const int nn, const int kk
 template <class Field>
 bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t iters, size_t seed){
         bool ok = true ;
-
+        size_t local_seed = seed;
         int nbit=(int)iters;
         while (ok &&  nbit){
                 typedef typename Field::Element Element ;
                     // choose Field
-                Field* F= chooseField<Field>(q,b,seed);
+                Field* F= chooseField<Field>(q,b,local_seed);
                 if (F==nullptr)
                         return true;
 
@@ -144,7 +144,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t 
                 F->write(std::cerr) << std::endl;
 #endif
                 typedef typename Field::Element  Element ;
-                typename Field::RandIter R(*F,b,seed++);
+                typename Field::RandIter R(*F,b,local_seed++);
                 typename Field::NonZeroRandIter NZR(R);
 
                 ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters, R);
@@ -208,6 +208,7 @@ int main(int argc, char** argv)
 
         FFLAS::parseArguments(argc,argv,as);
 
+        srand(seed);
         bool ok = true;
         do{
                 ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,iters, seed);
