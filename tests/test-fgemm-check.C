@@ -173,7 +173,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t 
                 }
                 nbit--;
                 if ( !ok )
-                        std::cout << "FAILED "<<std::endl;
+                        std::cout << "FAILED with seed = "<<seed<<std::endl;
                 else
                         std::cout << "PASSED "<<std::endl;
                 delete F;
