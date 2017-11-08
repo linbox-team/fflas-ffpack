@@ -40,6 +40,8 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
 
+using namespace Givaro;
+using namespace FFLAS;
 using namespace FFPACK;
 template<class Field, class RandIter>
 bool launch_MM_dispatch(const Field &F, const int mm, const int nn, const int kk, const typename Field::Element alpha,
@@ -180,13 +182,12 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t 
         }
         return ok;
 }
-using namespace Givaro;
+
 int main(int argc, char** argv)
 {
         std::cout<<std::setprecision(17);
         std::cerr<<std::setprecision(17);
-
-        size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        size_t seed = getSeed();
         size_t iters = 3 ;
         Givaro::Integer q = -1 ;
         uint64_t b = 0 ;
@@ -202,12 +203,11 @@ int main(int argc, char** argv)
                 { 'k', "-k K", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |k|).",      TYPE_INT , &k },
                 { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
                 { 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-                { 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+                { 's', "-s seed", "Set seed for the random generator", TYPE_ULONG, &seed },
                 END_OF_ARGUMENTS
         };
 
         FFLAS::parseArguments(argc,argv,as);
-
         srand(seed);
         bool ok = true;
         do{
