@@ -35,28 +35,7 @@ template <> struct chooseMPItype<float>{ static constexpr MPI_Datatype val = MPI
 template <> struct chooseMPItype<int32_t>{ static constexpr MPI_Datatype val = MPI_INT32_T;};
 template <> struct chooseMPItype<int64_t>{ static constexpr MPI_Datatype val = MPI_INT64_T;};
 
-/**
- * This struct wrappers the MPI data type value for the given C++ type.
- *
- * Any valid MPI data type value must have a corresponding explicit template
- * instantiation below.
- */
-template<typename T> struct mpi_type_wrapper {
-  MPI_Datatype mpi_type;
-  mpi_type_wrapper();
-};
 
-// Explicit instantiation for 'float'
-template <> mpi_type_wrapper<float>::mpi_type_wrapper() : mpi_type(MPI_FLOAT) {}
-
-// Explicit instantiation for 'double'
-template <> mpi_type_wrapper<double>::mpi_type_wrapper() : mpi_type(MPI_DOUBLE) {}
-
-// Explicit instantiation for 'MPI_INT32_T'
-template <> mpi_type_wrapper<int32_t>::mpi_type_wrapper() : mpi_type(MPI_INT32_T) {}
-
-// Explicit instantiation for 'MPI_INT64_T'
-template <> mpi_type_wrapper<int64_t>::mpi_type_wrapper() : mpi_type(MPI_INT64_T) {}
 
 
 
@@ -98,7 +77,6 @@ namespace FFLAS
 		MPI_Request recv_request[nprocs];
 
 		
-		bool tag;		
 		if(rank==0) 
 			{	std::cout << "<<<<<<<<<<<Master thread: ";printMPItype(chooseMPItype<typename Field::Element>::val);	
 				//FFLAS::WriteMatrix (std::cout << "A:="<<std::endl, F, m, m, A, lda) << std::endl;
@@ -111,11 +89,9 @@ namespace FFLAS
 					}
 					return Y;
 				}else{
-					tag=true;
-					for(int i=1; i<nprocs; i++){
-MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);
-					}
-					if(m%nprocs!=0){
+
+				std::cerr<<"Master: typename Field::Element = "<<typeid(typename Field::Element).name()<<std::endl;
+	if(m%nprocs!=0){
 						
 						for(int i=0;i<m%nprocs;i++){
 							
@@ -135,7 +111,8 @@ MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);
 							//FFLAS::WriteMatrix (std::cout << "X sent to proc("<<i+1<<"):"<<std::endl, F, n, incX, X, incX) << std::endl;
 						}
 						
-						
+						std::cerr<<"Master after send  : typename Field::Element = "<<typeid(typename Field::Element).name()<<std::endl;
+
 						
 						
 						
@@ -197,8 +174,8 @@ MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);
 					
 				}
 
-				tag=false;
-				for(int i=1; i<nprocs; i++)MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);				
+				//tag=false;
+				//for(int i=1; i<nprocs; i++)MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);				
 				return Y;
 				
 				
@@ -207,11 +184,11 @@ MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);
 			
 			while(1){
 				
-				bool tag;
-				MPI_Recv(&tag, 1, MPI_C_BOOL, 0, 123, MPI_COMM_WORLD,&status[0]);
+
 				typename Field::Element_ptr AA, XX, YY;
-				if(tag){
+				//if(tag){
 std::cout << ">>>>>>>>>>Worker thread: ";printMPItype(chooseMPItype<typename Field::Element>::val);
+std::cerr<<"typename Field::Element = "<<typeid(typename Field::Element).name()<<std::endl;
 					if(rank<m%nprocs+1){
 						typename Field::Element_ptr AA = fflas_new(F,m/nprocs+1,n);
 						MPI_Recv(AA, (m/nprocs+1)*n,  chooseMPItype<typename Field::Element>::val, 0, 123, MPI_COMM_WORLD,&status[0]);
@@ -266,7 +243,7 @@ std::cout << ">>>>>>>>>>Worker thread: ";printMPItype(chooseMPItype<typename Fie
 						FFLAS::fflas_delete(YY);						
 
 					}
-				}//if(tag)
+				//}//if(tag)
 
 			}//while(1)
 			
