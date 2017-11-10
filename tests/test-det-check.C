@@ -41,15 +41,18 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/checkers/checkers_ffpack.h"
 #include "fflas-ffpack/checkers/checkers_ffpack.inl"
+
+using namespace FFLAS;
 
 int main(int argc, char** argv) {
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
 	size_t MAXN = 1000;
     size_t n=0;
-    size_t seed( time(NULL) );
+    uint64_t seed = getSeed();
 	bool random_dim = false, random_rpm=false;
 	
 	Argument as[] = {
@@ -57,7 +60,7 @@ int main(int argc, char** argv) {
 		{ 'm', "-m M", "Set the dimension of A.", TYPE_INT , &n },
 		{ 'n', "-n N", "Set the dimension of A.", TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
-        { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
+        { 's', "-s N", "Set the seed.", TYPE_UINT64 , &seed },
 		{ 'r', "-r Y/N", "Set random RPM or not.", TYPE_BOOL, &random_rpm },
 		END_OF_ARGUMENTS
 	};

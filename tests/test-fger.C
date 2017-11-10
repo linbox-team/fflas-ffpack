@@ -40,7 +40,6 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
-#include <chrono>
 #include <givaro/modular-int32.h>
 #include <givaro/modular-balanced.h>
 #include <givaro/givintprime.h>
@@ -54,6 +53,7 @@
 
 using namespace std;
 using namespace FFPACK;
+using namespace FFLAS;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
@@ -79,14 +79,14 @@ bool check_fger(const Field                   & F,
 	typedef typename Field::Element_ptr Element_ptr;
 
 // 	std::cerr << "with(LinearAlgebra):" << std::endl;
-//         FFLAS::WriteMatrix(std::cerr <<"X:=",F, m, 1, x,incx, FflasMaple) << ';' << std::endl;
-//         FFLAS::WriteMatrix(std::cerr <<"Y:=Transpose(", F, n, 1, y, incy, FflasMaple) << ");" << std::endl;
-//         FFLAS::WriteMatrix(std::cerr <<"A:=",F, m, n, Cd, ldc, FflasMaple) << ';' << std::endl;
+//         WriteMatrix(std::cerr <<"X:=",F, m, 1, x,incx, FflasMaple) << ';' << std::endl;
+//         WriteMatrix(std::cerr <<"Y:=Transpose(", F, n, 1, y, incy, FflasMaple) << ");" << std::endl;
+//         WriteMatrix(std::cerr <<"A:=",F, m, n, Cd, ldc, FflasMaple) << ';' << std::endl;
 // 	F.write(std::cerr << "a:=", alpha) << ';' << std::endl;
 // 	std::cerr << "q:=" << F.characteristic() << ';' << std::endl;
 
-	Element_ptr D  = FFLAS::fflas_new (F,m,n);
-	FFLAS::fassign(F,m,n,Cd,n,D,n);
+	Element_ptr D  = fflas_new (F,m,n);
+	fassign(F,m,n,Cd,n,D,n);
 	for(size_t i=0; i<m; ++i) {
 		Element tmp; F.init(tmp);
 		F.mul(tmp, alpha, *(x+i*incx) );
@@ -97,7 +97,7 @@ bool check_fger(const Field                   & F,
 			}
 		}
 	}
-//     FFLAS::WriteMatrix(std::cerr <<"d:=",F, m, n, D, n, FflasMaple) << ';' << std::endl;
+//     WriteMatrix(std::cerr <<"d:=",F, m, n, D, n, FflasMaple) << ';' << std::endl;
 // 	F.write(std::cerr, alpha) << "*X.Y+A,d;";
 // 	F.write(std::cerr, alpha) << "*X.Y+A-d mod q;" << std::endl;
 	if ( wrong ){
@@ -127,7 +127,7 @@ bool check_fger(const Field                   & F,
 			}
 		}
 	}
-	FFLAS::fflas_delete (D);
+	fflas_delete (D);
 
 	return !wrong ;
 }
@@ -151,30 +151,30 @@ bool launch_fger(const Field & F,
 	FFLASFFPACK_check(inca >= 1);
 	Element_ptr B ;
 	FFLASFFPACK_check(incb >= 1);
-	Element_ptr C = FFLAS::fflas_new (F,m,ldc);
+	Element_ptr C = fflas_new (F,m,ldc);
 	FFLASFFPACK_check(ldc >= n);
-	FFLAS::fzero(F,m,n,C,ldc);
-	Element_ptr D = FFLAS::fflas_new (F, m, n);
+	fzero(F,m,n,C,ldc);
+	Element_ptr D = fflas_new (F, m, n);
 	for(size_t i = 0;i<iters;++i){
-		A = FFLAS::fflas_new (F, m, inca);
+		A = fflas_new (F, m, inca);
 		RandomMatrix(F, m, inca, A, inca, G);
-		B = FFLAS::fflas_new (F, n, incb);
+		B = fflas_new (F, n, incb);
 		RandomMatrix(F, n, incb, B, incb, G);
 		RandomMatrix(F, m, n, C, ldc, G);
-		FFLAS::fassign(F,m,n,C,ldc,D,n);
-		FFLAS::fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
+		fassign(F,m,n,C,ldc,D,n);
+		fger (F,m,n,alpha, A, inca, B, incb, C,ldc);
 		ok = ok && check_fger(F, D, m,n,alpha, A, inca, B, incb, C,ldc);
 
-		FFLAS::fflas_delete(A);
-		FFLAS::fflas_delete(B);
+		fflas_delete(A);
+		fflas_delete(B);
 
 		if (!ok)
 			break;
 
 
 	}
-	FFLAS::fflas_delete (C);
-	FFLAS::fflas_delete (D);
+	fflas_delete (C);
+	fflas_delete (D);
 
 	return ok ;
 }
@@ -277,18 +277,18 @@ int main(int argc, char** argv)
 	uint64_t b = 0 ;
 	size_t n = 50 ;
 	bool loop = false;
-	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_LONGLONG , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
 		{ 'n', "-n N", "Set the dimension of the matrix.",      TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		{ 's', "-s N", "Set the seed.",                         TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed.",                         TYPE_UINT64 , &seed },
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	bool ok = true;
 	do{

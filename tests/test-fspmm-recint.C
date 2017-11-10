@@ -44,6 +44,7 @@
 #include "fflas-ffpack/field/rns-integer-mod.h"
 #include "fflas-ffpack/fflas/fflas_sparse/read_sparse.h"
 #include "fflas-ffpack/utils/timer.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/flimits.h"
 
 #ifdef __FFLASFFPACK_USE_OPENMP
@@ -66,7 +67,7 @@ int main(int argc, char **argv) {
     using FieldRec     = ZRing<FieldElement>;
     using SparseMatrix = FFLAS::Sparse<FieldRec, FFLAS::SparseMatrix_t::HYB_ZO>;
 
-    uint64_t seed = time(NULL);
+    uint64_t seed = getSeed();
     Integer q = -1;
     int b = 128;
     int blockSize = 1;

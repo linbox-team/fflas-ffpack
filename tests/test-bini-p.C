@@ -2418,7 +2418,7 @@ int main(int ac, char **av) {
 	bool  eps = false ;
 	bool  kom = false ;
 	int r = 1 ;
-	uint64_t seed = time(NULL);
+	uint64_t seed = getSeed();
 	int iters = 4;
 
 	static Argument as[] = {
@@ -2428,7 +2428,7 @@ int main(int ac, char **av) {
 		{ 'k', "-k N", "Set the number of rows in B.",   TYPE_INT , &k },
 		{ 'r', "-k N", "Set the recursive number Bini.", TYPE_INT , &r },
 		{ 'i', "-i N", "Set the numebr of iterations.", TYPE_INT , &iters },
-		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed                 .", TYPE_UINT64 , &seed },
 		{ 'e', "-e " , "epsilon                 .", TYPE_NONE , &eps },
 		{ 'c', "-c " , "compress                .", TYPE_NONE , &kom},
 		END_OF_ARGUMENTS

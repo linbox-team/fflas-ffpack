@@ -42,6 +42,7 @@
 #include <chrono>
 
 using namespace FFPACK;
+using namespace FFLAS;
 
 
 template<class Field>
@@ -66,78 +67,78 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		std::cout<<" ... ";
 
 		size_t lda = n;
-		typename Field::Element_ptr A=FFLAS::fflas_new (*F, m,lda);
-		typename Field::Element_ptr B=FFLAS::fflas_new (*F, m,lda);
+		typename Field::Element_ptr A=fflas_new (*F, m,lda);
+		typename Field::Element_ptr B=fflas_new (*F, m,lda);
 		RandomMatrixWithRankandRandomRPM(*F,m,n,r,A,lda,G);
-		FFLAS::fassign (*F, m, n, A, lda, B, lda); 
+		fassign (*F, m, n, A, lda, B, lda); 
 
 		{
 				// Testing if LUdivine and PLUQ return the same result
 			size_t* RP1, * RP2;
 			FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, m, n, B, lda, A, lda); 
 			FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
 			for (size_t i=0; i<r; i++)
 				ok = ok && (RP1[i] == RP2[i]);
-			FFLAS::fflas_delete(RP1);
-			FFLAS::fflas_delete(RP2);
+			fflas_delete(RP1);
+			fflas_delete(RP2);
 
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, m, n, B, lda, A, lda); 
 			FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, m, n, B, lda, A, lda); 
 			FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
 			for (size_t i=0; i<r; i++)
 				ok = ok && (RP1[i] == RP2[i]);
-			FFLAS::fflas_delete(RP1);
-			FFLAS::fflas_delete(RP2);
+			fflas_delete(RP1);
+			fflas_delete(RP2);
 		}
 		{
 			// Testing if 1 PLUQ computes the rank profiles of all leading submatrices 
 			size_t* RP1, * RP2;
-			size_t * P = FFLAS::fflas_new<size_t>(m);
-			size_t * Q = FFLAS::fflas_new<size_t>(n);
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
-			PLUQ(*F, FFLAS::FflasNonUnit, m, n, A, lda, P, Q);
+			size_t * P = fflas_new<size_t>(m);
+			size_t * Q = fflas_new<size_t>(n);
+			fassign (*F, m, n, B, lda, A, lda); 
+			PLUQ(*F, FflasNonUnit, m, n, A, lda, P, Q);
 			
 			for (size_t i=0; i<3;i++){
 				size_t mm = 1 + (rand() % m);
 				size_t nn = 1 + (rand() % n);
-				FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+				fassign (*F, m, n, B, lda, A, lda); 
 				size_t rr = FFPACK::ColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
-				FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+				fassign (*F, m, n, B, lda, A, lda); 
 				FFPACK::RowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
-				size_t* RRP = FFLAS::fflas_new<size_t>(r);
-				size_t* CRP = FFLAS::fflas_new<size_t>(r);
+				size_t* RRP = fflas_new<size_t>(r);
+				size_t* CRP = fflas_new<size_t>(r);
 				
 				LeadingSubmatrixRankProfiles (m,n,r,mm,nn,P,Q,RRP,CRP);
 				for (size_t ii=0; ii<rr; ii++)
 					ok = ok && (RP1[ii] == CRP[ii]) && (RP2[ii] == RRP[ii]);
 				
-				FFLAS::fflas_delete(CRP);
-				FFLAS::fflas_delete(RRP);
-				FFLAS::fflas_delete(RP1);
-				FFLAS::fflas_delete(RP2);
+				fflas_delete(CRP);
+				fflas_delete(RRP);
+				fflas_delete(RP1);
+				fflas_delete(RP2);
 				
 			}
-			FFLAS::fflas_delete(P);
-			FFLAS::fflas_delete(Q);
+			fflas_delete(P);
+			fflas_delete(Q);
 		}
 		{
             // Testing PLUQ and LUDivine return a specified rank profile 
-			size_t* RRP = FFLAS::fflas_new<size_t>(r);
-			size_t* CRP = FFLAS::fflas_new<size_t>(r);
+			size_t* RRP = fflas_new<size_t>(r);
+			size_t* CRP = fflas_new<size_t>(r);
 			size_t* RRPLUD, * RRPPLUQ, *CRPLUD, *CRPPLUQ;
 
 			RandomRankProfileMatrix (m, n, r, RRP, CRP);
 			RandomMatrixWithRankandRPM(*F,m,n,r,A,lda, RRP, CRP, G);
 
-			FFLAS::fassign (*F, m, n, A, lda, B, lda); 
+			fassign (*F, m, n, A, lda, B, lda); 
 			size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, m, n, B, lda, A, lda); 
 			size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, m, n, B, lda, A, lda); 
 			size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
-			FFLAS::fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, m, n, B, lda, A, lda); 
 			size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
 			std::sort(CRP,CRP+r);
 			std::sort(RRP,RRP+r);	
@@ -145,17 +146,17 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			for (size_t i=0; i<r; i++)
 				ok = ok && (CRPLUD[i] == CRP[i]) && (CRPPLUQ[i] == CRP[i]) && 
 					(RRPLUD[i] == RRP[i]) && (RRPPLUQ[i] == RRP[i]);
-			FFLAS::fflas_delete(CRP);
-			FFLAS::fflas_delete(RRP);
-			FFLAS::fflas_delete(CRPLUD);
-			FFLAS::fflas_delete(RRPLUD);
-			FFLAS::fflas_delete(CRPPLUQ);
-			FFLAS::fflas_delete(RRPPLUQ);
+			fflas_delete(CRP);
+			fflas_delete(RRP);
+			fflas_delete(CRPLUD);
+			fflas_delete(RRPLUD);
+			fflas_delete(CRPPLUQ);
+			fflas_delete(RRPPLUQ);
 		}
 
 		
-		FFLAS::fflas_delete(A);
-		FFLAS::fflas_delete(B);
+		fflas_delete(A);
+		fflas_delete(B);
 		delete F;
 
 		nbit--;
@@ -179,7 +180,7 @@ int main(int argc, char** argv){
 	size_t r = 85;
 	size_t iters = 6 ;
 	bool loop=false;
-	uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field cardinality.",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
@@ -188,12 +189,12 @@ int main(int argc, char** argv){
 		{ 'r', "-r r", "Set the rank of the matrix."          , TYPE_INT , &r },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	srand(seed);
 

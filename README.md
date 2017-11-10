@@ -51,6 +51,10 @@ For example on a x86_64 architecture:
  - run `./configure --with-blas-libs="-L/usr/lib64/atlas -lsatlas"`.
 - Using Accelerate Framework on OS-X:
  - run `./configure --with-blas-libs="-framework Accelerate"`.
+- Using BLIS
+ - Configure BLIS with, say, `./configure --enable-cblas auto`.
+ - run fflas/ffpack's `./configure --with-blas-libs="-lblis"`.
+
 
 Then, simply run `make; make autotune; make install; make check`
 Note that running the `autotune` target is optional but recommended as it will tune up the thresholds of various algorithms to your specific target host.

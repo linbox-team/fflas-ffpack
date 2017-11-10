@@ -30,7 +30,6 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <random>
-#include <chrono>
 
 #include <givaro/modular.h>
 #include <givaro/zring.h>
@@ -144,7 +143,7 @@ int main(int argc, char** argv){
 	size_t n=97;
 	size_t iters=3;
 	bool loop=false;
-	size_t seed=std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed=getSeed();
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
@@ -152,7 +151,7 @@ int main(int argc, char** argv){
 		{ 'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		END_OF_ARGUMENTS
 	};
 

@@ -66,15 +66,15 @@ int main () {
 	FFPACK::RandomMatrix (F, nmax, nmax, A,nmax);
 	FFLAS::fassign (F, nmax,nmax, A, nmax, B, nmax);
 	time_t result = std::time(NULL);
-	cout << std::endl 
+	cerr << std::endl 
 		  << "---------------------------------------------------------------------"
 		  << std::endl << std::asctime(std::localtime(&result))
 		  << std::endl
 		  << "Threshold for PLUQ base case" ;
-	F.write(cout << " (using ") << ')' << endl << endl;
+	F.write(cerr << " (using ") << ')' << endl << endl;
 
-	cout << "PLUQ:  n                   Base case                        Recursive 1 level" << std::endl;
-	cout << "                    seconds            Gfops          seconds            Gfops" << std::endl;
+	cerr << "PLUQ:  n                   Base case                        Recursive 1 level" << std::endl;
+	cerr << "                    seconds            Gfops          seconds            Gfops" << std::endl;
 		do {
 		double BCTime, RecTime;
 		int iter=10;
@@ -104,20 +104,20 @@ int main () {
 			//FFLAS::fflas_delete(B);
 		RecTime = tim.realtime()/iter;
 
-		cout << "      ";
-		cout.width(4);
-		cout << n;
-		cout << "  ";
-		cout.width(15);
-		cout << BCTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n,n,r, BCTime) << "  ";
-		cout.width(15);
-		cout << RecTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n,n,r, RecTime) << endl;
+		cerr << "      ";
+		cerr.width(4);
+		cerr << n;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << BCTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n,n,r, BCTime) << "  ";
+		cerr.width(15);
+		cerr << RecTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n,n,r, RecTime) << endl;
 
 		if (BCTime > RecTime){
 			count++;
@@ -136,12 +136,12 @@ int main () {
 		}
 	} while ((prec > 4 ) && (n < nmax));
 
-	cout<<endl;
+	cerr<<endl;
 	if (nbest != 0 ) {
-		cerr << "#ifndef __FFLASFFPACK_PLUQ_THRESHOLD"  << endl;
-		cerr << "#define __FFLASFFPACK_PLUQ_THRESHOLD" << ' ' <<  nbest << endl;
-		cout << "defined __FFLASFFPACK_PLUQ_THRESHOLD to " << nbest << "" << std::endl;
-		std::cerr << "#endif" << endl  << endl;
+		cout << "#ifndef __FFLASFFPACK_PLUQ_THRESHOLD"  << endl;
+		cout << "#define __FFLASFFPACK_PLUQ_THRESHOLD" << ' ' <<  nbest << endl;
+		cerr << "defined __FFLASFFPACK_PLUQ_THRESHOLD to " << nbest << "" << std::endl;
+		std::cout << "#endif" << endl  << endl;
 	}
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(B);

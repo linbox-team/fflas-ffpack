@@ -38,6 +38,7 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_io.h"
 
 
@@ -51,26 +52,25 @@ void printPolynomial (const Field &F, Polynomial &v)
 	}
 	std::cout << std::endl;
 }
-
+using namespace FFLAS;
 int main(int argc, char** argv) {
-	typedef Givaro::ModularBalanced<double> Field;
-	Givaro::Integer q = 131071;
-	size_t iter = 3;
+    typedef Givaro::ModularBalanced<double> Field;
+    Givaro::Integer q = 131071;
+    size_t iter = 3;
     size_t MAXN = 100;
     size_t n = 0, N = 0;
-    static int variant = 6;
-    int seed = (int) time(NULL);
+    int variant = 6;
+    int seed = getSeed();
 	
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
-		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
-		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
-        { 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
+        { 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
+        { 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &n },
+        { 's', "-s N", "Set the seed                 .", TYPE_UINT64 , &seed },
         { 'a', "-a algorithm", "Set the algorithmic variant", TYPE_INT, &variant },
-		END_OF_ARGUMENTS
-	};
-	FFLAS::parseArguments(argc,argv,as);
-
+        END_OF_ARGUMENTS
+    };
+    FFLAS::parseArguments(argc,argv,as);
     FFPACK::FFPACK_CHARPOLY_TAG CPalg;
     switch (variant){
         case 0: CPalg = FFPACK::FfpackLUK; break;

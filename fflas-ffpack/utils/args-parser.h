@@ -46,7 +46,7 @@
 #include <stdlib.h>
 
 enum ArgumentType {
-	TYPE_NONE, TYPE_INT, TYPE_LONGLONG, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
+	TYPE_NONE, TYPE_INT, TYPE_UINT64, TYPE_LONGLONG, TYPE_INTEGER, TYPE_DOUBLE, TYPE_INTLIST, TYPE_STR
 };
 #define TYPE_BOOL TYPE_NONE
 
@@ -114,6 +114,9 @@ void printHelpMessage (const char *program, Argument *args, bool printDefaults =
 				break;
 			case TYPE_INT:
 				std::cout << *(int *) args[i].data;
+				break;
+			case TYPE_UINT64:
+				std::cout << *(uint64_t *) args[i].data;
 				break;
 			case TYPE_LONGLONG:
 				std::cout << *(long long *) args[i].data;
@@ -264,6 +267,13 @@ namespace FFLAS {
                         }
                         break;
 
+                        case TYPE_UINT64:
+                        {
+                            *(uint64_t *) current->data = atoi (argv[i+1]);
+                            ++i;
+                        }
+                        break;
+
                         case TYPE_LONGLONG:
                         {
                             *(long long *) current->data = atoi (argv[i+1]);
@@ -334,6 +344,9 @@ namespace FFLAS {
 				break;
 			case TYPE_INT:
 				os << ' ' << *(int *) args[i].data;
+				break;
+			case TYPE_UINT64:
+				os << ' ' << *(uint64_t *) args[i].data;
 				break;
 			case TYPE_LONGLONG:
 				os << ' ' << *(long long *) args[i].data;

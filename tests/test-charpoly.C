@@ -51,6 +51,7 @@
 
 using namespace std;
 using namespace FFPACK;
+using namespace FFLAS;
 
 template<class Field, class RandIter>
 bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t lda,
@@ -128,7 +129,7 @@ bool launch_test(const Field & F, size_t n, typename Field::Element * A, size_t 
 }
 
 template<class Field>
-bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::string file, int variant, size_t iter, size_t seed){
+bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::string file, int variant, size_t iter, uint64_t seed){
 	FFPACK::FFPACK_CHARPOLY_TAG CT;
 	switch (variant){
 	    case 0: CT = FfpackAuto; break;
@@ -150,7 +151,7 @@ bool run_with_field(const Givaro::Integer p, uint64_t bits, size_t n, std::strin
 		if (F==nullptr){
 			return true;
 		}
-		typename Field::RandIter R(*F,bits,seed);
+		typename Field::RandIter R(*F,bits,seed++);
 
 		typename Field::Element * A=NULL;
 
@@ -193,10 +194,9 @@ int main(int argc, char** argv)
 	bool loop = false; // loop infintely
 	std::string  mat_file = "" ; // input matrix file 
 	int variant = 0; // default value 0: test all variants
-	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 
 	std::cout<<setprecision(17);
-	srand((int)time(NULL));
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic.", TYPE_INTEGER , &q },
@@ -206,11 +206,12 @@ int main(int argc, char** argv)
 		{ 'f', "-f file", "Set input file", TYPE_STR, &mat_file },
 		{ 'a', "-a algorithm", "Set the algorithm variant", TYPE_INT, &variant },
 		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);
 
+	srand(seed);
 	bool passed = true;
 	do {
 		passed = passed && run_with_field<Givaro::ModularBalanced<float> >(q, bits, n, mat_file, variant, iter, seed);

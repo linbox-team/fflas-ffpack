@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset:  -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) 2015 the FFLAS-FFPACK group
@@ -38,76 +38,187 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/test-utils.h"
 
-int main(int argc, char** argv) {
-	srand (time(NULL));
-	typedef Givaro::Modular<double> Field;      
-	Givaro::Integer q = 131071;
-	size_t iter = 10;
-	
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
-		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
-		END_OF_ARGUMENTS
-	};
-	FFLAS::parseArguments(argc,argv,as);
+using namespace Givaro;
+using namespace FFLAS;
+using namespace FFPACK;
+template<class Field, class RandIter>
+bool launch_MM_dispatch(const Field &F, const int mm, const int nn, const int kk, const typename Field::Element alpha,
+                        const typename Field::Element beta, const size_t iters, RandIter& G)
+{
+        size_t m,n,k;
+        size_t lda,ldb,ldc;
+            //!@bug test for ldX equal
+            //!@bug test for transpo
+            //!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
+        size_t ld = 13 ;
+        
+        FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+        FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+        if (random()%2) ta = FFLAS::FflasTrans ;
+        if (random()%2) tb = FFLAS::FflasTrans ;
 
-	Field F(q);
-	Field::RandIter Rand(F);
-	FFLAS::FFLAS_TRANSPOSE ta,tb;
+        if (mm<0)
+                m = 1+(size_t)random() % -mm;
+        else m = mm;
+        if (nn<0)
+                n = 1+(size_t)random() % -nn;
+        else n = nn;
+        if (kk<0)
+                k = 1+(size_t)random() % -kk;
+        else k = kk;
 
-	size_t pass = 0;
-	for (size_t i=0; i<iter; ++i) {
+        lda = std::max(k,m)+(size_t)random()%ld;
+        ldb = std::max(n,k)+(size_t)random()%ld;
+        ldc = n+(size_t)random()%ld;
+#ifdef __FFLASFFPACK_DEBUG
+        std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
+                  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
+                  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
+        if (!F.isZero(beta))
+                cerr<<" + "<<beta<<" C";
+#endif
 
-		size_t m = rand() % 1000 + 1;
-		size_t n = rand() % 1000 + 1;
-		size_t k = rand() % 1000 + 1;
-		std::cout << "m= " << m << "    n= " << n << "    k= " << k << "   ";
+        typename Field::Element_ptr A, B, C;
+        C = FFLAS::fflas_new (F,m,ldc);
+        FFLASFFPACK_check(ldc >= n);
+        size_t Arows,Acols, Brows,Bcols;
+        if (ta == FFLAS::FflasNoTrans){
+                FFLASFFPACK_check(lda >= k);
+                Arows = m; Acols = k;
+        } else {
+                FFLASFFPACK_check(lda >= m);
+                Arows = k; Acols = m;
+        }
+        if (tb == FFLAS::FflasNoTrans){
+                FFLASFFPACK_check(ldb >= n);
+                Brows = k; Bcols = n;
+        } else {
+                FFLASFFPACK_check(ldb >= k);
+                Brows = n; Bcols = k;
+        }
+        A = FFLAS::fflas_new (F, Arows, lda);
+        FFLAS::fzero(F,Arows,lda,A,lda);
+        B = FFLAS::fflas_new (F, Brows, ldb);
+        FFLAS::fzero(F,Brows,ldb,B,ldb);
+        for(size_t i = 0; i<iters;++i){
+                RandomMatrix(F, Arows, Acols, A, lda, G);
+                RandomMatrix(F, Brows, Bcols, B, ldb, G);
+                RandomMatrix(F, m, n, C, ldc, G);
 
-		typename Field::Element alpha,beta;
-		F.init(alpha); Rand.random(alpha);
-		F.init(beta);  Rand.random(beta);
-		
-		ta = rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
-		tb = rand()%2 ? FFLAS::FflasNoTrans : FFLAS::FflasTrans;
+                FFLAS::Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
+                try {
+                    FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+                    checker.check(ta,tb,alpha,A,lda,B,ldb,C);
+                            //std::cout << "PASSED\n";
+                } catch (FailureFgemmCheck &e) {
+                        std::cout << "FAILED\n";
+                        FFLAS::fflas_delete(A,B,C);
+                        return false;
+                }
+        }
+        FFLAS::fflas_delete(A,B,C);
+        return true;
+}
 
-		std::cout << "m= " << m << "    n= " << n << "    k= " << k
-			  <<" ta = ";
-		if (ta==FFLAS::FflasNoTrans) std::cout<<"NoTrans";
-		else std::cout<<"Trans";
-		std::cout<< " tb =  ";
-		if (tb==FFLAS::FflasNoTrans) std::cout<<"NoTrans";
-		else std::cout<<"Trans";
-		std::cout<<" : ";
+template <class Field>
+bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t iters, uint64_t seed){
+        bool ok = true ;
+        uint64_t local_seed = seed;
+        int nbit=(int)iters;
+        while (ok &&  nbit){
+                typedef typename Field::Element Element ;
+                    // choose Field
+                srand(local_seed);
+                Field* F= chooseField<Field>(q,b,local_seed);
+                if (F==nullptr)
+                        return true;
 
-		size_t lda = ta == FFLAS::FflasNoTrans ? k : m,
-			ldb = tb == FFLAS::FflasNoTrans ? n : k,
-			ldc = n;
+                std::ostringstream oss;
+                F->write(oss);
+                std::cout.fill('.');
+                std::cout<<"Checking ";
+                std::cout.width(50);
+                std::cout<<oss.str();
+                std::cout<<" ... ";
 
-		Field::Element_ptr A = FFLAS::fflas_new(F,m,k);
-		Field::Element_ptr B = FFLAS::fflas_new(F,k,n);
-		Field::Element_ptr C = FFLAS::fflas_new(F,m,n);
+#ifdef __FFLASFFPACK_DEBUG
+                F->write(std::cerr) << std::endl;
+#endif
+                typedef typename Field::Element  Element ;
+                typename Field::RandIter R(*F,b,local_seed++);
+                typename Field::NonZeroRandIter NZR(R);
 
-		FFLAS::frand(F,Rand, m,k,A,k);
-		FFLAS::frand(F,Rand, k,n,B,n);
-		FFLAS::frand(F,Rand, m,n,C,n);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->mOne,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters, R);
 
-		FFLAS::Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
-		FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
-		try {
-			checker.check(ta,tb,alpha,A,lda,B,ldb,C);
-			std::cout << "PASSED\n";
-			pass++;
-		} catch (FailureFgemmCheck &e) {
-			std::cout << "FAILED\n";
-			FFLAS::fflas_delete(A,B,C);
-			return -1;
-		}
+                Element alpha,beta ;
+                NZR.random(alpha);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,alpha,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,alpha,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->zero,iters, R);
+                ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->mOne,iters, R);
 
-		FFLAS::fflas_delete(A,B,C);
-	}
+                for (size_t j = 0 ; j < 3 ; ++j) {
+                        R.random(alpha);
+                        R.random(beta);
+                        ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters, R);
+                }
+                nbit--;
+                if ( !ok )
+                    std::cout << "FAILED with seed = "<<local_seed-1<<std::endl;
+                else
+                    std::cout << "PASSED with seed = "<<local_seed-1<<std::endl;
+                delete F;
+        }
+        return ok;
+}
 
-	std::cout << pass << "/" << iter << " tests were successful.\n";
+int main(int argc, char** argv)
+{
+        std::cout<<std::setprecision(17);
+        std::cerr<<std::setprecision(17);
+        uint64_t seed = getSeed();
+        size_t iters = 3 ;
+        Givaro::Integer q = -1 ;
+        uint64_t b = 0 ;
+        int m = 50 ;
+        int n = 50 ;
+        int k = 50 ;
+        bool loop = false;
+        Argument as[] = {
+                { 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
+                { 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
+                { 'm', "-m M", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |n|).",      TYPE_INT , &m },
+                { 'n', "-n N", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |n|).",      TYPE_INT , &n },
+                { 'k', "-k K", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |k|).",      TYPE_INT , &k },
+                { 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
+                { 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
+                { 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
+                END_OF_ARGUMENTS
+        };
 
-	return 0;
+        FFLAS::parseArguments(argc,argv,as);
+        bool ok = true;
+        do{
+                ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,iters, seed);
+                ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,iters, seed);
+                ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,iters, seed);
+                ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,iters, seed);
+                ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,iters, seed);
+                ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,iters, seed);
+                seed++;
+        } while (loop && ok);
+
+        return !ok ;
 }

@@ -39,51 +39,53 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/test-utils.h"
+
+using namespace FFLAS;
 
 int main(int argc, char** argv) {
 	size_t iter = 3 ;
 	Givaro::Integer q = 131071;
 	size_t MAXM = 1000;
 	size_t MAXN = 1000;
-    size_t m=0,n=0;
-    size_t seed(0);
- bool random_dim = false;
+	size_t m=0,n=0;
+	uint64_t seed = getSeed();
+	bool random_dim = false;
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'm', "-m M", "Set the row dimension of A.", TYPE_INT , &m },
 		{ 'n', "-n N", "Set the col dimension of A.", TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
-        { 's', "-s N", "Set the seed.", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed.", TYPE_UINT64 , &seed },
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 	if (m == 0 || n == 0) random_dim = true;
 
-	srandom ( seed?seed:time(NULL) );
+	srandom (seed);
 
 	typedef Givaro::Modular<double> Field;
 	Field F(q);
 
 	Field::RandIter Rand(F,0,seed);
-    srandom(seed);
-    
+	
 	size_t pass = 0;	// number of tests that have successfully passed
 
-    FFLAS::FFLAS_DIAG Diag = FFLAS::FflasNonUnit;
+	FFLAS_DIAG Diag = FflasNonUnit;
 	for(size_t it=0; it<iter; ++it) {
 		if (random_dim) {
 			m = random() % MAXM + 1;
 			n = random() % MAXN + 1;
 		}
 			
-		Field::Element_ptr A = FFLAS::fflas_new(F,m,n);
-		size_t *P = FFLAS::fflas_new<size_t>(m);
-		size_t *Q = FFLAS::fflas_new<size_t>(n);
+		Field::Element_ptr A = fflas_new(F,m,n);
+		size_t *P = fflas_new<size_t>(m);
+		size_t *Q = fflas_new<size_t>(n);
 
 		// generate a random matrix A
-		PAR_BLOCK { FFLAS::pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
+		PAR_BLOCK { pfrand(F,Rand, m,n,A,m/MAX_THREADS); }
   
 		try {
 			FFPACK::PLUQ(F, Diag, m, n, A, n, P, Q);
@@ -93,8 +95,8 @@ int main(int argc, char** argv) {
 			std::cerr << m << 'x' << n << ' ' << Diag << " pluq verification FAILED!\n";
 		}
 
-		FFLAS::fflas_delete(A,P,Q);
-        Diag = (Diag == FFLAS::FflasNonUnit) ? FFLAS::FflasUnit : FFLAS::FflasNonUnit;
+		fflas_delete(A,P,Q);
+        Diag = (Diag == FflasNonUnit) ? FflasUnit : FflasNonUnit;
 	}
 
     std::cerr << pass << "/" << iter << " tests SUCCESSFUL.\n";

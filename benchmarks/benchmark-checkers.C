@@ -303,7 +303,7 @@ int main(int argc, char** argv) {
 	FFLAS::fflas_delete(C);
 
 	std::cout << "Time: " << global.realtime()
-			  << " Gflops: " << gffop/global.realtime() << std::endl;
+			  << " Gfops: " << gffop/global.realtime() << std::endl;
 
 	return 0;
 }

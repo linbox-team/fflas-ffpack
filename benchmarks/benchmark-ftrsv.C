@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 	fflas_delete (b);
 	
 	std::cout << "Time: " << time / double(iter)
-			  << " Gflops: " << (double(n)/1000.*double(n)/1000000.0) / time * double(iter);
+			  << " Gfops: " << (double(n)/1000.*double(n)/1000000.0) / time * double(iter);
 	writeCommandString(std::cout, as) << std::endl;
 
 	return 0;

@@ -72,7 +72,7 @@ std::pair<double, uint64_t> test_fspmm(size_t iter, const Field &F, IndexT *row,
 template <class T1, class T2, class T> void print_res(pair<T1, T2> &p, size_t iter, T as, int blocksize) {
 //	cout << 2*p.second*blocksize*iter << endl;
     std::cout << "Time: " << p.first / double(iter)
-              << " Gflops: " << ((2*blocksize*p.second)/(1000000.*p.first))*(double(iter)/1000) ;
+              << " Gfops: " << ((2*blocksize*p.second)/(1000000.*p.first))*(double(iter)/1000) ;
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 }
 
@@ -186,11 +186,11 @@ int main(int argc, char **argv) {
     // Standard output for benchmark - Alexis Breust 2014/11/14
 
     // std::cout << "Time: " << coo.first / double(iter)
-    // 		  << " Gflops: " << (2*coo.second)/1000000000. / coo.first * double(iter);
+    // 		  << " Gfops: " << (2*coo.second)/1000000000. / coo.first * double(iter);
     // FFLAS::writeCommandString(std::cout, as) << std::endl;
 
     //  std::cout << "Time: " << csr.first / double(iter)
-    //        << " Gflops: " << (2*csr.second)/1000000000. / csr.first * double(iter);
+    //        << " Gfops: " << (2*csr.second)/1000000000. / csr.first * double(iter);
     //  FFLAS::writeCommandString(std::cout, as) << std::endl;
     fflas_delete(x);
     fflas_delete(y);

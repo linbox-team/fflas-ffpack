@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -46,6 +46,13 @@
 #include <random>
 #include <functional>
 
+namespace FFLAS {
+	uint64_t getSeed(){
+		struct timeval tp;
+		gettimeofday(&tp, 0) ;
+        return static_cast<uint64_t> (tp.tv_usec + tp.tv_sec*1000000);
+	}
+}
 namespace FFPACK {
 
 	template<typename Field>
@@ -62,6 +69,7 @@ namespace FFPACK {
 		Givaro::Integer maxV= maxFieldElt<Field>();
 		    //auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 mt_rand(seed);
+		Givaro::Integer::seeding(mt_rand());
 		if (maxV>0 && (q> maxV || b> maxV.bitsize()))
 			return nullptr;
 		if (b<=1){
@@ -70,15 +78,13 @@ namespace FFPACK {
 			b = bitrand();
 		}
 		Givaro::IntPrimeDom IPD;
-		Givaro::Integer tmp,p;
+		Givaro::Integer p;
 		if (q==-1){
 			// Choose characteristic as a random prime of b bits
 			do{
 				Givaro::Integer _p;
-				Givaro::Integer::seeding(Givaro::Integer(mt_rand()));
 				Givaro::Integer::random_exact_2exp(_p,b);
-				IPD.prevprime( tmp, _p+1 );
-				p =  tmp;
+				IPD.prevprime(p, _p+1 );
 			}while( (p < 2) );
 		}
 		else p=q;

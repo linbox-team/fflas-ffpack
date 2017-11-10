@@ -82,9 +82,9 @@ void readMat(string path, index_t *& row, index_t *& col, double *&val, index_t 
                 ;});
   mat.shrink_to_fit();
   nnz = mat.size();
-  val = FFLAS::fflas_new<double>(nnz, Alignment::CACHE_LINE);
-  col = FFLAS::fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
-  row = FFLAS::fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+  val = fflas_new<double>(nnz, Alignment::CACHE_LINE);
+  col = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
+  row = fflas_new<index_t>(nnz, Alignment::CACHE_LINE);
   for(size_t i = 0 ; i < nnz ; ++i){
     val[i] = mat[i].val;
     col[i] = mat[i].col;
@@ -98,8 +98,8 @@ int main(int argc, char **argv) {
     using Field        = Modular<Integer>;
     using FieldMat     = ZRing<double>;
     using FieldComp    = FFPACK::RNSIntegerMod<FFPACK::rns_double_extended>;
-    using SparseMatrix = FFLAS::Sparse<FieldMat, FFLAS::SparseMatrix_t::CSR>;
-    uint64_t seed = time(NULL);
+    using SparseMatrix = Sparse<FieldMat, SparseMatrix_t::CSR>;
+    uint64_t seed = getSeed();
 
     Integer q = -1;
     int b = 128;
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 	{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
      END_OF_ARGUMENTS };
 
-    FFLAS::parseArguments(argc, argv, as);
+    parseArguments(argc, argv, as);
 
     // Construct Givaro::Integer field
     Field *F= chooseField<Field>(q,b,seed);
@@ -144,18 +144,18 @@ int main(int argc, char **argv) {
 
     // Build the matrix
     SparseMatrix A;
-    FFLAS::sparse_init(Fword, A, row, col, dat, rowdim, coldim, nnz);
+    sparse_init(Fword, A, row, col, dat, rowdim, coldim, nnz);
 
-    FFLAS::fflas_delete(row);
-    FFLAS::fflas_delete(col);
-    FFLAS::fflas_delete(dat);
+    fflas_delete(row);
+    fflas_delete(col);
+    fflas_delete(dat);
 
     vector<double> x(coldim, 1), y(rowdim, 0);
 
     cout.precision(20);
 
     // Compute the bigger row
-    FFLAS::fspmv(Fword, A, x.data(), 0, y.data());
+    fspmv(Fword, A, x.data(), 0, y.data());
     for(auto &x: y){
         if(x < 0){
             x = -x;
@@ -303,8 +303,8 @@ int main(int argc, char **argv) {
     cout << "spmm: " << spmmTime << endl;
     cout << "modp: " << modpTime << endl;
 
-    FFLAS::fflas_delete(Xrns);
-    FFLAS::fflas_delete(Yrns);
+    fflas_delete(Xrns);
+    fflas_delete(Yrns);
 
     return 0;
 }

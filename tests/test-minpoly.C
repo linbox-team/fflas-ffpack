@@ -51,6 +51,7 @@
 #include <givaro/givpoly1.h>
 
 using namespace std;
+using namespace FFLAS;
 using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
@@ -203,7 +204,7 @@ int main(int argc, char** argv)
     size_t n = 108;
 	size_t iters = 1;
 	bool loop = false;
-    uint64_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    uint64_t seed = getSeed();
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",	TYPE_INTEGER, &q },
@@ -211,7 +212,7 @@ int main(int argc, char** argv)
 		{ 'n', "-n N", "Set the order of the matrix.", TYPE_INT, &n },
 		{ 'i', "-i, R", "set the number of repetitions.", TYPE_INT, &iters },
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
-		{ 's', "-s seed", "set seed for the random generator.", TYPE_INT, &seed },
+		{ 's', "-s seed", "set seed for the random generator.", TYPE_UINT64, &seed },
 			END_OF_ARGUMENTS
 		};
 

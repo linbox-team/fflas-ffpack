@@ -37,25 +37,25 @@
 #include <time.h>
 #include "fflas-ffpack/fflas-ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/fflas_io.h"
+using namespace FFLAS;
 
 int main(int argc, char** argv) {
-	srand (time(NULL));
 	typedef Givaro::Modular<double> Field;
 	Givaro::Integer q = 131071;
 	size_t iter = 3;
 	size_t MAXN = 100;
-	uint64_t seed = time(NULL);
+	uint64_t seed = getSeed();
 
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER , &q },
 		{ 'i', "-i R", "Set number of repetitions.", TYPE_INT , &iter },
 		{ 'n', "-n N", "Set the size of the matrix.", TYPE_INT , &MAXN },
-		{ 's', "-s N", "Set the seed.", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed.", TYPE_UINT64 , &seed },
 		END_OF_ARGUMENTS
 	};
 	FFLAS::parseArguments(argc,argv,as);	
-
 	Field F(q);
 	srandom(seed);
 

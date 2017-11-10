@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 	// Standard output for benchmark - Alexis Breust 2014/11/14
 	#define CUBE(x) ((x)*(x)*(x))
 	std::cout << "Time: " << time / double(iter)
-			  << " Gflops: " << 2. * CUBE(double(n)/1000.) / 3. / time * double(iter);
+			  << " Gfops: " << 2. * CUBE(double(n)/1000.) / 3. / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;

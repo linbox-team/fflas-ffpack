@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
 		// -----------
 		// Standard output for benchmark - Alexis Breust 2014/11/14
 	std::cout << "Time: " << time / double(iter)
-			  << " Gflops: " << (double(m)/1000.*double(m)/1000.*double(n)/1000.0) / time * double(iter);
+			  << " Gfops: " << (double(m)/1000.*double(m)/1000.*double(n)/1000.0) / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 
 	return 0;

@@ -30,6 +30,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/fflas/fflas_simd.h"
 #include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/test-utils.h"
 #include "fflas-ffpack/utils/align-allocator.h"
 #include <vector>
 #include <algorithm>
@@ -112,7 +113,7 @@ typename std::enable_if<
 (function_traits<SimdFunc>::arity == 0) &&
 !(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
 , bool>::type
-test_op(SimdFunc && fsimd, ScalFunc && fscal, size_t seed, size_t vectorSize, Element max, std::string name){
+test_op(SimdFunc && fsimd, ScalFunc && fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 
 	using vect_t = typename simd::vect_t;
 
@@ -146,7 +147,7 @@ typename std::enable_if<
 (function_traits<SimdFunc>::arity == 1) &&
 !(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
 , bool>::type
-test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
+test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	
 	using vect_t = typename simd::vect_t;
 
@@ -195,7 +196,7 @@ typename std::enable_if<
 (function_traits<SimdFunc>::arity == 2) &&
 !(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
 , bool>::type
-test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
+test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	
 	using vect_t = typename simd::vect_t;
 
@@ -250,7 +251,7 @@ typename std::enable_if<
 (function_traits<SimdFunc>::arity == 3) &&
 !(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
 , bool>::type
-test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element max, std::string name){
+test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	
 	using vect_t = typename simd::vect_t;
 
@@ -293,7 +294,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, size_t seed, size_t vectorSize, Element 
 
 
 template<class simd, class Element>
-bool test_float_impl(size_t seed, size_t vectorSize, Element max){
+bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 	bool btest = true;
 
 	btest = btest && test_op<simd>(simd::ceil, [](Element x){return std::ceil(x);}, seed, vectorSize, max, "ceil");
@@ -318,7 +319,7 @@ template<typename simd>
 typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(2));}
 
 template<class simd, class Element>
-bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
+bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	bool btest = true;
 
 	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
@@ -369,7 +370,7 @@ bool test_integer_impl(size_t seed, size_t vectorSize, Element max){
 }
 
 template<class Element>
-bool test_float(size_t seed, size_t vectorSize, size_t max_){
+bool test_float(uint64_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	sse = test_float_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
@@ -390,7 +391,7 @@ bool test_float(size_t seed, size_t vectorSize, size_t max_){
 }
 
 template<class Element>
-bool test_integer(size_t seed, size_t vectorSize, size_t max_){
+bool test_integer(uint64_t seed, size_t vectorSize, size_t max_){
 	bool sse = true, avx = true;
 #ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 	sse = test_integer_impl<Simd128<Element>>(seed, vectorSize, (Element)max_);
@@ -411,13 +412,13 @@ bool test_integer(size_t seed, size_t vectorSize, size_t max_){
 
 
 int main(int ac, char **av) {
-	int seed = (int) time(NULL);
+	uint64_t seed = getSeed();
 	int vectorSize = 32;
 	int max = 100;
 	int loop = false;
 
 	static Argument as[] = {
-		{ 's', "-s N", "Set the seed                 .", TYPE_INT , &seed },
+		{ 's', "-s N", "Set the seed                 .", TYPE_UINT64 , &seed },
 		{ 'l', "-l N", "Set the loop execution       .", TYPE_INT , &loop },
 		END_OF_ARGUMENTS
 	};

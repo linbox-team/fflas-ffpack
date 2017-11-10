@@ -80,15 +80,15 @@ int main () {
 	FFPACK::RandomMatrix (F, nmax, nmax, C, nmax);
 
 	time_t result = std::time(NULL);
-	cout << std::endl 
+	cerr << std::endl 
 		  << "---------------------------------------------------------------------"
 		  << std::endl << std::asctime(std::localtime(&result))
 		  << std::endl
 		  << "Threshold for finite field Strassen-Winograd matrix multiplication" ;
-	F.write(cout << " (using ") << ')' << endl << endl;
+	F.write(cerr << " (using ") << ')' << endl << endl;
 
-	cout << "fgemm:  n                   Classic                        Winograd 1 level" << std::endl;
-	cout << "                    seconds            Gfops          seconds            Gfops" << std::endl;
+	cerr << "fgemm:  n                   Classic                        Winograd 1 level" << std::endl;
+	cerr << "                    seconds            Gfops          seconds            Gfops" << std::endl;
 	FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> ClassicH(F,0, FFLAS::ParSeqHelper::Sequential());
 	FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Winograd> WinogradH(F,1, FFLAS::ParSeqHelper::Sequential());
 	    //warm up computation
@@ -111,20 +111,20 @@ int main () {
 		
 		winogradTime = chrono.realtime()/iter;
 
-		cout << "      ";
-		cout.width(4);
-		cout << n;
-		cout << "  ";
-		cout.width(15);
-		cout << classicTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n, classicTime) << "  ";
-		cout.width(15);
-		cout << winogradTime;
-		cout << "  ";
-		cout.width(15);
-		cout << GFOPS(n, winogradTime) << endl;
+		cerr << "      ";
+		cerr.width(4);
+		cerr << n;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << classicTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n, classicTime) << "  ";
+		cerr.width(15);
+		cerr << winogradTime;
+		cerr << "  ";
+		cerr.width(15);
+		cerr << GFOPS(n, winogradTime) << endl;
 
 		if (classicTime > winogradTime ){
 			count++;
@@ -143,36 +143,36 @@ int main () {
 		}
 	} while ((prec > 32 ) && (n < nmax));
 
-	cout<<endl;
+	cerr<<endl;
 	if (nbest != 0 ) {
 		if (typeid(Element).name() == typeid(double).name()) {
 			if ( balanced(F) ) {
-				cerr << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL"  << endl;
-				cerr << "#define __FFLASFFPACK_WINOTHRESHOLD_BAL" << ' ' <<  nbest << endl;
-				cout << "defined __FFLASFFPACK_WINOTHRESHOLD_BAL to " << nbest << "" << std::endl;
+				cout << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL"  << endl;
+				cout << "#define __FFLASFFPACK_WINOTHRESHOLD_BAL" << ' ' <<  nbest << endl;
+				cerr << "defined __FFLASFFPACK_WINOTHRESHOLD_BAL to " << nbest << "" << std::endl;
 		}
 			else {
-				cerr << "#ifndef __FFLASFFPACK_WINOTHRESHOLD"  << endl;
-				cerr << "#define __FFLASFFPACK_WINOTHRESHOLD" << ' ' <<  nbest << endl;
-				cout << "defined __FFLASFFPACK_WINOTHRESHOLD to " << nbest << "" << std::endl;
+				cout << "#ifndef __FFLASFFPACK_WINOTHRESHOLD"  << endl;
+				cout << "#define __FFLASFFPACK_WINOTHRESHOLD" << ' ' <<  nbest << endl;
+				cerr << "defined __FFLASFFPACK_WINOTHRESHOLD to " << nbest << "" << std::endl;
 	
 			}
-			std::cerr << "#endif" << endl  << endl;
+			std::cout << "#endif" << endl  << endl;
 		}
 		
 		if (typeid(Element).name() == typeid(float).name()) {
 			if ( balanced(F) ) {
-				cerr << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT"  << endl;
-				cerr << "#define __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT" << ' ' << nbest << endl;
-				cout << "defined __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT to " << nbest << "" << std::endl;
+				cout << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT"  << endl;
+				cout << "#define __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT" << ' ' << nbest << endl;
+				cerr << "defined __FFLASFFPACK_WINOTHRESHOLD_BAL_FLT to " << nbest << "" << std::endl;
 
 			}
 			else {
-				cerr << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_FLT"  << endl;
-				cerr << "#define __FFLASFFPACK_WINOTHRESHOLD_FLT" << ' ' << nbest << endl;
-				cout << "defined __FFLASFFPACK_WINOTHRESHOLD_FLT to " << nbest << "" << std::endl;
+				cout << "#ifndef __FFLASFFPACK_WINOTHRESHOLD_FLT"  << endl;
+				cout << "#define __FFLASFFPACK_WINOTHRESHOLD_FLT" << ' ' << nbest << endl;
+				cerr << "defined __FFLASFFPACK_WINOTHRESHOLD_FLT to " << nbest << "" << std::endl;
 			}
-			cerr << "#endif" << endl << endl;
+			cout << "#endif" << endl << endl;
 		}
 	}
 

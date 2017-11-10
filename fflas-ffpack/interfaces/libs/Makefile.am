@@ -22,9 +22,8 @@ if FFLASFFPACK_PRECOMPILED
 
 pkgincludesubdir=$(pkgincludedir)/interfaces/libs
 
-AM_CPPFLAGS=-I$(top_srcdir)
 AM_CXXFLAGS = @DEFAULT_CFLAGS@
-AM_CPPFLAGS += $(OPTFLAGS)  -I$(top_srcdir)/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) #/fflas-ffpack/utils/ -I$(top_srcdir)/fflas-ffpack/fflas/  -I$(top_srcdir)/fflas-ffpack/ffpack  -I$(top_srcdir)/fflas-ffpack/field
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS)
 #AM_LDFLAGS=-static 
 
@@ -62,7 +61,7 @@ libfflas_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
 libffpack_la_SOURCES= ffpack_inst.C \
 		      ffpack_inst_implem.inl
 libffpack_la_LDFLAGS= $(LDADD) -version-info 1:0:0 \
-		       -no-undefined -lfflas 
+		       -no-undefined $(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
 
 EXTRA_libffpack_la_DEPENDENCIES= libfflas.la
 
@@ -72,7 +71,7 @@ libfflas_c_la_SOURCES=fflas_lvl1.C \
 		    fflas_sparse.C
 #libfflas_c_la_CPPFLAGS=$(AM_CPPFLAGS) -DFFLAS_COMPILED -DFFPACK_COMPILED
 libfflas_c_la_LDFLAGS=  $(LDADD) -version-info 1:0:0 \
-                       -no-undefined -lfflas
+                       -no-undefined 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la
 
 EXTRA_libfflas_c_la_DEPENDENCIES=libfflas.la
 

@@ -26,9 +26,8 @@ EXTRA_DIST=            \
        clapack.C       \
        lapack.C        \
        cblas.C         \
-       givaro.C        \
        cuda.C          \
-       sse.C           \
-       avx.C           \
+       instrset.h      \
+       instrset_detect.cpp\
        gmp.C
 

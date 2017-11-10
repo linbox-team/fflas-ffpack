@@ -59,6 +59,7 @@
 #include <chrono>
 
 using namespace std;
+using namespace FFLAS;
 using namespace FFPACK;
 
 using Givaro::Modular;
@@ -69,8 +70,8 @@ using Givaro::ModularBalanced;
 template<class Field>
 bool check_MM(const Field                   & F,
 			  const typename Field::Element_ptr  Cd, // c0
-			  enum FFLAS::FFLAS_TRANSPOSE   & ta,
-			  enum FFLAS::FFLAS_TRANSPOSE   & tb,
+			  enum FFLAS_TRANSPOSE   & ta,
+			  enum FFLAS_TRANSPOSE   & tb,
 			  const size_t                    m,
 			  const size_t                    n,
 			  const size_t                    k,
@@ -87,19 +88,19 @@ bool check_MM(const Field                   & F,
 	typedef typename Field::ConstElement_ptr ConstElement_ptr;
 	Element tmp;
 	ConstElement_ptr ail,blj;
-	Element_ptr D  = FFLAS::fflas_new (F,m,n);
-	FFLAS::fassign(F,m,n,Cd,n,D,n);
+	Element_ptr D  = fflas_new (F,m,n);
+	fassign(F,m,n,Cd,n,D,n);
 
 	for (size_t i = 0; i < m; ++i)
 		for (size_t j = 0; j < n; ++j){
 			F.mulin(*(D+i*n+j),beta);
 			F.assign (tmp, F.zero);
 			for ( size_t l = 0; l < k ; ++l ){
-				if ( ta == FFLAS::FflasNoTrans )
+				if ( ta == FflasNoTrans )
 					ail = A+i*lda+l;
 				else
 					ail = A+l*lda+i;
-				if ( tb == FFLAS::FflasNoTrans )
+				if ( tb == FflasNoTrans )
 					blj = B+l*ldb+j;
 				else
 					blj = B+j*ldb+l;
@@ -139,7 +140,7 @@ bool check_MM(const Field                   & F,
 	}
 	// else std::cout<<"COOL"<<std::endl;
 
-	FFLAS::fflas_delete (D);
+	fflas_delete (D);
 
 	return !wrong ;
 
@@ -155,9 +156,9 @@ bool launch_MM(const Field & F,
 			   const typename Field::Element beta,
 			   const size_t ldc,
 			   const size_t lda,
-			   enum FFLAS::FFLAS_TRANSPOSE    ta,
+			   enum FFLAS_TRANSPOSE    ta,
 			   const size_t ldb,
-			   enum FFLAS::FFLAS_TRANSPOSE    tb,
+			   enum FFLAS_TRANSPOSE    tb,
 			   size_t iters,
 			   int nbw,
 			   bool par, 
@@ -169,56 +170,56 @@ bool launch_MM(const Field & F,
 	typedef typename Field::Element_ptr Element_ptr;
 	Element_ptr A ;
 	Element_ptr B ;
-	Element_ptr C = FFLAS::fflas_new (F,m,ldc);
+	Element_ptr C = fflas_new (F,m,ldc);
 	FFLASFFPACK_check(ldc >= n);
-	FFLAS::fzero(F,m,n,C,ldc);
-	Element_ptr D = FFLAS::fflas_new (F, m, n);
+	fzero(F,m,n,C,ldc);
+	Element_ptr D = fflas_new (F, m, n);
 	for(size_t i = 0;i<iters;++i){
-		if (ta == FFLAS::FflasNoTrans) {
+		if (ta == FflasNoTrans) {
 			FFLASFFPACK_check(lda >= k);
-			A = FFLAS::fflas_new (F, m, lda);
-			FFLAS::fzero(F,m,lda,A,lda);
+			A = fflas_new (F, m, lda);
+			fzero(F,m,lda,A,lda);
 			RandomMatrix(F, m, k, A, lda, G);
 		}
 		else {
 			FFLASFFPACK_check(lda >= m);
-			A = FFLAS::fflas_new (F, k, lda); 
-			FFLAS::fzero(F,k,lda,A,lda);
+			A = fflas_new (F, k, lda); 
+			fzero(F,k,lda,A,lda);
 			RandomMatrix (F, k, m, A, lda, G);
 		}
-		if (tb == FFLAS::FflasNoTrans) {
+		if (tb == FflasNoTrans) {
 			FFLASFFPACK_check(ldb >= n);
-			B = FFLAS::fflas_new (F,k,ldb);
-			FFLAS::fzero(F,k,ldb,B,ldb);
+			B = fflas_new (F,k,ldb);
+			fzero(F,k,ldb,B,ldb);
 			RandomMatrix (F, k, n, B, ldb, G);
 		}
 		else {
 			FFLASFFPACK_check(ldb >= k);
-			B = FFLAS::fflas_new (F,n,ldb);
-			FFLAS::fzero(F,n,ldb,B,ldb);
+			B = fflas_new (F,n,ldb);
+			fzero(F,n,ldb,B,ldb);
 			RandomMatrix (F, n, k, B, ldb, G);
 		}
 		RandomMatrix (F, m, n, C, ldc, G);
-		FFLAS::fassign(F,m,n,C,ldc,D,n);
+		fassign(F,m,n,C,ldc,D,n);
 		if (par){
-			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive,FFLAS::StrategyParameter::ThreeDAdaptive> > WH (F, nbw);
+			MMHelper<Field,MMHelperAlgo::Auto, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::ThreeDAdaptive> > WH (F, nbw);
 			PAR_BLOCK{
-				FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+				fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
 		}else{
-			FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
-			FFLAS::fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+			MMHelper<Field,MMHelperAlgo::Auto,typename ModeTraits<Field>::value> WH(F,nbw,ParSeqHelper::Sequential());
+			fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 		}
 		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
 
-		FFLAS::fflas_delete(A);
-		FFLAS::fflas_delete(B);
+		fflas_delete(A);
+		fflas_delete(B);
 
 		if (!ok)
 			break;
 	}
-	FFLAS::fflas_delete (C);
-	FFLAS::fflas_delete (D);
+	fflas_delete (C);
+	fflas_delete (D);
 
 	return ok ;
 }
@@ -244,11 +245,11 @@ bool launch_MM_dispatch(const Field &F,
 	//!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
 	size_t ld = 13 ;
 	{
-		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
-		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		FFLAS_TRANSPOSE ta = FflasNoTrans ;
+		FFLAS_TRANSPOSE tb = FflasNoTrans ;
 		if (! par) {
-			if (random()%2) ta = FFLAS::FflasTrans ;
-			if (random()%2) tb = FFLAS::FflasTrans ;
+			if (random()%2) ta = FflasTrans ;
+			if (random()%2) tb = FflasTrans ;
 		}
 
 		if (mm<0)
@@ -269,8 +270,8 @@ bool launch_MM_dispatch(const Field &F,
 		ldc = n+(size_t)random()%ld;
 #ifdef __FFLASFFPACK_DEBUG
 		std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
-			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
-			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
+			  <<alpha<<".A"<<((ta==FflasTrans)?"^T":"")
+			  <<" * B"<<((tb==FflasTrans)?"^T":"");
 		if (!F.isZero(beta))
 			cerr<<" + "<<beta<<" C";
 #endif
@@ -373,7 +374,7 @@ int main(int argc, char** argv)
 	std::cout<<setprecision(17);
 	std::cerr<<setprecision(17);
 
-	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 	size_t iters = 3 ;
 	Givaro::Integer q = -1 ;
 	uint64_t b = 0 ;
@@ -393,11 +394,11 @@ int main(int argc, char** argv)
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
 		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		END_OF_ARGUMENTS
 	};
 
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	bool ok = true;
 	srand(seed);

@@ -24,10 +24,7 @@ SUBDIRS = data
 check:
 	$(BASE_TESTS)
 
-AM_CXXFLAGS = ${DEFAULT_CFLAGS} $(OPTFLAGS) $(GIVARO_CFLAGS) $(CBLAS_FLAG) $(CUDA_CFLAGS) $(PARFLAGS) $(PRECOMPILE_FLAGS)
-
-#LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARFLAGS) $(PRECOMPILE_LIBS)
-AM_LDFLAGS=-static $(PARFLAGS) #-L$(prefix)/lib   -lfflas -lffpack -lfflas_c -lffpack_c
+AM_CXXFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
 
 PERFPUBLISHERFILE=tests-report.xml
 
@@ -73,14 +70,15 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
 INTERFACE_TESTS= test-interfaces-c 
+test_interfaces_c_CFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
 test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack_c.la \
 	-lm -lstdc++
-
 else
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
+
 NOT_A_TEST =  \
 		test-lqup2             \
 		test-fsquare           \
