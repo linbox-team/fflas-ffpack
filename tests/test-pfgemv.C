@@ -68,7 +68,7 @@
 #include <omp.h>
 #endif
 
-
+#include<vector>
 
 using namespace std;
 using namespace FFPACK;
@@ -129,9 +129,9 @@ bool check_MV(const Field                   & F,
 		std::cerr << "ldA :" << lda << ", incX : " << incX << ", incY : " << incY << std::endl;
 		for (size_t i=0; i<Ydim && canprint; ++i){
 			if (!F.areEqual( Y[i*incY], D[i] ) ) {
-					std::cerr<<"Error Y["<<i<<"]="<<Y[i*incY]<<" D["<<i<<"]="<<D[i]<<std::endl;
-					canprint--;
-				}
+				std::cerr<<"Error Y["<<i<<"]="<<Y[i*incY]<<" D["<<i<<"]="<<D[i]<<std::endl;
+				canprint--;
+			}
 		}
 		if (Ydim<80) {
 			for (size_t i=0; i<Ydim ; ++i){
@@ -143,11 +143,11 @@ bool check_MV(const Field                   & F,
 			std::cout << std::endl;
 		}
 	}
-
+	
 	FFLAS::fflas_delete (D);
-
+	
 	return !wrong ;
-
+	
 }
 
 
@@ -165,9 +165,9 @@ bool launch_MV(const Field & F,
 			   bool par, 
 			   RandIter& G)
 {
-
+	
 	bool ok = true;
-
+	
 	typedef typename Field::Element_ptr Element_ptr;
 	Element_ptr A ;
 	for(size_t i = 0;i<iters;++i){
@@ -182,31 +182,91 @@ bool launch_MV(const Field & F,
 		FFLAS::fzero (F, Xdim, incX, X, incX);
 		FFLAS::fzero (F, Ydim, incY, Y, incY);
 		Element_ptr D = FFLAS::fflas_new (F, Ydim);
-
+		
 		RandomMatrix (F, Xdim, 1, X, incX, G);
 		RandomMatrix (F, Ydim, 1, Y, incY, G);
 		FFLAS::fassign (F, Ydim, Y, incY, D, 1);
-
+		
+		//Y will be modified so keep a copy of Y as Y2
+		Element_ptr Y2 =  FFLAS::fflas_new (F, Ydim, incY);
+		FFLAS::fassign (F, Ydim, Y, incY, Y2, incY);
+		
+		
 		if (par){
 			{
-					//FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads> >  WH;
-				FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row, FFLAS::StrategyParameter::Threads> >  WH;
-
-					//FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>   WH(2);
+				FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads> >  WH;
+				
 				PAR_BLOCK{
 					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
 				}
 			}
 		}else{
-				//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
 			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
 		}
-
+		
 		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
+		
 
-		FFLAS::fflas_delete (A, X, Y, D);
-		if (!ok)
+		
+		if (!ok){
+			FFLAS::fflas_delete (A, X, Y, Y2, D);
 			break;
+		}
+		
+		
+		
+		FFLAS::fassign (F, Ydim, Y2, incY, D, 1);
+		FFLAS::fassign (F, Ydim, Y2, incY, Y, incY);
+		if (par){
+			{
+				FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row, FFLAS::StrategyParameter::Threads> >  WH;
+				
+				PAR_BLOCK{
+					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+				}
+			}
+		}else{
+			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
+		}
+		
+		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
+		
+		
+		if (!ok){
+			FFLAS::fflas_delete (A, X, Y, Y2, D);
+			break;
+		}
+		
+		
+		
+		
+		FFLAS::fassign (F, Ydim, Y2, incY, D, 1);
+		FFLAS::fassign (F, Ydim, Y2, incY, Y, incY);
+		if (par){
+			{
+				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>  WH(4);;
+				
+				PAR_BLOCK{
+					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+				}
+			}
+		}else{
+			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
+		}
+		
+		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
+		
+		FFLAS::fflas_delete (A, X, Y, Y2, D);
+		if (!ok){
+			
+			break;
+		}
+		
+		
+		
 	}
 	return ok ;
 }
@@ -227,22 +287,22 @@ bool launch_MV_dispatch(const Field &F,
 	size_t lda,incX, incY;
 	size_t ld = 13 ;
 	{
-		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
-		if (! par) {
-			if (random()%2) ta = FFLAS::FflasTrans ;
-		}
-
+		//FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		//if (! par) {
+		//if (random()%2) ta = FFLAS::FflasTrans ;
+		//}
+		
 		if (mm<0)
 			m = 1+(size_t)random() % -mm;
 		else m = mm;
 		if (kk<0)
 			k = 1+(size_t)random() % -kk;
 		else k = kk;
-
+		
 		lda = k+(size_t)random()%ld;
 		incX = 1+(size_t)random()%ld;
 		incY = 1+(size_t)random()%ld;
-
+		
 		ok = ok && launch_MV (F, m, k, alpha,beta, lda, FflasNoTrans, incX, incY, iters, par, G);
 		ok = ok && launch_MV (F, m, k, alpha,beta, lda, FflasTrans, incX, incY, iters, par, G);
 	}
@@ -252,7 +312,7 @@ bool launch_MV_dispatch(const Field &F,
 template <class Field>
 bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, bool par, size_t seed){
 	bool ok = true ;
-
+	
 	int nbit=(int)iters;
 	
 	while (ok &&  nbit){
@@ -261,7 +321,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, 
 		Field* F= chooseField<Field>(q,b,seed);
 		if (F==nullptr)
 			return true;
-
+		
 		std::ostringstream oss;
 		F->write(oss);
 		std::cout.fill('.');
@@ -269,7 +329,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, 
 		std::cout.width(50);
 		std::cout<<oss.str();
 		std::cout<<" ... ";
-
+		
 #ifdef __FFLASFFPACK_DEBUG
 		F->write(std::cerr) << std::endl;
 #endif
@@ -277,27 +337,27 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, 
 		typename Field::RandIter R(*F,b,seed++);
 		typename Field::NonZeroRandIter NZR(R);
 
-			//size_t k = 0 ;
-			//std::cout << k << "/24" << std::endl; ++k;
+		//size_t k = 0 ;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one,F->zero,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,F->zero,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,F->zero,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one ,F->one,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,F->one,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,F->one,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one ,F->mOne,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,F->mOne,iters, par, R);
-		 	//std::cout << k << "/24" << std::endl; ++k;
+		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,F->mOne,iters, par, R);
-			//std::cout << k << "/24" << std::endl; ++k;
-
+		//std::cout << k << "/24" << std::endl; ++k;
+		
 		Element alpha,beta ;
 		NZR.random(alpha);
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one ,alpha,iters, par, R);
@@ -312,20 +372,20 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, 
 		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MV_dispatch<Field>(*F,m,k,alpha,F->mOne,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-
+		
 		for (size_t j = 0 ; j < 3 ; ++j) {
 			R.random(alpha);
 			R.random(beta);
 			ok = ok && launch_MV_dispatch<Field>(*F,m,k,alpha,beta,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
 		}
-			//std::cout<<std::endl;
+		//std::cout<<std::endl;
 		nbit--;
 		if ( !ok )
-			    //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
+			//std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
 			std::cout << "FAILED "<<std::endl;
 		else
-			    //std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+			//std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
 			std::cout << "PASSED "<<std::endl;
 		delete F;
 	}
@@ -335,7 +395,7 @@ int main(int argc, char** argv)
 {
 	std::cout<<setprecision(17);
 	std::cerr<<setprecision(17);
-
+	
 	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 	size_t iters = 3 ;
 	Givaro::Integer q = -1 ;
@@ -357,9 +417,9 @@ int main(int argc, char** argv)
 		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
 		END_OF_ARGUMENTS
 	};
-
+	
 	FFLAS::parseArguments(argc,argv,as);
-
+	
 	bool ok = true;
 	srand(seed);
 	do{
@@ -371,12 +431,12 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,k,iters,p, seed);
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,k,iters, p, seed);
 		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,k,iters, p, seed);
-
+		
 		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,k,iters,p, seed);
 		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,k,iters,p, seed);
 	} while (loop && ok);
-
-
+	
+	
 	
 	
 	return !ok ;
