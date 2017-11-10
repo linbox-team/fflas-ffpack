@@ -233,8 +233,6 @@ bool launch_MM(const Field & F,
 		}
 
 
-//FFLAS::fgemv(F, ta, m, k,alpha, A,lda, B,ldb, beta,C,ldc);//<------------------Pb
-//FFLAS::fgemv(F, ta, m, k,alpha, A,lda, B,ldb, beta,D,ldc);
 
 		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);//FFLAS::fequal (F, m, n, C, ldc, D, ldc);
 
