@@ -220,8 +220,11 @@ bool launch_MM(const Field & F,
 
 		if (par){
  {
+ //FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads> >  WH;
 
-   FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>   WH(2);
+ FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row, FFLAS::StrategyParameter::Threads> >  WH;
+
+   //FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>   WH(2);
 	PAR_BLOCK{
 		FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
@@ -270,7 +273,7 @@ bool launch_MM_dispatch(const Field &F,
 	size_t ld = 13 ;
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
-		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		//FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
 		if (! par) {
 			if (random()%2) ta = FFLAS::FflasTrans ;
 			//if (random()%2) tb = FFLAS::FflasTrans ;
