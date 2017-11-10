@@ -108,9 +108,9 @@ bool launch_MM_dispatch(const Field &F, const int mm, const int nn, const int kk
                 RandomMatrix(F, m, n, C, ldc, G);
 
                 FFLAS::Checker_fgemm<Field> checker(F,m,n,k,beta,C,ldc);
-                FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
                 try {
-                        checker.check(ta,tb,alpha,A,lda,B,ldb,C);
+                    FFLAS::fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+                    checker.check(ta,tb,alpha,A,lda,B,ldb,C);
                             //std::cout << "PASSED\n";
                 } catch (FailureFgemmCheck &e) {
                         std::cout << "FAILED\n";
@@ -130,6 +130,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t 
         while (ok &&  nbit){
                 typedef typename Field::Element Element ;
                     // choose Field
+                srand(local_seed);
                 Field* F= chooseField<Field>(q,b,local_seed);
                 if (F==nullptr)
                         return true;
@@ -175,9 +176,9 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, size_t 
                 }
                 nbit--;
                 if ( !ok )
-                        std::cout << "FAILED with seed = "<<seed<<std::endl;
+                    std::cout << "FAILED with seed = "<<local_seed-1<<std::endl;
                 else
-                        std::cout << "PASSED "<<std::endl;
+                    std::cout << "PASSED with seed = "<<local_seed-1<<std::endl;
                 delete F;
         }
         return ok;
@@ -208,7 +209,6 @@ int main(int argc, char** argv)
         };
 
         FFLAS::parseArguments(argc,argv,as);
-        srand(seed);
         bool ok = true;
         do{
                 ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,iters, seed);
@@ -217,6 +217,7 @@ int main(int argc, char** argv)
                 ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,iters, seed);
                 ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,iters, seed);
                 ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,iters, seed);
+                seed++;
         } while (loop && ok);
 
         return !ok ;
