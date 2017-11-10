@@ -72,6 +72,7 @@
 
 using namespace std;
 using namespace FFPACK;
+using namespace FFLAS;
 
 using Givaro::Modular;
 using Givaro::ModularBalanced;
@@ -79,81 +80,69 @@ using Givaro::ModularBalanced;
 
 // checks that D = alpha . C + beta . A ^ta * B ^tb
 template<class Field>
-bool check_MM(const Field                   & F,
+bool check_MV(const Field                   & F,
 			  const typename Field::Element_ptr  Cd, // c0
 			  enum FFLAS::FFLAS_TRANSPOSE   & ta,
-			  enum FFLAS::FFLAS_TRANSPOSE   & tb,
 			  const size_t                    m,
-			  const size_t                    n,
 			  const size_t                    k,
 			  const typename Field::Element & alpha,
 			  const typename Field::Element_ptr  A, size_t lda,
-			  const typename Field::Element_ptr  B, size_t ldb,
+			  const typename Field::Element_ptr  X, size_t incX,
 			  const typename Field::Element & beta,
-			  const typename Field::Element_ptr C, size_t ldc)
+			  const typename Field::Element_ptr Y, size_t incY)
 {
 	bool wrong = false;
-
-	typedef typename Field::Element Element;
-	typedef typename Field::Element_ptr Element_ptr;
-	typedef typename Field::ConstElement_ptr ConstElement_ptr;
-	Element tmp;
-	ConstElement_ptr ail,blj;
-	Element_ptr D  = FFLAS::fflas_new (F,m,n);
-	FFLAS::fassign(F,m,n,Cd,n,D,n);
-
-	for (size_t i = 0; i < m; ++i)
-		for (size_t j = 0; j < n; ++j){
-			F.mulin(*(D+i*n+j),beta);
-			F.assign (tmp, F.zero);
-			for ( size_t l = 0; l < k ; ++l ){
-				if ( ta == FFLAS::FflasNoTrans )
-					ail = A+i*lda+l;
-				else
-					ail = A+l*lda+i;
-				if ( tb == FFLAS::FflasNoTrans )
-					blj = B+l*ldb+j;
-				else
-					blj = B+j*ldb+l;
-				F.axpyin (tmp, *ail, *blj);
-				
+	typename Field::Element_ptr D;
+	if (ta == FflasNoTrans){
+		D = fflas_new(F,m);
+		fassign (F, m, Cd, 1, D, 1);
+		for (size_t i=0; i<m; i++){
+			F.mulin (D[i], beta);
+			typename Field::Element tmp;
+			F.init(tmp);
+			for (size_t j=0; j<k; j++){
+				F.axpyin (tmp, A[i*lda+j], X[j*incX]);
 			}
-			F.axpyin (*(D+i*n+j), alpha, tmp);
-			if ( !F.areEqual( *(D+i*n+j), *(C+i*ldc+j) ) ) {
-				wrong = true;
-			}
+			F.axpyin(D[i],alpha,tmp);
 		}
-
-
-
+		wrong = !fequal(F, m, D, 1, Y, incY);
+	} else {
+		D = fflas_new(F,k);
+		fassign (F, k, Cd, 1, D, 1);
+		for (size_t i=0; i<k; i++){
+			F.mulin (D[i], beta);
+			typename Field::Element tmp;
+			F.init(tmp);
+			for (size_t j=0; j<m; j++){
+				F.axpyin (tmp, A[i+j*lda], X[j*incX]);
+			}
+			F.axpyin(D[i],alpha,tmp);
+		}
+		wrong = !fequal(F, k, D, 1, Y, incY);
+	}
+	size_t Ydim = (ta==FflasNoTrans)? m : k;
 	if ( wrong ){
-		size_t ici = 20 ;
+		size_t canprint = 20 ;
 		std::cerr<<"FAIL"<<std::endl;
-		std::cerr << "a   :" << alpha<<", b   : " << beta << std::endl;
-		std::cerr << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
-		std::cerr << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
-		for (size_t i=0; i<m && ici; ++i){
-			for (size_t j =0; j<n && ici; ++j)
-				if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) ) {
-					std::cerr<<"Error C["<<i<<","<<j<<"]="
-						 <<(*(C+i*ldc+j))<<" D["<<i<<","<<j<<"]="
-						 <<(*(D+i*n+j))<<std::endl;
-					ici--;
+		std::cerr << "alpha   :" << alpha<<", beta   : " << beta << std::endl;
+		std::cerr << "m   :" << m   << ", k   : " << k << std::endl;
+		std::cerr << "ldA :" << lda << ", incX : " << incX << ", incY : " << incY << std::endl;
+		for (size_t i=0; i<Ydim && canprint; ++i){
+			if (!F.areEqual( Y[i*incY], D[i] ) ) {
+					std::cerr<<"Error Y["<<i<<"]="<<Y[i*incY]<<" D["<<i<<"]="<<D[i]<<std::endl;
+					canprint--;
 				}
 		}
-		if (m<80 && n<80) {
-			for (size_t i=0; i<m ; ++i){
-				for (size_t j =0; j<n ; ++j) {
-					if ( !F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) )
-						std::cout << 'X' ;
-					else
-						std::cout << '.' ;
-				}
-				std::cout << std::endl;
+		if (Ydim<80) {
+			for (size_t i=0; i<Ydim ; ++i){
+				if (!F.areEqual( Y[i*incY], D[i] ) )
+					std::cout << 'X' ;
+				else
+					std::cout << '.' ;
 			}
+			std::cout << std::endl;
 		}
 	}
-	// else std::cout<<"COOL"<<std::endl;
 
 	FFLAS::fflas_delete (D);
 
@@ -163,19 +152,16 @@ bool check_MM(const Field                   & F,
 
 
 template<class Field, class RandIter>
-bool launch_MM(const Field & F,
+bool launch_MV(const Field & F,
 			   const size_t   m,
-			   const size_t   n,
 			   const size_t   k,
 			   const typename Field::Element alpha,
 			   const typename Field::Element beta,
-			   const size_t ldc,
 			   const size_t lda,
 			   enum FFLAS::FFLAS_TRANSPOSE    ta,
-			   const size_t ldb,
-			   enum FFLAS::FFLAS_TRANSPOSE    tb,
+			   const size_t incX,
+			   const size_t incY,
 			   size_t iters,
-			   int nbw,
 			   bool par, 
 			   RandIter& G)
 {
@@ -184,137 +170,87 @@ bool launch_MM(const Field & F,
 
 	typedef typename Field::Element_ptr Element_ptr;
 	Element_ptr A ;
-	Element_ptr B ;
-	Element_ptr C = FFLAS::fflas_new (F,m,ldc);
-	FFLASFFPACK_check(ldc >= n);
-	FFLAS::fzero(F,m,n,C,ldc);
-	Element_ptr D = FFLAS::fflas_new (F, m, n);
 	for(size_t i = 0;i<iters;++i){
-		if (ta == FFLAS::FflasNoTrans) {
-			FFLASFFPACK_check(lda >= k);
-			A = FFLAS::fflas_new (F, m, lda);
-			FFLAS::fzero(F,m,lda,A,lda);
-			RandomMatrix(F, m, k, A, lda, G);
-		}
-		else {
-			FFLASFFPACK_check(lda >= m);
-			A = FFLAS::fflas_new (F, k, lda); 
-			FFLAS::fzero(F,k,lda,A,lda);
-			RandomMatrix (F, k, m, A, lda, G);
-		}
-		if (tb == FFLAS::FflasNoTrans) {
-			FFLASFFPACK_check(ldb >= n);
-			B = FFLAS::fflas_new (F,k,ldb);
-			FFLAS::fzero(F,k,ldb,B,ldb);
-			RandomMatrix (F, k, n, B, ldb, G);
-		}
-		else {
-			FFLASFFPACK_check(ldb >= k);
-			B = FFLAS::fflas_new (F,n,ldb);
-			FFLAS::fzero(F,n,ldb,B,ldb);
-			RandomMatrix (F, n, k, B, ldb, G);
-		}
-		RandomMatrix (F, m, n, C, ldc, G);
-		FFLAS::fassign(F,m,n,C,ldc,D,n);
+		FFLASFFPACK_check(lda >= k);
+		A = FFLAS::fflas_new (F, m, lda);
+		FFLAS::fzero(F,m,lda,A,lda);
+		RandomMatrix(F, m, k, A, lda, G);
+		size_t Xdim = (ta == FFLAS::FflasNoTrans)? k : m;
+		size_t Ydim = (ta == FFLAS::FflasNoTrans)? m : k;
+		Element_ptr X = FFLAS::fflas_new (F, Xdim, incX);
+		Element_ptr Y = FFLAS::fflas_new (F, Ydim, incY);
+		FFLAS::fzero (F, Xdim, incX, X, incX);
+		FFLAS::fzero (F, Ydim, incY, Y, incY);
+		Element_ptr D = FFLAS::fflas_new (F, Ydim);
 
+		RandomMatrix (F, Xdim, 1, X, incX, G);
+		RandomMatrix (F, Ydim, 1, Y, incY, G);
+		FFLAS::fassign (F, Ydim, Y, incY, D, 1);
 
 		if (par){
- {
- //FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads> >  WH;
+			{
+					//FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads> >  WH;
+				FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row, FFLAS::StrategyParameter::Threads> >  WH;
 
- FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row, FFLAS::StrategyParameter::Threads> >  WH;
-
-   //FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>   WH(2);
-	PAR_BLOCK{
-		FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+					//FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>   WH(2);
+				PAR_BLOCK{
+					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+				}
 			}
- }
-
 		}else{
-			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
-			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, B,ldb, beta,C,ldc);
+				//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
 		}
 
+		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
 
-
-		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);//FFLAS::fequal (F, m, n, C, ldc, D, ldc);
-
-		FFLAS::fflas_delete(A);
-		FFLAS::fflas_delete(B);
-
+		FFLAS::fflas_delete (A, X, Y, D);
 		if (!ok)
 			break;
 	}
-	FFLAS::fflas_delete (C);
-	FFLAS::fflas_delete (D);
-
 	return ok ;
 }
 
 
 template<class Field, class RandIter>
-bool launch_MM_dispatch(const Field &F,
+bool launch_MV_dispatch(const Field &F,
 						const int mm,
-						const int nn,
 						const int kk,
 						const typename Field::Element alpha,
 						const typename Field::Element beta,
 						const size_t iters,
-						const int nbw,
 						const bool par,
 						RandIter& G)
 {
 	bool ok = true;
-	size_t m,n,k;
-	size_t lda,ldb,ldc;
-	//!@bug test for ldX equal
-	//!@bug test for transpo
-	//!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
+	size_t m,k;
+	size_t lda,incX, incY;
 	size_t ld = 13 ;
 	{
 		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
-		//FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
 		if (! par) {
 			if (random()%2) ta = FFLAS::FflasTrans ;
-			//if (random()%2) tb = FFLAS::FflasTrans ;
 		}
 
 		if (mm<0)
 			m = 1+(size_t)random() % -mm;
 		else m = mm;
-		if (nn<0)
-			n = 1+(size_t)random() % -nn;
-		else n = nn;
 		if (kk<0)
 			k = 1+(size_t)random() % -kk;
 		else k = kk;
 
-		int logdim = (int)floor(log(std::min(std::min(m,k),n))/log(2.));
-		int nw = std::min (logdim,nbw);
+		lda = k+(size_t)random()%ld;
+		incX = 1+(size_t)random()%ld;
+		incY = 1+(size_t)random()%ld;
 
-		lda = std::max(k,m)+(size_t)random()%ld;
-		ldb = std::max(n,k)+(size_t)random()%ld;
-		ldc = n+(size_t)random()%ld;
-#ifdef __FFLASFFPACK_DEBUG
-		std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
-			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
-			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
-		if (!F.isZero(beta))
-			cerr<<" + "<<beta<<" C";
-#endif
-
-		ok = ok && launch_MM (F, m, n, k, alpha,beta, ldc, lda, ta,ldb, ta, iters,nw, par, G);
-
-
-#ifdef __FFLASFFPACK_DEBUG
-		std::cerr<<(ok?" -> ok ":" -> KO")<<std::endl;
-#endif
+		ok = ok && launch_MV (F, m, k, alpha,beta, lda, FflasNoTrans, incX, incY, iters, par, G);
+		ok = ok && launch_MV (F, m, k, alpha,beta, lda, FflasTrans, incX, incY, iters, par, G);
 	}
 	return ok ;
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw, size_t iters, bool par, size_t seed){
+bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, bool par, size_t seed){
 	bool ok = true ;
 
 	int nbit=(int)iters;
@@ -334,8 +270,6 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 		std::cout<<oss.str();
 		std::cout<<" ... ";
 
-		if (nbw<0)
-			nbw = (int) random() % 7;
 #ifdef __FFLASFFPACK_DEBUG
 		F->write(std::cerr) << std::endl;
 #endif
@@ -345,44 +279,44 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 
 			//size_t k = 0 ;
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one,F->zero,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,F->zero,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,F->zero,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one ,F->one,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,F->one,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,F->one,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one ,F->mOne,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,F->mOne,iters, par, R);
 		 	//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,F->mOne,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
 
 		Element alpha,beta ;
 		NZR.random(alpha);
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,alpha,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->one ,alpha,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,alpha,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->zero,alpha,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,F->mOne,alpha,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,alpha,F->one ,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->zero,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,alpha,F->zero,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MV_dispatch<Field>(*F,m,k,alpha,F->mOne,iters, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
 
 		for (size_t j = 0 ; j < 3 ; ++j) {
 			R.random(alpha);
 			R.random(beta);
-			ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
+			ok = ok && launch_MV_dispatch<Field>(*F,m,k,alpha,beta,iters, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
 		}
 			//std::cout<<std::endl;
@@ -407,7 +341,6 @@ int main(int argc, char** argv)
 	Givaro::Integer q = -1 ;
 	uint64_t b = 0 ;
 	int m = -50 ;
-	int n = 1;//-50 ;
 	int k = -50 ;
 	int nbw = -1 ;
 	bool loop = false;
@@ -416,7 +349,6 @@ int main(int argc, char** argv)
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
 		{ 'm', "-m M", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |n|).",      TYPE_INT , &m },
-		{ 'n', "-n N", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |n|).",      TYPE_INT , &n },
 		{ 'k', "-k K", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |k|).",      TYPE_INT , &k },
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
@@ -431,17 +363,17 @@ int main(int argc, char** argv)
 	bool ok = true;
 	srand(seed);
 	do{
-		ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
-		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<Modular<double> >(q,b,m,k,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,k,iters,p, seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,m,k,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,k,iters,p, seed);
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,k,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,k,iters,p, seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,k,iters, p, seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,k,iters, p, seed);
 
-		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,k,iters,p, seed);
+		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,k,iters,p, seed);
 	} while (loop && ok);
 
 
