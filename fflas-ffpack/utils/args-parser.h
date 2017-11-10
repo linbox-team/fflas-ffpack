@@ -269,14 +269,14 @@ namespace FFLAS {
 
                         case TYPE_UINT64:
                         {
-                            *(uint64_t *) current->data = atoi (argv[i+1]);
+                            *(uint64_t *) current->data = atol (argv[i+1]);
                             ++i;
                         }
                         break;
 
                         case TYPE_LONGLONG:
                         {
-                            *(long long *) current->data = atoi (argv[i+1]);
+                            *(long long *) current->data = atol (argv[i+1]);
                             ++i;
                         }
                         break;
