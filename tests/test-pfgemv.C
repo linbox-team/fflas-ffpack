@@ -1,8 +1,11 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+
+
 /*
  * Copyright (C) the FFLAS-FFPACK group
- *
+ * Written by Clément Pernet
+ *            Brice Boyer (briceboyer) <boyer.brice@gmail.com>
  * This file is Free Software and part of FFLAS-FFPACK.
  *
  * ========LICENCE========
@@ -25,231 +28,423 @@
  *.
  */
 
+// #ifndef NEWINO
+// #define NEWWINO
+// #endif
+
+// #define WINOTHRESHOLD 100
+// #define OLD_DYNAMIC_PEELING
+
+
+
+#define ENABLE_CHECKER_fgemv 1
+
+#include "fflas-ffpack/fflas-ffpack-config.h"
+
 #include <iomanip>
 #include <iostream>
-using namespace std;
 
-#define  __FFLASFFPACK_USE_OPENMP
+#include <givaro/modular.h>
+ 
+#include <givaro/udl.h>
+#include <recint/rint.h>
 
-//#include "fflas-ffpack/utils/fflas_randommatrix.h"
-#include "givaro/modular.h"
+#include <givaro/givintprime.h>
+
 #include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/fflas/fflas.h"
-
-
-#include "fflas-ffpack/utils/test-utils.h"
-/*
-#ifdef __FFLASFFPACK_USE_KAAPI
-#include <kaapi++>
-#endif
-*/
-#ifdef __FFLASFFPACK_USE_OPENMP
-#include <omp.h>
-#endif
-
-#include "fflas-ffpack/paladin/pfgemv.inl"
-
-
-using namespace FFLAS;
 
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
-#include <givaro/modular.h>
-#include <givaro/modular-balanced.h>
+
+#include <random>
+#include <chrono>
+
+
+
+#ifdef __FFLASFFPACK_USE_OPENMP
+#include "fflas-ffpack/paladin/pfgemv.inl"
+#include "fflas-ffpack/utils/fflas_io.h"
+#include <omp.h>
+#endif
+
+
+
 using namespace std;
 using namespace FFPACK;
+
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
 
-template<typename Field, class RandIter>
-bool check_solve(const Field &F, size_t m, RandIter& Rand){
+// checks that D = alpha . C + beta . A ^ta * B ^tb
+template<class Field>
+bool check_MM(const Field                   & F,
+			  const typename Field::Element_ptr  Cd, // c0
+			  enum FFLAS::FFLAS_TRANSPOSE   & ta,
+			  enum FFLAS::FFLAS_TRANSPOSE   & tb,
+			  const size_t                    m,
+			  const size_t                    n,
+			  const size_t                    k,
+			  const typename Field::Element & alpha,
+			  const typename Field::Element_ptr  A, size_t lda,
+			  const typename Field::Element_ptr  B, size_t ldb,
+			  const typename Field::Element & beta,
+			  const typename Field::Element_ptr C, size_t ldc)
+{
+	bool wrong = false;
 
-  typename Field::Element_ptr A, X, Y, Y2;
+	typedef typename Field::Element Element;
+	typedef typename Field::Element_ptr Element_ptr;
+	typedef typename Field::ConstElement_ptr ConstElement_ptr;
+	Element tmp;
+	ConstElement_ptr ail,blj;
+	Element_ptr D  = FFLAS::fflas_new (F,m,n);
+	FFLAS::fassign(F,m,n,Cd,n,D,n);
 
-  size_t lda,incX,incY;
-  lda=m;  
-  incX=1;  
-  incY=1;
-  A  = FFLAS::fflas_new(F,m,lda);
-  
-  Y  = FFLAS::fflas_new(F,m,incY);
-  Y2 = FFLAS::fflas_new(F,m,incY);
-  X  = FFLAS::fflas_new(F,m,incX);
-  
-  RandomMatrix (F, m, m, A, lda);
-  RandomMatrix (F, m, incX, X,  incX);
-  RandomMatrix (F, m, incY, Y,  incY);
-  RandomMatrix (F, m, incY, Y2, incY);
+	for (size_t i = 0; i < m; ++i)
+		for (size_t j = 0; j < n; ++j){
+			F.mulin(*(D+i*n+j),beta);
+			F.assign (tmp, F.zero);
+			for ( size_t l = 0; l < k ; ++l ){
+				if ( ta == FFLAS::FflasNoTrans )
+					ail = A+i*lda+l;
+				else
+					ail = A+l*lda+i;
+				if ( tb == FFLAS::FflasNoTrans )
+					blj = B+l*ldb+j;
+				else
+					blj = B+j*ldb+l;
+				F.axpyin (tmp, *ail, *blj);
+				
+			}
+			F.axpyin (*(D+i*n+j), alpha, tmp);
+			if ( !F.areEqual( *(D+i*n+j), *(C+i*ldc+j) ) ) {
+				wrong = true;
+			}
+		}
 
-  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
-  
 
 
-	FFLAS::Timer t; t.clear();
-	double time=0.0;
+	if ( wrong ){
+		size_t ici = 20 ;
+		std::cerr<<"FAIL"<<std::endl;
+		std::cerr << "a   :" << alpha<<", b   : " << beta << std::endl;
+		std::cerr << "m   :" << m   << ", n   : " <<  n  << ", k   : " << k << std::endl;
+		std::cerr << "ldA :" << lda << ", ldB : " << ldb << ", ldC : " << ldc << std::endl;
+		for (size_t i=0; i<m && ici; ++i){
+			for (size_t j =0; j<n && ici; ++j)
+				if (!F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) ) {
+					std::cerr<<"Error C["<<i<<","<<j<<"]="
+						 <<(*(C+i*ldc+j))<<" D["<<i<<","<<j<<"]="
+						 <<(*(D+i*n+j))<<std::endl;
+					ici--;
+				}
+		}
+		if (m<80 && n<80) {
+			for (size_t i=0; i<m ; ++i){
+				for (size_t j =0; j<n ; ++j) {
+					if ( !F.areEqual( *(C+i*ldc+j), *(D+i*n+j) ) )
+						std::cout << 'X' ;
+					else
+						std::cout << '.' ;
+				}
+				std::cout << std::endl;
+			}
+		}
+	}
+	// else std::cout<<"COOL"<<std::endl;
+
+	FFLAS::fflas_delete (D);
+
+	return !wrong ;
+
+}
+
+
+template<class Field, class RandIter>
+bool launch_MM(const Field & F,
+			   const size_t   m,
+			   const size_t   n,
+			   const size_t   k,
+			   const typename Field::Element alpha,
+			   const typename Field::Element beta,
+			   const size_t ldc,
+			   const size_t lda,
+			   enum FFLAS::FFLAS_TRANSPOSE    ta,
+			   const size_t ldb,
+			   enum FFLAS::FFLAS_TRANSPOSE    tb,
+			   size_t iters,
+			   int nbw,
+			   bool par, 
+			   RandIter& G)
+{
+
 	bool ok = true;
 
-	t.clear();
-	t.start();
+	typedef typename Field::Element_ptr Element_ptr;
+	Element_ptr A ;
+	Element_ptr B ;
+	Element_ptr C = FFLAS::fflas_new (F,m,ldc);
+	FFLASFFPACK_check(ldc >= n);
+	FFLAS::fzero(F,m,n,C,ldc);
+	Element_ptr D = FFLAS::fflas_new (F, m, n);
+	for(size_t i = 0;i<iters;++i){
+		if (ta == FFLAS::FflasNoTrans) {
+			FFLASFFPACK_check(lda >= k);
+			A = FFLAS::fflas_new (F, m, lda);
+			FFLAS::fzero(F,m,lda,A,lda);
+			RandomMatrix(F, m, k, A, lda, G);
+		}
+		else {
+			FFLASFFPACK_check(lda >= m);
+			A = FFLAS::fflas_new (F, k, lda); 
+			FFLAS::fzero(F,k,lda,A,lda);
+			RandomMatrix (F, k, m, A, lda, G);
+		}
+		if (tb == FFLAS::FflasNoTrans) {
+			FFLASFFPACK_check(ldb >= n);
+			B = FFLAS::fflas_new (F,k,ldb);
+			FFLAS::fzero(F,k,ldb,B,ldb);
+			RandomMatrix (F, k, n, B, ldb, G);
+		}
+		else {
+			FFLASFFPACK_check(ldb >= k);
+			B = FFLAS::fflas_new (F,n,ldb);
+			FFLAS::fzero(F,n,ldb,B,ldb);
+			RandomMatrix (F, n, k, B, ldb, G);
+		}
+		RandomMatrix (F, m, n, C, ldc, G);
+		FFLAS::fassign(F,m,n,C,ldc,D,n);
+
+
+		if (par){
  {
-    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::Threads> >  H;
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
+
+   FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>   WH(2);
+	PAR_BLOCK{
+		FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
+			}
  }
-	t.stop();
-	time+=t.usertime();
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){
-    cout << "PASSED ("<<time<<")"<<endl;
-    
-  } else{
-    ok=false;
-  }
 
- 	time=0.0;
-	t.clear();
-	t.start();
-  {
-    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Threads> >  H;
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-  }
-  	t.stop();
-	time+=t.usertime();
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){
-    cout << "PASSED ("<<time<<")"<<endl;
-    
-  } else{
-	ok=false;
-  }
+		}else{
+			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
+			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, B,ldb, beta,C,ldc);
+		}
 
-if(m>2){
-  for(size_t GS=2; GS<m; GS++){
- 	time=0.0;
-	t.clear();
-	t.start();
-  {
-	ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  H(GS);
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H); 
 
-  }
+//FFLAS::fgemv(F, ta, m, k,alpha, A,lda, B,ldb, beta,C,ldc);//<------------------Pb
+//FFLAS::fgemv(F, ta, m, k,alpha, A,lda, B,ldb, beta,D,ldc);
 
-	t.stop();
-	time+=t.usertime();
+		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);//FFLAS::fequal (F, m, n, C, ldc, D, ldc);
 
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){    
-    cout << "PASSED ("<<time<<")"<<endl;   
-  } else{
-	ok=false;
-	#ifdef DEBUG
-		cout << "m>2 : failed	with GS = "<<GS<<endl;
-	#endif
+		FFLAS::fflas_delete(A);
+		FFLAS::fflas_delete(B);
 
-	break;
-  }
- }
-}else{
-	size_t GS=2;
- 	time=0.0;
-	t.clear();
-	t.start();
-  {
-    ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>   H(GS);
-    FFLAS::pfgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H); 
-  }
-	t.stop();
-	time+=t.usertime();
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){    
-    cout << "PASSED ("<<time<<")"<<endl;   
-  } else{
-	ok=false;
-	#ifdef DEBUG
-		cout << "m<=2 : failed	with GS = "<<GS<<endl;
-	#endif
+		if (!ok)
+			break;
+	}
+	FFLAS::fflas_delete (C);
+	FFLAS::fflas_delete (D);
 
-  }
+	return ok ;
 }
-	FFLAS::fflas_delete(A);
-	FFLAS::fflas_delete(X);
-	FFLAS::fflas_delete(Y);
-	FFLAS::fflas_delete(Y2);
 
 
-	return ok;
+template<class Field, class RandIter>
+bool launch_MM_dispatch(const Field &F,
+						const int mm,
+						const int nn,
+						const int kk,
+						const typename Field::Element alpha,
+						const typename Field::Element beta,
+						const size_t iters,
+						const int nbw,
+						const bool par,
+						RandIter& G)
+{
+	bool ok = true;
+	size_t m,n,k;
+	size_t lda,ldb,ldc;
+	//!@bug test for ldX equal
+	//!@bug test for transpo
+	//!@todo does nbw actually do nbw recursive calls and then call blas (check ?) ?
+	size_t ld = 13 ;
+	{
+		FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		FFLAS::FFLAS_TRANSPOSE tb = FFLAS::FflasNoTrans ;
+		if (! par) {
+			if (random()%2) ta = FFLAS::FflasTrans ;
+			//if (random()%2) tb = FFLAS::FflasTrans ;
+		}
+
+		if (mm<0)
+			m = 1+(size_t)random() % -mm;
+		else m = mm;
+		if (nn<0)
+			n = 1+(size_t)random() % -nn;
+		else n = nn;
+		if (kk<0)
+			k = 1+(size_t)random() % -kk;
+		else k = kk;
+
+		int logdim = (int)floor(log(std::min(std::min(m,k),n))/log(2.));
+		int nw = std::min (logdim,nbw);
+
+		lda = std::max(k,m)+(size_t)random()%ld;
+		ldb = std::max(n,k)+(size_t)random()%ld;
+		ldc = n+(size_t)random()%ld;
+#ifdef __FFLASFFPACK_DEBUG
+		std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
+			  <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
+			  <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
+		if (!F.isZero(beta))
+			cerr<<" + "<<beta<<" C";
+#endif
+
+		ok = ok && launch_MM (F, m, n, k, alpha,beta, ldc, lda, ta,ldb, ta, iters,nw, par, G);
+
+
+#ifdef __FFLASFFPACK_DEBUG
+		std::cerr<<(ok?" -> ok ":" -> KO")<<std::endl;
+#endif
+	}
+	return ok ;
 }
+
 template <class Field>
-bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64_t seed){
+bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw, size_t iters, bool par, size_t seed){
 	bool ok = true ;
-	int nbit=(int)iters;
 
+	int nbit=(int)iters;
+	
 	while (ok &&  nbit){
-		//typedef typename Field::Element Element ;
+		typedef typename Field::Element Element ;
 		// choose Field
-		//Field* F= chooseField<Field>(3,b);
-		Field* F= FFPACK::chooseField<Field>(q,b,seed);
-		typename Field::RandIter G(*F,0,seed);
+		Field* F= chooseField<Field>(q,b,seed);
 		if (F==nullptr)
 			return true;
 
-		cout<<"Checking with ";F->write(cout)<<endl;
-		ok = ok && check_solve(*F,m,G);
-		
+		std::ostringstream oss;
+		F->write(oss);
+		std::cout.fill('.');
+		std::cout<<"Checking ";
+		std::cout.width(50);
+		std::cout<<oss.str();
+		std::cout<<" ... ";
+
+		if (nbw<0)
+			nbw = (int) random() % 7;
+#ifdef __FFLASFFPACK_DEBUG
+		F->write(std::cerr) << std::endl;
+#endif
+		typedef typename Field::Element  Element ;
+		typename Field::RandIter R(*F,b,seed++);
+		typename Field::NonZeroRandIter NZR(R);
+
+			//size_t k = 0 ;
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->mOne,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters,nbw, par, R);
+		 	//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+
+		Element alpha,beta ;
+		NZR.random(alpha);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,alpha,iters,nbw, par, R);
+		//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,alpha,iters,nbw, par, R);
+		//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters,nbw, par, R);
+		//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->one ,iters,nbw, par, R);
+		//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->zero,iters,nbw, par, R);
+		//std::cout << k << "/24" << std::endl; ++k;
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,F->mOne,iters,nbw, par, R);
+		//std::cout << k << "/24" << std::endl; ++k;
+
+		for (size_t j = 0 ; j < 3 ; ++j) {
+			R.random(alpha);
+			R.random(beta);
+			ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+		}
+			//std::cout<<std::endl;
 		nbit--;
+		if ( !ok )
+			    //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
+			std::cout << "FAILED "<<std::endl;
+		else
+			    //std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
+			std::cout << "PASSED "<<std::endl;
 		delete F;
-
 	}
-
 	return ok;
 }
-
-
-
-
-
-
-
-BEGIN_PARALLEL_MAIN(int argc, char** argv)
+int main(int argc, char** argv)
 {
+	std::cout<<setprecision(17);
+	std::cerr<<setprecision(17);
 
-	cerr<<setprecision(10);
-	Givaro::Integer q=-1;
-	size_t b=0;
-	size_t m=128;
-
-	size_t iters=11;
-	bool loop=false;
-	uint64_t seed = time(NULL);
+	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	size_t iters = 3 ;
+	Givaro::Integer q = -1 ;
+	uint64_t b = 0 ;
+	int m = -50 ;
+	int n = 1;//-50 ;
+	int k = -50 ;
+	int nbw = -1 ;
+	bool loop = false;
+	bool p = false;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INTEGER , &q },
-		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
-		{ 'm', "-m M", "Set the dimension of unknown square matrix.",      TYPE_INT , &m },
-
+		{ 'b', "-b B", "Set the bitsize of the random characteristic.",         TYPE_INT , &b },
+		{ 'm', "-m M", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |n|).",      TYPE_INT , &m },
+		{ 'n', "-n N", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |n|).",      TYPE_INT , &n },
+		{ 'k', "-k K", "Set the dimension of the matrix (negative values, mean, any random value between 0 and |k|).",      TYPE_INT , &k },
+		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
-		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
+		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
+		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
 		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
-                END_OF_ARGUMENTS
-        };
+		END_OF_ARGUMENTS
+	};
 
 	FFLAS::parseArguments(argc,argv,as);
 
 	bool ok = true;
-
+	srand(seed);
 	do{
-		ok = ok && run_with_field<Modular<double> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<Modular<float> >(q,b,m,iters,seed); 
-		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,iters,seed); 
-		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,iters,seed); 
-		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,iters,seed); 
-		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,iters,seed); 
-		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,iters,seed);
-		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,iters,seed); 
+		ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
 
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
 	} while (loop && ok);
 
 
-  
+	
+	
+	return !ok ;
 }
-END_PARALLEL_MAIN()
-
-
