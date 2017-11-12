@@ -70,6 +70,10 @@ if test "x${CCNAM}" = "xclang38" ; then
 else
    AX_CXX_COMPILE_STDCXX_11([ext],[mandatory])
 fi
+# appending CXX11FLAGS for the remaining checks, to avoid clang __float128 undefined bug
+# duplicates will be removed later on
+CXXFLAGS="$CXXFLAGS $CXX11FLAGS"
+
 REQUIRED_FLAGS="$CXX11FLAGS"
 
 
