@@ -64,6 +64,7 @@ BASIC_TESTS =               \
 		test-maxdelayeddim \
 		test-solve \
 		test-pfgemv \
+		test-pfgemv-mpi \
 		#test-pfgemm-DSL\
 		regression-check
 
@@ -173,7 +174,7 @@ regression_check_SOURCES = regression-check.C
 test_solve_SOURCES = test-solve.C
 test_pfgemv_SOURCES = test-pfgemv.C
 #test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
-
+test_pfgemv_mpi_SOURCES = test-pfgemv-mpi.C
 
 dense_generator: dense_generator.C
 	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) dense_generator.C -o dense_generator
