@@ -75,13 +75,12 @@ namespace FFLAS
 		MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 		MPI_Status status[nprocs];
 		MPI_Request recv_request[nprocs];
-
 		
 		if(rank==0) 
 			{	std::cout << "<<<<<<<<<<<Master thread: ";printMPItype(chooseMPItype<typename Field::Element>::val);	
-				//FFLAS::WriteMatrix (std::cout << "A:="<<std::endl, F, m, m, A, lda) << std::endl;
-				//FFLAS::WriteMatrix (std::cout << "X:="<<std::endl, F, m, incX, X, incX) << std::endl;
-				//FFLAS::WriteMatrix (std::cout << "Y:="<<std::endl, F, m, incY, Y, incY) << std::endl;
+				FFLAS::WriteMatrix (std::cout << "A:="<<std::endl, F, m, m, A, lda) << std::endl;
+				FFLAS::WriteMatrix (std::cout << "X:="<<std::endl, F, m, incX, X, incX) << std::endl;
+				FFLAS::WriteMatrix (std::cout << "Y:="<<std::endl, F, m, incY, Y, incY) << std::endl;
 				
 				if(nprocs==1) {
 					PAR_BLOCK {
@@ -117,7 +116,7 @@ namespace FFLAS
 						
 						
 						PAR_BLOCK {
-							pfgemv(F,ta,m-(m%nprocs)*(m/nprocs+1)-(nprocs-m%nprocs-1)*(m/nprocs+1), n, alpha, A+(m%nprocs)*(m/nprocs+1)*lda-(nprocs-m%nprocs-1)*(m/nprocs+1)*lda, lda, X,incX,beta,Y+(m%nprocs)*(m/nprocs+1)*incY-(nprocs-m%nprocs-1)*(m/nprocs+1)*incY, incY, H);
+							pfgemv(F,ta,m-(m%nprocs)*(m/nprocs+1)-(nprocs-m%nprocs-1)*(m/nprocs), n, alpha, A+(m%nprocs)*(m/nprocs+1)*lda+(nprocs-m%nprocs-1)*(m/nprocs)*lda, lda, X,incX,beta,Y+(m%nprocs)*(m/nprocs+1)*incY+(nprocs-m%nprocs-1)*(m/nprocs)*incY, incY, H);
 						}
 
 						
@@ -135,7 +134,7 @@ namespace FFLAS
 						
 						
 						
-					} else{
+					} else{ //m%nprocs==0
 						
 						for(int i=0;i<nprocs-1;i++){
 							
@@ -169,20 +168,21 @@ namespace FFLAS
 					}
 					
 					
-					
+
 					
 					
 				}
 
 				//tag=false;
 				//for(int i=1; i<nprocs; i++)MPI_Isend(&tag, 1, MPI_C_BOOL, i, 123, MPI_COMM_WORLD, &recv_request[i]);				
+
 				return Y;
 				
 				
 			} else { //rank!=0
 				
 			
-			while(1){
+			//while(1){
 				
 
 				typename Field::Element_ptr AA, XX, YY;
@@ -244,12 +244,12 @@ std::cerr<<"typename Field::Element = "<<typeid(typename Field::Element).name()<
 
 					}
 				//}//if(tag)
-
-			}//while(1)
+MPI_Isend(Y, (m/nprocs),  chooseMPItype<typename Field::Element>::val, 0, 124, MPI_COMM_WORLD, &recv_request[rank]);
+			//}//while(1)
 			
 		}   
 		
-		
+
 		
 	}
 	
