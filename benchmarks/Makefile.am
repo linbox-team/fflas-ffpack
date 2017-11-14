@@ -35,7 +35,8 @@ endif
 
 PERFPUBLISHERFILE=benchmarks-report.xml
 
-FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot
+FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot benchmark-pfgemv 
+#benchmark-test-pfgemv
 
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
 LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
@@ -81,6 +82,8 @@ benchmark_pluq_SOURCES = benchmark-pluq.C
 benchmark_checkers_SOURCES = benchmark-checkers.C
 benchmark_fadd_lvl2_SOURCES = benchmark-fadd-lvl2.C
 benchmark_fdot_SOURCES = benchmark-fdot.C
+benchmark_pfgemv_SOURCES = benchmark-pfgemv.C
+#benchmark_test_pfgemv_SOURCES = benchmark-test-pfgemv.C
 
 benchmark_sgemm_CXXFLAGS = $(AM_CXXFLAGS) -D__SGEMM__
 

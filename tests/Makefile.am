@@ -60,6 +60,8 @@ BASIC_TESTS =               \
 		test-io      \
 		test-maxdelayeddim \
 		test-solve \
+		test-pfgemv \
+		#test-pfgemm-DSL\
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -167,6 +169,8 @@ test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 regression_check_SOURCES = regression-check.C
 
 test_solve_SOURCES = test-solve.C
+test_pfgemv_SOURCES = test-pfgemv.C
+#test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
 
 
 dense_generator: dense_generator.C
@@ -182,7 +186,7 @@ perfpublisher:
 # for compilation of new tests
 FFLASFFPACK_BIN=@bindir@
 
-new_examp_comp = $(CXX) $(CXXFLAGS) $(AM_CXXFLAGS)  ${INCLUDES} $(AM_CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+new_examp_comp = $(CXX) $(AM_CXXFLAGS) ${CXXFLAGS}  ${INCLUDES} $(AM_CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
 
 %:%.C
 	$(new_examp_comp)
