@@ -413,13 +413,13 @@ int main(int argc, char** argv)
 		{ 'w', "-w N", "Set the number of winograd levels (-1 for random).",    TYPE_INT , &nbw },
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
-		{ 'p', "-p Y/N", "run the parallel fgemm.", TYPE_BOOL , &p },
+		{ 'p', "-p Y/N", "run the parallel fgemv.", TYPE_BOOL , &p },
 		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
 		END_OF_ARGUMENTS
 	};
 	
 	FFLAS::parseArguments(argc,argv,as);
-	
+
 	bool ok = true;
 	srand(seed);
 	do{

@@ -48,21 +48,31 @@ namespace FFLAS
 			typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> > MMH_t;
 			MMH_t H1(H);
 			MMH_t H2(H);
-			size_t M2 = m>>1;
+			size_t Ydim = (ta == FflasNoTrans) ? m : n;
+			size_t Ydim2 = Ydim>>1;
 			SYNCH_GROUP(				
 				H1.parseq.set_numthreads(H.parseq.numthreads() >> 1);
 				H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
 				typename Field::ConstElement_ptr A1 = A;
-				typename Field::ConstElement_ptr A2 = A + M2*lda;
+				typename Field::ConstElement_ptr A2 = A + ((ta==FflasNoTrans) ? Ydim2*lda : Ydim);
 				typename Field::Element_ptr C1 = Y;
-				typename Field::Element_ptr C2 = Y + M2*incY;
-				TASK(CONSTREFERENCE(F,H1) MODE( READ(A1,X) READWRITE(C1)),
-					 {pfgemv( F, ta,  M2, n, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
-					 );
-				TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,X) READWRITE(C2)),
-					 {pfgemv(F, ta, m-M2, n, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
-					 );
-					)
+				typename Field::Element_ptr C2 = Y + Ydim2*incY;
+				if (ta==FflasNoTrans){
+					TASK(CONSTREFERENCE(F,H1) MODE( READ(A1,X) READWRITE(C1)),
+						 {pfgemv( F, ta,  Ydim2, n, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
+						 );
+					TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,X) READWRITE(C2)),
+						 {pfgemv(F, ta, m-Ydim2, n, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
+						 );
+				} else {
+					TASK(CONSTREFERENCE(F,H1) MODE( READ(A1,X) READWRITE(C1)),
+						 {pfgemv( F, ta,  m, Ydim2, alpha, A1, lda, X, incX, beta, C1, incY, H1);}
+						 );
+					TASK(MODE(CONSTREFERENCE(F,H2) READ(A2,X) READWRITE(C2)),
+						 {pfgemv(F, ta, m, n-Ydim2, alpha, A2, lda, X, incX, beta, C2, incY, H2);}
+						 );
+				}
+			    )
 				}
 		return Y;		
 	}	
@@ -80,12 +90,18 @@ namespace FFLAS
 		   const typename Field::Element beta,
 		   typename Field::Element_ptr Y, const size_t incY,
 		   MMHelper<Field, AlgoT, FieldTrait, ParSeqHelper::Parallel<CuttingStrategy::Row, Cut> > & H){
+		size_t Xdim, Ydim;
+		if (ta == FflasNoTrans) { Xdim = n; Ydim = m;}
+		else {Xdim = m; Ydim = n;}
 		SYNCH_GROUP(
-					FORBLOCK1D(iter,m,H.parseq,
-							   TASK(MODE( READ (A[iter.begin()*lda],X) CONSTREFERENCE(F) READWRITE (Y[iter.begin()*incY]) ),
+					FORBLOCK1D(iter,Ydim,H.parseq,
+							   TASK(MODE( READ (A[iter.begin()*((ta==FflasNoTrans)?lda:1)],X) CONSTREFERENCE(F) READWRITE (Y[iter.begin()*incY]) ),
 									{
-										fgemv( F, ta, (iter.end()-iter.begin()), n, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y+iter.begin()*incY, incY);
-									} 
+										if (ta==FflasNoTrans)
+											fgemv( F, ta, (iter.end()-iter.begin()), Xdim, alpha, A + iter.begin()*lda, lda, X, incX, beta, Y+iter.begin()*incY, incY);
+										else
+											fgemv( F, ta, Xdim, (iter.end()-iter.begin()), alpha, A + iter.begin(), lda, X, incX, beta, Y+iter.begin()*incY, incY);
+									}
 									)
 							   );
 					);
