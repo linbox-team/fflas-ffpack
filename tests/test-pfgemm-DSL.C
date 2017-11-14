@@ -118,15 +118,12 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 
 	//const FFLAS::CuttingStrategy meth; //= FFLAS::BLOCK
 	//const FFLAS::StrategyParameter strat;// = FFLAS::THREADS;
+	FFLAS::ParSeqHelper::Parallel PSH(MAX_THREADS, FFLAS::CuttingStrategy::Block, 
+					  FFLAS::StrategyParameter::Threads);
 	FFLAS::MMHelper<Field, 
-FFLAS::MMHelperAlgo::Winograd, 
-FFLAS::FieldTraits<Field>::category,			
-FFLAS::ParSeqHelper::Parallel> pWH (F, 
-nbw, 
-FFLAS::ParSeqHelper::Parallel(
-MAX_THREADS, 
-FFLAS::CuttingStrategy::Block, 
-FFLAS::StrategyParameter::Threads));
+			FFLAS::MMHelperAlgo::Winograd, 
+			FFLAS::FieldTraits<Field>::category,			
+			FFLAS::ParSeqHelper::Parallel> pWH (F, nbw, PSH);
         for(int i = 0;i<nbit;++i){
 		C = FFLAS::fflas_new<Field::Element>(m*n);
                 clock_gettime(CLOCK_REALTIME, &t0);
