@@ -291,9 +291,9 @@ namespace FFLAS
 		
 		if(rank==0) 
 			{	std::cout << "<<<<<<<<<<<Master thread: ";printMPItype(chooseMPItype<typename Field::Element>::val);	
-				FFLAS::WriteMatrix (std::cout << "A:="<<std::endl, F, m, m, A, lda) << std::endl;
-				FFLAS::WriteMatrix (std::cout << "X:="<<std::endl, F, m, incX, X, incX) << std::endl;
-				FFLAS::WriteMatrix (std::cout << "Y:="<<std::endl, F, m, incY, Y, incY) << std::endl;
+				//FFLAS::WriteMatrix (std::cout << "A:="<<std::endl, F, m, m, A, lda) << std::endl;
+				//FFLAS::WriteMatrix (std::cout << "X:="<<std::endl, F, m, incX, X, incX) << std::endl;
+				//FFLAS::WriteMatrix (std::cout << "Y:="<<std::endl, F, m, incY, Y, incY) << std::endl;
 				
 				if(nprocs==1) {
 					PAR_BLOCK {
