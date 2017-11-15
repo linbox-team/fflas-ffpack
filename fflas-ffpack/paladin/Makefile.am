@@ -25,5 +25,6 @@ pkgincludesub_HEADERS= \
 	fflas_plevel1.h	\
 	blockcuts.inl  \
 	pfgemm_variants.inl \
+	pfgemv.inl \
 	parallel.h  \
 	kaapi_routines.inl
