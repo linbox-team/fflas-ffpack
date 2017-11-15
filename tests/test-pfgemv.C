@@ -37,8 +37,6 @@
 
 
 
-#define ENABLE_CHECKER_fgemv 1
-
 #include "fflas-ffpack/fflas-ffpack-config.h"
 
 #include <iomanip>
@@ -46,10 +44,7 @@
 
 #include <givaro/modular.h>
  
-#include <givaro/udl.h>
 #include <recint/rint.h>
-
-#include <givaro/givintprime.h>
 
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
@@ -58,15 +53,6 @@
 #include "fflas-ffpack/utils/test-utils.h"
 
 #include <random>
-#include <chrono>
-
-
-
-#ifdef __FFLASFFPACK_USE_OPENMP
-#include "fflas-ffpack/paladin/pfgemv.inl"
-#include "fflas-ffpack/utils/fflas_io.h"
-#include <omp.h>
-#endif
 
 #include<vector>
 
@@ -78,11 +64,11 @@ using Givaro::Modular;
 using Givaro::ModularBalanced;
 
 
-// checks that D = alpha . C + beta . A ^ta * B ^tb
+// checks that D = beta . Y + alpha . A ^ta * X
 template<class Field>
 bool check_MV(const Field                   & F,
 			  const typename Field::Element_ptr  Cd, // c0
-			  enum FFLAS::FFLAS_TRANSPOSE   & ta,
+			  enum FFLAS_TRANSPOSE   & ta,
 			  const size_t                    m,
 			  const size_t                    k,
 			  const typename Field::Element & alpha,
@@ -144,7 +130,7 @@ bool check_MV(const Field                   & F,
 		}
 	}
 	
-	FFLAS::fflas_delete (D);
+	fflas_delete (D);
 	
 	return !wrong ;
 	
@@ -158,7 +144,7 @@ bool launch_MV(const Field & F,
 			   const typename Field::Element alpha,
 			   const typename Field::Element beta,
 			   const size_t lda,
-			   enum FFLAS::FFLAS_TRANSPOSE    ta,
+			   enum FFLAS_TRANSPOSE    ta,
 			   const size_t incX,
 			   const size_t incY,
 			   size_t iters,
@@ -172,37 +158,37 @@ bool launch_MV(const Field & F,
 	Element_ptr A ;
 	for(size_t i = 0;i<iters;++i){
 		FFLASFFPACK_check(lda >= k);
-		A = FFLAS::fflas_new (F, m, lda);
-		FFLAS::fzero(F,m,lda,A,lda);
+		A = fflas_new (F, m, lda);
+		fzero(F,m,lda,A,lda);
 		RandomMatrix(F, m, k, A, lda, G);
-		size_t Xdim = (ta == FFLAS::FflasNoTrans)? k : m;
-		size_t Ydim = (ta == FFLAS::FflasNoTrans)? m : k;
-		Element_ptr X = FFLAS::fflas_new (F, Xdim, incX);
-		Element_ptr Y = FFLAS::fflas_new (F, Ydim, incY);
-		FFLAS::fzero (F, Xdim, incX, X, incX);
-		FFLAS::fzero (F, Ydim, incY, Y, incY);
-		Element_ptr D = FFLAS::fflas_new (F, Ydim);
+		size_t Xdim = (ta == FflasNoTrans)? k : m;
+		size_t Ydim = (ta == FflasNoTrans)? m : k;
+		Element_ptr X = fflas_new (F, Xdim, incX);
+		Element_ptr Y = fflas_new (F, Ydim, incY);
+		fzero (F, Xdim, incX, X, incX);
+		fzero (F, Ydim, incY, Y, incY);
+		Element_ptr D = fflas_new (F, Ydim);
 		
 		RandomMatrix (F, Xdim, 1, X, incX, G);
 		RandomMatrix (F, Ydim, 1, Y, incY, G);
-		FFLAS::fassign (F, Ydim, Y, incY, D, 1);
+		fassign (F, Ydim, Y, incY, D, 1);
 		
 		//Y will be modified so keep a copy of Y as Y2
-		Element_ptr Y2 =  FFLAS::fflas_new (F, Ydim, incY);
-		FFLAS::fassign (F, Ydim, Y, incY, Y2, incY);
+		Element_ptr Y2 =  fflas_new (F, Ydim, incY);
+		fassign (F, Ydim, Y, incY, Y2, incY);
 		
 		
 		if (par){
 			{
-				FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Recursive, FFLAS::StrategyParameter::Threads> >  WH;
+				MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::Threads> >  WH;
 				
 				PAR_BLOCK{
-					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+					pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
 				}
 			}
 		}else{
-			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
-			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
+			//MMHelper<Field,MMHelperAlgo::Auto,typename ModeTraits<Field>::value> WH(F,nbw,ParSeqHelper::Sequential());
+			fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
 		}
 		
 		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
@@ -210,56 +196,56 @@ bool launch_MV(const Field & F,
 
 		
 		if (!ok){
-			FFLAS::fflas_delete (A, X, Y, Y2, D);
+			fflas_delete (A, X, Y, Y2, D);
 			break;
 		}
 		
 		
 		
-		FFLAS::fassign (F, Ydim, Y2, incY, D, 1);
-		FFLAS::fassign (F, Ydim, Y2, incY, Y, incY);
+		fassign (F, Ydim, Y2, incY, D, 1);
+		fassign (F, Ydim, Y2, incY, Y, incY);
 		if (par){
 			{
-				FFLAS::MMHelper<Field, FFLAS::MMHelperAlgo::Classic, FFLAS::ModeTraits<Field>, FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row, FFLAS::StrategyParameter::Threads> >  WH;
+				MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row, StrategyParameter::Threads> >  WH;
 				
 				PAR_BLOCK{
-					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+					pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
 				}
 			}
 		}else{
-			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
-			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
+			//MMHelper<Field,MMHelperAlgo::Auto,typename ModeTraits<Field>::value> WH(F,nbw,ParSeqHelper::Sequential());
+			fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
 		}
 		
 		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
 		
 		
 		if (!ok){
-			FFLAS::fflas_delete (A, X, Y, Y2, D);
+			fflas_delete (A, X, Y, Y2, D);
 			break;
 		}
 		
 		
 		
 		
-		FFLAS::fassign (F, Ydim, Y2, incY, D, 1);
-		FFLAS::fassign (F, Ydim, Y2, incY, Y, incY);
+		fassign (F, Ydim, Y2, incY, D, 1);
+		fassign (F, Ydim, Y2, incY, Y, incY);
 		if (par){
 			{
-				FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Row,FFLAS::StrategyParameter::Grain>  WH(4);;
+				ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  WH(4);;
 				
 				PAR_BLOCK{
-					FFLAS::pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
+					pfgemv(F, ta, m,k,alpha, A,lda, X, incX, beta, Y, incY, WH);
 				}
 			}
 		}else{
-			//FFLAS::MMHelper<Field,FFLAS::MMHelperAlgo::Auto,typename FFLAS::ModeTraits<Field>::value> WH(F,nbw,FFLAS::ParSeqHelper::Sequential());
-			FFLAS::fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
+			//MMHelper<Field,MMHelperAlgo::Auto,typename ModeTraits<Field>::value> WH(F,nbw,ParSeqHelper::Sequential());
+			fgemv(F, ta, m, k,alpha, A,lda, X, incX, beta, Y, incY);
 		}
 		
 		ok = ok && check_MV(F, D, ta, m, k,alpha, A, lda, X, incX, beta, Y, incY);
 		
-		FFLAS::fflas_delete (A, X, Y, Y2, D);
+		fflas_delete (A, X, Y, Y2, D);
 		if (!ok){
 			
 			break;
@@ -287,9 +273,9 @@ bool launch_MV_dispatch(const Field &F,
 	size_t lda,incX, incY;
 	size_t ld = 13 ;
 	{
-		//FFLAS::FFLAS_TRANSPOSE ta = FFLAS::FflasNoTrans ;
+		//FFLAS_TRANSPOSE ta = FflasNoTrans ;
 		//if (! par) {
-		//if (random()%2) ta = FFLAS::FflasTrans ;
+		//if (random()%2) ta = FflasTrans ;
 		//}
 		
 		if (mm<0)
@@ -310,7 +296,7 @@ bool launch_MV_dispatch(const Field &F,
 }
 
 template <class Field>
-bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, bool par, size_t seed){
+bool run_with_field (Givaro::Integer q, uint64_t b, int m, int k, size_t iters, bool par, uint64_t seed){
 	bool ok = true ;
 	
 	int nbit=(int)iters;
@@ -396,7 +382,7 @@ int main(int argc, char** argv)
 	std::cout<<setprecision(17);
 	std::cerr<<setprecision(17);
 	
-	size_t seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+	uint64_t seed = getSeed();
 	size_t iters = 3 ;
 	Givaro::Integer q = -1 ;
 	uint64_t b = 0 ;
@@ -414,11 +400,11 @@ int main(int argc, char** argv)
 		{ 'i', "-i R", "Set number of repetitions.",            TYPE_INT , &iters },
 		{ 'l', "-l Y/N", "run the test in an infinte loop.", TYPE_BOOL , &loop },
 		{ 'p', "-p Y/N", "run the parallel fgemv.", TYPE_BOOL , &p },
-		{ 's', "-s seed", "Set seed for the random generator", TYPE_INT, &seed },
+		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
 		END_OF_ARGUMENTS
 	};
 	
-	FFLAS::parseArguments(argc,argv,as);
+	parseArguments(argc,argv,as);
 
 	bool ok = true;
 	srand(seed);

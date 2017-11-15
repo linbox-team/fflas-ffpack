@@ -44,10 +44,7 @@
 
 #include <givaro/modular.h>
  
-#include <givaro/udl.h>
 #include <recint/rint.h>
-
-#include <givaro/givintprime.h>
 
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
