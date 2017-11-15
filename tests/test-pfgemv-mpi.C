@@ -150,10 +150,10 @@ if(rank==0){
 	t.start();
 		
 	{
-cout <<"rank("<<rank<< ") begin to execute"<<endl;
+cout <<"0rank("<<rank<< ") begin to execute"<<endl;
 		MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Threads> >  H;		
 		pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-cout <<"rank("<<rank<< ") finished"<<endl;
+cout <<"0rank("<<rank<< ") finished"<<endl;
 	}
 	
 	t.stop();
@@ -164,8 +164,8 @@ cout <<"rank("<<rank<< ") finished"<<endl;
 		cout << "PASSED ("<<time<<")"<<endl; 
 	} else{
 		cout << "*********************************failed2********************************"<<endl;
-		FFLAS::WriteMatrix (std::cout <<"Found Y2:"<<std::endl, F, m, incY, Y2, incY) << std::endl;
-		FFLAS::WriteMatrix (std::cout <<"Found Y:"<<std::endl, F, m, incX, Y, incY) << std::endl;
+		//FFLAS::WriteMatrix (std::cout <<"Found Y2:"<<std::endl, F, m, incY, Y2, incY) << std::endl;
+		//FFLAS::WriteMatrix (std::cout <<"Found Y:"<<std::endl, F, m, incX, Y, incY) << std::endl;
 		ok=false; 
 	}
 	
@@ -173,154 +173,16 @@ cout <<"rank("<<rank<< ") finished"<<endl;
 	
  }else{
 
-	{cout <<"rank("<<rank<< ") begin to execute"<<endl;
-		MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::Threads> >  H;
+	{cout <<"0rank("<<rank<< ") begin to execute"<<endl;
+		MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Threads> >  H;
 		
 		pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-cout <<"rank("<<rank<< ") finished"<<endl;
+cout <<"0rank("<<rank<< ") finished"<<endl;
 	}
 
  }
  
  
-/*
-  if(rank==0){
-  RandomMatrix (F, m, incY, Y,  incY);
-  RandomMatrix (F, m, incY, Y2, incY);  
-  t.clear();
-  t.start();
-  
-  {
-  MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Threads> >  H;
-  
-  pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-  }
-  
-  t.stop();
-  time+=t.usertime();
-  cout << "*********************************NEXT*********************************"<<endl;
-  
-  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
-  
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){
-  cout << "PASSED ("<<time<<")"<<endl; 
-  } else{
-  cout << "*********************************failed*********************************"<<endl;
-FFLAS::WriteMatrix (std::cout <<"Found Y2:"<<std::endl, F, m, incY, Y2, incY) << std::endl;
-FFLAS::WriteMatrix (std::cout <<"Found Y:"<<std::endl, F, m, incX, Y, incY) << std::endl;
-ok=false; 
-}
-}else{
-{
-MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::Threads> >  H;
-
-pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-}
-
-}
-
-*/
- 
- 
-/*
-  
-  
-  if(world_rank==0){ 
-  t.clear();
-  t.start();
-  
-  {
-  MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Threads> >  H;
-  pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-  }
-
-	t.stop();
-	time+=t.usertime();
-  FFLAS::fgemv(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y,  incY);
-
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){
-    cout << "PASSED ("<<time<<")"<<endl; 
-  } else{
-cout << "*********************************failed*********************************"<<endl;
-FFLAS::WriteMatrix (std::cout <<"Found Y2:"<<std::endl, F, m, incY, Y2, incY) << std::endl;
-FFLAS::WriteMatrix (std::cout <<"Found Y:"<<std::endl, F, m, incX, Y, incY) << std::endl;
-    ok=false; 
-  }
-
-
-}else{
- {
-    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::Threads> >  H;
-    pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
- }
-
-}
-
- 	time=0.0;
-	t.clear();
-	t.start();
-  {
-    MMHelper<Field, MMHelperAlgo::Classic, ModeTraits<Field>, ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Threads> >  H;
-    FFLAS::pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H);
-  }
-  	t.stop();
-	time+=t.usertime();
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){
-    cout << "PASSED ("<<time<<")"<<endl;
-    
-  } else{
-	ok=false;
-  }
-
-if(m>2){
-  for(size_t GS=2; GS<m; GS++){
- 	time=0.0;
-	t.clear();
-	t.start();
-  {
-	ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>  H(GS);
-    FFLAS::pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H); 
-
-  }
-
-	t.stop();
-	time+=t.usertime();
-
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){    
-    cout << "PASSED ("<<time<<")"<<endl;   
-  } else{
-	ok=false;
-	#ifdef DEBUG
-		cout << "m>2 : failed	with GS = "<<GS<<endl;
-	#endif
-
-	break;
-  }
- }
-}else{
-	size_t GS=2;
- 	time=0.0;
-	t.clear();
-	t.start();
-  {
-    ParSeqHelper::Parallel<CuttingStrategy::Row,StrategyParameter::Grain>   H(GS);
-    FFLAS::pfgemv_mpi(F, FFLAS::FflasNoTrans, m, m, F.one, A, lda, X, incX, F.zero, Y2,  incY, H); 
-  }
-	t.stop();
-	time+=t.usertime();
-  if (FFLAS::fequal (F, m, 1, Y2, incY, Y, incY)){    
-    cout << "PASSED ("<<time<<")"<<endl;   
-  } else{
-	ok=false;
-	#ifdef DEBUG
-		cout << "m<=2 : failed	with GS = "<<GS<<endl;
-	#endif
-
-  }
-}
-*/
-
-
 
 
 if(rank==0){
@@ -331,8 +193,8 @@ if(rank==0){
 	FFLAS::fflas_delete(Y2);
 
 }
-	return ok;
 
+return ok;
 
 }
 
@@ -361,7 +223,7 @@ bool run_with_field (Givaro::Integer q, size_t b, size_t m, size_t iters, uint64
 		if(rank==0)cout<<"Checking with ";F->write(cout)<<endl;
 MPI_Barrier(MPI_COMM_WORLD);
 		ok = ok && check_solve(*F,m,G);
-		
+MPI_Barrier(MPI_COMM_WORLD);		
 		nbit--;
 		delete F;
 
@@ -382,7 +244,7 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	size_t m=1711;  //1741
+	size_t m=1741;
 
 	size_t iters=3;
 	bool loop=false;
@@ -400,19 +262,31 @@ BEGIN_PARALLEL_MAIN(int argc, char** argv)
 
 	FFLAS::parseArguments(argc,argv,as);
 
-MPI_Init(&argc, &argv); 
+//MPI_Init(&argc, &argv); 
+int provided;
+MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
+/*if (provided < MPI_THREAD_MULTIPLE) {
+	std::cout<<" Error - MPI does not provide needed threading level"<<std::endl;
+
+}else{
+	MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+	if (provided < MPI_THREAD_FUNNELED) {
+		std::cout<<" Error - MPI does not provide needed thread safety "<<std::endl;
+		return 1;
+	}
+}*/
 
 	bool ok = true;
 
 	do{
-		//ok = ok && run_with_field<Modular<double> >(q,b,m,iters,seed);
+		ok = ok && run_with_field<Modular<double> >(q,b,m,iters,seed);
 		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,iters,seed);
-		/*ok = ok && run_with_field<Modular<float> >(q,b,m,iters,seed); 
+		ok = ok && run_with_field<Modular<float> >(q,b,m,iters,seed); 
 		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,iters,seed); 
 		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,iters,seed); 
 		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,iters,seed); 
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,iters,seed);
-		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,iters,seed); */
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,iters,seed); 
 		//ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,5,m/6,iters,seed);
 		//ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> > (q,(b?b:512),m/6,iters,seed); 
 
