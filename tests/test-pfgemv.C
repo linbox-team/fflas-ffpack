@@ -52,10 +52,6 @@
 #include "fflas-ffpack/utils/args-parser.h"
 #include "fflas-ffpack/utils/test-utils.h"
 
-#include <random>
-
-#include<vector>
-
 using namespace std;
 using namespace FFPACK;
 using namespace FFLAS;
