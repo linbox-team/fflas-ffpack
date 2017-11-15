@@ -60,8 +60,7 @@ BASIC_TESTS =               \
 		test-io      \
 		test-maxdelayeddim \
 		test-solve \
-		test-pfgemv \
-		#test-pfgemm-DSL\
+		test-fgemv \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -80,17 +79,8 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 
 NOT_A_TEST =  \
-		test-lqup2             \
-		test-fsquare           \
-		test-redcolechelon     \
-		test-rank              \
 		test-krylov-elim       \
-		test-rowechelon        \
-		test-fgemv             \
-		test-colechelon        \
 		test-fullranksubmatrix \
-		test-redrowechelon     \
-		test-redechelon        \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
@@ -115,7 +105,6 @@ test_compressQ_SOURCES         = test-compressQ.C
 test_permutations_SOURCES         = test-permutations.C
 
 test_lu_SOURCES              = test-lu.C
-#test_lqup2_SOURCES              = test-lqup2.C
 test_det_SOURCES               = test-det.C
 test_pluq_check_SOURCES = test-pluq-check.C
 test_det_check_SOURCES = test-det-check.C
@@ -132,10 +121,7 @@ test_multifile_SOURCES             = test-multifile1.C test-multifile2.C
 test_io_SOURCES             = test-io.C
 #  test_fgemm_SOURCES             = test-fgemm.C
 test_charpoly_SOURCES          = test-charpoly.C
-#  test_fsquare_SOURCES           = test-fsquare.C
-#  test_rank_SOURCES              = test-rank.C
 #  test_ftrmm_SOURCES             = test-ftrmm.C
-#  test_redcolechelon_SOURCES     = test-redcolechelon.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
 test_ftrmm_SOURCES             = test-ftrmm.C
@@ -146,14 +132,10 @@ test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C
 test_ftrtri_SOURCES            = test-ftrtri.C
-#  test_redrowechelon_SOURCES     = test-redrowechelon.C
 #  testeur_lqup_SOURCES           = testeur_lqup.C
 #  test_fullranksubmatrix_SOURCES = test-fullranksubmatrix.C
-#  test_rowechelon_SOURCES        = test-rowechelon.C
 #  test_invert_SOURCES            = test-invert.C
-#  test_fgemv_SOURCES             = test-fgemv.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
-#  test_colechelon_SOURCES        = test-colechelon.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
 #  test_nullspace_SOURCES         = test-nullspace.C
@@ -169,7 +151,7 @@ test_maxdelayeddim_SOURCES = test-maxdelayeddim.C
 regression_check_SOURCES = regression-check.C
 
 test_solve_SOURCES = test-solve.C
-test_pfgemv_SOURCES = test-pfgemv.C
+test_fgemv_SOURCES = test-fgemv.C
 #test_pfgemm_DSL_SOURCES = test-pfgemm-DSL.C
 
 
