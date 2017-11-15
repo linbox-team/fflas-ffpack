@@ -35,8 +35,7 @@
 #include "fflas-ffpack/utils/timer.h"
 #include "givaro/modular-integer.h"
 #include "givaro/givcaster.h"
-#include "fflas-ffpack/paladin/parallel.h"
-#include "fflas-ffpack/paladin/pfgemv.inl"
+
 using namespace FFPACK;
 
 using namespace std;
