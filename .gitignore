@@ -43,6 +43,14 @@ autotune/charpoly-threshold.h
 autotune/fgemm-threshold.h
 autotune/fgemm-thresholds.h
 autotune/pluq-threshold.h
+autotune/arithprog
+autotune/arithprog-blocksize.h
+autotune/fsyrk
+autotune/fsyrk-threshold.h
+autotune/fsytrf
+autotune/fsytrf-threshold.h
+autotune/ftrtri
+autotune/ftrtri-threshold.h
 stamp-h1
 benchmarks/benchmark-fgemm
 benchmarks/benchmark-fgemv-mp
