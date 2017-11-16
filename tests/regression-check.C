@@ -31,15 +31,17 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <givaro/modular.h>
 #include "fflas-ffpack/fflas-ffpack.h"
-
+using namespace Givaro;
+using namespace FFLAS;
+using namespace FFPACK;
 /*  #1  */
 bool check1 () ;
 
 /*  #2  */
 bool check2()
 {
-	Givaro::Modular<double> F(2);
-	Givaro::Modular<double>::RandIter R(F);
+	Modular<double> F(2);
+	Modular<double>::RandIter R(F);
 
 	size_t ok = 0 ;
 	size_t tot = 500 ;
@@ -58,9 +60,9 @@ bool check2()
 /*  #3  */
 bool check3()
 {
-	Givaro::Modular<double> F(2);
+	Modular<double> F(2);
 	double * A = NULL ;
-	double d = FFPACK::Det(F,0,0,A,0);
+	double d = Det(F,0,0,A,0);
 	return F.areEqual(d,F.one);
 
 }
@@ -69,20 +71,29 @@ bool check3()
 bool check4()
 {
     typedef int32_t Element;
-	Givaro::Modular<Element> F(2);
+	Modular<Element> F(2);
 	Element * A = NULL ;
 	Element * X = NULL ;
 	int nul;
-	FFPACK::Invert2(F,0,A,0,X,0,nul);
+	Invert2(F,0,A,0,X,0,nul);
 	return true ;
 }
 
 
+bool checkZeroDimCharpoly(){
+	Modular<double> F(101);
+	double * A = fflas_new(F,0,0);
+	Poly1Dom<Modular<double> > PR (F);
+	Poly1Dom<Modular<double> >::Element charp;
+	CharPoly(PR, charp, 0, A, 0);
+	return PR.isOne(charp);
+}
 int main() {
 	bool pass = true ;
 	pass = pass && check2();
 	pass = pass && check3();
 	pass = pass && check4();
+	pass = pass && checkZeroDimCharpoly();
 	return !pass;
 }
 

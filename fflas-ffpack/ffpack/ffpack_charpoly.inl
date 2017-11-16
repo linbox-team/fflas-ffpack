@@ -142,6 +142,10 @@ namespace FFPACK {
 
 		typedef typename PolRing::Domain_t Field;
 		typedef typename PolRing::Element Polynomial;
+
+		if (N==0)
+			return R.assign (charp, R.one);
+
 		Checker_charpoly<Field,Polynomial> checker(R.getdomain(),N,A,lda);
 		
 		std::list<Polynomial> factor_list;
