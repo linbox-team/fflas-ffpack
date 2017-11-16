@@ -88,12 +88,21 @@ bool checkZeroDimCharpoly(){
 	CharPoly(PR, charp, 0, A, 0);
 	return PR.isOne(charp);
 }
+bool checkZeroDimMinPoly(){
+	Modular<double> F(101);
+	double * A = fflas_new(F,0,0);
+	Poly1Dom<Modular<double> > PR (F);
+	Poly1Dom<Modular<double> >::Element minp;
+	MinPoly(F, minp, 0, A, 0);
+	return PR.isOne(minp);
+}
 int main() {
 	bool pass = true ;
 	pass = pass && check2();
 	pass = pass && check3();
 	pass = pass && check4();
 	pass = pass && checkZeroDimCharpoly();
+	pass = pass && checkZeroDimMinPoly();
 	return !pass;
 }
 

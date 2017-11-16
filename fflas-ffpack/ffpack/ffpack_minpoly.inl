@@ -45,6 +45,11 @@ MinPoly (const Field& F, Polynomial& minP, const size_t N,
 		typename Field::ConstElement_ptr A, const size_t lda,
 		RandIter& G){
 
+	if (N==0){
+		minP.resize(1);
+		F.assign(minP[0],F.one);
+		return minP;
+	}
 		// Allocating a Krylov basis
 	typename Field::Element_ptr v = FFLAS::fflas_new(F, 1, N);
 		// Picking a non-zero random vector
