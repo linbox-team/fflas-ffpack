@@ -1,10 +1,23 @@
-2016-11-XX v2.3.0
-	* new fpotrf routine (Cholesky factorization) and symmetric rand generator
-	* change the signature of ftrtrm
+2016-11-17 v2.3.0
+	Improvements:
+	* improved build system (instruction set detection, ...)
+	* improved fttrtri (triangular matrix inverse)
+	* increased test-suite coverage
+	* more autotuning
 	* clean-up and update all random matrix generator so they can be seeded.
 	* clean-up the test-suite and enable seeding parameter
-	* many bug fixes
+	* many bug fixes (and merging sage patches)
+
+	New features:
+	* new pfgemv routine (parallel matrix vector product)
+	* new fpotrf routine (Cholesky factorization) and symmetric rand generator
+	* new tutorials
 	* Gauss-Jordan inverse made to work
+
+	Changes in API
+	* change signature for CharPoly (now takes a polynomial domain as input)
+	* change the signature of ftrtrm
+
 2016-07-30 v2.2.2
 	* many bug fixes ensuring a consistent support of clang, gcc-4.8 5.3 6.1
 	icpc on i386 x86_64, ubuntu and fedora, ppcle and osx
