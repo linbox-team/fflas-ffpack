@@ -69,8 +69,8 @@ autotune: autotune_fgemm autotune_pluq autotune_charpoly autotune_ftrtri autotun
 	${run_tune_pluq}
 	${run_tune_charpoly}
 	${run_tune_ftrtri}
-	${run_tune_fsytrf}
 	${run_tune_fsyrk}
+	${run_tune_fsytrf}
 	${merge_thresholds}
 
 # Tune fgemm only
