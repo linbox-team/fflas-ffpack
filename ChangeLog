@@ -1,6 +1,6 @@
 2016-11-17 v2.3.0
 	Improvements:
-	* improved build system (instruction set detection, ...)
+	* improved build system (instruction set detection, C++11 and clang compatibility, ...)
 	* improved fttrtri (triangular matrix inverse)
 	* increased test-suite coverage
 	* more autotuning
