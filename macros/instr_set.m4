@@ -25,39 +25,40 @@ AC_DEFUN([INSTR_SET],
 
         AC_TRY_RUN([
                         #include "macros/CodeChunk/instrset_detect.cpp"
-                        int main(){return instrset_detect();}
+                        // increment by one to distinguish from compilation failure error code
+                        int main(){return instrset_detect()+1;}
                 ],[AS_ECHO("Using 80386 instruction set")],[
                 iset=$?
-                AS_IF([ test "$iset" -ge "1" -a "x$enable_sse" != "xno" ], [
+                AS_IF([ test "$iset" -ge "2" -a "x$enable_sse" != "xno" ], [
                         AS_ECHO("SSE enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse"
                         HAVE_SSE="yes"
                 ],[AS_ECHO("SSE disabled")])
-                AS_IF([ test "$iset" -ge "2" -a "x$enable_sse2" != "xno" ], [
+                AS_IF([ test "$iset" -ge "3" -a "x$enable_sse2" != "xno" ], [
                         AS_ECHO("SSE2 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse2"
                 ],[AS_ECHO("SSE2 disabled")])
-                AS_IF([ test "$iset" -ge "3" -a "x$enable_sse3" != "xno" ], [
+                AS_IF([ test "$iset" -ge "4" -a "x$enable_sse3" != "xno" ], [
                         AS_ECHO("SSE3 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse3"
                 ],[AS_ECHO("SSE3 disabled")])
-                AS_IF([ test "$iset" -ge "4" -a "x$enable_ssse3" != "xno" ], [
+                AS_IF([ test "$iset" -ge "5" -a "x$enable_ssse3" != "xno" ], [
                         AS_ECHO("SSSE3 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -mssse3"
                 ],[AS_ECHO("SSSE3 disabled")])
-                AS_IF([ test "$iset" -ge "5" -a "x$enable_sse4.1" != "xno" ], [
+                AS_IF([ test "$iset" -ge "6" -a "x$enable_sse4.1" != "xno" ], [
                         AS_ECHO("SSE4.1 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse4.1"
                 ],[AS_ECHO("SSE4.1 disabled")])
-                AS_IF([ test "$iset" -ge "6" -a "x$enable_sse4.2" != "xno" ], [
+                AS_IF([ test "$iset" -ge "7" -a "x$enable_sse4.2" != "xno" ], [
                         AS_ECHO("SSE4.2 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -msse4.2"
                 ],[AS_ECHO("SSE4.2 disabled")])
-                AS_IF([ test "$iset" -ge "7" -a "x$enable_avx" != "xno" ], [
+                AS_IF([ test "$iset" -ge "8" -a "x$enable_avx" != "xno" ], [
                         AS_ECHO("AVX enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -mavx"
                 ],[AS_ECHO("AVX disabled")])
-                AS_IF([ test "$iset" -ge "8" -a "x$enable_avx2" != "xno" ], [
+                AS_IF([ test "$iset" -ge "9" -a "x$enable_avx2" != "xno" ], [
                         AS_ECHO("AVX2 enabled")
                         SIMD_CFLAGS="${SIMD_CFLAGS} -mavx2"
                 ],[AS_ECHO("AVX2 disabled")])
