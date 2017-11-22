@@ -1,3 +1,8 @@
+2016-11-22 v2.3.1
+	Improvements:
+	* minor bug fixes in the build system
+	* improved cblas/fblas detection and use
+
 2016-11-17 v2.3.0
 	Improvements:
 	* improved build system (instruction set detection, C++11 and clang compatibility, ...)
