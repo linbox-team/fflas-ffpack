@@ -138,43 +138,43 @@ extern "C" {
 
 	// level 1 routines
 
-	inline void cblas_daxpy(const int N, const double alpha, const double *X, const int incX, double *Y, const int incY)
+	static inline void cblas_daxpy(const int N, const double alpha, const double *X, const int incX, double *Y, const int incY)
 	{
 		daxpy_ (&N,&alpha, X, &incX, Y, &incY);
 	}
 
-	inline void cblas_saxpy(const int N, const float alpha, const float *X, const int incX, float *Y, const int incY)
+	static inline void cblas_saxpy(const int N, const float alpha, const float *X, const int incX, float *Y, const int incY)
 	{
 		saxpy_ (&N,&alpha, X, &incX, Y, &incY);
 	}
 
-	inline double cblas_ddot(const int N, const double *X, const int incX, const double *Y, const int incY)
+	static inline double cblas_ddot(const int N, const double *X, const int incX, const double *Y, const int incY)
 	{
 		return ddot_ (&N, X, &incX, Y, &incY);
 	}
 
-	inline float cblas_sdot(const int N, const float *X, const int incX, const float *Y, const int incY)
+	static inline float cblas_sdot(const int N, const float *X, const int incX, const float *Y, const int incY)
 	{
 		return sdot_ (&N, X, &incX, Y, &incY);
 	}
 
 
-	inline double cblas_dasum(const int N, const double *X, const int incX){
+	static inline double cblas_dasum(const int N, const double *X, const int incX){
 		return dasum_ (&N, X, &incX);
 	}
 
-	inline int cblas_idamax(const int N, const double *X, const int incX){
+	static inline int cblas_idamax(const int N, const double *X, const int incX){
 		return idamax_ (&N, X, &incX);
 	}
 
-	inline double cblas_dnrm2(const int N, const double *X, const int incX){
+	static inline double cblas_dnrm2(const int N, const double *X, const int incX){
 		return dnrm2_(&N, X, &incX);
 	}
 
 
 	// level 2 routines
 
-	inline void cblas_dgemv(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const int M, const int N, const double alpha,
+	static inline void cblas_dgemv(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const int M, const int N, const double alpha,
 			 const double *A, const int lda, const double *X, const int incX, const double beta, double *Y, const int incY)
 	{
 		if (Order == CblasRowMajor)
@@ -182,7 +182,7 @@ extern "C" {
 		else
 			dgemv_ ( EXT_BLAS_TRANSPOSE(TransA), &M, &N, &alpha, A, &lda, X, &incX, &beta, Y, &incY);
 	}
-	inline void cblas_sgemv(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const int M, const int N, const float alpha,
+	static inline void cblas_sgemv(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const int M, const int N, const float alpha,
 			 const float *A, const int lda, const float *X, const int incX, const float beta, float *Y, const int incY)
 	{
 		if (Order == CblasRowMajor)
@@ -191,7 +191,7 @@ extern "C" {
 			sgemv_ ( EXT_BLAS_TRANSPOSE(TransA), &M, &N, &alpha, A, &lda, X, &incX, &beta, Y, &incY);
 	}
 
-	inline void cblas_dger(const enum CBLAS_ORDER Order, const int M, const int N, const double alpha, const double *X, const int incX,
+	static inline void cblas_dger(const enum CBLAS_ORDER Order, const int M, const int N, const double alpha, const double *X, const int incX,
 			const double *Y, const int incY, double *A, const int lda)
 	{
 		if (Order == CblasRowMajor)
@@ -200,7 +200,7 @@ extern "C" {
 			dger_ (&M, &N, &alpha, X, &incX, Y, &incY, A, &lda);
 	}
 
-	inline void cblas_sger(const enum CBLAS_ORDER Order, const int M, const int N, const float alpha, const float *X, const int incX,
+	static inline void cblas_sger(const enum CBLAS_ORDER Order, const int M, const int N, const float alpha, const float *X, const int incX,
 			const float *Y, const int incY, float *A, const int lda)
 	{
 		if (Order == CblasRowMajor)
@@ -209,23 +209,23 @@ extern "C" {
 			sger_ (&M, &N, &alpha, X, &incX, Y, &incY, A, &lda);
 	}
 
-	void cblas_dcopy(const int N, const double *X, const int incX, double *Y, const int incY)
+	static inline void cblas_dcopy(const int N, const double *X, const int incX, double *Y, const int incY)
 	{
 		dcopy_(&N,X,&incX,Y,&incY);
 	}
 
 
-	void cblas_scopy(const int N, const float *X, const int incX, float *Y, const int incY)
+	static inline void cblas_scopy(const int N, const float *X, const int incX, float *Y, const int incY)
 	{
 		scopy_(&N,X,&incX,Y,&incY);
 	}
 
-	void cblas_dscal(const int N, const double alpha,  double *Y, const int incY)
+	static inline void cblas_dscal(const int N, const double alpha,  double *Y, const int incY)
 	{
 		dscal_(&N,&alpha,Y,&incY);
 	}
 
-	void cblas_sscal(const int N, const float alpha,  float *Y, const int incY)
+	static inline void cblas_sscal(const int N, const float alpha,  float *Y, const int incY)
 	{
 		sscal_(&N,&alpha,Y,&incY);
 	}
@@ -233,7 +233,7 @@ extern "C" {
 
 	// level 3 routines
 
-	inline void cblas_dtrsm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
+	static inline void cblas_dtrsm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
 			 const enum CBLAS_DIAG Diag, const int M, const int N, const double alpha, const double *A, const int lda,
 			 double *B, const int ldb)
 	{
@@ -242,7 +242,7 @@ extern "C" {
 		else
 			dtrsm_ ( EXT_BLAS_SIDE(Side), EXT_BLAS_UPLO(Uplo), EXT_BLAS_TRANSPOSE(TransA), EXT_BLAS_DIAG(Diag), &M, &N, &alpha, A, &lda, B, &ldb);
 	}
-	inline void cblas_strsm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
+	static inline void cblas_strsm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
 			 const enum CBLAS_DIAG Diag, const int M, const int N, const float alpha, const float *A, const int lda,
 			 float *B, const int ldb)
 	{
@@ -252,7 +252,7 @@ extern "C" {
 			strsm_ ( EXT_BLAS_SIDE(Side), EXT_BLAS_UPLO(Uplo), EXT_BLAS_TRANSPOSE(TransA), EXT_BLAS_DIAG(Diag), &M, &N, &alpha, A, &lda, B, &ldb);
 	}
 
-	inline void cblas_dtrmm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
+	static inline void cblas_dtrmm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
 			 const enum CBLAS_DIAG Diag, const int M, const int N, const double alpha, const double *A, const int lda,
 			 double *B, const int ldb)
 	{
@@ -261,7 +261,7 @@ extern "C" {
 		else
 			dtrmm_ ( EXT_BLAS_SIDE(Side), EXT_BLAS_UPLO(Uplo), EXT_BLAS_TRANSPOSE(TransA), EXT_BLAS_DIAG(Diag), &M, &N, &alpha, A, &lda, B, &ldb);
 	}
-	inline void cblas_strmm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
+	static inline void cblas_strmm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side, const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
 			 const enum CBLAS_DIAG Diag, const int M, const int N, const float alpha, const float *A, const int lda,
 			 float *B, const int ldb)
 	{
@@ -271,7 +271,7 @@ extern "C" {
 			strmm_ ( EXT_BLAS_SIDE(Side), EXT_BLAS_UPLO(Uplo), EXT_BLAS_TRANSPOSE(TransA), EXT_BLAS_DIAG(Diag), &M, &N, &alpha, A, &lda, B, &ldb);
 	}
 
-	inline void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
+	static inline void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
 			 const int K, const double alpha, const double *A, const int lda, const double *B, const int ldb,
 			 const double beta, double *C, const int ldc)
 	{
@@ -280,7 +280,7 @@ extern "C" {
 		else
 			dgemm_ ( EXT_BLAS_TRANSPOSE(TransA), EXT_BLAS_TRANSPOSE(TransB), &M, &N, &K, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
 	}
-	inline void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
+	static inline void cblas_sgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA, const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
 			 const int K, const float alpha, const float *A, const int lda, const float *B, const int ldb,
 			 const float beta, float *C, const int ldc)
 	{

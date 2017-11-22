@@ -280,21 +280,6 @@ FF_OPENBLAS_NUM_THREADS
 
 
 
-if test "$BLAS_FOUND" = "false" ; then
-	echo ''
-	echo '*******************************************************************************'
-	echo ' ERROR: BLAS not found!'
-	echo
-	echo ' BLAS routines are required for this library to compile. Please'
-	echo ' make sure BLAS are installed and specify its location with the option'
-	echo ' --with-blas-libs=<libs> and if necessary --with-blas-cflags=<cflags>'
-	echo ' when running configure.'
-	echo '*******************************************************************************'
-	exit 1
-fi
-
-
-
 # BLAS_LIBS="${BLAS_LIBS}"
 # BLAS_LIBS="-L/${BLAS_PATH} ${LAPACK_LIBS} ${BLAS_LIBS}"
 # AC_SUBST(BLAS_LIBS)
