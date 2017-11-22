@@ -25,6 +25,8 @@
  */
 
 #define __FFLASFFPACK_CONFIGURATION
+#define __FFLASFFPACK_HAVE_CBLAS 1
+
 #include "fflas-ffpack/config-blas.h"
 int main ()
 {

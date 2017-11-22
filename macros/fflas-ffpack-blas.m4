@@ -21,7 +21,7 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  U
 dnl ========LICENCE========
 dnl/
 
-dnl Tests BLAS for and define CBLAS_FLAG and CBLAS_LIBS
+dnl Tests BLAS for and define BLAS_CFLAGS and BLAS_LIBS
 dnl Defines HAVE_LAPACK,  HAVE_CLAPACK,  HAVE_BLAS,  HAVE_CBLAS if available
 
 AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
@@ -29,9 +29,8 @@ AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 			[AC_HELP_STRING([--with-blas-cflags=<cflags>],
 				[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
 			])
-		CBLAS_FLAG="$with_blas_cflags"
-		AC_SUBST(CBLAS_FLAG)
-		dnl  echo $CBLAS_FLAG;
+                BLAS_CFLAGS="$with_blas_cflags"
+		AC_SUBST(BLAS_FLAGS)
 		]
 	)
 
@@ -41,9 +40,8 @@ AC_DEFUN([FF_CHECK_BLAS_LIBS],
 			[AC_HELP_STRING([--with-blas-libs=<libs>],
 				[ LIBS for BLAS/LAPACK (i.e. -L/path/to/toto-blas -ltoto-blas) ])
 			])
-		CBLAS_LIBS="$with_blas_libs"
-		AC_SUBST(CBLAS_LIBS)
-		dnl  echo $CBLAS_LIBS;
+		BLAS_LIBS="$with_blas_libs"
+		AC_SUBST(BLAS_LIBS)
 		]
 	)
 
@@ -57,90 +55,88 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
 		LD_RUN_PATH="${LD_RUN_PATH:+$LD_RUN_PATH$PATH_SEPARATOR}$blas_lib_path"
 		export LD_RUN_PATH
 		CODE_CBLAS=`cat ${srcdir}/macros/CodeChunk/cblas.C`
+		CODE_FBLAS=`cat ${srcdir}/macros/CodeChunk/fblas.C`
 
-		AC_MSG_CHECKING(for USER BLAS)
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${BLAS_CFLAGS} -I. -I.. -I${srcdir} -I${srcdir}/fflas-ffpack ${GIVARO_CFLAGS}"
+		LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG} -I. -I.. -I${srcdir} -I${srcdir}/fflas-ffpack ${GIVARO_CFLAGS}"
-		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+                dnl is there user CBLAS accessible ?
+		AC_MSG_CHECKING(for BLAS)
 
-		AC_TRY_LINK( [
-#define __FFLASFFPACK_CONFIGURATION
-#include "fflas-ffpack/config-blas.h"],
-			[double a;],
-			[
-			AC_TRY_RUN(
-				[ ${CODE_CBLAS} ],[
+		AC_TRY_RUN([ ${CODE_CBLAS} ],[
 				blas_found="yes"
+                                is_cblas="yes"
+                                AC_MSG_RESULT(found CBLAS)
 				],[
-				blas_problem="$problem"
-				],[
-				blas_found="yes"
-				blas_cross="yes"
-				])
-			],
-			[
-			blas_found="no"
-			])
-
-		AS_IF([ test "x$blas_found" = "xno" ],
-			[
-			AC_MSG_RESULT(problem)
-			AC_MSG_CHECKING(for OpenBLAS)
-	                CBLAS_LIBS="${CBLAS_LIBS} -lopenblas -lpthread"
-                        AS_IF([ test  "x${CCNAM:0:3}" = "xgcc" ],[CBLAS_LIBS="${CBLAS_LIBS} -lgfortran"],[])
-                        LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
-			AC_TRY_LINK( [
-#define __FFLASFFPACK_CONFIGURATION
-#include "fflas-ffpack/config-blas.h"],
-				[double a;],
-				[
-				AC_TRY_RUN(
+                                dnl No, then checking for Fortran BLAS
+                                AC_TRY_RUN(
+                                  [ ${CODE_FBLAS} ],
+                                   [ blas_found="yes"
+                                     is_cblas="no"
+                                     AC_MSG_RESULT(found Fortran BLAS)
+                                   ],[
+                                     dnl No, then checking for  OpenBLAS
+                                     BLAS_LIBS="${BLAS_LIBS} -lopenblas -lpthread"
+                                     AS_IF([ test  "x${CCNAM:0:3}" = "xgcc" ],[BLAS_LIBS="${BLAS_LIBS} -lgfortran"],[])
+                                     LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
+				     AC_TRY_RUN(
 					[ ${CODE_CBLAS} ],[
+                                        AC_MSG_RESULT(found OpenBLAS)
 					blas_found="yes"
-					AC_SUBST(CBLAS_LIBS)
+                                        is_cblas="yes"
+					AC_SUBST(BLAS_LIBS)
 					],[
 					blas_problem="$problem"
+			                AC_MSG_RESULT(problem)
 					],[
 					blas_found="yes"
+                                        is_cblas="yes"
+			                AC_MSG_RESULT(cross compiling)
 					blas_cross="yes"
-					AC_SUBST(CBLAS_LIBS)
+					AC_SUBST(BLAS_LIBS)
 					])
-				],
-				[
-				blas_found="no"
+                                        ],[
+		                       blas_found="yes"
+                                       is_cblas="no"
+			               AC_MSG_RESULT(cross compiling)
+				       blas_cross="yes"
+                                   ])
+				],[
+				blas_found="yes"
+		                AC_MSG_RESULT(cross compiling)
+                                is_cblas="yes"
+				blas_cross="yes"
 				])
-			],
-			[])
-
 
 		AS_IF([ test "x$blas_found" = "xyes" ],
 				[
 				BLAS_VENDOR="USER"
 				AC_SUBST(BLAS_VENDOR)
-				dnl  AC_SUBST(CBLAS_FLAG)
-				dnl  AC_SUBST(BLAS_PATH)
-				AC_DEFINE(HAVE_BLAS,1,[Define if BLAS is installed])
-				AC_DEFINE(HAVE_CBLAS,1,[Define if C interface to BLAS is installed])
-				BLAS_FOUND=true
-				AC_SUBST(BLAS_FOUND)
-				dnl  AC_DEFINE(BLAS_AVAILABLE,,[Define if BLAS routines are available])
-				#echo ${CBLAS_FLAG}
-				#echo ${CBLAS_LIBS}
-				HAVE_BLAS=yes
-				AS_IF([test "x$blas_cross" != "xyes"],
-					[ AC_MSG_RESULT(found (cblas)) ] ,
-					[ AC_MSG_RESULT(unknown)
+                                AC_DEFINE(HAVE_BLAS,1,[Define if BLAS is available])
+                                AS_IF([test "x$is_cblas" = "xyes" ],[
+                                            AC_DEFINE(HAVE_CBLAS,1,[Define if BLAS is a CBLAS])
+                                      ],[])
+
+				AS_IF([test "x$blas_cross" = "xyes"], [
 					echo "WARNING: You appear to be cross compiling, so there is no way to determine"
-					echo "whether your BLAS are good. I am assuming it is."])
+					echo "whether your BLAS are good. I am assuming it is."],[])
 				],
 				[
-				AC_MSG_RESULT(problem)
-				]
-		)
+                                echo ''
+	echo '*******************************************************************************'
+	echo ' ERROR: BLAS not found!'
+	echo
+	echo ' BLAS routines are required for this library to compile. Please'
+	echo ' make sure BLAS are installed and specify its location with the option'
+	echo ' --with-blas-libs=<libs> and if necessary --with-blas-cflags=<cflags>'
+	echo ' when running configure.'
+	echo '*******************************************************************************'
+	exit 1
+        ])
 
 
-		AM_CONDITIONAL(FFLASFFPACK_HAVE_BLAS, test "x$HAVE_BLAS" = "xyes")
-
+        dnl	AM_CONDITIONAL(FFLASFFPACK_HAVE_BLAS, test "x$blas_found" = "xyes")
+        dnl     AM_CONDITIONAL(FFLASFFPACK_HAVE_CBLAS, test "x$is_cblas" = "xyes")
 		CXXFLAGS=${BACKUP_CXXFLAGS}
 		LIBS=${BACKUP_LIBS}
 		LD_RUN_PATH="$saved_LD_RUN_PATH"
@@ -163,8 +159,8 @@ AC_DEFUN([FF_CHECK_USER_LAPACK],
 
 		AC_MSG_CHECKING(for USER LAPACK)
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}  -I. -I.. -I${srcdir} -I${srcdir}/flas-ffpack ${GIVARO_CFLAGS}"
-		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${BLAS_CFLAGS}  -I. -I.. -I${srcdir} -I${srcdir}/flas-ffpack ${GIVARO_CFLAGS}"
+		LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
 		AC_TRY_RUN(
 			[ ${CODE_CLAPACK} ],
@@ -223,8 +219,8 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 
 		AC_MSG_CHECKING(if this is OpenBLAS)
 
-		CXXFLAGS="${BACKUP_CXXFLAGS} ${CBLAS_FLAG}"
-		LIBS="${BACKUP_LIBS} ${CBLAS_LIBS}"
+		CXXFLAGS="${BACKUP_CXXFLAGS} ${BLAS_CFLAGS}"
+		LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 
 		AC_TRY_RUN(
 			[ ${CODE_OPENBLAS} ],
@@ -236,7 +232,7 @@ AC_DEFUN([FF_OPENBLAS_NUM_THREADS],
 		AS_IF([test "x$openblas_found" = "xyes"],
 		      [
 		       AC_MSG_RESULT(yes)
-		       AC_MSG_CHECKING(for OPENBLAS numthreads)
+                       AC_MSG_CHECKING(for OPENBLAS numthreads)
 		       AS_IF([test "x$with_openblas_num_threads" = "x"],
 		       [
 			AC_MSG_RESULT(none specified (using default value 1))
