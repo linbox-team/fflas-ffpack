@@ -30,7 +30,7 @@ AC_DEFUN([FF_CHECK_BLAS_CFLAGS],
 				[ CFLAGS for BLAS/LAPACK (i.e. -I/path/to/toto-blas) ])
 			])
                 BLAS_CFLAGS="$with_blas_cflags"
-		AC_SUBST(BLAS_FLAGS)
+		AC_SUBST(BLAS_CFLAGS)
 		]
 	)
 
