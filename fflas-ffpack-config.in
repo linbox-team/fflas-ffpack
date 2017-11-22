@@ -99,19 +99,19 @@ while test $# -gt 0; do
 			;;
 
 		--cflags)
-			echo -I${includedir} @CBLAS_FLAG@ @CXXFLAGS@ @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@  @PARFLAGS@ # @CUDA_CFLAGS@
+			echo -I${includedir} @BLAS_CFLAGS@ @CXXFLAGS@ @GIVARO_CFLAGS@ @PRECOMPILE_FLAGS@  @PARFLAGS@ # @CUDA_CFLAGS@
 			;;
 
 		--blas-cflags)
-			echo -I${includedir} @CBLAS_FLAG@  @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
+			echo -I${includedir} @BLAS_CFLAG@  @AVXFLAGS@ # @PARFLAGS@ # @CUDA_CFLAGS@
 			;;
 
 		--libs)
-			echo @PARLIBS@ @PRECOMPILE_LIBS@ @CBLAS_LIBS@ @GIVARO_LIBS@ # @CUDA_LIBS@
+			echo @PARLIBS@ @PRECOMPILE_LIBS@ @BLAS_LIBS@ @GIVARO_LIBS@ # @CUDA_LIBS@
 			;;
 
 		--blas-libs)
-			echo  @CBLAS_LIBS@
+			echo  @BLAS_LIBS@
 			;;
 
 		--blas-home)
