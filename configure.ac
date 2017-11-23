@@ -163,7 +163,7 @@ LT_INIT
 
 
 echo "DEFAULT_CFLAGS=${DEFAULT_CFLAGS}"
-echo "DEBUG_CFLAGS=${DEBIG_CFLAGS}"
+echo "DEBUG_CFLAGS=${DEBUG_CFLAGS}"
 echo "TESTS_CFLAGS=${TESTS_CFLAGS}"
 echo "-----------------------------------------------"
 echo "     START  FFLAS-FFPACK CONFIG                "
