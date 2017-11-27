@@ -24,7 +24,7 @@
 AC_PREREQ([2.67])
 
 
-AC_INIT([FFLAS-FFPACK], [2.3.1],[ffpack-devel@googlegroups.com],[fflas-ffpack],
+AC_INIT([FFLAS-FFPACK], [2.3.2],[ffpack-devel@googlegroups.com],[fflas-ffpack],
 		[https://github.com/linbox-team/fflas-ffpack])
 
 
