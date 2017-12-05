@@ -96,7 +96,7 @@ perfpublisher:
 FFLASFFPACK_BIN=@bindir@
 
 define other_compilation
-	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES)
+	$(CXX) $(CXXFLAGS) $(AM_CXXFLAGS) ${INCLUDES} $(AM_CPPFLAGS) $*.C -o $@ $(LDFLAGS) $(LDADD) $(LOADLIBES) $(LIBS)
 endef
 
 %:%.C
