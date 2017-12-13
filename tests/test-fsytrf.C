@@ -47,7 +47,7 @@ using namespace FFPACK;
 using namespace FFLAS;
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_t threshold, uint64_t seed){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, std::string file, size_t threshold, uint64_t seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 	
@@ -57,17 +57,25 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 		if (F==nullptr)
 			return true;
 
-		typename Field::RandIter G (*F,b,seed++);
 		std::ostringstream oss;
 		F->write(oss);
 		
 		std::cout.fill('.');
 		std::cout<<"Checking ";
 
-		size_t lda = n+13;
-		typename Field::Element_ptr A=FFLAS::fflas_new (*F, n,lda);
+		typename Field::Element_ptr A;
+		size_t lda;
+		if (!file.empty()){
+			FFLAS::ReadMatrix (file, *F, n, n, A);
+			lda = n;
+		}else{
+			lda = n+13;
+			A = FFLAS::fflas_new (*F, n,lda);
+			typename Field::RandIter G (*F,b,seed++);
+			RandomSymmetricMatrix (*F, n, true, A, lda, G);
+
+		}
 		typename Field::Element_ptr B=FFLAS::fflas_new (*F, n,lda);
-		RandomSymmetricMatrix (*F, n, true, A, lda, G);
 
 		FFLAS::fassign (*F, n, n, A, lda, B, lda); 
 		typename Field::Element inv; F->init(inv);
@@ -94,7 +102,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t iters, size_
 		std::cout<<"Upper";
 			fassign (*F, n, n, B, lda, A, lda);
 
+				//WriteMatrix(std::cerr<<"B = "<<std::endl,*F,n,n,B, lda);
 			bool success = FFPACK::fsytrf (*F, FflasUpper, n, A, lda, threshold);
+				//WriteMatrix(std::cerr<<"After fsytrf = "<<std::endl,*F,n,n,B, lda);
 
 			if (!success) std::cerr<<"Non definite matrix"<<std::endl;
 				// copying U on U^T
@@ -141,6 +151,7 @@ int main(int argc, char** argv){
 	bool loop=false;
 	uint64_t seed = getSeed();
 	size_t threshold =64;
+	std::string file = "";
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field cardinality.",         TYPE_INTEGER , &q },
 		{ 'b', "-b B", "Set the bitsize of the field characteristic.",  TYPE_INT , &b },
@@ -149,7 +160,7 @@ int main(int argc, char** argv){
 		{ 'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL , &loop },
 		{ 't', "-t T", "Set the threshold to the base case.",    TYPE_INT , &threshold },
 		{ 's', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed },
-		    // { 'f', "-f file", "Set input file", TYPE_STR, &file },
+		{ 'f', "-f file", "Set input file", TYPE_STR, &file },
 		END_OF_ARGUMENTS
 	};
 
@@ -159,15 +170,15 @@ int main(int argc, char** argv){
 
 	bool ok=true;
 	do{
-		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n,iters,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n,iters,threshold,seed);
-			//ok = ok && run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,iters,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n,iters,file,threshold,seed);
+			//ok = ok && run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,iters,file,threshold,seed);
 	} while (loop && ok);
 
 	if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;

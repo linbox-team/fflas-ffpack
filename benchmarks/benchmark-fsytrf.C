@@ -23,6 +23,8 @@
 * ========LICENCE========
 */
 
+#define FSYTRF_BC_RL
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
