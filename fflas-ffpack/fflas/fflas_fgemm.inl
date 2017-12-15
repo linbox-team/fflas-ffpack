@@ -38,7 +38,7 @@
 
 namespace FFLAS { namespace Protected{
 
-		template <typename FloatElement, class Field, class FieldMode>
+		template <class NewField, class Field, class FieldMode>
 		inline typename Field::Element_ptr
 		fgemm_convert (const Field& F,
 					   const FFLAS_TRANSPOSE ta,
@@ -56,8 +56,9 @@ namespace FFLAS { namespace Protected{
 			// FFLASFFPACK_check(lda);
 			// FFLASFFPACK_check(ldb);
 			// FFLASFFPACK_check(ldc);
+			typedef typename NewField::Element FloatElement;
 
-			Givaro::ModularBalanced<FloatElement> G((FloatElement) F.characteristic());
+			NewField G((FloatElement) F.characteristic());
 			FloatElement tmp,alphaf, betaf;
 			// This conversion is quite tricky, but convert and init are required
 			// in sequence e.g. for when F is a ModularBalanced field and alpha == -1
@@ -86,9 +87,7 @@ namespace FFLAS { namespace Protected{
 				fconvert(F, m, n, Cf, n, C, ldc);
 				freduce (G, m, n, Cf, n);
 			}
-			MMHelper<Givaro::ModularBalanced<FloatElement>, 
-					 MMHelperAlgo::Winograd> 
-				HG(G,H.recLevel, ParSeqHelper::Sequential());
+			MMHelper<NewField, MMHelperAlgo::Winograd> HG(G,H.recLevel, ParSeqHelper::Sequential());
 			fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 			finit (F, m, n, Cf, n, C, ldc);
@@ -256,10 +255,16 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag>, ParSeqHelper::Sequential> & H)
 	{
-		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
-			return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
-			return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		if (!std::is_same<Field,Givaro::Modular<float> >::value){
+			if (F.cardinality() == 2)
+				return Protected::fgemm_convert<Givaro::Modular<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
+				if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
+					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			}
+		}
 		// else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
 		// 	    // Stays over int64_t
 		// 	MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
@@ -403,17 +408,16 @@ namespace FFLAS {
 		// detect fger
 		if (k==1 and ...) {}
 #endif
-		if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
-		    Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
-			//Givaro::Modular<double> need to switch to float if p too small
-			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
-				return Protected::fgemm_convert<float,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+		if (!std::is_same<Field,Givaro::Modular<float> >::value){
+			if (F.cardinality() == 2)
+				return Protected::fgemm_convert<Givaro::Modular<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
+				if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
+			}
 		}
-		if (Protected::AreEqual<Field, Givaro::Modular<int64_t> >::value ||
-		    Protected::AreEqual<Field, Givaro::ModularBalanced<int64_t> >::value)
-			if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
-				return Protected::fgemm_convert<double,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-		
 		typename Field::Element alpha_,beta_;
 		if ( !F.isOne(alpha) && !F.isMOne(alpha)){
 			F.assign (alpha_, F.one);

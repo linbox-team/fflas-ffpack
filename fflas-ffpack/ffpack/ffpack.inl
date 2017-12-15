@@ -256,7 +256,7 @@ size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		size_t* Qt = FFLAS::fflas_new<size_t>(M);
 
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasNoTrans, M, N, A, lda, P, Qt);
-		delete [] Qt;
+		FFLAS::fflas_delete(Qt);
 
 		ldn = N-R;
 		NSdim = ldn;
@@ -285,7 +285,7 @@ size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		applyP (F, FFLAS::FflasLeft, FFLAS::FflasTrans,
 				NSdim, 0,(int) R, NS, ldn, P);
 
-		delete [] P;
+		FFLAS::fflas_delete(P);
 
 		return NSdim;
 	}
@@ -294,7 +294,7 @@ size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		size_t* Qt = FFLAS::fflas_new<size_t>(N);
 
 		size_t R = LUdivine (F, FFLAS::FflasNonUnit, FFLAS::FflasTrans, M, N, A, lda, P, Qt);
-		delete [] Qt;
+		FFLAS::fflas_delete(Qt);
 
 		ldn = M;
 		NSdim = M-R;
@@ -319,7 +319,7 @@ size_t NullSpaceBasis (const Field& F, const FFLAS::FFLAS_SIDE Side,
 		FFLAS::fidentity(F,NSdim,NSdim,NS+R,ldn);
 		applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, NSdim, 0,(int) R, NS, ldn, P);
 
-		delete [] P;
+		FFLAS::fflas_delete(P);
 		return NSdim;
 	}
 }
