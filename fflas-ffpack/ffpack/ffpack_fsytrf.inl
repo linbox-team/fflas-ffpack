@@ -31,7 +31,7 @@
 namespace FFPACK {
 
 	template <class Field>
-	inline bool fsytrf_BC_LL (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+	inline bool fsytrf_BC_Crout (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 						   typename Field::Element_ptr A, const size_t lda,
 						   typename Field::Element_ptr Dinv, const size_t incDinv){
 
@@ -107,51 +107,51 @@ namespace FFPACK {
 		}
 		return true;				
 	}
-	// 	template <class Field>
-	// 	inline size_t fsytrf_BC_gen (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-	// 							 typename Field::Element_ptr A, const size_t lda,
-	// 							 typename Field::Element_ptr Dinv, const size_t incDinv,
-	// 							 size_t * P){
-
-	// 	typename Field::Element_ptr Ai = A, An = A;
-	// 	if (UpLo==FFLAS::FflasUpper){
-	// 		for (size_t i = 0; i<N; i++, Ai+=lda+1, An++){
-	// 			typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
-	// 			typename Field::Element_ptr Dinvj = Dinv;
-	// 			typename Field::Element_ptr Anj = An;
-	// 			for (size_t j=0; j<i; ++j, Anj+=lda,Dinvj+=incDinv)
-	// 				F.mul (tmp[j], *Anj, *Dinvj);
-	// 			FFLAS::fgemv (F, FFLAS::FflasTrans, i, N-i, F.mOne, An, lda, tmp, 1, F.one, Ai, 1);
-	// 			FFLAS::fflas_delete(tmp);
-	// 			typename Field::Element Apiv = Ai;
-	// 			while (F.isZero(*Apiv) && Apiv!=Ai+N-i) Apiv++;
-	// 			size_t j=Apiv-Ai;
-	// 			if (j){ // No pivot found at Aii
-	// 				if (i+j<N) {// found a pivot somewhere else
+		template <class Field>
+		inline size_t fsytrf_RPM_BC_Crout (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+										typename Field::Element_ptr A, const size_t lda,
+										typename Field::Element_ptr Dinv, const size_t incDinv,
+										size_t * P){
+			
+		typename Field::Element_ptr Ai = A, An = A;
+		if (UpLo==FFLAS::FflasUpper){
+			for (size_t i = 0; i<N; i++, Ai+=lda+1, An++){
+				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
+				typename Field::Element_ptr Dinvj = Dinv;
+				typename Field::Element_ptr Anj = An;
+				for (size_t j=0; j<i; ++j, Anj+=lda,Dinvj+=incDinv)
+					F.mul (tmp[j], *Anj, *Dinvj);
+				FFLAS::fgemv (F, FFLAS::FflasTrans, i, N-i, F.mOne, An, lda, tmp, 1, F.one, Ai, 1);
+				FFLAS::fflas_delete(tmp);
+				typename Field::Element Apiv = Ai;
+				while (F.isZero(*Apiv) && Apiv!=Ai+N-i) Apiv++;
+				size_t j=Apiv-Ai;
+				if (j){ // No pivot found at Aii
+					if (i+j<N) {// found a pivot somewhere else
 						
-	// 				} else {// zero row
+					} else {// zero row
 
-	// 				}
-				   
+					}
+				}
 				
-	// 			F.inv (Dinv[i*incDinv], *Ai);
-	// 		}
-	// 	} else {
-	// 		for (size_t i = 0; i<N; i++, Ai+=lda+1, An+=lda){
-	// 			typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
-	// 			typename Field::Element_ptr Dinvj = Dinv;
-	// 			typename Field::Element_ptr Anj = An;
-	// 			for (size_t j=0; j<i; ++j,Anj++,Dinvj+=incDinv)
-	// 				F.mul (tmp[j], *Anj, *Dinvj);
-	// 			FFLAS::fgemv (F, FFLAS::FflasNoTrans, N-i, i, F.mOne, An, lda, tmp, 1, F.one, Ai, lda);
-	// 			FFLAS::fflas_delete(tmp);
-	// 			if (F.isZero(*Ai))
-	// 				return false;
-	// 			F.inv (Dinv[i*incDinv], *Ai);
-	// 		}
-	// 	}
-	// 	return true;
-	// }
+				F.inv (Dinv[i*incDinv], *Ai);
+			}
+		} else {
+			for (size_t i = 0; i<N; i++, Ai+=lda+1, An+=lda){
+				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
+				typename Field::Element_ptr Dinvj = Dinv;
+				typename Field::Element_ptr Anj = An;
+				for (size_t j=0; j<i; ++j,Anj++,Dinvj+=incDinv)
+					F.mul (tmp[j], *Anj, *Dinvj);
+				FFLAS::fgemv (F, FFLAS::FflasNoTrans, N-i, i, F.mOne, An, lda, tmp, 1, F.one, Ai, lda);
+				FFLAS::fflas_delete(tmp);
+				if (F.isZero(*Ai))
+					return false;
+				F.inv (Dinv[i*incDinv], *Ai);
+			}
+		}
+		return true;
+	}
 
 	template <class Field>
 	inline bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
@@ -168,8 +168,8 @@ namespace FFPACK {
 		if (N <= threshold)
 #ifdef FSYTRF_BC_RL
 			return fsytrf_BC_RL (F, UpLo, N, A, lda, Dinv, incDinv);
-#elif defined FSYTRF_BC_LL
-			return fsytrf_BC_LL (F, UpLo, N, A, lda, Dinv, incDinv);
+#elif defined FSYTRF_BC_CROUT
+			return fsytrf_BC_CROUT (F, UpLo, N, A, lda, Dinv, incDinv);
 #else
 			return fsytrf_BC_RL (F, UpLo, N, A, lda, Dinv, incDinv);
 #endif
