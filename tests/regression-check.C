@@ -86,6 +86,7 @@ bool checkZeroDimCharpoly(){
 	Poly1Dom<Modular<double> > PR (F);
 	Poly1Dom<Modular<double> >::Element charp;
 	CharPoly(PR, charp, 0, A, 0);
+	fflas_delete(A);
 	return PR.isOne(charp);
 }
 bool checkZeroDimMinPoly(){
@@ -94,8 +95,32 @@ bool checkZeroDimMinPoly(){
 	Poly1Dom<Modular<double> > PR (F);
 	Poly1Dom<Modular<double> >::Element minp;
 	MinPoly(F, minp, 0, A, 0);
+	fflas_delete(A);
 	return PR.isOne(minp);
 }
+
+bool gf2ModularBalanced(){
+
+	typedef Givaro::Modular<int64_t> Field;
+
+	Field F(2);
+
+	int h_[] = {1,0,1,0,1,0,1, 0,1,1,0,0,1,1, 0,0,0,1,1,1,1};
+
+	Field::Element_ptr G, H;
+	H = fflas_new(F,3,7);
+
+	for (unsigned i=0; i<21; i++)
+        F.init(H[i], h_[i]);
+	size_t NSdim;
+	size_t ldn;
+	NullSpaceBasis (F, FflasLeft, 3, 7, H, 7, G, ldn, NSdim);
+
+	fflas_delete(G,H);
+	return true;
+}
+
+
 int main() {
 	bool pass = true ;
 	pass = pass && check2();
@@ -103,6 +128,7 @@ int main() {
 	pass = pass && check4();
 	pass = pass && checkZeroDimCharpoly();
 	pass = pass && checkZeroDimMinPoly();
+	pass = pass && gf2ModularBalanced();
 	return !pass;
 }
 
