@@ -1,9 +1,14 @@
-2016-11-22 v2.3.1
+2017-12-21 v2.3.2
+	Improvements:
+	* minor bug fixes in the build system and with GF2
+	* new specialization for fgemv over recint
+
+2017-11-22 v2.3.1
 	Improvements:
 	* minor bug fixes in the build system
 	* improved cblas/fblas detection and use
 
-2016-11-17 v2.3.0
+2017-11-17 v2.3.0
 	Improvements:
 	* improved build system (instruction set detection, C++11 and clang compatibility, ...)
 	* improved fttrtri (triangular matrix inverse)
