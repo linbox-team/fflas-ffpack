@@ -107,21 +107,167 @@ namespace FFPACK {
 		}
 		return true;				
 	}
-		template <class Field>
-		inline size_t fsytrf_RPM_BC_Crout (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
-										typename Field::Element_ptr A, const size_t lda,
-										typename Field::Element_ptr Dinv, const size_t incDinv,
-										size_t * P){
-			
+	template <class Field>
+	inline size_t fsytrf_UP_RPM_BC_RL (const Field& F, const size_t N,
+									   typename Field::Element_ptr A, const size_t lda,
+									   typename Field::Element_ptr Dinv, const size_t incDinv,
+									   size_t * P){
+		
+	}
+
+	template <class Field>
+	inline size_t fsytrf_UP_RPM_BC_Crout (const Field& F, const size_t N,
+										  typename Field::Element_ptr A, const size_t lda,
+										  typename Field::Element_ptr Dinv, const size_t incDinv,
+										  size_t * P){
+		
+		size_t * MathP = FFLAS::fflas_new<size_t>(N);
+		
+		for (size_t i=0; i<N; ++i) MathP[i] = i;
+	
+		for (size_t row = 0, size_t rank = 0, typename Field::Element_ptr CurrRow=A;
+			 row < N;
+			 row++, CurrRow += lda+1){
+
+				/* A =  [   U  | * | b | B ]  where U is rank x rank, b rank x 1
+				 *      [------------------]
+				 *      [      | 0 |   0   ]
+				 *      [------------------]
+				 *      [      | 0 |   c   ]
+				 *      [      | 0 |   C   ]
+				 */
+
+				// tmp <-  D^-1 . b
+			typename Field::Element_ptr tmp = FFLAS::fflas_new(F, rank);
+			for (size_t j=0, typename Field::Element_ptr bj=A+row; j<rank; ++j, bj+=lda, Dinvj+=incDinv)
+				F.mul (tmp[j], *Anj, *Dinvj);
+
+				// c <- c - tmp^T . [ b | B ]
+			fgemv (F, FFLAS::FflasTrans, rank, N-rank, Fi.mOne, A+row, lda, tmp, 1, F.one, CurrRow, 1);
+			size_t i = 0;
+			while (Fi.isZero (*(CurrRow + i++)) && i<N);
+			i--;
+			if (!Fi.isZero (CurrRow[i])){
+				    // found pivot
+				if (!i){ // pivot is on the leading diagonal -> 1x1 diagonal block
+					F.inv (*Dinvj, CurrRow[i]);
+					if (row>rank){ // some zero blocks are in the way
+							// column rotations
+							// On U
+						cyclic_shift_col(F, A+rank, rank, row+1, lda);
+							// On P
+						cyclic_shift_mathPerm(MathP+rank, row+1);
+						
+							// Moving pivot row
+						F.assign (A[rank*(lda+1)], CurrRow[i]);
+						FFLAS::fzero (F, row-rank, A+rank*(lda+1)+1, 1);
+						FFLAS::fassign (F, N-row-1, CurrRow+1, 1, A+rank*lda+row+1, 1);
+							//Fi.assign(*(CurrRow+i),Fi.zero); // CP : not sure we need it
+					}
+				} else { // off diagonal pivot -> forming a  2x2 diagonal block
+						
+						/* Changing 
+						 * A =  [   U  |      B         ]  where U is rank x rank
+						 *      [-----------------------]
+						 *rank->[      | 0 |   0        ]
+						 *      [-----------------------]
+						 * row->[      | 0 |   0 0 x  C ]
+						 *      [      | 0 |   0 D ET F ]
+						 *      [      | 0 |   x E y  G ]
+						 *      [      | 0 |   * * *  H ]
+						 * into 
+						/* A =  [   U  |        B'      ]  where U is rank x rank, b rank x 1
+						 *      [-----------------------]
+						 *      [      | x y/2| 0  E' G']
+						 *      [      | *  x | 0  0  C']
+						 *      [-----------------------]
+						 *      [             | 0  0  0 ]
+						 *      [             | 0  D' F']
+						 *      [             | 0  *  H']
+						 */
+						// A[rank,rank] <- x
+					F.assign (A[rank*(lda+1)], CurrRow[i]);
+						// A[rank,rank+1] <- y/2
+					F.div (A[rank*(lda+1)+1], A[(row+i)*(lda+1)], two);
+						// A[rank+1,rank+1] <- x
+					F.assign (A[(rank+1)*(lda+1)], A[rank*(lda+1)]);
+						// 0 E' G' <- 0 E G
+					FFLAS::fzero (F, row-rank, A+rank*(lda+1)+2, 1);
+					FFLAS::fassign(F, i-1, CurrRow+i*lda+1,1, A+rank*lda+row+2, 1);
+					FFLAS::fassign(F, N-row-i-1, CurrRow+i*(lda+1)+1,1, A+rank*lda+row+i+1, 1);
+						// 0 0 C' <- 0 0 C
+					FFLAS::fzero (F, row-rank+i-1, A+(rank+1)*(lda+1)+1, 1);
+					FFLAS::fassign(F, N-row-i-1, CurrRow+i+1,1, A+rank*lda+row+i+1,1);
+						// 
+						// Updating column below pivot
+					fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
+
+						// Storing the inverse of the pivot
+					typename Field::Element invpiv;
+					Fi.inv (Dinv[i], *(CurrRow+i));
+					if (Diag == FFLAS::FflasUnit)
+						FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
+					else{
+						FFLAS::fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
+					}
+					
+					if (i > rank){
+							// Column rotation to move pivot on the diagonal
+							// on U
+						cyclic_shift_col(Fi, A+rank, rank, i-rank+1, lda);
+						cyclic_shift_mathPerm(MathQ+rank, (size_t)(i-rank+1));
+							// on A
+						cyclic_shift_col(Fi, CurrRow+lda+rank, M-row-1, i-rank+1, lda);
+						Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
+						FFLAS::fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
+				}
+				if (row > rank){
+					    // Row rotation for L
+					    // Optimization: delay this to the end
+					cyclic_shift_row(Fi, A+rank*lda, row-rank+1, rank, lda);
+					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
+					    // Row rotation for U (not moving the 0 block)
+					FFLAS::fassign (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
+					Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
+					FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
+					Fi.assign(*(CurrRow+i),Fi.zero); // only needed once here
+				}
+				rank++;
+			} // if no pivot found then keep going
+		}
+
+		// size_t nonpiv = rank;
+		// for (size_t i = 0; i<M; ++i)
+		// 	if (!pivotRows[i])
+		// 		MathP[nonpiv++] = i;
+		// nonpiv = rank;
+		// for (size_t i = 0; i<N; ++i)
+		// 	if (!pivotCols[i])
+		// 		MathQ[nonpiv++] = i;
+
+		// std::cerr<<"MathP = ";
+		// for (int i=0; i<M; ++i)
+		// 	std::cerr<<MathP[i]<<" ";
+		// std::cerr<<std::endl;
+		// std::cerr<<"MathQ = ";
+		// for (int i=0; i<N; ++i)
+		// 	std::cerr<<MathQ[i]<<" ";
+		// std::cerr<<std::endl;
+
+		MathPerm2LAPACKPerm (P, MathP, N);
+		FFLAS::fflas_delete( MathP);
+		FFLAS::fzero (Fi, N-rank, N-rank, A+rank*(1+lda), lda);
+		return (size_t) rank;
+
+///////////////////////////
 		typename Field::Element_ptr Ai = A, An = A;
-		if (UpLo==FFLAS::FflasUpper){
-			for (size_t i = 0; i<N; i++, Ai+=lda+1, An++){
-				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
-				typename Field::Element_ptr Dinvj = Dinv;
-				typename Field::Element_ptr Anj = An;
-				for (size_t j=0; j<i; ++j, Anj+=lda,Dinvj+=incDinv)
-					F.mul (tmp[j], *Anj, *Dinvj);
-				FFLAS::fgemv (F, FFLAS::FflasTrans, i, N-i, F.mOne, An, lda, tmp, 1, F.one, Ai, 1);
+		for (size_t i = 0; i<N; i++, Ai+=lda+1, An++){
+			typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
+			typename Field::Element_ptr Dinvj = Dinv;
+			typename Field::Element_ptr Anj = An;
+			for (size_t j=0; j<i; ++j, Anj+=lda,Dinvj+=incDinv)
+				F.mul (tmp[j], *Anj, *Dinvj);
+			FFLAS::fgemv (F, FFLAS::FflasTrans, i, N-i, F.mOne, An, lda, tmp, 1, F.one, Ai, 1);
 				FFLAS::fflas_delete(tmp);
 				typename Field::Element Apiv = Ai;
 				while (F.isZero(*Apiv) && Apiv!=Ai+N-i) Apiv++;
@@ -130,27 +276,12 @@ namespace FFPACK {
 					if (i+j<N) {// found a pivot somewhere else
 						
 					} else {// zero row
-
+						
 					}
 				}
 				
 				F.inv (Dinv[i*incDinv], *Ai);
-			}
-		} else {
-			for (size_t i = 0; i<N; i++, Ai+=lda+1, An+=lda){
-				typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
-				typename Field::Element_ptr Dinvj = Dinv;
-				typename Field::Element_ptr Anj = An;
-				for (size_t j=0; j<i; ++j,Anj++,Dinvj+=incDinv)
-					F.mul (tmp[j], *Anj, *Dinvj);
-				FFLAS::fgemv (F, FFLAS::FflasNoTrans, N-i, i, F.mOne, An, lda, tmp, 1, F.one, Ai, lda);
-				FFLAS::fflas_delete(tmp);
-				if (F.isZero(*Ai))
-					return false;
-				F.inv (Dinv[i*incDinv], *Ai);
-			}
 		}
-		return true;
 	}
 
 	template <class Field>
