@@ -164,6 +164,7 @@ namespace FFPACK {
 						FFLAS::fassign (F, N-row-1, CurrRow+1, 1, A+rank*lda+row+1, 1);
 							//Fi.assign(*(CurrRow+i),Fi.zero); // CP : not sure we need it
 					}
+					rank++;
 				} else { // off diagonal pivot -> forming a  2x2 diagonal block
 						
 						/* Changing 
@@ -197,9 +198,26 @@ namespace FFPACK {
 					FFLAS::fassign(F, N-row-i-1, CurrRow+i*(lda+1)+1,1, A+rank*lda+row+i+1, 1);
 						// 0 0 C' <- 0 0 C
 					FFLAS::fzero (F, row-rank+i-1, A+(rank+1)*(lda+1)+1, 1);
-					FFLAS::fassign(F, N-row-i-1, CurrRow+i+1,1, A+rank*lda+row+i+1,1);
-						// 
-						// Updating column below pivot
+					FFLAS::fassign (F, N-row-i-1, CurrRow+i+1,1, A+(rank+1)*lda+row+i+1,1);
+						// Moving D 1 row down and 1 col right
+					FFLAS::fassign (F, i-1, i-1, CurrRow+lda+1,lda,CurrRow+2*(lda+1),lda);
+						// Moving F 1 row down
+					FFLAS::fassign (F, i-1, N-row-i-1, CurrRow+lda+i+1,lda,CurrRow+lda+i+1,lda,CurrRow+2*lda+i+1,lda);
+						// G'<- G' -y/2.x^-1.C'
+					typename Field::Element x;
+					F.init(x);
+					F.div (x, A[rank*(lda+1)+1], A[rank*(lda+1)]);
+					F.negin(x);
+					FFLAS::faxpy (F, N-row-i-1, x, A+(rank+1)*lda+row+i+1, 1, A+rank*lda+row+i+1, 1);
+						// Update permutation
+					MatP[rank]=-row-i;
+					MatP[rank+1]=-row-i;
+						//....
+					row++;
+					CurrRow+=lda+1;
+					rank+=2;
+					
+// Updating column below pivot
 					fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
 
 						// Storing the inverse of the pivot
