@@ -1,4 +1,4 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
  * Copyright (C) 2016 FFLAS-FFACK group
@@ -122,8 +122,11 @@ namespace FFPACK {
 										  size_t * P){
 		
 		size_t * MathP = FFLAS::fflas_new<size_t>(N);
-		
-		for (size_t i=0; i<N; ++i) MathP[i] = i;
+		size_t * twoBlocks = FFLAS::fflas_new<size_t>(N);
+		for (size_t i=0; i<N; ++i){
+			twoBlocks[i]=0;
+			MathP[i] = i;
+		}
 	
 		for (size_t row = 0, size_t rank = 0, typename Field::Element_ptr CurrRow=A;
 			 row < N;
@@ -210,96 +213,33 @@ namespace FFPACK {
 					F.negin(x);
 					FFLAS::faxpy (F, N-row-i-1, x, A+(rank+1)*lda+row+i+1, 1, A+rank*lda+row+i+1, 1);
 						// Update permutation
-					MatP[rank]=-row-i;
-					MatP[rank+1]=-row-i;
-						//....
+					size_t Prow = MathP[row];
+					size_t Pi = MathP[row+i];
+					std::copy(MathP+row+1,MathP+row+i,Math+row+2);
+					std::copy(MathP+rank,MathP+row,MathP+rank+2);
+					MathP[rank]=Prow;
+					MathP[rank+1]=Pi;
+
+					twoBlocks[rank]=row;
+					twoBlocks[rank+1]=row+i;
 					row++;
 					CurrRow+=lda+1;
 					rank+=2;
-					
-// Updating column below pivot
-					fgemv(Fi, FFLAS::FflasNoTrans, M-row-1, rank, Fi.mOne, CurrRow+lda, lda, A+i, lda, Fi.one, CurrRow+lda+i, lda);
-
-						// Storing the inverse of the pivot
-					typename Field::Element invpiv;
-					Fi.inv (Dinv[i], *(CurrRow+i));
-					if (Diag == FFLAS::FflasUnit)
-						FFLAS::fscalin (Fi, N-i-1, invpiv, CurrRow+i+1,1);
-					else{
-						FFLAS::fscalin (Fi, M-row-1, invpiv, CurrRow+i+lda,lda);
-					}
-					
-					if (i > rank){
-							// Column rotation to move pivot on the diagonal
-							// on U
-						cyclic_shift_col(Fi, A+rank, rank, i-rank+1, lda);
-						cyclic_shift_mathPerm(MathQ+rank, (size_t)(i-rank+1));
-							// on A
-						cyclic_shift_col(Fi, CurrRow+lda+rank, M-row-1, i-rank+1, lda);
-						Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
-						FFLAS::fzero (Fi, i-rank, A+rank*(lda+1)+1, 1);
 				}
-				if (row > rank){
-					    // Row rotation for L
-					    // Optimization: delay this to the end
-					cyclic_shift_row(Fi, A+rank*lda, row-rank+1, rank, lda);
-					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
-					    // Row rotation for U (not moving the 0 block)
-					FFLAS::fassign (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
-					Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
-					FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
-					Fi.assign(*(CurrRow+i),Fi.zero); // only needed once here
-				}
-				rank++;
 			} // if no pivot found then keep going
 		}
 
-		// size_t nonpiv = rank;
-		// for (size_t i = 0; i<M; ++i)
-		// 	if (!pivotRows[i])
-		// 		MathP[nonpiv++] = i;
-		// nonpiv = rank;
-		// for (size_t i = 0; i<N; ++i)
-		// 	if (!pivotCols[i])
-		// 		MathQ[nonpiv++] = i;
-
-		// std::cerr<<"MathP = ";
-		// for (int i=0; i<M; ++i)
-		// 	std::cerr<<MathP[i]<<" ";
-		// std::cerr<<std::endl;
-		// std::cerr<<"MathQ = ";
-		// for (int i=0; i<N; ++i)
-		// 	std::cerr<<MathQ[i]<<" ";
-		// std::cerr<<std::endl;
-
 		MathPerm2LAPACKPerm (P, MathP, N);
-		FFLAS::fflas_delete( MathP);
+		for (size_t i=0; i<rank; i++){
+			if (twoBlocks[i+1]>0){
+				P[i] = -twoBlocks[i];
+				P[i+1] = -twoBlocks[i+1];
+				i++;
+			}
+		}
+		FFLAS::fflas_delete (MathP, twoBlocks);
 		FFLAS::fzero (Fi, N-rank, N-rank, A+rank*(1+lda), lda);
 		return (size_t) rank;
-
-///////////////////////////
-		typename Field::Element_ptr Ai = A, An = A;
-		for (size_t i = 0; i<N; i++, Ai+=lda+1, An++){
-			typename Field::Element_ptr tmp = FFLAS::fflas_new(F, i);
-			typename Field::Element_ptr Dinvj = Dinv;
-			typename Field::Element_ptr Anj = An;
-			for (size_t j=0; j<i; ++j, Anj+=lda,Dinvj+=incDinv)
-				F.mul (tmp[j], *Anj, *Dinvj);
-			FFLAS::fgemv (F, FFLAS::FflasTrans, i, N-i, F.mOne, An, lda, tmp, 1, F.one, Ai, 1);
-				FFLAS::fflas_delete(tmp);
-				typename Field::Element Apiv = Ai;
-				while (F.isZero(*Apiv) && Apiv!=Ai+N-i) Apiv++;
-				size_t j=Apiv-Ai;
-				if (j){ // No pivot found at Aii
-					if (i+j<N) {// found a pivot somewhere else
-						
-					} else {// zero row
-						
-					}
-				}
-				
-				F.inv (Dinv[i*incDinv], *Ai);
-		}
 	}
 
 	template <class Field>
