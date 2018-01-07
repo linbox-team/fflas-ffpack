@@ -332,7 +332,62 @@ namespace FFPACK{
 		RandomIndexSubset (N, R, cols);
     }
 
-   /** @brief  Random Matrix with prescribed rank and rank profile matrix
+	/** @brief Pick uniformly at random a symmetric R-subpermutation of dimension \c N x \c N : a symmetric matrix with only R non-zeros, all equal to one, in a random rook placement.
+     * @param N matrix order
+	 * @param [out] rows the row position of each non zero element (pre-allocated)
+	 * @param [out] cols the column position of each non zero element (pre-allocated)
+	 */
+	inline void RandomSymmetricRankProfileMatrix (size_t N, size_t R, size_t* rows, size_t* cols){
+
+		// size_t nelt = N*(N+1)/2;
+		// size_t * piv = FFLAS::fflas_new<size_t>(R);
+		// RandomIndexSubset (nelt, R, piv);
+		// std::sort(piv,piv+R);
+		// for (size_t i=0,rowpos=0; i<N; i++,rowpos+=i+1){
+		// 	while (piv[k]<rowpos+i+1)
+		// 		rows[k] = rowpos
+			//}
+		size_t * rr = FFLAS::fflas_new<size_t>(N);
+		size_t * cc = FFLAS::fflas_new<size_t>(N);
+		bool * diag == FFLAS::fflas_new<bool>(N);
+		for (size_t i=0; i<N; ++i)
+			rr[i] = cc[i] = i;
+		for (size_t k=0; k<R; k+=2){
+			size_t i = RandInt(k,N);
+			size_t j = RandInt(k,N);
+			cols[k] = cc[j];
+			cc[j] = cc[k];
+			rows[k] = rr[i];
+			rr[i] = rr[k];
+			if (rows[k] != cols[k] && k < R-1){
+					// adding the symmetric element
+				rows[k+1] = cols[k];
+				cols[k+1] = rows[k];
+			} else {
+					// we need to add a diagonal pivot since 
+					// - either k==R-1 and there is only one pivot left to be added
+					// - or we just added a diagonal pivot. We need to pick another one so
+					//   that they appear with the same probability 2/N^2 as off-diagonal pivots
+				size_t l, co;
+				int found =-1;
+				do{
+					l = RandInt(k+1,N);
+					co = cc[l];
+					for (size_t m=k+1; m<N; m++)
+						if (rr[m] == co) // l is valid as row co still available
+							found = m;
+						// TODO: Write a variant for when k < N/2
+				} while(found<0);
+				cols[k+1] = co;
+				cc[l] = cc[k];
+				rows[k+1] = co;
+				rr[m] = rr[k];
+			}
+		}
+		FFLAS::fflas_delete(rr,cc);
+    }
+
+	/** @brief  Random Matrix with prescribed rank and rank profile matrix
      * Creates an \c m x \c n matrix with random entries and rank \c r.
      * @param F field
      * @param m number of rows in \p A
@@ -404,7 +459,67 @@ namespace FFPACK{
 		return RandomMatrixWithRankandRPM (F, M, N, R, A, lda, RRP, CRP, G);
 	}
 
-	/** @brief  Random Matrix with prescribed rank, with random  rank profile matrix
+   /** @brief  Random Symmetric Matrix with prescribed rank and rank profile matrix
+     * Creates an \c n x \c n symmetric matrix with random entries and rank \c r.
+     * @param F field
+     * @param n order of \p A
+     * @param r rank of \p A
+     * @param A the matrix (preallocated to at least \c n x \c lda field elements)
+     * @param lda leading dimension of \p A
+	 * @param RRP the R dimensional array with row positions of the rank profile matrix' pivots
+	 * @param CRP the R dimensional array with column positions of the rank profile matrix' pivots
+	 * @param G a random iterator
+     * @return \c A.
+     */
+	template<class Field,class RandIter>
+	inline typename Field::Element_ptr
+	RandomSymmetricMatrixWithRankandRPM (const Field& F,  size_t N, size_t R,
+										 typename Field::Element_ptr A, size_t lda,
+										 const size_t * RRP, const size_t * CRP, RandIter& G){
+		
+		Givaro::GeneralRingNonZeroRandIter<Field,RandIter> nzG(G);
+		typename Field::Element t;
+		F.init(t);
+		typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
+		typename Field::Element_ptr L= FFLAS::fflas_new(F,N,N);
+			// U <- $
+		RandomTriangularMatrix (F, N, N, FFLAS::FflasUpper, FFLAS::FflasUnit, true, U, N, G);
+			// L <-  U^T x R x D
+		FFLAS::fzero(F, N, N, L, N);
+		for (size_t k=0; k<R; ++k){
+			size_t i = RRP[k];
+			size_t j = CRP[k];
+			nzG.random(t);
+			FFLAS::fscal (F, t, N-i, U+i*(N+1), 1, L+j+i*N, N);
+		}
+		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N,N,N, F.one, L, N, U, N, F.zero, A, lda);
+
+		FFLAS::fflas_delete(L);
+		FFLAS::fflas_delete(U);
+		return A;
+	}
+
+   /** @brief  Random Symmetric Matrix with prescribed rank and rank profile matrix
+     * Creates an \c n x \c n symmetric matrix with random entries and rank \c r.
+     * @param F field
+     * @param n order of \p A
+     * @param r rank of \p A
+     * @param A the matrix (preallocated to at least \c n x \c lda field elements)
+     * @param lda leading dimension of \p A
+	 * @param RRP the R dimensional array with row positions of the rank profile matrix' pivots
+	 * @param CRP the R dimensional array with column positions of the rank profile matrix' pivots
+     * @return \c A.
+     */
+    template<class Field>
+	inline typename Field::Element_ptr
+	RandomSymmetricMatrixWithRankandRPM (const Field& F, size_t M, size_t N, size_t R,
+										 typename Field::Element_ptr A, size_t lda,
+										 const size_t * RRP, const size_t * CRP){
+		typename Field::RandIter G(F);
+		return RandomSymmetricMatrixWithRankandRPM (F, N, R, A, lda, RRP, CRP, G);
+	}
+
+	/** @brief  Random Matrix with prescribed rank, with random rank profile matrix
      * Creates an \c m x \c n matrix with random entries, rank \c r and with a 
 	 * rank profile matrix chosen uniformly at random.
      * @param F field
@@ -413,6 +528,7 @@ namespace FFPACK{
      * @param r rank of the matrix to build
      * @param A the matrix (preallocated to at least \c m x \c lda field elements)
      * @param lda leading dimension of \p A
+	 * @param G a random iterator
      * @return \c A.
      */
     template<class Field, class RandIter>
@@ -446,6 +562,49 @@ namespace FFPACK{
 									  typename Field::Element_ptr A, size_t lda){
 		typename Field::RandIter G(F);
 		return RandomMatrixWithRankandRandomRPM (F, M, N, R, A, lda, G);
+	}
+
+	/** @brief Random Symmetric Matrix with prescribed rank, with random rank profile matrix
+     * Creates an \c n x \c n matrix with random entries, rank \c r and with a 
+	 * rank profile matrix chosen uniformly at random.
+     * @param F field
+     * @param n order of \p A
+     * @param r rank of \p A
+     * @param A the matrix (preallocated to at least \c n x \c lda field elements)
+     * @param lda leading dimension of \p A
+	 * @param G a random iterator
+     * @return \c A.
+     */
+    template<class Field, class RandIter>
+	inline typename Field::Element_ptr
+	RandomSymmetricMatrixWithRankandRandomRPM (const Field& F, size_t N, size_t R,
+											   typename Field::Element_ptr A, size_t lda, RandIter& G){
+            // generate the r pivots in the rank profile matrix E
+		size_t * pivot_r = FFLAS::fflas_new<size_t> (R);
+		size_t * pivot_c = FFLAS::fflas_new<size_t> (R);
+		RandomSymmetricRankProfileMatrix (N, R, pivot_r, pivot_c);
+		RandomSymmetricMatrixWithRankandRPM (F, N, R, A, lda, pivot_r, pivot_c, G);
+		FFLAS::fflas_delete(pivot_r);
+		FFLAS::fflas_delete(pivot_c);
+		return A;
+	}
+
+	/** @brief Random Symmetric Matrix with prescribed rank, with random rank profile matrix
+     * Creates an \c n x \c n matrix with random entries, rank \c r and with a 
+	 * rank profile matrix chosen uniformly at random.
+     * @param F field
+     * @param n order of \p A
+     * @param r rank of \p A
+     * @param A the matrix (preallocated to at least \c n x \c lda field elements)
+     * @param lda leading dimension of \p A
+     * @return \c A.
+     */
+    template<class Field>
+	inline typename Field::Element_ptr
+	RandomSymmetricMatrixWithRankandRandomRPM (const Field& F, size_t N, size_t R,
+											   typename Field::Element_ptr A, size_t lda){
+		typename Field::RandIter G(F);
+		return RandomSymmetricMatrixWithRankandRandomRPM (F, N, R, A, lda, G);
 	}
 
 	/** @brief  Random Matrix with prescribed det.
