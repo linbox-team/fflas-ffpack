@@ -72,111 +72,110 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 		RandomMatrixWithRankandRandomRPM(*F,m,n,r,A,lda,G);
 		fassign (*F, m, n, A, lda, B, lda); 
 
-		// {
-		// 		// Testing if LUdivine and PLUQ return the same result
-		// 	size_t* RP1, * RP2;
-		// 	FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
-		// 	for (size_t i=0; i<r; i++)
-		// 		ok = ok && (RP1[i] == RP2[i]);
-		// 	fflas_delete(RP1);
-		// 	fflas_delete(RP2);
+		{
+				// Testing if LUdivine and PLUQ return the same result
+			size_t* RP1, * RP2;
+			FFPACK::RowRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+			fassign (*F, m, n, B, lda, A, lda);
+			FFPACK::RowRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+			for (size_t i=0; i<r; i++)
+				ok = ok && (RP1[i] == RP2[i]);
+			fflas_delete(RP1);
+			fflas_delete(RP2);
 
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
-		// 	for (size_t i=0; i<r; i++)
-		// 		ok = ok && (RP1[i] == RP2[i]);
-		// 	fflas_delete(RP1);
-		// 	fflas_delete(RP2);
-		// }
-		// {
-		// 	// Testing if 1 PLUQ computes the rank profiles of all leading submatrices 
-		// 	size_t* RP1, * RP2;
-		// 	size_t * P = fflas_new<size_t>(m);
-		// 	size_t * Q = fflas_new<size_t>(n);
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	PLUQ(*F, FflasNonUnit, m, n, A, lda, P, Q);
+			fassign (*F, m, n, B, lda, A, lda);
+			FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+			fassign (*F, m, n, B, lda, A, lda);
+			FFPACK::ColumnRankProfile (*F, m, n, A, lda, RP2, FFPACK::FfpackTileRecursive);
+			for (size_t i=0; i<r; i++)
+				ok = ok && (RP1[i] == RP2[i]);
+			fflas_delete(RP1);
+			fflas_delete(RP2);
+		}
+		{
+			// Testing if 1 PLUQ computes the rank profiles of all leading submatrices
+			size_t* RP1, * RP2;
+			size_t * P = fflas_new<size_t>(m);
+			size_t * Q = fflas_new<size_t>(n);
+			fassign (*F, m, n, B, lda, A, lda);
+			PLUQ(*F, FflasNonUnit, m, n, A, lda, P, Q);
 			
-		// 	for (size_t i=0; i<3;i++){
-		// 		size_t mm = 1 + (rand() % m);
-		// 		size_t nn = 1 + (rand() % n);
-		// 		fassign (*F, m, n, B, lda, A, lda); 
-		// 		size_t rr = FFPACK::ColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
-		// 		fassign (*F, m, n, B, lda, A, lda); 
-		// 		FFPACK::RowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
-		// 		size_t* RRP = fflas_new<size_t>(r);
-		// 		size_t* CRP = fflas_new<size_t>(r);
+			for (size_t i=0; i<3;i++){
+				size_t mm = 1 + (rand() % m);
+				size_t nn = 1 + (rand() % n);
+				fassign (*F, m, n, B, lda, A, lda);
+				size_t rr = FFPACK::ColumnRankProfile (*F, mm, nn, A, lda, RP1, FFPACK::FfpackSlabRecursive);
+				fassign (*F, m, n, B, lda, A, lda); 
+				FFPACK::RowRankProfile (*F, mm, nn, A, lda, RP2, FFPACK::FfpackSlabRecursive);
+				size_t* RRP = fflas_new<size_t>(r);
+				size_t* CRP = fflas_new<size_t>(r);
 				
-		// 		LeadingSubmatrixRankProfiles (m,n,r,mm,nn,P,Q,RRP,CRP);
-		// 		for (size_t ii=0; ii<rr; ii++)
-		// 			ok = ok && (RP1[ii] == CRP[ii]) && (RP2[ii] == RRP[ii]);
+				LeadingSubmatrixRankProfiles (m,n,r,mm,nn,P,Q,RRP,CRP);
+				for (size_t ii=0; ii<rr; ii++)
+					ok = ok && (RP1[ii] == CRP[ii]) && (RP2[ii] == RRP[ii]);
 				
-		// 		fflas_delete(CRP);
-		// 		fflas_delete(RRP);
-		// 		fflas_delete(RP1);
-		// 		fflas_delete(RP2);
+				fflas_delete(CRP);
+				fflas_delete(RRP);
+				fflas_delete(RP1);
+				fflas_delete(RP2);
 				
-		// 	}
-		// 	fflas_delete(P);
-		// 	fflas_delete(Q);
-		// }
-		// {
-        //     // Testing PLUQ and LUDivine return a specified rank profile 
-		// 	size_t* RRP = fflas_new<size_t>(r);
-		// 	size_t* CRP = fflas_new<size_t>(r);
-		// 	size_t* RRPLUD, * RRPPLUQ, *CRPLUD, *CRPPLUQ;
+			}
+			fflas_delete(P);
+			fflas_delete(Q);
+		}
+		{
+            // Testing PLUQ and LUDivine return a specified rank profile
+			size_t* RRP = fflas_new<size_t>(r);
+			size_t* CRP = fflas_new<size_t>(r);
+			size_t* RRPLUD, * RRPPLUQ, *CRPLUD, *CRPPLUQ;
 
-		// 	RandomRankProfileMatrix (m, n, r, RRP, CRP);
-		// 	RandomMatrixWithRankandRPM(*F,m,n,r,A,lda, RRP, CRP, G);
+			RandomRankProfileMatrix (m, n, r, RRP, CRP);
+			RandomMatrixWithRankandRPM(*F,m,n,r,A,lda, RRP, CRP, G);
 
-		// 	fassign (*F, m, n, A, lda, B, lda); 
-		// 	size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
-		// 	fassign (*F, m, n, B, lda, A, lda); 
-		// 	size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
-		// 	std::sort(CRP,CRP+r);
-		// 	std::sort(RRP,RRP+r);	
-		// 	ok = ok && (cs==ct)&&(cs==rs)&&(cs==rt)&&(cs==r);
-		// 	for (size_t i=0; i<r; i++)
-		// 		ok = ok && (CRPLUD[i] == CRP[i]) && (CRPPLUQ[i] == CRP[i]) && 
-		// 			(RRPLUD[i] == RRP[i]) && (RRPPLUQ[i] == RRP[i]);
-		// 	fflas_delete(CRP);
-		// 	fflas_delete(RRP);
-		// 	fflas_delete(CRPLUD);
-		// 	fflas_delete(RRPLUD);
-		// 	fflas_delete(CRPPLUQ);
-		// 	fflas_delete(RRPPLUQ);
-		// }
+			fassign (*F, m, n, A, lda, B, lda);
+			size_t cs = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
+			fassign (*F, m, n, B, lda, A, lda);
+			size_t ct = FFPACK::ColumnRankProfile (*F, m, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
+			fassign (*F, m, n, B, lda, A, lda);
+			size_t rs = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
+			fassign (*F, m, n, B, lda, A, lda);
+			size_t rt = FFPACK::RowRankProfile (*F, m, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
+			std::sort(CRP,CRP+r);
+			std::sort(RRP,RRP+r);
+			ok = ok && (cs==ct)&&(cs==rs)&&(cs==rt)&&(cs==r);
+			for (size_t i=0; i<r; i++)
+				ok = ok && (CRPLUD[i] == CRP[i]) && (CRPPLUQ[i] == CRP[i]) &&
+					(RRPLUD[i] == RRP[i]) && (RRPPLUQ[i] == RRP[i]);
+			fflas_delete(CRP);
+			fflas_delete(RRP);
+			fflas_delete(CRPLUD);
+			fflas_delete(RRPLUD);
+			fflas_delete(CRPPLUQ);
+			fflas_delete(RRPPLUQ);
+		}
+		fflas_delete(A);
+		fflas_delete(B);
 		{
             // Testing PLUQ and LUDivine return a specified  rank profile (symmetric case) 
 			size_t* RRP = fflas_new<size_t>(r);
 			size_t* CRP = fflas_new<size_t>(r);
 			size_t* RRPLUD, * RRPPLUQ, *CRPLUD, *CRPPLUQ;
 
+			typename Field::Element_ptr A=fflas_new (*F, n,lda);
+			typename Field::Element_ptr B=fflas_new (*F, n,lda);
 			RandomSymmetricRankProfileMatrix (n, r, RRP, CRP);
 			RandomSymmetricMatrixWithRankandRPM(*F,n,r,A,lda, RRP, CRP, G);
-
-			typename Field::Element_ptr RPM=FFLAS::fflas_new(*F,n*n);
-			fzero(*F,n,n,RPM,n);
-			for (size_t i=0; i<r; i++)
-				F->assign(RPM[RRP[i]*n+CRP[i]],F->one);
-			WriteMatrix(std::cout<<"RPM = "<<std::endl,*F,n,n,RPM,n);
-			WritePermutation(std::cout<<"RRP = ",RRP,r);
-			WritePermutation(std::cout<<"CRP = ",CRP,r);
-			WriteMatrix(std::cout<<"A = "<<std::endl,*F,n,n,A,lda);
-			fassign (*F, m, n, A, lda, B, lda); 
+			// typename Field::Element_ptr RPM=FFLAS::fflas_new(*F,n*n);
+			// fzero(*F,n,n,RPM,n);
+			// for (size_t i=0; i<r; i++)
+			// 	F->assign(RPM[RRP[i]*n+CRP[i]],F->one);
+			fassign (*F, n, n, A, lda, B, lda); 
 			size_t cs = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPLUD, FFPACK::FfpackSlabRecursive);
-			fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, n, n, B, lda, A, lda); 
 			size_t ct = FFPACK::ColumnRankProfile (*F, n, n, A, lda, CRPPLUQ, FFPACK::FfpackTileRecursive);
-			fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, n, n, B, lda, A, lda); 
 			size_t rs = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPLUD, FFPACK::FfpackSlabRecursive);
-			fassign (*F, m, n, B, lda, A, lda); 
+			fassign (*F, n, n, B, lda, A, lda); 
 			size_t rt = FFPACK::RowRankProfile (*F, n, n, A, lda, RRPPLUQ, FFPACK::FfpackTileRecursive);
 			std::sort(CRP,CRP+r);
 			std::sort(RRP,RRP+r);	
@@ -190,10 +189,9 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r,
 			fflas_delete(RRPLUD);
 			fflas_delete(CRPPLUQ);
 			fflas_delete(RRPPLUQ);
+			fflas_delete(A);
+			fflas_delete(B);
 		}
-		
-		fflas_delete(A);
-		fflas_delete(B);
 		delete F;
 
 		nbit--;
@@ -240,15 +238,15 @@ int main(int argc, char** argv){
 
 	bool ok=true;
 	do{
-			//ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<float> >           (q,b,m,n,r,iters,seed);
 		ok = ok &&run_with_field<Givaro::Modular<double> >          (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed);
-		// ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<float> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<double> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<int32_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<int64_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,m,n,r,iters,seed);
+		ok = ok &&run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),m/4+1,n/4+1,r/4+1,iters,seed);
 	} while (loop && ok);
 
 	return !ok;

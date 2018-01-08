@@ -482,21 +482,18 @@ namespace FFPACK{
                                          typename Field::Element_ptr A, size_t lda,
                                          const size_t * RRP, const size_t * CRP, RandIter& G){
         
-        Givaro::GeneralRingNonZeroRandIter<Field,RandIter> nzG(G);
-        typename Field::Element t;
-        F.init(t);
         typename Field::Element_ptr U= FFLAS::fflas_new(F,N,N);
         typename Field::Element_ptr L= FFLAS::fflas_new(F,N,N);
             // U <- $
-        RandomTriangularMatrix (F, N, N, FFLAS::FflasUpper, FFLAS::FflasUnit, true, U, N, G);
-            // L <-  U^T x R x D
+        RandomTriangularMatrix (F, N, N, FFLAS::FflasUpper, FFLAS::FflasNonUnit, true, U, N, G);
+            // L <-  U^T x R 
         FFLAS::fzero(F, N, N, L, N);
         for (size_t k=0; k<R; ++k){
             size_t i = RRP[k];
             size_t j = CRP[k];
-            nzG.random(t);
-            FFLAS::fscal (F, N-i, t, U+i*(N+1), 1, L+j+i*N, N);
+            FFLAS::fassign (F, N-i, U+i*(N+1), 1, L+j+i*N, N);
         }
+
         FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N,N,N, F.one, L, N, U, N, F.zero, A, lda);
 
         FFLAS::fflas_delete(L);
