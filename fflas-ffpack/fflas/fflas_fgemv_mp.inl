@@ -118,6 +118,27 @@ namespace FFLAS {
 		return Y;
 	}
 
+	    // specialization of the fgemv function for the field Givaro::Modular<RecInt::ruint<K>>
+    // Calling fgemm, TODO: really specialize fgemv
+	template <size_t K1, size_t K2, class ParSeq>
+	inline RecInt::ruint<K1>*
+	fgemv (const Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >& F,
+	       const FFLAS_TRANSPOSE ta,
+	       const size_t m, const size_t n,
+	       const RecInt::ruint<K1> alpha,
+	       const RecInt::ruint<K1>* A, const size_t lda,
+	       const RecInt::ruint<K1>* X, const size_t incx,
+	       RecInt::ruint<K1> beta,
+	       RecInt::ruint<K1>* Y, const size_t incy,
+	       MMHelper<Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >,
+	                MMHelperAlgo::Classic,
+	                ModeCategories::ConvertTo<ElementCategories::RNSElementTag>,
+	                ParSeq >  & H) {
+		MMHelper<Givaro::Modular<RecInt::ruint<K1>,RecInt::ruint<K2> >, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential> H2;
+		fgemm (F,ta,FflasNoTrans,(ta==FFLAS::FflasNoTrans)?m:n,1,(ta==FFLAS::FflasNoTrans)?n:m,alpha,A,lda,X,incx,beta,Y,incy,H2);
+		return Y;
+	}
+
 
 } // end namespace FFLAS 
 

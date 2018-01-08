@@ -414,6 +414,8 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,k,iters, p, seed);
 		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,k,iters, p, seed);
 		
+		ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,k,iters, p, seed);
+		ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,k,iters, p, seed);
 		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,k,iters,p, seed);
 		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,k,iters,p, seed);
 	} while (loop && ok);
