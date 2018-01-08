@@ -332,6 +332,16 @@ namespace FFPACK{
 		RandomIndexSubset (N, R, cols);
     }
 
+	void swapval(size_t k, size_t N, size_t * P, size_t val){
+		size_t i = k;
+		int found =-1;
+		do {
+			if (P[i] == val)
+				found = i;
+			i++;
+		} while(found<0);
+		P[found] = P[k];
+	}
 	/** @brief Pick uniformly at random a symmetric R-subpermutation of dimension \c N x \c N : a symmetric matrix with only R non-zeros, all equal to one, in a random rook placement.
      * @param N matrix order
 	 * @param [out] rows the row position of each non zero element (pre-allocated)
@@ -339,17 +349,8 @@ namespace FFPACK{
 	 */
 	inline void RandomSymmetricRankProfileMatrix (size_t N, size_t R, size_t* rows, size_t* cols){
 
-		// size_t nelt = N*(N+1)/2;
-		// size_t * piv = FFLAS::fflas_new<size_t>(R);
-		// RandomIndexSubset (nelt, R, piv);
-		// std::sort(piv,piv+R);
-		// for (size_t i=0,rowpos=0; i<N; i++,rowpos+=i+1){
-		// 	while (piv[k]<rowpos+i+1)
-		// 		rows[k] = rowpos
-			//}
 		size_t * rr = FFLAS::fflas_new<size_t>(N);
 		size_t * cc = FFLAS::fflas_new<size_t>(N);
-		bool * diag == FFLAS::fflas_new<bool>(N);
 		for (size_t i=0; i<N; ++i)
 			rr[i] = cc[i] = i;
 		for (size_t k=0; k<R; k+=2){
@@ -363,25 +364,29 @@ namespace FFPACK{
 					// adding the symmetric element
 				rows[k+1] = cols[k];
 				cols[k+1] = rows[k];
+				swapval(k+1,N,rr,cols[k]);
+				swapval(k+1,N,cc,rows[k]);
 			} else {
 					// we need to add a diagonal pivot since 
 					// - either k==R-1 and there is only one pivot left to be added
 					// - or we just added a diagonal pivot. We need to pick another one so
 					//   that they appear with the same probability 2/N^2 as off-diagonal pivots
+				if (k<R-1) k++; // 
 				size_t l, co;
 				int found =-1;
 				do{
-					l = RandInt(k+1,N);
+					l = RandInt(k,N);
 					co = cc[l];
-					for (size_t m=k+1; m<N; m++)
+					for (size_t m=k; m<N; m++)
 						if (rr[m] == co) // l is valid as row co still available
 							found = m;
 						// TODO: Write a variant for when k < N/2
 				} while(found<0);
-				cols[k+1] = co;
+				cols[k] = co;
 				cc[l] = cc[k];
-				rows[k+1] = co;
-				rr[m] = rr[k];
+				rows[k] = co;
+				rr[found] = rr[k];
+				if (k<R) k--; // 
 			}
 		}
 		FFLAS::fflas_delete(rr,cc);
@@ -490,7 +495,7 @@ namespace FFPACK{
 			size_t i = RRP[k];
 			size_t j = CRP[k];
 			nzG.random(t);
-			FFLAS::fscal (F, t, N-i, U+i*(N+1), 1, L+j+i*N, N);
+			FFLAS::fscal (F, N-i, t, U+i*(N+1), 1, L+j+i*N, N);
 		}
 		FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, N,N,N, F.one, L, N, U, N, F.zero, A, lda);
 
