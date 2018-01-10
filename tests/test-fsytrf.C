@@ -189,7 +189,7 @@ int main(int argc, char** argv){
 	FFLAS::parseArguments(argc,argv,as);
 
 	srand(seed);
-
+	cerr << "with seed = " << seed << endl;
 	if (r>n) r=n;
 	bool ok=true;
 	do{
