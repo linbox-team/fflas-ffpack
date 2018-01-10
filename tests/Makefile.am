@@ -43,6 +43,7 @@ BASIC_TESTS =               \
 		test-fgemm          \
 		test-fgemm-check    \
 		test-permutations   \
+		test-rpm   \
 		test-compressQ      \
 		test-lu             \
 		test-pluq-check     \
@@ -103,6 +104,7 @@ TESTS =     $(EXTRA_PROGRAMS)
 
 test_compressQ_SOURCES         = test-compressQ.C
 test_permutations_SOURCES         = test-permutations.C
+test_rpm_SOURCES         = test-rpm.C
 
 test_lu_SOURCES              = test-lu.C
 test_det_SOURCES               = test-det.C
