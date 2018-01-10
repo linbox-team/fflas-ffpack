@@ -127,7 +127,9 @@ namespace FFPACK {
 										  typename Field::Element_ptr A, const size_t lda,
 										  typename Field::Element_ptr Dinv, const size_t incDinv,
 										  size_t * P){
-        FFLAS::WriteMatrix(std::cerr<<"A = "<<std::endl,F,N,N,A,lda,FFLAS::FflasSageMath);	
+        // std::cerr<<"*****************************************************"<<std::endl;
+        // std::cerr<<"*****************************************************"<<std::endl;
+        // FFLAS::WriteMatrix(std::cerr<<"A = "<<std::endl,F,N,N,A,lda,FFLAS::FflasSageMath);	
 		size_t * MathP = FFLAS::fflas_new<size_t>(N);
 		int * twoBlocks = FFLAS::fflas_new<int>(N);
 		for (size_t i=0; i<N; ++i){
@@ -141,7 +143,8 @@ namespace FFPACK {
         typename Field::Element_ptr CurrRow = A;
         for (size_t row = 0; row < N; row++, CurrRow += (lda+1)){
 
-            FFLAS::WriteMatrix(std::cerr<<"A = "<<std::endl,F,N,N,A,lda);
+            // std::cerr<<"======================================================"<<std::endl;
+            // FFLAS::WriteMatrix(std::cerr<<"A = "<<std::endl,F,N,N,A,lda);
 				/* A =  [   U  | * | b | B ]  where U is rank x rank, b rank x 1
 				 *      [------------------]
 				 *      [      | 0 |   0   ]
@@ -154,12 +157,12 @@ namespace FFPACK {
 			typename Field::Element_ptr tmp = FFLAS::fflas_new(F, rank);
             typename Field::Element_ptr bj = A+row, Dinvj=Dinv;
 
-            std::cerr<<"twoBlocks = ";
-            for (size_t h=0; h<rank; h++)
-                std::cerr<<twoBlocks[h]<<" ";
-            std::cerr<<std::endl;
+                //std::cerr<<"twoBlocks = ";
+                //for (size_t h=0; h<rank; h++)
+                    //std::cerr<<twoBlocks[h]<<" ";
+                    //         std::cerr<<std::endl;
             for (size_t j=0; j<rank; ++j, bj+=lda, Dinvj+=incDinv){
-                std::cerr<<"j = "<<j<<std::endl;
+                    //std::cerr<<"j = "<<j<<std::endl;
                 if (twoBlocks[j]<0)
                     F.mul (tmp[j], *bj, *Dinvj);
                 else{
@@ -177,15 +180,15 @@ namespace FFPACK {
             // FFLAS::WriteMatrix(std::cerr<<"avant fgemv CurrRow = "<<std::endl,F,1,N-row,CurrRow,N-row);
             fgemv (F, FFLAS::FflasTrans, rank, N-row, F.mOne, A+row, lda, tmp, 1, F.one, CurrRow, 1);
             FFLAS::fflas_delete(tmp);
-            FFLAS::WriteMatrix(std::cerr<<"apres fgemv A = "<<std::endl,F,N,N,A,lda);
+            // FFLAS::WriteMatrix(std::cerr<<"apres fgemv A = "<<std::endl,F,N,N,A,lda);
             size_t i = 0;
             while (F.isZero (*(CurrRow + i++)) && i<N-row);
 			i--;
 			if (!F.isZero (CurrRow[i])){
-                std::cerr<<"Found pivot "<< CurrRow[i]<<" at row = "<<row<<" col "<< i<<std::endl;
+                // std::cerr<<"Found pivot "<< CurrRow[i]<<" at row = "<<row<<" col "<< i<<std::endl;
 				    // found pivot
 				if (!i){ // pivot is on the leading diagonal -> 1x1 diagonal block
-                    std::cerr<<"on the main diagonal"<<std::endl;
+                        //std::cerr<<"on the main diagonal"<<std::endl;
 					F.inv (*Dinvj, CurrRow[i]);
 					if (row>rank){ // some zero blocks are in the way
 							// column rotations
@@ -193,7 +196,7 @@ namespace FFPACK {
 						cyclic_shift_col(F, A+rank, rank, row-rank+1, lda);
 							// On P
 						cyclic_shift_mathPerm(MathP+rank, row-rank+1);
-                        FFLAS::WritePermutation(std::cerr<<"MathP = ",MathP,N);
+                        // FFLAS::WritePermutation(std::cerr<<"MathP = ",MathP,N);
 							// Moving pivot row
 						F.assign (A[rank*(lda+1)], *CurrRow);
 						FFLAS::fzero (F, row-rank, A+rank*(lda+1)+1, 1);
@@ -203,13 +206,13 @@ namespace FFPACK {
 					rank++;
 				} else { // off diagonal pivot -> forming a  2x2 diagonal block
 					
-                    std::cerr<<"off diagonal pivot"<<std::endl;
+                        //std::cerr<<"off diagonal pivot"<<std::endl;
                     
                         // Crout update of the row (row+i)
                     tmp = FFLAS::fflas_new(F, rank);
                     bj = A+row+i, Dinvj=Dinv;
                     for (size_t j=0; j<rank; ++j, bj+=lda, Dinvj+=incDinv){
-                        std::cerr<<"j = "<<j<<std::endl;
+                            //std::cerr<<"j = "<<j<<std::endl;
                         if (twoBlocks[j]<0)
                             F.mul (tmp[j], *bj, *Dinvj);
                         else{
@@ -221,9 +224,13 @@ namespace FFPACK {
                         }
                     } 
                         // c <- c - tmp^T . [ B ]
+                    // FFLAS::WriteMatrix(std::cerr<<"avant fgemv A = "<<std::endl,F,rank,N-row-1,A+row+1,lda);
+                    // FFLAS::WriteMatrix(std::cerr<<"avant fgemv tmp = "<<std::endl,F,1,rank,tmp,rank);
+                    // FFLAS::WriteMatrix(std::cerr<<"avant fgemv CurrRow = "<<std::endl,F,1,N-row-1,CurrRow+i*lda+1,N-row );
+                    FFLAS::fassign(F,i-1,CurrRow+lda+i,lda,CurrRow+i*lda+1,1);
                     fgemv (F, FFLAS::FflasTrans, rank, N-row-1, F.mOne, A+row+1, lda, tmp, 1, F.one, CurrRow+i*lda+1, 1);
                     FFLAS::fflas_delete(tmp);
-                    FFLAS::WriteMatrix(std::cerr<<"apres 2eme fgemv A = "<<std::endl,F,N,N,A,lda);
+                    // FFLAS::WriteMatrix(std::cerr<<"apres 2eme fgemv A = "<<std::endl,F,N,N,A,lda);
        
                         /* Changing 
 						 * A =  [   U  |      B         ]  where U is rank x rank
@@ -254,10 +261,10 @@ namespace FFPACK {
 
                          // 0 E' G' <- 0 E G
                     if (row==rank){ // Then we need to save C in a buffer
-                        std::cerr<<"Ddim = "<<Ddim<<" Hdim = "<<Hdim<<std::endl;
+                            //std::cerr<<"Ddim = "<<Ddim<<" Hdim = "<<Hdim<<std::endl;
                         tmp = FFLAS::fflas_new(F, Hdim);
                         FFLAS::fassign (F, Hdim, CurrRow+i+1,1, tmp, 1);
-                        FFLAS::WriteMatrix(std::cerr<<"tmp = "<<std::endl,F,1,Hdim,tmp,Hdim);
+                        // FFLAS::WriteMatrix(std::cerr<<"tmp = "<<std::endl,F,1,Hdim,tmp,Hdim);
                     } else{
                         tmp = CurrRow+i+1;
                         FFLAS::fzero(F, row-rank, A+rank*(lda+1)+2, 1);
@@ -266,14 +273,16 @@ namespace FFPACK {
                     FFLAS::fassign (F, Hdim, CurrRow+i*lda+2+Ddim, 1, A+rank*lda+N-Hdim,1);
                     
 						// Moving D 1 row down and 1 col right
-                    FFLAS::WriteMatrix(std::cerr<<"avant moving D = "<<std::endl,F,N,N,A,lda);
+                    // FFLAS::WriteMatrix(std::cerr<<"avant moving D = "<<std::endl,F,N,N,A,lda);
                     for (size_t l=Ddim; l>0; l--)
                         FFLAS::fassign (F, 1, Ddim, CurrRow+l*lda+1,lda,CurrRow+(l+1)*lda+2,lda);
-                    FFLAS::WriteMatrix(std::cerr<<"apres moving D = "<<std::endl,F,N,N,A,lda);
+                    // FFLAS::WriteMatrix(std::cerr<<"apres moving D = "<<std::endl,F,N,N,A,lda);
 
 						// Moving F 1 row down
-					FFLAS::fassign (F, Ddim, Hdim, CurrRow+lda+i+1,lda,CurrRow+2*lda+i+1,lda);
-                    FFLAS::WriteMatrix(std::cerr<<"apres moving F = "<<std::endl,F,N,N,A,lda);
+                        //FFLAS::fassign (F, Ddim, Hdim, CurrRow+lda+i+1,lda,CurrRow+2*lda+i+1,lda);
+					for (size_t l=Ddim; l>0; l--)
+                        FFLAS::fassign (F, 1, Hdim, CurrRow+l*lda+i+1,lda,CurrRow+(l+1)*lda+i+1,lda);
+                    // FFLAS::WriteMatrix(std::cerr<<"apres moving F = "<<std::endl,F,N,N,A,lda);
 
 						// A[rank+1,rank+1] <- x
 					F.assign (A[(rank+1)*(lda+1)], A[rank*(lda+1)]);
@@ -281,14 +290,18 @@ namespace FFPACK {
                         // 0 0 C' <- 0 0 C
                         // TODO could be only 2 assigns to 0
 					FFLAS::fzero (F, row-rank+Ddim, A+(rank+1)*(lda+1)+1, 1);
-                    std::cerr<<"row = "<<row<<" rank+1 = "<<rank+1<<std::endl;
+                        //std::cerr<<"row = "<<row<<" rank+1 = "<<rank+1<<std::endl;
                     if (row!=rank+1){
                         FFLAS::fassign (F, Hdim, tmp,1, A+(rank+1)*lda+row+i+1,1);
                     }
-                    FFLAS::WriteMatrix(std::cerr<<"apres moving C = "<<std::endl,F,N,N,A,lda);
+                    // FFLAS::WriteMatrix(std::cerr<<"apres moving C = "<<std::endl,F,N,N,A,lda);
                     if (row==rank)
                         FFLAS::fflas_delete(tmp);
 
+                        // first row of [ D ET ] <-0
+                        //std::cerr<<"row = "<<row<<" rank = "<<rank<<CurrRow[lda+1]<<std::endl;
+                    if (row > rank)
+                        FFLAS::fzero(F, Ddim+1, CurrRow+lda+1, 1);
                         // TODO: possibly need to zero out the row where x C used to be
 
                         // G'<- G' -y/2.x^-1.C'
@@ -297,7 +310,21 @@ namespace FFPACK {
 					F.div (x, A[rank*(lda+1)+1], A[rank*(lda+1)]);
 					F.negin(x);
 					FFLAS::faxpy (F, Hdim, x, A+(rank+1)*lda+row+i+1, 1, A+rank*lda+N-Hdim, 1);
-						// Update permutation
+
+                    // FFLAS::WriteMatrix(std::cerr<<"apres update G' "<<std::endl,F,N,N,A,lda);
+
+                        // Rotate the columns of the upper part of U
+                        //std::cerr<<"before cyclic shift row,i,rank="<<row<<" "<<i<<" "<<rank<<std::endl;
+                    if (row==rank) // only need to rotate 2nd pivot
+                        cyclic_shift_col(F, A+rank+1, rank, row+i-rank, lda);
+                    else{ // need to rotate 2 pivots
+                            //TODO: to both rotations at once
+                        cyclic_shift_col(F, A+rank, rank, row-rank+1, lda);
+                            //FFLAS::WriteMatrix(std::cerr<<"apres 1st cyclic' "<<std::endl,F,N,N,A,lda);
+                        cyclic_shift_col(F, A+rank+1, rank, row+i-rank, lda);
+                            //FFLAS::WriteMatrix(std::cerr<<"apres 2nd cyclic' "<<std::endl,F,N,N,A,lda);
+                    }
+                        // Update permutation
 					size_t Prow = MathP[row];
 					size_t Pi = MathP[row+i];
 					std::copy(MathP+row+1,MathP+row+i,MathP+row+2);
@@ -314,17 +341,23 @@ namespace FFPACK {
 				}
 			} // if no pivot found then keep going
 		}
+        // FFLAS::WriteMatrix(std::cerr<<"done A = "<<std::endl,F,N,N,A,lda);
+        // FFLAS::WritePermutation(std::cerr<<"MathPerm =",MathP,N);
 
 		MathPerm2LAPACKPerm (P, MathP, N);
+        // FFLAS::WritePermutation(std::cerr<<"LAPACKPerm =",MathP,N);
 		for (size_t i=0; i<rank; i++){
 			if (twoBlocks[i]>=0){
-				P[i] = -twoBlocks[i];
-				P[i+1] = -twoBlocks[i+1];
+				P[i] = -P[i]-1;
+				P[i+1] = -P[i+1]-1;
+				// P[i] = -twoBlocks[i+1];
+				// P[i+1] = -twoBlocks[i];
 				i++;
 			}
 		}
+        // FFLAS::WritePermutation(std::cerr<<"LAPACKPerm =",P,N);
 		FFLAS::fflas_delete (MathP, twoBlocks);
-        std::cerr<<"N = "<<N<<" rank = "<<rank<<std::endl;
+        // std::cerr<<"N = "<<N<<" rank = "<<rank<<std::endl;
 		FFLAS::fzero (F, N-rank, N-rank, A+rank*(1+lda), lda);
 		return (size_t) rank;
 	}
@@ -411,6 +444,24 @@ namespace FFPACK {
 		FFLAS::fflas_delete(Dinv);
 		return rank;
 	}
+
+    template <class Field>
+    inline void
+    getTridiagonal (const Field& F, const size_t N, const size_t R,
+                    typename Field::ConstElement_ptr A, const size_t lda, size_t * P,
+                    typename Field::Element_ptr T, const size_t ldt){
+
+        FFLAS::fzero(F,N,N,T,ldt);
+        for (size_t i=0; i<R; i++)
+            if ((int)P[i] <0){
+                F.assign (T[i*(ldt+1)+1], A[i*(lda+1)]);
+                F.assign (T[i*(ldt+1)+ldt], A[i*(lda+1)]);
+                i++;
+            } else {
+                F.assign (T[i*(ldt+1)], A[i*(lda+1)]);
+            }
+    }
+    
 } //FFPACK
 
 #endif // __FFLASFFPACK_ffpack_fsytrf_INL

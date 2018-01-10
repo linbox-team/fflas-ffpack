@@ -67,11 +67,41 @@ bool test_RPM_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, size_t r
 
 	size_t * P = fflas_new<size_t>(n);
 	size_t rank = fsytrf_RPM (F, uplo, n, A, lda, P, threshold);
-	if (rank != r){
-		cerr<<"ERROR: rank incorrect"<<endl;
+	 // WriteMatrix(std::cerr<<"sortie de l'algo ="<<std::endl,F,n,n,A,lda);
+
+	typename Field::Element_ptr T = fflas_new(F, n, n);
+	typename Field::Element_ptr U = fflas_new(F, n, n);
+	getTridiagonal(F,n,rank,A,lda, P, T, n);
+	getTriangular(F,FflasUpper, FflasUnit, n,n,rank,A,lda,  U, n, false);
+	// WriteMatrix(std::cerr<<"Tridiagonal ="<<std::endl,F,n,n,T,n);
+	// WriteMatrix(std::cerr<<"Triangular ="<<std::endl,F,n,n,U,n);
+	fgemm(F,FflasTrans,FflasNoTrans, n,n,n,F.one, U,n,T,n,F.zero,A,lda);
+	fgemm(F,FflasNoTrans,FflasNoTrans, n,n,n,F.one,A,lda,U,n,F.zero,T,n);
+	 // WriteMatrix(std::cerr<<"UTDU ="<<std::endl,F,n,n,T,n);
+	for (size_t i=0; i<n; i++)
+		if ((int)P[i]<0){
+			P[i]=-P[i]-1;
+			P[i+1]=-P[i+1]-1;
+			i++;
+		}
+	// FFLAS::WritePermutation(std::cerr<<"test LAPACK Perm =",P,n);
+	applyP(F,FflasRight, FflasNoTrans, n, 0, n, T,n,P);
+	applyP(F,FflasLeft, FflasTrans, n, 0, n, T,n,P);
+
+	if (!fequal(F,n,n,T,n,B,lda)){
+		cerr<<"ERROR: A != P^T U^T D U P"<<endl;
+		WriteMatrix(std::cerr<<"PTUTDUP ="<<std::endl,F,n,n,T,n);
+		WriteMatrix(std::cerr<<"A ="<<std::endl,F,n,n,B,lda);
+
+		fflas_delete(P,A,T,B,U);
 		return false;
 	}
-	fflas_delete(P);
+	if (rank != r){
+		cerr<<"ERROR: rank incorrect"<<endl;
+		fflas_delete(P,A,T,B,U);
+		return false;
+	}
+	fflas_delete(P,A,T,B,U);
 	return true;
 }
 
@@ -123,7 +153,7 @@ bool test_generic_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, Rand
 }
 
 template<class Field>
-bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t iters, string file, size_t threshold, uint64_t seed){
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t iters, string file, size_t threshold, uint64_t& seed){
 	bool ok = true ;
 	int nbit=(int)iters;
 	
@@ -194,7 +224,7 @@ int main(int argc, char** argv){
 	bool ok=true;
 	do{
 		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
 		// ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n, r,iters,file,threshold,seed);
 		// ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n, r,iters,file,threshold,seed);
 		// ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
