@@ -64,7 +64,6 @@ bool test_RPM_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, size_t r
 
 	typename Field::Element_ptr B = fflas_new(F, n,lda);
 	fassign (F,n,n,A,lda, B, lda);
-	cout<<"RPM revealing ...";
 
 	size_t * P = fflas_new<size_t>(n);
 	size_t rank = fsytrf_RPM (F, uplo, n, A, lda, P, threshold);
@@ -92,7 +91,6 @@ bool test_generic_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, Rand
 
 	typename Field::Element_ptr B = fflas_new(F, n,lda);
 	fassign (F,n,n,A,lda, B, lda);
-	cout<<"Generic ...";
 
 	bool success=FFPACK::fsytrf (F, uplo, n, A, lda, threshold);
 	if (!success) cerr<<"Non definite matrix"<<endl;
@@ -103,7 +101,7 @@ bool test_generic_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, Rand
 		for (size_t i=0; i<n; i++)
 			fassign (F, n-i-1, A+i*(lda+1)+lda, lda, A+i*(lda+1)+1, 1);		
 	} else { // Testing is B ==  U^T D U
-		cout<<"Upper";
+		cout<<"Upper...";
 			// copying U on U^T
 		for (size_t i=0; i<n; i++)
 			fassign(F, n-i-1, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
@@ -141,12 +139,14 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t it
 		
 		cout.fill('.');
 		cout<<"Checking ";
-		cout.width(40);
+		cout.width(20);
 		cout<<oss.str();
 		cout<<" ... ";
 
-		ok = ok && test_generic_fsytrf (*F, FflasUpper, file, n, G, threshold);
-		ok = ok && test_generic_fsytrf (*F, FflasLower, file, n, G, threshold);
+		// cout<<"Generic ...";
+		// ok = ok && test_generic_fsytrf (*F, FflasUpper, file, n, G, threshold);
+		// ok = ok && test_generic_fsytrf (*F, FflasLower, file, n, G, threshold);
+		cout<<"RPM ...";
 		ok = ok && test_RPM_fsytrf (*F, FflasUpper, file, n, r, G, threshold);
 			//ok = ok && test_RPM_fsytrf (*F, FflasLower, file, n, G, threshold);
 	
@@ -190,16 +190,17 @@ int main(int argc, char** argv){
 
 	srand(seed);
 
+	if (r>n) r=n;
 	bool ok=true;
 	do{
 		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
+		// ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
 			//ok = ok && run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,r/4+1,iters,file,threshold,seed);
 	} while (loop && ok);
 
