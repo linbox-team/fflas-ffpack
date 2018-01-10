@@ -172,7 +172,10 @@ namespace FFPACK {
             }
 
            // c <- c - tmp^T . [ b | B ]
-			fgemv (F, FFLAS::FflasTrans, rank, N-row, F.mOne, A+row, lda, tmp, 1, F.one, CurrRow, 1);
+            // FFLAS::WriteMatrix(std::cerr<<"avant fgemv A = "<<std::endl,F,rank,N-row,A+row,lda);
+            // FFLAS::WriteMatrix(std::cerr<<"avant fgemv tmp = "<<std::endl,F,1,rank,tmp,rank);
+            // FFLAS::WriteMatrix(std::cerr<<"avant fgemv CurrRow = "<<std::endl,F,1,N-row,CurrRow,N-row);
+            fgemv (F, FFLAS::FflasTrans, rank, N-row, F.mOne, A+row, lda, tmp, 1, F.one, CurrRow, 1);
             FFLAS::fflas_delete(tmp);
             FFLAS::WriteMatrix(std::cerr<<"apres fgemv A = "<<std::endl,F,N,N,A,lda);
             size_t i = 0;
@@ -187,7 +190,7 @@ namespace FFPACK {
 					if (row>rank){ // some zero blocks are in the way
 							// column rotations
 							// On U
-						cyclic_shift_col(F, A+rank, rank, row+1, lda);
+						cyclic_shift_col(F, A+rank, rank, row-rank+1, lda);
 							// On P
 						cyclic_shift_mathPerm(MathP+rank, row-rank+1);
                         FFLAS::WritePermutation(std::cerr<<"MathP = ",MathP,N);
@@ -255,17 +258,22 @@ namespace FFPACK {
                         tmp = FFLAS::fflas_new(F, Hdim);
                         FFLAS::fassign (F, Hdim, CurrRow+i+1,1, tmp, 1);
                         FFLAS::WriteMatrix(std::cerr<<"tmp = "<<std::endl,F,1,Hdim,tmp,Hdim);
-                    } else
+                    } else{
                         tmp = CurrRow+i+1;
-
-                    FFLAS::fzero(F, row-rank, A+rank*(lda+1)+2, 1);
+                        FFLAS::fzero(F, row-rank, A+rank*(lda+1)+2, 1);
+                    }
                     FFLAS::fassign (F, Ddim, CurrRow+i*lda+1, 1, A+rank*lda+row+2,1);
                     FFLAS::fassign (F, Hdim, CurrRow+i*lda+2+Ddim, 1, A+rank*lda+N-Hdim,1);
                     
 						// Moving D 1 row down and 1 col right
                     FFLAS::WriteMatrix(std::cerr<<"avant moving D = "<<std::endl,F,N,N,A,lda);
-                    FFLAS::fassign (F, Ddim, Ddim, CurrRow+lda+1,lda,CurrRow+2*(lda+1),lda);
+                    for (size_t l=Ddim; l>0; l--)
+                        FFLAS::fassign (F, 1, Ddim, CurrRow+l*lda+1,lda,CurrRow+(l+1)*lda+2,lda);
                     FFLAS::WriteMatrix(std::cerr<<"apres moving D = "<<std::endl,F,N,N,A,lda);
+
+						// Moving F 1 row down
+					FFLAS::fassign (F, Ddim, Hdim, CurrRow+lda+i+1,lda,CurrRow+2*lda+i+1,lda);
+                    FFLAS::WriteMatrix(std::cerr<<"apres moving F = "<<std::endl,F,N,N,A,lda);
 
 						// A[rank+1,rank+1] <- x
 					F.assign (A[(rank+1)*(lda+1)], A[rank*(lda+1)]);
@@ -280,8 +288,6 @@ namespace FFPACK {
                     FFLAS::WriteMatrix(std::cerr<<"apres moving C = "<<std::endl,F,N,N,A,lda);
                     if (row==rank)
                         FFLAS::fflas_delete(tmp);
-						// Moving F 1 row down
-					FFLAS::fassign (F, Ddim, Hdim, CurrRow+lda+i+1,lda,CurrRow+2*lda+i+1,lda);
 
                         // TODO: possibly need to zero out the row where x C used to be
 
