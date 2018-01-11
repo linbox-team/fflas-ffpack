@@ -112,7 +112,7 @@ namespace FFPACK {
 									   typename Field::Element_ptr A, const size_t lda,
 									   typename Field::Element_ptr Dinv, const size_t incDinv,
 									   size_t * P){
-		
+            // TODO: maybe one day
 	}
 
 	template <class Field>
@@ -361,8 +361,176 @@ namespace FFPACK {
 		FFLAS::fzero (F, N-rank, N-rank, A+rank*(1+lda), lda);
 		return (size_t) rank;
 	}
-
+    
 	template <class Field>
+    inline size_t fsytrf_UP_RPM (const Field& Fi, const size_t N,
+                                 typename Field::Element_ptr A, const size_t lda,
+                                 typename Field::Element_ptr Dinv, const size_t incDinv,
+                                 size_t * P, size_t BCThreshold){
+        
+        if (std::min(M,N) < BCThreshold){
+            return fsytrf_UP_RPM_BC_Crout (Fi,N,A,lda,Dinv,incDinv,P);
+		}
+        std::vector<bool> twoBlocks(N,false);
+        
+        size_t N1 = N>>1;
+        size_t N2 = N-N1;
+		size_t * P1 = FFLAS::fflas_new<size_t >(N1);
+		size_t R1,R2,R3;
+        
+            // A1 = P1^T [ U1^T ] D1 [ U1 V1 ] P1
+		    //           [ V1^T ]
+        R1 = fsytrf_UP_RPM (Fi, N1, A, lda, Dinv, incDinv, P1, BCThreshold);
+        for (size_t i=0; i<R1; i++)
+            if (P1[i]<0){
+                P1[i]=-P1[i]-1;
+                twoBlocks[i]=twoBlocks[i+1]=true;
+            }
+        
+        typename Field::Element_ptr A2 = A + N1;
+        typename Field::Element_ptr A4 = A2 + N1*lda;
+            // [ B1 ] <- P1^T A2
+		    // [ B2 ]
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, 0, M2, A+N1, lda, P1);
+        typename Field::Element_ptr B1 = A + N1;
+        typename Field::Element_ptr B2 = B1 + R1*lda;
+            /*     [ U1 V1 | B1 ]
+             *     [    0  | B2 ]
+             *     [ ------|--- ]
+             *     [    0  | A4 ]
+             *
+             */
+		    // C <- U1^-T B1
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, FflasNonUnit, R1, N2, Fi.one, A, lda, B1, lda);
+            // F <- B2 - V1^T C
+		fgemm (Fi, FFLAS::FflasTrans, FFLAS::FflasNoTrans, N1-R1, N2, R1, Fi.mOne, A + R1, lda, B1, lda, Fi.one, B2, lda);
+            // G <- A4 - C^T D1^-1 C
+        fsyrk (Fi, UpLo, FflasTrans, N2, R1, F.mOne, B1, lda, A, lda+1, twoBlocks, F.one, A4, lda);
+            // E <- D1^-1 C
+        applyD (F, FFLAS::FflasLeft, N2, 0, rank, A, lda+1, twoBlocks);
+
+            /*     [ U1 V1 | E ]
+             *     [    0  | F ]
+             *     [ ------|-- ]
+             *     [    0  | G ]
+             *
+             */
+            // F = P2 [ L2 ] [ U2 V2 ] Q2
+		    //        [ M2 ]
+		size_t * P2 = FFLAS::fflas_new<size_t >(N1-R1);
+		size_t * Q2 = FFLAS::fflas_new<size_t >(N2);
+		R2 = _PLUQ (Fi, FFLAS::FflasNonUnit, N1-R1, N2, F, lda, P2, Q2, BCThreshold);
+
+		    // [ H1 H2 ] <- Q2 H Q2^T
+		    // [ H3 H4 ]
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M-M2, size_t(0), N2, A4, lda, Q2);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, size_t(0), M-M2, A4, lda, Q2);
+		    // [ E1 ] <- P3^T E
+		    // [ E2 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3, R3);
+#else
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M-M2, A3, lda, P3);
+#endif
+		    // [ M11 ] <- P2^T M1
+		    // [ M12 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2, R2);
+		    // [ D1 D2 ] <- D Q2^T
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2, R2);
+		    // [ V1 V2 ] <- V1 Q3^T
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N1-R1, A+R1, lda, Q3, R3);
+#else
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, R1, size_t(0), M2-R1, A+R1*lda, lda, P2);
+		    // [ D1 D2 ] <- D Q2^T
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2);
+		    // [ V1 V2 ] <- V1 Q3^T
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N1-R1, A+R1, lda, Q3);
+#endif
+		    // I <- H U2^-1
+		    // K <- H3 U2^-1
+		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
+		    // J <- L3^-1 I (in a temp)
+		typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
+		FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
+		    // N <- L3^-1 H2
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N2-R2, Fi.one, G, lda, A4+R2, lda);
+		    // O <- N - J V2
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
+		FFLAS::fflas_delete (temp);
+		    // R <- H4 - K V2 - M3 O
+		typename Field::Element_ptr R = A4 + R2 + R3*lda;
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
+		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
+		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
+		    //         [ M4 ]
+		size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
+		size_t * Q4 = FFLAS::fflas_new<size_t >(N2-R2);
+		R4 = _PLUQ (Fi, Diag, M-M2-R3, N2-R2, R, lda, P4, Q4, BCThreshold);
+		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
+		    // [ E22 M32 0 K2 ]
+#ifdef MONOTONIC_APPLYP
+		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N1+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4, R4);
+		    // [ D21 D22 ]     [ D2 ]
+		    // [ V21 V22 ]  <- [ V2 ] Q4^T
+		    // [  0   0  ]     [  0 ]
+		    // [ O1   O2 ]     [  O ]
+		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N2-R2, A2+R2, lda, Q4, R4);
+#else
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N1+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4);
+		    // [ D21 D22 ]     [ D2 ]
+		    // [ V21 V22 ]  <- [ V2 ] Q4^T
+		    // [  0   0  ]     [  0 ]
+		    // [ O1   O2 ]     [  O ]
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N2-R2, A2+R2, lda, Q4);
+#endif
+		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
+		    //               [      P2 ]      [      P4 ]
+		size_t* MathP = FFLAS::fflas_new<size_t>(M);
+		composePermutationsLLM (MathP, P1, P2, R1, M2);
+		composePermutationsLLM (MathP+M2, P3, P4, R3, M-M2);
+		FFLAS::fflas_delete( P1);
+		FFLAS::fflas_delete( P2);
+		FFLAS::fflas_delete( P3);
+		FFLAS::fflas_delete( P4);
+		for (size_t i=M2; i<M; ++i)
+			MathP[i] += M2;
+		if (R1+R2 < M2){
+			    // P <- P S
+			PermApplyS (MathP, 1,1,M2, R1, R2, R3, R4);
+			    // A <-  S^T A
+			MatrixApplyS (Fi, A, lda, N, M2, R1, R2, R3, R4);
+		}
+		MathPerm2LAPACKPerm (P, MathP, M);
+		FFLAS::fflas_delete( MathP);
+
+		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
+		    //            [      Q3 ]      [      P4 ]
+		size_t * MathQ = FFLAS::fflas_new<size_t >(N);
+		composePermutationsLLM (MathQ, Q1, Q3, R1, N1);
+		composePermutationsLLM (MathQ+N1, Q2, Q4, R2, N2);
+		FFLAS::fflas_delete( Q1);
+		FFLAS::fflas_delete( Q2);
+		FFLAS::fflas_delete( Q3);
+		FFLAS::fflas_delete( Q4);
+		for (size_t i=N1; i<N; ++i)
+			MathQ[i] += N1;
+
+		if (R1 < N1){
+			    // Q <- T Q
+			PermApplyT (MathQ, 1,1,N1, R1, R2, R3, R4);
+			    // A <-   A T^T
+			MatrixApplyT (Fi, A, lda, M, N1, R1, R2, R3, R4);
+		}
+		MathPerm2LAPACKPerm (Q, MathQ, N);
+		FFLAS::fflas_delete( MathQ);
+
+		return R1+R2+R3+R4;
+
+    }
+
+    template <class Field>
 	inline bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 								typename Field::Element_ptr A, const size_t lda,
 								typename Field::Element_ptr Dinv, const size_t incDinv,
@@ -432,9 +600,11 @@ namespace FFPACK {
 		typename Field::Element_ptr Dinv = FFLAS::fflas_new(F,N);
         size_t rank;
         if (UpLo==FFLAS::FflasUpper)
-            rank = fsytrf_UP_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P/*, threshold*/);
+//            rank = fsytrf_UP_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P, threshold);
+            rank = fsytrf_UP_RPM (F, N, A, lda, Dinv, 1, P, threshold);
         else
-            rank = fsytrf_LOW_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P/*, P, threshold*/);
+//            rank = fsytrf_LOW_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P, P, threshold);
+            rank = fsytrf_LOW_RPM (F, N, A, lda, Dinv, 1, P, P, threshold);
         
 		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit A = "<<std::endl,F,N,N,A, lda);
 		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit Dinv = "<<std::endl,F,1,N,Dinv, 1);
