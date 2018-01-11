@@ -77,7 +77,7 @@ AC_DEFUN([FF_CHECK_USER_BLAS],
                                    ],[
                                      dnl No, then checking for  OpenBLAS
                                      BLAS_LIBS="${BLAS_LIBS} -lopenblas -lpthread"
-                                     AS_IF([ test  "x${CCNAM:0:3}" = "xgcc" ],[BLAS_LIBS="${BLAS_LIBS} -lgfortran"],[])
+                                     AS_CASE([$CCNAM], [gcc*], [BLAS_LIBS="${BLAS_LIBS} -lgfortran"])
                                      LIBS="${BACKUP_LIBS} ${BLAS_LIBS}"
 				     AC_TRY_RUN(
 					[ ${CODE_CBLAS} ],[
