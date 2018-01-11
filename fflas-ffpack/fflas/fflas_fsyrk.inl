@@ -174,6 +174,100 @@ namespace FFLAS {
 			return C;
         }
     }
+
+	  template<class Field>
+    inline typename Field::Element_ptr
+    fsyrk (const Field& F,
+           const FFLAS_UPLO UpLo,
+           const FFLAS_TRANSPOSE trans,
+           const size_t N,
+           const size_t K,
+           const typename Field::Element alpha,
+           typename Field::Element_ptr A, const size_t lda,
+           typename Field::ConstElement_ptr D, const size_t incD,
+		   const std::vector<bool>& twoBlocks,
+		   const typename Field::Element beta,
+           typename Field::Element_ptr C, const size_t ldc, const size_t threshold){
+
+		size_t incRow,incCol;
+		FFLAS_TRANSPOSE oppTrans;
+		if (trans==FflasNoTrans) {incRow=lda;incCol=1;oppTrans=FflasTrans;}
+		else {incRow = 1; incCol = lda;oppTrans=FflasNoTrans;}
+
+		if (N <= threshold){
+			typename Field::Element_ptr temp = fflas_new (F, N, K);
+			size_t ldt,incRowT,incColT;
+			if (trans==FFLAS::FflasNoTrans){
+				ldt =K;
+				incRowT=ldt; incColT=1;
+				fassign(F, K, N, A, lda, temp, ldt);
+			} else{
+				ldt = N;
+				incRowT=1; incColT=ldt;
+				fassign(F, K, N, A, lda, temp, ldt);
+			}
+			typename Field::Element_ptr Ai = A;
+			typename Field::Element_ptr tempi = temp;
+			typename Field::ConstElement_ptr Di = D;
+			for (size_t i=0; i<K;i++, Ai += incCol, Di+=incD, tempi+=incColT){
+				if (!twoBlocks[i])
+					fscalin (F, N, *Di, Ai, incRow);
+				else{
+					fscal (F, N, *Di, Ai+incCol,incRow, Ai,incRow);
+					fscal (F, N, *Di, tempi,incRowT, Ai+incCol,incRow);
+					Ai+=incCol; Di+=incD; temp+=incColT;i++;
+				}
+			}
+			FFLAS::fgemm (F, trans, oppTrans, N, N, K, alpha, A, lda, temp, ldt, beta, C, ldc); 
+			FFLAS::fflas_delete(temp);
+			return C;
+
+		}else {
+            size_t N1 = N>>1;
+			if (twoBlocks[N1-1]) N1++; // don't split a 2x2 block
+            size_t N2 = N - N1;
+                // Comments written for the case UpLo==FflasUpper, trans==FflasNoTrans
+
+			typename Field::Element_ptr A2 = A + N1*incRow;
+            typename Field::Element_ptr C12 = C + N1;
+            typename Field::Element_ptr C21 = C + N1*ldc;
+            typename Field::Element_ptr C22 = C12 + N1*ldc;
+
+			typename Field::Element_ptr temp = fflas_new (F, std::max(N2,N1),K);
+			size_t ldt, incRowT,incColT;
+			if (trans==FflasNoTrans) {ldt=K; incRowT=ldt; incColT=1;}
+			else {ldt = N2; incRowT=1; incColT=ldt;}
+
+				// temp <- A2 x D1
+			typename Field::Element_ptr Ai = A2, Ti = temp;
+			typename Field::ConstElement_ptr Di = D;
+			for (size_t i=0; i<K; Ai += incCol, Ti += incColT, Di+=incD,i++){
+				if (!twoBlocks[i])
+					fscal (F, N2, *Di, Ai, incRow, Ti, incRowT);
+				else {
+					fscal (F, N2, *Di, Ai, incRow, Ti+incColT, incRowT);
+					fscal (F, N2, *Di, Ai+incCol, incRow, Ti, incRowT);
+					Ti+=incColT; Ai+=incCol; Di+=incD; i++;
+				}
+
+			}
+			if (UpLo == FflasUpper) {
+					// C12 <- alpha A1 x temp^T + beta C12
+				fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, temp, ldt, beta, C12, ldc);
+			} else {
+					// C21 <- alpha temp x A11^T + beta C21
+				fgemm (F, trans, oppTrans, N2, N1, K, alpha, temp, ldt, A, lda, beta, C21, ldc);
+			}
+			fflas_delete (temp);
+
+                // C11 <- alpha A1 x D1 x A1^T + beta C11 and A1 <- A1 x D1
+            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, D, incD, beta, C, ldc, threshold);
+                // C22 <- alpha A2 x D1 x A2^T + beta C22 and A2 <- A2 x D1
+            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, D, incD, beta, C22, ldc, threshold);
+
+			return C;
+        }
+    }
 }
 
 #endif //__FFLASFFPACK_fflas_fsyrk_INL
