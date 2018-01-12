@@ -200,7 +200,7 @@ namespace FFLAS {
 			if (trans==FFLAS::FflasNoTrans){
 				ldt =K;
 				incRowT=ldt; incColT=1;
-				fassign(F, K, N, A, lda, temp, ldt);
+				fassign(F, N, K, A, lda, temp, ldt);
 			} else{
 				ldt = N;
 				incRowT=1; incColT=ldt;
@@ -215,7 +215,7 @@ namespace FFLAS {
 				else{
 					fscal (F, N, *Di, Ai+incCol,incRow, Ai,incRow);
 					fscal (F, N, *Di, tempi,incRowT, Ai+incCol,incRow);
-					Ai+=incCol; Di+=incD; temp+=incColT;i++;
+					Ai+=incCol; Di+=incD; tempi+=incColT;i++;
 				}
 			}
 			FFLAS::fgemm (F, trans, oppTrans, N, N, K, alpha, A, lda, temp, ldt, beta, C, ldc); 
@@ -261,9 +261,9 @@ namespace FFLAS {
 			fflas_delete (temp);
 
                 // C11 <- alpha A1 x D1 x A1^T + beta C11 and A1 <- A1 x D1
-            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, D, incD, beta, C, ldc, threshold);
+            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, D, incD, twoBlocks, beta, C, ldc, threshold);
                 // C22 <- alpha A2 x D1 x A2^T + beta C22 and A2 <- A2 x D1
-            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, D, incD, beta, C22, ldc, threshold);
+            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, D, incD, twoBlocks, beta, C22, ldc, threshold);
 
 			return C;
         }

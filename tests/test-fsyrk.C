@@ -34,6 +34,7 @@
 #include <iostream>
 #include <random>
 
+#include "fflas-ffpack/utils/fflas_io.h"
 #include "fflas-ffpack/utils/timer.h"
 #include "fflas-ffpack/fflas/fflas.h"
 #include "fflas-ffpack/utils/args-parser.h"
@@ -148,7 +149,7 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 	double time=0.0;
 	t.clear(); t.start();
 
-	fsyrk (F, uplo, trans, n, k, alpha, A, lda, D, incD, beta, C, ldc, 25);
+	fsyrk (F, uplo, trans, n, k, alpha, A, lda, D, incD, beta, C, ldc, 13);
 
 	t.stop();
 	time+=t.usertime();
@@ -231,7 +232,7 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
 	Givaro::GeneralRingNonZeroRandIter<Field,RandIter> nzRand (Rand);
 	std::vector<bool> tb(k,false);
 	for (size_t i=0; i<k; i++){
-		if (rand()% 10 != 0)
+		if (rand()% 10 != 0 || i==k-1)
 			nzRand.random(D[i*incD]);
 		else{
 			nzRand.random(D[i*incD]);
@@ -254,22 +255,21 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
 	cout<<ss;
 
 
-	 // FFLAS::WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-	 // FFLAS::WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
-	 // FFLAS::WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
+	// FFLAS::WriteMatrix ( std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+	// FFLAS::WriteMatrix ( std::cerr<<"C = "<<std::endl,F,n,n, C, ldc);
+	// FFLAS::WriteMatrix ( std::cerr<<"D = "<<std::endl,F,k,1,D, incD);
 	FFLAS::Timer t; t.clear();
 	double time=0.0;
 	t.clear(); t.start();
 
-	fsyrk (F, uplo, trans, n, k, alpha, A, lda, D, incD, tb, beta, C, ldc, 25);
+	fsyrk (F, uplo, trans, n, k, alpha, A, lda, D, incD, tb, beta, C, ldc, 13);
 
 	t.stop();
 	time+=t.usertime();
 
-	// std::cerr<<"After fsyrk_diag"<<std::endl;
-	//  FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
-	//  FFLAS::WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
-
+	 // std::cerr<<"After fsyrk_bk_diag"<<std::endl;
+	 // FFLAS::WriteMatrix (std::cerr<<"A = "<<std::endl,F,Arows, Acols, A, lda);
+	 // FFLAS::WriteMatrix (std::cerr<<"C = "<<std::endl,F,n,n,C,ldc);
 	bool ok = true;
 	
 	typename Field::Element tmp;
@@ -305,6 +305,9 @@ bool check_fsyrk_bkdiag (const Field &F, size_t n, size_t k,
 	}
 	if (!ok){
 		std::cerr<<"Scaling failed"<<std::endl;
+		std::cerr<<"alpha = "<<alpha<<" beta="<<beta<<std::endl;
+		std::cerr<<"tb = "<<tb<<std::endl;
+	 
 		return ok;
 	}
 
@@ -416,7 +419,7 @@ int main(int argc, char** argv)
         };
 
 	parseArguments(argc,argv,as);
-
+	srand(seed);
 	bool ok = true;
 	do{
 		ok = ok && run_with_field<Modular<double> >(q,b,n,k,a,c,iters,seed);
@@ -427,8 +430,8 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,n,k,a,c,iters,seed);
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,n,k,a,c,iters,seed);
 		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,n,k,a,c,iters,seed);
-//		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
-//		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,5,n/4+1,k/4+1,a,c,iters,seed);
+		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512),n/4+1,k/4+1,a,c,iters,seed);
 	} while (loop && ok);
 
 	if (!ok) std::cerr<<"with seed = "<<seed<<std::endl;
