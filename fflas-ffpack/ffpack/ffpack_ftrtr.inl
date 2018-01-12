@@ -83,8 +83,8 @@ namespace FFPACK {
 		else { // recursive case
 			size_t N1 = N/2;
 			size_t N2 = N - N1;
-			ftrtri (F, Uplo, Diag, N1, A, lda);
-			ftrtri (F, Uplo, Diag, N2, A + N1*(lda+1), lda);
+			ftrtri (F, Uplo, Diag, N1, A, lda, threshold);
+			ftrtri (F, Uplo, Diag, N2, A + N1*(lda+1), lda, threshold);
 			if (Uplo == FFLAS::FflasUpper){
 				ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, Diag, N1, N2,
 					   F.one, A, lda, A + N1, lda);
