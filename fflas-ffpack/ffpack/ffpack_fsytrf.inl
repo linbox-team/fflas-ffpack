@@ -425,8 +425,17 @@ namespace FFPACK {
 
 		    // [ E1 E2 ] <- E Q2^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2);
-		    // [ V1 V2 ] <- V1 P2^T
+		    // [ V11 V12 ] <- V1 P2^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, R1, size_t(0), N1-R1, A+R1, lda, P2);
+
+            // Notation G1 = U3^T + D3 + U3 with U3 strictly upper triangular
+            // H1^T <- 1/2.D2 + G1
+        typename Field::Element_ptr D2i=F, Dinvi=Dinv+(R1+R2)*incDinv;
+        for (size_t i=0; i<R2; i++, D2i+=lda+1, Dinvi++){
+            F.inv (*Dinvi, *D2i);
+            F.mulin (*D2i, invtwo);
+        }
+        ftrstr(F, R2, R2, F, lda, A4, lda);
 
             //----------------------
         
