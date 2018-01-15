@@ -24,16 +24,17 @@
  * ========LICENCE========
  *.
  */
-#define ENABLE_ALL_CHECKINGS 1
-#ifndef __FFLASFFPACK_ffpack_ftrtr_INL
-#define __FFLASFFPACK_ffpack_ftrtr_INL
+#ifndef __FFLASFFPACK_ffpack_ftrstr_INL
+#define __FFLASFFPACK_ffpack_ftrstr_INL
+
+#include "fflas-ffpack/utils/fflas_io.h"
 
 namespace FFPACK {
 	template<class Field>
-	inline void ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO uplo,
+	inline void ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO UpLo,
                         const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
                         typename Field::Element_ptr A, const size_t lda,
-                        typename Field::Element_ptr B, const size_t ldb, threshold) {
+                        typename Field::Element_ptr B, const size_t ldb, const size_t threshold) {
 
         if (!N) return;
         if (N <= 1){ // base case
@@ -46,23 +47,46 @@ namespace FFPACK {
                     F.divin (*B,*A);
             }
         } else { // recursive case
+                // Warning/TODO: only implemented for diagA=diagB for the moment
+            FFLAS::FFLAS_SIDE oppSide = (side == FFLAS::FflasLeft) ? FFLAS::FflasRight: FFLAS::FflasLeft;
             size_t N1 = N>>1;
             size_t N2 = N - N1;
-            typename Field::Element_ptr A2;
-            if (uplo == FFLAS::FflasUpper){ A2 = A + N1; B2 = B + N1;}
-            else { A2 = A + N1*lda; B2 = B + N1*lda;}
+            typename Field::Element_ptr A2,B2;
+            if (UpLo == FFLAS::FflasUpper){ A2 = A + N1; B2 = B + N1;}
+            else { A2 = A + N1*lda; B2 = B + N1*ldb;}
             typename Field::Element_ptr A3 = A + N1*(lda+1);
-            typename Field::Element_ptr B3 = B + N1*(lda+1);
+            typename Field::Element_ptr B3 = B + N1*(ldb+1);
             
-            ftrstr (F, side, uplo, diag1, diag2, N1, A, lda, B, ldb, threshold);
-            ftrstr (F, side, uplo, diag1, diag2, N2, A3, lda, B3, ldb, threshold);
-            if (Uplo == FFLAS::FflasUpper){
-                    // TODO: pb of location: A should not be modified by the trmm.
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, diagX, N1, N2, F.mOne, B3, lda, A2, lda);
-                ftrsm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, diagA, N1, N2, F.mOne, A, lda, A2, lda);
+                /* Solving [ A1 A2 ] [ X1 X2 ] = [ B1 B2 ]
+                 *         [    A3 ] [    X3 ] = [    B3 ]
+                 */
+                // B1 <- A1^-1 . B1
+            // FFLAS::WriteMatrix(std::cerr<<"avant rec1 A = "<<std::endl,F,N,N,A,lda);
+            ftrstr (F, side, UpLo, diagA, diagB, N1, A, lda, B, ldb, threshold);
+            
+            // FFLAS::WriteMatrix(std::cerr<<"after rec1 A = "<<std::endl,F,N,N,A,lda);
+
+                // B3 <- A3^-1 . B3
+            ftrstr (F, side, UpLo, diagA, diagB, N2, A3, lda, B3, ldb, threshold);
+
+            // FFLAS::WriteMatrix(std::cerr<<"after rec2 A = "<<std::endl,F,N,N,A,lda);
+
+                            
+            if ((UpLo == FFLAS::FflasUpper && side==FFLAS::FflasLeft) ||
+                (UpLo == FFLAS::FflasLower && side==FFLAS::FflasRight)){
+                    // B2 <- B2 - A2 . B3 
+                // FFLAS::WriteMatrix(std::cerr<<"before trmm A = "<<std::endl,F,N,N,A,lda);
+                // FFLAS::WriteMatrix(std::cerr<<"before trmm B = "<<std::endl,F,N,N,B,ldb);
+                ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagB, N1, N2, F.mOne, B3, ldb, A2, lda, F.one, B2, ldb);
+                // FFLAS::WriteMatrix(std::cerr<<"after trmm B = "<<std::endl,F,N,N,B,ldb);
+                    // B2 <- A1^-1 . B2
+                ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, N1, N2, F.one, A, lda, B2, ldb);
+                // FFLAS::WriteMatrix(std::cerr<<"after trsm B = "<<std::endl,F,N,N,B,ldb);
             } else {
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasNoTrans, diagX, N1, N2, F.mOne, A3, lda, A2, lda);
-                ftrsm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, diagA, N1, N2, F.mOne, B, lda, A2, lda);
+                    // B2 <- B2 - A2 . B1
+                ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagB, N2, N1, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
+                    // B2 <- A3^-1 . B2
+                ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, N2, N1, F.one, A3, lda, B2, ldb);
             }
         }
     }

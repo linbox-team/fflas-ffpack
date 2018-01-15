@@ -51,6 +51,8 @@
 #include <iostream> // std::cout
 #include <algorithm>
 
+#define  __FFLASFFPACK_FTRSTR_THRESHOLD 64
+
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -484,10 +486,10 @@ namespace FFPACK { /* ftrtr */
 	 */
 	template<class Field>
 	void
-	ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side,
-			const FFLAS::FFLAS_DIAG diag1, const FFLAS::FFLAS_DIAG diag2, const size_t N,
+	ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo,
+			const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
 			typename Field::Element_ptr A, const size_t lda,
-			typename Field::Element_ptr B, const size_t ldb, threshold=__FFLASFFPACK_FTRSTR_THRESHOLD);
+			typename Field::Element_ptr B, const size_t ldb, const size_t threshold=__FFLASFFPACK_FTRSTR_THRESHOLD);
 
 } // FFPACK ftrtr
 // #include "ffpack_ftrtr.inl"
@@ -1709,6 +1711,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_echelonforms.inl"
 #include "ffpack_invert.inl"
 #include "ffpack_ftrtr.inl"
+#include "ffpack_ftrstr.inl"
 #include "ffpack_charpoly_kglu.inl"
 #include "ffpack_charpoly_kgfast.inl"
 #include "ffpack_charpoly_kgfastgeneralized.inl"

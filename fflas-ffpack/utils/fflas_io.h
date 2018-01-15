@@ -28,11 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-#include "fflas-ffpack/fflas/fflas.h"
-#include "fflas_memory.h"
-
-// Reading and writing matrices over field
-
 namespace FFLAS{
 
     enum FFLAS_FORMAT {
@@ -44,7 +39,20 @@ namespace FFLAS{
         FflasMaple    = 5, // Maple input
         FflasSageMath = 6  // SageMath input
     };
-    
+	template<class Field>
+	std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
+                               typename Field::ConstElement_ptr A, size_t lda,
+                               FFLAS_FORMAT format = FflasMath,
+                               bool column_major=false) ;
+}
+
+#include "fflas-ffpack/fflas/fflas.h"
+#include "fflas_memory.h"
+
+// Reading and writing matrices over field
+
+namespace FFLAS{
+
 
     inline void preamble(std::ifstream&ifs, FFLAS_FORMAT& format){
 		char st[9];
@@ -173,10 +181,10 @@ namespace FFLAS{
 		 * @param column_major: whether the matrix is stored in column or row major (row by default)
 		 */
     template<class Field>
-    std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
+    inline std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
                                typename Field::ConstElement_ptr A, size_t lda,
-                               FFLAS_FORMAT format = FflasMath,
-                               bool column_major=false) {
+                               FFLAS_FORMAT format,
+                               bool column_major) {
 		switch (format){
 			case FflasSageMath:
 				c << "Matrix (";

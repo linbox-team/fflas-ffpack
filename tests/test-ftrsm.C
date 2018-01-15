@@ -50,26 +50,6 @@ using namespace FFPACK;
 using Givaro::Modular;
 using Givaro::ModularBalanced;
 
-template<typename T>
-void write_matrix(Givaro::Integer p, size_t m, size_t n, T* C, size_t ldc){
-
-	size_t www=(p.bitsize()*log(2.))/log(10.);
-	for (size_t i=0;i<m;++i){
-		cout<<"[ ";
-		cout.width(www+1);
-		cout<<std::right<<C[i*ldc];
-		for (size_t j=1;j<n;++j){
-			cout<<" ";
-			cout.width(www);
-			cout<<std::right<<C[i*ldc+j];
-		}
-		cout<<"]"<<endl;
-	}
-	cout<<endl;
-
-}
-
-
 template<typename Field, class RandIter>
 bool check_ftrsm (const Field &F, size_t m, size_t n, const typename Field::Element &alpha, FFLAS::FFLAS_SIDE side, FFLAS::FFLAS_UPLO uplo, FFLAS::FFLAS_TRANSPOSE trans, FFLAS::FFLAS_DIAG diag, RandIter& Rand){
 
