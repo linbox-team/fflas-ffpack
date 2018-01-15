@@ -428,55 +428,54 @@ namespace FFPACK {
 		    // [ V11 V12 ] <- V1 P2^T
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, R1, size_t(0), N1-R1, A+R1, lda, P2);
 
-            // Notation G1 = U3^T + D3 + U3 with U3 strictly upper triangular
-            // H1^T <- 1/2.D2 + G1
-        typename Field::Element_ptr D2i=F, Dinvi=Dinv+(R1+R2)*incDinv;
-        for (size_t i=0; i<R2; i++, D2i+=lda+1, Dinvi++){
-            F.inv (*Dinvi, *D2i);
-            F.mulin (*D2i, invtwo);
-        }
-        ftrstr(F, R2, R2, F, lda, A4, lda);
+            // Notation G1 = U3^T + D3 + U3 with U3 strictly upper triangular, D3 diagonal
 
-            //----------------------
+            // H1^T <- (1/2.D3 + U3)  U2^-1  (upper triangular)
+        typename Field::Element_ptr D3i=A4;
+        for (size_t i=0; i<R2; i++, D3i+=lda+1){
+            Fi.mulin (*D3i, invtwo);
+        }
+        ftrstr(Fi, FFLAS::FflassRight, FFLAS::FflasUpper, FFLAS::FflasNonUnit, FFLAS::FflasNonUnit, R2, F, lda, A4, lda);
+
+            // H2 <-  U2^-T (G2 - H1^T V2)
+        ftrmm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasNoTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.mOne, A4, lda, F+R2, lda, Fi.one, A4+R2);
+        ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.one, F, lda, A4+R2, lda); 
+
+            // J4 <- G4 - (V2^T H2 + H2^T V2)
+        fsyr2k (Fi, FFLAS::FflasUpper, FFLAS::FflasTrans, N2-R2, R2, Fi.mOne, F+R2, lda, A4+R2, lda, Fi.one, A4+R2*(lda+1), lda);
         
-		    // I <- H U2^-1
-		    // K <- H3 U2^-1
-		ftrsm (Fi, FFLAS::FflasRight, FFLAS::FflasUpper, FFLAS::FflasNoTrans, Diag, M-M2, R2, Fi.one, F, lda, A4, lda);
-		    // J <- L3^-1 I (in a temp)
-		typename Field::Element_ptr temp = FFLAS::fflas_new (Fi, R3, R2);
-		FFLAS::fassign (Fi, R3, R2, A4 , lda, temp , R2);
-		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, R2, Fi.one, G, lda, temp, R2);
-		    // N <- L3^-1 H2
-		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasNoTrans, OppDiag, R3, N2-R2, Fi.one, G, lda, A4+R2, lda);
-		    // O <- N - J V2
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, R3, N2-R2, R2, Fi.mOne, temp, R2, F+R2, lda, Fi.one, A4+R2, lda);
-		FFLAS::fflas_delete (temp);
-		    // R <- H4 - K V2 - M3 O
-		typename Field::Element_ptr R = A4 + R2 + R3*lda;
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N2-R2, R2, Fi.mOne, A4+R3*lda, lda, F+R2, lda, Fi.one, R, lda);
-		fgemm (Fi, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, M-M2-R3, N2-R2, R3, Fi.mOne, G+R3*lda, lda, A4+R2, lda, Fi.one, R, lda);
-		    // H4 = P4 [ L4 ] [ U4 V4 ] Q4
-		    //         [ M4 ]
-		size_t * P4 = FFLAS::fflas_new<size_t >(M-M2-R3);
-		size_t * Q4 = FFLAS::fflas_new<size_t >(N2-R2);
-		R4 = _PLUQ (Fi, Diag, M-M2-R3, N2-R2, R, lda, P4, Q4, BCThreshold);
+            // J1^T <- H1^T D2^-1
+            // J2 <-  D2^-1 H2
+        D3i = A4;
+        typename Field::Element_ptr D2i = F, Dinvi = Dinv+(R1+R2)*incDinv, H2i=A4+R2;
+        for (size_t i=0; i<R2; i++, Dinvi++, D2i+=lda+1,D3i += lda+1, H2i+=lda){
+            Fi.inv (*Dinvi, *D2i);
+            FFLAS::fscalin (Fi, R2-i, *Dinvi, D3i, lda);
+            FFLAS::fscalin (Fi, N2-R2, *Dinvi, H2i, 1);
+        }
+
+     
+            /*     [ U1 V1 | E1      E2 ]
+             *     [    0  | L2 \ U2 V2 ]
+             *     [    0  | M2     0   ]
+             *     [ ------|----------- ]
+             *     [    0  | J1^T    J2 ]
+             *     [    0  |         J4 ]
+             */
+        size_t * P4 = FFLAS::fflas_new<size_t >(N2-R2);
+            // J4 = P4^T [ U4^T ] D4 [ U4 V4 ] P4
+		    //           [ V4^T ]
+        R3 = fsytrf_UP_RPM (Fi, N2-R2, A4+R2*(lda+1), lda, Dinv+R1+2*R2, incDinv, P4, BCThreshold);
+
+//-------------------
 		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
 		    // [ E22 M32 0 K2 ]
-#ifdef MONOTONIC_APPLYP
-		MonotonicApplyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N1+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4, R4);
-		    // [ D21 D22 ]     [ D2 ]
-		    // [ V21 V22 ]  <- [ V2 ] Q4^T
-		    // [  0   0  ]     [  0 ]
-		    // [ O1   O2 ]     [  O ]
-		MonotonicApplyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N2-R2, A2+R2, lda, Q4, R4);
-#else
 		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N1+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4);
 		    // [ D21 D22 ]     [ D2 ]
 		    // [ V21 V22 ]  <- [ V2 ] Q4^T
 		    // [  0   0  ]     [  0 ]
 		    // [ O1   O2 ]     [  O ]
 		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N2-R2, A2+R2, lda, Q4);
-#endif
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
 		size_t* MathP = FFLAS::fflas_new<size_t>(M);
