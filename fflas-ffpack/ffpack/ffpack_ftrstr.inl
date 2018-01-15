@@ -37,7 +37,7 @@ namespace FFPACK {
                         typename Field::Element_ptr B, const size_t ldb, const size_t threshold) {
 
         if (!N) return;
-        if (N <= 1){ // base case
+        if (N <= 1){ // base case TODO: write a basecase with dimension = threshold
             if(diagA == FFLAS::FflasUnit)
                 return;
             else{
@@ -47,10 +47,12 @@ namespace FFPACK {
                     F.divin (*B,*A);
             }
         } else { // recursive case
-                // Warning/TODO: only implemented for diagA=diagB for the moment
-            FFLAS::FFLAS_SIDE oppSide = (side == FFLAS::FflasLeft) ? FFLAS::FflasRight: FFLAS::FflasLeft;
             size_t N1 = N>>1;
             size_t N2 = N - N1;
+            FFLAS::FFLAS_SIDE oppSide = (side == FFLAS::FflasLeft) ? FFLAS::FflasRight: FFLAS::FflasLeft;
+            size_t A2rowdim = (UpLo == FFLAS::FflasUpper)? N1 : N2;
+            size_t A2coldim = (UpLo == FFLAS::FflasUpper)? N2 : N1;
+            FFLAS::FFLAS_DIAG diagX = (diagA != diagB)? FFLAS::FflasNonUnit : diagA;
             typename Field::Element_ptr A2,B2;
             if (UpLo == FFLAS::FflasUpper){ A2 = A + N1; B2 = B + N1;}
             else { A2 = A + N1*lda; B2 = B + N1*ldb;}
@@ -60,33 +62,23 @@ namespace FFPACK {
                 /* Solving [ A1 A2 ] [ X1 X2 ] = [ B1 B2 ]
                  *         [    A3 ] [    X3 ] = [    B3 ]
                  */
-                // B1 <- A1^-1 . B1
-            // FFLAS::WriteMatrix(std::cerr<<"avant rec1 A = "<<std::endl,F,N,N,A,lda);
-            ftrstr (F, side, UpLo, diagA, diagB, N1, A, lda, B, ldb, threshold);
-            
-            // FFLAS::WriteMatrix(std::cerr<<"after rec1 A = "<<std::endl,F,N,N,A,lda);
 
+                // B1 <- A1^-1 . B1
+            ftrstr (F, side, UpLo, diagA, diagB, N1, A, lda, B, ldb, threshold);
                 // B3 <- A3^-1 . B3
             ftrstr (F, side, UpLo, diagA, diagB, N2, A3, lda, B3, ldb, threshold);
 
-            // FFLAS::WriteMatrix(std::cerr<<"after rec2 A = "<<std::endl,F,N,N,A,lda);
-
-                            
             if ((UpLo == FFLAS::FflasUpper && side==FFLAS::FflasLeft) ||
                 (UpLo == FFLAS::FflasLower && side==FFLAS::FflasRight)){
                     // B2 <- B2 - A2 . B3 
-                // FFLAS::WriteMatrix(std::cerr<<"before trmm A = "<<std::endl,F,N,N,A,lda);
-                // FFLAS::WriteMatrix(std::cerr<<"before trmm B = "<<std::endl,F,N,N,B,ldb);
-                ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagB, N1, N2, F.mOne, B3, ldb, A2, lda, F.one, B2, ldb);
-                // FFLAS::WriteMatrix(std::cerr<<"after trmm B = "<<std::endl,F,N,N,B,ldb);
+                ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagX, A2rowdim, A2coldim, F.mOne, B3, ldb, A2, lda, F.one, B2, ldb);
                     // B2 <- A1^-1 . B2
-                ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, N1, N2, F.one, A, lda, B2, ldb);
-                // FFLAS::WriteMatrix(std::cerr<<"after trsm B = "<<std::endl,F,N,N,B,ldb);
+                ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
             } else {
                     // B2 <- B2 - A2 . B1
-                ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagB, N2, N1, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
+                ftrmm (F, oppSide, UpLo, FFLAS::FflasNoTrans, diagX, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
                     // B2 <- A3^-1 . B2
-                ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, N2, N1, F.one, A3, lda, B2, ldb);
+                ftrsm (F, side, UpLo, FFLAS::FflasNoTrans, diagA, A2rowdim, A2coldim, F.one, A3, lda, B2, ldb);
             }
         }
     }
