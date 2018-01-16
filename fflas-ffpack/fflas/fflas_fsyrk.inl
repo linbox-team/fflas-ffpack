@@ -60,41 +60,25 @@ namespace FFLAS {
             size_t K1 = K>>1;
             size_t K2 = K - K1;
                 // Comments written for the case UpLo==FflasUpper, trans==FflasNoTrans
-			size_t incRow,incCol;
 			FFLAS_TRANSPOSE oppTrans;
-			if (trans==FflasNoTrans) {incRow=lda,incCol=1;oppTrans=FflasTrans;}
-			else {incRow = 1; incCol = lda;oppTrans=FflasNoTrans;}
+			if (trans==FflasNoTrans) {oppTrans=FflasTrans;}
+			else {oppTrans=FflasNoTrans;}
 
-            typename Field::ConstElement_ptr A21 = A + N1*incRow;
-            typename Field::ConstElement_ptr A22 = A21 + K1*incCol;
-            typename Field::ConstElement_ptr A12 = A + K1*incCol;
+            typename Field::ConstElement_ptr A2 = A + N1*(trans==FflasNoTrans?lda:1);
             typename Field::Element_ptr C12 = C + N1;
             typename Field::Element_ptr C21 = C + N1*ldc;
             typename Field::Element_ptr C22 = C12 + N1*ldc;
-                // C11 <- alpha A11 x A11^T + beta C11
-            fsyrk (F, UpLo, trans, N1, K1, alpha, A, lda, beta, C, ldc);
-                // C11 <- alpha A12 x A12^T + C11
-            fsyrk (F, UpLo, trans, N1, K2, alpha, A12, lda, F.one, C, ldc);
-                // C22 <- alpha A21 x A21^T + beta C22
-            fsyrk (F, UpLo, trans, N2, K1, alpha, A21, lda, beta, C22, ldc);
-                // C22 <- alpha A22 x A22^T + C22
-            fsyrk (F, UpLo, trans, N2, K2, alpha, A22, lda, F.one, C22, ldc);
+                // C11 <- alpha A1 x A1^T + beta C11
+            fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, beta, C, ldc);
+                // C22 <- alpha A2 x A2^T + beta C22
+            fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, beta, C22, ldc);
 
             if (UpLo == FflasUpper) {
-						// C12 <- alpha A11 * A21^T + beta C12
-					fgemm (F, trans, oppTrans, N1, N2, K1, alpha, A, lda, A21, lda,
-						   beta, C12, ldc);
-						// C12 <- alpha A12 * A22^T + C12
-					fgemm (F, trans, oppTrans, N1, N2, K2, alpha, A12, lda, A22, lda,
-						   F.one, C12, ldc);
+					// C12 <- alpha A1 * A2^T + beta C12
+					fgemm (F, trans, oppTrans, N1, N2, K, alpha, A, lda, A2, lda, beta, C12, ldc);
 			} else {
-					// C21 <- alpha A21 * A11^T + beta C21
-				fgemm (F, trans, oppTrans, N2, N1, K1, alpha, A21, lda, A, lda,
-					   beta, C21, ldc);
-					// C21 <- alpha A12 * A22^T + C21
-				fgemm (F, trans, oppTrans, N2, N1, K2, alpha, A22, lda, A12, lda,
-					   F.one, (UpLo==FflasUpper)?C12:C21, ldc);
-
+					// C21 <- alpha A2 * A1^T + beta C21
+				fgemm (F, trans, oppTrans, N2, N1, K1, alpha, A21, lda, A, lda, beta, C21, ldc);
 			}
 			return C;
         }
