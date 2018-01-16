@@ -467,33 +467,41 @@ namespace FFPACK {
 		    //           [ V4^T ]
         R3 = fsytrf_UP_RPM (Fi, N2-R2, A4+R2*(lda+1), lda, Dinv+R1+2*R2, incDinv, P4, BCThreshold);
 
-//-------------------
-		    // [ E21 M31 0 K1 ] <- P4^T [ E2 M3 0 K ]
-		    // [ E22 M32 0 K2 ]
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N1+R2, size_t(0), M-M2-R3, A3+R3*lda, lda, P4);
-		    // [ D21 D22 ]     [ D2 ]
-		    // [ V21 V22 ]  <- [ V2 ] Q4^T
+		    // [ E21 E22 ]     [ E2 ]
+		    // [ V21 V22 ]  <- [ V2 ] P4^T
 		    // [  0   0  ]     [  0 ]
-		    // [ O1   O2 ]     [  O ]
-		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, M2+R3, size_t(0), N2-R2, A2+R2, lda, Q4);
+		    // [ J21 J22 ]     [ J2 ]
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N1, size_t(0), N2-R2, A2+R2, lda, P4);
+		applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R2, size_t(0), N2-R2, A4+R2, lda, P4);
+
 		    // P <- Diag (P1 [ I_R1    ] , P3 [ I_R3    ])
 		    //               [      P2 ]      [      P4 ]
-		size_t* MathP = FFLAS::fflas_new<size_t>(M);
-		composePermutationsLLM (MathP, P1, P2, R1, M2);
-		composePermutationsLLM (MathP+M2, P3, P4, R3, M-M2);
+		size_t* MathP = FFLAS::fflas_new<size_t>(N);
+		LAPACKPerm2MathPerm (MathP, P1, N1);
+		composePermutationsLLM (MathP+N1, P2, P4, R2, N2);
 		FFLAS::fflas_delete( P1);
 		FFLAS::fflas_delete( P2);
-		FFLAS::fflas_delete( P3);
 		FFLAS::fflas_delete( P4);
-		for (size_t i=M2; i<M; ++i)
-			MathP[i] += M2;
-		if (R1+R2 < M2){
+		for (size_t i=N1; i<N; ++i)
+			MathP[i] += N1;
+
+//-------------------
+            /* Changing [ U1 V1 | E1      E2 ] into [ U1 V1 | E1      E2 ]
+             *          [    0  | L2 \ U2 V2 ]      [    0  | L2 \ U2 V2 ]
+             *          [    0  | M2     0   ]      [    0  | M2     0   ]
+             *          [ ------|----------- ]      [ ------|----------- ]
+             *          [    0  | J1^T    J2 ]      [    0  | J1^T    J2 ]
+             *          [    0  |         J4 ]      [    0  |         J4 ]
+             */
+
+
+        if (R1+R2 < N1){
 			    // P <- P S
-			PermApplyS (MathP, 1,1,M2, R1, R2, R3, R4);
+			PermApplyS (MathP, 1,1, N1, R1, R2, R2, R4);
 			    // A <-  S^T A
-			MatrixApplyS (Fi, A, lda, N, M2, R1, R2, R3, R4);
+			MatrixApplyS (Fi, A, lda, N, N1, R1, R2, R2, R4);
 		}
-		MathPerm2LAPACKPerm (P, MathP, M);
+		MathPerm2LAPACKPerm (P, MathP, N);
 		FFLAS::fflas_delete( MathP);
 
 		    // Q<- Diag ( [ I_R1    ] Q1,  [ I_R2    ] Q2 )
