@@ -51,7 +51,10 @@ pkgincludesub_HEADERS=        \
 		ffpack_fsytrf.inl\
 		ffpack_permutation.inl\
 		ffpack_ftrtr.inl\
+		ffpack_ftrstr.inl\
 		ffpack_rankprofiles.inl\
+		ffpack_ftrstr.inl\
+		ffpack_ftrssyr2k.inl\
 		$(multiprecision)
 
 

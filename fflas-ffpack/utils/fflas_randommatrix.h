@@ -332,7 +332,7 @@ namespace FFPACK{
         RandomIndexSubset (N, R, cols);
     }
 
-    void swapval(size_t k, size_t N, size_t * P, size_t val){
+    inline void swapval(size_t k, size_t N, size_t * P, size_t val){
         size_t i = k;
         int found =-1;
         do {

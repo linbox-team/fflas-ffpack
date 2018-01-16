@@ -198,13 +198,9 @@ bool check_fsyrk_diag (const Field &F, size_t n, size_t k,
 				ok = ok && F.areEqual(C2[i*ldc+j], C[i*ldc+j]);
 	}
 	if (ok)
-	    //cout << "\033[1;32mPASSED\033[0m ("<<time<<")"<<endl;
 		cout << "PASSED ("<<time<<")"<<endl;
-		//cerr<<"PASSED ("<<time<<")"<<endl;
 	else
-	    //cout << "\033[1;31mFAILED\033[0m ("<<time<<")"<<endl;
 		cout << "FAILED ("<<time<<")"<<endl;
-		//cerr<<"FAILED ("<<time<<")"<<endl;
 	
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(C2);
@@ -397,8 +393,8 @@ int main(int argc, char** argv)
 	cerr<<setprecision(10);
 	Givaro::Integer q=-1;
 	size_t b=0;
-	int k=55;
-	int n=79;
+	int k=85;
+	int n=179;
 	int a=-1;
 	int c=1;
 	size_t iters=3;

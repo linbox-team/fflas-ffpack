@@ -38,6 +38,8 @@ BASIC_TESTS =               \
 		test-ftrtri         \
 		test-ftrmv          \
 		test-ftrsm          \
+		test-ftrstr          \
+		test-ftrssyr2k      \
 		test-ftrsm-check    \
 		test-ftrmm          \
 		test-fgemm          \
@@ -48,6 +50,7 @@ BASIC_TESTS =               \
 		test-lu             \
 		test-pluq-check     \
 		test-fsyrk          \
+		test-fsyr2k          \
 		test-fsytrf          \
 		test-invert-check   \
 		test-rankprofiles   \
@@ -126,10 +129,13 @@ test_charpoly_SOURCES          = test-charpoly.C
 #  test_ftrmm_SOURCES             = test-ftrmm.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
+test_ftrstr_SOURCES             = test-ftrstr.C
+test_ftrssyr2k_SOURCES             = test-ftrssyr2k.C
 test_ftrmm_SOURCES             = test-ftrmm.C
 test_ftrsv_SOURCES             = test-ftrsv.C
 test_ftrmv_SOURCES             = test-ftrmv.C
 test_fsyrk_SOURCES             = test-fsyrk.C
+test_fsyr2k_SOURCES             = test-fsyr2k.C
 test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C

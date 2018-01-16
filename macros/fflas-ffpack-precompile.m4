@@ -32,8 +32,8 @@ AC_MSG_CHECKING([whether to compile the standard specializations])
 
 AC_ARG_ENABLE(precompilation,
 [AC_HELP_STRING([--enable-precompilation], [ Enable precompilation of the standard specializations])])
-AM_CONDITIONAL(FFLASFFPACK_PRECOMPILED, test "x$enable_precompilation" == "xyes")
-AS_IF([test "x$enable_precompilation" == "xyes"],
+AM_CONDITIONAL(FFLASFFPACK_PRECOMPILED, test "x$enable_precompilation" = "xyes")
+AS_IF([test "x$enable_precompilation" = "xyes"],
 	    [
 		AC_MSG_RESULT(yes)
 		PRECOMPILE_FLAGS="-DFFLAS_COMPILED -DFFPACK_COMPILED"

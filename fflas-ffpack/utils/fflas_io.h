@@ -182,9 +182,9 @@ namespace FFLAS{
 		 * @param column_major: whether the matrix is stored in column or row major (row by default)
 		 */
     template<class Field>
-	std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
+    inline std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
 									  typename Field::ConstElement_ptr A, size_t lda,
-									  FFLAS_FORMAT format,  bool column_major) {
+									  FFLAS_FORMAT format, bool column_major) {
 		switch (format){
 			case FflasSageMath:
 				c << "Matrix (";
