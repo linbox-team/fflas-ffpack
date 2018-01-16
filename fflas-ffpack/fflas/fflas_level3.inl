@@ -235,7 +235,7 @@ namespace FFLAS {
 	       const size_t M, const size_t N,
 	       const typename Field::Element alpha,
 	       typename Field::ConstElement_ptr A, const size_t lda,
-	       typename Field::Element_ptr B, const size_t ldb,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc);
 
@@ -266,6 +266,19 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       const typename Field::Element beta,
 	       typename Field::Element_ptr C, const size_t ldc);
+
+	template<class Field>
+	typename Field::Element_ptr
+	fsyr2k (const Field& F,
+	       const FFLAS_UPLO UpLo,
+	       const FFLAS_TRANSPOSE trans,
+	       const size_t n,
+	       const size_t k,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::ConstElement_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+		typename Field::Element_ptr C, const size_t ldc);
 
 	/** @brief  fsyrk: Symmetric Rank K update with diagonal scaling
 	 *
