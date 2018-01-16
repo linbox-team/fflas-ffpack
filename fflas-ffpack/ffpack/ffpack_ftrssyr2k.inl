@@ -50,7 +50,6 @@ namespace FFPACK {
             size_t N2 = N - N1;
             size_t A2rowdim = (Uplo == FFLAS::FflasUpper)? N1 : N2;
             size_t A2coldim = (Uplo == FFLAS::FflasUpper)? N2 : N1;
-            FFLAS::FFLAS_DIAG diagX = (diagA == FFLAS::FflasUnit)? FFLAS::FflasNonUnit : FFLAS::FflasUnit;
             typename Field::ConstElement_ptr A2;
             typename Field::Element_ptr B2;
             if (Uplo == FFLAS::FflasUpper){ A2 = A + N1; B2 = B + N1;}
@@ -64,17 +63,20 @@ namespace FFPACK {
 
                 // Solving  A1^T X1 + X1^T A1 = B1 in B1
             ftrssyr2k (F, Uplo, diagA, N1, A, lda, B, ldb, threshold);
-                // B2 <- B2 - X1^T . A2 
-            if (Uplo == FFLAS::FflasUpper)
-                ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasTrans, diagX, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
-            else
-                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasTrans, diagX, A2rowdim, A2coldim, F.mOne, B3, ldb, A2, lda, F.one, B2, ldb); // To be checked
-
-                // B2 <- A1^-1 B2
-            ftrsm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasNoTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
+            if (Uplo == FFLAS::FflasUpper){
+                    // B2 <- B2 - X1^T . A2
+                ftrmm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasTrans, FFLAS::FflasNonUnit, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb);
+                    // B2 <- A1^-T B2
+                ftrsm (F, FFLAS::FflasLeft, Uplo, FFLAS::FflasTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
+            } else {
+                    // B2 <- B2 - A2 . X1^T
+                ftrmm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasTrans, FFLAS::FflasNonUnit, A2rowdim, A2coldim, F.mOne, B, ldb, A2, lda, F.one, B2, ldb); // To be checked
+                    // B2 <- B2 A1^-T
+                ftrsm (F, FFLAS::FflasRight, Uplo, FFLAS::FflasTrans, diagA, A2rowdim, A2coldim, F.one, A, lda, B2, ldb);
+            }
 
                 // B3 <- B3 - A2^T X2 - X2^T A2
-            fsyr2k (F, Uplo, FFLAS::FflasTrans, N2, N1, F.mOne, A2, lda, B2, ldb, F.one, B3, ldb);
+            fsyr2k (F, Uplo, Uplo==FFLAS::FflasUpper?FFLAS::FflasTrans:FFLAS::FflasNoTrans, N2, N1, F.mOne, A2, lda, B2, ldb, F.one, B3, ldb);
 
               // Solving  A3^T X3 + X3^T A3 = B3 in B3
             ftrssyr2k (F, Uplo, diagA, N2, A3, lda, B3, ldb, threshold);
