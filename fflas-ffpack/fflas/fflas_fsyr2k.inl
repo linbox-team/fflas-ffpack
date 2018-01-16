@@ -47,27 +47,22 @@ namespace FFLAS {
         if (N==1){ // Base case
             F.mulin (*C, beta);
             size_t incA = (trans==FFLAS::FflasNoTrans)?1:lda;
-            size_t incB = (trans==FFLAS::FflasNoTrans)?ldb:1;
-			F.axpyin(*C, alpha, fdot (F, K, A, incA, B, incB));
+            size_t incB = (trans==FFLAS::FflasNoTrans)?1:ldb;
+            typename Field::Element two;
+            F.init(two, 2);
+            F.mulin (two,fdot (F, K, A, incA, B, incB));
+            F.axpyin(*C, alpha, two);
             return C;
-        } // else if (K==1){
-        //     if (!F.isOne(beta))
-        //         fscalin (F, N, N, beta, C, ldc);
-        //     size_t incA = (trans==FFLAS::FflasNoTrans)?lda:1;
-        //     fger (F, N, N, alpha, A, incA, A, incA, C, ldc);
-        //     return C;
-        // } 
-		else {
+        } else {
             size_t N1 = N>>1;
             size_t N2 = N - N1;
                 // Comments written for the case UpLo==FflasUpper, trans==FflasNoTrans
-            size_t incRow,incCol;
             FFLAS_TRANSPOSE oppTrans;
-            if (trans==FflasNoTrans) {incRowA=lda,incColA=1;incRowB=ldb,incColB=1;oppTrans=FflasTrans;}
-            else {incRowA = 1; incColA = lda;incRowB = 1; incColB = ldb; oppTrans=FflasNoTrans;}
+            if (trans==FflasNoTrans) {oppTrans=FflasTrans;}
+            else {oppTrans=FflasNoTrans;}
 
-            typename Field::ConstElement_ptr A2 = A + N1*incRowA;
-            typename Field::ConstElement_ptr B2 = B + N1*incRowB;
+            typename Field::ConstElement_ptr A2 = A + N1*(trans==FflasNoTrans?lda:1);
+            typename Field::ConstElement_ptr B2 = B + N1*(trans==FflasNoTrans?ldb:1);
             typename Field::Element_ptr C12 = C + N1;
             typename Field::Element_ptr C21 = C + N1*ldc;
             typename Field::Element_ptr C22 = C12 + N1*ldc;
@@ -90,4 +85,5 @@ namespace FFLAS {
             return C;
         }
     }
+} // namespace FFLAS
 #endif //__FFLASFFPACK_fflas_fsyr2k_INL
