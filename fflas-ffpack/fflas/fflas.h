@@ -114,6 +114,7 @@
 #include "fflas_freivalds.inl"
 #include "fflas_fger.inl"
 #include "fflas_fsyrk.inl"
+#include "fflas_fsyr2k.inl"
 #include "fflas_ftrsm.inl"
 #include "fflas_pftrsm.inl"
 #include "fflas_ftrmm.inl"

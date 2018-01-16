@@ -49,6 +49,7 @@ BASIC_TESTS =               \
 		test-lu             \
 		test-pluq-check     \
 		test-fsyrk          \
+		test-fsyr2k          \
 		test-fsytrf          \
 		test-invert-check   \
 		test-rankprofiles   \
@@ -132,6 +133,7 @@ test_ftrmm_SOURCES             = test-ftrmm.C
 test_ftrsv_SOURCES             = test-ftrsv.C
 test_ftrmv_SOURCES             = test-ftrmv.C
 test_fsyrk_SOURCES             = test-fsyrk.C
+test_fsyr2k_SOURCES             = test-fsyr2k.C
 test_fsytrf_SOURCES            = test-fsytrf.C
 #  test_redechelon_SOURCES        = test-redechelon.C
 #  testeur_ftrsm_SOURCES          = testeur_ftrsm.C
