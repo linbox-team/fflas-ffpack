@@ -51,6 +51,8 @@
 #include <iostream> // std::cout
 #include <algorithm>
 
+#define  __FFLASFFPACK_FTRSTR_THRESHOLD 64
+
 /** @brief <b>F</b>inite <b>F</b>ield <b>PACK</b>
  * Set of elimination based routines for dense linear algebra.
  *
@@ -455,7 +457,7 @@ namespace FFPACK { /* ftrtr */
 	void trinv_left( const Field& F, const size_t N, typename Field::ConstElement_ptr L, const size_t ldl,
 					 typename Field::Element_ptr X, const size_t ldx );
 
-	/**  Compute the product UL.
+	/**  @brief Compute the product of two triangular matrices of opposite shape.
 	 * Product UL or LU of the upper, resp lower triangular matrices U and L
 	 * stored one above the other in the square matrix A.
 	 * @param F base field
@@ -470,6 +472,24 @@ namespace FFPACK { /* ftrtr */
 	void
 	ftrtrm (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_DIAG diag,
 			const size_t N,	typename Field::Element_ptr A, const size_t lda);
+
+	/** @brief Solve a triangular system with a triangular right hand side of the same shape.
+	 * @param F base field
+	 * @param Side set to FflasLeft to compute U1^-1*U2 or L1^-1*L2, FflasRight to compute U1*U2^-1 or L1*L2^-1
+	 * @param diag1 whether the matrix U1 or L2 is unit diagonal (FflasUnit/NoUnit)
+	 * @param diag2 whether the matrix U2 or L2 is unit diagonal (FflasUnit/NoUnit)
+	 * @param N order of the input matrices
+	 * @param A the input matrix to be inverted (U1 or L1)
+	 * @param lda leading dimension of A
+	 * @param B the input right hand side (U2 or L2)
+	 * @param ldb leading dimension of B
+	 */
+	template<class Field>
+	void
+	ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO Uplo,
+			const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
+			typename Field::Element_ptr A, const size_t lda,
+			typename Field::Element_ptr B, const size_t ldb, const size_t threshold=__FFLASFFPACK_FTRSTR_THRESHOLD);
 
 } // FFPACK ftrtr
 // #include "ffpack_ftrtr.inl"
@@ -1691,6 +1711,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_echelonforms.inl"
 #include "ffpack_invert.inl"
 #include "ffpack_ftrtr.inl"
+#include "ffpack_ftrstr.inl"
 #include "ffpack_charpoly_kglu.inl"
 #include "ffpack_charpoly_kgfast.inl"
 #include "ffpack_charpoly_kgfastgeneralized.inl"

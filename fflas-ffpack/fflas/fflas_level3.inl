@@ -208,6 +208,37 @@ namespace FFLAS {
 	       typename Field::ConstElement_ptr A, const size_t lda,
 	       typename Field::Element_ptr B, const size_t ldb);
 
+	/** @brief ftrmm: <b>TR</b>iangular <b>M</b>atrix <b>M</b>ultiply with 3 operands
+	 * Computes  \f$ C \gets \alpha \mathrm{op}(A) B + beta C\f$ or  \f$C \gets \alpha B \mathrm{op}(A) + beta C\f$.
+	 * @param F field
+	 * \param Side if \c Side==FflasLeft then  \f$ B \gets \alpha \mathrm{op}(A) B\f$ is computed.
+	 * \param Uplo if \c Uplo==FflasUpper then \p A is upper triangular
+	 * \param TransA if \c TransA==FflasTrans then \f$\mathrm{op}(A)=A^t\f$.
+	 * \param Diag if \c Diag==FflasUnit then \p A is implicitly unit.
+	 * \param M rows of \p B
+	 * \param N cols of \p B
+	 * @param alpha scalar
+	 * \param A triangular matrix. If \c Side==FflasLeft then \p A is \f$N\times N\f$, otherwise \p A is \f$M\times M\f$
+	 * @param lda leading dim of \p A
+	 * @param B matrix of size \p MxN
+	 * @param ldb leading dim of \p B
+	 * @param beta scalar
+	 * @param C matrix of size \p MxN
+	 * @param ldc leading dim of \p C
+	 */
+	template<class Field>
+	void
+	ftrmm (const Field& F, const FFLAS_SIDE Side,
+	       const FFLAS_UPLO Uplo,
+	       const FFLAS_TRANSPOSE TransA,
+	       const FFLAS_DIAG Diag,
+	       const size_t M, const size_t N,
+	       const typename Field::Element alpha,
+	       typename Field::ConstElement_ptr A, const size_t lda,
+	       typename Field::Element_ptr B, const size_t ldb,
+	       const typename Field::Element beta,
+	       typename Field::Element_ptr C, const size_t ldc);
+
 	/** @brief  fsyrk: Symmetric Rank K update
 	 *
 	 * Computes the Lower or Upper triangular part of \f$C = \alpha A \times A^T + \beta C\f$ or \f$C = \alpha A^T \times A + \beta C\f$

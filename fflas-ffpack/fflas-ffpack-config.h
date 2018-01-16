@@ -158,3 +158,4 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #endif // __FFLASFFPACK_fflas_ffpack_configuration_H
+
