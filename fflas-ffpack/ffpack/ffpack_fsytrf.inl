@@ -113,6 +113,7 @@ namespace FFPACK {
 									   typename Field::Element_ptr Dinv, const size_t incDinv,
 									   size_t * P){
             // TODO: maybe one day
+        return 0;
 	}
 
 	template <class Field>
@@ -121,7 +122,8 @@ namespace FFPACK {
 										  typename Field::Element_ptr Dinv, const size_t incDinv,
 										  size_t * P){
             //  TODO
-        }
+        return 0;
+    }
 	template <class Field>
 	inline size_t fsytrf_UP_RPM_BC_Crout (const Field& F, const size_t N,
 										  typename Field::Element_ptr A, const size_t lda,
@@ -390,7 +392,7 @@ namespace FFPACK {
         typename Field::Element_ptr A4 = A2 + N1*lda;
             // [ B1 ] <- P1^T A2
 		    // [ B2 ]
-		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, 0, M2, A+N1, lda, P1);
+		applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, 0, N1, A+N1, lda, P1);
         typename Field::Element_ptr B1 = A + N1;
         typename Field::Element_ptr B2 = B1 + R1*lda;
             /*     [ U1 V1 | B1 ]
@@ -400,12 +402,12 @@ namespace FFPACK {
              *
              */
 		    // C <- U1^-T B1
-		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, FflasNonUnit, R1, N2, Fi.one, A, lda, B1, lda);
+		ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasLower, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R1, N2, Fi.one, A, lda, B1, lda);
             // F <- B2 - V1^T C
 		fgemm (Fi, FFLAS::FflasTrans, FFLAS::FflasNoTrans, N1-R1, N2, R1, Fi.mOne, A + R1, lda, B1, lda, Fi.one, B2, lda);
             // G <- A4 - C^T D1^-1 C
             // E <- D1^-1 C (done simultaneously)
-        fsyrk (Fi, UpLo, FflasTrans, N2, R1, F.mOne, B1, lda, A, lda+1, twoBlocks, F.one, A4, lda);
+        fsyrk (Fi, FFLAS::FflasUpper, FFLAS::FflasTrans, N2, R1, Fi.mOne, B1, lda, A, lda+1, twoBlocks, Fi.one, A4, lda);
 
             /*     [ U1 V1 | E ]
              *     [    0  | F ]
@@ -416,7 +418,9 @@ namespace FFPACK {
 		    //        [ M2 ]
 		size_t * P2 = FFLAS::fflas_new<size_t >(N1-R1);
 		size_t * Q2 = FFLAS::fflas_new<size_t >(N2);
+        typename Field::Element_ptr F=A2+R1*lda;
 		R2 = _PLUQ (Fi, FFLAS::FflasNonUnit, N1-R1, N2, F, lda, P2, Q2, BCThreshold);
+        typename Field::Element_ptr H1 = A4, H2 = H1+R2, H3 = H2+R2*lda;
 
         if (R2){
                 // [ G1   G2 ] <- Q2 G Q2^T
@@ -427,14 +431,11 @@ namespace FFPACK {
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2);
                 // [ V11 V12 ] <- V1 P2^T
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, R1, size_t(0), N1-R1, A+R1, lda, P2);
-
-            typename Field::Element_ptr H1 = A4, H2 = H1+R2, H3 = H2+R2*lda;
                 // H1 <- upper tri such that U2^TxH1 + H1^T x U2= G1
             ftrssyr2k (Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, R2, F, lda, A4, lda);
-
                 // H2 <-  U2^-T (G2 - H1^T V2)
-            ftrmm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.mOne, A4, lda, F+R2, lda, Fi.one, H2);
-            ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.one, F, lda, H2, lda);
+            FFLAS::ftrmm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.mOne, A4, lda, F+R2, lda, Fi.one, H2, lda);
+            FFLAS::ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.one, F, lda, H2, lda);
                 // H3 <- G3 - (V2^T H2 + H2^T V2)
             fsyr2k (Fi, FFLAS::FflasUpper, FFLAS::FflasTrans, N2-R2, R2, Fi.mOne, F+R2, lda, H2, lda, Fi.one, H3, lda);
                 // U2' V2'  <-  D2^-1 U2 V2
@@ -497,7 +498,7 @@ namespace FFPACK {
             typename Field::Element_ptr H1i = H1;
             size_t i=0, dim=hR2;
             for (; i<R2 && dim> 0; i++, Di+=2*lda+2, Fptr+=lda+1, H1i+=lda, dim-=2){
-                F.assign(*Di,*Fptr); // pivot
+                Fi.assign(*Di,*Fptr); // pivot
                 FFLAS::fassign (Fi, dim-1, Fptr+lda, lda, Di+2, 2); // copying L2
                 FFLAS::fassign (Fi, dim, H1i, 1, Di+1, 2); // copying H1
                 FFLAS::fassign (Fi, dim, Fptr, 1, Di+lda+1, 2); // copying U2
@@ -515,7 +516,7 @@ namespace FFPACK {
                 // 3/ end of the iteration
             dim = R2-i;
             for (; i < R2; i++, Di+=2*lda+2, Fptr+=lda+1, H1i+=lda){
-                Fi.assign(*Di,*Fi); // pivot
+                Fi.assign(*Di,*Fptr); // pivot
                 FFLAS::fassign (Fi, dim-1, Fptr+lda, lda, Di+2, 2); // copying L2
                 FFLAS::fassign (Fi, dim, H1i, 1, Di+1, 2); // copying H1
                 FFLAS::fassign (Fi, dim, Fptr, 1, Di+lda+1, 2); // copying U2
@@ -527,8 +528,8 @@ namespace FFPACK {
             typename Field::Element_ptr H2i=A4+R2;
             typename Field::Element_ptr tmpi=tmp;
             for (size_t i=0; i<R2; i++, Di+=2*lda, H2i+=lda,tmpi+=R3){
-                fassign (Fi, R3, H2i, 1, Di, 1); // copying H21
-                fassign (Fi, R3, tmp+i*R3, 1, Di+lda, 1); // copying V21
+                FFLAS::fassign (Fi, R3, H2i, 1, Di, 1); // copying H21
+                FFLAS::fassign (Fi, R3, tmp+i*R3, 1, Di+lda, 1); // copying V21
             }
             FFLAS::fflas_delete(tmp);
 
@@ -536,8 +537,8 @@ namespace FFPACK {
             Di = A+R1*(lda+1)+2*R2+R3;
             tmpi=tmpM2;
             for (size_t i=0; i<R2; i++, Di+=2*lda, tmpi+=N1-R1-R2){
-                fassign (Fi, N1-R2-R1, tmpi, 1, Di, 1); // copying M2^T
-                fzero (Fi, N1-R2-R1, Di+lda, 1); // copying 0s
+                FFLAS::fassign (Fi, N1-R2-R1, tmpi, 1, Di, 1); // copying M2^T
+                FFLAS::fzero (Fi, N1-R2-R1, Di+lda, 1); // copying 0s
             }
             FFLAS::fflas_delete(tmpM2);
 
@@ -549,8 +550,8 @@ namespace FFPACK {
             H2i=A4+R2+R3;
             tmpi=tmp;
             for (size_t i=0; i<R2; i++, Di+=2*lda, H2i+=lda,tmpi+=dim){
-                fassign (Fi, R3, H2i, 1, Di, 1); // copying H22
-                fassign (Fi, R3, tmp+i*dim, 1, Di+lda, 1); // copying V22
+                FFLAS::fassign (Fi, R3, H2i, 1, Di, 1); // copying H22
+                FFLAS::fassign (Fi, R3, tmp+i*dim, 1, Di+lda, 1); // copying V22
             }
             FFLAS::fflas_delete(tmp);
         }
@@ -558,11 +559,11 @@ namespace FFPACK {
         FFLAS::fassign(Fi, R3, R3, H3, lda, A+(R1+2*R2)*lda, lda);
 
             // Computing the permutation matrix
-        size_t tmpP=FFLAS::fflas_new<size_t>(N1-R1);
-        std::copy(MathP+R1, MathP+N1, tmp);
-        size_t * MP1=MathP+R1, *tmpi = tmp, * MP2=MathP+N1;
+        size_t *tmpP=FFLAS::fflas_new<size_t>(N1-R1);
+        std::copy(MathP+R1, MathP+N1, tmpP);
+        size_t * MP1=MathP+R1, *tmpi = tmpP, * MP2=MathP+N1;
             // Applying Q = [e_1 e_{R2} e_2 e_{R2+1} ...] to MathP[R1:R1+2*R2]
-        for (; tmpi != tmp+R2; tmpi++, MP2++, MP1++){
+        for (; tmpi != tmpP+R2; tmpi++, MP2++, MP1++){
             *MP1 = *tmpi;
             *(++MP1) = *MP2;
         }
@@ -647,9 +648,9 @@ namespace FFPACK {
         if (UpLo==FFLAS::FflasUpper)
 //            rank = fsytrf_UP_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P, threshold);
             rank = fsytrf_UP_RPM (F, N, A, lda, Dinv, 1, P, threshold);
-        else
-//            rank = fsytrf_LOW_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P, P, threshold);
-            rank = fsytrf_LOW_RPM (F, N, A, lda, Dinv, 1, P, P, threshold);
+        else 
+            rank = fsytrf_LOW_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P);
+                //rank = fsytrf_LOW_RPM (F, N, A, lda, Dinv, 1, P, P, threshold);
         
 		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit A = "<<std::endl,F,N,N,A, lda);
 		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit Dinv = "<<std::endl,F,1,N,Dinv, 1);

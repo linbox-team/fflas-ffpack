@@ -1719,7 +1719,6 @@ namespace FFPACK { /* not used */
 
 #include "ffpack_fgesv.inl"
 #include "ffpack_fgetrs.inl"
-#include "ffpack_fsytrf.inl"
 //---------------------------------------------------------------------
 // Checkers
 #include "fflas-ffpack/checkers/checkers_ffpack.inl"
@@ -1730,6 +1729,7 @@ namespace FFPACK { /* not used */
 #include "ffpack_ludivine.inl"
 #include "ffpack_ludivine_mp.inl"
 #include "ffpack_echelonforms.inl"
+#include "ffpack_fsytrf.inl"
 #include "ffpack_invert.inl"
 #include "ffpack_ftrtr.inl"
 #include "ffpack_ftrstr.inl"
