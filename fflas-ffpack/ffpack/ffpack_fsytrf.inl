@@ -420,29 +420,38 @@ namespace FFPACK {
 		size_t * Q2 = FFLAS::fflas_new<size_t >(N2);
         typename Field::Element_ptr F=A2+R1*lda;
 		R2 = _PLUQ (Fi, FFLAS::FflasNonUnit, N1-R1, N2, F, lda, P2, Q2, BCThreshold);
+        FFLAS::WriteMatrix(std::cerr<<"After PLUQ R2 = "<<R2<<" A = "<<std::endl,Fi,N,N,A,lda);
+
         typename Field::Element_ptr H1 = A4, H2 = H1+R2, H3 = H2+R2*lda;
 
         if (R2){
                 // [ G1   G2 ] <- Q2 G Q2^T
                 // [ G2^T G3 ]
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A4, lda, Q2);
+            FFLAS::WriteMatrix(std::cerr<<"after G1 G2 A = "<<std::endl,Fi,N,N,A,lda);
             applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, size_t(0), N2, A4, lda, Q2);
+            FFLAS::WriteMatrix(std::cerr<<"after G2 G3 A = "<<std::endl,Fi,N,N,A,lda);
                 // [ E1 E2 ] <- E Q2^T
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2);
                 // [ V11 V12 ] <- V1 P2^T
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasNoTrans, R1, size_t(0), N1-R1, A+R1, lda, P2);
                 // H1 <- upper tri such that U2^TxH1 + H1^T x U2= G1
             ftrssyr2k (Fi, FFLAS::FflasUpper, FFLAS::FflasNonUnit, R2, F, lda, A4, lda);
+            FFLAS::WriteMatrix(std::cerr<<"after ftrssyr2k A = "<<std::endl,Fi,N,N,A,lda);
                 // H2 <-  U2^-T (G2 - H1^T V2)
             FFLAS::ftrmm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.mOne, A4, lda, F+R2, lda, Fi.one, H2, lda);
+            FFLAS::WriteMatrix(std::cerr<<"after ftrmm A = "<<std::endl,Fi,N,N,A,lda);
             FFLAS::ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.one, F, lda, H2, lda);
+            FFLAS::WriteMatrix(std::cerr<<"after ftrsm A = "<<std::endl,Fi,N,N,A,lda);
                 // H3 <- G3 - (V2^T H2 + H2^T V2)
             fsyr2k (Fi, FFLAS::FflasUpper, FFLAS::FflasTrans, N2-R2, R2, Fi.mOne, F+R2, lda, H2, lda, Fi.one, H3, lda);
+            FFLAS::WriteMatrix(std::cerr<<"after fsyr2k A = "<<std::endl,Fi,N,N,A,lda);
                 // U2' V2'  <-  D2^-1 U2 V2
             typename Field::Element_ptr D2i = F, Dinvi = Dinv+(R1)*incDinv;
             for (size_t i=0; i<R2; i++, Dinvi++, D2i+=lda+1){
                 std::cerr<<"pivot = "<<D2i[0]<<std::endl;
                 Fi.inv (*Dinvi, *D2i);
+                Fi.assign(*(Dinvi+1), *Dinvi);
                 FFLAS::fscalin (Fi, N2-i-1, *Dinvi, D2i+1, lda);
             }
         }
@@ -456,15 +465,19 @@ namespace FFPACK {
         size_t * P3 = FFLAS::fflas_new<size_t >(N2-R2);
             // H3 = P3^T [ U3^T ] D3 [ U3 V3 ] P3
             //           [ V3^T ]
+        FFLAS::WriteMatrix(std::cerr<<"Before R3 = "<<R3<<" A = "<<std::endl,Fi,N,N,A,lda);
+
         R3 = fsytrf_UP_RPM (Fi, N2-R2, H3, lda, Dinv+R1+2*R2, incDinv, P3, BCThreshold);
 
         FFLAS::WriteMatrix(std::cerr<<"After R3 = "<<R3<<" A = "<<std::endl,Fi,N,N,A,lda);
+        for (size_t j=R1; j<R1+2*R2; j+=2)
+            twoBlocks[j] = true;
         for (size_t i=0,j=R1+2*R2; i<R3; i++,j++)
             if (int(P3[i])<0){
                 P3[i]=-P3[i]-1;
                 twoBlocks[j] = j? (!twoBlocks[j-1]) : true; // mark the first of the 2 positions
             }
-  
+        
             // [ E21 E22 ]     [ E2 ]
             // [ V21 V22 ]  <- [ V2 ] P3^T
 		    // [  0   0  ]     [  0 ]
@@ -583,16 +596,28 @@ namespace FFPACK {
         size_t *tmpP=FFLAS::fflas_new<size_t>(N1-R1);
         FFLAS::WritePermutation(std::cerr<<"MathP = ", MathP, N);
         std::copy(MathP+R1, MathP+N1, tmpP);
+        FFLAS::WritePermutation(std::cerr<<"tmpP = ", tmpP, N1-R1);
         FFLAS::WritePermutation(std::cerr<<"after copy MathP = ", MathP, N);
         size_t * MP1=MathP+R1, *tmpi = tmpP, * MP2=MathP+N1;
             // Applying Q = [e_1 e_{R2} e_2 e_{R2+1} ...] to MathP[R1:R1+2*R2]
+        std::cerr<<"tmpi= "<<*tmpi<<std::endl;
+        std::cerr<<"R2 = "<<R2<<std::endl;
         for (; tmpi != tmpP+R2; tmpi++, MP2++, MP1++){
+            std::cerr<<"->tmpi = "<<*tmpi<<std::endl;
+            std::cerr<<"->MP2 = "<<*MP2<<std::endl;
             *MP1 = *tmpi;
             *(++MP1) = *MP2;
         }
+        std::cerr<<"tmpi= "<<*tmpi<<std::endl;
         FFLAS::WritePermutation(std::cerr<<"after for MathP = ", MathP, N);
             // end of the permutation
-        std::copy(tmpi, tmpi+N1-R1, MP1);
+        std::cerr<<"N1= "<<N1<<" R1 = "<<R1<<" R2  = "<<R2<<std::endl;
+        std::cerr<<"Avant tmpi= "<<*tmpi<<" tmpi+N1-R1 = "<<tmpi[N1-R1]<<" MP1  = "<<MP1[0]<<std::endl;
+
+        std::copy(tmpi, tmpi+N1-R1-R2, MP1);
+        std::cerr<<"Apres tmpi= "<<*tmpi<<" tmpi+N1-R1 = "<<tmpi[N1-R1]<<" MP1  = "<<MP1[0]<<std::endl;
+        
+        FFLAS::WritePermutation(std::cerr<<"after std::copy MAthP = ", MathP, N);
 
         MathPerm2LAPACKPerm (P, MathP, N);
         FFLAS::WritePermutation(std::cerr<<"MathP2LAPACK P = ", P, N);
@@ -607,7 +632,7 @@ namespace FFPACK {
 		}
         FFLAS::WriteMatrix(std::cerr<<"done rec A = "<<std::endl,Fi,N,N,A,lda);
 //        FFLAS::WriteMatrix(std::cerr<<"invD A = "<<std::endl,Fi,1,N,invD,N);
-        return R1+R2+R3;
+        return R1+2*R2+R3;
     }
 
     template <class Field>
@@ -686,8 +711,8 @@ namespace FFPACK {
             rank = fsytrf_LOW_RPM_BC_Crout (F, N, A, lda, Dinv, 1, P);
                 //rank = fsytrf_LOW_RPM (F, N, A, lda, Dinv, 1, P, P, threshold);
         
-		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit A = "<<std::endl,F,N,N,A, lda);
-		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit Dinv = "<<std::endl,F,1,N,Dinv, 1);
+        FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit A = "<<std::endl,F,N,N,A, lda);
+        FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit Dinv = "<<std::endl,F,1,N,Dinv, 1);
 		size_t incA = (UpLo==FFLAS::FflasUpper) ? 1 : lda;
 		for (size_t i=0; i<N; i++)
 			FFLAS::fscalin (F, N-i-1, Dinv[i], A+i*(lda+1)+incA, incA);
