@@ -30,11 +30,19 @@
 //          Test for the computations of the LDLT factorization
 //--------------------------------------------------------------------------
 
+#include <iostream>
+#include <iterator>
+#include <vector>
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T> &x){
+	std::ostream_iterator<T> out_it (os,", ");
+	std::copy ( x.begin(), x.end(), out_it );
+	return os;
+}
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include "fflas-ffpack/ffpack/ffpack.h"
 #include "fflas-ffpack/utils/args-parser.h"
 
-#include <iostream>
 #include <iomanip>
 #include <random>
 #include <chrono>
@@ -66,18 +74,20 @@ bool test_RPM_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, size_t r
 	fassign (F,n,n,A,lda, B, lda);
 
 	size_t * P = fflas_new<size_t>(n);
+	WriteMatrix(std::cerr<<"A="<<std::endl,F,n,n,A,lda,FflasSageMath);
+	WriteMatrix(std::cerr<<"A="<<std::endl,F,n,n,A,lda);
 	size_t rank = fsytrf_RPM (F, uplo, n, A, lda, P, threshold);
-	 // WriteMatrix(std::cerr<<"sortie de l'algo ="<<std::endl,F,n,n,A,lda);
+	WriteMatrix(std::cerr<<"sortie de l'algo ="<<std::endl,F,n,n,A,lda);
 
 	typename Field::Element_ptr T = fflas_new(F, n, n);
 	typename Field::Element_ptr U = fflas_new(F, n, n);
 	getTridiagonal(F,n,rank,A,lda, P, T, n);
 	getTriangular(F,FflasUpper, FflasUnit, n,n,rank,A,lda,  U, n, false);
-	// WriteMatrix(std::cerr<<"Tridiagonal ="<<std::endl,F,n,n,T,n);
-	// WriteMatrix(std::cerr<<"Triangular ="<<std::endl,F,n,n,U,n);
+	WriteMatrix(std::cerr<<"Tridiagonal ="<<std::endl,F,n,n,T,n);
+	WriteMatrix(std::cerr<<"Triangular ="<<std::endl,F,n,n,U,n);
 	fgemm(F,FflasTrans,FflasNoTrans, n,n,n,F.one, U,n,T,n,F.zero,A,lda);
 	fgemm(F,FflasNoTrans,FflasNoTrans, n,n,n,F.one,A,lda,U,n,F.zero,T,n);
-	 // WriteMatrix(std::cerr<<"UTDU ="<<std::endl,F,n,n,T,n);
+	WriteMatrix(std::cerr<<"UTDU ="<<std::endl,F,n,n,T,n);
 	for (size_t i=0; i<n; i++)
 		if ((int)P[i]<0){
 			P[i]=-P[i]-1;
@@ -224,7 +234,7 @@ int main(int argc, char** argv){
 	bool ok=true;
 	do{
 		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n, r,iters,file,threshold,seed);
-		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
+//		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
 		// ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n, r,iters,file,threshold,seed);
 		// ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n, r,iters,file,threshold,seed);
 		// ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
