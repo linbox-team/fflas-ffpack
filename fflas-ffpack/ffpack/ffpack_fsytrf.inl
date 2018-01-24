@@ -438,9 +438,9 @@ namespace FFPACK {
                 // [ G1   G2 ] <- Q2 G Q2^T
                 // [ G2^T G3 ]
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A4, lda, Q2);
-            FFLAS::WriteMatrix(std::cerr<<"after G1 G2 A = "<<std::endl,Fi,N,N,A,lda);
+                //FFLAS::WriteMatrix(std::cerr<<"after G1 G2 A = "<<std::endl,Fi,N,N,A,lda);
             applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, size_t(0), N2, A4, lda, Q2);
-            FFLAS::WriteMatrix(std::cerr<<"after G2 G3 A = "<<std::endl,Fi,N,N,A,lda);
+                //FFLAS::WriteMatrix(std::cerr<<"after G2 G3 A = "<<std::endl,Fi,N,N,A,lda);
                 // [ E1 E2 ] <- E Q2^T
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2);
                 // [ V11 V12 ] <- V1 P2^T
@@ -450,9 +450,9 @@ namespace FFPACK {
             FFLAS::WriteMatrix(std::cerr<<"after ftrssyr2k A = "<<std::endl,Fi,N,N,A,lda);
                 // H2 <-  U2^-T (G2 - H1^T V2)
             FFLAS::ftrmm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasNonUnit, R2, N2-R2, Fi.mOne, A4, lda, F+R2, lda, Fi.one, H2, lda);
-            FFLAS::WriteMatrix(std::cerr<<"after ftrmm A = "<<std::endl,Fi,N,N,A,lda);
+                //FFLAS::WriteMatrix(std::cerr<<"after ftrmm A = "<<std::endl,Fi,N,N,A,lda);
             FFLAS::ftrsm (Fi, FFLAS::FflasLeft, FFLAS::FflasUpper, FFLAS::FflasTrans, FFLAS::FflasUnit, R2, N2-R2, Fi.one, F, lda, H2, lda);
-            FFLAS::WriteMatrix(std::cerr<<"after ftrsm A = "<<std::endl,Fi,N,N,A,lda);
+                //FFLAS::WriteMatrix(std::cerr<<"after ftrsm A = "<<std::endl,Fi,N,N,A,lda);
                 // H3 <- G3 - (V2^T H2 + H2^T V2)
             fsyr2k (Fi, FFLAS::FflasUpper, FFLAS::FflasTrans, N2-R2, R2, Fi.mOne, F+R2, lda, H2, lda, Fi.one, H3, lda);
             FFLAS::WriteMatrix(std::cerr<<"after fsyr2k A = "<<std::endl,Fi,N,N,A,lda);
@@ -527,7 +527,7 @@ namespace FFPACK {
 		for (size_t i=N1; i<N; ++i)
 			MathP[i] += N1;
 
-            /** Changing [ U1 V1 | E1      E21 E22 ] into [ U1    E*    V1   E*   E*  ]
+            /** Changing [ U1 V1 | E1      E21 E22 ] into [ U1 E11 E12  V1   E*   E*  ]
              *           [    0  | L2 \ U2 V21 V22 ]      [    U4  V41   0  V42  V43  ]
              *           [    0  | M2       0   0  ]      [         U3   0   0    V3  ]
              *           [ ------|---------------- ]      [              0   0     0  ]
@@ -536,12 +536,28 @@ namespace FFPACK {
              *           [    0  |               0 ]
              * where U4 is the 2R2 x 2R2 matrix formed by interleaving U2, L2^T and H1
              */
-        if (R2){
-                // Interleaving L2^T, U2 and H1 into 
+                // Rotating [V1 E1 E21]
+        size_t dim = N1-R1+R2+R3;
+        typename Field::Element_ptr tmpV1 = FFLAS::fflas_new(Fi, R1, dim);
+        FFLAS::fassign(Fi, R1, dim, A+R1, lda, tmpV1, dim);
+        FFLAS::WriteMatrix(std::cerr<<"tmpV1 =  "<<std::endl,Fi,R1,dim,tmpV1,dim);
 
-            typename Field::Element_ptr tmp = FFLAS::fflas_new(Fi, N2-R1, R2);
-            FFLAS::fassign(Fi, N2-R1, R2, F, lda, tmp, R2);
-            typename Field::Element_ptr Di = A+R1*(lda+1);
+        typename Field::Element_ptr Di=A+R1, tmpV1i=tmpV1;
+        for (size_t i=0; i<R1; i++, tmpV1i+=dim, Di+=lda){
+            FFLAS::fassign(Fi, R2, tmpV1i, 1, Di, 2);
+            FFLAS::fassign(Fi, R2, tmpV1i+N1-R1, 1, Di+1, 2);
+        }
+        FFLAS::WriteMatrix(std::cerr<<"After for rotating [V1 E1 E21] A = "<<std::endl,Fi,N,N,A,lda);
+        FFLAS::fassign(Fi, R1, R3, tmpV1+N1-R1+R2, dim, A+R1+2*R2, lda);
+        FFLAS::fassign(Fi, R1, N1-R1-R2, tmpV1+R2, dim, A+R1+2*R2+R3, lda);
+        FFLAS::WriteMatrix(std::cerr<<"After rotating [V1 E1 E21] A = "<<std::endl,Fi,N,N,A,lda);
+        if (R2){
+
+            
+                // Interleaving L2^T, U2 and H1 into 
+            typename Field::Element_ptr tmp = FFLAS::fflas_new(Fi, N1-R1, R2);
+            FFLAS::fassign(Fi, N1-R1, R2, F, lda, tmp, R2);
+            Di = A+R1*(lda+1);
             typename Field::Element_ptr tmpi = tmp;
             typename Field::Element_ptr H1i = H1;
             for (size_t i=0; i<R2; i++, Di+=2*lda+2, tmpi+=R2+1, H1i+=lda+1){
@@ -588,11 +604,19 @@ namespace FFPACK {
             //     FFLAS::fassign (Fi, dim, Fptr, 1, Di+lda+1, 2); // copying U2
             // }
             FFLAS::WriteMatrix(std::cerr<<"After interleaving L2 U2 H1 A = "<<std::endl,Fi,N,N,A,lda);
-                // Saving V21
-            typename Field::Element_ptr tmpV21 = FFLAS::fflas_new(Fi, R2, R3);
-            FFLAS::fassign(Fi, R2, R3, F+R2, lda, tmpV21, R3);
-            FFLAS::WriteMatrix(std::cerr<<"F = "<<std::endl,Fi, R2,R2+R3,F,lda);
-            FFLAS::WriteMatrix(std::cerr<<"tmp = "<<std::endl,Fi, R2,R3,tmp,R3);
+                // Interleaving V21 and H21 into tmpV21
+            typename Field::Element_ptr tmpV21 = FFLAS::fflas_new(Fi, 2*R2, R3);
+            typename Field::Element_ptr V21i=F+R2, H2i = A4+R2;
+            tmpi=tmpV21;
+            for (size_t i=0; i<R2; i++, V21i+=lda, H2i+=lda,tmpi+=2*R3){
+                FFLAS::fassign (Fi, R3, H2i, 1, tmpi, 1); // copying H21
+                FFLAS::fassign (Fi, R3, V21i, 1, tmpi+R3, 1); // copying V21
+            }
+            // FFLAS::WriteMatrix(std::cerr<<" V21= "<<std::endl,Fi,R2,R3,F+R2,lda);
+            // FFLAS::WriteMatrix(std::cerr<<" H21= "<<std::endl,Fi,R2,R3,A4+R2,lda);
+            // FFLAS::WriteMatrix(std::cerr<<"After interleaving V21 H21 into tmpV21= "<<std::endl,
+            //                    Fi,2*R2,R3,tmpV21,R3);
+                //FFLAS::fassign(Fi, R2, R3, F+R2, lda, tmpV21, R3);
 
                 // Interleaving M2^T and 0 into V42
             Di = A+R1*(lda+1)+2*R2+R3;
@@ -603,21 +627,22 @@ namespace FFPACK {
             }
             FFLAS::fflas_delete(tmp);
             FFLAS::WriteMatrix(std::cerr<<"After interleaving V42 A = "<<std::endl,Fi,N,N,A,lda);
-                // Interleaving V21 and H21 into V41
-            Di=A+R1*(lda+1)+2*R2;
-            typename Field::Element_ptr H2i=A4+R2;
-            tmpi=tmpV21;
-            for (size_t i=0; i<R2; i++, Di+=2*lda, H2i+=lda,tmpi+=R3){
-                FFLAS::fassign (Fi, R3, H2i, 1, Di, 1); // copying H21
-                std::cerr<<" copying tmpi = "<<*tmpi<<" into Di+lda = "<<*(Di+lda)<<std::endl;
-                FFLAS::fassign (Fi, R3, tmpi, 1, Di+lda, 1); // copying V21
-            }
+                // Copying tmpV21 into V41
+                //Di=A+R1*(lda+1)+2*R2;
+            FFLAS::fassign(Fi, 2*R2, R3, tmpV21, R3, A+R1*(lda+1)+2*R2,lda);
+            
+            // for (size_t i=0; i<R2; i++, Di+=2*lda, H2i+=lda,tmpi+=R3){
+            //     std::cerr<<" copying H2i = "<<*H2i<<" into Di = "<<*(Di)<<std::endl;
+            //     FFLAS::fassign (Fi, R3, H2i, 1, Di, 1); // copying H21
+            //     std::cerr<<" copying tmpi = "<<*tmpi<<" into Di+lda = "<<*(Di+lda)<<std::endl;
+            //     FFLAS::fassign (Fi, R3, tmpi, 1, Di+lda, 1); // copying V21
+            // }
             FFLAS::fflas_delete(tmpV21);
 
                 //FFLAS::fflas_delete(tmpM2);
 
                 // Interleaving V22 and H22 into V43
-            size_t dim = N2-R2-R3;
+            dim = N2-R2-R3;
             tmp = FFLAS::fflas_new(Fi, R2, dim);
             FFLAS::fassign(Fi, R2, dim, F+R2+R3, lda, tmp, dim);
             Di=A+R1*lda+N1+R2+R3;
@@ -639,11 +664,11 @@ namespace FFPACK {
             FFLAS::fzero(Fi, R3, N1-R1, DU3+R3,lda);
                 // Moving V3
             FFLAS::fassign(Fi, R3, N2-R2-R3, H3+R3, lda, A2+R2+R3+(R1+2*R2)*lda, lda);
-                // Rotating [V1 E1 E21] -> [E1 E21 V1]
-            typename Field::Element_ptr tmp = FFLAS::fflas_new(Fi, R1, N1-R1-R2);
-            FFLAS::fassign(Fi, R1, N1-R1-R2, A+R1+R2, lda, tmp, N1-R1-R2);
-            FFLAS::fassign(Fi, R1, R2+R3, A+N1, lda, A+R1+R2, lda);
-            FFLAS::fassign(Fi, R1, N1-R1-R2, tmp, N1-R1-R2, A+R1+2*R2+R3, lda);
+            //     // Rotating [V1 E1 E21] -> [E1 E21 V1]
+            // typename Field::Element_ptr tmp = FFLAS::fflas_new(Fi, R1, N1-R1-R2);
+            // FFLAS::fassign(Fi, R1, N1-R1-R2, A+R1+R2, lda, tmp, N1-R1-R2);
+            // FFLAS::fassign(Fi, R1, R2+R3, A+N1, lda, A+R1+R2, lda);
+            // FFLAS::fassign(Fi, R1, N1-R1-R2, tmp, N1-R1-R2, A+R1+2*R2+R3, lda);
 //-------------------------
         }
             // Computing the permutation matrix
