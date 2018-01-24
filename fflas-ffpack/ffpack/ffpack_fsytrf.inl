@@ -517,7 +517,7 @@ namespace FFPACK {
         LAPACKPerm2MathPerm (MathP+N1, Q2, N2);
         FFLAS::WritePermutation(std::cerr<<"Q2 = ", Q2, N2);
         FFLAS::WritePermutation(std::cerr<<"LAPACK2Math Q2 -> MathP = ", MathP, N);
-        composePermutationsMLM (MathP, P3, N1+R2, N2-R2);
+        composePermutationsMLM (MathP, P3, N1+R2, N);
         FFLAS::WritePermutation(std::cerr<<"composePermMLM = ", MathP, N);
 
 		FFLAS::fflas_delete( P1);
