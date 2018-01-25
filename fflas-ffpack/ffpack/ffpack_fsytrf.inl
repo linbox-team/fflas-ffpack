@@ -437,10 +437,15 @@ namespace FFPACK {
         if (R2){
                 // [ G1   G2 ] <- Q2 G Q2^T
                 // [ G2^T G3 ]
+                // temporarily copy G2 over G2^T to please std applyP
+                // TODO: write a symmetric applyP
+            for (size_t i=0; i<N2-R2; i++)
+                FFLAS::fassign(Fi, N2-R2-i-1, A4+i*(lda+1)+1, 1, A4+i*(lda+1)+lda, lda);
+
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A4, lda, Q2);
-                //FFLAS::WriteMatrix(std::cerr<<"after G1 G2 A = "<<std::endl,Fi,N,N,A,lda);
+                FFLAS::WriteMatrix(std::cerr<<"after G1 G2 A = "<<std::endl,Fi,N,N,A,lda);
             applyP (Fi, FFLAS::FflasLeft, FFLAS::FflasNoTrans, N2, size_t(0), N2, A4, lda, Q2);
-                //FFLAS::WriteMatrix(std::cerr<<"after G2 G3 A = "<<std::endl,Fi,N,N,A,lda);
+                FFLAS::WriteMatrix(std::cerr<<"after G2 G3 A = "<<std::endl,Fi,N,N,A,lda);
                 // [ E1 E2 ] <- E Q2^T
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, R1, size_t(0), N2, A2, lda, Q2);
                 // [ V11 V12 ] <- V1 P2^T
@@ -641,6 +646,7 @@ namespace FFPACK {
 
                 //FFLAS::fflas_delete(tmpM2);
 
+            FFLAS::WriteMatrix(std::cerr<<"Before interleaving V43 A = "<<std::endl,Fi,N,N,A,lda);
                 // Interleaving V22 and H22 into V43
             dim = N2-R2-R3;
             tmp = FFLAS::fflas_new(Fi, R2, dim);
@@ -652,6 +658,7 @@ namespace FFPACK {
                 FFLAS::fassign (Fi, dim, H2i, 1, Di, 1); // copying H22
                 FFLAS::fassign (Fi, dim, tmp+i*dim, 1, Di+lda, 1); // copying V22
             }
+            FFLAS::WriteMatrix(std::cerr<<"After interleaving V43 A = "<<std::endl,Fi,N,N,A,lda);
             FFLAS::fflas_delete(tmp);
         }
         
@@ -661,10 +668,12 @@ namespace FFPACK {
             FFLAS::fassign(Fi, R3, R3, H3, lda, DU3, lda);
                 // Zeros right of U3
                 //FFLAS::fzero(Fi, R3, N1-R1, DU3+R3,lda);
-            FFLAS::fzero(Fi, R3, N1-R1, DU3+R3,lda);
+            FFLAS::fzero(Fi, R3, N1-R2-R1, DU3+R3,lda);
                 // Moving V3
+            FFLAS::WriteMatrix(std::cerr<<"Before moving V3 A = "<<std::endl,Fi,N,N,A,lda);
             FFLAS::fassign(Fi, R3, N2-R2-R3, H3+R3, lda, A2+R2+R3+(R1+2*R2)*lda, lda);
-            //     // Rotating [V1 E1 E21] -> [E1 E21 V1]
+            FFLAS::WriteMatrix(std::cerr<<"After moving V3 A = "<<std::endl,Fi,N,N,A,lda);
+         //     // Rotating [V1 E1 E21] -> [E1 E21 V1]
             // typename Field::Element_ptr tmp = FFLAS::fflas_new(Fi, R1, N1-R1-R2);
             // FFLAS::fassign(Fi, R1, N1-R1-R2, A+R1+R2, lda, tmp, N1-R1-R2);
             // FFLAS::fassign(Fi, R1, R2+R3, A+N1, lda, A+R1+R2, lda);
