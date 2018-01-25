@@ -33,7 +33,7 @@ namespace FFPACK {
 	template<class Field>
 	inline void ftrstr (const Field& F, const FFLAS::FFLAS_SIDE side, const FFLAS::FFLAS_UPLO UpLo,
                         const FFLAS::FFLAS_DIAG diagA, const FFLAS::FFLAS_DIAG diagB, const size_t N,
-                        typename Field::Element_ptr A, const size_t lda,
+                        typename Field::ConstElement_ptr A, const size_t lda,
                         typename Field::Element_ptr B, const size_t ldb, const size_t threshold) {
 
         if (!N) return;
@@ -53,10 +53,11 @@ namespace FFPACK {
             size_t A2rowdim = (UpLo == FFLAS::FflasUpper)? N1 : N2;
             size_t A2coldim = (UpLo == FFLAS::FflasUpper)? N2 : N1;
             FFLAS::FFLAS_DIAG diagX = (diagA != diagB)? FFLAS::FflasNonUnit : diagA;
-            typename Field::Element_ptr A2,B2;
+            typename Field::ConstElement_ptr A2;
+            typename Field::Element_ptr B2;
             if (UpLo == FFLAS::FflasUpper){ A2 = A + N1; B2 = B + N1;}
             else { A2 = A + N1*lda; B2 = B + N1*ldb;}
-            typename Field::Element_ptr A3 = A + N1*(lda+1);
+            typename Field::ConstElement_ptr A3 = A + N1*(lda+1);
             typename Field::Element_ptr B3 = B + N1*(ldb+1);
             
                 /* Solving [ A1 A2 ] [ X1 X2 ] = [ B1 B2 ]
