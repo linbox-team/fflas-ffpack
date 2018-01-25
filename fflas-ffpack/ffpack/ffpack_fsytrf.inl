@@ -439,8 +439,8 @@ namespace FFPACK {
                 // [ G2^T G3 ]
                 // temporarily copy G2 over G2^T to please std applyP
                 // TODO: write a symmetric applyP
-            for (size_t i=0; i<N2-R2; i++)
-                FFLAS::fassign(Fi, N2-R2-i-1, A4+i*(lda+1)+1, 1, A4+i*(lda+1)+lda, lda);
+            for (size_t i=0; i<N2; i++)
+                FFLAS::fassign(Fi, N2-i-1, A4+i*(lda+1)+1, 1, A4+i*(lda+1)+lda, lda);
 
             applyP (Fi, FFLAS::FflasRight, FFLAS::FflasTrans, N2, size_t(0), N2, A4, lda, Q2);
                 FFLAS::WriteMatrix(std::cerr<<"after G1 G2 A = "<<std::endl,Fi,N,N,A,lda);
