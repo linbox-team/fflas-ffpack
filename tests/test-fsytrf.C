@@ -74,20 +74,14 @@ bool test_RPM_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, size_t r
 	fassign (F,n,n,A,lda, B, lda);
 
 	size_t * P = fflas_new<size_t>(n);
-	WriteMatrix(std::cerr<<"A="<<std::endl,F,n,n,A,lda,FflasSageMath);
-	WriteMatrix(std::cerr<<"A="<<std::endl,F,n,n,A,lda);
 	size_t rank = fsytrf_RPM (F, uplo, n, A, lda, P, threshold);
-	WriteMatrix(std::cerr<<"sortie de l'algo ="<<std::endl,F,n,n,A,lda);
 
 	typename Field::Element_ptr T = fflas_new(F, n, n);
 	typename Field::Element_ptr U = fflas_new(F, n, n);
 	getTridiagonal(F,n,rank,A,lda, P, T, n);
 	getTriangular(F,FflasUpper, FflasUnit, n,n,rank,A,lda,  U, n, false);
-	WriteMatrix(std::cerr<<"Tridiagonal ="<<std::endl,F,n,n,T,n);
-	WriteMatrix(std::cerr<<"Triangular ="<<std::endl,F,n,n,U,n);
 	fgemm(F,FflasTrans,FflasNoTrans, n,n,n,F.one, U,n,T,n,F.zero,A,lda);
 	fgemm(F,FflasNoTrans,FflasNoTrans, n,n,n,F.one,A,lda,U,n,F.zero,T,n);
-	WriteMatrix(std::cerr<<"UTDU ="<<std::endl,F,n,n,T,n);
 	for (size_t i=0; i<n; i++)
 		if ((int)P[i]<0){
 			P[i]=-P[i]-1;
@@ -102,6 +96,9 @@ bool test_RPM_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, size_t r
 		cerr<<"ERROR: A != P^T U^T D U P"<<endl;
 		WriteMatrix(std::cerr<<"PTUTDUP ="<<std::endl,F,n,n,T,n);
 		WriteMatrix(std::cerr<<"A ="<<std::endl,F,n,n,B,lda);
+		WriteMatrix(std::cerr<<"sortie de l'algo ="<<std::endl,F,n,n,A,lda);
+		WriteMatrix(std::cerr<<"Tridiagonal ="<<std::endl,F,n,n,T,n);
+		WriteMatrix(std::cerr<<"Triangular ="<<std::endl,F,n,n,U,n);
 
 		fflas_delete(P,A,T,B,U);
 		return false;
@@ -183,13 +180,23 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t it
 		cout<<oss.str();
 		cout<<" ... ";
 
-		// cout<<"Generic ...";
-		// ok = ok && test_generic_fsytrf (*F, FflasUpper, file, n, G, threshold);
-		// ok = ok && test_generic_fsytrf (*F, FflasLower, file, n, G, threshold);
-		cout<<"RPM ...";
+		cout<<"GRP..";
+		ok = ok && test_generic_fsytrf (*F, FflasUpper, file, n, G, threshold);
+		ok = ok && test_generic_fsytrf (*F, FflasLower, file, n, G, threshold);
+		cout<<"RPM..";
 		ok = ok && test_RPM_fsytrf (*F, FflasUpper, file, n, r, G, threshold);
-			//ok = ok && test_RPM_fsytrf (*F, FflasLower, file, n, G, threshold);
-	
+		//ok = ok && test_RPM_fsytrf (*F, FflasLower, file, n, r, G, threshold);
+		size_t NN = (rand() % n)+50;
+		size_t RR = (rand() % NN);
+		size_t THRESHOLD = (rand() % NN/3)+2;
+		cout<<"Random dim...";
+		cout<<"GRP..";
+		ok = ok && test_generic_fsytrf (*F, FflasUpper, file, NN, G, THRESHOLD);
+		ok = ok && test_generic_fsytrf (*F, FflasLower, file, NN, G, THRESHOLD);
+		cout<<"RPM..";
+		ok = ok && test_RPM_fsytrf (*F, FflasUpper, file, NN, RR, G, THRESHOLD);
+		//ok = ok && test_RPM_fsytrf (*F, FflasLower, file, NN,RR, G, THRESHOLD);
+		
 		delete F;
 
 		nbit--;
@@ -234,14 +241,14 @@ int main(int argc, char** argv){
 	bool ok=true;
 	do{
 		ok = ok && run_with_field<Givaro::Modular<float> >           (q,b,n, r,iters,file,threshold,seed);
-//		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
-		// ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
-			//ok = ok && run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,r/4+1,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<double> >          (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<float> >   (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<double> >   (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<int32_t> >   (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::ModularBalanced<int64_t> >   (q,b,n, r,iters,file,threshold,seed);
+		ok = ok && run_with_field<Givaro::Modular<Givaro::Integer> >(q,(b?b:128),n/4+1,r/4+1,iters,file,threshold,seed);
 	} while (loop && ok);
 
 	if (!ok) cerr << "with seed = " << seed << endl;
