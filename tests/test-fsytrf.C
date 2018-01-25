@@ -133,12 +133,12 @@ bool test_generic_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, Rand
 	if (!success) cerr<<"Non definite matrix"<<endl;
 
 	if (uplo == FflasLower) { // Testing is B ==  L D L^T
-		cout<<"Lower...";
+		cout<<"Low";
 			// copying L on L^T
 		for (size_t i=0; i<n; i++)
 			fassign (F, n-i-1, A+i*(lda+1)+lda, lda, A+i*(lda+1)+1, 1);		
 	} else { // Testing is B ==  U^T D U
-		cout<<"Upper...";
+		cout<<"Up";
 			// copying U on U^T
 		for (size_t i=0; i<n; i++)
 			fassign(F, n-i-1, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
@@ -176,7 +176,7 @@ bool run_with_field(Givaro::Integer q, uint64_t b, size_t n, size_t r, size_t it
 		
 		cout.fill('.');
 		cout<<"Checking ";
-		cout.width(20);
+		cout.width(40);
 		cout<<oss.str();
 		cout<<" ... ";
 
