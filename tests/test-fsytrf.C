@@ -152,7 +152,7 @@ bool test_generic_fsytrf (Field& F, FFLAS_UPLO uplo, string file, size_t n, Rand
 	
 	bool ok = fequal(F, n, n, A, lda, B, lda);
 
-	cout<<"... ";
+	cout<<"...";
 	
 	fflas_delete(A);
 	fflas_delete(B);
