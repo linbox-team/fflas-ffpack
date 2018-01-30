@@ -141,7 +141,7 @@ namespace FFPACK {
 	
 		size_t rank = 0;
         typename Field::Element two;
-        F.init(two, 2UL);
+        F.init(two, INT32_C(2));
         typename Field::Element_ptr CurrRow = A;
         for (size_t row = 0; row < N; row++, CurrRow += (lda+1)){
 				/* A =  [   U  | * | b | B ]  where U is rank x rank, b rank x 1
