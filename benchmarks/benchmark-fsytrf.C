@@ -23,6 +23,8 @@
 * ========LICENCE========
 */
 
+#define FSYTRF_BC_RL
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -41,15 +43,19 @@ int main(int argc, char** argv) {
 	int    q    = 131071;
 	size_t    n    = 1000;
 	size_t threshold = 64;
+	size_t rank = 500;
 	bool up =true;
+	bool rpm =false;
 	std::string file = "";
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'u', "-u yes/no", "Computes a UTDU (true) or LDLT decomposition (false).",  TYPE_BOOL , &up },
-		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
-		{ 't', "-t T", "Set the threshold to the base case.",                     TYPE_INT , &threshold },
+		{ 'm', "-m yes/no", "Use the rank profile matrix revealing algorithm.",  TYPE_BOOL , &rpm },
+		{ 'r', "-r R", "Set the rank (for the RPM version.",                     TYPE_INT , &rank },
+		{ 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
+		{ 't', "-t T", "Set the threshold to the base case.",            TYPE_INT , &threshold },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
 		END_OF_ARGUMENTS
 	};
@@ -73,14 +79,24 @@ int main(int argc, char** argv) {
 		else {
 			A = FFLAS::fflas_new<Element>(n*n);
 			Field::RandIter G(F);
-			FFPACK::RandomSymmetricMatrix (F, n, true, A, n, G);
+			if (rpm)
+				FFPACK::RandomSymmetricMatrixWithRankandRandomRPM (F, n, rank, A, n, G);
+			else
+				FFPACK::RandomSymmetricMatrix (F, n, true, A, n, G);
 		}
-		
-		chrono.clear();
-		if (i) chrono.start();
-		FFPACK::fsytrf (F, uplo, n, A, n, threshold);
-		if (i) chrono.stop();
-		
+		size_t*P=FFLAS::fflas_new<size_t>(n);
+		if (rpm){
+				chrono.clear();
+				if (i) chrono.start();
+				FFPACK::fsytrf_RPM (F, uplo, n, A, n, P, threshold);
+				if (i) chrono.stop();
+		}else{
+			chrono.clear();
+			if (i) chrono.start();
+			FFPACK::fsytrf (F, uplo, n, A, n, threshold);
+			if (i) chrono.stop();
+		}
+		FFLAS::fflas_delete(P);
 		time+=chrono.usertime();
 		FFLAS::fflas_delete( A);
 	}

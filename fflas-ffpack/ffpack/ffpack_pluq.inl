@@ -391,7 +391,7 @@ namespace FFPACK {
 					cyclic_shift_mathPerm(MathP+rank, (size_t) (row-rank+1) );
 					    // Row rotation for U (not moving the 0 block)
 					FFLAS::fassign (Fi, N-i-1, CurrRow+i+1, 1, A+rank*lda+i+1, 1);
-					Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i));
+					Fi.assign(*(A+rank*(lda+1)), *(CurrRow+i)); // CP: already assigned when i>rank
 					FFLAS::fzero (Fi, row-rank, A+rank*(lda+1)+lda, lda);
 					Fi.assign(*(CurrRow+i),Fi.zero); // only needed once here
 				}
