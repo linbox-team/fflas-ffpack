@@ -134,7 +134,10 @@ namespace FFLAS {
 		size_t Ydim = (ta == FflasNoTrans)?M:N;
 		size_t Xdim = (ta == FflasNoTrans)?N:M;
 		if (!Xdim || F.isZero (alpha)){
-			fscalin(F, Ydim, beta, Y, incY);
+			if (F.isZero (beta))
+				fzero (F, Ydim, Y, incY);
+			else
+				fscalin(F, Ydim, beta, Y, incY);
 			return Y;
 		}
 
@@ -348,7 +351,10 @@ namespace FFLAS{
 		size_t Ydim = (ta == FflasNoTrans)?M:N;
 		size_t Xdim = (ta == FflasNoTrans)?N:M;
 		if (!Xdim || F.isZero (alpha)){
-			fscalin(F, Ydim, beta, Y, incY);
+			if (F.isZero (beta))
+				fzero (F, Ydim, Y, incY);
+			else
+				fscalin(F, Ydim, beta, Y, incY);
 			return Y;
 		}
 		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);

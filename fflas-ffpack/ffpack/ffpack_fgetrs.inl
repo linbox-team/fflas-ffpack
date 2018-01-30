@@ -59,7 +59,6 @@ namespace FFPACK {
 					if (!F.isZero (*(B + i*ldb + j)))
 						consistent = false;
 			if (!consistent) {
-				std::cerr<<"System is inconsistent"<<std::endl;
 				*info = 1;
 			}
 			// The last rows of B are now supposed to be 0
@@ -93,7 +92,6 @@ namespace FFPACK {
 					if (!F.isZero (*(B + i*ldb + j)))
 						consistent = false;
 			if (!consistent) {
-				std::cerr<<"System is inconsistent"<<std::endl;
 				*info = 1;
 			}
 			// The last cols of B are now supposed to be 0
@@ -144,7 +142,6 @@ namespace FFPACK {
 						if (!F.isZero (*(W + i*ldw + j)))
 							consistent = false;
 				if (!consistent) {
-					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
 					FFLAS::fflas_delete (W);
 					return X;
@@ -176,7 +173,6 @@ namespace FFPACK {
 						if (!F.isZero (*(X + i*ldx + j)))
 							consistent = false;
 				if (!consistent) {
-					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
 					return X;
 				}
@@ -218,7 +214,6 @@ namespace FFPACK {
 						if (!F.isZero (*(W + i*ldw + j)))
 							consistent = false;
 				if (!consistent) {
-					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
 					FFLAS::fflas_delete (W);
 					return X;
@@ -250,7 +245,6 @@ namespace FFPACK {
 						if (!F.isZero (*(X + i*ldx + j)))
 							consistent = false;
 				if (!consistent) {
-					std::cerr<<"System is inconsistent"<<std::endl;
 					*info = 1;
 					return X;
 				}
