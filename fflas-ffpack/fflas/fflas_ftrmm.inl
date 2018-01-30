@@ -116,7 +116,7 @@ ftrmm (const Field& F, const FFLAS_SIDE Side,
        const size_t M, const size_t N,
        const typename Field::Element alpha,
        typename Field::ConstElement_ptr A, const size_t lda,
-       typename Field::Element_ptr B, const size_t ldb,
+       typename Field::ConstElement_ptr B, const size_t ldb,
        const typename Field::Element beta,
        typename Field::Element_ptr C, const size_t ldc)
 {

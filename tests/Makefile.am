@@ -39,6 +39,7 @@ BASIC_TESTS =               \
 		test-ftrmv          \
 		test-ftrsm          \
 		test-ftrstr          \
+		test-ftrssyr2k      \
 		test-ftrsm-check    \
 		test-ftrmm          \
 		test-fgemm          \
@@ -129,6 +130,7 @@ test_charpoly_SOURCES          = test-charpoly.C
 #  testeur_fgemm_SOURCES          = testeur_fgemm.C
 test_ftrsm_SOURCES             = test-ftrsm.C
 test_ftrstr_SOURCES             = test-ftrstr.C
+test_ftrssyr2k_SOURCES             = test-ftrssyr2k.C
 test_ftrmm_SOURCES             = test-ftrmm.C
 test_ftrsv_SOURCES             = test-ftrsv.C
 test_ftrmv_SOURCES             = test-ftrmv.C
