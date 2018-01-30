@@ -85,9 +85,9 @@ namespace FFPACK {
 				typename Field::Element_ptr tmpi=tmp, Aj=Ai+lda+1;
 				for (size_t j=i+1; j<N; j++,tmpi++, Aj+=lda+1)
 					FFLAS::faxpy (F, N-j, *tmpi, Ai+j-i, 1, Aj, 1);
-					//FFLAS::WriteMatrix(std::cerr<<"Fin iteration "<<i<< " tmp = "<<std::endl,F,1,N-i-1,tmp,N-i-1);
-					FFLAS::fflas_delete(tmp);
-						//FFLAS::WriteMatrix(std::cerr<<"Fin iteration "<<i<<"A = "<<std::endl,F,N,N,A,lda);
+				//FFLAS::WriteMatrix(std::cerr<<"Fin iteration "<<i<< " tmp = "<<std::endl,F,1,N-i-1,tmp,N-i-1);
+                FFLAS::fflas_delete(tmp);
+				//FFLAS::WriteMatrix(std::cerr<<"Fin iteration "<<i<<"A = "<<std::endl,F,N,N,A,lda);
 			}
 		}else { // FflasLower
 			for (size_t i=0; i<N; i++, Ai+=(lda+1), Dinvi+=incDinv){
@@ -173,12 +173,12 @@ namespace FFPACK {
             FFLAS::fflas_delete(tmp);
             size_t i = 0;
             while (F.isZero (*(CurrRow + i++)) && i<N-row);
-			i--;
-			if (!F.isZero (CurrRow[i])){
+            i--;
+            if (!F.isZero (CurrRow[i])){
 				    // found pivot
-				if (!i){ // pivot is on the leading diagonal -> 1x1 diagonal block
-					F.inv (*Dinvj, CurrRow[i]);
-					if (row>rank){ // some zero blocks are in the way
+                if (!i){ // pivot is on the leading diagonal -> 1x1 diagonal block
+                    F.inv (*Dinvj, CurrRow[i]);
+                    if (row>rank){ // some zero blocks are in the way
 							// column rotations
 							// On U
 						cyclic_shift_col(F, A+rank, rank, row-rank+1, lda);
