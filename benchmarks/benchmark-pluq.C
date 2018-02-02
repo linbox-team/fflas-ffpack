@@ -170,12 +170,14 @@ int main(int argc, char** argv) {
 	int v = 0;
 	int t=MAX_THREADS;
 	int NBK = -1;
-	bool par=false;
+    bool par=false;
+    bool grp =true;
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
 		{ 'n', "-n N", "Set the col dimension of A.",      TYPE_INT , &n },
 		{ 'r', "-r R", "Set the rank of matrix A.",            TYPE_INT , &r },
+		{ 'g', "-g yes/no", "Generic rank profile (yes) or random rank profile (no).", TYPE_BOOL , &grp },
 		{ 'i', "-i I", "Set number of repetitions.",            TYPE_INT , &iter },
 		{ 'v', "-v V", "Set 1 if need verification of result else 0.",            TYPE_INT , &v },
 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
@@ -198,7 +200,18 @@ int main(int argc, char** argv) {
 	PAR_BLOCK{
 		Rec_Initialize(F, A, m, n, n);
 		//				FFLAS::pfzero(F,m,n,A,m/NBK);
-		FFPACK::RandomMatrixWithRankandRandomRPM (F, m, n ,r, A, n);
+        if (grp){
+            size_t * cols = FFLAS::fflas_new<size_t>(n);
+            size_t * rows = FFLAS::fflas_new<size_t>(m);
+            for (int i=0; i<n; ++i)
+                cols[i] = i;
+            for (int i=0; i<m; ++i)
+                rows[i] = i;
+            FFPACK::RandomMatrixWithRankandRPM (F, m, n ,r, A, n, rows, cols);
+            FFLAS::fflas_delete(cols);
+            FFLAS::fflas_delete(rows);
+        } else
+            FFPACK::RandomMatrixWithRankandRandomRPM (F, m, n ,r, A, n);
 	}
 	size_t R;
 	FFLAS::Timer chrono;
