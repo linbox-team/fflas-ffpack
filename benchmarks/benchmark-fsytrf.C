@@ -23,7 +23,8 @@
 * ========LICENCE========
 */
 
-#define FSYTRF_BC_RL
+//#define __FFPACK_FSYTRF_BC_RL
+#define __FFPACK_FSYTRF_BC_CROUT
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
 	size_t threshold = 64;
 	size_t rank = 500;
 	bool up =true;
-	bool rpm =false;
+	bool rpm =true;
 	std::string file = "";
   
 	Argument as[] = {
@@ -104,8 +105,10 @@ int main(int argc, char** argv) {
 		// -----------
 		// Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
+	double gfops = 1.0/3.0*CUBE(double(rank)/1000.0) +n/1000.0*n/1000.0*double(rank)/1000.0  - double(rank)/1000.0*double(rank)/1000.0*n/1000;
+
 	std::cout << "Time: " << time / double(iter)
-			  << " Gfops: " << CUBE(double(n)/1000.)/3. / time * double(iter);
+			  << " Gfops: " << gfops / time * double(iter);
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	return 0;
 }

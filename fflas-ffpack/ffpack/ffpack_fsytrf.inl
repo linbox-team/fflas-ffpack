@@ -591,10 +591,10 @@ namespace FFPACK {
 		// 		return true;
 		// 	}
 		if (N <= threshold)
-#ifdef FSYTRF_BC_RL
+#ifdef __FFPACK_FSYTRF_BC_RL
 			return fsytrf_BC_RL (F, UpLo, N, A, lda, Dinv, incDinv);
-#elif defined FSYTRF_BC_CROUT
-			return fsytrf_BC_CROUT (F, UpLo, N, A, lda, Dinv, incDinv);
+#elif defined __FFPACK_FSYTRF_BC_CROUT
+			return fsytrf_BC_Crout (F, UpLo, N, A, lda, Dinv, incDinv);
 #else
 			return fsytrf_BC_RL (F, UpLo, N, A, lda, Dinv, incDinv);
 #endif
