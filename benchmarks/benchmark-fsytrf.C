@@ -45,15 +45,17 @@ int main(int argc, char** argv) {
 	size_t threshold = 64;
 	size_t rank = 500;
 	bool up =true;
-	bool rpm =false;
+    bool rpm =true;
+    bool grp =true;
 	std::string file = "";
   
 	Argument as[] = {
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'u', "-u yes/no", "Computes a UTDU (true) or LDLT decomposition (false).",  TYPE_BOOL , &up },
-		{ 'm', "-m yes/no", "Use the rank profile matrix revealing algorithm.",  TYPE_BOOL , &rpm },
-		{ 'r', "-r R", "Set the rank (for the RPM version.",                     TYPE_INT , &rank },
+		{ 'm', "-m yes/no", "Use the rank profile matrix revealing algorithm.", TYPE_BOOL , &rpm },
+		{ 'r', "-r R", "Set the rank (for the RPM version).", TYPE_INT , &rank },
+		{ 'g', "-g yes/no", "Generic rank profile (yes) or random rank profile (no).", TYPE_BOOL , &grp },
 		{ 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 't', "-t T", "Set the threshold to the base case.",            TYPE_INT , &threshold },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
@@ -79,8 +81,18 @@ int main(int argc, char** argv) {
 		else {
 			A = FFLAS::fflas_new<Element>(n*n);
 			Field::RandIter G(F);
-			if (rpm)
-				FFPACK::RandomSymmetricMatrixWithRankandRandomRPM (F, n, rank, A, n, G);
+			if (rpm) {
+                if (grp){
+                    size_t * cols = FFLAS::fflas_new<size_t>(n);
+                    size_t * rows = FFLAS::fflas_new<size_t>(n);
+                    for (size_t i=0; i<n; ++i)
+                        cols[i] = rows[i] = i;
+                    FFPACK::RandomSymmetricMatrixWithRankandRPM (F, n, rank, A, n, rows, cols, G);
+                    FFLAS::fflas_delete(cols);
+                    FFLAS::fflas_delete(rows);
+                } else
+                    FFPACK::RandomSymmetricMatrixWithRankandRandomRPM (F, n, rank, A, n, G);
+            }
 			else
 				FFPACK::RandomSymmetricMatrix (F, n, true, A, n, G);
 		}
