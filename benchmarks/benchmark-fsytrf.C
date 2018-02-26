@@ -66,6 +66,8 @@ int main(int argc, char** argv) {
 
     FFLAS::parseArguments(argc,argv,as);
 
+    rank=std::min(n,rank);
+
     typedef Givaro::ModularBalanced<double> Field;
     typedef Field::Element Element;
 
