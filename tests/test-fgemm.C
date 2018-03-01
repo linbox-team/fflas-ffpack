@@ -43,6 +43,7 @@
 #include <iostream>
 
 #include <givaro/modular.h>
+#include <givaro/gfq.h>
  
 #include <recint/rint.h>
 
@@ -412,6 +413,7 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+		ok = ok && run_with_field<Givaro::GFqDom<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
 	} while (loop && ok);
 
 

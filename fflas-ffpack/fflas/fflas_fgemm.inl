@@ -195,6 +195,19 @@ namespace FFLAS{ namespace Protected{
 			return false;
 		}
 
+		template<class MMHelperSrc, class MMHelperDest>
+		inline void updateOutBounds (const MMHelperSrc& MMHS, MMHelperDest& MMHD){
+			return;
+		}
+
+		template<class Field>
+		inline void updateOutBounds (const MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & MMHS,
+									 MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag> & MMHD){
+			MMHD.Outmax = MMHS.Outmax;
+			MMHD.Outmin = MMHS.Outmin;
+			return;
+		}
+
 		template <class Field, class AlgoT, class ParSeqTrait>
 		inline void ScalAndReduce (const Field& F, const size_t N,
 								   const typename Field::Element alpha,

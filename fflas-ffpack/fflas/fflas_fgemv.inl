@@ -357,7 +357,7 @@ namespace FFLAS{
 				fscalin(F, Ydim, beta, Y, incY);
 			return Y;
 		}
-		MMHelper<Field, MMHelperAlgo::Classic > HW (F, 0);
+		MMHelper<Field, MMHelperAlgo::Classic > HW (F);
 		return 	fgemv (F, ta, M, N, alpha,
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
 			       FFPACK::fflas_const_cast<typename Field::Element_ptr>(X), incX,

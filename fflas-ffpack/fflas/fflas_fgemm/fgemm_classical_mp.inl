@@ -46,94 +46,95 @@
 #include "fflas-ffpack/fflas/fflas_bounds.inl"
 namespace FFLAS {
  
-	template<typename Field,
-			 typename AlgoTrait,
-			 typename ParSeqTrait>
-	struct MMHelper<Field, AlgoTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqTrait> {
-		typedef MMHelper<Field, AlgoTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqTrait>  Self_t;
-		Givaro::Integer normA,normB;
-		int recLevel;
-		ParSeqTrait parseq;
-		MMHelper() : normA(0), normB(0), recLevel(-1) {}
-		template <class F2, class A2, class M2, class PS2>
-		MMHelper(MMHelper<F2, A2, M2, PS2> H2) : 
-			normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
-		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
-		MMHelper(const Field& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
-			: recLevel(-1), parseq(PS)
-		{F.characteristic(normA);F.characteristic(normB); }
-		MMHelper(const Field& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
-		{F.characteristic(normA);F.characteristic(normB);}
-		void setNorm(Givaro::Integer p){normA=normB=p;}
+	// template<typename Field,
+	// 		 typename AlgoTrait,
+	// 		 typename ParSeqTrait>
+	// struct MMHelper<Field, AlgoTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqTrait> {
+	// 	typedef MMHelper<Field, AlgoTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqTrait>  Self_t;
+	// 	Givaro::Integer normA,normB;
+	// 	int recLevel;
+	// 	ParSeqTrait parseq;
+	// 	MMHelper() : normA(0), normB(0), recLevel(-1) {}
+	// 	template <class F2, class A2, class M2, class PS2>
+	// 	MMHelper(MMHelper<F2, A2, M2, PS2> H2) : 
+	// 		normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
+	// 	MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
+	// 	MMHelper(const Field& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
+	// 		: recLevel(-1), parseq(PS)
+	// 	{F.characteristic(normA);F.characteristic(normB); }
+	// 	MMHelper(const Field& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
+	// 	{F.characteristic(normA);F.characteristic(normB);}
+	// 	void setNorm(Givaro::Integer p){normA=normB=p;}
 
-		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
-		{
-			return out <<"Helper: "
-					   <<typeid(AlgoTrait).name()<<' '
-					   <<typeid(ModeCategories::ConvertTo<ElementCategories::RNSElementTag>).name()<< ' '
-					   << M.parseq <<std::endl
-					   <<"  recLevel = "<<M.recLevel<<std::endl;
-		}
-	};
-	template<typename E,
-			 typename AlgoTrait,
-			 typename ParSeqTrait>
-	struct MMHelper<FFPACK::RNSInteger<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> {
-		typedef  MMHelper<FFPACK::RNSInteger<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> Self_t;
-		Givaro::Integer normA,normB;
-		int recLevel;
-		ParSeqTrait parseq;
-		MMHelper() : normA(0), normB(0), recLevel(-1) {}
-		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
-		MMHelper(const FFPACK::RNSInteger<E>& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
-			: recLevel(-1), parseq(PS)
-		{F.characteristic(normA);F.characteristic(normB);}
-		MMHelper(const FFPACK::RNSInteger<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
-		{F.characteristic(normA);F.characteristic(normB);}
-		template <class F2, class A2, class M2, class PS2>
-		MMHelper(MMHelper<F2, A2, M2, PS2> H2) : 
-			normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
-		void setNorm(Givaro::Integer p){normA=normB=p;}
+	// 	friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+	// 	{
+	// 		return out <<"Helper: "
+	// 				   <<typeid(AlgoTrait).name()<<' '
+	// 				   <<typeid(ModeCategories::ConvertTo<ElementCategories::RNSElementTag>).name()<< ' '
+	// 				   << M.parseq <<std::endl
+	// 				   <<"  recLevel = "<<M.recLevel<<std::endl;
+	// 	}
+	// };
+	// template<typename E,
+	// 		 typename AlgoTrait,
+	// 		 typename ParSeqTrait>
+	// struct MMHelper<FFPACK::RNSInteger<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> {
+	// 	typedef  MMHelper<FFPACK::RNSInteger<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> Self_t;
+	// 	Givaro::Integer normA,normB;
+	// 	int recLevel;
+	// 	ParSeqTrait parseq;
+	// 	MMHelper() : normA(0), normB(0), recLevel(-1) {}
+	// 	MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
+	// 	MMHelper(const FFPACK::RNSInteger<E>& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
+	// 		: recLevel(-1), parseq(PS)
+	// 	{F.characteristic(normA);F.characteristic(normB);}
+	// 	MMHelper(const FFPACK::RNSInteger<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
+	// 	{F.characteristic(normA);F.characteristic(normB);}
+	// 	template <class F2, class A2, class M2, class PS2>
+	// 	MMHelper(MMHelper<F2, A2, M2, PS2> H2) : 
+	// 		normA(H2.normA), normB(H2.normB), recLevel(H2.recLevel), parseq(H2.parseq) {}
+	// 	void setNorm(Givaro::Integer p){normA=normB=p;}
 
-		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
-		{
-			return out <<"Helper: "
-					   <<typeid(AlgoTrait).name()<<' '
-					   <<typeid(ModeCategories::DefaultTag).name()<< ' '
-					   << M.parseq <<std::endl
-					   <<"  recLevel = "<<M.recLevel<<std::endl;
-		}
-	};
-	template<typename E,
-			 typename AlgoTrait,
-			 typename ParSeqTrait>
-	struct MMHelper<FFPACK::RNSIntegerMod<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> {
-		typedef MMHelper<FFPACK::RNSIntegerMod<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> Self_t;
-		Givaro::Integer normA,normB;
-		int recLevel;
-		ParSeqTrait parseq;
-		MMHelper() : normA(0), normB(0), recLevel(-1) {}
-		MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
-		MMHelper(const FFPACK::RNSIntegerMod<E>& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
-			: recLevel(-1), parseq(PS)
-		{F.characteristic(normA);F.characteristic(normB);}
-		MMHelper(const FFPACK::RNSIntegerMod<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
-		{F.characteristic(normA);F.characteristic(normB);}
-		// copy constructor from other Field and Algo Traits
-		template<class F2, typename AlgoT2, typename FT2, typename PS2>
-		MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
+	// 	friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+	// 	{
+	// 		return out <<"Helper: "
+	// 				   <<typeid(AlgoTrait).name()<<' '
+	// 				   <<typeid(ModeCategories::DefaultTag).name()<< ' '
+	// 				   << M.parseq <<std::endl
+	// 				   <<"  recLevel = "<<M.recLevel<<std::endl;
+	// 	}
+	// };
+	// template<typename E,
+	// 		 typename AlgoTrait,
+	// 		 typename ParSeqTrait>
+	// struct MMHelper<FFPACK::RNSIntegerMod<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> {
+	// 	typedef MMHelper<FFPACK::RNSIntegerMod<E>, AlgoTrait,ModeCategories::DefaultTag, ParSeqTrait> Self_t;
+	// 	Givaro::Integer normA,normB;
+	// 	const AlgoTrait& AlgoManager;
+    //     ModeManager_t<FFPACK::RNSIntegerMod<E>,ModeCategories::DefaultTag>& ModeManager;
+    //     const ParSeqTrait& ParSeqManager;
+	// 	MMHelper() : normA(0), normB(0), recLevel(-1) {}
+	// 	MMHelper(Givaro::Integer Amax, Givaro::Integer Bmax) : normA(Amax), normB(Bmax), recLevel(-1) {}
+	// 	MMHelper(const FFPACK::RNSIntegerMod<E>& F, size_t m, size_t n, size_t k, ParSeqTrait PS=ParSeqTrait())
+	// 		: recLevel(-1), parseq(PS)
+	// 	{F.characteristic(normA);F.characteristic(normB);}
+	// 	MMHelper(const FFPACK::RNSIntegerMod<E>& F, int wino, ParSeqTrait PS=ParSeqTrait()) : recLevel(wino), parseq(PS)
+	// 	{F.characteristic(normA);F.characteristic(normB);}
+	// 	// copy constructor from other Field and Algo Traits
+	// 	template<class F2, typename AlgoT2, typename FT2, typename PS2>
+	// 	MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
 
-		void setNorm(Givaro::Integer p){normA=normB=p;}
+	// 	void setNorm(Givaro::Integer p){normA=normB=p;}
 
-		friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
-		{
-			return out <<"Helper: "
-					   <<typeid(AlgoTrait).name()<<' '
-					   <<typeid(ModeCategories::DefaultTag).name()<< ' '
-					   << M.parseq <<std::endl
-					   <<"  recLevel = "<<M.recLevel<<std::endl;
-		}
-	};
+	// 	friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+	// 	{
+	// 		return out <<"Helper: "
+	// 				   <<typeid(AlgoTrait).name()<<' '
+	// 				   <<typeid(ModeCategories::DefaultTag).name()<< ' '
+	// 				   << M.parseq <<std::endl
+	// 				   <<"  recLevel = "<<M.recLevel<<std::endl;
+	// 	}
+	// };
 
 	/***********************************
 	 *** MULTIPRECISION FGEMM OVER Z ***
@@ -158,7 +159,7 @@ namespace FFLAS {
 		Givaro::Timer t;t.start();
 #endif
 		for(size_t i=0;i<F.size();i++){
-			MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> H2(F.rns()._field_rns[i], H.recLevel, H.parseq);
+			MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> H2(F.rns()._field_rns[i], H.AlgoManager, H.parseq);
 			FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
 						 m, n, k, alpha._ptr[i*alpha._stride],
 						 Ad._ptr+i*Ad._stride, lda,
@@ -256,7 +257,7 @@ namespace FFLAS {
 	       const Givaro::Integer* B, const size_t ldb,
 	       Givaro::Integer beta,
 	       Givaro::Integer* C, const size_t ldc,
-	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq >  & H)
+	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag, ParSeqHelper::Sequential >  & H)
 	{
 		//std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
 #ifdef PROFILE_FGEMM_MP
@@ -277,16 +278,21 @@ namespace FFLAS {
 		// compute bound on the output
 		Givaro::Integer  mA,mB,mC;
 		size_t logA,logB;
-		mA=H.normA;
-		mB=H.normB;
-		if (H.normA==0)
-			H.normA = InfNorm ((ta==FflasNoTrans)?m:k,(ta==FflasNoTrans)?k:m,A,lda);
-		logA = H.normA.bitsize();
-		if (H.normB==0)
-			H.normB = InfNorm ((tb==FflasNoTrans)?k:n,(tb==FflasNoTrans)?n:k,B,ldb);
-		logB = H.normB.bitsize();
-
-		mC = 2*uint64_t(k)*H.normA*H.normB*abs(alpha); // need to use 2x bound to reach both positive and negative
+			// TODO (CP): have InfNorm return both min and max to set Amax and Amin
+		if (H.ModeManager.Amax==0){
+			H.ModeManager.Amax = InfNorm ((ta==FflasNoTrans)?m:k,(ta==FflasNoTrans)?k:m,A,lda);
+			H.ModeManager.Amin = -H.ModeManager.Amax;
+		}
+			// TODO (CP): have InfNorm return both min and max to set Bmax and Bmin
+		if (H.ModeManager.Bmax==0){
+			H.ModeManager.Bmax = InfNorm ((tb==FflasNoTrans)?k:n,(tb==FflasNoTrans)?n:k,B,ldb);
+			H.ModeManager.Bmin = -H.ModeManager.Bmax;
+		}
+		mA=std::max(-H.ModeManager.Amin,H.ModeManager.Amax);
+		mB=std::max(-H.ModeManager.Bmin,H.ModeManager.Bmax);
+		logA = mA.bitsize();
+		logB = mB.bitsize();
+		mC = 2*uint64_t(k)*mA*mB*abs(alpha); // need to use 2x bound to reach both positive and negative
 
         // A or B is zero, no need to modify C
         if (mC == 0) return C;
@@ -329,7 +335,7 @@ namespace FFLAS {
 
 		// perform the fgemm in RNS
 		// Classic as no Winograd over ZZ available for the moment
-		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H.recLevel,H.parseq);
+		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H.AlgoManager,H.ParSeqManager);
 
 		// compute alpha and beta in RNS
 		typename RnsDomain::Element alphap, betap;
@@ -451,8 +457,8 @@ namespace FFLAS {
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
-		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > H2(Z,H.recLevel,H.parseq);
-		H2.setNorm(p);
+		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag > H2(Z,H.AlgoManager,H.ParSeqManager);
+			//H2.setNorm(p);
 
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 

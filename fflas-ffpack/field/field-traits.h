@@ -193,7 +193,8 @@ namespace FFLAS { /*  Traits */
 
 #ifndef INTEGER_NO_RNS
 	template <> struct ModeTraits<Givaro::ModularBalanced<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
-	template <> struct ModeTraits<Givaro::ZRing<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
+	template <> struct ModeTraits<Givaro::ZRing<Givaro::Integer> > {typedef typename ModeCategories::DefaultBoundedTag value;};
+//	template <> struct ModeTraits<Givaro::ZRing<Givaro::Integer> > {typedef typename ModeCategories::ConvertTo<ElementCategories::RNSElementTag> value;};
 #endif
 
 	    // These ones are here temporarily, to ensure
