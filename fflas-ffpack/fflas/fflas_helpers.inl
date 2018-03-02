@@ -94,39 +94,34 @@ namespace FFLAS {
     template<class ParSeq>
     struct AlgoChooser<ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq>{typedef MMHelperAlgo::Classic value;};
 
-    template<class Field,
-             typename AlgoTrait = MMHelperAlgo::Auto,
-             typename ModeTrait = typename ModeTraits<Field>::value,
-             typename ParSeqTrait = ParSeqHelper::Sequential >
-    struct MMHelper;
-        /*! FGEMM  Helper for Default and ConvertTo modes of operation
+         /*! FGEMM  Helper for Default and ConvertTo modes of operation
          */
-    template<class Field,
-             typename AlgoTrait,
-             typename ParSeqTrait >
-    struct MMHelper<Field, AlgoTrait, ModeCategories::DefaultTag, ParSeqTrait>
-    {
-        typedef MMHelper<Field,AlgoTrait, ModeCategories::DefaultTag,ParSeqTrait> Self_t;
-        int recLevel ;
-        ParSeqTrait parseq;
+    // template<class Field,
+    //          typename AlgoTrait,
+    //          typename ParSeqTrait >
+    // struct MMHelper<Field, AlgoTrait, ModeCategories::DefaultTag, ParSeqTrait>
+    // {
+    //     typedef MMHelper<Field,AlgoTrait, ModeCategories::DefaultTag,ParSeqTrait> Self_t;
+    //     int recLevel ;
+    //     ParSeqTrait parseq;
 
-        MMHelper(){}
-        MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) : recLevel(-1), parseq(_PS) {}
-        MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) : recLevel(w), parseq(_PS) {}
+    //     MMHelper(){}
+    //     MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) : recLevel(-1), parseq(_PS) {}
+    //     MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) : recLevel(w), parseq(_PS) {}
 
-            // copy constructor from other Field and Algo Traits
-        template<class F2, typename AlgoT2, typename FT2, typename PS2>
-        MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
+    //         // copy constructor from other Field and Algo Traits
+    //     template<class F2, typename AlgoT2, typename FT2, typename PS2>
+    //     MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
 
-        friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
-            {
-                return out <<"Helper: "
-                           <<typeid(AlgoTrait).name()<<' '
-                           <<typeid(ModeCategories::DefaultTag).name()<< ' '
-                           << M.parseq <<std::endl
-                           <<"  recLevel = "<<M.recLevel<<std::endl;
-            }
-    }; 
+    //     friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+    //         {
+    //             return out <<"Helper: "
+    //                        <<typeid(AlgoTrait).name()<<' '
+    //                        <<typeid(ModeCategories::DefaultTag).name()<< ' '
+    //                        << M.parseq <<std::endl
+    //                        <<"  recLevel = "<<M.recLevel<<std::endl;
+    //         }
+    // }; 
 
 
     template<class Field, class ModeTrait,class Enable=void>
@@ -136,6 +131,10 @@ namespace FFLAS {
 
         ModeManager_t (){}
         ModeManager_t(const Field&F){}
+        
+        template<class OtherMode>
+        ModeManager_t (const Field& F, const OtherMode& OM) {}
+
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
                 return out <<"ModeManager: "
                            <<typeid(ModeTrait).name()<< ' ';
@@ -146,7 +145,8 @@ namespace FFLAS {
     struct ModeManager_t <Field, ModeTrait,
                           typename std::enable_if<std::is_same<ModeTrait,ModeCategories::DelayedTag>::value ||
                                                   std::is_same<ModeTrait,ModeCategories::LazyTag>::value ||
-                                                  std::is_same<ModeTrait,ModeCategories::DefaultBoundedTag>::value>::type> {
+                                                  std::is_same<ModeTrait,ModeCategories::DefaultBoundedTag>::value ||
+                                                  std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value >::type> {
                 
         typedef ModeManager_t<Field,ModeTrait,void> Self_t;
         typedef typename associatedDelayedField<const Field>::type DelayedField_t;
@@ -165,7 +165,17 @@ namespace FFLAS {
             Outmin(0), Outmax(0),
             MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
             delayedField(F) {}
-            
+        
+        template<class OtherMode>
+        ModeManager_t (const Field& F, const OtherMode& OM):
+            FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
+            Amin(OM.Amin), Amax(OM.Amax),
+            Bmin(OM.Bmin), Bmax(OM.Bmax),
+            Cmin(OM.Cmin), Cmax(OM.Cmax),
+            Outmin(0), Outmax(0),
+            MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
+            delayedField(F) {}
+
         ModeManager_t (const Field&F, DFElt _Amin, DFElt _Amax, DFElt _Bmin, DFElt _Bmax, DFElt _Cmin, DFElt _Cmax):
             FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
             Amin(_Amin), Amax(_Amax),
@@ -282,39 +292,11 @@ namespace FFLAS {
                        <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
         }
     };
-
-    // template<class Field,
-    //          typename AlgoTrait,
-    //          typename Dest,
-    //          typename ParSeqTrait>
-    // struct MMHelper<Field, AlgoTrait, ModeCategories::ConvertTo<Dest>, ParSeqTrait>
-    // {
-    //     typedef MMHelper<Field,AlgoTrait, ModeCategories::ConvertTo<Dest>,ParSeqTrait> Self_t;
-    //     int recLevel ;
-    //     ParSeqTrait parseq;
-
-    //     MMHelper(){}
-    //     MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) : recLevel(-1), parseq(_PS) {}
-    //     MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) : recLevel(w), parseq(_PS) {}
-
-    //         // copy constructor from other Field and Algo Traits
-    //     template<class F2, typename AlgoT2, typename FT2, typename PS2>
-    //     MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
-
-    //     friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
-    //         {
-    //             return out <<"Helper: "
-    //                        <<typeid(AlgoTrait).name()<<' '
-    //                        <<typeid(ModeCategories::ConvertTo<Dest>).name()<< ' '
-    //                        << M.parseq <<std::endl
-    //                        <<"  recLevel = "<<M.recLevel<<std::endl;
-    //         }
-    // }; 
-        // MMHelper for Delayed and Lazy Modes of operation
-    template<class Field,
-             typename AlgoTrait,
-             typename ModeTrait,
-             typename ParSeqTrait>
+    
+     template<class Field,
+             typename AlgoTrait = MMHelperAlgo::Auto,
+             typename ModeTrait = typename ModeTraits<Field>::value,
+             typename ParSeqTrait = ParSeqHelper::Sequential >
     struct MMHelper {
 
         typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
@@ -323,19 +305,24 @@ namespace FFLAS {
         ModeManager_t<Field,ModeTrait> ModeManager;
         const ParSeqTrait& ParSeqManager;
 
-        MMHelper(){}
+             //MMHelper(){}
             //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
             // correct but semantically not satisfactory
 
         MMHelper(const Field& F,
                  const AlgoTrait& _AT = AlgoTrait(),
                  const ParSeqTrait& _PS=ParSeqTrait()) :
-                AlgoManager(_AT), ParSeqManager(_PS){ModeManager = ModeManager_t<Field,ModeTrait>(F);}
+                AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
         MMHelper(const Field& F,
                  ModeManager_t<Field,ModeTrait> _MM,
                  const AlgoTrait& _AT = AlgoTrait(),
                  const ParSeqTrait& _PS = ParSeqTrait()) :
                 AlgoManager(_AT), ModeManager(_MM), ParSeqManager(_PS){}
+        
+
+        template <class OtherHelper>
+        MMHelper(const Field& F, const OtherHelper& OH):
+                AlgoManager(OH.AlgoManager), ModeManager(F,OH.ModeManager), ParSeqManager(OH.ParSeqManager){}
         
         // MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) :
         //         recLevel(w), 

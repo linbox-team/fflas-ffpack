@@ -52,7 +52,7 @@ namespace FFLAS{
 	      typename Givaro::Integer* A, const size_t lda,
 	      MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > & H)
 	{
-		MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  H2;
+		MMHelper<Givaro::Modular<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  H2(F,H);
 		FFLAS::fger(F,M,N,alpha,x,incx,y,incy,A,lda,H2);
 	}
 

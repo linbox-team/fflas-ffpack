@@ -159,7 +159,7 @@ namespace FFLAS {
 		Givaro::Timer t;t.start();
 #endif
 		for(size_t i=0;i<F.size();i++){
-			MMHelper<typename RNS::ModField,MMHelperAlgo::Winograd> H2(F.rns()._field_rns[i], H.AlgoManager, H.parseq);
+			MMHelper<typename RNS::ModField,MMHelperAlgo::Auto> H2(F.rns()._field_rns[i]);
 			FFLAS::fgemm(F.rns()._field_rns[i],ta,tb,
 						 m, n, k, alpha._ptr[i*alpha._stride],
 						 Ad._ptr+i*Ad._stride, lda,
@@ -246,7 +246,6 @@ namespace FFLAS {
 	} 
 
 
-	template<class ParSeq>
 	inline Givaro::Integer* 
 	fgemm (const Givaro::ZRing<Givaro::Integer>& F,
 	       const FFLAS_TRANSPOSE ta,
@@ -257,7 +256,7 @@ namespace FFLAS {
 	       const Givaro::Integer* B, const size_t ldb,
 	       Givaro::Integer beta,
 	       Givaro::Integer* C, const size_t ldc,
-	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag, ParSeqHelper::Sequential >  & H)
+	       MMHelper<Givaro::ZRing<Givaro::Integer>, MMHelperAlgo::Classic,  ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeqHelper::Sequential >  & H)
 	{
 		//std::cerr<<"Entering fgemm<ZRing<Integer>> ParSeq"<<std::endl;
 #ifdef PROFILE_FGEMM_MP
@@ -335,7 +334,7 @@ namespace FFLAS {
 
 		// perform the fgemm in RNS
 		// Classic as no Winograd over ZZ available for the moment
-		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H.AlgoManager,H.ParSeqManager);
+		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Sequential> H2(Zrns,H.AlgoManager,H.ParSeqManager);
 
 		// compute alpha and beta in RNS
 		typename RnsDomain::Element alphap, betap;
@@ -438,8 +437,6 @@ namespace FFLAS {
 	}
 
 
-	// fgemm for IntegerDomain with Winograd Helper
-	
 	inline Givaro::Integer* fgemm (const Givaro::Modular<Givaro::Integer>& F,
 								   const FFLAS_TRANSPOSE ta,
 								   const FFLAS_TRANSPOSE tb,
@@ -457,7 +454,7 @@ namespace FFLAS {
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
-		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag > H2(Z,H.AlgoManager,H.ParSeqManager);
+		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > H2(Z,H);
 			//H2.setNorm(p);
 
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
@@ -486,6 +483,7 @@ namespace FFLAS {
 		F.cardinality(p);
 		IntegerDomain Z;
 		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > H2(Z,H.recLevel,H.parseq);
+			//
 		H2.setNorm(p);
 		
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
