@@ -62,11 +62,11 @@ namespace FFLAS {
                 // - reducing them
                 // - making possibly more blocks (smaller kmax)
 		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
-		typename HelperType::DelayedField::Element alphadf, betadf;
+		typename HelperType::DFElt alphadf, betadf;
 		betadf = beta;
 		
 		if (F.isMOne (alpha)) {
-			alphadf = -H.delayedField.one;
+			alphadf = -H.ModeManager.delayedField.one;
 		} else {
 			alphadf = F.one;
 			if (! F.isOne( alpha)) {
@@ -82,29 +82,29 @@ namespace FFLAS {
 
 		if (F.isMOne(betadf)) betadf = -F.one;
 
-		size_t kmax = H.MaxDelayedDim (betadf);
-		H.checkA(F,ta, m,k,A,lda);
-		H.checkB(F,tb, k,n,B,ldb);
-		if (kmax <=  k/2 || H.Aunfit() || H.Bunfit() ){
+		size_t kmax = H.ModeManager.MaxDelayedDim (betadf);
+		H.ModeManager.checkA(F,ta, m,k,A,lda);
+		H.ModeManager.checkB(F,tb, k,n,B,ldb);
+		if (kmax <=  k/2 || H.ModeManager.Aunfit() || H.ModeManager.Bunfit() ){
                         // Might as well reduce inputs
-                        if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
-				H.initA();
+                        if (H.ModeManager.Amin < H.ModeManager.FieldMin || H.ModeManager.Amax>H.ModeManager.FieldMax){
+				H.ModeManager.initA();
 				freduce_constoverride (F, (ta==FflasNoTrans)?m:k, (ta==FflasNoTrans)?k:m, A, lda);
 			}
-			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
-				H.initB();
+			if (H.ModeManager.Bmin < H.ModeManager.FieldMin || H.ModeManager.Bmax>H.ModeManager.FieldMax){
+				H.ModeManager.initB();
 				freduce_constoverride (F, (tb==FflasNoTrans)?k:n, (tb==FflasNoTrans)?n:k, B, ldb);
 			}
-			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
-				H.initC();
+			if (H.ModeManager.Cmin < H.ModeManager.FieldMin || H.ModeManager.Cmax>H.ModeManager.FieldMax){
+				H.ModeManager.initC();
 				freduce (F, m, n, C, ldc);
 			}
-			kmax = H.MaxDelayedDim (betadf);
+			kmax = H.ModeManager.MaxDelayedDim (betadf);
 		}
 		
 		if (!kmax){
 			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
-			H.initOut();
+			H.ModeManager.initOut();
 			return fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
 		}
 
@@ -127,7 +127,7 @@ namespace FFLAS {
 		typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
 		typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
 		
-		fgemm (H.delayedField, ta, tb, m, n, remblock, alphadf, 
+		fgemm (H.ModeManager.delayedField, ta, tb, m, n, remblock, alphadf, 
 		       (DFCElt_ptr)A +nblock*shiftA, lda,
 		       (DFCElt_ptr)B +nblock*shiftB, ldb, betadf, 
 		       (DFElt_ptr)C, ldc, Hfp);
@@ -135,7 +135,7 @@ namespace FFLAS {
 		for (size_t i = 0; i < nblock; ++i) {
 			freduce (F, m, n, C, ldc);
 			Hfp.initC();
-			fgemm (H.delayedField, ta, tb, m, n, k2, alphadf, 
+			fgemm (H.ModeManager.delayedField, ta, tb, m, n, k2, alphadf, 
 			       (DFCElt_ptr)A +i*shiftA, lda,
 			       (DFCElt_ptr)B +i*shiftB, ldb, F.one, 
 			       (DFElt_ptr)C, ldc, Hfp);
@@ -152,20 +152,20 @@ namespace FFLAS {
 				Hfp.initOut();
 			}
 
-			fscalin(H.delayedField, m,n,alpha,(typename DelayedHelper_t::DelayedField_t::Element_ptr)C,ldc);
+			fscalin(H.ModeManager.delayedField, m,n,alpha,(typename DelayedHelper_t::DelayedField_t::Element_ptr)C,ldc);
 
 			if (alpha>0){
-				H.Outmin = (const DFElt)(alpha) * Hfp.Outmin;
-				H.Outmax = (const DFElt)alpha * Hfp.Outmax;
+				H.ModeManager.Outmin = (const DFElt)(alpha) * Hfp.Outmin;
+				H.ModeManager.Outmax = (const DFElt)alpha * Hfp.Outmax;
 			} else {
-				H.Outmin = (const DFElt)alpha * Hfp.Outmax;
-				H.Outmax = (const DFElt)alpha * Hfp.Outmin;
+				H.ModeManager.Outmin = (const DFElt)alpha * Hfp.Outmax;
+				H.ModeManager.Outmax = (const DFElt)alpha * Hfp.Outmin;
 			}
 		}else {
-			H.Outmin = Hfp.Outmin;
-			H.Outmax = Hfp.Outmax;
+			H.ModeManager.Outmin = Hfp.Outmin;
+			H.ModeManager.Outmax = Hfp.Outmax;
 		}
-		H.checkOut(F,m,n,C,ldc);
+		H.ModeManager.checkOut(F,m,n,C,ldc);
 	}
 } // FFLAS
 
@@ -235,7 +235,7 @@ namespace FFLAS {
 	{
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F,0);
 		fgemm (F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,Hd);
-		H.setOutBounds (k,alpha,beta);
+		H.ModeManager.setOutBounds (k,alpha,beta);
 	}
 
 	inline void fgemm (const Givaro::DoubleDomain& F,

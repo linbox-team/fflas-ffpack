@@ -80,10 +80,12 @@ namespace FFLAS {
         struct Classic{};
         struct Winograd{
             int recLevel;
+            Winograd():recLevel(-1){}
             Winograd(int r):recLevel(r){}
         };
         struct WinogradPar{
             int recLevel;
+            WinogradPar():recLevel(-1){}
             WinogradPar(int r):recLevel(r){}
         };
         struct Bini{};
@@ -310,13 +312,13 @@ namespace FFLAS {
             // correct but semantically not satisfactory
 
         MMHelper(const Field& F,
-                 const AlgoTrait& _AT = AlgoTrait(),
-                 const ParSeqTrait& _PS=ParSeqTrait()) :
+                 const ParSeqTrait& _PS=ParSeqTrait(),
+                 const AlgoTrait& _AT = AlgoTrait()) :
                 AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
         MMHelper(const Field& F,
                  ModeManager_t<Field,ModeTrait> _MM,
-                 const AlgoTrait& _AT = AlgoTrait(),
-                 const ParSeqTrait& _PS = ParSeqTrait()) :
+                 const ParSeqTrait& _PS = ParSeqTrait(),
+                 const AlgoTrait& _AT = AlgoTrait()) :
                 AlgoManager(_AT), ModeManager(_MM), ParSeqManager(_PS){}
         
 
@@ -337,12 +339,12 @@ namespace FFLAS {
         //     {
         //     }
 
-            // copy constructor from other Field and Algo Traits
-        template<class F2, typename AT2, typename MT2, typename PS2>
-        MMHelper(MMHelper<F2, AT2, MT2, PS2>& H2) :
-                AlgoManager(H2.AlgoManager),
-                ModeManager(H2.ModeManager),
-                ParSeqManager(H2.ParSeqManager) {}
+        //     // copy constructor from other Field and Algo Traits
+        // template<class F2, typename AT2, typename MT2, typename PS2>
+        // MMHelper(MMHelper<F2, AT2, MT2, PS2>& H2) :
+        //         AlgoManager(H2.AlgoManager),
+        //         ModeManager(H2.ModeManager),
+        //         ParSeqManager(H2.ParSeqManager) {}
 
         MMHelper(const Field& F, int w,
                  DFElt _Amin, DFElt _Amax,

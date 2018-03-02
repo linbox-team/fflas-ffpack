@@ -334,7 +334,10 @@ namespace FFLAS {
 
 		// perform the fgemm in RNS
 		// Classic as no Winograd over ZZ available for the moment
-		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Sequential> H2(Zrns,H.AlgoManager,H.ParSeqManager);
+		MMHelper<RnsDomain,
+				 MMHelperAlgo::Classic,
+				 ModeCategories::DefaultTag,
+				 ParSeqHelper::Sequential> H2(Zrns,H);
 
 		// compute alpha and beta in RNS
 		typename RnsDomain::Element alphap, betap;
@@ -368,22 +371,22 @@ namespace FFLAS {
 
 	
 
-	// Simple switch Winograd -> Classic (waiting for Winograd's algorithm to be generic wrt ModeTrait)
-	template<typename RNS, class ModeT>
-	inline typename RNS::Element_ptr fgemm (const FFPACK::RNSInteger<RNS> &F,
-											const FFLAS_TRANSPOSE ta,
-											const FFLAS_TRANSPOSE tb,
-											const size_t m, const size_t n,const size_t k,
-											const typename RNS::Element alpha,
-											typename RNS::ConstElement_ptr Ad, const size_t lda,
-											typename RNS::ConstElement_ptr Bd, const size_t ldb,
-											const typename RNS::Element beta,
-											typename RNS::Element_ptr Cd, const size_t ldc,
-											MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Winograd, ModeT, ParSeqHelper::Sequential> & H)
-	{
-		MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeT, ParSeqHelper::Sequential> H2(F, H.recLevel,H.parseq);
-		return fgemm(F,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
-	}
+	// // Simple switch Winograd -> Classic (waiting for Winograd's algorithm to be generic wrt ModeTrait)
+	// template<typename RNS, class ModeT>
+	// inline typename RNS::Element_ptr fgemm (const FFPACK::RNSInteger<RNS> &F,
+	// 										const FFLAS_TRANSPOSE ta,
+	// 										const FFLAS_TRANSPOSE tb,
+	// 										const size_t m, const size_t n,const size_t k,
+	// 										const typename RNS::Element alpha,
+	// 										typename RNS::ConstElement_ptr Ad, const size_t lda,
+	// 										typename RNS::ConstElement_ptr Bd, const size_t ldb,
+	// 										const typename RNS::Element beta,
+	// 										typename RNS::Element_ptr Cd, const size_t ldc,
+	// 										MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Winograd, ModeT, ParSeqHelper::Sequential> & H)
+	// {
+	// 	MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeT, ParSeqHelper::Sequential> H2(F, H.recLevel,H.parseq);
+	// 	return fgemm(F,ta,tb,m,n,k,alpha,Ad,lda,Bd,ldb,beta,Cd,ldc,H2);
+	// }
 
 	// template<class ParSeq>
 	// inline Givaro::Integer* 

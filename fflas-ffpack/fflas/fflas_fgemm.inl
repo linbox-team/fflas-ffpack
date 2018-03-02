@@ -313,7 +313,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       const ParSeqHelper::Sequential seq)
 	{
-		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F, m, k, n, seq);
+		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Sequential > HW (F);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
@@ -333,7 +333,7 @@ namespace FFLAS {
 	       const ParSeqHelper::Parallel<Cut,Param> par)
 	{
 
-		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > HW (F, m, k, n, par);
+		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > HW (F, MMHelperAlgo::Auto(), par);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
 
@@ -378,7 +378,7 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Auto, ModeT, ParSeq> & H)
 	{
-		MMHelper<Field, typename AlgoChooser<ModeT, ParSeq>::value, ModeT, ParSeq> HW (H);
+		MMHelper<Field, typename AlgoChooser<ModeT, ParSeq>::value, ModeT, ParSeq> HW (F,H.ParSeqManager);
 		return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HW);
 	}
 
@@ -447,7 +447,7 @@ namespace FFLAS {
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
 		// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
 
-		H.initOut();
+		H.ModeManager.initOut();
 
 		return C;
 	}

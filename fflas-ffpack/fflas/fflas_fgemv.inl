@@ -157,14 +157,13 @@ namespace FFLAS {
 				return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX,beta,Y,incY);
 			else{
 				    // Stay over int64_t
-				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
-				HG.recLevel = 0;
+				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(F,H);
 				if (ta == FflasNoTrans)
 					fgemm(F,FflasNoTrans,FflasNoTrans,M,1,N,alpha,A,lda,X,incX,beta,Y,incY,HG);
 				else
 					fgemm(F,FflasTrans,FflasNoTrans,N,1,M,alpha,A,lda,X,incX,beta,Y,incY,HG);
 				freduce(F,(ta==FflasNoTrans)?M:N, Y,incY);
-				H.initOut();
+				H.ModeManager.initOut();
 				return Y;
 			}
 		}
@@ -180,7 +179,7 @@ namespace FFLAS {
 		       beta_, Y, incY, HD);
 
 		Protected::ScalAndReduce (F, Ydim, alpha, Y, incY, HD);
-		H.initOut();
+		H.ModeManager.initOut();
 
 		return Y;
 	}
@@ -439,8 +438,8 @@ namespace FFLAS{
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
 	{
-                H.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
-		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hb(F,0);
+                H.ModeManager.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hb(F);
 
 		return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);
 	}
