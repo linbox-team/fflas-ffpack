@@ -126,6 +126,41 @@ namespace std {
 		return o;
 	}
 } // std
+
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+namespace std {
+
+	inline
+	std::ostream &operator<<(std::ostream &o, const __m512 &v) {
+		const float *vArray = (const float *)(&v);
+		o << '<';
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3] << ',' vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
+		o << ',';
+		o << vArray[8] << ',' << vArray[9] << ',' << vArray[10] << ',' << vArray[11] << ',' vArray[12] << ',' << vArray[13] << ',' << vArray[14] << ',' << vArray[15];
+		o << '>';
+		return o;
+	}
+
+	inline
+	std::ostream &operator<<(std::ostream &o, const __m512i &v) {
+		const int64_t *vArray = (const int64_t *)(&v);
+		o << '<';
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3] ',' vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
+		o << '>';
+		return o;
+	}
+
+	inline
+	std::ostream &operator<<(std::ostream &o, const __m512d &v) {
+		const double *vArray = (const double *)(&v);
+		o << '<';
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3] ',' vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
+		o << '>';
+		return o;
+	}
+} // std
+#endif // __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+
 #endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -204,7 +239,7 @@ template <> struct is_simd<__m128i> {
 #endif // SSE
 
 // AVX
-#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#if defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) //or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 #include "fflas-ffpack/fflas/fflas_simd/simd256.inl"
 
 template <> struct simdToType<__m256d> { using type = double; };
@@ -228,6 +263,32 @@ template <> struct is_simd<__m256i> {
 };
 #endif
 #endif // AVX
+
+// AVX2
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS) //or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+#include "fflas-ffpack/fflas/fflas_simd/simd512.inl" //TODO
+
+template <> struct simdToType<__m512d> { using type = double; };
+
+template <> struct simdToType<__m512> { using type = float; };
+
+template <> struct is_simd<__m512d> {
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+template <> struct is_simd<__m512> {
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+#ifdef SIMD_INT
+template <> struct is_simd<__m512i> {
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+#endif
+#endif // AVX2
 
 /*
  * Simd functors
@@ -266,7 +327,9 @@ template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSim
 template <class T>
 struct SimdChooser<T, true, false> // floating number
 {
-#ifdef __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+	using value = Simd512<T>;
+#elif defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 	using value = Simd256<T>;
 #elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)
 	using value = Simd128<T>;
@@ -361,6 +424,17 @@ namespace std {
 		return o;
 	}
 }
+
+#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+namespace std {
+	// cannot be instanciated, T is not deductible
+	template <class T>
+	inline std::ostream &operator<<(std::ostream &o, const typename Simd512<T>::vect_t &v) {
+		FFLAS::print(o, v);
+		return o;
+	}
+}
+#endif // __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 #endif // __FFLASFFPACK_HAVE_AVX_INSTRUCTIONS
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
