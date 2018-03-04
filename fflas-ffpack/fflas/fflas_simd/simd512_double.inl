@@ -30,8 +30,8 @@
 #ifndef __FFLASFFPACK_fflas_ffpack_utils_simd512_double_INL
 #define __FFLASFFPACK_fflas_ffpack_utils_simd512_double_INL
 
-#if not (defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS))
-#error "You need AVX instructions to perform 512bits operations on double"
+#if not (defined(__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS)
+#error "You need AVX512 instructions to perform 512bits operations on double"
 #endif
 
 /*
@@ -95,7 +95,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 */
 	template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
 		// TODO AVX2 Gather
-		return _mm256_set_pd(p[idx[7]], p[idx[6]], p[idx[5]], p[idx[4]] ,p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
+		return _mm512_set_pd(p[idx[7]], p[idx[6]], p[idx[5]], p[idx[4]] ,p[idx[3]], p[idx[2]], p[idx[1]], p[idx[0]]);
 	}
 
 	/*
@@ -138,30 +138,30 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 			   [b0, b1, b2, b3] double
 	* Return : [a[s[0..1]], ..., a[s[6..7]]] double
 	*/
-#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+/*#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
 		return _mm256_permute4x64_pd(a, s);
 	}
 #endif
-
+*/
 	/*
 	* Unpack and interleave double-precision (64-bit) floating-point elements from the low half of each 128-bit lane in a and b,
 	* and store the results in dst.
-	* Args   : [a0, a1, a2, a3] double
-			   [b0, b1, b2, b3] double
-	* Return : [a0, b0, a2, b2] double
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
+			   [b0, b1, b2, b3, b4, b5, b6, b7] double
+	* Return : [a0, b0, a2, b2, a4, b4, a6, b6] double
 	*/
-	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm256_unpacklo_pd(a, b); }
+	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm512_unpacklo_pd(a, b); }
 
 	/*
 	* Unpack and interleave double-precision (64-bit) floating-point elements from the high half of each 128-bit lane in a and b,
 	* and store the results in dst.
-	* Args   : [a0, a1, a2, a3] double
-			   [b0, b1, b2, b3] double
-	* Return : [a1, b1, a3, b3] double
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
+			   [b0, b1, b2, b3, b4, b5, b6, b7] double
+	* Return : [a1, b1, a3, b3, a5, b5, a7, b7] double
 	*/
-	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm256_unpackhi_pd(a, b); }
+	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm512_unpackhi_pd(a, b); }
 
 	/*
 	* Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
@@ -170,11 +170,11 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 			   [b0, b1, b2, b3] double
 	* Return : [s[0]?a0:b0, ..., s[3]?a3:b3] double
 	*/
-	template<uint8_t s>
+	/*template<uint8_t s>
 	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
 		return _mm256_blend_pd(a, b, s);
 	}
-
+*/
 	/*
 	* Blend packed double-precision (64-bit) floating-point elements from a and b using mask,
 	* and store the results in dst.
@@ -182,55 +182,55 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 			   [b0, b1, b2, b3] double
 	* Return : [mask[31]?a0:b0, ..., mask[255]?a3:b3] double
 	*/
-	static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
+	/*static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
 		return _mm256_blendv_pd(a, b, mask);
 	}
-
+*/
 	/*
 	 * Add packed double-precision (64-bit) floating-point elements in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0+b0, a1+b1, a2+b2, a3+b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0+b0, a1+b1, a2+b2, a3+b3, a4+b4, a5+b5, a6+b6, a7+b7]
 	 */
-	static INLINE CONST vect_t add(const vect_t a, const vect_t b) { return _mm256_add_pd(a, b); }
+	static INLINE CONST vect_t add(const vect_t a, const vect_t b) { return _mm512_add_pd(a, b); }
 
 	static INLINE vect_t addin(vect_t &a, const vect_t b) { return a = add(a, b); }
 
 	/*
 	 * Subtract packed double-precision (64-bit) floating-point elements in b from packed double-precision (64-bit)
 	 * floating-point elements in a, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0-b0, a1-b1, a2-b2, a3-b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0-b0, a1-b1, a2-b2, a3-b3, a4-b4, a5-b5, a6-b6, a7-b7]
 	 */
-	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) { return _mm256_sub_pd(a, b); }
+	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) { return _mm512_sub_pd(a, b); }
 
 	static INLINE CONST vect_t subin(vect_t &a, const vect_t b) { return a = sub(a, b); }
 
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0*b0, a1*b1, a2*b2, a3*b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0*b0, a1*b1, a2*b2, a3*b3, a4*b4, a5*b5, a6*b6, a7*b7]
 	 */
-	static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return _mm256_mul_pd(a, b); }
+	static INLINE CONST vect_t mul(const vect_t a, const vect_t b) { return _mm512_mul_pd(a, b); }
 
 	static INLINE CONST vect_t mulin(vect_t &a, const vect_t b) { return a = mul(a, b); }
 
 	/*
 	 * Divide packed double-precision (64-bit) floating-point elements in a by packed elements in b,
 	 * and store the results in dst.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0/b0, a1/b1, a2/b2, a3/b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0/b0, a1/b1, a2/b2, a3/b3, a4/b4, a5/b5, a6/b6, a7/b7]
 	 */
-	static INLINE CONST vect_t div(const vect_t a, const vect_t b) { return _mm256_div_pd(a, b); }
+	static INLINE CONST vect_t div(const vect_t a, const vect_t b) { return _mm512_div_pd(a, b); }
 
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to
 	 * packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]
 	 */
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) {
 #ifdef __FMA__
-		return _mm256_fmadd_pd(a, b, c);
+		return _mm512_fmadd_pd(a, b, c);
 #else
 		return add(c, mul(a, b));
 #endif
@@ -239,16 +239,16 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to
 	 * packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]
 	 */
 	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) { return fmadd(c, a, b); }
 
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the intermediate result to
 	 * packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]
 	 */
 	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b) { return fmadd(c, a, b); }
 
@@ -257,12 +257,12 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the negated intermediate result
 	 * to packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3, -(a4*b4)+c4, -(a5*b5)+c5, -(a6*b6)+c6, -(a7*b7)+c7]
 	 */
 	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b) {
 #ifdef __FMA__
-		return _mm256_fnmadd_pd(a, b, c);
+		return _mm512_fnmadd_pd(a, b, c);
 #else
 		return sub(c, mul(a, b));
 #endif
@@ -271,8 +271,8 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, add the negated intermediate result
 	 * to packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3, -(a4*b4)+c4, -(a5*b5)+c5, -(a6*b6)+c6, -(a7*b7)+c7]
 	 */
 	static INLINE CONST vect_t nmadd(const vect_t c, const vect_t a, const vect_t b) { return fnmadd(c, a, b); }
 
@@ -281,12 +281,12 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, subtract packed elements in c from
 	 * the intermediate result, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3, a4*b4-c4, a5*b5-c5, a6*b6-c6, a7*b7-c7]
 	 */
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) {
 #ifdef __FMA__
-		return _mm256_fmsub_pd(a, b, c);
+		return _mm512_fmsub_pd(a, b, c);
 #else
 		return sub(mul(a, b), c);
 #endif
@@ -295,8 +295,8 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Multiply packed double-precision (64-bit) floating-point elements in a and b, subtract packed elements in c from
 	 * the intermediate result, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3], [c0, c1, c2, c3]
-	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7], [c0, c1, c2, c3, c4, c5, c6, c7]
+	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3, a4*b4-c4, a5*b5-c5, a6*b6-c6, a7*b7-c7]
 	 */
 	static INLINE CONST vect_t msub(const vect_t c, const vect_t a, const vect_t b) { return fmsub(c, a, b); }
 
@@ -311,7 +311,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_EQ_OQ); }
+	//static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_EQ_OQ); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser-than, and store the
@@ -322,7 +322,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_LT_OS); }
+	//static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_LT_OS); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser or equal than, and store
@@ -333,7 +333,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_LE_OS); }
+	//static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_LE_OS); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater-than, and store the
@@ -344,7 +344,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_GT_OS); }
+	//static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_GT_OS); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater or equal than, and store
@@ -355,64 +355,65 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2>=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_GE_OS); }
+	//static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_GE_OS); }
 
 	/*
 	 * Compute the bitwise AND of packed double-precision (64-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3, a4 AND b4, a5 AND b5, a6 AND b6, a7 AND b7]
 	 */
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm256_and_pd(a, b); }
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_pd(a, b); }
 
 	/*
 	 * Compute the bitwise OR of packed double-precision (64-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3, a4 OR b4, a5 OR b5, a6 OR b6, a7 OR b7]
 	 */
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm256_or_pd(a, b); }
+	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm512_or_pd(a, b); }
 
 	/*
 	 * Compute the bitwise XOR of packed double-precision (64-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3, a4 XOR b4, a5 XOR b5, a6 XOR b6, a7 XOR b7]
 	 */
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm256_xor_pd(a, b); }
+	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm512_xor_pd(a, b); }
 
 	/*
 	 * Compute the bitwise AND NOT of packed double-precision (64-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0 AND NOT b0, a1 AND NOT b1, a2 AND NOT b2, a3 AND NOT b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3, a4 ANDNOT b4, a5 ANDNOT b5, a6 ANDNOT b6, a7
+	 * ANDNOT b7]
 	 */
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm256_andnot_pd(a, b); }
+	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_pd(a, b); }
 
 	/*
 	 * Round the packed double-precision (64-bit) floating-point elements in a down to an integer value, and store the
 	 * results as packed double-precision floating-point elements in vect_t.
-	 * Args   : [a0, a1, a2, a3]
-	 * Return : [floor(a0), floor(a1), floor(a2), floor(a3)]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 * Return : [floor(a0), floor(a1), floor(a2), floor(a3), floor(a4), floor(a5), floor(a6), floor(a7)]
 	 */
-	static INLINE CONST vect_t floor(const vect_t a) { return _mm256_floor_pd(a); }
+	static INLINE CONST vect_t floor(const vect_t a) { return _mm512_floor_pd(a); }
 
 	/*
 	 * Round the packed double-precision (64-bit) floating-point elements in a up to an integer value, and store the
 	 * results as packed double-precision floating-point elements in vect_t.
-	 * Args   : [a0, a1, a2, a3]
-	 * Return : [ceil(a0), ceil(a1), ceil(a2), ceil(a3)]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 * Return : [ceil(a0), ceil(a1), ceil(a2), ceil(a3), ceil(a4), ceil(a5), ceil(a6), ceil(a7)]
 	 */
-	static INLINE CONST vect_t ceil(const vect_t a) { return _mm256_ceil_pd(a); }
+	static INLINE CONST vect_t ceil(const vect_t a) { return _mm512_ceil_pd(a); }
 
 	/*
 	 * Round the packed double-precision (64-bit) floating-point elements in a, and store the results as packed
 	 * double-precision floating-point elements in vect_t.
-	 * Args   : [a0, a1, a2, a3]
-	 * Return : [round(a0), round(a1), round(a2), round(a3)]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 * Return : [round(a0), round(a1), round(a2), round(a3), round(a4), round(a5), round(a6), round(a7)]
 	 */
 	static INLINE CONST vect_t round(const vect_t a) {
-		return _mm256_round_pd(a, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+		return _mm512_round_pd(a, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 	}
 
 	/*
@@ -421,16 +422,17 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
 	 * Return : [a0+a1, b0+b1, a2+a3, b2+b3]
 	 */
-	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) { return _mm256_hadd_pd(a, b); }
+	//static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) { return _mm256_hadd_pd(a, b); }
 
 	/*
 	 * Horizontally add double-precision (64-bit) floating-point elements in a.
-	 * Args   : [a0, a1, a2, a3]
-	 * Return : a0+a1+a2+a3
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 * Return : a0+a1+a2+a3+a4+a5+a6+a7
 	 */
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
 		return ((const scalar_t *)&a)[0] + ((const scalar_t *)&a)[1] + ((const scalar_t *)&a)[2] +
-				((const scalar_t *)&a)[3];
+				((const scalar_t *)&a)[3] + ((const scalar_t *)&a)[4] + ((const scalar_t *)&a)[5] +
+				((const scalar_t *)&a)[6] + ((const scalar_t *)&a)[7];
 	}
 
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
