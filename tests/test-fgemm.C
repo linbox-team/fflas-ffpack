@@ -199,12 +199,15 @@ bool launch_MM(const Field & F,
 		RandomMatrix (F, m, n, C, ldc, G);
 		fassign(F,m,n,C,ldc,D,n);
 		if (par){
-			MMHelper<Field,MMHelperAlgo::Auto, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::ThreeDAdaptive> > WH (F, nbw);
+			MMHelper<Field,MMHelperAlgo::Winograd,
+					 typename ModeTraits<Field>::value,
+					 ParSeqHelper::Parallel<CuttingStrategy::Recursive,
+											StrategyParameter::ThreeDAdaptive> > WH (F, MMHelperAlgo::Winograd(nbw));
 			PAR_BLOCK{
 				fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 			}
 		}else{
-			MMHelper<Field,MMHelperAlgo::Auto,typename ModeTraits<Field>::value> WH(F,nbw,ParSeqHelper::Sequential());
+			MMHelper<Field,MMHelperAlgo::Winograd,typename ModeTraits<Field>::value> WH(F,ParSeqHelper::Sequential(), MMHelperAlgo::Winograd(nbw));
 			fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 		}
 		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);

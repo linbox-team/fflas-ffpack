@@ -299,13 +299,13 @@ namespace FFLAS {
              typename AlgoTrait = MMHelperAlgo::Auto,
              typename ModeTrait = typename ModeTraits<Field>::value,
              typename ParSeqTrait = ParSeqHelper::Sequential >
-    struct MMHelper {
+     struct MMHelper {
 
-        typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
-        typedef typename ModeManager_t<Field,ModeTrait>::DFElt DFElt;
-        const AlgoTrait& AlgoManager;
-        ModeManager_t<Field,ModeTrait> ModeManager;
-        const ParSeqTrait& ParSeqManager;
+         typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
+         typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
+         const AlgoTrait& AlgoManager;
+         ModeManager_t<Field,ModeTrait> ModeManager;
+         const ParSeqTrait& ParSeqManager;
 
              //MMHelper(){}
             //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
@@ -315,7 +315,13 @@ namespace FFLAS {
                  const ParSeqTrait& _PS=ParSeqTrait(),
                  const AlgoTrait& _AT = AlgoTrait()) :
                 AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
-        MMHelper(const Field& F,
+         
+         MMHelper(const Field& F,
+                  const AlgoTrait& _AT,
+                  const ParSeqTrait& _PS=ParSeqTrait()):                 
+                 AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
+                 
+       MMHelper(const Field& F,
                  ModeManager_t<Field,ModeTrait> _MM,
                  const ParSeqTrait& _PS = ParSeqTrait(),
                  const AlgoTrait& _AT = AlgoTrait()) :
@@ -347,9 +353,9 @@ namespace FFLAS {
         //         ParSeqManager(H2.ParSeqManager) {}
 
         MMHelper(const Field& F, int w,
-                 DFElt _Amin, DFElt _Amax,
-                 DFElt _Bmin, DFElt _Bmax,
-                 DFElt _Cmin, DFElt _Cmax,
+                 typename ModeMgr_t::DFElt _Amin, typename ModeMgr_t::DFElt _Amax,
+                 typename ModeMgr_t::DFElt _Bmin, typename ModeMgr_t::DFElt _Bmax,
+                 typename ModeMgr_t::DFElt _Cmin, typename ModeMgr_t::DFElt _Cmax,
                  ParSeqTrait _PS=ParSeqTrait()):
                 AlgoTrait(w),
                 ModeManager(F,_Amin,_Amax,_Bmin,_Bmax,_Cmin,_Cmax),

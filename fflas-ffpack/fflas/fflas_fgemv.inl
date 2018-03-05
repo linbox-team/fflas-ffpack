@@ -171,7 +171,7 @@ namespace FFLAS {
 			F.assign (alpha_, F.one);
 			F.div (beta_, beta, alpha);
 		}
-		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HD(F,0);
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HD(F);
 
 		fgemv (F, ta, M, N, alpha_,
 		       FFPACK::fflas_const_cast<typename Field::Element_ptr>(A), lda,
@@ -236,9 +236,9 @@ namespace FFLAS{
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & H)
 	{
 		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
-		typedef typename HelperType::DelayedField::Element DFElt;
-		typedef typename HelperType::DelayedField::Element_ptr DFElt_ptr;
-		typedef typename HelperType::DelayedField::ConstElement_ptr DFCElt_ptr;
+		typedef typename HelperType::ModeMgr_t::DelayedField::Element DFElt;
+		typedef typename HelperType::ModeMgr_t::DelayedField::Element_ptr DFElt_ptr;
+		typedef typename HelperType::ModeMgr_t::DelayedField::ConstElement_ptr DFCElt_ptr;
 		DFElt alphadf=alpha, betadf=beta;
 		size_t Ydim = (ta==FflasNoTrans)?M:N;
 		size_t Xdim = (ta==FflasNoTrans)?N:M;
@@ -256,28 +256,28 @@ namespace FFLAS{
 		}
         if (F.isMOne(betadf)) betadf = -F.one;
         
-		size_t kmax = H.MaxDelayedDim (betadf);
+		size_t kmax = H.ModeManager.MaxDelayedDim (betadf);
 
 		if (kmax <=  Xdim/2 ){
                         // Might as well reduce inputs
-                        if (H.Amin < H.FieldMin || H.Amax>H.FieldMax){
-				H.initA();
+                        if (H.ModeManager.Amin < H.ModeManager.FieldMin || H.ModeManager.Amax>H.ModeManager.FieldMax){
+				H.ModeManager.initA();
 				freduce_constoverride (F, M, N, A, lda);
 			}
-			if (H.Bmin < H.FieldMin || H.Bmax>H.FieldMax){
-				H.initB();
+			if (H.ModeManager.Bmin < H.ModeManager.FieldMin || H.ModeManager.Bmax>H.ModeManager.FieldMax){
+				H.ModeManager.initB();
 				freduce_constoverride (F, Xdim, X, incX);
 			}
-			if (H.Cmin < H.FieldMin || H.Cmax>H.FieldMax){
-				H.initC();
+			if (H.ModeManager.Cmin < H.ModeManager.FieldMin || H.ModeManager.Cmax>H.ModeManager.FieldMax){
+				H.ModeManager.initC();
 				freduce (F, Ydim, Y, incY);
 			}
-			kmax = H.MaxDelayedDim (betadf);
+			kmax = H.ModeManager.MaxDelayedDim (betadf);
 		}
 
 		if (!kmax){
 			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
-			H.initOut();
+			H.ModeManager.initOut();
 			return fgemv (F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, HG);
 		}
 		size_t k2 = std::min (Xdim, kmax);
@@ -302,34 +302,34 @@ namespace FFLAS{
 		MMHelper<typename associatedDelayedField<const Field>::field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> Hfp(H);
 
 
-		fgemv (H.delayedField, ta, M1, N1, alphadf, (DFCElt_ptr)A+nblock*shiftA, lda,
+		fgemv (H.ModeManager.delayedField, ta, M1, N1, alphadf, (DFCElt_ptr)A+nblock*shiftA, lda,
 		       (DFCElt_ptr)X+nblock*k2*incX, incX, betadf, (DFElt_ptr)Y, incY, Hfp);
 
 		for (size_t i = 0; i < nblock; ++i) {
 			freduce (F, Ydim ,Y, incY);
-			Hfp.initC();
-			fgemv (H.delayedField, ta, Mi, Ni, alphadf, (DFCElt_ptr)A+i*shiftA, lda,
+			Hfp.ModeManager.initC();
+			fgemv (H.ModeManager.delayedField, ta, Mi, Ni, alphadf, (DFCElt_ptr)A+i*shiftA, lda,
 			       (DFCElt_ptr)X+i*k2*incX, incX, F.one, (DFElt_ptr)Y, incY, Hfp);
 		}
 
         if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
-			if (std::max(-Hfp.Outmin, Hfp.Outmax) > Hfp.MaxStorableValue/al){
+			if (std::max(-Hfp.ModeManager.Outmin, Hfp.ModeManager.Outmax) > Hfp.ModeManager.MaxStorableValue/al){
 				freduce (F, Ydim, Y, incY);
-				Hfp.initOut();
+				Hfp.ModeManager.initOut();
 			}
-			fscalin (H.delayedField, Ydim, alpha, (DFElt_ptr)Y, incY);
+			fscalin (H.ModeManager.delayedField, Ydim, alpha, (DFElt_ptr)Y, incY);
 			if (alpha>0){
-				H.Outmin = al*Hfp.Outmin;
-				H.Outmax = al*Hfp.Outmax;
+				H.ModeManager.Outmin = al*Hfp.ModeManager.Outmin;
+				H.ModeManager.Outmax = al*Hfp.ModeManager.Outmax;
 			} else {
-				H.Outmin = -al*Hfp.Outmax;
-				H.Outmax = -al*Hfp.Outmin;
+				H.ModeManager.Outmin = -al*Hfp.ModeManager.Outmax;
+				H.ModeManager.Outmax = -al*Hfp.ModeManager.Outmin;
 			}
 		}else {
-			H.Outmin = Hfp.Outmin;
-			H.Outmax = Hfp.Outmax;
+			H.ModeManager.Outmin = Hfp.ModeManager.Outmin;
+			H.ModeManager.Outmax = Hfp.ModeManager.Outmax;
 		}
 		return Y;
 	}

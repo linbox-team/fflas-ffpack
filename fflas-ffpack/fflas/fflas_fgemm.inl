@@ -215,14 +215,14 @@ namespace FFLAS{ namespace Protected{
 								   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
 		{
 			if (!F.isOne(alpha) && !F.isMOne(alpha)){
-				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
+				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::ModeMgr_t::DFElt al; 
 				F.convert(al, alpha);
 				if (al < 0) al = -al;
-				if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
+				if (std::max(-H.ModeManager.Outmin, H.ModeManager.Outmax) > H.ModeManager.MaxStorableValue/al){
 					freduce (F, N, X, incX);
 					fscalin (F, N, alpha, X, incX);
 				} else {
-					fscalin (H.delayedField, N, alpha, X, incX);
+					fscalin (H.ModeManager.delayedField, N, alpha, X, incX);
 					freduce (F, N, X, incX);
 				}
 			} else
@@ -239,11 +239,11 @@ namespace FFLAS{ namespace Protected{
 				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
 				F.convert(al, alpha);
 				if (al<0) al = -al;
-				if (std::max(-H.Outmin, H.Outmax) > H.MaxStorableValue/al){
+				if (std::max(-H.ModeManager.Outmin, H.ModeManager.Outmax) > H.ModeManager.MaxStorableValue/al){
 					freduce (F, M, N, A, lda);
 					fscalin (F, M, N, alpha, A, lda);
 				} else {
-					fscalin (H.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
+					fscalin (H.ModeManager.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
 					freduce (F, M, N, A, lda);
 				}
 			} else
@@ -281,8 +281,8 @@ namespace FFLAS {
 		// else if (Protected::AreEqual<typename Field::Element,int64_t>::value) {
 		// 	    // Stays over int64_t
 		// 	MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> HG(H);
-		// 	H.Outmin=HG.Outmin;
-		// 	H.Outmax=HG.Outmax;
+		// 	H.ModeManager.Outmin=HG.Outmin;
+		// 	H.ModeManager.Outmax=HG.Outmax;
 		// 	return fgemm(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,HG);
 			
 		//	}
