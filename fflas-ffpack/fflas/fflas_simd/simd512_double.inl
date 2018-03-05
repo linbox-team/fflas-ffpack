@@ -29,7 +29,7 @@
 #ifndef __FFLASFFPACK_simd512_double_INL
 #define __FFLASFFPACK_simd512_double_INL
 
-#if not (defined(__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS)
+#if not (defined(__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS))
 #error "You need AVX512 instructions to perform 512bits operations on double"
 #endif
 
