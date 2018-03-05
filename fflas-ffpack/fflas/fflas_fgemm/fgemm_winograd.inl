@@ -227,16 +227,16 @@ namespace FFLAS { namespace Protected {
                 b21 = B+(k-kr)*ldb;
             }
 
-            MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> Hacc(H);
-            MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HModd(H);
-            MMHelper<Field, MMHelperAlgo::Winograd, FieldMode> HNodd(H);
+            MMHelper<Field, MMHelperAlgo::Auto, FieldMode> Hacc(F,H);
+            MMHelper<Field, MMHelperAlgo::Auto, FieldMode> HModd(F,H);
+            MMHelper<Field, MMHelperAlgo::Auto, FieldMode> HNodd(F,H);
 
-            Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax; 
-            Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
-            HModd.Cmin = HC.Cmin; HModd.Cmax = HC.Cmax;
-            HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
-            HModd.Bmax = H.Amax; HModd.Bmin = H.Amin;
-            HNodd.Cmin = HC.Cmin; HNodd.Cmax = HC.Cmax;
+            Hacc.ModeManager.Cmin = H.ModeManager.Outmin; Hacc.ModeManager.Cmax = H.ModeManager.Outmax; 
+                //Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
+            HModd.ModeManager.Cmin = HC.ModeManager.Cmin; HModd.ModeManager.Cmax = HC.ModeManager.Cmax;
+            HModd.ModeManager.Amax = H.ModeManager.Bmax; HModd.ModeManager.Amin = H.ModeManager.Bmin;
+            HModd.ModeManager.Bmax = H.ModeManager.Amax; HModd.ModeManager.Bmin = H.ModeManager.Amin;
+            HNodd.ModeManager.Cmin = HC.ModeManager.Cmin; HNodd.ModeManager.Cmax = HC.ModeManager.Cmax;
 
             switch (mkn) {
                 case 1: // n oddsized
@@ -275,9 +275,9 @@ namespace FFLAS { namespace Protected {
                     fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
                     break;
             }
-            H.Outmin = min4(HModd.Outmin,HNodd.Outmin, Hacc.Outmin, H.Outmin);
-            H.Outmax = max4(HModd.Outmax,HNodd.Outmax, Hacc.Outmax, H.Outmax);
-            H.checkOut(F, m,n, C, ldc);
+            H.ModeManager.Outmin = min4(HModd.ModeManager.Outmin,HNodd.ModeManager.Outmin, Hacc.ModeManager.Outmin, H.ModeManager.Outmin);
+            H.ModeManager.Outmax = max4(HModd.ModeManager.Outmax,HNodd.ModeManager.Outmax, Hacc.ModeManager.Outmax, H.ModeManager.Outmax);
+            H.ModeManager.checkOut(F, m,n, C, ldc);
         }
 
             // #define NEWIP
@@ -391,19 +391,20 @@ namespace FFLAS{
             fscalin(F,m,n,beta,C,ldc);
             return C;
         }
-        if (H.recLevel < 0) {
-            H.recLevel = Protected::WinogradSteps (F, min3(m,k,n));
+        if (H.AlgoManager.recLevel < 0) {
+            MMHelper<Field, MMHelperAlgo::Winograd, ModeT> Hw(F,H.ModeManager, H.ParSeqManager, MMHelperAlgo::Winograd(Protected::WinogradSteps (F, min3(m,k,n))));
+            return  fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, Hw);
         }
 
-        if (H.recLevel == 0){
-            MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(H);
+        if (H.AlgoManager.recLevel == 0){
+            MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(F,H.ModeManager,H.ParSeqManager);
             fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
             Protected::updateOutBounds(HC, H);
             return C;
         }
 
             // Then w >0
-        MMHelper<Field, MMHelperAlgo::Winograd, ModeT> & HC(H);
+        MMHelper<Field, MMHelperAlgo::Winograd, ModeT> HC(F,H);
             // typedef typename  MMHelper<Field, MMHelperAlgo::Winograd, ModeT>::DelayedField::Element DFElt;
             // DFElt Cmin = H.Cmin;
             // DFElt Cmax = H.Cmax;
@@ -418,7 +419,7 @@ namespace FFLAS{
 
 //              Protected::DynamicPeeling (F, ta, tb, m, n, k, m&0x1, n&0x1, k&0x1, alpha, A, lda, B, ldb, beta, C, ldc, H, HC);
 // #else
-        size_t ww = (size_t)H.recLevel ;
+        size_t ww = (size_t)H.AlgoManager.recLevel ;
         size_t m2 = (m >> ww) << (ww-1) ;
         size_t n2 = (n >> ww) << (ww-1) ;
         size_t k2 = (k >> ww) << (ww-1) ;

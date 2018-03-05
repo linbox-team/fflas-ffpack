@@ -425,7 +425,7 @@ namespace FFLAS {
 		// compute the product over Z
 		typedef FFPACK::RNSInteger<RNS> RnsDomain;
 		RnsDomain Zrns(F.rns());
-		MMHelper<RnsDomain, MMHelperAlgo::Classic> H2(Zrns, H.recLevel,H.parseq);
+		MMHelper<RnsDomain, MMHelperAlgo::Classic> H2(Zrns, H);
 #ifdef BENCH_PERF_FGEMM_MP
 		FFLAS::Timer chrono;chrono.start();
 #endif
@@ -598,7 +598,7 @@ namespace FFLAS {
 
 		// perform the fgemm in RNS
 		// Classic as no Winograd over ZZ available for the moment
-		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H.recLevel,H.parseq);
+		MMHelper<RnsDomain, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeq> H2(Zrns,H);
 
 		// compute alpha and beta in RNS
 		typename RnsDomain::Element alphap, betap;

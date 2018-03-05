@@ -103,7 +103,7 @@ namespace FFLAS {
 		}
 		
 		if (!kmax){
-			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
+			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(F,H);
 			H.ModeManager.initOut();
 			return fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
 		}
@@ -233,7 +233,7 @@ namespace FFLAS {
 			   typename Field::Element_ptr C, const size_t ldc,
 			   MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
 	{
-		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F,0);
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F);
 		fgemm (F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,Hd);
 		H.ModeManager.setOutBounds (k,alpha,beta);
 	}

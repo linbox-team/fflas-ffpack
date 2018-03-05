@@ -87,7 +87,8 @@ namespace FFLAS { namespace Protected{
 				fconvert(F, m, n, Cf, n, C, ldc);
 				freduce (G, m, n, Cf, n);
 			}
-			MMHelper<NewField, MMHelperAlgo::Winograd> HG(G,H.recLevel, ParSeqHelper::Sequential());
+//			MMHelper<NewField, MMHelperAlgo::Winograd> HG(G,H.recLevel, ParSeqHelper::Sequential());
+			MMHelper<NewField, MMHelperAlgo::Winograd> HG(G,H);
 			fgemm (G, ta, tb, m, n, k, alphaf, Af, ldaf, Bf, ldbf, betaf, Cf, ldcf, HG);
 
 			finit (F, m, n, Cf, n, C, ldc);
@@ -203,8 +204,8 @@ namespace FFLAS{ namespace Protected{
 		template<class Field>
 		inline void updateOutBounds (const MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & MMHS,
 									 MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag> & MMHD){
-			MMHD.Outmax = MMHS.Outmax;
-			MMHD.Outmin = MMHS.Outmin;
+			MMHD.ModeManager.Outmax = MMHS.ModeManager.Outmax;
+			MMHD.ModeManager.Outmin = MMHS.ModeManager.Outmin;
 			return;
 		}
 
@@ -236,14 +237,14 @@ namespace FFLAS{ namespace Protected{
 								   const MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >& H)
 		{
 			if (!F.isOne(alpha) && !F.isMOne(alpha)){
-				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt al; 
+				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::ModeMgr_t::DFElt al; 
 				F.convert(al, alpha);
 				if (al<0) al = -al;
 				if (std::max(-H.ModeManager.Outmin, H.ModeManager.Outmax) > H.ModeManager.MaxStorableValue/al){
 					freduce (F, M, N, A, lda);
 					fscalin (F, M, N, alpha, A, lda);
 				} else {
-					fscalin (H.ModeManager.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::DFElt*)A, lda);
+					fscalin (H.ModeManager.delayedField, M, N, alpha, (typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::ModeMgr_t::DFElt*)A, lda);
 					freduce (F, M, N, A, lda);
 				}
 			} else
@@ -439,7 +440,7 @@ namespace FFLAS {
 			F.assign (alpha_,alpha);
 			F.assign (beta_,beta);
 		}
-		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
+		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(F,H);
 		// std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
 		// std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);

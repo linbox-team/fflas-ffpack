@@ -90,18 +90,17 @@ namespace FFLAS
 		 return C;
 	 }
 
-	 if (H.parseq.numthreads()<=1 || std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
-		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Sequential> SeqH(H);
+	 if (H.ParSeqManager.numthreads()<=1 || std::min(m*n,std::min(m*k,k*n))<=__FFLASFFPACK_SEQPARTHRESHOLD*__FFLASFFPACK_SEQPARTHRESHOLD){
+		 MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Sequential> SeqH(F,H);
 		 return fgemm(F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, SeqH);
 	 }
-
-	 typedef MMHelper<Field,AlgoT,FieldTrait,ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::ThreeDAdaptive> > MMH_t;
-	 MMH_t H1(H);
-	 MMH_t H2(H);
+	 typedef ParSeqHelper::Parallel<CuttingStrategy::Recursive, StrategyParameter::ThreeDAdaptive> PSH;
+	 typedef MMHelper<Field,AlgoT,FieldTrait,PSH> MMH_t;
+	 size_t nt = H.ParSeqManager.numthreads();
+	 MMH_t H1(F,H.ModeManager,PSH(nt>>1) );
+	 MMH_t H2(F,H.ModeManager,PSH(nt-(nt>>1)));
 	  if(__FFLASFFPACK_DIMKPENALTY*m > k && m >= n) {
 		  SYNCH_GROUP(size_t M2= m>>1;
-					  H1.parseq.set_numthreads(H1.parseq.numthreads() >> 1);
-					  H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
 					  
 					  typename Field::ConstElement_ptr A1= A;
 					  typename Field::ConstElement_ptr A2= A+M2*((ta==FFLAS::FflasTrans)?1:lda);
@@ -122,8 +121,6 @@ namespace FFLAS
 	 } else if (__FFLASFFPACK_DIMKPENALTY*n > k) {
 		  SYNCH_GROUP(
 		 size_t N2 = n>>1;
-         H1.parseq.set_numthreads( H1.parseq.numthreads() >> 1);
-		 H2.parseq.set_numthreads(H.parseq.numthreads() - H1.parseq.numthreads());
 		 typename Field::ConstElement_ptr B1= B;
 		 typename Field::ConstElement_ptr B2= B+N2*((tb==FFLAS::FflasTrans)?ldb:1);
 		 
@@ -144,8 +141,6 @@ namespace FFLAS
 		 typename Field::ConstElement_ptr A2= A+K2*((ta==FFLAS::FflasTrans)?lda:1);
 		 typename Field::Element_ptr C2 = fflas_new (F, m, n,Alignment::CACHE_PAGESIZE);
 
-		 H1.parseq.set_numthreads(H1.parseq.numthreads() >> 1);
-		 H2.parseq.set_numthreads(H.parseq.numthreads()-H1.parseq.numthreads());
 		 SYNCH_GROUP(
 		 TASK(MODE(CONSTREFERENCE(F,H1) READ(A1,B1) READWRITE(C)), pfgemm(F, ta, tb, m, n, K2, a, A1, lda, B1, ldb, b, C, ldc, H1));
 

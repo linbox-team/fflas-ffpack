@@ -40,7 +40,7 @@ namespace FFLAS {
 	      typename Field::ConstElement_ptr y, const size_t incy,
 	      typename Field::Element_ptr A, const size_t lda)
 	{
-		MMHelper<Field, MMHelperAlgo::Classic> H(F,0);
+		MMHelper<Field, MMHelperAlgo::Classic> H(F);
  		fger (F, M, N, alpha, x, incx, y, incy, A, lda, H);
 		freduce (F, M, N, A, lda);
 	}
@@ -297,19 +297,18 @@ namespace FFLAS{
 				return Protected::fger_convert<double,Field>(F,M,N,alpha,x,incx,y,incy, A,lda);
 			else{
 				    // Stay over int64_t
-				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(H);
-				HG.recLevel = 0;
+				MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag, ParSeqHelper::Sequential> HG(F,H);
 				typename Field::Element_ptr sY  = FFLAS::fflas_new (F, N);
 				fscal(F, N, alpha, y, incy, sY, 1);
 				fgemm(F,FflasNoTrans,FflasNoTrans,M,N,1,F.one,x,incx,sY,1,F.one,A,lda,HG);
 				FFLAS::fflas_delete(sY);
 				freduce(F,M,N,A,lda);
-				H.initOut();
+				H.ModeManager.initOut();
 				return;
 			}
 		}
 	typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DelayedTag> ModularHelperType;
-        typedef typename ModularHelperType::DelayedField	delayedField;
+        typedef typename ModularHelperType::ModeMgr_t::DelayedField delayedField;
         typedef typename delayedField::Element	DFElt;
         typedef typename delayedField::ConstElement_ptr	DFCElt_ptr;
         typedef typename delayedField::Element_ptr	DFElt_ptr;
@@ -323,19 +322,19 @@ namespace FFLAS{
             if (F.isMOne( alpha)) alphadf = -F.one;
             else alphadf = F.one;
 
-            fger (H.delayedField, M, N, alphadf, (DFCElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
+            fger (H.ModeManager.delayedField, M, N, alphadf, (DFCElt_ptr)x, incx, (DFCElt_ptr)y, incy, (DFElt_ptr)A, lda, Hfp);
 
         } else {
             Element_ptr sY  = FFLAS::fflas_new (F, N);
             fscal(F, N, alpha, y, incy, sY, 1);
 
-            fger (H.delayedField, M, N, H.delayedField.one, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, (size_t)1, (DFElt_ptr)A, lda, Hfp);
+            fger (H.ModeManager.delayedField, M, N, H.ModeManager.delayedField.one, (DFCElt_ptr)x, incx, (DFCElt_ptr)sY, (size_t)1, (DFElt_ptr)A, lda, Hfp);
 
             FFLAS::fflas_delete(sY);
 
         }
 
-		H.initOut();
+		H.ModeManager.initOut();
 	}
 
 } // FFLAS

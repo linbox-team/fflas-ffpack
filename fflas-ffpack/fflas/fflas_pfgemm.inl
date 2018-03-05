@@ -52,7 +52,8 @@
 namespace FFLAS {
 
 	template<class Field, class ModeTrait, class Strat, class Param>
-	inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
+	//	inline typename  std::enable_if<!std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value,typename Field::Element_ptr>::type
+	inline typename Field::Element_ptr
 	fgemm( const Field& F,
 	       const FFLAS::FFLAS_TRANSPOSE ta,
 	       const FFLAS::FFLAS_TRANSPOSE tb,

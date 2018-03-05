@@ -276,7 +276,7 @@ namespace FFLAS{
 		}
 
 		if (!kmax){
-			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(H);
+			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(F,H);
 			H.ModeManager.initOut();
 			return fgemv (F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, HG);
 		}
