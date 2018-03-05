@@ -33,7 +33,7 @@
 struct Simd512fp_base {
 };
 
-struct Simd256i_base {
+struct Simd512i_base {
 };
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd512_impl;

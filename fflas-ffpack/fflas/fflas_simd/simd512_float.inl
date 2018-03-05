@@ -334,7 +334,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a13==b13) ? 0xFFFFFFFF : 0,
 	 (a14==b14) ? 0xFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ); }
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return (vect_t)_mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ); }
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for lesser-than, and store the
