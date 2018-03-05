@@ -3,8 +3,7 @@
 /*
  * Copyright (C) 2014 the FFLAS-FFPACK group
  *
- * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
- * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Written by   Ozturk Ozden<ozden.ozturk@etu.univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -30,6 +29,12 @@
 
 #ifndef __FFLASFFPACK_simd512_INL
 #define __FFLASFFPACK_simd512_INL
+
+struct Simd512fp_base {
+};
+
+struct Simd256i_base {
+};
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd512_impl;
 
