@@ -27,6 +27,10 @@
  *.
  */
 
+
+#ifndef __FFLASFFPACK_simd512_INL
+#define __FFLASFFPACK_simd512_INL
+
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd512_impl;
 
 template <class T>
@@ -36,3 +40,4 @@ using Simd512 =
 #include "simd512_float.inl"
 #include "simd512_double.inl"
 
+#endif // __FFLASFFPACK_simd512_INL

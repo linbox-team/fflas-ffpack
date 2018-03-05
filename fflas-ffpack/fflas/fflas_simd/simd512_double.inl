@@ -1,10 +1,9 @@
 /* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 /*
- * Copyright (C) 2014 the FFLAS-FFPACK group
+ * Copyright (C) 2018 the FFLAS-FFPACK group
  *
- * Written by   Bastien Vialla<bastien.vialla@lirmm.fr>
- * Brice Boyer (briceboyer) <boyer.brice@gmail.com>
+ * Written by   Ozturk Ozden<ozden.ozturk@etu.univ-grenoble-alpes.fr>
  *
  *
  * ========LICENCE========
@@ -27,8 +26,8 @@
  *.
  */
 
-#ifndef __FFLASFFPACK_fflas_ffpack_utils_simd512_double_INL
-#define __FFLASFFPACK_fflas_ffpack_utils_simd512_double_INL
+#ifndef __FFLASFFPACK_simd512_double_INL
+#define __FFLASFFPACK_simd512_double_INL
 
 #if not (defined(__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS)
 #error "You need AVX512 instructions to perform 512bits operations on double"
@@ -229,11 +228,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7]
 	 */
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __FMA__
 		return _mm512_fmadd_pd(a, b, c);
-#else
-		return add(c, mul(a, b));
-#endif
 	}
 
 	/*
@@ -261,11 +256,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3, -(a4*b4)+c4, -(a5*b5)+c5, -(a6*b6)+c6, -(a7*b7)+c7]
 	 */
 	static INLINE CONST vect_t fnmadd(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __FMA__
 		return _mm512_fnmadd_pd(a, b, c);
-#else
-		return sub(c, mul(a, b));
-#endif
 	}
 
 	/*
@@ -285,11 +276,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3, a4*b4-c4, a5*b5-c5, a6*b6-c6, a7*b7-c7]
 	 */
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) {
-#ifdef __FMA__
 		return _mm512_fmsub_pd(a, b, c);
-#else
-		return sub(mul(a, b), c);
-#endif
 	}
 
 	/*
@@ -311,7 +298,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	//static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_EQ_OQ); }
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser-than, and store the
@@ -322,7 +309,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	//static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_LT_OS); }
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_LT_OS); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser or equal than, and store
@@ -333,7 +320,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	//static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_LE_OS); }
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_LE_OS); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater-than, and store the
@@ -344,7 +331,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	//static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_GT_OS); }
+	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_GT_OS); }
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater or equal than, and store
@@ -355,7 +342,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2>=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	//static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return _mm256_cmp_pd(a, b, _CMP_GE_OS); }
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_GE_OS); }
 
 	/*
 	 * Compute the bitwise AND of packed double-precision (64-bit) floating-point elements in a and b, and store the
@@ -445,4 +432,4 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 
 };
 
-#endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_double_INL
+#endif // __FFLASFFPACK_simd256_double_INL

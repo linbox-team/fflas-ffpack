@@ -230,6 +230,31 @@ template <> struct is_simd<__m256i> {
 #endif
 #endif // AVX
 
+// AVX512F
+#if defined(__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS)
+#include "fflas-ffpack/fflas/fflas_simd/simd512.inl"
+
+template <> struct simdToType<__m512d> { using type = double; };
+
+template <> struct simdToType<__m512> { using type = float; };
+
+template <> struct is_simd<__m512d> {
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+template <> struct is_simd<__m512> {
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+
+#ifdef SIMD_INT
+template <> struct is_simd<__m512i> {
+	static const constexpr bool value = true;
+	using type = std::integral_constant<bool, true>;
+};
+#endif
+#endif // AVX512F
 
 /*
  * Simd functors
