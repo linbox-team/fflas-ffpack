@@ -293,7 +293,7 @@ namespace FFLAS {
                        <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
         }
     };
-    
+        //TODO : write generic case with empty functions
     namespace Protected{
         template<class MMDest, class MMSrc>
         void setDynPeelHelpers(MMDest& MMacc, MMDest& MMModd, MMDest& MMNodd, const MMSrc& MMH, const MMSrc& MMHC){
@@ -307,6 +307,11 @@ namespace FFLAS {
             MMModd.Bmin = MMH.Amin;
             MMNodd.Cmin = MMHC.Cmin;
             MMNodd.Cmax = MMHC.Cmax;
+        }
+    template<class MMDest, class MMSrc>
+    void updateDynPeelHelpers (MMDest& MM, const MMDest& MMModd, const MMDest& MMNodd, const  MMSrc& MMacc){
+        MM.Outmin = min4(MMModd.Outmin,MMNodd.Outmin, MMacc.Outmin, MM.Outmin);
+        MM.Outmax = min4(MMModd.Outmax,MMNodd.Outmax, MMacc.Outmax, MM.Outmax);
         }
 
     } //Protected
@@ -331,12 +336,12 @@ namespace FFLAS {
                  const AlgoTrait& _AT = AlgoTrait()) :
                 AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
          
-         MMHelper(const Field& F,
-                  const AlgoTrait& _AT,
-                  const ParSeqTrait& _PS=ParSeqTrait()):                 
-                 AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
-                 
-       MMHelper(const Field& F,
+        MMHelper(const Field& F,
+                 const AlgoTrait& _AT,
+                 const ParSeqTrait& _PS=ParSeqTrait()):
+                AlgoManager(_AT), ModeManager(F), ParSeqManager(_PS) {}
+        
+        MMHelper(const Field& F,
                  ModeManager_t<Field,ModeTrait> _MM,
                  const ParSeqTrait& _PS = ParSeqTrait(),
                  const AlgoTrait& _AT = AlgoTrait()) :

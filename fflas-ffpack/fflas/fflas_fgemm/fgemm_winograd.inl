@@ -231,7 +231,7 @@ namespace FFLAS { namespace Protected {
             MMHelper<Field, MMHelperAlgo::Auto, FieldMode> HModd(F,H);
             MMHelper<Field, MMHelperAlgo::Auto, FieldMode> HNodd(F,H);
 
-            setDynPeelHelperss(Hacc.ModeManager, HModd.ModeManager, MNodd.ModeManager, H.ModeManager, HC.ModeManager);
+            Protected::setDynPeelHelpers(Hacc.ModeManager, HModd.ModeManager, HNodd.ModeManager, H.ModeManager, HC.ModeManager);
 
                 // Hacc.ModeManager.Cmin = H.ModeManager.Outmin; Hacc.ModeManager.Cmax = H.ModeManager.Outmax; 
             //     //Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
@@ -277,9 +277,10 @@ namespace FFLAS { namespace Protected {
                     fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
                     break;
             }
-            H.ModeManager.Outmin = min4(HModd.ModeManager.Outmin,HNodd.ModeManager.Outmin, Hacc.ModeManager.Outmin, H.ModeManager.Outmin);
-            H.ModeManager.Outmax = max4(HModd.ModeManager.Outmax,HNodd.ModeManager.Outmax, Hacc.ModeManager.Outmax, H.ModeManager.Outmax);
-            H.ModeManager.checkOut(F, m,n, C, ldc);
+            Protected::updateDynPeelHelpers(H.ModeManager,HModd.ModeManager, HNodd.ModeManager, Hacc.ModeManager); 
+            // H.ModeManager.Outmin = min4(HModd.ModeManager.Outmin,HNodd.ModeManager.Outmin, Hacc.ModeManager.Outmin, H.ModeManager.Outmin);
+            // H.ModeManager.Outmax = max4(HModd.ModeManager.Outmax,HNodd.ModeManager.Outmax, Hacc.ModeManager.Outmax, H.ModeManager.Outmax);
+            // H.ModeManager.checkOut(F, m,n, C, ldc);
         }
 
             // #define NEWIP
