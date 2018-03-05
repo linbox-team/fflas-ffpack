@@ -294,7 +294,23 @@ namespace FFLAS {
         }
     };
     
-     template<class Field,
+    namespace Protected{
+        template<class MMDest, class MMSrc>
+        void setDynPeelHelpers(MMDest& MMacc, MMDest& MMModd, MMDest& MMNodd, const MMSrc& MMH, const MMSrc& MMHC){
+            MMacc.Cmin = MMH.Outmin;
+            MMacc.Cmax = MMH.Outmax;
+            MMModd.Cmin = MMHC.Cmin;
+            MMModd.Cmax = MMHC.Cmax;
+            MMModd.Amax = MMH.Bmax;
+            MMModd.Amin = MMH.Bmin;
+            MMModd.Bmax = MMH.Amax;
+            MMModd.Bmin = MMH.Amin;
+            MMNodd.Cmin = MMHC.Cmin;
+            MMNodd.Cmax = MMHC.Cmax;
+        }
+
+    } //Protected
+    template<class Field,
              typename AlgoTrait = MMHelperAlgo::Auto,
              typename ModeTrait = typename ModeTraits<Field>::value,
              typename ParSeqTrait = ParSeqHelper::Sequential >

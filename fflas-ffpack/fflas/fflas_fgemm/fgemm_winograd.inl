@@ -231,12 +231,14 @@ namespace FFLAS { namespace Protected {
             MMHelper<Field, MMHelperAlgo::Auto, FieldMode> HModd(F,H);
             MMHelper<Field, MMHelperAlgo::Auto, FieldMode> HNodd(F,H);
 
-            Hacc.ModeManager.Cmin = H.ModeManager.Outmin; Hacc.ModeManager.Cmax = H.ModeManager.Outmax; 
-                //Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
-            HModd.ModeManager.Cmin = HC.ModeManager.Cmin; HModd.ModeManager.Cmax = HC.ModeManager.Cmax;
-            HModd.ModeManager.Amax = H.ModeManager.Bmax; HModd.ModeManager.Amin = H.ModeManager.Bmin;
-            HModd.ModeManager.Bmax = H.ModeManager.Amax; HModd.ModeManager.Bmin = H.ModeManager.Amin;
-            HNodd.ModeManager.Cmin = HC.ModeManager.Cmin; HNodd.ModeManager.Cmax = HC.ModeManager.Cmax;
+            setDynPeelHelperss(Hacc.ModeManager, HModd.ModeManager, MNodd.ModeManager, H.ModeManager, HC.ModeManager);
+
+                // Hacc.ModeManager.Cmin = H.ModeManager.Outmin; Hacc.ModeManager.Cmax = H.ModeManager.Outmax; 
+            //     //Hacc.recLevel=-1;HModd.recLevel=-1;HNodd.recLevel=-1;
+            // HModd.ModeManager.Cmin = HC.ModeManager.Cmin; HModd.ModeManager.Cmax = HC.ModeManager.Cmax;
+            // HModd.ModeManager.Amax = H.ModeManager.Bmax; HModd.ModeManager.Amin = H.ModeManager.Bmin;
+            // HModd.ModeManager.Bmax = H.ModeManager.Amax; HModd.ModeManager.Bmin = H.ModeManager.Amin;
+            // HNodd.ModeManager.Cmin = HC.ModeManager.Cmin; HNodd.ModeManager.Cmax = HC.ModeManager.Cmax;
 
             switch (mkn) {
                 case 1: // n oddsized
