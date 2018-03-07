@@ -76,8 +76,16 @@ namespace FFLAS {
     }
 
     namespace MMHelperAlgo{
-        struct Auto{};
-        struct Classic{};
+        struct Auto{
+            Auto(){}
+            template<class Other>
+            Auto(Other& o){}
+        };
+        struct Classic{
+            Classic(){}
+            template<class Other>
+            Classic(Other & o){}
+        };
         struct Winograd{
             int recLevel;
             Winograd():recLevel(-1){}
@@ -95,36 +103,6 @@ namespace FFLAS {
     struct AlgoChooser{typedef MMHelperAlgo::Winograd value;};
     template<class ParSeq>
     struct AlgoChooser<ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq>{typedef MMHelperAlgo::Classic value;};
-
-         /*! FGEMM  Helper for Default and ConvertTo modes of operation
-         */
-    // template<class Field,
-    //          typename AlgoTrait,
-    //          typename ParSeqTrait >
-    // struct MMHelper<Field, AlgoTrait, ModeCategories::DefaultTag, ParSeqTrait>
-    // {
-    //     typedef MMHelper<Field,AlgoTrait, ModeCategories::DefaultTag,ParSeqTrait> Self_t;
-    //     int recLevel ;
-    //     ParSeqTrait parseq;
-
-    //     MMHelper(){}
-    //     MMHelper(const Field& F, size_t m, size_t k, size_t n, ParSeqTrait _PS) : recLevel(-1), parseq(_PS) {}
-    //     MMHelper(const Field& F, int w, ParSeqTrait _PS=ParSeqTrait()) : recLevel(w), parseq(_PS) {}
-
-    //         // copy constructor from other Field and Algo Traits
-    //     template<class F2, typename AlgoT2, typename FT2, typename PS2>
-    //     MMHelper(MMHelper<F2, AlgoT2, FT2, PS2>& WH) : recLevel(WH.recLevel), parseq(WH.parseq) {}
-
-    //     friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
-    //         {
-    //             return out <<"Helper: "
-    //                        <<typeid(AlgoTrait).name()<<' '
-    //                        <<typeid(ModeCategories::DefaultTag).name()<< ' '
-    //                        << M.parseq <<std::endl
-    //                        <<"  recLevel = "<<M.recLevel<<std::endl;
-    //         }
-    // }; 
-
 
     template<class Field, class ModeTrait,class Enable=void>
     struct ModeManager_t{
@@ -315,6 +293,66 @@ namespace FFLAS {
         }
 
     } //Protected
+
+	namespace CuttingStrategy{
+		struct Single{};
+		struct Row{};
+		struct Column{};
+		struct Block{};
+		struct Recursive{};		
+	}
+
+	namespace StrategyParameter{
+		struct Fixed{};
+		struct Threads{};
+		struct Grain{};
+		struct TwoD{};
+		struct TwoDAdaptive{};
+		struct ThreeD{};
+		struct ThreeDInPlace{};
+		struct ThreeDAdaptive{};
+	}
+
+	/*! ParSeqHelper for both fgemm and ftrsm
+	*/
+		/*! ParSeqHelper for both fgemm and ftrsm
+	*/
+	namespace ParSeqHelper {
+		template <typename C=CuttingStrategy::Block, typename P=StrategyParameter::Threads>
+		struct Parallel{
+			typedef C Cut;
+			typedef P Param;
+			
+			Parallel(size_t n=NUM_THREADS):_numthreads(n){}
+
+			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
+				return out << "Parallel: " << p.numthreads();
+			}
+			size_t numthreads() const { return _numthreads; }
+			size_t& set_numthreads(size_t n) { return _numthreads=n; }
+			// CuttingStrategy method() const { return _method; }
+			// StrategyParameter strategy() const { return _param; }
+        private:
+			size_t _numthreads;
+			// CuttingStrategy _method;
+			// StrategyParameter _param;
+            
+		};
+		struct Sequential{
+			Sequential() {}
+			template<class Cut,class Param>
+			Sequential(const Parallel<Cut,Param>& ) {}
+			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
+				return out << "Sequential";
+			}
+			size_t numthreads() const { return 1; }
+		// 	CuttingStrategy method() const { return SINGLE; }
+                // // numthreads==1 ==> a single block
+		// 	StrategyParameter strategy() const { return THREADS; }
+		};
+	}
+
+
     template<class Field,
              typename AlgoTrait = MMHelperAlgo::Auto,
              typename ModeTrait = typename ModeTraits<Field>::value,

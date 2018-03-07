@@ -485,7 +485,7 @@ namespace FFLAS {
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
-		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > H2(Z,H.recLevel,H.parseq);
+		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > H2(Z,H);
 			//
 		H2.setNorm(p);
 		

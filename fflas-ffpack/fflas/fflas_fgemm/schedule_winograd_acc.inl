@@ -201,11 +201,11 @@ namespace FFLAS { namespace BLAS3 {
 				     )
 	{
 		typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
-		typedef typename  MMH_t::DelayedField::Element_ptr DFEptr;
-		typedef typename  MMH_t::DelayedField::ConstElement_ptr DFCEptr;
-		typedef typename  MMH_t::DelayedField::Element DFElt;
+		typedef typename  MMH_t::ModeMgr_t::DelayedField::Element_ptr DFEptr;
+		typedef typename  MMH_t::ModeMgr_t::DelayedField::ConstElement_ptr DFCEptr;
+		typedef typename  MMH_t::ModeMgr_t::DelayedField::Element DFElt;
 
-		const typename MMH_t::DelayedField & DF = WH.delayedField;
+		const typename MMH_t::ModeMgr_t::DelayedField & DF = WH.ModeManager.delayedField;
 
 		FFLASFFPACK_check(!DF.isZero(beta));
 
@@ -266,19 +266,19 @@ namespace FFLAS { namespace BLAS3 {
 
 		typename Field::Element_ptr X1 = fflas_new(F,mr,nr);
                 // P5 = alpha . S1*T1  in X1
-		MMH_t H5(F, WH.recLevel-1,
-			 2*WH.Amin, 2*WH.Amax,
-			 -(WH.Bmax-WH.Bmin),
-			 WH.Bmax-WH.Bmin,
+		MMH_t H5(F, WH.AlgoManager.recLevel-1,
+			 2*WH.ModeManager.Amin, 2*WH.ModeManager.Amax,
+			 -(WH.ModeManager.Bmax-WH.ModeManager.Bmin),
+			 WH.ModeManager.Bmax-WH.ModeManager.Bmin,
 			 0, 0);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H5);
 
 		DFElt C22Min, C22Max;
 		DFElt C12Min, C12Max;
 		// This test will be optimized out
-		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.Outmin, H5.Outmax, WH.Cmin, WH.Cmax, betadf, WH)){
+		if (Protected::NeedDoublePreAddReduction (C12Min, C12Max, H5.ModeManager.Outmin, H5.ModeManager.Outmax, WH.ModeManager.Cmin, WH.ModeManager.Cmax, betadf, WH)){
 			freduce(F,mr,nr,X1,nr);
-			H5.initOut();
+			H5.ModeManager.initOut();
 		}
 		C22Min = C12Min; C22Max = C12Max;
 
@@ -289,22 +289,22 @@ namespace FFLAS { namespace BLAS3 {
 		fadd(DF,mr,nr,(DFCEptr)X1,nr,betadf,(DFCEptr)C12,ldc,(DFEptr)C12,ldc);
 
 		// P1 = alpha . A11 * B11 in X1
-		MMH_t H1(F, WH.recLevel-1,
-			 WH.Amin, WH.Amax,
-			 WH.Bmin, WH.Bmax,
+		MMH_t H1(F, WH.AlgoManager.recLevel-1,
+			 WH.ModeManager.Amin, WH.ModeManager.Amax,
+			 WH.ModeManager.Bmin, WH.ModeManager.Bmax,
 			 0, 0);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H1);
 
 		// P2 = alpha . A12 * B21 + beta . C11  in C11
-		MMH_t H2(F, WH.recLevel-1,
-			 WH.Amin, WH.Amax,
-			 WH.Bmin, WH.Bmax,
-			 WH.Cmin, WH.Cmax);
+		MMH_t H2(F, WH.AlgoManager.recLevel-1,
+			 WH.ModeManager.Amin, WH.ModeManager.Amax,
+			 WH.ModeManager.Bmin, WH.ModeManager.Bmax,
+			 WH.ModeManager.Cmin, WH.ModeManager.Cmax);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, beta, C11, ldc, H2);
 
 		//  U1 = P2 + P1 in C11
 		DFElt U1Min, U1Max;
-		if (Protected::NeedPreAddReduction (U1Min,U1Max, H1.Outmin, H1.Outmax, H2.Outmin,H2.Outmax, WH) ){
+		if (Protected::NeedPreAddReduction (U1Min,U1Max, H1.ModeManager.Outmin, H1.ModeManager.Outmax, H2.ModeManager.Outmin,H2.ModeManager.Outmax, WH) ){
 			freduce(F,mr,nr,X1,nr);
 			freduce(F,mr,nr,C11,ldc);
 		}
@@ -317,15 +317,15 @@ namespace FFLAS { namespace BLAS3 {
 		fsubin(DF,la,ca,(DFCEptr)A11,lda,(DFEptr)X2,ca);
 
 		// U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
-		MMH_t H6(F, WH.recLevel-1,
-			 2*WH.Amin-WH.Amax, 2*WH.Amax-WH.Amin,
-			 2*WH.Bmin-WH.Bmax, 2*WH.Bmax-WH.Bmin,
-			 H1.Outmin, H1.Outmax);
+		MMH_t H6(F, WH.AlgoManager.recLevel-1,
+			 2*WH.ModeManager.Amin-WH.ModeManager.Amax, 2*WH.ModeManager.Amax-WH.ModeManager.Amin,
+			 2*WH.ModeManager.Bmin-WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-WH.ModeManager.Bmin,
+			 H1.ModeManager.Outmin, H1.ModeManager.Outmax);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H6);
 
 		// U4 = U2 + C12 in C12
 		DFElt U4Min, U4Max;
-		if (Protected::NeedPreAddReduction (U4Min, U4Max, H6.Outmin, H6.Outmax, C12Min, C12Max, WH)){
+		if (Protected::NeedPreAddReduction (U4Min, U4Max, H6.ModeManager.Outmin, H6.ModeManager.Outmax, C12Min, C12Max, WH)){
 			freduce(F,mr,nr,C12,ldc);
 			freduce(F,mr,nr,X1,nr);
 		}
@@ -338,16 +338,16 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(DF,la,ca,(DFCEptr)A12,lda,(DFCEptr)X2,ca,(DFEptr)X2,ca);
 
 		// P4 = alpha . A22 * T4 - beta . C21 in C21
-		MMH_t H4(F, WH.recLevel-1,
-			 WH.Amin, WH.Amax,
-			 2*WH.Bmin-2*WH.Bmax, 2*WH.Bmax-2*WH.Bmin,
-			 WH.Cmin, WH.Cmax);
+		MMH_t H4(F, WH.AlgoManager.recLevel-1,
+			 WH.ModeManager.Amin, WH.ModeManager.Amax,
+			 2*WH.ModeManager.Bmin-2*WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-2*WH.ModeManager.Bmin,
+			 WH.ModeManager.Cmin, WH.ModeManager.Cmax);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, H4);
 
 		// U5 = P3 + U4 = alpha . S4*B22 + U4 in C12
-		MMH_t H3(F, WH.recLevel-1,
-			 2*WH.Amin-2*WH.Amax, 2*WH.Amax-2*WH.Amin,
-			 WH.Bmin, WH.Bmax,
+		MMH_t H3(F, WH.AlgoManager.recLevel-1,
+			 2*WH.ModeManager.Amin-2*WH.ModeManager.Amax, 2*WH.ModeManager.Amax-2*WH.ModeManager.Amin,
+			 WH.ModeManager.Bmin, WH.ModeManager.Bmax,
 			 U4Min, U4Max);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, B22, ldb, F.one, C12, ldc, H3);
 
@@ -358,10 +358,10 @@ namespace FFLAS { namespace BLAS3 {
 		fsub(DF,la,ca,(DFCEptr)A11,lda,(DFCEptr)A21,lda,(DFEptr)X2,ca);
 
 		// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
-		MMH_t H7(F, WH.recLevel-1,
-			 WH.Amin-WH.Amax, WH.Amax-WH.Amin,
-			 WH.Bmin-WH.Bmax, WH.Bmax-WH.Bmin,
-			 H6.Outmin, H6.Outmax);
+		MMH_t H7(F, WH.AlgoManager.recLevel-1,
+			 WH.ModeManager.Amin-WH.ModeManager.Amax, WH.ModeManager.Amax-WH.ModeManager.Amin,
+			 WH.ModeManager.Bmin-WH.ModeManager.Bmax, WH.ModeManager.Bmax-WH.ModeManager.Bmin,
+			 H6.ModeManager.Outmin, H6.ModeManager.Outmax);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.one, X1, nr, H7);
 
 		fflas_delete (X2);
@@ -369,7 +369,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		// U7 =  U3 + C22 in C22
 		DFElt U7Min, U7Max;
-		if (Protected::NeedPreAddReduction (U7Min, U7Max, H7.Outmin, H7.Outmax, C22Min, C22Max, WH)){
+		if (Protected::NeedPreAddReduction (U7Min, U7Max, H7.ModeManager.Outmin, H7.ModeManager.Outmax, C22Min, C22Max, WH)){
 			freduce(F,mr,nr,X1,nr);
 			freduce(F,mr,nr,C22,ldc);
 		}
@@ -377,7 +377,7 @@ namespace FFLAS { namespace BLAS3 {
 
 		// U6 = U3 - P4 in C21
 		DFElt U6Min, U6Max;
-		if (Protected::NeedPreSubReduction(U6Min, U6Max, H7.Outmin, H7.Outmax, H4.Outmin, H4.Outmax, WH)){
+		if (Protected::NeedPreSubReduction(U6Min, U6Max, H7.ModeManager.Outmin, H7.ModeManager.Outmax, H4.ModeManager.Outmin, H4.ModeManager.Outmax, WH)){
 			freduce(F,mr,nr,X1,nr);
 			freduce(F,mr,nr,C21,ldc);
 		}
@@ -386,8 +386,8 @@ namespace FFLAS { namespace BLAS3 {
 		fflas_delete (X1);
 
 		// Updating WH with Outmin, Outmax of the result
-		WH.Outmin = min4 (U1Min, H3.Outmin, U6Min, U7Min);
-		WH.Outmax = max4 (U1Max, H3.Outmax, U6Max, U7Max);
+		WH.ModeManager.Outmin = min4 (U1Min, H3.ModeManager.Outmin, U6Min, U7Min);
+		WH.ModeManager.Outmax = max4 (U1Max, H3.ModeManager.Outmax, U6Max, U7Max);
 	} // WinogradAcc
 
 

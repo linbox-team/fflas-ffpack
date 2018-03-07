@@ -31,86 +31,10 @@
 
 #include <fflas-ffpack/fflas/fflas_enum.h>
 #include <math.h>
-
+#include "fflas-ffpack/fflas/fflas_helpers.inl"
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 
 namespace FFLAS {
-	// enum CuttingStrategy {
-    //     SINGLE			,
-	// 	ROW		,
-	// 	COLUMN	,
-	// 	BLOCK	,
-	// 	RECURSIVE
-	// };
-
-	// enum StrategyParameter {
-    //     FIXED		,
-	// 	THREADS		,
-	// 	GRAIN		,
-	// 	TWO_D			,
-	// 	THREE_D_INPLACE	,
-	// 	THREE_D_ADAPT	,
-	// 	TWO_D_ADAPT		,
-	// 	THREE_D
-	// };
-	namespace CuttingStrategy{
-		struct Single{};
-		struct Row{};
-		struct Column{};
-		struct Block{};
-		struct Recursive{};		
-	}
-
-	namespace StrategyParameter{
-		struct Fixed{};
-		struct Threads{};
-		struct Grain{};
-		struct TwoD{};
-		struct TwoDAdaptive{};
-		struct ThreeD{};
-		struct ThreeDInPlace{};
-		struct ThreeDAdaptive{};
-	}
-
-	/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-		/*! ParSeqHelper for both fgemm and ftrsm
-	*/
-	namespace ParSeqHelper {
-		template <typename C=CuttingStrategy::Block, typename P=StrategyParameter::Threads>
-		struct Parallel{
-			typedef C Cut;
-			typedef P Param;
-			
-			Parallel(size_t n=NUM_THREADS):_numthreads(n){}
-
-			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads();
-			}
-			size_t numthreads() const { return _numthreads; }
-			size_t& set_numthreads(size_t n) { return _numthreads=n; }
-			// CuttingStrategy method() const { return _method; }
-			// StrategyParameter strategy() const { return _param; }
-        private:
-			size_t _numthreads;
-			// CuttingStrategy _method;
-			// StrategyParameter _param;
-            
-		};
-		struct Sequential{
-			Sequential() {}
-			template<class Cut,class Param>
-			Sequential(Parallel<Cut,Param>& ) {}
-			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
-				return out << "Sequential";
-			}
-			size_t numthreads() const { return 1; }
-		// 	CuttingStrategy method() const { return SINGLE; }
-                // // numthreads==1 ==> a single block
-		// 	StrategyParameter strategy() const { return THREADS; }
-		};
-	}
-
 
 	template<class Cut=CuttingStrategy::Block, class Strat=StrategyParameter::Threads>
     inline void BlockCuts(size_t& RBLOCKSIZE, size_t& CBLOCKSIZE,
