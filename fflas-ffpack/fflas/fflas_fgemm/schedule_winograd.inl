@@ -362,13 +362,13 @@ namespace FFLAS { namespace BLAS3 {
 
             typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
             typedef typename MMH_t::ModeMgr_t MMgr;
-                //typedef typename MMgr::DelayedField::Element_ptr DFEptr;
-                //typedef typename MMgr::DelayedField::ConstElement_ptr DFCEptr;
-            typedef typename MMgr::DFElt DFElt;
-            typedef typename MMgr::DFEptr DFEptr;
+            //     //typedef typename MMgr::DelayedField::Element_ptr DFEptr;
+            //     //typedef typename MMgr::DelayedField::ConstElement_ptr DFCEptr;
+            // typedef typename MMgr::DFElt DFElt;
+            // typedef typename MMgr::DFEptr DFEptr;
 
-            const typename MMgr::DelayedField & DF = WH.ModeManager.delayedField;
-
+            // const typename MMgr::DelayedField & DF = WH.ModeManager.delayedField;
+            MMgr& WHMM = WH.ModeManager;
             size_t lb, cb, la, ca, ldX2;
                 // size_t x3rd = std::max(mr,kr);
             typename Field::ConstElement_ptr A11=A, A12, A21, A22;
@@ -407,133 +407,141 @@ namespace FFLAS { namespace BLAS3 {
                 ldX2 = cb = nr;
             }
                 // Two temporary submatrices are required
-            typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
 
                 // T3 = B22 - B12 in X2
-            fsub(DF,lb,cb,  B22,ldb,  B12,ldb, X2,ldX2);
+            typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
+            SubHelper<Field, ModeCategories::LazyTag> T3H(F, WHMM.B, WHMM.B);
+            fsub (F, lb, cb,  B22, ldb,  B12, ldb, X2, ldX2, T3H);
 
                 // S3 = A11 - A21 in X1
             typename Field::Element_ptr X1 = fflas_new (F,mr,x1rd);
-            fsub(DF,la,ca,A11,lda,A21,lda,X1,ldX1);
+            SubHelper<Field, ModeCategories::LazyTag> S3H(F, WHMM.A, WHMM.A);
+            fsub (F, la, ca, A11, lda, A21, lda, X1, ldX1, S3H);
 
                 // P7 = alpha . S3 * T3  in C21
-            MMH_t H7(F, WH.AlgoManager.recLevel-1, -(WH.ModeManager.Amax-WH.ModeManager.Amin), WH.ModeManager.Amax-WH.ModeManager.Amin, -(WH.ModeManager.Bmax-WH.ModeManager.Bmin), WH.ModeManager.Bmax-WH.ModeManager.Bmin,0,0);
-
+            MMH_t H7(F, WH.AlgoManager.recLevel-1, S3H.Out, T3H.Out);
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H7);
 
                 // T1 = B12 - B11 in X2
-            fsub(DF,lb,cb,B12,ldb,B11,ldb,X2,ldX2);
+            SubHelper<Field, ModeCategories::LazyTag> T1H(F, WHMM.B, WHMM.B);
+            fsub (F, lb, cb, B12, ldb, B11, ldb, X2, ldX2, T1H);
 
                 // S1 = A21 + A22 in X1
-            fadd(DF,la,ca,A21,lda,A22,lda,X1,ldX1);
+            AddHelper<Field, ModeCategories::LazyTag> S1H(F, WHMM.A, WHMM.A);
+            fadd (F, la, ca, A21, lda, A22, lda, X1, ldX1, S1H);
 
                 // P5 = alpha . S1*T1 in C22
-            MMH_t H5(F, WH.AlgoManager.recLevel-1, 2*WH.ModeManager.Amin, 2*WH.ModeManager.Amax, -(WH.ModeManager.Bmax-WH.ModeManager.Bmin), WH.ModeManager.Bmax-WH.ModeManager.Bmin, 0, 0);
-
+            MMH_t H5(F, WH.AlgoManager.recLevel-1, S1H.Out, T1H.Out);
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
                 // T2 = B22 - T1 in X2
-            fsub(DF,lb,cb,B22,ldb,X2,ldX2,X2,ldX2);
+            SubHelper<Field, ModeCategories::LazyTag> T2H(F, WHMM.B, T1H.Out);
+            fsub (F, lb, cb, B22, ldb, X2, ldX2, X2, ldX2, T2H);
 
                 // S2 = S1 - A11 in X1
-            fsubin(DF,la,ca,A11,lda,X1,ldX1);
+            SubHelper<Field, ModeCategories::LazyTag> S2H(F, S1H.Out, WHMM.A);
+            fsubin(F, la, ca, A11, lda, X1, ldX1, S2H);
 
                 // P6 = alpha . S2 * T2 in C12
-            MMH_t H6(F, WH.AlgoManager.recLevel-1, 2*WH.ModeManager.Amin-WH.ModeManager.Amax, 2*WH.ModeManager.Amax-WH.ModeManager.Amin, 2*WH.ModeManager.Bmin-WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-WH.ModeManager.Bmin, 0, 0);
-
+            MMH_t H6(F, WH.AlgoManager.recLevel-1, S2H.Out, T2H.Out);
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
 
                 // S4 = A12 -S2 in X1
-            fsub(DF,la,ca,A12,lda,X1,ldX1,X1,ldX1);
+            SubHelper<Field, ModeCategories::LazyTag> S4H(F, WHMM.A, S2H.Out);
+            fsub (F, la, ca, A12, lda, X1, ldX1, X1, ldX1, S4H);
 
                 // P3 = alpha . S4*B22 in C11
-            MMH_t H3(F, WH.AlgoManager.recLevel-1, 2*WH.ModeManager.Amin-2*WH.ModeManager.Amax, 2*WH.ModeManager.Amax-2*WH.ModeManager.Amin, WH.ModeManager.Bmin, WH.ModeManager.Bmax, 0, 0);
-
+            MMH_t H3 (F, WH.AlgoManager.recLevel-1, S4H.Out, WHMM.B);
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, B22, ldb, F.zero, C11, ldc, H3);
 
                 // P1 = alpha . A11 * B11 in X1
-            MMH_t H1(F, WH.AlgoManager.recLevel-1, WH.ModeManager.Amin, WH.ModeManager.Amax, WH.ModeManager.Bmin, WH.ModeManager.Bmax, 0, 0);
-
+            MMH_t H1(F, WH.AlgoManager.recLevel-1, WHMM.A, WHMM.B);
             fgemm (F, ta, tb, mr, nr, kr, alpha, A11, lda, B11, ldb, F.zero, X1, nr, H1);
 
                 // U2 = P1 + P6 in C12  and
-            DFElt U2Min, U2Max;
-                // This test will be optimized out
-            if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.ModeManager.Outmin, H1.ModeManager.Outmax, H6.ModeManager.Outmin, H6.ModeManager.Outmax, WH)){
-                freduce (F, mr, nr, X1, nr);
-                freduce (F, mr, nr, C12, ldc);
-            }
-            faddin(DF,mr,nr,X1,nr,C12,ldc);
+            // DFElt U2Min, U2Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreAddReduction(U2Min, U2Max, H1.ModeManager.Outmin, H1.ModeManager.Outmax, H6.ModeManager.Outmin, H6.ModeManager.Outmax, WH)){
+            //     freduce (F, mr, nr, X1, nr);
+            //     freduce (F, mr, nr, C12, ldc);
+            // }
+            AddHelper<Field,ModeCategories::LazyTag> U2H (F, H1.Out, H6.Out);
+            faddin (F, mr, nr, X1, nr, C12, ldc, U2H);
 
                 // U3 = P7 + U2 in C21  and
-            DFElt U3Min, U3Max;
-                // This test will be optimized out
-            if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.ModeManager.Outmin, H7.ModeManager.Outmax, WH)){
-                freduce (F, mr, nr, C12, ldc);
-                freduce (F, mr, nr, C21, ldc);
-            }
-            faddin(DF,mr,nr,C12,ldc,C21,ldc);
+            // DFElt U3Min, U3Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreAddReduction(U3Min, U3Max, U2Min, U2Max, H7.ModeManager.Outmin, H7.ModeManager.Outmax, WH)){
+            //     freduce (F, mr, nr, C12, ldc);
+            //     freduce (F, mr, nr, C21, ldc);
+            // }
+            AddHelper<Field,ModeCategories::LazyTag> U3H (F, H7.Out, U2.Out);
+            faddin (F, mr, nr, C12, ldc, C21, ldc, U3H);
 
 
                 // U4 = P5 + U2 in C12    and
-            DFElt U4Min, U4Max;
-                // This test will be optimized out
-            if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.ModeManager.Outmin, H5.ModeManager.Outmax, WH)){
-                freduce (F, mr, nr, C22, ldc);
-                freduce (F, mr, nr, C12, ldc);
-            }
-            faddin(DF,mr,nr,C22,ldc,C12,ldc);
+            // DFElt U4Min, U4Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreAddReduction(U4Min, U4Max, U2Min, U2Max, H5.ModeManager.Outmin, H5.ModeManager.Outmax, WH)){
+            //     freduce (F, mr, nr, C22, ldc);
+            //     freduce (F, mr, nr, C12, ldc);
+            // }
+            AddHelper<Field,ModeCategories::LazyTag> U4H (F, H5.Out, U2.Out);
+            faddin (F, mr, nr, C22, ldc, C12, ldc, U4H);
 
                 // U7 = P5 + U3 in C22    and
-            DFElt U7Min, U7Max;
-                // This test will be optimized out
-            if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.ModeManager.Outmin,H5.ModeManager.Outmax, WH) ){
-                freduce (F, mr, nr, C21, ldc);
-                freduce (F, mr, nr, C22, ldc);
-            }
-            faddin(DF,mr,nr,C21,ldc,C22,ldc);
+            // DFElt U7Min, U7Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreAddReduction (U7Min,U7Max, U3Min, U3Max, H5.ModeManager.Outmin,H5.ModeManager.Outmax, WH) ){
+            //     freduce (F, mr, nr, C21, ldc);
+            //     freduce (F, mr, nr, C22, ldc);
+            // }
+            AddHelper<Field,ModeCategories::LazyTag> U7H (F, H5.Out, U3.Out);
+            faddin (F, mr, nr, C21, ldc, C22, ldc, U7H);
 
                 // U5 = P3 + U4 in C12
-            DFElt U5Min, U5Max;
-                // This test will be optimized out
-            if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.ModeManager.Outmin, H3.ModeManager.Outmax, WH) ){
-                freduce (F, mr, nr, C12, ldc);
-                freduce (F, mr, nr, C11, ldc);
-            }
-            faddin(DF,mr,nr,C11,ldc,C12,ldc);
+            // DFElt U5Min, U5Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreAddReduction (U5Min,U5Max, U4Min, U4Max, H3.ModeManager.Outmin, H3.ModeManager.Outmax, WH) ){
+            //     freduce (F, mr, nr, C12, ldc);
+            //     freduce (F, mr, nr, C11, ldc);
+            // }
+            AddHelper<Field,ModeCategories::LazyTag> U5H (F, H3.Out, U4.Out);
+            faddin (F, mr, nr, C11, ldc, C12, ldc, U5H);
 
                 // T4 = T2 - B21 in X2
-            fsubin(DF,lb,cb,B21,ldb,X2,ldX2);
+            SubHelper<Field,ModeCategories::LazyTag> T4H (F, T2H.Out, WHMM.B);
+            fsubin (F, lb, cb, B21, ldb, X2, ldX2, T4H);
 
                 // P4 = alpha . A22 * T4 in C11
-            MMH_t H4(F, WH.AlgoManager.recLevel-1, WH.ModeManager.Amin, WH.ModeManager.Amax, 2*WH.ModeManager.Bmin-2*WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-2*WH.ModeManager.Bmin, 0, 0);
-
+            MMH_t H4(F, WH.AlgoManager.recLevel-1, WHMM.A,  T4H.Out);
             fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H4);
 
             fflas_delete (X2);
 
                 // U6 = U3 - P4 in C21
-            DFElt U6Min, U6Max;
-                // This test will be optimized out
-            if (Protected::NeedPreSubReduction (U6Min,U6Max, U3Min, U3Max, H4.ModeManager.Outmin,H4.ModeManager.Outmax, WH) ){
-                freduce (F, mr, nr, C11, ldc);
-                freduce (F, mr, nr, C21, ldc);
-            }
-            fsubin(DF,mr,nr,C11,ldc,C21,ldc);
+            // DFElt U6Min, U6Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreSubReduction (U6Min,U6Max, U3Min, U3Max, H4.ModeManager.Outmin,H4.ModeManager.Outmax, WH) ){
+            //     freduce (F, mr, nr, C11, ldc);
+            //     freduce (F, mr, nr, C21, ldc);
+            // }
+            SubHelper<Field,ModeCategories::LazyTag> U6H (F, U3H.Out, H4.Out);
+            fsubin (F, mr, nr, C11, ldc, C21, ldc, U6H);
 
                 // P2 = alpha . A12 * B21  in C11
-            MMH_t H2(F, WH.AlgoManager.recLevel-1, WH.ModeManager.Amin, WH.ModeManager.Amax, WH.ModeManager.Bmin, WH.ModeManager.Bmax, 0, 0);
-
+            MMH_t H2 (F, WH.AlgoManager.recLevel-1, WHMM.A, WHMM.B);
             fgemm (F, ta, tb, mr, nr, kr, alpha, A12, lda, B21, ldb, F.zero, C11, ldc, H2);
 
                 //  U1 = P2 + P1 in C11
-            DFElt U1Min, U1Max;
-                // This test will be optimized out
-            if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.ModeManager.Outmin, H1.ModeManager.Outmax, H2.ModeManager.Outmin,H2.ModeManager.Outmax, WH) ){
-                freduce (F, mr, nr, X1, nr);
-                freduce (F, mr, nr, C11, ldc);
-            }
-            faddin(DF,mr,nr,X1,nr,C11,ldc);
+            // DFElt U1Min, U1Max;
+            //     // This test will be optimized out
+            // if (Protected::NeedPreAddReduction (U1Min, U1Max, H1.ModeManager.Outmin, H1.ModeManager.Outmax, H2.ModeManager.Outmin,H2.ModeManager.Outmax, WH) ){
+            //     freduce (F, mr, nr, X1, nr);
+            //     freduce (F, mr, nr, C11, ldc);
+            // }
+            AddHelper<Field,ModeCategories::LazyTag> U1H (F, H2.Out, H1.Out);
+            faddin (F, mr, nr, X1, nr, C11, ldc, U1H);
 
             fflas_delete (X1);
 

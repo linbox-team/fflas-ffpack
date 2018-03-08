@@ -125,143 +125,123 @@ namespace FFLAS {
                 }
     };
     
+    template<class Field, class ModeTrait,class Enable=void>
+    struct Operand{};
+    template<class Field, class ModeTrait>
+    struct Operand<Field, ModeTrait,
+                   typename std::enable_if<std::is_same<ModeTrait,ModeCategories::DelayedTag>::value ||
+                                           std::is_same<ModeTrait,ModeCategories::LazyTag>::value ||
+                                           std::is_same<ModeTrait,ModeCategories::DefaultBoundedTag>::value ||
+                                           std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value >::type> {
+        typedef Operand<Field,ModeTrait,void> Self_t;
+        typedef typename associatedDelayedField<const Field>::field DelayedField;
+        typedef typename DelayedField::Element DFElt;
+        Operand(Self_t Other): min(Other.min),max(Other.max){}
+        Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
+        DFElt min, max;
+        const DFElt& absMax() const{return std::max(static_cast<const DFElt&>(-min),max);}
+            //void init(DF){min = F.minElement(); max = F.maxElement();}
+        bool unfit(){ return Protected::unfit(absMax());}
+        bool check (const Field& F, const FFLAS::FFLAS_TRANSPOSE ta, const size_t M, const size_t N,
+                    typename Field::ConstElement_ptr A, const size_t lda ) {
+#ifdef __FFLASFFPACK_DEBUG
+            for (size_t i=0; i<M;++i)
+                for (size_t j=0; j<N;++j){
+                    const typename Field::Element x = (ta == FFLAS::FflasNoTrans)? A[i*lda+j] : A[i+j*lda];
+                    if (x > max || x < min){
+                        std::cerr<<"Error in "<<min<<" < = A["<<i<<", "<<j<<"] ="<<x<<" <= "<<max<<std::endl;
+                        return false;
+                    }
+                }
+#endif
+            return true;
+        }
+
+    };
+
     template<class Field, class ModeTrait>
     struct ModeManager_t <Field, ModeTrait,
                           typename std::enable_if<std::is_same<ModeTrait,ModeCategories::DelayedTag>::value ||
                                                   std::is_same<ModeTrait,ModeCategories::LazyTag>::value ||
                                                   std::is_same<ModeTrait,ModeCategories::DefaultBoundedTag>::value ||
                                                   std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value >::type> {
-                
+
         typedef ModeManager_t<Field,ModeTrait,void> Self_t;
         typedef typename associatedDelayedField<const Field>::field_ref DelayedFieldRef;
         typedef typename associatedDelayedField<const Field>::field DelayedField;
         typedef typename DelayedField::Element DFElt;
         typedef typename DelayedField::Element_ptr DFEptr;
-        DFElt FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
-        DFElt MaxStorableValue;
+
+        Operand<Field,ModeTrait> A, B, C, Out;
+        const DFElt FieldMin, FieldMax;
+        const DFElt MaxStorableValue;
         const DelayedFieldRef delayedField;
         ModeManager_t (){}
         
         ModeManager_t (const Field& F):
             FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
-            Amin(FieldMin), Amax(FieldMax),
-            Bmin(FieldMin), Bmax(FieldMax),
-            Cmin(FieldMin), Cmax(FieldMax),
-            Outmin(0), Outmax(0),
+            A (FieldMin, FieldMax), B (FieldMin, FieldMax), C (FieldMin, FieldMax), Out (0, 0),
             MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
             delayedField(F) {}
-        
+    
         template<class OtherMode>
         ModeManager_t (const Field& F, const OtherMode& OM):
             FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
-            Amin(OM.Amin), Amax(OM.Amax),
-            Bmin(OM.Bmin), Bmax(OM.Bmax),
-            Cmin(OM.Cmin), Cmax(OM.Cmax),
-            Outmin(0), Outmax(0),
-            MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
-            delayedField(F) {}
-
-        ModeManager_t (const Field&F, DFElt _Amin, DFElt _Amax, DFElt _Bmin, DFElt _Bmax, DFElt _Cmin, DFElt _Cmax):
-            FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
-            Amin(_Amin), Amax(_Amax),
-            Bmin(_Bmin), Bmax(_Bmax),
-            Cmin(_Cmin), Cmax(_Cmax),
-            Outmin(0), Outmax(0),
+            A(OM.A), B(OM.B), C(OM.C), Out(0,0),
             MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
             delayedField(F) {}
         
+        ModeManager_t (const Field&F, Operand<Field, ModeTrait>& OA, Operand<Field,ModeTrait>& OB):
+                FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
+                A(OA), B(OB), C(0,0), Out(0,0),
+                MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
+                delayedField(F) {}
+    
+        ModeManager_t (const Field&F, Operand<Field, ModeTrait>& OA, Operand<Field,ModeTrait>& OB, Operand<Field,ModeTrait>& OC):
+                FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
+                A(OA), B(OB), C(OC), Out(0,0),
+                MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
+                delayedField(F) {}
+
         size_t MaxDelayedDim(DFElt beta) {
             if (MaxStorableValue < DFElt(0))
                     //Infinte precision delayed field
                 return std::numeric_limits<size_t>::max();
-
+            
             DFElt absbeta;
             delayedField.init(absbeta,beta);
             if (beta < 0) absbeta = -beta;
                 // This cast is needed when Cmin base type is int8/16_t,
                 // getting -Cmin returns a int, not the same base type.
-            DFElt diff = MaxStorableValue - absbeta
-                * std::max(static_cast<const DFElt&>(-Cmin), Cmax);
-            DFElt AB = std::max(static_cast<const DFElt&>(-Amin), Amax)
-                * std::max(static_cast<const DFElt&>(-Bmin), Bmax);
+            DFElt diff = MaxStorableValue - absbeta * C.absMax();
+            DFElt AB = A.absMax() * B.absMax();
             if ((diff < DFElt(0u))||(AB<DFElt(0u))) return 0;
 
             DFElt kmax = diff/AB;
             return FFLAS::Protected::min_types<DFElt>(kmax);
-                // if (kmax > std::numeric_limits<size_t>::max())
-                //      return std::numeric_limits<size_t>::max();
-                // else
-                //      return kmax;
         }
-        bool Aunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Amin),Amax));}
-        bool Bunfit(){ return Protected::unfit(std::max(static_cast<const DFElt&>(-Bmin),Bmax));}
 
-        void initC(){Cmin = FieldMin; Cmax = FieldMax;}
-        void initA(){Amin = FieldMin; Amax = FieldMax;}
-        void initB(){Bmin = FieldMin; Bmax = FieldMax;}
-        void initOut(){Outmin = FieldMin; Outmax = FieldMax;}
+        void initC(){C.min = FieldMin; C.max = FieldMax;}
+        void initA(){A.min = FieldMin; A.max = FieldMax;}
+        void initB(){B.min = FieldMin; B.max = FieldMax;}
+        void initOut(){Out.min = FieldMin; Out.max = FieldMax;}
 
         void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
         {
             if (beta<0){
-                Outmin = beta*Cmax;
-                Outmax = beta*Cmin;
+                Out.min = beta*C.max;
+                Out.max = beta*C.min;
             } else {
-                Outmin = beta*Cmin;
-                Outmax = beta*Cmax;
+                Out.min = beta*C.min;
+                Out.max = beta*C.max;
             }
             if (alpha >0){
-                Outmin += DFElt(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
-                Outmax += DFElt(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
+                Out.min += DFElt(k)*alpha*std::min(A.min*B.max, A.max*B.min);
+                Out.max += DFElt(k)*alpha*std::max(A.min*B.min, A.max*B.max);
             }else{
-                Outmin += DFElt(k)*alpha*std::max(Amin*Bmin, Amax*Bmax);
-                Outmax += DFElt(k)*alpha*std::min(Amin*Bmax, Amax*Bmin);
+                Out.min += DFElt(k)*alpha*std::max(A.min*B.min, A.max*B.max);
+                Out.max += DFElt(k)*alpha*std::min(A.min*B.max, A.max*B.min);
             }
-        }
-
-        bool checkA(const Field& F, const FFLAS::FFLAS_TRANSPOSE ta, const size_t M, const size_t N,
-                    typename Field::ConstElement_ptr A, const size_t lda )
-        {
-#ifdef __FFLASFFPACK_DEBUG
-            for (size_t i=0; i<M;++i)
-                for (size_t j=0; j<N;++j){
-                    const typename Field::Element x = (ta == FFLAS::FflasNoTrans)? A[i*lda+j] : A[i+j*lda];
-                    if (x > Amax || x < Amin){
-                        std::cerr<<"Error in "<<Amin<<" < = A["<<i<<", "<<j<<"] ="<<x<<" <= "<<Amax<<std::endl;
-                        return false;
-                    }
-                }
-#endif
-            return true;
-        }
-
-        bool checkB(const Field& F, const FFLAS::FFLAS_TRANSPOSE tb, const size_t M, const size_t N,
-                    typename Field::ConstElement_ptr B, const size_t ldb)
-        {
-#ifdef __FFLASFFPACK_DEBUG
-            for (size_t i=0; i<M;++i)
-                for (size_t j=0; j<N;++j){
-                    const typename Field::Element x = (tb == FFLAS::FflasNoTrans)? B[i*ldb+j] : B[i+j*ldb];
-                    if (x > Bmax || x < Bmin){
-                        std::cerr<<"Error in "<<Bmin<<" < = B["<<i<<", "<<j<<"] ="<<B[i*ldb+j]<<" <= "<<Bmax<<std::endl;
-                        return false;
-                    }
-                }
-#endif
-            return true;
-        }
-
-        bool checkOut(const Field& F, const size_t M, const size_t N,
-                      typename Field::ConstElement_ptr A, const size_t lda ){
-#ifdef __FFLASFFPACK_DEBUG
-            for (size_t i=0; i<M;++i)
-                for (size_t j=0; j<N;++j)
-                    if ((A[i*lda+j]>Outmax) || (A[i*lda+j]<Outmin)){
-                        std::cerr<<"Error in "<<Outmin<<" <= Out["<<i<<", "<<j<<"] = "<<A[i*lda+j]<<" <= "<<Outmax<<std::endl;
-                        return false;
-                    }
-#endif
-            return true;
         }
 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
@@ -270,31 +250,26 @@ namespace FFLAS {
                        <<" DelayedField = "<<typeid(DelayedField).name()<<std::endl
                        <<"  FieldMin = "<<M.FieldMin<<" FieldMax = "<<M.FieldMax<<std::endl
                        <<"  MaxStorableValue = "<< M.MaxStorableValue <<std::endl
-                       <<"  Amin = "<<M.Amin<<" Amax = "<<M.Amax<<std::endl
-                       <<"  Bmin = "<<M.Bmin<<" Bmax = "<<M.Bmax<<std::endl
-                       <<"  Cmin = "<<M.Cmin<<" Cmax = "<<M.Cmax<<std::endl
-                       <<"  Outmin = "<<M.Outmin<<" Outmax = "<<M.Outmax<<std::endl;
+                       <<"  Amin = "<<M.A.min<<" Amax = "<<M.A.max<<std::endl
+                       <<"  Bmin = "<<M.B.min<<" Bmax = "<<M.B.max<<std::endl
+                       <<"  Cmin = "<<M.C.min<<" Cmax = "<<M.C.max<<std::endl
+                       <<"  Outmin = "<<M.Out.min<<" Outmax = "<<M.Out.max<<std::endl;
         }
     };
         //TODO : write generic case with empty functions
     namespace Protected{
         template<class MMDest, class MMSrc>
         void setDynPeelHelpers(MMDest& MMacc, MMDest& MMModd, MMDest& MMNodd, const MMSrc& MMH, const MMSrc& MMHC){
-            MMacc.Cmin = MMH.Outmin;
-            MMacc.Cmax = MMH.Outmax;
-            MMModd.Cmin = MMHC.Cmin;
-            MMModd.Cmax = MMHC.Cmax;
-            MMModd.Amax = MMH.Bmax;
-            MMModd.Amin = MMH.Bmin;
-            MMModd.Bmax = MMH.Amax;
-            MMModd.Bmin = MMH.Amin;
-            MMNodd.Cmin = MMHC.Cmin;
-            MMNodd.Cmax = MMHC.Cmax;
+            MMacc.C = MMH.Out;
+            MMModd.C = MMHC.C;
+            MMModd.A = MMH.B;
+            MMModd.B = MMH.A;
+            MMNodd.C = MMHC.C;
         }
     template<class MMDest, class MMSrc>
     void updateDynPeelHelpers (MMDest& MM, const MMDest& MMModd, const MMDest& MMNodd, const  MMSrc& MMacc){
-        MM.Outmin = min4(MMModd.Outmin,MMNodd.Outmin, MMacc.Outmin, MM.Outmin);
-        MM.Outmax = min4(MMModd.Outmax,MMNodd.Outmax, MMacc.Outmax, MM.Outmax);
+        MM.Out.min = min4(MMModd.Out.min,MMNodd.Out.min, MMacc.Out.min, MM.Out.min);
+        MM.Out.max = max4(MMModd.Out.max,MMNodd.Out.max, MMacc.Out.max, MM.Out.max);
         }
 
     } //Protected
