@@ -136,7 +136,7 @@ namespace FFLAS {
         typedef Operand<Field,ModeTrait,void> Self_t;
         typedef typename associatedDelayedField<const Field>::field DelayedField;
         typedef typename DelayedField::Element DFElt;
-        Operand(Self_t Other): min(Other.min),max(Other.max){}
+        Operand(const Self_t& Other): min(Other.min),max(Other.max){}
         Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
         DFElt min, max;
         const DFElt& absMax() const{return std::max(static_cast<const DFElt&>(-min),max);}
@@ -226,7 +226,12 @@ namespace FFLAS {
         void initB(){B.min = FieldMin; B.max = FieldMax;}
         void initOut(){Out.min = FieldMin; Out.max = FieldMax;}
 
-        void setOutBounds(const size_t k, const DFElt alpha, const DFElt beta)
+        template<class OtherMM>
+        void setOutBoundsMM(const OtherMM& M1,const OtherMM& M2,const OtherMM& M3,const OtherMM& M4){
+            Out.min = std::min (M1.Out.min, std::min (M2.Out.min, std::min (M3.Out.min, M4.Out.min)));
+            Out.max = std::max (M1.Out.max, std::max (M2.Out.max, std::max (M3.Out.max, M4.Out.max)));
+        }
+        void setOutBoundsMM(const size_t k, const DFElt alpha, const DFElt beta)
         {
             if (beta<0){
                 Out.min = beta*C.max;
@@ -243,6 +248,9 @@ namespace FFLAS {
                 Out.max += DFElt(k)*alpha*std::min(A.min*B.max, A.max*B.min);
             }
         }
+
+        void setOutBoundsAdd() { Out.min = A.min+B.min; Out.max = A.max+B.max; }
+        void setOutBoundsSub() { Out.min = A.min-B.max; Out.max = A.max-B.min; }
 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
             return out <<"ModeManager: "
@@ -334,6 +342,42 @@ namespace FFLAS {
 
 
     template<class Field,
+             typename ModeTrait = typename ModeTraits<Field>::value,
+             typename ParSeqTrait = ParSeqHelper::Sequential >
+     struct AddSubHelper {
+
+         typedef AddSubHelper<Field,ModeTrait,ParSeqTrait> Self_t;
+         typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
+         ModeMgr_t ModeManager;
+         const ParSeqTrait& ParSeqManager;
+
+        AddSubHelper(const Field& F, const ParSeqTrait& _PS=ParSeqTrait()):
+                  ModeManager(F), ParSeqManager(_PS) {}
+         
+        
+        AddSubHelper(const Field& F, ModeMgr_t _MM,
+                  const ParSeqTrait& _PS = ParSeqTrait()):
+                  ModeManager(_MM), ParSeqManager(_PS){}
+        
+        AddSubHelper(const Field& F,
+                  const Operand<Field,ModeTrait>& OA,
+                  const Operand<Field,ModeTrait>& OB, 
+                  const ParSeqTrait& _PS = ParSeqTrait()):
+                ModeManager(F, OA, OB), ParSeqManager(_PS){}
+
+        template <class OtherHelper>
+        AddSubHelper(const Field& F, const OtherHelper& OH):
+                ModeManager(F,OH.ModeManager), ParSeqManager(OH.ParSeqManager){}
+
+        friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
+            {
+                return out <<"AddSubHelper: "
+                           << M.ModeManager <<std::endl
+                           << M.ParSeqManager <<std::endl;
+            }
+    };
+
+    template<class Field,
              typename AlgoTrait = MMHelperAlgo::Auto,
              typename ModeTrait = typename ModeTraits<Field>::value,
              typename ParSeqTrait = ParSeqHelper::Sequential >
@@ -402,7 +446,7 @@ namespace FFLAS {
                 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
             {
-                return out <<"Helper: "
+                return out <<"MMHelper: "
                            << M.AlgoManager <<' '
                            << M.ModeManager <<std::endl
                            << M.ParSeqManager <<std::endl;
