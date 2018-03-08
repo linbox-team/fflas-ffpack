@@ -107,13 +107,17 @@ namespace FFLAS {
     template<class Field, class ModeTrait,class Enable=void>
     struct ModeManager_t{
         typedef ModeManager_t<Field,ModeTrait,Enable> Self_t;
-        typedef typename  Field::Element DFElt;
-
-        ModeManager_t (){}
-        ModeManager_t(const Field&F){}
+        typedef typename associatedDelayedField<const Field>::field_ref DelayedFieldRef;
+        typedef typename associatedDelayedField<const Field>::field DelayedField;
+        typedef typename DelayedField::Element DFElt;
+        typedef typename DelayedField::Element_ptr DFEptr;
+        const DelayedFieldRef delayedField;
+        
+//        ModeManager_t (){}
+        ModeManager_t(const Field&F) : delayedField(F){}
         
         template<class OtherMode>
-        ModeManager_t (const Field& F, const OtherMode& OM) {}
+        ModeManager_t (const Field& F, const OtherMode& OM) : delayedField(F){}
 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
                 return out <<"ModeManager: "
@@ -129,12 +133,13 @@ namespace FFLAS {
                                                   std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value >::type> {
                 
         typedef ModeManager_t<Field,ModeTrait,void> Self_t;
-        typedef typename associatedDelayedField<const Field>::type DelayedField_t;
+        typedef typename associatedDelayedField<const Field>::field_ref DelayedFieldRef;
         typedef typename associatedDelayedField<const Field>::field DelayedField;
         typedef typename DelayedField::Element DFElt;
+        typedef typename DelayedField::Element_ptr DFEptr;
         DFElt FieldMin, FieldMax, Amin, Amax, Bmin, Bmax, Cmin, Cmax, Outmin, Outmax;
         DFElt MaxStorableValue;
-        const DelayedField_t delayedField;
+        const DelayedFieldRef delayedField;
         ModeManager_t (){}
         
         ModeManager_t (const Field& F):

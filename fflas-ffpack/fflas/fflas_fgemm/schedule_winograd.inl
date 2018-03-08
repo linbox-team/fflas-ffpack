@@ -362,9 +362,10 @@ namespace FFLAS { namespace BLAS3 {
 
             typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
             typedef typename MMH_t::ModeMgr_t MMgr;
-            typedef typename MMgr::DelayedField::Element_ptr DFEptr;
-            typedef typename MMgr::DelayedField::ConstElement_ptr DFCEptr;
-            typedef typename MMgr::DelayedField::Element DFElt;
+                //typedef typename MMgr::DelayedField::Element_ptr DFEptr;
+                //typedef typename MMgr::DelayedField::ConstElement_ptr DFCEptr;
+            typedef typename MMgr::DFElt DFElt;
+            typedef typename MMgr::DFEptr DFEptr;
 
             const typename MMgr::DelayedField & DF = WH.ModeManager.delayedField;
 
@@ -409,11 +410,11 @@ namespace FFLAS { namespace BLAS3 {
             typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
 
                 // T3 = B22 - B12 in X2
-            fsub(DF,lb,cb, (DFCEptr) B22,ldb, (DFCEptr) B12,ldb, (DFEptr)X2,ldX2);
+            fsub(DF,lb,cb,  B22,ldb,  B12,ldb, X2,ldX2);
 
                 // S3 = A11 - A21 in X1
             typename Field::Element_ptr X1 = fflas_new (F,mr,x1rd);
-            fsub(DF,la,ca,(DFCEptr)A11,lda,(DFCEptr)A21,lda,(DFEptr)X1,ldX1);
+            fsub(DF,la,ca,A11,lda,A21,lda,X1,ldX1);
 
                 // P7 = alpha . S3 * T3  in C21
             MMH_t H7(F, WH.AlgoManager.recLevel-1, -(WH.ModeManager.Amax-WH.ModeManager.Amin), WH.ModeManager.Amax-WH.ModeManager.Amin, -(WH.ModeManager.Bmax-WH.ModeManager.Bmin), WH.ModeManager.Bmax-WH.ModeManager.Bmin,0,0);
@@ -421,10 +422,10 @@ namespace FFLAS { namespace BLAS3 {
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H7);
 
                 // T1 = B12 - B11 in X2
-            fsub(DF,lb,cb,(DFCEptr)B12,ldb,(DFCEptr)B11,ldb,(DFEptr)X2,ldX2);
+            fsub(DF,lb,cb,B12,ldb,B11,ldb,X2,ldX2);
 
                 // S1 = A21 + A22 in X1
-            fadd(DF,la,ca,(DFCEptr)A21,lda,(DFCEptr)A22,lda,(DFEptr)X1,ldX1);
+            fadd(DF,la,ca,A21,lda,A22,lda,X1,ldX1);
 
                 // P5 = alpha . S1*T1 in C22
             MMH_t H5(F, WH.AlgoManager.recLevel-1, 2*WH.ModeManager.Amin, 2*WH.ModeManager.Amax, -(WH.ModeManager.Bmax-WH.ModeManager.Bmin), WH.ModeManager.Bmax-WH.ModeManager.Bmin, 0, 0);
@@ -432,10 +433,10 @@ namespace FFLAS { namespace BLAS3 {
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
                 // T2 = B22 - T1 in X2
-            fsub(DF,lb,cb,(DFCEptr)B22,ldb,(DFCEptr)X2,ldX2,(DFEptr)X2,ldX2);
+            fsub(DF,lb,cb,B22,ldb,X2,ldX2,X2,ldX2);
 
                 // S2 = S1 - A11 in X1
-            fsubin(DF,la,ca,(DFCEptr)A11,lda,(DFEptr)X1,ldX1);
+            fsubin(DF,la,ca,A11,lda,X1,ldX1);
 
                 // P6 = alpha . S2 * T2 in C12
             MMH_t H6(F, WH.AlgoManager.recLevel-1, 2*WH.ModeManager.Amin-WH.ModeManager.Amax, 2*WH.ModeManager.Amax-WH.ModeManager.Amin, 2*WH.ModeManager.Bmin-WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-WH.ModeManager.Bmin, 0, 0);
@@ -443,7 +444,7 @@ namespace FFLAS { namespace BLAS3 {
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
 
                 // S4 = A12 -S2 in X1
-            fsub(DF,la,ca,(DFCEptr)A12,lda,(DFCEptr)X1,ldX1,(DFEptr)X1,ldX1);
+            fsub(DF,la,ca,A12,lda,X1,ldX1,X1,ldX1);
 
                 // P3 = alpha . S4*B22 in C11
             MMH_t H3(F, WH.AlgoManager.recLevel-1, 2*WH.ModeManager.Amin-2*WH.ModeManager.Amax, 2*WH.ModeManager.Amax-2*WH.ModeManager.Amin, WH.ModeManager.Bmin, WH.ModeManager.Bmax, 0, 0);
@@ -462,7 +463,7 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, X1, nr);
                 freduce (F, mr, nr, C12, ldc);
             }
-            faddin(DF,mr,nr,(DFCEptr)X1,nr,(DFEptr)C12,ldc);
+            faddin(DF,mr,nr,X1,nr,C12,ldc);
 
                 // U3 = P7 + U2 in C21  and
             DFElt U3Min, U3Max;
@@ -471,7 +472,7 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, C12, ldc);
                 freduce (F, mr, nr, C21, ldc);
             }
-            faddin(DF,mr,nr,(DFCEptr)C12,ldc,(DFEptr)C21,ldc);
+            faddin(DF,mr,nr,C12,ldc,C21,ldc);
 
 
                 // U4 = P5 + U2 in C12    and
@@ -481,7 +482,7 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, C22, ldc);
                 freduce (F, mr, nr, C12, ldc);
             }
-            faddin(DF,mr,nr,(DFCEptr)C22,ldc,(DFEptr)C12,ldc);
+            faddin(DF,mr,nr,C22,ldc,C12,ldc);
 
                 // U7 = P5 + U3 in C22    and
             DFElt U7Min, U7Max;
@@ -490,7 +491,7 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, C21, ldc);
                 freduce (F, mr, nr, C22, ldc);
             }
-            faddin(DF,mr,nr,(DFCEptr)C21,ldc,(DFEptr)C22,ldc);
+            faddin(DF,mr,nr,C21,ldc,C22,ldc);
 
                 // U5 = P3 + U4 in C12
             DFElt U5Min, U5Max;
@@ -499,10 +500,10 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, C12, ldc);
                 freduce (F, mr, nr, C11, ldc);
             }
-            faddin(DF,mr,nr,(DFCEptr)C11,ldc,(DFEptr)C12,ldc);
+            faddin(DF,mr,nr,C11,ldc,C12,ldc);
 
                 // T4 = T2 - B21 in X2
-            fsubin(DF,lb,cb,(DFCEptr)B21,ldb,(DFEptr)X2,ldX2);
+            fsubin(DF,lb,cb,B21,ldb,X2,ldX2);
 
                 // P4 = alpha . A22 * T4 in C11
             MMH_t H4(F, WH.AlgoManager.recLevel-1, WH.ModeManager.Amin, WH.ModeManager.Amax, 2*WH.ModeManager.Bmin-2*WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-2*WH.ModeManager.Bmin, 0, 0);
@@ -518,7 +519,7 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, C11, ldc);
                 freduce (F, mr, nr, C21, ldc);
             }
-            fsubin(DF,mr,nr,(DFCEptr)C11,ldc,(DFEptr)C21,ldc);
+            fsubin(DF,mr,nr,C11,ldc,C21,ldc);
 
                 // P2 = alpha . A12 * B21  in C11
             MMH_t H2(F, WH.AlgoManager.recLevel-1, WH.ModeManager.Amin, WH.ModeManager.Amax, WH.ModeManager.Bmin, WH.ModeManager.Bmax, 0, 0);
@@ -532,7 +533,7 @@ namespace FFLAS { namespace BLAS3 {
                 freduce (F, mr, nr, X1, nr);
                 freduce (F, mr, nr, C11, ldc);
             }
-            faddin(DF,mr,nr,(DFCEptr)X1,nr,(DFEptr)C11,ldc);
+            faddin(DF,mr,nr,X1,nr,C11,ldc);
 
             fflas_delete (X1);
 

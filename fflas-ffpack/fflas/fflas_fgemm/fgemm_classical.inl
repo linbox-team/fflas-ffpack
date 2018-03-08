@@ -152,7 +152,7 @@ namespace FFLAS {
 				Hfp.ModeManager.initOut();
 			}
 
-			fscalin(H.ModeManager.delayedField, m,n,alpha,(typename DelayedHelper_t::ModeMgr_t::DelayedField_t::Element_ptr)C,ldc);
+			fscalin(H.ModeManager.delayedField, m,n,alpha,(DFElt_ptr)C,ldc);
 
 			if (alpha>0){
 				H.ModeManager.Outmin = (const DFElt)(alpha) * Hfp.ModeManager.Outmin;

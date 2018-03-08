@@ -321,27 +321,27 @@ namespace FFLAS { /* associatedDelayedField */
 	template <class Field>
 	struct associatedDelayedField{
 		typedef Field field;
-		typedef Field& type; // reference to avoid copying heavy fields
+		typedef Field& field_ref; // reference to avoid copying heavy fields
 	};
 	template <typename T,typename X>
 	struct associatedDelayedField<const Givaro::Modular<T,X>> {
 		typedef Givaro::ZRing<T> field;
-		typedef Givaro::ZRing<T> type;
+		typedef Givaro::ZRing<T> field_ref;
 	};
 	template <typename T>
 	struct associatedDelayedField<const Givaro::ModularBalanced<T>> {
 		typedef Givaro::ZRing<T> field;
-		typedef Givaro::ZRing<T> type;
+		typedef Givaro::ZRing<T> field_ref;
 	};
 	template <typename T>
 	struct associatedDelayedField<const Givaro::ZRing<T>> {
 		typedef Givaro::ZRing<T> field;
-		typedef Givaro::ZRing<T> type;
+		typedef Givaro::ZRing<T> field_ref;
 	};
 	template <typename RNS>
 	struct associatedDelayedField<const FFPACK::RNSIntegerMod<RNS>> {
 		typedef FFPACK::RNSInteger<RNS> field;
-		typedef FFPACK::RNSInteger<RNS> type;
+		typedef FFPACK::RNSInteger<RNS> field_ref;
 	};
 	
 } // FFLAS

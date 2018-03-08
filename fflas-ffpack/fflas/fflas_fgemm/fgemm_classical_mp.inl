@@ -482,12 +482,12 @@ namespace FFLAS {
 		// compute the product over Z
 		//std::cerr<<"Entering fgemm<Modular<Integer>> PArSeq"<<std::endl;
 		typedef Givaro::ZRing<Givaro::Integer> IntegerDomain;
-		Givaro::Integer p;
-		F.cardinality(p);
+		// Givaro::Integer p;
+		// F.cardinality(p);
 		IntegerDomain Z;
 		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag>, ParSeq > H2(Z,H);
 			//
-		H2.setNorm(p);
+			//	H2.setNorm(p);
 		
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);
 		
