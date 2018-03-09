@@ -136,7 +136,8 @@ namespace FFLAS {
         typedef Operand<Field,ModeTrait,void> Self_t;
         typedef typename associatedDelayedField<const Field>::field DelayedField;
         typedef typename DelayedField::Element DFElt;
-        Operand(const Self_t& Other): min(Other.min),max(Other.max){}
+        template<class OtherOp>
+        Operand(const OtherOp& Other): min(Other.min),max(Other.max){}
         Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
         DFElt min, max;
         const DFElt& absMax() const{return std::max(static_cast<const DFElt&>(-min),max);}
@@ -172,8 +173,8 @@ namespace FFLAS {
         typedef typename DelayedField::Element DFElt;
         typedef typename DelayedField::Element_ptr DFEptr;
 
-        Operand<Field,ModeTrait> A, B, C, Out;
         const DFElt FieldMin, FieldMax;
+        Operand<Field,ModeTrait> A, B, C, Out;
         const DFElt MaxStorableValue;
         const DelayedFieldRef delayedField;
         ModeManager_t (){}
@@ -346,28 +347,34 @@ namespace FFLAS {
              typename ParSeqTrait = ParSeqHelper::Sequential >
      struct AddSubHelper {
 
-         typedef AddSubHelper<Field,ModeTrait,ParSeqTrait> Self_t;
-         typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
-         ModeMgr_t ModeManager;
-         const ParSeqTrait& ParSeqManager;
+        typedef AddSubHelper<Field,ModeTrait,ParSeqTrait> Self_t;
+        typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
+        ModeMgr_t ModeManager;
+        const ParSeqTrait& ParSeqManager;
 
+        Operand<Field,ModeTrait>& A, B, Out;
+        
         AddSubHelper(const Field& F, const ParSeqTrait& _PS=ParSeqTrait()):
-                  ModeManager(F), ParSeqManager(_PS) {}
+                ModeManager(F), ParSeqManager(_PS),
+                A(ModeManager.A), B(ModeManager.B), Out(ModeManager.Out) {}
          
         
         AddSubHelper(const Field& F, ModeMgr_t _MM,
                   const ParSeqTrait& _PS = ParSeqTrait()):
-                  ModeManager(_MM), ParSeqManager(_PS){}
+                ModeManager(_MM), ParSeqManager(_PS),
+                A(ModeManager.A), B(ModeManager.B), Out(ModeManager.Out){}
         
         AddSubHelper(const Field& F,
-                  const Operand<Field,ModeTrait>& OA,
-                  const Operand<Field,ModeTrait>& OB, 
-                  const ParSeqTrait& _PS = ParSeqTrait()):
-                ModeManager(F, OA, OB), ParSeqManager(_PS){}
+                     const Operand<Field,ModeTrait>& OA,
+                     const Operand<Field,ModeTrait>& OB, 
+                     const ParSeqTrait& _PS = ParSeqTrait()):
+                ModeManager(F, OA, OB), ParSeqManager(_PS),
+                A(ModeManager.A), B(ModeManager.B), Out(ModeManager.Out){}
 
         template <class OtherHelper>
         AddSubHelper(const Field& F, const OtherHelper& OH):
-                ModeManager(F,OH.ModeManager), ParSeqManager(OH.ParSeqManager){}
+                ModeManager(F,OH.ModeManager), ParSeqManager(OH.ParSeqManager),
+                A(ModeManager.A), B(ModeManager.B), Out(ModeManager.Out){}
 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
             {
@@ -435,14 +442,17 @@ namespace FFLAS {
         //         ParSeqManager(H2.ParSeqManager) {}
 
         MMHelper(const Field& F, int w,
-                 typename ModeMgr_t::DFElt _Amin, typename ModeMgr_t::DFElt _Amax,
-                 typename ModeMgr_t::DFElt _Bmin, typename ModeMgr_t::DFElt _Bmax,
-                 typename ModeMgr_t::DFElt _Cmin, typename ModeMgr_t::DFElt _Cmax,
+                 Operand<Field,ModeTrait>& OA,
+                 Operand<Field,ModeTrait>& OB,
                  ParSeqTrait _PS=ParSeqTrait()):
-                AlgoTrait(w),
-                ModeManager(F,_Amin,_Amax,_Bmin,_Bmax,_Cmin,_Cmax),
-                ParSeqManager(_PS)
-            {}
+                AlgoTrait(w), ModeManager(F,OA,OB),ParSeqManager(_PS) {}
+
+        MMHelper(const Field& F, int w,
+                 Operand<Field,ModeTrait>& OA,
+                 Operand<Field,ModeTrait>& OB,
+                 Operand<Field,ModeTrait>& OC,
+                 ParSeqTrait _PS=ParSeqTrait()):
+                AlgoTrait(w), ModeManager(F,OA,OB,OC),ParSeqManager(_PS) {}
                 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
             {

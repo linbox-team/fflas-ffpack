@@ -204,8 +204,7 @@ namespace FFLAS{ namespace Protected{
 		template<class Field>
 		inline void updateOutBounds (const MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> & MMHS,
 									 MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag> & MMHD){
-			MMHD.ModeManager.Outmax = MMHS.ModeManager.Outmax;
-			MMHD.ModeManager.Outmin = MMHS.ModeManager.Outmin;
+			MMHD.ModeManager.Out = MMHS.ModeManager.Out;
 			return;
 		}
 
@@ -219,7 +218,7 @@ namespace FFLAS{ namespace Protected{
 				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::ModeMgr_t::DFElt al; 
 				F.convert(al, alpha);
 				if (al < 0) al = -al;
-				if (std::max(-H.ModeManager.Outmin, H.ModeManager.Outmax) > H.ModeManager.MaxStorableValue/al){
+				if (std::max(-H.ModeManager.Out.min, H.ModeManager.Out.max) > H.ModeManager.MaxStorableValue/al){
 					freduce (F, N, X, incX);
 					fscalin (F, N, alpha, X, incX);
 				} else {
@@ -240,7 +239,7 @@ namespace FFLAS{ namespace Protected{
 				typename MMHelper<Field, AlgoT, ModeCategories::LazyTag, ParSeqTrait >::ModeMgr_t::DFElt al; 
 				F.convert(al, alpha);
 				if (al<0) al = -al;
-				if (std::max(-H.ModeManager.Outmin, H.ModeManager.Outmax) > H.ModeManager.MaxStorableValue/al){
+				if (std::max(-H.ModeManager.Out.min, H.ModeManager.Out.max) > H.ModeManager.MaxStorableValue/al){
 					freduce (F, M, N, A, lda);
 					fscalin (F, M, N, alpha, A, lda);
 				} else {

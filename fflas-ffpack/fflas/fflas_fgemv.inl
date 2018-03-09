@@ -258,17 +258,17 @@ namespace FFLAS{
         
 		size_t kmax = H.ModeManager.MaxDelayedDim (betadf);
 
-		if (kmax <=  Xdim/2 ){
-                        // Might as well reduce inputs
-                        if (H.ModeManager.Amin < H.ModeManager.FieldMin || H.ModeManager.Amax>H.ModeManager.FieldMax){
+		if (kmax <=  64 && Xdim >= 256 ){
+                        // Might as well reduce input
+                        if (H.ModeManager.A.min < H.ModeManager.FieldMin || H.ModeManager.A.max>H.ModeManager.FieldMax){
 				H.ModeManager.initA();
 				freduce_constoverride (F, M, N, A, lda);
 			}
-			if (H.ModeManager.Bmin < H.ModeManager.FieldMin || H.ModeManager.Bmax>H.ModeManager.FieldMax){
+			if (H.ModeManager.B.min < H.ModeManager.FieldMin || H.ModeManager.B.max>H.ModeManager.FieldMax){
 				H.ModeManager.initB();
 				freduce_constoverride (F, Xdim, X, incX);
 			}
-			if (H.ModeManager.Cmin < H.ModeManager.FieldMin || H.ModeManager.Cmax>H.ModeManager.FieldMax){
+			if (H.ModeManager.C.min < H.ModeManager.FieldMin || H.ModeManager.C.max>H.ModeManager.FieldMax){
 				H.ModeManager.initC();
 				freduce (F, Ydim, Y, incY);
 			}
@@ -311,25 +311,24 @@ namespace FFLAS{
 			fgemv (H.ModeManager.delayedField, ta, Mi, Ni, alphadf, (DFCElt_ptr)A+i*shiftA, lda,
 			       (DFCElt_ptr)X+i*k2*incX, incX, F.one, (DFElt_ptr)Y, incY, Hfp);
 		}
-
-        if (!F.isOne(alpha) && !F.isMOne(alpha)){
+		
+		if (!F.isOne(alpha) && !F.isMOne(alpha)){
 			DFElt al; F.convert(al, alpha);
 			if (al<0) al = -al;
-			if (std::max(-Hfp.ModeManager.Outmin, Hfp.ModeManager.Outmax) > Hfp.ModeManager.MaxStorableValue/al){
+			if (std::max(-Hfp.ModeManager.Out.min, Hfp.ModeManager.Out.max) > Hfp.ModeManager.MaxStorableValue/al){
 				freduce (F, Ydim, Y, incY);
 				Hfp.ModeManager.initOut();
 			}
 			fscalin (H.ModeManager.delayedField, Ydim, alpha, (DFElt_ptr)Y, incY);
 			if (alpha>0){
-				H.ModeManager.Outmin = al*Hfp.ModeManager.Outmin;
-				H.ModeManager.Outmax = al*Hfp.ModeManager.Outmax;
+				H.ModeManager.Out.min = al*Hfp.ModeManager.Out.min;
+				H.ModeManager.Out.max = al*Hfp.ModeManager.Out.max;
 			} else {
-				H.ModeManager.Outmin = -al*Hfp.ModeManager.Outmax;
-				H.ModeManager.Outmax = -al*Hfp.ModeManager.Outmin;
+			H.ModeManager.Out.min = -al*Hfp.ModeManager.Out.max;
+			H.ModeManager.Out.max = -al*Hfp.ModeManager.Out.min;
 			}
 		}else {
-			H.ModeManager.Outmin = Hfp.ModeManager.Outmin;
-			H.ModeManager.Outmax = Hfp.ModeManager.Outmax;
+			H.ModeManager.Out = Hfp.ModeManager.Out;
 		}
 		return Y;
 	}
@@ -438,7 +437,7 @@ namespace FFLAS{
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
 	{
-                H.ModeManager.setOutBounds((ta ==FflasNoTrans)?N:M, alpha, beta);
+                H.ModeManager.setOutBoundsMM((ta ==FflasNoTrans)?N:M, alpha, beta);
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hb(F);
 
 		return fgemv(F, ta, M, N, alpha, A, lda, X, incX, beta, Y, incY, Hb);

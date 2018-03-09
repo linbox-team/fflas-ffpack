@@ -278,17 +278,17 @@ namespace FFLAS {
 		Givaro::Integer  mA,mB,mC;
 		size_t logA,logB;
 			// TODO (CP): have InfNorm return both min and max to set Amax and Amin
-		if (H.ModeManager.Amax==0){
-			H.ModeManager.Amax = InfNorm ((ta==FflasNoTrans)?m:k,(ta==FflasNoTrans)?k:m,A,lda);
-			H.ModeManager.Amin = -H.ModeManager.Amax;
+		if (H.ModeManager.A.max==0){
+			H.ModeManager.A.max = InfNorm ((ta==FflasNoTrans)?m:k,(ta==FflasNoTrans)?k:m,A,lda);
+			H.ModeManager.A.min = -H.ModeManager.A.max;
 		}
 			// TODO (CP): have InfNorm return both min and max to set Bmax and Bmin
-		if (H.ModeManager.Bmax==0){
-			H.ModeManager.Bmax = InfNorm ((tb==FflasNoTrans)?k:n,(tb==FflasNoTrans)?n:k,B,ldb);
-			H.ModeManager.Bmin = -H.ModeManager.Bmax;
+		if (H.ModeManager.B.max==0){
+			H.ModeManager.B.max = InfNorm ((tb==FflasNoTrans)?k:n,(tb==FflasNoTrans)?n:k,B,ldb);
+			H.ModeManager.B.min = -H.ModeManager.B.max;
 		}
-		mA=std::max(-H.ModeManager.Amin,H.ModeManager.Amax);
-		mB=std::max(-H.ModeManager.Bmin,H.ModeManager.Bmax);
+		mA=std::max(-H.ModeManager.A.min,H.ModeManager.A.max);
+		mB=std::max(-H.ModeManager.B.min,H.ModeManager.B.max);
 		logA = mA.bitsize();
 		logB = mB.bitsize();
 		mC = 2*uint64_t(k)*mA*mB*abs(alpha); // need to use 2x bound to reach both positive and negative
