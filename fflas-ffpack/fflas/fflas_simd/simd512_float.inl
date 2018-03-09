@@ -164,15 +164,16 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	* Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
 	* and store the results in dst.
+	* uint8_t became uint16_t 
 	* Args   :	[a0, ..., a7] float
-				[b0, ..., b7] float
+	*			[b0, ..., b7] float
 	* Return :	[s[0]?a0:b0, ..., s[7]?a7:b7] float
 	*/
-	/*template<uint8_t s>
-	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
-		return _mm256_blend_ps(a, b, s);
-	}
-	*/
+	/*template<uint16_t s>
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) { 
+		return _mm512_mask_blend_ps(s, a, b);
+	}*/
+	
 	/*
 	* Blend packed single-precision (32-bit) floating-point elements from a and b using mask,
 	* and store the results in dst.
@@ -182,8 +183,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	*/
 	/*static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
 		return _mm256_blendv_ps(a, b, mask);
-	}
-	*/
+	}*/
+	
 	/*
 	 * Add packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
 	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
@@ -333,11 +334,14 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a12==b12) ? 0xFFFFFFFF : 0,
 	 (a13==b13) ? 0xFFFFFFFF : 0,
 	 (a14==b14) ? 0xFFFFFFFF : 0]
+
+
 	 */
 
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { 
-		vect_t z = zero();
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ), z);
+		int32_t i = 0xFFFFFFFF;
+		__m512i a = _mm512_set_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_ps(a));
 	}
 
 	/*
@@ -353,7 +357,11 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a6<b6) ? 0xFFFFFFFF : 0,
 	 (a7<b7) ? 0xFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm512_cmp_ps_mask(a, b, _CMP_LT_OS); }
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { 
+		int32_t i = 0xFFFFFFFF;
+		__m512i a = _mm512_set_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(a)); 
+	}
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for lesser or equal than, and store
@@ -368,7 +376,11 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a6<=b6) ? 0xFFFFFFFF : 0,
 	 (a7<=b7) ? 0xFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return _mm512_cmp_ps_mask(a, b, _CMP_LE_OS); }
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {
+		int32_t i = 0xFFFFFFFF;
+		__m512i a = _mm512_set_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(a)); 
+	} 
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for greater-than, and store the
@@ -383,7 +395,11 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a6>b6) ? 0xFFFFFFFF : 0,
 	 (a7>b7) ? 0xFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm512_cmp_ps_mask(a, b, _CMP_GT_OS); }
+	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
+		int32_t i = 0xFFFFFFFF;
+		__m512i a = _mm512_set_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(a)); 
+	}
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for greater or equal than, and store
@@ -398,7 +414,11 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a6>=b6) ? 0xFFFFFFFF : 0,
 	 (a7>=b7) ? 0xFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return _mm512_cmp_ps_mask(a, b, _CMP_GE_OS); }
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {
+		int32_t i = 0xFFFFFFFF;
+		__m512i a = _mm512_set_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(a)); 
+	} 
 
 	/*
 	 * Compute the bitwise AND of packed single-precision (32-bit) floating-point elements in a and b, and store the
@@ -408,7 +428,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3, a4 AND b4, a5 AND b5, a6 AND b6, a7 AND b7,
 	 *			a8 AND b8, a9 AND b9, a10 AND b10, a11 AND b11, a12 AND b12, a13 AND b13, a14 AND b14, a15 AND b15]
 	 */
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_ps(a, b); }
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_ps(a, b); } //TODO
 
 	/*
 	 * Compute the bitwise OR of packed single-precision (32-bit) floating-point elements in a and b, and store the
@@ -418,7 +438,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3, a4 OR b4, a5 OR b5, a6 OR b6, a7 OR b7,
 	 *			a8 OR b8, a9 OR b9, a10 OR b10, a11 OR b11, a12 OR b12, a13 OR b13, a14 OR b14, a15 OR b15]
 	 */
-	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm512_or_ps(a, b); }
+	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm512_or_ps(a, b); } //TODO
 
 	/*
 	 * Compute the bitwise XOR of packed single-precision (32-bit) floating-point elements in a and b, and store the
@@ -428,7 +448,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3, a4 XOR b4, a5 XOR b5, a6 XOR b6, a7 XOR b7,
 	 *			a8 XOR b8, a9 XOR b9, a10 XOR b10, a11 XOR b11, a12 XOR b12, a13 XOR b13, a14 XOR b14, a15 XOR b15]
 	 */
-	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm512_xor_ps(a, b); }
+	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm512_xor_ps(a, b); } //TODO
 
 	/*
 	 * Compute the bitwise AND NOT of packed single-precision (32-bit) floating-point elements in a and b, and store the
@@ -438,7 +458,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3, a4 ANDNOT b4, a5 ANDNOT b5, a6 ANDNOT b6, a7 ANDNOT b7,
 	 *			a8 ANDNOT b8, a9 ANDNOT b9, a10 ANDNOT b10, a11 ANDNOT b11, a12 ANDNOT b12, a13 ANDNOT b13, a14 ANDNOT b14, a15 ANDNOT b15]
 	 */
-	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_ps(a, b); }
+	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_ps(a, b); } //TODO
 
 	/*
 	 * Round the packed single-precision (32-bit) floating-point elements in a down to an integer value, and store the
@@ -447,7 +467,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [floor(a0), floor(a1), floor(a2), floor(a3), floor(a4), floor(a5), floor(a6), floor(a7),
 	 *			floor(a8), floor(a9), floor(a10), floor(a11), floor(a12), floor(a13), floor(a14), floor(a15)]
 	 */
-	static INLINE CONST vect_t floor(const vect_t a) { return _mm512_floor_ps(a); }
+	static INLINE CONST vect_t floor(const vect_t a) { return _mm512_floor_ps(a); } //TODO
 
 	/*
 	 * Round the packed single-precision (32-bit) floating-point elements in a up to an integer value, and store the
@@ -456,7 +476,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [ceil(a0), ceil(a1), ceil(a2), ceil(a3), ceil(a4), ceil(a5), ceil(a6), ceil(a7),
 	 *			ceil(a8), ceil(a9), ceil(a10), ceil(a11), ceil(a12), ceil(a13), ceil(a14), ceil(a15)]
 	 */
-	static INLINE CONST vect_t ceil(const vect_t a) { return _mm512_ceil_ps(a); }
+	static INLINE CONST vect_t ceil(const vect_t a) { return _mm512_ceil_ps(a); } //TODO
 
 	/*
 	 * Round the packed single-precision (32-bit) floating-point elements in a, and store the results as packed
@@ -466,7 +486,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 *			round(a8), round(a9), round(a10), round(a11), round(a12), round(a13), round(a14), round(a15)]
 	 */
 	static INLINE CONST vect_t round(const vect_t a) {
-		return _mm512_round_ps(a, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+		return _mm512_round_ps(a, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC); //TODO
 	}
 
 	/*
