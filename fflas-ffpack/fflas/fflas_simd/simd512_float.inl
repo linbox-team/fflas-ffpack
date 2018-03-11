@@ -314,6 +314,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 
 	static INLINE CONST vect_t fmsubin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsub(c, a, b); }
 
+
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for equality, and store the results
 	 in vect_t.
@@ -340,8 +341,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { 
 		int32_t i = 0xFFFFFFFF;
-		__m512i a = _mm512_set_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_ps(a));
+		__m512i c = _mm512_set1_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_ps(c));
 	}
 
 	/*
@@ -359,8 +360,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 */
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { 
 		int32_t i = 0xFFFFFFFF;
-		__m512i a = _mm512_set_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(a)); 
+		__m512i c = _mm512_set1_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(c)); 
 	}
 
 	/*
@@ -378,8 +379,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 */
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
-		__m512i a = _mm512_set_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(a)); 
+		__m512i c = _mm512_set1_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(c)); 
 	} 
 
 	/*
@@ -397,8 +398,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 */
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
-		__m512i a = _mm512_set_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(a)); 
+		__m512i c = _mm512_set1_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(c)); 
 	}
 
 	/*
@@ -416,8 +417,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 */
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
-		__m512i a = _mm512_set_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(a)); 
+		__m512i c = _mm512_set1_epi32(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(c)); 
 	} 
 
 #ifdef __AVX512DQ__
@@ -490,10 +491,10 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [round(a0), round(a1), round(a2), round(a3), round(a4), round(a5), round(a6), round(a7),
 	 *			round(a8), round(a9), round(a10), round(a11), round(a12), round(a13), round(a14), round(a15)]
 	 */
-	static INLINE CONST vect_t round(const vect_t a) {
+	/*static INLINE CONST vect_t round(const vect_t a) {
 		return _mm512_round_ps(a, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 	}
-
+	*/
 	/*
 	 * Horizontally add adjacent pairs of single-precision (32-bit) floating-point elements in a and b, and pack the
 	 * results in vect_t.

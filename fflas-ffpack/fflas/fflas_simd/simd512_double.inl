@@ -298,7 +298,11 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ); }
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_ps(c)); 
+	}
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser-than, and store the
@@ -309,7 +313,11 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_LT_OS); }
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(c)); 
+	}
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser or equal than, and store
@@ -320,7 +328,11 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_LE_OS); }
+	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(c));
+	}
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater-than, and store the
@@ -331,7 +343,11 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_GT_OS); }
+	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(c)); 
+	}
 
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater or equal than, and store
@@ -342,8 +358,13 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 (a2>=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return _mm512_cmp_pd_mask(a, b, _CMP_GE_OS); }
+	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(c)); 
+	}
 
+#ifdef __AVX512DQ__
 	/*
 	 * Compute the bitwise AND of packed double-precision (64-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
@@ -376,7 +397,8 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * ANDNOT b7]
 	 */
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_pd(a, b); }
-
+#else //AVX512DQ
+#endif
 	/*
 	 * Round the packed double-precision (64-bit) floating-point elements in a down to an integer value, and store the
 	 * results as packed double-precision floating-point elements in vect_t.
