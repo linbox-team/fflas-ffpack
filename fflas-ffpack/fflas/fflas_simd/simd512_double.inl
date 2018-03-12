@@ -301,7 +301,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_ps(c)); 
+		return _mm512_maskz_expand_pd(_mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_pd(c)); 
 	}
 
 	/*
@@ -316,7 +316,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(c)); 
+		return _mm512_maskz_expand_pd(_mm512_cmp_pd_mask(a, b, _CMP_LT_OS), _mm512_castsi512_pd(c)); 
 	}
 
 	/*
@@ -331,7 +331,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(c));
+		return _mm512_maskz_expand_pd(_mm512_cmp_pd_mask(a, b, _CMP_LE_OS), _mm512_castsi512_pd(c));
 	}
 
 	/*
@@ -346,7 +346,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(c)); 
+		return _mm512_maskz_expand_pd(_mm512_cmp_pd_mask(a, b, _CMP_GT_OS), _mm512_castsi512_pd(c)); 
 	}
 
 	/*
@@ -361,7 +361,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_pd_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(c)); 
+		return _mm512_maskz_expand_pd(_mm512_cmp_pd_mask(a, b, _CMP_GE_OS), _mm512_castsi512_pd(c)); 
 	}
 
 #ifdef __AVX512DQ__
