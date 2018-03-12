@@ -491,10 +491,11 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 * Return : [round(a0), round(a1), round(a2), round(a3), round(a4), round(a5), round(a6), round(a7),
 	 *			round(a8), round(a9), round(a10), round(a11), round(a12), round(a13), round(a14), round(a15)]
 	 */
-	/*static INLINE CONST vect_t round(const vect_t a) {
-		return _mm512_round_ps(a, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+	static INLINE CONST vect_t round(const vect_t a) {
+		int i = 0;
+		return _mm512_roundscale_ps(a, i);
 	}
-	*/
+	
 	/*
 	 * Horizontally add adjacent pairs of single-precision (32-bit) floating-point elements in a and b, and pack the
 	 * results in vect_t.
