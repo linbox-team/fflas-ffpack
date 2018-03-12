@@ -340,13 +340,22 @@ namespace FFLAS {
 	}
 	// C = A + a B
 	template <class Field>
-	void
-	fadd (const Field& F, const size_t M, const size_t N,
-	      typename Field::ConstElement_ptr A, const size_t lda,
-	      const typename Field::Element alpha,
-	      typename Field::ConstElement_ptr B, const size_t ldb,
-	      typename Field::Element_ptr C, const size_t ldc)
-	{
+	void fadd (const Field& F, const size_t M, const size_t N,
+		   typename Field::ConstElement_ptr A, const size_t lda,
+		   const typename Field::Element alpha,
+		   typename Field::ConstElement_ptr B, const size_t ldb,
+		   typename Field::Element_ptr C, const size_t ldc){
+		AddSubHelper<Field> ASH(F);
+		return fadd(F, M, N, A, lda, alpha, B, ldb, C, ldc, ASH);
+	}
+
+	template <class Field, class ModeT>
+	void fadd (const Field& F, const size_t M, const size_t N,
+		   typename Field::ConstElement_ptr A, const size_t lda,
+		   const typename Field::Element alpha,
+		   typename Field::ConstElement_ptr B, const size_t ldb,
+		   typename Field::Element_ptr C, const size_t ldc,
+		   AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H){
 		if (C == A && lda == ldc)
 			return faxpy(F,M,N,alpha,B,ldb,C,ldc);
 		if (F.isOne(alpha))
@@ -362,13 +371,20 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr Ai = A, Bi = B;
 		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
-			for (size_t i=0; i<N; i++) {
-				F.mul(Ci[i],alpha,Bi[i]);
-				F.addin (Ci[i], Ai[i]);
-			}
+			fadd (F, N, Ai, 1, alpha, Bi, 1, Ci, 1);
 	}
 
-
+	template <class Field>
+	void fadd (const Field& F, const size_t M, const size_t N,
+		   typename Field::ConstElement_ptr A, const size_t lda,
+		   const typename Field::Element alpha,
+		   typename Field::ConstElement_ptr B, const size_t ldb,
+		   typename Field::Element_ptr C, const size_t ldc,
+		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H){
+		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
+		fadd (F, M, N, A, lda, alpha, B, ldb, C, ldc, Hdf);
+		H.ModeManager.Out = Hdf.ModeManager.Out;
+	}
 } // FFLAS
 
 

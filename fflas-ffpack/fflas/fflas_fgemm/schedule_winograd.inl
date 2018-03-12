@@ -361,14 +361,13 @@ namespace FFLAS { namespace BLAS3 {
             FFLASFFPACK_check(F.isZero(beta));
 
             typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
-            typedef typename MMH_t::ModeMgr_t MMgr;
             //     //typedef typename MMgr::DelayedField::Element_ptr DFEptr;
             //     //typedef typename MMgr::DelayedField::ConstElement_ptr DFCEptr;
             // typedef typename MMgr::DFElt DFElt;
             // typedef typename MMgr::DFEptr DFEptr;
 
             // const typename MMgr::DelayedField & DF = WH.ModeManager.delayedField;
-            MMgr& WHMM = WH.ModeManager;
+            typename MMH_t::ModeMgr_t& WHMM = WH.ModeManager;
             size_t lb, cb, la, ca, ldX2;
                 // size_t x3rd = std::max(mr,kr);
             typename Field::ConstElement_ptr A11=A, A12, A21, A22;
