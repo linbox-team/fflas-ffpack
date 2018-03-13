@@ -194,7 +194,7 @@ namespace FFLAS{
 	     typename Field::Element_ptr A, const size_t lda,
 	     MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
 	{
-		H.ModeManager.setOutBounds (1, alpha, 1.0);
+		H.ModeManager.setOutBoundsMM (1, alpha, 1.0);
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hd(F,0);
 		fger (F, M, N, alpha, x, incx, y, incy, A, lda, Hd);
 	}
@@ -274,7 +274,7 @@ namespace FFLAS{
 
             FFLAS::fflas_delete(sY);
 
-            H.setOutBounds (1, alpha, 1.0);
+            H.setOutBoundsMM (1, alpha, 1.0);
 
         }
 

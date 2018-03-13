@@ -269,7 +269,7 @@ namespace FFLAS { namespace BLAS3 {
 
                 // P5 = alpha . S1*T1  in X1
 		typename Field::Element_ptr X1 = fflas_new(F,mr,nr);
-		MMH_t H5(F, WH.AlgoManager.recLevel-1, S1H.Out, T1H.Out);
+		MMH_t H5(F, WH.AlgoManager.recLevel-1, S1H.ModeManager.Out, T1H.ModeManager.Out);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, X2, ca, X3, ldX3, F.zero, X1, nr, H5);
 
 		// DFElt C22Min, C22Max;
@@ -312,15 +312,15 @@ namespace FFLAS { namespace BLAS3 {
 		faddin (F, mr, nr, X1, nr, C11, ldc, U1H);
 
 		// T2 = B22 - T1 in X3
-		AddSubHelper<Field, ModeCategories::LazyTag> T2H(F, WHMM.B, T1H.Out);
+		AddSubHelper<Field, ModeCategories::LazyTag> T2H(F, WHMM.B, T1H.ModeManager.Out);
 		fsub (F, lb, cb, B22, ldb, X3, ldX3, X3, ldX3, T2H);
 
 		// S2 = S1 - A11 in X2
-		AddSubHelper<Field, ModeCategories::LazyTag> S2H(F, S1H.Out, WHMM.A);
+		AddSubHelper<Field, ModeCategories::LazyTag> S2H(F, S1H.ModeManager.Out, WHMM.A);
 		fsubin (F, la, ca, A11, lda, X2, ca, S2H);
 
 		// U2 = P6 + P1 = alpha . S2 * T2 + P1 in X1
-		MMH_t H6(F, WH.AlgoManager.recLevel-1, S2H.Out, T2H.Out, H1.ModeManager.Out);
+		MMH_t H6(F, WH.AlgoManager.recLevel-1, S2H.ModeManager.Out, T2H.ModeManager.Out, H1.ModeManager.Out);
 			 // 2*WH.ModeManager.Amin-WH.ModeManager.Amax, 2*WH.ModeManager.Amax-WH.ModeManager.Amin,
 			 // 2*WH.ModeManager.Bmin-WH.ModeManager.Bmax, 2*WH.ModeManager.Bmax-WH.ModeManager.Bmin,
 			 // H1.ModeManager.Outmin, H1.ModeManager.Outmax);
@@ -332,23 +332,23 @@ namespace FFLAS { namespace BLAS3 {
 		// 	freduce(F,mr,nr,C12,ldc);
 		// 	freduce(F,mr,nr,X1,nr);
 		// }
-		AddSubHelper<Field, ModeCategories::LazyTag> U4H(F, H6.ModeManager.Out, P5H2.Out);
+		AddSubHelper<Field, ModeCategories::LazyTag> U4H(F, H6.ModeManager.Out, P5H2.ModeManager.Out);
 		faddin (F, mr, nr, X1, nr, C12, ldc, U4H);
 
 		// T4 = T2 - B21 in X3
-		AddSubHelper<Field, ModeCategories::LazyTag> T4H(F, T2H.Out, WHMM.B);
+		AddSubHelper<Field, ModeCategories::LazyTag> T4H(F, T2H.ModeManager.Out, WHMM.B);
 		fsubin (F, lb, cb, B21, ldb, X3, ldX3, T4H);
 
 		// S4 = A12 -S2 in X2
-		AddSubHelper<Field, ModeCategories::LazyTag> S4H(F, WHMM.A, S2H.Out);
+		AddSubHelper<Field, ModeCategories::LazyTag> S4H(F, WHMM.A, S2H.ModeManager.Out);
 		fsub (F, la, ca, A12, lda, X2, ca, X2, ca, S4H);
 
 		// P4 = alpha . A22 * T4 - beta . C21 in C21
-		MMH_t H4(F, WH.AlgoManager.recLevel-1, S4H.Out, T4H.Out, C21H);
+		MMH_t H4(F, WH.AlgoManager.recLevel-1, S4H.ModeManager.Out, T4H.ModeManager.Out, C21H);
 		fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X3, ldX3, mbeta, C21, ldc, H4);
 
 		// U5 = P3 + U4 = alpha . S4*B22 + U4 in C12
-		MMH_t H3(F, WH.AlgoManager.recLevel-1, S4H.Out, WHMM.B, U4H.Out);
+		MMH_t H3(F, WH.AlgoManager.recLevel-1, S4H.ModeManager.Out, WHMM.B, U4H.ModeManager.Out);
 			 // 2*WH.ModeManager.Amin-2*WH.ModeManager.Amax, 2*WH.ModeManager.Amax-2*WH.ModeManager.Amin,
 			 // WH.ModeManager.Bmin, WH.ModeManager.Bmax,
 			 // U4Min, U4Max);
@@ -363,7 +363,7 @@ namespace FFLAS { namespace BLAS3 {
 		fsub (F, la, ca, A11, lda, A21, lda, X2, ca, S3H);
 
 		// U3 = P7 + U2  = alpha . S3 * T3 + U2 in X1
-		MMH_t H7(F, WH.AlgoManager.recLevel-1, S3H.Out, T3H.Out, H6.ModeManager.Out);
+		MMH_t H7(F, WH.AlgoManager.recLevel-1, S3H.ModeManager.Out, T3H.ModeManager.Out, H6.ModeManager.Out);
 			 // WH.ModeManager.Amin-WH.ModeManager.Amax, WH.ModeManager.Amax-WH.ModeManager.Amin,
 			 // WH.ModeManager.Bmin-WH.ModeManager.Bmax, WH.ModeManager.Bmax-WH.ModeManager.Bmin,
 			 // H6.ModeManager.Outmin, H6.ModeManager.Outmax);
@@ -378,7 +378,7 @@ namespace FFLAS { namespace BLAS3 {
 		// 	freduce(F,mr,nr,X1,nr);
 		// 	freduce(F,mr,nr,C22,ldc);
 		// }
-		AddSubHelper<Field,ModeCategories::LazyTag> U7H (F, H7.ModeManager.Out, P5H.Out);
+		AddSubHelper<Field,ModeCategories::LazyTag> U7H (F, H7.ModeManager.Out, P5H.ModeManager.Out);
 		faddin (F, mr, nr, X1, nr, C22, ldc, U7H);
 
 		// U6 = U3 - P4 in C21
