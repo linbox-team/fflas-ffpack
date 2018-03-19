@@ -409,12 +409,12 @@ namespace FFLAS { namespace BLAS3 {
 
                 // T3 = B22 - B12 in X2
             typename Field::Element_ptr X2 = fflas_new (F, kr, nr);
-            AddSubHelper<Field, ModeCategories::LazyTag> T3H(F, WHMM.B, WHMM.B);
+            AddSubHelper<Field, typename TryLazy<Field>::value > T3H(F, WHMM.B, WHMM.B);
             fsub (F, lb, cb,  B22, ldb,  B12, ldb, X2, ldX2, T3H);
 
                 // S3 = A11 - A21 in X1
             typename Field::Element_ptr X1 = fflas_new (F,mr,x1rd);
-            AddSubHelper<Field, ModeCategories::LazyTag> S3H(F, WHMM.A, WHMM.A);
+            AddSubHelper<Field, typename TryLazy<Field>::value> S3H(F, WHMM.A, WHMM.A);
             fsub (F, la, ca, A11, lda, A21, lda, X1, ldX1, S3H);
 
                 // P7 = alpha . S3 * T3  in C21
@@ -422,11 +422,11 @@ namespace FFLAS { namespace BLAS3 {
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C21, ldc, H7);
 
                 // T1 = B12 - B11 in X2
-            AddSubHelper<Field, ModeCategories::LazyTag> T1H(F, WHMM.B, WHMM.B);
+            AddSubHelper<Field, typename TryLazy<Field>::value> T1H(F, WHMM.B, WHMM.B);
             fsub (F, lb, cb, B12, ldb, B11, ldb, X2, ldX2, T1H);
 
                 // S1 = A21 + A22 in X1
-            AddSubHelper<Field, ModeCategories::LazyTag> S1H(F, WHMM.A, WHMM.A);
+            AddSubHelper<Field, typename TryLazy<Field>::value> S1H(F, WHMM.A, WHMM.A);
             fadd (F, la, ca, A21, lda, A22, lda, X1, ldX1, S1H);
 
                 // P5 = alpha . S1*T1 in C22
@@ -434,11 +434,11 @@ namespace FFLAS { namespace BLAS3 {
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C22, ldc, H5);
 
                 // T2 = B22 - T1 in X2
-            AddSubHelper<Field, ModeCategories::LazyTag> T2H(F, WHMM.B, T1H.ModeManager.Out);
+            AddSubHelper<Field, typename TryLazy<Field>::value> T2H(F, WHMM.B, T1H.ModeManager.Out);
             fsub (F, lb, cb, B22, ldb, X2, ldX2, X2, ldX2, T2H);
 
                 // S2 = S1 - A11 in X1
-            AddSubHelper<Field, ModeCategories::LazyTag> S2H(F, S1H.ModeManager.Out, WHMM.A);
+            AddSubHelper<Field, typename TryLazy<Field>::value> S2H(F, S1H.ModeManager.Out, WHMM.A);
             fsubin(F, la, ca, A11, lda, X1, ldX1, S2H);
 
                 // P6 = alpha . S2 * T2 in C12
@@ -446,11 +446,11 @@ namespace FFLAS { namespace BLAS3 {
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
 
                 // S4 = A12 -S2 in X1
-            AddSubHelper<Field, ModeCategories::LazyTag> S4H(F, WHMM.A, S2H.ModeManager.Out);
+            AddSubHelper<Field, typename TryLazy<Field>::value> S4H(F, WHMM.A, S2H.ModeManager.Out);
             fsub (F, la, ca, A12, lda, X1, ldX1, X1, ldX1, S4H);
 
                 // P3 = alpha . S4*B22 in C11
-            Operand<Field,ModeCategories::LazyTag> B22H(WHMM.B);
+            Operand<Field,typename TryLazy<Field>::value> B22H(WHMM.B);
             MMH_t H3 (F, WH.AlgoManager.recLevel-1, S4H.ModeManager.Out, B22H);
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, B22, ldb, F.zero, C11, ldc, H3);
 
@@ -465,7 +465,7 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, X1, nr);
             //     freduce (F, mr, nr, C12, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U2H (F, H1.ModeManager.Out, H6.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U2H (F, H1.ModeManager.Out, H6.ModeManager.Out);
             faddin (F, mr, nr, X1, nr, C12, ldc, U2H);
 
                 // U3 = P7 + U2 in C21  and
@@ -475,7 +475,7 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, C12, ldc);
             //     freduce (F, mr, nr, C21, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U3H (F, H7.ModeManager.Out, U2H.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U3H (F, H7.ModeManager.Out, U2H.ModeManager.Out);
             faddin (F, mr, nr, C12, ldc, C21, ldc, U3H);
 
 
@@ -486,7 +486,7 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, C22, ldc);
             //     freduce (F, mr, nr, C12, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U4H (F, H5.ModeManager.Out, U2H.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U4H (F, H5.ModeManager.Out, U2H.ModeManager.Out);
             faddin (F, mr, nr, C22, ldc, C12, ldc, U4H);
 
                 // U7 = P5 + U3 in C22    and
@@ -496,7 +496,7 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, C21, ldc);
             //     freduce (F, mr, nr, C22, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U7H (F, H5.ModeManager.Out, U3H.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U7H (F, H5.ModeManager.Out, U3H.ModeManager.Out);
             faddin (F, mr, nr, C21, ldc, C22, ldc, U7H);
 
                 // U5 = P3 + U4 in C12
@@ -506,15 +506,15 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, C12, ldc);
             //     freduce (F, mr, nr, C11, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U5H (F, H3.ModeManager.Out, U4H.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U5H (F, H3.ModeManager.Out, U4H.ModeManager.Out);
             faddin (F, mr, nr, C11, ldc, C12, ldc, U5H);
 
                 // T4 = T2 - B21 in X2
-            AddSubHelper<Field,ModeCategories::LazyTag> T4H (F, T2H.ModeManager.Out, WHMM.B);
+            AddSubHelper<Field,typename TryLazy<Field>::value> T4H (F, T2H.ModeManager.Out, WHMM.B);
             fsubin (F, lb, cb, B21, ldb, X2, ldX2, T4H);
 
                 // P4 = alpha . A22 * T4 in C11
-            Operand<Field,ModeCategories::LazyTag> A22H(WHMM.A);
+            Operand<Field,typename TryLazy<Field>::value> A22H(WHMM.A);
             MMH_t H4(F, WH.AlgoManager.recLevel-1, A22H,  T4H.ModeManager.Out);
             fgemm (F, ta, tb, mr, nr, kr, alpha, A22, lda, X2, ldX2, F.zero, C11, ldc, H4);
 
@@ -527,7 +527,7 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, C11, ldc);
             //     freduce (F, mr, nr, C21, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U6H (F, U3H.ModeManager.Out, H4.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U6H (F, U3H.ModeManager.Out, H4.ModeManager.Out);
             fsubin (F, mr, nr, C11, ldc, C21, ldc, U6H);
 
                 // P2 = alpha . A12 * B21  in C11
@@ -541,7 +541,7 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, X1, nr);
             //     freduce (F, mr, nr, C11, ldc);
             // }
-            AddSubHelper<Field,ModeCategories::LazyTag> U1H (F, H2.ModeManager.Out, H1.ModeManager.Out);
+            AddSubHelper<Field,typename TryLazy<Field>::value> U1H (F, H2.ModeManager.Out, H1.ModeManager.Out);
             faddin (F, mr, nr, X1, nr, C11, ldc, U1H);
 
             fflas_delete (X1);

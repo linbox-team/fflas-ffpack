@@ -113,10 +113,14 @@ namespace FFLAS {
                                            std::is_same<ModeTrait,ModeCategories::DefaultBoundedTag>::value ||
                                            std::is_same<ModeTrait,ModeCategories::ConvertTo<ElementCategories::RNSElementTag> >::value >::type> {
         typedef Operand<Field,ModeTrait,void> Self_t;
+        typedef ModeTrait ModeTrait_t;
         typedef typename associatedDelayedField<const Field>::field DelayedField;
         typedef typename DelayedField::Element DFElt;
         template<class OtherOp>
-        Operand(const OtherOp& Other): min(Other.min),max(Other.max){}
+        Operand(const OtherOp& Other) {}
+        
+        template<class OtherOp>
+        Operand (const OtherOp& Other): min(Other.min),max(Other.max){}
         Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
         DFElt min, max;
         const DFElt& absMax() const{return std::max(static_cast<const DFElt&>(-min),max);}
@@ -159,9 +163,19 @@ namespace FFLAS {
         template<class OtherMode>
         ModeManager_t (const Field& F, const OtherMode& OM) : delayedField(F){}
 
+        ModeManager_t (const Field&F, const Operand<Field, ModeTrait>& OA, const Operand<Field,ModeTrait>& OB):
+                delayedField(F) {}
+    
+        ModeManager_t (const Field&F, const Operand<Field, ModeTrait>& OA, const Operand<Field,ModeTrait>& OB, const Operand<Field,ModeTrait>& OC):
+                delayedField(F) {}
+
         template<class MM1, class MM2, class MM3, class MM4>
         void setOutBoundsMM(const MM1& M1,const MM2& M2,const MM3& M3,const MM4& M4){}
         
+        template<class MMSrc, class MMDest>
+        void updateDynPeelHelpers (const MMDest& MMModd, const MMDest& MMNodd, const MMSrc& MMacc){
+        }
+
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
                 return out <<"ModeManager: "
                            <<typeid(ModeTrait).name()<< ' ';
@@ -200,13 +214,13 @@ namespace FFLAS {
             MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
             delayedField(F) {}
         
-        ModeManager_t (const Field&F, Operand<Field, ModeTrait>& OA, Operand<Field,ModeTrait>& OB):
+         ModeManager_t (const Field&F, const Operand<Field, ModeTrait>& OA, const Operand<Field,ModeTrait>& OB):
                 FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
                 A(OA), B(OB), C(0,0), Out(0,0),
                 MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
                 delayedField(F) {}
     
-        ModeManager_t (const Field&F, Operand<Field, ModeTrait>& OA, Operand<Field,ModeTrait>& OB, Operand<Field,ModeTrait>& OC):
+        ModeManager_t (const Field&F, const Operand<Field, ModeTrait>& OA, const Operand<Field,ModeTrait>& OB, const Operand<Field,ModeTrait>& OC):
                 FieldMin((DFElt)F.minElement()), FieldMax((DFElt)F.maxElement()),
                 A(OA), B(OB), C(OC), Out(0,0),
                 MaxStorableValue ((DFElt)(limits<typename DelayedField::Element>::max())),
@@ -237,8 +251,8 @@ namespace FFLAS {
 
         template<class MM1, class MM2, class MM3, class MM4>
         void setOutBoundsMM(const MM1& M1,const MM2& M2,const MM3& M3,const MM4& M4){
-            Out.min = std::min (M1.Out.min, std::min (M2.Out.min, std::min (M3.Out.min, M4.Out.min)));
-            Out.max = std::max (M1.Out.max, std::max (M2.Out.max, std::max (M3.Out.max, M4.Out.max)));
+            Out.min = std::min (M1.ModeManager.Out.min, std::min (M2.ModeManager.Out.min, std::min (M3.ModeManager.Out.min, M4.ModeManager.Out.min)));
+            Out.max = std::max (M1.ModeManager.Out.max, std::max (M2.ModeManager.Out.max, std::max (M3.ModeManager.Out.max, M4.ModeManager.Out.max)));
         }
         void setOutBoundsMM(const size_t k, const DFElt alpha, const DFElt beta)
         {
@@ -260,7 +274,13 @@ namespace FFLAS {
 
         void setOutBoundsAdd() { Out.min = A.min+B.min; Out.max = A.max+B.max; }
         void setOutBoundsSub() { Out.min = A.min-B.max; Out.max = A.max-B.min; }
-
+        
+        template<class MMSrc, class MMDest>
+        void updateDynPeelHelpers (const MMDest& MMModd, const MMDest& MMNodd, const  MMSrc& MMacc){
+            Out.min = min4(MMModd.Out.min,MMNodd.Out.min, MMacc.Out.min, Out.min);
+            Out.max = max4(MMModd.Out.max,MMNodd.Out.max, MMacc.Out.max, Out.max);
+        }
+        
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
             return out <<"ModeManager: "
                        <<typeid(ModeTrait).name()<< ' '
@@ -282,11 +302,6 @@ namespace FFLAS {
             MMModd.A = MMH.B;
             MMModd.B = MMH.A;
             MMNodd.C = MMHC.C;
-        }
-    template<class MMDest, class MMSrc>
-    void updateDynPeelHelpers (MMDest& MM, const MMDest& MMModd, const MMDest& MMNodd, const  MMSrc& MMacc){
-        MM.Out.min = min4(MMModd.Out.min,MMNodd.Out.min, MMacc.Out.min, MM.Out.min);
-        MM.Out.max = max4(MMModd.Out.max,MMNodd.Out.max, MMacc.Out.max, MM.Out.max);
         }
 
     } //Protected
@@ -406,9 +421,9 @@ namespace FFLAS {
 
          typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
          typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
-         const AlgoTrait& AlgoManager;
+         const AlgoTrait AlgoManager;
          ModeManager_t<Field,ModeTrait> ModeManager;
-         const ParSeqTrait& ParSeqManager;
+         const ParSeqTrait ParSeqManager;
 
              //MMHelper(){}
             //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain
@@ -460,7 +475,7 @@ namespace FFLAS {
                  Operand<Field,MT1>& OA,
                  Operand<Field,MT2>& OB,
                  ParSeqTrait _PS=ParSeqTrait()):
-                AlgoTrait(w), ModeManager(F,OA,OB),ParSeqManager(_PS) {}
+                AlgoManager(w), ModeManager(F,OA,OB),ParSeqManager(_PS) {}
 
         template<class MT1, class MT2, class MT3>
         MMHelper(const Field& F, int w,
@@ -468,7 +483,7 @@ namespace FFLAS {
                  Operand<Field,MT2>& OB,
                  Operand<Field,MT3>& OC,
                  ParSeqTrait _PS=ParSeqTrait()):
-                AlgoTrait(w), ModeManager(F,OA,OB,OC),ParSeqManager(_PS) {}
+                AlgoManager(w), ModeManager(F,OA,OB,OC),ParSeqManager(_PS) {}
                 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
             {

@@ -277,7 +277,7 @@ namespace FFLAS { namespace Protected {
                     fgemm (F, ta, tb, m, nr, k, alpha, A, lda, b12, ldb, beta, C+(n-nr), ldc, HNodd);
                     break;
             }
-            Protected::updateDynPeelHelpers(H.ModeManager,HModd.ModeManager, HNodd.ModeManager, Hacc.ModeManager); 
+            H.ModeManager.updateDynPeelHelpers(HModd.ModeManager, HNodd.ModeManager, Hacc.ModeManager); 
             // H.ModeManager.Outmin = min4(HModd.ModeManager.Outmin,HNodd.ModeManager.Outmin, Hacc.ModeManager.Outmin, H.ModeManager.Outmin);
             // H.ModeManager.Outmax = max4(HModd.ModeManager.Outmax,HNodd.ModeManager.Outmax, Hacc.ModeManager.Outmax, H.ModeManager.Outmax);
             // H.ModeManager.checkOut(F, m,n, C, ldc);

@@ -63,7 +63,7 @@ namespace FFLAS {
 	      ModeCategories::DelayedTag& MT)
 	{
 		typedef typename associatedDelayedField<const Field>::field DelayedField;
-		typedef typename associatedDelayedField<const Field>::type DelayedField_t;
+		typedef typename associatedDelayedField<const Field>::field_ref DelayedField_t;
 		typedef typename DelayedField::Element DFElt;
 		DelayedField_t delayedF;
 

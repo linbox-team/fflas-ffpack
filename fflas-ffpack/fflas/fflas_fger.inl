@@ -195,7 +195,7 @@ namespace FFLAS{
 	     MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> & H)
 	{
 		H.ModeManager.setOutBoundsMM (1, alpha, 1.0);
-		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hd(F,0);
+		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> Hd(F);
 		fger (F, M, N, alpha, x, incx, y, incy, A, lda, Hd);
 	}
 

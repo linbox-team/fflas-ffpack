@@ -382,7 +382,7 @@ namespace FFLAS {
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H){
 		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
-		fadd (F, M, N, A, lda, alpha, B, ldb, C, ldc, Hdf);
+		fadd (H.ModeManager.delayedField, M, N, A, lda, alpha, B, ldb, C, ldc, Hdf);
 		H.ModeManager.Out = Hdf.ModeManager.Out;
 	}
 } // FFLAS

@@ -203,6 +203,12 @@ namespace FFLAS { /*  Traits */
 	template <> struct ModeTraits<Givaro::ZRing<double> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 	template <class T> struct ModeTraits<Givaro::Montgomery<T> > {typedef typename ModeCategories::DefaultBoundedTag value;};
 
+	template<class Field, class Mode = typename ModeTraits<Field>::value >
+	struct TryLazy{typedef Mode value;};
+	template<>
+	template<class Field>
+	struct TryLazy<Field, ModeCategories::DefaultBoundedTag>{typedef ModeCategories::LazyTag value;};
+
 	/*! FieldTrait
 	*/
 	template <class Field>
