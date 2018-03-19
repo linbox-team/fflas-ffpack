@@ -131,12 +131,12 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	static INLINE void stream(const scalar_t *p, const vect_t v) { _mm512_stream_pd(const_cast<scalar_t *>(p), v); }
 
 	/*
-	* Shuffle double-precision (64-bit) floating-point elements within 128-bit lanes using the control in imm8,
+	Shuffle double-precision (64-bit) floating-point elements within 128-bit lanes using the control in imm8,
 	* and store the results in dst.
-	* Args   : [a0, a1, a2, a3] double
-			   [b0, b1, b2, b3] double
-	* Return : [a[s[0..1]], ..., a[s[6..7]]] double
-	*/
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
+	*		   [b0, b1, b2, b3, b4, b5, b6, b7] double
+	* Return : [a[s[0..1]], ..., a[s[14..15]]] double
+
 /*#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
@@ -165,9 +165,9 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	* Blend packed double-precision (64-bit) floating-point elements from a and b using control mask s,
 	* and store the results in dst.
-	* Args   : [a0, a1, a2, a3] double
-			   [b0, b1, b2, b3] double
-	* Return : [s[0]?a0:b0, ..., s[3]?a3:b3] double
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
+			   [b0, b1, b2, b3, b4, b5, b6, b7] double
+	* Return : [s[0]?a0:b0, ..., s[7]?a7:b7] double
 	*/
 	/*template<uint8_t s>
 	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
@@ -177,9 +177,9 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	* Blend packed double-precision (64-bit) floating-point elements from a and b using mask,
 	* and store the results in dst.
-	* Args   : [a0, a1, a2, a3] double
-			   [b0, b1, b2, b3] double
-	* Return : [mask[31]?a0:b0, ..., mask[255]?a3:b3] double
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] double
+			   [b0, b1, b2, b3, b4, b5, b6, b7] double
+	* Return : [mask[31]?a0:b0, ..., mask[511]?a7:b7] double
 	*/
 	/*static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
 		return _mm256_blendv_pd(a, b, mask);
@@ -292,11 +292,16 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for equality, and store the results
 	 in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], 
+	 * 			[b0, b1, b2, b3, b4, b5, b6, b7]
 	 * Return : [(a0==b0) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a1==b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0]
+	 (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4==b4) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a5==b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6==b6) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a7==b7) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
@@ -307,11 +312,16 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser-than, and store the
 	 results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], 
+	 * 			[b0, b1, b2, b3, b4, b5, b6, b7]
 	 * Return : [(a0<b0) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a1<b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0]
+	 (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4<b4) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a5<b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6<b6) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a7<b7) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
@@ -322,11 +332,16 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for lesser or equal than, and store
 	 the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], 
+	 * 			[b0, b1, b2, b3, b4, b5, b6, b7]
 	 * Return : [(a0<=b0) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a1<=b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
+	 (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4<=b4) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a5<=b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6<=b6) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a7<=b7) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
@@ -337,11 +352,16 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater-than, and store the
 	 results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], 
+	 * 			[b0, b1, b2, b3, b4, b5, b6, b7]
 	 * Return : [(a0>b0) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a1>b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0]
+	 (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4>b4) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a5>b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6>b6) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a7>b7) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
@@ -352,11 +372,16 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Compare packed double-precision (64-bit) floating-point elements in a and b for greater or equal than, and store
 	 the results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], 
+	 * 			[b0, b1, b2, b3, b4, b5, b6, b7]
 	 * Return : [(a0>=b0) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a1>=b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2>=b2) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0]
+	 (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4>=b4) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a5>=b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6>=b6) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a7>=b7) ? 0xFFFFFFFFFFFFFFFF : 0]
 	 */
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
@@ -429,8 +454,8 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	/*
 	 * Horizontally add adjacent pairs of double-precision (64-bit) floating-point elements in a and b, and pack the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0+a1, b0+b1, a2+a3, b2+b3]
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7], [b0, b1, b2, b3, b4, b5, b6, b7]
+	 * Return : [a0+a1, b0+b1, a2+a3, b2+b3, a4+a5, b4+b5, a6+a7, b6+b7]
 	 */
 	//static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) { return _mm256_hadd_pd(a, b); }
 
