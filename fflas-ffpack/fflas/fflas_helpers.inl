@@ -80,21 +80,34 @@ namespace FFLAS {
             Auto(){}
             template<class Other>
             Auto(Other& o){}
+            friend std::ostream& operator<<(std::ostream& out, const Auto& M) {
+                return out <<"AlgoManager: Auto"<<std::endl;
+            }
         };
         struct Classic{
             Classic(){}
             template<class Other>
             Classic(Other & o){}
+            friend std::ostream& operator<<(std::ostream& out, const Classic& M) {
+                return out <<"AlgoManager: Classic"<<std::endl;
+            }
         };
         struct Winograd{
             int recLevel;
             Winograd():recLevel(-1){}
             Winograd(int r):recLevel(r){}
+            friend std::ostream& operator<<(std::ostream& out, const Winograd& M) {
+                return out <<"AlgoManager: Winograd (w = "<<M.recLevel<<")"<<std::endl;
+            }
+
         };
         struct WinogradPar{
             int recLevel;
             WinogradPar():recLevel(-1){}
             WinogradPar(int r):recLevel(r){}
+            friend std::ostream& operator<<(std::ostream& out, const WinogradPar& M) {
+                return out <<"AlgoManager: WinogradPar (w = "<<M.recLevel<<")"<<std::endl;
+            }
         };
         struct Bini{};
     }
@@ -118,6 +131,10 @@ namespace FFLAS {
         typedef typename DelayedField::Element DFElt;
         template<class OtherOp>
         Operand(const OtherOp& Other) {}
+
+        Operand(const Operand<Field, ModeCategories::DelayedTag>& Other): min(Other.min), max(Other.max) {}
+        Operand(const Operand<Field, ModeCategories::LazyTag>& Other): min(Other.min), max(Other.max) {}
+        Operand(const Operand<Field, ModeCategories::DefaultBoundedTag>& Other): min(Other.min), max(Other.max) {}
         
         Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
         DFElt min, max;
@@ -179,7 +196,7 @@ namespace FFLAS {
 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M){
                 return out <<"ModeManager: "
-                           <<typeid(ModeTrait).name()<< ' ';
+                           <<typeid(ModeTrait).name()<< ' '<<std::endl;
                 }
     };
     
@@ -344,7 +361,7 @@ namespace FFLAS {
 			Parallel(size_t n=NUM_THREADS):_numthreads(n){}
 
 			friend std::ostream& operator<<(std::ostream& out, const Parallel& p) {
-				return out << "Parallel: " << p.numthreads();
+				return out << "ParSeqManager: Parallel: (p = " << p.numthreads()<<")"<<std::endl;
 			}
 			size_t numthreads() const { return _numthreads; }
 			size_t& set_numthreads(size_t n) { return _numthreads=n; }
@@ -361,7 +378,7 @@ namespace FFLAS {
 			template<class Cut,class Param>
 			Sequential(const Parallel<Cut,Param>& ) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
-				return out << "Sequential";
+				return out << "ParSeqManager: Sequential"<<std::endl;
 			}
 			size_t numthreads() const { return 1; }
 		// 	CuttingStrategy method() const { return SINGLE; }
@@ -493,10 +510,8 @@ namespace FFLAS {
                 
         friend std::ostream& operator<<(std::ostream& out, const Self_t& M)
             {
-                return out <<"MMHelper: "
-                           << M.AlgoManager <<' '
-                           << M.ModeManager <<std::endl
-                           << M.ParSeqManager <<std::endl;
+                return out <<"MMHelper: "<<std::endl
+                           << M.AlgoManager << M.ModeManager << M.ParSeqManager << std::endl;
             }
     }; // MMHelper
 
