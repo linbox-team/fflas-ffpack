@@ -396,12 +396,15 @@ namespace FFLAS{
         }
         if (H.AlgoManager.recLevel < 0) {
             MMHelper<Field, MMHelperAlgo::Winograd, ModeT> Hw(F,H.ModeManager, H.ParSeqManager, MMHelperAlgo::Winograd(Protected::WinogradSteps (F, min3(m,k,n))));
-            return  fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, Hw);
+            fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, Hw);
+            H.ModeManager.updateOutBounds(Hw.ModeManager);
+            return C;
         }
 
         if (H.AlgoManager.recLevel == 0){
             MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(F,H.ModeManager,H.ParSeqManager);
             fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
+                //std::cerr<<"recLevel == 0"<<HC<<std::endl;
             H.ModeManager.updateOutBounds(HC.ModeManager);
             return C;
         }

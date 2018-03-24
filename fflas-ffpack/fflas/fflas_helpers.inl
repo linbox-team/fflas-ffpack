@@ -132,9 +132,12 @@ namespace FFLAS {
         template<class OtherOp>
         Operand(const OtherOp& Other) {}
 
-        Operand(const Operand<Field, ModeCategories::DelayedTag>& Other): min(Other.min), max(Other.max) {}
-        Operand(const Operand<Field, ModeCategories::LazyTag>& Other): min(Other.min), max(Other.max) {}
-        Operand(const Operand<Field, ModeCategories::DefaultBoundedTag>& Other): min(Other.min), max(Other.max) {}
+        template<class OF>
+        Operand(const Operand<OF, ModeCategories::DelayedTag>& Other): min(Other.min), max(Other.max) {}
+        template<class OF>
+        Operand(const Operand<OF, ModeCategories::LazyTag>& Other): min(Other.min), max(Other.max) {}
+        template<class OF>
+        Operand(const Operand<OF, ModeCategories::DefaultBoundedTag>& Other): min(Other.min), max(Other.max) {}
         
         Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
         DFElt min, max;

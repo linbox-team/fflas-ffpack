@@ -446,6 +446,7 @@ namespace FFLAS {
 		// std::cerr<<"Sortie de fgemm Lazy C = "<<*C<<std::endl;
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
 		// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
+		//std::cerr<<H<<HD<<std::endl;
 
 		H.ModeManager.initOut();
 

@@ -124,7 +124,9 @@ namespace FFLAS {
 		else shiftB = k2*ldb;
 
 		typedef MMHelper<typename HelperType::ModeMgr_t::DelayedField, MMHelperAlgo::Classic, ModeCategories::DefaultBoundedTag> DelayedHelper_t;
-		DelayedHelper_t Hfp(H);
+
+		DelayedHelper_t Hfp(H.ModeManager.delayedField,H);
+
 		typedef typename HelperType::ModeMgr_t::DelayedField::Element DFElt;
 		typedef typename HelperType::ModeMgr_t::DelayedField::Element_ptr DFElt_ptr;
 		typedef typename HelperType::ModeMgr_t::DelayedField::ConstElement_ptr DFCElt_ptr;
@@ -164,9 +166,9 @@ namespace FFLAS {
 				H.ModeManager.Out.max = (const DFElt)alpha * Hfp.ModeManager.Out.min;
 			}
 		}else {
-			H.ModeManager.Out.min = Hfp.ModeManager.Out.min;
-			H.ModeManager.Out.max = Hfp.ModeManager.Out.max;
+			H.ModeManager.Out = Hfp.ModeManager.Out;
 		}
+		    //std::cerr<<"Lazy->ZRing"<<Hfp<<H<<std::endl;
 		H.ModeManager.Out.check(F,FflasNoTrans,m,n,C,ldc);
 	}
 } // FFLAS
@@ -238,6 +240,7 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F);
 		fgemm (F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,Hd);
 		H.ModeManager.setOutBoundsMM (k,alpha,beta);
+		    //std::cerr<<"After setOUtBoundsMM H="<<H<<std::endl;
 	}
 
 	inline void fgemm (const Givaro::DoubleDomain& F,
