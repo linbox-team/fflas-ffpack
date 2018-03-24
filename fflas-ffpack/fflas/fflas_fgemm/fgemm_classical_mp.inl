@@ -140,7 +140,6 @@ namespace FFLAS {
 	 *** MULTIPRECISION FGEMM OVER Z ***
 	 ***********************************/
 
-	// fgemm for RnsInteger sequential version
 	template<typename RNS>
 	inline  typename FFPACK::RNSInteger<RNS>::Element_ptr 
 	fgemm (const FFPACK::RNSInteger<RNS> &F,
@@ -152,7 +151,25 @@ namespace FFLAS {
 	       typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
 	       const typename FFPACK::RNSInteger<RNS>::Element beta,
 	       typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
-	       MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic,ModeCategories::DefaultTag, ParSeqHelper::Sequential> & H)
+	       MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Auto, ModeCategories::DefaultTag, ParSeqHelper::Sequential> & H)
+	{
+		MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Sequential> HC(F,H);
+		return fgemm(F, ta, tb, m, n, k, alpha, Ad, lda, Bd, ldb, beta, Cd, ldc, HC);
+	}
+
+// fgemm for RnsInteger sequential version
+	template<typename RNS>
+	inline  typename FFPACK::RNSInteger<RNS>::Element_ptr 
+	fgemm (const FFPACK::RNSInteger<RNS> &F,
+	       const FFLAS_TRANSPOSE ta,
+	       const FFLAS_TRANSPOSE tb,
+	       const size_t m, const size_t n,const size_t k,
+	       const typename FFPACK::RNSInteger<RNS>::Element alpha,
+	       typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Ad, const size_t lda,
+	       typename FFPACK::RNSInteger<RNS>::ConstElement_ptr Bd, const size_t ldb,
+	       const typename FFPACK::RNSInteger<RNS>::Element beta,
+	       typename FFPACK::RNSInteger<RNS>::Element_ptr Cd, const size_t ldc,
+	       MMHelper<FFPACK::RNSInteger<RNS>, MMHelperAlgo::Classic, ModeCategories::DefaultTag, ParSeqHelper::Sequential> & H)
 	{		
 		// compute each fgemm componentwise
 #ifdef PROFILE_FGEMM_MP
@@ -457,7 +474,7 @@ namespace FFLAS {
 		Givaro::Integer p;
 		F.cardinality(p);
 		IntegerDomain Z;
-		MMHelper<IntegerDomain,MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > H2(Z,H);
+		MMHelper<IntegerDomain,MMHelperAlgo::Auto, ModeCategories::ConvertTo<ElementCategories::RNSElementTag> > H2(Z,H);
 			//H2.setNorm(p);
 
 		fgemm(Z,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H2);

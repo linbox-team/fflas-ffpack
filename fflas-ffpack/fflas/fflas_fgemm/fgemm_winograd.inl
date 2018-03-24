@@ -402,7 +402,7 @@ namespace FFLAS{
         if (H.AlgoManager.recLevel == 0){
             MMHelper<Field, MMHelperAlgo::Classic, ModeT> HC(F,H.ModeManager,H.ParSeqManager);
             fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HC);
-            Protected::updateOutBounds(HC, H);
+            H.ModeManager.updateOutBounds(HC.ModeManager);
             return C;
         }
 

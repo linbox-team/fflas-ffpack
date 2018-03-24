@@ -119,11 +119,9 @@ namespace FFLAS {
         template<class OtherOp>
         Operand(const OtherOp& Other) {}
         
-        template<class OtherOp>
-        Operand (const OtherOp& Other): min(Other.min),max(Other.max){}
         Operand(const DFElt& mi, const DFElt& ma) : min(mi), max(ma){}
         DFElt min, max;
-        const DFElt& absMax() const{return std::max(static_cast<const DFElt&>(-min),max);}
+        const DFElt absMax() const{return std::max(static_cast<const DFElt&>(-min),max);}
             //void init(DF){min = F.minElement(); max = F.maxElement();}
         bool unfit(){ return Protected::unfit(absMax());}
         bool check (const Field& F, const FFLAS::FFLAS_TRANSPOSE ta, const size_t M, const size_t N,
@@ -168,6 +166,9 @@ namespace FFLAS {
     
         ModeManager_t (const Field&F, const Operand<Field, ModeTrait>& OA, const Operand<Field,ModeTrait>& OB, const Operand<Field,ModeTrait>& OC):
                 delayedField(F) {}
+
+        template<class OtherMM>
+        void updateOutBounds (const OtherMM&M){}
 
         template<class MM1, class MM2, class MM3, class MM4>
         void setOutBoundsMM(const MM1& M1,const MM2& M2,const MM3& M3,const MM4& M4){}
@@ -249,7 +250,12 @@ namespace FFLAS {
         void initB(){B.min = FieldMin; B.max = FieldMax;}
         void initOut(){Out.min = FieldMin; Out.max = FieldMax;}
 
-        template<class MM1, class MM2, class MM3, class MM4>
+        template<class OtherMM>
+        void updateOutBounds (const OtherMM&M){
+            Out = M.Out;
+            return;
+        }
+	   template<class MM1, class MM2, class MM3, class MM4>
         void setOutBoundsMM(const MM1& M1,const MM2& M2,const MM3& M3,const MM4& M4){
             Out.min = std::min (M1.ModeManager.Out.min, std::min (M2.ModeManager.Out.min, std::min (M3.ModeManager.Out.min, M4.ModeManager.Out.min)));
             Out.max = std::max (M1.ModeManager.Out.max, std::max (M2.ModeManager.Out.max, std::max (M3.ModeManager.Out.max, M4.ModeManager.Out.max)));
@@ -373,7 +379,7 @@ namespace FFLAS {
         typedef AddSubHelper<Field,ModeTrait,ParSeqTrait> Self_t;
         typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
         ModeMgr_t ModeManager;
-        const ParSeqTrait& ParSeqManager;
+        ParSeqTrait ParSeqManager;
 
         // Operand<Field,ModeTrait>& A;
         // Operand<Field,ModeTrait>& B;
@@ -417,13 +423,13 @@ namespace FFLAS {
              typename AlgoTrait = MMHelperAlgo::Auto,
              typename ModeTrait = typename ModeTraits<Field>::value,
              typename ParSeqTrait = ParSeqHelper::Sequential >
-     struct MMHelper {
+    struct MMHelper {
 
-         typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
-         typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
-         const AlgoTrait AlgoManager;
-         ModeManager_t<Field,ModeTrait> ModeManager;
-         const ParSeqTrait ParSeqManager;
+        typedef MMHelper<Field,AlgoTrait,ModeTrait,ParSeqTrait> Self_t;
+        typedef ModeManager_t<Field,ModeTrait> ModeMgr_t;
+        AlgoTrait AlgoManager;
+        ModeManager_t<Field,ModeTrait> ModeManager;
+        ParSeqTrait ParSeqManager;
 
              //MMHelper(){}
             //TODO: delayedField constructor has a >0 characteristic even when it is a Double/FloatDomain

@@ -293,7 +293,7 @@ namespace FFLAS {
 		AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H){
 		if (N == ldb && N == ldc)
 			return faddin(F,M*N,B,1,C,1);
-		const typename Field::Element  *Bi = B;
+		typename Field::ConstElement_ptr Bi = B;
 		typename Field::Element_ptr Ci = C;
 		for (; Bi < B+M*ldb;  Bi+=ldb, Ci+=ldc)
 			faddin(F,N,Bi,1,Ci,1);
