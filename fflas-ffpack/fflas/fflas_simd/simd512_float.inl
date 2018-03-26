@@ -201,7 +201,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 		__m256 reshigh = _mm256_blendv_ps(higha, highb, highmask);
 
 		__m512 res = _mm512_castps256_ps512(reslow);
-		res = _mm512_insert32x8(res, reshigh, 1);
+		res = _mm512_insertf32x8(res, reshigh, 1);
 
 		return res;
 	}
@@ -575,7 +575,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 		__m256 reshigh = _mm256_hadd_ps(higha, highb);
 
 		__m512 res = _mm512_castps256_ps512(reslow);
-		res = _mm512_insert32x8(res, reshigh, 1);
+		res = _mm512_insertf32x8(res, reshigh, 1);
 
 		return res; 
 	}
