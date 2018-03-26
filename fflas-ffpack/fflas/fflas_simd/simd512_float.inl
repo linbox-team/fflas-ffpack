@@ -168,11 +168,13 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	* Args   :	[a0, ..., a15] float
 	*			[b0, ..., b15] float
 	* Return :	[s[0]?a0:b0, ..., s[15]?a15:b15] float
+
+	A TESTER
 	*/
-	/*template<uint16_t s>
+	template<uint16_t s>
 	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) { 
 		return _mm512_mask_blend_ps(s, a, b);
-	}*/
+	}
 	
 	/*
 	* Blend packed single-precision (32-bit) floating-point elements from a and b using mask,
@@ -180,10 +182,29 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	* Args   :	[a0, ..., a15] float
 				[b0, ..., b15] float
 	* Return : [mask[31]?a0:b0, ..., mask[511]?a15:b15] float
+
+	A TESTER
 	*/
-	/*static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
-		return _mm256_blendv_ps(a, b, mask);
-	}*/
+
+	static INLINE CONST vect_t blendv(const vect_t a, const vect_t b, const vect_t mask) {
+
+		__m256 lowa  = _mm512_castps512_ps256(a);
+		__m256 higha = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(a),1));
+
+		__m256 lowb  = _mm512_castps512_ps256(b);
+		__m256 highb = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(b),1));
+
+		__m256 lowmask  = _mm512_castps512_ps256(mask);
+		__m256 highmask = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(mask),1));
+
+		__m256 reslow = _mm256_blendv_ps(lowa, lowb, lowmask);
+		__m256 reshigh = _mm256_blendv_ps(higha, highb, highmask);
+
+		__m512 res = _mm512_castps256_ps512(reslow);
+		res = _mm512_insert32x8(res, reshigh, 1);
+
+		return res;
+	}
 	
 	/*
 	 * Add packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
@@ -540,8 +561,24 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0+a1, b0+b1, a2+a3, b2+b3, a4+a5, b4+b5, a6+a7, b6+b7,
 	 *			a8+a9, b8+b9, a10+a11, b10+b11, a12+a13, b12+b13, a14+a15, b14+b15]
+
+	 A TESTER
 	 */
-	//static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) { return _mm256_hadd_ps(a, b); }
+	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) { 
+		__m256 lowa  = _mm512_castps512_ps256(a);
+		__m256 higha = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(a),1));
+
+		__m256 lowb  = _mm512_castps512_ps256(b);
+		__m256 highb = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(b),1));
+
+		__m256 reslow = _mm256_hadd_ps(lowa, lowb);
+		__m256 reshigh = _mm256_hadd_ps(higha, highb);
+
+		__m512 res = _mm512_castps256_ps512(reslow);
+		res = _mm512_insert32x8(res, reshigh, 1);
+
+		return res; 
+	}
 
 	/*
 	 * Horizontally add single-precision (32-bit) floating-point elements in a.
