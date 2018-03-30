@@ -293,10 +293,9 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 }
 
 template<class simd, class Element, class SimdFunc, class ScalFunc> 
-inline
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	using vect_t = typename simd::vect_t;
-
+	uint8_t s = 0x1;
 	std::mt19937 generator(seed);
 	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), c3(vectorSize);
 	generate_random(a1, generator);
@@ -311,7 +310,7 @@ test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Ele
 			va2 = simd::load(a2.data()+i);
 			vb2 = simd::load(b2.data()+i);
 			vc3 = simd::load(c1.data()+i);
-			vc2 = fsimd(va2, vb2);
+			vc2 = fsimd<s>(va2, vb2);
 			vc3 = simd::sub(vc3,vc2);
 			simd::store(c2.data()+i, vc2);
 			simd::store(c3.data()+i, vc3);
