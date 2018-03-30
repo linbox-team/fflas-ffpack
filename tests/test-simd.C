@@ -463,7 +463,7 @@ bool test_integer(uint64_t seed, size_t vectorSize, size_t max_){
 
 
 int main(int ac, char **av) {
-	uint64_t seed = getSeed();
+	uint64_t seed = FFLAS::getSeed();
 	int vectorSize = 32;
 	int max = 100;
 	int loop = false;
