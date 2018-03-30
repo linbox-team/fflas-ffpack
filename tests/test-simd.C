@@ -294,7 +294,6 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 
 template<class simd, class Element, class SimdFunc, class ScalFunc> 
 inline
-typename std::enable
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	using vect_t = typename simd::vect_t;
 
