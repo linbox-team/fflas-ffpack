@@ -293,6 +293,11 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 }
 
 template<class simd, class Element, class SimdFunc, class ScalFunc> 
+inline
+typename std::enable_if<
+(function_traits<SimdFunc>::arity != 10) &&
+!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
+, bool>::type
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	using vect_t = typename simd::vect_t;
 	uint8_t s = 0x1;
