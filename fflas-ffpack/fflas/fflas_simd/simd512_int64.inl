@@ -367,11 +367,11 @@ TODO
 	/*
 	 * Multiply the low 32-bit integers from each packed 64-bit element in a and b,
 	 * keep the signed 64-bit results and substract them from elements of c.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 *	    [c0, c1, c2, c3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, a4, a5, a6, a7]	int64_t
+	 *	    	[c0, c1, c2, c3, c4, c5, c6, c7]	int64_t
 	 * Return :	[(-(a0 smod 2^32)*(b0 smod 2^32)+c0) smod 2^64, ...,
-	 *		 (-(a3 smod 2^32)*(b3 smod 2^32)+c3) smod 2^64]	int64_t
+	 *		 (-(a7 smod 2^32)*(b7 smod 2^32)+c7) smod 2^64]	int64_t
 	 */
 	static INLINE CONST vect_t fnmaddx(const vect_t c, const vect_t a, const vect_t b) { return sub(c, mulx(a, b)); }
 
@@ -380,10 +380,10 @@ TODO
 	/*
 	 * Multiply the packed 64-bit integers in a and b, producing intermediate 128-bit integers,
 	 * and substract elements of c to the low 64-bits of the intermediate.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 *	    [c0, c1, c2, c3]	int64_t
-	 * Return :	[(a0*b0-c0) smod 2^64, ..., (a3*b3-c3) smod 2^64]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, a4, a5, a6, a7]	int64_t
+	 *	    	[c0, c1, c2, c3, c4, c5, c6, c7]	int64_t
+	 * Return :	[(a0*b0-c0) smod 2^64, ..., (a7*b7-c7) smod 2^64]	int64_t
 	 */
 	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) { return sub(mul(a, b), c); }
 
@@ -392,11 +392,11 @@ TODO
 	/*
 	 * Multiply the low 32-bit integers from each packed 64-bit element in a and b,
 	 * keep the signed 64-bit results and substract elements of c from them.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
-	 *	    [c0, c1, c2, c3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, a4, a5, a6, a7]	int64_t
+	 *	    	[c0, c1, c2, c3, c4, c5, c6, c7]	int64_t
 	 * Return :	[((a0 smod 2^32)*(b0 smod 2^32)-c0) smod 2^64, ...,
-	 *		 ((a3 smod 2^32)*(b3 smod 2^32)-c3) smod 2^64]	int64_t
+	 *		 ((a7 smod 2^32)*(b7 smod 2^32)-c7) smod 2^64]	int64_t
 	 */
 	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { return sub(mulx(a, b), c); }
 
@@ -404,37 +404,50 @@ TODO
 
 	/*
 	 * Compare packed 64-bits in a and b for equality, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [(a0==b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1==b1) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
+	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0, ..., (a7==b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { return _mm256_cmpeq_epi64(a, b); }
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { 
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		uint8_t d = _mm512_maskz_expand_epi64(_mm512_cmpeq_epi64_mask(a, b), c);
+		return d;
+	}
 
 	/*
 	 * Compare packed 64-bits in a and b for greater-than, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [(a0>b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1>b1) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
+	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0, ..., (a7>b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
-		return _mm256_cmpgt_epi64(a, b);
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		uint8_t d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
+		return d;
 	}
 
 	/*
 	 * Compare packed 64-bits in a and b for lesser-than, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [(a0<b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
+	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0, ..., (a7<b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { return _mm256_cmpgt_epi64(b, a); }
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { 
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		uint8_t d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
+		return d;
+	}
 
 	/*
 	 * Compare packed 64-bits in a and b for greater or equal than, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [(a0>=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1>=b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2>=b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3>=b3) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a4>=b4) ? 0xFFFFFFFFFFFFFFFF : 0, (a5>=b5) ? 0xFFFFFFFFFFFFFFFF : 0,
@@ -444,10 +457,12 @@ TODO
 
 	/*
 	 * Compare packed 64-bits in a and b for lesser or equal than, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 *	    [b0, b1, b2, b3]	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [(a0<=b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<=b1) ? 0xFFFFFFFFFFFFFFFF : 0,
-	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
+	 (a2<=b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<=b3) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a4<=b4) ? 0xFFFFFFFFFFFFFFFF : 0, (a5<=b5) ? 0xFFFFFFFFFFFFFFFF : 0,
+	 (a6<=b6) ? 0xFFFFFFFFFFFFFFFF : 0, (a7<=b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) { return vor(lesser(a, b), eq(a, b)); }
 
