@@ -141,15 +141,15 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	* Return : [a[s[0..1]], ..., a[s[14..15]]] double
 
 	PROBLEME DANS L'IMPLEMENTATION, DES FONCTIONS EXISTENT POUR PERMUTER LE m512d MAIS CHAQUE PARTIE DU m512d NE PEUT PRENDRE QUE 2 VALEURS
-	ALORS QUE POUR LE m256d IL POUVAIT EN PRENDRE 4 (DONC IL DEVRAIT POUVOIR PRENDRE LES 8 VALEURS DANS CETTE VERSION)
+	ALORS QUE POUR LE m256d IL POUVAIT EN PRENDRE 4 (DONC IL DEVRAIT POUVOIR PRENDRE LES 8 VALEURS DANS CETTE VERSION)*/
 
-/*#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
+
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
-		return _mm256_permute4x64_pd(a, s);
+		return _mm512_permute_pd(a, s);
 	}
-#endif
-*/
+
+
 	/*
 	* Unpack and interleave double-precision (64-bit) floating-point elements from the low half of each 128-bit lane in a and b,
 	* and store the results in dst.

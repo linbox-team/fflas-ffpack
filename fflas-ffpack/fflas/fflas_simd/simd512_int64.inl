@@ -180,13 +180,12 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	* Args   : [a0, ..., a7] int32_t
 	* Return : [a[s[0..1]], ..., a[s[14..15]]] int32_t
 	*/
-/*
-TODO	
+
 	template<uint8_t s>
 	static INLINE CONST vect_t shuffle(const vect_t a) {
-		return _mm256_permute4x64_epi64(a, s);
+		return _mm512_permutex_epi64(a, s);
 	}
-*/
+
 	/*
 	* Unpack and interleave 64-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
 	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
@@ -209,56 +208,63 @@ TODO
 			   [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
 	* Return : [a0, b0, a1, b1, a2, b2, a3, b3] int64_t
 	*/
-/*	
-TODO
+
 	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
-		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
-		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-		return unpacklo_twice(a1, b1);
+		__m256i a1 = _mm512_castsi512_si256(a); // a1 = [a0, a1, a2, a3]
+		__m256i b1 = _mm512_castsi512_si256(b); // b1 = [b0, b1, b2, b3]
+		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a0, a2, a1, a3] (0xD8 permet d'intervertir a1 et a2)
+		__m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b0, b2, b1, b3] (0xD8 permet d'intervertir b1 et b2)
+		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
+		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
+		__m512i res = _mm512_castsi256_si512(low);
+		res = _mm512_inserti64x4(res, reshigh, 1); 
+		return res;
 	}
-*/
+
 	/*
 	* Unpack and interleave 64-bit integers from the high half of a and b, and store the results in dst.
-	* Args   : [a0, a1, a2, a3] int64_t
-			   [b0, b1, b2, b3] int64_t
-	* Return : [a2, b2, a3, b3] int64_t
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
+			   [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
+	* Return : [a4, b4, a5, b5, a6, b6, a7, b7] int64_t
 	*/
-/*	
-TODO
+
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
-		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4
-		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-		return unpackhi_twice(a1, b1);
+		__m256i a1 = _mm512_extracti64x4_epi64(a,1); // a1 = [a4, a5, a6, a7]
+		__m256i b1 = _mm512_extracti64x4_epi64(b,1); // b1 = [b4, b5, b6, b7]
+		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a4, a6, a5, a7] (0xD8 permet d'intervertir a5 et a6)
+		__m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b4, b6, b5, b7] (0xD8 permet d'intervertir b5 et b6)
+		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
+		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
+		__m512i res = _mm512_castsi256_si512(low);
+		res = _mm512_inserti64x4(res, reshigh, 1); 
+		return res;
 	}
-*/
+
 	/*
 	* Unpack and interleave 64-bit integers from the low then high half of a and b, and store the results in dst.
-	* Args   : [a0, a1, a2, a3] int64_t
-			   [b0, b1, b2, b3] int64_t
-	* Return : [a0, b0, a1, b1] int64_t
-	*		   [a2, b2, a3, b3] int64_t
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
+			   [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
+	* Return : [a0, b0, a1, b1, a2, b2, a3, b3] int64_t
+	*		   [a4, b4, a5, b5, a6, b6, a7, b7] int64_t
 	*/
-/*
-TODO
+
 	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
-		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
-		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
-		l = unpacklo_twice(a1, b1);
-		h = unpackhi_twice(a1, b1);
+		l = unpacklo(a1, b1);
+		h = unpackhi(a1, b1);
 	}
-*/
+
 	/*
 	* Blend packed 64-bit integers from a and b using control mask imm8, and store the results in dst.
-	* Args   : [a0, a1, a2, a3] int64_t
-			   [b0, b1, b2, b3] int64_t
-	* Return : [s[0]?a0:b0,   , s[3]?a3:b3] int64_t
+	* Args   : [a0, a1, a2, a3, a4, a5, a6, a7] int64_t
+			   [b0, b1, b2, b3, b4, b5, b6, b7] int64_t
+	* Return : [s[0]?a0:b0,   , s[7]?a7:b7] int64_t
 	*/
 	template<uint8_t s>
 	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
 		// _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
 		// We have to transform s = [d3 d2 d1 d0]_base2 to s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
-		constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
-		return _mm256_blend_epi32(a, b, s1);
+		//constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
+		return _mm512_blend_epi64(s, a, b);
 	}
 
 	/*
@@ -302,8 +308,7 @@ TODO
 	 *	    	[b0, b1, b2, b3, a4, a5, a6, a7]	int64_t
 	 * Return : [Floor(a0*b0/2^64), ..., Floor(a7*b7/2^64)] int64_t
 	 */
-/*
-TODO
+
 #ifdef __FFLASFFPACK_HAVE_INT128
 	static INLINE CONST vect_t mulhi(vect_t a, vect_t b) {
 		//#pragma warning "The simd mulhi function is emulate, it may impact the performances."
@@ -313,10 +318,12 @@ TODO
 		ca.v = a;
 		cb.v = b;
 		return set((scalar_t)((int128_t(ca.t[0]) * cb.t[0]) >> 64), (scalar_t)((int128_t(ca.t[1]) * cb.t[1]) >> 64),
-				(scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64));
+				(scalar_t)((int128_t(ca.t[2]) * cb.t[2]) >> 64), (scalar_t)((int128_t(ca.t[3]) * cb.t[3]) >> 64),
+				(scalar_t)((int128_t(ca.t[4]) * cb.t[4]) >> 64), (scalar_t)((int128_t(ca.t[5]) * cb.t[5]) >> 64),
+				(scalar_t)((int128_t(ca.t[6]) * cb.t[6]) >> 64), (scalar_t)((int128_t(ca.t[7]) * cb.t[7]) >> 64));
 	}
 #endif
-*/
+
 	/*
 	 * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the signed 64-bit results
 	 in dst.
@@ -412,7 +419,7 @@ TODO
 	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { 
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		uint8_t d = _mm512_maskz_expand_epi64(_mm512_cmpeq_epi64_mask(a, b), c);
+		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpeq_epi64_mask(a, b), c);
 		return d;
 	}
 
@@ -426,7 +433,7 @@ TODO
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		uint8_t d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
+		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
 		return d;
 	}
 
@@ -440,7 +447,7 @@ TODO
 	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { 
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
-		uint8_t d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
+		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
 		return d;
 	}
 
@@ -468,13 +475,13 @@ TODO
 
 	/*
 	 * Horizontally add 64-bits elements of a.
-	 * Args   : [a0, a1, a2, a3]	int64_t
-	 * Return : a0+a1+a2+a3	int64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	int64_t
+	 * Return : a0+a1+a2+a3+a4+a5+a6+a7	int64_t
 	 */
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
 		Converter ca;
 		ca.v = a;
-		return scalar_t(ca.t[0] + ca.t[1] + ca.t[2] + ca.t[3]);
+		return scalar_t(ca.t[0] + ca.t[1] + ca.t[2] + ca.t[3], ca.t[4], ca.t[5], ca.t[6], ca.t[7]);
 	}
 
 	static INLINE CONST vect_t round(const vect_t a) { return a; }
@@ -485,19 +492,19 @@ TODO
 	}
 
 	// mask the high 32 bits of a 64 bits, that is 00000000FFFFFFFF
-	static INLINE CONST vect_t mask_high() { return srl(_mm256_set1_epi8(-1), 32); }
+	static INLINE CONST vect_t mask_high() { return srl(_mm512_set1_epi8(-1), 32); }
 
 	static INLINE CONST vect_t mulhi_fast(vect_t x, vect_t y);
 
 	template <bool overflow, bool poweroftwo>
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
 							 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T);
-}; // Simd256_impl<true, true, true, 8>
+}; // Simd512_impl<true, true, true, 8>
 
 /*
- * Simd256 specialized for uint64_t
+ * Simd512 specialized for uint64_t
  */
-template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true, true, true, 8> {
+template <> struct Simd512_impl<true, true, false, 8> : public Simd256_impl<true, true, true, 8> {
 
 	/*
 	* define the scalar type corresponding to the specialization
@@ -507,7 +514,7 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	/*
 	 * Simd128 for scalar_t, to deal half_t
 	 */
-	using simdHalf = Simd128<scalar_t>;
+	using simdHalf = Simd256<scalar_t>;
 
 	/*
 	* Converter from vect_t to a tab.
@@ -523,81 +530,85 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 
 	/*
 	 *  Broadcast 64-bit unsigned integer a to all elements of dst. This intrinsic may generate the vpbroadcastw.
-	 *  Return [x,x,x,x] uint64_t
+	 *  Return [x,x,x,x,x,x,x,x] uint64_t
 	 */
-	static INLINE CONST vect_t set1(const scalar_t x) { return _mm256_set1_epi64x(x); }
+	static INLINE CONST vect_t set1(const scalar_t x) { return _mm512_set1_epi64(x); }
 
 	/*
 	 *  Set packed 64-bit unsigned integers in dst with the supplied values.
-	 *  Return [x0,x1,x2,x3] uint64_t
+	 *  Return [x0,x1,x2,x3,x4,x5,x6,x7] uint64_t
 	 */
-	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3) {
-		return _mm256_set_epi64x(x3, x2, x1, x0);
+	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
+		return _mm256_set_epi64x(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
 	/*
-	 *  Gather 64-bit unsigned integer elements with indexes idx[0], ..., idx[3] from the address p in vect_t.
-	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]] uint64_t
+	 *  Gather 64-bit unsigned integer elements with indexes idx[0], ..., idx[7] from the address p in vect_t.
+	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], ..., p[idx[7]]] uint64_t
 	 */
 	template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
-		return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]);
+		return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]]);
 	}
 
 	/*
-	 * Load 256-bits of unsigned integer data from memory into dst.
+	 * Load 512-bits of unsigned integer data from memory into dst.
 	 * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
-	 * Return [p[0],p[1],p[2],p[3]] uint64_t
+	 * Return [p[0],p[1],p[2],p[3], ..., p[7]] uint64_t
 	 */
 	static INLINE PURE vect_t load(const scalar_t *const p) {
-		return _mm256_load_si256(reinterpret_cast<const vect_t *>(p));
+		return _mm512_load_si512(reinterpret_cast<const vect_t *>(p));
 	}
 
 	/*
-	 * Load 256-bits of unsigned integer data from memory into dst.
+	 * Load 512-bits of unsigned integer data from memory into dst.
 	 * p does not need to be aligned on any particular boundary.
-	 * Return [p[0],p[1],p[2],p[3]] uint64_t
+	 * Return [p[0],p[1],p[2],p[3], ..., p[7]] uint64_t
 	 */
 	static INLINE PURE vect_t loadu(const scalar_t *const p) {
-		return _mm256_loadu_si256(reinterpret_cast<const vect_t *>(p));
+		return _mm512_loadu_si512(reinterpret_cast<const vect_t *>(p));
 	}
 
 	/*
-	 * Store 256-bits of unsigned integer data from a into memory.
+	 * Store 512-bits of unsigned integer data from a into memory.
 	 * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
 	 */
 	static INLINE void store(scalar_t *p, vect_t v) {
-		_mm256_store_si256(reinterpret_cast<vect_t *>(p), v);
+		_mm512_store_si512(reinterpret_cast<vect_t *>(p), v);
 	}
 
 	/*
-	 * Store 256-bits of unsigned integer data from a into memory.
+	 * Store 512-bits of unsigned integer data from a into memory.
 	 * p does not need to be aligned on any particular boundary.
 	 */
 	static INLINE void storeu(scalar_t *p, vect_t v) {
-		_mm256_storeu_si256(reinterpret_cast<vect_t *>(p), v);
+		_mm512_storeu_si512(reinterpret_cast<vect_t *>(p), v);
 	}
 
 	/*
-	 * Store 256-bits of unsigned integer data from a into memory using a non-temporal memory hint.
-	 * p must be aligned on a 32-byte boundary or a general-protection exception may be generated.
+	 * Store 512-bits of unsigned integer data from a into memory using a non-temporal memory hint.
+	 * p must be aligned on a 64-byte boundary or a general-protection exception may be generated.
 	 */
 	static INLINE void stream(scalar_t *p, const vect_t v) {
-		_mm256_stream_si256(reinterpret_cast<vect_t *>(p), v);
+		_mm512_stream_si512(reinterpret_cast<vect_t *>(p), v);
 	}
 
 	/*
 	* Shift packed 64-bit unsigned integers in a right by s while shifting in sign bits, and store the results in vect_t.
-	 * Args   : [a0, ..., a3]			uint64_t
-	 * Return : [Floor(a0/2^s), ..., Floor(a3/2^s)]	uint64_t
+	 * Args   : [a0, ..., a7]			uint64_t
+	 * Return : [Floor(a0/2^s), ..., Floor(a7/2^s)]	uint64_t
 	*/
-	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm256_srli_epi64(a, s); }
+	static INLINE CONST vect_t sra(const vect_t a, const int s) { return _mm512_srli_epi64(a, s); }
 
 	static INLINE CONST vect_t greater(vect_t a, vect_t b) {
 		vect_t x;
 		x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
 		a = sub(x, a);
 		b = sub(x, b);
-		return _mm256_cmpgt_epi64(b,a);
+
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
+		return d;
 	}
 
 	static INLINE CONST vect_t lesser(vect_t a, vect_t b) {
@@ -605,7 +616,11 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 		x = set1(-(static_cast<scalar_t>(1) << (sizeof(scalar_t) * 8 - 1)));
 		a = sub(x, a);
 		b = sub(x, b);
-		return _mm256_cmpgt_epi64(a, b);
+
+		int64_t i = 0xFFFFFFFFFFFFFFFF;
+		__m512i c = _mm512_set1_epi64(i);
+		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
+		return d;
 	}
 
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) { return vor(greater(a, b), eq(a, b)); }
@@ -615,23 +630,23 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 	/*
 	 * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the low 64
 	 bits of the intermediate integers in vect_t.
-	 * Args   : [a0, a1, a2, a3]	   							uint64_t
-	 [b0, b1, b2, b3]  		 							uint64_t
-	 * Return : [a0*b0 mod 2^64, a1*b1 mod 2^64, a2*b2 mod 2^64, a3*b3 mod 2^64]		uint64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	uint64_t
+	 			[b0, b1, b2, b3, b4, b5, b6, b7]	uint64_t
+	 * Return : [a0*b0 mod 2^64, a1*b1 mod 2^64, a2*b2 mod 2^64, a3*b3 mod 2^64, ..., a7*b7 mod 2^64]		uint64_t
 	 */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
 		//#pragma warning "The simd mullo function is emulate, it may impact the performances."
 		Converter ca, cb;
 		ca.v = a;
 		cb.v = b;
-		return set(ca.t[0] * cb.t[0], ca.t[1] * cb.t[1], ca.t[2] * cb.t[2], ca.t[3] * cb.t[3]);
+		return set(ca.t[0] * cb.t[0], ca.t[1] * cb.t[1], ca.t[2] * cb.t[2], ca.t[3] * cb.t[3], ca.t[4] * cb.t[4], ca.t[5] * cb.t[5], ca.t[6] * cb.t[6], ca.t[7] * cb.t[7]);
 	}
 
 	/*
 	 * Multiply the packed 64-bits integers in a and b, producing intermediate 128-bit integers, and store the high 64
 	 bits of the intermediate integers in vect_t.
-	 * Args   : [a0, a1, a2, a3]	   							 uint64_t
-	 [b0, b1, b2, b3]  		 							 uint64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	uint64_t
+	 			[b0, b1, b2, b3, b4, b5, b6, b7]  	uint64_t
 	 * Return :
 	 */
 #ifdef __FFLASFFPACK_HAVE_INT128
@@ -643,18 +658,20 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 		c0.v = a;
 		c1.v = b;
 		return set((scalar_t)(((uint128_t)(c0.t[0]) * c1.t[0]) >> 64), (scalar_t)(((uint128_t)(c0.t[1]) * c1.t[1]) >> 64),
-				(scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64));
+				(scalar_t)(((uint128_t)(c0.t[2]) * c1.t[2]) >> 64), (scalar_t)(((uint128_t)(c0.t[3]) * c1.t[3]) >> 64),
+				(scalar_t)(((uint128_t)(c0.t[4]) * c1.t[4]) >> 64), (scalar_t)(((uint128_t)(c0.t[5]) * c1.t[5]) >> 64),
+				(scalar_t)(((uint128_t)(c0.t[6]) * c1.t[6]) >> 64), (scalar_t)(((uint128_t)(c0.t[7]) * c1.t[7]) >> 64));
 	}
 #endif
 
 	/*
 	 * Multiply the low 32-bits integers from each packed 64-bit element in a and b, and store the unsigned 64-bit
 	 results in dst.
-	 * Args   : [a0, a1, a2, a3]	uint64_t
-	 [b0, b1, b2, b3]	uint64_t
-	 * Return : [a0*b0, a1*b1, a2*b2, a3*b3] uint64_t
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]	uint64_t
+	 			[b0, b1, b2, b3, b4, b5, b6, b7]	uint64_t
+	 * Return : [a0*b0, a1*b1, a2*b2, a3*b3, ..., a7*b7] uint64_t
 	 */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm256_mul_epu32(a, b); }
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm512_mul_epu32(a, b); }
 
 	static INLINE CONST vect_t fmaddx(const vect_t c, const vect_t a, const vect_t b) { return add(c, mulx(a, b)); }
 
@@ -670,17 +687,17 @@ template <> struct Simd256_impl<true, true, false, 8> : public Simd256_impl<true
 
 	/*
 	 * Horizontally add 64-bits elements of a.
-	 * Args   : [a0, a1, a2, a3]
-	 * Return : a0+a1+a2+a3
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7]
+	 * Return : a0+a1+a2+a3+a4+a5+a6+a7
 	 */
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
 		Converter ca;
 		ca.v = a;
-		return ca.t[0] + ca.t[1] + ca.t[2] + ca.t[3];
+		return ca.t[0] + ca.t[1] + ca.t[2] + ca.t[3] + ca.t[4] + ca.t[5] + ca.t[6] + ca.t[7];
 	}
-}; // Simd256_impl<true, true, false, 8>
+}; // Simd512_impl<true, true, false, 8>
 
-#define vect_t Simd256_impl<true, true, true, 8>::vect_t
+#define vect_t Simd512_impl<true, true, true, 8>::vect_t
 
 // warning : may be off by 1 multiple, but we save a mul...
 INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect_t y) {
@@ -691,9 +708,9 @@ INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
 	vect_t x0 = vand(x, mask), x1 = srl(x, 32);
 	vect_t y0 = vand(y, mask), y1 = srl(y, 32);
 
-	x0 = Simd256_impl<true, true, false, 8>::mulx(x0, y1); // x0y1
-	y0 = Simd256_impl<true, true, false, 8>::mulx(x1, y0); // x1y0
-	y1 = Simd256_impl<true, true, false, 8>::mulx(x1, y1); // x1y1
+	x0 = Simd512_impl<true, true, false, 8>::mulx(x0, y1); // x0y1
+	y0 = Simd512_impl<true, true, false, 8>::mulx(x1, y0); // x1y0
+	y1 = Simd512_impl<true, true, false, 8>::mulx(x1, y1); // x1y1
 
 	x1 = vand(y0, mask);
 	y0 = srl(y0, 32); // x1y0_lo = x1 // y1yo_hi = y0
@@ -713,11 +730,11 @@ INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect
 }
 
 template <bool overflow, bool poweroftwo>
-INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
+INLINE vect_t Simd512_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P, const int8_t &shifter, const vect_t &magic, const vect_t &NEGP,
 													 const vect_t &MIN, const vect_t &MAX, vect_t &Q, vect_t &T) {
 #ifdef __INTEL_COMPILER
 	// Works fine with ICC 15.0.1 - A.B.
-	C = _mm256_rem_epi64(C, P);
+	C = _mm512_rem_epi64(C, P);
 #else
 	if (poweroftwo) {
 			Q = srl(C, 63);
@@ -734,8 +751,8 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P,
 					Q = add(Q, C);
 				}
 			Q = sra(Q, shifter);
-			vect_t q1 = Simd256_impl<true, true, false, 8>::mulx(Q, P);
-			vect_t q2 = sll(Simd256_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
+			vect_t q1 = Simd512_impl<true, true, false, 8>::mulx(Q, P);
+			vect_t q2 = sll(Simd512_impl<true, true, false, 8>::mulx(srl(Q, 32), P), 32);
 			C = sub(C, add(q1, q2));
 			T = greater_eq(C, P);
 			C = sub(C, vand(T, P));
@@ -747,4 +764,4 @@ INLINE vect_t Simd256_impl<true, true, true, 8>::mod(vect_t &C, const vect_t &P,
 
 #undef vect_t
 
-#endif // __FFLASFFPACK_fflas_ffpack_utils_simd256_int64_INL
+#endif // __FFLASFFPACK_simd512_int64_INL

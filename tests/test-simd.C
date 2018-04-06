@@ -362,8 +362,8 @@ bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::lesser, [](Element x1, Element x2){return (x1<x2)?NAN:0;}, seed, vectorSize, max, "lesser");
 	btest = btest && test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
-	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
-	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
+	btest = btest && test_op<simd>(simd::greateq, [er_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
+	btest = btest && test_op<simd>(simd::](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
 
 	return btest;
 }
