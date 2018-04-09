@@ -367,12 +367,11 @@ bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 template<typename simd>
 typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(2));}
 
-template<typename simd>
-typename simd::vect_t myblend (typename simd::vect_t x1, typename simd::vect_t x2){uint8_t a = 3; return simd::blend<a>(x1,x2);}
 
 template<class simd, class Element>
 bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	bool btest = true;
+	uint8_t a = 3;
 
 	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
 	btest = btest && test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
@@ -386,7 +385,7 @@ bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	btest = btest && test_op<simd>(myblend<simd>, [](Element x1, Element x2){
+	btest = btest && test_op<simd>(simd::blend<a>, [](Element x1, Element x2){
 
 			return false;
 }, seed, vectorSize, max, "blend");
