@@ -297,7 +297,7 @@ inline
 typename std::enable_if<true, bool>::type
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	using vect_t = typename simd::vect_t;
-	unt8_t a = 3;
+	uint8_t a = 3;
 
 	std::mt19937 generator(seed);
 	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), c3(vectorSize);
