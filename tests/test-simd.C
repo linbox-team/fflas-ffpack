@@ -292,12 +292,13 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 	return res;
 }
 
-/*template<class simd, class Element, class SimdFunc, class ScalFunc> 
+template<class simd, class Element, class SimdFunc, class ScalFunc> 
 inline
 typename std::enable_if<true, bool>::type
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	using vect_t = typename simd::vect_t;
-	uint8_t s = 0x1;
+	unt8_t a = 3;
+
 	std::mt19937 generator(seed);
 	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), c3(vectorSize);
 	generate_random(a1, generator);
@@ -312,7 +313,7 @@ test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Ele
 			va2 = simd::load(a2.data()+i);
 			vb2 = simd::load(b2.data()+i);
 			vc3 = simd::load(c1.data()+i);
-			vc2 = fsimd<s>(va2, vb2);
+			vc2 = fsimd<a>(va2, vb2);
 			vc3 = simd::sub(vc3,vc2);
 			simd::store(c2.data()+i, vc2);
 			simd::store(c3.data()+i, vc3);
@@ -341,7 +342,7 @@ test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Ele
 			std::cout << std::endl << std::endl;
 		}
 	return res;
-}*/
+}
 
 template<class simd, class Element>
 bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
@@ -371,7 +372,6 @@ typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(
 template<class simd, class Element>
 bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	bool btest = true;
-	uint8_t a = 3;
 
 	btest = btest && test_op<simd>(simd::add, [](Element x1, Element x2){return x1+x2;}, seed, vectorSize, max, "add");
 	btest = btest && test_op<simd>(simd::sub, [](Element x1, Element x2){return x1-x2;}, seed, vectorSize, max, "sub");
@@ -385,7 +385,7 @@ bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	btest = btest && test_op<simd>(simd::blend<a>, [](Element x1, Element x2){
+	btest = btest && test_blend<simd>(simd::blend, [](Element x1, Element x2){
 
 			return false;
 }, seed, vectorSize, max, "blend");
