@@ -360,12 +360,15 @@ bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::lesser_eq, [](Element x1, Element x2){return (x1<=x2)?NAN:0;}, seed, vectorSize, max, "lesser_eq");
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
-	btest = btest && test_op<simd>(simd::eq], (Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
+	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
 	return btest;
 }
 
 template<typename simd>
 typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(2));}
+
+template<typename simd>
+typename simd::vect_t myblend (typename simd::vect_t x1, typename simd::vect_t x2){return simd::blend<0x3>(x1,x2);}
 
 template<class simd, class Element>
 bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
@@ -383,7 +386,10 @@ bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	btest = btest && test_blend<simd>(simd::blend, [](Element x1, Element x2){return blend(x1,x2);}, seed, vectorSize, max, "blend");
+	btest = btest && test_blend<simd>(myblend, [](Element x1, Element x2){
+
+			return false;
+}, seed, vectorSize, max, "blend");
 	// print_arity(mysra<simd>);
 	btest = btest && test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
 						   [](Element x1){
