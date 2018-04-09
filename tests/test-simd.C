@@ -292,7 +292,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 	return res;
 }
 
-template<class simd, class Element, class SimdFunc, class ScalFunc> 
+/*template<class simd, class Element, class SimdFunc, class ScalFunc> 
 inline
 typename std::enable_if<true, bool>::type
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
@@ -341,7 +341,7 @@ test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Ele
 			std::cout << std::endl << std::endl;
 		}
 	return res;
-}
+}*/
 
 template<class simd, class Element>
 bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
@@ -386,7 +386,7 @@ bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	btest = btest && test_blend<simd>(myblend<simd>, [](Element x1, Element x2){
+	btest = btest && test_op<simd>(myblend<simd>, [](Element x1, Element x2){
 
 			return false;
 }, seed, vectorSize, max, "blend");
