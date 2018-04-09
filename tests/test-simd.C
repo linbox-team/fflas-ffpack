@@ -368,7 +368,7 @@ template<typename simd>
 typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(2));}
 
 template<typename simd>
-typename simd::vect_t myblend (typename simd::vect_t x1, typename simd::vect_t x2){return simd::blend<0x3>(x1,x2);}
+typename simd::vect_t myblend (typename simd::vect_t x1, typename simd::vect_t x2){return simd::blend(x1,x2);}
 
 template<class simd, class Element>
 bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
