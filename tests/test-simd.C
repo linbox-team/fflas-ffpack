@@ -294,10 +294,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 
 template<class simd, class Element, class SimdFunc, class ScalFunc> 
 inline
-typename std::enable_if<
-(function_traits<SimdFunc>::arity != 10) &&
-!(std::is_same<typename function_traits<SimdFunc>::return_type, void>::value)
-, bool>::type
+typename std::enable_if<true, bool>::type
 test_blend(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Element max, std::string name){
 	using vect_t = typename simd::vect_t;
 	uint8_t s = 0x1;
@@ -387,7 +384,7 @@ bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
-	btest = btest && test_blend<simd>(simd::blend, [](Element x1, Element x2){return std::blend(x1,x2);}, seed, vectorSize, max, "blend");
+	btest = btest && test_blend<simd>(simd::blend, [](Element x1, Element x2){return blend(x1,x2);}, seed, vectorSize, max, "blend");
 	// print_arity(mysra<simd>);
 	btest = btest && test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
 						   [](Element x1){
