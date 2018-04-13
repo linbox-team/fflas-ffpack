@@ -292,7 +292,7 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 	return res;
 }
 
-template<class simd, class Element, class ScalFunc> 
+template<class simd, class Element> 
 inline
 //typename std::enable_if<true, bool>::type
 bool test_blend(uint64_t seed, size_t vectorSize, Element max, std::string name){
