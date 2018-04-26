@@ -408,6 +408,8 @@ extern "C" {
 	void dswap_ (const CBLAS_INT *, double *, const CBLAS_INT *, double *, const CBLAS_INT *);
     int LAPACKE_dsytrf( int matrix_layout, char uplo, int n, double* a, int lda, int* ipiv );
     int LAPACKE_dsytrf_rook( int matrix_layout, char uplo, int n, double* a, int lda, int* ipiv );
+    int LAPACKE_dsytrf_rk( int matrix_layout, char uplo, int n, double* a, int lda, double* e, int* ipiv );
+    int LAPACKE_dsytrf_aa( int matrix_layout, char uplo, int n, double* a, int lda, int* ipiv );
 
 }
 

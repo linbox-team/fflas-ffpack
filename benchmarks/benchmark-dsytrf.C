@@ -74,9 +74,10 @@ int main(int argc, char** argv) {
   Field::Element * A;
 
   TTimer chrono;
-  double time(0.0), trook(0.0);
+  double time(0.0), trook(0.0), trk(0.0), taa(0.0);
 
   std::vector<int> Piv(n,0);
+  std::vector<double> Diag(n,0.0);
   for (size_t it=0;it <= iter;++it){
 	  if (!file.empty()){
 		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
@@ -113,14 +114,53 @@ int main(int argc, char** argv) {
 	  if (it) trook+=chrono.usertime();
 	  FFLAS::fflas_delete( A);
   }
+  for (size_t it=0;it <= iter;++it){
+	  if (!file.empty()){
+		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+	  }
+	  else {
+		  A = FFLAS::fflas_new<Element>(n*n);
+		  Field::RandIter G(F);
+          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
+	  }
+
+	  chrono.clear();
+	  if (it) chrono.start();
+	  LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
+	  if (it) chrono.stop();
+
+	  if (it) taa+=chrono.usertime();
+	  FFLAS::fflas_delete( A);
+  }
+  for (size_t it=0;it <= iter;++it){
+	  if (!file.empty()){
+		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+	  }
+	  else {
+		  A = FFLAS::fflas_new<Element>(n*n);
+		  Field::RandIter G(F);
+          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
+	  }
+
+	  chrono.clear();
+	  if (it) chrono.start();
+	  LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
+	  if (it) chrono.stop();
+
+	  if (it) trk+=chrono.usertime();
+	  FFLAS::fflas_delete( A);
+  }
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cout << "DSYTRFTime: " << time / double(iter)
+	std::cout << "DSYTRFtime: " << time / double(iter)
 			  << " Gfops: " << EFFGFF(n,time,iter);
-	std::cout << ", DSYTRFROOKTime: " << trook / double(iter)
+	std::cout << ", DSYTRFROOKtime: " << trook / double(iter)
 			  << " Gfops: " << EFFGFF(n,trook,iter);
-
+	std::cout << ", DSYTRFRKtime: " << trk / double(iter)
+			  << " Gfops: " << EFFGFF(n,trk,iter);
+	std::cout << ", DSYTRFAAtime: " << taa / double(iter)
+			  << " Gfops: " << EFFGFF(n,taa,iter);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 
   return 0;
