@@ -208,6 +208,8 @@ namespace FFLAS { /*  Traits */
 	template<>
 	template<class Field>
 	struct TryLazy<Field, ModeCategories::DefaultBoundedTag>{typedef ModeCategories::LazyTag value;};
+	template<class Field>
+	struct TryLazy<Field, ModeCategories::DelayedTag>{typedef ModeCategories::LazyTag value;};
 
 	/*! FieldTrait
 	*/

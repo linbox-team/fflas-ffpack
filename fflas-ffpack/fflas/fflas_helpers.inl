@@ -135,7 +135,7 @@ namespace FFLAS {
         template<class OF>
         Operand(const Operand<OF, ModeCategories::DelayedTag>& Other): min(Other.min), max(Other.max) {}
         template<class OF>
-        Operand(const Operand<OF, ModeCategories::LazyTag>& Other): min(Other.min), max(Other.max) {}
+            Operand(const Operand<OF, ModeCategories::LazyTag>& Other): min(Other.min), max(Other.max) {std::cerr<<"COUCOU Other.max = "<<Other.max<<std::endl;}
         template<class OF>
         Operand(const Operand<OF, ModeCategories::DefaultBoundedTag>& Other): min(Other.min), max(Other.max) {}
         

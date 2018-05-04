@@ -225,12 +225,15 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H) {
+		H.ModeManager.setOutBoundsAdd();
+		std::cerr<<"in general fadd H="<<H<<std::endl;
 		if (N == lda && N == ldb && N == ldc)
 			return fadd(F,M*N,A,1,B,1,C,1);
 		typename Field::ConstElement_ptr Ai = A, Bi = B;
 		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
 			fadd(F,N,Ai,1,Bi,1,Ci,1);
+
 	}
 	
 	template <class Field>
@@ -239,9 +242,21 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
+
+		std::cerr<<"fadd lazy"<<std::endl;
+		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
+		if (MM.MaxStorableValue - MM.A.max < -MM.B.max ||
+		    MM.MaxStorableValue - MM.A.min < -MM.B.min){
+			MM.initA();
+			MM.initB();
+			    // TODO merge these freduce with the fsub (to reduce cache misses)
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(A), lda);
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), lda);
+		}
 		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
-		fadd (H.ModeManager.delayedField, M, N, A, lda, B, ldb, C, ldc, Hdf);
-		H.ModeManager.Out = Hdf.ModeManager.Out;
+		fadd (MM.delayedField, M, N, A, lda, B, ldb, C, ldc, Hdf);
+		std::cerr<<"MM = "<<MM<<std::endl;
+		MM.Out = Hdf.ModeManager.Out;
 	}
 
 	template <class Field>
@@ -259,6 +274,7 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H) {
+		H.ModeManager.setOutBoundsSub();
 		if (N == lda && N == ldb && N == ldc)
 			return fsub(F,M*N,A,1,B,1,C,1);
 		typename Field::ConstElement_ptr Ai = A, Bi = B;
@@ -273,9 +289,20 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
-		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
-		fsub (H.ModeManager.delayedField, M, N, A, lda, B, ldb, C, ldc, Hdf);
-		H.ModeManager.Out = Hdf.ModeManager.Out;
+
+		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
+		if (MM.MaxStorableValue - MM.A.max < -MM.B.min ||
+		    MM.MaxStorableValue - MM.B.max < -MM.A.min){
+			MM.initA();
+			MM.initB();
+			    // TODO merge these freduce with the fsub (to reduce cache misses)
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(A), lda);
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), lda);
+		}
+		AddSubHelper<typename associatedDelayedField<const Field>::field,
+			     ModeCategories::DefaultBoundedTag> Hdf(H);
+		fsub (MM.delayedField, M, N, A, lda, B, ldb, C, ldc, Hdf);
+		MM.Out = Hdf.ModeManager.Out;
 	}
 
 	template <class Field>
@@ -291,21 +318,33 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr B, const size_t ldb,
 		typename Field::Element_ptr C, const size_t ldc,
 		AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H){
+		H.ModeManager.setOutBoundsAdd();
 		if (N == ldb && N == ldc)
 			return faddin(F,M*N,B,1,C,1);
 		typename Field::ConstElement_ptr Bi = B;
 		typename Field::Element_ptr Ci = C;
 		for (; Bi < B+M*ldb;  Bi+=ldb, Ci+=ldc)
 			faddin(F,N,Bi,1,Ci,1);
+
 	}
 	template <class Field>
 	void faddin (const Field& F, const size_t M, const size_t N,
 		     typename Field::ConstElement_ptr B, const size_t ldb,
 		     typename Field::Element_ptr C, const size_t ldc,
 		     AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
+	
+		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
+		if (MM.MaxStorableValue - MM.A.max < -MM.B.max ||
+		    MM.MaxStorableValue - MM.A.min < -MM.B.min){
+			MM.initA();
+			MM.initB();
+			    // TODO merge these freduce with the fsub (to reduce cache misses)
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), ldb);
+			freduce (F, M, N, C, ldc);
+		}
 		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
-		faddin (H.ModeManager.delayedField, M, N, B, ldb, C, ldc, Hdf);
-		H.ModeManager.Out = Hdf.ModeManager.Out;
+		faddin (MM.delayedField, M, N, B, ldb, C, ldc, Hdf);
+		MM.Out = Hdf.ModeManager.Out;
 	}
 
 
@@ -321,12 +360,14 @@ namespace FFLAS {
 		     typename Field::ConstElement_ptr B, const size_t ldb,
 		     typename Field::Element_ptr C, const size_t ldc,
 		     AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H){
+		H.ModeManager.setOutBoundsSub();
 		if (N == ldb && N == ldc)
 			return fsubin(F,M*N,B,1,C,1);
 		typename Field::ConstElement_ptr Bi = B;
 		typename Field::Element_ptr Ci = C;
 		for (; Bi < B+M*ldb;  Bi+=ldb, Ci+=ldc)
 			fsubin(F,N,Bi,1,Ci,1);
+
 	}
 
 	template <class Field>
@@ -334,9 +375,19 @@ namespace FFLAS {
 		     typename Field::ConstElement_ptr B, const size_t ldb,
 		     typename Field::Element_ptr C, const size_t ldc,
 		     AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
+
+		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
+		if (MM.MaxStorableValue - MM.A.max < -MM.B.min ||
+		    MM.MaxStorableValue - MM.B.max < -MM.A.min){
+			MM.initA();
+			MM.initB();
+			    // TODO merge these freduce with the fsub (to reduce cache misses)
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), ldb);
+			freduce (F, M, N, C, ldc);
+		}
 		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
-		fsubin (H.ModeManager.delayedField, M, N, B, ldb, C, ldc, Hdf);
-		H.ModeManager.Out = Hdf.ModeManager.Out;
+		fsubin (MM.delayedField, M, N, B, ldb, C, ldc, Hdf);
+		MM.Out = Hdf.ModeManager.Out;
 	}
 	// C = A + a B
 	template <class Field>
@@ -372,6 +423,7 @@ namespace FFLAS {
 		typename Field::Element_ptr Ci = C;
 		for (; Ai < A+M*lda; Ai+=lda, Bi+=ldb, Ci+=ldc)
 			fadd (F, N, Ai, 1, alpha, Bi, 1, Ci, 1);
+		    //TODO update Helper.ModeManager.setOutBounds
 	}
 
 	template <class Field>

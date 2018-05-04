@@ -83,9 +83,12 @@ namespace FFLAS {
 		if (F.isMOne(betadf)) betadf = -F.one;
 
 		size_t kmax = H.ModeManager.MaxDelayedDim (betadf);
+		std::cerr<<"Checking A"<<std::endl;
 		H.ModeManager.A.check(F,ta, m,k,A,lda);
-		H.ModeManager.B.check(F,tb, k,n,B,ldb);
-		
+		std::cerr<<"Checking B"<<std::endl;
+		H.ModeManager.B.check(F,tb, k,n,B,ldb);	
+		std::cerr<<"done"<<std::endl;
+		std::cerr<<"H = "<<H<<std::endl;
 		    // TODO: to be wrapped into a reduceIfRequired method of ModeManager
 		if ((kmax <=  64 && k>= 256) || H.ModeManager.A.unfit() || H.ModeManager.B.unfit() ){
                         // Might as well reduce inputs
