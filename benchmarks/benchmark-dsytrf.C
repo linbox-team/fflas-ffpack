@@ -115,6 +115,10 @@ int main(int argc, char** argv) {
         if (it) time[it-1] = chrono.realtime();
         FFLAS::fflas_delete( A);
     }
+
+    for(size_t i=0; i<iter; ++i)
+        std::cerr << "time" << i << " : " << time[i] << std::endl;
+
     std::sort(time, time+iter);
     double mediantime = time[iter/2];
     delete[] time;
@@ -135,8 +139,8 @@ int main(int argc, char** argv) {
             std::cout << "DSYTRFRKtime: ";
     }
   
-    std::cout << mediantime / double(iter)
-              << " Gfops: " << EFFGFF(n,mediantime,iter);
+    std::cout << mediantime
+              << " Gfops: " << EFFGFF(n,mediantime,1);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 
     return 0;
