@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         FFLAS::fflas_delete( A);
     }
     std::sort(time, time+iter);
-    double meantime = time[iter/2];
+    double mediantime = time[iter/2];
     delete[] time;
 
         // -----------
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 #define CUBE(x) ((x)*(x)*(x))
     double gfops = 1.0/3.0*CUBE(double(rank)/1000.0) +n/1000.0*n/1000.0*double(rank)/1000.0  - double(rank)/1000.0*double(rank)/1000.0*n/1000;
 
-    std::cout << "Time: " << meantime << " Gfops: " << gfops / meantime;
+    std::cout << "Time: " << mediantime << " Gfops: " << gfops / mediantime;
     FFLAS::writeCommandString(std::cout, as) << std::endl;
     return 0;
 }
