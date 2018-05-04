@@ -116,9 +116,6 @@ int main(int argc, char** argv) {
         FFLAS::fflas_delete( A);
     }
 
-    for(size_t i=0; i<iter; ++i)
-        std::cerr << "time" << i << " : " << time[i] << std::endl;
-
     std::sort(time, time+iter);
     double mediantime = time[iter/2];
     delete[] time;
