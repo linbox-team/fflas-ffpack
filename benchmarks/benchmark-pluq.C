@@ -259,14 +259,14 @@ int main(int argc, char** argv) {
 		
 	}
 	std::sort(time, time+iter);
-	double meantime = time[iter/2];
+	double mediantime = time[iter/2];
 	delete[] time;
 		// -----------
 		// Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
 	double gflop =  2.0/3.0*CUBE(double(r)/1000.0) +2*m/1000.0*n/1000.0*double(r)/1000.0  - double(r)/1000.0*double(r)/1000.0*(m+n)/1000;
-	std::cout << "Time: " << meantime
-			  << " Gfops: " << gflop / meantime;
+	std::cout << "Time: " << mediantime
+			  << " Gfops: " << gflop / mediantime;
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	
 	//verification

@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
   
 	size_t iter = 3;
 	int    q    = 1009;
+	int    algo = 1;
 	size_t    n    = 2000;
 	std::string file = "";
 	
@@ -62,108 +63,83 @@ int main(int argc, char** argv) {
 		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
 		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
 		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+		{ 'a', "-a Algorithm", "Set the algorithm (0 for default, 1 for Aasen, 2 for rook, 3 for rk.",  TYPE_INT , &algo },
 		END_OF_ARGUMENTS
 	};
 
 	FFLAS::parseArguments(argc,argv,as);
 
-  typedef Givaro::Modular<double> Field;
-  typedef Field::Element Element;
+    typedef Givaro::Modular<double> Field;
+    typedef Field::Element Element;
 
-  Field F(q);
-  Field::Element * A;
+    Field F(q);
+    Field::Element * A;
 
-  TTimer chrono;
-  double time(0.0), trook(0.0), trk(0.0), taa(0.0);
+    TTimer chrono;
+    double *time=new double[iter];
 
-  std::vector<int> Piv(n,0);
-  std::vector<double> Diag(n,0.0);
-  for (size_t it=0;it <= iter;++it){
-	  if (!file.empty()){
-		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
-	  }
+    std::vector<int> Piv(n,0);
+    std::vector<double> Diag(n,0.0);
+    for (size_t it=0;it <= iter;++it){
+        if (!file.empty()){
+            FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+        }
+        else {
+            A = FFLAS::fflas_new<Element>(n*n);
+            Field::RandIter G(F);
+            PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
+        }
 
-	  chrono.clear();
-	  if (it) chrono.start();
-	  LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
-	  if (it) chrono.stop();
+        chrono.clear();
+        switch(algo) {
+            case 0:
+                if (it) chrono.start();
+                LAPACKE_dsytrf(101,'U',n,A,n,&Piv[0]);
+                if (it) chrono.stop();
+                break;
+            case 1:
+                if (it) chrono.start();
+                LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
+                if (it) chrono.stop();
+                break;
+            case 2:
+                if (it) chrono.start();
+                LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
+                if (it) chrono.stop();
+                break;
+            default:
+                if (it) chrono.start();
+                LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
+                if (it) chrono.stop();
+        }
+        if (it) time[it-1] = chrono.realtime();
+        FFLAS::fflas_delete( A);
+    }
+    std::sort(time, time+iter);
+    double mediantime = time[iter/2];
+    delete[] time;
 
-	  if (it) time+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
-  }
-  for (size_t it=0;it <= iter;++it){
-	  if (!file.empty()){
-		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
-	  }
-
-	  chrono.clear();
-	  if (it) chrono.start();
-	  LAPACKE_dsytrf_rook(101,'U',n,A,n,&Piv[0]);
-	  if (it) chrono.stop();
-
-	  if (it) trook+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
-  }
-  for (size_t it=0;it <= iter;++it){
-	  if (!file.empty()){
-		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
-	  }
-
-	  chrono.clear();
-	  if (it) chrono.start();
-	  LAPACKE_dsytrf_aa(101,'U',n,A,n,&Piv[0]);
-	  if (it) chrono.stop();
-
-	  if (it) taa+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
-  }
-  for (size_t it=0;it <= iter;++it){
-	  if (!file.empty()){
-		  FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
-	  }
-	  else {
-		  A = FFLAS::fflas_new<Element>(n*n);
-		  Field::RandIter G(F);
-          PAR_BLOCK{ FFLAS::pfrand(F,G,n,n,A,n/NBK); }
-	  }
-
-	  chrono.clear();
-	  if (it) chrono.start();
-	  LAPACKE_dsytrf_rk(101,'U',n,A,n,&Diag[0],&Piv[0]);
-	  if (it) chrono.stop();
-
-	  if (it) trk+=chrono.usertime();
-	  FFLAS::fflas_delete( A);
-  }
+        // -----------
+        // Standard output for benchmark - Alexis Breust 2014/11/14
+    switch(algo) {
+        case 0:
+            std::cout << "DSYTRFtime: ";
+            break;
+        case 1:
+            std::cout << "DSYTRFAAtime: ";
+            break;
+        case 2:
+            std::cout << "DSYTRFROOKtime: ";
+            break;
+        default:
+            std::cout << "DSYTRFRKtime: ";
+    }
   
-	// -----------
-	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cout << "DSYTRFtime: " << time / double(iter)
-			  << " Gfops: " << EFFGFF(n,time,iter);
-	std::cout << ", DSYTRFROOKtime: " << trook / double(iter)
-			  << " Gfops: " << EFFGFF(n,trook,iter);
-	std::cout << ", DSYTRFRKtime: " << trk / double(iter)
-			  << " Gfops: " << EFFGFF(n,trk,iter);
-	std::cout << ", DSYTRFAAtime: " << taa / double(iter)
-			  << " Gfops: " << EFFGFF(n,taa,iter);
+    std::cout << mediantime / double(iter)
+              << " Gfops: " << EFFGFF(n,mediantime,iter);
     FFLAS::writeCommandString(std::cout, as) << std::endl;
 
-  return 0;
+    return 0;
 }
 
 
