@@ -212,8 +212,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
 		__m256i a1 = _mm512_castsi512_si256(a); // a1 = [a0, a1, a2, a3]
 		__m256i b1 = _mm512_castsi512_si256(b); // b1 = [b0, b1, b2, b3]
-		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a0, a2, a1, a3] (0xD8 permet d'intervertir a1 et a2)
-		__m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b0, b2, b1, b3] (0xD8 permet d'intervertir b1 et b2)
+		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a0, a2, a1, a3] (0xD8 a1 <-> a2)
+		__m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b0, b2, b1, b3] (0xD8 b1 <-> b2)
 		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
 		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
 		__m512i res = _mm512_castsi256_si512(low);
@@ -231,8 +231,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
 		__m256i a1 = _mm512_extracti64x4_epi64(a,1); // a1 = [a4, a5, a6, a7]
 		__m256i b1 = _mm512_extracti64x4_epi64(b,1); // b1 = [b4, b5, b6, b7]
-		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a4, a6, a5, a7] (0xD8 permet d'intervertir a5 et a6)
-		__m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b4, b6, b5, b7] (0xD8 permet d'intervertir b5 et b6)
+		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a4, a6, a5, a7] (0xD8 a5 <-> a6)
+		__m256i b2 = _mm256_permute4x64_epi64(b1, 0xD8); // b2 = [b4, b6, b5, b7] (0xD8 b5 <-> b6)
 		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
 		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
 		__m512i res = _mm512_castsi256_si512(low);
