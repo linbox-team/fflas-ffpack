@@ -72,7 +72,6 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 *  Return [0,0,0,0,0,0,0,0]
 	 */
 	static INLINE CONST vect_t zero() { 
-		std::cout << "ALLO simd512_double zero" << std::endl;
 		return _mm512_setzero_pd(); 
 	}
 

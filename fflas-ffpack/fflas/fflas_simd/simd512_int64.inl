@@ -264,7 +264,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 		// _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
 		// We have to transform s = [d3 d2 d1 d0]_base2 to s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
 		//constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
-		return _mm512_blend_epi64(s, a, b);
+		return _mm512_mask_blend_epi64(s, a, b);
 	}
 
 	/*
