@@ -79,7 +79,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 *	Broadcast double-precision (64-bit) floating-point value x to all elements of vect_t.
 	 *  Return [x,x,x,x,x,x,x,x]
 	 */
-	static INLINE CONST vect_t set1(const scalar_t x) { std::cout << "ALLO simd512_double zero" << std::endl;return _mm512_set1_pd(x); }
+	static INLINE CONST vect_t set1(const scalar_t x) { return _mm512_set1_pd(x); }
 
 	/*
 	 *	Set packed double-precision (64-bit) floating-point elements in vect_t with the supplied values.
