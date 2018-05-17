@@ -261,7 +261,7 @@ namespace FFLAS {
 			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
 				if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 0/* 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()*/)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 			}
 		}
@@ -390,6 +390,8 @@ namespace FFLAS {
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
+
+		std::cerr<<"Winograd DelayedTag"<<std::endl;
 #ifndef NDEBUG
 		/*  check if alpha is invertible.
 		 *  XXX do it in F.isInvertible(Element&) ?
@@ -414,7 +416,7 @@ namespace FFLAS {
 			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
 				if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 0/*16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()*/)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 			}
 		}
