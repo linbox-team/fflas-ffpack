@@ -255,7 +255,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd256i_base {
 	* Return :	[a0, b0, ..., a3, b3] int32_t
 	*			[a4, b4, ..., a7, b7] int32_t
 	*/
-	static INLINE CONST void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
+	static INLINE void unpacklohi(vect_t& s1, vect_t& s2, const vect_t a, const vect_t b) {
 		using Simd256_64 = Simd256<uint64_t>;
 		vect_t a1 = Simd256_64::template shuffle<0xD8>(a); // 0xD8 = 3120 base_4
 		vect_t b1 = Simd256_64::template shuffle<0xD8>(b); // 0xD8 = 3120 base_4
