@@ -305,8 +305,8 @@ struct SimdChooser<T, true, false> // floating number
 };
 
 template <class T>
-{
 struct SimdChooser<T, true, true> // integral number
+{
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 	using value = Simd512<T>;
 #elif __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS

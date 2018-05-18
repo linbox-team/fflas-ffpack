@@ -213,7 +213,7 @@ template <> struct Simd256_impl<true, true, true, 4> : public Simd512i_base {
 					conv.t[((s>>56) & 0x0000000F)], conv.t[((s>>56) & 0x000000F0)]);
 	}
 
-// TODO UNPACK	
+
 	/*
 	* Unpack and interleave 32-bit integers from the low half of a and b within 128-bit lanes, and store the results in dst.
 	* Args   :	[a0, ..., a7] int32_t
