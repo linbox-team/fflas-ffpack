@@ -427,13 +427,13 @@ namespace FFLAS { namespace BLAS3 {
                 // T1 = B12 - B11 in X2
             AddSubHelper<Field, typename TryLazy<Field>::value> T1H(F, WHMM.B, WHMM.B);
             fsub (F, lb, cb, B12, ldb, B11, ldb, X2, ldX2, T1H);
-            // std::cerr<<std::endl<<"T1H = "<<T1H<<std::endl;
+                //std::cerr<<std::endl<<"T1H = "<<T1H<<std::endl;
 
                 // S1 = A21 + A22 in X1
             AddSubHelper<Field, typename TryLazy<Field>::value> S1H(F, WHMM.A, WHMM.A);
             fadd (F, la, ca, A21, lda, A22, lda, X1, ldX1, S1H);
             // std::cerr<<std::endl<<"S1H = "<<S1H<<std::endl;
-            std::cerr<<"Apres fadd S1H = "<<S1H<<std::endl;
+            //std::cerr<<"Apres fadd S1H = "<<S1H<<std::endl;
 
                 // P5 = alpha . S1*T1 in C22
             MMH_t H5(F, WH.AlgoManager.recLevel-1, S1H.ModeManager.Out, T1H.ModeManager.Out);
@@ -446,12 +446,13 @@ namespace FFLAS { namespace BLAS3 {
                 // S2 = S1 - A11 in X1
             AddSubHelper<Field, typename TryLazy<Field>::value> S2H(F, S1H.ModeManager.Out, WHMM.A);
             fsubin(F, la, ca, A11, lda, X1, ldX1, S2H);
-            std::cerr<<"Apres fsubin S2H = "<<S2H<<std::endl;
+                //std::cerr<<"Apres fsubin S2H = "<<S2H<<std::endl;
 
                 // P6 = alpha . S2 * T2 in C12
             MMH_t H6(F, WH.AlgoManager.recLevel-1, S2H.ModeManager.Out, T2H.ModeManager.Out);
-            std::cerr<<"Avant appel à P6: H6 = "<<H6<<std::endl;
+                //std::cerr<<"Avant appel à P6: H6 = "<<H6<<std::endl;
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
+                //std::cerr<<"Apres appel à P6: H6 = "<<H6<<std::endl;
 
                 // S4 = A12 -S2 in X1
             AddSubHelper<Field, typename TryLazy<Field>::value> S4H(F, WHMM.A, S2H.ModeManager.Out);

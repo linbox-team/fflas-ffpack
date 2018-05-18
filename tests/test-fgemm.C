@@ -361,7 +361,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 		nbit--;
 		if ( !ok )
 			    //std::cout << "\033[1;31mFAILED\033[0m "<<std::endl;
-			std::cout << "FAILED "<<std::endl;
+			std::cout << "FAILED with seed "<<seed-1<<std::endl;
 		else
 			    //std::cout << "\033[1;32mPASSED\033[0m "<<std::endl;
 			std::cout << "PASSED "<<std::endl;
@@ -417,6 +417,7 @@ int main(int argc, char** argv)
 		// ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<Givaro::GFqDom<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+		seed++;
 	} while (loop && ok);
 
 

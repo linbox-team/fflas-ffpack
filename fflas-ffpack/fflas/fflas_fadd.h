@@ -226,7 +226,6 @@ namespace FFLAS {
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H) {
 		H.ModeManager.setOutBoundsAdd();
-		std::cerr<<"in general fadd H="<<H<<std::endl;
 		if (N == lda && N == ldb && N == ldc)
 			return fadd(F,M*N,A,1,B,1,C,1);
 		typename Field::ConstElement_ptr Ai = A, Bi = B;
@@ -243,19 +242,17 @@ namespace FFLAS {
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
 
-		std::cerr<<"fadd lazy"<<std::endl;
 		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
-		if (MM.MaxStorableValue - MM.A.max < -MM.B.max ||
-		    MM.MaxStorableValue - MM.A.min < -MM.B.min){
+		if (MM.MaxStorableValue - MM.A.max < MM.B.max ||
+		    MM.MaxStorableValue - MM.A.min < MM.B.min){
 			MM.initA();
 			MM.initB();
-			    // TODO merge these freduce with the fsub (to reduce cache misses)
+			    // TODO merge these freduce with the fadd operation (to reduce cache misses)
 			freduce (F, M, N, const_cast<typename Field::Element_ptr>(A), lda);
 			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), lda);
 		}
-		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
+		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(MM.delayedField, H);
 		fadd (MM.delayedField, M, N, A, lda, B, ldb, C, ldc, Hdf);
-		std::cerr<<"MM = "<<MM<<std::endl;
 		MM.Out = Hdf.ModeManager.Out;
 	}
 
@@ -300,7 +297,7 @@ namespace FFLAS {
 			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), lda);
 		}
 		AddSubHelper<typename associatedDelayedField<const Field>::field,
-			     ModeCategories::DefaultBoundedTag> Hdf(H);
+			     ModeCategories::DefaultBoundedTag> Hdf(MM.delayedField,H);
 		fsub (MM.delayedField, M, N, A, lda, B, ldb, C, ldc, Hdf);
 		MM.Out = Hdf.ModeManager.Out;
 	}
@@ -334,15 +331,15 @@ namespace FFLAS {
 		     AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
 	
 		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
-		if (MM.MaxStorableValue - MM.A.max < -MM.B.max ||
-		    MM.MaxStorableValue - MM.A.min < -MM.B.min){
+		if (MM.MaxStorableValue - MM.A.max < MM.B.max ||
+		    MM.MaxStorableValue - MM.A.min < MM.B.min){
 			MM.initA();
 			MM.initB();
 			    // TODO merge these freduce with the fsub (to reduce cache misses)
 			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), ldb);
 			freduce (F, M, N, C, ldc);
 		}
-		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
+		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(MM.delayedField,H);
 		faddin (MM.delayedField, M, N, B, ldb, C, ldc, Hdf);
 		MM.Out = Hdf.ModeManager.Out;
 	}
@@ -385,7 +382,7 @@ namespace FFLAS {
 			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), ldb);
 			freduce (F, M, N, C, ldc);
 		}
-		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
+		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(MM.delayedField, H);
 		fsubin (MM.delayedField, M, N, B, ldb, C, ldc, Hdf);
 		MM.Out = Hdf.ModeManager.Out;
 	}
@@ -433,7 +430,7 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H){
-		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H);
+		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H.ModeManager.delayedField, H);
 		fadd (H.ModeManager.delayedField, M, N, A, lda, alpha, B, ldb, C, ldc, Hdf);
 		H.ModeManager.Out = Hdf.ModeManager.Out;
 	}

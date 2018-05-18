@@ -83,12 +83,12 @@ namespace FFLAS {
 		if (F.isMOne(betadf)) betadf = -F.one;
 
 		size_t kmax = H.ModeManager.MaxDelayedDim (betadf);
-		std::cerr<<"Checking A"<<std::endl;
+		    //std::cerr<<"Checking A"<<std::endl;
 		H.ModeManager.A.check(F,ta, m,k,A,lda);
-		std::cerr<<"Checking B"<<std::endl;
+		    //std::cerr<<"Checking B"<<std::endl;
 		H.ModeManager.B.check(F,tb, k,n,B,ldb);	
-		std::cerr<<"done"<<std::endl;
-		std::cerr<<"H = "<<H<<std::endl;
+		    //std::cerr<<"done"<<std::endl;
+		// std::cerr<<"H = "<<H<<std::endl;
 		    // TODO: to be wrapped into a reduceIfRequired method of ModeManager
 		if ((kmax <=  64 && k>= 256) || H.ModeManager.A.unfit() || H.ModeManager.B.unfit() ){
                         // Might as well reduce inputs
@@ -243,7 +243,7 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag>  Hd(F);
 		fgemm (F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,Hd);
 		H.ModeManager.setOutBoundsMM (k,alpha,beta);
-		    //std::cerr<<"After setOUtBoundsMM H="<<H<<std::endl;
+		    //std::cerr<<"After setOUtBoundsMM k = "<<k<<" H="<<H<<std::endl;
 	}
 
 	inline void fgemm (const Givaro::DoubleDomain& F,

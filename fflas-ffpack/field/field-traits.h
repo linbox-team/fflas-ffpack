@@ -205,7 +205,6 @@ namespace FFLAS { /*  Traits */
 
 	template<class Field, class Mode = typename ModeTraits<Field>::value >
 	struct TryLazy{typedef Mode value;};
-	template<>
 	template<class Field>
 	struct TryLazy<Field, ModeCategories::DefaultBoundedTag>{typedef ModeCategories::LazyTag value;};
 	template<class Field>

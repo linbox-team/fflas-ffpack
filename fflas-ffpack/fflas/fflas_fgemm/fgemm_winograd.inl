@@ -429,7 +429,6 @@ namespace FFLAS{
         size_t m2 = (m >> ww) << (ww-1) ;
         size_t n2 = (n >> ww) << (ww-1) ;
         size_t k2 = (k >> ww) << (ww-1) ;
-
         Protected::WinogradCalc (F, ta, tb, m2, n2, k2, alpha, A, lda, B, ldb, beta, C, ldc, H);
 
         size_t mr = m -2*m2;
