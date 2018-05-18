@@ -101,7 +101,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *  Return [x0,x1,x2,x3,x4,x5,x6,x7] int64_t
 	 */
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
-		return _mm512_set_epi64x(x7, x6, x5, x4, x3, x2, x1, x0);
+		return _mm512_set_epi64(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
 	/*
@@ -217,7 +217,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
 		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
 		__m512i res = _mm512_castsi256_si512(low);
-		res = _mm512_inserti64x4(res, reshigh, 1); 
+		res = _mm512_inserti64x4(res, high, 1); 
 		return res;
 	}
 
@@ -236,7 +236,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
 		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
 		__m512i res = _mm512_castsi256_si512(low);
-		res = _mm512_inserti64x4(res, reshigh, 1); 
+		res = _mm512_inserti64x4(res, high, 1); 
 		return res;
 	}
 
@@ -249,8 +249,8 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	*/
 
 	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
-		l = unpacklo(a1, b1);
-		h = unpackhi(a1, b1);
+		l = unpacklo(a, b);
+		h = unpackhi(a, b);
 	}
 
 	/*
@@ -481,7 +481,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
 		Converter ca;
 		ca.v = a;
-		return scalar_t(ca.t[0] + ca.t[1] + ca.t[2] + ca.t[3], ca.t[4], ca.t[5], ca.t[6], ca.t[7]);
+		return scalar_t(ca.t[0] + ca.t[1] + ca.t[2] + ca.t[3] + ca.t[4] + ca.t[5] + ca.t[6] + ca.t[7]);
 	}
 
 	static INLINE CONST vect_t round(const vect_t a) { return a; }
@@ -539,7 +539,7 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 	 *  Return [x0,x1,x2,x3,x4,x5,x6,x7] uint64_t
 	 */
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
-		return _mm256_set_epi64x(x7, x6, x5, x4, x3, x2, x1, x0);
+		return _mm512_set_epi64(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
 
 	/*
@@ -547,7 +547,7 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], ..., p[idx[7]]] uint64_t
 	 */
 	template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
-		return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]]);
+		return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]]);
 	}
 
 	/*
@@ -700,7 +700,7 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 #define vect_t Simd512_impl<true, true, true, 8>::vect_t
 
 // warning : may be off by 1 multiple, but we save a mul...
-INLINE CONST vect_t Simd256_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect_t y) {
+INLINE CONST vect_t Simd512_impl<true, true, true, 8>::mulhi_fast(vect_t x, vect_t y) {
 	// unsigned mulhi starts:
 	// x1 = xy_high = mulhiu_fast(x,y)
 	const vect_t mask = mask_high();

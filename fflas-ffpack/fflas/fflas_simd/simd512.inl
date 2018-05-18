@@ -48,7 +48,21 @@ struct Simd512i_base {
 	*/
 	static INLINE CONST vect_t zero() { return _mm512_setzero_si512(); }
 
+	/*
+	* Compute the bitwise OR and store the results in vect_t.
+	* Args   : [a0, ..., a255]
+	*		   [b0, ..., b255]
+	* Return : [a0 OR b0, ..., a255 OR b255]
+	*/
+	static INLINE CONST vect_t vor(const vect_t a, const vect_t b) { return _mm512_or_si512(b, a); }
 
+	/*
+	* Compute the bitwise AND and store the results in vect_t.
+	* Args   : [a0, ..., a255]
+	*		   [b0, ..., b255]
+	* Return : [a0 AND b0, ..., a255 AND b255]
+	*/
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_si512(b, a); }
 
 	
 };
