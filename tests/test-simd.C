@@ -306,7 +306,7 @@ bool test_blend(uint64_t seed, size_t vectorSize, Element max, std::string name)
 	generate_random(b1, generator);
 	a2 = a1;
 	b2 = b1;
-*/
+
 
 	//std::transform(a1.begin(), a1.end(), b1.begin(), c1.begin(), fscal);
 
@@ -345,7 +345,7 @@ bool test_blend(uint64_t seed, size_t vectorSize, Element max, std::string name)
 		}
 	return res;
 }
-
+*/
 template<class simd, class Element>
 bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 	bool btest = true;
