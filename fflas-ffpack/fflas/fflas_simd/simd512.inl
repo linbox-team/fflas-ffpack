@@ -31,9 +31,26 @@
 #define __FFLASFFPACK_simd512_INL
 
 struct Simd512fp_base {
+
+
 };
 
 struct Simd512i_base {
+
+	/*
+	* alias to 512 bit simd register
+	*/
+	using vect_t = __m512i;
+
+	/*
+	*  Return vector of type vect_t with all elements set to zero
+	*  Return [0, ...,0]
+	*/
+	static INLINE CONST vect_t zero() { return _mm512_setzero_si512(); }
+
+
+
+	
 };
 
 template <bool ArithType, bool Int, bool Signed, int Size> struct Simd512_impl;
@@ -44,5 +61,6 @@ using Simd512 =
 
 #include "simd512_float.inl"
 #include "simd512_double.inl"
+#include "simd512_int64.inl"
 
 #endif // __FFLASFFPACK_simd512_INL

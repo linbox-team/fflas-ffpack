@@ -30,7 +30,7 @@
 #define _simd512_int64_INL
 
 #ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-#error "You need AVX2 instructions to perform 512bits operations on int64_t"
+#error "You need AVX512 instructions to perform 512bits operations on int64_t"
 #endif
 
 /*
