@@ -504,7 +504,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 /*
  * Simd512 specialized for uint64_t
  */
-template <> struct Simd512_impl<true, true, false, 8> : public Simd256_impl<true, true, true, 8> {
+template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true, true, true, 8> {
 
 	/*
 	* define the scalar type corresponding to the specialization
