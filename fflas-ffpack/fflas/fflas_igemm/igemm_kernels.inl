@@ -91,7 +91,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			A_0 = simd::load( blA+0*StepA);
 			std::cerr<<"A0 = "<<A_0<<std::endl;
 			A_1 = simd::load( blA+1*StepA);
-			std::cerr<<"A1 = "<<A_0<<std::endl;
+			std::cerr<<"A1 = "<<A_1<<std::endl;
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
