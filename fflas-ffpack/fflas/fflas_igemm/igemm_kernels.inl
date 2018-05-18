@@ -82,20 +82,15 @@ namespace FFLAS { namespace details { /*  kernels */
 		prefetch(r2+simd::vect_size);
 		prefetch(r3+simd::vect_size);
 		// process the loop by (_mrx4) by (4x4) matrix mul
-		std::cerr<<"Dans igebb44:"<<std::endl;
 		for (k=0;k<pdepth;k+=4){
-			std::cerr<<"k="<<k<<std::endl;
 			vect_t A_0,A_1;
 			vect_t B_0,B_1,B_2,B_3;
 			
 			A_0 = simd::load( blA+0*StepA);
-			std::cerr<<"A0 = "<<A_0<<std::endl;
 			A_1 = simd::load( blA+1*StepA);
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
-			std::cerr<<"B0 = "<<B_0<<std::endl;
 			simd::fmaddxin(C0,A_0,B_0);
-			std::cerr<<"C0 = A0*B0+C0"<<C0<<std::endl;
 			B_2 = simd::load( blB+2*StepB);
 			simd::fmaddxin(C4,A_1,B_0); // B_0
 			B_3 = simd::load( blB+3*StepB);
