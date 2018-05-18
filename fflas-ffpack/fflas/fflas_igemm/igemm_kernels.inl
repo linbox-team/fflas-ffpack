@@ -87,9 +87,11 @@ namespace FFLAS { namespace details { /*  kernels */
 			std::cerr<<"k="<<k<<std::endl;
 			vect_t A_0,A_1;
 			vect_t B_0,B_1,B_2,B_3;
-			std::cerr<<"A0 = "<<A_0<<std::endl;
+			
 			A_0 = simd::load( blA+0*StepA);
+			std::cerr<<"A0 = "<<A_0<<std::endl;
 			A_1 = simd::load( blA+1*StepA);
+			std::cerr<<"A1 = "<<A_0<<std::endl;
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
@@ -105,6 +107,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			B_2 = simd::load( blB+6*StepB);
 			simd::fmaddxin(C3,A_0,B_3);
 			A_0 = simd::load( blA+2*StepA);
+			std::cerr<<"A2 = "<<A_0<<std::endl;
 			simd::fmaddxin(C7,A_1,B_3); // B_3
 			A_1 = simd::load( blA+3*StepA);
 			B_3 = simd::load( blB+7*StepB);
