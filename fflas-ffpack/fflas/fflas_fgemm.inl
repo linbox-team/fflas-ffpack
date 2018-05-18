@@ -391,7 +391,6 @@ namespace FFLAS {
 			return C;
 		}
 
-		std::cerr<<"Winograd DelayedTag"<<std::endl;
 #ifndef NDEBUG
 		/*  check if alpha is invertible.
 		 *  XXX do it in F.isInvertible(Element&) ?
