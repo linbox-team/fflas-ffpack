@@ -31,7 +31,12 @@
 #define __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 
 
-#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+#ifdef __FFLASPACK_HAVE_AVX512F_INSTRUCTIONS
+#define _nr 4
+#define _mr 8
+#define StepA 8
+#define StepB 8 
+#elif __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 #define _nr 4
 #define _mr 8
 #define StepA 4
