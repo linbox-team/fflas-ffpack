@@ -332,7 +332,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return : [(a0 smod 2^32)*(b0 smod 2^32), ..., (a7 smod 2^32)*(b7 smod 2^32)]	int64_t
 	 *	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	 */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm512_mul_epi32(a, b); }
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm512_mul_epu32(a, b); }
 
 	/*
 	 * Multiply packed 64-bit integers in a and b, producing intermediate 128-bit integers, and add the low 64-bits of
