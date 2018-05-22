@@ -31,7 +31,7 @@
 #define __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-#define _nr 4
+#define _nr 8 //nr and mr must be both equal or bigger than simd::vect_size
 #define _mr 8
 #define StepA 8
 #define StepB 8 
