@@ -30,8 +30,7 @@
 #ifndef __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 #define __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 
-
-#ifdef __FFLASPACK_HAVE_AVX512F_INSTRUCTIONS
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 #define _nr 4
 #define _mr 8
 #define StepA 8
