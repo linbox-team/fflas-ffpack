@@ -131,6 +131,49 @@ namespace std {
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+namespace std {
+
+	inline
+	std::ostream &operator<<(std::ostream &o, const __m256 &v) {
+		const float *vArray = (const float *)(&v);
+		o << '<';
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
+		o << ',';
+		o << vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
+		o << ',';
+		o << vArray[8] << ',' << vArray[9] << ',' << vArray[10] << ',' << vArray[11];
+		o << ',';
+		o << vArray[12] << ',' << vArray[13] << ',' << vArray[14] << ',' << vArray[15];
+		o << '>';
+		return o;
+	}
+
+	inline
+	std::ostream &operator<<(std::ostream &o, const __m256i &v) {
+		const int64_t *vArray = (const int64_t *)(&v);
+		o << '<';
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
+		o << ',';
+		o << vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
+		o << '>';
+		return o;
+	}
+
+	inline
+	std::ostream &operator<<(std::ostream &o, const __m256d &v) {
+		const double *vArray = (const double *)(&v);
+		o << '<';
+		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
+		o << ',';
+		o << vArray[4] << ',' << vArray[5] << ',' << vArray[6] << ',' << vArray[7];
+		o << '>';
+		return o;
+	}
+} // std
+
+#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+
 namespace FFLAS {
 	template <class T> struct support_simd : public std::false_type {};
 
