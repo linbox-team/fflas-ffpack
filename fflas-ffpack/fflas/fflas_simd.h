@@ -135,7 +135,7 @@ namespace std {
 namespace std {
 
 	inline
-	std::ostream &operator<<(std::ostream &o, const __m256 &v) {
+	std::ostream &operator<<(std::ostream &o, const __m512 &v) {
 		const float *vArray = (const float *)(&v);
 		o << '<';
 		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
@@ -150,7 +150,7 @@ namespace std {
 	}
 
 	inline
-	std::ostream &operator<<(std::ostream &o, const __m256i &v) {
+	std::ostream &operator<<(std::ostream &o, const __m512i &v) {
 		const int64_t *vArray = (const int64_t *)(&v);
 		o << '<';
 		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
@@ -161,7 +161,7 @@ namespace std {
 	}
 
 	inline
-	std::ostream &operator<<(std::ostream &o, const __m256d &v) {
+	std::ostream &operator<<(std::ostream &o, const __m512d &v) {
 		const double *vArray = (const double *)(&v);
 		o << '<';
 		o << vArray[0] << ',' << vArray[1] << ',' << vArray[2] << ',' << vArray[3];
