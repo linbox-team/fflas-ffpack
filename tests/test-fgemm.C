@@ -288,7 +288,7 @@ bool launch_MM_dispatch(const Field &F,
 template <class Field>
 bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw, size_t iters, bool par, size_t seed){
 	bool ok = true ;
-
+	srand(seed);
 	int nbit=(int)iters;
 	
 	while (ok &&  nbit){
@@ -317,14 +317,14 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 
 			//size_t k = 0 ;
 			//std::cout << k << "/24" << std::endl; ++k;
-		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
+//		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one,F->zero,iters,nbw, par, R);
 			//std::cout << k << "/24" << std::endl; ++k;
-		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
-		// 	//std::cout << k << "/24" << std::endl; ++k;
-		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
-		// 	//std::cout << k << "/24" << std::endl; ++k;
-		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
-		// 	//std::cout << k << "/24" << std::endl; ++k;
+//		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->zero,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+//		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->zero,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
+//		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,F->one,iters,nbw, par, R);
+			//std::cout << k << "/24" << std::endl; ++k;
 		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->one,iters,nbw, par, R);
 		// 	//std::cout << k << "/24" << std::endl; ++k;
 		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->one,iters,nbw, par, R);
@@ -333,7 +333,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 		// 	//std::cout << k << "/24" << std::endl; ++k;
 		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,F->mOne,iters,nbw, par, R);
 		//  	//std::cout << k << "/24" << std::endl; ++k;
-		// ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
+		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,F->mOne,iters,nbw, par, R);
 		// 	//std::cout << k << "/24" << std::endl; ++k;
 
 		// Element alpha,beta ;
@@ -401,7 +401,6 @@ int main(int argc, char** argv)
 	parseArguments(argc,argv,as);
 
 	bool ok = true;
-	srand(seed);
 	do{
 		// ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);

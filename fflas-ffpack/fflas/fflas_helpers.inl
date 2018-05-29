@@ -68,6 +68,10 @@ namespace FFLAS {
         template <class T>
         inline bool unfit(T x){return false;}
         template <>
+        inline bool unfit(float x){return x > int32_t(1) << FLT_MANT_DIG/2;}
+        template <>
+        inline bool unfit(double x){return x > int64_t(1) << DBL_MANT_DIG/2;}
+        template <>
         inline bool unfit(int64_t x){return (x>limits<int32_t>::max());}
         template <size_t K>
         inline bool unfit(RecInt::rint<K> x){return (x > RecInt::rint<K>(limits<RecInt::rint<K-1>>::max()));}

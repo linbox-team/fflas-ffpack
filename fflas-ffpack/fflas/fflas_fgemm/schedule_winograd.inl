@@ -450,9 +450,7 @@ namespace FFLAS { namespace BLAS3 {
 
                 // P6 = alpha . S2 * T2 in C12
             MMH_t H6(F, WH.AlgoManager.recLevel-1, S2H.ModeManager.Out, T2H.ModeManager.Out);
-                //std::cerr<<"Avant appel à P6: H6 = "<<H6<<std::endl;
             fgemm (F, ta, tb, mr, nr, kr, alpha, X1, ldX1, X2, ldX2, F.zero, C12, ldc, H6);
-                //std::cerr<<"Apres appel à P6: H6 = "<<H6<<std::endl;
 
                 // S4 = A12 -S2 in X1
             AddSubHelper<Field, typename TryLazy<Field>::value> S4H(F, WHMM.A, S2H.ModeManager.Out);
@@ -516,11 +514,12 @@ namespace FFLAS { namespace BLAS3 {
             //     freduce (F, mr, nr, C11, ldc);
             // }
             AddSubHelper<Field,typename TryLazy<Field>::value> U5H (F, H3.ModeManager.Out, U4H.ModeManager.Out);
-            // std::cerr<<"U5H = "<<U5H<<std::endl;
-            // WriteMatrix(std::cerr<<"C11 = "<<std::endl,F,mr,nr,C11,ldc);
-            // WriteMatrix(std::cerr<<"C12 = "<<std::endl,F,mr,nr,C12,ldc);
+            std::cerr<<"Avant U5H = "<<U5H<<std::endl;
+             WriteMatrix(std::cerr<<"C11 = "<<std::endl,F,mr,nr,C11,ldc);
+             WriteMatrix(std::cerr<<"C12 = "<<std::endl,F,mr,nr,C12,ldc);
             faddin (F, mr, nr, C11, ldc, C12, ldc, U5H);
-            // WriteMatrix(std::cerr<<"C12 += C11 "<<std::endl,F,mr,nr,C12,ldc);
+            std::cerr<<"Apres U5H = "<<U5H<<std::endl;
+            WriteMatrix(std::cerr<<"C12 += C11 "<<std::endl,F,mr,nr,C12,ldc);
 
                 // T4 = T2 - B21 in X2
             AddSubHelper<Field,typename TryLazy<Field>::value> T4H (F, T2H.ModeManager.Out, WHMM.B);

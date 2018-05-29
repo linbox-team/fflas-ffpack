@@ -43,6 +43,7 @@
 #include "fflas-ffpack/fflas/fflas_igemm/igemm.h"
 #endif
 
+#include "fflas-ffpack/utils/fflas_io.h"
 namespace FFLAS {
 
 	// F is a field supporting delayed reductions
@@ -110,7 +111,8 @@ namespace FFLAS {
 		if (!kmax){
 			MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::DefaultTag> HG(F,H);
 			H.ModeManager.initOut();
-			return fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
+			fgemm (F, ta, tb, m,n,k,alpha, A, lda, B, ldb, beta, C, ldc, HG);
+			return;
 		}
 
 		size_t k2 = std::min(k,kmax);
