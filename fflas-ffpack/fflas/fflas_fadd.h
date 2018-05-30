@@ -244,7 +244,7 @@ namespace FFLAS {
 
 		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
 		if (MM.MaxStorableValue - MM.A.max < MM.B.max ||
-		    MM.MaxStorableValue - MM.A.min < MM.B.min){
+		    MM.MaxStorableValue + MM.A.min < -MM.B.min){
 			MM.initA();
 			MM.initB();
 			    // TODO merge these freduce with the fadd operation (to reduce cache misses)
@@ -329,10 +329,10 @@ namespace FFLAS {
 		     typename Field::ConstElement_ptr B, const size_t ldb,
 		     typename Field::Element_ptr C, const size_t ldc,
 		     AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H) {
-	
+
 		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
 		if (MM.MaxStorableValue - MM.A.max < MM.B.max ||
-		    MM.MaxStorableValue - MM.A.min < MM.B.min){
+		    MM.MaxStorableValue + MM.A.min < -MM.B.min){
 			MM.initA();
 			MM.initB();
 			    // TODO merge these freduce with the fsub (to reduce cache misses)
@@ -404,15 +404,21 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeT,ParSeqHelper::Sequential>& H){
+		if (F.isOne(alpha)){
+			H.ModeManager.setOutBoundsAdd();
+			return fadd(F,M,N,A,lda,B,ldb,C,ldc);
+		}
+		if (F.isMOne(alpha)){
+			H.ModeManager.setOutBoundsSub();
+			return fsub(F,M,N,A,lda,B,ldb,C,ldc);
+		}
+		if (F.isZero(alpha)){
+			H.ModeManager.Out=H.ModeManager.A;
+			return fassign(F,M,N,A,lda,C,ldc);
+		}
+		H.ModeManager.setOutBoundsAddScal(alpha);
 		if (C == A && lda == ldc)
 			return faxpy(F,M,N,alpha,B,ldb,C,ldc);
-		if (F.isOne(alpha))
-			return fadd(F,M,N,A,lda,B,ldb,C,ldc);
-		if (F.isMOne(alpha))
-			return fsub(F,M,N,A,lda,B,ldb,C,ldc);
-		if (F.isZero(alpha))
-			return fassign(F,M,N,A,lda,C,ldc);
-
 		if (N == lda && N == ldb && N == ldc)
 			return fadd(F,M*N,A,1,alpha,B,1,C,1);
 
@@ -430,6 +436,16 @@ namespace FFLAS {
 		   typename Field::ConstElement_ptr B, const size_t ldb,
 		   typename Field::Element_ptr C, const size_t ldc,
 		   AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>& H){
+
+		typename AddSubHelper<Field,ModeCategories::LazyTag,ParSeqHelper::Sequential>::ModeMgr_t& MM = H.ModeManager;
+		if (MM.MaxStorableValue - alpha*MM.B.max < MM.A.max ||
+		    MM.MaxStorableValue + alpha*MM.B.min < -MM.A.min){
+			MM.initA();
+			MM.initB();
+			    // TODO merge these freduce with the fsub (to reduce cache misses)
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(A), lda);
+			freduce (F, M, N, const_cast<typename Field::Element_ptr>(B), ldb);
+		}
 		AddSubHelper<typename associatedDelayedField<const Field>::field, ModeCategories::DefaultBoundedTag> Hdf(H.ModeManager.delayedField, H);
 		fadd (H.ModeManager.delayedField, M, N, A, lda, alpha, B, ldb, C, ldc, Hdf);
 		H.ModeManager.Out = Hdf.ModeManager.Out;

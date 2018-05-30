@@ -304,6 +304,7 @@ namespace FFLAS {
 
         void setOutBoundsAdd() { Out.min = A.min+B.min; Out.max = A.max+B.max; }
         void setOutBoundsSub() { Out.min = A.min-B.max; Out.max = A.max-B.min; }
+        void setOutBoundsAddScal(const DFElt& alpha) { Out.min = A.min+alpha*B.min; Out.max = A.max+alpha*B.max; }
         
         template<class MMSrc, class MMDest>
         void updateDynPeelHelpers (const MMDest& MMModd, const MMDest& MMNodd, const  MMSrc& MMacc){
