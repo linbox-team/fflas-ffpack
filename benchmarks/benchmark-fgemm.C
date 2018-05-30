@@ -82,7 +82,8 @@ int main(int argc, char** argv) {
 
 	if (NBK==-1) NBK = t;
 //  typedef Givaro::Modular<Givaro::Integer> Field;
-  typedef Givaro::ModularBalanced<int64_t> Field;
+//  typedef Givaro::Modular<int64_t> Field;
+    typedef Givaro::Modular<double> Field;
 //	typedef Givaro::Modular<float> Field;
 //	typedef Givaro::ModularBalanced<float> Field;
 //	typedef Givaro::ModularBalanced<double> Field;

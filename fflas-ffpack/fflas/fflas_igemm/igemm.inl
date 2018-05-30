@@ -69,7 +69,7 @@ namespace FFLAS { namespace Protected {
 			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
 			    int64_t* C, size_t ldc)
 	{
-
+		    //std::cerr<<"igemm debut fonction cols = "<<cols<<std::endl;
 		using simd = Simd<int64_t> ;
 		size_t mc,kc,nc;
 		mc=rows;
@@ -114,6 +114,7 @@ namespace FFLAS { namespace Protected {
 					FFLAS::details::pack_rhs<_mr,true>(blockA, A+i2*lda+k2, lda, actual_kc, actual_mc);
 				
 				// call block*panel kernel
+//				std::cerr<<"igemm.inl avant igebp cols = "<<cols<<std::endl;
 				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
 								  , alpha
 								  , blockA, actual_kc, blockB, actual_kc
@@ -179,7 +180,6 @@ namespace FFLAS {
 			   const int64_t beta, 
                        int64_t *C, const size_t ldc)
 	{
-
 
 		if (Order == FflasColMajor)
 			Protected::igemm(TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);

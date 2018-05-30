@@ -388,7 +388,7 @@ namespace FFLAS{
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, ModeT> & H)
 	{
-		if (!m || !n ) return C;
+      		if (!m || !n ) return C;
 		if (!k){
 			    //TODO: update helper
 			fscalin(F,m,n,beta,C,ldc);
