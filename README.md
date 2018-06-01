@@ -53,7 +53,7 @@ For example on a x86_64 architecture:
  - run `./configure --with-blas-libs="-framework Accelerate"`.
 - Using BLIS
  - Configure BLIS with, say, `./configure --enable-cblas auto`.
- - run fflas/ffpack's `./configure --with-blas-libs="-lblis"`.
+ - run fflas/ffpack's `./configure --with-blas-libs="-lblis -lpthread"`.
 
 
 Then, simply run `make; make autotune; make install; make check`
