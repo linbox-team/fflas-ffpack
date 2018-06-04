@@ -30,6 +30,8 @@
 #ifndef __FFLASFFPACK_fadd_H
 #define __FFLASFFPACK_fadd_H
 
+#include "fflas-ffpack/fflas/fflas_simd.h"
+
 namespace FFLAS {
 
 	template<class T>
@@ -40,13 +42,11 @@ namespace FFLAS {
 	struct support_simd_add<float> : public std::true_type {} ;
 	template<>
 	struct support_simd_add<double> : public std::true_type {} ;
- #ifdef SIMD_INT
 	template<>
 	struct support_simd_add<int64_t> : public std::true_type {} ;
 	template<>
 	struct support_simd_add<int32_t> : public std::true_type {} ;
 
- #endif  // SIMD_INT
 
 // #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
