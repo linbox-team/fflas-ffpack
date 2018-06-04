@@ -198,8 +198,8 @@ bool launch_MM(const Field & F,
 		}
 		RandomMatrix (F, m, n, C, ldc, G);
 		fassign(F,m,n,C,ldc,D,n);
-//		WriteMatrix(std::cerr<<"A:=",F,m,k,A,lda)<<';'<<std::endl;
-//		WriteMatrix(std::cerr<<"B:=",F,k,n,B,ldb)<<';'<<std::endl;
+		//		WriteMatrix(std::cerr<<"A:=",F,m,k,A,lda)<<';'<<std::endl;
+		//WriteMatrix(std::cerr<<"B:=",F,k,n,B,ldb)<<';'<<std::endl;
 			//std::cerr<<"test-fgemm: cols = "<<n<<std::endl;
 		if (par){
 			MMHelper<Field,MMHelperAlgo::Auto, typename ModeTraits<Field>::value, ParSeqHelper::Parallel<CuttingStrategy::Recursive,StrategyParameter::ThreeDAdaptive> > WH (F, nbw);
@@ -211,7 +211,7 @@ bool launch_MM(const Field & F,
 			fgemm (F, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc,WH);
 
 		}
-//		WriteMatrix(std::cerr<<"C:=",F,m,n,C,ldc)<<';'<<std::endl;
+		//WriteMatrix(std::cerr<<"C:=",F,m,n,C,ldc)<<';'<<std::endl;
 		ok = ok && check_MM(F, D, ta, tb,m,n,k,alpha, A,lda, B,ldb, beta,C,ldc);
 
 		fflas_delete(A);
@@ -405,13 +405,13 @@ int main(int argc, char** argv)
 	bool ok = true;
 	srand(seed);
 	do{
-		// ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
+		//		 ok = ok && run_with_field<Modular<double> >(q,b,m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
 		// ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
-		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+				ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
 //		ok = ok && run_with_field<Modular<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
 //		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
 //		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
