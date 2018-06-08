@@ -57,7 +57,10 @@ int main(int argc, char** argv) {
   
 	FFLAS::parseArguments(argc,argv,as);
   
-	typedef Givaro::ModularBalanced<double> Field;
+	typedef Givaro::Modular<double> Field;
+//	typedef Givaro::Modular<float> Field;
+//	typedef Givaro::ZRing<int64_t> Field;
+//	typedef Givaro::ZRing<float> Field;
 	typedef Field::Element Element;
 	
 	Field F(q);
@@ -68,33 +71,35 @@ int main(int argc, char** argv) {
   
   
 	FFLAS::Timer chrono;
-	double time=0.0;
+	double *time=new double[iter];
+
+	A = fflas_new(F, rows, cols);
+	size_t lda = cols;
+	B = fflas_new(F, rows, cols);
+	size_t ldb = cols;
+	C = fflas_new(F, rows, cols);
+	size_t ldc = cols;
+	Field::RandIter G(F);
+	RandomMatrix (F, rows, cols, A, lda, G);
+	RandomMatrix (F, rows, cols, B, ldb, G);
   
 	for (size_t i=0;i<=iter;++i){
-		A = fflas_new(F, rows, cols);
-		size_t lda = cols;
-		B = fflas_new(F, rows, cols);
-		size_t ldb = cols;
-		C = fflas_new(F, rows, cols);
-		size_t ldc = cols;
-		Field::RandIter G(F);
-		RandomMatrix (F, rows, cols, A, lda, G);
-		RandomMatrix (F, rows, cols, B, ldb, G);
 		chrono.clear();
 		if (i) chrono.start();
 		fadd(F, rows, cols, A, lda, alpha, B, ldb, C, ldc);
-		if (i) chrono.stop();
-	
-		time+=chrono.usertime();
-		FFLAS::fflas_delete(A);
-		FFLAS::fflas_delete(B);
-		FFLAS::fflas_delete(C);
+		if (i) {chrono.stop(); time[i-1] = chrono.usertime();}
 	}
+	FFLAS::fflas_delete(A);
+	FFLAS::fflas_delete(B);
+	FFLAS::fflas_delete(C);
+	std::sort(time, time+iter);
+	double mediantime = time[iter/2];
+	delete[] time;
 
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cout << "Time: " << time / double(iter)
-			  << " Gfops: " << ((double(rows)/1000)*(double(cols)/1000))/(1000*time)* double(iter); //(n^2/1000^3)/time * iter
+	std::cout << "Time: " << mediantime
+			  << " Gfops: " << ((double(rows)/1000)*(double(cols)/1000))/(1000*mediantime); //(n^2/1000^3)/time * iter
 	FFLAS::writeCommandString(std::cout, as) << std::endl;
 	return 0;
 }
