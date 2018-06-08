@@ -93,7 +93,8 @@ int main(int argc, char** argv) {
   Field F(q);
 
   Timer chrono, TimFreivalds;
-  double time=0.0, timev=0.0;
+  double timev=0.0;
+  double *time=new double[iter];
 
   Element * A, * B, * C;
 
@@ -166,7 +167,7 @@ int main(int argc, char** argv) {
 		  }
 	      }
 		  }
-	      if (i) {chrono.stop(); time+=chrono.realtime();}
+	      if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
       }else{
 	      if(p==7){
 
@@ -189,7 +190,7 @@ int main(int argc, char** argv) {
 				  MMHelper<Field, MMHelperAlgo::WinogradPar,ModeTraits<Field>::value,ParSeqHelper::Parallel<> >  WH (F, nrec, ParSeqHelper::Parallel<>(t));
 				  fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
 			  }
-			  if (i) {chrono.stop(); time+=chrono.realtime();}
+			  if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 			  
 			  
 		      // MMHelper<Field, MMHelperAlgo::WinogradPar>
@@ -210,7 +211,7 @@ int main(int argc, char** argv) {
 			      WH (F, nbw, ParSeqHelper::Sequential());
 		      if (i) chrono.start();
 		      fgemm (F, FflasNoTrans, FflasNoTrans, m,n,k, F.one, A, k, B, n, F.zero, C,n,WH);
-		      if (i) {chrono.stop(); time+=chrono.realtime();}
+		      if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 	      }
   }
 
@@ -226,11 +227,14 @@ int main(int argc, char** argv) {
   fflas_delete( A);
   fflas_delete( B);
   fflas_delete( C);
+  std::sort(time, time+iter);
+  double mediantime = time[iter/2];
+  delete[] time;
   
 	// -----------
 	// Standard output for benchmark - Alexis Breust 2014/11/14
-	std::cout << "Time: " << time / double(iter)
-			  << " Gfops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / time * double(iter);
+	std::cout << "Time: " << mediantime
+			  << " Gfops: " << (2.*double(m)/1000.*double(n)/1000.*double(k)/1000.0) / mediantime;
 	writeCommandString(std::cout, as) << std::endl;
   
 #if __FFLASFFPACK_DEBUG
