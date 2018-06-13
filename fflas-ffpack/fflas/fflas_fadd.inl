@@ -59,7 +59,7 @@ namespace FFLAS { namespace vectorised {
 		using vect_t = typename simd::vect_t;
 
 		size_t i = 0;
-
+		
 		if (n < simd::vect_size)
 		{
 			for (; i < n ; i++)

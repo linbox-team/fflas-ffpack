@@ -57,10 +57,13 @@ int main(int argc, char** argv) {
   
 	FFLAS::parseArguments(argc,argv,as);
   
-	typedef Givaro::Modular<double> Field;
-//	typedef Givaro::Modular<float> Field;
-//	typedef Givaro::ZRing<int64_t> Field;
-//	typedef Givaro::ZRing<float> Field;
+	//	typedef Givaro::Modular<double> Field;
+	//	typedef Givaro::Modular<float> Field;
+	//	typedef Givaro::ZRing<int64_t> Field;
+	//	typedef Givaro::ZRing<float> Field;
+	//		typedef Givaro::ZRing<double> Field;
+	typedef Givaro::Modular<int64_t> Field;
+	
 	typedef Field::Element Element;
 	
 	Field F(q);

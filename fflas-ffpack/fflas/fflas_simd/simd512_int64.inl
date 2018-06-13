@@ -118,6 +118,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7]] int32_t
 	 */
 	static INLINE PURE vect_t load(const scalar_t *const p) {
+		//std::cerr<<"load simd512_int64"<<std::endl;
 		return _mm512_load_si512(reinterpret_cast<const vect_t *>(p));
 	}
 
@@ -192,7 +193,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 			   [b0, b1, b2, b3, a4, a5, a6, a7] int64_t
 	* Return : [a0, b0, a2, b2, a4, b4, a6, b6] int64_t
 	*/
-	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { return _mm512_unpacklo_epi64(a, b); }
+	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { 
+		//std::cerr<<"unpacklo_twice simd512_int64"<<std::endl;
+		return _mm512_unpacklo_epi64(a, b); }
 
 	/*
 	* Unpack and interleave 64-bit integers from the high half of a and b within 128-bit lanes, and store the results in dst.
@@ -200,7 +203,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 			   [b0, b1, b2, b3, a4, a5, a6, a7] int64_t
 	* Return : [a0, b0, a2, b2, a4, b4, a6, b6] int64_t
 	*/
-	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) { return _mm512_unpackhi_epi64(a, b); }
+	static INLINE CONST vect_t unpackhi_twice(const vect_t a, const vect_t b) {
+		//std::cerr<<"unpackhi_twice simd512_int64"<<std::endl;
+		return _mm512_unpackhi_epi64(a, b); }
 
 	/*
 	* Unpack and interleave 64-bit integers from the low half of a and b, and store the results in dst.
@@ -210,6 +215,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	*/
 
 	static INLINE CONST vect_t unpacklo(const vect_t a, const vect_t b) {
+		//std::cerr<<"unpacklo simd512_int64"<<std::endl;
 		__m256i a1 = _mm512_castsi512_si256(a); // a1 = [a0, a1, a2, a3]
 		__m256i b1 = _mm512_castsi512_si256(b); // b1 = [b0, b1, b2, b3]
 		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a0, a2, a1, a3] (0xD8 a1 <-> a2)
@@ -229,6 +235,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	*/
 
 	static INLINE CONST vect_t unpackhi(const vect_t a, const vect_t b) {
+		//std::cerr<<"unpackhi simd512_int64"<<std::endl;
 		__m256i a1 = _mm512_extracti64x4_epi64(a,1); // a1 = [a4, a5, a6, a7]
 		__m256i b1 = _mm512_extracti64x4_epi64(b,1); // b1 = [b4, b5, b6, b7]
 		__m256i a2 = _mm256_permute4x64_epi64(a1, 0xD8); // a2 = [a4, a6, a5, a7] (0xD8 a5 <-> a6)
@@ -264,6 +271,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 		// _mm_blend_epi16 is faster than _mm_blend_epi32 and require SSE4.1 instead of AVX2
 		// We have to transform s = [d3 d2 d1 d0]_base2 to s1 = [d3 d3 d2 d2 d1 d1 d0 d0]_base2
 		//constexpr uint8_t s1 = (s & 0x1) * 3 + (((s & 0x2) << 1)*3)  + (((s & 0x4) << 2)*3) + (((s & 0x8) << 3)*3);
+		//std::cerr<<"blend simd512_int64"<<std::endl;
 		return _mm512_mask_blend_epi64(s, a, b);
 	}
 
@@ -273,7 +281,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [a0+b0, a1+b1, a2+b2, a3+b3, a4+b4, a5+b5, a6+b6, a7+b7]   int64_t
 	 */
-	static INLINE CONST vect_t add(const vect_t a, const vect_t b) { return _mm512_add_epi64(a, b); }
+	static INLINE CONST vect_t add(const vect_t a, const vect_t b) {
+		return _mm512_add_epi64(a, b);
+	}
 
 	static INLINE vect_t addin(vect_t &a, const vect_t b) { return a = add(a, b); }
 
@@ -283,7 +293,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *	    	[b0, b1, b2, b3, b4, b5, b6, b7]	int64_t
 	 * Return : [a0-b0, a1-b1, a2-b2, a3-b3, a4-b4, a5-b5, a6-b6, a7-b7]  int64_t
 	 */
-	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) { return _mm512_sub_epi64(a, b); }
+	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {
+		//std::cerr<<"sub in simd512_int64"<<std::endl;
+		return _mm512_sub_epi64(a, b); }
 
 	static INLINE vect_t subin(vect_t &a, const vect_t b) { return a = sub(a, b); }
 
@@ -296,6 +308,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	 */
 	static INLINE CONST vect_t mullo(vect_t a, vect_t b) {
+		//std::cerr<<"mullo simd512_int64"<<std::endl;
 		return _mm512_mullo_epi64(a, b);
 	}
 
@@ -332,7 +345,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return : [(a0 smod 2^32)*(b0 smod 2^32), ..., (a7 smod 2^32)*(b7 smod 2^32)]	int64_t
 	 *	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	 */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { return _mm512_mul_epu32(a, b); }
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { 
+		//std::cerr<<"mulx simd512_int64"<<std::endl;
+		return _mm512_mul_epi32(a, b); }
 
 	/*
 	 * Multiply packed 64-bit integers in a and b, producing intermediate 128-bit integers, and add the low 64-bits of
@@ -342,7 +357,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *	    	[c0, c1, c2, c3, c4, c5, c6, c7]	int64_t
 	 * Return : [(a0*b0+c0) smod 2^64, ..., (a7*b7+c7) smod 2^64]	int64_t
 	 */
-	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) { return add(c, mul(a, b)); }
+	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) {
+		//std::cerr<<"COUCOU fmadd simd512_int64.inl"<<std::endl;
+		return add(c, mul(a, b)); }
 
 	static INLINE vect_t fmaddin(vect_t &c, const vect_t a, const vect_t b) { return c = fmadd(c, a, b); }
 
@@ -392,7 +409,9 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *	    	[c0, c1, c2, c3, c4, c5, c6, c7]	int64_t
 	 * Return :	[(a0*b0-c0) smod 2^64, ..., (a7*b7-c7) smod 2^64]	int64_t
 	 */
-	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) { return sub(mul(a, b), c); }
+	static INLINE CONST vect_t fmsub(const vect_t c, const vect_t a, const vect_t b) {
+		//std::cerr<<"fmsub in simd512_int64"<<std::endl;
+			return sub(mul(a, b), c); }
 
 	static INLINE vect_t fmsubin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsub(c, a, b); }
 
@@ -405,7 +424,10 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return :	[((a0 smod 2^32)*(b0 smod 2^32)-c0) smod 2^64, ...,
 	 *		 ((a7 smod 2^32)*(b7 smod 2^32)-c7) smod 2^64]	int64_t
 	 */
-	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { return sub(mulx(a, b), c); }
+	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) {
+			 
+		//std::cerr<<"fmsubx in simd512_int64"<<std::endl;
+		return sub(mulx(a, b), c); }
 
 	static INLINE vect_t fmsubxin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsubx(c, a, b); }
 
@@ -431,9 +453,11 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 (a2>b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3>b3) ? 0xFFFFFFFFFFFFFFFF : 0, ..., (a7>b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
+		//		std::cerr<<"COUCOU greater simd512_int64.inl"<<std::endl;
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
 		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(a, b), c);
+		
 		return d;
 	}
 
@@ -681,7 +705,9 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 
 	static INLINE vect_t fnmaddxin(vect_t &c, const vect_t a, const vect_t b) { return c = fnmaddx(c, a, b); }
 
-	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { return sub(mulx(a, b), c); }
+	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { 
+		//std::cerr<<"fmsubx in simd512_int64"<<std::endl;
+		return sub(mulx(a, b), c); }
 
 	static INLINE vect_t fmsubxin(vect_t &c, const vect_t a, const vect_t b) { return c = fmsubx(c, a, b); }
 

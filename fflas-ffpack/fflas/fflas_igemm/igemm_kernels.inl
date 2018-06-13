@@ -65,6 +65,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+		//		std::cerr<<"igeb44"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 		size_t k;
@@ -95,8 +96,8 @@ namespace FFLAS { namespace details { /*  kernels */
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A0 := "<<A_0<<std::endl;
-			    //std::cerr<<"B0 := "<<B_0<<std::endl;
+			//std::cerr<<"A0 := "<<A_0<<std::endl;
+			//std::cerr<<"B0 := "<<B_0<<std::endl;
 			B_2 = simd::load( blB+2*StepB);
 			simd::fmaddxin(C4,A_1,B_0); // B_0
 			B_3 = simd::load( blB+3*StepB);
@@ -254,6 +255,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+		//		std::cerr<<"igeb24"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -276,8 +278,8 @@ namespace FFLAS { namespace details { /*  kernels */
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A0 := "<<A_0<<std::endl;
-			    //std::cerr<<"B0 := "<<B_0<<std::endl;
+			// std::cerr<<"A0 := "<<A_0<<std::endl;
+			// std::cerr<<"B0 := "<<B_0<<std::endl;
 			
 			B_2 = simd::load( blB+2*StepB);
 			B_3 = simd::load( blB+3*StepB);
@@ -378,6 +380,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+		//		std::cerr<<"igeb14"<<std::endl;
 		// using simd = Simd<int64_t>;
 		// using vect_t =  typename simd::vect_t;
 
@@ -420,6 +423,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+		//		std::cerr<<"igeb41"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -471,6 +475,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+		//		std::cerr<<"igeb21"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -511,6 +516,7 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+		//		std::cerr<<"igeb11"<<std::endl;
 		// using simd = Simd<int64_t>;
 		// using vect_t =  typename simd::vect_t;
 		size_t k;

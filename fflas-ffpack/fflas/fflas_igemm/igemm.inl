@@ -99,13 +99,13 @@ namespace FFLAS { namespace Protected {
 				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
 			else
 				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2*ldb, ldb, cols, actual_kc);
-			
+
                         // For each mc x kc block of the lhs's vertical panel...
 			for(size_t i2=0; i2<rows; i2+=mc){
 
 				const size_t actual_mc = std::min(i2+mc,rows)-i2;
 
-
+				
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
 				if (tA == FflasNoTrans)

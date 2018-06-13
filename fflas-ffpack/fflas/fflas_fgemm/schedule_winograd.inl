@@ -357,7 +357,6 @@ namespace FFLAS { namespace BLAS3 {
 							  MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait> & WH
 							  )
 		{
-
 			FFLASFFPACK_check(F.isZero(beta));
 
 			typedef MMHelper<Field, MMHelperAlgo::Winograd, FieldTrait > MMH_t;
