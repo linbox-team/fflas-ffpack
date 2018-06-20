@@ -168,6 +168,7 @@ namespace FFLAS {
 		    typename Field::ConstElement_ptr B, const size_t ldb ,
 		    typename Field::Element_ptr A, const size_t lda)
 	{
+		if (!m || !n) return;
 		FFLASFFPACK_check(n<=std::min(lda,ldb));
 		// if possible, copy one big block
 		if (lda == n && ldb == n) {

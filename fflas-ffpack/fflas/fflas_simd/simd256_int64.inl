@@ -244,7 +244,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	* Return : [a0, b0, a1, b1] int64_t
 	*		   [a2, b2, a3, b3] int64_t
 	*/
-	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
+	static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
 		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
 		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		l = unpacklo_twice(a1, b1);

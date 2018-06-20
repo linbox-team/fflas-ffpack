@@ -43,6 +43,8 @@ namespace FFLAS {
 			const typename Field::Element beta,
 			typename Field::Element_ptr C, const size_t ldc){
         
+        if (!N) return C;
+        if (!K) FFLAS::fscalin(F, N,N, beta, C, ldc);
             //@TODO: write an optimized iterative basecase
         if (N==1){ // Base case
             F.mulin (*C, beta);

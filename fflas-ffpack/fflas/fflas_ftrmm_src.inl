@@ -207,7 +207,7 @@ class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRAN
 	template <class Field>
 		void delayed (const Field& F, const size_t M, const size_t N,
 			      typename Field::ConstElement_ptr A, const size_t lda,
-			      typename Field::Element_ptr B, const size_t ldb,
+			      typename Field::ConstElement_ptr B, const size_t ldb,
 			      const typename Field::Element beta,
 			      typename Field::Element_ptr C, const size_t ldc)
 	{
@@ -277,7 +277,7 @@ class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRAN
 	template <class Field>
 		void operator () (const Field& F, const size_t M, const size_t N,
 				  typename Field::ConstElement_ptr A, const size_t lda,
-				  typename Field::Element_ptr B, const size_t ldb,
+				  typename Field::ConstElement_ptr B, const size_t ldb,
 				  const typename Field::Element beta,
 				  typename Field::Element_ptr C, const size_t ldc)
 	{
@@ -352,7 +352,7 @@ class Mjoin(ftrmm, Mjoin(__FFLAS__SIDE, Mjoin(__FFLAS__UPLO, Mjoin(__FFLAS__TRAN
 	template<class Field>
 		void operator() (const Field& F, const size_t M, const size_t N,
 				 typename Field::ConstElement_ptr A, const size_t lda,
-				 typename Field::Element_ptr B, const size_t ldb,
+				 typename Field::ConstElement_ptr B, const size_t ldb,
 				 const typename Field::Element beta,
 				 typename Field::Element_ptr C, const size_t ldc)
 	{

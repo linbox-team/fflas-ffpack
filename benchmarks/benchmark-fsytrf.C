@@ -1,4 +1,4 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 
@@ -23,6 +23,10 @@
 * ========LICENCE========
 */
 
+//#define __FFPACK_FSYTRF_BC_RL
+#undef __FFPACK_FSYTRF_BC_RL
+#define __FFPACK_FSYTRF_BC_CROUT
+
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
 #include <givaro/modular.h>
@@ -37,61 +41,89 @@ using namespace std;
 
 int main(int argc, char** argv) {
   
-	size_t iter = 3;
-	int    q    = 131071;
-	size_t    n    = 1000;
-	size_t threshold = 64;
-	bool up =true;
-	std::string file = "";
+    size_t iter = 3;
+    int    q    = 131071;
+    size_t    n    = 1000;
+    size_t threshold = 64;
+    size_t rank = 500;
+    bool up =true;
+    bool rpm =true;
+    bool grp =true;
+    std::string file = "";
   
-	Argument as[] = {
-		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
-		{ 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
-		{ 'u', "-u yes/no", "Computes a UTDU (true) or LDLT decomposition (false).",  TYPE_BOOL , &up },
-		{ 'i', "-i R", "Set number of repetitions.",                     TYPE_INT , &iter },
-		{ 't', "-t T", "Set the threshold to the base case.",                     TYPE_INT , &threshold },
-		{ 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
-		END_OF_ARGUMENTS
-	};
+    Argument as[] = {
+        { 'q', "-q Q", "Set the field characteristic (-1 for random).",  TYPE_INT , &q },
+        { 'n', "-n N", "Set the dimension of the matrix.",               TYPE_INT , &n },
+        { 'u', "-u yes/no", "Computes a UTDU (true) or LDLT decomposition (false).",  TYPE_BOOL , &up },
+        { 'm', "-m yes/no", "Use the rank profile matrix revealing algorithm.", TYPE_BOOL , &rpm },
+        { 'r', "-r R", "Set the rank (for the RPM version).", TYPE_INT , &rank },
+        { 'g', "-g yes/no", "Matrix with generic rank profile (yes) or random rank profile matrix (no).", TYPE_BOOL , &grp },
+        { 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
+        { 't', "-t T", "Set the threshold to the base case.",            TYPE_INT , &threshold },
+        { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
+        END_OF_ARGUMENTS
+    };
 
-	FFLAS::parseArguments(argc,argv,as);
-	
-	typedef Givaro::ModularBalanced<double> Field;
-	typedef Field::Element Element;
-	
-	Field F(q);
-	Field::Element * A;
-	
-	FFLAS::Timer chrono;
-	double time=0.0;
-	
-	FFLAS::FFLAS_UPLO uplo = up?FFLAS::FflasUpper:FFLAS::FflasLower;
-	for (size_t i=0;i<=iter;++i){
-		if (!file.empty()){
-			FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
-		}
-		else {
-			A = FFLAS::fflas_new<Element>(n*n);
-			Field::RandIter G(F);
-			FFPACK::RandomSymmetricMatrix (F, n, true, A, n, G);
-		}
-		
-		chrono.clear();
-		if (i) chrono.start();
-		FFPACK::fsytrf (F, uplo, n, A, n, threshold);
-		if (i) chrono.stop();
-		
-		time+=chrono.usertime();
-		FFLAS::fflas_delete( A);
-	}
-  
-		// -----------
-		// Standard output for benchmark - Alexis Breust 2014/11/14
+    FFLAS::parseArguments(argc,argv,as);
+
+    rank=std::min(n,rank);
+
+    typedef Givaro::ModularBalanced<double> Field;
+    typedef Field::Element Element;
+
+    Field F(q);
+    Field::Element * A;
+    FFLAS::Timer chrono;
+
+    FFLAS::FFLAS_UPLO uplo = up?FFLAS::FflasUpper:FFLAS::FflasLower;
+    double *time=new double[iter];
+    for (size_t i=0; i<iter; i++) time[i]=0;
+    for (size_t i=0;i<=iter;++i){
+        if (!file.empty()){
+            FFLAS::ReadMatrix (file.c_str(),F,n,n,A);
+        }
+        else {
+            A = FFLAS::fflas_new<Element>(n*n);
+            Field::RandIter G(F);
+            if (grp){
+                size_t * cols = FFLAS::fflas_new<size_t>(n);
+                size_t * rows = FFLAS::fflas_new<size_t>(n);
+                for (size_t i=0; i<n; ++i)
+                    cols[i] = rows[i] = i;
+                FFPACK::RandomSymmetricMatrixWithRankandRPM (F, n, rank, A, n, rows, cols, G);
+                FFLAS::fflas_delete(cols);
+                FFLAS::fflas_delete(rows);
+            } else
+                FFPACK::RandomSymmetricMatrixWithRankandRandomRPM (F, n, rank, A, n, G);
+        }
+        size_t*P=FFLAS::fflas_new<size_t>(n);
+        if (rpm){
+                chrono.clear();
+                if (i) chrono.start();
+                FFPACK::fsytrf_RPM (F, uplo, n, A, n, P, threshold);
+                if (i) chrono.stop();
+        }else{
+            chrono.clear();
+            if (i) chrono.start();
+            FFPACK::fsytrf (F, uplo, n, A, n, threshold);
+            if (i) chrono.stop();
+        }
+        FFLAS::fflas_delete(P);
+        if (i) time[i-1]=chrono.realtime();
+        FFLAS::fflas_delete( A);
+    }
+    std::sort(time, time+iter);
+    double mediantime = time[iter/2];
+    delete[] time;
+
+        // -----------
+        // Standard output for benchmark - Alexis Breust 2014/11/14
 #define CUBE(x) ((x)*(x)*(x))
-	std::cout << "Time: " << time / double(iter)
-			  << " Gfops: " << CUBE(double(n)/1000.)/3. / time * double(iter);
-	FFLAS::writeCommandString(std::cout, as) << std::endl;
-	return 0;
+    double gfops = 1.0/3.0*CUBE(double(rank)/1000.0) +n/1000.0*n/1000.0*double(rank)/1000.0  - double(rank)/1000.0*double(rank)/1000.0*n/1000;
+
+    std::cout << "Time: " << mediantime << " Gfops: " << gfops / mediantime;
+    FFLAS::writeCommandString(std::cout, as) << std::endl;
+    return 0;
 }
 
 
