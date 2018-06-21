@@ -35,30 +35,13 @@
 #define __FFLASFFPACK_MINBLOCKCUTS ((size_t)256)
 
 namespace FFLAS {
-	// enum CuttingStrategy {
-    //     SINGLE			,
-	// 	ROW		,
-	// 	COLUMN	,
-	// 	BLOCK	,
-	// 	RECURSIVE
-	// };
-
-	// enum StrategyParameter {
-    //     FIXED		,
-	// 	THREADS		,
-	// 	GRAIN		,
-	// 	TWO_D			,
-	// 	THREE_D_INPLACE	,
-	// 	THREE_D_ADAPT	,
-	// 	TWO_D_ADAPT		,
-	// 	THREE_D
-	// };
 	namespace CuttingStrategy{
 		struct Single{};
 		struct Row{};
 		struct Column{};
 		struct Block{};
 		struct Recursive{};		
+		typedef Row RNSModulus;
 	}
 
 	namespace StrategyParameter{
@@ -99,6 +82,7 @@ namespace FFLAS {
 		};
 		struct Sequential{
 			Sequential() {}
+			Sequential(size_t nth) { assert (nth == 1); }
 			template<class Cut,class Param>
 			Sequential(Parallel<Cut,Param>& ) {}
 			friend std::ostream& operator<<(std::ostream& out, const Sequential&) {
@@ -108,6 +92,27 @@ namespace FFLAS {
 		// 	CuttingStrategy method() const { return SINGLE; }
                 // // numthreads==1 ==> a single block
 		// 	StrategyParameter strategy() const { return THREADS; }
+		};
+		template <typename H1=Sequential, typename H2=Sequential>
+		struct Compose{
+
+			Compose() : _comp1 (), _comp2 () {}
+			Compose(const Compose & other) : _comp1 (other.first_component()), _comp2 (other.second_component()) {}
+			Compose(const Sequential & S) : _comp1 (1), _comp2 (1) {}
+			Compose(size_t th1, size_t th2) : _comp1 (th1), _comp2 (th2) {}
+			Compose(const H1 & o1, const H2 & o2) : _comp1 (o1), _comp2 (o2) {}
+
+			H1 first_component () const { return _comp1; }
+			H2 second_component () const { return _comp2; }
+
+			friend std::ostream& operator<<(std::ostream& o, const Compose& c) {
+				return o << "Compose: (" << c.first_component() << ", "
+				                         << c.second_component() << ")";
+			}
+
+		private:
+			H1 _comp1;
+			H2 _comp2;
 		};
 	}
 
