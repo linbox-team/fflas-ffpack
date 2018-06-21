@@ -78,15 +78,13 @@ namespace FFLAS { namespace Protected {
 		FFLAS::details::BlockingFactor(mc,nc,kc);
 		size_t sizeA = mc*kc;
 		size_t sizeB = kc*cols;
-		size_t sizeW = simd::vect_size*kc*_nr; // store data duplicated by the number of elements fitting in vector register
 
 		// these data must be simd::alignment byte aligned
-		int64_t *blockA, *blockB, *blockW;
+		int64_t *blockA, *blockB;
 
 
 		blockA = fflas_new<int64_t>(sizeA, (Alignment)simd::alignment);
 		blockB = fflas_new<int64_t>(sizeB, (Alignment)simd::alignment);
-		blockW = fflas_new<int64_t>(sizeW, (Alignment)simd::alignment);
 
 		// For each horizontal panel of B, and corresponding vertical panel of A
 		for(size_t k2=0; k2<depth; k2+=kc){
@@ -117,14 +115,12 @@ namespace FFLAS { namespace Protected {
 				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
 								  , alpha
 								  , blockA, actual_kc, blockB, actual_kc
-								  , C+i2, ldc
-								  , blockW);
+								  , C+i2, ldc);
 			}
 		}
 
 		fflas_delete(blockA);
 		fflas_delete(blockB);
-		fflas_delete(blockW);
 	}
 
 	void igemm( const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB,

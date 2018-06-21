@@ -89,8 +89,7 @@ namespace FFLAS { namespace details {
 		    , const int64_t alpha
 		    , const int64_t* blockA, size_t lda,
 		    const int64_t* blockB, size_t ldb,
-		    int64_t* C, size_t ldc,
-		    int64_t* blockW);
+		    int64_t* C, size_t ldc);
 
 } // details
 } // FFLAS
