@@ -416,8 +416,8 @@ namespace FFLAS { namespace details { /*  kernels */
 		}
 		r0[0] = simd::get(R0, 0);
 		r1[0] = simd::get(R0, 1);
-		r2[0] = simd::get(R1, 2);
-		r3[0] = simd::get(R1, 3);
+		r2[0] = simd::get(R1, 0);
+		r3[0] = simd::get(R1, 1);
 #endif
 
 	}
