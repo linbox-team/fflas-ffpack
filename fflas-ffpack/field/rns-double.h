@@ -42,7 +42,7 @@
 #include <iterator>     // std::ostream_iterator
 
 #include <vector>
-#include <givaro/modular-double.h>
+#include <givaro/modular-floating.h>
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
 #include "givaro/modular-extended.h"
