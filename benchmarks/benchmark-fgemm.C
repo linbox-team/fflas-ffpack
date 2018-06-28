@@ -85,7 +85,8 @@ int main(int argc, char** argv) {
 //  typedef Givaro::ModularBalanced<int32_t> Field;
 //	typedef Givaro::Modular<float> Field;
 //	typedef Givaro::ModularBalanced<float> Field;
-	typedef Givaro::ModularBalanced<double> Field;
+//	typedef Givaro::ModularBalanced<double> Field;
+	typedef Givaro::ModularBalanced<int64_t> Field;
 //	typedef Givaro::Modular<Givaro::Integer> Field;
 	typedef Field::Element Element;
 
