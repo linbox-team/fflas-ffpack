@@ -40,7 +40,6 @@
 #include <givaro/givinteger.h>
 #include <givaro/givintprime.h>
 #include <givaro/givranditer.h>
-#include <random>
 
 namespace FFPACK {
 
