@@ -1,1 +1,0 @@
-./autogen.sh  --with-blas-libs="-L/local/cpernet/builds/lib -lblis -lpthread"
