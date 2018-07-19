@@ -57,7 +57,7 @@
  * @bug to be benchmarked.
  */
 #ifndef DOUBLE_TO_FLOAT_CROSSOVER
-#define DOUBLE_TO_FLOAT_CROSSOVER 0
+#define DOUBLE_TO_FLOAT_CROSSOVER 800
 #endif
 
 #include <float.h>
