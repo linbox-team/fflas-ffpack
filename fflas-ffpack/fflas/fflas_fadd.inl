@@ -285,46 +285,46 @@ namespace FFLAS { namespace vectorised {
 	}
 #else // no simd, but faster than F.init()     // CP: is this necessary? subp and addp only called when support_simd_add is defined
 
-	template<bool positive, class Element, class T1, class T2>
-	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
-	void
-	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
-	{
-		Element min = (Element)min_, max = (Element)max_;
+	// template<bool positive, class Element, class T1, class T2>
+	// // inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	// void
+	// subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
+	// {
+	// 	Element min = (Element)min_, max = (Element)max_;
 
-		size_t i = 0;
+	// 	size_t i = 0;
 
-			for (; i < n ; i++)
-			{
-				T[i] = TA[i] - TB[i];
-				if (!positive)
-					T[i] -= (T[i] > max) ? p : 0;
-				T[i] += (T[i] < min) ? p : 0;
-			}
-			return;
+	// 		for (; i < n ; i++)
+	// 		{
+	// 			T[i] = TA[i] - TB[i];
+	// 			if (!positive)
+	// 				T[i] -= (T[i] > max) ? p : 0;
+	// 			T[i] += (T[i] < min) ? p : 0;
+	// 		}
+	// 		return;
 
-	}
+	// }
 
-	template<bool positive, class Element, class T1, class T2>
-	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
-	void
-	addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
-	{
-		Element min= (Element)min_, max= (Element)max_;
+	// template<bool positive, class Element, class T1, class T2>
+	// // inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	// void
+	// addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
+	// {
+	// 	Element min= (Element)min_, max= (Element)max_;
 
-		size_t i = 0;
+	// 	size_t i = 0;
 
-		for (; i < n ; i++)
-		{
-			T[i] = TA[i] + TB[i];
-			T[i] -= (T[i] > max) ? p : 0;
-			if (!positive)
-			{
-				T[i] += (T[i] < min) ? p : 0;
-			}
-		}
-		return;
-	}
+	// 	for (; i < n ; i++)
+	// 	{
+	// 		T[i] = TA[i] + TB[i];
+	// 		T[i] -= (T[i] > max) ? p : 0;
+	// 		if (!positive)
+	// 		{
+	// 			T[i] += (T[i] < min) ? p : 0;
+	// 		}
+	// 	}
+	// 	return;
+	// }
 
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -415,7 +415,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template <class Field, bool ADD>
-	inline typename std::enable_if<FFLAS::support_simd_add<typename Field::Element>::value, void>::type
+	inline typename std::enable_if<!FFLAS::support_simd_add<typename Field::Element>::value, void>::type
 	fadd (const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
@@ -431,7 +431,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template <class Field, bool ADD>
-	inline typename std::enable_if<!FFLAS::support_simd_add<typename Field::Element>::value, void>::type
+	inline typename std::enable_if<FFLAS::support_simd_add<typename Field::Element>::value, void>::type
 	fadd (const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
@@ -439,9 +439,7 @@ namespace FFLAS { namespace details {
 	      , FieldCategories::UnparametricTag
 	     )
 	{
-		std::cerr<<"Dans fadd Unparam"<<std::endl;
 		if (inca == 1 && incb == 1 && incc == 1) {
-			std::cerr<<"Go dans vectorised::add/sub"<<std::endl;
 			if (ADD)
 				FFLAS::vectorised::add(C,A,B,N);
 			else

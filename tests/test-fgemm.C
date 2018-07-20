@@ -351,7 +351,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 			R.random(alpha);
 			R.random(beta);
 			ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,alpha,beta,iters,nbw, par, R);
-			std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		}
 			//std::cout<<std::endl;
 		nbit--;
