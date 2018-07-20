@@ -38,7 +38,7 @@ PERFPUBLISHERFILE=benchmarks-report.xml
 FFLA_BENCH =    benchmark-fgemm benchmark-wino benchmark-ftrsm  benchmark-ftrsv benchmark-ftrtri  benchmark-inverse benchmark-fsytrf benchmark-fsyrk  benchmark-lqup benchmark-pluq benchmark-charpoly benchmark-charpoly-mp benchmark-fgemm-mp benchmark-fgemv-mp benchmark-ftrsm-mp benchmark-lqup-mp benchmark-checkers benchmark-fadd-lvl2 benchmark-fdot benchmark-fgemv 
 
 BLAS_BENCH =    benchmark-sgemm$(EXEEXT) benchmark-dgemm benchmark-dtrsm
-LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf
+LAPA_BENCH =    benchmark-dtrtri benchmark-dgetri benchmark-dgetrf benchmark-dsytrf
 
 
 if FFLASFFPACK_HAVE_LAPACK
@@ -46,6 +46,7 @@ USE_LAPACK_BENCH = $(LAPA_BENCH)
 benchmark_dtrtri_SOURCES = benchmark-dtrtri.C
 benchmark_dgetri_SOURCES = benchmark-dgetri.C
 benchmark_dgetrf_SOURCES = benchmark-dgetrf.C
+benchmark_dsytrf_SOURCES = benchmark-dsytrf.C
 endif
 
 BENCHMARKS =			\

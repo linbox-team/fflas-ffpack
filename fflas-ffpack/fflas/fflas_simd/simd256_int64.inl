@@ -106,12 +106,22 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 		return _mm256_set_epi64x(x3, x2, x1, x0);
 	}
 
+	//TODO use the real gather? (e.g. with _mm256_i64gather_epi64)
+	//But cannot with this signature...
 	/*
 	 *  Gather 64-bit integer elements with indexes idx[0], ..., idx[3] from the address p in vect_t.
 	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]] int64_t
 	 */
 	template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
 		return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]);
+	}
+
+	/*
+	 *  Extract one 64-bit integer from src at index idx
+	 *  Return v[idx] int64_t
+	 */
+	static INLINE CONST scalar_t get(vect_t v, const scalar_t idx) {
+		return _mm256_extract_epi64(v, idx);
 	}
 
 	/*
@@ -244,7 +254,7 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 	* Return : [a0, b0, a1, b1] int64_t
 	*		   [a2, b2, a3, b3] int64_t
 	*/
-	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
+	static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
 		vect_t a1 = shuffle<0xD8>(a); // 0xD8 = 3120 base_4 so a -> [a0,a2,a1,a3]
 		vect_t b1 = shuffle<0xD8>(b); // 0xD8 = 3120 base_4
 		l = unpacklo_twice(a1, b1);

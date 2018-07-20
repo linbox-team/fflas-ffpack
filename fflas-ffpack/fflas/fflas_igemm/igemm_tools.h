@@ -37,9 +37,9 @@
 
 namespace FFLAS { namespace details { /*  tools */
 
-	// duplicate each entry into vector register
-	template<size_t N>
-	inline void duplicate_vect (int64_t* XX, const int64_t* X, size_t n);
+	// // duplicate each entry into vector register
+	// template<size_t N>
+	// inline void duplicate_vect (int64_t* XX, const int64_t* X, size_t n);
 
 	template<size_t k,bool transpose>
 	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols);

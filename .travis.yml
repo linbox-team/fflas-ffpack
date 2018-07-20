@@ -8,6 +8,10 @@ matrix:
       dist: trusty
       compiler: gcc
       env: COMPILER=g++-4.9
+      env: CXX=g++-4.9
+      env: CC=gcc-4.9
+      env: FC=gfortran-4.9
+
       addons:
         apt:
           sources:
@@ -23,6 +27,9 @@ matrix:
       dist: trusty
       compiler: gcc
       env: COMPILER=g++-5
+      env: CXX=g++-5
+      env: CC=gcc-5
+      env: FC=gfortran-5
       addons:
         apt:
           sources:
@@ -38,6 +45,9 @@ matrix:
       dist: trusty
       compiler: gcc
       env: COMPILER=g++-6
+      env: CXX=g++-6
+      env: CC=gcc-6
+      env: FC=gfortran-6
       # BLAS_LIBS='--with-blas-libs="-latlas -lcblas"'
       addons:
         apt:
