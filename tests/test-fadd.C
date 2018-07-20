@@ -72,7 +72,7 @@ bool test_fadd(const Field & F, size_t m, size_t k, size_t n, bool timing, uint6
 		tim += tam ;
 
 		tam.clear();tam.start();
-		//		WriteMatrix(std::cerr<<"A:=",F,m,k,A,n)<<';'<<std::endl;
+		//WriteMatrix(std::cerr<<"A:=",F,m,k,A,n)<<';'<<std::endl;
 		//WriteMatrix(std::cerr<<"B:=",F,m,k,B,n)<<';'<<std::endl;
 		FFLAS::fadd(F,m,k,A,n,B,n,C,n);
 		//WriteMatrix(std::cerr<<"C:=",F,m,k,C,n)<<';'<<std::endl;
@@ -302,7 +302,7 @@ int main(int ac, char **av) {
 	bool pass  = true ;
 	{ /*  fadd  */
 		{
-						Givaro::Modular<float> F(p) ;
+			Givaro::Modular<float> F(p) ;
 			pass = pass && test_fadd(F,m,k,n,timing,seed);
 		}
 		{

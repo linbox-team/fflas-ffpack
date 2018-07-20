@@ -245,6 +245,7 @@ namespace FFLAS { namespace vectorised {
 
 		size_t i = 0;
 
+		    // CP: is this necessary?
 		if (n < simd::vect_size)
 		{
 			for (; i < n ; i++)
@@ -282,7 +283,8 @@ namespace FFLAS { namespace vectorised {
 			T[i] = TA[i] - TB[i];
 		}
 	}
-#else // no simd, but faster than F.init()
+#else // no simd, but faster than F.init()     // CP: is this necessary? subp and addp only called when support_simd_add is defined
+
 	template<bool positive, class Element, class T1, class T2>
 	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
 	void

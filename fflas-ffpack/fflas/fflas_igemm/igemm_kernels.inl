@@ -65,7 +65,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		//		std::cerr<<"igeb44"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 		size_t k;
@@ -96,16 +95,11 @@ namespace FFLAS { namespace details { /*  kernels */
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			//std::cerr<<"A0 := "<<A_0<<std::endl;
-			//std::cerr<<"B0 := "<<B_0<<std::endl;
 			B_2 = simd::load( blB+2*StepB);
 			simd::fmaddxin(C4,A_1,B_0); // B_0
 			B_3 = simd::load( blB+3*StepB);
 			B_0 = simd::load( blB+4*StepB);
 			simd::fmaddxin(C1,A_0,B_1);
-//			std::cerr<<"A0 := "<<A_0<<std::endl;
-//			std::cerr<<"B1 := "<<B_1<<std::endl;
-			
 			simd::fmaddxin(C5,A_1,B_1); // B_1
 			B_1 = simd::load( blB+5*StepB);
 			simd::fmaddxin(C2,A_0,B_2);
@@ -113,16 +107,10 @@ namespace FFLAS { namespace details { /*  kernels */
 			B_2 = simd::load( blB+6*StepB);
 			simd::fmaddxin(C3,A_0,B_3);
 			A_0 = simd::load( blA+2*StepA);
-//			std::cerr<<"A2 := "<<A_0<<std::endl;
-//			std::cerr<<"B5 := "<<B_1<<std::endl;
-			
 			simd::fmaddxin(C7,A_1,B_3); // B_3
 			A_1 = simd::load( blA+3*StepA);
 			B_3 = simd::load( blB+7*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A2 := "<<A_0<<std::endl;
-			    //std::cerr<<"B4 := "<<B_0<<std::endl;
-
 			simd::fmaddxin(C4,A_1,B_0); // B_0
 			B_0 = simd::load( blB+8*StepB);
 			simd::fmaddxin(C1,A_0,B_1);
@@ -137,9 +125,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			A_1 = simd::load( blA+5*StepA);
 			B_3 = simd::load( blB+11*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A4 := "<<A_0<<std::endl;
-			    //std::cerr<<"B8 := "<<B_0<<std::endl;
-
 			simd::fmaddxin(C4,A_1,B_0); // B_0
 			B_0 = simd::load( blB+12*StepB);
 			simd::fmaddxin(C1,A_0,B_1);
@@ -154,9 +139,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			A_1 = simd::load( blA+7*StepA);
 			B_3 = simd::load( blB+15*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A6 := "<<A_0<<std::endl;
-			    //std::cerr<<"B12 := "<<B_0<<std::endl;
-
 			simd::fmaddxin(C4,A_1,B_0); // B_0
 			simd::fmaddxin(C1,A_0,B_1);
 			simd::fmaddxin(C5,A_1,B_1); // B_1
@@ -166,7 +148,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			simd::fmaddxin(C7,A_1,B_3); // B_3
 			blA+= 8*StepA;
 			blB+=16*StepB;
-			    //std::cerr<<"C0 := "<<C0<<std::endl;
 		}
 		// process (depth mod 4) remaining entries by  (_mrx1) by (1x4) matrix mul
 		for(;k<depth;k++){
@@ -255,7 +236,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		//		std::cerr<<"igeb24"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -278,9 +258,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			B_0 = simd::load( blB+0*StepB);
 			B_1 = simd::load( blB+1*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			// std::cerr<<"A0 := "<<A_0<<std::endl;
-			// std::cerr<<"B0 := "<<B_0<<std::endl;
-			
 			B_2 = simd::load( blB+2*StepB);
 			B_3 = simd::load( blB+3*StepB);
 			B_0 = simd::load( blB+4*StepB);
@@ -292,9 +269,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			A_0 = simd::load( blA+1*StepA);
 			B_3 = simd::load( blB+7*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A1 := "<<A_0<<std::endl;
-			    //std::cerr<<"B4 := "<<B_0<<std::endl;
-			
 			B_0 = simd::load( blB+8*StepB);
 			simd::fmaddxin(C1,A_0,B_1);
 			B_1 = simd::load( blB+9*StepB);
@@ -304,9 +278,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			A_0 = simd::load( blA+2*StepA);
 			B_3 = simd::load( blB+11*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A2 := "<<A_0<<std::endl;
-			    //std::cerr<<"B8 := "<<B_0<<std::endl;
-
 			B_0 = simd::load( blB+12*StepB);
 			simd::fmaddxin(C1,A_0,B_1);
 			B_1 = simd::load( blB+13*StepB);
@@ -316,9 +287,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			A_0 = simd::load( blA+3*StepA);
 			B_3 = simd::load( blB+15*StepB);
 			simd::fmaddxin(C0,A_0,B_0);
-			    //std::cerr<<"A3 := "<<A_0<<std::endl;
-			    //std::cerr<<"B12 := "<<B_0<<std::endl;
-
 			simd::fmaddxin(C1,A_0,B_1);
 			simd::fmaddxin(C2,A_0,B_2);
 			simd::fmaddxin(C3,A_0,B_3);
@@ -380,10 +348,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		//		std::cerr<<"igeb14"<<std::endl;
-		// using simd = Simd<int64_t>;
-		// using vect_t =  typename simd::vect_t;
-
 		size_t k;
 		int64_t *r0 = C+j*ldc+i;
 		int64_t *r1 = r0+ldc;
@@ -423,7 +387,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		//		std::cerr<<"igeb41"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -475,7 +438,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		//		std::cerr<<"igeb21"<<std::endl;
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -516,9 +478,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		//		std::cerr<<"igeb11"<<std::endl;
-		// using simd = Simd<int64_t>;
-		// using vect_t =  typename simd::vect_t;
 		size_t k;
 		int64_t *r0 = C+j*ldc+i;
 		for(k=0;k<depth;k++){
@@ -556,7 +515,6 @@ namespace FFLAS { namespace details { /*  main */
 		size_t prows,pcols,pdepth;
 		prows=(rows/_mr)*_mr;
 		pcols=(cols/_nr)*_nr;
-		    //std::cerr<<"cols = "<<cols<<" pcols = "<<pcols<<" rows = "<<rows<<" prows = "<<prows<<std::endl;
 		pdepth=(depth/4)*4;
 		// process columns by pack of _nr
 		for(j=0;j<pcols;j+=_nr){
@@ -566,7 +524,6 @@ namespace FFLAS { namespace details { /*  main */
 			for (i=0;i<prows;i+=_mr){
 				const int64_t* blA = blockA+i*lda;
 				prefetch(blA);
-				    //std::cerr<<"44 : j = "<<j<<" i = "<<i<<std::endl;
 				igebb44<K>(i, j, depth, pdepth, alpha, blA, blockW, C, ldc);
 			}
 			i=prows;
@@ -574,15 +531,11 @@ namespace FFLAS { namespace details { /*  main */
 			int rem=(int)(rows-prows);
 			while (rem >0) {
 				if (rem>=(int)simd::vect_size){
-					    //std::cerr<<"24"<<std::endl;
-					    //std::cerr<<"24 : j = "<<j<<" i = "<<i<<std::endl;
 					igebb24<K>(i  ,j,depth, pdepth, alpha , blockA+i*lda, blockW, C, ldc);
 					i+=simd::vect_size;
 					rem-=(int)simd::vect_size;
 				}
 				else{	// use blockB since no vectorization
-					//std::cerr<<"14 : j = "<<j<<" i = "<<i<<std::endl;
-					//std::cerr<<"14"<<std::endl;
 					igebb14<K>(i,j,depth, pdepth, alpha, blockA+i*lda, blockB+j*ldb, C, ldc);
 					i++;
 					rem--;
@@ -597,8 +550,6 @@ namespace FFLAS { namespace details { /*  main */
 			for (i=0;i<prows;i+=_mr){
 				const int64_t* blA = blockA+i*lda;
 				prefetch(blA);
-				    //std::cerr<<"41 : j = "<<j<<" i = "<<i<<std::endl;
-				    //std::cerr<<"41"<<std::endl;
 				igebb41<K>(i, j, depth, pdepth, alpha, blA, blockW, C, ldc);
 			}
 			i=prows;
@@ -606,15 +557,11 @@ namespace FFLAS { namespace details { /*  main */
 			int rem=(int)(rows-prows);
 			while (rem >0) {
 				if (rem>=(int)simd::vect_size){
-					    //	std::cerr<<"21 : j = "<<j<<" i = "<<i<<std::endl;
-					    //std::cerr<<"21"<<std::endl;
 					igebb21<K>(i  ,j,depth, pdepth, alpha, blockA+i*lda, blockW, C, ldc);
 					i+=simd::vect_size;
 					rem-=(int)(simd::vect_size);
 				}
 				else{   // use blockB since no vectorization
-					//std::cerr<<"11 : j = "<<j<<" i = "<<i<<std::endl;
-					//std::cerr<<"11"<<std::endl;
 					igebb11<K>(i,j,depth, pdepth, alpha, blockA+i*lda, blockB+j*ldb, C, ldc);
 					i++;
 					rem--;

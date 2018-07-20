@@ -260,7 +260,7 @@ namespace FFLAS {
 			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
 				if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 0/* 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()*/)
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value &&  16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 			}
 		}
@@ -382,8 +382,6 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::DelayedTag, ParSeqHelper::Sequential> & H)
 	{		
-
-
 		if (!m || !n) {return C;}
 
 		if (!k || F.isZero (alpha)){
@@ -415,7 +413,7 @@ namespace FFLAS {
 			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
 				if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 0/*16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()*/)
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 			}
 		}
@@ -433,9 +431,7 @@ namespace FFLAS {
 		
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
 		
-		// std::cerr<<"Sortie de fgemm Lazy C = "<<*C<<std::endl;
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
-		// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
 
 		H.initOut();
 
