@@ -73,11 +73,11 @@ bool launch_MM_dispatch(const Field &F, const int mm, const int nn, const int kk
         ldb = std::max(n,k)+(size_t)random()%ld;
         ldc = n+(size_t)random()%ld;
 #ifdef __FFLASFFPACK_DEBUG
-        std::cerr <<"q = "<<F.characteristic()<<" nw = "<<nw<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
+        std::cerr <<"q = "<<F.characteristic()<<" m,k,n = "<<m<<", "<<k<<", "<<n<<" C := "
                   <<alpha<<".A"<<((ta==FFLAS::FflasTrans)?"^T":"")
                   <<" * B"<<((tb==FFLAS::FflasTrans)?"^T":"");
         if (!F.isZero(beta))
-                cerr<<" + "<<beta<<" C";
+            std::cerr<<" + "<<beta<<" C";
 #endif
 
         typename Field::Element_ptr A, B, C;
