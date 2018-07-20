@@ -106,7 +106,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	 *  Extract one 64-bit integer from src at *_immediate_* index idx
 	 *  Return v[idx] int64_t
 	 */
-	static INLINE CONST scalar_t get(vect_t v, const scalar_t idx) {
+	static INLINE CONST scalar_t get(vect_t v, const int idx) {
 		return _mm_extract_epi64(v, idx);
 	}
 
