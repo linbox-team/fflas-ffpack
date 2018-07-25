@@ -116,14 +116,14 @@ namespace FFPACK {
 #ifdef BENCH_PERF_LQUP_MP
 		chrono.stop();
 		//t_rec+=chrono.usertime();		
-		cout<<"LUDIVINE RNS PERF:"<<endl;
-		cout<<"  ---  RNS basis size: "<<Zp.size() <<endl;
-		cout<<"  ***      init  : "<<t_init<<endl;
-		cout<<"  ***  rns  mod  : "<<t_mod<<endl;
-		cout<<"  ***  rns lqup  : "<<t_lqup<<" ( igemm="<<Zp.t_igemm<<" ftrsm="<<Zp.t_trsm<<" scal="<<Zp.t_scal
-		    <<" modp="<<Zp.t_modp<<endl;
-		cout<<"  ***  rns  rec  : "<<t_rec<<endl;
-		cout<<"  ***       mod  : "<<chrono.usertime()<<endl;
+		std::cout<<"LUDIVINE RNS PERF:"<<std::endl;
+		std::cout<<"  ---  RNS basis size: "<<Zp.size() <<std::endl;
+		std::cout<<"  ***      init  : "<<t_init<<std::endl;
+		std::cout<<"  ***  rns  mod  : "<<t_mod<<std::endl;
+		std::cout<<"  ***  rns lqup  : "<<t_lqup<<" ( igemm="<<Zp.t_igemm<<" ftrsm="<<Zp.t_trsm<<" scal="<<Zp.t_scal
+		    <<" modp="<<Zp.t_modp<<std::endl;
+		std::cout<<"  ***  rns  rec  : "<<t_rec<<std::endl;
+		std::cout<<"  ***       mod  : "<<chrono.usertime()<<std::endl;
 		
 #endif	
 		FFLAS::fflas_delete(Ap);
