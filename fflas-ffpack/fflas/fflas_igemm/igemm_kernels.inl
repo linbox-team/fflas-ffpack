@@ -30,8 +30,12 @@
 #ifndef __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 #define __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 
-
-#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+#define _nr 4 //nr and mr must be both equal or bigger than simd::vect_size
+#define _mr 16
+#define StepA 8
+#define StepB 8 
+#elif __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 #define _nr 4
 #define _mr 8
 #define StepA 4
@@ -86,6 +90,7 @@ namespace FFLAS { namespace details { /*  kernels */
 		for (k=0;k<pdepth;k+=4){
 			vect_t A_0,A_1;
 			vect_t B_0,B_1,B_2,B_3;
+			
 			A_0 = simd::load( blA+0*StepA);
 			A_1 = simd::load( blA+1*StepA);
 			B_0 = simd::set1( blB[0]);
@@ -338,7 +343,6 @@ namespace FFLAS { namespace details { /*  kernels */
 
 	}
 
-
 	template<enum number_kind K>
 	inline void igebb14(size_t i, size_t j, size_t depth, size_t pdepth
 			    , const int64_t alpha
@@ -523,8 +527,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
-		// using simd = Simd<int64_t>;
-		// using vect_t =  typename simd::vect_t;
 		size_t k;
 		int64_t *r0 = C+j*ldc+i;
 		for(k=0;k<depth;k++){

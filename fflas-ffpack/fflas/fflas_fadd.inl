@@ -59,7 +59,7 @@ namespace FFLAS { namespace vectorised {
 		using vect_t = typename simd::vect_t;
 
 		size_t i = 0;
-
+		
 		if (n < simd::vect_size)
 		{
 			for (; i < n ; i++)
@@ -190,47 +190,141 @@ namespace FFLAS { namespace vectorised {
 		}
 	}
 
-#else // no simd, but faster than F.init()
-	template<bool positive, class Element, class T1, class T2>
-	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
-	void
-	subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
+	template<class Element>
+	inline typename std::enable_if<FFLAS::support_simd_add<Element>::value, void>::type
+	add(Element * T, const Element * TA, const Element * TB,  size_t n)
 	{
-		Element min = (Element)min_, max = (Element)max_;
+		using simd = Simd<Element>;
+		using vect_t = typename simd::vect_t;
 
 		size_t i = 0;
 
+		if (n < simd::vect_size)
+		{
 			for (; i < n ; i++)
 			{
-				T[i] = TA[i] - TB[i];
-				if (!positive)
-					T[i] -= (T[i] > max) ? p : 0;
-				T[i] += (T[i] < min) ? p : 0;
+				T[i] = TA[i] + TB[i];
 			}
 			return;
+		}
 
-	}
-
-	template<bool positive, class Element, class T1, class T2>
-	// inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
-	void
-	addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
-	{
-		Element min= (Element)min_, max= (Element)max_;
-
-		size_t i = 0;
-
+		vect_t A,B,C;
+		long st = long(T)%simd::alignment;
+		if (st)
+		{ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j=static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
+			{
+				T[i] = TA[i] + TB[i];
+			}
+		}
+		FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
+		if ( (long(TA+i)%simd::alignment==0) && (long(TB+i)%simd::alignment==0))
+		{
+			// perform the loop using 256 bits SIMD
+			for (; i <= n - simd::vect_size ; i += simd::vect_size)
+			{
+				// C = simd::load(T+i);
+				A = simd::load(TA+i);
+				B = simd::load(TB+i);
+				C = simd::add(A, B);
+				simd::store(T+i, C);
+			}
+		}
+		// perform the last elt from T without SIMD
 		for (; i < n ; i++)
 		{
 			T[i] = TA[i] + TB[i];
-			T[i] -= (T[i] > max) ? p : 0;
-			if (!positive)
+		}
+	}
+	template<class Element>
+	inline typename std::enable_if<FFLAS::support_simd_add<Element>::value, void>::type
+	sub(Element * T, const Element * TA, const Element * TB,  size_t n)
+	{
+		using simd = Simd<Element>;
+		using vect_t = typename simd::vect_t;
+
+		size_t i = 0;
+
+		    // CP: is this necessary?
+		if (n < simd::vect_size)
+		{
+			for (; i < n ; i++)
 			{
-				T[i] += (T[i] < min) ? p : 0;
+				T[i] = TA[i] - TB[i];
+			}
+			return;
+		}
+
+		vect_t A,B,C;
+		long st = long(T)%simd::alignment;
+		if (st)
+		{ // the array T is not 32 byte aligned (process few elements s.t. (T+i) is 32 bytes aligned)
+			for (size_t j=static_cast<size_t>(st) ; j < simd::alignment ; j += sizeof(Element), i++)
+			{
+				T[i] = TA[i] - TB[i];
 			}
 		}
-		return;
+		FFLASFFPACK_check((long(T+i) % simd::alignment == 0));
+		if ( (long(TA+i)%simd::alignment==0) && (long(TB+i)%simd::alignment==0))
+		{
+			// perform the loop using 256 bits SIMD
+			for (; i <= n - simd::vect_size ; i += simd::vect_size)
+			{
+				// C = simd::load(T+i);
+				A = simd::load(TA+i);
+				B = simd::load(TB+i);
+				C = simd::sub(A, B);
+				simd::store(T+i, C);
+			}
+		}
+		// perform the last elt from T without SIMD
+		for (; i < n ; i++)
+		{
+			T[i] = TA[i] - TB[i];
+		}
 	}
+#else // no simd, but faster than F.init()     // CP: is this necessary? subp and addp only called when support_simd_add is defined
+
+	// template<bool positive, class Element, class T1, class T2>
+	// // inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	// void
+	// subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
+	// {
+	// 	Element min = (Element)min_, max = (Element)max_;
+
+	// 	size_t i = 0;
+
+	// 		for (; i < n ; i++)
+	// 		{
+	// 			T[i] = TA[i] - TB[i];
+	// 			if (!positive)
+	// 				T[i] -= (T[i] > max) ? p : 0;
+	// 			T[i] += (T[i] < min) ? p : 0;
+	// 		}
+	// 		return;
+
+	// }
+
+	// template<bool positive, class Element, class T1, class T2>
+	// // inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
+	// void
+	// addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
+	// {
+	// 	Element min= (Element)min_, max= (Element)max_;
+
+	// 	size_t i = 0;
+
+	// 	for (; i < n ; i++)
+	// 	{
+	// 		T[i] = TA[i] + TB[i];
+	// 		T[i] -= (T[i] > max) ? p : 0;
+	// 		if (!positive)
+	// 		{
+	// 			T[i] += (T[i] < min) ? p : 0;
+	// 		}
+	// 	}
+	// 	return;
+	// }
 
 
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
@@ -321,7 +415,7 @@ namespace FFLAS { namespace details {
 	}
 
 	template <class Field, bool ADD>
-	void
+	inline typename std::enable_if<!FFLAS::support_simd_add<typename Field::Element>::value, void>::type
 	fadd (const Field & F,  const size_t N,
 	      typename Field::ConstElement_ptr A, const size_t inca,
 	      typename Field::ConstElement_ptr B, const size_t incb,
@@ -336,9 +430,32 @@ namespace FFLAS { namespace details {
 				C[i] = A[i] - B[i];
 	}
 
+	template <class Field, bool ADD>
+	inline typename std::enable_if<FFLAS::support_simd_add<typename Field::Element>::value, void>::type
+	fadd (const Field & F,  const size_t N,
+	      typename Field::ConstElement_ptr A, const size_t inca,
+	      typename Field::ConstElement_ptr B, const size_t incb,
+	      typename Field::Element_ptr C, const size_t incc
+	      , FieldCategories::UnparametricTag
+	     )
+	{
+		if (inca == 1 && incb == 1 && incc == 1) {
+			if (ADD)
+				FFLAS::vectorised::add(C,A,B,N);
+			else
+				FFLAS::vectorised::sub(C,A,B,N);
+		} else {
+			for (size_t i=0; i<N; i++)
+				if (ADD)
+					C[i] = A[i] + B[i];
+				else
+					C[i] = A[i] - B[i];
+		}
+	}
 
 
-} // details
+
+	} // details
 } // FFLAS
 
 

@@ -69,7 +69,6 @@ namespace FFLAS { namespace Protected {
 			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
 			    int64_t* C, size_t ldc)
 	{
-
 		using simd = Simd<int64_t> ;
 		size_t mc,kc,nc;
 		mc=rows;
@@ -97,13 +96,13 @@ namespace FFLAS { namespace Protected {
 				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
 			else
 				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2*ldb, ldb, cols, actual_kc);
-			
+
                         // For each mc x kc block of the lhs's vertical panel...
 			for(size_t i2=0; i2<rows; i2+=mc){
 
 				const size_t actual_mc = std::min(i2+mc,rows)-i2;
 
-
+				
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
 				if (tA == FflasNoTrans)
@@ -175,7 +174,6 @@ namespace FFLAS {
 			   const int64_t beta, 
                        int64_t *C, const size_t ldc)
 	{
-
 
 		if (Order == FflasColMajor)
 			Protected::igemm(TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);
