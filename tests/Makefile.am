@@ -65,6 +65,7 @@ BASIC_TESTS =               \
 		test-maxdelayeddim \
 		test-solve \
 		test-fgemv \
+		test-nullspace \
 		regression-check
 
 if FFLASFFPACK_PRECOMPILED
@@ -72,7 +73,7 @@ LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
 
-INTERFACE_TESTS= test-interfaces-c 
+INTERFACE_TESTS= test-interfaces-c
 test_interfaces_c_CFLAGS = ${DEFAULT_CFLAGS}  -I$(top_srcdir) $(PRECOMPILE_FLAGS)
 test_interfaces_c_LDADD = \
 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas_c.la \
@@ -88,8 +89,7 @@ NOT_A_TEST =  \
 		test-frobenius         \
 		test-fgesv             \
 		test-invert            \
-		test-sparse            \
-		test-nullspace
+		test-sparse
 
 INFINITE_TEST= \
 		testeur_fgemm          \
@@ -146,7 +146,7 @@ test_ftrtri_SOURCES            = test-ftrtri.C
 #  test_krylov_elim_SOURCES       = test-krylov-elim.C
 #  test_fgesv_SOURCES             = test-fgesv.C
 #  test_frobenius_SOURCES         = test-frobenius.C
-#  test_nullspace_SOURCES         = test-nullspace.C
+test_nullspace_SOURCES = test-nullspace.C
 test_fdot_SOURCES = test-fdot.C
 test_fadd_SOURCES = test-fadd.C
 test_fscal_SOURCES = test-fscal.C
