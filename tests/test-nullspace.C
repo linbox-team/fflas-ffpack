@@ -179,7 +179,7 @@ int main(int argc, char** argv)
                      {'m', "-m M", "Set the row dimension of the matrix.", TYPE_INT, &m},
                      {'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT, &n},
                      {'r', "-r R", "Set the rank.", TYPE_INT, &r},
-                     {'i', "-i R", "Set number of iterations.", TYPE_INT, &iters},
+                     {'i', "-i I", "Set number of iterations.", TYPE_INT, &iters},
                      {'s', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed},
                      {'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL, &loop},
                      {'f', "-f file", "Set input file", TYPE_STR, &file},
@@ -192,10 +192,10 @@ int main(int argc, char** argv)
     }
 
     srand(seed);
-    std::cout << "With seed: " << seed << std::endl;
 
     bool ok = true;
     do {
+        auto lastKnownSeed = seed;
         ok = ok && run_with_field<Givaro::Modular<float>>(q, b, m, n, r, iters, file, seed);
         ok = ok && run_with_field<Givaro::Modular<double>>(q, b, m, n, r, iters, file, seed);
         ok = ok && run_with_field<Givaro::Modular<int32_t>>(q, b, m, n, r, iters, file, seed);
@@ -206,6 +206,7 @@ int main(int argc, char** argv)
         ok = ok && run_with_field<Givaro::ModularBalanced<int64_t>>(q, b, m, n, r, iters, file, seed);
         ok = ok && run_with_field<Givaro::Modular<Givaro::Integer>>(q, 5, m / 6, n / 6, r / 6, iters, file, seed);
         ok = ok && run_with_field<Givaro::Modular<Givaro::Integer>>(q, (b ? b : 512), m / 6, n / 6, r / 6, iters, file, seed);
+        if (!ok) std::cerr << "Failed with seed: " << lastKnownSeed << std::endl;
     } while (loop && ok);
 
     return !ok;
