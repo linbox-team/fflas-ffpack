@@ -15,6 +15,7 @@ build-aux
 *status
 *cache
 *aux
+.vscode
 config.h
 config.h.in
 config.status
@@ -86,6 +87,7 @@ tests/test-fsyrk
 tests/test-fsytrf
 tests/test-lu
 tests/test-multifile
+tests/test-nullspace
 tests/test-rankprofiles
 tests/test-bini-p
 tests/test-charpoly-check
