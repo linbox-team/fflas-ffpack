@@ -40,7 +40,7 @@ namespace FFLAS{
         FflasMaple    = 5, // Maple input
         FflasSageMath = 6  // SageMath input
     };
-    
+
 	template<class Field>
     std::ostream& WriteMatrix (std::ostream& c, const Field& F, size_t m, size_t n,
                                typename Field::ConstElement_ptr A, size_t lda,
@@ -102,6 +102,11 @@ namespace FFLAS{
                 break;
 			}
             case FflasSMS:{
+				// Ignore comments (starting with %)
+				while (ifs.peek() == '%') {
+					ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				}
+
                 ifs >> m;
                 ifs >> n;
                 size_t i,j;
@@ -275,7 +280,7 @@ namespace FFLAS{
 		}
 		return c ;
     }
-    
+
 	/**
 		 * @brief WriteMatrix: write a matrix to a file
 		 * @param matrix_file: file name
@@ -320,7 +325,7 @@ namespace FFLAS{
 		c<<"]"<<std::endl;
 	return c;
 }
-    
+
 } //namespace FFLAS
 
 #endif //__FFLAS_IO_H
