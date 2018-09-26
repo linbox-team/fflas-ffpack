@@ -474,8 +474,7 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * Return : [round(a0), round(a1), round(a2), round(a3), round(a4), round(a5), round(a6), round(a7)]
 	 */
 	static INLINE CONST vect_t round(const vect_t a) {
-		int i = 0;
-		return _mm512_roundscale_pd(a, i);
+		return _mm512_roundscale_pd(a, 0);
 	}
 
 	/*
