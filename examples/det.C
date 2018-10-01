@@ -28,6 +28,8 @@
 /**
  * This example computes the determinant of a matrix
  * over a defined finite field.
+ *
+ * Outputs the determinant.
  */
 int main(int argc, char** argv)
 {
@@ -46,10 +48,9 @@ int main(int argc, char** argv)
     double* A;
     size_t m, n;
     FFLAS::ReadMatrix(file.c_str(), F, m, n, A);
-    std::cout << "Input matrix is " << m << "x" << n << std::endl;
 
     double d = FFPACK::Det(F, m, n, A, n);
-    std::cout << "Det is " << d << std::endl;
+    std::cout << d << std::endl;
 
     FFLAS::fflas_delete(A);
 
