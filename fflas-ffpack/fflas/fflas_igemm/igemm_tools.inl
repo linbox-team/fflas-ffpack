@@ -34,46 +34,6 @@
 
 namespace FFLAS { namespace details {
 
-	// template<>
-	// inline void duplicate_vect<2>(int64_t* XX, const int64_t* X, size_t n)
-	// {
-	// 	int64_t *p=XX;
-	// 	for(size_t i=0;i<n;i++){
-	// 		p[0]=X[i];
-	// 		p[1]=X[i];
-	// 		p+=2;
-	// 	}
-	// }
-
-	// template<>
-	// inline void duplicate_vect<4>(int64_t* XX, const int64_t* X, size_t n)
-	// {
-	// 	int64_t *p=XX;
-	// 	for(size_t i=0;i<n;i++){
-	// 		p[0]=X[i];
-	// 		p[1]=X[i];
-	// 		p[2]=X[i];
-	// 		p[3]=X[i];
-	// 		p+=4;
-	// 	}
-	// }
-
-	// template<>
-	// inline void duplicate_vect<8>(int64_t* XX, const int64_t* X, size_t n)
-	// {
-	// 	int64_t *p=XX;
-	// 	for(size_t i=0;i<n;i++){
-	// 		p[0]=X[i];
-	// 		p[1]=X[i];
-	// 		p[2]=X[i];
-	// 		p[3]=X[i];
-	// 		p[4]=X[i];
-	// 		p[5]=X[i];
-	// 		p[6]=X[i];
-	// 		p[7]=X[i];
-	// 		p+=8;
-	// 	}
-	// }
 
 	// store each rows x k submatrices of Rhs in row major mode
 	// if k does not divide cols, the remaining column are not packed

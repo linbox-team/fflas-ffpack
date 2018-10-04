@@ -103,6 +103,13 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3, const scalar_t x4, const scalar_t x5, const scalar_t x6, const scalar_t x7) {
 		return _mm512_set_epi64(x7, x6, x5, x4, x3, x2, x1, x0);
 	}
+	/*
+	 *  Set packed 64-bit integers in dst with the supplied values, and padd with 0s
+	 *  Return [x0,x1,x2,x3,0,0,0,0] int64_t
+	 */
+	static INLINE CONST vect_t set(const scalar_t x0, const scalar_t x1, const scalar_t x2, const scalar_t x3) {
+		return _mm512_set_epi64(scalar_t(0), scalar_t(0), scalar_t(0), scalar_t(0), x3, x2, x1, x0);
+	}
 
 	/*
 	 *  Gather 64-bit integer elements with indexes idx[0], ..., idx[7] from the address p in vect_t.
