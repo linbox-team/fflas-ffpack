@@ -387,10 +387,19 @@ namespace FFLAS { namespace details { /*  kernels */
 			blA++;
 			blB+=4;
 		}
+  #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+		int64_t r[8];
+		    //simd::maskstore<uint8_t(0x0F)>(r, R0);
+		*r0=r[0];
+		*r1=r[1];
+		*r2=r[2];
+		*r3=r[3];
+  #else
 		r0[0]     = simd::get(R0, 0);
 		r1[0]     = simd::get(R0, 1);
 		r2[0]     = simd::get(R0, 2);
 		r3[0]     = simd::get(R0, 3);
+  #endif
 #elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 		vect_t R0,R1;
 		R0 = simd::set(r0[0], r1[0]);

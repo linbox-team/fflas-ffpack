@@ -147,6 +147,16 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	}
 
 	/*
+	 * Store 512-bits of integer data from a into memory following mask.
+	 * p must be aligned on a 64-byte boundary or a general-protection exception will be generated.
+	 */
+	template<uint8_t k>
+    static INLINE void maskstore(scalar_t *p, vect_t v) {
+        _mm512_mask_store_epi64(p, k, v);
+    }
+
+
+	/*
 	 * Store 512-bits of integer data from a into memory.
 	 * p does not need to be aligned on any particular boundary.
 	 */
@@ -365,7 +375,6 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return : [(a0*b0+c0) smod 2^64, ..., (a7*b7+c7) smod 2^64]	int64_t
 	 */
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) {
-		//std::cerr<<"COUCOU fmadd simd512_int64.inl"<<std::endl;
 		return add(c, mul(a, b)); }
 
 	static INLINE vect_t fmaddin(vect_t &c, const vect_t a, const vect_t b) { return c = fmadd(c, a, b); }
@@ -583,7 +592,7 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 
 	/*
 	 * Load 512-bits of unsigned integer data from memory into dst.
-	 * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
+	 * p must be aligned on a 64-byte boundary or a general-protection exception will be generated.
 	 * Return [p[0],p[1],p[2],p[3], ..., p[7]] uint64_t
 	 */
 	static INLINE PURE vect_t load(const scalar_t *const p) {
@@ -601,11 +610,19 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 
 	/*
 	 * Store 512-bits of unsigned integer data from a into memory.
-	 * p must be aligned on a 32-byte boundary or a general-protection exception will be generated.
+	 * p must be aligned on a 64-byte boundary or a general-protection exception will be generated.
 	 */
 	static INLINE void store(scalar_t *p, vect_t v) {
 		_mm512_store_si512(reinterpret_cast<vect_t *>(p), v);
 	}
+
+	/* Store 512-bits of integer data from a into memory following mask.
+	 * p must be aligned on a 64-byte boundary or a general-protection exception will be generated.
+	 */
+	template<uint8_t k>
+    static INLINE void maskstore(scalar_t *p, vect_t v) {
+        _mm512_mask_store_epi64(p, k, v);
+    }
 
 	/*
 	 * Store 512-bits of unsigned integer data from a into memory.

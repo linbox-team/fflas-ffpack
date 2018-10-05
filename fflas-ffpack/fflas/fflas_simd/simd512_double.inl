@@ -226,7 +226,6 @@ template <> struct Simd512_impl<true, false, true, 8> : public Simd512fp_base {
 	 * Return : [a0-b0, a1-b1, a2-b2, a3-b3, a4-b4, a5-b5, a6-b6, a7-b7]
 	 */
 	static INLINE CONST vect_t sub(const vect_t a, const vect_t b) {
-		std::cerr<<"sub simd512_double"<<std::endl;
 		return _mm512_sub_pd(a, b); }
 
 	static INLINE CONST vect_t subin(vect_t &a, const vect_t b) { return a = sub(a, b); }
