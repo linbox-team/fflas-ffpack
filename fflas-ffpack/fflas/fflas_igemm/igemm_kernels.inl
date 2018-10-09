@@ -354,6 +354,39 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+
+#if defined( __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS) or (not defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS))
+		    // Note: as long as _nr is harcoded to _nr=4, no way to vectorize gebb14 with simd512
+		size_t k;
+		int64_t *r0 = C+j*ldc+i;
+		int64_t *r1 = r0+ldc;
+		int64_t *r2 = r1+ldc;
+		int64_t *r3 = r2+ldc;
+		if (K == number_kind::one)
+			for(k=0;k<depth;k++){
+				r0[0]+=blA[k]*blB[0];
+				r1[0]+=blA[k]*blB[1];
+				r2[0]+=blA[k]*blB[2];
+				r3[0]+=blA[k]*blB[3];
+				blB+=4;
+			}
+		if ( K == number_kind::mone)
+			for(k=0;k<depth;k++){
+				r0[0]-=blA[k]*blB[0];
+				r1[0]-=blA[k]*blB[1];
+				r2[0]-=blA[k]*blB[2];
+				r3[0]-=blA[k]*blB[3];
+				blB+=4;
+			}
+		if ( K == number_kind::other)
+			for(k=0;k<depth;k++){
+				r0[0]+=alpha*blA[k]*blB[0];
+				r1[0]+=alpha*blA[k]*blB[1];
+				r2[0]+=alpha*blA[k]*blB[2];
+				r3[0]+=alpha*blA[k]*blB[3];
+				blB+=4;
+			}
+#else
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -362,10 +395,10 @@ namespace FFLAS { namespace details { /*  kernels */
 		int64_t *r1 = r0+ldc;
 		int64_t *r2 = r1+ldc;
 		int64_t *r3 = r2+ldc;
-#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 		vect_t R0;
-		    //R0 = simd::load (r0); // requires _nr=simd::vect_size
-		R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
+		R0 = simd::load (r0); // requires _nr=simd::vect_size
+//		R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
 		for(k=0;k<depth;k++){
 			vect_t A0;
 			vect_t B0;
@@ -387,20 +420,11 @@ namespace FFLAS { namespace details { /*  kernels */
 			blA++;
 			blB+=4;
 		}
-  #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-		int64_t r[8];
-		    //simd::maskstore<uint8_t(0x0F)>(r, R0);
-		*r0=r[0];
-		*r1=r[1];
-		*r2=r[2];
-		*r3=r[3];
-  #else
 		r0[0]     = simd::get(R0, 0);
 		r1[0]     = simd::get(R0, 1);
 		r2[0]     = simd::get(R0, 2);
 		r3[0]     = simd::get(R0, 3);
-  #endif
-#elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
+#else
 		vect_t R0,R1;
 		R0 = simd::set(r0[0], r1[0]);
 		R1 = simd::set(r2[0], r3[0]);
@@ -437,7 +461,7 @@ namespace FFLAS { namespace details { /*  kernels */
 		r2[0] = simd::get(R1, 0);
 		r3[0] = simd::get(R1, 1);
 #endif
-
+#endif
 	}
 
 

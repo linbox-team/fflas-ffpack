@@ -73,28 +73,28 @@ namespace FFLAS { namespace details {
 	template<size_t k, bool transpose>
 	void pack_lhs(int64_t* XX, const int64_t* X, size_t ldx, size_t rows, size_t cols)
 	{
-		using simd = Simd<int64_t> ;
+		    //using simd = Simd<int64_t> ;
 		size_t p=0;
 		size_t rows_by_k=(rows/k)*k;
 		// pack rows by group of k
 		for(size_t i=0;i<rows_by_k;i+=k)
 			for(size_t j=0;j<cols;j++) {
-				// for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
-				FFLASFFPACK_check(k%simd::vect_size == 0);
+				for (size_t l=0;l<k;l++,p++) XX[p]=X[i+l+j*ldx];
+				    //FFLASFFPACK_check(k%simd::vect_size == 0);
 				//! @bug this is fassign
-				for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
-					simd::store(&XX[p],simd::loadu(&X[i+l+j*ldx]));
-				}
+				// for (size_t l=0;l<k;l+= simd::vect_size, p+=simd::vect_size){
+				// 	simd::store(&XX[p],simd::loadu(&X[i+l+j*ldx]));
+				// }
 			}
 		// the remaining rows are packed by group of StepA (if possible)
 		if (!transpose) {
 			if (rows-rows_by_k>=StepA){
 				for(size_t j=0;j<cols;j++) {
-					// for (size_t l=0;l<StepA;l++,p++) XX[p]=X[rows_by_k+l+j*ldx];
-					FFLASFFPACK_check(StepA%simd::vect_size == 0);
-					for (size_t l=0;l<StepA;l+=simd::vect_size,p+=simd::vect_size){
-						simd::store(&XX[p],simd::loadu(&X[rows_by_k+l+j*ldx]));
-					}
+					for (size_t l=0;l<StepA;l++,p++) XX[p]=X[rows_by_k+l+j*ldx];
+					// FFLASFFPACK_check(StepA%simd::vect_size == 0);
+					// for (size_t l=0;l<StepA;l+=simd::vect_size,p+=simd::vect_size){
+					// 	simd::store(&XX[p],simd::loadu(&X[rows_by_k+l+j*ldx]));
+					// }
 				}
 				rows_by_k+=StepA;
 			}
