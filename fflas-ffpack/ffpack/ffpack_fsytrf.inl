@@ -582,6 +582,7 @@ namespace FFPACK {
 	inline bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 								typename Field::Element_ptr A, const size_t lda,
 								typename Field::Element_ptr Dinv, const size_t incDinv,
+                                FFLAS::ParSeqHelper::Sequential seq,
 								size_t threshold){
 
 		// if (N==1){
@@ -611,7 +612,7 @@ namespace FFPACK {
 			typename Field::Element_ptr A22 = A + N1*(lda+1);
 
 				// A1 = U1^T x D1^-1 x U1
-			if (!fsytrf_nonunit (F, UpLo, N1, A, lda, Dinv, incDinv, threshold)) return false;
+			if (!fsytrf_nonunit (F, UpLo, N1, A, lda, Dinv, incDinv, seq, threshold)) return false;
 
 				// A12 <- U1^-T x A12
 			FFLAS::ftrsm (F, side, UpLo, FFLAS::FflasTrans, FFLAS::FflasNonUnit, Arows, Acols, F.one, A, lda, A12, lda);
@@ -620,19 +621,75 @@ namespace FFPACK {
 			FFLAS::fsyrk (F, UpLo, trans, N2, N1, F.mOne, A12, lda, A, lda+1, F.one, A22, lda);
 
 				// A22 = U2^T x D2^-1 x U2
-			if (!fsytrf_nonunit (F, UpLo, N2, A22, lda, Dinv+N1, incDinv, threshold)) return false;
+			if (!fsytrf_nonunit (F, UpLo, N2, A22, lda, Dinv+N1, incDinv, seq, threshold)) return false;
 			return true;
 		}
 	}
-	
+
+    template <class Field, class Cut, class Param>
+	inline bool fsytrf_nonunit (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+								typename Field::Element_ptr A, const size_t lda,
+								typename Field::Element_ptr Dinv, const size_t incDinv,
+                                FFLAS::ParSeqHelper::Parallel<Cut,Param> par,
+								size_t threshold){
+
+		// if (N==1){
+		// 	if (F.isZero(*A))
+		// 		return false;
+		// 	else{
+		// 		return true;
+		// 	}
+		if (N <= threshold)
+#ifdef __FFPACK_FSYTRF_BC_RL
+			return fsytrf_BC_RL (F, UpLo, N, A, lda, Dinv, incDinv);
+#elif defined __FFPACK_FSYTRF_BC_CROUT
+			return fsytrf_BC_Crout (F, UpLo, N, A, lda, Dinv, incDinv);
+#else
+			return fsytrf_BC_RL (F, UpLo, N, A, lda, Dinv, incDinv);
+#endif
+		else {
+			size_t N1 = N>>1;
+			size_t N2 = N-N1;
+			size_t Arows, Acols;
+			FFLAS::FFLAS_TRANSPOSE trans;
+			FFLAS::FFLAS_SIDE side;
+			if (UpLo==FFLAS::FflasUpper){side = FFLAS::FflasLeft; Arows = N1; Acols = N2;trans=FFLAS::FflasTrans;}
+			else{side = FFLAS::FflasRight; Arows = N2; Acols = N1;trans=FFLAS::FflasNoTrans;}
+				// Comments written for the UpLo = FflasUpper case
+			typename Field::Element_ptr A12 = A + N1*((UpLo==FFLAS::FflasUpper)?1:lda);
+			typename Field::Element_ptr A22 = A + N1*(lda+1);
+
+				// A1 = U1^T x D1^-1 x U1
+			if (!fsytrf_nonunit (F, UpLo, N1, A, lda, Dinv, incDinv, par, threshold)) return false;
+
+
+                // A12 <- U1^-T x A12
+            FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> trsmPSH (par.numthreads());
+            FFLAS::ftrsm (F, side, UpLo, FFLAS::FflasTrans, FFLAS::FflasNonUnit, Arows, Acols, F.one, A, lda, A12, lda, trsmPSH );
+
+                // A22 <- A22 - A12^T x D1 x A12 and A12 <- A12
+            FFLAS::fsyrk (F, UpLo, trans, N2, N1, F.mOne, A12, lda, A, lda+1, F.one, A22, lda, par);
+
+                // A22 = U2^T x D2^-1 x U2
+            if (!fsytrf_nonunit (F, UpLo, N2, A22, lda, Dinv+N1, incDinv, par, threshold)) return false;
+			return true;
+		}
+	}
+
+    template <class Field>
+	bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+				 typename Field::Element_ptr A, const size_t lda,
+				 const size_t threshold){
+        return fsytrf(F, UpLo, N, A, lda, FFLAS::ParSeqHelper::Sequential(), threshold);
+    }
+
 	template <class Field>
 	inline bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
 						typename Field::Element_ptr A, const size_t lda,
+                        const FFLAS::ParSeqHelper::Sequential seq,
 						size_t threshold){
 		typename Field::Element_ptr Dinv = FFLAS::fflas_new(F,N);
-		bool success = fsytrf_nonunit (F, UpLo, N, A, lda, Dinv, 1, threshold);
-		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit A = "<<std::endl,F,N,N,A, lda);
-		// FFLAS::WriteMatrix(std::cerr<<"After fsytrf_nonunit Dinv = "<<std::endl,F,1,N,Dinv, 1);
+		bool success = fsytrf_nonunit (F, UpLo, N, A, lda, Dinv, 1, seq, threshold);
 		if (!success) return false;
 		size_t incA = (UpLo==FFLAS::FflasUpper) ? 1 : lda;
 		for (size_t i=0; i<N; i++)
@@ -641,6 +698,20 @@ namespace FFPACK {
 		return true;
 	}
 
+	template <class Field, class Cut, class Param>
+	inline bool fsytrf (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
+						typename Field::Element_ptr A, const size_t lda,
+                        const FFLAS::ParSeqHelper::Parallel<Cut,Param> par,
+						size_t threshold){
+		typename Field::Element_ptr Dinv = FFLAS::fflas_new(F,N);
+		bool success = fsytrf_nonunit (F, UpLo, N, A, lda, Dinv, 1, par, threshold);
+		if (!success) return false;
+		size_t incA = (UpLo==FFLAS::FflasUpper) ? 1 : lda;
+		for (size_t i=0; i<N; i++)
+			FFLAS::fscalin (F, N-i-1, Dinv[i], A+i*(lda+1)+incA, incA);
+		FFLAS::fflas_delete(Dinv);
+		return true;
+	}
 	template <class Field>
 	inline size_t fsytrf_RPM (const Field& F, const FFLAS::FFLAS_UPLO UpLo, const size_t N,
                             typename Field::Element_ptr A, const size_t lda,
