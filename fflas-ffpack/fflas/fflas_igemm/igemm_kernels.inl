@@ -31,18 +31,22 @@
 #define __FFLASFFPACK_fflas_igemm_igemm_kernels_INL
 
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-#define _nr 4 //nr and mr must be both equal or bigger than simd::vect_size
+// Warning, _nr=4 is hardcoded in most routines below. Any other value  set here will cause failure.
+#define _nr 4 //nr and mr must be both multiples of simd::vect_size
 #define _mr 16
+#define _dr 4
 #define StepA 8
 #define StepB 8 
 #elif __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
 #define _nr 4
 #define _mr 8
+#define _dr 4
 #define StepA 4
 #define StepB 4
 #elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 #define _nr 4
 #define _mr 4
+#define _dr 4
 #define StepA 2
 #define StepB 2
 #else
@@ -87,7 +91,7 @@ namespace FFLAS { namespace details { /*  kernels */
 		prefetch(r2+simd::vect_size);
 		prefetch(r3+simd::vect_size);
 		// process the loop by (_mrx4) by (4x4) matrix mul
-		for (k=0;k<pdepth;k+=4){
+		for (k=0;k<pdepth;k+=_dr){
 			vect_t A_0,A_1;
 			vect_t B_0,B_1,B_2,B_3;
 			
@@ -312,8 +316,6 @@ namespace FFLAS { namespace details { /*  kernels */
 			blB+=4;
 		}
 		vect_t R0, R1, R2, R3;
-		vect_t A_0 ;
-		A_0 = simd::set1(alpha);
 		R0 = simd::loadu( r0);
 		R1 = simd::loadu( r1);
 		R2 = simd::loadu( r2);
@@ -331,6 +333,8 @@ namespace FFLAS { namespace details { /*  kernels */
 			simd::subin(R3,C3);
 		}
 		if ( K == number_kind::other) {
+			vect_t A_0 ;
+			A_0 = simd::set1(alpha);
 			simd::fmaddxin(R0,A_0,C0);
 			simd::fmaddxin(R1,A_0,C1);
 			simd::fmaddxin(R2,A_0,C2);
@@ -350,6 +354,39 @@ namespace FFLAS { namespace details { /*  kernels */
 			    , int64_t* C, size_t ldc
 			   )
 	{
+
+#if defined( __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS) or (not defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS) and not defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS))
+		    // Note: as long as _nr is harcoded to _nr=4, no way to vectorize gebb14 with simd512
+		size_t k;
+		int64_t *r0 = C+j*ldc+i;
+		int64_t *r1 = r0+ldc;
+		int64_t *r2 = r1+ldc;
+		int64_t *r3 = r2+ldc;
+		if (K == number_kind::one)
+			for(k=0;k<depth;k++){
+				r0[0]+=blA[k]*blB[0];
+				r1[0]+=blA[k]*blB[1];
+				r2[0]+=blA[k]*blB[2];
+				r3[0]+=blA[k]*blB[3];
+				blB+=4;
+			}
+		if ( K == number_kind::mone)
+			for(k=0;k<depth;k++){
+				r0[0]-=blA[k]*blB[0];
+				r1[0]-=blA[k]*blB[1];
+				r2[0]-=blA[k]*blB[2];
+				r3[0]-=blA[k]*blB[3];
+				blB+=4;
+			}
+		if ( K == number_kind::other)
+			for(k=0;k<depth;k++){
+				r0[0]+=alpha*blA[k]*blB[0];
+				r1[0]+=alpha*blA[k]*blB[1];
+				r2[0]+=alpha*blA[k]*blB[2];
+				r3[0]+=alpha*blA[k]*blB[3];
+				blB+=4;
+			}
+#else
 		using simd = Simd<int64_t>;
 		using vect_t =  typename simd::vect_t;
 
@@ -358,8 +395,9 @@ namespace FFLAS { namespace details { /*  kernels */
 		int64_t *r1 = r0+ldc;
 		int64_t *r2 = r1+ldc;
 		int64_t *r3 = r2+ldc;
-#ifdef __FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS
+#if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 		vect_t R0;
+		//		R0 = simd::load (r0); // requires _nr=simd::vect_size
 		R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
 		for(k=0;k<depth;k++){
 			vect_t A0;
@@ -386,7 +424,7 @@ namespace FFLAS { namespace details { /*  kernels */
 		r1[0]     = simd::get(R0, 1);
 		r2[0]     = simd::get(R0, 2);
 		r3[0]     = simd::get(R0, 3);
-#elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS) or defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
+#else
 		vect_t R0,R1;
 		R0 = simd::set(r0[0], r1[0]);
 		R1 = simd::set(r2[0], r3[0]);
@@ -423,7 +461,7 @@ namespace FFLAS { namespace details { /*  kernels */
 		r2[0] = simd::get(R1, 0);
 		r3[0] = simd::get(R1, 1);
 #endif
-
+#endif
 	}
 
 
@@ -460,8 +498,6 @@ namespace FFLAS { namespace details { /*  kernels */
 		vect_t R0, R4;
 		R0 = simd::loadu( r0);
 		R4 = simd::loadu( r4);
-		vect_t A_0 ;
-		A_0 = simd::set1(alpha);
 		if (K == number_kind::one) {
 			simd::addin(R0,C0);
 			simd::addin(R4,C4);
@@ -471,6 +507,8 @@ namespace FFLAS { namespace details { /*  kernels */
 			simd::subin(R4,C4);
 		}
 		if (K == number_kind::other) {
+			vect_t A_0 ;
+			A_0 = simd::set1(alpha);
 			simd::fmaddxin(R0,A_0,C0);
 			simd::fmaddxin(R4,A_0,C4);
 		}
@@ -506,16 +544,16 @@ namespace FFLAS { namespace details { /*  kernels */
 			blB+= 1;
 		}
 		vect_t R0;
-		vect_t A_0 ;
-		A_0 = simd::set1(alpha);
-
 		R0 = simd::loadu( r0);
 		if ( K == number_kind::one)
 			simd::addin(R0,C0);
 		if ( K == number_kind::mone)
 			simd::subin(R0,C0);
-		if ( K == number_kind::other)
+		if ( K == number_kind::other){
+			vect_t A_0 ;
+			A_0 = simd::set1(alpha);
 			simd::fmaddxin(R0,A_0,C0);
+		}
 		simd::storeu(r0,R0);
 	}
 
@@ -563,7 +601,7 @@ namespace FFLAS { namespace details { /*  main */
 		size_t prows,pcols,pdepth;
 		prows=(rows/_mr)*_mr;
 		pcols=(cols/_nr)*_nr;
-		pdepth=(depth/4)*4;
+		pdepth=(depth/_dr)*_dr;
 		// process columns by pack of _nr
 		for(j=0;j<pcols;j+=_nr){
 			// process rows by pack of _mr
