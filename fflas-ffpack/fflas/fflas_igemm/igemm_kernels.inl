@@ -397,8 +397,8 @@ namespace FFLAS { namespace details { /*  kernels */
 		int64_t *r3 = r2+ldc;
 #if defined(__FFLASFFPACK_HAVE_AVX2_INSTRUCTIONS)
 		vect_t R0;
-		R0 = simd::load (r0); // requires _nr=simd::vect_size
-//		R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
+		//		R0 = simd::load (r0); // requires _nr=simd::vect_size
+		R0 = simd::set(r0[0], r1[0], r2[0], r3[0]); // could be done with a gather (marginally faster?)
 		for(k=0;k<depth;k++){
 			vect_t A0;
 			vect_t B0;
