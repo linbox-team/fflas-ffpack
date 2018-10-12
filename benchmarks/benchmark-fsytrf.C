@@ -49,6 +49,8 @@ int main(int argc, char** argv) {
     bool up =true;
     bool rpm =true;
     bool grp =true;
+    bool par =false;
+  	int t=MAX_THREADS;
     std::string file = "";
   
     Argument as[] = {
@@ -61,7 +63,9 @@ int main(int argc, char** argv) {
         { 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
         { 't', "-t T", "Set the threshold to the base case.",            TYPE_INT , &threshold },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
-        END_OF_ARGUMENTS
+  		{ 'p', "-p P", "whether to run or not the parallel PLUQ", TYPE_BOOL , &par },
+ 		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
+     END_OF_ARGUMENTS
     };
 
     FFLAS::parseArguments(argc,argv,as);
@@ -103,10 +107,20 @@ int main(int argc, char** argv) {
                 FFPACK::fsytrf_RPM (F, uplo, n, A, n, P, threshold);
                 if (i) chrono.stop();
         }else{
-            chrono.clear();
-            if (i) chrono.start();
-            FFPACK::fsytrf (F, uplo, n, A, n, threshold);
-            if (i) chrono.stop();
+            if (!par){
+                chrono.clear();
+                if (i) chrono.start();
+                FFPACK::fsytrf (F, uplo, n, A, n, threshold);
+                if (i) chrono.stop();
+            }else{
+                chrono.clear();
+                if (i) chrono.start();
+                PAR_BLOCK{
+                    FFPACK::fsytrf (F, uplo, n, A, n, SPLITTER(t),threshold);
+
+                }
+                if (i) chrono.stop();
+            }
         }
         FFLAS::fflas_delete(P);
         if (i) time[i-1]=chrono.realtime();

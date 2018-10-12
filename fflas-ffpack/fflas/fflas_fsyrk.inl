@@ -248,10 +248,10 @@ namespace FFLAS {
             SYNCH_GROUP(
                     // C11 <- alpha A1 x D1 x A1^T + beta C11 and A1 <- A1 x D1
                 TASK(MODE(READ(D[0]) READWRITE(A[0]) WRITE(C[0]) CONSTREFERENCE(A, D, C, F, ps_rec1)),
-                     fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, D, incD, beta, C, ldc, threshold, ps_rec1));
+                     fsyrk (F, UpLo, trans, N1, K, alpha, A, lda, D, incD, beta, C, ldc, ps_rec1, threshold));
                     // C22 <- alpha A2 x D1 x A2^T + beta C22 and A2 <- A2 x D1
                 TASK(MODE(READ(D[0]) READWRITE(A2[0]) WRITE(C22[0]) CONSTREFERENCE(A2, D, C22, F, ps_rec2)),
-                     fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, D, incD, beta, C22, ldc, threshold, ps_rec2));
+                     fsyrk (F, UpLo, trans, N2, K, alpha, A2, lda, D, incD, beta, C22, ldc, ps_rec2, threshold));
                         );
             return C;
         }
