@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
         { 'r', "-r R", "Set the rank (for the RPM version).", TYPE_INT , &rank },
         { 'g', "-g yes/no", "Matrix with generic rank profile (yes) or random rank profile matrix (no).", TYPE_BOOL , &grp },
         { 'i', "-i I", "Set number of repetitions.",                     TYPE_INT , &iter },
-        { 't', "-t T", "Set the threshold to the base case.",            TYPE_INT , &threshold },
+        { 'c', "-c C", "Set the cross-over point to the base case.",            TYPE_INT , &threshold },
         { 'f', "-f FILE", "Set the input file (empty for random).",  TYPE_STR , &file },
   		{ 'p', "-p P", "whether to run or not the parallel PLUQ", TYPE_BOOL , &par },
  		{ 't', "-t T", "number of virtual threads to drive the partition.", TYPE_INT , &t },
