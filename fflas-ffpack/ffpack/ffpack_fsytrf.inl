@@ -649,7 +649,7 @@ namespace FFPACK {
 #endif
 		else {
             if (par.numthreads() == 1)
-                return fsytrf_nonunit(F, UpLo, N, A, lda, Dinv, incDinv, ParSeqHelper::Sequential(), threshold);
+                return fsytrf_nonunit(F, UpLo, N, A, lda, Dinv, incDinv, FFLAS::ParSeqHelper::Sequential(), threshold);
 			size_t N1 = N>>1;
 			size_t N2 = N-N1;
 			size_t Arows, Acols;

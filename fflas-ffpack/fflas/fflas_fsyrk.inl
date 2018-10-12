@@ -217,7 +217,7 @@ namespace FFLAS {
 
             size_t nt = par.numthreads();
             if (nt == 1)
-                return fsyrk(F, UpLo, trans, N, L, alpha, A, lda, D, incD, beta, C, ldc, ParSeqHelper::Sequential(), threshold);
+                return fsyrk(F, UpLo, trans, N, K, alpha, A, lda, D, incD, beta, C, ldc, ParSeqHelper::Sequential(), threshold);
             size_t nt2 = nt >> 1;
             size_t ntr = nt - nt2;
             ParSeqHelper::Parallel<Cut, Param> ps_rec1(nt2);
