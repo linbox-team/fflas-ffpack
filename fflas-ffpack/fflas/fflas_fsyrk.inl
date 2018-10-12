@@ -216,7 +216,9 @@ namespace FFLAS {
             typename Field::Element_ptr C22 = C12 + N1*ldc;
 
             size_t nt = par.numthreads();
-            size_t nt2 = nt >> 2;
+            if (nt == 1)
+                return fsyrk(F, UpLo, trans, N, L, alpha, A, lda, D, incD, beta, C, ldc, ParSeqHelper::Sequential(), threshold);
+            size_t nt2 = nt >> 1;
             size_t ntr = nt - nt2;
             ParSeqHelper::Parallel<Cut, Param> ps_rec1(nt2);
             ParSeqHelper::Parallel<Cut, Param> ps_rec2(ntr);
