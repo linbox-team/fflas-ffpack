@@ -34,7 +34,6 @@
 
 namespace FFLAS { namespace vectorised {
 
-#ifdef __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 	template<class SimdT, class Element, bool positive>
 	inline typename std::enable_if<is_simd<SimdT>::value, void>::type
@@ -283,51 +282,6 @@ namespace FFLAS { namespace vectorised {
 			T[i] = TA[i] - TB[i];
 		}
 	}
-#else // no simd, but faster than F.init()     // CP: is this necessary? subp and addp only called when support_simd_add is defined
-
-	// template<bool positive, class Element, class T1, class T2>
-	// // inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
-	// void
-	// subp(Element * T, const Element * TA, const Element * TB, const size_t n, const Element p, const T1 min_, const T2 max_)
-	// {
-	// 	Element min = (Element)min_, max = (Element)max_;
-
-	// 	size_t i = 0;
-
-	// 		for (; i < n ; i++)
-	// 		{
-	// 			T[i] = TA[i] - TB[i];
-	// 			if (!positive)
-	// 				T[i] -= (T[i] > max) ? p : 0;
-	// 			T[i] += (T[i] < min) ? p : 0;
-	// 		}
-	// 		return;
-
-	// }
-
-	// template<bool positive, class Element, class T1, class T2>
-	// // inline typename std::enable_if<!FFLAS::support_simd_add<Element>::value, void>::type
-	// void
-	// addp(Element * T, const Element * TA, const Element * TB,  const size_t n,  const Element p,  const T1 min_,  const T2 max_)
-	// {
-	// 	Element min= (Element)min_, max= (Element)max_;
-
-	// 	size_t i = 0;
-
-	// 	for (; i < n ; i++)
-	// 	{
-	// 		T[i] = TA[i] + TB[i];
-	// 		T[i] -= (T[i] > max) ? p : 0;
-	// 		if (!positive)
-	// 		{
-	// 			T[i] += (T[i] < min) ? p : 0;
-	// 		}
-	// 	}
-	// 	return;
-	// }
-
-
-#endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
 
 } // vectorised
 } //  FFLAS
