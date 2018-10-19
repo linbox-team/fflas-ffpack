@@ -336,8 +336,10 @@ template <class T, bool b> struct SimdChooser<T, false, b> { using value = NoSim
 template <class T>
 struct SimdChooser<T, true, false> // floating number
 {
-#ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
 	using value = Simd512<T>;
+#elif defined (__FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS)
+	using value = Simd256<T>;
 #elif defined(__FFLASFFPACK_HAVE_AVX_INSTRUCTIONS)
 	using value = Simd256<T>;
 #elif defined(__FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS)

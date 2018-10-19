@@ -479,8 +479,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(c)); 
 	} 
 
-#ifdef __AVX512DQ__
-
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
 	/*
 	 * Compute the bitwise AND of packed single-precision (32-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
@@ -521,9 +520,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 *			a8 ANDNOT b8, a9 ANDNOT b9, a10 ANDNOT b10, a11 ANDNOT b11, a12 ANDNOT b12, a13 ANDNOT b13, a14 ANDNOT b14, a15 ANDNOT b15]
 	 */
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_ps(a, b); }
-#else //__AVX512DQ__
-
-#endif
+#endif /* __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS */
 	/*
 	 * Round the packed single-precision (32-bit) floating-point elements in a down to an integer value, and store the
 	 * results as packed double-precision floating-point elements in vect_t.
@@ -593,6 +590,8 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 				((const scalar_t *)&a)[15];
 	}
 
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
+	/* Call NORML_MOD which needs vand which is not defined without AVX512DQ */
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
 							 const vect_t &MAX, vect_t &Q, vect_t &T) {
 		FLOAT_MOD(C, P, INVP, Q);
@@ -600,6 +599,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 
 		return C;
 	}
+#endif /* __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS */
 
 #else // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 #error "You need AVX512 instructions to perform 512bits operations on float"
