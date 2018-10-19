@@ -44,15 +44,11 @@ namespace FFLAS {
 	struct support_simd_add<double> : public std::true_type {} ;
 #ifdef SIMD_INT
 	template<>
+	struct support_simd_add<int32_t> : public std::true_type {} ;
+	template<>
 	struct support_simd_add<int64_t> : public std::true_type {} ;
 #endif // SIMD_INT
 #endif // __FFLASFFPACK_HAVE_SSE4_1_INSTRUCTIONS
-
-#ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-	    // no int32_t AVX512 implemented yet in FFLAS
-	template<>
-	struct support_simd_add<int32_t> : public std::true_type {} ;
-#endif // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 
 } // FFLAS
 
