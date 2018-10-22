@@ -163,6 +163,7 @@ void Rec_Initialize(Field &F, Field::Element * C, size_t m, size_t n, size_t ldc
 int main(int argc, char** argv) {
 	
 	size_t iter = 3 ;
+    bool slab=false;
 	int q = 131071 ;
 	int m = 2000 ;
 	int n = 2000 ;
@@ -173,6 +174,7 @@ int main(int argc, char** argv) {
     bool par=false;
     bool grp =true;
 	Argument as[] = {
+		{ 's', "-s S", "Use the Slab recursive algorithm (LUdivine)instead of the tile recursive algorithm (PLUQ).", TYPE_BOOL , &slab },
 		{ 'q', "-q Q", "Set the field characteristic (-1 for random).",         TYPE_INT , &q },
 		{ 'm', "-m M", "Set the row dimension of A.",      TYPE_INT , &m },
 		{ 'n', "-n N", "Set the col dimension of A.",      TYPE_INT , &n },
@@ -253,7 +255,10 @@ int main(int argc, char** argv) {
 			}
 		}
 		else{
-			R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
+			if (slab)
+				R = FFPACK::LUdivine (F, diag, FFLAS::FflasNoTrans, m, n, A, n, P, Q);
+			else
+				R = FFPACK::PLUQ(F, diag, m, n, A, n, P, Q);
 		}
 		if (i) {chrono.stop(); time[i-1]=chrono.realtime();}
 		
