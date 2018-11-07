@@ -52,7 +52,7 @@
 #define FFLAS_ELT float
 #include "ffpack_inst_implem.inl"
 #undef FFLAS_ELT
-#define FFLAS_ELT int32_t
+#define FFLAS_ELT int64_t
 #include "ffpack_inst_implem.inl"
 #undef FFLAS_ELT
 #undef FFLAS_FIELD
@@ -64,7 +64,7 @@
 #define FFLAS_ELT float
 #include "ffpack_inst_implem.inl"
 #undef FFLAS_ELT
-#define FFLAS_ELT int32_t
+#define FFLAS_ELT int64_t
 #include "ffpack_inst_implem.inl"
 #undef FFLAS_ELT
 #undef FFLAS_FIELD

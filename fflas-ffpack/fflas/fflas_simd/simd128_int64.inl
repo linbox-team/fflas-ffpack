@@ -255,7 +255,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	*/
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-		_mm_mullo_epi64(x0, x1);
+		return _mm_mullo_epi64(x0, x1);
 #else
 		// _mm_mullo_epi64 emul
 		//#pragma warning "The simd mullo function is emulate, it may impact the performances."

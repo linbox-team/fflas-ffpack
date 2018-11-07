@@ -403,8 +403,11 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
+#ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+			// int32_t simd not yet fully implemented over AVX512
 		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+#endif
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<Modular<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);

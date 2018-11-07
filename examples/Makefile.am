@@ -32,10 +32,14 @@ else
 LDADD = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
 endif
 
-EXAMPLES = pluq
+EXAMPLES =  \
+	det		\
+	pluq
+
+det_SOURCES = det.C
 pluq_SOURCES = pluq.C
 
-CLEANFILES = $(EXAMPLES) 
+CLEANFILES = $(EXAMPLES)
 
 EXTRA_PROGRAMS = $(EXAMPLES)
 
