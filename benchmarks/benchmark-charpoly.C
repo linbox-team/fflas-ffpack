@@ -22,6 +22,7 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 * ========LICENCE========
 */
+//#define __FFLASFFPACK_ARITHPROG_THRESHOLD 1
 
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iostream>
@@ -48,10 +49,11 @@ void run_with_field(int q, size_t bits, size_t n, size_t iter, std::string file,
 	    case 1: CT = FfpackDanilevski; break;
 	    case 2: CT = FfpackLUK; break;
 	    case 3: CT = FfpackArithProg; break;
-	    case 4: CT = FfpackKG; break;
-	    case 5: CT = FfpackKGFast; break;
-	    case 6: CT = FfpackHybrid; break;
-	    case 7: CT = FfpackKGFastG; break;
+		case 4: CT = FfpackPrecondArithProg; break;
+		case 5: CT = FfpackKG; break;
+	    case 6: CT = FfpackKGFast; break;
+	    case 7: CT = FfpackHybrid; break;
+	    case 8: CT = FfpackKGFastG; break;
 	    default: CT = FfpackAuto; break;
 	}
 	FFLAS::Timer chrono;

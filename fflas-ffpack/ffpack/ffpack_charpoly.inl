@@ -83,7 +83,7 @@ namespace FFPACK {
 				FFLAS::fflas_delete (X);
 				return charp;
 			}
-			case FfpackArithProg:
+			case FfpackPrecondArithProg:
 			{
 				size_t attempts=0;
 				bool cont;
@@ -94,9 +94,10 @@ namespace FFPACK {
 				do{
 					cont=false;
 					try {
-						Protected::CharpolyArithProg (R, charp, N, A, lda, G);
+						Protected::PrecondArithProgCharpoly (R, charp, N, A, lda, G);
 					}
 					catch (CharpolyFailed){
+						std::cerr<<"Failed, retrying"<<std::endl;
 						charp.clear();
 						if (++attempts < 2)
 							cont = true;
@@ -106,18 +107,29 @@ namespace FFPACK {
 				} while (cont);
 				return charp;
 			}
+			case FfpackArithProg:
+			{
+				try {
+					Protected::ArithProgCharpoly (R, charp, N, A, lda, 1);
+				}
+				catch (CharpolyFailed){
+					charp.clear();
+					std::cerr<<"FAIL: no preconditionning and genericity assumption not met";
+				}
+				return charp;
+			}
 			case FfpackKG: return Protected::KellerGehrig (F, charp, N, A, lda);
 			case FfpackKGFast:
 			{
 				size_t mc, mb, j;
 				if (Protected::KGFast (F, charp, N, A, lda, &mc, &mb, &j)){
-					std::cerr<<"NON GENERIC MATRIX PROVIDED TO KELLER-GEHRIG-FAST"<<std::endl;
+					std::cerr<<"FAIL: genericity assumption not met in Keller-Gehrigh-Fast"<<std::endl;
 				}
 				return charp;
 			}
 			case FfpackHybrid:
 			{
-				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
+				typename Field::Element_ptr X = FFLAS::fflas_new (F, N+1, N);
 				Protected::LUKrylov_KGFast (F, charp, N, A, lda, X, N);
 				FFLAS::fflas_delete (X);
 				return charp;
@@ -125,7 +137,7 @@ namespace FFPACK {
 			case FfpackKGFastG:	return Protected::KGFast_generalized (F, charp, N, A, lda);
 			default:
 			{
-				typename Field::Element_ptr X = FFLAS::fflas_new (F, N, N+1);
+				typename Field::Element_ptr X = FFLAS::fflas_new (F, N+1, N);
 				Protected::LUKrylov (F, charp, N, A, lda, X, N, G);
 				FFLAS::fflas_delete (X);
 				return charp;

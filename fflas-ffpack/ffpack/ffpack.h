@@ -78,11 +78,12 @@ namespace FFPACK  { /* tags */
 		FfpackAuto = 0,
 		FfpackDanilevski = 1,
 		FfpackLUK = 2,
-		FfpackArithProg = 3,
-		FfpackKG = 4,
-		FfpackKGFast = 5,
-		FfpackHybrid = 6,
-		FfpackKGFastG = 7
+		FfpackPrecondArithProg = 3,
+		FfpackArithProg = 4,
+		FfpackKG = 5,
+		FfpackKGFast = 6,
+		FfpackHybrid = 7,
+		FfpackKGFastG = 8
 	};
 /* \endcond */
 	class CharpolyFailed{};
@@ -995,13 +996,18 @@ namespace FFPACK { /* charpoly */
 
 		template <class PolRing>
 		std::list<typename PolRing::Element>&
-		CharpolyArithProg (const PolRing& R,
-						   std::list<typename PolRing::Element>& frobeniusForm,
-						   const size_t N,
-						   typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-						   typename PolRing::Domain_t::RandIter& G,
-						   const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
+		PrecondArithProgCharpoly (const PolRing& R,
+								  std::list<typename PolRing::Element>& frobeniusForm,
+								  const size_t N,
+								  typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+								  typename PolRing::Domain_t::RandIter& G,
+								  const size_t block_size=__FFLASFFPACK_ARITHPROG_THRESHOLD);
 
+		template <class PolRing>
+		std::list<typename PolRing::Element>&
+		ArithProgCharpoly (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+						   const size_t N, typename PolRing::Domain_t::ConstElement_ptr A, const size_t lda,
+						   const size_t deg);
 
 		template <class Field, class Polynomial>
 		std::list<Polynomial>&

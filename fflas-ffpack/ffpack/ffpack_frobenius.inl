@@ -1,4 +1,4 @@
-/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 // vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /* fflas-ffpack/ffpack/ffpack_frobenius.inl
@@ -74,10 +74,10 @@ void DeCompressRowsQA (Field& F, const size_t M, const size_t N,
 
 template <class PolRing>
 std::list<typename PolRing::Element>&
-CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
-				   const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
-				   typename PolRing::Domain_t::RandIter& g,
-				   const size_t block_size)
+PrecondArithProgCharpoly (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+						  const size_t N, typename PolRing::Domain_t::Element_ptr A, const size_t lda,
+						  typename PolRing::Domain_t::RandIter& g,
+						  const size_t block_size)
 {
 	typedef typename PolRing::Domain_t Field;
 	typedef typename PolRing::Element Polynomial;
@@ -85,7 +85,6 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 
 	FFLASFFPACK_check(block_size);
 	size_t c = block_size;
-	size_t * rp = FFLAS::fflas_new<size_t>(2*N);
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
 	size_t Nnoc = N*noc;
 			
@@ -146,7 +145,6 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			// std::cerr << "FAIL in preconditionning phase:"
 			//           << " degree sequence is not monotonically not increasing"
 			// 	     << std::endl;
-			FFLAS::fflas_delete( rp);
 			FFLAS::fflas_delete (K);
 			FFLAS::fflas_delete( Pk);
 			FFLAS::fflas_delete( Qk);
@@ -208,7 +206,6 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 					FFLAS::fflas_delete (K);
 					FFLAS::fflas_delete( Pk);
 					FFLAS::fflas_delete(Qk);
-					FFLAS::fflas_delete( rp);
 					FFLAS::fflas_delete( dA);
 					FFLAS::fflas_delete( dK);
 					throw CharpolyFailed();
@@ -234,7 +231,6 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 					FFLAS::fflas_delete (K);
 					FFLAS::fflas_delete( Pk);
 					FFLAS::fflas_delete( Qk);
-					FFLAS::fflas_delete( rp);
 					FFLAS::fflas_delete( dA);
 					FFLAS::fflas_delete( dK);
 					throw CharpolyFailed();
@@ -287,34 +283,65 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 		polyList.clear();
 
 		// Recursive call on the complementary subspace
-		CharpolyArithProg (PR, polyList, Nrest, Arec, ldarec,g,c);
+		PrecondArithProgCharpoly (PR, polyList, Nrest, Arec, ldarec,g,c);
 		FFLAS::fflas_delete (Arec);
 		frobeniusForm.merge(polyList);
 	}
 
 	FFLAS::fflas_delete( Pk);
 	FFLAS::fflas_delete( Qk);
-	size_t deg = c+1;
 	for (size_t i=0; i<Mk; ++i)
  		dA[i] = dK[i];
 	bk_idx = 0;
 
-	typename Field::Element_ptr Arp = FFLAS::fflas_new (F, Ncurr, Ma);
 	typename Field::Element_ptr Ac = FFLAS::fflas_new (F, Ncurr, Ma);
 	size_t ldac = Ma;
-	size_t ldarp = Ncurr;
 
 	for (size_t i=0; i < Ncurr; ++i)
  		for (size_t j=0; j<Ma; ++j)
-			*(K+i*ldk+j) = *(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
+//			*(K+i*ldk+j) =
+			*(Ac + i*Ma +j) = *(K4 + i + (j)*ldk);
 	FFLAS::fflas_delete (K4);
 
+		// Call to the main charpoly algorithm
+	return ArithProgCharpoly (PR, frobeniusForm, Ncurr, Ac, ldac, block_size);
+}
 
-	// Main loop of the arithmetic progession
+template <class PolRing>
+std::list<typename PolRing::Element>&
+ArithProgCharpoly (const PolRing& PR, std::list<typename PolRing::Element>& frobeniusForm,
+				   const size_t N, typename PolRing::Domain_t::ConstElement_ptr A, const size_t lda,
+				   const size_t degree){
+
+	typedef typename PolRing::Domain_t Field;
+	typedef typename PolRing::Element Polynomial;
+	const Field& F = PR.getdomain();
+
+	size_t noc = static_cast<size_t>(ceil(double(N)/double(degree)));
+	size_t nb_full_blocks, Mk, Ma;
+	Mk = Ma = nb_full_blocks = noc;
+	typename Field::Element_ptr K, K3, Ac;
+	size_t ldk=Ma;
+	K = FFLAS::fflas_new(F, N, ldk);
+	Ac = FFLAS::fflas_new(F, N, Ma);
+	size_t ldac = Ma;
+	FFLAS::fassign(F, N, Ma, A, lda, Ac, ldac);
+	FFLAS::fassign(F, N, Ma, Ac, lda, K, ldk);
+	size_t Ncurr=N;
+	size_t * dA = FFLAS::fflas_new<size_t>(Ma);
+	size_t * dK = FFLAS::fflas_new<size_t>(Mk);
+	for (size_t i=0; i<Ma; i++){
+		dK[i] = dA[i] = degree;
+	}
+	size_t rdeg = N % degree;
+	if (rdeg)
+		dK[Mk-1] = dA[Ma-1] = rdeg;
+	
+	typename Field::Element_ptr Arp = FFLAS::fflas_new (F, Ncurr, Ma);
+	size_t ldarp = Ncurr;
+	size_t deg = degree+1;
 	while ((nb_full_blocks >= 1) && (Mk > 1)) {
 		size_t block_idx, it_idx, rp_val;
-		FFLAS::fflas_delete (K);
-		FFLAS::fflas_delete (K3);
 		K = FFLAS::fflas_new (F, Ncurr, Ma);
 		K3 = FFLAS::fflas_new (F, Ncurr, Ma);
 		ldk = Ma;
@@ -323,6 +350,8 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 		for (size_t i=0; i < Ncurr; ++i)
 			for (size_t j=0; j < Ma; ++j)
 				*(Arp + j*ldarp + Ncurr-i-1) = *(Ac + i*ldac + j);
+
+		size_t * rp = FFLAS::fflas_new<size_t>(2*Ncurr);
 		for (size_t i=0; i<2*Ncurr; ++i)
 			rp[i] = 0;
 		size_t RR;
@@ -333,9 +362,9 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			FFLAS::fflas_delete (Ac);
 			FFLAS::fflas_delete (K);
 			FFLAS::fflas_delete (K3);
-			FFLAS::fflas_delete( rp);
-			FFLAS::fflas_delete( dA);
-			FFLAS::fflas_delete( dK);
+			FFLAS::fflas_delete (rp);
+			FFLAS::fflas_delete (dA);
+			FFLAS::fflas_delete (dK);
 			throw CharpolyFailed();
 		}
 		if (RR < Ncurr){
@@ -344,9 +373,9 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			FFLAS::fflas_delete (Ac);
 			FFLAS::fflas_delete (K);
 			FFLAS::fflas_delete (K3);
-			FFLAS::fflas_delete( rp);
-			FFLAS::fflas_delete( dA);
-			FFLAS::fflas_delete( dK);
+			FFLAS::fflas_delete (rp);
+			FFLAS::fflas_delete (dA);
+			FFLAS::fflas_delete (dK);
 			throw CharpolyFailed();
 		}
 
@@ -365,9 +394,9 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 				FFLAS::fflas_delete (Ac);
 				FFLAS::fflas_delete (K);
 				FFLAS::fflas_delete (K3);
-				FFLAS::fflas_delete( rp);
-				FFLAS::fflas_delete( dA);
-				FFLAS::fflas_delete(dK);
+				FFLAS::fflas_delete (rp);
+				FFLAS::fflas_delete (dA);
+				FFLAS::fflas_delete (dK);
 				throw CharpolyFailed();
 				//std::cerr<<"FAIL d non decreasing"<<std::endl;
 				//exit(-1);
@@ -379,7 +408,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			it_idx=0;
 			rp_val = rp[gg];
 		}
-
+		FFLAS::fflas_delete(rp);
 		Mk = block_idx;
 
 		// Selection of dense colums of K
@@ -417,7 +446,7 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			FFLAS::fassign(F, nb_full_blocks, Arp+i*ldarp, 1, K+(Ncurr-Ma+i)*ldk, 1);
 
 		// Copying the last rows of A times K
-		offset = (deg-2)*nb_full_blocks;
+		size_t offset = (deg-2)*nb_full_blocks;
 		for (size_t i = nb_full_blocks; i < Mk; ++i) {
 			for (size_t j=0; j<Ncurr; ++j)
 				F.assign(*(K+i+j*ldk), F.zero);
@@ -484,7 +513,6 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 			for (size_t j=0; j<nb_full_blocks+1; ++j){
 				if (!F.isZero( *(K+i*ldk+j) )){
 					//std::cerr<<"FAIL C != 0"<<std::endl;
-					FFLAS::fflas_delete( rp);
 					FFLAS::fflas_delete (Arp);
 					FFLAS::fflas_delete (Ac);
 					FFLAS::fflas_delete (K);
@@ -507,6 +535,9 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 
 		deg++;
 
+		FFLAS::fflas_delete (K);
+		FFLAS::fflas_delete (K3);
+
 	}
 
 	// Recovery of the first invariant factor
@@ -515,11 +546,8 @@ CharpolyArithProg (const PolRing& PR, std::list<typename PolRing::Element>& frob
 	for (size_t j=0; j < dK[0]; ++j)
 		F.neg( Pl[j], *(K  + j*ldk));
 	frobeniusForm.push_front(Pl);
-	FFLAS::fflas_delete( rp);
 	FFLAS::fflas_delete (Arp);
 	FFLAS::fflas_delete (Ac);
-	FFLAS::fflas_delete (K);
-	FFLAS::fflas_delete (K3);
 	FFLAS::fflas_delete( dA);
 	FFLAS::fflas_delete( dK);
 	return frobeniusForm;
