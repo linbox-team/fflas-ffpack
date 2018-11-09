@@ -86,14 +86,14 @@ PrecondArithProgCharpoly (const PolRing& PR, std::list<typename PolRing::Element
 	FFLASFFPACK_check(block_size);
 	size_t c = block_size;
 	size_t noc = static_cast<size_t>(ceil(double(N)/double(c)));
-	size_t Nnoc = N*noc;
+	size_t ldk = N;
+	size_t Nnoc = ldk*noc;
 			
 		// Building the workplace matrix
-	typename Field::Element_ptr K  = FFLAS::fflas_new (F, Nnoc, c);
-	typename Field::Element_ptr K2 = FFLAS::fflas_new (F, Nnoc, c);
+	typename Field::Element_ptr K  = FFLAS::fflas_new (F, noc*c, N);
+	typename Field::Element_ptr K2 = FFLAS::fflas_new (F, noc*c, N);
 		// for (size_t i = 0 ; i < Nnoc*c ; ++i)
 				// K[i] = F.zero;
-	size_t ldk = N;
 	
 	size_t *dA = FFLAS::fflas_new<size_t>(N); //PA
 	size_t *dK = FFLAS::fflas_new<size_t>(noc*c);
