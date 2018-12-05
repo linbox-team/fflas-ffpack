@@ -21,13 +21,15 @@
 #/
 
 AM_CXXFLAGS = @DEFAULT_CFLAGS@ -I$(top_srcdir) $(PRECOMPILE_FLAGS)
-if FFLASFFPACK_PRECOMPILED
-AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
-	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
-else
+
+# Forcing compilation without the precompiled libraries for the autotuning only
+# if FFLASFFPACK_PRECOMPILED
+# AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS) \
+# 	$(top_builddir)/fflas-ffpack/interfaces/libs/libfflas.la \
+# 	$(top_builddir)/fflas-ffpack/interfaces/libs/libffpack.la
+# else
 AM_LDFLAGS = $(CBLAS_LIBS) $(GIVARO_LIBS) $(CUDA_LIBS) $(PARLIBS)
-endif
+#endif
 
 AUTOTUNE_FGEMM = winograd-modular-float winograd-modular-double winograd-modularbalanced-float winograd-modularbalanced-double
 AUTOTUNE_PLUQ = pluq
