@@ -30,38 +30,6 @@
 #include "libkomp.h"
 #endif
 
-namespace FFLAS
-{
-  template <typename RandIter, typename RNS>
-  void
-  frand (const FFPACK::RNSInteger<RNS> &F, RandIter &G, const size_t m,
-         const size_t n, typename FFPACK::RNSInteger<RNS>::Element_ptr A,
-         const size_t lda)
-  {
-    for (size_t i = 0; i < m; i++)
-    {
-      for (size_t j = 0; j < m; j++)
-      {
-        G.random(A[j+i*lda]);
-      }
-    }
-  }
-
-  template <typename RandIter, typename RNS>
-  void
-  fzero (const FFPACK::RNSInteger<RNS> &F, const size_t m, const size_t n,
-         typename FFPACK::RNSInteger<RNS>::Element_ptr A, const size_t lda)
-  {
-    for (size_t i = 0; i < m; i++)
-    {
-      for (size_t j = 0; j < m; j++)
-      {
-        A[j+i*lda].assign(F.zero);
-      }
-    }
-  }
-}
-
 using namespace FFLAS;
 
 typedef FFPACK::rns_double RNS;
@@ -215,11 +183,11 @@ main(int argc, char *argv[])
   Field::RandIter G(ZZ);
 
   A = fflas_new (ZZ, m, k, Alignment::CACHE_PAGESIZE);
-  frand (ZZ, G, m, k, A, k);
+  frand (ZZ, G, m*k, A, 0);
   B = fflas_new (ZZ, k, n, Alignment::CACHE_PAGESIZE);
-  frand (ZZ, G, k, n, B, n);
+  frand (ZZ, G, k*n, B, 0);
   C = fflas_new (ZZ, m, n, Alignment::CACHE_PAGESIZE);
-  fzero (ZZ, m, n, C, n);
+  fzero (ZZ, m*n, C, 0);
 
   for (size_t i=0; i<=iter; ++i)
   {
