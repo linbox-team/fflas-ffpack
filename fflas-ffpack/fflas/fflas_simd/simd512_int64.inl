@@ -272,7 +272,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	*		   [a4, b4, a5, b5, a6, b6, a7, b7] int64_t
 	*/
 
-	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
+	static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
 		l = unpacklo(a, b);
 		h = unpackhi(a, b);
 	}
