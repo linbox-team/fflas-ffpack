@@ -35,11 +35,13 @@ endif
 EXAMPLES =  \
 	det		\
 	pluq	\
-	rank
+	rank	\
+	charpoly
 
 det_SOURCES = det.C
 pluq_SOURCES = pluq.C
 rank_SOURCES = rank.C
+charpoly_SOURCES = charpoly.C
 
 CLEANFILES = $(EXAMPLES)
 
