@@ -20,7 +20,7 @@
 # ========LICENCE========
 #/
 
-AM_CXXFLAGS = @DEFAULT_CFLAGS@ -I$(top_srcdir) $(PRECOMPILE_FLAGS)
+AM_CXXFLAGS = @DEFAULT_CFLAGS@ -I$(top_srcdir)
 
 # Forcing compilation without the precompiled libraries for the autotuning only
 # if FFLASFFPACK_PRECOMPILED
