@@ -34,10 +34,12 @@ endif
 
 EXAMPLES =  \
 	det		\
-	pluq
+	pluq	\
+	rank
 
 det_SOURCES = det.C
 pluq_SOURCES = pluq.C
+rank_SOURCES = rank.C
 
 CLEANFILES = $(EXAMPLES)
 
