@@ -162,10 +162,6 @@ int main(int argc, char** argv) {
 		}
 	  
 	}
-
-    size_t rindex = rand() % m;
-    std::cerr << "Y[" << rindex << "]=" << Y[rindex] << std::endl;
-
 	FFLAS::fflas_delete(A);
 	FFLAS::fflas_delete(X);
 	FFLAS::fflas_delete(Y);
