@@ -1,5 +1,5 @@
-/* -*- mode: C++; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- */
-// vim:sts=8:sw=8:ts=8:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
+/* -*- mode: C++; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+// vim:sts=4:sw=4:ts=4:noet:sr:cino=>s,f0,{0,g0,(0,\:0,t0,+0,=s
 
 /*
  * Copyright (C) FFLAS-FFPACK
@@ -26,102 +26,188 @@
  *.
  */
 
-
 //--------------------------------------------------------------------------
 //                        Test for nullspace
-//
 //--------------------------------------------------------------------------
-// Clement Pernet
+// Authors: Clément Pernet
+//			Alexis Breust (clean-up)
 //-------------------------------------------------------------------------
-
-#define TIME 1
-using namespace std;
 
 #include <iomanip>
 #include <iostream>
-#include "fflas-ffpack/field/modular-balanced.h"
-#include "fflas-ffpack/utils/timer.h"
-#include "fflas-ffpack/utils/fflas_io.h"
+
 #include "fflas-ffpack/ffpack/ffpack.h"
+#include "fflas-ffpack/utils/args-parser.h"
+#include "fflas-ffpack/utils/fflas_io.h"
+#include "fflas-ffpack/utils/fflas_randommatrix.h"
+#include "fflas-ffpack/utils/test-utils.h"
+#include "fflas-ffpack/utils/timer.h"
 
+template <class Field>
+std::string checkingMessage(const Field& F)
+{
+    std::ostringstream message;
+    std::ostringstream fieldNameStream;
+    F.write(fieldNameStream);
 
-using namespace FFPACK;
-typedef ModularBalanced<double> Field;
+    message << "Checking ";
+    message.fill('.');
+    message.width(40);
+    message << fieldNameStream.str() << " ... ";
 
-int main(int argc, char** argv){
+    return message.str();
+}
 
-	int n,m;
-	int nbit=atoi(argv[3]); // number of times the product is performed
-	cerr<<setprecision(10);
-	Field::Element zero, one;
+/**
+ * If file is not empty, read it and set m, n, lda and r.
+ * Otherwise, generate a random matrix of size m x n with random lda.
+ */
+template <class Field>
+typename Field::Element_ptr readOrRandomMatrixWithRankAndRandomRPM(const Field& F, std::string file, size_t& m, size_t& n,
+                                                                   size_t& lda, size_t& r, uint64_t seed)
+{
+    typename Field::Element_ptr A = nullptr;
 
-	if (argc != 4)	{
-		cerr<<"Usage : test-nullspace <p> <A> <<i>"
-		    <<endl
-		    <<"         to compute the nullspace of A mod p (i computations)"
-		    <<endl;
-		exit(-1);
-	}
-	Field F(atof(argv[1]));
-	F.init(zero,0.0);
-	F.init(one,1.0);
-	Field::Element * A, *NS;
-	FFLAS::ReadMatrix (argv[2],F,m,n,A);
+    if (!file.empty()) {
+        FFLAS::ReadMatrix(file, F, m, n, A);
+        lda = n;
+        r = FFPACK::Rank(F, m, n, A, lda);
+    }
+    else {
+        lda = std::max(m, n) + (rand() % 13);
+        A = FFLAS::fflas_new(F, m, lda);
+        typename Field::RandIter G(F, 0, seed);
+        FFPACK::RandomMatrixWithRankandRandomRPM(F, m, n, r, A, lda, G);
+    }
 
-	FFLAS::Timer tim,t; t.clear();tim.clear();
-	size_t  ldn, NSdim;
+    return A;
+}
 
-	for(int i = 0;i<nbit;++i){
-		t.clear();
-		t.start();
-		FFPACK::NullSpaceBasis (F, FFLAS::FflasRight, m,n,
-					A, n, NS, ldn, NSdim);
-// 		FFPACK::NullSpaceBasis (F, FFLAS::FflasLeft, m,n,
-// 					A, n, NS, ldn, NSdim);
-		t.stop();
-		tim+=t;
-	}
+template <class Field>
+bool test_nullspace(Field& F, FFLAS::FFLAS_SIDE side, size_t m, size_t n, size_t r, typename Field::Element_ptr A, size_t lda)
+{
+    // @note As NullSpaceBasis mutates A, we make a copy of it.
+    auto ACopy = FFLAS::fflas_new(F, m, lda);
+    FFLAS::fassign(F, m, n, A, lda, ACopy, lda);
 
-#if __FFLASFFPACK_DEBUG
-	FFLAS::ReadMatrix (argv[2],F,m,n,Ab);
-	Field::Element *C = FFLAS::fflas_new<Field::Element>(NSdim*n);
- 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n,
- 		      1.0, Ab, n, NS, ldn, 0.0, C, NSdim);
-// 	FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NSdim, n, m,
-// 		      1.0, NS, ldn, Ab, n, 0.0, C, n);
-	bool wrong = false;
+    size_t ldns = 0u;
+    size_t NSdim = 0u;
+    typename Field::Element_ptr NS;
+    FFPACK::NullSpaceBasis(F, side, m, n, ACopy, lda, NS, ldns, NSdim);
 
-	for (int i=0;i<m;++i)
-		for (size_t j=0;j<NSdim;++j)
-			if (!F.areEqual(*(C+i*NSdim+j),zero))
-				wrong = true;
-// 	for (int i=0;i<NSdim;++i)
-// 		for (int j=0;j<n;++j)
-// 			if (!F.areEqual(*(C+i*n+j),zero))
-// 				wrong = true;
-
-	if ( wrong ){
-		cerr<<"FAIL"<<endl;
-		FFLAS::WriteMatrix (cerr<<"A="<<endl,F,m,n,Ab,n);
-		FFLAS::WriteMatrix (cerr<<"NS="<<endl,F, n,NSdim, NS, NSdim);
-		FFLAS::WriteMatrix (cerr<<"C="<<endl,F,m,NSdim, C, NSdim);
-	} else {
-		cerr<<"PASS"<<endl;
-	}
-	FFLAS::fflas_delete( C);
-	FFLAS::fflas_delete( Ab);
-
+#if defined(__FFLAS_FFPACK_DEBUG)
+    std::cout << std::endl;
+    std::cout << "A: " << m << "x" << n << " (rank " << r << ")" << std::endl;
+    std::cout << "NS: " << NSdim << std::endl;
 #endif
-	FFLAS::fflas_delete( NS);
-	FFLAS::fflas_delete( A);
 
-#if TIME
-	double mflops = 2*(n*n/1000000.0)*nbit*n/tim.usertime();
-	cerr<<"NSdim = "<<NSdim<<" Nullspace over Z/"<<atoi(argv[1])<<"Z : t= "
-	     << tim.usertime()/nbit
-	     << " s, Mffops = "<<mflops
-	     << endl;
+    if (side == FFLAS::FFLAS_SIDE::FflasRight) {
+        // Right nullspace dimension + Rank == Matrix column dimension
+        if (NSdim + r != n) return false;
 
-	cout<<n<<" "<<mflops<<" "<<tim.usertime()/nbit<<endl;
-#endif
+        // Ensure nullspace is full rank
+        auto NSCopy = FFLAS::fflas_new(F, n, NSdim);
+        FFLAS::fassign(F, n, NSdim, NS, NSdim, NSCopy, NSdim);
+        if (FFPACK::Rank(F, n, NSdim, NSCopy, NSdim) != NSdim) return false;
+
+        // Check that NS is a nullspace
+        auto C = FFLAS::fflas_new(F, m, NSdim);
+        FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, NSdim, n, F.one, A, lda, NS, ldns, F.zero, C, NSdim);
+        if (!FFLAS::fiszero(F, m, NSdim, C, NSdim)) return false;
+        FFLAS::fflas_delete(C);
+    }
+    else {
+        // Left nullspace dimension + Rank == Matrix row dimension
+        if (NSdim + r != m) return false;
+
+        // Ensure nullspace is full rank
+        auto NSCopy = FFLAS::fflas_new(F, NSdim, m);
+        FFLAS::fassign(F, NSdim, m, NS, m, NSCopy, m);
+        if (FFPACK::Rank(F, NSdim, m, NSCopy, m) != NSdim) return false;
+
+        // Check that NS is a nullspace
+        auto C = FFLAS::fflas_new(F, NSdim, n);
+        FFLAS::fgemm(F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, NSdim, n, m, F.one, NS, ldns, A, lda, F.zero, C, n);
+        if (!FFLAS::fiszero(F, NSdim, n, C, n)) return false;
+        FFLAS::fflas_delete(C);
+    }
+
+    FFLAS::fflas_delete(NS);
+    return true;
+}
+
+template <class Field>
+bool run_with_field(Givaro::Integer q, uint64_t b, size_t m, size_t n, size_t r, size_t iters, std::string file, uint64_t& seed)
+{
+    bool ok = true;
+
+    for (auto i = 0u; ok && i < iters; ++i) {
+        Field* F = FFPACK::chooseField<Field>(q, b, seed);
+        if (F == nullptr) return true;
+        std::cout << checkingMessage(*F);
+
+        size_t lda = 0u;
+        auto A = readOrRandomMatrixWithRankAndRandomRPM(*F, file, m, n, lda, r, seed++);
+
+        // The test indeed
+        ok = ok && test_nullspace(*F, FFLAS::FFLAS_SIDE::FflasLeft, m, n, r, A, lda);
+        ok = ok && test_nullspace(*F, FFLAS::FFLAS_SIDE::FflasRight, m, n, r, A, lda);
+
+        FFLAS::fflas_delete(A);
+        delete F;
+
+        std::cout << (ok ? "PASSED" : "FAILED") << std::endl;
+    }
+
+    return ok;
+}
+
+int main(int argc, char** argv)
+{
+    Givaro::Integer q = -1;
+    size_t b = 0;
+    size_t m = 100;
+    size_t n = 120;
+    size_t r = 70;
+    size_t iters = 3;
+    uint64_t seed = FFLAS::getSeed();
+    bool loop = false;
+    std::string file;
+
+    Argument as[] = {{'q', "-q Q", "Set the field characteristic (-1 for random).", TYPE_INTEGER, &q},
+                     {'b', "-b B", "Set the bitsize of the field characteristic.", TYPE_INT, &b},
+                     {'m', "-m M", "Set the row dimension of the matrix.", TYPE_INT, &m},
+                     {'n', "-n N", "Set the column dimension of the matrix.", TYPE_INT, &n},
+                     {'r', "-r R", "Set the rank.", TYPE_INT, &r},
+                     {'i', "-i I", "Set number of iterations.", TYPE_INT, &iters},
+                     {'s', "-s seed", "Set seed for the random generator", TYPE_UINT64, &seed},
+                     {'l', "-loop Y/N", "run the test in an infinite loop.", TYPE_BOOL, &loop},
+                     {'f', "-f file", "Set input file", TYPE_STR, &file},
+                     END_OF_ARGUMENTS};
+
+    FFLAS::parseArguments(argc, argv, as);
+
+    if (r > std::min(m, n)) {
+        r = std::min(m, n);
+    }
+
+    srand(seed);
+
+    bool ok = true;
+    do {
+        auto lastKnownSeed = seed;
+        ok = ok && run_with_field<Givaro::Modular<float>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::Modular<double>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::Modular<int32_t>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::Modular<int64_t>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::ModularBalanced<float>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::ModularBalanced<double>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::ModularBalanced<int32_t>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::ModularBalanced<int64_t>>(q, b, m, n, r, iters, file, seed);
+        ok = ok && run_with_field<Givaro::Modular<Givaro::Integer>>(q, 5, m / 6, n / 6, r / 6, iters, file, seed);
+        ok = ok && run_with_field<Givaro::Modular<Givaro::Integer>>(q, (b ? b : 512), m / 6, n / 6, r / 6, iters, file, seed);
+        if (!ok) std::cerr << "Failed with seed: " << lastKnownSeed << std::endl;
+    } while (loop && ok);
+
+    return !ok;
 }

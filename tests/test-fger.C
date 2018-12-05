@@ -40,7 +40,7 @@
 #include "fflas-ffpack/fflas-ffpack-config.h"
 #include <iomanip>
 #include <iostream>
-#include <givaro/modular-int32.h>
+#include <givaro/modular-integral.h>
 #include <givaro/modular-balanced.h>
 #include <givaro/givintprime.h>
 

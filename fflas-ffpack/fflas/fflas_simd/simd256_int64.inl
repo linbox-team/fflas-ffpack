@@ -106,12 +106,22 @@ template <> struct Simd256_impl<true, true, true, 8> : public Simd256i_base {
 		return _mm256_set_epi64x(x3, x2, x1, x0);
 	}
 
+	//TODO use the real gather? (e.g. with _mm256_i64gather_epi64)
+	//But cannot with this signature...
 	/*
 	 *  Gather 64-bit integer elements with indexes idx[0], ..., idx[3] from the address p in vect_t.
 	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]] int64_t
 	 */
 	template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
 		return set(p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]]);
+	}
+
+	/*
+	 *  Extract one 64-bit integer from src at index idx
+	 *  Return v[idx] int64_t
+	 */
+	static INLINE CONST scalar_t get(vect_t v, const scalar_t idx) {
+		return _mm256_extract_epi64(v, idx);
 	}
 
 	/*

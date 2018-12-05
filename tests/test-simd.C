@@ -292,7 +292,60 @@ test_op(SimdFunc fsimd, ScalFunc fscal, uint64_t seed, size_t vectorSize, Elemen
 	return res;
 }
 
+/* test_blend todo
+template<class simd, class Element> 
+inline
+//typename std::enable_if<true, bool>::type
+bool test_blend(uint64_t seed, size_t vectorSize, Element max, std::string name){
+	using vect_t = typename simd::vect_t;
+	uint8_t a = 3;
 
+	std::mt19937 generator(seed);
+	std::vector<Element, AlignedAllocator<Element, Alignment::AVX>> a1(vectorSize), b1(vectorSize), c1(vectorSize), a2(vectorSize), b2(vectorSize), c2(vectorSize), c3(vectorSize);
+	generate_random(a1, generator);
+	generate_random(b1, generator);
+	a2 = a1;
+	b2 = b1;
+
+
+	//std::transform(a1.begin(), a1.end(), b1.begin(), c1.begin(), fscal);
+
+	vect_t va2, vb2, vc2, vc3;
+	for(size_t i = 0 ; i < vectorSize ; i+=simd::vect_size){
+			va2 = simd::load(a2.data()+i);
+			vb2 = simd::load(b2.data()+i);
+			vc3 = simd::load(c1.data()+i);
+			vc2 = simd::blend<a>(va2, vb2);
+			vc3 = simd::sub(vc3,vc2);
+			simd::store(c2.data()+i, vc2);
+			simd::store(c3.data()+i, vc3);
+		}
+
+	bool res = std::equal(c1.begin(), c1.end(), c2.begin(), [](Element x1, Element x2){return (std::isnan(x1) && std::isnan(x2)) || x1 == x2;});
+	if(!res)
+		{
+			std::cout << "Error Simd" << sizeof(typename simd::scalar_t)*simd::vect_size*8 << "::" << name
+					  << " on " << (sizeof(Element) * 8) << "bits." << std::endl;
+
+			std::cout << "a2: ";
+			std::copy(a2.begin(), a2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "b2: ";
+			std::copy(b2.begin(), b2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "c1: ";
+			std::copy(c1.begin(), c1.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl;
+			std::cout << "c2: ";
+			std::copy(c2.begin(), c2.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl << std::endl;
+			std::cout << "c1-c2: ";
+			std::copy(c3.begin(), c3.end(), std::ostream_iterator<Element>(std::cout, " "));
+			std::cout << std::endl << std::endl;
+		}
+	return res;
+}
+*/
 template<class simd, class Element>
 bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 	bool btest = true;
@@ -311,12 +364,12 @@ bool test_float_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?NAN:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?NAN:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?NAN:0;}, seed, vectorSize, max, "eq");
-
 	return btest;
 }
 
 template<typename simd>
 typename simd::vect_t mysra (typename simd::vect_t x1){return simd::sra(x1, int(2));}
+
 
 template<class simd, class Element>
 bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
@@ -334,6 +387,8 @@ bool test_integer_impl(uint64_t seed, size_t vectorSize, Element max){
 	btest = btest && test_op<simd>(simd::greater, [](Element x1, Element x2){return (x1>x2)?-1:0;}, seed, vectorSize, max, "greater");
 	btest = btest && test_op<simd>(simd::greater_eq, [](Element x1, Element x2){return (x1>=x2)?-1:0;}, seed, vectorSize, max, "greater_eq");
 	btest = btest && test_op<simd>(simd::eq, [](Element x1, Element x2){return (x1==x2)?-1:0;}, seed, vectorSize, max, "eq");
+	// test_blend todo
+	//btest = btest && test_blend<simd>(seed, vectorSize, max, "blend");
 	// print_arity(mysra<simd>);
 	btest = btest && test_op<simd>(mysra<simd>, //std::bind(simd::sra,std::placeholders::_1,int(sizeof(Element)*4)),
 						   [](Element x1){
@@ -412,7 +467,7 @@ bool test_integer(uint64_t seed, size_t vectorSize, size_t max_){
 
 
 int main(int ac, char **av) {
-	uint64_t seed = getSeed();
+	uint64_t seed = FFLAS::getSeed();
 	int vectorSize = 32;
 	int max = 100;
 	int loop = false;

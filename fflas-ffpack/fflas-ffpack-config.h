@@ -148,6 +148,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS  1
 #endif
 
+/* Define if avx512dq instructions are supported */
+#ifdef __AVX512DQ__
+#define __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS 1
+#endif
+
 /* Define if fma instructions are supported */
 #ifdef __FMA__
 #define __FFLASFFPACK_HAVE_FMA_INSTRUCTIONS  1

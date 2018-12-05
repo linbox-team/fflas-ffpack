@@ -69,7 +69,6 @@ namespace FFLAS { namespace Protected {
 			    const int64_t* A, size_t lda, const int64_t* B, size_t ldb,
 			    int64_t* C, size_t ldc)
 	{
-
 		using simd = Simd<int64_t> ;
 		size_t mc,kc,nc;
 		mc=rows;
@@ -78,15 +77,13 @@ namespace FFLAS { namespace Protected {
 		FFLAS::details::BlockingFactor(mc,nc,kc);
 		size_t sizeA = mc*kc;
 		size_t sizeB = kc*cols;
-		size_t sizeW = simd::vect_size*kc*_nr; // store data duplicated by the number of elements fitting in vector register
 
 		// these data must be simd::alignment byte aligned
-		int64_t *blockA, *blockB, *blockW;
+		int64_t *blockA, *blockB;
 
 
 		blockA = fflas_new<int64_t>(sizeA, (Alignment)simd::alignment);
 		blockB = fflas_new<int64_t>(sizeB, (Alignment)simd::alignment);
-		blockW = fflas_new<int64_t>(sizeW, (Alignment)simd::alignment);
 
 		// For each horizontal panel of B, and corresponding vertical panel of A
 		for(size_t k2=0; k2<depth; k2+=kc){
@@ -99,13 +96,13 @@ namespace FFLAS { namespace Protected {
 				FFLAS::details::pack_rhs<_nr,false>(blockB, B+k2, ldb, actual_kc, cols);
 			else
 				FFLAS::details::pack_lhs<_nr,true>(blockB, B+k2*ldb, ldb, cols, actual_kc);
-			
+
                         // For each mc x kc block of the lhs's vertical panel...
 			for(size_t i2=0; i2<rows; i2+=mc){
 
 				const size_t actual_mc = std::min(i2+mc,rows)-i2;
 
-
+				
 				FFLASFFPACK_check(mc <= rows);
 				// pack a chunk of the vertical panel of A into a sequential memory (L1 cache)
 				if (tA == FflasNoTrans)
@@ -117,14 +114,12 @@ namespace FFLAS { namespace Protected {
 				FFLAS::details::igebp<alpha_kind>(actual_mc, cols, actual_kc
 								  , alpha
 								  , blockA, actual_kc, blockB, actual_kc
-								  , C+i2, ldc
-								  , blockW);
+								  , C+i2, ldc);
 			}
 		}
 
 		fflas_delete(blockA);
 		fflas_delete(blockB);
-		fflas_delete(blockW);
 	}
 
 	void igemm( const enum FFLAS_TRANSPOSE TransA, const enum FFLAS_TRANSPOSE TransB,
@@ -179,7 +174,6 @@ namespace FFLAS {
 			   const int64_t beta, 
                        int64_t *C, const size_t ldc)
 	{
-
 
 		if (Order == FflasColMajor)
 			Protected::igemm(TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);

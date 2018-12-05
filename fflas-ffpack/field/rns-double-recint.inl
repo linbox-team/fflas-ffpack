@@ -66,13 +66,11 @@ namespace FFPACK {
 					  size_t l=0;
 					  size_t maxs=std::min(k,size_t(1UL<<(K-4)));
 					  
-					  //size_t maxs=std::min(k,(Aiter[j+i*lda].size())*sizeof(mp_limb_t)/2);// to ensure 32 bits portability
-
 					  for (;l<maxs;l++){
 #ifdef __FFLASFFPACK_HAVE_LITTLE_ENDIAN
 						  A_beta[l+idx*k]= m0_ptr[l];						  
 #else
-						  A_beta[l+idx*k]= m0_ptr[l^((sizeof(mp_limb_t)/2U)-1U)];
+						  A_beta[l+idx*k]= m0_ptr[l^((__RECINT_LIMB_BITS/16U)-1U)]; /* big endian: from __RECINT_LIMB_BITS-bit word to 16-bit words */
 #endif
 					  }
 					  for (;l<k;l++)

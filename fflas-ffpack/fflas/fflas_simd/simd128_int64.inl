@@ -103,6 +103,14 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	}
 
 	/*
+	 *  Extract one 64-bit integer from src at *_immediate_* index idx
+	 *  Return v[idx] int64_t
+	 */
+	static INLINE CONST scalar_t get(vect_t v, const int idx) {
+		return _mm_extract_epi64(v, idx);
+	}
+
+	/*
 	* Load 128-bits of integer data from memory into dst.
 	* p must be aligned on a 16-byte boundary or a general-protection exception will be generated.
 	* Return [p[0],p[1]] int64_t
@@ -247,7 +255,7 @@ template <> struct Simd128_impl<true, true, true, 8> : public Simd128i_base {
 	*/
 	static INLINE CONST vect_t mullo(const vect_t x0, const vect_t x1) {
 #ifdef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
-		_mm_mullo_epi64(x0, x1);
+		return _mm_mullo_epi64(x0, x1);
 #else
 		// _mm_mullo_epi64 emul
 		//#pragma warning "The simd mullo function is emulate, it may impact the performances."

@@ -57,7 +57,6 @@ namespace FFLAS { namespace Protected{
 			// FFLASFFPACK_check(ldb);
 			// FFLASFFPACK_check(ldc);
 			typedef typename NewField::Element FloatElement;
-
 			NewField G((FloatElement) F.characteristic());
 			FloatElement tmp,alphaf, betaf;
 			// This conversion is quite tricky, but convert and init are required
@@ -261,7 +260,7 @@ namespace FFLAS {
 			else if (!std::is_same<Field,Givaro::ModularBalanced<float> >::value){
 				if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
 					return Protected::fgemm_convert<Givaro::ModularBalanced<float>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
-				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value && 16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+				else if (!std::is_same<Field,Givaro::ModularBalanced<double> >::value &&  16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
 					return Protected::fgemm_convert<Givaro::ModularBalanced<double>,Field>(F,ta,tb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,H);
 			}
 		}
@@ -319,7 +318,6 @@ namespace FFLAS {
 	       typename Field::Element_ptr C, const size_t ldc,
 	       const ParSeqHelper::Parallel<Cut,Param> par)
 	{
-
 		MMHelper<Field, MMHelperAlgo::Auto, typename FFLAS::ModeTraits<Field>::value, ParSeqHelper::Parallel<Cut,Param> > HW (F, m, k, n, par);
 		return 	fgemm (F, ta, tb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, HW);
 	}
@@ -390,6 +388,7 @@ namespace FFLAS {
 			fscalin(F, m, n, beta, C, ldc);
 			return C;
 		}
+
 #ifndef NDEBUG
 		/*  check if alpha is invertible.
 		 *  XXX do it in F.isInvertible(Element&) ?
@@ -429,10 +428,10 @@ namespace FFLAS {
 		MMHelper<Field, MMHelperAlgo::Winograd, ModeCategories::LazyTag>  HD(H);
 		// std::cerr<<"\n Delayed -> Lazy alpha_ = "<<alpha_<<std::endl;
 		// std::cerr<<" A = "<<*A<<"\n B = "<<*B<<"\n C = "<<*C<<"\n alpha, beta ="<<alpha<<" "<<beta<<std::endl;
+		
 		fgemm (F, ta, tb, m, n, k, alpha_, A, lda, B, ldb, beta_, C, ldc, HD);
-		// std::cerr<<"Sortie de fgemm Lazy C = "<<*C<<std::endl;
+		
 		Protected::ScalAndReduce (F, m, n, alpha, C, ldc, HD);
-		// std::cerr<<"Sortie de ScalAndReduce C = "<<*C<<std::endl;
 
 		H.initOut();
 

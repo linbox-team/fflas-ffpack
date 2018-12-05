@@ -840,7 +840,7 @@ namespace FFPACK { /* invert */
 			typename Field::Element_ptr A, const size_t lda,
 			int& nullity);
 
-	/** @brief Invert the given matrix in place
+	/** @brief Invert the given matrix
 	 * or computes its nullity if it is singular.
 	 *
 	 * @pre \p X is preallocated and should be large enough to store the

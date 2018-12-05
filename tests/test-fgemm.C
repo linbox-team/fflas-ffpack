@@ -244,8 +244,8 @@ bool launch_MM_dispatch(const Field &F,
 		FFLAS_TRANSPOSE ta = FflasNoTrans ;
 		FFLAS_TRANSPOSE tb = FflasNoTrans ;
 		if (! par) {
-			if (random()%2) ta = FflasTrans ;
-			if (random()%2) tb = FflasTrans ;
+		 	if (random()%2) ta = FflasTrans ;
+		 	if (random()%2) tb = FflasTrans ;
 		}
 
 		if (mm<0)
@@ -335,7 +335,7 @@ bool run_with_field (Givaro::Integer q, uint64_t b, int m, int n, int k, int nbw
 		Element alpha,beta ;
 		NZR.random(alpha);
 		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->one ,alpha,iters,nbw, par, R);
-		//std::cout << k << "/24" << std::endl; ++k;
+			//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->zero,alpha,iters,nbw, par, R);
 		//std::cout << k << "/24" << std::endl; ++k;
 		ok = ok && launch_MM_dispatch<Field>(*F,m,n,k,F->mOne,alpha,iters,nbw, par, R);
@@ -403,15 +403,21 @@ int main(int argc, char** argv)
 		ok = ok && run_with_field<ModularBalanced<double> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<Modular<float> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<ModularBalanced<float> >(q,b,m,n,k,nbw,iters,p, seed);
+#ifndef __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
+			// int32_t simd not yet fully implemented over AVX512
 		ok = ok && run_with_field<Modular<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<ModularBalanced<int32_t> >(q,b,m,n,k,nbw,iters,p, seed);
+#endif
 		ok = ok && run_with_field<Modular<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<Modular<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b,m,n,k,nbw,iters, p, seed);
+		ok = ok && run_with_field<ModularBalanced<int64_t> >(q,b?b:25,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<Modular<RecInt::rint<7> > >(q,b?b:63_ui64,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<Modular<RecInt::rint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<Modular<RecInt::ruint<7>,RecInt::ruint<8> > >(q,b?b:127_ui64,m,n,k,nbw,iters, p, seed);
 		ok = ok && run_with_field<Modular<Givaro::Integer> >(q,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
 		ok = ok && run_with_field<Givaro::ZRing<Givaro::Integer> >(0,(b?b:512_ui64),m,n,k,nbw,iters,p, seed);
+		seed++;
 	} while (loop && ok);
 
 

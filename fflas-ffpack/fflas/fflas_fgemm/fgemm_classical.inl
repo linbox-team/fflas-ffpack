@@ -64,7 +64,6 @@ namespace FFLAS {
 		typedef MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::LazyTag> HelperType;
 		typename HelperType::DelayedField::Element alphadf, betadf;
 		betadf = beta;
-		
 		if (F.isMOne (alpha)) {
 			alphadf = -H.delayedField.one;
 		} else {

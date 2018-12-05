@@ -128,7 +128,6 @@ namespace FFLAS { namespace Protected {
 		MMHelper<Field, MMHelperAlgo::Classic, FieldMode> Hacc(H);
 		MMHelper<Field, MMHelperAlgo::Classic, FieldMode> HModd(H);
 		MMHelper<Field, MMHelperAlgo::Classic, FieldMode> HNodd(H);
-
 		Hacc.Cmin = H.Outmin; Hacc.Cmax = H.Outmax;
 		HModd.Cmin = Cmin; HModd.Cmax = Cmax;
 		HModd.Amax = H.Bmax; HModd.Amin = H.Bmin;
@@ -388,7 +387,7 @@ namespace FFLAS{
 	       typename Field::Element_ptr C, const size_t ldc,
 	       MMHelper<Field, MMHelperAlgo::Winograd, ModeT> & H)
 	{
-		if (!m || !n ) return C;
+      		if (!m || !n ) return C;
 		if (!k){
 			    //TODO: update helper
 			fscalin(F,m,n,beta,C,ldc);
