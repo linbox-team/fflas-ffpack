@@ -51,40 +51,39 @@ int main(int argc, char** argv) {
     size_t * P = FFLAS::fflas_new<size_t>(m);
     size_t * Q = FFLAS::fflas_new<size_t>(n);
 
-    FFPACK::PLUQ (F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
+    size_t r = FFPACK::PLUQ (F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
+
 
 	FFLAS::WritePermutation (std::cout<<"P = "<<std::endl,P,m);
 
-	size_t lda = n;
-	//Display L (which has unit diagonal)
-	std::cout<<"L = "<<std::endl;
-	for(size_t i = 0; i < m; ++i){
-		for(size_t j = 0; j < m; ++j)
-		{
-			if(i == j)
-				std::cout<<1<<"\t";
-			else if(i < j)
-				std::cout<<0<<"\t";
-			else
-				std::cout<<A[j+i*lda]<<"\t";
-		}
-		std::cout<<std::endl;
-	}
-	std::cout<<"\n modulo "<<p<<std::endl;
+		// Size of L and U depend on the rank of A
+	if(r == std::min(m, n))
+	{	
+		// If A is full rank, L is (m x m) and  U is (m x n)
+		double * L = FFLAS::fflas_new<double>(m * m);
+		double * U = FFLAS::fflas_new<double>(m * n);
+		FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, m);
+		FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n);
+		FFLAS::WriteMatrix(std::cout<<"L = "<<std::endl, F, m, m, L, m);
+		std::cout<<"modulo "<<p<<std::endl;
+		FFLAS::WriteMatrix(std::cout<<"U = "<<std::endl, F, m, n, U, n);
+		std::cout<<"modulo "<<p<<std::endl;
 
-	//Display U
-	std::cout<<"U = "<<std::endl;
-	for(size_t i = 0; i < m; ++i){
-		for(size_t j = 0; j < n; ++j)
-		{
-			if(i > j)
-				std::cout<<0<<"\t";
-			else
-				std::cout<<A[j+i*lda]<<"\t";
-		}
-		std::cout<<std::endl;
 	}
-	std::cout<<"\n modulo "<<p<<std::endl;
+	else
+	{
+		// If A is full rank, L is (m x r) and  U is (r x n)
+		double * L = FFLAS::fflas_new<double>(m * r);
+		double * U = FFLAS::fflas_new<double>(r * n);
+		FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, r);
+		FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n);
+		FFLAS::WriteMatrix(std::cout<<"L = "<<std::endl, F, m, r, L, r);
+		std::cout<<"modulo "<<p<<std::endl;
+		FFLAS::WriteMatrix(std::cout<<"U = "<<std::endl, F, r, n, U, n);
+		std::cout<<"modulo "<<p<<std::endl;
+
+	}
+
 	FFLAS::WritePermutation (std::cout<<"Q = "<<std::endl,Q,n);
 
     FFLAS::fflas_delete( P);
