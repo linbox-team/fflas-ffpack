@@ -80,12 +80,11 @@ namespace FFLAS {
 		typename Field::ConstElement_ptr xi = x, yi = y;
 		size_t i=delayedDim;
 		typename Field::Element dp;
-		F.init(dp);
 		for (; i<N; i+= delayedDim, xi += incx*delayedDim, yi += incy*delayedDim){
-			F.assign(dp, fdot (delayedF, delayedDim, xi, incx, yi, incy, DM));
+			F.init(dp, fdot (delayedF, delayedDim, xi, incx, yi, incy, DM));
 			F.addin(d, dp);
 		}
-		F.assign (dp,fdot (delayedF, N+delayedDim-i, xi, incx, yi, incy, DM));
+		F.init (dp,fdot (delayedF, N+delayedDim-i, xi, incx, yi, incy, DM));
 		F.addin (d, dp);
 		return d;
 	}
