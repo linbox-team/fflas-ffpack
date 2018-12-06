@@ -204,10 +204,13 @@ namespace FFPACK {
                            typename Field::Element_ptr A, size_t lda, RandIter& G) {
         RandomTriangularMatrix (F, n, n, FFLAS::FflasUpper, FFLAS::FflasNonUnit, nonsingular, A, lda, G);
         for (size_t i=0; i<n; i++){
-            typename Field::Element inv;
-            F.init(inv);
-            F.inv(inv, A[i*(lda+1)]);
-            FFLAS::fscal(F, n-i-1, inv, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
+            typename Field::Element piv = A[i*(lda+1)];
+            if (!F.isZero(piv)){
+                    typename Field::Element inv;
+                    F.init(inv);
+                    F.inv(inv, A[i*(lda+1)]);
+                    FFLAS::fscal(F, n-i-1, inv, A+i*(lda+1)+1, 1, A+i*(lda+1)+lda, lda);
+            }
         }
         ftrtrm (F, FFLAS::FflasRight, FFLAS::FflasNonUnit, n, A, lda);
         return A;
