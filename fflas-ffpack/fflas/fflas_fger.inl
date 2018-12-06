@@ -95,7 +95,7 @@ namespace FFLAS{
 	{
 		if (F.isZero(alpha)) { return ; }
 
-		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER){
+		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER && F.cardinality() > 2){
 			return Protected::fger_convert<float,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
 		} else if  (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()){
 			return Protected::fger_convert<double,Field>(F,M,N,alpha,x, incx, y,incy, A, lda);
@@ -293,7 +293,7 @@ namespace FFLAS{
 
 		if (Protected::AreEqual<Field, Givaro::Modular<int64_t> >::value ||
 		    Protected::AreEqual<Field, Givaro::ModularBalanced<int64_t> >::value){
-			if (F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+			if (F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality()&& F.cardinality() > 2)
 				return Protected::fger_convert<double,Field>(F,M,N,alpha,x,incx,y,incy, A,lda);
 			else{
 				    // Stay over int64_t
