@@ -99,9 +99,9 @@ namespace FFLAS {
 	       typename Field::Element_ptr Y, const size_t incY,
 	       MMHelper<Field, MMHelperAlgo::Classic, ModeCategories::ConvertTo<ElementCategories::MachineFloatTag> > & H)
 	{
-		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER)
+		if (F.cardinality() < DOUBLE_TO_FLOAT_CROSSOVER && F.cardinality() > 2)
 			return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
-		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+		else if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality() && F.cardinality() > 2)
 			return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX, beta,Y,incY);
 		else {
 			FFPACK::failure()(__func__,__LINE__,"Invalid ConvertTo Mode for this field");
@@ -147,13 +147,13 @@ namespace FFLAS {
 		if (Protected::AreEqual<Field, Givaro::Modular<double> >::value ||
 		    Protected::AreEqual<Field, Givaro::ModularBalanced<double> >::value){
 			    //Givaro::Modular<double> need to switch to float if p too small
-			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER)
+			if (F.characteristic() < DOUBLE_TO_FLOAT_CROSSOVER && F.cardinality() > 2)
 				return Protected::fgemv_convert<float,Field>(F,ta,M,N,alpha,A,lda,X,incX,beta,Y,incY);
 		}
 
 		if (Protected::AreEqual<Field, Givaro::Modular<int64_t> >::value ||
 		    Protected::AreEqual<Field, Givaro::ModularBalanced<int64_t> >::value){
-			if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality())
+			if (16*F.cardinality() < Givaro::ModularBalanced<double>::maxCardinality() && F.cardinality()>2)
 				return Protected::fgemv_convert<double,Field>(F,ta,M,N,alpha,A,lda,X, incX,beta,Y,incY);
 			else{
 				    // Stay over int64_t
