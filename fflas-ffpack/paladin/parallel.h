@@ -287,7 +287,6 @@
 // get the number of threads specified with the global variable OMP_NUM_THREADS
 # define MAX_THREADS omp_get_max_threads()
 
-
 #define BEGIN_PARALLEL_MAIN(Args...) int main(Args)  {
 #define END_PARALLEL_MAIN(void)  return 0; }
 
