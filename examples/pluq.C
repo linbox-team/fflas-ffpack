@@ -31,22 +31,22 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-	
-	if (argc != 3){
-		std::cerr<<"Usage: pluq <p> <matrix>"<<std::endl;
-		return -1;
-	}
+    
+    if (argc != 3){
+        std::cerr<<"Usage: pluq <p> <matrix>"<<std::endl;
+        return -1;
+    }
 
-	int p = atoi(argv[1]);
-	std::string file = argv[2];
-	size_t m,n;
-	
-		// Creating the finite field Z/qZ
-	Givaro::Modular<double> F(p);
+    int p = atoi(argv[1]);
+    std::string file = argv[2];
+    size_t m,n;
+    
+        // Creating the finite field Z/qZ
+    Givaro::Modular<double> F(p);
 
-		// Reading the matrix from a file
-	double *A;
-	FFLAS::ReadMatrix (file.c_str(),F,m,n,A);
+        // Reading the matrix from a file
+    double *A;
+    FFLAS::ReadMatrix (file.c_str(),F,m,n,A);
 
     size_t * P = FFLAS::fflas_new<size_t>(m);
     size_t * Q = FFLAS::fflas_new<size_t>(n);
@@ -54,42 +54,24 @@ int main(int argc, char** argv) {
     size_t r = FFPACK::PLUQ (F, FFLAS::FflasNonUnit, m, n, A, n, P, Q);
 
 
-	FFLAS::WritePermutation (std::cout<<"P = "<<std::endl,P,m);
+    FFLAS::WritePermutation (std::cout<<"P = "<<std::endl,P,m);
 
-		// Size of L and U depend on the rank of A
-	if(r == std::min(m, n))
-	{	
-		// If A is full rank, L is (m x m) and  U is (m x n)
-		double * L = FFLAS::fflas_new<double>(m * m);
-		double * U = FFLAS::fflas_new<double>(m * n);
-		FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, m);
-		FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n);
-		FFLAS::WriteMatrix(std::cout<<"L = "<<std::endl, F, m, m, L, m);
-		std::cout<<"modulo "<<p<<std::endl;
-		FFLAS::WriteMatrix(std::cout<<"U = "<<std::endl, F, m, n, U, n);
-		std::cout<<"modulo "<<p<<std::endl;
+        // Displays L and U separately
+    double * L = FFLAS::fflas_new<double>(m * r);
+    double * U = FFLAS::fflas_new<double>(r * n);
+    FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, r);
+    FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n);
+    FFLAS::WriteMatrix(std::cout<<"L = "<<std::endl, F, m, r, L, r);
+    std::cout<<"modulo "<<p<<std::endl;
+    FFLAS::WriteMatrix(std::cout<<"U = "<<std::endl, F, r, n, U, n);
+    std::cout<<"modulo "<<p<<std::endl;
 
-	}
-	else
-	{
-		// If A is full rank, L is (m x r) and  U is (r x n)
-		double * L = FFLAS::fflas_new<double>(m * r);
-		double * U = FFLAS::fflas_new<double>(r * n);
-		FFPACK::getTriangular(F, FFLAS::FflasLower, FFLAS::FflasUnit, m, n, r, A, n, L, r);
-		FFPACK::getTriangular(F, FFLAS::FflasUpper, FFLAS::FflasNonUnit, m, n, r, A, n, U, n);
-		FFLAS::WriteMatrix(std::cout<<"L = "<<std::endl, F, m, r, L, r);
-		std::cout<<"modulo "<<p<<std::endl;
-		FFLAS::WriteMatrix(std::cout<<"U = "<<std::endl, F, r, n, U, n);
-		std::cout<<"modulo "<<p<<std::endl;
-
-	}
-
-	FFLAS::WritePermutation (std::cout<<"Q = "<<std::endl,Q,n);
+    FFLAS::WritePermutation (std::cout<<"Q = "<<std::endl,Q,n);
 
     FFLAS::fflas_delete( P);
     FFLAS::fflas_delete( Q);
     FFLAS::fflas_delete( A);
-		
-	return 0;
+        
+    return 0;
 }
 
