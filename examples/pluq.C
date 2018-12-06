@@ -55,6 +55,40 @@ int main(int argc, char** argv) {
 
 	FFLAS::WritePermutation (std::cout<<"P = "<<std::endl,P,m);
 	FFLAS::WriteMatrix (std::cout<<"LU = "<<std::endl,F,m,n,A,n)<< " modulo " << p << std::endl;
+	if(m == n)
+	{
+		size_t lda = n;
+		//Display L (which has unit diagonal)
+		std::cout<<"L = "<<std::endl;
+		for(size_t i = 0; i < m; ++i){
+			for(size_t j = 0; j < n; ++j)
+			{
+				if(i == j)
+					std::cout<<1<<"\t";
+				else if(i < j)
+					std::cout<<0<<"\t";
+				else
+					std::cout<<A[j+i*lda]<<"\t";
+			}
+			std::cout<<std::endl;
+		}
+		std::cout<<"\n modulo "<<p<<std::endl;
+		
+		//Display U
+		std::cout<<"U = "<<std::endl;
+		for(size_t i = 0; i < m; ++i){
+			for(size_t j = 0; j < n; ++j)
+			{
+				if(i > j)
+					std::cout<<0<<"\t";
+				else
+					std::cout<<A[j+i*lda]<<"\t";
+			}
+			std::cout<<std::endl;
+		}
+		std::cout<<"\n modulo "<<p<<std::endl;
+
+	}
 	FFLAS::WritePermutation (std::cout<<"Q = "<<std::endl,Q,n);
 
     FFLAS::fflas_delete( P);
