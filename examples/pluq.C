@@ -71,8 +71,8 @@ int main(int argc, char** argv) {
     FFLAS::fflas_delete( P);
     FFLAS::fflas_delete( Q);
     FFLAS::fflas_delete( A);
-	FFLAS::fflas_delete( L);
-	FFLAS::fflas_delete( U);
+    FFLAS::fflas_delete( L);
+    FFLAS::fflas_delete( U);
         
     return 0;
 }
