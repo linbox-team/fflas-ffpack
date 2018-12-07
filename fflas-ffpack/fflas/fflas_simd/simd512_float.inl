@@ -90,7 +90,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 *	Gather single-precision (32-bit) floating-point elements with indexes idx[0], ..., idx[15] from the address p in
 	 *vect_t.
-	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]], p[idx[8]], 
+	 *  Return [p[idx[0]], p[idx[1]], p[idx[2]], p[idx[3]], p[idx[4]], p[idx[5]], p[idx[6]], p[idx[7]], p[idx[8]],
 	 			p[idx[9]], p[idx[10]], p[idx[11]], p[idx[12]], p[idx[13]], p[idx[14]], p[idx[15]]]
 	 */
 	template <class T> static INLINE PURE vect_t gather(const scalar_t *const p, const T *const idx) {
@@ -164,7 +164,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	* Blend packed single-precision (32-bit) floating-point elements from a and b using control mask s,
 	* and store the results in dst.
-	* uint8_t became uint16_t 
+	* uint8_t became uint16_t
 	* Args   :	[a0, ..., a15] float
 	*			[b0, ..., b15] float
 	* Return :	[s[0]?a0:b0, ..., s[15]?a15:b15] float
@@ -172,7 +172,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	A TESTER
 	*/
 	template<uint16_t s>
-	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t blend(const vect_t a, const vect_t b) {
 		return _mm512_mask_blend_ps(s, a, b);
 	}
 	
@@ -208,7 +208,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	
 	/*
 	 * Add packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0+b0, a1+b1, a2+b2, a3+b3, a4+b4, a5+b5, a6+b6, a7+b7, a8+b8, a9+b9, a10+b10, a11+b11, a12+b12, a13+b13, a14+b14, a15+b15]
 	 */
@@ -219,7 +219,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Subtract packed single-precision (32-bit) floating-point elements in b from packed single-precision (32-bit)
 	 * floating-point elements in a, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0-b0, a1-b1, a2-b2, a3-b3, a4-b4, a5-b5, a6-b6, a7-b7, a8-b8, a9-b9, a10-b10, a11-b11, a12-b12, a13-b13, a14-b14, a15-b15]
 	 */
@@ -229,7 +229,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0*b0, a1*b1, a2*b2, a3*b3, a4*b4, a5*b5, a6*b6, a7*b7, a8*b8, a9*b9, a10*b10, a11*b11, a12*b12, a13*b13, a14*b14, a15*b15]
 	 */
@@ -240,7 +240,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Divide packed single-precision (32-bit) floating-point elements in a by packed elements in b,
 	 * and store the results in dst.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0/b0, a1/b1, a2/b2, a3/b3, a4/b4, a5/b5, a6/b6, a7/b7, a8/b8, a9/b9, a10/b10, a11/b11, a12/b12, a13/b13, a14/b14, a15/b15]
 	 */
@@ -249,10 +249,10 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to
 	 * packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
-	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7, 
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7,
 	 *			a8*b8+c8, a9*b9+c9, a10*b10+c10, a11*b11+c11, a12*b12+c12, a13*b13+c13, a14*b14+c14, a15*b15+c15]
 	 */
 	static INLINE CONST vect_t fmadd(const vect_t c, const vect_t a, const vect_t b) {
@@ -262,10 +262,10 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to
 	 * packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
-	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7, 
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7,
 	 *			a8*b8+c8, a9*b9+c9, a10*b10+c10, a11*b11+c11, a12*b12+c12, a13*b13+c13, a14*b14+c14, a15*b15+c15]
 	 */
 	static INLINE CONST vect_t madd(const vect_t c, const vect_t a, const vect_t b) { return fmadd(c, a, b); }
@@ -273,10 +273,10 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the intermediate result to
 	 * packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
-	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7, 
+	 * Return : [a0*b0+c0, a1*b1+c1, a2*b2+c2, a3*b3+c3, a4*b4+c4, a5*b5+c5, a6*b6+c6, a7*b7+c7,
 	 *			a8*b8+c8, a9*b9+c9, a10*b10+c10, a11*b11+c11, a12*b12+c12, a13*b13+c13, a14*b14+c14, a15*b15+c15]
 	 */
 	static INLINE CONST vect_t maddx(const vect_t c, const vect_t a, const vect_t b) { return fmadd(c, a, b); }
@@ -286,7 +286,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the negated intermediate result
 	 * to packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
 	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3, -(a4*b4)+c4, -(a5*b5)+c5, -(a6*b6)+c6, -(a7*b7)+c7,
@@ -299,7 +299,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, add the negated intermediate result
 	 * to packed elements in c, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
 	 * Return : [-(a0*b0)+c0, -(a1*b1)+c1, -(a2*b2)+c2, -(a3*b3)+c3, -(a4*b4)+c4, -(a5*b5)+c5, -(a6*b6)+c6, -(a7*b7)+c7,
@@ -312,7 +312,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, subtract packed elements in c from
 	 * the intermediate result, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
 	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3, a4*b4-c4, a5*b5-c5, a6*b6-c6, a7*b7-c7,
@@ -325,7 +325,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Multiply packed single-precision (32-bit) floating-point elements in a and b, subtract packed elements in c from
 	 * the intermediate result, and store the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15],
 	 *			[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
 	 * Return : [a0*b0-c0, a1*b1-c1, a2*b2-c2, a3*b3-c3, a4*b4-c4, a5*b5-c5, a6*b6-c6, a7*b7-c7,
@@ -339,7 +339,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for equality, and store the results
 	 in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [(a0==b0) ? 0xFFFFFFFF : 0,
 	 (a1==b1) ? 0xFFFFFFFF : 0,
@@ -361,7 +361,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 
 	 */
 
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
 		__m512i c = _mm512_set1_epi32(i);
 		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ), _mm512_castsi512_ps(c));
@@ -370,7 +370,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for lesser-than, and store the
 	 results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [(a0<b0) ? 0xFFFFFFFF : 0,
 	 (a1<b1) ? 0xFFFFFFFF : 0,
@@ -389,16 +389,16 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	 (a14<b14) ? 0xFFFFFFFF : 0,
 	 (a15<b15) ? 0xFFFFFFFF : 0]
 	 */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
 		__m512i c = _mm512_set1_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(c)); 
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LT_OS), _mm512_castsi512_ps(c));
 	}
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for lesser or equal than, and store
 	 the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [(a0<=b0) ? 0xFFFFFFFF : 0,
 	 (a1<=b1) ? 0xFFFFFFFF : 0,
@@ -420,13 +420,13 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	static INLINE CONST vect_t lesser_eq(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
 		__m512i c = _mm512_set1_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(c)); 
-	} 
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_LE_OS), _mm512_castsi512_ps(c));
+	}
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for greater-than, and store the
 	 results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [(a0>b0) ? 0xFFFFFFFF : 0,
 	 (a1>b1) ? 0xFFFFFFFF : 0,
@@ -448,13 +448,13 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	static INLINE CONST vect_t greater(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
 		__m512i c = _mm512_set1_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(c)); 
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GT_OS), _mm512_castsi512_ps(c));
 	}
 
 	/*
 	 * Compare packed single-precision (32-bit) floating-point elements in a and b for greater or equal than, and store
 	 the results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [(a0>=b0) ? 0xFFFFFFFF : 0,
 	 (a1>=b1) ? 0xFFFFFFFF : 0,
@@ -476,26 +476,25 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	static INLINE CONST vect_t greater_eq(const vect_t a, const vect_t b) {
 		int32_t i = 0xFFFFFFFF;
 		__m512i c = _mm512_set1_epi32(i);
-		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(c)); 
-	} 
+		return _mm512_maskz_expand_ps(_mm512_cmp_ps_mask(a, b, _CMP_GE_OS), _mm512_castsi512_ps(c));
+	}
 
-#ifdef __AVX512DQ__
-
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
 	/*
 	 * Compute the bitwise AND of packed single-precision (32-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
 	 * Without AVX512_DQ need to cast m512 into m512i and use _mm512_and_si512
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0 AND b0, a1 AND b1, a2 AND b2, a3 AND b3, a4 AND b4, a5 AND b5, a6 AND b6, a7 AND b7,
 	 *			a8 AND b8, a9 AND b9, a10 AND b10, a11 AND b11, a12 AND b12, a13 AND b13, a14 AND b14, a15 AND b15]
 	 */
-	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_ps(a, b); } 
+	static INLINE CONST vect_t vand(const vect_t a, const vect_t b) { return _mm512_and_ps(a, b); }
 
 	/*
 	 * Compute the bitwise OR of packed single-precision (32-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0 OR b0, a1 OR b1, a2 OR b2, a3 OR b3, a4 OR b4, a5 OR b5, a6 OR b6, a7 OR b7,
 	 *			a8 OR b8, a9 OR b9, a10 OR b10, a11 OR b11, a12 OR b12, a13 OR b13, a14 OR b14, a15 OR b15]
@@ -505,7 +504,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Compute the bitwise XOR of packed single-precision (32-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0 XOR b0, a1 XOR b1, a2 XOR b2, a3 XOR b3, a4 XOR b4, a5 XOR b5, a6 XOR b6, a7 XOR b7,
 	 *			a8 XOR b8, a9 XOR b9, a10 XOR b10, a11 XOR b11, a12 XOR b12, a13 XOR b13, a14 XOR b14, a15 XOR b15]
@@ -513,17 +512,15 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm512_xor_ps(a, b); }
 
 	/*
-	 * Compute the bitwise AND NOT of packed single-precision (32-bit) floating-point elements in a and b, and store the
+	 * Compute the bitwise NOT AND of packed single-precision (32-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
-	 * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3, a4 ANDNOT b4, a5 ANDNOT b5, a6 ANDNOT b6, a7 ANDNOT b7,
-	 *			a8 ANDNOT b8, a9 ANDNOT b9, a10 ANDNOT b10, a11 ANDNOT b11, a12 ANDNOT b12, a13 ANDNOT b13, a14 ANDNOT b14, a15 ANDNOT b15]
+	 * Return : [NOT(a0) AND b0, NOT(a1) AND b1, NOT(a2) AND b2, NOT(a3) AND b3, NOT(a4) AND b4, NOT(a5) AND b5, NOT(a6) AND b6, NOT(a7) AND b7,
+	 *			NOT(a8) AND b8, NOT(a9) AND b9, NOT(a10) AND b10, NOT(a11) AND b11, NOT(a12) AND b12, NOT(a13) AND b13, NOT(a14) AND b14, NOT(a15) AND b15]
 	 */
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm512_andnot_ps(a, b); }
-#else //__AVX512DQ__
-
-#endif
+#endif /* __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS */
 	/*
 	 * Round the packed single-precision (32-bit) floating-point elements in a down to an integer value, and store the
 	 * results as packed double-precision floating-point elements in vect_t.
@@ -556,14 +553,14 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	/*
 	 * Horizontally add adjacent pairs of single-precision (32-bit) floating-point elements in a and b, and pack the
 	 * results in vect_t.
-	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15], 
+	 * Args   : [a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15],
 	 *			[b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15]
 	 * Return : [a0+a1, b0+b1, a2+a3, b2+b3, a4+a5, b4+b5, a6+a7, b6+b7,
 	 *			a8+a9, b8+b9, a10+a11, b10+b11, a12+a13, b12+b13, a14+a15, b14+b15]
 
 	 A TESTER
 	 */
-	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t hadd(const vect_t a, const vect_t b) {
 		__m256 lowa  = _mm512_castps512_ps256(a);
 		__m256 higha = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(a),1));
 
@@ -576,7 +573,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 		__m512 res = _mm512_castps256_ps512(reslow);
 		res = _mm512_insertf32x8(res, reshigh, 1);
 
-		return res; 
+		return res;
 	}
 
 	/*
@@ -587,12 +584,14 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 	static INLINE CONST scalar_t hadd_to_scal(const vect_t a) {
 		return ((const scalar_t *)&a)[0] + ((const scalar_t *)&a)[1] + ((const scalar_t *)&a)[2] +
 				((const scalar_t *)&a)[3] + ((const scalar_t *)&a)[4] + ((const scalar_t *)&a)[5] +
-				((const scalar_t *)&a)[6] + ((const scalar_t *)&a)[7] +  ((const scalar_t *)&a)[8] + 
-				((const scalar_t *)&a)[9] + ((const scalar_t *)&a)[10] + ((const scalar_t *)&a)[11] + 
-				((const scalar_t *)&a)[12] + ((const scalar_t *)&a)[13] + ((const scalar_t *)&a)[14] + 
+				((const scalar_t *)&a)[6] + ((const scalar_t *)&a)[7] +  ((const scalar_t *)&a)[8] +
+				((const scalar_t *)&a)[9] + ((const scalar_t *)&a)[10] + ((const scalar_t *)&a)[11] +
+				((const scalar_t *)&a)[12] + ((const scalar_t *)&a)[13] + ((const scalar_t *)&a)[14] +
 				((const scalar_t *)&a)[15];
 	}
 
+#ifdef __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS
+	/* Call NORML_MOD which needs vand which is not defined without AVX512DQ */
 	static INLINE vect_t mod(vect_t &C, const vect_t &P, const vect_t &INVP, const vect_t &NEGP, const vect_t &MIN,
 							 const vect_t &MAX, vect_t &Q, vect_t &T) {
 		FLOAT_MOD(C, P, INVP, Q);
@@ -600,6 +599,7 @@ template <> struct Simd512_impl<true, false, true, 4> : public Simd512fp_base {
 
 		return C;
 	}
+#endif /* __FFLASFFPACK_HAVE_AVX512DQ_INSTRUCTIONS */
 
 #else // __FFLASFFPACK_HAVE_AVX512F_INSTRUCTIONS
 #error "You need AVX512 instructions to perform 512bits operations on float"

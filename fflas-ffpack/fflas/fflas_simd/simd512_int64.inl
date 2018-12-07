@@ -210,7 +210,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 			   [b0, b1, b2, b3, a4, a5, a6, a7] int64_t
 	* Return : [a0, b0, a2, b2, a4, b4, a6, b6] int64_t
 	*/
-	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t unpacklo_twice(const vect_t a, const vect_t b) {
 		//std::cerr<<"unpacklo_twice simd512_int64"<<std::endl;
 		return _mm512_unpacklo_epi64(a, b); }
 
@@ -240,7 +240,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
 		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
 		__m512i res = _mm512_castsi256_si512(low);
-		res = _mm512_inserti64x4(res, high, 1); 
+		res = _mm512_inserti64x4(res, high, 1);
 		return res;
 	}
 
@@ -260,7 +260,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 		__m256i low = _mm256_unpacklo_epi64(a2, b2); // low = [a0, bo, a1, b1]
 		__m256i high = _mm256_unpackhi_epi64(a2, b2); // high = [a2, b2, a3, b3]
 		__m512i res = _mm512_castsi256_si512(low);
-		res = _mm512_inserti64x4(res, high, 1); 
+		res = _mm512_inserti64x4(res, high, 1);
 		return res;
 	}
 
@@ -272,7 +272,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	*		   [a4, b4, a5, b5, a6, b6, a7, b7] int64_t
 	*/
 
-	static INLINE CONST void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
+	static INLINE void unpacklohi(vect_t& l, vect_t& h, const vect_t a, const vect_t b) {
 		l = unpacklo(a, b);
 		h = unpackhi(a, b);
 	}
@@ -362,7 +362,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return : [(a0 smod 2^32)*(b0 smod 2^32), ..., (a7 smod 2^32)*(b7 smod 2^32)]	int64_t
 	 *	   where (a smod p) is the signed representant of a modulo p, that is -p/2 <= (a smod p) < p/2
 	 */
-	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t mulx(const vect_t a, const vect_t b) {
 		//std::cerr<<"mulx simd512_int64"<<std::endl;
 		return _mm512_mul_epi32(a, b); }
 
@@ -441,7 +441,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 *		 ((a7 smod 2^32)*(b7 smod 2^32)-c7) smod 2^64]	int64_t
 	 */
 	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) {
-			 
+			
 		//std::cerr<<"fmsubx in simd512_int64"<<std::endl;
 		return sub(mulx(a, b), c); }
 
@@ -454,7 +454,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return : [(a0==b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1==b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2==b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3==b3) ? 0xFFFFFFFFFFFFFFFF : 0, ..., (a7==b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
-	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t eq(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
 		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpeq_epi64_mask(a, b), c);
@@ -484,7 +484,7 @@ template <> struct Simd512_impl<true, true, true, 8> : public Simd512i_base {
 	 * Return : [(a0<b0) ? 0xFFFFFFFFFFFFFFFF : 0, (a1<b1) ? 0xFFFFFFFFFFFFFFFF : 0,
 	 (a2<b2) ? 0xFFFFFFFFFFFFFFFF : 0, (a3<b3) ? 0xFFFFFFFFFFFFFFFF : 0, ..., (a7<b7) ? 0xFFFFFFFFFFFFFFFF : 0]	int64_t
 	 */
-	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t lesser(const vect_t a, const vect_t b) {
 		int64_t i = 0xFFFFFFFFFFFFFFFF;
 		__m512i c = _mm512_set1_epi64(i);
 		__m512i d = _mm512_maskz_expand_epi64(_mm512_cmpgt_epi64_mask(b, a), c);
@@ -729,7 +729,7 @@ template <> struct Simd512_impl<true, true, false, 8> : public Simd512_impl<true
 
 	static INLINE vect_t fnmaddxin(vect_t &c, const vect_t a, const vect_t b) { return c = fnmaddx(c, a, b); }
 
-	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) { 
+	static INLINE CONST vect_t fmsubx(const vect_t c, const vect_t a, const vect_t b) {
 		//std::cerr<<"fmsubx in simd512_int64"<<std::endl;
 		return sub(mulx(a, b), c); }
 

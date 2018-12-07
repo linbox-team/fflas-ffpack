@@ -367,10 +367,10 @@ template <> struct Simd128_impl<true, false, true, 4> {
 	static INLINE CONST vect_t vxor(const vect_t a, const vect_t b) { return _mm_xor_ps(a, b); }
 
 	/*
-	 * Compute the bitwise AND NOT of packed single-precision (32-bit) floating-point elements in a and b, and store the
+	 * Compute the bitwise NOT AND of packed single-precision (32-bit) floating-point elements in a and b, and store the
 	 * results in vect_t.
 	 * Args   : [a0, a1, a2, a3], [b0, b1, b2, b3]
-	 * Return : [a0 ANDNOT b0, a1 ANDNOT b1, a2 ANDNOT b2, a3 ANDNOT b3]
+	 * Return : [NOT(a0) AND b0, NOT(a1) AND b1, NOT(a2) AND b2, NOT(a3) AND b3]
 	 */
 	static INLINE CONST vect_t vandnot(const vect_t a, const vect_t b) { return _mm_andnot_ps(a, b); }
 

@@ -120,7 +120,8 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, t
     size_t w = 0;
     index_t larow_i = 0;
     typename Field::Element e;
-    F.init(e, y[larow_i]);
+    F.init(e);
+    F.assign(e, y[larow_i]);
     size_t accu = 0;
 
     while (w < A.nnz) {
@@ -133,15 +134,18 @@ inline void fspmv(const Field &F, const Sparse<Field, SparseMatrix_t::COO> &A, t
                 accu = 0;
             }
         } else { // new line
-            F.init(y[larow_i], e);
+            F.init(y[larow_i]);
+            F.assign(y[larow_i], e);
             larow_i = row[w];
-            F.init(e, y[larow_i]);
+            F.init(e);
+            F.assign(e, y[larow_i]);
             e += dat[w] * x[col[w]];
             accu = 1;
         }
         ++w;
     }
-    F.init(y[larow_i], e);
+    F.init(y[larow_i]);
+    F.assign(y[larow_i], e);
 }
 
 template <class Field>

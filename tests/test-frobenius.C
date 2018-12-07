@@ -69,8 +69,6 @@ int main(int argc, char** argv){
 		exit(-1);
 	}
 	Field F( atoi(argv[1]) );
-	Field::Element one;
-	F.init(one, 1U);
 	Field::Element* A;
 	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 	size_t c = atoi(argv[3]);

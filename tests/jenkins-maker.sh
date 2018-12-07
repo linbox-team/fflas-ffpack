@@ -20,9 +20,9 @@ SOURCE_DIRECTORY=$( cd "$( dirname "$0" )" && pwd )
 #=============================#
 # Change only these variables #
 #=============================#
-ARCH=`pwd | awk -F/ '{print $(NF-4)}'`
-CXX=`pwd | awk -F/ '{print $(NF-2)}'`
-SSE=`pwd | awk -F/ '{print $NF}'`
+ARCH=`pwd | awk -F/ '{print $(NF-2)}'`
+CXX=`pwd | awk -F/ '{print $(NF)}'`
+#SSE=`pwd | awk -F/ '{print $NF}'`
 
 JENKINS_DIR=${SOURCE_DIRECTORY%%/workspace/*}
 LOCAL_DIR="$JENKINS_DIR"/local
@@ -45,12 +45,12 @@ fi
 
 # Where to install fflas-ffpack binaries
 # Keep default for local installation.
-PREFIX_INSTALL="$LOCAL_DIR/$CXX/$SSE"
+PREFIX_INSTALL="$LOCAL_DIR/$CXX"
 
 # Add specific locations (if needed)
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH":/usr/local/lib:"$LOCAL_DIR/$CXX/lib":"$PREFIX_INSTALL"/lib
 echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
-export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/$SSE/lib/pkgconfig"
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"$LOCAL_DIR/$CXX/lib/pkgconfig"
 echo "PKG_CONFIG_PATH = ${PKG_CONFIG_PATH}"
 
 #================#
@@ -91,8 +91,8 @@ rm -rf "$PREFIX_INSTALL"/bin/fflas-ffpack* "$PREFIX_INSTALL"/include/fflas-ffpac
 # Automated installation and tests #
 #==================================#
 
-echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-optimization --enable-precompilation"
-./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS"
+echo "|=== JENKINS AUTOMATED SCRIPT ===| ./autogen.sh CXX=$CXX CC=$CC --prefix=$PREFIX_INSTALL --with-blas-libs=$BLAS_LIBS --enable-precompilation"
+./autogen.sh CXX=$CXX CC=$CC --prefix="$PREFIX_INSTALL" --with-blas-libs="$BLAS_LIBS" --enable-precompilation
 V="$?"; if test "x$V" != "x0"; then exit "$V"; fi
 
 echo "|=== JENKINS AUTOMATED SCRIPT ===| make autotune"

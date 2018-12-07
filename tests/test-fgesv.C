@@ -55,7 +55,6 @@ int main(int argc, char** argv){
 
 	int n,m,mb,nb;
 	cerr<<setprecision(10);
-	Field::Element zero, one;
 
 	if (argc != 6)	{
 		cerr<<"Usage : test-fgesv <p> <A> <b> <iter> <left/right>"
@@ -64,8 +63,6 @@ int main(int argc, char** argv){
 	}
 	int nbit=atoi(argv[4]); // number of times the product is performed
 	Field F(atoi(argv[1]));
-	F.init(zero,0.0);
-	F.init(one,1.0);
 	Field::Element * A, *B, *X=NULL;
 	FFLAS::ReadMatrix (argv[2],F,m,n,A);
 	FFLAS::ReadMatrix (argv[3],F,mb,nb,B);
@@ -134,17 +131,17 @@ int main(int argc, char** argv){
 	if (m==n)
 		if (side == FFLAS::FflasLeft)
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
-				      one, A, n, B, nb, zero, B2, nb);
+				      F.one, A, n, B, nb, F.zero, B2, nb);
 		else
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
-				      one, B, nb, A, n, zero, B2, nb);
+				      F.one, B, nb, A, n, F.zero, B2, nb);
 	else
 		if (side == FFLAS::FflasLeft)
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m, nb, n,
-				      one, A, n, X, ldx, zero, B2, nb);
+				      F.one, A, n, X, ldx, F.zero, B2, nb);
 		else
 			FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, mb, n, m,
-				      one, X, ldx, A, n, zero, B2, nb);
+				      F.one, X, ldx, A, n, F.zero, B2, nb);
 	FFLAS::fflas_delete( B);
 	FFLAS::fflas_delete( X);
 

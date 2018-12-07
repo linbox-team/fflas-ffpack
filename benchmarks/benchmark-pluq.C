@@ -71,47 +71,44 @@ typedef Givaro::ModularBalanced<double> Field;
 void verification_PLUQ(const Field & F, typename Field::Element * B, typename Field::Element * A,
                        size_t * P, size_t * Q, size_t m, size_t n, size_t R)
 {
-    
-    FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
-    
-    Field::Element_ptr X = FFLAS::fflas_new (F, m,n);
-    Field::Element_ptr L, U;
-    L = FFLAS::fflas_new(F, m,R);
-    U = FFLAS::fflas_new(F, R,n);
-    
-    PARFOR1D (i, m*R,H, F.init(L[i], 0.0); );
-    
-    PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
-    
-    PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );    
-    
-    Field::Element zero,one;
-    F.init(zero,0.0);
-    F.init(one,1.0);
-    PARFOR1D (i,R,H,
+	
+	FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> H;
+	
+	Field::Element_ptr X = FFLAS::fflas_new (F, m,n);
+	Field::Element_ptr L, U;
+	L = FFLAS::fflas_new(F, m,R);
+	U = FFLAS::fflas_new(F, R,n);
+	
+	PARFOR1D (i, m*R,H, F.init(L[i], 0.0); );
+	
+	PARFOR1D (i,n*R,H, F.init(U[i], 0.0); );
+	
+	PARFOR1D (i,m*n,H, F.init(X[i], 0.0); );	
+	
+	PARFOR1D (i,R,H,
               for (size_t j=0; j<i; ++j)
-                  F.assign ( *(U + i*n + j), zero);
+				  F.assign ( *(U + i*n + j), F.zero);
               for (size_t j=i; j<n; ++j)
                   F.assign (*(U + i*n + j), *(A+ i*n+j));
               );
-    
-    PARFOR1D (j,R,H, 
-              for (size_t i=0; i<=j; ++i )
-                  F.assign( *(L+i*R+j), zero);
-              F.assign(*(L+j*R+j), one);
-              for (size_t i=j+1; i<m; i++)
-                  F.assign( *(L + i*R+j), *(A+i*n+j));
-              );
-    
-    PAR_BLOCK{
-        SYNCH_GROUP(
-            
-            TASK(MODE(CONSTREFERENCE(F,P,L)),
-                 FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
-            TASK(MODE(CONSTREFERENCE(F,Q,U)),
-                 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
-            WAIT;
-            typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> pWH (MAX_THREADS);
+	
+	PARFOR1D (j,R,H, 
+			  for (size_t i=0; i<=j; ++i )
+				  F.assign( *(L+i*R+j), F.zero);
+			  F.assign(*(L+j*R+j), F.one);
+			  for (size_t i=j+1; i<m; i++)
+				  F.assign( *(L + i*R+j), *(A+i*n+j));
+			  );
+	
+	PAR_BLOCK{
+		SYNCH_GROUP(
+			
+			TASK(MODE(CONSTREFERENCE(F,P,L)),
+				 FFPACK::applyP( F, FFLAS::FflasLeft, FFLAS::FflasTrans, R,0,m, L, R, P););
+			TASK(MODE(CONSTREFERENCE(F,Q,U)),
+				 FFPACK::applyP (F, FFLAS::FflasRight, FFLAS::FflasNoTrans, R,0,n, U, n, Q););
+			WAIT;
+			typename FFLAS::ParSeqHelper::Parallel<FFLAS::CuttingStrategy::Block,FFLAS::StrategyParameter::Threads> pWH (MAX_THREADS);
 
             TASK(MODE(CONSTREFERENCE(F,U,L,X)),
                  FFLAS::fgemm (F, FFLAS::FflasNoTrans, FFLAS::FflasNoTrans, m,n,R,
